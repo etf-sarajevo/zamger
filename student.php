@@ -48,7 +48,7 @@ if ($labgrupa == 0) {
 // Predmet često zatreba...
 if ($predmet_id == 0) {
 	$q03 = myquery("select predmet from labgrupa where id=$labgrupa"); 
-	if (mysql_num_rows($q3)>0) $predmet_id = mysql_result($q03,0,0);
+	if (mysql_num_rows($q03)>0) $predmet_id = mysql_result($q03,0,0);
 }
 
 
@@ -119,6 +119,7 @@ function menuimage($img,$tekst,$link) {
 			<table width="100%" border="0" cellspacing="0" cellpadding="10"><tr><td>
 
 <? 
+
 
 if ($greska) {
 	niceerror($greska);
