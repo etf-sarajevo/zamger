@@ -2,6 +2,8 @@
 
 // v2.9.3.1 (2007/03/15) + stara baza u izmjeni profila
 // v2.9.3.2 (2007/03/22) + logiraj promjenu šifre
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/16) + Dju tu popjular dimand, isključujemo mogućnost promjene imena, prezimena i broja indexa 
 
 function stud_profil() {
 
@@ -28,11 +30,11 @@ if (mysql_num_rows($q1)<1) {
 <table border="0">
 	<tr>
 		<td>Ime:</td>
-		<td><input type="text" name="ime" size="20" value="<?=mysql_result($q1,0,0)?>"></td>
+		<td><b><?=mysql_result($q1,0,0)?></b></td>
 	</tr>
 	<tr>
 		<td>Prezime:</td>
-		<td><input type="text" name="prezime" size="20" value="<?=mysql_result($q1,0,1)?>"></td>
+		<td><b><?=mysql_result($q1,0,1)?></b></td>
 	</tr>
 	<tr>
 		<td>E-mail:</td>
@@ -40,7 +42,7 @@ if (mysql_num_rows($q1)<1) {
 	</tr>
 	<tr>
 		<td>Broj indexa:</td>
-		<td><input type="text" name="brind" size="10" value="<?=mysql_result($q1,0,3)?>"></td>
+		<td><b><?=mysql_result($q1,0,3)?></b></td>
 	</tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr>
