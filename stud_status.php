@@ -2,7 +2,8 @@
 
 // v2.9.3.1 (2007/04/05) + Prosljeđivanje labgrupe u modul zadaca
 // v2.9.3.2 (2007/04/06) + "odbrana" vs. "slanje"
-
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/16) + Design komentari by Teo 
 
 
 function stud_status() {
@@ -164,8 +165,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 <p>Za ponovno slanje zadatka, kliknite na sličicu u tabeli dolje.</p>
 </td>
-<td valign="top">
-<table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="#EEEEEE"><tr><td>
+<td valign="top" align="center">
+<table width="350" border="1" cellspacing="0" cellpadding="5" bgcolor="#EEEEEE"><tr><td>
 <table border="0" cellspacing="2" cellpadding="0"><tr><td>
 <b>LEGENDA:</b></td></tr>
 <tr><td><img src="images/zad_preg.png" width="16" height="16" border="0" align="center"> Pregled u toku</td></tr>
@@ -177,6 +178,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 </td></tr></table>
 
+<br/><br/>
 
 <center><table cellspacing="0" cellpadding="2" border="1">
 <tr><td>&nbsp;</td>

@@ -1,6 +1,8 @@
 <?
 
 // v2.9.3.1 (2007/04/09) + dodatno osiguranje protiv spoofanja labgrupe
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/16) + Design komentari by Teo 
 
 
 # Prijava
@@ -72,7 +74,7 @@ if ($sta == "download") {
 <body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
 
 <!-- The big table - cause we like it!!!!! web 2.0 is teh sux00rz -->
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
+<table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr bgcolor="#BBBBFF">
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
@@ -106,7 +108,7 @@ function menuimage($img,$tekst,$link) {
 
 ?>
 
-	<table width="100%" height="450" border="0" cellspacing="0" cellpadding="0">
+	<table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
 		<tr><td width="250" valign="top" background="images/fadetogray.gif">
 			<br/>
 			<?=menuimage("artsfftscope.png","Status","student.php?sta=status&labgrupa=$labgrupa");?>
@@ -142,9 +144,6 @@ if ($greska) {
 			</td></tr></table>
 		</td></tr>
 	</table>
-
-
-
 		</td>
 	</tr>
 </table>
