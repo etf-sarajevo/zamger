@@ -4,7 +4,9 @@
 // v2.9.3.2 (2007/03/19) + ispravan prikaz imena zadaće
 // v2.9.3.3 (2007/04/08) + optimizacije, code cleanup, komentari
 // v3.0.0.0 (2007/04/09) + Release
-// v3.0.0.1 (2007/04/25) + Release
+// v3.0.0.1 (2007/04/25) + Popravljeno prikazivanje bodova za zadaće u nekim situacijama 
+// kada nisu prikazivani
+// v3.0.0.1 (2007/04/25) + Trebao sam koristiti myquery ;) ispravka SQL greške 
 
 ?>
 <html>
@@ -253,7 +255,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$i=$pao1=$pao2=0;
 		foreach ($par_id_array as $pid) {
 			$i++;
-			$q202 = mysql_query("select ocjena from ispitocjena where student=$stud_id and ispit=$pid");
+			$q202 = myquery("select ocjena from ispitocjene where student=$stud_id and ispit=$pid");
 			if (mysql_num_rows($q202)>0) {
 				if (($ocjena = mysql_result($q202,0,0)) == -1) {
 					$parc_ispis .= "<td> / </td>";
