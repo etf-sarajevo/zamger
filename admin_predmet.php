@@ -5,6 +5,10 @@
 // v2.9.3.2 (2007/03/13) + editovanje imena grupe
 // v2.9.3.3 (2007/03/16) + rucno ubacivanje zadataka u zadacu, nova labela za broj zadataka
 // v2.9.3.4 (2007/03/26) + novo ime za genform() kod dodavanja ispita
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/25) + Rezultati ispita: konvertuj decimalni zarez u tačku, 
+// ispravka greške u SQL upitu, nova imena varijabli za datum, ispravljeno više 
+// semantičkih grešaka, dodana provjera za ponavljanje studenata u rezultatima
 
 
 function admin_predmet() {
@@ -183,7 +187,25 @@ if ($_POST['akcija'] == "massexam") {
 		print "Akcije koje će biti urađene:<br/><br/>\n";
 		print genform("POST");
 		print '<input type="hidden" name="fakatradi" value="1">';
+	} else {
+		# Registrovati ispit u bazi
+
+		$naziv = my_escape($_POST['naziv']);
+		$dan = intval($_POST['day']);
+		$mjesec = intval($_POST['month']);
+		$godina = intval($_POST['year']);
+		$mdat = time2mysql(mktime(0,0,0,$mjesec,$dan,$godina));
+
+		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum='$mdat'");
+		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum='$mdat'");
+		if (mysql_num_rows($q41)<1) {
+			niceerror("Unos ispita nije uspio.");
+			return;
+		} 
+		$ispit = mysql_result($q41,0,0);
 	}
+
+	$prosli_idovi = array();
 
 	foreach ($redovi as $red) {
 		$red = my_escape($red);
@@ -196,34 +218,25 @@ if ($_POST['akcija'] == "massexam") {
 				list($imepr,$bodova) = explode("\t",$red);
 				list($prezime,$ime) = explode(" ",$imepr);
 			}
-			# Provjeri da li je $bodova float?
-			$bodova = floatval($bodova);
-
-			# Registrovati ispit u bazi
-			if ($f == 1) {
-				$naziv = my_escape($_POST['naziv']);
-				$dan = intval($_POST['dan']);
-				$mjesec = intval($_POST['mjesec']);
-				$godina = intval($_POST['godina']);
-				$mdat = time2mysql(mktime(0,0,0,$mjesec,$dan,$godina));
-
-				$q40 = myquery("insert into ispit naziv='$naziv', predmet=$predmet, datum='$mdat'");
-				$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum='$mdat'");
-				if (mysql_num_rows($q41)!=0) {
-					niceerror("Unos ispita nije uspio.");
-					return;
-				} 
-				$ispit = mysql_query($q41,0,0);
-			}
+			# pretvori $bodova u float uz obradu decimalnog zareza
+			$bodova = floatval(str_replace(",",".",$bodova));
 
 			# Da li student postoji?
 			$q42 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
 			if (mysql_num_rows($q42)>0) {
 				$student = mysql_result($q42,0,0);
-				if ($f != 1) {
-					print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
+
+				# Da li se isti student ponavlja dvaput?
+				if (array_search($student, $prosli_idovi)) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (bodova: $bodova)<br/>";
+					}
 				} else {
-					$q43 = myquery("insert into ispitocjena ispit=$ispit, student=$student, ocjena=$bodova");
+					if ($f != 1) {
+						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
+					} else {
+						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
+					}
 				}
 			} else {
 				if ($f != 1) {
