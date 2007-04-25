@@ -3,6 +3,8 @@
 // v2.9.3.1 (2007/03/17) + napravio da radi
 // v2.9.3.2 (2007/03/19) + ispravan prikaz imena zadaće
 // v2.9.3.3 (2007/04/08) + optimizacije, code cleanup, komentari
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/25) + Release
 
 ?>
 <html>
@@ -92,11 +94,15 @@ while ($r10 = mysql_fetch_row($q10)) {
 		// Ne brojimo zadatke sa statusima 1 ("Ceka na pregled") i 
 		// 4 ("Potrebno pregledati")
 		if ($r100[3]!=1 && $r100[3]!=4) 
-			$bodova=$r100[4];
+			$bodova=$r100[4]+1;
 		else $bodova=-1;
 
+		// Dodajemo 1 kako bismo kasnije mogli znati da li je vrijednost
+		// niza definisana ili ne.
+		// undef ne radi :(
+
 		// Slog sa najnovijim IDom se smatra mjerodavnim
-		// Ostali su tu radi historije
+		// Ostali su u bazi radi historije
 		$zadace[$r100[0]][$r100[1]][$r100[2]]=$bodova;
 	}
 
@@ -220,24 +226,20 @@ while ($r10 = mysql_fetch_row($q10)) {
 		// ZADACE
 		foreach ($vj_id_array as $n => $vid) {
 			$ocjena=0;
-			$ok=1; // Da li je ok ispisati?
+			$ima=0; // Da li je poslao ijedan zadatak?
+			$ispis=1; // Da li ima nepregledanih zadataka?
 			for ($i=1; $i<=$vj_br_zad[$n]; $i++) {
 				$bzad = $zadace[$vid][$i][$stud_id];
-				if ($bzad>-1)
-					$ocjena+=$bzad;
-				else 	// Ispisujemo samo ako su svi zadaci pregledani
-					$ok=0;
+				if ($bzad > 0) {
+					// Svi bodovi su uvećani za 1
+					$ocjena+=($bzad-1);
+					$ima=1;
+				} 
+				// Ispisujemo samo ako su svi zadaci pregledani
+				if ($bzad == -1) $ispis=0;
 			}
 
-			// Šta ako student nije ništa poslao?
-			if ($ok==1) {
-				$ok=0;
-				for ($i=1; $i<=$vj_br_zad[$n]; $i++)
-					if (!is_null($zadace[$vid][$i][$stud_id]))
-						$ok=1;
-			}
-
-			if ($ok == 0) {
+			if ($ima == 0 || $ispis==0) {
 				$ocjene_ispis .= "<td> / </td>";
 			} else {
 				$ocjene_ispis .= "<td> $ocjena </td>";
