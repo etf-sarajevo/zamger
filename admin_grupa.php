@@ -3,6 +3,8 @@
 // v2.9.3.1 (2007/03/11) + popravka interakcije u FF, redni brojevi studenata, input validation
 // v2.9.3.2 (2007/03/19) + zabrana ulaska u grupe za koje nema dozvolu
 // v2.9.3.3 (2007/04/08) + polje ocjena je izbaceno iz tabele prisustvo, pa da usutkamo warningse u logu
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/27) + Kreiranje zadataka iz admina
 
 
 function admin_grupa() {
@@ -13,12 +15,18 @@ global $userid;
 print '<p><a href="qwerty.php">Nazad na početnu stranu</a></p>'."\n";
 
 
+// Ulazni parametri
+
 $grupa_id = intval($_GET['id']); if ($grupa_id<1) { $grupa_id = intval($_POST['id']); }
 logthis("Admin grupa $grupa_id (login $userid)");
 
 $akcija = $_GET['akcija']; if (!$akcija) { $akcija = $_POST['akcija']; }
 
+$kreiranje = intval($_GET['kreiranje']);
+
+
 // Predmet
+
 $q500 = myquery("select predmet from labgrupa where id=$grupa_id");
 if (mysql_num_rows($q500)<1) {
 	niceerror("Nemate pravo ulaska u ovu grupu!");
@@ -265,12 +273,14 @@ while ($r10 = mysql_fetch_row($q10)) {
 if ($casovi_zaglavlje == "") $casovi_zaglavlje = "<td>&nbsp;</td>";
 
 
-$q11 = myquery("select id,naziv from zadaca where predmet=$predmet order by id");
+$q11 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
 $brzadaca = mysql_num_rows($q11);
 if ($brzadaca > 0) { 
 	while ($r11 = mysql_fetch_row($q11)) {
 		$zadace_zaglavlje .= "<td>$r11[1]</td>\n";
 		$zad_id_array[] = $r11[0];
+		$zad_brz_array[$r11[0]] = $r11[2];
+
 	}
 }
 
@@ -366,34 +376,39 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		// FIXME: subqueries
 		//$q15a = myquery ("select redni_broj from zadatak where zadaca=$zid and student=$stud_id order by redni_broj group by redni_broj");
 
-		$q15 = myquery ("select redni_broj,status,bodova from zadatak where zadaca=$zid and student=$stud_id order by redni_broj,id desc");
-		if (mysql_num_rows($q15)<1) { $zadace_ispis .= "&nbsp;"; }
+		for ($i=1; $i<=$zad_brz_array[$zid]; $i++) {
+			$q15 = myquery ("select status,bodova from zadatak where zadaca=$zid and student=$stud_id and redni_broj=$i order by id desc limit 1");
+			if (mysql_num_rows($q15)<1) {
+				if ($kreiranje>0) {
+					$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/idea.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"></a>&nbsp;";
+				}
+				//$zadace_ispis .= "&nbsp;";
+				continue;
+			}
 
-		$prevzadatak=0;
-		while ($r15 = mysql_fetch_row($q15)) {
-			if ($r15[0] == $prevzadatak) continue;
+			$status = mysql_result($q15,0,0);
+			$zb = mysql_result($q15,0,1);
 			
-			if ($r15[1] == 1) {
+			if ($status == 1) {
 				$icon = "zad_cekaj";
 				$title = "Automatsko testiranje u toku";
-			} else if ($r15[1] == 4) {
+			} else if ($status == 4) {
 				$icon = "zad_preg";
 				$title = "Potrebno pregledati";
-			} else if ($r15[1] == 2) { 
+			} else if ($status == 2) { 
 				$icon = "zad_copy";
 				$title = "Zadaća prepisana";
-			} else if ($r15[1] == 5) { 
+			} else if ($status == 5) { 
 				$icon = "zad_ok";
 				$title = "OK";
 			} else  { // BUG - 3, 0, 6...
 				$icon = "zad_bug";
 				$title = "Bug u programu";
 			}
-			$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$r15[0]."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"> ".$r15[2]."</a>";
-			$bodova += $r15[2];
-			$prevzadatak = $r15[0];
+			$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"> ".$zb."</a>";
+			$bodova += $zb;
 		}
-		$zadace_ispis .= "</td>\n";
+		$zadace_ispis .= "&nbsp;</td>\n";
 		$mogucih += 2;
 	}
 
@@ -459,6 +474,16 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 ?>
 </tr>
 </table>
+<p><?
+	if ($kreiranje>0) {
+		$k=str_replace("&kreiranje=1","",genuri());
+?><a href="<?=$k?>">Sakrij dugmad za kreiranje zadataka</a><?
+	} else {
+?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
+	}
+?></p>
+
+
 <p>&nbsp;</p>
 <?
 
