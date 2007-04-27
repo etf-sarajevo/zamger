@@ -105,7 +105,7 @@ $attachment = mysql_result($q13,0,4);
 //////////////////////////
 
 
-# Poslani parametar:
+// Poslani parametar:
 $zadatak = intval($_GET['zadatak']);
 
 if ($zadatak==0) { 
@@ -129,11 +129,82 @@ if ($zadatak==0) {
 //  NAVIGACIJA
 //////////////////////////
 
+print "<center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
+
+
+// Nova navigacija - kod kopiran iz stud_status
+
+?>
+<center><table cellspacing="0" cellpadding="2" border="1">
+<tr><td>&nbsp;</td>
+
+<?
+
+
+// Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
+
+for ($i=1;$i<=$brojzad;$i++) {
+	?><td>Zadatak <?=$i?>.</td><?
+}
+
+?>
+</tr>
+<?
+
+
+/* Ovo se sve moglo kroz SQL rijesiti, ali necu iz razloga:
+1. PHP je citljiviji
+2. MySQL <4.1 ne podrzava subqueries */
+
+
+// Status ikone:
+$stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok", "idea");
+$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK", "Novi zadatak");
+
+
+$bodova_sve_zadace=0;
+
+$q31 = myquery("select id,naziv,bodova from zadaca where predmet=$predmet_id");
+while ($r31 = mysql_fetch_row($q31)) {
+	$m_zadaca = $r31[0];
+	$m_mogucih += $r31[2];
+	?><tr>
+	<td><?=$r31[1]?></td><?
+	$m_bodova_zadaca = 0;
+
+	for ($m_zadatak=1;$m_zadatak<=$brojzad;$m_zadatak++) {
+		// Uzmi samo rjesenje sa zadnjim IDom
+		$q32 = myquery("select status,bodova from zadatak where student=$userid and zadaca=$m_zadaca and redni_broj=$m_zadatak order by id desc limit 1");
+		if (mysql_num_rows($q32)>0) {
+			$status = mysql_result($q32,0,0);
+			$m_bodova_zadatak = mysql_result($q32,0,1);
+			$m_bodova_zadaca += $m_bodova_zadatak;
+		} else {
+			$status = 6;
+			$m_bodova_zadatak="";
+		} 
+		if ($m_zadaca==$zadaca && $m_zadatak==$zadatak)
+			$bgcolor = ' bgcolor="#EEEEFF"'; 
+		else 	$bgcolor = "";
+		?><td <?=$bgcolor?>><a href="student.php?sta=zadaca&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>&labgrupa=<?=$labgrupa?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$m_bodova_zadatak?></a></td><?
+	}
+	?></tr><?
+	$bodova_sve_zadace += $m_bodova_zadaca;
+}
+
+
+// Ukupno bodova za studenta
+ 
+$bodova += $bodova_sve_zadace;
+
+?>
+</table></center>
+<?
 
 # Naslov i strelice lijevo-desno...
 
 
-$onclick = 'onclick="self.location = \''.genuri();
+/*$onclick = 'onclick="self.location = \''.genuri();
 
 # dugme "<<"
 $q30 = myquery("select id from zadaca where id<$zadaca and predmet=$predmet_id order by id desc limit 1");
@@ -178,6 +249,7 @@ else
 </tr></table>
 
 <? 
+*/
 
 
 
