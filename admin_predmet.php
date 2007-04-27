@@ -256,7 +256,7 @@ if ($_POST['akcija'] == "massexam") {
 
 # Dodavanje zadataka u zadaću
 
-if ($_GET['akcija']=="dodaj_zadatke") {
+/*if ($_GET['akcija']=="dodaj_zadatke") {
 	$brojzad = 0;
 
 	// _lv_nav_id bi trebao biti ID zadaće
@@ -275,7 +275,7 @@ if ($_GET['akcija']=="dodaj_zadatke") {
 	}
 	print "<p><b>Operacija izvršena:</b> Svim studentima su generisani zadaci iz izabrane zadaće sa statusom &quot;Novi zadatak&quot;.</p>\n";
 	$_REQUEST['akcija']="";
-}
+}*/
 
 ###############
 # Ispis tabova
@@ -463,8 +463,7 @@ if ($tab == "Zadaće") {
 		<?
 	} else {
 		?><p><hr/></p>
-		<table border="0" cellspacing="0" cellpadding="0" width="100%"><tr><td><b>Izmjena zadaće</b></td><td align="right"><a href="<?=genuri()?>&zadaca=<?=$izabrana?>&akcija=dodaj_zadatke">Dodaj zadatke u zadaću</a></td></tr></table>
-		<br/>
+		<p><b>Izmjena zadaće</b></p>
 		<?
 	}
 
