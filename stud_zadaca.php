@@ -5,6 +5,9 @@
 // v2.9.3.3 (2007/03/22) + popravljene tabele za diff
 // v2.9.3.4 (2007/04/05) + prosljeđivanje labgrupe kod slanja zadaće
 // v2.9.3.5 (2007/04/06) + popravka fast forward dugmeta
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.0.1 (2007/04/28) + Novi sistem navigacije - tabela sa status stranice
+// v3.0.0.2 (2007/05/03) + Popravka navigacije: broj zadataka u zadaći
 
 
 function stud_zadaca() {
@@ -142,8 +145,13 @@ print "<center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
+$q30 = myquery("select zadataka from zadaca where predmet=$predmet_id order by zadataka desc limit 1");
+if (mysql_num_rows($q30)<1) 
+	$max_brzad=0;
+else
+	$max_brzad=mysql_result($q30,0,0);
 
-for ($i=1;$i<=$brojzad;$i++) {
+for ($i=1;$i<=$max_brzad;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
 }
 
@@ -164,15 +172,16 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 $bodova_sve_zadace=0;
 
-$q31 = myquery("select id,naziv,bodova from zadaca where predmet=$predmet_id");
+$q31 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet_id");
 while ($r31 = mysql_fetch_row($q31)) {
 	$m_zadaca = $r31[0];
 	$m_mogucih += $r31[2];
+	$m_brzad = $r31[3];
 	?><tr>
 	<td><?=$r31[1]?></td><?
 	$m_bodova_zadaca = 0;
 
-	for ($m_zadatak=1;$m_zadatak<=$brojzad;$m_zadatak++) {
+	for ($m_zadatak=1;$m_zadatak<=$m_brzad;$m_zadatak++) {
 		// Uzmi samo rjesenje sa zadnjim IDom
 		$q32 = myquery("select status,bodova from zadatak where student=$userid and zadaca=$m_zadaca and redni_broj=$m_zadatak order by id desc limit 1");
 		if (mysql_num_rows($q32)>0) {
@@ -188,6 +197,12 @@ while ($r31 = mysql_fetch_row($q31)) {
 		else 	$bgcolor = "";
 		?><td <?=$bgcolor?>><a href="student.php?sta=zadaca&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>&labgrupa=<?=$labgrupa?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$m_bodova_zadatak?></a></td><?
 	}
+	
+	// Ispis praznih ćelija tabele za zadaće koje imaju manje od max. zadataka
+	for ($i=$m_zadatak; $i<=$max_brzad; $i++) {
+		print "<td>&nbsp;</td>\n";
+	}
+
 	?></tr><?
 	$bodova_sve_zadace += $m_bodova_zadaca;
 }
