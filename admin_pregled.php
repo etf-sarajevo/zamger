@@ -7,6 +7,7 @@
 // v2.9.3.4 (2007/03/28) + Riješen potencijalni SQL injection kod ocjenjivanja zadaće
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/12) + Izvršavanje programa na serveru, textarea za komentar polje, generalno čišćenje koda, komentari
+// v3.0.0.2 (2007/05/03) + Nova combo-box kontrola za parametre programa
 
 function admin_pregled() {
 
@@ -19,6 +20,7 @@ global $system_path;
 	<title>Pregled</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/style.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="js/combo-box.js"></script>
 </head>
 <body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
 
@@ -219,17 +221,18 @@ if ($attach == 0) {
 	<input type="hidden" name="student" value="<?=$stud_id?>">
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+	<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
 	<?
 
 	// Zadnje korišteni stdin se čuva u bazi
 	// TODO: napraviti drop-down listu
-	$q15 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
-	if (mysql_num_rows($q15)>0) 
-		$stdin=mysql_result($q15,0,0);
-	else
-		$stdin=""; 
+	$q15 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+	while ($r15 = mysql_fetch_row($q15)) {
+		print "<option value=\"$r15[0]\">$r15[0]</option>\n";
+	}
 	?>
-	<input type="text" size="40" name="stdin" value="<?=$stdin?>"><br/>
+	</select><br/>
+
 	<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
 	<input type="submit" value=" Izvrši program ">
 	</form></table></center><br/>&nbsp;<br/>
