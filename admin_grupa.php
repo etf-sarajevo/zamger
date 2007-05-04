@@ -5,6 +5,7 @@
 // v2.9.3.3 (2007/04/08) + polje ocjena je izbaceno iz tabele prisustvo, pa da usutkamo warningse u logu
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/27) + Kreiranje zadataka iz admina
+// v3.0.0.2 (2007/05/04) + Optimizacija prikaza, čišćenje komentara i sl.
 
 
 function admin_grupa() {
@@ -12,10 +13,8 @@ function admin_grupa() {
 global $userid;
 
 
-print '<p><a href="qwerty.php">Nazad na početnu stranu</a></p>'."\n";
 
-
-// Ulazni parametri
+// ------- ULAZNI PARAMETRI
 
 $grupa_id = intval($_GET['id']); if ($grupa_id<1) { $grupa_id = intval($_POST['id']); }
 logthis("Admin grupa $grupa_id (login $userid)");
@@ -25,7 +24,8 @@ $akcija = $_GET['akcija']; if (!$akcija) { $akcija = $_POST['akcija']; }
 $kreiranje = intval($_GET['kreiranje']);
 
 
-// Predmet
+
+// Određujemo predmet za labgrupu
 
 $q500 = myquery("select predmet from labgrupa where id=$grupa_id");
 if (mysql_num_rows($q500)<1) {
@@ -35,7 +35,8 @@ if (mysql_num_rows($q500)<1) {
 $predmet_id = mysql_result($q500,0,0);
 
 
-// Ima li pravo ući u grupu?
+// Da li korisnik ima pravo ući u grupu?
+
 $q501 = myquery("select siteadmin from nastavnik where id=$userid");
 if (mysql_num_rows($q501)<1) {
 	niceerror("Nemate pravo ulaska u ovu grupu!");
@@ -60,7 +61,11 @@ if (mysql_result($q501,0,0) != 1) {
 	}
 }
 
-# Dodavanje casa
+
+
+// ------- AKCIJE
+
+// Dodavanje casa
 
 if ($akcija == 'dodajcas') {
 	$datum = intval($_POST['godina'])."-".intval($_POST['mjesec'])."-".intval($_POST['dan']);
@@ -70,7 +75,7 @@ if ($akcija == 'dodajcas') {
 	$q201 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$grupa_id");
 	$cas_id = mysql_result($q201,0,0);
 
-	# unos prisustva i ocjena
+	// dodajemo u bazu default podatke za prisustvo i ocjene
 
 	$q202 = myquery("select student from student_labgrupa where labgrupa=$grupa_id");
 	while ($r202 = mysql_fetch_row($q202)) {
@@ -80,7 +85,7 @@ if ($akcija == 'dodajcas') {
 }
 
 
-# Brisanje casa
+// Brisanje casa
 
 if ($akcija == 'brisicas') {
 	$cas_id = intval($_GET['cas']); if ($cas_id<1) { $cas_id = intval($_POST['cas']); }
@@ -91,7 +96,13 @@ if ($akcija == 'brisicas') {
 
 
 
-# Naslov
+// ------- ZAGLAVLJE
+
+
+print '<p><a href="qwerty.php">Nazad na početnu stranu</a></p>'."\n";
+
+
+// Naslov
 
 $q1 = myquery("select naziv,predmet from labgrupa where id=$grupa_id");
 if (mysql_num_rows($q1)<1) { niceerror("Izabrana je nepostojeća grupa"); return; }
@@ -105,7 +116,7 @@ print "<center><h1>$pime - $naziv</h1></center>";
 
 
 
-# Ima li iko u grupi?
+// Ima li ikoga u grupi?
 
 $q9 = myquery("select count(student) from student_labgrupa where labgrupa=$grupa_id");
 if (mysql_result($q9,0,0)<1) {
@@ -114,8 +125,8 @@ if (mysql_result($q9,0,0)<1) {
 } 
 
 
-# --------------------
-# Zadace za pregled
+
+// JavaScript za prikaz zadaće
 
 ?>
 <table border="0" width="100%"><tr><td valign="top" width="50%">
@@ -126,13 +137,20 @@ function openzadaca(student,zadaca,zadatak) {
 //	alert(url);
 	window.open(url,'Ispravak zadace','width=600,height=600,scrollbars=yes');
 }
-function firefoxopen(p1,p2,p3) {
+
+// FF ne podrzava direktan poziv window.open() iz eventa 
+function firefoxopen(p1,p2,p3) { 
 	window.open(p1,p2,p3);
 }
 </script>
 <?
 
+
+
+// ------- SPISAK NEPREGLEDANIH ZADAĆA
+
 // FIXME: subqueries
+// Zahtijeva MySQL 4.1 ili noviji (dakle, ne radi na Debian Sarge :( )
 
 /* $q100 = myquery(
 "SELECT zadatak.zadaca, zadatak.redni_broj, zadatak.student, student.ime, student.prezime, zadaca.naziv
@@ -146,6 +164,8 @@ if (mysql_num_rows($q100)>0) {
 	}
 	print "</ul>\n";
 }*/
+
+
 
 $q100 = myquery(
 "SELECT zadatak.zadaca, zadatak.redni_broj, zadatak.student, student.ime, student.prezime, zadatak.status, zadaca.naziv
@@ -163,8 +183,10 @@ while ($r100 = mysql_fetch_row($q100)) {
 if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 
 
-# --------------------
-# Novi cas
+
+
+
+// ------- FORMA ZA NOVI ČAS
 
 
 $dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
@@ -212,8 +234,12 @@ Registrujte novi čas:<br/>
 
 
 
-# --------------------
-# JavaScript koji zamjenjuje AJAX
+
+// ------- TABLICA GRUPE
+
+
+// JavaScript koji zamjenjuje AJAX koristeći hidden IFRAME 
+// (tzv. AJAH)
 
 ?>
 <font color="#FF0000"><b><div id="razmjena-info">&nbsp;</div></b></font>
@@ -250,28 +276,29 @@ function prisustvo(student,cas) {
 
 
 
-# --------------------
-# Tablica grupe...
-
+// Zaglavlje prisustvo
 
 $q10 = myquery("select id,datum,vrijeme from cas where labgrupa=$grupa_id order by datum");
 $casova = 0;
-$casovi_zaglavlje = "";
-$casovi_zaglavlje = $ocjene_zaglavlje = $ispit_zaglavlje = "";
+$prisustvo_zaglavlje = "";
 
 while ($r10 = mysql_fetch_row($q10)) {
 	$cas_id = $r10[0];
 	list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r10[1]);
 	list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$r10[2]);
-	$casovi_zaglavlje .= "<td align=\"center\">$cas_dan.$cas_mjesec<br/>$cas_sat:$cas_minuta";
-	$casovi_zaglavlje .= '<br/><a href="qwerty.php?sta=grupa&id='.$grupa_id.'&akcija=brisicas&cas='.$cas_id.'"><img src="images/b_drop.png" border="0"></a>';
-	$casovi_zaglavlje .= "</td>\n";
+	$prisustvo_zaglavlje .= "<td align=\"center\">$cas_dan.$cas_mjesec<br/>$cas_sat:$cas_minuta";
+	$prisustvo_zaglavlje .= '<br/><a href="qwerty.php?sta=grupa&id='.$grupa_id.'&akcija=brisicas&cas='.$cas_id.'"><img src="images/b_drop.png" border="0"></a>';
+	$prisustvo_zaglavlje .= "</td>\n";
 	$cas_id_array[] = $cas_id;
 	$casova++;
 }
 
-if ($casovi_zaglavlje == "") $casovi_zaglavlje = "<td>&nbsp;</td>";
+if ($prisustvo_zaglavlje == "") $prisustvo_zaglavlje = "<td>&nbsp;</td>";
 
+
+// Zaglavlje zadaće
+
+$zadace_zaglavlje = "";
 
 $q11 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
 $brzadaca = mysql_num_rows($q11);
@@ -284,10 +311,15 @@ if ($brzadaca > 0) {
 	}
 }
 
+
+// Zaglavlje ispiti
+
+$ispit_zaglavlje = "";
+
 $q12 = myquery("SELECT ispit.id,ispit.naziv 
 FROM ispitocjene, student_labgrupa, ispit 
 WHERE ispitocjene.student=student_labgrupa.student AND student_labgrupa.labgrupa=$grupa_id AND ispitocjene.ispit=ispit.id AND ispit.predmet=$predmet 
-GROUP BY ispitocjene.ispit order by ispitocjene.ispit");
+GROUP BY ispitocjene.ispit ORDER BY ispitocjene.ispit");
 $brispita = mysql_num_rows($q12);
 if ($brispita > 0) {
 	while ($r12 = mysql_fetch_row($q12)) {
@@ -313,11 +345,39 @@ if ($casova==0) $casova=1;
 	<td align="center" valign="center" rowspan="2" colspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
 </tr>
 <tr>
-	<?=$casovi_zaglavlje?><td>BOD.</td>
+	<?=$prisustvo_zaglavlje?><td>BOD.</td>
 	<?=$zadace_zaglavlje?>
 	<?=$ispit_zaglavlje?>
 </tr>
 <?
+
+
+// CACHE REZULTATA ZADAĆA
+$zadace_statusi=array();
+$zadace_bodovi=array();
+$q12a = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
+FROM zadatak as z,student_labgrupa as sl 
+WHERE z.student=sl.student and sl.labgrupa=$grupa_id
+ORDER BY id");
+while ($r100 = mysql_fetch_row($q12a)) {
+	// Slog sa najnovijim IDom se smatra mjerodavnim
+	// Ostali su u bazi radi historije
+	$zadace_bodovi[$r100[0]][$r100[1]][$r100[2]]=$r100[4];
+	$zadace_statusi[$r100[0]][$r100[1]][$r100[2]]=$r100[3]+1;
+	// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
+	// je vrijednost niza definisana ili ne.
+	// undef ne radi :(
+}
+
+
+
+// Ikone i statusi za zadaće
+$stat_icon = array("zad_bug", "zad_cekaj", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
+$stat_tekst = array("Bug u programu", "Automatsko testiranje u toku", "Zadaća prepisana", "Bug u programu", "Potrebno pregledati", "Zadaća OK");
+
+
+
+// Glavna petlja - studenti
 
 $q13 = myquery("select student.id,student.ime,student.prezime,student.brindexa from student,student_labgrupa where student.id=student_labgrupa.student and student_labgrupa.labgrupa=$grupa_id");
 
@@ -332,7 +392,7 @@ while ($r13 = mysql_fetch_row($q13)) {
 	$imeprezime[$stud_id] = "$stud_prezime $stud_ime";
 	$brind[$stud_id] = $stud_brind;
 }
-uasort($imeprezime,"bssort");
+uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 $redni_broj=0;
 foreach ($imeprezime as $stud_id => $stud_imepr) {
 
@@ -346,6 +406,8 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
 	$bodova=0;
 	$mogucih=0;
+
+	// Ispis prisustvo
 
 	if (count($cas_id_array)==0) $prisustvo_ispis = "<td>&nbsp;</td>";
 	$odsustvo=0;
@@ -377,36 +439,19 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		//$q15a = myquery ("select redni_broj from zadatak where zadaca=$zid and student=$stud_id order by redni_broj group by redni_broj");
 
 		for ($i=1; $i<=$zad_brz_array[$zid]; $i++) {
-			$q15 = myquery ("select status,bodova from zadatak where zadaca=$zid and student=$stud_id and redni_broj=$i order by id desc limit 1");
-			if (mysql_num_rows($q15)<1) {
+			$status = $zadace_statusi[$zid][$i][$stud_id];
+			if ($status == 0) { // Zadatak nije poslan
 				if ($kreiranje>0) {
 					$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/idea.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"></a>&nbsp;";
 				}
-				//$zadace_ispis .= "&nbsp;";
-				continue;
+			} else {
+				$status--; // Bio uvećan za 1 
+				$icon = $stat_icon[$status];
+				$title = $stat_tekst[$status];
+				$zb = $zadace_bodovi[$zid][$i][$stud_id];
+				$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"> ".$zb."</a>";
+				$bodova += $zb;
 			}
-
-			$status = mysql_result($q15,0,0);
-			$zb = mysql_result($q15,0,1);
-			
-			if ($status == 1) {
-				$icon = "zad_cekaj";
-				$title = "Automatsko testiranje u toku";
-			} else if ($status == 4) {
-				$icon = "zad_preg";
-				$title = "Potrebno pregledati";
-			} else if ($status == 2) { 
-				$icon = "zad_copy";
-				$title = "Zadaća prepisana";
-			} else if ($status == 5) { 
-				$icon = "zad_ok";
-				$title = "OK";
-			} else  { // BUG - 3, 0, 6...
-				$icon = "zad_bug";
-				$title = "Bug u programu";
-			}
-			$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"> ".$zb."</a>";
-			$bodova += $zb;
 		}
 		$zadace_ispis .= "&nbsp;</td>\n";
 		$mogucih += 2;
