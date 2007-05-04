@@ -8,6 +8,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/12) + Izvršavanje programa na serveru, textarea za komentar polje, generalno čišćenje koda, komentari
 // v3.0.0.2 (2007/05/03) + Nova combo-box kontrola za parametre programa
+// v3.0.0.3 (2007/05/04) + Dodajem blank polje u combo-box kako bi bilo moguće kucati nešto
+
 
 function admin_pregled() {
 
@@ -225,8 +227,9 @@ if ($attach == 0) {
 	<?
 
 	// Zadnje korišteni stdin se čuva u bazi
-	// TODO: napraviti drop-down listu
 	$q15 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+	if (mysql_num_rows($q15)<1)
+		print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
 	while ($r15 = mysql_fetch_row($q15)) {
 		print "<option value=\"$r15[0]\">$r15[0]</option>\n";
 	}
