@@ -4,6 +4,7 @@
 // v2.9.3.2 (2007/03/22) + logiraj promjenu šifre
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Dju tu popjular dimand, isključujemo mogućnost promjene imena, prezimena i broja indexa 
+// v3.0.0.2 (2007/05/10) + Greška sa promjenom profila (izbačene varijable su i dalje kontrolisane)
 
 function stud_profil() {
 
@@ -69,15 +70,16 @@ function izmijeni_profil() {
 
 	global $userid;
 
-	$ime = my_escape($_POST['ime']);
-	$prezime = my_escape($_POST['prezime']);
+//	$ime = my_escape($_POST['ime']);
+//	$prezime = my_escape($_POST['prezime']);
 	$email = my_escape($_POST['email']);
-	$brind = intval($_POST['brind']);
-	if ($brind==0) { niceerror("Broj indexa mora biti BROJ :)"); return; }
+//	$brind = intval($_POST['brind']);
+//	if ($brind==0) { niceerror("Broj indexa mora biti BROJ :)"); return; }
 
 logthis("Izmjena profila $stud_id ('$ime' '$prezime' '$email' '$brind')");
 
-	$q101 = myquery("update student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$userid");
+//	$q101 = myquery("update student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$userid");
+	$q101 = myquery("update student set email='$email' where id=$userid");
 
 	// Promjena sifre
 	$pass1 = my_escape($_POST['pass1']);
