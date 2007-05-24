@@ -9,6 +9,8 @@
 // v3.0.0.1 (2007/04/25) + Rezultati ispita: konvertuj decimalni zarez u tačku, 
 // ispravka greške u SQL upitu, nova imena varijabli za datum, ispravljeno više 
 // semantičkih grešaka, dodana provjera za ponavljanje studenata u rezultatima
+// v3.0.0.2 (2007/05/04) + Kompaktovanje baze
+// v3.0.0.3 (2007/05/24) + Ispravka greške do koje je došlo zbog prelaska na FROM_UNIXTIME
 
 
 function admin_predmet() {
@@ -194,10 +196,10 @@ if ($_POST['akcija'] == "massexam") {
 		$dan = intval($_POST['day']);
 		$mjesec = intval($_POST['month']);
 		$godina = intval($_POST['year']);
-		$mdat = time2mysql(mktime(0,0,0,$mjesec,$dan,$godina));
+		$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
-		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum='$mdat'");
-		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum='$mdat'");
+		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat')");
+		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat')");
 		if (mysql_num_rows($q41)<1) {
 			niceerror("Unos ispita nije uspio.");
 			return;
@@ -222,7 +224,7 @@ if ($_POST['akcija'] == "massexam") {
 			$bodova = floatval(str_replace(",",".",$bodova));
 
 			# Da li student postoji?
-			$q42 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
+			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
 			if (mysql_num_rows($q42)>0) {
 				$student = mysql_result($q42,0,0);
 
@@ -309,6 +311,7 @@ printtab("Grupe",$predmet,$tab);
 printtab("Ispiti",$predmet,$tab); 
 printtab("Zadaće",$predmet,$tab); 
 printtab("Kvizovi",$predmet,$tab); 
+printtab("Kompaktuj",$predmet,$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
 <td width="150">&nbsp;</td>
@@ -418,12 +421,12 @@ if ($tab == "Grupe") {
 
 if ($tab == "Ispiti") {
 	print "Uneseni ispiti:<br/>\n";
-	$q110 = myquery("select id,naziv,datum from ispit where predmet=$predmet");
+	$q110 = myquery("select id,naziv,UNIX_TIMESTAMP(datum) from ispit where predmet=$predmet");
 	print "<ul>\n";
 	if (mysql_num_rows($q110)<1)
 		print "<li>Nije unesen nijedan ispit.</li>";
 	while ($r110 = mysql_fetch_row($q110)) {
-		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[1].' ('.date("d. m. Y.",mysql2time($r110[2])).')</a></li>'."\n";
+		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[1].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
 	}
 	print "</ul>\n";
 
@@ -478,11 +481,25 @@ if ($tab == "Zadaće") {
 
 
 
-# Kvizovi!
+// Kvizovi!
 
 if ($tab == "Kvizovi") {
 	print "<ul><b>Nije još implementirano... Sačekajte sljedeću verziju :)</b></ul>\n";
 }
+
+
+
+// Kompaktuj bazu
+
+if ($tab == "Kompaktuj") {
+	?><p><b>Kompaktovanje baze</b></p>
+	<p>Kompaktovanje baze je operacija kojom se brišu sve poslane zadaće i dnevnici slanja (kad je ko poslao zadaću, prethodni statusi itd.). Zadaće zadržavaju posljednji status, tako da konačna statistika - broj bodova koje je student osvojio - ostaje ista. Na taj način se zauzeće disk prostora na serveru značajno smanjuje. Preporučujemo da kompaktujete bazu po završetku školske godine.</p>
+	<center><input type="submit" value="Kompaktuj bazu"></center>
+	<?
+}
+
+
+
 ?>
 </td>
 </tr>
