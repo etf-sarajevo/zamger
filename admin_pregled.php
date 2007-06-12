@@ -245,13 +245,12 @@ if ($attach == 0) {
 } else {
 	// Attachment
 
-	$q20 = myquery("select filename,vrijeme from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
+	$q20 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
 	$filename = mysql_result($q20,0,0);
 	$the_file = "$lokacijazadaca$zadaca/$filename";
 
 	if (file_exists($the_file)) {
-		$vrijeme = mysql_result($q20,0,1);
-		$vrijeme = date("d. m. Y. h:i:s",mysql2time($vrijeme));
+		$vrijeme = date("d. m. Y. h:i:s", mysql_result($q20,0,1));
 		$velicina = nicesize(filesize($the_file));
 		$icon = "images/mimetypes/" . getmimeicon($the_file);
 		$dllink = "qwerty.php?sta=download&zadaca=$zadaca&zadatak=$zadatak";
@@ -289,8 +288,8 @@ $izvjestaj_skripte = str_replace("\n","<br/>",mysql_result($q21,0,2));
 $komentar = mysql_result($q21,0,3);
 $komentar = str_replace("\"","&quot;",$komentar);
 
-$q22 = myquery("select vrijeme from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
-$vrijeme_slanja = date("d. m. Y. H:i:s",mysql2time(mysql_result($q22,0,0)));
+$q22 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
+$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q22,0,0));
 
 
 ?>
@@ -346,7 +345,7 @@ for ($i=0;$i<$brstatusa;$i++)
 ##### HISTORIJA IZMJENA ######
 
 
-$q31 = myquery("select id,vrijeme,status,bodova,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
+$q31 = myquery("select id,UNIX_TIMESTAMP(vrijeme),status,bodova,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
 if (mysql_num_rows($q31)>1) {
 
 ?>
@@ -354,7 +353,7 @@ if (mysql_num_rows($q31)>1) {
 <p>Historija izmjena:</p>
 <ul><?
 	while ($r31 = mysql_fetch_row($q31)) {
-		$vrijeme_slanja = date("d. m. Y. H:i:s",mysql2time($r31[1]));
+		$vrijeme_slanja = date("d. m. Y. H:i:s",$r31[1]);
 		print "<li><b>$vrijeme_slanja:</b> ".$statusi_array[$r31[2]];
 		if ($r31[3]>0) print " (".$r31[3]." bodova)";
 		if (strlen($r31[4])>0) print " - &quot;".$r31[4]."&quot;";
