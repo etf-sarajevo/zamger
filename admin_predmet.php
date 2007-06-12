@@ -311,7 +311,6 @@ printtab("Grupe",$predmet,$tab);
 printtab("Ispiti",$predmet,$tab); 
 printtab("Zadaće",$predmet,$tab); 
 printtab("Kvizovi",$predmet,$tab); 
-printtab("Kompaktuj",$predmet,$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
 <td width="150">&nbsp;</td>
@@ -488,15 +487,6 @@ if ($tab == "Kvizovi") {
 }
 
 
-
-// Kompaktuj bazu
-
-if ($tab == "Kompaktuj") {
-	?><p><b>Kompaktovanje baze</b></p>
-	<p>Kompaktovanje baze je operacija kojom se brišu sve poslane zadaće i dnevnici slanja (kad je ko poslao zadaću, prethodni statusi itd.). Zadaće zadržavaju posljednji status, tako da konačna statistika - broj bodova koje je student osvojio - ostaje ista. Na taj način se zauzeće disk prostora na serveru značajno smanjuje. Preporučujemo da kompaktujete bazu po završetku školske godine.</p>
-	<center><input type="submit" value="Kompaktuj bazu"></center>
-	<?
-}
 
 
 
