@@ -94,7 +94,7 @@ if ($zadaca==0) {
 
 
 // Ove vrijednosti će nam trebati kasnije
-$q13 = myquery("select naziv,zadataka,rok,programskijezik,attachment from zadaca where id=$zadaca");
+$q13 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment from zadaca where id=$zadaca");
 $naziv = mysql_result($q13,0,0);
 $brojzad = mysql_result($q13,0,1);
 $rok = mysql_result($q13,0,2);
@@ -304,7 +304,7 @@ if (mysql_num_rows($q40)>0) {
 
 # Istek roka za slanje zadace
 
-if (mysql2time($rok) <= time()) {
+if ($rok <= time()) {
 	print "<p><b>Vrijeme za slanje ove zadaće je isteklo.</b></p>";
 	// Ovo je onemogućavalo copy&paste u Firefoxu :(
 	//$readonly = "DISABLED";
@@ -323,13 +323,13 @@ if (mysql2time($rok) <= time()) {
 if ($attachment) {
 
 	# Attachment
-	$q50 = myquery("select filename,vrijeme from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and status=1 order by id desc limit 1");
+	$q50 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and status=1 order by id desc limit 1");
 	if (mysql_num_rows($q50)>0) {
 		$filename = mysql_result($q50,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
 		if (file_exists($the_file)) {
 			$vrijeme = mysql_result($q50,0,01);
-			$vrijeme = date("d. m. Y. h:i:s",mysql2time($vrijeme));
+			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
 			$icon = "images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "student.php?sta=download&zadaca=$zadaca&zadatak=$zadatak";
@@ -429,14 +429,14 @@ function akcijaslanje($path) {
 	}
 
 	// Podaci o zadaći
-	$q200 = myquery("select programskijezik,rok,attachment,naziv from zadaca where id=$zadaca");
+	$q200 = myquery("select programskijezik,UNIX_TIMESTAMP(rok),attachment,naziv from zadaca where id=$zadaca");
 	$jezik = mysql_result($q200,0,0);
 	$rok = mysql_result($q200,0,1);
 	$attach = mysql_result($q200,0,2);
 	$naziv_zadace = mysql_result($q200,0,3);
 
 	// Provjera roka
-	if (mysql2time($rok)<=time()) { 
+	if ($rok <= time()) { 
 		niceerror("Vrijeme za slanje zadaće je isteklo!"); 
 		return; 
 	}
