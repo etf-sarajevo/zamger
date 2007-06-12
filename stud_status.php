@@ -245,7 +245,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 			?><td><a href="student.php?sta=zadaca&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>&labgrupa=<?=$labgrupa?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?></a></td><?
 		}
 	}
-	?><td><?=$bodova_zadaca?></td><td><a href="student.php?sta=pdf&zadaca=<?=$zadaca?>"><img src="images/acroread.png" border="0"></a></td></tr><?
+	?><td><?=$bodova_zadaca?></td><td><a href="student.php?sta=pdf&zadaca=<?=$zadaca?>&labgrupa=<?=$labgrupa?>"><img src="images/acroread.png" border="0"></a></td></tr><?
 	$bodova_sve_zadace += $bodova_zadaca;
 }
 
