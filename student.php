@@ -3,6 +3,7 @@
 // v2.9.3.1 (2007/04/09) + dodatno osiguranje protiv spoofanja labgrupe
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Design komentari by Teo 
+// v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
 
 
 # Prijava
@@ -55,12 +56,16 @@ if ($predmet_id == 0) {
 
 
 
+
 // Moduli bez templatea
 
 $sta=$_GET['sta']; if ($sta=="") $sta=$_POST['sta'];
 
 if ($sta == "download") {
 	include ("stud_download.php"); stud_download(); exit;
+} 
+if ($sta == "pdf") {
+	include ("stud_pdf.php"); stud_pdf(); exit;
 } 
 
 
