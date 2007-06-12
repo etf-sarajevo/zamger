@@ -4,6 +4,7 @@
 // v2.9.3.2 (2007/04/06) + "odbrana" vs. "slanje"
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Design komentari by Teo 
+// v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
 
 
 function stud_status() {
@@ -196,6 +197,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 ?>
 <td><b>Ukupno bodova</b></td>
+<td>&nbsp;</td>
 </tr>
 <?
 
@@ -243,7 +245,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 			?><td><a href="student.php?sta=zadaca&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>&labgrupa=<?=$labgrupa?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?></a></td><?
 		}
 	}
-	?><td><?=$bodova_zadaca?></td></tr><?
+	?><td><?=$bodova_zadaca?></td><td><a href="student.php?sta=pdf&zadaca=<?=$zadaca?>"><img src="images/acroread.png" border="0"></a></td></tr><?
 	$bodova_sve_zadace += $bodova_zadaca;
 }
 
@@ -254,7 +256,7 @@ $bodova += $bodova_sve_zadace;
 
 ?>
 <tr><td colspan="<?=$broj_zadataka+1?>" align="right">UKUPNO: </td>
-<td><?=$bodova_sve_zadace?></td></tr>
+<td><?=$bodova_sve_zadace?></td><td>&nbsp;</td></tr>
 </table></center>
 
 <br/>
