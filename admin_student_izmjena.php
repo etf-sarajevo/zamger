@@ -3,6 +3,9 @@
 
 // v2.9.3.1 (2007/03/17) + onemogući izmjenu ako nije admin predmeta
 // v2.9.3.2 (2007/03/19) + ali omogući ako je siteadmin; dodatna zaštita od spoofanja
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/09/11) + Pristup kao siteadmin nije radio
 
 
 function admin_student_izmjena() {
@@ -29,7 +32,7 @@ if ($predmet_id<1) $predmet_id=intval($_POST['predmet']);
 // Da li neko spoofa predmet/studenta?
 $q100 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$stud_id and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
 if (mysql_num_rows($q100)<1) {
-	niceerror("Nemate pravo pristupa ovom studentu!");
+	niceerror("Nemate pravo pristupa ovom studentu! a");
 	return;
 }
 $labgrupa = mysql_result($q100,0,0);
@@ -43,7 +46,7 @@ if (mysql_num_rows($q101)>0) {
 		if ($r101[0] == $labgrupa) { $nasao=1; break; }
 	}
 	if ($nasao == 0) {
-		niceerror("Nemate pravo pristupa ovom studentu!");
+		niceerror("Nemate pravo pristupa ovom studentu! b");
 		return;
 	}
 }
@@ -52,17 +55,18 @@ if (mysql_num_rows($q101)>0) {
 // Onemogući izmjenu ako prijavljeni korisnik nije admin predmeta
 $q102=myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
 $izmjena_moguca = 0;
-if (mysql_num_rows($q102)==0) {
-	niceerror("Nemate pravo pristupa ovom studentu!");
-	return;
-} else if (mysql_result($q102,0,0)==1) {
+if (mysql_num_rows($q102)>0 && mysql_result($q102,0,0)==1) {
 	$izmjena_moguca = 1;
 } else {
 	$q103=myquery("select siteadmin from nastavnik where id=$userid");
-	if (mysql_num_rows($q6)>0 && mysql_result($q6,0,0)==1)
+	if (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==1)
 		$izmjena_moguca = 1;
 }
 
+if ($izmjena_moguca ==0) {
+	niceerror("Nemate pravo pristupa ovom studentu! c");
+	return;
+}
 
 // Poziv funkcije za izmjenu
 if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) izmijeni_profil($stud_id,$predmet_id);
