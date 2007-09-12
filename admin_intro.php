@@ -4,6 +4,7 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/10) + Grupiši predmete po akademskim godinama
+// v3.0.1.2 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd., reorganizacija admin linkova
 
 
 function admin_intro() {
@@ -26,11 +27,15 @@ if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" &
 	print "<h1>Dobro došao, $ime $prezime!</h1>";
 }
 
-if ($siteadmin)
-	print "<h3>Ti si <a href=\"qwerty.php?sta=siteadmin\">site admin</a>!</h3>";
 
-// Promjena šifre
-print "<p><a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
+// Administratorski moduli
+
+print "<p>";
+if ($siteadmin==2)
+	print "<a href=\"qwerty.php?sta=siteadmin\">Site admin</a> * ";
+if ($siteadmin==2 || $siteadmin==1)
+	print "<a href=\"qwerty.php?sta=nihada\">Studenti, nastavnici</a> * ";
+print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
 
 
 

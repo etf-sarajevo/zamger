@@ -1,6 +1,10 @@
 <?
 
 
+// v3.0.0.0 (2007/04/09) + Release
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd.
+
 # Prijava
 
 require("libvedran.php");
@@ -14,7 +18,8 @@ if (!$admin) {
 	exit;
 }
 
-$sta=$_GET['sta']; if ($sta=="") $sta=$_POST['sta'];
+$sta=$_REQUEST['sta'];
+$akcija=$_REQUEST['akcija'];
 
 # Moduli bez template-a
 if ($sta == "student-izmjena") {
@@ -27,6 +32,8 @@ if ($sta == "student-izmjena") {
 	include("admin_pregled.php"); admin_pregled(); exit;
 } elseif ($sta == "unos") {
 	include("admin_unos.php"); admin_unos(); exit;
+} elseif ($sta == "nihada" && $akcija == "report") {
+	include("admin_nihada.php"); admin_nihada(); exit;
 }
 
 ?>
@@ -75,6 +82,8 @@ if ($sta == "grupa") {
 	print "<h1>Statistika ispita</h1><p>Nije još implementirano... Sačekajte sljedeću verziju :)</p>";
 } elseif ($sta == "sifra") {
 	include("admin_sifra.php"); admin_sifra(); 
+} elseif ($sta == "nihada") {
+	include("admin_nihada.php"); admin_nihada(); 
 } elseif ($sta == "logout") {
 	logout();
 } else {

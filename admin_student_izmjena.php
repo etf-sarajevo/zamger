@@ -32,7 +32,7 @@ if ($predmet_id<1) $predmet_id=intval($_POST['predmet']);
 // Da li neko spoofa predmet/studenta?
 $q100 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$stud_id and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
 if (mysql_num_rows($q100)<1) {
-	niceerror("Nemate pravo pristupa ovom studentu! a");
+	niceerror("Nemate pravo pristupa ovom studentu!");
 	return;
 }
 $labgrupa = mysql_result($q100,0,0);
@@ -46,7 +46,7 @@ if (mysql_num_rows($q101)>0) {
 		if ($r101[0] == $labgrupa) { $nasao=1; break; }
 	}
 	if ($nasao == 0) {
-		niceerror("Nemate pravo pristupa ovom studentu! b");
+		niceerror("Nemate pravo pristupa ovom studentu!");
 		return;
 	}
 }
@@ -59,12 +59,12 @@ if (mysql_num_rows($q102)>0 && mysql_result($q102,0,0)==1) {
 	$izmjena_moguca = 1;
 } else {
 	$q103=myquery("select siteadmin from nastavnik where id=$userid");
-	if (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==1)
+	if (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==2)
 		$izmjena_moguca = 1;
 }
 
 if ($izmjena_moguca ==0) {
-	niceerror("Nemate pravo pristupa ovom studentu! c");
+	niceerror("Nemate pravo pristupa ovom studentu!");
 	return;
 }
 
