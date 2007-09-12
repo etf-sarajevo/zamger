@@ -135,6 +135,15 @@ $predmet = mysql_result($q4,0,0);
 			}
 		?></select></td>
 	</tr>
+<?
+
+if (mysql_result($q103,0,0)==2) {
+	?>
+	<tr><td colspan="2"><a href="qwerty.php?sta=nihada&akcija=edit&student=<?=$stud_id?>">Detaljnije o studentu</a></td></tr>
+	<?
+}
+
+?>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td>&nbsp;</td><td>
 		<input type="submit" value=" Pošalji " <? if ($izmjena_moguca != 1) print "disabled"; ?>> &nbsp;&nbsp;&nbsp;&nbsp;
