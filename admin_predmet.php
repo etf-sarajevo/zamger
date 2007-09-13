@@ -11,6 +11,8 @@
 // semantičkih grešaka, dodana provjera za ponavljanje studenata u rezultatima
 // v3.0.0.2 (2007/05/04) + Kompaktovanje baze
 // v3.0.0.3 (2007/05/24) + Ispravka greške do koje je došlo zbog prelaska na FROM_UNIXTIME
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
 
 
 function admin_predmet() {
@@ -215,13 +217,28 @@ if ($_POST['akcija'] == "massexam") {
 			# Parsiranje formata
 			$format = $_POST['format'];
 			if ($format == "A") {
-				list($prezime,$ime,$bodova) = explode("\t",$red);
-			} else if ($format == "B") {
 				list($imepr,$bodova) = explode("\t",$red);
+				$bodova2 == -1;
 				list($prezime,$ime) = explode(" ",$imepr);
+			} else if ($format == "B") {
+				list($imepr,$bodova2) = explode("\t",$red);
+				$bodova == -1;
+				list($prezime,$ime) = explode(" ",$imepr);
+			} else if ($format == "C") {
+				list($imepr,$bodova,$bodova2) = explode("\t",$red);;
+				list($prezime,$ime) = explode(" ",$imepr);
+			} else if ($format == "D") {
+				list($prezime,$ime,$bodova) = explode("\t",$red);
+				$bodova2 == -1;
+			} else if ($format == "E") {
+				list($prezime,$ime,$bodova2) = explode("\t",$red);
+				$bodova == -1;
+			} else if ($format == "F") {
+				list($prezime,$ime,$bodova,$bodova2) = explode("\t",$red);
 			}
 			# pretvori $bodova u float uz obradu decimalnog zareza
 			$bodova = floatval(str_replace(",",".",$bodova));
+			$bodova2 = floatval(str_replace(",",".",$bodova2));
 
 			# Da li student postoji?
 			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
@@ -231,13 +248,13 @@ if ($_POST['akcija'] == "massexam") {
 				# Da li se isti student ponavlja dvaput?
 				if (array_search($student, $prosli_idovi)) {
 					if ($f != 1) {
-						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (bodova: $bodova)<br/>";
+						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (bodova: $bodova / $bodova2)<br/>";
 					}
 				} else {
 					if ($f != 1) {
-						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
+						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova / $bodova2<br/>";
 					} else {
-						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
+						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova, ocjena2=$bodova2");
 					}
 				}
 			} else {
@@ -254,6 +271,72 @@ if ($_POST['akcija'] == "massexam") {
 	}
 }
 
+
+
+
+
+
+# Masovni unos konačnih ocjena
+
+if ($_POST['akcija'] == "massocjena") {
+	$redovi = explode("\n",$_POST['massocjena']);
+	$tempid=1;
+
+	$f = $_POST['fakatradi'];
+	if ($f != 1) {
+		print "Akcije koje će biti urađene:<br/><br/>\n";
+		print genform("POST");
+		print '<input type="hidden" name="fakatradi" value="1">';
+	} else {
+
+	}
+
+	$prosli_idovi = array();
+
+	foreach ($redovi as $red) {
+		$red = my_escape($red);
+		if (strlen($red)>1) {
+			# Parsiranje formata
+			$format = $_POST['format'];
+			if ($format == "A") {
+				list($imepr,$ocjena) = explode("\t",$red);
+				list($prezime,$ime) = explode(" ",$imepr);
+			} else if ($format == "B") {
+				list($prezime,$ime,$ocjena) = explode("\t",$red);
+			}
+			# pretvori $ocjenu u int
+			$ocjena = intval($ocjena);
+
+			# Da li student postoji?
+			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
+			if (mysql_num_rows($q42)>0) {
+				$student = mysql_result($q42,0,0);
+
+				# Da li se isti student ponavlja dvaput?
+				if (array_search($student, $prosli_idovi)) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (ocjena: $ocjena)<br/>";
+					}
+				} else {
+					if ($f != 1) {
+						print "Student '$prezime $ime' (ID: $student) - ocjena: $ocjena<br/>";
+					} else {
+						$q43 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena");
+					}
+				}
+			} else {
+				if ($f != 1) {
+					print "-- GREŠKA! Nepoznat student '$prezime $ime'<br/>";
+				}
+			}
+		}
+	}
+	if ($f != 1) {
+		print '<input type="submit" value=" Potvrda">';
+		print "</form>";
+		return;
+	}
+}
 
 
 # Dodavanje zadataka u zadaću
@@ -302,7 +385,7 @@ function upozorenje(url) {
 
 <p><h3><?=$predmet_naziv?></h3></p>
 
-<table border="0" cellspacing="1" cellpadding="5" width="500">
+<table border="0" cellspacing="1" cellpadding="5" width="550">
 <tr>
 <td width="50">&nbsp;</td>
 <? 
@@ -311,13 +394,14 @@ printtab("Grupe",$predmet,$tab);
 printtab("Ispiti",$predmet,$tab); 
 printtab("Zadaće",$predmet,$tab); 
 printtab("Kvizovi",$predmet,$tab); 
+printtab("Ocjena",$predmet,$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
 <td width="150">&nbsp;</td>
 </tr>
 <tr>
 <td width="50">&nbsp;</td>
-<td colspan="7" bgcolor="#DDDDDD" width="450">
+<td colspan="8" bgcolor="#DDDDDD" width="500">
 <?
 
 
@@ -389,6 +473,7 @@ if ($tab == "Grupe") {
 	print '<input type="hidden" name="akcija" value="nova_grupa">'."\n";
 	print 'Dodaj grupu: <input type="text" name="ime" size="20"> <input type="submit" value="Dodaj"></form></p>'."\n";
 
+	# Kopiranje grupa sa predmeta
 	$q103 = myquery("select akademska_godina from predmet where id=$predmet");
 	$akgod = mysql_result($q103,0,0);
 	print "<p>\n";
@@ -400,8 +485,10 @@ if ($tab == "Grupe") {
 	print '<input type="submit" value="Dodaj">'."\n";
 	print '</form></p>'."\n";
 
+	# Masovni unos
 	print '<p><hr/></p><p><b>Masovni unos studenata</b><br/>'."\n";
 	print genform("POST");
+	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massinput">'."\n";
 	print '<br/>Izaberite format podataka:<br/>'."\n";
 	print '<input type="radio" name="format" value="A" CHECKED> Prezime[TAB]Ime[TAB]Grupa[TAB]E-mail[TAB]Broj indexa<br/>'."\n";
@@ -433,14 +520,20 @@ if ($tab == "Ispiti") {
 	print '<p><hr/></p>'."\n";
 	print '<p><b>Masovni unos rezultata ispita</b><br/>'."\n";
 	print genform("POST");
+	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massexam">'."\n";
 
 	print '<br/>Naziv ispita: <input type="text" name="naziv" size="20"><br/><br/>'."\n";
 	print 'Datum: '.datectrl(date('d'),date('m'),date('Y'))."<br/><br/>\n";
 
 	print 'Izaberite format podataka:<br/>'."\n";
-	print '<input type="radio" name="format" value="A" CHECKED> Prezime[TAB]Ime[TAB]Bodova<br/>'."\n";
-	print ' <input type="radio" name="format" value="B"> Prezime Ime[TAB]Bodova<br/><br/>'."\n";
+	print '<input type="radio" name="format" value="A"> Prezime Ime[TAB]I parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="B"> Prezime Ime[TAB]II parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="C" CHECKED> Prezime Ime[TAB]I parcijalni[TAB]II parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="D"> Prezime[TAB]Ime[TAB]I parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="E"> Prezime[TAB]Ime[TAB]II parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="F"> Prezime[TAB]Ime[TAB]I parcijalni[TAB]II parcijalni<br/>'."\n";
+	print "<br/>\n";
 	print '<textarea name="massexam" cols="50" rows="10"></textarea><br/>'."\n";
 	print '<input type="submit" value="  Dodaj  ">'."\n";
 	print '</form></p>'."\n";
@@ -486,6 +579,24 @@ if ($tab == "Kvizovi") {
 	print "<ul><b>Nije još implementirano... Sačekajte sljedeću verziju :)</b></ul>\n";
 }
 
+
+
+
+// Konačna ocjena
+
+if ($tab == "Ocjena") {
+	print "<p>Unos konačnih ocjena za predmet.</p>\n";
+	print genform("POST");
+	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
+	print '<input type="hidden" name="akcija" value="massocjena">'."\n";
+	print 'Izaberite format podataka:<br/>'."\n";
+	print '<input type="radio" name="format" value="A" CHECKED> Prezime Ime[TAB]Ocjena<br/>'."\n";
+	print '<input type="radio" name="format" value="B"> Prezime[TAB]Ime[TAB]Ocjena<br/>'."\n";
+	print "<br/>\n";
+	print '<textarea name="massocjena" cols="50" rows="10"></textarea><br/>'."\n";
+	print '<input type="submit" value="  Dodaj  ">'."\n";
+	print '</form></p>'."\n";
+}
 
 
 
