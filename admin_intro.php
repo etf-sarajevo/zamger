@@ -21,7 +21,7 @@ $prezime = mysql_result($q1,0,1);
 $siteadmin = mysql_result($q1,0,2);
 
 $stud_spol = substr($ime,strlen($ime)-1);
-if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa") {
+if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Sa&#353;a") {
 	print "<h1>Dobro došla, $ime $prezime!<h1>";
 } else {
 	print "<h1>Dobro došao, $ime $prezime!</h1>";
@@ -52,7 +52,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	if ($siteadmin)
 		$q2 = myquery("select id,1 from predmet where akademska_godina=$r1a[0] order by id");
 	else
-		$q2 = myquery("select predmet,admin from nastavnik_predmet where nastavnik=$userid and akademska_godina=$r1a[0]");
+		$q2 = myquery("select np.predmet,np.admin from nastavnik_predmet as np, predmet as p where np.nastavnik=$userid and np.predmet=p.id and p.akademska_godina=$r1a[0]");
 
 	$nr = mysql_num_rows($q2);
 	if ($nr==0) continue; // skip to next
