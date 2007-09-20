@@ -6,6 +6,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/27) + Kreiranje zadataka iz admina
 // v3.0.0.2 (2007/05/04) + Optimizacija prikaza, čišćenje komentara i sl.
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/09/20) + Resize popup prozora za nove sadrzaje, dodatni parametar za FF 2.0
 
 
 function admin_grupa() {
@@ -42,7 +44,7 @@ if (mysql_num_rows($q501)<1) {
 	niceerror("Nemate pravo ulaska u ovu grupu!");
 	return;
 } 
-if (mysql_result($q501,0,0) != 1) {
+if (mysql_result($q501,0,0) < 1) {
 	$q502 = myquery("select np.admin from nastavnik_predmet as np,labgrupa where np.nastavnik=$userid and np.predmet=labgrupa.predmet and labgrupa.id=$grupa_id");
 	if (mysql_num_rows($q502)<1) {
 		niceerror("Nemate pravo ulaska u ovu grupu!");
@@ -399,7 +401,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>. <a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=300,height=200');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>. <a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
 <?
 
