@@ -13,7 +13,7 @@
 // v3.0.0.3 (2007/05/24) + Ispravka greške do koje je došlo zbog prelaska na FROM_UNIXTIME
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
-// v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu
+// v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu, ddodan link na izvještaj "spisak studenata po grupama"
 
 
 function admin_predmet() {
@@ -488,6 +488,9 @@ if ($tab == "Grupe") {
 	print db_dropdown("predmet");
 	print '<input type="submit" value="Dodaj">'."\n";
 	print '</form></p>'."\n";
+
+	// Izvjestaj "GRUPE"
+	print '<p><hr/></p><p><a href="qwerty.php?sta=izvjestaj&tip=grupe&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> IZVJEŠTAJ: Spisak studenata po grupama</a>';
 
 	# Masovni unos
 	print '<p><hr/></p><p><b>Masovni unos studenata</b><br/>'."\n";

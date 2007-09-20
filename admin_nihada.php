@@ -1,7 +1,7 @@
 <?
 
-// v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd.
-
+// v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd. Trenutno implementirana samo pretraga studenata i neki izvještaji
+// v3.0.1.2 (2007/09/20) + Izdvojeni izvjestaji u modul "izvjestaj"
 
 
 function admin_nihada() {
@@ -23,160 +23,6 @@ $tab=$_REQUEST['tab'];
 if ($tab=="") $tab="Studenti";
 
 $akcija=$_REQUEST['akcija'];
-
-
-// Izvjestaji
-
-if ($akcija == "report") {
-?>
-<html>
-<head>
-	<title>Izvještaji</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link href="css/style.css" rel="stylesheet" type="text/css" />
-</head>
-<body bgcolor="#FFFFFF">
-<p>Univerzitet u Sarajevu<br/>
-Elektrotehnički fakultet Sarajevo</p>
-<?
-}
-
-
-if ($tab == "Studenti" && $akcija == "report") {
-	$imena_ocjena = array("Šest","Sedam","Osam","Devet","Deset");
-
-	$student = intval($_REQUEST['student']);
-	$q300 = myquery("select ime,prezime,brindexa from student where id=$student");
-	if (!($r300 = mysql_fetch_row($q300))) {
-		niceerror("Student se ne nalazi u bazi podataka.");
-		return;
-	}
-	print "<p>&nbsp;</br>Student:</br><h1>$r300[0] $r300[1]</h1><br/>\nBroj indeksa: $r300[2]<br/><br/><br/>\n";
-
-	$tip = $_REQUEST['tip'];
-
-
-	if ($tip == "index") {
-		?><p><b>Pregled položenih predmeta sa ocjenama</b></p>
-		<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
-			<td width="20">&nbsp;</td>
-			<td width="330">Naziv predmeta</td>
-			<td width="200">Akademska godina</td>
-			<td width="150">Konačna ocjena</td>
-		</tr>
-		<?
-		$i=1;
-		$q301 = myquery("select id,naziv from akademska_godina order by naziv");
-		while ($r301 = mysql_fetch_row($q301)) {
-			$q302 = myquery("select p.naziv,k.ocjena from konacna_ocjena as k,predmet as p where k.student=$student and k.predmet=p.id and p.akademska_godina=$r301[0] order by p.naziv");
-			while ($r302 = mysql_fetch_row($q302)) {
-				print "<tr><td>".($i++)."</td><td>".$r302[0]."</td><td>".$r301[1]."</td><td>".$r302[1]." (".$imena_ocjena[$r302[1]-6].")</td></tr>";
-			}
-		}
-		print "</table>";
-	}
-
-
-	if ($tip == "progress" || $tip == "progress2") {
-		?><p><b>Pregled ostvarenog rezultata na predmetima</b></p>
-		<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
-			<td width="20">&nbsp;</td>
-			<td width="155">Predmet</td>
-			<td width="75">Ak. godina</td>
-			<td width="75">Prisustvo</td>
-			<td width="75">Zadaće</td>
-			<td width="75">I parcijalni</td>
-			<td width="75">II parcijalni</td>
-			<td width="75">UKUPNO</td>
-			<td width="75">Ocjena</td>
-		</tr>
-		<?
-		$i=1;
-		$q310 = myquery("select id,naziv from akademska_godina order by naziv");
-		while ($r310 = mysql_fetch_row($q310)) {
-			$q311 = myquery("select p.id, p.naziv, l.id from predmet as p, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=p.id and p.akademska_godina=$r310[0] order by p.naziv");
-			while ($r311 = mysql_fetch_row($q311)) {
-				print "<tr><td>".($i++)."</td><td>".$r311[1]."</td><td>".$r310[1]."</td>";
-				$ukupno=0;
-
-				$q312 = myquery("select count(*) from prisustvo as p,cas as c where p.student=$student and p.cas=c.id and c.labgrupa=$r311[2] and p.prisutan=0");
-				if (mysql_result($q312,0,0)<=3) {
-					print "<td>10</td>";
-					$ukupno += 10;
-				} else
-					print "<td>0</td>";
-
-				$q313 = myquery("select id, zadataka from zadaca where predmet=$r311[0]");
-				$zadaca=0;
-				while ($r313 = mysql_fetch_row($q313)) {
-					for ($i=1; $i<=$r313[1]; $i++) {
-						$q314 = myquery("select status,bodova from zadatak where zadaca=$r313[0] and redni_broj=$i and student=$student order by id desc limit 1");
-						if ($r314 = mysql_fetch_row($q314))
-							if ($r314[0] == 5)
-								$zadaca += $r314[1];
-					}
-				}
-				print "<td>$zadaca</td>";
-				$ukupno += $zadaca;
-
-				$q315 = myquery("select io.ocjena,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id and io.ocjena>=0 and i.predmet=$r311[0] order by i.datum");
-				$max=0;
-
-				print "<td>";
-				if (mysql_num_rows($q315)>0) {
-					while ($r315 = mysql_fetch_row($q315)) {
-						if ($tip == "progress2") {
-							list ($g,$m,$d) = explode("-",$r315[1]);
-							print "$r315[0] ($d.$m.)<br/>";
-						}
-						if ($r315[0]>$max) $max=$r315[0];
-					}
-					$ukupno += $max;
-					if ($tip == "progress") print $max;
-				} else
-					print "&nbsp;";
-				print "</td>";
-
-				$q316 = myquery("select io.ocjena2,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id and io.ocjena2>=0 and i.predmet=$r311[0] order by i.datum");
-				$max=0;
-
-				print "<td>";
-				if (mysql_num_rows($q316)>0) {
-					while ($r316 = mysql_fetch_row($q316)) {
-						if ($tip == "progress2") {
-							list ($g,$m,$d) = explode("-",$r316[1]);
-							print "$r316[0] ($d.$m.)<br/>";
-						}
-						if ($r316[0]>$max) $max=$r316[0];
-					}
-					$ukupno += $max;
-					if ($tip == "progress") print $max;
-				} else
-					print "&nbsp;";
-				print "</td>";
-
-				print "<td>$ukupno</td>";
-
-				$q317 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r311[0]");
-				if ($r317 = mysql_fetch_row($q317))
-					if ($r317[0] > 5)
-						print "<td>$r317[0]</td>";
-					else
-						print "<td>Nije položio/la</td>";
-				else
-					print "<td>Nije položio/la</td>";
-
-
-				print "</tr>";
-			}
-		}
-		print "</table>";
-	}
-
-	return;
-}
-
-
 
 
 
@@ -216,6 +62,37 @@ if ($tab == "Studenti" && $akcija == "edit") {
 	print "<a href=\"".genuri()."&akcija=\">Nazad na rezultate pretrage</a><br/><br/>";
 	
 
+	// Submit
+	if ($_POST['subakcija'] == "podaci") {
+		$ime = my_escape($_POST['ime']);
+		$prezime = my_escape($_POST['prezime']);
+		$email = my_escape($_POST['email']);
+		$brindexa = my_escape($_POST['brindexa']);
+
+		$q190 = myquery("update student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa' where id=$student");
+	}
+	if ($_POST['subakcija'] == "auth") {
+		$login = my_escape($_POST['login']);
+		$password = my_escape($_POST['password']);
+
+		$q191 = myquery("select count(*) from auth where id=$student");
+		if (mysql_result($q191,0,0) < 1) {
+			$q192 = myquery("insert into auth set id=$student, login='$login', password='$password'");
+		} else {
+			$q193 = myquery("update auth set login='$login', password='$password' where id=$student");
+		}
+	}
+	if ($_POST['subakcija'] == "upisi") {
+		$predmet = intval($_POST['predmet']);
+		$q193 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
+		if (mysql_num_rows($q193) < 1) {
+			$q194 = myquery("insert into labgrupa set predmet=$predmet, naziv='Default grupa'");
+			$q193 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
+		}
+		$labgrupa = mysql_result($q193,0,0);
+		$q195 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
+	}
+
 	// Izvjestaji
 
 	?>
@@ -225,11 +102,11 @@ if ($tab == "Studenti" && $akcija == "edit") {
 			<tr><td bgcolor="#777777" align="center">
 				<font color="white"><b>IZVJEŠTAJI:</b></font>
 			</td></tr>
-			<tr><td align="center"><a href="<?=genuri()?>&akcija=report&tip=index">
+			<tr><td align="center"><a href="qwerty.php?sta=izvjestaj&tip=index&student=<?=$student?>">
 			<img src="images/kontact_journal.png" border="0"><br/>Indeks</a></td></tr>
-			<tr><td align="center"><a href="<?=genuri()?>&akcija=report&tip=progress">
+			<tr><td align="center"><a href="qwerty.php?sta=izvjestaj&tip=progress&student=<?=$student?>&razdvoji_ispite=0">
 			<img src="images/kontact_journal.png" border="0"><br/>Bodovi</a></td></tr>
-			<tr><td align="center"><a href="<?=genuri()?>&akcija=report&tip=progress2">
+			<tr><td align="center"><a href="qwerty.php?sta=izvjestaj&tip=progress&student=<?=$student?>&razdvoji_ispite=1">
 			<img src="images/kontact_journal.png" border="0"><br/>Bodovi + nepoloženi ispiti</a></td></tr>
 		</table>
 	</td><td width="10" valign="top">&nbsp;
@@ -257,11 +134,11 @@ if ($tab == "Studenti" && $akcija == "edit") {
 	<tr><td colspan="5"><br/></td></tr>
 	<?
 
-	$q201 = myquery("select login,password from auth where id=$student");
-	if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
-
 
 	// Login&password
+
+	$q201 = myquery("select login,password from auth where id=$student");
+	if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
 
 	?>
 	<?=genform("POST")?>
@@ -342,8 +219,14 @@ else if ($tab == "Studenti") {
 			$q100 = myquery("select count(*) from student");
 			$q101 = myquery("select id,ime,prezime,brindexa from student order by prezime limit $offset,$limit");
 		} else {
-			$q100 = myquery("select count(*) from student where ime like '%$src%' or prezime like '%$src%' or brindexa like '%$src%'");
-			$q101 = myquery("select id,ime,prezime,brindexa from student where ime like '%$src%' or prezime like '%$src%' order by prezime limit $offset,$limit");
+			$dijelovi = explode(" ", $src);
+			$query = "";
+			foreach($dijelovi as $dio) {
+				if ($query != "") $query .= "or ";
+				$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
+			}
+			$q100 = myquery("select count(*) from student where $query");
+			$q101 = myquery("select id,ime,prezime,brindexa from student where $query order by prezime limit $offset,$limit");
 		}
 		$rezultata = mysql_result($q100,0,0);
 		if ($rezultata == 0)

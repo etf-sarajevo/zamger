@@ -32,8 +32,8 @@ if ($sta == "student-izmjena") {
 	include("admin_pregled.php"); admin_pregled(); exit;
 } elseif ($sta == "unos") {
 	include("admin_unos.php"); admin_unos(); exit;
-} elseif ($sta == "nihada" && $akcija == "report") {
-	include("admin_nihada.php"); admin_nihada(); exit;
+} elseif ($sta == "izvjestaj") {
+	include("admin_izvjestaj.php"); admin_izvjestaj(); exit;
 }
 
 ?>
@@ -51,7 +51,7 @@ if ($sta == "student-izmjena") {
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><a href="http://www.etf.unsa.ba"><img src="images/etf.gif" border="0"></a></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0</h1>by <a href="http://www.linux.org.ba/?c=contact&koga=vedran"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.5 beta</h1>by <a href="http://www.linux.org.ba/?c=contact&koga=vedran"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>
@@ -84,6 +84,8 @@ if ($sta == "grupa") {
 	include("admin_sifra.php"); admin_sifra(); 
 } elseif ($sta == "nihada") {
 	include("admin_nihada.php"); admin_nihada(); 
+} elseif ($sta == "siteadmin") {
+	include("admin_site.php"); admin_site(); 
 } elseif ($sta == "logout") {
 	logout();
 } else {
