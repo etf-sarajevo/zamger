@@ -172,7 +172,7 @@ if ($_POST['akcija'] == "massinput") {
 		}
 	}
 	if ($f != 1) {
-		print '<input type="submit" value=" Potvrda">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Grupe\'"> <input type="submit" value=" Potvrda ">';
 		print "</form>";
 		return;
 	}
@@ -265,7 +265,7 @@ if ($_POST['akcija'] == "massexam") {
 		}
 	}
 	if ($f != 1) {
-		print '<input type="submit" value=" Potvrda">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ispiti\'"> <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
 	}
@@ -332,7 +332,7 @@ if ($_POST['akcija'] == "massocjena") {
 		}
 	}
 	if ($f != 1) {
-		print '<input type="submit" value=" Potvrda">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ocjena\'"> <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
 	}
