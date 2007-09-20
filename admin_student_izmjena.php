@@ -6,6 +6,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + Pristup kao siteadmin nije radio
+// v3.0.1.2 (2007/09/12) + Dodan link na izvještaj studenta u nihada-modulu za siteadmine
+// v3.0.1.3 (2007/09/20) + Dodan link za ispis studenta sa predmeta za admine, ukinut viška query
 
 
 function admin_student_izmjena() {
@@ -72,6 +74,14 @@ if ($izmjena_moguca ==0) {
 if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) izmijeni_profil($stud_id,$predmet_id);
 
 
+// Ispis studenta sa predmeta
+if ($_GET['akcija'] == "ispis" && $izmjena_moguca==1) {
+	$q1000 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$labgrupa");
+	nicemessage("Studen ispisan sa predmeta.");
+	return;
+}
+
+
 // Podaci o studentu...
 $q1=myquery("select ime,prezime,email,brindexa from student where id=$stud_id");
 if (mysql_num_rows($q1)<1) {
@@ -81,7 +91,8 @@ if (mysql_num_rows($q1)<1) {
 
 $q2=myquery("select id,naziv from labgrupa where predmet=$predmet_id order by naziv");
 
-$q3=myquery("select student_labgrupa.labgrupa from student_labgrupa,labgrupa where student_labgrupa.student=$stud_id and student_labgrupa.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
+//$q3=myquery("select student_labgrupa.labgrupa from student_labgrupa,labgrupa where student_labgrupa.student=$stud_id and student_labgrupa.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
+
 
 $q4=myquery("select naziv from predmet where id=$predmet_id");
 if (mysql_num_rows($q4)<1) {
@@ -136,6 +147,12 @@ $predmet = mysql_result($q4,0,0);
 		?></select></td>
 	</tr>
 <?
+
+if ($izmjena_moguca == 1) {
+	?>
+	<tr><td colspan="2"><a href="qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet_id?>&akcija=ispis">Ispiši studenta sa predmeta!</a></td></tr>
+	<?
+}
 
 if (mysql_result($q103,0,0)==2) {
 	?>
