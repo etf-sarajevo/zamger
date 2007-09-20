@@ -13,6 +13,7 @@
 // v3.0.0.3 (2007/05/24) + Ispravka greške do koje je došlo zbog prelaska na FROM_UNIXTIME
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
+// v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu
 
 
 function admin_predmet() {
@@ -104,6 +105,7 @@ if ($_POST['akcija'] == "massinput") {
 	}
 
 	foreach ($redovi as $red) {
+		$red = rtrim($red);
 		$red = my_escape($red);	
 		if (strlen($red)>1) {
 			# Parsiranje formata
@@ -143,7 +145,7 @@ if ($_POST['akcija'] == "massinput") {
 				}
 			} else {
 				if ($f != 1) {
-					print "Unos novog studenta '$prezime $ime', prijava u predmet u predmet '$predmet' grupa";
+					print "Unos novog studenta '$prezime $ime' ($brindexa), prijava u predmet u predmet '$predmet' grupa";
 				} else {
 					$q31 = myquery("insert into student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa'");
 					$q32 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
@@ -212,6 +214,7 @@ if ($_POST['akcija'] == "massexam") {
 	$prosli_idovi = array();
 
 	foreach ($redovi as $red) {
+		$red = rtrim($red);
 		$red = my_escape($red);
 		if (strlen($red)>1) {
 			# Parsiranje formata
@@ -294,6 +297,7 @@ if ($_POST['akcija'] == "massocjena") {
 	$prosli_idovi = array();
 
 	foreach ($redovi as $red) {
+		$red = rtrim($red);
 		$red = my_escape($red);
 		if (strlen($red)>1) {
 			# Parsiranje formata
