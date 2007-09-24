@@ -14,6 +14,7 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
 // v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu, ddodan link na izvještaj "spisak studenata po grupama"
+// v3.0.1.3 (2007/09/24) + Popravljen bug sa većim brojem razmaka kod masovnog unosa
 
 
 function admin_predmet() {
@@ -111,17 +112,17 @@ if ($_POST['akcija'] == "massinput") {
 			# Parsiranje formata
 			$format = $_POST['format'];
 			if ($format == "A") {
-				list($prezime,$ime,$grupa,$email,$brindexa) = explode("\t",$red);
+				list($prezime,$ime,$grupa,$email,$brindexa) = explode("\t",$red,5);
 			} else if ($format == "B") {
-				list($imepr,$grupa,$email,$brindexa) = explode("\t",$red);
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($imepr,$grupa,$email,$brindexa) = explode("\t",$red,4);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "C") {
-				list($imepr,$grupa,$brindexa) = explode("\t",$red);
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($imepr,$grupa,$brindexa) = explode("\t",$red,3);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 				$email = "";
 			} else if ($format == "D") {
-				list($imepr,$brindexa) = explode("\t",$red);
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($imepr,$brindexa) = explode("\t",$red,2);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 				$email = "";
 			}
 
@@ -220,24 +221,24 @@ if ($_POST['akcija'] == "massexam") {
 			# Parsiranje formata
 			$format = $_POST['format'];
 			if ($format == "A") {
-				list($imepr,$bodova) = explode("\t",$red);
+				list($imepr,$bodova) = explode("\t",$red,2);
 				$bodova2 == -1;
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "B") {
-				list($imepr,$bodova2) = explode("\t",$red);
+				list($imepr,$bodova2) = explode("\t",$red,2);
 				$bodova == -1;
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "C") {
-				list($imepr,$bodova,$bodova2) = explode("\t",$red);;
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($imepr,$bodova,$bodova2) = explode("\t",$red,3);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "D") {
-				list($prezime,$ime,$bodova) = explode("\t",$red);
+				list($prezime,$ime,$bodova) = explode("\t",$red,3);
 				$bodova2 == -1;
 			} else if ($format == "E") {
-				list($prezime,$ime,$bodova2) = explode("\t",$red);
+				list($prezime,$ime,$bodova2) = explode("\t",$red,3);
 				$bodova == -1;
 			} else if ($format == "F") {
-				list($prezime,$ime,$bodova,$bodova2) = explode("\t",$red);
+				list($prezime,$ime,$bodova,$bodova2) = explode("\t",$red,4);
 			}
 			# pretvori $bodova u float uz obradu decimalnog zareza
 			$bodova = floatval(str_replace(",",".",$bodova));
@@ -303,10 +304,10 @@ if ($_POST['akcija'] == "massocjena") {
 			# Parsiranje formata
 			$format = $_POST['format'];
 			if ($format == "A") {
-				list($imepr,$ocjena) = explode("\t",$red);
-				list($prezime,$ime) = explode(" ",$imepr);
+				list($imepr,$ocjena) = explode("\t",$red,2);
+				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "B") {
-				list($prezime,$ime,$ocjena) = explode("\t",$red);
+				list($prezime,$ime,$ocjena) = explode("\t",$red,3);
 			}
 			# pretvori $ocjenu u int
 			$ocjena = intval($ocjena);
