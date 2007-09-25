@@ -270,6 +270,30 @@ else if ($tab == "Studenti") {
 //   STUDENTI
 //------------------------------
 
+else if ($tab == "Predmeti" && $akcija == "novi_predmet") {
+	$naziv = substr(my_escape($_POST['naziv']), 0, 100);
+	if (!preg_match("/\w/", $naziv)) {
+		niceerror("Naziv nije ispravan");
+		return;
+	}
+	$q390 = myquery("select id from akademska_godina order by naziv desc limit 1");
+	$ak_god = mysql_result($q390,0,0);
+	$q391 = myquery("select id from predmet where naziv='$naziv' and akademska_godina=$ak_god");
+	if (mysql_num_rows($q391)>0) {
+		niceerror("Predmet već postoji");
+		return;
+	}
+	$q392 = myquery("insert into predmet set naziv='$naziv', akademska_godina=$ak_god");
+	$q393 = myquery("select id from predmet where naziv='$naziv' and akademska_godina=$ak_god");
+	$predmet = mysql_result($q393,0,0);
+
+	?>
+	<script language="JavaScript">
+	location.href='<?=genuri()?>&akcija=edit&predmet=<?=$predmet?>';
+	</script>
+	<?
+}
+
 else if ($tab == "Predmeti" && $akcija == "edit") {
 	$predmet = intval($_REQUEST['predmet']);
 
@@ -315,6 +339,11 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 		$nastavnik = intval($_GET['nastavnik']);
 		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet");
 	}
+	else if($_POST['subakcija'] == "podaci") {
+		$naziv = my_escape($_POST['naziv']);
+		$ak_god = intval($_POST['_lv_column_akademska_godina']);
+		$q364 = myquery("update predmet set naziv='$naziv', akademska_godina=$ak_god where id=$predmet");
+	}
 
 
 	// Osnovni podaci
@@ -343,12 +372,6 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 		print "<ul><li>Nema nastavnika</li></ul>\n";
 	} else {
 		?>
-		<script language="JavaScript">
-			function firefox_go(url) {
-//alert("Hello world!");
-				window.location = url;
-			}
-		</script>
 		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
 	}
 	while ($r351 = mysql_fetch_row($q351)) {
@@ -459,8 +482,15 @@ else if ($tab == "Predmeti") {
 		}
 		print "</table>";
 	}
-	print "</table></center>\n";
-
+	?>
+		<br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="novi_predmet">
+		<b>Novi predmet:</b><br/>
+		<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
+		</form>
+	</table></center>
+	<?
 
 }
 
