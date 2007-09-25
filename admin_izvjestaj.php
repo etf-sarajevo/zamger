@@ -1,6 +1,7 @@
 <?
 
 // v3.0.1.1 (2007/09/20) + Novi modul "Izvjestaj" - izdvojen iz admin_nihada; dodan izvjestaj "grupe"
+// v3.0.1.2 (2007/09/25) + Dodan izvjestaj "predmet_full"; optimizacija racunanja bodova na ispitima
 
 
 
@@ -142,41 +143,36 @@ if ($tip == "progress") {
 			print "<td>$zadaca</td>";
 			$ukupno += $zadaca;
 
-			$q315 = myquery("select io.ocjena,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id and io.ocjena>=0 and i.predmet=$r311[0] order by i.datum");
-			$max=0;
+			$q315 = myquery("select io.ocjena,io.ocjena2,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id  and i.predmet=$r311[0] order by i.datum");
 
-			print "<td>";
+			$prvi_ispis = $drugi_ispis = "";
+			$max1 = $max2 = "&nbsp;";
+			
 			if (mysql_num_rows($q315)>0) {
 				while ($r315 = mysql_fetch_row($q315)) {
 					if ($razdvoji == 1) {
-						list ($g,$m,$d) = explode("-",$r315[1]);
-						print "$r315[0] ($d.$m.)<br/>";
+						list ($g,$m,$d) = explode("-",$r315[2]);
+						if ($r315[0]>=0) $prvi_ispis .= "$r315[0] ($d.$m.)<br/>";
+						if ($r315[1]>=0) $drugi_ispis .= "$r315[1] ($d.$m.)<br/>";
 					}
-					if ($r315[0]>$max) $max=$r315[0];
+					if ($r315[0]>$max1) $max1=$r315[0];
+					if ($r315[1]>$max2) $max2=$r315[1];
 				}
-				$ukupno += $max;
-				if ($razdvoji == 0) print $max;
-			} else
-				print "&nbsp;";
-			print "</td>";
+				$ukupno += ($max1 + $max2);
+			}
 
-			$q316 = myquery("select io.ocjena2,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id and io.ocjena2>=0 and i.predmet=$r311[0] order by i.datum");
-			$max=0;
-
-			print "<td>";
-			if (mysql_num_rows($q316)>0) {
-				while ($r316 = mysql_fetch_row($q316)) {
-					if ($razdvoji == 1) {
-						list ($g,$m,$d) = explode("-",$r316[1]);
-						print "$r316[0] ($d.$m.)<br/>";
-					}
-					if ($r316[0]>$max) $max=$r316[0];
-				}
-				$ukupno += $max;
-				if ($razdvoji == 0) print $max;
-			} else
-				print "&nbsp;";
-			print "</td>";
+			if ($razdvoji == 0) {
+				print "<td>$max1</td><td>$max2</td>";
+			} else {
+				if ($prvi_ispis == "") 
+					print "<td>&nbsp;</td>";
+				else
+					print "<td>$prvi_ispis</td>";
+				if ($drugi_ispis == "") 
+					print "<td>&nbsp;</td>";
+				else
+					print "<td>$drugi_ispis</td>";
+			}
 
 			print "<td>$ukupno</td>";
 
@@ -251,6 +247,147 @@ if ($tip == "grupe") {
 			<?
 		} else $parni=1;
 	}
+}
+
+
+
+// PREDMET_FULL - izvjestaj koji salje Nihada
+
+if ($tip == "predmet_full") {
+	if ($predmetadmin == -1 && $siteadmin == 0) {
+		niceerror("Nemate permisije za pristup ovom izvještaju");
+		return;
+	}
+
+	$q500 = myquery("select p.naziv,ag.naziv from predmet as p, akademska_godina as ag where p.id=$predmet and ag.id=p.akademska_godina");
+	print "<p>&nbsp;</p><h1>".mysql_result($q500,0,0)." ".mysql_result($q500,0,1)."</h1>\n";
+
+	$grupa = intval($_REQUEST['grupa']);
+	if ($grupa>0)
+		$q501 = myquery("select id,naziv from labgrupa where predmet=$predmet and id=$grupa");
+	else
+		$q501 = myquery("select id,naziv from labgrupa where predmet=$predmet");
+
+	while ($r501 = mysql_fetch_row($q501)) {
+		?>
+		<table width="100%" border="2" cellspacing="0" cellpadding="2">
+			<tr><td colspan="27" align="center"><b><?=strtoupper($r501[1])?></b></td></tr>
+			<tr><td align="center">R.br.</td>
+				<td align="center">Br. indexa</td>
+				<td align="center">Prezime i ime</td>
+				<td colspan="7" align="center">Prisustvo tutorijalima 1</td>
+				<td colspan="7" align="center">Prisustvo tutorijalima 2</td>
+				<td colspan="5" align="center">Zadaće i lab vježbe</td>
+				<td align="center">Test 1</td>
+				<td align="center">Test 2</td>
+				<td align="center">Prisustvo</td>
+				<td align="center">Zadaće</td>
+				<td align="center">Ukupno</td>
+			</tr>
+		<?
+
+		// Ucitavamo studente u array radi sortiranja
+		$imeprezime=array();
+		$brindexa=array();
+		$q502 = myquery("select s.id, s.prezime, s.ime, s.brindexa from student as s, student_labgrupa as sl where sl.labgrupa=$r501[0] and sl.student=s.id");
+		while ($r502 = mysql_fetch_row($q502)) {
+			$imeprezime[$r502[0]] = "$r502[1] $r502[2]";
+			$brindexa[$r502[0]] = $r502[3];
+		}
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+		$redni_broj=0;
+
+		// Ucitavamo casove i zadace u array, radi brzeg kasnijeg referenciranja
+		$casoviar = array();
+		$q503 = myquery("select id from cas where labgrupa=$r501[0] order by datum");
+		while ($r503 = mysql_fetch_row($q503))
+			array_push($casoviar, $r503[0]);
+
+		$zadacear = array();
+		$q504 = myquery("select id,zadataka from zadaca where predmet=$predmet order by id");
+		while ($r504 = mysql_fetch_row($q504)) {
+			$zadacear[$r504[0]] = $r504[1];
+		}
+
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			$redni_broj++;
+			?>
+			<tr>
+				<td><?=$redni_broj?>.</td>
+				<td><?=$brindexa[$stud_id]?></td>
+				<td><?=$stud_imepr?></td>
+			<?
+
+			$n = 0;
+			foreach ($casoviar as $cas) {
+				$q505 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cas");
+				if (mysql_num_rows($q505)<1) {
+					print "<td>/</td>\n";
+				} else if (mysql_result($q505,0,0) == 0) {
+					print "<td>0</td>\n";
+					$n++;
+				} else {
+					print "<td>1</td>\n";
+				}
+			}
+			for ($i=count($casoviar); $i<14; $i++) {
+				print "<td>&nbsp;</td>\n";
+			}
+			if ($n>3) $prisustvo=0; else $prisustvo=10;
+			
+			// Jos jedan array...... optimizacija
+			$q506 = myquery("select z.id,zc.id,z.redni_broj,z.status,z.bodova from zadatak as z, zadaca as zc where z.zadaca=zc.id and z.student=$stud_id and zc.predmet=$predmet order by z.id desc");
+			$bilo = array();
+			$bodova = array();
+			while ($r506 = mysql_fetch_row($q506)) {
+				$zadaca_rbr = "$r506[1]-$r506[2]";
+				if ($bilo[$zadaca_rbr] != 1) {
+					$bilo[$zadaca_rbr] = 1;
+					if ($r506[3] == 5)
+						$bodova[$r506[1]] += $r506[4];
+				}
+			}
+
+			$zadace=0;
+			foreach ($zadacear as $zid => $zadataka) {
+/*				$uk_bodova = 0;
+				for ($i=1; $i<=$zadataka; $i++) {
+					if ($r506 = mysql_fetch_row($q506)) {
+						if ($r506[0] == 5)
+							$uk_bodova += $r506[1];
+					}
+				}
+				print "<td>$uk_bodova</td>\n";
+				$zadace += $uk_bodova;*/
+				if ($bodova[$zid]) {
+					print "<td>".$bodova[$zid]."</td>";
+					$zadace += $bodova[$zid];
+				} else {
+					print "<td>&nbsp;</td>";
+				}
+			}
+			for  ($i=count($zadacear); $i<5; $i++)
+				print "<td>&nbsp;</td>\n";
+
+			$q507 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id  and i.predmet=$predmet order by i.datum");
+			$ocjena1 = $ocjena2 = "&nbsp;";
+			while ($r507 = mysql_fetch_row($q507)) {
+				if ($r507[0] > $ocjena1 && $r507[0] != "-1") $ocjena1=$r507[0];
+				if ($r507[1] > $ocjena2 && $r507[1] != "-1") $ocjena2=$r507[1];
+			}
+			print "<td>$ocjena1</td><td>$ocjena2</td>\n";
+
+			print "<td>$prisustvo</td>";
+			print "<td>$zadace</td>";
+			print "<td>".($prisustvo+$zadace+$ocjena1+$ocjena2)."</td>";
+
+			print "</tr>\n";
+		}
+		print "</table><p>&nbsp;</p>";
+
+	}
+	
 }
 
 return;
