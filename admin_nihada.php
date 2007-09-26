@@ -3,6 +3,7 @@
 // v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd. Trenutno implementirana samo pretraga studenata i neki izvještaji
 // v3.0.1.2 (2007/09/20) + Izdvojeni izvjestaji u modul "izvjestaj"
 // v3.0.1.3 (2007/09/25) + Dodana kartica Predmeti, izbacena kartica Korisnici (to je integrisano sa Studenti odnosno Nastavnici), razmaci u broju rezultata na kartici Studenti
+// v3.0.1.4 (2007/09/26) + Dodana kartica Nastavnici; dodavanje novog studenta, sortiraj studente i po imenu
 
 
 function admin_nihada() {
@@ -60,8 +61,51 @@ printtab("Predmeti", $tab);
 //   STUDENTI
 //------------------------------
 
+if ($tab == "Studenti" && $akcija == "novi") {
+	$ime = substr(my_escape($_POST['ime']), 0, 100);
+	if (!preg_match("/\w/", $ime)) {
+		niceerror("Ime nije ispravno");
+		return;
+	}
+	$prezime = substr(my_escape($_POST['prezime']), 0, 100);
+	if (!preg_match("/\w/", $prezime)) {
+		niceerror("Prezime nije ispravno");
+		return;
+	}
+	$brindexa = intval($_POST['brindexa']);
+	if ($brindexa<1 || $brindexa>100000) {
+		niceerror("Broj indexa nije ispravan");
+		return;
+	}
 
-if ($tab == "Studenti" && $akcija == "edit") {
+	$q180 = myquery("select id,ime,prezime,brindexa from student where ime like '$ime' and prezime like '$prezime'");
+	if ($r180 = mysql_fetch_row($q180)) {
+		niceerror("Student već postoji u bazi:");
+		print "<br><a href=\"".genuri()."&akcija=edit&student=$r180[0]\">$r180[1] $r180[2] ($r180[3])</a>";
+		return;
+	}
+
+	$q181 = myquery("select id,ime,prezime,brindexa from student where brindexa='$brindexa'");
+	if ($r181 = mysql_fetch_row($q181)) {
+		niceerror("Dvostruki broj indeksa:");
+		print "<br><a href=\"".genuri()."&akcija=edit&student=$r181[0]\">$r181[1] $r181[2] ($r181[3])</a>";
+		return;
+	}
+
+	$q182 = myquery("insert into student set ime='$ime', prezime='$prezime', brindexa='$brindexa'");
+	$q183 = myquery("select id from student where ime='$ime' and prezime='$prezime' and brindexa='$brindexa'");
+	$student = mysql_result($q183,0,0);
+
+
+	?>
+	<script language="JavaScript">
+	location.href='<?=genuri()?>&akcija=edit&student=<?=$student?>';
+	</script>
+	<?
+}
+
+
+else if ($tab == "Studenti" && $akcija == "edit") {
 	$student = intval($_REQUEST['student']);
 
 	print "<a href=\"".genuri()."&akcija=\">Nazad na rezultate pretrage</a><br/><br/>";
@@ -202,8 +246,8 @@ if ($tab == "Studenti" && $akcija == "edit") {
 
 	?></td></tr></table></center><? // Vanjska tabela
 
-
 }
+
 
 else if ($tab == "Studenti") {
 	$src = my_escape($_REQUEST["search"]);
@@ -223,7 +267,7 @@ else if ($tab == "Studenti") {
 	if ($src) {
 		if ($src == "sve") {
 			$q100 = myquery("select count(*) from student");
-			$q101 = myquery("select id,ime,prezime,brindexa from student order by prezime limit $offset,$limit");
+			$q101 = myquery("select id,ime,prezime,brindexa from student order by prezime,ime limit $offset,$limit");
 		} else {
 			$dijelovi = explode(" ", $src);
 			$query = "";
@@ -232,7 +276,7 @@ else if ($tab == "Studenti") {
 				$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
 			}
 			$q100 = myquery("select count(*) from student where $query");
-			$q101 = myquery("select id,ime,prezime,brindexa from student where $query order by prezime limit $offset,$limit");
+			$q101 = myquery("select id,ime,prezime,brindexa from student where $query order by prezime,ime limit $offset,$limit");
 		}
 		$rezultata = mysql_result($q100,0,0);
 		if ($rezultata == 0)
@@ -262,15 +306,30 @@ else if ($tab == "Studenti") {
 		}
 		print "</table>";
 	}
-	print "</table></center>\n";
+	?>
+		<br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="novi">
+		<b>Unesite novog studenta:</b><br/>
+		<table border="0" cellspacing="0" cellpadding="0" width="100%">
+		<tr><td>Ime:</td><td>Prezime:</td><td>Broj indexa:</td><td>&nbsp;</td></tr>
+		<tr>
+			<td><input type="text" name="ime" size="15"></td>
+			<td><input type="text" name="prezime" size="15"></td>
+			<td><input type="text" name="brindexa" size="15"></td>
+			<td><input type="submit" value=" Dodaj "></td>
+		</tr></table>
+		</form>
+	</table></center>
+	<?
 }
 
 
 //------------------------------
-//   STUDENTI
+//   PREDMETI
 //------------------------------
 
-else if ($tab == "Predmeti" && $akcija == "novi_predmet") {
+else if ($tab == "Predmeti" && $akcija == "novi") {
 	$naziv = substr(my_escape($_POST['naziv']), 0, 100);
 	if (!preg_match("/\w/", $naziv)) {
 		niceerror("Naziv nije ispravan");
@@ -432,7 +491,7 @@ else if ($tab == "Predmeti") {
 		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
 		<?=db_dropdown("akademska_godina",$ak_god, "Sve akademske godine");?>
 		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
-		<br/><br/>
+		<br/>
 	<?
 	if ($ak_god>0 && $src != "") {
 		$q300 = myquery("select count(*) from predmet where akademska_godina=$ak_god and naziv like '%$src%'");
@@ -485,9 +544,242 @@ else if ($tab == "Predmeti") {
 	?>
 		<br/>
 		<?=genform("POST")?>
-		<input type="hidden" name="akcija" value="novi_predmet">
+		<input type="hidden" name="akcija" value="novi">
 		<b>Novi predmet:</b><br/>
 		<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
+		</form>
+	</table></center>
+	<?
+
+}
+
+
+
+
+
+//------------------------------
+//   PREDMETI
+//------------------------------
+
+
+else if ($tab == "Nastavnici" && $akcija == "novi") {
+	$ime = substr(my_escape($_POST['ime']), 0, 100);
+	if (!preg_match("/\w/", $ime)) {
+		niceerror("Ime nije ispravno");
+		return;
+	}
+	$prezime = substr(my_escape($_POST['prezime']), 0, 100);
+	if (!preg_match("/\w/", $prezime)) {
+		niceerror("Prezime nije ispravno");
+		return;
+	}
+
+	$q480 = myquery("select id,ime,prezime from nastavnik where ime like '$ime' and prezime like '$prezime'");
+	if ($r480 = mysql_fetch_row($q480)) {
+		niceerror("Nastavnik već postoji u bazi:");
+		print "<br><a href=\"".genuri()."&akcija=edit&nastavnik=$r480[0]\">$r480[1] $r480[2]</a>";
+		return;
+	}
+
+
+	$q481 = myquery("insert into nastavnik set ime='$ime', prezime='$prezime'");
+	$q482 = myquery("select id from nastavnik where ime='$ime' and prezime='$prezime'");
+	$nastavnik = mysql_result($q482,0,0);
+
+
+	?>
+	<script language="JavaScript">
+	location.href='<?=genuri()?>&akcija=edit&nastavnik=<?=$nastavnik?>';
+	</script>
+	<?
+}
+
+
+else if ($tab == "Nastavnici" && $akcija == "edit") {
+	$nastavnik = intval($_REQUEST['nastavnik']);
+
+	print "<a href=\"".genuri()."&akcija=\">Nazad na rezultate pretrage</a><br/><br/>";
+	
+
+	// Submit akcije
+
+	if ($_POST['subakcija'] == "podaci") {
+		$ime = my_escape($_POST['ime']);
+		$prezime = my_escape($_POST['prezime']);
+		$email = my_escape($_POST['email']);
+
+		$q490 = myquery("update nastavnik set ime='$ime', prezime='$prezime', email='$email' where id=$nastavnik");
+	}
+	if ($_POST['subakcija'] == "auth") {
+		$login = my_escape($_POST['login']);
+		$password = my_escape($_POST['password']);
+
+		$q491 = myquery("select count(*) from auth where id=$nastavnik");
+		if (mysql_result($q491,0,0) < 1) {
+			$q492 = myquery("insert into auth set id=$nastavnik, login='$login', password='$password'");
+		} else {
+			$q493 = myquery("update auth set login='$login', password='$password' where id=$nastavnik");
+		}
+	}
+	if ($_POST['subakcija'] == "upisi") {
+		$predmet = intval($_POST['_lv_column_predmet']);
+		$admin_predmeta = intval($_POST['admin_predmeta']);
+		$q494 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet, admin=$admin_predmeta");
+	}
+
+	// Izvjestaji
+
+	?>
+	<center>
+	<table width="700" border="0" cellspacing="0" cellpadding="0"><tr><td width="100" valign="top">
+		<table width="100%" border="1" cellspacing="0" cellpadding="0">
+			<tr><td bgcolor="#777777" align="center">
+				<font color="white"><b>IZVJEŠTAJI:</b></font>
+			</td></tr>
+			<tr><td align="center">(Ništa za sada)</td></tr>
+		</table>
+	</td><td width="10" valign="top">&nbsp;
+	</td><td width="590" valign="top">
+	<?
+
+
+	// Osnovni podaci
+
+	$q480 = myquery("select ime,prezime,email from nastavnik where id=$nastavnik");
+	if (!($r480 = mysql_fetch_row($q480))) {
+		niceerror("Nepostojeći nastavnik!");
+		return;
+	}
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="podaci">
+	<table width="100%" border="0"><tr>
+		<td>Ime:<br/> <input type="text" size="10" name="ime" value="<?=$r480[0]?>"></td>
+		<td>Prezime:<br/> <input type="text" size="10" name="prezime" value="<?=$r480[1]?>"></td>
+		<td>E-mail:<br/> <input type="text" size="10" name="email" value="<?=$r480[2]?>"></td>
+		<td><input type="Submit" value=" Izmijeni "></td>
+	</tr></form>
+	<tr><td colspan="5"><br/></td></tr>
+	<?
+
+
+	// Login&password
+
+	$q481 = myquery("select login,password from auth where id=$nastavnik");
+	if (!($r481 = mysql_fetch_row($q481))) $auth=0; else $auth=1;
+
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="auth">
+	<tr>
+		<td colspan="2">Korisnički pristup: <? if(!$auth) print '<font color="red">NEMA</font>'; ?></td>
+		<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$r481[0]?>"></td>
+		<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$r481[1]?>"></td>
+		<td><input type="Submit" value="<? if($auth) print ' Izmijeni '; else print ' Dodaj '?>"></td>
+	</tr></table></form>
+	<?
+
+
+	// Angazovan na predmetima
+
+	print "<p>Angažovan na predmetima:</p>\n<ul>";
+	$q482 = myquery("select id from akademska_godina order by naziv desc limit 1");
+	$tekuca_ag = mysql_result($q482,0,0);
+
+	$q483 = myquery("select p.id, p.naziv, ag.naziv, np.admin from nastavnik_predmet as np, predmet as p, akademska_godina as ag where np.nastavnik=$nastavnik and np.predmet=p.id and p.akademska_godina=ag.id and ag.id=$tekuca_ag");
+	if (mysql_num_rows($q483) < 1)
+		print "<li>Nijedan</li>\n";
+	while ($r483 = mysql_fetch_row($q483)) {
+		print "<li><a href=\"qwerty.php?sta=nihada&tab=Predmeti&akcija=edit&predmet=$r483[0]\">$r483[1] ($r483[2])</a>";
+		if ($r483[3] == 1) print " (Administrator predmeta)";
+		print "</li>\n";
+	}
+	print "</ul>\n";
+	print "<p>Svi predmeti su u tekućoj akademskoj godini. Za prethodne akademske godine, koristite pretragu na kartici &quot;Predmeti&quot;<br/></p>";
+
+
+	// Upis na predmet
+
+	print "<p>Angažuj nastavnika na:\n";
+	print genform("POST");
+	print '<input type="hidden" name="subakcija" value="upisi">';
+	$_lv_["where:akademska_godina"] = $tekuca_ag;
+	print db_dropdown("predmet");
+	print '<input type="submit" value=" Upiši "></form></p>';
+
+
+	?></td></tr></table></center><? // Vanjska tabela
+}
+
+
+else if ($tab == "Nastavnici") {
+	$src = my_escape($_REQUEST["search"]);
+	$limit = 20;
+	$offset = intval($_REQUEST["offset"]);
+
+	?>
+	<center>
+	<table width="500" border="0"><tr><td align="left">
+		<p><b>Pretraga</b><br/>
+		Za prikaz svih nastavnika, ostavite polje za pretragu prazno.</br>
+		<?=genform("POST")?>
+		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
+		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
+		<br/>
+	<?
+	if ($src != "") {
+		$dijelovi = explode(" ", $src);
+		$query = "";
+		foreach($dijelovi as $dio) {
+			if ($query != "") $query .= "or ";
+			$query .= "ime like '%$dio%' or prezime like '%$dio%' ";
+		}
+		$q400 = myquery("select count(*) from nastavnik where $query");
+		$q401 = myquery("select id,ime,prezime from nastavnik where $query order by prezime,ime limit $offset,$limit");
+	} else {
+		$q400 = myquery("select count(*) from nastavnik");
+		$q401 = myquery("select id,ime,prezime from nastavnik order by prezime,ime limit $offset,$limit");
+	}
+	$rezultata = mysql_result($q400,0,0);
+
+	if ($rezultata == 0)
+		print "Nema rezultata!";
+	else {
+		if ($rezultata>$limit) {
+			print "Prikazujem rezultate ".($offset+1)."-".($offset+20)." od $rezultata. Stranica: ";
+	
+			for ($i=0; $i<$rezultata; $i+=$limit) {
+				$br = intval($i/$limit)+1;
+				if ($i==$offset)
+					print "<b>$br</b> ";
+				else
+					print "<a href=\"".genuri()."&offset=$i\">$br</a> ";
+			}
+			print "<br/>";
+		}
+		print "<br/>";
+
+		print '<table width="100%" border="0">';
+		$i=$offset+1;
+		while ($r401 = mysql_fetch_row($q401)) {
+			print "<tr><td>$i. $r401[2] $r401[1]</td>\n";
+			print "<td><a href=\"".genuri()."&akcija=edit&nastavnik=$r401[0]\">Detalji</a></td>\n";
+			$i++;
+		}
+		print "</table>";
+	}
+	?>
+		<br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="novi">
+		<b>Novi nastavnik:</b><br/>
+		<table border="0" cellspacing="0" cellpadding="0" width="100%">
+		<tr><td>Ime:</td><td>Prezime:</td><td>&nbsp;</td></tr>
+		<tr>
+			<td><input type="text" name="ime" size="15"></td>
+			<td><input type="text" name="prezime" size="15"></td>
+			<td><input type="submit" value=" Dodaj "></td>
+		</tr></table>
 		</form>
 	</table></center>
 	<?
