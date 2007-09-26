@@ -7,7 +7,8 @@
 // v3.0.0.1 (2007/04/27) + Kreiranje zadataka iz admina
 // v3.0.0.2 (2007/05/04) + Optimizacija prikaza, čišćenje komentara i sl.
 // v3.0.1.0 (2007/06/12) + Release
-// v3.0.1.1 (2007/09/20) + Resize popup prozora za nove sadrzaje, dodatni parametar za FF 2.0
+// v3.0.1.1 (2007/09/20) + Resize popup prozora za nove sadrzaje, dodatni parametri za FF 2.0
+// v3.0.1.2 (2007/09/25) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna), horizontalni scroll po potrebi, ukinuta polja sa statusom/legendom
 
 
 function admin_grupa() {
@@ -72,8 +73,9 @@ if (mysql_result($q501,0,0) < 1) {
 if ($akcija == 'dodajcas') {
 	$datum = intval($_POST['godina'])."-".intval($_POST['mjesec'])."-".intval($_POST['dan']);
 	$vrijeme = my_escape($_POST['vrijeme']);
+	$predavanje = intval($_POST['predavanje']);
 
-	$q200 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$grupa_id, nastavnik=$userid");
+	$q200 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$grupa_id, nastavnik=$userid, predavanje=$predavanje");
 	$q201 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$grupa_id");
 	$cas_id = mysql_result($q201,0,0);
 
@@ -82,7 +84,8 @@ if ($akcija == 'dodajcas') {
 	$q202 = myquery("select student from student_labgrupa where labgrupa=$grupa_id");
 	while ($r202 = mysql_fetch_row($q202)) {
 		$stud_id = $r202[0];
-		$q203 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=1");
+		$prisustvo = intval($_POST['prisustvo']);
+		$q203 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
 	}
 }
 
@@ -131,8 +134,6 @@ if (mysql_result($q9,0,0)<1) {
 // JavaScript za prikaz zadaće
 
 ?>
-<table border="0" width="100%"><tr><td valign="top" width="50%">
-
 <script language="JavaScript">
 function openzadaca(student,zadaca,zadatak) {
 	var url='qwerty.php?sta=pregled&student='+student+'&zadaca='+zadaca+'&zadatak='+zadatak;
@@ -195,12 +196,14 @@ $dan=date("d"); $mjesec=date("m"); $godina=date("Y");
 $vrijeme=date("H:i");
 
 
-?></td><td valign="top" width="50%">
-Registrujte novi čas:<br/>
-<form action="qwerty.php" method="POST">
-<input type="hidden" name="sta" value="grupa">
-<input type="hidden" name="akcija" value="dodajcas">
-<input type="hidden" name="id" value="<?=$grupa_id?>">
+?>
+<table border="0" width="100%"><tr><td valign="top" width="50%">&nbsp;</td>
+<td valign="top" width="50%">
+	Registrujte novi čas:<br/>
+	<form action="qwerty.php" method="POST">
+	<input type="hidden" name="sta" value="grupa">
+	<input type="hidden" name="akcija" value="dodajcas">
+	<input type="hidden" name="id" value="<?=$grupa_id?>">
 
 	Datum:
 	<select name="dan"><?
@@ -225,10 +228,11 @@ Registrujte novi čas:<br/>
 	}
 	?></select><br/>
 	Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>">
+	<input type="submit" value="Registruj"><br/><br/>
 
-
-<input type="submit" value="Registruj">
-
+	<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="radio" name="prisustvo" value="0">Svi odustni
 
 </form>
 </td></tr></table>
@@ -277,6 +281,8 @@ function prisustvo(student,cas) {
 <?
 
 
+$minw = 0; // minimalna sirina tabele
+
 
 // Zaglavlje prisustvo
 
@@ -293,6 +299,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$prisustvo_zaglavlje .= "</td>\n";
 	$cas_id_array[] = $cas_id;
 	$casova++;
+	$minw += 40;
 }
 
 if ($prisustvo_zaglavlje == "") $prisustvo_zaglavlje = "<td>&nbsp;</td>";
@@ -310,13 +317,14 @@ if ($brzadaca > 0) {
 		$zad_id_array[] = $r11[0];
 		$zad_brz_array[$r11[0]] = $r11[2];
 
+		$minw += 80;
 	}
 }
 
 
 // Zaglavlje ispiti
 
-$ispit_zaglavlje = "";
+/*$ispit_zaglavlje = "";
 
 $q12 = myquery("SELECT ispit.id,ispit.naziv 
 FROM ispitocjene, student_labgrupa, ispit 
@@ -328,12 +336,16 @@ if ($brispita > 0) {
 		$ispit_zaglavlje .= "<td>$r12[1]</td>\n";
 		$ispit_id_array[] = $r12[0];
 	}
-}
+}*/
 if ($casova==0) $casova=1;
 
+$minw += (2*40); // parcijalni ispiti
+$minw += 70; // ukupno
+$minw += 45; // broj indexa
+$minw += 100; // ime i prezime
 
 ?>
-<table cellspacing="0" cellpadding="2" border="1">
+<table cellspacing="0" cellpadding="2" border="1" <? if ($minw>800) print "width=\"$minw\""; ?>>
 <tr>
 	<td rowspan="2" align="center" valign="center">Ime i prezime</td>
 	<td rowspan="2" align="center" valign="center">Broj indexa</td>
@@ -341,15 +353,13 @@ if ($casova==0) $casova=1;
 	<? if ($brzadaca > 0) { 
 ?><td align="center" colspan="<?=$brzadaca?>">Ocjene iz zadaća</td>
 	<? } ?>
-	<? if ($brispita > 0) {
-?><td align="center" colspan="<?=$brispita?>">Ispiti</td>
-	<? } ?>
-	<td align="center" valign="center" rowspan="2" colspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
+	<td align="center" colspan="2">Ispiti</td>
+	<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
 </tr>
 <tr>
 	<?=$prisustvo_zaglavlje?><td>BOD.</td>
 	<?=$zadace_zaglavlje?>
-	<?=$ispit_zaglavlje?>
+	<td>I parc.</td><td>II parc.</td>
 </tr>
 <?
 
@@ -459,10 +469,10 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$mogucih += 2;
 	}
 
-	$i=$pao1=$pao2=0;
+/*	$i=$pao1=$pao2=0;
 	foreach ($ispit_id_array as $pid) {
 		$i++;
-		$q16 = myquery("select ocjena from ispitocjene where student=$stud_id and ispit=$pid");
+		$q16 = myquery("select ocjena,ocjena2 from ispitocjene where student=$stud_id and ispit=$pid");
 		if (mysql_num_rows($q16)>0) {
 			if (($ocjena = mysql_result($q16,0,0)) == -1) {
 				$ispiti_ispis .= "<td> / </td>";
@@ -477,15 +487,25 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		} else {
 			$ispiti_ispis .= "<td> / </td>";
 			if ($i==1) { $pao1 = 1; } else { $pao2 = 1; }
-		}
+		}		if ($r16[0] != -1 && $r16[0]>$max1) $max1=$r16[0];
+
 		$mogucih+=20;
+	}*/
+	$max1 = $max2 = "/";
+	$q16 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
+	while ($r16 = mysql_fetch_row($q16)) {
+		if ($r16[0] != -1 && $r16[0]>=$max1) $max1=$r16[0];
+		if ($r16[1] != -1 && $r16[1]>=$max2) $max2=$r16[1];
 	}
+	$bodova += ($max1+$max2);
+	$mogucih += 40;
+	$ispiti_ispis = "<td>$max1</td><td>$max2</td>";
 
 	if ($mogucih>0) $procent = round(($bodova/$mogucih)*100); else $procent=0;
 	
 	$imena[$stud_id]="$stud_prezime $stud_ime";
 	$topscore[$stud_id]=$bodova;
-	if ($pao1 == 0 && $pao2 == 0) {
+/*	if ($pao1 == 0 && $pao2 == 0) {
 		if ($bodova>=40) {
 			$thecolor="#CCFFCC";
 			$theletter="U";
@@ -505,14 +525,14 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 		$thecolor="#FFEECC";
 		$theletter="P0";
-	}
+	}*/
 
 ?>
 	<?=$prisustvo_ispis?>
 	<?=$zadace_ispis?>
 	<?=$ispiti_ispis?>
 	<td align="center"><?=$bodova?> (<?=$procent?>%)</td>
-	<td bgcolor="<?=$thecolor?>"><?=$theletter?></td>
+	<? /*<td bgcolor="<?=$thecolor?>"><?=$theletter?></td>*/ ?>
 <?
 
 }

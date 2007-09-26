@@ -7,6 +7,9 @@
 // v3.0.0.1 (2007/04/25) + Popravljeno prikazivanje bodova za zadaće u nekim situacijama 
 // kada nisu prikazivani
 // v3.0.0.1 (2007/04/25) + Trebao sam koristiti myquery ;) ispravka SQL greške 
+// v3.0.0.2 (2007/05/04) + Popravke komentara, izbacivanje tačke iz zaglavlja parcijala 
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/09/26) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna)
 
 ?>
 <html>
@@ -54,6 +57,9 @@ if ($predmet == 0) {
 
 } else {
 
+
+// Predmet je izabran!
+
 $q2 = myquery("select p.naziv,ag.naziv from predmet as p, akademska_godina as ag where p.id=$predmet");
 print "<p>Predmet: <b>".mysql_result($q2,0,0)." (".mysql_result($q2,0,1).")</b></p>\n";
 
@@ -86,7 +92,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	// Trebalo bi biti brže od komplikovanih ifova i for petlji a opet raditi
 	// sa starim mysql-om :(
 
-	// Rezultati zadaca
+	// CACHE REZULTATA ZADAĆA
 	$zadace=array();
 	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 	FROM zadatak as z,student_labgrupa as sl 
@@ -99,8 +105,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$bodova=$r100[4]+1;
 		else $bodova=-1;
 
-		// Dodajemo 1 kako bismo kasnije mogli znati da li je vrijednost
-		// niza definisana ili ne.
+		// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
+		// je vrijednost niza definisana ili ne.
 		// undef ne radi :(
 
 		// Slog sa najnovijim IDom se smatra mjerodavnim
@@ -141,7 +147,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	}
 
 	// ZAGLAVLJE - PARCIJALE
-	$q103 = mysql_query("select id,naziv from ispit where predmet=$predmet");
+/*	$q103 = mysql_query("select id,naziv from ispit where predmet=$predmet order by id");
 	$par_id_array = array();
 	$parc_zaglavlje = "";
 	$brparc = mysql_num_rows($q103);
@@ -151,10 +157,12 @@ while ($r10 = mysql_fetch_row($q10)) {
 	} else {
 		while ($r103 = mysql_fetch_row($q103)) {
 			$parc = $r103[0];
-			$parc_zaglavlje .= "<td>$r103[1].</td>\n";
+			$parc_zaglavlje .= "<td>$r103[1]</td>\n";
 			array_push($par_id_array,$parc);
 		}
-	}
+	}*/
+	$parc_zaglavlje = "<td>I parc.</td><td>II parc.</td>";
+	$brparc = 2;
 	if ($casova==0) $casova=1;
 
 
@@ -166,7 +174,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	<td align="center" colspan="<?=($casova+1)?>">Prisustvo</td>
 	<td align="center" colspan="<?=$brzadaca?>">Ocjene iz zadaća</td>
 	<td align="center" colspan="<?=$brparc?>">Parcijalni ispiti</td>
-	<td align="center" valign="center" rowspan="2" colspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
+	<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
 </tr>
 <tr>
 	<?=$casovi_zaglavlje?><td>BOD.</td>
@@ -251,7 +259,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		}
 
 		// PARCIJALE
-		if (count($par_id_array)==0) $parc_ispis = "<td>&nbsp;</td>";
+/*		if (count($par_id_array)==0) $parc_ispis = "<td>&nbsp;</td>";
 		$i=$pao1=$pao2=0;
 		foreach ($par_id_array as $pid) {
 			$i++;
@@ -271,14 +279,25 @@ while ($r10 = mysql_fetch_row($q10)) {
 				$parc_ispis .= "<td> / </td>";
 				if ($i==1) { $pao1 = 1; } else { $pao2 = 1; }
 			}
-			$mogucih+=20;
+			if ($predmet==7) $mogucih += 70; else $mogucih+=20;
+		}*/
+
+		$max1 = $max2 = "/";
+		$q202 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
+		while ($r202 = mysql_fetch_row($q202)) {
+			if ($r202[0] != -1 && $r202[0]>=$max1) $max1=$r202[0];
+			if ($r202[1] != -1 && $r202[1]>=$max2) $max2=$r202[1];
 		}
+		$bodova += ($max1+$max2);
+		$mogucih += 40;
+		$parc_ispis = "<td>$max1</td><td>$max2</td>";
+
 
 		if ($mogucih>0) $procent = round(($bodova/$mogucih)*100); else $procent=0;
 		
 		$imena[$stud_id]=$stud_imepr;
 		$topscore[$stud_id]=$bodova;
-		if ($pao1 == 0 && $pao2 == 0) {
+/*		if ($pao1 == 0 && $pao2 == 0) {
 			if ($bodova>=40) {
 				$thecolor="#CCFFCC";
 				$theletter="U";
@@ -298,15 +317,17 @@ while ($r10 = mysql_fetch_row($q10)) {
 		} else {
 			$thecolor="#FFEECC";
 			$theletter="P0";
-		}
+		}*/
 
 ?>
 	<?=$prisustvo_ispis?>
 	<?=$ocjene_ispis?>
 	<?=$parc_ispis?>
 	<td align="center"><?=$bodova?> (<?=$procent?>%)</td>
+	<? /*if ($predmet==7) { print "<td>&nbsp;</td>"; } else { ?>
 	<td bgcolor="<?=$thecolor?>"><?=$theletter?></td>
 <?
+	}*/
 	}
 ?>
 </tr>
@@ -321,7 +342,7 @@ mysql_close();
 ?>
 
 
-<!-- TOP LISTA  - ukloniti komentar za ispis
+<!-- TOP LISTA  - ukloniti komentar za ispis -->
 
 <?
 asort($topscore);
