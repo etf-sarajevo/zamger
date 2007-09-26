@@ -9,6 +9,7 @@
 // v3.0.1.2 (2007/09/12) + Dodan link na izvještaj studenta u nihada-modulu za siteadmine
 // v3.0.1.3 (2007/09/20) + Dodan link za ispis studenta sa predmeta za admine, ukinut viška query
 // v3.0.1.4 (2007/09/25) + Link na izvjestaj nije radio ako je siteadmin bio i predmet admin
+// v3.0.1.5 (2007/09/26) + Unaprijedjen ispis studenta sa predmeta (nema zaostalih podataka u bazi)
 
 
 function admin_student_izmjena() {
@@ -74,7 +75,30 @@ if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) izmijeni_profil($stud_id,
 
 // Ispis studenta sa predmeta
 if ($_GET['akcija'] == "ispis" && $izmjena_moguca==1) {
-	$q1000 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$labgrupa");
+	// Brisanje svih podataka vezanih za student/predmet
+	$q1000 = myquery("select id from cas where labgrupa=$labgrupa");
+	while ($r1000 = mysql_fetch_row($q1000)) {
+		$q1001 = myquery("delete from prisustvo where student=$stud_id and cas=$r1000[0]");
+	}
+
+	$q1002 = myquery("select id from ispit where predmet=$predmet_id");
+	while ($r1002 = mysql_fetch_row($q1002)) {
+		$q1003 = myquery("delete from ispitocjene where student=$stud_id and ispit=$r1002[0]");
+	}
+
+	$q1004 = myquery("delete from komentar where student=$stud_id and labgrupa=$labgrupa");
+	$q1005 = myquery("delete from konacna_ocjena where student=$stud_id and predmet=$predmet_id");
+	
+	$q1006 = myquery("select id from zadaca where predmet=$predmet_id");
+	while ($r1006 = mysql_fetch_row($q1006)) {
+		$q1007 = myquery("select id from zadatak where student=$stud_id and zadaca=$r1006[0]");
+		while ($r1007 = mysql_fetch_row($q1007)) {
+			$q1008 = myquery("delete from zadatakdiff where zadatak=$r1007[0]");
+		}
+		$q1009 = myquery("delete from zadatak where student=$stud_id and zadaca=$r1006[0]");
+	}
+
+	$q1010 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$labgrupa");
 	nicemessage("Studen ispisan sa predmeta.");
 	return;
 }
