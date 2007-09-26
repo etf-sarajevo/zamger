@@ -4,6 +4,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd.
+// v3.0.1.2 (2007/09/20) + Modul "Izvjestaj" izdvojen iz modula "Nihada"
+// v3.0.1.2 (2007/09/26) + Novi modul "Komentar" za komentare na rad studenta
 
 # Prijava
 
@@ -34,6 +36,8 @@ if ($sta == "student-izmjena") {
 	include("admin_unos.php"); admin_unos(); exit;
 } elseif ($sta == "izvjestaj") {
 	include("admin_izvjestaj.php"); admin_izvjestaj(); exit;
+} elseif ($sta == "komentar") {
+	include("admin_komentar.php"); admin_komentar(); exit;
 }
 
 ?>

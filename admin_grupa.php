@@ -9,6 +9,7 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/20) + Resize popup prozora za nove sadrzaje, dodatni parametri za FF 2.0
 // v3.0.1.2 (2007/09/25) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna), horizontalni scroll po potrebi, ukinuta polja sa statusom/legendom
+// v3.0.1.3 (2007/09/26) + Komentari
 
 
 function admin_grupa() {
@@ -343,12 +344,14 @@ $minw += (2*40); // parcijalni ispiti
 $minw += 70; // ukupno
 $minw += 45; // broj indexa
 $minw += 100; // ime i prezime
+$minw += 40; // komentar
 
 ?>
 <table cellspacing="0" cellpadding="2" border="1" <? if ($minw>800) print "width=\"$minw\""; ?>>
 <tr>
 	<td rowspan="2" align="center" valign="center">Ime i prezime</td>
 	<td rowspan="2" align="center" valign="center">Broj indexa</td>
+	<td rowspan="2" align="center" valign="center">Ko-<br/>men-<br/>tar</td>
 	<td align="center" colspan="<?=($casova+1)?>">Prisustvo</td>
 	<? if ($brzadaca > 0) { 
 ?><td align="center" colspan="<?=$brzadaca?>">Ocjene iz zadaća</td>
@@ -413,6 +416,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 <tr>
 	<td><?=$rednibroj?>. <a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
+	<td align="center"><a href="javascript:firefoxopen('qwerty.php?sta=komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>','Komentari na rad studenta','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/filetypes.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
 
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
