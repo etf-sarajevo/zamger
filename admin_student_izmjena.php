@@ -8,6 +8,7 @@
 // v3.0.1.1 (2007/09/11) + Pristup kao siteadmin nije radio
 // v3.0.1.2 (2007/09/12) + Dodan link na izvještaj studenta u nihada-modulu za siteadmine
 // v3.0.1.3 (2007/09/20) + Dodan link za ispis studenta sa predmeta za admine, ukinut viška query
+// v3.0.1.4 (2007/09/25) + Link na izvjestaj nije radio ako je siteadmin bio i predmet admin
 
 
 function admin_student_izmjena() {
@@ -56,13 +57,10 @@ if (mysql_num_rows($q101)>0) {
 
 // Onemogući izmjenu ako prijavljeni korisnik nije admin predmeta
 $q102=myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
+$q103=myquery("select siteadmin from nastavnik where id=$userid");
 $izmjena_moguca = 0;
-if (mysql_num_rows($q102)>0 && mysql_result($q102,0,0)==1) {
+if ((mysql_num_rows($q102)>0 && mysql_result($q102,0,0)==1) || (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==2)) {
 	$izmjena_moguca = 1;
-} else {
-	$q103=myquery("select siteadmin from nastavnik where id=$userid");
-	if (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==2)
-		$izmjena_moguca = 1;
 }
 
 if ($izmjena_moguca ==0) {
