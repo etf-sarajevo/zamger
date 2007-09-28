@@ -558,7 +558,7 @@ else if ($tab == "Predmeti") {
 
 
 //------------------------------
-//   PREDMETI
+//   NASTAVNICI
 //------------------------------
 
 
@@ -616,7 +616,7 @@ else if ($tab == "Nastavnici" && $akcija == "edit") {
 
 		$q491 = myquery("select count(*) from auth where id=$nastavnik");
 		if (mysql_result($q491,0,0) < 1) {
-			$q492 = myquery("insert into auth set id=$nastavnik, login='$login', password='$password'");
+			$q492 = myquery("insert into auth set id=$nastavnik, login='$login', password='$password', admin=1");
 		} else {
 			$q493 = myquery("update auth set login='$login', password='$password' where id=$nastavnik");
 		}
