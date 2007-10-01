@@ -10,6 +10,7 @@
 // v3.0.1.3 (2007/09/20) + Dodan link za ispis studenta sa predmeta za admine, ukinut viška query
 // v3.0.1.4 (2007/09/25) + Link na izvjestaj nije radio ako je siteadmin bio i predmet admin
 // v3.0.1.5 (2007/09/26) + Unaprijedjen ispis studenta sa predmeta (nema zaostalih podataka u bazi)
+// v3.0.1.5 (2007/10/01) + Ispravljen prikaz grupe nakon promjene grupe
 
 
 function admin_student_izmjena() {
@@ -70,7 +71,7 @@ if ($izmjena_moguca ==0) {
 }
 
 // Poziv funkcije za izmjenu
-if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) izmijeni_profil($stud_id,$predmet_id);
+if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) $labgrupa = izmijeni_profil($stud_id,$predmet_id);
 
 
 // Ispis studenta sa predmeta
@@ -196,8 +197,6 @@ if (mysql_result($q103,0,0)==2) {
 }
 
 function izmijeni_profil($stud_id,$predmet_id) {
-
-
 	$ime = my_escape($_POST['ime']);
 	$prezime = my_escape($_POST['prezime']);
 	$email = my_escape($_POST['email']);
@@ -217,7 +216,8 @@ function izmijeni_profil($stud_id,$predmet_id) {
 	}
 	
 	$q104 = myquery("insert into student_labgrupa set student=$stud_id, labgrupa=$grupa");
-	return;
+	$labgrupa = $grupa;
+	return $grupa;
 }
 
 
