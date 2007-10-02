@@ -11,6 +11,7 @@
 // v3.0.1.4 (2007/09/25) + Link na izvjestaj nije radio ako je siteadmin bio i predmet admin
 // v3.0.1.5 (2007/09/26) + Unaprijedjen ispis studenta sa predmeta (nema zaostalih podataka u bazi)
 // v3.0.1.5 (2007/10/01) + Ispravljen prikaz grupe nakon promjene grupe
+// v3.0.1.6 (2007/10/02) + Dodan logging
 
 
 function admin_student_izmjena() {
@@ -76,6 +77,8 @@ if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) $labgrupa = izmijeni_prof
 
 // Ispis studenta sa predmeta
 if ($_GET['akcija'] == "ispis" && $izmjena_moguca==1) {
+	logthis("Ispis studenta $stud_id sa predmeta $predmet_id (labgrupa $labgrupa)");
+
 	// Brisanje svih podataka vezanih za student/predmet
 	$q1000 = myquery("select id from cas where labgrupa=$labgrupa");
 	while ($r1000 = mysql_fetch_row($q1000)) {
@@ -201,6 +204,7 @@ function izmijeni_profil($stud_id,$predmet_id) {
 	$prezime = my_escape($_POST['prezime']);
 	$email = my_escape($_POST['email']);
 	$brind = intval($_POST['brind']);
+	logthis("Izmjena ličnih podataka studenta $stud_id");
 	if ($brind==0) { niceerror("Broj indexa mora biti BROJ :)"); return; }
 
 	$grupa = intval($_POST['grupa']);

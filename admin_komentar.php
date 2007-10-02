@@ -2,6 +2,7 @@
 
 
 // v3.0.1.1 (2007/09/26) + Novi modul: Komentar
+// v3.0.1.2 (2007/10/02) + Dodan logging
 
 
 function admin_komentar() {
@@ -16,7 +17,6 @@ global $userid;
 	<link href="css/style.css" rel="stylesheet" type="text/css" />
 </head>
 <body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
-<p>Komentari na rad studenta</p>
 <?
 
 $stud_id=intval($_GET['student']); 
@@ -72,10 +72,14 @@ if ($_POST['akcija'] == "dodaj") {
 	$datum = date("Y-m-d H:i:s", mktime($h,$m,$s, $_POST['month'], $_POST['day'], $_POST['year']));
 	$komentar = my_escape($_POST['komentar']);
 	$q120 = myquery("insert into komentar set student=$stud_id, nastavnik=$userid, labgrupa=$labgrupa, datum='$datum', komentar='$komentar'");
+
+	logthis("Dodan komentar na studenta $stud_id labgrupa $labgrupa");
 }
 if ($_GET['akcija'] == "obrisi") {
 	$id = intval($_GET['id']);
 	$q121 = myquery("delete from komentar where id=$id");
+
+	logthis("Obrisan komentar $id");
 }
 
 

@@ -15,6 +15,7 @@
 // v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
 // v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu, dodan link na izvještaj "spisak studenata po grupama"
 // v3.0.1.3 (2007/09/24) + Popravljen bug sa većim brojem razmaka kod masovnog unosa
+// v3.0.1.4 (2007/10/02) + Dodan logging
 
 
 function admin_predmet() {
@@ -37,6 +38,8 @@ $tab=$_GET['tab'];
 if ($tab=="") $tab=$_POST['tab'];
 if ($tab=="") $tab="Opcije";
 
+logthis("Admin Predmet $predmet - tab $tab");
+
 
 ###############
 # Akcije
@@ -47,6 +50,7 @@ if ($tab=="") $tab="Opcije";
 
 if ($_POST['akcija'] == "nova_grupa") {
 	$q2 = myquery("insert into labgrupa set naziv='".my_escape($_POST['ime'])."', predmet=$predmet");
+	logthis("Dodana nova labgrupa '$ime'");
 } 
 
 
@@ -56,6 +60,7 @@ if ($_GET['akcija'] == "obrisi_grupu") {
 	$grupaid = intval($_GET['grupaid']);
 	$q10 = myquery("delete from labgrupa where id=$grupaid");
 	$q11 = myquery("delete from student_labgrupa where labgrupa=$grupaid");
+	logthis("Obrisana labgrupa $grupaid");
 }
 
 
@@ -68,6 +73,7 @@ if ($_POST['akcija'] == "preimenuj_grupu") {
 	// Grupa treba ostati otvorena:
 	$_GET['akcija']="studenti_grupa";
 	$_GET['grupaid']=$grupaid;
+	logthis("Preimenovana labgrupa $grupaid u '$ime'");
 }
 
 
@@ -88,6 +94,7 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 			$q24 = myquery("insert into student_labgrupa select student,$r22[0] from student_labgrupa where labgrupa=$origid");
 		}
 	}
+	logthis("Prekopirane labgrupe sa predmeta $kopiraj u $predmet");
 }
 
 
@@ -178,6 +185,8 @@ if ($_POST['akcija'] == "massinput") {
 		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Grupe\'"> <input type="submit" value=" Potvrda ">';
 		print "</form>";
 		return;
+	} else {
+		logthis("Masovno upisani studenti na predmet $predmet");
 	}
 }
 
@@ -272,6 +281,8 @@ if ($_POST['akcija'] == "massexam") {
 		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ispiti\'"> <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
+	} else {
+		logthis("Masovno upisani ispiti na predmet $predmet");
 	}
 }
 
@@ -340,6 +351,8 @@ if ($_POST['akcija'] == "massocjena") {
 		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ocjena\'"> <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
+	} else {
+		logthis("Masovno upisane ocjene na predmet $predmet");
 	}
 }
 

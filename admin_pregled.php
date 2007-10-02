@@ -9,6 +9,8 @@
 // v3.0.0.1 (2007/04/12) + Izvršavanje programa na serveru, textarea za komentar polje, generalno čišćenje koda, komentari
 // v3.0.0.2 (2007/05/03) + Nova combo-box kontrola za parametre programa
 // v3.0.0.3 (2007/05/04) + Dodajem blank polje u combo-box kako bi bilo moguće kucati nešto
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/10/02) + Dodan logging
 
 
 function admin_pregled() {
@@ -84,6 +86,8 @@ if ($_GET['akcija'] == "diff") {
 // Akcija: Izvršenje programa
 
 if ($_GET['akcija'] == "izvrsi") {
+	logthis("Izvrsena zadaca ($zadaca,$zadatak,$stud_id)");
+
 	// čuvamo poslane podatke u bazi (ako ih nema)
 	$stdin = $_GET['stdin'];
 	$mstdin = my_escape($stdin);
@@ -164,6 +168,7 @@ if ($_GET['akcija'] == "izvrsi") {
 // Akcija: Izmjena statusa
 
 if ($_GET['akcija'] == "slanje") {
+	logthis("Izmjena statusa zadace ($zadaca,$zadatak,$stud_id)");
 	$komentar = my_escape($_GET['komentar']);
 	$status = intval($_GET['status']);
 	$bodova = floatval($_GET['bodova']);

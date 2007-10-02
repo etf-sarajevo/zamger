@@ -10,6 +10,7 @@
 // v3.0.1.1 (2007/09/20) + Resize popup prozora za nove sadrzaje, dodatni parametri za FF 2.0
 // v3.0.1.2 (2007/09/25) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna), horizontalni scroll po potrebi, ukinuta polja sa statusom/legendom
 // v3.0.1.3 (2007/09/26) + Komentari
+// v3.0.1.4 (2007/10/02) + Dodano jos logginga
 
 
 function admin_grupa() {
@@ -21,7 +22,7 @@ global $userid;
 // ------- ULAZNI PARAMETRI
 
 $grupa_id = intval($_GET['id']); if ($grupa_id<1) { $grupa_id = intval($_POST['id']); }
-logthis("Admin grupa $grupa_id (login $userid)");
+logthis("Admin grupa $grupa_id");
 
 $akcija = $_GET['akcija']; if (!$akcija) { $akcija = $_POST['akcija']; }
 
@@ -88,6 +89,8 @@ if ($akcija == 'dodajcas') {
 		$prisustvo = intval($_POST['prisustvo']);
 		$q203 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
 	}
+
+	logthis("Registrovan cas $cas_id za labgrupu $grupa_id");
 }
 
 
@@ -97,6 +100,7 @@ if ($akcija == 'brisicas') {
 	$cas_id = intval($_GET['cas']); if ($cas_id<1) { $cas_id = intval($_POST['cas']); }
 	$q204 = myquery("delete from prisustvo where cas=$cas_id");
 	$q204 = myquery("delete from cas where id=$cas_id");
+	logthis("Obrisan cas $cas_id");
 }
 
 
