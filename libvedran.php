@@ -26,7 +26,8 @@ $file_path = "/var/www/folder";
 
 $system_auth = "ldap";
 //$system_auth = "table";
-$ldap_server = "80.65.65.78";
+$ldap_server = "igman.etf.unsa.ba";
+$ldap_domain = "@etf.unsa.ba"; // string added to uid to get an email address
 
 
 
@@ -120,7 +121,7 @@ function login($pass) {
 	//  $admin - user has admin privileges (from auth table)
 	//  $userid - whatever is used internally (aside from login)
 
-	global $userid,$admin,$login,$system_auth;
+	global $userid,$admin,$login,$system_auth,$ldap_server;
 
 	$q1 = myquery("select id,password,admin from auth where login='$login'");
 	if (mysql_num_rows($q1)<=0)

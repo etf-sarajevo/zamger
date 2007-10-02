@@ -4,11 +4,13 @@
 // v3.0.1.2 (2007/09/20) + Izdvojeni izvjestaji u modul "izvjestaj"
 // v3.0.1.3 (2007/09/25) + Dodana kartica Predmeti, izbacena kartica Korisnici (to je integrisano sa Studenti odnosno Nastavnici), razmaci u broju rezultata na kartici Studenti
 // v3.0.1.4 (2007/09/26) + Dodana kartica Nastavnici; dodavanje novog studenta, sortiraj studente i po imenu
+// v3.0.1.5 (2007/09/28) + Ispravka buga: nastavnici su dodavani u auth tabelu kao studenti
+// v3.0.1.6 (2007/10/02) + Dodan logging; dodana LDAP podrska - kod studenata, polja za login i password se zamjenjuju checkbox-om (koji ce usput povuci i e-mail adresu sa LDAPa); kod nastavnika, polja za login i password su ukinuta a auth tabela se automatski popunjava pri kreiranju nastavnika; moguce dodati nastavnika kucanjem UIDa u polje za ime
 
 
 function admin_nihada() {
 
-global $userid;
+global $userid, $system_auth, $ldap_server, $ldap_domain;
 
 global $_lv_; // We use form generators
 
@@ -25,6 +27,8 @@ $tab=$_REQUEST['tab'];
 if ($tab=="") $tab="Studenti";
 
 $akcija=$_REQUEST['akcija'];
+
+logthis("Admin Nihada - tab $tab");
 
 
 
@@ -78,6 +82,8 @@ if ($tab == "Studenti" && $akcija == "novi") {
 		return;
 	}
 
+	logthis("Dodan novi student: '$ime' '$prezime' '$brindexa'");
+
 	$q180 = myquery("select id,ime,prezime,brindexa from student where ime like '$ime' and prezime like '$prezime'");
 	if ($r180 = mysql_fetch_row($q180)) {
 		niceerror("Student već postoji u bazi:");
@@ -114,6 +120,8 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 	// Submit akcije
 
 	if ($_POST['subakcija'] == "podaci") {
+		logthis("Izmjena podataka studenta (Nihada): $student");
+
 		$ime = my_escape($_POST['ime']);
 		$prezime = my_escape($_POST['prezime']);
 		$email = my_escape($_POST['email']);
@@ -121,16 +129,57 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 
 		$q190 = myquery("update student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa' where id=$student");
 	}
-	if ($_POST['subakcija'] == "auth") {
-		$login = my_escape($_POST['login']);
-		$password = my_escape($_POST['password']);
+	if ($_REQUEST['subakcija'] == "auth") {
+		logthis("Dodan/izmijenjen login za studenta: $student");
 
-		$q191 = myquery("select count(*) from auth where id=$student");
+		$login = my_escape($_REQUEST['login']);
+		$password = my_escape($_REQUEST['password']);
+
+		$q191 = myquery("select count(*) from auth where id=$student and admin=0");
 		if (mysql_result($q191,0,0) < 1) {
-			$q192 = myquery("insert into auth set id=$student, login='$login', password='$password'");
+			// Provjeri predlozeni login na LDAPu
+			if ($login == "" && $system_auth == "ldap") {
+				$suggest_login = my_escape($_REQUEST['suggest_login']);
+				$ds = ldap_connect($ldap_server);
+				ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+				if (ldap_bind($ds)) {
+					$sr = ldap_search($ds, "", "uid=$suggest_login", array() /* just dn */ );
+					if (!$sr) {
+						niceerror("ldap_search() failed.");
+						exit;
+					}
+					$results = ldap_get_entries($ds, $sr);
+					if ($results['count'] < 1) 
+						niceerror("Predloženi login ($suggest_login) nije pronađen na LDAP serveru! Vjerovatno je pogrešan broj indeksa, ime ili prezime.");
+						
+					else {
+						$login = $suggest_login;
+
+						// Updateuj email adresu, ako nije setovana
+						$q191a = myquery("select email from student where id=$student");
+						if (mysql_result($q191a,0,0) == "") {
+							$email = $login.$ldap_domain;
+							$q191b = myquery("update student set email='$email' where id=$student");
+						}
+					}
+				}
+			}
+
+			if ($login != "")
+				$q192 = myquery("insert into auth set id=$student, login='$login', password='$password', admin=0");
+
 		} else {
-			$q193 = myquery("update auth set login='$login', password='$password' where id=$student");
+			// U slucaju nestandardne autentikacije, ukini login
+			if ($login == "" && $system_auth != "table")
+				$q193 = myquery("delete from auth where id=$student and admin=0");
+			else
+				$q193 = myquery("update auth set login='$login', password='$password' where id=$student and admin=0");
 		}
+
+		// Izbjegni višestruko kreiranje korisnika
+		$_REQUEST['login'] = $_POST['login'] = $_GET['login'] = "";
+		$_REQUEST['password'] = $_POST['password'] = $_GET['password'] = "";
+		$_REQUEST['subakcija'] = $_POST['subakcija'] = $_GET['subakcija'] = "";
 	}
 	if ($_POST['subakcija'] == "upisi") {
 		$predmet = intval($_POST['_lv_column_predmet']);
@@ -139,6 +188,7 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 			$q194 = myquery("insert into labgrupa set predmet=$predmet, naziv='Default grupa'");
 			$q193 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
 		}
+		logthis("Student $student upisan na predmet $predmet (Nihada)");
 		$labgrupa = mysql_result($q193,0,0);
 		$q195 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 	}
@@ -186,21 +236,35 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 
 
 	// Login&password
+	if ($system_auth == "table") {
+		$q201 = myquery("select login,password from auth where id=$student and admin=0");
+		if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
+	
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="auth">
+		<tr>
+			<td colspan="2">Korisnički pristup: <? if(!$auth) print '<font color="red">NEMA</font>'; ?></td>
+			<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$r201[0]?>"></td>
+			<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$r201[1]?>"></td>
+			<td><input type="Submit" value="<? if($auth) print ' Izmijeni '; else print ' Dodaj '?>"></td>
+		</tr></form>
+		<?
+	}
+	else {
+		$q201 = myquery("select login from auth where id=$student and admin=0");
+		if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
 
-	$q201 = myquery("select login,password from auth where id=$student");
-	if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
+		// generisanje logina za studenta
+		$suggest_login = strtolower(substr($r200[0],0,1)).strtolower(substr($r200[1],0,1)).$r200[3];
+		?>
+		<tr>
+			<td colspan="5">Korisnički pristup: <input type="checkbox" name="ima_auth" onchange="javascript:location.href='<?=genuri()?>&subakcija=auth&suggest_login=<?=$suggest_login?>';" <? if ($auth==1) print "CHECKED"; ?>></td>
+		</tr></form>
+		<?
+	}
 
-	?>
-	<?=genform("POST")?>
-	<input type="hidden" name="subakcija" value="auth">
-	<tr>
-		<td colspan="2">Korisnički pristup: <? if(!$auth) print '<font color="red">NEMA</font>'; ?></td>
-		<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$r201[0]?>"></td>
-		<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$r201[1]?>"></td>
-		<td><input type="Submit" value="<? if($auth) print ' Izmijeni '; else print ' Dodaj '?>"></td>
-	</tr></table></form>
-	<?
-
+	print "</table>\n";
 
 	// Trenutno sluša
 
@@ -335,6 +399,7 @@ else if ($tab == "Predmeti" && $akcija == "novi") {
 		niceerror("Naziv nije ispravan");
 		return;
 	}
+
 	$q390 = myquery("select id from akademska_godina order by naziv desc limit 1");
 	$ak_god = mysql_result($q390,0,0);
 	$q391 = myquery("select id from predmet where naziv='$naziv' and akademska_godina=$ak_god");
@@ -345,6 +410,8 @@ else if ($tab == "Predmeti" && $akcija == "novi") {
 	$q392 = myquery("insert into predmet set naziv='$naziv', akademska_godina=$ak_god");
 	$q393 = myquery("select id from predmet where naziv='$naziv' and akademska_godina=$ak_god");
 	$predmet = mysql_result($q393,0,0);
+
+	logthis("Dodan novi predmet '$naziv' (ID: $predmet)");
 
 	?>
 	<script language="JavaScript">
@@ -383,6 +450,8 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 	if ($_POST['subakcija'] == "dodaj") {
 		$nastavnik = intval($_POST['_lv_column_nastavnik']);
 		if ($nastavnik>0) {
+			logthis("Nastavnik $nastavnik dodan na predmet $predmet");
+
 			$q360 = myquery("select count(*) from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet");
 			if (mysql_result($q360,0,0) < 1) {
 				$q361 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet");
@@ -391,14 +460,18 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 	}
 	else if ($_GET['subakcija'] == "set_admin") {
 		$nastavnik = intval($_GET['nastavnik']);
+		logthis("Nastavnik $nastavnik proglasen za admina predmeta $predmet");
+
 		$yesno = intval($_GET['yesno']);
 		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$predmet");
 	}
 	else if ($_GET['subakcija'] == "izbaci") {
 		$nastavnik = intval($_GET['nastavnik']);
+		logthis("Nastavnik $nastavnik izbacen sa predmeta $predmet");
 		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet");
 	}
 	else if($_POST['subakcija'] == "podaci") {
+		logthis("Izmijenjeni podaci nastavnika $nastavnik");
 		$naziv = my_escape($_POST['naziv']);
 		$ak_god = intval($_POST['_lv_column_akademska_godina']);
 		$q364 = myquery("update predmet set naziv='$naziv', akademska_godina=$ak_god where id=$predmet");
@@ -568,7 +641,31 @@ else if ($tab == "Nastavnici" && $akcija == "novi") {
 		niceerror("Ime nije ispravno");
 		return;
 	}
+
 	$prezime = substr(my_escape($_POST['prezime']), 0, 100);
+
+	// Probamo tretirati ime kao LDAP UID
+	if ($system_auth == "ldap") {
+		$uid = $ime;
+		$ds = ldap_connect($ldap_server);
+		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+		if ($ds && ldap_bind($ds)) {
+			$sr = ldap_search($ds, "", "uid=$uid", array("givenname","sn") );
+			$results = ldap_get_entries($ds, $sr);
+			if ($results['count'] > 0) {
+				$gn = $results[0]['givenname'];
+				if (is_array($gn)) $gn = $results[0]['givenname'][0];
+				if ($gn) $ime = $gn;
+
+				$sn = $results[0]['sn'];
+				if (is_array($sn)) $sn = $results[0]['sn'][0];
+				if ($sn) $prezime = $sn;
+			}
+		} else {
+			niceerror("Ne mogu kontaktirati LDAP server... pravim se da ga nema :(");
+		}
+	}
+
 	if (!preg_match("/\w/", $prezime)) {
 		niceerror("Prezime nije ispravno");
 		return;
@@ -581,11 +678,23 @@ else if ($tab == "Nastavnici" && $akcija == "novi") {
 		return;
 	}
 
-
-	$q481 = myquery("insert into nastavnik set ime='$ime', prezime='$prezime'");
+	// Ako je LDAP onda imamo email adresu
+	if ($system_auth == "ldap") {
+		$email = $uid.$ldap_domain;
+		$q481 = myquery("insert into nastavnik set ime='$ime', prezime='$prezime', email='$email'");
+	} else {
+		$q481 = myquery("insert into nastavnik set ime='$ime', prezime='$prezime'");
+	}
 	$q482 = myquery("select id from nastavnik where ime='$ime' and prezime='$prezime'");
 	$nastavnik = mysql_result($q482,0,0);
 
+	// Ubacujemo dummy podatke u auth tabelu za slučaj eksterne autentikacije
+	if ($system_auth == "ldap") {
+		$q483 = myquery("insert into auth set id=$nastavnik, login='$uid', admin=1");
+	}
+
+
+	logthis("Dodan novi nastavnik '$ime' '$prezime' (ID: $nastavnik)");
 
 	?>
 	<script language="JavaScript">
@@ -604,6 +713,7 @@ else if ($tab == "Nastavnici" && $akcija == "edit") {
 	// Submit akcije
 
 	if ($_POST['subakcija'] == "podaci") {
+		logthis("Izmjena osnovnih podataka nastavnika $nastavnik");
 		$ime = my_escape($_POST['ime']);
 		$prezime = my_escape($_POST['prezime']);
 		$email = my_escape($_POST['email']);
@@ -611,6 +721,8 @@ else if ($tab == "Nastavnici" && $akcija == "edit") {
 		$q490 = myquery("update nastavnik set ime='$ime', prezime='$prezime', email='$email' where id=$nastavnik");
 	}
 	if ($_POST['subakcija'] == "auth") {
+		logthis("Dodan/izmijenjen login za nastavnika $nastavnik");
+
 		$login = my_escape($_POST['login']);
 		$password = my_escape($_POST['password']);
 
@@ -625,6 +737,8 @@ else if ($tab == "Nastavnici" && $akcija == "edit") {
 		$predmet = intval($_POST['_lv_column_predmet']);
 		$admin_predmeta = intval($_POST['admin_predmeta']);
 		$q494 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet, admin=$admin_predmeta");
+
+		logthis("Nastavnik $nastavnik prijavljen na predmet $predmet (admin: $admin_predmeta)");
 	}
 
 	// Izvjestaji
@@ -664,21 +778,22 @@ else if ($tab == "Nastavnici" && $akcija == "edit") {
 
 
 	// Login&password
-
-	$q481 = myquery("select login,password from auth where id=$nastavnik");
-	if (!($r481 = mysql_fetch_row($q481))) $auth=0; else $auth=1;
-
-	?>
-	<?=genform("POST")?>
-	<input type="hidden" name="subakcija" value="auth">
-	<tr>
-		<td colspan="2">Korisnički pristup: <? if(!$auth) print '<font color="red">NEMA</font>'; ?></td>
-		<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$r481[0]?>"></td>
-		<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$r481[1]?>"></td>
-		<td><input type="Submit" value="<? if($auth) print ' Izmijeni '; else print ' Dodaj '?>"></td>
-	</tr></table></form>
-	<?
-
+	if ($system_auth == "table") {
+		$q481 = myquery("select login,password from auth where id=$nastavnik");
+		if (!($r481 = mysql_fetch_row($q481))) $auth=0; else $auth=1;
+	
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="auth">
+		<tr>
+			<td colspan="2">Korisnički pristup: <? if(!$auth) print '<font color="red">NEMA</font>'; ?></td>
+			<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$r481[0]?>"></td>
+			<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$r481[1]?>"></td>
+			<td><input type="Submit" value="<? if($auth) print ' Izmijeni '; else print ' Dodaj '?>"></td>
+		</tr></form>
+		<?
+	}
+	print "</table>\n";
 
 	// Angazovan na predmetima
 
