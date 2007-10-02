@@ -8,6 +8,10 @@
 # v0.0.5 (2007/03/06) + db_grid(), uveden _lv_nav_ reqvar radi ispravljanja buga sa kombinacijom db_form+db_list, više unaprjeđenja u drugim db funkcijama
 # v0.0.6 (2007/03/12) + nova funkcija login(), ispravke u session mgmt, ukinute globalne varijable osim $_lv_, dodan htmlspecialchars u my_escape() radi Type 2 XSS napada
 # v0.0.7 (2007/03/30) + podrška za autonumber vs. nonautonumber
+# v0.0.8 (2007/04/27) + db_dropdown() ipak nije forma i ne treba se ponašati kao forma
+# v0.0.9 (2007/09/11) + dodana podrška za limit u db_grid() (dodati u druge db_* ?)
+# v0.0.10 (2007/09/25) + dodano prazno polje u db_dropdown() (npr. za opciju "Sve opcije")
+# v0.0.11 (2007/10/02) + dodana LDAP autentikacija, polje userid u tabeli log
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
 
@@ -19,6 +23,10 @@ $_lv_["debug"]=1;
 //builtincss();
 $system_path = "/srv/www/web18";
 $file_path = "/var/www/folder";
+
+$system_auth = "ldap";
+//$system_auth = "table";
+$ldap_server = "80.65.65.78";
 
 
 
@@ -104,29 +112,58 @@ function my_escape($value) {
 // --- SESSION MGMT
 
 function login($pass) {
-	# STATUS:
-	#  0 - OK
-	#  1 - nepoznat login
-	#  2 - password ne odgovara 
+	// RETURN VALUE:
+	//  0 - OK
+	//  1 - unknown user
+	//  2 - password doesn't match 
+	// VARIABLES:
+	//  $admin - user has admin privileges (from auth table)
+	//  $userid - whatever is used internally (aside from login)
 
-	global $userid,$admin,$login;
+	global $userid,$admin,$login,$system_auth;
 
 	$q1 = myquery("select id,password,admin from auth where login='$login'");
 	if (mysql_num_rows($q1)<=0)
 		return 1;
-	else {
-		$userid = mysql_result($q1,0,0);
-		$pass2 = mysql_result($q1,0,1);
-		$admin = mysql_result($q1,0,2);
-	
-		if ($pass != $pass2)
-			return 2;
+
+	if ($system_auth == "ldap") {
+		$ds = ldap_connect($ldap_server);
+		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+		if ($ds) {
+			if (ldap_bind($ds)) {
+				$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
+				if (!$sr) { 
+					niceerror("ldap_search() failed.");
+					exit;
+				}
+				$results = ldap_get_entries($ds, $sr);
+				if ($results['count'] < 1) return 1;
+				$dn = $results[0]['dn'];
+				
+				if (!ldap_bind($ds, $dn, $pass)) {
+					return 2;
+				}
+				// ldap_bind succeeded, user is authenticated
+			} else {
+				niceerror("LDAP anonymous bind failed.");
+				exit;
+			}
+		} else {
+			niceerror("Can't contact LDAP server.");
+			exit;
+		}
+	} else if ($system_auth == "table") {
+		if ($pass != mysql_result($q1,0,1)) return 2;
 	}
+
+	$userid = mysql_result($q1,0,0);
+	$admin = mysql_result($q1,0,2);
 
 	// All OK, start session
 	session_start();
 	$_SESSION['login']=$login;
 	session_write_close();
+
 }
 
 
@@ -184,8 +221,8 @@ function bssort($a, $b) {
 	static $abeceda = array("a","A","b","B","c","C","č","Č","ć","Ć","d","đ","Đ","e","f","g","h","i","j","k","l","m","n","o","p", "q","r","s","š","Š","t","u","v", "w","x","y","z","ž","Ž");
 	$min = (strlen($a)<strlen($b)) ? strlen($a) : strlen($b);
 	for ($i=0; $i<$min; $i++) {
-		$ca = substr($a,$i,1); if (ord($ca)>128) $ca = substr($a,$i,2);
-		$cb = substr($b,$i,1); if (ord($cb)>128) $cb = substr($b,$i,2);
+		$ca = substr($a,$i,1); if (ord($ca)>127) $ca = substr($a,$i,2);
+		$cb = substr($b,$i,1); if (ord($cb)>127) $cb = substr($b,$i,2);
 		$k=array_search($ca,$abeceda); $l=array_search($cb,$abeceda);
 		//print "K: $k L: $l ZLJ: ".$ca. "       ";
 		if ($k<$l) return -1; if ($k>$l) return 1;
@@ -197,7 +234,7 @@ function bssort($a, $b) {
 
 # Logiranje
 function logthis($event) {
-	global $_lv_;
+	global $_lv_, $userid;
 
 /*	if (!$lv_debug) return;
 	$lv_logfile = fopen($system_path."/debug12874.log",'a');
@@ -206,7 +243,7 @@ function logthis($event) {
 	return;*/
 
 	// Database logging
-	myquery("insert into log set dogadjaj='".my_escape($event)."'");
+	myquery("insert into log set dogadjaj='".my_escape($event)."', userid=$userid");
 }
 
 
@@ -237,6 +274,7 @@ function datectrl($d,$m,$g,$prefix) {
 
 # genform - pravi zaglavlje forme sa hidden poljima
 function genform($method) {
+	if ($method != "GET" || $method != "POST") $method="POST";
 	$result = '<form action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
 	foreach ($_REQUEST as $key=>$value) {
 		if (substr($key,0,4) != "_lv_") 
@@ -390,10 +428,10 @@ function db_submit() {
 
 
 # Generise drop-down listu za datu tabelu
-function db_dropdown($table,$selected) {
+function db_dropdown($table,$selected,$empty) {
 	global $_lv_; // where
 	global $__lv_cn, $__lv_ct, $__lv_cs, $__lv_showcreate;
-	// Update database with submitted data
+	// Update database with submitted data - in case the $table was changed!
 	db_submit(); 
 
 	// Parse table columns from "show create" query
@@ -451,8 +489,8 @@ function db_dropdown($table,$selected) {
 	}
 
 	// Get default value from WHERE
-	if (strlen($selected)<1) $selected = $_lv_["where:$id"];
-	if (strlen($selected)<1) $selected = $_REQUEST["_lv_where_$id"];
+//	if (strlen($selected)<1) $selected = $_lv_["where:$id"];
+//	if (strlen($selected)<1) $selected = $_REQUEST["_lv_where_$id"];
 
 	// Finally - query
 	if ($surname == "")
@@ -499,8 +537,14 @@ function db_dropdown($table,$selected) {
 		if ($surname != "") $result .= " ".$r101[2];
 		$result .= '</option>'."\n";
 	}
-	if ($found == 0)
-		$result .= '<option value="'.$selected.'" SELECTED>'.$selected.'</option>'."\n";
+//	if ($found == 0)
+//		$result .= '<option value="'.$selected.'" SELECTED>'.$selected.'</option>'."\n";
+
+	if ($empty) { // empty field 
+		$result .= '<option value="-1"'; // so it can be detected by php !
+		if (!$found) $result .= " SELECTED";
+		$result .= ">$empty</option>\n"; 
+	}
 	$result .= '</select>';
 	return $result;
 }
@@ -816,6 +860,14 @@ function db_grid($table) {
 	foreach ($_lv_ as $key => $value) {
 		if ($key == "orderby") {
 			$sql .= " order by ".$value;
+			break;
+		}
+	}
+
+	// Get LIMIT from $_lv_
+	foreach ($_lv_ as $key => $value) {
+		if ($key == "limit") {
+			$sql .= " limit ".$value;
 			break;
 		}
 	}
