@@ -16,6 +16,7 @@
 // v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu, dodan link na izvještaj "spisak studenata po grupama"
 // v3.0.1.3 (2007/09/24) + Popravljen bug sa većim brojem razmaka kod masovnog unosa
 // v3.0.1.4 (2007/10/02) + Dodan logging
+// v3.0.1.5 (2007/10/05) + Ispravke bugova kod kopiranja grupa: zabranjeno kopiranje sa istog predmeta, prebacivanje studenta (ako je vec upisan na predmet), spoji grupe ako se isto zovu
 
 
 function admin_predmet() {
@@ -81,19 +82,34 @@ if ($_POST['akcija'] == "preimenuj_grupu") {
 
 if ($_POST['akcija'] == "kopiraj_grupe") {
 	$kopiraj = intval($_POST['_lv_column_predmet']);
-	$q20 = myquery("select count(*) from labgrupa where predmet=$kopiraj");
-	if (mysql_result($q20,0,0) == 0) {
-		niceerror("Nisu definisane grupe za ovaj predmet.");
+	if ($kopiraj == $predmet) {
+		niceerror("Ne možete kopirati grupe sa istog predmeta.");
+		return;
 	}
-	$q21 = myquery("insert into labgrupa select 0,naziv,$predmet from labgrupa where predmet=$kopiraj");
-	$q22 = myquery("select id,naziv from labgrupa where predmet=$predmet");
-	while ($r22 = mysql_fetch_row($q22)) {
-		$q23 = myquery("select id from labgrupa where predmet=$kopiraj and naziv='$r22[1]'");
-		if (mysql_num_rows($q23)>0) {
-			$origid = mysql_result($q23,0,0);
-			$q24 = myquery("insert into student_labgrupa select student,$r22[0] from student_labgrupa where labgrupa=$origid");
+	$q20 = myquery("select id,naziv from labgrupa where predmet=$kopiraj");
+	if (mysql_num_rows($q20) == 0) 
+		niceerror("Nisu definisane grupe za ovaj predmet.");
+	while ($r20 = mysql_fetch_row($q20)) {
+		$q21 = myquery("select id from labgrupa where predmet=$predmet and naziv='$r20[1]'");
+		if (mysql_num_rows($q21) == 0) {
+			$q22 = myquery("insert into labgrupa set naziv='$r20[1]', predmet=$predmet");
+			$q21 = myquery("select id from labgrupa where predmet=$predmet and naziv='$r20[1]'");
+		}
+		$novagrupa = mysql_result($q21,0,0);
+		$q23 = myquery("select student from student_labgrupa as sl where labgrupa=$r20[0]");
+		while ($r23 = mysql_fetch_row($q23)) {
+			$q24 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$r23[0] and sl.labgrupa=l.id and l.predmet=$predmet");
+			if (mysql_num_rows($q24) > 0) {
+				$staragrupa=mysql_result($q24,0,0);
+				$q25 = myquery("update student_labgrupa set labgrupa=$novagrupa where student=$r23[0] and labgrupa=$staragrupa");
+				print "Prebacujem studenta $r23[0] iz grupe $staragrupa u grupu $novagrupa<br/>";
+			} else {
+				$q25 = myquery("insert into student_labgrupa set labgrupa=$novagrupa and student=$r23[0]");
+				print "Upisujem studenta $r23[0] u grupu $novagrupa<br/>";
+			}
 		}
 	}
+
 	logthis("Prekopirane labgrupe sa predmeta $kopiraj u $predmet");
 }
 
