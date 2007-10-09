@@ -5,6 +5,8 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/10) + Grupiši predmete po akademskim godinama
 // v3.0.1.2 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd., reorganizacija admin linkova
+// v3.0.1.3 (2007/09/20) + Ispravljen bug u query-ju za spisak predmeta
+// v3.0.1.4 (2007/10/08) + Nova struktura baze za predmete
 
 
 function admin_intro() {
@@ -34,7 +36,7 @@ print "<p>";
 if ($siteadmin==2)
 	print "<a href=\"qwerty.php?sta=siteadmin\">Site admin</a> * ";
 if ($siteadmin==2 || $siteadmin==1)
-	print "<a href=\"qwerty.php?sta=nihada\">Studenti, nastavnici</a> * ";
+	print "<a href=\"qwerty.php?sta=nihada\">Studenti, nastavnici, predmeti</a> * ";
 print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
 
 
@@ -50,9 +52,9 @@ else
 
 while ($r1a = mysql_fetch_row($q1a)) {
 	if ($siteadmin)
-		$q2 = myquery("select id,1 from predmet where akademska_godina=$r1a[0] order by id");
+		$q2 = myquery("select id,1 from ponudakursa where akademska_godina=$r1a[0] order by semestar,id");
 	else
-		$q2 = myquery("select np.predmet,np.admin from nastavnik_predmet as np, predmet as p where np.nastavnik=$userid and np.predmet=p.id and p.akademska_godina=$r1a[0]");
+		$q2 = myquery("select np.predmet,np.admin from nastavnik_predmet as np, ponudakursa as p where np.nastavnik=$userid and np.predmet=p.id and p.akademska_godina=$r1a[0]");
 
 	$nr = mysql_num_rows($q2);
 	if ($nr==0) continue; // skip to next
@@ -70,7 +72,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 		$admin_predmeta = $r2[1];
 	
 		# Ispis naziva predmeta
-		$q3 = myquery("select predmet.naziv,predmet.aktivan from predmet where predmet.id=$predmet");
+		$q3 = myquery("select p.naziv,pk.aktivan from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 		if (mysql_num_rows($q3)<0) {
 			print "Greška: nepoznat predmet!";
 		} else {

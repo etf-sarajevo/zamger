@@ -17,6 +17,7 @@
 // v3.0.1.3 (2007/09/24) + Popravljen bug sa većim brojem razmaka kod masovnog unosa
 // v3.0.1.4 (2007/10/02) + Dodan logging
 // v3.0.1.5 (2007/10/05) + Ispravke bugova kod kopiranja grupa: zabranjeno kopiranje sa istog predmeta, prebacivanje studenta (ako je vec upisan na predmet), spoji grupe ako se isto zovu
+// v3.0.1.6 (2007/10/08) + Nova struktura baze za predmete; izbacen jedan broj opcija iz taba "Opcije" (sad je to u modulu Nihada)
 
 
 function admin_predmet() {
@@ -32,7 +33,7 @@ $predmet=intval($_GET['predmet']);
 if ($predmet==0) $predmet=intval($_POST['predmet']);
 if ($predmet==0) { niceerror("Nije izabran predmet."); return; }
 
-$q1 = myquery("select naziv from predmet where id=$predmet");
+$q1 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 $predmet_naziv = mysql_result($q1,0,0);
 
 $tab=$_GET['tab'];
@@ -52,7 +53,7 @@ logthis("Admin Predmet $predmet - tab $tab");
 if ($_POST['akcija'] == "nova_grupa") {
 	$q2 = myquery("insert into labgrupa set naziv='".my_escape($_POST['ime'])."', predmet=$predmet");
 	logthis("Dodana nova labgrupa '$ime'");
-} 
+}
 
 
 # Obrisi grupu
@@ -104,7 +105,7 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 				$q25 = myquery("update student_labgrupa set labgrupa=$novagrupa where student=$r23[0] and labgrupa=$staragrupa");
 				print "Prebacujem studenta $r23[0] iz grupe $staragrupa u grupu $novagrupa<br/>";
 			} else {
-				$q25 = myquery("insert into student_labgrupa set labgrupa=$novagrupa and student=$r23[0]");
+				$q25 = myquery("insert into student_labgrupa set labgrupa=$novagrupa, student=$r23[0]");
 				print "Upisujem studenta $r23[0] u grupu $novagrupa<br/>";
 			}
 		}
@@ -442,15 +443,19 @@ printtab("Ocjena",$predmet,$tab);
 
 # Opšta konfiguracija
 
+// Ukinuti?
 if ($tab == "Opcije") {
-	$_lv_["label:naziv"] = "Naziv predmeta";
-	$_lv_["label:akademska_godina"] = "Akademska godina";
+	$_lv_["hidden:predmet"] = 1;
+	$_lv_["hidden:studij"] = 1;
+	$_lv_["hidden:semestar"] = 1;
+	$_lv_["hidden:obavezan"] = 1;
+	$_lv_["hidden:akademska_godina"] = 1;
 	$_lv_["label:aktivan"] = "Predmet je aktivan (vidljiv studentima)";
 	$_lv_["label:motd"] = "Obavještenja za studente (na vrhu Status stranice)";
 	$_lv_["where:id"] = "$predmet";
 	$_lv_["forceedit"]=1;
 
-	print db_form("predmet");
+	print db_form("ponudakursa");
 }
 
 
@@ -508,21 +513,24 @@ if ($tab == "Grupe") {
 	print 'Dodaj grupu: <input type="text" name="ime" size="20"> <input type="submit" value="Dodaj"></form></p>'."\n";
 
 	# Kopiranje grupa sa predmeta
-	$q103 = myquery("select akademska_godina from predmet where id=$predmet");
+	$q103 = myquery("select akademska_godina from ponudakursa where id=$predmet");
 	$akgod = mysql_result($q103,0,0);
 	print "<p>\n";
 	print genform("POST");
 	print '<input type="hidden" name="akcija" value="kopiraj_grupe">'."\n";
 	print 'Prekopiraj grupe sa predmeta: '."\n";
-	$_lv_["where:akademska_godina"] = "$akgod";
-	print db_dropdown("predmet");
-	print '<input type="submit" value="Dodaj">'."\n";
+	print '<select name="predmet">';
+	$q103a = myquery("select pk.id, p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod order by p.naziv");
+	while ($r103a = mysql_fetch_row($q103a)) {
+		print "<option value=\"$r103a[0]\">$r103a[1]</a>\n";
+	}
+	print '</select><input type="submit" value="Dodaj">'."\n";
 	print '</form></p>'."\n";
 
 	// Izvjestaj "GRUPE"
 	print '<p><hr/></p><p><a href="qwerty.php?sta=izvjestaj&tip=grupe&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> IZVJEŠTAJ: Spisak studenata po grupama</a></p>';
 
-	// Izvjestaj "GRUPE"
+	// Izvjestaj "PREDMET_FULL"
 	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> IZVJEŠTAJ: Pregled grupa, prisustva, bodova</a>';
 
 	# Masovni unos

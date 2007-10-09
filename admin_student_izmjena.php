@@ -12,6 +12,7 @@
 // v3.0.1.5 (2007/09/26) + Unaprijedjen ispis studenta sa predmeta (nema zaostalih podataka u bazi)
 // v3.0.1.5 (2007/10/01) + Ispravljen prikaz grupe nakon promjene grupe
 // v3.0.1.6 (2007/10/02) + Dodan logging
+// v3.0.1.7 (2007/10/08) + Nova struktura baze za predmete
 
 
 function admin_student_izmjena() {
@@ -120,7 +121,7 @@ $q2=myquery("select id,naziv from labgrupa where predmet=$predmet_id order by na
 //$q3=myquery("select student_labgrupa.labgrupa from student_labgrupa,labgrupa where student_labgrupa.student=$stud_id and student_labgrupa.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
 
 
-$q4=myquery("select naziv from predmet where id=$predmet_id");
+$q4=myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet_id and pk.predmet=p.id");
 if (mysql_num_rows($q4)<1) {
 	biguglyerror("Nema predmeta $predmet_id");
 	return;

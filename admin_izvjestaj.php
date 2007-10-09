@@ -2,6 +2,7 @@
 
 // v3.0.1.1 (2007/09/20) + Novi modul "Izvjestaj" - izdvojen iz admin_nihada; dodan izvjestaj "grupe"
 // v3.0.1.2 (2007/09/25) + Dodan izvjestaj "predmet_full"; optimizacija racunanja bodova na ispitima
+// v3.0.1.3 (2007/10/08) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
 
 
 
@@ -75,7 +76,7 @@ if ($tip == "index") {
 	$i=1;
 	$q101 = myquery("select id,naziv from akademska_godina order by naziv");
 	while ($r101 = mysql_fetch_row($q101)) {
-		$q102 = myquery("select p.naziv,k.ocjena from konacna_ocjena as k,predmet as p where k.student=$student and k.predmet=p.id and p.akademska_godina=$r101[0] order by p.naziv");
+		$q102 = myquery("select p.naziv,k.ocjena from konacna_ocjena as k,predmet as p, ponudakursa as pk where k.student=$student and k.predmet=pk.id and pk.akademska_godina=$r101[0] and pk.predmet=p.naziv order by p.naziv");
 		while ($r102 = mysql_fetch_row($q102)) {
 			print "<tr><td>".($i++)."</td><td>".$r102[0]."</td><td>".$r101[1]."</td><td>".$r102[1]." (".$imena_ocjena[$r102[1]-5].")</td></tr>";
 		}
@@ -118,7 +119,7 @@ if ($tip == "progress") {
 	$i=1;
 	$q310 = myquery("select id,naziv from akademska_godina order by naziv");
 	while ($r310 = mysql_fetch_row($q310)) {
-		$q311 = myquery("select p.id, p.naziv, l.id from predmet as p, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=p.id and p.akademska_godina=$r310[0] order by p.naziv");
+		$q311 = myquery("select pk.id, p.naziv, l.id from predmet as p, ponudakursa as pk, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=$r310[0] and pk.predmet=p.id order by p.naziv");
 		while ($r311 = mysql_fetch_row($q311)) {
 			print "<tr><td>".($i++)."</td><td>".$r311[1]."</td><td>".$r310[1]."</td>";
 			$ukupno=0;
@@ -155,8 +156,8 @@ if ($tip == "progress") {
 						if ($r315[0]>=0) $prvi_ispis .= "$r315[0] ($d.$m.)<br/>";
 						if ($r315[1]>=0) $drugi_ispis .= "$r315[1] ($d.$m.)<br/>";
 					}
-					if ($r315[0]>$max1) $max1=$r315[0];
-					if ($r315[1]>$max2) $max2=$r315[1];
+					if ($r315[0]!= -1 && $r315[0]>$max1) $max1=$r315[0];
+					if ($r315[1]!= -1 && $r315[1]>$max2) $max2=$r315[1];
 				}
 				$ukupno += ($max1 + $max2);
 			}
@@ -201,11 +202,11 @@ if ($tip == "grupe") {
 		return;
 	}
 
-	$q399 = myquery("select naziv from predmet where id=$predmet");
+	$q399 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 	print "<p>&nbsp;</p><h1>".mysql_result($q399,0,0)."</h1><p>Spisak grupa:</p>\n";
 	print '<table width="100%" border="0">'."\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id");
 	$parni=0;
 	while ($r400 = mysql_fetch_row($q400)) {
 		if ($parni == 0) 
@@ -251,7 +252,7 @@ if ($tip == "grupe") {
 
 
 
-// PREDMET_FULL - izvjestaj koji salje Nihada
+// PREDMET_FULL - izvjestaj koji profesori salju Nihadi
 
 if ($tip == "predmet_full") {
 	if ($predmetadmin == -1 && $siteadmin == 0) {
@@ -259,14 +260,14 @@ if ($tip == "predmet_full") {
 		return;
 	}
 
-	$q500 = myquery("select p.naziv,ag.naziv from predmet as p, akademska_godina as ag where p.id=$predmet and ag.id=p.akademska_godina");
+	$q500 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and ag.id=pk.akademska_godina and pk.predmet=p.id");
 	print "<p>&nbsp;</p><h1>".mysql_result($q500,0,0)." ".mysql_result($q500,0,1)."</h1>\n";
 
 	$grupa = intval($_REQUEST['grupa']);
 	if ($grupa>0)
 		$q501 = myquery("select id,naziv from labgrupa where predmet=$predmet and id=$grupa");
 	else
-		$q501 = myquery("select id,naziv from labgrupa where predmet=$predmet");
+		$q501 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id");
 
 	while ($r501 = mysql_fetch_row($q501)) {
 		?>
@@ -351,15 +352,6 @@ if ($tip == "predmet_full") {
 
 			$zadace=0;
 			foreach ($zadacear as $zid => $zadataka) {
-/*				$uk_bodova = 0;
-				for ($i=1; $i<=$zadataka; $i++) {
-					if ($r506 = mysql_fetch_row($q506)) {
-						if ($r506[0] == 5)
-							$uk_bodova += $r506[1];
-					}
-				}
-				print "<td>$uk_bodova</td>\n";
-				$zadace += $uk_bodova;*/
 				if ($bodova[$zid]) {
 					print "<td>".$bodova[$zid]."</td>";
 					$zadace += $bodova[$zid];
@@ -389,6 +381,119 @@ if ($tip == "predmet_full") {
 	}
 	
 }
+
+
+
+// PROLAZNOST - izvjestaj koji Nihada daje NNVu
+
+if ($tip == "prolaznost") {
+	$akgod = intval($_REQUEST['_lv_column_akademska_godina']);
+	$semestar = intval($_REQUEST['semestar']);
+	$studij = intval($_REQUEST['_lv_column_studij']);
+
+	// tabela kurseva i studenata
+	$kursevi = array();
+	$imeprezime = array();
+	$brind = array();
+	$q600 = myquery("select pk.id, p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod and pk.semestar=$semestar and pk.studij=$studij");
+	$sirina = 200;
+	while ($r600 = mysql_fetch_row($q600)) {
+		$kursevi[$r600[0]] = $r600[1];
+
+		$q601 = myquery("select s.id, s.ime, s.prezime, s.brindexa from student as s, student_labgrupa as sl, labgrupa as l where sl.student=s.id and sl.labgrupa=l.id and l.predmet=$r600[0]");
+		while ($r601 = mysql_fetch_row($q601)) {
+			$imeprezime[$r601[0]] = "$r601[2] $r601[1]";
+			$brind[$r601[0]] = $r601[3];
+		}
+		$sirina += 200;
+	}
+
+	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+	?>
+	<table width="<?=$sirina?>" border="1" cellspacing="0" cellpadding="2">
+	<tr>
+		<td rowspan="2" valign="center">R. br.</td>
+		<td rowspan="2" valign="center">Broj indeksa</td>
+		<td rowspan="2" valign="center">Prezime i ime</td>
+	<?
+	foreach ($kursevi as $kurs) {
+		print '<td colspan="5">'.$kurs."</td>\n";
+	}
+	?>
+		<td rowspan="2" valign="center" align="center">UKUPNO</td>
+	</tr>
+	<tr>
+	<?
+	for ($i=0; $i<count($kursevi); $i++) {
+		?>
+		<td align="center">I</td>
+		<td align="center">II</td>
+		<td align="center">P</td>
+		<td align="center">Z</td>
+		<td align="center">Ocjena</td>
+		<?
+	}
+	print "</tr>\n";
+	$i=1;
+
+	// Slušalo / položilo predmet
+	$slusalo = array();
+	$polozilo = array();
+
+	foreach ($imeprezime as $stud_id => $stud_imepr) {
+		?>
+		<tr>
+			<td><?=$i?></td>
+			<td><?=$brind[$stud_id]?></td>
+			<td><?=$stud_imepr?></td>
+		<?
+		$polozio = 0;
+		foreach ($kursevi as $kurs_id => $kurs) {
+			$slusalo[$kurs_id]++;
+			$q602 = myquery("select io.ocjena,io.ocjena2 from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
+			$o1 = $o2 = -1;
+			while ($r602 = mysql_fetch_row($q602)) {
+				if ($r602[0] > $o1) $o1 = $r602[0];
+				if ($r602[1] > $o2) $o2 = $r602[1];
+			}
+			if ($o1 >= 0)
+				print "<td>$o1</td>\n";
+			else
+				print "<td>&nbsp;</td>\n";
+			if ($o2 >= 0)
+				print "<td>$o2</td>\n";
+			else
+				print "<td>&nbsp;</td>\n";
+			print "<td>&nbsp;</td><td>&nbsp;</td>\n";
+			$q605 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
+			if (mysql_num_rows($q605)>0) {
+				$ocj = mysql_result($q605,0,0);
+				print "<td>$ocj</td>\n";
+				if ($ocj >= 6) $polozio++;
+				$polozilo[$kurs_id]++;
+			} else
+				print "<td>&nbsp;</td>\n";
+		}
+		print "<td>$polozio</td></tr>\n";
+		$i++;
+	}
+	print '<tr><td colspan="3" align="right">SLUŠALO</td>';
+	foreach ($kursevi as $kurs_id => $kurs) {
+		print '<td colspan="5">'.$slusalo[$kurs_id]."</td>\n";
+	}
+	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">POLOŽILO</td>';
+	foreach ($kursevi as $kurs_id => $kurs) {
+		print '<td colspan="5">'.$polozilo[$kurs_id]."</td>\n";
+	}
+	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">PROCENAT</td>';
+	foreach ($kursevi as $kurs_id => $kurs) {
+		$proc = intval(($polozilo[$kurs_id]/$slusalo[$kurs_id])*100)/100;
+		print '<td colspan="5">'.$proc."%</td>\n";
+	}
+	print '<td>&nbsp;</td></tr></table>';
+}
+
 
 return;
 

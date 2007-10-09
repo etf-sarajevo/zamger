@@ -11,6 +11,7 @@
 // v3.0.1.2 (2007/09/25) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna), horizontalni scroll po potrebi, ukinuta polja sa statusom/legendom
 // v3.0.1.3 (2007/09/26) + Komentari
 // v3.0.1.4 (2007/10/02) + Dodano jos logginga
+// v3.0.1.5 (2007/10/08) + Nova struktura baze za predmete
 
 
 function admin_grupa() {
@@ -119,7 +120,7 @@ if (mysql_num_rows($q1)<1) { niceerror("Izabrana je nepostojeća grupa"); return
 $naziv = mysql_result($q1,0,0);
 $predmet = mysql_result($q1,0,1);
 
-$q2 = myquery("select naziv from predmet where id=$predmet");
+$q2 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 $pime = mysql_result($q2,0,0);
 
 print "<center><h1>$pime - $naziv</h1></center>";
