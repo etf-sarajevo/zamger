@@ -6,7 +6,8 @@
 // v3.0.1.4 (2007/09/26) + Dodana kartica Nastavnici; dodavanje novog studenta, sortiraj studente i po imenu
 // v3.0.1.5 (2007/09/28) + Ispravka buga: nastavnici su dodavani u auth tabelu kao studenti
 // v3.0.1.6 (2007/10/02) + Dodan logging; dodana LDAP podrska - kod studenata, polja za login i password se zamjenjuju checkbox-om (koji ce usput povuci i e-mail adresu sa LDAPa); kod nastavnika, polja za login i password su ukinuta a auth tabela se automatski popunjava pri kreiranju nastavnika; moguce dodati nastavnika kucanjem UIDa u polje za ime
-// v3.0.1.7 (2007/10/08) + Nova struktura baze za predmete; nove opcije u editovanju predmeta; kartica "Studij" - za sada samo izvjestaj o prolaznosti
+// v3.0.1.7 (2007/10/09) + Nova struktura baze za predmete; nove opcije u editovanju predmeta; kartica "Studij" - za sada samo izvjestaj o prolaznosti
+// v3.0.1.7 (2007/10/10) + Podrska za nasa slova kod generisanja LDAP logina
 
 
 function admin_nihada() {
@@ -257,7 +258,13 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 		if (!($r201 = mysql_fetch_row($q201))) $auth=0; else $auth=1;
 
 		// generisanje logina za studenta
-		$suggest_login = strtolower(substr($r200[0],0,1)).strtolower(substr($r200[1],0,1)).$r200[3];
+		$debosn = array( 'Č'=>'c', 'č'=>'c', 'Ć'=>'c', 'ć'=>'c', 'Đ'=>'d', 'đ'=>'d', 'Š'=>'s', 'š'=>'s', 'Ž'=>'z', 'ž'=>'z');
+
+		$sime = strtolower(substr($r200[0],0,1));
+		if ($debosn[substr($r200[0],0,2)]) $sime=$debosn[substr($r200[0],0,2)];
+		$sprezime = strtolower(substr($r200[1],0,1));
+		if ($debosn[substr($r200[1],0,2)]) $sprezime=$debosn[substr($r200[1],0,2)];
+		$suggest_login = $sime.$sprezime.$r200[3];
 		?>
 		<tr>
 			<td colspan="5">Korisnički pristup: <input type="checkbox" name="ima_auth" onchange="javascript:location.href='<?=genuri()?>&subakcija=auth&suggest_login=<?=$suggest_login?>';" <? if ($auth==1) print "CHECKED"; ?>></td>
