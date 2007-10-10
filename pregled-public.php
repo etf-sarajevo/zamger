@@ -10,6 +10,8 @@
 // v3.0.0.2 (2007/05/04) + Popravke komentara, izbacivanje tačke iz zaglavlja parcijala 
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/26) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna)
+// v3.0.1.2 (2007/10/10) + Nova struktura baze za predmete
+
 
 ?>
 <html>
@@ -49,7 +51,7 @@ if (!preg_match("/[a-zA-Z0-9]/",$login)) $login="";
 // Ako nije izabran predmet, prikaži spisak predmeta
 $predmet = intval($_GET['predmet']);
 if ($predmet == 0) {
-	$q1 = myquery("select p.id,p.naziv,ag.naziv from predmet as p, akademska_godina as ag where ag.id=p.akademska_godina order by ag.naziv,p.naziv");
+	$q1 = myquery("select pk.id,p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where ag.id=pk.akademska_godina and pk.predmet=p.id order by ag.naziv,p.naziv");
 	print "<p>Izaberite predmet:</p>\n<ul>";
 	while ($r1 = mysql_fetch_row($q1)) {
 		print "<li><a href=\"pregled-public.php?predmet=$r1[0]\">$r1[1] ($r1[2])</a></li>";
@@ -60,7 +62,7 @@ if ($predmet == 0) {
 
 // Predmet je izabran!
 
-$q2 = myquery("select p.naziv,ag.naziv from predmet as p, akademska_godina as ag where p.id=$predmet");
+$q2 = myquery("select p.naziv,ag.naziv from predmet as p, akademska_godina as ag, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id and pk.akademska_godina=ag.id");
 print "<p>Predmet: <b>".mysql_result($q2,0,0)." (".mysql_result($q2,0,1).")</b></p>\n";
 
 // Imena prikazujemo samo ako je korisnik profesor/asistent/demonstrator
@@ -257,6 +259,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 			}
 			$mogucih+=2;
 		}
+		if (count($vj_id_array)==0) $ocjene_ispis .= "<td>&nbsp;</td>";
 
 		// PARCIJALE
 /*		if (count($par_id_array)==0) $parc_ispis = "<td>&nbsp;</td>";
@@ -342,7 +345,7 @@ mysql_close();
 ?>
 
 
-<!-- TOP LISTA  - ukloniti komentar za ispis -->
+<!-- TOP LISTA  - ukloniti komentar za ispis 
 
 <?
 asort($topscore);

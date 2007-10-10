@@ -4,6 +4,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Design komentari by Teo 
 // v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; rendering fix (Konqueror 3.5.7)
 
 
 # Prijava
@@ -36,9 +38,9 @@ if ($labgrupa != 0) {
 // Labgrupa nije zadana, ali moguće da je student u samo jednoj labgrupi
 // pa ćemo izabrati nju
 if ($labgrupa == 0) {
-	$q02 = myquery("SELECT sl.labgrupa, predmet.id 
-	FROM student_labgrupa as sl, labgrupa, predmet 
-	WHERE sl.student=$userid and sl.labgrupa=labgrupa.id and labgrupa.predmet=predmet.id and predmet.aktivan=1");
+	$q02 = myquery("SELECT sl.labgrupa, pk.id 
+	FROM student_labgrupa as sl, labgrupa, ponudakursa as pk
+	WHERE sl.student=$userid and sl.labgrupa=labgrupa.id and labgrupa.predmet=pk.id and pk.aktivan=1");
 	if (mysql_num_rows($q02)<1) {
 		$greska = "Niste trenutno upisani ni u jedan aktivan predmet. Kontaktirajte tutora!";
 	}
@@ -89,7 +91,7 @@ if ($sta == "pdf") {
 		</tr></table></td>
 	</tr>
 	<tr bgcolor="#777777"><td><img src="images/fnord.gif" width="1" height="1"></td></tr>
-	<tr>
+	<tr height="100%">
 		<td>
 
 <?

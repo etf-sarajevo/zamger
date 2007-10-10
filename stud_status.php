@@ -5,6 +5,8 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Design komentari by Teo 
 // v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; ukinuta oznaka konačnog statusa
 
 
 function stud_status() {
@@ -42,7 +44,7 @@ if (mysql_num_rows($q1a)<1) {
 $predmet_id = mysql_result($q1a,0,0);
 
 
-$q1b = myquery("select naziv,akademska_godina,aktivan,motd from predmet where id=$predmet_id");
+$q1b = myquery("select p.naziv,pk.akademska_godina,pk.aktivan,pk.motd from predmet as p, ponudakursa as pk where pk.id=$predmet_id and pk.predmet=p.id");
 if (mysql_num_rows($q1b)<1) {
 	biguglyerror("Nema predmeta $predmet_id");
 	return;
@@ -360,9 +362,9 @@ if ($pao1 == 0 && $pao2 == 0) {
 
 ?>
 
-<h3>Osvojeno <?=$bodova?> od <?=$mogucih?> mogućih (<?=$procent?> %)</h3>
+<h3>Osvojeno <?=$bodova?> bodova od <?=$mogucih?> mogućih (<?=$procent?> %)</h3>
 
-<center><table cellspacing="0" cellpadding="0">
+<!--center><table cellspacing="0" cellpadding="0">
 <tr>
 	<td>
 	<table width="50" height="50" cellspacing="0" cellpadding="0" border="1"><tr>
@@ -371,7 +373,7 @@ if ($pao1 == 0 && $pao2 == 0) {
 	</td>
 	<td>&nbsp;&nbsp;&nbsp;</td>
 	<td valign="center"><?=$thetext?></td>
-</tr></table></center>
+</tr></table></center-->
 
 
 <?

@@ -5,6 +5,9 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/16) + Dju tu popjular dimand, isključujemo mogućnost promjene imena, prezimena i broja indexa 
 // v3.0.0.2 (2007/05/10) + Greška sa promjenom profila (izbačene varijable su i dalje kontrolisane)
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/10/10) + Ukinuta promjena šifre kod LDAPa
+
 
 function stud_profil() {
 
@@ -38,13 +41,16 @@ if (mysql_num_rows($q1)<1) {
 		<td><b><?=mysql_result($q1,0,1)?></b></td>
 	</tr>
 	<tr>
-		<td>E-mail:</td>
+		<td>Kontakt e-mail:</td>
 		<td><input type="text" name="email" size="30" value="<?=mysql_result($q1,0,2)?>"></td>
 	</tr>
 	<tr>
 		<td>Broj indexa:</td>
 		<td><b><?=mysql_result($q1,0,3)?></b></td>
 	</tr>
+<?
+	if ($system_auth == "table") {
+?>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr>
 		<td>Promijeni šifru:</td>
@@ -54,6 +60,7 @@ if (mysql_num_rows($q1)<1) {
 		<td>Ponovi šifru:</td>
 		<td><input type="password" name="pass2" size="15"></td>
 	</tr>
+<? } ?>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td>&nbsp;</td><td>
 		<input type="submit" value=" Pošalji "> &nbsp;&nbsp;&nbsp;&nbsp;
