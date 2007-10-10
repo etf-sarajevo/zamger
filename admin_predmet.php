@@ -18,6 +18,7 @@
 // v3.0.1.4 (2007/10/02) + Dodan logging
 // v3.0.1.5 (2007/10/05) + Ispravke bugova kod kopiranja grupa: zabranjeno kopiranje sa istog predmeta, prebacivanje studenta (ako je vec upisan na predmet), spoji grupe ako se isto zovu
 // v3.0.1.6 (2007/10/08) + Nova struktura baze za predmete; izbacen jedan broj opcija iz taba "Opcije" (sad je to u modulu Nihada)
+// v3.0.1.7 (2007/10/09) + Popravljen bug sa kopiranjem predmeta, dodana provjera prava pristupa
 
 
 function admin_predmet() {
@@ -43,6 +44,23 @@ if ($tab=="") $tab="Opcije";
 logthis("Admin Predmet $predmet - tab $tab");
 
 
+
+// Da li korisnik ima pravo ući u modul?
+
+$q501 = myquery("select siteadmin from nastavnik where id=$userid");
+if (mysql_num_rows($q501)<1) {
+	niceerror("Nemate pravo ulaska u ovu grupu!");
+	return;
+}
+if (mysql_result($q501,0,0) < 1) {
+	$q502 = myquery("select np.admin from nastavnik_predmet as np,labgrupa where np.nastavnik=$userid and np.predmet=labgrupa.predmet and labgrupa.id=$grupa_id");
+	if (mysql_num_rows($q502)<1 || mysql_result($q502,0,0)<1) {
+		niceerror("Nemate pravo ulaska u ovu grupu!");
+		return;
+	} 
+}
+
+
 ###############
 # Akcije
 ###############
@@ -51,7 +69,8 @@ logthis("Admin Predmet $predmet - tab $tab");
 # Dodaj grupu
 
 if ($_POST['akcija'] == "nova_grupa") {
-	$q2 = myquery("insert into labgrupa set naziv='".my_escape($_POST['ime'])."', predmet=$predmet");
+	$ime = my_escape($_POST['ime']);
+	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet");
 	logthis("Dodana nova labgrupa '$ime'");
 }
 
@@ -82,7 +101,7 @@ if ($_POST['akcija'] == "preimenuj_grupu") {
 # Kopiraj grupe
 
 if ($_POST['akcija'] == "kopiraj_grupe") {
-	$kopiraj = intval($_POST['_lv_column_predmet']);
+	$kopiraj = intval($_POST['kopiraj']);
 	if ($kopiraj == $predmet) {
 		niceerror("Ne možete kopirati grupe sa istog predmeta.");
 		return;
@@ -519,7 +538,7 @@ if ($tab == "Grupe") {
 	print genform("POST");
 	print '<input type="hidden" name="akcija" value="kopiraj_grupe">'."\n";
 	print 'Prekopiraj grupe sa predmeta: '."\n";
-	print '<select name="predmet">';
+	print '<select name="kopiraj">';
 	$q103a = myquery("select pk.id, p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod order by p.naziv");
 	while ($r103a = mysql_fetch_row($q103a)) {
 		print "<option value=\"$r103a[0]\">$r103a[1]</a>\n";
