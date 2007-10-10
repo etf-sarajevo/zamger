@@ -7,6 +7,7 @@
 // v3.0.1.2 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd., reorganizacija admin linkova
 // v3.0.1.3 (2007/09/20) + Ispravljen bug u query-ju za spisak predmeta
 // v3.0.1.4 (2007/10/08) + Nova struktura baze za predmete
+// v3.0.1.5 (2007/10/10) + Sakrij promjenu sifre ako autentikacija nije tabela
 
 
 function admin_intro() {
@@ -37,7 +38,8 @@ if ($siteadmin==2)
 	print "<a href=\"qwerty.php?sta=siteadmin\">Site admin</a> * ";
 if ($siteadmin==2 || $siteadmin==1)
 	print "<a href=\"qwerty.php?sta=nihada\">Studenti, nastavnici, predmeti</a> * ";
-print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
+if ($system_auth == "table")
+	print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
 
 
 
