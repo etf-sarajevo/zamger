@@ -8,6 +8,7 @@
 // v3.0.1.3 (2007/09/20) + Ispravljen bug u query-ju za spisak predmeta
 // v3.0.1.4 (2007/10/08) + Nova struktura baze za predmete
 // v3.0.1.5 (2007/10/10) + Sakrij promjenu sifre ako autentikacija nije tabela
+// v3.0.1.6 (2007/10/16) + Popravljen HTML bug
 
 
 function admin_intro() {
@@ -25,7 +26,7 @@ $siteadmin = mysql_result($q1,0,2);
 
 $stud_spol = substr($ime,strlen($ime)-1);
 if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Sa&#353;a") {
-	print "<h1>Dobro došla, $ime $prezime!<h1>";
+	print "<h1>Dobro došla, $ime $prezime!</h1>";
 } else {
 	print "<h1>Dobro došao, $ime $prezime!</h1>";
 }
