@@ -19,6 +19,7 @@
 // v3.0.1.5 (2007/10/05) + Ispravke bugova kod kopiranja grupa: zabranjeno kopiranje sa istog predmeta, prebacivanje studenta (ako je vec upisan na predmet), spoji grupe ako se isto zovu
 // v3.0.1.6 (2007/10/08) + Nova struktura baze za predmete; izbacen jedan broj opcija iz taba "Opcije" (sad je to u modulu Nihada)
 // v3.0.1.7 (2007/10/09) + Popravljen bug sa kopiranjem predmeta, dodana provjera prava pristupa
+// v3.0.1.8 (2007/10/16) + SQL bug u provjeri permisija
 
 
 function admin_predmet() {
@@ -53,7 +54,7 @@ if (mysql_num_rows($q501)<1) {
 	return;
 }
 if (mysql_result($q501,0,0) < 1) {
-	$q502 = myquery("select np.admin from nastavnik_predmet as np,labgrupa where np.nastavnik=$userid and np.predmet=labgrupa.predmet and labgrupa.id=$grupa_id");
+	$q502 = myquery("select np.admin from nastavnik_predmet as np where np.nastavnik=$userid and np.predmet=$predmet");
 	if (mysql_num_rows($q502)<1 || mysql_result($q502,0,0)<1) {
 		niceerror("Nemate pravo ulaska u ovu grupu!");
 		return;
