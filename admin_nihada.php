@@ -7,7 +7,8 @@
 // v3.0.1.5 (2007/09/28) + Ispravka buga: nastavnici su dodavani u auth tabelu kao studenti
 // v3.0.1.6 (2007/10/02) + Dodan logging; dodana LDAP podrska - kod studenata, polja za login i password se zamjenjuju checkbox-om (koji ce usput povuci i e-mail adresu sa LDAPa); kod nastavnika, polja za login i password su ukinuta a auth tabela se automatski popunjava pri kreiranju nastavnika; moguce dodati nastavnika kucanjem UIDa u polje za ime
 // v3.0.1.7 (2007/10/09) + Nova struktura baze za predmete; nove opcije u editovanju predmeta; kartica "Studij" - za sada samo izvjestaj o prolaznosti
-// v3.0.1.7 (2007/10/10) + Podrska za nasa slova kod generisanja LDAP logina
+// v3.0.1.8 (2007/10/10) + Podrska za nasa slova kod generisanja LDAP logina
+// v3.0.1.9 (2007/10/16) + Ispravka buga prilikom dodavanja novog predmeta
 
 
 function admin_nihada() {
@@ -427,7 +428,7 @@ else if ($tab == "Predmeti" && $akcija == "novi") {
 	} else {
 		print "Novi predmet.<br/><br/>";
 		$q393 = myquery("insert into predmet set naziv='$naziv'");
-		$q394 = myquery("select id from predmet where naziv='$naziv'");
+		$q391 = myquery("select id from predmet where naziv='$naziv'");
 		$pid = mysql_result($q391,0,0);
 	}
 
@@ -518,6 +519,7 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 	</form><?
 
 	$_lv_["label:aktivan"] = "Predmet je aktivan (vidljiv studentima)";
+	$_lv_["label:studij"] = "Program studija";
 	$_lv_["where:id"] = "$predmet";
 	$_lv_["hidden:predmet"] = 1;
 	$_lv_["hidden:motd"] = 1;
