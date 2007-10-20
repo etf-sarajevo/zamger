@@ -13,13 +13,14 @@
 // v3.0.0.3 (2007/05/24) + Ispravka greške do koje je došlo zbog prelaska na FROM_UNIXTIME
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/11) + U tabeli ispitocjena sada je razdvojen prvi i drugi parcijalni, naziv se ignoriše; dodan unos konačne ocjene; poništena vrijednost varijable fakatradi kod masovnih unosa; izbačeno kompaktovanje (to će biti u siteadminu)
-// v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (Usability), korištenje rtrim() u masovnom unosu, dodan link na izvještaj "spisak studenata po grupama"
+// v3.0.1.2 (2007/09/20) + Dodano dugme Nazad na sve ekrane za potvrdu (usability), korištenje rtrim() u masovnom unosu, dodan link na izvještaj "spisak studenata po grupama"
 // v3.0.1.3 (2007/09/24) + Popravljen bug sa većim brojem razmaka kod masovnog unosa
 // v3.0.1.4 (2007/10/02) + Dodan logging
 // v3.0.1.5 (2007/10/05) + Ispravke bugova kod kopiranja grupa: zabranjeno kopiranje sa istog predmeta, prebacivanje studenta (ako je vec upisan na predmet), spoji grupe ako se isto zovu
 // v3.0.1.6 (2007/10/08) + Nova struktura baze za predmete; izbacen jedan broj opcija iz taba "Opcije" (sad je to u modulu Nihada)
 // v3.0.1.7 (2007/10/09) + Popravljen bug sa kopiranjem predmeta, dodana provjera prava pristupa
 // v3.0.1.8 (2007/10/16) + SQL bug u provjeri permisija
+// v3.0.1.9 (2007/10/19) + Nova shema tabele ispita
 
 
 function admin_predmet() {
@@ -249,7 +250,9 @@ if ($_POST['akcija'] == "massexam") {
 		$godina = intval($_POST['year']);
 		$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
-		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat')");
+		$tipispita = intval($_POST['tipispita']);
+
+		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat'), tipispita=$tipispita");
 		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat')");
 		if (mysql_num_rows($q41)<1) {
 			niceerror("Unos ispita nije uspio.");
@@ -267,28 +270,25 @@ if ($_POST['akcija'] == "massexam") {
 			# Parsiranje formata
 			$format = $_POST['format'];
 			if ($format == "A") {
+				$red = trim($red);
 				list($imepr,$bodova) = explode("\t",$red,2);
-				$bodova2 == -1;
 				list($prezime,$ime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			} else if ($format == "B") {
-				list($imepr,$bodova2) = explode("\t",$red,2);
-				$bodova == -1;
-				list($prezime,$ime) = explode(" ",$imepr,2);
-			} else if ($format == "C") {
-				list($imepr,$bodova,$bodova2) = explode("\t",$red,3);
-				list($prezime,$ime) = explode(" ",$imepr,2);
-			} else if ($format == "D") {
+				$red = trim($red);
 				list($prezime,$ime,$bodova) = explode("\t",$red,3);
-				$bodova2 == -1;
-			} else if ($format == "E") {
-				list($prezime,$ime,$bodova2) = explode("\t",$red,3);
-				$bodova == -1;
-			} else if ($format == "F") {
-				list($prezime,$ime,$bodova,$bodova2) = explode("\t",$red,4);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
+			} else if ($format == "C") {
+				$red = trim($red);
+				list($imepr,$bodova) = explode("\t",$red,2);
+				list($ime,$prezime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			}
 			# pretvori $bodova u float uz obradu decimalnog zareza
 			$bodova = floatval(str_replace(",",".",$bodova));
-			$bodova2 = floatval(str_replace(",",".",$bodova2));
 
 			# Da li student postoji?
 			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
@@ -298,18 +298,18 @@ if ($_POST['akcija'] == "massexam") {
 				# Da li se isti student ponavlja dvaput?
 				if (array_search($student, $prosli_idovi)) {
 					if ($f != 1) {
-						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (bodova: $bodova / $bodova2)<br/>";
+						print "-- GREŠKA! Student '$prezime' '$ime' se ponavlja! (bodova: $bodova)<br/>";
 					}
 				} else {
-					if ($f != 1) {
-						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova / $bodova2<br/>";
+					if ($f == 1) {
+						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
 					} else {
-						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova, ocjena2=$bodova2");
+						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
 					}
 				}
 			} else {
 				if ($f != 1) {
-					print "-- GREŠKA! Nepoznat student '$prezime $ime'<br/>";
+					print "-- GREŠKA! Nepoznat student '$prezime' '$ime'<br/>";
 				}
 			}
 		}
@@ -575,12 +575,12 @@ if ($tab == "Grupe") {
 
 if ($tab == "Ispiti") {
 	print "Uneseni ispiti:<br/>\n";
-	$q110 = myquery("select id,naziv,UNIX_TIMESTAMP(datum) from ispit where predmet=$predmet");
+	$q110 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum),t.naziv from ispit as i, tipispita as t where i.predmet=$predmet and i.tipispita=t.id order by i.datum,i.tipispita");
 	print "<ul>\n";
 	if (mysql_num_rows($q110)<1)
 		print "<li>Nije unesen nijedan ispit.</li>";
 	while ($r110 = mysql_fetch_row($q110)) {
-		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[1].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
+		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[1].' - '.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
 	}
 	print "</ul>\n";
 
@@ -591,16 +591,19 @@ if ($tab == "Ispiti") {
 	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massexam">'."\n";
 
-	print '<br/>Naziv ispita: <input type="text" name="naziv" size="20"><br/><br/>'."\n";
+	print '<br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;'."\n";
+	print 'Tip ispita: <select name="tipispita">';
+	$q111 = myquery("select id,naziv from tipispita order by id");
+	while ($r111 = mysql_fetch_row($q111)) {
+		print '<option value="'.$r111[0].'">'.$r111[1].'</option>'."\n";
+	}
+	print '</select><br/><br/>'."\n";
 	print 'Datum: '.datectrl(date('d'),date('m'),date('Y'))."<br/><br/>\n";
 
 	print 'Izaberite format podataka:<br/>'."\n";
-	print '<input type="radio" name="format" value="A"> Prezime Ime[TAB]I parcijalni<br/>'."\n";
-	print '<input type="radio" name="format" value="B"> Prezime Ime[TAB]II parcijalni<br/>'."\n";
-	print '<input type="radio" name="format" value="C" CHECKED> Prezime Ime[TAB]I parcijalni[TAB]II parcijalni<br/>'."\n";
-	print '<input type="radio" name="format" value="D"> Prezime[TAB]Ime[TAB]I parcijalni<br/>'."\n";
-	print '<input type="radio" name="format" value="E"> Prezime[TAB]Ime[TAB]II parcijalni<br/>'."\n";
-	print '<input type="radio" name="format" value="F"> Prezime[TAB]Ime[TAB]I parcijalni[TAB]II parcijalni<br/>'."\n";
+	print '<input type="radio" name="format" value="A"> Prezime Ime[TAB]Ocjena<br/>'."\n";
+	print '<input type="radio" name="format" value="B"> Prezime[TAB]Ime[TAB]Ocjena<br/>'."\n";
+	print '<input type="radio" name="format" value="C"> Ime Prezime[TAB]Ocjena<br/>'."\n";
 	print "<br/>\n";
 	print '<textarea name="massexam" cols="50" rows="10"></textarea><br/>'."\n";
 	print '<input type="submit" value="  Dodaj  ">'."\n";

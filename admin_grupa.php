@@ -12,6 +12,7 @@
 // v3.0.1.3 (2007/09/26) + Komentari
 // v3.0.1.4 (2007/10/02) + Dodano jos logginga
 // v3.0.1.5 (2007/10/08) + Nova struktura baze za predmete
+// v3.0.1.6 (2007/10/19) + Nova shema tabele ispita
 
 
 function admin_grupa() {
@@ -501,14 +502,25 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$mogucih+=20;
 	}*/
 	$max1 = $max2 = "/";
-	$q16 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
+	$int = "";
+	$q16 = myquery("select io.ocjena,i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
 	while ($r16 = mysql_fetch_row($q16)) {
-		if ($r16[0] != -1 && $r16[0]>=$max1) $max1=$r16[0];
-		if ($r16[1] != -1 && $r16[1]>=$max2) $max2=$r16[1];
+		if ($r16[0] == -1) continue;
+		if ($r16[0]>=$max1 && $r16[1]==1) $max1=$r16[0];
+		if ($r16[0]>=$max2 && $r16[1]==2) $max2=$r16[0];
+		if ($r16[0]>=$int && $r16[1]==3) $int=$r16[0];
 	}
-	$bodova += ($max1+$max2);
-	$mogucih += 40;
-	$ispiti_ispis = "<td>$max1</td><td>$max2</td>";
+	if ($int > ($max1+$max2)) {
+		$bodova += $int;
+		$mogucih += 40;
+		$ispiti_ispis = "<td colspan=\"2\" align=\"center\">$int</td>\n";
+	} else {
+		if ($max1>0) $mogucih += 20;
+		if ($max2>0) $mogucih += 20;
+		$bodova += ($max1+$max2);
+		$ispiti_ispis = "<td>$max1</td><td>$max2</td>";
+	}
+
 
 	if ($mogucih>0) $procent = round(($bodova/$mogucih)*100); else $procent=0;
 	

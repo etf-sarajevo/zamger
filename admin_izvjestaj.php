@@ -2,7 +2,8 @@
 
 // v3.0.1.1 (2007/09/20) + Novi modul "Izvjestaj" - izdvojen iz admin_nihada; dodan izvjestaj "grupe"
 // v3.0.1.2 (2007/09/25) + Dodan izvjestaj "predmet_full"; optimizacija racunanja bodova na ispitima
-// v3.0.1.3 (2007/10/08) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
+// v3.0.1.3 (2007/10/09) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
+// v3.0.1.4 (2007/10/19) + Nova shema tabele ispita
 
 
 
@@ -104,7 +105,7 @@ if ($tip == "progress") {
 	print "<p>&nbsp;</br>Student:</br><h1>$r100[0] $r100[1]</h1><br/>\nBroj indeksa: $r100[2]<br/><br/><br/>\n";
 
 	?><p><b>Pregled ostvarenog rezultata na predmetima</b></p>
-	<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
+	<table width="775" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
 		<td width="20">&nbsp;</td>
 		<td width="155">Predmet</td>
 		<td width="75">Ak. godina</td>
@@ -112,16 +113,17 @@ if ($tip == "progress") {
 		<td width="75">Zadaće</td>
 		<td width="75">I parcijalni</td>
 		<td width="75">II parcijalni</td>
+		<td width="75">Integralni</td>
 		<td width="75">UKUPNO</td>
 		<td width="75">Ocjena</td>
 	</tr>
 	<?
-	$i=1;
+	$rbr=1;
 	$q310 = myquery("select id,naziv from akademska_godina order by naziv");
 	while ($r310 = mysql_fetch_row($q310)) {
 		$q311 = myquery("select pk.id, p.naziv, l.id from predmet as p, ponudakursa as pk, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=$r310[0] and pk.predmet=p.id order by p.naziv");
 		while ($r311 = mysql_fetch_row($q311)) {
-			print "<tr><td>".($i++)."</td><td>".$r311[1]."</td><td>".$r310[1]."</td>";
+			print "<tr><td>".($rbr++)."</td><td>".$r311[1]."</td><td>".$r310[1]."</td>";
 			$ukupno=0;
 
 			$q312 = myquery("select count(*) from prisustvo as p,cas as c where p.student=$student and p.cas=c.id and c.labgrupa=$r311[2] and p.prisutan=0");
@@ -144,35 +146,37 @@ if ($tip == "progress") {
 			print "<td>$zadaca</td>";
 			$ukupno += $zadaca;
 
-			$q315 = myquery("select io.ocjena,io.ocjena2,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id  and i.predmet=$r311[0] order by i.datum");
+			$q315 = myquery("select io.ocjena,i.tipispita,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id  and i.predmet=$r311[0] order by i.datum");
 
-			$prvi_ispis = $drugi_ispis = "";
-			$max1 = $max2 = "&nbsp;";
+			$ispis = array();
+			$ispis[1] = $ispis[2] = $ispis[3] = "";
+			$max = array();
+			$max[1] = $max[2] = $max[3] = "&nbsp;";
 			
 			if (mysql_num_rows($q315)>0) {
 				while ($r315 = mysql_fetch_row($q315)) {
+					if ($r315[0] == -1) continue; // skip
 					if ($razdvoji == 1) {
 						list ($g,$m,$d) = explode("-",$r315[2]);
-						if ($r315[0]>=0) $prvi_ispis .= "$r315[0] ($d.$m.)<br/>";
-						if ($r315[1]>=0) $drugi_ispis .= "$r315[1] ($d.$m.)<br/>";
+						$ispis[$r315[1]] .= "$r315[0] ($d.$m.)<br/>";
 					}
-					if ($r315[0]!= -1 && $r315[0]>$max1) $max1=$r315[0];
-					if ($r315[1]!= -1 && $r315[1]>$max2) $max2=$r315[1];
+					if ($r315[0]>$max[$r315[1]])
+						$max[$r315[1]]=$r315[0];
 				}
-				$ukupno += ($max1 + $max2);
+				if ($max[3] > ($max[1]+$max[2]))
+					$ukupno += $max[3];
+				else
+					$ukupno += ($max[1] + $max[2]);
 			}
 
 			if ($razdvoji == 0) {
-				print "<td>$max1</td><td>$max2</td>";
+				print "<td>$max[1]</td><td>$max[2]</td><td>$max[3]</td>\n";
 			} else {
-				if ($prvi_ispis == "") 
-					print "<td>&nbsp;</td>";
-				else
-					print "<td>$prvi_ispis</td>";
-				if ($drugi_ispis == "") 
-					print "<td>&nbsp;</td>";
-				else
-					print "<td>$drugi_ispis</td>";
+				for ($i=1; $i<4; $i++)
+					if ($ispis[$i] == "")
+						print "<td>&nbsp;</td>\n";
+					else
+						print "<td>".$ispis[$i]."</td>\n";
 			}
 
 			print "<td>$ukupno</td>";
@@ -279,8 +283,8 @@ if ($tip == "predmet_full") {
 				<td colspan="7" align="center">Prisustvo tutorijalima 1</td>
 				<td colspan="7" align="center">Prisustvo tutorijalima 2</td>
 				<td colspan="5" align="center">Zadaće i lab vježbe</td>
-				<td align="center">Test 1</td>
-				<td align="center">Test 2</td>
+				<td align="center">I parc.</td>
+				<td align="center">II parc.</td>
 				<td align="center">Prisustvo</td>
 				<td align="center">Zadaće</td>
 				<td align="center">Ukupno</td>
@@ -362,17 +366,34 @@ if ($tip == "predmet_full") {
 			for  ($i=count($zadacear); $i<5; $i++)
 				print "<td>&nbsp;</td>\n";
 
-			$q507 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id  and i.predmet=$predmet order by i.datum");
-			$ocjena1 = $ocjena2 = "&nbsp;";
+
+			// Ispiti
+			$parc1 = $parc2 = "&nbsp;";
+			$integralni = 0;
+
+			$q507 = myquery("select io.ocjena, i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.datum");
 			while ($r507 = mysql_fetch_row($q507)) {
-				if ($r507[0] > $ocjena1 && $r507[0] != "-1") $ocjena1=$r507[0];
-				if ($r507[1] > $ocjena2 && $r507[1] != "-1") $ocjena2=$r507[1];
+				if ($r507[1]==1 && $r507[0] > $parc1 && $r507[0] != "-1")
+					$parc1=$r507[0];
+				if ($r507[1]==2 && $r507[0] > $parc2 && $r507[0] != "-1")
+					$parc2=$r507[0];
+				if ($r507[1]==3 && $r507[0] > $integralni && $r507[0] != "-1") 
+					$integralni=$r507[0];
 			}
-			print "<td>$ocjena1</td><td>$ocjena2</td>\n";
+
+			$total = $prisustvo+$zadace;
+
+			if ($integralni > ($parc1+$parc2)) {
+				print "<td colspan=\"2\" align=\"center\">$integralni</td>\n";
+				$total += $integralni;
+			} else {
+				print "<td>$parc1</td><td>$parc2</td>\n";
+				$total += ($parc1 + $parc2);
+			}
 
 			print "<td>$prisustvo</td>";
 			print "<td>$zadace</td>";
-			print "<td>".($prisustvo+$zadace+$ocjena1+$ocjena2)."</td>";
+			print "<td>$total</td>";
 
 			print "</tr>\n";
 		}
@@ -429,6 +450,7 @@ if ($tip == "prolaznost") {
 		?>
 		<td align="center">I</td>
 		<td align="center">II</td>
+		<td align="center">Int</td>
 		<td align="center">P</td>
 		<td align="center">Z</td>
 		<td align="center">Ocjena</td>
@@ -451,20 +473,20 @@ if ($tip == "prolaznost") {
 		$polozio = 0;
 		foreach ($kursevi as $kurs_id => $kurs) {
 			$slusalo[$kurs_id]++;
-			$q602 = myquery("select io.ocjena,io.ocjena2 from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
-			$o1 = $o2 = -1;
+			$q602 = myquery("select io.ocjena,i.tipispita from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
+			$ispit = array();
+			$ispit[1] = $ispit[2] = $ispit[3] = -1;
 			while ($r602 = mysql_fetch_row($q602)) {
-				if ($r602[0] > $o1) $o1 = $r602[0];
-				if ($r602[1] > $o2) $o2 = $r602[1];
+				if ($r602[0] > $ispit[$r602[1]]) 
+					$ispit[$r602[1]] = $r602[0];
 			}
-			if ($o1 >= 0)
-				print "<td>$o1</td>\n";
-			else
-				print "<td>&nbsp;</td>\n";
-			if ($o2 >= 0)
-				print "<td>$o2</td>\n";
-			else
-				print "<td>&nbsp;</td>\n";
+			for ($i=1; $i<4; $i++) {
+				if ($ispit[$i] >= 0)
+					print "<td>$ispit[$i]</td>\n";
+				else
+					print "<td>&nbsp;</td>\n";
+			}
+
 			print "<td>&nbsp;</td><td>&nbsp;</td>\n";
 			$q605 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
 			if (mysql_num_rows($q605)>0) {
@@ -484,6 +506,7 @@ if ($tip == "prolaznost") {
 	}
 	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">POLOŽILO</td>';
 	foreach ($kursevi as $kurs_id => $kurs) {
+		if (intval($polozilo[$kurs_id])==0) $polozilo[$kurs_id]="0";
 		print '<td colspan="5">'.$polozilo[$kurs_id]."</td>\n";
 	}
 	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">PROCENAT</td>';
