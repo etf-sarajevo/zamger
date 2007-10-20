@@ -4,6 +4,7 @@
 // v3.0.1.2 (2007/09/25) + Dodan izvjestaj "predmet_full"; optimizacija racunanja bodova na ispitima
 // v3.0.1.3 (2007/10/09) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
 // v3.0.1.4 (2007/10/19) + Nova shema tabele ispita
+// v3.0.1.5 (2007/10/20) + Razdvojen izvjestaj "grupe" i "grupedouble" (u jednoj i dvije kolone); u izvjestaj "grupe" dodan ispis komentara
 
 
 
@@ -200,7 +201,7 @@ if ($tip == "progress") {
 
 // GRUPE - Spisak studenata po grupama
 
-if ($tip == "grupe") {
+if ($tip == "grupedouble") {
 	if ($predmetadmin == -1 && $siteadmin == 0) {
 		niceerror("Nemate permisije za pristup ovom izvještaju");
 		return;
@@ -252,6 +253,81 @@ if ($tip == "grupe") {
 			<?
 		} else $parni=1;
 	}
+}
+
+if ($tip == "grupe") {
+	if ($predmetadmin == -1 && $siteadmin == 0) {
+		niceerror("Nemate permisije za pristup ovom izvještaju");
+		return;
+	}
+
+	$komentari = intval($_REQUEST['komentari']);
+	if ($komentari==0) $nr=3; else $nr=4;
+
+	$q399 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+	print "<p>&nbsp;</p><h1>".mysql_result($q399,0,0)."</h1><p>Spisak grupa:</p>\n";
+
+	?>
+	<table width="100%" border="0"><tr>
+		<td width="20%">&nbsp;</td>
+		<td width="60%">
+	<?
+
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id");
+	while ($r400 = mysql_fetch_row($q400)) {
+		?>
+			<table width="100%" border="2" cellspacing="0">
+				<tr><td colspan="<?=$nr?>"><b><?=$r400[1]?></b></td></tr>
+				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
+		<?
+		if ($komentari>0) print "<td>Komentari</td>";
+		print "</tr>\n";
+
+		$imeprezime=array();
+		$brindexa=array();
+		$komentar=array();
+		$q401 = myquery("select s.id, s.prezime, s.ime, s.brindexa from student as s, student_labgrupa as sl where sl.labgrupa=$r400[0] and sl.student=s.id");
+		while ($r401 = mysql_fetch_row($q401)) {
+			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
+			$brindexa[$r401[0]] = $r401[3];
+			if ($komentari>0) {
+				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$r401[0] and labgrupa=$r400[0] order by id");
+				$i=0;
+				while ($r402 = mysql_fetch_row($q402)) {
+					if ($i>0) $komentar[$r401[0]] .= "<br/>\n";
+					$i=1;
+					$komentar[$r401[0]] .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
+				}
+				if (mysql_num_rows($r402)<1) $komentar[$r401[0]] .= "&nbsp;";
+			}
+		}
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+		$n=1;
+		foreach($imeprezime as $stud_id => $stud_imepr) {
+			?>
+				<tr>
+					<td><?=$n++?></td>
+					<td><?=$stud_imepr?></td>
+					<td><?=$brindexa[$stud_id]?></td>
+			<?
+			if ($komentari>0) {
+				print "<td>".$komentar[$stud_id]."</td>\n";
+			}
+			print "</tr>\n";
+		}
+
+		?>
+				<!--/table></td></tr-->
+			</table>
+			<p>&nbsp;</p>
+		<?
+	}
+	?>
+		</td>
+		<td width="20%">&nbsp;</td>
+	</tr></table>
+	<?
 }
 
 
@@ -408,6 +484,11 @@ if ($tip == "predmet_full") {
 // PROLAZNOST - izvjestaj koji Nihada daje NNVu
 
 if ($tip == "prolaznost") {
+	if ($siteadmin == 0) {
+		niceerror("Nemate permisije za pristup ovom izvještaju");
+		return;
+	}
+
 	$akgod = intval($_REQUEST['_lv_column_akademska_godina']);
 	$semestar = intval($_REQUEST['semestar']);
 	$studij = intval($_REQUEST['_lv_column_studij']);
@@ -516,7 +597,6 @@ if ($tip == "prolaznost") {
 	}
 	print '<td>&nbsp;</td></tr></table>';
 }
-
 
 return;
 

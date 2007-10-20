@@ -21,6 +21,7 @@
 // v3.0.1.7 (2007/10/09) + Popravljen bug sa kopiranjem predmeta, dodana provjera prava pristupa
 // v3.0.1.8 (2007/10/16) + SQL bug u provjeri permisija
 // v3.0.1.9 (2007/10/19) + Nova shema tabele ispita
+// v3.0.1.10 (2007/10/20) + Odvojen tab "Izvjestaji", dodan izvjestaj sa komentarima
 
 
 function admin_predmet() {
@@ -445,6 +446,7 @@ function upozorenje(url) {
 <td width="50">&nbsp;</td>
 <? 
 printtab("Opcije",$predmet,$tab); 
+printtab("Izvještaji",$predmet,$tab); 
 printtab("Grupe",$predmet,$tab); 
 printtab("Ispiti",$predmet,$tab); 
 printtab("Zadaće",$predmet,$tab); 
@@ -452,7 +454,7 @@ printtab("Kvizovi",$predmet,$tab);
 printtab("Ocjena",$predmet,$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
-<td width="150">&nbsp;</td>
+<td width="100">&nbsp;</td>
 </tr>
 <tr>
 <td width="50">&nbsp;</td>
@@ -478,6 +480,20 @@ if ($tab == "Opcije") {
 	print db_form("ponudakursa");
 }
 
+
+if ($tab == "Izvještaji") {
+
+	// Izvjestaj "GRUPE"
+//	print '<p><hr/></p>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupedouble&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Spisak studenata po grupama</a></p>';
+
+	// Izvjestaj "PREDMET_FULL"
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Pregled grupa, prisustva, bodova</a>';
+
+	// Izvjestaj "KOMENTARI"
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Spisak studenata sa komentarima</a>';
+
+}
 
 
 # Konfiguracija grupa
@@ -546,12 +562,6 @@ if ($tab == "Grupe") {
 	}
 	print '</select><input type="submit" value="Dodaj">'."\n";
 	print '</form></p>'."\n";
-
-	// Izvjestaj "GRUPE"
-	print '<p><hr/></p><p><a href="qwerty.php?sta=izvjestaj&tip=grupe&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> IZVJEŠTAJ: Spisak studenata po grupama</a></p>';
-
-	// Izvjestaj "PREDMET_FULL"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> IZVJEŠTAJ: Pregled grupa, prisustva, bodova</a>';
 
 	# Masovni unos
 	print '<p><hr/></p><p><b>Masovni unos studenata</b><br/>'."\n";
