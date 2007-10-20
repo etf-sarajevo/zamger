@@ -11,6 +11,7 @@
 // v3.0.0.3 (2007/05/04) + Dodajem blank polje u combo-box kako bi bilo moguće kucati nešto
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/02) + Dodan logging
+// v3.0.1.2 (2007/10/20) + Lokalna kopija funkcije file_put_contents sada ima provjeru da li je vec redefinisana, tako da ne dolazi do greske na novijim verzijama PHPa
 
 
 function admin_pregled() {
@@ -431,12 +432,14 @@ function getmimeicon($file) {
 	return "misc.png";
 }
 
-// ggrrrrrrrrrrrrr!!!
+// a library function not available in earlier versions of php...
+if (!function_exists('file_put_contents')) {
 function file_put_contents($file,$tekst) {
 	if (!($file = fopen($file,"w"))) return false;
 	$bytes = fwrite($file,$tekst);
 	fclose($file);
 	return $bytes;
+}
 }
 
 ?>
