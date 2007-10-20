@@ -7,11 +7,12 @@
 // v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; ukinuta oznaka konačnog statusa
+// v3.0.1.2 (2007/10/20) + Nova schema tabele ispita; sredjeno forwardovanje force_userid (potreban za admin pristup studentskom interfejsu)
 
 
 function stud_status() {
 
-global $userid,$labgrupa,$predmet_id;
+global $userid,$labgrupa,$predmet_id,$force_userid;
 
 
 
@@ -244,10 +245,10 @@ while ($r21 = mysql_fetch_row($q21)) {
 			$status = mysql_result($q22,0,0);
 			$bodova_zadatak = mysql_result($q22,0,1);
 			$bodova_zadaca += $bodova_zadatak;
-			?><td><a href="student.php?sta=zadaca&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>&labgrupa=<?=$labgrupa?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?></a></td><?
+			?><td><a href="student.php?sta=zadaca&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>&labgrupa=<?=$labgrupa?>&force_userid=<?=$force_userid?>"><img src="images/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?></a></td><?
 		}
 	}
-	?><td><?=$bodova_zadaca?></td><td><a href="student.php?sta=pdf&zadaca=<?=$zadaca?>&labgrupa=<?=$labgrupa?>"><img src="images/acroread.png" border="0"></a></td></tr><?
+	?><td><?=$bodova_zadaca?></td><td><a href="student.php?sta=pdf&zadaca=<?=$zadaca?>&labgrupa=<?=$labgrupa?>&force_userid=<?=$force_userid?>"><img src="images/acroread.png" border="0"></a></td></tr><?
 	$bodova_sve_zadace += $bodova_zadaca;
 }
 
@@ -284,34 +285,48 @@ $bodova += $bodova_sve_zadace;
 <?
 	
 
-$q30 = myquery("select id,naziv from ispit where predmet=$predmet_id");
+$q30 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum),t.naziv,t.id from ispit as i, tipispita as t where i.predmet=$predmet_id and i.tipispita=t.id order by i.datum,i.tipispita");
 if (mysql_num_rows($q30) == 0) {
 	print "<p>Nije bilo parcijalnih ispita.</p>";
 }
 
 $brispita=$polozenih=0; 
+$ispit_ocjene = array();
+$ispit_ocjene[1] = $ispit_ocjene[2] = $ispit_ocjene[3] = -1;
 
 while ($r30 = mysql_fetch_row($q30)) {
-	?><p><?=$r30[1]?>: <b><?
 	$brispita++;
 
 	$q31 = myquery("select ocjena from ispitocjene where ispit=$r30[0] and student=$userid");
 	if (mysql_num_rows($q31)>0) {
 		if (($ocjena = mysql_result($q31,0,0)) == -1) {
-			if ($stud_spol=="a") print "Nije izašla"; else print "Nije izašao";
+//			if ($stud_spol=="a") print "Nije izašla"; else print "Nije izašao";
 		} else {
+			?><p><?=$r30[3]?> (<?=date("d. m. Y.",$r30[2])?>): <b><?
 			print "$ocjena bodova";
-			$bodova += $ocjena;
-			if ($ocjena>=10) $polozenih++;
+			if ($ocjena>$ispit_ocjene[$r30[4]]) $ispit_ocjene[$r30[4]]=$ocjena;
 		}
-		$mogucih+=20;
-	} else {
-		if ($stud_spol=="a") print "Nije izašla"; else print "Nije izašao";
-		$mogucih+=20;
+//	} else {
+//		if ($stud_spol=="a") print "Nije izašla"; else print "Nije izašao";
+//		$mogucih+=20;
 	}
+//	$mogucih+=20;
 	print "</b></p>";
 }
 
+if ($ispit_ocjene[3]!=-1 && $ispit_ocjene[3] > ($ispit_ocjene[1]+$ispit_ocjene[2])) {
+	$bodova += $ispit_ocjene[3];
+	$mogucih += 40;
+} else {
+	if ($ispit_ocjene[1]!=-1) { 
+		$bodova += $ispit_ocjene[1];
+		$mogucih += 20;
+	}
+	if ($ispit_ocjene[2]!=-1) { 
+		$bodova += $ispit_ocjene[2];
+		$mogucih += 20;
+	}
+}
 
 
 

@@ -7,6 +7,7 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; rendering fix (Konqueror 3.5.7)
 // v3.0.1.2 (2007/10/18) + Dodana mogucnost ulaska u studentski interfejs za site admina
+// v3.0.1.3 (2007/10/20) + Sredjeno forwardovanje force_userid (potreban za admin pristup studentskom interfejsu)
 
 
 # Prijava
@@ -128,9 +129,9 @@ function menuimage($img,$tekst,$link) {
 	<table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
 		<tr><td width="250" valign="top" background="images/fadetogray.gif">
 			<br/>
-			<?=menuimage("artsfftscope.png","Status","student.php?sta=status&labgrupa=$labgrupa");?>
-			<?=menuimage("source.png","Pošalji zadaću","student.php?sta=zadaca&labgrupa=$labgrupa")?>
-			<?=menuimage("kontact_contacts.png","Promijeni lične podatke","student.php?sta=profil&labgrupa=$labgrupa")?>
+			<?=menuimage("artsfftscope.png","Status","student.php?sta=status&labgrupa=$labgrupa&force_userid=$force_userid");?>
+			<?=menuimage("source.png","Pošalji zadaću","student.php?sta=zadaca&labgrupa=$labgrupa&force_userid=$force_userid")?>
+			<?=menuimage("kontact_contacts.png","Promijeni lične podatke","student.php?sta=profil&labgrupa=$labgrupa&force_userid=$force_userid")?>
 			<?=menuimage("kontact_todo.png","Pregled ocjena","pregled-public.php?predmet=$predmet_id&toplista=1")?>
 			<?=menuimage("exit.png","Izlaz","student.php?sta=logout&labgrupa=$labgrupa")?>
 		</td>
