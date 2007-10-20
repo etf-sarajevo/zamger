@@ -6,6 +6,7 @@
 // v3.0.0.2 (2007/05/30) + Generisanje zadaća u PDF formatu 
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; rendering fix (Konqueror 3.5.7)
+// v3.0.1.2 (2007/10/18) + Dodana mogucnost ulaska u studentski interfejs za site admina
 
 
 # Prijava
@@ -21,6 +22,15 @@ if (!$userid) {
 	print '<script language="JavaScript">window.location="index.php?greska=1"</script>';
 	exit;
 }
+
+// Pristup za siteadmina
+$force_userid = intval($_GET['force_userid']);
+if ($admin==1 && $force_userid>0) {
+	$q001 = myquery("select siteadmin from nastavnik where id=$userid");
+	if (mysql_num_rows($q001)>0 && (mysql_result($q001,0,0) > 0))
+		$userid=$force_userid;
+}
+
 
 $labgrupa=intval($_GET['labgrupa']); if ($labgrupa==0) $labgrupa=intval($_POST['labgrupa']);
 
@@ -86,7 +96,7 @@ if ($sta == "pdf") {
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><img src="images/etf.gif"></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.5 beta</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>

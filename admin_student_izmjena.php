@@ -13,6 +13,7 @@
 // v3.0.1.5 (2007/10/01) + Ispravljen prikaz grupe nakon promjene grupe
 // v3.0.1.6 (2007/10/02) + Dodan logging
 // v3.0.1.7 (2007/10/08) + Nova struktura baze za predmete
+// v3.0.1.8 (2007/10/08) + Dodana mogucnost ulaska u studentski interfejs za site admina
 
 
 function admin_student_izmjena() {
@@ -184,6 +185,7 @@ if ($izmjena_moguca == 1) {
 if (mysql_result($q103,0,0)==2) {
 	?>
 	<tr><td colspan="2"><a href="qwerty.php?sta=nihada&akcija=edit&student=<?=$stud_id?>">Detaljnije o studentu</a></td></tr>
+	<tr><td colspan="2"><a href="student.php?force_userid=<?=$stud_id?>">Studentski interfejs</a></td></tr>
 	<?
 }
 
