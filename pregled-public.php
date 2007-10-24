@@ -11,6 +11,7 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/09/26) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna)
 // v3.0.1.2 (2007/10/10) + Nova struktura baze za predmete
+// v3.0.1.3 (2007/10/24) + Nova schema tabele za ispite
 
 
 ?>
@@ -285,16 +286,22 @@ while ($r10 = mysql_fetch_row($q10)) {
 			if ($predmet==7) $mogucih += 70; else $mogucih+=20;
 		}*/
 
-		$max1 = $max2 = "/";
-		$q202 = myquery("select io.ocjena,io.ocjena2 from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
+		$maxispit = array();
+		$maxispit[1] = $maxispit[2] = $maxispit[3] = "/";
+		$q202 = myquery("select io.ocjena, i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
 		while ($r202 = mysql_fetch_row($q202)) {
-			if ($r202[0] != -1 && $r202[0]>=$max1) $max1=$r202[0];
-			if ($r202[1] != -1 && $r202[1]>=$max2) $max2=$r202[1];
+			if ($r202[0] != -1 && $r202[0]>=$maxispit[$r202[1]]) $maxispit[$r202[1]]=$r202[0];
 		}
-		$bodova += ($max1+$max2);
-		$mogucih += 40;
-		$parc_ispis = "<td>$max1</td><td>$max2</td>";
-
+		if ($maxispit[3] > ($maxispit[1]+$maxispit[2])) {
+			$bodova += $maxispit[3];
+			$mogucih += 40;
+			$parc_ispis = '<td colspan="2" align="center">'.$$maxispit[3].'</td>';
+		} else {
+			$bodova += ($max1+$max2);
+			if ($maxispit[1] != "/") $mogucih += 20;
+			if ($maxispit[2] != "/") $mogucih += 20;
+			$parc_ispis = "<td>$maxispit[1]</td><td>$maxispit[2]</td>";
+		}
 
 		if ($mogucih>0) $procent = round(($bodova/$mogucih)*100); else $procent=0;
 		
