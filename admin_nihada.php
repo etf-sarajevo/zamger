@@ -9,6 +9,7 @@
 // v3.0.1.7 (2007/10/09) + Nova struktura baze za predmete; nove opcije u editovanju predmeta; kartica "Studij" - za sada samo izvjestaj o prolaznosti
 // v3.0.1.8 (2007/10/10) + Podrska za nasa slova kod generisanja LDAP logina
 // v3.0.1.9 (2007/10/16) + Ispravka buga prilikom dodavanja novog predmeta
+// v3.0.1.10 (2007/10/25) + Dodani podaci o studiju u editovanje studenta; popravka buga u listi predmeta
 
 
 function admin_nihada() {
@@ -195,6 +196,27 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 		$labgrupa = mysql_result($q193,0,0);
 		$q195 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 	}
+	if ($_POST['subakcija'] == "student_studij") {
+		$q202 = myquery("select id,naziv from akademska_godina order by naziv desc");
+		$r202 = mysql_fetch_row($q202);
+
+		$q196 = myquery("select count(*) from student_studij where student=$student and akademska_godina=$r202[0]");
+		$cc = mysql_result($q196,0,0);
+		$studij = intval($_POST['studij']);
+		$semestar = intval($_POST['semestar']);
+		if ($cc==0) {
+			if ($studij>0) {
+				$q197 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$r202[0]");
+			}
+		} else {
+			if ($studij>0) {
+				$q198 = myquery("update student_studij set studij=$studij, semestar=$semestar where student=$student and akademska_godina=$r202[0]");
+			} else {
+				$q198 = myquery("delete from student_studij where student=$student and akademska_godina=$r202[0]");
+			}
+		}
+	}
+
 
 	// Izvjestaji
 
@@ -273,16 +295,52 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 		<?
 	}
 
-	print "</table>\n";
 
 	// Trenutno sluša
 
 	$q202 = myquery("select id,naziv from akademska_godina order by naziv desc");
 	$r202 = mysql_fetch_row($q202);
+
+	$q202a = myquery("select studij,semestar from student_studij where akademska_godina=$r202[0] and student=$student");
+	if (mysql_num_rows($q202a)==0) {
+		$studij=0;
+		$semestar="";
+	} else {
+		$studij=mysql_result($q202a,0,0);
+		$semestar=mysql_result($q202a,0,1);
+	}
+
+	?>
+	<tr><td colspan="5">&nbsp;</td></tr>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="student_studij">
+	<tr>
+		<td colspan="3">Trenutno (<b><?=$r202[1]?></b>) upisan na:<br/>
+		<select name="studij">
+			<option value="0" <?if($studij==0) print "SELECTED"?>>-- Nije upisan --</option>
+			<?
+			$q202b = myquery("select id, naziv from studij order by id");
+			while ($r202b = mysql_fetch_row($q202b)) {
+				if ($r202b[0]==$studij) $s=" SELECTED"; else $s="";
+				print "<option value=\"$r202b[0]\"$s>$r202b[1]</option>\n";
+			}
+			?>
+		</select>
+		</td>
+		<td>Semestar:<br/>
+		<input type="text" size="10" name="semestar" value="<?=$semestar?>">
+		</td>
+		<td><input type="Submit" value=" Izmijeni "></td>
+	</tr></form>
+	<?
+
+
+	print "</table><br/>\n";
+
 	
 	$q203 = myquery("select pk.id,p.naziv from predmet as p, ponudakursa as pk, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=$r202[0] and pk.predmet=p.id");
 	if (mysql_num_rows($q203)>0)
-		print "<b>Trenutno sluša ($r202[1]):</b>\n<ul>\n";
+		print "Trenutno ($r202[1]) sluša predmete:\n<ul>\n";
 	while ($r203 = mysql_fetch_row($q203))
 		print "<li><a href=\"".genuri()."&tab=Predmeti&akcija=edit&predmet=$r203[0]\">$r203[1]</a></li>\n";
 	print "</ul>\n";
@@ -620,20 +678,20 @@ else if ($tab == "Predmeti") {
 				if ($i==$offset)
 					print "<b>$br</b> ";
 				else
-					print "<a href=\"".genuri()."&offset=$i\">$br</a> ";
+					print "<a href=\"".genuri()."&offset=$i&_lv_column_akademska_godina=$ak_god\">$br</a> ";
 			}
 			print "<br/>";
 		}
 		print "<br/>";
 
 		if ($ak_god>0 && $src != "") {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($ak_god>0) {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id order by ag.naziv desc, p.naziv");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($src != "") {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and pk.predmet=p.id order by ag.naziv desc,p.naziv");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and pk.predmet=p.id order by ag.naziv desc,p.naziv limit $offset,$limit");
 		}
 
 		print '<table width="100%" border="0">';
