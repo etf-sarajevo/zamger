@@ -13,7 +13,8 @@
 // v3.0.1.5 (2007/10/01) + Ispravljen prikaz grupe nakon promjene grupe
 // v3.0.1.6 (2007/10/02) + Dodan logging
 // v3.0.1.7 (2007/10/08) + Nova struktura baze za predmete
-// v3.0.1.8 (2007/10/08) + Dodana mogucnost ulaska u studentski interfejs za site admina
+// v3.0.1.8 (2007/10/20) + Dodana mogucnost ulaska u studentski interfejs za site admina
+// v3.0.1.9 (2007/10/20) + Jos ispravki u access pravima: omoguceno asistentu da udje
 
 
 function admin_student_izmjena() {
@@ -60,11 +61,11 @@ if (mysql_num_rows($q101)>0) {
 }
 
 
-// Onemogući izmjenu ako prijavljeni korisnik nije admin predmeta
-$q102=myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
+// Onemogući izmjenu ako prijavljeni korisnik nije nastavnik na predmetu ili siteadmin
+$q102=myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
 $q103=myquery("select siteadmin from nastavnik where id=$userid");
 $izmjena_moguca = 0;
-if ((mysql_num_rows($q102)>0 && mysql_result($q102,0,0)==1) || (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==2)) {
+if ((mysql_result($q102,0,0)>0) || (mysql_num_rows($q103)>0 && mysql_result($q103,0,0)==2)) {
 	$izmjena_moguca = 1;
 }
 
