@@ -5,6 +5,8 @@
 // v3.0.1.3 (2007/10/09) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
 // v3.0.1.4 (2007/10/19) + Nova shema tabele ispita
 // v3.0.1.5 (2007/10/20) + Razdvojen izvjestaj "grupe" i "grupedouble" (u jednoj i dvije kolone); u izvjestaj "grupe" dodan ispis komentara
+// v3.0.1.6 (2007/10/24) + Dovrsen izvjestaj "prolaznost"; 
+// v3.0.1.6 (2007/11/02) + Dodana kolona za konacnu ocjenu u predmet_full
 
 
 
@@ -352,7 +354,7 @@ if ($tip == "predmet_full") {
 	while ($r501 = mysql_fetch_row($q501)) {
 		?>
 		<table width="100%" border="2" cellspacing="0" cellpadding="2">
-			<tr><td colspan="27" align="center"><b><?=strtoupper($r501[1])?></b></td></tr>
+			<tr><td colspan="28" align="center"><b><?=strtoupper($r501[1])?></b></td></tr>
 			<tr><td align="center">R.br.</td>
 				<td align="center">Br. indexa</td>
 				<td align="center">Prezime i ime</td>
@@ -364,6 +366,7 @@ if ($tip == "predmet_full") {
 				<td align="center">Prisustvo</td>
 				<td align="center">Zadaće</td>
 				<td align="center">Ukupno</td>
+				<td align="center">Ocjena</td>
 			</tr>
 		<?
 
@@ -471,6 +474,14 @@ if ($tip == "predmet_full") {
 			print "<td>$zadace</td>";
 			print "<td>$total</td>";
 
+			// Konacna ocjena
+			$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet");
+			if (mysql_num_rows($q508)>0) {
+				print "<td>".mysql_result($q508,0,0)."</td>\n";
+			} else {
+				print "<td>/</td>\n";
+			}
+
 			print "</tr>\n";
 		}
 		print "</table><p>&nbsp;</p>";
@@ -512,6 +523,17 @@ if ($tip == "prolaznost") {
 
 	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
+	// array zadaća - optimizacija
+	$kzadace = array();
+	foreach ($kursevi as $kurs_id => $kurs) {
+		$q600a = myquery("select id, zadataka from zadaca where predmet=$kurs_id");
+		$tmpzadaca = array();
+		while ($r600a = mysql_fetch_row($q600a)) {
+			$tmpzadaca[$r600a[0]] = $r600a[1];
+		}
+		$kzadace[$kurs_id] = $tmpzadaca;
+	}
+
 	?>
 	<table width="<?=$sirina?>" border="1" cellspacing="0" cellpadding="2">
 	<tr>
@@ -520,7 +542,7 @@ if ($tip == "prolaznost") {
 		<td rowspan="2" valign="center">Prezime i ime</td>
 	<?
 	foreach ($kursevi as $kurs) {
-		print '<td colspan="5">'.$kurs."</td>\n";
+		print '<td colspan="6" align="center">'.$kurs."</td>\n";
 	}
 	?>
 		<td rowspan="2" valign="center" align="center">UKUPNO</td>
@@ -538,7 +560,7 @@ if ($tip == "prolaznost") {
 		<?
 	}
 	print "</tr>\n";
-	$i=1;
+	$rbr=1;
 
 	// Slušalo / položilo predmet
 	$slusalo = array();
@@ -547,7 +569,7 @@ if ($tip == "prolaznost") {
 	foreach ($imeprezime as $stud_id => $stud_imepr) {
 		?>
 		<tr>
-			<td><?=$i?></td>
+			<td><?=$rbr++?></td>
 			<td><?=$brind[$stud_id]?></td>
 			<td><?=$stud_imepr?></td>
 		<?
@@ -568,10 +590,28 @@ if ($tip == "prolaznost") {
 					print "<td>&nbsp;</td>\n";
 			}
 
-			print "<td>&nbsp;</td><td>&nbsp;</td>\n";
-			$q605 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
-			if (mysql_num_rows($q605)>0) {
-				$ocj = mysql_result($q605,0,0);
+			$q603 = myquery("select count(*) from prisustvo as p,cas as c, labgrupa as l where p.student=$stud_id and p.cas=c.id and c.labgrupa=l.id and l.predmet=$kurs_id and p.prisutan=0");
+			if (mysql_result($q603,0,0)<=3) {
+				print "<td>10</td>\n";
+				$ukupno += 10;
+			} else
+				print "<td>0</td>\n";
+
+			$zadaca = 0;
+			foreach ($kzadace[$kurs_id] as $zid => $zadataka) {
+				for ($i=1; $i<=$zadataka; $i++) {
+					$q605 = myquery("select status,bodova from zadatak where zadaca=$zid and redni_broj=$i and student=$stud_id order by id desc limit 1");
+					if ($r605 = mysql_fetch_row($q605))
+						if ($r605[0] == 5)
+							$zadaca += $r605[1];
+//					$zadaca .= $i." ";
+				}
+			}
+			print "<td>$zadaca</td>\n";
+
+			$q606 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
+			if (mysql_num_rows($q606)>0) {
+				$ocj = mysql_result($q606,0,0);
 				print "<td>$ocj</td>\n";
 				if ($ocj >= 6) $polozio++;
 				$polozilo[$kurs_id]++;
@@ -596,6 +636,37 @@ if ($tip == "prolaznost") {
 		print '<td colspan="5">'.$proc."%</td>\n";
 	}
 	print '<td>&nbsp;</td></tr></table>';
+}
+
+
+if ($tip == "odustali") {
+	if ($siteadmin == 0) {
+		niceerror("Nemate permisije za pristup ovom izvještaju");
+		return;
+	}
+
+	print "<h3>Spisak studenata koji više nisu na fakultetu</h3>\n";
+	
+	$q700 = myquery("select s.id, s.ime, s.prezime, ss.studij from student as s left join student_studij as ss on s.id=ss.student where ss.studij is null");
+	$imeprezime = array();
+	while ($r700 = mysql_fetch_row($q700)) {
+		$imeprezime[$r700[0]] = "$r700[2] $r700[1]";
+	}
+	
+	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+	$rbr=1;
+	foreach($imeprezime as $stud_id => $stud_imepr) {
+		$q702 = myquery("select count(*) from akademska_godina as ag, student_labgrupa as sl, labgrupa as l, ponudakursa as pk where sl.student=$stud_id and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=ag.id and pk.predmet=5");
+		if (mysql_result($q702,0,0)>0) continue;
+		$q701 = myquery("select ag.naziv from akademska_godina as ag, student_labgrupa as sl, labgrupa as l, ponudakursa as pk where sl.student=$stud_id and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=ag.id group by ag.naziv order by ag.naziv");
+		$aghtml = "";
+		while ($r701 = mysql_fetch_row($q701)) {
+			if ($aghtml != "") $aghtml .= ", ";
+			$aghtml .= $r701[0];
+		}
+		print $rbr++.". $stud_imepr ($aghtml)<Br/>";
+	}
 }
 
 return;
