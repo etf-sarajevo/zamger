@@ -22,6 +22,9 @@
 // v3.0.1.8 (2007/10/16) + SQL bug u provjeri permisija
 // v3.0.1.9 (2007/10/19) + Nova shema tabele ispita
 // v3.0.1.10 (2007/10/20) + Odvojen tab "Izvjestaji", dodan izvjestaj sa komentarima
+// v3.0.1.11 (2007/10/24) + massinput: Brisanje starih podataka o prisustvu; Ne radi nista ako student ostaje u istoj grupi
+// v3.0.1.12 (2007/10/25) + Ukinut "Naziv ispita" posto sada "Tip ispita" igra tu ulogu; dodan format "Ime Prezime[tab]ocjena" u konačne ocjene
+// v3.0.1.13 (2007/11/02) + Numerisani izvjestaji u kartici "Izvjestaji"
 
 
 function admin_predmet() {
@@ -174,11 +177,12 @@ if ($_POST['akcija'] == "massinput") {
 
 			# Da li student već postoji?
 			$q30 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
+			$stara_grupa = -1;
 			if (mysql_num_rows($q30)>0) {
 				$student = mysql_result($q30,0,0);
 				$q30a = myquery("select l.id,l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet");
 				if (mysql_num_rows($q30a)>0) {
-					$labgrupa = mysql_result($q30a,0,0);
+					$stara_grupa = mysql_result($q30a,0,0);
 					$lgnaziv = mysql_result($q30a,0,1);
 					if ($f != 1) {
 						print "Prebacivanje studenta '$prezime $ime' iz grupe '$lgnaziv' u grupu";
@@ -207,15 +211,27 @@ if ($_POST['akcija'] == "massinput") {
 			} else {
 				$q33 = myquery("select id,naziv from labgrupa where naziv='$grupa' and predmet=$predmet");
 			}
+			$nova_grupa = mysql_result($q33,0,0);
 
 			# Dodaj studenta u grupu ili ispisi, ovisno o $f
 			if (mysql_num_rows($q33)==0) {
 				if ($f != 1) print " --- Nepoznata grupa!!";
 			} else {
-				if ($f != 1)
-					print " '".mysql_result($q33,0,1)."'";
-				else 
-					$q34 = myquery("insert into student_labgrupa set student=$student, labgrupa=".mysql_result($q33,0,0));
+				if ($nova_grupa == $stara_grupa) {
+					if ($f != 1) print " ISTU GRUPU! Ništa neće biti urađeno.";
+				} else {
+					if ($f != 1)
+						print " '".mysql_result($q33,0,1)."'";
+					else {
+						if ($stara_grupa>0) {
+							$q33a = myquery("select id from cas where labgrupa=$stara_grupa");
+							while ($r33a = mysql_fetch_row($q33a)) {
+								$q33b = myquery("delete from prisustvo where student=$student and cas=$r33a[0]");
+							}
+						}
+						$q34 = myquery("insert into student_labgrupa set student=$student, labgrupa=$nova_grupa");
+					}
+				}
 			}
 			if ($f != 1) print "<br/>\n";
 		}
@@ -356,6 +372,9 @@ if ($_POST['akcija'] == "massocjena") {
 				list($imepr,$ocjena) = explode("\t",$red,2);
 				list($prezime,$ime) = explode(" ",$imepr,2);
 			} else if ($format == "B") {
+				list($imepr,$ocjena) = explode("\t",$red,2);
+				list($ime,$prezime) = explode(" ",$imepr,2);
+			} else if ($format == "C") {
 				list($prezime,$ime,$ocjena) = explode("\t",$red,3);
 			}
 			# pretvori $ocjenu u int
@@ -441,7 +460,7 @@ function upozorenje(url) {
 
 <p><h3><?=$predmet_naziv?></h3></p>
 
-<table border="0" cellspacing="1" cellpadding="5" width="550">
+<table border="0" cellspacing="1" cellpadding="5" width="650">
 <tr>
 <td width="50">&nbsp;</td>
 <? 
@@ -454,11 +473,11 @@ printtab("Kvizovi",$predmet,$tab);
 printtab("Ocjena",$predmet,$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
-<td width="100">&nbsp;</td>
+<td width="200">&nbsp;</td>
 </tr>
 <tr>
 <td width="50">&nbsp;</td>
-<td colspan="8" bgcolor="#DDDDDD" width="500">
+<td colspan="9" bgcolor="#DDDDDD" width="600">
 <?
 
 
@@ -485,13 +504,13 @@ if ($tab == "Izvještaji") {
 
 	// Izvjestaj "GRUPE"
 //	print '<p><hr/></p>';
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupedouble&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Spisak studenata po grupama</a></p>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupedouble&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 1. Spisak studenata po grupama</a></p>';
 
 	// Izvjestaj "PREDMET_FULL"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Pregled grupa, prisustva, bodova</a>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 2. Pregled grupa, prisustva, bodova</a>';
 
 	// Izvjestaj "KOMENTARI"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> Spisak studenata sa komentarima</a>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 3. Spisak studenata sa komentarima</a>';
 
 }
 
@@ -590,7 +609,7 @@ if ($tab == "Ispiti") {
 	if (mysql_num_rows($q110)<1)
 		print "<li>Nije unesen nijedan ispit.</li>";
 	while ($r110 = mysql_fetch_row($q110)) {
-		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[1].' - '.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
+		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
 	}
 	print "</ul>\n";
 
@@ -601,8 +620,8 @@ if ($tab == "Ispiti") {
 	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massexam">'."\n";
 
-	print '<br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;'."\n";
-	print 'Tip ispita: <select name="tipispita">';
+//	print '<br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;'."\n";
+	print '<br/>Tip ispita: <select name="tipispita">';
 	$q111 = myquery("select id,naziv from tipispita order by id");
 	while ($r111 = mysql_fetch_row($q111)) {
 		print '<option value="'.$r111[0].'">'.$r111[1].'</option>'."\n";
@@ -666,13 +685,20 @@ if ($tab == "Kvizovi") {
 // Konačna ocjena
 
 if ($tab == "Ocjena") {
-	print "<p>Unos konačnih ocjena za predmet.</p>\n";
+	# Pojedinačna ocjena
+	
+
+
+	# Masovni unos konačnih ocjena
+//	print '<p><hr/></p>'."\n";
+	print '<p><b>Masovni unos konačnih ocjena</b><br/>'."\n";
 	print genform("POST");
 	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massocjena">'."\n";
 	print 'Izaberite format podataka:<br/>'."\n";
 	print '<input type="radio" name="format" value="A" CHECKED> Prezime Ime[TAB]Ocjena<br/>'."\n";
-	print '<input type="radio" name="format" value="B"> Prezime[TAB]Ime[TAB]Ocjena<br/>'."\n";
+	print '<input type="radio" name="format" value="B"> Ime Prezime[TAB]Ocjena<br/>'."\n";
+	print '<input type="radio" name="format" value="C"> Prezime[TAB]Ime[TAB]Ocjena<br/>'."\n";
 	print "<br/>\n";
 	print '<textarea name="massocjena" cols="50" rows="10"></textarea><br/>'."\n";
 	print '<input type="submit" value="  Dodaj  ">'."\n";
