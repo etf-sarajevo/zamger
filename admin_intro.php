@@ -9,6 +9,8 @@
 // v3.0.1.4 (2007/10/08) + Nova struktura baze za predmete
 // v3.0.1.5 (2007/10/10) + Sakrij promjenu sifre ako autentikacija nije tabela
 // v3.0.1.6 (2007/10/16) + Popravljen HTML bug
+// v3.0.1.7 (2007/11/03) + Novica
+// v3.0.1.8 (2007/11/08) + Dodan kratki naziv studija pored naziva predmeta
 
 
 function admin_intro() {
@@ -25,7 +27,7 @@ $prezime = mysql_result($q1,0,1);
 $siteadmin = mysql_result($q1,0,2);
 
 $stud_spol = substr($ime,strlen($ime)-1);
-if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Sa&#353;a") {
+if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Sa&#353;a" && $ime != "Novica") {
 	print "<h1>Dobro došla, $ime $prezime!</h1>";
 } else {
 	print "<h1>Dobro došao, $ime $prezime!</h1>";
@@ -75,12 +77,13 @@ while ($r1a = mysql_fetch_row($q1a)) {
 		$admin_predmeta = $r2[1];
 	
 		# Ispis naziva predmeta
-		$q3 = myquery("select p.naziv,pk.aktivan from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+		$q3 = myquery("select p.naziv,pk.aktivan,s.kratkinaziv from predmet as p, ponudakursa as pk, studij as s where pk.id=$predmet and pk.predmet=p.id and pk.studij=s.id");
 		if (mysql_num_rows($q3)<0) {
 			print "Greška: nepoznat predmet!";
 		} else {
 			$naziv_predmeta = mysql_result($q3,0,0);
 			$predmet_aktivan = mysql_result($q3,0,1);
+			$studij = mysql_result($q3,0,2);
 			
 			// Da li je predmet moj?
 			$moj=1;
@@ -89,13 +92,13 @@ while ($r1a = mysql_fetch_row($q1a)) {
 				if (mysql_result($q3a,0,0)<1) $moj=0;
 			}
 			if($predmet_aktivan==0 && $moj==0) {
-				print "<b><font color=\"#CC8888\">$naziv_predmeta $god</font></b>";
+				print "<b><font color=\"#CC8888\">$naziv_predmeta ($studij)</font></b>";
 			} else if ($predmet_aktivan==0) {
-				print "<b><font color=\"#888888\">$naziv_predmeta $god</font></b>";
+				print "<b><font color=\"#888888\">$naziv_predmeta ($studij)</font></b>";
 			} else if ($moj==0) {
-				print "<b><font color=\"#664444\">$naziv_predmeta $god</font></b>";
+				print "<b><font color=\"#664444\">$naziv_predmeta ($studij)</font></b>";
 			} else {
-				print "<b>$naziv_predmeta</b>";
+				print "<b>$naziv_predmeta ($studij)</b>";
 			}
 		}
 	
