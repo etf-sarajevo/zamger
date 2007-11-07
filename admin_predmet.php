@@ -25,6 +25,7 @@
 // v3.0.1.11 (2007/10/24) + massinput: Brisanje starih podataka o prisustvu; Ne radi nista ako student ostaje u istoj grupi
 // v3.0.1.12 (2007/10/25) + Ukinut "Naziv ispita" posto sada "Tip ispita" igra tu ulogu; dodan format "Ime Prezime[tab]ocjena" u konačne ocjene
 // v3.0.1.13 (2007/11/02) + Numerisani izvjestaji u kartici "Izvjestaji"
+// v3.0.1.14 (2007/11/08) + Zabrani registrovanje novih studenata kroz massinput; novi formati za massinput (ukinute opcije koje ne interesuju nastavnike, dodano Ime-Prezime); nova opcija "upisi sve studente sa semestra"; popravljen log za massexam
 
 
 function admin_predmet() {
@@ -141,6 +142,32 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 
 
 
+# Upis u prvu grupu svih koji slušaju tekući semestar/odsjek
+
+if ($_REQUEST['akcija'] == "svisasemestra") {
+//	$f = $_POST['fakatradi'];
+	// IMHO fakatradi nije potreban jer je operacija foolproof
+
+	$q50 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
+	if (mysql_num_rows($q50) < 1) {
+		$q51 = myquery("insert into labgrupa set naziv='Grupa 1', predmet=$predmet");
+		$q50 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
+	}
+	$labgrupa = mysql_result($q50,0,0);
+
+	$q51 = myquery("select ss.student from student_studij as ss, ponudakursa as pk where pk.id=$predmet and pk.studij=ss.studij and pk.semestar=ss.semestar and pk.akademska_godina=ss.akademska_godina");
+
+	while ($r51 = mysql_fetch_row($q51)) {
+		$q52 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=$r51[0] and sl.labgrupa=l.id and l.predmet=$predmet");
+		if (mysql_result($q52,0,0)==0) {
+			// Ne vrsimo premjestanje, nego samo upis ako nije vec upisan
+			$q53 = myquery("insert into student_labgrupa set student=$r51[0], labgrupa=$labgrupa");
+		}
+	}
+}
+
+
+
 # Masovni unos studenata u grupe
 
 if ($_POST['akcija'] == "massinput") {
@@ -153,6 +180,7 @@ if ($_POST['akcija'] == "massinput") {
 		print genform("POST");
 		print '<input type="hidden" name="fakatradi" value="1">';
 	}
+	$greska=0;
 
 	foreach ($redovi as $red) {
 		$red = rtrim($red);
@@ -160,7 +188,7 @@ if ($_POST['akcija'] == "massinput") {
 		if (strlen($red)>1) {
 			# Parsiranje formata
 			$format = $_POST['format'];
-			if ($format == "A") {
+/*			if ($format == "A") {
 				list($prezime,$ime,$grupa,$email,$brindexa) = explode("\t",$red,5);
 			} else if ($format == "B") {
 				list($imepr,$grupa,$email,$brindexa) = explode("\t",$red,4);
@@ -173,7 +201,20 @@ if ($_POST['akcija'] == "massinput") {
 				list($imepr,$brindexa) = explode("\t",$red,2);
 				list($prezime,$ime) = explode(" ",$imepr,2);
 				$email = "";
+			}*/
+			if ($format == "E") {
+				list($prezime,$ime,$grupa) = explode("\t",$red,5);
+			} else if ($format == "F") {
+				list($imepr,$grupa) = explode("\t",$red,4);
+				list($prezime,$ime) = explode(" ",$imepr,2);
+			} else if ($format == "G") {
+				list($imepr,$grupa) = explode("\t",$red,4);
+				list($ime,$prezime) = explode(" ",$imepr,2);
+			} else if ($format == "H") {
+				list($prezime,$ime) = explode("\t",$red,5);
 			}
+			$email = "";
+			$brindexa = "";
 
 			# Da li student već postoji?
 			$q30 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
@@ -191,12 +232,13 @@ if ($_POST['akcija'] == "massinput") {
 					}
 				} else {
 					if ($f != 1) {
-						print "Prijava studenta '$prezime $ime' u predmet '$predmet' grupa";
+						print "Prijava studenta '$prezime $ime' u predmet '$predmet_naziv' grupa";
 					}
 				}
 			} else {
 				if ($f != 1) {
-					print "Unos novog studenta '$prezime $ime' ($brindexa), prijava u predmet u predmet '$predmet' grupa";
+					print " -- GREŠKA! Nepoznat student '$prezime $ime' ($brindexa) - da li ste koristili ispravan format (prezime-ime vs. ime-prezime)?";
+					$greska=1;
 				} else {
 					$q31 = myquery("insert into student set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa'");
 					$q32 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
@@ -205,7 +247,7 @@ if ($_POST['akcija'] == "massinput") {
 			}
 
 			# Izbor grupe
-			if ($format == "D") {
+			if ($format == "D" || $format == "H") {
 				# Format D - grupa nije navedena, koristi prvu
 				$q33 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id limit 1");
 			} else {
@@ -216,13 +258,14 @@ if ($_POST['akcija'] == "massinput") {
 			# Dodaj studenta u grupu ili ispisi, ovisno o $f
 			if (mysql_num_rows($q33)==0) {
 				if ($f != 1) print " --- Nepoznata grupa!!";
+				$greska = 1;
 			} else {
 				if ($nova_grupa == $stara_grupa) {
 					if ($f != 1) print " ISTU GRUPU! Ništa neće biti urađeno.";
 				} else {
 					if ($f != 1)
 						print " '".mysql_result($q33,0,1)."'";
-					else {
+					else if ($greska==0) {
 						if ($stara_grupa>0) {
 							$q33a = myquery("select id from cas where labgrupa=$stara_grupa");
 							while ($r33a = mysql_fetch_row($q33a)) {
@@ -237,7 +280,8 @@ if ($_POST['akcija'] == "massinput") {
 		}
 	}
 	if ($f != 1) {
-		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Grupe\'"> <input type="submit" value=" Potvrda ">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Grupe\'"> ';
+		if ($greska==0) print '<input type="submit" value=" Potvrda ">';
 		print "</form>";
 		return;
 	} else {
@@ -336,7 +380,7 @@ if ($_POST['akcija'] == "massexam") {
 		print "</form>";
 		return;
 	} else {
-		logthis("Masovno upisani ispiti na predmet $predmet");
+		logthis("Masovni rezultati ispita za predmet $predmet");
 	}
 }
 
@@ -582,16 +626,20 @@ if ($tab == "Grupe") {
 	print '</select><input type="submit" value="Dodaj">'."\n";
 	print '</form></p>'."\n";
 
+	# Upis svih studenata na semestru
+	$q104 = myquery("select s.naziv, pk.semestar from ponudakursa as pk, studij as s where pk.id=$predmet and pk.studij=s.id");
+	print '<p><hr/></p><p><a href="qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Grupe&akcija=svisasemestra">Upiši u prvu grupu sve studente koji trenutno slušaju '.mysql_result($q104,0,0).', '.mysql_result($q104,0,1).'. semestar</a></p>';
+
 	# Masovni unos
 	print '<p><hr/></p><p><b>Masovni unos studenata</b><br/>'."\n";
 	print genform("POST");
 	print '<input type="hidden" name="fakatradi" value="0">'; // poništi fakatradi
 	print '<input type="hidden" name="akcija" value="massinput">'."\n";
 	print '<br/>Izaberite format podataka:<br/>'."\n";
-	print '<input type="radio" name="format" value="A" CHECKED> Prezime[TAB]Ime[TAB]Grupa[TAB]E-mail[TAB]Broj indexa<br/>'."\n";
-	print ' <input type="radio" name="format" value="B"> Prezime Ime[TAB]Grupa[TAB]E-mail[TAB]Broj indexa<br/>'."\n";
-	print ' <input type="radio" name="format" value="C"> Prezime Ime[TAB]Grupa[TAB]Broj indexa<br/>'."\n";
-	print ' <input type="radio" name="format" value="D"> Prezime Ime[TAB]Broj indexa (svi će biti dodati u prvu grupu)<br/><br/>'."\n";
+	print '<input type="radio" name="format" value="E" CHECKED> Prezime[TAB]Ime[TAB]Grupa<br/>'."\n";
+	print ' <input type="radio" name="format" value="F"> Prezime Ime[TAB]Grupa<br/>'."\n";
+	print ' <input type="radio" name="format" value="G"> Ime Prezime[TAB]Grupa<br/>'."\n";
+	print ' <input type="radio" name="format" value="H"> Prezime[TAB]Ime (svi će biti dodati u prvu grupu)<br/><br/>'."\n";
 	print '<textarea name="massinput" cols="50" rows="10"></textarea><br/>'."\n";
 	print '<input type="submit" value="  Dodaj  ">'."\n";
 	print '</form></p>'."\n";
