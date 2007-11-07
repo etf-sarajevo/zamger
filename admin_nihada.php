@@ -10,6 +10,8 @@
 // v3.0.1.8 (2007/10/10) + Podrska za nasa slova kod generisanja LDAP logina
 // v3.0.1.9 (2007/10/16) + Ispravka buga prilikom dodavanja novog predmeta
 // v3.0.1.10 (2007/10/25) + Dodani podaci o studiju u editovanje studenta; popravka buga u listi predmeta
+// v3.0.1.11 (2007/11/05) + Ponasaj se pametnije kod unosa nepostojeceg UIDa (LDAP)
+// v3.0.1.12 (2007/11/08) + Popravljen link "Nazad na rezultate pretrage" da ne koristi geturi() kako ne bi rezultirao haosom zbog prijenosa parametara; dodaj kratki naziv institucije (odsjeka) na spisak predmeta umjesto akademske godine - ako je ak. god. fiksna
 
 
 function admin_nihada() {
@@ -508,7 +510,7 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 	$predmet = intval($_REQUEST['predmet']);
 
 	$oag = intval($_REQUEST['old_akademska_godina']);
-	print "<a href=\"".genuri()."&akcija=&_lv_column_akademska_godina=$oag\">Nazad na rezultate pretrage</a><br/><br/>";
+	print "<a href=\"qwerty.php?sta=nihada&tab=Predmeti&_lv_column_akademska_godina=$oag&search=".$_REQUEST['search']."&offset=".intval($_REQUEST['offset'])."\">Nazad na rezultate pretrage</a><br/><br/>";
 
 	// Izvjestaji
 
@@ -685,9 +687,9 @@ else if ($tab == "Predmeti") {
 		print "<br/>";
 
 		if ($ak_god>0 && $src != "") {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv, s.kratkinaziv from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($ak_god>0) {
-			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = myquery("select pk.id, p.naziv, ag.naziv, s.kratkinaziv from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($src != "") {
 			$q301 = myquery("select pk.id, p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else {
@@ -697,7 +699,10 @@ else if ($tab == "Predmeti") {
 		print '<table width="100%" border="0">';
 		$i=$offset+1;
 		while ($r301 = mysql_fetch_row($q301)) {
-			print "<tr><td>$i. $r301[1] ($r301[2])</td>\n";
+			if ($ak_god>0)
+				print "<tr><td>$i. $r301[1] ($r301[3])</td>\n";
+			else
+				print "<tr><td>$i. $r301[1] ($r301[2])</td>\n";
 			print "<td><a href=\"".genuri()."&old_akademska_godina=$ak_god&akcija=edit&predmet=$r301[0]\">Detalji</a></td>\n";
 			print "<td><a href=\"qwerty.php?sta=predmet&predmet=$r301[0]\">Uređivanje predmeta</a></td></tr>";
 			$i++;
@@ -750,6 +755,9 @@ else if ($tab == "Nastavnici" && $akcija == "novi") {
 				$sn = $results[0]['sn'];
 				if (is_array($sn)) $sn = $results[0]['sn'][0];
 				if ($sn) $prezime = $sn;
+			} else {
+				$uid = "";
+				niceerror("Korisnik nije pronadjen na LDAPu... dodajem novog!");
 			}
 		} else {
 			niceerror("Ne mogu kontaktirati LDAP server... pravim se da ga nema :(");
@@ -769,7 +777,7 @@ else if ($tab == "Nastavnici" && $akcija == "novi") {
 	}
 
 	// Ako je LDAP onda imamo email adresu
-	if ($system_auth == "ldap") {
+	if ($system_auth == "ldap" && $uid != "") {
 		$email = $uid.$ldap_domain;
 		$q481 = myquery("insert into nastavnik set ime='$ime', prezime='$prezime', email='$email'");
 	} else {
@@ -779,7 +787,7 @@ else if ($tab == "Nastavnici" && $akcija == "novi") {
 	$nastavnik = mysql_result($q482,0,0);
 
 	// Ubacujemo dummy podatke u auth tabelu za slučaj eksterne autentikacije
-	if ($system_auth == "ldap") {
+	if ($system_auth == "ldap" && $uid != "") {
 		$q483 = myquery("insert into auth set id=$nastavnik, login='$uid', admin=1");
 	}
 
