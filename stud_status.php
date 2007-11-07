@@ -8,6 +8,7 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/10) + Nova struktura baze za predmete; ukinuta oznaka konačnog statusa
 // v3.0.1.2 (2007/10/20) + Nova schema tabele ispita; sredjeno forwardovanje force_userid (potreban za admin pristup studentskom interfejsu)
+// v3.0.1.3 (2007/11/06) + Logging
 
 
 function stud_status() {
@@ -65,6 +66,7 @@ if (mysql_num_rows($q1c)<1) {
 
 print "<p>Predmet: <b>".mysql_result($q1b,0,0)." (".mysql_result($q1c,0,0).")</b></p>\n";
 
+logthis("Student labgrupa $labgrupa");
 
 
 # MOTD
