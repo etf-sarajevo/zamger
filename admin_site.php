@@ -3,6 +3,7 @@
 // v3.0.1.1 (2007/09/12) + Novi modul: site admin (za sada samo kompaktovanje)
 // v3.0.1.2 (2007/10/02) + Dodan logging
 // v3.0.1.3 (2007/10/13) + Nova struktura baze za predmete; novi tab Log za analizu loga
+// v3.0.1.4 (2007/11/06) + Robusnije generisanje loga; nove logging opcije
 
 function admin_site() {
 
@@ -89,7 +90,7 @@ function printtab($ime,$tab) {
 ?>
 <p><h3>Site Admin</h3></p>
 
-<table border="0" cellspacing="1" cellpadding="5" width="550">
+<table border="0" cellspacing="1" cellpadding="5" width="750">
 <tr>
 <td width="50">&nbsp;</td>
 <? 
@@ -97,11 +98,11 @@ printtab("Kompaktovanje",$tab);
 printtab("Log",$tab); 
 ?>
 <td bgcolor="#BBBBBB" width="50"><a href="qwerty.php">Nazad</a></td>
-<td width="450">&nbsp;</td>
+<td width="550">&nbsp;</td>
 </tr>
 <tr>
 <td width="50">&nbsp;</td>
-<td colspan="8" bgcolor="#DDDDDD" width="500">
+<td colspan="8" bgcolor="#DDDDDD" width="700">
 <?
 
 
@@ -165,23 +166,7 @@ if ($tab == "Log") {
 			}
 		}
 		if (substr($r200[3],0,5) == "Login") {
-			$q201 = myquery("select admin from auth where id=$r200[2]");
-			if (mysql_result($q201,0,0)==1) {
-				$usrimg="tutor"; 
-				$q202 = myquery("select ime,prezime from nastavnik where id=$r200[2]");
-				$link = "qwerty.php?sta=nihada&tab=Nastavnici&akcija=edit&nastavnik=$r200[2]";
-			} else {
-				$usrimg="user";
-				$q202 = myquery("select ime,prezime from student where id=$r200[2]");
-				$link = "qwerty.php?sta=nihada&tab=Studenti&akcija=edit&student=$r200[2]";
-			}
-			$imeprezime = mysql_result($q202,0,0)." ".mysql_result($q202,0,1);
-			$eventshtml[$lastlogin[$r200[2]]] = 
-"<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-".$lastlogin[$r200[2]]."\" onclick=\"toggleVisibility('".$lastlogin[$r200[2]]."')\">
-<img src=\"images/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
-<a href=\"$link\" target=\"_blank\">$imeprezime</a> $nicedate
-<div id=\"".$lastlogin[$r200[2]]."\" style=\"display:none\">
-".$eventshtml[$lastlogin[$r200[2]]];
+			$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Login $r200[2] $nicedate\n".$eventshtml[$lastlogin[$r200[2]]];
 			$lastlogin[$r200[2]]=0;
 		}
 		else if (preg_match("/Admin grupa (\d+)/", $r200[3], $matches)) {
@@ -242,11 +227,59 @@ if ($tab == "Log") {
 				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
 			}
 		}
+		else if (preg_match("/Nastavnik (\d+) dodan na predmet (\d+)/", $r200[3], $matches)) {
+			$q205 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$matches[2] and pk.predmet=p.id");
+			$q207 = myquery("select ime,prezime from nastavnik where id=$matches[1]");
+			if (mysql_num_rows($q205)>0 && mysql_num_rows($q207)>0) {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Nastavnik '".mysql_result($q207,0,0)." ".mysql_result($q207,0,1)."' dodan na predmet '".mysql_result($q205,0,0)."' ".$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			} else {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			}
+
+		}
+		else if (preg_match("/Nastavnik (\d+) proglasen za admina predmeta (\d+)/", $r200[3], $matches)) {
+			$q205 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$matches[2] and pk.predmet=p.id");
+			$q207 = myquery("select ime,prezime from nastavnik where id=$matches[1]");
+			if (mysql_num_rows($q205)>0 && mysql_num_rows($q207)>0) {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Nastavnik '".mysql_result($q207,0,0)." ".mysql_result($q207,0,1)."' proglašen za admina predmeta '".mysql_result($q205,0,0)."' ".$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			} else {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			}
+
+		}
+		else if (preg_match("/Student labgrupa (\d+)/", $r200[3], $matches)) {
+			$q203 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p, ponudakursa as pk where l.id=$matches[1] and l.predmet=pk.id and pk.predmet=p.id");
+			if (mysql_num_rows($q203)>0) {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Statusna stranica, predmet ".mysql_result($q203,0,0).", labgrupa ".mysql_result($q203,0,1)." ".$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			} else {
+				$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
+			}
+		}
 		else {
 			$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
 		}
 	}
-	foreach ($eventshtml as $event) {
+	foreach ($eventshtml as $logid => $event) {
+		$q201 = myquery("select auth.id,auth.admin,UNIX_TIMESTAMP(log.vrijeme) from auth,log where auth.id=log.userid and log.id=$logid");
+		$userid = mysql_result($q201,0,0);
+		$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q201,0,2)).")";
+
+		if (mysql_result($q201,0,1)==1) {
+			$usrimg="tutor"; 
+			$q202 = myquery("select ime,prezime from nastavnik where id=$userid");
+			$link = "qwerty.php?sta=nihada&tab=Nastavnici&akcija=edit&nastavnik=$userid";
+		} else {
+			$usrimg="user";
+			$q202 = myquery("select ime,prezime from student where id=$userid");
+			$link = "qwerty.php?sta=nihada&tab=Studenti&akcija=edit&student=$userid";
+		}
+		$imeprezime = mysql_result($q202,0,0)." ".mysql_result($q202,0,1);
+
+		if (substr($event,0,4)!="<img")
+			print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"toggleVisibility('$logid')\">
+<img src=\"images/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
+<a href=\"$link\" target=\"_blank\">$imeprezime</a> $nicedate
+<div id=\"$logid\" style=\"display:none\">\n";
 		print "$event</div><br/>\n";
 	}
 	print "<p>&nbsp;</p><p><a href=\"".genuri()."&stardate=$stardate\">Sljedećih $maxlogins</a></p>";
