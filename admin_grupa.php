@@ -13,6 +13,7 @@
 // v3.0.1.4 (2007/10/02) + Dodano jos logginga
 // v3.0.1.5 (2007/10/08) + Nova struktura baze za predmete
 // v3.0.1.6 (2007/10/19) + Nova shema tabele ispita
+// v3.0.1.7 (2007/11/15) + Layout fixes
 
 
 function admin_grupa() {
@@ -309,7 +310,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$minw += 40;
 }
 
-if ($prisustvo_zaglavlje == "") $prisustvo_zaglavlje = "<td>&nbsp;</td>";
+if ($prisustvo_zaglavlje == "") { $prisustvo_zaglavlje = "<td>&nbsp;</td>"; $minw += 40; }
 
 
 // Zaglavlje zadaće
@@ -320,11 +321,11 @@ $q11 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet orde
 $brzadaca = mysql_num_rows($q11);
 if ($brzadaca > 0) { 
 	while ($r11 = mysql_fetch_row($q11)) {
-		$zadace_zaglavlje .= "<td>$r11[1]</td>\n";
+		$zadace_zaglavlje .= "<td width=\"60\">$r11[1]</td>\n";
 		$zad_id_array[] = $r11[0];
 		$zad_brz_array[$r11[0]] = $r11[2];
 
-		$minw += 80;
+		$minw += 60;
 	}
 }
 
@@ -351,6 +352,7 @@ $minw += 70; // ukupno
 $minw += 45; // broj indexa
 $minw += 100; // ime i prezime
 $minw += 40; // komentar
+$minw += 40; // bodovi prisustvo
 
 ?>
 <table cellspacing="0" cellpadding="2" border="1" <? if ($minw>800) print "width=\"$minw\""; ?>>
@@ -410,7 +412,7 @@ while ($r13 = mysql_fetch_row($q13)) {
 	$stud_ime = $r13[1];
 	$stud_prezime = $r13[2];
 	$stud_brind = $r13[3];
-	$imeprezime[$stud_id] = "$stud_prezime $stud_ime";
+	$imeprezime[$stud_id] = "$stud_prezime&nbsp;$stud_ime";
 	$brind[$stud_id] = $stud_brind;
 }
 uasort($imeprezime,"bssort"); // bssort - bosanski jezik
@@ -420,7 +422,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>. <a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
 	<td align="center"><a href="javascript:firefoxopen('qwerty.php?sta=komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>','Komentari na rad studenta','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/filetypes.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
@@ -465,13 +467,15 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			if ($status == 0) { // Zadatak nije poslan
 				if ($kreiranje>0) {
 					$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/idea.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"></a>&nbsp;";
+					if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				}
 			} else {
 				$status--; // Bio uvećan za 1 
 				$icon = $stat_icon[$status];
 				$title = $stat_tekst[$status];
 				$zb = $zadace_bodovi[$zid][$i][$stud_id];
-				$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"> ".$zb."</a>";
+				$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\">&nbsp;".$zb."</a>";
+//				if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				$bodova += $zb;
 			}
 		}
