@@ -1,15 +1,21 @@
 <?
 
 
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/12/28) + ID predmeta nije prosljedjivan kod downloada zadace u vidu attachmenta; datoteke sa razmakom u imenu
+
+
+
 
 function stud_download() {
 
-global $userid,$system_path,$predmet_id;
+global $userid,$system_path;
 
 
 
 # Poslani parametar:
 $zadaca = intval($_GET['zadaca']);
+$predmet_id = intval($_GET['predmet']);
 
 // Da li neko pokušava da spoofa zadaću?
 if ($zadaca!=0) {
@@ -38,7 +44,7 @@ if (mysql_num_rows($q02) < 1) {
 $filename = mysql_result($q02,0,0);
 $filepath = $lokacijazadaca.$filename;
 
-$type = `file -bi $filepath`;
+$type = `file -bi '$filepath'`;
 header("Content-Type: $type");
 header('Content-Disposition: attachment; filename=' . $filename, false);
 
