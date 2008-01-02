@@ -12,7 +12,7 @@
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><img src="images/etf.gif"></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.5 beta</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>
@@ -33,7 +33,7 @@
 
 		<p>Za pristup drugim sadržajima, morate se prijaviti:<br/>
 		<form action="login.php" method="POST">
-		<table border="0"><tr><td>Broj indeksa:</td><td><input type="text" name="login" size="15"></td></tr>
+		<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15"></td></tr>
 		<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
 		<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
 		</form>
