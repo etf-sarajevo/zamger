@@ -11,6 +11,9 @@
 // v3.0.1.6 (2007/10/16) + Popravljen HTML bug
 // v3.0.1.7 (2007/11/03) + Novica
 // v3.0.1.8 (2007/11/08) + Dodan kratki naziv studija pored naziva predmeta
+// v3.0.1.9 (2007/11/27) + Zabranjen pristup studentskoj sluzbi u spisak predmeta
+// v3.0.1.10 (2007/12/13) + Bezimene grupe
+// v3.0.1.10 (2007/12/25) + Dodan "logout"
 
 
 function admin_intro() {
@@ -42,8 +45,8 @@ if ($siteadmin==2)
 if ($siteadmin==2 || $siteadmin==1)
 	print "<a href=\"qwerty.php?sta=nihada\">Studenti, nastavnici, predmeti</a> * ";
 if ($system_auth == "table")
-	print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a></p>\n";
-
+	print "<a href=\"qwerty.php?sta=sifra\">Promjena šifre</a> * \n";
+print "<a href=\"qwerty.php?sta=logout\">Odjavite se</a></p>";
 
 
 // Spisak grupa po predmetima, predmeti po akademskoj godini
@@ -56,7 +59,7 @@ else
 
 
 while ($r1a = mysql_fetch_row($q1a)) {
-	if ($siteadmin)
+	if ($siteadmin==2)
 		$q2 = myquery("select id,1 from ponudakursa where akademska_godina=$r1a[0] order by semestar,id");
 	else
 		$q2 = myquery("select np.predmet,np.admin from nastavnik_predmet as np, ponudakursa as p where np.nastavnik=$userid and np.predmet=p.id and p.akademska_godina=$r1a[0]");
@@ -126,6 +129,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 		}
 		natsort($result);
 		foreach($result as $gid=>$gname) {
+			if (!preg_match("/\w/",$gname)) $gname="[Nema imena]";
 			if (count($limit)==0 || in_array($gid,$limit))
 				print "<li><a href=\"qwerty.php?sta=grupa&id=$gid\">$gname</a></li>";
 		}
