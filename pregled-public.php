@@ -12,6 +12,7 @@
 // v3.0.1.1 (2007/09/26) + Prelazak na novu schemu tabele ispita (za sada su moguca samo 2 parcijalna)
 // v3.0.1.2 (2007/10/10) + Nova struktura baze za predmete
 // v3.0.1.3 (2007/10/24) + Nova schema tabele za ispite
+// v3.0.1.4 (2007/11/16) + Ispiti nisu bili uključeni u zbir
 
 
 ?>
@@ -297,7 +298,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$mogucih += 40;
 			$parc_ispis = '<td colspan="2" align="center">'.$$maxispit[3].'</td>';
 		} else {
-			$bodova += ($max1+$max2);
+			$bodova += ($maxispit[1]+$maxispit[2]);
 			if ($maxispit[1] != "/") $mogucih += 20;
 			if ($maxispit[2] != "/") $mogucih += 20;
 			$parc_ispis = "<td>$maxispit[1]</td><td>$maxispit[2]</td>";
