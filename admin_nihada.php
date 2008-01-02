@@ -12,6 +12,9 @@
 // v3.0.1.10 (2007/10/25) + Dodani podaci o studiju u editovanje studenta; popravka buga u listi predmeta
 // v3.0.1.11 (2007/11/05) + Ponasaj se pametnije kod unosa nepostojeceg UIDa (LDAP)
 // v3.0.1.12 (2007/11/08) + Popravljen link "Nazad na rezultate pretrage" da ne koristi geturi() kako ne bi rezultirao haosom zbog prijenosa parametara; dodaj kratki naziv institucije (odsjeka) na spisak predmeta umjesto akademske godine - ako je ak. god. fiksna
+// v3.0.1.13 (2007/12/04) + U modul "predmeti" dodani linkovi na izvjestaje za pojedinacne ispite
+// v3.0.1.14 (2007/12/10) + Dodan link i na sumarnu statistiku ispita
+// v3.0.1.15 (2007/12/22) + Nastavak rada na kartici "Studij"; prostor za semestar koji student trenutno slusa je postao read-only (prevelika je mogucnost greske - ovo se sada moze editovati kroz bazu a eventualno kroz siteadmin interfejs)
 
 
 function admin_nihada() {
@@ -198,7 +201,8 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 		$labgrupa = mysql_result($q193,0,0);
 		$q195 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 	}
-	if ($_POST['subakcija'] == "student_studij") {
+	/*if ($_POST['subakcija'] == "student_studij") {
+		// Najnovija (trenutna) akademska godina 
 		$q202 = myquery("select id,naziv from akademska_godina order by naziv desc");
 		$r202 = mysql_fetch_row($q202);
 
@@ -217,7 +221,7 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 				$q198 = myquery("delete from student_studij where student=$student and akademska_godina=$r202[0]");
 			}
 		}
-	}
+	}*/
 
 
 	// Izvjestaji
@@ -298,51 +302,41 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 	}
 
 
-	// Trenutno sluša
+	// Trenutno upisan na semestar:
 
+	// Prvo odredjujemo aktuelnu akademsku godinu - ovaj upit se dosta koristi kasnije
 	$q202 = myquery("select id,naziv from akademska_godina order by naziv desc");
 	$r202 = mysql_fetch_row($q202);
 
-	$q202a = myquery("select studij,semestar from student_studij where akademska_godina=$r202[0] and student=$student");
-	if (mysql_num_rows($q202a)==0) {
-		$studij=0;
-		$semestar="";
-	} else {
-		$studij=mysql_result($q202a,0,0);
-		$semestar=mysql_result($q202a,0,1);
+	$q202a = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv from student_studij as ss, studij as s, akademska_godina as ag where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina order by ag.naziv desc");
+	$studij="0";
+	$puta=1;
+
+	while ($r202a=mysql_fetch_row($q202a)) {
+		if ($r202a[2]==$r202[0]) { //trenutna akademska godina
+			$studij=$r202a[0];
+			$semestar = $r202a[1];
+		}
+		else if ($r202a[0]==$studij && $r202a[1]==$semestar) { // ponovljeni semestri
+			$puta++;
+		}
 	}
 
-	?>
-	<tr><td colspan="5">&nbsp;</td></tr>
-	<?=genform("POST")?>
-	<input type="hidden" name="subakcija" value="student_studij">
-	<tr>
-		<td colspan="3">Trenutno (<b><?=$r202[1]?></b>) upisan na:<br/>
-		<select name="studij">
-			<option value="0" <?if($studij==0) print "SELECTED"?>>-- Nije upisan --</option>
-			<?
-			$q202b = myquery("select id, naziv from studij order by id");
-			while ($r202b = mysql_fetch_row($q202b)) {
-				if ($r202b[0]==$studij) $s=" SELECTED"; else $s="";
-				print "<option value=\"$r202b[0]\"$s>$r202b[1]</option>\n";
-			}
-			?>
-		</select>
-		</td>
-		<td>Semestar:<br/>
-		<input type="text" size="10" name="semestar" value="<?=$semestar?>">
-		</td>
-		<td><input type="Submit" value=" Izmijeni "></td>
-	</tr></form>
-	<?
-
-
 	print "</table><br/>\n";
+	print "<p>Trenutno (<b>$r202[1]</b>) upisan na:<br/>\n";
 
+	if ($studij=="0") {
+		print "Nije upisan niti u jedan semestar!</p>";
+	} else {
+		print "<b>&quot;$studij&quot;</b>, $semestar. semestar ($puta. put)</p>";
+	}
+
+
+	// Predmeti koje slusa
 	
 	$q203 = myquery("select pk.id,p.naziv from predmet as p, ponudakursa as pk, labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=pk.id and pk.akademska_godina=$r202[0] and pk.predmet=p.id");
 	if (mysql_num_rows($q203)>0)
-		print "Trenutno ($r202[1]) sluša predmete:\n<ul>\n";
+		print "Trenutno (<b>$r202[1]</b>) sluša predmete:\n<ul>\n";
 	while ($r203 = mysql_fetch_row($q203))
 		print "<li><a href=\"".genuri()."&tab=Predmeti&akcija=edit&predmet=$r203[0]\">$r203[1]</a></li>\n";
 	print "</ul>\n";
@@ -525,6 +519,15 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 			<img src="images/kontact_journal.png" border="0"><br/>Spisak grupa</a></td></tr>
 			<tr><td align="center"><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet=<?=$predmet?>">
 			<img src="images/kontact_journal.png" border="0"><br/>Puni izvještaj</a></td></tr>
+			<tr><td align="left">Ispiti:<br/><?
+			$q359 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum),t.naziv from ispit as i, tipispita as t where i.predmet=$predmet and i.tipispita=t.id order by i.datum,i.tipispita");
+			while ($r359 = mysql_fetch_row($q359)) {
+				print '* <a href="qwerty.php?sta=izvjestaj&tip=ispit&predmet='.$predmet.'&ispit='.$r359[0].'">'.$r359[3].'<br/> ('.date("d. m. Y.",$r359[2]).')</a><br/>'."\n";
+			}
+			if (mysql_num_rows($q359)>0)
+				print '<br/><a href="qwerty.php?sta=izvjestaj&tip=ispit&predmet='.$predmet.'&ispit=svi">Ukupna statistika</a>';
+
+			?></td></tr>
 		</table>
 	</td><td width="10" valign="top">&nbsp;
 	</td><td width="590" valign="top">
@@ -1014,14 +1017,57 @@ else if ($tab == "Nastavnici") {
 else if ($tab == "Studij") {
 	?>
 	<center>
+	<script type="text/javascript">
+function setCheckedValue(radioObj, newValue) {
+	if(!radioObj)
+		return;
+	var radioLength = radioObj.length;
+	if(radioLength == undefined) {
+		radioObj.checked = (radioObj.value == newValue.toString());
+		return;
+	}
+	for(var i = 0; i < radioLength; i++) {
+		radioObj[i].checked = false;
+		if(radioObj[i].value == newValue.toString()) {
+			radioObj[i].checked = true;
+		}
+	}
+}
+	</script>
 	<table width="500" border="0"><tr><td align="left">
-		<p><b>Izvještaj o prolaznosti</b><br/>
-		<form action="qwerty.php" method="GET">
+		<p><h3>Izvještaj o prolaznosti</h3><br/>
+		<form action="qwerty.php" method="GET" name="studijForm">
 		<input type="hidden" name="sta" value="izvjestaj">
 		<input type="hidden" name="tip" value="prolaznost">
-		Akademska godina: <?=db_dropdown("akademska_godina")?><br/><br/>
+		Akademska godina: <select name="_lv_column_akademska_godina">
+		<?
+			$q500 = mysql_query("select id,naziv from akademska_godina order by naziv desc");
+			while ($r500 = mysql_fetch_row($q500))
+				print "<option value=\"$r500[0]\">$r500[1]</option>\n";
+		?>
+		</select><br/><br/>
 		Studij: <?=db_dropdown("studij")?><br/><br/>
-		Semestar: <input type="text" name="semestar" size="5"><br/><br/>
+		<input type="radio" name="period" value="0" CHECKED> Semestar: <input type="text" name="semestar" size="5" onclick="setCheckedValue(document.forms['studijForm'].elements['period'], '0');">&nbsp;
+		<input type="radio" name="period" value="1"> Cijela godina: <input type="text" name="godina" size="5" onclick="setCheckedValue(document.forms['studijForm'].elements['period'], '1');"><br/><br/>
+
+		Statistika za:<br/>
+		<input type="radio" name="ispit" value="1" CHECKED> I parcijalni&nbsp;
+		<input type="radio" name="ispit" value="2"> II parcijalni&nbsp;
+		<input type="radio" name="ispit" value="3"> Ukupan broj bodova&nbsp;
+		<input type="radio" name="ispit" value="4"> Konačna ocjena<br/><br/>
+
+		Studenti:<br/>
+		<input type="radio" name="cista_gen" value="0" CHECKED> Svi studenti (uključujući ponovce i one koji su prenijeli predmete)<br/>
+		<input type="radio" name="cista_gen" value="1"> Svi koji slušaju godinu (uključujući ponovce, ali bez prenijetih predmeta)<br/>
+		<input type="radio" name="cista_gen" value="2"> Bez ponovaca<br/>
+		<input type="radio" name="cista_gen" value="3"> Čista generacija (studenti koji nemaju ponovljenih godina ni prenesenih predmeta)<br/><br/>
+
+		<input type="checkbox" name="studenti" value="1"> Prikaži podatke za svakog pojedinačnog studenta<br/>
+		NAPOMENA: Zbog kompleksnosti izvještaja, izračunavanje podataka za pojedinačne studente može trajati do par minuta.<br/>
+		Sortiraj spisak po: 
+		<input type="radio" name="sortiranje" value="0" CHECKED> Prezimenu
+		<input type="radio" name="sortiranje" value="1"> Broju položenih ispita i bodova<br/><br/>
+		
 		<input type="submit" value=" Prikaži "></form>
 
 	<?
