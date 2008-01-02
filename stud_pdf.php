@@ -1,5 +1,8 @@
 <?
 
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/10/18) + Nova struktura baze za predmete
+
 
 
 function stud_pdf() {
@@ -31,7 +34,7 @@ $lokacijazadaca="$system_path/zadace/$predmet_id/$userid/$zadaca/";
 
 // Podaci o zadaći
 
-$q02 = myquery("select zadaca.zadataka,predmet.naziv,zadaca.naziv,programskijezik.ekstenzija from zadaca,predmet,programskijezik where zadaca.id=$zadaca and zadaca.predmet=predmet.id and zadaca.programskijezik=programskijezik.id");
+$q02 = myquery("select z.zadataka,p.naziv,z.naziv,pj.ekstenzija from zadaca as z,predmet as p,programskijezik as pj, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.id and pk.predmet=p.id and z.programskijezik=pj.id");
 if (mysql_num_rows($q02) < 1) {
 	print niceerror("Ne mogu pronaći zadaću");
 	return;
