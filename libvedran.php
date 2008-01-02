@@ -12,6 +12,7 @@
 # v0.0.9 (2007/09/11) + dodana podrška za limit u db_grid() (dodati u druge db_* ?)
 # v0.0.10 (2007/09/25) + dodano prazno polje u db_dropdown() (npr. za opciju "Sve opcije")
 # v0.0.11 (2007/10/02) + dodana LDAP autentikacija, polje userid u tabeli log
+# v0.0.11.1 (2007/11/16) + dodana opcija $_lv_['brisanje']
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
 
@@ -21,7 +22,7 @@
 
 $_lv_["debug"]=1;
 //builtincss();
-$system_path = "/srv/www/web18";
+$system_path = "/srv/httpd/zamger";
 $file_path = "/var/www/folder";
 
 $system_auth = "ldap";
@@ -701,7 +702,7 @@ function db_form($table) {
 	$result .= '<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">';
 
 	// Delete button will be displayed only if we are editing
-	if ($nav==1 || $_lv_["forceedit"]==1)
+	if ($nav==1 || $_lv_["forceedit"]==1 && $_lv_["brisanje"]==1)
 		$result .= '<input type="submit" name="_lv_action_delete" value=" Obriši  ">'."\n";
 
 	$result .= '</form>'."\n";
