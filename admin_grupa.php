@@ -14,6 +14,8 @@
 // v3.0.1.5 (2007/10/08) + Nova struktura baze za predmete
 // v3.0.1.6 (2007/10/19) + Nova shema tabele ispita
 // v3.0.1.7 (2007/11/15) + Layout fixes
+// v3.0.1.8 (2007/11/26) + Sve zadace u istom redu, prema sugestiji Sase i Zajke (ne svidja mi se)
+// v3.0.1.9 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
 
 
 function admin_grupa() {
@@ -139,17 +141,17 @@ if (mysql_result($q9,0,0)<1) {
 
 
 
-// JavaScript za prikaz zadaće
+// JavaScript za prikaz zadaće i drugih popup prozora
+//  * Kod IE naslov prozora ('blah') ne smije sadržavati razmak, a inače je nebitan
+//  * FF ne podržava direktan poziv window.open() iz eventa 
 
 ?>
 <script language="JavaScript">
 function openzadaca(student,zadaca,zadatak) {
 	var url='qwerty.php?sta=pregled&student='+student+'&zadaca='+zadaca+'&zadatak='+zadatak;
-//	alert(url);
-	window.open(url,'Ispravak zadace','width=600,height=600,scrollbars=yes');
+	window.open(url,'blah','width=600,height=600,scrollbars=yes');
 }
 
-// FF ne podrzava direktan poziv window.open() iz eventa 
 function firefoxopen(p1,p2,p3) { 
 	window.open(p1,p2,p3);
 }
@@ -422,9 +424,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','Podaci o studentu','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('qwerty.php?sta=student-izmjena&student=<?=$stud_id?>&predmet=<?=$predmet?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
-	<td align="center"><a href="javascript:firefoxopen('qwerty.php?sta=komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>','Komentari na rad studenta','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/filetypes.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
+	<td align="center"><a href="javascript:firefoxopen('qwerty.php?sta=komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/filetypes.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
 
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
@@ -467,7 +469,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			if ($status == 0) { // Zadatak nije poslan
 				if ($kreiranje>0) {
 					$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/idea.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"></a>&nbsp;";
-					if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
+					//if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				}
 			} else {
 				$status--; // Bio uvećan za 1 
