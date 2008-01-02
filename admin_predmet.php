@@ -26,6 +26,11 @@
 // v3.0.1.12 (2007/10/25) + Ukinut "Naziv ispita" posto sada "Tip ispita" igra tu ulogu; dodan format "Ime Prezime[tab]ocjena" u konačne ocjene
 // v3.0.1.13 (2007/11/02) + Numerisani izvjestaji u kartici "Izvjestaji"
 // v3.0.1.14 (2007/11/08) + Zabrani registrovanje novih studenata kroz massinput; novi formati za massinput (ukinute opcije koje ne interesuju nastavnike, dodano Ime-Prezime); nova opcija "upisi sve studente sa semestra"; popravljen log za massexam
+// v3.0.1.15 (2007/11/19) + U massexam dodana provjera da li student slusa predmet; ispravljen bug gdje su bodovi upisani drugom studentu sa istim imenom i prezimenom (ostaje problem sa dva studenta sa istim imenom i prezimenom koji slusaju isti predmet!?); zabrana unosa ispita sa greskama; massinput: popravljen bug kod prebacivanja studenta u drugu grupu
+// v3.0.1.16 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
+// v3.0.1.17 (2007/12/10) + Zabraniti registrovanje vise ispita istog tipa na isti datum; popravljen bug u SQLu zbog kojeg nije prepoznato da student nije upisan na predmet
+// v3.0.1.18 (2007/12/13) + Sitna ispravka u gore spomenutoj zabrani; bezimene grupe
+// v3.0.1.19 (2007/12/15) + Umjesto zabrane, sada dodajemo rezultate na isti ispit!; samo 0 se priznaje kao nula bodova
 
 
 function admin_predmet() {
@@ -88,6 +93,7 @@ if ($_GET['akcija'] == "obrisi_grupu") {
 	$grupaid = intval($_GET['grupaid']);
 	$q10 = myquery("delete from labgrupa where id=$grupaid");
 	$q11 = myquery("delete from student_labgrupa where labgrupa=$grupaid");
+	// Dodati brisanje svih podataka
 	logthis("Obrisana labgrupa $grupaid");
 }
 
@@ -155,13 +161,13 @@ if ($_REQUEST['akcija'] == "svisasemestra") {
 	}
 	$labgrupa = mysql_result($q50,0,0);
 
-	$q51 = myquery("select ss.student from student_studij as ss, ponudakursa as pk where pk.id=$predmet and pk.studij=ss.studij and pk.semestar=ss.semestar and pk.akademska_godina=ss.akademska_godina");
+	$q52 = myquery("select ss.student from student_studij as ss, ponudakursa as pk where pk.id=$predmet and pk.studij=ss.studij and pk.semestar=ss.semestar and pk.akademska_godina=ss.akademska_godina");
 
-	while ($r51 = mysql_fetch_row($q51)) {
-		$q52 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=$r51[0] and sl.labgrupa=l.id and l.predmet=$predmet");
-		if (mysql_result($q52,0,0)==0) {
+	while ($r52 = mysql_fetch_row($q52)) {
+		$q53 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=$r52[0] and sl.labgrupa=l.id and l.predmet=$predmet");
+		if (mysql_result($q53,0,0)==0) {
 			// Ne vrsimo premjestanje, nego samo upis ako nije vec upisan
-			$q53 = myquery("insert into student_labgrupa set student=$r51[0], labgrupa=$labgrupa");
+			$q54 = myquery("insert into student_labgrupa set student=$r52[0], labgrupa=$labgrupa");
 		}
 	}
 }
@@ -213,6 +219,10 @@ if ($_POST['akcija'] == "massinput") {
 			} else if ($format == "H") {
 				list($prezime,$ime) = explode("\t",$red,5);
 			}
+			else {
+				niceerror("Nije izabran format!");
+				return;
+			}
 			$email = "";
 			$brindexa = "";
 
@@ -228,7 +238,7 @@ if ($_POST['akcija'] == "massinput") {
 					if ($f != 1) {
 						print "Prebacivanje studenta '$prezime $ime' iz grupe '$lgnaziv' u grupu";
 					} else {
-						$q30b = myquery("delete from student_labgrupa where student=$student and labgrupa=$labgrupa");
+						$q30b = myquery("delete from student_labgrupa where student=$student and labgrupa=$stara_grupa");
 					}
 				} else {
 					if ($f != 1) {
@@ -296,31 +306,46 @@ if ($_POST['akcija'] == "massinput") {
 if ($_POST['akcija'] == "massexam") {
 	$redovi = explode("\n",$_POST['massexam']);
 	$tempid=1;
+	$greska=0;
 
 	$f = $_POST['fakatradi'];
 	if ($f != 1) {
 		print "Akcije koje će biti urađene:<br/><br/>\n";
 		print genform("POST");
 		print '<input type="hidden" name="fakatradi" value="1">';
-	} else {
-		# Registrovati ispit u bazi
+	} 
 
-		$naziv = my_escape($_POST['naziv']);
-		$dan = intval($_POST['day']);
-		$mjesec = intval($_POST['month']);
-		$godina = intval($_POST['year']);
-		$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
-		$tipispita = intval($_POST['tipispita']);
+	// Registrovati ispit u bazi
 
+	$naziv = my_escape($_POST['naziv']);
+	$dan = intval($_POST['day']);
+	$mjesec = intval($_POST['month']);
+	$godina = intval($_POST['year']);
+	$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
+
+	$tipispita = intval($_POST['tipispita']);
+
+	// Da li je ispit vec registrovan?
+	$q39 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and tipispita=$tipispita");
+	if (mysql_num_rows($q39)>0) {
+		$ispit = mysql_result($q39,0,0);
+		if ($f != 1) {
+			print "Dodati rezultate na postojeći ispit (ID: $ispit):<br/>";
+		}
+	} else if ($f == 1) {
 		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat'), tipispita=$tipispita");
-		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat')");
+		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and tipispita=$tipispita");
+
 		if (mysql_num_rows($q41)<1) {
 			niceerror("Unos ispita nije uspio.");
 			return;
 		} 
 		$ispit = mysql_result($q41,0,0);
 	}
+
+
+	// Obrada rezultata
 
 	$prosli_idovi = array();
 
@@ -348,11 +373,23 @@ if ($_POST['akcija'] == "massexam") {
 				$prezime=trim($prezime); 
 				$ime=trim($ime);
 			}
-			# pretvori $bodova u float uz obradu decimalnog zareza
-			$bodova = floatval(str_replace(",",".",$bodova));
+			else {
+				niceerror("Nije izabran format!");
+				return;
+			}
+
+			// pretvori $bodova u float uz obradu decimalnog zareza
+			$fbodova = floatval(str_replace(",",".",$bodova));
+			// samo 0 priznajemo za nula bodova, inace student nije izasao na ispit
+			if ($fbodova==0 && strpos($bodova,"0")===FALSE) {
+				if ($f != 1)
+					print "Student '$prezime $ime' - nije izašao na ispit (nije unesen broj bodova $bodova)<br/>";
+				continue;
+			}
+			$bodova = $fbodova;
 
 			# Da li student postoji?
-			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
+			$q42 = myquery("select * from student as s, student_labgrupa as sl, labgrupa as l where s.ime like '$ime' and s.prezime like '$prezime' and sl.student=s.id and sl.labgrupa=l.id and l.predmet=$predmet");
 			if (mysql_num_rows($q42)>0) {
 				$student = mysql_result($q42,0,0);
 
@@ -360,23 +397,35 @@ if ($_POST['akcija'] == "massexam") {
 				if (array_search($student, $prosli_idovi)) {
 					if ($f != 1) {
 						print "-- GREŠKA! Student '$prezime' '$ime' se ponavlja! (bodova: $bodova)<br/>";
+						$greska=1;
 					}
 				} else {
 					if ($f == 1) {
 						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
+						$greska=1;
 					} else {
 						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
 					}
 				}
 			} else {
-				if ($f != 1) {
-					print "-- GREŠKA! Nepoznat student '$prezime' '$ime'<br/>";
+				$q42a = myquery("select count(*) from student where ime like '$ime' and prezime like '$prezime'");
+				if (mysql_result($q42a,0,0) >= 1) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime' '$ime' nije upisan na ovaj predmet.<br/>";
+						$greska=1;
+					}
+				} else {
+					if ($f != 1) {
+						print "-- GREŠKA! Nepoznat student '$prezime' '$ime'<br/>";
+						$greska=1;
+					}
 				}
 			}
 		}
 	}
 	if ($f != 1) {
-		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ispiti\'"> <input type="submit" value=" Potvrda">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ispiti\'">';
+		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
 	} else {
@@ -572,8 +621,10 @@ if ($tab == "Grupe") {
 	while ($r100 = mysql_fetch_row($q100)) {
 		$grupa = $r100[0];
 		$naziv = $r100[1];
-
-		print "<li>$naziv - ";
+		if (!preg_match("/\w/",$naziv)) 
+			print "<li>[Nema imena] - ";
+		else
+			print "<li>$naziv - ";
 
 		$q101 = myquery("select count(*) from student_labgrupa where labgrupa=$grupa");
 		$brstud = mysql_result($q101,0,0);
@@ -586,7 +637,7 @@ if ($tab == "Grupe") {
 			print "<ul>\n";
 			$q102 = myquery("select student.id,student.prezime,student.ime from student_labgrupa,student where student_labgrupa.student=student.id and student_labgrupa.labgrupa=$grupa order by student.prezime");
 			while ($r102 = mysql_fetch_row($q102)) {
-				?><li><a href="#" onclick="javascript:window.open('qwerty.php?sta=student-izmjena&student=<?=$r102[0]?>&predmet=<?=$predmet?>','Podaci o studentu','width=300,height=200');"><? print $r102[1]." ".$r102[2]."</a></li>\n";
+				?><li><a href="#" onclick="javascript:window.open('qwerty.php?sta=student-izmjena&student=<?=$r102[0]?>&predmet=<?=$predmet?>','blah6','width=320,height=320');"><? print $r102[1]." ".$r102[2]."</a></li>\n";
 			}
 			print "</ul>";
 			$zapamti_grupu=$naziv;
@@ -657,7 +708,7 @@ if ($tab == "Ispiti") {
 	if (mysql_num_rows($q110)<1)
 		print "<li>Nije unesen nijedan ispit.</li>";
 	while ($r110 = mysql_fetch_row($q110)) {
-		print '<li><a href="qwerty.php?sta=statistika&ispit='.$r110[0].'">'.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
+		print '<li><a href="qwerty.php?sta=izvjestaj&tip=ispit&predmet='.$predmet.'&ispit='.$r110[0].'">'.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
 	}
 	print "</ul>\n";
 
