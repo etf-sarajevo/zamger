@@ -8,6 +8,9 @@
 // v3.0.0.0 (2007/04/09) + Release
 // v3.0.0.1 (2007/04/28) + Novi sistem navigacije - tabela sa status stranice
 // v3.0.0.2 (2007/05/03) + Popravka navigacije: broj zadataka u zadaći
+// v3.0.1.0 (2007/06/12) + Release
+// v3.0.1.1 (2007/12/03) + Default status za zadace koje nemaju programski jezik je 2; iskljucen wrapping u textarea
+// v3.0.1.2 (2007/12/28) + ID predmeta nije prosljedjivan kod downloada zadace u vidu attachmenta
 
 
 function stud_zadaca() {
@@ -21,7 +24,7 @@ global $userid,$system_path,$predmet_id,$labgrupa;
 $lokacijazadaca="$system_path/zadace/$predmet_id/$userid/";
 # Create db dir
 if (!file_exists("$system_path/zadace/$predmet_id")) {
-	mkdir ("$system_path/zadace/$predmet_id",0777);
+	mkdir ("$system_path/zadace/$predmet_id",0777, true);
 }
 
 
@@ -332,7 +335,7 @@ if ($attachment) {
 			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
 			$icon = "images/mimetypes/" . getmimeicon($the_file);
-			$dllink = "student.php?sta=download&zadaca=$zadaca&zadatak=$zadatak";
+			$dllink = "student.php?sta=download&zadaca=$zadaca&zadatak=$zadatak&predmet=$predmet_id";
 			?>
 			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
 			<a href="<?=$dllink?>"><img src="<?=$icon?>" border="0"></a>
@@ -379,7 +382,7 @@ if ($attachment) {
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
 	
-	<textarea rows="20" cols="80" name="program" <?=$readonly?>><? 
+	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
 	if (file_exists($the_file)) print join("",file($the_file)); 
 	?></textarea>
@@ -453,6 +456,9 @@ function akcijaslanje($path) {
 
 		$filename = "$path$zadaca/$zadatak$ekst";
 
+		// Ako nije zadat jezik, postavi status na 2 (ceka pregled), inace na 1 (automatska kontrola)
+		if ($jezik==0) $prvi_status=2; else $prvi_status=1;
+
 		// Temp fajl radi određivanja diff-a 
 		$diffing=0;
 		if (file_exists($filename)) {
@@ -471,7 +477,7 @@ function akcijaslanje($path) {
 
 			// Tabela "zadatak" funkcioniše kao log događaja u
 			// koji se stvari samo dodaju
-			$q202 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=1, vrijeme=now(), filename='$zadatak$ekst'");
+			$q202 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$zadatak$ekst'");
 
 			// Pravljenje diffa
 			if ($diffing==1) {
