@@ -5,9 +5,11 @@
 // v3.0.1.3 (2007/10/09) + Dodan izvjestaj "prolaznost"; nova struktura baze za predmete; sortiraj grupe po IDu
 // v3.0.1.4 (2007/10/19) + Nova shema tabele ispita
 // v3.0.1.5 (2007/10/20) + Razdvojen izvjestaj "grupe" i "grupedouble" (u jednoj i dvije kolone); u izvjestaj "grupe" dodan ispis komentara
-// v3.0.1.6 (2007/10/24) + Dovrsen izvjestaj "prolaznost"; 
-// v3.0.1.6 (2007/11/02) + Dodana kolona za konacnu ocjenu u predmet_full
-
+// v3.0.1.6 (2007/10/24) + Dovrsen izvjestaj "prolaznost"
+// v3.0.1.7 (2007/11/02) + Dodana kolona za konacnu ocjenu u predmet_full
+// v3.0.1.8 (2007/11/19) + Izvjestaj "ispit" - statistika pojedinacnog ispita
+// v3.0.1.9 (2007/12/10) + U izvjestaj "ispit" dodan sumarni izvjestaj za sve ispite na predmetu
+// v3.0.1.10 (2007/12/22) + Nastavak rada na izvjestaju "prolaznost", optimizacije itd.
 
 
 function admin_izvjestaj() {
@@ -38,7 +40,6 @@ if ($predmet>0) {
 		$predmetadmin = mysql_result($q2,0,0);
 }
 	// LEGENDA: -1 = nije na predmetu, 0 = jeste na predmetu, 1 = admin predmeta
-
 
 ?>
 <html>
@@ -500,142 +501,407 @@ if ($tip == "prolaznost") {
 		return;
 	}
 
+	// parametri izvjestaja
 	$akgod = intval($_REQUEST['_lv_column_akademska_godina']);
-	$semestar = intval($_REQUEST['semestar']);
 	$studij = intval($_REQUEST['_lv_column_studij']);
+	$period = intval($_REQUEST['period']);
+	$semestar = intval($_REQUEST['semestar']);
+	$godina = intval($_REQUEST['godina']);
+	$ispit = intval($_REQUEST['ispit']);
+	$cista_gen = intval($_REQUEST['cista_gen']);
+	$studenti = intval($_REQUEST['studenti']);
+	$sortiranje = intval($_REQUEST['sortiranje']);
 
-	// tabela kurseva i studenata
-	$kursevi = array();
-	$imeprezime = array();
-	$brind = array();
-	$q600 = myquery("select pk.id, p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod and pk.semestar=$semestar and pk.studij=$studij");
-	$sirina = 200;
-	while ($r600 = mysql_fetch_row($q600)) {
-		$kursevi[$r600[0]] = $r600[1];
+	// Naslov
+	print "<h2>Prolaznost</h2>\n";
+	$q598 = myquery("select naziv from studij where id=$studij");
+	$q599 = myquery("select naziv from akademska_godina where id=$akgod");
+	$akgod_naziv = mysql_result($q599,0,0);
+	print "<h3>".mysql_result($q598,0,0).", $akgod_naziv, ";
+	if ($period==0) {
+		if ($semestar==0) $semestar=1;
+		print "$semestar. semestar, ";
+	} else {
+		if ($godina==0) $godina=1;
+		print "$godina. godina, ";
+	}
+	if ($ispit==1) print "I parcijalni, ";
+	elseif ($ispit==2) print "II parcijalni, ";
+	elseif ($ispit==3) print "Bodovi, ";
+	elseif ($ispit==4) print "Konačna ocjena, ";
 
-		$q601 = myquery("select s.id, s.ime, s.prezime, s.brindexa from student as s, student_labgrupa as sl, labgrupa as l where sl.student=s.id and sl.labgrupa=l.id and l.predmet=$r600[0]");
-		while ($r601 = mysql_fetch_row($q601)) {
-			$imeprezime[$r601[0]] = "$r601[2] $r601[1]";
-			$brind[$r601[0]] = $r601[3];
+	if ($cista_gen==0) print "Redovni+Ponovci+Preneseni predmeti";
+	elseif ($cista_gen==1) print "Redovni+Ponovci";
+	elseif ($cista_gen==2) print "Redovni studenti";
+	elseif ($cista_gen==3) print "Čista generacija";
+
+
+	print "</h3><br/>\n";
+
+	// Spisak predmeta na studij-semestru
+	if ($period==0) {
+		$semestar_upit = "pk.semestar=$semestar";
+		$sem_stud_upit = "semestar=$semestar";
+	} else {
+		$semestar_upit = "(pk.semestar=".($godina*2-1)." or pk.semestar=".($godina*2).")";
+		$sem_stud_upit = "semestar=".($godina*2-1); // blazi kriterij za studente koji slusaju
+	}
+	$q600 = myquery("select pk.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit order by pk.obavezan desc, p.naziv");
+
+	// Dodatak upitu za studente
+	$upit_studenti="";
+	if ($cista_gen>=1) {
+		$upit_studenti="and ss.studij=$studij and ss.$sem_stud_upit and ss.akademska_godina=$akgod";
+	}
+	if ($cista_gen==2) {
+		$upit_studenti .= " and (select count(*) from student_studij as ss2 where ss2.student=io.student and ss2.studij=$studij and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0";
+	}
+
+	// PODIZVJESTAJ 1: Statistika za ispit
+	// 1 = I parc., 2 = II parc.
+	if ($studenti==0 && ($ispit == 1 || $ispit == 2)) {
+		?><table border="1" cellspacing="0" cellpadding="2">
+			<tr><td><b>Predmet</b></td>
+			<td><b>Izašlo</b></td>
+			<td><b>Položilo</b></td>
+			<td><b>%</b></td>
+		</tr><?
+		while ($r600 = mysql_fetch_row($q600)) {
+			$naziv = $r600[1];
+			if ($r600[2]==0) $naziv .= " *";
+			$q601 = myquery("select count(distinct io.student) from ispitocjene as io, ispit as i, student as s, student_studij as ss where io.student=s.id and ss.student=s.id and io.ispit=i.id and i.predmet=$r600[0] and i.tipispita=$ispit $upit_studenti");
+			$izaslo=mysql_result($q601,0,0);
+			$q602 = myquery("select count(distinct io.student) from ispitocjene as io, ispit as i, student as s, student_studij as ss where io.student=s.id and ss.student=s.id and io.ispit=i.id and i.predmet=$r600[0] and i.tipispita=$ispit and io.ocjena>=10 $upit_studenti");
+			$polozilo=mysql_result($q602,0,0);
+			if ($izaslo>0) {
+				$procenat = intval($polozilo/$izaslo*10000)/100;
+				$procenat = "$procenat %";
+			} else {
+				$procenat = "-";
+			}
+			?><tr><td><?=$naziv?></td>
+			<td><?=$izaslo?></td>
+			<td><?=$polozilo?></td>
+			<td><?=$procenat?></td>
+			</tr><?
 		}
-		$sirina += 200;
-	}
+		print "</table>\n* Predmet je izborni<br/>\n";
 
-	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
-
-	// array zadaća - optimizacija
-	$kzadace = array();
-	foreach ($kursevi as $kurs_id => $kurs) {
-		$q600a = myquery("select id, zadataka from zadaca where predmet=$kurs_id");
-		$tmpzadaca = array();
-		while ($r600a = mysql_fetch_row($q600a)) {
-			$tmpzadaca[$r600a[0]] = $r600a[1];
+		// Sumarni podaci
+		if ($period==0) {
+			$sem2_upit = "semestar=$semestar";
+		} else {
+			$sem2_upit = "semestar=".($godina*2-1);
 		}
-		$kzadace[$kurs_id] = $tmpzadaca;
+
+		$q603 = myquery("select count(distinct io.student) from ispitocjene as io, ispit as i, ponudakursa as pk where io.ispit=i.id and i.predmet=pk.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit");
+		$uk_studenata = mysql_result($q603,0,0);
+		print "<p>Na ispite izašlo ukupno: <b>$uk_studenata</b> studenata<br/>";
+
+		if ($cista_gen==0) {
+
+//			$q604 = myquery("");
+//			while ($r604 = mysql_fetch_row($q604)) {
+//				$polozilo = $r604[0];
+//				$procenat = intval($polozilo/$uk_studenata*10000)/100;
+//				print "Položilo $r604[1] ispita: <b>$polozilo</b> studenata ($procenat%)<br/>";
+//			}
+
+		} else if ($cista_gen==1) {
+			$q603 = myquery("select count(*) from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem2_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.studij=$studij and ss2.$sem2_upit and ss2.akademska_godina<$akgod)=0");
+			$uk2_studenata = mysql_result($q603,0,0);
+
+			$q603 = myquery("select count(*) from student_studij where studij=$studij and akademska_godina=$akgod and $sem2_upit");
+			$uk_studenata = mysql_result($q603,0,0);
+			print "<p>Semestar upisalo: <b>$uk2_studenata</b> redovnih studenata + <b>".($uk_studenata-$uk2_studenata)."</b> ponovaca<br/>";
+
+			$q604 = myquery("select count(*),(select count(*) from ispitocjene as io, ispit as i, ponudakursa as pk where io.student=ss.student and io.ocjena>=10 and io.ispit=i.id and i.tipispita=$ispit and i.predmet=pk.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit) as broj_ispita from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem2_upit group by broj_ispita order by broj_ispita desc");
+			while ($r604 = mysql_fetch_row($q604)) {
+				$polozilo = $r604[0];
+				$procenat = intval($polozilo/$uk_studenata*10000)/100;
+				print "Položilo $r604[1] ispita: <b>$polozilo</b> studenata ($procenat%)<br/>";
+			}
+
+		} else if ($cista_gen==2) {
+			$q603 = myquery("select count(*) from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem2_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.studij=$studij and ss2.$sem2_upit and ss2.akademska_godina<$akgod)=0");
+			$uk_studenata = mysql_result($q603,0,0);
+			print "<p>Semestar upisalo: <b>$uk_studenata</b> studenata<br/>";
+
+			$q604 = myquery("select count(*),(select count(*) from ispitocjene as io, ispit as i, ponudakursa as pk where io.student=ss.student and io.ocjena>=10 and io.ispit=i.id and i.tipispita=$ispit and i.predmet=pk.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit) as broj_ispita from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem2_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.studij=$studij and ss2.$sem2_upit and ss2.akademska_godina<$akgod)=0 group by broj_ispita order by broj_ispita desc");
+			while ($r604 = mysql_fetch_row($q604)) {
+				$polozilo = $r604[0];
+				$procenat = intval($polozilo/$uk_studenata*10000)/100;
+				print "Položilo $r604[1] ispita: <b>$polozilo</b> studenata ($procenat%)<br/>";
+			}
+		}
 	}
 
-	?>
-	<table width="<?=$sirina?>" border="1" cellspacing="0" cellpadding="2">
-	<tr>
-		<td rowspan="2" valign="center">R. br.</td>
-		<td rowspan="2" valign="center">Broj indeksa</td>
-		<td rowspan="2" valign="center">Prezime i ime</td>
-	<?
-	foreach ($kursevi as $kurs) {
-		print '<td colspan="6" align="center">'.$kurs."</td>\n";
-	}
-	?>
-		<td rowspan="2" valign="center" align="center">UKUPNO</td>
-	</tr>
-	<tr>
-	<?
-	for ($i=0; $i<count($kursevi); $i++) {
+	else if ($studenti==1 && $ispit!=3) {
+
+		// Kreiranja niza kurseva i ispis zaglavlja tabele
+		$kursevi = array();
+		
+		print "<p>Pregled po studentima.";
+		if ($sortiranje==1) print " Spisak je sortiran po broju položenih ispita.</p>\n";
+		print " Spisak je sortiran po prezimenu.</p>\n";
+
 		?>
-		<td align="center">I</td>
-		<td align="center">II</td>
-		<td align="center">Int</td>
-		<td align="center">P</td>
-		<td align="center">Z</td>
-		<td align="center">Ocjena</td>
-		<?
-	}
-	print "</tr>\n";
-	$rbr=1;
-
-	// Slušalo / položilo predmet
-	$slusalo = array();
-	$polozilo = array();
-
-	foreach ($imeprezime as $stud_id => $stud_imepr) {
-		?>
+		<table  border="1" cellspacing="0" cellpadding="2">
 		<tr>
-			<td><?=$rbr++?></td>
-			<td><?=$brind[$stud_id]?></td>
-			<td><?=$stud_imepr?></td>
+			<td>R. br.</td>
+			<td>Student</td>
+			<td>Broj indexa</td>
 		<?
-		$polozio = 0;
-		foreach ($kursevi as $kurs_id => $kurs) {
-			$slusalo[$kurs_id]++;
-			$q602 = myquery("select io.ocjena,i.tipispita from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
-			$ispit = array();
-			$ispit[1] = $ispit[2] = $ispit[3] = -1;
-			while ($r602 = mysql_fetch_row($q602)) {
-				if ($r602[0] > $ispit[$r602[1]]) 
-					$ispit[$r602[1]] = $r602[0];
-			}
-			for ($i=1; $i<4; $i++) {
-				if ($ispit[$i] >= 0)
-					print "<td>$ispit[$i]</td>\n";
-				else
-					print "<td>&nbsp;</td>\n";
-			}
+		while ($r600 = mysql_fetch_row($q600)) {
+			$kursevi[$r600[0]] = $r600[1];
+			$naziv = $r600[1];
+			if ($r600[2]==0) $naziv .= " *";
+			print "<td>$naziv</td>\n";
+		}
+		print "<td>UKUPNO:</td></tr>\n";
 
-			$q603 = myquery("select count(*) from prisustvo as p,cas as c, labgrupa as l where p.student=$stud_id and p.cas=c.id and c.labgrupa=l.id and l.predmet=$kurs_id and p.prisutan=0");
-			if (mysql_result($q603,0,0)<=3) {
-				print "<td>10</td>\n";
-				$ukupno += 10;
-			} else
-				print "<td>0</td>\n";
+		// Upit koji vraca sve rezultate
+		$imeprezime = array();
+		$brind = array();
+		$rezultati = array();
+		$izasao = array();
 
-			$zadaca = 0;
-			foreach ($kzadace[$kurs_id] as $zid => $zadataka) {
-				for ($i=1; $i<=$zadataka; $i++) {
-					$q605 = myquery("select status,bodova from zadatak where zadaca=$zid and redni_broj=$i and student=$stud_id order by id desc limit 1");
-					if ($r605 = mysql_fetch_row($q605))
-						if ($r605[0] == 5)
-							$zadaca += $r605[1];
-//					$zadaca .= $i." ";
+		global $polozio;
+		$polozio = array(); // ne znam kako bez global :(
+		global $suma_bodova;
+		$suma_bodova = array();
+
+		if ($ispit==1 || $ispit==2) {
+			if ($cista_gen == 0)
+				$q620 = myquery("select s.id, s.ime, s.prezime, s.brindexa, i.predmet, io.ocjena from student as s, ispit as i, ispitocjene as io, ponudakursa as pk where s.id=io.student and io.ispit=i.id and i.predmet=pk.id and i.tipispita=$ispit and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit");
+			else if ($cista_gen == 1)
+				$q620 = myquery("select s.id, s.ime, s.prezime, s.brindexa, i.predmet, io.ocjena from student as s, ispit as i, ispitocjene as io, ponudakursa as pk, student_studij as ss where s.id=io.student and io.ispit=i.id and i.predmet=pk.id and i.tipispita=$ispit and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit and ss.student=s.id and ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem_stud_upit");
+			else if ($cista_gen == 2)
+				$q620 = myquery("select s.id, s.ime, s.prezime, s.brindexa, i.predmet, io.ocjena from student as s, ispit as i, ispitocjene as io, ponudakursa as pk, student_studij as ss where s.id=io.student and io.ispit=i.id and i.predmet=pk.id and i.tipispita=$ispit and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit and ss.student=s.id and ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=s.id and ss2.studij=$studij and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
+
+			while ($r620 = mysql_fetch_row($q620)) {
+				$imeprezime[$r620[0]] = "$r620[2] $r620[1]";
+				$brind[$r620[0]] = $r620[3];
+				if ($izasao[$r620[0]][$r620[4]] == 1) {
+					if ($rezultati[$r620[0]][$r620[4]]<10 && $r620[5]>=10) $polozio[$r620[0]]++;
+					if ($r620[5]>$rezultati[$r620[0]][$r620[4]]) {
+						$rezultati[$r620[0]][$r620[4]] = $r620[5];
+						$suma_bodova[$r620[0]] += $r620[5] - $rezultati[$r620[0]][$r620[4]];
+					}
+				} else {
+					if ($r620[5]>$rezultati[$r620[0]][$r620[4]]) $rezultati[$r620[0]][$r620[4]] = $r620[5];
+					$izasao[$r620[0]][$r620[4]] = 1;
+					if ($r620[5]>=10) $polozio[$r620[0]]++;
+					$suma_bodova[$r620[0]] += $r620[5];
 				}
 			}
-			print "<td>$zadaca</td>\n";
-
-			$q606 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
-			if (mysql_num_rows($q606)>0) {
-				$ocj = mysql_result($q606,0,0);
-				print "<td>$ocj</td>\n";
-				if ($ocj >= 6) $polozio++;
-				$polozilo[$kurs_id]++;
-			} else
-				print "<td>&nbsp;</td>\n";
+		} else {
+			// konacna ocjena
 		}
-		print "<td>$polozio</td></tr>\n";
-		$i++;
+
+
+		// Sortiranje tabele
+
+		if ($sortiranje==0) {
+			uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+		} else {
+			function tablica_sort($a, $b) {
+				global $polozio,$suma_bodova;
+				if ($polozio[$a]>$polozio[$b]) return -1;
+				else if ($polozio[$a]<$polozio[$b]) return 1;
+				else if ($suma_bodova[$a]>$suma_bodova[$b]) return -1;
+				return 1;
+			}
+			uksort($imeprezime,"tablica_sort");
+		}
+
+
+		// Ispis tablice
+
+		$rbr=1;
+		$slusalo = array();
+		$polozilo = array();
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			?>
+			<tr>
+				<td><?=$rbr++?></td>
+				<td><?=$brind[$stud_id]?></td>
+				<td><?=$stud_imepr?></td>
+			<?
+
+			foreach ($kursevi as $kurs_id => $kurs) {
+				if ($rezultati[$stud_id][$kurs_id] >= 10) $polozilo[$kurs_id]++;
+				if ($izasao[$stud_id][$kurs_id]==1) {
+					$slusalo[$kurs_id]++;
+					print "<td>".$rezultati[$stud_id][$kurs_id]."</td>\n";
+				} else {
+					print "<td>/</td>\n";
+				}
+			}
+			if (intval($polozio[$stud_id])==0) $polozio[$stud_id]=0;
+			print "<td>".$polozio[$stud_id]."</td></tr>\n";
+		}
+		if ($ispit==1 || $ispit==2)
+			print '<tr><td colspan="3" align="right">PRISTUPILO ISPITU</td>';
+		else
+			print '<tr><td colspan="3" align="right">SLUŠALO</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			if (intval($slusalo[$kurs_id])==0) $slusalo[$kurs_id]="0";
+			print '<td>'.$slusalo[$kurs_id]."</td>\n";
+		}
+		print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">POLOŽILO</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			if (intval($polozilo[$kurs_id])==0) $polozilo[$kurs_id]="0";
+			print '<td>'.$polozilo[$kurs_id]."</td>\n";
+		}
+		print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">PROCENAT</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			if ($slusalo[$kurs_id]>0) {
+				$proc = intval(($polozilo[$kurs_id]/$slusalo[$kurs_id])*10000)/100;
+				print '<td>'.$proc."%</td>\n";
+			} else {
+				print "<td>-</td>\n";
+			}
+		}
+		print "<td>&nbsp;</td></tr></table>\n* Predmet je izborni<br/>\n";
 	}
-	print '<tr><td colspan="3" align="right">SLUŠALO</td>';
-	foreach ($kursevi as $kurs_id => $kurs) {
-		print '<td colspan="5">'.$slusalo[$kurs_id]."</td>\n";
+
+
+	else if ($studenti==1 && $ispit==3) {
+	
+	
+		// tabela kurseva i studenata
+		$kursevi = array();
+		$imeprezime = array();
+		$brind = array();
+		$sirina = 200;
+		while ($r600 = mysql_fetch_row($q600)) {
+			$kursevi[$r600[0]] = $r600[1];
+	
+			$q601 = myquery("select s.id, s.ime, s.prezime, s.brindexa from student as s, student_labgrupa as sl, labgrupa as l where sl.student=s.id and sl.labgrupa=l.id and l.predmet=$r600[0]");
+			while ($r601 = mysql_fetch_row($q601)) {
+				$imeprezime[$r601[0]] = "$r601[2] $r601[1]";
+				$brind[$r601[0]] = $r601[3];
+			}
+			$sirina += 200;
+		}
+	
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+	
+		// array zadaća - optimizacija
+		$kzadace = array();
+		foreach ($kursevi as $kurs_id => $kurs) {
+			$q600a = myquery("select id, zadataka from zadaca where predmet=$kurs_id");
+			$tmpzadaca = array();
+			while ($r600a = mysql_fetch_row($q600a)) {
+				$tmpzadaca[$r600a[0]] = $r600a[1];
+			}
+			$kzadace[$kurs_id] = $tmpzadaca;
+		}
+	
+		?>
+		<table width="<?=$sirina?>" border="1" cellspacing="0" cellpadding="2">
+		<tr>
+			<td rowspan="2" valign="center">R. br.</td>
+			<td rowspan="2" valign="center">Broj indeksa</td>
+			<td rowspan="2" valign="center">Prezime i ime</td>
+		<?
+		foreach ($kursevi as $kurs) {
+			print '<td colspan="6" align="center">'.$kurs."</td>\n";
+		}
+		?>
+			<td rowspan="2" valign="center" align="center">UKUPNO</td>
+		</tr>
+		<tr>
+		<?
+		for ($i=0; $i<count($kursevi); $i++) {
+			?>
+			<td align="center">I</td>
+			<td align="center">II</td>
+			<td align="center">Int</td>
+			<td align="center">P</td>
+			<td align="center">Z</td>
+			<td align="center">Ocjena</td>
+			<?
+		}
+		print "</tr>\n";
+		$rbr=1;
+	
+		// Slušalo / položilo predmet
+		$slusalo = array();
+		$polozilo = array();
+	
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			?>
+			<tr>
+				<td><?=$rbr++?></td>
+				<td><?=$brind[$stud_id]?></td>
+				<td><?=$stud_imepr?></td>
+			<?
+			$polozio = 0;
+			foreach ($kursevi as $kurs_id => $kurs) {
+				$slusalo[$kurs_id]++;
+				$q602 = myquery("select io.ocjena,i.tipispita from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
+				$ispit = array();
+				$ispit[1] = $ispit[2] = $ispit[3] = -1;
+				while ($r602 = mysql_fetch_row($q602)) {
+					if ($r602[0] > $ispit[$r602[1]]) 
+						$ispit[$r602[1]] = $r602[0];
+				}
+				for ($i=1; $i<4; $i++) {
+					if ($ispit[$i] >= 0)
+						print "<td>$ispit[$i]</td>\n";
+					else
+						print "<td>&nbsp;</td>\n";
+				}
+	
+				$q603 = myquery("select count(*) from prisustvo as p,cas as c, labgrupa as l where p.student=$stud_id and p.cas=c.id and c.labgrupa=l.id and l.predmet=$kurs_id and p.prisutan=0");
+				if (mysql_result($q603,0,0)<=3) {
+					print "<td>10</td>\n";
+					$ukupno += 10;
+				} else
+					print "<td>0</td>\n";
+	
+				$zadaca = 0;
+				foreach ($kzadace[$kurs_id] as $zid => $zadataka) {
+					for ($i=1; $i<=$zadataka; $i++) {
+						$q605 = myquery("select status,bodova from zadatak where zadaca=$zid and redni_broj=$i and student=$stud_id order by id desc limit 1");
+						if ($r605 = mysql_fetch_row($q605))
+							if ($r605[0] == 5)
+								$zadaca += $r605[1];
+	//					$zadaca .= $i." ";
+					}
+				}
+				print "<td>$zadaca</td>\n";
+	
+				$q606 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
+				if (mysql_num_rows($q606)>0) {
+					$ocj = mysql_result($q606,0,0);
+					print "<td>$ocj</td>\n";
+					if ($ocj >= 6) $polozio++;
+					$polozilo[$kurs_id]++;
+				} else
+					print "<td>&nbsp;</td>\n";
+			}
+			print "<td>$polozio</td></tr>\n";
+			$i++;
+		}
+		print '<tr><td colspan="3" align="right">SLUŠALO</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			print '<td colspan="5">'.$slusalo[$kurs_id]."</td>\n";
+		}
+		print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">POLOŽILO</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			if (intval($polozilo[$kurs_id])==0) $polozilo[$kurs_id]="0";
+			print '<td colspan="5">'.$polozilo[$kurs_id]."</td>\n";
+		}
+		print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">PROCENAT</td>';
+		foreach ($kursevi as $kurs_id => $kurs) {
+			$proc = intval(($polozilo[$kurs_id]/$slusalo[$kurs_id])*100)/100;
+			print '<td colspan="5">'.$proc."%</td>\n";
+		}
+		print '<td>&nbsp;</td></tr></table>';
 	}
-	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">POLOŽILO</td>';
-	foreach ($kursevi as $kurs_id => $kurs) {
-		if (intval($polozilo[$kurs_id])==0) $polozilo[$kurs_id]="0";
-		print '<td colspan="5">'.$polozilo[$kurs_id]."</td>\n";
-	}
-	print '<td>&nbsp;</td></tr><tr><td colspan="3" align="right">PROCENAT</td>';
-	foreach ($kursevi as $kurs_id => $kurs) {
-		$proc = intval(($polozilo[$kurs_id]/$slusalo[$kurs_id])*100)/100;
-		print '<td colspan="5">'.$proc."%</td>\n";
-	}
-	print '<td>&nbsp;</td></tr></table>';
 }
 
 
@@ -669,8 +935,170 @@ if ($tip == "odustali") {
 	}
 }
 
+
+
+
+// ISPIT - statistika ispita
+
+if ($tip == "ispit") {
+	if ($predmetadmin == -1 && $siteadmin == 0) {
+		niceerror("Nemate permisije za pristup ovom izvještaju");
+		return;
+	}
+	
+	$ispit = intval($_REQUEST['ispit']);
+	if ($_REQUEST['ispit'] == "svi") $ispit=-1;
+
+	// Naziv predmeta, akademska godina
+	$q800 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and ag.id=pk.akademska_godina and pk.predmet=p.id");
+	print "<p>&nbsp;</p><h1>".mysql_result($q800,0,0)." ".mysql_result($q800,0,1)."</h1>\n";
+
+	// Tip ispita, datum i opis
+	if ($ispit==-1) {
+		print "<h3>Sumarna statistika za sve ispite</h3>\n";
+	} else {
+		$q801 = myquery("select UNIX_TIMESTAMP(i.datum),ti.naziv,i.naziv from ispit as i, tipispita as ti where i.id=$ispit and i.tipispita=ti.id");
+		print "<h3>".mysql_result($q801,0,1).", ".date("d. m. Y.", mysql_result($q801,0,0));
+		$opis = mysql_result($q801,0,2);
+		if (preg_match("/\w/",$opis)) print " ($opis)";
+		print "</h3>\n";
+	}
+
+	// Opste statistike (sumarno za predmet)
+	if ($ispit==-1) {
+		// Potreban MySQL v4.0+ !!!
+		$q804 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet");
+		$slusa_predmet = mysql_result($q804,0,0);
+		$q820 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (select count(*) from konacna_ocjena as ko where ko.student=sl.student and ko.predmet=$predmet and ko.ocjena>5)>0");
+		$polozilo = mysql_result($q820,0,0);
+		$q821 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=1 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0");
+		$prvaparc = mysql_result($q821,0,0);
+		$q822 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=2 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0");
+		$drugaparc = mysql_result($q822,0,0);
+		$q823 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=3 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0");
+		$intparc = mysql_result($q823,0,0);
+		$q824 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (((select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=1 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0) and ((select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=2 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0) or ((select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=3 and i.id=io.ispit and io.student=sl.student and io.ocjena>=10)>0))");
+		$parcijale = mysql_result($q824,0,0);
+		$q825 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.id=io.ispit and io.student=sl.student)=0");
+		$nisu_izlazili = mysql_result($q825,0,0);
+
+		print "<p>Ukupno upisalo predmet: <b>$slusa_predmet</b> studenata.<br/>";
+		print "Nije izašlo ni na jedan ispit (pretpostavka je da ne slušaju predmet, biće isključeni iz daljnjih statistika): <b>$nisu_izlazili</b> studenata.<br/>";
+		$slusa_predmet -= $nisu_izlazili;
+		print "Položilo (konačna ocjena 6 ili više): <b>$polozilo</b> studenata (<b>".procenat($polozilo,$slusa_predmet)."</b>).<br/>";
+		print "Zadovoljili uslove za usmeni: <b>$parcijale</b> studenata (<b>".procenat($parcijale,$slusa_predmet)."</b>).<br/><br/>";
+		print "Položilo I parcijalni ispit: <b>$prvaparc</b> studenata  (<b>".procenat($prvaparc,$slusa_predmet)."</b>).<br/>";
+		print "Položilo II parcijalni ispit: <b>$drugaparc</b> studenata  (<b>".procenat($drugaparc,$slusa_predmet)."</b>).<br/>";
+		print "Položilo ispit integralno: <b>$intparc</b> studenata  (<b>".procenat($intparc,$slusa_predmet)."</b>).</p>";
+
+		return;
+	}
+
+	// Opste statistike - pojedinacni ispit
+	$q802 = myquery("select count(*) from ispitocjene where ispit=$ispit");
+	$ukupno_izaslo = mysql_result($q802,0,0);
+	$q803 = myquery("select count(*) from ispitocjene where ispit=$ispit and ocjena>=10");
+	$polozilo = mysql_result($q803,0,0);
+	$q804 = myquery("select count(*) from student_labgrupa as sl, labgrupa as l where sl.labgrupa=l.id and l.predmet=$predmet");
+	$slusa_predmet = mysql_result($q804,0,0);
+	$prolaznost = intval(($polozilo/$ukupno_izaslo)*10000+0.5)/100;
+	print "<p>Ukupno izašlo studenata: <b>$ukupno_izaslo</b><br/>Položilo: <b>$polozilo</b><br/>Prolaznost: <b>$prolaznost %</b></p>\n";
+	print "<p>Od studenata koji slušaju predmet, nije izašlo: <b>".($slusa_predmet-$ukupno_izaslo)."</b></p>";
+
+	// Po broju bodova
+	print "<p>Distribucija po broju bodova:<br/>(Svaki stupac predstavlja broj studenata sa određenim brojem bodova. Rezolucija je 0.5 bodova)</p>";
+	// Odredjivanje max. broja studenata po koloni radi skaliranja grafa
+	$max = 0;
+	for ($i=0; $i<=20; $i+=0.5) {
+		$q805 = myquery("select COUNT( * ) FROM ispitocjene WHERE ispit=$ispit and ocjena>=$i and ocjena<".($i+0.5));
+		$studenata = mysql_result($q805,0,0);
+		if ($studenata>$max) $max=$studenata;
+	}
+	$koef = 80/$max;
+
+	?><table border="0" cellspacing="0" cellpadding="0"><tr><?
+	for ($i=0; $i<=20; $i+=0.5) {
+		$q806 = myquery("select COUNT( * ) FROM ispitocjene WHERE ispit=$ispit and ocjena>=$i and ocjena<".($i+0.5));
+		$height = intval(mysql_result($q806,0,0) * $koef);
+		?><td width="10">
+			<table width="10" border="0" cellspacing="0" cellpadding="0">
+				<tr><td>
+					<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				</td></tr><tr><td bgcolor="#FF0000">
+					<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				</td></tr>
+				<!--tr><td align="center"><?=$r806[0]?><br/><?=$r806[1]?><br/>
+				</td></tr-->
+			</table>
+		</td><td>&nbsp;</td><?
+	}
+	print "</tr></table>\n";
+
+
+	// Prolaznost po grupama
+	$ukupno = array(); $polozilo = array(); $prosjek = array(); $grupe = array();
+	$maxprol = 0; $maxprosj = 0;
+	$q807 = myquery("select l.id,io.ocjena,l.naziv FROM ispitocjene as io, student_labgrupa as sl, labgrupa as l, ispit as i WHERE io.ispit=$ispit and io.student=sl.student and sl.labgrupa=l.id and l.predmet=i.predmet and i.id=io.ispit order by l.id");
+	while ($r807 = mysql_fetch_row($q807)) {
+		$ukupno[$r807[0]]++;
+		if ($r807[1]>=10) $polozilo[$r807[0]]++;
+		$prosjek[$r807[0]] = ($prosjek[$r807[0]]*($ukupno[$r807[0]]-1) + $r807[1]) / $ukupno[$r807[0]];
+		$grupe[$r807[0]] = $r807[2];
+		if ($prosjek[$r807[0]]>$maxprosj) $maxprosj=$prosjek[$r807[0]];
+		$prolaznost = $polozilo[$r807[0]]/$ukupno[$r807[0]];
+		if ($prolaznost>$maxprol) $maxprol=$prolaznost;
+	}
+	
+	print "<p>Prolaznost po grupama:</p>";
+	$koef = 80/$maxprol;
+	?><table border="0" cellspacing="0" cellpadding="0"><tr><?
+	foreach ($grupe as $id => $naziv) {
+		$height = intval($polozilo[$id]/$ukupno[$id] * $koef);
+		$label = intval($polozilo[$id]/$ukupno[$id] * 100) . "%";
+		?><td width="50" valign="top">
+			<table width="50" border="0" cellspacing="0" cellpadding="0">
+				<tr><td align="center"><?=$label?></td></tr>
+				<tr><td>
+					<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				</td></tr><tr><td bgcolor="#FF0000">
+					<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				</td></tr>
+				<tr><td align="center"><?=$naziv?></td></tr>
+			</table>
+		</td><td width="10">&nbsp;</td><?
+	}
+	print "</tr></table>\n";
+
+
+	// Broj bodova po grupama
+	print "<p>Prosječan broj bodova po grupama:</p>";
+	$koef = 80/$maxprosj;
+	?><table border="0" cellspacing="0" cellpadding="0"><tr><?
+	foreach ($grupe as $id => $naziv) {
+		$height = intval($prosjek[$id] * $koef);
+		$label = intval($prosjek[$id]*10) / 10;
+		?><td width="50" valign="top">
+			<table width="50" border="0" cellspacing="0" cellpadding="0">
+				<tr><td align="center"><?=$label?></td></tr>
+				<tr><td>
+					<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				</td></tr><tr><td bgcolor="#FF0000">
+					<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				</td></tr>
+				<tr><td align="center"><?=$naziv?></td></tr>
+			</table>
+		</td><td width="10">&nbsp;</td><?
+	}
+	print "</tr></table>\n";
+}
+
+
 return;
 
+}
+
+function procenat($dio,$total) {
+	return (intval($dio/$total*10000)/100)."%";
 }
 
 ?>
