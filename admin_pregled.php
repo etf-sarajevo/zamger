@@ -12,6 +12,11 @@
 // v3.0.1.0 (2007/06/12) + Release
 // v3.0.1.1 (2007/10/02) + Dodan logging
 // v3.0.1.2 (2007/10/20) + Lokalna kopija funkcije file_put_contents sada ima provjeru da li je vec redefinisana, tako da ne dolazi do greske na novijim verzijama PHPa
+// v3.0.1.3 (2007/10/22) + Izvrsenje zadace: Privremene datoteke premjestene u sistem_path, ukinut dvostruki escaping kod stdin programa
+// v3.0.1.4 (2007/11/01) + Promijenjeni opisi statusa zadace
+// v3.0.1.5 (2007/11/30) + Ne prikazuj pokretanje programa ako programski jezik nije zadan
+// v3.0.1.6 (2007/12/03) + Dodan ID studenta u link za download; modul za download ubacen ovdje, da ne komplikujemo
+// v3.0.1.7 (2007/12/28) + Sacuvaj ime datoteke kod promjene statusa zadace
 
 
 function admin_pregled() {
@@ -98,10 +103,10 @@ if ($_GET['akcija'] == "izvrsi") {
 
 
 	// priprema fajlova
-	$tstdin = str_replace('\\\n',"\n",$stdin);
+	$tstdin = str_replace('\\n',"\n",$stdin); // više nije dvostruki escape
 	$tstdin .= "\n";
-	$result = file_put_contents("/tmp/zamger-gdb.txt","run\nbt\n");
-	if ($result) file_put_contents("/tmp/zamger-input.txt",$tstdin);
+	$result = file_put_contents("$system_path/tmp/zamger-gdb.txt","run\nbt\n");
+	if ($result) $result = file_put_contents("$system_path/tmp/zamger-input.txt",$tstdin);
 	if (!$result) {
 		niceerror("Ne mogu kreirati potrebne datoteke u direktoriju /tmp");
 		return;
@@ -114,22 +119,22 @@ if ($_GET['akcija'] == "izvrsi") {
 		$kompajler = "gcc";
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
 	$stdout = array();
-	exec("$kompajler -ggdb $the_file -o /tmp/zamger.out 2>&1", $stdout, $retvar);
+	exec("$kompajler -lm  -ggdb $the_file -o $system_path/tmp/zamger.out 2>&1", $stdout, $retvar);
 	if ($retvar != 0) {
 		niceerror("Kompajliranje nije uspjelo! Slijedi ispis");
 		print "<pre>".join("\n",$stdout)."</pre>";
 		print "</body></html>";
 		// čišćenje
-		unlink("/tmp/zamger-gdb.txt");
-		unlink("/tmp/zamger-input.txt");
-		unlink("/tmp/zamger.out");
+//		unlink("$system_path/tmp/zamger-gdb.txt");
+//		unlink("$system_path/tmp/zamger-input.txt");
+//		unlink("$system_path/tmp/zamger.out");
 		return;
 	}
 
 	// izvršenje
 	unset($stdout);
 	chmod("/tmp/zamger.out", 0755);
-	exec("gdb --batch --command=/tmp/zamger-gdb.txt /tmp/zamger.out </tmp/zamger-input.txt 2>&1", $stdout, $retvar);
+	exec("gdb --batch --command=$system_path/tmp/zamger-gdb.txt $system_path/tmp/zamger.out <$system_path/tmp/zamger-input.txt 2>&1", $stdout, $retvar);
 
 	// Čistimo viškove iz stdout-a
 	$ispis = join("\n",$stdout);
@@ -159,9 +164,9 @@ if ($_GET['akcija'] == "izvrsi") {
 	?><p><a href="javascript:history.go(-1)">Nazad</a></p></body></html><?
 
 	// čišćenje
-	unlink("/tmp/zamger-gdb.txt");
-	unlink("/tmp/zamger-input.txt");
-	unlink("/tmp/zamger.out");
+//	unlink("$system_path/tmp/zamger-gdb.txt");
+//	unlink("$system_path/tmp/zamger-input.txt");
+//	unlink("$system_path/tmp/zamger.out");
 	return;
 }
 
@@ -173,7 +178,11 @@ if ($_GET['akcija'] == "slanje") {
 	$komentar = my_escape($_GET['komentar']);
 	$status = intval($_GET['status']);
 	$bodova = floatval($_GET['bodova']);
-	$q1 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar' ");
+	// Filename
+	$q000 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
+	$filename = mysql_result($q000,0,0);
+
+	$q1 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename'");
 	// Nakon izmjene ispisujemo zadatak normalno
 }
 
@@ -195,7 +204,6 @@ if ($attach == 0) {
 	// Nije attachment
 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
-	#print "The_file: $the_file<br>\n";
 	if (file_exists($the_file)) { 
 		$src = file_get_contents($the_file);  
 	}
@@ -220,32 +228,35 @@ if ($attach == 0) {
 
 
 	// Formular za izvršavanje programa
+	$q14a = myquery("select programskijezik from zadaca where id=$zadaca");
+	$r14a = mysql_result($q14a,0,0);
+	if ($r14a>0) {
+		?><center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
+		Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
+		<form action="qwerty.php" method="GET">
+		<input type="hidden" name="sta" value="pregled">
+		<input type="hidden" name="akcija" value="izvrsi">
+		<input type="hidden" name="student" value="<?=$stud_id?>">
+		<input type="hidden" name="zadaca" value="<?=$zadaca?>">
+		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+		<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
+		<?
 
-	?><center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
-	Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
-	<form action="qwerty.php" method="GET">
-	<input type="hidden" name="sta" value="pregled">
-	<input type="hidden" name="akcija" value="izvrsi">
-	<input type="hidden" name="student" value="<?=$stud_id?>">
-	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
-	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
-	<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
-	<?
-
-	// Zadnje korišteni stdin se čuva u bazi
-	$q15 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
-	if (mysql_num_rows($q15)<1)
-		print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
-	while ($r15 = mysql_fetch_row($q15)) {
-		print "<option value=\"$r15[0]\">$r15[0]</option>\n";
+		// Zadnje korišteni stdin se čuva u bazi
+		$q15 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+		if (mysql_num_rows($q15)<1)
+			print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
+		while ($r15 = mysql_fetch_row($q15)) {
+			print "<option value=\"$r15[0]\">$r15[0]</option>\n";
+		}
+		?>
+		</select><br/>
+	
+		<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
+		<input type="submit" value=" Izvrši program ">
+		</form></table></center><br/>&nbsp;<br/>
+		<?
 	}
-	?>
-	</select><br/>
-
-	<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
-	<input type="submit" value=" Izvrši program ">
-	</form></table></center><br/>&nbsp;<br/>
-	<?
 
 
 } else {
@@ -259,7 +270,7 @@ if ($attach == 0) {
 		$vrijeme = date("d. m. Y. h:i:s", mysql_result($q20,0,1));
 		$velicina = nicesize(filesize($the_file));
 		$icon = "images/mimetypes/" . getmimeicon($the_file);
-		$dllink = "qwerty.php?sta=download&zadaca=$zadaca&zadatak=$zadatak";
+		$dllink = "qwerty.php?sta=download&student=$stud_id&zadaca=$zadaca&zadatak=$zadatak";
 		?>
 		<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
 		<a href="<?=$dllink?>"><img src="<?=$icon?>" border="0"></a>
@@ -321,7 +332,7 @@ print ">$tx</option>";
 
 // tabela status kodova
 
-$statusi_array = array("nepoznat status","nova zadaća","prepisana","ne može se kompajlirati","prošla test, predstoji kontrola","pregledana");
+$statusi_array = array("nepoznat status","sačekati automatsko testiranje!","prepisana","ne može se kompajlirati","nova zadaća, potrebno pregledati","pregledana");
 $brstatusa = 6;
 
 for ($i=0;$i<$brstatusa;$i++)
@@ -440,6 +451,44 @@ function file_put_contents($file,$tekst) {
 	fclose($file);
 	return $bytes;
 }
+}
+
+
+
+
+function admin_download() {
+
+global $system_path;
+
+
+$stud_id=intval($_GET['student']);
+$zadaca=intval($_GET['zadaca']);
+$zadatak=intval($_GET['zadatak']);
+
+$q02 = myquery("select z.filename,z2.predmet from zadatak as z,zadaca as z2 where z.zadaca=$zadaca and z.redni_broj=$zadatak and z.student=$stud_id and z.zadaca=z2.id order by z.id desc limit 1");
+if (mysql_num_rows($q02) < 1) {
+	print niceerror("Ova zadaća nije iz vašeg predmeta!?");
+	return;
+}
+
+
+
+$filename = mysql_result($q02,0,0);
+$predmet_id = mysql_result($q02,0,1);
+
+$lokacijazadaca="$system_path/zadace/$predmet_id/$stud_id/";
+$filepath = $lokacijazadaca."$zadaca/$filename";
+
+
+$type = `file -bi '$filepath'`;
+header("Content-Type: $type");
+header('Content-Disposition: attachment; filename=' . $filename, false);
+
+$k = readfile($filepath,false);
+if ($k == false) print "FALSE";
+exit;
+
+
 }
 
 ?>
