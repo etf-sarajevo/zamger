@@ -13,6 +13,7 @@
 // v3.0.1.2 (2007/10/10) + Nova struktura baze za predmete
 // v3.0.1.3 (2007/10/24) + Nova schema tabele za ispite
 // v3.0.1.4 (2007/11/16) + Ispiti nisu bili uključeni u zbir
+// v3.0.1.5 (2008/01/17) + Uzmi u obzir koliko bodova nosi zadaca kod racunanja procenta
 
 
 ?>
@@ -137,7 +138,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 	// ZAGLAVLJE - ZADACE
 	$vj_id_array = $vj_br_zad = array(); 
 	$ocjene_zaglavlje = "";
-	$q102 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
+	$maxbodovi_zadace = 0;
+	$q102 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet order by id");
 	$brzadaca = mysql_num_rows($q102);
 	if ($brzadaca == 0) { $brzadaca=1; $ocjene_zaglavlje = "<td>&nbsp;</td>"; }
 	else {
@@ -147,6 +149,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$ocjene_zaglavlje .= "<td>$zad_naziv</td>\n";
 			array_push($vj_id_array,$zad_id);
 			array_push($vj_br_zad,$r102[2]);
+			$maxbodovi_zadace += $r102[3];
 		}
 	}
 
@@ -259,8 +262,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 				$ocjene_ispis .= "<td> $ocjena </td>";
 				$bodova = $bodova + $ocjena;
 			}
-			$mogucih+=2;
 		}
+		$mogucih += $maxbodovi_zadace;
 		if (count($vj_id_array)==0) $ocjene_ispis .= "<td>&nbsp;</td>";
 
 		// PARCIJALE
