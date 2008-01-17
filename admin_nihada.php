@@ -15,6 +15,7 @@
 // v3.0.1.13 (2007/12/04) + U modul "predmeti" dodani linkovi na izvjestaje za pojedinacne ispite
 // v3.0.1.14 (2007/12/10) + Dodan link i na sumarnu statistiku ispita
 // v3.0.1.15 (2007/12/22) + Nastavak rada na kartici "Studij"; prostor za semestar koji student trenutno slusa je postao read-only (prevelika je mogucnost greske - ovo se sada moze editovati kroz bazu a eventualno kroz siteadmin interfejs)
+// v3.0.1.16 (2008/01/17) + Na kartici Predmeti dodan panel za ogranicenja
 
 
 function admin_nihada() {
@@ -457,9 +458,85 @@ else if ($tab == "Studenti") {
 }
 
 
+
 //------------------------------
 //   PREDMETI
 //------------------------------
+
+
+else if ($tab == "Predmeti" && $akcija == "ogranicenja") {
+	$nastavnik = intval($_REQUEST['nastavnik']);
+	$predmet = intval($_REQUEST['predmet']);
+
+	// Imena stvari
+	$q370 = myquery("select ime,prezime from nastavnik where id=$nastavnik");
+	if (mysql_num_rows($q370)<1) {
+		niceerror("Nepoznat nastavnik");
+		return;
+	}
+	$ime = mysql_result($q370,0,0);
+	$prezime = mysql_result($q370,0,1);
+	$q371 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+	if (mysql_num_rows($q371)<1) {
+		niceerror("Nepoznat predmet");
+		return;
+	}
+	$naziv_predmeta = mysql_result($q371,0,0);
+
+	?><ul><p>
+	<b>Ograničenja za nastavnika <?=$ime." ".$prezime?> na predmetu <?=$naziv_predmeta?></b></p><?
+
+	// Subakcija
+	if ($_REQUEST['subakcija']=="izmjena") {
+		// Provjera podataka...
+		$q374 = myquery("select id from labgrupa where predmet=$predmet");
+		$izabrane=0; $grupe=0; $upit="";
+		while ($r374 = mysql_fetch_row($q374)) {
+			if ($_REQUEST['lg'.$r374[0]]) {
+				$izabrane++;
+				if ($upit)
+					$upit .= ",($nastavnik,$r374[0])";
+				else
+					$upit = "($nastavnik,$r374[0])";
+			}
+			$grupe++;
+		}
+		if ($upit == "") {
+			niceerror("Nastavnik mora imati pristup barem jednoj grupi");
+			print "<br/>Ako ne želite da ima pristup, odjavite ga/je sa predmeta.";
+		} else if ($izabrane == $grupe) {
+			$q375 = myquery("delete from ogranicenje where nastavnik=$nastavnik");
+			print "<br/>Nastavnik više nema ograničenja!<br/>\n";
+		} else {
+			$q375 = myquery("delete from ogranicenje where nastavnik=$nastavnik");
+			$q376 = myquery("insert into ogranicenje values $upit");
+			print "<br/>Postavljena nova ograničenja.<br/>\n";
+		}
+	}
+
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="izmjena">
+	<p>
+	<?
+	
+	$nema_ogranicenja=0;
+	$q372 = myquery("select count(*) from ogranicenje as o, labgrupa as l where o.nastavnik=$nastavnik and o.labgrupa=l.id and l.predmet=$predmet");
+	if (mysql_result($q372,0,0)<1) $nema_ogranicenja=1;
+
+	$q373 = myquery("select id,naziv from labgrupa where predmet=$predmet");
+	while ($r373 = mysql_fetch_row($q373)) {
+		$dodaj="CHECKED";
+		if ($nema_ogranicenja==0) {
+			$q374=myquery("select count(*) from ogranicenje where labgrupa=$r373[0] and nastavnik=$nastavnik");
+			if (mysql_result($q374,0,0)==0) $dodaj="";
+		}
+		?><input type="checkbox" name="lg<?=$r373[0]?>" <?=$dodaj?>> <?=$r373[1]?><br/><?
+	}
+	?><br/><input type="submit" value=" Izmijeni "> <input type="button" value=" Nazad " onclick="location.href='qwerty.php?sta=nihada&tab=Predmeti&akcija=edit&predmet=<?=$predmet?>';"></form><?
+	
+}
+
 
 else if ($tab == "Predmeti" && $akcija == "novi") {
 	$naziv = substr(my_escape($_POST['naziv']), 0, 100);
@@ -611,7 +688,7 @@ else if ($tab == "Predmeti" && $akcija == "edit") {
 		else 
 			print "1'\"></td>\n";
 
-		print '<td><a href="'.genuri().'&subakcija=ogranicenja&nastavnik='.$r351[0].'">';
+		print '<td><a href="'.genuri().'&akcija=ogranicenja&nastavnik='.$r351[0].'">';
 		$q352 = myquery("select l.naziv from ogranicenje as o, labgrupa as l where o.nastavnik=$r351[0] and o.labgrupa=l.id and l.predmet=$predmet");
 		if (mysql_num_rows($q352)<1)
 			print "Nema";
