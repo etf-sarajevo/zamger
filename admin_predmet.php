@@ -31,7 +31,7 @@
 // v3.0.1.17 (2007/12/10) + Zabraniti registrovanje vise ispita istog tipa na isti datum; popravljen bug u SQLu zbog kojeg nije prepoznato da student nije upisan na predmet
 // v3.0.1.18 (2007/12/13) + Sitna ispravka u gore spomenutoj zabrani; bezimene grupe
 // v3.0.1.19 (2007/12/15) + Umjesto zabrane, sada dodajemo rezultate na isti ispit!; samo 0 se priznaje kao nula bodova
-// v3.0.1.20 (2008/01/19) + Dodan link na skracenu verziju izvjestaja "predmet_full"
+// v3.0.1.20 (2008/01/19) + Dodan link na skracenu verziju izvjestaja "predmet_full"; masovni unos zadaca
 
 
 function admin_predmet() {
@@ -444,6 +444,7 @@ if ($_POST['akcija'] == "massexam") {
 if ($_POST['akcija'] == "massocjena") {
 	$redovi = explode("\n",$_POST['massocjena']);
 	$tempid=1;
+	$greska=0;
 
 	$f = $_POST['fakatradi'];
 	if ($f != 1) {
@@ -472,10 +473,15 @@ if ($_POST['akcija'] == "massocjena") {
 				list($prezime,$ime,$ocjena) = explode("\t",$red,3);
 			}
 			# pretvori $ocjenu u int
+			if (intval($ocjena)==0 && strpos($ocjena,"0")===FALSE) {
+				if ($f != 1)
+					print "Student '$prezime $ime' - nije ocijenjen (nije unesena ocjena $ocjena)<br/>";
+				continue;
+			}
 			$ocjena = intval($ocjena);
 
 			# Da li student postoji?
-			$q42 = myquery("select id from student where ime like '$ime' and prezime like '$prezime'");
+			$q42 = myquery("select * from student as s, student_labgrupa as sl, labgrupa as l where s.ime like '$ime' and s.prezime like '$prezime' and sl.student=s.id and sl.labgrupa=l.id and l.predmet=$predmet");
 			if (mysql_num_rows($q42)>0) {
 				$student = mysql_result($q42,0,0);
 
@@ -483,6 +489,7 @@ if ($_POST['akcija'] == "massocjena") {
 				if (array_search($student, $prosli_idovi)) {
 					if ($f != 1) {
 						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (ocjena: $ocjena)<br/>";
+						$greska=1;
 					}
 				} else {
 					if ($f != 1) {
@@ -492,18 +499,139 @@ if ($_POST['akcija'] == "massocjena") {
 					}
 				}
 			} else {
-				if ($f != 1) {
-					print "-- GREŠKA! Nepoznat student '$prezime $ime'<br/>";
+				$q42a = myquery("select count(*) from student where ime like '$ime' and prezime like '$prezime'");
+				if (mysql_result($q42a,0,0) >= 1) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime' '$ime' nije upisan na ovaj predmet.<br/>";
+						$greska=1;
+					}
+				} else {
+					if ($f != 1) {
+						print "-- GREŠKA! Nepoznat student '$prezime' '$ime'<br/>";
+						$greska=1;
+					}
 				}
 			}
 		}
 	}
 	if ($f != 1) {
-		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ocjena\'"> <input type="submit" value=" Potvrda">';
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Ocjena\'"> ';
+		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
 		print "</form>";
 		return;
 	} else {
 		logthis("Masovno upisane ocjene na predmet $predmet");
+	}
+}
+
+
+
+
+
+
+
+
+
+# Masovni unos konačnih ocjena
+
+if ($_POST['akcija'] == "masszadaca") {
+	$redovi = explode("\n",$_REQUEST['masszadaca']);
+	$tempid=1;
+	$zadaca = intval($_REQUEST['_lv_column_zadaca']);
+	$zadatak = intval($_REQUEST['zadatak']);
+	$q44 = myquery("select naziv,zadataka,bodova from zadaca where id=$zadaca");
+	if (mysql_result($q44,0,1)<$zadatak) {
+		niceerror("Zadaća \"".mysql_result($q44,0,0)."\" nema $zadatak zadataka.");
+		return;
+	}
+	$maxbodova=mysql_result($q44,0,2);
+
+	$f = $_POST['fakatradi'];
+	if ($f != 1) {
+		print "Akcije koje će biti urađene:<br/><br/>\n";
+		print genform("POST");
+		print '<input type="hidden" name="fakatradi" value="1">';
+		print '<input type="hidden" name="_lv_column_zadaca" value="'.$zadaca.'">';
+		print '<input type="hidden" name="zadatak" value="'.$zadatak.'">';
+	} else {
+
+	}
+
+	$prosli_idovi = array();
+
+	foreach ($redovi as $red) {
+		$red = rtrim($red);
+		$red = my_escape($red);
+		if (strlen($red)>1) {
+			# Parsiranje formata
+			$format = $_POST['format'];
+			if ($format == "A") {
+				list($imepr,$bodova) = explode("\t",$red,2);
+				list($prezime,$ime) = explode(" ",$imepr,2);
+			} else if ($format == "B") {
+				list($imepr,$bodova) = explode("\t",$red,2);
+				list($ime,$prezime) = explode(" ",$imepr,2);
+			} else if ($format == "C") {
+				list($prezime,$ime,$bodova) = explode("\t",$red,3);
+			}
+			// pretvori $bodova u float uz obradu decimalnog zareza
+			$fbodova = floatval(str_replace(",",".",$bodova));
+			// samo 0 priznajemo za nula bodova, inace student nije izasao na ispit
+			if ($fbodova==0 && strpos($bodova,"0")===FALSE) {
+				if ($f != 1)
+					print "Student '$prezime $ime' - nije uradio zadaću (nije unesen broj bodova $bodova)<br/>";
+				continue;
+			}
+			$bodova = $fbodova;
+
+			if ($bodova>$maxbodova) {
+				if ($f != 1) {
+					print "-- GREŠKA! Student '$prezime $ime' uneseno je $bodova što je više od maksimalnih $maxbodova<br/>";
+					$greska=1;
+				}
+			}
+
+			# Da li student postoji?
+			$q42 = myquery("select * from student as s, student_labgrupa as sl, labgrupa as l where s.ime like '$ime' and s.prezime like '$prezime' and sl.student=s.id and sl.labgrupa=l.id and l.predmet=$predmet");
+			if (mysql_num_rows($q42)>0) {
+				$student = mysql_result($q42,0,0);
+
+				# Da li se isti student ponavlja dvaput?
+				if (array_search($student, $prosli_idovi)) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime $ime' se ponavlja! (bodova $bodova)<br/>";
+						$greska=1;
+					}
+				} else {
+					if ($f != 1) {
+						print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
+					} else {
+						$q46 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=5, bodova=$bodova, vrijeme=NOW()");
+					}
+				}
+			} else {
+				$q42a = myquery("select count(*) from student where ime like '$ime' and prezime like '$prezime'");
+				if (mysql_result($q42a,0,0) >= 1) {
+					if ($f != 1) {
+						print "-- GREŠKA! Student '$prezime' '$ime' nije upisan na ovaj predmet.<br/>";
+						$greska=1;
+					}
+				} else {
+					if ($f != 1) {
+						print "-- GREŠKA! Nepoznat student '$prezime' '$ime'<br/>";
+						$greska=1;
+					}
+				}
+			}
+		}
+	}
+	if ($f != 1) {
+		print '<input type="button" value=" Nazad " onClick="location.href=\'qwerty.php?sta=predmet&predmet='.$predmet.'&tab=Zadaće\'"> ';
+		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
+		print "</form>";
+		return;
+	} else {
+		logthis("Masovno upisane zadaće na predmet $predmet, zadaca $zadaca, zadatak $zadatak");
 	}
 }
 
@@ -769,6 +897,32 @@ if ($tab == "Zadaće") {
 	$_lv_["label:attachment"] = "Slanje zadatka u formi attachmenta";
 	$_lv_["label:rok"] = "Rok za slanje";
 	print db_form("zadaca");
+
+	?><p><hr/></p>
+	<p><b>Masovni unos zadaća</b><br/>
+	<?
+
+	print genform("POST");
+	?><input type="hidden" name="fakatradi" value="0">
+	<input type="hidden" name="akcija" value="masszadaca">
+
+	Izaberite zadaću: <?=db_dropdown("zadaca");?>
+	Izaberite zadatak: <select name="zadatak"><?
+	$q112 = myquery("select zadataka from zadaca where predmet=$predmet order by zadataka desc limit 1");
+	for ($i=1; $i<=mysql_result($q112,0,0); $i++) {
+		print "<option value=\"$i\">$i</option>\n";
+	}
+	?>
+	</select><br/><br/>
+
+	Izaberite format podataka:<br/>
+	<input type="radio" name="format" value="A"> Prezime Ime[TAB]Bodova<br/>
+	<input type="radio" name="format" value="B"> Ime Prezime[TAB]Bodova<br/>
+	<input type="radio" name="format" value="C"> Prezime[TAB]Ime[TAB]Bodova<br/>
+	<br/>
+	<textarea name="masszadaca" cols="50" rows="10"></textarea><br/>
+	<input type="submit" value="  Dodaj  ">
+	</form></p><?
 }
 
 
