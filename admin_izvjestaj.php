@@ -10,6 +10,8 @@
 // v3.0.1.8 (2007/11/19) + Izvjestaj "ispit" - statistika pojedinacnog ispita
 // v3.0.1.9 (2007/12/10) + U izvjestaj "ispit" dodan sumarni izvjestaj za sve ispite na predmetu
 // v3.0.1.10 (2007/12/22) + Nastavak rada na izvjestaju "prolaznost", optimizacije itd.
+// v3.0.1.11 (2008/01/17) + Ljepse zaglavlje za "prolaznost", dodan podizvjestaj o konacnim ocjenama
+// v3.0.1.12 (2008/01/19) + Dodana skracena verzija izvjestaja "predmet_full"; boldovana kolona "ukupno", ubacene kose crte za ispite na koje student nije izasao
 
 
 function admin_izvjestaj() {
@@ -343,6 +345,8 @@ if ($tip == "predmet_full") {
 		return;
 	}
 
+	$skrati = intval($_REQUEST['skrati']);
+
 	$q500 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and ag.id=pk.akademska_godina and pk.predmet=p.id");
 	print "<p>&nbsp;</p><h1>".mysql_result($q500,0,0)." ".mysql_result($q500,0,1)."</h1>\n";
 
@@ -354,19 +358,19 @@ if ($tip == "predmet_full") {
 
 	while ($r501 = mysql_fetch_row($q501)) {
 		?>
-		<table width="100%" border="2" cellspacing="0" cellpadding="2">
-			<tr><td colspan="28" align="center"><b><?=strtoupper($r501[1])?></b></td></tr>
+		<table <? if ($skrati!=1) { ?> width="100%"<? } ?> border="2" cellspacing="0" cellpadding="2">
+			<tr><td colspan="<? if ($skrati!=1) print "28"; else print "9"; ?>" align="center"><b><?=strtoupper($r501[1])?></b></td></tr>
 			<tr><td align="center">R.br.</td>
 				<td align="center">Br. indexa</td>
-				<td align="center">Prezime i ime</td>
+				<td align="center">Prezime i ime</td><? if ($skrati!=1) { ?>
 				<td colspan="7" align="center">Prisustvo tutorijalima 1</td>
 				<td colspan="7" align="center">Prisustvo tutorijalima 2</td>
-				<td colspan="5" align="center">Zadaće i lab vježbe</td>
+				<td colspan="5" align="center">Zadaće i lab vježbe</td><? } ?>
 				<td align="center">I parc.</td>
 				<td align="center">II parc.</td>
 				<td align="center">Prisustvo</td>
 				<td align="center">Zadaće</td>
-				<td align="center">Ukupno</td>
+				<td align="center"><b>Ukupno</b></td>
 				<td align="center">Ocjena</td>
 			</tr>
 		<?
@@ -407,18 +411,20 @@ if ($tip == "predmet_full") {
 			$n = 0;
 			foreach ($casoviar as $cas) {
 				$q505 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cas");
+
 				if (mysql_num_rows($q505)<1) {
-					print "<td>/</td>\n";
+					if ($skrati!=1) print "<td>/</td>\n";
 				} else if (mysql_result($q505,0,0) == 0) {
-					print "<td>0</td>\n";
+					if ($skrati!=1) print "<td>0</td>\n";
 					$n++;
 				} else {
-					print "<td>1</td>\n";
+					if ($skrati!=1) print "<td>1</td>\n";
 				}
 			}
-			for ($i=count($casoviar); $i<14; $i++) {
-				print "<td>&nbsp;</td>\n";
-			}
+			if ($skrati!=1)
+				for ($i=count($casoviar); $i<14; $i++) {
+					print "<td>&nbsp;</td>\n";
+				}
 			if ($n>3) $prisustvo=0; else $prisustvo=10;
 			
 			// Jos jedan array...... optimizacija
@@ -437,18 +443,19 @@ if ($tip == "predmet_full") {
 			$zadace=0;
 			foreach ($zadacear as $zid => $zadataka) {
 				if ($bodova[$zid]) {
-					print "<td>".$bodova[$zid]."</td>";
+					if ($skrati!=1) print "<td>".$bodova[$zid]."</td>";
 					$zadace += $bodova[$zid];
 				} else {
-					print "<td>&nbsp;</td>";
+					if ($skrati!=1) print "<td>&nbsp;</td>";
 				}
 			}
-			for  ($i=count($zadacear); $i<5; $i++)
-				print "<td>&nbsp;</td>\n";
+			if ($skrati!=1) 
+				for  ($i=count($zadacear); $i<5; $i++)
+					print "<td>&nbsp;</td>\n";
 
 
 			// Ispiti
-			$parc1 = $parc2 = "&nbsp;";
+			$parc1 = $parc2 = "/";
 			$integralni = 0;
 
 			$q507 = myquery("select io.ocjena, i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.datum");
@@ -473,7 +480,7 @@ if ($tip == "predmet_full") {
 
 			print "<td>$prisustvo</td>";
 			print "<td>$zadace</td>";
-			print "<td>$total</td>";
+			print "<td><b>$total</b></td>";
 
 			// Konacna ocjena
 			$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet");
@@ -516,27 +523,31 @@ if ($tip == "prolaznost") {
 	print "<h2>Prolaznost</h2>\n";
 	$q598 = myquery("select naziv from studij where id=$studij");
 	$q599 = myquery("select naziv from akademska_godina where id=$akgod");
-	$akgod_naziv = mysql_result($q599,0,0);
-	print "<h3>".mysql_result($q598,0,0).", $akgod_naziv, ";
+
+	?><p>Studij: <b><?=mysql_result($q598,0,0)?></b><br/>
+	Akademska godina: <b><?=mysql_result($q599,0,0)?></b><br/>
+	Godina/semestar studija: <b><?
 	if ($period==0) {
 		if ($semestar==0) $semestar=1;
-		print "$semestar. semestar, ";
+		print "$semestar. semestar";
 	} else {
 		if ($godina==0) $godina=1;
 		print "$godina. godina, ";
 	}
-	if ($ispit==1) print "I parcijalni, ";
-	elseif ($ispit==2) print "II parcijalni, ";
-	elseif ($ispit==3) print "Bodovi, ";
-	elseif ($ispit==4) print "Konačna ocjena, ";
-
-	if ($cista_gen==0) print "Redovni+Ponovci+Preneseni predmeti";
-	elseif ($cista_gen==1) print "Redovni+Ponovci";
+	?></b><br/>
+	Obuhvaćeni studenti: <b><?
+	if ($cista_gen==0) print "Redovni, Ponovci, Preneseni predmeti";
+	elseif ($cista_gen==1) print "Redovni, Ponovci";
 	elseif ($cista_gen==2) print "Redovni studenti";
-	elseif ($cista_gen==3) print "Čista generacija";
+	elseif ($cista_gen==3) print "Čista generacija";?></b><br/><br/>
+	Vrsta izvještaja: <b><?
+	if ($ispit==1) print "I parcijalni ispit";
+	elseif ($ispit==2) print "II parcijalni ispit";
+	elseif ($ispit==3) print "Ukupni bodovi";
+	elseif ($ispit==4) print "Konačna ocjena";
+	?></b><br/>
+	</p><?
 
-
-	print "</h3><br/>\n";
 
 	// Spisak predmeta na studij-semestru
 	if ($period==0) {
@@ -557,7 +568,7 @@ if ($tip == "prolaznost") {
 		$upit_studenti .= " and (select count(*) from student_studij as ss2 where ss2.student=io.student and ss2.studij=$studij and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0";
 	}
 
-	// PODIZVJESTAJ 1: Statistika za ispit
+	// PODIZVJESTAJ 1: Statistika za ispit, bez pojedinacnih studenata
 	// 1 = I parc., 2 = II parc.
 	if ($studenti==0 && ($ispit == 1 || $ispit == 2)) {
 		?><table border="1" cellspacing="0" cellpadding="2">
@@ -636,6 +647,70 @@ if ($tip == "prolaznost") {
 		}
 	}
 
+
+	// PODIZVJESTAJ 2: Ukupan zbir bodova, bez pojedinacnih studenata
+	else if ($studenti==0 && $ispit == 3) {
+		// Ovo će biti komplikovano....
+	}
+
+
+
+	// PODIZVJESTAJ 3: Konacna ocjena, bez pojedinacnih studenata
+	else if ($studenti==0 && $ispit == 4) {
+		?><table border="1" cellspacing="0" cellpadding="2">
+			<tr><td><b>Predmet</b></td>
+			<td><b>Deset (10)</b></td>
+			<td><b>%</b></td>
+			<td><b>Devet (9)</b></td>
+			<td><b>%</b></td>
+			<td><b>Osam (8)</b></td>
+			<td><b>%</b></td>
+			<td><b>Sedam (7)</b></td>
+			<td><b>%</b></td>
+			<td><b>Šest (6)</b></td>
+			<td><b>%</b></td>
+			<td><b>Nisu položili</b></td>
+			<td><b>%</b></td>
+		</tr><?
+
+		// Ukupan broj studenata na semestru/odsjeku
+		if ($period==0) {
+			$sem2_upit = "semestar=$semestar";
+		} else {
+			$sem2_upit = "semestar=".($godina*2-1);
+		}
+
+		if ($cista_gen==0) {
+			$q603 = myquery("select count(distinct io.student) from ispitocjene as io, ispit as i, ponudakursa as pk where io.ispit=i.id and i.predmet=pk.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit");
+			$uk_studenata = mysql_result($q603,0,0);
+		} else if ($cista_gen==1) {
+			$q603 = myquery("select count(distinct io.student) from ispitocjene as io, ispit as i, ponudakursa as pk where io.ispit=i.id and i.predmet=pk.id and pk.akademska_godina=$akgod and pk.studij=$studij and $semestar_upit");
+			$uk_studenata = mysql_result($q603,0,0);
+			// ?? isto kao gore
+		} else if ($cista_gen==2) {
+			$q603 = myquery("select count(*) from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem2_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.studij=$studij and ss2.$sem2_upit and ss2.akademska_godina<$akgod)=0");
+			$uk_studenata = mysql_result($q603,0,0);
+		}
+
+		while ($r600 = mysql_fetch_row($q600)) {
+			$naziv = $r600[1];
+			if ($r600[2]==0) $naziv .= " *";
+			$q630 = myquery("select ocjena,count(*) from konacna_ocjena where predmet=$r600[0] group by ocjena order by ocjena");
+			$ocjene = array();
+			for ($i=6; $i<=10; $i++) $ocjene[$i]=0;
+			while ($r630 = mysql_fetch_row($q630)) {
+				$ocjene[$r630[0]] = $r630[1];
+			}
+
+			$palo = $uk_studenata - $ocjene[10] - $ocjene[9] - $ocjene[8] - $ocjene[7] - $ocjene[6];
+			print "<tr><td>$naziv</td><td>$ocjene[10]</td><td>".procenat($ocjene[10],$uk_studenata)."</td><td>$ocjene[9]</td><td>".procenat($ocjene[9],$uk_studenata)."</td><td>$ocjene[8]</td><td>".procenat($ocjene[8],$uk_studenata)."</td><td>$ocjene[7]</td><td>".procenat($ocjene[7],$uk_studenata)."</td><td>$ocjene[6]</td><td>".procenat($ocjene[6],$uk_studenata)."</td><td>$palo</td><td>".procenat($palo,$uk_studenata)."</td></tr>";
+		}
+
+		// 
+	}
+
+
+	// PODIZVJESTAJ 4: Statistika za ispit, pojedinacni studenti
 	else if ($studenti==1 && $ispit!=3) {
 
 		// Kreiranja niza kurseva i ispis zaglavlja tabele
@@ -767,6 +842,8 @@ if ($tip == "prolaznost") {
 	}
 
 
+	// PODIZVJESTAJ 5: Ukupan broj bodova, pojedinacni studenti
+	// NEOPTIMIZOVANO
 	else if ($studenti==1 && $ispit==3) {
 	
 	

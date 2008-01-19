@@ -31,6 +31,7 @@
 // v3.0.1.17 (2007/12/10) + Zabraniti registrovanje vise ispita istog tipa na isti datum; popravljen bug u SQLu zbog kojeg nije prepoznato da student nije upisan na predmet
 // v3.0.1.18 (2007/12/13) + Sitna ispravka u gore spomenutoj zabrani; bezimene grupe
 // v3.0.1.19 (2007/12/15) + Umjesto zabrane, sada dodajemo rezultate na isti ispit!; samo 0 se priznaje kao nula bodova
+// v3.0.1.20 (2008/01/19) + Dodan link na skracenu verziju izvjestaja "predmet_full"
 
 
 function admin_predmet() {
@@ -600,7 +601,8 @@ if ($tab == "Izvještaji") {
 	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupedouble&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 1. Spisak studenata po grupama</a></p>';
 
 	// Izvjestaj "PREDMET_FULL"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 2. Pregled grupa, prisustva, bodova</a>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 2. Pregled grupa, prisustva, bodova</a><br/>';
+	print '<a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'&skrati=1">(skraćena verzija)</a></p>';
 
 	// Izvjestaj "KOMENTARI"
 	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 3. Spisak studenata sa komentarima</a>';
