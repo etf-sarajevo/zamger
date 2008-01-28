@@ -16,6 +16,7 @@
 // v3.0.1.7 (2007/11/15) + Layout fixes
 // v3.0.1.8 (2007/11/26) + Sve zadace u istom redu, prema sugestiji Sase i Zajke (ne svidja mi se)
 // v3.0.1.9 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
+// v3.0.1.10 (2008/01/28) + Omogucen negativan broj bodova na ispitu
 
 
 function admin_grupa() {
@@ -507,22 +508,21 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 		$mogucih+=20;
 	}*/
-	$max1 = $max2 = "/";
-	$int = "";
+	$max1 = $max2 = $int = "/";
 	$q16 = myquery("select io.ocjena,i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
 	while ($r16 = mysql_fetch_row($q16)) {
 		if ($r16[0] == -1) continue;
-		if ($r16[0]>=$max1 && $r16[1]==1) $max1=$r16[0];
-		if ($r16[0]>=$max2 && $r16[1]==2) $max2=$r16[0];
-		if ($r16[0]>=$int && $r16[1]==3) $int=$r16[0];
+		if (($max1=="/" || $r16[0]>=$max1) && $r16[1]==1) $max1=$r16[0];
+		if (($max2=="/" || $r16[0]>=$max2) && $r16[1]==2) $max2=$r16[0];
+		if (($int=="/" || $r16[0]>=$int) && $r16[1]==3) $int=$r16[0];
 	}
-	if ($int > ($max1+$max2)) {
+	if ($int > ($max1+$max2) && $int != "/") {
 		$bodova += $int;
 		$mogucih += 40;
 		$ispiti_ispis = "<td colspan=\"2\" align=\"center\">$int</td>\n";
 	} else {
-		if ($max1>0) $mogucih += 20;
-		if ($max2>0) $mogucih += 20;
+		if ($max1!="&nbsp;") $mogucih += 20;
+		if ($max2!="&nbsp;") $mogucih += 20;
 		$bodova += ($max1+$max2);
 		$ispiti_ispis = "<td>$max1</td><td>$max2</td>";
 	}

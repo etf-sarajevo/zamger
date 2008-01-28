@@ -14,6 +14,7 @@
 // v3.0.1.3 (2007/10/24) + Nova schema tabele za ispite
 // v3.0.1.4 (2007/11/16) + Ispiti nisu bili uključeni u zbir
 // v3.0.1.5 (2008/01/17) + Uzmi u obzir koliko bodova nosi zadaca kod racunanja procenta
+// v3.0.1.6 (2008/01/28) + Omogucen negativan broj bodova na ispitu
 
 
 ?>
@@ -294,9 +295,10 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$maxispit[1] = $maxispit[2] = $maxispit[3] = "/";
 		$q202 = myquery("select io.ocjena, i.tipispita from ispitocjene as io, ispit as i where io.student=$stud_id and io.ispit=i.id and i.predmet=$predmet order by i.id");
 		while ($r202 = mysql_fetch_row($q202)) {
-			if ($r202[0] != -1 && $r202[0]>=$maxispit[$r202[1]]) $maxispit[$r202[1]]=$r202[0];
+			if ($r202[0] != -1 && ($r202[0]>=$maxispit[$r202[1]] || $maxispit[$r202[1]]=="/")) 
+				$maxispit[$r202[1]]=$r202[0];
 		}
-		if ($maxispit[3] > ($maxispit[1]+$maxispit[2])) {
+		if ($maxispit[3] > ($maxispit[1]+$maxispit[2]) && $maxispit[3]!="/") {
 			$bodova += $maxispit[3];
 			$mogucih += 40;
 			$parc_ispis = '<td colspan="2" align="center">'.$$maxispit[3].'</td>';
