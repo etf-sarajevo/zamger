@@ -32,6 +32,7 @@
 // v3.0.1.18 (2007/12/13) + Sitna ispravka u gore spomenutoj zabrani; bezimene grupe
 // v3.0.1.19 (2007/12/15) + Umjesto zabrane, sada dodajemo rezultate na isti ispit!; samo 0 se priznaje kao nula bodova
 // v3.0.1.20 (2008/01/19) + Dodan link na skracenu verziju izvjestaja "predmet_full"; masovni unos zadaca
+// v3.0.1.21 (2008/01/28) + Dodano trimovanje imena i prezimena u massocjena i masszadaca (do sada samo u massexam)
 
 
 function admin_predmet() {
@@ -466,11 +467,17 @@ if ($_POST['akcija'] == "massocjena") {
 			if ($format == "A") {
 				list($imepr,$ocjena) = explode("\t",$red,2);
 				list($prezime,$ime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			} else if ($format == "B") {
 				list($imepr,$ocjena) = explode("\t",$red,2);
 				list($ime,$prezime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			} else if ($format == "C") {
 				list($prezime,$ime,$ocjena) = explode("\t",$red,3);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			}
 			# pretvori $ocjenu u int
 			if (intval($ocjena)==0 && strpos($ocjena,"0")===FALSE) {
@@ -568,11 +575,17 @@ if ($_POST['akcija'] == "masszadaca") {
 			if ($format == "A") {
 				list($imepr,$bodova) = explode("\t",$red,2);
 				list($prezime,$ime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			} else if ($format == "B") {
 				list($imepr,$bodova) = explode("\t",$red,2);
 				list($ime,$prezime) = explode(" ",$imepr,2);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			} else if ($format == "C") {
 				list($prezime,$ime,$bodova) = explode("\t",$red,3);
+				$prezime=trim($prezime); 
+				$ime=trim($ime);
 			}
 			// pretvori $bodova u float uz obradu decimalnog zareza
 			$fbodova = floatval(str_replace(",",".",$bodova));
