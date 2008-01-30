@@ -16,7 +16,7 @@
 // v3.0.1.7 (2007/11/15) + Layout fixes
 // v3.0.1.8 (2007/11/26) + Sve zadace u istom redu, prema sugestiji Sase i Zajke (ne svidja mi se)
 // v3.0.1.9 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
-// v3.0.1.10 (2008/01/28) + Omogucen negativan broj bodova na ispitu
+// v3.0.1.10 (2008/01/28) + Omogucen negativan broj bodova na ispitu; uzmi u obzir max. broj bodova u zadaci kod racunanja procenta; prikaz konacne ocjene
 
 
 function admin_grupa() {
@@ -320,13 +320,14 @@ if ($prisustvo_zaglavlje == "") { $prisustvo_zaglavlje = "<td>&nbsp;</td>"; $min
 
 $zadace_zaglavlje = "";
 
-$q11 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
+$q11 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet order by id");
 $brzadaca = mysql_num_rows($q11);
 if ($brzadaca > 0) { 
 	while ($r11 = mysql_fetch_row($q11)) {
 		$zadace_zaglavlje .= "<td width=\"60\">$r11[1]</td>\n";
 		$zad_id_array[] = $r11[0];
 		$zad_brz_array[$r11[0]] = $r11[2];
+		$zad_max_bodova[$r11[0]] = $r11[3];
 
 		$minw += 60;
 	}
@@ -348,6 +349,17 @@ if ($brispita > 0) {
 		$ispit_id_array[] = $r12[0];
 	}
 }*/
+
+
+// Zaglavlje konacna ocjena
+
+$ispis_konacna=0;
+$q11a = myquery("select count(*) from konacna_ocjena where predmet=$predmet");
+if (mysql_result($q11a,0,0)>0) {
+	$minw += 40;
+	$ispis_konacna=1;
+}
+
 if ($casova==0) $casova=1;
 
 $minw += (2*40); // parcijalni ispiti
@@ -369,6 +381,9 @@ $minw += 40; // bodovi prisustvo
 	<? } ?>
 	<td align="center" colspan="2">Ispiti</td>
 	<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
+	<? if ($ispis_konacna==1) {
+?><td rowspan="2" align="center">Konačna<br/>ocjena</td><?
+	} ?>
 </tr>
 <tr>
 	<?=$prisustvo_zaglavlje?><td>BOD.</td>
@@ -483,7 +498,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			}
 		}
 		$zadace_ispis .= "&nbsp;</td>\n";
-		$mogucih += 2;
+		$mogucih += $zad_max_bodova[$zid];
 	}
 
 /*	$i=$pao1=$pao2=0;
@@ -561,6 +576,16 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	<td align="center"><?=$bodova?> (<?=$procent?>%)</td>
 	<? /*<td bgcolor="<?=$thecolor?>"><?=$theletter?></td>*/ ?>
 <?
+
+	// Konacna ocjena
+	if ($ispis_konacna==1) {
+		$q17 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet");
+		if (mysql_num_rows($q17)>0) {
+			?><td align="center"><?= mysql_result($q17,0,0)?></td><?
+		} else {
+			?><td align="center">/</td><?
+		}
+	}
 
 }
 

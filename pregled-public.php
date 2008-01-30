@@ -14,7 +14,7 @@
 // v3.0.1.3 (2007/10/24) + Nova schema tabele za ispite
 // v3.0.1.4 (2007/11/16) + Ispiti nisu bili uključeni u zbir
 // v3.0.1.5 (2008/01/17) + Uzmi u obzir koliko bodova nosi zadaca kod racunanja procenta
-// v3.0.1.6 (2008/01/28) + Omogucen negativan broj bodova na ispitu
+// v3.0.1.6 (2008/01/28) + Omogucen negativan broj bodova na ispitu; prikaz konacne ocjene
 
 
 ?>
@@ -183,6 +183,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	<td align="center" colspan="<?=$brzadaca?>">Ocjene iz zadaća</td>
 	<td align="center" colspan="<?=$brparc?>">Parcijalni ispiti</td>
 	<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
+	<td rowspan="2" align="center" valign="center">Konačna<br/>ocjena</td>
 </tr>
 <tr>
 	<?=$casovi_zaglavlje?><td>BOD.</td>
@@ -344,6 +345,16 @@ while ($r10 = mysql_fetch_row($q10)) {
 	<td bgcolor="<?=$thecolor?>"><?=$theletter?></td>
 <?
 	}*/
+
+	// Konacna ocjena
+	$q203 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet");
+	if (mysql_num_rows($q203)>0) {
+		?><td align="center"><?= mysql_result($q203,0,0)?></td><?
+	} else {
+		?><td align="center">/</td><?
+	}
+
+
 	}
 ?>
 </tr>
