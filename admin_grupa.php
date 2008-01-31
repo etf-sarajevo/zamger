@@ -17,6 +17,7 @@
 // v3.0.1.8 (2007/11/26) + Sve zadace u istom redu, prema sugestiji Sase i Zajke (ne svidja mi se)
 // v3.0.1.9 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
 // v3.0.1.10 (2008/01/28) + Omogucen negativan broj bodova na ispitu; uzmi u obzir max. broj bodova u zadaci kod racunanja procenta; prikaz konacne ocjene
+// v3.0.1.11 (2008/01/31) + Prikazi rezultate sa integralnog ako jedan od parcijalnih nije polozen; prikazi usmeni ispit ako postoji
 
 
 function admin_grupa() {
@@ -350,6 +351,14 @@ if ($brispita > 0) {
 	}
 }*/
 
+// Zaglavlje usmeni ispit
+$ispis_usmeni=0;
+$q11b = myquery("select count(*) from ispit where predmet=$predmet and tipispita=4");
+if (mysql_result($q11b,0,0)>0) {
+	$minw += 40;
+	$ispis_usmeni=1;
+}
+
 
 // Zaglavlje konacna ocjena
 
@@ -369,6 +378,9 @@ $minw += 100; // ime i prezime
 $minw += 40; // komentar
 $minw += 40; // bodovi prisustvo
 
+$broj_ispita=2;
+if ($ispis_usmeni==1) $broj_ispita=3;
+
 ?>
 <table cellspacing="0" cellpadding="2" border="1" <? if ($minw>800) print "width=\"$minw\""; ?>>
 <tr>
@@ -379,16 +391,15 @@ $minw += 40; // bodovi prisustvo
 	<? if ($brzadaca > 0) { 
 ?><td align="center" colspan="<?=$brzadaca?>">Ocjene iz zadaća</td>
 	<? } ?>
-	<td align="center" colspan="2">Ispiti</td>
+	<td align="center" colspan="<?=$broj_ispita?>">Ispiti</td>
 	<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
-	<? if ($ispis_konacna==1) {
-?><td rowspan="2" align="center">Konačna<br/>ocjena</td><?
-	} ?>
+	<? if ($ispis_konacna==1) { ?><td rowspan="2" align="center">Konačna<br/>ocjena</td><? } ?>
 </tr>
 <tr>
 	<?=$prisustvo_zaglavlje?><td>BOD.</td>
 	<?=$zadace_zaglavlje?>
 	<td>I parc.</td><td>II parc.</td>
+	<? if ($ispis_usmeni==1) { ?><td>Usmeni</td><? } ?>
 </tr>
 <?
 
@@ -531,7 +542,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		if (($max2=="/" || $r16[0]>=$max2) && $r16[1]==2) $max2=$r16[0];
 		if (($int=="/" || $r16[0]>=$int) && $r16[1]==3) $int=$r16[0];
 	}
-	if ($int > ($max1+$max2) && $int != "/") {
+	if (($int > ($max1+$max2) || ($int>20 && ($max1<10 || $max2<10))) && $int != "/") {
 		$bodova += $int;
 		$mogucih += 40;
 		$ispiti_ispis = "<td colspan=\"2\" align=\"center\">$int</td>\n";
@@ -539,7 +550,20 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		if ($max1!="&nbsp;") $mogucih += 20;
 		if ($max2!="&nbsp;") $mogucih += 20;
 		$bodova += ($max1+$max2);
-		$ispiti_ispis = "<td>$max1</td><td>$max2</td>";
+		$ispiti_ispis = "<td>$max1</td><td>$max2</td>\n";
+	}
+
+	// Usmeni ispit
+	if ($ispis_usmeni==1) {
+		$q17 = myquery("select io.ocjena from ispitocjene as io, ispit as i where i.predmet=$predmet and i.tipispita=4 and i.id=io.ispit and io.student=$stud_id order by io.ocjena desc");
+		if (mysql_num_rows($q17)>0) {
+			$usmeni = mysql_result($q17,0,0);
+			$ispiti_ispis .= "<td>$usmeni</td>\n";
+			$bodova += $usmeni;
+		} else {
+			$ispiti_ispis .= "<td>/</td>";
+		}
+		$mogucih += 40;
 	}
 
 
