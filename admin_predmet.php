@@ -33,6 +33,8 @@
 // v3.0.1.19 (2007/12/15) + Umjesto zabrane, sada dodajemo rezultate na isti ispit!; samo 0 se priznaje kao nula bodova
 // v3.0.1.20 (2008/01/19) + Dodan link na skracenu verziju izvjestaja "predmet_full"; masovni unos zadaca
 // v3.0.1.21 (2008/01/28) + Dodano trimovanje imena i prezimena u massocjena i masszadaca (do sada samo u massexam)
+// v3.0.1.22 (2008/01/30) + Ogranicenje na ocjene (6-10); onemogucen visestruki unos bodova za ispit i konacne ocjene
+// v3.0.1.23 (2008/01/31) + Sada se umjesto linka na full izvjestaj uvijek koristi skracena verzija; dodan link na izvjestaj sa razdvojenim ispitima
 
 
 function admin_predmet() {
@@ -335,6 +337,7 @@ if ($_POST['akcija'] == "massexam") {
 		if ($f != 1) {
 			print "Dodati rezultate na postojeći ispit (ID: $ispit):<br/>";
 		}
+		$dodavanje=1;
 	} else if ($f == 1) {
 		$q40 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat'), tipispita=$tipispita");
 		$q41 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and tipispita=$tipispita");
@@ -344,6 +347,7 @@ if ($_POST['akcija'] == "massexam") {
 			return;
 		} 
 		$ispit = mysql_result($q41,0,0);
+		$dodavanje=0;
 	}
 
 
@@ -402,6 +406,15 @@ if ($_POST['akcija'] == "massexam") {
 						$greska=1;
 					}
 				} else {
+					# Da li je ocjena za studenta vec ranije unesena?
+					if ($dodavanje == 1) {
+						$q42a = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$student");
+						if (mysql_num_rows($q42a)>0 && $f != 1) {
+							$oc2 = mysql_result($q42a,0,0);
+							print "-- GREŠKA! Student '$prezime $ime' je već ranije unesen na ovaj ispit sa $oc2 bodova (a sada sa $ocjena bodova). Izmjena unesenih bodova trenutno nije moguća.<br/>";
+							$greska=1;
+						}
+					}
 					if ($f == 1) {
 						$q43 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
 						$greska=1;
@@ -486,6 +499,13 @@ if ($_POST['akcija'] == "massocjena") {
 				continue;
 			}
 			$ocjena = intval($ocjena);
+			if ($ocjena<6 || $ocjena>10) {
+				if ($f != 1) {
+					print "-- GREŠKA! Za studenta '$prezime $ime' ocjena nije u opsegu 6-10 (ocjena: $ocjena)<br/>";
+					$greska=1;
+					continue;
+				}
+			}
 
 			# Da li student postoji?
 			$q42 = myquery("select * from student as s, student_labgrupa as sl, labgrupa as l where s.ime like '$ime' and s.prezime like '$prezime' and sl.student=s.id and sl.labgrupa=l.id and l.predmet=$predmet");
@@ -499,6 +519,16 @@ if ($_POST['akcija'] == "massocjena") {
 						$greska=1;
 					}
 				} else {
+					# Da li vec ima ocjena u bazi?
+					$q42a = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$predmet");
+					if (mysql_num_rows($q42a)>0) {
+						if ($f != 1) {
+							$oc2 = mysql_result($q42a,0,0);
+							print "-- GREŠKA! Student '$prezime $ime' je već ranije ocijenjen ocjenom $oc2 (a sada sa $ocjena). Izmjena unesene ocjene trenutno nije moguća.<br/>";
+							$greska=1;
+						}
+					}
+
 					if ($f != 1) {
 						print "Student '$prezime $ime' (ID: $student) - ocjena: $ocjena<br/>";
 					} else {
@@ -742,11 +772,13 @@ if ($tab == "Izvještaji") {
 	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupedouble&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 1. Spisak studenata po grupama</a></p>';
 
 	// Izvjestaj "PREDMET_FULL"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 2. Pregled grupa, prisustva, bodova</a><br/>';
-	print '<a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'&skrati=1">(skraćena verzija)</a></p>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'&skrati=1"><img src="images/kontact_journal.png" border="0" align="center"> 2. Pregled grupa, prisustva, bodova</a><br/>';
+
+	// Izvjestaj "PREDMET_FULL"
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=predmet_full&predmet='.$predmet.'&skrati=1&razdvoji_ispite=1"><img src="images/kontact_journal.png" border="0" align="center"> 3. Pregled grupa, prisustva, bodova sa razdvojenim popravnim ispitima</a><br/>';
 
 	// Izvjestaj "KOMENTARI"
-	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 3. Spisak studenata sa komentarima</a>';
+	print '<p><a href="qwerty.php?sta=izvjestaj&tip=grupe&komentari=1&predmet='.$predmet.'"><img src="images/kontact_journal.png" border="0" align="center"> 4. Spisak studenata sa komentarima</a>';
 
 }
 
