@@ -4,6 +4,7 @@
 // v3.0.1.2 (2007/10/02) + Dodan logging
 // v3.0.1.3 (2007/10/13) + Nova struktura baze za predmete; novi tab Log za analizu loga
 // v3.0.1.4 (2007/11/06) + Robusnije generisanje loga; nove logging opcije
+// v3.0.1.5 (2008/01/31) + Popravljen sitni bug: zadnji zapis u logu je ignorisan
 
 function admin_site() {
 
@@ -131,7 +132,7 @@ if ($tab == "Log") {
 	$stardate = intval($_GET['stardate']);
 	if ($stardate == 0) {
 		$q199 = myquery("select id from log order by id desc limit 1");
-		$stardate = mysql_result($q199,0,0);
+		$stardate = mysql_result($q199,0,0)+1;
 	}
 
 ?>
@@ -157,17 +158,19 @@ if ($tab == "Log") {
 	$logins=0;
 	while ($r200 = mysql_fetch_row($q200)) {
 		$nicedate = " (".date("d.m.Y. H:i:s", $r200[1]).")";
-		if ($lastlogin[$r200[2]]==0) {
-			$lastlogin[$r200[2]]=$r200[0];
+		$usr=$r200[2];
+		if ($lastlogin[$usr]==0) {
+			$lastlogin[$usr]=$r200[0];
 			$logins++;
 			if ($logins > $maxlogins) {
-				$stardate=$r200[0];
+				$stardate=$r200[0]+1;
 				break; // izlaz iz while
 			}
 		}
+
 		if (substr($r200[3],0,5) == "Login") {
-			$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Login $r200[2] $nicedate\n".$eventshtml[$lastlogin[$r200[2]]];
-			$lastlogin[$r200[2]]=0;
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Login $r200[2] $nicedate\n".$eventshtml[$lastlogin[$usr]];
+			$lastlogin[$usr]=0;
 		}
 		else if (preg_match("/Admin grupa (\d+)/", $r200[3], $matches)) {
 			$q203 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p, ponudakursa as pk where l.id=$matches[1] and l.predmet=pk.id and pk.predmet=p.id");
@@ -259,6 +262,7 @@ if ($tab == "Log") {
 			$eventshtml[$lastlogin[$r200[2]]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$r200[3].$nicedate."\n".$eventshtml[$lastlogin[$r200[2]]];
 		}
 	}
+
 	foreach ($eventshtml as $logid => $event) {
 		$q201 = myquery("select auth.id,auth.admin,UNIX_TIMESTAMP(log.vrijeme) from auth,log where auth.id=log.userid and log.id=$logid");
 		$userid = mysql_result($q201,0,0);
