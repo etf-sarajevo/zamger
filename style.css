@@ -1,0 +1,6 @@
+	body{font-family:Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	td{font-family:Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	a{color:#333399;font-family:Verdana,Arial,sans-serif;font-size:11px;text-decoration:none;}
+	a:hover{color:red;text-decoration:underline;}
+	.grupa {color:#666666;font-weight:bold;font-size:11px}
+	.msg {color:#FF0000}
