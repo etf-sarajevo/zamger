@@ -6,7 +6,7 @@
 // v3.9.1.1 (2008/03/04) + Sprijecen konflikt IDa nastavnika i studenta, omogucen unos studenta kao nastavnika
 // v3.9.1.2 (2008/03/24) + Nova auth tabela
 // v3.9.1.3 (2008/04/12) + Popravljen typo i redirekcija u proceduri za dodavanje nastavnika; popravljeno proglasavanje korisnika za nastavnika kada se koristi LDAP
-
+// v3.9.1.4 (2008/06/10) + Popravljena redirekcija kod izmjene podataka upravo dodanog nastavnika
 
 function studentska_nastavnici() {
 
@@ -92,6 +92,7 @@ if ($akcija == "novi") {
 			nicemessage("Korisnik je proglašen za nastavnika.");
 			zamgerlog("korisnik u$r10[0] proglašen za nastavnika",4); // nivo 4 - audit
 			$akcija="edit";
+			$_POST['subakcija']="";
 			$nastavnik=$r10[0];
 		} else {
 			// Korisnik već postoji i nastavnik je! Ovo je greška
@@ -116,7 +117,7 @@ if ($akcija == "novi") {
 		nicemessage("Novi korisnik je dodan.");
 		zamgerlog("dodan novi nastavnik u$nastavnik (ID: $nastavnik)",4); // nivo 4: audit
 		$akcija="edit";
-		$nastavnik=$nastavnik;
+		$_POST['subakcija']="";
 	}
 }
 
@@ -187,6 +188,8 @@ if ($akcija == "edit") {
 	}
 	?>
 	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="edit">
+	<input type="hidden" name="nastavnik" value="<?=$nastavnik?>">
 	<input type="hidden" name="subakcija" value="podaci">
 	<table width="100%" border="0"><tr>
 		<td>Ime:<br/> <input type="text" size="10" name="ime" value="<?=$r150[0]?>"></td>
