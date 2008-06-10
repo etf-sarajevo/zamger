@@ -12,6 +12,7 @@
 // v3.9.1.3 (2008/04/04) + Optimizovan ajah za prisustvo koristenjem update_komponenta_prisustvo() iz libmanip
 // v3.9.1.4 (2008/04/09) + Popravljeno koristenje varijable $user_siteadmin
 // v3.9.1.5 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
+// v3.9.1.6 (2008/06/10) + Dodana podrska za fiksne komponente
 
 
 
@@ -118,16 +119,19 @@ case "izmjena_ispita":
 		$vrijednost = floatval(str_replace(",",".",$vrijednost));
 	}
 
-	list($ime,$stud_id,$ispit) = explode("-",$idpolja);
-	$stud_id = intval($stud_id); $ispit = intval($ispit);
-	if (($ime != "ispit" && $ime!="ko") || $stud_id==0 || $ispit == 0) {
+	$parametri = array();
+	$parametri = explode("-",$idpolja);
+	$ime = $parametri[0];
+	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna") {
 		// ko = konacna ocjena
 		zamgerlog("AJAH ispit - ne valja id polja ($idpolja)",3);
 		print "ne valja ID polja"; break;
 	}
 	
-	// Provjera prava pristupa
+	// Provjera prava pristupa i dodatna validacija parametara
 	if ($ime == "ispit") {
+		$stud_id = intval($parametri[1]);
+		$ispit = intval($parametri[2]);
 		if ($user_siteadmin)
 			$q40 = myquery("select 1,i.predmet,k.maxbodova,k.id,k.tipkomponente,k.opcija from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 		else
@@ -145,10 +149,32 @@ case "izmjena_ispita":
 		$tipkomponente = mysql_result($q40,0,4);
 		$kopcija = mysql_result($q40,0,5);
 
+	} else if ($ime == "fiksna") {
+		$stud_id = intval($parametri[1]);
+		$predmet = intval($parametri[2]);
+		$komponenta = intval($parametri[3]);
+
+		// TODO: provjeriti da li komponenta postoji na predmetu
+		$q40a = myquery("select maxbodova from komponenta where id=$komponenta and tipkomponente=5");
+		if (mysql_num_rows($q40a)!=1) {
+			zamgerlog("AJAH fiksna - nepoznata fiksna komponenta $komponenta",3);
+			print "nepoznata fiksna komponenta $komponenta"; break;
+		}
+		$max = mysql_result($q40a,0,0);
+
+		if (!$user_siteadmin) {
+			$q40b = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+			if (mysql_num_rows($q40b)<1) {
+				zamgerlog("AJAH fiksna - nije na predmetu p$predmet",3);
+				print "niste saradnik na predmetu"; break;
+			}
+		}
+			
+
 	} else if ($ime == "ko") {
 		// konacna ocjena
 		if ($vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
-		$predmet=$ispit;
+		$predmet=intval($parametri[2]);
 		$max=10;
 		if (!$user_siteadmin) {
 			$q41 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
@@ -184,6 +210,7 @@ case "izmjena_ispita":
 		break;
 	}
 
+	// Ažuriranje podataka u bazi
 	if ($ime=="ispit") {
 		$q50 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
 		$c = mysql_num_rows($q50);
@@ -201,6 +228,12 @@ case "izmjena_ispita":
 		}
 
 		update_komponente($stud_id,$predmet,$komponenta);
+
+	} else if ($ime == "fiksna") {
+//		update_komponente($stud_id,$predmet,$komponenta);
+		$q63 = myquery("delete from komponentebodovi where student=$stud_id and predmet=$predmet and komponenta=$komponenta");
+		if ($vrijednost != "/") $q66 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$predmet, komponenta=$komponenta, bodovi=$vrijednost");
+
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena

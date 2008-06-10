@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/03/08) + Nova tabela auth
 // v3.9.1.2 (2008/03/15) + Popravljen log nivo za brisanje casa
 // v3.9.1.3 (2008/05/16) + update_komponente_prisustvo() zamijenjen sa update_komponente()
+// v3.9.1.4 (2008/06/10) + Dodan ispis fiksnih komponenti + AJAH
 
 
 
@@ -396,6 +397,20 @@ while ($r205 = mysql_fetch_row($q205)) {
 }
 
 
+// Zaglavlje fiksne komponente
+
+$fiksna_prolaz = array();
+$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k 
+WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+while ($r215 = mysql_fetch_row($q215)) {
+	$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">$r215[1]";
+	$mogucih_bodova += $r215[2];
+	$minw += 60;
+	$fiksna_id_array[]=$r215[0];
+	$fiksna_prolaz[$r215[0]]=$r215[3];
+}
+
+
 // Zaglavlje ispiti
 
 $broj_ispita=0;
@@ -597,6 +612,21 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	}
 
 
+	// FIKSNE KOMPONENTE - ISPIS
+
+	$fiksne_ispis="";
+	foreach ($fiksna_id_array as $fiksna) {
+		$q328 = myquery("select bodovi from komponentebodovi where komponenta=$fiksna and student=$stud_id and predmet=$predmet_id");
+		if (mysql_num_rows($q328)>0) {
+			$fbodova = mysql_result($q328,0,0);
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet_id-$fiksna\" ondblclick=\"coolboxopen(this)\">$fbodova</td>\n";
+			$bodova += $fbodova;
+		} else {
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet_id-$fiksna\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		}
+	}
+
+
 	// ISPITI - ISPIS
 
 	$ispiti_ispis="";
@@ -660,6 +690,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 ?>
 	<?=$prisustvo_ispis?>
 	<?=$zadace_ispis?>
+	<?=$fiksne_ispis?>
 	<?=$ispiti_ispis?>
 	<td align="center"><? print $bodova;
 /*	Procenat zauzima previše prostora po horizontali, a nije toliko interesantan
