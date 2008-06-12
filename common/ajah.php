@@ -169,7 +169,7 @@ case "izmjena_ispita":
 				print "niste saradnik na predmetu"; break;
 			}
 		}
-			
+		$padmin=1; // Dozvoljavamo saradnicima da unose fiksne komponente
 
 	} else if ($ime == "ko") {
 		// konacna ocjena
