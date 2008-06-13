@@ -18,6 +18,7 @@
 # v0.0.13 (2008/03/04) + dodana reimplementacija funkcije mysql_set_charset i opcija u dbconnect; genform je uvijek koristio metod POST
 # v0.0.13.1 (2008/03/21) + dodane default vrijednosti parametara, da smanjimo warning-e
 # v0.0.13.2 (2008/05/16) + sitne ispravke u prikazu i obradi hidden polja u db_form(), mada i dalje treba popraviti db_submit() tako da prepozna polja koja su skrivena i ne ukljucuje ih u upitu
+# v0.0.13.3 (2008/06/13) + dodan tip double
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -38,7 +39,8 @@ if (!$_lv_) $_lv_ = array(); // Prevent PHP warnings
 
 function dbconnect() {
 	// Default database
-	dbconnect2("localhost","root","","zamger");
+	//dbconnect2("localhost","root","","zamger");
+	dbconnect2("localhost","vedran_studenti","itneduts","zamger");
 }
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
@@ -698,7 +700,7 @@ function db_form($table) {
 				$result .= ' CHECKED';
 			$result .= '> '.$label.'<br/><br/>'."\n";
 
-		} else if ($type=="int" || $type=="tinyint" || $type=="smallint" || $type=="bigint" || $type=="float") {
+		} else if ($type=="int" || $type=="tinyint" || $type=="smallint" || $type=="bigint" || $type=="float"|| $type=="double") {
 			// classic numeric
 			$result .= $label.': <input type="text" name="_lv_column_'.$name.'" size="'.$size.'" value="'.$r202[$name].'"><br/><br/>'."\n";
 
@@ -988,7 +990,7 @@ function db_grid($table) {
 				$result .= ' CHECKED';
 			$result .= '></td>'."\n";
 
-		} else if ($type=="int" || $type=="tinyint" || $type=="smallint" || $type=="bigint" || $type=="float") {
+		} else if ($type=="int" || $type=="tinyint" || $type=="smallint" || $type=="bigint" || $type=="float"|| $type=="double") {
 			// classic numeric
 			$result .= '<td><input type="text" name="_lv_column_'.$name.'" size="'.$size.'" value="'.$r202[$name].'"></td>'."\n";
 
