@@ -9,7 +9,7 @@ $registry = array(
 # "path", "puni naziv", "UI naziv", "Uloga", "U sablonu", "Nevidljiv (debug)"
 # Legenda polja Uloga:
 #      A - admin, B - studentska, N - saradnik, S - student, P - public
-# Sablon == 2 znaci da se ne prikazuje ni HTML header
+# Sablon == 2 znaci da se ne prikazuje ni header
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
 
@@ -49,6 +49,7 @@ array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"
 array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
 array("admin/inbox", "Monster messenger", "Poruke", "A", "1", "0"),
 array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
+array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
 
 
 array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"),
