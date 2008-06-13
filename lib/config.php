@@ -17,8 +17,8 @@ $conf_script_path = "/srv/httpd/zamger/www";
 $conf_appname = "ZAMGER";
 $conf_appversion = "4.0 beta2";
 
-$conf_system_auth = "ldap";
-//$conf_system_auth = "table";
+//$conf_system_auth = "ldap";
+$conf_system_auth = "table";
 
 // LDAP stuff:
 $conf_ldap_server = "localhost";
