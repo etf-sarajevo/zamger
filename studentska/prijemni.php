@@ -143,7 +143,7 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 if ($_REQUEST['akcija'] == "unos_kriterij"){
 
 ?>
-<h2>Kriterij za upis</h2>
+<h3>Unos kriterija za upis</h3>
 <br/>
 
 <form action="" method="POST">
