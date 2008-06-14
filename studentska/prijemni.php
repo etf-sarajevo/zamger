@@ -77,7 +77,125 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<?
 }
 
+if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 
+	$rdonja = intval($_REQUEST['donja_granica']);
+	$rgornja = intval($_REQUEST['gornja_granica']);
+	$rkandidatisd = intval($_REQUEST['kandidati_sd']);
+	$rkandidatisp = intval($_REQUEST['kandidati_sp']);
+	$rkandidatikp = intval($_REQUEST['kandidati_kp']);
+	$rodsjek = intval($_REQUEST['_lv_column_institucija']);
+	$rakademska_godina = intval($_REQUEST['_lv_column_akademska_godina']);
+	
+
+	if ($_REQUEST['potvrda']){
+	$qInsert = myquery("INSERT INTO upis_kriterij	(donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, odsjek, akademska_godina)
+										VALUES  	($rdonja, $rgornja, $rkandidatisd, $rkandidatisp, $rkandidatikp, $rodsjek, $rakademska_godina)");
+	$_REQUEST['akcija'] = "unos_kriterij";
+	}
+	else if ($_REQUEST['nazad']){
+	$_REQUEST['akcija']="unos_kriterij";
+	}
+	
+	else{
+	
+		$q_odsjek = myquery("select naziv from institucija where id=$rodsjek");
+		$naziv_odsjeka = mysql_result($q_odsjek,0,0);
+		$q_akademska_godina = myquery("select naziv from akademska_godina where id_akademska_godina=$rakademska_godina");
+		$akademska_godina = mysql_result($q_akademska_godina,0,0);
+		
+?>
+
+<h3>Provjera podataka</h3>
+<br />
+
+<table width="50%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
+	<tr bgcolor="#DDDDDD">
+		<td align="left">Akademska godina:</td><td align="left"><b><?php print $akademska_godina?></b></td>
+	</tr>
+	<tr>
+		<td align="left">Odsjek:</td><td align="left"><b><?php print $naziv_odsjeka?></b></td>
+	</tr>
+	<tr bgcolor="#DDDDDD">
+		<td align="left" width="65%">Donja granica:</td><td align="left"><b><?php echo $rdonja?></b></td>
+	</tr>
+	<tr>
+		<td align="left">Gornja granica:</td><td align="left"><b><?php echo $rgornja?></b></td>
+	</tr>
+	<tr bgcolor="#DDDDDD">
+		<td align="left" width="65%">Broj kandidata(strani državljani):</td><td align="left"><b><?php echo $rkandidatisd?></b></td>
+	</tr>
+	<tr>
+		<td align="left">Broj kandidata(sami plaćaju troškove školovanja):</td><td align="left"><b><?php print $rkandidatisp?></b></td>
+	</tr>
+	<tr bgcolor="#DDDDDD">
+		<td align="left">Broj kandidata(kanton plaća troškove školovanja):</td><td align="left"><b><?php print $rkandidatikp?></b></td>
+	</tr>
+</table>
+<br />
+<?php echo genform("POST")?><input type="hidden" name="_lv_column_institucija" value="<?php echo $rodsjek?>"><input type="hidden" name="_lv_column_akademska_godina" value="<?php echo $rakademska_godina?>"><input type="submit" name="potvrda" value=" Potvrda "> <input type="submit" name="nazad" value=" Nazad "></form><?php
+}
+}
+?>
+
+<?php
+	
+if ($_REQUEST['akcija'] == "unos_kriterij"){
+
+?>
+<h2>Kriterij za upis</h2>
+<br/>
+
+<form action="" method="POST">
+<input type="hidden" name="sta" value="studentska/prijemni">
+<input type="hidden" name="akcija" value="kriterij_potvrda">
+<table align="left" border="0" width="40%" bgcolor="">
+	<tr>
+		<td width="70%" align="left">Odsjek:</td>
+		<td width="" align="left">Akademska godina:</td>
+	</tr>
+	<tr>
+		<td><?php echo db_dropdown("institucija")?></td>
+		<td><?php echo db_dropdown("akademska_godina")?></td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Donja granica(postotak):</td>
+		<td><input type="text" size="12" name="donja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Gornja granica(postotak):</td>
+		<td><input type="text" size="12" name="gornja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Broj kandidata(strani državljani):</td>
+		<td><input type="text" size="12" name="kandidati_sd" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Broj kandidata(sami plaćaju školovanje):</td>
+		<td><input type="text" size="12" name="kandidati_sp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Broj kandidata(kanton plaća školovanje):</td>
+		<td><input type="text" size="12" name="kandidati_kp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+	</tr>
+	<tr>
+		<td>&nbsp;<td>
+	</tr>
+	<tr>
+		<td><input type="submit" value="Spremi"></td>
+	</tr>
+	
+	</table>
+	</form>
+	
+<?php
+}
 
 // Obrada podataka poslanih iz formulara za prijemni ispit
 
@@ -820,6 +938,10 @@ function provjeri_sve() {
 	<tr>&nbsp;</tr>
 	<tr>
 		<td><a href="?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij">Unos kriterija za upis</a></td>
 	</tr>
 </table>
 
