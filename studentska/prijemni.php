@@ -109,7 +109,7 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 <h3>Provjera podataka</h3>
 <br />
 
-<table width="50%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
+<table width="70%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
 	<tr bgcolor="#DDDDDD">
 		<td align="left">Akademska godina:</td><td align="left"><b><?php print $akademska_godina?></b></td>
 	</tr>
@@ -149,7 +149,7 @@ if ($_REQUEST['akcija'] == "unos_kriterij"){
 <form action="" method="POST">
 <input type="hidden" name="sta" value="studentska/prijemni">
 <input type="hidden" name="akcija" value="kriterij_potvrda">
-<table align="left" border="0" width="40%" bgcolor="">
+<table align="left" border="0" width="70%" bgcolor="">
 	<tr>
 		<td width="70%" align="left">Odsjek:</td>
 		<td width="" align="left">Akademska godina:</td>
