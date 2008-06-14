@@ -101,7 +101,7 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 	
 		$q_odsjek = myquery("select naziv from institucija where id=$rodsjek");
 		$naziv_odsjeka = mysql_result($q_odsjek,0,0);
-		$q_akademska_godina = myquery("select naziv from akademska_godina where id_akademska_godina=$rakademska_godina");
+		$q_akademska_godina = myquery("select naziv from akademska_godina where id=$rakademska_godina");
 		$akademska_godina = mysql_result($q_akademska_godina,0,0);
 		
 ?>
