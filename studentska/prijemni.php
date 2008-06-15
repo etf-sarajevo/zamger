@@ -866,7 +866,7 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 <h3>Provjera podataka</h3>
 <br />
 
-<table width="70%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
+<table width="80%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
 	<tr bgcolor="#DDDDDD">
 		<td align="left">Akademska godina:</td><td align="left"><b><?php print $akademska_godina?></b></td>
 	</tr>
@@ -903,6 +903,13 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 if ($_REQUEST['akcija'] == "unos_kriterij"){
 
 ?>
+
+<SCRIPT language="JavaScript">
+function odzuti(nesto) {
+	nesto.style.backgroundColor = '#FFFFFF';
+}
+</SCRIPT>
+
 <h3>Unos kriterija za upis</h3>
 <br/>
 
