@@ -13,6 +13,7 @@
 // v3.9.1.4 (2008/04/09) + Popravljeno koristenje varijable $user_siteadmin
 // v3.9.1.5 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
 // v3.9.1.6 (2008/06/10) + Dodana podrska za fiksne komponente
+// v3.9.1.7 (2008/06/16) + Popravljena provjera za site_admin kod prisustva, postrozen uslov za brisanje/dodavanje ocjene na ispitu
 
 
 
@@ -34,7 +35,7 @@ require("lib/manip.php");
 switch ($_REQUEST['akcija']) {
 
 case "prisustvo":
-	if (!$user_nastavnik) {
+	if (!$user_nastavnik && !$user_siteadmin) {
 		zamgerlog("AJAH prisustvo - korisnik nije nastavnik",3); // nivo 3 - greska
 		print "niste nastavnik"; break; 
 	}
@@ -46,11 +47,11 @@ case "prisustvo":
 
 	// Provjera prava pristupa
 
-	if (!$site_admin) {
+	if (!$user_siteadmin) {
 		$q10 = myquery("select np.predmet,l.id from nastavnik_predmet as np,labgrupa as l, cas as c where np.nastavnik=$userid and np.predmet=l.predmet and l.id=c.labgrupa and c.id=$cas");
 		if (mysql_num_rows($q10)<1) {
 			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
-			print "niste nastavnik"; break;
+			print "niste nastavnik A"; break;
 		}
 		$predmet = mysql_result($q10,0,0);
 		$labgrupa = mysql_result($q10,0,1);
@@ -214,10 +215,10 @@ case "izmjena_ispita":
 	if ($ime=="ispit") {
 		$q50 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
 		$c = mysql_num_rows($q50);
-		if ($c==0 && $vrijednost!="/") {
+		if ($c==0 && $vrijednost!=="/") {
 			$q60 = myquery("insert into ispitocjene set ispit=$ispit, student=$stud_id, ocjena=$vrijednost");
 			zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
-		} else if ($c>0 && $vrijednost=="/") {
+		} else if ($c>0 && $vrijednost==="/") {
 			$staraocjena = mysql_result($q50,0,0);
 			$q60 = myquery("delete from ispitocjene where ispit=$ispit and student=$stud_id");
 			zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
