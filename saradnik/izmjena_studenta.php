@@ -8,6 +8,7 @@
 // v3.9.1.2 (2008/03/08) + Nova tabela auth
 // v3.9.1.3 (2008/03/21) + Student ne mora biti ni u jednoj labgrupi, auth polja
 // v3.9.1.4 (2008/04/14) + Popravljen link za ispis studenta sa predmeta
+// v3.9.1.5 (2008/06/16) + Situacija kad student nije ni u jednoj grupi je sada malo jasnija, brisi prisustvo prilikom promjene grupe
 
 
 function saradnik_izmjena_studenta() {
@@ -155,22 +156,13 @@ $q150=myquery("select id,naziv from labgrupa where predmet=$predmet_id order by 
 if (mysql_num_rows($q150)>0) {
 
 	$q155 = myquery("select l.id, l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet_id and sl.labgrupa=l.id and sl.student=$stud_id");
-	if (mysql_num_rows($q155)==0) {
+	if (mysql_num_rows($q155)<=1) {
+		if (mysql_num_rows($q155)==0) $nijedna=" SELECTED"; else $nijedna="";
 ?>
 	<tr>
 		<td>Upiši u grupu:</td>
-		<td><select name="grupa"><?
-			while ($r150 = mysql_fetch_row($q150)) {
-				?><option value="<?=$r150[0]?>"><?=$r150[1]?></option><?
-			}
-		?></select></td>
-	</tr>
-<?
-	} else if (mysql_num_rows($q155)==1) {
-?>
-	<tr>
-		<td>Prebaci u grupu:</td>
-		<td><select name="grupa"><?
+		<td><select name="grupa"><option value="0"<?=$nijedna?>>-- Nije ni u jednoj grupi --</option>
+			<?
 			while ($r150 = mysql_fetch_row($q150)) {
 				if ($r150[0]==mysql_result($q155,0,0)) 
 					$value="SELECTED"; else $value="";
@@ -179,6 +171,20 @@ if (mysql_num_rows($q150)>0) {
 		?></select></td>
 	</tr>
 <?
+//	} else if (mysql_num_rows($q155)==1) {
+/*?>
+	<tr>
+		<td>Prebaci u grupu:</td>
+		<td><select name="grupa"><option value="0">-- Nije ni u jednoj grupi --</option>
+			<?
+			while ($r150 = mysql_fetch_row($q150)) {
+				if ($r150[0]==mysql_result($q155,0,0)) 
+					$value="SELECTED"; else $value="";
+				?><option value="<?=$r150[0]?>" <?=$value?>><?=$r150[1]?></option><?
+			}
+		?></select></td>
+	</tr>
+<?*/
 	} else {
 ?>
 	<tr>
@@ -246,11 +252,25 @@ function _izmijeni_profil($stud_id,$predmet_id) {
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
 	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$stud_id and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
+	$vec_upisan_u_grupu = 1;
 	while ($r220 = mysql_fetch_row($q220)) {
-		$q230 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$r220[0]");
+		if ($r220[0]!=$grupa) {
+			$vec_upisan_u_grupu = 0;
+			$q230 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$r220[0]");
+
+			// Brisanje prisustva za staru grupu
+			$q235 = myquery("delete from prisustvo where student=$stud_id and cas=ANY(select id from cas where labgrupa=$r220[0])");
+		}
 	}
 	
-	$q240 = myquery("insert into student_labgrupa set student=$stud_id, labgrupa=$grupa");
+	if ($vec_upisan_u_grupu==0) {
+		$q240 = myquery("insert into student_labgrupa set student=$stud_id, labgrupa=$grupa");
+
+		// Update komponente za prisustvo
+		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k where pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
+		while ($r250 = mysql_fetch_row($q250))
+			update_komponente($stud_id, $predmet_id, $r250[0]);
+	}
 	zamgerlog("update profila i labgrupe za studenta u$stud_id",2); // nivo 2: edit
 
 	return $grupa;
