@@ -3,6 +3,7 @@
 // IZVJESTAJ/GRUPE - spisak studenata po grupama
 
 // v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_izvjestaj(), spojeni izvjestaji grupe i grupedouble
+// v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
 
 
 function izvjestaj_grupe() {
@@ -84,6 +85,49 @@ if ($double == 1) {
 			<?
 		} else $parni=1;
 	}
+
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	if (mysql_num_rows($q410)>0) {
+		if ($parni == 0) 
+			print "<tr>";
+		else
+			print "</td>";
+		?>
+		<td width="13%">&nbsp;</td><td width="30%" valign="top">
+			<table width="100%" border="2" cellspacing="0">
+				<tr><td colspan="2"><b>Nisu ni u jednoj grupi</b></td></tr>
+				<tr><td>
+		<?
+		$imeprezime=array();
+		$brindexa=array();
+
+		while ($r410 = mysql_fetch_row($q410)) {
+			$imeprezime[$r410[0]] = "$r410[1] $r410[2]";
+			$brindexa[$r410[0]] = $r410[3];
+		}
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			print "$n. $stud_imepr<br/>";
+			$n++;
+		}
+		print "</td><td>";
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			print $brindexa[$stud_id]."<br/>";
+		}
+		print "</td></tr></table>";
+
+		if ($parni==1) {
+			$parni=0;
+			?>
+		</td><td width="13%">&nbsp;</td></tr>
+		<tr><td colspan="5">&nbsp;</td></tr>
+			<?
+		} else $parni=1;
+		
+	}
+
 }
 
 
@@ -150,6 +194,42 @@ else {
 			<p>&nbsp;</p>
 		<?
 	}
+
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	if (mysql_num_rows($q410)>0) {
+		?>
+			<table width="100%" border="2" cellspacing="0">
+				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
+				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
+		<?
+		$imeprezime=array();
+		$brindexa=array();
+
+		while ($r410 = mysql_fetch_row($q410)) {
+			$imeprezime[$r410[0]] = "$r410[1] $r410[2]";
+			$brindexa[$r410[0]] = $r410[3];
+		}
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			?>
+				<tr>
+					<td><?=$n++?></td>
+					<td><?=$stud_imepr?></td>
+					<td><?=$brindexa[$stud_id]?></td>
+			<?
+			print "</tr>\n";
+		}
+
+		?>
+				<!--/table></td></tr-->
+			</table>
+			<p>&nbsp;</p>
+		<?
+		
+	}
+
 	?>
 		</td>
 		<td width="20%">&nbsp;</td>
