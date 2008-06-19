@@ -174,6 +174,7 @@ case "izmjena_ispita":
 
 	} else if ($ime == "ko") {
 		// konacna ocjena
+		$stud_id = intval($parametri[1]);
 		if ($vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
 		$predmet=intval($parametri[2]);
 		$max=10;
