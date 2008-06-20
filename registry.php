@@ -41,7 +41,7 @@ array("studentska/studenti", "Administracija studenata", "Studenti", "B", "1", "
 array("studentska/predmeti", "Administracija predmeta", "Predmeti", "B", "1", "0"),
 array("studentska/nastavnici", "Administracija nastavnika", "Nastavnici", "B", "1", "0"),
 array("studentska/prijemni", "Obrada prijemnog ispita", "Prijemni", "B", "1", "0"),
-array("studentska/izvjestaji", "Izvještaji", "Izvještaji", "B", "1", "0"),
+array("studentska/izvjestaji", "Prolaznost", "Prolaznost", "B", "1", "0"),
 
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
