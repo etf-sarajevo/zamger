@@ -532,6 +532,11 @@ function odzuti(nesto) {
 	nesto.style.backgroundColor = '#FFFFFF';
 }
 
+// Predji na sljedece polje
+function enterhack(e,gdje) {
+	if(e.keyCode==13) document.getElementById(gdje).focus();
+}
+
 </SCRIPT>
 
 <form action="index.php" method="POST" id="glavnaforma">
@@ -542,39 +547,39 @@ function odzuti(nesto) {
 <table border="0" cellpadding="3" cellspacing="0">
 	<tr>
 		<td width="130" align="left">Ime kandidata:</td>
-		<td><input maxlength="50" size="17" name="ime" id="ime" type="text" <? if ($eime) { ?> value="<?=$eime?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"><font color="#FF0000">*</font></td>
+		<td><input maxlength="50" size="17" name="ime" id="ime" type="text" <? if ($eime) { ?> value="<?=$eime?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'prezime')"><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Prezime kandidata:</td>
-		<td><input maxlength="50" size="17" name="prezime" id="prezime" type="text" <? if ($eprezime) { ?> value="<?=$eprezime?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"><font color="#FF0000">*</font></td>
+		<td><input maxlength="50" size="17" name="prezime" id="prezime" type="text" <? if ($eprezime) { ?> value="<?=$eprezime?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'datum_rodjenja')"><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Datum rođenja:</td>
-		<td><input maxlength="20" size="17" name="datum_rodjenja" id="datum_rodjenja" type="text" <? if ($edatum) { ?> value="<?=$edatum?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"><font color="#FF0000">*</font></td>
+		<td><input maxlength="20" size="17" name="datum_rodjenja" id="datum_rodjenja" type="text" <? if ($edatum) { ?> value="<?=$edatum?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'mjesto_rodjenja')"><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Mjesto rođenja:</td>
-		<td><input maxlength="50" size="17" name="mjesto_rodjenja" id="mjesto_rodjenja" type="text" <? if ($emjesto) { ?> value="<?=$emjesto?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> ><font color="#FF0000">*</font></td>
+		<td><input maxlength="50" size="17" name="mjesto_rodjenja" id="mjesto_rodjenja" type="text" <? if ($emjesto) { ?> value="<?=$emjesto?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> onkeypress="enterhack(event,'drzavljanstvo')"><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Državljanstvo:</td>
-		<td><input maxlength="40" size="17" name="drzavljanstvo" id="drzavljanstvo" type="text"  <? if ($edrz) { ?> value="<?=$edrz?>"<? } else { ?> value="BiH" <? } ?> ><font color="#FF0000">*</font></td>
+		<td><input maxlength="40" size="17" name="drzavljanstvo" id="drzavljanstvo" type="text"  <? if ($edrz) { ?> value="<?=$edrz?>"<? } else { ?> value="BiH" <? } ?> onkeypress="enterhack(event,'zavrsena_skola')"><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Završena škola:</td>
-		<td><input maxlength="50" size="17" name="zavrsena_skola" id="zavrsena_skola" type="text" <? if ($eskola) { ?> value="<?=$eskola?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?>></td>
+		<td><input maxlength="50" size="17" name="zavrsena_skola" id="zavrsena_skola" type="text" <? if ($eskola) { ?> value="<?=$eskola?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> onkeypress="enterhack(event,'jmbg')"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">JMBG:</td>
-		<td><input maxlength="13" size="17" name="jmbg" id="jmbg" type="text" <? if ($ejmbg) { ?> value="<?=$ejmbg?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"></td>
+		<td><input maxlength="13" size="17" name="jmbg" id="jmbg" type="text" <? if ($ejmbg) { ?> value="<?=$ejmbg?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'adresa')"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Adresa:</td>
-		<td><input maxlength="50" size="17" name="adresa" id="adresa" type="text" <? if ($eadresa) { ?> value="<?=$eadresa?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"></td>
+		<td><input maxlength="50" size="17" name="adresa" id="adresa" type="text" <? if ($eadresa) { ?> value="<?=$eadresa?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'telefon_roditelja')"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Telefon roditelja:</td>
-		<td><input maxlength="30" size="17" name="telefon_roditelja" id="telefon_roditelja" type="text"  <? if ($etelefon) { ?> value="<?=$etelefon?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off"></td>
+		<td><input maxlength="30" size="17" name="telefon_roditelja" id="telefon_roditelja" type="text"  <? if ($etelefon) { ?> value="<?=$etelefon?>"<? } else { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="enterhack(event,'kanton')"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Kanton:</td>
@@ -631,9 +636,13 @@ function odzuti(nesto) {
 <script language="JavaScript">
 var sumaocjena=0;
 var brojocjena=0;
+var unique=0;
 var sumakljucnih=0;
 var brojkljucnih=0;
 function obrisi_ocjenu(broc,ocjena,kljucval) {
+alert ("brisem ocjenu:"+broc);
+	var razred = document.getElementById('razred').value;
+
 	sumaocjena = parseInt(sumaocjena)-parseInt(ocjena);
 	brojocjena--;
 	if (kljucval>0) {
@@ -642,21 +651,23 @@ function obrisi_ocjenu(broc,ocjena,kljucval) {
 	}
 
 	if (brojocjena>0)
-		document.getElementById('opci_uspjeh').value = (sumaocjena/brojocjena)*8;
+		document.getElementById('opci_uspjeh').value = Math.round((sumaocjena/brojocjena)*800)/100;
 	else
 		document.getElementById('opci_uspjeh').value = '0';
 
 	if (brojkljucnih>0) 
-		document.getElementById('kljucni_predmeti').value = sumakljucnih/brojkljucnih*4;
+		document.getElementById('kljucni_predmeti').value = Math.round((sumakljucnih/brojkljucnih)*400)/100;
 	else
 		document.getElementById('kljucni_predmeti').value = '0';
 
 
 	// Pokusacemo obrisati ovo kino iz html-a
 	var stari = document.getElementById('dalje').innerHTML;
-	var pos1 = stari.indexOf('<!-- brojocjena ' + brojocjena + '-->');
+	var pos1 = stari.indexOf('<!-- brojocjena ' + broc + '-->');
 	var pos2 = stari.indexOf('<!-- kraj brojocjena -->',pos1+1) + 24;
+alert("pos1: "+pos1+" pos2: "+pos2);
 	document.getElementById('dalje').innerHTML = stari.substr(0,pos1) + stari.substr(pos2);
+	document.getElementById('razred').value=razred;
 }
 
 function addnew() {
@@ -679,13 +690,14 @@ function addnew() {
 		kljuctext='DA';
 		kljucval=1;
 	}
-	document.getElementById('opci_uspjeh').value = (sumaocjena/brojocjena)*8;
-	if (brojkljucnih>0) document.getElementById('kljucni_predmeti').value = sumakljucnih/brojkljucnih*4;
+	document.getElementById('opci_uspjeh').value = Math.round((sumaocjena/brojocjena)*800)/100;
+	if (brojkljucnih>0) document.getElementById('kljucni_predmeti').value = Math.round((sumakljucnih/brojkljucnih)*400)/100;
 //alert('Suma '+sumakljucnih+' broj '+brojkljucnih);
 //alert(kljucni);
 //
 	// Formiranje HTMLa
-	var html = '<!-- brojocjena ' + brojocjena + '--><tr><td>' + document.getElementById('razred').value + '</td><td><b>' + ocjena + '</b></td><td><b>' + kljuctext + ' (<a onclick="obrisi_ocjenu(' + brojocjena + ',' + ocjena + ',' + kljucval + ')">obriši</a>)</b></td></tr><!-- kraj brojocjena --><!-- komentar -->';
+	unique++;
+	var html = '<!-- brojocjena ' + unique + '--><tr><td>' + document.getElementById('razred').value + '</td><td><b>' + ocjena + '</b></td><td><b>' + kljuctext + ' (<a onclick=' + "\"" + 'obrisi_ocjenu(' + unique + ',' + ocjena + ',' + kljucval + ')'+"\""+'>obriši</a>)</b></td></tr><!-- kraj brojocjena --><!-- komentar -->';
 	var stari = document.getElementById('dalje').innerHTML;
 	document.getElementById('dalje').innerHTML = stari.replace('<!-- komentar -->',html);
 
@@ -693,6 +705,7 @@ function addnew() {
 	document.getElementById('kljucni').checked=false;
 	document.getElementById('ocjena').value='';
 	document.getElementById('razred').value=razred;
+	document.getElementById('ocjena').focus();
 
 	return true;
 }
@@ -770,9 +783,9 @@ function provjeri_sve() {
 			<option value="III razred">III razred</option>
 			<option value="IV razred">IV razred</option>
 		</select></td>
-		<td><input type="text" id="ocjena" name="ocjena" size="5" autocomplete="off"></td>
-		<td align="center"><input type="radio" id="kljucni" name="kljucni" value="1"> Da <input type="radio" id="kljucni" name="kljucni" value="0"> Ne</td>
-		<td><input type="button" value=" Ok " onclick="addnew();"></td>
+		<td><input type="text" id="ocjena" name="ocjena" size="5" autocomplete="off" onkeypress="enterhack(event,'kljucni')"></td>
+		<td align="center"><input type="radio" id="kljucni" name="kljucni" value="1" onkeypress="enterhack(event,'posalji_ocjenu')"> Da <input type="radio" id="kljucni" name="kljucni" value="0" onkeypress="enterhack(event,'posalji_ocjenu')"> Ne</td>
+		<td><input type="button" id="posalji_ocjenu" name="posalji_ocjenu" value=" Ok " onclick="addnew();"></td>
 	</tr>
 </table>
 </div>
@@ -784,12 +797,12 @@ function provjeri_sve() {
 <legend>Bodovi</legend>
 <table align="center" width="600" border="0">
 	<tr>
-		<td align="left">Opći uspjeh:</td>
-		<td><input maxlength="10" size="3" name="opci_uspjeh" id="opci_uspjeh" type="text" value="<?=$eopci?>"><font color="#FF0000">*</font></td>
-		<td align="left">Ključni predmeti:</td>
-		<td><input maxlength="10" size="3" name="kljucni_predmeti" id="kljucni_predmeti" type="text" value="<?=$ekljucni?>"><font color="#FF0000">*</font></td>
-		<td align="left">Dodatni bodovi:</td>
-		<td><input maxlength="10" size="3" name="dodatni_bodovi" type="text" value="<?=$edodatni?>"></td>
+		<td align="left">Opći uspjeh: 
+		<input maxlength="10" size="5" name="opci_uspjeh" id="opci_uspjeh" type="text" value="<?=$eopci?>"><font color="#FF0000">*</font></td>
+		<td align="left">Ključni predmeti:
+		<input maxlength="10" size="5" name="kljucni_predmeti" id="kljucni_predmeti" type="text" value="<?=$ekljucni?>"><font color="#FF0000">*</font></td>
+		<td align="left">Dodatni bodovi:
+		<input maxlength="10" size="5" name="dodatni_bodovi" type="text" value="<?=$edodatni?>"></td>
 	</tr>
 </table>
 </fieldset>
