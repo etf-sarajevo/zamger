@@ -14,7 +14,7 @@
 // v3.9.1.5 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
 // v3.9.1.6 (2008/06/10) + Dodana podrska za fiksne komponente
 // v3.9.1.7 (2008/06/16) + Popravljena provjera za site_admin kod prisustva, postrozen uslov za brisanje/dodavanje ocjene na ispitu
-
+// v3.9.1.7 (2008/06/22) + Dodan unos bodova sa prijemnog
 
 
 // Prebaciti u lib/manip?
@@ -287,13 +287,34 @@ case "pretraga":
 
 	break;
 
+
+// Unos bodova sa prijemnog
+case "prijemni_unos":
+	$id = intval($_REQUEST['idpolja']);
+	$vrijednost = floatval(str_replace(",",".",$_REQUEST['vrijednost']));
+	$q100 = myquery("select count(*) from prijemni where id=$id");
+	if (mysql_result($q100,0,0)==0)  {
+		print "Nepoznat id $id";
+		break;
+	}
+	// Dodati provjeru rezultata prijemnog...
+	if ($_REQUEST['vrijednost'] == "/")
+		$q110 = myquery("update prijemni set prijemni_ispit=0, izasao_na_prijemni=0 where id=$id");
+	else
+		$q110 = myquery("update prijemni set prijemni_ispit=$vrijednost, izasao_na_prijemni=1 where id=$id");
+	print "OK";
+
+	break;
+
+
+
 default:
 
 # Testna poruka
 
 ?>
 
-OK wellcome to ajah :)
+Wellcome to ajah :)
 
 <?
 

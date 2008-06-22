@@ -77,6 +77,84 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<?
 }
 
+
+// Unos bodova sa prijemnog ispita
+
+if ($_REQUEST['akcija']=="prijemni") {
+
+
+	?>
+	<h3>Unos bodova sa prijemnog ispita</h3>
+	<br />
+	<hr color="black" width="2500">
+	<a href="index.php?sta=studentska/prijemni&akcija=prijemni&sort=prezime">Sortirano po prezimenu</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=prijemni&sort=unos">Sortirano po redoslijedu unosa</a>
+	<hr color="black" width="2500">
+
+	<?
+
+	// AJAH i prateće funkcije
+
+	print ajah_box();
+
+	?>
+	<SCRIPT language="JavaScript">
+	function dobio_focus(element) {
+		element.style.borderColor='red';
+	}
+	function izgubio_focus(element) {
+		element.style.borderColor='black';
+		var id = parseInt(element.id.substr(8));
+		var vrijednost = element.value;
+		if (vrijednost!=origval[id])
+			ajah_start("index.php?c=N&sta=common/ajah&akcija=prijemni_unos&idpolja="+id+"&vrijednost="+vrijednost,"document.getElementById('prijemni'+"+id+").focus()");
+		origval[id]=vrijednost;
+	}
+	function enterhack(element,e,gdje) {
+		if(e.keyCode==13) {
+			element.blur();
+			document.getElementById('prijemni'+gdje).focus();
+			document.getElementById('prijemni'+gdje).select();
+		}
+	}
+	var origval=new Array();
+	</SCRIPT>
+
+
+	<table border="1" bordercolordark="grey" cellspacing="0">
+		<tr><td><b>R. br.</b></td><td width="300"><b>Prezime i ime</b></td><td><b>Bodova</b></td></tr>
+	<?
+
+	$upit = "SELECT id, ime, prezime, prijemni_ispit, izasao_na_prijemni FROM prijemni";
+	if ($_REQUEST['sort'] == "prezime") $upit .= " ORDER BY prezime,ime";
+	else $upit .= " ORDER BY id";
+
+	$q = myquery($upit);
+	$id=0;
+	while ($r = mysql_fetch_row($q)) {
+		if ($id!=0)
+			print "$r[0])\"></tr>\n";
+		$id=$r[0];
+		if ($r[4]==0) $bodova="/"; else $bodova="0"; // izasao na prijemni?
+
+		?>
+		<SCRIPT language="JavaScript"> origval[<?=$id?>]=<?=$bodova?></SCRIPT>
+		<tr><td><?=$id?></td><td><?=$r[2]?> <?=$r[1]?></td><td align="center"><input type="text" id="prijemni<?=$id?>" size="2" value="<?=$bodova?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event,<?
+	}
+	?>0)"></tr>
+	<?
+	?>
+	</table>
+	<?
+
+}
+
+/*
+
+STARA VERZIJA UNOSA BODOVA
+Nihada rekla da će praviti puno grešaka
+
+
 // Obrada podataka poslanih iz formulara za prijemni ispit
 
 if ($_REQUEST['akcija']=="prijemni_bodovi") {
@@ -163,6 +241,8 @@ if ($_REQUEST['akcija']=="prijemni") {
 	<?
 
 }
+
+*/
 
 
 // brisanje kandidata
@@ -348,9 +428,9 @@ if ($_REQUEST['akcija'] == "pregled") {
 	
 	<hr color="black" width="2500">
 	<a href="index.php?sta=studentska/prijemni&akcija=unos">Dodaj kandidata&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
-	<a href="index.php?sta=studentska/prijemni&akcija=prijemni">Unos bodova sa prijemnog ispita&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih">Kandidati BiH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</font></a>
+	<a href="index.php?sta=studentska/prijemni&akcija=prijemni">Unos bodova sa prijemnog ispita&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih">Kandidati BiH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</a>
 	<hr color="black" width="2500">
 	
 	<?
