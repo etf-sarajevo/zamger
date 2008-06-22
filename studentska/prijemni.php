@@ -916,6 +916,22 @@ function provjeri_sve() {
 	<tr>
 		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij">Unos kriterija za upis</a></td>
 	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=rang_lista&odsjek=ee">Rang lista kandidata(EE)</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=rang_lista&odsjek=ae">Rang lista kandidata(AE)</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=rang_lista&odsjek=ri">Rang lista kandidata(RI)</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=rang_lista&odsjek=tk">Rang lista kandidata(TK)</a></td>
+	</tr>
 </table>
 
 <br />
@@ -1059,6 +1075,243 @@ function odzuti(nesto) {
 	</form>
 	
 <?php
+}
+
+//Rang liste kandidata nakon kvalifikacionog ispita
+
+if ($_REQUEST['akcija'] =="rang_lista"){
+	
+	if($_REQUEST['odsjek']=="ee"){
+	$uslov = "i.kratki_naziv='EE'";
+	$uslovprijemni = "p.odsjek_prvi='EE'";
+	$naslov = "Elektroenergetiku";
+	}
+	else if($_REQUEST['odsjek']=="ae"){
+	$uslov = "i.kratki_naziv='AE'"; 
+	$uslovprijemni = "p.odsjek_prvi='AE'";
+	$naslov = "Automatiku i elektroniku";
+	}
+	else if($_REQUEST['odsjek']=="ri"){
+	$uslov = "i.kratki_naziv='RI'"; 
+	$uslovprijemni = "p.odsjek_prvi='RI'";
+	$naslov = "Računarstvo i informatiku";
+	}
+	else if($_REQUEST['odsjek']=="tk"){
+	$uslov = "i.kratki_naziv='TK'";
+	$uslovprijemni = "p.odsjek_prvi='TK'";	
+	$naslov = "Telekomunikacije";
+	}
+	else {
+	}
+	
+?>
+<h3 align="center">Rang lista kandidata nakon kvalifikacionog ispita</h3>
+<h2 align="center">Odsjek za <?php echo $naslov ?><h2>
+<br/>
+<?php
+	
+$podupit = myquery("SELECT MAX(id) FROM akademska_godina");
+$broj = mysql_fetch_row($podupit);
+	
+$quk = myquery	("SELECT uk.donja_granica, uk.gornja_granica, uk.kandidati_strani, uk.kandidati_sami_placaju, uk.kandidati_kanton_placa, uk.prijemni_max
+				FROM upis_kriterij uk, institucija i, akademska_godina ag
+				WHERE uk.odsjek = i.id AND uk.akademska_godina = ag.id AND uk.akademska_godina = $broj[0] AND $uslov");
+
+$donjagranica = floatval(mysql_result($quk, 0, 0));
+$gornjagranica = floatval(mysql_result($quk, 0, 1));
+$kandidatisd = intval(mysql_result($quk,0,2));
+$kandidatisp = intval(mysql_result($quk,0,3));
+$kandidatikp = intval(mysql_result($quk,0,4));
+$prijemnimax = floatval(mysql_result($quk,0,5));
+
+$bodovihard = $donjagranica * $prijemnimax / 100;
+$bodovisoft = $gornjagranica * $prijemnimax / 100;
+
+$qispis = myquery  	("SELECT CONCAT(p.prezime, ' ', p.ime) 'Prezime i ime', k.kratki_naziv, p.opci_uspjeh, p.kanton, p.kljucni_predmeti, p.dodatni_bodovi, p.prijemni_ispit, p.opci_uspjeh+p.kljucni_predmeti+p.dodatni_bodovi+p.prijemni_ispit ukupno
+					FROM prijemni p, kanton k
+					WHERE  p.kanton = k.id AND $uslovprijemni 
+					ORDER BY ukupno DESC, p.prijemni_ispit DESC");
+						
+					
+$rednibroj = 1;
+$kp = 0;
+$sp = 0;
+$nz = 0;
+$ssp = 0;
+$snz = 0;
+$spsd = 0;
+$brojkandidata = 0;
+
+$qstrani = myquery ("SELECT COUNT(id) FROM prijemni p WHERE p.kanton=13 AND p.prijemni_ispit > $bodovihard AND $uslovprijemni");
+$sd = intval(mysql_result($qstrani,0,0));
+
+?>
+
+<table width="65%" align="center" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
+	<tr>
+		<td align="center" width="5%"><b>R.br.</b></td>
+		<td align="left"><b>Prezime i ime</b></td>
+		<td align="center" width="6%"><b>Kanton</b></td>
+		<td align="center" width="10%"><b>Opći uspjeh</b></td>
+		<td align="center" width="10%"><b>Ključni predmeti</b></td>
+		<td align="center" width="10%"><b>Dodatni bodovi</b></td>
+		<td align="center" width="10%"><b>Rezultat ispita</b></td>
+		<td align="center" width="10%"><b>Ukupno</b></td>
+		<td align="center" width="5%"><b>NP</b></td>
+	</tr>
+	<?php	
+	while($kandidat = mysql_fetch_row($qispis)){
+	if(floatval($kandidat[6]) >= $bodovisoft && intval($kandidat[3]) != 13 && $kp < $kandidatikp){
+		if ($kp == 0){
+		?>
+		<tr>
+			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snosi kanton Sarajevo</b></td>
+		</tr>
+		<?php
+		}
+	?>
+	<tr>
+		<td align="center"><?php echo $rednibroj?></td>
+		<td><?php echo $kandidat[0]?></td>
+		<td align="center"><?php echo $kandidat[1]?></td>
+		<td align="center"><?php echo $kandidat[2]?></td>
+		<td align="center"><?php echo $kandidat[4]?></td>
+		<td align="center"><?php echo $kandidat[5]?></td>
+		<td align="center"><?php echo $kandidat[6]?></td>
+		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+	</tr>
+	<?php
+	$kp++;
+	}
+	else if ((floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13 && $sp < $kandidatisp) || ($kp == $kandidatikp && floatval($kandidat[6]) >= $bodovisoft && intval($kandidat[3]) != 13)){
+		if ($sp == 0){
+		?>
+		<tr>
+			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
+		</tr>
+		<?php
+		}
+	?>
+	<tr>
+		<td align="center"><?php echo $rednibroj?></td>
+		<td><?php echo $kandidat[0]?></td>
+		<td align="center"><?php echo $kandidat[1]?></td>
+		<td align="center"><?php echo $kandidat[2]?></td>
+		<td align="center"><?php echo $kandidat[4]?></td>
+		<td align="center"><?php echo $kandidat[5]?></td>
+		<td align="center"><?php echo $kandidat[6]?></td>
+		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td><font color="red"><?php echo "**"?></font></td>
+	</tr>
+	<?php
+	$sp++;
+	}
+	else if (floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13 && $kandidatisd - $sd > 0 && $spsd < $kandidatisd - $sd && $sp == $kandidatisp){
+	?>
+	<tr>
+		<td align="center"><?php echo $rednibroj?></td>
+		<td><?php echo $kandidat[0]?></td>
+		<td align="center"><?php echo $kandidat[1]?></td>
+		<td align="center"><?php echo $kandidat[2]?></td>
+		<td align="center"><?php echo $kandidat[4]?></td>
+		<td align="center"><?php echo $kandidat[5]?></td>
+		<td align="center"><?php echo $kandidat[6]?></td>
+		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td><font color="red"><?php echo "***"?></font></td>
+	</tr>
+	<?php
+	$spsd++;
+	}
+	else if ((floatval($kandidat[6]) < $bodovihard && intval($kandidat[3]) != 13) || ($sp == $kandidatisp && floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13)){
+		if ($nz == 0){
+		?>
+		<tr>
+			<td colspan="8"><b>Kandidati koji nisu stekli uvjete za upis</b></td>
+		</tr>
+		<?php
+		}
+	?>
+	<tr>
+		<td align="center"><?php echo $rednibroj?></td>
+		<td><?php echo $kandidat[0]?></td>
+		<td align="center"><?php echo $kandidat[1]?></td>
+		<td align="center"><?php echo $kandidat[2]?></td>
+		<td align="center"><?php echo $kandidat[4]?></td>
+		<td align="center"><?php echo $kandidat[5]?></td>
+		<td align="center"><?php echo $kandidat[6]?></td>
+		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+	</tr>
+	<?php
+	$nz++;
+	}
+	else if (intval($kandidat[3] == 13)){
+		if ($ssp+$snz == 0){
+	?>
+		<tr>
+			<td colspan="8">&nbsp;</td>
+		</tr>
+		<tr>
+			<td colspan="8" align="center"><font size="2"><b>Rang-lista kandidata stranih državljana nakon kvalifikacionog ispita</b></font></td>
+		</tr>
+		<tr>
+			<td colspan="8">&nbsp;</td>
+		</tr>
+	<?php
+		}
+		if (floatval($kandidat[6]) > $bodovihard && $ssp < $kandidatisd){
+			if ($ssp == 0){
+			?>
+			<tr>
+			<td colspan="8" align="left"><b>REDOVNI STUDIJ - Strani državljani koji sami snose troškove studija</b></td>
+			</tr>
+			<?php
+			}
+		?>
+		<tr>
+			<td align="center"><?php echo $ssp+1?></td>
+			<td><?php echo $kandidat[0]?></td>
+			<td align="center"><?php echo $kandidat[1]?></td>
+			<td align="center"><?php echo $kandidat[2]?></td>
+			<td align="center"><?php echo $kandidat[4]?></td>
+			<td align="center"><?php echo $kandidat[5]?></td>
+			<td align="center"><?php echo $kandidat[6]?></td>
+			<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		</tr>
+		<?php
+		$ssp++;
+		}
+		else if (floatval($kandidat[6]) <= $bodovihard || $ssp == $kandidatisd){
+		if ($snz == 0){
+			?>
+			<tr>
+			<td colspan="8" align="left"><b>Kandidati strani državljani koji nisu stekli uvjete za upis</b></td>
+			</tr>
+			<?php
+			}
+		?>
+		<tr>
+			<td align="center"><?php echo $snz+$ssp+1?></td>
+			<td><?php echo $kandidat[0]?></td>
+			<td align="center"><?php echo $kandidat[1]?></td>
+			<td align="center"><?php echo $kandidat[2]?></td>
+			<td align="center"><?php echo $kandidat[4]?></td>
+			<td align="center"><?php echo $kandidat[5]?></td>
+			<td align="center"><?php echo $kandidat[6]?></td>
+			<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		</tr>
+		<?php
+		$snz++;
+		}
+	}
+	$rednibroj++;
+	}
+	?>
+</table>
+</br>
+<p><font color="red" size="1">**</font><font size="2" face="Verdana"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?>, a manje od <?php echo $bodovihard?></font></br></br>
+	<font color="red" size="1">***</font><font size="2" face="Verdana"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?> (a manje od <?php echo $bodovihard?>), a upisuju </br>se na slobodna mjesta koja su bila Konkursom predviđena za studente strane državljane</p>
+<?php
+
 }
 
 } // function studentska_prijemni
