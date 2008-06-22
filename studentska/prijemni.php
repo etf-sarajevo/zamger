@@ -1147,7 +1147,7 @@ $sd = intval(mysql_result($qstrani,0,0));
 
 ?>
 
-<table width="65%" align="center" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
+<table width="85%" align="center" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
 	<tr>
 		<td align="center" width="5%"><b>R.br.</b></td>
 		<td align="left"><b>Prezime i ime</b></td>
