@@ -292,12 +292,12 @@ if ($_REQUEST['akcija'] == 'unospotvrda') {
 
 	// Podaci su ok, ubaci u bazu
 	if ($_REQUEST['ok']==1) {
-		$dioupita = "set ime='$rime', prezime='$rprezime', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja='$rmjestorod', drzavljanstvo='$rdrzavljanstvo', zavrsena_skola='$rzavrskola', jmbg='$rjmbg', adresa='$radresa', telefon='$rtelefon', kanton='$rkanton', redovni=$rredovni, odsjek_prvi='$opi', odsjek_drugi='$odi', odsjek_treci='$oti', odsjek_cetvrti='$oci', opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, prijemni_ispit=0";
+		$dioupita = "set ime='$rime', prezime='$rprezime', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja='$rmjestorod', drzavljanstvo='$rdrzavljanstvo', zavrsena_skola='$rzavrskola', jmbg='$rjmbg', adresa='$radresa', telefon='$rtelefon', kanton='$rkanton', redovni=$rredovni, odsjek_prvi='$opi', odsjek_drugi='$odi', odsjek_treci='$oti', odsjek_cetvrti='$oci', opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni,";
 		$editid = intval($_REQUEST['edit']);
 		if ($editid>0)
-			$q = myquery("update prijemni $dioupita where id=$editid");
+			$q = myquery("update prijemni $dioupita prijemni_ispit=$rprijemni where id=$editid");
 		else
-			$q = myquery("insert into prijemni $dioupita");
+			$q = myquery("insert into prijemni $dioupita prijemni_ispit=0");
 
 		$_REQUEST['akcija']="unos";
 
