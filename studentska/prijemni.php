@@ -1105,8 +1105,8 @@ if ($_REQUEST['akcija'] =="rang_lista"){
 	}
 	
 ?>
-<h3 align="center">Rang lista kandidata nakon kvalifikacionog ispita</h3>
-<h2 align="center">Odsjek za <?php echo $naslov ?><h2>
+<h3 align="left">Rang lista kandidata nakon kvalifikacionog ispita</h3>
+<h2 align="left">Odsjek za <?php echo $naslov ?><h2>
 <br/>
 <?php
 	
@@ -1127,27 +1127,20 @@ $prijemnimax = floatval(mysql_result($quk,0,5));
 $bodovihard = $donjagranica * $prijemnimax / 100;
 $bodovisoft = $gornjagranica * $prijemnimax / 100;
 
-$qispis = myquery  	("SELECT CONCAT(p.prezime, ' ', p.ime) 'Prezime i ime', k.kratki_naziv, p.opci_uspjeh, p.kanton, p.kljucni_predmeti, p.dodatni_bodovi, p.prijemni_ispit, p.opci_uspjeh+p.kljucni_predmeti+p.dodatni_bodovi+p.prijemni_ispit ukupno
+$qispis = myquery  	("SELECT p.id, CONCAT(p.prezime, ' ', p.ime) 'Prezime i ime', k.kratki_naziv, p.opci_uspjeh, p.kanton, p.kljucni_predmeti, p.dodatni_bodovi, p.prijemni_ispit, p.opci_uspjeh+p.kljucni_predmeti+p.dodatni_bodovi+p.prijemni_ispit ukupno
 					FROM prijemni p, kanton k
 					WHERE  p.kanton = k.id AND $uslovprijemni 
-					ORDER BY ukupno DESC, p.prijemni_ispit DESC");
+					ORDER BY ukupno DESC");
 						
-					
-$rednibroj = 1;
-$kp = 0;
-$sp = 0;
-$nz = 0;
-$ssp = 0;
-$snz = 0;
-$spsd = 0;
-$brojkandidata = 0;
-
-$qstrani = myquery ("SELECT COUNT(id) FROM prijemni p WHERE p.kanton=13 AND p.prijemni_ispit > $bodovihard AND $uslovprijemni");
-$sd = intval(mysql_result($qstrani,0,0));
-
+$kandidati = array();
+while($rezultat = mysql_fetch_row($qispis)){
+$id = $rezultat[0];
+$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$rezultat[2], 'opci_uspjeh'=>$rezultat[3], 'kanton_id'=>$rezultat[4], 'kljucni_predmeti'=>$rezultat[5], 'dodatni_bodovi'=>$rezultat[6], 'prijemni_ispit'=>$rezultat[7], 'ukupno'=>$rezultat[8]);
+}
 ?>
 
-<table width="85%" align="center" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
+
+<table width="85%" align="left" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
 	<tr>
 		<td align="center" width="5%"><b>R.br.</b></td>
 		<td align="left"><b>Prezime i ime</b></td>
@@ -1159,10 +1152,12 @@ $sd = intval(mysql_result($qstrani,0,0));
 		<td align="center" width="10%"><b>Ukupno</b></td>
 		<td align="center" width="5%"><b>NP</b></td>
 	</tr>
-	<?php	
-	while($kandidat = mysql_fetch_row($qispis)){
-	if(floatval($kandidat[6]) >= $bodovisoft && intval($kandidat[3]) != 13 && $kp < $kandidatikp){
-		if ($kp == 0){
+	<?php
+	
+$i = 1;
+foreach($kandidati as $id => $kandidat){
+	if($kandidat['prijemni_ispit'] >= $bodovisoft && $kandidat['kanton_id'] != 13){
+		if ($i == 1){
 		?>
 		<tr>
 			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snosi kanton Sarajevo</b></td>
@@ -1171,20 +1166,25 @@ $sd = intval(mysql_result($qstrani,0,0));
 		}
 	?>
 	<tr>
-		<td align="center"><?php echo $rednibroj?></td>
-		<td><?php echo $kandidat[0]?></td>
-		<td align="center"><?php echo $kandidat[1]?></td>
-		<td align="center"><?php echo $kandidat[2]?></td>
-		<td align="center"><?php echo $kandidat[4]?></td>
-		<td align="center"><?php echo $kandidat[5]?></td>
-		<td align="center"><?php echo $kandidat[6]?></td>
-		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td align="center"><?php echo $i?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
 	</tr>
 	<?php
-	$kp++;
+	unset($kandidati[$id]);
+	if ($i++ >= $kandidatikp) break;
 	}
-	else if ((floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13 && $sp < $kandidatisp) || ($kp == $kandidatikp && floatval($kandidat[6]) >= $bodovisoft && intval($kandidat[3]) != 13)){
-		if ($sp == 0){
+}
+
+$j = 1;
+foreach($kandidati as $id => $kandidat){
+	if(($kandidat['prijemni_ispit'] >= $bodovisoft && $kandidat['kanton_id'] != 13 && $i >= $kandidatikp)){
+		if ($j == 1){
 		?>
 		<tr>
 			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
@@ -1193,123 +1193,112 @@ $sd = intval(mysql_result($qstrani,0,0));
 		}
 	?>
 	<tr>
-		<td align="center"><?php echo $rednibroj?></td>
-		<td><?php echo $kandidat[0]?></td>
-		<td align="center"><?php echo $kandidat[1]?></td>
-		<td align="center"><?php echo $kandidat[2]?></td>
-		<td align="center"><?php echo $kandidat[4]?></td>
-		<td align="center"><?php echo $kandidat[5]?></td>
-		<td align="center"><?php echo $kandidat[6]?></td>
-		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td align="center"><?php echo $i++?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
+	</tr>
+	<?php
+	unset($kandidati[$id]);
+	if ($j++ >= $kandidatisp) break;
+	}
+}
+
+foreach($kandidati as $id => $kandidat){
+	if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $kandidat['kanton_id'] != 13)){
+	?>
+	<tr>
+		<td align="center"><?php echo $i++?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
 		<td><font color="red"><?php echo "**"?></font></td>
 	</tr>
 	<?php
-	$sp++;
+	unset($kandidati[$id]);
+	if ($j++ >= $kandidatisp) break;
 	}
-	else if (floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13 && $kandidatisd - $sd > 0 && $spsd < $kandidatisd - $sd && $sp == $kandidatisp){
+}
+
+$j = 1;
+foreach($kandidati as $id => $kandidat){
+	if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13){
 	?>
 	<tr>
-		<td align="center"><?php echo $rednibroj?></td>
-		<td><?php echo $kandidat[0]?></td>
-		<td align="center"><?php echo $kandidat[1]?></td>
-		<td align="center"><?php echo $kandidat[2]?></td>
-		<td align="center"><?php echo $kandidat[4]?></td>
-		<td align="center"><?php echo $kandidat[5]?></td>
-		<td align="center"><?php echo $kandidat[6]?></td>
-		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td align="center"><?php echo $i++?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
+		<td><font color="red"><?php echo "****"?></font></td>
+	</tr>
+	<?php
+	unset($kandidati[$id]);
+	if ($j++ >= $kandidatisd) break;
+	}
+}
+
+if($j <= $kandidatisd){
+	foreach($kandidati as $id => $kandidat){
+		if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] != 13){
+	?>
+	<tr>
+		<td align="center"><?php echo $i++?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
 		<td><font color="red"><?php echo "***"?></font></td>
 	</tr>
 	<?php
-	$spsd++;
+	unset($kandidati[$id]);
+	if ($j++ >= $kandidatisd) break;
 	}
-	else if ((floatval($kandidat[6]) < $bodovihard && intval($kandidat[3]) != 13) || ($sp == $kandidatisp && floatval($kandidat[6]) < $bodovisoft && floatval($kandidat[6]) >= $bodovihard && intval($kandidat[3]) != 13)){
-		if ($nz == 0){
-		?>
-		<tr>
-			<td colspan="8"><b>Kandidati koji nisu stekli uvjete za upis</b></td>
-		</tr>
-		<?php
-		}
+}
+}
+$j = 1;
+foreach ($kandidati as $id => $kandidat){
+	if ($j == 1){
 	?>
 	<tr>
-		<td align="center"><?php echo $rednibroj?></td>
-		<td><?php echo $kandidat[0]?></td>
-		<td align="center"><?php echo $kandidat[1]?></td>
-		<td align="center"><?php echo $kandidat[2]?></td>
-		<td align="center"><?php echo $kandidat[4]?></td>
-		<td align="center"><?php echo $kandidat[5]?></td>
-		<td align="center"><?php echo $kandidat[6]?></td>
-		<td align="center"><b><?php echo $kandidat[7]?></b></td>
+		<td colspan="8"><b>Kandidati koji nisu stekli uvjete za upis</b></td>
 	</tr>
 	<?php
-	$nz++;
 	}
-	else if (intval($kandidat[3] == 13)){
-		if ($ssp+$snz == 0){
-	?>
-		<tr>
-			<td colspan="8">&nbsp;</td>
-		</tr>
-		<tr>
-			<td colspan="8" align="center"><font size="2"><b>Rang-lista kandidata stranih državljana nakon kvalifikacionog ispita</b></font></td>
-		</tr>
-		<tr>
-			<td colspan="8">&nbsp;</td>
-		</tr>
-	<?php
-		}
-		if (floatval($kandidat[6]) > $bodovihard && $ssp < $kandidatisd){
-			if ($ssp == 0){
-			?>
-			<tr>
-			<td colspan="8" align="left"><b>REDOVNI STUDIJ - Strani državljani koji sami snose troškove studija</b></td>
-			</tr>
-			<?php
-			}
-		?>
-		<tr>
-			<td align="center"><?php echo $ssp+1?></td>
-			<td><?php echo $kandidat[0]?></td>
-			<td align="center"><?php echo $kandidat[1]?></td>
-			<td align="center"><?php echo $kandidat[2]?></td>
-			<td align="center"><?php echo $kandidat[4]?></td>
-			<td align="center"><?php echo $kandidat[5]?></td>
-			<td align="center"><?php echo $kandidat[6]?></td>
-			<td align="center"><b><?php echo $kandidat[7]?></b></td>
-		</tr>
-		<?php
-		$ssp++;
-		}
-		else if (floatval($kandidat[6]) <= $bodovihard || $ssp == $kandidatisd){
-		if ($snz == 0){
-			?>
-			<tr>
-			<td colspan="8" align="left"><b>Kandidati strani državljani koji nisu stekli uvjete za upis</b></td>
-			</tr>
-			<?php
-			}
-		?>
-		<tr>
-			<td align="center"><?php echo $snz+$ssp+1?></td>
-			<td><?php echo $kandidat[0]?></td>
-			<td align="center"><?php echo $kandidat[1]?></td>
-			<td align="center"><?php echo $kandidat[2]?></td>
-			<td align="center"><?php echo $kandidat[4]?></td>
-			<td align="center"><?php echo $kandidat[5]?></td>
-			<td align="center"><?php echo $kandidat[6]?></td>
-			<td align="center"><b><?php echo $kandidat[7]?></b></td>
-		</tr>
-		<?php
-		$snz++;
-		}
-	}
-	$rednibroj++;
-	}
-	?>
+?>
+<tr>
+		<td align="center"><?php echo $i++?></td>
+		<td><?php echo $kandidat['prezime_ime']?></td>
+		<td align="center"><?php echo $kandidat['kanton']?></td>
+		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
+		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
+		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
+		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
+		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
+	</tr>
+<?php
+$j++;
+}
+?>
 </table>
 </br>
-<p><font color="red" size="1">**</font><font size="2" face="Verdana"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?>, a manje od <?php echo $bodovihard?></font></br></br>
-	<font color="red" size="1">***</font><font size="2" face="Verdana"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?> (a manje od <?php echo $bodovihard?>), a upisuju </br>se na slobodna mjesta koja su bila Konkursom predviđena za studente strane državljane</p>
+<p><font color="red" size="1">**</font><font size="3" face="Times New Roman"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?>, a više od <?php echo $bodovihard?></font></br></br>
+	<font color="red" size="1">***</font><font size="3" face="Times New Roman"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?> (a više od <?php echo $bodovihard?>), a upisuju </br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;se na slobodna mjesta koja su bila Konkursom predviđena za studente strane državljane</font></br></br>
+	<font color="red" size="1">****</font><font size="3" face="Times New Roman"> - Kandidati strani državljani koji su stekli uvjete za upis<font></p>
 <?php
 
 }
