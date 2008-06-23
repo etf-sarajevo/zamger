@@ -986,10 +986,10 @@ if ($_REQUEST['akcija'] == "kriterij_potvrda"){
 		<td align="left">Maksimalni broj bodova na prijemnom ispitu:</td><td align="left"><b><?php print $rprijemnimax?></b></td>
 	</tr>
 	<tr>
-		<td align="left" width="65%">Donja granica:</td><td align="left"><b><?php echo $rdonja?></b></td>
+		<td align="left" width="65%">Hard limit:</td><td align="left"><b><?php echo $rdonja?></b></td>
 	</tr>
 	<tr bgcolor="#DDDDDD">
-		<td align="left">Gornja granica:</td><td align="left"><b><?php echo $rgornja?></b></td>
+		<td align="left">Soft limit:</td><td align="left"><b><?php echo $rgornja?></b></td>
 	</tr>
 	<tr>
 		<td align="left" width="65%">Broj kandidata(strani državljani):</td><td align="left"><b><?php echo $rkandidatisd?></b></td>
@@ -1045,11 +1045,11 @@ function odzuti(nesto) {
 		<td><input type="text" size="12" name="prijemni_max" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Donja granica(postotak):</td>
+		<td width="70%" align="left">Hard limit(postotak):</td>
 		<td><input type="text" size="12" name="donja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Gornja granica(postotak):</td>
+		<td width="70%" align="left">Soft limit(postotak):</td>
 		<td><input type="text" size="12" name="gornja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
 	</tr>
 	<tr>
