@@ -1140,7 +1140,7 @@ $kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$rezultat[2], 'op
 ?>
 
 
-<table width="95%" align="left" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
+<table width="100%" align="left" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
 	<tr>
 		<td align="center" width="5%"><b>R.br.</b></td>
 		<td align="left"><b>Prezime i ime</b></td>
@@ -1210,6 +1210,13 @@ foreach($kandidati as $id => $kandidat){
 
 foreach($kandidati as $id => $kandidat){
 	if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $kandidat['kanton_id'] != 13)){
+		if ($j == 1){
+		?>
+		<tr>
+			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
+		</tr>
+		<?php
+		}
 	?>
 	<tr>
 		<td align="center"><?php echo $i++?></td>
