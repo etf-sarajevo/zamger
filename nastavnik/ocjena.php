@@ -39,7 +39,7 @@ $predmet_naziv = mysql_result($q1,0,0);
 if (!$user_siteadmin) {
 	$q10 = myquery("select np.admin from nastavnik_predmet as np where np.nastavnik=$userid and np.predmet=$predmet");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("privilegije (predmet $predmet)",3);
+		zamgerlog("nastavnik/ocjena privilegije (predmet p$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
