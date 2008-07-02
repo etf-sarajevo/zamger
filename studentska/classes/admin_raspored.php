@@ -1,4 +1,4 @@
-Test: 23:12<?
+Test: 23:16<?
 
 class adminRaspored
 	{		
@@ -367,7 +367,7 @@ class adminRaspored
 								function ucitajGrupe(ob)
 									{
 										selSem = getSelected(ob);
-										selSmj = getSelected(document.getElementById(\'studij\'));
+										selSmj = getSelected(document.getElementById(\'godina\'));
 										
 										if (selSem && selSmj)
 											{
