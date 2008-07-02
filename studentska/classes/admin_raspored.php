@@ -1,4 +1,4 @@
-<?
+Test: 23:12<?
 
 class adminRaspored
 	{		
