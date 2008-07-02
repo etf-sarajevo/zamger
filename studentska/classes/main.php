@@ -3,6 +3,7 @@ class mainConfig
 	{
 		var $mainErrors = array();
 		
+		/*
 		// Vraca postavke
 		function getSet()
 			{				
@@ -29,7 +30,7 @@ class mainConfig
 			{
 				return implode("<br />",$this->mainErrors);
 			}		
-			
+		*/
 		// Uzima postavke stranice iz baze	
 		function getSetDb()
 			{

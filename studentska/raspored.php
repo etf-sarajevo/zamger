@@ -1,7 +1,8 @@
+<LINK href="css/izgled.css" rel="stylesheet" type="text/css">
 <?
 function studentska_raspored ()
 	{
-		global $userid,$user_siteadmin,$user_studentska;
+		global $userid,$user_siteadmin,$user_studentska, $db, $main;
 
 		global $_lv_; // Potrebno za genform() iz libvedran
 
