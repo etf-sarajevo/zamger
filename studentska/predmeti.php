@@ -150,7 +150,7 @@ else if ($akcija == "novi") {
 		zamgerlog("potpuno novi predmet p$pid, akademska godina ag$ak_god",4);
 	}
 
-	$q395 = myquery("insert into ponudakursa set predmet=$pid, akademska_godina=$ak_god, studij=1, semestar=1, akademska_godina=1"); // default vrijednosti
+	$q395 = myquery("insert into ponudakursa set predmet=$pid, akademska_godina=$ak_god, studij=1, semestar=1"); // default vrijednosti
 	$q396 = myquery("select id from ponudakursa where predmet=$pid and akademska_godina=$ak_god");
 	$predmet = mysql_result($q396,0,0);
 
