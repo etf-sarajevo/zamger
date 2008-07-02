@@ -615,11 +615,11 @@ class adminRaspored
 				?>
 					<div id = "navigacija">
 							<ul id = "menu">
-								<li><a id="<?$this->pozicija(false, $gdje == "pocetak")?>" href = "?sta=admin&uradi=pocetak">Raspored administracija</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "sale")?>" href = "?sta=admin&uradi=sale">Definisi sale</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "novi")?>" href = "?sta=admin&uradi=novi">Napravi novi raspored</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "modifikuj")?>" href = "?sta=admin&uradi=modifikuj">Modifikuj postojeci raspored</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "pogledaj")?>'" href = "?sta=admin&uradi=pogledaj">Pogledaj sve rasporede</a></li>
+								<li><a id="<?$this->pozicija(false, $gdje == "pocetak")?>" href = "?sta=studentska/raspored&uradi=pocetak">Raspored administracija</a></li>
+								<li><a id="<?$this->pozicija(false, $gdje == "sale")?>" href = "?sta=studentska/raspored&uradi=sale">Definisi sale</a></li>
+								<li><a id="<?$this->pozicija(false, $gdje == "novi")?>" href = "?sta=studentska/raspored&uradi=novi">Napravi novi raspored</a></li>
+								<li><a id="<?$this->pozicija(false, $gdje == "modifikuj")?>" href = "?sta=studentska/raspored&uradi=modifikuj">Modifikuj postojeci raspored</a></li>
+								<li><a id="<?$this->pozicija(false, $gdje == "pogledaj")?>'" href = "?sta=studentska/raspored&uradi=pogledaj">Pogledaj sve rasporede</a></li>
 							</ul>
 					</div>
 				<?
