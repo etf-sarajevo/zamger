@@ -60,10 +60,10 @@ class adminRaspored
 						';
 					}
 				$ret1 .= '
-					</select>
+					</select> 
 					<br/>
 				';
-				
+				//111
 				return $ret1;
 			}
 		
