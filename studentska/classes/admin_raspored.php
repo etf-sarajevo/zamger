@@ -366,20 +366,20 @@ class adminRaspored
 									
 								function ucitajGrupe(ob)
 									{
-										selSem = getSelected(ob);
-										selSmj = getSelected(document.getElementById(\'godina\'));
+										selGod = getSelected(ob);
+										selStu = getSelected(document.getElementById(\'studij\'));
 										
-										if (selSem && selSmj)
+										if (selStu && selGod)
 											{
 												// Grupe
 												gr = document.getElementById(\'grupa\');
 												gr.options.length=0;
 												gr.options[0] = new Option("- - - -", 0);
-												if (labgrupe[sel+"-"+selSem]) 
+												if (labgrupe[selStu+"-"+selGod]) 
 													{
-														for (i=1; i<=labgrupe[sel+"-"+selSem].length; i++)
+														for (i=1; i<=labgrupe[selStu+"-"+selGod].length; i++)
 															{
-																gr.options[i] = new Option(labgrupe[sel+"-"+selSem][i-1].naziv, labgrupe[sel+"-"+selSem][i-1].id);
+																gr.options[i] = new Option(labgrupe[selStu+"-"+selGod][i-1].naziv, labgrupe[selStu+"-"+selGod][i-1].id);
 															}
 														gr.disabled=false;	
 													}
