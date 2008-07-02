@@ -209,7 +209,7 @@ class adminRaspored
 								Definisnje sala: <span id = "salaModify" style = "color: #ff0000"></span>
 							</div>
 							<hr style = "border-top: 1px dotted #ccc; color: #FFF">
-							<form name = "saleF" id = "saleF" action="./?sta=admin&uradi=sale" method = "post">
+							<form name = "saleF" id = "saleF" action="./?sta=studentska/raspored&uradi=sale" method = "post">
 								<div>
 									<div class = "formLS">Unesi oznaku sale: (primjer: S01)</div>
 									<div class = "formRS"><input type = "textbox" value = "" name = "salaS" size = "30" MAXLENGTH="10"></div>
