@@ -48,7 +48,7 @@ class adminRaspored
 				global $db;
 				
 				$ret1 .= '
-					<select name = "'.$tablica.'" '.$ajax.'>
+					<select name = "'.$tablica.'" id = "'.$tablica.'" '.$ajax.'>
 						<option value="0">- - - -</option>
 				';
 				
