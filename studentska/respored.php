@@ -21,6 +21,6 @@ function studentska_raspored ()
 
 		$aRas = new adminRaspored;
 
-		$aRas ->printajAdministracijuRasporeda();
+		return $aRas ->printajAdministracijuRasporeda();
 	}
 ?>
