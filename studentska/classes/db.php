@@ -1,46 +1,13 @@
 <?
-class dbClass extends mainConfig
+class dbClass
 	{
-		var $veza;
-		var $sqlErrors = array();	
-		
-		// Konekcija na bazu
-		function Connect()
-			{
-				// MySQL Data
-				$settings = mainConfig::getSet();
-				
-				$this->veza = mysql_connect($settings['db_host'],$settings['db_user'],$settings['db_pass']);
-				
-				if (!$this->veza)
-					{
-						$this->sqlErrors[] = mysql_error();
-						return false;
-					}
-				else
-					{
-						$sel = mysql_select_db($settings['db_name']);
-						
-						if (!$sel)
-							{
-								$this->sqlErrors[] = mysql_error();
-								return false;
-							}
-						else
-							{								
-								return true;
-							}						
-					}
-			}
-		
 		// Izvrsava query nad bazom
 		function Query($query,$do_fetch = false)
 			{
-				$do_query = mysql_query($query,$this->veza);
+				$do_query = mysql_query($query);
 				
 				if (!$do_query)
 					{
-						$this->sqlErrors[] = mysql_error();
 						return false;
 					}
 				else
@@ -89,12 +56,6 @@ class dbClass extends mainConfig
 					}
 			}
 			
-		// Prekida vezu sa bazom	
-		function Close()
-			{
-				mysql_close($this->veza);
-			}
-		
 		// Broji selektovane rezultate
 		function Count($array)
 			{
