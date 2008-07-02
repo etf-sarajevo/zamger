@@ -85,12 +85,10 @@ class adminRaspored
 								$updateDBS = $db->Query("UPDATE ras_sala SET nameS = '".$salaS."', capacS = '".$kapacitetS."' WHERE idS = '".$salaModif."' ");
 								if($updateDBS)
 									{
-										echo "Loading...";
 										$main->printInfo("Sala uspjesno modifikovana", true);
 									}
 								else
 									{
-										echo "Loading...";
 										$main->printInfo("Greska pri modifikaciji sale", true);
 									}
 							}
@@ -99,12 +97,10 @@ class adminRaspored
 								$insertIntoDBS = $db->Query("INSERT INTO ras_sala (nameS, capacS) VALUES ('".$salaS."', '".$kapacitetS."') ");
 								if($insertIntoDBS)
 									{
-										echo "Loading...";
 										$main->printInfo("Sala uspjesno dodana", true);
 									}
 								else
 									{
-										echo "Loading...";
 										$main->printInfo("Greska pri dodavanju sale", true);
 									}
 							}
@@ -258,7 +254,7 @@ class adminRaspored
 												<div id = "sectionP3">'.$kapacSale.'</div>
 												<div id = "sectionP4">
 													<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja(\''.$imeSale.'\',\''.$kapacSale.'\', \''.$idSale.'\', \'salaModify\')" ><img  src = "img/edit.gif" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
-													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=admin&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "img/delete.gif" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
+													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=studentska/raspored&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "img/delete.gif" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
 												</div>
 												<div class = "razmak"></div>
 											</div>
@@ -303,7 +299,7 @@ class adminRaspored
 						</script>
 						';
 						
-						$main->printInfo("Sala uspjesno obrisana");
+						$main->printInfo("Sala uspjesno obrisana", false);
 					}
 				else
 					{
@@ -320,6 +316,8 @@ class adminRaspored
 		//Kreiraj raspored
 		function napraviRaspored()
 			{
+				global $db;
+				
 				$ajax = '
 					onChange = "javascript:promjenaGodine(\'godinaSCSS\')";
 				';
@@ -336,9 +334,10 @@ class adminRaspored
 								function promjenaGodine(ob)
 									{
 										sel = getSelected(ob);
+										//selSem = getSelected(document.getElementById(\'semestar\'));
 										
 										god = document.getElementById(\'godina\');
-										gr = document.getElementById(\'grupa\');
+										//gr = document.getElementById(\'grupa\');
 										
 										// Godina
 										god.options.length=0;
@@ -362,22 +361,34 @@ class adminRaspored
 												god.disabled=false;
 											}
 											
-										// Grupa
-										gr.options.length=0;
-										gr.options[0] = new Option("- - - -", 0);
-										if (labgrupe[sel]) 
+										ucitajGrupe(document.getElementById(\'studij\'));													
+									}	
+									
+								function ucitajGrupe(ob)
+									{
+										selSem = getSelected(ob);
+										selSmj = getSelected(document.getElementById(\'studij\'));
+										
+										if (selSem && selSmj)
 											{
-												for (i=1; i<=labgrupe[sel].length; i++)
+												// Grupe
+												gr = document.getElementById(\'grupa\');
+												gr.options.length=0;
+												gr.options[0] = new Option("- - - -", 0);
+												if (labgrupe[sel+"-"+selSem]) 
 													{
-														gr.options[i] = new Option(labgrupe[sel][i-1].naziv, labgrupe[sel][i-1].id);
+														for (i=1; i<=labgrupe[sel+"-"+selSem].length; i++)
+															{
+																gr.options[i] = new Option(labgrupe[sel+"-"+selSem][i-1].naziv, labgrupe[sel+"-"+selSem][i-1].id);
+															}
+														gr.disabled=false;	
 													}
-												gr.disabled=false;	
+												else
+													{
+														gr.disabled=true;
+													}
 											}
-										else
-											{
-												gr.disabled=true;
-											}															
-									}								
+									}							
 								function getSelected(ob)
 									{
 										for (i = 0; i < ob.options.length; i++)
@@ -389,17 +400,13 @@ class adminRaspored
 													}
 											}
 									}';
-									
-						if ($lgS = mysql_query("SELECT lg.naziv, lg.id, pk.studij FROM ponudakursa pk, labgrupa lg where lg.predmet=pk.id ORDER BY lg.naziv ASC
-"))
+						if ($lgS = $db->Query("SELECT lg.naziv, lg.id, pk.studij, pk.semestar FROM ponudakursa pk, labgrupa lg WHERE lg.predmet = pk.id ORDER BY lg.naziv ASC"))
 							{
-								while ($row = mysql_fetch_array($lgS))
-									{
-										$labG[$row['studij']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
-									}
+								while ($row = $db->fetchArray($lgS)) {
+									$labG[$row['studij'].'-'.$row['semestar']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
+								}
 								echo "var labgrupe = ".json_encode($labG).";";
 							}
-							
 						echo '
 							</script>
 							<div class = "velikiNaslov">
@@ -418,7 +425,7 @@ class adminRaspored
 									<div class = "razmak"></div>
 									
 									<div class = "formLS">Godina studija:</div>
-									<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" disabled="disabled"><option value="0">- - - -</option></select></div>
+									<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" onchange="ucitajGrupe(this);" disabled="disabled"><option value="0">- - - -</option></select></div>
 									<div class = "razmak"></div>
 									
 									<div class = "formLS">Grupa:</div>
@@ -426,7 +433,6 @@ class adminRaspored
 									<div class = "razmak"></div>
 									<br/>
 									
-									<a href = "">Ucitaj predmete u raspored </a><br/><br/>
 									
 									<script type="text/javascript">
 										
