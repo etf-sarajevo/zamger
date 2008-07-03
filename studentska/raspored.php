@@ -103,7 +103,7 @@ function napraviSale() {
 		}
 	} else {
 		?>
-		<script type = "text/javascript">
+		<script language="JavaScript" type="text/javascript">
 			//Funkcija koja pri reloadu prozora brise sve iz formi
 			window.onload=function() {
 				document.saleF.reset();
@@ -286,7 +286,7 @@ function napraviRaspored() {
 
 	} else {
 	?>
-<script type = "text/javascript">
+<script language="JavaScript" type="text/javascript">
 	//Funkcija za dinamicko mijenjanje godine studija u zavisnosti od smijera
 	function promjenaGodine(ob) {
 		sel = getSelected(ob);
@@ -342,7 +342,7 @@ function napraviRaspored() {
 		}
 		<?
 		if ($lgS = myquery("SELECT lg.naziv, lg.id, pk.studij, pk.semestar FROM ponudakursa pk, labgrupa lg WHERE lg.predmet = pk.id ORDER BY lg.naziv ASC")) {
-			while ($row = $db->fetchArray($lgS)) {
+			while ($row = mysql_fetch_array($lgS)) {
 				$labG[$row['studij'].'-'.$row['semestar']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
 			}
 			echo "var labgrupe = ".json_encode($labG).";";
@@ -369,7 +369,7 @@ function napraviRaspored() {
 	<div class = "formRS"><select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select></div>
 	<div class = "razmak"></div>
 	<br/>
-	<script type="text/javascript">
+	<script language="JavaScript" type="text/javascript">
 		function addElement(inEl, elTag, inHtml, otherD) {
 			parentEl = document.getElementById(inEl);
 			newEl = document.createElement(elTag);
@@ -594,7 +594,7 @@ function printInfo($text, $reloadBack = false) {
 	}
 		
 	echo '
-		<script type = "text/javascript">
+		<script language="JavaScript" type="text/javascript">
 			alert(\''.$text.'\');
 			
 			'.$reload.'
