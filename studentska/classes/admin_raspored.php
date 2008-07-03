@@ -251,8 +251,8 @@
 												<div id = "sectionP2">'.$imeSale.'</div>
 												<div id = "sectionP3">'.$kapacSale.'</div>
 												<div id = "sectionP4">
-													<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja(\''.$imeSale.'\',\''.$kapacSale.'\', \''.$idSale.'\', \'salaModify\')" ><img  src = "images/16x16/log_edit.gif" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
-													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=studentska/raspored&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "images/16x16/brisanje.gif" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
+													<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja(\''.$imeSale.'\',\''.$kapacSale.'\', \''.$idSale.'\', \'salaModify\')" ><img  src = "images/16x16/log_edit.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
+													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=studentska/raspored&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "images/16x16/brisanje.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
 												</div>
 												<div class = "razmak"></div>
 											</div>
