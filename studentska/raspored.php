@@ -17,8 +17,8 @@ function studentska_raspored ()
 		
 		$db = new dbClass;
 		$main = new mainConfig;
-		$aRas = new adminRaspored;
+//		$aRas = new adminRaspored;
 
-		return $aRas ->printajAdministracijuRasporeda();
+		return printajAdministracijuRasporeda();
 	}
 ?>

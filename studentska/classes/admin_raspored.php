@@ -1,7 +1,5 @@
-Test: 23:16<?
+<?
 
-class adminRaspored
-	{		
 		//Pozicija gdje se trenutno admin nalazi (Radi selektovanja u navigaciji i izabira elementa u sadrzaju)
 		function pozicija($lokacija = false, $sel = false)
 			{	
@@ -23,15 +21,15 @@ class adminRaspored
 							}
 						else if($lokacija == 'sale')
 							{
-								$sadrzaj = $this->napraviSale();
+								$sadrzaj = napraviSale();
 							}
 						else if($lokacija == 'novi')
 							{
-								$sadrzaj = $this->napraviRaspored();
+								$sadrzaj = napraviRaspored();
 							}
 						else if($lokacija == 'modifikuj')
 							{
-								$sadrzaj = $this->urediRaspored();
+								$sadrzaj = urediRaspored();
 							}
 						else if($lokacija == 'pogledaj')
 							{
@@ -269,7 +267,7 @@ class adminRaspored
 					
 					if($_GET['do'] == "brisi")
 						{
-							$this->brisiSalu($db->addSlashes($_GET['idS']));
+							brisiSalu($db->addSlashes($_GET['idS']));
 						}
 					
 			}//Kraj kreiranja sala
@@ -417,11 +415,11 @@ class adminRaspored
 							<form name = "rasP" id = "rasP" action="./?sta=admin&uradi=sale" method = "post">
 								<div>
 									<div class = "formLS">Akademska godina:</div>
-									<div class = "formRS">'.$this->selectOption("akademska_godina", array("id", "naziv")).'</div>
+									<div class = "formRS">'.selectOption("akademska_godina", array("id", "naziv")).'</div>
 									<div class = "razmak"></div>								
 									
 									<div class = "formLS">Smijer:</div>
-									<div class = "formRS">'.$this->selectOption("studij", array("id", "naziv"), ' onchange="promjenaGodine(this)"').'</div>
+									<div class = "formRS">'.selectOption("studij", array("id", "naziv"), ' onchange="promjenaGodine(this)"').'</div>
 									<div class = "razmak"></div>
 									
 									<div class = "formLS">Godina studija:</div>
@@ -621,11 +619,11 @@ class adminRaspored
 				?>
 					<div id = "navigacija">
 							<ul id = "menu">
-								<li><a id="<?$this->pozicija(false, $gdje == "pocetak")?>" href = "?sta=studentska/raspored&uradi=pocetak">Raspored administracija</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "sale")?>" href = "?sta=studentska/raspored&uradi=sale">Definisi sale</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "novi")?>" href = "?sta=studentska/raspored&uradi=novi">Napravi novi raspored</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "modifikuj")?>" href = "?sta=studentska/raspored&uradi=modifikuj">Modifikuj postojeci raspored</a></li>
-								<li><a id="<?$this->pozicija(false, $gdje == "pogledaj")?>'" href = "?sta=studentska/raspored&uradi=pogledaj">Pogledaj sve rasporede</a></li>
+								<li><a id="<?pozicija(false, $gdje == "pocetak")?>" href = "?sta=studentska/raspored&uradi=pocetak">Raspored administracija</a></li>
+								<li><a id="<?pozicija(false, $gdje == "sale")?>" href = "?sta=studentska/raspored&uradi=sale">Definisi sale</a></li>
+								<li><a id="<?pozicija(false, $gdje == "novi")?>" href = "?sta=studentska/raspored&uradi=novi">Napravi novi raspored</a></li>
+								<li><a id="<?pozicija(false, $gdje == "modifikuj")?>" href = "?sta=studentska/raspored&uradi=modifikuj">Modifikuj postojeci raspored</a></li>
+								<li><a id="<?pozicija(false, $gdje == "pogledaj")?>'" href = "?sta=studentska/raspored&uradi=pogledaj">Pogledaj sve rasporede</a></li>
 							</ul>
 					</div>
 				<?
@@ -638,7 +636,7 @@ class adminRaspored
 				
 				?>
 					<div id = "sadrzajA">
-						<?$this->pozicija($gdje)?>
+						<?pozicija($gdje)?>
 					</div>
 					<div class = "razmak"></div>
 				<?
@@ -651,12 +649,11 @@ class adminRaspored
 					<div id = "adminRas">
 						Administracija rasporeda:
 						<div class = "razmak"></div><br/>
-						<?$this->navigacija()?>
-						<?$this->sadrzaj()?>
+						<?navigacija()?>
+						<?sadrzaj()?>
 					</div>
 					
 				<?
 			}
 
-	}
 ?>
