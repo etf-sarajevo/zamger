@@ -155,7 +155,7 @@ if ($found==1 && $template==2 && $greska=="") {
 <head>
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link href="css/style.css" rel="stylesheet" type="text/css" />
+	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
 </head><?
 
 

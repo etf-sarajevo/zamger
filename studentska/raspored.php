@@ -1,4 +1,4 @@
-<LINK href="css/izgled.css" rel="stylesheet" type="text/css">
+<LINK href="css/raspored.css" rel="stylesheet" type="text/css">
 <?
 function studentska_raspored ()
 	{
