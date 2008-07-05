@@ -276,19 +276,19 @@ function brisiSalu($idSale) {
 }
 
 //Ispis <option> predmeta vezanih za neki smijer i godinu
-function ispisiElementDana($dan, $int, $grupa, $semestar) {
+function ispisiElementDana($dan, $int, $studij, $semestar) {
 	$danDivId = strtolower($dan);
 	
 	echo '
 		<div class = "cRDanBox" id="'.$danDivId.'">
 			<span style = "float: left"><b>'.$dan.'</b></span> 
-			<span style = "float: right"><a href="javascript:addPredmet('.$int.');">[+]</a></span>
+			<span style = "float: right"><a href="javascript:addPredmet('.$int.', '.$studij.', '.$semestar.');">[+]</a></span>
 			<br/><br/>
 			<!-- ################################################################## -->
 			<!--<div class = "cRDanNoBox">1</div>-->
 			<div class = "cRDanContBoxPredmet">
-				<input type="checkbox" name = "izborniPredmet" onClick = "javascript:izaberiGrupu('.$grupa.', '.$semestar.');"/> Izborni Predmet<br/>
-				<select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select>
+				<input type="checkbox" name = "izborniPredmet" onClick = "javascript:izaberiGrupu('.$studij.', '.$semestar.', '.$int.', 1);"/> Izborni Predmet<br/>
+				<select name="grupa['.$int.'][1]" id="grupa['.$int.'][1]" disabled="disabled"><option value="0">- - - -</option></select>
 				<p>
 				<select name="predmet['.$int.'][1]">
 					<option></option>
@@ -323,6 +323,7 @@ function ispisiElementDana($dan, $int, $grupa, $semestar) {
 
 //Kreiraj raspored
 function napraviRaspored() {
+
 	global $json;
 	
 	$unlock_div = "none";
@@ -367,18 +368,14 @@ function napraviRaspored() {
 
 				
 			}
-			
-			function izaberiGrupu(stud, god) {
-				ucitajGrupe(stu,god);
-			}
 		
-			function izaberiGrupu(selStu,selGod) {
+			function izaberiGrupu(selStu,selGod,dan,cas) {
 				//selGod = getSelected(ob);
 				//selStu = getSelected(document.getElementById('studij'));
 		
 				if (selStu && selGod) {
 					// Grupe
-					gr = document.getElementById('grupa');
+					gr = document.getElementById('grupa['+dan+']['+cas+']');
 					gr.options.length=0;
 					gr.options[0] = new Option("- - - -", 0);
 					if (labgrupe[selStu+"-"+selGod]) {
@@ -443,10 +440,11 @@ function napraviRaspored() {
 				var dani = {1:"ponedjeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
 				var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
 
-				function addPredmet(id) {
+				function addPredmet(id, studij, semestar) {
 					nums[id] += 1;
 					addHtml = '<div class="razmak"></div><hr><div class = "cRDanContBoxPredmet">'+
-						'<input type="checkbox" name = "izborniPredmet"/> Izborni Predmet'+
+						'<input type="checkbox" name = "izborniPredmet"onClick = "javascript:izaberiGrupu('+studij+', '+semestar+', '+id+', '+nums[id]+');"/> Izborni Predmet<br/>'+
+						'<select name="grupa['+id+']['+nums[id]+']" id="grupa['+id+']['+nums[id]+']" disabled="disabled"><option value="0">- - - -</option></select>'+
 						'<p><select name="predmet['+id+']['+nums[id]+']"><option></option></select></p>'+
 						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="P">Predavanje<BR>'+
 						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="T">Tutorial<BR>'+
