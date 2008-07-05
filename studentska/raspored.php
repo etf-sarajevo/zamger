@@ -1,5 +1,8 @@
 <LINK href="css/raspored.css" rel="stylesheet" type="text/css">
 <?
+//Poziva json klasu
+require_once "classes/class.json.php";
+$json = new Services_JSON; //Nova instanca klase
 
 function studentska_raspored () {
 	global $userid,$user_siteadmin,$user_studentska, $db, $main;
@@ -58,9 +61,9 @@ function pozicija($lokacija = false, $sel = false) {
 }
 	
 //Select option u formi
-function selectOption($tablica, $elementi, $ajax = false) {
+function selectOption($tablica, $elementi, $ajax = false, $disabled) {
 	$ret1 .= '
-		<select name = "'.$tablica.'" id = "'.$tablica.'" '.$ajax.'>
+		<select name = "'.$tablica.'" id = "'.$tablica.'" '.$ajax.' '.$disabled.'>
 			<option value="0">- - - -</option>
 	';
 	
@@ -179,8 +182,6 @@ function napraviSale() {
 				} else
 					return false;
 			}
-				
-			function doAction(){}
 		</script>
 		<div class = "velikiNaslov">
 			Definisanje sala: <span id = "salaModify" style = "color: #ff0000"></span>
@@ -223,16 +224,17 @@ function napraviSale() {
 				$imeSale = $pSDB['nameS'];
 				$kapacSale = $pSDB['capacS'];
 				
-				?><div class = "sectionP0">
-									<div id = "sectionP1"><?=$nmbrCounter?></div>
-									<div id = "sectionP2"><?=$imeSale?></div>
-									<div id = "sectionP3"><?=$kapacSale?></div>
-									<div id = "sectionP4">
-		<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja('<?=$imeSale?>','<?=$kapacSale?>', '<?=$idSale?>', 'salaModify')" ><img  src = "images/16x16/log_edit.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
-										<a href = "javascript: doAction()" onClick="javascript:izbrisi('Zelim izbrisati salu: <?=$imeSale?> ?', '?sta=studentska/raspored&uradi=sale&do=brisi&idS=<?=$idSale?>')"><img src = "images/16x16/brisanje.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
-									</div>
-									<div class = "razmak"></div>
-</div>
+				?>
+				<div class = "sectionP0">
+					<div id = "sectionP1"><?=$nmbrCounter?></div>
+					<div id = "sectionP2"><?=$imeSale?></div>
+					<div id = "sectionP3"><?=$kapacSale?></div>
+					<div id = "sectionP4">
+						<a href = "javascript: void(0)" onClick="javascript:popuniSalaPolja('<?=$imeSale?>','<?=$kapacSale?>', '<?=$idSale?>', 'salaModify'); scroll(0,95)" ><img  src = "images/16x16/log_edit.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
+						<a href = "javascript: void(0)" onClick="javascript:izbrisi('Zelim izbrisati salu: <?=$imeSale?> ?', '?sta=studentska/raspored&uradi=sale&do=brisi&idS=<?=$idSale?>')"><img src = "images/16x16/brisanje.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
+					</div>
+					<div class = "razmak"></div>
+				</div>
 				<?
 				$nmbrCounter++;
 			}
@@ -280,249 +282,259 @@ function ispisiPredmeteVezaneZaSmijer($smijer, $godina = false) {
 
 //Kreiraj raspored
 function napraviRaspored() {
+	global $json;
+	
+	$unlock_div = "none";
 	$ajax = 'onChange = "javascript:promjenaGodine(\'godinaSCSS\')";';
-
+	
 	if($_POST) {
+		//printInfo("Sala uspjesno dodana", true);
+		$disable_all = "DISABLED";
+		$unlock_div = "";
+		
+		echo "ppp: ".$_POST['akademska_godina'];
+	}
 
+	if($_POST['submit']) {
+		echo "laaa";
 	} else {
 	?>
-<script language="JavaScript" type="text/javascript">
-	//Funkcija za dinamicko mijenjanje godine studija u zavisnosti od smijera
-	function promjenaGodine(ob) {
-		sel = getSelected(ob);
-		//selSem = getSelected(document.getElementById(\'semestar\'));
+		<script language="JavaScript" type="text/javascript">
+			//Funkcija za dinamicko mijenjanje godine studija u zavisnosti od smijera
+			function promjenaGodine(ob) {
+				sel = getSelected(ob);
+				//selSem = getSelected(document.getElementById(\'semestar\'));
 		
-		god = document.getElementById('godina');
-		//gr = document.getElementById(\'grupa\');
+				god = document.getElementById('godina');
+				//gr = document.getElementById(\'grupa\');
 		
-		// Godina
-		god.options.length=0;
-		god.options[0] = new Option("- - - -", 0);
-		if (sel == 0) {
-			god.disabled=true;
-		} else if (sel == 1) {
-			god.options[1] = new Option("1. Semestar", 1);
-			god.options[2] = new Option("2. Semestar", 2);
-			god.disabled=false;
-		} else {
-			for (i=3; i<=9; i++) {
-				god.options[i-2] = new Option(i+". Semestar", i);
-			}
-			god.disabled=false;
-		}
-
-		ucitajGrupe(document.getElementById('studij'));
-	}
-		
-	function ucitajGrupe(ob) {
-		selGod = getSelected(ob);
-		selStu = getSelected(document.getElementById('studij'));
-		
-		if (selStu && selGod) {
-			// Grupe
-			gr = document.getElementById('grupa');
-			gr.options.length=0;
-			gr.options[0] = new Option("- - - -", 0);
-			if (labgrupe[selStu+"-"+selGod]) {
-				for (i=1; i<=labgrupe[selStu+"-"+selGod].length; i++) {
-					gr.options[i] = new Option(labgrupe[selStu+"-"+selGod][i-1].naziv, labgrupe[selStu+"-"+selGod][i-1].id);
+				// Godina
+				god.options.length=0;
+				god.options[0] = new Option("- - - -", 0);
+				if (sel == 0) {
+					god.disabled=true;
+				} else if (sel == 1) {
+					god.options[1] = new Option("1. Semestar", 1);
+					god.options[2] = new Option("2. Semestar", 2);
+					god.disabled=false;
+				} else {
+					for (i=3; i<=9; i++) {
+						god.options[i-2] = new Option(i+". Semestar", i);
+					}
+					god.disabled=false;
 				}
-				gr.disabled=false;
-			} else {
-				gr.disabled=true;
-			}
-		}
-	}
 
-	function getSelected(ob) {
-		for (i = 0; i < ob.options.length; i++) {
-			if (ob.options[i].selected) {
-				return ob.options[i].value;
+				ucitajGrupe(document.getElementById('studij'));
 			}
-		}
-		<?
-		if ($lgS = myquery("SELECT lg.naziv, lg.id, pk.studij, pk.semestar FROM ponudakursa pk, labgrupa lg WHERE lg.predmet = pk.id ORDER BY lg.naziv ASC")) {
-			while ($row = mysql_fetch_array($lgS)) {
-				$labG[$row['studij'].'-'.$row['semestar']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
+		
+			function ucitajGrupe(ob) {
+				selGod = getSelected(ob);
+				selStu = getSelected(document.getElementById('studij'));
+		
+				if (selStu && selGod) {
+					// Grupe
+					gr = document.getElementById('grupa');
+					gr.options.length=0;
+					gr.options[0] = new Option("- - - -", 0);
+					if (labgrupe[selStu+"-"+selGod]) {
+						for (i=1; i<=labgrupe[selStu+"-"+selGod].length; i++) {
+							gr.options[i] = new Option(labgrupe[selStu+"-"+selGod][i-1].naziv, labgrupe[selStu+"-"+selGod][i-1].id);
+						}
+						gr.disabled=false;
+					} else {
+						gr.disabled=true;
+					}
+				}
 			}
-			echo "var labgrupe = ".json_encode($labG).";";
-		}
-	?>
-</script>
-<div class = "velikiNaslov">
-	Definisi novi raspored:
-</div>
-<hr style = "border-top: 1px dotted #ccc; color: #FFF">
+
+			function getSelected(ob) {
+				for (i = 0; i < ob.options.length; i++) {
+					if (ob.options[i].selected) {
+						return ob.options[i].value;
+					}
+				}
+			}
+			<?
+			if ($lgS = myquery("SELECT lg.naziv, lg.id, pk.studij, pk.semestar FROM ponudakursa pk, labgrupa lg WHERE lg.predmet = pk.id ORDER BY lg.naziv ASC")) {
+				while ($row = mysql_fetch_array($lgS)) {
+					$labG[$row['studij'].'-'.$row['semestar']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
+				}
+				echo "var labgrupe = ".$json->encode($labG).";";
+			}
+			?>
+		</script>
+		<div class = "velikiNaslov">
+			Definisi novi raspored:
+		</div>
+		<hr style = "border-top: 1px dotted #ccc; color: #FFF">
 			
-<form name = "rasP" id = "rasP" action="./?sta=admin&uradi=sale" method = "post">
-<div>
-	<div class = "formLS">Akademska godina:</div>
-	<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"))?></div>
-	<div class = "razmak"></div>
-	<div class = "formLS">Smijer:</div>
-	<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), ' onchange="promjenaGodine(this)"')?></div>
-	<div class = "razmak"></div>
-	<div class = "formLS">Godina studija:</div>
-	<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" onchange="ucitajGrupe(this);" disabled="disabled"><option value="0">- - - -</option></select></div>
-	<div class = "razmak"></div>
-	<div class = "formLS">Grupa:</div>
-	<div class = "formRS"><select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select></div>
-	<div class = "razmak"></div>
-	<br/>
-	<script language="JavaScript" type="text/javascript">
-		function addElement(inEl, elTag, inHtml, otherD) {
-			parentEl = document.getElementById(inEl);
-			newEl = document.createElement(elTag);
-		/*if (otherD.id)
-											newEl.setAttribute(\'id\', otherD.id);
-										if (otherD.class)
-											newEl.setAttribute(\'class\', otherD.id);
-										if (otherD.style)
-											newEl.setAttribute(\'style\', otherD.style);*/
-			for (index in otherD)
-				newEl.setAttribute(index, otherD[index]);
-			newEl.innerHTML = inHtml;
-			parentEl.appendChild(newEl);
-		}
-
-		var dani = {1:"ponedeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
-		var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
-
-		function addPredmet(id) {
-			nums[id] += 1;
-			addHtml = '<a style = "font-size: 13px; text-decoration: none; text-align: right" href = "javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">[-]</a><div class = "cRDanNoBox">'+nums[id]+'<br/></div><div class = "cRDanContBox">Predmet:<br/><select name="predmet['+id+']['+nums[id]+']"><option></option></select><br/>Vrijeme:<br/><span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>-<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span></div><div class = "razmak"></div>';
-
-			addElement(dani[id],\'div\',addHtml,{id:\'mkdiv\'});
-		}
-	</script>
-
-	<div class = "cRDanBox" id="ponedeljak">
-		<span style = "float: left"><b>Ponedjeljak</b></span> <span style = "float: right"><a href="javascript:addPredmet(1);">[+]</a></span><br/><br/>
-
-		<!-- ################################################################## -->
-		<div class = "cRDanNoBox">1</div>
-		<div class = "cRDanContBox">
-			Predmet:<br/>
-			<select name="predmet[1][1]">
-				<option></option>
-			</select>
+		<form name = "rasP" id = "rasP" action="" method = "post">
+			<div class = "formLS">Akademska godina:</div>
+			<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"), false, $disable_all)?></div>
+			<div class = "razmak"></div>
+			<div class = "formLS">Smijer:</div>
+			<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), 'onchange="promjenaGodine(this)"', $disable_all)?></div>
+			<div class = "razmak"></div>
+			<div class = "formLS">Godina studija:</div>
+			<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" onchange="ucitajGrupe(this);" disabled="disabled"><option value="0">- - - -</option></select></div>
+			<div class = "razmak"></div>
+			<div class = "formLS">Grupa:</div>
+			<div class = "formRS"><select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select></div>
+			<div class = "razmak"></div>
 			<br/>
-			Vrijeme:<br/>
-			<span>
-				<select name="h[1][1]">
-					<option></option>
-				</select>
-			</span>
-			<span>
-				<select name="min[1][1]">
-					<option></option>
-				</select>
-			</span>
-		</div>
+			<script language="JavaScript" type="text/javascript">
+				function addElement(inEl, elTag, inHtml, otherD) {
+					parentEl = document.getElementById(inEl);
+					newEl = document.createElement(elTag);
+					/*if (otherD.id)
+						newEl.setAttribute(\'id\', otherD.id);
+					if (otherD.class)
+						newEl.setAttribute(\'class\', otherD.id);
+					if (otherD.style)
+						newEl.setAttribute(\'style\', otherD.style);*/
+					for (index in otherD)
+						newEl.setAttribute(index, otherD[index]);
+					newEl.innerHTML = inHtml;
+					parentEl.appendChild(newEl);
+				}
 
-		<div class = "razmak"></div>
-	</div>
+				var dani = {1:"ponedeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
+				var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
 
-	<div class = "cRDanBox" id="utorak">
-		<span style = "float: left"><b>Utorak</b></span> <span style = "float: right"><a href="javascript:addPredmet(2);">[+]</a></span><br/><br/>
+				function addPredmet(id) {
+					nums[id] += 1;
+					addHtml = '<a style = "font-size: 13px; text-decoration: none; text-align: right" href = "javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">[-]</a><div class = "cRDanNoBox">'+nums[id]+'<br/></div><div class = "cRDanContBox">Predmet:<br/><select name="predmet['+id+']['+nums[id]+']"><option></option></select><br/>Vrijeme:<br/><span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>-<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span></div><div class = "razmak"></div>';
 
-		<div class = "cRDanNoBox">1</div>
-		<div class = "cRDanContBox">
-			Predmet:<br/>
-			<select name="predmet[2][1]">
-				<option></option>
-			</select>
-			<br/>
-			Vrijeme:<br/>
-			<span>
-				<select name="h[2][1]">
-					<option></option>
-				</select>
-			</span>
-			<span>
-				<select name="min[2][1]">
-					<option></option>
-				</select>
-			</span>
-		</div>
-	</div>
+					addElement(dani[id],'div',addHtml,{id:'mkdiv'});
+				}
+			</script>
 
-	<div class = "cRDanBox" id="srijeda">
-		<span style = "float: left"><b>Srijeda</b></span> <span style = "float: right"><a href="javascript:addPredmet(3);">[+]</a></span><br/><br/>
+			<input type = "submit" name = "kl" value = "Ucitaj predmete"/>
+			<br/><br/>
 
-		<div class = "cRDanNoBox">1</div>
-		<div class = "cRDanContBox">
-			Predmet:<br/>
-			<select name="predmet[3][1]">
-				<option></option>
-			</select>
-			<br/>
-			Vrijeme:<br/>
-			<span>
-				<select name="h[3][1]">
-					<option></option>
-				</select>
-			</span>
-			<span>
-				<select name="min[3][1]">
-					<option></option>
-				</select>
-			</span>
-		</div>
-	</div>
+			<div style = "display: <?=$unlock_div?>">
+			
+				<div class = "cRDanBox" id="ponedeljak">
+					<span style = "float: left"><b>Ponedjeljak</b></span> <span style = "float: right"><a href="javascript:addPredmet(1);">[+]</a></span><br/><br/>
+					<!-- ################################################################## -->
+					<div class = "cRDanNoBox">1</div>
+					<div class = "cRDanContBox">Predmet:<br/>
+						<select name="predmet[1][1]">
+							<option></option>
+						</select>
+						<br/>
+						Vrijeme:<br/>
+						<span>
+							<select name="h[1][1]">
+								<option></option>
+							</select>
+						</span>
+						<span>
+							<select name="min[1][1]">
+								<option></option>
+							</select>
+						</span>
+					</div>
+				</div>
 
-	<div class = "cRDanBox" id="cetvrtak">
-		<span style = "float: left"><b>Četvrtak</b></span> <span style = "float: right"><a href="javascript:addPredmet(4);">[+]</a></span><br/><br/>
+				<div class = "cRDanBox" id="utorak">
+					<span style = "float: left"><b>Utorak</b></span> <span style = "float: right"><a href="javascript:addPredmet(2);">[+]</a></span><br/><br/>
 
-		<div class = "cRDanNoBox">1</div>
-		<div class = "cRDanContBox">
-			Predmet:<br/>
-			<select name="predmet[4][1]">
-				<option></option>
-			</select>
-			<br/>
-			Vrijeme:<br/>
-			<span>
-				<select name="h[4][1]">
-					<option></option>
-				</select>
-			</span>
-			<span>
-				<select name="min[4][1]">
-					<option></option>
-				</select>
-			</span>
-		</div>
-	</div>
+					<div class = "cRDanNoBox">1</div>
+					<div class = "cRDanContBox">
+						Predmet:<br/>
+						<select name="predmet[2][1]">
+							<option></option>
+						</select>
+						<br/>
+						Vrijeme:<br/>
+						<span>
+							<select name="h[2][1]">
+								<option></option>
+							</select>
+						</span>
+						<span>
+							<select name="min[2][1]">
+								<option></option>
+							</select>
+						</span>
+					</div>
+				</div>
+					
+				<div class = "cRDanBox" id="srijeda">
+					<span style = "float: left"><b>Srijeda</b></span> <span style = "float: right"><a href="javascript:addPredmet(3);">[+]</a></span><br/><br/>
+					<div class = "cRDanNoBox">1</div>
+					<div class = "cRDanContBox">
+						Predmet:<br/>
+						<select name="predmet[3][1]">
+							<option></option>
+						</select>
+						<br/>
+						Vrijeme:<br/>
+						<span>
+							<select name="h[3][1]">
+								<option></option>
+							</select>
+						</span>
+						<span>
+							<select name="min[3][1]">
+								<option></option>
+							</select>
+						</span>
+					</div>
+				</div>
 
-	<div class = "cRDanBox" id="petak">
-		<span style = "float: left"><b>Petak</b></span> <span style = "float: right"><a href="javascript:addPredmet(5);">[+]</a></span><br/><br/>
+				<div class = "cRDanBox" id="cetvrtak">
+					<span style = "float: left"><b>Četvrtak</b></span> <span style = "float: right"><a href="javascript:addPredmet(4);">[+]</a></span><br/><br/>
+					<div class = "cRDanNoBox">1</div>
+					<div class = "cRDanContBox">
+						Predmet:<br/>
+						<select name="predmet[4][1]">
+							<option></option>
+						</select>
+						<br/>
+						Vrijeme:<br/>
+						<span>
+							<select name="h[4][1]">
+								<option></option>
+							</select>
+						</span>
+						<span>
+							<select name="min[4][1]">
+								<option></option>
+							</select>
+						</span>
+					</div>
+				</div>
 
-		<div class = "cRDanNoBox">1</div>
-		<div class = "cRDanContBox">
-			Predmet:<br/>
-			<select name="predmet[5][1]">
-				<option></option>
-			</select>
-			<br/>
-			Vrijeme:<br/>
-			<span>
-				<select name="h[5][1]">
-					<option></option>
-				</select>
-			</span>
-			<span>
-				<select name="min[5][1]">
-					<option></option>
-				</select>
-			</span>
-		</div>
-	</div>
+				<div class = "cRDanBox" id="petak">
+					<span style = "float: left"><b>Petak</b></span> <span style = "float: right"><a href="javascript:addPredmet(5);">[+]</a></span><br/><br/>
+					<div class = "cRDanNoBox">1</div>
+					<div class = "cRDanContBox">
+						Predmet:<br/>
+						<select name="predmet[5][1]">
+							<option></option>
+						</select>
+						<br/>
+						Vrijeme:<br/>
+						<span>
+							<select name="h[5][1]">
+								<option></option>
+							</select>
+						</span>
+						<span>
+							<select name="min[5][1]">
+								<option></option>
+							</select>
+						</span>
+					</div>
+				</div>
 
-	<div class = "razmak"></div>
-	<input type = "submit" name = "submit_sala" value = "Spremi" onClick = "provjeriPolja(); return false;">
-</div>
-</form>
+				<div class = "razmak"></div>
+	
+				<input type = "submit" name = "submit" value = "Spremi">
+			</div>
+		</form>
 		<?
 	} // if ($POST) ... else ...
 
@@ -530,7 +542,19 @@ function napraviRaspored() {
 
 //Uredi raspored
 function urediRaspored() {
-	return "Modifikujemo raspored";
+	if($_POST) {
+		echo "dddd";
+	} else {
+		?>
+		<form action = "" method = "post">
+			
+		
+		
+			<input type = "submit" name = "a" value = "PPP"/>
+			<input type = "submit" name = "a2" value = "PPP2"/>
+		</form>
+		<?
+	}
 } //Kraj uredjivanja rasporeda
 
 
