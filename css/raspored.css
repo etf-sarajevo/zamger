@@ -201,17 +201,14 @@ input, select {
 	background: #FBFAD0;
 	margin-right: 2px;
 }
-.cRDanNoBox {
-	width: 9%;
-	height: 65px;
-	font: 20px Arial, Helvetica, sans-serif;
-	border-right: 1px solid #666666;
-	float: left;
-	margin: 2px 2px 0px 0px;
-}
-.cRDanContBox {
-	width: 86%;
-	height: 65px;
+.cRDanContBoxPredmet {
 	padding: 2px;
-	border-bottom: 1px dotted #E9E301;
+	border: 1px solid #EEEFB6;
+	background-color: #FDFCE8;
+}
+.cRDanContBoxV {
+	float: left;
+}
+.cRDanContBoxS {
+	float: right;
 }

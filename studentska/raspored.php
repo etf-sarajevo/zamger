@@ -132,7 +132,7 @@ function napraviSale() {
 				
 				document.saleF.submit_sala.value="Modifikuj salu";
 				
-				document.getElementById(idM).innerHTML = "(Modifikacija sale: "+ sala +") <span style = \"font-size:10px; font-weight:normal\">| <a href = \"\">Ponisti modifikaciju</a></span>";
+				document.getElementById(idM).innerHTML = "(Modifikacija sale: "+ sala +") <span style = \"font-size:10px; font-weight:normal\">| <a href = \"?sta=studentska/raspored&uradi=sale\">Ponisti modifikaciju</a></span>";
 				
 				document.saleF.modify.value = idS;
 			}
@@ -276,8 +276,48 @@ function brisiSalu($idSale) {
 }
 
 //Ispis <option> predmeta vezanih za neki smijer i godinu
-function ispisiPredmeteVezaneZaSmijer($smijer, $godina = false) {
-
+function ispisiElementDana($dan, $int, $grupa = false) {
+	$danDivId = strtolower($dan);
+	
+	echo '
+		<div class = "cRDanBox" id="'.$danDivId.'">
+			<span style = "float: left"><b>'.$dan.'</b></span> 
+			<span style = "float: right"><a href="javascript:addPredmet('.$int.');">[+]</a></span>
+			<br/><br/>
+			<!-- ################################################################## -->
+			<!--<div class = "cRDanNoBox">1</div>-->
+			<div class = "cRDanContBoxPredmet">
+				<input type="checkbox" name = "izborniPredmet" onClick = "javascript:izaberiGrupu('.$grupa.');"/> Izborni Predmet
+				<p>
+				<select name="predmet['.$int.'][1]">
+					<option></option>
+				</select>
+				</p>
+				<input type="radio" name="tipP['.$int.'][1]" VALUE="P">Predavanje<BR>
+				<input type="radio" name="tipP['.$int.'][1]" VALUE="T">Tutorial<BR>
+				<input type="radio" name="tipP['.$int.'][1]" VALUE="L">Labaratorijska vjezba
+			</div>
+			<span class = "cRDanContBoxV">
+				Vrijeme:<br/>
+				<span>
+					<select name="h['.$int.'][1]">
+						<option></option>
+					</select>
+				</span>
+				<span>
+					<select name="min['.$int.'][1]">
+						<option></option>
+					</select>
+				</span>
+			</span>
+			<span class = "cRDanContBoxS">
+				Sala:<br/>
+				<select name="s['.$int.'][1]">
+					<option></option>
+				</select>
+			</span>
+		</div>
+	';
 }
 
 //Kreiraj raspored
@@ -324,7 +364,11 @@ function napraviRaspored() {
 					god.disabled=false;
 				}
 
-				ucitajGrupe(document.getElementById('studij'));
+				
+			}
+			
+			function izaberiGrupu(elem) {
+				ucitajGrupe(elem);
 			}
 		
 			function ucitajGrupe(ob) {
@@ -398,12 +442,25 @@ function napraviRaspored() {
 					parentEl.appendChild(newEl);
 				}
 
-				var dani = {1:"ponedeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
+				var dani = {1:"ponedjeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
 				var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
 
 				function addPredmet(id) {
 					nums[id] += 1;
-					addHtml = '<a style = "font-size: 13px; text-decoration: none; text-align: right" href = "javascript:void(0)" onclick="this.parentNode.parentNode.removeChild(this.parentNode);">[-]</a><div class = "cRDanNoBox">'+nums[id]+'<br/></div><div class = "cRDanContBox">Predmet:<br/><select name="predmet['+id+']['+nums[id]+']"><option></option></select><br/>Vrijeme:<br/><span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>-<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span></div><div class = "razmak"></div>';
+					addHtml = '<div class="razmak"></div><hr><div class = "cRDanContBoxPredmet">'+
+						'<input type="checkbox" name = "izborniPredmet"/> Izborni Predmet'+
+						'<p><select name="predmet['+id+']['+nums[id]+']"><option></option></select></p>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="P">Predavanje<BR>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="T">Tutorial<BR>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="L">Labaratorijska vjezba'+
+						'</div>'+
+						'<span class = "cRDanContBoxV">Vrijeme:<br/>'+
+						'<span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>'+
+						'<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span>'+
+						'</span>'+
+						'<span class = "cRDanContBoxS">Sala:<br/>'+
+						'<select name="salaP['+id+']['+nums[id]+']"><option></option></select>'+
+						'</span>';
 
 					addElement(dani[id],'div',addHtml,{id:'mkdiv'});
 				}
@@ -413,125 +470,14 @@ function napraviRaspored() {
 			<br/><br/>
 
 			<div style = "display: <?=$unlock_div?>">
-			
-				<div class = "cRDanBox" id="ponedeljak">
-					<span style = "float: left"><b>Ponedjeljak</b></span> <span style = "float: right"><a href="javascript:addPredmet(1);">[+]</a></span><br/><br/>
-					<!-- ################################################################## -->
-					<div class = "cRDanNoBox">1</div>
-					<div class = "cRDanContBox">Predmet:<br/>
-						<select name="predmet[1][1]">
-							<option></option>
-						</select>
-						<br/>
-						Vrijeme:<br/>
-						<span>
-							<select name="h[1][1]">
-								<option></option>
-							</select>
-						</span>
-						<span>
-							<select name="min[1][1]">
-								<option></option>
-							</select>
-						</span>
-					</div>
-				</div>
-
-				<div class = "cRDanBox" id="utorak">
-					<span style = "float: left"><b>Utorak</b></span> <span style = "float: right"><a href="javascript:addPredmet(2);">[+]</a></span><br/><br/>
-
-					<div class = "cRDanNoBox">1</div>
-					<div class = "cRDanContBox">
-						Predmet:<br/>
-						<select name="predmet[2][1]">
-							<option></option>
-						</select>
-						<br/>
-						Vrijeme:<br/>
-						<span>
-							<select name="h[2][1]">
-								<option></option>
-							</select>
-						</span>
-						<span>
-							<select name="min[2][1]">
-								<option></option>
-							</select>
-						</span>
-					</div>
-				</div>
-					
-				<div class = "cRDanBox" id="srijeda">
-					<span style = "float: left"><b>Srijeda</b></span> <span style = "float: right"><a href="javascript:addPredmet(3);">[+]</a></span><br/><br/>
-					<div class = "cRDanNoBox">1</div>
-					<div class = "cRDanContBox">
-						Predmet:<br/>
-						<select name="predmet[3][1]">
-							<option></option>
-						</select>
-						<br/>
-						Vrijeme:<br/>
-						<span>
-							<select name="h[3][1]">
-								<option></option>
-							</select>
-						</span>
-						<span>
-							<select name="min[3][1]">
-								<option></option>
-							</select>
-						</span>
-					</div>
-				</div>
-
-				<div class = "cRDanBox" id="cetvrtak">
-					<span style = "float: left"><b>Četvrtak</b></span> <span style = "float: right"><a href="javascript:addPredmet(4);">[+]</a></span><br/><br/>
-					<div class = "cRDanNoBox">1</div>
-					<div class = "cRDanContBox">
-						Predmet:<br/>
-						<select name="predmet[4][1]">
-							<option></option>
-						</select>
-						<br/>
-						Vrijeme:<br/>
-						<span>
-							<select name="h[4][1]">
-								<option></option>
-							</select>
-						</span>
-						<span>
-							<select name="min[4][1]">
-								<option></option>
-							</select>
-						</span>
-					</div>
-				</div>
-
-				<div class = "cRDanBox" id="petak">
-					<span style = "float: left"><b>Petak</b></span> <span style = "float: right"><a href="javascript:addPredmet(5);">[+]</a></span><br/><br/>
-					<div class = "cRDanNoBox">1</div>
-					<div class = "cRDanContBox">
-						Predmet:<br/>
-						<select name="predmet[5][1]">
-							<option></option>
-						</select>
-						<br/>
-						Vrijeme:<br/>
-						<span>
-							<select name="h[5][1]">
-								<option></option>
-							</select>
-						</span>
-						<span>
-							<select name="min[5][1]">
-								<option></option>
-							</select>
-						</span>
-					</div>
-				</div>
-
+				<?
+				ispisiElementDana("Ponedjeljak", 1, $_POST['studij']);
+				ispisiElementDana("Utorak", 2, $_POST['studij']);
+				ispisiElementDana("Srijeda", 3, $_POST['studij']);
+				ispisiElementDana("Cetvrtak", 4, $_POST['studij']);
+				ispisiElementDana("Petak", 5, $_POST['studij']);
+				?>
 				<div class = "razmak"></div>
-	
 				<input type = "submit" name = "submit" value = "Spremi">
 			</div>
 		</form>
@@ -547,9 +493,6 @@ function urediRaspored() {
 	} else {
 		?>
 		<form action = "" method = "post">
-			
-		
-		
 			<input type = "submit" name = "a" value = "PPP"/>
 			<input type = "submit" name = "a2" value = "PPP2"/>
 		</form>
