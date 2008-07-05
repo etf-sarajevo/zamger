@@ -276,7 +276,7 @@ function brisiSalu($idSale) {
 }
 
 //Ispis <option> predmeta vezanih za neki smijer i godinu
-function ispisiElementDana($dan, $int, $grupa = false) {
+function ispisiElementDana($dan, $int, $grupa, $semestar) {
 	$danDivId = strtolower($dan);
 	
 	echo '
@@ -287,7 +287,8 @@ function ispisiElementDana($dan, $int, $grupa = false) {
 			<!-- ################################################################## -->
 			<!--<div class = "cRDanNoBox">1</div>-->
 			<div class = "cRDanContBoxPredmet">
-				<input type="checkbox" name = "izborniPredmet" onClick = "javascript:izaberiGrupu('.$grupa.');"/> Izborni Predmet
+				<input type="checkbox" name = "izborniPredmet" onClick = "javascript:izaberiGrupu('.$grupa.', '.$semestar.');"/> Izborni Predmet<br/>
+				<select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select>
 				<p>
 				<select name="predmet['.$int.'][1]">
 					<option></option>
@@ -367,13 +368,13 @@ function napraviRaspored() {
 				
 			}
 			
-			function izaberiGrupu(elem) {
-				ucitajGrupe(elem);
+			function izaberiGrupu(stud, god) {
+				ucitajGrupe(stu,god);
 			}
 		
-			function ucitajGrupe(ob) {
-				selGod = getSelected(ob);
-				selStu = getSelected(document.getElementById('studij'));
+			function izaberiGrupu(selStu,selGod) {
+				//selGod = getSelected(ob);
+				//selStu = getSelected(document.getElementById('studij'));
 		
 				if (selStu && selGod) {
 					// Grupe
@@ -420,10 +421,7 @@ function napraviRaspored() {
 			<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), 'onchange="promjenaGodine(this)"', $disable_all)?></div>
 			<div class = "razmak"></div>
 			<div class = "formLS">Godina studija:</div>
-			<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" onchange="ucitajGrupe(this);" disabled="disabled"><option value="0">- - - -</option></select></div>
-			<div class = "razmak"></div>
-			<div class = "formLS">Grupa:</div>
-			<div class = "formRS"><select name="grupa" id="grupa" disabled="disabled"><option value="0">- - - -</option></select></div>
+			<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" disabled="disabled"><option value="0">- - - -</option></select></div>
 			<div class = "razmak"></div>
 			<br/>
 			<script language="JavaScript" type="text/javascript">
@@ -471,11 +469,11 @@ function napraviRaspored() {
 
 			<div style = "display: <?=$unlock_div?>">
 				<?
-				ispisiElementDana("Ponedjeljak", 1, $_POST['studij']);
-				ispisiElementDana("Utorak", 2, $_POST['studij']);
-				ispisiElementDana("Srijeda", 3, $_POST['studij']);
-				ispisiElementDana("Cetvrtak", 4, $_POST['studij']);
-				ispisiElementDana("Petak", 5, $_POST['studij']);
+				ispisiElementDana("Ponedjeljak", 1, $_POST['studij'], $_POST['godina']);
+				ispisiElementDana("Utorak", 2, $_POST['studij'], $_POST['godina']);
+				ispisiElementDana("Srijeda", 3, $_POST['studij'], $_POST['godina']);
+				ispisiElementDana("Cetvrtak", 4, $_POST['studij'], $_POST['godina']);
+				ispisiElementDana("Petak", 5, $_POST['studij'], $_POST['godina']);
 				?>
 				<div class = "razmak"></div>
 				<input type = "submit" name = "submit" value = "Spremi">
