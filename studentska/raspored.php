@@ -71,17 +71,20 @@ function selectOption($tablica, $elementi, $values, $name = false) {
 	if($values['optionV'] == 0 || $values['optionV'] == null) {
 		$values['optionV'] = 0;
 		$values['optionVv'] = "- - -";
+		$sqlDo = "false";
 	}
 	if($name != false) {
 		$ret1 .= '<select name = "'.$name.'" id = "'.$name.'" '.$values['ajax'].' '.$values['disable'].'><option value="'.$values['optionV'].'">'.$values['optionVv'].'</option>';
 	} else {
 		$ret1 .= '<select name = "'.$tablica.'" id = "'.$tablica.'" '.$values['ajax'].' '.$values['disable'].'><option value="'.$values['optionV'].'">'.$values['optionVv'].'</option>';
 	}
-	
-	$selectO = myquery("SELECT * FROM ".$tablica." ");
-	while($sO = mysql_fetch_array($selectO)) {
-		$ret1 .= '<option value = "'.my_escape($sO[$elementi[0]], true).'" >'.my_escape($sO[$elementi[1]]).'</option>';
+	if($sqlDo != false) {
+		$selectO = myquery("SELECT * FROM ".$tablica." ");
+		while($sO = mysql_fetch_array($selectO)) {
+			$ret1 .= '<option value = "'.my_escape($sO[$elementi[0]], true).'" >'.my_escape($sO[$elementi[1]]).'</option>';
+		}
 	}
+	
 	$ret1 .= '</select>';
 	
 	return $ret1;
@@ -341,7 +344,6 @@ function napraviRaspored() {
 		$disable_all = "DISABLED";
 		$unlock_div = "";
 		
-		echo "ppp: ".$_POST['akademska_godina'];
 	}
 
 	if($_POST['submit']) {
@@ -422,8 +424,11 @@ function napraviRaspored() {
 			}
 			
 			//Popunjavanje hide polja, da bi se mogla proslijediti vrijednost kada se pritisne dugme send
-			function popuniPolje(imePolja) {
-				alert("vrijednost je: "+imePolja.value.value);
+			function popuniPolje(vrijednost, imePolja) {
+				sel = getSelected(vrijednost);
+				vl = vrijednost.options[sel].text;
+				document.getElementById(imePolja).value = vl;
+				document.getElementById(imePolja+"a").value = sel;
 			}
 		</script>
 		<div class = "velikiNaslov">
@@ -433,15 +438,29 @@ function napraviRaspored() {
 			
 		<form name = "rasP" id = "rasP" action="" method = "post">
 			<div class = "formLS">Akademska godina:</div>
-			<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"), array("ajax"=>'onChange="popuniPolje(this)"', "disable"=>$disable_all, ))?>
-			<input type = "textbox" id= "polje1"/>
+			<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"), array("ajax"=>'onChange="popuniPolje(this, \'polje1\')"', "disable"=>$disable_all, "optionV"=>$_POST['polje1a'], "optionVv"=>$_POST['polje1']))?>
+			<input type = "textbox" name = "polje1a" id= "polje1a" style = "display: none"/><input type = "textbox" name = "polje1" id= "polje1" style = "display: none"/>
 			</div>
 			<div class = "razmak"></div>
 			<div class = "formLS">Smijer:</div>
-			<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), array("ajax"=>'onChange="promjenaGodine(this); prikaziDugme()"',"disable"=>$disable_all))?></div>
+			<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), array("ajax"=>'onChange="promjenaGodine(this); popuniPolje(this, \'polje2\'); prikaziDugme()"', "disable"=>$disable_all, "optionV"=>$_POST['polje2a'], "optionVv"=>$_POST['polje2']))?>
+			<input type = "textbox" name = "polje2a" id= "polje2a" style = "display: none"/><input type = "textbox" name = "polje2" id= "polje2" style = "display: none"/>
+			</div>
 			<div class = "razmak"></div>
 			<div class = "formLS">Godina studija:</div>
-			<div class = "formRS" id = "godinaSCSS"><select name="godina" id="godina" onChange = "prikaziDugme()" disabled="disabled"><option value="0">- - -</option></select></div>
+			<div class = "formRS" id = "godinaSCSS">
+				<select name="godina" id="godina" onChange = "prikaziDugme(); popuniPolje(this, 'polje3')" disabled="disabled">
+					<?
+					if($_POST['kl']) {
+						$option = '<option value = "'.$_POST['polje3a'].'">'.$_POST['polje3'].'</option>';
+					} else {
+						$option = '<option value="0">- - -</option>';
+					}
+					echo $option;
+					?>
+				</select>
+			<input type = "textbox" name = "polje3a" id= "polje3a" style = "display: none"/><input type = "textbox" name = "polje3" id= "polje3" style = "display: none"/>
+			</div>
 			<div class = "razmak"></div>
 			<br/>
 			<script language="JavaScript" type="text/javascript">
