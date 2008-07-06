@@ -1,4 +1,5 @@
 <LINK href="css/raspored.css" rel="stylesheet" type="text/css">
+
 <?
 //Poziva json klasu
 require_once "classes/class.json.php";
