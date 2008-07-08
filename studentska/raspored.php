@@ -1,5 +1,4 @@
 <LINK href="css/raspored.css" rel="stylesheet" type="text/css">
-
 <?
 //Poziva json klasu
 require_once "classes/class.json.php";
@@ -63,12 +62,6 @@ function pozicija($lokacija = false, $sel = false) {
 	
 //Select option u formi
 function selectOption($tablica, $elementi, $values, $name = false) {
-	/*$vales je niz ostalih elemenata
-	0 - ajax/javascript element
-	1 - disable/enable polje
-	2 - value vrijednost option-a
-	3 - ispis vrijednosti option-a
-	*/
 	if($values['optionV'] == 0 || $values['optionV'] == null) {
 		$values['optionV'] = 0;
 		$values['optionVv'] = "- - -";
@@ -286,15 +279,20 @@ function brisiSalu($idSale) {
 	}
 }
 
+//Samo vraca predmete
+function ispisiPredmeteBox($studij, $semestar, $akademska) {
+	$selectPredmeteDB = myquery("SELECT a.predmet, b.kratki_naziv FROM ponudakursa a, predmet b WHERE a.studij = '".my_escape($studij)."' AND a.semestar = '".my_escape($semestar)."' AND a.obavezan = '1' AND a.akademska_godina = '".$akademska."' AND b.id=a.predmet");
+	while($sPDB = mysql_fetch_array($selectPredmeteDB)) {
+		$ispis .= '<option value = "'.$sPDB['predmet'].'">'.$sPDB['kratki_naziv'].'</option>';
+	}
+	
+	return $ispis;
+}
+
 //Ispis <option> predmeta vezanih za neki smijer i godinu
 function ispisiElementDana($dan, $int, $studij, $semestar, $akademska) {
+
 	$danDivId = strtolower($dan);
-	
-	$selectPredmeteDB = myquery("SELECT predmet FROM ponudakursa WHERE studij = '".my_escape($studij)."' AND semestar = '".my_escape($semestar)."' AND obavezan = '1' AND akademska_godina = '".$akademska."' ");
-	while($sPDB = mysql_fetch_array($selectPredmeteDB)) {
-		$predmet = $sPDB['predmet'];
-		$ispis .= '<option value = "'.$predmet.'">'.$predmet.'</option>';
-	}
 	
 	echo '
 		<div class = "cRDanBox" id="'.$danDivId.'">
@@ -304,13 +302,11 @@ function ispisiElementDana($dan, $int, $studij, $semestar, $akademska) {
 			<!-- ################################################################## -->
 			<!--<div class = "cRDanNoBox">1</div>-->
 			<div class = "cRDanContBoxPredmet">
-				<input type="checkbox" name = "izborniPredmet['.$int.'][1]" id = "izborniPredmet['.$int.'][1]" onClick = "javascript:izaberiGrupu('.$studij.', '.$semestar.', '.$int.', 1);"/> Izborni Predmet<br/>
-				<select name="grupa['.$int.'][1]" id="grupa['.$int.'][1]" disabled="disabled" onChange = "alert(\'Selektovano!\')"><option value="0">- - - -</option></select>
-				<p>
+				<div id = "selektPredmeta" style = "margin: 5px 0px 5px">
 				<select name="predmet['.$int.'][1]">
-					'.$ispis.'
+					'.ispisiPredmeteBox($studij, $semestar, $akademska).'
 				</select>
-				</p>
+				</div>
 				<input type="radio" name="tipP['.$int.'][1]" VALUE="P">Predavanje<BR>
 				<input type="radio" name="tipP['.$int.'][1]" VALUE="T">Tutorial<BR>
 				<input type="radio" name="tipP['.$int.'][1]" VALUE="L">Labaratorijska vjezba
@@ -332,25 +328,116 @@ function ispisiElementDana($dan, $int, $studij, $semestar, $akademska) {
 	';
 }
 
+				
+				function predmetLista($grupa) {
+					$prS = myquery("SELECT b.id, b.kratki_naziv FROM labgrupa a, predmet b WHERE b.id = a.predmet AND a.id = '".$grupa."' ");
+					while($rW = mysql_fetch_array($prS)) {
+						$predmetLista .= '<option value = "'.$rW['id'].'">'.$rW['kratki_naziv'].'</option>';
+					}
+					
+					return $predmetLista;
+				}
+				
+				//echo "SELECT * FROM labgrupa a, predmet b, ponudakursa c WHERE b.id = a.predmet AND c.studij = '".$_POST['studij']."' AND c.semestar = '".$_POST['godina']."' AND a.predmet=c.predmet";
+				
 //Kreiraj raspored
 function napraviRaspored() {
 
-	global $json;
+	global $json, $ispis, $val;
 	
 	$unlock_div = "none";
 	$ajax = 'onChange = "javascript:promjenaGodine(\'godinaSCSS\')";';
 	
-	if($_POST) {
-		//printInfo("Sala uspjesno dodana", true);
-		$disable_all = "DISABLED";
-		$unlock_div = "";
-		
-	}
-
-	if($_POST['submit']) {
-		echo "laaa";
-	} else {
 	?>
+	<script language="JavaScript" type="text/javascript">
+		function addElement(inEl, elTag, inHtml, otherD) {
+			parentEl = document.getElementById(inEl);
+			newEl = document.createElement(elTag);
+			/*if (otherD.id)
+				newEl.setAttribute(\'id\', otherD.id);
+			if (otherD.class)
+				newEl.setAttribute(\'class\', otherD.id);
+			if (otherD.style)
+				newEl.setAttribute(\'style\', otherD.style);*/
+			for (index in otherD)
+				newEl.setAttribute(index, otherD[index]);
+			newEl.innerHTML = inHtml;
+			parentEl.appendChild(newEl);
+		}
+
+		var dani = {1:"ponedjeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
+		var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
+	</script>
+	<div class = "velikiNaslov">
+			Kreiranje novog rasporeda:
+	</div>
+	<hr style = "border-top: 1px dotted #ccc; color: #FFF">
+	<div  class = "wizardEl1" <?if($_GET['step']=='obavezni' || $_GET['step']=='izborni' || $_GET['step']=='kraj') echo 'style = "color: #8cc689; font-weight:bold"'; else if($_GET['uradi']=='novi') echo 'style = "color: #000; font-weight:bold"';?>>Osnovne postavke rasporeda</div>
+	<div  class = "wizardEl1" <?if($_GET['step']=='obavezni') echo 'style = "color: #000; font-weight:bold"'; else if($_GET['step']=='izborni' || $_GET['step']=='kraj') echo 'style = "color: #8cc689; font-weight:bold"';?>>Unos obaveznih predmeta</div>
+	<div  class = "wizardEl1" <?if($_GET['step']=='izborni') echo 'style = "color: #000; font-weight:bold"'; else if($_GET['step']=='kraj') echo 'style = "color: #8cc689; font-weight:bold"';?>>Unos izbornih predmeta</div>
+	<div  class = "wizardEl1" <?if($_GET['step']=='kraj') echo 'style = "color: #000; font-weight:bold"';?>>Generisanje rasporeda</div>
+	<div class = "razmak"></div>
+	<div id = "wizardBox">
+		<div class = "wizardBoxInner" <?if($_GET['step']=='obavezni' || $_GET['step']=='izborni' || $_GET['step']=='kraj') echo 'style = "background: #a6ffa2"'; else if($_GET['uradi']=='novi') echo 'style = "background: #fcf300"';?>></div>
+		<div class = "wizardBoxInner" <?if($_GET['step']=='obavezni') echo 'style = "background: #fcf300"'; else if($_GET['step']=='izborni' || $_GET['step']=='kraj') echo 'style = "background: #a6ffa2"';?>></div>
+		<div class = "wizardBoxInner" <?if($_GET['step']=='izborni') echo 'style = "background: #fcf300"'; else if($_GET['step']=='kraj') echo 'style = "background: #a6ffa2"';?>></div>
+		<div class = "wizardBoxInner" <?if($_GET['step']=='kraj') echo 'style = "background: #fcf300"';?>></div>
+		<div class = "razmak"></div>
+	</div>
+	<?
+	global $var;
+		
+	if($_GET['step'] == "kraj") {
+		echo "kraj, prikaze kako raspored izgleda i ispise tipku za generisanje";
+		
+	} else if($_GET['step'] == "izborni") {
+		$predmeta = $_POST['predmet'];
+		$predmeta = sizeof($predmeta);
+		
+		echo "Izabranih predmeta: ".$predmeta;
+		
+	} else if($_GET['step'] == "obavezni") {
+?>
+		<form name = "rasP" id = "rasP" action="./?sta=studentska/raspored&uradi=novi&step=izborni" method = "post">
+			<script language="JavaScript" type="text/javascript">
+				function addPredmet(id, studij, semestar) {
+					nums[id] += 1;
+					addHtml = '<div class="razmak"></div><hr><div class = "cRDanContBoxPredmet">'+
+						'<div id = "selektPredmeta" style = "margin: 5px 0px 5px"><select name="predmet['+id+']['+nums[id]+']"><?=ispisiPredmeteBox($_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);?></select></div>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="P">Predavanje<BR>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="T">Tutorial<BR>'+
+						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="L">Labaratorijska vjezba'+
+						'</div>'+
+						'<span class = "cRDanContBoxV">Vrijeme:<br/>'+
+						'<span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>'+
+						'<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span>'+
+						'</span>'+
+						'<span class = "cRDanContBoxS">Sala:<br/>'+
+						'<?=selectOption("ras_sala", array("idS", "nameS"), array(), "salaP['+id+']['+nums[id]+']")?>'+
+						'</span>';
+
+					addElement(dani[id],'div',addHtml,{id:'mkdiv'});
+				}	
+			</script>
+			<input type="hidden" name="akademska_godina" value="<?=$_POST['akademska_godina']?>" />
+			<input type="hidden" name="studij" value="<?=$_POST['studij']?>"/>
+			<input type="hidden" name="godina" value="<?=$_POST['godina']?>"/>
+<?
+		ispisiElementDana("Ponedjeljak", 1, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
+		ispisiElementDana("Utorak", 2, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
+		ispisiElementDana("Srijeda", 3, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
+		ispisiElementDana("Cetvrtak", 4, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
+		ispisiElementDana("Petak", 5, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
+			
+		echo '
+			<div class = "razmak"></div>
+			<input type = "submit" name = "submit" value = "Spremi">
+		</form>
+		';
+		
+	}else if($_GET['uradi'] == "novi") {
+?>
+	<form name = "rasP" id = "rasP" action="./?sta=studentska/raspored&uradi=novi&step=obavezni" method = "post">
 		<script language="JavaScript" type="text/javascript">
 			//Funkcija za dinamicko mijenjanje godine studija u zavisnosti od smijera
 			function promjenaGodine(ob) {
@@ -382,7 +469,7 @@ function napraviRaspored() {
 			function izaberiGrupu(selStu,selGod,dan,cas) {
 				//selGod = getSelected(ob);
 				//selStu = getSelected(document.getElementById('studij'));
-		
+				
 				if (selStu && selGod) {
 					// Grupe
 					gr = document.getElementById('grupa['+dan+']['+cas+']');
@@ -417,110 +504,69 @@ function napraviRaspored() {
 			
 			//Ako su selektovana polja studij i semestar (godina), prikazi dugme za ispis, u suprotnom, sakrij ga
 			function prikaziDugme() {
-				if(document.getElementById('godina').value != 0 && document.getElementById('studij').value != 0) {
+				if(document.getElementById('godina').value != 0 && document.getElementById('studij').value != 0 && document.getElementById('akademska_godina').value != 0) {
 					document.getElementById('popuniPredmetDiv').style.display = "";
 				} else {
 					document.getElementById('popuniPredmetDiv').style.display = "none";
 				}
 			}
 			
-			//Popunjavanje hide polja, da bi se mogla proslijediti vrijednost kada se pritisne dugme send
-			function popuniPolje(vrijednost, imePolja) {
-				sel = getSelected(vrijednost);
-				vl = vrijednost.options[sel].text;
-				document.getElementById(imePolja).value = vl;
-				document.getElementById(imePolja+"a").value = sel;
+			function posaljiPodatke() {
+				document.rasP.submit();
 			}
 		</script>
-		<div class = "velikiNaslov">
-			Definisi novi raspored:
+		<div class = "formLS">Akademska godina:</div>
+		<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"), array("ajax"=>'onChange="prikaziDugme()"'))?>
 		</div>
-		<hr style = "border-top: 1px dotted #ccc; color: #FFF">
+		<div class = "razmak"></div>
+		<div class = "formLS">Smijer:</div>
+		<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), array("ajax"=>'onChange="promjenaGodine(this); prikaziDugme()"'))?>
+		</div>
+		<div class = "razmak"></div>
+		<div class = "formLS">Godina studija:</div>
+		<div class = "formRS" id = "godinaSCSS">
+			<select name="godina" id="godina" onChange = "prikaziDugme();" disabled="disabled">
+				<option value="0">- - -</option>';
+			</select>
+		</div>
+		<div class = "razmak"></div>
+		<br/>
+		<div id = "popuniPredmetDiv" style = "display: none">
+			<input type = "submit" name = "submit" value = "Korak 2: Popuni obavezne predmete"/>
+		</div>
+<?
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	if($_POST) {
+		//printInfo("Sala uspjesno dodana", true);
+		$disable_all = "DISABLED";
+		$unlock_div = "";
+	}
+
+	if($_POST['submit']) {
+		
+	} else {
+	?>
+		
 			
-		<form name = "rasP" id = "rasP" action="" method = "post">
-			<div class = "formLS">Akademska godina:</div>
-			<div class = "formRS"><?=selectOption("akademska_godina", array("id", "naziv"), array("ajax"=>'onChange="popuniPolje(this, \'polje1\')"', "disable"=>$disable_all, "optionV"=>$_POST['polje1a'], "optionVv"=>$_POST['polje1']))?>
-			<input type = "textbox" name = "polje1a" id= "polje1a" style = "display: none"/><input type = "textbox" name = "polje1" id= "polje1" style = "display: none"/>
-			</div>
-			<div class = "razmak"></div>
-			<div class = "formLS">Smijer:</div>
-			<div class = "formRS"><?=selectOption("studij", array("id", "naziv"), array("ajax"=>'onChange="promjenaGodine(this); popuniPolje(this, \'polje2\'); prikaziDugme()"', "disable"=>$disable_all, "optionV"=>$_POST['polje2a'], "optionVv"=>$_POST['polje2']))?>
-			<input type = "textbox" name = "polje2a" id= "polje2a" style = "display: none"/><input type = "textbox" name = "polje2" id= "polje2" style = "display: none"/>
-			</div>
-			<div class = "razmak"></div>
-			<div class = "formLS">Godina studija:</div>
-			<div class = "formRS" id = "godinaSCSS">
-				<select name="godina" id="godina" onChange = "prikaziDugme(); popuniPolje(this, 'polje3')" disabled="disabled">
-					<?
-					if($_POST['kl']) {
-						$option = '<option value = "'.$_POST['polje3a'].'">'.$_POST['polje3'].'</option>';
-					} else {
-						$option = '<option value="0">- - -</option>';
-					}
-					echo $option;
-					?>
-				</select>
-			<input type = "textbox" name = "polje3a" id= "polje3a" style = "display: none"/><input type = "textbox" name = "polje3" id= "polje3" style = "display: none"/>
-			</div>
-			<div class = "razmak"></div>
-			<br/>
-			<script language="JavaScript" type="text/javascript">
-				function addElement(inEl, elTag, inHtml, otherD) {
-					parentEl = document.getElementById(inEl);
-					newEl = document.createElement(elTag);
-					/*if (otherD.id)
-						newEl.setAttribute(\'id\', otherD.id);
-					if (otherD.class)
-						newEl.setAttribute(\'class\', otherD.id);
-					if (otherD.style)
-						newEl.setAttribute(\'style\', otherD.style);*/
-					for (index in otherD)
-						newEl.setAttribute(index, otherD[index]);
-					newEl.innerHTML = inHtml;
-					parentEl.appendChild(newEl);
+
+			
+			<?
+			if($_GET['step'] == "obavezni")
+				{
+			?>
+
+			
+			<?
 				}
-
-				var dani = {1:"ponedjeljak",2:"utorak",3:"srijeda",4:"cetvrtak",5:"petak"};
-				var nums = {1:1, 2:1, 3:1, 4:1, 5:1};
-
-				function addPredmet(id, studij, semestar) {
-					nums[id] += 1;
-					addHtml = '<div class="razmak"></div><hr><div class = "cRDanContBoxPredmet">'+
-						'<input type="checkbox" name = "izborniPredmet['+id+']['+nums[id]+']" id = "izborniPredmet['+id+']['+nums[id]+']" onClick = "javascript:izaberiGrupu('+studij+', '+semestar+', '+id+', '+nums[id]+');"/> Izborni Predmet<br/>'+
-						'<select name="grupa['+id+']['+nums[id]+']" id="grupa['+id+']['+nums[id]+']" disabled="disabled"><option value="0">- - - -</option></select>'+
-						'<p><select name="predmet['+id+']['+nums[id]+']"><option></option></select></p>'+
-						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="P">Predavanje<BR>'+
-						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="T">Tutorial<BR>'+
-						'<input type="radio" name="tipP['+id+']['+nums[id]+']" VALUE="L">Labaratorijska vjezba'+
-						'</div>'+
-						'<span class = "cRDanContBoxV">Vrijeme:<br/>'+
-						'<span><select name="h['+id+']['+nums[id]+']"><option></option></select></span>'+
-						'<span><select name="min['+id+']['+nums[id]+']"><option></option></select></span>'+
-						'</span>'+
-						'<span class = "cRDanContBoxS">Sala:<br/>'+
-						'<?=selectOption("ras_sala", array("idS", "nameS"), false, false, "salaP['+id+']['+nums[id]+']")?>'+
-						'</span>';
-
-					addElement(dani[id],'div',addHtml,{id:'mkdiv'});
-				}
-			</script>
-
-			<div id = "popuniPredmetDiv" style = "display: none">
-				<input type = "submit" name = "kl" value = "Ucitaj predmete"/>
-			</div>
-			<br/><br/>
-
-			<div style = "display: <?=$unlock_div?>">
-				<?
-				ispisiElementDana("Ponedjeljak", 1, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
-				ispisiElementDana("Utorak", 2, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
-				ispisiElementDana("Srijeda", 3, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
-				ispisiElementDana("Cetvrtak", 4, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
-				ispisiElementDana("Petak", 5, $_POST['studij'], $_POST['godina'], $_POST['akademska_godina']);
-				?>
-				<div class = "razmak"></div>
-				<input type = "submit" name = "submit" value = "Spremi">
-			</div>
+			?>
 		</form>
 		<?
 	} // if ($POST) ... else ...

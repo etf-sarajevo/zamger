@@ -194,7 +194,7 @@ input, select {
 	text-align: right;
 }
 .cRDanBox {
-	width: 19%;
+	width: 18.8%;
 	padding: 2px;
 	float: left;
 	border: 1px #EEE866 solid;
@@ -211,4 +211,25 @@ input, select {
 }
 .cRDanContBoxS {
 	float: right;
+}
+#wizardBox {
+	width: 100%;
+	border-left: 1px solid #ccc;
+	border-right: 0px;
+	height: 8px;
+	margin-bottom: 20px;
+}
+.wizardBoxInner {
+	width: 24.85%;
+	border: 1px solid #ccc;
+	border-left: 0px;
+	background: #ececec;
+	height: 8px;
+	float: left;
+}
+.wizardEl1 {
+	width: 24.85%;
+	text-align: center;
+	font-size: 10px;
+	float: left;
 }
