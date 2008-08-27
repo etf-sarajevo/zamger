@@ -3,6 +3,7 @@
 // ADMIN/KONZISTENTNOST + vrsi provjeru konzistentnosti podataka u bazi i nudi mogucnost popravke
 
 // v3.9.1.0 (2008/04/28) + Novi modul admin/konzistentnost
+// v3.9.1.1 (2008/08/27) + Kod brisanja stvari dodano LIMIT 1 kako bi se mogli brisati dupli unosi
 
 
 
@@ -36,11 +37,11 @@ if ($_GET['akcija']=="ispisi_studij") {
 	$semestar=intval($_GET['semestar']);
 
 	// Ubacujemo studij
-	$q540 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=$semestar and akademska_godina=$ag");
+	$q540 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=$semestar and akademska_godina=$ag limit 1");
 	if ($semestar%2==1) {
 		$q545 = myquery("select count(*) from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag");
 		if (mysql_result($q545,0,0)>0)
-			$q550 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag");
+			$q550 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag limit 1");
 	}
 	zamgerlog("admin/pk: student u$student ispisan sa studija $studij, semestar $semestar, ag ag$ag",4);
 	print "student $student ispisan sa studija $studij, semestar $semestar, ag $ag<br/>";
@@ -74,7 +75,7 @@ if ($_GET['akcija']=="brisiocjenu") {
 		zamgerlog("nije pronađena ocjena koju treba brisati! student: $student predmet: $predmet akademska_godina: $ag",3);
 	} else {
 		$pk = mysql_result($q500,0,0);
-		$q510 = myquery("delete from konacna_ocjena where student=$student and predmet=$pk");
+		$q510 = myquery("delete from konacna_ocjena where student=$student and predmet=$pk limit 1");
 		zamgerlog("admin/pk: obrisana ocjena - student: u$student predmet: p$predmet akademska_godina: ag$ag",4);
 		print "obrisana ocjena - student: $student predmet: $predmet akademska_godina: $ag<br/>";
 	}
@@ -108,7 +109,7 @@ if ($_GET['akcija']=="ispisi_predmet") {
 	$q600 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.id=sp.predmet and sp.student=$student");
 	if (mysql_num_rows($q600)>0) {
 		$pk = mysql_result($q600,0,0);
-		$q590 = myquery("delete from student_predmet where student=$student and predmet=$pk");
+		$q590 = myquery("delete from student_predmet where student=$student and predmet=$pk limit 1");
 		zamgerlog("admin/pk: student u$student ispisan sa predmeta p$pk",4);
 		print "student $student ispisan sa predmeta $pk<br/>";
 	} else {
