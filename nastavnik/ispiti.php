@@ -7,6 +7,7 @@
 // v3.9.1.2 (2008/04/09) + Dozvoljeno kreiranje praznog ispita; dodan update komponente u masovni unos
 // v3.9.1.3 (2008/04/25) + Popravljeno prosljedjivanje parametra $ispis funkciji mass_input
 // v3.9.1.4 (2008/05/16) + Ponovo ukljucen update komponente (bio iskomentiran zbog sporosti)
+// v3.9.1.5 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
 
 
 function nastavnik_ispiti() {
@@ -157,6 +158,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		return;
 	} else {
 		zamgerlog("masovni rezultati ispita za predmet p$predmet",4);
+		?>
+		Rezultati ispita su upisani.
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/ocjena&predmet=<?=$predmet?>';
+		</script>
+		<?
 	}
 }
 

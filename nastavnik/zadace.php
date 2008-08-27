@@ -7,6 +7,8 @@
 // v3.9.1.2 (2008/05/09) + Forma za masovni unos koristila za hidden polje "akcija" vrijednost "masszadaca" umjesto "massinput", nije ispravno preuzeta vrijednost zadace iz db_dropdown (falilo _lv_column), dugme nazad nije bilo ispravno obradjeno
 // v3.9.1.3 (2008/05/12) + Kod masovnog unosa u upitu stajalo SET... redni_broj=$bodova :( Popravljen logging
 // v3.9.1.4 (2008/05/16) + Dodan update_komponente()
+// v3.9.1.5 (2008/08/18) + Informativnija greska kod pokusaja masovnog unosa zadaca ako ne postoji nijedna zadaca, promijenjen naslov "Unos zadace" u "Kreiranje zadace", dodana zastita od visestrukog slanja kod masovnog unosa
+
 
 
 
@@ -69,7 +71,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 	$q20 = myquery("select naziv,zadataka,bodova,komponenta from zadaca where id=$zadaca");
 	if (mysql_num_rows($q20)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greška
-		niceerror("Nepostojeća zadaća $zadaca");
+		niceerror("Morate najprije kreirati zadaću");
+		print "\n<p>Koristite formular &quot;Kreiranje zadaće&quot; koji se nalazi na prethodnoj stranici. Ukoliko ne vidite nijednu zadaću na spisku &quot;Postojeće zadaće&quot;, koristite dugme Refresh vašeg web preglednika.</p>\n";
 		return;
 	}
 	if (mysql_result($q20,0,1)<$zadatak) {
@@ -134,6 +137,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		return;
 	} else {
 		zamgerlog("masovno upisane zadaće na predmet p$predmet, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
+		?>
+		Bodovi iz zadaća su upisani.
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>';
+		</script>
+		<?
 	}
 }
 
@@ -143,7 +152,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 $_lv_["where:predmet"] = $predmet;
 $_lv_["where:komponenta"] = 6; // namećemo standardnu komponentu za zadaće... FIXME
 
-print "Unesene zadaće:<br/>\n";
+print "Postojeće zadaće:<br/>\n";
 print db_list("zadaca");
 
 
@@ -152,7 +161,7 @@ print db_list("zadaca");
 $izabrana = intval($_REQUEST['_lv_nav_id']);
 if ($izabrana==0) {
 	?><p><hr/></p>
-	<p><b>Unos nove zadaće</b><br/>
+	<p><b>Kreiranje zadaće</b><br/>
 	<?
 } else {
 	?><p><hr/></p>
@@ -188,6 +197,8 @@ if (!$_POST['separator']) {
 		$separator=0;
 }
 
+$q130 = myquery("select count(*) from zadaca where predmet=$predmet");
+if (mysql_result($q130,0,0)>0) {
 
 ?><p><hr/></p>
 <p><b>Masovni unos zadaća</b><br/>
@@ -223,6 +234,14 @@ Separator: <select name="separator" class="default">
 <input type="submit" value="  Dodaj  ">
 </form></p>
 <?
+
+} else {
+
+	?><p><hr/></p>
+	<p><b>Masovni unos zadaća NIJE MOGUĆ</b><br/>
+	Najprije kreirajte zadaću koristeći formular iznad</p>
+	<?
+}
 
 
 

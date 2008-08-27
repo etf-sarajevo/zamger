@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/02/28) + Koristim lib/manip
 // v3.9.1.2 (2008/05/20) + Podignut logging nivo sa 2 na 4
+// v3.9.1.3 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
 
 
 
@@ -125,6 +126,13 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		return;
 	} else {
 		zamgerlog("masovno upisane ocjene na predmet p$predmet",4);
+		
+		?>
+		Ocjene su upisane.
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/ocjena&predmet=<?=$predmet?>';
+		</script>
+		<?
 	}
 }
 
