@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/02/28) + Koristimo lib/manip, student moze biti u vise grupa
+// v3.9.1.2 (2008/08/18) + Popravljen logging predmeta, popravljen ispis u mass_inputu, informativna poruka kada parsiranje ne vrati nista, dodana greska za brisanje nepostojece grupe, dodana zastita od visestrukog slanja kod masovnog unosa
 
 
 
@@ -72,6 +73,12 @@ if ($_POST['akcija'] == "nova_grupa") {
 
 if ($_GET['akcija'] == "obrisi_grupu") {
 	$grupaid = intval($_GET['grupaid']);
+	$q29 = mquery("select count(*) from labgrupa where id=$grupaid");
+	if (mysql_result($q29,0,0)<1) {
+		zamgerlog("nepostojeca labgrupa $grupaid",3);
+		niceerror("Pokušavate obrisati labgrupu koja ne postoji");
+		return;
+	}
 	// ispis svih studenata iz labgrupe
 	$q30 = myquery("select student from student_labgrupa where labgrupa=$grupaid");
 	while ($r30 = mysql_fetch_row($q30)) {
@@ -188,21 +195,23 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		$q200 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id limit 1");
 		if (mysql_num_rows($q200)<1) {
 			// Ovo je fatalna greska...
-			zamgerlog("nije kreirana nijedna grupa za masovni upis (predmet $predmet)",3);
+			zamgerlog("nije kreirana nijedna grupa za masovni upis (predmet p$predmet)",3);
 			niceerror("Niste kreirali niti jednu grupu.");
-			print "<br/>Ili izaberite format koji sadrži kolonu naziva grupe, ili kreirajte barem jednu grupu.";
+			print "<br/>Ili izaberite opciju &quot;Naziv grupe&quot; (s kojom će automatski biti kreirane grupe pod datim imenima), ili kreirajte barem jednu grupu.";
 			return;
 		}
 		$labgrupa = mysql_result($q200,0,0);
 		$imegrupe = mysql_result($q200,0,1);
 	}
 
-
-	$greska=mass_input($f); // Funkcija koja parsira podatke
+	$greska=mass_input($ispis); // Funkcija koja parsira podatke
+	if ($greska != 0) {
+		print "<p>NAPOMENA: U novoj verziji ZAMGERa upis studenata na predmet može vršiti samo studentska služba. Spiskovi studenata na predmetima su dostavljeni iz studentske službe, tako da ako su ti spiskovi netačni molimo da kontaktirate njih.</p>\n";
+	}
 
 	if (count($mass_rezultat)==0) {
-		zamgerlog("parsiranje kod masovnog upisa nije vratilo ništa (predmet $predmet)",3);
-		niceerror("Niste unijeli ništa.");
+		zamgerlog("parsiranje kod masovnog upisa nije vratilo ništa (predmet p$predmet)",3);
+		niceerror("Niste unijeli nijedan koristan podatak.");
 		return;
 	}
 
@@ -281,6 +290,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		return;
 	} else {
 		zamgerlog("masovan upis grupa za predmet $predmet",4);
+		?>
+		Grupe su kreirane.
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/grupe&predmet=<?=$predmet?>';
+		</script>
+		<?
 	}
 }
 
