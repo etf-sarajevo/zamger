@@ -54,7 +54,7 @@ if ($_REQUEST['ispit'] == "svi") $ispit=-1;
 // Naziv predmeta, akademska godina
 $q10 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and ag.id=pk.akademska_godina and pk.predmet=p.id");
 
-if (mysql_num_rows($q10))<1) {
+if (mysql_num_rows($q10)<1) {
 	niceerror("Nepoznat predmet sa IDom $predmet.");
 	zamgerlog ("nepoznat predmet $predmet", 3);
 	return;
