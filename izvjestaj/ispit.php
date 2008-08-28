@@ -3,6 +3,7 @@
 // IZVJESTAJ/ISPIT - statistika pojedinacnog ispita
 
 // v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
+// v3.9.1.1 (2008/08/28) + Dodana provjera da li postoji predmet
 
 
 
@@ -52,7 +53,18 @@ if ($_REQUEST['ispit'] == "svi") $ispit=-1;
 
 // Naziv predmeta, akademska godina
 $q10 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and ag.id=pk.akademska_godina and pk.predmet=p.id");
-print "<p>&nbsp;</p><h1>".mysql_result($q10,0,0)." ".mysql_result($q10,0,1)."</h1>\n";
+
+if (mysql_num_rows($q10))<1) {
+	niceerror("Nepoznat predmet sa IDom $predmet.");
+	zamgerlog ("nepoznat predmet $predmet", 3);
+	return;
+}
+
+?>
+	<p>&nbsp;</p>
+	<h1><?=mysql_result($q10,0,0)?> <?=mysql_result($q10,0,1)?></h1>
+<?
+
 
 
 // Tip ispita, datum i opis
