@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/02/28) + Koristimo lib/manip, student moze biti u vise grupa
 // v3.9.1.2 (2008/08/18) + Popravljen logging predmeta, popravljen ispis u mass_inputu, informativna poruka kada parsiranje ne vrati nista, dodana greska za brisanje nepostojece grupe, dodana zastita od visestrukog slanja kod masovnog unosa
+// v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -337,7 +338,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	print "</li>\n";
 	if ($_GET['akcija']=="studenti_grupa" && $_GET['grupaid']==$grupa) {
 		print "<ul>\n";
-		$q102 = myquery("select auth.id,auth.prezime,auth.ime from student_labgrupa,auth where student_labgrupa.student=auth.id and student_labgrupa.labgrupa=$grupa order by auth.prezime,auth.ime");
+		$q102 = myquery("select osoba.id,osoba.prezime,osoba.ime from student_labgrupa,osoba where student_labgrupa.student=osoba.id and student_labgrupa.labgrupa=$grupa order by osoba.prezime,osoba.ime");
 		while ($r102 = mysql_fetch_row($q102)) {
 			?><li><a href="#" onclick="javascript:window.open('?sta=saradnik/izmjena_studenta&student=<?=$r102[0]?>&predmet=<?=$predmet?>','blah6','width=320,height=320');"><? print $r102[1]." ".$r102[2]."</a></li>\n";
 		}

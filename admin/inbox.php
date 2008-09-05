@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/03/07) + Novi modul admin/inbox
 // v3.9.1.1 (2008/04/11) + Popravljen naslov "bez naslova"
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -44,7 +45,7 @@ if ($_REQUEST['akcija']=='send') {
 	if ($opseg == 7) {
 		// Ko je primalac
 		list($ime,$prezime) = explode(" ",my_escape($_REQUEST['primalac']));
-		$q300 = myquery("select id from auth where ime='$ime' and prezime='$prezime'");
+		$q300 = myquery("select id from osoba where ime='$ime' and prezime='$prezime'");
 		if (mysql_num_rows($q300)<1) {
 			niceerror("Nepoznat primalac");
 			return;
@@ -75,7 +76,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 
 		// Posiljalac
 		$pos_id = mysql_result($q200,0,0);
-		$q210 = myquery("select ime,prezime from auth where id=$pos_id");
+		$q210 = myquery("select ime,prezime from osoba where id=$pos_id");
 		if (mysql_num_rows($q210)<1) {
 			niceerror("Nepoznat pošiljalac");
 			zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id (prilikom odgovora na poruku)",3);
@@ -153,7 +154,7 @@ if ($poruka>0) {
 
 	// Posiljalac
 	$pos_id = mysql_result($q10,0,2);
-	$q20 = myquery("select ime,prezime from auth where id=$pos_id");
+	$q20 = myquery("select ime,prezime from osoba where id=$pos_id");
 	if (mysql_num_rows($q20)<1) {
 		$posiljalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id",3);
@@ -206,7 +207,7 @@ if ($poruka>0) {
 		}
 	}
 	else if ($opseg==7) {
-		$q60 = myquery("select ime,prezime from auth where id=$prim_id");
+		$q60 = myquery("select ime,prezime from osoba where id=$prim_id");
 		if (mysql_num_rows($q60)<1) {
 			$primalac = "Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
@@ -260,7 +261,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 
 	// Posiljalac
-	$q120 = myquery("select ime,prezime from auth where id=$r100[5]");
+	$q120 = myquery("select ime,prezime from osoba where id=$r100[5]");
 	if (mysql_num_rows($q120)<1)
 		$posiljalac = "Nepoznato! Prijavite grešku";
 	else

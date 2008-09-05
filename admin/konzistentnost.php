@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/04/28) + Novi modul admin/konzistentnost
 // v3.9.1.1 (2008/08/27) + Kod brisanja stvari dodano LIMIT 1 kako bi se mogli brisati dupli unosi
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -149,7 +150,7 @@ if ($_GET['vrsta']=="studenti") {
 	}
 
 
-	$q10 = myquery("select id,ime,prezime from auth where student=1 order by prezime,ime");
+	$q10 = myquery("select o.id,o.ime,o.prezime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='student' order by o.prezime,o.ime");
 	while ($r10 = mysql_fetch_row($q10)) {
 		$stud_id = $r10[0];
 		$ime = $r10[1];

@@ -25,17 +25,17 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 // Podaci o studentu
-$q100 = myquery("select ime,prezime,brindexa,student from auth where id=$student");
+$q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
 	return;
 }
-if ($r100[3] != 1) {
+/*if ($r100[3] != 1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("korisnik u$student nema status studenta",3);
 	return;
-}
+}*/
 
 
 ?>

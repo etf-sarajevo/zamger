@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/03/15-22) + Kod nivoa>1 nisu razdvajani logini, popravljen SU, novi format loga (stari će biti uklonjen uskoro)
 // v3.9.1.4 (2008/04/09) + Popravljen prikaz ispita
 // v3.9.1.5 (2008/04/28) + Naslov u <h3>
+// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -68,11 +69,13 @@ if ($nivo>4) $nivo=4;
 function get_user_link($id) {
 	static $users = array();
 	if (!$users[$id]) {
-		$q20 = myquery("select ime, prezime, student, nastavnik from auth where id=$id");
+		$q20 = myquery("select ime, prezime from osoba where id=$id");
 		if (mysql_num_rows($q20)>0) {
-			if (mysql_result($q20,0,3)==1) {
+			$q25 = myquery("select count(*) from privilegije where osoba=$id and privilegija='nastavnik'");
+			$q27 = myquery("select count(*) from privilegije where osoba=$id and privilegija='student'");
+			if (mysql_result($q25,0,0)>0) {
 				$link="?sta=studentska/nastavnici&akcija=edit&nastavnik=$id";
-			} else if (mysql_result($q20,0,2)==1) {
+			} else if (mysql_result($q27,0,0)>0) {
 				$link="?sta=studentska/studenti&akcija=edit&student=$id";
 			} else {
 				$link="";
@@ -289,24 +292,31 @@ while ($r10 = mysql_fetch_row($q10)) {
 foreach ($eventshtml as $logid => $event) {
 	if (substr($event,0,4)!="<img") {
 		// Login počinje sa <br/>
-		$q201 = myquery("select a.id, UNIX_TIMESTAMP(log.vrijeme), a.ime, a.prezime, a.student, a.nastavnik, a.studentska, a.siteadmin from auth as a,log where a.id=log.userid and log.id=$logid");
-		$userid = mysql_result($q201,0,0);
+		$q201 = myquery("select o.id, UNIX_TIMESTAMP(log.vrijeme), o.ime, o.prezime from osoba as o, log where o.id=log.userid and log.id=$logid");
+		$userid = intval(mysql_result($q201,0,0));
+
+		if ($userid>0) {
+			$q203 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='nastavnik'");
+			$q204 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='studentska'");
+			$q205 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
+		}
+
 		$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q201,0,1)).")";
 		$imeprezime = mysql_result($q201,0,2)." ".mysql_result($q201,0,3);
 	
-		if (mysql_result($q201,0,7)>0) {
+		if ($userid==0) {
+			$imeprezime = "ANONIMNI PRISTUPI";
+			$usrimg="";
+		} else if (mysql_result($q205,0,0)>0) {
 			$usrimg="admin"; 
-			$link = "?c=B&sta=studentska/nastavnici&akcija=edit&nastavnik=$userid";
-		} else if (mysql_result($q201,0,6)>0) {
+		} else if (mysql_result($q204,0,0)>0) {
 			$usrimg="teta"; 
-			$link = "?c=B&sta=studentska/nastavnici&akcija=edit&nastavnik=$userid";
-		} else if (mysql_result($q201,0,5)>0) {
+		} else if (mysql_result($q203,0,0)>0) {
 			$usrimg="tutor"; 
-			$link = "?c=B&sta=studentska/nastavnici&akcija=edit&nastavnik=$userid";
 		} else {
 			$usrimg="user";
-			$link = "?c=B&sta=studentska/studenti&akcija=edit&student=$userid";
 		}
+		$link = "?sta=studentska/studenti&akcija=edit&osoba=$userid";
 
 		print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"toggleVisibility('$logid')\">
 <img src=\"images/16x16/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">

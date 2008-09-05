@@ -16,6 +16,8 @@
 // v3.9.1.7 (2008/06/16) + Popravljena provjera za site_admin kod prisustva, postrozen uslov za brisanje/dodavanje ocjene na ispitu
 // v3.9.1.7 (2008/06/22) + Dodan unos bodova sa prijemnog
 // v3.9.1.7a (2008/07/01) + Dodan unos ocjena tokom srednje skole za prijemni
+// v3.9.1.8 (2008/08/28) + Tabela osoba umjesto auth u akciji "pretraga" (kod pisanja poruke)
+// v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
 
 
 // Prebaciti u lib/manip?
@@ -269,9 +271,9 @@ case "pretraga":
 	$imena = explode(" ",$ime);
 	$upit = "";
 	foreach($imena as $dio) {
-		$upit .= "(ime like '%$dio%' or prezime like '%$dio%' or login like '%$dio%' or brindexa like '%$dio%')";
+		$upit .= "(o.ime like '%$dio%' or o.prezime like '%$dio%' or a.login like '%$dio%' or o.brindexa like '%$dio%')";
 	}
-	$q10 = myquery("select login, ime, prezime from auth where $upit order by prezime, ime");
+	$q10 = myquery("select a.login, o.ime, o.prezime from auth as a, osoba as o where a.id=o.id and $upit order by o.prezime, o.ime");
 	$redova=0;
 	while ($r10 = mysql_fetch_row($q10)) {
 		if (strlen($r10[0])<2) continue;
@@ -299,9 +301,9 @@ case "prijemni_unos":
 	}
 	// Dodati provjeru rezultata prijemnog...
 	if ($_REQUEST['vrijednost'] == "/")
-		$q110 = myquery("update prijemni set prijemni_ispit=0, izasao_na_prijemni=0 where id=$id");
+		$q110 = myquery("update prijemni set prijemni_ispit_dva=0, izasao_na_prijemni=0 where id=$id");
 	else
-		$q110 = myquery("update prijemni set prijemni_ispit=$vrijednost, izasao_na_prijemni=1 where id=$id");
+		$q110 = myquery("update prijemni set prijemni_ispit_dva=$vrijednost, izasao_na_prijemni=1 where id=$id");
 	print "OK";
 
 	break;

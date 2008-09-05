@@ -9,16 +9,17 @@
 // v3.9.1.4 (2008/03/26) + Fini datum u bloku Poruke
 // v3.9.1.5 (2008/04/10) + Dodani rezultati ispita i konacna ocjena u Aktuelno, ukinut mysql2time() kod rokova za zadace
 // v3.9.1.6 (2008/04/30) + Popravljen naslov poruke "bez naslova"; dodan link na RSS
+// v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function student_intro() {
 
-global $userid,$conf_site_url;
+global $userid;
 
 
 // Dobrodošlica
 
-$q1 = myquery("select ime from auth where id=$userid");
+$q1 = myquery("select ime from osoba where id=$userid");
 $ime = mysql_result($q1,0,0);
 if (spol($ime)=="Z") 
 	print "<h1>Dobro došla, ".genitiv($ime,"Z")."</h1>";
@@ -273,7 +274,6 @@ if (mysql_num_rows($q200)<1) {
 }
 
 
-// FIXME: hardcodiran URL za RSS - zbog http/https gluposti :( ljudi ne vole kad im iskace svako malo prozor za certifikat
 ?>
 <a href="http://zamger.etf.unsa.ba/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
 

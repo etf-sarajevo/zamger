@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/04/21) + Kopiran admin_izvjestaj, dodana tabela student_predmet, komponente, izvjestaj "ukupan broj bodova" prebacen na komponente
 // v3.9.1.1 (2008/04/24) + Dodano bojenje po odsjeku
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -262,7 +263,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 
 		// Zaglavlje za poimenicni spisak studenata
 		if ($studenti==1) {
-			$q100 = myquery("select ime, prezime, brindexa from auth where id=$stud_id");
+			$q100 = myquery("select ime, prezime, brindexa from osoba where id=$stud_id");
 			$imeprezime[$stud_id] = mysql_result($q100,0,1)." ".mysql_result($q100,0,0);
 			$brindexa[$stud_id] = mysql_result($q100,0,2);
 			/* Korisna informacija - kako je upotrijebiti?

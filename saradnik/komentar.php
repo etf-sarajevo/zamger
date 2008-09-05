@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/14) + Preimenovan bivsi admin_komentar
 // v3.9.1.1 (2008/02/28) + Dodana nulta labgrupa
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -75,7 +76,7 @@ if ($labgrupa>0) {
 	}
 }
 
-$q40 = myquery("select ime, prezime, brindexa from auth where id=$stud_id");
+$q40 = myquery("select ime, prezime, brindexa from osoba where id=$stud_id");
 if ($r40 = mysql_fetch_row($q40)) {
 	print "<h3>$r40[0] $r40[1] ($r40[2])</h3>\n";
 } else {
@@ -107,7 +108,7 @@ if ($_GET['akcija'] == "obrisi") {
 
 // Spisak komentara
 
-$q70 = myquery("select k.id, a.ime, a.prezime, UNIX_TIMESTAMP(k.datum), k.komentar from komentar as k, auth as a where k.student=$stud_id and k.labgrupa=$labgrupa and k.predmet=$predmet and k.nastavnik=a.id");
+$q70 = myquery("select k.id, a.ime, a.prezime, UNIX_TIMESTAMP(k.datum), k.komentar from komentar as k, osoba as a where k.student=$stud_id and k.labgrupa=$labgrupa and k.predmet=$predmet and k.nastavnik=a.id");
 
 if (mysql_num_rows($q70) < 1) {
 	print "<ul><li>Nijedan komentar nije unesen.</li></ul>\n";

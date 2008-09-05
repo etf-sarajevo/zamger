@@ -3,6 +3,7 @@
 // IZVJESTAJ/INDEX - spisak ocjena studenta
 
 // v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
+// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -19,17 +20,17 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 // Podaci o studentu
-$q100 = myquery("select ime,prezime,brindexa,student from auth where id=$student");
+$q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
 	return;
 }
-if ($r100[3] != 1) {
+/*if ($r100[3] != 1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("korisnik u$student nema status studenta",3);
 	return;
-}
+}*/
 
 
 ?>

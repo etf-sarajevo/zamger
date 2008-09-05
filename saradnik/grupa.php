@@ -7,6 +7,9 @@
 // v3.9.1.2 (2008/03/15) + Popravljen log nivo za brisanje casa
 // v3.9.1.3 (2008/05/16) + update_komponente_prisustvo() zamijenjen sa update_komponente()
 // v3.9.1.4 (2008/06/10) + Dodan ispis fiksnih komponenti + AJAH
+// v3.9.1.5 (2008/08/18) + Provjera da li postoji predmet
+// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
+
 
 
 
@@ -112,7 +115,7 @@ if ($akcija == 'dodajcas') {
 			$stud_id = $r80[0];
 			$prisustvo = intval($_POST['prisustvo']);
 			$q90 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
-			if ($prisustvo==0)
+			if ($prisustvo==0) // Update radimo samo ako se registruje odsustvo
 				update_komponente($stud_id,$predmet_id,$komponenta);
 		}
 	
@@ -152,6 +155,12 @@ if ($grupa_id>0) {
 }
 
 $q130 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet_id and pk.predmet=p.id");
+if (mysql_num_rows($q130)<1) {
+	zamgerlog("nepostojeci predmet $predmet_id",3);
+	biguglyerror("Izabran je nepostojeći predmet"); 
+	return; 
+}
+	
 $pime = mysql_result($q130,0,0);
 
 print "\n<center><h1>$pime - $naziv</h1></center>\n\n";
@@ -213,14 +222,14 @@ if ($predmet_admin==1 || $user_siteadmin) {
 if ($grupa_id>0)
 $q150 = myquery(
 "SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
-FROM zadatak as zk, auth as a, student_labgrupa as sl, zadaca as z
+FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
 WHERE zk.student=a.id AND zk.student=sl.student 
 AND sl.labgrupa=$grupa_id AND zk.zadaca=z.id AND z.predmet=$predmet_id
 ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
 else
 $q150 = myquery(
 "SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
-FROM zadatak as zk, auth as a, zadaca as z
+FROM zadatak as zk, osoba as a, zadaca as z
 WHERE zk.student=a.id AND zk.zadaca=z.id AND z.predmet=$predmet_id
 ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
 
@@ -514,9 +523,9 @@ $stat_tekst = array("Bug u programu", "Automatsko testiranje u toku", "Zadaća p
 // Glavna petlja - studenti
 
 if ($grupa_id>0)
-$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from auth as a,student_labgrupa as sl where a.id=sl.student and sl.labgrupa=$grupa_id");
+$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_labgrupa as sl where a.id=sl.student and sl.labgrupa=$grupa_id");
 else
-$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from auth as a,student_predmet as sp where a.id=sp.student and sp.predmet=$predmet_id");
+$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_predmet as sp where a.id=sp.student and sp.predmet=$predmet_id");
 
 $imeprezime = array();
 $brind = array();

@@ -9,6 +9,7 @@
 // v3.9.1.4 (2008/04/10) + Navigacija je prikazivala visak zadataka; dodan update komponente nakon slanja
 // v3.9.1.5 (2008/04/27) + Zamijenjen obican zadatak i attachment u log zapisu
 // v3.9.1.6 (2008/05/16) + Dodan link za odgovor na komentar tutora; dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
+// v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function student_zadaca() {
@@ -400,7 +401,7 @@ if (mysql_num_rows($q110)>0) {
 		// Link za odgovor na komentar
 		$link="";
 		if ($tutor>0) {
-			$q115 = myquery("select login,ime,prezime from auth where id=$tutor");
+			$q115 = myquery("select a.login,o.ime,o.prezime from auth as a, osoba as o where o.id=$tutor and a.id=o.id");
 
 			$naslov = urlencode("Odgovor na komentar ($naziv, Zadatak $zadatak)");
 			$tekst = urlencode("> $komentar");

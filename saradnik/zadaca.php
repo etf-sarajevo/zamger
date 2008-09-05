@@ -8,6 +8,7 @@
 // v3.9.1.2 (2008/03/22) + Prebaceno sve na $conf_files_path i drugi sitni bugovi
 // v3.9.1.3 (2008/03/26) + Popravljen javascript
 // v3.9.1.4 (2008/05/16) + Dodano polje userid u tabeli zadatak koje odredjuje ko je zadnji izmjenio podatak (da li ima potrebe prikazati?); dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
+// v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function saradnik_zadaca() {
@@ -69,7 +70,7 @@ if ($user_siteadmin) $predmet_id = mysql_result($q40,0,3);
 
 // Podaci o studentu
 
-$q50 = myquery("select ime, prezime from auth where id=$stud_id");
+$q50 = myquery("select ime, prezime from osoba where id=$stud_id");
 if (mysql_num_rows($q50)<1) {
 	zamgerlog("nepostojeci student $stud_id",3);
 	niceerror("Neispravan student.");

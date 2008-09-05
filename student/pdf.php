@@ -4,7 +4,8 @@
 
 // v3.9.1.0 (2008/02/19) + Kopiran raniji stud_pdf
 // v3.9.1.1 (2008/03/28) + Nova auth tabela
-// v3.9.1.1 (2008/03/30) + Popravljen put za zadaće
+// v3.9.1.2 (2008/03/30) + Popravljen put za zadaće
+// v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
 
 // TODO: koristiti tcpdf
 
@@ -51,7 +52,7 @@ $ekst = mysql_result($q20,0,3);
 
 // Podaci o studentu
 
-$q30 = myquery("select ime, prezime, brindexa from auth where id=$userid");
+$q30 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
 if (mysql_num_rows($q30) < 1) {
 	biguglyerror("Ne mogu pronaći studenta");
 	// .. može li se ukinuti ovo?

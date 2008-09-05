@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_izvjestaj(), spojeni izvjestaji grupe i grupedouble
 // v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function izvjestaj_grupe() {
@@ -59,7 +60,7 @@ if ($double == 1) {
 
 		$imeprezime=array();
 		$brindexa=array();
-		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_labgrupa as sl where sl.labgrupa=$r400[0] and sl.student=a.id");
+		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$r400[0] and sl.student=a.id");
 		while ($r401 = mysql_fetch_row($q401)) {
 			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
 			$brindexa[$r401[0]] = $r401[3];
@@ -86,7 +87,7 @@ if ($double == 1) {
 		} else $parni=1;
 	}
 
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
 	if (mysql_num_rows($q410)>0) {
 		if ($parni == 0) 
 			print "<tr>";
@@ -157,7 +158,7 @@ else {
 		$imeprezime=array();
 		$brindexa=array();
 		$komentar=array();
-		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_labgrupa as sl where sl.labgrupa=$r400[0] and sl.student=a.id");
+		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$r400[0] and sl.student=a.id");
 		while ($r401 = mysql_fetch_row($q401)) {
 			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
 			$brindexa[$r401[0]] = $r401[3];
@@ -195,7 +196,7 @@ else {
 		<?
 	}
 
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
 	if (mysql_num_rows($q410)>0) {
 		?>
 			<table width="100%" border="2" cellspacing="0">

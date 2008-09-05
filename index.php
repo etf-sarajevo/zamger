@@ -8,6 +8,7 @@
 // v3.9.1.2 (2008/03/21) + Popravljen pristup public dijelovima bez prijave i logging
 // v3.9.1.3 (2008/04/17) + Popravljen XSS sa varijablom sta
 // v3.9.1.4 (2008/05/07) + Dodan logging za razne greske kod anonimnog pristupa, popravljen forwarding kada čovjeku istekne sesija
+// v3.9.1.5 (2008/08/27) + Koristimo horizontalni_meni() za studentska/*; koristimo tabelu privilegija umjesto auth
 
 
 require("lib/libvedran.php");
@@ -65,8 +66,8 @@ if ($userid>0) {
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
 		// Provjeravamo da li je korisnik admin
-		$q5 = myquery("select siteadmin from auth where id=$userid");
-		if (mysql_result($q5,0,0)==1) {
+		$q5 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
+		if (mysql_result($q5,0,0)>0) {
 			$userid=$su;
 			$_SESSION['su']=$su;
 		} 
@@ -80,11 +81,16 @@ if ($userid>0) {
 
 $user_student=$user_nastavnik=$user_studentska=$user_siteadmin=false;
 if ($userid>0) {
-	$q10 = myquery("select student,nastavnik,studentska,siteadmin from auth where id=$userid");
-	if(mysql_result($q10,0,0)>0) $user_student=true; 
-	if(mysql_result($q10,0,1)>0) $user_nastavnik=true;
-	if(mysql_result($q10,0,2)>0) $user_studentska=true;
-	if(mysql_result($q10,0,3)>0) $user_siteadmin=true;
+	$q10 = myquery("select privilegija from privilegije where osoba=$userid");
+	while ($r10=mysql_fetch_row($q10)) {
+		if ($r10[0]=="student") $user_student=true; 
+		if ($r10[0]=="nastavnik") $user_nastavnik=true;
+		if ($r10[0]=="studentska") $user_studentska=true;
+		if ($r10[0]=="siteadmin") $user_siteadmin=true;
+		//if ($r10[0]=="prijemni")  -- ovi nemaju pristup zamgeru
+		// ovdje dodati ostale vrste korisnika koje imaju pristup
+	}
+
 
 	// Korisnik nije ništa!?
 	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
@@ -299,8 +305,10 @@ include ("$sta.php");
 
 
 // Prikaz menija specificnih za odredjene grupe modula
-if (strstr($sta,"nastavnik/") || strstr($sta,"admin/") || strstr($sta,"studentska/"))
+if (strstr($sta,"nastavnik/") || strstr($sta,"admin/"))
 	malimeni("$staf();");
+else if (strstr($sta,"studentska/"))
+	horizontalni_meni("$staf();");
 else if (strstr($sta,"student/"))
 	studentski_meni("$staf();");
 else

@@ -3,6 +3,7 @@
 // IZVJESTAJ/PREDMET - statistika predmeta, pregled prisustva itd.
 
 // v3.9.1.0 (2008/02/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
+// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
 
 
 
@@ -250,7 +251,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 	// Ucitavamo studente u array radi sortiranja
 	$imeprezime=array();
 	$brindexa=array();
-	$q130 = myquery("select a.id, a.prezime, a.ime, a.brindexa from auth as a, student_labgrupa as sl where sl.labgrupa=$grupa_id and sl.student=a.id");
+	$q130 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$grupa_id and sl.student=a.id");
 	while ($r130 = mysql_fetch_row($q130)) {
 		$imeprezime[$r130[0]] = "$r130[1] $r130[2]";
 		$brindexa[$r130[0]] = $r130[3];

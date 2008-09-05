@@ -7,7 +7,7 @@
 // v3.9.1.2 (2008/04/14) + Ponistavam zadnju izmjenu - ako nije odrzan nijedan cas treba dati max bodova za prisustvo 
 // v3.9.1.3 (2008/04/24) + mass_input(): (!$f) zamijenjeno sa ($f) (provjeriti sve module!); dodano trimovanje imena i prezimena i ljepse upozorenje kod gresaka; ako student nije na predmetu a nema bodova, to nije greska
 // v3.9.1.4 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
-// v3.9.1.5 (2008/08/28) + Omoguceno koristenje masovnog unosa kada nije definisan predmet
+// v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth; omoguceno koristenje masovnog unosa kada nije definisan predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -187,7 +187,7 @@ function mass_input($ispis) {
 		// Provjera ispravnosti podataka
 
 		// Da li korisnik postoji u bazi?
-		$q10 = myquery("select id from auth where ime like '$ime' and prezime like '$prezime'");
+		$q10 = myquery("select id from osoba where ime like '$ime' and prezime like '$prezime'");
 		if (mysql_num_rows($q10)<1) {
 			if ($f) print "-- GREŠKA! Prezime: '$prezime'. Ime: '$ime'. Nepoznat student! Da li ste dobro ukucali ime?<br/>";
 			$greska=1;
@@ -197,7 +197,7 @@ function mass_input($ispis) {
 			if ($predmet>0) {
 				// Postoji više studenata sa istim imenom i prezimenom
 				// Biramo onog koji je upisan na ovaj predmet
-				$q10 = myquery("select DISTINCT a.id from auth as a, student_predmet as sp where a.ime like '$ime' and a.prezime like '$prezime' and a.id=sp.student and sp.predmet=$predmet");
+				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=$predmet");
 	
 				if (mysql_num_rows($q10)<1) {
 					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";

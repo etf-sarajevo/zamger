@@ -9,6 +9,7 @@
 // v3.9.1.3 (2008/03/21) + Student ne mora biti ni u jednoj labgrupi, auth polja
 // v3.9.1.4 (2008/04/14) + Popravljen link za ispis studenta sa predmeta
 // v3.9.1.5 (2008/06/16) + Situacija kad student nije ni u jednoj grupi je sada malo jasnija, brisi prisustvo prilikom promjene grupe
+// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function saradnik_izmjena_studenta() {
@@ -84,7 +85,7 @@ if ($_GET['akcija'] == "ispis" && $izmjena_moguca==1) {
 
 // Podaci o studentu...
 
-$q140=myquery("select ime,prezime,email,brindexa from auth where id=$stud_id");
+$q140=myquery("select ime,prezime,email,brindexa from osoba where id=$stud_id");
 if (mysql_num_rows($q140)<1) {
 	zamgerlog("nepostojeci student (student $stud_id)",3);
 	biguglyerror("Nema studenta $stud_id");
@@ -248,7 +249,7 @@ function _izmijeni_profil($stud_id,$predmet_id) {
 		return; 
 	}
 
-	$q210 = myquery("update auth set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$stud_id");
+	$q210 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$stud_id");
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
 	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$stud_id and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");

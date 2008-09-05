@@ -9,6 +9,8 @@
 // v3.9.1.4 (2008/04/14) + Imena mjeseci malim
 // v3.9.1.5 (2008/05/06) + zamgerlog(): popravljen logging za dogadjaje kada korisnik nije logiran
 // v3.9.1.6 (2008/05/09) + studentski_meni(): arhivirani predmeti sortirani po godinama i semestrima, popravljen link za arhivu (cuva trenutno otvoreni modul)
+// v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
+// v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
 
 
 
@@ -50,7 +52,7 @@ function spol($ime) {
 function genitiv($rijec,$spol) {
 	if ($spol=="Z") return $rijec;
 	$slovo = substr($rijec,strlen($rijec)-1);
-	if ($slovo == "e" || $slovo == "i" || $slovo == "o" || $slovo == "u" || $slovo == "k")
+	if ($slovo == "a" || $slovo == "e" || $slovo == "i" || $slovo == "o" || $slovo == "u" || $slovo == "k")
 		return $rijec;
 	else
 		return $rijec."e";
@@ -62,7 +64,7 @@ function genitiv($rijec,$spol) {
 function user_box() {
 	global $user_nastavnik,$user_studentska,$user_siteadmin,$userid,$su;
 
-	$q1 = myquery("select ime,prezime from auth where id=$userid");
+	$q1 = myquery("select ime,prezime from osoba where id=$userid");
 
 	if ($user_siteadmin) {
 		$slika="admin.png";
@@ -322,7 +324,7 @@ function malimeni($fj) {
 			</table>
 		</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
 		</td-->
-		<td width="80">&nbsp;</td>
+		<td width="50">&nbsp;</td>
 		<td valign="top">
 		<?
 		eval($fj);
@@ -330,6 +332,50 @@ function malimeni($fj) {
 		</td>
 	</tr></table><?
 
+}
+
+
+// "Mali meni" - koji se pokazuje u modulima za nastavnika, studentsku i site admin
+
+function horizontalni_meni($fj) {
+
+	global $sta, $registry;
+
+	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
+
+	if ($sekcija=="nastavnik/") {
+		$predmet=intval($_REQUEST['predmet']);
+		$dodaj="&predmet=$predmet";
+	}
+
+	?>
+	&nbsp;</br>
+	<style>
+		a.malimeni {color:#333399;text-decoration:none;}
+		a:hover.malimeni {color:#333399;text-decoration:underline;}
+	</style>
+
+	<table cellspacing="0" cellpadding="4" style="border:1px; border-style:solid; border-color:black; margin-left: 30px">
+		<tr>
+		<?
+
+	$k=0;
+	foreach ($registry as $r) {
+		if (strstr($r[0],$sekcija)) { 
+			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
+			?><td height="20" width="100" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
+				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[2]?></a>
+			</td>
+			<?
+		}
+	}
+
+	?>
+	</tr></table>
+	<p>&nbsp;</p>
+
+	<?
+	eval($fj);
 }
 
 
@@ -481,7 +527,7 @@ function zamgerlog($event,$nivo) {
 // Ispod je dato pravilo: prvo slovo imena + prvo slovo prezimena + broj indexa
 
 function gen_ldap_uid($userid) {
-	$q10 = myquery("select ime, prezime, brindexa from auth where id=$userid");
+	$q10 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
 	$ime = mysql_result($q10,0,0);
 	$prezime = mysql_result($q10,0,1);
 	$brindexa = mysql_result($q10,0,2);

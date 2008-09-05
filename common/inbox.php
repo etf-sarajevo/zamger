@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/04/30) + "bez naslova" i kod citanja poruke
 // v3.9.1.7 (2008/05/16) + Omoguceno zadavanje naslova, teksta i primaoca poruke u URLu prilikom slanja
 // v3.9.1.8 (2008/06/05) + Dodan outbox
+// v3.9.1.9 (2008/08/28) + Tabela osoba umjesto auth
 
 
 function common_inbox() {
@@ -97,7 +98,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 
 		// Ko je poslao originalnu poruku (tj. kome odgovaramo)
 		$prim_id = mysql_result($q200,0,0);
-		$q210 = myquery("select login,ime,prezime from auth where id=$prim_id");
+		$q210 = myquery("select a.login,o.ime,o.prezime from auth as a, osoba as o where a.id=o.id and o.id=$prim_id");
 		if (mysql_num_rows($q210)<1) {
 			niceerror("Nepoznat pošiljalac");
 			zamgerlog("poruka $poruka ima nepoznatog posiljaoca $prim_id (prilikom odgovora na poruku)",3);
@@ -294,7 +295,7 @@ if ($poruka>0) {
 	}
 
 
-	$q20 = myquery("select ime,prezime from auth where id=$pos_id");
+	$q20 = myquery("select ime,prezime from osoba where id=$pos_id");
 	if (mysql_num_rows($q20)<1) {
 		$posiljalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id",3);
@@ -345,7 +346,7 @@ if ($poruka>0) {
 		}
 	}
 	else if ($opseg==7) {
-		$q60 = myquery("select ime,prezime from auth where id=$prim_id");
+		$q60 = myquery("select ime,prezime from osoba where id=$prim_id");
 		if (mysql_num_rows($q60)<1) {
 			$primalac = "Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
@@ -421,7 +422,7 @@ if ($_REQUEST['mode']=="outbox") {
 		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 	
 		// Primalac
-		$q120 = myquery("select ime,prezime from auth where id=$primalac");
+		$q120 = myquery("select ime,prezime from osoba where id=$primalac");
 		if (mysql_num_rows($q120)<1)
 			$primalac = "Nepoznato! Prijavite grešku";
 		else
@@ -501,7 +502,7 @@ if ($_REQUEST['mode']=="outbox") {
 		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 	
 		// Posiljalac
-		$q120 = myquery("select ime,prezime from auth where id=$r100[5]");
+		$q120 = myquery("select ime,prezime from osoba where id=$r100[5]");
 		if (mysql_num_rows($q120)<1)
 			$posiljalac = "Nepoznato! Prijavite grešku";
 		else
