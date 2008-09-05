@@ -644,7 +644,7 @@ function db_form($table) {
 		} else if ($_lv_["hidden:$name"]==1) {
 			// When adding, we go with the database default
 			if ($nav==1 || $_lv_["forceedit"]==1) {
-				$result .= '<input type="hidden" name="_lv_column_'.$name.'" value="'.$r202[$name].'">'."$nav ".$_lv_["forceedit"]."\n";
+				$result .= '<input type="hidden" name="_lv_column_'.$name.'" value="'.$r202[$name].'">'."\n";
 			}
 
 		// find foreign keys
@@ -806,7 +806,7 @@ function db_list($table,$selected=0) {
 	// Construct output
 	$result = '<ul>'."\n";
 	if (mysql_num_rows($q101)<1)
-		$result .= '<li>Nema rezultata</li>'."\n";
+		$result .= '<li>Nema</li>'."\n";
 
 	$uri = genuri();
 
