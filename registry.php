@@ -36,11 +36,10 @@ array("nastavnik/ocjena", "Konačna ocjena", "Konačna ocjena", "N", "1", "0"),
 array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
 
 
-array("studentska/intro", "Studentska služba", "Studentska služba", "B", "1", "0"),
-array("studentska/studenti", "Administracija studenata", "Studenti", "B", "1", "0"),
-array("studentska/predmeti", "Administracija predmeta", "Predmeti", "B", "1", "0"),
-array("studentska/nastavnici", "Administracija nastavnika", "Nastavnici", "B", "1", "0"),
-array("studentska/prijemni", "Obrada prijemnog ispita", "Prijemni", "B", "1", "0"),
+array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
+array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
+array("studentska/predmeti", "Predmeti", "Predmeti", "B", "1", "0"),
+array("studentska/prijemni", "Prijemni ispit", "Prijemni", "B", "1", "0"),
 array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 array("studentska/izvjestaji", "Prolaznost", "Prolaznost", "B", "1", "0"),
 
@@ -59,6 +58,7 @@ array("izvjestaj/ispit", "Izvještaj za ispit", "Ispit", "NBA", "0", "0"),
 array("izvjestaj/index", "Spisak ocjena studenta", "Indeks", "BA", "0", "0"),
 array("izvjestaj/prolaznost", "Prolaznost", "Prolaznost", "BA", "0", "0"),
 array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodovi", "BA", "0", "0"),
+array("izvjestaj/prijemni", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
