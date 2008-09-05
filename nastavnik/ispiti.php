@@ -161,7 +161,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		?>
 		Rezultati ispita su upisani.
 		<script language="JavaScript">
-		location.href='?sta=nastavnik/ocjena&predmet=<?=$predmet?>';
+		location.href='?sta=nastavnik/ispiti&predmet=<?=$predmet?>';
 		</script>
 		<?
 	}
