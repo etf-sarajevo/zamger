@@ -3,6 +3,11 @@
 // LIB/CONFIG - default konfiguracija za zamger
 
 // v3.9.1.0 (2008/02/12) + Pocetak
+// v3.9.1.1 (2008/09/05) + Dodane opcije: $conf_naziv_intitucije + skraceni oblik, $conf_site_url, $conf_promjena_sifre
+
+$conf_naziv_institucije = "Elektrotehnički fakultet Sarajevo";
+$conf_skr_naziv_institucije = "ETF";
+$conf_skr_naziv_institucije_genitiv = "ETFa";
 
 $conf_dbhost = "localhost";
 $conf_dbuser = "root";
@@ -24,6 +29,9 @@ $conf_system_auth = "table";
 $conf_ldap_server = "localhost";
 $conf_ldap_domain = "@moja.domena.ba"; // string koji se dodaje na uid da bi se dobila email adresa
 // Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
+
+// URL za promjenu sifre (u slucaju LDAPa)
+$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
 
 $conf_use_mysql_utf8 = true; // potreban mysql 5.0+
 
