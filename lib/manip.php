@@ -7,6 +7,7 @@
 // v3.9.1.2 (2008/04/14) + Ponistavam zadnju izmjenu - ako nije odrzan nijedan cas treba dati max bodova za prisustvo 
 // v3.9.1.3 (2008/04/24) + mass_input(): (!$f) zamijenjeno sa ($f) (provjeriti sve module!); dodano trimovanje imena i prezimena i ljepse upozorenje kod gresaka; ako student nije na predmetu a nema bodova, to nije greska
 // v3.9.1.4 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
+// v3.9.1.5 (2008/08/28) + Omoguceno koristenje masovnog unosa kada nije definisan predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -193,18 +194,24 @@ function mass_input($ispis) {
 			continue;
 
 		} else if (mysql_num_rows($q10)>1) {
-			// Postoji više studenata sa istim imenom i prezimenom
-			// Biramo onog koji je upisan na ovaj predmet
-			$q10 = myquery("select a.id from auth as a, student_predmet as sp where a.ime like '$ime' and a.prezime like '$prezime' and a.id=sp.student and sp.predmet=$predmet");
-
-			if (mysql_num_rows($q10)<1) {
-				if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
-				$greska=1;
-				continue;
-
-			} else if (mysql_num_rows($q10)>1) {
-				// Na istom su predmetu!? wtf
-				if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime' na ovom predmetu. Kontaktirajte administratora.<br/>";
+			if ($predmet>0) {
+				// Postoji više studenata sa istim imenom i prezimenom
+				// Biramo onog koji je upisan na ovaj predmet
+				$q10 = myquery("select DISTINCT a.id from auth as a, student_predmet as sp where a.ime like '$ime' and a.prezime like '$prezime' and a.id=sp.student and sp.predmet=$predmet");
+	
+				if (mysql_num_rows($q10)<1) {
+					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
+					$greska=1;
+					continue;
+	
+				} else if (mysql_num_rows($q10)>1) {
+					// Na istom su predmetu!? wtf
+					if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime' na ovom predmetu. Kontaktirajte administratora.<br/>";
+					$greska=1;
+					continue;
+				}
+			} else {
+				if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime'. Kontaktirajte administratora.<br/>";
 				$greska=1;
 				continue;
 			}
@@ -223,27 +230,29 @@ function mass_input($ispis) {
 		}
 
 		// Da li je upisan na predmet?
-		$q20 = myquery("select count(*) from student_predmet where student=$student and predmet=$predmet");
-		if (mysql_result($q20,0,0)<1) {
-			// Pokusacemo preskociti studente koji nemaju ocjenu
-			if ($format==0 || $format==1) 
-				$bodovi=$nred[2];
-			else
-				$bodovi=$nred[1];
-			if (!preg_match("/\w/",$bodovi)) {
-				if ($f) print "Student '$prezime $ime' nije upisan na ovaj predmet, ali nema ni broj bodova ($bodova) - preskačem.<br/>\n";
-			} else {
-				if ($f) print "-- GREŠKA! Student '$prezime $ime' ($student) nije upisan na ovaj predmet<br/>\n";
-				$greska=1;
+		if ($predmet>0) {
+			$q20 = myquery("select count(*) from student_predmet where student=$student and predmet=$predmet");
+			if (mysql_result($q20,0,0)<1) {
+				// Pokusacemo preskociti studente koji nemaju ocjenu
+				if ($format==0 || $format==1) 
+					$bodovi=$nred[2];
+				else
+					$bodovi=$nred[1];
+				if (!preg_match("/\w/",$bodovi)) {
+					if ($f) print "Student '$prezime $ime' nije upisan na ovaj predmet, ali nema ni broj bodova ($bodova) - preskačem.<br/>\n";
+				} else {
+					if ($f) print "-- GREŠKA! Student '$prezime $ime' ($student) nije upisan na ovaj predmet<br/>\n";
+					$greska=1;
+				}
+				continue;
 			}
-			continue;
 		}
 
 		// Podaci su OK, punimo niz...
 		$mass_rezultat['ime'][$student]=$ime;
 		$mass_rezultat['prezime'][$student]=$prezime;
 		for ($i=1; $i<=$brpodataka; $i++) {
-			if ($visestruki==1) {
+			if ($duplikati==1 && $visestruki==1) {
 				if (count($mass_rezultat["podatak$i"][$student])==0) $mass_rezultat["podatak$i"][$student]=array();
 				array_push($mass_rezultat["podatak$i"][$student],$nred[$kolona-$i]);
 			} else
