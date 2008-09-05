@@ -3,11 +3,12 @@
 // NASTAVNIK/OBAVJESTENJA - slanje obavjestenja studentima
 
 // v3.9.1.0 (2008/02/22) + Novi modul: nastavnik/obavjestenja
+// v3.9.1.1 (2008/09/03) + Dodajem podrsku za email
 
 
 function nastavnik_obavjestenja() {
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$conf_ldap_domain;
 
 
 
@@ -90,9 +91,61 @@ if ($_REQUEST['akcija']=='novo') {
 		} else {
 			if ($primalac>0) {
 				$q6 = myquery("insert into poruka set tip=1, opseg=6, primalac=$primalac, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst'");
+
+				// Spisak studenata u grupi
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_labgrupa as sl where sl.labgrupa=$primalac and sl.student=o.id and sl.student=a.id";
 			} else {
 				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst'");
+
+				// Spisak studenata na predmetu
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$predmet and sp.student=o.id and sp.student=a.id";
 			}
+
+			// Saljem mail studentima
+
+			$subject = "OBAVJEŠTENJE: $predmet_naziv";
+			if ($primalac>0) {
+				$q8 = myquery("select naziv from labgrupa where id=$primalac");
+				$subject .= " (".mysql_result($q8,0,0).")";
+			}
+			
+			$subject = iconv("UTF-8", "ISO-8859-2", $subject); // neki mail klijenti ne znaju prikazati utf-8 u subjektu
+			$preferences = array(
+				"input-charset" => "ISO-8859-2",
+				"output-charset" => "ISO-8859-2",
+				"line-length" => 76,
+				"line-break-chars" => "\n"
+			);
+			$preferences["scheme"] = "Q"; // quoted-printable
+			$subject = iconv_mime_encode("", $subject, $preferences);
+
+ 			$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nNastavnik ili saradnik na predmetu $predmet_naziv poslao vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
+
+			$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
+			$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+			$email = mysql_result($q9,0,2);
+			if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
+			
+			$add_header = "From: $email ($imeprezime)\r\nContent-Type: text/plain; charset=utf-8\r\n";
+
+			$mailto = "";
+			$broj=0;
+			$q7 = myquery($upit);
+			while ($r7 = mysql_fetch_row($q7)) {
+				$mailto .= "$r7[1]$conf_ldap_domain ($r7[2] $r7[3]); ";
+				$broj++;
+				if ($r7[0]!="$r7[1]$conf_ldap_domain") {
+					$mailto .= "$r7[0] ($r7[2] $r7[3]); ";
+					$broj++;
+				}
+				if ($broj>10) {
+					mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
+					$mailto=""; $broj=0;
+				}
+			}
+			if ($broj>0)
+				mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
+
 			zamgerlog("novo obavjestenje (predmet $predmet)",2);
 		}
 
