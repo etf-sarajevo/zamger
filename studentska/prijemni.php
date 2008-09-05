@@ -4,11 +4,113 @@
 
 // v3.9.1.0 (2008/06/05) + Import koda by eldin.starcevic@hotmail.com
 // v3.9.1.1 (2008/06/09) + Dodan post-guard, ispravljen bug sa ispisom datuma u pregledu, dodana default vrijednost za opći uspjeh
+// v3.9.1.2 (2008/07/11) + Finalna verzija korištena za prijemni na ETFu
+// v3.9.1.3 (2008/08/28) + Uhakovan drugi termin za prijemni (popraviti), centriran i reorganizovan prikaz
+
+
+// TODO: koristiti tabelu osoba
+
 
 
 function studentska_prijemni() {
 
+global $_lv_;
+
+
 ?>
+<center>
+<table border="0" width="100%">
+
+
+<?
+
+if ($_REQUEST['akcija'] != "pregled") {
+
+?>
+<tr><td valign="top" width="200">
+<!--Tabela za linkove koji otvaraju ostale stranice vezane za aplikciju-->
+Prijemni ispit 7. jula 2008:<br/>
+
+
+<table bgcolor="" style="border:1px;border-style:solid;border-color:black">
+	<tr>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=1">Pregled kandidata</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=prijemni&termin=1">Unos bodova sa prijemnog ispita</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij&termin=1">Unos kriterija za upis</a></td>
+	</tr>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=spisak&termin=1">Spisak kandidata za prijemni ispit</a></td>
+		<!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=bih&termin=1">BiH</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=strani&termin=1">Strani državljani</a><br />
+		</td>-->
+        <tr>&nbsp;</tr> 	 
+	<tr> 	 
+		<td>Rang liste kandidata:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=3&termin=1">Automatika i elektronika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=4&termin=1">Elektroenergetika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=2&termin=1">Računarstvo i informatika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=5&termin=1">Telekomunikacije</a><br />
+
+		</td> 	 
+	</tr> 	 
+</table>
+
+<br/><br/>
+Prijemni ispit 1. septembra 2008:<br/>
+
+
+<table bgcolor="" style="border:1px;border-style:solid;border-color:black">
+	<tr>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=2">Pregled kandidata</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=prijemni&termin=2">Unos bodova sa prijemnog ispita</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij&termin=2">Unos kriterija za upis</a></td>
+	</tr>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=spisak&termin=2">Spisak kandidata za prijemni ispit</a></td>
+		<!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=bih&termin=2">BiH</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=strani&termin=2">Strani državljani</a><br />
+		</td>-->
+        <tr>&nbsp;</tr> 	 
+	<tr> 	 
+		<td>Rang liste kandidata:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=3&termin=2">Automatika i elektronika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=4&termin=2">Elektroenergetika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=2&termin=2">Računarstvo i informatika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=5&termin=2">Telekomunikacije</a><br />
+
+		</td> 	 
+	</tr> 	 
+</table>
+
+
+
+
+</td><td width="10">&nbsp;</td>
+
+
+<?
+
+} // if ($_REQUEST['akcija'] != "pregled" )
+
+?>
+<td valign="top">
+
 <h1>Prijemni ispit</h1>
 <br />
 <?
@@ -20,64 +122,26 @@ function studentska_prijemni() {
 if ($_REQUEST['akcija']=="") $_REQUEST['akcija']="unos";
 
 
-
-// Spisak kandidata za prijemni
-// Parametar IZ definiše da li su strani, domaci ili svi
-
-if ($_REQUEST['akcija']=="kandidati") {
-
-	if ($_REQUEST['iz']=='bih') {
-		$uslov="WHERE kanton!=13"; $naslov="(BiH)";
-	}
-	else if ($_REQUEST['iz']=='strani') {
-		$uslov="WHERE kanton=13"; $naslov="(Strani državljani)";
-	}
-	else {
-		$uslov=""; $naslov="";
-	}
-
+// Predlink za izvještaj
+if ($_REQUEST['akcija']=="spisak") {
 	?>
-	<h3>Spisak kandidata za kvalifikacioni ispit <?=$naslov?></h3>
-	<br /><?
+	<form action="index.php" method="GET">
+	<input type="hidden" name="sta" value="izvjestaj/prijemni">
+	<input type="hidden" name="akcija" value="kandidati">
+	<input type="hidden" name="termin" value="<?=$_REQUEST['termin']?>">
+	<h2>Spisak kandidata za prijemni ispit</h2>
 
-	$sqlSelect="SELECT id, ime, prezime, kanton, opci_uspjeh, kljucni_predmeti, dodatni_bodovi FROM prijemni $uslov ORDER BY prezime";
-	
-	$q = myquery($sqlSelect);
-	
-	?>
-	<table width="" align="center" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
-	<tr>
-	<td width="10"><b>R.br.</b></td>
-	<td><b>Prezime i ime</b></td>
-	<td width="100"><b>Opći uspjeh</b></td>
-	<td width="110"><b>Ključni predmeti</b></td>
-	<td width="105"><b>Dodatni bodovi</b></td>
-	<td width="105"><b>Ukupno bodova</b></td>
-	</tr>
-	<?php
-	$brojac = 1;
-	while ($kandidat=mysql_fetch_array($q))
-	{
-		$array = array ($kandidat["prezime"], $kandidat["ime"]);
-		$prezimeIme = join (" ", $array);
-		?>
-		<tr>
-		<td align="center"><?php echo //"$brojac";
-		$kandidat["id"];?></td>
-		<td><?php echo $prezimeIme;?></td>
-		<td align="center"><?php echo $kandidat["opci_uspjeh"];?></td>
-		<td align="center"><?php echo $kandidat["kljucni_predmeti"];?></td>
-		<td align="center"><?php echo $kandidat["dodatni_bodovi"];?></td>
-		<td align="center"><?php echo $kandidat["opci_uspjeh"]+$kandidat["kljucni_predmeti"]+$kandidat["dodatni_bodovi"];?></font></td>
-		</tr>
-		<?php
-		$brojac++;
-	}
-	?>
-	</table>
+	<p>Državljanstvo: <select name="iz"><option value="bih">BiH</option>
+	<option value="strani">Strani državljani</option>
+	<option>Svi zajedno</option>
+	</select></p>
+	<p>Sortirano po: <select name="sort"><option value="abecedno">imenu i prezimenu</option>
+	<option>ukupnom broju bodova</option>
+	</select></p>
+	<input type="submit" value=" Kreni ">
+	</form>
 	<?
 }
-
 
 // Unos bodova sa prijemnog ispita
 
@@ -128,7 +192,12 @@ if ($_REQUEST['akcija']=="prijemni") {
 		<td><b>Bodovi (prijemni)</b></td></tr>
 	<?
 
-	$upit = "SELECT id, ime, prezime, prijemni_ispit, izasao_na_prijemni, opci_uspjeh+kljucni_predmeti+dodatni_bodovi FROM prijemni";
+	$upit = "";
+
+	if ($_REQUEST['termin']==2) $upit = "SELECT id, ime, prezime, prijemni_ispit_dva, izasao_na_prijemni, opci_uspjeh+kljucni_predmeti+dodatni_bodovi FROM prijemni WHERE prijavio_drugi=1 OR prijavio_drugi=2";
+	else $upit .= "SELECT id, ime, prezime, prijemni_ispit, izasao_na_prijemni, opci_uspjeh+kljucni_predmeti+dodatni_bodovi FROM prijemni WHERE prijavio_drugi=0 OR prijavio_drugi=2";
+
+
 	if ($_REQUEST['sort'] == "prezime") $upit .= " ORDER BY prezime,ime";
 	else $upit .= " ORDER BY id";
 
@@ -138,7 +207,7 @@ if ($_REQUEST['akcija']=="prijemni") {
 		if ($id!=0)
 			print "$r[0])\"></tr>\n";
 		$id=$r[0];
-		if ($r[4]==0) $bodova="/"; else $bodova="0"; // izasao na prijemni?
+		if ($r[4]==0) $bodova="/"; else $bodova=$r[3]; // izasao na prijemni?
 
 		?>
 		<SCRIPT language="JavaScript"> origval[<?=$id?>]=<?=$bodova?></SCRIPT>
@@ -289,6 +358,15 @@ if ($_REQUEST['akcija'] == 'unospotvrda') {
 	$rdodatni=floatval($_REQUEST['dodatni_bodovi']);
 	$rprijemni=floatval($_REQUEST['prijemni']);
 	$editovanje = intval($_REQUEST['editovanje']);
+	$rprijemni_dva=floatval($_REQUEST['prijemni_dva']);
+
+	if ($_REQUEST['termin1']=="on" && $_REQUEST['termin2']=="on") {
+		$rtermin=2;
+	} else if ($_REQUEST['termin2']=="on") {
+		$rtermin=1;
+	} else /* if ($_REQUEST['termin1']=="on") */ {
+		$rtermin=0;
+	}
 
 	if (preg_match("/(\d+).*?(\d+).*?(\d+)/",$_REQUEST['datum_rodjenja'],$matches)) {
 		$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
@@ -309,7 +387,7 @@ if ($_REQUEST['akcija'] == 'unospotvrda') {
 			if (mysql_result($q,0,0)>0) $novi_id=$stari_id; // Stari ID se ne bi trebao ponavljati...
 		}
 
-		$dioupita = "set ime='$rime', prezime='$rprezime', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja='$rmjestorod', drzavljanstvo='$rdrzavljanstvo', zavrsena_skola='$rzavrskola', jmbg='$rjmbg', adresa='$radresa', telefon='$rtelefon', kanton='$rkanton', redovni=$rredovni, odsjek_prvi='$opi', odsjek_drugi='$odi', odsjek_treci='$oti', odsjek_cetvrti='$oci', opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, student_generacije=$rgener, id=$novi_id";
+		$dioupita = "set ime='$rime', prezime='$rprezime', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja='$rmjestorod', drzavljanstvo='$rdrzavljanstvo', zavrsena_skola='$rzavrskola', jmbg='$rjmbg', adresa='$radresa', telefon='$rtelefon', kanton='$rkanton', redovni=$rredovni, odsjek_prvi='$opi', odsjek_drugi='$odi', odsjek_treci='$oti', odsjek_cetvrti='$oci', opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, student_generacije=$rgener, prijemni_ispit=$rprijemni, prijemni_ispit_dva=$rprijemni_dva, prijavio_drugi=$rtermin, id=$novi_id";
 
 		if ($editovanje>0)
 			$q = myquery("update prijemni $dioupita where id=$stari_id");
@@ -440,9 +518,28 @@ if ($_REQUEST['akcija'] == 'unospotvrda') {
 	<tr>
 		<td align="left">Bodovi (dodatni bodovi):</td><td align="left"><b><?=$rdodatni?></b></td>
 	</tr>
+<?
+if ($rtermin==0) $termin="7. jula 2008";
+else if ($rtermin==1) $termin="1. septembra 2008";
+else if ($rtermin==2) $termin="7. jula i 1. septembra 2008";
+?>
 	<tr bgcolor="#DDDDDD">
-		<td align="left">Bodovi (prijemni ispit):</td><td align="left"><b><?=$rprijemni?></b></td>
+		<td align="left">Termini prijemnog:</td><td align="left"><b><?=$termin?></b></td>
 	</tr>
+<? 
+if ($rprijemni>0) { ?>
+	<tr bgcolor="#DDDDDD">
+		<td align="left">Bodovi (prijemni 7.7):</td><td align="left"><b><?=$rprijemni?></b></td>
+	</tr>
+<?
+}
+if ($rprijemni_dva>0) { ?>
+	<tr bgcolor="#DDDDDD">
+		<td align="left">Bodovi (prijemni 1.9):</td><td align="left"><b><?=$rprijemni_dva?></b></td>
+	</tr>
+<?
+}
+?>
 </table>
 <br />
 
@@ -457,17 +554,19 @@ if ($_REQUEST['akcija'] == 'unospotvrda') {
 
 if ($_REQUEST['akcija'] == "pregled") {
 	
+	$termin = $_REQUEST['termin'];
+
 	?>
 	<h3>Pregled kandidata</h3>
 	<br />
 	
 	<hr color="black" width="2500">
-	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=prezime">Sortirano po prezimenu</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=id">Sortirano po rednom broju</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<a href="index.php?sta=studentska/prijemni&akcija=unos">Dodaj kandidata</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<a href="index.php?sta=studentska/prijemni&akcija=prijemni">Unos bodova sa prijemnog ispita</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih">Kandidati BiH</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</a>
+	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=prezime&termin=<?=$termin?>">Sortirano po prezimenu</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=id&termin=<?=$termin?>">Sortirano po rednom broju</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=unos&termin=<?=$termin?>">Dodaj kandidata</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=prijemni&termin=<?=$termin?>">Unos bodova sa prijemnog ispita</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih&termin=<?=$termin?>">Kandidati BiH</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani&termin=<?=$termin?>">Kandidati (strani državljani)</a>
 	<hr color="black" width="2500">
 	
 	<?
@@ -481,7 +580,18 @@ if ($_REQUEST['akcija'] == "pregled") {
 	
 	$sqlSelect="SELECT id, ime, prezime, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja,
 				drzavljanstvo, zavrsena_skola, jmbg, adresa, telefon, kanton, opci_uspjeh,
-				kljucni_predmeti, dodatni_bodovi, redovni, prijemni_ispit, odsjek_prvi, odsjek_drugi, odsjek_treci, odsjek_cetvrti FROM prijemni ";
+				kljucni_predmeti, dodatni_bodovi, redovni, ";
+	if ($_REQUEST['termin']=="2") $sqlSelect .= "prijemni_ispit_dva AS prijemni_bodovi, ";
+	else $sqlSelect .= "prijemni_ispit AS prijemni_bodovi, ";
+
+	$sqlSelect .= "odsjek_prvi, odsjek_drugi, odsjek_treci, odsjek_cetvrti, student_generacije FROM prijemni ";
+
+	if ($_REQUEST['termin']=="1")
+		$sqlSelect .= "WHERE prijavio_drugi=0 OR prijavio_drugi=2 ";
+	else if ($_REQUEST['termin']=="2")
+		$sqlSelect .= "WHERE prijavio_drugi=1 OR prijavio_drugi=2 ";
+
+
 	if ($_REQUEST['sort'] == "id") $sqlSelect .= "ORDER BY id";
 	else $sqlSelect .= "ORDER BY prezime";
 				
@@ -499,6 +609,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	<td><b>Mjesto rođenja</b></td>
 	<td><b>Državljanstvo</b></td>
 	<td><b>Završena škola</b></td>
+	<td><b>Uč. gen.</b></td>
 	<td width="115"><b>Jmbg</b></td>
 	<td><b>Adresa</b></td>
 	<td><b>Telefon</b></td>
@@ -530,6 +641,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 		<td><?php echo $kandidat["mjesto_rodjenja"];?></td>
 		<td><?php echo $kandidat["drzavljanstvo"];?></td>
 		<td><?php echo $kandidat["zavrsena_skola"];?></td>
+		<td><?php if ($kandidat["student_generacije"]>0) print "DA"; else print "&nbsp;"?></td>
 		<td><?php echo $kandidat["jmbg"];?></td>
 		<td><?php echo $kandidat["adresa"];?></td>
 		<td><?php echo $kandidat["telefon"];?></td>
@@ -537,7 +649,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 		<td align="center"><?php echo $kandidat["opci_uspjeh"];?></td>
 		<td align="center"><?php echo $kandidat["kljucni_predmeti"];?></td>
 		<td align="center"><?php echo $kandidat["dodatni_bodovi"];?></td>
-		<td align="center"><?php echo $kandidat["prijemni_ispit"];?></td>
+		<td align="center"><?php echo $kandidat["prijemni_bodovi"];?></td>
 		<td align="center"><?php if ($kandidat["redovni"]) echo "redovni"; else echo "paralelni";?></td>
 		<td align="center"><?php echo $kandidat["odsjek_prvi"];?></td>
 		<td align="center"><?php echo $kandidat["odsjek_drugi"];?></td>
@@ -562,10 +674,12 @@ if ($_REQUEST['akcija'] == "pregled") {
 	</table>
 	
 	<hr color="black" width="2500">
-	<a href="index.php?sta=studentska/prijemni&akcija=unos">Dodaj kandidata&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
-	<a href="index.php?sta=studentska/prijemni&akcija=prijemni">Unos bodova sa prijemnog ispita&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih">Kandidati BiH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
-	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</font></a>
+	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=prezime&termin=<?=$termin?>">Sortirano po prezimenu</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=pregled&sort=id&termin=<?=$termin?>">Sortirano po rednom broju</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<a href="index.php?sta=studentska/prijemni&akcija=unos&termin=<?=$termin?>">Dodaj kandidata&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+	<a href="index.php?sta=studentska/prijemni&akcija=prijemni&termin=<?=$termin?>">Unos bodova sa prijemnog ispita&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=bih&termin=<?=$termin?>">Kandidati BiH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font></a>
+	<a href="index.php?sta=studentska/prijemni&akcija=kandidati&iz=strani&termin=<?=$termin?>">Kandidati (strani državljani)</font></a>
 	<hr color="black" width="2500">
 	<?
 
@@ -581,9 +695,10 @@ if ($_REQUEST['akcija']=="unos") {
 // Editovanje starog kandidata
 $editid=intval($_REQUEST['edit']);
 $eredovni=1;
-$ekanton=$eopci=$ekljucni=$edodatni=$eprijemni=0;
+$ekanton=$eopci=$ekljucni=$edodatni=$eprijemni=$eprijemni_dva=0;
+$eprijavio_drugi=-1;
 if ($editid>0) {
-	$q = myquery("select ime, prezime, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, drzavljanstvo, zavrsena_skola, jmbg, adresa, telefon, kanton, redovni, odsjek_prvi, odsjek_drugi, odsjek_treci, odsjek_cetvrti, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, prijemni_ispit, student_generacije from prijemni where id=$editid");
+	$q = myquery("select ime, prezime, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, drzavljanstvo, zavrsena_skola, jmbg, adresa, telefon, kanton, redovni, odsjek_prvi, odsjek_drugi, odsjek_treci, odsjek_cetvrti, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, prijemni_ispit, student_generacije, prijemni_ispit_dva, prijavio_drugi from prijemni where id=$editid");
 	$eime = mysql_result($q,0,0);
 	$eprezime = mysql_result($q,0,1);
 	$edatum = date("d. m. Y.",mysql_result($q,0,2));
@@ -604,6 +719,8 @@ if ($editid>0) {
 	$edodatni = mysql_result($q,0,17);
 	$eprijemni = mysql_result($q,0,18);
 	$egener = mysql_result($q,0,19);
+	$eprijemni_dva = mysql_result($q,0,20);
+	$eprijavio_drugi = mysql_result($q,0,21);
 }
 
 
@@ -623,7 +740,7 @@ $odsjeci = array("AE", "EE", "RI", "TK");
 
 // Tabela za unos podataka - design
 ?>
-<h3>Unos studenata</h3>
+<h3>Unos kandidata</h3>
 <br />
 
 <SCRIPT language="JavaScript">
@@ -765,13 +882,25 @@ function enterhack(e,gdje) {
 		</table>
 		</td>
 	</tr>
+	<tr>
+		<td width="125" align="left">Termin prijemnog:</td>
+		<td><input type="checkbox" name="termin1" id="termin1" <?if ($eprijavio_drugi==0 || $eprijavio_drugi==2) print "checked"?>>07. 07. 2008 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="termin2" id="termin2" <?if ($eprijavio_drugi==1 || $eprijavio_drugi==2) print "checked"?>>01. 09. 2008</td>
+	</tr>
 <? if ($eprijemni>0) { ?>
 	<tr>
-		<td width="125" align="left">Prijemni</td>
+		<td width="125" align="left">Prijemni (7.7):</td>
 		<td><input maxlength="50" size="17" name="prijemni" id="prijemni" type="text" value="<?=$eprijemni?>" autocomplete="off"></td>
 	</tr>
 <? } else { ?>
 	<input type="hidden" name="prijemni" value="0">
+<? } ?>
+<? if ($eprijemni_dva>0) { ?>
+	<tr>
+		<td width="125" align="left">Prijemni (1.9)</td>
+		<td><input maxlength="50" size="17" name="prijemni_dva" id="prijemni_dva" type="text" value="<?=$eprijemni_dva?>" autocomplete="off"></td>
+	</tr>
+<? } else { ?>
+	<input type="hidden" name="prijemni_dva" value="0">
 <? } ?>
 </table>
 <br />
@@ -1208,6 +1337,13 @@ function provjeri_sve() {
 		return false;
 	}
 
+	var nesto = document.getElementById('termin1');
+	var nesto2 = document.getElementById('termin2');
+	if (!nesto.checked && !nesto2.checked) {
+		alert("Niste izabrali nijedan termin za prijemni!");
+		return false;
+	}
+
 	document.getElementById('glavnaforma').submit();
 	return true;
 }
@@ -1223,104 +1359,137 @@ function provjeri_sve() {
 
 
 <!--Tabela za linkove koji otvaraju ostale stranice vezane za aplikciju-->
+<!--
+<table border="0" bgcolor="">
+<tr>
+	<td>Prijemni ispit 7. jula 2008:<br/>
+
+
 <table border="0" bgcolor="">
 	<tr>
-		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled">Pregled kandidata</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=1">Pregled kandidata</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=prijemni">Unos bodova sa prijemnog ispita</a></td>
+		<td><a href="?sta=studentska/prijemni&akcija=prijemni&termin=1">Unos bodova sa prijemnog ispita</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=kandidati&iz=bih">Kandidati BiH</a></td>
+		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij&termin=1">Unos kriterija za upis</a></td>
+	</tr>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=kandidati&iz=strani">Kandidati (strani državljani)</a></td>
-	</tr>
-	<tr>&nbsp;</tr>
-	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij">Unos kriterija za upis</a></td>
-	</tr>
+		<td>Spisak kandidata za prijemni ispit:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=bih&termin=1">BiH</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=strani&termin=1">Strani državljani</a><br />
+		</td>
+        <tr>&nbsp;</tr> 	 
+	<tr> 	 
+		<td>Rang liste kandidata:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=3&termin=1">Automatika i elektronika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=4&termin=1">Elektroenergetika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=2&termin=1">Računarstvo i informatika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=5&termin=1">Telekomunikacije</a><br />
+
+		</td> 	 
+	</tr> 	 
 </table>
 
+
+	</td><td>Prijemni ispit 1. septembra 2008:<br/>
+
+
+<table border="0" bgcolor="">
+	<tr>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=2">Pregled kandidata</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=prijemni&termin=2">Unos bodova sa prijemnog ispita</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=unos_kriterij&termin=2">Unos kriterija za upis</a></td>
+	</tr>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td>Spisak kandidata za prijemni ispit:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=bih&termin=2">BiH</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&akcija=kandidati&iz=strani&termin=2">Strani državljani</a><br />
+		</td>
+        <tr>&nbsp;</tr> 	 
+	<tr> 	 
+		<td>Rang liste kandidata:<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=3&termin=2">Automatika i elektronika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=4&termin=2">Elektroenergetika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=2&termin=2">Računarstvo i informatika</a><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=5&termin=2">Telekomunikacije</a><br />
+
+		</td> 	 
+	</tr> 	 
+</table>
+
+
+</td></tr></table>
+
 <br />
+-->
 
 <?
 
 } // if ($akcija_unos==1)
 
+
+
+// Forma za izbor vrste rang liste
+if ($_REQUEST['akcija'] == "rang_liste") {
+	?>
+	<form action="index.php" METHOD="GET">
+	<input type="hidden" name="sta" value="izvjestaj/prijemni">
+	Odsjek: <? 
+		$_lv_['where:moguc_upis']="1"; 
+		echo db_dropdown("studij")
+	?><br /><br />
+	<input type="submit" value=" Prikaži ">
+	</form>
+	<?
+}
+
+
+
 //Unos kriterija za upis
+if ($_REQUEST['akcija'] == "unos_kriterij") {
 
-if ($_REQUEST['akcija'] == "kriterij_potvrda"){
+	if ($_REQUEST['spremi']) {
+		$rdonja = intval($_REQUEST['donja_granica']);
+		$rgornja = intval($_REQUEST['gornja_granica']);
+		$rkandidatisd = intval($_REQUEST['kandidati_sd']);
+		$rkandidatisp = intval($_REQUEST['kandidati_sp']);
+		$rkandidatikp = intval($_REQUEST['kandidati_kp']);
+		$rprijemnimax = floatval($_REQUEST['prijemni_max']);
+		$rstudij = intval($_REQUEST['_lv_column_studij']);
 
-	$rdonja = intval($_REQUEST['donja_granica']);
-	$rgornja = intval($_REQUEST['gornja_granica']);
-	$rkandidatisd = intval($_REQUEST['kandidati_sd']);
-	$rkandidatisp = intval($_REQUEST['kandidati_sp']);
-	$rkandidatikp = intval($_REQUEST['kandidati_kp']);
-	$rprijemnimax = floatval($_REQUEST['prijemni_max']);
-	$rodsjek = intval($_REQUEST['_lv_column_institucija']);
-	$rakademska_godina = intval($_REQUEST['_lv_column_akademska_godina']);
-	
+		$qInsert = myquery("UPDATE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, prijemni_max=$rprijemnimax WHERE studij=$rstudij");
 
-	if ($_REQUEST['potvrda']){
-	$qInsert = myquery("INSERT INTO upis_kriterij	(donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, odsjek, akademska_godina,  prijemni_max)
-										VALUES  	($rdonja, $rgornja, $rkandidatisd, $rkandidatisp, $rkandidatikp, $rodsjek, $rakademska_godina, $rprijemnimax)");
-	$_REQUEST['akcija'] = "unos_kriterij";
+		$_REQUEST['prikazi'] = true; // prikazi upravo unesene podatke
 	}
-	else if ($_REQUEST['nazad']){
-	$_REQUEST['akcija']="unos_kriterij";
+
+	if ($_REQUEST['prikazi']) {
+		$rstudij = intval($_REQUEST['_lv_column_studij']);
+		$q120 = myquery("select donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, prijemni_max from upis_kriterij where studij=$rstudij");
+		if (mysql_num_rows($q120)<1) {
+			$pdonja=$pgornja=$pksd=$pksp=$pkkp=$ppmax=0;
+		} else {
+			$pdonja=mysql_result($q120,0,0);
+			$pgornja=mysql_result($q120,0,1);
+			$pksd=mysql_result($q120,0,2);
+			$pksp=mysql_result($q120,0,3);
+			$pkkp=mysql_result($q120,0,4);
+			$ppmax=mysql_result($q120,0,5);
+		}
 	}
-	
-	else{
-	
-		$q_odsjek = myquery("select naziv from institucija where id=$rodsjek");
-		$naziv_odsjeka = mysql_result($q_odsjek,0,0);
-		$q_akademska_godina = myquery("select naziv from akademska_godina where id=$rakademska_godina");
-		$akademska_godina = mysql_result($q_akademska_godina,0,0);
-		
-?>
-
-<h3>Provjera podataka</h3>
-<br />
-
-<table width="80%" cellspacing="3" style="border:1px;border-style:solid;border-color:black">
-	<tr bgcolor="#DDDDDD">
-		<td align="left">Akademska godina:</td><td align="left"><b><?php print $akademska_godina?></b></td>
-	</tr>
-	<tr>
-		<td align="left">Odsjek:</td><td align="left"><b><?php print $naziv_odsjeka?></b></td>
-	</tr>
-	<tr bgcolor="#DDDDDD">
-		<td align="left">Maksimalni broj bodova na prijemnom ispitu:</td><td align="left"><b><?php print $rprijemnimax?></b></td>
-	</tr>
-	<tr>
-		<td align="left" width="65%">Hard limit:</td><td align="left"><b><?php echo $rdonja?></b></td>
-	</tr>
-	<tr bgcolor="#DDDDDD">
-		<td align="left">Soft limit:</td><td align="left"><b><?php echo $rgornja?></b></td>
-	</tr>
-	<tr>
-		<td align="left" width="65%">Broj kandidata(strani državljani):</td><td align="left"><b><?php echo $rkandidatisd?></b></td>
-	</tr>
-	<tr bgcolor="#DDDDDD">
-		<td align="left">Broj kandidata(sami plaćaju troškove školovanja):</td><td align="left"><b><?php print $rkandidatisp?></b></td>
-	</tr>
-	<tr>
-		<td align="left">Broj kandidata(kanton plaća troškove školovanja):</td><td align="left"><b><?php print $rkandidatikp?></b></td>
-	</tr>
-</table>
-<br />
-<?php echo genform("POST")?><input type="hidden" name="_lv_column_institucija" value="<?php echo $rodsjek?>"><input type="hidden" name="_lv_column_akademska_godina" value="<?php echo $rakademska_godina?>"><input type="submit" name="potvrda" value=" Potvrda "> <input type="submit" name="nazad" value=" Nazad "></form><?php
-}
-}
-?>
-
-<?php
-	
-if ($_REQUEST['akcija'] == "unos_kriterij"){
 
 ?>
 
@@ -1335,15 +1504,14 @@ function odzuti(nesto) {
 
 <form action="" method="POST">
 <input type="hidden" name="sta" value="studentska/prijemni">
-<input type="hidden" name="akcija" value="kriterij_potvrda">
+<input type="hidden" name="akcija" value="unos_kriterij">
 <table align="left" border="0" width="70%" bgcolor="">
 	<tr>
-		<td width="70%" align="left">Odsjek:</td>
-		<td width="" align="left">Akademska godina:</td>
+		<td colspan="2" align="left">Odsjek:</td>
 	</tr>
 	<tr>
-		<td><?php echo db_dropdown("institucija")?></td>
-		<td><?php echo db_dropdown("akademska_godina")?></td>
+		<td><?php $_lv_['where:moguc_upis']="1"; echo db_dropdown("studij",$rstudij,"-- Izaberite odsjek --")?></td>
+		<td><input type="submit" name="prikazi" value=" Prikaži "></td>
 	</tr>
 	<tr>
 		<td>&nbsp;</td>
@@ -1353,277 +1521,49 @@ function odzuti(nesto) {
 	</tr>
 	<tr>
 		<td width="70%" align="left">Maksimalni broj bodova na prijemnom ispitu:</td>
-		<td><input type="text" size="12" name="prijemni_max" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td><input type="text" size="12" name="prijemni_max" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$ppmax?>"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Hard limit(postotak):</td>
-		<td><input type="text" size="12" name="donja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td width="70%" align="left">Hard limit:</td>
+		<td><input type="text" size="12" name="donja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pdonja?>"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Soft limit(postotak):</td>
-		<td><input type="text" size="12" name="gornja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td width="70%" align="left">Soft limit:</td>
+		<td><input type="text" size="12" name="gornja_granica" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pgornja?>"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Broj kandidata(strani državljani):</td>
-		<td><input type="text" size="12" name="kandidati_sd" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td width="70%" align="left">Broj kandidata (strani državljani):</td>
+		<td><input type="text" size="12" name="kandidati_sd" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pksd?>"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Broj kandidata(sami plaćaju školovanje):</td>
-		<td><input type="text" size="12" name="kandidati_sp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td width="70%" align="left">Broj kandidata (sami plaćaju školovanje):</td>
+		<td><input type="text" size="12" name="kandidati_sp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pksp?>"></td>
 	</tr>
 	<tr>
-		<td width="70%" align="left">Broj kandidata(kanton plaća školovanje):</td>
-		<td><input type="text" size="12" name="kandidati_kp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off"></td>
+		<td width="70%" align="left">Broj kandidata (kanton plaća školovanje):</td>
+		<td><input type="text" size="12" name="kandidati_kp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pkkp?>"></td>
 	</tr>
 	<tr>
 		<td>&nbsp;<td>
 	</tr>
 	<tr>
-		<td><input type="submit" value="Spremi"></td>
+		<td><input type="submit" name="spremi" value="Spremi"></td>
 	</tr>
 	
 	</table>
 	</form>
 	
-<?php
+<?
+
 }
 
-//Rang liste kandidata nakon kvalifikacionog ispita
 
-if ($_REQUEST['akcija'] =="rang_lista"){
-	
-	if($_REQUEST['odsjek']=="ee"){
-	$uslov = "i.kratki_naziv='EE'";
-	$uslovprijemni = "p.odsjek_prvi='EE'";
-	$naslov = "Elektroenergetiku";
-	}
-	else if($_REQUEST['odsjek']=="ae"){
-	$uslov = "i.kratki_naziv='AE'"; 
-	$uslovprijemni = "p.odsjek_prvi='AE'";
-	$naslov = "Automatiku i elektroniku";
-	}
-	else if($_REQUEST['odsjek']=="ri"){
-	$uslov = "i.kratki_naziv='RI'"; 
-	$uslovprijemni = "p.odsjek_prvi='RI'";
-	$naslov = "Računarstvo i informatiku";
-	}
-	else if($_REQUEST['odsjek']=="tk"){
-	$uslov = "i.kratki_naziv='TK'";
-	$uslovprijemni = "p.odsjek_prvi='TK'";	
-	$naslov = "Telekomunikacije";
-	}
-	else {
-	}
-	
 ?>
-<h3 align="left">Rang lista kandidata nakon kvalifikacionog ispita</h3>
-<h2 align="left">Odsjek za <?php echo $naslov ?><h2>
-<br/>
-<?php
-	
-$podupit = myquery("SELECT MAX(id) FROM akademska_godina");
-$broj = mysql_fetch_row($podupit);
-	
-$quk = myquery	("SELECT uk.donja_granica, uk.gornja_granica, uk.kandidati_strani, uk.kandidati_sami_placaju, uk.kandidati_kanton_placa, uk.prijemni_max
-				FROM upis_kriterij uk, institucija i, akademska_godina ag
-				WHERE uk.odsjek = i.id AND uk.akademska_godina = ag.id AND uk.akademska_godina = $broj[0] AND $uslov");
+</td></tr></table></center>
+<?
 
-$donjagranica = floatval(mysql_result($quk, 0, 0));
-$gornjagranica = floatval(mysql_result($quk, 0, 1));
-$kandidatisd = intval(mysql_result($quk,0,2));
-$kandidatisp = intval(mysql_result($quk,0,3));
-$kandidatikp = intval(mysql_result($quk,0,4));
-$prijemnimax = floatval(mysql_result($quk,0,5));
-
-$bodovihard = $donjagranica * $prijemnimax / 100;
-$bodovisoft = $gornjagranica * $prijemnimax / 100;
-
-$qispis = myquery  	("SELECT p.id, CONCAT(p.prezime, ' ', p.ime) 'Prezime i ime', k.kratki_naziv, p.opci_uspjeh, p.kanton, p.kljucni_predmeti, p.dodatni_bodovi, p.prijemni_ispit, p.opci_uspjeh+p.kljucni_predmeti+p.dodatni_bodovi+p.prijemni_ispit ukupno
-					FROM prijemni p, kanton k
-					WHERE  p.kanton = k.id AND $uslovprijemni 
-					ORDER BY ukupno DESC");
-						
-$kandidati = array();
-while($rezultat = mysql_fetch_row($qispis)){
-$id = $rezultat[0];
-$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$rezultat[2], 'opci_uspjeh'=>$rezultat[3], 'kanton_id'=>$rezultat[4], 'kljucni_predmeti'=>$rezultat[5], 'dodatni_bodovi'=>$rezultat[6], 'prijemni_ispit'=>$rezultat[7], 'ukupno'=>$rezultat[8]);
-}
-?>
-
-
-<table width="100%" align="center" border="1" cellspacing="1" cellpadding="1" bordercolor="#000000">
-	<tr>
-		<td align="center" width="5%"><b>R.br.</b></td>
-		<td align="left"><b>Prezime i ime</b></td>
-		<td align="center" width="6%"><b>Kanton</b></td>
-		<td align="center" width="10%"><b>Opći uspjeh</b></td>
-		<td align="center" width="10%"><b>Ključni predmeti</b></td>
-		<td align="center" width="10%"><b>Dodatni bodovi</b></td>
-		<td align="center" width="10%"><b>Rezultat ispita</b></td>
-		<td align="center" width="10%"><b>Ukupno</b></td>
-		<td align="center" width="5%"><b>NP</b></td>
-	</tr>
-	<?php
-	
-$i = 1;
-foreach($kandidati as $id => $kandidat){
-	if($kandidat['prijemni_ispit'] >= $bodovisoft && $kandidat['kanton_id'] != 13){
-		if ($i == 1){
-		?>
-		<tr>
-			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snosi kanton Sarajevo</b></td>
-		</tr>
-		<?php
-		}
-	?>
-	<tr>
-		<td align="center"><?php echo $i?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-	</tr>
-	<?php
-	unset($kandidati[$id]);
-	if ($i++ >= $kandidatikp) break;
-	}
-}
-
-$j = 1;
-foreach($kandidati as $id => $kandidat){
-	if(($kandidat['prijemni_ispit'] >= $bodovisoft && $kandidat['kanton_id'] != 13 && $i >= $kandidatikp)){
-		if ($j == 1){
-		?>
-		<tr>
-			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
-		</tr>
-		<?php
-		}
-	?>
-	<tr>
-		<td align="center"><?php echo $i++?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-	</tr>
-	<?php
-	unset($kandidati[$id]);
-	if ($j++ >= $kandidatisp) break;
-	}
-}
-
-foreach($kandidati as $id => $kandidat){
-	if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $kandidat['kanton_id'] != 13)){
-		if ($j == 1){
-		?>
-		<tr>
-			<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
-		</tr>
-		<?php
-		}
-	?>
-	<tr>
-		<td align="center"><?php echo $i++?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-		<td><font color="red"><?php echo "**"?></font></td>
-	</tr>
-	<?php
-	unset($kandidati[$id]);
-	if ($j++ >= $kandidatisp) break;
-	}
-}
-
-$j = 1;
-foreach($kandidati as $id => $kandidat){
-	if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13){
-	?>
-	<tr>
-		<td align="center"><?php echo $i++?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-		<td><font color="red"><?php echo "****"?></font></td>
-	</tr>
-	<?php
-	unset($kandidati[$id]);
-	if ($j++ >= $kandidatisd) break;
-	}
-}
-
-if($j <= $kandidatisd){
-	foreach($kandidati as $id => $kandidat){
-		if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] != 13){
-	?>
-	<tr>
-		<td align="center"><?php echo $i++?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-		<td><font color="red"><?php echo "***"?></font></td>
-	</tr>
-	<?php
-	unset($kandidati[$id]);
-	if ($j++ >= $kandidatisd) break;
-	}
-}
-}
-$j = 1;
-foreach ($kandidati as $id => $kandidat){
-	if ($j == 1){
-	?>
-	<tr>
-		<td colspan="8"><b>Kandidati koji nisu stekli uvjete za upis</b></td>
-	</tr>
-	<?php
-	}
-?>
-<tr>
-		<td align="center"><?php echo $i++?></td>
-		<td><?php echo $kandidat['prezime_ime']?></td>
-		<td align="center"><?php echo $kandidat['kanton']?></td>
-		<td align="center"><?php echo $kandidat['opci_uspjeh']?></td>
-		<td align="center"><?php echo $kandidat['kljucni_predmeti']?></td>
-		<td align="center"><?php echo $kandidat['dodatni_bodovi']?></td>
-		<td align="center"><?php echo $kandidat['prijemni_ispit']?></td>
-		<td align="center"><b><?php echo $kandidat['ukupno']?></b></td>
-	</tr>
-<?php
-$j++;
-}
-?>
-</table>
-</br>
-<p><font color="red" size="1">**</font><font size="3" face="Times New Roman"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?>, a više od <?php echo $bodovihard?></font></br></br>
-	<font color="red" size="1">***</font><font size="3" face="Times New Roman"> - Kandidati koji su na prijemnom ispitu osvojili manje od <?php echo $bodovisoft?> (a više od <?php echo $bodovihard?>), a upisuju </br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;se na slobodna mjesta koja su bila Konkursom predviđena za studente strane državljane</font></br></br>
-	<font color="red" size="1">****</font><font size="3" face="Times New Roman"> - Kandidati strani državljani koji su stekli uvjete za upis<font></p>
-<?php
-
-}
 
 } // function studentska_prijemni
-
-
 
 
 

@@ -15,6 +15,7 @@
 // v3.9.1.6 (2008/06/10) + Dodana podrska za fiksne komponente
 // v3.9.1.7 (2008/06/16) + Popravljena provjera za site_admin kod prisustva, postrozen uslov za brisanje/dodavanje ocjene na ispitu
 // v3.9.1.7 (2008/06/22) + Dodan unos bodova sa prijemnog
+// v3.9.1.7a (2008/07/01) + Dodan unos ocjena tokom srednje skole za prijemni
 
 
 // Prebaciti u lib/manip?
@@ -268,7 +269,6 @@ case "pretraga":
 	$imena = explode(" ",$ime);
 	$upit = "";
 	foreach($imena as $dio) {
-		if ($upit != "") $upit .= " and ";
 		$upit .= "(ime like '%$dio%' or prezime like '%$dio%' or login like '%$dio%' or brindexa like '%$dio%')";
 	}
 	$q10 = myquery("select login, ime, prezime from auth where $upit order by prezime, ime");
@@ -302,6 +302,38 @@ case "prijemni_unos":
 		$q110 = myquery("update prijemni set prijemni_ispit=0, izasao_na_prijemni=0 where id=$id");
 	else
 		$q110 = myquery("update prijemni set prijemni_ispit=$vrijednost, izasao_na_prijemni=1 where id=$id");
+	print "OK";
+
+	break;
+
+
+// Unos ocjena tokom srednje skole za prijemni
+case "prijemni_ocjene":
+	$prijemni = intval($_REQUEST['prijemni']);
+
+	$nova = intval($_REQUEST['nova']);
+	$stara = intval($_REQUEST['stara']);
+	$razred = intval($_REQUEST['razred']);
+	$tipocjene = intval($_REQUEST['tipocjene']);
+
+// Pretpostavljamo da je id tačan
+// Glupost :( ali šta se može kad se ocjene moraju unositi prije nego što se registruje prijemni
+/*	$q100 = myquery("select count(*) from prijemni where id=$prijemni");
+	if (mysql_result($q100,0,0)==0)  {
+		print "Nepoznat id $prijemni";
+		break;
+	}*/
+
+	if ($_REQUEST['subakcija']!="obrisi" && $_REQUEST['subakcija']!="izmijeni" && $_REQUEST['subakcija']!="dodaj") {
+		print "Nepoznata akcija: ".my_escape($_REQUEST['akcija']);
+		break;
+	}
+
+	if ($_REQUEST['subakcija']=="obrisi" || $_REQUEST['subakcija']=="izmijeni")
+		$q200 = myquery("delete from prijemniocjene where prijemni=$prijemni and razred=$razred and ocjena=$stara and tipocjene=$tipocjene limit 1");
+	if ($_REQUEST['subakcija']=="dodaj" || $_REQUEST['subakcija']=="izmijeni")
+		$q200 = myquery("insert into prijemniocjene set prijemni=$prijemni, razred=$razred, ocjena=$nova, tipocjene=$tipocjene");
+
 	print "OK";
 
 	break;
