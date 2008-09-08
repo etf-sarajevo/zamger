@@ -9,7 +9,7 @@
 // v3.9.1.4 (2008/06/10) + Dodan ispis fiksnih komponenti + AJAH
 // v3.9.1.5 (2008/08/18) + Provjera da li postoji predmet
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
-
+// v3.9.1.7 (2008/09/08) + Forma za registrovanje casa nije prosljedjivala ID predmeta
 
 
 
@@ -261,6 +261,7 @@ $vrijeme=date("H:i");
 	<input type="hidden" name="sta" value="saradnik/grupa">
 	<input type="hidden" name="akcija" value="dodajcas">
 	<input type="hidden" name="id" value="<?=$grupa_id?>">
+	<input type="hidden" name="predmet" value="<?=$predmet_id?>">
 
 	Datum:
 	<select name="dan" class="default"><?
