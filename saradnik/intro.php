@@ -14,7 +14,7 @@ global $userid,$user_siteadmin;
 
 // Dobrodošlica
 
-$q1 = myquery("select ime from auth where id=$userid");
+$q1 = myquery("select ime from osoba where id=$userid");
 $ime = mysql_result($q1,0,0);
 if (spol($ime)=="Z") 
 	print "<h1>Dobro došla, ".genitiv($ime,"Z")."</h1>";
@@ -28,7 +28,7 @@ print '<table border="0" cellspacing="5"><tr>';
 if ($_REQUEST['sve']) 
 	$q1a = myquery("select id,naziv from akademska_godina order by naziv desc");
 else
-	$q1a = myquery("select id,naziv from akademska_godina order by naziv desc limit 1");
+	$q1a = myquery("select id,naziv from akademska_godina where aktuelna=1 order by naziv desc limit 1");
 
 
 while ($r1a = mysql_fetch_row($q1a)) {
