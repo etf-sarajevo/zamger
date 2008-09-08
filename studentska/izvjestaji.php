@@ -3,6 +3,7 @@
 // STUDENTSKA/IZVJESTAJI - izvjestaji koji se ticu prolaznosti
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
+// v3.9.1.0 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
 
 
 
@@ -52,9 +53,12 @@ function setCheckedValue(radioObj, newValue) {
 		<input type="hidden" name="sta" value="izvjestaj/prolaznost">
 		Akademska godina: <select name="_lv_column_akademska_godina">
 		<?
-			$q500 = mysql_query("select id,naziv from akademska_godina order by naziv desc");
-			while ($r500 = mysql_fetch_row($q500))
-				print "<option value=\"$r500[0]\">$r500[1]</option>\n";
+			$q500 = mysql_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+			while ($r500 = mysql_fetch_row($q500)) {
+				print "<option value=\"$r500[0]\"";
+				if ($r500[2]==1) print " selected";
+				print ">$r500[1]</option>\n";
+			}
 		?>
 		</select><br/><br/>
 		Studij: <?=db_dropdown("studij")?><br/><br/>
