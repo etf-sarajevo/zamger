@@ -1218,7 +1218,7 @@ function addnew() {
 			if ($i<19) $nextid = $id+1;
 			else if ($j<4) $nextid = $theid*1000 + ($j+1)*100 + $i;
 			else $nextid=$theid*1000 + 100 + 91;
-			if (array_key_exists($i, $razred[$j]))
+			if (is_array($razred[$j]) && array_key_exists($i, $razred[$j]))
 				$vr = $razred[$j][$i];
 			else
 				$vr = "";
@@ -1249,7 +1249,8 @@ function addnew() {
 		for ($j=1; $j<$pocni_od; $j++) print "<td>&nbsp;</td>\n";
 		for ($j=$pocni_od; $j<=4; $j++) {
 			$id = $theid*1000 + $j*100 + $i+90;
-			if (array_key_exists($i, $kljucni[$j])) $vr=$kljucni[$j][$i];
+			if (is_array($kljucni[$j]) && array_key_exists($i, $kljucni[$j]))
+				$vr=$kljucni[$j][$i];
 			else $vr = "";
 			if ($j<4) $nextid = $theid*1000 + ($j+1)*100 + $i+90;
 			else if ($i==1) $nextid = $theid*1000 + 100 + $i+90+1;
