@@ -7,7 +7,7 @@
 // v3.9.1.2 (2008/04/23) + Trimovanje whitespace-a kod pretrage
 // v3.9.1.3 (2008/08/27) + Pretvaram studentska/studenti u studentska/osobe; izbjegnut XSS u linku 'nazad na rezultate pretrage'
 // v3.9.1.4 (2008/09/03) + Napravljena akcija 'upis', dodani linkovi na sve vrste upisa u sljedeci semestar; dodano polje aktivan u tabeli auth
-
+// v3.9.1.5 (2008/09/05) + Ispravke bugova; prikazi podatke i za godinu u koju pokusavas upisati studenta
 
 
 // TODO: prva godina studija je hardkodirana u provjeri uslova za upis
@@ -135,7 +135,7 @@ if ($akcija == "podaci") {
 		$drzavljanstvo = my_escape($_REQUEST['drzavljanstvo']);
 		$adresa = my_escape($_REQUEST['adresa']);
 		$telefon = my_escape($_REQUEST['telefon']);
-		$kanton = intval($_REQUEST['kanton']);
+		$kanton = intval($_REQUEST['_lv_column_kanton']);
 
 		if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
 			$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
@@ -326,7 +326,7 @@ else if ($akcija == "upis") {
 	} // if ($semestar%2 ==1)
 
 	// Izborni predmeti
-	$q560 = myquery("select p.id, p.naziv, pk.id from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
+	$q560 = myquery("select p.id, p.naziv, pk.id from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
 	if (mysql_num_rows($q560)>0 && $ns!=0) {
 		// student je upravo promijenio studij, mora prvo izabrati izborne predmete
 		$ok_izvrsiti_upis=0;
@@ -370,7 +370,7 @@ else if ($akcija == "upis") {
 		// Novi broj indexa
 		$nbri = intval($_REQUEST['novi_brindexa']);
 		if ($nbri>0)
-			$q650 = myquery("update osoba set brindexa='$nbri' where osoba=$student");
+			$q650 = myquery("update osoba set brindexa='$nbri' where id=$student");
 
 		// Upisujemo ocjene za predmete koje su dopisane
 		foreach($_REQUEST as $key=>$value) {
@@ -406,7 +406,7 @@ else if ($akcija == "upis") {
 		
 
 		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
-		zamgerlog("Student u$student upisan na studij $studij, semestar $semestar", 4); // 4 - audit
+		zamgerlog("Student u$student upisan na studij $studij, semestar $semestar, godina $godina", 4); // 4 - audit
 		return;
 
 	} else {
@@ -719,7 +719,14 @@ else if ($akcija == "edit") {
 		if (mysql_num_rows($q230)>0) {
 
 		$nova_ak_god = mysql_result($q230,0,0);
-		?><p>Upis u akademsku <?=mysql_result($q230,0,1)?> godinu:</p><?
+		?><p>Upis u akademsku <b><?=mysql_result($q230,0,1)?></b> godinu:</p><?
+
+
+		// Da li je vec upisan?
+		$q235 = myquery("select s.naziv from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god");
+		if (mysql_num_rows($q235)>0) {
+			?><p>Student je upisan na studij: <b><?=mysql_result($q235,0,0)?></b></p><?
+		} else {
 
 
 		// Ima li uslove za upis
@@ -804,6 +811,7 @@ else if ($akcija == "edit") {
 			}
 		}
 
+		} // if ($q235... else ... -- nije vec upisan nigdje
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
 
 		print "\n<div style=\"clear:both\"></div>\n";
