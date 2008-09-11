@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
 // v3.9.1.0 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
+// v3.9.1.0 (2008/09/09) + Dodan izvjestaj "studenti kojima nedostaje..."
 
 
 
@@ -31,6 +32,19 @@ if (!$user_studentska && !$user_siteadmin) {
 
 
 	?>
+
+<p>Najčešći izvještaji:
+<ul>
+<li><a href="?sta=izvjestaj/granicni&polozili=1">Spisak studenata koji su dali uslove za upis u sljedeći semestar</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalnih=1&predmeta=1">Granični slučajevi - po studiju</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalnih=1&predmeta=1&sort=predmet">Granični slučajevi - po predmetu</a></li>
+</ul></p>
+
+<hr/>
+
+<p><h3>Kreirajte vlastiti izvještaj:</h3></p>
+
+
 	<script type="text/javascript">
 function setCheckedValue(radioObj, newValue) {
 	if(!radioObj)
