@@ -102,6 +102,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
 		$bodova = $mass_rezultat['podatak1'][$student];
+		$bodova = str_replace(",",".",$bodova);
 
 		// Student neocijenjen (prazno mjesto za ocjenu)
 		if (floatval($bodova)==0 && strpos($bodova,"0")===FALSE) {
