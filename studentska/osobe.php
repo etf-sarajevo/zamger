@@ -248,8 +248,6 @@ else if ($akcija == "upis") {
 	}
 
 
-
-
 	// Izbor studija kod zavrsetka prethodnog - FIXME!
 	$q540 = myquery("select zavrsni_semestar, naziv, tipstudija from studij where id=$studij");
 	$trajanje=mysql_result($q540,0,0);
@@ -373,19 +371,28 @@ else if ($akcija == "upis") {
 			$q650 = myquery("update osoba set brindexa='$nbri' where id=$student");
 
 		// Upisujemo ocjene za predmete koje su dopisane
-		foreach($_REQUEST as $key=>$value) {
-			if (substr($key,0,4) != "pao-") continue;
-			$predmet = intval(substr($key,4));
-			$ocjena = intval($value);
-			if ($ocjena<6) continue;
-			$q580 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
-			if (mysql_num_rows($q580)<1) {
-				niceerror("Nije nikad slušao predmet $predmet!?");
-				return;
+		foreach ($predmeti_pao as $predmet) {
+			$ocjena = intval($_REQUEST["pao-$predmet"]);
+			if ($ocjena>5) {
+				// Upisujem dopisanu ocjenu
+
+				$q580 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
+				if (mysql_num_rows($q580)<1) {
+					niceerror("Nije nikad slušao predmet $predmet!?");
+					return;
+				}
+				$pk = mysql_result($q580,0,0);
+				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena");
+			} else {
+				// Student prenio predmet
+
+				$q592 = myquery("select pk.studij,pk.semestar from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
+				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
+
+				$q620 = myquery("insert into student_predmet set student=$student, predmet=".mysql_result($q594,0,0));
 			}
-			$pk = mysql_result($q580,0,0);
-			$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena");
 		}
+
 
 		// Upisujemo studenta na novi studij
 		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina");
@@ -799,7 +806,7 @@ else if ($akcija == "edit") {
 			}
 
 			// Konačan ispis
-			if ($suma_ects>=$uslov_ects && $pao!="") {
+			if ($suma_ects>=$uslov_ects && $pao=="") {
 				?><p>Student je stekao/la uslove za upis na <?=$sta?></p>
 				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$studij?>, <?=($semestar+1)?>. semestar.</a></p>
 				<?
