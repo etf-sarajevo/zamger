@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/05/09) + studentski_meni(): arhivirani predmeti sortirani po godinama i semestrima, popravljen link za arhivu (cuva trenutno otvoreni modul)
 // v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
 // v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
+// v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni())
 
 
 
@@ -385,7 +386,7 @@ function studentski_meni($fj) {
 	global $userid,$sta;
 
 	// Zadnja akademska godina
-	$q10 = myquery("select id,naziv from akademska_godina order by id desc limit 1");
+	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 	$ag = mysql_result($q10,0,0);
 
 
@@ -396,6 +397,8 @@ function studentski_meni($fj) {
 		$studij=0;
 		// određujemo da li je aktuelni semestar parni ili neparni
 		$q15 = myquery("select semestar from student_studij where akademska_godina=$ag order by semestar desc limit 1");
+		// situacija u kojoj niko nije upisan ni na sta se u principu ne bi trebala 
+		// desavati, osim prilikom instalacije
 		$semestar=mysql_result($q15,0,0);
 	} else {
 		$studij = mysql_result($q20,0,0);
