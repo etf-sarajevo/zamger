@@ -74,7 +74,7 @@ if ($_POST['akcija'] == "nova_grupa") {
 
 if ($_GET['akcija'] == "obrisi_grupu") {
 	$grupaid = intval($_GET['grupaid']);
-	$q29 = mquery("select count(*) from labgrupa where id=$grupaid");
+	$q29 = myquery("select count(*) from labgrupa where id=$grupaid");
 	if (mysql_result($q29,0,0)<1) {
 		zamgerlog("nepostojeca labgrupa $grupaid",3);
 		niceerror("Pokušavate obrisati labgrupu koja ne postoji");
