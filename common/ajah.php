@@ -18,6 +18,7 @@
 // v3.9.1.7a (2008/07/01) + Dodan unos ocjena tokom srednje skole za prijemni
 // v3.9.1.8 (2008/08/28) + Tabela osoba umjesto auth u akciji "pretraga" (kod pisanja poruke)
 // v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
+// v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"
 
 
 // Prebaciti u lib/manip?
@@ -51,18 +52,29 @@ case "prisustvo":
 	// Provjera prava pristupa
 
 	if (!$user_siteadmin) {
-		$q10 = myquery("select np.predmet,l.id from nastavnik_predmet as np,labgrupa as l, cas as c where np.nastavnik=$userid and np.predmet=l.predmet and l.id=c.labgrupa and c.id=$cas");
+		$q10 = myquery("select predmet, labgrupa from cas where id=$cas");
 		if (mysql_num_rows($q10)<1) {
-			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
-			print "niste nastavnik A"; break;
+			zamgerlog("AJAH prisustvo - nepostojeci cas $cas",3);
+			print "nepostojeci cas"; break;
 		}
 		$predmet = mysql_result($q10,0,0);
 		$labgrupa = mysql_result($q10,0,1);
-	
+
+		if ($labgrupa==0) 
+			$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+		else
+			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l where np.nastavnik=$userid and np.predmet=l.predmet and l.id=$labgrupa");
+		if (mysql_num_rows($q15)<1) {
+			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
+			print "niste nastavnik A"; break;
+		}
+
+		// Provjeravamo ogranicenja
 		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet");
 		if (mysql_num_rows($q20)>0) {
 			$nasao=0;
 			while ($r20 = mysql_fetch_row($q20)) {
+				// Ako je labgrupa 0 nece ga nikada nac
 				if ($r20[0] == $labgrupa) { $nasao=1; break; }
 			}
 			if ($nasao == 0) {
@@ -129,7 +141,7 @@ case "izmjena_ispita":
 	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna") {
 		// ko = konacna ocjena
 		zamgerlog("AJAH ispit - ne valja id polja ($idpolja)",3);
-		print "ne valja ID polja"; break;
+		print "ne valja ID polja $idpolja"; break;
 	}
 	
 	// Provjera prava pristupa i dodatna validacija parametara
