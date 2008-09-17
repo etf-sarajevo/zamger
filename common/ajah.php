@@ -18,7 +18,7 @@
 // v3.9.1.7a (2008/07/01) + Dodan unos ocjena tokom srednje skole za prijemni
 // v3.9.1.8 (2008/08/28) + Tabela osoba umjesto auth u akciji "pretraga" (kod pisanja poruke)
 // v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
-// v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"
+// v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"; konacna ocjena: kod poredjenja integera 0 i stringa mora se koristiti !==; popravljena poruka za konacnu ocjenu vecu od $max
 
 
 // Prebaciti u lib/manip?
@@ -143,7 +143,7 @@ case "izmjena_ispita":
 		zamgerlog("AJAH ispit - ne valja id polja ($idpolja)",3);
 		print "ne valja ID polja $idpolja"; break;
 	}
-	
+
 	// Provjera prava pristupa i dodatna validacija parametara
 	if ($ime == "ispit") {
 		$stud_id = intval($parametri[1]);
@@ -218,10 +218,13 @@ case "izmjena_ispita":
 	// Maksimalan i minimalan broj bodova
 	if ($vrijednost>$max) {
 		zamgerlog("AJAH ispit - vrijednost $vrijednost > max $max",3);
-		print "maksimalan broj bodova na ispitu je $max, a unijeli ste $vrijednost";
+		if ($ime=="ko")
+			print "stavili ste ocjenu veću od 10";
+		else
+			print "maksimalan broj bodova je $max, a unijeli ste $vrijednost";
 		break;
 	}
-	if ($ime=="ko" && $vrijednost<6 && $vrijednost!="/") {
+	if ($ime=="ko" && $vrijednost<6 && $vrijednost!=="/") {
 		zamgerlog("AJAH ispit - konacna ocjena manja od 6 ($vrijednost)",3);
 		print "stavili ste ocjenu manju od 6";
 		break;
