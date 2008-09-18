@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + Forma za registrovanje casa nije prosljedjivala ID predmeta
 // v3.9.1.8 (2008/09/13) + Sprjeceno otvaranje coolboxa ako slanje nije uspjelo
+// v3.9.1.9 (2008/09/17) + Akcija dodaj_cas ce ubaciti 10 bodova u tabelu komponentebodovi ako prije toga nije bilo sloga u toj tabeli za datog studenta, predmet i komponentu
 
 
 
@@ -116,8 +117,16 @@ if ($akcija == 'dodajcas') {
 			$stud_id = $r80[0];
 			$prisustvo = intval($_POST['prisustvo']);
 			$q90 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
-			if ($prisustvo==0) // Update radimo samo ako se registruje odsustvo
+			if ($prisustvo==0)
+				 // Update radimo samo ako se registruje odsustvo
 				update_komponente($stud_id,$predmet_id,$komponenta);
+			else {
+				// Ako nema uopšte bodova za komponentu, ubacićemo 10
+				$q95 = myquery("select count(*) from komponentebodovi where student=$stud_id and predmet=$predmet_id and komponenta=$komponenta");
+				if (mysql_result($q95,0,0)==0) {
+					$q97 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$predmet_id, komponenta=$komponenta, bodovi=10");
+				}
+			}
 		}
 	
 		zamgerlog("registrovan cas c$cas_id",2); // nivo 2: edit
@@ -593,7 +602,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$prisustvo_ispis .= "<td>$pbodovi</td>\n";
 	$bodova += $pbodovi;
 
-	}
+	} // foreach ($prisustvo... as $pid)
 
 
 	// ZADACE - ISPIS
