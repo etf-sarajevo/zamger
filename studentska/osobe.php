@@ -8,9 +8,13 @@
 // v3.9.1.3 (2008/08/27) + Pretvaram studentska/studenti u studentska/osobe; izbjegnut XSS u linku 'nazad na rezultate pretrage'
 // v3.9.1.4 (2008/09/03) + Napravljena akcija 'upis', dodani linkovi na sve vrste upisa u sljedeci semestar; dodano polje aktivan u tabeli auth
 // v3.9.1.5 (2008/09/05) + Ispravke bugova; prikazi podatke i za godinu u koju pokusavas upisati studenta
+// v3.9.1.6 (2008/09/13) + Upisi studenta u predmete koje je prenio prilikom upisa novog semestra; dodan debugging ispis; dodaj nastavnike u auth tabelu prilikom kreiranja iz LDAPa; omogucen upis studenta u aktuelnu akademsku godinu ako postoje podaci iz ranijih godina
+
 
 
 // TODO: prva godina studija je hardkodirana u provjeri uslova za upis
+// TODO: omoguciti site adminu da proglasi korisnika za studenta, nastavnika itd.
+// TODO: popraviti odredjivanje uslova za upis na statusnom ekranu
 
 
 function studentska_osobe() {
@@ -108,6 +112,12 @@ if ($akcija == "novi") {
 			// a ako je student, imamo i brindexa
 			if (preg_match("/\w\w(\d\d\d\d\d)/", $uid, $matches))
 				$upit = $upit.", brindexa='".$matches[1]."'";
+
+			// Mozemo ga dodati i u auth tabelu
+			$q35 = myquery("select count(*) from auth where id=$osoba");
+			if (mysql_result($q35,0,0)==0) {
+				$q37 = myquery("insert into auth set id=$osoba, login='$uid', admin=1, aktivan=1");
+			}
 		}
 
 		$q40 = myquery($upit);
@@ -268,7 +278,7 @@ else if ($akcija == "upis") {
 		$ok_izvrsiti_upis=0;
 	} else {
 		?>
-		<p>Upis na studij <?=$naziv_studija?>, <?=$semestar?>. semestar</p>
+		<p>Upis na studij <?=$naziv_studija?>, <?=$semestar?>. semestar:</p>
 		<?
 	}
 
@@ -363,16 +373,21 @@ else if ($akcija == "upis") {
 			$q640 = myquery("update privilegije set privilegija='student' where osoba=$student and privilegija='prijemni'");
 
 			// AUTH tabelu cemo srediti naknadno
+			print "-- $prezime $ime proglašen za studenta<br/>";
 		}
 
 		// Novi broj indexa
 		$nbri = intval($_REQUEST['novi_brindexa']);
-		if ($nbri>0)
+		if ($nbri>0) {
 			$q650 = myquery("update osoba set brindexa='$nbri' where id=$student");
+			print "-- broj indeksa postavljen na $nbri<br/>";
+		}
 
 		// Upisujemo ocjene za predmete koje su dopisane
 		foreach ($predmeti_pao as $predmet) {
 			$ocjena = intval($_REQUEST["pao-$predmet"]);
+			$q579 = myquery("select naziv from predmet where id=$predmet");
+			$naziv_predmeta = mysql_result($q579,0,0);
 			if ($ocjena>5) {
 				// Upisujem dopisanu ocjenu
 
@@ -383,6 +398,7 @@ else if ($akcija == "upis") {
 				}
 				$pk = mysql_result($q580,0,0);
 				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena");
+				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>";
 			} else {
 				// Student prenio predmet
 
@@ -390,6 +406,7 @@ else if ($akcija == "upis") {
 				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
 
 				$q620 = myquery("insert into student_predmet set student=$student, predmet=".mysql_result($q594,0,0));
+				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>";
 			}
 		}
 
@@ -398,9 +415,10 @@ else if ($akcija == "upis") {
 		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina");
 
 		// Upisujemo na sve obavezne predmete na studiju
-		$q610 = myquery("select id from ponudakursa where studij=$studij and semestar=$semestar and akademska_godina=$godina and obavezan=1");
+		$q610 = myquery("select pk.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		while ($r610 = mysql_fetch_row($q610)) {
 			$q620 = myquery("insert into student_predmet set student=$student, predmet=$r610[0]");
+			print "-- Student upisan u obavezni predmet $r610[1]<br/>";
 		}
 
 		// Upisujemo na izborne predmete koji su odabrani
@@ -409,9 +427,10 @@ else if ($akcija == "upis") {
 			if ($value=="") continue;
 			$predmet = intval(substr($key,8));
 			$q630 = myquery("insert into student_predmet set student=$student, predmet=$predmet");
+			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
+			print "-- Student upisan u izborni predmet ".mysql_result($q635,0,0)."<br/>";
 		}
 		
-
 		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
 		zamgerlog("Student u$student upisan na studij $studij, semestar $semestar, godina $godina", 4); // 4 - audit
 		return;
@@ -544,7 +563,7 @@ else if ($akcija == "edit") {
 			$q140 = myquery("insert into nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, admin=$admin_predmeta");
 		}
 
-		zamgerlog("nastavnik u$nastavnik prijavljen na predmet p$predmet (admin: $admin_predmeta)",4);
+		zamgerlog("nastavnik u$osoba prijavljen na predmet p$predmet (admin: $admin_predmeta)",4);
 	}
 
 
@@ -671,7 +690,9 @@ else if ($akcija == "edit") {
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=0;
+
+		// Da li je ikada slusao nesto?
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=0;
 	
 		while ($r220=mysql_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -683,9 +704,11 @@ else if ($akcija == "edit") {
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
 			} else if ($r220[1]>$ikad_semestar) {
-				$ikad_semestar=$r220[1];
-				$ikad_studij_id=$r220[4];
 				$ikad_studij=$r220[0];
+				$ikad_semestar=$r220[1];
+				$ikad_ak_god=$r220[2];
+				$ikad_ak_god_naziv=$r220[3];
+				$ikad_studij_id=$r220[4];
 			}
 		}
 
@@ -711,22 +734,39 @@ else if ($akcija == "edit") {
 
 		// Trenutno slusa studij 
 
+		$nova_ak_god=0;
+
 		print "<p align=\"left\">Trenutno (<b>$naziv_ak_god</b>) upisan/a na:<br/>\n";
-	
 		if ($studij=="0") {
 			print "Nije upisan/a niti u jedan semestar!</p>";
+
+			// Proglasavamo zadnju akademsku godinu koju je slusao za tekucu
+			// a tekucu za novu
+			if ($ikad_semestar != 0) {
+				$nova_ak_god = $id_ak_god;
+				$naziv_nove_ak_god = $naziv_ak_god;
+				$id_ak_god = $ikad_ak_god;
+				$naziv_ak_god = $ikad_ak_god_naziv;
+				// Zelimo da se provjeri ECTS:
+				$studij = $ikad_studij;
+				$studij_id = $ikad_studij_id;
+				$semestar = $ikad_semestar;
+			}
+
 		} else {
 			print "<b>&quot;$studij&quot;</b>, $semestar. semestar ($puta. put)</p>";
+			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
+			if (mysql_num_rows($q230)>0) {
+				$nova_ak_god = mysql_result($q230,0,0);
+				$naziv_nove_ak_god = mysql_result($q230,0,1);
+			}
 		}
 
 
+		if ($nova_ak_god!=0) {
 
 		// Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
-		$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
-		if (mysql_num_rows($q230)>0) {
-
-		$nova_ak_god = mysql_result($q230,0,0);
-		?><p>Upis u akademsku <b><?=mysql_result($q230,0,1)?></b> godinu:</p><?
+		?><p>Upis u akademsku <b><?=$naziv_nove_ak_god?></b> godinu:</p><?
 
 
 		// Da li je vec upisan?
@@ -808,7 +848,7 @@ else if ($akcija == "edit") {
 			// Konačan ispis
 			if ($suma_ects>=$uslov_ects && $pao=="") {
 				?><p>Student je stekao/la uslove za upis na <?=$sta?></p>
-				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$studij?>, <?=($semestar+1)?>. semestar.</a></p>
+				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
 				<?
 			} else {
 				?><p>Student NIJE stekao/la uslove za <?=$sta?><br/>(ukupno skupljeno <?=$suma_ects?> ECTS bodova<?=$pao?>)</p>
