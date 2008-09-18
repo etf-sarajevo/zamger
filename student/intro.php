@@ -14,7 +14,7 @@
 
 function student_intro() {
 
-global $userid;
+global $userid, $registry;
 
 
 // Dobrodošlica
@@ -27,6 +27,15 @@ else
 	print "<h1>Dobro došao, ".genitiv($ime,"M")."</h1>";
 
 
+// Sakrij raspored ako ga nema u registry-ju
+$nasao=0;
+foreach ($registry as $r) {
+	if ($r[0]=="studentska/raspored") { $nasao=1; break; }
+}
+if ($nasao==1) {
+	require_once "common/raspored.php";
+	printRaspored($userid, "student");
+}
 
 
 // AKTUELNO

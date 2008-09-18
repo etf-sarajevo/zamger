@@ -26,24 +26,25 @@ body {
 	color:#000000;
 }
 .dan_header {
+	padding: 4px 0px 0px 1px;
 	margin: 0px 1px 1px 0px; 
 	float:left; 
-	width: 130px; 
+	width: 129.2px; 
 	height:20px; 
-	background:#FF0000;
+	background:#ADB4F6;
 }
 .satnica {
+	padding: 10px 0px 0px 2px;
 	margin: 0px 1px 1px 0px; 
 	width: 50px; 
-	height:40px; 
-	background:#FFF6BF;
+	height: 30px; 
+	background: #D3D6F1;
 }
 
 .kolona {
 	float:left;
 	width:130px;
 	margin-right: 1px;
-	background: #FFFFFF;
 	height: 368px;
 }
 
@@ -59,13 +60,13 @@ body {
 }
 .celija_pola {
 	padding: 1px;
-	width: 55px;
+	width: 60px;
 	height: 28px;
 	background: #F5E2BC;
 	margin: 0px 1px 9px 1px;
 	border: 1px solid #FF9900;
 	text-align: left;
-	position:absolute;
+	position: absolute;
 }
 .prazna_celija {
 	padding: 1px;
@@ -181,7 +182,11 @@ input, select {
 	float: left;
 }
 #sectionP2 {
-	width: 45%;
+	width: 25%;
+	float: left;
+}
+#sectionP2a {
+	width: 20%;
 	float: left;
 }
 #sectionP3 {
@@ -206,12 +211,6 @@ input, select {
 	border: 1px solid #EEEFB6;
 	background-color: #FDFCE8;
 }
-.cRDanContBoxV {
-	float: left;
-}
-.cRDanContBoxS {
-	float: right;
-}
 #wizardBox {
 	width: 100%;
 	border-left: 1px solid #ccc;
@@ -220,7 +219,7 @@ input, select {
 	margin-bottom: 20px;
 }
 .wizardBoxInner {
-	width: 24.85%;
+	width: 33%;
 	border: 1px solid #ccc;
 	border-left: 0px;
 	background: #ececec;
@@ -228,7 +227,7 @@ input, select {
 	float: left;
 }
 .wizardEl1 {
-	width: 24.85%;
+	width: 33%;
 	text-align: center;
 	font-size: 10px;
 	float: left;
