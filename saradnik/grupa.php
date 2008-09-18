@@ -10,6 +10,7 @@
 // v3.9.1.5 (2008/08/18) + Provjera da li postoji predmet
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + Forma za registrovanje casa nije prosljedjivala ID predmeta
+// v3.9.1.8 (2008/09/13) + Sprjeceno otvaranje coolboxa ako slanje nije uspjelo
 
 
 
@@ -205,11 +206,12 @@ function firefoxopen(p1,p2,p3) {
 
 // Cool editing box
 if ($predmet_admin==1 || $user_siteadmin) {
-	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()");'); 
+	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");'); 
 	?>
 	<script language="JavaScript">
 	function undo_coolbox() {
 		zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
+		zamger_coolbox_origcaller=false;
 	}
 	</script>
 	<?

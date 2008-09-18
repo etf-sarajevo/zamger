@@ -11,7 +11,7 @@
 // v3.9.1.6 (2008/05/09) + studentski_meni(): arhivirani predmeti sortirani po godinama i semestrima, popravljen link za arhivu (cuva trenutno otvoreni modul)
 // v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
 // v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
-// v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni())
+// v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni()); sprjeceno otvaranje coolboxa ako slanje nije uspjelo
 
 
 
@@ -217,9 +217,12 @@ function cool_box($izvrsi) {
 <!-- COOL BOX -->
 <div id="coolbox" style="position:absolute;visibility:hidden"><input style="font-size:11px; border:1px solid red" type="text" size="3" onchange="coolboxsubmit()" onblur="coolboxclose()" onkeypress="coolboxkey(event)" id="coolboxedit"></div>
 <script language="JavaScript">
-var zamger_coolbox_origcaller;
-var zamger_coolbox_origvalue;
+var zamger_coolbox_origcaller=false;
+var zamger_coolbox_origvalue=false;
+var zamger_coolbox_submitted=false;
 function coolboxopen(callobj) {
+	if (zamger_coolbox_origcaller) return;
+	zamger_coolbox_submitted=false;
 	zamger_coolbox_origcaller = callobj;
 	zamger_coolbox_origvalue = callobj.innerHTML;
 
@@ -245,12 +248,18 @@ function coolboxopen(callobj) {
 	coolboxedit.focus();
 }
 function coolboxclose() {
+	if (zamger_coolbox_submitted) return;
+	if (!zamger_coolbox_origcaller) return;
+	zamger_coolbox_origcaller=false;
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	coolbox.style.visibility = 'hidden';
 	coolboxedit.blur();
 }
 function coolboxsubmit() {
+	if (!zamger_coolbox_origcaller) return;
+	if (zamger_coolbox_submitted) return;
+	zamger_coolbox_submitted=true;
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	if (coolbox.style.visibility == 'hidden') return;
@@ -266,7 +275,7 @@ function coolboxsubmit() {
 // posto je ni onblur ni onchange ne hvataju ako tekst nije izmijenjen
 function coolboxkey(e) {
 	var coolboxedit = document.getElementById("coolboxedit");
-	if (e.keyCode==13 && coolboxedit.value==zamger_coolbox_origvalue) coolboxclose();
+	if (e.keyCode==13 && coolboxedit.value==zamger_coolbox_origvalue) { coolboxclose(); }
 }
 </script>
 
