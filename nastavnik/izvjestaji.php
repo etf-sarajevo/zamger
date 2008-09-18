@@ -3,7 +3,7 @@
 // NASTAVNIK/IZVJESTAJI - izvjestaji za izabrani predmet
 
 // v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
-
+// v3.9.1.1 (2008/09/18) + Konsolidovane sve vrste izvjestaj/grupe i izvjestaj/predmet
 
 
 function nastavnik_izvjestaji() {
@@ -50,13 +50,18 @@ if (!$user_siteadmin) { // 3 = site admin
 
 <p><a href="?sta=izvjestaj/ispit&predmet=<?=$predmet?>&ispit=svi"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 1. Sumarni izvještaj za predmet</a></p>
 
-<p><a href="?sta=izvjestaj/grupe&double=1&predmet=<?=$predmet?>"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 2. Spisak studenata po grupama</a></p>
+<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 2. Spisak studenata po grupama:
+<ul><li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>">Jedna kolona</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&double=1">Dvije kolone (za lakše printanje)</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&komentari=1">Sa komentarima na rad</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></li></ul>
+</p>
 
-<p><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&skrati=da"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 3. Pregled grupa, prisustva, bodova</a></p>
-
-<p><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&skrati=da&razdvoji_ispite=da"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 4. Pregled grupa, prisustva, bodova sa razdvojenim popravnim ispitima</a></p>
-
-<p><a href="?sta=izvjestaj/grupe&komentari=1&predmet=<?=$predmet?>"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 5. Spisak studenata sa komentarima</a></p>
+<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
+<ul><li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>">Puni izvještaj</a></li>
+<li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&skrati=da">Sa sumiranim kolonama za prisustvo i zadaće</a></li>
+<li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&skrati=da&razdvoji_ispite=da">Sa razdvojenim popravnim ispitima</li><ul>
+</p>
 
 
 <?
