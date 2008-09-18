@@ -9,7 +9,8 @@
 // v3.9.1.3 (2008/03/21) + Student ne mora biti ni u jednoj labgrupi, auth polja
 // v3.9.1.4 (2008/04/14) + Popravljen link za ispis studenta sa predmeta
 // v3.9.1.5 (2008/06/16) + Situacija kad student nije ni u jednoj grupi je sada malo jasnija, brisi prisustvo prilikom promjene grupe
-// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.7 (2008/09/17) + Omogucena promjena grupe ako student nije niti u jednoj grupi (bug 24)
 
 
 function saradnik_izmjena_studenta() {
@@ -253,10 +254,11 @@ function _izmijeni_profil($stud_id,$predmet_id) {
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
 	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$stud_id and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet_id");
-	$vec_upisan_u_grupu = 1;
+	$vec_upisan_u_grupu = 0;
 	while ($r220 = mysql_fetch_row($q220)) {
-		if ($r220[0]!=$grupa) {
-			$vec_upisan_u_grupu = 0;
+		if ($r220[0]==$grupa) {
+			$vec_upisan_u_grupu = 1;
+		} else {
 			$q230 = myquery("delete from student_labgrupa where student=$stud_id and labgrupa=$r220[0]");
 
 			// Brisanje prisustva za staru grupu
