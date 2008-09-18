@@ -6,7 +6,7 @@
 // v3.9.1.1 (2008/02/28) + Koristimo lib/manip, student moze biti u vise grupa
 // v3.9.1.2 (2008/08/18) + Popravljen logging predmeta, popravljen ispis u mass_inputu, informativna poruka kada parsiranje ne vrati nista, dodana greska za brisanje nepostojece grupe, dodana zastita od visestrukog slanja kod masovnog unosa
 // v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
-
+// v3.9.1.4 (2008/09/17) + Konacno azuriran kod za kopiranje grupa
 
 
 function nastavnik_grupe() {
@@ -109,7 +109,7 @@ if ($_POST['akcija'] == "preimenuj_grupu") {
 if ($_POST['akcija'] == "kopiraj_grupe") {
 	$kopiraj = intval($_POST['kopiraj']);
 	if ($kopiraj == $predmet) {
-		zamgerlog("kopiranje sa istog predmeta $predmet (STARI KOD!)",3);
+		zamgerlog("kopiranje sa istog predmeta p$predmet",3);
 		niceerror("Ne možete kopirati grupe sa istog predmeta.");
 		return;
 	}
@@ -117,8 +117,8 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 	// Spisak labgrupa na odabranom predmetu
 	$q60 = myquery("select id,naziv from labgrupa where predmet=$kopiraj");
 	if (mysql_num_rows($q60) == 0) {
-		zamgerlog("kopiranje sa predmeta $predmet na kojem nema grupa",3);
-		niceerror("Nisu definisane grupe za ovaj predmet.");
+		zamgerlog("kopiranje sa predmeta p$kopiraj na kojem nema grupa",3);
+		niceerror("Na odabranom predmetu nije definisana nijedna grupa.");
 	}
 	while ($r60 = mysql_fetch_row($q60)) {
 		$staragrupa = $r60[0];
@@ -133,9 +133,16 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 		$novagrupa = mysql_result($q70,0,0);
 
 		// Spisak studenata u grupi koja se kopira
-		$q90 = myquery("select student from student_labgrupa as sl where labgrupa=$staragrupa");
+		$q100 = myquery("select student from student_labgrupa as sl where labgrupa=$staragrupa");
 		while ($r100 = mysql_fetch_row($q100)) {
 			$student = $r100[0];
+
+			// Da li student uopste slusa ovaj predmet?
+			$q90 = myquery("select o.ime, o.prezime from student_predmet as sp, osoba as o where sp.student=$student and sp.predmet=$predmet and o.id=$student");
+			if (mysql_num_rows($q90)<1) {
+				print "-- Student ".mysql_result($q90,0,0)." ".mysql_result($q90,0,1)." ne sluša ovaj predmet, pa ćemo ga preskočiti.<br/>";
+				continue;
+			}
 
 			// Ispis studenta sa svih grupa u kojima je trenutno
 			$q110 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and sl.labgrupa!=$novagrupa");
