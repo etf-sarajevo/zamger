@@ -43,3 +43,5 @@
 #zadace sup {
 	color: gray;
 }
+
+div.breakafter {page-break-after:always;}
