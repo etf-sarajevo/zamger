@@ -315,7 +315,7 @@ foreach ($eventshtml as $logid => $event) {
 			}
 		}
 	
-		$link = "?sta=studentska/studenti&akcija=edit&osoba=$userid";
+		$link = "?sta=studentska/osobe&akcija=edit&osoba=$userid";
 
 		print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"toggleVisibility('$logid')\">
 <img src=\"images/16x16/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
