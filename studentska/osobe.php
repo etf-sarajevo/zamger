@@ -8,7 +8,9 @@
 // v3.9.1.3 (2008/08/27) + Pretvaram studentska/studenti u studentska/osobe; izbjegnut XSS u linku 'nazad na rezultate pretrage'
 // v3.9.1.4 (2008/09/03) + Napravljena akcija 'upis', dodani linkovi na sve vrste upisa u sljedeci semestar; dodano polje aktivan u tabeli auth
 // v3.9.1.5 (2008/09/05) + Ispravke bugova; prikazi podatke i za godinu u koju pokusavas upisati studenta
-// v3.9.1.6 (2008/09/13) + Upisi studenta u predmete koje je prenio prilikom upisa novog semestra; dodan debugging ispis; dodaj nastavnike u auth tabelu prilikom kreiranja iz LDAPa; omogucen upis studenta u aktuelnu akademsku godinu ako postoje podaci iz ranijih godina
+// v3.9.1.6 (2008/09/13) + Upisi studenta u predmete koje je prenio prilikom upisa novog semestra; 
+// v3.9.1.7 (2008/09/17) + Dodan debugging ispis; dodaj nastavnike u auth tabelu prilikom kreiranja iz LDAPa; omogucen upis studenta u aktuelnu akademsku godinu ako postoje podaci iz ranijih godina
+// v3.9.1.8 (2008/09/19) + Nemoj upisivati studenta u predmete koje je vec polozio
 
 
 
@@ -415,10 +417,16 @@ else if ($akcija == "upis") {
 		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina");
 
 		// Upisujemo na sve obavezne predmete na studiju
-		$q610 = myquery("select pk.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
+		$q610 = myquery("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		while ($r610 = mysql_fetch_row($q610)) {
-			$q620 = myquery("insert into student_predmet set student=$student, predmet=$r610[0]");
-			print "-- Student upisan u obavezni predmet $r610[1]<br/>";
+			// Da li ga je vec polozio
+			$q615 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$student and ko.predmet=pk.id and pk.predmet=$r610[1]");
+			if (mysql_result($q615,0,0)==0) {
+				$q620 = myquery("insert into student_predmet set student=$student, predmet=$r610[0]");
+				print "-- Student upisan u obavezni predmet $r610[2]<br/>";
+			} else {
+				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>";
+			}
 		}
 
 		// Upisujemo na izborne predmete koji su odabrani
