@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/09/13) + Upisi studenta u predmete koje je prenio prilikom upisa novog semestra; 
 // v3.9.1.7 (2008/09/17) + Dodan debugging ispis; dodaj nastavnike u auth tabelu prilikom kreiranja iz LDAPa; omogucen upis studenta u aktuelnu akademsku godinu ako postoje podaci iz ranijih godina
 // v3.9.1.8 (2008/09/19) + Nemoj upisivati studenta u predmete koje je vec polozio
+// v3.9.1.9 (2008/10/02) + Ozivljavam dio koda za direktan upis studenta na predmet, radi "kolizije"
 
 
 
@@ -515,11 +516,22 @@ else if ($akcija == "edit") {
 
 			} else {
 				// Dodajemo login, ako nije podešen
-				$q110 = myquery("select login from auth where id=$osoba");
-				if (mysql_result($q110,0,0) == "") {
-					$q112 = myquery("update auth set login='$suggest_login' where id=$osoba");
-					zamgerlog("kreiran login za korisnika u$osoba (ldap)",4);
+				$q110 = myquery("select login, aktivan from auth where id=$osoba");
+				if (mysql_num_rows($q110)==0) {
+					$q111 = myquery("insert into auth set id=$osoba, login='$suggest_login', aktivan=1");
+					zamgerlog("kreiran login za korisnika u$osoba (ldap - upis u tabelu)",4);
 				}
+				else {
+					if (mysql_result($q110,0,0) == "") {
+						$q112 = myquery("update auth set login='$suggest_login' where id=$osoba");
+						zamgerlog("kreiran login za korisnika u$osoba (ldap - postavljeno polje login)",4);
+					}
+					if (mysql_result($q110,0,1)==0) {
+						$q113 = myquery("update auth set aktivan=1 where id=$osoba");
+						zamgerlog("kreiran login za korisnika u$osoba (ldap - aktivan=1)",4);
+					}
+				}
+
 				// Generišemo email adresu ako nije podešena
 				$q115 = myquery("select email from osoba where id=$osoba");
 				if (mysql_result($q115,0,0) == "") {
@@ -546,7 +558,7 @@ else if ($akcija == "edit") {
 		}
 	} // if ($_REQUEST['subakcija'] == "auth")
 
-/*
+
 	// Upis studenta na predmet
 	if ($_POST['subakcija'] == "upisi") {
 		$predmet = intval($_POST['predmet']);
@@ -556,7 +568,6 @@ else if ($akcija == "edit") {
 			zamgerlog("student u$student upisan na predmet p$predmet",4);
 		}
 	}
-*/
 
 
 	// Prijava nastavnika na predmet
@@ -850,7 +861,7 @@ else if ($akcija == "edit") {
 			}
 			else {
 				$sta = "&quot;$studij&quot;, ".($semestar+1).". semestar";
-				$uslov_ects = 54;
+				$uslov_ects = 60; // Nema prenosenja predmeta na visim godinama
 			}
 
 			// Konačan ispis
@@ -868,6 +879,28 @@ else if ($akcija == "edit") {
 
 		} // if ($q235... else ... -- nije vec upisan nigdje
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
+
+		// Upis studenta na predmet
+		?>
+		<p>&nbsp;</p>
+		<p>Upiši studenta na predmet:<br/>
+		<?=genform("POST");?>
+		<input type="hidden" name="subakcija" value="upisi">
+		<select name="predmet">
+		<option>--- Izaberite predmet ---</option>
+		<?
+		$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$id_ak_god and pk.studij=s.id and pk.predmet=p.id order by p.naziv");
+		while ($r300 = mysql_fetch_row($q300)) {
+			$q310 = myquery("select count(*) from student_predmet where predmet=$r300[0] and student=$osoba");
+			if (mysql_result($q310,0,0)>0) continue;
+			print "<option value=\"$r300[0]\">$r300[1] ($r300[2])</option>\n";
+		}
+		?>
+		</select>&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="submit" value=" Upiši ">
+		</form>
+		<?
+
 
 		print "\n<div style=\"clear:both\"></div>\n";
 	} // STUDENT
