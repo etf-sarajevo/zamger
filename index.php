@@ -9,6 +9,7 @@
 // v3.9.1.3 (2008/04/17) + Popravljen XSS sa varijablom sta
 // v3.9.1.4 (2008/05/07) + Dodan logging za razne greske kod anonimnog pristupa, popravljen forwarding kada čovjeku istekne sesija
 // v3.9.1.5 (2008/08/27) + Koristimo horizontalni_meni() za studentska/*; koristimo tabelu privilegija umjesto auth
+// v3.9.1.6 (2008/10/02) + Popravljen logging
 
 
 require("lib/libvedran.php");
@@ -129,13 +130,13 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 				$greska = "";
 			} else if ($greska=="") {
 				$greska = "Pristup nije dozvoljen";
-				$sta = ""; // prikaži default modul
 				$permstr=""; // opis korisnika, za lakši debugging
 				if ($user_student) $permstr.="S";
 				if ($user_nastavnik) $permstr.="N";
 				if ($user_studentska) $permstr.="B";
 				if ($user_siteadmin) $permstr.="A";
 				if ($userid>0) zamgerlog("Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]",3); // nivo 3 = greska
+				$sta = ""; // prikaži default modul
 //print "Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]";
 			} else {
 				$sta=""; // kako se ne bi prikazivale ostale greske, navigacija itd.
