@@ -551,6 +551,9 @@ function gen_ldap_uid($userid) {
 	if ($debosn[substr($ime,0,2)]) $sime=$debosn[substr($ime,0,2)];
 	$sprezime = strtolower(substr($prezime,0,1));
 	if ($debosn[substr($prezime,0,2)]) $sprezime=$debosn[substr($prezime,0,2)];
+
+	if (strstr($brindexa,"/")) $brindexa = substr($brindexa,strpos($brindexa,"/")+1);
+
 	return $sime.$sprezime.$brindexa;
 }
 
