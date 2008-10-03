@@ -19,6 +19,7 @@
 # v0.0.13.1 (2008/03/21) + dodane default vrijednosti parametara, da smanjimo warning-e
 # v0.0.13.2 (2008/05/16) + sitne ispravke u prikazu i obradi hidden polja u db_form(), mada i dalje treba popraviti db_submit() tako da prepozna polja koja su skrivena i ne ukljucuje ih u upitu
 # v0.0.13.3 (2008/06/13) + dodan tip double
+# v0.0.13.4 (2008/09/26) + Omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -113,6 +114,13 @@ function my_escape($value) {
 	return $value;
 }
 
+function ldap_escape($str){
+    $metaChars = array('\\', '(', ')', '#', '*');
+    $quotedMetaChars = array();
+    foreach ($metaChars as $key => $value) $quotedMetaChars[$key] = '\\'.dechex(ord($value));
+    $str=str_replace($metaChars,$quotedMetaChars,$str); //replace them
+    return ($str);
+}
 
 // --- SESSION MGMT
 
@@ -125,25 +133,68 @@ function login($pass) {
 	//  $admin - user has admin privileges (from auth table)
 	//  $userid - whatever is used internally (aside from login)
 
-	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server;
+	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain;
 
-	$q1 = myquery("select id,password,admin from auth where login='$login'");
+	$q1 = myquery("select id,password,admin from auth where login='$login' and aktivan=1");
 	if (mysql_num_rows($q1)<=0)
 		return 1;
+
+	function is_alias($results) {
+		foreach ($results as $k1=>$v1) {
+			if ($k1 === "objectclass") foreach ($v1 as $k2=>$v2) {
+				if ($v2 === "zimbraAlias") return true;
+			}
+		}
+		return false;
+	}
 
 	if ($conf_system_auth == "ldap") {
 		$ds = ldap_connect($conf_ldap_server);
 		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 		if ($ds) {
 			if (ldap_bind($ds)) {
+				$i=0;
+
+				// Probavamo UID
+				$login = ldap_escape($login);
 				$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
-				if (!$sr) { 
+				if (!$sr) {
 					niceerror("ldap_search() failed.");
 					exit;
 				}
 				$results = ldap_get_entries($ds, $sr);
-				if ($results['count'] < 1) return 1;
-				$dn = $results[0]['dn'];
+
+				// Ovaj upit ce vratiti i aliase, koje moramo profiltrirati
+				while (is_alias($results[$i]) && $i<$results['count']) $i++;
+
+				// Probavamo email adresu
+				if ($i == $results['count']) {
+					$sr = ldap_search($ds, "", "mail=$login", array() );
+					if (!$sr) {
+						niceerror("ldap_search() 1 failed.");
+						exit;
+					}
+					$results = ldap_get_entries($ds, $sr);
+
+					$i=0;
+					while (is_alias($results[$i]) && $i<$results['count']) $i++;
+				}
+
+				// Probavamo email adresu + domena
+				if ($i == $results['count']) {
+					$sr = ldap_search($ds, "", "mail=$login$conf_ldap_domain", array() );
+					if (!$sr) {
+						niceerror("ldap_search() 2 failed.");
+						exit;
+					}
+					$results = ldap_get_entries($ds, $sr);
+
+					$i=0;
+					while (is_alias($results[$i]) && $i<$results['count']) $i++;
+				}
+
+				if ($i == $results['count']) return 1;
+				$dn = $results[$i]['dn'];
 				
 				if (!ldap_bind($ds, $dn, $pass)) {
 					return 2;
