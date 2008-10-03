@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/22) + Novi modul: nastavnik/obavjestenja
 // v3.9.1.1 (2008/09/03) + Dodajem podrsku za email
+// v3.9.1.2 (2008/10/02) + Modul nije ispisivao stara obavjestenja ako na predmetu nisu definisane labgrupe; popravljen logging
 
 
 function nastavnik_obavjestenja() {
@@ -146,7 +147,7 @@ if ($_REQUEST['akcija']=='novo') {
 			if ($broj>0)
 				mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
 
-			zamgerlog("novo obavjestenje (predmet $predmet)",2);
+			zamgerlog("novo obavjestenje (predmet p$predmet)",2);
 		}
 
 		$naslov=$tekst="";
@@ -156,7 +157,7 @@ if ($_REQUEST['akcija']=='novo') {
 
 // Stara obavjestenja
 
-$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet and l.predmet=$predmet or p.opseg=6 and p.primalac=l.id and l.predmet=$predmet) order by vrijeme");
+$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet or p.opseg=6 and p.primalac=l.id and l.predmet=$predmet) order by vrijeme");
 if (mysql_num_rows($q10)>0) {
 	print "<p>Do sada unesena obavještenja:</p>\n<ul>\n";
 } else {
