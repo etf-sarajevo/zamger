@@ -11,6 +11,7 @@
 // v3.9.1.5 (2008/06/16) + Situacija kad student nije ni u jednoj grupi je sada malo jasnija, brisi prisustvo prilikom promjene grupe
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/17) + Omogucena promjena grupe ako student nije niti u jednoj grupi (bug 24)
+// v3.9.1.8 (2008/09/23) + Popravljen link na studentska/osobe
 
 
 function saradnik_izmjena_studenta() {
@@ -211,7 +212,7 @@ if ($izmjena_moguca == 1) {
 if ($user_siteadmin) {
 	// Linkovi za site admina
 	?>
-	<tr><td colspan="2"><a href="index.php?c=B&sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>" target="openerwindow" onClick="if (document.images) opener.name='openerwindow'">Detaljnije o studentu</a></td></tr>
+	<tr><td colspan="2"><a href="index.php?c=B&sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>" target="openerwindow" onClick="if (document.images) opener.name='openerwindow'">Detaljnije o studentu</a></td></tr>
 	<tr><td colspan="2"><a href="index.php?c=S&su=<?=$stud_id?>" target="openerwindow" onClick="if (document.images) opener.name='openerwindow'">Prijavi se kao student</a></td></tr>
 	<?
 }
