@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/02/19) + Kopiran raniji stud_status, uz novi dizajn
 // v3.9.1.1 (2008/03/28) + Dodana ikona za slanje novog zadatka (zad_novi.png)
 // v3.9.1.2 (2008/04/09) + Dodan prikaz akademske godine uz ime predmeta; zadace bez imena; navigacija za zadace je prikazivala visak zadataka; otvori PDF u novom prozoru
+// v3.9.1.3 (2008/10/02) + Dodana provjera da li student slusa predmet
 
 
 function student_predmet() {
@@ -19,6 +20,14 @@ $q10 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, ak
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet_id",3); // nivo 3: greska
 	biguglyerror("Nepoznat predmet $predmet_id");
+	return;
+}
+
+// Da li student slusa predmet?
+$q15 = myquery("select count(*) from student_predmet where student=$userid and predmet=$predmet_id");
+if (mysql_result($q15,0,0)==0) {
+	zamgerlog("student ne slusa predmet $predmet_id", 3);
+	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
 
