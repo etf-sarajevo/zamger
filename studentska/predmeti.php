@@ -7,7 +7,8 @@
 // v3.9.1.2 (2008/03/25) + Nova auth tabela
 // v3.9.1.3 (2008/04/09) + Nije radila izmjena imena predmeta
 // v3.9.1.4 (2008/08/27) + Tabela auth zamijenjena sa osoba, centriran prikaz (radi novog menija), polje aktuelna u tabeli akademska_godina, izdvojen izvjestaj ukupne statistike, link na pretragu za sve ak. godine
-
+// v3.9.1.5 (2008/09/08) + Dodavanje novog predmeta: popravljen neispravan upit, polje aktuelna, kratki naziv
+// v3.9.1.6 (2008/10/03) + Popravljen link na nastavnika
 
 
 function studentska_predmeti() {
@@ -128,7 +129,9 @@ else if ($akcija == "novi") {
 		return;
 	}
 
-	$q390 = myquery("select id from akademska_godina order by naziv desc limit 1");
+	$q390 = myquery("select id from akademska_godina where aktuelna=1");
+	if (mysql_num_rows($q390)<1)
+		$q390 = myquery("select id from akademska_godina order by id desc");
 	if (mysql_num_rows($q390)<1) {
 		niceerror("Nije definisana nijedna akademska godina. Molimo kontaktirajte administratora sajta.");
 		zamgerlog("ne postoji nijedna akademska godina",3);
@@ -148,13 +151,19 @@ else if ($akcija == "novi") {
 		zamgerlog("dodajem predmet p$pid u akademsku godinu ag$ak_god",4);
 	} else {
 		print "Novi predmet.<br/><br/>";
-		$q393 = myquery("insert into predmet set naziv='$naziv'");
+		// Odredjujemo kratki naziv
+		$dijelovi = explode(" ",$naziv);
+		$kratki_naziv = "";
+		foreach ($dijelovi as $dio)
+			$kratki_naziv .= strtoupper(substr($dio,0,1));
+
+		$q393 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv'");
 		$q391 = myquery("select id from predmet where naziv='$naziv'");
 		$pid = mysql_result($q391,0,0);
 		zamgerlog("potpuno novi predmet p$pid, akademska godina ag$ak_god",4);
 	}
 
-	$q395 = myquery("insert into ponudakursa set predmet=$pid, akademska_godina=$ak_god, studij=1, semestar=1, akademska_godina=1"); // default vrijednosti
+	$q395 = myquery("insert into ponudakursa set predmet=$pid, akademska_godina=$ak_god, studij=1, semestar=1"); // default vrijednosti
 	$q396 = myquery("select id from ponudakursa where predmet=$pid and akademska_godina=$ak_god");
 	$predmet = mysql_result($q396,0,0);
 
@@ -341,7 +350,7 @@ else if ($akcija == "edit") {
 		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
 	}
 	while ($r351 = mysql_fetch_row($q351)) {
-		print '<tr><td><a href="?sta=studentska/studenti&akcija=edit&osoba='.$r351[0].'">'.$r351[2].' '.$r351[3].'</td>'."\n";
+		print '<tr><td><a href="?sta=studentska/osobe&akcija=edit&osoba='.$r351[0].'">'.$r351[2].' '.$r351[3].'</td>'."\n";
 
 		print '<td><input type="checkbox" onchange="javascript:location.href=\'';
 		print genuri()."&subakcija=set_admin&nastavnik=$r351[0]&yesno=";
