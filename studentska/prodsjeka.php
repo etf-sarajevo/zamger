@@ -3,6 +3,7 @@
 // STUDENTSKA/PRODSJEKA - odobrenja za promjenu odsjeka
 
 // v3.9.1.0 (2008/09/11) + Novi modul studentska/prodsjeka
+// v3.9.1.1 (2008/09/24) + Dodan link na detalje o studentu
 
 
 function studentska_prodsjeka() {
@@ -275,14 +276,14 @@ odsjeka</td><td>U odsjek</td><td>Broj pol.</td><td>Prosjek</td></tr>
 <ul>
 <?
 
-$q10 = myquery("select po.id, o.ime, o.prezime, s.naziv, po.u_odsjek from promjena_odsjeka as po, osoba as o, studij as s where po.osoba=o.id and po.iz_odsjeka=s.id");
+$q10 = myquery("select po.id, o.ime, o.prezime, s.naziv, po.u_odsjek, o.id from promjena_odsjeka as po, osoba as o, studij as s where po.osoba=o.id and po.iz_odsjeka=s.id");
 if (mysql_num_rows($q10)<1) 
 	print "<li>Nema zahtjeva</li\n";
 $total=0;
 while ($r10 = mysql_fetch_row($q10)) {
 	$q20 = myquery("select naziv from studij where id=$r10[4]");
 	?>
-	<li><?=$r10[1]?> <?=$r10[2]?> - sa "<?=$r10[3]?>" na "<?=mysql_result($q20,0,0)?>" (<a href="?sta=studentska/prodsjeka&akcija=obrisi&id=<?=$r10[0]?>">obriši zahtjev</a>)</li>
+	<li><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$r10[5]?>"><?=$r10[1]?> <?=$r10[2]?></a> - sa "<?=$r10[3]?>" na "<?=mysql_result($q20,0,0)?>" (<a href="?sta=studentska/prodsjeka&akcija=obrisi&id=<?=$r10[0]?>">obriši zahtjev</a>)</li>
 	<?
 	$total++;
 }
