@@ -3,8 +3,9 @@
 // STUDENTSKA/IZVJESTAJI - izvjestaji koji se ticu prolaznosti
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
-// v3.9.1.0 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
-// v3.9.1.0 (2008/09/09) + Dodan izvjestaj "studenti kojima nedostaje..."
+// v3.9.1.1 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
+// v3.9.1.2 (2008/09/09) + Dodan izvjestaj "studenti kojima nedostaje..."
+// v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
 
 
 
@@ -36,8 +37,10 @@ if (!$user_studentska && !$user_siteadmin) {
 <p>Najčešći izvještaji:
 <ul>
 <li><a href="?sta=izvjestaj/granicni&polozili=1">Spisak studenata koji su dali uslove za upis u sljedeći semestar</a></li>
-<li><a href="?sta=izvjestaj/granicni&parcijalnih=1&predmeta=1">Granični slučajevi - po studiju</a></li>
-<li><a href="?sta=izvjestaj/granicni&parcijalnih=1&predmeta=1&sort=predmet">Granični slučajevi - po predmetu</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalni=1&predmet=1&akademska_godina=3">Granični slučajevi - po studiju</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalni=1&predmet=1&sort=predmet&akademska_godina=3">Granični slučajevi - po predmetu</a></li>
+<li><a href="?sta=izvjestaj/granicni&predmet=1&akademska_godina=4">Studenti kojima fali 1 predmet - 2008/2009</a></li>
+<li><a href="?sta=izvjestaj/granicni&predmet=2&akademska_godina=4">Studenti kojima fale 2 predmeta - 2008/2009</a></li>
 </ul></p>
 
 <hr/>
@@ -75,7 +78,7 @@ function setCheckedValue(radioObj, newValue) {
 			}
 		?>
 		</select><br/><br/>
-		Studij: <?=db_dropdown("studij")?><br/><br/>
+		Studij: <?=db_dropdown("studij",0,"Svi studiji")?><br/><br/>
 		<input type="radio" name="period" value="0" CHECKED> Semestar: <input type="text" name="semestar" size="5" onclick="setCheckedValue(document.forms['studijForm'].elements['period'], '0');">&nbsp;
 		<input type="radio" name="period" value="1"> Cijela godina: <input type="text" name="godina" size="5" onclick="setCheckedValue(document.forms['studijForm'].elements['period'], '1');"><br/><br/>
 
@@ -92,10 +95,11 @@ function setCheckedValue(radioObj, newValue) {
 		<input type="radio" name="cista_gen" value="3"> Čista generacija (studenti koji nemaju ponovljenih godina ni prenesenih predmeta)<br/><br/>
 
 		<input type="checkbox" name="studenti" value="1"> Prikaži podatke za svakog pojedinačnog studenta<br/>
-		NAPOMENA: Zbog kompleksnosti izvještaja, izračunavanje podataka za pojedinačne studente može trajati do par minuta.<br/>
-		Sortiraj spisak po: 
-		<input type="radio" name="sortiranje" value="0" CHECKED> Prezimenu
-		<input type="radio" name="sortiranje" value="1"> Broju položenih ispita i bodova<br/><br/>
+		NAPOMENA: Zbog kompleksnosti izvještaja, izračunavanje podataka za pojedinačne studente može trajati do par minuta.<br/><br/>
+		Sortiraj spisak po: <ul>
+		<input type="radio" name="sortiranje" value="0" CHECKED> Prezimenu<br/>
+		<input type="radio" name="sortiranje" value="1"> Broju položenih ispita i bodova<br/>
+		<input type="radio" name="sortiranje" value="2"> Broju indeka</ul>
 		
 		<input type="submit" value=" Prikaži "></form>
 
