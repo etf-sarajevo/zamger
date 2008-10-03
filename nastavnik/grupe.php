@@ -7,6 +7,7 @@
 // v3.9.1.2 (2008/08/18) + Popravljen logging predmeta, popravljen ispis u mass_inputu, informativna poruka kada parsiranje ne vrati nista, dodana greska za brisanje nepostojece grupe, dodana zastita od visestrukog slanja kod masovnog unosa
 // v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.4 (2008/09/17) + Konacno azuriran kod za kopiranje grupa
+// v3.9.1.5 (2008/09/24) + Popravljen bug u massinput-u kada opcija Naziv grupe nije ukljucena
 
 
 function nastavnik_grupe() {
@@ -248,7 +249,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		}
 
 		// Kod upisa sviju u prvu grupu, ovo ispod znatno pojednostavljuje k^od
-		if ($brpodataka==0) array_push($mass_rezultat['podatak1'][$student],$imegrupe);
+		if ($brpodataka==0) $mass_rezultat['podatak1'][$student][]=$imegrupe;
 
 		// spisak grupa u koje treba upisati studenta
 		foreach ($mass_rezultat['podatak1'][$student] as $imegrupe) {
