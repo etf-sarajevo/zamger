@@ -8,6 +8,9 @@
 // v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.4 (2008/09/17) + Konacno azuriran kod za kopiranje grupa
 // v3.9.1.5 (2008/09/24) + Popravljen bug u massinput-u kada opcija Naziv grupe nije ukljucena
+// v3.9.1.6 (2008/10/03) + Iskomentarisan dio koda koji se vec odavno ne koristi
+// v3.9.1.7 (2008/10/07) + Malo doradjen logging
+// v3.9.1.8 (2008/12/23) + Dodana zastita od CSRF, brisanje grupe prebaceno na POST jer je destruktivna operacija (bug 51)
 
 
 function nastavnik_grupe() {
@@ -64,17 +67,17 @@ if (!$user_siteadmin) { // 3 = site admin
 
 // Dodaj grupu
 
-if ($_POST['akcija'] == "nova_grupa") {
+if ($_POST['akcija'] == "nova_grupa" && check_csrf_token()) {
 	$ime = my_escape($_POST['ime']);
 	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet");
-	zamgerlog("dodana nova labgrupa '$ime'",4); // nivo 4: audit
+	zamgerlog("dodana nova labgrupa '$ime' (predmet p$predmet)",4); // nivo 4: audit
 }
 
 
 // Obrisi grupu
 
-if ($_GET['akcija'] == "obrisi_grupu") {
-	$grupaid = intval($_GET['grupaid']);
+if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
+	$grupaid = intval($_POST['grupaid']);
 	$q29 = myquery("select count(*) from labgrupa where id=$grupaid");
 	if (mysql_result($q29,0,0)<1) {
 		zamgerlog("nepostojeca labgrupa $grupaid",3);
@@ -88,26 +91,26 @@ if ($_GET['akcija'] == "obrisi_grupu") {
 	}
 	$q40 = myquery("delete from labgrupa where id=$grupaid");
 	// Dodati brisanje svih podataka
-	zamgerlog("obrisana labgrupa $grupaid",4); // nivo 4: audit
+	zamgerlog("obrisana labgrupa $grupaid (predmet p$predmet)",4); // nivo 4: audit
 }
 
 
 // Promjena imena grupe
 
-if ($_POST['akcija'] == "preimenuj_grupu") {
+if ($_POST['akcija'] == "preimenuj_grupu" && check_csrf_token()) {
 	$grupaid = intval($_POST['grupaid']);
 	$ime = my_escape($_POST['ime']);
 	$q50 = myquery("update labgrupa set naziv='$ime' where id=$grupaid");
 	// Grupa treba ostati otvorena:
 	$_GET['akcija']="studenti_grupa";
 	$_GET['grupaid']=$grupaid;
-	zamgerlog("preimenovana labgrupa $grupaid u '$ime'",2); // nivo 2: edit
+	zamgerlog("preimenovana labgrupa $grupaid u '$ime' (predmet p$predmet)",2); // nivo 2: edit
 }
 
 
 // Kopiraj grupe
 
-if ($_POST['akcija'] == "kopiraj_grupe") {
+if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	$kopiraj = intval($_POST['kopiraj']);
 	if ($kopiraj == $predmet) {
 		zamgerlog("kopiranje sa istog predmeta p$predmet",3);
@@ -160,7 +163,7 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 		}
 	}
 
-	zamgerlog("prekopirane labgrupe sa predmeta $kopiraj u $predmet",4);
+	zamgerlog("prekopirane labgrupe sa predmeta p$kopiraj u p$predmet",4);
 }
 
 
@@ -168,7 +171,7 @@ if ($_POST['akcija'] == "kopiraj_grupe") {
 // Upis u prvu grupu svih koji slušaju tekući semestar/odsjek
 // Ova akcija se više ne koristi u v3.9
 
-if ($_REQUEST['akcija'] == "svisasemestra") {
+/*if ($_POST['akcija'] == "svisasemestra") {
 	$q50 = myquery("select id from labgrupa where predmet=$predmet order by id limit 1");
 	if (mysql_num_rows($q50) < 1) {
 		zamgerlog("kreirana labgrupa prilikom upisa sviju sa semestra (predmet $predmet)",4);
@@ -187,13 +190,12 @@ if ($_REQUEST['akcija'] == "svisasemestra") {
 		}
 	}
 	zamgerlog("upisani svi sa semestra na predmet $predmet (STARI KOD!)",4);
-}
+}*/
 
 
 
 // Masovni unos studenata u grupe
-if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
-
+if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 
 	// Unos moze imati jedan parametar (ime grupe) ili nula (prva grupa)
@@ -221,7 +223,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 	if (count($mass_rezultat)==0) {
 		zamgerlog("parsiranje kod masovnog upisa nije vratilo ništa (predmet p$predmet)",3);
 		niceerror("Niste unijeli nijedan koristan podatak.");
-		return;
+	//	return;
 	}
 
 	if ($ispis) {
@@ -298,7 +300,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 		print "</form>";
 		return;
 	} else {
-		zamgerlog("masovan upis grupa za predmet $predmet",4);
+		zamgerlog("masovan upis grupa za predmet p$predmet",4);
 		?>
 		Grupe su kreirane.
 		<script language="JavaScript">
@@ -316,11 +318,18 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
 
 ?>
 <script language="JavaScript">
-function upozorenje(url) {
+function upozorenje(grupa) {
 	var a = confirm("Svi studenti će biti ispisani iz ove grupe.");
-	if (a) window.location=url;
+	if (a) {
+		document.brisanjegrupe.grupaid.value=grupa;
+		document.brisanjegrupe.submit();
+	}
 }
 </script>
+<?=genform("POST", "brisanjegrupe")?>
+<input type="hidden" name="akcija" value="obrisi_grupu">
+<input type="hidden" name="grupaid" value=""></form>
+
 Spisak grupa:<br/>
 <?
 
@@ -332,6 +341,7 @@ if (mysql_num_rows($q100) == 0)
 while ($r100 = mysql_fetch_row($q100)) {
 	$grupa = $r100[0];
 	$naziv = $r100[1];
+
 	if (!preg_match("/\w/",$naziv)) 
 		print "<li>[Nema imena] - ";
 	else
@@ -341,9 +351,9 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$brstud = mysql_result($q110,0,0);
 	print "(<a href=\"?sta=nastavnik/grupe&predmet=$predmet&akcija=studenti_grupa&grupaid=$grupa\">$brstud studenata</a>) - ";
 
-	print "<a href=\"javascript:onclick=upozorenje('?sta=nastavnik/grupe&predmet=$predmet&akcija=obrisi_grupu&grupaid=$grupa')\">Obriši grupu</a>";
+	print "<a href=\"javascript:onclick=upozorenje('$grupa')\">Obriši grupu</a></li>";
 
-	print "</li>\n";
+	//print "</li>\n";
 	if ($_GET['akcija']=="studenti_grupa" && $_GET['grupaid']==$grupa) {
 		print "<ul>\n";
 		$q102 = myquery("select osoba.id,osoba.prezime,osoba.ime from student_labgrupa,osoba where student_labgrupa.student=osoba.id and student_labgrupa.labgrupa=$grupa order by osoba.prezime,osoba.ime");
