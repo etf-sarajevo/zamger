@@ -10,6 +10,11 @@
 // v3.9.1.5 (2008/04/27) + Zamijenjen obican zadatak i attachment u log zapisu
 // v3.9.1.6 (2008/05/16) + Dodan link za odgovor na komentar tutora; dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
 // v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.8 (2008/10/03) + Slanje zadace prebaceno na genform() radi sigurnosnih aspekata istog (kod slanja attachmenta ne moze?)
+// v3.9.1.9 (2008/10/22) + Popravljen bug u slanju zadace - genform() nije ubacivao hidden polje zadatak jer se ono ponekad izracunava kao "zadnji neuradjeni" i slicno
+// v3.9.1.9 (2008/10/27) + Isto i sa poljem zadaca
+// v3.9.1.10 (2008/11/10) + Popravljen status nove zadace sa 2 (prepisana) na 4 (potrebno pregledati)
+
 
 
 function student_zadaca() {
@@ -18,7 +23,7 @@ global $userid,$conf_files_path;
 
 
 // Akcije
-if ($_POST['akcija'] == "slanje") {
+if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	akcijaslanje();
 }
 
@@ -469,7 +474,6 @@ if ($attachment) {
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
 	<input type="file" name="attachment" size="50">
-	</file>
 	</center>
 	<p>&nbsp;</p>
 	<?
@@ -487,15 +491,16 @@ if ($attachment) {
 		<?
 	}
 
+
+	// Moze li se izbaciti labgrupa ispod?
+
 	?>
 	
 	<center>
-	<form action="index.php" method="POST">
-	<input type="hidden" name="sta" value="student/zadaca">
-	<input type="hidden" name="akcija" value="slanje">
-	<input type="hidden" name="predmet" value="<?=$predmet_id?>">
+	<?=genform("POST")?>
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+	<input type="hidden" name="akcija" value="slanje">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
 	
 	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
@@ -587,8 +592,8 @@ function akcijaslanje() {
 
 		$filename = "$lokacijazadaca$zadaca/$zadatak$ekst";
 
-		// Ako nije zadat jezik, postavi status na 2 (ceka pregled), inace na 1 (automatska kontrola)
-		if ($jezik==0) $prvi_status=2; else $prvi_status=1;
+		// Ako nije zadat jezik, postavi status na 4 (ceka pregled), inace na 1 (automatska kontrola)
+		if ($jezik==0) $prvi_status=4; else $prvi_status=1;
 
 		// Temp fajl radi određivanja diff-a 
 		$diffing=0;
@@ -647,7 +652,7 @@ function akcijaslanje() {
 			update_komponente($userid,$predmet_id,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
 		} else {
-			zamgerlog("greska kod attachmenta (program $program)",3);
+			zamgerlog("greska kod attachmenta (zadaca z$zadaca, varijabla program je: $program)",3);
 			niceerror("Greška pri slanju zadaće. Kontaktirajte tutora.");
 		}
 	}
