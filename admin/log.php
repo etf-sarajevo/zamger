@@ -10,6 +10,7 @@
 // v3.9.1.5 (2008/04/28) + Naslov u <h3>
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + JOIN izmedju log i osoba ne mora vratiti nista ako je userid 0
+// v3.9.1.8 (2008/10/31) + Dodana mogucnost pretrage; dodan tag za studij
 
 
 
@@ -32,6 +33,67 @@ if ($nivo<1) $nivo=1;
 if ($nivo>4) $nivo=4;
 
 
+
+// Pretraga / filtriranje
+
+$pretraga = $_REQUEST['pretraga'];
+if ($pretraga) {
+	$src = preg_replace("/\s+/"," ",$pretraga);
+	$src=trim($src);
+	$dijelovi = explode(" ", $src);
+	$query = "";
+	$filterupita = "";
+
+	// Probavamo traziti ime i prezime istovremeno
+	if (count($dijelovi)==2) {
+		$q100 = myquery("select id from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
+		if (mysql_num_rows($q100)==0) {
+			$q100 = myquery("select id from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
+		}
+		$rezultata = mysql_num_rows($q100);
+	}
+
+	// Nismo nasli ime i prezime, pokusavamo bilo koji dio
+	if ($rezultata==0) {
+		foreach($dijelovi as $dio) {
+			if ($query != "") $query .= "or ";
+			$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
+			if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
+		}
+		$q100 = myquery("select id from osoba where ($query)");
+		$rezultata = mysql_num_rows($q100);
+	}
+
+	// Nismo nasli nista, pokusavamo login
+	if ($rezultata==0) {
+		$query="";
+		foreach($dijelovi as $dio) {
+			if ($query != "") $query .= "or ";
+			$query .= "a.login like '%$dio%' ";
+		}
+		$q100 = myquery("select id from osoba as o, auth as a where ($query) and a.id=o.id");
+		$rezultata = mysql_num_rows($q100);
+	}
+
+	if ($rezultata>0) {
+		while ($r100 = mysql_fetch_row($q100)) {
+			if ($filterupita!="") $filterupita .= " OR ";
+			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+		}
+	}
+
+	// Probavamo predmete
+	$q101 = myquery("select pk.id from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.predmet=p.id and (p.naziv like '%$src%' or p.kratki_naziv='$src') and pk.akademska_godina=ag.id and ag.aktuelna=1");
+	if (mysql_num_rows($q101)>0) {
+		if ($filterupita!="") $filterupita .= " OR ";
+		$filterupita .= "dogadjaj like '%p$r101%'";
+	}
+
+	// Kraj, dodajemo and
+	if ($filterupita!="") $filterupita = " AND ($filterupita)";
+}
+
+
 // Izbor nivoa logiranja (JavaScript)
 
 ?>
@@ -46,6 +108,17 @@ if ($nivo>4) $nivo=4;
 </tr></table>
 </form>
 <br/><br/>
+
+<center>
+<form action="index.php" method="GET">
+<input type="hidden" name="sta" value="admin/log">
+<input type="hidden" name="nivo" value="<?=$nivo?>">
+<input type="text" name="pretraga" size="40" value="<?=$pretraga?>">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="submit" value=" Traži ">
+</form>
+</center>
+
 
 <script language="JavaScript">
 	function toggleVisibility(ime){
@@ -94,7 +167,8 @@ function get_predmet_link($id) {
 
 // Glavni upit i petlja
 
-$q10 = myquery ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and (nivo>=$nivo or dogadjaj='login') order by id desc");
+
+$q10 = myquery ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and ((nivo>=$nivo $filterupita) or dogadjaj='login') order by id desc");
 $lastlogin = array();
 $eventshtml = array();
 $logins=0;
@@ -105,7 +179,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$evt=$r10[3]; // string koji opisuje dogadjaj
 	if (strlen($evt)>100) $evt = substr($evt,0,100);
 
-	if ($lastlogin[$usr]==0 && ($nivo==1 || $evt != "login")) { // ne prikazuj login na nivou>1 ako je to jedina stavka
+	// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
+	if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $evt != "login")) { 
 		$lastlogin[$usr]=$r10[0];
 		$logins++;
 		if ($logins > $maxlogins) {
@@ -119,7 +194,17 @@ while ($r10 = mysql_fetch_row($q10)) {
 	else if ($r10[4]==3) $nivoimg="log_error";
 	else if ($r10[4]==4) $nivoimg="log_audit";
 
-	// Prepoznavanje određenih elemenata eventa
+
+	// Prepoznavanje određenih elemenata eventa - TAGOVA
+	// Legenda:
+	//   uID - korisnik
+	//   pID - predmet
+	//   cID - čas
+	//   zID - zadaća
+	//   iID - ispit
+	//   agID - akademska godina
+	//   sID - studij
+
 	if (preg_match("/\Wu(\d+)/", $evt, $m)) { // korisnik
 		$evt = str_replace("u$m[1]",get_user_link($m[1]), $evt);
 	}
@@ -169,12 +254,19 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$evt = str_replace("ag$m[1]","$naziv",$evt);
 		}
 	}
+	if (preg_match("/\Ws(\d+)/", $evt, $m)) { // studij
+		$q80 = myquery("select naziv from studij where id=$m[1]");
+		if (mysql_num_rows($q80)>0) {
+			$naziv=mysql_result($q80,0,0);
+			$evt = str_replace("s$m[1]","$naziv",$evt);
+		}
+	}
 
 
 	// Pošto idemo unazad, login predstavlja kraj zapisa za korisnika
 
 	if ($evt == "login") {
-		if ($lastlogin[$usr]!=0) {
+		if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
 			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 			$lastlogin[$usr]=0;
 		}
