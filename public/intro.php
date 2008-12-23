@@ -5,6 +5,7 @@
 
 // v3.9.1.0 (2008/02/09) + Novi modul: public/intro, prikazuje stablo predmeta i login formu
 // v3.9.1.1 (2008/03/08) + Popravljena redirekcija
+// v3.9.1.2 (2008/11/21) + Dodajem link na dokumentaciju
 
 
 
@@ -47,9 +48,11 @@ function login_forma() {
 	<center><table border="0" bgcolor="#FFFFFF"><tr><td>
 		<big><b>Dobro došli na bolognaware Elektrotehničkog fakulteta Sarajevo</b></big>
 	
+			<p align="center">
+			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p>
 		<form action="<?=$uri?>" method="POST">
 		<input type="hidden" name="loginforma" value="1">
-		<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15"></td></tr>
+		<table border="0"><tr><td>Korisničko ime (UID):</td><td><input type="text" name="login" size="15"></td></tr>
 		<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
 		<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
 		</form>
