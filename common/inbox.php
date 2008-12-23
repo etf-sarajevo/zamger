@@ -12,6 +12,8 @@
 // v3.9.1.7 (2008/05/16) + Omoguceno zadavanje naslova, teksta i primaoca poruke u URLu prilikom slanja
 // v3.9.1.8 (2008/06/05) + Dodan outbox
 // v3.9.1.9 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.10 (2008/10/03) + Poostren uslov za slanje poruke samo putem POST
+// v3.9.1.11 (2008/10/22) + Popravljeno dodavanje viska Re:
 
 
 function common_inbox() {
@@ -67,7 +69,8 @@ if ($user_student) {
 // Slanje poruke
 //////////////////////
 
-if ($_REQUEST['akcija']=='send') {
+if ($_POST['akcija']=='send' && check_csrf_token()) {
+
 	// Ko je primalac
 	$primalac = my_escape($_REQUEST['primalac']);
 	$primalac = preg_replace("/\(.*?\)/","",$primalac);
@@ -107,7 +110,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 			$primalac = mysql_result($q210,0,0)." (".mysql_result($q210,0,1)." ".mysql_result($q210,0,2).")";
 		
 		// Prepravka naslova i teksta
-		$naslov = "Re: ".mysql_result($q200,0,1);
+		$naslov = mysql_result($q200,0,1);
+		if (substr($naslov,0,3) != "Re:") $naslov = "Re: ".$naslov;
 		$tekst = mysql_result($q200,0,2);
 		for ($i=80;$i<strlen($tekst);$i+=81) {
 			$k=$i-80;

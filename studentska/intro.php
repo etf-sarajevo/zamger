@@ -4,7 +4,8 @@
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
 // v3.9.1.1 (2008/03/26) + Nova auth tabela
-// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth; dodana potvrda izmjene licnih podataka
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth; dodana potvrda izmjene licnih podataka
+// v3.9.1.3 (2008/10/03) + Destruktivni zahtjevi prebaceni na POST radi sukladnosti sa RFCom
 
 
 function studentska_intro() {
@@ -34,7 +35,7 @@ function promjena($nominativ, $u, $iz) {
 	}
 }
 
-if ($_REQUEST['akcija'] == "Prihvati zahtjev") {
+if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
 	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton from promjena_podataka as pp where pp.id=$id");
@@ -47,7 +48,7 @@ if ($_REQUEST['akcija'] == "Prihvati zahtjev") {
 	return;
 }
 
-if ($_REQUEST['akcija'] == "Odbij zahtjev") {
+if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
 	$q200 = myquery("delete from promjena_podataka where id=$id");
@@ -57,7 +58,7 @@ if ($_REQUEST['akcija'] == "Odbij zahtjev") {
 }
 
 
-if ($_REQUEST['akcija'] == "zahtjev") {
+if ($_GET['akcija'] == "zahtjev") {
 	$id = intval($_REQUEST['id']);
 	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton, o.ime, o.prezime, o.email, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.telefon, o.kanton from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
 	if (mysql_num_rows($q100)<1) {
@@ -89,7 +90,7 @@ if ($_REQUEST['akcija'] == "zahtjev") {
 
 	?>
 	</ul><p>&nbsp;</p>
-	<?=genform("GET")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="osoba" value="<?=mysql_result($q100,0,0)?>">
 	<input type="submit" name="akcija" value="Prihvati zahtjev">
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

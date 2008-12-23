@@ -32,7 +32,7 @@ if ($_REQUEST['akcija']=="obrisi") {
 }
 
 // Akcija: dodavanje zahtjeva
-if ($_REQUEST['akcija']=="dodaj") {
+if ($_POST['akcija']=="dodaj" && check_csrf_token()) {
 	$prezime = trim(malaslova(my_escape($_REQUEST['prezime'])));
 	$ime = trim(malaslova(my_escape($_REQUEST['ime'])));
 

@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/05/09) + Novi modul common/profil
 // v3.9.1.1 (2008/08/28) + $conf_promjena_sifre, zahtjev za promjenu ostalih podataka
+// v3.9.1.2 (2008/10/03) + Poostren zahtjev na POST
+// v3.9.1.3 (2008/10/15) + Dodan format datuma
 
 
 function common_profil() {
@@ -15,7 +17,8 @@ global $userid,$conf_system_auth,$conf_promjena_sifre, $conf_skr_naziv_instituci
 <?
 
 
-if ($_REQUEST['subakcija'] == "potvrda") {
+if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
+
 	$ime = my_escape($_REQUEST['ime']);
 	$prezime = my_escape($_REQUEST['prezime']);
 	$brindexa = my_escape($_REQUEST['brindexa']);
@@ -91,7 +94,8 @@ $q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodj
 	</td></tr><tr><td valign="top">
 		JMBG:</td><td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,6)?>" class="default">
 	</td></tr><tr><td valign="top">
-		Datum rođenja:</td><td><input type="text" name="datum_rodjenja" value="<?
+		Datum rođenja:<br/>
+		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?
 		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,4))?>" class="default">
 	</td></tr><tr><td valign="top">
 		Mjesto rođenja:</td><td><input type="text" name="mjesto_rodjenja" value="<?=mysql_result($q400,0,5)?>" class="default">

@@ -61,7 +61,8 @@ if (!$user_siteadmin) {
 
 # Masovni unos zadaća
 
-if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
+if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
+
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 
 	// Provjera ostalih parametara

@@ -9,6 +9,8 @@
 // v3.9.1.3 (2008/03/26) + Popravljen javascript
 // v3.9.1.4 (2008/05/16) + Dodano polje userid u tabeli zadatak koje odredjuje ko je zadnji izmjenio podatak (da li ima potrebe prikazati?); dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
 // v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.6 (2008/10/03) + Izmjena statusa i izvrsenje zadace prebaceni na genform() (radi sigurnosnih aspekata istog) i POST metod (radi sukladnosti sa RFCom koji nalaze da se sve potencijalno destruktivne akcije rade kroz POST)
+// v3.9.1.7 (2008/10/19) + Popravljeno jos bugova izazvanih prelaskom na POST
 
 
 function saradnik_zadaca() {
@@ -26,9 +28,9 @@ require("lib/manip.php"); // radi update_komponente
 // --------------------
 // Standardni ulazni podaci i potrebne varijable
 
-$stud_id=intval($_GET['student']);
-$zadaca=intval($_GET['zadaca']);
-$zadatak=intval($_GET['zadatak']);
+$stud_id=intval($_REQUEST['student']);
+$zadaca=intval($_REQUEST['zadaca']);
+$zadatak=intval($_REQUEST['zadatak']);
 
 
 // Prava pristupa
@@ -115,9 +117,10 @@ if ($_GET['akcija'] == "diff") {
 
 // Akcija: Izvršenje programa
 
-if ($_GET['akcija'] == "izvrsi") {
+if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
+
 	// čuvamo poslane podatke u bazi (ako ih nema)
-	$stdin = $_GET['stdin'];
+	$stdin = $_POST['stdin'];
 	$mstdin = my_escape($stdin);
 	$q70 = myquery("select count(*) from stdin where ulaz='$mstdin' and zadaca=$zadaca and redni_broj=$zadatak");
 	if (mysql_result($q70,0,0)==0) 
@@ -196,10 +199,11 @@ if ($_GET['akcija'] == "izvrsi") {
 
 // Akcija: Izmjena statusa
 
-if ($_GET['akcija'] == "slanje") {
-	$komentar = my_escape($_GET['komentar']);
-	$status = intval($_GET['status']);
-	$bodova = floatval($_GET['bodova']);
+if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
+
+	$komentar = my_escape($_POST['komentar']);
+	$status = intval($_POST['status']);
+	$bodova = floatval($_POST['bodova']);
 	// Filename
 	$q90 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
 	$filename = mysql_result($q90,0,0);
@@ -260,12 +264,8 @@ if ($attach == 0) {
 		<script type="text/javascript" src="js/combo-box.js"></script>
 		<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
 		Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
-		<form action="index.php" method="GET">
-		<input type="hidden" name="sta" value="saradnik/zadaca">
+		<?=genform("POST")?>
 		<input type="hidden" name="akcija" value="izvrsi">
-		<input type="hidden" name="student" value="<?=$stud_id?>">
-		<input type="hidden" name="zadaca" value="<?=$zadaca?>">
-		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 		<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
 		<?
 
@@ -314,12 +314,8 @@ if ($attach == 0) {
 // Prikaz statusa sa log-om i izmjena
 
 ?>
-<form action="index.php" method="GET">
-<input type="hidden" name="sta" value="saradnik/zadaca">
+<?=genform("POST")?>
 <input type="hidden" name="akcija" value="slanje">
-<input type="hidden" name="student" value="<?=$stud_id?>">
-<input type="hidden" name="zadaca" value="<?=$zadaca?>">
-<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 
 <? 
 

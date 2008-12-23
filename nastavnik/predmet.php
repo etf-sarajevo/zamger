@@ -4,6 +4,7 @@
 
 // v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/04/09) + Usavrsen login
+// v3.9.1.2 (2008/12/23) + Akcija "set_smodul" prebacena na POST radi zastite od CSRF (bug 58)
 
 
 
@@ -50,17 +51,28 @@ if (!$user_siteadmin) { // 3 = site admin
 <p><h3><?=$predmet_naziv?> - Opcije predmeta</h3></p>
 
 <SCRIPT language="JavaScript">
-function changemodul
+function upozorenje(smodul,aktivan) {
+	document.smodulakcija.smodul.value=smodul;
+	document.smodulakcija.aktivan.value=aktivan;
+	document.smodulakcija.submit();
+}
 </SCRIPT>
+<?=genform("POST", "smodulakcija")?>
+<input type="hidden" name="akcija" value="set_smodul">
+<input type="hidden" name="smodul" value="">
+<input type="hidden" name="aktivan" value="">
+</form>
+
 <p>Izaberite opcije koje želite da učinite dostupnim studentima:<br/>
 <?
 
 
 // Click na checkbox za dodavanje modula
+// Prebaciti na POST?
 
-if ($_REQUEST['akcija'] == "set_smodul") {
-	$smodul = intval($_REQUEST['smodul']);
-	if ($_REQUEST['aktivan']==0) $aktivan=1; else $aktivan=0;
+if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
+	$smodul = intval($_POST['smodul']);
+	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
 	$q15 = myquery("update studentski_moduli set aktivan=$aktivan where id=$smodul");
 	if ($aktivan==1)
 		zamgerlog("aktiviran studentski modul $smodul (predmet p$predmet)",2); // nivo 2: edit
@@ -80,7 +92,7 @@ while ($r20 = mysql_fetch_row($q20)) {
 	$aktivan=$r20[2];
 	if ($aktivan==0) $checked=""; else $checked="CHECKED";
 	?>
-	<input type="checkbox" onchange="javascript:location.href='?sta=nastavnik/predmet&predmet=<?=$predmet?>&akcija=set_smodul&smodul=<?=$smodul?>&aktivan=<?=$aktivan?>'" <?=$checked?>> <?=$naziv?><br/>
+	<input type="checkbox" onchange="javascript:onclick=upozorenje('<?=$smodul?>','<?=$aktivan?>')" <?=$checked?>> <?=$naziv?><br/>
 	<?
 }
 

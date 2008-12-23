@@ -59,7 +59,7 @@ if (!$user_siteadmin) {
 
 # Masovni unos konačnih ocjena
 
-if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1) {
+if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
 
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0; // fakatradi=0 --> ispis=1
 

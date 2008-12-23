@@ -3,6 +3,7 @@
 // STUDENTSKA/OBAVIJEST + slanje obavjestenja za studentsku sluzbu
 
 // v3.9.1.0 (2008/09/02) + Kopiran common/inbox u studentska/obavijest
+// v3.9.1.1 (2008/10/03) + Postrozen uslov za slanje na POST
 
 
 // TODO: popraviti slanje svim studentima na godini studija
@@ -62,7 +63,7 @@ if ($user_student) {
 // Slanje poruke
 //////////////////////
 
-if ($_REQUEST['akcija']=='send') {
+if ($_POST['akcija']=='send' && check_csrf_token()) {
 	// Ko je primalac
 	$primalac = intval($_REQUEST['primalac']);
 	$opseg = intval($_REQUEST['opseg']);

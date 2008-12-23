@@ -90,7 +90,7 @@ if ($r40 = mysql_fetch_row($q40)) {
 //  Akcije
 // ------------------------
 
-if ($_POST['akcija'] == "dodaj") {
+if ($_POST['akcija'] == "dodaj" && check_csrf_token()) {
 	list ($h,$m,$s) = explode(":", $_POST['vrijeme']);
 	$datum = date("Y-m-d H:i:s", mktime($h,$m,$s, $_POST['month'], $_POST['day'], $_POST['year']));
 	$komentar = my_escape($_POST['komentar']);
@@ -123,7 +123,7 @@ while ($r70 = mysql_fetch_row($q70)) {
 ?>
 <p><hr></p>
 <p><b>Dodajte komentar:</b><br/>
-<?=genform();?>
+<?=genform("POST");?>
 <input type="hidden" name="akcija" value="dodaj">
 Trenutni datum i vrijeme:<br/>
 <?=datectrl(date("d"),date("m"),date("Y"));?>&nbsp;

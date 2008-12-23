@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/06/09) + Dodan post-guard, ispravljen bug sa ispisom datuma u pregledu, dodana default vrijednost za opći uspjeh
 // v3.9.1.2 (2008/07/11) + Finalna verzija korištena za prijemni na ETFu
 // v3.9.1.3 (2008/08/28) + Uhakovan drugi termin za prijemni (popraviti), centriran i reorganizovan prikaz
+// v3.9.1.4 (2008/10/03) + Akcije unospotvrda i unoskriterij (subakcija spremi) prebacene na genform() radi sigurnosnih aspekata istog
 
 
 // TODO: koristiti tabelu osoba
@@ -336,7 +337,7 @@ if ($_REQUEST["akcija"]=="obrisi") {
 
 // Obrada podataka sa forme za unos kandidata i ekran za potvrdu
 
-if ($_REQUEST['akcija'] == 'unospotvrda') {
+if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 	$rime=my_escape($_REQUEST['ime']);
 	$rprezime=my_escape($_REQUEST['prezime']);
@@ -791,8 +792,7 @@ function enterhack(e,gdje) {
 
 </SCRIPT>
 
-<form action="index.php" method="POST" id="glavnaforma">
-<input type="hidden" name="sta" value="studentska/prijemni">
+<?=genform("POST")?>
 <input type="hidden" name="akcija" value="unospotvrda">
 <input type="hidden" name="stari_id" value="<?=$theid?>">
 <? if ($editid>0) { // Editovanje
@@ -1463,7 +1463,7 @@ if ($_REQUEST['akcija'] == "rang_liste") {
 //Unos kriterija za upis
 if ($_REQUEST['akcija'] == "unos_kriterij") {
 
-	if ($_REQUEST['spremi']) {
+	if ($_POST['spremi'] && check_csrf_token()) {
 		$rdonja = intval($_REQUEST['donja_granica']);
 		$rgornja = intval($_REQUEST['gornja_granica']);
 		$rkandidatisd = intval($_REQUEST['kandidati_sd']);
@@ -1503,8 +1503,7 @@ function odzuti(nesto) {
 <h3>Unos kriterija za upis</h3>
 <br/>
 
-<form action="" method="POST">
-<input type="hidden" name="sta" value="studentska/prijemni">
+<?=genform("POST")?>
 <input type="hidden" name="akcija" value="unos_kriterij">
 <table align="left" border="0" width="70%" bgcolor="">
 	<tr>

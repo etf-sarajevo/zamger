@@ -19,7 +19,9 @@
 # v0.0.13.1 (2008/03/21) + dodane default vrijednosti parametara, da smanjimo warning-e
 # v0.0.13.2 (2008/05/16) + sitne ispravke u prikazu i obradi hidden polja u db_form(), mada i dalje treba popraviti db_submit() tako da prepozna polja koja su skrivena i ne ukljucuje ih u upitu
 # v0.0.13.3 (2008/06/13) + dodan tip double
-# v0.0.13.4 (2008/09/26) + Omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
+# v0.0.13.4 (2008/09/26) + omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
+# v0.0.13.5 (2008/10/28) + ispravka u genform() - izbaci polje "pass" ako je metoda GET
+# v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -329,14 +331,36 @@ function datectrl($d,$m,$g,$prefix="") {
 
 
 # genform - pravi zaglavlje forme sa hidden poljima
-function genform($method="POST") {
+function genform($method="POST", $name="") {
+	global $login;
+
 	if ($method != "GET" && $method != "POST") $method="POST";
-	$result = '<form action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
+	$result = '<form name="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
 	foreach ($_REQUEST as $key=>$value) {
+		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
 		if (substr($key,0,4) != "_lv_") 
 		$result .= '<input type="hidden" name="'.$key.'" value="'.$value.'">'."\n";
 	}
+
+	//   CSRF protection
+	//   The generated token is a SHA1 sum of session ID, time()/1000 and userid (in the
+	// highly unlikely case that two users get the same SID in a short timespan). The
+	// second function checks this token and the second token which uses time()/1000+1.
+	// This leaves a 1000-2000 second (cca. 16-33 minutes) window during which an 
+	// attacker could potentially discover a users SID and then craft an attack targeting
+	// that specific user.
+
+	$result .= '<input type="hidden" name="_lv_csrf_protection_token1" value="'.sha1(session_id().(intval(time()/1000)).$login).'"><input type="hidden" name="_lv_csrf_protection_token2" value="'.sha1(session_id().(intval(time()/1000)+1).$login).'">';
+
 	return $result;
+}
+
+function check_csrf_token() {
+	global $login;
+	$token = sha1(session_id().intval(time()/1000).$login);
+	if ($_POST['_lv_csrf_protection_token1']==$token || $_POST['_lv_csrf_protection_token2']==$token)
+		return true;
+	return false;
 }
 
 
