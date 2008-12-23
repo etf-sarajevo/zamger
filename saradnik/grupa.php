@@ -10,8 +10,11 @@
 // v3.9.1.5 (2008/08/18) + Provjera da li postoji predmet
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + Forma za registrovanje casa nije prosljedjivala ID predmeta
-// v3.9.1.8 (2008/09/13) + Sprjeceno otvaranje coolboxa ako slanje nije uspjelo
+// v3.9.1.8 (2008/09/13) + Sprijeceno otvaranje coolboxa ako slanje nije uspjelo
 // v3.9.1.9 (2008/09/17) + Akcija dodaj_cas ce ubaciti 10 bodova u tabelu komponentebodovi ako prije toga nije bilo sloga u toj tabeli za datog studenta, predmet i komponentu
+// v3.9.1.10 (2008/10/03) + Akcija dodaj_cas prebacena na genform() radi sigurnosnih aspekata istog; onemoguceno dodavanje casa sa GET
+// v3.9.1.11 (2008/11/18) + Akcija brisi_cas nije prosljedjivala predmet_id, sto je dovodilo do greske "nepostojeci predmet" (ali je cas ipak bio obrisan)
+// v3.9.1.12 (2008/12/23) + Akcija brisi_cas prebacena na POST radi zastite od CSRF (bug 54); dodan refresh link
 
 
 
@@ -29,7 +32,6 @@ print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>
 // ------- ULAZNI PARAMETRI
 
 $grupa_id = intval($_REQUEST['id']);
-$akcija = $_REQUEST['akcija']; 
 $kreiranje = intval($_GET['kreiranje']);
 
 
@@ -43,7 +45,7 @@ if ($grupa_id==0) {
 		if (mysql_num_rows($q10)<1) {
 			$q20 = myquery("select count(*) from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet_id");
 			if (mysql_result($q20,0,0)>0) {
-				zamgerlog("Pokušava ući u nultu grupu a ima ograničenja",3);
+				zamgerlog("Pokusava uci u nultu grupu a ima ogranicenja",3);
 				biguglyerror("Nemate pravo ulaska u ovu grupu!");
 				return;
 			}
@@ -90,7 +92,7 @@ if ($grupa_id==0) {
 
 // Dodavanje casa
 
-if ($akcija == 'dodajcas') {
+if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 	// KOMPONENTA
 	// Ovaj kod radi samo sa jednom komponentom prisustva. U budućnosti to bi moglo biti popravljeno, ali realno nema prevelike potrebe
 
@@ -136,8 +138,8 @@ if ($akcija == 'dodajcas') {
 
 // Brisanje casa
 
-if ($akcija == 'brisicas') {
-	$cas_id = intval($_REQUEST['cas']);
+if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
+	$cas_id = intval($_POST['casid']);
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
 	zamgerlog("obrisan cas $cas_id",2);
@@ -268,11 +270,8 @@ $vrijeme=date("H:i");
 <table border="0" width="100%"><tr><td valign="top" width="50%">&nbsp;</td>
 <td valign="top" width="50%">
 	Registrujte novi čas:<br/>
-	<form action="index.php" method="POST">
-	<input type="hidden" name="sta" value="saradnik/grupa">
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="dodajcas">
-	<input type="hidden" name="id" value="<?=$grupa_id?>">
-	<input type="hidden" name="predmet" value="<?=$predmet_id?>">
 
 	Datum:
 	<select name="dan" class="default"><?
@@ -333,8 +332,20 @@ function invert(student,cas) {
 		return 2;
 	}
 }
+function upozorenje(cas) {
+	document.brisanjecasa.casid.value=cas;
+	document.brisanjecasa.submit();
+}
 
 </script>
+
+<!-- Pomocna forma za POST brisanje casa -->
+
+<?=genform("POST", "brisanjecasa")?>
+<input type="hidden" name="akcija" value="brisi_cas">
+<input type="hidden" name="casid" value="">
+</form>
+
 
 <?
 
@@ -366,7 +377,7 @@ while ($r195 = mysql_fetch_row($q195)) {
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
 		list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$r200[2]);
 		$prisustvo_zaglavlje .= "<td align=\"center\">$cas_dan.$cas_mjesec<br/>$cas_sat:$cas_minuta";
-		$prisustvo_zaglavlje .= '<br/><a href="index.php?sta=saradnik/grupa&id='.$grupa_id.'&akcija=brisicas&cas='.$cas_id.'"><img src="images/16x16/brisanje.png" border="0"></a>';
+		$prisustvo_zaglavlje .= '<br/><a href="javascript:onclick=upozorenje('."'$cas_id'".')"><img src="images/16x16/brisanje.png" border="0"></a>';
 		$prisustvo_zaglavlje .= "</td>\n";
 		$cas_id_array[] = $cas_id;
 		$casova++;
@@ -734,7 +745,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 ?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
 	}
-?></p>
+?> * <a href="?sta=saradnik/grupa&id=<?=$grupa_id?>">Refresh</a></p>
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
