@@ -12,7 +12,11 @@
 // v3.9.1.7 (2008/09/17) + Dodan debugging ispis; dodaj nastavnike u auth tabelu prilikom kreiranja iz LDAPa; omogucen upis studenta u aktuelnu akademsku godinu ako postoje podaci iz ranijih godina
 // v3.9.1.8 (2008/09/19) + Nemoj upisivati studenta u predmete koje je vec polozio
 // v3.9.1.9 (2008/10/02) + Ozivljavam dio koda za direktan upis studenta na predmet, radi "kolizije"
-
+// v3.9.1.10 (2008/10/03) + Pretraga prebacena na GET radi lakseg vracanja na back; za sve vrste izmjena poostren uslov na POST
+// v3.9.1.11 (2008/10/08) + Dodana mogucnost siteadminu da promijeni tip korisnika; popravljen logging na par mjesta; pretraga pokusava naci EXACT match, provjerava i login; prikaz vise logina za istu osobu (ako postoje); ne moze se upisati student na predmet 0
+// v3.9.1.12 (2008/10/16) + Popravljen bug kod spiska predmeta u koje se moze direktno upisati
+// v3.9.1.13 (2008/10/31) + Ukinut autocomplete kod unosa logina i sifre; ukinuta redirekcija kod dodavanja novog korisnika, zbog toga sto je $_REQUEST niz zagadjen podacima; dodana mogucnost upisa na prvu godinu za studente koji nikad nista nisu slusali; dodani tagovi u logging kod upisa
+// v3.9.1.14 (2008/12/23) + Checkbox za korisnicki pristup kod LDAPa prebacen na POST radi zastite od CSRF (bug 59)
 
 
 // TODO: prva godina studija je hardkodirana u provjeri uslova za upis
@@ -51,7 +55,8 @@ $osoba = intval($_REQUEST['osoba']);
 
 // Dodavanje novog korisnika u bazu
 
-if ($akcija == "novi") {
+if ($_POST['akcija'] == "novi" && check_csrf_token()) {
+
 	$ime = substr(my_escape($_POST['ime']), 0, 100);
 	if (!preg_match("/\w/", $ime)) {
 		zamgerlog("ime nije ispravno ($ime)",3);
@@ -99,7 +104,7 @@ if ($akcija == "novi") {
 	if ($r10 = mysql_fetch_row($q10)) {
 		zamgerlog("korisnik vec postoji u bazi ('$ime' '$prezime' - ID: $r10[0])",3);
 		niceerror("Korisnik već postoji u bazi:");
-		print "<br><a href=\"".genuri()."&akcija=edit&nastavnik=$r10[0]\">$r10[1] $r10[2]</a>";
+		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&nastavnik=$r10[0]\">$r10[1] $r10[2]</a>";
 		return;
 
 	} else {
@@ -127,8 +132,8 @@ if ($akcija == "novi") {
 
 		nicemessage("Novi korisnik je dodan.");
 		zamgerlog("dodan novi korisnik u$osoba (ID: $osoba)",4); // nivo 4: audit
-		$akcija="edit";
-		$_POST['subakcija']="";
+		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&nastavnik=$osoba\">$ime $prezime</a>";
+		return;
 	}
 }
 
@@ -138,7 +143,8 @@ if ($akcija == "novi") {
 
 if ($akcija == "podaci") {
 
-	if ($_REQUEST['subakcija']=="potvrda") {
+	if ($_POST['subakcija']=="potvrda" && check_csrf_token()) {
+
 		$ime = my_escape($_REQUEST['ime']);
 		$prezime = my_escape($_REQUEST['prezime']);
 		$email = my_escape($_REQUEST['email']);
@@ -181,6 +187,7 @@ if ($akcija == "podaci") {
 
 	<h2><?=$ime?> <?=$prezime?> - izmjena ličnih podataka</h2>
 	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="potvrda">
 	<table border="0" width="600"><tr><td valign="top">
 		Ime: <input type="text" name="ime" value="<?=$ime?>" class="default"><br/>
 		Prezime: <input type="text" name="prezime" value="<?=$prezime?>" class="default"><br/>
@@ -201,7 +208,6 @@ if ($akcija == "podaci") {
 	</tr></table>
 
 	<p>
-	<input type="hidden" name="subakcija" value="potvrda">
 	<input type="Submit" value=" Izmijeni "></form>
 	<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$osoba?>">Povratak nazad</a>
 	</p>
@@ -246,7 +252,8 @@ else if ($akcija == "upis") {
 	// Ako je subakcija, potvrdjujemo da se moze izvrsiti upis
 	$ok_izvrsiti_upis=0;
 
-	if ($_REQUEST['subakcija']=="upis_potvrda") {
+	if ($_POST['subakcija']=="upis_potvrda" && check_csrf_token()) {
+
 		$ok_izvrsiti_upis=1;
 
 		$ns = intval($_REQUEST['novi_studij']);
@@ -370,7 +377,8 @@ else if ($akcija == "upis") {
 
 	// ------ Izvrsenje upisa!
 
-	if ($ok_izvrsiti_upis==1) {
+	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
+
 		// Upis u prvi semestar - kandidat za prijemni postaje student!
 		if ($semestar==1) {
 			$q640 = myquery("update privilegije set privilegija='student' where osoba=$student and privilegija='prijemni'");
@@ -441,7 +449,7 @@ else if ($akcija == "upis") {
 		}
 		
 		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
-		zamgerlog("Student u$student upisan na studij $studij, semestar $semestar, godina $godina", 4); // 4 - audit
+		zamgerlog("Student u$student upisan na studij s$studij, semestar $semestar, godina ag$godina", 4); // 4 - audit
 		return;
 
 	} else {
@@ -469,7 +477,7 @@ else if ($akcija == "edit") {
 
 
 	// Promjena korisničkog pristupa i pristupnih podataka
-	if ($_REQUEST['subakcija'] == "auth") {
+	if ($_POST['subakcija'] == "auth" && check_csrf_token()) {
 
 		// LDAP
 		if ($conf_system_auth == "ldap") {
@@ -560,18 +568,27 @@ else if ($akcija == "edit") {
 
 
 	// Upis studenta na predmet
-	if ($_POST['subakcija'] == "upisi") {
+	if ($_POST['subakcija'] == "upisi" && check_csrf_token()) {
+
 		$predmet = intval($_POST['predmet']);
-		$q130 = myquery("select count(*) from student_predmet where student=$student and predmet=$predmet");
-		if (mysql_result($q130,0,0)<1) {
-			$q135 = myquery("insert into student_predmet set student=$student, predmet=$predmet");
-			zamgerlog("student u$student upisan na predmet p$predmet",4);
+		if ($predmet==0) {
+			nicemessage("Niste izabrali predmet");
+		} else {
+			$q130 = myquery("select count(*) from student_predmet where student=$osoba and predmet=$predmet");
+			if (mysql_result($q130,0,0)<1) {
+				$q135 = myquery("insert into student_predmet set student=$osoba, predmet=$predmet");
+				zamgerlog("student u$osoba upisan na predmet p$predmet",4);
+				$q136 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+				$naziv_predmeta = mysql_result($q136,0,0);
+				nicemessage("Student upisan na predmet $naziv_predmeta.");
+			}
 		}
 	}
 
 
 	// Prijava nastavnika na predmet
-	if ($_POST['subakcija'] == "angazuj") {
+	if ($_POST['subakcija'] == "angazuj" && check_csrf_token()) {
+
 		$predmet = intval($_POST['predmet']);
 		$admin_predmeta = intval($_POST['admin_predmeta']);
 
@@ -582,7 +599,40 @@ else if ($akcija == "edit") {
 			$q140 = myquery("insert into nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, admin=$admin_predmeta");
 		}
 
+		$q136 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+		$naziv_predmeta = mysql_result($q136,0,0);
+
 		zamgerlog("nastavnik u$osoba prijavljen na predmet p$predmet (admin: $admin_predmeta)",4);
+		nicemessage("Nastavnik prijavljen na predmet $naziv_predmeta.");
+	}
+
+
+	// Promjena uloga korisnika
+	if ($_POST['subakcija'] == "uloga" && check_csrf_token()) {
+		if (!$user_siteadmin) { niceerror("Nemate pravo na promjenu uloga!"); return; }
+
+		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=0;
+		$q150 = myquery("select privilegija from privilegije where osoba=$osoba");
+		while($r150 = mysql_fetch_row($q150)) {
+			if ($r209[0]=="student") $korisnik['student']=1;
+			if ($r209[0]=="nastavnik") $korisnik['nastavnik']=1;
+			if ($r209[0]=="prijemni") $korisnik['prijemni']=1;
+			if ($r209[0]=="studentska") $korisnik['studentska']=1;
+			if ($r209[0]=="siteadmin") $korisnik['siteadmin']=1;
+		}
+
+		foreach ($korisnik as $privilegija => $vrijednost) {
+			if ($_POST[$privilegija]=="1" && $vrijednost==0) {
+				$q151 = myquery("insert into privilegije set osoba=$osoba, privilegija='$privilegija'");
+				zamgerlog("osobi u$osoba data privilegija $privilegija",4);
+				nicemessage("Data privilegija $privilegija");
+			}
+			if ($_POST[$privilegija]!="1" && $vrijednost==1) {
+				$q151 = myquery("delete from privilegije where osoba=$osoba and privilegija='$privilegija'");
+				zamgerlog("osobi u$osoba oduzeta privilegija $privilegija",4);
+				nicemessage("Oduzeta privilegija $privilegija");
+			}
+		}
 	}
 
 
@@ -640,34 +690,69 @@ else if ($akcija == "edit") {
 		$pristup=mysql_result($q201,0,2);
 	} else $pristup=0;
 
-	if ($conf_system_auth == "table") {
-		?>
-		<?=genform("POST")?>
-		<input type="hidden" name="subakcija" value="auth">
-		<table border="0">
-		<tr>
-			<td colspan="2">Korisnički pristup: <? if(!$pristup) print '<font color="red">NEMA</font>'; ?></td>
-			<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$login?>"></td>
-			<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$password?>"></td>
-			<td><input type="Submit" value="<? if($pristup) print ' Izmijeni '; else print ' Dodaj '?>"></td>
-		</tr></table></form>
-		<?
+	if ($conf_system_auth == "table" || $user_siteadmin) {
+		if ($pristup==0) {
+			?>
+			<?=genform("POST")?>
+			<input type="hidden" name="subakcija" value="auth">
+			<table border="0">
+			<tr>
+				<td colspan="2">Korisnički pristup:<br/> <font color="red">NEMA</font></td>
+				<td>Korisničko ime:<br/> <input type="text" size="10" name="login" autocomplete="off"></td>
+				<td>Šifra:<br/> <input type="password" size="10" name="password" autocomplete="off"></td>
+				<td>Aktivan:<br/> <input type="checkbox" size="10" name="ima_auth" value="1"></td>
+				<td><input type="Submit" value=" Dodaj "></td>
+			</tr></table></form>
+			<?
+		}
+
+		$q201 = myquery("select login,password,aktivan from auth where id=$osoba");
+		while ($r201 = mysql_fetch_row($q201)) {
+			$login=$r201[0];
+			$password=$r201[1];
+			$pristup=$r201[2];
+			?>
+			<?=genform("POST")?>
+			<input type="hidden" name="subakcija" value="auth">
+			<table border="0">
+			<tr>
+				<td colspan="2">Korisnički pristup:</td>
+				<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$login?>"></td>
+				<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$password?>"></td>
+				<td>Aktivan:<br/> <input type="checkbox" size="10" name="ima_auth" value="1" <? if ($pristup==1) print "CHECKED"; ?>></td>
+				<td><input type="Submit" value=" Izmijeni "></td>
+			</tr></table></form>
+			<?
+		}
 	}
 
 	else if ($conf_system_auth == "ldap") {
 		?>
+		
+		<script language="JavaScript">
+		function upozorenje(pristup) {
+			document.authforma.pristup.value=pristup;
+			document.authforma.submit();
+		}
+		</script>
+		<?=genform("POST", "authforma")?>
+		<input type="hidden" name="subakcija" value="auth">
+		<input type="hidden" name="pristup" value="">
+		</form>
+
 		<table border="0">
 		<tr>
-			<td colspan="5">Korisnički pristup: <input type="checkbox" name="ima_auth" onchange="javascript:location.href='<?=genuri()?>&subakcija=auth&pristup=<?=$pristup?>';" <? if ($pristup==1) print "CHECKED"; ?>></td>
+			<td colspan="5">Korisnički pristup: <input type="checkbox" name="ima_auth" onchange="javascript:upozorenje('<?=$pristup?>');" <? if ($pristup==1) print "CHECKED"; ?>></td>
 		</tr></table></form>
 		<?
 	}
 
-	// Uloge korisnika
 
-	$korisnik_student=$korisnik_nastavnik=$korisnik_prijemni=0;
+	// Uloge korisnika
+	$korisnik_student=$korisnik_nastavnik=$korisnik_prijemni=$korisnik_studentska=$korisnik_siteadmin=0;
 	print "<p>Tip korisnika: ";
 	$q209 = myquery("select privilegija from privilegije where osoba=$osoba");
+
 	while ($r209 = mysql_fetch_row($q209)) {
 		if ($r209[0]=="student") {
 			print "<b>student,</b> ";
@@ -683,17 +768,38 @@ else if ($akcija == "edit") {
 		}
 		if ($r209[0]=="studentska") {
 			print "<b>uposlenik studentske službe,</b> ";
+			$korisnik_studentska=1;
 		}
 		if ($r209[0]=="siteadmin") {
 			print "<b>administrator,</b> ";
+			$korisnik_siteadmin=1;
 		}
 	}
 	print "</p>\n";
+
+
+	// Admin dio
+
+	if ($user_siteadmin) {
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="uloga">
+		<input type="checkbox" name="student" value="1" <?if($korisnik_student==1) print "CHECKED";?>> Student&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="nastavnik" value="1" <?if($korisnik_nastavnik==1) print "CHECKED";?>> nastavnik&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="prijemni" value="1" <?if($korisnik_prijemni==1) print "CHECKED";?>> prijemni&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="studentska" value="1" <?if($korisnik_studentska==1) print "CHECKED";?>> studentska&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/>
+		<input type="submit" value=" Promijeni ">
+		</form>
+		<?
+	}
 
 	// Prvo odredjujemo aktuelnu akademsku godinu - ovaj upit se dosta koristi kasnije
 	$q210 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc");
 	$id_ak_god = mysql_result($q210,0,0);
 	$naziv_ak_god = mysql_result($q210,0,1);
+	// Posto se id_ak_god moze promijeniti.... CLEANUP!!!
+	$orig_iag = $id_ak_god;
 
 
 	// STUDENT
@@ -761,9 +867,9 @@ else if ($akcija == "edit") {
 
 			// Proglasavamo zadnju akademsku godinu koju je slusao za tekucu
 			// a tekucu za novu
+			$nova_ak_god = $id_ak_god;
+			$naziv_nove_ak_god = $naziv_ak_god;
 			if ($ikad_semestar != 0) {
-				$nova_ak_god = $id_ak_god;
-				$naziv_nove_ak_god = $naziv_ak_god;
 				$id_ak_god = $ikad_ak_god;
 				$naziv_ak_god = $ikad_ak_god_naziv;
 				// Zelimo da se provjeri ECTS:
@@ -797,7 +903,10 @@ else if ($akcija == "edit") {
 
 		// Ima li uslove za upis
 		if ($semestar==0 && $ikad_semestar==0) {
-			?><p>Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p><?
+			// Upis na prvu godinu -- FIXME: pretpostavka je da je prva godina ID 1
+
+			?><p>Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p>
+			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=1&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p><?
 
 		} else if ($studij=="0") {
 			if ($ikad_semestar%2==0) $ikad_semestar--;
@@ -889,7 +998,7 @@ else if ($akcija == "edit") {
 		<select name="predmet">
 		<option>--- Izaberite predmet ---</option>
 		<?
-		$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$id_ak_god and pk.studij=s.id and pk.predmet=p.id order by p.naziv");
+		$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$orig_iag and pk.studij=s.id and pk.predmet=p.id order by p.naziv");
 		while ($r300 = mysql_fetch_row($q300)) {
 			$q310 = myquery("select count(*) from student_predmet where predmet=$r300[0] and student=$osoba");
 			if (mysql_result($q310,0,0)>0) continue;
@@ -1009,29 +1118,60 @@ else {
 	<table width="500" border="0"><tr><td align="left">
 		<p><b>Pretraži osobe:</b><br/>
 		Unesite dio imena i prezimena ili broj indeksa<br/>
-		<?=genform("POST")?>
+		<?=genform("GET")?>
 		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
 		<input type="text" size="50" name="search" value="<? if ($src!="sve") print $src?>"> <input type="Submit" value=" Pretraži "></form>
 		<a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a><br/><br/>
 	<?
 	if ($src) {
+		$rezultata=0;
 		if ($src == "sve") {
 			$q100 = myquery("select count(*) from osoba");
 			$q101 = myquery("select id,ime,prezime,brindexa from osoba order by prezime,ime limit $offset,$limit");
+			$rezultata = mysql_result($q100,0,0);
 		} else {
 			$src = preg_replace("/\s+/"," ",$src);
 			$src=trim($src);
 			$dijelovi = explode(" ", $src);
 			$query = "";
-			foreach($dijelovi as $dio) {
-				if ($query != "") $query .= "or ";
-				$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
-				if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
+
+			// Probavamo traziti ime i prezime istovremeno
+			if (count($dijelovi)==2) {
+				$q100 = myquery("select count(*) from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
+				$q101 = myquery("select id,ime,prezime,brindexa from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%' order by prezime,ime limit $offset,$limit");
+				if (mysql_result($q100,0,0)==0) {
+					$q100 = myquery("select count(*) from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
+					$q101 = myquery("select id,ime,prezime,brindexa from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%' order by prezime,ime limit $offset,$limit");
+				}
+				$rezultata = mysql_result($q100,0,0);
 			}
-			$q100 = myquery("select count(*) from osoba where ($query)");
-			$q101 = myquery("select id,ime,prezime,brindexa from osoba where ($query) order by prezime,ime limit $offset,$limit");
+
+			// Nismo nasli ime i prezime, pokusavamo bilo koji dio
+			if ($rezultata==0) {
+				foreach($dijelovi as $dio) {
+					if ($query != "") $query .= "or ";
+					$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
+					if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
+				}
+				$q100 = myquery("select count(*) from osoba where ($query)");
+				$q101 = myquery("select id,ime,prezime,brindexa from osoba where ($query) order by prezime,ime limit $offset,$limit");
+				$rezultata = mysql_result($q100,0,0);
+			}
+
+			// Nismo nasli nista, pokusavamo login
+			if ($rezultata==0) {
+				$query="";
+				foreach($dijelovi as $dio) {
+					if ($query != "") $query .= "or ";
+					$query .= "a.login like '%$dio%' ";
+				}
+				$q100 = myquery("select count(*) from osoba as o, auth as a where ($query) and a.id=o.id");
+				$q101 = myquery("select o.id,o.ime,o.prezime,o.brindexa from osoba as o, auth as a where ($query) and a.id=o.id order by o.prezime,o.ime limit $offset,$limit");
+				$rezultata = mysql_result($q100,0,0);
+			}
+
 		}
-		$rezultata = mysql_result($q100,0,0);
+
 		if ($rezultata == 0)
 			print "Nema rezultata!";
 		else if ($rezultata>$limit) {
