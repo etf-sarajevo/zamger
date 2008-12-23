@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/04/24) + mass_input(): (!$f) zamijenjeno sa ($f) (provjeriti sve module!); dodano trimovanje imena i prezimena i ljepse upozorenje kod gresaka; ako student nije na predmetu a nema bodova, to nije greska
 // v3.9.1.4 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
 // v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth; omoguceno koristenje masovnog unosa kada nije definisan predmet
+// v3.9.1.6 (2008/11/24) + mass_input(): zamijeni Unicode karakter "non-breakable space" razmakom
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -158,6 +159,9 @@ function mass_input($ispis) {
 	foreach ($redovi as $red) {
 		$red = trim($red);
 		if (strlen($red)<2) continue; // prazan red
+		// popravljamo nbsp Unicode karakter
+		$red = str_replace("¡", " ", $red);
+		$red = str_replace(" ", " ", $red);
 		$red = my_escape($red);
 
 		$nred = explode($sepchar, $red, $kolona);
