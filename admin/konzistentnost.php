@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/04/28) + Novi modul admin/konzistentnost
 // v3.9.1.1 (2008/08/27) + Kod brisanja stvari dodano LIMIT 1 kako bi se mogli brisati dupli unosi
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.3 (2008/12/02) + studentska/osobe umjesto studentska/studenti; dozvoljeno prenijeti izborni predmet (ali treba provjeriti ECTS...)
 
 
 
@@ -163,7 +164,7 @@ if ($_GET['vrsta']=="studenti") {
 		while ($r20 = mysql_fetch_row($q20)) {
 			$studiji[$r20[2]]=$r20[0];
 			if ($r20[1]%2==0 && $ssemestar[$r20[2]]<1) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> upisan na semestar <?=$r20[1]?> a nije bio upisan na <?=($r20[1]-1)?> u <?=$iag[$r20[2]]?><br>
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> upisan na semestar <?=$r20[1]?> a nije bio upisan na <?=($r20[1]-1)?> u <?=$iag[$r20[2]]?><br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=upisi_studij&student=<?=$stud_id?>&studij=<?=$r20[0]?>&ag=<?=$r20[2]?>&semestar=<?=($r20[1]-1)?>">Upiši studenta na studij '<?=$istud[$r20[0]]?>', semestar <?=($r20[1]-1)?>, godina <?=$iag[$r20[2]]?></a><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_studij&student=<?=$stud_id?>&studij=<?=$r20[0]?>&ag=<?=$r20[2]?>&semestar=<?=$r20[1]?>">Ispiši studenta sa studija '<?=$istud[$r20[0]]?>', semestar <?=$r20[1]?>, godina <?=$iag[$r20[2]]?></a>
 				</li><?
@@ -175,11 +176,13 @@ if ($_GET['vrsta']=="studenti") {
 		$predmeti = array();
 		$pstudij = array();
 		$psemestar = array();
-		$q30 = myquery("select pk.predmet, pk.studij, pk.semestar, pk.akademska_godina from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id order by pk.akademska_godina");
+		$pobavezan = array();
+		$q30 = myquery("select pk.predmet, pk.studij, pk.semestar, pk.akademska_godina, pk.obavezan from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id order by pk.akademska_godina");
 		while ($r30 = mysql_fetch_row($q30)) {
 			$predmeti[$r30[0]]=$r30[3];
 			$pstudij[$r30[0]]=$r30[1];
 			$psemestar[$r30[0]]=$r30[2];
+			if ($r30[4]==1) $pobavezan[$r30[0]]=1; else $pobavezan[$r30[0]]=0; 
 		}
 
 		// Kada je ocijenjen
@@ -188,7 +191,7 @@ if ($_GET['vrsta']=="studenti") {
 		$q40 = myquery("select pk.predmet, pk.akademska_godina, ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.id order by pk.akademska_godina");
 		while ($r40 = mysql_fetch_row($q40)) {
 			if ($ocjene[$r40[0]]>0) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> dvaput ocijenjen iz predmeta <?=$ip[$r40[0]]?>: jednom <?=$iag[$ocjene[$r40[0]]]?>, a drugi put <?=$iag[$r40[1]]?><br>
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> dvaput ocijenjen iz predmeta <?=$ip[$r40[0]]?>: jednom <?=$iag[$ocjene[$r40[0]]]?>, a drugi put <?=$iag[$r40[1]]?><br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=brisiocjenu&student=<?=$stud_id?>&predmet=<?=$r40[0]?>&ag=<?=$ocjene[$r40[0]]?>">Obriši ocjenu <?=$oocjene[$r40[0]]?> iz <?=$iag[$ocjene[$r40[0]]]?></a><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=brisiocjenu&student=<?=$stud_id?>&predmet=<?=$r40[0]?>&ag=<?=$r40[1]?>">Obriši ocjenu <?=$r40[2]?> iz <?=$iag[$r40[1]]?></a>
 				</li><?
@@ -200,7 +203,7 @@ if ($_GET['vrsta']=="studenti") {
 		// Slusa predmete koje je vec polozio
 		foreach ($ocjene as $predmet => $ag) {
 			if ($predmeti[$predmet] > $ag) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> sluša predmet <?=$ip[$predmet]?> (<?=$iag[$predmeti[$predmet]]?>) koji je već položio <?=$iag[$ag]?><br/>
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> sluša predmet <?=$ip[$predmet]?> (<?=$iag[$predmeti[$predmet]]?>) koji je već položio <?=$iag[$ag]?><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_predmet&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$predmeti[$predmet]?>">Ispiši studenta sa predmeta <?=$ip[$predmet]?> u <?=$iag[$predmeti[$predmet]]?></a><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=brisiocjenu&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Obriši ocjenu <?=$oocjene[$predmet]?> iz <?=$iag[$ag]?></a>
 				</li><?
@@ -217,7 +220,7 @@ if ($_GET['vrsta']=="studenti") {
 			foreach($predmeti as $predmet => $agp) {
 
 				if ($psemestar[$predmet]<$s2-2 && $ocjene[$predmet]<1) {
-					?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio predmet <?=$ip[$predmet]?> sa semestra <?=$psemestar[$predmet]?>, a sluša semestar <?=$semestar?>, godina <?=$iag[$ag]?>! Molimo razriješite ručno.
+					?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio predmet <?=$ip[$predmet]?> sa semestra <?=$psemestar[$predmet]?>, a sluša semestar <?=$semestar?>, godina <?=$iag[$ag]?>! Molimo razriješite ručno.
 					</li><?
 				}
 				else if ($psemestar[$predmet]<$s2 && $ocjene[$predmet]<1) {
@@ -230,11 +233,11 @@ if ($_GET['vrsta']=="studenti") {
 
 			// Prenio više od 1 predmeta
 			if ($prenio>1) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio <?=$prenio?> predmeta: <?=$nazivi?>. Molimo razriješite ručno.<br/><?=$ispis_ispis?></li><?
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio <?=$prenio?> predmeta: <?=$nazivi?>. Molimo razriješite ručno.<br/><?=$ispis_ispis?></li><?
 
 			// Ne sluša predmet koji je prenio
-			} else if ($prenio==1 && $predmeti[$prenio_predmet]<$ag) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio predmet <?=$ip[$prenio_predmet]?> u godinu <?=$iag[$ag]?> a nije ga upisao<br/>
+			} else if ($prenio==1 && $predmeti[$prenio_predmet]<$ag && $pobavezan[$prenio_predmet]==1) {
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prenio predmet <?=$ip[$prenio_predmet]?> u godinu <?=$iag[$ag]?> a nije ga upisao<br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=upisi_predmet&student=<?=$stud_id?>&predmet=<?=$prenio_predmet?>&ag=<?=$ag?>&studij=<?=$pstudij[$prenio_predmet]?>">Upiši studenta na predmet <?=$ip[$prenio_predmet]?> u <?=$iag[$ag]?></a><br/>
 				</li><?
 				
@@ -245,7 +248,7 @@ if ($_GET['vrsta']=="studenti") {
 			$zadnji_neparni=$semestar-1;
 			if ($semestar%2==0) $zadnji_parni-=2;
 			if ($ag>1 && $ssemestar[$ag-1]>0 && $ssemestar[$ag-1]<$zadnji_parni) {
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prešao iz <?=$ssemestar[$ag-1]?> semestra u <?=$iag[$ag-1]?> na <?=$semestar?> semestar u <?=$iag[$ag]?>. Molimo razriješite ručno</li><?
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> je prešao iz <?=$ssemestar[$ag-1]?> semestra u <?=$iag[$ag-1]?> na <?=$semestar?> semestar u <?=$iag[$ag]?>. Molimo razriješite ručno</li><?
 			}
 		}
 
@@ -255,7 +258,7 @@ if ($_GET['vrsta']=="studenti") {
 			// Nije upisan na fakultet?
 			if ($studiji[$ag]<1 || $ssemestar[$ag]<$psemestar[$predmet]) {
 				if ($pisao[$psemestar[$predmet]]!=1) {
-					?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> slušao predmete sa <?=$psemestar[$predmet]?> semestra a nije bio upisan na fakultet<br/>
+					?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> slušao predmete sa <?=$psemestar[$predmet]?> semestra a nije bio upisan na fakultet<br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=upisi_studij&student=<?=$stud_id?>&studij=<?=$pstudij[$predmet]?>&ag=<?=$ag?>&semestar=<?=$psemestar[$predmet]?>">Upiši studenta na studij '<?=$istud[$pstudij[$predmet]]?>', semestar <?=$psemestar[$predmet]?>, godina <?=$iag[$ag]?></a><br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_predmet&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$predmeti[$predmet]?>">Ispiši studenta sa predmeta <?=$ip[$predmet]?> u <?=$iag[$ag]?> (potencijalno još predmeta)</a>
 					</li><?
@@ -265,7 +268,7 @@ if ($_GET['vrsta']=="studenti") {
 
 			// Sluša predmet sa pogrešnog studija?
 			else if ($pstudij[$predmet]!=$studiji[$ag] && $pstudij[$predmet]!=1) { // studij 1 = prva godina
-				?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> slušao predmet <?=$ip[$predmet]?> sa studija <?=$istud[$pstudij[$predmet]]?> a bio upisan na <?=$istud[$studiji[$ag]]?><br/>
+				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> slušao predmet <?=$ip[$predmet]?> sa studija <?=$istud[$pstudij[$predmet]]?> a bio upisan na <?=$istud[$studiji[$ag]]?><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=promijeni_studij&student=<?=$stud_id?>&studij=<?=$pstudij[$predmet]?>&ag=<?=$ag?>">Prebaci studenta sa '<?=$istud[$studiji[$ag]]?>' na '<?=$istud[$pstudij[$predmet]]?>' u <?=$iag[$ag]?></a><br/>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_predmet&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$predmeti[$predmet]?>">Ispiši studenta sa predmeta <?=$ip[$predmet]?> u <?=$iag[$ag]?> (potencijalno još predmeta)</a>
 				</li>
@@ -287,7 +290,7 @@ if ($_GET['vrsta']=="studenti") {
 				if ($ocjene[$predmet]>0 && $ocjene[$predmet]<$ag) continue;
 				$q60 = myquery("select count(*) from student_predmet where predmet=$pk and student=$stud_id");
 				if (mysql_result($q60,0,0)<1) {
-					?><li>Student <a href="?sta=studentska/studenti&akcija=edit&student=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> nije slušao predmet <?=$ip[$predmet]?> a bio upisan na <?=$istud[$studij]?><br/>
+					?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?></a> <?=$iag[$ag]?> nije slušao predmet <?=$ip[$predmet]?> a bio upisan na <?=$istud[$studij]?><br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=upisi_predmet&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>&studij=<?=$studij?>">Upiši studenta na predmet <?=$ip[$predmet]?> u <?=$iag[$ag]?></a><br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_studij&student=<?=$stud_id?>&studij=<?=$studij?>&ag=<?=$ag?>&semestar=<?=$semestar?>">Ispiši studenta sa studija '<?=$istud[$studij]?>', semestar <?=$semestar?>, godina <?=$iag[$ag]?></a>
 					</li><?
