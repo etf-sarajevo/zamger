@@ -4,7 +4,9 @@
 
 // v3.9.1.0 (2008/02/22) + Novi modul: nastavnik/obavjestenja
 // v3.9.1.1 (2008/09/03) + Dodajem podrsku za email
-// v3.9.1.2 (2008/10/02) + Modul nije ispisivao stara obavjestenja ako na predmetu nisu definisane labgrupe; popravljen logging
+// v3.9.1.2 (2008/10/02) + Modul nije ispisivao stara obavjestenja ako na predmetu nisu definisane labgrupe; popravljen logging; prebacena forma na genform() radi sigurnosnih aspekata istog; onemoguceno koristenje GET za kreiranje obavjestenja
+// v3.9.1.3 (2008/12/01) + Slanje maila je sada opcionalno; ispravljeno vise bugova u slanju maila: salji mail svakom studentu zasebno (drugacije nije radilo :( ); vracanje naslova i teksta u ne-escapovan oblik prije slanja maila; ukinuta nasa slova u imenima; pobrisao svoju adresu iz koda
+// v3.9.1.4 (2008/12/23) + Brisanje obavjestenja prebaceno na POST radi zastite od CSRF (bug 53)
 
 
 function nastavnik_obavjestenja() {
@@ -49,6 +51,19 @@ if (!$user_siteadmin) {
 
 <p><h3><?=$predmet_naziv?> - Obavještenja za studente</h3></p>
 
+<script language="JavaScript">
+function upozorenje(obavjest) {
+	var a = confirm("Želite li obrisati ovo obavještenje? Ako ste odabrali opciju Slanje maila, ne možete poništiti njen efekat!");
+	if (a) {
+		document.brisanjeobavjestenja.obavjestenje.value=obavjest;
+		document.brisanjegrupe.submit();
+	}
+}
+</script>
+<?=genform("POST", "brisanjeobavjestenja")?>
+<input type="hidden" name="akcija" value="obrisi_obavjestenje">
+<input type="hidden" name="obavjestenje" value=""></form>
+
 <?
 
 // LEGENDA tabele poruke
@@ -71,15 +86,25 @@ $naslov = $tekst = "";
 
 $citava = intval($_REQUEST['citava']);
 $izmijeni = intval($_REQUEST['izmijeni']);
-$obrisi =  intval($_REQUEST['obrisi']);
+
+
+// Brisanje obavjestenja
+
+if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
+	$obavjestenje = intval($_POST['obavjestenje']);
+	$q20 = myquery("delete from poruka where id=$obavjestenje");
+	zamgerlog("obrisano obavjestenje (id $obavjestenje )",2);
+}
+
 
 
 // Novo obavještenje / izmjena obavještenja
 
-if ($_REQUEST['akcija']=='novo') {
+if ($_POST['akcija']=='novo' && check_csrf_token()) {
 	$naslov = my_escape($_REQUEST['naslov']);
 	$tekst = my_escape($_REQUEST['tekst']);
 	$primalac = intval($_REQUEST['primalac']);
+	if ($_REQUEST['email']) $email=1; else $email=0;
 	$io = intval($_REQUEST['izmjena_obavjestenja']);
 
 	if (strlen($naslov)<5) {
@@ -103,6 +128,7 @@ if ($_REQUEST['akcija']=='novo') {
 			}
 
 			// Saljem mail studentima
+			if ($email==1) {
 
 			$subject = "OBAVJEŠTENJE: $predmet_naziv";
 			if ($primalac>0) {
@@ -120,32 +146,54 @@ if ($_REQUEST['akcija']=='novo') {
 			$preferences["scheme"] = "Q"; // quoted-printable
 			$subject = iconv_mime_encode("", $subject, $preferences);
 
+			// Vracamo naslov i tekst koji su ranije escapovani
+			$naslov = $_REQUEST['naslov'];
+			$tekst = $_REQUEST['tekst'];
+			
  			$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nNastavnik ili saradnik na predmetu $predmet_naziv poslao vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
 
 			$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
 			$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+
 			$email = mysql_result($q9,0,2);
 			if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
 			
-			$add_header = "From: $email ($imeprezime)\r\nContent-Type: text/plain; charset=utf-8\r\n";
 
-			$mailto = "";
+//			$mailto = "";
 			$broj=0;
 			$q7 = myquery($upit);
+			$nasaslova = array("č", "ć", "đ", "š", "ž", "Č", "Ć", "Đ", "Š", "Ž");
+			$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
+
+
+			$imeprezime = str_replace($nasaslova, $beznasihslova, $imeprezime);
+			$add_header = "From: $imeprezime <$email>\r\nContent-Type: text/plain; charset=utf-8\r\n";
+
 			while ($r7 = mysql_fetch_row($q7)) {
-				$mailto .= "$r7[1]$conf_ldap_domain ($r7[2] $r7[3]); ";
+				$studentimeprezime = str_replace($nasaslova, $beznasihslova, "$r7[2] $r7[3]");
+				$nmailto = "$studentimeprezime <$r7[1]$conf_ldap_domain>; ";
 				$broj++;
 				if ($r7[0]!="$r7[1]$conf_ldap_domain") {
-					$mailto .= "$r7[0] ($r7[2] $r7[3]); ";
+					$nmailto .= "$studentimeprezime <$r7[0]>; ";
 					$broj++;
 				}
-				if ($broj>10) {
-					mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
-					$mailto=""; $broj=0;
-				}
+				mail("$r7[1]$conf_ldap_domain", $subject, $mail_body, "$add_header"."Cc: $nmailto");
+				nicemessage ("Mail poslan za $studentimeprezime &lt;$r7[1]$conf_ldap_domain&gt;");
+/*				if (strlen($nmailto)>250) {
+					mail("", $subject, $mail_body, "$add_header"."Bcc: $nmailto");
+					$mailto="<$r7[2] $r7[3]> $r7[1]$conf_ldap_domain; ";
+					$broj=1;
+					if ($r7[0]!="$r7[1]$conf_ldap_domain") {
+						$mailto .= "$imeprezime <$r7[0]>; ";
+						$broj++;
+					}
+				} else {
+					$mailto = $nmailto;
+				}*/
+
 			}
-			if ($broj>0)
-				mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
+
+			} // if ($email==1)...
 
 			zamgerlog("novo obavjestenje (predmet p$predmet)",2);
 		}
@@ -170,9 +218,10 @@ while ($r10 = mysql_fetch_row($q10)) {
 		continue;
 	}
 	print "<li><b>(".date("d.m.Y",$r10[1]).")</b> ".$r10[2];
-	if (strlen($r10[3])>0) {
+	$tekst_poruke = str_replace("\n", "<br/>", $r10[3]);
+	if (strlen($tekst_poruke)>0) {
 		if ($citava==$r10[0])
-			print "<br/><br/>".$r10[3];
+			print "<br/><br/>".$tekst_poruke;
 		else
 			print " (<a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&citava=$r10[0]\">Dalje...</a>)";
 	}
@@ -184,7 +233,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		else
 			$labgrupa=$r10[5];
 	}
-	print "<br/> <a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&izmijeni=$r10[0]\">[Izmijeni]</a> <a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&obrisi=$r10[0]\">[Obriši]</a></li>\n";
+	print "<br/> <a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&izmijeni=$r10[0]\">[Izmijeni]</a> <a href=\"javascript:onclick=upozorenje('$r10[0]')\">[Obriši]</a></li>\n";
 }
 if (mysql_num_rows($q10)>0) {
 	print "</ul>\n";
@@ -195,15 +244,14 @@ if (mysql_num_rows($q10)>0) {
 
 ?>
 <hr>
-<form action="index.php" method="POST">
-<input type="hidden" name="sta" value="nastavnik/obavjestenja">
-<input type="hidden" name="predmet" value="<?=$predmet?>">
+<?=genform("POST")?>
 <input type="hidden" name="akcija" value="novo">
 <? if ($izmijeni>0) { ?>
 <input type="hidden" name="izmjena_obavjestenja" value="<?=$izmijeni?>">
 <p><b>Izmjena postojećeg obavještenja</b></p>
 <? } else {
 ?>
+<input type="hidden" name="izmjena_obavjestenja" value="0">
 <p><b>Unos novog obavještenja</b></p>
 <? } ?>
 <p>Obavještenje za: <select name="primalac" class="default"><option value="0">Sve studente</option>
@@ -215,7 +263,10 @@ while ($r20 = mysql_fetch_row($q20)) {
 	<?
 }
 ?>
-</select></p>
+</select>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="checkbox" name="email" value="1"> Slanje e-maila
+</p>
 <p>Kraći tekst (2-3 rečenice):<br/>
 <textarea  rows="5" cols="80" name="naslov"><?=$naslov?></textarea>
 <br/><br/>
