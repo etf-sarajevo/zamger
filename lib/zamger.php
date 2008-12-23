@@ -493,7 +493,8 @@ function studentski_meni($fj) {
 			<a href="?sta=student/kalendar"><img src="images/32x32/kalendar.png" align="center" border="0"> Kalendar</a>
 			<? */ ?>
 			<br/><br/>
-<?
+			<a href="?sta=student/prosjeci">Kalkulator prosjeka</a>
+			<br/><br/><?
 $dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
 $mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
 

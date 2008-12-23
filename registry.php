@@ -18,6 +18,7 @@ array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/zadaca", "Slanje zadaće", "Slanje zadaće", "S", "1", "0"),
 array("student/pdf", "Prikaz zadaće u PDF formatu", "PDF", "S", "2", "0"),
+array("student/prosjeci", "Kalkulator prosjeka ocjena", "Kalkulator prosjeka", "S", "1", "0"),
 
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),
@@ -41,7 +42,7 @@ array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
 array("studentska/predmeti", "Predmeti", "Predmeti", "B", "1", "0"),
 array("studentska/prijemni", "Prijemni ispit", "Prijemni", "B", "1", "0"),
 array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
-array("studentska/izvjestaji", "Prolaznost", "Prolaznost", "B", "1", "0"),
+array("studentska/izvjestaji", "Izvještaji o prolaznosti", "Izvještaji", "B", "1", "0"),
 array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0"),
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
 
