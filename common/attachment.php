@@ -5,11 +5,12 @@
 // COMMON/ATTACHMENT - download zadaće poslane u formi attachmenta
 
 // v3.9.1.0 (2008/02/12) + Preimenovan bivsi stud_download, uz merge dijela koda iz admin_pregled
+// v3.9.1.1 (2008/10/22) + Ovaj kod se obajatio :) prepravljeno $uloga na $user_* varijable; omoguceno nastavniku da otvara attachmente studenata cak i ako je istovremeno i student; tabela student_predmet umjesto relacije preko labgrupe; conf_files_path
 
 
 function common_attachment() {
 
-global $userid,$conf_system_path,$uloga;
+global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin;
 
 
 // Poslani parametar
@@ -25,30 +26,43 @@ if ($zadaca == 0 || $zadatak == 0) {
 
 
 // Prava pristupa
+$stud_id=intval($_REQUEST['student']);
 
-if ($uloga=="S") { // student
-	$stud_id=$userid;
-} else if ($uloga=="N") {
-	$stud_id=intval($_REQUEST['student']);
+if ($stud_id==0) { // student otvara vlastitu zadacu
+	if ($user_student)
+		$stud_id=$userid;
+	else {
+		zamgerlog("pokusao otvoriti attachment bez ID studenta, a sam nije student");
+		niceerror("Čiju zadaću pokušavate otvoriti?");
+		return;
+	}
 
-	if ($admin!=3) { // 3 = site admin
-		$q10 = myquery("select np.predmet,l.id from nastavnik_predmet as np, labgrupa as l, student_labgrupa as sl where np.nastavnik=$userid and np.predmet=l.predmet and l.id=sl.labgrupa and sl.student=$stud_id and z.id=$zadaca and z.predmet=np.predmet");
+} else { // student je odredjen kao parametar
+	if (!$user_nastavnik && !$user_siteadmin) {
+		zamgerlog("attachment: nije nastavnik (student u$stud_id zadaca z$zadaca)");
+		niceerror("Nemate pravo pregleda ove zadaće");
+		return;
+	}
+
+	if ($user_nastavnik) {
+		$q10 = myquery("select np.predmet from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and np.nastavnik=$userid");
 		if (mysql_num_rows($q10)<1) {
-			zamgerlog("privilegije (student $stud_id zadaca $zadaca)",3);
+			zamgerlog("attachment: nije nastavnik na predmetu (student u$stud_id zadaca z$zadaca)",3);
 			niceerror("Nemate pravo pregleda ove zadaće");
 			return;
 		}
 		$predmet_id = mysql_result($q10,0,0);
-		$labgrupa = mysql_result($q10,0,1);
 		
+		// Provjera ogranicenja
 		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet_id");
 		if (mysql_num_rows($q20)>0) {
 			$nasao=0;
 			while ($r20 = mysql_fetch_row($q20)) {
-				if ($r20[0] == $grupa_id) { $nasao=1; break; }
+				$q25 = myquery("select count(*) from student_labgrupa where student=$stud_id and labgrupa=$r20[0]");
+				if (mysql_result($q25,0,0)>0) { $nasao=1; break; }
 			}
 			if ($nasao == 0) {
-				zamgerlog("ogranicenje na predmet (student $stud_id predmet $predmet_id)",3);
+				zamgerlog("ogranicenje na predmet (student u$stud_id predmet p$predmet_id)",3);
 				niceerror("Nemate pravo pregleda ove zadaće");
 				return;
 			}
@@ -59,17 +73,18 @@ if ($uloga=="S") { // student
 
 // Da li neko pokušava da spoofa zadaću?
 
-$q30 = myquery("SELECT count(*) FROM zadaca as z, labgrupa as l, student_labgrupa as sl WHERE sl.student=$stud_id and sl.labgrupa=l.id and l.predmet=z.predmet and z.id=$zadaca");
-if (mysql_result($q30,0,0)==0) {
-	zamgerlog("student nije upisan na predmet (student $stud_id zadaca $zadaca)",3);
+$q30 = myquery("SELECT z.predmet FROM zadaca as z, student_predmet as sp WHERE sp.student=$stud_id and sp.predmet=z.predmet and z.id=$zadaca");
+if (mysql_num_rows($q30)<1) {
+	zamgerlog("student nije upisan na predmet (student u$stud_id zadaca z$zadaca)",3);
 	niceerror("Student nije upisan na predmet");
 	return;
 }
+$predmet_id = mysql_result($q30,0,0);
 
 
-// Slanje zadaće
+// Preuzimanje zadaće
 
-$lokacijazadaca="$conf_system_path/zadace/$predmet_id/$stud_id/$zadaca/";
+$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$stud_id/$zadaca/";
 
 $q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
 if (mysql_num_rows($q40) < 1) {
