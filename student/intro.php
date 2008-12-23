@@ -10,6 +10,7 @@
 // v3.9.1.5 (2008/04/10) + Dodani rezultati ispita i konacna ocjena u Aktuelno, ukinut mysql2time() kod rokova za zadace
 // v3.9.1.6 (2008/04/30) + Popravljen naslov poruke "bez naslova"; dodan link na RSS
 // v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.8 (2008/11/21) + Pod Aktuelno objavi samo rezultate ispita na koje je student izasao; prikazi bodove i cestitku ako je polozio/la; prikazi tekst Studentska sluzba za obavjestenja koje posalje studentska
 
 
 function student_intro() {
@@ -64,10 +65,11 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum) from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=i.predmet and i.komponenta=k.id and i.predmet=pk.id and pk.predmet=p.id");
+$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.id and pk.predmet=p.id");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[1]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>.<br/><br/>\n";
+	if ($r15[6]>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
+	$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[1]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $r15[6] bodova.$cestitka<br/><br/>\n";
 	$vrijeme_poruke["i".$r15[0]] = $r15[3];
 }
 
@@ -134,11 +136,12 @@ if (mysql_num_rows($q30)>0) {
 	$studij = mysql_result($q30,0,0);
 }
 
-$q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst from poruka where tip=1 order by vrijeme desc");
+$q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
 $printed=0;
 while ($r40 = mysql_fetch_row($q40)) {
 	$opseg = $r40[2];
 	$primalac = $r40[3];
+	$posiljalac = $r40[6];
 	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
 		continue;
 	if ($opseg==5) {
@@ -153,8 +156,18 @@ while ($r40 = mysql_fetch_row($q40)) {
 		$posiljalac = mysql_result($q55,0,0);
 
 	} else {
-		// Obavještenja u drugim opsezima može slati samo site admin
-		$posiljalac = "Administrator";
+		// Obavještenja u drugim opsezima može slati samo site admin ili studentska služba
+		$q56 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='siteadmin'");
+		if (mysql_result($q60,0,0)>0) 
+			$posiljalac = "Administrator";
+		else {
+			$q57 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='studentska'");
+			if (mysql_result($q60,0,0)>0) 
+				$posiljalac = "Studentska služba";
+			else
+				$posiljalac = "Neko iz mase";
+		}
+
 	}
 	
 	?>
