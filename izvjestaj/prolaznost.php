@@ -7,6 +7,7 @@
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
 // v3.9.1.4 (2008/09/24) + Popravljen bug 26 - netacan broj studenata koji su upisali predmet (kod izvjestaja konacna ocjena)
+// v3.9.1.5 (2008/10/24) + Popravljena ukupna statistika kod upita "Redovni + ponovci + preneseni"
 
 
 
@@ -55,7 +56,7 @@ if ($period==0) {
 }
 ?></b><br/>
 Obuhvaćeni studenti: <b><?
-if ($cista_gen==0) print "Redovni, Ponovci, Preneseni predmeti";
+if ($cista_gen==0) print "Redovni, Ponovci, Preneseni predmeti i kolizija";
 elseif ($cista_gen==1) print "Redovni, Ponovci";
 elseif ($cista_gen==2) print "Redovni studenti";
 elseif ($cista_gen==3) print "Čista generacija";?></b><br/><br/>
@@ -207,15 +208,19 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		$q50 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
 		$redovnih = mysql_result($q50,0,0);
 
-		// Posto su neki ponovci polozili sve iz ovog semestra, moramo vidjeti
-		// koji ponovci slusaju ove predmete
-		$q60 = myquery("select count(distinct sp.student) from student_studij as ss, student_predmet as sp, ponudakursa as pk where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.student=sp.student and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+		// Ukupan broj studenata na studiju
+		$q60 = myquery("select count(ss.student) from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit");
+
+		// Posto su neki ponovci polozili sve iz ovog semestra, sljedeci upit vraca samo prenesene predmete
+		// i kolizije kako bi ukupna statistika bila tacna, cak iako se suma ne poklapa
+		// FIXME? Ovaj upit nema smisla za izvjestaj "Svi studiji" ($studij==-1)
+		$q65 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and ss.studij!=pk.studij and ss.akademska_godina=$akgod");
 
 		$ukupno_na_godini = mysql_result($q60,0,0);
 		$ponovaca = $ukupno_na_godini - $redovnih;
-		$prenesenih = $uk_studenata - $redovnih - $ponovaca;
+		$prenesenih = mysql_result($q65,0,0);
 
-		$ispis_br_studenata = "Predmete slušalo: <b>$redovnih</b> redovnih studenata + <b>$ponovaca</b> ponovaca + <b>$prenesenih</b> prenesenih predmeta";
+		$ispis_br_studenata = "Predmete slušalo: <b>$redovnih</b> redovnih studenata + <b>$ponovaca</b> ponovaca + <b>$prenesenih</b> prenesenih predmeta / kolizije";
 
 		// Ova statistika se izvrsava presporo
 		
