@@ -19,6 +19,7 @@
 // v3.9.1.8 (2008/08/28) + Tabela osoba umjesto auth u akciji "pretraga" (kod pisanja poruke)
 // v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
 // v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"; konacna ocjena: kod poredjenja integera 0 i stringa mora se koristiti !==; popravljena poruka za konacnu ocjenu vecu od $max
+// v3.9.1.10 (2008/10/14) + Popravljen upit u akciji "pretraga"
 
 
 // Prebaciti u lib/manip?
@@ -286,6 +287,7 @@ case "pretraga":
 	$imena = explode(" ",$ime);
 	$upit = "";
 	foreach($imena as $dio) {
+		if ($upit != "") $upit .= " and ";
 		$upit .= "(o.ime like '%$dio%' or o.prezime like '%$dio%' or a.login like '%$dio%' or o.brindexa like '%$dio%')";
 	}
 	$q10 = myquery("select a.login, o.ime, o.prezime from auth as a, osoba as o where a.id=o.id and $upit order by o.prezime, o.ime");
