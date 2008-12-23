@@ -12,6 +12,9 @@
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/17) + Omogucena promjena grupe ako student nije niti u jednoj grupi (bug 24)
 // v3.9.1.8 (2008/09/23) + Popravljen link na studentska/osobe
+// v3.9.1.9 (2008/10/03) + Akcija izmjena prebacena na genform() radi sigurnosnih aspekata istog
+// v3.9.1.10 (2008/10/05) + Broj indexa ne mora biti broj
+// v3.9.1.11 (2008/11/17) + Samo site admin moze ispisati studenta sa predmeta (privremeno rjesenje)
 
 
 function saradnik_izmjena_studenta() {
@@ -71,13 +74,14 @@ if ($izmjena_moguca ==0) {
 
 // Poziv funkcije za izmjenu
 
-if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1) 
+if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1 && check_csrf_token()) {
 	$labgrupa = _izmijeni_profil($stud_id,$predmet_id);
+}
 
 
 // Ispis studenta sa predmeta
 
-if ($_GET['akcija'] == "ispis" && $izmjena_moguca==1) {
+if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 	ispis_studenta_sa_predmeta($stud_id,$predmet_id);
 	zamgerlog("student ispisan sa predmeta (student u$stud_id predmet p$predmet_id)",4); // nivo 4: audit
 	nicemessage("Studen ispisan sa predmeta.");
@@ -119,11 +123,8 @@ else
 ?>
 <center><h2>Izmjena ličnih podataka</h2></center>
 
-<form action="index.php" method="POST">
-<input type="hidden" name="sta" value="saradnik/izmjena_studenta">
+<?=genform("POST")?>
 <input type="hidden" name="akcija" value="izmjena">
-<input type="hidden" name="student" value="<?=$stud_id?>">
-<input type="hidden" name="predmet" value="<?=$predmet_id?>">
 <table border="0" width="100%">
 	<tr>
 		<td>DB ID:</td>
@@ -203,7 +204,7 @@ if (mysql_num_rows($q150)>0) {
 	}
 }
 
-if ($izmjena_moguca == 1) {
+if ($user_siteadmin) {
 	?>
 	<tr><td colspan="2"><a href="index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$predmet_id?>&akcija=ispis">Ispiši studenta sa predmeta:<br/><b><?=$predmet?></b></a></td></tr>
 	<?
@@ -236,7 +237,7 @@ function _izmijeni_profil($stud_id,$predmet_id) {
 	$ime = my_escape($_POST['ime']);
 	$prezime = my_escape($_POST['prezime']);
 	$email = my_escape($_POST['email']);
-	$brind = intval($_POST['brind']);
+	$brind = my_escape($_POST['brind']);
 	if ($brind==0) { 
 		zamgerlog("broj indexa nije broj ($brind)",3);
 		niceerror("Broj indexa mora biti BROJ :)"); 
