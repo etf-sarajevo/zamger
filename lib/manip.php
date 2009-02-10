@@ -9,6 +9,7 @@
 // v3.9.1.4 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
 // v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth; omoguceno koristenje masovnog unosa kada nije definisan predmet
 // v3.9.1.6 (2008/11/24) + mass_input(): zamijeni Unicode karakter "non-breakable space" razmakom
+// v3.9.1.7 (2009/01/20) + Priblizavam upite za brisanje i unos komponenti kod zadaca jer se desavalo da paralelni proces unese nesto drugo; eksperiment sa lock tables
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -402,7 +403,6 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 		case 4: // Zadace
 			$bodovi = 0;
-			$q230 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet and komponenta=$k");
 
 			$q70 = myquery("select id, zadataka from zadaca where predmet=$predmet and komponenta=$k");
 			while ($r70 = mysql_fetch_row($q70)) {
@@ -418,8 +418,12 @@ function update_komponente($student,$predmet,$komponenta=0) {
 				}
 			}
 
-			if (mysql_num_rows($q70)>0)
-				$q90 = myquery("insert into komponentebodovi set student=$student, predmet=$predmet, komponenta=$k, bodovi=$bodovi");
+			if (mysql_num_rows($q70)>0) {
+				$q90 = myquery("lock tables komponentebodovi write");
+				$q91 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet and komponenta=$k");
+				$q92 = myquery("insert into komponentebodovi set student=$student, predmet=$predmet, komponenta=$k, bodovi=$bodovi");
+				$q93 = myquery("unlock tables");
+			}
 			break;
 
 		case 5: // Fiksne komponente
