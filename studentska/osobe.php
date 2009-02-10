@@ -18,6 +18,7 @@
 // v3.9.1.13 (2008/10/31) + Ukinut autocomplete kod unosa logina i sifre; ukinuta redirekcija kod dodavanja novog korisnika, zbog toga sto je $_REQUEST niz zagadjen podacima; dodana mogucnost upisa na prvu godinu za studente koji nikad nista nisu slusali; dodani tagovi u logging kod upisa
 // v3.9.1.14 (2008/12/23) + Checkbox za korisnicki pristup kod LDAPa prebacen na POST radi zastite od CSRF (bug 59)
 // v3.9.1.15 (2009/02/01) + Popravljena dva linka na osobu
+// v3.9.1.16 (2009/02/10) + Dodan prikaz ECTS bodova na izbornim predmetima i kontrola sume ECTSa prilikom upisa na semestar
 
 
 
@@ -344,12 +345,34 @@ else if ($akcija == "upis") {
 
 	} // if ($semestar%2 ==1)
 
+
 	// Izborni predmeti
-	$q560 = myquery("select p.id, p.naziv, pk.id from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
+	$q560 = myquery("select p.id, p.naziv, pk.id, pk.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
 	if (mysql_num_rows($q560)>0 && $ns!=0) {
 		// student je upravo promijenio studij, mora prvo izabrati izborne predmete
 		$ok_izvrsiti_upis=0;
 	}
+
+	// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
+	if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==1) {
+		$q565 = myquery("select sum(pk.ects) from ponudakursa as pk where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1");
+		$ects_suma = mysql_result($q565,0,0);
+
+		// Upisujemo na izborne predmete koji su odabrani
+		foreach($_REQUEST as $key=>$value) {
+			if (substr($key,0,8) != "izborni-") continue;
+			if ($value=="") continue;
+			$predmet = intval(substr($key,8));
+			$q566 = myquery("select ects from ponudakursa where id=$predmet");
+			$ects_suma += mysql_result($q566,0,0);
+		}
+
+		if ($ects_suma != 30) {
+			$ok_izvrsiti_upis=0;
+			niceerror("Izabrani izborni predmeti čine sumu $ects ECTS kredita, umjesto 30");
+		}
+	}
+
 	if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==0) {
 		?>
 		<p><b>Izaberite izborne predmete:</b><br/>
@@ -359,7 +382,7 @@ else if ($akcija == "upis") {
 			if (mysql_result($q570,0,0)<1) {
 				// Nije polozio/la - koristimo pk
 				?>
-				<input type="checkbox" name="izborni-<?=$r560[2]?>"> <?=$r560[1]?><br/>
+				<input type="checkbox" name="izborni-<?=$r560[2]?>"> <?=$r560[1]?> (<?=$r560[3]?> ECTS)<br/>
 				<?
 			}
 		}
