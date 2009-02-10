@@ -15,6 +15,7 @@
 // v3.9.1.10 (2008/10/03) + Akcija dodaj_cas prebacena na genform() radi sigurnosnih aspekata istog; onemoguceno dodavanje casa sa GET
 // v3.9.1.11 (2008/11/18) + Akcija brisi_cas nije prosljedjivala predmet_id, sto je dovodilo do greske "nepostojeci predmet" (ali je cas ipak bio obrisan)
 // v3.9.1.12 (2008/12/23) + Akcija brisi_cas prebacena na POST radi zastite od CSRF (bug 54); dodan refresh link
+// v3.9.1.13 (2008/01/21) + Dodan predmet na Refresh link
 
 
 
@@ -745,7 +746,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 ?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
 	}
-?> * <a href="?sta=saradnik/grupa&id=<?=$grupa_id?>">Refresh</a></p>
+?> * <a href="?sta=saradnik/grupa&id=<?=$grupa_id?>&predmet=<?=$predmet_id?>">Refresh</a></p>
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
