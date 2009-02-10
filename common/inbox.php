@@ -14,6 +14,7 @@
 // v3.9.1.9 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.10 (2008/10/03) + Poostren uslov za slanje poruke samo putem POST
 // v3.9.1.11 (2008/10/22) + Popravljeno dodavanje viska Re:
+// v3.9.1.12 (2008/12/28) + Dodano parsiranje linkova u porukama
 
 
 function common_inbox() {
@@ -384,7 +385,30 @@ if ($poruka>0) {
 		<br/>
 		<table border="0" cellpadding="5"><tr><td>
 		<?
-		print str_replace("\n","<br/>\n",mysql_result($q10,0,5));
+		$tekst = mysql_result($q10,0,5);
+		$i=0;
+		while (strpos($tekst,"http://",$i)!==false) {
+			$j = strpos($tekst,"http://",$i);
+			$k = strpos($tekst," ",$j);
+			$k2 = strpos($tekst,"\n",$j);
+			if ($k2<$k && $k2!=0) $k=$k2;
+			if ($k==0) $k=$k2;
+			if ($k==0) { $k=strlen($tekst);}
+
+			do {
+				$k--;
+				$a = substr($tekst,$k,1);
+			} while ($a=="."||$a=="," || $a==")" || $a=="!" || $a=="?");
+			$k++;
+			if ($k-$j<9) { $i=$j+1; continue; }
+			$url = substr($tekst,$j,$k-$j);
+			$tekst = substr($tekst,0,$j). "<a href=\"$url\" target=\"_blank\">$url</a>". substr($tekst,$k);
+			$i = $j+strlen($url)+28;
+		}
+
+		$tekst =  str_replace("\n","<br/>\n",$tekst);
+
+		print $tekst;
 		?>
 		</td><tr></table>
 	</td></tr></table>
