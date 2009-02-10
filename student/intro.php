@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/04/30) + Popravljen naslov poruke "bez naslova"; dodan link na RSS
 // v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.8 (2008/11/21) + Pod Aktuelno objavi samo rezultate ispita na koje je student izasao; prikazi bodove i cestitku ako je polozio/la; prikazi tekst Studentska sluzba za obavjestenja koje posalje studentska
+// v3.9.1.9 (2008/12/24) + Popravljen bug sa prikazom posiljaoca obavjestenja Administrator i Studentska sluzba
 
 
 function student_intro() {
@@ -158,11 +159,11 @@ while ($r40 = mysql_fetch_row($q40)) {
 	} else {
 		// Obavještenja u drugim opsezima može slati samo site admin ili studentska služba
 		$q56 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='siteadmin'");
-		if (mysql_result($q60,0,0)>0) 
+		if (mysql_result($q56,0,0)>0) 
 			$posiljalac = "Administrator";
 		else {
 			$q57 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='studentska'");
-			if (mysql_result($q60,0,0)>0) 
+			if (mysql_result($q57,0,0)>0) 
 				$posiljalac = "Studentska služba";
 			else
 				$posiljalac = "Neko iz mase";
@@ -176,7 +177,9 @@ while ($r40 = mysql_fetch_row($q40)) {
 	if (strlen($r40[5])>0) print " (<a href=\"?sta=common/inbox&poruka=$r40[0]\">Dalje...</a>)";
 	?><br/><br/>
 	<?
-	$printed=1;
+	$printed++;
+	// Maksimalno 5 obavjestenja
+	if ($printed>=5) break;
 }
 if ($printed==0)
 	print "Nema novih obavještenja.";
