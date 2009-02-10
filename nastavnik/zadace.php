@@ -8,7 +8,7 @@
 // v3.9.1.3 (2008/05/12) + Kod masovnog unosa u upitu stajalo SET... redni_broj=$bodova :( Popravljen logging
 // v3.9.1.4 (2008/05/16) + Dodan update_komponente()
 // v3.9.1.5 (2008/08/18) + Informativnija greska kod pokusaja masovnog unosa zadaca ako ne postoji nijedna zadaca, promijenjen naslov "Unos zadace" u "Kreiranje zadace", dodana zastita od visestrukog slanja kod masovnog unosa
-
+// v3.9.1.6 (2009/01/23) + Ukinut db_form() radi niza bugova (metabug #48)
 
 
 
@@ -149,6 +149,122 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 }
 
 
+// Akcija za kreiranje nove ili promjenu postojeće zadaće
+
+if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
+	$zadaca = intval($_POST['zadaca']);
+	
+	// Prava pristupa
+	if ($zadaca>0) {
+		$q86 = myquery("select predmet from zadaca where id=$zadaca");
+		if (mysql_num_rows($q86)<1) {
+			niceerror("Nepostojeća zadaća sa IDom $zadaca");
+			zamgerlog("promjena nepostojece zadace $zadaca", 3);
+			return 0;
+		}
+		if (mysql_result($q86,0,0)!=$predmet) {
+			niceerror("Zadaća nije sa izabranog predmeta");
+			zamgerlog("promjena zadace: zadaca $zadaca nije sa predmeta p$predmet", 3);
+			return 0;
+		}
+	}
+
+	// Brisanje zadaće
+	if ($_POST['brisanje'] == " Obriši " && $zadaca>0) {
+		if ($_POST['potvrdabrisanja']==" Briši ") {
+			$q88 = myquery("delete from zadaca where id=$zadaca");
+			$q89 = myquery("delete from zadatak where zadaca=$zadaca");
+			zamgerlog("obrisana zadaca $zadaca sa predmeta p$predmet", 4);
+		} else {
+			$q96 = myquery("select count(*) from zadatak where zadaca=$zadaca");
+			$brojzadataka=mysql_result($q96,0,0);
+			print genform("POST");
+			?>
+			Brisanjem zadatka obrisaćete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to želite?<br>
+			U pitanju je <b><?=$brojzadataka?></b> jedinstvenih slogova u bazi!<br><br>
+			<input type="submit" name="potvrdabrisanja" value=" Briši ">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
+			<?
+			return;
+		}
+	}
+
+	$naziv = trim(my_escape($_POST['naziv']));
+	$zadataka = intval($_POST['zadataka']);
+	$bodova = floatval(str_replace(",",".",$_POST['bodova']));
+	$dan = intval($_POST['day']);
+	$mjesec = intval($_POST['month']);
+	$godina = intval($_POST['year']);
+	$sat = intval($_POST['sat']);
+	$minuta = intval($_POST['minuta']);
+	$sekunda = intval($_POST['sekunda']);
+	if ($_POST['aktivna']) $aktivna=1; else $aktivna=0;
+	if ($_POST['attachment']) $attachment=1; else $attachment=0;
+	$programskijezik = intval($_POST['programskijezik']);
+
+	// Provjera ispravnosti
+	if (!preg_match("/\w/",$naziv)) {
+		niceerror("Naziv zadaće nije dobar.");
+		zamgerlog("los naziv zadace", 3);
+		return 0;
+	}
+	if ($zadataka<=0 || $bodova<=0 || $zadataka>100 || $bodova>100) {
+		niceerror("Broj zadataka ili broj bodova nije dobar");
+		zamgerlog("los broj zadataka ili bodova", 3);
+		return 0;
+	}
+	if (!checkdate($mjesec,$dan,$godina)) {
+		niceerror("Odabrani datum je nemoguć");
+		zamgerlog("los datum", 3);
+		return 0;
+	}
+	if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
+		niceerror("Vrijeme nije dobro");
+		zamgerlog("lose vrijeme", 3);
+		return 0;
+	}
+	$mysqlvrijeme = time2mysql(mktime($sat,$minuta,$sekunda,$mjesec,$dan,$godina));
+
+	// Provjera duplog imena zadace
+	$q90 = myquery("select count(*) from zadaca where naziv like '$naziv' and predmet=$predmet and id!=$zadaca");
+	if (mysql_result($q90,0,0)>0) {
+		niceerror("Zadaća pod imenom '$naziv' već postoji! Izaberite neko drugo ime.");
+		zamgerlog("zadaca sa nazivom '$naziv' vec postoji", 3);
+		return 0;
+	}
+
+	// Kreiranje nove
+	if ($zadaca==0) {
+		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
+		$q92 = myquery("insert into zadaca set predmet=$predmet, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
+		zamgerlog("Kreirana nova zadaca '$naziv'", 2);
+
+	// Izmjena postojece zadace
+	} else {
+		// Ako se smanjuje broj zadataka, moraju se obrisati bodovi
+		$q94 = myquery("select zadataka, komponenta from zadaca where id=$zadaca");
+		$oldzadataka = mysql_result($q94,0,0);
+		if ($zadataka<$oldzadataka) {
+			// Prilikom brisanja svakog zadatka updatujemo komponentu studenta
+			$komponenta = mysql_result($q94,0,1);
+			$q96 = myquery("select id,student from zadatak where zadaca=$zadaca and redni_broj>$zadataka and redni_broj<=$oldzadataka order by student");
+			$oldstudent=0;
+			while ($r96 = mysql_fetch_row($q96)) {
+				$q97 = myquery("delete from zadatak where id=$r96[0]");
+				if ($oldstudent!=0 && $oldstudent!=$r96[1])
+					update_komponente($oldstudent,$predmet,$komponenta);
+				$oldstudent=$r96[1];
+			}
+			if ($oldstudent!=0) // log samo ako je bilo nesto
+				zamgerlog("Smanjen broj zadataka u zadaci z$zadaca", 4);
+		}
+
+		$q94 = myquery("update zadaca set predmet=$predmet, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6 where id=$zadaca");
+		zamgerlog("Ažurirana zadaca z$zadaca", 2);
+	}
+}
+
+
 // Spisak postojećih zadaća
 
 $_lv_["where:predmet"] = $predmet;
@@ -165,19 +281,145 @@ if ($izabrana==0) {
 	?><p><hr/></p>
 	<p><b>Kreiranje zadaće</b><br/>
 	<?
+	$znaziv=$zaktivna=$zattachment=$zjezik="";
+	$zzadataka=0; $zbodova=0;
+	$tmpvrijeme=time();
 } else {
 	?><p><hr/></p>
 	<p><b>Izmjena zadaće</b></p>
 	<?
+	$q100 = myquery("select predmet, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment from zadaca where id=$izabrana");
+	if ($predmet != mysql_result($q100,0,0)) {
+		niceerror("Zadaća ne pripada vašem predmetu");
+		zamgerlog("zadaca $izabrana ne pripada predmetu p$predmet",3);
+		return;
+	}
+
+	$znaziv = mysql_result($q100,0,1);
+	$zzadataka = intval(mysql_result($q100,0,2));
+	$zbodova = floatval(mysql_result($q100,0,3));
+	$tmpvrijeme = mysql2time(mysql_result($q100,0,4));
+	if (mysql_result($q100,0,5)==1) $zaktivna="CHECKED"; else $zaktivna="";
+	$zjezik = mysql_result($q100,0,6);
+	if (mysql_result($q100,0,7)==1) $zattachment="CHECKED"; else $zattachment="";
 }
 
+$zdan = date('d',$tmpvrijeme);
+$zmjesec = date('m',$tmpvrijeme);
+$zgodina = date('Y',$tmpvrijeme);
+$zsat = date('H',$tmpvrijeme);
+$zminuta = date('i',$tmpvrijeme);
+$zsekunda = date('s',$tmpvrijeme);
+
+
+
+// JavaScript za provjeru validnosti forme
+?>
+<script language="JavaScript">
+function IsNumeric(sText) {
+   var ValidChars = "0123456789.";
+   var IsNumber=true;
+   var Char;
+
+ 
+   for (i = 0; i < sText.length && IsNumber == true; i++) 
+      { 
+      Char = sText.charAt(i); 
+      if (ValidChars.indexOf(Char) == -1) 
+         {
+         IsNumber = false;
+         }
+      }
+   return IsNumber;0
+   
+}
+
+function provjera() {
+//	var forma=document.getElementById("kreiranje_zadace");
+	var naziv=document.getElementById("naziv");
+	if (parseInt(naziv.value.length)<2) {
+		alert("Niste unijeli naziv");
+		naziv.style.border=1;
+		naziv.style.backgroundColor="#FF9999";
+		naziv.focus();
+		return false;
+	}
+	var zadataka=document.getElementById("zadataka");
+	if (zadataka.value=="0") {
+		alert("Broj zadataka u zadaći mora biti veći od nule, npr. 1");
+		zadataka.style.border=1;
+		zadataka.style.backgroundColor="#FF9999";
+		zadataka.focus();
+		return false;
+	}
+	if (!IsNumeric(zadataka.value)) {
+		alert("Neispravan broj zadataka!");
+		zadataka.style.border=1;
+		zadataka.style.backgroundColor="#FF9999";
+		zadataka.focus();
+		return false;
+	}
+	var bodova=document.getElementById("bodova");
+	if (bodova.value=="0") {
+		alert("Broj bodova koje nosi zadaća mora biti veći od nule, npr. 2 boda");
+		bodova.style.border=1;
+		bodova.style.backgroundColor="#FF9999";
+		bodova.focus();
+		return false;
+	}
+	if (!IsNumeric(bodova.value)) {
+		alert("Neispravan broj bodova!");
+		bodova.style.border=1;
+		bodova.style.backgroundColor="#FF9999";
+		bodova.focus();
+		return false;
+	}
+	return true;
+}
+</script>
+<?
+
+
+
+// Forma za kreiranje zadaće
+
+print genform("POST", "kreiranje_zadace\" onsubmit=\"return provjera();");
+
+?>
+<input type="hidden" name="akcija" value="edit">
+<input type="hidden" name="zadaca" value="<?=$izabrana?>">
+Naziv: <input type="text" name="naziv" id="naziv" size="30" value="<?=$znaziv?>"><br><br>
+
+Broj zadataka: <input type="text" name="zadataka" id="zadataka" size="4" value="<?=$zzadataka?>">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
+
+Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
+&nbsp;&nbsp; <input type="text" name="sat" size="1" value="<?=$zsat?>"> <b>:</b> <input type="text" name="minuta" size="1" value="<?=$zminuta?>"> <b>:</b> <input type="text" name="sekunda" size="1" value="<?=$zsekunda?>"> <br><br>
+
+<input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
+
+Programski jezik: <?=db_dropdown("programskijezik", $zjezik, "---Nije određen---")?><br><br>
+
+<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
+<?
+if ($izabrana>0) {
+	?><input type="submit" name="brisanje" value=" Obriši "><?
+}
+?>
+</form>
+<?
+
+
+
+/*
 $_lv_["label:programskijezik"] = "Programski jezik";
 $_lv_["label:zadataka"] = "Broj zadataka";
 $_lv_["label:bodova"] = "Max. broj bodova";
 $_lv_["label:attachment"] = "Slanje zadatka u formi attachmenta";
 $_lv_["label:rok"] = "Rok za slanje";
 $_lv_["hidden:vrijemeobjave"] = 1;
-print db_form("zadaca");
+print db_form("zadaca");*/
 
 
 
