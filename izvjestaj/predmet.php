@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/02/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
 // v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.2 (2009/02/02) + Dodana podrska za studente koji nisu niti u jednoj grupi; ovo sada ukljucuje i jedan strahovito spor upit sa podupitom :(
+// v3.9.1.3 (2009/02/07) + Ubrzano generisanje izvjestaja (ukinut ranije spomenuti podupit)
 
 
 
@@ -62,6 +64,7 @@ else
 
 
 $q20 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet_id and i.komponenta=k.id order by $orderby");
+$imaintegralni=0;
 while ($r20 = mysql_fetch_row($q20)) {
 	if ($razdvoji_ispite==1) {
 		if ($r20[4]==5)
@@ -73,6 +76,8 @@ while ($r20 = mysql_fetch_row($q20)) {
 		$oldkomponenta=$r20[2];
 		$ispit_zaglavlje .= "<td align=\"center\">$r20[3]</td>\n";
 		$broj_ispita++;
+	} else if ($r20[4] == 2) {
+		$imaintegralni=1;
 	}
 
 	$ispit_id_array[] = $r20[0];
@@ -86,6 +91,15 @@ while ($r20 = mysql_fetch_row($q20)) {
 
 }
 
+// Za slucaj da prof odrzi integralni bez parcijalnih
+if ($imaintegralni==1 && $broj_ispita<2) {
+	// $razvdoji_ispite=1; goto // Zaglavlje tabele ispita
+	// no php ne podržava goto :(
+	$broj_ispita=2;
+	// Ovo ce i dalje biti deformisano, ali nesto manje deformisano nego ranije
+} 
+
+
 
 // Upit za grupe
 
@@ -94,39 +108,79 @@ if ($grupa>0)
 else
 	$q40 = myquery("select id,naziv from labgrupa where predmet=$predmet_id order by id");
 
+$br_grupa = mysql_num_rows($q40);
 
-while ($r40 = mysql_fetch_row($q40)) {
-	$grupa_id = $r40[0];
-	$grupa_naziv = $r40[1];
 
-	// Plan je sljedeći:
-	// Učitamo sve podatke iz tabele u nizove i onda ih samo prikažemo
-	// Trebalo bi biti brže od komplikovanih ifova i for petlji a opet raditi
-	// sa starim mysql-om :(
 
-	$zaglavlje1=$zaglavlje2="";
+// CACHE REZULTATA ZADAĆA
 
-	// CACHE REZULTATA ZADAĆA
-	$zadace = array();
+// Plan je sljedeći:
+// Učitamo sve podatke iz tabele u nizove i onda ih samo prikažemo
+// Trebalo bi biti brže od komplikovanih ifova i for petlji 
+// kao i od subqueries koji su očajno spori
+
+$zadace = array();
+if ($grupa>0)
 	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 	FROM zadatak as z,student_labgrupa as sl 
-	WHERE z.student=sl.student and sl.labgrupa=$grupa_id
+	WHERE z.student=sl.student and sl.labgrupa=$grupa
 	ORDER BY id");
-	while ($r100 = mysql_fetch_row($q100)) {
-		// Ne brojimo zadatke sa statusima 1 ("Ceka na pregled") i 
-		// 4 ("Potrebno pregledati")
-		if ($r100[3]!=1 && $r100[3]!=4) 
-			$bodova=$r100[4]+1;
-		else $bodova=-1;
+else
+	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
+	FROM zadatak as z,student_predmet as sp 
+	WHERE z.student=sp.student and sp.predmet=$predmet_id
+	ORDER BY z.id");
 
-		// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
-		// je vrijednost niza definisana ili ne.
-		// undef ne radi :(
+while ($r100 = mysql_fetch_row($q100)) {
+	// Ne brojimo zadatke sa statusima 1 ("Ceka na pregled") i 
+	// 4 ("Potrebno pregledati")
+	if ($r100[3]!=1 && $r100[3]!=4) 
+		$bodova=$r100[4]+1;
+	else $bodova=-1;
 
-		// Slog sa najnovijim IDom se smatra mjerodavnim
-		// Ostali su u bazi radi historije
-		$zadace[$r100[0]][$r100[1]][$r100[2]]=$bodova;
+	// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
+	// je vrijednost niza definisana ili ne.
+	// undef ne radi :(
+
+	// Slog sa najnovijim IDom se smatra mjerodavnim
+	// Ostali su u bazi radi historije
+	$zadace[$r100[0]][$r100[1]][$r100[2]]=$bodova;
+}
+
+
+// SPISAK SVIH STUDENATA NA PREDMETU
+
+// Razlog za generisanje ovog spiska je sporost podupita koji vraca studente
+// koji nisu ni u jednoj grupi
+// Umjesto toga cemo napraviti spisak studenata na predmetu, a zatim izbacivati
+// iz njega elemente po grupama, tako da ce na kraju ostati samo oni koji nisu
+// u grupi
+$imeprezimesvi = $brindexasvi = array();
+
+$q102 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.predmet=$predmet_id and sp.student=a.id");
+
+while ($r102 = mysql_fetch_row($q102)) {
+	$imeprezimesvi[$r102[0]] = "$r102[1] $r102[2]";
+	$brindexasvi[$r102[0]] = $r102[3];
+}
+uasort($imeprezimesvi,"bssort"); // bssort - bosanski jezik
+
+
+
+
+// Petlja za grupe, koju smo prosirili "nultom" grupom (studenti nisu ni u jednoj grupi)
+for ($j=0; $j<=$br_grupa; $j++) {
+	if ($j<$br_grupa) {
+		$r40 = mysql_fetch_row($q40);
+		$grupa_id = $r40[0];
+		$grupa_naziv = $r40[1];
+	} else {
+		$grupa_id = 0;
+		$grupa_naziv = "[Bez grupe]";
 	}
+
+
+	$zaglavlje1=$zaglavlje2="";
 
 
 	// ZAGLAVLJE - PRISUSTVO
@@ -222,10 +276,12 @@ while ($r40 = mysql_fetch_row($q40)) {
 		}
 	}
 
+	// Ako je grupa prazna, preskacemo je
+	if ($grupa_id==0 && count($imeprezimesvi)==0) continue;
 
 
 	?>
-<center><h2><?=$r40[1]?></h2></center>
+<center><h2><?=$grupa_naziv?></h2></center>
 <table border="1" cellspacing="0" cellpadding="2">
 	<tr><td rowspan="2" align="center">R.br.</td>
 		<? if ($imenaopt) { ?><td rowspan="2" align="center">Prezime i ime</td><? } ?>
@@ -251,12 +307,26 @@ while ($r40 = mysql_fetch_row($q40)) {
 	// Ucitavamo studente u array radi sortiranja
 	$imeprezime=array();
 	$brindexa=array();
-	$q130 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$grupa_id and sl.student=a.id");
-	while ($r130 = mysql_fetch_row($q130)) {
-		$imeprezime[$r130[0]] = "$r130[1] $r130[2]";
-		$brindexa[$r130[0]] = $r130[3];
+	if ($grupa_id>0) {
+		// Studenti u grupi
+		$q130 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$grupa_id and sl.student=a.id");
+
+		while ($r130 = mysql_fetch_row($q130)) {
+			$imeprezime[$r130[0]] = "$r130[1] $r130[2]";
+			$brindexa[$r130[0]] = $r130[3];
+
+			// Izbacujemo iz spiska studenata na predmetu
+			unset($imeprezimesvi[$r130[0]]);
+			unset($brindexasvi[$r130[0]]);
+		}
+		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+	} else {
+		// Studenti izvan grupe
+		// U nizovima su ostali samo oni koji nisu ni u jednoj grupi
+		$imeprezime = $imeprezimesvi;
+		$brindexa = $brindexasvi;
+		// Niz je vec sortiran
 	}
-	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
 	$redni_broj=0;
 
