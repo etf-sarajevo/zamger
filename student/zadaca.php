@@ -14,6 +14,7 @@
 // v3.9.1.9 (2008/10/22) + Popravljen bug u slanju zadace - genform() nije ubacivao hidden polje zadatak jer se ono ponekad izracunava kao "zadnji neuradjeni" i slicno
 // v3.9.1.9 (2008/10/27) + Isto i sa poljem zadaca
 // v3.9.1.10 (2008/11/10) + Popravljen status nove zadace sa 2 (prepisana) na 4 (potrebno pregledati)
+// v3.9.1.10 (2009/02/10) + Onemogucen spoofing predmeta i pogresna kombinacija predmet/zadaca; csrf zastita je sprjecavala slanje attachmenta
 
 
 
@@ -23,7 +24,7 @@ global $userid,$conf_files_path;
 
 
 // Akcije
-if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
+if ($_POST['akcija'] == "slanje" && ($_FILES['attachment']['tmp_name'] || check_csrf_token())) {
 	akcijaslanje();
 }
 
@@ -59,7 +60,26 @@ if ($zadaca!=0) {
 	}
 }
 
+// Ili predmet
+if ($predmet_id != 0) {
+	$q25 = myquery("select count(*) from student_predmet where student=$userid and predmet=$predmet_id");
+	if (mysql_result($q25,0,0)==0) {
+		zamgerlog("student nije upisan na predmet (predmet p$predmet_id)",3);
+		biguglyerror("Niste upisani na ovaj predmet");
+		return;
+	}
+	// Odgovarajuci predmet i zadaca
+	if ($zadaca != 0) {
+		$q27 = myquery("select count(*) from zadaca where id=$zadaca and predmet=$predmet_id");
+		if (mysql_result($q27,0,0)==0) {
+			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$predmet_id, zadaca z$zadaca)",3);
+			biguglyerror("Ova zadaća nije iz vašeg predmeta");
+			return;
+		}
+	}
+}
 
+// Nije izabrana konkretna zadaca
 if ($zadaca==0) {
 	// Zadnja zadaca na kojoj je radio/la
 	$q30 = myquery("SELECT z.id FROM zadatak as zk, zadaca as z
