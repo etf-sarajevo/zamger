@@ -17,10 +17,11 @@
 // v3.9.1.12 (2008/10/16) + Popravljen bug kod spiska predmeta u koje se moze direktno upisati
 // v3.9.1.13 (2008/10/31) + Ukinut autocomplete kod unosa logina i sifre; ukinuta redirekcija kod dodavanja novog korisnika, zbog toga sto je $_REQUEST niz zagadjen podacima; dodana mogucnost upisa na prvu godinu za studente koji nikad nista nisu slusali; dodani tagovi u logging kod upisa
 // v3.9.1.14 (2008/12/23) + Checkbox za korisnicki pristup kod LDAPa prebacen na POST radi zastite od CSRF (bug 59)
+// v3.9.1.15 (2009/02/01) + Popravljena dva linka na osobu
+
 
 
 // TODO: prva godina studija je hardkodirana u provjeri uslova za upis
-// TODO: omoguciti site adminu da proglasi korisnika za studenta, nastavnika itd.
 // TODO: popraviti odredjivanje uslova za upis na statusnom ekranu
 
 
@@ -104,7 +105,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	if ($r10 = mysql_fetch_row($q10)) {
 		zamgerlog("korisnik vec postoji u bazi ('$ime' '$prezime' - ID: $r10[0])",3);
 		niceerror("Korisnik već postoji u bazi:");
-		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&nastavnik=$r10[0]\">$r10[1] $r10[2]</a>";
+		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r10[0]\">$r10[1] $r10[2]</a>";
 		return;
 
 	} else {
@@ -132,7 +133,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 
 		nicemessage("Novi korisnik je dodan.");
 		zamgerlog("dodan novi korisnik u$osoba (ID: $osoba)",4); // nivo 4: audit
-		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&nastavnik=$osoba\">$ime $prezime</a>";
+		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$osoba\">$ime $prezime</a>";
 		return;
 	}
 }
