@@ -12,6 +12,7 @@
 // v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
 // v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
 // v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni()); sprjeceno otvaranje coolboxa ako slanje nije uspjelo
+// v3.9.1.10 (2009/02/10) + Funkcija myquery prebacena ovdje radi logginga
 
 
 
@@ -427,8 +428,9 @@ function studentski_meni($fj) {
 	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
 		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar,p.naziv");
-	} else
+	} else {
 		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
+	}
 
 
 	$ispis = "";
@@ -557,6 +559,25 @@ function gen_ldap_uid($userid) {
 
 	return $sime.$sprezime.$brindexa;
 }
+
+
+function myquery($query) {
+	global $_lv_;
+
+	if ($r = @mysql_query($query)) {
+		return $r;
+	}
+	
+	# Error handling
+	if ($_lv_["debug"])
+		print "<br/><hr/><br/>MYSQL query:<br/><pre>".$query."</pre><br/>MYSQL error:<br/><pre>".mysql_error()."</pre>";
+	$backtrace = debug_backtrace();
+	$file = substr($backtrace[0]['file'], strlen($backtrace[0]['file'])-20);
+	$line = intval($backtrace[0]['line']);
+	zamgerlog("SQL greska ($file : $line):".mysql_error(), 3);
+	exit;
+}
+
 
 
 

@@ -22,6 +22,7 @@
 # v0.0.13.4 (2008/09/26) + omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
 # v0.0.13.5 (2008/10/28) + ispravka u genform() - izbaci polje "pass" ako je metoda GET
 # v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
+# v0.0.14.1 (2009/01/22) + omogucen unos float vrijednosti sa zarezom u form generatorima
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -68,7 +69,7 @@ function dbdisconnect() {
 	mysql_close($__lv_connection);
 }
 
-function myquery($query) {
+/*function myquery($query) {
 	global $_lv_;
 
 	if ($r = @mysql_query($query)) {
@@ -79,7 +80,7 @@ function myquery($query) {
 	if ($_lv_["debug"])
 		print "<br/><hr/><br/>MYSQL query:<br/><pre>".$query."</pre><br/>MYSQL error:<br/><pre>".mysql_error()."</pre>";
 	exit;
-}
+}*/
 
 function niceerror($error) {
 	print "<p><font color='red'><b>GREŠKA: $error</b></font></p>";
@@ -474,7 +475,7 @@ function db_submit() {
 		else if ($type == "tinyint" || $type=="int" || $type=="smallint" || $type=="mediumint" || $type=="bigint")
 			$sql .= "$name=".intval($data);
 		else if ($type == "float" || $type=="double" || $type=="decimal")
-			$sql .= "$name=".floatval($data);
+			$sql .= "$name=".floatval(str_replace(",",".",$data));
 		else
 			$sql .= "$name='".my_escape($data)."'";
 	}
