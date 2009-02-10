@@ -3,19 +3,19 @@
 // ADMIN/KOMPAKT - kompaktovanje baze za predmete koji su zavrseni
 
 // v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_site
+// v3.9.1.1 (2009/02/07) + Dodano brisanje fajlova zadaca, ispravljen broj diffova
 
 
 
 function admin_kompakt() {
 
-global $userid;
+global $userid, $conf_files_path;
 
 
 
 ###############
 # Akcije
 ###############
-
 
 if ($_POST['akcija'] == "kompaktuj") {
 	$predmet = intval($_POST['predmet']);
@@ -28,17 +28,26 @@ if ($_POST['akcija'] == "kompaktuj") {
 	nicemessage("Kompaktujem predmet $r10[0] ($r10[1])");
 	
 	// Zadaće
-	$q11 = myquery("select id,zadataka from zadaca where predmet=$predmet");
+	$q11 = myquery("select id,zadataka, programskijezik from zadaca where predmet=$predmet");
 	$totcount=0;
 	$diffcount=0;
 	$stdincount=0;
+	$filecount=0;
+	$lokacijazadaca="$conf_files_path/zadace/$predmet/";
 	while ($r11 = mysql_fetch_row($q11)) {
 		$zadaca = $r11[0];
 		$brzad = $r11[1];
+		$pj = $r11[2];
+
+		// Ekstenzija
+		if ($pj>0) {
+			$q11a = myquery("select ekstenzija from programskijezik where id=$pj");
+			$ekstenzija = mysql_result($q11a,0,0);
+		}
 		
 		// Historija statusa zadaće
 		for ($i=1; $i<=$brzad; $i++) {
-			$q12 = myquery("select id,student from zadatak where zadaca=$zadaca and redni_broj=$i order by student,id desc");
+			$q12 = myquery("select id,student, filename, redni_broj from zadatak where zadaca=$zadaca and redni_broj=$i order by student,id desc");
 			$student=0;
 			$count=0;
 			while ($r12 = mysql_fetch_row($q12)) {
@@ -54,8 +63,24 @@ if ($_POST['akcija'] == "kompaktuj") {
 					$count++;
 				}
 
+				$q13a = myquery("select count(*) from zadatakdiff where zadatak=$r12[0]");
 				$q14 = myquery("delete from zadatakdiff where zadatak=$r12[0]");
-				$diffcount++;
+				$diffcount+=mysql_result($q13a,0,0);
+
+				// Brisanje fajla / attachment
+				$filename = $r12[2];
+				if (preg_match("/\w/", $filename)) {
+					$path = $lokacijazadaca."$student/$zadaca/$filename";
+					if (file_exists($path)) {
+						unlink($path);
+						$filecount++;
+					}
+				}
+				$path = $lokacijazadaca."$student/$zadaca/$r12[3]$ekstenzija";
+				if (file_exists($path)) {
+					unlink($path);
+					$filecount++;
+				}
 			}
 
 			$q15 = myquery("select count(*) from stdin where zadaca=$zadaca and redni_broj=$i");
@@ -63,7 +88,7 @@ if ($_POST['akcija'] == "kompaktuj") {
 			$q16 = myquery("delete from stdin where zadaca=$zadaca and redni_broj=$i");
 		}
 	}
-	nicemessage("Obrisano: $totcount starih statusa zadaće, $diffcount diffova, $stdincount unosa.");
+	nicemessage("Obrisano: $totcount starih statusa zadaće, $diffcount diffova, $stdincount unosa stdin, $filecount datoteka.");
 
 	zamgerlog("kompaktovana baza za predmet $predmet",4); // nivo 4: audit
 }
