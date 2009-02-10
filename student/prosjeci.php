@@ -3,6 +3,7 @@
 // STUDENT/PROSJECI - skripta za racunanje prosjeka
 
 // v3.9.1.0 (2008/10/20) + Novi modul student/prosjeci
+// v3.9.1.1 (2009/02/07) + Dodan prikaz prosjeka po semestrima, na zahtjev studenata
 
 
 function student_prosjeci() {
@@ -27,9 +28,15 @@ while ($r10 = mysql_fetch_row($q10)) {
 <?
 for ($i=1; $i<=$maxgod; $i++) {
 	$prosjek = ($sumasem[$i*2-1]+$sumasem[$i*2]) / ($brocsem[$i*2-1]+$brocsem[$i*2]);
+	$prosjek1 = $sumasem[$i*2-1]/$brocsem[$i*2-1];
+	$prosjek2 = $sumasem[$i*2]/$brocsem[$i*2];
+
 	?>
 	<h3><?=$i?>. godina: <?=round($prosjek, 2)?></h3>
+	<?=($i*2-1)?>. semestar: <?=round($prosjek1, 2)?><br>
+	<?=($i*2)?>. semestar: <?=round($prosjek2, 2)?><br>
 	<?
+	
 }
 
 }
