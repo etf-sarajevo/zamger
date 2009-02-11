@@ -62,6 +62,7 @@ array("izvjestaj/prolaznost", "Prolaznost", "Prolaznost", "BA", "0", "0"),
 array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodovi", "BA", "0", "0"),
 array("izvjestaj/prijemni", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),
 array("izvjestaj/granicni", "Granični slučajevi", "Granični", "BA", "0", "0"),
+array("izvjestaj/genijalci", "Pregled studenata po prosjeku", "Prosjek", "BA", "0", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
