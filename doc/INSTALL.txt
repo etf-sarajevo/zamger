@@ -1,0 +1,116 @@
+ZAMGER v4.0
+
+Copyright (c) 2006-2009 Vedran Ljubovic
+Elektrotehnicki fakultet Sarajevo
+
+
+UPUTA ZA INSTALACIJU
+====================
+
+Za instalaciju je potrebno:
+- MySQL v4.0 ili noviji (relativno jednostavno je prepraviti aplikaciju 
+tako da radi sa MySQL v3.x)
+- PHP v5.0 ili noviji (ponovo, relativno jednostavno portati na PHP 4.x)
+- Web server - testirano samo sa Apache web serverom
+
+
+1. Kopirajte sadrzaj Zamger stabla na neku lokaciju na web serveru:
+
+# tar xzvf zamger_4.0.tar.gz
+
+
+2. Kreirajte bazu u mysqlu:
+
+# mysql -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3299027 to server version: 5.0.22
+
+Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
+
+mysql> CREATE DATABASE zamger;
+
+
+3. Kreirajte korisnika koji ima prava pristupa toj bazi:
+
+mysql> GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified 
+by '1A2s3D4f';
+mysql> FLUSH PRIVILEGES;
+mysql> exit
+Bye
+#
+
+
+4. Importujte standardnu Zamger schemu u mysql:
+
+# mysql zamger -u zamger -p <zamger-dump.sql
+
+
+5. Ako zelite omoguciti slanje zadaca, trebate kreirati neke foldere
+kojima web korisnik moze pristupiti, ali koji nisu direktno dostupni 
+kroz browser.
+
+# mkdir /home/zamger
+# mkdir /home/zamger/tmp
+# mkdir /home/zamger/zadace
+# chown -R apache:apache /home/zamger
+
+
+
+5. Editujte fajl zamger/lib/config.php. Fajl bi trebalo da bude 
+relativno ocigledan. Ostavite debug poruke aktivne do daljnjeg, kasnije 
+ih mozete iskljuciti. Opciju $conf_files_path postavite na ranije 
+kreirani direktorij za fajlove ( /home/zamger ), dok script_path treba 
+biti web root (na primjer: /srv/www/htdocs/zamger ).
+
+# nano zamger/lib/config.php
+
+
+6. Sada mozete pristupiti web interface-u sa korisnikom admin i sifrom 
+admin. Ove podatke morate odmah promijeniti!
+
+http://vasadomena.ba/zamger
+
+- Kliknite na link Studentska sluzba gore lijevo.
+- Kliknite na karticu Osobe
+- Kliknite na link Prikazi sve osobe
+- Kliknite na link Detalji
+- Ovdje mozete promijeniti sifru korisnika i druge podatke
+
+
+7. Kreirajte jos par korisnika, npr. nekoliko studenata:
+
+- Kliknite na karticu Osobe
+- U dnu ekrana imate polja za Ime i Prezime - popunite ih i kliknite na 
+dugme Dodaj
+- Sada cete dobiti priliku da odredite ostale podatke, ukljucujuci login 
+i sifru
+
+
+8. Kreirajte par predmeta:
+
+- Kliknite na karticu Predmeti
+- U dnu ekrana imate polje Novi predmet - tu upisite naziv predmeta i 
+kliknite na dugme Dodaj
+- Sada cete dobiti priliku da popunite ostale osobine predmeta
+
+
+9. Sada upisite studente na predmet:
+
+- Vratite se na karticu Osobe
+- Potrazite studenta, kliknite na link Detalji
+- U dijelu pod naslovom Tip korisnika treba biti aktivirana opcija 
+Student - ako nije, aktivirajte je
+- Ispod toga nalazi se naslov STUDENT. Pod ovim naslovom jedna od opcija 
+zove se Upisi studenta na predmet. Izaberite naziv predmeta i kliknite 
+na dugme Upisi
+
+
+10. Klikom na link Spisak predmeta i grupa u gornjem lijevom uglu ekrana 
+mozete dobiti pregled predmeta. Prirucnik za nastavnike (u kojem su 
+opisane dostupne opcije) mozete naci u folderu doc/
+
+
+11. Klikom na link Site admin vidite administracijske opcije, kao sto su 
+Parametri studija. itd. Upoznajte se sa interfejsom. Administratorski 
+prirucnik je u pripremi.
