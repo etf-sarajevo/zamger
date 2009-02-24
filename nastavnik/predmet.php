@@ -5,6 +5,8 @@
 // v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/04/09) + Usavrsen login
 // v3.9.1.2 (2008/12/23) + Akcija "set_smodul" prebacena na POST radi zastite od CSRF (bug 58)
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/02/24) + Dodan prikaz nastavnika angazovanih na predmetu
 
 
 
@@ -49,6 +51,34 @@ if (!$user_siteadmin) { // 3 = site admin
 <p>&nbsp;</p>
 
 <p><h3><?=$predmet_naziv?> - Opcije predmeta</h3></p>
+
+<?
+
+
+// Prikaz angažovanih nastavnika i saradnika
+
+?>
+
+<p>Pristup predmetu imaju sljedeći nastavnici i saradnici (slovo A označava da saradnik ima administratorske privilegije):</p>
+
+<ul>
+<?
+
+$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet");
+while ($r100 = mysql_fetch_row($q100)) {
+	if ($r100[2]==1) $dodaj=" (A)"; else $dodaj="";
+	print "<li>$r100[0] $r100[1]$dodaj</li>\n";
+}
+
+?>
+</ul>
+
+<?
+
+
+// Opcije predmeta
+
+?>
 
 <SCRIPT language="JavaScript">
 function upozorenje(smodul,aktivan) {
