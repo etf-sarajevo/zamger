@@ -11,6 +11,8 @@
 // v3.9.1.6 (2008/10/03) + Iskomentarisan dio koda koji se vec odavno ne koristi
 // v3.9.1.7 (2008/10/07) + Malo doradjen logging
 // v3.9.1.8 (2008/12/23) + Dodana zastita od CSRF, brisanje grupe prebaceno na POST jer je destruktivna operacija (bug 51)
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/02/25) + Popravljen ispis imena i prezimena studenta koji ne slusa predmet prilikom kopiranja grupa
 
 
 function nastavnik_grupe() {
@@ -144,7 +146,8 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			// Da li student uopste slusa ovaj predmet?
 			$q90 = myquery("select o.ime, o.prezime from student_predmet as sp, osoba as o where sp.student=$student and sp.predmet=$predmet and o.id=$student");
 			if (mysql_num_rows($q90)<1) {
-				print "-- Student ".mysql_result($q90,0,0)." ".mysql_result($q90,0,1)." ne sluša ovaj predmet, pa ćemo ga preskočiti.<br/>";
+				$q100 = myquery("select ime, prezime from osoba where id=$student");
+				print "-- Student ".mysql_result($q100,0,0)." ".mysql_result($q100,0,1)." ne sluša ovaj predmet, pa ćemo ga preskočiti.<br/>";
 				continue;
 			}
 
