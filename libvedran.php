@@ -27,7 +27,7 @@ $file_path = "/var/www/folder";
 
 $system_auth = "ldap";
 //$system_auth = "table";
-$ldap_server = "igman.etf.unsa.ba";
+$ldap_server = "localhost";
 $ldap_domain = "@etf.unsa.ba"; // string added to uid to get an email address
 
 
@@ -39,8 +39,7 @@ if (!$_lv_) $_lv_ = array(); // Prevent PHP warnings
 
 function dbconnect() {
 	// Default database
-	//dbconnect2("localhost","root","","zamger3");
-	dbconnect2("localhost","vedran_studenti","itneduts","vedran_zamger3");
+	dbconnect2("localhost","root","","zamger3");
 }
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
@@ -803,6 +802,7 @@ function db_list($table,$selected) {
 		$result .= '<li>';
 		$i = $r101[0];
 		$n = $r101[1];
+		if (!preg_match("/\w/",$n)) $n="[Bez naziva]";
 		$nav = $_REQUEST["_lv_nav_$id"];
 		if ($surname != "") $n .= " ".$r101[2];
 		if ($i==$selected || $n==$selected || $nav==$i)

@@ -4,7 +4,6 @@
 // v3.0.1.2 (2007/10/02) + Dodan logging
 // v3.0.1.3 (2007/10/13) + Nova struktura baze za predmete; novi tab Log za analizu loga
 // v3.0.1.4 (2007/11/06) + Robusnije generisanje loga; nove logging opcije
-// v3.0.1.5 (2008/01/31) + Popravljen sitni bug: zadnji zapis u logu je ignorisan
 
 function admin_site() {
 

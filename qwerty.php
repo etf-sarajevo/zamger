@@ -6,8 +6,7 @@
 // v3.0.1.1 (2007/09/11) + Novi modul "Nihada" za unos i pristup podataka o studentima, nastavnicima, loginima itd.
 // v3.0.1.2 (2007/09/20) + Modul "Izvjestaj" izdvojen iz modula "Nihada"
 // v3.0.1.3 (2007/09/26) + Novi modul "Komentar" za komentare na rad studenta
-// v3.0.1.4 (2007/12/03) + Novi modul "download" (moracemo vidjeti oko ovih zajednickih modula...)
-// v3.0.1.5 (2007/12/25) + Dodan logout
+// v3.0.1.4 (2007/12/25) + Dodan logout
 
 # Prijava
 
@@ -61,7 +60,7 @@ if ($sta == "student-izmjena") {
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><a href="http://www.etf.unsa.ba"><img src="images/etf.gif" border="0"></a></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.5 beta</h1>by <a href="http://www.linux.org.ba/?c=contact&koga=vedran"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.5</h1>by <a href="http://www.linux.org.ba/?c=contact&koga=vedran"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>

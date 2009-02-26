@@ -23,10 +23,9 @@ global $userid,$system_path,$predmet_id,$labgrupa;
 
 $lokacijazadaca="$system_path/zadace/$predmet_id/$userid/";
 # Create db dir
-if (!file_exists("$system_path/zadace/$predmet_id")) {
-	mkdir ("$system_path/zadace/$predmet_id",0777, true);
+if (!file_exists("$system_path/zadace/$predmet_id/$userid")) {
+	mkdir ("$system_path/zadace/$predmet_id/$userid",0755,true);
 }
-
 
 
 if ($_POST['akcija'] == "slanje") {
@@ -446,7 +445,7 @@ function akcijaslanje($path) {
 
 	// Pravimo potrebne puteve
 	if (!file_exists($path)) mkdir ($path,0777);
-	if ($zadaca>0 && !file_exists("$path$zadaca")) mkdir ("$path$zadaca",0777);
+	if ($zadaca>0 && !file_exists("$path$zadaca")) mkdir ("$path$zadaca",0755);
 
 	// Vrsta zadaće: textarea ili attachment
 	if ($attach == 0) {

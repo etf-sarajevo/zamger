@@ -1,8 +1,5 @@
 <?
 
-// v3.0.1.0 (2007/06/12) + Release
-// v3.0.1.1 (2007/12/04) + Upit za spisak labgrupa je koristio staru strukturu baze
-
 function stud_labgrupa() {
 
 global $userid, $labgrupa;

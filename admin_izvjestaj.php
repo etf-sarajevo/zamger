@@ -17,6 +17,8 @@
 // v3.0.1.15 (2007/01/30) + "prolaznost": dodan pojedinacni izvjestaj za konacnu ocjenu
 // v3.0.1.16 (2007/01/31) + "prolaznost": podizvjestaj za ispite totalno prepisan (stari je brojao popravne ispite uz redovne + implementirana "cista generacija"); "ispit": skaliraj bodove za integralni i usmeni ispit 0-40; "predmet_full": dodan usmeni ispit (ako postoji), prikazi bodove za integralni ako jedan od parcijalnih nije polozen (bez obzira na zbir bodova), moguce razdvajanje popravnih ispita
 // v3.0.1.16 (2007/01/31) + "prolaznost": u podizvjestaj za ispite dodani su pojedinacni studenti i konacna ocjena - sad je samo jos ostao zaseban podizvjestaj za broj bodova (neoptimizovan)
+// v3.0.1.17 (2007/02/13) + "predmet_full": razdvojeni ispiti sortirani po datumu i tipu
+// v3.0.1.18 (2007/02/29) + "prolaznost": popravljeno zaglavlje izvjestaja kod konacne ocjene
 
 
 function admin_izvjestaj() {
@@ -389,7 +391,7 @@ if ($tip == "predmet_full") {
 				<td colspan="7" align="center">Prisustvo tutorijalima 2</td>
 				<td colspan="5" align="center">Zadaće i lab vježbe</td><? } ?>
 				<? if ($razdvoji_ispite==1) {
-					$q501a = myquery("select UNIX_TIMESTAMP(i.datum), ti.naziv from ispit as i, tipispita as ti where i.predmet=$predmet and i.tipispita=ti.id and ti.id!=4 order by i.datum");
+					$q501a = myquery("select UNIX_TIMESTAMP(i.datum), ti.naziv from ispit as i, tipispita as ti where i.predmet=$predmet and i.tipispita=ti.id and ti.id!=4 order by i.datum,i.tipispita");
 					while ($r501a = mysql_fetch_row($q501a)) {
 						?><td align="center"><?=$r501a[1]?><br/>
 						<?=date("d.m.",$r501a[0])?></td><?
@@ -464,11 +466,13 @@ if ($tip == "predmet_full") {
 			$bodova = array();
 			while ($r506 = mysql_fetch_row($q506)) {
 				$zadaca_rbr = "$r506[1]-$r506[2]";
+//print "student: $stud_id zadaca_rbr: $zadaca_rbr bilo: ".$bilo[$zadaca_rbr]." status: ".$r506[3]." bodova: ".$r506[4];
 				if ($bilo[$zadaca_rbr] != 1) {
 					$bilo[$zadaca_rbr] = 1;
 					if ($r506[3] == 5)
 						$bodova[$r506[1]] += $r506[4];
 				}
+//print " nakon uslova: ".$bodova[$r506[1]]."<br/>\n";
 			}
 
 			$zadace=0;
@@ -510,7 +514,7 @@ if ($tip == "predmet_full") {
 
 			// Razdvojeni ispis
 			if ($razdvoji_ispite==1) {
-				$q507 = myquery("select io.ocjena, i.tipispita FROM ispit as i LEFT JOIN ispitocjene as io ON io.student=$stud_id and io.ispit=i.id where i.predmet=$predmet and i.tipispita != 4 order by i.datum");
+				$q507 = myquery("select io.ocjena, i.tipispita FROM ispit as i LEFT JOIN ispitocjene as io ON io.student=$stud_id and io.ispit=i.id where i.predmet=$predmet and i.tipispita != 4 order by i.datum,i.tipispita");
 	
 				while ($r507 = mysql_fetch_row($q507)) {
 					if ($r507[0] || $r507[0]==="0")
@@ -648,7 +652,14 @@ if ($tip == "prolaznost") {
 			print " Spisak je sortiran po broju položenih ispita.</p>\n";
 		else print " Spisak je sortiran po prezimenu.</p>\n";
 
-		if ($studenti==0) {
+		if ($studenti==0 && $ispit==4) {
+			?><table border="1" cellspacing="0" cellpadding="2">
+				<tr><td><b>Predmet</b></td>
+				<td><b>Upisalo</b></td>
+				<td><b>Položilo</b></td>
+				<td><b>%</b></td>
+			</tr><?
+		} else if ($studenti==0) {
 			?><table border="1" cellspacing="0" cellpadding="2">
 				<tr><td><b>Predmet</b></td>
 				<td><b>Izašlo</b></td>
@@ -851,7 +862,7 @@ if ($tip == "prolaznost") {
 			}
 
 			// Sumarni podaci na kraju tabele
-			print '<tr><td colspan="3" align="right">'
+			print '<tr><td colspan="3" align="right">';
 			if ($ispit==1 || $ispit==2) 
 				print 'PRISTUPILO ISPITU:&nbsp; </td>';
 			else

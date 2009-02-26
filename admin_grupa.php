@@ -18,6 +18,7 @@
 // v3.0.1.9 (2007/12/06) + Popravljeno otvaranje popup-a u IE6
 // v3.0.1.10 (2008/01/28) + Omogucen negativan broj bodova na ispitu; uzmi u obzir max. broj bodova u zadaci kod racunanja procenta; prikaz konacne ocjene
 // v3.0.1.11 (2008/01/31) + Prikazi rezultate sa integralnog ako jedan od parcijalnih nije polozen; prikazi usmeni ispit ako postoji
+// v3.0.1.12 (2008/03/03) + Prikaz zadaca bez imena
 
 
 function admin_grupa() {
@@ -325,7 +326,9 @@ $q11 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predm
 $brzadaca = mysql_num_rows($q11);
 if ($brzadaca > 0) { 
 	while ($r11 = mysql_fetch_row($q11)) {
-		$zadace_zaglavlje .= "<td width=\"60\">$r11[1]</td>\n";
+		$naziv = $r11[1];
+		if (!preg_match("/\w/", $naziv)) $naziv="[Bez naziva]";
+		$zadace_zaglavlje .= "<td width=\"60\">$naziv</td>\n";
 		$zad_id_array[] = $r11[0];
 		$zad_brz_array[$r11[0]] = $r11[2];
 		$zad_max_bodova[$r11[0]] = $r11[3];

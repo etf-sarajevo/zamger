@@ -16,7 +16,6 @@
 // v3.0.1.4 (2007/11/01) + Promijenjeni opisi statusa zadace
 // v3.0.1.5 (2007/11/30) + Ne prikazuj pokretanje programa ako programski jezik nije zadan
 // v3.0.1.6 (2007/12/03) + Dodan ID studenta u link za download; modul za download ubacen ovdje, da ne komplikujemo
-// v3.0.1.7 (2007/12/28) + Sacuvaj ime datoteke kod promjene statusa zadace
 
 
 function admin_pregled() {

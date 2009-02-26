@@ -1,11 +1,6 @@
 <?
 
 
-// v3.0.1.0 (2007/06/12) + Release
-// v3.0.1.1 (2007/12/28) + ID predmeta nije prosljedjivan kod downloada zadace u vidu attachmenta; datoteke sa razmakom u imenu
-
-
-
 
 function stud_download() {
 

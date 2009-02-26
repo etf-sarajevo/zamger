@@ -35,6 +35,9 @@
 // v3.0.1.21 (2008/01/28) + Dodano trimovanje imena i prezimena u massocjena i masszadaca (do sada samo u massexam)
 // v3.0.1.22 (2008/01/30) + Ogranicenje na ocjene (6-10); onemogucen visestruki unos bodova za ispit i konacne ocjene
 // v3.0.1.23 (2008/01/31) + Sada se umjesto linka na full izvjestaj uvijek koristi skracena verzija; dodan link na izvjestaj sa razdvojenim ispitima
+// v3.0.1.24 (2008/02/07) + Popravljena konverzija nasih slova iz velikih u mala kod svih masovnih unosa
+// v3.0.1.25 (2008/02/26) + Onemogućen masovni unos zadaće ako zadaća ima 0 zadataka
+// v3.0.1.26 (2008/03/03) + Scratch that - prepravicemo zadacu tako da ima 1 zadatak
 
 
 function admin_predmet() {
@@ -227,8 +230,9 @@ if ($_POST['akcija'] == "massinput") {
 				niceerror("Nije izabran format!");
 				return;
 			}
-			$email = "";
-			$brindexa = "";
+			# Fixevi za naša slova
+			$prezime = malaslova($prezime);
+			$ime = malaslova($ime);
 
 			# Da li student već postoji?
 			$q30 = myquery("select id from student where ime='$ime' and prezime='$prezime'");
@@ -383,6 +387,9 @@ if ($_POST['akcija'] == "massexam") {
 				niceerror("Nije izabran format!");
 				return;
 			}
+			# Fixevi za naša slova
+			$prezime = malaslova($prezime);
+			$ime = malaslova($ime);
 
 			// pretvori $bodova u float uz obradu decimalnog zareza
 			$fbodova = floatval(str_replace(",",".",$bodova));
@@ -492,6 +499,10 @@ if ($_POST['akcija'] == "massocjena") {
 				$prezime=trim($prezime); 
 				$ime=trim($ime);
 			}
+			# Fixevi za naša slova
+			$prezime = malaslova($prezime);
+			$ime = malaslova($ime);
+
 			# pretvori $ocjenu u int
 			if (intval($ocjena)==0 && strpos($ocjena,"0")===FALSE) {
 				if ($f != 1)
@@ -581,6 +592,11 @@ if ($_POST['akcija'] == "masszadaca") {
 		niceerror("Zadaća \"".mysql_result($q44,0,0)."\" nema $zadatak zadataka.");
 		return;
 	}
+	else if ($zadatak==0) {
+		$q44a = myquery("update zadaca set zadataka=1 where id=$zadaca");
+		$zadatak=1;
+	}
+
 	$maxbodova=mysql_result($q44,0,2);
 
 	$f = $_POST['fakatradi'];
@@ -1014,6 +1030,17 @@ if ($tab == "Ocjena") {
 </table>
 <?
 
+}
+
+// Funkcija koja pretvara naša slova iz velikih u mala
+function malaslova($string) {
+	$slovo = substr($string,0,1);
+	if ($slovo>='A' && $slovo<='Z') {
+		$string = strtr($string, "ČĆŽŠĐ", "čćžšđ");
+	} else {
+		$string = substr($string,0,2).strtr(substr($string,2),"ČĆŽŠĐ","čćžšđ");
+	}
+	return $string;
 }
 
 ?>

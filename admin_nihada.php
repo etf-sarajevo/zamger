@@ -16,6 +16,7 @@
 // v3.0.1.14 (2007/12/10) + Dodan link i na sumarnu statistiku ispita
 // v3.0.1.15 (2007/12/22) + Nastavak rada na kartici "Studij"; prostor za semestar koji student trenutno slusa je postao read-only (prevelika je mogucnost greske - ovo se sada moze editovati kroz bazu a eventualno kroz siteadmin interfejs)
 // v3.0.1.16 (2008/01/17) + Na kartici Predmeti dodan panel za ogranicenja
+// v3.0.1.17 (2008/02/14) + Sprječeno razvaljivanje tabele kod predugačkog imena predmeta
 
 
 function admin_nihada() {
@@ -309,12 +310,13 @@ else if ($tab == "Studenti" && $akcija == "edit") {
 	$q202 = myquery("select id,naziv from akademska_godina order by naziv desc");
 	$r202 = mysql_fetch_row($q202);
 
-	$q202a = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv from student_studij as ss, studij as s, akademska_godina as ag where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina order by ag.naziv desc");
+	$q202a = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv from student_studij as ss, studij as s, akademska_godina as ag where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina order by ag.naziv desc, ss.semestar desc");
 	$studij="0";
 	$puta=1;
+	$semestar=0;
 
 	while ($r202a=mysql_fetch_row($q202a)) {
-		if ($r202a[2]==$r202[0]) { //trenutna akademska godina
+		if ($r202a[2]==$r202[0] && $semestar<=$r202a[1]) { //trenutna akademska godina
 			$studij=$r202a[0];
 			$semestar = $r202a[1];
 		}
@@ -779,10 +781,12 @@ else if ($tab == "Predmeti") {
 		print '<table width="100%" border="0">';
 		$i=$offset+1;
 		while ($r301 = mysql_fetch_row($q301)) {
+			$naziv = $r301[1];
+			if (strlen($naziv)>45) $naziv = substr($naziv,0,40)."...";
 			if ($ak_god>0)
-				print "<tr><td>$i. $r301[1] ($r301[3])</td>\n";
+				print "<tr><td>$i. $naziv ($r301[3])</td>\n";
 			else
-				print "<tr><td>$i. $r301[1] ($r301[2])</td>\n";
+				print "<tr><td>$i. $naziv ($r301[2])</td>\n";
 			print "<td><a href=\"".genuri()."&old_akademska_godina=$ak_god&akcija=edit&predmet=$r301[0]\">Detalji</a></td>\n";
 			print "<td><a href=\"qwerty.php?sta=predmet&predmet=$r301[0]\">Uređivanje predmeta</a></td></tr>";
 			$i++;

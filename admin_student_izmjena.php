@@ -14,7 +14,7 @@
 // v3.0.1.6 (2007/10/02) + Dodan logging
 // v3.0.1.7 (2007/10/08) + Nova struktura baze za predmete
 // v3.0.1.8 (2007/10/20) + Dodana mogucnost ulaska u studentski interfejs za site admina
-// v3.0.1.9 (2007/10/20) + Jos ispravki u access pravima: omoguceno asistentu da udje
+// v3.0.1.9 (2007/11/01) + Jos ispravki u access pravima: omoguceno asistentu da udje
 
 
 function admin_student_izmjena() {
