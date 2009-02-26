@@ -12,7 +12,7 @@
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><img src="images/etf.gif"></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0 RC1</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>

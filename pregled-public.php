@@ -2,6 +2,7 @@
 
 // v2.9.3.1 (2007/03/17) + napravio da radi
 // v2.9.3.2 (2007/03/19) + ispravan prikaz imena zadaće
+// v2.9.3.3 (2007/04/08) + optimizacije, code cleanup, komentari
 
 ?>
 <html>
@@ -29,6 +30,7 @@
 
 include("libvedran.php");
 dbconnect();
+
 
 // Provjerimo sesiju radi prikazivanja imena
 session_start();
@@ -67,59 +69,86 @@ if ($imenaopt==0)
 	$topscore=array();
 
 
-$result = myquery("select id,naziv from labgrupa where predmet=$predmet order by id");
+$q10 = myquery("select id,naziv from labgrupa where predmet=$predmet order by id");
 
-//print "AAAAAAAAA ".vsortcmp("Čamdžić","Cokić");
-
-while ($jedanred = mysql_fetch_row($result)) {
-	$grupa_id = $jedanred[0];
-	$grupa_naziv = $jedanred[1];
+while ($r10 = mysql_fetch_row($q10)) {
+	$grupa_id = $r10[0];
+	$grupa_naziv = $r10[1];
 	print "<center><h2>Grupa: $grupa_naziv</h2></center>\n";
 
-	// ZAGLAVLJE PRISUSTVO
-	$r2 = mysql_query("select id,datum,vrijeme from cas where labgrupa=$grupa_id order by datum");
+
+	// Plan je sljedeći:
+	// Učitamo sve podatke iz tabele u nizove i onda ih samo prikažemo
+	// Trebalo bi biti brže od komplikovanih ifova i for petlji a opet raditi
+	// sa starim mysql-om :(
+
+	// Rezultati zadaca
+	$zadace=array();
+	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
+	FROM zadatak as z,student_labgrupa as sl 
+	WHERE z.student=sl.student and sl.labgrupa=$grupa_id
+	ORDER BY id");
+	while ($r100 = mysql_fetch_row($q100)) {
+		// Ne brojimo zadatke sa statusima 1 ("Ceka na pregled") i 
+		// 4 ("Potrebno pregledati")
+		if ($r100[3]!=1 && $r100[3]!=4) 
+			$bodova=$r100[4];
+		else $bodova=-1;
+
+		// Slog sa najnovijim IDom se smatra mjerodavnim
+		// Ostali su tu radi historije
+		$zadace[$r100[0]][$r100[1]][$r100[2]]=$bodova;
+	}
+
+
+	// ZAGLAVLJE - PRISUSTVO
+	$q101 = mysql_query("select id,datum,vrijeme from cas where labgrupa=$grupa_id order by datum");
 	$casova = 0;
-	$casovi_zaglavlje = $ocjene_zaglavlje = $parc_zaglavlje = "";
-	$cas_id_array = $vj_id_array = $vj_br_zad = $par_id_array = array();
-	while ($dr = mysql_fetch_row($r2)) {
-		$cas_id = $dr[0];
-		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$dr[1]);
-		list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$dr[2]);
+	$casovi_zaglavlje = "";
+	$cas_id_array = array();
+	while ($r101 = mysql_fetch_row($q101)) {
+		$cas_id = $r101[0];
+		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r101[1]);
+		list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$r101[2]);
 		$casovi_zaglavlje .= "<td>$cas_dan.$cas_mjesec<br>$cas_sat:$cas_minuta</td>\n";
 		array_push($cas_id_array,$cas_id);
 		$casova++;
 	}
 	if ($casovi_zaglavlje == "") $casovi_zaglavlje = "<td>&nbsp;</td>";
 	
-	// ZAGLAVLJE ZADACE
-	//$r2a = mysql_query("select ocjene.vjezba from ocjene,studenti where ocjene.student=studenti.id and studenti.grupa=$grupa_id group by ocjene.vjezba order by ocjene.vjezba") or die(mysql_error());
-	$q2a = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
-	$brzadaca = mysql_num_rows($q2a);
+	// ZAGLAVLJE - ZADACE
+	$vj_id_array = $vj_br_zad = array(); 
+	$ocjene_zaglavlje = "";
+	$q102 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet order by id");
+	$brzadaca = mysql_num_rows($q102);
 	if ($brzadaca == 0) { $brzadaca=1; $ocjene_zaglavlje = "<td>&nbsp;</td>"; }
 	else {
-		for ($i=0;$i<$brzadaca;$i++) {
-			$zad_id = mysql_result($q2a,$i,0);
-			$zad_naziv = mysql_result($q2a,$i,1);
+		while ($r102 = mysql_fetch_row($q102)) {
+			$zad_id = $r102[0];
+			$zad_naziv = $r102[1];
 			$ocjene_zaglavlje .= "<td>$zad_naziv</td>\n";
 			array_push($vj_id_array,$zad_id);
-			array_push($vj_br_zad,mysql_result($q2a,$i,2));
+			array_push($vj_br_zad,$r102[2]);
 		}
 	}
 
-	// ZAGLAVLJE PARCIJALE
-	$r2b = mysql_query("select id,naziv from ispit where predmet=$predmet");
-	$brparc = mysql_num_rows($r2b);
+	// ZAGLAVLJE - PARCIJALE
+	$q103 = mysql_query("select id,naziv from ispit where predmet=$predmet");
+	$par_id_array = array();
+	$parc_zaglavlje = "";
+	$brparc = mysql_num_rows($q103);
 	if ($brparc == 0) {
 		$parc_zaglavlje = "<td>&nbsp;</td>";
 		$brparc=1;
 	} else {
-		while ($drb = mysql_fetch_row($r2b)) {
-			$parc = $drb[0];
-			$parc_zaglavlje .= "<td>$parc.</td>\n";
+		while ($r103 = mysql_fetch_row($q103)) {
+			$parc = $r103[0];
+			$parc_zaglavlje .= "<td>$r103[1].</td>\n";
 			array_push($par_id_array,$parc);
 		}
 	}
 	if ($casova==0) $casova=1;
+
 
 	?>
 <table cellspacing="0" cellpadding="2" border="1">
@@ -137,14 +166,17 @@ while ($jedanred = mysql_fetch_row($result)) {
 	<?=$parc_zaglavlje?>
 </tr>
 <?
-	$r3 = mysql_query("select s.id,s.ime,s.prezime,s.brindexa from student as s, student_labgrupa as sl where s.id=sl.student and sl.labgrupa=$grupa_id");
+
+	// Spisak studenata
+
+	$q200 = mysql_query("select s.id,s.ime,s.prezime,s.brindexa from student as s, student_labgrupa as sl where s.id=sl.student and sl.labgrupa=$grupa_id");
 	$imeprezime = array();
 	$brind = array();
-	while ($tr = mysql_fetch_row($r3)) {
-		$stud_id = $tr[0];
-		$stud_ime = $tr[1];
-		$stud_prezime = $tr[2];
-		$stud_brind = $tr[3];
+	while ($r200 = mysql_fetch_row($q200)) {
+		$stud_id = $r200[0];
+		$stud_ime = $r200[1];
+		$stud_prezime = $r200[2];
+		$stud_brind = $r200[3];
 		$imeprezime[$stud_id] = "$stud_prezime $stud_ime";
 		$brind[$stud_id] = $stud_brind;
 	}
@@ -164,15 +196,15 @@ while ($jedanred = mysql_fetch_row($result)) {
 		if (count($cas_id_array)==0) $prisustvo_ispis = "<td>&nbsp;</td>";
 		$odsustvo=0;
 		foreach ($cas_id_array as $cid) {
-			$r4 = mysql_query("select prisutan,plus_minus from prisustvo where student=$stud_id and cas=$cid");
-			if (mysql_num_rows($r4)>0) {
-				if (mysql_result($r4,0,0) == 1) { 
+			$q201 = mysql_query("select prisutan,plus_minus from prisustvo where student=$stud_id and cas=$cid");
+			if (mysql_num_rows($q201)>0) {
+				if (mysql_result($q201,0,0) == 1) { 
 					$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>";
 				} else { 
 					$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>";
 					$odsustvo++;
 				}
-				$ocj = mysql_result($r4,0,1);
+				//$ocj = mysql_result($r4,0,1);
 			} else {
 				$prisustvo_ispis .= "<td bgcolor=\"#FFFFCC\"> / </td>";
 			}
@@ -186,17 +218,25 @@ while ($jedanred = mysql_fetch_row($result)) {
 		$mogucih+=10;
 
 		// ZADACE
-		if (count($vj_id_array)==0) $ocjene_ispis = "<td>&nbsp;</td>";
 		foreach ($vj_id_array as $n => $vid) {
-			//$r5 = mysql_query("select ocjena from ocjene where student=$stud_id and vjezba=$vid");
-			$ocjena = $ok = 0;
+			$ocjena=0;
+			$ok=1; // Da li je ok ispisati?
 			for ($i=1; $i<=$vj_br_zad[$n]; $i++) {
-				$q5 = myquery("select status,bodova from zadatak where zadaca=$vid and redni_broj=$i and student=$stud_id order by id desc limit 1");
-				if (mysql_num_rows($q5)>0 && mysql_result($q5,0,0)==5) {
-					$ok = 1;
-					$ocjena += mysql_result($q5,0,1);
-				}
+				$bzad = $zadace[$vid][$i][$stud_id];
+				if ($bzad>-1)
+					$ocjena+=$bzad;
+				else 	// Ispisujemo samo ako su svi zadaci pregledani
+					$ok=0;
 			}
+
+			// Šta ako student nije ništa poslao?
+			if ($ok==1) {
+				$ok=0;
+				for ($i=1; $i<=$vj_br_zad[$n]; $i++)
+					if (!is_null($zadace[$vid][$i][$stud_id]))
+						$ok=1;
+			}
+
 			if ($ok == 0) {
 				$ocjene_ispis .= "<td> / </td>";
 			} else {
@@ -211,9 +251,9 @@ while ($jedanred = mysql_fetch_row($result)) {
 		$i=$pao1=$pao2=0;
 		foreach ($par_id_array as $pid) {
 			$i++;
-			$r6 = mysql_query("select ocjena from ispitocjena where student=$stud_id and ispit=$pid");
-			if (mysql_num_rows($r6)>0) {
-				if (($ocjena = mysql_result($r6,0,0)) == -1) {
+			$q202 = mysql_query("select ocjena from ispitocjena where student=$stud_id and ispit=$pid");
+			if (mysql_num_rows($q202)>0) {
+				if (($ocjena = mysql_result($q202,0,0)) == -1) {
 					$parc_ispis .= "<td> / </td>";
 					if ($i==1) { $pao1 = 1; } else { $pao2 = 1; }
 				} else {
@@ -269,13 +309,15 @@ while ($jedanred = mysql_fetch_row($result)) {
 </table>
 <p>&nbsp;</p>
 <?
-} 
+
+} // while ($r10...
 
 mysql_close();
+
 ?>
 
 
-<!-- TOP LISTA 
+<!-- TOP LISTA  - ukloniti komentar za ispis
 
 <?
 asort($topscore);

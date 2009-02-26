@@ -22,7 +22,7 @@ $q1 = myquery("select ime,prezime from student where id=$userid");
 $ime = mysql_result($q1,0,0);
 $prezime = mysql_result($q1,0,1);
 $stud_spol = substr($ime,strlen($ime)-1);
-if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa") {
+if ($stud_spol == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa") {
 	print "<h1>Dobro došla, $ime $prezime!<h1>";
 } else {
 	print "<h1>Dobro došao, $ime $prezime!</h1>";
