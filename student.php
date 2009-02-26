@@ -1,5 +1,7 @@
 <?
 
+// v2.9.3.1 (2007/04/09) + dodatno osiguranje protiv spoofanja labgrupe
+
 
 # Prijava
 
@@ -23,6 +25,7 @@ if ($labgrupa != 0) {
 	$q01 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$labgrupa");
 	if (mysql_result($q01,0,0) == 0) {
 		$greska = "Niste upisani u ovu labgrupu.";
+		$labgrupa=0;
 	}
 }
 
@@ -45,7 +48,7 @@ if ($labgrupa == 0) {
 // Predmet često zatreba...
 if ($predmet_id == 0) {
 	$q03 = myquery("select predmet from labgrupa where id=$labgrupa"); 
-	$predmet_id = mysql_result($q03,0,0);
+	if (mysql_num_rows($q3)>0) $predmet_id = mysql_result($q03,0,0);
 }
 
 
@@ -74,7 +77,7 @@ if ($sta == "download") {
 		<td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
 			<td width="25">&nbsp;</td>
 			<td width="110" height="110" align="center" valign="center"><img src="images/etf.gif"></td>
-			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0 RC1</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
+			<td width="100%"><font color="#FFFFFF"><center><h1>ZAMGER v3.0</h1>by <a href="http://people.etf.unsa.ba/~vljubovic/contact.php"><font color="#FFFFFF">Vedran Ljubović</font></a> (c) 2006,2007</center></font></td>
 			<td width="135">&nbsp;</td> <!-- Centriranje-->
 		</tr></table></td>
 	</tr>
