@@ -17,7 +17,7 @@
 
 $_lv_["debug"]=1;
 //builtincss();
-$system_path = "/srv/www/web18";
+$system_path = "/srv/httpd/zamger";
 $file_path = "/var/www/folder";
 
 
@@ -29,8 +29,7 @@ if (!$_lv_) $_lv_ = array(); // Prevent PHP warnings
 
 function dbconnect() {
 	// Default database
-	//dbconnect2("localhost","root","","zamger3");
-	dbconnect2("localhost","vedran_studenti","itneduts","vedran_zamger3");
+	dbconnect2("localhost","root","","zamger3");
 }
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
