@@ -6,6 +6,8 @@
 // v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.3 (2008/09/17) + Sortiraj grupe po nazivu; dodana tablica za prisustvo; dodano polje tip; dodan page break (vidljiv prilikom stampanja) izmedju grupa
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
 
 
 // TODO: Ubaciti strverscmp u libvedran?
@@ -241,7 +243,7 @@ else if ($tip=="single") {
 	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
 	if (mysql_num_rows($q410)>0) {
 		?>
-			<table width="100%" border="2" cellspacing="0">
+			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
 				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
 		<?
