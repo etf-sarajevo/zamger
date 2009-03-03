@@ -654,6 +654,7 @@ CREATE TABLE IF NOT EXISTS `ras_raspored` (
   `semestarR` int(11) NOT NULL,
   `salaR` tinyint(2) NOT NULL,
   `tipR` varchar(1) NOT NULL default 'P',
+  `grupaR` int(11) NOT NULL default '0',
   PRIMARY KEY  (`idR`),
   KEY `idRaspored` (`idRaspored`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=63 ;
@@ -673,6 +674,7 @@ CREATE TABLE IF NOT EXISTS `ras_sala` (
   `idS` int(11) NOT NULL auto_increment,
   `nameS` varchar(50) NOT NULL,
   `capacS` int(5) default NULL,
+  `tipS` varchar(50) NOT NULL,
   PRIMARY KEY  (`idS`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=11 ;
 
