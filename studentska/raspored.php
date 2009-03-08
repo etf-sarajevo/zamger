@@ -251,7 +251,7 @@ function selectOption($tablica, $elementi, $values, $name = false, $distinct = f
 *
 * - spiska predmeta po semestrima i odsjecima
 * - spisak grupa studenata za svaki predmet
-* - pregled angažmana nastavnika na pojedinim predmetima
+* - pregled angaï¿½mana nastavnika na pojedinim predmetima
 * 
 */
 
@@ -325,7 +325,7 @@ function ispisPocetne() {
 		<div><a href = "#" onclick="toggleVisibility(\'pp\', \'formP2\')"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "pp" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP2" id = "formP2" action = "studentska/print.php?act=PP" target = "_blank" method = "post">
-				Printanje profesora za pedmet: '.selectOption("auth", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
+				Printanje profesora za pedmet: '.selectOption("auth", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", /*"sql_uslov"=>"WHERE nastavnik = 1"*/), "nastavnik").' &nbsp;&nbsp;
 				<input type = "hidden" name = "imeNastavnika" id = "imeNastavnika" />
 				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
 			</form>
