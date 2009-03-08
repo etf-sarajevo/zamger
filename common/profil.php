@@ -6,11 +6,13 @@
 // v3.9.1.1 (2008/08/28) + $conf_promjena_sifre, zahtjev za promjenu ostalih podataka
 // v3.9.1.2 (2008/10/03) + Poostren zahtjev na POST
 // v3.9.1.3 (2008/10/15) + Dodan format datuma
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/03/05) + Dodan logging; sakrij broj indexa korisnicima koji nisu studenti; prikazi informaciju ako je vec poslan zahtjev; ne radi nista ako korisnik nije napravio promjenu
 
 
 function common_profil() {
 
-global $userid,$conf_system_auth,$conf_promjena_sifre, $conf_skr_naziv_institucije_genitiv;
+global $userid,$conf_system_auth,$conf_promjena_sifre, $conf_skr_naziv_institucije_genitiv, $user_student;
 
 ?>
 <h2>Zahtjev za promjenu ličnih podataka u Informacionom sistemu <?=$conf_skr_naziv_institucije_genitiv?></h2>
@@ -36,6 +38,16 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 			if ($godina<50) $godina+=2000; else $godina+=1900;
 		if ($godina<1000)
 			if ($godina<900) $godina+=2000; else $godina+=1000;
+	} else {
+		$dan="00"; $mjesec="00"; $godina="0000";
+	}
+
+	// Da li je uopste bilo promjene?
+	$q05 = myquery("select ime, prezime, email, brindexa, datum_rodjenja, mjesto_rodjenja, drzavljanstvo, jmbg, adresa, telefon, kanton from osoba where id=$userid");
+	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$email && mysql_result($q05,0,3)==$brindexa && mysql_result($q05,0,4)=="$godina-$mjesec-$dan" && mysql_result($q05,0,5)==$mjesto_rodjenja && mysql_result($q05,0,6)==$drzavljanstvo && mysql_result($q05,0,7)==$jmbg && mysql_result($q05,0,8)==$adresa && mysql_result($q05,0,9)==$telefon && mysql_result($q05,0,10)==$kanton) {
+		?><p><b>Ništa nije promijenjeno?</b><br>
+		Podaci koje ste unijeli ne razlikuju se od podataka koje već imamo u bazi. Zahtjev za promjenu neće biti poslan.</p><?
+		return;
 	}
 
 	$q10 = myquery("select id from promjena_podataka where osoba=$userid");
@@ -54,8 +66,10 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if ($kanton != 0) $upit .= ", kanton=$kanton";
 		if ($godina!=1970) $upit .= ", datum_rodjenja='$godina-$mjesec-$dan'";
 		$q20 = myquery("update promjena_podataka set $upit where id=$id");
+		zamgerlog("Zatražena promjena ličnih podataka",2); // 2 = edit
 	} else {
 		$q30 = myquery("insert into promjena_podataka set osoba=$userid, ime='$ime', prezime='$prezime', brindexa='$brindexa', jmbg='$jmbg', mjesto_rodjenja='$mjesto_rodjenja', drzavljanstvo='$drzavljanstvo', adresa='$adresa', telefon='$telefon', email='$email', kanton=$kanton, datum_rodjenja='$godina-$mjesec-$dan'");
+		zamgerlog("zatrazena promjena licnih podataka",2); // 2 = edit
 	}
 
 	?>
@@ -79,19 +93,31 @@ if ($conf_system_auth == "ldap") {
 
 }
 
+$q390 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where osoba=$userid order by vrijeme_zahtjeva desc limit 1");
+
+if (mysql_num_rows($q390)>0) {
+	?><p><b>Već ste uputili zahtjev za promjenu ličnih podataka</b> (na dan <?=date("d. m. Y. u H:i:s", mysql_result($q390,0,0))?>). Vaš zahtjev se trenutno razmatra. U međuvremenu, ispod možete vidjeti stare podatke ili eventualno ponovo poslati zahtjev (stari zahtjev će u tom slučaju biti zanemaren.</p><?
+} else {
+?>
+	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p><?
+}
+
 $q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, telefon, kanton from osoba where id=$userid");
 
 ?>
-	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p>
 	<?=genform("POST")?>
 	<table border="0" width="600">
 	<tr><td valign="top">
 		Ime:</td><td><input type="text" name="ime" value="<?=mysql_result($q400,0,0)?>" class="default">
 	</td></tr><tr><td valign="top">
 		Prezime:</td><td><input type="text" name="prezime" value="<?=mysql_result($q400,0,1)?>" class="default">
-	</td></tr><tr><td valign="top">
+	</td></tr>
+	<? if ($user_student) { ?>
+	<tr><td valign="top">
 		Broj indexa:</td><td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,3)?>" class="default">
-	</td></tr><tr><td valign="top">
+	</td></tr>
+	<? } ?>
+	<tr><td valign="top">
 		JMBG:</td><td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,6)?>" class="default">
 	</td></tr><tr><td valign="top">
 		Datum rođenja:<br/>
