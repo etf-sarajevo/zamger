@@ -6,6 +6,8 @@
 // v3.9.1.1 (2008/03/26) + Nova auth tabela
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth; dodana potvrda izmjene licnih podataka
 // v3.9.1.3 (2008/10/03) + Destruktivni zahtjevi prebaceni na POST radi sukladnosti sa RFCom
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/03/05) + Slanje poruke studentu da je zahtjev prihvacen / odbijen i komentar
 
 
 function studentska_intro() {
@@ -38,22 +40,46 @@ function promjena($nominativ, $u, $iz) {
 if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton from promjena_podataka as pp where pp.id=$id");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
 		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='".intval($r100[4])."', datum_rodjenja='$r100[5]', mjesto_rodjenja='$r100[6]', drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', telefon='$r100[10]', kanton=".intval($r100[11])." where id=".intval($r100[0]));
+		$vrijeme_zahtjeva=$r100[12];
 	}
 	$q120 = myquery("delete from promjena_podataka where id=$id");
 	zamgerlog("prihvacen zahtjev za promjenu podataka korisnika u$osoba", 4);
 	print "Zahtjev je prihvaćen";
+
+	// Poruka korisniku
+	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za promjenu ličnih podataka. Vaš zahtjev je prihvaćen. Klikom na link Profil možete vidjeti vaše nove podatke.";
+	if (strlen($_REQUEST['komentar'])>2)
+		$tekst_poruke .= "\n\nPovodom Vašeg zahtjeva, Studentska služba vam je uputila sljedeći komentar:\n\t".$_REQUEST['komentar'];
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, ref=0, naslov='Vaš zahtjev za promjenu podataka je prihvaćen', tekst='$tekst_poruke'");
+
 	return;
 }
 
 if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
+
+	$q195 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where id=$id");
+	if (mysql_num_rows($q195)<1) {
+		niceerror("Nepostojeci zahtjev sa IDom $id.");
+		zamgerlog("Nepostojeci zahtjev sa IDom $id.", 3);
+		return;
+	}
+	$vrijeme_zahtjeva=mysql_result($q195,0,0);
+
 	$q200 = myquery("delete from promjena_podataka where id=$id");
 	zamgerlog("odbijen zahtjev za promjenu podataka korisnika u$osoba", 2);
 	print "Zahtjev je odbijen";
+
+	// Poruka korisniku
+	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za promjenu ličnih podataka. Vaš zahtjev je odbijen.";
+	if (strlen($_REQUEST['komentar'])>2)
+		$tekst_poruke .= "\n\nRazlog odbijanja zahtjeva je:\n\t".$_REQUEST['komentar'];
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, ref=0, naslov='Vaš zahtjev za promjenu podataka je odbijen!', tekst='$tekst_poruke'");
+
 	return;
 }
 
@@ -94,7 +120,9 @@ if ($_GET['akcija'] == "zahtjev") {
 	<input type="hidden" name="osoba" value="<?=mysql_result($q100,0,0)?>">
 	<input type="submit" name="akcija" value="Prihvati zahtjev">
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<input type="submit" name="akcija" value="Odbij zahtjev">
+	<input type="submit" name="akcija" value="Odbij zahtjev"><br><br>
+	Eventualno upišite komentar koji želite poslati studentu:<br>
+	<input type="text" size="50" name="komentar">
 	</form>
 	<?
 	
