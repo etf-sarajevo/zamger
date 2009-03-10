@@ -245,7 +245,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		</script><?
 	}
 	?>
-
+	<input type="checkbox" name="email" value="1"> Slanje e-maila
+	</p>
 
 	<br/>
 	Skraćeni tekst obavijesti:<br/>
