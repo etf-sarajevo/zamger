@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/09/02) + Kopiran common/inbox u studentska/obavijest
 // v3.9.1.1 (2008/10/03) + Postrozen uslov za slanje na POST
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/03/10) + Omoguci administratoru da posalje poruku svim korisnicima Zamgera; bilo moguce izmijeniti sve poruke (ukljucujuci privatne) preko IDa poruke; pored toga, onemoguceno editovanje poruka za opsege koje normalno nije moguce slati (vidjecemo koliko ce to predstavljati problem); bilo moguce slanje poruke sa bilo kojim opsegom kroz spoofing URLa; uskladjivanje koda za slanje maila sa izmjenama u nastavnik/obavjestenje; onemogucen spamming (slanje maila svim studentima ili svim nastavnicima)
 
 
 // TODO: popraviti slanje svim studentima na godini studija
@@ -12,7 +14,7 @@
 
 function studentska_obavijest() {
 
-global $userid,$conf_ldap_domain;
+global $userid,$conf_ldap_domain,$user_siteadmin,$conf_skr_naziv_institucije_genitiv;
 
 // LEGENDA tabele poruke
 // Tip:
@@ -67,75 +69,87 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	// Ko je primalac
 	$primalac = intval($_REQUEST['primalac']);
 	$opseg = intval($_REQUEST['opseg']);
-	$ref = intval($_REQUEST['ref']);
+	$poruka = intval($_REQUEST['poruka']);
 
-	if ($ref>0) {
-		$q310 = myquery("update poruka set tip=1, opseg=$opseg, primalac=$primalac, naslov='".my_escape($_REQUEST['naslov'])."', tekst='".my_escape($_REQUEST['tekst'])."' where id=$ref");
+	// Pogrešan opseg
+	if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && ($opseg!=0 || !$user_siteadmin)) {
+		niceerror("Nemate pravo slanja poruke sa tim opsegom");
+		zamgerlog("pokusaj slanja/izmjene poruke sa opsegom $opseg",3);
+		return;
+	}
+
+	$naslov = my_escape($_REQUEST['naslov']);
+	$tekst = my_escape($_REQUEST['tekst']);
+	if ($_REQUEST['email']) $email=1; else $email=0;
+
+	if ($poruka>0) {
+		// Editovanje poruke
+		$q310 = myquery("update poruka set tip=1, opseg=$opseg, primalac=$primalac, naslov='$naslov', tekst='$tekst' where id=$poruka");
 		nicemessage("Obavijest uspješno izmijenjena");
-		zamgerlog("izmijenjena obavijest $ref",2);
+		zamgerlog("izmijenjena obavijest $poruka",2);
 	} else {
-		// Nije edit - nova obavijest
-		$naslov = my_escape($_REQUEST['naslov']);
-		$tekst = my_escape($_REQUEST['tekst']);
-
+		// Nova obavijest
 		$q310 = myquery("insert into poruka set tip=1, opseg=$opseg, primalac=$primalac, posiljalac=$userid, naslov='$naslov', tekst='$tekst'");
 
-		// Saljem mail studentima...
-		if ($opseg == 1) {
-			// necemo sve korisnike tipa student, nego samo one koji slusaju neki studij u aktuelnoj godini
-			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.akademska_godina=ag.id and ag.aktuelna=1";
-			$subject = "OBAVJEŠTENJE: Svi studenti";
-		} else if ($opseg == 2) {
-			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, privilegije as priv where priv.osoba=o.id and priv.osoba=a.id and priv.privilegija='nastavnik'";
-			$subject = "OBAVJEŠTENJE: Svi nastavnici";
-		} else if ($opseg == 3) {
-			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
-			$q320 = myquery("select naziv from studij where id=$primalac");
-			$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
-		} else if ($opseg == 5) {
-			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$predmet and sp.student=o.id and sp.student=a.id";
-			$q330 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$primalac and pk.predmet=p.id");
-			$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
-		}
+		// Saljem mail...
+		if ($email && ($opseg==3 || $opseg==5)) { // nema spamanja!
 
-		$subject = iconv("UTF-8", "ISO-8859-2", $subject); // neki mail klijenti ne znaju prikazati utf-8 u subjektu
-		$preferences = array(
-			"input-charset" => "ISO-8859-2",
-			"output-charset" => "ISO-8859-2",
-			"line-length" => 76,
-			"line-break-chars" => "\n"
-		);
-		$preferences["scheme"] = "Q"; // quoted-printable
-		$subject = iconv_mime_encode("", $subject, $preferences);
+			if ($opseg == 3) {
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
+				$q320 = myquery("select naziv from studij where id=$primalac");
+				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
+			} else if ($opseg == 5) {
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$predmet and sp.student=o.id and sp.student=a.id";
+				$q330 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$primalac and pk.predmet=p.id");
+				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
+			}
 
-		$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nStudentska služba ETFa poslala vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
-		if ($opseg == 2)
-			$mail_body = "\n=== OBAVJEŠTENJE ZA NASTAVNIKE I SARADNIKE ===\n\nStudentska služba ETFa poslala vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
+			$subject = iconv("UTF-8", "ISO-8859-2", $subject); // neki mail klijenti ne znaju prikazati utf-8 u subjektu
+			$preferences = array(
+				"input-charset" => "ISO-8859-2",
+				"output-charset" => "ISO-8859-2",
+				"line-length" => 76,
+				"line-break-chars" => "\n"
+			);
+			$preferences["scheme"] = "Q"; // quoted-printable
+			$subject = iconv_mime_encode("", $subject, $preferences);
 
-		$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
-		$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
-		$email = mysql_result($q9,0,2);
-		if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
-		
-		$add_header = "From: $email ($imeprezime)\r\nContent-Type: text/plain; charset=utf-8\r\n";
+			// Vracamo naslov i tekst koji su ranije escapovani
+			$naslov = $_REQUEST['naslov'];
+			$tekst = $_REQUEST['tekst'];
+			
+ 			$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nStudentska služba $conf_skr_naziv_institucije_genitiv poslala vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
 
-		$mailto = "";
-		$broj=0;
-		$q7 = myquery($upit);
-		while ($r7 = mysql_fetch_row($q7)) {
-			$mailto .= "$r7[1]$conf_ldap_domain ($r7[2] $r7[3]); ";
-			$broj++;
-			if ($r7[0]!="$r7[1]$conf_ldap_domain") {
-				$mailto .= "$r7[0] ($r7[2] $r7[3]); ";
+			$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
+			$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+
+			$email = mysql_result($q9,0,2);
+			if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
+			
+
+			$broj=0;
+			$q7 = myquery($upit);
+			$nasaslova = array("č", "ć", "đ", "š", "ž", "Č", "Ć", "Đ", "Š", "Ž");
+			$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
+
+
+			$imeprezime = str_replace($nasaslova, $beznasihslova, $imeprezime);
+			$add_header = "From: $imeprezime <$email>\r\nContent-Type: text/plain; charset=utf-8\r\n";
+
+			while ($r7 = mysql_fetch_row($q7)) {
+				$studentimeprezime = str_replace($nasaslova, $beznasihslova, "$r7[2] $r7[3]");
+				$nmailto = "$studentimeprezime <$r7[1]$conf_ldap_domain>; ";
 				$broj++;
+				if ($r7[0]!="$r7[1]$conf_ldap_domain") {
+					$nmailto .= "$studentimeprezime <$r7[0]>; ";
+					$broj++;
+				}
+				mail("$r7[1]$conf_ldap_domain", $subject, $mail_body, "$add_header"."Cc: $nmailto");
+				nicemessage ("Mail poslan za $studentimeprezime &lt;$r7[1]$conf_ldap_domain&gt;");
+
 			}
-			if ($broj>10) {
-				mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
-				$mailto=""; $broj=0;
-			}
-		}
-		if ($broj>0)
-			mail("vljubovic@etf.unsa.ba", $subject, $mail_body, "$add_header"."Bcc: $mailto");
+
+		} // if ($email==1)...
 
 		nicemessage("Obavijest uspješno poslana");
 		zamgerlog("poslana obavijest, opseg $opseg primalac $primalac",2);
@@ -148,22 +162,19 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 	$opseg=0;
 	if ($_REQUEST['akcija']=='izmjena') {
 		$poruka = intval($_REQUEST['poruka']);
-		$q200 = myquery("select primalac, naslov, tekst, opseg from poruka where id=$poruka");
+		$q200 = myquery("select primalac, naslov, tekst, opseg from poruka where id=$poruka and tip=1");
 		if (mysql_num_rows($q200) < 1) {
 			niceerror("Poruka ne postoji");
 			zamgerlog("pokusaj izmjene na nepostojece poruke $poruka",3);
 			return;
 		}
 
-/*		// Ko je poslao originalnu poruku (tj. kome odgovaramo)
-		$prim_id = mysql_result($q200,0,0);
-		$q210 = myquery("select a.login,o.ime,o.prezime from auth as a, osoba as o where a.id=o.id and o.id=$prim_id");
-		if (mysql_num_rows($q210)<1) {
-			niceerror("Nepoznat pošiljalac");
-			zamgerlog("poruka $poruka ima nepoznatog posiljaoca $prim_id (prilikom odgovora na poruku)",3);
+		// Pogrešan opseg
+		if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && ($opseg!=0 || !$user_siteadmin)) {
+			niceerror("Nemate pravo izmjene ove poruke");
+			zamgerlog("pokusaj izmjene poruke $poruka sa opsegom $opseg",3);
 			return;
-		} else
-			$primalac = mysql_result($q210,0,0)." (".mysql_result($q210,0,1)." ".mysql_result($q210,0,2).")"; */
+		}
 		
 		// Prepravka naslova i teksta
 		$primalac = mysql_result($q200,0,0);
@@ -177,10 +188,10 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 	<h3>Slanje obavijesti</h3>
 	<?=genform("POST")?>
 	<?
-	if ($_REQUEST['akcija']=='izmjena') {
+/*	if ($_REQUEST['akcija']=='izmjena') {
 		?>
 		<input type="hidden" name="ref" value="<?=$poruka?>"><?
-	}
+	}*/
 	?>
 	<input type="hidden" name="akcija" value="send">
 	<script language="JavaScript">
@@ -188,7 +199,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		var lista=document.getElementById('primalac');
 		while (lista.length>0)
 			lista.options[0]=null;
-		if (opseg==1 || opseg==2) {
+		if (opseg==0 || opseg==1 || opseg==2) {
 			// Nista
 		} else if (opseg==3) {
 			<?
@@ -215,7 +226,9 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 	</script>
 
 	<p><b>Tip primaoca:</b> 
-		<select name="opseg" id="opseg" onchange="spisak_primalaca(this.value)">
+		<select name="opseg" id="opseg" onchange="spisak_primalaca(this.value)"><?
+	if ($user_siteadmin) { ?>
+		<option value="0" <? if ($opseg==0) print "selected"; ?>>Svi korisnici Zamgera</option><? } ?>
 		<option value="1" <? if ($opseg==1) print "selected"; ?>>Svi studenti</option>
 		<option value="2">Svi nastavnici</option>
 		<option value="3" <? if ($opseg==3) print "selected"; ?>>Svi studenti na studiju</option>
@@ -357,8 +370,10 @@ if ($poruka>0) {
 		<table border="0">
 			<tr><td><b>Vrijeme slanja:</b></td><td><?=$vrijeme?></td></tr>
 			<tr><td><b>Pošiljalac:</b></td><td><?=$posiljalac?></td></tr>
-			<tr><td><b>Primalac:</b></td><td><?=$primalac?></td></tr>
+			<tr><td><b>Primalac:</b></td><td><?=$primalac?></td></tr><?
+	if (($opseg==0 && $user_siteadmin) || $opseg==1 || $opseg==2 || $opseg==3 || $opseg==5) { ?>
 			<tr><td>&nbsp;</td><td><a href="?sta=studentska/obavijest&akcija=izmjena&poruka=<?=$poruka?>">Izmijeni ovo obavještenje</a></td></tr>
+	<? } ?>
 		</table>
 	</td></tr><tr><td>
 		<br/>
