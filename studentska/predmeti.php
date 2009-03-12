@@ -10,6 +10,8 @@
 // v3.9.1.5 (2008/09/08) + Dodavanje novog predmeta: popravljen neispravan upit, polje aktuelna, kratki naziv
 // v3.9.1.6 (2008/10/03) + Popravljen link na detalje nastavnika; poostreni uslovi za subakcije na POST; iskomentirane neke subakcije koje se vise ne koriste; pretraga prebacena na GET radi lakseg back-a
 // v3.9.1.7 (2008/12/23) + Link "Uredjivanje predmeta" sada vidljiv samo site adminu (ostali svakako ne mogu pristupiti); subakcija "izbaci" prebacena na POST radi zastite od CSRF
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/03/12) + Popravljen logging prilikom dodavanja predmeta - log ocekuje ID u tabeli ponudakursa a ne u tabeli predmet
 
 
 function studentska_predmeti() {
@@ -148,10 +150,7 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 			niceerror("Predmet već postoji");
 			return;
 		}
-		print "Predmet već postoji - dodajem ga u izabranu akademsku godinu.<br/><br/>";
-		zamgerlog("dodajem predmet p$pid u akademsku godinu ag$ak_god",4);
 	} else {
-		print "Novi predmet.<br/><br/>";
 		// Odredjujemo kratki naziv
 		$dijelovi = explode(" ",$naziv);
 		$kratki_naziv = "";
@@ -161,12 +160,21 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		$q393 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv'");
 		$q391 = myquery("select id from predmet where naziv='$naziv'");
 		$pid = mysql_result($q391,0,0);
-		zamgerlog("potpuno novi predmet p$pid, akademska godina ag$ak_god",4);
 	}
 
 	$q395 = myquery("insert into ponudakursa set predmet=$pid, akademska_godina=$ak_god, studij=1, semestar=1"); // default vrijednosti
 	$q396 = myquery("select id from ponudakursa where predmet=$pid and akademska_godina=$ak_god");
 	$predmet = mysql_result($q396,0,0);
+
+	// Logging
+	if (mysql_num_rows($q391)>0) {
+		print "Predmet već postoji - dodajem ga u izabranu akademsku godinu.<br/><br/>";
+		zamgerlog("dodajem predmet p$pid u akademsku godinu ag$ak_god",4);
+	} else {
+		print "Novi predmet.<br/><br/>";
+		zamgerlog("potpuno novi predmet p$pid, akademska godina ag$ak_god",4);
+	}
+
 
 	?>
 	<script language="JavaScript">
