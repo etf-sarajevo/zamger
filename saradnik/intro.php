@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/02/11) + Preimenovan bivsi admin_intro, dodan link na [Svi studenti]
 // v3.9.1.1 (2008/03/08) + Nova tabela auth
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/03/12) + Dodan prikaz obavjestenja nivoa 0 i 2 koje bi nastavnici trebali dobijati, ali ih nisu mogli vidjeti
 
 
 function saradnik_intro() {
@@ -20,6 +22,19 @@ if (spol($ime)=="Z")
 	print "<h1>Dobro došla, ".genitiv($ime,"Z")."</h1>";
 else
 	print "<h1>Dobro došao, ".genitiv($ime,"M")."</h1>";
+
+
+// Prikaz obavještenja za saradnike
+$q20 = myquery("select UNIX_TIMESTAMP(vrijeme) from log where userid=$userid order by id desc limit 2");
+if (mysql_num_rows($q20)>0)
+	$vrijeme=intval(mysql_result($q20,1,0))-60; // Prikazi obavjestenja ne starija od minut
+else 
+	$vrijeme=0;
+$q30 = myquery("select id from poruka where tip=1 and (opseg=0 or opseg=2) and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 1");
+if (mysql_num_rows($q30)>0) {
+	?><p><a href="?sta=common/inbox&poruka=<?=mysql_result($q30,0,0)?>"><font color="red">Imate novo sistemsko obavještenje</font></a></p><?
+}
+
 
 
 // Spisak grupa po predmetima, predmeti po akademskoj godini
