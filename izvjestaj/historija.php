@@ -72,11 +72,17 @@ while ($r10 = mysql_fetch_row($q10)) {
 	}
 
 	// Upisi u studije
-	$q20 = myquery("select s.naziv, ss.semestar, ns.naziv from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.semestar");
+	$q20 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac, ss.odluka from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.semestar");
 	while ($r20 = mysql_fetch_row($q20)) {
 		$semestar = $r20[1];
 		$parni = $semestar%2;
-		print "<p><b>$agnaziv</b>: $upisa studij \"$r20[0]\", $semestar. semestar, kao $r20[2] student.<br />\n";
+		print "<p><b>$agnaziv</b>: $upisa studij \"$r20[0]\", $semestar. semestar, kao $r20[2] student";
+		if ($r20[3]>0) print " (ponovac)";
+		if ($r20[4]>0) {
+			$q25 = myquery("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$r20[4]");
+			print " na osnovu odluke ".mysql_result($q25,0,1)." od ".date("d. m. Y", mysql_result($q25,0,0));
+		}
+		print ".<br />\n";
 		$q30 = myquery("select pk.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
 		if (mysql_num_rows($q30)>0) print "<ul>\n";
 		while ($r30 = mysql_fetch_row($q30)) {

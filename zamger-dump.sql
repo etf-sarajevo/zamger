@@ -346,6 +346,25 @@ CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `odluka`
+--
+
+CREATE TABLE IF NOT EXISTS `odluka` (
+  `id` int(11) NOT NULL auto_increment,
+  `datum` date NOT NULL,
+  `broj_protokola` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `student` int(11) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `odluka`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `ogranicenje`
 --
 
@@ -837,6 +856,8 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `semestar` int(3) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `nacin_studiranja` int(11) NOT NULL
+  `ponovac` tinyint(4) NOT NULL default '0',
+  `odluka` int(11) NOT NULL default '0'
   PRIMARY KEY  (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
