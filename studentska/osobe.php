@@ -21,6 +21,7 @@
 // v3.9.1.16 (2009/02/10) + Dodan prikaz ECTS bodova na izbornim predmetima i kontrola sume ECTSa prilikom upisa na semestar
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/24) + Kod direktnog upisa na predmet, sakrij predmete sa drugih studija (osim prve godine) i predmete koje je student vec polozio
+// v4.0.0.2 (2009/03/19) + Sakrij direktni upis na predmet ako student nije upisan na fakultet!
 
 
 
@@ -1016,33 +1017,34 @@ else if ($akcija == "edit") {
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
 
 		// Upis studenta na predmet
-		?>
-		<p>&nbsp;</p>
-		<p>Upiši studenta na predmet:<br/>
-		<?=genform("POST");?>
-		<input type="hidden" name="subakcija" value="upisi">
-		<select name="predmet">
-		<option>--- Izaberite predmet ---</option>
-		<?
-		// s.id=1 -- ETF specifično (na ETFu studij 1 je Prva godina studija koja je zajednička za sve studije... nažalost, mora se voditi kao cjelovit studij pa se moraju raditi ovakvi hackovi)
-		if ($studij_id==1) {
-			$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv, p.id from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$orig_iag and pk.studij=s.id and pk.predmet=p.id and (pk.semestar=3 or pk.semestar=4) order by p.naziv");
-		} else {
-			$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv, p.id from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$orig_iag and pk.studij=s.id and (s.id=$studij_id or s.id=1) and pk.predmet=p.id order by p.naziv");
+		if ($nova_ak_god==0) { // Ako je trenutno upisan na fakultet...
+			?>
+			<p>&nbsp;</p>
+			<p>Upiši studenta na predmet:<br/>
+			<?=genform("POST");?>
+			<input type="hidden" name="subakcija" value="upisi">
+			<select name="predmet">
+			<option>--- Izaberite predmet ---</option>
+			<?
+			// s.id=1 -- ETF specifično (na ETFu studij 1 je Prva godina studija koja je zajednička za sve studije... nažalost, mora se voditi kao cjelovit studij pa se moraju raditi ovakvi hackovi)
+			if ($studij_id==1) {
+				$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv, p.id from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$orig_iag and pk.studij=s.id and pk.predmet=p.id and (pk.semestar=3 or pk.semestar=4) order by p.naziv");
+			} else {
+				$q300 = myquery("select pk.id, p.naziv, s.kratkinaziv, p.id from ponudakursa as pk, predmet as p, studij as s where pk.akademska_godina=$orig_iag and pk.studij=s.id and (s.id=$studij_id or s.id=1) and pk.predmet=p.id order by p.naziv");
+			}
+			while ($r300 = mysql_fetch_row($q300)) {
+				$q310 = myquery("select count(*) from student_predmet where predmet=$r300[0] and student=$osoba");
+				if (mysql_result($q310,0,0)>0) continue;
+				$q320 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r300[3]");
+				if (mysql_result($q320,0,0)>0) continue;
+				print "<option value=\"$r300[0]\">$r300[1] ($r300[2])</option>\n";
+			}
+			?>
+			</select>&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type="submit" value=" Upiši ">
+			</form>
+			<?
 		}
-		while ($r300 = mysql_fetch_row($q300)) {
-			$q310 = myquery("select count(*) from student_predmet where predmet=$r300[0] and student=$osoba");
-			if (mysql_result($q310,0,0)>0) continue;
-			$q320 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r300[3]");
-			if (mysql_result($q320,0,0)>0) continue;
-			print "<option value=\"$r300[0]\">$r300[1] ($r300[2])</option>\n";
-		}
-		?>
-		</select>&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="submit" value=" Upiši ">
-		</form>
-		<?
-
 
 		print "\n<div style=\"clear:both\"></div>\n";
 	} // STUDENT
