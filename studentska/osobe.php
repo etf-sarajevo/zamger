@@ -22,6 +22,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/24) + Kod direktnog upisa na predmet, sakrij predmete sa drugih studija (osim prve godine) i predmete koje je student vec polozio
 // v4.0.0.2 (2009/03/19) + Sakrij direktni upis na predmet ako student nije upisan na fakultet!
+// v4.0.9.1 (2009/03/19) + Novi izvjestaj "Historija"
 
 
 
@@ -873,6 +874,8 @@ else if ($akcija == "edit") {
 				<tr><td bgcolor="#777777" align="center">
 					<font color="white"><b>IZVJEŠTAJI:</b></font>
 				</td></tr>
+				<tr><td align="center"><a href="?sta=izvjestaj/historija&student=<?=$osoba?>">
+				<img src="images/32x32/izvjestaj.png" border="0"><br/>Historija</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/index&student=<?=$osoba?>">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Indeks</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=0">
