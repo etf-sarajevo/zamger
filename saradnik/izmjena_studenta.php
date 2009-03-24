@@ -1,6 +1,5 @@
 <?
 
-
 // SARADNIK/IZMJENA_STUDENTA - pregled i izmjena podataka o korisniku
 
 // v3.9.1.0 (2008/02/12) + Preimenovan bivsi admin_student_izmjena
@@ -15,6 +14,9 @@
 // v3.9.1.9 (2008/10/03) + Akcija izmjena prebacena na genform() radi sigurnosnih aspekata istog
 // v3.9.1.10 (2008/10/05) + Broj indexa ne mora biti broj
 // v3.9.1.11 (2008/11/17) + Samo site admin moze ispisati studenta sa predmeta (privremeno rjesenje)
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+
 
 
 function saradnik_izmjena_studenta() {
@@ -272,7 +274,7 @@ function _izmijeni_profil($stud_id,$predmet_id) {
 		$q240 = myquery("insert into student_labgrupa set student=$stud_id, labgrupa=$grupa");
 
 		// Update komponente za prisustvo
-		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k where pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
+		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, predmet as p where pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
 		while ($r250 = mysql_fetch_row($q250))
 			update_komponente($stud_id, $predmet_id, $r250[0]);
 	}

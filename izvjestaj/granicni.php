@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/09/09) + Novi izvjestaj: granicni
 // v3.9.1.1 (2008/09/23) + Dodajem polje akademska_godina; omogucen prikaz kada je aktuelni semestar neparni
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 function izvjestaj_granicni() {
@@ -114,7 +116,7 @@ while($r20 = mysql_fetch_row($q20)) {
 	if ($semestar == 4) $ects_uslov=0; // Ne moze se prenijeti 2->3 godina
 
 	// Svi predmeti koje je ikada slusao
-	$q30 = myquery("select pk.predmet, pk.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
+	$q30 = myquery("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
 	$predmeti_pao=array();
 	$ects_pao=array();
 	$ects_suma=0;

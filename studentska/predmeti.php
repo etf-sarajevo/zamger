@@ -12,6 +12,11 @@
 // v3.9.1.7 (2008/12/23) + Link "Uredjivanje predmeta" sada vidljiv samo site adminu (ostali svakako ne mogu pristupiti); subakcija "izbaci" prebacena na POST radi zastite od CSRF
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/12) + Popravljen logging prilikom dodavanja predmeta - log ocekuje ID u tabeli ponudakursa a ne u tabeli predmet
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet, iskomentarisan dio koda koji se vise ne koristi (vezano za direktan upis studenata na predmet - sad se to radi kroz studentska/osobe gdje je puno prakticnije)
+
+// TODO: Izmjena podataka za sada ne radi
+// TODO: Napraviti spisak ponuda kursa i podatke o angazmanu prebaciti na predmet, a zatim na novu tabelu angazman
+
 
 
 function studentska_predmeti() {
@@ -37,8 +42,6 @@ if (!$user_studentska && !$user_siteadmin) {
 ?>
 <center>
 <table border="0"><tr><td>
-
-<p><h3>Studentska služba - Predmeti</h3></p>
 
 <?
 
@@ -225,22 +228,27 @@ else if ($akcija == "edit") {
 
 	// Semestar, akademska godina, metapredmet
 	$q348 = myquery("select pk.semestar, pk.akademska_godina, pk.predmet, ag.naziv from ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and pk.akademska_godina=ag.id");
+	if (!($r348 = mysql_fetch_row($q348))) {
+		zamgerlog("nepostojeca ponudakursa $predmet",3);
+		niceerror("Nepostojeći predmet!");
+		return;
+	}
 	$semestar = intval(mysql_result($q348,0,0));
-	$akademskagodina = intval(mysql_result($q348,0,1));
+//	$akademskagodina = intval(mysql_result($q348,0,1));
 	$metapredmet = intval(mysql_result($q348,0,2));
 	$ak_god_naziv = mysql_result($q348,0,3);
 
 	// Naziv studija
 	$q348a = myquery("select s.naziv, pk.studij from studij as s, ponudakursa as pk where pk.studij=s.id and pk.id=$predmet");
 	$nazivstudija = mysql_result($q348a,0,0).", $semestar. semestar";
-	$studij=intval(mysql_result($q348a,0,1));
+//	$studij=intval(mysql_result($q348a,0,1));
 
-	// Isti predmet od prosle godine
+/*	// Isti predmet od prosle godine
 	$q349 = myquery("select pk.id from ponudakursa as pk where pk.predmet=$metapredmet and pk.studij=$studij and pk.akademska_godina=".($akademskagodina-1));
 	if (mysql_num_rows($q349)>0)
 		$proslagodina=mysql_result($q349,0,0);
 	else
-		$proslagodina=0;
+		$proslagodina=0;*/
 
 
 	// Submit akcije
@@ -295,35 +303,52 @@ else if ($akcija == "edit") {
 	} */
 
 
+
 	// Osnovni podaci
 
-	$q350 = myquery("select p.id,p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+	$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, i.naziv, tp.naziv, p.ects from predmet as p, institucija as i, tippredmeta as tp where p.id=$metapredmet and p.institucija=i.id and p.tippredmeta=tp.id");
 	if (!($r350 = mysql_fetch_row($q350))) {
-		zamgerlog("nepostojeci predmet $predmet",3);
+		zamgerlog("nepostojeci predmet $metapredmet",3);
 		niceerror("Nepostojeći predmet!");
 		return;
 	}
 	?>
-	<?=genform("POST")?>
-	<input type="hidden" name="subakcija" value="podaci">
-	<input type="hidden" name="pid" value="<?=$r350[0]?>">
-	Naziv predmeta<br/> <input type="text" size="40" name="naziv" value="<?=$r350[1]?>"> <input type="submit" value=" Izmijeni ">
-	</form>
+	<h3><?=$r350[2]?></h3>
+	<p>Šifra predmeta:<b><?=$r350[1]?></b><br />
+	Skraćeni naziv predmeta: <b><?=$r350[3]?></b><br />
+	Institucija: <b><?=$r350[4]?></b><br />
+	Tip predmeta: <b><?=$r350[5]?></b><br />
+	ECTS: <b><?=$r350[6]?></b> bodova</p>
 
-	<p>Akademska godina: <b><?=$ak_god_naziv?></b><br/>(za druge godine koristite <a href="?sta=studentska/predmeti&akademska_godina=-1&search=<?=$r350[1]?>">pretragu</a>)</p><?
+	<p><?=genform("POST")?><input type="submit" value=" Izmijeni "></form></p>
 
-	$_lv_["label:aktivan"] = "Predmet je aktivan (vidljiv studentima)";
-	$_lv_["label:studij"] = "Program studija";
+	<hr>
+	<?
+
+
+
+	// Ponuda kursa
+
+	?>
+	<h3><?=$nazivstudija?>, <?=$ak_god_naziv?></h3>
+	(za druge studije i godine koristite <a href="?sta=studentska/predmeti&akademska_godina=-1&search=<?=$r350[1]?>">pretragu</a>)</p>
+	<?
+
+/*	$_lv_["label:aktivan"] = "Predmet je aktivan (vidljiv studentima)";
+	$_lv_["label:studij"] = "Studij";
 	$_lv_["label:tippredmeta"] = "Tip predmeta";
 	$_lv_["where:id"] = "$predmet";
 	$_lv_["hidden:predmet"] = 1;
 	$_lv_["hidden:motd"] = 1;
 	$_lv_["forceedit"]=1;
 
-	print db_form("ponudakursa");
+	print db_form("ponudakursa");*/
 
 
-	// Upis studenata na predmet
+
+
+
+/*	// Upis studenata na predmet
 
 	// Koliko slusa?
 	$q350a = myquery("select count(*) from student_predmet where predmet=$predmet");

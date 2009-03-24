@@ -16,6 +16,8 @@
 // v3.9.1.11 (2008/11/18) + Akcija brisi_cas nije prosljedjivala predmet_id, sto je dovodilo do greske "nepostojeci predmet" (ali je cas ipak bio obrisan)
 // v3.9.1.12 (2008/12/23) + Akcija brisi_cas prebacena na POST radi zastite od CSRF (bug 54); dodan refresh link
 // v3.9.1.13 (2008/01/21) + Dodan predmet na Refresh link
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 
@@ -363,8 +365,8 @@ $zaglavlje2 = "";
 
 // Zaglavlje prisustvo
 
-$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k 
-WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
 
 while ($r195 = mysql_fetch_row($q195)) {
 	$casova = 0;
@@ -405,8 +407,8 @@ while ($r195 = mysql_fetch_row($q195)) {
 
 // Zaglavlje zadaće
 
-$q205 = myquery("SELECT k.id, k.gui_naziv FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k 
-WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+$q205 = myquery("SELECT k.id, k.gui_naziv FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
 
 while ($r205 = mysql_fetch_row($q205)) {
 	$brzadaca = 0;
@@ -433,8 +435,8 @@ while ($r205 = mysql_fetch_row($q205)) {
 // Zaglavlje fiksne komponente
 
 $fiksna_prolaz = array();
-$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k 
-WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
 while ($r215 = mysql_fetch_row($q215)) {
 	$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">$r215[1]";
 	$mogucih_bodova += $r215[2];

@@ -20,6 +20,8 @@
 // v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
 // v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"; konacna ocjena: kod poredjenja integera 0 i stringa mora se koristiti !==; popravljena poruka za konacnu ocjenu vecu od $max
 // v3.9.1.10 (2008/10/14) + Popravljen upit u akciji "pretraga"
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 // Prebaciti u lib/manip?
@@ -106,7 +108,7 @@ case "prisustvo":
 	}
 
 	// Ažuriranje komponenti
-	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, ponudakursa as pk where pk.id=$predmet and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
 	while ($r4 = mysql_fetch_row($q4))
 		update_komponente($student,$predmet,$r4[0]);
 	zamgerlog("AJAH prisustvo - student: u$student cas: c$cas prisutan: $prisutan",2); // nivo 2 - edit

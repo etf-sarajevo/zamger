@@ -422,8 +422,6 @@ CREATE TABLE IF NOT EXISTS `ponudakursa` (
   `semestar` int(11) NOT NULL default '0',
   `obavezan` tinyint(1) NOT NULL default '0',
   `akademska_godina` int(11) NOT NULL default '0',
-  `tippredmeta` int(11) NOT NULL,
-  `ects` float NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
@@ -467,6 +465,8 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `institucija` int(11) NOT NULL default '0',
   `kratki_naziv` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  `tippredmeta` int(11) NOT NULL,
+  `ects` float NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 

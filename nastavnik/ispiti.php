@@ -8,6 +8,8 @@
 // v3.9.1.3 (2008/04/25) + Popravljeno prosljedjivanje parametra $ispis funkciji mass_input
 // v3.9.1.4 (2008/05/16) + Ponovo ukljucen update komponente (bio iskomentiran zbog sporosti)
 // v3.9.1.5 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 function nastavnik_ispiti() {
@@ -214,7 +216,7 @@ if (!$_POST['separator']) {
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
 <br/>Tip ispita: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q111 = myquery("select k.id,k.gui_naziv from ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k where pk.id=$predmet and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+	$q111 = myquery("select k.id,k.gui_naziv from ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 	while ($r111 = mysql_fetch_row($q111)) {
 		print '<option value="'.$r111[0].'"';
 		if ($tipispita==$r111[0]) print ' SELECTED';

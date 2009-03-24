@@ -6,6 +6,8 @@
 // v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.2 (2009/02/02) + Dodana podrska za studente koji nisu niti u jednoj grupi; ovo sada ukljucuje i jedan strahovito spor upit sa podupitom :(
 // v3.9.1.3 (2009/02/07) + Ubrzano generisanje izvjestaja (ukinut ranije spomenuti podupit)
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 
@@ -188,7 +190,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 	$prisustvo_casovi = array();
 	$prisustvo_mogucih = array();
 
-	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
 	while ($r105 = mysql_fetch_row($q105)) {
 		$prisustvo_id_array[] = $r105[0];
 		$prisustvo_mogucih[$r105[0]] =  $r105[2];
@@ -232,8 +234,8 @@ for ($j=0; $j<=$br_grupa; $j++) {
 	$zad_id_array = $zad_brz_array = $zad_mogucih = array();
 	$zadace = array();
 
-	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k 
-	WHERE pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+	WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
 	while ($r115 = mysql_fetch_row($q115)) {
 		$komponente_zadace[] = $r115[0];
 		$zadace_maxbodova[$r115[0]] = $r115[2];

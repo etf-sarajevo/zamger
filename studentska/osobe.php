@@ -23,6 +23,7 @@
 // v4.0.0.1 (2009/02/24) + Kod direktnog upisa na predmet, sakrij predmete sa drugih studija (osim prve godine) i predmete koje je student vec polozio
 // v4.0.0.2 (2009/03/19) + Sakrij direktni upis na predmet ako student nije upisan na fakultet!
 // v4.0.9.1 (2009/03/19) + Novi izvjestaj "Historija"
+// v4.0.9.2 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 
@@ -311,7 +312,7 @@ else if ($akcija == "upis") {
 	// programu. Stoga, kao bazu za spisak predmeta na studiju koristimo zadnju
 	// akademsku godinu
 
-	$q510 = myquery("select pk.predmet, pk.ects, pk.semestar from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar");
+	$q510 = myquery("select pk.predmet, p.ects, pk.semestar from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
 	$ects_pao=0;
 	$predmeti_pao=array();
 	while ($r510 = mysql_fetch_row($q510)) {
@@ -351,7 +352,7 @@ else if ($akcija == "upis") {
 
 
 	// Izborni predmeti
-	$q560 = myquery("select p.id, p.naziv, pk.id, pk.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
+	$q560 = myquery("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
 	if (mysql_num_rows($q560)>0 && $ns!=0) {
 		// student je upravo promijenio studij, mora prvo izabrati izborne predmete
 		$ok_izvrsiti_upis=0;
@@ -359,7 +360,7 @@ else if ($akcija == "upis") {
 
 	// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
 	if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==1) {
-		$q565 = myquery("select sum(pk.ects) from ponudakursa as pk where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1");
+		$q565 = myquery("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		$ects_suma = mysql_result($q565,0,0);
 
 		// Upisujemo na izborne predmete koji su odabrani
@@ -367,7 +368,7 @@ else if ($akcija == "upis") {
 			if (substr($key,0,8) != "izborni-") continue;
 			if ($value=="") continue;
 			$predmet = intval(substr($key,8));
-			$q566 = myquery("select ects from ponudakursa where id=$predmet");
+			$q566 = myquery("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet, and pk.predmet=p.id");
 			$ects_suma += mysql_result($q566,0,0);
 		}
 
@@ -954,7 +955,7 @@ else if ($akcija == "edit") {
 			// Sumiramo ECTS bodove
 			$suma_ects=0;
 			$pao="";
-			$q240 = myquery("select pk.id,p.id,p.naziv,pk.ects from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$id_ak_god and (pk.semestar=$semestar or pk.semestar=".($semestar-1).")");
+			$q240 = myquery("select pk.id,p.id,p.naziv,p.ects from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$id_ak_god and (pk.semestar=$semestar or pk.semestar=".($semestar-1).")");
 			while ($r240 = mysql_fetch_row($q240)) {
 				$q250 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r240[1]");
 				if (mysql_result($q250,0,0)>0) {

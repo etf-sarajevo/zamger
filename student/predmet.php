@@ -6,6 +6,8 @@
 // v3.9.1.1 (2008/03/28) + Dodana ikona za slanje novog zadatka (zad_novi.png)
 // v3.9.1.2 (2008/04/09) + Dodan prikaz akademske godine uz ime predmeta; zadace bez imena; navigacija za zadace je prikazivala visak zadataka; otvori PDF u novom prozoru
 // v3.9.1.3 (2008/10/02) + Dodana provjera da li student slusa predmet
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 function student_predmet() {
@@ -26,7 +28,7 @@ if (mysql_num_rows($q10)<1) {
 // Da li student slusa predmet?
 $q15 = myquery("select count(*) from student_predmet where student=$userid and predmet=$predmet_id");
 if (mysql_result($q15,0,0)==0) {
-	zamgerlog("student ne slusa predmet $predmet_id", 3);
+	zamgerlog("student ne slusa predmet p$predmet_id", 3);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
@@ -156,7 +158,8 @@ function prisustvo_ispis($idgrupe,$imegrupe,$predmet_id,$komponenta) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, ponudakursa as pk, tippredmeta_komponenta as tpk where pk.id=$predmet_id and pk.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, ponudakursa as pk, tippredmeta_komponenta as tpk, predmet as p
+where pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];

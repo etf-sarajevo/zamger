@@ -10,6 +10,8 @@
 // v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth; omoguceno koristenje masovnog unosa kada nije definisan predmet
 // v3.9.1.6 (2008/11/24) + mass_input(): zamijeni Unicode karakter "non-breakable space" razmakom
 // v3.9.1.7 (2009/01/20) + Priblizavam upite za brisanje i unos komponenti kod zadaca jer se desavalo da paralelni proces unese nesto drugo; eksperiment sa lock tables
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -281,7 +283,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 	// Glavni upit - spisak komponenti
 	$dodaj="";
 	if ($komponenta!=0) $dodaj="and k.id=$komponenta";
-	$q10 = myquery("select k.id, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk where tpk.komponenta=k.id and tpk.tippredmeta=pk.tippredmeta and pk.id=$predmet $dodaj");
+	$q10 = myquery("select k.id, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where tpk.komponenta=k.id and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.id $dodaj");
 
 	while ($r10 = mysql_fetch_row($q10)) {
 		$k=$r10[0];
@@ -301,7 +303,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 
 			// Provjeravamo integralni
-			$q30 = myquery("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk where tpk.komponenta=k.id and tpk.tippredmeta=pk.tippredmeta and pk.id=$predmet and k.tipkomponente=2 and k.opcija like '%$k%'");
+			$q30 = myquery("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where tpk.komponenta=k.id and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.id and k.tipkomponente=2 and k.opcija like '%$k%'");
 			if (mysql_num_rows($q30)<1) break;
 			$intk = mysql_result($q30,0,0);
 			$intdijelovi = mysql_result($q30,0,1);

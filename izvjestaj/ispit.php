@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
 // v3.9.1.1 (2008/08/28) + Dodana provjera da li postoji predmet
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 
 
 
@@ -109,7 +111,7 @@ if ($ispit==-1) {
 		$stvarno_slusa = $slusa_predmet-$nisu_izlazili;
 
 		// Ako predmet nije bologna standard, daljnje statistike nemaju smisla
-		$q70 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk where pk.id=$predmet and pk.tippredmeta=tpk.tippredmeta");
+		$q70 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta");
 		$bologna=0;
 		while ($r70 = mysql_fetch_row($q70)) {
 			if ($r70[0]==1) $bologna++;
