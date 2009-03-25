@@ -51,7 +51,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	if ($user_siteadmin)
 		$q2 = myquery("select id,1 from ponudakursa where akademska_godina=$r1a[0] order by semestar,id");
 	else
-		$q2 = myquery("select pk.id,np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=$r1a[0] and pk.akademska_godina=$r1a[0] order by p.semestar,p.id");
+		$q2 = myquery("select pk.id,np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=$r1a[0] and pk.akademska_godina=$r1a[0] order by pk.semestar,p.id");
 
 	$nr = mysql_num_rows($q2);
 	if ($nr==0) continue; // sljedeća akademska godina
