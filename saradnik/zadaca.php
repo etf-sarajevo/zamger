@@ -11,6 +11,7 @@
 // v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.6 (2008/10/03) + Izmjena statusa i izvrsenje zadace prebaceni na genform() (radi sigurnosnih aspekata istog) i POST metod (radi sukladnosti sa RFCom koji nalaze da se sve potencijalno destruktivne akcije rade kroz POST)
 // v3.9.1.7 (2008/10/19) + Popravljeno jos bugova izazvanih prelaskom na POST
+// v3.9.1.8 (2009/01/22) + Dozvoliti unos bodova iz zadace sa zarezom
 
 
 function saradnik_zadaca() {
@@ -203,7 +204,7 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 
 	$komentar = my_escape($_POST['komentar']);
 	$status = intval($_POST['status']);
-	$bodova = floatval($_POST['bodova']);
+	$bodova = floatval(str_replace(",",".",$_POST['bodova']));
 	// Filename
 	$q90 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
 	$filename = mysql_result($q90,0,0);
