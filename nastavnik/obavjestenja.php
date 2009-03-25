@@ -7,6 +7,8 @@
 // v3.9.1.2 (2008/10/02) + Modul nije ispisivao stara obavjestenja ako na predmetu nisu definisane labgrupe; popravljen logging; prebacena forma na genform() radi sigurnosnih aspekata istog; onemoguceno koristenje GET za kreiranje obavjestenja
 // v3.9.1.3 (2008/12/01) + Slanje maila je sada opcionalno; ispravljeno vise bugova u slanju maila: salji mail svakom studentu zasebno (drugacije nije radilo :( ); vracanje naslova i teksta u ne-escapovan oblik prije slanja maila; ukinuta nasa slova u imenima; pobrisao svoju adresu iz koda
 // v3.9.1.4 (2008/12/23) + Brisanje obavjestenja prebaceno na POST radi zastite od CSRF (bug 53)
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 function nastavnik_obavjestenja() {
@@ -35,7 +37,7 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo pristupa
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select np.admin from nastavnik_predmet as np where np.nastavnik=$userid and np.predmet=$predmet");
+	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
 		zamgerlog("nastavnik/obavjestenja privilegije (predmet p$predmet)",3);
 		biguglyerror("Nemate pravo pristupa");

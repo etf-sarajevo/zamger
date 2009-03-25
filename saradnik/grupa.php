@@ -18,6 +18,7 @@
 // v3.9.1.13 (2008/01/21) + Dodan predmet na Refresh link
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 
@@ -44,7 +45,7 @@ if ($grupa_id==0) {
 	$predmet_admin=0;
 	
 	if (!$user_siteadmin) {
-		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
+		$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet_id");
 		if (mysql_num_rows($q10)<1) {
 			$q20 = myquery("select count(*) from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet_id");
 			if (mysql_result($q20,0,0)>0) {
@@ -68,7 +69,7 @@ if ($grupa_id==0) {
 
 	// Da li korisnik ima pravo ući u grupu?
 	if (!$user_siteadmin) {
-		$q40 = myquery("select np.admin from nastavnik_predmet as np,labgrupa where np.nastavnik=$userid and np.predmet=labgrupa.predmet and labgrupa.id=$grupa_id");
+		$q40 = myquery("select np.admin from nastavnik_predmet as np, labgrupa as l, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=l.predmet and l.id=$grupa_id");
 		if (mysql_num_rows($q40)<1) {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			return;

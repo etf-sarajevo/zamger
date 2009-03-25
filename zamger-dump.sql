@@ -332,10 +332,11 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
-  `nastavnik` int(11) NOT NULL default '0',
-  `predmet` int(11) NOT NULL default '0',
+  `nastavnik` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
   `admin` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`nastavnik`,`predmet`)
+  PRIMARY KEY  (`nastavnik`,`akademska_godina`,`predmet`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --

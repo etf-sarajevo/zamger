@@ -1,4 +1,13 @@
-<LINK href="css/raspored.css" rel="stylesheet" type="text/css">
+<?
+
+// common/raspored - ne valja
+
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet, dodano polje aktuelna u tabelu akademska_godina
+
+
+
+?><LINK href="css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
 			function toggleVisibility(ime){
 				var me = document.getElementById(ime);
@@ -92,7 +101,7 @@
 					
 				} else {
 					$whereCounter = 0;
-					$selUserData = myquery("SELECT a.predmet, b.akademska_godina, b.semestar FROM nastavnik_predmet a, ponudakursa b WHERE a.nastavnik = '".$korisnik."' AND b.predmet = a.predmet AND b.akademska_godina = (SELECT id FROM akademska_godina ORDER BY id DESC)");
+					$selUserData = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = '".$korisnik."' AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 					while($sUD = mysql_fetch_array($selUserData)) {
 						
 						$adId = $sUD['akademska_godina'];

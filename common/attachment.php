@@ -6,6 +6,8 @@
 
 // v3.9.1.0 (2008/02/12) + Preimenovan bivsi stud_download, uz merge dijela koda iz admin_pregled
 // v3.9.1.1 (2008/10/22) + Ovaj kod se obajatio :) prepravljeno $uloga na $user_* varijable; omoguceno nastavniku da otvara attachmente studenata cak i ako je istovremeno i student; tabela student_predmet umjesto relacije preko labgrupe; conf_files_path
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 function common_attachment() {
@@ -45,7 +47,7 @@ if ($stud_id==0) { // student otvara vlastitu zadacu
 	}
 
 	if ($user_nastavnik) {
-		$q10 = myquery("select np.predmet from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and np.nastavnik=$userid");
+		$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.id and pk.predmet=np.predmet and np.nastavnik=$userid");
 		if (mysql_num_rows($q10)<1) {
 			zamgerlog("attachment: nije nastavnik na predmetu (student u$stud_id zadaca z$zadaca)",3);
 			niceerror("Nemate pravo pregleda ove zadaće");

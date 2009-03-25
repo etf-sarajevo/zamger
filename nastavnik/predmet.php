@@ -7,6 +7,7 @@
 // v3.9.1.2 (2008/12/23) + Akcija "set_smodul" prebacena na POST radi zastite od CSRF (bug 58)
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/24) + Dodan prikaz nastavnika angazovanih na predmetu
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 
@@ -36,7 +37,7 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo pristupa
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select np.admin from nastavnik_predmet as np where np.nastavnik=$userid and np.predmet=$predmet");
+	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
 		zamgerlog("nastavnik/predmet privilegije (predmet p$predmet)",3);
 		biguglyerror("Nemate pravo pristupa");
@@ -64,7 +65,7 @@ if (!$user_siteadmin) { // 3 = site admin
 <ul>
 <?
 
-$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet");
+$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=o.id and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 while ($r100 = mysql_fetch_row($q100)) {
 	if ($r100[2]==1) $dodaj=" (A)"; else $dodaj="";
 	print "<li>$r100[0] $r100[1]$dodaj</li>\n";

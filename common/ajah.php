@@ -22,6 +22,7 @@
 // v3.9.1.10 (2008/10/14) + Popravljen upit u akciji "pretraga"
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet - FIXME: prekontrolisati upite, mozda je moguca optimizacija?
 
 
 // Prebaciti u lib/manip?
@@ -64,9 +65,9 @@ case "prisustvo":
 		$labgrupa = mysql_result($q10,0,1);
 
 		if ($labgrupa==0) 
-			$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+			$q15 = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 		else
-			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l where np.nastavnik=$userid and np.predmet=l.predmet and l.id=$labgrupa");
+			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=l.predmet and l.id=$labgrupa");
 		if (mysql_num_rows($q15)<1) {
 			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
 			print "niste nastavnik A"; break;
@@ -154,7 +155,7 @@ case "izmjena_ispita":
 		if ($user_siteadmin)
 			$q40 = myquery("select 1,i.predmet,k.maxbodova,k.id,k.tipkomponente,k.opcija from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 		else
-			$q40 = myquery("select np.admin,np.predmet,k.maxbodova,k.id,k.tipkomponente,k.opcija from nastavnik_predmet as np, ispit as i, komponenta as k where np.nastavnik=$userid and np.predmet=i.predmet and i.id=$ispit and i.komponenta=k.id");
+			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=i.predmet and i.id=$ispit and i.komponenta=k.id");
 
 		if (mysql_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
@@ -182,7 +183,7 @@ case "izmjena_ispita":
 		$max = mysql_result($q40a,0,0);
 
 		if (!$user_siteadmin) {
-			$q40b = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+			$q40b = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 			if (mysql_num_rows($q40b)<1) {
 				zamgerlog("AJAH fiksna - nije na predmetu p$predmet",3);
 				print "niste saradnik na predmetu"; break;
@@ -197,7 +198,7 @@ case "izmjena_ispita":
 		$predmet=intval($parametri[2]);
 		$max=10;
 		if (!$user_siteadmin) {
-			$q41 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+			$q41 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 			if (mysql_num_rows($q41)<1) {
 				zamgerlog("AJAH ispit/ko - niste saradnik (ispit i$ispit)",3);
 				print "niste saradnik na predmetu $predmet";

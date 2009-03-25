@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/09/17) + Sortiraj grupe po nazivu; dodana tablica za prisustvo; dodano polje tip; dodan page break (vidljiv prilikom stampanja) izmedju grupa
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 // TODO: Ubaciti strverscmp u libvedran?
@@ -51,7 +52,7 @@ if (mysql_num_rows($q10)<1) {
 
 // Prava pristupa
 
-$q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+$q20 = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
 	zamgerlog("permisije (predmet $predmet)",3);
 	niceerror("Nemate permisije za pristup ovom izvještaju");

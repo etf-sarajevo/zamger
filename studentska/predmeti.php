@@ -13,9 +13,10 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/12) + Popravljen logging prilikom dodavanja predmeta - log ocekuje ID u tabeli ponudakursa a ne u tabeli predmet
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet, iskomentarisan dio koda koji se vise ne koristi (vezano za direktan upis studenata na predmet - sad se to radi kroz studentska/osobe gdje je puno prakticnije)
+// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 // TODO: Izmjena podataka za sada ne radi
-// TODO: Napraviti spisak ponuda kursa i podatke o angazmanu prebaciti na predmet, a zatim na novu tabelu angazman
+// TODO: Napraviti spisak ponuda kursa i podatke o angazmanu prebaciti na novu tabelu angazman
 
 
 
@@ -234,7 +235,7 @@ else if ($akcija == "edit") {
 		return;
 	}
 	$semestar = intval(mysql_result($q348,0,0));
-//	$akademskagodina = intval(mysql_result($q348,0,1));
+	$akademskagodina = intval(mysql_result($q348,0,1));
 	$metapredmet = intval(mysql_result($q348,0,2));
 	$ak_god_naziv = mysql_result($q348,0,3);
 
@@ -256,9 +257,9 @@ else if ($akcija == "edit") {
 	if ($_POST['subakcija'] == "dodaj" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
 		if ($nastavnik>0) {
-			$q360 = myquery("select count(*) from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet");
+			$q360 = myquery("select count(*) from nastavnik_predmet where nastavnik=$nastavnik and predmet=$metapredmet and akademska_godina=$akademskagodina");
 			if (mysql_result($q360,0,0) < 1) {
-				$q361 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet");
+				$q361 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$metapredmet, akademska_godina=$akademskagodina");
 			}
 			zamgerlog("nastavnik u$nastavnik dodan na predmet p$predmet",4);
 		}
@@ -267,12 +268,12 @@ else if ($akcija == "edit") {
 		$nastavnik = intval($_GET['nastavnik']);
 
 		$yesno = intval($_GET['yesno']);
-		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$predmet");
+		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$metapredmet and akademska_godina=$akademskagodina");
 		zamgerlog("nastavnik u$nastavnik proglasen za admina predmeta p$predmet ($yesno)",4);
 	}
 	else if ($_POST['subakcija'] == "izbaci" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
-		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet");
+		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$metapredmet and akademska_godina=$akademskagodina");
 		zamgerlog("nastavnik u$nastavnik izbacen sa predmeta p$predmet",4);
 	}
 	else if($_POST['subakcija'] == "podaci" && check_csrf_token()) {
@@ -381,7 +382,7 @@ else if ($akcija == "edit") {
 	// Nastavnici na predmetu
 
 	print "<p>Nastavnici angažovani na predmetu:</p>\n";
-	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet");
+	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$metapredmet and np.akademska_godina=$akademskagodina");
 	if (mysql_num_rows($q351) < 1) {
 		print "<ul><li>Nema nastavnika</li></ul>\n";
 	} else {

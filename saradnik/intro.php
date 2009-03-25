@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/03/08) + Nova tabela auth
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/12) + Dodan prikaz obavjestenja nivoa 0 i 2 koje bi nastavnici trebali dobijati, ali ih nisu mogli vidjeti
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 function saradnik_intro() {
@@ -50,7 +51,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	if ($user_siteadmin)
 		$q2 = myquery("select id,1 from ponudakursa where akademska_godina=$r1a[0] order by semestar,id");
 	else
-		$q2 = myquery("select np.predmet,np.admin from nastavnik_predmet as np, ponudakursa as p where np.nastavnik=$userid and np.predmet=p.id and p.akademska_godina=$r1a[0] order by p.semestar,p.id");
+		$q2 = myquery("select pk.id,np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=$r1a[0] and pk.akademska_godina=$r1a[0] order by p.semestar,p.id");
 
 	$nr = mysql_num_rows($q2);
 	if ($nr==0) continue; // sljedeća akademska godina
@@ -79,7 +80,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 			// Da li je predmet moj?
 			$moj=1;
 			if ($user_siteadmin) {
-				$q3a = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+				$q3a = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and pk.id=$predmet");
 				if (mysql_result($q3a,0,0)<1) $moj=0;
 			}
 			if($predmet_aktivan==0 && $moj==0) {

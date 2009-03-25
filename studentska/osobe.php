@@ -24,6 +24,7 @@
 // v4.0.0.2 (2009/03/19) + Sakrij direktni upis na predmet ako student nije upisan na fakultet!
 // v4.0.9.1 (2009/03/19) + Novi izvjestaj "Historija"
 // v4.0.9.2 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.3 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet -- FIXME provjeriti mogucnosti optimizacije
 
 
 
@@ -618,8 +619,12 @@ else if ($akcija == "edit") {
 	// Prijava nastavnika na predmet
 	if ($_POST['subakcija'] == "angazuj" && check_csrf_token()) {
 
-		$predmet = intval($_POST['predmet']);
+		$ponudakursa = intval($_POST['predmet']);
 		$admin_predmeta = intval($_POST['admin_predmeta']);
+
+		$q115 = myquery("select p.id, p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
+		$predmet = mysql_result($q115,0,0);
+		$naziv_predmeta = mysql_result($q115,0,1);
 
 		$q120 = myquery("select count(*) from nastavnik_predmet where nastavnik=$osoba and predmet=$predmet");
 		if (mysql_result($q120)>0) {
@@ -627,9 +632,6 @@ else if ($akcija == "edit") {
 		} else {
 			$q140 = myquery("insert into nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, admin=$admin_predmeta");
 		}
-
-		$q136 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
-		$naziv_predmeta = mysql_result($q136,0,0);
 
 		zamgerlog("nastavnik u$osoba prijavljen na predmet p$predmet (admin: $admin_predmeta)",4);
 		nicemessage("Nastavnik prijavljen na predmet $naziv_predmeta.");
@@ -1064,7 +1066,7 @@ else if ($akcija == "edit") {
 		<p>Angažovan/a na predmetima (akademska godina <b><?=$naziv_ak_god?></b>):</p>
 		<ul>
 		<?
-		$q180 = myquery("select pk.id, p.naziv, np.admin, s.kratkinaziv from nastavnik_predmet as np, predmet as p, ponudakursa as pk, studij as s where np.nastavnik=$osoba and np.predmet=pk.id and pk.akademska_godina=$id_ak_god and pk.predmet=p.id and pk.studij=s.id");
+		$q180 = myquery("select pk.id, p.naziv, np.admin, s.kratkinaziv from nastavnik_predmet as np, predmet as p, ponudakursa as pk, studij as s where np.nastavnik=$osoba and np.predmet=pk.predmet and np.akademska_godina=$id_ak_god and pk.akademska_godina=$id_ak_god and pk.predmet=p.id and pk.studij=s.id");
 		if (mysql_num_rows($q180) < 1)
 			print "<li>Nijedan</li>\n";
 		while ($r180 = mysql_fetch_row($q180)) {

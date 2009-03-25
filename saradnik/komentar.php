@@ -5,6 +5,8 @@
 // v3.9.1.0 (2008/02/14) + Preimenovan bivsi admin_komentar
 // v3.9.1.1 (2008/02/28) + Dodana nulta labgrupa
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 
@@ -42,14 +44,14 @@ if ($admin==3) {
 	}
 } else {
 	if ($labgrupa>0) {
-		$q20 = myquery("select np.predmet from labgrupa as l, nastavnik_predmet as np where l.id=$labgrupa and l.predmet=np.predmet and np.nastavnik=$userid");
+		$q20 = myquery("select np.predmet from labgrupa as l, nastavnik_predmet as np, ponudakursa as pk where l.id=$labgrupa and l.predmet=pk.id and pk.predmet=np.predmet and pk.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
 		if (mysql_num_rows($q20)<1) {
 			zamgerlog("nastavnik nije na predmetu (labgrupa $labgrupa)",3);
 			niceerror("Nemate pravo pristupa ovom studentu!");
 			return;
 		}
 	} else {
-		$q25 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+		$q25 = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 		if (mysql_result($q25,0,0)<1) {
 			zamgerlog("nastavnik nije na predmetu $predmet",3);
 			niceerror("Nemate pravo pristupa ovom studentu!");

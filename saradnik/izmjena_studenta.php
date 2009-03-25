@@ -16,6 +16,7 @@
 // v3.9.1.11 (2008/11/17) + Samo site admin moze ispisati studenta sa predmeta (privremeno rjesenje)
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 
@@ -60,7 +61,7 @@ if (mysql_num_rows($q20)>0) {
 
 
 // Onemogući izmjenu ako prijavljeni korisnik nije nastavnik na predmetu ili siteadmin
-$q30=myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet_id");
+$q30=myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet_id");
 $izmjena_moguca = 0;
 if ((mysql_result($q30,0,0)>0) || $user_siteadmin || $user_studentska) { 
 	$izmjena_moguca = 1;

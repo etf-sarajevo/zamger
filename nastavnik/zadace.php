@@ -11,6 +11,7 @@
 // v3.9.1.6 (2009/01/23) + Ukinut db_form() radi niza bugova (metabug #48)
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/12) + Nije se mogao zadati programski jezik (uvijek vracao na nedefinisan); dvostruka stavka "--Nije odredjen--"; poboljsan feedback nakon kreiranja / editovanja zadace
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 function nastavnik_zadace() {
@@ -42,7 +43,7 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select np.admin from nastavnik_predmet as np where np.nastavnik=$userid and np.predmet=$predmet");
+	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
 		zamgerlog("nastavnik/zadace privilegije (predmet p$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");

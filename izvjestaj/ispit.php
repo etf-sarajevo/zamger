@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/08/28) + Dodana provjera da li postoji predmet
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 
 
 
@@ -39,7 +40,7 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	return;
 }
 if (!$user_studentska && !$user_siteadmin) {
-	$q2 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet");
+	$q2 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 	if (mysql_num_rows($q2) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("Nije admin predmeta",3); // 3 = error
