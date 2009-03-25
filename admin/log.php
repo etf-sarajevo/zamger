@@ -11,6 +11,7 @@
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + JOIN izmedju log i osoba ne mora vratiti nista ako je userid 0
 // v3.9.1.8 (2008/10/31) + Dodana mogucnost pretrage; dodan tag za studij
+// v3.9.1.9 (2009/01/23) + Podignut default nivo radi brzeg otvaranja
 
 
 
@@ -29,7 +30,7 @@ if ($stardate == 0) {
 	$stardate = mysql_result($q199,0,0)+1;
 }
 $nivo = intval($_GET['nivo']);
-if ($nivo<1) $nivo=1;
+if ($nivo<1) $nivo=2;
 if ($nivo>4) $nivo=4;
 
 
