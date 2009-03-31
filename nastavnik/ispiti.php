@@ -11,6 +11,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 function nastavnik_ispiti() {
@@ -22,15 +23,17 @@ global $mass_rezultat; // za masovni unos studenata u grupe
 
 
 
-$predmet=intval($_REQUEST['predmet']);
-if ($predmet==0) { 
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+$ponudakursa=intval($_REQUEST['predmet']);
+if ($ponudakursa==0) { 
+	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
 	biguglyerror("Nije izabran predmet."); 
 	return; 
 }
 
-$q1 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
 $predmet_naziv = mysql_result($q1,0,0);
+$predmet = mysql_result($q1,0,1);
+$ag = mysql_result($q1,0,2);
 
 //$tab=$_REQUEST['tab'];
 //if ($tab=="") $tab="Opcije";
@@ -42,9 +45,9 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/ispiti privilegije (predmet p$predmet)",3);
+		zamgerlog("nastavnik/ispiti privilegije (predmet p$ponudakursa)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
@@ -103,11 +106,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 		$dodavanje=1;
 	} else if (!$ispis) {
-		$q20 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
-		$q30 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
+		$q20 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
+		$q30 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
 
 		if (mysql_num_rows($q30)<1) {
-			zamgerlog("unos ispita nije uspio (naziv '$naziv', predmet $predmet, datum $mdat, tipispita $tipispita)",3);
+			zamgerlog("unos ispita nije uspio (naziv '$naziv', predmet $predmet, ag $ag, datum $mdat, tipispita $tipispita)",3);
 			niceerror("Unos ispita nije uspio.");
 			return;
 		} 
@@ -150,7 +153,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		} else {
 			$q50 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
 			// Update komponenti
-			update_komponente($student, $predmet, $tipispita);
+			update_komponente($student, $ponudakursa, $tipispita);
 		}
 	}
 
@@ -176,12 +179,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 print "Uneseni ispiti:<br/>\n";
 
-$q110 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.komponenta=k.id order by i.datum,i.komponenta");
+$q110 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 print "<ul>\n";
 if (mysql_num_rows($q110)<1)
 	print "<li>Nije unesen nijedan ispit.</li>";
 while ($r110 = mysql_fetch_row($q110)) {
-	print '<li><a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r110[0].'">'.$r110[3].' ('.date("d. m. Y.",$r110[2]).')</a></li>'."\n";
+	print '<li><a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
 }
 print "</ul>\n";
 
@@ -217,7 +220,7 @@ if (!$_POST['separator']) {
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
 <br/>Tip ispita: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q111 = myquery("select k.id,k.gui_naziv from ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+	$q111 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 	while ($r111 = mysql_fetch_row($q111)) {
 		print '<option value="'.$r111[0].'"';
 		if ($tipispita==$r111[0]) print ' SELECTED';

@@ -1,6 +1,5 @@
 <?
 
-
 // COMMON/AJAH - biblioteka za razmjenu podataka a la AJAX
 
 // VAZNO: za svaku akciju je potrebno implementirati striktnu kontrolu prava pristupa,
@@ -23,6 +22,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet - FIXME: prekontrolisati upite, mozda je moguca optimizacija?
+// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet - FIXME: isto
 
 
 // Prebaciti u lib/manip?
@@ -155,7 +155,7 @@ case "izmjena_ispita":
 		if ($user_siteadmin)
 			$q40 = myquery("select 1,i.predmet,k.maxbodova,k.id,k.tipkomponente,k.opcija from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 		else
-			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=i.predmet and i.id=$ispit and i.komponenta=k.id");
+			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.id=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id");
 
 		if (mysql_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);

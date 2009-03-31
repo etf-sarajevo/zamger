@@ -12,6 +12,7 @@
 // v3.9.1.7 (2009/01/20) + Priblizavam upite za brisanje i unos komponenti kod zadaca jer se desavalo da paralelni proces unese nesto drugo; eksperiment sa lock tables
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -55,7 +56,7 @@ function ispis_studenta_sa_predmeta($student,$predmet) {
 	ispis_studenta_sa_labgrupe($student,$predmet,0);
 
 	// Ocjene na ispitima
-	$q50 = myquery("select id from ispit where predmet=$predmet");
+	$q50 = myquery("select i.id from ispit as i, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet");
 	while ($r50 = mysql_fetch_row($q50)) {
 		$q60 = myquery("delete from ispitocjene where student=$student and ispit=$r50[0]");
 	}
@@ -294,7 +295,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 			$q15 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet and komponenta=$k");
 
-			$q20 = myquery("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$predmet and i.komponenta=$k and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
+			$q20 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$k and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 			// Ako nema ispita, komponenta ostaje obrisana
 			if (mysql_num_rows($q20)<1) break; 
 			$bodovi=mysql_result($q20,0,0);
@@ -313,7 +314,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 			$q35 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet and komponenta=$intk");
 
 			// Koliko bodova je na integralnom?
-			$q40 = myquery("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$predmet and i.komponenta=$intk and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
+			$q40 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$intk and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 			if (mysql_num_rows($q40)<1) break;
 			$intbodovi = mysql_result($q40,0,0);
 
@@ -329,7 +330,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 				$q45 = myquery("select prolaz from komponenta where id=$dio");
 				$dioprolaz = mysql_result($q45,0,0);
 
-				$q50 = myquery("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$predmet and i.komponenta=$dio and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
+				$q50 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$dio and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 				if (mysql_num_rows($q50)>0) {
 					$diobodovi = mysql_result($q50,0,0);
 					if ($diobodovi<$dioprolaz) $polozio=0;
@@ -356,7 +357,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 			$q100 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet and komponenta=$k");
 
-			$q110 = myquery("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$predmet and i.komponenta=$k and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
+			$q110 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$k and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 			if (mysql_num_rows($q110)<1) break;
 			$bodovi=mysql_result($q110,0,0);
 
@@ -366,7 +367,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 			foreach ($dijelovi as $dio) {
 				$q120 = myquery("select prolaz from komponenta where id=$dio");
 				$dioprolaz = mysql_result($q120,0,0);
-				$q130 = myquery("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$predmet and i.komponenta=$dio and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
+				$q130 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$dio and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 				if (mysql_num_rows($q130)>0) {
 					$diobodovi = mysql_result($q130,0,0);
 					if ($diobodovi<$dioprolaz) $polozio=0;

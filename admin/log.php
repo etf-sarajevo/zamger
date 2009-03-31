@@ -11,6 +11,9 @@
 // v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.7 (2008/09/08) + JOIN izmedju log i osoba ne mora vratiti nista ako je userid 0
 // v3.9.1.8 (2008/10/31) + Dodana mogucnost pretrage; dodan tag za studij
+// v3.9.1.9 (2009/01/23) + Podignut default nivo radi brzeg otvaranja
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -29,7 +32,7 @@ if ($stardate == 0) {
 	$stardate = mysql_result($q199,0,0)+1;
 }
 $nivo = intval($_GET['nivo']);
-if ($nivo<1) $nivo=1;
+if ($nivo<1) $nivo=2;
 if ($nivo>4) $nivo=4;
 
 
@@ -238,7 +241,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		}
 	}
 	if (preg_match("/\Wi(\d+)/", $evt, $m)) { // ispit
-		$q60 = myquery("select k.gui_naziv,i.predmet,p.naziv from ispit as i, komponenta as k, ponudakursa as pk, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=pk.id and pk.predmet=p.id");
+		$q60 = myquery("select k.gui_naziv,i.predmet,p.naziv from ispit as i, komponenta as k, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=p.id");
 		if (mysql_num_rows($q60)>0) {
 			$naziv=mysql_result($q60,0,0);
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";

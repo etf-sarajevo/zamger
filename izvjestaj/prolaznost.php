@@ -8,7 +8,11 @@
 // v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
 // v3.9.1.4 (2008/09/24) + Popravljen bug 26 - netacan broj studenata koji su upisali predmet (kod izvjestaja konacna ocjena)
 // v3.9.1.5 (2008/10/24) + Popravljena ukupna statistika kod upita "Redovni + ponovci + preneseni"
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
+
+// TODO: Zašto ovo nije prebačeno na komponente?
 
 
 function izvjestaj_prolaznost() {
@@ -222,7 +226,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 
 		$ispis_br_studenata = "Predmete slušalo: <b>$redovnih</b> redovnih studenata + <b>$ponovaca</b> ponovaca + <b>$prenesenih</b> prenesenih predmeta / kolizije";
 
-		// Ova statistika se izvrsava presporo
+		// Ova statistika se izvrsava presporo:
 		
 		/*
 		$q604a = myquery("select count(*) from student_studij as ss where ss.studij=$studij and ss.akademska_godina=$akgod and ss.$sem_stud_upit");
@@ -274,7 +278,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 	// Gledamo samo redovni rok a.k.a. prvi ispit datog tipa
 	$cache_ispiti = $cache_predmeti = array();
 	if ($ispit==1 || $ispit==2) {
-		$q90 = myquery("select i.id, i.predmet from ispit as i, ponudakursa as pk, predmet as p where i.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=$ispit group by i.predmet,i.komponenta");
+		$q90 = myquery("select i.id, pk.id from ispit as i, ponudakursa as pk, predmet as p where i.predmet=p.id and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=$ispit group by i.predmet,i.komponenta");
 		while ($r90 = mysql_fetch_row($q90)) {
 			array_push($cache_ispiti,$r90[0]);
 			array_push($cache_predmeti,$r90[1]);
@@ -574,7 +578,7 @@ else if ($studenti==1 && $ispit==3) {
 		$polozio = 0;
 		foreach ($kursevi as $kurs_id => $kurs) {
 			$slusalo[$kurs_id]++;
-			$q602 = myquery("select io.ocjena,i.komponenta from ispit as i, ispitocjene as io where io.ispit=i.id and io.student=$stud_id and i.predmet=$kurs_id");
+			$q602 = myquery("select io.ocjena,i.komponenta from ispit as i, ispitocjene as io, ponudakursa as pk where io.ispit=i.id and io.student=$stud_id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$kurs_id");
 			$ispit = array();
 			$ispit[1] = $ispit[2] = $ispit[3] = "/";
 			while ($r602 = mysql_fetch_row($q602)) {

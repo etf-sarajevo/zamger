@@ -12,6 +12,8 @@
 // v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
 // v3.9.1.8 (2008/11/21) + Pod Aktuelno objavi samo rezultate ispita na koje je student izasao; prikazi bodove i cestitku ako je polozio/la; prikazi tekst Studentska sluzba za obavjestenja koje posalje studentska
 // v3.9.1.9 (2008/12/24) + Popravljen bug sa prikazom posiljaoca obavjestenja Administrator i Studentska sluzba
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 function student_intro() {
@@ -66,7 +68,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.id and pk.predmet=p.id");
+$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	if ($r15[6]>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";

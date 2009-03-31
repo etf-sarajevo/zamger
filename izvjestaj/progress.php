@@ -3,6 +3,8 @@
 // IZVJESTAJ/PROGRESS - pregled svih kurseva koje je slusao student sa ostvarenim bodovima (eventualno sa razdvojenim ispitima)
 
 // v3.9.1.0 (2008/04/22) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php, prebaceno na komponente i student_predmet; razdvojen po godinama i semestrima
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 // TODO: spojiti sa izvjestaj/index???
@@ -93,8 +95,8 @@ while ($r110 = mysql_fetch_row($q110)) {
 				print "<td>".$kb[1]."</td><td>".$kb[2]."</td><td>".$kb[3]."</td>";
 			} else {
 				// Treba razdvojiti ispite... gledamo tabelu ispiti
-				$q140 = myquery("select io.ocjena,i.komponenta,i.datum from ispitocjene as io, ispit as i where io.student=$student and io.ispit=i.id  and i.predmet=$r120[0] order by i.datum");
-	
+				$q140 = myquery("select io.ocjena,i.komponenta,i.datum from ispitocjene as io, ispit as i, ponudakursa as pk where io.student=$student and io.ispit=i.id  and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$r120[0] order by i.datum");
+
 				$ispis = array();
 				while ($r140 = mysql_fetch_row($q140)) {
 					if ($r140[0] == -1) continue; // skip

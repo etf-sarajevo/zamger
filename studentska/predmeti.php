@@ -14,6 +14,8 @@
 // v4.0.0.1 (2009/03/12) + Popravljen logging prilikom dodavanja predmeta - log ocekuje ID u tabeli ponudakursa a ne u tabeli predmet
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet, iskomentarisan dio koda koji se vise ne koristi (vezano za direktan upis studenata na predmet - sad se to radi kroz studentska/osobe gdje je puno prakticnije)
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+
 
 // TODO: Izmjena podataka za sada ne radi
 // TODO: Napraviti spisak ponuda kursa i podatke o angazmanu prebaciti na novu tabelu angazman
@@ -195,36 +197,6 @@ else if ($akcija == "edit") {
 
 	print "<a href=\"?sta=studentska/predmeti&akademska_godina=$oag&search=$old_search&offset=".intval($_REQUEST['offset'])."\">Nazad na rezultate pretrage</a><br/><br/>";
 
-	// Izvjestaji
-
-	?>
-	<center>
-	<table width="700" border="0" cellspacing="0" cellpadding="0"><tr><td width="100" valign="top">
-		<table width="100%" border="1" cellspacing="0" cellpadding="0">
-			<tr><td bgcolor="#777777" align="center">
-				<font color="white"><b>IZVJEŠTAJI:</b></font>
-			</td></tr>
-			<tr><td align="center"><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Spisak grupa</a></td></tr>
-			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Puni izvještaj</a></td></tr><?
-			$q359 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.komponenta=k.id order by i.datum,i.komponenta");
-			if (mysql_num_rows($q359)>0) {
-				?><tr><td align="center"><a href="?sta=izvjestaj/ispit&predmet=<?=$predmet?>&ispit=svi">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Statistika predmeta</a></td></tr><?
-			}
-			?><tr><td align="left">Ispiti:<br/><?
-			while ($r359 = mysql_fetch_row($q359)) {
-				print '* <a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r359[0].'">'.$r359[3].'<br/> ('.date("d. m. Y.",$r359[2]).')</a><br/>'."\n";
-			}
-
-			?></td></tr>
-		</table>
-	</td><td width="10" valign="top">&nbsp;
-	</td><td width="590" valign="top">
-	<?
-
-
 	// Podaci potrebni u kasnijim upitima
 
 	// Semestar, akademska godina, metapredmet
@@ -242,6 +214,38 @@ else if ($akcija == "edit") {
 	// Naziv studija
 	$q348a = myquery("select s.naziv, pk.studij from studij as s, ponudakursa as pk where pk.studij=s.id and pk.id=$predmet");
 	$nazivstudija = mysql_result($q348a,0,0).", $semestar. semestar";
+
+
+	// Izvjestaji
+
+	?>
+	<center>
+	<table width="700" border="0" cellspacing="0" cellpadding="0"><tr><td width="100" valign="top">
+		<table width="100%" border="1" cellspacing="0" cellpadding="0">
+			<tr><td bgcolor="#777777" align="center">
+				<font color="white"><b>IZVJEŠTAJI:</b></font>
+			</td></tr>
+			<tr><td align="center"><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>">
+			<img src="images/32x32/izvjestaj.png" border="0"><br/>Spisak grupa</a></td></tr>
+			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>">
+			<img src="images/32x32/izvjestaj.png" border="0"><br/>Puni izvještaj</a></td></tr><?
+			$q359 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$metapredmet and i.akademska_godina=$akademskagodina and i.komponenta=k.id order by i.datum,i.komponenta");
+			if (mysql_num_rows($q359)>0) {
+				?><tr><td align="center"><a href="?sta=izvjestaj/ispit&predmet=<?=$predmet?>&ispit=svi">
+				<img src="images/32x32/izvjestaj.png" border="0"><br/>Statistika predmeta</a></td></tr><?
+			}
+			?><tr><td align="left">Ispiti:<br/><?
+			while ($r359 = mysql_fetch_row($q359)) {
+				print '* <a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r359[0].'">'.$r359[3].'<br/> ('.date("d. m. Y.",$r359[2]).')</a><br/>'."\n";
+			}
+
+			?></td></tr>
+		</table>
+	</td><td width="10" valign="top">&nbsp;
+	</td><td width="590" valign="top">
+	<?
+
+
 //	$studij=intval(mysql_result($q348a,0,1));
 
 /*	// Isti predmet od prosle godine

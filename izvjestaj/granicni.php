@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/09/23) + Dodajem polje akademska_godina; omogucen prikaz kada je aktuelni semestar neparni
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 function izvjestaj_granicni() {
@@ -193,10 +194,10 @@ while($r20 = mysql_fetch_row($q20)) {
 
 			// Provjeravamo da li zadovoljava uslove za parcijale
 			if ($parcijalnih==1 || $statistika==1) {
-				$q50 = myquery("select count(*) from ispitocjene as io, ispit as i, ponudakursa as pk where io.ispit=i.id and io.student=$student and io.ocjena>=10 and i.predmet=pk.id and pk.predmet=$predmet and (i.komponenta=1 or i.komponenta=2)");
+				$q50 = myquery("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=10 and i.predmet=$predmet and (i.komponenta=1 or i.komponenta=2)");
 				if (mysql_result($q50,0,0)==0) {
 					// Integralni?
-					$q60 = myquery("select count(*) from ispitocjene as io, ispit as i, ponudakursa as pk where io.ispit=i.id and io.student=$student and io.ocjena>=20 and i.predmet=pk.id and pk.predmet=$predmet and i.komponenta=3");
+					$q60 = myquery("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=20 and i.predmet=$predmet and i.komponenta=3");
 					if (mysql_result($q60,0,0)==0) {
 //$ispis_nemoze .= $predmeti_naziv[$predmet]." - NE<br/>\n";
 						// Ne moze proci, preskacemo ga

@@ -3,6 +3,9 @@
 // RSS - feed za studente
 
 // v3.9.1.0 (2008/04/30) + pocetak
+// v3.9.1.1 (2008/10/24) + Popravljen entity u linku za common/inbox
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 $broj_poruka = 10;
@@ -77,7 +80,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum) from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=i.predmet and i.komponenta=k.id and i.predmet=pk.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum) from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["i".$r15[0]] = "<item>
@@ -190,7 +193,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 	$code_poruke[$id]="<item>
 		<title>$title: $naslov ($vrijeme)</title>
-		<link>$conf_site_url/index.php?sta=common/inbox&amp;poruka=$id</link>
+		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
 		<description>Poslao: $posiljalac</description>
 	</item>";
 }

@@ -111,8 +111,8 @@ INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`) VALUES
 
 CREATE TABLE IF NOT EXISTS `ispit` (
   `id` int(11) NOT NULL auto_increment,
-  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL default '',
   `predmet` int(11) NOT NULL default '0',
+  `akademska_godina` int(11) NOT NULL default '0',
   `datum` date NOT NULL default '0000-00-00',
   `komponenta` int(2) NOT NULL default '0',
   `vrijemeobjave` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,

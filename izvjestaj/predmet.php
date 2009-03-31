@@ -8,6 +8,7 @@
 // v3.9.1.3 (2009/02/07) + Ubrzano generisanje izvjestaja (ukinut ranije spomenuti podupit)
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -25,7 +26,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 // Parametri upita
 
-$predmet_id = intval($_REQUEST['predmet']);
+$ponudakursa = intval($_REQUEST['predmet']);
 
 if ($_REQUEST['skrati']=="da") $skrati=1; else $skrati=0;
 if ($_REQUEST['razdvoji_ispite']=="da") $razdvoji_ispite=1; else $razdvoji_ispite=0;
@@ -36,13 +37,16 @@ $grupa = intval($_REQUEST['grupa']);
 
 // Naslov
 
-$q10 = myquery("select p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet_id and ag.id=pk.akademska_godina and pk.predmet=p.id");
+$q10 = myquery("select p.naziv,ag.naziv,p.id,ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$ponudakursa and ag.id=pk.akademska_godina and pk.predmet=p.id");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	exit;
 }
 
 print "<p>&nbsp;</p><p>Predmet: <b>".mysql_result($q10,0,0)."</b><br/>Akademska godina: <b>".mysql_result($q10,0,1)."</b></p>\n<h1>Izvještaj o predmetu</h1>\n";
+
+$predmet = mysql_result($q10,0,2);
+$ag = mysql_result($q10,0,3);
 
 
 // Koristimo ulogu iz /index.php da odredimo da li će se prikazati imena...
@@ -65,7 +69,7 @@ else
 	$orderby="i.komponenta,i.datum";
 
 
-$q20 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet_id and i.komponenta=k.id order by $orderby");
+$q20 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by $orderby");
 $imaintegralni=0;
 while ($r20 = mysql_fetch_row($q20)) {
 	if ($razdvoji_ispite==1) {
@@ -106,9 +110,9 @@ if ($imaintegralni==1 && $broj_ispita<2) {
 // Upit za grupe
 
 if ($grupa>0)
-	$q40 = myquery("select id,naziv from labgrupa where predmet=$predmet_id and id=$grupa");
+	$q40 = myquery("select id,naziv from labgrupa where predmet=$ponudakursa and id=$grupa");
 else
-	$q40 = myquery("select id,naziv from labgrupa where predmet=$predmet_id order by id");
+	$q40 = myquery("select id,naziv from labgrupa where predmet=$ponudakursa order by id");
 
 $br_grupa = mysql_num_rows($q40);
 
@@ -130,7 +134,7 @@ if ($grupa>0)
 else
 	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 	FROM zadatak as z,student_predmet as sp 
-	WHERE z.student=sp.student and sp.predmet=$predmet_id
+	WHERE z.student=sp.student and sp.predmet=$ponudakursa
 	ORDER BY z.id");
 
 while ($r100 = mysql_fetch_row($q100)) {
@@ -159,7 +163,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 // u grupi
 $imeprezimesvi = $brindexasvi = array();
 
-$q102 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.predmet=$predmet_id and sp.student=a.id");
+$q102 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.predmet=$ponudakursa and sp.student=a.id");
 
 while ($r102 = mysql_fetch_row($q102)) {
 	$imeprezimesvi[$r102[0]] = "$r102[1] $r102[2]";
@@ -190,7 +194,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 	$prisustvo_casovi = array();
 	$prisustvo_mogucih = array();
 
-	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
 	while ($r105 = mysql_fetch_row($q105)) {
 		$prisustvo_id_array[] = $r105[0];
 		$prisustvo_mogucih[$r105[0]] =  $r105[2];
@@ -200,7 +204,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 			$casova = 0;
 			$prisustvo_zaglavlje = "";
 		
-			$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and predmet=$predmet_id and komponenta=$r105[0] ORDER BY datum");
+			$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and predmet=$ponudakursa and komponenta=$r105[0] ORDER BY datum");
 			while ($r110 = mysql_fetch_row($q110)) {
 				$cas_id = $r110[0];
 				list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r110[1]);
@@ -234,8 +238,8 @@ for ($j=0; $j<=$br_grupa; $j++) {
 	$zad_id_array = $zad_brz_array = $zad_mogucih = array();
 	$zadace = array();
 
-	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM ponudakursa as pk, tippredmeta_komponenta as tpk, komponenta as k, predmet as p
-	WHERE pk.id=$predmet_id and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+	WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
 	while ($r115 = mysql_fetch_row($q115)) {
 		$komponente_zadace[] = $r115[0];
 		$zadace_maxbodova[$r115[0]] = $r115[2];
@@ -245,7 +249,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 			$zadace_zaglavlje = "";
 			
 			// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
-			$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet_id order by id");
+			$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$ponudakursa order by id");
 			while ($r120 = mysql_fetch_row($q120)) {
 				$zadace_zaglavlje .= "<td width=\"60\">$r120[1]</td>\n";
 				$zad_id_array[] = $r120[0];
@@ -371,7 +375,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 			}
 		}
 
-		$q210 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$predmet_id and komponenta=$pid");
+		$q210 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$pid");
 		if (mysql_num_rows($q210)==0) 
 			$pbodovi=0;
 		else
@@ -415,7 +419,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 		}
 
 		foreach($komponente_zadace as $kz) {
-			$q220 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$predmet_id and komponenta=$kz");
+			$q220 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$kz");
 			$zbodova=0;
 			while ($r220 = mysql_fetch_row($q220)) {
 				$zbodova += $r220[0];
@@ -505,7 +509,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 
 
 		// Konacna ocjena
-		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet_id");
+		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$ponudakursa");
 		if (mysql_num_rows($q508)>0) {
 			print "<td>".mysql_result($q508,0,0)."</td>\n";
 		} else {
