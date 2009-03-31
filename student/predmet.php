@@ -175,10 +175,10 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$ponudakursa and l.id=sl.labgrupa and sl.student=$userid");
 	
 	while ($r60 = mysql_fetch_row($q60)) {
-		$odsustva += prisustvo_ispis($r60[0],$r60[1],$predmet_id,$id_komponente);
+		$odsustva += prisustvo_ispis($r60[0],$r60[1],$ponudakursa,$id_komponente);
 	}
 	
-	$odsustva += prisustvo_ispis(0,"sve grupe",$predmet_id,$id_komponente);
+	$odsustva += prisustvo_ispis(0,"sve grupe",$ponudakursa,$id_komponente);
 	
 	if ($odsustva<=$max_izostanaka) {
 		?><p>Ukupno na prisustvo imate <b><?=$max_bodova?></b> bodova.</p>
@@ -380,7 +380,7 @@ $bodova += $bodova_sve_zadace;
 <?
 	
 
-$q30 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.id from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+$q30 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.id from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 if (mysql_num_rows($q30) == 0) {
 	print "<p>Nije bilo parcijalnih ispita.</p>";
 }
@@ -390,7 +390,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 	if (mysql_num_rows($q40)<1) {
 //		print "Nije izašao/izašla";
 	} else {
-		?><p><?=$r30[3]?> (<?=date("d. m. Y",$r30[2])?>): <b><?=mysql_result($q40,0,0)?> bodova</b></p><?
+		?><p><?=$r30[2]?> (<?=date("d. m. Y",$r30[1])?>): <b><?=mysql_result($q40,0,0)?> bodova</b></p><?
 	}
 }
 
