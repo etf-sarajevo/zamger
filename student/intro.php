@@ -69,7 +69,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id");
+$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	if ($r15[6]>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
@@ -77,8 +77,9 @@ while ($r15 = mysql_fetch_row($q15)) {
 	$vrijeme_poruke["i".$r15[0]] = $r15[3];
 }
 
+// Konačne ocjene
 
-$q17 = myquery("select ko.predmet, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id");
+$q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id");
 while ($r17 = mysql_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[0]\">Dobili ste $r17[1]</a><br/><br/>\n";
