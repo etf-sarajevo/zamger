@@ -16,6 +16,8 @@
 // v3.9.1.11 (2008/11/18) + Akcija brisi_cas nije prosljedjivala predmet_id, sto je dovodilo do greske "nepostojeci predmet" (ali je cas ipak bio obrisan)
 // v3.9.1.12 (2008/12/23) + Akcija brisi_cas prebacena na POST radi zastite od CSRF (bug 54); dodan refresh link
 // v3.9.1.13 (2008/01/21) + Dodan predmet na Refresh link
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
 
 
 
@@ -140,7 +142,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 // Brisanje casa
 
 if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
-	$cas_id = intval($_POST['casid']);
+	$cas_id = intval($_POST['_lv_casid']);
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
 	zamgerlog("obrisan cas $cas_id",2);
@@ -334,7 +336,7 @@ function invert(student,cas) {
 	}
 }
 function upozorenje(cas) {
-	document.brisanjecasa.casid.value=cas;
+	document.brisanjecasa._lv_casid.value=cas;
 	document.brisanjecasa.submit();
 }
 
@@ -344,12 +346,13 @@ function upozorenje(cas) {
 
 <?=genform("POST", "brisanjecasa")?>
 <input type="hidden" name="akcija" value="brisi_cas">
-<input type="hidden" name="casid" value="">
+<input type="hidden" name="_lv_casid" value="">
 </form>
 
 
 <?
 
+// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
 
 
 // ------- TABLICA GRUPE - ZAGLAVLJE
