@@ -21,6 +21,7 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
 
 
 
@@ -127,7 +128,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 			$q90 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
 			if ($prisustvo==0)
 				 // Update radimo samo ako se registruje odsustvo
-				update_komponente($stud_id,$predmet_id,$komponenta);
+				update_komponente($stud_id,$ponudakursa,$komponenta);
 			else {
 				// Ako nema uopšte bodova za komponentu, ubacićemo 10
 				$q95 = myquery("select count(*) from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
@@ -145,7 +146,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 // Brisanje casa
 
 if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
-	$cas_id = intval($_POST['casid']);
+	$cas_id = intval($_POST['_lv_casid']);
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
 	zamgerlog("obrisan cas $cas_id",2);
@@ -341,7 +342,7 @@ function invert(student,cas) {
 	}
 }
 function upozorenje(cas) {
-	document.brisanjecasa.casid.value=cas;
+	document.brisanjecasa._lv_casid.value=cas;
 	document.brisanjecasa.submit();
 }
 
@@ -351,11 +352,13 @@ function upozorenje(cas) {
 
 <?=genform("POST", "brisanjecasa")?>
 <input type="hidden" name="akcija" value="brisi_cas">
-<input type="hidden" name="casid" value="">
+<input type="hidden" name="_lv_casid" value="">
 </form>
 
 
 <?
+
+// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
 
 
 
