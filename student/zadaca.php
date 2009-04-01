@@ -15,6 +15,8 @@
 // v3.9.1.9 (2008/10/27) + Isto i sa poljem zadaca
 // v3.9.1.10 (2008/11/10) + Popravljen status nove zadace sa 2 (prepisana) na 4 (potrebno pregledati)
 // v3.9.1.10 (2009/02/10) + Onemogucen spoofing predmeta i pogresna kombinacija predmet/zadaca; csrf zastita je sprjecavala slanje attachmenta
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/01) + Kod slanja zadace kao attachment status je bio postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran programski jezik
 
 
 
@@ -592,6 +594,9 @@ function akcijaslanje() {
 	$naziv_zadace = mysql_result($q210,0,3);
 	$komponenta = mysql_result($q210,0,4);
 
+	// Ako nije zadat jezik, postavi status na 4 (ceka pregled), inace na 1 (automatska kontrola)
+	if ($jezik==0) $prvi_status=4; else $prvi_status=1;
+
 	// Provjera roka
 	if ($rok <= time()) {
 		niceerror("Vrijeme za slanje zadaće je isteklo!");
@@ -611,9 +616,6 @@ function akcijaslanje() {
 		$ekst = mysql_result($q220,0,0);
 
 		$filename = "$lokacijazadaca$zadaca/$zadatak$ekst";
-
-		// Ako nije zadat jezik, postavi status na 4 (ceka pregled), inace na 1 (automatska kontrola)
-		if ($jezik==0) $prvi_status=4; else $prvi_status=1;
 
 		// Temp fajl radi određivanja diff-a 
 		$diffing=0;
@@ -666,7 +668,7 @@ function akcijaslanje() {
 			unlink ($filename);
 			rename($program, $filename);
 
-			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=1, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$predmet_id,$komponenta);
