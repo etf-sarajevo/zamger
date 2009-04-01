@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_site
 // v3.9.1.1 (2009/02/07) + Dodano brisanje fajlova zadaca, ispravljen broj diffova
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -18,17 +20,19 @@ global $userid, $conf_files_path;
 ###############
 
 if ($_POST['akcija'] == "kompaktuj") {
-	$predmet = intval($_POST['predmet']);
-	$q10 = myquery("select p.naziv, ag.naziv from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.akademska_godina=ag.id and pk.id=$predmet and pk.predmet=p.id");
+	$ponudakursa = intval($_POST['predmet']);
+	$q10 = myquery("select p.naziv, ag.naziv, p.id, ag.id from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.akademska_godina=ag.id and pk.id=$predmet and pk.predmet=p.id");
 	if (!($r10 = mysql_fetch_row($q10))) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 		niceerror("Predmet nije pronađen u bazi");
 		return;
 	}
 	nicemessage("Kompaktujem predmet $r10[0] ($r10[1])");
+	$predmet = $r10[2];
+	$ag = $r10[3];
 	
 	// Zadaće
-	$q11 = myquery("select id,zadataka, programskijezik from zadaca where predmet=$predmet");
+	$q11 = myquery("select id,zadataka, programskijezik from zadaca where predmet=$predmet and akademska_godina=$ag");
 	$totcount=0;
 	$diffcount=0;
 	$stdincount=0;
@@ -90,7 +94,7 @@ if ($_POST['akcija'] == "kompaktuj") {
 	}
 	nicemessage("Obrisano: $totcount starih statusa zadaće, $diffcount diffova, $stdincount unosa stdin, $filecount datoteka.");
 
-	zamgerlog("kompaktovana baza za predmet $predmet",4); // nivo 4: audit
+	zamgerlog("kompaktovana baza za predmet p$ponudakursa",4); // nivo 4: audit
 }
 
 

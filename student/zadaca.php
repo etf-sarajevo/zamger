@@ -17,6 +17,7 @@
 // v3.9.1.10 (2009/02/10) + Onemogucen spoofing predmeta i pogresna kombinacija predmet/zadaca; csrf zastita je sprjecavala slanje attachmenta
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/04/01) + Kod slanja zadace kao attachment status je bio postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran programski jezik
+// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; pobrisan neki iskomentirani kod
 
 
 
@@ -33,17 +34,25 @@ if ($_POST['akcija'] == "slanje" && ($_FILES['attachment']['tmp_name'] || check_
 
 // Poslani parametri
 $zadaca = intval($_REQUEST['zadaca']);
-$predmet_id = intval($_REQUEST['predmet']);
+$ponudakursa = intval($_REQUEST['predmet']);
 
+$q5 = myquery("select predmet, akademska_godina from ponudakursa where id=$ponudakursa");
+if (mysql_num_rows($q5)<1) {
+	niceerror("Nepoznat predmet!");
+	zamgerlog("nepostojeci predmet $ponudakursa",3); // 3 - greska
+	return;
+}
+
+$predmet=mysql_result($q5,0,0);
+$ag=mysql_result($q5,0,1);
 
 
 //  IMA LI AKTIVNIH?
 // TODO: provjeriti da li je aktivan modul...
 
-$q10 = myquery("select count(*) from zadaca where predmet=$predmet_id and aktivna=1");
+$q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
 	niceerror("Nijedna zadaća nije aktivna");
-	// Ovo ujedno utvrđuje da li je $predmet_id nelegalan
 	return;
 }
 
@@ -53,8 +62,8 @@ if (mysql_result($q10,0,0) == 0) {
 
 // Da li neko pokušava da spoofa zadaću?
 if ($zadaca!=0) {
-	$q20 = myquery("SELECT count(*) FROM zadaca, student_predmet as sp
-	WHERE sp.student=$userid and sp.predmet=zadaca.predmet and zadaca.id=$zadaca");
+	$q20 = myquery("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
+	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q20,0,0)==0) {
 		zamgerlog("student nije upisan na predmet (zadaca z$zadaca)",3);
 		biguglyerror("Ova zadaća nije iz vašeg predmeta");
@@ -63,18 +72,18 @@ if ($zadaca!=0) {
 }
 
 // Ili predmet
-if ($predmet_id != 0) {
-	$q25 = myquery("select count(*) from student_predmet where student=$userid and predmet=$predmet_id");
+if ($ponudakursa != 0) {
+	$q25 = myquery("select count(*) from student_predmet where student=$userid and predmet=$ponudakursa");
 	if (mysql_result($q25,0,0)==0) {
-		zamgerlog("student nije upisan na predmet (predmet p$predmet_id)",3);
+		zamgerlog("student nije upisan na predmet (predmet p$ponudakursa)",3);
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
 	// Odgovarajuci predmet i zadaca
 	if ($zadaca != 0) {
-		$q27 = myquery("select count(*) from zadaca where id=$zadaca and predmet=$predmet_id");
+		$q27 = myquery("select count(*) from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_result($q27,0,0)==0) {
-			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$predmet_id, zadaca z$zadaca)",3);
+			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$ponudakursa, zadaca z$zadaca)",3);
 			biguglyerror("Ova zadaća nije iz vašeg predmeta");
 			return;
 		}
@@ -85,15 +94,15 @@ if ($predmet_id != 0) {
 if ($zadaca==0) {
 	// Zadnja zadaca na kojoj je radio/la
 	$q30 = myquery("SELECT z.id FROM zadatak as zk, zadaca as z
-	WHERE z.id=zk.zadaca and z.aktivna=1 and z.rok>curdate() and z.predmet=$predmet_id and zk.student=$userid
+	WHERE z.id=zk.zadaca and z.aktivna=1 and z.rok>curdate() and z.predmet=$predmet and z.akademska_godina=$ag and zk.student=$userid
 	ORDER BY z.id DESC LIMIT 1");
 
 	if (mysql_num_rows($q30)>0)
 		$zadaca = mysql_result($q30,0,0);
 	else {
-		// Nije radio ni na jednoj od aktivnih zadaca
+		// Nije radio ni na jednoj od aktivnih zadaca$predmet_id
 		// Daj najstariju aktivnu zadacu
-		$q40 = myquery("select id from zadaca where predmet=$predmet_id and rok>curdate() and aktivna=1 order by id limit 1");
+		$q40 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and rok>curdate() and aktivna=1 order by id limit 1");
 
 		if (mysql_num_rows($q40)>0)
 			$zadaca = mysql_result($q40,0,0);
@@ -101,7 +110,7 @@ if ($zadaca==0) {
 			// Ako ni ovdje nema rezultata, znači da je svim 
 			// zadaćama istekao rok. Daćemo zadnju zadaću.
 			// Da li ima aktivnih provjerili smo u $q10
-			$q50 = myquery("select id from zadaca where predmet=$predmet_id and aktivna=1 order by id desc limit 1");
+			$q50 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1 order by id desc limit 1");
 			$zadaca = mysql_result($q50,0,0);
 		}
 	}
@@ -111,10 +120,10 @@ if ($zadaca==0) {
 
 # Standardna lokacija zadaca:
 
-$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$userid/";
+$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$userid/";
 # Create db dir
-if (!file_exists("$conf_files_path/zadace/$predmet_id")) {
-	mkdir ("$conf_files_path/zadace/$predmet_id",0777, true);
+if (!file_exists("$conf_files_path/zadace/$ponudakursa")) {
+	mkdir ("$conf_files_path/zadace/$ponudakursa",0777, true);
 }
 
 
@@ -155,9 +164,6 @@ if ($zadatak==0) {
 print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 
-// Još novija navigacija
-
-
 // Statusne ikone:
 $stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
@@ -181,7 +187,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$q20 = myquery("select zadataka from zadaca where predmet=$predmet_id order by zadataka desc limit 1");
+$q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
 $broj_zadataka = mysql_result($q20,0,0);
 for ($i=1;$i<=$broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
@@ -212,7 +218,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet_id order by komponenta,id");
+$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$m_zadaca = $r21[0];
 	$m_mogucih += $r21[2];
@@ -234,7 +240,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 			$bgcolor = ' bgcolor="#DDDDFF"'; 
 		else 	$bgcolor = "";
 		if (mysql_num_rows($q22)<1) {
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet_id?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
 			$status = mysql_result($q22,0,0);
 			$bodova_zadatak = mysql_result($q22,0,1);
@@ -242,7 +248,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet_id?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
 	<?
 		}
 	}
@@ -261,145 +267,6 @@ while ($r21 = mysql_fetch_row($q21)) {
 
 
 
-
-// Nova navigacija - kod kopiran iz stud_status
-
-
-
-/*
-?>
-<center><table cellspacing="0" cellpadding="2" border="1">
-<tr><td>&nbsp;</td>
-
-<?
-
-
-// Zaglavlje tabele - potreban nam je max. broj zadataka u svim zadaćama
-$q80 = myquery("select zadataka from zadaca where predmet=$predmet_id order by zadataka desc limit 1");
-if (mysql_num_rows($q80)<1) 
-	$max_brzad=0;
-else
-	$max_brzad=mysql_result($q80,0,0);
-
-for ($i=1;$i<=$max_brzad;$i++) {
-	?><td>Zadatak <?=$i?>.</td><?
-}
-
-?>
-</tr>
-<?
-
-
-// (nastavak navigacije...)
-
-/* Ovo se sve moglo kroz SQL rijesiti, ali necu iz razloga:
-1. PHP je citljiviji
-2. MySQL <4.1 ne podrzava subqueries */
-
-
-/*
-// Status ikone:
-$stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok", "zad_novi");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK", "Novi zadatak");
-
-
-$bodova_sve_zadace=0;
-
-$q90 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet_id");
-while ($r90 = mysql_fetch_row($q90)) {
-	$m_zadaca = $r90[0];
-	$m_mogucih += $r90[2];
-	$m_brzad = $r90[3];
-	?><tr>
-	<td><?=$r90[1]?></td><?
-	$m_bodova_zadaca = 0;
-
-	for ($m_zadatak=1;$m_zadatak<=$m_brzad;$m_zadatak++) {
-		// Uzmi samo rjesenje sa zadnjim IDom
-		$q100 = myquery("select status,bodova from zadatak where student=$userid and zadaca=$m_zadaca and redni_broj=$m_zadatak order by id desc limit 1");
-		if (mysql_num_rows($q100)>0) {
-			$status = mysql_result($q100,0,0);
-			$m_bodova_zadatak = mysql_result($q100,0,1);
-			$m_bodova_zadaca += $m_bodova_zadatak;
-		} else {
-			$status = 6;
-			$m_bodova_zadatak="";
-		} 
-		if ($m_zadaca==$zadaca && $m_zadatak==$zadatak)
-			$bgcolor = ' bgcolor="#EEEEFF"'; 
-		else 	$bgcolor = "";
-		?><td <?=$bgcolor?>><a href="?sta=student/zadaca&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>&predmet=<?=$predmet_id?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$m_bodova_zadatak?></a></td><?
-	}
-	
-	// Ispis praznih ćelija tabele za zadaće koje imaju manje od max. zadataka
-	for ($i=$m_zadatak; $i<=$max_brzad; $i++) {
-		print "<td>&nbsp;</td>\n";
-	}
-
-	?></tr><?
-	$bodova_sve_zadace += $m_bodova_zadaca;
-}
-
-
-// Ukupno bodova za studenta
- 
-$bodova += $bodova_sve_zadace;
-
-?>
-</table></center>
-<?
-
-*/
-
-
-// STARA NAVIGACIJA - Naslov i strelice lijevo-desno...
-
-/*$onclick = 'onclick="self.location = \''.genuri();
-
-# dugme "<<"
-$q30 = myquery("select id from zadaca where id<$zadaca and predmet=$predmet_id order by id desc limit 1");
-if (mysql_num_rows($q30)==0)
-	$d1="disabled";
-else
-	$d1=$onclick.'&zadaca='.mysql_result($q30,0,0).'&zadatak=1\'"';
-
-# dugme "<"
-if ($zadatak==1)
-	$d2="disabled";
-else
-	$d2=$onclick.'&zadaca='.$zadaca.'&zadatak='.($zadatak-1).'\'"';
-
-# dugme "<"
-if ($zadatak>=$brojzad) // $brzad određen kod Određivanja zadaće
-	$d3="disabled";
-else
-	$d3=$onclick.'&zadaca='.$zadaca.'&zadatak='.($zadatak+1).'\'"';
-
-# dugme ">>"
-$q31 = myquery("select id from zadaca where id>$zadaca and predmet=$predmet_id order by id limit 1");
-if (mysql_num_rows($q31)==0)
-	$d4="disabled";
-else
-	$d4=$onclick.'&zadaca='.mysql_result($q31,0,0).'&zadatak=1\'"';
-
-
-
-# Ispis zaglavlja
-
-?>
-<table width="100%" border="0">
-<tr>
-<td width="10%" align="center" valign="center"><input type="submit" value=" &lt;&lt; " <?=$d1?>></td>
-<td width="10%" align="center" valign="center"><input type="submit" value=" &lt; " <?=$d2?>></td>
-<td align="center" valign="center">
-<h1>Zadaća: <?=$naziv?>, Zadatak: <?=$zadatak?></h1>
-</td>
-<td width="10%" align="center" valign="center"><input type="submit" value=" &gt; " <?=$d3?>></td>
-<td width="10%" align="center" valign="center"><input type="submit" value=" &gt;&gt; " <?=$d4?>></td>
-</tr></table>
-
-<? 
-*/
 
 
 
@@ -491,7 +358,7 @@ if ($attachment) {
 	<form action="index.php" method="POST" enctype="multipart/form-data">
 	<input type="hidden" name="sta" value="student/zadaca">
 	<input type="hidden" name="akcija" value="slanje">
-	<input type="hidden" name="predmet" value="<?=$predmet_id?>">
+	<input type="hidden" name="predmet" value="<?=$ponudakursa?>">
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
@@ -556,25 +423,25 @@ function akcijaslanje() {
 	require ("lib/manip.php"); // update komponente nakon slanja
 
 	// Parametri
-	$predmet_id = intval($_POST['predmet']);
+	$ponudakursa = intval($_POST['predmet']);
 	$zadaca = intval($_POST['zadaca']); 
 	$zadatak = intval($_POST['zadatak']);
 	$program = $_POST['program'];
-	if ($predmet_id==0) {
+	if ($ponudakursa==0) {
 		return; // student_zadaca() će ispisati grešku
 	}
 
 
 	// Standardna lokacija zadaca
-	$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$userid/";
-	if (!file_exists("$conf_files_path/zadace/$predmet_id")) {
-		mkdir ("$conf_files_path/zadace/$predmet_id",0777, true);
+	$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$userid/";
+	if (!file_exists("$conf_files_path/zadace/$ponudakursa")) {
+		mkdir ("$conf_files_path/zadace/$ponudakursa",0777, true);
 	}
 
 
 	// Da li neko pokušava da spoofa zadaću?
-	$q200 = myquery("SELECT count(*) FROM zadaca, student_predmet as sp
-	WHERE sp.student=$userid and sp.predmet=zadaca.predmet and zadaca.id=$zadaca");
+	$q200 = myquery("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
+	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q200,0,0)==0) {
 //		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
 		// student_zadaca() ce ispisati grešku
@@ -653,7 +520,7 @@ function akcijaslanje() {
 			}
 
 			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspješno poslan!");
-			update_komponente($userid,$predmet_id);
+			update_komponente($userid,$ponudakursa);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak",2); // nivo 2 - edit
 		} else {
 			zamgerlog("greska pri slanju zadace (zadaca z$zadaca zadatak $zadatak filename $filename)",3);
@@ -671,7 +538,7 @@ function akcijaslanje() {
 			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
-			update_komponente($userid,$predmet_id,$komponenta);
+			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
 		} else {
 			zamgerlog("greska kod attachmenta (zadaca z$zadaca, varijabla program je: $program)",3);

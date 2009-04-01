@@ -13,6 +13,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -43,6 +44,7 @@ function ispis_studenta_sa_labgrupe($student,$predmet,$labgrupa) {
 // (ispis sa svih labgrupa, ispiti, konacna ocjena, komponente, zadace)
 
 function ispis_studenta_sa_predmeta($student,$predmet) {
+// Ovo bi se dalo optimizovati
 	logthis("Ispis studenta $stud_id sa predmeta $predmet_id (labgrupa $labgrupa)");
 
 	global $conf_files_path;
@@ -67,7 +69,7 @@ function ispis_studenta_sa_predmeta($student,$predmet) {
 	// Zadace
 	$lokacijazadaca="$conf_files_path/zadace/$predmet/$student/";
 
-	$q90 = myquery("select z.id, pj.ekstenzija, z.attachment from zadaca as z, programskijezik as pj where z.predmet=$predmet and z.programskijezik=pj.id");
+	$q90 = myquery("select z.id, pj.ekstenzija, z.attachment from zadaca as z, programskijezik as pj, ponudakursa as pk where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and pk.id=$predmet and z.programskijezik=pj.id");
 	while ($r90 = mysql_fetch_row($q90)) {
 		$q100 = myquery("select id,redni_broj,filename from zadatak where student=$student and zadaca=$r90[0]");
 		while ($r100 = mysql_fetch_row($q100)) {
@@ -407,7 +409,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 		case 4: // Zadace
 			$bodovi = 0;
 
-			$q70 = myquery("select id, zadataka from zadaca where predmet=$predmet and komponenta=$k");
+			$q70 = myquery("select z.id, z.zadataka from zadaca as z, ponudakursa as pk where pk.id=$predmet and z.komponenta=$k and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
 			while ($r70 = mysql_fetch_row($q70)) {
 				$zadaca=$r70[0];
 				$zadataka=$r70[1];

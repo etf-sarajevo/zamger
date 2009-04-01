@@ -999,8 +999,9 @@ INSERT INTO `upis_kriterij` (`id`, `donja_granica`, `gornja_granica`, `kandidati
 
 CREATE TABLE IF NOT EXISTS `zadaca` (
   `id` bigint(4) NOT NULL auto_increment,
-  `predmet` int(11) NOT NULL default '0',
   `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `predmet` int(11) NOT NULL default '0',
+  `akademska_godina` int(11) NOT NULL default '0',
   `zadataka` tinyint(4) NOT NULL default '0',
   `bodova` float NOT NULL default '0',
   `rok` datetime default NULL,

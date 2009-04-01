@@ -14,6 +14,8 @@
 // v3.9.1.8 (2009/01/22) + Dozvoliti unos bodova iz zadace sa zarezom
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+
 
 
 function saradnik_zadaca() {
@@ -39,7 +41,7 @@ $zadatak=intval($_REQUEST['zadatak']);
 // Prava pristupa
 if (!$user_siteadmin) {
 	// Da li je nastavnik na predmetu?
-	$q10 = myquery("select z.predmet from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=z.predmet and z.id=$zadaca");
+	$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_num_rows($q10)<1) {
 		zamgerlog("privilegije (student u$stud_id zadaca z$zadaca)",3); // nivo 3: greska
 		niceerror("Nemate pravo izmjene ove zadaće");
@@ -47,12 +49,12 @@ if (!$user_siteadmin) {
 	}
 	$predmet_id = mysql_result($q10,0,0);
 
-	// Ogranicenja ne provjeravamo jer bi to bilo prekomplikovano,
+	// Ogranicenja (tabela: ogranicenje) ne provjeravamo jer bi to bilo prekomplikovano,
 	// a pitanje je da li ima smisla
 
-	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.predmet, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id and z.predmet=$predmet_id");
-} else {
 	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.predmet, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
+} else {
+	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, pk.id, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p, ponudakursa as pk where z.id=$zadaca and z.programskijezik=p.id and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
 }
 
 // Provjera spoofinga

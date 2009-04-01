@@ -22,6 +22,7 @@
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
+// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -241,18 +242,18 @@ if ($predmet_admin==1 || $user_siteadmin) {
 // ------- SPISAK NEPREGLEDANIH ZADAĆA
 
 
-if ($grupa_id>0)
+if ($grupa_id>0) // pojednostaviti? razbiti na vise upita?
 $q150 = myquery(
 "SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
 FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
 WHERE zk.student=a.id AND zk.student=sl.student 
-AND sl.labgrupa=$grupa_id AND zk.zadaca=z.id AND z.predmet=$ponudakursa
+AND sl.labgrupa=$grupa_id AND zk.zadaca=z.id AND z.predmet=$predmet AND z.akademska_godina=$ag
 ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
 else
 $q150 = myquery(
 "SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
 FROM zadatak as zk, osoba as a, zadaca as z
-WHERE zk.student=a.id AND zk.zadaca=z.id AND z.predmet=$ponudakursa
+WHERE zk.student=a.id AND zk.zadaca=z.id AND z.predmet=$predmet AND z.akademska_godina=$ag
 ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
 
 $mzadaca=0; $mzadatak=0; $mstudent=0; $print="";
@@ -423,7 +424,7 @@ while ($r205 = mysql_fetch_row($q205)) {
 	$zadace_zaglavlje = "";
 	
 	// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
-	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$ponudakursa order by id");
+	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by id");
 	while ($r210 = mysql_fetch_row($q210)) {
 		$zadace_zaglavlje .= "<td width=\"60\">$r210[1]</td>\n";
 		$zad_id_array[] = $r210[0];
@@ -533,7 +534,7 @@ ORDER BY z.id");
 else
 $q300 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 FROM zadatak as z, zadaca as zz
-WHERE z.zadaca=zz.id AND zz.predmet=$ponudakursa
+WHERE z.zadaca=zz.id AND zz.predmet=$predmet and zz.akademska_godina=$ag
 ORDER BY z.id");
 
 while ($r300 = mysql_fetch_row($q300)) {

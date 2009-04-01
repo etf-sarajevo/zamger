@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -131,7 +132,7 @@ if ($grupa>0)
 	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 	FROM zadatak as z,student_labgrupa as sl 
 	WHERE z.student=sl.student and sl.labgrupa=$grupa
-	ORDER BY id");
+	ORDER BY id"); // Ovo je sumnjivo - vraca zadace koje je student poslao na drugim predmetima?
 else
 	$q100 = myquery("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
 	FROM zadatak as z,student_predmet as sp 
@@ -250,7 +251,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 			$zadace_zaglavlje = "";
 			
 			// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
-			$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$ponudakursa order by id");
+			$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by id");
 			while ($r120 = mysql_fetch_row($q120)) {
 				$zadace_zaglavlje .= "<td width=\"60\">$r120[1]</td>\n";
 				$zad_id_array[] = $r120[0];

@@ -11,6 +11,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
@@ -529,7 +530,7 @@ else if ($studenti==1 && $ispit==3) {
 	// array zadaća - optimizacija
 	$kzadace = array();
 	foreach ($kursevi as $kurs_id => $kurs) {
-		$q600a = myquery("select id, zadataka from zadaca where predmet=$kurs_id");
+		$q600a = myquery("select z.id, z.zadataka from zadaca as z, ponudakursa as pk where pk.id=$kurs_id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina");
 		$tmpzadaca = array();
 		while ($r600a = mysql_fetch_row($q600a)) {
 			$tmpzadaca[$r600a[0]] = $r600a[1];

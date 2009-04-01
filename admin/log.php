@@ -14,7 +14,7 @@
 // v3.9.1.9 (2009/01/23) + Podignut default nivo radi brzeg otvaranja
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-
+// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; obrisan legacy parser koji se koristio u ranim dev verzijama loga
 
 
 function admin_log() {
@@ -226,12 +226,13 @@ while ($r10 = mysql_fetch_row($q10)) {
 		}
 	}
 	if (preg_match("/\Wz(\d+)/", $evt, $m)) { // zadaca
-		$q50 = myquery("select naziv,predmet from zadaca where id=$m[1]");
+		$q50 = myquery("select naziv,predmet,akademska_godina from zadaca where id=$m[1]");
 		if (mysql_num_rows($q50)>0) {
 			$naziv=mysql_result($q50,0,0);
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
 			$predmet=mysql_result($q50,0,1);
-			$q60 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet");
+			$ag=mysql_result($q50,0,2);
+			$q60 = myquery("select l.id from student_labgrupa as sl, labgrupa as l, ponudakursa as pk where sl.student=$usr and sl.labgrupa=l.id and l.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 			if (mysql_num_rows($q60)>0) {
 				$link="?sta=saradnik/grupa&id=".mysql_result($q60,0,0);
 			} else {
@@ -280,95 +281,6 @@ while ($r10 = mysql_fetch_row($q10)) {
 	}
 
 
-	// Legacy parser loga... (brisati!)
-
-
-	else if (preg_match("/Admin grupa (\d+)/", $evt, $matches)) {
-		$q203 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p, ponudakursa as pk where l.id=$matches[1] and l.predmet=pk.id and pk.predmet=p.id");
-		if (mysql_num_rows($q203)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Predmet ".mysql_result($q203,0,0).", labgrupa ".mysql_result($q203,0,1).$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	} 
-	else if (preg_match("/Poslana zadaca (\d+)-(\d+)/", $evt, $matches)) {
-		$q204 = myquery("select p.naziv, z.naziv from zadaca as z, predmet as p, ponudakursa as pk where z.id=$matches[1] and z.predmet=pk.id and pk.predmet=p.id");
-		if (mysql_num_rows($q204)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> Poslana zadaća ".mysql_result($q204,0,1)." / $matches[2] (predmet ".mysql_result($q204,0,0).")".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Admin Predmet (\d+) - (.+)/", $evt, $matches)) {
-		$q205 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$matches[1] and pk.predmet=p.id");
-		if (mysql_num_rows($q205)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Admin Predmet ".mysql_result($q205,0,0)." - $matches[2]".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Registrovan cas \d+ za labgrupu (\d+)/", $evt, $matches)) {
-		$q203 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p, ponudakursa as pk where l.id=$matches[1] and l.predmet=pk.id and pk.predmet=p.id");
-		if (mysql_num_rows($q203)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Registrovan čas za labgrupu ".mysql_result($q203,0,1)." (predmet ".mysql_result($q203,0,0).")".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Izmjena ličnih podataka studenta (\d+)/", $evt, $matches)) {
-		$q206 = myquery("select ime, prezime from student where id=$matches[1]");
-		if (mysql_num_rows($q206)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Izmjena ličnih podataka studenta ".mysql_result($q206,0,0)." ".mysql_result($q206,0,1).$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Izvrsena zadaca \((\d+),(\d+),(\d+)\)/", $evt, $matches)) {
-		$q204 = myquery("select z.naziv from zadaca as z, predmet as p, ponudakursa as pk where z.id=$matches[1] and z.predmet=pk.id and pk.predmet=p.id");
-		$q206 = myquery("select ime, prezime from student where id=$matches[3]");
-		if (mysql_num_rows($q204)>0 && mysql_num_rows($q206)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Izvršena zadaća ".mysql_result($q204,0,0)." / $matches[2] (student ".mysql_result($q206,0,0)." ".mysql_result($q206,0,1).")".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Izmjena statusa zadace \((\d+),(\d+),(\d+)\)/", $evt, $matches)) {
-		$q204 = myquery("select z.naziv from zadaca as z, predmet as p, ponudakursa as pk where z.id=$matches[1] and z.predmet=pk.id and pk.predmet=p.id");
-		$q206 = myquery("select ime, prezime from student where id=$matches[3]");
-		if (mysql_num_rows($q204)>0 && mysql_num_rows($q206)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Izmjena statusa zadaće ".mysql_result($q204,0,0)." / $matches[2] (student ".mysql_result($q206,0,0)." ".mysql_result($q206,0,1).")".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
-	else if (preg_match("/Nastavnik (\d+) dodan na predmet (\d+)/", $evt, $matches)) {
-		$q205 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$matches[2] and pk.predmet=p.id");
-		$q207 = myquery("select ime,prezime from nastavnik where id=$matches[1]");
-		if (mysql_num_rows($q205)>0 && mysql_num_rows($q207)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Nastavnik '".mysql_result($q207,0,0)." ".mysql_result($q207,0,1)."' dodan na predmet '".mysql_result($q205,0,0)."' ".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-
-	}
-	else if (preg_match("/Nastavnik (\d+) proglasen za admina predmeta (\d+)/", $evt, $matches)) {
-		$q205 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$matches[2] and pk.predmet=p.id");
-		$q207 = myquery("select ime,prezime from nastavnik where id=$matches[1]");
-		if (mysql_num_rows($q205)>0 && mysql_num_rows($q207)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Nastavnik '".mysql_result($q207,0,0)." ".mysql_result($q207,0,1)."' proglašen za admina predmeta '".mysql_result($q205,0,0)."' ".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-
-	}
-	else if (preg_match("/Student labgrupa (\d+)/", $evt, $matches)) {
-		$q203 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p, ponudakursa as pk where l.id=$matches[1] and l.predmet=pk.id and pk.predmet=p.id");
-		if (mysql_num_rows($q203)>0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">Statusna stranica, predmet ".mysql_result($q203,0,0).", labgrupa ".mysql_result($q203,0,1)." ".$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		} else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\">".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-		}
-	}
 	else {
 		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 	}

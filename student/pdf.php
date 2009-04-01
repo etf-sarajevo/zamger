@@ -6,6 +6,8 @@
 // v3.9.1.1 (2008/03/28) + Nova auth tabela
 // v3.9.1.2 (2008/03/30) + Popravljen put za zadaće
 // v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 // TODO: koristiti tcpdf
 
@@ -25,8 +27,8 @@ if ($zadaca == 0) {
 }
 
 // Da li neko pokušava da spoofa zadaću?
-$q10 = myquery("SELECT z.predmet FROM zadaca as z, student_predmet as sp
-WHERE sp.student=$userid and sp.predmet=z.predmet and z.id=$zadaca");
+$q10 = myquery("SELECT pk.id FROM zadaca as z, student_predmet as sp, ponudakursa as pk
+WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Ova zadaća nije iz vašeg predmeta!?");
 	return;
@@ -38,7 +40,7 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet_id/$userid/$zadaca/";
 
 // Podaci o zadaći
 
-$q20 = myquery("select z.zadataka,p.naziv,z.naziv,pj.ekstenzija from zadaca as z,predmet as p,programskijezik as pj, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.id and pk.predmet=p.id and z.programskijezik=pj.id");
+$q20 = myquery("select z.zadataka,p.naziv,z.naziv,pj.ekstenzija from zadaca as z,predmet as p,programskijezik as pj where z.id=$zadaca and z.predmet=p.id and z.programskijezik=pj.id");
 if (mysql_num_rows($q20) < 1) {
 	biguglyerror("Ne mogu pronaći zadaću");
 	// .. može li se ukinuti ovo?

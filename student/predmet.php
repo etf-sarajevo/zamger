@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 function student_predmet() {
@@ -275,7 +276,7 @@ if (mysql_result($q100,0,0)==0) {
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$q20 = myquery("select zadataka from zadaca where predmet=$ponudakursa order by zadataka desc limit 1");
+$q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
 $broj_zadataka = mysql_result($q20,0,0);
 for ($i=1;$i<=$broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
@@ -308,7 +309,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$ponudakursa order by komponenta,id");
+$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];

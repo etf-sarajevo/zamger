@@ -8,6 +8,7 @@
 // v3.9.1.1 (2008/10/22) + Ovaj kod se obajatio :) prepravljeno $uloga na $user_* varijable; omoguceno nastavniku da otvara attachmente studenata cak i ako je istovremeno i student; tabela student_predmet umjesto relacije preko labgrupe; conf_files_path
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 
 
 function common_attachment() {
@@ -47,7 +48,7 @@ if ($stud_id==0) { // student otvara vlastitu zadacu
 	}
 
 	if ($user_nastavnik) {
-		$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.id and pk.predmet=np.predmet and np.nastavnik=$userid");
+		$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and pk.predmet=np.predmet and np.nastavnik=$userid and pk.akademska_godina=np.akademska_godina"); // POJEDNOSTAVITI!
 		if (mysql_num_rows($q10)<1) {
 			zamgerlog("attachment: nije nastavnik na predmetu (student u$stud_id zadaca z$zadaca)",3);
 			niceerror("Nemate pravo pregleda ove zadaće");
@@ -75,7 +76,7 @@ if ($stud_id==0) { // student otvara vlastitu zadacu
 
 // Da li neko pokušava da spoofa zadaću?
 
-$q30 = myquery("SELECT z.predmet FROM zadaca as z, student_predmet as sp WHERE sp.student=$stud_id and sp.predmet=z.predmet and z.id=$zadaca");
+$q30 = myquery("SELECT z.predmet FROM zadaca as z, student_predmet as sp, ponudakursa as pk WHERE sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 if (mysql_num_rows($q30)<1) {
 	zamgerlog("student nije upisan na predmet (student u$stud_id zadaca z$zadaca)",3);
 	niceerror("Student nije upisan na predmet");
