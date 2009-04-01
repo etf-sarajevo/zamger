@@ -10,6 +10,8 @@
 // v3.9.1.4 (2008/05/07) + Dodan logging za razne greske kod anonimnog pristupa, popravljen forwarding kada čovjeku istekne sesija
 // v3.9.1.5 (2008/08/27) + Koristimo horizontalni_meni() za studentska/*; koristimo tabelu privilegija umjesto auth
 // v3.9.1.6 (2008/10/02) + Popravljen logging
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/01) + Dodan link na RSS u header
 
 
 require("lib/libvedran.php");
@@ -163,6 +165,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php" />
 </head><?
 
 
