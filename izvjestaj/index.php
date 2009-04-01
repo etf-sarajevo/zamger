@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
 // v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -51,12 +53,11 @@ Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 $imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
 
 $i=1;
-$q110 = myquery("select id,naziv from akademska_godina order by id");
+$q110 = myquery("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar 
+FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, akademska_godina as ag
+WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student order by ag.id, pk.semestar, p.naziv");
 while ($r110 = mysql_fetch_row($q110)) {
-	$q120 = myquery("SELECT p.naziv,ko.ocjena,pk.semestar FROM `konacna_ocjena` as ko, ponudakursa as pk, predmet as p WHERE ko.student=$student and ko.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$r110[0] order by pk.semestar,p.naziv");
-	while ($r120 = mysql_fetch_row($q120)) {
-		print "<tr><td>".($i++)."</td><td>".$r120[0]."</td><td>".$r110[1]."</td><td>".$r120[1]." (".$imena_ocjena[$r120[1]-5].")</td></tr>";
-	}
+	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$r110[1]." (".$imena_ocjena[$r110[1]-5].")</td></tr>\n";
 }
 print "</table>";
 

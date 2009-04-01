@@ -9,6 +9,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -509,7 +510,7 @@ for ($j=0; $j<=$br_grupa; $j++) {
 
 
 		// Konacna ocjena
-		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$ponudakursa");
+		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q508)>0) {
 			print "<td>".mysql_result($q508,0,0)."</td>\n";
 		} else {

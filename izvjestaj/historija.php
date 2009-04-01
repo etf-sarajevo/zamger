@@ -3,6 +3,7 @@
 // IZVJESTAJ/HISTORIJA - historija jednog studenta
 
 // v4.0.9.1 (2009/03/19) + Pocetak rada na izvjestaju
+// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -83,7 +84,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 			print " na osnovu odluke ".mysql_result($q25,0,1)." od ".date("d. m. Y", mysql_result($q25,0,0));
 		}
 		print ".<br />\n";
-		$q30 = myquery("select pk.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
+		$q30 = myquery("select p.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
 		if (mysql_num_rows($q30)>0) print "<ul>\n";
 		while ($r30 = mysql_fetch_row($q30)) {
 			$q40 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r30[0]");

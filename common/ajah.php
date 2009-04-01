@@ -23,6 +23,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet - FIXME: prekontrolisati upite, mozda je moguca optimizacija?
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet - FIXME: isto
+// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 // Prebaciti u lib/manip?
@@ -261,18 +262,20 @@ case "izmjena_ispita":
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
-		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
+		$q70 = myquery("select ko.ocjena,ko.predmet,pk.akademska_godina from konacna_ocjena as ko, ponudakursa as pk where ko.predmet=pk.predmet and pk.id=$predmet and ko.student=$stud_id");
+		$metapredmet = mysql_result($q70,0,1);
+		$ag = mysql_result($q70,0,2);
 		$c = mysql_num_rows($q70);
 		if ($c==0 && $vrijednost!="/") {
-			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, student=$stud_id, ocjena=$vrijednost");
+			$q80 = myquery("insert into konacna_ocjena set predmet=$metapredmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = mysql_result($q70,0,0);
-			$q80 = myquery("delete from konacna_ocjena where predmet=$predmet and student=$stud_id");
+			$q80 = myquery("delete from konacna_ocjena where predmet=$metapredmet and student=$stud_id");
 			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0) {
 			$staraocjena = mysql_result($q70,0,0);
-			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost where predmet=$predmet and student=$stud_id");
+			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost where predmet=$metapredmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
 		}
 	}

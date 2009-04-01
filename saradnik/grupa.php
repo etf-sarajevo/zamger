@@ -20,6 +20,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -718,7 +719,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	// KONACNA OCJENA - ISPIS
 
-	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$ponudakursa");
+	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q350)>0) {
 		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet_id\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
 	} else {

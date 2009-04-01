@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -27,8 +28,10 @@ if ($predmet==0) {
 	return; 
 }
 
-$q1 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 $predmet_naziv = mysql_result($q1,0,0);
+$metapredmet = mysql_result($q1,0,1);
+$ag = mysql_result($q1,0,2);
 
 //$tab=$_REQUEST['tab'];
 //if ($tab=="") $tab="Opcije";
@@ -103,7 +106,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 
 		// Da li vec ima ocjena u bazi?
-		$q100 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$predmet");
+		$q100 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$metapredmet");
 		if (mysql_num_rows($q100)>0) {
 			if ($ispis) {
 				$oc2 = mysql_result($q100,0,0);
@@ -117,7 +120,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 //			print "Student '$prezime $ime' (ID: $student) - ocjena: $ocjena<br/>";
 			print "Student '$prezime $ime' - ocjena: $ocjena<br/>";
 		} else {
-			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena");
+			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$metapredmet, akademska_godina=$ag, ocjena=$ocjena");
 		}
 	}
 

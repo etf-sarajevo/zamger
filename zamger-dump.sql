@@ -254,6 +254,7 @@ CREATE TABLE IF NOT EXISTS `komponentebodovi` (
 CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
   `student` int(11) NOT NULL default '0',
   `predmet` int(11) NOT NULL default '0',
+  `akademska_godina` int(11) NOT NULL default '0',
   `ocjena` int(3) NOT NULL default '0',
   `datum` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`student`,`predmet`)

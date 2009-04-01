@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/09/11) + Novi modul studentska/prodsjeka
 // v3.9.1.1 (2008/09/24) + Dodan link na detalje o studentu
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 function studentska_prodsjeka() {
@@ -114,9 +116,7 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 		$uk_uodsjek[$r200[2]]++;
 
 		// Prosjek
-		$q210 = myquery("select ko.ocjena from konacna_ocjena as 
-ko, ponudakursa as pk 
-where ko.student=$r200[0] and ko.predmet=pk.id and pk.semestar<3");
+		$q210 = myquery("select ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$r200[0] and ko.predmet=pk.predmet and pk.semestar<3");
 		while ($r210 = mysql_fetch_row($q210)) {
 			$brojpredmeta[$r200[0]]++;
 			$prosjek[$r200[0]] += $r210[0];

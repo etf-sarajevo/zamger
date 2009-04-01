@@ -25,6 +25,7 @@
 // v4.0.9.1 (2009/03/19) + Novi izvjestaj "Historija"
 // v4.0.9.2 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.3 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet -- FIXME provjeriti mogucnosti optimizacije
+// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -317,7 +318,7 @@ else if ($akcija == "upis") {
 	$ects_pao=0;
 	$predmeti_pao=array();
 	while ($r510 = mysql_fetch_row($q510)) {
-		$q520 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$student and ko.predmet=pk.id and pk.predmet=$r510[0]");
+		$q520 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r510[0]");
 		if (mysql_result($q520,0,0)<1 && !in_array($r510[0], $predmeti_pao)) { 
 			$ects_pao+=$r510[1];
 			if ($r510[2]<$semestar-2) $ects_pao += 1000;
@@ -384,7 +385,7 @@ else if ($akcija == "upis") {
 		<p><b>Izaberite izborne predmete:</b><br/>
 		<?
 		while ($r560 = mysql_fetch_row($q560)) {
-			$q570 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$student and ko.predmet=pk.id and pk.predmet=$r560[0]");
+			$q570 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r560[0]");
 			if (mysql_result($q570,0,0)<1) {
 				// Nije polozio/la - koristimo pk
 				?>
@@ -432,13 +433,14 @@ else if ($akcija == "upis") {
 			if ($ocjena>5) {
 				// Upisujem dopisanu ocjenu
 
-				$q580 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
+				$q580 = myquery("select pk.id, pk.akademska_godina from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
 				if (mysql_num_rows($q580)<1) {
 					niceerror("Nije nikad slušao predmet $predmet!?");
 					return;
 				}
 				$pk = mysql_result($q580,0,0);
-				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena");
+				$ag = mysql_result($q580,0,1);
+				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena, akademska_godina=$ag");
 				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>";
 			} else {
 				// Student prenio predmet
@@ -459,7 +461,7 @@ else if ($akcija == "upis") {
 		$q610 = myquery("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		while ($r610 = mysql_fetch_row($q610)) {
 			// Da li ga je vec polozio
-			$q615 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$student and ko.predmet=pk.id and pk.predmet=$r610[1]");
+			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
 			if (mysql_result($q615,0,0)==0) {
 				$q620 = myquery("insert into student_predmet set student=$student, predmet=$r610[0]");
 				print "-- Student upisan u obavezni predmet $r610[2]<br/>";
@@ -959,7 +961,7 @@ else if ($akcija == "edit") {
 			$pao="";
 			$q240 = myquery("select pk.id,p.id,p.naziv,p.ects from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$id_ak_god and (pk.semestar=$semestar or pk.semestar=".($semestar-1).")");
 			while ($r240 = mysql_fetch_row($q240)) {
-				$q250 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r240[1]");
+				$q250 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r240[1]");
 				if (mysql_result($q250,0,0)>0) {
 					$suma_ects += $r240[3];
 				}
@@ -970,7 +972,7 @@ else if ($akcija == "edit") {
 				$stara_akgod = $id_ak_god - ($semestar-2)/2;
 				$q260 = myquery("select pk.id,p.id,p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=1 and pk.akademska_godina=$stara_akgod"); // 1 = Prva godina studija
 				while ($r260 = mysql_fetch_row($q260)) {
-					$q270 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r260[1]");
+					$q270 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r260[1]");
 					if (mysql_result($q270,0,0)<1) {
 						$pao = " - nepoložen predmet sa prve godine studija.";
 					}
@@ -982,7 +984,7 @@ else if ($akcija == "edit") {
 				$stara_akgod = $id_ak_god - ($semestar-$i)/2;
 				$q280 = myquery("select pk.id,p.id,p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$stara_akgod"); // 1 = Prva godina studija
 				while ($r280 = mysql_fetch_row($q280)) {
-					$q290 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r280[1]");
+					$q290 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r280[1]");
 					if (mysql_result($q290,0,0)<1) {
 						$pao = " - nepoložen predmet sa ".($i/2).". godine $r280[2]";
 					}
@@ -1041,7 +1043,7 @@ else if ($akcija == "edit") {
 			while ($r300 = mysql_fetch_row($q300)) {
 				$q310 = myquery("select count(*) from student_predmet where predmet=$r300[0] and student=$osoba");
 				if (mysql_result($q310,0,0)>0) continue;
-				$q320 = myquery("select count(*) from konacna_ocjena as ko, ponudakursa as pk where ko.student=$osoba and ko.predmet=pk.id and pk.predmet=$r300[3]");
+				$q320 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r300[3]");
 				if (mysql_result($q320,0,0)>0) continue;
 				print "<option value=\"$r300[0]\">$r300[1] ($r300[2])</option>\n";
 			}

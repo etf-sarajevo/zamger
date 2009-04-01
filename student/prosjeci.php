@@ -4,6 +4,8 @@
 
 // v3.9.1.0 (2008/10/20) + Novi modul student/prosjeci
 // v3.9.1.1 (2009/02/07) + Dodan prikaz prosjeka po semestrima, na zahtjev studenata
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 function student_prosjeci() {
@@ -11,7 +13,7 @@ function student_prosjeci() {
 global $userid;
 
 $maxgod=0;
-$q10 = myquery("select ko.ocjena, pk.semestar from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=ko.predmet and ko.student=$userid and sp.predmet=pk.id");
+$q10 = myquery("select ko.ocjena, pk.semestar from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk where sp.student=$userid and pk.predmet=ko.predmet and pk.akademska_godina=ko.akademska_godina and ko.student=$userid and sp.predmet=pk.id");
 while ($r10 = mysql_fetch_row($q10)) {
 	$sumoc += $r10[0]; $broc++;
 	$sumasem[$r10[1]] += $r10[0];

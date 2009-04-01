@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/04/22) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php, prebaceno na komponente i student_predmet; razdvojen po godinama i semestrima
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 // TODO: spojiti sa izvjestaj/index???
@@ -56,7 +57,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 	for ($sem=1; $sem>=0; $sem--) {
 		if ($sem==1) $naziv_sem="Zimski semestar"; else $naziv_sem="Ljetnji semestar";
 
-		$q120 = myquery("select pk.id, p.naziv from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$r110[0] and pk.predmet=p.id and pk.semestar%2=$sem order by p.naziv");
+		$q120 = myquery("select pk.id, p.naziv, p.id from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$r110[0] and pk.predmet=p.id and pk.semestar%2=$sem order by p.naziv");
 		if (mysql_num_rows($q120)>0) {
 			// Zaglavlje tabele
 			?>
@@ -121,7 +122,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 			print "<td>$suma</td>\n";
 			
 			// Konacna ocjena
-			$q150 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r120[0]");
+			$q150 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r120[2] and akademska_godina=$r110[0]");
 			if ($r150 = mysql_fetch_row($q150))
 				if ($r150[0] > 5)
 					print "<td>$r150[0] (".$imena_ocjena[$r150[0]-5].")</td>";

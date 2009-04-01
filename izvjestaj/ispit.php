@@ -8,6 +8,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -64,13 +65,13 @@ if (mysql_num_rows($q10)<1) {
 	return;
 }
 
-$predmet = mysql_result($q10,0,2);
-$ag = mysql_result($q10,0,3);
-
 ?>
 	<p>&nbsp;</p>
 	<h1><?=mysql_result($q10,0,0)?> <?=mysql_result($q10,0,1)?></h1>
 <?
+
+$predmet = mysql_result($q10,0,2);
+$ag = mysql_result($q10,0,3);
 
 
 
@@ -105,7 +106,7 @@ if ($ispit==-1) {
 		$ispiti=array();
 		while ($r40 = mysql_fetch_row($q40)) array_push($ispiti,$r40[0]);
 
-		$q50 = myquery("select count(*) from konacna_ocjena where predmet=$ponudakursa and ocjena>5");
+		$q50 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena>5");
 		$polozilo = mysql_result($q50,0,0);
 
 		$q60 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ag and io.ispit=i.id and io.student=sp.student)=0");

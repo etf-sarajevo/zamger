@@ -10,6 +10,7 @@
 // v3.9.1.5 (2008/10/24) + Popravljena ukupna statistika kod upita "Redovni + ponovci + preneseni"
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
@@ -363,7 +364,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 
 		// Konacna ocjena
 		} else if ($ispit==4) {
-			$q110 = myquery("select ko.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+			$q110 = myquery("select pk.id,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
 			$broj_polozenih=0;
 			while ($r110 = mysql_fetch_row($q110)) {
 				if ($r110[1] >= 6 ) {
@@ -611,7 +612,7 @@ else if ($studenti==1 && $ispit==3) {
 			}
 			print "<td>$zadaca</td>\n";
 
-			$q606 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$kurs_id");
+			$q606 = myquery("select ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=$kurs_id");
 			if (mysql_num_rows($q606)>0) {
 				$ocj = mysql_result($q606,0,0);
 				print "<td>$ocj</td>\n";

@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/10/24) + Popravljen entity u linku za common/inbox
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 
 
 $broj_poruka = 10;
