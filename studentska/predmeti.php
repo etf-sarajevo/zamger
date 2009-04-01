@@ -229,14 +229,14 @@ else if ($akcija == "edit") {
 			<img src="images/32x32/izvjestaj.png" border="0"><br/>Spisak grupa</a></td></tr>
 			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>">
 			<img src="images/32x32/izvjestaj.png" border="0"><br/>Puni izvještaj</a></td></tr><?
-			$q359 = myquery("select i.id,i.naziv,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$metapredmet and i.akademska_godina=$akademskagodina and i.komponenta=k.id order by i.datum,i.komponenta");
+			$q359 = myquery("select i.id,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$metapredmet and i.akademska_godina=$akademskagodina and i.komponenta=k.id order by i.datum,i.komponenta");
 			if (mysql_num_rows($q359)>0) {
 				?><tr><td align="center"><a href="?sta=izvjestaj/ispit&predmet=<?=$predmet?>&ispit=svi">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Statistika predmeta</a></td></tr><?
 			}
 			?><tr><td align="left">Ispiti:<br/><?
 			while ($r359 = mysql_fetch_row($q359)) {
-				print '* <a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r359[0].'">'.$r359[3].'<br/> ('.date("d. m. Y.",$r359[2]).')</a><br/>'."\n";
+				print '* <a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r359[0].'">'.$r359[2].'<br/> ('.date("d. m. Y.",$r359[1]).')</a><br/>'."\n";
 			}
 
 			?></td></tr>
