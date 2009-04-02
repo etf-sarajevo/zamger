@@ -13,6 +13,8 @@
 // v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
 // v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni()); sprjeceno otvaranje coolboxa ako slanje nije uspjelo
 // v3.9.1.10 (2009/02/10) + Funkcija myquery prebacena ovdje radi logginga
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -427,9 +429,9 @@ function studentski_meni($fj) {
 	$arhiva = intval($_REQUEST['sm_arhiva']);
 	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
-		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar,p.naziv");
+		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar,p.naziv");
 	} else {
-		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
+		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
 	}
 
 
@@ -438,8 +440,10 @@ function studentski_meni($fj) {
 
 	// Glavna petlja za generisanje ispisa
 	while ($r30 = mysql_fetch_row($q30)) {
-		$predmet_id = $r30[0];
+		$ponudakursa = $r30[0];
 		$predmet_naziv = $r30[1];
+		$predmet = $r30[4];
+		$pag = $r30[5];
 
 		// Zaglavlje sa imenom akademske godine
 		if ($r30[2]!=$oldsem || $r30[3]!=$oldag) {
@@ -451,16 +455,16 @@ function studentski_meni($fj) {
 			$oldsem=$r30[2]; $oldag=$r30[3];
 		}
 
-		if (intval($_REQUEST['predmet'])==$predmet_id) {
+		if (intval($_REQUEST['predmet'])==$ponudakursa) {
 			if ($_REQUEST['sta'] != "student/predmet")
-				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet_id&sm_arhiva=$arhiva\">";
+				$ispis .= "<a href=\"?sta=student/predmet&predmet=$ponudakursa&sm_arhiva=$arhiva\">";
 			$ispis .= "<img src=\"images/dole.png\" align=\"bottom\" border=\"0\"> <b>$predmet_naziv</b>";
 			if ($_REQUEST['sta'] != "student/predmet")
 				$ispis .= "</a>";
 			$ispis .= "<br/>\n";
 			
 			// Studentski moduli aktivirani za ovaj predmet
-			$q40 = myquery("select gui_naziv, url, novi_prozor from studentski_moduli where predmet=$predmet_id and aktivan=1 order by id");
+			$q40 = myquery("select gui_naziv, url, novi_prozor from studentski_moduli where predmet=$predmet and akademska_godina=$pag and aktivan=1 order by id");
 			while ($r40 = mysql_fetch_row($q40)) {
 				if (stristr($r40[1],$_REQUEST['sta']))
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;$r40[0]<br/>\n";
@@ -471,7 +475,7 @@ function studentski_meni($fj) {
 			}
 
 		} else {
-			$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet_id&sm_arhiva=$arhiva\"><img src=\"images/lijevo.png\" align=\"bottom\" border=\"0\"> $predmet_naziv</a><br/>\n";
+			$ispis .= "<a href=\"?sta=student/predmet&predmet=$ponudakursa&sm_arhiva=$arhiva\"><img src=\"images/lijevo.png\" align=\"bottom\" border=\"0\"> $predmet_naziv</a><br/>\n";
 		}
 	}
 

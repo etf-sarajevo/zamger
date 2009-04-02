@@ -801,6 +801,7 @@ CREATE TABLE IF NOT EXISTS `stdin` (
 CREATE TABLE IF NOT EXISTS `studentski_moduli` (
   `id` int(11) NOT NULL auto_increment,
   `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
   `gui_naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `url` varchar(255) collate utf8_slovenian_ci NOT NULL,
   `aktivan` tinyint(1) NOT NULL,
@@ -998,7 +999,7 @@ INSERT INTO `upis_kriterij` (`id`, `donja_granica`, `gornja_granica`, `kandidati
 --
 
 CREATE TABLE IF NOT EXISTS `zadaca` (
-  `id` bigint(4) NOT NULL auto_increment,
+  `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `predmet` int(11) NOT NULL default '0',
   `akademska_godina` int(11) NOT NULL default '0',

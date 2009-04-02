@@ -8,6 +8,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/24) + Dodan prikaz nastavnika angazovanih na predmetu
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 
 
 
@@ -17,15 +18,17 @@ global $userid,$user_siteadmin;
 
 
 
-$predmet=intval($_REQUEST['predmet']);
-if ($predmet==0) { 
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+$ponudakursa=intval($_REQUEST['predmet']);
+if ($ponudakursa==0) { 
+	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
 	biguglyerror("Nije izabran predmet."); 
 	return; 
 }
 
-$q1 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
+$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
 $predmet_naziv = mysql_result($q1,0,0);
+$predmet = mysql_result($q1,0,1);
+$ag = mysql_result($q1,0,2);
 
 //$tab=$_REQUEST['tab'];
 //if ($tab=="") $tab="Opcije";
@@ -37,9 +40,9 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo pristupa
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/predmet privilegije (predmet p$predmet)",3);
+		zamgerlog("nastavnik/predmet privilegije (predmet p$ponudakursa)",3);
 		biguglyerror("Nemate pravo pristupa");
 		return;
 	} 
@@ -65,7 +68,7 @@ if (!$user_siteadmin) { // 3 = site admin
 <ul>
 <?
 
-$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=o.id and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 while ($r100 = mysql_fetch_row($q100)) {
 	if ($r100[2]==1) $dodaj=" (A)"; else $dodaj="";
 	print "<li>$r100[0] $r100[1]$dodaj</li>\n";
@@ -106,15 +109,15 @@ if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
 	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
 	$q15 = myquery("update studentski_moduli set aktivan=$aktivan where id=$smodul");
 	if ($aktivan==1)
-		zamgerlog("aktiviran studentski modul $smodul (predmet p$predmet)",2); // nivo 2: edit
+		zamgerlog("aktiviran studentski modul $smodul (predmet p$ponudakursa)",2); // nivo 2: edit
 	else
-		zamgerlog("deaktiviran studentski modul $smodul (predmet p$predmet)",2); // nivo 2: edit
+		zamgerlog("deaktiviran studentski modul $smodul (predmet p$ponudakursa)",2); // nivo 2: edit
 }
 
 
 // Studentski moduli koji su aktivirani za ovaj predmet
 
-$q20 = myquery("select id,gui_naziv,aktivan from studentski_moduli where predmet=$predmet order by id");
+$q20 = myquery("select id,gui_naziv,aktivan from studentski_moduli where predmet=$predmet and akademska_godina=$ag order by id");
 if (mysql_num_rows($q20)<1)
 	print "<p>Nijedan modul nije ponuđen.</p>\n";
 while ($r20 = mysql_fetch_row($q20)) {

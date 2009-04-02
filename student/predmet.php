@@ -11,6 +11,7 @@
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.5 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 
 
 function student_predmet() {
@@ -216,7 +217,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 <?
 
 
-$q100 = myquery("select count(*) from studentski_moduli where predmet=$ponudakursa and url like '%student/zadaca%' and aktivan=1");
+$q100 = myquery("select count(*) from studentski_moduli where predmet=$predmet and akademska_godina=$ag and url like '%student/zadaca%' and aktivan=1");
 
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
