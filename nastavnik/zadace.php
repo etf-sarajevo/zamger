@@ -74,7 +74,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	$zadaca = intval($_REQUEST['_lv_column_zadaca']);
 	$zadatak = intval($_REQUEST['zadatak']);
 
-	$q20 = myquery("select naziv,zadataka,bodova,komponenta,predmet,ag from zadaca where id=$zadaca");
+	$q20 = myquery("select naziv,zadataka,bodova,komponenta,predmet,akademska_godina from zadaca where id=$zadaca");
 	if (mysql_num_rows($q20)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greška
 		niceerror("Morate najprije kreirati zadaću");
