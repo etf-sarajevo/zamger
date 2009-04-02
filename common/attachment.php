@@ -28,36 +28,48 @@ if ($zadaca == 0 || $zadatak == 0) {
 }
 
 
-// Prava pristupa
+
 $stud_id=intval($_REQUEST['student']);
+
+// Određujemo ID ponudekursa
+
+$q5 = myquery("select pk.id from ponudakursa as pk, zadaca as z where pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
+if (mysql_num_rows($q5)<1) {
+	zamgerlog("nepostojeca zadaca $zadaca",3);
+	niceerror("Nepostojeća zadaća");
+	return;
+}
+$ponudakursa = mysql_result($q5,0,0);
+
+
+// Prava pristupa
 
 if ($stud_id==0) { // student otvara vlastitu zadacu
 	if ($user_student)
 		$stud_id=$userid;
 	else {
-		zamgerlog("pokusao otvoriti attachment bez ID studenta, a sam nije student");
+		zamgerlog("pokusao otvoriti attachment bez ID studenta, a sam nije student",3);
 		niceerror("Čiju zadaću pokušavate otvoriti?");
 		return;
 	}
 
 } else { // student je odredjen kao parametar
 	if (!$user_nastavnik && !$user_siteadmin) {
-		zamgerlog("attachment: nije nastavnik (student u$stud_id zadaca z$zadaca)");
+		zamgerlog("attachment: nije nastavnik (student u$stud_id zadaca z$zadaca)",3);
 		niceerror("Nemate pravo pregleda ove zadaće");
 		return;
 	}
 
-	if ($user_nastavnik) {
+	if (!$user_siteadmin) {
 		$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where z.id=$zadaca and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and pk.predmet=np.predmet and np.nastavnik=$userid and pk.akademska_godina=np.akademska_godina"); // POJEDNOSTAVITI!
 		if (mysql_num_rows($q10)<1) {
 			zamgerlog("attachment: nije nastavnik na predmetu (student u$stud_id zadaca z$zadaca)",3);
 			niceerror("Nemate pravo pregleda ove zadaće");
 			return;
 		}
-		$predmet_id = mysql_result($q10,0,0);
 		
 		// Provjera ogranicenja
-		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet_id");
+		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$ponudakursa");
 		if (mysql_num_rows($q20)>0) {
 			$nasao=0;
 			while ($r20 = mysql_fetch_row($q20)) {
@@ -65,7 +77,7 @@ if ($stud_id==0) { // student otvara vlastitu zadacu
 				if (mysql_result($q25,0,0)>0) { $nasao=1; break; }
 			}
 			if ($nasao == 0) {
-				zamgerlog("ogranicenje na predmet (student u$stud_id predmet p$predmet_id)",3);
+				zamgerlog("ogranicenje na predmet (student u$stud_id predmet p$ponudakursa)",3);
 				niceerror("Nemate pravo pregleda ove zadaće");
 				return;
 			}
@@ -82,12 +94,11 @@ if (mysql_num_rows($q30)<1) {
 	niceerror("Student nije upisan na predmet");
 	return;
 }
-$predmet_id = mysql_result($q30,0,0);
 
 
 // Preuzimanje zadaće
 
-$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$stud_id/$zadaca/";
+$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$stud_id/$zadaca/";
 
 $q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
 if (mysql_num_rows($q40) < 1) {
