@@ -236,7 +236,9 @@ while ($r10 = mysql_fetch_row($q10)) {
 			if (mysql_num_rows($q60)>0) {
 				$link="?sta=saradnik/grupa&id=".mysql_result($q60,0,0);
 			} else {
-				$link="?sta=saradnik/grupa&id=0&predmet=$predmet";
+				$q65 = myquery("select pk.id from ponudakursa as pk, zadaca as z where z.id=$m[1] and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
+				$pk = mysql_result($q65,0,0);
+				$link="?sta=saradnik/grupa&id=0&predmet=$pk";
 			}
 			$evt = str_replace("z$m[1]","<a href=\"$link\" target=\"_blank\">$naziv</a>",$evt);
 		}
