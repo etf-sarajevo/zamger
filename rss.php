@@ -8,6 +8,7 @@
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; popravljen link na stranicu za konacnu ocjenu (greska unesena sa r372)
+// v4.0.9.4 (2009/04/06) + Dodano polje pubDate na sve kanale
 
 
 $broj_poruka = 10;
@@ -75,6 +76,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[4]</link>
 		<description><![CDATA[Rok za slanje je ".date("d. m. Y",$r10[2]).".]]></description>
+		<pubDate>".date(DATE_RFC822, $r10[5])."</pubDate>
 	</item>";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
@@ -89,6 +91,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[1]</link>
 		<description></description>
+		<pubDate>".date(DATE_RFC822, $r15[3])."</pubDate>
 	</item>";
 	$vrijeme_poruke["i".$r15[0]] = $r15[3];
 }
@@ -104,6 +107,7 @@ while ($r17 = mysql_fetch_row($q17)) {
 		<title>Čestitamo! Dobili ste $r17[1] -- predmet $r17[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[0]</link>
 		<description></description>
+		<pubDate>".date(DATE_RFC822, $r17[2])."</pubDate>
 	</item>";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
@@ -122,6 +126,7 @@ while ($r18 = mysql_fetch_row($q18)) {
 		<title>Pregledana zadaća $r18[4], predmet $r18[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r18[5]</link>
 		<description>Posljednja izmjena: ".date("d. m. Y. h:i:s",$r18[2])."</description>
+		<pubDate>".date(DATE_RFC822, $r18[2])."</pubDate>
 	</item>";
 	array_push($zadaca_bila,$r18[6]);
 	$vrijeme_poruke["zp".$r18[0]] = $r18[2];
@@ -197,6 +202,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		<title>$title: $naslov ($vrijeme)</title>
 		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
 		<description>Poslao: $posiljalac</description>
+		<pubDate>".date(DATE_RFC822, $r100[1])."</pubDate>
 	</item>";
 }
 
