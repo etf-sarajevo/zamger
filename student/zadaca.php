@@ -18,7 +18,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/04/01) + Kod slanja zadace kao attachment status je bio postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran programski jezik
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; pobrisan neki iskomentirani kod
-
+// v4.0.9.2 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 
 
 function student_zadaca() {
@@ -328,7 +328,7 @@ if ($attachment) {
 	print "</td></tr></table>\n";
 
 	// Attachment
-	$q120 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and status=1 order by id desc limit 1");
+	$q120 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
 	if (mysql_num_rows($q120)>0) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
@@ -347,8 +347,8 @@ if ($attachment) {
 			Veličina: <b><?=$velicina?></b></p>
 			</td></tr></table></center>
 			<?
+			print "<p>Ako želite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
 		}
-		print "<p>Ako želite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
 	} else {
 		print "<p>Izaberite datoteku koju želite poslati i kliknite na dugme za slanje:</p>";
 	}

@@ -9,6 +9,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/04/06) + Attachment se nije mogao otvoriti osim ako je status 1
 
 
 function common_attachment() {
@@ -100,7 +101,7 @@ if (mysql_num_rows($q30)<1) {
 
 $lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$stud_id/$zadaca/";
 
-$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
+$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 if (mysql_num_rows($q40) < 1) {
 	zamgerlog("ne postoji attachment (zadaca $zadaca zadatak $zadatak student $stud_id)",3);
 	niceerror("Ne postoji attachment");
@@ -115,7 +116,10 @@ header("Content-Type: $type");
 header('Content-Disposition: attachment; filename=' . $filename, false);
 
 $k = readfile($filepath,false);
-if ($k == false) print "FALSE";
+if ($k == false) {
+	print "Otvaranje attachmenta nije uspjelo! Kontaktirajte administratora";
+	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadaca $zadaca zadatak $zadatak student $stud_id)", 3);
+}
 exit;
 
 }

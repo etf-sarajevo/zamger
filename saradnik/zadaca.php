@@ -15,6 +15,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 
 
 
@@ -214,10 +215,11 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	$filename = mysql_result($q90,0,0);
 
 	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', userid=$userid");
-	// Nakon izmjene ispisujemo zadatak normalno
 
 	update_komponente($stud_id, $predmet_id, $komponenta);
 	zamgerlog("izmjena zadace (student u$stud_id zadaca z$zadaca zadatak $zadatak)",2);
+
+	// Nakon izmjene statusa, nastavljamo normalno sa prikazom zadatka
 }
 
 
@@ -294,7 +296,7 @@ if ($attach == 0) {
 } else {
 	// Attachment
 
-	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
+	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 	$filename = mysql_result($q130,0,0);
 	$the_file = "$lokacijazadaca$zadaca/$filename";
 
