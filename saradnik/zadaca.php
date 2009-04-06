@@ -12,6 +12,8 @@
 // v3.9.1.6 (2008/10/03) + Izmjena statusa i izvrsenje zadace prebaceni na genform() (radi sigurnosnih aspekata istog) i POST metod (radi sukladnosti sa RFCom koji nalaze da se sve potencijalno destruktivne akcije rade kroz POST)
 // v3.9.1.7 (2008/10/19) + Popravljeno jos bugova izazvanih prelaskom na POST
 // v3.9.1.8 (2009/01/22) + Dozvoliti unos bodova iz zadace sa zarezom
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/06) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 
 
 function saradnik_zadaca() {
@@ -290,7 +292,7 @@ if ($attach == 0) {
 } else {
 	// Attachment
 
-	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
+	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 	$filename = mysql_result($q130,0,0);
 	$the_file = "$lokacijazadaca$zadaca/$filename";
 

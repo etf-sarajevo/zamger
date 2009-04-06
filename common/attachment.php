@@ -8,6 +8,7 @@
 // v3.9.1.1 (2008/10/22) + Ovaj kod se obajatio :) prepravljeno $uloga na $user_* varijable; omoguceno nastavniku da otvara attachmente studenata cak i ako je istovremeno i student; tabela student_predmet umjesto relacije preko labgrupe; conf_files_path
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/04/01) + Logicka greska je onemogucavala admina da otvori attachment
+// v4.0.0.2 (2009/04/06) + Attachment se nije mogao otvoriti osim ako je status 1
 
 
 function common_attachment() {
@@ -88,7 +89,7 @@ $predmet_id = mysql_result($q30,0,0);
 
 $lokacijazadaca="$conf_files_path/zadace/$predmet_id/$stud_id/$zadaca/";
 
-$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id and status=1 order by id desc limit 1");
+$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 if (mysql_num_rows($q40) < 1) {
 	zamgerlog("ne postoji attachment (zadaca $zadaca zadatak $zadatak student $stud_id)",3);
 	niceerror("Ne postoji attachment");
