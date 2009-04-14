@@ -12,6 +12,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/04/14) + Zaboravio izbaciti polje naziv iz tabele ispit
 
 
 function nastavnik_ispiti() {
@@ -106,11 +107,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 		$dodavanje=1;
 	} else if (!$ispis) {
-		$q20 = myquery("insert into ispit set naziv='$naziv', predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
-		$q30 = myquery("select id from ispit where naziv='$naziv' and predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
+		$q20 = myquery("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
+		$q30 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
 
 		if (mysql_num_rows($q30)<1) {
-			zamgerlog("unos ispita nije uspio (naziv '$naziv', predmet $predmet, ag $ag, datum $mdat, tipispita $tipispita)",3);
+			zamgerlog("unos ispita nije uspio (predmet $predmet, ag $ag, datum $mdat, tipispita $tipispita)",3);
 			niceerror("Unos ispita nije uspio.");
 			return;
 		} 
