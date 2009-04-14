@@ -23,6 +23,7 @@
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/04/14) + Zaboravio popraviti ID predmeta u pozivu AJAHa za konacnu ocjenu
 
 
 
@@ -725,9 +726,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q350)>0) {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet_id\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
 	} else {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet_id\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 	}
 
 
