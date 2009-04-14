@@ -858,9 +858,9 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `studij` int(11) NOT NULL,
   `semestar` int(3) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
-  `nacin_studiranja` int(11) NOT NULL
+  `nacin_studiranja` int(11) NOT NULL,
   `ponovac` tinyint(4) NOT NULL default '0',
-  `odluka` int(11) NOT NULL default '0'
+  `odluka` int(11) NOT NULL default '0',
   PRIMARY KEY  (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
