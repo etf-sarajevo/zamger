@@ -13,6 +13,7 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/14) + Zaboravio izbaciti polje naziv iz tabele ispit
+// v4.0.9.4 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
 
 
 function nastavnik_ispiti() {
@@ -111,7 +112,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$q30 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
 
 		if (mysql_num_rows($q30)<1) {
-			zamgerlog("unos ispita nije uspio (predmet $predmet, ag $ag, datum $mdat, tipispita $tipispita)",3);
+			zamgerlog("unos ispita nije uspio (predmet p$ponudakursa, ag $ag, datum $mdat, tipispita $tipispita)",3);
 			niceerror("Unos ispita nije uspio.");
 			return;
 		} 
@@ -164,11 +165,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		print "</form>";
 		return;
 	} else {
-		zamgerlog("masovni rezultati ispita za predmet p$predmet",4);
+		zamgerlog("masovni rezultati ispita za predmet p$ponudakursa",4);
 		?>
 		Rezultati ispita su upisani.
 		<script language="JavaScript">
-		location.href='?sta=nastavnik/ispiti&predmet=<?=$predmet?>';
+		location.href='?sta=nastavnik/ispiti&predmet=<?=$ponudakursa?>';
 		</script>
 		<?
 	}
