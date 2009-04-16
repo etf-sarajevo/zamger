@@ -9,7 +9,7 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-
+// v4.0.9.5 (2009/04/16) + Popravljena logging
 
 
 
@@ -38,14 +38,14 @@ $ponudakursa = intval($_REQUEST['predmet']);
 
 if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
-	zamgerlog ("Pristup izvjestaju a nije NBA",3); // 3 = error
+	zamgerlog ("pristup izvjestaju a nije NBA",3); // 3 = error
 	return;
 }
 if (!$user_studentska && !$user_siteadmin) {
 	$q2 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
 	if (mysql_num_rows($q2) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
-		zamgerlog ("Nije admin predmeta",3); // 3 = error
+		zamgerlog ("nije admin predmeta p$ponudakursa",3); // 3 = error
 		return;
 	}
 }
@@ -60,7 +60,7 @@ if ($_REQUEST['ispit'] == "svi") $ispit=-1;
 $q10 = myquery("select p.naziv,ag.naziv,p.id,ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$ponudakursa and ag.id=pk.akademska_godina and pk.predmet=p.id");
 
 if (mysql_num_rows($q10)<1) {
-	niceerror("Nepoznat predmet sa IDom $ponudakursa.");
+	biguglyerror("Nepoznat predmet sa IDom $ponudakursa.");
 	zamgerlog ("nepoznat predmet $ponudakursa", 3);
 	return;
 }
@@ -83,7 +83,7 @@ if ($ispit==-1) {
 	$q20 = myquery("select UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.maxbodova,k.prolaz from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 	if (mysql_num_rows($q20)<1) {
 		biguglyerror("Nepoznat ispit!");
-		zamgerlog ("Pristup ispitu kojeg nema u bazi",3);
+		zamgerlog ("nepoznat ispit $ispit predmet p$ponudakursa",3);
 		return;
 	}
 
