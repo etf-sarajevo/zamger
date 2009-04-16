@@ -13,7 +13,8 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/14) + Zaboravio izbaciti polje naziv iz tabele ispit
-// v4.0.9.4 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
+// v4.0.9.5 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
+// v4.0.9.6 (2009/04/16) + Popravljen link na izvjestaj/ispit
 
 
 function nastavnik_ispiti() {
@@ -186,7 +187,7 @@ print "<ul>\n";
 if (mysql_num_rows($q110)<1)
 	print "<li>Nije unesen nijedan ispit.</li>";
 while ($r110 = mysql_fetch_row($q110)) {
-	print '<li><a href="?sta=izvjestaj/ispit&predmet='.$predmet.'&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
+	print '<li><a href="?sta=izvjestaj/ispit&predmet='.$ponudakursa.'&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
 }
 print "</ul>\n";
 
