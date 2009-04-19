@@ -9,6 +9,7 @@
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; popravljen link na stranicu za konacnu ocjenu (greska unesena sa r372)
 // v4.0.9.4 (2009/04/06) + Dodano polje pubDate na sve kanale
+// v4.0.9.5 (2009/04/19) + Popravljen link na rezultate ispita
 
 
 $broj_poruka = 10;
@@ -84,12 +85,12 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum) from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["i".$r15[0]] = "<item>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
-		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[1]</link>
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[6]</link>
 		<description></description>
 		<pubDate>".date(DATE_RFC822, $r15[3])."</pubDate>
 	</item>";
