@@ -80,7 +80,7 @@
 						//Ako je paramatar != 0, uradi update baze, u suprotnom ubaci novi red u bazu
 						if($salaModif != 0)
 							{
-								$updateDBS = $db->Query("UPDATE ras_sala SET nameS = '".$salaS."', capacS = '".$kapacitetS."' WHERE idS = '".$salaModif."' ");
+								$updateDBS = $db->Query("UPDATE raspored_sala SET naziv = '".$salaS."', kapacitet = '".$kapacitetS."' WHERE id = '".$salaModif."' ");
 								if($updateDBS)
 									{
 										$main->printInfo("Sala uspjesno modifikovana", true);
@@ -92,7 +92,7 @@
 							}
 						else
 							{
-								$insertIntoDBS = $db->Query("INSERT INTO ras_sala (nameS, capacS) VALUES ('".$salaS."', '".$kapacitetS."') ");
+								$insertIntoDBS = $db->Query("INSERT INTO raspored_sala (naziv, kapacitet) VALUES ('".$salaS."', '".$kapacitetS."') ");
 								if($insertIntoDBS)
 									{
 										$main->printInfo("Sala uspjesno dodana", true);
@@ -230,7 +230,7 @@
 						';
 						
 						//Ispis sala za modifikaciju
-						$selectSaleDB = $db->Query("SELECT idS, nameS, capacS FROM ras_sala ORDER BY idS DESC ");
+						$selectSaleDB = $db->Query("SELECT id, naziv, kapacitet FROM raspored_sala ORDER BY id DESC ");
 						$ifExistSDB = $db->Count($selectSaleDB);
 						
 						if($ifExistSDB >= 1)
@@ -241,9 +241,9 @@
 								$nmbrCounter = 1;
 								while($pSDB = $db->fetchArray($selectSaleDB))
 									{
-										$idSale = $db->stripS($pSDB['idS'], true);
-										$imeSale = $db->stripS($pSDB['nameS']);
-										$kapacSale = $db->stripS($pSDB['capacS'], true);
+										$idSale = $db->stripS($pSDB['id'], true);
+										$imeSale = $db->stripS($pSDB['naziv']);
+										$kapacSale = $db->stripS($pSDB['kapacitet'], true);
 										
 										echo '
 											<div class = "sectionP0">
@@ -251,8 +251,8 @@
 												<div id = "sectionP2">'.$imeSale.'</div>
 												<div id = "sectionP3">'.$kapacSale.'</div>
 												<div id = "sectionP4">
-													<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja(\''.$imeSale.'\',\''.$kapacSale.'\', \''.$idSale.'\', \'salaModify\')" ><img  src = "images/16x16/log_edit.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
-													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=studentska/raspored&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "images/16x16/brisanje.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
+													<a href = "javascript: doAction()" onClick="javascript:popuniSalaPolja(\''.$imeSale.'\',\''.$kapacSale.'\', \''.$idSale.'\', \'salaModify\')" ><img  src = "images/16x16/log_edit.gif" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
+													<a href = "javascript: doAction()" onClick="javascript:izbrisi(\'Zelim izbrisati salu: '.$imeSale.' ?\', \'?sta=studentska/raspored&uradi=sale&do=brisi&idS='.$idSale.'\')"><img src = "images/16x16/brisanje.gif" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
 												</div>
 												<div class = "razmak"></div>
 											</div>
@@ -267,7 +267,7 @@
 					
 					if($_GET['do'] == "brisi")
 						{
-							brisiSalu($db->addSlashes($_GET['idS']));
+							brisiSalu($db->addSlashes($_GET['id']));
 						}
 					
 			}//Kraj kreiranja sala
@@ -277,7 +277,7 @@
 			{
 				global $db, $main;
 				
-				$deleteSDB = $db->Query("DELETE FROM ras_sala WHERE idS = '".$idSale."' ");
+				$deleteSDB = $db->Query("DELETE FROM raspored_sala WHERE id = '".$idSale."' ");
 				if($deleteSDB)
 					{
 						//Osvjezi prozor da bi se izbrisala iz liste sala

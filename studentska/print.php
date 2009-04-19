@@ -50,7 +50,7 @@ function vrijemeIspis($vrijemePoc, $vrijemeKraj){
 function printRaspored($id, $tip) {	
 
 	// Selektuje podatke iz baze
-	if ($rasSel = myquery("SELECT idR, id, naziv, kratki_naziv, danR, smijerR, godinaR, tipR, vrijemeRP, vrijemeRK, grupaR, salaR FROM ras_raspored LEFT JOIN predmet ON ras_raspored.predmetR = predmet.id WHERE idRaspored = '".$id."' ORDER BY danR ASC, vrijemeRP ASC, idR ASC")){
+	if ($rasSel = myquery("SELECT id, id, naziv, kratki_naziv, dan_u_sedmici, smijerR, godinaR, tip, vrijeme_pocetak, vrijeme_kraj, labgrupa, sala FROM raspored_stavka LEFT JOIN predmet ON raspored_stavka.predmet = predmet.id WHERE raspored = '".$id."' ORDER BY dan_u_sedmici ASC, vrijeme_pocetak ASC, id ASC")){
 		
 		// Printa dane
 		echo '<div class="dan_header" style="width:50px">Dan/Sat</div>
@@ -88,9 +88,9 @@ function printRaspored($id, $tip) {
 			$cssFontSize = "";
 			$cssFontSize2 = "";
 			// Provjerava da li je presao na novi dan
-			if ($row['danR'] != $lastDay){
+			if ($row['dan_u_sedmici'] != $lastDay){
 				echo '<div class="razmak"></div></div>'; // Kraj one kolone
-				$dayDif = $row['danR']-$lastDay-1; //Provjerava ako ima prazan dan izmedu										
+				$dayDif = $row['dan_u_sedmici']-$lastDay-1; //Provjerava ako ima prazan dan izmedu										
 				for ($i=0; $i<$dayDif; $i++){
 					echo '<div class="kolona">
 						<div class="prazna_celija" style="height:28px"></div>
@@ -98,12 +98,12 @@ function printRaspored($id, $tip) {
 						</div>';
 				}
 				echo '<div class="kolona">'; // Prelazak u novu kolonu
-				$lastDay = $row['danR'];
+				$lastDay = $row['dan_u_sedmici'];
 				$lastCas = 0;
 			}
 									
 			/* Provjerava da li postoji jos neki cas paralelno */
-			if ($parSel = myquery("SELECT idR, vrijemeRP, vrijemeRK FROM ras_raspored WHERE ((vrijemeRP<='".$row['vrijemeRP']."' AND vrijemeRK>='".$row['vrijemeRP']."') OR (vrijemeRP<='".$row['vrijemeRK']."' AND vrijemeRK>='".$row['vrijemeRK']."')OR (vrijemeRP>='".$row['vrijemeRP']."' AND vrijemeRK<='".$row['vrijemeRK']."')) AND godinaR = '".$row['godinaR']."' AND smijerR = '".$row['smijerR']."' AND danR='".$row['danR']."' AND idR!='".$row['idR']."' ORDER BY vrijemeRP ASC")){
+			if ($parSel = myquery("SELECT id, vrijeme_pocetak, vrijeme_kraj FROM raspored_stavka WHERE ((vrijeme_pocetak<='".$row['vrijeme_pocetak']."' AND vrijeme_kraj>='".$row['vrijeme_pocetak']."') OR (vrijeme_pocetak<='".$row['vrijeme_kraj']."' AND vrijeme_kraj>='".$row['vrijeme_kraj']."')OR (vrijeme_pocetak>='".$row['vrijeme_pocetak']."' AND vrijeme_kraj<='".$row['vrijeme_kraj']."')) AND godinaR = '".$row['godinaR']."' AND smijerR = '".$row['smijerR']."' AND dan_u_sedmici='".$row['dan_u_sedmici']."' AND id!='".$row['id']."' ORDER BY vrijeme_pocetak ASC")){
 				$css = 'celija'; // Ovo ti je css za normalni siroki box i on je default
 				$cssMarLeft = 0; // Default je na lijevoj strani
 				if (mysql_num_rows($parSel)) { // Broji prethodni query, ako ima makar 1 red u rezultatu znaci da se nesto odvija paralelno
@@ -126,25 +126,25 @@ function printRaspored($id, $tip) {
 				}						
 			}
 			
-			if($row['grupaR'] != 0) {
-				$grupeSel = mysql_fetch_array(myquery("SELECT * FROM labgrupa WHERE id = '".$row['grupaR']."' "));
+			if($row['labgrupa'] != 0) {
+				$grupeSel = mysql_fetch_array(myquery("SELECT * FROM labgrupa WHERE id = '".$row['labgrupa']."' "));
 				$grupaP = " - ".$grupeSel['naziv'];
 			} else
 				$grupaP = "";
 				
-			$sala = mysql_fetch_array(myquery("SELECT nameS FROM ras_sala WHERE idS = '".$row['salaR']."' "));
+			$sala = mysql_fetch_array(myquery("SELECT naziv FROM raspored_sala WHERE id = '".$row['sala']."' "));
 			
 			if($tip == "full")
-				echo '<div class="'.$css.'" style="'.$cssFontSize2.' height:'.(28+($row['vrijemeRK']-$row['vrijemeRP'])*41).'px; margin-top:'.(($row['vrijemeRP']-1)*41).'px; margin-left:'.$cssMarLeft.'px">
-					<div class = "naslov" '.$cssFontSize.'><div style = "float:left">'.vrijemeIspis($row['vrijemeRP'], $row['vrijemeRK']).'</div> <div class = "razmak"></div></div> '.$row['skracenoP'].' ('.$row['tipR'].') <b>'.$row['kratki_naziv'].'</b> '.$grupaP.' - '.$sala['nameS'].' </div>';
+				echo '<div class="'.$css.'" style="'.$cssFontSize2.' height:'.(28+($row['vrijeme_kraj']-$row['vrijeme_pocetak'])*41).'px; margin-top:'.(($row['vrijeme_pocetak']-1)*41).'px; margin-left:'.$cssMarLeft.'px">
+					<div class = "naslov" '.$cssFontSize.'><div style = "float:left">'.vrijemeIspis($row['vrijeme_pocetak'], $row['vrijeme_kraj']).'</div> <div class = "razmak"></div></div> '.$row['skracenoP'].' ('.$row['tip'].') <b>'.$row['kratki_naziv'].'</b> '.$grupaP.' - '.$sala['nameS'].' </div>';
 			else
 				echo '
-				<div class="'.$css.'" style="'.$cssFontSize2.' height:'.(28+($row['vrijemeRK']-$row['vrijemeRP'])*41).'px; margin-top:'.(($row['vrijemeRP']-1)*41).'px; margin-left:'.$cssMarLeft.'px">
-					<div class = "naslov" '.$cssFontSize.'><div style = "float:left">'.vrijemeIspis($row['vrijemeRP'], $row['vrijemeRK']).'</div> <div class = "razmak"></div></div> <b>'.$sala['nameS'].'</b> </div>';
+				<div class="'.$css.'" style="'.$cssFontSize2.' height:'.(28+($row['vrijeme_kraj']-$row['vrijeme_pocetak'])*41).'px; margin-top:'.(($row['vrijeme_pocetak']-1)*41).'px; margin-left:'.$cssMarLeft.'px">
+					<div class = "naslov" '.$cssFontSize.'><div style = "float:left">'.vrijemeIspis($row['vrijeme_pocetak'], $row['vrijeme_kraj']).'</div> <div class = "razmak"></div></div> <b>'.$sala['nameS'].'</b> </div>';
 
 			// Ispisuje box sa predmetom									
 			
-			$lastCas = $row['vrijemeRK'];
+			$lastCas = $row['vrijeme_kraj'];
 		}
 		
 		echo '</div>';

@@ -11,7 +11,7 @@
 
 function saradnik_intro() {
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$registry;
 
 
 
@@ -24,6 +24,17 @@ if (spol($ime)=="Z")
 else
 	print "<h1>Dobro došao, ".genitiv($ime,"M")."</h1>";
 
+
+
+// Sakrij raspored ako ga nema u registry-ju
+$nasao=0;
+foreach ($registry as $r) {
+	if ($r[0]=="common/raspored") { $nasao=1; break; }
+}
+if ($nasao==1) {
+	require "common/raspored.php";
+	common_raspored("nastavnik");
+}
 
 // Prikaz obavještenja za saradnike
 $q20 = myquery("select UNIX_TIMESTAMP(vrijeme) from log where userid=$userid order by id desc limit 2");

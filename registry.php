@@ -69,6 +69,7 @@ array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "0", "0"),
 array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
+array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
 
 array());
 

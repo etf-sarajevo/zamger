@@ -684,25 +684,40 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ras_raspored`
+-- Table structure for table `raspored`
 --
 
-CREATE TABLE IF NOT EXISTS `ras_raspored` (
-  `idR` int(1) NOT NULL auto_increment,
-  `idRaspored` int(11) NOT NULL,
-  `danR` tinyint(1) NOT NULL,
-  `predmetR` int(11) NOT NULL,
-  `vrijemeRP` int(11) NOT NULL,
-  `vrijemeRK` int(11) NOT NULL,
-  `smijerR` int(11) NOT NULL,
-  `godinaR` tinyint(2) NOT NULL,
-  `semestarR` int(11) NOT NULL,
-  `salaR` tinyint(2) NOT NULL,
-  `tipR` varchar(1) NOT NULL default 'P',
-  `grupaR` int(11) NOT NULL default '0',
-  PRIMARY KEY  (`idR`),
-  KEY `idRaspored` (`idRaspored`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+CREATE TABLE IF NOT EXISTS `raspored` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `datum_kreiranja` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `aktivan` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+
+--
+-- Dumping data for table `raspored`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `raspored_stavka`
+--
+
+CREATE TABLE IF NOT EXISTS `raspored_stavka` (
+  `id` int(11) NOT NULL auto_increment,
+  `raspored` int(11) NOT NULL,
+  `dan_u_sedmici` tinyint(1) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `labgrupa` int(11) NOT NULL,
+  `vrijeme_pocetak` int(11) NOT NULL,
+  `vrijeme_kraj` int(11) NOT NULL,
+  `sala` int(11) NOT NULL,
+  `tip` varchar(1) character set latin1 NOT NULL default 'P',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=255 ;
 
 --
 -- Dumping data for table `ras_raspored`

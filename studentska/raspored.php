@@ -325,7 +325,7 @@ function ispisPocetne() {
 		<div><a href = "#" onclick="toggleVisibility(\'pp\', \'formP2\')"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "pp" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP2" id = "formP2" action = "studentska/print.php?act=PP" target = "_blank" method = "post">
-				Printanje profesora za pedmet: '.selectOption("auth", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", /*"sql_uslov"=>"WHERE nastavnik = 1"*/), "nastavnik").' &nbsp;&nbsp;
+				Printanje profesora za pedmet: '.selectOption("auth", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
 				<input type = "hidden" name = "imeNastavnika" id = "imeNastavnika" />
 				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
 			</form>
@@ -351,14 +351,14 @@ function napraviSale() {
 		
 		//Ako je parametar != 0, uradi update baze, u suprotnom ubaci novi red u bazu
 		if($salaModif != 0) {
-			$updateDBS = myquery("UPDATE ras_sala SET nameS = '".$salaS."', capacS = '".$kapacitetS."', tipS = '".$tipS."' WHERE idS = '".$salaModif."' ");
+			$updateDBS = myquery("UPDATE raspored_sala SET naziv = '".$salaS."', kapacitet = '".$kapacitetS."', tip = '".$tipS."' WHERE id = '".$salaModif."' ");
 			if($updateDBS) {
 				printInfo("Sala uspjesno modifikovana", true);
 			} else {
 				printInfo("Greska pri modifikaciji sale", true);
 			}
 		} else {
-			$insertIntoDBS = myquery("INSERT INTO ras_sala (nameS, capacS, tipS) VALUES ('".$salaS."', '".$kapacitetS."', '".$tipS."') ");
+			$insertIntoDBS = myquery("INSERT INTO raspored_sala (naziv, kapacitet, tip) VALUES ('".$salaS."', '".$kapacitetS."', '".$tipS."') ");
 			if($insertIntoDBS) {
 				printInfo("Sala uspjesno dodana", true);
 			} else {
@@ -409,16 +409,16 @@ function napraviSale() {
 		<?
 			
 		//Ispis sala za modifikaciju
-		$selectSaleDB = myquery("SELECT idS, nameS, capacS, tipS FROM ras_sala ORDER BY idS DESC ");
+		$selectSaleDB = myquery("SELECT id, naziv, kapacitet, tip FROM raspored_sala ORDER BY id DESC ");
 		$ifExistSDB = mysql_num_rows($selectSaleDB);
 			
 		if($ifExistSDB >= 1) {
 			$nmbrCounter = 1;
 			while($pSDB = mysql_fetch_array($selectSaleDB)) {
-				$idSale = $pSDB['idS'];
-				$imeSale = $pSDB['nameS'];
-				$tipSale = $pSDB['tipS'];
-				$kapacSale = $pSDB['capacS'];
+				$idSale = $pSDB['id'];
+				$imeSale = $pSDB['naziv'];
+				$tipSale = $pSDB['tip'];
+				$kapacSale = $pSDB['kapacitet'];
 				
 				?>
 				<div class = "sectionP0">
@@ -451,7 +451,7 @@ function napraviSale() {
 #
 ##################################################################################
 function brisiSalu($idSale) {
-	$deleteSDB = myquery("DELETE FROM ras_sala WHERE idS = '".$idSale."' ");
+	$deleteSDB = myquery("DELETE FROM raspored_sala WHERE id = '".$idSale."' ");
 	if($deleteSDB) {
 		//Osvjezi prozor da bi se izbrisala iz liste sala
 		?>
@@ -536,8 +536,8 @@ function napraviRaspored() {
 		
 		function ispis($arrP) {
 			//$insertRas = myquery("INSERT INTO ras_ras VALUES ('', '".$_POST['godina']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."')");
-			$selR = mysql_fetch_assoc(myquery("SELECT MAX(idRaspored) AS idRas, smijerR, godinaR, semestarR FROM ras_raspored GROUP BY idRaspored"));
-			$idN = $selR['idRas'] + 1;
+			$selR = mysql_fetch_assoc(myquery("SELECT MAX(raspored) AS idas, smijerR, godinaR, semestarR FROM raspored_stavka GROUP BY raspored"));
+			$idN = $selR['idas'] + 1;
 			
 			if($_POST['studij'] == $selR['smijerR'] AND $_POST['akademska_godina'] == $selR['godinaR'] AND $_POST['godina'] == $selR['semestarR'])
 				echo "Raspored za izabrani smijer na ".$_POST['godina']." semestru vec postoji.";
@@ -549,7 +549,7 @@ function napraviRaspored() {
 					if($val['x'] == "")
 						$none;
 					else {
-						if(myquery("INSERT INTO ras_raspored (idRaspored, danR, predmetR, vrijemeRP, vrijemeRK, smijerR, godinaR, semestarR, salaR, tipR, grupaR) VALUES ('".$idN."', '".$val['y']."', '".$val['predmet']."', '".$val['xp']."', '".$val['xe']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."', '".$_POST['godina']."', '".$val['sala']."', '".$val['tip']."', '".$val['grupa']."')"))
+						if(myquery("INSERT INTO raspored_stavka (raspored, dan_u_sedmici, predmet, vrijeme_pocetak, vrijeme_kraj, smijerR, godinaR, semestarR, sala, tip, labgrupa) VALUES ('".$idN."', '".$val['y']."', '".$val['predmet']."', '".$val['xp']."', '".$val['xe']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."', '".$_POST['godina']."', '".$val['sala']."', '".$val['tip']."', '".$val['grupa']."')"))
 							$kreiran++;
 					}
 				}
@@ -719,7 +719,7 @@ function napraviRaspored() {
 				
 			<div class = "formLS">Sala:</div>
 			<div class = "formRS">
-					<?=selectOption("ras_sala", array("idS", "nameS"), array("ajax"=>'onChange = "popuniPolje(\'sala\', \'sakrivenoPoljeS\')"'), "sala")?>
+					<?=selectOption("raspored_sala", array("id", "naziv"), array("ajax"=>'onChange = "popuniPolje(\'sala\', \'sakrivenoPoljeS\')"'), "sala")?>
 				<input type="hidden" id="sakrivenoPoljeS" name="sakrivenoPoljeS" />
 			</div>
 			<div class = "razmak"></div>
@@ -824,13 +824,13 @@ function pogledajRasporede() {
 	<?
 	
 	$brojacRK = 1;
-	$sqlRasporediK = myquery("SELECT DISTINCT(a.idRaspored), a.semestarR, b.naziv AS nStudij, c.naziv AS nAkademska FROM ras_raspored a, studij b, akademska_godina c WHERE b.id = a.smijerR AND c.id = a.godinaR ORDER BY a.idR DESC");
+	$sqlRasporediK = myquery("SELECT DISTINCT(a.raspored), a.semestarR, b.naziv AS nStudij, c.naziv AS nAkademska FROM raspored_stavka a, studij b, akademska_godina c WHERE b.id = a.smijerR AND c.id = a.godinaR ORDER BY a.id DESC");
 	if(mysql_num_rows($sqlRasporediK) < 1)
 		echo "Nema kreiranih rasporeda";
 	else {
 		while($sRK = mysql_fetch_array($sqlRasporediK)) {
 		
-			echo "<div style = 'line-height: 18px'>Raspored no.".$brojacRK." - <b>Odsjek:</b> <font color = '#000'>".$sRK['nStudij']."</font> | <b>Semestar:</b> <font color = '#000'>".$sRK['semestar']."</font> | <b>Akademska godina:</b> <font color = '#000'>".$sRK['nAkademska']."</font> | <a target = '_blank' href = 'studentska/print.php?act=rasporedFull&id=".$sRK['idRaspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/raspored.png' border = '0' alt = 'Printaj cijeli raspored' title = 'Printaj cijeli raspored'></a> | <a target = '_blank' href = 'studentska/print.php?act=sale&id=".$sRK['idRaspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/sale.png' border = '0' alt = 'Printaj sale' title = 'Printaj sale'></a> | <a href = '?sta=studentska/raspored&uradi=brisiRaspored&id=".$sRK['idRaspored']."'><img src = 'images/16x16/brisanje.png' border = '0' alt = 'Brisi raspored' title = 'Brisi raspored'></a></div>";
+			echo "<div style = 'line-height: 18px'>Raspored no.".$brojacRK." - <b>Odsjek:</b> <font color = '#000'>".$sRK['nStudij']."</font> | <b>Semestar:</b> <font color = '#000'>".$sRK['semestar']."</font> | <b>Akademska godina:</b> <font color = '#000'>".$sRK['nAkademska']."</font> | <a target = '_blank' href = 'studentska/print.php?act=rasporedFull&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/raspored.png' border = '0' alt = 'Printaj cijeli raspored' title = 'Printaj cijeli raspored'></a> | <a target = '_blank' href = 'studentska/print.php?act=sale&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/sale.png' border = '0' alt = 'Printaj sale' title = 'Printaj sale'></a> | <a href = '?sta=studentska/raspored&uradi=brisiRaspored&id=".$sRK['raspored']."'><img src = 'images/16x16/brisanje.png' border = '0' alt = 'Brisi raspored' title = 'Brisi raspored'></a></div>";
 		
 			$brojacRK++;
 		}
@@ -846,7 +846,7 @@ function pogledajRasporede() {
 function brisiRaspored() {
 	$id = $_GET['id'];
 	
-	$sqlBrisi = myquery("DELETE FROM ras_raspored WHERE idRaspored = '".$id."' ");
+	$sqlBrisi = myquery("DELETE FROM raspored_stavka WHERE raspored = '".$id."' ");
 	if($sqlBrisi)
 		echo "Raspored izbrisan.";
 	else
