@@ -26,6 +26,7 @@
 // v4.0.9.2 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.3 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet -- FIXME provjeriti mogucnosti optimizacije
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.5 (2009/04/19) + U r335 nije ustvari napravljena izmjena koja pise u komentaru; subakcija "angazuj" nije definisala polje akademska_godina koje je u tabelu nastavnik_predmet dodano u r365; upit za aktuelnu ak. godinu pomjeren naprijed
 
 
 
@@ -504,8 +505,20 @@ else if ($akcija == "edit") {
 	?><a href="?sta=studentska/osobe&search=<?=$pretraga?>&offset=<?=$ofset?>">Nazad na rezultate pretrage</a><br/><br/><?
 	
 
-	// Submit akcije
+	// Prvo odredjujemo aktuelnu akademsku godinu - ovaj upit se dosta koristi kasnije
+	$q210 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc");
+	if (mysql_num_rows($q210)<1) {
+		// Nijedna godina nije aktuelna - ali mora postojati barem jedna u bazi
+		$q210 = myquery("select id,naziv from akademska_godina order by id desc");
+	}
+	$id_ak_god = mysql_result($q210,0,0);
+	$naziv_ak_god = mysql_result($q210,0,1);
+	// Posto se id_ak_god moze promijeniti.... CLEANUP!!!
+	$orig_iag = $id_ak_god;
 
+
+
+	// ======= SUBMIT AKCIJE =========
 
 
 	// Promjena korisničkog pristupa i pristupnih podataka
@@ -592,7 +605,7 @@ else if ($akcija == "edit") {
 			$login = my_escape($_REQUEST['login']);
 			$password = my_escape($_REQUEST['password']);
 
-			$q120 = myquery("update auth set login='$login', password='$password', aktivan=1 where id=$osoba");
+			$q120 = myquery("replace auth set id=$osoba, login='$login', password='$password', aktivan=1");
 			zamgerlog("dodan/izmijenjen login za korisnika u$osoba (table)",4);
 
 		}
@@ -628,14 +641,9 @@ else if ($akcija == "edit") {
 		$predmet = mysql_result($q115,0,0);
 		$naziv_predmeta = mysql_result($q115,0,1);
 
-		$q120 = myquery("select count(*) from nastavnik_predmet where nastavnik=$osoba and predmet=$predmet");
-		if (mysql_result($q120)>0) {
-			$q130 = myquery("update nastavnik_predmet set admin=$admin_predmeta where nastavnik=$osoba, predmet=$predmet");
-		} else {
-			$q140 = myquery("insert into nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, admin=$admin_predmeta");
-		}
+		$q130 = myquery("replace nastavnik_predmet set admin=$admin_predmeta, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
 
-		zamgerlog("nastavnik u$osoba prijavljen na predmet p$predmet (admin: $admin_predmeta)",4);
+		zamgerlog("nastavnik u$osoba prijavljen na predmet p$ponudakursa (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
 		nicemessage("Nastavnik prijavljen na predmet $naziv_predmeta.");
 	}
 
@@ -826,13 +834,6 @@ else if ($akcija == "edit") {
 		</form>
 		<?
 	}
-
-	// Prvo odredjujemo aktuelnu akademsku godinu - ovaj upit se dosta koristi kasnije
-	$q210 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc");
-	$id_ak_god = mysql_result($q210,0,0);
-	$naziv_ak_god = mysql_result($q210,0,1);
-	// Posto se id_ak_god moze promijeniti.... CLEANUP!!!
-	$orig_iag = $id_ak_god;
 
 
 	// STUDENT
