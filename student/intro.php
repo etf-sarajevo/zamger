@@ -16,6 +16,8 @@
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/04/06) + Skracujem prikaz obavjestenja ako je "naslov" duzi od 200 znakova
+// v4.0.9.5 (2009/04/19) + Popravljen upit za obavjestenja o polozenim ispitima - posto je moguce da isti predmet ima vise ponudakursa, desavalo se da link na stranicu predmeta bude za pogresnu ponudukursa na koju student nije upisan
 
 
 function student_intro() {
@@ -36,11 +38,11 @@ else
 // Sakrij raspored ako ga nema u registry-ju
 $nasao=0;
 foreach ($registry as $r) {
-	if ($r[0]=="studentska/raspored") { $nasao=1; break; }
+	if ($r[0]=="common/raspored") { $nasao=1; break; }
 }
 if ($nasao==1) {
-	require_once "common/raspored.php";
-	printRaspored($userid, "student");
+	require "common/raspored.php";
+	common_raspored("student");
 }
 
 
@@ -70,7 +72,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id");
+$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	if ($r15[6]>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
@@ -176,10 +178,20 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 	}
 	
+	// Ako je tekst obavještenja prevelik, skraćujemo
+	$tekst = $r40[4];
+	$skracen=false;
+	if (strlen($tekst)>200) {
+		$pos = strpos($tekst," ",200);
+		if ($pos>220) $pos=220;
+		$tekst = substr($tekst,0,$pos)."...";
+		$skracen=true;
+	}
+
 	?>
 	<b><?=$posiljalac?></b> (<?=date("d.m",$r40[1])?>)<br/>
-	<?=$r40[4]?><?
-	if (strlen($r40[5])>0) print " (<a href=\"?sta=common/inbox&poruka=$r40[0]\">Dalje...</a>)";
+	<?=$tekst?><?
+	if (strlen($r40[5])>0 || $skracen) print " (<a href=\"?sta=common/inbox&poruka=$r40[0]\">Dalje...</a>)";
 	?><br/><br/>
 	<?
 	$printed++;
