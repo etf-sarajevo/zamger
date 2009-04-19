@@ -693,7 +693,7 @@ CREATE TABLE IF NOT EXISTS `raspored` (
   `datum_kreiranja` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   `aktivan` tinyint(1) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `raspored`
@@ -717,29 +717,31 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
   `sala` int(11) NOT NULL,
   `tip` varchar(1) character set latin1 NOT NULL default 'P',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=255 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
--- Dumping data for table `ras_raspored`
+-- Dumping data for table `raspored_stavka`
 --
 
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `ras_sala`
---
-
-CREATE TABLE IF NOT EXISTS `ras_sala` (
-  `idS` int(11) NOT NULL auto_increment,
-  `nameS` varchar(50) NOT NULL,
-  `capacS` int(5) default NULL,
-  `tipS` varchar(50) NOT NULL,
-  PRIMARY KEY  (`idS`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `ras_sala`
+-- Table structure for table `raspored_sala`
+--
+
+CREATE TABLE IF NOT EXISTS `raspored_sala` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `kapacitet` int(5) default NULL,
+  `tip` varchar(255) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `raspored_sala`
 --
 
 
