@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/10/03) + Destruktivni zahtjevi prebaceni na POST radi sukladnosti sa RFCom
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/05) + Slanje poruke studentu da je zahtjev prihvacen / odbijen i komentar
+// v4.0.0.2 (2009/04/20) + Broj indexa ne mora biti integer :(
 
 
 function studentska_intro() {
@@ -42,7 +43,7 @@ if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$osoba = intval($_REQUEST['osoba']);
 	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
-		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='".intval($r100[4])."', datum_rodjenja='$r100[5]', mjesto_rodjenja='$r100[6]', drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', telefon='$r100[10]', kanton=".intval($r100[11])." where id=".intval($r100[0]));
+		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='$r100[4]', datum_rodjenja='$r100[5]', mjesto_rodjenja='$r100[6]', drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', telefon='$r100[10]', kanton=".intval($r100[11])." where id=".intval($r100[0]));
 		$vrijeme_zahtjeva=$r100[12];
 	}
 	$q120 = myquery("delete from promjena_podataka where id=$id");
@@ -100,7 +101,7 @@ if ($_GET['akcija'] == "zahtjev") {
 	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,12));
 	promjena("prezime", mysql_result($q100,0,2), mysql_result($q100,0,13));
 	promjena("kontakt e-mail adresa", mysql_result($q100,0,3), mysql_result($q100,0,14));
-	promjena("broj indexa", intval(mysql_result($q100,0,4)), intval(mysql_result($q100,0,15)));
+	promjena("broj indexa", mysql_result($q100,0,4), mysql_result($q100,0,15));
 	promjena("datum rođenja", date("d. m. Y.", mysql_result($q100,0,5)), date("d. m. Y.", mysql_result($q100,0,16)));
 	promjena("mjesto rođenja", mysql_result($q100,0,6), mysql_result($q100,0,17));
 	promjena("državljanstvo", mysql_result($q100,0,7), mysql_result($q100,0,18));
