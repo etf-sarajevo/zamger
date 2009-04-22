@@ -371,7 +371,7 @@ else if ($akcija == "upis") {
 			if (substr($key,0,8) != "izborni-") continue;
 			if ($value=="") continue;
 			$predmet = intval(substr($key,8));
-			$q566 = myquery("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet, and pk.predmet=p.id");
+			$q566 = myquery("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
 			$ects_suma += mysql_result($q566,0,0);
 		}
 
