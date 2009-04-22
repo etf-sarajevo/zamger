@@ -9,13 +9,11 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/16) + Popravljena logging
+// v4.0.9.5 (2009/04/16) + Popravljen logging
+// v4.0.9.6 (2009/04/22) + Izbacujem predmet kao parametar (nepotrebno, predmet je sadrzan u ispitu), a ispit=svi prebacujem u drugi izvjestaj pod imenom statistika_predmeta
 
+// Provjeriti ispravnost dijela sa grupama
 
-
-// NAPOMENA: Sumarne statistike rade samo za predmete tipa "ETF Bologna standard", odnosno 
-// predmete koji imaju standardni I i II parcijalni i Integralni. IDovi komponenti su 
-// ukodirani.
 
 
 function izvjestaj_ispit() {
@@ -31,142 +29,69 @@ Elektrotehnički fakultet Sarajevo</p>
 
 
 
-$ponudakursa = intval($_REQUEST['predmet']);
+// Parametar
+
+$ispit = intval($_REQUEST['ispit']);
+if ($_REQUEST['ispit'] == "svi") {
+	// Privremeno vrsim redirekciju na izvjestaj/statistika_predmeta
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
+	?>
+	<script language="JavaScript">
+	location.href='?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>';
+	</script>
+	<?
+	return;
+}
 
 
-// Provjera permisija
+// Elementarna provjera privilegija
 
 if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
 	zamgerlog ("pristup izvjestaju a nije NBA",3); // 3 = error
 	return;
 }
-if (!$user_studentska && !$user_siteadmin) {
-	$q2 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
-	if (mysql_num_rows($q2) < 1) {
-		biguglyerror("Nemate permisije za pristup ovom izvještaju");
-		zamgerlog ("nije admin predmeta p$ponudakursa",3); // 3 = error
-		return;
-	}
-}
 
 
+// Upit za ispit
 
-$ispit = intval($_REQUEST['ispit']);
-if ($_REQUEST['ispit'] == "svi") $ispit=-1;
-
-
-// Naziv predmeta, akademska godina
-$q10 = myquery("select p.naziv,ag.naziv,p.id,ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$ponudakursa and ag.id=pk.akademska_godina and pk.predmet=p.id");
-
+$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prolaz, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 if (mysql_num_rows($q10)<1) {
-	biguglyerror("Nepoznat predmet sa IDom $ponudakursa.");
-	zamgerlog ("nepoznat predmet $ponudakursa", 3);
+	biguglyerror("Nepoznat ispit!");
+	zamgerlog ("nepoznat ispit $ispit",3);
 	return;
 }
 
+$finidatum = date("d. m. Y.", mysql_result($q10,0,0));
+$naziv = mysql_result($q10,0,1);
+$maxbodova = mysql_result($q10,0,2);
+$prolaz = mysql_result($q10,0,3);
+$predmet = mysql_result($q10,0,4);
+$ag = mysql_result($q10,0,5);
+
+
+// Dodatna provjera privilegija
+if (!$user_studentska && !$user_siteadmin) {
+	$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q20) < 1) {
+		biguglyerror("Nemate permisije za pristup ovom izvještaju");
+		zamgerlog ("nije admin predmeta pp$predmet godina ag$ag",3); // 3 = error
+		return;
+	}
+}
+
+
+
+// Naziv predmeta, akademska godina
+$q21 = myquery("select naziv from predmet where id=$predmet");
+$q22 = myquery("select naziv from akademska_godina where id=$ag");
+
 ?>
 	<p>&nbsp;</p>
-	<h1><?=mysql_result($q10,0,0)?> <?=mysql_result($q10,0,1)?></h1>
+	<h1><?=mysql_result($q21,0,0)?> <?=mysql_result($q22,0,0)?></h1>
+	<h3><?=$naziv?>, <?=$finidatum?></h3>
 <?
-
-$predmet = mysql_result($q10,0,2);
-$ag = mysql_result($q10,0,3);
-
-
-
-// Tip ispita i datum
-
-if ($ispit==-1) {
-	print "<h3>Sumarna statistika za sve ispite</h3>\n";
-} else {
-	$q20 = myquery("select UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.maxbodova,k.prolaz from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-	if (mysql_num_rows($q20)<1) {
-		biguglyerror("Nepoznat ispit!");
-		zamgerlog ("nepoznat ispit $ispit predmet p$ponudakursa",3);
-		return;
-	}
-
-	print "<h3>".mysql_result($q20,0,1).", ".date("d. m. Y.", mysql_result($q20,0,0))."</h3>\n";
-	$maxbodova=mysql_result($q20,0,2);
-	$prolaz=mysql_result($q20,0,3);
-}
-
-
-// Opste statistike (sumarno za predmet)
-
-if ($ispit==-1) {
-	$q30 = myquery("select count(*) from student_predmet where predmet=$ponudakursa");
-	$slusa_predmet = mysql_result($q30,0,0);
-
-	$q40 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag");
-	$odrzano_ispita = mysql_num_rows($q40);
-
-	if ($odrzano_ispita>0) {
-		$ispiti=array();
-		while ($r40 = mysql_fetch_row($q40)) array_push($ispiti,$r40[0]);
-
-		$q50 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena>5");
-		$polozilo = mysql_result($q50,0,0);
-
-		$q60 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ag and io.ispit=i.id and io.student=sp.student)=0");
-		$nisu_izlazili = mysql_result($q60,0,0);
-		$stvarno_slusa = $slusa_predmet-$nisu_izlazili;
-
-		// Ako predmet nije bologna standard, daljnje statistike nemaju smisla
-		$q70 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta");
-		$bologna=0;
-		while ($r70 = mysql_fetch_row($q70)) {
-			if ($r70[0]==1) $bologna++;
-			if ($r70[0]==2) $bologna++;
-			if ($r70[0]==3) $bologna++;
-		}
-
-		if ($bologna>=3) {
-			$q80 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=1 and io.ispit=i.id and io.student=sp.student and io.ocjena>=10)>0");
-			$prvaparc = mysql_result($q80,0,0);
-
-			$q90 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=2 and io.ispit=i.id and io.student=sp.student and io.ocjena>=10)>0");
-			$drugaparc = mysql_result($q90,0,0);
-
-			$q100 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=3 and io.ispit=i.id and io.student=sp.student and io.ocjena>=20)>0");
-			$intparc = mysql_result($q100,0,0);
-
-			$q110 = myquery("select count(*) from student_predmet as sp where sp.predmet=$ponudakursa and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=1 and io.ispit=i.id and io.student=sp.student and io.ocjena>=10)>0 and (select count(*) from ispitocjene as io, ispit as i where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=2 and io.ispit=i.id and io.student=sp.student and io.ocjena>=10)>0");
-			$objeparc = mysql_result($q110,0,0);
-
-			$zad_uslove = $intparc+$objeparc;
-		}
-	}
-
-	?>
-	<p>Ukupno upisalo predmet: <b><?=$slusa_predmet?></b> studenata.<br/>
-	<?
-
-	if ($odrzano_ispita==0) {
-		?>Nije održan nijedan ispit.</p><?
-		return;
-	}
-	else if ($bologna<3) {
-		?>
-		Nije izašlo ni na jedan ispit (pretpostavka je da ne slušaju predmet, biće isključeni iz daljnjih statistika): <b><?=$nisu_izlazili?></b> studenata.<br/>
-		Položilo (konačna ocjena 6 ili više): <b><?=$polozilo?></b> studenata (<b><?=procenat($polozilo,$stvarno_slusa)?></b>).<br/>
-		Predmet nije Bologna standard tako da daljnje statistike nisu dostupne.</p>
-		<?
-		return;
-	} else {
-		?>
-		Nije izašlo ni na jedan ispit (pretpostavka je da ne slušaju predmet, biće isključeni iz daljnjih statistika): <b><?=$nisu_izlazili?></b> studenata.<br/>
-		Položilo (konačna ocjena 6 ili više): <b><?=$polozilo?></b> studenata (<b><?=procenat($polozilo,$stvarno_slusa)?></b>).<br/>
-		Zadovoljilo uslove za usmeni: <b><?=$zad_uslove?></b> studenata (<b><?=procenat($zad_uslove,$stvarno_slusa)?></b>).<br/><br/>
-		Položilo I parcijalni ispit: <b><?=$prvaparc?></b> studenata  (<b><?=procenat($prvaparc,$stvarno_slusa)?></b>).<br/>
-		Položilo II parcijalni ispit: <b><?=$drugaparc?></b> studenata  (<b><?=procenat($drugaparc,$stvarno_slusa)?></b>).<br/>
-		Položilo oba parcijalna ispita: <b><?=$objeparc?></b> studenata  (<b><?=procenat($objeparc,$stvarno_slusa)?></b>).<br/>
-		Položilo ispit integralno: <b><?=$intparc?></b> studenata  (<b><?=procenat($intparc,$stvarno_slusa)?></b>).</p>
-		<?
-		return;
-	}
-}
 
 
 // Opste statistike - pojedinacni ispit
@@ -177,7 +102,7 @@ $ukupno_izaslo = mysql_result($q200,0,0);
 $q210 = myquery("select count(*) from ispitocjene where ispit=$ispit and ocjena>=$prolaz");
 $polozilo = mysql_result($q210,0,0);
 
-$q220 = myquery("select count(*) from student_predmet where predmet=$ponudakursa");
+$q220 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 $slusa_predmet = mysql_result($q220,0,0);
 
 ?>
@@ -223,7 +148,7 @@ for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
 
 // Prolaznost po grupama
 
-$q315 = myquery("select count(*) from labgrupa where predmet=$ponudakursa");
+$q315 = myquery("select count(*) from labgrupa as l, ponudakursa as pk where l.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_result($q315,0,0)<2) {
 	// Nema grupa, preskacemo ostatak izvjestaja
 	return;
@@ -232,13 +157,16 @@ if (mysql_result($q315,0,0)<2) {
 $ukupno = array(); $polozilo = array(); $prosjek = array(); $grupe = array();
 $maxprol = 0; $maxprosj = 0;
 
-$q320 = myquery("select l.id,io.ocjena,l.naziv FROM ispitocjene as io, student_labgrupa as sl, labgrupa as l, ispit as i WHERE io.ispit=$ispit and io.student=sl.student and sl.labgrupa=l.id and l.predmet=i.predmet and i.id=io.ispit order by l.id");
+$q320 = myquery("select l.id,io.ocjena,l.naziv FROM ispitocjene as io, student_labgrupa as sl, labgrupa as l, ispit as i, ponudakursa as pk WHERE io.ispit=$ispit and io.student=sl.student and sl.labgrupa=l.id and i.id=io.ispit and l.predmet=pk.id and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina order by l.id"); // Privremeno ruzan upit dok se labgrupa ne prebaci sa ponudekursa na predmet
 while ($r320 = mysql_fetch_row($q320)) {
+	$grupe[$r320[0]] = $r320[2]; // Nazivi grupa
+
 	$ukupno[$r320[0]]++;
 	if ($r320[1]>=$prolaz) $polozilo[$r320[0]]++;
+
 	$prosjek[$r320[0]] = ($prosjek[$r320[0]]*($ukupno[$r320[0]]-1) + $r320[1]) / $ukupno[$r320[0]];
-	$grupe[$r320[0]] = $r320[2];
 	if ($prosjek[$r320[0]]>$maxprosj) $maxprosj=$prosjek[$r320[0]];
+
 	$prolaznost = $polozilo[$r320[0]]/$ukupno[$r320[0]];
 	if ($prolaznost>$maxprol) $maxprol=$prolaznost;
 }
