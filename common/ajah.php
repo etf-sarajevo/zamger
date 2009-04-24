@@ -24,8 +24,8 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet - FIXME: prekontrolisati upite, mozda je moguca optimizacija?
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet - FIXME: isto
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita
-
+// v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita; ekvivalentan upit za admine, i.predmet vise nije id ponudekursa nego predmeta
+// v4.0.9.6 (2009/04/24) + Greska uvedena u v4.0.9.4 (r372), ako $q70 ne vrati nista kako cemo onda znati metapredmet?
 
 // Prebaciti u lib/manip?
 
@@ -261,10 +261,14 @@ case "izmjena_ispita":
 
 
 	} else if ($ime == "ko") {
+		// Odredjujemo metapredmet i akademsku godinu
+		$q68 = myquery("select predmet, akademska_godina from ponudakursa where id=$predmet");
+		$metapredmet = mysql_result($q68,0,0);
+		$ag = mysql_result($q68,0,1);
+
 		// Konacna ocjena
-		$q70 = myquery("select ko.ocjena,ko.predmet,pk.akademska_godina from konacna_ocjena as ko, ponudakursa as pk where ko.predmet=pk.predmet and pk.id=$predmet and ko.student=$stud_id");
-		$metapredmet = mysql_result($q70,0,1);
-		$ag = mysql_result($q70,0,2);
+		// TODO: koristiti REPLACE
+		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$metapredmet and student=$stud_id");
 		$c = mysql_num_rows($q70);
 		if ($c==0 && $vrijednost!="/") {
 			$q80 = myquery("insert into konacna_ocjena set predmet=$metapredmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost");
