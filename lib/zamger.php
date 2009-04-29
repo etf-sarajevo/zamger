@@ -15,6 +15,7 @@
 // v3.9.1.10 (2009/02/10) + Funkcija myquery prebacena ovdje radi logginga
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/29) + studentski_meni(): sortiranje po semestrima je dovodilo da se vise puta ponavlja zaglavlje za svaki preneseni predmet (sa drugog semestra)
 
 
 
@@ -429,7 +430,7 @@ function studentski_meni($fj) {
 	$arhiva = intval($_REQUEST['sm_arhiva']);
 	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
-		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar,p.naziv");
+		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar mod 2 desc,p.naziv");
 	} else {
 		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
 	}
@@ -444,15 +445,16 @@ function studentski_meni($fj) {
 		$predmet_naziv = $r30[1];
 		$predmet = $r30[4];
 		$pag = $r30[5];
+		$zimskiljetnji = $r30[2]%2;
 
 		// Zaglavlje sa imenom akademske godine
-		if ($r30[2]!=$oldsem || $r30[3]!=$oldag) {
+		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) {
 			if ($r30[2]%2==1)
 				$ispis .= "<br/><br/><b>Zimski semestar ";
 			else
 				$ispis .= "<br/><br/><b>Ljetnji semestar ";
 			$ispis .= $r30[3].":</b><br/><br/>\n";
-			$oldsem=$r30[2]; $oldag=$r30[3];
+			$oldsem=$zimskiljetnji; $oldag=$r30[3];
 		}
 
 		if (intval($_REQUEST['predmet'])==$ponudakursa) {
