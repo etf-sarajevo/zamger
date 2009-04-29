@@ -9,6 +9,7 @@
 // v3.9.1.4 (2008/12/23) + Brisanje obavjestenja prebaceno na POST radi zastite od CSRF (bug 53)
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 
 
 function nastavnik_obavjestenja() {
@@ -17,15 +18,18 @@ global $userid,$user_siteadmin,$conf_ldap_domain;
 
 
 
-$predmet=intval($_REQUEST['predmet']);
-if ($predmet==0) { 
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+$ponudakursa=intval($_REQUEST['predmet']);
+if ($ponudakursa==0) { 
+	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
 	biguglyerror("Nije izabran predmet."); 
 	return; 
 }
 
-$q1 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
-$predmet_naziv = mysql_result($q1,0,0);
+$q1 = myquery("select p.id, p.naziv, pk.akademska_godina, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$ponudakursa and pk.predmet=p.id and pk.akademska_godina=ag.id");
+$predmet = mysql_result($q1,0,0);
+$predmet_naziv = mysql_result($q1,0,1);
+$ag = mysql_result($q1,0,2);
+$ag_naziv = mysql_result($q1,0,3);
 
 //$tab=$_REQUEST['tab'];
 //if ($tab=="") $tab="Opcije";
@@ -37,9 +41,9 @@ $predmet_naziv = mysql_result($q1,0,0);
 // Da li korisnik ima pravo pristupa
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/obavjestenja privilegije (predmet p$predmet)",3);
+		zamgerlog("nastavnik/obavjestenja privilegije (predmet p$ponudakursa)",3);
 		biguglyerror("Nemate pravo pristupa");
 		return;
 	} 
@@ -126,7 +130,7 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst'");
 
 				// Spisak studenata na predmetu
-				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$predmet and sp.student=o.id and sp.student=a.id";
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$ponudakursa and sp.student=o.id and sp.student=a.id";
 			}
 
 			// Saljem mail studentima
@@ -197,7 +201,7 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 
 			} // if ($email==1)...
 
-			zamgerlog("novo obavjestenje (predmet p$predmet)",2);
+			zamgerlog("novo obavjestenje (predmet p$ponudakursa)",2);
 		}
 
 		$naslov=$tekst="";
@@ -207,7 +211,11 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 
 // Stara obavjestenja
 
-$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet or p.opseg=6 and p.primalac=l.id and l.predmet=$predmet) order by vrijeme");
+// Obavjestenja od proslih akademskih godina nisu relevantna:
+$rubnidatum = intval($ag_naziv)."-09-01";
+
+
+$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet and p.vrijeme>'$rubnidatum' or p.opseg=6 and p.primalac=l.id and l.predmet=$ponudakursa) order by vrijeme");
 if (mysql_num_rows($q10)>0) {
 	print "<p>Do sada unesena obavještenja:</p>\n<ul>\n";
 } else {
@@ -225,7 +233,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		if ($citava==$r10[0])
 			print "<br/><br/>".$tekst_poruke;
 		else
-			print " (<a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&citava=$r10[0]\">Dalje...</a>)";
+			print " (<a href=\"?sta=nastavnik/obavjestenja&predmet=$ponudakursa&citava=$r10[0]\">Dalje...</a>)";
 	}
 	if ($izmijeni == $r10[0]) {
 		$naslov = $r10[2];
@@ -235,7 +243,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		else
 			$labgrupa=$r10[5];
 	}
-	print "<br/> <a href=\"?sta=nastavnik/obavjestenja&predmet=$predmet&izmijeni=$r10[0]\">[Izmijeni]</a> <a href=\"javascript:onclick=upozorenje('$r10[0]')\">[Obriši]</a></li>\n";
+	print "<br/> <a href=\"?sta=nastavnik/obavjestenja&predmet=$ponudakursa&izmijeni=$r10[0]\">[Izmijeni]</a> <a href=\"javascript:onclick=upozorenje('$r10[0]')\">[Obriši]</a></li>\n";
 }
 if (mysql_num_rows($q10)>0) {
 	print "</ul>\n";

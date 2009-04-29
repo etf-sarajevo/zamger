@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/10/03) + Postrozen uslov za slanje na POST
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/10) + Omoguci administratoru da posalje poruku svim korisnicima Zamgera; bilo moguce izmijeniti sve poruke (ukljucujuci privatne) preko IDa poruke; pored toga, onemoguceno editovanje poruka za opsege koje normalno nije moguce slati (vidjecemo koliko ce to predstavljati problem); bilo moguce slanje poruke sa bilo kojim opsegom kroz spoofing URLa; uskladjivanje koda za slanje maila sa izmjenama u nastavnik/obavjestenje; onemogucen spamming (slanje maila svim studentima ili svim nastavnicima)
+// v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 
 
 // TODO: popraviti slanje svim studentima na godini studija
@@ -35,8 +36,9 @@ global $userid,$conf_ldap_domain,$user_siteadmin,$conf_skr_naziv_institucije_gen
 // Podaci potrebni kasnije
 
 // Zadnja akademska godina
-$q20 = myquery("select id,naziv from akademska_godina order by id desc limit 1");
+$q20 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
 $ag = mysql_result($q20,0,0);
+$ag_naziv = mysql_result($q20,0,1);
 
 // Studij koji student trenutno sluša
 $studij=0;
@@ -99,8 +101,9 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 				$q320 = myquery("select naziv from studij where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
 			} else if ($opseg == 5) {
-				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp where sp.predmet=$predmet and sp.student=o.id and sp.student=a.id";
-				$q330 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$primalac and pk.predmet=p.id");
+				// Saljemo mail samo studentima na aktuelnoj akademskoj godini
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
+				$q330 = myquery("select naziv from predmet where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
 			}
 
@@ -214,7 +217,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 			// Godini!?
 		} else if (opseg==5) {
 			<?
-			$q220 = myquery("select pk.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s, akademska_godina as ag where pk.predmet=p.id and pk.studij=s.id and pk.akademska_godina=ag.id and ag.aktuelna=1 order by pk.studij, pk.semestar, p.naziv");
+			$q220 = myquery("select p.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.studij=s.id and pk.akademska_godina=$ag order by pk.studij, pk.semestar, p.naziv");
 			while ($r220 = mysql_fetch_row($q220)) {
 				print "	lista.options[lista.length]=new Option(\"$r220[1] ($r220[2])\",\"$r220[0]\"";
 				if ($opseg==5 && $primalac==$r220[0]) print ",true";
@@ -326,12 +329,12 @@ if ($poruka>0) {
 		}
 	}
 	else if ($opseg==5) {
-		$q50 = myquery("select p.naziv,ag.naziv from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.id=$prim_id and pk.predmet=p.id and pk.akademska_godina=ag.id");
+		$q50 = myquery("select naziv from predmet where id=$prim_id");
 		if (mysql_num_rows($q50)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: predmet)",3);
 		} else {
-			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0)." (".mysql_result($q50,0,1).")";
+			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0);
 		}
 	}
 	else if ($opseg==6) {
@@ -451,7 +454,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		}
 	}
 	else if ($opseg==5) {
-		$q50 = myquery("select p.naziv,s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.id=$prim_id and pk.predmet=p.id and pk.studij=s.id");
+		$q50 = myquery("select p.naziv,i.kratki_naziv from predmet as p, institucija as i where p.id=$prim_id and p.institucija=i.id");
 		if (mysql_num_rows($q50)<1) {
 			$primalac="Nepoznat predmet!?";
 		} else {

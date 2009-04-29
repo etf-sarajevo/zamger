@@ -18,6 +18,7 @@
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/06) + Skracujem prikaz obavjestenja ako je "naslov" duzi od 200 znakova
 // v4.0.9.5 (2009/04/19) + Popravljen upit za obavjestenja o polozenim ispitima - posto je moguce da isti predmet ima vise ponudakursa, desavalo se da link na stranicu predmeta bude za pogresnu ponudukursa na koju student nije upisan
+// v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 
 
 function student_intro() {
@@ -131,11 +132,13 @@ print $vijesti;
 //    3 - svi studenti na studiju (primalac - id studija)
 //    4 - svi studenti na godini (primalac - id akademske godine)
 //    5 - svi studenti na predmetu (primalac - id predmeta)
-//    6 - korisnik (primalac - user id)
+//    6 - svi studenti na labgrupi (primalac - id labgrupe)
+//    7 - korisnik (primalac - user id)
 
 // Zadnja akademska godina
-$q20 = myquery("select id,naziv from akademska_godina order by id desc limit 1");
+$q20 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
 $ag = mysql_result($q20,0,0);
+$ag_naziv = mysql_result($q20,0,1);
 
 // Studij koji student trenutno sluša
 $studij=0;
@@ -153,8 +156,11 @@ while ($r40 = mysql_fetch_row($q40)) {
 	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
 		continue;
 	if ($opseg==5) {
+		// Poruke od starih akademskih godina nisu relevantne
+		if ($r40[1]<mktime(0,0,0,9,1,intval($ag_naziv))) continue;
+
 		// odredjujemo naziv predmeta i da li ga student slusa
-		$q50 = myquery("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=$primalac and pk.id=$primalac and pk.predmet=p.id");
+		$q50 = myquery("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and pk.predmet=p.id");
 		if (mysql_num_rows($q50)<1) continue;
 		$posiljalac = mysql_result($q50,0,0);
 	} else if ($opseg==6) {
@@ -222,8 +228,8 @@ while ($r100 = mysql_fetch_row($q100)) {
 	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
 		continue;
 	if ($opseg==5) {
-		// odredjujemo da li student slusa predmet
-		$q110 = myquery("select count(*) from student_predmet where student=$userid and predmet=$primalac");
+		// odredjujemo da li je student ikada slusao predmet (FIXME?)
+		$q110 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac");
 		if (mysql_result($q110,0,0)<1) continue;
 	}
 	if ($opseg==6) {

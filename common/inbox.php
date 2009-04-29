@@ -15,6 +15,8 @@
 // v3.9.1.10 (2008/10/03) + Poostren uslov za slanje poruke samo putem POST
 // v3.9.1.11 (2008/10/22) + Popravljeno dodavanje viska Re:
 // v3.9.1.12 (2008/12/28) + Dodano parsiranje linkova u porukama
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 
 
 function common_inbox() {
@@ -281,8 +283,8 @@ if ($poruka>0) {
 		return;
 	}
 	if ($opseg==5) {
-		// da li student slusa predmet?
-		$q110 = myquery("select count(*) from student_predmet where student=$userid and predmet=$prim_id");
+		// da li student ikada slusao predmet? ako jeste moze citati poruke za taj predmet... (FIXME?)
+		$q110 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$prim_id");
 		if (mysql_result($q110,0,0)<1) {
 			niceerror("Nemate pravo pristupa ovoj poruci!");
 			zamgerlog("pokusao pristupiti poruci $poruka",3);
@@ -333,12 +335,12 @@ if ($poruka>0) {
 		}
 	}
 	else if ($opseg==5) {
-		$q50 = myquery("select p.naziv,ag.naziv from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.id=$prim_id and pk.predmet=p.id and pk.akademska_godina=ag.id");
+		$q50 = myquery("select naziv from predmet where id=$prim_id");
 		if (mysql_num_rows($q50)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: predmet)",3);
 		} else {
-			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0)." (".mysql_result($q50,0,1).")";
+			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0);
 		}
 	}
 	else if ($opseg==6) {
@@ -515,8 +517,8 @@ if ($_REQUEST['mode']=="outbox") {
 		if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
 			continue;
 		if ($opseg==5) {
-			// da li student slusa predmet?
-			$q110 = myquery("select count(*) from student_predmet where student=$userid and predmet=$primalac");
+			// da li je student ikada slusao predmet? (FIXME?)
+			$q110 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac");
 			if (mysql_result($q110,0,0)<1) continue;
 		}
 		if ($opseg==6) {
