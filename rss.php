@@ -3,6 +3,8 @@
 // RSS - feed za studente
 
 // v3.9.1.0 (2008/04/30) + pocetak
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/29) + Ime i prezime se sada nalaze u tabeli osoba a ne auth
 
 
 $broj_poruka = 10;
@@ -28,7 +30,7 @@ $q2 = myquery("update rss set access=NOW() where id='$id'");
 
 
 // Ime studenta
-$q5 = myquery("select ime,prezime from auth where id=$userid");
+$q5 = myquery("select ime,prezime from osoba where id=$userid");
 if (mysql_num_rows($q5)<1) {
 	print "Greska! Nepoznat userid $userid";
 	return 0;
@@ -175,7 +177,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	if ($r100[6]==0) {
 		$posiljalac="Administrator";
 	} else {
-		$q120 = myquery("select ime,prezime from auth where id=$r100[6]");
+		$q120 = myquery("select ime,prezime from osoba where id=$r100[6]");
 		if (mysql_num_rows($q120)>0) {
 			$posiljalac=mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
