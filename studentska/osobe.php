@@ -587,7 +587,7 @@ else if ($akcija == "edit") {
 			$login = my_escape($_REQUEST['login']);
 			$password = my_escape($_REQUEST['password']);
 
-			$q120 = myquery("update auth set login='$login', password='$password', aktivan=1 where id=$osoba");
+			$q120 = myquery("replace auth set id=$osoba, login='$login', password='$password', aktivan=1");
 			zamgerlog("dodan/izmijenjen login za korisnika u$osoba (table)",4);
 
 		}
