@@ -27,6 +27,7 @@
 // v4.0.9.3 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet -- FIXME provjeriti mogucnosti optimizacije
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/19) + U r335 nije ustvari napravljena izmjena koja pise u komentaru; subakcija "angazuj" nije definisala polje akademska_godina koje je u tabelu nastavnik_predmet dodano u r365; upit za aktuelnu ak. godinu pomjeren naprijed
+// v4.0.9.6 (2009/04/27) + Popravljen typo u dijelu za promjenu privilegija; typo u upitu r566
 
 
 
@@ -655,11 +656,11 @@ else if ($akcija == "edit") {
 		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=0;
 		$q150 = myquery("select privilegija from privilegije where osoba=$osoba");
 		while($r150 = mysql_fetch_row($q150)) {
-			if ($r209[0]=="student") $korisnik['student']=1;
-			if ($r209[0]=="nastavnik") $korisnik['nastavnik']=1;
-			if ($r209[0]=="prijemni") $korisnik['prijemni']=1;
-			if ($r209[0]=="studentska") $korisnik['studentska']=1;
-			if ($r209[0]=="siteadmin") $korisnik['siteadmin']=1;
+			if ($r150[0]=="student") $korisnik['student']=1;
+			if ($r150[0]=="nastavnik") $korisnik['nastavnik']=1;
+			if ($r150[0]=="prijemni") $korisnik['prijemni']=1;
+			if ($r150[0]=="studentska") $korisnik['studentska']=1;
+			if ($r150[0]=="siteadmin") $korisnik['siteadmin']=1;
 		}
 
 		foreach ($korisnik as $privilegija => $vrijednost) {
