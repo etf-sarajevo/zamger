@@ -10,7 +10,7 @@
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; popravljen link na stranicu za konacnu ocjenu (greska unesena sa r372)
 // v4.0.9.4 (2009/04/06) + Dodano polje pubDate na sve kanale
 // v4.0.9.5 (2009/04/19) + Popravljen link na rezultate ispita
-// v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
+// v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke); jos uvijek koristena auth tabela za ime i prezime, sto spada u davnu historiju zamgera
 
 
 $broj_poruka = 10;
@@ -36,7 +36,7 @@ $q2 = myquery("update rss set access=NOW() where id='$id'");
 
 
 // Ime studenta
-$q5 = myquery("select ime,prezime from auth where id=$userid");
+$q5 = myquery("select ime,prezime from osoba where id=$userid");
 if (mysql_num_rows($q5)<1) {
 	print "Greska! Nepoznat userid $userid";
 	return 0;
@@ -165,7 +165,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		if ($r100[1]<mktime(0,0,0,9,1,intval($ag_naziv))) continue;
 
 		// odredjujemo da li student slusa predmet
-		$q110 = myquery("select count(*) from student_predmet as sp where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag");
+		$q110 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag");
 		if (mysql_result($q110,0,0)<1) continue;
 	}
 	if ($opseg==6) {
@@ -191,7 +191,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	if ($r100[6]==0) {
 		$posiljalac="Administrator";
 	} else {
-		$q120 = myquery("select ime,prezime from auth where id=$r100[6]");
+		$q120 = myquery("select ime,prezime from osoba where id=$r100[6]");
 		if (mysql_num_rows($q120)>0) {
 			$posiljalac=mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
