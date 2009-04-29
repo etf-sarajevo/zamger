@@ -11,6 +11,8 @@
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/16) + Popravljen logging
 // v4.0.9.6 (2009/04/22) + Izbacujem predmet kao parametar (nepotrebno, predmet je sadrzan u ispitu), a ispit=svi prebacujem u drugi izvjestaj pod imenom statistika_predmeta
+// v4.0.9.7 (2009/04/27) + Parametar "predmet" je ustvari ponudakursa, pa treba dodati upit koji saznaje predmet i akademsku godinu za izvjestaj/statistika_predmeta
+
 
 // Provjeriti ispravnost dijela sa grupama
 
@@ -34,8 +36,10 @@ Elektrotehnički fakultet Sarajevo</p>
 $ispit = intval($_REQUEST['ispit']);
 if ($_REQUEST['ispit'] == "svi") {
 	// Privremeno vrsim redirekciju na izvjestaj/statistika_predmeta
-	$predmet = intval($_REQUEST['predmet']);
-	$ag = intval($_REQUEST['ag']);
+	$ponudakursa = intval($_REQUEST['predmet']);
+	$qtmp = myquery("select predmet, akademska_godina from ponudakursa where id=$ponudakursa");
+	$predmet = mysql_result($qtmp,0,0);
+	$ag = mysql_result($qtmp,0,1);
 	?>
 	<script language="JavaScript">
 	location.href='?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>';
