@@ -5,12 +5,14 @@
 // v3.9.1.0 (2008/02/14) + Preimenovan bivsi admin_komentar
 // v3.9.1.1 (2008/02/28) + Dodana nulta labgrupa
 // v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/04/29) + Pristup za site admina nije radio, koristena zastarjela varijabla $admin
 
 
 
 function saradnik_komentar() {
 
-global $userid;
+global $userid, $user_siteadmin;
 
 ?>
 <body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
@@ -31,7 +33,7 @@ if ($labgrupa>0) {
 	}
 }
 
-if ($admin==3) {
+if ($user_siteadmin) {
 	if ($labgrupa>0) {
 		$q20 = myquery("select predmet from labgrupa where id=$labgrupa");
 		if (mysql_num_rows($q20)<1) {
