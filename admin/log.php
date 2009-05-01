@@ -26,7 +26,6 @@ global $userid;
 global $_lv_; // We use form generators
 
 
-
 $maxlogins = 20;
 $stardate = intval($_GET['stardate']);
 if ($stardate == 0) {
@@ -158,11 +157,17 @@ function get_user_link($id) {
 }
 
 function get_predmet_link($id) {
+	static $aktuelna_ag = 0; // Aktuelna akademska godina
+	if ($aktuelna_ag==0) {
+		$q35 = myquery("select id from akademska_godina where aktuelna=1 order by id desc");
+		$aktuelna_ag = mysql_result($q35,0,0);
+	}
+
 	static $predmeti = array();
 	if (!$predmeti[$id]) {
-		$q30 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$id and pk.predmet=p.id");
+		$q30 = myquery("select p.id, p.naziv from ponudakursa as pk, predmet as p where pk.id=$id and pk.predmet=p.id");
 		if (mysql_num_rows($q30)>0) {
-			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$id\" target=\"_new\">".mysql_result($q30,0,0)."</a>";
+			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=".mysql_result($q30,0,0)."&ag=$aktuelna_ag\" target=\"_new\">".mysql_result($q30,0,1)."</a>";
 		} else return $id;
 	}
 	return $predmeti[$id];
@@ -170,12 +175,17 @@ function get_predmet_link($id) {
 
 
 function get_ppredmet_link($id) {
-	// Za sada moramo odrediti bilo koju ponudukursa, a kasnije ce studentska/predmeti biti prebaceno na predmet
+	static $aktuelna_ag = 0; // Aktuelna akademska godina
+	if ($aktuelna_ag==0) {
+		$q35 = myquery("select id from akademska_godina where aktuelna=1 order by id desc");
+		$aktuelna_ag = mysql_result($q35,0,0);
+	}
+
 	static $predmeti = array();
 	if (!$predmeti[$id]) {
-		$q40 = myquery("select pk.id, p.naziv from ponudakursa as pk, akademska_godina as ag, predmet as p where pk.predmet=$id and pk.akademska_godina=ag.id and ag.aktuelna=1 and pk.predmet=p.id");
-		if (mysql_num_rows($q30)>0) {
-			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=".mysql_result($q40,0,0)."\" target=\"_new\">".mysql_result($q40,0,1)."</a>";
+		$q40 = myquery("select naziv from predmet where id=$id");
+		if (mysql_num_rows($q40)>0) {
+			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$id&ag=$aktuelna_ag\" target=\"_new\">".mysql_result($q40,0,0)."</a>";
 		} else return $id;
 	}
 	return $predmeti[$id];
