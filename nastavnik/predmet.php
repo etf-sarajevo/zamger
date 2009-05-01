@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
+// v4.0.9.4 (2009/05/01) + Nove tabele za studentske module; popravljen bug sa redirekcijom
 
 
 function nastavnik_predmet() {
@@ -75,6 +76,20 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 <?
 
+// Click na checkbox za dodavanje modula
+// Prebaciti na POST?
+
+if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
+	$smodul = intval($_POST['smodul']);
+	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
+	$q15 = myquery("replace studentski_modul_predmet set predmet=$predmet, akademska_godina=$ag, studentski_modul=$smodul, aktivan=$aktivan");
+	if ($aktivan==1)
+		zamgerlog("aktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
+	else
+		zamgerlog("deaktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
+}
+
+
 
 // Opcije predmeta
 
@@ -87,7 +102,11 @@ function upozorenje(smodul,aktivan) {
 	document.smodulakcija.submit();
 }
 </SCRIPT>
-<?=genform("POST", "smodulakcija")?>
+<?
+unset ($_REQUEST['smodul']);
+unset ($_REQUEST['aktivan']);
+print genform("POST", "smodulakcija");
+?>
 <input type="hidden" name="akcija" value="set_smodul">
 <input type="hidden" name="smodul" value="">
 <input type="hidden" name="aktivan" value="">
@@ -97,30 +116,24 @@ function upozorenje(smodul,aktivan) {
 <?
 
 
-// Click na checkbox za dodavanje modula
-// Prebaciti na POST?
 
-if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
-	$smodul = intval($_POST['smodul']);
-	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
-	$q15 = myquery("update studentski_moduli set aktivan=$aktivan where id=$smodul");
-	if ($aktivan==1)
-		zamgerlog("aktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
-	else
-		zamgerlog("deaktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
-}
 
 
 // Studentski moduli koji su aktivirani za ovaj predmet
 
-$q20 = myquery("select id,gui_naziv,aktivan from studentski_moduli where predmet=$predmet and akademska_godina=$ag order by id");
+$q20 = myquery("select id, gui_naziv from studentski_modul order by id");
 if (mysql_num_rows($q20)<1)
 	print "<p>Nijedan modul nije ponuđen.</p>\n";
 while ($r20 = mysql_fetch_row($q20)) {
 	$smodul = $r20[0];
 	$naziv = $r20[1];
-	$aktivan=$r20[2];
-	if ($aktivan==0) $checked=""; else $checked="CHECKED";
+
+	$q30 = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=$smodul");
+	if (mysql_num_rows($q30)<1 || mysql_result($q30,0,0)==0) {
+		$aktivan=0; $checked="";
+	} else {
+		$aktivan=1; $checked="CHECKED";
+	}
 	?>
 	<input type="checkbox" onchange="javascript:onclick=upozorenje('<?=$smodul?>','<?=$aktivan?>')" <?=$checked?>> <?=$naziv?><br/>
 	<?

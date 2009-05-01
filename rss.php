@@ -11,6 +11,7 @@
 // v4.0.9.4 (2009/04/06) + Dodano polje pubDate na sve kanale
 // v4.0.9.5 (2009/04/19) + Popravljen link na rezultate ispita
 // v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke); jos uvijek koristena auth tabela za ime i prezime, sto spada u davnu historiju zamgera
+// v4.0.9.7 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
 
 
 $broj_poruka = 10;
@@ -72,11 +73,11 @@ print $code_poruke[1];
 
 // Rokovi za slanje zadaća
 
-$q10 = myquery("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave) from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
+$q10 = myquery("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
 while ($r10 = mysql_fetch_row($q10)) {
 	$code_poruke["z".$r10[0]] = "<item>
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
-		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[4]</link>
+		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
 		<description><![CDATA[Rok za slanje je ".date("d. m. Y",$r10[2]).".]]></description>
 		<pubDate>".date(DATE_RFC822, $r10[5])."</pubDate>
 	</item>";
@@ -86,12 +87,12 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+$q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["i".$r15[0]] = "<item>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
-		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[6]</link>
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
 		<description></description>
 		<pubDate>".date(DATE_RFC822, $r15[3])."</pubDate>
 	</item>";
@@ -102,12 +103,12 @@ while ($r15 = mysql_fetch_row($q15)) {
 
 // konacna ocjena
 
-$q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id order by ko.datum desc limit $broj_poruka");
+$q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id order by ko.datum desc limit $broj_poruka");
 while ($r17 = mysql_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["k".$r17[0]] = "<item>
 		<title>Čestitamo! Dobili ste $r17[1] -- predmet $r17[3]</title>
-		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[0]</link>
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[4]&amp;ag=$r17[5]</link>
 		<description></description>
 		<pubDate>".date(DATE_RFC822, $r17[2])."</pubDate>
 	</item>";

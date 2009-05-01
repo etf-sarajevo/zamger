@@ -19,6 +19,7 @@
 // v4.0.0.1 (2009/04/01) + Kod slanja zadace kao attachment status je bio postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran programski jezik
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; pobrisan neki iskomentirani kod
 // v4.0.9.2 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
+// v4.0.9.3 (2009/05/01) + Parametri su sada predmet i ag
 
 
 function student_zadaca() {
@@ -34,17 +35,31 @@ if ($_POST['akcija'] == "slanje" && ($_FILES['attachment']['tmp_name'] || check_
 
 // Poslani parametri
 $zadaca = intval($_REQUEST['zadaca']);
-$ponudakursa = intval($_REQUEST['predmet']);
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']);
 
-$q5 = myquery("select predmet, akademska_godina from ponudakursa where id=$ponudakursa");
-if (mysql_num_rows($q5)<1) {
-	niceerror("Nepoznat predmet!");
-	zamgerlog("nepostojeci predmet $ponudakursa",3); // 3 - greska
+$q10 = myquery("select naziv from predmet where id=$predmet");
+if (mysql_num_rows($q10)<1) {
+	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	biguglyerror("Nepoznat predmet");
 	return;
 }
 
-$predmet=mysql_result($q5,0,0);
-$ag=mysql_result($q5,0,1);
+$q15 = myquery("select naziv from akademska_godina where id=$ag");
+if (mysql_num_rows($q10)<1) {
+	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	biguglyerror("Nepoznata akademska godina");
+	return;
+}
+
+// Da li student slusa predmet?
+$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+if (mysql_num_rows($q17)<1) {
+	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	biguglyerror("Niste upisani na ovaj predmet");
+	return;
+}
+$ponudakursa = mysql_result($q17,0,0);
 
 
 //  IMA LI AKTIVNIH?
@@ -240,7 +255,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 			$bgcolor = ' bgcolor="#DDDDFF"'; 
 		else 	$bgcolor = "";
 		if (mysql_num_rows($q22)<1) {
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
 			$status = mysql_result($q22,0,0);
 			$bodova_zadatak = mysql_result($q22,0,1);
@@ -248,7 +263,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
 	<?
 		}
 	}
@@ -358,7 +373,8 @@ if ($attachment) {
 	<form action="index.php" method="POST" enctype="multipart/form-data">
 	<input type="hidden" name="sta" value="student/zadaca">
 	<input type="hidden" name="akcija" value="slanje">
-	<input type="hidden" name="predmet" value="<?=$ponudakursa?>">
+	<input type="hidden" name="predmet" value="<?=$predmet?>">
+	<input type="hidden" name="ag" value="<?=$ag?>">
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
@@ -423,13 +439,19 @@ function akcijaslanje() {
 	require ("lib/manip.php"); // update komponente nakon slanja
 
 	// Parametri
-	$ponudakursa = intval($_POST['predmet']);
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
 	$zadaca = intval($_POST['zadaca']); 
 	$zadatak = intval($_POST['zadatak']);
 	$program = $_POST['program'];
-	if ($ponudakursa==0) {
-		return; // student_zadaca() će ispisati grešku
+
+	// Da li student slusa predmet?
+	$q195 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (mysql_num_rows($q195)<1) {
+		// student_zadaca() ce ispisati grešku
+		return;
 	}
+	$ponudakursa = mysql_result($q195,0,0);	
 
 
 	// Standardna lokacija zadaca

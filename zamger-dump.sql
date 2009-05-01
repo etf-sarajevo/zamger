@@ -82,6 +82,18 @@ CREATE TABLE IF NOT EXISTS `cas` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `etf_moodle`
+--
+
+CREATE TABLE IF NOT EXISTS `etf_moodle` (
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `moodle_id` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `institucija`
 --
 
@@ -815,24 +827,39 @@ CREATE TABLE IF NOT EXISTS `stdin` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `studentski_moduli`
+-- Table structure for table `studentski_modul`
 --
 
-CREATE TABLE IF NOT EXISTS `studentski_moduli` (
-  `id` int(11) NOT NULL auto_increment,
+CREATE TABLE IF NOT EXISTS `studentski_modul` (
+  `id` int(11) NOT NULL,
+  `modul` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `gui_naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `novi_prozor` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `studentski_modul`
+--
+
+INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUES
+(1, 'student/moodle', 'Materijali (Moodle)', 1),
+(2, 'student/zadaca', 'Slanje zadaće', 0),
+(3, 'izvjestaj/predmet', 'Dnevnik', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `studentski_modul_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `studentski_modul_predmet` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
-  `gui_naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
-  `url` varchar(255) collate utf8_slovenian_ci NOT NULL,
+  `studentski_modul` int(11) NOT NULL,
   `aktivan` tinyint(1) NOT NULL,
-  `novi_prozor` int(1) NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
-
---
--- Dumping data for table `studentski_moduli`
---
-
+  PRIMARY KEY  (`predmet`,`akademska_godina`,`studentski_modul`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 

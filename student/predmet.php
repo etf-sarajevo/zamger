@@ -13,6 +13,7 @@
 // v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.6 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.7 (2009/05/01) + Parametri su sada predmet i ag
 
 
 function student_predmet() {
@@ -21,30 +22,38 @@ global $userid;
 
 
 // Određivanje predmeta iz labgrupe
-$ponudakursa = intval($_REQUEST['predmet']);
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']); // akademska godina
 
-$q10 = myquery("select p.naziv,ag.naziv,p.id,ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$ponudakursa and pk.predmet=p.id and pk.akademska_godina=ag.id");
+
+// Podaci za zaglavlje
+$q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
-	zamgerlog("nepoznat predmet $ponudakursa",3); // nivo 3: greska
-	biguglyerror("Nepoznat predmet $ponudakursa");
+	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	biguglyerror("Nepoznat predmet");
+	return;
+}
+
+$q15 = myquery("select naziv from akademska_godina where id=$ag");
+if (mysql_num_rows($q10)<1) {
+	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	biguglyerror("Nepoznata akademska godina");
 	return;
 }
 
 // Da li student slusa predmet?
-$q15 = myquery("select count(*) from student_predmet where student=$userid and predmet=$ponudakursa");
-if (mysql_result($q15,0,0)==0) {
-	zamgerlog("student ne slusa predmet p$ponudakursa", 3);
+$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+if (mysql_num_rows($q17)<1) {
+	zamgerlog("student ne slusa predmet pp$predmet", 3);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
+$ponudakursa = mysql_result($q17,0,0);
 
 ?>
 <br/>
-<p style="font-size: small;">Predmet: <b><?=mysql_result($q10,0,0)?> (<?=mysql_result($q10,0,1)?>)</b><br/>
+<p style="font-size: small;">Predmet: <b><?=mysql_result($q10,0,0)?> (<?=mysql_result($q15,0,0)?>)</b><br/>
 <?
-
-$predmet = mysql_result($q10,0,2);
-$ag = mysql_result($q10,0,3);
 
 // Određivanje labgrupe
 $q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid limit 1");
@@ -218,7 +227,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 <?
 
 
-$q100 = myquery("select count(*) from studentski_moduli where predmet=$predmet and akademska_godina=$ag and url like '%student/zadaca%' and aktivan=1");
+$q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
 
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
@@ -331,7 +340,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 		// Uzmi samo rjesenje sa zadnjim IDom
 		$q22 = myquery("select status,bodova,komentar from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 		if (mysql_num_rows($q22)<1) {
-			?><td><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
 			$status = mysql_result($q22,0,0);
 			$bodova_zadatak = mysql_result($q22,0,1);
@@ -340,7 +349,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
-			?><td><a href="?sta=student/zadaca&predmet=<?=$ponudakursa?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
+			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
 	<?
 		}
 	}
