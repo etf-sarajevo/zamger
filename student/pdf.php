@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 // TODO: koristiti tcpdf
 
@@ -66,7 +67,7 @@ $brindexa = mysql_result($q30,0,2);
 
 // Labgrupa
 
-$q40 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet_id limit 1");
+$q40 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl, ponudakursa as pk where sl.student=$userid and sl.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$predmet_id limit 1");
 if (mysql_num_rows($q40)>0)
 	$labgrupa = mysql_result($q40,0,0);
 else

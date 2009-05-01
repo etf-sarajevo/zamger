@@ -12,6 +12,7 @@
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.6 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 
 function student_predmet() {
@@ -46,7 +47,7 @@ $predmet = mysql_result($q10,0,2);
 $ag = mysql_result($q10,0,3);
 
 // Određivanje labgrupe
-$q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$ponudakursa and l.id=sl.labgrupa and sl.student=$userid limit 1");
+$q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid limit 1");
 if (mysql_num_rows($q20)>0) {
 	?>Grupa: <b><?=mysql_result($q20,0,0)?></b></p><?
 }
@@ -116,13 +117,13 @@ if ($tabela1>$tabela2) {
 //  PRISUSTVO NA VJEŽBAMA
 
 
-function prisustvo_ispis($idgrupe,$imegrupe,$ponudakursa,$komponenta) {
+function prisustvo_ispis($idgrupe,$imegrupe,$predmet,$ag,$komponenta) {
 	global $userid;
 
 	if (!preg_match("/\w/",$imegrupe)) $imegrupe = "[Bez naziva]";
 
 	$odsustva=0;
-	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and predmet=$ponudakursa and komponenta=$komponenta");
+	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta");
 	if (mysql_num_rows($q70)<1) return;
 
 	$datumi = $vremena = $statusi = "";
@@ -175,13 +176,13 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$max_izostanaka = $r40[3];
 
 	$odsustva = 0;
-	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$ponudakursa and l.id=sl.labgrupa and sl.student=$userid");
+	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid");
 	
 	while ($r60 = mysql_fetch_row($q60)) {
-		$odsustva += prisustvo_ispis($r60[0],$r60[1],$ponudakursa,$id_komponente);
+		$odsustva += prisustvo_ispis($r60[0],$r60[1],$predmet,$ag,$id_komponente);
 	}
 	
-	$odsustva += prisustvo_ispis(0,"sve grupe",$ponudakursa,$id_komponente);
+	$odsustva += prisustvo_ispis(0,"sve grupe",$predmet,$ag,$id_komponente);
 	
 	if ($odsustva<=$max_izostanaka) {
 		?><p>Ukupno na prisustvo imate <b><?=$max_bodova?></b> bodova.</p>
@@ -222,7 +223,7 @@ $q100 = myquery("select count(*) from studentski_moduli where predmet=$predmet a
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
-	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$ponudakursa order by komponenta,naziv");
+	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];

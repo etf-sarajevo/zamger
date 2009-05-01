@@ -9,7 +9,7 @@
 // v4.0.0.1 (2009/02/24) + Dodan prikaz nastavnika angazovanih na predmetu
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
-
+// v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 
 
 function nastavnik_predmet() {
@@ -18,32 +18,28 @@ global $userid,$user_siteadmin;
 
 
 
-$ponudakursa=intval($_REQUEST['predmet']);
-if ($ponudakursa==0) { 
-	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
-	biguglyerror("Nije izabran predmet."); 
-	return; 
+// Parametri
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']);
+
+// Naziv predmeta
+$q10 = myquery("select naziv from predmet where id=$predmet");
+if (mysql_num_rows($q10)<1) {
+	biguglyerror("Nepoznat predmet");
+	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	return;
 }
-
-$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
-$predmet_naziv = mysql_result($q1,0,0);
-$predmet = mysql_result($q1,0,1);
-$ag = mysql_result($q1,0,2);
-
-//$tab=$_REQUEST['tab'];
-//if ($tab=="") $tab="Opcije";
-
-//logthis("Admin Predmet $predmet - tab $tab");
+$predmet_naziv = mysql_result($q10,0,0);
 
 
 
-// Da li korisnik ima pravo pristupa
+// Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
+	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/predmet privilegije (predmet p$ponudakursa)",3);
-		biguglyerror("Nemate pravo pristupa");
+		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
 }
@@ -109,9 +105,9 @@ if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
 	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
 	$q15 = myquery("update studentski_moduli set aktivan=$aktivan where id=$smodul");
 	if ($aktivan==1)
-		zamgerlog("aktiviran studentski modul $smodul (predmet p$ponudakursa)",2); // nivo 2: edit
+		zamgerlog("aktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
 	else
-		zamgerlog("deaktiviran studentski modul $smodul (predmet p$ponudakursa)",2); // nivo 2: edit
+		zamgerlog("deaktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
 }
 
 

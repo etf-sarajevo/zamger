@@ -14,6 +14,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/04/23) + Prebacena tabela labgrupa sa ponudekursa na predmet; funkcije ispis_studenta_sa... sada primaju predmet a ne ponudukursa; ukinut zastarjeli logging u ispis_studenta_sa_predmeta; massinput sada moze primiti ponudukursa ili predmet+ag
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -33,7 +34,8 @@ function ispis_studenta_sa_labgrupe($student,$predmet,$labgrupa) {
 		$q20 = myquery("delete from prisustvo where student=$student and cas=$r10[0]");
 	}
 	// Komentari
-	$q20 = myquery("delete from komentar where student=$student and predmet=$predmet and labgrupa=$labgrupa");
+	// FIXME ovo ne radi jer tabela komentar sada sadrzi ponudukursa koju ne znamo, a ubuduce ce sadrzavati samo labgrupu
+	// $q20 = myquery("delete from komentar where student=$student and predmet=$predmet and labgrupa=$labgrupa");
 
 	// Ispis iz labgrupe
 	if ($labgrupa>0) $q30 = myquery("delete from student_labgrupa where student=$student and labgrupa=$labgrupa");
@@ -43,14 +45,12 @@ function ispis_studenta_sa_labgrupe($student,$predmet,$labgrupa) {
 // Funkcija koja ispisuje studenta sa predmeta, brisuci sve relevantne podatke 
 // (ispis sa svih labgrupa, ispiti, konacna ocjena, komponente, zadace)
 
-function ispis_studenta_sa_predmeta($student,$predmet) {
+function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Ovo bi se dalo optimizovati
-	logthis("Ispis studenta $stud_id sa predmeta $predmet_id (labgrupa $labgrupa)");
-
 	global $conf_files_path;
 
 	// Odredjivanje labgrupa ciji je student eventualno clan
-	$q40 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet");
+	$q40 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	while ($r40 = mysql_fetch_row($q40)) {
 		ispis_studenta_sa_labgrupe($student,$predmet,$r40[0]);
 	}
@@ -58,18 +58,19 @@ function ispis_studenta_sa_predmeta($student,$predmet) {
 	ispis_studenta_sa_labgrupe($student,$predmet,0);
 
 	// Ocjene na ispitima
-	$q50 = myquery("select i.id from ispit as i, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+	$q50 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag");
 	while ($r50 = mysql_fetch_row($q50)) {
 		$q60 = myquery("delete from ispitocjene where student=$student and ispit=$r50[0]");
 	}
 
 	// Konacne ocjene
-	$q70 = myquery("delete from konacna_ocjena where student=$student and predmet=$predmet");
+	/*$q70 = myquery("delete from konacna_ocjena where student=$student and predmet=$predmet");*/
+	// Ima li smisla brisati konacnu ocjenu kod ispisa sa predmeta!?
 
 	// Zadace
 	$lokacijazadaca="$conf_files_path/zadace/$predmet/$student/";
 
-	$q90 = myquery("select z.id, pj.ekstenzija, z.attachment from zadaca as z, programskijezik as pj, ponudakursa as pk where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and pk.id=$predmet and z.programskijezik=pj.id");
+	$q90 = myquery("select z.id, pj.ekstenzija, z.attachment from zadaca as z, programskijezik as pj where z.predmet=$predmet and z.akademska_godina=$ag and z.programskijezik=pj.id");
 	while ($r90 = mysql_fetch_row($q90)) {
 		$q100 = myquery("select id,redni_broj,filename from zadatak where student=$student and zadaca=$r90[0]");
 		while ($r100 = mysql_fetch_row($q100)) {
@@ -89,11 +90,18 @@ function ispis_studenta_sa_predmeta($student,$predmet) {
 		$q120 = myquery("delete from zadatak where student=$student and zadaca=$r90[0]");
 	}
 
+	// Odredjujem ponudukursa sto je potrebno za naredna dva upita
+	$q225 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	$ponudakursa = mysql_result($q225,0,0);
+
 	// Brisanje komponenti
-	$q230 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet");
+	$q230 = myquery("delete from komponentebodovi where student=$student and predmet=$ponudakursa");
 
 	// Ispis sa predmeta
-	$q240 = myquery("delete from student_predmet where student=$student and predmet=$predmet");
+	$q240 = myquery("delete from student_predmet where student=$student and predmet=$ponudakursa");
+
+//	zamgerlog("studenta u$student ispisan sa predmeta pp$predmet", 4); // nivo 4: audit
+// Logging treba raditi tamo gdje se funkcija poziva!
 
 }
 
@@ -112,7 +120,11 @@ function mass_input($ispis) {
 	// Da li treba ispisivati akcije na ekranu ili ne?
 	$f = $ispis;
 
+	// Parametri
+	$ponudakursa = intval($_REQUEST['ponudakursa']);
 	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
+
 	$redovi = explode("\n",$_POST['massinput']);
 
 	// Format imena i prezimena:
@@ -204,10 +216,10 @@ function mass_input($ispis) {
 			continue;
 
 		} else if (mysql_num_rows($q10)>1) {
-			if ($predmet>0) {
+			if ($ponudakursa>0) {
 				// Postoji više studenata sa istim imenom i prezimenom
-				// Biramo onog koji je upisan na ovaj predmet
-				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=$predmet");
+				// Biramo onog koji je upisan na ovu ponudukursa
+				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=$ponudakursa");
 	
 				if (mysql_num_rows($q10)<1) {
 					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
@@ -220,6 +232,23 @@ function mass_input($ispis) {
 					$greska=1;
 					continue;
 				}
+
+			} else if ($predmet>0 && $ag>0) {
+				// Isto za predmet
+				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp, ponudakursa as pk where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	
+				if (mysql_num_rows($q10)<1) {
+					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
+					$greska=1;
+					continue;
+	
+				} else if (mysql_num_rows($q10)>1) {
+					// Na istom su predmetu!? wtf
+					if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime' na ovom predmetu. Kontaktirajte administratora.<br/>";
+					$greska=1;
+					continue;
+				}
+
 			} else {
 				if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime'. Kontaktirajte administratora.<br/>";
 				$greska=1;
@@ -240,8 +269,13 @@ function mass_input($ispis) {
 		}
 
 		// Da li je upisan na predmet?
-		if ($predmet>0) {
-			$q20 = myquery("select count(*) from student_predmet where student=$student and predmet=$predmet");
+		$q20=0;
+		if ($ponudakursa>0) {
+			$q20 = myquery("select count(*) from student_predmet where student=$student and predmet=$ponudakursa");
+		} else if ($predmet>0 && $ag>0) {
+			$q20 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		}
+		if ($q20 != 0) {
 			if (mysql_result($q20,0,0)<1) {
 				// Pokusacemo preskociti studente koji nemaju ocjenu
 				if ($format==0 || $format==1) 
@@ -279,6 +313,7 @@ function mass_input($ispis) {
 
 
 // Azurira "komponente" - sumarne bodove po komponentama ukupnog broja bodova za neki predmet i studenta
+// parametar $predmet je ustvari ponudakursa
 
 function update_komponente($student,$predmet,$komponenta=0) {
 	// Ako nije navedena komponenta, racunaju se sve komponente

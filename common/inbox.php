@@ -17,6 +17,7 @@
 // v3.9.1.12 (2008/12/28) + Dodano parsiranje linkova u porukama
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
+// v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 
 function common_inbox() {
@@ -344,7 +345,7 @@ if ($poruka>0) {
 		}
 	}
 	else if ($opseg==6) {
-		$q55 = myquery("select p.naziv,l.naziv from ponudakursa as pk, predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=pk.id and pk.predmet=p.id");
+		$q55 = myquery("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
 		if (mysql_num_rows($q55)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: labgrupa)",3);

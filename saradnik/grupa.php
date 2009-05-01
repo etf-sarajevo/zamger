@@ -24,6 +24,10 @@
 // v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/14) + Zaboravio popraviti ID predmeta u pozivu AJAHa za konacnu ocjenu
+// v4.0.9.4 (2009/04/22) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; saradnik/izmjena_studenta sada prima predmet umjesto ponudekursa; u slucaju grupe 0 prima se predmet i ag umjesto ponudekursa; preusmjeravam tabelu cas sa ponudekursa na predmet
+
+
+// TODO: ukinuti nultu grupu - sada će virtualne grupe biti obicne grupe koje se automatski popunjavaju
 
 
 
@@ -46,13 +50,14 @@ $kreiranje = intval($_GET['kreiranje']);
 
 if ($grupa_id==0) {
 	// Svi studenti
-	$ponudakursa = intval($_REQUEST['predmet']);
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
 	$predmet_admin=0;
 	
 	if (!$user_siteadmin) {
-		$q10 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
+		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q10)<1) {
-			$q20 = myquery("select count(*) from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$ponudakursa");
+			$q20 = myquery("select count(*) from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 			if (mysql_result($q20,0,0)>0) {
 				zamgerlog("Pokusava uci u nultu grupu a ima ogranicenja",3);
 				biguglyerror("Nemate pravo ulaska u ovu grupu!");
@@ -64,24 +69,25 @@ if ($grupa_id==0) {
 
 } else {
 	// Određujemo predmet za labgrupu
-	$q30 = myquery("select predmet from labgrupa where id=$grupa_id");
+	$q30 = myquery("select predmet, akademska_godina from labgrupa where id=$grupa_id");
 	if (mysql_num_rows($q30)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
-	$ponudakursa = mysql_result($q30,0,0);
+	$predmet = mysql_result($q30,0,0);
+	$ag = mysql_result($q30,0,1);
 
 
 	// Da li korisnik ima pravo ući u grupu?
 	if (!$user_siteadmin) {
-		$q40 = myquery("select np.admin from nastavnik_predmet as np, labgrupa as l, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=l.predmet and l.id=$grupa_id");
+		$q40 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q40)<1) {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			return;
 		}
 		$predmet_admin = mysql_result($q40,0,0);
 
-		$q50 = myquery("select ogranicenje.labgrupa from ogranicenje, labgrupa where ogranicenje.nastavnik=$userid and ogranicenje.labgrupa=labgrupa.id and labgrupa.predmet=$ponudakursa");
+		$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 		if (mysql_num_rows($q50)>0) {
 			$nasao=0;
 			while ($r50 = mysql_fetch_row($q50)) {
@@ -114,8 +120,8 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		$q55 = myquery("select id from komponenta where tipkomponente=3");
 		$komponenta = mysql_result($q55,0,0);
 	
-		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$grupa_id, nastavnik=$userid, predmet=$ponudakursa, komponenta=$komponenta");
-		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$grupa_id and predmet=$ponudakursa");
+		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$grupa_id, nastavnik=$userid, predmet=$predmet, akademska_godina=$ag, komponenta=$komponenta");
+		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$grupa_id and predmet=$predmet and akademska_godina=$ag");
 		$cas_id = mysql_result($q70,0,0);
 	
 		// dodajemo u bazu default podatke za prisustvo i ocjene
@@ -123,10 +129,15 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		if ($grupa_id>0)
 			$q80 = myquery("select student from student_labgrupa where labgrupa=$grupa_id");
 		else
-			$q80 = myquery("select student from student_predmet where predmet=$ponudakursa");
+			$q80 = myquery("select sp.student from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		while ($r80 = mysql_fetch_row($q80)) {
 			$stud_id = $r80[0];
 			$prisustvo = intval($_POST['prisustvo']);
+
+			// Potrebna nam je ponudakursa sa update_komponente
+			$q53 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$ponudakursa = mysql_result($q53,0,0);
+
 			$q90 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
 			if ($prisustvo==0)
 				 // Update radimo samo ako se registruje odsustvo
@@ -175,16 +186,14 @@ if ($grupa_id>0) {
 	$naziv = "Svi studenti";
 }
 
-$q130 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
+$q130 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q130)<1) {
-	zamgerlog("nepostojeci predmet $predmet_id",3);
+	zamgerlog("nepostojeci predmet $predmet",3);
 	biguglyerror("Izabran je nepostojeći predmet"); 
 	return; 
 }
 	
 $pime = mysql_result($q130,0,0);
-$predmet = mysql_result($q130,0,1);
-$ag = mysql_result($q130,0,2);
 
 print "\n<center><h1>$pime - $naziv</h1></center>\n\n";
 
@@ -195,7 +204,7 @@ print "\n<center><h1>$pime - $naziv</h1></center>\n\n";
 if ($grupa_id>0)
 	$q140 = myquery("select count(student) from student_labgrupa where labgrupa=$grupa_id");
 else
-	$q140 = myquery("select count(student) from student_predmet where predmet=$ponudakursa");
+	$q140 = myquery("select count(student) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 
 if (mysql_result($q140,0,0)<1) {
 	if ($grupa_id>0)
@@ -384,7 +393,7 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$prisustvo_id_array[] = $r195[0];
 	$cas_id_array = array();
 
-	$q200 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and predmet=$ponudakursa and komponenta=$r195[0] ORDER BY datum");
+	$q200 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and predmet=$predmet and akademska_godina=$ag and komponenta=$r195[0] ORDER BY datum");
 	while ($r200 = mysql_fetch_row($q200)) {
 		$cas_id = $r200[0];
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
@@ -561,7 +570,7 @@ $stat_tekst = array("Bug u programu", "Automatsko testiranje u toku", "Zadaća p
 if ($grupa_id>0)
 $q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_labgrupa as sl where a.id=sl.student and sl.labgrupa=$grupa_id");
 else
-$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_predmet as sp where a.id=sp.student and sp.predmet=$ponudakursa");
+$q310 = myquery("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_predmet as sp, ponudakursa as pk where a.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 
 $imeprezime = array();
 $brind = array();
@@ -580,9 +589,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$ponudakursa?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$predmet?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
-	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>&predmet=<?=$ponudakursa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
+	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$grupa_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
 
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
@@ -618,7 +627,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 		$prisustvo_ispis .= "<td>".$prisustvo_minbodova[$pid]."</td>";
 	}*/
-	$q325 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$pid");
+	$q325 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$pid");
 	if (mysql_num_rows($q325)==0) 
 		$pbodovi=0;
 	else
@@ -661,13 +670,13 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	$fiksne_ispis="";
 	foreach ($fiksna_id_array as $fiksna) {
-		$q328 = myquery("select bodovi from komponentebodovi where komponenta=$fiksna and student=$stud_id and predmet=$ponudakursa");
+		$q328 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$fiksna");
 		if (mysql_num_rows($q328)>0) {
 			$fbodova = mysql_result($q328,0,0);
-			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet_id-$fiksna\" ondblclick=\"coolboxopen(this)\">$fbodova</td>\n";
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna\" ondblclick=\"coolboxopen(this)\">$fbodova</td>\n";
 			$bodova += $fbodova;
 		} else {
-			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet_id-$fiksna\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 		}
 	}
 
@@ -758,7 +767,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 ?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
 	}
-?> * <a href="?sta=saradnik/grupa&id=<?=$grupa_id?>&predmet=<?=$ponudakursa?>">Refresh</a></p>
+?> * <a href="?sta=saradnik/grupa&id=<?=$grupa_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Refresh</a></p>
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>

@@ -15,6 +15,8 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; obrisan legacy parser koji se koristio u ranim dev verzijama loga
+// v4.0.9.3 (2009/04/07) + Dodajem tag za lab grupu
+// v4.0.9.4 (2009/04/22) + Tag za predmet (za razliku od ponudekursa) - posto se dobar broj modula prebacuje na predmet, bice lakse logirati tako; prebacujem labgrupu sa ponudakursa na predmet
 
 
 function admin_log() {
@@ -167,6 +169,18 @@ function get_predmet_link($id) {
 }
 
 
+function get_ppredmet_link($id) {
+	// Za sada moramo odrediti bilo koju ponudukursa, a kasnije ce studentska/predmeti biti prebaceno na predmet
+	static $predmeti = array();
+	if (!$predmeti[$id]) {
+		$q40 = myquery("select pk.id, p.naziv from ponudakursa as pk, akademska_godina as ag, predmet as p where pk.predmet=$id and pk.akademska_godina=ag.id and ag.aktuelna=1 and pk.predmet=p.id");
+		if (mysql_num_rows($q30)>0) {
+			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=".mysql_result($q40,0,0)."\" target=\"_new\">".mysql_result($q40,0,1)."</a>";
+		} else return $id;
+	}
+	return $predmeti[$id];
+}
+
 
 // Glavni upit i petlja
 
@@ -201,7 +215,9 @@ while ($r10 = mysql_fetch_row($q10)) {
 	// Prepoznavanje određenih elemenata eventa - TAGOVA
 	// Legenda:
 	//   uID - korisnik
-	//   pID - predmet
+	//   ppID - predmet
+	//   pID - ponudakursa
+	//   gID - labgrupa
 	//   cID - čas
 	//   zID - zadaća
 	//   iID - ispit
@@ -211,14 +227,20 @@ while ($r10 = mysql_fetch_row($q10)) {
 	if (preg_match("/\Wu(\d+)/", $evt, $m)) { // korisnik
 		$evt = str_replace("u$m[1]",get_user_link($m[1]), $evt);
 	}
-	if (preg_match("/\Wp(\d+)/", $evt, $m)) { // predmet
+	if (preg_match("/\Wpp(\d+)/", $evt, $m)) { // predmet
+		$evt = str_replace("pp$m[1]",get_ppredmet_link($m[1]),$evt);
+	}
+	if (preg_match("/\Wp(\d+)/", $evt, $m)) { // ponudakursa
 		$evt = str_replace("p$m[1]",get_predmet_link($m[1]),$evt);
 	}
+	if (preg_match("/\Wg(\d+)/", $evt, $m)) { // labgrupa
+		$evt = str_replace("g$m[1]","<a href=\"?sta=saradnik/grupa&id=$m[1]\" target=\"_blank\">$m[1]</a>",$evt);
+	}
 	if (preg_match("/\Wc(\d+)/", $evt, $m)) { // cas
-		$q40 = myquery("select labgrupa, predmet from cas where id=$m[1]");
+		$q40 = myquery("select labgrupa, predmet, akademska_godina from cas where id=$m[1]");
 		if (mysql_num_rows($q40)>0) {
 			if (mysql_result($q40,0,0)==0) {
-				$link="?sta=saradnik/grupa&id=0&predmet=".mysql_result($q40,0,1);
+				$link="?sta=saradnik/grupa&id=0&predmet=".mysql_result($q40,0,1)."&ag=".mysql_result($q40,0,2);
 			} else {
 				$link="?sta=saradnik/grupa&id=".mysql_result($q40,0,0);
 			}
@@ -232,7 +254,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
 			$predmet=mysql_result($q50,0,1);
 			$ag=mysql_result($q50,0,2);
-			$q60 = myquery("select l.id from student_labgrupa as sl, labgrupa as l, ponudakursa as pk where sl.student=$usr and sl.labgrupa=l.id and l.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 			if (mysql_num_rows($q60)>0) {
 				$link="?sta=saradnik/grupa&id=".mysql_result($q60,0,0);
 			} else {

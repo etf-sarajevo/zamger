@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/06) + Attachment se nije mogao otvoriti osim ako je status 1
+// v4.0.9.4 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 
 function common_attachment() {
@@ -70,7 +71,7 @@ if ($stud_id==0) { // student otvara vlastitu zadacu
 		}
 		
 		// Provjera ogranicenja
-		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$ponudakursa");
+		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, ponudakursa as pk where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa");
 		if (mysql_num_rows($q20)>0) {
 			$nasao=0;
 			while ($r20 = mysql_fetch_row($q20)) {

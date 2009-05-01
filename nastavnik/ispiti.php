@@ -15,6 +15,7 @@
 // v4.0.9.4 (2009/04/14) + Zaboravio izbaciti polje naziv iz tabele ispit
 // v4.0.9.5 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
 // v4.0.9.6 (2009/04/16) + Popravljen link na izvjestaj/ispit
+// v4.0.9.7 (2009/04/22) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 
 
 function nastavnik_ispiti() {
@@ -25,23 +26,18 @@ require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
 
 
+// Parametri
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']);
 
-$ponudakursa=intval($_REQUEST['predmet']);
-if ($ponudakursa==0) { 
-	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
-	biguglyerror("Nije izabran predmet."); 
-	return; 
+// Naziv predmeta
+$q10 = myquery("select naziv from predmet where id=$predmet");
+if (mysql_num_rows($q10)<1) {
+	biguglyerror("Nepoznat predmet");
+	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	return;
 }
-
-$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
-$predmet_naziv = mysql_result($q1,0,0);
-$predmet = mysql_result($q1,0,1);
-$ag = mysql_result($q1,0,2);
-
-//$tab=$_REQUEST['tab'];
-//if ($tab=="") $tab="Opcije";
-
-//logthis("Admin Predmet $predmet - tab $tab");
+$predmet_naziv = mysql_result($q10,0,0);
 
 
 
@@ -50,7 +46,7 @@ $ag = mysql_result($q1,0,2);
 if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/ispiti privilegije (predmet p$ponudakursa)",3);
+		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
@@ -101,7 +97,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	$tipispita = intval($_POST['tipispita']);
 
 	// Da li je ispit vec registrovan?
-	$q10 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
+	$q10 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
 	if (mysql_num_rows($q10)>0) {
 		$ispit = mysql_result($q10,0,0);
 		if ($ispis) {
@@ -113,7 +109,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$q30 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
 
 		if (mysql_num_rows($q30)<1) {
-			zamgerlog("unos ispita nije uspio (predmet p$ponudakursa, ag $ag, datum $mdat, tipispita $tipispita)",3);
+			zamgerlog("unos ispita nije uspio (predmet pp$predmet, ag$ag, datum $mdat, tipispita $tipispita)",3);
 			niceerror("Unos ispita nije uspio.");
 			return;
 		} 
@@ -138,7 +134,19 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 		$bodova = $fbodova;
 
-
+		// Da li student slusa predmet?
+		$q35 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		if (mysql_num_rows($q35)<1) {
+			if ($ispis) {
+				print "-- GREŠKA! Student '$prezime $ime' nije upisan na predmet $predmet_naziv<br/>";
+			}
+			$greska=1;
+			continue; // Ne smijemo dozvoliti da se ovakav podatak unese u bazu
+		} else {
+			// Ponudakursa nam treba za update_komponente()
+			$ponudakursa = mysql_result($q35,0,0);
+		}
+		
 		// Da li je ocjena za studenta vec ranije unesena?
 		if ($dodavanje == 1) {
 			$q40 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$student");
@@ -148,13 +156,17 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 					print "-- GREŠKA! Student '$prezime $ime' je već ranije unesen na ovaj ispit sa $oc2 bodova (a sada sa $fbodova bodova). Izmjena unesenih bodova trenutno nije moguća.<br/>";
 				}
 				$greska=1;
+				continue; // Ne smijemo dozvoliti dvostruke ocjene u bazi
 			}
 		}
+
+		// Zakljucak
 		if ($ispis) {
 //			print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
 			print "Student '$prezime $ime' - bodova: $bodova<br/>";
 		} else {
 			$q50 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
+
 			// Update komponenti
 			update_komponente($student, $ponudakursa, $tipispita);
 		}
@@ -166,11 +178,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		print "</form>";
 		return;
 	} else {
-		zamgerlog("masovni rezultati ispita za predmet p$ponudakursa",4);
+		zamgerlog("masovni rezultati ispita za predmet pp$predmet",4);
 		?>
 		Rezultati ispita su upisani.
 		<script language="JavaScript">
-		location.href='?sta=nastavnik/ispiti&predmet=<?=$ponudakursa?>';
+		location.href='?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>';
 		</script>
 		<?
 	}
@@ -187,7 +199,7 @@ print "<ul>\n";
 if (mysql_num_rows($q110)<1)
 	print "<li>Nije unesen nijedan ispit.</li>";
 while ($r110 = mysql_fetch_row($q110)) {
-	print '<li><a href="?sta=izvjestaj/ispit&predmet='.$ponudakursa.'&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
+	print '<li><a href="?sta=izvjestaj/ispit&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
 }
 print "</ul>\n";
 

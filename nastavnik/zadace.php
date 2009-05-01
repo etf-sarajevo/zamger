@@ -13,6 +13,7 @@
 // v4.0.0.1 (2009/03/12) + Nije se mogao zadati programski jezik (uvijek vracao na nedefinisan); dvostruka stavka "--Nije odredjen--"; poboljsan feedback nakon kreiranja / editovanja zadace
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; dodana provjera spoofinga zadace kod masovnog unosa
+// v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 
 
 function nastavnik_zadace() {
@@ -24,31 +25,27 @@ global $mass_rezultat; // za masovni unos studenata u grupe
 global $_lv_; // radi autogenerisanih formi
 
 
-$ponudakursa=intval($_REQUEST['predmet']);
-if ($ponudakursa==0) { 
-	zamgerlog("ilegalan predmet $ponudakursa",3); //nivo 3: greska
-	biguglyerror("Nije izabran predmet."); 
-	return; 
+// Parametri
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']);
+
+// Naziv predmeta
+$q10 = myquery("select naziv from predmet where id=$predmet");
+if (mysql_num_rows($q10)<1) {
+	biguglyerror("Nepoznat predmet");
+	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	return;
 }
-
-$q1 = myquery("select p.naziv, p.id, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=p.id");
-$predmet_naziv = mysql_result($q1,0,0);
-$predmet = mysql_result($q1,0,1);
-$ag = mysql_result($q1,0,2);
-
-//$tab=$_REQUEST['tab'];
-//if ($tab=="") $tab="Opcije";
-
-//logthis("Admin Predmet $predmet - tab $tab");
+$predmet_naziv = mysql_result($q10,0,0);
 
 
 
 // Da li korisnik ima pravo ući u modul?
 
-if (!$user_siteadmin) {
+if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/zadace privilegije (predmet p$ponudakursa)",3);
+		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
 	} 
@@ -91,7 +88,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	// Provjera spoofanja zadaće
 	if ($predmet != mysql_result($q20,0,4) || $ag != mysql_result($q20,0,5)) {
-		zamgerlog("zadaca z$zadaca nije u predmetu p$ponudakursa",3);
+		zamgerlog("zadaca z$zadaca nije u predmetu pp$predme",3);
 		niceerror("Pogresan ID zadace!");
 		return;
 	}
@@ -140,6 +137,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		} else {
 			$q30 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=5, bodova=$bodova"); 
 			// status 5: pregledana
+
+			// Treba nam ponudakursa za update komponente
+			$q35 = myquery("select sp.predmet from studentpredmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$ponudakursa = mysql_result($q35,0,0);
+
 			update_komponente($student,$ponudakursa,$komponenta); // update statistike
 		}
 	}
@@ -150,11 +152,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		print "</form>";
 		return;
 	} else {
-		zamgerlog("masovno upisane zadaće na predmet p$ponudakursa, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
+		zamgerlog("masovno upisane zadaće na predmet pp$predmet, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
 		?>
 		Bodovi iz zadaća su upisani.
 		<script language="JavaScript">
-		location.href='?sta=nastavnik/zadace&predmet=<?=$ponudakursa?>';
+		location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
 		</script>
 		<?
 	}
@@ -176,7 +178,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		}
 		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
 			niceerror("Zadaća nije sa izabranog predmeta");
-			zamgerlog("promjena zadace: zadaca $edit_zadaca nije sa predmeta p$ponudakursa", 3);
+			zamgerlog("promjena zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
 			return 0;
 		}
 	}
@@ -186,7 +188,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		if ($_POST['potvrdabrisanja']==" Briši ") {
 			$q88 = myquery("delete from zadaca where id=$edit_zadaca");
 			$q89 = myquery("delete from zadatak where zadaca=$edit_zadaca");
-			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta p$ponudakursa", 4);
+			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
 		} else {
 			$q96 = myquery("select count(*) from zadatak where zadaca=$edit_zadaca");
 			$brojzadataka=mysql_result($q96,0,0);
@@ -309,7 +311,7 @@ if ($izabrana==0) {
 	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment from zadaca where id=$izabrana");
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
 		niceerror("Zadaća ne pripada vašem predmetu");
-		zamgerlog("zadaca $izabrana ne pripada predmetu p$ponudakursa",3);
+		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
 		return;
 	}
 

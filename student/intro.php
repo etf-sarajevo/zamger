@@ -19,6 +19,7 @@
 // v4.0.9.4 (2009/04/06) + Skracujem prikaz obavjestenja ako je "naslov" duzi od 200 znakova
 // v4.0.9.5 (2009/04/19) + Popravljen upit za obavjestenja o polozenim ispitima - posto je moguce da isti predmet ima vise ponudakursa, desavalo se da link na stranicu predmeta bude za pogresnu ponudukursa na koju student nije upisan
 // v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
+// v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 
 function student_intro() {
@@ -165,7 +166,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 		$posiljalac = mysql_result($q50,0,0);
 	} else if ($opseg==6) {
 		// odredjujemo naziv predmeta za labgrupu i da li je student u grupi
-		$q55 = myquery("select p.naziv from student_labgrupa as sl, labgrupa as l, ponudakursa as pk, predmet as p where sl.student=$userid and sl.labgrupa=l.id and l.id=$primalac and l.predmet=pk.id and pk.predmet=p.id");
+		$q55 = myquery("select p.naziv from student_labgrupa as sl, labgrupa as l, predmet as p where sl.student=$userid and sl.labgrupa=l.id and l.id=$primalac and l.predmet=p.id");
 		if (mysql_num_rows($q55)<1) continue;
 		$posiljalac = mysql_result($q55,0,0);
 

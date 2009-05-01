@@ -9,9 +9,10 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
 
 
-// TODO: Ubaciti strverscmp u libvedran?
+// TODO: Ubaciti strverscmp u libvedran? - prebaciti na php funkciju (cini mi se natsort)!!!
 
 
 function izvjestaj_grupe() {
@@ -27,6 +28,8 @@ Elektrotehnički fakultet Sarajevo</p>
 
 
 $predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']); // akademska godina
+
 $tip = $_REQUEST['tip'];
 if (intval($_REQUEST['double'])==1 && $tip=="") $tip = "double"; // kompatibilnost unazad
 $komentari = intval($_REQUEST['komentari']);
@@ -34,28 +37,35 @@ $prisustvo = intval($_REQUEST['prisustvo']);
 
 if ($tip=="") $tip="single";
 
+
 // Naziv predmeta - ovo ujedno provjerava da li predmet postoji
 
-$q10 = myquery("select p.naziv, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and pk.predmet=p.id and pk.akademska_godina=ag.id");
+$q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
-	niceerror("Traženi predmet ne postoji");
+	biguglyerror("Traženi predmet ne postoji");
+	return;
+}
+$q15 = myquery("select naziv from akademska_godina where id=$ag");
+if (mysql_num_rows($q15)<1) {
+	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	biguglyerror("Tražena godina ne postoji");
 	return;
 }
 
 ?>
 <h1><?=mysql_result($q10,0,0)?></h1>
-<h3>Akademska <?=mysql_result($q10,0,1)?> godina - Spisak grupa</h3>
+<h3>Akademska <?=mysql_result($q15,0,0)?> godina - Spisak grupa</h3>
 <?
 
 
 
 // Prava pristupa
 
-$q20 = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+$q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
-	zamgerlog("permisije (predmet $predmet)",3);
-	niceerror("Nemate permisije za pristup ovom izvještaju");
+	zamgerlog("permisije (predmet pp$predmet)",3);
+	biguglyerror("Nemate permisije za pristup ovom izvještaju");
 	return;
 }
 
@@ -68,7 +78,7 @@ if ($tip=="double") {
 
 	$parni=0;
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet order by naziv");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag order by naziv");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
@@ -92,6 +102,7 @@ if ($tip=="double") {
 		while ($r401 = mysql_fetch_row($q401)) {
 			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
 			$brindexa[$r401[0]] = $r401[3];
+			
 		}
 		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
@@ -115,7 +126,8 @@ if ($tip=="double") {
 		} else $parni=1;
 	}
 
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	// FIXME: ubrzati
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp, ponudakursa as pk where sp.student=a.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag)=0");
 	if (mysql_num_rows($q410)>0) {
 		if ($parni == 0) 
 			print "<tr>";
@@ -178,7 +190,7 @@ else if ($tip=="single") {
 	<?*/
 	print "<center>\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
@@ -241,7 +253,7 @@ else if ($tip=="single") {
 		<?
 	}
 
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp where sp.student=a.id and sp.predmet=$predmet and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet)=0");
+	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp, ponudakursa as pk where sp.student=a.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag)=0");
 	if (mysql_num_rows($q410)>0) {
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">

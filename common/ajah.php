@@ -26,6 +26,7 @@
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita; ekvivalentan upit za admine, i.predmet vise nije id ponudekursa nego predmeta
 // v4.0.9.6 (2009/04/24) + Greska uvedena u v4.0.9.4 (r372), ako $q70 ne vrati nista kako cemo onda znati metapredmet?
+// v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 // Prebaciti u lib/manip?
 
@@ -58,25 +59,26 @@ case "prisustvo":
 	// Provjera prava pristupa
 
 	if (!$user_siteadmin) {
-		$q10 = myquery("select predmet, labgrupa from cas where id=$cas");
+		$q10 = myquery("select predmet, labgrupa, akademska_godina from cas where id=$cas");
 		if (mysql_num_rows($q10)<1) {
 			zamgerlog("AJAH prisustvo - nepostojeci cas $cas",3);
 			print "nepostojeci cas"; break;
 		}
 		$predmet = mysql_result($q10,0,0);
 		$labgrupa = mysql_result($q10,0,1);
+		$ag = mysql_result($q10,0,2);
 
 		if ($labgrupa==0) 
-			$q15 = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+			$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		else
-			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=l.predmet and l.id=$labgrupa");
+			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l where np.nastavnik=$userid and np.predmet=l.predmet and np.akademska_godina=l.akademska_godina and l.id=$labgrupa");
 		if (mysql_num_rows($q15)<1) {
 			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
 			print "niste nastavnik A"; break;
 		}
 
 		// Provjeravamo ogranicenja
-		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet");
+		$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 		if (mysql_num_rows($q20)>0) {
 			$nasao=0;
 			while ($r20 = mysql_fetch_row($q20)) {
@@ -88,10 +90,13 @@ case "prisustvo":
 				print "imate ograničenje na ovu grupu"; break;
 			}
 		}
+
+		// ponudakursa
 	} else {
-		// Treba nam predmet
-		$q25 = myquery("select predmet from cas where id=$cas");
+		// Treba nam predmet i ag
+		$q25 = myquery("select predmet, akademska_godina from cas where id=$cas");
 		$predmet = mysql_result($q25,0,0);
+		$ag = mysql_result($q25,0,1);
 	}
 
 
@@ -111,9 +116,13 @@ case "prisustvo":
 	}
 
 	// Ažuriranje komponenti
-	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+	// potrebna nam je ponudakursa za update_komponente
+	$q3 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	$ponudakursa = mysql_result($q3,0,0);
+
+	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
 	while ($r4 = mysql_fetch_row($q4))
-		update_komponente($student,$predmet,$r4[0]);
+		update_komponente($student,$ponudakursa,$r4[0]);
 	zamgerlog("AJAH prisustvo - student: u$student cas: c$cas prisutan: $prisutan",2); // nivo 2 - edit
 
 	print "OK";

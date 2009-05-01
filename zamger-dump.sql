@@ -69,6 +69,7 @@ CREATE TABLE IF NOT EXISTS `cas` (
   `labgrupa` int(11) NOT NULL default '0',
   `nastavnik` int(11) NOT NULL default '0',
   `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
   `komponenta` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
@@ -275,6 +276,7 @@ CREATE TABLE IF NOT EXISTS `labgrupa` (
   `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL default '',
   `predmet` int(11) NOT NULL default '0',
+  `akademska_godina` int(11) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
