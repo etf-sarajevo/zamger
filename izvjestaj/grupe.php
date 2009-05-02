@@ -10,9 +10,8 @@
 // v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
+// v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
 
-
-// TODO: Ubaciti strverscmp u libvedran? - prebaciti na php funkciju (cini mi se natsort)!!!
 
 
 function izvjestaj_grupe() {
@@ -70,6 +69,20 @@ if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
 }
 
 
+// Spisak studenata
+// (iz kojeg ćemo vaditi članove grupa, tako da će na kraju ostati oni van svih grupa)
+
+$imeprezime=array();
+$brindexa=array();
+$q30 = myquery("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+while ($r30 = mysql_fetch_row($q30)) {
+	$imeprezime[$r30[0]] = "$r30[1] $r30[2]";
+	$brindexa[$r30[0]] = $r30[3];
+	
+}
+uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+
 
 // Dvije kolone
 
@@ -82,7 +95,7 @@ if ($tip=="double") {
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
-	uasort($grupe, strverscmp);
+	natsort($grupe);
 
 	foreach ($grupe as $id => $naziv) {
 		if ($parni == 0) 
@@ -96,26 +109,26 @@ if ($tip=="double") {
 				<tr><td>
 		<?
 
-		$imeprezime=array();
-		$brindexa=array();
-		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$id and sl.student=a.id");
-		while ($r401 = mysql_fetch_row($q401)) {
-			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
-			$brindexa[$r401[0]] = $r401[3];
-			
-		}
-		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+		$idovi = array();
+		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			print "$n. $stud_imepr<br/>";
+			if (!in_array($stud_id,$idovi)) continue;
+			unset($imeprezime[$stud_id]);
+
+			print "$n. $stud_imepr<br/>\n";
 			$n++;
 		}
 		print "</td><td>";
-		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			print $brindexa[$stud_id]."<br/>";
+		foreach ($brindexa as $stud_id => $brind) {
+			if (!in_array($stud_id,$idovi)) continue;
+			unset($brindexa[$stud_id]);
+
+			print "$brind<br/>\n";
 		}
-		print "</td></tr></table>";
+		print "</td></tr></table>\n";
 
 		if ($parni==1) {
 			$parni=0;
@@ -126,9 +139,7 @@ if ($tip=="double") {
 		} else $parni=1;
 	}
 
-	// FIXME: ubrzati
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp, ponudakursa as pk where sp.student=a.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag)=0");
-	if (mysql_num_rows($q410)>0) {
+	if (count($imeprezime)>0) {
 		if ($parni == 0) 
 			print "<tr>";
 		else
@@ -139,25 +150,17 @@ if ($tip=="double") {
 				<tr><td colspan="2"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<tr><td>
 		<?
-		$imeprezime=array();
-		$brindexa=array();
-
-		while ($r410 = mysql_fetch_row($q410)) {
-			$imeprezime[$r410[0]] = "$r410[1] $r410[2]";
-			$brindexa[$r410[0]] = $r410[3];
-		}
-		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			print "$n. $stud_imepr<br/>";
+			print "$n. $stud_imepr<br/>\n";
 			$n++;
 		}
 		print "</td><td>";
-		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			print $brindexa[$stud_id]."<br/>";
+		foreach ($brindexa as $stud_id => $brind) {
+			print "$brind<br/>\n";
 		}
-		print "</td></tr></table>";
+		print "</td></tr></table>\n";
 
 		if ($parni==1) {
 			$parni=0;
@@ -194,7 +197,7 @@ else if ($tip=="single") {
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
-	uasort($grupe, strverscmp);
+	natsort($grupe);
 
 	foreach ($grupe as $id => $naziv) {
 		?>
@@ -208,29 +211,29 @@ else if ($tip=="single") {
 		if ($komentari>0) { ?><td align="center"><b>Komentari</b></td><? }
 		print "</tr>\n";
 
-		$imeprezime=array();
-		$brindexa=array();
-		$komentar=array();
-		$q401 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_labgrupa as sl where sl.labgrupa=$id and sl.student=a.id");
-		while ($r401 = mysql_fetch_row($q401)) {
-			$imeprezime[$r401[0]] = "$r401[1] $r401[2]";
-			$brindexa[$r401[0]] = $r401[3];
-			if ($r401[3]=="") $brindexa[$r401[0]]="&nbsp;";
-			if ($komentari>0) {
-				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$r401[0] and labgrupa=$id order by id");
-				$i=0;
-				while ($r402 = mysql_fetch_row($q402)) {
-					if ($i>0) $komentar[$r401[0]] .= "<br/>\n";
-					$i=1;
-					$komentar[$r401[0]] .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
-				}
-				if (mysql_num_rows($r402)<1) $komentar[$r401[0]] .= "&nbsp;";
-			}
-		}
-		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+		$idovi = array();
+		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
-		foreach($imeprezime as $stud_id => $stud_imepr) {
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			if (!in_array($stud_id,$idovi)) continue;
+			unset($imeprezime[$stud_id]);
+
+			if ($brindexa[$stud_id]=="") $brindexa[$stud_id]="&nbsp;";
+
+			$komentar="";
+			if ($komentari>0) {
+				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id order by id");
+				$i=0;
+				while ($r402 = mysql_fetch_row($q402)) {
+					if ($i>0) $komentar .= "<br/>\n";
+					$i=1;
+					$komentar .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
+				}
+				if (mysql_num_rows($q402)<1) $komentar = "&nbsp;";
+			}
+
 			?>
 				<tr>
 					<td><?=$n++?></td>
@@ -240,7 +243,7 @@ else if ($tip=="single") {
 			if ($prisustvo>0)
 				for ($i=0; $i<14; $i++) print "<td>&nbsp;</td>";
 			if ($komentari>0)
-				print "<td>".$komentar[$stud_id]."</td>\n";
+				print "<td>$komentar</td>\n";
 			print "</tr>\n";
 		}
 
@@ -253,21 +256,12 @@ else if ($tip=="single") {
 		<?
 	}
 
-	$q410 = myquery("select a.id, a.prezime, a.ime, a.brindexa from osoba as a, student_predmet as sp, ponudakursa as pk where sp.student=a.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and (select count(*) from student_labgrupa as sl, labgrupa as l where sl.student=sp.student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag)=0");
-	if (mysql_num_rows($q410)>0) {
+	if (count($imeprezime)>0) {
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
 				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
 		<?
-		$imeprezime=array();
-		$brindexa=array();
-
-		while ($r410 = mysql_fetch_row($q410)) {
-			$imeprezime[$r410[0]] = "$r410[1] $r410[2]";
-			$brindexa[$r410[0]] = $r410[3];
-		}
-		uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
@@ -298,39 +292,6 @@ else if ($tip=="single") {
 
 }
 
-function is_number($k) {
-	return (ord($k)>=ord("0") && ord($k)<=ord("9"));
-}
-
-function give_number($string, $pos) {
-	$result = "";
-	do {
-		$result .= $c;
-		$c = substr($string,$pos++,1);
-	} while (is_number($c) && $pos<=strlen($string));
-	return intval($result);
-}
-function strverscmp($a, $b) {
-	$minlen = (strlen($a)<strlen($b)) ? strlen($a) : strlen($b);
-	for ($i=0; $i<$minlen; $i++) {
-		if ($i>=strlen($a)) return 1; // a is shorter
-		if ($i>=strlen($b)) return -1; // a is longer
-		$ca = substr($a,$i,1); $cb = substr($b,$i,1);
-
-		// Numerical comparison
-		if (is_number($ca) && is_number($cb)) {
-			$na = give_number($a,$i);
-			$nb = give_number($b,$i);
-			if ($na<$nb) return -1;
-			if ($na>$nb) return 1;
-
-		} else {
-			if (ord($ca)<ord($cb)) return -1;
-			if (ord($ca)>ord($cb)) return 1;
-		}
-	}
-	return 0;
-}
 
 
 ?>
