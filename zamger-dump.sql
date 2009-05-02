@@ -1085,6 +1085,7 @@ CREATE TABLE IF NOT EXISTS `zadatak` (
   `filename` varchar(200) collate utf8_slovenian_ci NOT NULL default '',
   `userid` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
+  KEY `pomocni` (`zadaca`,`redni_broj`,`student`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
