@@ -17,6 +17,7 @@
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; obrisan legacy parser koji se koristio u ranim dev verzijama loga
 // v4.0.9.3 (2009/04/07) + Dodajem tag za lab grupu
 // v4.0.9.4 (2009/04/22) + Tag za predmet (za razliku od ponudekursa) - posto se dobar broj modula prebacuje na predmet, bice lakse logirati tako; prebacujem labgrupu sa ponudakursa na predmet
+// v4.0.9.5 (2009/05/05) + Vise ispravki kod pretrage, dodan prikaz masovnih unosa za studenta koji se pretrazuje; popravljen pogresan link na zadace, ispite, grupe
 
 
 function admin_log() {
@@ -75,7 +76,7 @@ if ($pretraga) {
 			if ($query != "") $query .= "or ";
 			$query .= "a.login like '%$dio%' ";
 		}
-		$q100 = myquery("select id from osoba as o, auth as a where ($query) and a.id=o.id");
+		$q100 = myquery("select o.id from osoba as o, auth as a where ($query) and a.id=o.id");
 		$rezultata = mysql_num_rows($q100);
 	}
 
@@ -83,14 +84,22 @@ if ($pretraga) {
 		while ($r100 = mysql_fetch_row($q100)) {
 			if ($filterupita!="") $filterupita .= " OR ";
 			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
 		}
 	}
 
 	// Probavamo predmete
-	$q101 = myquery("select pk.id from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.predmet=p.id and (p.naziv like '%$src%' or p.kratki_naziv='$src') and pk.akademska_godina=ag.id and ag.aktuelna=1");
-	if (mysql_num_rows($q101)>0) {
-		if ($filterupita!="") $filterupita .= " OR ";
-		$filterupita .= "dogadjaj like '%p$r101%'";
+	if ($rezultata==0) {
+		$q101 = myquery("select id from predmet where naziv like '%$src%' or kratki_naziv='$src'");
+		if (mysql_num_rows($q101)>0) {
+			$pp=mysql_result($q101,0,0);
+			if ($filterupita!="") $filterupita .= " OR ";
+			$filterupita .= "dogadjaj like '%pp$pp%'";
+			$q102 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$pp and pk.akademska_godina=ag.id and ag.aktuelna=1");
+			while ($r102 = mysql_fetch_row($q102)) {
+				$filterupita .= " OR dogadjaj like '%p$r102[0]%'";
+			}
+		}
 	}
 
 	// Kraj, dodajemo and
@@ -199,11 +208,18 @@ $q10 = myquery ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from
 $lastlogin = array();
 $eventshtml = array();
 $logins=0;
+$prvidatum=$zadnjidatum=0;
+$stardate=1;
 while ($r10 = mysql_fetch_row($q10)) {
 	
+	if ($prvidatum==0) $prvidatum=$r10[1];
+	$zadnjidatum=$r10[1];
 	$nicedate = " (".date("d.m.Y. H:i:s", $r10[1]).")";
 	$usr=$r10[2]; // ID korisnika
 	$evt=$r10[3]; // string koji opisuje dogadjaj
+
+	if ($rezultata==1 && preg_match("/u$nasaokorisnika\d/", $evt)) continue; // kada je ID korisnika kratak, moze se desiti da se javlja unutar eventa
+
 	if (strlen($evt)>100) $evt = substr($evt,0,100);
 
 	// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
@@ -236,6 +252,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 	if (preg_match("/\Wu(\d+)/", $evt, $m)) { // korisnik
 		$evt = str_replace("u$m[1]",get_user_link($m[1]), $evt);
+		$zadnjikorisnik = $m[1]; // Ovo ce omoguciti neke dodatne upite kasnije
 	}
 	if (preg_match("/\Wpp(\d+)/", $evt, $m)) { // predmet
 		$evt = str_replace("pp$m[1]",get_ppredmet_link($m[1]),$evt);
@@ -265,24 +282,26 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$predmet=mysql_result($q50,0,1);
 			$ag=mysql_result($q50,0,2);
 			$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-			if (mysql_num_rows($q60)>0) {
-				$link="?sta=saradnik/grupa&id=".mysql_result($q60,0,0);
+			if (mysql_num_rows($q55)<1) {
+				$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$zadnjikorisnik and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+			}
+			if (mysql_num_rows($q55)>0) {
+				$link="?sta=saradnik/grupa&id=".mysql_result($q55,0,0);
 			} else {
-				$q65 = myquery("select pk.id from ponudakursa as pk, zadaca as z where z.id=$m[1] and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
-				$pk = mysql_result($q65,0,0);
-				$link="?sta=saradnik/grupa&id=0&predmet=$pk";
+				$link="?sta=saradnik/grupa&id=0&predmet=$predmet&ag=$ag";
 			}
 			$evt = str_replace("z$m[1]","<a href=\"$link\" target=\"_blank\">$naziv</a>",$evt);
 		}
 	}
 	if (preg_match("/\Wi(\d+)/", $evt, $m)) { // ispit
-		$q60 = myquery("select k.gui_naziv,i.predmet,p.naziv from ispit as i, komponenta as k, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=p.id");
+		$q60 = myquery("select k.gui_naziv, i.predmet, p.naziv, i.akademska_godina from ispit as i, komponenta as k, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=p.id");
 		if (mysql_num_rows($q60)>0) {
 			$naziv=mysql_result($q60,0,0);
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
 			$predmet=mysql_result($q60,0,1);
 			$predmetnaziv=mysql_result($q60,0,2);
-			$evt = str_replace("i$m[1]","<a href=\"?sta=nastavnik/ispiti&predmet=$predmet\" target=\"_blank\">$naziv ($predmetnaziv)</a>",$evt);
+			$ag=mysql_result($q60,0,3);
+			$evt = str_replace("i$m[1]","<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\" target=\"_blank\">$naziv ($predmetnaziv)</a>",$evt);
 		}
 	}
 	if (preg_match("/\Wag(\d+)/", $evt, $m)) { // akademska godina
@@ -318,6 +337,60 @@ while ($r10 = mysql_fetch_row($q10)) {
 	else {
 		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 	}
+}
+if ($stardate==1) $zadnjidatum=1; // Nije doslo do breaka...
+
+
+// Insertujem masovni unos ocjena i rezultata ispita
+if ($rezultata==1) {
+	// Konacne ocjene
+	$q300 = myquery("select predmet, ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$nasaokorisnika AND datum>=FROM_UNIXTIME($zadnjidatum) AND datum<=FROM_UNIXTIME($prvidatum)");
+	while ($r300 = mysql_fetch_row($q300)) {
+		$predmet=$r300[0];
+		$ocjena=$r300[1];
+		$datum=$r300[2];
+		$nicedate = " (".date("d.m.Y. H:i:s", $datum).")";
+
+		// Prvo cemo varijantu sa predmetom pa sa ponudom kursa
+		$q310 = myquery("select id from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
+		if (mysql_num_rows($q310)>0) {
+			$eventshtml[mysql_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		} 
+
+		$q320 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
+		while ($r320 = mysql_fetch_row($q320)) {
+			$q310 = myquery("select id from log where dogadjaj='masovno upisane ocjene na predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
+			if (mysql_num_rows($q310)>0) {
+				$eventshtml[mysql_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+			}
+		}
+	}
+
+
+	// Isto ovo za ispite
+	$q330 = myquery("select i.predmet, io.ocjena, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, ispitocjene as io where io.student=$nasaokorisnika AND io.ispit=i.id AND i.datum>=FROM_UNIXTIME($zadnjidatum) AND i.datum<=FROM_UNIXTIME($prvidatum)");
+	while ($r330 = mysql_fetch_row($q330)) {
+		$predmet=$r330[0];
+		$ocjena=$r330[1];
+		$datum=$r330[2]; // Datum je zaokruzen :(
+
+		// Prvo cemo varijantu sa predmetom pa sa ponudom kursa
+		$q340 = myquery("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
+		if (mysql_num_rows($q340)>0) {
+			$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q340,0,1)).")";
+			$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		}
+
+		$q320 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
+		while ($r320 = mysql_fetch_row($q320)) {
+			$q340 = myquery("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
+			if (mysql_num_rows($q340)>0) {
+				$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q340,0,1)).")";
+				$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+			}
+		}
+	}
+	krsort($eventshtml);
 }
 
 
