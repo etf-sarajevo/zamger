@@ -101,7 +101,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		$komponenta = mysql_result($q55,0,0);
 	
 		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta");
-		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa");
+		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
 		$cas_id = mysql_result($q70,0,0);
 	
 		// dodajemo u bazu default podatke za prisustvo i ocjene
@@ -341,7 +341,7 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$prisustvo_id_array[] = $r195[0];
 	$cas_id_array = array();
 
-	$q200 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$labgrupa and predmet=$predmet and akademska_godina=$ag and komponenta=$r195[0] ORDER BY datum");
+	$q200 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum");
 	while ($r200 = mysql_fetch_row($q200)) {
 		$cas_id = $r200[0];
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
