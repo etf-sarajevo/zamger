@@ -17,10 +17,9 @@
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/23) + Popravljeni linkovi na izvjestaj/ispit; dodan ispis IDa predmeta (ID ponudekursa je u URLu)
 // v4.0.9.5 (2009/04/29) + Kompletan modul sada radi sa predmetom i akademskom godinom; tabela labgrupa preusmjerena sa ponudekursa na predmet; nesto ciscenja i uredjivanja koda
-// v4.0.9.5 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta
+// v4.0.9.6 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta; dodate nedostajuce akcije; malo kozmetike, mogucnost check/uncheck all kod ogranicenja
 
 
-// TODO: Izmjena podataka i dodavanje/brisanje ponudekursa za sada ne radi
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
 
 
@@ -114,8 +113,22 @@ if ($akcija == "ogranicenja") {
 		}
 	}
 
+	// Skripta za (de)selektovanje svih checkboxa
+
 	?>
-	<?=genform("POST")?>
+	<script language="JavaScript">
+	function checkall(val) {
+		var z;
+		for(z=0; z<document.ogranicenjaform.length; z++)
+			if (document.ogranicenjaform[z].type=='checkbox')
+				document.ogranicenjaform[z].checked=val;
+	}
+	</script>
+	<?
+
+
+	?>
+	<?=genform("POST", "ogranicenjaform")?>
 	<input type="hidden" name="subakcija" value="izmjena">
 	<p>
 	<?
@@ -133,7 +146,8 @@ if ($akcija == "ogranicenja") {
 		}
 		?><input type="checkbox" name="lg<?=$r373[0]?>" <?=$dodaj?>> <?=$r373[1]?><br/><?
 	}
-	?><br/><input type="submit" value=" Izmijeni "> <input type="button" value=" Nazad " onclick="location.href='?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>';"></form><?
+	?><br/><input type="submit" value=" Izmijeni "> &nbsp; <input type="button" value=" Označi sve " onclick="javascript:checkall(true);"> &nbsp; <input type="button" value=" Poništi sve " onclick="javascript:checkall(false);">
+	&nbsp; <input type="button" value=" Nazad " onclick="location.href='?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>';"></form><?
 	
 }
 
@@ -177,7 +191,7 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		foreach ($dijelovi as $dio)
 			$kratki_naziv .= strtoupper(substr($dio,0,1));
 
-		$q393 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv'");
+		$q393 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=1"); // tippredmeta mora biti definisan
 		$q391 = myquery("select id from predmet where naziv='$naziv'");
 		$predmet = mysql_result($q391,0,0);
 	}
@@ -206,7 +220,62 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 }
 
 
+
 // AKCIJA: Izmjena podataka o predmetu
+
+else if ($akcija == "realedit") {
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
+
+	print "<h1>Izmjena podataka o predmetu</h1>";
+	if ($_REQUEST['_lv_action']=="edit") {
+		nicemessage("Podaci o predmetu izmijenjeni");
+		zamgerlog("izmijenjeni podaci o predmetu pp$predmet",4);
+	}
+
+	$_lv_['where:id']=$predmet;
+	$_lv_['forceedit']=1;
+	print db_form("predmet");
+
+	?>
+	<p><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
+	<?
+}
+
+
+
+// AKCIJA: Dodavanje ponude kursa
+
+else if ($akcija == "dodaj_pk") {
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
+
+	$q400 = myquery("select naziv from predmet where id=$predmet");
+	$q410 = myquery("select naziv from akademska_godina where id=$ag");
+
+	print "<h3>Nova ponuda kursa za predmet ".mysql_result($q400,0,0).",<br/> akademska godina ".mysql_result($q410,0,0)."</h3>";
+
+	$_lv_['where:predmet']=$predmet;
+	$_lv_['where:akademska_godina']=$ag;
+	$forma=db_form("ponudakursa");
+
+	if ($_REQUEST['_lv_action']=="add") {
+		nicemessage("Dodana nova ponuda kursa");
+		zamgerlog("dodana ponuda kursa na predmet pp$predmet",4);
+
+	} else {
+		print $forma;
+	}
+
+	?>
+	<p><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
+	<?
+
+}
+
+
+
+// AKCIJA: Prikaz predmeta
 
 else if ($akcija == "edit") {
 	$predmet = intval($_REQUEST['predmet']);
@@ -216,24 +285,6 @@ else if ($akcija == "edit") {
 
 	print "<a href=\"?sta=studentska/predmeti&ag=$ag&search=$old_search&offset=".intval($_REQUEST['offset'])."\">Nazad na rezultate pretrage</a><br/><br/>";
 
-
-/*	// Podaci potrebni u kasnijim upitima
-
-	// Semestar, akademska godina, metapredmet
-	$q348 = myquery("select pk.semestar, pk.akademska_godina, pk.predmet, ag.naziv from ponudakursa as pk, akademska_godina as ag where pk.id=$predmet and pk.akademska_godina=ag.id");
-	if (!($r348 = mysql_fetch_row($q348))) {
-		zamgerlog("nepostojeca ponudakursa $predmet",3);
-		niceerror("Nepostojeći predmet!");
-		return;
-	}
-	$semestar = intval(mysql_result($q348,0,0));
-	$akademskagodina = intval(mysql_result($q348,0,1));
-	$metapredmet = intval(mysql_result($q348,0,2));
-	$ak_god_naziv = mysql_result($q348,0,3);
-
-	// Naziv studija
-	$q348a = myquery("select s.naziv, pk.studij from studij as s, ponudakursa as pk where pk.studij=s.id and pk.id=$predmet");
-	$nazivstudija = mysql_result($q348a,0,0).", $semestar. semestar";*/
 
 
 	// Izvjestaji
@@ -275,7 +326,7 @@ else if ($akcija == "edit") {
 	// Submit akcije
 
 	// Angazman nastavnika na predmetu
-	if ($_POST['subakcija'] == "dodaj" && check_csrf_token()) {
+	if ($_POST['subakcija'] == "dodaj_nastavnika" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
 		if ($nastavnik>0) {
 			$q360 = myquery("select count(*) from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
@@ -287,7 +338,7 @@ else if ($akcija == "edit") {
 	}
 
 	// Admin privilegije
-	else if ($_GET['subakcija'] == "set_admin") {
+	else if ($_GET['subakcija'] == "proglasi_za_admina") {
 		$nastavnik = intval($_GET['nastavnik']);
 
 		$yesno = intval($_GET['yesno']);
@@ -296,39 +347,64 @@ else if ($akcija == "edit") {
 	}
 
 	// De-angazman nastavnika sa predmeta
-	else if ($_POST['subakcija'] == "izbaci" && check_csrf_token()) {
+	else if ($_POST['subakcija'] == "izbaci_nastavnika" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
 		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
 		zamgerlog("nastavnik u$nastavnik izbacen sa predmeta pp$predmet",4);
 	}
 
-	// Izmjena podataka o predmetu - STARI KOD, IZBACITI
-	else if($_POST['subakcija'] == "podaci" && check_csrf_token()) {
-		$naziv = my_escape($_POST['naziv']);
-		$q364 = myquery("update predmet set naziv='$naziv' where id=$predmet");
-		zamgerlog("izmijenjeni podaci za predmet pp$predmet",4);
-	}
 
 
 
 	// Osnovni podaci o predmetu
 
-	$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, i.naziv, tp.naziv, p.ects from predmet as p, institucija as i, tippredmeta as tp where p.id=$predmet and p.institucija=i.id and p.tippredmeta=tp.id");
+	$q350 = myquery("select id, sifra, naziv, kratki_naziv, institucija, tippredmeta, ects from predmet where id=$predmet");
 	if (!($r350 = mysql_fetch_row($q350))) {
 		zamgerlog("nepostojeci predmet $predmet",3);
 		niceerror("Nepostojeći predmet!");
 		return;
 	}
+
+	// Oznacicemo neispravne podatke
+	$greska=0;
+	$naziv=$r350[2]; if (!preg_match("/\w/",$naziv)) { $naziv="<font color=\"red\">Bez naziva!</font>"; $greska=1; }
+	$sifra=$r350[1]; if ($sifra=="") { $sifra="<font color=\"red\">(?)</font>"; $greska=1; }
+	$kratkinaziv=$r350[3]; if ($kratkinaziv=="") { $kratkinaziv="<font color=\"red\">(?)</font>"; $greska=1; }
+	$ects=floatval($r350[6]); if ($ects==0) { $ects="<font color=\"red\">(?)</font>"; $greska=1; }
+
+	// Institucija
+	$q352 = myquery("select naziv from institucija where id=$r350[4]");
+	if (mysql_num_rows($q352)<1) {
+		$institucija="<font color=\"red\">(?)</font>"; $greska=1; 
+	} else {
+		$institucija = mysql_result($q352,0,0);
+	}
+
+	// Tip predmeta
+	$q354 = myquery("select naziv from tippredmeta where id=$r350[5]");
+	if (mysql_num_rows($q354)<1) {
+		$tippredmeta="<font color=\"red\">(?)</font>"; $greska=1; 
+	} else {
+		$tippredmeta= mysql_result($q354,0,0);
+	}
+
 	?>
-	<h3><?=$r350[2]?></h3>
-	<p> Šifra predmeta:<b><?=$r350[1]?></b><br />
-	Skraćeni naziv predmeta: <b><?=$r350[3]?></b><br />
-	Institucija: <b><?=$r350[4]?></b><br />
-	Tip predmeta: <b><?=$r350[5]?></b><br />
-	ECTS: <b><?=$r350[6]?> bodova</b><br />
+	<h3><?=$naziv?></h3>
+	<p>Šifra predmeta: <b><?=$sifra?></b><br />
+	Skraćeni naziv predmeta: <b><?=$kratkinaziv?></b><br />
+	Institucija: <b><?=$institucija?></b><br />
+	Tip predmeta: <b><?=$tippredmeta?></b><br />
+	ECTS: <b><?=$ects?> bodova</b><br />
 	ID: <?=$predmet?></p>
 
-	<p><?=genform("POST")?><input type="submit" value=" Izmijeni "></form></p>
+	<?
+	if ($greska==1) print "<font color=\"red\">Imate grešaka u definiciji predmeta. Kliknite na dugme <b>Izmijeni</b>.</font>\n";
+
+	unset($_REQUEST['akcija']);
+	print "\n\n<p>\n".genform("GET");
+	?>
+	<input type="hidden" name="akcija" value="realedit">
+	<input type="submit" value=" Izmijeni "></form></p>
 
 	<hr>
 	<?
@@ -340,18 +416,48 @@ else if ($akcija == "edit") {
 	?><h3>Ponude kursa:</h3>
 	<?
 
+	// Forma za upozorenje prilikom brisanja ponudekursa
+	?>
+	<script language="JavaScript">
+	function upozorenje2(grupa,broj) {
+		var a = confirm("Ovim će sa predmeta biti ispisano "+broj+" studenata, te pobrisani svi ostvareni bodovi i ocjene. Da li ste sigurni?");
+		if (a) {
+			document.brisanjepkform.pk.value=grupa;
+			document.brisanjepkform.submit();
+		}
+	}
+	</script>
+	<?=genform("POST", "brisanjepkform")?>
+	<input type="hidden" name="subakcija" value="obrisi_pk">
+	<input type="hidden" name="pk" value=""></form>
+	<?
+
+	// Evt ispis akademske godine
+	$q359 = myquery("select naziv, aktuelna from akademska_godina where id=$ag");
+	if (mysql_num_rows($q359)<1) {
+		zamgerlog("nepostojeca akademska godina $ag",3);
+		niceerror("Nepostojeći predmet!");
+		return;
+	}
+	$agnaziv = mysql_result($q359,0,0);
+	if (mysql_result($q359,0,1)!=1)
+		print "<p>Akademska godina: <b>$agnaziv</b></p>";
+
 	$q360 = myquery("select pk.id, s.naziv, pk.semestar, pk.obavezan from ponudakursa as pk, studij as s where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=s.id");
 	if (mysql_num_rows($q360)<1) {
 		print "<p>Ovaj predmet se trenutno ne nudi nigdje! Dodajte ponudu kursa ispod.</p>\n";
 	} else print "<ul>\n";
 	while ($r360 = mysql_fetch_row($q360)) {
+		// Broj studenata
+		$q365 = myquery("select count(*) from student_predmet where predmet=$r360[0]");
+		$brstud = mysql_result($q365,0,0);
 		?>
-		<li><?=$r360[1]?>, <?=$r360[2]?>. semestar <? if ($r360[3]<1) print "(izborni)"?> (<a href="?pk=<?=$r360[0]?>&sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>&subakcija=izbrisi_pk">obriši ponudu kursa</a>)</li>
+		<li><?=$r360[1]?>, <?=$r360[2]?>. semestar <? if ($r360[3]<1) print "(izborni)"?> (<a href="javascript:onclick=upozorenje2('<?=$r360[0]?>','<?=$brstud?>')">obriši ponudu kursa</a>)</li>
 		<?
 	}
 	if (mysql_num_rows($q360)>0) print "</ul>\n";
 
-	?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>&subakcija=dodaj_pk">Dodaj ponudu kursa</a><?
+	?><a href="?sta=studentska/predmeti&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=dodaj_pk">Dodaj ponudu kursa</a><?
 
 
 	// Ranije akademske godine
@@ -370,7 +476,10 @@ else if ($akcija == "edit") {
 
 	// Nastavnici na predmetu
 
-	print "<p>Nastavnici angažovani na predmetu:</p>\n";
+	?>
+	<hr>
+	<p>Nastavnici angažovani na predmetu (<?=$agnaziv?>):</p>
+	<?
 	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 	if (mysql_num_rows($q351) < 1) {
 		print "<ul><li>Na predmetu nije angažovan nijedan nastavnik</li></ul>\n";
@@ -383,7 +492,7 @@ else if ($akcija == "edit") {
 		}
 		</script>
 		<?=genform("POST", "izbaciform")?>
-		<input type="hidden" name="subakcija" value="izbaci">
+		<input type="hidden" name="subakcija" value="izbaci_nastavnika">
 		<input type="hidden" name="nastavnik" value=""></form>
 
 		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
@@ -404,7 +513,7 @@ else if ($akcija == "edit") {
 		<tr>
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
 			<td>
-			<input type="checkbox" onchange="javascript:location.href=\'<?=genuri()?>&subakcija=set_admin&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>" <?=$cbstanje?>></td>
+			<input type="checkbox" onchange="javascript:location.href=\'<?=genuri()?>&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>" <?=$cbstanje?>></td>
 			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>"><?
 
 		// Spisak grupa na koje ima ogranicenje
@@ -434,7 +543,7 @@ else if ($akcija == "edit") {
 
 	?><p>Angažman nastavnika na predmetu:
 	<?=genform("POST")?>
-	<input type="hidden" name="subakcija" value="dodaj">
+	<input type="hidden" name="subakcija" value="dodaj_nastavnika">
 	<select name="nastavnik" class="default">'<?
 	$q360 = myquery("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
 	while ($r360 = mysql_fetch_row($q360)) {
