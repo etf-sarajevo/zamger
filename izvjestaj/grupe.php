@@ -194,7 +194,7 @@ else if ($tip=="single") {
 	<?*/
 	print "<center>\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$agand and virtualna=0");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
