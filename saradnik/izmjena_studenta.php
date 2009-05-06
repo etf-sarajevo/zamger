@@ -18,6 +18,7 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Parametar je sada ID predmeta umjesto ponudekursa; tabela labgrupa preusmjerena sa ponudekursa na predmet; provjere ispravnosti podataka pomjerene naprijed radi sigurnosti
+// v4.0.9.4 (2009/05/06) + Sakrij virtualne grupe kod promjene grupe
 
 
 // TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena
@@ -176,11 +177,11 @@ if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 
 // Labgrupe
 
-$q150=myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag order by naziv");
+$q150=myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
 
 if (mysql_num_rows($q150)>0) {
 
-	$q155 = myquery("select l.id, l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa=l.id and sl.student=$student");
+	$q155 = myquery("select l.id, l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa=l.id and sl.student=$student and l.virtualna=0");
 	if (mysql_num_rows($q155)<=1) {
 		if (mysql_num_rows($q155)==0) $nijedna=" SELECTED"; else $nijedna="";
 ?>
@@ -218,7 +219,7 @@ if (mysql_num_rows($q150)>0) {
 			while ($r155 = mysql_fetch_row($q155)) {
 				print $r155[1];
 				// Ovo ispod nije implementirano!?!
-				print " <a href=\"?sta=saradnik/izmjena_studenta&akcija=ispis_iz_grupe&grupa=$r155[0]&student=$student\">(ispiši)</a><br/>\n";
+				print " <a href=\"?sta=saradnik/izmjena_studenta&akcija=ispis_iz_grupe&grupa=$r155[0]&student=$student&predmet=$predmet\">(ispiši)</a><br/>\n";
 			}
 		?></td>
 	</tr>

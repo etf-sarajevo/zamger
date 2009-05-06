@@ -12,6 +12,8 @@
 // v4.0.9.5 (2009/04/16) + Popravljen logging
 // v4.0.9.6 (2009/04/22) + Izbacujem predmet kao parametar (nepotrebno, predmet je sadrzan u ispitu), a ispit=svi prebacujem u drugi izvjestaj pod imenom statistika_predmeta
 // v4.0.9.7 (2009/04/27) + Parametar "predmet" je ustvari ponudakursa, pa treba dodati upit koji saznaje predmet i akademsku godinu za izvjestaj/statistika_predmeta
+// v4.0.9.8 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.9 (2009/05/05) + Ne prikazuj virtualne grupe posto je statistika za sve studente vec data
 
 
 // Provjeriti ispravnost dijela sa grupama
@@ -152,7 +154,7 @@ for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
 
 // Prolaznost po grupama
 
-$q315 = myquery("select count(*) from labgrupa as l, ponudakursa as pk where l.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+$q315 = myquery("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
 if (mysql_result($q315,0,0)<2) {
 	// Nema grupa, preskacemo ostatak izvjestaja
 	return;
@@ -161,7 +163,7 @@ if (mysql_result($q315,0,0)<2) {
 $ukupno = array(); $polozilo = array(); $prosjek = array(); $grupe = array();
 $maxprol = 0; $maxprosj = 0;
 
-$q320 = myquery("select l.id,io.ocjena,l.naziv FROM ispitocjene as io, student_labgrupa as sl, labgrupa as l, ispit as i, ponudakursa as pk WHERE io.ispit=$ispit and io.student=sl.student and sl.labgrupa=l.id and i.id=io.ispit and l.predmet=pk.id and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina order by l.id"); // Privremeno ruzan upit dok se labgrupa ne prebaci sa ponudekursa na predmet
+$q320 = myquery("select l.id,io.ocjena,l.naziv FROM ispitocjene as io, student_labgrupa as sl, labgrupa as l, ispit as i WHERE io.ispit=$ispit and io.student=sl.student and sl.labgrupa=l.id and i.id=io.ispit and l.predmet=i.predmet and l.akademska_godina=i.akademska_godina and l.virtualna=0 order by l.id");
 while ($r320 = mysql_fetch_row($q320)) {
 	$grupe[$r320[0]] = $r320[2]; // Nazivi grupa
 

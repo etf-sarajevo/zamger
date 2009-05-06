@@ -9,7 +9,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/07) + Popravljen logging
 // v4.0.9.3 (2009/04/29) + Preusmjeravam tabelu labgrupa i parametre sa tabele ponudakursa na tabelu predmet
-
+// v4.0.9.4 (2009/05/06) + Ukinuto polje predmet u tabeli komentar kao i nulta labgrupa
 
 
 function saradnik_komentar() {
@@ -22,62 +22,47 @@ global $userid, $user_siteadmin;
 
 $stud_id=intval($_REQUEST['student']); 
 $labgrupa=intval($_REQUEST['labgrupa']); 
-$predmet=intval($_REQUEST['predmet']);
-$ag=intval($_REQUEST['ag']); // akademska godina
 
 
 // Da li neko spoofa predmet/studenta?
-if ($labgrupa>0) {
-	$q10 = myquery("select sl.labgrupa from student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=$labgrupa");
-	if (mysql_num_rows($q10)<1) {
-		zamgerlog("student u$stud_id nije u labgrupi g$labgrupa",3);
+$q10 = myquery("select sl.labgrupa from student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=$labgrupa");
+if (mysql_num_rows($q10)<1) {
+	zamgerlog("student u$stud_id nije u labgrupi g$labgrupa",3);
+	niceerror("Nemate pravo pristupa ovom studentu!");
+	return;
+}
+
+// Prava pristupa i odredjivanje predmeta
+if ($user_siteadmin) {
+	$q20 = myquery("select predmet, akademska_godina from labgrupa where id=$labgrupa");
+	if (mysql_num_rows($q20)<1) {
+		zamgerlog("nepoznata labgrupa (labgrupa $labgrupa predmet pp$predmet)",3);
+		niceerror("Nepoznata grupa $labgrupa");
+		return;
+	}
+} else {
+	$q20 = myquery("select np.predmet, np.akademska_godina from labgrupa as l, nastavnik_predmet as np where l.id=$labgrupa and l.predmet=np.predmet and l.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
+	if (mysql_num_rows($q20)<1) {
+		zamgerlog("nastavnik nije na predmetu (labgrupa g$labgrupa)",3);
 		niceerror("Nemate pravo pristupa ovom studentu!");
 		return;
 	}
 }
-
-if ($user_siteadmin) {
-	if ($labgrupa>0) {
-		$q20 = myquery("select predmet from labgrupa where id=$labgrupa");
-		if (mysql_num_rows($q20)<1) {
-			zamgerlog("nepoznata labgrupa (labgrupa $labgrupa predmet pp$predmet)",3);
-			niceerror("Nepoznata grupa $labgrupa");
-			return;
-		}
-	}
-} else {
-	if ($labgrupa>0) {
-		$q20 = myquery("select np.predmet from labgrupa as l, nastavnik_predmet as np where l.id=$labgrupa and l.predmet=np.predmet and l.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
-		if (mysql_num_rows($q20)<1) {
-			zamgerlog("nastavnik nije na predmetu (labgrupa g$labgrupa)",3);
-			niceerror("Nemate pravo pristupa ovom studentu!");
-			return;
-		}
-	} else {
-		$q25 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_result($q25,0,0)<1) {
-			zamgerlog("nastavnik nije na predmetu pp$predmet",3);
-			niceerror("Nemate pravo pristupa ovom studentu!");
-			return;
-		}
-	}
-}
-// $predmet = mysql_result($q20,0,0); -- pouzdamo se u parametre
+$predmet = mysql_result($q20,0,0);
+$ag = mysql_result($q20,0,1);
 
 
 // Limit...
-if ($labgrupa>0) {
-	$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-	if (mysql_num_rows($q30)>0) {
-		$nasao=0;
-		while ($r30 = mysql_fetch_row($q30)) {
-			if ($r30[0] == $labgrupa) { $nasao=1; break; }
-		}
-		if ($nasao == 0) {
-			zamgerlog("ogranicenje (labgrupa g$labgrupa predmet pp$predmet)",3);
-			niceerror("Nemate pravo pristupa ovom studentu!");
-			return;
-		}
+$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+if (mysql_num_rows($q30)>0) {
+	$nasao=0;
+	while ($r30 = mysql_fetch_row($q30)) {
+		if ($r30[0] == $labgrupa) { $nasao=1; break; }
+	}
+	if ($nasao == 0) {
+		zamgerlog("ogranicenje (labgrupa g$labgrupa predmet pp$predmet)",3);
+		niceerror("Nemate pravo pristupa ovom studentu!");
+		return;
 	}
 }
 

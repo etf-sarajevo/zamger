@@ -28,6 +28,7 @@
 // v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/04/19) + U r335 nije ustvari napravljena izmjena koja pise u komentaru; subakcija "angazuj" nije definisala polje akademska_godina koje je u tabelu nastavnik_predmet dodano u r365; upit za aktuelnu ak. godinu pomjeren naprijed
 // v4.0.9.6 (2009/04/27) + Popravljen typo u dijelu za promjenu privilegija; typo u upitu r566
+// v4.0.9.7 (2009/05/06) + Koristim funkciju upis_studenta_na_predmet radi upisa na virtualnu labgrupu
 
 
 
@@ -41,6 +42,8 @@ global $userid,$user_siteadmin,$user_studentska;
 global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain;
 
 global $_lv_; // Potrebno za genform() iz libvedran
+
+require ("lib/manip.php"); // Radi upisa studenta na predmet
 
 
 // Provjera privilegija
@@ -450,7 +453,7 @@ else if ($akcija == "upis") {
 				$q592 = myquery("select pk.studij,pk.semestar from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
 				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
 
-				$q620 = myquery("insert into student_predmet set student=$student, predmet=".mysql_result($q594,0,0));
+				upisi_studenta_na_predmet($student, mysql_result($q594,0,0));
 				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>";
 			}
 		}
@@ -465,8 +468,7 @@ else if ($akcija == "upis") {
 			// Da li ga je vec polozio
 			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
 			if (mysql_result($q615,0,0)==0) {
-				$q620 = myquery("insert into student_predmet set student=$student, predmet=$r610[0]");
-				print "-- Student upisan u obavezni predmet $r610[2]<br/>";
+				upis_studenta_na_predmet($student, $r610[1]);
 			} else {
 				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>";
 			}
@@ -477,7 +479,7 @@ else if ($akcija == "upis") {
 			if (substr($key,0,8) != "izborni-") continue;
 			if ($value=="") continue;
 			$predmet = intval(substr($key,8));
-			$q630 = myquery("insert into student_predmet set student=$student, predmet=$predmet");
+			upis_studenta_na_predmet($student, $predmet);
 			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
 			print "-- Student upisan u izborni predmet ".mysql_result($q635,0,0)."<br/>";
 		}
@@ -622,7 +624,7 @@ else if ($akcija == "edit") {
 		} else {
 			$q130 = myquery("select count(*) from student_predmet where student=$osoba and predmet=$predmet");
 			if (mysql_result($q130,0,0)<1) {
-				$q135 = myquery("insert into student_predmet set student=$osoba, predmet=$predmet");
+				upis_studenta_na_predmet($osoba, $predmet);
 				zamgerlog("student u$osoba upisan na predmet p$predmet",4);
 				$q136 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 				$naziv_predmeta = mysql_result($q136,0,0);

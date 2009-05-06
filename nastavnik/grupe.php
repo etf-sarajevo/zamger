@@ -15,6 +15,7 @@
 // v4.0.0.1 (2009/02/25) + Popravljen ispis imena i prezimena studenta koji ne slusa predmet prilikom kopiranja grupa
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/23) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa; dodana provjera predmeta za akcije; kod brisanja grupe dodano brisanje registrovanih casova i prisustva
+// v4.0.9.3 (2009/05/06) + Dodajem polje virtualna u tabelu labgrupa - virtualne grupe trebaju biti nevidljive nastavniku
 
 
 function nastavnik_grupe() {
@@ -70,7 +71,7 @@ if (!$user_siteadmin) { // 3 = site admin
 
 if ($_POST['akcija'] == "nova_grupa" && check_csrf_token()) {
 	$ime = my_escape($_POST['ime']);
-	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet, akademska_godina=$ag");
+	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet, akademska_godina=$ag, virtualna=0");
 	zamgerlog("dodana nova labgrupa '$ime' (predmet pp$predmet godina ag$ag)",4); // nivo 4: audit
 }
 
@@ -148,7 +149,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	}
 
 	// Spisak labgrupa na odabranom predmetu
-	$q60 = myquery("select id,naziv from labgrupa where predmet=$kopiraj and akademska_godina=$ag");
+	$q60 = myquery("select id,naziv from labgrupa where predmet=$kopiraj and akademska_godina=$ag and virtualna=0");
 	if (mysql_num_rows($q60) == 0) {
 		zamgerlog("kopiranje sa predmeta pp$kopiraj na kojem nema grupa",3);
 		niceerror("Na odabranom predmetu nije definisana nijedna grupa.");
@@ -208,7 +209,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	if ($_REQUEST['brpodataka']=='on') $brpodataka=1; //checkbox
 
 	if ($brpodataka==0) {
-		$q200 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag order by id limit 1");
+		$q200 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by id limit 1");
 		if (mysql_num_rows($q200)<1) {
 			// Ovo je fatalna greska...
 			zamgerlog("nije kreirana nijedna grupa za masovni upis (predmet pp$predmet)",3);
@@ -246,7 +247,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$prezime = $mass_rezultat['prezime'][$student];
 
 		// Ispis studenta iz svih grupa
-		$q230 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+		$q230 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
 		while ($r230 = mysql_fetch_row($q230)) {
 			if ($ispis) {
 				print "Ispis studenta '$prezime $ime' iz grupe '$r230[1]'<br/>\n";
@@ -278,7 +279,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 					if ($ispis) {
 						print "Kreiranje nove grupe '$imegrupe' <br/>\n";
 					} else {
-						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag");
+						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, virtualna=0");
 						$q210 = myquery("select id from labgrupa where naziv like '$imegrupe' and predmet=$predmet and akademska_godina=$ag");
 						$labgrupa = mysql_result($q210,0,0);
 					}
@@ -338,7 +339,9 @@ function upozorenje(grupa) {
 Spisak grupa:<br/>
 <?
 
-$q100 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag order by id");
+$q100 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by id");
+
+// TODO: koristiti natsort za sortiranje grupa
 
 print "<ul>\n";
 if (mysql_num_rows($q100) == 0)

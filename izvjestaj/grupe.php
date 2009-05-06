@@ -11,6 +11,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
 // v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
+// v4.0.9.4 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
 
 
 
@@ -91,7 +92,7 @@ if ($tip=="double") {
 
 	$parni=0;
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag order by naziv");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
@@ -193,7 +194,7 @@ else if ($tip=="single") {
 	<?*/
 	print "<center>\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$agand and virtualna=0");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 

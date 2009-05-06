@@ -17,6 +17,7 @@
 // v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/23) + Popravljeni linkovi na izvjestaj/ispit; dodan ispis IDa predmeta (ID ponudekursa je u URLu)
 // v4.0.9.5 (2009/04/29) + Kompletan modul sada radi sa predmetom i akademskom godinom; tabela labgrupa preusmjerena sa ponudekursa na predmet; nesto ciscenja i uredjivanja koda
+// v4.0.9.5 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta
 
 
 // TODO: Izmjena podataka i dodavanje/brisanje ponudekursa za sada ne radi
@@ -181,7 +182,11 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		$predmet = mysql_result($q391,0,0);
 	}
 
-	$q395 = myquery("insert into ponudakursa set predmet=$predmet, akademska_godina=$ak_god, studij=1, semestar=1"); // default vrijednosti
+	// Kreiram virtualnu labgrupu "Svi studenti"
+	$q393 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");
+
+	// Kreiram jednu ponudukursa sa default vrijednostima (sto ce se moci editovati odmah)
+	$q395 = myquery("insert into ponudakursa set predmet=$predmet, akademska_godina=$ak_god, studij=1, semestar=1");
 
 	// Logging
 	if (mysql_num_rows($q391)>0) {

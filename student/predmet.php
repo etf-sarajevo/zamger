@@ -14,6 +14,7 @@
 // v4.0.9.5 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.6 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.7 (2009/05/01) + Parametri su sada predmet i ag
+// v4.0.9.8 (2009/05/06) + Kod ispisa naziva grupe u kojoj je student, necemo uzimati u obzir virtualne grupe; ispis prisustva pojednostavljen ukidanjem labgrupe 0
 
 
 function student_predmet() {
@@ -21,7 +22,6 @@ function student_predmet() {
 global $userid;
 
 
-// Određivanje predmeta iz labgrupe
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']); // akademska godina
 
@@ -56,7 +56,8 @@ $ponudakursa = mysql_result($q17,0,0);
 <?
 
 // Određivanje labgrupe
-$q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid limit 1");
+$q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
+// Ispisujemo naziv prve nevirtualne grupe koju upit vrati
 if (mysql_num_rows($q20)>0) {
 	?>Grupa: <b><?=mysql_result($q20,0,0)?></b></p><?
 }
@@ -126,14 +127,14 @@ if ($tabela1>$tabela2) {
 //  PRISUSTVO NA VJEŽBAMA
 
 
-function prisustvo_ispis($idgrupe,$imegrupe,$predmet,$ag,$komponenta) {
+function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	global $userid;
 
 	if (!preg_match("/\w/",$imegrupe)) $imegrupe = "[Bez naziva]";
 
 	$odsustva=0;
-	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta");
-	if (mysql_num_rows($q70)<1) return;
+	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta");
+	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
 
 	$datumi = $vremena = $statusi = "";
 	while ($r70 = mysql_fetch_row($q70)) {
@@ -188,10 +189,8 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid");
 	
 	while ($r60 = mysql_fetch_row($q60)) {
-		$odsustva += prisustvo_ispis($r60[0],$r60[1],$predmet,$ag,$id_komponente);
+		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente);
 	}
-	
-	$odsustva += prisustvo_ispis(0,"sve grupe",$predmet,$ag,$id_komponente);
 	
 	if ($odsustva<=$max_izostanaka) {
 		?><p>Ukupno na prisustvo imate <b><?=$max_bodova?></b> bodova.</p>

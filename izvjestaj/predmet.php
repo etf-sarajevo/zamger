@@ -14,7 +14,7 @@
 // v4.0.9.5 (2009/04/16) + Popravljen logging
 // v4.0.9.6 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
 // v4.0.9.7 (2009/05/02) + Ciscenje koda i optimizacija: izbaceni neki viska dijelovi, neke stvari izvucene iz petlje, upiti koji nisu potrebni za skraceni ispis stavljeni pod uslove; sada se skraceni izvjestaj prikazuje prakticno trenutno
-
+// v4.0.9.8 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
 
 
 function izvjestaj_predmet() {
@@ -105,7 +105,7 @@ if ($sastavi_grupe==0) {
 		$spisak_grupa[mysql_result($q40,0,0)] = mysql_result($q40,0,1);
 	} else {
 		// Spisak grupa moramo sortirati
-		$q20 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
+		$q20 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
 		while ($r20 = mysql_fetch_row($q20))
 			$spisak_grupa[$r20[0]]=$r20[1];
 		natsort($spisak_grupa); // "natural sort" - npr. "Grupa 10" dodje iza "Grupa 9"

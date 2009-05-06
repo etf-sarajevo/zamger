@@ -27,6 +27,7 @@
 // v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita; ekvivalentan upit za admine, i.predmet vise nije id ponudekursa nego predmeta
 // v4.0.9.6 (2009/04/24) + Greska uvedena u v4.0.9.4 (r372), ako $q70 ne vrati nista kako cemo onda znati metapredmet?
 // v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.8 (2009/05/05) + prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
 
 // Prebaciti u lib/manip?
 
@@ -55,23 +56,21 @@ case "prisustvo":
 	$cas=intval($_GET['cas']);
 	$prisutan=intval($_GET['prisutan']);
 
+	// Provjera parametra i odredjivanje predmeta i ag
+
+	$q10 = myquery("select c.labgrupa, l.predmet, l.akademska_godina from cas as c, labgrupa as l where c.id=$cas and c.labgrupa=l.id");
+	if (mysql_num_rows($q10)<1) {
+		zamgerlog("AJAH prisustvo - nepostojeci cas $cas",3);
+		print "nepostojeci cas"; break;
+	}
+	$labgrupa = mysql_result($q10,0,0);
+	$predmet = mysql_result($q10,0,1);
+	$ag = mysql_result($q10,0,2);
+
 
 	// Provjera prava pristupa
-
 	if (!$user_siteadmin) {
-		$q10 = myquery("select predmet, labgrupa, akademska_godina from cas where id=$cas");
-		if (mysql_num_rows($q10)<1) {
-			zamgerlog("AJAH prisustvo - nepostojeci cas $cas",3);
-			print "nepostojeci cas"; break;
-		}
-		$predmet = mysql_result($q10,0,0);
-		$labgrupa = mysql_result($q10,0,1);
-		$ag = mysql_result($q10,0,2);
-
-		if ($labgrupa==0) 
-			$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		else
-			$q15 = myquery("select count(*) from nastavnik_predmet as np,labgrupa as l where np.nastavnik=$userid and np.predmet=l.predmet and np.akademska_godina=l.akademska_godina and l.id=$labgrupa");
+		$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q15)<1) {
 			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
 			print "niste nastavnik A"; break;
@@ -92,12 +91,8 @@ case "prisustvo":
 		}
 
 		// ponudakursa
-	} else {
-		// Treba nam predmet i ag
-		$q25 = myquery("select predmet, akademska_godina from cas where id=$cas");
-		$predmet = mysql_result($q25,0,0);
-		$ag = mysql_result($q25,0,1);
 	}
+
 
 
 	// Akcija

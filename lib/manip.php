@@ -15,6 +15,7 @@
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/23) + Prebacena tabela labgrupa sa ponudekursa na predmet; funkcije ispis_studenta_sa... sada primaju predmet a ne ponudukursa; ukinut zastarjeli logging u ispis_studenta_sa_predmeta; massinput sada moze primiti ponudukursa ili predmet+ag
+// v4.0.9.5 (2009/05/06) + Dodajem funkciju upis_studenta_na_predmet koja za sada samo upisuje studenta i u virtuelnu labgrupu
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -24,7 +25,6 @@
 
 // Funkcija koja ispisuje studenta iz labgrupe, brisuci sve relevantne podatke
 // (prisustvo, komentari)
-// Dozvoljena je labgrupa 0 (brisu se podaci u grupi "Svi studenti")
 // Ne zaboravite updatovati komponente ako treba (prisustvo je promijenjeno)!
 
 function ispis_studenta_sa_labgrupe($student,$predmet,$labgrupa) {
@@ -105,6 +105,21 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 
 }
 
+
+
+// Upis studenta na predmet
+// Parametar funkcije je ustvari ponudakursa
+
+function upis_studenta_na_predmet($student,$ponudakursa) {
+	// Zapis u tabeli student_predmet
+	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
+
+	// Pronalazimo labgrupu "(Svi studenti)" i upisujemo studenta u nju
+	$q20 = myquery("select l.id from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
+	$labgrupa = mysql_result($q20,0,0); // mora postojati
+	
+	$q30 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
+}
 
 
 
@@ -467,7 +482,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 			break;
 
 		case 5: // Fiksne komponente
-			// TODO!
+			// fiksne komponente se upisuju direktno u tabelu komponentebodovi
 			break;
 		}
 	} // while ($r40...
