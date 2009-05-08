@@ -16,6 +16,7 @@
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/04/23) + Prebacena tabela labgrupa sa ponudekursa na predmet; funkcije ispis_studenta_sa... sada primaju predmet a ne ponudukursa; ukinut zastarjeli logging u ispis_studenta_sa_predmeta; massinput sada moze primiti ponudukursa ili predmet+ag
 // v4.0.9.5 (2009/05/06) + Dodajem funkciju upis_studenta_na_predmet koja za sada samo upisuje studenta i u virtuelnu labgrupu
+// v4.0.9.6 (2009/05/08) + Popravljam update_komponente za prisustvo, tabela cas vise ne sadrzi predmet
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -445,7 +446,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 			$minbodova = $r10[3];
 			$maxodsustva = $r10[4];
 			
-			$q200 = myquery("select count(*) from cas, prisustvo where cas.predmet=$predmet and cas.komponenta=$k and cas.id=prisustvo.cas and prisustvo.student=$student and prisustvo.prisutan=0");
+			$q200 = myquery("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$predmet and c.komponenta=$k and c.id=p.cas and p.student=$student and p.prisutan=0");
 			if (mysql_result($q200,0,0)>$maxodsustva)
 				$bodovi=$minbodova;
 			else
