@@ -18,6 +18,7 @@
 // v4.0.9.4 (2009/04/23) + Popravljeni linkovi na izvjestaj/ispit; dodan ispis IDa predmeta (ID ponudekursa je u URLu)
 // v4.0.9.5 (2009/04/29) + Kompletan modul sada radi sa predmetom i akademskom godinom; tabela labgrupa preusmjerena sa ponudekursa na predmet; nesto ciscenja i uredjivanja koda
 // v4.0.9.6 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta; dodate nedostajuce akcije; malo kozmetike, mogucnost check/uncheck all kod ogranicenja
+// v4.0.9.7 (2009/05/08) + Popravljen typo, popravljeno prosljedjivanje akcija=edit parametra, dodano malo feedback poruka
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -333,6 +334,7 @@ else if ($akcija == "edit") {
 			if (mysql_result($q360,0,0) < 1) {
 				$q361 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet, akademska_godina=$ag");
 			}
+			nicemessage ("Nastavnik angažovan na predmetu");
 			zamgerlog("nastavnik u$nastavnik dodan na predmet pp$predmet",4);
 		}
 	}
@@ -343,6 +345,10 @@ else if ($akcija == "edit") {
 
 		$yesno = intval($_GET['yesno']);
 		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
+		if ($yesno==1) 
+			nicemessage("Nastavnik proglašen za administratora predmeta");
+		else
+			nicemessage("Nastavnik više nije administrator predmeta");
 		zamgerlog("nastavnik u$nastavnik proglasen za admina predmeta pp$predmet ($yesno)",4);
 	}
 
@@ -350,6 +356,7 @@ else if ($akcija == "edit") {
 	else if ($_POST['subakcija'] == "izbaci_nastavnika" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
 		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
+		nicemessage ("Nastavnik više nije angažovan na predmetu");
 		zamgerlog("nastavnik u$nastavnik izbacen sa predmeta pp$predmet",4);
 	}
 
@@ -492,6 +499,7 @@ else if ($akcija == "edit") {
 		}
 		</script>
 		<?=genform("POST", "izbaciform")?>
+		<input type="hidden" name="akcija" value="edit">
 		<input type="hidden" name="subakcija" value="izbaci_nastavnika">
 		<input type="hidden" name="nastavnik" value=""></form>
 
@@ -513,7 +521,7 @@ else if ($akcija == "edit") {
 		<tr>
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
 			<td>
-			<input type="checkbox" onchange="javascript:location.href=\'<?=genuri()?>&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>" <?=$cbstanje?>></td>
+			<input type="checkbox" onchange="javascript:location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'" <?=$cbstanje?>></td>
 			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>"><?
 
 		// Spisak grupa na koje ima ogranicenje
@@ -543,6 +551,7 @@ else if ($akcija == "edit") {
 
 	?><p>Angažman nastavnika na predmetu:
 	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="edit">
 	<input type="hidden" name="subakcija" value="dodaj_nastavnika">
 	<select name="nastavnik" class="default">'<?
 	$q360 = myquery("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
