@@ -140,7 +140,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			// status 5: pregledana
 
 			// Treba nam ponudakursa za update komponente
-			$q35 = myquery("select sp.predmet from studentpredmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$q35 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 			$ponudakursa = mysql_result($q35,0,0);
 
 			update_komponente($student,$ponudakursa,$komponenta); // update statistike
