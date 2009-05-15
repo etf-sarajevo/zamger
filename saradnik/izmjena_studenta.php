@@ -280,7 +280,7 @@ function _izmijeni_profil($student,$predmet) {
 	$q210 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$student");
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
-	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet and labgrupa.virtualna=1");
+	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet and labgrupa.virtualna=0");
 	$vec_upisan_u_grupu = 0;
 	while ($r220 = mysql_fetch_row($q220)) {
 		if ($r220[0]==$grupa) {
