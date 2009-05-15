@@ -19,6 +19,7 @@
 // v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Parametar je sada ID predmeta umjesto ponudekursa; tabela labgrupa preusmjerena sa ponudekursa na predmet; provjere ispravnosti podataka pomjerene naprijed radi sigurnosti
 // v4.0.9.4 (2009/05/06) + Sakrij virtualne grupe kod promjene grupe
+// v4.0.9.5 (2009/05/15) + Kod promjene grupe student je bio ispisan iz virtualne grupe
 
 
 // TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena
@@ -279,7 +280,7 @@ function _izmijeni_profil($student,$predmet) {
 	$q210 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$student");
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
-	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet");
+	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet and labgrupa.virtualna=1");
 	$vec_upisan_u_grupu = 0;
 	while ($r220 = mysql_fetch_row($q220)) {
 		if ($r220[0]==$grupa) {
