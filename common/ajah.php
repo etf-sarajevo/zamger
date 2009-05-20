@@ -27,7 +27,8 @@
 // v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita; ekvivalentan upit za admine, i.predmet vise nije id ponudekursa nego predmeta
 // v4.0.9.6 (2009/04/24) + Greska uvedena u v4.0.9.4 (r372), ako $q70 ne vrati nista kako cemo onda znati metapredmet?
 // v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.8 (2009/05/05) + prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
+// v4.0.9.8 (2009/05/05) + Prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
+// v4.0.9.9 (2009/05/18) + Nemamo vise ponudukursa kod izmjene fiksnih bodova i konacne ocjene, pa cemo tu koristiti predmet i akademsku godinu
 
 // Prebaciti u lib/manip?
 
@@ -159,25 +160,27 @@ case "izmjena_ispita":
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
 		if ($user_siteadmin)
-			$q40 = myquery("select 1,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija from ispit as i, komponenta as k, ponudakursa as pk where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina");
+			$q40 = myquery("select 1,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina");
 		else
-			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id");
+			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id");
 		if (mysql_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
 			print "nepoznat ispit $ispit ili niste saradnik na predmetu"; break;
 		}
 		$padmin = mysql_result($q40,0,0);
-		$predmet = mysql_result($q40,0,1);
+		$ponudakursa = mysql_result($q40,0,1);
 		$max = mysql_result($q40,0,2);
 		// Potrebno za update komponenti:
 		$komponenta = mysql_result($q40,0,3);
 		$tipkomponente = mysql_result($q40,0,4);
 		$kopcija = mysql_result($q40,0,5);
+		$predmet = mysql_result($q40,0,6);
 
 	} else if ($ime == "fiksna") {
 		$stud_id = intval($parametri[1]);
 		$predmet = intval($parametri[2]);
 		$komponenta = intval($parametri[3]);
+		$ag = intval($parametri[4]);
 
 		// TODO: provjeriti da li komponenta postoji na predmetu
 		$q40a = myquery("select maxbodova from komponenta where id=$komponenta and tipkomponente=5");
@@ -201,6 +204,8 @@ case "izmjena_ispita":
 		$stud_id = intval($parametri[1]);
 		if ($vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
 		$predmet=intval($parametri[2]);
+		$ag = intval($parametri[3]);
+
 		$max=10;
 		if (!$user_siteadmin) {
 			$q41 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
@@ -218,9 +223,9 @@ case "izmjena_ispita":
 	}
 
 	// Da li je student na predmetu?
-	$q45 = myquery ("select count(*) from student_predmet where student=$stud_id and predmet=$predmet");
+	$q45 = myquery ("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet");
 	if (mysql_result($q45,0,0)<1) {
-		zamgerlog("AJAH ispit - student u$stud_id ne slusa predmet p$predmet (ispit i$ispit)",3);
+		zamgerlog("AJAH ispit - student u$stud_id ne slusa predmet pp$predmet (ispit i$ispit)",3);
 		print "student $stud_id ne sluša predmet $predmet"; break;
 	}
 
@@ -256,35 +261,34 @@ case "izmjena_ispita":
 			zamgerlog("AJAH ispit - izmjena rezultata $staraocjena u $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
 		}
 
-		update_komponente($stud_id,$predmet,$komponenta);
+		update_komponente($stud_id,$ponudakursa,$komponenta);
 
 	} else if ($ime == "fiksna") {
-//		update_komponente($stud_id,$predmet,$komponenta);
-		$q63 = myquery("delete from komponentebodovi where student=$stud_id and predmet=$predmet and komponenta=$komponenta");
-		if ($vrijednost != "/") $q66 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$predmet, komponenta=$komponenta, bodovi=$vrijednost");
+		// Odredjujemo ponudukursa zbog tabele komponentebodovi
+		$q62 = myquery("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		$ponudakursa = mysql_result($q62,0,0);
+
+		$q63 = myquery("delete from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
+		if ($vrijednost != "/") $q66 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");
+		zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
 
 
 	} else if ($ime == "ko") {
-		// Odredjujemo metapredmet i akademsku godinu
-		$q68 = myquery("select predmet, akademska_godina from ponudakursa where id=$predmet");
-		$metapredmet = mysql_result($q68,0,0);
-		$ag = mysql_result($q68,0,1);
-
 		// Konacna ocjena
-		// TODO: koristiti REPLACE
-		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$metapredmet and student=$stud_id");
+		// Ne koristimo REPLACE i slicno zbog logginga
+		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
 		$c = mysql_num_rows($q70);
 		if ($c==0 && $vrijednost!="/") {
-			$q80 = myquery("insert into konacna_ocjena set predmet=$metapredmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost");
-			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
+			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost");
+			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = mysql_result($q70,0,0);
-			$q80 = myquery("delete from konacna_ocjena where predmet=$metapredmet and student=$stud_id");
-			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
+			$q80 = myquery("delete from konacna_ocjena where predmet=$predmet and student=$stud_id");
+			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0) {
 			$staraocjena = mysql_result($q70,0,0);
-			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost where predmet=$metapredmet and student=$stud_id");
-			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet p$predmet, student u$stud_id)",4); // nivo 4: audit
+			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost where predmet=$predmet and student=$stud_id");
+			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		}
 	}
 
