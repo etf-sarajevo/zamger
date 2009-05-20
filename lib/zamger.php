@@ -477,7 +477,7 @@ function studentski_meni($fj) {
 			//anketa postaviti uslov za datum ili aktivnost
 			$q42 =  myquery("select id  from anketa a where a.aktivna=1 ");
 			if(mysql_num_rows($q42)>0)
-				$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet_id\">Anketa</a><br/>\n";
+				$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
 
 
 		} else {
