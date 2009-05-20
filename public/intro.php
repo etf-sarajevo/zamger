@@ -45,11 +45,18 @@ function login_forma() {
 	}
 
 	?>
-	<center><table border="0" bgcolor="#FFFFFF"><tr><td>
+	<center><table border="0" cellpadding="5" bgcolor="#FFFFFF">
+    <tr><td colspan="2">
 		<big><b>Dobro došli na bolognaware Elektrotehničkog fakulteta Sarajevo</b></big>
-	
-			<p align="center">
-			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p>
+	 </td></tr>
+      <tr><td>
+			<p align="right">
+			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p> 
+            </td><td>
+            <p align=""
+            <a href="public/anketa.php"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
+           </td></tr>
+            <tr><td colspan="2" align="center">
 		<form action="<?=$uri?>" method="POST">
 		<input type="hidden" name="loginforma" value="1">
 		<table border="0"><tr><td>Korisničko ime (UID):</td><td><input type="text" name="login" size="15"></td></tr>
