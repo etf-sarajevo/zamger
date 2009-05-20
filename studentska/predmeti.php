@@ -19,6 +19,7 @@
 // v4.0.9.5 (2009/04/29) + Kompletan modul sada radi sa predmetom i akademskom godinom; tabela labgrupa preusmjerena sa ponudekursa na predmet; nesto ciscenja i uredjivanja koda
 // v4.0.9.6 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta; dodate nedostajuce akcije; malo kozmetike, mogucnost check/uncheck all kod ogranicenja
 // v4.0.9.7 (2009/05/08) + Popravljen typo, popravljeno prosljedjivanje akcija=edit parametra, dodano malo feedback poruka
+// v4.0.9.8 (2009/05/20) + Dodajem akciju brisanje ponude kursa; ne prikazuj svaku ponudu kursa zasebno kod pretrage, prikazi predmete bez ponude kursa; akcija novi je pogresno prijavljivala da predmet vec postoji (ali je inace sve radilo ispravno); izbacio sam kreiranje default ponudekursa (svakako je viska), kreiranje virtualne labgrupe se radi samo ako ne postoji u aktuelnoj godini; renumerisem upite
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -165,59 +166,87 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	}
 
 	// Dodajemo ga u aktuelnu akademsku godinu
-	$q390 = myquery("select id from akademska_godina where aktuelna=1");
-	if (mysql_num_rows($q390)<1)
-		$q390 = myquery("select id from akademska_godina order by id desc");
-	if (mysql_num_rows($q390)<1) {
+	$q200 = myquery("select id from akademska_godina where aktuelna=1");
+	if (mysql_num_rows($q200)<1)
+		$q200 = myquery("select id from akademska_godina order by id desc");
+	if (mysql_num_rows($q200)<1) {
 		niceerror("Nije definisana nijedna akademska godina. Molimo kontaktirajte administratora sajta.");
 		zamgerlog("ne postoji nijedna akademska godina",3);
 		return;
 	}
-	$ak_god = mysql_result($q390,0,0);
+	$ak_god = mysql_result($q200,0,0);
 
 	// Da li vec postoji?
-	$q391 = myquery("select id from predmet where naziv='$naziv'");
-	if (mysql_num_rows($q391)>0) {
-		$predmet = mysql_result($q391,0,0);
-		$q392 = myquery("select id from ponudakursa where predmet=$predmet and akademska_godina=$ak_god");
-		if (mysql_num_rows($q392)>0) {
-			zamgerlog("predmet vec postoji u ovoj ak.god ($naziv)",3);
+	$q210 = myquery("select id from predmet where naziv='$naziv'");
+	if (mysql_num_rows($q210)>0) {
+		$predmet = mysql_result($q210,0,0);
+		$q220 = myquery("select count(*) from ponudakursa where predmet=$predmet and akademska_godina=$ak_god");
+		if (mysql_result($q220,0,0)>0) {
+			zamgerlog("predmet vec postoji u ovoj ak.god (pp$predmet)",3);
 			niceerror("Predmet već postoji");
+			?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
+			return;
+		} else {
+			// Kopiram ponude kursa iz prosle godine u ovu
+			// TODO: kada se implementira tabela plan i program, koristicemo nju
+			$q230 = myquery("select studij, semestar, obavezan from ponudakursa where predmet=$predmet and akademska_godina=".($ak_god-1));
+			if (mysql_num_rows($q230)<1) {
+				zamgerlog("predmet vec postoji, ali nije se drzao (pp$predmet)",3);
+				niceerror("Predmet već postoji, ali nije se držao ni ove ni prošle akademske godine.");
+				?><p>Stoga ne možemo automatski kreirati ponude kursa. Koristite editovanje da biste dodali ponude kursa.</p><br/><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
+				return;
+			}
+			while ($r230 = mysql_fetch_row($q230)) {
+				$q240 = myquery("insert into ponudakursa set predmet=$predmet, studij=$r230[0], semestar=$r230[1], obavezan=$r230[2], akademska_godina=$ak_god");
+
+				// Ispis i logging
+				$q231 = myquery("select naziv from studij where id=$r230[0]");
+				$ispis = "Kreiram ponudu kursa za predmet $naziv (studij ".mysql_result($q231,0,0).", semestar $r230[1]";
+				if ($r230[2]!=1) $ispis.=", izborni";
+				$ispis.=")";
+				nicemessage($ispis);
+				zamgerlog ("kreirana ponudakursa za pp$predmet");
+			}
+
+			// Kreiram virtualnu labgrupu "Svi studenti"
+			$q250 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");
+
+			?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
 			return;
 		}
-	} else {
-		// Odredjujemo kratki naziv
-		$dijelovi = explode(" ",$naziv);
-		$kratki_naziv = "";
-		foreach ($dijelovi as $dio)
-			$kratki_naziv .= strtoupper(substr($dio,0,1));
-
-		$q393 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=1"); // tippredmeta mora biti definisan
-		$q391 = myquery("select id from predmet where naziv='$naziv'");
-		$predmet = mysql_result($q391,0,0);
 	}
+
+
+	// Kreiranje potpuno novog predmeta
+
+	// Odredjujemo kratki naziv
+	$dijelovi = explode(" ",$naziv);
+	$kratki_naziv = "";
+	foreach ($dijelovi as $dio)
+		$kratki_naziv .= strtoupper(substr($dio,0,1));
+
+	// Polja tippredmeta i institucija u tabeli predmet moraju biti definisana! korisnik ih može promijeniti kasnije
+	$q260 = myquery("select id from institucija order by id limit 1");
+	$institucija = mysql_result($q260,0,0);
+	$q265 = myquery("select id from tippredmeta order by id limit 1");
+	$tippredmeta = mysql_result($q265,0,0);
+
+	// Dodajem predmet u bazu
+	$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=$tippredmeta, institucija=$institucija"); 
+
+	// Koji id predmeta smo dobili?
+	$q280 = myquery("select id from predmet where naziv='$naziv'");
+	$predmet = mysql_result($q280,0,0);
 
 	// Kreiram virtualnu labgrupu "Svi studenti"
-	$q393 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");
-
-	// Kreiram jednu ponudukursa sa default vrijednostima (sto ce se moci editovati odmah)
-	$q395 = myquery("insert into ponudakursa set predmet=$predmet, akademska_godina=$ak_god, studij=1, semestar=1");
+	$q290 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");
 
 	// Logging
-	if (mysql_num_rows($q391)>0) {
-		print "Predmet već postoji - dodajem ga u aktuelnu akademsku godinu.<br/><br/>";
-		zamgerlog("kreiram ponudu kursa pp$predmet za akademsku godinu ag$ak_god",4);
-	} else {
-		print "Novi predmet.<br/><br/>";
-		zamgerlog("potpuno novi predmet pp$predmet, akademska godina ag$ak_god",4);
-	}
-
+	zamgerlog("potpuno novi predmet pp$predmet, akademska godina ag$ak_god",4);
 
 	?>
-	<script language="JavaScript">
-	location.href='<?=genuri()?>&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>';
-	</script>
-	<?
+	<p>Kreiran novi predmet pod nazivom <?=$naziv?> sa uobičajenim parametrima. Koristite polja za izmjenu da ih podesite.</p>
+	<a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
 }
 
 
@@ -360,6 +389,26 @@ else if ($akcija == "edit") {
 		zamgerlog("nastavnik u$nastavnik izbacen sa predmeta pp$predmet",4);
 	}
 
+	// Obrisi ponudukursa
+	else if ($_POST['subakcija'] == "obrisi_pk" && check_csrf_token()) {
+		$ponudakursa = intval($_POST['pk']);
+
+		// Ispisujemo studente sa predmeta radi ispravnog brisanja podataka
+		$q364 = myquery("select sp.student, pk.predmet, pk.akademska_godina, o.ime, o.prezime, p.naziv from student_predmet as sp, ponudakursa as pk, osoba as o, predmet as p where pk.id=$ponudakursa and sp.predmet=pk.id and sp.student=o.id and pk.predmet=p.id");
+		while ($r364 = mysql_fetch_row($q364)) {
+			$predmet=$r364[1]; $ag=$r364[2]; // za kasnije...
+			nicemessage ("Ispisujem studenta $r364[3] $r364[4] sa predmeta $r365");
+			// Ova funkcija briše ispite, zadaće, prisustvo i konačnu ocjenu te ispisuje studenta iz labgrupe
+			ispis_studenta_sa_predmeta($r364[0], $r364[1], $r364[2]);
+		}
+
+
+		// Brišemo ponudu kursa
+		$q365 = myquery("delete from ponudakursa where id=$ponudakursa");
+		nicemessage ("Ponuda kursa je obrisana");
+		zamgerlog("obrisana ponudakursa $ponudakursa (predmet pp$predmet, godina ag$ag)",4);
+	}
+
 
 
 
@@ -435,6 +484,7 @@ else if ($akcija == "edit") {
 	}
 	</script>
 	<?=genform("POST", "brisanjepkform")?>
+	<input type="hidden" name="akcija" value="edit">
 	<input type="hidden" name="subakcija" value="obrisi_pk">
 	<input type="hidden" name="pk" value=""></form>
 	<?
@@ -452,7 +502,9 @@ else if ($akcija == "edit") {
 
 	$q360 = myquery("select pk.id, s.naziv, pk.semestar, pk.obavezan from ponudakursa as pk, studij as s where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=s.id");
 	if (mysql_num_rows($q360)<1) {
-		print "<p>Ovaj predmet se trenutno ne nudi nigdje! Dodajte ponudu kursa ispod.</p>\n";
+		?><p><font color="red">Ovaj predmet se trenutno ne nudi nigdje!</font><br/>
+		Dodajte ponudu kursa ispod. Dok to ne uradite, predmet neće biti vidljiv, osim kod pretrage ako je izabrana opcija &quot;Sve akademske godine&quot;</p>
+		<?
 	} else print "<ul>\n";
 	while ($r360 = mysql_fetch_row($q360)) {
 		// Broj studenata
@@ -584,7 +636,7 @@ else {
 		Za prikaz svih predmeta na akademskoj godini, ostavite polje za pretragu prazno.</br>
 		<?=genform("GET")?>
 		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
-		<select name="akademska_godina">
+		<select name="ag">
 			<option value="-1">Sve akademske godine</option>
 		<?
 		$q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
@@ -597,14 +649,14 @@ else {
 		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
 		<br/>
 	<?
-	if ($ak_god>0 && $src != "") {
-		$q300 = myquery("select count(*) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id");
-	} else if ($ak_god>0) {
-		$q300 = myquery("select count(*) from ponudakursa where akademska_godina=$ak_god");
+	if ($ak_god>=0 && $src != "") {
+		$q300 = myquery("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id");
+	} else if ($ak_god>=0) {
+		$q300 = myquery("select count(distinct pk.predmet) from ponudakursa as pk where pk.akademska_godina=$ak_god");
 	} else if ($src != "") {
-		$q300 = myquery("select count(*) from ponudakursa as pk, predmet as p where pk.predmet=p.id and p.naziv like '%$src%'");
+		$q300 = myquery("select count(*) from predmet as p where p.naziv like '%$src%'");
 	} else {
-		$q300 = myquery("select count(*) from ponudakursa");
+		$q300 = myquery("select count(*) from predmet as p");
 	}
 	$rezultata = mysql_result($q300,0,0);
 
@@ -625,25 +677,22 @@ else {
 		}
 		print "<br/>";
 
-		if ($ak_god>0 && $src != "") {
-			$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc, p.naziv limit $offset,$limit");
-		} else if ($ak_god>0) {
-			$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+		if ($ak_god>=0 && $src != "") {
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+		} else if ($ak_god>=0) {
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($src != "") {
-			$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where p.naziv like '%$src%' and p.institucija=i.id order by p.naziv limit $offset,$limit");
 		} else {
-			$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and pk.predmet=p.id and pk.studij=s.id order by ag.naziv desc,p.naziv limit $offset,$limit");
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where p.institucija=i.id order by p.naziv limit $offset,$limit");
 		}
 
 		print '<table width="100%" border="0">';
 		$i=$offset+1;
 		while ($r301 = mysql_fetch_row($q301)) {
-			if ($ak_god>0)
-				print "<tr><td>$i. $r301[1] ($r301[3])</td>\n";
-			else
-				print "<tr><td>$i. $r301[1] ($r301[3]) - $r301[2]</td>\n";
-			print "<td><a href=\"".genuri()."&akcija=edit&predmet=$r301[0]&ag=$r301[4]\">Detalji</a></td>\n";
-			if ($user_siteadmin) print "<td><a href=\"?sta=nastavnik/predmet&predmet=$r301[0]&ag=$r301[4]\">Uređivanje predmeta</a></td></tr>";
+			print "<tr><td>$i. $r301[1] ($r301[2])</td>\n";
+			print "<td><a href=\"".genuri()."&akcija=edit&predmet=$r301[0]&ag=$r301[3]\">Detalji</a></td>\n";
+			if ($user_siteadmin) print "<td><a href=\"?sta=nastavnik/predmet&predmet=$r301[0]&ag=$r301[3]\">Uređivanje predmeta</a></td></tr>";
 			$i++;
 		}
 		print "</table>";
