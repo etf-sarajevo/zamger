@@ -15,6 +15,7 @@
 // v4.0.9.6 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
 // v4.0.9.7 (2009/05/02) + Ciscenje koda i optimizacija: izbaceni neki viska dijelovi, neke stvari izvucene iz petlje, upiti koji nisu potrebni za skraceni ispis stavljeni pod uslove; sada se skraceni izvjestaj prikazuje prakticno trenutno
 // v4.0.9.8 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
+// v4.0.9.9 (2009/05/20) + Polja predmet i akademska_godina izbacena iz tabele cas
 
 
 function izvjestaj_predmet() {
@@ -316,7 +317,7 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			$casova = 0;
 			$prisustvo_zaglavlje = "";
 		
-			$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and predmet=$predmet and akademska_godina=$ag and komponenta=$r105[0] ORDER BY datum");
+			$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum");
 			while ($r110 = mysql_fetch_row($q110)) {
 				$cas_id = $r110[0];
 				list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r110[1]);
