@@ -677,9 +677,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q350)>0) {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
 	} else {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 	}
 
 
