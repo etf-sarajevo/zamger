@@ -8,6 +8,8 @@
 // v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
 // v3.9.1.4 (2009/01/26) + Dodan overlay za prikaz izvjestaja
 // v3.9.1.5 (2009/02/07) + Dodan link za izvjestaj "genijalci"
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.9.1 (2009/05/20) + Apsolutni linkovi na slike promijenjeni u relativne
 
 
 
@@ -48,16 +50,16 @@ function izvjestaj() {
 }
 </script>
 
-<img src="/images/blur.gif" width="1" height="1" border="0"> <!-- preloading -->
+<img src="images/blur.gif" width="1" height="1" border="0"> <!-- preloading -->
 
 <div id="prekrivac" name="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px">
-<table width="1024" height="900" border="0" cellspacing="0" cellpadding="0"><tr><td background="/images/blur.gif" align="center" valign="center">
+<table width="1024" height="900" border="0" cellspacing="0" cellpadding="0"><tr><td background="images/blur.gif" align="center" valign="center">
 &nbsp;
 </td></tr></table>
 </div>
 
 <div id="obavijest" name="obavijest" style="display:none; position: absolute; left: 0px; top: 55px">
-<table width="300" height="50" border="1" cellspacing="0" cellpadding="0"><tr><td align="center" valign="center" width="50"  bgcolor="#DDDDDD"><img src="/images/Animated-Hourglass.gif" width="38" height="38"></td><td align="center" valign="center" bgcolor="#DDDDDD">U toku je kreiranje izvještaja<br>Molimo sačekajte</td></tr></table>
+<table width="300" height="50" border="1" cellspacing="0" cellpadding="0"><tr><td align="center" valign="center" width="50"  bgcolor="#DDDDDD"><img src="images/Animated-Hourglass.gif" width="38" height="38"></td><td align="center" valign="center" bgcolor="#DDDDDD">U toku je kreiranje izvještaja<br>Molimo sačekajte</td></tr></table>
 </div>
 
 
@@ -129,7 +131,7 @@ function setCheckedValue(radioObj, newValue) {
 		Sortiraj spisak po: <ul>
 		<input type="radio" name="sortiranje" value="0" CHECKED> Prezimenu<br/>
 		<input type="radio" name="sortiranje" value="1"> Broju položenih ispita i bodova<br/>
-		<input type="radio" name="sortiranje" value="2"> Broju indeka</ul>
+		<input type="radio" name="sortiranje" value="2"> Broju indeksa</ul>
 		
 		<input type="submit" value=" Prikaži "></form>
 
