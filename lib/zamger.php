@@ -431,6 +431,7 @@ function studentski_meni($fj) {
 
 			$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
 		}
+		
 	}
 
 	$ispis = "";
@@ -473,6 +474,11 @@ function studentski_meni($fj) {
 				else
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag\">$r40[0]</a><br/>\n";
 			}
+			//anketa postaviti uslov za datum ili aktivnost
+			$q42 =  myquery("select id  from anketa a where a.aktivna=1 ");
+			if(mysql_num_rows($q42)>0)
+				$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet_id\">Anketa</a><br/>\n";
+
 
 		} else {
 			$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\"><img src=\"images/lijevo.png\" align=\"bottom\" border=\"0\"> $predmet_naziv</a><br/>\n";
