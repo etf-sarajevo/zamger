@@ -20,6 +20,7 @@
 // v4.0.9.3 (2009/04/23) + Parametar je sada ID predmeta umjesto ponudekursa; tabela labgrupa preusmjerena sa ponudekursa na predmet; provjere ispravnosti podataka pomjerene naprijed radi sigurnosti
 // v4.0.9.4 (2009/05/06) + Sakrij virtualne grupe kod promjene grupe
 // v4.0.9.5 (2009/05/15) + Kod promjene grupe student je bio ispisan iz virtualne grupe
+// v4.0.9.6 (2009/05/17) + Posto se izmjena_studenta moze pozvati u arhiviranim predmetima, ag mora biti parametar
 
 
 // TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena
@@ -39,6 +40,7 @@ require("lib/manip.php"); // radi ispisa studenta sa predmeta
 
 $student=intval($_REQUEST['student']); 
 $predmet=intval($_REQUEST['predmet']); 
+$ag=intval($_REQUEST['ag']); 
 
 
 // Necemo provjeravati prava pristupa jer je osnovna provjera vec napravljena kroz registry, a prikaz readonly podataka nastavniku koji nije angazovan na predmetu je IMHO ok
@@ -66,9 +68,13 @@ $naziv_predmeta = mysql_result($q160,0,0);
 
 // Aktuelna akademska godina
 
-$q170=myquery("select id,naziv from akademska_godina where aktuelna=1");
-$ag=mysql_result($q170,0,0);
-$agnaziv=mysql_result($q170,0,1);
+$q170=myquery("select naziv from akademska_godina where id=$ag");
+if (mysql_num_rows($q170)<1) {
+	zamgerlog("nepostojeca ag $ag",3);
+	biguglyerror("Nepoznat predmet");
+	return;
+}
+$agnaziv=mysql_result($q170,0,0);
 
 
 // Studij koji student trenutno sluša
@@ -134,7 +140,7 @@ if ($_POST['akcija']=="izmjena" && $izmjena_moguca==1 && check_csrf_token()) {
 // Ispis studenta sa predmeta
 
 if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
-	ispis_studenta_sa_predmeta($student,$predmet);
+	ispis_studenta_sa_predmeta($student,$predmet, $ag);
 	zamgerlog("student ispisan sa predmeta (student u$student predmet pp$predmet)",4); // nivo 4: audit
 	nicemessage("Studen ispisan sa predmeta.");
 	return;
@@ -230,7 +236,7 @@ if (mysql_num_rows($q150)>0) {
 
 if ($user_siteadmin) {
 	?>
-	<tr><td colspan="2"><a href="index.php?sta=saradnik/izmjena_studenta&student=<?=$student?>&predmet=<?=$predmet?>&akcija=ispis">Ispiši studenta sa predmeta:<br/><b><?=$naziv_predmeta?></b></a></td></tr>
+	<tr><td colspan="2"><a href="index.php?sta=saradnik/izmjena_studenta&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ispis">Ispiši studenta sa predmeta:<br/><b><?=$naziv_predmeta?></b></a></td></tr>
 	<?
 }
 

@@ -26,6 +26,9 @@
 // v4.0.9.3 (2009/04/14) + Zaboravio popraviti ID predmeta u pozivu AJAHa za konacnu ocjenu
 // v4.0.9.4 (2009/04/22) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; saradnik/izmjena_studenta sada prima predmet umjesto ponudekursa; u slucaju grupe 0 prima se predmet i ag umjesto ponudekursa; preusmjeravam tabelu cas sa ponudekursa na predmet
 // v4.0.9.5 (2009/05/06) + Ukidam "virtualnu grupu" 0, predmet i akademska godina vise nisu neophodni parametri; dodano malo logginga
+// v4.0.9.6 (2009/05/15) + U Refresh linku predmet i ag više nisu potrebni
+// v4.0.9.7 (2009/05/17) + Dodana ag u link na izmjenu_studenta
+// v4.0.9.8 (2009/05/18) + AJAH komponente za fiksnu komponentu i konacnu ocjenu sada primaju predmet i ag
 
 
 function saradnik_grupa() {
@@ -528,7 +531,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$predmet?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
 	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$labgrupa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
@@ -612,10 +615,10 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$q328 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$fiksna");
 		if (mysql_num_rows($q328)>0) {
 			$fbodova = mysql_result($q328,0,0);
-			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna\" ondblclick=\"coolboxopen(this)\">$fbodova</td>\n";
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna-$ag\" ondblclick=\"coolboxopen(this)\">$fbodova</td>\n";
 			$bodova += $fbodova;
 		} else {
-			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+			$fiksne_ispis .= "<td id=\"fiksna-$stud_id-$predmet-$fiksna-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 		}
 	}
 
@@ -674,9 +677,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q350)>0) {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
 	} else {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$ponudakursa-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 	}
 
 
@@ -706,7 +709,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	} else {
 ?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
 	}
-?> * <a href="?sta=saradnik/grupa&id=<?=$labgrupa?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Refresh</a></p>
+?> * <a href="?sta=saradnik/grupa&id=<?=$labgrupa?>">Refresh</a></p>
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
