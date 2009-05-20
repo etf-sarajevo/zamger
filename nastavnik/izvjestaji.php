@@ -61,7 +61,16 @@ if (!$user_siteadmin) { // 3 = site admin
 <p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
 <ul><li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>">Puni izvještaj</a></li>
 <li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da">Sa sumiranim kolonama za prisustvo i zadaće</a></li>
-<li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da&razdvoji_ispite=da">Sa razdvojenim popravnim ispitima</li><ul>
+<li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da&razdvoji_ispite=da">Sa razdvojenim popravnim ispitima </a></li></ul>
+</p>
+
+<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 4. Pregled anketa:
+<ul>
+	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&rank=da">Rank pitanja </a></li>
+	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&komentar=da">Komentari</a></li>
+
+
+</ul>
 </p>
 
 
