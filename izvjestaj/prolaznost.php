@@ -12,6 +12,7 @@
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/05/18) + Integrisi ponude istog kursa npr. kod izvjestaja "Svi studiji", dodano polje "ponovac"
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
@@ -94,8 +95,10 @@ if ($studij>-1) {
 	$studij_upit_ss2 = "and ss2.studij=$studij";
 }
 
-
-$q30 = myquery("select pk.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+if ($studij==-1) 
+	$q30 = myquery("select distinct p.id, p.naziv, 1 from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+else
+	$q30 = myquery("select pk.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 
 // Dodatak upitu za studente
 $upit_studenti="";
@@ -255,7 +258,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 	} else if ($cista_gen==2) {
 		// Samo redovni, bez ponovaca (nisu nikada slusali istu ak. godinu)
 
-		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
+		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.ponovac=0 and (select count(*) from student_studij as ss2 where ss2.student=ss.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
 
 		$uk_studenata = mysql_num_rows($q40);
 		$ispis_br_studenata = "Semestar upisalo: <b>$uk_studenata</b> redovnih studenata";
@@ -270,7 +273,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			$upisao_godine -= $godina;
 		}
 
-		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.akademska_godina<=$upisao_godine)=0");
+		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.ponovac=0 and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.akademska_godina<=$upisao_godine)=0");
 		$uk_studenata = mysql_num_rows($q40);
 		$ispis_br_studenata = "Semestar upisalo: <b>$uk_studenata</b> studenata &quot;čiste generacije&quot;";
 	}
@@ -344,7 +347,10 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		} else if ($ispit==3) {
 //			$stud_predmeti_ar=array();
 			$broj_polozenih=0;
-			$q200 = myquery("select kb.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+			if ($studij==-1)
+				$q200 = myquery("select pk.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+			else
+				$q200 = myquery("select kb.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
 			while ($r200 = mysql_fetch_row($q200)) {
 				$suma_bodova[$stud_id] += $r200[1];
 				$ispitocjena[$stud_id][$r200[0]] += $r200[1];
@@ -365,7 +371,10 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 
 		// Konacna ocjena
 		} else if ($ispit==4) {
-			$q110 = myquery("select pk.id,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+			if ($studij==-1) 
+				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id");
+			else
+				$q110 = myquery("select pk.id,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
 			$broj_polozenih=0;
 			while ($r110 = mysql_fetch_row($q110)) {
 				if ($r110[1] >= 6 ) {
@@ -382,7 +391,10 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			if ($studenti==1) $polozio[$stud_id] = $broj_polozenih;
 
 			// Niz $izaslo punimo brojem studenata upisanih na predmet
-			$q120 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+			if ($studij==-1)
+				$q120 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+			else
+				$q120 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
 			while ($r120 = mysql_fetch_row($q120))
 				$izaslo[$r120[0]]++;
 		}
