@@ -6,6 +6,7 @@
 // v3.9.1.1 (2009/02/07) + Dodano brisanje fajlova zadaca, ispravljen broj diffova
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 
 
 
@@ -37,7 +38,7 @@ if ($_POST['akcija'] == "kompaktuj") {
 	$diffcount=0;
 	$stdincount=0;
 	$filecount=0;
-	$lokacijazadaca="$conf_files_path/zadace/$predmet/";
+	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/";
 	while ($r11 = mysql_fetch_row($q11)) {
 		$zadaca = $r11[0];
 		$brzad = $r11[1];

@@ -20,6 +20,8 @@
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; pobrisan neki iskomentirani kod
 // v4.0.9.2 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 // v4.0.9.3 (2009/05/01) + Parametri su sada predmet i ag
+// v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa; Nemoj praviti direktorij ako nema potrebe za tim
+
 
 
 function student_zadaca() {
@@ -133,15 +135,9 @@ if ($zadaca==0) {
 
 
 
-# Standardna lokacija zadaca:
+// Standardna lokacija zadaca:
 
-$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$userid/";
-# Create db dir
-if (!file_exists("$conf_files_path/zadace/$ponudakursa")) {
-	mkdir ("$conf_files_path/zadace/$ponudakursa",0777, true);
-}
-
-
+$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
 
 
 
@@ -347,7 +343,7 @@ if ($attachment) {
 	if (mysql_num_rows($q120)>0) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
-		if (file_exists($the_file)) {
+		if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
 			$vrijeme = mysql_result($q120,0,1);
 			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
@@ -410,7 +406,7 @@ if ($attachment) {
 	
 	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
-	if (file_exists($the_file)) print join("",file($the_file)); 
+	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) print join("",file($the_file)); 
 	?></textarea>
 	</center>	
 
@@ -455,9 +451,9 @@ function akcijaslanje() {
 
 
 	// Standardna lokacija zadaca
-	$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$userid/";
-	if (!file_exists("$conf_files_path/zadace/$ponudakursa")) {
-		mkdir ("$conf_files_path/zadace/$ponudakursa",0777, true);
+	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
+	if (!file_exists("$conf_files_path/zadace/$predmet-$ag")) {
+		mkdir ("$conf_files_path/zadace/$predmet-$ag",0777, true);
 	}
 
 

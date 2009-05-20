@@ -17,6 +17,8 @@
 // v4.0.9.4 (2009/04/23) + Prebacena tabela labgrupa sa ponudekursa na predmet; funkcije ispis_studenta_sa... sada primaju predmet a ne ponudukursa; ukinut zastarjeli logging u ispis_studenta_sa_predmeta; massinput sada moze primiti ponudukursa ili predmet+ag
 // v4.0.9.5 (2009/05/06) + Dodajem funkciju upis_studenta_na_predmet koja za sada samo upisuje studenta i u virtuelnu labgrupu
 // v4.0.9.6 (2009/05/08) + Popravljam update_komponente za prisustvo, tabela cas vise ne sadrzi predmet
+// v4.0.9.7 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
+// v4.0.9.8 (2009/05/17) + Ukidamo nultu labgrupu kod ispisa sa predmeta
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -55,8 +57,6 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 	while ($r40 = mysql_fetch_row($q40)) {
 		ispis_studenta_sa_labgrupe($student,$predmet,$r40[0]);
 	}
-	// Brisemo i nultu labgrupu ("svi studenti")
-	ispis_studenta_sa_labgrupe($student,$predmet,0);
 
 	// Ocjene na ispitima
 	$q50 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag");
@@ -69,7 +69,7 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 	// Ima li smisla brisati konacnu ocjenu kod ispisa sa predmeta!?
 
 	// Zadace
-	$lokacijazadaca="$conf_files_path/zadace/$predmet/$student/";
+	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$student/";
 
 	$q90 = myquery("select z.id, pj.ekstenzija, z.attachment from zadaca as z, programskijezik as pj where z.predmet=$predmet and z.akademska_godina=$ag and z.programskijezik=pj.id");
 	while ($r90 = mysql_fetch_row($q90)) {

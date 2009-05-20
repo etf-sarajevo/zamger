@@ -16,6 +16,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
+// v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 
 
 
@@ -42,20 +43,25 @@ $zadatak=intval($_REQUEST['zadatak']);
 // Prava pristupa
 if (!$user_siteadmin) {
 	// Da li je nastavnik na predmetu?
-	$q10 = myquery("select pk.id from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
+	$q10 = myquery("select pk.id, z.predmet, z.akademska_godina from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_num_rows($q10)<1) {
 		zamgerlog("privilegije (student u$stud_id zadaca z$zadaca)",3); // nivo 3: greska
 		niceerror("Nemate pravo izmjene ove zadaće");
 		return;
 	}
-	$predmet_id = mysql_result($q10,0,0);
+	$ponudakursa = mysql_result($q10,0,0);
+	$predmet = mysql_result($q10,0,1);
+	$ag = mysql_result($q10,0,2);
 
 	// Ogranicenja (tabela: ogranicenje) ne provjeravamo jer bi to bilo prekomplikovano,
 	// a pitanje je da li ima smisla
 
 	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.predmet, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
 } else {
-	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, pk.id, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p, ponudakursa as pk where z.id=$zadaca and z.programskijezik=p.id and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
+	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, pk.id, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina from zadaca as z, programskijezik as p, ponudakursa as pk where z.id=$zadaca and z.programskijezik=p.id and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
+	$ponudakursa = mysql_result($q40,0,3);
+	$predmet = mysql_result($q40,0,7);
+	$ag = mysql_result($q40,0,8);
 }
 
 // Provjera spoofinga
@@ -71,9 +77,6 @@ if (mysql_result($q40,0,5)<$zadatak || $zadatak<1) {
 	niceerror("Neispravan broj zadatka.");
 	exit;
 }
-
-// Za site admina nam je potreban predmet
-if ($user_siteadmin) $predmet_id = mysql_result($q40,0,3);
 
 
 // Podaci o studentu
@@ -95,7 +98,7 @@ $komponenta = mysql_result($q40,0,6);
 $ime_studenta = mysql_result($q50,0,0);
 $prezime_studenta = mysql_result($q50,0,1);
 
-$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$stud_id/";
+$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$stud_id/";
 
 
 
@@ -216,7 +219,7 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 
 	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', userid=$userid");
 
-	update_komponente($stud_id, $predmet_id, $komponenta);
+	update_komponente($stud_id, $ponudakursa, $komponenta);
 	zamgerlog("izmjena zadace (student u$stud_id zadaca z$zadaca zadatak $zadatak)",2);
 
 	// Nakon izmjene statusa, nastavljamo normalno sa prikazom zadatka

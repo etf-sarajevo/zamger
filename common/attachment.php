@@ -11,6 +11,7 @@
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/06) + Attachment se nije mogao otvoriti osim ako je status 1
 // v4.0.9.4 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.5 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 
 
 function common_attachment() {
@@ -35,13 +36,15 @@ $stud_id=intval($_REQUEST['student']);
 
 // Određujemo ID ponudekursa
 
-$q5 = myquery("select pk.id from ponudakursa as pk, zadaca as z where pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
+$q5 = myquery("select pk.id, z.predmet, z.akademska_godina from ponudakursa as pk, zadaca as z where pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 if (mysql_num_rows($q5)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
 	niceerror("Nepostojeća zadaća");
 	return;
 }
 $ponudakursa = mysql_result($q5,0,0);
+$predmet = mysql_result($q5,0,1);
+$ag = mysql_result($q5,0,2);
 
 
 // Prava pristupa
@@ -100,7 +103,7 @@ if (mysql_num_rows($q30)<1) {
 
 // Preuzimanje zadaće
 
-$lokacijazadaca="$conf_files_path/zadace/$ponudakursa/$stud_id/$zadaca/";
+$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$stud_id/$zadaca/";
 
 $q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 if (mysql_num_rows($q40) < 1) {
