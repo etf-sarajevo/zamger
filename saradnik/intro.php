@@ -9,6 +9,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/23) + labgrupa preusmjerena sa tabele ponudakursa na tabelu predmet, spojene ponudekursa u prikazu za nastavnike, EDIT link preusmjeren na predmet
 // v4.0.9.3 (2009/05/05) + Ukidam "virtualnu grupu" 0
+// v4.0.9.4 (2009/05/17) + Prikazi site adminu predmete cak i u slucaju kada nijedan nastavnik nije angazovan na predmetu
 
 
 function saradnik_intro() {
@@ -70,12 +71,12 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	// Prikaži sve predmete siteadminu
 	$uslov=""; $nppolje="1";
 	if (!$user_siteadmin) {
-		$uslov="and np.nastavnik=$userid";
+		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
 		$nppolje="np.admin";
 	}
 
 	// Upit za spisak predmeta
-	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, s.kratkinaziv from predmet as p, nastavnik_predmet as np, studij as s, ponudakursa as pk where np.predmet=p.id $uslov and np.akademska_godina=$ag and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
+	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
 
 	// Format - šest predmeta u jednom redu
 	$nr = mysql_num_rows($q10);
