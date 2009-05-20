@@ -18,6 +18,8 @@
 // v4.0.9.3 (2009/04/07) + Dodajem tag za lab grupu
 // v4.0.9.4 (2009/04/22) + Tag za predmet (za razliku od ponudekursa) - posto se dobar broj modula prebacuje na predmet, bice lakse logirati tako; prebacujem labgrupu sa ponudakursa na predmet
 // v4.0.9.5 (2009/05/05) + Vise ispravki kod pretrage, dodan prikaz masovnih unosa za studenta koji se pretrazuje; popravljen pogresan link na zadace, ispite, grupe
+// v4.0.9.6 (2009/05/18) + Popravljen link na grupu "svi studenti" (ne postoji vise grupa 0)
+// v4.0.9.7 (2009/05/20) + Ukinuta labgrupa 0 i polja predmet i ag iz tabele labgrupa
 
 
 function admin_log() {
@@ -264,13 +266,9 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$evt = str_replace("g$m[1]","<a href=\"?sta=saradnik/grupa&id=$m[1]\" target=\"_blank\">$m[1]</a>",$evt);
 	}
 	if (preg_match("/\Wc(\d+)/", $evt, $m)) { // cas
-		$q40 = myquery("select labgrupa, predmet, akademska_godina from cas where id=$m[1]");
+		$q40 = myquery("select labgrupa from cas where id=$m[1]");
 		if (mysql_num_rows($q40)>0) {
-			if (mysql_result($q40,0,0)==0) {
-				$link="?sta=saradnik/grupa&id=0&predmet=".mysql_result($q40,0,1)."&ag=".mysql_result($q40,0,2);
-			} else {
-				$link="?sta=saradnik/grupa&id=".mysql_result($q40,0,0);
-			}
+			$link="?sta=saradnik/grupa&id=".mysql_result($q40,0,0);
 			$evt = str_replace("c$m[1]","<a href=\"$link\" target=\"_blank\">$m[1]</a>",$evt);
 		}
 	}
@@ -281,16 +279,17 @@ while ($r10 = mysql_fetch_row($q10)) {
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
 			$predmet=mysql_result($q50,0,1);
 			$ag=mysql_result($q50,0,2);
-			$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-			if (mysql_num_rows($q55)<1) {
-				$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$zadnjikorisnik and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-			}
-			if (mysql_num_rows($q55)>0) {
+			if (intval($usr)>0) {
+				$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				if (mysql_num_rows($q55)<1 && $zadnjikorisnik>0) {
+					$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$zadnjikorisnik and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				}
+				if (mysql_num_rows($q55)<1) {
+					$q55 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+				}
 				$link="?sta=saradnik/grupa&id=".mysql_result($q55,0,0);
-			} else {
-				$link="?sta=saradnik/grupa&id=0&predmet=$predmet&ag=$ag";
+				$evt = str_replace("z$m[1]","<a href=\"$link\" target=\"_blank\">$naziv</a>",$evt);
 			}
-			$evt = str_replace("z$m[1]","<a href=\"$link\" target=\"_blank\">$naziv</a>",$evt);
 		}
 	}
 	if (preg_match("/\Wi(\d+)/", $evt, $m)) { // ispit
