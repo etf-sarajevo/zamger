@@ -9,6 +9,7 @@ function student_projekti()
 	if ($predmet <=0)
 	{
 		//hijack attempt?
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
 		return;
 	}
 	
@@ -22,6 +23,7 @@ function student_projekti()
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
 	{
+		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu student/projekti na predmetu p$predmet", 3);				
 		return;	
 	}
 	
@@ -68,11 +70,12 @@ Nastavnik je definisao sljedece parametre svih projekata:
 		}
 ?>
 <?php
-	$projects = fetchProjects($predmet);
+	
 	
 	$teamLimitReached = isTeamLimitReachedForPredmet($predmet);
 		
 	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet);
+	
 	if (!empty($actualProjectForUser))
 	{
 		//user already in a project on this predmet
@@ -84,9 +87,18 @@ Nastavnik je definisao sljedece parametre svih projekata:
 			$teamLimitReached = false;
 		}	
 	}
+	$projects = array();
+	if ($predmetParams[zakljucani_projekti] == 1)
+	{
+		if (!empty($actualProjectForUser))
+			$projects[] = $actualProjectForUser;
+	}
+	else
+		$projects = fetchProjects($predmet);
 	
 	foreach ($projects as $project)
 	{
+
 		$members = fetchProjectMembers($project[id]);
 		
 		$newTeamDeny = isProjectEmpty($project[id]) == true && $teamLimitReached == true;
@@ -195,7 +207,10 @@ Nastavnik je definisao sljedece parametre svih projekata:
 		{
 			$projekat = intval($_GET['projekat']);
 			if ($projekat <= 0)
+			{
+				zamgerlog("korisnik u$userid pokusao da se prijavi na projekat sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
+			}
 			$errorText = applyForProject($userid, $projekat, $predmet);
 			if($errorText == '')
 			{
@@ -217,7 +232,10 @@ Nastavnik je definisao sljedece parametre svih projekata:
 		{
 			$projekat = intval($_GET['projekat']);
 			if ($projekat <= 0)
+			{
+				zamgerlog("korisnik u$userid pokusao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
+			}
 			$errorText = getOutOfproject($userid, $predmet);
 			if($errorText == '')
 			{
