@@ -544,7 +544,7 @@ function getThreadAndPosts($thread)
 	
 	$item = $row;
 	
-	getExtendedInfoForThread($thread, &$item);
+	getExtendedInfoForThread($thread, $item);
 	
 	$item[posts] = getPostsInThread($thread);
 	
