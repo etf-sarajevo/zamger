@@ -36,7 +36,6 @@ function common_articleImageDownload()
 	$filepath = $lokacijaclanaka  . $imageName;
 	
 	$type = `file -bi '$filepath'`;
-	
 	header("Content-Type: $type");
 	
 	echo file_get_contents($filepath);	
