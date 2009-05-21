@@ -32,7 +32,7 @@ function common_articleImageDownload()
 	}
 	
 	
-	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/$userid" . $authorID . "/";
+	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $authorID . "/";
 	$filepath = $lokacijaclanaka  . $imageName;
 	
 	$type = `file -bi '$filepath'`;
