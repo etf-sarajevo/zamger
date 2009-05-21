@@ -39,13 +39,7 @@ function common_articleImageDownload()
 	
 	header("Content-Type: $type");
 	
-	
-	$k = readfile($filepath,false);
-	if ($k == false) 
-	{
-		print "Download slike nije uspjelo! Kontaktirajte administratora";
-		zamgerlog("download slike nije uspjelo (slika $imageName korisnik u$userid projekat $projekat predmet p$predmet)", 3);
-	}
+	echo file_get_contents($filepath);	
 
 }
 
