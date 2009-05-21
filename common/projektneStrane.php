@@ -2,7 +2,7 @@
 function common_projektneStrane()
 {
 	//debug mod aktivan
-	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path;
+	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
 	$predmet 	= intval($_REQUEST['predmet']);
 	$projekat 	= intval($_REQUEST['projekat']);
 	$action 	= $_GET['action'];
@@ -24,8 +24,8 @@ function common_projektneStrane()
 		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu common/projektneStrane na predmetu p$predmet", 3);				
 		return;	
 	}
-	
-	if ($user_student)
+
+	if ($user_student && !$user_siteadmin) //ordinary student
 	{
 		$actualProject = getActualProjectForUserInPredmet($userid, $predmet);
 		if ($actualProject[id] != $projekat)
