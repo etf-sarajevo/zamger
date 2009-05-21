@@ -192,8 +192,8 @@ div#file
 .article_full .imgCont
 {
 	float: left;
-	width: 130px;
-	height: 130px;
+	width: 150px;
+	height: 150px;
 	
 	margin:0;
 	padding:0;
@@ -205,7 +205,8 @@ div#file
 {
 	border:0;
 	
-	width: 130px;
+	height: 150px;
+	width: auto;
 	
 	margin:0;
 	padding:0px;
@@ -213,7 +214,7 @@ div#file
 }
 .article_summary .contentCont
 {
-	margin-left: 140px;
+	margin-left: 160px;
 }
 .article_summary h1, 
 .article_full h1
@@ -273,7 +274,7 @@ div#file
 }
 .article_full .imgCont
 {
-	width: 300px;
+	width: 400px;
 	height: auto;
 
 	margin: 10px;
@@ -285,7 +286,8 @@ div#file
 }
 .article_full .imgCont img
 {
-	width: 300px;
+	width: 400px;
+	height: auto;
 	
 	margin-top: 5px;
 }
