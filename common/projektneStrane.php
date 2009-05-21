@@ -696,6 +696,9 @@ function common_projektneStrane()
     	<div class="imgCont">
     		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
         </div>
+    	<div class="imgCont">
+    		<img src="<?="$conf_files_path/projekti/clanci/$projekat/$article[osoba]/$article[slika]"?>" />
+        </div>
 	<?php
 		}
 	?>
