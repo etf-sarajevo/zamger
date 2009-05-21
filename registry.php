@@ -85,6 +85,7 @@ array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
 array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
 array("common/fileDownload", "Download projektnih fajlova", "Projektni fajlovi", "SNA", "2", "0"),
+array("common/articleImageDownload", "Slike projektnih clanaka", "Slike clanaka", "SNA", "2", "0"),
 /************************************
  * Haris Agic
 *************************************/
