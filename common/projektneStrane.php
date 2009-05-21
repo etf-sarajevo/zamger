@@ -696,9 +696,6 @@ function common_projektneStrane()
     	<div class="imgCont">
     		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
         </div>
-    	<div class="imgCont">
-    		<img src="<?="$conf_files_path/projekti/clanci/$projekat/$article[osoba]/$article[slika]"?>" />
-        </div>
 	<?php
 		}
 	?>
@@ -815,7 +812,7 @@ function common_projektneStrane()
 					if (!empty($article[slika]))
 					{
 		?>
-			<div class="imgCont"></div>
+			<div class="imgCont"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" /></div>
 	  <?php
 					}
 		?>
@@ -926,9 +923,7 @@ function common_projektneStrane()
 				  ?>
                        <div class="row">
                             <span class="label">Trenutna slika</span>
-                            <span class="formw"><img src="<?php 
-							$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/$userid/";
-							echo $lokacijaclanaka . $entry[slika]; ?>" />
+                            <span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$entry[osoba]&i=$entry[slika]"?>" />
                             </span>
                        </div> 
                        
