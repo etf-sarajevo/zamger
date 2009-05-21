@@ -81,4 +81,15 @@ array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
 
 array());
 
+/************************************
+ * Haris Agic
+*************************************/
+array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
+array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
+array("common/fileDownload", "Download projektnih fajlova", "Projektni fajlovi", "SN", "2", "0"),
+/************************************
+ * Haris Agic
+*************************************/
+
+
 ?>
