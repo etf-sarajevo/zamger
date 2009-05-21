@@ -46,7 +46,7 @@ function common_fileDownload()
 	$filepath = $lokacijafajlova . $entry[filename];
 	$type = `file -bi '$filepath'`;
 	header("Content-Type: $type");
-	header('Content-Disposition: attachment; filename=' . $entry[filename], false);
+	header("Content-Disposition: attachment; filename=\"" . $entry[filename] . "\";", false);
 	
 	$k = readfile($filepath,false);
 	if ($k == false) 
