@@ -1,7 +1,7 @@
 <?php
 function common_fileDownload()
 {
-	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path;
+	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
 	$predmet 	= intval($_REQUEST['predmet']);
 	$projekat 	= intval($_REQUEST['projekat']);
 	$id = intval($_REQUEST['id']); //file ID
@@ -23,7 +23,7 @@ function common_fileDownload()
 
 	require_once("lib/projekti.php");
 	
-	if ($user_student)
+	if ($user_student && !$user_siteadmin)
 	{
 		$actualProject = getActualProjectForUserInPredmet($userid, $predmet);
 		if ($actualProject[id] != $projekat)
