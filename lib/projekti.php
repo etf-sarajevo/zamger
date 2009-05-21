@@ -518,7 +518,7 @@ function fetchThreadsForProject($id, $offset = 0, $rowsPerPage = 0)
 	
 	foreach ($list as $key => $item)
 	{
-		getExtendedInfoForThread($item[id], &$list[$key]);
+		getExtendedInfoForThread($item[id], $list[$key]);
 	}
 	
 	return $list;	
