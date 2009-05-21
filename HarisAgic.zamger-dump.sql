@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 -- 
 -- Host: localhost
--- Generation Time: May 07, 2009 at 06:39 PM
+-- Generation Time: May 20, 2009 at 10:13 PM
 -- Server version: 5.0.24
 -- PHP Version: 5.1.6
 -- 
@@ -19,6 +19,7 @@
 DROP TABLE IF EXISTS `bb_post`;
 CREATE TABLE `bb_post` (
   `id` int(11) NOT NULL,
+  `naslov` varchar(300) collate utf8_slovenian_ci NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `osoba` int(11) NOT NULL,
   `tema` int(11) NOT NULL,
@@ -34,7 +35,6 @@ CREATE TABLE `bb_post` (
 DROP TABLE IF EXISTS `bb_post_text`;
 CREATE TABLE `bb_post_text` (
   `post` int(11) NOT NULL,
-  `naslov` varchar(200) collate utf8_slovenian_ci NOT NULL,
   `tekst` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`post`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -49,9 +49,9 @@ DROP TABLE IF EXISTS `bb_tema`;
 CREATE TABLE `bb_tema` (
   `id` int(11) NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  `naslov` varchar(200) collate utf8_slovenian_ci NOT NULL,
-  `prvi_post` int(11) NOT NULL,
-  `zadnji_post` int(11) NOT NULL,
+  `prvi_post` int(11) NOT NULL default '0',
+  `zadnji_post` int(11) NOT NULL default '0',
+  `pregleda` int(11) unsigned NOT NULL default '0',
   `osoba` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
@@ -130,10 +130,9 @@ CREATE TABLE `projekat` (
 DROP TABLE IF EXISTS `projekat_file`;
 CREATE TABLE `projekat_file` (
   `id` int(11) NOT NULL,
-  `naslov` varchar(200) collate utf8_slovenian_ci NOT NULL,
   `filename` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
-  `revizija` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  `revizija` tinyint(4) NOT NULL,
   `osoba` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
   `file` int(11) NOT NULL,
