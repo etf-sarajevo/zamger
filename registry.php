@@ -78,9 +78,6 @@ array("common/attachment", "Download zadaće u formi attachmenta", "Attachment",
 array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
 array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
-
-array());
-
 /************************************
  * Haris Agic
 *************************************/
@@ -90,6 +87,11 @@ array("common/fileDownload", "Download projektnih fajlova", "Projektni fajlovi",
 /************************************
  * Haris Agic
 *************************************/
+array()
+
+);
+
+
 
 
 ?>
