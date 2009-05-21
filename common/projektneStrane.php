@@ -2002,6 +2002,7 @@ function formProcess_bl($option)
 	{
 		mkdir ($lokacijaclanaka,0777, true);
 	}
+	new dBug(file_exists($lokacijaclanaka));
 
 
 	if ($slika['error'] != 4)
