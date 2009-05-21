@@ -52,7 +52,7 @@ function common_fileDownload()
 	if ($k == false) 
 	{
 		print "Download fajla nije uspjelo! Kontaktirajte administratora";
-		zamgerlog("download fajla nije uspjelo (fajl $id korisnik u#userid projekat $projekat predmet p$predmet)", 3);
+		zamgerlog("download fajla nije uspjelo (fajl $id korisnik u$userid projekat $projekat predmet p$predmet)", 3);
 	}
 	exit();
 
