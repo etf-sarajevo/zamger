@@ -12,7 +12,13 @@ function student_projekti()
 		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
 		return;
 	}
-	
+	if ($user_student == false)
+	{
+		//hijack attempt?
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti iako nije student", 3);		
+		return;
+	}
+
 	
 	$linkPrefix = "?sta=student/projekti&predmet=$predmet";
 	$action 	= $_GET['action'];
