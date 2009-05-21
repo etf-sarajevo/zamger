@@ -10,6 +10,7 @@ function nastavnik_projekti()
 	if ($predmet <=0)
 	{
 		//hijack attempt?
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
 		return;
 	}
 	
@@ -19,11 +20,12 @@ function nastavnik_projekti()
 	$id			= intval($_GET['id']);
 	
 	$conf_debug = 1;
-
+	
 
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
 	{
+		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu nastavnik/projekti na predmetu p$predmet", 3);				
 		return;	
 	}
 	
@@ -65,6 +67,16 @@ function nastavnik_projekti()
 
 <?php
 		}
+		$countTeamsForPredmet = getCountNONEmptyProjectsForPredmet($predmet);
+		if ($countTeamsForPredmet < $params[min_timova])
+		{
+?>
+	<span class="notice">Trenutni broj timova (<?=$countTeamsForPredmet?>) je ispod minimalnog broj timova koji ste definisali za ovaj predmet (<?=$params[min_timova]?>).</span>	
+<?php
+		
+		} //if min teams is not achieved yet
+		
+		
 	} //if there are projects
 	else
 	{
@@ -94,7 +106,17 @@ function nastavnik_projekti()
         <?php
 			} //locked projects
 		?>
-            </ul>   
+            </ul> 
+        <?php
+			$countMembersForProject = getCountMembersForProject($project[id]);
+			if ($countMembersForProject < $params[min_clanova_tima])
+			{
+		?>
+			<span class="notice">Broj prijavljenih studenata (<?=$countMembersForProject?>) je ispod minimuma koji ste definisali za ovaj predmet (<?=$params[min_clanova_tima]?>).</span>	
+		<?php
+			} //if count members < minimal defined
+		?>
+        
     </div>	
 <table class="projekti" border="0" cellspacing="0" cellpadding="2">
   <tr>
@@ -197,6 +219,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspjesno ste uredili parametre projekata.');
+					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu p$_GET[predmet]", 2);		
 					$link = $linkPrefix;		
 				}
 				else
@@ -267,6 +290,8 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Novi projekat uspjesno dodan.');
+					zamgerlog("korisnik u$userid dodao novi projekat na predmetu p$_GET[predmet]", 2);		
+
 					$link = $linkPrefix;			
 				}
 				else
@@ -324,6 +349,8 @@ function nastavnik_projekti()
 					if($errorText == '')
 					{
 						nicemessage('Uspjesno ste uredili projekat.');
+						zamgerlog("korisnik u$userid uspjesno uredio projekat na predmetu p$_GET[predmet]", 2);		
+
 						$link = $linkPrefix;									
 					}
 					else
@@ -359,11 +386,14 @@ function nastavnik_projekti()
 						if (deleteProject($id))
 						{
 							nicemessage('Uspjesno ste obrisali projekat.');	
+							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu p$_GET[predmet]", 4);		
+
 							$link = $linkPrefix;		
 						}
 						else
 						{
-							niceerror('Doslo je do greske prilikom brisanja projekta. Molimo kontaktirajte administratora.');
+							niceerror('Doslo je do greske prilikom brisanja projekta. Molimo kontaktirajte administratora.');		
+
 							$link = "javascript:history.back();";	
 						}
 						nicemessage('<a href="'. $link .'">Povratak.</a>');
@@ -396,7 +426,7 @@ function formProcess($option)
 {
 	if (!in_array($option, array('add', 'edit') ) )
 	{
-		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';		
 		return $errorText;		
 	}
 	
@@ -504,6 +534,21 @@ function deleteProject($id)
 function deleteArticlesForProject($id)
 {
 	//bl_clanak	
+	
+	global $conf_files_path;
+	
+	$list = fetchArticlesForProject($id);
+	
+	foreach ($list as $item)
+	{
+		if ($item['slika'] != '')
+		{
+			$lokacijaclanaka ="$conf_files_path/projekti/clanci/" . $item['projekat'] . '/' . $item['osoba'] . '/';
+			unlink($lokacijaclanaka . $item['slika']);
+		}
+	}
+	
+	
 	$query = sprintf("DELETE FROM bl_clanak WHERE projekat='%d'", 
 					intval($id)
 					);
@@ -512,21 +557,43 @@ function deleteArticlesForProject($id)
 }
 function deleteFilesForProject($id)
 {
-	//bl_clanak
+	//projekat_file
 	
-	//TODO: DELETE FILE FROM THE SERVER
+	global $conf_files_path;
 	
-	$query = sprintf("DELETE FROM projekat_file_diff WHERE file IN (SELECT id FROM projekat_file WHERE projekat='%d') ", 
-					intval($id)
-					);
+	$allFiles = fetchFilesForProjectAllRevisions($id);
+	foreach ($allFiles as $list)
+	{
+		foreach ($list as $item)
+		{
+			
+			$query = sprintf("DELETE FROM projekat_file WHERE id='%d' LIMIT 1", 
+						intval($item[id])
+						);
+		
+			$result = myquery($query);
+			if (mysql_affected_rows() == 0)
+				return false;
+				
+			$lokacijarevizije = "$conf_files_path/projekti/fajlovi/" . $item['projekat'] . '/' . $item['osoba'] . '/' . $item['filename'] . '/v' . $item['revizija'];
+			
+			if (!unlink($lokacijarevizije . '/' . $item[filename]))
+				return false;	
+			if (!rmdir($lokacijarevizije))
+				return false;
+				
+			//remove any diffs for this file
+			myquery("DELETE FROM projekat_file_diff WHERE file='" . $item[id] . "' LIMIT 1");
+		}
+		
+		$lokacijafajlova = "$conf_files_path/projekti/fajlovi/" . $list[0]['projekat'] . '/' . $list[0]['osoba'] . '/' . $list[0]['filename'];
+		if (!rmdir($lokacijafajlova))
+			return false;
+		
+		return true;
 	
-	$result = myquery($query);
-	
-	$query = sprintf("DELETE FROM projekat_file WHERE projekat='%d'", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
+	} //foreach allFiles
+		
 }
 
 function deleteLinksForProject($id)
