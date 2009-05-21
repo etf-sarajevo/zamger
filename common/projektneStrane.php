@@ -694,7 +694,7 @@ function common_projektneStrane()
 		{
 	?>
     	<div class="imgCont">
-    		<img src="<?=$conf_files_path . "/projekti/clanci/$predmet/$article[osoba]/$article[slika]" ?>" />
+    		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
         </div>
 	<?php
 		}
@@ -724,7 +724,7 @@ function common_projektneStrane()
 		}
    ?>
 
-            <div class="text">
+<div class="text">
                                 <?php
                                 $len = strlen($article[tekst]);
                         
@@ -812,10 +812,8 @@ function common_projektneStrane()
 					if (!empty($article[slika]))
 					{
 		?>
-			<div class="imgCont">
-				<img src="<?=$conf_files_path . "/projekti/clanci/$predmet/$article[osoba]/$article[slika]" ?>" />
-			</div>
-		<?php
+			<div class="imgCont"></div>
+	  <?php
 					}
 		?>
 				<div class="text"><?=filtered_output_string($article['tekst']) ?></div><!--text-->
