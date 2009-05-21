@@ -36,11 +36,15 @@ function common_articleImageDownload()
 	$filepath = $lokacijaclanaka  . $imageName;
 	
 	//$type = `file -bi '$filepath'`;
-	$type = 'application/octet-stream';
+	/*$type = 'application/octet-stream';
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
+	*/
+	echo time();
+	$fileString = file_get_contents($filepath);	
+	echo time();
 	
-	@readfile($filepath);	
+	
 	exit;
 
 }
