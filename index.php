@@ -165,6 +165,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
+	<link href="css/projekti.css" rel="stylesheet" type="text/css" />
 	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php" />
 </head><?
 
