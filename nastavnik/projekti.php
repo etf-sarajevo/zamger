@@ -14,7 +14,13 @@ function nastavnik_projekti()
 		return;
 	}
 	
-	
+	if ($user_nastavnik == false)
+	{
+		//hijack attempt?
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti iako nije student", 3);		
+		return;
+	}
+
 	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet";
 	$action 	= $_GET['action'];
 	$id			= intval($_GET['id']);
