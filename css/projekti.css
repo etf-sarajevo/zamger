@@ -9,6 +9,11 @@
 * html .clearfix {height: 1%;}
 /* End hide from IE-mac */
 
+span.newsPages
+{
+	display: block;
+	margin-top: 25px;
+}
 div.row 
 {
 	clear:both;
@@ -74,7 +79,7 @@ textarea
 .linkovi td, 
 .rss td,
 .linkovi th, 
-.rss th 
+.rss th
 {
 	padding: 3px 10px;
 	border-bottom: 1px solid silver;
@@ -82,7 +87,7 @@ textarea
 }
 
 .linkovi th, 
-.rss th 
+.rss th
 {
 	font-size: 11px;
 }
@@ -90,6 +95,24 @@ textarea
 .rss sup
  {
 	color: gray;
+}
+
+.file_leading
+{
+	font-size: 1.1em;
+	
+	margin-bottom: 7px;
+}
+.link
+{
+	cursor: pointer;
+	color:#003399;
+}
+
+.file_revisions
+{
+	padding-left: 20px;
+	border-left: 1px solid #c2c1c1;
 }
 
 
@@ -126,27 +149,33 @@ div.links ul li
 }
 div#link ul li, 
 div#rss ul li, 
-div#bl ul li
+div#bl ul li, 
+div#file ul li
 {	
 	float: left;
 	padding: 0 5px 0 5px;
 	border-left: 1px solid black;
 	width: 100px;
 }
-div#rss ul li
-{
-	width: 140px;
-}
-
-div#bl, 
-div#rss
-{
-	margin-bottom: 20px;
-}
-
+div#rss ul li, 
 div#bl ul li
 {
 	width: 140px;
+}
+div#file ul li
+{
+	width: 60px;
+}
+
+div#bl, 
+div#rss, 
+div#file
+{
+	margin-bottom: 20px;
+}
+div#file
+{
+	margin-bottom: 6px;
 }
 
 .article_summary, 
@@ -273,6 +302,126 @@ a#backLink:hover
 	color: #000033;
 }
 
+#threadList
+{
+	width: 100%;
+	
+	border: 1px solid #c2c1c1;
+}
+.threadRow
+{
+	font-size: 1.1em;
+	
+	padding: 7px 6px;
+}
+.pattern
+{
+	background-color:#F5F5F5;
+}
+.caption
+{
+	cursor:default;
+	background-color:#EEEEEE;
+}
+.caption div
+{
+	font-weight: bold;
+	margin-top:0 !important;
+}
+
+.threadRow .threadInfo
+{
+	float: right;
+	
+	width: 350px;
+}
+.threadRow .threadInfo .views
+{
+	float: right;
+	width: 80px;
+	text-align: center;
+	margin-top: 8px;
+}
+
+.threadRow .threadInfo .lastReply
+{
+	float: right;
+	width: 160;
+	text-align:center;
+}
+
+.threadRow .threadInfo .replies
+{
+	margin-right: 240px;
+	text-align:center;
+	margin-top: 8px;
+}
+
+.threadRow .title, 
+.threadRow .author
+{
+	margin-right: 350px;
+}
+.threadRow .author
+{
+	margin-top: 2px;
+	font-size: 0.9em;
+}
+
+#fullThread
+{
+
+}
+.post
+{
+	border: 1px solid #c2c1c1;
+	margin: 7px 6px;
+	margin-bottom: 0;
+	margin-top: 0;
+}
+.post .header
+{
+	background-color:#EEEEEE;
+	padding: 7px 6px;
+	
+	cursor:pointer;
+
+	font-size: 1.1em;
+}
+.post .header .buttons
+{
+	float: right;
+	width: 200px;
+	text-align:right;
+	padding-right: 20px;
+}
+
+.post .header .maininfo
+{
+	margin-right: 200px;
+}
+.post .header .maininfo .date
+{
+	float: left;
+	width: 140px;
+}
+.post .header .maininfo .author, 
+.post .header .maininfo .title
+{
+	display: inline-block;
+	*display: inline;
+	*zoom: 1;
+}
+.post .header .maininfo .title
+{
+	
+}
+.post .text
+{
+	margin: 10px;
+	
+	font-size: 1.1em;
+}
 
 
 
