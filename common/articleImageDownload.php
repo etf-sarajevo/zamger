@@ -41,6 +41,7 @@ function common_articleImageDownload()
 	header('Content-Length: ' . filesize($filepath));
 	
 	@readfile($filepath);	
+	exit;
 
 }
 
