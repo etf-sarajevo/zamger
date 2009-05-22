@@ -60,14 +60,14 @@ function common_projektneStrane()
 
 	?>   
      <div class="links">
-            <ul>
+            <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix?>">Početna strana</a></li>
             	<li><a href="<?php echo $linkPrefix . "&section=info"?>">Informacije o projektu</a></li>
                 <li><a href="<?php echo $linkPrefix . "&section=links"?>">Korisni linkovi</a></li>
                 <li><a href="<?php echo $linkPrefix . "&section=rss"?>">RSS feedovi</a></li>
                 <li><a href="<?php echo $linkPrefix . "&section=bl"?>">Članci</a></li>
                 <li><a href="<?php echo $linkPrefix . "&section=file"?>">Fajlovi</a></li>
-                <li><a href="<?php echo $linkPrefix . "&section=bb"?>">Grupa za diskusiju</a></li>
+                <li class="last"><a href="<?php echo $linkPrefix . "&section=bb"?>">Grupa za diskusiju</a></li>
             </ul>   
      </div>	
     <?php	
@@ -88,6 +88,8 @@ function common_projektneStrane()
 		{
 			// display project info
 	?>
+    	<h2>Informacije o projektu</h2>
+
 <table class="projekti" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">Naziv</th>
@@ -135,8 +137,8 @@ function common_projektneStrane()
 			$linkPrefix .='&section=links';
 	?>
 <h2>Korisni linkovi</h2>
- <div class="links clearfix" id="link">
-    <ul>
+ <div class="links" id="link">
+    <ul class="clearfix">
         <li><a href="<?php echo $linkPrefix?>">Lista linkova</a></li>
         <li><a href="<?php echo $linkPrefix . "&subaction=add"?>">Novi link</a></li>
     </ul>   
@@ -161,8 +163,8 @@ function common_projektneStrane()
 					if (isUserAuthorOfLink($link[id], $userid))
 					{
 	?>
-<div class="links clearfix" id="link">
-    <ul>
+<div class="links" id="link">
+    <ul class="clearfix">
         <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=$link[id]"?>">Uredi</a></li>
         <li><a href="<?php echo $linkPrefix . "&subaction=del&id=$link[id]"?>">Briši</a></li>
     </ul>   
