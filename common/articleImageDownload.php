@@ -36,14 +36,24 @@ function common_articleImageDownload()
 	$filepath = $lokacijaclanaka  . $imageName;
 	
 	//$type = `file -bi '$filepath'`;
-	/*$type = 'application/octet-stream';
+	/*
+	$type = 'application/octet-stream';
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
-	*/
+	
 	echo file_get_contents($filepath);	
+	*/
+	header("Pragma: public");
+	header("Expires: 0");
+	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	header("Content-Type: application/force-download");
+	header("Content-Type: application/octet-stream");
+	header("Content-Type: application/download"); 
+	header("Content-Disposition: attachment; filename=".$imageName.";");
+	header("Content-Transfer-Encoding: binary");
+	header("Content-Length: ".filesize($filepath));
 	
-	
-	exit;
+	readfile($filepath);
 
 }
 
