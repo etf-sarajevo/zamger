@@ -50,16 +50,20 @@ textarea
 	overflow: auto;
 }
 
-.projekti {
+.projekti 
+{
 	border: 1px solid silver;
 	
 	margin-bottom: 15px;
 }
 .projekti td,
-.projekti th {
-	padding: 3px 10px;
+.projekti th 
+{
+	padding: 7px 11px;
 	border-bottom: 1px solid silver;
 	border-right: 1px solid silver;
+	
+	font-size: 13px;
 }
 
 .projekti th {
@@ -68,20 +72,26 @@ textarea
 .projekti sup {
 	color: gray;
 }
-
+.projekti ul
+{
+	list-style-type:decimal;
+	padding-left: 20px;
+	margin-bottom:0;
+}
 .linkovi, 
 .rss
 {
 	border: 1px solid silver;
 	
 	margin-bottom: 15px;
+	clear: both;
 }
 .linkovi td, 
 .rss td,
 .linkovi th, 
 .rss th
 {
-	padding: 3px 10px;
+	padding: 7px 11px;
 	border-bottom: 1px solid silver;
 	border-right: 1px solid silver;
 }
@@ -141,37 +151,85 @@ div.links ul
 {
 	list-style-type:none;
 	padding-left: 0;
+	white-space: nowrap;
+	
+	margin-bottom: 30px;
 }
 div.links ul li
 {
 	font-size: 1em;
-	font-weight:bold;	
+	font-weight:bold;
+	
+	display: block;
+	float: left;
+	
+	
+	border: 1px solid #c2c1c1;
+	border-right:0;
 }
+div.links ul li.last
+{
+	border-right:1px solid #c2c1c1;
+}
+div.links ul li a
+{
+	display: block;
+	padding: 9px 12px;
+	
+	font-weight:normal;
+	font-size: 1.2em;
+}
+div.links ul li a:link, 
+div.links ul li a:visited
+{
+	
+}
+div.links ul li a:hover
+{
+	text-decoration: none;
+	background-color:#eeeeee;
+	color:#003366;
+}
+h2
+{
+	font-size: 1.5em;
+	margin-bottom: 20px;
+}
+h3
+{
+	font-size: 1.3em;
+}
+
+div#link ul, 
+div#rss ul, 
+div#bl ul, 
+div#file ul
+{
+	margin-bottom: 15px;
+}
+
 div#link ul li, 
 div#rss ul li, 
 div#bl ul li, 
 div#file ul li
 {	
-	float: left;
-	padding: 0 5px 0 5px;
-	border-left: 1px solid black;
-	width: 100px;
+	border: 0;
+	border-left: 1px solid #c2c1c1;
 }
-div#rss ul li, 
-div#bl ul li
+div#link ul li a, 
+div#rss ul li a, 
+div#bl ul li a, 
+div#file ul li a
 {
-	width: 140px;
-}
-div#file ul li
-{
-	width: 60px;
+	padding: 4px 5px;
 }
 
+div#link, 
 div#bl, 
 div#rss, 
 div#file
 {
-	margin-bottom: 20px;
+	margin-bottom: 12px;
 }
 div#file
 {
