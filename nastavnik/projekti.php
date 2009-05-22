@@ -35,17 +35,19 @@ function nastavnik_projekti()
 		return;	
 	}
 	
-	
+	?>
+<h2>Projekti</h2>    
+	<?php	
 	
 	$params = getPredmetParams($predmet);
 	if ($action!= 'page')
 	{
 	?>
      <div class="links">
-            <ul>
+            <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix . "&action=param"?>">Parametri projekata</a></li>
                 <li><a href="<?php echo $linkPrefix ?>">Lista projekata</a></li>
-                <li><a href="<?php echo $linkPrefix . "&action=addProject" ?>">Novi projekat</a></li>
+                <li class="last"><a href="<?php echo $linkPrefix . "&action=addProject" ?>">Novi projekat</a></li>
             </ul>   
     </div>	
     <?php	
@@ -55,7 +57,7 @@ function nastavnik_projekti()
 	{
 		
 ?>
-<h3>Projekti</h3>
+<h2>Lista projekata</h2>
 <?php
 	$projects = fetchProjects($predmet);
 	if (!empty($projects))
@@ -99,16 +101,16 @@ function nastavnik_projekti()
 	{
 		$members = fetchProjectMembers($project[id]);
 ?>
-<h4><?=filtered_output_string($project['naziv'])?></h4>
+<h3><?=filtered_output_string($project['naziv'])?></h3>
 <div class="links">
-            <ul>
+            <ul class="clearfix" style="margin-bottom: 10px;">
             <li><a href="<?php echo $linkPrefix . "&action=editProject&id=$project[id]" ?>">Uredi projekat</a></li>
-            <li><a href="<?php echo $linkPrefix . "&action=delProject&id=$project[id]" ?>">Obriši projekat</a></li>
+            <li<?php if ($params[zakljucani_projekti] == 0) echo 'class="last"' ?>><a href="<?php echo $linkPrefix . "&action=delProject&id=$project[id]" ?>">Obriši projekat</a></li>
      	<?php
 			if ($params[zakljucani_projekti] == 1)
 			{
 		?>
-                <li><a href="<?= $linkPrefix . "&action=page&projekat=$project[id]" ?>">Projektna stranica</a></li>
+                <li class="last"><a href="<?= $linkPrefix . "&action=page&projekat=$project[id]" ?>">Projektna stranica</a></li>
         <?php
 			} //locked projects
 		?>
@@ -174,7 +176,7 @@ function nastavnik_projekti()
 			if (!isset($_POST['submit']))
 			{
 ?>
-				 <h1>Parametri projekata</h1>
+				 <h2>Parametri projekata</h2>
 			
 				<form action="<?=$linkPrefix . "&action=param" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
 				<div id="formDiv">
@@ -263,7 +265,7 @@ function nastavnik_projekti()
 		
 	?>	
     		
-				 <h1>Novi projekat</h1>
+				 <h2>Novi projekat</h2>
 				
                 <form action="<?=$linkPrefix . "&action=addProject" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
                 <div id="formDiv">
