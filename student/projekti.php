@@ -41,7 +41,7 @@ function student_projekti()
 	
 ?>
 
-<h3>Projekti</h3>
+<h2>Projekti</h2>
 <span class="notice">
 Nastavnik je definisao sljedece parametre svih projekata:
     <ul>
@@ -111,22 +111,22 @@ Nastavnik je definisao sljedece parametre svih projekata:
 
 		
 ?>
-<h4><?=filtered_output_string($project['naziv'])?></h4>
+<h3><?=filtered_output_string($project['naziv'])?></h3>
 <div class="links">
-            <ul>
+            <ul class="clearfix">
         <?php  
 		if ($predmetParams['zakljucani_projekti'] == 0) //open for applications
 		{
 		   if (!empty($actualProjectForUser) && $actualProjectForUser[id] == $project[id])
 		   {
 		?>
-				<li><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=getout"?>">Odustani od prijave na ovom projektu</a></li>	
+				<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=getout"?>">Odustani od prijave na ovom projektu</a></li>	
 		<?php 
 		   }
 		   	elseif(isProjectFull($project[id], $predmet) == true)
 			{
 		?>
-        		<li style="color:red">Projekat je popunjen i ne prima prijave.</li>
+        		<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
         <?php
 			}
 			else
@@ -136,13 +136,13 @@ Nastavnik je definisao sljedece parametre svih projekata:
 					if (empty($actualProjectForUser))
 					{
 		?>
-        		<li><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat</a></li>       	
+        		<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat</a></li>       	
 		<?php
 					}
 					else
 					{
 		?>	
-        		<li><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>   	
+        		<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>   	
 		<?php
 					}
 				}
@@ -159,7 +159,7 @@ Nastavnik je definisao sljedece parametre svih projekata:
 			if ($predmetParams['zakljucani_projekti'] == 1)
 			{
 		?>
-        	<li><a href="<?= $linkPrefix . "&action=page&projekat=$project[id]" ?>">Projektna stranica</a></li>
+        	<li class="last"><a href="<?= $linkPrefix . "&action=page&projekat=$project[id]" ?>">Projektna stranica</a></li>
 		<?php
 			}
 		?>
