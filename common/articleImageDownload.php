@@ -40,9 +40,9 @@ function common_articleImageDownload()
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
 	*/
-	echo time();
+	echo date("H:i:s     ", time());
 	$fileString = file_get_contents($filepath);	
-	echo time();
+	echo date("H:i:s     ", time());
 	
 	
 	exit;
