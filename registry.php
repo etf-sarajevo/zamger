@@ -12,7 +12,7 @@ $registry = array(
 # Sablon == 2 znaci da se ne prikazuje ni header
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
-
+array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
