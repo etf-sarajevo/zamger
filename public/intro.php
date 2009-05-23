@@ -53,8 +53,8 @@ function login_forma() {
 			<p align="right">
 			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p> 
             </td><td>
-            <p align=""
-            <a href="public/anketa.php"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
+         
+            <a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
            </td></tr>
             <tr><td colspan="2" align="center">
 		<form action="<?=$uri?>" method="POST">
