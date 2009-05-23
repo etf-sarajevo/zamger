@@ -41,6 +41,7 @@ function studentska_anketa()
 $akcija = $_REQUEST['akcija'];
 $anketa = intval($_REQUEST['anketa']);
 $id = intval($_REQUEST['anketa']);
+
 // ako korinik želi da mijenja podatke vezane za anketu -- ime -- info -- datum pocetka i kraja
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if ($akcija =="podaci")
@@ -99,13 +100,27 @@ if ($akcija =="podaci")
 		<? 
 		return;
 	}
-
-	$q401="select id,open_date,close_date,title,info from anketa where id=$id";
-    $result401 = mysql_query($q401);
-	$naziv = mysql_result($result401,0,3);
 	
+	 print "<a href='?sta=studentska/anketa&akcija=edit&anketa=$anketa'>Povratak nazad</a>";
+	
+		// subakcija kojom se data anketa postavlja kao aktivna
+	if ($_REQUEST['subakcija']=="aktivacija" ){
+		
+		// prvo sve anket postavimo na neaktivne 
+		$result401=myquery("update anketa set aktivna = 0");
+		//a zatim datu postavimo kao aktivnu jer u datom trenu samo jedna ankete moze biti aktivna
+		$result401=myquery("update anketa set aktivna = 1 where id=$id");
+		print "<center><span style='color:#009900'> Anekta je postavljena kao aktivna!</span></center>";
+	
+	}
+
+	$result401=myquery("select id,open_date,close_date,title,info from anketa where id=$id");
+    //$result401 = mysql_query($q401);
+	$naziv = mysql_result($result401,0,3);
+
 	?>
-    <a href="?sta=studentska/anketa&akcija=edit&anketa=<?=$anketa?>">Povratak nazad</a>
+    
+   
 
 <center>
 	<h2><?=$naziv?>  - izmjena podataka</h2>
@@ -176,6 +191,8 @@ if ($akcija =="podaci")
 	<?
 	
 	}
+	
+	
 //  ******************* dio koji se prikazuje kada se kreira nova anketa ******************************	
 else if ($_POST['akcija'] == "novi"){
 // TODO dodati provjeru naziva
@@ -195,7 +212,7 @@ else if ($_POST['akcija'] == "novi"){
 	<?
 	
 	
-// todo ubaciti anketu a zatim sa javascriptom prebaciti se na edit dio
+
 
 
 }	
@@ -215,6 +232,7 @@ else if ($_GET['akcija'] == "edit" ) {
 		$sta_je = $_REQUEST['obrisi'];
 		$pitanje = $_REQUEST['column_id'];
 		if ($sta_je){
+			// TO DO provjerit ima li odgovora na ti pitanje .. ako ima onemoguciti brisanje
 			print "Pitanje obrisano";
 			$q800=myquery("delete from pitanje where id = $pitanje");
 		}
@@ -222,10 +240,7 @@ else if ($_GET['akcija'] == "edit" ) {
 			
 			$tekst_pitanja = $_REQUEST['tekst_pitanja'];
 			$tip_pitanja= $_REQUEST['tip_pitanja'];
-			print "izmjenjeno pitanje pod rednim brojem : $pitanje";
-			print "<br> Nove vrijednosti:";
-			print "Tekst pitanja: $tekst_pitanja" ;
-			print "Tip pitanja : $tip_pitanja";	
+			
 			$q800=myquery("update pitanje set tip_id=$tip_pitanja,tekst= '$tekst_pitanja' where id = $pitanje");
 			
 		}
@@ -252,25 +267,24 @@ $id_pitanja=mysql_result($q891,0,0)+1;
 	
 	
 	$id=$_GET['anketa'];
+		
 		// Osnovni podaci
 	
-	$q201="select id,open_date,close_date,title,info from anketa where id=$id";
-    $result201 = mysql_query($q201);
+	$result201=myquery("select id,open_date,close_date,title,info,editable from anketa where id=$id");
+    //$result201 = mysql_query($q201);
 	
 	// broj pitanja
-	$q203="SELECT count(*) FROM pitanje WHERE anketa_id =$id";
-	$result203 = mysql_query($q203);
+	$result203=myquery("SELECT count(*) FROM pitanje WHERE anketa_id =$id");
+	//$result203 = mysql_query($q203);
 	$broj_pitanja= mysql_result($result203,0,0);
 	
 	//kupimo pitanja
-	$q202="SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =$id";
-    $result202 = mysql_query($q202);
-	//
-	//if (!($r201 = mysql_fetch_row($q201))) {
-		
-		//return;
-	//}
+	$result202=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =$id");
+    //$result202 = mysql_query($q202);
+	
+	
 	$naziv = mysql_result($result201,0,3);
+	$editable = mysql_result($result201,0,5);
 	//  opci podaci
 
 ?>
@@ -359,47 +373,61 @@ $id_pitanja=mysql_result($q891,0,0)+1;
 		print "<br/>";
 		print '<table width="800" border="0">';
 		print '<tr> <td  > Tekst pitanja </td> <td> Tip pitanja</td> <td> </td></tr>';
-		
-		$i=1;
-		while ($r202 = mysql_fetch_row($result202)) {
-			print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>
-					<tr> <td colspan='3'> <hr/> </td> </tr>";
-			print "<input type='hidden' name='subakcija' value='edit_pitanje'>";
-			print "<tr "; if ($i%2==0) print "bgcolor=\"#EEEEEE\""; print ">";
-			print "<input type='hidden' name='column_id' value='$r202[0]'>";
-			print  "<td>$i. <input name ='tekst_pitanja' size='75' value='$r202[1]'/> </td> <td> ". dropdown_anketa($r202[2]); 
-			print "</td><td><input type='submit' value='Posalji '><input type='submit' name='obrisi'  value='Obrisi '></td></tr> 
-			</form>";
 			
-			$i++;
-		}	
-			$q284=myquery("SELECT id, tekst,tip_id FROM pitanje");
-			$lista_pitanja="<select id = 'pitanja' name='pitanja' onChange=\"javascript:setVal();\">";
-			$Counter=0;
-			while ($r283=mysql_fetch_row($q284)) {
+		// da li se mogu dodavati nova pitanja ili mijenjati postojeca
+		if($editable == 0){
+				$i=1;
+				while ($r202 = mysql_fetch_row($result202)) {			
 					
-				$lista_pitanja.="<option value='$r283[0]'>$r283[1]</option>"; 
+					print  "<tr> <td colspan='3'> <hr/> </td> </tr>";
+					print "<tr "; if ($i%2==0) print "bgcolor=\"#EEEEEE\""; print ">";
+					print "<td colspan='2'>$i. $r202[1]  </td><td>$r202[2]  </td> </tr>";				
+					$i++;
+			}	
+		
+		}		
+		else{	
 				
-				$lista_pitanja.="<script>pitanje_array[$Counter]='$r283[1]'; tip_array[$Counter]=$r283[2]-1; </script>";
-				$Counter++;	
+				$i=1;
+				while ($r202 = mysql_fetch_row($result202)) {
+					print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>
+						<tr> <td colspan='3'> <hr/> </td> </tr>";
+					print "<input type='hidden' name='subakcija' value='edit_pitanje'>";
+					print "<tr "; if ($i%2==0) print "bgcolor=\"#EEEEEE\""; print ">";
+					print "<input type='hidden' name='column_id' value='$r202[0]'>";
+					print  "<td> <input name ='tekst_pitanja' size='100' value='$r202[1]'/> </td> <td> ". dropdown_anketa($r202[2]); 
+					print "</td><td><input type='submit' value='Posalji '><input type='submit' name='obrisi'  value='Obrisi '></td></tr> ";
+					print "</form>";
 					
-			}
-			$lista_pitanja.= "</select>";
-			//echo $lista_pitanja;
-			
-			print "<tr> <td colspan='3'> <hr/><br> </td> </tr>";
-			print "<tr > <td colspan='3'> Dodajte novo pitanje: </td> </tr>";
-			print "<tr > <td colspan='3'> Odaberite postojece pitanja: </td> </tr>";
-			print "<tr > <td colspan='3'> $lista_pitanja </td> </tr>";
-			print "<tr > <td colspan='3'> Novo pitanje: </td> </tr>";
-			print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>";
-			print "<input type='hidden' name='subakcija' value='novo_pitanje'>";
-			print "<tr >";  	
-			print  "<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='75' /> </td> <td> Tip:". dropdown_anketa(1); 
-			print "</td><td><input type='submit' value='Dodaj '><input type='reset'  value='Reset '></td></tr> 
-			</form>";
-		
-		
+					$i++;
+				}	
+					$q284=myquery("SELECT id, tekst,tip_id FROM pitanje");
+					$lista_pitanja="<select id = 'pitanja' name='pitanja' onChange=\"javascript:setVal();\">";
+					$Counter=0;
+					while ($r283=mysql_fetch_row($q284)) {
+							
+						$lista_pitanja.="<option value='$r283[0]'>$r283[1]</option>"; 
+						
+						$lista_pitanja.="<script>pitanje_array[$Counter]='$r283[1]'; tip_array[$Counter]=$r283[2]-1; </script>";
+						$Counter++;	
+							
+					}
+					$lista_pitanja.= "</select>";
+					
+					
+					print "<tr> <td colspan='3'> <hr/><br> </td> </tr>";
+					print "<tr > <td colspan='3'> Dodajte novo pitanje: </td> </tr>";
+					print "<tr > <td colspan='3'> Odaberite postojece pitanja: </td> </tr>";
+					print "<tr > <td colspan='3'> $lista_pitanja </td> </tr>";
+					print "<tr > <td colspan='3'> Novo pitanje: </td> </tr>";
+					print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>";
+					print "<input type='hidden' name='subakcija' value='novo_pitanje'>";
+					print "<tr >";  	
+					print  "<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='100' /> </td> <td> Tip:". dropdown_anketa(1); 
+					print "</td><td><input type='submit' value='Dodaj '><input type='reset'  value='Reset '></td></tr> 
+					</form>";
+				
+		}
 		
 		
 		
@@ -431,14 +459,13 @@ print "brisanje uspjesno";
 
 
 else {
-// DIO koji se pojavljuje na pocetku
-// TODO dodati linkova na izvjestaje 
+// DIO koji se pojavljuje na pocetku 
 ?>
 
 
 <center>
 
-<table width="500" border="0">
+<table width="600" border="0">
 		<tr>
         	<td align="left">
 				
@@ -448,16 +475,18 @@ else {
                 
                 </div>
                 <?
-				$q200=myquery("select id,open_date,close_date,title,info from anketa");
+				$q200=myquery("select id,open_date,close_date,title,info,aktivna from anketa");
 				print '<table width="100%" border="0">';
 				//$naziv = mysql_result($result200,0,4);
 				while ($r200 = mysql_fetch_row($q200)){
 					print "<tr><td> $r200[3] ";
+					if ($r200[5] == 1 ) print "&nbsp;(<span style='color:#FF0000'> aktivna </span>)";
 					print "</td><td align='right'><a href='".genuri()."&akcija=edit&anketa=$r200[0]'>
-							Detalji</a></td>
-							</td><td align='right'><a href='".genuri()."&akcija=brisi&anketa=$r200[0]'>
-							Obrisi</a></td>
-				       </tr>";
+							Detalji</a></td>";
+					
+					print "</td><td align='right'>";
+					if ($r200[5] == 0 )	 print "<a href='".genuri()."&akcija=podaci&anketa=$r200[0]&subakcija=aktivacija'>Aktiviraj</a>";
+				    print "</td></tr>";
 				}
 				print "</table>";
 					
@@ -560,8 +589,8 @@ else {
 							print "<tr><td>$i. $r301[1] ($r301[3])</td>\n";
 						else
 							print "<tr><td>$i. $r301[1] ($r301[3]) - $r301[2]</td>\n";
-						print "<td><a href= '?sta=izvjestaj/anketa&predmet=$r301[0]&rank=da'>Izvjestaj rank</a></td>\n";
-						print "<td><a href='?sta=izvjestaj/anketa&predmet=$r301[0]&komentar=da'>Izvjestaj komentari</a></td>\n";
+						print "<td align='right'><a href= '?sta=izvjestaj/anketa&predmet=$r301[0]&rank=da'>Izvjestaj rank</a></td>\n";
+						print "<td align='right' ><a href='?sta=izvjestaj/anketa&predmet=$r301[0]&komentar=da'>Izvjestaj komentari</a></td>\n";
 				
 						$i++;
 					}
@@ -573,19 +602,7 @@ else {
 				</table>
 			
               		
-                <p><h4> <a onClick="switch_poredjenje()">  >> Poredjenje rezultata </a></h4></p>
-                    
-                    
-                    <div id="poredjenje_1" style="display:none">
-                    
-                    <p> &nbsp; &nbsp;  -> <a href="?sta=izvjestaj/anketa_komparacija&tip=1">Usporedite jedan predmet za dvije akademske godine:</a></p>
-                    
-                    <p> &nbsp; &nbsp;	-> <a  href="?sta=izvjestaj/anketa_komparacija&tip=2">Usporedite dva predmeta:</a> </p>
-                                       	                   
-                    <p>&nbsp; &nbsp;  -> <a href="?sta=izvjestaj/anketa_komparacija&tip=3">Usporedite dva semestra:</a></p>
-                    
-                    </div>
-             	
+                
     
                          
              
