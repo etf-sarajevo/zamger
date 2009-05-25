@@ -42,7 +42,7 @@ $akcija = $_REQUEST['akcija'];
 $anketa = intval($_REQUEST['anketa']);
 $id = intval($_REQUEST['anketa']);
 
-// ako korinik želi da mijenja podatke vezane za anketu -- ime -- info -- datum pocetka i kraja
+// ako korinik želi da mijenja podatke vezane za anketu -- ime -- opis -- datum pocetka i kraja
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if ($akcija =="podaci")
 	{
@@ -50,7 +50,7 @@ if ($akcija =="podaci")
 	if ($_POST['subakcija']=="potvrda" ) {
 
 		$naziv = $_REQUEST['naziv'];
-		$info = $_REQUEST['info'];
+		$opis = $_REQUEST['opis'];
 		
 		$dan = intval($_POST['1day']);
 		$mjesec = intval($_POST['1month']);
@@ -89,8 +89,8 @@ if ($akcija =="podaci")
 		$mysqlvrijeme1 = time2mysql(mktime($sat,$minuta,$sekunda,$mjesec,$dan,$godina));
 		$mysqlvrijeme2 = time2mysql(mktime($sat2,$minuta2,$sekunda2,$mjesec2,$dan2,$godina2));
 		
-		$q395 = myquery("update anketa set title='$naziv', open_date='$mysqlvrijeme1', close_date='$mysqlvrijeme2',
-						  info='$info' where id=$anketa");
+		$q395 = myquery("update anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2',
+						  opis='$opis' where id=$anketa");
 		//$nesto= mysql_query($q395);
 		 // nivo 4 - audit
 		?>
@@ -114,7 +114,7 @@ if ($akcija =="podaci")
 	
 	}
 
-	$result401=myquery("select id,open_date,close_date,title,info from anketa where id=$id");
+	$result401=myquery("select id,datum_otvaranja,datum_zatvaranja,naziv,opis from anketa where id=$id");
     //$result401 = mysql_query($q401);
 	$naziv = mysql_result($result401,0,3);
 
@@ -174,10 +174,10 @@ if ($akcija =="podaci")
            
         <tr>
         	<td valign="top" align="right">
-				 Info : &nbsp; 
+				 opis : &nbsp; 
             </td>
             <td valign="top">
-            <b><b><textarea name="info" cols="30"  rows="15" class="default"><?=mysql_result($result401,0,4)?> </textarea></b><br/>
+            <b><b><textarea name="opis" cols="30"  rows="15" class="default"><?=mysql_result($result401,0,4)?> </textarea></b><br/>
 			</td>
         </tr>
         
@@ -201,8 +201,8 @@ else if ($_POST['akcija'] == "novi"){
 		print "Nova anketa.<br/><br/>";
 	
 		
-	$q393 = myquery("insert into anketa set title='$naziv'");
-	$q391 = myquery("select id from anketa where title='$naziv'");
+	$q393 = myquery("insert into anketa set naziv='$naziv'");
+	$q391 = myquery("select id from anketa where naziv='$naziv'");
 	$anketa = mysql_result($q391,0,0);
 
 	?>
@@ -270,7 +270,7 @@ $id_pitanja=mysql_result($q891,0,0)+1;
 		
 		// Osnovni podaci
 	
-	$result201=myquery("select id,open_date,close_date,title,info,editable from anketa where id=$id");
+	$result201=myquery("select id,datum_otvaranja,datum_zatvaranja,naziv,opis,editable from anketa where id=$id");
     //$result201 = mysql_query($q201);
 	
 	// broj pitanja
@@ -327,7 +327,7 @@ $id_pitanja=mysql_result($q891,0,0)+1;
            
         <tr>
         	<td valign="top" align="right">
-				 Info : &nbsp; 
+				 opis : &nbsp; 
             </td>
             <td valign="top">
             <b><b><?=mysql_result($result201,0,4)?></b><br/>
@@ -475,7 +475,7 @@ else {
                 
                 </div>
                 <?
-				$q200=myquery("select id,open_date,close_date,title,info,aktivna from anketa");
+				$q200=myquery("select id,datum_otvaranja,datum_zatvaranja,naziv,opis,aktivna from anketa");
 				print '<table width="100%" border="0">';
 				//$naziv = mysql_result($result200,0,4);
 				while ($r200 = mysql_fetch_row($q200)){
