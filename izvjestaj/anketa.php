@@ -90,8 +90,11 @@ if ($_REQUEST['komentar'] == "da")
 	
 	// ako je izvjestaj za rank pitanja
 
+	$result233=myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.id=$predmet ");
+	$naziv_predmeta = mysql_result($result233,0,0);
 
-	print "<h3>Sumarna statistika za rank pitanja</h3>\n";
+
+	print "<h2>Statistika za predmet $naziv_predmeta</h2>\n";
  
 	
     // Opste statistike (sumarno za predmet)
@@ -99,13 +102,13 @@ if ($_REQUEST['komentar'] == "da")
 
 	$q30 = myquery("select count(*) from rezultat where predmet_id=$predmet ");
 	$broj_anketa = mysql_result($q30,0,0);
-	print "<h2> Broj studenata koji su pristupili anketi je : $broj_anketa </h2>";
+	print "<h3> Broj studenata koji su pristupili anketi je : $broj_anketa </h3>";
 	
 	
-	// prvo vidjeti koliko je rank pitanja pa zatim toliko puta napraviit petlju 
+	 
 	// broj rank pitanja
 	$result203=myquery("SELECT id FROM pitanje WHERE anketa_id =8 and tip_id =1");
-	//$broj_rank_pitanja= mysql_result($result203,0,0);
+	
 	
 	$i = 0;
 	while ($r01 = mysql_fetch_row($result203)){
@@ -115,14 +118,14 @@ if ($_REQUEST['komentar'] == "da")
 					AND pitanje_id = $r01[0]");
 	
 		$prosjek[$i]=mysql_result($q60,0,0);
-		print " nn: $prosjek[$i] bb $r01[0]<br/>";
+		
 		$i++;
 	}
 	
 	
 	//kupimo pitanja
-	$q202="SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =8 and p.tip_id=1";
-    $result202 = mysql_query($q202);
+	$result202=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =8 and p.tip_id=1");
+   
 	
 	?>
     
@@ -134,6 +137,9 @@ if ($_REQUEST['komentar'] == "da")
 	<tr> 
         	<td colspan="2"> <hr/>  </td>
         </tr>
+          <tr > 
+             <td  > </td> <td bgcolor="#FF0000" width='350px'> &nbsp;MAX </td>
+         </tr>
     
     
 	<?
@@ -142,9 +148,9 @@ if ($_REQUEST['komentar'] == "da")
 			$procenat=($prosjek[$i]/5)*100;
 			print "<tr >";
 			print  "<td>".($i+1) .". $r202[1] </td> <td>    
-				<table border='1' width='350px'>
+				<table border='0' width='350px'>
     				<tr> 
-        				<td width='$procenat%'  bgcolor='#CCCCFF'>". round($prosjek[$i],2) ." </td> <td>  </td>
+        				<td width='$procenat%'  bgcolor='#CCCCFF'>". round($prosjek[$i],2) ." </td> <td width='".(100-$procenat)."%'> </td>
         			</tr>
       			</table> 
 			</td> 
@@ -152,7 +158,15 @@ if ($_REQUEST['komentar'] == "da")
 			
 			$i++;
 		}	
+		$prosjek = array_sum($prosjek)/sizeof($prosjek);
+
 	?>
+    <tr> 
+        	<td colspan="2"> <hr/>  </td>
+        </tr>
+          <tr > 
+             <td align="right"> Prosjek predmeta : </td> <td  width='350px'> &nbsp;<strong><?=round($prosjek,2)?> </strong> </td>
+         </tr>
     </table> 
     <?
 }

@@ -1,22 +1,39 @@
+<script type="text/javascript">
+function promjeniListu()
+{
+	studij = document.getElementById('studij').value;
+	if (studij !=1){
+		document.getElementById('pgs').style.display = 'none';
+		document.getElementById('ostalo').style.display = '';
+	}
+	else{
+		document.getElementById('pgs').style.display = '';
+		document.getElementById('ostalo').style.display = 'none';
+	}
+
+}
+</script>
 <?
+
 function izvjestaj_anketa_semestralni(){
 
-$predmet = intval($_REQUEST['predmet']);
-
-
+if ($_REQUEST['akcija']=="izvrsi"){
 	
-	// ako je izvjestaj za rank pitanja
-
-
+	$semestar = intval($_REQUEST['semestar']);
+	$ak_god = intval($_REQUEST['akademska_godina']);
+	$studij=intval($_REQUEST['studij']);
+	
+	print "$semestar  jj  $ak_god   $studij";
+	
+	
 	print "<h3>Sumarna statistika za rank pitanja</h3>\n";
- 
+ 	
+	
+	$q011 = myquery("select id from anketa where aktivna = 1");	
+	$id_ankete = mysql_result($q011,0,0);
 	
     // Opste statistike (sumarno za predmet)
 
-
-	
-	
-	
 	// prvo vidjeti koliko je rank pitanja pa zatim toliko puta napraviit petlju 
 	// broj rank pitanja
 	$q203="SELECT count(*) FROM pitanje WHERE anketa_id =8 and tip_id =1";
@@ -26,7 +43,8 @@ $predmet = intval($_REQUEST['predmet']);
 	
 	
 	//kupimo pitanja
-	
+	$predmeti;
+	$string_rezultata;
 	$result202=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =8 and p.tip_id=1");
 	
 	$l=0;
@@ -37,29 +55,24 @@ $predmet = intval($_REQUEST['predmet']);
 		
 			$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.predmet_id =$predmet[0]");
 			$prosjek[$l]=mysql_result($q6730,0,0);
+			$predmeti[$l] =$predmet[1] ;
 			
 			$l++;
 		
 		}
 	
+		
 	}
-	
-	
-	
-	
-	
-	
-    
 	
 	?>
     
-    <table  border="0" >
+    <table  border="0" align="center">
     	<tr> 
-        	<td bgcolor="#6699CC" width='350px'> Pitanje </td> <td  bgcolor="#6699CC" > Prosjek odgovora </td>
+        	<td bgcolor="#6699CC" width='350px'> Prikaz prosjeka odgovora po pitanjima za sve predmete </td>
         </tr>
        
 	<tr> 
-        	<td colspan="2"> <hr/>  </td>
+        	<td > <hr/>  </td>
         </tr>
     
     
@@ -71,44 +84,101 @@ $predmet = intval($_REQUEST['predmet']);
 	while ($r202 = mysql_fetch_row($result2077 	)) {
 			
 			print "<tr >";
-			print  "<td>".($i+1) .". $r202[1] </td> 
-			<td height='100'>    
-				<table border='0'  width='350'>
-    				<tr height='100'> ";
-					
-					$result2016=myquery("select pk.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet");
-					while ($r2016 = mysql_fetch_row($result2016)) {
-					$procenat=($prosjek[$i]/5)*100;
-					?>
-                    <td align="center" valign="bottom">
-					<table width="40" bgcolor='#CC445F' height="<?=$procenat?>%"  border="0"> 
-                    	
-                        <tr  >
-                         <td align="center" valign="bottom">
-                         	<?=$procenat?>%
-                         </td>
-                         </tr>
-                    	<tr  >
-                         <td align="center" valign="bottom">
-                         	<?=$r2016[1]?> 
-                         </td>
-                         </tr>
-                     </table>
-        				
-                        </td>
-        			<?
-					$i++;
-                    //print "<td >". round($prosjek[$i],2) ." </td> ";
-					}
-			print "</tr>
-      			</table> 
-			</td> 
+			print  "<td> <img src='izvjestaj/chart_semestralni.php?pitanje=$r202[0]'></td> 
+			
 			</tr>";
 			
+					
 		}	
 	?>
+    
     </table> 
     <?
+}
+	else{
+// to do dadati mozda i opciju da se bira i anketa a ne da se automatski uzima aktivna
+?>
+				
+				<form method="post" action>
+                    
+                    
+                    <table align="center">
+                    <tr>
+                    	<td colspan="2">
+                        <h3>Sumarna statistika za rank pitanja</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                    	<td>
+                	 	Odaberite  akademsku godinu  : 
+               			</td>
+						<td>
+                                <select name="akademska_godina">
+                                <?
+                                $q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
+                                while ($r295=mysql_fetch_row($q295)) {
+                                ?>
+                                    <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
+                                <?
+                                }
+                                ?></select><br/> 
+                        </td>
+                      </tr>
+                      <tr>
+                      	<td>
+                                Odaberite  studij  :
+               			</td>
+                        <td>
+					
+                                <select onchange="javascript:promjeniListu()" name="studij" id="studij">
+                                <?
+                                $q295 = myquery("select id,naziv from studij order by id");
+                                while ($r295=mysql_fetch_row($q295)) {
+                                ?>
+                                    <option value="<?=$r295[0]?>"><?=$r295[1]?></option>
+                                <?
+                                }
+                                ?></select><br/>
+                            </td>
+                        </tr>    
+                         <tr>
+                         	<td>       
+                    	 	Odaberite semestar :
+                            </td>
+                            <td>
+                            	<div id="pgs">
+                            	<select name="semestar" id="semestar">
+                                	<option value="1"> 1</option>
+                                  	<option value="2"> 2</option>
+                                </select>
+                                </div>
+                                <div id="ostalo" style="display:none">
+                            	<select name="semestar" id="semestar">
+                                	<option value="3"> 3</option>
+                                  	<option value="4"> 4</option>
+                                    <option value="5"> 5</option>
+                                  	<option value="6"> 6</option>
+                                </select>
+                                </div>
+                                
+                             </td>
+                           </tr>
+                           
+                           <tr>
+                           	<td colspan="2">
+                            		<input type="hidden" name="akcija" value="izvrsi">                                
+                                    <input size="100px" type="submit" value="Kreiraj izvjestaj">
+                            		
+                            </td>
+                            </tr>
+                       </table>
+                        
+               		</form>
+                    
+                    
+                   
 
+<?
+}
 }
 ?>
