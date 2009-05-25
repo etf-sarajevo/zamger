@@ -1,6 +1,6 @@
 <?php 
 // izbrisati one rezultete kod kojih je zavrsene postavljeno na N
-// $q600 = myquery("delete from rezultati where complete='N'");
+// $q600 = myquery("delete from rezultati where zavrsena='N'");
 
 // kod kreiranja anketa prilikom klika na ankete generisat id za rezultat i napraviti insert u tabelu rezultat 
 // sa vrijednostima ID predmeta i ID studeta a polje zavrsena ce automatski biti false
@@ -176,7 +176,7 @@ function public_anketa(){
 	
 	
 	// nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
-	$q600 = myquery("update rezultat set complete='Y' where id=$id_rezultata");
+	$q600 = myquery("update rezultat set zavrsena='Y' where id=$id_rezultata");
 	
 }
 
@@ -186,9 +186,9 @@ else if($_POST['akcija'] == "prikazi") {
 		// kupimo kod koji je student unio
 		$unique_hash_code = $_POST['kod'];
 		
-		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem COMPLETE
+		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem zavrsena
 		
-		$q590 = myquery("SELECT count( * ),id FROM rezultat WHERE osoba_id = '$unique_hash_code' AND complete = 'N'");
+		$q590 = myquery("SELECT count( * ),id FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N'");
 		$broj_rezultata =mysql_result($q590,0,0);
 		$id_rezultata =mysql_result($q590,0,1);
 		if($broj_rezultata==0){
