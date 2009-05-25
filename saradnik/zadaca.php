@@ -17,6 +17,7 @@
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 // v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
+// v4.0.9.5 (2009/05/25) + Upiti u prvom dijelu skripte su postali prekomplikovani, pa se potkrala greska da je odredjivana pogresna ponudakursa (ne ona koju student slusa nego neka random)
 
 
 
@@ -40,43 +41,48 @@ $zadaca=intval($_REQUEST['zadaca']);
 $zadatak=intval($_REQUEST['zadatak']);
 
 
+
 // Prava pristupa
+
 if (!$user_siteadmin) {
 	// Da li je nastavnik na predmetu?
-	$q10 = myquery("select pk.id, z.predmet, z.akademska_godina from nastavnik_predmet as np, zadaca as z, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = myquery("select count(*) from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and z.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
+	if (mysql_result($q10,0,0)<1) {
 		zamgerlog("privilegije (student u$stud_id zadaca z$zadaca)",3); // nivo 3: greska
 		niceerror("Nemate pravo izmjene ove zadaće");
 		return;
 	}
-	$ponudakursa = mysql_result($q10,0,0);
-	$predmet = mysql_result($q10,0,1);
-	$ag = mysql_result($q10,0,2);
 
 	// Ogranicenja (tabela: ogranicenje) ne provjeravamo jer bi to bilo prekomplikovano,
 	// a pitanje je da li ima smisla
 
-	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.predmet, z.naziv, z.zadataka, z.komponenta from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
-} else {
-	$q40 = myquery("select p.geshi, p.ekstenzija, z.attachment, pk.id, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina from zadaca as z, programskijezik as p, ponudakursa as pk where z.id=$zadaca and z.programskijezik=p.id and z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina");
-	$ponudakursa = mysql_result($q40,0,3);
-	$predmet = mysql_result($q40,0,7);
-	$ag = mysql_result($q40,0,8);
 }
 
-// Provjera spoofinga
 
-if (mysql_num_rows($q40)<1) {
+// Podaci o zadaci
+
+$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
+if (mysql_num_rows($q20)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
 	niceerror("Neispravna zadaća.");
 	exit;
 }
 
-if (mysql_result($q40,0,5)<$zadatak || $zadatak<1) {
+$jezik = mysql_result($q20,0,0);
+$ekst = mysql_result($q20,0,1);
+$attach = mysql_result($q20,0,2);
+$naziv_zadace = mysql_result($q20,0,3);
+$komponenta = mysql_result($q20,0,5);
+$predmet = mysql_result($q20,0,6);
+$ag = mysql_result($q20,0,7);
+
+
+if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
 	zamgerlog("pokusao pristupiti nepostojecem zadatku $zadatak u zadaci z$zadaca",3);
 	niceerror("Neispravan broj zadatka.");
 	exit;
 }
+
 
 
 // Podaci o studentu
@@ -88,17 +94,12 @@ if (mysql_num_rows($q50)<1) {
 	exit;
 }
 
-
-$jezik = mysql_result($q40,0,0);
-$ekst = mysql_result($q40,0,1);
-$attach = mysql_result($q40,0,2);
-$naziv_zadace = mysql_result($q40,0,4);
-$komponenta = mysql_result($q40,0,6);
-
 $ime_studenta = mysql_result($q50,0,0);
 $prezime_studenta = mysql_result($q50,0,1);
 
 $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$stud_id/";
+
+
 
 
 
@@ -219,7 +220,11 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 
 	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', userid=$userid");
 
-	update_komponente($stud_id, $ponudakursa, $komponenta);
+	// Odredjujemo ponudu kursa (za update komponente)
+	$q110 = myquery("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+
+	update_komponente($stud_id, mysql_result($q110,0,0), $komponenta);
+
 	zamgerlog("izmjena zadace (student u$stud_id zadaca z$zadaca zadatak $zadatak)",2);
 
 	// Nakon izmjene statusa, nastavljamo normalno sa prikazom zadatka
