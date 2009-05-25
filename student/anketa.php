@@ -59,9 +59,12 @@ function student_anketa() {
 <?
 // kreiramo novi slog u tabeli rezultat
 
-$q700="SELECT id FROM rezultat ORDER BY id desc limit 1";
-$result700 = mysql_query($q700);
-$id_rezultata =mysql_result($result700,0,0)+1;
+$result700=myquery("SELECT id FROM rezultat ORDER BY id desc limit 1");
+//$result700 = mysql_query($q700);
+if (mysql_num_rows($result700)==0) 
+	$id_rezultata=1;
+else
+	$id_rezultata =mysql_result($result700,0,0)+1;
 // prepraviti da tako da je i akademska godina u hashu
 $unique_hash_code = md5($userid.$predmet);
 // da li je vec taj slog u tabeli 
