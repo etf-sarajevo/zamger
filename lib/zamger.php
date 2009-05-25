@@ -475,10 +475,13 @@ function studentski_meni($fj) {
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag\">$r40[0]</a><br/>\n";
 			}
 			//anketa postaviti uslov za datum ili aktivnost
-			$q42 =  myquery("select id  from anketa a where a.aktivna=1 ");
-			if(mysql_num_rows($q42)>0)
-				$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
-
+			$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna = 1");
+			$rok=mysql_result($q42,0,0);
+			if (time () < $rok){
+				$q42b =  myquery("select id  from anketa a where a.aktivna=1 ");
+				if(mysql_num_rows($q42b)>0)
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
+				}
 
 		} else {
 			$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\"><img src=\"images/lijevo.png\" align=\"bottom\" border=\"0\"> $predmet_naziv</a><br/>\n";
