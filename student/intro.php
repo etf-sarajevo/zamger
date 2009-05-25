@@ -94,8 +94,8 @@ while ($r17 = mysql_fetch_row($q17)) {
 
 //anketa
 $q19a = myquery("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
-$q19b = myquery("select UNIX_TIMESTAMP(close_date) from anketa where aktivna = 1");
-$q19b_vrijeme=mysql_fetch_row($q19b);
+$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa where aktivna = 1");
+$q19b_vrijeme=mysql_result($q19b,0,0);
 
 while ($r19 = mysql_fetch_row($q19a)) {
 	if ($q19b_vrijeme < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
