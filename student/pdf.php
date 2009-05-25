@@ -9,6 +9,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/05/25) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 
 // TODO: koristiti tcpdf
 
@@ -28,15 +29,16 @@ if ($zadaca == 0) {
 }
 
 // Da li neko pokušava da spoofa zadaću?
-$q10 = myquery("SELECT pk.id FROM zadaca as z, student_predmet as sp, ponudakursa as pk
+$q10 = myquery("SELECT z.predmet, z.akademska_godina FROM zadaca as z, student_predmet as sp, ponudakursa as pk
 WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Ova zadaća nije iz vašeg predmeta!?");
 	return;
 }
-$predmet_id = mysql_result($q10,0,0);
+$predmet = mysql_result($q10,0,0);
+$ag = mysql_result($q10,0,1);
 
-$lokacijazadaca="$conf_files_path/zadace/$predmet_id/$userid/$zadaca/";
+$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/";
 
 
 // Podaci o zadaći
@@ -67,7 +69,7 @@ $brindexa = mysql_result($q30,0,2);
 
 // Labgrupa
 
-$q40 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl, ponudakursa as pk where sl.student=$userid and sl.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$predmet_id limit 1");
+$q40 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag limit 1");
 if (mysql_num_rows($q40)>0)
 	$labgrupa = mysql_result($q40,0,0);
 else
