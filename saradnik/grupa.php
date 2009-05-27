@@ -634,7 +634,6 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$q330 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
 		if (mysql_num_rows($q330)>0) {
 			$ocjena = mysql_result($q330,0,0);
-			$tip = mysql_result($q330,0,1);
 			$ispiti_ispis .= "<td id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
 			if (!in_array($k,$komponente) || $ocjena>$kmax[$k])
 				$kmax[$k]=$ocjena;
