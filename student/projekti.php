@@ -40,7 +40,7 @@ function student_projekti()
 		$predmetParams = getPredmetParams($predmet);
 	
 ?>
-
+<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
 <h2>Projekti</h2>
 <span class="notice">
 Nastavnik je definisao sljedece parametre svih projekata:
