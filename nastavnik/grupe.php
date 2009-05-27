@@ -97,7 +97,7 @@ if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 	// ispis svih studenata iz labgrupe
 	$q30 = myquery("select student from student_labgrupa where labgrupa=$grupaid");
 	while ($r30 = mysql_fetch_row($q30)) {
-		ispis_studenta_sa_labgrupe($r30[0],$predmet,$grupaid);
+		ispis_studenta_sa_labgrupe($r30[0],$grupaid);
 	}
 
 	// Sada mozemo obrisati casove jer je funkcija ispis_studenta... obrisala prisustvo
@@ -184,7 +184,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			// Ispis studenta sa svih grupa u kojima je trenutno
 			$q110 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa");
 			while ($r110 = mysql_fetch_row($q110)) {
-				ispis_studenta_sa_labgrupe($student,$predmet,$r110[0]);
+				ispis_studenta_sa_labgrupe($student,$r110[0]);
 			}
 
 			// Upis u novu grupu
@@ -252,7 +252,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				print "Ispis studenta '$prezime $ime' iz grupe '$r230[1]'<br/>\n";
 			} else {
-				ispis_studenta_sa_labgrupe($student,$predmet,$r230[0]);
+				ispis_studenta_sa_labgrupe($student,$r230[0]);
 			}
 		}
 

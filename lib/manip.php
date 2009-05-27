@@ -30,15 +30,14 @@
 // (prisustvo, komentari)
 // Ne zaboravite updatovati komponente ako treba (prisustvo je promijenjeno)!
 
-function ispis_studenta_sa_labgrupe($student,$predmet,$labgrupa) {
+function ispis_studenta_sa_labgrupe($student,$labgrupa) {
 	// Prisustvo
-	$q10 = myquery("select id from cas where predmet=$predmet and labgrupa=$labgrupa");
+	$q10 = myquery("select id from cas where labgrupa=$labgrupa");
 	while ($r10 = mysql_fetch_row($q10)) {
 		$q20 = myquery("delete from prisustvo where student=$student and cas=$r10[0]");
 	}
 	// Komentari
-	// FIXME ovo ne radi jer tabela komentar sada sadrzi ponudukursa koju ne znamo, a ubuduce ce sadrzavati samo labgrupu
-	// $q20 = myquery("delete from komentar where student=$student and predmet=$predmet and labgrupa=$labgrupa");
+	$q20 = myquery("delete from komentar where student=$student and labgrupa=$labgrupa");
 
 	// Ispis iz labgrupe
 	if ($labgrupa>0) $q30 = myquery("delete from student_labgrupa where student=$student and labgrupa=$labgrupa");
@@ -55,7 +54,7 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 	// Odredjivanje labgrupa ciji je student eventualno clan
 	$q40 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	while ($r40 = mysql_fetch_row($q40)) {
-		ispis_studenta_sa_labgrupe($student,$predmet,$r40[0]);
+		ispis_studenta_sa_labgrupe($student,$r40[0]);
 	}
 
 	// Ocjene na ispitima
