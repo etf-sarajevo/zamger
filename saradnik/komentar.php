@@ -102,7 +102,7 @@ if ($_GET['akcija'] == "obrisi") {
 
 // Spisak komentara
 
-$q70 = myquery("select k.id, a.ime, a.prezime, UNIX_TIMESTAMP(k.datum), k.komentar from komentar as k, osoba as a where k.student=$stud_id and k.labgrupa=$labgrupa and k.predmet=$ponudakursa and k.nastavnik=a.id");
+$q70 = myquery("select k.id, a.ime, a.prezime, UNIX_TIMESTAMP(k.datum), k.komentar from komentar as k, osoba as a where k.student=$stud_id and k.labgrupa=$labgrupa and k.nastavnik=a.id");
 
 if (mysql_num_rows($q70) < 1) {
 	print "<ul><li>Nijedan komentar nije unesen.</li></ul>\n";
