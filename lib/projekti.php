@@ -283,6 +283,16 @@ function isUserAuthorOfLink($link, $user)
 	return false;
 }
 
+function getAuthorOfLink($id)
+{
+	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT l.osoba FROM projekat_link l WHERE l.id='$id' LIMIT 1) LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
 function getLink($id)
 {
 	$result = myquery("SELECT * FROM projekat_link WHERE id='$id' LIMIT 1");
@@ -327,6 +337,17 @@ function isUserAuthorOfRSS($rss, $user)
 		return true;
 	return false;
 }
+function getAuthorOfRSS($id)
+{
+	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT r.osoba FROM projekat_rss r WHERE r.id='$id' LIMIT 1) LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
+
 
 function getRSS($id)
 {
@@ -649,8 +670,25 @@ function isUserAuthorOfPost($post, $user)
 	return false;
 }
 
+function fetchLatestPostsForProject($project, $limit)
+{
+	$result = myquery("SELECT p.*, pt.tekst FROM bb_post p, bb_post_text pt WHERE pt.post=p.id ORDER BY p.vrijeme DESC LIMIT 0, $limit ");
+	$list = array();
+	$i = 0;
+	while ($row = mysql_fetch_assoc($result))
+	{
+		$list[$i] = $row;
+		$list[$i][osoba] = getOsobaInfoForPost($list[$i][id]);
+		$i++;
+	}
+	
+	
+	
+	mysql_free_result($result);
+	
+	return $list;
 
-
+}
 
 
 /**********************
