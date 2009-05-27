@@ -36,6 +36,7 @@ function nastavnik_projekti()
 	}
 	
 	?>
+<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
 <h2>Projekti</h2>    
 	<?php	
 	
