@@ -377,9 +377,9 @@ while ($r195 = mysql_fetch_row($q195)) {
 
 // Zaglavlje zadaće
 
+$zad_id_array = array();
 $q205 = myquery("SELECT k.id, k.gui_naziv FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
 WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
-
 while ($r205 = mysql_fetch_row($q205)) {
 	$brzadaca = 0;
 	$zadace_zaglavlje = "";
@@ -405,6 +405,7 @@ while ($r205 = mysql_fetch_row($q205)) {
 // Zaglavlje fiksne komponente
 
 $fiksna_prolaz = array();
+$fiksna_id_array = array();
 $q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
 WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
 while ($r215 = mysql_fetch_row($q215)) {
