@@ -34,6 +34,7 @@
 
 // TODO: prva godina studija je hardkodirana u provjeri uslova za upis
 // TODO: popraviti odredjivanje uslova za upis na statusnom ekranu
+// TODO: dodati nova polja u tabeli student_studij u akciju "upis"
 
 
 function studentska_osobe() {
@@ -287,7 +288,7 @@ else if ($akcija == "upis") {
 	$trajanje=mysql_result($q540,0,0);
 	$naziv_studija=mysql_result($q540,0,1);
 	$tip_studija=mysql_result($q540,0,2);
-	if ($semestar>$trajanje) {
+	if ($semestar>$trajanje || ($semestar==1 && $ns==0)) {
 		// Da li je student svojevremeno na prijemnom odabrao drugi studij?
 		// TODO!
 
