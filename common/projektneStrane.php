@@ -59,7 +59,7 @@ function common_projektneStrane()
 	
 
 	?>  
-     <LINK href="css/projekti.css" rel="stylesheet" type="text/css"> 
+     
      <div class="links">
             <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix?>">Početna strana</a></li>
