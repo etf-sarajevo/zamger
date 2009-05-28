@@ -106,7 +106,7 @@ function nastavnik_projekti()
 <div class="links">
             <ul class="clearfix" style="margin-bottom: 10px;">
             <li><a href="<?php echo $linkPrefix . "&action=editProject&id=$project[id]" ?>">Uredi projekat</a></li>
-            <li<?php if ($params[zakljucani_projekti] == 0) echo 'class="last"' ?>><a href="<?php echo $linkPrefix . "&action=delProject&id=$project[id]" ?>">Obriši projekat</a></li>
+            <li <?php if ($params[zakljucani_projekti] == 0) echo 'class="last"' ?>><a href="<?php echo $linkPrefix . "&action=delProject&id=$project[id]" ?>">Obriši projekat</a></li>
      	<?php
 			if ($params[zakljucani_projekti] == 1)
 			{
