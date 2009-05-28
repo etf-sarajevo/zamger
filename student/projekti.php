@@ -32,6 +32,9 @@ function student_projekti()
 		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu student/projekti na predmetu p$predmet", 3);				
 		return;	
 	}
+?>
+<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+<?php
 	
 	
 	if (!isset($action))
@@ -40,7 +43,7 @@ function student_projekti()
 		$predmetParams = getPredmetParams($predmet);
 	
 ?>
-<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+
 <h2>Projekti</h2>
 <span class="notice">
 Nastavnik je definisao sljedece parametre svih projekata:
