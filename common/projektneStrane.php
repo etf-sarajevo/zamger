@@ -47,18 +47,19 @@ function common_projektneStrane()
 		return;
 	}
 	
-	
-	if ($user_student)
+
+	if ($user_student && !$user_siteadmin)
 		$linkPrefix = "?sta=student/projekti&action=page&projekat=$projekat&predmet=$predmet";
 	elseif ($user_nastavnik)
 		$linkPrefix = "?sta=nastavnik/projekti&action=page&projekat=$projekat&predmet=$predmet";
 	else
 		return;
-	
+
 	$conf_debug = 1;
 	
 
-	?>   
+	?>  
+     <LINK href="css/projekti.css" rel="stylesheet" type="text/css"> 
      <div class="links">
             <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix?>">Početna strana</a></li>
@@ -2555,7 +2556,7 @@ function formProcess_file($option)
 	if ($option == 'edit')
 	{
 		//diffing with textual files only
-		$lastRevisionFile = $lokacijafajlova .'/' . $lastRevisionEntry['filename'] . '/v' . $lastRevisionEntry['revizija'] . '/' . $lastRevisionEntry['filename'];
+		$lastRevisionFile = $lokacijafajlova . $lastRevisionEntry['filename'] . '/v' . $lastRevisionEntry['revizija'] . '/' . $lastRevisionEntry['filename'];
 		$newFile          = $uploadDir . $uploadFile;
 		
 		$extension = preg_replace('/.+(\..*)$/', '$1', $lastRevisionEntry['filename']);
@@ -2565,7 +2566,7 @@ function formProcess_file($option)
 
 		if (in_array($extension, $textExtensions)) 
 			$diffing = 1;
-		
+		//new dBug($diffing);
 		if ($diffing == 1)
 		{
 			//hope this will finish nicely...
@@ -2591,7 +2592,7 @@ function formProcess_file($option)
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;		
 	}
-
+	
 	return $errorText;
 	
 }
