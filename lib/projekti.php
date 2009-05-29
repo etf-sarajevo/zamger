@@ -1,5 +1,4 @@
 <?php
-require_once("lib/dBug.php");
 function fetchProjects($predmet)
 {
 	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' ORDER BY vrijeme DESC");
@@ -39,7 +38,7 @@ function applyForProject($userid, $project, $predmet)
 	if (areApplicationsLockedForPredmet($predmet))
 	{
 		$errorText = 'Zaključane su prijave na projekte. Prijave nisu dozvoljene.';
-		zamgerlog("student u$userid pokusao da se prijavi na projekat koji je zakljucan na predmetu p$predmet", 3);
+		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je zaključan na predmetu p$predmet", 3);
 		return $errorText;	
 	}
 	
@@ -63,14 +62,14 @@ function applyForProject($userid, $project, $predmet)
 	if ( $newTeamDeny == true )
 	{
 		$errorText = 'Limit timova dostignut. Nije moguće kreirati projektni tim. Prijavite se na drugi projekat.';
-		zamgerlog("student u$userid pokusao da se prijavi na projekat na predmetu p$predmet iako je limit za broj timova dostignut.", 3);
+		zamgerlog("student u$userid pokusao da se prijavi na projekat $project na predmetu p$predmet iako je limit za broj timova dostignut.", 3);
 		return $errorText;	
 	}
 	
 	if (isProjectFull($project, $predmet) == true)
 	{
 		$errorText = 'Projekat je popunjen. Nije moguće prijaviti se.';
-		zamgerlog("student u$userid pokusao da se prijavi na projekat koji je popunjen na predmetu p$predmet", 3);
+		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je popunjen na predmetu p$predmet", 3);
 		return $errorText;	
 	}
 	
@@ -86,7 +85,7 @@ function applyForProject($userid, $project, $predmet)
 	
 	if ($result == false)
 	{
-		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;	
 	}
 	
@@ -106,8 +105,8 @@ function getOutOfProject($userid, $predmet)
 	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet);
 	if (empty($actualProjectForUser))
 	{
-		$errorText = 'Doslo je do greske. Molimo kontaktirajte administratora.';
-		zamgerlog("student u$userid pokusao da se odjavi sa projekta na kojem nije bio prijavljen na predmetu p$predmet", 3);		
+		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
+		zamgerlog("student u$userid pokusao da se odjavi sa projekta iako nije ni bio prijavljen ni na jedan projekat na predmetu p$predmet", 3);		
 		return $errorText;
 	}
 	
@@ -117,7 +116,7 @@ function getOutOfProject($userid, $predmet)
 	
 	if ($result == false)
 	{
-		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;	
 	}
 	
