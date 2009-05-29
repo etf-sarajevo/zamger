@@ -17,7 +17,7 @@ function nastavnik_projekti()
 	if ($user_nastavnik == false)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti iako nije student", 3);		
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti iako nije nastavnik na predmetu p$predmet", 3);		
 		return;
 	}
 
@@ -183,12 +183,12 @@ function nastavnik_projekti()
 				<div id="formDiv">
 					Polja sa * su obavezna. <br />
                 	<div class="row">
-						<span class="label">Zakljucaj stanje projekata i timova</span>
+						<span class="label">Zaključaj stanje projekata i timova</span>
 						<span class="formw"><input name="lock" type="checkbox" id="lock" <?php 
 							if ($params['zakljucani_projekti'] == 1)
 								echo 'checked';
 						?> /></span> <br /><br />
-                        Ova opcija ce onemoguciti dalje prijavljivanje za projekte i pokrenuti projektne stranice.
+                        Ova opcija će onemogućiti dalje prijavljivanje za projekte i pokrenuti projektne stranice.
 					</div>
                     
 					<div class="row">
@@ -227,7 +227,7 @@ function nastavnik_projekti()
 				$errorText = formProcess_param();
 				if($errorText == '')
 				{
-					nicemessage('Uspjesno ste uredili parametre projekata.');
+					nicemessage('Uspješno ste uredili parametre projekata.');
 					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu p$_GET[predmet]", 2);		
 					$link = $linkPrefix;		
 				}
@@ -235,8 +235,7 @@ function nastavnik_projekti()
 				{	
 					//an error occured trying to process the form
 					niceerror($errorText);
-					$link = "javascript:history.back();";	
-					
+					$link = "javascript:history.back();";					
 				}
 				nicemessage('<a href="'. $link .'">Povratak.</a>');
 				
@@ -256,7 +255,7 @@ function nastavnik_projekti()
 			}
 			if ($params[zakljucani_projekti] == 1)
 			{
-				niceerror("Zaključali ste stanje sa projektima na ovom predmetu. Nije moguće napraviti novi projekat.");
+				niceerror("Zaključali ste stanje projekata na ovom predmetu. Nije moguće napraviti novi projekat.");
 				nicemessage('<a href="'. $linkPrefix .'&action=param">Parametri projekata</a>');
 				return;
 			}
@@ -298,7 +297,7 @@ function nastavnik_projekti()
 				$errorText = formProcess('add');
 				if($errorText == '')
 				{
-					nicemessage('Novi projekat uspjesno dodan.');
+					nicemessage('Novi projekat uspješno dodan.');
 					zamgerlog("korisnik u$userid dodao novi projekat na predmetu p$_GET[predmet]", 2);		
 
 					$link = $linkPrefix;			
@@ -357,8 +356,8 @@ function nastavnik_projekti()
 					$errorText = formProcess('edit');
 					if($errorText == '')
 					{
-						nicemessage('Uspjesno ste uredili projekat.');
-						zamgerlog("korisnik u$userid uspjesno uredio projekat na predmetu p$_GET[predmet]", 2);		
+						nicemessage('Uspješno ste uredili projekat.');
+						zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_GET[predmet]", 2);		
 
 						$link = $linkPrefix;									
 					}
@@ -472,7 +471,8 @@ function formProcess($option)
 	{
 		if (!insertProject($data))
 		{
-			$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
+			zamgerlog("greška prilikom unosa novog projekta u bazu(predmet p$predmet, korisnik u$userid)", 3);
 			return $errorText;		
 		}
 	
@@ -481,7 +481,8 @@ function formProcess($option)
 	{
 		if (!updateProject($data, $id))
 		{
-			$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
+			zamgerlog("greška prilikom update projekta $id u bazi(predmet p$predmet, korisnik u$userid)", 3);
 			return $errorText;		
 		}
 	
@@ -582,23 +583,32 @@ function deleteFilesForProject($id)
 		
 			$result = myquery($query);
 			if (mysql_affected_rows() == 0)
+			{
+				zamgerlog("greška prilikom brisanja fajla $item[id] iz baze(predmet p$predmet, korisnik u$userid)", 3);
 				return false;
-				
+			}	
 			$lokacijarevizije = "$conf_files_path/projekti/fajlovi/" . $item['projekat'] . '/' . $item['osoba'] . '/' . $item['filename'] . '/v' . $item['revizija'];
 			
 			if (!unlink($lokacijarevizije . '/' . $item[filename]))
+			{
+				zamgerlog("greška prilikom brisanja fajla $item[id] iz fajl sistema(predmet p$predmet, korisnik u$userid)", 3);
 				return false;	
+			}	
 			if (!rmdir($lokacijarevizije))
+			{
+				zamgerlog("greška prilikom brisanja direktorija fajla $item[id] iz fajl sistema(predmet p$predmet, korisnik u$userid)", 3);
 				return false;
-				
+			}	
 			//remove any diffs for this file
 			myquery("DELETE FROM projekat_file_diff WHERE file='" . $item[id] . "' LIMIT 1");
 		}
 		
 		$lokacijafajlova = "$conf_files_path/projekti/fajlovi/" . $list[0]['projekat'] . '/' . $list[0]['osoba'] . '/' . $list[0]['filename'];
 		if (!rmdir($lokacijafajlova))
+		{
+			zamgerlog("greška prilikom brisanja direktorija za projektne fajlove (predmet p$predmet, korisnik u$userid)", 3);
 			return false;
-		
+		}
 		return true;
 	
 	} //foreach allFiles
@@ -694,7 +704,8 @@ function formProcess_param()
 	
 	if (!replacePredmetParams($data, $predmet))
 	{
-		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
+		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
+		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat(predmet p$predmet, korisnik u$userid)", 3);
 		return $errorText;		
 	}
 
