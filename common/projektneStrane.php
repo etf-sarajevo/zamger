@@ -14,14 +14,14 @@ function common_projektneStrane()
 	if ($predmet <=0 || $projekat <=0)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/projektneStrane sa ID predmeta  ili ID projekta koji nije integer ili je <=0", 3);		
+		zamgerlog("korisnik u$userid pokušao pristupiti modulu common/projektneStrane sa ID predmeta  ili ID projekta koji nije integer ili je <=0", 3);		
 		return;
 	}
 	
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
 	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu common/projektneStrane na predmetu p$predmet", 3);				
+		zamgerlog("korisnik sa lošim ID koji nije integer ili je <=0 pokušao pristupiti modulu common/projektneStrane projekta $projekat na predmetu p$predmet", 3);				
 		return;	
 	}
 
@@ -31,7 +31,7 @@ function common_projektneStrane()
 		if ($actualProject[id] != $projekat)
 		{
 			//user is not in this project in this predmet...hijack attempt?
-			zamgerlog("korisnik u$userid pokusao pristupiti modulu common/projektneStrane i projektu na kojem nije prijavljen ID=$projekat na predmetu p$predmet", 3);				
+			zamgerlog("korisnik u$userid pokusao pristupiti modulu common/projektneStrane i projektu na kojem nije prijavljen $projekat na predmetu p$predmet", 3);				
 			return;	
 		}
 		
@@ -2566,13 +2566,11 @@ function formProcess_file($option)
 
 		if (in_array($extension, $textExtensions)) 
 			$diffing = 1;
-		//new dBug($diffing);
+		
 		if ($diffing == 1)
 		{
-			//hope this will finish nicely...
 			$diff = `/usr/bin/diff -u $lastRevisionFile $newFile`;
 		}	
-	
 		 
 	} //option == edit
 
