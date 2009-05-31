@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 // REGISTRY - baza komponenti ZAMGERa
 
@@ -12,15 +12,14 @@ $registry = array(
 # Sablon == 2 znaci da se ne prikazuje ni header
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
-array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
+
 
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/zadaca", "Slanje zadaće", "Slanje zadaće", "S", "1", "0"),
 array("student/pdf", "Prikaz zadaće u PDF formatu", "PDF", "S", "2", "0"),
 array("student/prosjeci", "Kalkulator prosjeka ocjena", "Kalkulator prosjeka", "S", "1", "0"),
-array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
-array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
+array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),
@@ -34,6 +33,7 @@ array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
 array("nastavnik/obavjestenja", "Obavještenja za studente", "Obavještenja", "N", "1", "0"),
 array("nastavnik/grupe", "Grupe za predavanja i vježbe", "Grupe", "N", "1", "0"),
 array("nastavnik/ispiti", "Unos rezultata ispita", "Ispiti", "N", "1", "0"),
+array("nastavnik/prijava_ispita", "Prijava ispita", "Prijava ispita", "N", "1", "0"),
 array("nastavnik/zadace", "Kreiranje i unos zadaća", "Zadaće", "N", "1", "0"),
 array("nastavnik/ocjena", "Konačna ocjena", "Konačna ocjena", "N", "1", "0"),
 array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
@@ -47,7 +47,6 @@ array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B
 array("studentska/izvjestaji", "Izvještaji o prolaznosti", "Izvještaji", "B", "1", "0"),
 array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0"),
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
-array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
@@ -66,34 +65,13 @@ array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodov
 array("izvjestaj/prijemni", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),
 array("izvjestaj/granicni", "Granični slučajevi", "Granični", "BA", "0", "0"),
 array("izvjestaj/genijalci", "Pregled studenata po prosjeku", "Prosjek", "BA", "0", "0"),
-array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistika predmeta", "NBA", "0", "0"),
-array("izvjestaj/historija", "Historija studenta", "Historija studenta", "BA", "0", "0"),
-array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
-array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
-array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "0", "0"),
 array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
-array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
-/************************************
- * Haris Agic
-*************************************/
-array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
-array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
-array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
-array("common/fileDownload", "Download projektnih fajlova", "Projektni fajlovi", "SNA", "2", "0"),
-array("common/articleImageDownload", "Slike projektnih clanaka", "Slike clanaka", "SNA", "2", "0"),
-/************************************
- * Haris Agic
-*************************************/
-array()
 
-);
-
-
-
+array());
 
 ?>
