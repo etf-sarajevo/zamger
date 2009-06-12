@@ -9,13 +9,13 @@ function student_projekti()
 	if ($predmet <=0)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
+		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
 		return;
 	}
 	if ($user_student == false)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu student/projekti iako nije student", 3);		
+		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti na predmetu p$predmet iako nije student", 3);		
 		return;
 	}
 
@@ -29,7 +29,7 @@ function student_projekti()
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
 	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu student/projekti na predmetu p$predmet", 3);				
+		zamgerlog("korisnik sa lošim ID koji nije integer ili je <=0 pokušao pristupiti modulu student/projekti na predmetu p$predmet", 3);				
 		return;	
 	}
 ?>
@@ -46,7 +46,7 @@ function student_projekti()
 
 <h2>Projekti</h2>
 <span class="notice">
-Nastavnik je definisao sljedece parametre svih projekata:
+Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
     <ul>
         <li>Broj timova: <?php
         	if ($predmetParams[min_timova] == $predmetParams[max_timova])
@@ -67,7 +67,7 @@ Nastavnik je definisao sljedece parametre svih projekata:
   	if ($predmetParams[zakljucani_projekti] == 1)
 		{
 ?>
-	<span class="notice">Onemogučene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
+	<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
 <?php
 		} //locked projects
 		else
@@ -217,7 +217,7 @@ Nastavnik je definisao sljedece parametre svih projekata:
 			$projekat = intval($_GET['projekat']);
 			if ($projekat <= 0)
 			{
-				zamgerlog("korisnik u$userid pokusao da se prijavi na projekat sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
+				zamgerlog("korisnik u$userid pokušao da se prijavi na projekat sa lošim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
 			}
 			$errorText = applyForProject($userid, $projekat, $predmet);
@@ -242,7 +242,7 @@ Nastavnik je definisao sljedece parametre svih projekata:
 			$projekat = intval($_GET['projekat']);
 			if ($projekat <= 0)
 			{
-				zamgerlog("korisnik u$userid pokusao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
+				zamgerlog("korisnik u$userid pokušao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
 			}
 			$errorText = getOutOfproject($userid, $predmet);
