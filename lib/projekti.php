@@ -295,7 +295,7 @@ START
 *********************/
 function fetchLinksForProject($id, $offset, $rowsPerPage)
 {
-	$result = myquery("SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY naziv ASC ");
+	$result = myquery("SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC ");
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
@@ -350,7 +350,7 @@ function getCountLinksForProject($id)
 
 function fetchRSSForProject($id, $offset, $rowsPerPage)
 {
-	$result = myquery("SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY naziv ASC");
+	$result = myquery("SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC");
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
@@ -482,6 +482,33 @@ function fetchFilesForProjectAllRevisions($id, $offset = 0, $rowsPerPage = 0)
 	}
 	return $files;	
 }
+function fetchFilesForProjectLatestRevisions($id, $offset = 0, $rowsPerPage = 0)
+{
+	$query = "SELECT * FROM projekat_file WHERE projekat='$id' AND file=0 ORDER BY vrijeme DESC ";
+	if ($offset == 0 && $rowsPerPage == 0)
+	{}
+	else
+		$query .="LIMIT $offset, $rowsPerPage";
+	
+	$result = myquery($query);
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list;
+}
+function getAuthorOfFile($id)
+{
+	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT f.osoba FROM projekat_file f WHERE f.id='$id' LIMIT 1) LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
+
 
 function isUserAuthorOfFile($file, $user)
 {
