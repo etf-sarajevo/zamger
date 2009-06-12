@@ -35,9 +35,10 @@ function common_articleImageDownload()
 	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $authorID . "/";
 	$filepath = $lokacijaclanaka  . $imageName;
 	
-	//$type = `file -bi '$filepath'`;
+	$type = `file -bi '$filepath'`;
 	
-	$type = 'application/octet-stream';
+	//$type = 'application/octet-stream';
+	
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
 	
