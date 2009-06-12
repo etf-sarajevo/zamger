@@ -132,11 +132,12 @@ span.noticeGreen
 {
 	display: block;
 	
-	width:930px;
+	width:935px;
 	
 	border: 1px solid red;
 	
 	padding: 5px;
+	margin-bottom: 7px;
 }
 span.noticeGreen
 {
@@ -246,6 +247,23 @@ div#file
 	margin-bottom: 20px;
 
 }
+.article_summary .imgCont a, 
+.article_full .imgCont a
+{
+	display: block;	
+	
+	margin-top: 5px;
+	
+	border: 1px solid white;
+	
+	overflow:hidden;
+}
+.article_summary .imgCont a:hover, 
+.article_full .imgCont a:hover
+{
+	border: 1px solid #c2c1c1;
+}
+
 .article_summary .imgCont, 
 .article_full .imgCont
 {
@@ -337,17 +355,12 @@ div#file
 
 	margin: 10px;
 	margin-top: 0;
-	margin-left: 0;
-	
-	overflow: auto;
-	
+	margin-left: 0;	
 }
 .article_full .imgCont img
 {
 	width: 400px;
 	height: auto;
-	
-	margin-top: 5px;
 }
 
 a#backLink:link, 
