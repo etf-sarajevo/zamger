@@ -37,8 +37,8 @@ function nastavnik_projekti()
 	
 	?>
 <LINK href="css/projekti.css" rel="stylesheet" type="text/css">
-<h2>Projekti</h2>    
-	<?php	
+<h2>Projekti</h2>
+<?php	
 	
 	$params = getPredmetParams($predmet);
 	if ($action!= 'page')
@@ -188,7 +188,7 @@ function nastavnik_projekti()
 							if ($params['zakljucani_projekti'] == 1)
 								echo 'checked';
 						?> /></span> <br /><br />
-                        Ova opcija će onemogućiti dalje prijavljivanje za projekte i pokrenuti projektne stranice.
+                        Ova opcija će onemogućiti prijavljivanje na projekte i pokrenuti projektne stranice.
 					</div>
                     
 					<div class="row">
@@ -201,11 +201,11 @@ function nastavnik_projekti()
 					</div>
                     
                     <div class="row">
-						<span class="label">MIN clanova tima *</span>
+						<span class="label">MIN članova tima *</span>
 						<span class="formw"><input name="min_clanova_tima" type="text" id="min_clanova_tima" size="10" value="<?php echo stripslashes(htmlentities($params['min_clanova_tima'], ENT_QUOTES))?>" /></span> 
 					</div>
                     <div class="row">
-						<span class="label">MAX clanova tima *</span>
+						<span class="label">MAX članova tima *</span>
 						<span class="formw"><input name="max_clanova_tima" type="text" id="max_clanova_tima" size="10" value="<?php echo stripslashes(htmlentities($params['max_clanova_tima'], ENT_QUOTES))?>" /></span> 
 					</div>
 
