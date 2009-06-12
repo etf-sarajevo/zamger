@@ -80,200 +80,283 @@ function common_projektneStrane()
 		//display project start page
 	?>
   	    <div id="mainWrapper" class="clearfix">
-
-            <div class="blockRow clearfix">
-            	 <div class="block" id="latestPosts">
-                    <a class="blockTitle" href="<?=$linkPrefix . "&section=bb" ?>" title="Grupa za diskusiju">Najnoviji postovi</a>
-                	<div class="items">
-                    <?php
-						$latestPosts = fetchLatestPostsForProject($project[id], 4);
-						foreach ($latestPosts as $post)
-						{
-					?>
-						<div class="item">
-                        	<span class="date"><?=date('d.m H:i  ', mysql2time($post[vrijeme])) ?></span>
-                        	<a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=$post[tema]#p$post[id]" ?>" title="<?=stripslashes(htmlentities($post['naslov'], ENT_QUOTES))?>" target="_blank"><?php
-							
-								$maxLen = 100;	
-								$len = strlen($post[naslov]);
-								
-								echo filtered_output_string(substr($post['naslov'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-							 ?></a>
-                        	<span class="author"> - <?=filtered_output_string($post[osoba][prezime] . ' ' . $post[osoba][ime]) ?></span>
-    						<div class="desc"><?php
-                            	$maxLen = 200;	
-								$len = strlen($post[tekst]);
-								
-								echo filtered_output_string(substr($post['tekst'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-
-						 ?></div><!--desc-->
-                        </div><!--item-->	
-					<?php
-						}
-						
-						
-						
-						
-					?>
+			<div id="leftBlocks">
+                <div class="blockRow clearfix">
+                     <div class="block" id="latestPosts">
+                        <a class="blockTitle" href="<?=$linkPrefix . "&section=bb" ?>" title="Grupa za diskusiju">Najnoviji postovi</a>
+                        <div class="items">
+                        <?php
+                            $latestPosts = fetchLatestPostsForProject($project[id], 4);
+                            foreach ($latestPosts as $post)
+                            {
+                            
+                        ?>
+                            <div class="item">
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($post[vrijeme])) ?></span>
+                                <a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=$post[tema]#p$post[id]" ?>" title="<?=stripslashes(htmlentities($post['naslov'], ENT_QUOTES))?>" target="_blank"><?php
+                                
+                                    $maxLen = 100;	
+                                    $len = strlen($post[naslov]);
+                                    
+                                    echo filtered_output_string(substr($post['naslov'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+                                 ?></a>
+                                <span class="author"> - <?=filtered_output_string($post[osoba][prezime] . ' ' . $post[osoba][ime]) ?></span>
+                                <div class="desc"><?php
+                                    $maxLen = 200;	
+                                    $len = strlen($post[tekst]);
+                                    
+                                    echo filtered_output_string(substr($post['tekst'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+    
+                             ?></div><!--desc-->
+                            </div><!--item-->	
+                        <?php
+                            }
+                            
+                            
+                            
+                            
+                        ?>
+                        
+                        
+                        </div><!--items-->
+                    </div><!--block-->
                     
                     
-                    </div><!--items-->
-                </div><!--block-->
+                </div><!--blockRow-->
                 
-                
-            </div><!--blockRow-->
-            
-            
-            <div class="blockRow clearfix">
-                <div class="block" id="latestLinks">
-                    <a class="blockTitle" href="<?=$linkPrefix . "&section=links" ?>" title="Korisni linkovi">Korisni linkovi</a>
-                    <div class="items">
-                   
-    <?php
-		//get latest entries
-		
-		$links = fetchLinksForProject($project[id], 0, 4);;
-		
-		foreach ($links as $link)
-		{
-						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
-						$scheme = parse_url($url);
-						$scheme  = $scheme['scheme'];
-					
-						if ($scheme == '') //only www part	
-							$url = 'http://' . $url;
-							
-						$maxLen = 150;	
-						$len = strlen($link[naziv]);
-						
-						
-						if ($len>$maxLen) 
-							echo '...';
-
-					
-					
-						$author = getAuthorOfLink($link[id]);					
-	?>
-    					<div class="item">
-                            <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
-							
-								$maxLen = 35;	
-								$len = strlen($link[naziv]);
-								
-								echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-							 ?></a>
-                        	<span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
-    <?php
-                        if ($link[opis] != '')
-                        {
-    ?>                   
-    						<div class="desc"><?php
-                            	$maxLen = 200;	
-								$len = strlen($link[opis]);
-								
-								echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-
-						 ?></div><!--desc-->
-    <?php                    
-                        }
+                <div class="blockRow clearfix">
+                     <div class="block" id="latestArticles">
+                        <a class="blockTitle" href="<?=$linkPrefix . "&section=bl" ?>" title="Članci">Najnoviji članci</a>
+                        <div class="items">
+                        <?php
+                            $latestArticles = fetchArticlesForProject($project[id], 0, 4);
+                            foreach ($latestArticles as $article)
+                            {
+                                $author = getAuthorOfArticle($article[id]);	
+                        ?>
+                            <div class="item">
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($article[vrijeme])) ?></span>
+                                <a href="<?=$linkPrefix . "&section=bl&subaction=view&id=$article[id]" ?>" title="<?=stripslashes(htmlentities($article['naslov'], ENT_QUOTES))?>" target="_blank"><?php
+                                
+                                    $maxLen = 100;	
+                                    $len = strlen($article[naslov]);
+                                    
+                                    echo filtered_output_string(substr($article['naslov'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+                                 ?></a>
+                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                                <div class="desc"><?php
+                                    $maxLen = 200;	
+                                    $len = strlen($article[tekst]);
+                                    
+                                    echo filtered_output_string(substr($article['tekst'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+    
+                             ?></div><!--desc-->
+                            </div><!--item-->	
+                        <?php
+                            }
+                                
+                        ?>
                         
-    ?>                 
-    					</div><!--item-->   		
-    <?php
-		
-		
-		} //foreach
-		
-		
-		
-	?>     
-                 	</div><!--items-->   
-                </div><!--block-->
-                <div class="vertSeparator"></div>
-                <div class="block" id="latestRSS">
-                    <a class="blockTitle" href="<?=$linkPrefix . "&section=rss" ?>" title="RSS feedovi">RSS feedovi</a>
-                    <div class="items">
-                   
-    <?php
-		//get latest entries
-		
-		$links = fetchRSSForProject($project[id], 0, 4);;
-		
-		foreach ($links as $link)
-		{
-						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
-						$scheme = parse_url($url);
-						$scheme  = $scheme['scheme'];
-					
-						if ($scheme == '') //only www part	
-							$url = 'http://' . $url;
-							
-						$maxLen = 150;	
-						$len = strlen($link[naziv]);
-						
-						
-						if ($len>$maxLen) 
-							echo '...';
-
-					
-					
-						$author = getAuthorOfRSS($link[id]);					
-	?>
-    					<div class="item">
-                            <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
-							
-								$maxLen = 35;	
-								$len = strlen($link[naziv]);
-								
-								echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-							 ?></a>
-                        	<span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
-    <?php
-                        if ($link[opis] != '')
-                        {
-    ?>                   
-    						<div class="desc"><?php
-                            	$maxLen = 200;	
-								$len = strlen($link[opis]);
-								
-								echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
-								if ($len>$maxLen) 
-									echo '...';
-
-						 ?></div><!--desc-->
-    <?php                    
-                        }
                         
-    ?>                 
-    					</div><!--item-->   		
-    <?php
-		
-		
-		} //foreach
-		
-		
-		
-	?>     
-                 	</div><!--items-->   
-                </div><!--block-->
-  
-        	</div><!--blockRow-->
+                        </div><!--items-->
+                    </div><!--block-->
+                    
+                    
+                </div><!--blockRow-->
+
+            </div><!--leftBlocks-->
+            <div id="rightBlocks" class="clearfix">
+            	<div class="blockRow">
+                    <div class="block" id="latestLinks">
+                        <a class="blockTitle" href="<?=$linkPrefix . "&section=links" ?>" title="Korisni linkovi">Korisni linkovi</a>
+                        <div class="items">
+                       
+        <?php
+            //get latest entries
             
-        </div><!--mainWrapper-->  
-        
-        
-        
-        
+            $links = fetchLinksForProject($project[id], 0, 4);;
+            
+            foreach ($links as $link)
+            {
+                            $url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+                            $scheme = parse_url($url);
+                            $scheme  = $scheme['scheme'];
+                        
+                            if ($scheme == '') //only www part	
+                                $url = 'http://' . $url;
+                                
+                            $maxLen = 150;	
+                            $len = strlen($link[naziv]);
+                            
+                            
+                            if ($len>$maxLen) 
+                                echo '...';
+    
+                        
+                        
+                            $author = getAuthorOfLink($link[id]);					
+        ?>
+                            <div class="item">
+                                <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
+                                
+                                    $maxLen = 35;	
+                                    $len = strlen($link[naziv]);
+                                    
+                                    echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+                                 ?></a>
+                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+        <?php
+                            if ($link[opis] != '')
+                            {
+        ?>                   
+                                <div class="desc"><?php
+                                    $maxLen = 200;	
+                                    $len = strlen($link[opis]);
+                                    
+                                    echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+    
+                             ?></div><!--desc-->
+        <?php                    
+                            }
+                            
+        ?>                 
+                            </div><!--item-->   		
+        <?php
+            
+            
+            } //foreach
+            
+            
+            
+        ?>     
+                        </div><!--items-->   
+                    </div><!--block--> 
+				</div><!--blockRow-->            
+            	<div class="blockRow">
+                    <div class="block" id="latestRSS">
+                        <a class="blockTitle" href="<?=$linkPrefix . "&section=rss" ?>" title="RSS feedovi">RSS feedovi</a>
+                        <div class="items">
+                       
+        <?php
+            //get latest entries
+            
+            $links = fetchRSSForProject($project[id], 0, 4);;
+            
+            foreach ($links as $link)
+            {
+                            $url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+                            $scheme = parse_url($url);
+                            $scheme  = $scheme['scheme'];
+                        
+                            if ($scheme == '') //only www part	
+                                $url = 'http://' . $url;
+                                
+                            $maxLen = 150;	
+                            $len = strlen($link[naziv]);
+                            
+                            
+                            if ($len>$maxLen) 
+                                echo '...';
+    
+                        
+                        
+                            $author = getAuthorOfRSS($link[id]);					
+        ?>
+                            <div class="item">
+                                <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
+                                
+                                    $maxLen = 35;	
+                                    $len = strlen($link[naziv]);
+                                    
+                                    echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+                                 ?></a>
+                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+        <?php
+                            if ($link[opis] != '')
+                            {
+        ?>                   
+                                <div class="desc"><?php
+                                    $maxLen = 200;	
+                                    $len = strlen($link[opis]);
+                                    
+                                    echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+    
+                             ?></div><!--desc-->
+        <?php                    
+                            }
+                            
+        ?>                 
+                            </div><!--item-->   		
+        <?php
+            
+            
+            } //foreach
+            
+            
+            
+        ?>     
+                        </div><!--items-->   
+                    </div><!--block-->
+                </div><!--blockRow-->  
+            	<div class="blockRow">
+                    <div class="block" id="latestFiles">
+                        <a class="blockTitle" href="<?=$linkPrefix . "&section=file" ?>" title="Fajlovi">Fajlovi</a>
+                        <div class="items">
+                       
+        <?php
+            //get latest entries
+            
+            $files = fetchFilesForProjectLatestRevisions($project[id], 0, 4);;
+            
+            foreach ($files as $file)
+            {
+			
+                            $author = getAuthorOfFile($file[id]);					
+        ?>
+                            <div class="item">
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($file[vrijeme])) ?></span>
+                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&projekat=$projekat&id=$file[id]" ?>" title="<?=stripslashes(htmlentities($file['filename'], ENT_QUOTES))?>" target="_blank"><?php
+                                
+                                    $maxLen = 100;	
+                                    $len = strlen($file[filename]);
+                                    
+                                    echo filtered_output_string(substr($file['filename'], 0, $maxLen-1));
+                                    if ($len>$maxLen) 
+                                        echo '...';
+                                 ?></a>
+                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                               
+                            </div><!--item-->	
+        <?php
+            
+            
+            } //foreach
+            
+            
+            
+        ?>     
+                        </div><!--items-->   
+                    </div><!--block-->
+                </div><!--blockRow-->            
+                          
+            </div><!--rightBlocks-->
+        </div><!--mainWrapper-->    
     <?php
 	
 	} //section not set

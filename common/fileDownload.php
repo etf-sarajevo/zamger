@@ -56,13 +56,6 @@ function common_fileDownload()
 	}
 	exit();
 
-	
-	
-	
-	
-
-
-
 }
 
 
