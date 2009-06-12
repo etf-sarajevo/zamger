@@ -59,7 +59,7 @@ function common_projektneStrane()
 	
 
 	?>  
-     
+     <h2><?=filtered_output_string($project[naziv]) ?></h2>
      <div class="links">
             <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix?>">Početna strana</a></li>
@@ -79,7 +79,6 @@ function common_projektneStrane()
 	{
 		//display project start page
 	?>
-   		<h2><?=filtered_output_string($project[naziv]) ?></h2>
   	    <div id="mainWrapper" class="clearfix">
 
             <div class="blockRow clearfix">
@@ -385,10 +384,17 @@ function common_projektneStrane()
 	?><a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
     </td>
   </tr>
+ <?php
+ 						if ($link['opis'] != '')
+						{
+ ?>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
     <td width="700" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
   </tr>
+  <?php
+  						} //opis
+  ?>
 </table>
     <?php
 				} //foreach link
@@ -464,8 +470,8 @@ function common_projektneStrane()
 						$errorText = formProcess_links('add');
 						if($errorText == '')
 						{
-							nicemessage('Novi link uspjesno dodan.');
-							zamgerlog("korisnik u$userid uspjesno dodao novi link na projektu ID=$projekat na predmetu p$predmet", 2);				
+							nicemessage('Novi link uspješno dodan.');
+							zamgerlog("korisnik u$userid uspješno dodao novi link na projektu ID=$projekat na predmetu p$predmet", 2);				
 							$link = $linkPrefix;			
 						}
 						else
@@ -530,8 +536,8 @@ function common_projektneStrane()
 							$errorText = formProcess_links('edit');
 							if($errorText == '')
 							{
-								nicemessage('Uspjesno ste uredili link.');
-								zamgerlog("korisnik u$userid uspjesno uredio link na projektu ID=$projekat na predmetu p$predmet", 2);				
+								nicemessage('Uspješno ste uredili link.');
+								zamgerlog("korisnik u$userid uspješno uredio link na projektu ID=$projekat na predmetu p$predmet", 2);				
 								$link = $linkPrefix;									
 							}
 							else
@@ -569,8 +575,8 @@ function common_projektneStrane()
 								//delete the record
 								if (deleteLink($id))
 								{
-									nicemessage('Uspjesno ste obrisali link.');	
-									zamgerlog("korisnik u$userid uspjesno obrisao link na projektu ID=$projekat na predmetu p$predmet", 2);				
+									nicemessage('Uspješno ste obrisali link.');	
+									zamgerlog("korisnik u$userid uspješno obrisao link na projektu ID=$projekat na predmetu p$predmet", 2);				
 									$link = $linkPrefix;		
 								}
 								else
@@ -650,10 +656,17 @@ function common_projektneStrane()
 	?><a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
     </td>
   </tr>
+ <?php
+ 						if ($link['opis'] != '')
+						{
+ ?>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
     <td width="700" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
   </tr>
+ <?php
+ 						} //opis
+ ?>
 </table>
     <?php
 				} //foreach link
@@ -729,8 +742,8 @@ function common_projektneStrane()
 						$errorText = formProcess_rss('add');
 						if($errorText == '')
 						{
-							nicemessage('Novi RSS feed uspjesno dodan.');
-							zamgerlog("korisnik u$userid uspjesno dodao novi rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
+							nicemessage('Novi RSS feed uspješno dodan.');
+							zamgerlog("korisnik u$userid uspješno dodao novi rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
 							$link = $linkPrefix;			
 						}
 						else
@@ -794,8 +807,8 @@ function common_projektneStrane()
 							$errorText = formProcess_rss('edit');
 							if($errorText == '')
 							{
-								nicemessage('Uspjesno ste uredili RSS feed.');
-								zamgerlog("korisnik u$userid uspjesno uredio rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
+								nicemessage('Uspješno ste uredili RSS feed.');
+								zamgerlog("korisnik u$userid uspješno uredio rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
 								$link = $linkPrefix;									
 							}
 							else
@@ -833,8 +846,8 @@ function common_projektneStrane()
 								//delete the record
 								if (deleteRSS($id))
 								{
-									nicemessage('Uspjesno ste obrisali RSS feed.');	
-									zamgerlog("korisnik u$userid uspjesno obrisao rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
+									nicemessage('Uspješno ste obrisali RSS feed.');	
+									zamgerlog("korisnik u$userid uspješno obrisao rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
 									$link = $linkPrefix;		
 								}
 								else
@@ -892,7 +905,9 @@ function common_projektneStrane()
 		{
 	?>
     	<div class="imgCont">
-    		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
+        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
+        	</a>
         </div>
 	<?php
 		}
@@ -1010,7 +1025,11 @@ function common_projektneStrane()
 					if (!empty($article[slika]))
 					{
 		?>
-			<div class="imgCont"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" /></div>
+			<div class="imgCont">
+            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
+                </a>     
+            </div>
 	  <?php
 					}
 		?>
@@ -1072,7 +1091,7 @@ function common_projektneStrane()
 						if($errorText == '')
 						{
 							nicemessage('Novi članak uspješno dodan.');
-							zamgerlog("korisnik u$userid uspjesno dodao novi clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
+							zamgerlog("korisnik u$userid uspješno dodao novi clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
 							$link = $linkPrefix;			
 						}
 						else
@@ -1162,7 +1181,7 @@ function common_projektneStrane()
 							if($errorText == '')
 							{
 								nicemessage('Uspješno ste uredili članak.');
-								zamgerlog("korisnik u$userid uspjesno uredio clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
+								zamgerlog("korisnik u$userid uspješno uredio clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
 								$link = $linkPrefix;									
 							}
 							else
@@ -1200,8 +1219,8 @@ function common_projektneStrane()
 								//delete the record
 								if (deleteArticle($id))
 								{
-									nicemessage('Uspjesno ste obrisali članak.');	
-									zamgerlog("korisnik u$userid uspjesno obrisao clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
+									nicemessage('Uspješno ste obrisali članak.');	
+									zamgerlog("korisnik u$userid uspješno obrisao clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
 									$link = $linkPrefix;		
 								}
 								else
@@ -1382,8 +1401,8 @@ function common_projektneStrane()
 						$errorText = formProcess_file('add');
 						if($errorText == '')
 						{
-							nicemessage('Novi fajl uspjesno dodan.');
-							zamgerlog("korisnik u$userid uspjesno dodao novi fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
+							nicemessage('Novi fajl uspješno dodan.');
+							zamgerlog("korisnik u$userid uspješno dodao novi fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
 							$link = $linkPrefix;			
 						}
 						else
@@ -1449,8 +1468,8 @@ function common_projektneStrane()
 							$errorText = formProcess_file('edit');
 							if($errorText == '')
 							{
-								nicemessage('Uspjesno ste uredili fajl.');
-								zamgerlog("korisnik u$userid uspjesno uredio fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
+								nicemessage('Uspješno ste uredili fajl.');
+								zamgerlog("korisnik u$userid uspješno uredio fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
 								$link = $linkPrefix;									
 							}
 							else
@@ -1491,8 +1510,8 @@ function common_projektneStrane()
 								//delete the record
 								if (deleteFile($id))
 								{
-									nicemessage('Uspjesno ste obrisali fajl.');	
-									zamgerlog("korisnik u$userid uspjesno obrisao fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
+									nicemessage('Uspješno ste obrisali fajl.');	
+									zamgerlog("korisnik u$userid uspješno obrisao fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
 									$link = $linkPrefix;		
 								}
 								else
@@ -1733,12 +1752,12 @@ function common_projektneStrane()
 							if ($thread == true)
 							{
 								nicemessage('Novi odgovor uspješno dodan.');
-								zamgerlog("korisnik u$userid uspjesno dodao novi ogvoro na diskusiju (ID=$threadID) na projektu ID=$projekat na predmetu p$predmet", 2);			
+								zamgerlog("korisnik u$userid uspješno dodao novi ogvoro na diskusiju (ID=$threadID) na projektu ID=$projekat na predmetu p$predmet", 2);			
 							}
 							else
 							{
 								nicemessage('Nova tema uspješno dodana.');
-								zamgerlog("korisnik u$userid uspjesno dodao novu temu diskusije na projektu ID=$projekat na predmetu p$predmet", 2);
+								zamgerlog("korisnik u$userid uspješno dodao novu temu diskusije na projektu ID=$projekat na predmetu p$predmet", 2);
 							}
 								
 							if (!empty($_GET[tid]))				
@@ -1818,7 +1837,7 @@ function common_projektneStrane()
 							if($errorText == '')
 							{
 								nicemessage('Uspješno ste uredili post.');
-								zamgerlog("korisnik u$userid uspjesno uredio vlastiti BB post ID=$id na projektu ID=$projekat na predmetu p$predmet", 2);				
+								zamgerlog("korisnik u$userid uspješno uredio vlastiti BB post ID=$id na projektu ID=$projekat na predmetu p$predmet", 2);				
 								$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";									
 							}
 							else
@@ -1865,8 +1884,8 @@ function common_projektneStrane()
 								//delete the record
 								if (deletePost($id))
 								{
-									nicemessage('Uspjesno ste obrisali post.');	
-									zamgerlog("korisnik u$userid uspjesno obrisao post na projektu ID=$projekat na predmetu p$predmet", 2);				
+									nicemessage('Uspješno ste obrisali post.');	
+									zamgerlog("korisnik u$userid uspješno obrisao post na projektu ID=$projekat na predmetu p$predmet", 2);				
 									if (getCountPostsInThread($threadID) > 0)
 										$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";	
 									else
