@@ -524,12 +524,6 @@ function updateProject($data, $id)
 
 function deleteProject($id)
 {
-	$query = sprintf("DELETE FROM projekat WHERE id='%d' LIMIT 1", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-	
 	//delete all data bound to this project
 	deleteArticlesForProject($id);
 	deleteFilesForProject($id);
@@ -537,6 +531,12 @@ function deleteProject($id)
 	deleteRssForProject($id);
 	deleteForumForProject($id);
 	deleteStudentsForProject($id);
+	
+	$query = sprintf("DELETE FROM projekat WHERE id='%d' LIMIT 1", 
+					intval($id)
+					);
+	
+	$result = myquery($query);
 	
 	return ( $result == false ) ? false : true;
 }
@@ -546,18 +546,13 @@ function deleteArticlesForProject($id)
 	//bl_clanak	
 	
 	global $conf_files_path;
+	$lokacijaclanaka ="$conf_files_path/projekti/clanci/";
 	
-	$list = fetchArticlesForProject($id);
-	
-	foreach ($list as $item)
+	if (!rmdir_recursive($lokacijaclanaka . $id)) //delete all article files - images for this project
 	{
-		if ($item['slika'] != '')
-		{
-			$lokacijaclanaka ="$conf_files_path/projekti/clanci/" . $item['projekat'] . '/' . $item['osoba'] . '/';
-			unlink($lokacijaclanaka . $item['slika']);
-		}
+		zamgerlog("greška prilikom brisanja direktorija clanci za projekat ID=$id iz fajl sistema", 3);
+		return false;	
 	}
-	
 	
 	$query = sprintf("DELETE FROM bl_clanak WHERE projekat='%d'", 
 					intval($id)
@@ -565,12 +560,13 @@ function deleteArticlesForProject($id)
 	
 	$result = myquery($query);
 }
+
 function deleteFilesForProject($id)
 {
 	//projekat_file
 	
 	global $conf_files_path;
-	
+	/*
 	$allFiles = fetchFilesForProjectAllRevisions($id);
 	foreach ($allFiles as $list)
 	{
@@ -612,6 +608,16 @@ function deleteFilesForProject($id)
 		return true;
 	
 	} //foreach allFiles
+	
+	*/
+	
+	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/";
+	
+	if (!rmdir_recursive($lokacijafajlova . $id))
+	{
+		zamgerlog("greška prilikom brisanja direktorija fajlovi za projekat ID=$id iz fajl sistema", 3);
+		return false;	
+	}
 		
 }
 
