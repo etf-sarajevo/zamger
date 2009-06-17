@@ -132,7 +132,7 @@ span.noticeGreen
 {
 	display: block;
 	
-	width:935px;
+	/*width:935px;*/
 	
 	border: 1px solid red;
 	
@@ -175,7 +175,7 @@ div.links ul li.last
 div.links ul li a
 {
 	display: block;
-	padding: 9px 12px;
+	padding: 9px 10px;
 	
 	font-weight:normal;
 	font-size: 1.2em;
@@ -240,7 +240,7 @@ div#file
 .article_summary, 
 .article_full
 {
-	width: 930px;
+	width: 736px;
 	
 	padding:0;
 	margin:0;
@@ -498,16 +498,31 @@ a#backLink:hover
 
 #mainWrapper
 {
-	width: 930px;
+	width: 736px;
 }
+#mainWrapper #leftBlocks
+{
+	float: left;
+	width: 420px;
+}
+#mainWrapper #rightBlocks
+{
+	margin-left: 435px;
+}
+
 #mainWrapper .blockRow
+{	
+	margin-bottom: 15px;
+}
+
+#mainWrapper #leftBlocks .blockRow
 {
 	float: left;
 	
-	margin-bottom: 25px;
 	clear: both;
 }
-#mainWrapper .blockRow .block
+
+#mainWrapper #leftBlocks .blockRow .block
 {
 	float: left;	
 }
@@ -527,52 +542,62 @@ a#backLink:hover
 	
 	margin: 15px 15px 20px 15px;
 }
-#mainWrapper .blockRow #latestLinks, 
-#mainWrapper .blockRow #latestRSS
-
-{
-	width: 350px;
+#mainWrapper #rightBlocks .blockRow #latestLinks, 
+#mainWrapper #rightBlocks .blockRow #latestRSS,
+#mainWrapper #rightBlocks .blockRow #latestFiles
+{	
+	background-color:#F2F2F2;
 	
-	background-color:#F2F2F2;
+	overflow:auto;
 }
-#mainWrapper .blockRow #latestPosts
+#mainWrapper #leftBlocks .blockRow #latestPosts,
+#mainWrapper #leftBlocks .blockRow #latestArticles
 {
-	width: 715px;
-	background-color:#F2F2F2;
+	background-color:#F4F4F4;
 }
 
-#mainWrapper .blockRow #latestLinks .items, 
-#mainWrapper .blockRow #latestRSS .items, 
-#mainWrapper .blockRow #latestPosts .items
+#mainWrapper #rightBlocks .blockRow #latestLinks .items, 
+#mainWrapper #rightBlocks .blockRow #latestRSS .items, 
+#mainWrapper #rightBlocks .blockRow #latestFiles .items, 
+#mainWrapper #leftBlocks .blockRow #latestPosts .items,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items
 {
 	margin: 15px;
 	margin-top: 0;
 }
-#mainWrapper .blockRow #latestLinks .items .item, 
-#mainWrapper .blockRow #latestRSS .items .item
-#mainWrapper .blockRow #latestPosts .items .item
+#mainWrapper #rightBlocks .blockRow #latestLinks .items .item, 
+#mainWrapper #rightBlocks .blockRow #latestRSS .items .item,
+#mainWrapper #rightBlocks .blockRow #latestFiles .items .item,
+#mainWrapper #leftBlocks .blockRow #latestPosts .items .item,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items .item
 {
-	margin-bottom: 7px;
+	margin-bottom: 10px;
 }
-#mainWrapper .blockRow #latestLinks .items .item a, 
-#mainWrapper .blockRow #latestRSS .items .item a, 
-#mainWrapper .blockRow #latestPosts .items .item a
+#mainWrapper #rightBlocks .blockRow #latestLinks .items .item a, 
+#mainWrapper #rightBlocks .blockRow #latestRSS .items .item a, 
+#mainWrapper #rightBlocks .blockRow #latestFiles .items .item a, 
+#mainWrapper #leftBlocks .blockRow #latestPosts .items .item a,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items .item a
 {
 	font-size: 1.2em;
 }
-#mainWrapper .blockRow #latestPosts .items .item .date
+#mainWrapper #leftBlocks .blockRow #latestPosts .items .item .date,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items .item .date,
+#mainWrapper #rightBlocks .blockRow #latestFiles .items .item .date
 {
 	color:#006F00;
 }
-#mainWrapper .blockRow #latestLinks .items .item .author, 
-#mainWrapper .blockRow #latestRSS .items .item .author, 
-#mainWrapper .blockRow #latestPosts .items .item .author
+#mainWrapper #rightBlocks .blockRow #latestLinks .items .item .author, 
+#mainWrapper #rightBlocks .blockRow #latestRSS .items .item .author, 
+#mainWrapper #leftBlocks .blockRow #latestPosts .items .item .author,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items .item .author
 {
 	
 }
-#mainWrapper .blockRow #latestLinks .items .item .desc, 
-#mainWrapper .blockRow #latestRSS .items .item .desc, 
-#mainWrapper .blockRow #latestPosts .items .item .desc
+#mainWrapper #rightBlocks .blockRow #latestLinks .items .item .desc, 
+#mainWrapper #rightBlocks .blockRow #latestRSS .items .item .desc, 
+#mainWrapper #leftBlocks .blockRow #latestPosts .items .item .desc,
+#mainWrapper #leftBlocks .blockRow #latestArticles .items .item .desc
 {
 	margin-top: 5px;
 	margin-left: 5px;
@@ -581,10 +606,4 @@ a#backLink:hover
 	
 	border-left: 1px solid #c2c1c1;
 }
-
-
-
-
-
-
 
