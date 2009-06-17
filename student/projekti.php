@@ -171,11 +171,11 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 <table class="projekti" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">Naziv</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($project['naziv'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($project['naziv'])?></td>
   </tr>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Prijavljeni tim / student</th>
-    <td width="700" align="left" valign="top">
+    <td width="490" align="left" valign="top">
     	<?php
 			if (empty($members))
 				echo 'Nema prijavljenih studenata.';
@@ -201,7 +201,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
   </tr>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($project['opis'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($project['opis'])?></td>
   </tr>
 </table>
 
