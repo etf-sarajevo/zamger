@@ -107,25 +107,82 @@ textarea
 	color: gray;
 }
 
-.file_leading
+.files_table
 {
-	font-size: 1.1em;
+	width: 736px;
 	
-	margin-bottom: 7px;
+	margin:0;
+	padding:0;
+	
+	text-align:left;
+	
+	border:1px solid #c2c1c1;
+	border-collapse:collapse;
 }
-.link
+.files_table td, 
+.files_table th
 {
-	cursor: pointer;
-	color:#003399;
+	border:1px solid #c2c1c1;
+	border-collapse:collapse;
 }
-
-.file_revisions
+.files_table th
 {
-	padding-left: 20px;
-	border-left: 1px solid #c2c1c1;
+	font-size: 0.75em;
+	
+	padding: 7px 6px;
+	
+	background-color: #EEEEEE;
+	
+	cursor:default;
+}
+.files_table .creation_date
+{
+	width: 20%;
+}
+.files_table .revision
+{
+	width: 7%;
+}
+.files_table .name
+{
+	width: 45%;
+}
+.files_table .filesize
+{
+	width: 10%;
+}
+.files_table .options
+{
+	width: 18%;
+}
+.files_table td.options a
+{
+	display: inline-block;
+	*display: inline;
+	*zoom: 1;
+	
+	padding: 4px 5px;	
+}
+.files_table td
+{
+	padding: 6px 8px;
+	
+	font-size:0.7em;
+}
+.files_table td.options
+{
+	padding:0;
+}
+.files_table td.revision,
+.files_table td.filesize
+{
+	text-align: center;
 }
 
-
+.files_table tr#file_revisions
+{
+	background-color:#F7F7F7;
+}
 
 span.notice, 
 span.noticeGreen
@@ -133,11 +190,16 @@ span.noticeGreen
 	display: block;
 	
 	/*width:935px;*/
-	
+	width: 726px;
 	border: 1px solid red;
 	
 	padding: 5px;
 	margin-bottom: 7px;
+}
+* html span.notice, 
+* html span.noticeGreen
+{
+	*width: 736px;
 }
 span.noticeGreen
 {
@@ -203,38 +265,33 @@ h3
 
 div#link ul, 
 div#rss ul, 
-div#bl ul, 
-div#file ul
+div#bl ul
 {
 	margin-bottom: 15px;
 }
-
+ul
+{
+	margin-left: 0;
+}
 div#link ul li, 
 div#rss ul li, 
-div#bl ul li, 
-div#file ul li
+div#bl ul li
 {	
 	border: 0;
 	border-left: 1px solid #c2c1c1;
 }
 div#link ul li a, 
 div#rss ul li a, 
-div#bl ul li a, 
-div#file ul li a
+div#bl ul li a
 {
 	padding: 4px 5px;
 }
 
 div#link, 
 div#bl, 
-div#rss, 
-div#file
+div#rss
 {
 	margin-bottom: 12px;
-}
-div#file
-{
-	margin-bottom: 6px;
 }
 
 .article_summary, 
@@ -516,16 +573,19 @@ a#backLink:hover
 }
 
 #mainWrapper #leftBlocks .blockRow
-{
-	float: left;
-	
+{	
 	clear: both;
 }
-
 #mainWrapper #leftBlocks .blockRow .block
 {
-	float: left;	
+	display: inline-block;
 }
+
+* html #mainWrapper .blockRow .block
+{
+	*zoom: 1;
+}
+
 #mainWrapper .blockRow .vertSeparator
 {
 	float: left;
