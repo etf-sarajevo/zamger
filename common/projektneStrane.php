@@ -371,11 +371,11 @@ function common_projektneStrane()
 <table class="projekti" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">Naziv</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($project['naziv'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($project['naziv'])?></td>
   </tr>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Prijavljeni studenti</th>
-    <td width="700" align="left" valign="top">
+    <td width="490" align="left" valign="top">
     	<?php
 			if (empty($members))
 				echo 'Nema prijavljenih studenata.';
@@ -401,7 +401,7 @@ function common_projektneStrane()
   </tr>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($project['opis'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($project['opis'])?></td>
   </tr>
 </table>
     
@@ -454,7 +454,7 @@ function common_projektneStrane()
 <table class="linkovi" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">URL</th>
-    <td width="700" align="left" valign="top">
+    <td width="490" align="left" valign="top">
     <?php
 						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
 						$scheme = parse_url($url);
@@ -473,7 +473,7 @@ function common_projektneStrane()
  ?>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
   </tr>
   <?php
   						} //opis
@@ -722,11 +722,10 @@ function common_projektneStrane()
 	<?php
 					} //if user is author of this item
 	?>
-
 <table class="rss" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">URL</th>
-    <td width="700" align="left" valign="top">
+    <td width="490" align="left" valign="top">
     <?php
 						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
 						$scheme = parse_url($url);
@@ -745,7 +744,7 @@ function common_projektneStrane()
  ?>
   <tr>
     <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="700" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
+    <td width="490" align="left" valign="top"><?=filtered_output_string($link['opis'])?></td>
   </tr>
  <?php
  						} //opis
@@ -1352,59 +1351,92 @@ function common_projektneStrane()
 				
 				//display files for this project, with links to edit and delete
 				$files = fetchFilesForProjectAllRevisions($project[id], $offset, $rowsPerPage);
-
+	?>
+<table class="files_table" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <th scope="col" class="creation_date">Datum kreiranja</th>
+    <th scope="col" class="revision">Revizija</th>
+    <th scope="col" class="name">Naziv</th>
+    <th scope="col" class="filesize">Veličina</th>
+    <th scope="col" class="options">Opcije</th>
+  </tr>
+	<?php
 				foreach ($files as $file)
 				{
-					$lastRevisionId = count($file)-1;
+					$lastRevisionId = 0;
+	?>				
+    <tr>
+    	<td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($file[$lastRevisionId][vrijeme]))?></td><!--vrijeme-->
+        <td class="revision">v<?=$file[$lastRevisionId][revizija] ?></td><!--revizija-->
+        <td class="filename"><?php 
+					if (count($file) > 1)
+					{
+	?>
+		<a href="#" onclick="toggleFileRevisions('file_<?=$file[$lastRevisionId][id] ?>_revisions')"><?=filtered_output_string($file[$lastRevisionId][filename]) ?></a>		
+   	<?php
+    				}
+					else
+					{
+	?>
+    	<?=filtered_output_string($file[$lastRevisionId][filename]) ?>
+    <?php						
+					}
 					
+    ?>        </td><!--filename-->
+        <td class="filesize"><?php
+        	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $file[$lastRevisionId][osoba] . "/" . 
+			$file[$lastRevisionId][filename] . '/v' . $file[$lastRevisionId][revizija] . '/';
+			$filepath = $lokacijafajlova . $file[$lastRevisionId][filename];
+			$filesize = filesize($filepath);
+			echo nicesize($filesize);
+			?>        </td><!--filesize-->
+        <td class="options">
+			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>" target="_blank">Snimi</a>        
+	<?php
 					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
 					{
 	?>
-<div class="links clearfix" id="file">
-    <ul>
-        <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $file[$lastRevisionId]['id'] ?>">Uredi</a></li>
-        <li><a href="<?php echo $linkPrefix . "&subaction=del&id=" . $file[$lastRevisionId]['id']?>">Briši</a></li>
-    </ul>   
-</div>	
+           <a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $file[$lastRevisionId]['id'] ?>">Uredi</a>
+           <a href="<?php echo $linkPrefix . "&subaction=del&id=" . $file[$lastRevisionId]['id']?>">Briši</a>
 	<?php
 					} //if user is author of this item
-	?>
-    <div class="file_leading<?php if (count($file) > 1) echo ' link' ?>">
-    <?php if (count($file) > 1)
-	{
-	?>
-		<a href="#" onclick="toggleFileRevisions('file_<?=$file[0][id] ?>_revisions')"> + </a>
-   	<?php
-    }
-    ?>    
-    	<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $file[0][id] ?>" target="_blank"><?=filtered_output_string($file[0][filename]) ?></a>
-    </div><!--file_leading-->
+
+		?>        </td><!--options-->
+    </tr><!--file_leading-->
     <?php
-		if (count($file) > 1)
-		{
+					if (count($file) > 1)
+					{
+						
+						for ($i = 1; $i < count($file); $i++)
+						{	
+							$revision = $file[$i];
 	?>
-    <div class="file_revisions" id="file_<?=$file[0]['id'] ?>_revisions" style="display: none;">
-	<?php
-					for ($i = 1; $i < count($file); $i++)
-					{	
-						$revision = $file[$i];
-	?>
-        <div class="file_revision">
-        	<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $revision[id] ?>" target="_blank">
-            	<?='v' . $revision[revizija] ?>&nbsp;&nbsp;
-				<?=filtered_output_string($revision[filename]) ?>
-            </a>
-        </div><!--file_revision-->	
+            <tr class="file_<?=$file[$lastRevisionId][id] ?>_revisions" style="display: none;" id="file_revisions">
+                <td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($revision[vrijeme]))?></td><!--vrijeme-->
+                <td class="revision">v<?=$revision[revizija] ?></td><!--revizija-->
+                <td class="filename"><?=filtered_output_string($revision[filename]) ?></td><!--filename-->
+                <td class="filesize"><?php
+                    $lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $revision[osoba] . "/" . 
+                    $revision[filename] . '/v' . $revision[revizija] . '/';
+                    $filepath = $lokacijafajlova . $revision[filename];
+                    $filesize = filesize($filepath);
+                    echo nicesize($filesize);
+                    ?>
+                </td><!--filesize-->
+                <td class="options">
+                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $revision[id] ?>" target="_blank">Snimi</a>        
+                </td><!--options-->
+            </tr><!--file_revision-->	
     <?php					
-					} //foreach revision
-	?>
-    </div><!--file_revisions-->
-    <?php
-		} //if count files > 1
-	?>
-		
-	<?php
+						} //foreach revision
+
+					} //if count files > 1
+
 				} //foreach file
+	?>
+    </table>
+<!--files_table-->
+<?php
 				$numrows = getCountFilesForProjectWithoutRevisions($project[id]);
 							
 				$maxPage = ceil($numrows/$rowsPerPage);
@@ -1435,13 +1467,31 @@ function common_projektneStrane()
 				
 	?>
     <script type="text/javascript">
+		function getElementsByClassName( strClassName, obj ) 
+		{
+			var ar = arguments[2] || new Array();
+			var re = new RegExp("\\b" + strClassName + "\\b", "g");
+		
+			if ( re.test(obj.className) ) 
+			{
+				ar.push( obj );
+			}
+			for ( var i = 0; i < obj.childNodes.length; i++ )
+				getElementsByClassName( strClassName, obj.childNodes[i], ar );
+			
+			return ar;
+		}
+		
 		function toggleFileRevisions(divID)
 		{
-			wrap = document.getElementById(divID);
-			if (wrap.style.display == 'block')
-				wrap.style.display = 'none';
-			else
-				wrap.style.display = 'block';		
+			 var aryClassElements = getElementsByClassName( divID, document.body );
+			for ( var i = 0; i < aryClassElements.length; i++ ) 
+			{
+				if (aryClassElements[i].style.display == '')
+					aryClassElements[i].style.display = 'none';
+				else
+					aryClassElements[i].style.display = '';	
+			}
 		}
 	
 	</script>
