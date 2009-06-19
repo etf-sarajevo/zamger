@@ -318,6 +318,23 @@ CREATE TABLE IF NOT EXISTS `log` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `mjesto`
+--
+
+CREATE TABLE IF NOT EXISTS `mjesto` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(40) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=79 ;
+
+--
+-- Dumping data for table `log`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `nacin_studiranja`
 --
 
