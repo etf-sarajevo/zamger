@@ -9,6 +9,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/05) + Slanje poruke studentu da je zahtjev prihvacen / odbijen i komentar
 // v4.0.0.2 (2009/04/20) + Broj indexa ne mora biti integer :(
+// v4.0.9.1 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
 
 
 function studentska_intro() {
@@ -41,10 +42,10 @@ function promjena($nominativ, $u, $iz) {
 if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
-		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='$r100[4]', datum_rodjenja='$r100[5]', mjesto_rodjenja='$r100[6]', drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', telefon='$r100[10]', kanton=".intval($r100[11])." where id=".intval($r100[0]));
-		$vrijeme_zahtjeva=$r100[12];
+		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='$r100[4]', datum_rodjenja='$r100[5]', mjesto_rodjenja=$r100[6], drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', adresa_mjesto=$r100[10], telefon='$r100[11]', kanton=".intval($r100[12])." where id=".intval($r100[0]));
+		$vrijeme_zahtjeva=$r100[13];
 	}
 	$q120 = myquery("delete from promjena_podataka where id=$id");
 	zamgerlog("prihvacen zahtjev za promjenu podataka korisnika u$osoba", 4);
@@ -87,32 +88,67 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 
 if ($_GET['akcija'] == "zahtjev") {
 	$id = intval($_REQUEST['id']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.telefon, pp.kanton, o.ime, o.prezime, o.email, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.telefon, o.kanton from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, o.ime, o.prezime, o.email, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
 	if (mysql_num_rows($q100)<1) {
 		niceerror("Nepoznat ID zahtjeva $id.");
 		zamgerlog("nepoznat id zahtjeva za promjenu podataka $id", 3);
 		return;
 	}
-	
+
+
 	?>
-	<p>Korisnik <b><?=mysql_result($q100,0,12)?> <?=mysql_result($q100,0,13)?></b> zatražio je sljedeće izmjene svojih ličnih podataka:
+	<p>Korisnik <b><?=mysql_result($q100,0,13)?> <?=mysql_result($q100,0,14)?></b> zatražio je sljedeće izmjene svojih ličnih podataka:
 	<ul>
 	<?
-	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,12));
-	promjena("prezime", mysql_result($q100,0,2), mysql_result($q100,0,13));
-	promjena("kontakt e-mail adresa", mysql_result($q100,0,3), mysql_result($q100,0,14));
-	promjena("broj indexa", mysql_result($q100,0,4), mysql_result($q100,0,15));
-	promjena("datum rođenja", date("d. m. Y.", mysql_result($q100,0,5)), date("d. m. Y.", mysql_result($q100,0,16)));
-	promjena("mjesto rođenja", mysql_result($q100,0,6), mysql_result($q100,0,17));
-	promjena("državljanstvo", mysql_result($q100,0,7), mysql_result($q100,0,18));
-	promjena("JMBG", mysql_result($q100,0,8), mysql_result($q100,0,19));
-	promjena("adresa", mysql_result($q100,0,9), mysql_result($q100,0,20));
-	promjena("telefon", mysql_result($q100,0,10), mysql_result($q100,0,21));
+	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,13));
+	promjena("prezime", mysql_result($q100,0,2), mysql_result($q100,0,14));
+	promjena("kontakt e-mail adresa", mysql_result($q100,0,3), mysql_result($q100,0,15));
+	promjena("broj indexa", mysql_result($q100,0,4), mysql_result($q100,0,16));
+	promjena("datum rođenja", date("d. m. Y.", mysql_result($q100,0,5)), date("d. m. Y.", mysql_result($q100,0,17)));
 
-	if (mysql_result($q100,0,11) != mysql_result($q100,0,22)) {
-		$q110 = myquery("select naziv from kanton where id=".mysql_result($q100,0,11));
-		$q112 = myquery("select naziv from kanton where id=".mysql_result($q100,0,22));
-		promjena("kanton", mysql_result($q110,0,0), mysql_result($q112,0,0));
+	// Mjesto rodjenja
+	$staromj=mysql_result($q100,0,6); $novomj=mysql_result($q100,0,18);
+	if ($staromj!=$novomj) {
+		if ($staromj != 0) {
+			$q101 = myquery("select naziv from mjesto where id=$staromj");
+			$staromj = mysql_result($q101,0,0);
+		}
+		if ($novomj != 0) {
+			$q102 = myquery("select naziv from mjesto where id=$novomj");
+			$novomj = mysql_result($q102,0,0);
+		}
+		promjena("mjesto rođenja", $staromj, $novomj);
+	}
+
+	promjena("državljanstvo", mysql_result($q100,0,7), mysql_result($q100,0,19));
+	promjena("JMBG", mysql_result($q100,0,8), mysql_result($q100,0,20));
+
+	// Adresa
+	$staraadr = mysql_result($q100,0,9); $novaadr = mysql_result($q100,0,21);
+	$said = mysql_result($q100,0,10); $naid = mysql_result($q100,0,22);
+	if ($said != 0) {
+		$q103 = myquery("select naziv from mjesto where id=$said");
+		$staraadr .= ", ".mysql_result($q103,0,0);
+	}
+	if ($naid != 0) {
+		$q103 = myquery("select naziv from mjesto where id=$naid");
+		$novaadr .= ", ".mysql_result($q103,0,0);
+	}
+	promjena("adresa", $staraadr, $novaadr);
+
+	promjena("telefon", mysql_result($q100,0,11), mysql_result($q100,0,23));
+
+	$starikanton = mysql_result($q100,0,12); $novikanton = mysql_result($q100,0,24);
+	if ($starikanton != $novikanton) {
+		if ($starikanton != 0) {
+			$q110 = myquery("select naziv from kanton where id=$starikanton");
+			$starikanton = mysql_result($q110,0,0);
+		}
+		if ($novikanton != 0) {
+			$q112 = myquery("select naziv from kanton where id=$novikanton");
+			$novikanton = mysql_result($q112,0,0);
+		}
+		promjena("kanton", $starikanton, $novikanton);
 	}
 
 	?>

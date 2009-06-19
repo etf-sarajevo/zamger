@@ -8,6 +8,7 @@
 // v3.9.1.3 (2008/10/15) + Dodan format datuma
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/05) + Dodan logging; sakrij broj indexa korisnicima koji nisu studenti; prikazi informaciju ako je vec poslan zahtjev; ne radi nista ako korisnik nije napravio promjenu
+// v4.0.9.1 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
 
 
 function common_profil() {
@@ -28,6 +29,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 	$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
 	$drzavljanstvo = my_escape($_REQUEST['drzavljanstvo']);
 	$adresa = my_escape($_REQUEST['adresa']);
+	$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
 	$telefon = my_escape($_REQUEST['telefon']);
 	$email = my_escape($_REQUEST['email']);
 	$kanton = intval($_REQUEST['_lv_column_kanton']);
@@ -42,9 +44,31 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		$dan="00"; $mjesec="00"; $godina="0000";
 	}
 
+	// Mjesto
+	$mjrid=0;
+	if ($mjesto_rodjenja != "") {
+		$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+		if (mysql_num_rows($q1)<1) {
+			$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja'");
+			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+		}
+		$mjrid = mysql_result($q1,0,0);
+	}
+
+	$admid=0;
+	if ($adresa_mjesto != "") {
+		$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
+		if (mysql_num_rows($q3)<1) {
+			$q4 = myquery("insert into mjesto set naziv='$adresa_mjesto'");
+			$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
+		}
+		$admid = mysql_result($q3,0,0);
+	}
+
+
 	// Da li je uopste bilo promjene?
-	$q05 = myquery("select ime, prezime, email, brindexa, datum_rodjenja, mjesto_rodjenja, drzavljanstvo, jmbg, adresa, telefon, kanton from osoba where id=$userid");
-	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$email && mysql_result($q05,0,3)==$brindexa && mysql_result($q05,0,4)=="$godina-$mjesec-$dan" && mysql_result($q05,0,5)==$mjesto_rodjenja && mysql_result($q05,0,6)==$drzavljanstvo && mysql_result($q05,0,7)==$jmbg && mysql_result($q05,0,8)==$adresa && mysql_result($q05,0,9)==$telefon && mysql_result($q05,0,10)==$kanton) {
+	$q05 = myquery("select ime, prezime, email, brindexa, datum_rodjenja, mjesto_rodjenja, drzavljanstvo, jmbg, adresa, adresa_mjesto, telefon, kanton from osoba where id=$userid");
+	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$email && mysql_result($q05,0,3)==$brindexa && mysql_result($q05,0,4)=="$godina-$mjesec-$dan" && mysql_result($q05,0,5)==$mjrid && mysql_result($q05,0,6)==$drzavljanstvo && mysql_result($q05,0,7)==$jmbg && mysql_result($q05,0,8)==$adresa && mysql_result($q05,0,9)==$admid && mysql_result($q05,0,10)==$telefon && mysql_result($q05,0,11)==$kanton) {
 		?><p><b>Ništa nije promijenjeno?</b><br>
 		Podaci koje ste unijeli ne razlikuju se od podataka koje već imamo u bazi. Zahtjev za promjenu neće biti poslan.</p><?
 		return;
@@ -58,19 +82,19 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if ($prezime != "") $upit .= ", prezime='$prezime'";
 		if ($brindexa != "") $upit .= ", brindexa='$brindexa'";
 		if ($jmbg != "") $upit .= ", jmbg='$jmbg'";
-		if ($mjesto_rodjenja != "") $upit .= ", mjesto_rodjenja='$mjesto_rodjenja'";
+		if ($mjrid != 0) $upit .= ", mjesto_rodjenja=$mjrid";
 		if ($drzavljanstvo != "") $upit .= ", drzavljanstvo='$drzavljanstvo'";
 		if ($adresa != "") $upit .= ", adresa='$adresa'";
+		if ($admid != 0) $upit .= ", adresa_mjesto='$admid'";
 		if ($telefon != "") $upit .= ", telefon='$telefon'";
 		if ($email != "") $upit .= ", email='$email'";
 		if ($kanton != 0) $upit .= ", kanton=$kanton";
 		if ($godina!=1970) $upit .= ", datum_rodjenja='$godina-$mjesec-$dan'";
 		$q20 = myquery("update promjena_podataka set $upit where id=$id");
-		zamgerlog("Zatražena promjena ličnih podataka",2); // 2 = edit
 	} else {
-		$q30 = myquery("insert into promjena_podataka set osoba=$userid, ime='$ime', prezime='$prezime', brindexa='$brindexa', jmbg='$jmbg', mjesto_rodjenja='$mjesto_rodjenja', drzavljanstvo='$drzavljanstvo', adresa='$adresa', telefon='$telefon', email='$email', kanton=$kanton, datum_rodjenja='$godina-$mjesec-$dan'");
-		zamgerlog("zatrazena promjena licnih podataka",2); // 2 = edit
+		$q30 = myquery("insert into promjena_podataka set osoba=$userid, ime='$ime', prezime='$prezime', brindexa='$brindexa', jmbg='$jmbg', mjesto_rodjenja=$mjrid, drzavljanstvo='$drzavljanstvo', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', email='$email', kanton=$kanton, datum_rodjenja='$godina-$mjesec-$dan'");
 	}
+	zamgerlog("zatrazena promjena ličnih podataka",2); // 2 = edit
 
 	?>
 	<h2>Zahvaljujemo!</h2>
@@ -102,9 +126,23 @@ if (mysql_num_rows($q390)>0) {
 	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p><?
 }
 
-$q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, telefon, kanton from osoba where id=$userid");
+$q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton from osoba where id=$userid");
+
+// Spisak gradova
+$q410 = myquery("select id,naziv from mjesto order by naziv");
+$gradovir="<option></option>";
+$gradovia="<option></option>";
+while ($r410 = mysql_fetch_row($q410)) { 
+	$gradovir .= "<option"; $gradovia .= "<option";
+ 	if ($r410[0]==mysql_result($q400,0,5)) { $gradovir  .= " SELECTED"; }
+ 	if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; }
+	$gradovir .= ">$r410[1]</option>\n";
+	$gradovia .= ">$r410[1]</option>\n";
+}
 
 ?>
+	<script type="text/javascript" src="js/combo-box.js"></script>
+
 	<?=genform("POST")?>
 	<table border="0" width="600">
 	<tr><td valign="top">
@@ -124,15 +162,18 @@ $q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodj
 		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?
 		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,4))?>" class="default">
 	</td></tr><tr><td valign="top">
-		Mjesto rođenja:</td><td><input type="text" name="mjesto_rodjenja" value="<?=mysql_result($q400,0,5)?>" class="default">
+		Mjesto rođenja:</td><td>
+		<select name="mjesto_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovir?></select>
 	</td></tr><tr><td valign="top">
 		Državljanstvo:</td><td><input type="text" name="drzavljanstvo" value="<?=mysql_result($q400,0,7)?>" class="default">
 	</td></tr><tr><td valign="top">
 		Adresa:</td><td><input type="text" name="adresa" value="<?=mysql_result($q400,0,8)?>" class="default">
 	</td></tr><tr><td valign="top">
-		Kanton / regija:</td><td><?=db_dropdown("kanton",mysql_result($q400,0,10), "--Izaberite kanton--") ?> <br/>
+		&nbsp;</td><td><select name="adresa_mjesto" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovia?></select>
 	</td></tr><tr><td valign="top">
-		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,9)?>" class="default">
+		Kanton / regija:</td><td><?=db_dropdown("kanton",mysql_result($q400,0,11), "--Izaberite kanton--") ?> <br/>
+	</td></tr><tr><td valign="top">
+		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,10)?>" class="default">
 	</td></tr><tr><td valign="top">
 		Kontakt e-mail:</td><td><input type="text" name="email" value="<?=mysql_result($q400,0,2)?>" class="default">
 	</td></tr></table>
