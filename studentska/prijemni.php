@@ -8,6 +8,8 @@
 // v3.9.1.3 (2008/08/28) + Uhakovan drugi termin za prijemni (popraviti), centriran i reorganizovan prikaz
 // v3.9.1.4 (2008/10/03) + Akcije unospotvrda i unoskriterij (subakcija spremi) prebacene na genform() radi sigurnosnih aspekata istog
 // v3.9.1.5 (2009/02/12) + Cleanup
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/06/22) + Prelaskom na genform izgubilo se ime forme, tako da submit nije radio
 
 
 // TODO: koristiti tabelu osoba
@@ -795,7 +797,7 @@ function enterhack(e,gdje) {
 
 </SCRIPT>
 
-<?=genform("POST")?>
+<?=genform("POST". "glavnaforma")?>
 <input type="hidden" name="akcija" value="unospotvrda">
 <input type="hidden" name="stari_id" value="<?=$theid?>">
 <? if ($editid>0) { // Editovanje
@@ -1166,7 +1168,7 @@ function provjeri_sve() {
 		return false;
 	}
 
-	document.getElementById('glavnaforma').submit();
+	document.getElementByName('glavnaforma').submit();
 	return true;
 }
 
