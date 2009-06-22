@@ -1168,7 +1168,7 @@ function provjeri_sve() {
 		return false;
 	}
 
-	document.getElementByName('glavnaforma').submit();
+	document.getElementsByName('glavnaforma')[0].submit();
 	return true;
 }
 
