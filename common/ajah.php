@@ -29,6 +29,9 @@
 // v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.8 (2009/05/05) + Prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
 // v4.0.9.9 (2009/05/18) + Nemamo vise ponudukursa kod izmjene fiksnih bodova i konacne ocjene, pa cemo tu koristiti predmet i akademsku godinu
+// v4.0.9.10 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij
+// v4.0.9.11 (2009/06/22) + Provjera prava pristupa kod fiksne komponente i konacne ocjene nije prebacena sa ponudekursa na predmet+ag
+
 
 // Prebaciti u lib/manip?
 
@@ -191,9 +194,9 @@ case "izmjena_ispita":
 		$max = mysql_result($q40a,0,0);
 
 		if (!$user_siteadmin) {
-			$q40b = myquery("select count(*) from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+			$q40b = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (mysql_num_rows($q40b)<1) {
-				zamgerlog("AJAH fiksna - nije na predmetu p$predmet",3);
+				zamgerlog("AJAH fiksna - nije na predmetu pp$predmet, ag$ag",3);
 				print "niste saradnik na predmetu"; break;
 			}
 		}
@@ -208,9 +211,9 @@ case "izmjena_ispita":
 
 		$max=10;
 		if (!$user_siteadmin) {
-			$q41 = myquery("select np.admin from nastavnik_predmet as np, ponudakursa as pk where np.nastavnik=$userid and np.predmet=pk.predmet and np.akademska_godina=pk.akademska_godina and pk.id=$predmet");
+			$q41 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (mysql_num_rows($q41)<1) {
-				zamgerlog("AJAH ispit/ko - niste saradnik (ispit i$ispit)",3);
+				zamgerlog("AJAH ispit/ko - niste saradnik (ispit pp$predmet, ag$ag)",3);
 				print "niste saradnik na predmetu $predmet";
 				break;
 			}
@@ -327,35 +330,40 @@ case "pretraga":
 
 // Unos bodova sa prijemnog
 case "prijemni_unos":
-	$id = intval($_REQUEST['idpolja']);
+	$osoba = intval($_REQUEST['osoba']);
+	$termin = intval($_REQUEST['termin']);
 	$vrijednost = floatval(str_replace(",",".",$_REQUEST['vrijednost']));
-	$q100 = myquery("select count(*) from prijemni where id=$id");
+
+	$q100 = myquery("select count(*) from prijemni_prijava where osoba=$osoba and prijemni_termin=$termin");
 	if (mysql_result($q100,0,0)==0)  {
 		print "Nepoznat id $id";
 		break;
 	}
 	// Dodati provjeru rezultata prijemnog...
 	if ($_REQUEST['vrijednost'] == "/")
-		$q110 = myquery("update prijemni set prijemni_ispit_dva=0, izasao_na_prijemni=0 where id=$id");
+		$q110 = myquery("update prijemni_prijava set rezultat=0, izasao=0 where osoba=$osoba and prijemni_termin=$termin");
 	else
-		$q110 = myquery("update prijemni set prijemni_ispit_dva=$vrijednost, izasao_na_prijemni=1 where id=$id");
+		$q110 = myquery("update prijemni_prijava set rezultat=$vrijednost, izasao=1 where osoba=$osoba and prijemni_termin=$termin");
+
 	print "OK";
+
+	zamgerlog("upisan rezultat na prijemnom za u$osoba, termin $termin ($vrijednost)",2);
 
 	break;
 
 
 // Unos ocjena tokom srednje skole za prijemni
 case "prijemni_ocjene":
-	$prijemni = intval($_REQUEST['prijemni']);
+	$osoba = intval($_REQUEST['osoba']);
 
 	$nova = intval($_REQUEST['nova']);
 	$stara = intval($_REQUEST['stara']);
 	$razred = intval($_REQUEST['razred']);
 	$tipocjene = intval($_REQUEST['tipocjene']);
 
-// Pretpostavljamo da je id tačan
-// Glupost :( ali šta se može kad se ocjene moraju unositi prije nego što se registruje prijemni
-/*	$q100 = myquery("select count(*) from prijemni where id=$prijemni");
+// Pretpostavljamo da je id osobe tačan
+// Glupost :( ali šta se može kad se ocjene moraju unositi prije nego što se registruje osoba
+/*	$q100 = myquery("select count(*) from osoba where id=$osoba");
 	if (mysql_result($q100,0,0)==0)  {
 		print "Nepoznat id $prijemni";
 		break;
@@ -367,9 +375,9 @@ case "prijemni_ocjene":
 	}
 
 	if ($_REQUEST['subakcija']=="obrisi" || $_REQUEST['subakcija']=="izmijeni")
-		$q200 = myquery("delete from prijemniocjene where prijemni=$prijemni and razred=$razred and ocjena=$stara and tipocjene=$tipocjene limit 1");
+		$q200 = myquery("delete from srednja_ocjene where osoba=$osoba and razred=$razred and ocjena=$stara and tipocjene=$tipocjene limit 1");
 	if ($_REQUEST['subakcija']=="dodaj" || $_REQUEST['subakcija']=="izmijeni")
-		$q200 = myquery("insert into prijemniocjene set prijemni=$prijemni, razred=$razred, ocjena=$nova, tipocjene=$tipocjene");
+		$q200 = myquery("insert into srednja_ocjene set osoba=$osoba, razred=$razred, ocjena=$nova, tipocjene=$tipocjene");
 
 	print "OK";
 
