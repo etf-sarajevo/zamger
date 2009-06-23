@@ -139,21 +139,26 @@ textarea
 {
 	width: 20%;
 }
+.files_table .author
+{
+	width: 19%;
+}
+
 .files_table .revision
 {
 	width: 7%;
 }
 .files_table .name
 {
-	width: 45%;
+	width: 28%;
 }
 .files_table .filesize
 {
-	width: 10%;
+	width: 7%;
 }
 .files_table .options
 {
-	width: 18%;
+	width: 19%;
 }
 .files_table td.options a
 {
