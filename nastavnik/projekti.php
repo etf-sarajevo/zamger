@@ -566,50 +566,6 @@ function deleteFilesForProject($id)
 	//projekat_file
 	
 	global $conf_files_path;
-	/*
-	$allFiles = fetchFilesForProjectAllRevisions($id);
-	foreach ($allFiles as $list)
-	{
-		foreach ($list as $item)
-		{
-			
-			$query = sprintf("DELETE FROM projekat_file WHERE id='%d' LIMIT 1", 
-						intval($item[id])
-						);
-		
-			$result = myquery($query);
-			if (mysql_affected_rows() == 0)
-			{
-				zamgerlog("greška prilikom brisanja fajla $item[id] iz baze(predmet p$predmet, korisnik u$userid)", 3);
-				return false;
-			}	
-			$lokacijarevizije = "$conf_files_path/projekti/fajlovi/" . $item['projekat'] . '/' . $item['osoba'] . '/' . $item['filename'] . '/v' . $item['revizija'];
-			
-			if (!unlink($lokacijarevizije . '/' . $item[filename]))
-			{
-				zamgerlog("greška prilikom brisanja fajla $item[id] iz fajl sistema(predmet p$predmet, korisnik u$userid)", 3);
-				return false;	
-			}	
-			if (!rmdir($lokacijarevizije))
-			{
-				zamgerlog("greška prilikom brisanja direktorija fajla $item[id] iz fajl sistema(predmet p$predmet, korisnik u$userid)", 3);
-				return false;
-			}	
-			//remove any diffs for this file
-			myquery("DELETE FROM projekat_file_diff WHERE file='" . $item[id] . "' LIMIT 1");
-		}
-		
-		$lokacijafajlova = "$conf_files_path/projekti/fajlovi/" . $list[0]['projekat'] . '/' . $list[0]['osoba'] . '/' . $list[0]['filename'];
-		if (!rmdir($lokacijafajlova))
-		{
-			zamgerlog("greška prilikom brisanja direktorija za projektne fajlove (predmet p$predmet, korisnik u$userid)", 3);
-			return false;
-		}
-		return true;
-	
-	} //foreach allFiles
-	
-	*/
 	
 	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/";
 	
