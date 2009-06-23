@@ -1355,6 +1355,7 @@ function common_projektneStrane()
 <table class="files_table" border="0" cellspacing="0" cellpadding="0">
   <tr>
     <th scope="col" class="creation_date">Datum kreiranja</th>
+    <th scope="col" class="author">Autor</th>
     <th scope="col" class="revision">Revizija</th>
     <th scope="col" class="name">Naziv</th>
     <th scope="col" class="filesize">Veličina</th>
@@ -1364,9 +1365,12 @@ function common_projektneStrane()
 				foreach ($files as $file)
 				{
 					$lastRevisionId = 0;
+					$firstRevisionId = count($file) > 0 ? count($file) - 1 : 0;
+					$author = getAuthorOfFile($file[$lastRevisionId][id]);
 	?>				
     <tr>
     	<td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($file[$lastRevisionId][vrijeme]))?></td><!--vrijeme-->
+    	<td class="author"><?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?></td><!--author-->
         <td class="revision">v<?=$file[$lastRevisionId][revizija] ?></td><!--revizija-->
         <td class="filename"><?php 
 					if (count($file) > 1)
@@ -1396,8 +1400,8 @@ function common_projektneStrane()
 					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
 					{
 	?>
-           <a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $file[$lastRevisionId]['id'] ?>">Uredi</a>
-           <a href="<?php echo $linkPrefix . "&subaction=del&id=" . $file[$lastRevisionId]['id']?>">Briši</a>
+           <a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $file[$firstRevisionId]['id'] ?>">Uredi</a>
+           <a href="<?php echo $linkPrefix . "&subaction=del&id=" . $file[$firstRevisionId]['id']?>">Briši</a>
 	<?php
 					} //if user is author of this item
 
@@ -1410,9 +1414,11 @@ function common_projektneStrane()
 						for ($i = 1; $i < count($file); $i++)
 						{	
 							$revision = $file[$i];
+							$author = getAuthorOfFile($revision[id]);
 	?>
             <tr class="file_<?=$file[$lastRevisionId][id] ?>_revisions" style="display: none;" id="file_revisions">
                 <td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($revision[vrijeme]))?></td><!--vrijeme-->
+                <td class="author"><?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?></td><!--author-->
                 <td class="revision">v<?=$revision[revizija] ?></td><!--revizija-->
                 <td class="filename"><?=filtered_output_string($revision[filename]) ?></td><!--filename-->
                 <td class="filesize"><?php
@@ -1553,6 +1559,7 @@ function common_projektneStrane()
 				{
 					if (!isUserAuthorOfFile($id, $userid))
 						return;
+
 					if (!isThisFileFirstRevision($id))
 						return;
 					
