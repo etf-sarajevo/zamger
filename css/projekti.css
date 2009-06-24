@@ -439,7 +439,7 @@ a#backLink:hover
 
 #threadList
 {
-	width: 100%;
+	width: 733px;
 	
 	border: 1px solid #c2c1c1;
 }
@@ -505,7 +505,7 @@ a#backLink:hover
 
 #fullThread
 {
-
+	width: 742px;
 }
 .post
 {
