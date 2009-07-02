@@ -584,6 +584,8 @@ a#backLink:hover
 #mainWrapper #leftBlocks .blockRow .block
 {
 	display: inline-block;
+	
+	width: 100%;
 }
 
 * html #mainWrapper .blockRow .block
