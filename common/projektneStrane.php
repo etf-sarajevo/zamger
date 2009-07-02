@@ -2,8 +2,9 @@
 function common_projektneStrane()
 {
 	//debug mod aktivan
-	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
+	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
 	$predmet 	= intval($_REQUEST['predmet']);
+	$ag 		= intval($_REQUEST['ag']);
 	$projekat 	= intval($_REQUEST['projekat']);
 	$action 	= $_GET['action'];
 	
@@ -49,14 +50,11 @@ function common_projektneStrane()
 	
 
 	if ($user_student && !$user_siteadmin)
-		$linkPrefix = "?sta=student/projekti&action=page&projekat=$projekat&predmet=$predmet";
+		$linkPrefix = "?sta=student/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag";
 	elseif ($user_nastavnik)
-		$linkPrefix = "?sta=nastavnik/projekti&action=page&projekat=$projekat&predmet=$predmet";
+		$linkPrefix = "?sta=nastavnik/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag";
 	else
 		return;
-
-	$conf_debug = 1;
-	
 
 	?>  
      <h2><?=filtered_output_string($project[naziv]) ?></h2>
@@ -331,7 +329,7 @@ function common_projektneStrane()
         ?>
                             <div class="item">
                                 <span class="date"><?=date('d.m H:i  ', mysql2time($file[vrijeme])) ?></span>
-                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&projekat=$projekat&id=$file[id]" ?>" title="<?=stripslashes(htmlentities($file['filename'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&ag=$ag&projekat=$projekat&id=$file[id]" ?>" title="<?=stripslashes(htmlentities($file['filename'], ENT_QUOTES))?>" target="_blank"><?php
                                 
                                     $maxLen = 100;	
                                     $len = strlen($file[filename]);
@@ -987,8 +985,8 @@ function common_projektneStrane()
 		{
 	?>
     	<div class="imgCont">
-        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
+        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]"?>" />
         	</a>
         </div>
 	<?php
@@ -1108,8 +1106,8 @@ function common_projektneStrane()
 					{
 		?>
 			<div class="imgCont">
-            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$article[osoba]&i=$article[slika]"?>" />
+            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]"?>" />
                 </a>     
             </div>
 	  <?php
@@ -1222,7 +1220,7 @@ function common_projektneStrane()
 				  ?>
                        <div class="row">
                             <span class="label">Trenutna slika</span>
-                            <span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&u=$entry[osoba]&i=$entry[slika]"?>" />
+                            <span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$entry[osoba]&i=$entry[slika]"?>" />
                             </span>
                        </div> 
                        
@@ -1395,7 +1393,7 @@ function common_projektneStrane()
 			echo nicesize($filesize);
 			?>        </td><!--filesize-->
         <td class="options">
-			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>" target="_blank">Snimi</a>        
+			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>" target="_blank">Snimi</a>        
 	<?php
 					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
 					{
@@ -1430,7 +1428,7 @@ function common_projektneStrane()
                     ?>
                 </td><!--filesize-->
                 <td class="options">
-                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $revision[id] ?>" target="_blank">Snimi</a>        
+                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $revision[id] ?>" target="_blank">Snimi</a>        
                 </td><!--options-->
             </tr><!--file_revision-->	
     <?php					
@@ -1580,7 +1578,7 @@ function common_projektneStrane()
                             <b>Limit za upload je 20MB.</b> <br />							
                            <div class="row">
                                 <span class="label">Trenutni fajl</span>
-                                <span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" target="_blank">
+                                <span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" target="_blank">
 									<?=filtered_output_string($lastRevisionEntry[filename]) ?>
                                 </a>
                                 </span>

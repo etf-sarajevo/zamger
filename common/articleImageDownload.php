@@ -1,16 +1,17 @@
 <?php
 function common_articleImageDownload()
 {
-	global $conf_debug, $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;	
+	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;	
 	$predmet 	= intval($_REQUEST['predmet']);
+	$ag		 	= intval($_REQUEST['ag']);
 	$projekat 	= intval($_REQUEST['projekat']);
 	$authorID   = intval($_REQUEST['u']);
 	$imageName = $_GET['i'];
 		
-	if ($predmet <=0 || $projekat <=0 || $authorID <=0)
+	if ($predmet <=0 || $projekat <=0 || $authorID <=0 || $ag <=0)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa ID predmeta  ili ID projekta ili ID autora slike koji nije integer ili je <=0", 3);		
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa ID predmeta  ili ID projekta ili ID autora slike ili ag koji nije integer ili je <=0", 3);		
 		return;
 	}
 	
@@ -21,6 +22,28 @@ function common_articleImageDownload()
 		return;	
 	}
 	
+	if ($user_nastavnik && !$user_siteadmin)
+	{
+		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+			zamgerlog("common/projektneStrane privilegije (predmet pp$predmet)",3);
+			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			return;
+		} 	
+	}
+	require_once("lib/projekti.php");
+	if ($user_student && !$user_siteadmin)
+	{
+		$actualProject = getActualProjectForUserInPredmet($userid, $predmet);
+		if ($actualProject[id] != $projekat)
+		{
+			//user is not in this project in this predmet...hijack attempt?
+			zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload i projektu na kojem nije prijavljen ID=$projekat na predmetu p$predmet", 3);				
+			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			return;	
+		}
+		
+	}
 	
 	$imageName = strip_tags($imageName);
 	$imageName = trim($imageName);
@@ -36,8 +59,6 @@ function common_articleImageDownload()
 	$filepath = $lokacijaclanaka  . $imageName;
 	
 	$type = `file -bi '$filepath'`;
-	
-	//$type = 'application/octet-stream';
 	
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
