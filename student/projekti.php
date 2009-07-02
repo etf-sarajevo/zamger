@@ -3,13 +3,20 @@ require_once("lib/projekti.php");
 function student_projekti()
 {
 	//debug mod aktivan
-	global $conf_debug, $userid, $user_student;
+	global $userid, $user_student;
 	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);	
 	
 	if ($predmet <=0)
 	{
 		//hijack attempt?
 		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
+		return;
+	}
+	if ($ag <=0)
+	{
+		//hijack attempt?
+		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti sa ag koji nije integer ili je <=0", 3);		
 		return;
 	}
 	if ($user_student == false)
@@ -19,12 +26,18 @@ function student_projekti()
 		return;
 	}
 
+	// Da li student slusa predmet?
+	$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (mysql_num_rows($q17)<1) 
+	{
+		zamgerlog("student ne slusa predmet pp$predmet", 3);
+		biguglyerror("Niste upisani na ovaj predmet");
+		return;
+	}
 	
-	$linkPrefix = "?sta=student/projekti&predmet=$predmet";
+	$linkPrefix = "?sta=student/projekti&predmet=$predmet&ag=$ag";
 	$action 	= $_GET['action'];
 	$id			= intval($_GET['id']);
-	
-	$conf_debug = 1;
 
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
