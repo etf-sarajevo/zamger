@@ -511,7 +511,7 @@ else if ($akcija == "upis") {
 			// Da li ga je vec polozio
 			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
 			if (mysql_result($q615,0,0)==0) {
-				upis_studenta_na_predmet($student, $r610[1]);
+				upis_studenta_na_predmet($student, $r610[0]);
 			} else {
 				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>";
 			}

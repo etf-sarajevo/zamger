@@ -28,12 +28,13 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 DROP TABLE IF EXISTS `anketa`;
 CREATE TABLE IF NOT EXISTS `anketa` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `open_date` datetime DEFAULT NULL,
-  `close_date` datetime DEFAULT NULL,
-  `title` char(255) NOT NULL,
-  `info` text,
+  `datum_otvaranja` datetime DEFAULT NULL,
+  `datum_zatvaranja` datetime DEFAULT NULL,
+  `naziv` char(255) NOT NULL,
+  `opis` text,
   `aktivna` tinyint(1) DEFAULT '0',
   `editable` tinyint(1) DEFAULT '1',
+  `ak_god` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=9 ;
 

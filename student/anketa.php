@@ -14,9 +14,15 @@ function student_anketa() {
 	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 	$ag = mysql_result($q10,0,0);
 	
-	$q09= myquery("select id,naziv from anketa where aktivna=1");
+	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna=1 and ak_god=$ag");
 	$anketa = mysql_result($q09,0,0);
 	$naziv= mysql_result($q09,0,1);
+	$rok=mysql_result($q09,0,2);
+	if (time () > $rok){
+	
+		biguglyerror("Isteklo vrijeme za ispunjavanje ankete");
+		return;
+	}
 	// Podaci za zaglavlje
 	$q10 = myquery("select naziv from predmet where id=$predmet");
 	if (mysql_num_rows($q10)<1) {
@@ -65,8 +71,8 @@ if (mysql_num_rows($result700)==0)
 	$id_rezultata=1;
 else
 	$id_rezultata =mysql_result($result700,0,0)+1;
-// prepraviti da tako da je i akademska godina u hashu
-$unique_hash_code = md5($userid.$predmet);
+// jedan student (userID ) moze isputniti anektu za jedna predmet samo jednom u jednoj akademskoj godini
+$unique_hash_code = md5($userid.$predmet.$ag);
 // da li je vec taj slog u tabeli 
 $q589 = myquery("select count(*) from rezultat where unique_id='$unique_hash_code'");
 
@@ -74,16 +80,10 @@ $postoji_slog= mysql_result($q589,0,0);
 
 if(!$postoji_slog)
 	$q590 = myquery("INSERT INTO rezultat (id ,anketa_id ,vrijeme ,zavrsena ,predmet_id,unique_id,studij,semestar)
-   		VALUES ($id_rezultata, $anketa, curdate(), 'N', $predmet, '$unique_hash_code',$studij,$semestar)");
-
-
+   		VALUES ($id_rezultata, $anketa, curdate(), 'N', $ponudakursa, '$unique_hash_code',$studij,$semestar)");
 
 ?>
-
-
-<!-- progress bar -->
-
-        <center>
+  <center>
       
         <p>Ovdje cete dobiti kod koji cete iskoristiti za ispunjavanje ankete za ovaj predmet: &nbsp;<br/>
         <br/>
@@ -97,9 +97,7 @@ if(!$postoji_slog)
          </table>
         
        </center>
-        
 
-<!-- end progress bar -->
 <?
 
 

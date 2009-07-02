@@ -1,19 +1,14 @@
 <?php 
-// izbrisati one rezultete kod kojih je zavrsene postavljeno na N
-// $q600 = myquery("delete from rezultati where zavrsena='N'");
 
-// kod kreiranja anketa prilikom klika na ankete generisat id za rezultat i napraviti insert u tabelu rezultat 
-// sa vrijednostima ID predmeta i ID studeta a polje zavrsena ce automatski biti false
-// koje ce se prikom uspjesnog zavrsetka ankete postaviti na true 
-// u slucaju da je vec ispunio anketu za taj predmet onemoguciti da se to opet uradi
+// PUBLIC/ANKETA - stranica za ispunjavanje ankete
+
 
 global $_lv_; 
 
 $k=1;
-// uzimamo id aktivne ankete
+	// uzimamo id aktivne ankete
 	$q01 = myquery("select id from anketa where aktivna = 1");
 	$id_ankete = mysql_result($q01,0,0);
-
 
 function Ubaci_pitanje($tip_pitanja){
 	global $id_ankete;
@@ -73,8 +68,6 @@ function Ubaci_pitanje($tip_pitanja){
 				$j++;
 				}	
 			
-		
-		
 		}
 		$k=$j;
 }
@@ -114,14 +107,24 @@ function Validate()
 <?php 
 function public_anketa(){
 
-// da li je student zavrsio anketu 
+	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
+	$ag = mysql_result($q10,0,0);
+	
+	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna=1 and ak_god=$ag");
+	$anketa = mysql_result($q09,0,0);
+	$naziv= mysql_result($q09,0,1);
+	$rok=mysql_result($q09,0,2);
+	if (time () > $rok){
+	
+		biguglyerror("Isteklo vrijeme za ispunjavanje ankete");
+		return;
+	}
+	
+	
+	// da li je student zavrsio anketu 
 	if ($_POST['akcija'] == "finish" ) {
 		
 		global $id_ankete;
-		// pokupit id predmeta , ankete i osobe i rezultata
-		// $predmet = $_REQUEST['predmet'];
-		// $anketa = $_REQUEST['anketa'];
-		// $osoba = $_REQUEST['osoba'];
 		
 		$id_rezultata = $_POST['id_rezultata'];
 		//mogao bi se prvo napraviti query na tabelu tip pitanja pa zatim za svaki slog vidjeti da li je tih pitanja bilo u anketi
@@ -188,25 +191,40 @@ else if($_POST['akcija'] == "prikazi") {
 		
 		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem zavrsena
 		
-		$q590 = myquery("SELECT count( * ),id FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N'");
+		$q590 = myquery("SELECT count( * ),id,predmet_id FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N'");
 		$broj_rezultata =mysql_result($q590,0,0);
-		$id_rezultata =mysql_result($q590,0,1);
 		if($broj_rezultata==0){
 		
 			// dio koji ide ako dati hesh ne postoji u bazi tj ako student pokusava da izmisli hesh :P
-			print "Zao nam je ali ili ste vec ispunili anketu ili dati kod ne postoji u bazi!!";
+		?>
+			<center>
+    	<p> Zao nam je ali ili ste vec ispunili anketu ili dati kod ne postoji u bazi!! </p>
+    	<a href="http://www.zamger.dev/trunk/index.php"> Nazad na pocetnu </a>
+    	</center>
+		<?	
+			
 		
 		}
 		else  { // else 15   uspjesno 
 		
-		?>
+		$id_rezultata =mysql_result($q590,0,1);
+		$ponudakursa = mysql_result($q590,0,2);
+		$q011= myquery("select naziv from ponudakursa pk,predmet p where pk.predmet = p.id and pk.id = $ponudakursa");
+		$naziv_predmeta = mysql_result($q011,0,0);
 		
+		?>
+		<center>
+            <h2> Anketa za predmet <?= $naziv_predmeta?> </h2>
+            
+
+
+        </center>
 		<form id="forma" name="forma" method="post" action="<?php echo $PHP_SELF?>" onSubmit="return Validate()">
             <input type="hidden" name="akcija" value="finish">
             <input type="hidden" name="id_rezultata" value="<?=$id_rezultata?>">
             
             <table align="center" cellpadding="4" border="0" >
-            
+             	<tr>  <td colspan = '6'><hr/> <strong> U sljedecoj tabeli  izaberite samo jednu od ocjena za iskazanu tvrdnju na skali ocjena od 1 (najlosija)  do 5 (najbolja). </strong></td></tr>;
                 <?php 
             
                     echo "<tr>  <td colspan = '6'><hr/> </td></tr>";
@@ -234,6 +252,8 @@ else if($_POST['akcija'] == "prikazi") {
 }
 
 else{
+
+
 	?>
      <table align="center" cellpadding="0">
      	<form method="post" >
