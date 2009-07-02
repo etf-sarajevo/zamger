@@ -4,14 +4,27 @@ require_once("lib/projekti.php");
 function nastavnik_projekti()
 {
 	//debug mod aktivan
-	global $conf_debug, $userid, $user_nastavnik;
+	global $userid, $user_nastavnik, $user_siteadmin;
 	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
 	
 	if ($predmet <=0)
 	{
 		//hijack attempt?
 		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
 		return;
+	}
+	if ($ag <=0)
+	{
+		//hijack attempt?
+		zamgerlog("korisnik u$userid pokušao pristupiti modulu nastavnik/projekti sa ag koji nije integer ili je <=0", 3);		
+		return;
+	}
+	//bad userid
+	if (!is_numeric($userid) || $userid <=0)
+	{
+		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu nastavnik/projekti na predmetu p$predmet", 3);				
+		return;	
 	}
 	
 	if ($user_nastavnik == false)
@@ -20,21 +33,22 @@ function nastavnik_projekti()
 		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti iako nije nastavnik na predmetu p$predmet", 3);		
 		return;
 	}
-
-	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet";
-	$action 	= $_GET['action'];
-	$id			= intval($_GET['id']);
+	// Da li korisnik ima pravo ući u modul?
 	
-	$conf_debug = 1;
-	
-
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu nastavnik/projekti na predmetu p$predmet", 3);				
-		return;	
+	if (!$user_siteadmin) 
+	{ // 3 = site admin
+		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
+			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			return;
+		} 
 	}
 	
+	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet&ag=$ag";
+	$action 	= $_GET['action'];
+	$id			= intval($_GET['id']);
+		
 	?>
 <LINK href="css/projekti.css" rel="stylesheet" type="text/css">
 <h2>Projekti</h2>
