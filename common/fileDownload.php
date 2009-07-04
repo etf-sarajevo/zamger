@@ -50,7 +50,7 @@ function common_fileDownload()
 	$entry = getFile($id);
 	if (empty($entry))
 	{
-		zamgerlog("fajl sa ID=$id ne postoji u bazi (common/fileDownload, u$userid projekat $projekat predmet p$predmet)");
+		zamgerlog("fajl sa ID=$id ne postoji u bazi (common/fileDownload, u$userid projekat $projekat predmet p$predmet)",3);
 		return;
 	}
 	
