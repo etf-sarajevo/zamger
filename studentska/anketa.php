@@ -1,3 +1,24 @@
+<?php 
+// STUDENTSKA/ANKETA - administracija ankete, studentska služba
+
+global $userid,$user_siteadmin,$user_studentska;
+
+global $_lv_; // Potrebno za genform() iz libvedran
+
+
+// Provjera privilegija
+
+if (!$user_studentska && !$user_siteadmin) {
+	zamgerlog("nije studentska",3); // 3: error
+	biguglyerror("Pristup nije dozvoljen.");
+	return;
+}
+
+
+
+function studentska_anketa()
+{
+?>
 <script type="text/javascript">
 function promjeniListu()
 {
@@ -37,8 +58,6 @@ function switch_poredjenje()
 			par=1;
 
 	}
-
-
 }
 var help=1;
 
@@ -56,8 +75,6 @@ function switch_izvjestaj()
 			help=1;
 
 	}
-
-
 }
 
 var help2=1;
@@ -76,19 +93,11 @@ function switch_izvjestaj2()
 			help2=1;
 
 	}
-
-
 }
-
-
 </script>
 
+<?
 
-<?php 
-
-
-function studentska_anketa()
-{
 $akcija = $_REQUEST['akcija'];
 $anketa = intval($_REQUEST['anketa']);
 $id = intval($_REQUEST['anketa']);
@@ -106,7 +115,7 @@ if ($_REQUEST['akcija']=="deaktivacija" ){
 if ($akcija =="podaci")
 	{
 	
-	if ($_POST['subakcija']=="potvrda" ) {
+	if ($_POST['subakcija']=="potvrda" && check_csrf_token() ) {
 
 		$naziv = $_REQUEST['naziv'];
 		$opis = $_REQUEST['opis'];
@@ -256,7 +265,7 @@ if ($akcija =="podaci")
 	
 	
 //  ******************* dio koji se prikazuje kada se kreira nova anketa ******************************	
-else if ($_POST['akcija'] == "novi"){
+else if ($_POST['akcija'] == "novi" && check_csrf_token()){
 // TODO dodati provjeru naziva
 	$ak_godina = $_POST['ak_godina'];
 	$naziv = substr($_POST['naziv'], 0, 100);
@@ -300,12 +309,11 @@ else if ($_POST['akcija'] == "novi"){
 else if ($_GET['akcija'] == "edit" ) {
 
 	// subakcija koja se izvrsava kada se edituje neko od pitanja 
-	if($_POST['subakcija']=="edit_pitanje"){
+	if($_POST['subakcija']=="edit_pitanje"  ){
 		$sta_je = $_REQUEST['obrisi'];
 		$pitanje = $_REQUEST['column_id'];
 		if ($sta_je){
-			// TO DO provjerit ima li odgovora na ti pitanje .. ako ima onemoguciti brisanje
-			print "Pitanje obrisano";
+			
 			$q800=myquery("delete from pitanje where id = $pitanje");
 		}
 		else{

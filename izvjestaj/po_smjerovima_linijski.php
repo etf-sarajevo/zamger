@@ -1,5 +1,6 @@
 <?php
-// podaci
+// IZVJESTAJ/PO_SMJEROVIMA_LINIJSKI - stranica koja generiše grafove za izvjestaj po smjerovima uz pomoc GD biblioteke
+
 require("../lib/libvedran.php");
 require("../lib/zamger.php");
 require("../lib/config.php");

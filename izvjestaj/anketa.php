@@ -1,4 +1,7 @@
 <?
+
+// IZVJESTAJ/ANKETA - stranica koja generise izvjestaje za predmete koje mogu pregledati profesori ili clanovi studentske sluzbe
+
 function izvjestaj_anketa(){
 
 $predmet = intval($_REQUEST['predmet']);

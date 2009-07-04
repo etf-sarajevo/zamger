@@ -1,4 +1,5 @@
 <?php
+// IZVJESTAJ/CHART_SEMESTRALNI - stranica koja generiše grafove za semestralni izvjestaj uz pomoc GD biblioteke
 
 require("../lib/libvedran.php");
 require("../lib/zamger.php");

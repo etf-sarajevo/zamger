@@ -1,3 +1,9 @@
+<?
+// IZVJESTAJ/ANKETA_SEMESTRALNI - stranica koja generiše izvjestaje : SEMESTRALNI  i IZVJESTAJ PO SMJEROVIMA
+
+function izvjestaj_anketa_semestralni(){
+
+?>
 <script type="text/javascript">
 function promjeniListu()
 {
@@ -13,10 +19,8 @@ function promjeniListu()
 
 }
 </script>
+
 <?
-
-function izvjestaj_anketa_semestralni(){
-
 if ($_REQUEST['akcija']=="izvrsi"){
 	
 	$ak_god = intval($_REQUEST['akademska_godina']);

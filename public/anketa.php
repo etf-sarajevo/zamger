@@ -104,7 +104,7 @@ function Validate()
 		
     alert('Niste odgovorili na sva pitanja');
 	
-    return false;
+    return true;
 }
 
 </script>
@@ -127,7 +127,7 @@ function public_anketa(){
 	
 	
 	// da li je student zavrsio anketu 
-	if ($_POST['akcija'] == "finish" ) {
+	if ($_POST['akcija'] == "finish" && check_csrf_token()) {
 		
 		global $id_ankete;
 		
@@ -223,8 +223,9 @@ else if($_POST['akcija'] == "prikazi") {
             
 
 
-        </center>
-		<form id="forma" name="forma" method="post" action="<?php echo $PHP_SELF?>" onSubmit="return Validate()">
+        </center><?=genform("POST")?>
+		<!--<form id="forma" name="forma" method="post" action="<?php echo $PHP_SELF?>" onSubmit="return Validate()">-->
+        	
             <input type="hidden" name="akcija" value="finish">
             <input type="hidden" name="id_rezultata" value="<?=$id_rezultata?>">
             
@@ -261,7 +262,7 @@ else{
 
 	?>
      <table align="center" cellpadding="0">
-     	<form method="post" >
+     	<?=genform("POST")?>
         <tr>
         	<td>
             	<br/>
