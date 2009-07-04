@@ -9,14 +9,18 @@ $naziv_predmeta = mysql_result($result233,0,0);
 // akademska godina za datu ponudu kursa
 $ag = mysql_result($result233,0,1);
 
-/*// id aktelne akademske godine
-$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-$ag = mysql_result($q10,0,0);*/
-
 // naziv akdemske godine
 $q0111=myquery("select naziv from akademska_godina where id = $ag");
 $naziv_ak_god = mysql_result($q0111,0,0);
+
+// da li postoji anketa
+$q011 = myquery("select id from anketa where ak_god= $ag");	
+	if (mysql_num_rows($q011)==0){ // da li postoji anketa uopce
 	
+		biguglyerror("Za datu akademsku godinu nije bila kreirana anketa!");
+		return;
+	}
+
 $rank = intval($_REQUEST['rank']);
 
 	

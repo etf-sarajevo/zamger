@@ -52,10 +52,18 @@ function login_forma() {
       <tr><td>
 			<p align="right">
 			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p> 
-            </td><td>
+            </td>
+            <?php 
+				$q01 = myquery("select id from anketa where aktivna = 1");
+				  if (mysql_num_rows($q01)==1)
+				{
+			?>
+            	<td>
          
-            <a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
-           </td></tr>
+           		 <a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
+          	 </td>
+           <?php }?>
+           </tr>
             <tr><td colspan="2" align="center">
 		<form action="<?=$uri?>" method="POST">
 		<input type="hidden" name="loginforma" value="1">

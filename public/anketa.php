@@ -8,6 +8,11 @@ global $_lv_;
 $k=1;
 	// uzimamo id aktivne ankete
 	$q01 = myquery("select id from anketa where aktivna = 1");
+	if (mysql_num_rows($q01)==0)
+	{
+		biguglyerror("Ne postoji aktivna anketa!");
+		return;
+	}
 	$id_ankete = mysql_result($q01,0,0);
 
 function Ubaci_pitanje($tip_pitanja){
@@ -191,7 +196,7 @@ else if($_POST['akcija'] == "prikazi") {
 		
 		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem zavrsena
 		
-		$q590 = myquery("SELECT count( * ),id,predmet_id FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N'");
+		$q590 = myquery("SELECT count( * ),id,predmet_id FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N' GROUP BY id, predmet_id");
 		$broj_rezultata =mysql_result($q590,0,0);
 		if($broj_rezultata==0){
 		
