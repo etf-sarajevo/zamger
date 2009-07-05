@@ -44,27 +44,35 @@ function login_forma() {
 		$uri = $_SERVER['REQUEST_URI'];
 	}
 
+	$anketa_aktivna=0;
+	$q01 = myquery("select id from anketa where aktivna = 1");
+	if (mysql_num_rows($q01)>0) $anketa_aktivna=1;
+
 	?>
 	<center><table border="0" cellpadding="5" bgcolor="#FFFFFF">
-    <tr><td colspan="2">
+	<tr><td align="center">
 		<big><b>Dobro došli na bolognaware Elektrotehničkog fakulteta Sarajevo</b></big>
-	 </td></tr>
-      <tr><td>
-			<p align="right">
-			<a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p> 
-            </td>
-            <?php 
-				$q01 = myquery("select id from anketa where aktivna = 1");
-				  if (mysql_num_rows($q01)==1)
-				{
-			?>
-            	<td>
-         
-           		 <a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
-          	 </td>
-           <?php }?>
-           </tr>
-            <tr><td colspan="2" align="center">
+	</td></tr>
+	<tr><td align="center">
+		<!-- Ikone za javne servise -->
+		<table  border="0" cellpadding="10" bgcolor="#FFFFFF"><tr>
+			<td align="center" valign="top">
+				<p><a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p>
+			</td>
+	<? 
+
+	if ($anketa_aktivna) {
+		?>
+			<td align="center" valign="top">
+				<p><a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
+			</td>
+		<?
+	}
+	?>
+		</tr></table>
+	</td></tr>
+	<tr><td align="center">
+		<!-- Login forma -->
 		<form action="<?=$uri?>" method="POST">
 		<input type="hidden" name="loginforma" value="1">
 		<table border="0"><tr><td>Korisničko ime (UID):</td><td><input type="text" name="login" size="15"></td></tr>
