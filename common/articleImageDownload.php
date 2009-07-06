@@ -48,13 +48,12 @@ function common_articleImageDownload()
 		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa losim authorID, imageName, projekat ili ID clanka", 3);				
 		return;
 	}
-	
-	
-	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $article[osoba] . "/";
-	$filepath = $lokacijaclanaka  . $article[slika];
-	
+
+	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $article['osoba'] . "/";
+	$filepath = $lokacijaclanaka  . $article['slika'];
+
 	$type = `file -bi '$filepath'`;
-	
+
 	header("Content-Type: $type");
 	header('Content-Length: ' . filesize($filepath));
 	
