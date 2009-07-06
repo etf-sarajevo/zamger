@@ -8,12 +8,6 @@ function nastavnik_projekti()
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 		
-	if ($user_nastavnik == false)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti iako nije nastavnik na predmetu p$predmet", 3);		
-		return;
-	}
 	// Da li korisnik ima pravo ući u modul?
 	
 	if (!$user_siteadmin) 
