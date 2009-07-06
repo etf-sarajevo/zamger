@@ -7,26 +7,7 @@ function nastavnik_projekti()
 	global $userid, $user_nastavnik, $user_siteadmin;
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
-	
-	if ($predmet <=0)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu nastavnik/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
-		return;
-	}
-	if ($ag <=0)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokušao pristupiti modulu nastavnik/projekti sa ag koji nije integer ili je <=0", 3);		
-		return;
-	}
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu nastavnik/projekti na predmetu p$predmet", 3);				
-		return;	
-	}
-	
+		
 	if ($user_nastavnik == false)
 	{
 		//hijack attempt?
@@ -207,20 +188,20 @@ function nastavnik_projekti()
                     
 					<div class="row">
 						<span class="label">MIN timova *</span>
-						<span class="formw"><input name="min_timova" type="text" id="min_timova" size="10" value="<?php echo stripslashes(htmlentities($params['min_timova'], ENT_QUOTES))?>" /></span> 
+						<span class="formw"><input name="min_timova" type="text" id="min_timova" size="10" value="<?php echo $params['min_timova'];?>" /></span> 
 					</div>
                     <div class="row">
 						<span class="label">MAX timova *</span>
-						<span class="formw"><input name="max_timova" type="text" id="max_timova" size="10" value="<?php echo stripslashes(htmlentities($params['max_timova'], ENT_QUOTES))?>" /></span> 
+						<span class="formw"><input name="max_timova" type="text" id="max_timova" size="10" value="<?php echo $params['max_timova']?>" /></span> 
 					</div>
                     
                     <div class="row">
 						<span class="label">MIN članova tima *</span>
-						<span class="formw"><input name="min_clanova_tima" type="text" id="min_clanova_tima" size="10" value="<?php echo stripslashes(htmlentities($params['min_clanova_tima'], ENT_QUOTES))?>" /></span> 
+						<span class="formw"><input name="min_clanova_tima" type="text" id="min_clanova_tima" size="10" value="<?php echo $params['min_clanova_tima']?>" /></span> 
 					</div>
                     <div class="row">
 						<span class="label">MAX članova tima *</span>
-						<span class="formw"><input name="max_clanova_tima" type="text" id="max_clanova_tima" size="10" value="<?php echo stripslashes(htmlentities($params['max_clanova_tima'], ENT_QUOTES))?>" /></span> 
+						<span class="formw"><input name="max_clanova_tima" type="text" id="max_clanova_tima" size="10" value="<?php echo $params['max_clanova_tima']?>" /></span> 
 					</div>
 
 					<div class="row">	
@@ -345,11 +326,11 @@ function nastavnik_projekti()
                     
                         <div class="row">
                             <span class="label">Naziv *</span>
-                            <span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo stripslashes(htmlentities($entry['naziv'], ENT_QUOTES))?>" /></span> 
+                            <span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
                         </div>
                         <div class="row">
                             <span class="label">Opis *</span>
-                            <span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo stripslashes(htmlentities($entry['opis'], ENT_QUOTES)) ?></textarea></span>
+                            <span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis'] ?></textarea></span>
                         </div> 
                         
                         <div class="row">	
@@ -469,11 +450,7 @@ function formProcess($option)
 
 	$naziv = trim($naziv);
 	$opis = trim($opis);
-	
-	$opis = strip_tags($opis);
-	$naziv = strip_tags($naziv);
-	
-	
+		
 	$data = array(
 				'naziv' => $naziv, 
 				'opis'  => $opis, 
@@ -634,7 +611,7 @@ function deleteForumForProject($id)
 
 function deleteStudentsForProject($id)
 {
-	$query = sprintf("DELETE FROM osoba_projekat WHERE projekat='%d' ", 
+	$query = sprintf("DELETE FROM student_projekat WHERE projekat='%d' ", 
 					intval($id)
 					);
 	
