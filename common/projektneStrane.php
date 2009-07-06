@@ -560,68 +560,63 @@ function common_projektneStrane()
 					
 					
 					//edit item
-					if (isset($id) && is_int($id) && $id > 0)
+					if (!isset($_POST['submit']))
 					{
-						
-						if (!isset($_POST['submit']))
-						{
-							$entry = getLink($id);
+						$entry = getLink($id);
+				
+		?>
+					 <h3>Uredi link</h3>
 					
-			?>
-						 <h3>Uredi link</h3>
+					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
+					<div id="formDiv">
+						Polja sa * su obavezna. <br />
 						
-						<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
-						<div id="formDiv">
-							Polja sa * su obavezna. <br />
-							
-                            <div class="row">
-								<span class="label">Naziv *</span>
-								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
-							</div>
-	
-							<div class="row">
-								<span class="label">URL *</span>
-								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
-							</div>
-							<div class="row">
-								<span class="label">Opis</span>
-								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
-							</div> 
-							
-							<div class="row">	
-								<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-							</div>
+						<div class="row">
+							<span class="label">Naziv *</span>
+							<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
+						</div>
+
+						<div class="row">
+							<span class="label">URL *</span>
+							<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
+						</div>
+						<div class="row">
+							<span class="label">Opis</span>
+							<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
+						</div> 
 						
-						</div><!--formDiv-->
-						</form>
+						<div class="row">	
+							<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+						</div>
+					
+					</div><!--formDiv-->
+					</form>
+							
+						
+		<?php				
 								
-							
-			<?php				
-									
+					}
+					else
+					{
+						$errorText = formProcess_links('edit');
+						if($errorText == '')
+						{
+							nicemessage('Uspješno ste uredili link.');
+							zamgerlog("korisnik u$userid uspješno uredio link na projektu ID=$projekat na predmetu p$predmet", 2);				
+							$link = $linkPrefix;									
 						}
 						else
-						{
-							$errorText = formProcess_links('edit');
-							if($errorText == '')
-							{
-								nicemessage('Uspješno ste uredili link.');
-								zamgerlog("korisnik u$userid uspješno uredio link na projektu ID=$projekat na predmetu p$predmet", 2);				
-								$link = $linkPrefix;									
-							}
-							else
-							{	
-								//an error occured trying to process the form
-								niceerror($errorText);
-								$link = "javascript:history.back();";	
-								
-							}
-							nicemessage('<a href="'. $link .'">Povratak.</a>');
+						{	
+							//an error occured trying to process the form
+							niceerror($errorText);
+							$link = "javascript:history.back();";	
 							
-						} //submitted the form
-								
+						}
+						nicemessage('<a href="'. $link .'">Povratak.</a>');
 						
-					} //id is okay	
-					
+					} //submitted the form
+							
+				
 				} //subaction == edit
 				elseif ($subaction == 'del')
 				{
@@ -830,67 +825,64 @@ function common_projektneStrane()
 						return;
 					
 					//edit item
-					if (isset($id) && is_int($id) && $id > 0)
-					{
-						
-						if (!isset($_POST['submit']))
-						{
-							$entry = getRSS($id);
 					
-			?>
-						 <h3>Uredi RSS feed</h3>
+					if (!isset($_POST['submit']))
+					{
+						$entry = getRSS($id);
+				
+		?>
+					 <h3>Uredi RSS feed</h3>
+					
+					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
+					<div id="formDiv">
+						Polja sa * su obavezna. <br />
 						
-						<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
-						<div id="formDiv">
-							Polja sa * su obavezna. <br />
-							
-                            <div class="row">
-								<span class="label">Naziv *</span>
-								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
-							</div>
-	
-							<div class="row">
-								<span class="label">URL *</span>
-								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
-							</div>
-							<div class="row">
-								<span class="label">Opis</span>
-								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
-							</div> 
-							
-							<div class="row">	
-								<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-							</div>
+						<div class="row">
+							<span class="label">Naziv *</span>
+							<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
+						</div>
+
+						<div class="row">
+							<span class="label">URL *</span>
+							<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
+						</div>
+						<div class="row">
+							<span class="label">Opis</span>
+							<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
+						</div> 
 						
-						</div><!--formDiv-->
-						</form>
+						<div class="row">	
+							<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+						</div>
+					
+					</div><!--formDiv-->
+					</form>
+							
+						
+		<?php				
 								
-							
-			<?php				
-									
+					}
+					else
+					{
+						$errorText = formProcess_rss('edit');
+						if($errorText == '')
+						{
+							nicemessage('Uspješno ste uredili RSS feed.');
+							zamgerlog("korisnik u$userid uspješno uredio rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
+							$link = $linkPrefix;									
 						}
 						else
-						{
-							$errorText = formProcess_rss('edit');
-							if($errorText == '')
-							{
-								nicemessage('Uspješno ste uredili RSS feed.');
-								zamgerlog("korisnik u$userid uspješno uredio rss feed na projektu ID=$projekat na predmetu p$predmet", 2);				
-								$link = $linkPrefix;									
-							}
-							else
-							{	
-								//an error occured trying to process the form
-								niceerror($errorText);
-								$link = "javascript:history.back();";	
-								
-							}
-							nicemessage('<a href="'. $link .'">Povratak.</a>');
+						{	
+							//an error occured trying to process the form
+							niceerror($errorText);
+							$link = "javascript:history.back();";	
 							
-						} //submitted the form
-								
+						}
+						nicemessage('<a href="'. $link .'">Povratak.</a>');
 						
-					} //id is okay	
+					} //submitted the form
+							
+				
 					
 				} //subaction == edit
 				elseif ($subaction == 'del')
@@ -972,8 +964,8 @@ function common_projektneStrane()
 		{
 	?>
     	<div class="imgCont">
-        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]"?>" />
+        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]"?>" />
         	</a>
         </div>
 	<?php
@@ -1093,8 +1085,8 @@ function common_projektneStrane()
 					{
 		?>
 			<div class="imgCont">
-            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$article[osoba]&i=$article[slika]"?>" />
+            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
+            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]"?>" />
                 </a>     
             </div>
 	  <?php
@@ -1179,91 +1171,86 @@ function common_projektneStrane()
 
 					
 					//edit item
-					if (isset($id) && is_int($id) && $id > 0)
+					if (!isset($_POST['submit']))
 					{
-						if (!isset($_POST['submit']))
-						{
-							$entry = getArticle($id);
+						$entry = getArticle($id);
+			
+?>
+				 <h3>Uredi članak</h3>
+			
+				<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<div id="formDiv">
+					Polja sa * su obavezna. <br />
 				
-	?>
-					 <h3>Uredi članak</h3>
-				
-                    <form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
-                    <div id="formDiv">
-                        Polja sa * su obavezna. <br />
-                    
-                        <div class="row">
-                            <span class="label">Naslov *</span>
-                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
-                        </div>
-                        <div class="row">
-                            <span class="label">Tekst</span>
-                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
-                        </div> 
+					<div class="row">
+						<span class="label">Naslov *</span>
+						<span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
+					</div>
+					<div class="row">
+						<span class="label">Tekst</span>
+						<span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
+					</div> 
 
-	<?php 					if ($entry['slika'] != '')
-		  					{
-							//if the image exists, display it
-				  ?>
-                       <div class="row">
-                            <span class="label">Trenutna slika</span>
-                            <span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&u=$entry[osoba]&i=$entry[slika]"?>" />
-                            </span>
-                       </div> 
-                       
-                       <div class="row">
-                            <span class="label">Briši sliku</span>
-                            <span class="formw"><input name="delete" type="checkbox" id="delete" value="delete" /></span>
-                       </div> 
-                   
-	<?php
-		  					} //if image is present
-				  
-	?>
-                        <div class="row">
-                          <span class="label"><?php 
-                          if($entry['slika'] != '') echo "ILI: Zamijeni sliku"; else echo "Slika";?></span>
-                            <span class="formw">
-                                <input name="image" type="file" id="image" size="50" />
-                            </span><br /><br />
-                        	Dozvoljeni tipovi slike: jpg, jpeg, gif, png <br />
-                        </div>                         
-                        
-                        <div class="row">	
-                            <span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-                        </div>
-                    
-                    </div><!--formDiv-->
-                    
-                    
-                    </form>
-                    
+<?php 					if ($entry['slika'] != '')
+						{
+						//if the image exists, display it
+			  ?>
+				   <div class="row">
+						<span class="label">Trenutna slika</span>
+						<span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$entry[osoba]&i=$entry[slika]"?>" />
+						</span>
+				   </div> 
+				   
+				   <div class="row">
+						<span class="label">Briši sliku</span>
+						<span class="formw"><input name="delete" type="checkbox" id="delete" value="delete" /></span>
+				   </div> 
+			   
+<?php
+						} //if image is present
+			  
+?>
+					<div class="row">
+					  <span class="label"><?php 
+					  if($entry['slika'] != '') echo "ILI: Zamijeni sliku"; else echo "Slika";?></span>
+						<span class="formw">
+							<input name="image" type="file" id="image" size="50" />
+						</span><br /><br />
+						Dozvoljeni tipovi slike: jpg, jpeg, gif, png <br />
+					</div>                         
 					
-	<?php				
-							
+					<div class="row">	
+						<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+					</div>
+				
+				</div><!--formDiv-->
+				
+				
+				</form>
+				
+				
+<?php				
+						
+					}
+					else
+					{
+						$errorText = formProcess_bl('edit');
+						if($errorText == '')
+						{
+							nicemessage('Uspješno ste uredili članak.');
+							zamgerlog("korisnik u$userid uspješno uredio clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
+							$link = $linkPrefix;									
 						}
 						else
-						{
-							$errorText = formProcess_bl('edit');
-							if($errorText == '')
-							{
-								nicemessage('Uspješno ste uredili članak.');
-								zamgerlog("korisnik u$userid uspješno uredio clanak na projektu ID=$projekat na predmetu p$predmet", 2);				
-								$link = $linkPrefix;									
-							}
-							else
-							{	
-								//an error occured trying to process the form
-								niceerror($errorText);
-								$link = "javascript:history.back();";	
-								
-							}
-							nicemessage('<a href="'. $link .'">Povratak.</a>');
+						{	
+							//an error occured trying to process the form
+							niceerror($errorText);
+							$link = "javascript:history.back();";	
 							
-						} //submitted the form
-								
+						}
+						nicemessage('<a href="'. $link .'">Povratak.</a>');
 						
-					} //id is okay	
+					} //submitted the form
 				
 				} //subaction == edit
 				elseif ($subaction == 'del')
@@ -1549,67 +1536,61 @@ function common_projektneStrane()
 						return;
 					
 					//edit item
-					if (isset($id) && is_int($id) && $id > 0)
+					if (!isset($_POST['submit']))
 					{
-						
-						if (!isset($_POST['submit']))
-						{
-							$entry = getFileFirstRevision($id);
-							$lastRevisionEntry = getFileLastRevision($id);
-			?>
-						 <h3>Uredi fajl</h3>
-						
-						<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
-						<div id="formDiv">
-							Polja sa * su obavezna. <br />
-                            <b>Limit za upload je 20MB.</b> <br />							
-                           <div class="row">
-                                <span class="label">Trenutni fajl</span>
-                                <span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
-									<?=filtered_output_string($lastRevisionEntry[filename]) ?>
-                                </a>
-                                </span>
-                           </div> 
+						$entry = getFileFirstRevision($id);
+						$lastRevisionEntry = getFileLastRevision($id);
+		?>
+					 <h3>Uredi fajl</h3>
+					
+					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+					<div id="formDiv">
+						Polja sa * su obavezna. <br />
+						<b>Limit za upload je 20MB.</b> <br />							
+					   <div class="row">
+							<span class="label">Trenutni fajl</span>
+							<span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
+								<?=filtered_output_string($lastRevisionEntry[filename]) ?>
+							</a>
+							</span>
+					   </div> 
 
-                            <div class="row">
-                              <span class="label">Zamijeni fajl</span>
-                                <span class="formw">
-                                    <input name="filename" type="file" id="filename" size="50" />
-                                    <input type="hidden" name="MAX_FILE_SIZE" value="20971520">
-                                </span>
-                            </div>                         
-							<div class="row">	
-								<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-							</div>
-						
-						</div><!--formDiv-->
-						</form>
-		
-			<?php				
-									
+						<div class="row">
+						  <span class="label">Zamijeni fajl</span>
+							<span class="formw">
+								<input name="filename" type="file" id="filename" size="50" />
+								<input type="hidden" name="MAX_FILE_SIZE" value="20971520">
+							</span>
+						</div>                         
+						<div class="row">	
+							<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+						</div>
+					
+					</div><!--formDiv-->
+					</form>
+	
+		<?php				
+								
+					}
+					else
+					{
+						$errorText = formProcess_file('edit');
+						if($errorText == '')
+						{
+							nicemessage('Uspješno ste uredili fajl.');
+							zamgerlog("korisnik u$userid uspješno uredio fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
+							$link = $linkPrefix;									
 						}
 						else
-						{
-							$errorText = formProcess_file('edit');
-							if($errorText == '')
-							{
-								nicemessage('Uspješno ste uredili fajl.');
-								zamgerlog("korisnik u$userid uspješno uredio fajl na projektu ID=$projekat na predmetu p$predmet", 2);				
-								$link = $linkPrefix;									
-							}
-							else
-							{	
-								//an error occured trying to process the form
-								niceerror($errorText);
-								$link = "javascript:history.back();";	
-								
-							}
-							nicemessage('<a href="'. $link .'">Povratak.</a>');
+						{	
+							//an error occured trying to process the form
+							niceerror($errorText);
+							$link = "javascript:history.back();";	
 							
-						} //submitted the form
-								
+						}
+						nicemessage('<a href="'. $link .'">Povratak.</a>');
 						
-					} //id is okay	
+					} //submitted the form
 					
 				} //subaction == edit
 				elseif ($subaction == 'del')
@@ -1904,80 +1885,75 @@ function common_projektneStrane()
 				elseif ($subaction == 'edit')
 				{
 					//edit item
-					if (isset($id) && is_int($id) && $id > 0)
+					if (isUserAuthorOfPost($id, $userid) == false)
 					{
-						if (isUserAuthorOfPost($id, $userid) == false)
-						{
-							zamgerlog("korisnik u$userid pokusava urediti vlastiti post  ID=$id kojem nije autor na projektu ID=$projekat na predmetu p$predmet", 3);
-							return;
-						}
-						$threadID = intval($_GET[tid]);
-						if ($threadID <=0)
-						{
-							zamgerlog("korisnik u$userid pokusava urediti post ID=$id iako je ID teme los jer nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
-							return;
-						}
-						
-						
-						if (!isset($_POST['submit']))
-						{
-							$entry = getPost($id);
-							if (empty($entry))
-							{
-								zamgerlog("korisnik u$userid pokusava urediti vlastiti post koji ima los ID koji nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
-								return;
-							}
-	?>
-					 <h3>Uredi post</h3>
-				
-                    <form action="<?=$linkPrefix . "&subaction=edit&tid=$threadID&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
-                    <div id="formDiv">
-                        Polja sa * su obavezna. <br />
-                    
-                        <div class="row">
-                            <span class="label">Naslov *</span>
-                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
-                        </div>
-                        <div class="row">
-                            <span class="label">Tekst *</span>
-                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
-                        </div> 
-                        
-                        <div class="row">	
-                            <span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-                        </div>
-                    
-                    </div><!--formDiv-->
-                    
-                    
-                    </form>
-                    
+						zamgerlog("korisnik u$userid pokusava urediti vlastiti post  ID=$id kojem nije autor na projektu ID=$projekat na predmetu p$predmet", 3);
+						return;
+					}
+					$threadID = intval($_GET[tid]);
+					if ($threadID <=0)
+					{
+						zamgerlog("korisnik u$userid pokusava urediti post ID=$id iako je ID teme los jer nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
+						return;
+					}
 					
-	<?php				
-							
+					
+					if (!isset($_POST['submit']))
+					{
+						$entry = getPost($id);
+						if (empty($entry))
+						{
+							zamgerlog("korisnik u$userid pokusava urediti vlastiti post koji ima los ID koji nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
+							return;
+						}
+?>
+				 <h3>Uredi post</h3>
+			
+				<form action="<?=$linkPrefix . "&subaction=edit&tid=$threadID&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<div id="formDiv">
+					Polja sa * su obavezna. <br />
+				
+					<div class="row">
+						<span class="label">Naslov *</span>
+						<span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
+					</div>
+					<div class="row">
+						<span class="label">Tekst *</span>
+						<span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
+					</div> 
+					
+					<div class="row">	
+						<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+					</div>
+				
+				</div><!--formDiv-->
+				
+				
+				</form>
+				
+				
+<?php				
+						
+					}
+					else
+					{
+						$errorText = formProcess_bb('edit', $thread, $threadID);
+						if($errorText == '')
+						{
+							nicemessage('Uspješno ste uredili post.');
+							zamgerlog("korisnik u$userid uspješno uredio vlastiti BB post ID=$id na projektu ID=$projekat na predmetu p$predmet", 2);				
+							$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";									
 						}
 						else
-						{
-							$errorText = formProcess_bb('edit', $thread, $threadID);
-							if($errorText == '')
-							{
-								nicemessage('Uspješno ste uredili post.');
-								zamgerlog("korisnik u$userid uspješno uredio vlastiti BB post ID=$id na projektu ID=$projekat na predmetu p$predmet", 2);				
-								$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";									
-							}
-							else
-							{	
-								//an error occured trying to process the form
-								niceerror($errorText);
-								$link = "javascript:history.back();";	
-								
-							}
-							nicemessage('<a href="'. $link .'">Povratak.</a>');
+						{	
+							//an error occured trying to process the form
+							niceerror($errorText);
+							$link = "javascript:history.back();";	
 							
-						} //submitted the form
-								
+						}
+						nicemessage('<a href="'. $link .'">Povratak.</a>');
 						
-					} //id is okay	
+					} //submitted the form
 				
 				} //subaction == edit
 				elseif ($subaction == 'del')
