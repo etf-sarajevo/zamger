@@ -14,12 +14,6 @@ function common_fileDownload()
 		return;
 	}
 	
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu common/fileDownload na predmetu p$predmet", 3);				
-		return;	
-	}
 	
 	if ($user_nastavnik && !$user_siteadmin)
 	{
@@ -58,7 +52,7 @@ function common_fileDownload()
 	$filepath = $lokacijafajlova . $entry[filename];
 	$type = `file -bi '$filepath'`;
 	header("Content-Type: $type");
-	header("Content-Disposition: attachment; filename=\"" . $entry[filename] . "\";", false);
+	header("Content-Disposition: attachment; filename=\"" . $entry[filename] . "\"", false);
 	
 	$k = readfile($filepath,false);
 	if ($k == false) 
