@@ -5,21 +5,15 @@ function common_articleImageDownload()
 	$predmet 	= intval($_REQUEST['predmet']);
 	$ag		 	= intval($_REQUEST['ag']);
 	$projekat 	= intval($_REQUEST['projekat']);
+	$articleID   = intval($_REQUEST['a']);
 	$authorID   = intval($_REQUEST['u']);
 	$imageName = $_GET['i'];
 		
-	if ($predmet <=0 || $projekat <=0 || $authorID <=0 || $ag <=0)
+	if ($predmet <=0 || $projekat <=0 || $authorID <=0 || $ag <=0 || $articleID <= 0)
 	{
 		//hijack attempt?
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa ID predmeta  ili ID projekta ili ID autora slike ili ag koji nije integer ili je <=0", 3);		
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa ID predmeta  ili ID projekta ili ID autora slike ili ag ili clanak koji nije integer ili je <=0", 3);		
 		return;
-	}
-	
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa losim ID koji nije integer ili je <=0 pokusao pristupiti modulu common/articleImageDownload na predmetu p$predmet", 3);				
-		return;	
 	}
 	
 	if ($user_nastavnik && !$user_siteadmin)
@@ -48,15 +42,16 @@ function common_articleImageDownload()
 	$imageName = strip_tags($imageName);
 	$imageName = trim($imageName);
 	
-	if (empty($imageName))
+	$article = getArticle($articleID);
+	if (empty($article) || $article['osoba'] != $authorID || $article['slika'] != $imageName || $article['projekat'] |= $projekat)
 	{
-		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa praznim nazivom slike", 3);				
+		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa losim authorID, imageName, projekat ili ID clanka", 3);				
 		return;
 	}
 	
 	
-	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $authorID . "/";
-	$filepath = $lokacijaclanaka  . $imageName;
+	$lokacijaclanaka ="$conf_files_path/projekti/clanci/$projekat/" . $article[osoba] . "/";
+	$filepath = $lokacijaclanaka  . $article[slika];
 	
 	$type = `file -bi '$filepath'`;
 	
