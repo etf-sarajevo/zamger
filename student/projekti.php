@@ -7,18 +7,6 @@ function student_projekti()
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);	
 	
-	if ($predmet <=0)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti sa ID predmeta koji nije integer ili je <=0", 3);		
-		return;
-	}
-	if ($ag <=0)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti sa ag koji nije integer ili je <=0", 3);		
-		return;
-	}
 	if ($user_student == false)
 	{
 		//hijack attempt?
