@@ -12,19 +12,6 @@ function common_projektneStrane()
 	$section 	= $_GET['section'];
 	$subaction  = $_GET['subaction'];
 	$id			= intval($_GET['id']);  //editing links, rss....
-	if ($predmet <=0 || $projekat <=0)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokušao pristupiti modulu common/projektneStrane sa ID predmeta  ili ID projekta koji nije integer ili je <=0", 3);		
-		return;
-	}
-	
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa lošim ID koji nije integer ili je <=0 pokušao pristupiti modulu common/projektneStrane projekta $projekat na predmetu p$predmet", 3);				
-		return;	
-	}
 
 	if ($user_student && !$user_siteadmin) //ordinary student
 	{
@@ -91,7 +78,7 @@ function common_projektneStrane()
                         ?>
                             <div class="item">
                                 <span class="date"><?=date('d.m H:i  ', mysql2time($post[vrijeme])) ?></span>
-                                <a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=$post[tema]#p$post[id]" ?>" title="<?=stripslashes(htmlentities($post['naslov'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=$post[tema]#p$post[id]" ?>" title="<?=$post['naslov']?>" target="_blank"><?php
                                 
                                     $maxLen = 100;	
                                     $len = strlen($post[naslov]);
@@ -138,7 +125,7 @@ function common_projektneStrane()
                         ?>
                             <div class="item">
                                 <span class="date"><?=date('d.m H:i  ', mysql2time($article[vrijeme])) ?></span>
-                                <a href="<?=$linkPrefix . "&section=bl&subaction=view&id=$article[id]" ?>" title="<?=stripslashes(htmlentities($article['naslov'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?=$linkPrefix . "&section=bl&subaction=view&id=$article[id]" ?>" title="<?=$article['naslov']?>" target="_blank"><?php
                                 
                                     $maxLen = 100;	
                                     $len = strlen($article[naslov]);
@@ -184,7 +171,7 @@ function common_projektneStrane()
             
             foreach ($links as $link)
             {
-                            $url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+                            $url = $link[url];
                             $scheme = parse_url($url);
                             $scheme  = $scheme['scheme'];
                         
@@ -203,7 +190,7 @@ function common_projektneStrane()
                             $author = getAuthorOfLink($link[id]);					
         ?>
                             <div class="item">
-                                <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?php
                                 
                                     $maxLen = 35;	
                                     $len = strlen($link[naziv]);
@@ -254,7 +241,7 @@ function common_projektneStrane()
             
             foreach ($links as $link)
             {
-                            $url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+                            $url = $link[url];
                             $scheme = parse_url($url);
                             $scheme  = $scheme['scheme'];
                         
@@ -273,7 +260,7 @@ function common_projektneStrane()
                             $author = getAuthorOfRSS($link[id]);					
         ?>
                             <div class="item">
-                                <a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?php
                                 
                                     $maxLen = 35;	
                                     $len = strlen($link[naziv]);
@@ -329,7 +316,7 @@ function common_projektneStrane()
         ?>
                             <div class="item">
                                 <span class="date"><?=date('d.m H:i  ', mysql2time($file[vrijeme])) ?></span>
-                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&ag=$ag&projekat=$projekat&id=$file[id]" ?>" title="<?=stripslashes(htmlentities($file['filename'], ENT_QUOTES))?>" target="_blank"><?php
+                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&ag=$ag&projekat=$projekat&id=$file[id]" ?>" title="<?=$file['filename']?>" ><?php
                                 
                                     $maxLen = 100;	
                                     $len = strlen($file[filename]);
@@ -454,7 +441,7 @@ function common_projektneStrane()
     <th width="200" align="left" valign="top" scope="row">URL</th>
     <td width="490" align="left" valign="top">
     <?php
-						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+						$url = $link[url];
 						$scheme = parse_url($url);
 						$scheme  = $scheme['scheme'];
 					
@@ -462,7 +449,7 @@ function common_projektneStrane()
 							$url = 'http://' . $url;
 						
 						
-	?><a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
+	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
     </td>
   </tr>
  <?php
@@ -589,16 +576,16 @@ function common_projektneStrane()
 							
                             <div class="row">
 								<span class="label">Naziv *</span>
-								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo stripslashes(htmlentities($entry['naziv'], ENT_QUOTES))?>" /></span> 
+								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
 							</div>
 	
 							<div class="row">
 								<span class="label">URL *</span>
-								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo stripslashes(htmlentities($entry['url'], ENT_QUOTES))?>" /></span> 
+								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
 							</div>
 							<div class="row">
 								<span class="label">Opis</span>
-								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo stripslashes(htmlentities($entry['opis'], ENT_QUOTES))?></textarea></span>
+								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
 							</div> 
 							
 							<div class="row">	
@@ -725,7 +712,7 @@ function common_projektneStrane()
     <th width="200" align="left" valign="top" scope="row">URL</th>
     <td width="490" align="left" valign="top">
     <?php
-						$url = stripslashes(htmlentities($link[url], ENT_QUOTES));
+						$url = $link[url];
 						$scheme = parse_url($url);
 						$scheme  = $scheme['scheme'];
 					
@@ -733,7 +720,7 @@ function common_projektneStrane()
 							$url = 'http://' . $url;
 						
 						
-	?><a href="<?=$url ?>" title="<?=stripslashes(htmlentities($link['naziv'], ENT_QUOTES))?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
+	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
     </td>
   </tr>
  <?php
@@ -859,16 +846,16 @@ function common_projektneStrane()
 							
                             <div class="row">
 								<span class="label">Naziv *</span>
-								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo stripslashes(htmlentities($entry['naziv'], ENT_QUOTES))?>" /></span> 
+								<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
 							</div>
 	
 							<div class="row">
 								<span class="label">URL *</span>
-								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo stripslashes(htmlentities($entry['url'], ENT_QUOTES))?>" /></span> 
+								<span class="formw"><input name="url" type="text" id="url" size="70" value="<?php echo $entry['url']?>" /></span> 
 							</div>
 							<div class="row">
 								<span class="label">Opis</span>
-								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo stripslashes(htmlentities($entry['opis'], ENT_QUOTES))?></textarea></span>
+								<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis']?></textarea></span>
 							</div> 
 							
 							<div class="row">	
@@ -995,7 +982,7 @@ function common_projektneStrane()
     	<div class="contentCont" <?php if (empty($article[slika])) echo 'style="margin-left: 0;"' ?>>
             <h1>
                 <a href="<?=$linkPrefix . "&subaction=view&id=$article[id]" ?>" 
-                title="<?=stripslashes(htmlentities($article['naslov'], ENT_QUOTES, 'UTF-8')) ?>"><?=filtered_output_string($article['naslov']) ?>
+                title="<?=$article['naslov'] ?>"><?=filtered_output_string($article['naslov']) ?>
                 </a>
             </h1>
             <div class="details">
@@ -1080,7 +1067,7 @@ function common_projektneStrane()
 			<div class="contentCont clearfix">
 				<h1>
 					<a href="<?=$linkPrefix . "?subaction=view&id=$article[id]" ?>" 
-					title="<?=stripslashes(htmlentities($article['naslov'], ENT_QUOTES, 'UTF-8')) ?>"><?=filtered_output_string($article['naslov']) ?>
+					title="<?=$article['naslov'] ?>"><?=filtered_output_string($article['naslov']) ?>
 					</a>
 				</h1>
 				<div class="details">
@@ -1207,11 +1194,11 @@ function common_projektneStrane()
                     
                         <div class="row">
                             <span class="label">Naslov *</span>
-                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo stripslashes(htmlentities($entry['naslov'], ENT_QUOTES))?>" /></span> 
+                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
                         </div>
                         <div class="row">
                             <span class="label">Tekst</span>
-                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo stripslashes(htmlentities($entry['tekst'], ENT_QUOTES)) ?></textarea></span>
+                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
                         </div> 
 
 	<?php 					if ($entry['slika'] != '')
@@ -1393,7 +1380,7 @@ function common_projektneStrane()
 			echo nicesize($filesize);
 			?>        </td><!--filesize-->
         <td class="options">
-			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>" target="_blank">Snimi</a>        
+			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>">Snimi</a>        
 	<?php
 					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
 					{
@@ -1428,7 +1415,7 @@ function common_projektneStrane()
                     ?>
                 </td><!--filesize-->
                 <td class="options">
-                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $revision[id] ?>" target="_blank">Snimi</a>        
+                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $revision[id] ?>">Snimi</a>        
                 </td><!--options-->
             </tr><!--file_revision-->	
     <?php					
@@ -1578,7 +1565,7 @@ function common_projektneStrane()
                             <b>Limit za upload je 20MB.</b> <br />							
                            <div class="row">
                                 <span class="label">Trenutni fajl</span>
-                                <span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" target="_blank">
+                                <span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
 									<?=filtered_output_string($lastRevisionEntry[filename]) ?>
                                 </a>
                                 </span>
@@ -1718,7 +1705,7 @@ function common_projektneStrane()
         	<div class="lastReply"><?=date('d.m.Y H:i:s', mysql2time($thread[zadnji_post][vrijeme])) ?><br /><?=filtered_output_string($thread[zadnji_post][osoba][prezime] . ' ' . $thread[zadnji_post][osoba][ime]) ?></div><!--lastReply-->
             <div class="replies"><?=intval($thread[broj_odgovora]) ?></div><!--replies-->
         </div><!--threadInfo-->
-    	<div class="title"><a href="<?=$linkPrefix . "&subaction=view&tid=$thread[id]" ?>" title="<?php echo stripslashes(htmlentities($thread['naslov'], ENT_QUOTES)) ?>"><?=filtered_output_string($thread[naslov]) ?></a></div><!--title-->
+    	<div class="title"><a href="<?=$linkPrefix . "&subaction=view&tid=$thread[id]" ?>" title="<?php echo $thread['naslov'] ?>"><?=filtered_output_string($thread[naslov]) ?></a></div><!--title-->
         <div class="author"><?=filtered_output_string($thread[prvi_post][osoba][prezime] . ' ' . $thread[prvi_post][osoba][ime]) ?></div><!--author-->		
     </div><!--threadRow caption-->
     <?php
@@ -1865,7 +1852,7 @@ function common_projektneStrane()
                 
                 	<div class="row">
                         <span class="label">Naslov *</span>
-                        <span class="formw"><input name="naslov" type="text" id="naslov" size="70" <?php if ($thread == true) {?> value="RE: <?=stripslashes(htmlentities($extendedThreadInfo['naslov'], ENT_QUOTES, 'UTF-8'))?>"<?php } ?>/></span> 
+                        <span class="formw"><input name="naslov" type="text" id="naslov" size="70" <?php if ($thread == true) {?> value="RE: <?=$extendedThreadInfo['naslov']?>"<?php } ?>/></span> 
                   	</div>
                     <div class="row">
                         <span class="label">Tekst *</span>
@@ -1949,11 +1936,11 @@ function common_projektneStrane()
                     
                         <div class="row">
                             <span class="label">Naslov *</span>
-                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo stripslashes(htmlentities($entry['naslov'], ENT_QUOTES))?>" /></span> 
+                            <span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?php echo $entry['naslov']?>" /></span> 
                         </div>
                         <div class="row">
                             <span class="label">Tekst *</span>
-                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo stripslashes(htmlentities($entry['tekst'], ENT_QUOTES)) ?></textarea></span>
+                            <span class="formw"><textarea name="tekst" cols="60" rows="15" wrap="physical" id="tekst"><?php echo $entry['tekst'] ?></textarea></span>
                         </div> 
                         
                         <div class="row">	
@@ -2094,11 +2081,7 @@ function formProcess_links($option)
 	$naziv = trim($naziv);
 	$url = trim($url);
 	$opis = trim($opis);
-	
-	$naziv = strip_tags($naziv);
-	$url = strip_tags($url);
-	$opis = strip_tags($opis);
-	
+		
 	$data = array(
 				'naziv' => $naziv, 
 				'url' => $url, 
@@ -2216,10 +2199,6 @@ function formProcess_rss($option)
 	$url = trim($url);
 	$opis = trim($opis);
 	
-	$naziv = strip_tags($naziv);
-	$url = strip_tags($url);
-	$opis = strip_tags($opis);
-	
 	$data = array(
 				'naziv' => $naziv, 
 				'url' => $url, 
@@ -2334,9 +2313,6 @@ function formProcess_bl($option)
 	
 	$naslov = trim($naslov);
 	$tekst = trim($tekst);
-	
-	$naslov = strip_tags($naslov);
-	$tekst = strip_tags($tekst);
 	
 	
 	//process image
@@ -2867,10 +2843,6 @@ function formProcess_bb($option, $thread, $threadID)
 	$naslov = trim($naslov);
 	$tekst = trim($tekst);
 	
-	$naslov = strip_tags($naslov);
-	$tekst = strip_tags($tekst);
-	
-
 	if ($option == 'edit')
 	{
 		$entry = getPost($id);
