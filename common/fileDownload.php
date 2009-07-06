@@ -14,7 +14,6 @@ function common_fileDownload()
 		return;
 	}
 	
-	
 	if ($user_nastavnik && !$user_siteadmin)
 	{
 		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
