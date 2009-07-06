@@ -230,8 +230,6 @@ function nastavnik_projekti()
 				
 			} //submitted the form
 		
-		
-
 		} //action == param		
 		elseif ($action == 'addProject')
 		{
@@ -253,7 +251,6 @@ function nastavnik_projekti()
 			{
 		
 	?>	
-    		
 				 <h2>Novi projekat</h2>
 				
                 <form action="<?=$linkPrefix . "&action=addProject" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
@@ -305,64 +302,60 @@ function nastavnik_projekti()
 		elseif ($action == 'editProject')
 		{
 			//edit item
-			if (isset($id) && is_int($id) && $id > 0)
+			if (!isset($_POST['submit']))
 			{
-				if (!isset($_POST['submit']))
-				{
-					$entry = getProject($id);
+				$entry = getProject($id);
+			
+?>
+				 <h1>Uredi projekat</h1>
+			
+				<form action="<?=$linkPrefix . "&action=editProject&amp;id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<div id="formDiv">
+					Polja sa * su obavezna. <br />
 				
-	?>
-					 <h1>Uredi projekat</h1>
-				
-                    <form action="<?=$linkPrefix . "&action=editProject&amp;id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
-                    <div id="formDiv">
-                        Polja sa * su obavezna. <br />
-                    
-                        <div class="row">
-                            <span class="label">Naziv *</span>
-                            <span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
-                        </div>
-                        <div class="row">
-                            <span class="label">Opis *</span>
-                            <span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis'] ?></textarea></span>
-                        </div> 
-                        
-                        <div class="row">	
-                            <span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-                        </div>
-                    
-                    </div><!--formDiv-->
-                    
-                    
-                    </form>
-                    
+					<div class="row">
+						<span class="label">Naziv *</span>
+						<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?php echo $entry['naziv']?>" /></span> 
+					</div>
+					<div class="row">
+						<span class="label">Opis *</span>
+						<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['opis'] ?></textarea></span>
+					</div> 
 					
-	<?php				
-							
+					<div class="row">	
+						<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
+					</div>
+				
+				</div><!--formDiv-->
+				
+				
+				</form>
+				
+				
+<?php				
+						
+			}
+			else
+			{
+				$errorText = formProcess('edit');
+				if($errorText == '')
+				{
+					nicemessage('Uspješno ste uredili projekat.');
+					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_GET[predmet]", 2);		
+
+					$link = $linkPrefix;									
 				}
 				else
-				{
-					$errorText = formProcess('edit');
-					if($errorText == '')
-					{
-						nicemessage('Uspješno ste uredili projekat.');
-						zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_GET[predmet]", 2);		
-
-						$link = $linkPrefix;									
-					}
-					else
-					{	
-						//an error occured trying to process the form
-						niceerror($errorText);
-						$link = "javascript:history.back();";	
-						
-					}
-					nicemessage('<a href="'. $link .'">Povratak.</a>');
+				{	
+					//an error occured trying to process the form
+					niceerror($errorText);
+					$link = "javascript:history.back();";	
 					
-				} //submitted the form
-						
+				}
+				nicemessage('<a href="'. $link .'">Povratak.</a>');
 				
-			} //id is okay	
+			} //submitted the form
+			
 		
 		} //action == editProject
 		elseif ($action == 'delProject')
