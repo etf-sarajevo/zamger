@@ -43,7 +43,7 @@ function common_articleImageDownload()
 	$imageName = trim($imageName);
 	
 	$article = getArticle($articleID);
-	if (empty($article) || $article['osoba'] != $authorID || $article['slika'] != $imageName || $article['projekat'] |= $projekat)
+	if (empty($article) || ( $article['osoba'] != $authorID || $article['slika'] != $imageName || $article['projekat'] != $projekat ))
 	{
 		zamgerlog("korisnik u$userid pokusao pristupiti modulu common/articleImageDownload sa losim authorID, imageName, projekat ili ID clanka", 3);				
 		return;
@@ -59,6 +59,7 @@ function common_articleImageDownload()
 	header('Content-Length: ' . filesize($filepath));
 	
 	echo file_get_contents($filepath);	
+	
 }
 
 
