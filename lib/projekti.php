@@ -22,7 +22,7 @@ function getProject($id)
 
 function fetchProjectMembers($id)
 {
-	$result = myquery("SELECT * FROM osoba o INNER JOIN osoba_projekat op ON o.id=op.student WHERE op.projekat='$id' ORDER BY prezime ASC, ime ASC");
+	$result = myquery("SELECT * FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id' ORDER BY prezime ASC, ime ASC");
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))
 		$list[] = $row;	
@@ -75,8 +75,8 @@ function applyForProject($userid, $project, $predmet)
 	
 	
 	//clear person from all projects on this predmet
-	$result = myquery("DELETE FROM osoba_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
-	$query = sprintf("INSERT INTO osoba_projekat (student, projekat) VALUES ('%d', '%d')", 
+	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
+	$query = sprintf("INSERT INTO student_projekat (student, projekat) VALUES ('%d', '%d')", 
 					$userid,
 					$project
 	);
@@ -112,7 +112,7 @@ function getOutOfProject($userid, $predmet)
 	
 
 	//clear person from all projects on this predmet - actually only one project
-	$result = myquery("DELETE FROM osoba_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
+	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
 	
 	if ($result == false)
 	{
@@ -168,7 +168,7 @@ function getCountProjectsForPredmet($predmet)
 
 function getCountMembersForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM osoba o INNER JOIN osoba_projekat op ON o.id=op.student WHERE op.projekat='$id'");
+	$result = myquery("SELECT COUNT(id) FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id'");
 	$row = mysql_fetch_row($result);
 	$row = $row[0];
 	
@@ -237,7 +237,7 @@ function isProjectFull($project, $predmet)
 
 function getActualProjectForUserInPredmet($userid, $predmet)
 {
-	$result = myquery("SELECT p.* FROM projekat p, osoba_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' LIMIT 1");
+	$result = myquery("SELECT p.* FROM projekat p, student_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' LIMIT 1");
 	
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))
@@ -250,8 +250,8 @@ function getActualProjectForUserInPredmet($userid, $predmet)
 
 function filtered_output_string($string)
 {
-	//performing nl2br and stripslashes function to display text from the database
-	return nl2br(stripslashes($string));
+	//performing nl2br function to display text from the database
+	return nl2br($string);
 }
 
 
@@ -733,7 +733,7 @@ function isUserAuthorOfPost($post, $user)
 
 function fetchLatestPostsForProject($project, $limit)
 {
-	$result = myquery("SELECT p.*, pt.tekst FROM bb_post p, bb_post_text pt WHERE pt.post=p.id ORDER BY p.vrijeme DESC LIMIT 0, $limit ");
+	$result = myquery("SELECT p.*, pt.tekst FROM bb_post p, bb_post_text pt WHERE pt.post=p.id AND p.tema IN (SELECT t.id FROM bb_tema t WHERE t.projekat=$project) ORDER BY p.vrijeme DESC LIMIT 0, $limit ");
 	$list = array();
 	$i = 0;
 	while ($row = mysql_fetch_assoc($result))
