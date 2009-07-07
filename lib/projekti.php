@@ -143,7 +143,7 @@ function generateIdFromTable($table)
 
 function getPredmetParams($predmet)
 {
-	$result = myquery("SELECT * FROM predmet_parametri WHERE predmet='$predmet' LIMIT 1");
+	$result = myquery("SELECT * FROM predmet_projektni_parametri WHERE predmet='$predmet' LIMIT 1");
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))
 		$list[] = $row;	
