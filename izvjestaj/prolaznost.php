@@ -283,7 +283,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 	// Gledamo samo redovni rok a.k.a. prvi ispit datog tipa
 	$cache_ispiti = $cache_predmeti = array();
 	if ($ispit==1 || $ispit==2) {
-		$q90 = myquery("select i.id, pk.id from ispit as i, ponudakursa as pk, predmet as p where i.predmet=p.id and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=$ispit group by i.predmet,i.komponenta");
+		$q90 = myquery("select i.id, p.id from ispit as i, ponudakursa as pk, predmet as p where i.predmet=p.id and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=$ispit group by i.predmet,i.komponenta");
 		while ($r90 = mysql_fetch_row($q90)) {
 			array_push($cache_ispiti,$r90[0]);
 			array_push($cache_predmeti,$r90[1]);
