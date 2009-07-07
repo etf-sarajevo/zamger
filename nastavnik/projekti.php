@@ -1,4 +1,5 @@
 ﻿<?php
+// NASTAVNIK/PROJEKTI - nastavnicki modul za definisanje projekata, parametara
 require_once("lib/projekti.php");
 
 function nastavnik_projekti()
@@ -21,8 +22,8 @@ function nastavnik_projekti()
 	}
 	
 	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet&ag=$ag";
-	$action 	= $_GET['action'];
-	$id			= intval($_GET['id']);
+	$action 	= $_REQUEST['action'];
+	$id			= intval($_REQUEST['id']);
 		
 	?>
 <LINK href="css/projekti.css" rel="stylesheet" type="text/css">
@@ -163,12 +164,14 @@ function nastavnik_projekti()
 		if ($action == 'param')
 		{
 		
-			if (!isset($_POST['submit']))
+			if (!isset($_REQUEST['submit']))
 			{
 ?>
 				 <h2>Parametri projekata</h2>
-			
-				<form action="<?=$linkPrefix . "&action=param" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<?php
+					print genform("POST", "editForm");
+				?>
+				<!--<action="<?=$linkPrefix . "&action=param" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">-->
 				<div id="formDiv">
 					Polja sa * su obavezna. <br />
                 	<div class="row">
@@ -217,7 +220,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili parametre projekata.');
-					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu p$_GET[predmet]", 2);		
+					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu p$_REQUEST[predmet]", 2);		
 					$link = $linkPrefix;		
 				}
 				else
@@ -234,7 +237,7 @@ function nastavnik_projekti()
 		elseif ($action == 'addProject')
 		{
 		
-			if (empty($params) && !isset($_POST['submit']))
+			if (empty($params) && !isset($_REQUEST['submit']))
 			{
 				nicemessage("Prvo podesite parametre projekata.");
 				nicemessage('<a href="'. $linkPrefix .'&action=param">Parametri projekata</a>');
@@ -247,13 +250,15 @@ function nastavnik_projekti()
 				return;
 			}
 			
-			if (!isset($_POST['submit']))
+			if (!isset($_REQUEST['submit']))
 			{
 		
 	?>	
 				 <h2>Novi projekat</h2>
-				
-                <form action="<?=$linkPrefix . "&action=addProject" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
+	<?php
+   				 print genform("POST", "addForm");
+    ?>
+                
                 <div id="formDiv">
                 	Polja sa * su obavezna. <br />
                 
@@ -284,7 +289,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Novi projekat uspješno dodan.');
-					zamgerlog("korisnik u$userid dodao novi projekat na predmetu p$_GET[predmet]", 2);		
+					zamgerlog("korisnik u$userid dodao novi projekat na predmetu p$_REQUEST[predmet]", 2);		
 
 					$link = $linkPrefix;			
 				}
@@ -302,14 +307,16 @@ function nastavnik_projekti()
 		elseif ($action == 'editProject')
 		{
 			//edit item
-			if (!isset($_POST['submit']))
+			if (!isset($_REQUEST['submit']))
 			{
 				$entry = getProject($id);
 			
 ?>
 				 <h1>Uredi projekat</h1>
-			
-				<form action="<?=$linkPrefix . "&action=editProject&amp;id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+	<?php
+   				 print genform("POST", "editForm");
+    ?>
+				
 				<div id="formDiv">
 					Polja sa * su obavezna. <br />
 				
@@ -341,7 +348,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili projekat.');
-					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_GET[predmet]", 2);		
+					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_REQUEST[predmet]", 2);		
 
 					$link = $linkPrefix;									
 				}
@@ -363,20 +370,20 @@ function nastavnik_projekti()
 			//delete item
 			if (isset($id) && is_int($id) && $id > 0)
 			{
-				if (!isset($_GET['c']))
+				if (!isset($_REQUEST['c']))
 				{
 					echo "Da li ste sigurni da zelite obrisati ovaj projekat? Svi podaci vezani za aktivnosti na ovom projektu ce biti obrisane.<br />";	
 					echo '<a href="' . $linkPrefix .'&amp;action=delProject&amp;id=' . $id . '&amp;c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 				}
 				else
 				{
-					if ($_GET['c'] == 'true')
+					if ($_REQUEST['c'] == 'true')
 					{
 						//delete the record
 						if (deleteProject($id))
 						{
 							nicemessage('Uspjesno ste obrisali projekat.');	
-							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu p$_GET[predmet]", 4);		
+							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu p$_REQUEST[predmet]", 4);		
 
 							$link = $linkPrefix;		
 						}
@@ -414,6 +421,14 @@ function nastavnik_projekti()
 
 function formProcess($option)
 {
+	$errorText = '';
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
+	
 	if (!in_array($option, array('add', 'edit') ) )
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';		
@@ -421,13 +436,11 @@ function formProcess($option)
 	}
 	
 	//get variables
-	$naziv = $_POST['naziv'];
-	$opis  = $_POST['opis'];
+	$naziv = $_REQUEST['naziv'];
+	$opis  = $_REQUEST['opis'];
 	
-	$predmet = intval($_GET['predmet']);
-	$id = intval($_GET['id']);
-	
-	$errorText = '';
+	$predmet = intval($_REQUEST['predmet']);
+	$id = intval($_REQUEST['id']);
 	
 	if (empty($naziv) || empty($opis))
 	{
@@ -607,20 +620,28 @@ function deleteStudentsForProject($id)
 
 function formProcess_param()
 {
-	//get variables
-	$min_timova = intval($_POST['min_timova']);
-	$max_timova  = intval($_POST['max_timova']);
+	$errorText = '';
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	
-	$min_clanova_tima = intval($_POST['min_clanova_tima']);
-	$max_clanova_tima = intval($_POST['max_clanova_tima']);
+	//get variables
+	$min_timova = intval($_REQUEST['min_timova']);
+	$max_timova  = intval($_REQUEST['max_timova']);
+	
+	$min_clanova_tima = intval($_REQUEST['min_clanova_tima']);
+	$max_clanova_tima = intval($_REQUEST['max_clanova_tima']);
 	
 	$zakljucani_projekti = 0;
-	if (isset($_POST['lock']))
+	if (isset($_REQUEST['lock']))
 		$zakljucani_projekti = 1;
 	
-	$predmet = intval($_GET['predmet']);
+	$predmet = intval($_REQUEST['predmet']);
 	
-	$errorText = '';
+	
 	
 	if (empty($min_timova) || empty($max_timova)
 	 || empty($min_clanova_tima) || empty($max_clanova_tima))
