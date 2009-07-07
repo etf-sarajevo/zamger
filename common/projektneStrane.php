@@ -1,4 +1,5 @@
 ﻿<?php
+// COMMON/PROJEKTNESTRANE - projektna strana projekta
 function common_projektneStrane()
 {
 	//debug mod aktivan
@@ -6,12 +7,12 @@ function common_projektneStrane()
 	$predmet 	= intval($_REQUEST['predmet']);
 	$ag 		= intval($_REQUEST['ag']);
 	$projekat 	= intval($_REQUEST['projekat']);
-	$action 	= $_GET['action'];
+	$action 	= $_REQUEST['action'];
 	
 	//for project page only:
-	$section 	= $_GET['section'];
-	$subaction  = $_GET['subaction'];
-	$id			= intval($_GET['id']);  //editing links, rss....
+	$section 	= $_REQUEST['section'];
+	$subaction  = $_REQUEST['subaction'];
+	$id			= intval($_REQUEST['id']);  //editing links, rss....
 
 	if ($user_student && !$user_siteadmin) //ordinary student
 	{
@@ -412,9 +413,9 @@ function common_projektneStrane()
 			{
 				$rowsPerPage = 20;
 				$pageNum = 1;
-				if(isset($_GET['page']))
+				if(isset($_REQUEST['page']))
 				{
-					$pageNum = $_GET['page'];
+					$pageNum = $_REQUEST['page'];
 				}
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
@@ -500,13 +501,15 @@ function common_projektneStrane()
 				if ($subaction == 'add')
 				{
 					
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 				
 	?>
 						 <h3>Novi link</h3>
+				<?php
+					print genform("POST", "addForm");
+				?>
 						
-						<form action="<?=$linkPrefix . "&subaction=add" ?>" method="post" enctype="application/x-www-form-urlencoded" name="addForm" id="addForm">
 						<div id="formDiv">
 							Polja sa * su obavezna. <br />
 							
@@ -560,14 +563,16 @@ function common_projektneStrane()
 					
 					
 					//edit item
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 						$entry = getLink($id);
 				
 		?>
 					 <h3>Uredi link</h3>
-					
-					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
+				<?php
+					print genform("POST", "editForm");
+				?>
+                	
 					<div id="formDiv">
 						Polja sa * su obavezna. <br />
 						
@@ -626,14 +631,14 @@ function common_projektneStrane()
 					//delete item
 					if (isset($id) && is_int($id) && $id > 0)
 					{
-						if (!isset($_GET['c']))
+						if (!isset($_REQUEST['c']))
 						{
 							echo "Da li ste sigurni da zelite obrisati ovaj link?<br />";	
 							echo '<a href="' . $linkPrefix . '&subaction=del&id=' . $id . '&c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 						}
 						else
 						{
-							if ($_GET['c'] == 'true')
+							if ($_REQUEST['c'] == 'true')
 							{
 								//delete the record
 								if (deleteLink($id))
@@ -679,9 +684,9 @@ function common_projektneStrane()
 			{
 				$rowsPerPage = 20;
 				$pageNum = 1;
-				if(isset($_GET['page']))
+				if(isset($_REQUEST['page']))
 				{
-					$pageNum = $_GET['page'];
+					$pageNum = $_REQUEST['page'];
 				}
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
@@ -766,13 +771,15 @@ function common_projektneStrane()
 				if ($subaction == 'add')
 				{
 					
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 				
 	?>
 						 <h3>Novi RSS feed</h3>
+				<?php
+					print genform("POST", "addForm");
+				?>
 						
-						<form action="<?=$linkPrefix . "&subaction=add" ?>" method="post" enctype="application/x-www-form-urlencoded" name="addForm" id="addForm">
 						<div id="formDiv">
 							Polja sa * su obavezna. <br />
 							
@@ -826,14 +833,16 @@ function common_projektneStrane()
 					
 					//edit item
 					
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 						$entry = getRSS($id);
 				
 		?>
 					 <h3>Uredi RSS feed</h3>
-					
-					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="application/x-www-form-urlencoded" name="editForm" id="editForm">
+				<?php
+					print genform("POST", "editForm");
+				?>
+                	
 					<div id="formDiv">
 						Polja sa * su obavezna. <br />
 						
@@ -893,14 +902,14 @@ function common_projektneStrane()
 					//delete item
 					if (isset($id) && is_int($id) && $id > 0)
 					{
-						if (!isset($_GET['c']))
+						if (!isset($_REQUEST['c']))
 						{
 							echo "Da li ste sigurni da zelite obrisati ovaj RSS feed?<br />";	
 							echo '<a href="' . $linkPrefix . '&subaction=del&id=' . $id . '&c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 						}
 						else
 						{
-							if ($_GET['c'] == 'true')
+							if ($_REQUEST['c'] == 'true')
 							{
 								//delete the record
 								if (deleteRSS($id))
@@ -946,9 +955,9 @@ function common_projektneStrane()
 				
 				$rowsPerPage = 20;
 				$pageNum = 1;
-				if(isset($_GET['page']))
+				if(isset($_REQUEST['page']))
 				{
-					$pageNum = $_GET['page'];
+					$pageNum = $_REQUEST['page'];
 				}
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
@@ -1105,14 +1114,16 @@ function common_projektneStrane()
 				elseif ($subaction == 'add')
 				{
 		
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 		
 	?>	
     		
 				 <h3>Novi članak</h3>
-				
-                <form action="<?=$linkPrefix . "&subaction=add" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
+				<?php
+					print genform("POST", "addForm\" enctype=\"multipart/form-data\" ");
+				?>
+                
                 <div id="formDiv">
                 	Polja sa * su obavezna. <br />
                 
@@ -1171,14 +1182,16 @@ function common_projektneStrane()
 
 					
 					//edit item
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 						$entry = getArticle($id);
 			
 ?>
 				 <h3>Uredi članak</h3>
-			
-				<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<?php
+					print genform("POST", "editForm\" enctype=\"multipart/form-data\" ");
+				?>
+				
 				<div id="formDiv">
 					Polja sa * su obavezna. <br />
 				
@@ -1261,14 +1274,14 @@ function common_projektneStrane()
 						if (isUserAuthorOfArticle($id, $userid) == false)
 							return;
 						
-						if (!isset($_GET['c']))
+						if (!isset($_REQUEST['c']))
 						{
 							echo "Da li ste sigurni da zelite obrisati ovaj članak? <br />";	
 							echo '<a href="' . $linkPrefix .'&amp;subaction=del&amp;id=' . $id . '&amp;c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 						}
 						else
 						{
-							if ($_GET['c'] == 'true')
+							if ($_REQUEST['c'] == 'true')
 							{
 								//delete the record
 								if (deleteArticle($id))
@@ -1314,9 +1327,9 @@ function common_projektneStrane()
 			{
 				$rowsPerPage = 20;
 				$pageNum = 1;
-				if(isset($_GET['page']))
+				if(isset($_REQUEST['page']))
 				{
-					$pageNum = $_GET['page'];
+					$pageNum = $_REQUEST['page'];
 				}
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;			
@@ -1480,13 +1493,15 @@ function common_projektneStrane()
 				if ($subaction == 'add')
 				{
 					
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 				
 	?>
 						 <h3>Novi fajl</h3>
+				<?php
+					print genform("POST", "addForm\" enctype=\"multipart/form-data\" ");
+				?>
 						
-						<form action="<?=$linkPrefix . "&subaction=add" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
 						<div id="formDiv">
 							Polja sa * su obavezna. <br />
 							<b>Limit za upload je 20MB.</b> <br />
@@ -1536,14 +1551,16 @@ function common_projektneStrane()
 						return;
 					
 					//edit item
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 						$entry = getFileFirstRevision($id);
 						$lastRevisionEntry = getFileLastRevision($id);
 		?>
 					 <h3>Uredi fajl</h3>
+				<?php
+					print genform("POST", "editForm\" enctype=\"multipart/form-data\" ");
+				?>
 					
-					<form action="<?=$linkPrefix . "&subaction=edit&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
 					<div id="formDiv">
 						Polja sa * su obavezna. <br />
 						<b>Limit za upload je 20MB.</b> <br />							
@@ -1604,14 +1621,14 @@ function common_projektneStrane()
 					//delete item
 					if (isset($id) && is_int($id) && $id > 0)
 					{
-						if (!isset($_GET['c']))
+						if (!isset($_REQUEST['c']))
 						{
 							echo "Da li ste sigurni da zelite obrisati ovaj fajl? Obrisacete sve revizije fajla sa servera.<br />";	
 							echo '<a href="' . $linkPrefix . '&subaction=del&id=' . $id . '&c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 						}
 						else
 						{
-							if ($_GET['c'] == 'true')
+							if ($_REQUEST['c'] == 'true')
 							{
 								//delete the record
 								if (deleteFile($id))
@@ -1656,9 +1673,9 @@ function common_projektneStrane()
 				
 				$rowsPerPage = 20;
 				$pageNum = 1;
-				if(isset($_GET['page']))
+				if(isset($_REQUEST['page']))
 				{
-					$pageNum = $_GET['page'];
+					$pageNum = $_REQUEST['page'];
 				}
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
@@ -1726,7 +1743,7 @@ function common_projektneStrane()
 			{
 				if ($subaction == 'view')
 				{
-					$tid = intval($_GET[tid]);
+					$tid = intval($_REQUEST[tid]);
 					$thread = getThreadAndPosts($tid);
 					if (empty($thread))
 					{
@@ -1801,7 +1818,7 @@ function common_projektneStrane()
 				elseif ($subaction == 'add')
 				{
 		
-					$threadID = intval($_GET['tid']);
+					$threadID = intval($_REQUEST['tid']);
 					
 					if ($threadID <=0)
 						$thread = false;
@@ -1820,14 +1837,23 @@ function common_projektneStrane()
 							return;	
 						}	
 					}
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 		
 	?>	
     		
 				 <h3><?php if ($thread == true) echo 'Novi odgovor'; else echo 'Nova tema'; ?></h3>
-				
-                <form action="<?php if ($thread == true) echo $linkPrefix . "&subaction=add&tid=$threadID"; else echo $linkPrefix . "&subaction=add" ?>" method="post" enctype="multipart/form-data" name="addForm" id="addForm">
+				<?php
+					print genform("POST", "addForm");
+				?>
+                <?php 
+					if ($thread == true)
+					{
+				?> 
+					<input type="hidden" name="tid" value="<?=$threadID?>"  />
+				<?php
+					}
+				?>
                 <div id="formDiv">
                 	Polja sa * su obavezna. <br />
                 
@@ -1866,8 +1892,8 @@ function common_projektneStrane()
 								zamgerlog("korisnik u$userid uspješno dodao novu temu diskusije na projektu ID=$projekat na predmetu p$predmet", 2);
 							}
 								
-							if (!empty($_GET[tid]))				
-								$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";	
+							if (!empty($_REQUEST[tid]))				
+								$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";	
 							else
 								$link = $linkPrefix;
 						}
@@ -1890,7 +1916,7 @@ function common_projektneStrane()
 						zamgerlog("korisnik u$userid pokusava urediti vlastiti post  ID=$id kojem nije autor na projektu ID=$projekat na predmetu p$predmet", 3);
 						return;
 					}
-					$threadID = intval($_GET[tid]);
+					$threadID = intval($_REQUEST[tid]);
 					if ($threadID <=0)
 					{
 						zamgerlog("korisnik u$userid pokusava urediti post ID=$id iako je ID teme los jer nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
@@ -1898,7 +1924,7 @@ function common_projektneStrane()
 					}
 					
 					
-					if (!isset($_POST['submit']))
+					if (!isset($_REQUEST['submit']))
 					{
 						$entry = getPost($id);
 						if (empty($entry))
@@ -1908,8 +1934,9 @@ function common_projektneStrane()
 						}
 ?>
 				 <h3>Uredi post</h3>
-			
-				<form action="<?=$linkPrefix . "&subaction=edit&tid=$threadID&id=$id" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">
+				<?php
+					print genform("POST", "editForm");
+				?>
 				<div id="formDiv">
 					Polja sa * su obavezna. <br />
 				
@@ -1942,7 +1969,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili post.');
 							zamgerlog("korisnik u$userid uspješno uredio vlastiti BB post ID=$id na projektu ID=$projekat na predmetu p$predmet", 2);				
-							$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";									
+							$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";									
 						}
 						else
 						{	
@@ -1966,21 +1993,21 @@ function common_projektneStrane()
 							zamgerlog("korisnik u$userid pokusava izbrisati post ID=$id iako nije autor na projektu ID=$projekat na predmetu p$predmet", 3);
 							return;
 						}
-						$threadID = intval($_GET[tid]);
+						$threadID = intval($_REQUEST[tid]);
 						if ($threadID<=0)
 						{
 							zamgerlog("korisnik u$userid pokusava izbrisati post ID=$id iako nije dobar ID teme koji nije int ili je <=0 na projektu ID=$projekat na predmetu p$predmet", 3);
 							return;
 						}
 						
-						if (!isset($_GET['c']))
+						if (!isset($_REQUEST['c']))
 						{
 							echo "Da li ste sigurni da zelite obrisati ovaj post? <br />";	
 							echo '<a href="' . $linkPrefix .'&amp;subaction=del&tid=' . $threadID .'&id=' . $id . '&amp;c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
 						}
 						else
 						{
-							if ($_GET['c'] == 'true')
+							if ($_REQUEST['c'] == 'true')
 							{
 								//delete the record
 								if (deletePost($id))
@@ -1988,7 +2015,7 @@ function common_projektneStrane()
 									nicemessage('Uspješno ste obrisali post.');	
 									zamgerlog("korisnik u$userid uspješno obrisao post na projektu ID=$projekat na predmetu p$predmet", 2);				
 									if (getCountPostsInThread($threadID) > 0)
-										$link = $linkPrefix . "&subaction=view&tid=$_GET[tid]";	
+										$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";	
 									else
 										$link = $linkPrefix;
 								}
@@ -2019,14 +2046,19 @@ function common_projektneStrane()
 function formProcess_links($option)
 {
 	$errorText = '';
-	
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	if (!in_array($option, array('add', 'edit') ) )
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;		
 	}
 	
-	$id = intval($_GET['id']);
+	$id = intval($_REQUEST['id']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2037,12 +2069,12 @@ function formProcess_links($option)
 	}
 	
 	//get variables
-	$naziv 	= $_POST['naziv'];
-	$url 	= $_POST['url'];
-	$opis 	= $_POST['opis'];
+	$naziv 	= $_REQUEST['naziv'];
+	$url 	= $_REQUEST['url'];
+	$opis 	= $_REQUEST['opis'];
 	
-	$projekat = intval($_GET['projekat']);
-	$predmet = intval($_GET['predmet']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 	
 	
@@ -2137,14 +2169,19 @@ function deleteLink($id)
 function formProcess_rss($option)
 {
 	$errorText = '';
-	
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	if (!in_array($option, array('add', 'edit') ) )
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;		
 	}
 	
-	$id = intval($_GET['id']);
+	$id = intval($_REQUEST['id']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2154,12 +2191,12 @@ function formProcess_rss($option)
 	}
 	
 	//get variables
-	$naziv 	= $_POST['naziv'];
-	$url 	= $_POST['url'];
-	$opis 	= $_POST['opis'];
+	$naziv 	= $_REQUEST['naziv'];
+	$url 	= $_REQUEST['url'];
+	$opis 	= $_REQUEST['opis'];
 	
-	$projekat = intval($_GET['projekat']);
-	$predmet = intval($_GET['predmet']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 	
 	
@@ -2255,14 +2292,19 @@ function deleteRSS($id)
 function formProcess_bl($option)
 {
 	$errorText = '';
-	
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	if (!in_array($option, array('add', 'edit') ) )
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;		
 	}
 	
-	$id = intval($_GET['id']);
+	$id = intval($_REQUEST['id']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2272,12 +2314,12 @@ function formProcess_bl($option)
 	}
 	
 	//get variables
-	$naslov 	= $_POST['naslov'];
-	$tekst 		= $_POST['tekst'];
+	$naslov 	= $_REQUEST['naslov'];
+	$tekst 		= $_REQUEST['tekst'];
 	$slika 		= $_FILES['image'];
 	
-	$projekat = intval($_GET['projekat']);
-	$predmet = intval($_GET['predmet']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	
@@ -2315,7 +2357,7 @@ function formProcess_bl($option)
 
 		//cannot delete original image and preplace it with the new image so check this also
 		
-		if (isset($_POST['delete']))
+		if (isset($_REQUEST['delete']))
 		{
 			$errorText .= 'Selektujte ili brisanje slike, ili zamjena slike, ne oboje!';
 			return $errorText;
@@ -2415,7 +2457,7 @@ function formProcess_bl($option)
 		}	
 		else
 		{
-			if (isset($_POST['delete']))
+			if (isset($_REQUEST['delete']))
 			{
 				//delete image from server
 				
@@ -2524,7 +2566,12 @@ function deleteArticle($id)
 function formProcess_file($option)
 {
 	$errorText = '';
-	
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	//ini_set('post_max_size', '20M');
 	//ini_set('upload_max_filesize', '20M');
 	set_time_limit(0);
@@ -2535,7 +2582,7 @@ function formProcess_file($option)
 		return $errorText;		
 	}
 	
-	$id = intval($_GET['id']);
+	$id = intval($_REQUEST['id']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2572,8 +2619,8 @@ function formProcess_file($option)
 		$file = '';	
 	}
 
-	$projekat = intval($_GET['projekat']);
-	$predmet = intval($_GET['predmet']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	
@@ -2777,14 +2824,19 @@ function deleteFile($id)
 function formProcess_bb($option, $thread, $threadID)
 {
 	$errorText = '';
-	
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
 	if (!in_array($option, array('add', 'edit') ) )
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		return $errorText;		
 	}
 	
-	$id = intval($_GET['id']);
+	$id = intval($_REQUEST['id']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2802,11 +2854,11 @@ function formProcess_bb($option, $thread, $threadID)
 	
 	
 	//get variables
-	$naslov 	= $_POST['naslov'];
-	$tekst 		= $_POST['tekst'];
+	$naslov 	= $_REQUEST['naslov'];
+	$tekst 		= $_REQUEST['tekst'];
 	
-	$projekat = intval($_GET['projekat']);
-	$predmet = intval($_GET['predmet']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	
