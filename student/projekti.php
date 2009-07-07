@@ -1,4 +1,5 @@
 ﻿<?php
+// STUDENT/PROJEKTI - studenski modul za prijavu na projekte i ulazak u projektnu stranu projekta
 require_once("lib/projekti.php");
 function student_projekti()
 {
@@ -24,8 +25,8 @@ function student_projekti()
 	}
 	
 	$linkPrefix = "?sta=student/projekti&predmet=$predmet&ag=$ag";
-	$action 	= $_GET['action'];
-	$id			= intval($_GET['id']);
+	$action 	= $_REQUEST['action'];
+	$id			= intval($_REQUEST['id']);
 
 	//bad userid
 	if (!is_numeric($userid) || $userid <=0)
@@ -215,7 +216,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 	{
 		if ($action == 'apply')
 		{
-			$projekat = intval($_GET['projekat']);
+			$projekat = intval($_REQUEST['projekat']);
 			if ($projekat <= 0)
 			{
 				zamgerlog("korisnik u$userid pokušao da se prijavi na projekat sa lošim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
@@ -240,7 +241,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 		} //action == apply
 		elseif ($action == 'getout')
 		{
-			$projekat = intval($_GET['projekat']);
+			$projekat = intval($_REQUEST['projekat']);
 			if ($projekat <= 0)
 			{
 				zamgerlog("korisnik u$userid pokušao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
