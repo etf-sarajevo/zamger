@@ -79,7 +79,8 @@ if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
 
 // boja označava napredak studenta
-$procent = intval(($bodova/$mogucih)*100);
+if ($mogucih==0) $procent=0;
+else $procent = intval(($bodova/$mogucih)*100);
 if ($procent>=75) 
 	$color="#00FF00";
 else if ($procent>=50)
