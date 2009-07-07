@@ -20,7 +20,7 @@ array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/zadaca", "Slanje zadaće", "Slanje zadaće", "S", "1", "0"),
 array("student/pdf", "Prikaz zadaće u PDF formatu", "PDF", "S", "2", "0"),
 array("student/prosjeci", "Kalkulator prosjeka ocjena", "Kalkulator prosjeka", "S", "1", "0"),
-array("student/prijava_isptita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
+array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
 array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 
