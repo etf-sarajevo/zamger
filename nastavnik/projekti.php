@@ -655,7 +655,7 @@ function formProcess_param()
 }
 function replacePredmetParams($data, $predmet)
 {
-	$query = sprintf("REPLACE predmet_parametri SET predmet='%d', min_timova='%d', max_timova='%d', min_clanova_tima='%d', max_clanova_tima='%d', zakljucani_projekti='%d'", 
+	$query = sprintf("REPLACE predmet_projektni_parametri SET predmet='%d', min_timova='%d', max_timova='%d', min_clanova_tima='%d', max_clanova_tima='%d', zakljucani_projekti='%d'", 
 											$predmet, 
 											$data['min_timova'], 
 											$data['max_timova'],
