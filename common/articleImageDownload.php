@@ -29,7 +29,7 @@ function common_articleImageDownload()
 	require_once("lib/projekti.php");
 	if ($user_student && !$user_siteadmin)
 	{
-		$actualProject = getActualProjectForUserInPredmet($userid, $predmet);
+		$actualProject = getActualProjectForUserInPredmet($userid, $predmet, $ag);
 		if ($actualProject[id] != $projekat)
 		{
 			//user is not in this project in this predmet...hijack attempt?

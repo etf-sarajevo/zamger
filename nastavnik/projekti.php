@@ -30,7 +30,7 @@ function nastavnik_projekti()
 <h2>Projekti</h2>
 <?php	
 	
-	$params = getPredmetParams($predmet);
+	$params = getPredmetParams($predmet, $ag);
 	if ($action!= 'page')
 	{
 	?>
@@ -50,7 +50,7 @@ function nastavnik_projekti()
 ?>
 <h2>Lista projekata</h2>
 <?php
-	$projects = fetchProjects($predmet);
+	$projects = fetchProjects($predmet, $ag);
 	if (!empty($projects))
 	{
 		if ($params[zakljucani_projekti] == 1)
@@ -66,7 +66,7 @@ function nastavnik_projekti()
 
 <?php
 		}
-		$countTeamsForPredmet = getCountNONEmptyProjectsForPredmet($predmet);
+		$countTeamsForPredmet = getCountNONEmptyProjectsForPredmet($predmet, $ag);
 		if ($countTeamsForPredmet < $params[min_timova])
 		{
 ?>
@@ -440,6 +440,7 @@ function formProcess($option)
 	$opis  = $_REQUEST['opis'];
 	
 	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
 	$id = intval($_REQUEST['id']);
 	
 	if (empty($naziv) || empty($opis))
@@ -454,7 +455,8 @@ function formProcess($option)
 	$data = array(
 				'naziv' => $naziv, 
 				'opis'  => $opis, 
-				'predmet' => $predmet	
+				'predmet' => $predmet,
+				'ag' => $ag	
 	);
 	
 	
@@ -489,11 +491,12 @@ function insertProject($data)
 	//generate unique id value
 	$id = generateIdFromTable('projekat');
 	
-	$query = sprintf("INSERT INTO projekat (id, naziv, opis, predmet) VALUES ('%d', '%s', '%s', '%d')", 
+	$query = sprintf("INSERT INTO projekat (id, naziv, opis, predmet, akademska_godina) VALUES ('%d', '%s', '%s', '%d', '%d')", 
 											$id, 
 											my_escape($data['naziv']), 
 											my_escape($data['opis']), 
-											intval($data['predmet']) 
+											intval($data['predmet']),
+											intval($data['ag']) 
 											
 					);
 	$result = myquery($query);	
@@ -640,7 +643,7 @@ function formProcess_param()
 		$zakljucani_projekti = 1;
 	
 	$predmet = intval($_REQUEST['predmet']);
-	
+	$ag		 = intval($_REQUEST['ag']);
 	
 	
 	if (empty($min_timova) || empty($max_timova)
@@ -663,7 +666,7 @@ function formProcess_param()
 				'zakljucani_projekti' => $zakljucani_projekti 
 	);
 	
-	if (!replacePredmetParams($data, $predmet))
+	if (!replacePredmetParams($data, $predmet, $ag))
 	{
 		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat(predmet p$predmet, korisnik u$userid)", 3);
@@ -674,10 +677,11 @@ function formProcess_param()
 	return $errorText;
 	
 }
-function replacePredmetParams($data, $predmet)
+function replacePredmetParams($data, $predmet, $ag)
 {
-	$query = sprintf("REPLACE predmet_projektni_parametri SET predmet='%d', min_timova='%d', max_timova='%d', min_clanova_tima='%d', max_clanova_tima='%d', zakljucani_projekti='%d'", 
-											$predmet, 
+	$query = sprintf("REPLACE predmet_projektni_parametri SET predmet='%d', akademska_godina='%d', min_timova='%d', max_timova='%d', min_clanova_tima='%d', max_clanova_tima='%d', zakljucani_projekti='%d'", 
+											$predmet,
+											$ag, 
 											$data['min_timova'], 
 											$data['max_timova'],
 											$data['min_clanova_tima'],

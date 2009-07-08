@@ -1,7 +1,8 @@
 <?php
-function fetchProjects($predmet)
+// LIB/PROJEKTI - funkcije za module nastavnik/projekti, student/projekti, common/projektneStrane
+function fetchProjects($predmet, $ag)
 {
-	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' ORDER BY vrijeme DESC");
+	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' ORDER BY vrijeme DESC");
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))
 		$list[] = $row;	
@@ -31,20 +32,20 @@ function fetchProjectMembers($id)
 	return $list;	
 }
 
-function applyForProject($userid, $project, $predmet)
+function applyForProject($userid, $project, $predmet, $ag)
 {
 	$errorText = '';
 	
-	if (areApplicationsLockedForPredmet($predmet))
+	if (areApplicationsLockedForPredmet($predmet, $ag))
 	{
 		$errorText = 'Zaključane su prijave na projekte. Prijave nisu dozvoljene.';
 		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je zaključan na predmetu p$predmet", 3);
 		return $errorText;	
 	}
 	
-	$teamLimitReached = isTeamLimitReachedForPredmet($predmet);
+	$teamLimitReached = isTeamLimitReachedForPredmet($predmet, $ag);
 		
-	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet);
+	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet, $ag);
 	if (!empty($actualProjectForUser))
 	{
 		//user already in a project on this predmet
@@ -66,7 +67,7 @@ function applyForProject($userid, $project, $predmet)
 		return $errorText;	
 	}
 	
-	if (isProjectFull($project, $predmet) == true)
+	if (isProjectFull($project, $predmet, $ag) == true)
 	{
 		$errorText = 'Projekat je popunjen. Nije moguće prijaviti se.';
 		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je popunjen na predmetu p$predmet", 3);
@@ -75,7 +76,7 @@ function applyForProject($userid, $project, $predmet)
 	
 	
 	//clear person from all projects on this predmet
-	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
+	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
 	$query = sprintf("INSERT INTO student_projekat (student, projekat) VALUES ('%d', '%d')", 
 					$userid,
 					$project
@@ -91,18 +92,18 @@ function applyForProject($userid, $project, $predmet)
 	
 	return $errorText;
 }
-function getOutOfProject($userid, $predmet)
+function getOutOfProject($userid, $predmet, $ag)
 {
 	$errorText = '';
 	
-	if (areApplicationsLockedForPredmet($predmet))
+	if (areApplicationsLockedForPredmet($predmet, $ag))
 	{
 		$errorText = 'Zaključane su liste timova za projekte. Odustajanja nisu dozvoljena.';
 		zamgerlog("student u$userid pokusao da se odjavi sa projekat predmetu p$predmet na kojem je zakljucano stanje timova i projekata", 3);		
 		return $errorText;	
 	}
 	
-	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet);
+	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet, $ag);
 	if (empty($actualProjectForUser))
 	{
 		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
@@ -112,7 +113,7 @@ function getOutOfProject($userid, $predmet)
 	
 
 	//clear person from all projects on this predmet - actually only one project
-	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet')");
+	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
 	
 	if ($result == false)
 	{
@@ -141,9 +142,9 @@ function generateIdFromTable($table)
 	return intval($id+1);
 }
 
-function getPredmetParams($predmet)
+function getPredmetParams($predmet, $ag)
 {
-	$result = myquery("SELECT * FROM predmet_projektni_parametri WHERE predmet='$predmet' LIMIT 1");
+	$result = myquery("SELECT * FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))
 		$list[] = $row;	
@@ -151,15 +152,15 @@ function getPredmetParams($predmet)
 	
 	return $list[0];	
 }
-function areApplicationsLockedForPredmet($predmet)
+function areApplicationsLockedForPredmet($predmet, $ag)
 {
 	
-	$params = getPredmetParams($predmet);
+	$params = getPredmetParams($predmet, $ag);
 	return $params[zakljucani_projekti] == 1;
 }
-function getCountProjectsForPredmet($predmet)
+function getCountProjectsForPredmet($predmet, $ag)
 {
-	$result = myquery("SELECT COUNT(id) FROM projekat WHERE predmet='$predmet'");
+	$result = myquery("SELECT COUNT(id) FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag'");
 	$row = mysql_fetch_row($result);
 	$row = $row[0];
 	
@@ -175,10 +176,10 @@ function getCountMembersForProject($id)
 	return $row;
 }
 
-function getCountEmptyProjectsForPredmet($id)
+function getCountEmptyProjectsForPredmet($predmet, $ag)
 {
 	$count = 0;
-	$projects = fetchProjects($id);
+	$projects = fetchProjects($predmet, $ag);
 	foreach ($projects as $project)
 	{	
 		$nMembers = getCountMembersForProject($project[id]);
@@ -188,10 +189,10 @@ function getCountEmptyProjectsForPredmet($id)
 	
 	return $count;
 }
-function getCountNONEmptyProjectsForPredmet($id)
+function getCountNONEmptyProjectsForPredmet($predmet, $ag)
 {
 	$count = 0;
-	$projects = fetchProjects($id);
+	$projects = fetchProjects($predmet, $ag);
 	foreach ($projects as $project)
 	{	
 		$nMembers = getCountMembersForProject($project[id]);
@@ -202,11 +203,11 @@ function getCountNONEmptyProjectsForPredmet($id)
 	return $count;
 }
 
-function isTeamLimitReachedForPredmet($id)
+function isTeamLimitReachedForPredmet($predmet, $ag)
 {
 
-	$nTeams = getCountNONEmptyProjectsForPredmet($id);
-	$predmetParams = getPredmetParams($id);
+	$nTeams = getCountNONEmptyProjectsForPredmet($predmet, $ag);
+	$predmetParams = getPredmetParams($predmet, $ag);
 	
 	if ($nTeams < $predmetParams['max_timova'])
 		return false;
@@ -224,9 +225,9 @@ function isProjectEmpty($project)
 	return false;
 } 
 
-function isProjectFull($project, $predmet)
+function isProjectFull($project, $predmet, $ag)
 {
-	$predmetParams = getPredmetParams($predmet);
+	$predmetParams = getPredmetParams($predmet, $ag);
 	$nMembers = getCountMembersForProject($project);
 	
 	if ($nMembers < $predmetParams[max_clanova_tima])
@@ -235,9 +236,9 @@ function isProjectFull($project, $predmet)
 	return true;
 }
 
-function getActualProjectForUserInPredmet($userid, $predmet)
+function getActualProjectForUserInPredmet($userid, $predmet, $ag)
 {
-	$result = myquery("SELECT p.* FROM projekat p, student_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' LIMIT 1");
+	$result = myquery("SELECT p.* FROM projekat p, student_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' AND p.akademska_godina='$ag' LIMIT 1");
 	
 	$list = array();
 	while ($row = mysql_fetch_assoc($result))

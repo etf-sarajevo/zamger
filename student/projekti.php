@@ -42,7 +42,7 @@ function student_projekti()
 	if (!isset($action))
 	{
 	
-		$predmetParams = getPredmetParams($predmet);
+		$predmetParams = getPredmetParams($predmet, $ag);
 	
 ?>
 
@@ -83,9 +83,9 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 <?php
 	
 	
-	$teamLimitReached = isTeamLimitReachedForPredmet($predmet);
+	$teamLimitReached = isTeamLimitReachedForPredmet($predmet, $ag);
 		
-	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet);
+	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet, $ag);
 	
 	if (!empty($actualProjectForUser))
 	{
@@ -105,7 +105,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 			$projects[] = $actualProjectForUser;
 	}
 	else
-		$projects = fetchProjects($predmet);
+		$projects = fetchProjects($predmet, $ag);
 	
 	foreach ($projects as $project)
 	{
@@ -222,7 +222,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 				zamgerlog("korisnik u$userid pokušao da se prijavi na projekat sa lošim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
 			}
-			$errorText = applyForProject($userid, $projekat, $predmet);
+			$errorText = applyForProject($userid, $projekat, $predmet, $ag);
 			if($errorText == '')
 			{
 		?>
@@ -247,7 +247,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 				zamgerlog("korisnik u$userid pokušao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
 				return;
 			}
-			$errorText = getOutOfproject($userid, $predmet);
+			$errorText = getOutOfproject($userid, $predmet, $ag);
 			if($errorText == '')
 			{
 		?>

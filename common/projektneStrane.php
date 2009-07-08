@@ -16,7 +16,7 @@ function common_projektneStrane()
 
 	if ($user_student && !$user_siteadmin) //ordinary student
 	{
-		$actualProject = getActualProjectForUserInPredmet($userid, $predmet);
+		$actualProject = getActualProjectForUserInPredmet($userid, $predmet, $ag);
 		if ($actualProject[id] != $projekat)
 		{
 			//user is not in this project in this predmet...hijack attempt?
@@ -26,7 +26,7 @@ function common_projektneStrane()
 		
 	}
 	
-	$params = getPredmetParams($predmet);
+	$params = getPredmetParams($predmet, $ag);
 	$project = getProject($projekat);	
 	$members = fetchProjectMembers($project[id]);
 	
@@ -2572,8 +2572,7 @@ function formProcess_file($option)
 		zamgerlog("1337 h4x0r detected",3);
 		return "ERROR";
    	}
-	//ini_set('post_max_size', '20M');
-	//ini_set('upload_max_filesize', '20M');
+	
 	set_time_limit(0);
 	
 	if (!in_array($option, array('add', 'edit') ) )
