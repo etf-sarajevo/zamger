@@ -1,10 +1,11 @@
 <?php 
 // STUDENTSKA/ANKETA - administracija ankete, studentska služba
 
+
+function studentska_anketa()
+{
 global $userid,$user_siteadmin,$user_studentska;
-
 global $_lv_; // Potrebno za genform() iz libvedran
-
 
 // Provjera privilegija
 
@@ -14,10 +15,6 @@ if (!$user_studentska && !$user_siteadmin) {
 	return;
 }
 
-
-
-function studentska_anketa()
-{
 ?>
 <script type="text/javascript">
 function promjeniListu()
@@ -269,29 +266,20 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()){
 // TODO dodati provjeru naziva
 	$ak_godina = $_POST['ak_godina'];
 	$naziv = substr($_POST['naziv'], 0, 100);
-	$ponovi = $_POST['ponovi'];
-	
-	
-	
-	print $naziv;
+	$prethodna_anketa = $_POST['prethodna_anketa'];
+
 	print "Nova anketa.<br/><br/>";
-	
-		
+			
 	$q393 = myquery("insert into anketa (naziv,ak_god) values ('$naziv',$ak_godina)");
 	$q391 = myquery("select id from anketa where naziv='$naziv'");
 	$anketa = mysql_result($q391,0,0);
 	
 	// da li cemo prekopirati pitanja od proslogodisnje ankete ?
-	if ($ponovi == 1)
+	if ($prethodna_anketa != 0)
 		{
-		// pokupiti id od ankete koja je bila prosle godine ako postoji
-		$q375= myquery("SELECT id FROM akademska_godina ORDER BY id DESC");
-		$prosla_god= mysql_result($q375,1,0);
-		$q376= myquery("SELECT id FROM anketa where ak_god=$prosla_god");
-		if (mysql_num_rows($q376)==1){
-			$prosla_anketa= mysql_result($q376,0,0);
-			$q377=myquery("insert into pitanje (anketa_id,tip_id,tekst) select $anketa,tip_id,tekst from pitanje where anketa_id=$prosla_anketa");
-		}
+		// ubaci pitanja od izabrane ankete za ponavljanje
+		$q377=myquery("insert into pitanje (anketa_id,tip_id,tekst) select $anketa,tip_id,tekst from pitanje where anketa_id=$prethodna_anketa");
+		
 	}
 	?>
 	<script language="JavaScript">
@@ -310,9 +298,9 @@ else if ($_GET['akcija'] == "edit" ) {
 
 	// subakcija koja se izvrsava kada se edituje neko od pitanja 
 	if($_POST['subakcija']=="edit_pitanje"  ){
-		$sta_je = $_REQUEST['obrisi'];
+		$obrisi = $_REQUEST['obrisi'];
 		$pitanje = $_REQUEST['column_id'];
-		if ($sta_je){
+		if ($obrisi){
 			
 			$q800=myquery("delete from pitanje where id = $pitanje");
 		}
@@ -330,14 +318,10 @@ else if ($_GET['akcija'] == "edit" ) {
 	if($_POST['subakcija']=="novo_pitanje"){
 		$tekst_pitanja = $_REQUEST['tekst_novo_pitanje'];
 		$tip_pitanja= $_REQUEST['tip_novo_pitanja'];
-		print "Anketa : $anketa";
-		print "Tekst pitanja: $tekst_pitanja" ;
-		print "Tip pitanja : $tip_pitanja";	
+	
 		$q891=myquery("select id from pitanje ORDER BY id desc limit 1");
-$id_pitanja=mysql_result($q891,0,0)+1;
+		$id_pitanja=mysql_result($q891,0,0)+1;
 
-
-		print $id_pitanja;
 		//mozda treba prepraviti posto koristi autoincrement	
 		$q800=myquery("insert into pitanje (anketa_id,tip_id,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
 		
@@ -478,7 +462,7 @@ $id_pitanja=mysql_result($q891,0,0)+1;
 		
 		}		
 		else{	
-				print "<td> </td></tr>";
+				print "<td>  </td></tr>";
 				$i=1;
 				while ($r202 = mysql_fetch_row($result202)) {
 					print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>
@@ -572,11 +556,11 @@ else {
 				<?php 
 				// gledamo da li je za ovu akademsku godinu kreirana anketa
 				$q199=myquery("select id,naziv,opis,aktivna from anketa where ak_god=$ag");
+				// kupimo ako postoje ankete od proslih godina
+				$q199b=myquery("select id,naziv from anketa where ak_god!=$ag");
 				if (mysql_num_rows($q199) ==0)
 				{
-					
 					print "Za ovu akademsku godinu nije kreirana ankete!";
-					
 				?>	  
                     <hr>
 					<!--                    Forma za kreiranje ankete:              -->   
@@ -585,7 +569,15 @@ else {
                     <input type="hidden" name="ak_godina" value="<?=$ag?>">
                     <b>Nova anketa :</b><br/>
                     <input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
-                    Ponovi proslogodisnja pitanja:<input type="checkbox" name="ponovi" value="1"/>
+                    <br />Ponovi pitanja od: 
+                    <select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
+                    	<option value='0'> Bez ponavljanja </option>
+					<?php 
+					while ($r199b = mysql_fetch_row($q199b)){
+						print "<option value='$r199b[0]'> $r199b[1]</option>";
+					}
+					?>
+                    </select>
                     </form>
                     <hr>
                         

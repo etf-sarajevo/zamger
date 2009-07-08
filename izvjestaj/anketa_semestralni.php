@@ -43,32 +43,9 @@ if ($_REQUEST['akcija']=="izvrsi"){
 	
 		$id_ankete = mysql_result($q011,0,0);	
 		
-		
-	
 		$result203=myquery("SELECT count(*) FROM pitanje WHERE anketa_id =$id_ankete and tip_id =1");
 		$broj_rank_pitanja= mysql_result($result203,0,0);
-	/*
-		//kupimo pitanja
-		$predmeti;
-		$string_rezultata;
-		$result202=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =$id_ankete and p.tip_id=1");
-		
-		$l=0;
-		while($pitanje = mysql_fetch_row($result202)){
-			$result409=myquery("select pk.id ,p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
-			
-			while($predmet = mysql_fetch_row($result409)){
-			
-				$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.predmet_id =$predmet[0]");
-				$prosjek[$l]=mysql_result($q6730,0,0);
-				$predmeti[$l] =$predmet[1] ;
-				
-				$l++;
-			
-			}
-		
-			
-		}*/
+
 		
 		?>
         <center>
@@ -126,7 +103,7 @@ if ($_REQUEST['akcija']=="izvrsi"){
 		?>
 			 <center>
 				<h3>Sumarna statistika za rank pitanja za akademsku godinu <?=$naziv_ak_god?>  po smjerovima</h3>
-				  <h3><? if ($semestar ==1 ) print  "Zimski semestar"; if ($semestar ==2 ) print "Ljetni semestar"; if ($semestar ==0 ) print "Cijela godina";?> </h3>
+				  <h3><? if ($semestar ==1 ) print  "Zimski semestar"; else if ($semestar ==2 ) print "Ljetni semestar"; else  print "Cijela godina";?> </h3>
 			</center>
 		
 			<table align="center" >

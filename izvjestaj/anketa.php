@@ -5,12 +5,26 @@
 function izvjestaj_anketa(){
 
 $predmet = intval($_REQUEST['predmet']);
+global $userid,$user_siteadmin,$user_studentska;
+
+
 
 // naziv predmeta
-$result233=myquery("select p.naziv,pk.akademska_godina from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.id=$predmet ");
+$result233=myquery("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.id=$predmet ");
 $naziv_predmeta = mysql_result($result233,0,0);
-// akademska godina za datu ponudu kursa
+$id_predmeta = mysql_result($result233,0,2);
 $ag = mysql_result($result233,0,1);
+
+// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
+
+if (!$user_siteadmin && !$user_studentska){
+	$q001 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$id_predmeta and akademska_godina=$ag");
+	if (mysql_num_rows($q001)==0) {
+		zamgerlog("nastavnik/izvjestaj_anketa privilegije ",3);
+		biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
+		return;
+	}
+}
 
 // naziv akdemske godine
 $q0111=myquery("select naziv from akademska_godina where id = $ag");
@@ -46,7 +60,7 @@ if ($_REQUEST['komentar'] == "da")
 	print "<h2>Prikaz svih komentara za predmet $naziv_predmeta za akademsku godinu $naziv_ak_god</h2>\n";
 
  
-	$q30 = myquery("select count(*) from rezultat where predmet_id=$predmet and anketa_id = $anketa");
+	$q30 = myquery("select count(*) from rezultat where predmet_id=$predmet and anketa_id = $anketa AND zavrsena='Y'");
 	$broj_anketa = mysql_result($q30,0,0);
 	
 	print "<h3> Broj studenata koji su pristupili anketi je : $broj_anketa </h3>";
@@ -54,7 +68,7 @@ if ($_REQUEST['komentar'] == "da")
 	
 	// pokupimo sve komentare za dati predmet
 		
-	$q60 = myquery("SELECT count(*) FROM odgovor_text WHERE rezultat_id IN (SELECT id FROM rezultat WHERE predmet_id =$predmet and anketa_id=$anketa)");
+	$q60 = myquery("SELECT count(*) FROM odgovor_text WHERE rezultat_id IN (SELECT id FROM rezultat WHERE predmet_id =$predmet and anketa_id=$anketa AND zavrsena='Y')");
 	
 	$broj_odgovora = mysql_result($q60,0,0);
 	
@@ -125,28 +139,24 @@ if ($_REQUEST['komentar'] == "da")
     // Opste statistike (sumarno za predmet)
 
 
-	$q30 = myquery("select count(*) from rezultat where predmet_id=$predmet and anketa_id = $anketa");
+	$q30 = myquery("select count(*) from rezultat where predmet_id=$predmet and anketa_id = $anketa AND zavrsena='Y'" );
 	$broj_anketa = mysql_result($q30,0,0);
 	print "<h3> Broj studenata koji su pristupili anketi je : $broj_anketa </h3>";
 	
-	
-	 
 	// broj rank pitanja
 	$result203=myquery("SELECT id FROM pitanje WHERE anketa_id =$anketa and tip_id =1");
-	
 	
 	$i = 0;
 	while ($r01 = mysql_fetch_row($result203)){
 		
 		$j=$i+1;
-		$q60 = myquery(" SELECT avg( izbor_id )FROM odgovor_rank WHERE rezultat_id IN (SELECT id FROM rezultat WHERE predmet_id =$predmet and anketa_id = $anketa)
+		$q60 = myquery(" SELECT avg( izbor_id )FROM odgovor_rank WHERE rezultat_id IN (SELECT id FROM rezultat WHERE predmet_id =$predmet and anketa_id = $anketa AND zavrsena='Y')
 					AND pitanje_id = $r01[0]");
 	
 		$prosjek[$i]=mysql_result($q60,0,0);
 		
 		$i++;
 	}
-	
 	
 	//kupimo pitanja
 	$result202=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =$anketa and p.tip_id=1");

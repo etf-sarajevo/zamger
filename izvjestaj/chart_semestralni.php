@@ -21,7 +21,8 @@ $predmeti;
 $result409=myquery("select pk.id ,p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
 		while($predmet = mysql_fetch_row($result409)){
 		
-			$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje AND a.predmet_id =$predmet[0]");
+			$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje AND a.predmet_id =$predmet[0] AND 	
+							zavrsena='Y'");
 			$data[$l]=mysql_result($q6730,0,0);
 			$predmeti[$predmet[1]] =$data[$l] ;
 			
@@ -91,7 +92,7 @@ function crtaj ($data,$title){
 		
 		// y labele i mrezne linije
 		$labelfont = 2;
-		$ngrid = 4; // number of grid lines
+		$ngrid = 4; // broj mreznih linija
 		
 		$dydat = 1; // udaljenost izmedju mreznih linija
 		$dypix = $ysize / ($ngrid + 1); // udaljenost izmedju mreznih linija u pixelima

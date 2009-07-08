@@ -28,9 +28,9 @@ dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 			
 				//kupimo vrijednosti
 				if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0]");
+					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y'");
 				else // ako nije onda biramo parne ili neparene semestre
-					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar");
+					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y'");
 				$prosjek[$l]=mysql_result($q6730,0,0);
 				
 				$smjerovi[$studij[0]][$k] = $prosjek[$l];
