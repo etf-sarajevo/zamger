@@ -128,7 +128,7 @@ Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
 				<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=getout"?>">Odustani od prijave na ovom projektu</a></li>	
 		<?php 
 		   }
-		   	elseif(isProjectFull($project[id], $predmet) == true)
+		   	elseif(isProjectFull($project[id], $predmet, $ag) == true)
 			{
 		?>
         		<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
