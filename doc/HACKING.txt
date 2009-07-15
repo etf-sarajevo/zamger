@@ -1,0 +1,116 @@
+HACKING.TXT
+===========
+
+Ukoliko želite da se uključite u razvoj Zamger projekta, molimo da se 
+pridržavate sljedećih pravila, u suprotnom vaši patchevi neće biti 
+primijenjeni, a SVN commits će biti poništeni ma kako dobri bili.
+
+
+1. OPŠTA PRAVILA IZGLEDA KODA:
+- stil indentacije je "K&R style" 
+[http://en.wikipedia.org/wiki/Indent_style#K.26R_style]
+- za indentaciju se koristi TAB (ASCII kod 9) a ne razmaci; ovo se odnosi 
+i na ugnježdeni HTML i JavaScript; bonus bodovi za one koji postignu da 
+i PHP i rezultujući HTML (view source) budu propisno indentovani :)
+- koristi se UNIX standard novih redova (LF - ASCII kod 10)
+- line wrapping (prelom linija znakom LF nakon nekog znaka, obicno 80-tog
+u redu /kao u ovom fajlu/) se NE koristi - koristite editor koji podržava
+Dynamic Word Wrap
+- sav Zamger kod je pisan koristeći Unicode - koristite editor koji 
+podržava Unicode
+- ukratko, nemojte koristiti Notepad :-)
+- imena varijabli, funkcija itd. su uvijek na našem, osim biblioteka koje
+nisu dio Zamger projekta (npr. libvedran)
+- neka daljnja pravila za imena varijabli i funkcija nisu data, koristite
+zdrav razum
+- komentari su uvijek na našem
+- u komentarima se koriste afrikati (naša slova) osim u spisku revizija 
+koji ide na početku fajla, jer SVN ne podržava Unicode baš najbolje
+- koriste se "short open tags", odnosno nije potrebno navoditi php iza 
+<? jer se podrazumijeva da je u pitanju jezik php što se vidi i iz 
+ekstenzije, a teza da ovo uvodi nekompatibilnost sa XMLom je netačna 
+(može se uvijek napisati print "<"."?xml";) - osim toga u Zamgeru se ne 
+koristi XML
+- shodno tome, poželjno je pisati formu <?=$varijabla?> kad god je 
+moguće
+- autor Zamgera preferira print u odnosu na echo
+
+
+2. ZAMGER NOMENKLATURA:
+- imena modula su oblika kategorija/modul (možda ubuduće 
+kategorija/podkategorija/modul)
+- sve iznad je isključivo malim slovima
+- SVE što se tiče jednog modula MORA SE NALAZITI U ISTOM TOM MODULU - 
+nema pomoćnih fajlova
+- KOMPLETAN sadržaj modula mora biti u funkciji koja se zove
+function kategorija_modul() 
+(bez parametara); pogledajte API za spisak globalnih varijabli koje 
+možete koristiti; ako modul koristi neke druge funkcije, i te funkcije
+se trebaju nalaziti unutar glavne funkcije (to ponegdje u Zamgeru nije
+slučaj ali će biti popravljeno)
+- ako postoji nešto što koristi više modula, može se napraviti 
+bibliotečni modul (lib/nesto), ali izbjegavajte to koliko možete
+- u Zamgeru se ne koriste klase (OOP)
+
+
+3. BAZA:
+- nazivi tabela i kolona su na našem jeziku, bez naših slova (jer ih 
+mysql ne podržava)
+- sve je malim slovima
+- primarni ključ u tabeli se uvijek zove "id", uvijek je INT veličine 11 
+(maksimalna veličina)
+- kod korištenja autonumber imajte na umu njegove nedostatke
+- strani ključ se uvijek zove kao tabela na koju se odnosi (bez dodataka 
+tipa "fk_" "_id" i slično); nije dozvoljeno skraćivanje ili bilo kakva druga 
+izmjena imena tabele u stranom ključu
+- many-to-many relacije se zovu "prvatabela_drugatabela" a polja (strani 
+ključevi) se zovu "prvatabela" i "drugatabela", eventualno se mogu 
+dodati neka druga polja 
+- ostala polja bi trebala imati kratka, jasna imena, bez skraćenica, 
+dodataka i slično; pogledati postojeće tabele za primjere
+- polje koje sadrži nekakvo ime elementa u tabeli se uvijek zove 
+"naziv"; većina tabela bi trebala imati to polje
+
+
+4. OBAVEZNO KORIŠTENJE FUNKCIJA
+(za uputstva pogledajte odgovarajuci lib/ modul i doc/API.odt)
+- za sve upite obavezno koristiti funkciju myquery() (lib/libvedran)
+- koristiti funkciju zamgerlog() što se više može (lib/zamger); radi 
+konzistentnog ispisa u pozivima ove funkcije ne koristiti velika slova i 
+naša slova, a koristiti tagove (pogledajte admin/log za spisak 
+tagova i primjere korištenja u drugim modulima)
+- za pozive modula koji mijenjaju nešto u bazi OBAVEZNO koristiti 
+POST metodu, a za one koji samo biraju šta se prikazuje koristiti GET 
+metodu
+- kombinovanje GET i POST generalno nije baš pametno, a nije ni dobro 
+podržano od strane raznih Zamger biblioteka
+- kod kreiranja forme za POST koristiti metodu genform() ili ručno
+ubaciti tokene (pogledajte kod funkcije genform u lib/libvedran da 
+vidite kako)
+- kod prijema podataka iz POST metode pozvati funkciju check_csrf_token 
+i baciti grešku ako funkcija vrati false. Primjer:
+
+$akcija = $_POST['akcija'];
+if ($akcija=="brisi_sve_iz_baze") {
+    if (!check_csrf_token()) {
+        biguglyerror("Mrs odavle");
+        zamgerlog("1337 h4x0r detected",3);
+        return;
+    }
+    $q = myquery("truncate table modul");
+} else {
+    print genform("POST");
+    print '<input type="submit" value="Kliknite ovdje da pobrišete sve 
+podatke"></form>';
+}
+
+
+
+
+5. OSTALO:
+- require() i eventualni CSS, JavaScript i slično po mogućnosti idu 
+na početak modula, radi lakšeg uočavanja, ali idu unutar funkcije 
+kako bi se izbjeglo da "slučajno" neko ne može nešto zločesto 
+uraditi pristupajući modulu direktno kroz browser (npr. 
+http://zamger.etf.unsa.ba/nastavnik/projekti.php ne bi trebalo raditi
+ništa)
