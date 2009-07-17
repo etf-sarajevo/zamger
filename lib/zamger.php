@@ -506,6 +506,8 @@ function studentski_meni($fj) {
 			<a href="<?=genuri()?>&sm_arhiva=0">Sakrij arhivirane predmete</a>
 			<? } ?>
 			<br/><br/>
+			<a href="?sta=student/prijava_ispita">Prijava ispita</a>
+			<br/><br/>
 			<a href="?sta=student/prosjeci">Kalkulator prosjeka</a>
 			<br/><br/><?
 $dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
