@@ -7,6 +7,43 @@ function student_prijava_ispita() {
 
 global $userid;
 
+
+//dio koda koji se izvrsava kad se klikne na "odjavi"
+if ($_GET["akcija"]=="odjavi")
+{
+    $uid = intval($_GET['user_id']);
+	$termin = intval($_GET['termin']);
+	if ($uid && $termin) {
+	$sqlDelete="DELETE FROM student_ispit_termin WHERE student=" .$uid . " AND ispit_termin=" . $termin . ";";
+	myquery($sqlDelete);
+	}
+?>
+	<script language="JavaScript">
+		window.location="?sta=student/prijava_ispita";
+	</script>
+<?php
+}
+
+//dio koda koji se izvrsava kad se klikne na "prijavi"
+if ($_GET["akcija"]=="prijavi")
+{
+	$uid = intval($_GET['user_id']);
+	$termin = intval($_GET['termin']);
+    if ($uid && $termin) {
+	$sqlInsert="INSERT INTO student_ispit_termin (student,ispit_termin) VALUES (" .
+	$uid . "," . $termin . ");";
+	myquery($sqlInsert);
+	}
+?>
+	<script language="JavaScript">
+		window.location="?sta=student/prijava_ispita";
+	</script>
+<?php
+}
+
+
+
+
 $s1="SELECT DISTINCT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.id, it.maxstudenata
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk
 		 WHERE it.ispit=i.id AND it.komponenta=k.id AND i.predmet=pk.id AND p.id=pk.predmet AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id
@@ -65,22 +102,6 @@ $brojac++;
 }
 echo "</table>";
 
-//dio koda koji se izvrsava kad se klikne na "prijavi"
-if ($_REQUEST["akcija"]=="prijavi")
-{
-	if ($_GET["user_id"] && $_GET["termin"]) {
-	$sqlInsert="INSERT INTO student_ispit_termin (student,ispit_termin) VALUES (" .
-	$_GET["user_id"] . "," . $_GET["termin"] . ");";
-	myquery($sqlInsert);
-	}
-?>
-	<script language="JavaScript">
-		window.location="?sta=student/prijava_ispita";
-	</script>
-<?php
-}
-
-
 if($brojac==1) echo "<p><font color=\"#FF0000\">Trenutno nemate ispitnih termina koji su otvoreni za prijavu.</font></p>";
 
 echo "<br><br><br>";
@@ -115,7 +136,7 @@ $q2 = myquery($s2);
 $brojac=1;
 
 while ($ispit=mysql_fetch_row($q2)) {
-	$mytime = time(); // Set time to now
+	$mytime = time(); // Postavi vrijeme na trenutno
       if($mytime>$ispit[1]) continue;
 
 ?>
@@ -141,23 +162,5 @@ if($brojac==1) echo "<p><font color=\"#FF0000\">Trenutno nemate prijavljenih isp
 
 
 
-//dio koda koji se izvrsava kad se klikne na "odjavi"
-if ($_REQUEST["akcija"]=="odjavi")
-{
-	if ($_GET["user_id"] && $_GET["termin"]) {
-	$sqlDelete="DELETE FROM student_ispit_termin WHERE student=" .
-	$_GET["user_id"] . " AND ispit_termin=" . $_GET["termin"] . ";";
-	myquery($sqlDelete);
-	}
-?>
-	<script language="JavaScript">
-		window.location="?sta=student/prijava_ispita";
-	</script>
-<?php
-}
-
-
 }
 ?>
-
-
