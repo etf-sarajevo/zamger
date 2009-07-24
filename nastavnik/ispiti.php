@@ -29,6 +29,7 @@ global $mass_rezultat; // za masovni unos studenata u grupe
 // Parametri
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
+$termin = intval($_REQUEST['termin']);
 
 // Naziv predmeta
 $q10 = myquery("select naziv from predmet where id=$predmet");
@@ -189,20 +190,114 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 }
 
 
+// akcija koja brise ispitni termin, kopirana iz modula nastavnik/prijava_ispita, zbog sminke uglavnom
+if ($_REQUEST["akcija"]=="obrisi")
+{
+	if ($termin) {
+	
+	$delete1="DELETE FROM ispit_termin WHERE id=" . $termin;
+	$delete2="DELETE FROM student_ispit_termin WHERE ispit_termin=" . $termin;
+	myquery($delete1);
+	myquery($delete2);
+	
+	}
+	zamgerlog("Izbrisan ispitni termin id=$termin", 2);
+?>
+	<script language="JavaScript">
+		window.location="?sta=nastavnik/ispiti&predmet=<? print $predmet; ?>&ag=<? print $ag; ?>";
+	</script>
+<?
+	
+}
+
+
 
 // Uneseni ispiti
 
-print "Uneseni ispiti:<br/>\n";
+print "<b>Uneseni ispiti:</b><br/>\n";
 
 $q110 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
-print "<ul>\n";
-if (mysql_num_rows($q110)<1)
-	print "<li>Nije unesen nijedan ispit.</li>";
-while ($r110 = mysql_fetch_row($q110)) {
-	print '<li><a href="?sta=izvjestaj/ispit&ispit='.$r110[0].'">'.$r110[2].' ('.date("d. m. Y.",$r110[1]).')</a></li>'."\n";
-}
-print "</ul>\n";
+?>
+<br>
+<table width="460" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
+	<tr>
+	<td width=20><b>R.br.</b></td>
+    <td align="center" width=110><b>Tip ispita</b></td>
+    <td align="center" width=110><b>Datum ispita</b></td>
+	<td align="center"><b>Opcije</b></td>
+	</tr>
+<?
+$brojac=1;
 
+while ($r110 = mysql_fetch_row($q110)) {
+
+if (mysql_num_rows($q110)<1)
+	print "Nije unesen nijedan ispit.";
+?>
+<tr>
+	<td><?=$brojac ?></td>
+	<td align="center"><?=$r110[2]?></td>
+	<td align="center"><?=date("d.m.Y.",date($r110[1]));?></td>
+	<td align="center"><a href="?sta=izvjestaj/ispit&ispit=<?=$r110[0];?>&predmet=<?=$predmet ?>">Izvjestaj</a>&nbsp;&nbsp;&nbsp;
+					   <a href="?sta=nastavnik/prijava_ispita&ispit=<?=$r110[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Objavi termin</a></td>
+</tr>
+<?
+$brojac++;
+}
+print "</table><br><hr><br>";
+
+
+
+
+//tabela objavljenih termina za predmet
+
+$s1="SELECT DISTINCT it.id, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata
+             FROM ispit_termin as it, komponenta as k,ispit as i, akademska_godina as ag WHERE it.ispit=i.id AND it.komponenta=k.id AND i.predmet=$predmet AND ag.id=$ag";
+
+$q1 = myquery($s1);
+?>
+<b>Objavljeni termini:</b>
+<br><br>
+<table width="600" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
+	<tr>
+	<td width=20><b>R.br.</b></td>
+     	<td align="center" width=110><b>Vrijeme ispita</b></td>
+      <td align="center" width=110><b>Rok za prijavu</b></td>
+	<td align="center" width=80><b>Tip ispita</b></td>
+	<td align="center" width=60><b>Max studenata</b></td>
+	<td align="center"><b>Opcije</b></td>
+	</tr>
+
+<?
+$brojac=1;
+
+while ($r2=mysql_fetch_row($q1)) {
+
+
+?>
+	<tr>
+	<td><?=$brojac ?></td>
+	<td align="center"><?=date("d.m.Y. H:i",date($r2[1]));?></td>
+	<td align="center"><font color="#FF0000"><?=date("d.m.Y. H:i",date($r2[2]));?></font></td>
+
+	<td align="center"><?=$r2[3]?></td>
+
+	<td align="center"><?=$r2[4]?></td>
+	<td align="center"><a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Izmijeni</a>&nbsp;&nbsp;
+				 <a href="?sta=nastavnik/ispiti&akcija=obrisi&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Obrisi</a>&nbsp;&nbsp;
+				 <a href="?sta=nastavnik/prijava_ispita&akcija=studenti&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Studenti</a></td>
+	
+
+	</tr>
+
+<?
+$brojac++;
+}
+
+print "</table>";
+if ($brojac==1) echo "<br><font color=\"red\">Nema objavljenih termina trenutno.</font><br><br>
+					      <font color=\"red\">* Napomena: Da bi objavili termine za prijavu ispita morate prvo kreirati ispit</font>";
+print "<br>";
 
 
 // Masovni unos rezultata ispita
