@@ -1163,42 +1163,46 @@ else if ($akcija == "edit") {
 
 	// PRIJEMNI
 
-	if ($korisnik_prijemni) {
+//	if ($korisnik_prijemni) {
+	$q600 = myquery("select prijemni_termin, broj_dosjea, redovan, studij_prvi, studij_drugi, studij_treci, studij_cetvrti, izasao, rezultat from prijemni_prijava where osoba=$osoba");
+	if (!$korisnik_student && !$korisnik_nastavnik && mysql_num_rows($q600)>0) {
 		?>
 		<br/><hr>
 		<h3>KANDIDAT NA PRIJEMNOM ISPITU</h3>
-		<p>Ostvareni bodovi:<br/>
 		<?
-		$q195 = myquery("select opci_uspjeh, kljucni_predmeti, dodatni_bodovi, izasao_na_prijemni, prijemni_ispit, prijavio_drugi, prijemni_ispit_dva from prijemni where id=".($osoba-2000)); // FIXME!
-		while ($r195 = mysql_fetch_row($q195)) {
+		while ($r600 = mysql_fetch_row($q600)) {
+			$q610 = myquery("select ag.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.id=$r600[0] and pt.akademska_godina=ag.id");
 			?>
-			<ul>
-				<li>Opći uspjeh: <b><?=$r195[0]?></b></li>
-				<li>Ključni predmeti: <b><?=$r195[1]?></b></li>
-				<li>Dodatni bodovi: <b><?=$r195[2]?></b></li>
-			<?
-			if ($r195[3]==1) {
-				?>
-				<li>Prijemni ispit (1. termin): <b><?=$r195[4]?></b></li>
-				<?
+			<b>Za akademsku <?=mysql_result($q610,0,1)?> godinu (<?=mysql_result($q610,0,3)?>. ciklus studija), održan <?=date("d. m. Y", mysql_result($q610,0,2))?></b>
+			<ul><li><?
+				if ($r600[7]>0) print "$r600[8] bodova"; else print "(nije izašao/la)";
+			?></li>
+			<li>Broj dosjea: <?=$r600[1]?>, <?
+			if ($r600[2]==1) print "redovan"; else print "paralelan";
+			for ($i=3; $i<=6; $i++) {
+				if ($r600[$i]>0) {
+					$q620 = myquery("select kratkinaziv from studij where id=".$r600[$i]);
+					print ", ".mysql_result($q620,0,0);
+				}
 			}
-			if ($r195[5]>0) {
-				?>
-				<li>Prijemni ispit (2. termin): <b><?=$r195[6]?></b></li>
-				<?
-			}
+			?></li>
+			<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=mysql_result($q610,0,0)?>">Upiši kandidata na &quot;<?
+			$q630 = myquery("select naziv from studij where id=$r600[3]");
+			print mysql_result($q630,0,0);
+			?>&quot;, 1. semestar, u akademskoj <?=mysql_result($q610,0,1)?> godini</a></li>
+			</ul><?
 		}
 
-		$q198 = myquery("select id, naziv from akademska_godina order by id desc limit 1");
-
-		$id_ak_god = mysql_result($q198,0,0);
-		$naziv_ak_god = mysql_result($q198,0,1);
-
+		$q640 = myquery("select ss.naziv, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.ucenik_generacije from srednja_skola as ss, uspjeh_u_srednjoj as us where us.srednja_skola=ss.id and us.osoba=$osoba");
 
 		?>
-		</ul></p>
-
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=1&semestar=1&godina=<?=$id_ak_god?>">Upiši studenta u Prvu godinu studija u akademskoj <?=$naziv_ak_god?> godini</a></p>
+		<b>Uspjeh u srednjoj školi:</b>
+		<ul>
+		<li>Škola: <?=mysql_result($q640,0,0)?></li>
+		<li>Opći uspjeh: <?=mysql_result($q640,0,1)?>. Ključni predmeti: <?=mysql_result($q640,0,2)?>. Dodatni bodovi: <?=mysql_result($q640,0,3)?>. <?
+		if (mysql_result($q640,0,4)>0) print "Učenik generacije.";
+		?></li>
+		</ul>
 		<?
 		
 	}

@@ -29,8 +29,9 @@
 // v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.8 (2009/05/05) + Prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
 // v4.0.9.9 (2009/05/18) + Nemamo vise ponudukursa kod izmjene fiksnih bodova i konacne ocjene, pa cemo tu koristiti predmet i akademsku godinu
-// v4.0.9.10 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij
+// v4.0.9.10 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
 // v4.0.9.11 (2009/06/22) + Provjera prava pristupa kod fiksne komponente i konacne ocjene nije prebacena sa ponudekursa na predmet+ag
+// v4.0.9.12 (2009/07/15) + Dodajem kod za upis na drugi ciklus
 
 
 // Prebaciti u lib/manip?
@@ -360,6 +361,7 @@ case "prijemni_ocjene":
 	$stara = intval($_REQUEST['stara']);
 	$razred = intval($_REQUEST['razred']);
 	$tipocjene = intval($_REQUEST['tipocjene']);
+	$rednibroj = intval($_REQUEST['rednibroj']);
 
 // Pretpostavljamo da je id osobe tačan
 // Glupost :( ali šta se može kad se ocjene moraju unositi prije nego što se registruje osoba
@@ -375,15 +377,73 @@ case "prijemni_ocjene":
 	}
 
 	if ($_REQUEST['subakcija']=="obrisi" || $_REQUEST['subakcija']=="izmijeni")
-		$q200 = myquery("delete from srednja_ocjene where osoba=$osoba and razred=$razred and ocjena=$stara and tipocjene=$tipocjene limit 1");
+		$q200 = myquery("delete from srednja_ocjene where osoba=$osoba and razred=$razred and ocjena=$stara and tipocjene=$tipocjene and redni_broj=$rednibroj limit 1");
 	if ($_REQUEST['subakcija']=="dodaj" || $_REQUEST['subakcija']=="izmijeni")
-		$q200 = myquery("insert into srednja_ocjene set osoba=$osoba, razred=$razred, ocjena=$nova, tipocjene=$tipocjene");
+		$q200 = myquery("insert into srednja_ocjene set osoba=$osoba, razred=$razred, ocjena=$nova, tipocjene=$tipocjene, redni_broj=$rednibroj");
 
 	print "OK";
 
 	break;
 
 
+
+// Unos ocjena u prošlom ciklusu studija za prijemni
+case "prosli_ciklus_ocjena":
+	$osoba = intval($_REQUEST['osoba']);
+	$nova = intval($_REQUEST['nova']);
+	$rednibroj = intval($_REQUEST['rednibroj']); // nece biti nula
+
+	$q100 = myquery("select count(*) from osoba where id=$osoba");
+	if (mysql_result($q100,0,0)==0)  {
+		print "Nepoznata osoba $osoba";
+		break;
+	}
+
+	if ($nova==0) {
+		$q140 = myquery("delete from prosliciklus_ocjene where osoba=$osoba and redni_broj=$rednibroj");
+	} else if ($nova<6 || $nova>10) {
+		print "Ocjena nije u opsegu 6-10";
+		break;
+	} else {
+	
+		$q110 = myquery("select count(*) from prosliciklus_ocjene where osoba=$osoba and redni_broj=$rednibroj");
+		if (mysql_result($q110,0,0)==0)
+			$q120 = myquery("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ocjena=$nova");
+		else
+			$q130 = myquery("update prosliciklus_ocjene set ocjena=$nova where osoba=$osoba and redni_broj=$rednibroj");
+	}
+
+	print "OK";
+
+	break;
+
+
+
+// Unos ECTS bodova u prošlom ciklusu studija za prijemni
+case "prosli_ciklus_ects": // 1500,5 / 157,5 = 9,52698413 / 6 = 1,58783069
+	$osoba = intval($_REQUEST['osoba']);
+	$nova = floatval($_REQUEST['nova']);
+	$rednibroj = intval($_REQUEST['rednibroj']); // nece biti nula
+
+	$q100 = myquery("select count(*) from osoba where id=$osoba");
+	if (mysql_result($q100,0,0)==0)  {
+		print "Nepoznata osoba $osoba";
+		break;
+	}
+
+	if ($nova==0) {
+		$q140 = myquery("delete from prosliciklus_ocjene where osoba=$osoba and redni_broj=$rednibroj");
+	} else {
+		$q110 = myquery("select count(*) from prosliciklus_ocjene where osoba=$osoba and redni_broj=$rednibroj");
+		if (mysql_result($q110,0,0)==0)
+			$q120 = myquery("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ects=$nova");
+		else
+			$q130 = myquery("update prosliciklus_ocjene set ects=$nova where osoba=$osoba and redni_broj=$rednibroj");
+	}
+
+	print "OK";
+
+	break;
 
 default:
 

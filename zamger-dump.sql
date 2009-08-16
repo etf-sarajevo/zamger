@@ -525,77 +525,52 @@ CREATE TABLE IF NOT EXISTS `preference` (
 --
 
 
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `prijemni`
+-- Table structure for table `prijemni_prijava`
 --
 
-CREATE TABLE IF NOT EXISTS `prijemni` (
+CREATE TABLE IF NOT EXISTS `prijemni_prijava` (
+  `prijemni_termin` int(11) NOT NULL,
+  `osoba` int(11) NOT NULL,
+  `broj_dosjea` int(11) NOT NULL,
+  `redovan` tinyint(1) NOT NULL default '1',
+  `studij_prvi` int(11) NOT NULL,
+  `studij_drugi` int(11) NOT NULL,
+  `studij_treci` int(11) NOT NULL,
+  `studij_cetvrti` int(11) NOT NULL,
+  `izasao` tinyint(1) NOT NULL,
+  `rezultat` double NOT NULL,
+  PRIMARY KEY  (`prijemni_termin`,`osoba`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `prijemni_prijava`
+--
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `prijemni_termin`
+--
+
+CREATE TABLE IF NOT EXISTS `prijemni_termin` (
   `id` int(11) NOT NULL auto_increment,
-  `ime` varchar(30) collate utf8_slovenian_ci NOT NULL,
-  `prezime` varchar(30) collate utf8_slovenian_ci NOT NULL,
-  `datum_rodjenja` date NOT NULL,
-  `mjesto_rodjenja` varchar(30) collate utf8_slovenian_ci NOT NULL,
-  `drzavljanstvo` varchar(30) collate utf8_slovenian_ci NOT NULL,
-  `zavrsena_skola` varchar(50) collate utf8_slovenian_ci NOT NULL,
-  `jmbg` varchar(14) collate utf8_slovenian_ci NOT NULL,
-  `adresa` varchar(50) collate utf8_slovenian_ci NOT NULL,
-  `telefon` varchar(15) collate utf8_slovenian_ci NOT NULL,
-  `kanton` int(11) NOT NULL,
-  `redovni` tinyint(1) NOT NULL,
-  `odsjek_prvi` varchar(3) collate utf8_slovenian_ci NOT NULL,
-  `odsjek_drugi` varchar(3) collate utf8_slovenian_ci NOT NULL,
-  `odsjek_treci` varchar(3) collate utf8_slovenian_ci NOT NULL,
-  `odsjek_cetvrti` varchar(3) collate utf8_slovenian_ci NOT NULL,
-  `opci_uspjeh` double NOT NULL,
-  `kljucni_predmeti` double NOT NULL,
-  `dodatni_bodovi` double NOT NULL,
-  `prijemni_ispit` double NOT NULL default '0',
-  `izasao_na_prijemni` tinyint(1) NOT NULL default '0',
-  `student_generacije` tinyint(1) NOT NULL default '0',
-  `prijemni_ispit_dva` double NOT NULL,
-  `prijavio_drugi` tinyint(1) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `ciklus_studija` tinyint(2) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
 
 --
--- Dumping data for table `prijemni`
+-- Dumping data for table `prijemni_termin`
 --
 
-
--- --------------------------------------------------------
-
---
--- Table structure for table `prijemniocjene`
---
-
-CREATE TABLE IF NOT EXISTS `prijemniocjene` (
-  `prijemni` int(11) NOT NULL,
-  `razred` tinyint(4) NOT NULL,
-  `ocjena` tinyint(5) NOT NULL,
-  `tipocjene` tinyint(5) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `prijemniocjene`
---
-
-
--- --------------------------------------------------------
-
---
--- Table structure for table `prijemni_trenutno_edituje`
---
-
-CREATE TABLE IF NOT EXISTS `prijemni_trenutno_edituje` (
-  `prijemni` int(11) NOT NULL,
-  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `prijemni_trenutno_edituje`
---
 
 
 -- --------------------------------------------------------
@@ -694,11 +669,11 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `email` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) collate utf8_slovenian_ci NOT NULL,
   `datum_rodjenja` date NOT NULL,
-  `mjesto_rodjenja` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `mjesto_rodjenja` int(11) NOT NULL,
   `drzavljanstvo` varchar(30) collate utf8_slovenian_ci NOT NULL,
-  `srednja_skola` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `jmbg` varchar(14) collate utf8_slovenian_ci NOT NULL,
   `adresa` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `adresa_mjesto` int(11) NOT NULL,
   `telefon` varchar(15) collate utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
   `vrijeme_zahtjeva` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -752,8 +727,6 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
 -- Dumping data for table `raspored_stavka`
 --
 
-
--- --------------------------------------------------------
 
 -- --------------------------------------------------------
 
@@ -818,6 +791,44 @@ CREATE TABLE IF NOT EXISTS `rss` (
 --
 -- Dumping data for table `rss`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `srednja_ocjene`
+--
+
+CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
+  `osoba` int(11) NOT NULL,
+  `razred` tinyint(4) NOT NULL,
+  `redni_broj` int(1) NOT NULL,
+  `ocjena` tinyint(5) NOT NULL,
+  `tipocjene` tinyint(5) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `srednja_ocjene`
+--
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `srednja_skola`
+--
+
+CREATE TABLE IF NOT EXISTS `srednja_skola` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=431 ;
+
+--
+-- Dumping data for table `srednja_skola`
+--
+
 
 
 -- --------------------------------------------------------
@@ -1033,7 +1044,7 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `upis_kriterij` (
-  `id` int(11) NOT NULL auto_increment,
+  `prijemni_termin` int(11) NOT NULL auto_increment,
   `donja_granica` float NOT NULL,
   `gornja_granica` float NOT NULL,
   `kandidati_strani` int(5) NOT NULL,
@@ -1048,11 +1059,27 @@ CREATE TABLE IF NOT EXISTS `upis_kriterij` (
 -- Dumping data for table `upis_kriterij`
 --
 
-INSERT INTO `upis_kriterij` (`id`, `donja_granica`, `gornja_granica`, `kandidati_strani`, `kandidati_sami_placaju`, `kandidati_kanton_placa`, `prijemni_max`, `studij`) VALUES
-(1, 20, 50, 2, 5, 4, 40, 5),
-(2, 20, 50, 3, 3, 3, 40, 2),
-(3, 20, 50, 2, 5, 5, 40, 3),
-(4, 20, 50, 2, 3, 4, 40, 4);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `uspjeh_u_srednjoj`
+--
+
+CREATE TABLE IF NOT EXISTS `uspjeh_u_srednjoj` (
+  `osoba` int(11) NOT NULL,
+  `srednja_skola` int(11) NOT NULL,
+  `opci_uspjeh` double NOT NULL,
+  `kljucni_predmeti` double NOT NULL,
+  `dodatni_bodovi` double NOT NULL,
+  `ucenik_generacije` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`osoba`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `uspjeh_u_srednjoj`
+--
+
 
 -- --------------------------------------------------------
 
