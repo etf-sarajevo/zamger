@@ -124,7 +124,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 
 	// Pretraga
 	foreach ($registry as $r) {
-		if ($r[0] == $sta && $r[5]==0) { //$r[5] == debug
+		if ($r[0] == $sta) { //$r[5] == nevidljiv
 			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin)) {
 				$naslov=$r[1];
 				$template=$r[4];
