@@ -318,6 +318,7 @@ function malimeni($fj) {
 
 	$k=0;
 	foreach ($registry as $r) {
+		if($r[5] != 0) continue;
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
@@ -377,6 +378,7 @@ function horizontalni_meni($fj) {
 
 	$k=0;
 	foreach ($registry as $r) {
+		if($r[5] != 0) continue;
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
 			?><td height="20" width="100" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
