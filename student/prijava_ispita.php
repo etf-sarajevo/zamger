@@ -30,12 +30,21 @@ if ($_GET["akcija"]=="prijavi")
 	$termin = intval($_GET['termin']);
     if ($termin) {
 	//sljedeci dio koda ispituje da li je popunjen ispitni termin
+	$s0 = "SELECT it.id FROM ispit_termin as it, osoba as o, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.id AND pk.id=sp.predmet AND sp.student=o.id AND o.id=$userid";
 	$s1 = "SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$termin";
 	$s2 = "SELECT maxstudenata FROM ispit_termin WHERE id=$termin";
+	$q0 = myquery ($s0);
 	$q1 = myquery ($s1);
 	$q2 = myquery ($s2);
+	$temp0 = mysql_fetch_row($q0);
 	$temp1 = mysql_fetch_row($q1);
 	$temp2 = mysql_fetch_row($q2);
+	if(!$temp0[0])
+	{
+		niceerror("Niste upisani na taj predmet!");
+		zamgerlog("nije upisan na predmet", 3);
+		return 0;
+	} 
 	if($temp1[0]<$temp2[0])
 		{	
 		$sqlInsert="INSERT INTO student_ispit_termin (student,ispit_termin) VALUES (" .
@@ -43,6 +52,12 @@ if ($_GET["akcija"]=="prijavi")
 		myquery($sqlInsert);
 		}
     }
+	else 
+	{
+		niceerror("Popunjen ispitni termin!");
+		zamgerlog("popunjen termin", 3);
+		return 0;
+	}
 ?>
 	<script language="JavaScript">
 		window.location="?sta=student/prijava_ispita";
