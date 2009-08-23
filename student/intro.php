@@ -103,7 +103,7 @@ if (mysql_num_rows($q19b)!= 0){
 		
 		while ($r19 = mysql_fetch_row($q19a)) {
 			if ($q19b_vrijeme < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-			$code_poruke["l".$r19[0]] = "<b>$r19[1]:</b> Molimo ispunite anketu. <br/><br/>\n";
+			$code_poruke["l".$r19[0]] = "<b>$r19[1]:</b><a href=\"?sta=student/anketa&predmet=$r19[2]\"> Molimo ispunite anketu. </a> <br/><br/>\n";
 			$vrijeme_poruke["l".$r19[0]] = $q19b_vrijeme;
 		}
 }

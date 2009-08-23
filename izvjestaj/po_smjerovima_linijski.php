@@ -6,45 +6,54 @@ require("../lib/zamger.php");
 require("../lib/config.php");
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
-	$id_ankete = $_GET['anketa'];
-	$semestar = $_GET['semestar'];
+$id_ankete = $_GET['anketa'];
+$semestar = $_GET['semestar'];
+$semestarPGS = $semestar;
 
-	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-	$ag = mysql_result($q10,0,0);
-	// ako bude potrebno dodati mogucnost i da se moze birati i semestar ali onda napraviti da se bira samo da li je ljetni ili zimski
-	if ($semestar != 3)
-	 $semestar= $semestar%2;
-	 
-	$smjerovi;
+$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
+$ag = mysql_result($q10,0,0);
 
-	//kupimo pitanja
-	$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_id = t.id and p.anketa_id =$id_ankete and p.tip_id=1");
-	$k=0;
-	$l=0;
-		while($pitanje = mysql_fetch_row($result2077)){
-			$result409=myquery("select id,kratkinaziv from studij ");
-			
-			while($studij = mysql_fetch_row($result409)){
-			
-				//kupimo vrijednosti
-				if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y'");
-				else // ako nije onda biramo parne ili neparene semestre
-					$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y'");
-				$prosjek[$l]=mysql_result($q6730,0,0);
-				
-				$smjerovi[$studij[0]][$k] = $prosjek[$l];
-				
-				$l++;
-			
-			}
-			$k++;
-			
-		}
+if ($semestar != 3)
+	$semestar= $semestar%2;
+ 
+$smjerovi;
 
+//kupimo pitanja za datu anketu
+$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
+$k=0;
+$l=0;
+while($pitanje = mysql_fetch_row($result2077)){
+	// kupimo studije s tim da nakon promjena u Zamgeru ne postoji vise studij PGS stoga
+	// ga treba izbaciti u ovom upitu te naknadno izracunati statistiku za prvu godinu studija posebnim upitom
+	$result409=myquery("select id,kratkinaziv from studij where id !=1");
+	
+	// za prvu godinu je poseban upit gdje ne postoji uslov za studije vec samo uslov na semestar
+	if ($semestar==3)  // ako je izvjestaj za cijelu godinu
+		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar in(1,2) AND zavrsena='Y'");
+	else // ako nije onda biramo parne ili neparene semestre
+		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar=$semestarPGS AND zavrsena='Y'");
+	
+	$prosjek[$l]=mysql_result($q6730PGS,0,0);
+	$smjerovi[1][$k] = $prosjek[$l];
+	$l++;
+	
+	// za ostale studije koristimo isti upit
+	while($studij = mysql_fetch_row($result409)){
+		//kupimo vrijednosti
+		if ($semestar==3)  // ako je izvjestaj za cijelu godinu
+			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y' and a.semestar not in (1,2)");
+		else // ako nije onda biramo parne ili neparene semestre
+			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y' and a.semestar not in (1,2)");
+		$prosjek[$l]=mysql_result($q6730,0,0);
+		
+		$smjerovi[$studij[0]][$k] = $prosjek[$l];
+		
+		$l++;
+	}
+	$k++;	
+}
 
 crtaj ($smjerovi,$k);
-
 
 function crtaj ($podaci,$broj_pitanja){
 		$width = 700;
@@ -141,7 +150,7 @@ function crtaj ($podaci,$broj_pitanja){
 				$xpos = $hmargin;
 				$ty = $vmargin + $ysize;
 				$padding = ($xsize-20)/$nval ; // half of spacing between columns
-				$yscale = $ysize / ($ngrid+1); // pixels per data unit
+				$yscale = $ysize / ($ngrid+1); // pixela po podacima
 				
 				for ($i = 0; $i < $nval; $i++) {
 					$j=$i+1;
@@ -159,10 +168,10 @@ function crtaj ($podaci,$broj_pitanja){
 					imageline($image,$tx,$ty,$xpos,$cy,$boje[$a-1]);
 					imagestring($image,5,$xpos-3,$cy-13,'.',$navy);
 					
-					// x labels
+					// x labele
 				   
 					$ymax = $vmargin + $ysize;
-					$ypos = $ymax + 3; // distance from x axis
+					$ypos = $ymax + 3; // udaljenost od x ose
 					
 					$ty = $cy;
 					$tx = $xpos;

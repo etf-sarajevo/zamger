@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS `anketa` (
   `opis` text,
   `aktivna` tinyint(1) DEFAULT '0',
   `editable` tinyint(1) DEFAULT '1',
-  `ak_god` int(11) DEFAULT NULL,
+  `akademska_godina` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=9 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
 
 -- --------------------------------------------------------
 
@@ -47,16 +47,16 @@ CREATE TABLE IF NOT EXISTS `anketa` (
 DROP TABLE IF EXISTS `izbori_pitanja`;
 CREATE TABLE IF NOT EXISTS `izbori_pitanja` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `pitanje_id` int(10) unsigned NOT NULL,
+  `pitanje` int(10) unsigned NOT NULL,
   `izbor` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=26 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=26 ;
 
 --
 -- Dumping data for table `izbori_pitanja`
 --
 
-INSERT INTO `izbori_pitanja` (`id`, `pitanje_id`, `izbor`) VALUES
+INSERT INTO `izbori_pitanja` (`id`, `pitanje`, `izbor`) VALUES
 (1, 1, '1'),
 (2, 1, '2'),
 (3, 1, '3'),
@@ -71,12 +71,11 @@ INSERT INTO `izbori_pitanja` (`id`, `pitanje_id`, `izbor`) VALUES
 
 DROP TABLE IF EXISTS `odgovor_rank`;
 CREATE TABLE IF NOT EXISTS `odgovor_rank` (
-  `rezultat_id` int(10) unsigned NOT NULL,
-  `pitanje_id` int(10) unsigned NOT NULL,
+  `rezultat` int(10) unsigned NOT NULL,
+  `pitanje` int(10) unsigned NOT NULL,
   `izbor_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`rezultat_id`,`pitanje_id`,`izbor_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
+  PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 -- --------------------------------------------------------
 
 --
@@ -85,12 +84,11 @@ CREATE TABLE IF NOT EXISTS `odgovor_rank` (
 
 DROP TABLE IF EXISTS `odgovor_text`;
 CREATE TABLE IF NOT EXISTS `odgovor_text` (
-  `rezultat_id` int(10) unsigned NOT NULL,
-  `pitanje_id` int(10) unsigned NOT NULL,
-  `response` text,
-  PRIMARY KEY (`rezultat_id`,`pitanje_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
+  `rezultat` int(10) unsigned NOT NULL,
+  `pitanje` int(10) unsigned NOT NULL,
+  `odgovor` text,
+  PRIMARY KEY (`rezultat`,`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 -- --------------------------------------------------------
 
 --
@@ -100,12 +98,11 @@ CREATE TABLE IF NOT EXISTS `odgovor_text` (
 DROP TABLE IF EXISTS `pitanje`;
 CREATE TABLE IF NOT EXISTS `pitanje` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa_id` int(10) unsigned NOT NULL,
-  `tip_id` int(10) unsigned NOT NULL,
+  `anketa` int(10) unsigned NOT NULL DEFAULT '0',
+  `tip_pitanja` int(10) unsigned NOT NULL,
   `tekst` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=38 ;
-
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=93 ;
 -- --------------------------------------------------------
 
 --
@@ -115,15 +112,16 @@ CREATE TABLE IF NOT EXISTS `pitanje` (
 DROP TABLE IF EXISTS `rezultat`;
 CREATE TABLE IF NOT EXISTS `rezultat` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa_id` int(10) unsigned NOT NULL,
-  `submitted` timestamp NULL DEFAULT '0000-00-00 00:00:00',
-  `complete` enum('Y','N') DEFAULT 'N',
-  `predmet_id` int(11) DEFAULT NULL,
-  `osoba_id` varchar(50) DEFAULT NULL,
-  `akad_god` int(10) NOT NULL DEFAULT '1',
+  `anketa` int(10) unsigned NOT NULL,
+  `vrijeme` timestamp NULL DEFAULT '0000-00-00 00:00:00',
+  `zavrsena` enum('Y','N') DEFAULT 'N',
+  `predmet` int(11) DEFAULT NULL,
+  `unique_id` varchar(50) DEFAULT NULL,
+  `akademska_godina` int(10) NOT NULL,
+  `studij` int(10) NOT NULL,
+  `semestar` int(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=50 ;
-
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=26 ;
 -- --------------------------------------------------------
 
 --
@@ -137,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `tip_pitanja` (
   `postoji_izbor` enum('Y','N') NOT NULL,
   `tabela_odgovora` char(32) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `tip_pitanja`

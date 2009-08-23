@@ -9,7 +9,6 @@ dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 $pitanje = $_GET['pitanje'];
 $semestar = $_GET['semestar'];
-	//$ak_god = $_GET['akademska_godina'];
 $studij=$_GET['studij'];
 
 $result2077=myquery("SELECT tekst FROM pitanje WHERE id=$pitanje");
@@ -17,24 +16,29 @@ $title = mysql_result($result2077,0,0);
 
 $l=0;
 $predmeti;
+// ako je za studij odabrana Prva godina studija onda izbacujemo uslov
+// studij iz sljedeceg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 
+// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
+// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
+if ($studij == 1)
+	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and semestar = $semestar");
+else
+	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
+while($predmet = mysql_fetch_row($result409)){
 
-$result409=myquery("select pk.id ,p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
-		while($predmet = mysql_fetch_row($result409)){
-		
-			$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat_id AND b.pitanje_id =$pitanje AND a.predmet_id =$predmet[0] AND 	
-							zavrsena='Y'");
-			$data[$l]=mysql_result($q6730,0,0);
-			$predmeti[$predmet[1]] =$data[$l] ;
-			
-			$l++;
-		
-		}
+	$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje AND a.predmet =$predmet[0] AND 	
+					zavrsena='Y'");
+	$data[$l]=mysql_result($q6730,0,0);
+	$predmeti[$predmet[1]] =$data[$l] ;
+	
+	$l++;
+
+}
 $prosjek = array_sum($predmeti)/sizeof($predmeti);
 // izbacio prosjek ali ako se odkomentarise sljedeca linija koda dodaje se jos jedan dodatni bar u graf sa srednjom vrijednošcu za to pitanje
 // $predmeti['AVG']=$prosjek;
 
 crtaj($predmeti,$title);
-
 
 function crtaj ($data,$title){
 		
@@ -56,7 +60,6 @@ function crtaj ($data,$title){
 		// crtanje 
 		
 		$maxval = max($data); // maximalna vrijednost 
-		
 		
 		$vmargin = 20; // vertikalna margina za vrh i dno za  x-labele
 		$hmargin = 38; // lijeva horizontalna margina za y-labele
@@ -86,9 +89,6 @@ function crtaj ($data,$title){
 		//ImageString(image, font, x, y, text, color);
 		imagestring($image, $titlefont, $xpos, $ypos, $title , $black);
 		*/
-		
-		
-		
 		
 		// y labele i mrezne linije
 		$labelfont = 2;
@@ -130,7 +130,7 @@ function crtaj ($data,$title){
 			$xmin = $hmargin + $i*$base + $padding;
 			
 			
-			imagefilledrectangle($image, $xmin, $ymin, $xmax, $ymax, $navy);
+			imagefilledrectangle($image, $xmin+1, $ymin+1, $xmax -1, $ymax-1, $navy);
 			
 			// x labels
 			$txtsz = imagefontwidth($labelfont) * strlen($xval);
@@ -142,12 +142,9 @@ function crtaj ($data,$title){
 			imagestring($image, $labelfont, $xpos, $ypos, $xval, $black);
 		} 
 		
-		
 		// flush image
 		header("Content-type: image/gif"); // or "Content-type: image/png"
 		imagegif($image); // or imagepng($image)
 		imagedestroy($image);
 }
-
-
 ?>

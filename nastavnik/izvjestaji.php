@@ -66,13 +66,8 @@ if (!$user_siteadmin) { // 3 = site admin
 
 <p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 4. Pregled anketa:
 <ul>
-<?
-$q10 = myquery("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag");
-$ponudakursa=mysql_result($q10,0,0);
-?>
-	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$ponudakursa?>&rank=da">Rank pitanja </a></li>
-	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$ponudakursa?>&komentar=da">Komentari</a></li>
-
+	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&rank=da">Rank pitanja </a></li>
+	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&komentar=da">Komentari</a></li>
 
 </ul>
 </p>
