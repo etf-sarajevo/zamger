@@ -276,6 +276,11 @@ $brojac=1;
 
 while ($r2=mysql_fetch_row($q1)) {
 
+$temp=$r2[0];
+$s5="SELECT i.id FROM ispit_termin as it, ispit as i WHERE it.id=$temp AND it.ispit=i.id";
+$q5=myquery($s5);
+$i=mysql_result($q5,0,0);
+
 
 ?>
 	<tr>
@@ -288,7 +293,7 @@ while ($r2=mysql_fetch_row($q1)) {
 	<td align="center"><?=$r2[4]?></td>
 	<td align="center"><a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Izmijeni</a>&nbsp;&nbsp;
 				 <a href="?sta=nastavnik/ispiti&akcija=obrisi&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Obrisi</a>&nbsp;&nbsp;
-				 <a href="?sta=nastavnik/prijava_ispita&akcija=studenti&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Studenti</a></td>
+				 <a href="?sta=nastavnik/prijava_ispita&akcija=studenti&ispit=<? print $i;?>&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Studenti</a></td>
 	
 
 	</tr>
