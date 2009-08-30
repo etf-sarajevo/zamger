@@ -190,18 +190,21 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 }
 
 
-// akcija koja brise ispitni termin, kopirana iz modula nastavnik/prijava_ispita, zbog sminke uglavnom
+// akcija koja brise ispitni termin iz tabele
 if ($_REQUEST["akcija"]=="obrisi")
 {
-	if ($termin) {
+	$s555 = "SELECT it.id FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=$predmet";
+	$q555 = myquery($s555);
+	$r555 = mysql_result($q555,0,0);
+	if (($termin) && ($r555)) {
 	
 	$delete1="DELETE FROM ispit_termin WHERE id=" . $termin;
 	$delete2="DELETE FROM student_ispit_termin WHERE ispit_termin=" . $termin;
 	myquery($delete1);
 	myquery($delete2);
+	zamgerlog("Izbrisan ispitni termin id=$termin", 2);
 	
 	}
-	zamgerlog("Izbrisan ispitni termin id=$termin", 2);
 ?>
 	<script language="JavaScript">
 		window.location="?sta=nastavnik/ispiti&predmet=<? print $predmet; ?>&ag=<? print $ag; ?>";
