@@ -291,8 +291,8 @@ $i=mysql_result($q5,0,0);
 	<td align="center"><?=$r2[3]?></td>
 
 	<td align="center"><?=$r2[4]?></td>
-	<td align="center"><a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Izmijeni</a>&nbsp;&nbsp;
-				 <a href="?sta=nastavnik/ispiti&akcija=obrisi&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Obrisi</a>&nbsp;&nbsp;
+	<td align="center"><a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&ispit=<? print $i;?>&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Izmijeni</a>&nbsp;&nbsp;
+				 <a href="?sta=nastavnik/ispiti&akcija=obrisi&ispit=<? print $i;?>&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Obrisi</a>&nbsp;&nbsp;
 				 <a href="?sta=nastavnik/prijava_ispita&akcija=studenti&ispit=<? print $i;?>&termin=<? print $r2[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Studenti</a></td>
 	
 
