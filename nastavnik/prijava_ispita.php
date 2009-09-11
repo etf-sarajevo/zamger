@@ -248,6 +248,11 @@ if ($_POST['akcija'] == 'dodajtermin' && check_csrf_token()) {
 		zamgerlog("los max broj studenata po ispitu",3);
 		return 0;
 	}
+	if ($t1<=$t2){
+		niceerror("Krajnji rok za prijavu ispita mora raniji od tacnog vremena odzavanja ispita");
+		zamgerlog("los datum",3);
+		return 0;
+	}
 	
 	$sqlInsert="INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , komponenta=$tip , maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')";
 	$q=myquery($sqlInsert);
@@ -308,6 +313,11 @@ if ($_POST['akcija'] == 'izmijenitermin' && check_csrf_token()) {
 	if ($limit<=0){
 		niceerror("Maksimalni broj studenata na ispitu mora biti veci od nule");
 		zamgerlog("los max broj studenata po ispitu",3);
+		return 0;
+	}
+	if ($t1<=$t2){
+		niceerror("Krajnji rok za prijavu ispita mora raniji od tacnog vremena odzavanja ispita");
+		zamgerlog("los datum",3);
 		return 0;
 	}
 	
