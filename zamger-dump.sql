@@ -437,8 +437,8 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 -- Dumping data for table `osoba`
 --
 
-INSERT INTO `osoba` (`id`, `ime`, `prezime`, `email`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `srednja_skola`, `jmbg`, `adresa`, `telefon`, `kanton`, `treba_brisati`) VALUES
-(1, 'Site', 'Admin', 'site@admin.com', '', '0000-00-00', '', '', '', '', '', '', 0, 0);
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `email`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
+(1, 'Site', 'Admin', 'site@admin.com', '', '0000-00-00', 0, '', '', '', 0, '', 0, 0);
 
 -- --------------------------------------------------------
 
