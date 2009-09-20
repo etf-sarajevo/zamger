@@ -326,7 +326,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2008 Vedran Ljubović<br/>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2009 Vedran Ljubović<br/>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
