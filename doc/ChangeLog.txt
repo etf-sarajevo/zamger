@@ -1,0 +1,169 @@
+------------------------------------------------------------------------
+r575 | vedran | 2009-06-22 15:41:40 +0200 (Mon, 22 Jun 2009) | 2 lines
+
+(v4) studentska/prijemni: Nisam provjerio kod prije slanja
+
+------------------------------------------------------------------------
+r574 | vedran | 2009-06-22 15:38:24 +0200 (Mon, 22 Jun 2009) | 3 lines
+
+(v4) studentska/prijemni: Prelaskom na genform izgubilo se ime forme, 
+tako da submit nije radio
+
+------------------------------------------------------------------------
+r417 | vedran | 2009-04-29 22:04:58 +0200 (Wed, 29 Apr 2009) | 3 lines
+
+(v4) studentska/osobe: U r335 nije ustvari napravljena izmjena koja pise 
+u komentaru
+
+------------------------------------------------------------------------
+r416 | vedran | 2009-04-29 22:01:18 +0200 (Wed, 29 Apr 2009) | 2 lines
+
+(v4) rss.php: ime i prezime se sada nalaze u tabeli osoba a ne u auth
+
+------------------------------------------------------------------------
+r414 | vedran | 2009-04-29 21:34:28 +0200 (Wed, 29 Apr 2009) | 3 lines
+
+(v4) saradnik/komentar: Pristup za site admina nije radio, koristena 
+zastarjela varijabla $admin
+
+------------------------------------------------------------------------
+r403 | vedran | 2009-04-20 15:57:08 +0200 (Mon, 20 Apr 2009) | 2 lines
+
+(v4) studentska/intro: Broj indexa ne mora biti integer :(
+
+------------------------------------------------------------------------
+r388 | vedran | 2009-04-06 16:44:08 +0200 (Mon, 06 Apr 2009) | 5 lines
+
+(v4) Zadatak tipa attachment je prikazivan samo za status=1. Ovaj bug je 
+isplivao nakon r378, a uzrok je bio to sto se polje filename brisalo 
+promjenom statusa. To vec odavno vise nije slucaj sto se moze vidjeti u 
+saradnik/zadaca $q90 i $q100
+
+------------------------------------------------------------------------
+r384 | vedran | 2009-04-02 05:20:03 +0200 (Thu, 02 Apr 2009) | 3 lines
+
+(v4) common/attachment: Logicka greska je onemogucavala admina da otvori 
+attachment
+
+------------------------------------------------------------------------
+r379 | vedran | 2009-04-01 21:38:32 +0200 (Wed, 01 Apr 2009) | 2 lines
+
+(v4) index.php: Dodan link u header
+
+------------------------------------------------------------------------
+r377 | vedran | 2009-04-01 21:28:11 +0200 (Wed, 01 Apr 2009) | 4 lines
+
+(v4) student/zadaca: Kod slanja zadace kao attachment status je bio 
+postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran 
+programski jezik
+
+------------------------------------------------------------------------
+r375 | vedran | 2009-04-01 20:53:02 +0200 (Wed, 01 Apr 2009) | 4 lines
+
+(v4) saradnik/grupa: Kod brisanja casa, ID nekada nije bio ispravno 
+prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze 
+obrisati)
+
+------------------------------------------------------------------------
+r367 | vedran | 2009-03-25 21:48:33 +0100 (Wed, 25 Mar 2009) | 2 lines
+
+(v4) admin/log: Podignut default nivo radi brzeg otvaranja
+
+------------------------------------------------------------------------
+r366 | vedran | 2009-03-25 21:47:38 +0100 (Wed, 25 Mar 2009) | 2 lines
+
+(v4) saradnik/zadaca: Dozvoliti unos bodova iz zadace sa zarezom
+
+------------------------------------------------------------------------
+r361 | vedran | 2009-03-23 21:51:41 +0100 (Mon, 23 Mar 2009) | 3 lines
+
+(v4) studentska/osobe: Sakrij direktni upis na predmet ako student nije 
+upisan na fakultet
+
+------------------------------------------------------------------------
+r352 | vedran | 2009-03-13 05:06:56 +0100 (Fri, 13 Mar 2009) | 3 lines
+
+(v4) saradnik/intro: Dodan prikaz obavjestenja nivoa 0 i 2 koje bi 
+nastavnici trebali dobijati, ali ih nisu mogli vidjeti.
+
+------------------------------------------------------------------------
+r351 | vedran | 2009-03-13 04:59:11 +0100 (Fri, 13 Mar 2009) | 4 lines
+
+(v4) nastavnik/zadace: Nije se mogao zadati programski jezik (uvijek 
+vracao na nedefinisan); dvostruka stavka "--Nije odredjen--"; poboljsan 
+feedback nakon kreiranja / editovanja zadace
+
+------------------------------------------------------------------------
+r349 | vedran | 2009-03-12 21:55:30 +0100 (Thu, 12 Mar 2009) | 3 lines
+
+(v4) studentska/predmeti: Popravljen logging prilikom dodavanja predmeta 
+- log ocekuje ID u tabeli ponudakursa a ne u tabeli predmet
+
+------------------------------------------------------------------------
+r346 | vedran | 2009-03-10 19:09:24 +0100 (Tue, 10 Mar 2009) | 2 lines
+
+(v4) studentska/obavijest: Zaboravio checkbox
+
+------------------------------------------------------------------------
+r345 | vedran | 2009-03-10 19:05:45 +0100 (Tue, 10 Mar 2009) | 2 lines
+
+(v4) studentska/obavijest: Refactoring koda koji je na brzinu pisan
+
+------------------------------------------------------------------------
+r342 | vedran | 2009-03-08 19:06:42 +0100 (Sun, 08 Mar 2009) | 4 lines
+
+(v4) common/profil: Dodan logging; sakrij broj indexa korisnicima koji nisu 
+studenti; prikazi informaciju ako je vec poslan zahtjev; ne radi 
+nista ako korisnik nije napravio promjenu
+
+------------------------------------------------------------------------
+r341 | vedran | 2009-03-08 19:06:09 +0100 (Sun, 08 Mar 2009) | 3 lines
+
+(v4) studentska/intro: Slanje poruke studentu da je zahtjev prihvacen / 
+odbijen i komentar
+
+------------------------------------------------------------------------
+r340 | vedran | 2009-03-08 19:05:42 +0100 (Sun, 08 Mar 2009) | 3 lines
+
+(v4) studentska/osobe: Postavljanje logina po prvi put za korisnika nije 
+radilo ako se koristi tabela.. koristim MySQL specificnu sintaxu REPLACE
+
+------------------------------------------------------------------------
+r339 | vedran | 2009-03-08 19:05:13 +0100 (Sun, 08 Mar 2009) | 3 lines
+
+(v4) studentska/raspored: Privremeno komentiram dio da bi modul radio... 
+ovdje bi trebao sada ici slozeniji uslov sa tabelom privilegija
+
+------------------------------------------------------------------------
+r338 | vedran | 2009-03-08 19:04:34 +0100 (Sun, 08 Mar 2009) | 2 lines
+
+(v4) Update DB scheme za raspored (neke stvari nisu ispravljene)
+
+------------------------------------------------------------------------
+r195 | vedran | 2009-02-26 21:19:27 +0100 (Thu, 26 Feb 2009) | 3 lines
+
+izvjestaj/grupe: Popravljena sirina kolone za tabelu "Studenti koji nisu 
+niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
+
+------------------------------------------------------------------------
+r194 | vedran | 2009-02-26 21:19:01 +0100 (Thu, 26 Feb 2009) | 3 lines
+
+nastavnik/grupe: Popravljen ispis imena i prezimena studenta koji ne 
+slusa predmet prilikom kopiranja grupa
+
+------------------------------------------------------------------------
+r190 | vedran | 2009-02-24 12:42:41 +0100 (Tue, 24 Feb 2009) | 2 lines
+
+nastavnik/predmet: Dodan prikaz nastavnika angazovanih na predmetu
+
+------------------------------------------------------------------------
+r189 | vedran | 2009-02-24 12:15:34 +0100 (Tue, 24 Feb 2009) | 2 lines
+
+Zaboravio sam API.ODT
+
+------------------------------------------------------------------------
+r188 | vedran | 2009-02-24 12:04:11 +0100 (Tue, 24 Feb 2009) | 3 lines
+
+studentska/osobe: Kod direktnog upisa na predmet, sakrij predmete sa 
+drugih studija (osim prve godine) i predmete koje je student vec polozio
+
