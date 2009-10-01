@@ -8,6 +8,10 @@
 // v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.4 (2009/09/14) + Izmjene u bazi su izazvale da predmeti nisu bili ispravno sortirani; predmeti su sada sortirani po studiju i semestru, a studenti po imenu
+
+// FIXME: Ovaj izvjestaj treba prebaciti na plan studija zbog izbornih predmeta
+
 
 
 function izvjestaj_granicni() {
@@ -101,7 +105,11 @@ $student_studij = array();
 $student_status = array();
 
 // Upit koji vraca sve studente upisane u aktuelnoj godini
-$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+if ($sort_po_predmetu)
+	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa, s.id from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by o.prezime, o.ime, ss.studij, ss.semestar");
+else
+	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+
 if (mysql_num_rows($q20)==0) 
 	// Nema nikog u parnom semestru, probavamo neparni
 	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
@@ -112,17 +120,22 @@ while($r20 = mysql_fetch_row($q20)) {
 	$semestar = $r20[2];
 	if ($semestar%2==1) $semestar++;
 	$imeprezime = $r20[4]." ".$r20[3];
+	$brindexa = $r20[5];
+	$studij_id = $r20[6];
 
-	$ects_uslov = 6; // Maksimalan broj ECTS bodova koji se mogu prenijeti
+	$ects_uslov = 7.5; // Maksimalan broj ECTS bodova koji se mogu prenijeti
 	if ($semestar == 6) $ects_uslov=12; // Zavrsni rad :(
-	if ($semestar == 4) $ects_uslov=0; // Ne moze se prenijeti 2->3 godina
+	//if ($semestar == 4) $ects_uslov=0; // Ne moze se prenijeti 2->3 godina
+
 
 	// Svi predmeti koje je ikada slusao
-	$q30 = myquery("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
+	$q30 = myquery("select pk.predmet, p.ects, pk.semestar, p.naziv, pk.obavezan, pk.studij from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
 	$predmeti_pao=array();
 	$ects_pao=array();
 	$ects_suma=0;
 	while ($r30 = mysql_fetch_row($q30)) {
+		if ($r30[5]!=$studij_id) continue; // preskacemo predmete sa drugog studija
+		if ($r30[4]==0) continue; // preskacemo izborne predmete jer ovo ne moze raditi
 		$q40 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r30[0]");
 		if (mysql_result($q40,0,0)<1 && !in_array($r30[0], $predmeti_pao)) {
 			$predmeti_pao[] = $r30[0];
@@ -154,14 +167,14 @@ while($r20 = mysql_fetch_row($q20)) {
 				</table>
 				<h3>Studij: <?=$studij?>, Upisuju semestar: <?=($semestar+1)?></h3>
 				<table border="1">
-				<tr><td>R. br.</td><td>Ime i prezime</td><td>Prenosi predmet?</td></tr>
+				<tr><td>R. br.</td><td>Ime i prezime</td><td>Broj indexa</td><td>Prenosi predmet?</td></tr>
 				<?
 				$oldstudij=$studij;
 				$oldsemestar=$semestar;
 			}
 			if ($ects_suma==0) $ispis="NE"; else $ispis="DA";
 
-			?><tr><td><?=($rbr++)?></td><td><?=$imeprezime?></td><td><?=$ispis?></td></tr><?
+			?><tr><td><?=($rbr++)?></td><td><?=$imeprezime?></td><td><?=$brindexa?></td><td><?=$ispis?></td></tr><?
 			
 		} else 
 			// Preskacemo studente koji su dali uslov
@@ -181,7 +194,7 @@ while($r20 = mysql_fetch_row($q20)) {
 				$ispis .= $predmeti_naziv[$predmet]."<br/>\n";
 				if ($sort_po_predmetu==1) {
 					$counter[$predmet]++;
-					$total_ispis[$predmet] .= "<tr><td>".$counter[$predmet]."</td><td>$imeprezime</td></tr>\n";
+					$total_ispis[$predmet] .= "<tr><td>".$counter[$predmet]."</td><td>$imeprezime</td><td>$brindexa</td></tr>\n";
 				}
 			}
 		}
@@ -214,7 +227,7 @@ while($r20 = mysql_fetch_row($q20)) {
 			$ispis .= $predmeti_naziv[$predmet]."<br/>\n";
 			if ($sort_po_predmetu==1) {
 				$counter[$predmet]++;
-				$total_ispis[$predmet] .= "<tr><td>".$counter[$predmet]."</td><td>$imeprezime</td></tr>\n";
+				$total_ispis[$predmet] .= "<tr><td>".$counter[$predmet]."</td><td>$imeprezime</td><td>$brindexa</td></tr>\n";
 			}
 		}
 	}
@@ -227,13 +240,13 @@ while($r20 = mysql_fetch_row($q20)) {
 			</table>
 			<h3>Studij: <?=$studij?>, Upisuju semestar: <?=($semestar+1)?></h3>
 			<table border="1">
-			<tr><td>R. br.</td><td>Ime i prezime</td><td>Nedostajući predmet(i)</td></tr>
+			<tr><td>R. br.</td><td>Ime i prezime</td><td>Broj indexa</td><td>Nedostajući predmet(i)</td></tr>
 			<?
 			$oldstudij=$studij;
 			$oldsemestar=$semestar;
 		}
 
-		?><tr><td><?=($rbr++)?></td><td><?=$imeprezime?></td><td><?=$ispis?></td></tr><?
+		?><tr><td><?=($rbr++)?></td><td><?=$imeprezime?></td><td><?=$brindexa?></td><td><?=$ispis?></td></tr><?
 	}
 }
 
@@ -241,15 +254,18 @@ while($r20 = mysql_fetch_row($q20)) {
 // Ispis sortiran po predmetu
 
 if ($sort_po_predmetu==1) {
-	foreach ($total_ispis as $predmet => $ispis) {
-		if ($predmet==131) continue;
-		$q1000 = myquery("select s.kratkinaziv, pk.semestar from studij as s, ponudakursa as pk where pk.predmet=$predmet and pk.studij=s.id");
-		$studij = mysql_result($q1000,0,0);
-		$semestar = mysql_result($q1000,0,1);
+
+	$q1000 = myquery("select p.id, p.naziv, s.kratkinaziv, pk.semestar, p.ects from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.akademska_godina=$ak_god and pk.studij=s.id order by s.id, pk.semestar, p.naziv");
+	while ($r1000 = mysql_fetch_row($q1000)) {
+		if ($r1000[4]==12) continue; // ignorišemo završni rad
+
+		$ispis = $total_ispis[$r1000[0]];
+		if ($ispis=="") continue; // predmeti bez graničnih slučajeva
+		$total_ispis[$r1000[0]]=""; // da se ne bi ponavljali predmeti koji se nude na više mjesta...
 
 		?>
-		<h3><?=$predmeti_naziv[$predmet]?> (<?=$studij?>, <?=$semestar?>. semestar)</h3>
-		<table border="1"><tr><td>R. br.</td><td>Ime i prezime</td></tr>
+		<h3><?=$predmeti_naziv[$r1000[0]]?> (<?=$r1000[2]?>, <?=$r1000[3]?>. semestar)</h3>
+		<table border="1"><tr><td>R. br.</td><td>Ime i prezime</td><td>Broj indexa</td></tr>
 		<?=$ispis?>
 		</table>
 		<?
