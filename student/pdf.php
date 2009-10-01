@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/05/25) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
+// v4.0.9.4 (2009/05/26) + Varijabla $predmet je koristena u dva znacenja :)
 
 // TODO: koristiti tcpdf
 
@@ -50,7 +51,7 @@ if (mysql_num_rows($q20) < 1) {
 	return;
 }
 $brzad = mysql_result($q20,0,0);
-$predmet = mysql_result($q20,0,1);
+$imepredmeta = mysql_result($q20,0,1);
 $imezad = mysql_result($q20,0,2);
 $ekst = mysql_result($q20,0,3);
 
@@ -155,7 +156,7 @@ $pdf->SetFont('DejaVu Sans B','',30);
 $pdf->Cell(190,10,iconv('utf-8','iso-8859-2',$imezad),0,0,'C');
 $pdf->Ln();
 $pdf->SetFont('DejaVu Sans B','',16);
-$pdf->Cell(190,10,'- '.strtoupper(iconv("utf8","iso-8859-2",$predmet)).' -',0,0,'C');
+$pdf->Cell(190,10,'- '.strtoupper(iconv("utf8","iso-8859-2",$imepredmeta)).' -',0,0,'C');
 
 
 
