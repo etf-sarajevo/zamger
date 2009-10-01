@@ -18,6 +18,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/06/20) + Greska kod citanja poruke u opsegu 6
 
 
 function common_inbox() {
@@ -294,7 +295,7 @@ if ($poruka>0) {
 	}
 	if ($opseg==6) {
 		// da li je student u labgrupi?
-		$q115 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$primalac");
+		$q115 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$prim_id");
 		if (mysql_result($q115,0,0)<1) {
 			niceerror("Nemate pravo pristupa ovoj poruci!");
 			zamgerlog("pokusao pristupiti poruci $poruka",3);
