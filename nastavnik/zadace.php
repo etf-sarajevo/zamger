@@ -15,6 +15,7 @@
 // v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; dodana provjera spoofinga zadace kod masovnog unosa
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 // v4.0.9.4 (2009/05/08) + Izdvajam brisanje zadace da se ne bi izvrsilo i azuriranje i sve ostalo
+// v4.0.9.5 (2009/09/13) + Dozvoljavam da naziv zadace bude jedno slovo
 
 
 function nastavnik_zadace() {
@@ -373,7 +374,7 @@ function IsNumeric(sText) {
 function provjera() {
 //	var forma=document.getElementById("kreiranje_zadace");
 	var naziv=document.getElementById("naziv");
-	if (parseInt(naziv.value.length)<2) {
+	if (parseInt(naziv.value.length)<1) {
 		alert("Niste unijeli naziv");
 		naziv.style.border=1;
 		naziv.style.backgroundColor="#FF9999";
