@@ -4,7 +4,7 @@
 
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet, dodano polje aktuelna u tabelu akademska_godina
-
+// v4.0.9.2 (2009/09/13) + Dodana podrska za nastavu 08-21 i subotu; popravljen spacing (sugestije by Teo); daljnje unaprjedjenje citljivosti koda
 
 	
 		
@@ -73,7 +73,7 @@ function common_raspored($tip) {
 </div>
 
 <div>
-	<a href = "#" onclick="toggleVisibility('raspored')"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 />Pogledaj svoj raspored časova</a>
+	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="toggleVisibility('raspored')" style="color: #666699"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
 	<hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px">
 </div>
 
@@ -138,7 +138,7 @@ function common_raspored($tip) {
 		if (strlen($sqlPredmet)>0) $sqlWhere = "(".$sqlPredmet.")";
 		else $sqlWhere="1=0"; // Nije angazovan nigdje, prikaži prazan raspored
 		
-		$sqlUpit = "SELECT rs.id, p.naziv, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rsala.naziv FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
+		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rsala.naziv FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
 	}
 
 	// Selektuj podatke iz baze
@@ -153,17 +153,18 @@ function common_raspored($tip) {
 			<div class="dan_header">Srijeda</div>
 			<div class="dan_header">Cetvrtak</div>
 			<div class="dan_header">Petak</div>
+			<div class="dan_header">Subota</div>
 			<div class="razmak"></div>
 			<?
 
 		// Satnica
 		print "<div style=\"float:left\">\n";
-		for ($i=9; $i<=17; $i++)
+		for ($i=8; $i<=20; $i++)
 			print "<div class=\"satnica\">$i:00</div>\n";
 		print "</div>\n";
 		
-		for($r=0; $r<9; $r++) {
-			for($r2=0; $r2<4; $r2++) {
+		for($r=0; $r<13; $r++) {
+			for($r2=0; $r2<6; $r2++) {
 				print '<div style = "float: left; border-right: 1px solid #E0E4F3; width: 129px; height: 35px; padding: 4px 0px 0px 1px;"></div>'."\n";
 			}
 			print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 54px; width: 650px; height: 30px; padding: 10px 0px 0px 2px;"></div>'."\n";
@@ -176,12 +177,23 @@ function common_raspored($tip) {
 		print '<div class="kolona">'."\n"; // Pocetak kolone	
 		$lastDay = 1; // Promjena dana
 		$lastCas = 0; // Prazna polja
-		while ($row = mysql_fetch_array($q10)) {
+		while ($row = mysql_fetch_row($q10)) {
+			// polja
+			$rsid = $row[0];
+			$predmet_naziv = $row[1];
+			$predmet_kratki_naziv = $row[2];
+			$dan_u_sedmici = $row[3];
+			$tip_stavke = $row[4];
+			$vpocetak = $row[5];
+			$vkraj = $row[6];
+			$naziv_sale = $row[7];
+
+
 			$cssFontSize = "";
 			$cssFontSize2 = "";
 
 			// Provjera da li ima preklapanja
-			if ($row['dan_u_sedmici'] == $lastDay && $row['vrijeme_pocetak']<$lastCas) {
+			if ($dan_u_sedmici == $lastDay && $vpocetak<$lastCas) {
 				$transparentno = "background: rgba(245, 226, 188, 0.5); ";
 				$pomak=10;
 			} else {
@@ -190,11 +202,11 @@ function common_raspored($tip) {
 			}
 
 			// Boja naslovne trake kocke
-			if($row['tip'] == "P") {
+			if($tip_stavke == "P") {
 				$bojaTrake = "#E95026";
 				if ($pomak==10) $bojaTrake="rgba(233,80,38,0.5);";
 				$altT = "Predavanje";
-			} else if($row['tip'] == "T") {
+			} else if($tip_stavke == "T") {
 				$bojaTrake = "#FF8100";
 				if ($pomak==10) $bojaTrake="rgba(255,129,0,0.5);";
 				$altT = "Tutorijal";
@@ -206,9 +218,9 @@ function common_raspored($tip) {
 
 			// Provjerava da li je presao na novi dan
 			// U upitu smo definisali da su stavke poredane hronološki
-			if ($row['dan_u_sedmici'] != $lastDay) {
+			if ($dan_u_sedmici != $lastDay) {
 				print '<div class="razmak"></div></div>'."\n"; // Kraj prethodne kolone
-				$dayDif = $row['dan_u_sedmici']-$lastDay-1; //Provjerava ako ima praznih dana između
+				$dayDif = $dan_u_sedmici-$lastDay-1; //Provjerava ako ima praznih dana između
 				for ($i=0; $i<$dayDif; $i++) {
 					print  '<div class="kolona">
 						<div class="prazna_celija" style="height:28px"></div>
@@ -216,7 +228,7 @@ function common_raspored($tip) {
 					</div>'."\n";
 				}
 				print '<div class="kolona">'."\n"; // Prelazak u novu kolonu
-				$lastDay = $row['dan_u_sedmici'];
+				$lastDay = $dan_u_sedmici;
 				$lastCas = 0;
 			}
 
@@ -226,13 +238,13 @@ function common_raspored($tip) {
 
 			$polaDone = false; // next box ide desno
 			
-			$stylePlus = 'onMouseMove = "prikaziTT(\'<b>'.$row['naziv'].'</b> - '.$altT.'\', event)" onMouseOver = "prikaziTT(\'<b>'.$row['naziv'].'</b> - '.$altT.'\', event)" onMouseOut = "sakrijTT()"';
+			$stylePlus = 'onMouseMove = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.'\', event)" onMouseOver = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.'\', event)" onMouseOut = "sakrijTT()"';
 
 			// Ispisuje box sa predmetom
-			print "<div $stylePlus class=\"$css\" style=\"$transparentno $cssFontSize2 height:".(28+($row['vrijeme_kraj']-$row['vrijeme_pocetak'])*41)."px; margin-top:".(($row['vrijeme_pocetak']-1)*41+$pomak)."px; margin-left:$cssMarLeft"."px\">\n";
-			print "<div class = \"naslov\" style = \"background: $bojaTrake; $cssFontSize2\">".$vrijeme_pocetak[$row['vrijeme_pocetak']]." - ".$vrijeme_kraj[$row['vrijeme_kraj']]."</div> <b>".$row['kratki_naziv']."</b> - ".$row['naziv']."</div>\n";
+			print "<div $stylePlus class=\"$css\" style=\"$transparentno $cssFontSize2 height:".(28+($vkraj-$vpocetak)*41)."px; margin-top:".(($vpocetak-4)*41+$pomak)."px; margin-left:$cssMarLeft"."px\">\n";
+			print "<div class = \"naslov\" style = \"background: $bojaTrake; $cssFontSize2\">".$vrijeme_pocetak[$vpocetak]." - ".$vrijeme_kraj[$vkraj]."</div> <b>$predmet_kratki_naziv</b> - $naziv_sale</div>\n";
 
-			$lastCas = $row['vrijeme_kraj'];
+			$lastCas = $vkraj;
 		}
 
 		?>
