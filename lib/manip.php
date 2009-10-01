@@ -19,6 +19,7 @@
 // v4.0.9.6 (2009/05/08) + Popravljam update_komponente za prisustvo, tabela cas vise ne sadrzi predmet
 // v4.0.9.7 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 // v4.0.9.8 (2009/05/17) + Ukidamo nultu labgrupu kod ispisa sa predmeta
+// v4.0.9.9 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -226,7 +227,9 @@ function mass_input($ispis) {
 		// Da li korisnik postoji u bazi?
 		$q10 = myquery("select id from osoba where ime like '$ime' and prezime like '$prezime'");
 		if (mysql_num_rows($q10)<1) {
-			if ($f) print "-- GREŠKA! Prezime: '$prezime'. Ime: '$ime'. Nepoznat student! Da li ste dobro ukucali ime?<br/>";
+			if ($f)  {
+				?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>nepoznat student - da li ste dobro ukucali ime?</td></tr><?
+			}
 			$greska=1;
 			continue;
 
@@ -237,13 +240,17 @@ function mass_input($ispis) {
 				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=$ponudakursa");
 	
 				if (mysql_num_rows($q10)<1) {
-					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
+					if ($f) {
+						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>nije upisan/a na ovaj predmet</td></tr><?
+					}
 					$greska=1;
 					continue;
 	
 				} else if (mysql_num_rows($q10)>1) {
 					// Na istom su predmetu!? wtf
-					if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime' na ovom predmetu. Kontaktirajte administratora.<br/>";
+					if ($f) {
+						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
+					}
 					$greska=1;
 					continue;
 				}
@@ -253,19 +260,25 @@ function mass_input($ispis) {
 				$q10 = myquery("select DISTINCT o.id from osoba as o, student_predmet as sp, ponudakursa as pk where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	
 				if (mysql_num_rows($q10)<1) {
-					if ($f) print "-- GREŠKA! Student '$prezime $ime' nije upisan na ovaj predmet<br/>";
+					if ($f) {
+						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>nije upisan/a na ovaj predmet</td></tr><?
+					}
 					$greska=1;
 					continue;
 	
 				} else if (mysql_num_rows($q10)>1) {
 					// Na istom su predmetu!? wtf
-					if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime' na ovom predmetu. Kontaktirajte administratora.<br/>";
+					if ($f) {
+						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
+					}
 					$greska=1;
 					continue;
 				}
 
 			} else {
-				if ($f) print "-- GREŠKA! Postoji više studenata koji se zovu '$prezime $ime'. Kontaktirajte administratora.<br/>";
+				if ($f) {
+					?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
+				}
 				$greska=1;
 				continue;
 			}
@@ -276,7 +289,9 @@ function mass_input($ispis) {
 		if ($duplikati==0) {
 			// FIXME: zašto ne radi array_search?
 			if (in_array($student,$prosli_idovi)) {
-				if ($f) print "-- GREŠKA! Student '$prezime $ime' se ponavlja!<br/>";
+				if ($f) {
+					?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>ponavlja se</td></tr><?
+				}
 				$greska=1;
 				continue;
 			}
@@ -298,9 +313,13 @@ function mass_input($ispis) {
 				else
 					$bodovi=$nred[1];
 				if (!preg_match("/\w/",$bodovi)) {
-					if ($f) print "Student '$prezime $ime' nije upisan na ovaj predmet, ali nema ni broj bodova ($bodova) - preskačem.<br/>\n";
+					if ($f)  {
+						?><tr bgcolor="#EEEEEE"><td><?=$prezime?></td><td><?=$ime?></td><td>nepoznat student, nema ocjene - preskačem</td></tr><?
+					}
 				} else {
-					if ($f) print "-- GREŠKA! Student '$prezime $ime' ($student) nije upisan na ovaj predmet<br/>\n";
+					if ($f) {
+						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>nije upisan/a na ovaj predmet</td></tr><?
+					}
 					$greska=1;
 				}
 				continue;
@@ -320,7 +339,6 @@ function mass_input($ispis) {
 	}
 	if ($f) {
 		print "<br/>\n";
-		if ($greska==1) print "Da li ste izabrali ispravan format? \"Prezime[TAB]Ime\" vs. \"Prezime Ime\".<br/><br/>";
 	}
 	return $greska;
 }

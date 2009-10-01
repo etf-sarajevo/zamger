@@ -10,6 +10,7 @@
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
+// v4.0.9.4 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 function nastavnik_ocjena() {
@@ -63,6 +64,23 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0; // fakatradi=0 --> ispis=1
 
+	if ($ispis) {
+		?>Akcije koje će biti urađene:<br/><br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="fakatradi" value="1">
+		<table border="0" cellspacing="1" cellpadding="2">
+		<!-- FIXME: prebaciti stilove u CSS? -->
+		<thead>
+		<tr bgcolor="#999999">
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ocjena / Komentar</font></td>
+		</tr>
+		</thead>
+		<tbody>
+		<?
+	}
+
 	$greska=mass_input($ispis); // Funkcija koja parsira podatke
 
 	if (count($mass_rezultat)==0) {
@@ -72,12 +90,13 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$greska=1;
 	}
 
-	if ($ispis) {
-		?>Akcije koje će biti urađene:<br/><br/>
-		<?=genform("POST")?>
-		<input type="hidden" name="fakatradi" value="1">
-		<?
-	}
+
+	// Obrada rezultata
+
+	$boja1 = "#EEEEEE";
+	$boja2 = "#DDDDDD";
+	$boja=$boja1;
+	$bojae = "#FFE3DD";
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
@@ -85,8 +104,15 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 		// Student neocijenjen (prazno mjesto za ocjenu)
 		if (intval($ocjena)==0 && strpos($ocjena,"0")===FALSE) {
-			if ($ispis)
-				print "Student '$prezime $ime' - nije ocijenjen (nije unesena ocjena $ocjena)<br/>";
+			if ($ispis) {
+				?>
+				<tr bgcolor="<?=$boja?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>nije ocijenjen/a (unesena je ocjena: <?=$ocjena?>)</td>
+				</tr>
+				<?
+				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
+			}
 			continue;
 		}
 
@@ -94,7 +120,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$ocjena = intval($ocjena);
 		if ($ocjena<6 || $ocjena>10) {
 			if ($ispis) {
-				print "-- GREŠKA! Za studenta '$prezime $ime' ocjena nije u opsegu 6-10 (ocjena: $ocjena)<br/>";
+				?>
+				<tr bgcolor="<?=$bojae?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>ocjena nije u opsegu 6-10 (ocjena: <?=$ocjena?>)</td>
+				</tr>
+				<?
 				$greska=1;
 				continue;
 			}
@@ -105,24 +136,46 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if (mysql_num_rows($q100)>0) {
 			if ($ispis) {
 				$oc2 = mysql_result($q100,0,0);
-				print "-- GREŠKA! Student '$prezime $ime' je već ranije ocijenjen ocjenom $oc2 (a sada sa $ocjena). Izmjena unesene ocjene trenutno nije moguća.<br/>";
+				?>
+				<tr bgcolor="<?=$bojae?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>već ima ocjenu <?=$oc2?>; koristite pogled grupe za izmjenu</td>
+				</tr>
+				<?
 				$greska=1;
 				continue;
 			}
 		}
 
 		if ($ispis) {
-//			print "Student '$prezime $ime' (ID: $student) - ocjena: $ocjena<br/>";
-			print "Student '$prezime $ime' - ocjena: $ocjena<br/>";
+			?>
+			<tr bgcolor="<?=$boja?>">
+				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td>ocjena: <?=$ocjena?></td>
+			</tr>
+			<?
+			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
 			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena");
 		}
 	}
 
 	if ($ispis) {
-		print '<input type="submit" name="nazad" value=" Nazad "> ';
-		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
-		print "</form>";
+		if ($greska == 0) {
+			?>
+			</tbody></table>
+			<p>Potvrdite upis ocjena ili se vratite na prethodni ekran.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
+			</form>
+			<? 
+		} else {
+			?>
+			</tbody></table>
+			<p>U unesenim podacima ima grešaka. Da li ste izabrali ispravan format ("Prezime[TAB]Ime" vs. "Prezime Ime")? Vratite se nazad kako biste ovo popravili.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "></p>
+			</form>
+			<? 
+		}
 		return;
 	} else {
 		zamgerlog("masovno upisane ocjene na predmet pp$predmet",4);

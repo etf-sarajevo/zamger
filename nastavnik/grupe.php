@@ -18,6 +18,7 @@
 // v4.0.9.3 (2009/05/06) + Dodajem polje virtualna u tabelu labgrupa - virtualne grupe trebaju biti nevidljive nastavniku
 // v4.0.9.4 (2009/09/30) + Link na izmjenu studenta nije ukljucivao parametar ag
 // v4.0.9.5 (2009/10/01) + Ukidam mogucnost upisa svih studenata u prvu grupu koja samo zbunjuje korisnika, a nema potrebe za njom (razlog za tu opciju je sto se tako ustvari nekada vrsio upis na predmet)
+// v4.0.9.6 (2009/10/01) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 // FIXME: moguce kreirati vise grupa sa istim imenom
@@ -207,54 +208,67 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 
 // Masovni unos studenata u grupe
 if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
+
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
-
-	$greska=mass_input($ispis); // Funkcija koja parsira podatke
-	if ($greska != 0) {
-		print "<p>NAPOMENA: U novoj verziji ZAMGERa upis studenata na predmet može vršiti samo studentska služba. Spiskovi studenata na predmetima su dostavljeni iz studentske službe, tako da ako su ti spiskovi netačni molimo da kontaktirate njih.</p>\n";
-	}
-
-	if (count($mass_rezultat)==0) {
-		zamgerlog("parsiranje kod masovnog upisa nije vratilo ništa (predmet pp$predmet)",3);
-		niceerror("Niste unijeli nijedan koristan podatak.");
-	//	return;
-	}
 
 	if ($ispis) {
 		?>Akcije koje će biti urađene:<br/><br/>
 		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
+		<table border="0" cellspacing="1" cellpadding="2">
+		<!-- FIXME: prebaciti stilove u CSS? -->
+		<thead>
+		<tr bgcolor="#999999">
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Akcije</font></td>
+		</tr>
+		</thead>
+		<tbody>
 		<?
 	}
 
+	$greska=mass_input($ispis); // Funkcija koja parsira podatke
+
 	$idovi_grupa=array();
 
+
 	// Spisak studenata
+
+	$boja1 = "#EEEEEE";
+	$boja2 = "#DDDDDD";
+	$boja=$boja1;
+	$bojae = "#FFE3DD";
+
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
 
 		// Ispis studenta iz svih grupa
+		$ispisispis = "";
 		$q230 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
 		while ($r230 = mysql_fetch_row($q230)) {
 			if ($ispis) {
-				print "Ispis studenta '$prezime $ime' iz grupe '$r230[1]'<br/>\n";
+				$ispisispis .= "<br/>Ispis iz grupe '$r230[1]'";
 			} else {
 				ispis_studenta_sa_labgrupe($student,$r230[0]);
 			}
 		}
 
-		// Kod upisa sviju u prvu grupu, ovo ispod znatno pojednostavljuje k^od
-		if ($brpodataka==0) $mass_rezultat['podatak1'][$student][]=$imegrupe;
-
 		// spisak grupa u koje treba upisati studenta
 		foreach ($mass_rezultat['podatak1'][$student] as $imegrupe) {
+			$imegrupe = trim($imegrupe);
 			if (array_key_exists($imegrupe,$idovi_grupa)) {
 				$labgrupa=$idovi_grupa[$imegrupe];
 			} else {
 
 				// Da li je ime ispravno?
 				if (!preg_match("/\w/", $imegrupe)) {
-					print "--GREŠKA: Neispravno ime grupe '$imegrupe'<br/>\n";
+					?>
+					<tr bgcolor="<?=$bojae?>">
+						<td><?=$prezime?></td><td><?=$ime?></td>
+						<td>neispravno ime grupe '<?=$imegrupe?>'</td>
+					</tr>
+					<?
 					$greska=1;
 					continue;
 				}
@@ -264,7 +278,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				if (mysql_num_rows($q210)<1) {
 					// Grupa ne postoji - kreiramo je
 					if ($ispis) {
-						print "Kreiranje nove grupe '$imegrupe' <br/>\n";
+						?>
+						<tr bgcolor="<?=$boja?>">
+							<td colspan="3">Kreiranje nove grupe '<?=$imegrupe?>'</td>
+						</tr>
+						<?
+						if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 					} else {
 						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, virtualna=0");
 						$q210 = myquery("select id from labgrupa where naziv like '$imegrupe' and predmet=$predmet and akademska_godina=$ag");
@@ -279,7 +298,13 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 			// Upis u novu grupu
 			if ($ispis) {
-				print "Upis studenta '$prezime $ime' u grupu '$imegrupe'<br/>\n";
+				?>
+				<tr bgcolor="<?=$boja?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>Upis u grupu '<?=$imegrupe?>'<?=$ispisispis?></td>
+				</tr>
+				<?
+				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 			} else {
 				$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 			}
@@ -288,10 +313,33 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	// Potvrda i Nazad
 	if ($ispis) {
-		print '<input type="submit" name="nazad" value=" Nazad "> ';
-		if ($greska==0) print '<input type="submit" value=" Potvrda ">';
-		print "</form>";
+		if ($greska != 0) {
+			?>
+			</tbody></table>
+			<p>U unesenim podacima ima grešaka. Da li ste izabrali ispravan format ("Prezime[TAB]Ime" vs. "Prezime Ime")?Vratite se nazad kako biste ovo popravili.</p>
+			<p>NAPOMENA: Upis studenata na predmet može vršiti samo studentska služba. Ukoliko na spisku nedostaje neki student koji sluša vaš predmet, kontaktirajte službu radi razjašnjenja nesporazuma.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "></p>
+			</form>
+			<? 
+
+		} else if (count($mass_rezultat)==0) {
+			?>
+			</tbody></table>
+			<p>Niste unijeli nijedan koristan podatak.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "></p>
+			</form>
+			<?
+
+		} else {
+			?>
+			</tbody></table>
+			<p>Potvrdite kreiranje grupa i upis studenata u grupe ili se vratite na prethodni ekran.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
+			</form>
+			<? 
+		}
 		return;
+
 	} else {
 		zamgerlog("masovan upis grupa za predmet pp$predmet",4);
 		?>
