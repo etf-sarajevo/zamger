@@ -267,6 +267,7 @@ CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
   `akademska_godina` int(11) NOT NULL default '0',
   `ocjena` int(3) NOT NULL default '0',
   `datum` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `odluka` int(11) NOT NULL default '0',
   PRIMARY KEY  (`student`,`predmet`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

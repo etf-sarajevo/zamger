@@ -6,6 +6,7 @@
 // v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/09/15) + Ocjene po odluci
 
 
 
@@ -41,6 +42,24 @@ Student:</br>
 <h1><?=$r100[0]." ".$r100[1]?></h1><br/>
 Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 
+<?
+
+$imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
+
+// Ocjene po odluci:
+
+$q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
+if (mysql_num_rows($q105)>0) {
+	print "<p><b>Ocjene po odluci:</b><br/><ul>\n";
+}
+while ($r105 = mysql_fetch_row($q105)) {
+	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+}
+if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
+
+
+?>
+
 <p><b>Pregled položenih predmeta sa ocjenama</b></p>
 <table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
 	<td width="20">&nbsp;</td>
@@ -49,8 +68,6 @@ Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 	<td width="150">Konačna ocjena</td>
 </tr>
 <?
-
-$imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
 
 $i=1;
 $q110 = myquery("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar 

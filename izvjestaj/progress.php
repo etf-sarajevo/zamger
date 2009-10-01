@@ -6,6 +6,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/09/15) + Ocjene po odluci
 
 
 // TODO: spojiti sa izvjestaj/index???
@@ -50,6 +51,22 @@ Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 <?
 
 $imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
+
+
+// Ocjene po odluci:
+
+$q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
+if (mysql_num_rows($q105)>0) {
+	print "<p><b>Ocjene po odluci:</b><br/><ul>\n";
+}
+while ($r105 = mysql_fetch_row($q105)) {
+	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+}
+if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
+
+
+
+// Ocjene po akademskoj godini
 
 $rbr=1;
 $q110 = myquery("select id,naziv from akademska_godina order by naziv");
