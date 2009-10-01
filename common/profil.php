@@ -9,6 +9,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/03/05) + Dodan logging; sakrij broj indexa korisnicima koji nisu studenti; prikazi informaciju ako je vec poslan zahtjev; ne radi nista ako korisnik nije napravio promjenu
 // v4.0.9.1 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
+// v4.0.9.2 (2009/06/23) + Nova combobox kontrola koja se sasvim dobro pokazala kod studentska/prijemni
 
 
 function common_profil() {
@@ -51,6 +52,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if (mysql_num_rows($q1)<1) {
 			$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja'");
 			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+			zamgerlog("upisano novo mjesto rodjenja $mjesto_rodjenja", 2);
 		}
 		$mjrid = mysql_result($q1,0,0);
 	}
@@ -61,6 +63,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if (mysql_num_rows($q3)<1) {
 			$q4 = myquery("insert into mjesto set naziv='$adresa_mjesto'");
 			$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
+			zamgerlog("upisano novo mjesto (adresa) $adresa_mjesto", 2);
 		}
 		$admid = mysql_result($q3,0,0);
 	}
@@ -134,14 +137,109 @@ $gradovir="<option></option>";
 $gradovia="<option></option>";
 while ($r410 = mysql_fetch_row($q410)) { 
 	$gradovir .= "<option"; $gradovia .= "<option";
- 	if ($r410[0]==mysql_result($q400,0,5)) { $gradovir  .= " SELECTED"; }
- 	if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; }
+ 	if ($r410[0]==mysql_result($q400,0,5)) { $gradovir  .= " SELECTED"; $mjestorvalue = $r410[1]; }
+ 	if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
 	$gradovir .= ">$r410[1]</option>\n";
 	$gradovia .= ">$r410[1]</option>\n";
 }
 
+
 ?>
-	<script type="text/javascript" src="js/combo-box.js"></script>
+	<script type="text/javascript">
+	function comboBoxEdit(evt, elname) {
+		var ib = document.getElementById(elname);
+		var list = document.getElementById("comboBoxDiv_"+elname);
+		var listsel = document.getElementById("comboBoxMenu_"+elname);
+
+		var key, keycode;
+		if (evt) {
+			key = evt.which;
+			keycode = evt.keyCode;
+		} else if (window.event) {
+			key = window.event.keyCode;
+			keycode = key; // wtf?
+		} else return true;
+
+		if (keycode==40) { // arrow down
+			if (list.style.visibility == 'visible') {
+				if (listsel.selectedIndex<listsel.length)
+					listsel.selectedIndex = listsel.selectedIndex+1;
+			} else {
+				comboBoxShowHide(elname);
+			}
+			return false;
+
+		} else if (keycode==38) { // arrow up
+			if (list.style.visibility == 'visible' && listsel.selectedIndex>0) {
+				listsel.selectedIndex = listsel.selectedIndex-1;
+			}
+			return false;
+
+		} else if (keycode==13 && list.style.visibility == 'visible') { // Enter key - select option and hide
+			comboBoxOptionSelected(elname);
+			return false;
+
+		} else if (key>31 && key<127) {
+			// This executes before the letter is added to text
+			// so we have to add it manually
+			var ibtxt = ib.value.toLowerCase() + String.fromCharCode(key).toLowerCase();
+
+			for (i=0; i<listsel.length; i++) {
+				var listtxt = listsel.options[i].value.toLowerCase();
+				if (ibtxt == listtxt.substr(0,ibtxt.length)) {
+					listsel.selectedIndex=i;
+					if (list.style.visibility == 'hidden') comboBoxShowHide(elname);
+					return true;
+				}
+			}
+			return true;
+		}
+		return true;
+	}
+
+	function comboBoxShowHide(elname) {
+		var ib = document.getElementById(elname);
+		var list = document.getElementById("comboBoxDiv_"+elname);
+		var image = document.getElementById("comboBoxImg_"+elname);
+
+		if (list.style.visibility == 'hidden') {
+			// Nadji poziciju objekta
+			var curleft = curtop = 0;
+			var obj=ib;
+			if (obj.offsetParent) {
+				do {
+					curleft += obj.offsetLeft;
+					curtop += obj.offsetTop;
+				} while (obj = obj.offsetParent);
+			}
+	
+			list.style.visibility = 'visible';
+			list.style.left=curleft;
+			list.style.top=curtop+ib.offsetHeight;
+			image.src = "images/cb_down.png";
+		} else {
+			list.style.visibility = 'hidden';
+			image.src = "images/cb_up.png";
+		}
+	}
+	function comboBoxHide(elname) {
+		var list = document.getElementById("comboBoxDiv_"+elname);
+		var listsel = document.getElementById("comboBoxMenu_"+elname);
+		if (list.style.visibility == 'visible' && listsel.focused==false) {
+			list.style.visibility = 'hidden';
+			image.src = "images/cb_up.png";
+		}
+	}
+	function comboBoxOptionSelected(elname) {
+		var ib = document.getElementById(elname);
+		var listsel = document.getElementById("comboBoxMenu_"+elname);
+		
+		ib.value = listsel.options[listsel.selectedIndex].value;
+		comboBoxShowHide(elname);
+	}
+	</script>
+
+	<!--script type="text/javascript" src="js/combo-box.js"></script-->
 
 	<?=genform("POST")?>
 	<table border="0" width="600">
@@ -163,13 +261,22 @@ while ($r410 = mysql_fetch_row($q410)) {
 		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,4))?>" class="default">
 	</td></tr><tr><td valign="top">
 		Mjesto rođenja:</td><td>
-		<select name="mjesto_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovir?></select>
+		<input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'mjesto_rodjenja')" autocomplete="off" onBlur="comboBoxHide('mjesto_rodjenja')"><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
+		<!-- Rezultati pretrage primaoca -->
+		<div id="comboBoxDiv_mjesto_rodjenja" style="position:absolute;visibility:hidden">
+			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovir?></select>
+		</div>
 	</td></tr><tr><td valign="top">
 		Državljanstvo:</td><td><input type="text" name="drzavljanstvo" value="<?=mysql_result($q400,0,7)?>" class="default">
 	</td></tr><tr><td valign="top">
 		Adresa:</td><td><input type="text" name="adresa" value="<?=mysql_result($q400,0,8)?>" class="default">
 	</td></tr><tr><td valign="top">
-		&nbsp;</td><td><select name="adresa_mjesto" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovia?></select>
+		&nbsp;</td><td>
+		<input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyPress="comboBoxEdit(event, 'adresa_mjesto')" autocomplete="off" onBlur="comboBoxHide('adresa_mjesto')"><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
+		<!-- Rezultati pretrage primaoca -->
+		<div id="comboBoxDiv_adresa_mjesto" style="position:absolute;visibility:hidden">
+			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')"><?=$gradovir?></select>
+		</div>
 	</td></tr><tr><td valign="top">
 		Kanton / regija:</td><td><?=db_dropdown("kanton",mysql_result($q400,0,11), "--Izaberite kanton--") ?> <br/>
 	</td></tr><tr><td valign="top">
