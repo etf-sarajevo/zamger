@@ -5,6 +5,7 @@
 // v3.9.1.0 (2008/07/04) + Kod prebacen iz studentska/prijemni da bi se rasteretio modul
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
+// v4.0.9.2 (2009/09/04) + Popravljen bug, izvjestaj nije podrzavao 0 studenata u nekim kategorijama (npr. kategorija kanton finansira studij), nego je uvijek ubacivao jednog
 
 
 function izvjestaj_prijemni() {
@@ -204,6 +205,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Troskove studija snosi Kanton
 	$i = 1;
 	foreach($kandidati as $id => $kandidat) {
+		if ($i >= $kandidatikp) break;
 		if($kandidat['prijemni_ispit'] >= $bodovisoft) {
 			if ($i == 1) {
 				?>
@@ -226,13 +228,14 @@ STUDIJ - Troškove studija snosi Kanton Sarajevo</b></td>
 			</tr>
 			<?php
 			unset($kandidati[$id]);
-			if ($i++ >= $kandidatikp) break;
+			$i++;
 		}
 	}
 	
 	// Troskove studija snose studenti (polozili prijemni)
 	$j = 1;
 	foreach($kandidati as $id => $kandidat) {
+		if ($j >= $kandidatisp) break;
 		if(($kandidat['prijemni_ispit'] >= $bodovisoft && $i >= $kandidatikp)) {
 			if ($j == 1) {
 				?>
@@ -255,13 +258,14 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 			</tr>
 			<?
 			unset($kandidati[$id]);
-			if ($j++ >= $kandidatisp) break;
+			$j++;
 		}
 	}
 	
 	// Troskove studija snose studenti (nisu polozili ali su iznad soft limita i ima mjesta)
 	$iznadsoftlimita=0;
 	foreach($kandidati as $id => $kandidat) {
+		if ($j >= $kandidatisp) break;
 		if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $j<$kandidatisp)) {
 			if ($j == 1) {
 				?>
@@ -285,7 +289,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 			<?
 			unset($kandidati[$id]);
 			$iznadsoftlimita++;
-			if ($j++ >= $kandidatisp) break;
+			$j++;
 		}
 	}
 
@@ -294,6 +298,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 	$k = 1;
 	$stranidrzavljani=0;
 	foreach($kandidati as $id => $kandidat){
+		if ($k >= $kandidatisd) break;
 		if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13)  {
 			if ($j == 1 && $k == 1) {
 				?>
@@ -317,7 +322,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 			<?php
 			unset($kandidati[$id]);
 			$stranidrzavljani++;
-			if ($k++ >= $kandidatisd) break;
+			$k++;
 		}
 	}
 	
