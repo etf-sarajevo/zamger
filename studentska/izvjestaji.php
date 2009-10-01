@@ -10,6 +10,7 @@
 // v3.9.1.5 (2009/02/07) + Dodan link za izvjestaj "genijalci"
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/05/20) + Apsolutni linkovi na slike promijenjeni u relativne
+// v4.0.9.2 (2009/08/28) + Razjasnjeni linkovi na rang-listu po prosjeku
 
 
 
@@ -66,13 +67,16 @@ function izvjestaj() {
 <p>Najčešći izvještaji:
 <ul>
 <li><a href="?sta=izvjestaj/granicni&polozili=1" onclick="izvjestaj();">Spisak studenata koji su dali uslove za upis u sljedeći semestar</a></li>
-<li><a href="?sta=izvjestaj/granicni&parcijalni=1&predmet=1&akademska_godina=3" onclick="izvjestaj();">Granični slučajevi - po studiju</a></li>
-<li><a href="?sta=izvjestaj/granicni&parcijalni=1&predmet=1&sort=predmet&akademska_godina=3" onclick="izvjestaj();">Granični slučajevi - po predmetu</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalni=0&predmet=1&akademska_godina=4" onclick="izvjestaj();">Granični slučajevi - po studiju</a></li>
+<li><a href="?sta=izvjestaj/granicni&parcijalni=0&predmet=1&sort=predmet&akademska_godina=4" onclick="izvjestaj();">Granični slučajevi - po predmetu</a></li>
 <li><a href="?sta=izvjestaj/granicni&predmet=1&akademska_godina=4" onclick="izvjestaj();">Studenti kojima fali 1 predmet - 2008/2009</a></li>
 <li><a href="?sta=izvjestaj/granicni&predmet=2&akademska_godina=4" onclick="izvjestaj();">Studenti kojima fale 2 predmeta - 2008/2009</a></li>
 <li><a href="?sta=izvjestaj/prolaznosttab" onclick="izvjestaj();">Tabelarni pregled prolaznosti</a></li>
-<li><a href="?sta=izvjestaj/pregled" onclick="izvjestaj();">Pregled upisanih studenata u školsku 2008/09 godinu</a></li>
-<li>Rang liste po prosjeku za MSc studij: <a href="?sta=izvjestaj/genijalci&studij=7">RI</a>, <a href="?sta=izvjestaj/genijalci&studij=8">AE</a>, <a href="?sta=izvjestaj/genijalci&studij=9">EE</a>, <a href="?sta=izvjestaj/genijalci&studij=10">TK</a></li>
+<li><a href="?sta=izvjestaj/pregled" onclick="izvjestaj();">Pregled upisanih studenata u školsku 2009/10 godinu</a></li>
+<li>Spiskovi studenata po prosječnoj ocjeni (svi studiji, prosjek 8,0 i više, dat uslov):<br />
+- <a href="?sta=izvjestaj/genijalci&akademska_godina=4&limit_prosjek=8&studij=0&godina_studija=1&limit_ects=22" onclick="izvjestaj()";>prva godina</a><br />
+- <a href="?sta=izvjestaj/genijalci&akademska_godina=4&limit_prosjek=8&studij=0&godina_studija=2&limit_ects=22" onclick="izvjestaj();">druga godina</a><br />
+- <a href="?sta=izvjestaj/genijalci&akademska_godina=4&limit_prosjek=8&studij=0&godina_studija=3&limit_ects=22" onclick="izvjestaj();">treća godina</a></li>
 </ul></p>
 
 <hr/>
