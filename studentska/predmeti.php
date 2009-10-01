@@ -20,6 +20,7 @@
 // v4.0.9.6 (2009/05/06) + Kreiraj virtualnu grupu kod kreiranja predmeta; dodate nedostajuce akcije; malo kozmetike, mogucnost check/uncheck all kod ogranicenja
 // v4.0.9.7 (2009/05/08) + Popravljen typo, popravljeno prosljedjivanje akcija=edit parametra, dodano malo feedback poruka
 // v4.0.9.8 (2009/05/20) + Dodajem akciju brisanje ponude kursa; ne prikazuj svaku ponudu kursa zasebno kod pretrage, prikazi predmete bez ponude kursa; akcija novi je pogresno prijavljivala da predmet vec postoji (ali je inace sve radilo ispravno); izbacio sam kreiranje default ponudekursa (svakako je viska), kreiranje virtualne labgrupe se radi samo ako ne postoji u aktuelnoj godini; renumerisem upite
+// v4.0.9.9 (2009/09/27) + Popravljena provjera da li je ista izabrano u akciji ogranicenja; popravljeno prosljedjivanje IDa nastavnika kod izbacivanja nastavnika sa predmeta
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -73,7 +74,7 @@ if ($akcija == "ogranicenja") {
 	$prezime = mysql_result($q370,0,1);
 	$q371 = myquery("select naziv from predmet where id=$predmet");
 	if (mysql_num_rows($q371)<1) {
-		zamgerlog("nepoznat predmet p$predmet",3);
+		zamgerlog("nepoznat predmet pp$predmet",3);
 		niceerror("Nepoznat predmet");
 		return;
 	}
@@ -100,8 +101,8 @@ if ($akcija == "ogranicenja") {
 			}
 			$grupe++;
 		}
-		if ($upit == "") {
-			zamgerlog("pokusao ograniciti sve grupe nastavniku u$nastavnik, predmet p$predmet, ag$ag",3);
+		if ($upitdodaj == "") {
+			zamgerlog("pokusao ograniciti sve grupe nastavniku u$nastavnik, predmet pp$predmet, ag$ag",3);
 			niceerror("Nastavnik mora imati pristup barem jednoj grupi");
 			print "<br/>Ako ne želite da ima pristup, odjavite ga/je sa predmeta.";
 		} else {
@@ -111,7 +112,7 @@ if ($akcija == "ogranicenja") {
 				$q376 = myquery("insert into ogranicenje values $upitdodaj");
 
 			nicemessage ("Postavljena nova ograničenja.");
-			zamgerlog("izmijenjena ogranicenja nastavniku u$nastavnik, predmet p$predmet, ag$ag",4);
+			zamgerlog("izmijenjena ogranicenja nastavniku u$nastavnik, predmet pp$predmet, ag$ag",4);
 		}
 	}
 
@@ -310,6 +311,11 @@ else if ($akcija == "dodaj_pk") {
 else if ($akcija == "edit") {
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']); // akademska godina
+	if ($ag==0) {
+		// Izaberi aktuelnu akademsku godinu
+		$q358 = myquery("select id from akademska_godina where aktuelna=1 limit 1");
+		$ag = mysql_result($q358,0,0);
+	}
 
 	$old_search = $_REQUEST['search']; // Za link ispod
 
@@ -553,7 +559,7 @@ else if ($akcija == "edit") {
 		<?=genform("POST", "izbaciform")?>
 		<input type="hidden" name="akcija" value="edit">
 		<input type="hidden" name="subakcija" value="izbaci_nastavnika">
-		<input type="hidden" name="nastavnik" value=""></form>
+		<input type="hidden" name="nastavnik" id="nastavnik" value=""></form>
 
 		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
 	}
