@@ -11,6 +11,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
 // v4.0.9.2 (2009/07/15) + Dodajem kod za upis na drugi ciklus
+// v4.0.9.3 (2009/09/02) + U akciji za unos kriterija za upis: popravljen upit kada ne postoji nista u bazi, prikaz odabranog studija, varijabla Spremi nije bila unsetovana
 
 
 function studentska_prijemni() {
@@ -268,7 +269,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 		$rprijemnimax = floatval($_REQUEST['prijemni_max']);
 		$rstudij = intval($_REQUEST['rstudij']);
 
-		$qInsert = myquery("UPDATE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, prijemni_max=$rprijemnimax WHERE studij=$rstudij AND prijemni_termin=$termin");
+		$qInsert = myquery("REPLACE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, prijemni_max=$rprijemnimax, studij=$rstudij, prijemni_termin=$termin");
 
 		$_REQUEST['prikazi'] = true; // prikazi upravo unesene podatke
 
@@ -295,8 +296,12 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 	$q130 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija");
 	$spisak_studija="";
 	while ($r130 = mysql_fetch_row($q130)) {
-		$spisak_studija .= "<option value=\"$r130[0]\">$r130[1]</option>\n";
+		$spisak_studija .= "<option value=\"$r130[0]\"";
+		if ($r130[0]==$rstudij) $spisak_studija .= " selected";
+		$spisak_studija .= ">$r130[1]</option>\n";
 	}
+
+	unset($_REQUEST['spremi']);
 
 ?>
 
@@ -315,7 +320,7 @@ function odzuti(nesto) {
 		<td colspan="2" align="left">Odsjek:</td>
 	</tr>
 	<tr>
-		<td><select name="rstudij"><?=$spisak_studija?></td>
+		<td><select name="rstudij"><?=$spisak_studija?></select></td>
 		<td><input type="submit" name="prikazi" value=" Prikaži "></td>
 	</tr>
 	<tr>
