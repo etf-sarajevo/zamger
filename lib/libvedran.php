@@ -23,6 +23,7 @@
 # v0.0.13.5 (2008/10/28) + ispravka u genform() - izbaci polje "pass" ako je metoda GET
 # v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
 # v0.0.14.1 (2009/01/22) + omogucen unos float vrijednosti sa zarezom u form generatorima
+# v0.0.14.2 (2009/03/24) + dodan escaping u genform
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -339,6 +340,8 @@ function genform($method="POST", $name="") {
 	$result = '<form name="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
 	foreach ($_REQUEST as $key=>$value) {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
+		$key = htmlspecialchars($key);
+		$value = htmlspecialchars($value);
 		if (substr($key,0,4) != "_lv_") 
 		$result .= '<input type="hidden" name="'.$key.'" value="'.$value.'">'."\n";
 	}
