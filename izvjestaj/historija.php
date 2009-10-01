@@ -4,6 +4,7 @@
 
 // v4.0.9.1 (2009/03/19) + Pocetak rada na izvjestaju
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
+// v4.0.9.3 (2009/05/17) + Popravljen bug sa prikazivanjem podataka koji ne pripadaju nijednoj akademskoj godini (odluka)
 
 
 
@@ -87,7 +88,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$q30 = myquery("select p.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
 		if (mysql_num_rows($q30)>0) print "<ul>\n";
 		while ($r30 = mysql_fetch_row($q30)) {
-			$q40 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r30[0]");
+			$q40 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r30[0] and akademska_godina=$ag");
 			if (mysql_num_rows($q40)<1) {
 				print "NIJE $polozi predmet $r30[1]<br />\n";
 			} else {
