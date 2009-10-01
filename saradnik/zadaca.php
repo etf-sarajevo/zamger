@@ -18,6 +18,7 @@
 // v4.0.9.3 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
 // v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 // v4.0.9.5 (2009/05/25) + Upiti u prvom dijelu skripte su postali prekomplikovani, pa se potkrala greska da je odredjivana pogresna ponudakursa (ne ona koju student slusa nego neka random)
+// v4.0.9.6 (2009/08/11) + Dodajem osobu koja je napravila izmjenu u log na sugestiju prof. Nosovica
 
 
 
@@ -400,7 +401,7 @@ for ($i=0;$i<$brstatusa;$i++)
 ##### HISTORIJA IZMJENA ######
 
 
-$q160 = myquery("select id,UNIX_TIMESTAMP(vrijeme),status,bodova,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
+$q160 = myquery("select id,UNIX_TIMESTAMP(vrijeme),status,bodova,komentar,userid from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
 if (mysql_num_rows($q160)>1) {
 
 ?>
@@ -408,8 +409,18 @@ if (mysql_num_rows($q160)>1) {
 <p>Historija izmjena:</p>
 <ul><?
 	while ($r160 = mysql_fetch_row($q160)) {
+		$imeprezime="";
+		if ($r160[5]>0) {
+			$q165 = myquery("select ime, prezime from osoba where id=$r160[5]");
+			if (mysql_num_rows($q165)>0) {
+				$imeprezime = mysql_result($q165,0,0)." ".mysql_result($q165,0,1);
+			}
+		}
+
 		$vrijeme_slanja = date("d. m. Y. H:i:s",$r160[1]);
-		print "<li><b>$vrijeme_slanja:</b> ".$statusi_array[$r160[2]];
+		print "<li><b>$vrijeme_slanja";
+		if ($imeprezime != "") print " ($imeprezime)";
+		print ":</b> ".$statusi_array[$r160[2]];
 		if ($r160[3]>0) print " (".$r160[3]." bodova)";
 		if (strlen($r160[4])>0) print " - &quot;".$r160[4]."&quot;";
 		$q170 = myquery("select count(zadatak) from zadatakdiff where zadatak=$r160[0]");
