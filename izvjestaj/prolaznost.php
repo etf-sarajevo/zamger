@@ -13,6 +13,7 @@
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/05/18) + Integrisi ponude istog kursa npr. kod izvjestaja "Svi studiji", dodano polje "ponovac"
+// v4.0.9.5 (2009/08/29) + Popravljeno poravnanje footera tabele, popravljen broj studenata u koliziji
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
@@ -222,8 +223,12 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 
 		// Posto su neki ponovci polozili sve iz ovog semestra, sljedeci upit vraca samo prenesene predmete
 		// i kolizije kako bi ukupna statistika bila tacna, cak iako se suma ne poklapa
-		// FIXME? Ovaj upit nema smisla za izvjestaj "Svi studiji" ($studij==-1)
-		$q65 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and ss.studij!=pk.studij and ss.akademska_godina=$akgod");
+		if ($period==0) {
+			$sssupit = "ss.semestar!=$semestar"; // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
+		} else {
+			$sssupit = "ss.semestar!=".($godina*2-1)." and ss.semestar!=".($godina*2); 
+		}
+		$q65 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and $sssupit and ss.akademska_godina=$akgod");
 
 		$ukupno_na_godini = mysql_result($q60,0,0);
 		$ponovaca = $ukupno_na_godini - $redovnih;
@@ -481,18 +486,21 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			print 'PRISTUPILO ISPITU:&nbsp; </td>';
 		else
 			print 'UPISALO PREDMET:&nbsp; </td>';
+		if ($studij==-1) print "<td>&nbsp;</td>";
 		foreach ($kursevi as $kurs_id => $kurs) {
 			print "<td>".intval($izaslo[$kurs_id])."</td>\n";
 		}
 		print "<td>&nbsp;</td></tr>\n";
 
 		print '<tr><td colspan="3" align="right">POLOŽILO:&nbsp; </td>';
+		if ($studij==-1) print "<td>&nbsp;</td>";
 		foreach ($kursevi as $kurs_id => $kurs) {
 			print "<td>".intval($polozilo[$kurs_id])."</td>\n";
 		}
 		print "<td>&nbsp;</td></tr>\n";
 
 		print '<tr><td colspan="3" align="right">PROCENAT:&nbsp; </td>';
+		if ($studij==-1) print "<td>&nbsp;</td>";
 		foreach ($kursevi as $kurs_id => $kurs) {
 			print "<td>".procenat($polozilo[$kurs_id],$izaslo[$kurs_id])."</td>\n";
 		}
