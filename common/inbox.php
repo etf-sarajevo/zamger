@@ -19,6 +19,7 @@
 // v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/06/20) + Greska kod citanja poruke u opsegu 6
+// v4.0.9.4 (2009/09/16) + Akademska godina je neispravno uzimana kao najnovija, umjesto kao aktuelna, sto je dovodilo do problema sa permisijama u opsegu 3
 
 
 function common_inbox() {
@@ -44,7 +45,7 @@ global $userid,$user_student;
 // Podaci potrebni kasnije
 
 // Zadnja akademska godina
-$q20 = myquery("select id,naziv from akademska_godina order by id desc limit 1");
+$q20 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 $ag = mysql_result($q20,0,0);
 
 // Studij koji student trenutno sluša
