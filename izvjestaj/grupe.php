@@ -12,6 +12,7 @@
 // v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
 // v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
 // v4.0.9.4 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
+// v4.0.9.5 (2009/10/01) + Kod izvjestaja "double", brojevi indexa unutar grupe nisu bili sortirani a imena jesu
 
 
 
@@ -119,17 +120,12 @@ if ($tip=="double") {
 			if (!in_array($stud_id,$idovi)) continue;
 			unset($imeprezime[$stud_id]);
 
-			print "$n. $stud_imepr<br/>\n";
+			$imena .= "$n. $stud_imepr<br/>\n";
+			$brojevi_indexa .= $brindexa[$stud_id]."<br/>\n";
 			$n++;
 		}
-		print "</td><td>";
-		foreach ($brindexa as $stud_id => $brind) {
-			if (!in_array($stud_id,$idovi)) continue;
-			unset($brindexa[$stud_id]);
-
-			print "$brind<br/>\n";
-		}
-		print "</td></tr></table>\n";
+		print "$imena</td><td>$brojevi_indexa</td></tr></table>\n";
+		$imena=$brojevi_indexa="";
 
 		if ($parni==1) {
 			$parni=0;
