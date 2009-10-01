@@ -17,6 +17,7 @@
 // v4.0.9.2 (2009/04/23) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa; dodana provjera predmeta za akcije; kod brisanja grupe dodano brisanje registrovanih casova i prisustva
 // v4.0.9.3 (2009/05/06) + Dodajem polje virtualna u tabelu labgrupa - virtualne grupe trebaju biti nevidljive nastavniku
 // v4.0.9.4 (2009/09/30) + Link na izmjenu studenta nije ukljucivao parametar ag
+// v4.0.9.5 (2009/10/01) + Ukidam mogucnost upisa svih studenata u prvu grupu koja samo zbunjuje korisnika, a nema potrebe za njom (razlog za tu opciju je sto se tako ustvari nekada vrsio upis na predmet)
 
 
 // FIXME: moguce kreirati vise grupa sa istim imenom
@@ -208,23 +209,6 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 
-	// Unos moze imati jedan parametar (ime grupe) ili nula (prva grupa)
-	$brpodataka = intval($_REQUEST['brpodataka']);
-	if ($_REQUEST['brpodataka']=='on') $brpodataka=1; //checkbox
-
-	if ($brpodataka==0) {
-		$q200 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by id limit 1");
-		if (mysql_num_rows($q200)<1) {
-			// Ovo je fatalna greska...
-			zamgerlog("nije kreirana nijedna grupa za masovni upis (predmet pp$predmet)",3);
-			niceerror("Niste kreirali niti jednu grupu.");
-			print "<br/>Ili izaberite opciju &quot;Naziv grupe&quot; (s kojom će automatski biti kreirane grupe pod imenima koje navedete u drugoj koloni), ili ručno kreirajte barem jednu grupu.";
-			return;
-		}
-		$labgrupa = mysql_result($q200,0,0);
-		$imegrupe = mysql_result($q200,0,1);
-	}
-
 	$greska=mass_input($ispis); // Funkcija koja parsira podatke
 	if ($greska != 0) {
 		print "<p>NAPOMENA: U novoj verziji ZAMGERa upis studenata na predmet može vršiti samo studentska služba. Spiskovi studenata na predmetima su dostavljeni iz studentske službe, tako da ako su ti spiskovi netačni molimo da kontaktirate njih.</p>\n";
@@ -244,7 +228,6 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	}
 
 	$idovi_grupa=array();
-	if ($brpodataka==0) $idovi_grupa[$imegrupe]=$labgrupa;
 
 	// Spisak studenata
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
@@ -445,6 +428,7 @@ if (!$_POST['separator']) {
 <input type="hidden" name="nazad" value="">
 <input type="hidden" name="visestruki" value="1">
 <input type="hidden" name="duplikati" value="1">
+<input type="hidden" name="brpodataka" value="1">
 
 <textarea name="massinput" cols="50" rows="10"><?
 if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
@@ -457,7 +441,6 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
-<input type="checkbox" name="brpodataka" CHECKED> Naziv grupe (treća kolona)<br/><br/>
 
 <input type="submit" value="  Dodaj  ">
 </form></p><?
