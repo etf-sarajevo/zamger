@@ -10,6 +10,7 @@
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa; prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet; provjera spoofinga kod brisanja obavjestenja
+// v4.0.9.3 (2009/09/30) + Brisanje obavjestenja nije radilo zbog glupe greske u JavaScriptu i zbog toga sto provjera prava brisanja nije uzimala u obzir opseg labgrupa
 
 
 function nastavnik_obavjestenja() {
@@ -58,7 +59,7 @@ function upozorenje(obavjest) {
 	var a = confirm("Želite li obrisati ovo obavještenje? Ako ste odabrali opciju Slanje maila, ne možete poništiti njen efekat!");
 	if (a) {
 		document.brisanjeobavjestenja.obavjestenje.value=obavjest;
-		document.brisanjegrupe.submit();
+		document.brisanjeobavjestenja.submit();
 	}
 }
 </script>
@@ -96,11 +97,28 @@ if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
 	$obavjestenje = intval($_POST['obavjestenje']);
 
 	// Provjera predmeta
-	$q15 = myquery("select primalac from poruka where id=$obavjestenje");
-	if (mysql_num_rows($q15)<1 || mysql_result($q15,0,0)!=$predmet) {
-		zamgerlog("poruka $obavjestenje ne postoji ili nije sa predmeta pp$predmet",3);
+	$q15 = myquery("select primalac, opseg from poruka where id=$obavjestenje");
+
+	if (mysql_num_rows($q15)<1) {
+		zamgerlog("poruka $obavjestenje ne postoji",3);
 		nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
 	} else {
+		// Provjeravamo prava za brisanje
+		$primalac=mysql_result($q15,0,0);
+		$opseg=mysql_result($q15,0,1);
+		if ($opseg==5 && $primalac!=$predmet) {
+			zamgerlog("poruka $obavjestenje nije za predmet pp$predmet nego pp$primalac",3);
+			nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
+			return;
+		} else if ($opseg==6) {
+			$q17 = myquery("select predmet, akademska_godina from labgrupa where id=$primalac");
+			if (mysql_result($q17,0,0)!=$predmet || mysql_result($q17,0,1)!=$ag) {
+				zamgerlog("poruka $obavjestenje je za labgrupu $primalac koja nije sa pp$predmet",3);
+				nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
+				return;
+			}
+		}
+
 		$q20 = myquery("delete from poruka where id=$obavjestenje");
 		zamgerlog("obrisano obavjestenje (id $obavjestenje )",2);
 	}
@@ -164,7 +182,6 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 
 			$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
 			$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
-
 			$email = mysql_result($q9,0,2);
 			if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
 			
