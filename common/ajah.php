@@ -32,6 +32,7 @@
 // v4.0.9.10 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
 // v4.0.9.11 (2009/06/22) + Provjera prava pristupa kod fiksne komponente i konacne ocjene nije prebacena sa ponudekursa na predmet+ag
 // v4.0.9.12 (2009/07/15) + Dodajem kod za upis na drugi ciklus
+// v4.0.9.13 (2009/10/02) + Ljepsa poruka za sesiju koja je istekla; jos zastite za module studentske sluzbe
 
 
 // Prebaciti u lib/manip?
@@ -40,7 +41,7 @@
 
 function common_ajah() {
 
-global $userid,$user_nastavnik,$user_siteadmin;
+global $userid,$user_nastavnik,$user_siteadmin,$user_studentska;
 
 require("lib/manip.php");
 
@@ -52,6 +53,13 @@ require("lib/manip.php");
 switch ($_REQUEST['akcija']) {
 
 case "prisustvo":
+	
+	if ($userid == 0) {
+		zamgerlog("AJAH prisustvo - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
 	if (!$user_nastavnik && !$user_siteadmin) {
 		zamgerlog("AJAH prisustvo - korisnik nije nastavnik",3); // nivo 3 - greska
 		print "niste nastavnik"; break; 
@@ -133,8 +141,14 @@ case "izmjena_ispita":
 
 	// TODO: treci tip vrijenosti, fiksna komponenta
 
+	if ($userid == 0) {
+		zamgerlog("AJAH ispit - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
 	if (!$user_nastavnik) {
-		zamgerlog("AJAH prisustvo - korisnik nije nastavnik",3); // nivo 3 - greska
+		zamgerlog("AJAH ispit - korisnik nije nastavnik",3); // nivo 3 - greska
 		print "niste nastavnik"; break; 
 	}
 
@@ -302,6 +316,12 @@ case "izmjena_ispita":
 
 
 case "pretraga":
+	if ($userid == 0) {
+		zamgerlog("AJAH pretraga - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
 	$ime = my_escape($_REQUEST['ime']);
 	if (!preg_match("/\w/",$ime)) { print "OK"; return; }
 	$ime = str_replace("(","",$ime);
@@ -331,6 +351,18 @@ case "pretraga":
 
 // Unos bodova sa prijemnog
 case "prijemni_unos":
+
+	if ($userid == 0) {
+		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
+	if (!$user_studentska && !$user_siteadmin) {
+		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		print "niste studentska sluzba"; break; 
+	}
+
 	$osoba = intval($_REQUEST['osoba']);
 	$termin = intval($_REQUEST['termin']);
 	$vrijednost = floatval(str_replace(",",".",$_REQUEST['vrijednost']));
@@ -355,6 +387,18 @@ case "prijemni_unos":
 
 // Unos ocjena tokom srednje skole za prijemni
 case "prijemni_ocjene":
+
+	if ($userid == 0) {
+		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
+	if (!$user_studentska && !$user_siteadmin) {
+		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		print "niste studentska sluzba"; break; 
+	}
+
 	$osoba = intval($_REQUEST['osoba']);
 
 	$nova = intval($_REQUEST['nova']);
@@ -389,6 +433,18 @@ case "prijemni_ocjene":
 
 // Unos ocjena u prošlom ciklusu studija za prijemni
 case "prosli_ciklus_ocjena":
+
+	if ($userid == 0) {
+		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
+	if (!$user_studentska && !$user_siteadmin) {
+		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		print "niste studentska sluzba"; break; 
+	}
+
 	$osoba = intval($_REQUEST['osoba']);
 	$nova = intval($_REQUEST['nova']);
 	$rednibroj = intval($_REQUEST['rednibroj']); // nece biti nula
@@ -421,6 +477,18 @@ case "prosli_ciklus_ocjena":
 
 // Unos ECTS bodova u prošlom ciklusu studija za prijemni
 case "prosli_ciklus_ects": // 1500,5 / 157,5 = 9,52698413 / 6 = 1,58783069
+
+	if ($userid == 0) {
+		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
+		break;
+	}
+
+	if (!$user_studentska && !$user_siteadmin) {
+		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		print "niste studentska sluzba"; break; 
+	}
+
 	$osoba = intval($_REQUEST['osoba']);
 	$nova = floatval($_REQUEST['nova']);
 	$rednibroj = intval($_REQUEST['rednibroj']); // nece biti nula
