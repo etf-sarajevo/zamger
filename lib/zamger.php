@@ -17,6 +17,7 @@
 // v4.0.9.1 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.2 (2009/04/29) + studentski_meni(): sortiranje po semestrima je dovodilo da se vise puta ponavlja zaglavlje za svaki preneseni predmet (sa drugog semestra); dodajem akademsku godinu u linkove za malimeni
 // v4.0.9.3 (2009/05/01) + studentski_meni(): Parametri modula student/predmet su sada predmet i ag; restruktuiran kod
+// v4.0.9.4 (2009/07/23) + Dodajem linkove na dokumente - merge
 
 
 
@@ -318,7 +319,7 @@ function malimeni($fj) {
 
 	$k=0;
 	foreach ($registry as $r) {
-		if($r[5] != 0) continue;
+		if($r[5] != 0) continue; // nevidljiv
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
@@ -400,7 +401,7 @@ function horizontalni_meni($fj) {
 // "Studentski meni" - prikazuje se u prozoru studenta
 
 function studentski_meni($fj) {
-	global $userid,$sta;
+	global $userid,$sta,$registry; // da utvrdimo koji je modul trenutno aktivan a koji su dostupni
 
 	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
 	$arhiva = intval($_REQUEST['sm_arhiva']);
@@ -491,6 +492,16 @@ function studentski_meni($fj) {
 		}
 	}
 
+	// Koji od interesantnih registry modula su aktivni
+	$modul_uou=$modul_kolizija=$modul_prijava=$modul_prosjek=0;
+	foreach ($registry as $r) {
+		if($r[5] != 0) continue; // nevidljiv
+		if ($r[0]=="student/ugovoroucenju") $modul_uou=1;
+		if ($r[0]=="student/kolizija") $modul_kolizija=1;
+		if ($r[0]=="student/prijava_ispita") $modul_prijava=1;
+		if ($r[0]=="student/prosjeci") $modul_prosjek=1;
+	}
+
 
 ?>
 	<table width="100%" border="0" cellspacing="4" cellpadding="0">
@@ -508,17 +519,33 @@ function studentski_meni($fj) {
 			<a href="<?=genuri()?>&sm_arhiva=0">Sakrij arhivirane predmete</a>
 			<? } ?>
 			<br/><br/>
-			<a href="?sta=student/prijava_ispita">Prijava ispita</a>
-			<br/><br/>
-			<a href="?sta=student/prosjeci">Kalkulator prosjeka</a>
+			<img src="images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
+			<a href="#" onclick="daj_stablo('dokumenti'); return false;">Dokumenti</a><br />
+			<div id="dokumenti" style="display:none">
+				<? if ($modul_uou) { ?>
+				&nbsp;&nbsp;&nbsp; <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a><br />
+				<? } ?>
+				<? if ($modul_prijava) { ?>
+				&nbsp;&nbsp;&nbsp; <a href="?sta=student/prijava_ispita">Prijava ispita</a><br />
+				<? } ?>
+				&nbsp;&nbsp;&nbsp; Uvjerenje <i><font color="red">USKORO!</font></i><br />
+				&nbsp;&nbsp;&nbsp; Promjena odsjeka <i><font color="red">USKORO!</font></i><br />
+				<? if ($modul_kolizija) { ?>
+				&nbsp;&nbsp;&nbsp; <a href="?sta=student/kolizija">Zahtjev za koliziju</a><br />
+				<? } ?>
+				<? if ($modul_prosjek) { ?>
+				&nbsp;&nbsp;&nbsp; <a href="?sta=student/prosjeci">Prosjeci po godinama</a><br />
+				<? } ?>
+			</div>
 			<br/><br/><?
-$dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
-$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
 
-print $dani[date("N",time())];
-print ", ".date("j",time()).". ".$mjeseci[date("n",time())]." ".date("Y",time()).".";
+	$dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
+	$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
 
-?>
+	print $dani[date("N",time())];
+	print ", ".date("j",time()).". ".$mjeseci[date("n",time())]." ".date("Y",time()).".";
+
+	?>
 		</td>
 		<td width="1" bgcolor="#888888"><img src="images/fnord.gif" width="1" height="1"></td>
 		<td width="5" bgcolor="#FFFFFF"><img src="images/fnord.gif" width="5" height="1"></td>
