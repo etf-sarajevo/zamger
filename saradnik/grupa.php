@@ -29,6 +29,7 @@
 // v4.0.9.6 (2009/05/15) + U Refresh linku predmet i ag više nisu potrebni
 // v4.0.9.7 (2009/05/17) + Dodana ag u link na izmjenu_studenta
 // v4.0.9.8 (2009/05/18) + AJAH komponente za fiksnu komponentu i konacnu ocjenu sada primaju predmet i ag
+// v4.0.9.9 (2009/09/03) + Stavljam ime studenta kao link na saradnik/student, da vidim hoce li iko primijetiti
 
 
 function saradnik_grupa() {
@@ -78,7 +79,7 @@ if (!$user_siteadmin) {
 		}
 		if ($nasao == 0) {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
-			zamgerlog("ogranicenje na labgrupu g$labgrupa");
+			zamgerlog("ogranicenje na labgrupu g$labgrupa", 3); // 3 - greska
 			return;
 		}
 	}
@@ -532,7 +533,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>.&nbsp;<a href="javascript:firefoxopen('index.php?sta=saradnik/izmjena_studenta&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah2','width=320,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=0');"><?=$stud_imepr?></a></td>
+	<td><?=$rednibroj?>.&nbsp;<a href="index.php?sta=saradnik/student&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
 	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$labgrupa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?

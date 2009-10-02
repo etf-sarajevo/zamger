@@ -30,6 +30,7 @@ array("saradnik/grupa", "Pregled grupe", "Pregled grupe", "N", "1", "0"),
 array("saradnik/zadaca", "Pregled zadaće", "Pregled zadaće", "N", "0", "0"),
 array("saradnik/izmjena_studenta", "Izmjena podataka o studentu", "Izmjena studenta", "N", "0", "0"),
 array("saradnik/komentar", "Komentari na rad studenta", "Komentar", "N", "0", "0"),
+array("saradnik/student", "Detalji studenta na predmetu", "Detalji studenta", "N", "1", "0"),
 
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
