@@ -443,6 +443,27 @@ INSERT INTO `osoba` (`id`, `ime`, `prezime`, `email`, `brindexa`, `datum_rodjenj
 
 -- --------------------------------------------------------
 
+
+--
+-- Table structure for table `plan_studija`
+--
+
+CREATE TABLE IF NOT EXISTS `plan_studija` (
+  `godina_vazenja` int(11) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `obavezan` tinyint(1) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `plan_studija`
+--
+
+
+-- --------------------------------------------------------
+
+
 --
 -- Table structure for table `ponudakursa`
 --

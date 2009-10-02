@@ -52,6 +52,7 @@ array("studentska/izvjestaji", "Izvještaji o prolaznosti", "Izvještaji", "B", 
 array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0"),
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
 array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
+array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
 
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
