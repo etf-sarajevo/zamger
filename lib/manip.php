@@ -20,6 +20,7 @@
 // v4.0.9.7 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
 // v4.0.9.8 (2009/05/17) + Ukidamo nultu labgrupu kod ispisa sa predmeta
 // v4.0.9.9 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
+// v4.0.9.10 (2009/09/16) + Prilikom upisa na predmet upisujem default bodove za prisustvo u tabelu komponentebodovi
 
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
@@ -116,10 +117,18 @@ function upis_studenta_na_predmet($student,$ponudakursa) {
 	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
 
 	// Pronalazimo labgrupu "(Svi studenti)" i upisujemo studenta u nju
-	$q20 = myquery("select l.id from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
+	$q20 = myquery("select l.id, pk.predmet from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
 	$labgrupa = mysql_result($q20,0,0); // mora postojati
+	$predmet = mysql_result($q20,0,1); // treba nam za $q40
 	
 	$q30 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
+
+	// Potrebno je upisati max. bodova za sve komponente prisustva!
+	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tip komponente 3 = klasično prisustvo
+	while ($r40 = mysql_fetch_row($q40)) {
+		$q50 = myquery("insert into komponentebodovi set student=$student, predmet=$ponudakursa, komponenta=$r40[0], bodovi=$r40[1]");
+	}
+	
 }
 
 
