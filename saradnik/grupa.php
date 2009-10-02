@@ -30,6 +30,7 @@
 // v4.0.9.7 (2009/05/17) + Dodana ag u link na izmjenu_studenta
 // v4.0.9.8 (2009/05/18) + AJAH komponente za fiksnu komponentu i konacnu ocjenu sada primaju predmet i ag
 // v4.0.9.9 (2009/09/03) + Stavljam ime studenta kao link na saradnik/student, da vidim hoce li iko primijetiti
+// v4.0.9.10 (2009/10/02) + Sprijecena promjena prisustva ako je slanje u toku
 
 
 function saradnik_grupa() {
@@ -287,6 +288,10 @@ print ajah_box();
 <script language="JavaScript">
 // Funkcija koja se poziva klikom na polje u tabeli
 function prisustvo(student,cas) {
+	if (zamger_ajah_sending) {
+		alert("Slanje u toku. Sačekajte malo.");
+		return false;
+	}
 	var prisutan = invert(student,cas);
 	ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+student+","+cas+")");
 	// U slucaju da ajah ne uspije, ponovo se poziva funkcija invert
