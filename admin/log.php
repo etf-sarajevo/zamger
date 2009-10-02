@@ -134,23 +134,9 @@ if ($pretraga) {
 </form>
 </center>
 
-
-<script language="JavaScript">
-	function toggleVisibility(ime){
-		var me = document.getElementById(ime);
-		var img = document.getElementById('img-'+ime);
-		if (me.style.display=="none"){
-			me.style.display="inline";
-			img.src="images/minus.png";
-		}
-		else {
-			me.style.display="none";
-			img.src="images/plus.png";
-		}
-	}
-</script>
 <?
 
+// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
 
 
 // Funkcije koje cachiraju imena korisnika i predmeta 
@@ -385,7 +371,7 @@ if ($rezultata==1) {
 			$q340 = myquery("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
 			if (mysql_num_rows($q340)>0) {
 				$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q340,0,1)).")";
-				$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+				$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 			}
 		}
 	}
@@ -430,7 +416,7 @@ foreach ($eventshtml as $logid => $event) {
 	
 		$link = "?sta=studentska/osobe&akcija=edit&osoba=$userid";
 
-		print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"toggleVisibility('$logid')\">
+		print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"daj_stablo('$logid')\">
 <img src=\"images/16x16/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
 <a href=\"$link\">$imeprezime</a> $nicedate
 <div id=\"$logid\" style=\"display:none\">\n";

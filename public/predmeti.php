@@ -18,22 +18,7 @@ function public_predmeti($modul) {
 	$linka = "</a>";
 	if ($modul == "") $link=$linka="";
 
-	?>
-	<script language="JavaScript">
-		function toggleVisibility(ime){
-			var me = document.getElementById(ime);
-			var img = document.getElementById('img-'+ime);
-			if (me.style.display=="none"){
-				me.style.display="inline";
-				img.src="images/minus.png";
-			}
-			else {
-				me.style.display="none";
-				img.src="images/plus.png";
-			}
-		}
-	</script>
-	<?
+	// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
 
 	$q1 = myquery("select ag.id,ag.naziv from akademska_godina as ag where (select count(*) from ponudakursa as pk where pk.akademska_godina=ag.id)>0 order by ag.id");
 
@@ -68,7 +53,7 @@ function public_predmeti($modul) {
 }
 
 function dajplus($layerid,$layername) {
-	return "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$layerid\" onclick=\"toggleVisibility('$layerid')\"> $layername <div id=\"$layerid\" style=\"display:none\">";
+	return "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$layerid\" onclick=\"daj_stablo('$layerid')\"> $layername <div id=\"$layerid\" style=\"display:none\">";
 }
 
 ?>

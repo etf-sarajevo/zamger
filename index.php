@@ -187,6 +187,8 @@ if ($found==1 && $template==0 && $greska=="") {
 ?>
 <body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
 
+<script type="text/javascript" src="js/stablo.js"></script> <!-- Cesto koristena skripta -->
+
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr bgcolor="#BBBBFF">
 		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->

@@ -4,7 +4,8 @@
 
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet, dodano polje aktuelna u tabelu akademska_godina
-// v4.0.9.2 (2009/09/13) + Dodana podrska za nastavu 08-21 i subotu; popravljen spacing (sugestije by Teo); daljnje unaprjedjenje citljivosti koda
+// v4.0.9.2 (2009/04/19) + Kompletan rewrite modula kako bih shvatio sta radi i stavio u funkciju
+// v4.0.9.3 (2009/09/13) + Dodana podrska za nastavu 08-21 i subotu; popravljen spacing (sugestije by Teo); daljnje unaprjedjenje citljivosti koda
 
 	
 		
@@ -23,6 +24,9 @@ function common_raspored($tip) {
 
 // Stilovi i javascript za raspored
 
+// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
+
+
 ?>
 
 
@@ -30,20 +34,6 @@ function common_raspored($tip) {
 
 <LINK href="css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
-	function toggleVisibility(ime){
-		var me = document.getElementById(ime);
-		var img = document.getElementById('img-'+ime);
-		
-		if (me.style.display=="none"){
-			me.style.display="";
-			img.src="images/minus.png";
-		}
-		else {
-			me.style.display="none";
-			img.src="images/plus.png";
-		}
-	}
-
 	//Tooltip
 	function prikaziTT(poruka, eVentER) {
 		var x = 0;
@@ -73,7 +63,7 @@ function common_raspored($tip) {
 </div>
 
 <div>
-	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="toggleVisibility('raspored')" style="color: #666699"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
+	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="daj_stablo('raspored')" style="color: #666699"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
 	<hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px">
 </div>
 

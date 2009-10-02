@@ -1,22 +1,5 @@
 <LINK href="css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
-			//Funkcija za prikazivanje i sakrivanje boxova
-			function toggleVisibility(ime, resForm){
-				var me = document.getElementById(ime);
-				var img = document.getElementById('img-'+ime);
-				
-				if (me.style.display=="none"){
-					me.style.display="";
-					img.src="images/minus.png";
-				}
-				else {
-					me.style.display="none";
-					img.src="images/plus.png";
-					//Kada se zatvori meni, pobrisi form sadrzaj u njemu
-					document.getElementById(resForm).reset();
-				}
-			}
-			
 			//Funkcija za potrvrdu brisanja
 			function izbrisi(poruka, url)  {
 				if (confirm(poruka))
@@ -261,7 +244,7 @@ function ispisPocetne() {
 	
 	########################################
 	echo '
-		<div><a href = "#" onclick="toggleVisibility(\'sp\', \'formP0\')"><img id = "img-sp" src = "images/plus.png" border = "0" align = left hspace = 2/>Spiska predmeta po semestrima i odsjecima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'sp\'); document.getElementById(\'formP0\').reset();"><img id = "img-sp" src = "images/plus.png" border = "0" align = left hspace = 2/>Spiska predmeta po semestrima i odsjecima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sp" style = "display: none; padding-bottom: 15px; line-height: 18px;">
 			<div style = "height: 150px;">
 				<div style = "width: 35%; float: left;">Naziv predmeta</div>
@@ -310,7 +293,7 @@ function ispisPocetne() {
 	
 	#######################################
 	echo '
-		<div><a href = "#" onclick="toggleVisibility(\'sg\', \'formP1\')"><img id = "img-sg" src = "images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'sg\'); document.getElementById(\'formP1\').reset();"><img id = "img-sg" src = "images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sg" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP1" id = "formP1" action = "studentska/print.php?act=PG" target = "_blank" method = "post">
 				Printanje grupa za pedmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
@@ -322,7 +305,7 @@ function ispisPocetne() {
 	
 	#######################################
 	echo '
-		<div><a href = "#" onclick="toggleVisibility(\'pp\', \'formP2\')"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'pp\'); document.getElementById(\'formP2\').reset();"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "pp" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP2" id = "formP2" action = "studentska/print.php?act=PP" target = "_blank" method = "post">
 				Printanje profesora za pedmet: '.selectOption("auth", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
