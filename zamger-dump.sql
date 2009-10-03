@@ -1,4 +1,4 @@
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -1354,3 +1354,32 @@ CREATE TABLE  IF NOT EXISTS `student_projekat` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- HARIS AGIC END
+
+
+
+-- ADMIR HERIC START
+-- --------------------------------------------------------
+--
+-- Table structure for table `ispit_termin`
+--
+DROP TABLE IF EXISTS `ispit_termin`;
+CREATE TABLE IF NOT EXISTS `ispit_termin` (
+  `id` int(11) NOT NULL auto_increment,
+  `datumvrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `komponenta` int(11) NOT NULL,
+  `maxstudenata` int(11) NOT NULL,
+  `deadline` timestamp NOT NULL default '0000-00-00 00:00:00',
+  `ispit` int(11) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=30 ;
+-- --------------------------------------------------------
+--
+-- Table structure for table `student_ispit_termin`
+--
+DROP TABLE IF EXISTS `student_ispit_termin`;
+CREATE TABLE IF NOT EXISTS `student_ispit_termin` (
+  `student` int(11) NOT NULL,
+  `ispit_termin` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- ADMIR HERIC END
