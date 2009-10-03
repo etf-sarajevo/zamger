@@ -122,6 +122,7 @@ if ($tip=="double") {
 
 			$imena .= "$n. $stud_imepr<br/>\n";
 			$brojevi_indexa .= $brindexa[$stud_id]."<br/>\n";
+			unset($brindexa[$stud_id]);
 			$n++;
 		}
 		print "$imena</td><td>$brojevi_indexa</td></tr></table>\n";
