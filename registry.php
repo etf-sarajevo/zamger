@@ -76,6 +76,7 @@ array("izvjestaj/historija", "Historija studenta", "Historija studenta", "BA", "
 array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
+array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
