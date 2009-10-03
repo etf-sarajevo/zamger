@@ -14,6 +14,7 @@
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/05/18) + Integrisi ponude istog kursa npr. kod izvjestaja "Svi studiji", dodano polje "ponovac"
 // v4.0.9.5 (2009/08/29) + Popravljeno poravnanje footera tabele, popravljen broj studenata u koliziji
+// v4.0.9.6 (2009/10/03) + Dodan parametar "tip studija", za prikaz podataka za sve studije istog tipa; razjasnjene sumarne statistike; respektuj polje ponovac u tabeli student_studij
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
@@ -39,6 +40,7 @@ $cista_gen = intval($_REQUEST['cista_gen']);
 $studenti = intval($_REQUEST['studenti']);
 $sortiranje = intval($_REQUEST['sortiranje']);
 $oboji = $_REQUEST['oboji'];
+$tipstudija = intval($_REQUEST['tipstudija']);
 
 
 // Naslov
@@ -46,12 +48,21 @@ $q20 = myquery("select naziv from akademska_godina where id=$akgod");
 
 ?>
 <h2>Prolaznost</h2>
-<p>Studij: <b><? 
-if ($studij==-1) print "Svi studiji";
-else {
+<p>Studij: <b><?
+
+if ($studij==-1)
+	$q10 = myquery("select naziv from tipstudija where id=$tipstudija");
+else 
 	$q10 = myquery("select naziv from studij where id=$studij");
-	print mysql_result($q10,0,0);
+
+if (mysql_num_rows($q10)<1) {
+	niceerror("Nepoznat studij / tipstudija");
+	return;
 }
+
+if ($studij==-1) print "Svi studenti (".mysql_result($q10,0,0).")";
+else print mysql_result($q10,0,0);
+
 ?></b><br/>
 Akademska godina: <b><?=mysql_result($q20,0,0)?></b><br/>
 Godina/semestar studija: <b><?
@@ -77,9 +88,9 @@ elseif ($ispit==4) print "Konačna ocjena";
 </p><?
 
 
+// Razni dodaci na upite ovisno o primljenim parametrima
 
-// ($q30) Spisak predmeta na studij-semestru
-if ($period==0) {
+if ($period==0) { // Semestar ili godina?
 	$semestar_upit = "pk.semestar=$semestar";
 	$sem_stud_upit = "semestar=$semestar";
 } else {
@@ -90,12 +101,30 @@ if ($period==0) {
 $studij_upit_pk = "";
 $studij_upit_ss = "";
 $studij_upit_ss2 = "";
-if ($studij>-1) {
+if ($studij>-1) { // Izbor studija
 	$studij_upit_pk = "and pk.studij=$studij";
 	$studij_upit_ss = "and ss.studij=$studij";
 	$studij_upit_ss2 = "and ss2.studij=$studij";
+} else {
+	$q25 = myquery("select id from studij where tipstudija=$tipstudija");
+	while ($r25 = mysql_fetch_row($q25)) {
+		if ($studij_upit_pk=="") {
+			$studij_upit_pk = "and (pk.studij=$r25[0]";
+			$studij_upit_ss = "and (ss.studij=$r25[0]";
+			$studij_upit_ss2 = "and (ss2.studij=$r25[0]";
+		} else {
+			$studij_upit_pk .= " or pk.studij=$r25[0]";
+			$studij_upit_ss .= " or ss.studij=$r25[0]";
+			$studij_upit_ss2 .= " or ss2.studij=$r25[0]";
+		}
+	}
+	$studij_upit_pk .= ")";
+	$studij_upit_ss .= ")";
+	$studij_upit_ss2 .= ")";
 }
 
+
+// ($q30) Spisak predmeta na studij-semestru
 if ($studij==-1) 
 	$q30 = myquery("select distinct p.id, p.naziv, 1 from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 else
@@ -215,7 +244,8 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		// Statisticki podaci o generaciji
 
 		// Redovni studenti
-		$q50 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
+		//$q50 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and (select count(*) from student_studij as ss2 where ss2.student=ss.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)=0");
+		$q50 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.ponovac=0");
 		$redovnih = mysql_result($q50,0,0);
 
 		// Ukupan broj studenata na studiju
@@ -224,17 +254,21 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		// Posto su neki ponovci polozili sve iz ovog semestra, sljedeci upit vraca samo prenesene predmete
 		// i kolizije kako bi ukupna statistika bila tacna, cak iako se suma ne poklapa
 		if ($period==0) {
-			$sssupit = "ss.semestar!=$semestar"; // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
+			$prenesenoupit = "ss.semestar>$semestar"; // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
+			$kolizijaupit = "ss.semestar<$semestar";
 		} else {
-			$sssupit = "ss.semestar!=".($godina*2-1)." and ss.semestar!=".($godina*2); 
+			$prenesenoupit = "ss.semestar>".($godina*2); 
+			$kolizijaupit = "ss.semestar<".($godina*2-1); 
 		}
-		$q65 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and $sssupit and ss.akademska_godina=$akgod");
+		$q65 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and $prenesenoupit and ss.akademska_godina=$akgod");
+		$q67 = myquery("SELECT count(distinct sp.student) FROM student_predmet as sp, ponudakursa as pk, student_studij as ss WHERE sp.predmet=pk.id $studij_upit_pk and $semestar_upit and pk.akademska_godina=$akgod and ss.student=sp.student and $kolizijaupit and ss.akademska_godina=$akgod");
 
 		$ukupno_na_godini = mysql_result($q60,0,0);
 		$ponovaca = $ukupno_na_godini - $redovnih;
 		$prenesenih = mysql_result($q65,0,0);
+		$kolizije = mysql_result($q67,0,0);
 
-		$ispis_br_studenata = "Predmete slušalo: <b>$redovnih</b> redovnih studenata + <b>$ponovaca</b> ponovaca + <b>$prenesenih</b> prenesenih predmeta / kolizije";
+		$ispis_br_studenata = "Ukupno studenata:<br />&nbsp;&nbsp;&nbsp;&nbsp;<b>$redovnih</b> studenata redovno upisalo godinu<br />&nbsp;&nbsp;&nbsp;&nbsp;<b>$ponovaca</b> ponavlja godinu<br />&nbsp;&nbsp;&nbsp;&nbsp;<b>$prenesenih</b> prenijelo predmet na iduću godinu<br />&nbsp;&nbsp;&nbsp;&nbsp;<b>$kolizije</b> sluša predmete sa ove godine u koliziji";
 
 		// Ova statistika se izvrsava presporo:
 		
@@ -400,8 +434,13 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 				$q120 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
 			else
 				$q120 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
-			while ($r120 = mysql_fetch_row($q120))
+			while ($r120 = mysql_fetch_row($q120)) {
 				$izaslo[$r120[0]]++;
+				if ($studenti==1 && $ispitocjena[$stud_id][$r120[0]]<6) {
+					// Ako student sluša predmet, a nije ga položio, stavljamo minus
+					$ispitocjena[$stud_id][$r120[0]]="-";
+				}
+			}
 		}
 	}
 
