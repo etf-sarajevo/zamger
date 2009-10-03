@@ -6,6 +6,8 @@
 // v3.9.1.0 (2008/02/09) + Novi modul: public/intro, prikazuje stablo predmeta i login formu
 // v3.9.1.1 (2008/03/08) + Popravljena redirekcija
 // v3.9.1.2 (2008/11/21) + Dodajem link na dokumentaciju
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/05/02) + Posto botovi stalno napadaju izvjestaj/predmet, dodajem opciju "skrati" koja puno brze kreira izvjestaj
 
 
 
@@ -20,7 +22,7 @@ function public_intro() {
 			<?
 
 				require("public/predmeti.php");
-				public_predmeti("izvjestaj/predmet");
+				public_predmeti("izvjestaj/predmet&skrati=da");
 			?>
 			</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
 			</td--><td valign="top">
