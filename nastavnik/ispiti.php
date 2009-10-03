@@ -16,6 +16,7 @@
 // v4.0.9.5 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
 // v4.0.9.6 (2009/04/16) + Popravljen link na izvjestaj/ispit
 // v4.0.9.7 (2009/04/22) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
+// v4.0.9.8 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 function nastavnik_ispiti() {
@@ -70,22 +71,28 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 
-	$greska=mass_input($ispis); // Funkcija koja parsira podatke
-
-// Dozvoljavamo kreiranje blank ispita
-
-//	if (count($mass_rezultat)==0) {
-//		zamgerlog("parsiranje kod masovnog upisa nije vratilo ništa (predmet $predmet)",3);
-//		niceerror("Niste unijeli ništa.");
-//		return;
-//	}
-
 	if ($ispis) {
 		?>Akcije koje će biti urađene:<br/><br/>
 		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
+		<table border="0" cellspacing="1" cellpadding="2">
+		<!-- FIXME: prebaciti stilove u CSS? -->
+		<thead>
+		<tr bgcolor="#999999">
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Bodovi / Komentar</font></td>
+		</tr>
+		</thead>
+		<tbody>
 		<?
 	}
+
+	$greska=mass_input($ispis); // Funkcija koja parsira podatke
+
+	// Dozvoljavamo kreiranje blank ispita
+	// if (count($mass_rezultat)==0) { ...
+
 
 	// Registrovati ispit u bazi
 
@@ -121,6 +128,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	// Obrada rezultata
 
+	$boja1 = "#EEEEEE";
+	$boja2 = "#DDDDDD";
+	$boja=$boja1;
+	$bojae = "#FFE3DD";
+
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
 		$bodova = $mass_rezultat['podatak1'][$student];
@@ -129,17 +141,29 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$fbodova = floatval(str_replace(",",".",$bodova));
 		// samo 0 priznajemo za nula bodova, inace student nije izasao na ispit
 		if ($fbodova==0 && strpos($bodova,"0")===FALSE) {
-			if ($ispis)
-				print "Student '$prezime $ime' - nije izašao na ispit (nije unesen broj bodova $bodova)<br/>";
+			if ($ispis) {
+				?>
+				<tr bgcolor="<?=$boja?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>nije izašao/la na ispit (unesena je ocjena: <?=$ocjena?>)</td>
+				</tr>
+				<?
+				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
+			}
 			continue;
 		}
 		$bodova = $fbodova;
 
-		// Da li student slusa predmet?
+		// Određujem ponudu kursa (provjeru je već trebao uraditi massinput ali neka je i ovdje)
 		$q35 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		if (mysql_num_rows($q35)<1) {
 			if ($ispis) {
-				print "-- GREŠKA! Student '$prezime $ime' nije upisan na predmet $predmet_naziv<br/>";
+				?>
+				<tr bgcolor="<?=$boja?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>nije upisan/a na predmet</td>
+				</tr>
+				<?
 			}
 			$greska=1;
 			continue; // Ne smijemo dozvoliti da se ovakav podatak unese u bazu
@@ -154,7 +178,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if (mysql_num_rows($q40)>0) {
 				if ($ispis) {
 					$oc2 = mysql_result($q40,0,0);
-					print "-- GREŠKA! Student '$prezime $ime' je već ranije unesen na ovaj ispit sa $oc2 bodova (a sada sa $fbodova bodova). Izmjena unesenih bodova trenutno nije moguća.<br/>";
+					?>
+					<tr bgcolor="<?=$bojae?>">
+						<td><?=$prezime?></td><td><?=$ime?></td>
+						<td>već ima rezultat <?=$oc2?>; koristite pogled grupe za izmjenu</td>
+					</tr>
+					<?
 				}
 				$greska=1;
 				continue; // Ne smijemo dozvoliti dvostruke ocjene u bazi
@@ -164,7 +193,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		// Zakljucak
 		if ($ispis) {
 //			print "Student '$prezime $ime' (ID: $student) - bodova: $bodova<br/>";
-			print "Student '$prezime $ime' - bodova: $bodova<br/>";
+			?>
+			<tr bgcolor="<?=$boja?>">
+				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td><?=$ocjena?> bodova</td>
+			</tr>
+			<?
 		} else {
 			$q50 = myquery("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
 
@@ -174,9 +208,21 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	}
 
 	if ($ispis) {
-		print '<input type="submit" name="nazad" value=" Nazad "> ';
-		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
-		print "</form>";
+		if ($greska == 0) {
+			?>
+			</tbody></table>
+			<p>Potvrdite upis ispita i bodova ili se vratite na prethodni ekran.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
+			</form>
+			<? 
+		} else {
+			?>
+			</tbody></table>
+			<p>U unesenim podacima ima grešaka. Da li ste izabrali ispravan format ("Prezime[TAB]Ime" vs. "Prezime Ime")? Vratite se nazad kako biste ovo popravili.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "></p>
+			</form>
+			<? 
+		}
 		return;
 	} else {
 		zamgerlog("masovni rezultati ispita za predmet pp$predmet",4);
