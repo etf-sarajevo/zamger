@@ -188,6 +188,25 @@ INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `kolizija`
+--
+
+CREATE TABLE IF NOT EXISTS `kolizija` (
+  `student` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  KEY `student` (`student`,`akademska_godina`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `kolizija`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `komentar`
 --
 

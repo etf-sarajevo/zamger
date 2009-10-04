@@ -31,6 +31,8 @@
 // v4.0.9.7 (2009/05/06) + Koristim funkciju upis_studenta_na_predmet radi upisa na virtualnu labgrupu
 // v4.0.9.8 (2009/06/16) + Popravljen link na studentska/predmeti
 // v4.0.9.9 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
+// v4.0.9.10 (2009/08/28) + Dodajem podrsku za ugovor o ucenju, popravljena provjera uslova za upis na osnovu plana studija, ukinut hardkodirani studij "Prva godina studija" iz upisa i provjere uslova
+// v4.0.9.11 (2009/09/12) + Dodajem podrsku za koliziju; oba dijela se prikazuju samo ako su moduli aktivni
 
 
 
@@ -535,6 +537,84 @@ else if ($akcija == "upis") {
 		?>
 		<p>&nbsp;</p>
 		<input type="submit" value=" Potvrda upisa ">
+		</form>
+		<?
+	}
+}
+
+
+
+// Pregled predmeta za koliziju i potvrda
+
+else if ($akcija == "kolizija") {
+	?>
+	<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
+	<?
+
+	// Odredjujemo u koju akademsku godinu bi se trebao upisivati student
+	$nova_ak_god=intval($_REQUEST['godina']);
+	$q398 = myquery("select naziv from akademska_godina where id=$nova_ak_god");
+	$naziv_godine=mysql_result($q398,0,0);
+
+	// Koji studij student sluša? Treba nam radi ponudekursa
+	$q399 = myquery("select s.id, s.naziv from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc");
+	$studij = mysql_result($q399,0,0);
+	$studij_naziv = mysql_result($q399,0,1);
+	
+	$q400 = myquery("select predmet from kolizija where student=$osoba and akademska_godina=$nova_ak_god");
+	$predmeti=$ponudekursa=array();
+	$greska=0;
+	while ($r400 = mysql_fetch_row($q400)) {
+		$predmet = $r400[0];
+
+		// Eliminišemo predmete koje je položio u međuvremenu
+		$q410 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$predmet and ocjena>5");
+		if (mysql_result($q410,0,0)<1) {
+			$q420 = myquery("select naziv from predmet where id=$predmet");
+			$predmeti[$predmet] = "<b>".mysql_result($q420,0,0)."</b> ($studij_naziv, ";
+
+			// Odredjujemo ponudu kursa koju bi student trebao slušati
+			$q430 = myquery("select id, semestar, obavezan from ponudakursa where predmet=$predmet and studij=$studij and akademska_godina=$nova_ak_god");
+			if (mysql_num_rows($q430)<1) {
+				if ($greska==0) niceerror("Nije pronađena ponuda kursa");
+				print "Predmet <b>".mysql_result($q420,0,0)."</b>, studij <b>$studij_naziv</b>, godina $naziv_godine<br/>";
+				$greska=1;
+			}
+			$ponudekursa[$predmet] = mysql_result($q430,0,0);
+			$predmeti[$predmet] .= mysql_result($q430,0,1).". semestar";
+			if (mysql_result($q430,0,2)==0) $predmeti[$predmet] .= ", izborni";
+			$predmeti[$predmet] .= ")";
+		}
+	}
+
+	if ($greska==1) return; // ne idemo dalje
+
+	if (count($predmeti)==0) { // nema ništa za koliziju!!!
+		nicemessage ("Student je u međuvremenu položio/la sve predmete! Nema se ništa za upisati.");
+		return;
+	}
+	
+
+	if ($_REQUEST['subakcija'] == "potvrda") {
+		foreach ($ponudekursa as $predmet => $pk) {
+			upis_studenta_na_predmet($osoba, $pk);
+			$q440 = myquery("delete from kolizija where student=$osoba and akademska_godina=$nova_ak_god and predmet=$predmet");
+		}
+		zamgerlog("prihvacen zahtjev za koliziju studenta u$osoba", 4); // 4 = audit
+		print "<p>Upis je potvrđen.</p>\n";
+	} else {
+		?>
+		<p>Student želi upisati sljedeće predmete:</p>
+		<ul>
+		<?
+		foreach ($predmeti as $tekst) {
+			print "<li>$tekst</li>\n";
+		}
+		?>
+		</ul>
+		<?=genform("POST");?>
+		<input type="hidden" name="subakcija" value="potvrda">
+		<input type="submit" value=" Potvrdi ">
 		</form>
 		<?
 	}
@@ -1149,6 +1229,26 @@ else if ($akcija == "edit") {
 			}
 
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
+
+
+
+		// Kolizija
+		if ($modul_kolizija==1) {
+			$q280 = myquery("select count(*) from kolizija where student=$osoba and akademska_godina=$nova_ak_god");
+			if (mysql_result($q280,0,0)>0) {
+				?>
+				<p>Student je popunio/la <b>Zahtjev za koliziju</b>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=kolizija&godina=<?=$nova_ak_god?>">Kliknite ovdje da potvrdite upis na kolizione predmete.</a>
+				<?
+			} else {
+				// Probavamo i za trenutnu
+				$q280 = myquery("select count(*) from kolizija where student=$osoba and akademska_godina=$id_ak_god");
+				if (mysql_result($q280,0,0)>0) {
+					?>
+					<p>Student je popunio/la <b>Zahtjev za koliziju</b>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=kolizija&godina=<?=$id_ak_god?>">Kliknite ovdje da potvrdite upis na kolizione predmete.</a>
+					<?
+				}
+			}
+		}
 
 		// Upis studenta na predmet
 		if ($nova_ak_god==0) { // Ako je trenutno upisan na fakultet...
