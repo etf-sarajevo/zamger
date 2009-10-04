@@ -35,6 +35,7 @@
 // v4.0.9.11 (2009/09/12) + Dodajem podrsku za koliziju; oba dijela se prikazuju samo ako su moduli aktivni
 // v4.0.9.12 (2009/09/15) + Redizajniran kod za akciju upis, uz podrsku za plan studija i nova polja u tabelama studij i tipstudija; u akciji "edit", sekcija "Prijemni", daj link za upis samo ako je student polagao prijemni za godinu iza aktuelne; popravljen prikaz upisa u sljedecu godinu za studente upravo upisane na prijemnom
 // v4.0.9.13 (2009/09/23) + Manuelni upis na predmete / ispis sa predmeta napravljen kao zasebna akcija
+// v4.0.9.14 (2009/10/03) + Dodajem kod za ispis studenta sa studija (prethodno u modulu prodsjeka)
 
 
 
@@ -218,8 +219,8 @@ if ($akcija == "podaci") {
 
 	$q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
-		zamgerlog("nepostojeci student u$osoba",3);
-		niceerror("Nepostojeći student!");
+		zamgerlog("nepostojeca osoba u$osoba",3);
+		niceerror("Nepostojeća osoba!");
 		return;
 	}
 	$ime = mysql_result($q400,0,0);
@@ -781,6 +782,83 @@ else if ($akcija == "upis") {
 
 
 
+// Ispis sa studija
+
+else if ($akcija == "ispis") {
+
+	// Svi parametri su obavezni!
+	$studij = $_REQUEST['studij'];
+	$semestar = $_REQUEST['semestar'];
+	$ak_god = $_REQUEST['godina'];
+
+	$q2500 = myquery("select ime, prezime from osoba where id=$osoba");
+	$ime = mysql_result($q2500,0,0);
+	$prezime = mysql_result($q2500,0,1);
+
+	$q2510 = myquery("select naziv from akademska_godina where id=$ak_god");
+	$naziv_ak_god = mysql_result($q2510,0,0);
+
+	?>
+	<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$osoba?>">Nazad na podatke o osobi</a><br/><br/>
+	<h2><?=$ime?> <?=$prezime?> - ispis sa studija</h2>
+	<?
+
+	// Gdje je trenutno upisan?
+	$q2520 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god");
+	if (mysql_num_rows($q2520)<1) {
+		niceerror("Student nije upisan na fakultet u izabranoj akademskoj godini!");
+		zamgerlog("pokusao ispisati studenta u$osoba koji nije upisan u ag$ak_god", 3);
+		return;
+	}
+	if (mysql_result($q2520,0,0)!=$studij) {
+		niceerror("Student nije upisan na izabrani studij u izabranoj akademskoj godini!");
+		zamgerlog("pokusao ispisati studenta u$osoba sa studija $studij koji ne slusa u ag$ak_god", 3);
+		return;
+	}
+	if (mysql_result($q2520,0,2)!=$semestar) {
+		niceerror("Student nije upisan na izabrani semestar u izabranoj akademskoj godini!");
+		zamgerlog("pokusao ispisati studenta u$osoba sa semestra $semestar koji ne slusa u ag$ak_god", 3);
+		return;
+	}
+	$naziv_studija = mysql_result($q2520,0,1);
+
+	?>
+	<h3>Studij: <?=$naziv_studija?>, <?=$semestar?>. semestar, <?=$naziv_ak_god?> godina</h3>
+	<?
+
+	// Ispis sa studija
+	if ($_REQUEST['potvrda']=="1") {
+		$q530 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god");
+		while ($r530 = mysql_fetch_row($q530)) {
+			$predmet = $r530[0];
+			ispis_studenta_sa_predmeta($osoba, $predmet, $ak_god);
+			zamgerlog("ispisujem studenta u$osoba sa predmeta pp$predmet (promjena odsjeka)",4); // 4 - audit
+		}
+		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god");
+		nicemessage("Ispisujem studenta sa studija $naziv_studija i svih predmeta koje trenutno sluša.");
+		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god) (promjena odsjeka)", 4);
+	} else {
+		?>
+		<p>Student će biti ispisan sa sljedećih predmeta:<ul>
+		<?
+		$q520 = myquery("select p.naziv from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.predmet=p.id");
+		while ($r520 = mysql_fetch_row($q520)) {
+			print "<li>$r520[0]</li>\n";
+		}
+		?>
+		</ul></p>
+		<p>NAPOMENA: Svi bodovi ostvareni na ovim predmetima će biti izgubljeni! Trenutno nema drugog načina da se student ispiše sa studija.</p>
+		<p>Kliknite na dugme "Potvrda" da potvrdite ispis.</p>
+		<?=genform("POST");?>
+		<input type="hidden" name="potvrda" value="1">
+		<input type="submit" value=" Potvrda ">
+		</form>
+		<?
+	}
+}
+
+
+
 // Pregled predmeta za koliziju i potvrda
 
 else if ($akcija == "kolizija") {
@@ -1242,8 +1320,8 @@ else if ($akcija == "edit") {
 
 	$q200 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton from osoba where id=$osoba");
 	if (!($r200 = mysql_fetch_row($q200))) {
-		zamgerlog("nepostojeci student u$osoba",3);
-		niceerror("Nepostojeći student!");
+		zamgerlog("nepostojeca osoba u$osoba",3);
+		niceerror("Nepostojeća osoba!");
 		return;
 	}
 	$ime = mysql_result($q200,0,0);
@@ -1505,7 +1583,7 @@ else if ($akcija == "edit") {
 
 		} else {
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put)</p>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put)  (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>)</p>
 			<?
 			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
 			if (mysql_num_rows($q230)>0) {
@@ -1542,17 +1620,17 @@ else if ($akcija == "edit") {
 			$novi_studij_id=mysql_result($q235,0,2);
 			if ($novi_semestar<=$semestar && $novi_studij==$studij) $nputa=$puta+1; else $nputa=1;
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je upisan na studij: <b><?=$novi_studij?></b>, <?=$novi_semestar?>. semestar (<?=$nputa?>. put).</p><?
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je upisan na studij: <b><?=$novi_studij?></b>, <?=$novi_semestar?>. semestar (<?=$nputa?>. put). (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$novi_studij_id?>&semestar=<?=$novi_semestar?>&godina=<?=$nova_ak_god?>">ispiši sa studija</a>)</p><?
 
 		} else {
 
 		// Ima li uslove za upis
 		if ($semestar==0 && $ikad_semestar==0) {
-			// Upis na prvu godinu -- FIXME: pretpostavka je da je prva godina ID 1
+			// Upis na prvu godinu
 
 			?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p>
-			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=1&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p>
+			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p>
 			<?
 
 		} else if ($studij=="0") {
@@ -1664,7 +1742,6 @@ else if ($akcija == "edit") {
 			}
 
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
-
 
 
 		// Kolizija
