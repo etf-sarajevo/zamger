@@ -45,6 +45,7 @@ function studentska_osobe() {
 
 global $userid,$user_siteadmin,$user_studentska;
 global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain;
+global $registry; // šta je od modula aktivno
 
 global $_lv_; // Potrebno za genform() iz libvedran
 
@@ -60,7 +61,6 @@ if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
 
 
 
-
 ?>
 
 <center>
@@ -70,6 +70,7 @@ if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
 
 $akcija = $_REQUEST['akcija'];
 $osoba = intval($_REQUEST['osoba']);
+
 
 
 // Dodavanje novog korisnika u bazu
@@ -286,21 +287,20 @@ else if ($akcija == "upis") {
 	$semestar = intval($_REQUEST['semestar']);
 	$godina = intval($_REQUEST['godina']);
 
-	// Postoji li akademska godina?
-	$q495 = myquery("select count(*) from akademska_godina where id=$godina");
-	if (mysql_result($q495,0,0)<1) {
-		niceerror("Pokušaj upisa u nepostojeću akademsku godinu! Kontaktirajte administratora");
-		zamgerlog("pokusaj upisa u nepostojecu akademsku godinu $godina",3); // 3 - error
-		return;
-	}
+	// Neispravni parametri se ne bi trebali desiti, osim u slučaju hackovanja
+	// a i tada je "šteta" samo nekonzistentnost baze
 
-	$q500 = myquery("select ime, prezime, brindexa from osoba where id=$osoba");
+	$q500 = myquery("select ime, prezime, brindexa from osoba where id=$student");
 	$ime = mysql_result($q500,0,0);
 	$prezime = mysql_result($q500,0,1);
-	$brindexa = intval(mysql_result($q500,0,2));
+	$brindexa = mysql_result($q500,0,2);
+
+	$q505 = myquery("select naziv from akademska_godina where id=$godina");
+	$naziv_ak_god = mysql_result($q505,0,0);
+
 
 	?>
-	<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$osoba?>">Nazad na podatke o osobi</a><br/><br/>
+	<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$student?>">Nazad na podatke o osobi</a><br/><br/>
 	<h2><?=$ime?> <?=$prezime?> - upis</h2><?
 	print genform("POST");
 	?>
@@ -315,6 +315,7 @@ else if ($akcija == "upis") {
 
 		$ok_izvrsiti_upis=1;
 
+		// Potvrdjujemo promjenu studija napravljenu tokom rada
 		$ns = intval($_REQUEST['novi_studij']);
 		if ($ns>0) {
 			$studij=$ns;
@@ -323,29 +324,103 @@ else if ($akcija == "upis") {
 	<input type="hidden" name="studij" value="<?=$studij?>">
 	<input type="hidden" name="novi_studij" value="0">
 			<?
+			$ok_izvrsiti_upis=0; // Tražimo novu potvrdu jer od izbora studija ovisi previše stvari
+			// npr. ugovor o učenju
 		}
 	}
 
 
-	// Izbor studija kod zavrsetka prethodnog - FIXME!
-	$q540 = myquery("select zavrsni_semestar, naziv, tipstudija from studij where id=$studij");
-	$trajanje=mysql_result($q540,0,0);
-	$naziv_studija=mysql_result($q540,0,1);
-	$tip_studija=mysql_result($q540,0,2);
-	if ($semestar>$trajanje || ($semestar==1 && $ns==0)) {
-		// Da li je student svojevremeno na prijemnom odabrao drugi studij?
-		// TODO! - ukida se polje preduslov
+	// Šta je student slušao i kako?
+	$q510 = myquery("select studij, nacin_studiranja, plan_studija, semestar from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
+	$stari_studij=$nacin_studiranja=$plan_studija=$ponovac=0;
+	if (mysql_num_rows($q510)>0) {
+		$stari_studij=mysql_result($q510,0,0);
+		$nacin_studiranja=mysql_result($q510,0,1);
+		$plan_studija=mysql_result($q510,0,2);
+		if (mysql_result($q510,0,3)>=$semestar) $ponovac=1;
+	} else if (intval($_REQUEST['nacin_studiranja'])>0) {
+		$nacin_studiranja=intval($_REQUEST['nacin_studiranja']);
+	}
 
-		$q550 = myquery("select id,naziv from studij where zavrsni_semestar>$semestar and preduslov=$tip_studija");
+	// Ako je promijenjen studij, moramo odrediti i novi plan studija
+	if ($stari_studij != $studij) {
+		$ponovac=0;
+		$q515 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+		$plan_studija = mysql_result($q515,0,0);
+	}
+
+
+	// Novi student
+	$mijenja_studij=0;
+	if ($stari_studij==0 && $ns==0 && $ok_izvrsiti_upis==0) {
+		// Šta je odabrao na prijemnom? (pretpostavljamo da godine idu hronološkim redom)
+		$izabrani_studij=$studij;
+		$q520 = myquery("select pp.studij_prvi, pt.ciklus_studija from prijemni_prijava as pp, prijemni_termin as pt where pp.osoba=$student and pp.prijemni_termin=pt.id and pt.akademska_godina=$godina order by pt.datum desc limit 1");
+		if (mysql_num_rows($q520)>0) {
+			$izabrani_studij=mysql_result($q520,0,0);
+			$ciklus = mysql_result($q520,0,1);
+		} else {
+			// Iz parametra studij ćemo probati odrediti ciklus
+			$q530 = myquery("select ts.ciklus from tipstudija as ts, studij as s where s.id=$studij and s.tipstudija=ts.id");
+			if (mysql_num_rows($q530)>0)
+				$ciklus = mysql_result($q530,0,0);
+			else
+				$ciklus=1; // nemamo pojma = prvi ciklus
+		}
+
+		// Lista studija
+		$q550 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
 		while ($r550 = mysql_fetch_row($q550)) {
-			print '<input type="radio" name="novi_studij" value="'.$r550[0].'">'.$r550[1]."<br/>\n";
+			if ($r550[0]==$izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="novi_studij" value="'.$r550[0].'"'.$dodaj.'>'.$r550[1]."<br/>\n";
 		}
 		print "</p>\n\n";
+		$mijenja_studij=1;
+	}
+
+
+	// Izbor studija kod zavrsetka prethodnog
+	$q540 = myquery("select ts.trajanje, s.naziv, ts.ciklus, s.institucija from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
+	if (mysql_num_rows($q540)>0) {
+		$trajanje=mysql_result($q540,0,0);
+		$naziv_studija=mysql_result($q540,0,1);
+		$ciklus=mysql_result($q540,0,2);
+		$institucija=mysql_result($q540,0,3);
+	} else $ok_izvrsiti_upis=0; // nepoznat studij
+
+	// Pošto se akcija "edit" ne bavi određivanjem sljedećeg ciklusa, ona će proslijediti 
+	// prevelik broj semestra
+	if ($semestar>$trajanje && $stari_studij!=0) {
+		// Biramo sljedeći ciklus istog studija po tome što ga nudi ista institucija
+		$ciklus++;
+		$q545 = myquery("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1");
+		if (mysql_num_rows($q545)>0) {
+			$izabrani_studij=mysql_result($q545,0,0);
+		}
+	
+		$q550 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
+		?>
+		<p><b>Izaberite studij koji će student upisati:</b><br/>
+		<?
+		while ($r550 = mysql_fetch_row($q550)) {
+			if ($r550[0]==$izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="novi_studij" value="'.$r550[0].'"'.$dodaj.'>'.$r550[1]."<br/>\n";
+		}
+		print "</p>\n\n";
+
+		// Postavljamo semestar na 1
+		unset($_REQUEST['semestar']);
+		print '<input type="hidden" name="semestar" value="1">'."\n";
+
+		$prijedlog_nacin_studiranja=$nacin_studiranja;
+		$nacin_studiranja=0; // Ponovo se mora izabrati način studiranja
+
 		$ok_izvrsiti_upis=0;
-	} else {
+		$mijenja_studij=1;
+	} else if ($stari_studij!=0) {
 		?>
 		<p>Upis na studij <?=$naziv_studija?>, <?=$semestar?>. semestar:</p>
 		<?
@@ -353,46 +428,116 @@ else if ($akcija == "upis") {
 
 
 
-	if ($semestar%2==1) {
+	// Izbor načina studiranja
+	if ($nacin_studiranja==0) {
+		?>
+		<p><b>Izaberite način studiranja studenta:</b><br/>
+		<?
+		$q560 = myquery("select id, naziv from nacin_studiranja where id!=0"); // 0 = nepoznat status
+		while ($r560 = mysql_fetch_row($q560)) {
+			if ($r560[0]==$prijedlog_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="nacin_studiranja" value="'.$r560[0].'"'.$dodaj.'>'.$r560[1]."<br/>\n";
+		}
+		$ok_izvrsiti_upis=0;
+	}
+
+
 
 	// Da li ima nepoložene predmete sa ranijih semestara?
+	if ($semestar>1 && $semestar%2==1 && $stari_studij!=0) {
 
-	// NAPOMENA: studij je po definiciji nepromjenljiv. Ako dođe do promjene u 
-	// nastavnom planu i programu, MORA se kreirati novi zapis u tabeli 'studij' jer
-	// bi se u suprotnom promjene primijenile retroaktivno sto nije dobro. U praksi,
-	// studenti koji upisu fakultet po odredjenom programu, moraju ga zavrsiti po tom
-	// programu. Stoga, kao bazu za spisak predmeta na studiju koristimo zadnju
-	// akademsku godinu
+	// Uvodimo dva načina izbora predmeta - preko plana studija i preko odslušanih predmeta u prošloj godini
+	// U slučaju da nije definisan plan studija, bira se ovaj drugi način, ali on nije pouzdan zbog komplikacije
+	// oko izbornih predmeta i ECTSova
 
-	$q510 = myquery("select pk.predmet, p.ects, pk.semestar from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
-	$ects_pao=0;
-	$predmeti_pao=array();
-	while ($r510 = mysql_fetch_row($q510)) {
-		$q520 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r510[0]");
-		if (mysql_result($q520,0,0)<1 && !in_array($r510[0], $predmeti_pao)) { 
-			$ects_pao+=$r510[1];
-			if ($r510[2]<$semestar-2) $ects_pao += 1000;
-			array_push($predmeti_pao, $r510[0]);
+	if ($plan_studija>0) {
+		// Prema novom zakonu, uslov za upis je jedan predmet iz prethodne godine
+		$predmeti_pao=array();
+		$stari_predmet=array();
+
+		$q570 = myquery("select predmet, obavezan, semestar from plan_studija where godina_vazenja=$plan_studija and studij=$stari_studij and semestar<$semestar order by semestar");
+		$slusao=array();
+		while ($r570 = mysql_fetch_row($q570)) {
+			$psemestar = $r570[2];
+			if ($r570[1]==1) { // obavezan
+				$predmet = $r570[0];
+
+				$q580 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+				if (mysql_result($q580,0,0)<1) {
+					$q590 = myquery("select ects, naziv from predmet where id=$predmet");
+					$predmeti_pao[$predmet]=mysql_result($q590,0,1);
+					if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
+				}
+			} else { // izborni
+				$is = $r570[0];
+				$slusao_id=0;
+				$polozio=0;
+				$q600 = myquery("select predmet from izborni_slot where id=$is");
+				while ($r600 = mysql_fetch_row($q600)) {
+					$predmet=$r600[0];
+					if ($slusao[$predmet]!="") continue; // kada je isti predmet u dva slota
+
+					// Koji je od ovih slušao?
+					$q610 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet");
+					if (mysql_result($q610,0,0)>0) {
+						$slusao_id=$predmet;
+						$q620 = myquery("select ects, naziv from predmet where id=$predmet");
+						$slusao[$predmet]=mysql_result($q620,0,1);
+					}
+
+					// Da li je polozio?
+					$q630 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+					if (mysql_result($q630,0,0)>0) {
+						$polozio=1; break;
+					}
+				}
+				if ($polozio==0) { // nije položio nijedan od mogućih predmeta u slotu
+					if ($slusao_id>0) $predmeti_pao[$slusao_id]=$slusao[$slusao_id];
+					else {
+						// Ubacićemo nešto u niz $predmeti_pao da se zna da nema uslov
+						// ali u biti ne znamo šta
+						$predmeti_pao[0]="X";
+					}
+					if ($psemestar<$semestar-2) $stari_predmet[$slusao_id]=1;
+				}
+			}
+		}
+
+	} else { // if ($plan_studija>0)
+		// Nemamo plana studija, pokušavamo odrediti šta je student slušao ranijih godina
+		// Nepouzdano zbog kolizija, izbornih predmeta itd.
+
+		$q640 = myquery("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
+		$predmeti_pao=array();
+		while ($r650 = mysql_fetch_row($q650)) {
+			$predmet = $r650[0];
+			$psemestar = $r650[2];
+			$pnaziv = $r650[3];
+			$q660 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+			if (mysql_result($q660,0,0)<1 && !$predmeti_pao[$predmet]) { 
+				$predmeti_pao[$predmet]=$pnaziv;
+				if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
+			}
 		}
 	}
 
-	// Ako zavrsava studij, ne smije pasti nijedan
-	if ($semestar>$trajanje && count($predmeti_pao)>0) {
-		$ects_pao += 1000;
-	}
-
 	// Tabela za unos ocjena na predmetima koje je pao:
-//	if ($ects_pao>6) {
 	if (count($predmeti_pao)>0 && $ok_izvrsiti_upis==0) {
 		?>
 		<p><b>Predmeti iz kojih je student ostao neocijenjen - upišite eventualne ocjene u polja lijevo:</b></p>
 		<table border="0">
 		<?
-		foreach ($predmeti_pao as $pao) {
-			$q530 = myquery("select naziv from predmet where id=$pao");
+		foreach ($predmeti_pao as $id => $naziv) {
+			if ($id==0) {
+				// Ovo je jedini pametan razlog da se pojavi id nula
+				?>
+				<tr><td colspan="2">Student nije slušao nijedan od ponuđenih izbornih predmeta koje je po planu studija trebao slušati.<br/> Pošto ima dovoljan broj ostvarenih ECTS kredita pretpostavićemo da je sve u redu.</td></tr>
+				<?
+				continue;
+			}
 			?>
-			<tr><td><input type="text" size="3" name="pao-<?=$pao?>"></td>
-			<td><?=mysql_result($q530,0,0)?></td></tr>
+			<tr><td><input type="text" size="3" name="pao-<?=$id?>"></td>
+			<td><?=$naziv?></td></tr>
 			<?
 		}
 		?>
@@ -403,54 +548,153 @@ else if ($akcija == "upis") {
 	} // if ($semestar%2 ==1)
 
 
-	// Izborni predmeti
-	$q560 = myquery("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
-	if (mysql_num_rows($q560)>0 && $ns!=0) {
-		// student je upravo promijenio studij, mora prvo izabrati izborne predmete
-		$ok_izvrsiti_upis=0;
+
+
+	// IZBORNI PREDMETI
+
+	// novi studij - određujemo najnoviji plan studija za taj studij
+	if ($ns>0) { 
+		$q670 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+		if (mysql_num_rows($q670)>0)
+			$plan_studija = mysql_result($q670,0,0);
 	}
 
-	// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
-	if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==1) {
-		$q565 = myquery("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-		$ects_suma = mysql_result($q565,0,0);
+	// Nema potrebe gledati dalje ako treba tek izabrati studij
+	if ($mijenja_studij==0) {
+		// Da li je popunjen ugovor o učenju?
+		$q680 = myquery("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
+		$uoupk = array();
+		if (mysql_num_rows($q680)>0) {
+			$uou=mysql_result($q680,0,0);
+			if ($ok_izvrsiti_upis==0) print "<p>Popunjen Ugovor o učenju (ID: $uou).\n";
+			$q690 = myquery("select p.id, p.naziv from ugovoroucenju_izborni as uoui, predmet as p where uoui.ugovoroucenju=$uou and uoui.predmet=p.id");
+			if (mysql_num_rows($q690)>0 && $ok_izvrsiti_upis==0) print " Izabrani predmeti u semestru:";
+			while ($r690 = mysql_fetch_row($q690)) {
+				$predmet = $r690[0];
 
-		// Upisujemo na izborne predmete koji su odabrani
-		foreach($_REQUEST as $key=>$value) {
-			if (substr($key,0,8) != "izborni-") continue;
-			if ($value=="") continue;
-			$predmet = intval(substr($key,8));
-			$q566 = myquery("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
-			$ects_suma += mysql_result($q566,0,0);
-		}
+				if ($ok_izvrsiti_upis==0) print "<br/>* $r690[1]\n";
 
-		if ($ects_suma != 30) {
-			$ok_izvrsiti_upis=0;
-			niceerror("Izabrani izborni predmeti čine sumu $ects ECTS kredita, umjesto 30");
-		}
-	}
-
-	if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==0) {
-		?>
-		<p><b>Izaberite izborne predmete:</b><br/>
-		<?
-		while ($r560 = mysql_fetch_row($q560)) {
-			$q570 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r560[0]");
-			if (mysql_result($q570,0,0)<1) {
-				// Nije polozio/la - koristimo pk
-				?>
-				<input type="checkbox" name="izborni-<?=$r560[2]?>"> <?=$r560[1]?> (<?=$r560[3]?> ECTS)<br/>
-				<?
+				// Da li je već položio predmet
+				$q695 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+				if (mysql_result($q695,0,0)>0) {
+					if ($ok_izvrsiti_upis==0) print " - već položen! Preskačem";
+				}
+	
+				// Tražimo ponudukursa
+				$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+				if (mysql_num_rows($q700)<1) {
+					if ($ok_izvrsiti_upis==0) print " - nije pronađena ponuda kursa!!\n";
+				} else $uoupk[$predmet] = mysql_result($q700,0,0);
 			}
+			if ($ok_izvrsiti_upis==0) print "</p>\n";
+		} else {
+			if ($ok_izvrsiti_upis==0) print "<p><b>Nije popunjen Ugovor o učenju!</b> Izaberite izborne predmete ručno.</p>\n";
 		}
-	}
 
+
+		// Nalazim izborne predmete 
+
+		// Ako postoji plan studija, problem je jednostavan
+		if ($plan_studija>0) {
+			$bio_predmet=array();
+			$q710 = myquery("select predmet from plan_studija where godina_vazenja=$plan_studija and studij=$studij and semestar=$semestar and obavezan=0");
+			while ($r710 = mysql_fetch_row($q710)) {
+				$izborni_slot = $r710[0];
+				$q720 = myquery("select p.id, p.naziv, p.ects from izborni_slot as iz, predmet as p where iz.id=$izborni_slot and iz.predmet=p.id");
+
+				// Prvi prolaz, za provjere
+				$nastavak=0;
+				$ispis_predmet=array();
+				$ispis_predmet_ects = array();
+				while ($r720 = mysql_fetch_row($q720)) {
+					$predmet=$r720[0];
+					if (in_array($predmet, $bio_predmet)) continue;
+					array_push($bio_predmet, $predmet);
+
+					// Da li je položen?
+					$q730 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+					if (mysql_result($q730,0,0)>0) {
+						$nastavak=1; break;
+					}
+
+					// Da li je već izabran u Ugovoru o učenju?
+					if ($uoupk[$predmet]>0) {
+						if ($ok_izvrsiti_upis==0) print '<input type="hidden" name="izborni-'.$uoupk[$predmet].'" value="on">'."\n";
+						$nastavak=1; break;
+					}
+
+					$ispis_predmet[$predmet]=$r720[1];
+					$ispis_predmet_ects[$predmet]=$r720[2];
+				}
+				if ($nastavak==1) continue;
+
+				if ($ok_izvrsiti_upis==1 && count($ispis_predmet)>0) {
+					print "<p><b>Morate izabrati jedan od ovih predmeta.</b> Ako to znači da ste sada izabrali viška predmeta, koristite dugme za povratak nazad.</p>\n";
+					$ok_izvrsiti_upis=0;
+				}
+
+				// Drugi prolaz
+				foreach ($ispis_predmet as $predmet => $pnaziv) {
+					// Odredjujemo ponudu kursa
+					$q740 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+					if (mysql_num_rows($q740)<1) {
+						niceerror("Kurs '$pnaziv' nije ponuđen za studij $naziv_studija, $semestar. semestar, godina $naziv_ak_god");
+						zamgerlog("nije ponudjen predmet pp$predmet, studij s$studij, semestar $semestar, ag$godina", 3); // 3 - greska
+					} else {
+						?>
+						<input type="checkbox" name="izborni-<?=mysql_result($q740,0,0)?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
+						<?
+					}
+				}
+			}
+
+		} else { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
+
+			// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
+			$q560 = myquery("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
+			if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==1) {
+				$q565 = myquery("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
+				$ects_suma = mysql_result($q565,0,0);
+		
+				// Upisujemo na izborne predmete koji su odabrani
+				foreach($_REQUEST as $key=>$value) {
+					if (substr($key,0,8) != "izborni-") continue;
+					if ($value=="") continue;
+					$predmet = intval(substr($key,8));
+					$q566 = myquery("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
+					$ects_suma += mysql_result($q566,0,0);
+				}
+		
+				if ($ects_suma != 30) {
+					$ok_izvrsiti_upis=0;
+					niceerror("Izabrani izborni predmeti čine sumu $ects ECTS kredita, umjesto 30");
+				}
+			}
+		
+			if (mysql_num_rows($q560)>0 && $ok_izvrsiti_upis==0) {
+				?>
+				<p><b>Izaberite izborne predmete:</b><br/>
+				<?
+				while ($r560 = mysql_fetch_row($q560)) {
+					$q570 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r560[0]");
+					if (mysql_result($q570,0,0)<1) {
+						// Nije polozio/la - koristimo pk
+						?>
+						<input type="checkbox" name="izborni-<?=$r560[2]?>"> <?=$r560[1]?> (<?=$r560[3]?> ECTS)<br/>
+						<?
+					}
+				}
+			}
+
+		}
+	}  // if ($stari_studij!=0 && $semestar<=$trajanje)
 
 	// Studentu nikada nije zadat broj indexa (npr. prvi put se upisuje)
-	if ($brindexa<1 && $ok_izvrsiti_upis==0) {
+	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0) {
+		if ($brindexa==0) $brindexa="";
 		?>
 		<p><b>Unesite broj indeksa za ovog studenta:</b><br/>
-		<input type="text" name="novi_brindexa" size="5"></p>
+		<input type="text" name="novi_brindexa" size="10" value="<?=$brindexa?>"></p>
 		<?
 	}
 
@@ -461,61 +705,57 @@ else if ($akcija == "upis") {
 	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
 
 		// Upis u prvi semestar - kandidat za prijemni postaje student!
-		if ($semestar==1) {
-			$q640 = myquery("update privilegije set privilegija='student' where osoba=$student and privilegija='prijemni'");
+		if ($stari_studij==0) {
+			$q640 = myquery("insert into privilegije set privilegija='student', osoba=$student");
+//			$q640 = myquery("update privilegije set privilegija='student' where osoba=$student and privilegija='prijemni'");
 
 			// AUTH tabelu cemo srediti naknadno
-			print "-- $prezime $ime proglašen za studenta<br/>";
+			print "-- $prezime $ime proglašen za studenta<br/>\n";
 		}
 
 		// Novi broj indexa
-		$nbri = intval($_REQUEST['novi_brindexa']);
-		if ($nbri>0) {
+		$nbri = my_escape($_REQUEST['novi_brindexa']);
+		if ($nbri!="") {
 			$q650 = myquery("update osoba set brindexa='$nbri' where id=$student");
-			print "-- broj indeksa postavljen na $nbri<br/>";
+			print "-- broj indeksa postavljen na $nbri<br/>\n";
 		}
 
 		// Upisujemo ocjene za predmete koje su dopisane
-		foreach ($predmeti_pao as $predmet) {
+		foreach ($predmeti_pao as $predmet=>$naziv_predmeta) {
 			$ocjena = intval($_REQUEST["pao-$predmet"]);
-			$q579 = myquery("select naziv from predmet where id=$predmet");
-			$naziv_predmeta = mysql_result($q579,0,0);
 			if ($ocjena>5) {
 				// Upisujem dopisanu ocjenu
-
-				$q580 = myquery("select pk.id, pk.akademska_godina from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
-				if (mysql_num_rows($q580)<1) {
-					niceerror("Nije nikad slušao predmet $predmet!?");
-					return;
-				}
-				$pk = mysql_result($q580,0,0);
-				$ag = mysql_result($q580,0,1);
-				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$pk, ocjena=$ocjena, akademska_godina=$ag");
-				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>";
+				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$ag");
+				zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
+				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>\n";
 			} else {
 				// Student prenio predmet
+				if ($predmet==0) continue; // nije slušao nijedan od mogućih izbornih predmeta
+				// Provjera broja ECTS kredita je obavljena na početnoj strani (akcija "edit")
+				// pa ćemo pretpostaviti sve najbolje :)
 
+				// Moramo upisati studenta u istu ponudu kursa koju je ranije slušao
 				$q592 = myquery("select pk.studij,pk.semestar from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
 				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
 
-				upisi_studenta_na_predmet($student, mysql_result($q594,0,0));
-				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>";
+				upis_studenta_na_predmet($student, mysql_result($q594,0,0));
+				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>\n";
 			}
 		}
 
 
 		// Upisujemo studenta na novi studij
-		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina");
+		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=0, plan_studija=$plan_studija");
 
 		// Upisujemo na sve obavezne predmete na studiju
 		$q610 = myquery("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		while ($r610 = mysql_fetch_row($q610)) {
 			// Da li ga je vec polozio
 			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
-			if (mysql_result($q615,0,0)==0) {
+			if (mysql_result($q615,0,0)<1) {
 				upis_studenta_na_predmet($student, $r610[0]);
 			} else {
-				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>";
+				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>\n";
 			}
 		}
 
@@ -523,9 +763,9 @@ else if ($akcija == "upis") {
 		foreach($_REQUEST as $key=>$value) {
 			if (substr($key,0,8) != "izborni-") continue;
 			if ($value=="") continue;
-			$predmet = intval(substr($key,8));
-			upis_studenta_na_predmet($student, $predmet);
-			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
+			$ponudakursa = intval(substr($key,8)); // drugi dio ključa je ponudakursa
+			upis_studenta_na_predmet($student, $ponudakursa);
+			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
 			print "-- Student upisan u izborni predmet ".mysql_result($q635,0,0)."<br/>";
 		}
 		
@@ -540,7 +780,7 @@ else if ($akcija == "upis") {
 		</form>
 		<?
 	}
-}
+} // $akcija == "upis"
 
 
 
