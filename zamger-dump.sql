@@ -1,4 +1,4 @@
-﻿-- phpMyAdmin SQL Dump
+-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -1058,6 +1058,42 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 (1, 4),
 (1, 5),
 (1, 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ugovoroucenju`
+--
+
+CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
+  `id` int(11) NOT NULL auto_increment,
+  `student` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(5) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+
+--
+-- Dumping data for table `ugovoroucenju`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ugovoroucenju_izborni`
+--
+
+CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
+  `ugovoroucenju` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `ugovoroucenju_izborni`
+--
+
 
 -- --------------------------------------------------------
 

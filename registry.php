@@ -23,6 +23,8 @@ array("student/prosjeci", "Kalkulator prosjeka ocjena", "Kalkulator prosjeka", "
 array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
 array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
+array("student/ugovoroucenju", "Ugovor o učenju", "Ugovor o učenju", "S", "1", "0"),
+array("student/ugovoroucenjupdf", "Ugovor o učenju (PDF)", "Ugovor o učenju (PDF)", "S", "2", "0"),
 
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),

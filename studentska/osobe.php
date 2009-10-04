@@ -1000,6 +1000,17 @@ else if ($akcija == "edit") {
 		}
 
 
+
+		// UPIS U SLJEDEĆU AK. GODINU
+
+		// Aktivni moduli
+		$modul_uou=$modul_kolizija=0;
+		foreach ($registry as $r) {
+			if ($r[0]=="student/ugovoroucenju") $modul_uou=1;
+			if ($r[0]=="student/kolizija") $modul_kolizija=1;
+		}
+
+
 		if ($nova_ak_god!=0) { // Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
 
 
@@ -1045,7 +1056,7 @@ else if ($akcija == "edit") {
 
 		} else {
 			// Upis na neparni semestar - da li je student dao uslov?
-			$ima_uslov==0;
+			$ima_uslov=0;
 			
 			// Tekst za ono što upisuje
 			if ($semestar==$studij_trajanje) {
@@ -1117,6 +1128,26 @@ else if ($akcija == "edit") {
 		}
 
 		} // if ($q235... else ... -- nije vec upisan nigdje
+
+			// Ugovor o učenju
+			if ($modul_uou==1) {
+				$q270 = myquery("select s.naziv, u.semestar from ugovoroucenju as u, studij as s where u.student=$osoba and u.akademska_godina=$nova_ak_god and u.studij=s.id order by u.semestar");
+				if (mysql_num_rows($q270)>0) {
+					$nazivstudijauu=$semestaruu="";
+					while ($r270 = mysql_fetch_row($q270)) {
+						$nazivstudijauu=$r270[0];
+						$semestaruu.=$r270[1].". ";
+					}
+					?>
+					<p>Student je popunio/la <b>Ugovor o učenju</b> za <?=$nazivstudijauu?>, <?=$semestaruu?>semestar</p>
+					<?
+				} else {
+					?>
+					<p>Student NIJE popunio/la <b>Ugovor o učenju</b> za sljedeću akademsku godinu.</p>
+					<?
+				}
+			}
+
 		} // if (mysql_num_rows($q230  -- da li postoji ak. god. iza aktuelne?
 
 		// Upis studenta na predmet
