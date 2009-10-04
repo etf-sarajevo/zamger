@@ -905,7 +905,7 @@ else if ($akcija == "edit") {
 		<?
 
 		// Trenutno upisan na semestar:
-		$q220 = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv, s.id, s.zavrsni_semestar from student_studij as ss, studij as s, akademska_godina as ag where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina order by ag.naziv desc");
+		$q220 = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv, s.id, ts.trajanje from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id order by ag.naziv desc");
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
@@ -922,12 +922,13 @@ else if ($akcija == "edit") {
 			}
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
-			} else if ($r220[1]>$ikad_semestar) {
+			} else if ($r220[2]>$ikad_ak_god || ($r220[2]==$ikad_ak_god && $r220[1]>$ikad_semestar)) {
 				$ikad_studij=$r220[0];
 				$ikad_semestar=$r220[1];
 				$ikad_ak_god=$r220[2];
 				$ikad_ak_god_naziv=$r220[3];
 				$ikad_studij_id=$r220[4];
+				$ikad_studij_trajanje=$r220[5];
 			}
 		}
 
@@ -957,25 +958,40 @@ else if ($akcija == "edit") {
 
 		$nova_ak_god=0;
 
-		print "<p align=\"left\">Trenutno (<b>$naziv_ak_god</b>) upisan/a na:<br/>\n";
+		?>
+		<p align="left">Trenutno (<b><?=$naziv_ak_god?></b>) upisan/a na:<br/>
+		<?
 		if ($studij=="0") {
-			print "Nije upisan/a niti u jedan semestar!</p>";
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nije upisan/a niti u jedan semestar!</p>
+			<?
 
 			// Proglasavamo zadnju akademsku godinu koju je slusao za tekucu
 			// a tekucu za novu
 			$nova_ak_god = $id_ak_god;
 			$naziv_nove_ak_god = $naziv_ak_god;
 			if ($ikad_semestar != 0) {
-				$id_ak_god = $ikad_ak_god;
-				$naziv_ak_god = $ikad_ak_god_naziv;
+				// Ako je covjek upisan u buducu godinu, onda je u toku upis
+				if ($ikad_ak_god>$id_ak_god) {
+					$nova_ak_god=$ikad_ak_god;
+					$naziv_nove_ak_god=$ikad_ak_god_naziv;
+					$semestar=$ikad_semestar-1; // da se ne bi ispisivalo da drugi put sluša
+				} else {
+					$id_ak_god = $ikad_ak_god;
+					$naziv_ak_god = $ikad_ak_god_naziv;
+					$semestar = $ikad_semestar;
+				}
 				// Zelimo da se provjeri ECTS:
 				$studij = $ikad_studij;
 				$studij_id = $ikad_studij_id;
-				$semestar = $ikad_semestar;
+				$studij_trajanje = $ikad_studij_trajanje;
+
 			}
 
 		} else {
-			print "<b>&quot;$studij&quot;</b>, $semestar. semestar ($puta. put)</p>";
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put)</p>
+			<?
 			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
 			if (mysql_num_rows($q230)>0) {
 				$nova_ak_god = mysql_result($q230,0,0);
@@ -984,98 +1000,116 @@ else if ($akcija == "edit") {
 		}
 
 
-		if ($nova_ak_god!=0) {
+		if ($nova_ak_god!=0) { // Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
 
-		// Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
-		?><p>Upis u akademsku <b><?=$naziv_nove_ak_god?></b> godinu:</p><?
+
+		?>
+		<p>Upis u akademsku <b><?=$naziv_nove_ak_god?></b> godinu:<br />
+		<?
 
 
 		// Da li je vec upisan?
-		$q235 = myquery("select s.naziv from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god");
+		$q235 = myquery("select s.naziv, ss.semestar, s.id from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god order by ss.semestar desc");
 		if (mysql_num_rows($q235)>0) {
-			?><p>Student je upisan na studij: <b><?=mysql_result($q235,0,0)?></b></p><?
-		} else {
+			$novi_studij=mysql_result($q235,0,0);
+			$novi_semestar=mysql_result($q235,0,1);
+			$novi_studij_id=mysql_result($q235,0,2);
+			if ($novi_semestar<=$semestar && $novi_studij==$studij) $nputa=$puta+1; else $nputa=1;
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je upisan na studij: <b><?=$novi_studij?></b>, <?=$novi_semestar?>. semestar (<?=$nputa?>. put).</p><?
 
+		} else {
 
 		// Ima li uslove za upis
 		if ($semestar==0 && $ikad_semestar==0) {
 			// Upis na prvu godinu -- FIXME: pretpostavka je da je prva godina ID 1
 
-			?><p>Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p>
-			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=1&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p><?
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p>
+			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=1&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p>
+			<?
 
 		} else if ($studij=="0") {
 			if ($ikad_semestar%2==0) $ikad_semestar--;
 			// Trenutno nije upisan na fakultet, ali upisacemo ga
-			?><p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$ikad_studij_id?>&semestar=<?=$ikad_semestar?>&godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$ikad_studij?>, <?=$ikad_semestar?>. semestar.</a></p>
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$ikad_studij_id?>&semestar=<?=$ikad_semestar?>&godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$ikad_studij?>, <?=$ikad_semestar?>. semestar.</a></p>
 			<?
 
 		} else if ($semestar%2!=0) {
 			// S neparnog na parni ide automatski
-			?><p>Student je stekao uslove za upis na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar</p>
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao uslove za upis na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar</p>
 			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar.</a></p>
 			<?
 
 		} else {
-			// Sumiramo ECTS bodove
-			$suma_ects=0;
-			$pao="";
-			$q240 = myquery("select pk.id,p.id,p.naziv,p.ects from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$id_ak_god and (pk.semestar=$semestar or pk.semestar=".($semestar-1).")");
-			while ($r240 = mysql_fetch_row($q240)) {
-				$q250 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r240[1]");
-				if (mysql_result($q250,0,0)>0) {
-					$suma_ects += $r240[3];
-				}
-			}
-
-			// Provjeravamo nepoložene ispite sa prve godine - FIXME
-			if ($semestar>=4) {
-				$stara_akgod = $id_ak_god - ($semestar-2)/2;
-				$q260 = myquery("select pk.id,p.id,p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=1 and pk.akademska_godina=$stara_akgod"); // 1 = Prva godina studija
-				while ($r260 = mysql_fetch_row($q260)) {
-					$q270 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r260[1]");
-					if (mysql_result($q270,0,0)<1) {
-						$pao = " - nepoložen predmet sa prve godine studija.";
-					}
-				}
-			}
-
-			// Provjeravamo nepoložene predmete s viših godina!?
-			for ($i=4; $i<=$semestar-2; $i+=2) {
-				$stara_akgod = $id_ak_god - ($semestar-$i)/2;
-				$q280 = myquery("select pk.id,p.id,p.naziv from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij_id and pk.akademska_godina=$stara_akgod"); // 1 = Prva godina studija
-				while ($r280 = mysql_fetch_row($q280)) {
-					$q290 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r280[1]");
-					if (mysql_result($q290,0,0)<1) {
-						$pao = " - nepoložen predmet sa ".($i/2).". godine $r280[2]";
-					}
-				}
-
-			}
-
-			// Koji je sljedeci studij?
+			// Upis na neparni semestar - da li je student dao uslov?
+			$ima_uslov==0;
+			
+			// Tekst za ono što upisuje
 			if ($semestar==$studij_trajanje) {
-				// POSEBAN SLUCAJ - prva godina studija ETF - FIXME
-				if ($studij=="Prva godina studija") { 
-					$sta="drugu godinu studija";
-					$uslov_ects = 54;
-				} else {
-					$sta = "sljedeći nivo studija";
-					$uslov_ects = 60;
-				}
-			}
-			else {
+				$sta = "sljedeći ciklus studija";
+			} else {
 				$sta = "&quot;$studij&quot;, ".($semestar+1).". semestar";
-				$uslov_ects = 60; // Nema prenosenja predmeta na visim godinama
 			}
+
+
+			// Pokusacemo odrediti uslov na osnovu polozenih predmeta...
+
+			// Od predmeta koje je slušao, koliko je pao?
+			$q250 = myquery("select distinct pk.predmet, p.ects, pk.semestar, pk.obavezan, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$osoba and sp.predmet=pk.id and pk.semestar<=$semestar and pk.studij=$studij_id and pk.predmet=p.id order by pk.semestar");
+			$ects_pao=$predmeti_pao=$izborni_pao=$nize_godine=$ects_polozio=0;
+			while ($r250 = mysql_fetch_row($q250)) {
+				$q260 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r250[0]");
+				if (mysql_result($q260,0,0)<1) { 
+					if ($r250[3]==1) { // Obavezni predmeti se ne smiju pasti!
+						$ects_pao+=$r250[1];
+
+						$predmeti_pao++;
+						if ($r250[2]<$semestar-1) $nize_godine++;
+					} else {
+						$izborni_pao++; // Za izborne cemo uporediti sumu ECTSova kasnije
+					}
+				} else
+					$ects_polozio += $r250[1];
+			}
+
+			// USLOV ZA UPIS
+			// Prema aktuelnom zakonu može se prenijeti tačno jedan predmet, bez obzira na ECTS
+			// No za sljedeći ciklus studija se ne može prenijeti ništa
+			if ($semestar==$studij_trajanje && $predmeti_pao==0 && ($ects_pao+$ects_polozio)%60==0) {
+				// Ako je student pao izborni predmet pa polozio drugi umjesto njega, vazice
+				// ($ects_pao+$ects_polozio)%60==0
+				// Zato sto ects_pao = obavezni predmeti tako da ostaju samo izborni predmeti
+				$ima_uslov=1;
+
+			} else if ($semestar<$studij_trajanje && $predmeti_pao<=1) {
+				// Provjeravamo broj nepolozenih izbornih predmeta i razliku ects-ova
+				if ($predmeti_pao==0 && ($ects_pao+$ects_polozio)%60<7) { // nema izbornog predmeta sa 7 ili više kredita
+					$ima_uslov=1;
+				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0) {
+					$ima_uslov=1;
+				} else {
+					if ($predmeti_pao==1) $objasnjenje="nepoložen jedan obavezan i jedan ili više izborni predmet";
+					else $objasnjenje="nepoloženo dva ili više izbornih predmeta";
+					$objasnjenje .= ", nedostaje ".(60-$ects_polozio%60)." ECTS kredita";
+				}
+
+			} else {
+				$objasnjenje=($predmeti_pao+$izborni_pao)." nepoloženih predmeta, nedostaje ".(60-$ects_polozio%60)." ECTS kredita";
+			}
+
 
 			// Konačan ispis
-			if ($suma_ects>=$uslov_ects && $pao=="") {
-				?><p>Student je stekao/la uslove za upis na <?=$sta?></p>
+			if ($ima_uslov) {
+				?>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao/la uslove za upis na <?=$sta?></p>
 				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
 				<?
 			} else {
-				?><p>Student NIJE stekao/la uslove za <?=$sta?><br/>(ukupno skupljeno <?=$suma_ects?> ECTS bodova<?=$pao?>)</p>
+				?>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za <?=$sta?><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<?=$objasnjenje?>)</p>
 				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar-1)?>&godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($puta+1)?>. put).</a></p>
 				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
 				<?
