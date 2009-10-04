@@ -688,6 +688,7 @@ CREATE TABLE IF NOT EXISTS `promjena_odsjeka` (
   `osoba` int(11) NOT NULL,
   `iz_odsjeka` int(11) NOT NULL,
   `u_odsjek` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
