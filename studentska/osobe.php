@@ -704,8 +704,13 @@ else if ($akcija == "upis") {
 
 		// Upis u prvi semestar - kandidat za prijemni postaje student!
 		if ($stari_studij==0) {
-			$q640 = myquery("insert into privilegije set privilegija='student', osoba=$student");
-//			$q640 = myquery("update privilegije set privilegija='student' where osoba=$student and privilegija='prijemni'");
+			// Ukidamo privilegiju "prijemni" ako je student imao
+			$q640 = myquery("delete from privilegije where osoba=$student and privilegija='prijemni'");
+
+			// Dodajemo privilegiju "student" samo ako je student nije već imao
+			$q643 = myquery("select count(*) from privilegije where osoba=$student and privilegija='student'");
+			if (mysql_result($q643,0,0)<1)
+				$q646 = myquery("insert into privilegije set osoba=$student, privilegija='student'");
 
 			// AUTH tabelu cemo srediti naknadno
 			print "-- $prezime $ime proglašen za studenta<br/>\n";
@@ -832,11 +837,11 @@ else if ($akcija == "ispis") {
 		while ($r530 = mysql_fetch_row($q530)) {
 			$predmet = $r530[0];
 			ispis_studenta_sa_predmeta($osoba, $predmet, $ak_god);
-			zamgerlog("ispisujem studenta u$osoba sa predmeta pp$predmet (promjena odsjeka)",4); // 4 - audit
+			zamgerlog("ispisujem studenta u$osoba sa predmeta pp$predmet (ispis sa studija)",4); // 4 - audit
 		}
 		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god");
 		nicemessage("Ispisujem studenta sa studija $naziv_studija i svih predmeta koje trenutno sluša.");
-		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god) (promjena odsjeka)", 4);
+		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god)", 4);
 	} else {
 		?>
 		<p>Student će biti ispisan sa sljedećih predmeta:<ul>
