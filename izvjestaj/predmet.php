@@ -113,6 +113,10 @@ if ($sastavi_grupe==0) {
 	}
 }
 
+// ID grupe "[Svi studenti]" trebamo saznati iz baze
+$q25 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+$id_virtualne_grupe = mysql_result($q25,0,0);
+
 $spisak_grupa[0] = "[Bez grupe]"; // Dodajemo "nultu grupu" kojoj svi pripadaju
 
 
@@ -169,7 +173,7 @@ if ($imaintegralni==1 && $broj_ispita<2) {
 	// no php ne podržava goto :(
 	$broj_ispita=2;
 	// Ovo ce i dalje biti deformisano, ali nesto manje deformisano nego ranije
-} 
+}
 
 
 
@@ -316,8 +320,12 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			$cas_id_array = array();
 			$casova = 0;
 			$prisustvo_zaglavlje = "";
-		
-			$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum");
+
+			if ($grupa_id!=0) 
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum");
+			else
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum");
+
 			while ($r110 = mysql_fetch_row($q110)) {
 				$cas_id = $r110[0];
 				list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r110[1]);
