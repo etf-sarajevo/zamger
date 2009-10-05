@@ -38,12 +38,15 @@ else
 	print "<h1>Dobro došao, ".genitiv($ime,"M")."</h1>";
 
 
-// Sakrij raspored ako ga nema u registry-ju
-$nasao=0;
+// Sakrij module ako ih nema u registry-ju
+$modul_raspored=$modul_anketa=0;
 foreach ($registry as $r) {
-	if ($r[0]=="common/raspored") { $nasao=1; break; }
+	if ($r[0]=="common/raspored") $modul_raspored=1;
+	if ($r[0]=="student/anketa") $modul_anketa=1;
 }
-if ($nasao==1) {
+
+// Prikazujem raspored
+if ($modul_raspored==1) {
 	require "common/raspored.php";
 	common_raspored("student");
 }
@@ -92,13 +95,14 @@ while ($r17 = mysql_fetch_row($q17)) {
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
 
-//anketa
-$q19a = myquery("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
-$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa where aktivna = 1");
+// Anketa
+// Ima li ovo smisla? Ako natrpamo 5 poruka u obavjestenja, nece se nista drugo prikazati :(
+/*if ($modul_anketa) {
+	$q19a = myquery("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
+	$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa where aktivna = 1");
 
-// provjeravamo da li postoji aktivna anketa
-if (mysql_num_rows($q19b)!= 0){
-		
+	// provjeravamo da li postoji aktivna anketa
+	if (mysql_num_rows($q19b)!= 0) {
 		$q19b_vrijeme=mysql_result($q19b,0,0);
 		
 		while ($r19 = mysql_fetch_row($q19a)) {
@@ -106,7 +110,8 @@ if (mysql_num_rows($q19b)!= 0){
 			$code_poruke["l".$r19[0]] = "<b>$r19[1]:</b><a href=\"?sta=student/anketa&predmet=$r19[2]\"> Molimo ispunite anketu. </a> <br/><br/>\n";
 			$vrijeme_poruke["l".$r19[0]] = $q19b_vrijeme;
 		}
-}
+	}
+}*/
 
 
 
