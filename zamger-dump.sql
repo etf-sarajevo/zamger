@@ -913,7 +913,8 @@ CREATE TABLE IF NOT EXISTS `studentski_modul` (
 INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUES
 (1, 'student/moodle', 'Materijali (Moodle)', 1),
 (2, 'student/zadaca', 'Slanje zadaće', 0),
-(3, 'izvjestaj/predmet', 'Dnevnik', 1);
+(3, 'izvjestaj/predmet', 'Dnevnik', 1),
+(4, 'student/projekti', 'Projekti', 0);
 
 -- --------------------------------------------------------
 
