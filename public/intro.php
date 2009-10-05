@@ -37,7 +37,7 @@ function public_intro() {
 
 
 function login_forma() {
-	global $greska;
+	global $greska, $registry;
 
 	// Redirekciju na isti URI vršimo samo ako je greška = istek sesije
 	$uri=$_SERVER['PHP_SELF'];
