@@ -1,278 +1,306 @@
-﻿<?php
+<?
+
 // STUDENT/PROJEKTI - studenski modul za prijavu na projekte i ulazak u projektnu stranu projekta
-require_once("lib/projekti.php");
-function student_projekti()
-{
+
+// v4.0.9.0 (2009/07/08) - originalna verzija by Haris Agic
+// v4.0.9.1 (2009/10/04) - Dodana provjera da li su definisani predmetni parametri; dodana poruka ako nema definisanih timova; uljepsan kod, izbaceno viska provjera primljenih varijabli, importovan kod iz lib/projekti
+
+function student_projekti() {
+
+	require_once("lib/projekti.php");
+
 	//debug mod aktivan
 	global $userid, $user_student;
+
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);	
 	
-	if ($user_student == false)
-	{
-		//hijack attempt?
-		zamgerlog("korisnik u$userid pokušao pristupiti modulu student/projekti na predmetu p$predmet iako nije student", 3);		
-		return;
-	}
-
 	// Da li student slusa predmet?
-	$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (mysql_num_rows($q17)<1) 
-	{
+	$q10 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (mysql_num_rows($q10)<1) {
 		zamgerlog("student ne slusa predmet pp$predmet", 3);
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
 	
-	$linkPrefix = "?sta=student/projekti&predmet=$predmet&ag=$ag";
-	$action 	= $_REQUEST['action'];
-	$id			= intval($_REQUEST['id']);
+	$linkprefix = "?sta=student/projekti&predmet=$predmet&ag=$ag";
+	$akcija = $_REQUEST['akcija'];
+	$id = intval($_REQUEST['id']);
 
-	//bad userid
-	if (!is_numeric($userid) || $userid <=0)
-	{
-		zamgerlog("korisnik sa lošim ID koji nije integer ili je <=0 pokušao pristupiti modulu student/projekti na predmetu p$predmet", 3);				
-		return;	
+
+
+	// KORISNI UPITI
+
+	// Spisak svih projekata
+	$q20 = myquery("SELECT id, naziv, opis, vrijeme FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY vrijeme DESC");
+	$svi_projekti = array();
+	while ($r20 = mysql_fetch_assoc($q20))
+		$svi_projekti[] = $r20;
+
+	// Broj članova po projektu
+	$broj_studenata = array();
+	$q30 = myquery("select p.id, count(sp.student) FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$userid AND p.predmet=$predmet AND p.akademska_godina=$ag GROUP BY sp.projekat");
+	while ($r30 = mysql_fetch_row($q30))
+		$broj_studenata[$r30[0]]=$r30[1];
+
+	// Da li je student upisan u neki projekat?
+	$clan_projekta = 0;
+	$q40 = myquery("SELECT p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$userid AND p.predmet=$predmet AND p.akademska_godina=$ag LIMIT 1");
+	if (mysql_num_rows($q40)>0) 
+		$clan_projekta = mysql_result($q40,0,0);
+
+	// Parametri projekata na predmetu
+	$q50 = myquery("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
+	if (mysql_num_rows($q50)<1) {
+		niceerror("Predmetni nastavnik nije podesio parametre projekata.");
+		print "Prijavljivanje na projekte za sada nije moguće. Obratite se predmetnom nastavniku ili asistentu za dodatne informacije.";
+		return;
 	}
-?>
-<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
-<?php
-	
-	
-	if (!isset($action))
-	{
-	
-		$predmetParams = getPredmetParams($predmet, $ag);
-	
-?>
 
-<h2>Projekti</h2>
-<span class="notice">
-Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
-    <ul>
-        <li>Broj timova: <?php
-        	if ($predmetParams[min_timova] == $predmetParams[max_timova])
-				echo 'tačno ' . $predmetParams[max_timova];
-			else
-				echo 'od ' . $predmetParams[min_timova] . ' do ' . $predmetParams[max_timova];
-			?></li>
-        <li>Broj članova tima: <?php
-        	if ($predmetParams[min_clanova_tima] == $predmetParams[max_clanova_tima])
-				echo 'tačno ' . $predmetParams[max_clanova_tima];
-			else
-				echo 'od ' . $predmetParams[min_clanova_tima] . ' do ' . $predmetParams[max_clanova_tima];
-			?></li>
-    </ul>
-    Prijavite se na projekat i automatski se učlanjujete u projektni tim ili kreirate novi tim. Da biste promijenili tim, prijavite se u drugi tim.
-</span>	<br />
-<?php
-  	if ($predmetParams[zakljucani_projekti] == 1)
-		{
-?>
-	<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
-<?php
-		} //locked projects
-		else
-		{
-?>
-	<span class="noticeGreen">Moguće su prijave u projetne timove. Nastavnik još uvijek nije kompletirao prijave.</span>	
+	$min_timova = mysql_result($q50,0,0);
+	$max_timova = mysql_result($q50,0,1);
+	$min_clanova_tima = mysql_result($q50,0,2);
+	$max_clanova_tima = mysql_result($q50,0,3);
+	$zakljucani_projekti = mysql_result($q50,0,4);
 
-<?php
+
+	// Da li je dostignut limit broja timova?
+	$brtimova=0;
+	foreach ($svi_projekti as $projekat) {
+		if ($broj_studenata[$projekat[id]]>0) $brtimova++;
+	}
+	$limit_timova=false;
+	if ($brtimova>=$max_timova) {
+		$limit_timova=true;
+
+		// No ako je student trenutno član projekta sa samo jednim članom,
+		// istupanjem iz tima otvoriće se mogućnost kreiranja novog tima
+		if ($clan_projekta>0 && $broj_studenata[$clan_projekta]==1) $limit_timova=false;
+	}
+
+
+	// Stylesheet... čemu?
+	?>
+	<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+	<?
+
+
+	// Akcije
+
+	if ($akcija == 'prijava') {
+		$projekat = intval($_REQUEST['projekat']);
+
+		// Da li je projekat sa ovog predmeta?
+		$nasao=false;
+		foreach ($svi_projekati as $proj) {
+			if ($proj[id]==$projekat) { $nasao=true; break; }
 		}
-?>
-<?php
-	
-	
-	$teamLimitReached = isTeamLimitReachedForPredmet($predmet, $ag);
-		
-	$actualProjectForUser = getActualProjectForUserInPredmet($userid, $predmet, $ag);
-	
-	if (!empty($actualProjectForUser))
-	{
-		//user already in a project on this predmet
-		$nMembers = getCountMembersForProject($actualProjectForUser[id]);
-		//after I leave actual team, I will be able to create a new project team because this one will be empty...
-		if ($nMembers -1 == 0)
-		{
-			//reset the team limit
-			$teamLimitReached = false;
-		}	
-	}
-	$projects = array();
-	if ($predmetParams[zakljucani_projekti] == 1)
-	{
-		if (!empty($actualProjectForUser))
-			$projects[] = $actualProjectForUser;
-	}
-	else
-		$projects = fetchProjects($predmet, $ag);
-	
-	foreach ($projects as $project)
-	{
 
-		$members = fetchProjectMembers($project[id]);
-		
-		$newTeamDeny = isProjectEmpty($project[id]) == true && $teamLimitReached == true;
+		if ($nasao==false) {
+			niceerror("Nepoznat projekat!");
+			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji nije sa predmeta pp$predmet", 3);
+		} 
 
-		
-?>
-<h3><?=filtered_output_string($project['naziv'])?></h3>
-<div class="links">
-            <ul class="clearfix">
-        <?php  
-		if ($predmetParams['zakljucani_projekti'] == 0) //open for applications
-		{
-		   if (!empty($actualProjectForUser) && $actualProjectForUser[id] == $project[id])
-		   {
-		?>
-				<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=getout"?>">Odustani od prijave na ovom projektu</a></li>	
-		<?php 
-		   }
-		   	elseif(isProjectFull($project[id], $predmet, $ag) == true)
-			{
-		?>
-        		<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
-        <?php
+		else if ($zakljucani_projekti) {
+			niceerror("Zaključane su prijave na projekte.");
+			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji je zaključan na predmetu pp$predmet", 3);
+		}
+
+		else if ($broj_studenata[$projekat]>=$max_clanova_tima) {
+			niceerror("Dosegnut je limit broja članova po projektu.");
+			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji je popunjen", 3);
+		}
+
+		else if ($broj_studenata[$projekat]==0 && $limit_timova) {
+			niceerror("Dosegnut je maksimalan broj timova. Ne možete kreirati novi tim.");
+			zamgerlog("student u$userid pokusao da se kreira novi tim na predmetu pp$predmet cime je dosegnut limit", 3);
+		}
+
+		else {
+			// Upisujemo u novi projekat
+			$q110 = myquery("INSERT INTO student_projekat SET student=$userid AND projekat=$projekat");
+			nicemessage("Uspješno ste prijavljeni na projekat");
+			// Ispisujemo studenta sa postojećih projekata
+			if ($clan_projekta>0) {
+				$q100 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
+				nicemessage("Odjavljeni ste sa starog projekta");
 			}
-			else
-			{
-				if ($newTeamDeny == false)
-				{
-					if (empty($actualProjectForUser))
-					{
+		}
+
+		print '<a href="'.$linkprefix.'">Povratak.</a>';
+		return;
+	} // akcija == prijava
+
+
+	if ($akcija == 'odjava') {
+		$projekat = intval($_REQUEST['projekat']);
+		
+		// Da li je projekat sa ovog predmeta?
+		$nasao=false;
+		foreach ($svi_projekati as $proj) {
+			if ($proj[id]==$projekat) { $nasao=true; break; }
+		}
+
+		if ($nasao==false) {
+			niceerror("Nepoznat projekat!");
+			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat koji nije sa predmeta pp$predmet", 3);
+		}
+
+		else if ($zakljucani_projekti) {
+			niceerror("Zaključane su liste timova za projekte. Odustajanja nisu dozvoljena.");
+			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat koji je zaključan na predmetu pp$predmet", 3);
+		}
+
+		else if ($projekat != $clan_projekta) {
+			niceerror("Niste prijavljeni na ovaj projekat");
+			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat na koji nije prijavljen", 3);
+		}
+
+		else {
+			$q120 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
+			nicemessage("Uspješno ste odjavljeni sa projekta");
+		}
+
+		print '<a href="'.$linkprefix.'">Povratak.</a>';
+		return;
+	} // akcija == odjava
+
+
+	if ($akcija == 'projektnastranica') {
+		require_once('common/projektneStrane.php');
+		common_projektneStrane();
+		return;
+	} //akcija == projektnastranica
+
+
+	// Glavni ekran
+	?>
+	<h2>Projekti</h2>
+	<span class="notice">
+	Nastavnik je definisao sljedeće parametre svih projekata na ovom predmetu:
+	<ul>
+		<li>Broj timova: <?
+			if ($min_timova == $max_timova) print "tačno $max_timova";
+			else print "od $min_timova do $max_timova";
+		?></li>
+		<li>Broj članova tima: <?
+			if ($min_clanova_tima == $max_clanova_tima) print "tačno $max_clanova_tima";
+			else print "od $min_clanova_tima do $max_clanova_tima";
+		?></li>
+	</ul>
+	Prijavite se na projekat i automatski se učlanjujete u projektni tim ili kreirate novi tim. Da biste promijenili tim, prijavite se u drugi tim.
+	</span><br /><?
+
+
+	// Ispis - zakljucani projekti
+
+	if ($zakljucani_projekti == 1) {
 		?>
-        		<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat</a></li>       	
-		<?php
-					}
+		<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
+		<?
+	} else {
+		?>
+		<span class="noticeGreen">Moguće su prijave u projetne timove. Nastavnik još uvijek nije kompletirao prijave.</span>	
+		<?
+	}
+
+
+	// Ako je upisivanje zaključano, ispisaćemo samo onaj projekat u koji je student upisan
+	$projekti_za_ispis = array();
+	if ($zakljucani_projekti==1 && $upisan_u_projekat>0) {
+		foreach ($svi_projekti as $projekat) {
+			if ($projekat[id]==$upisan_u_projekat)
+				$projekti_za_ispis[] = $projekat;
+		}
+	} else 
+		$projekti_za_ispis = $svi_projekti;
+
+
+	// Nema projekata
+	if (count($svi_projekti)==0) {
+		nicemessage("Predmetni nastavnik još uvijek nije definisao projekte na ovom predmetu. Imajte strpljenja.");
+	}
+
+
+	// Ispis projektnih kocki
+	foreach ($projekti_za_ispis as $projekat) {
+
+		?>
+		<h3><?=$projekat['naziv']?></h3>
+		<div class="links">
+			<ul class="clearfix">
+		<?
+
+		if ($zakljucani_projekti == 0) {
+			if ($projekat[id]==$upisan_u_projekat) {
+				?>
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=odjava"?>">Odustani od prijave na ovom projektu</a></li>	
+				<?
+
+			} else if ($broj_studenata[$projekat[id]]>=$max_clanova_tima) {
+				?>
+				<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
+				<?
+
+			} else if ($broj_studenata[$projekat[id]]==0 && $limit_timova) {
+				?>
+				<div style="color:red; margin-top: 10px;">Limit za broj timova dostignut. Ne možete kreirati novi tim. Prijavite se na projekte u kojima ima mjesta.</div>	
+				<?
+
+			} else if ($upisan_u_projekat==0) {
+				?>
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=prijava"?>">Prijavi se na ovaj projekat</a></li>
+				<?
+
+			} else {
+				?>	
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=prijava"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>   	
+				<?
+			}
+
+		} else { // Projekti su zaključani
+			?>
+			<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=projektnastranica"?>">Projektna stranica</a></li>
+			<?
+		}
+
+		// Ispis ostalih podataka o projektu
+		?>
+			</ul>
+		</div>	
+		<table class="projekti" border="0" cellspacing="0" cellpadding="2">
+			<tr>
+				<th width="200" align="left" valign="top" scope="row">Naziv</th>
+				<td width="490" align="left" valign="top"><?=$projekat['naziv']?></td>
+			</tr>
+			<tr>
+				<th width="200" align="left" valign="top" scope="row">Prijavljeni tim / student</th>
+				<td width="490" align="left" valign="top">
+					<?
+					// Spisak članova projekta
+					$q200 = myquery("select o.ime, o.prezime, o.brindexa from osoba as o, student_projekat as sp where sp.student=o.id and sp.projekat=".$projekat[id]." order by o.prezime, o.ime");
+					if (mysql_num_rows($q200)<1)
+						print 'Nema prijavljenih studenata.';
 					else
-					{
-		?>	
-        		<li class="last"><a href="<?php echo $linkPrefix . "&projekat=$project[id]&action=apply"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>   	
-		<?php
+						print "<ul>\n";
+					
+					while ($r200 = mysql_fetch_row($q200)) {
+						?>
+						<li><?=$r200[1].' '.$r200[0].', '.$r200[2]?></li>
+						<?
 					}
-				}
-				else
-				{
-?>
-        	<div style="color:red; margin-top: 10px;">Limit za broj timova dostignut. Ne možete kreirati novi tim. Prijavite se na projekte u kojima ima mjesta.</div>	
-<?php
-				}	
-			}
-		} //predmetparams locked == 0
-		?>
-        <?php
-			if ($predmetParams['zakljucani_projekti'] == 1)
-			{
-		?>
-        	<li class="last"><a href="<?= $linkPrefix . "&action=page&projekat=$project[id]" ?>">Projektna stranica</a></li>
-		<?php
-			}
-		?>
-            </ul>   
-    </div>	
-<table class="projekti" border="0" cellspacing="0" cellpadding="2">
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Naziv</th>
-    <td width="490" align="left" valign="top"><?=filtered_output_string($project['naziv'])?></td>
-  </tr>
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Prijavljeni tim / student</th>
-    <td width="490" align="left" valign="top">
-    	<?php
-			if (empty($members))
-				echo 'Nema prijavljenih studenata.';
-			else
-			{
-		?>
-        <ul>
-        <?php
-				foreach ($members as $member)
-				{
-		?>
-        	<li><?=filtered_output_string($member[prezime] . ' ' . $member[ime] . ', ' . $member[brindexa]); ?></li>
-		<?php		
-				}
-		?>
-        </ul>	
-		<?php	
-			}
-		
-		?>
-    
-    </td>
-  </tr>
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="490" align="left" valign="top"><?=filtered_output_string($project['opis'])?></td>
-  </tr>
-</table>
+					if (mysql_num_rows($r200)>0) print "</ul>\n";
+					?>
+				</td>
+			</tr>
+			<tr>
+				<th width="200" align="left" valign="top" scope="row">Opis</th>
+				<td width="490" align="left" valign="top"><?=nl2br($projekat['opis'])?></td>
+			</tr>
+		</table>
+		<?
+	} // foreach ($projekti_za_ispis...
 
-
-<?php
-	} //foreach project
-	
-	} //if action is not set
-	else
-	{
-		if ($action == 'apply')
-		{
-			$projekat = intval($_REQUEST['projekat']);
-			if ($projekat <= 0)
-			{
-				zamgerlog("korisnik u$userid pokušao da se prijavi na projekat sa lošim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
-				return;
-			}
-			$errorText = applyForProject($userid, $projekat, $predmet, $ag);
-			if($errorText == '')
-			{
-		?>
-        	<script type="text/javascript">window.location = '<?=$linkPrefix ?>'; </script>
-        <?php						
-			}
-			else
-			{	
-				//an error occured trying to process the form
-				niceerror($errorText);				
-			}
-			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
-	
-		
-		
-		} //action == apply
-		elseif ($action == 'getout')
-		{
-			$projekat = intval($_REQUEST['projekat']);
-			if ($projekat <= 0)
-			{
-				zamgerlog("korisnik u$userid pokušao da se odjavi sa projekta sa losim ID koji nije integer ili je <=0 na predmetu p$predmet", 3);				
-				return;
-			}
-			$errorText = getOutOfproject($userid, $predmet, $ag);
-			if($errorText == '')
-			{
-		?>
-        	<script type="text/javascript">window.location = '<?=$linkPrefix ?>'; </script>
-        <?php						
-			}
-			else
-			{	
-				//an error occured trying to process the form
-				niceerror($errorText);				
-			}
-			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
-	
-		
-		
-		} //action == getout
-		elseif ($action == 'page')
-		{
-			require_once('common/projektneStrane.php');
-			common_projektneStrane();
-				
-		} //action == page
-		
-	} //else - action is set
-	
 } //function
 
 
