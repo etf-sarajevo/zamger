@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // NASTAVNIK/PROJEKTI - nastavnicki modul za definisanje projekata, parametara
 require_once("lib/projekti.php");
 
@@ -220,7 +220,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili parametre projekata.');
-					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu p$_REQUEST[predmet]", 2);		
+					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);		
 					$link = $linkPrefix;		
 				}
 				else
@@ -289,7 +289,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Novi projekat uspješno dodan.');
-					zamgerlog("korisnik u$userid dodao novi projekat na predmetu p$_REQUEST[predmet]", 2);		
+					zamgerlog("korisnik u$userid dodao novi projekat na predmetu pp$_REQUEST[predmet]", 2);		
 
 					$link = $linkPrefix;			
 				}
@@ -348,7 +348,7 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili projekat.');
-					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu p$_REQUEST[predmet]", 2);		
+					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu pp$_REQUEST[predmet]", 2);		
 
 					$link = $linkPrefix;									
 				}
@@ -383,7 +383,7 @@ function nastavnik_projekti()
 						if (deleteProject($id))
 						{
 							nicemessage('Uspjesno ste obrisali projekat.');	
-							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu p$_REQUEST[predmet]", 4);		
+							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu pp$_REQUEST[predmet]", 4);		
 
 							$link = $linkPrefix;		
 						}
@@ -465,7 +465,7 @@ function formProcess($option)
 		if (!insertProject($data))
 		{
 			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom unosa novog projekta u bazu(predmet p$predmet, korisnik u$userid)", 3);
+			zamgerlog("greška prilikom unosa novog projekta u bazu(predmet pp$predmet, korisnik u$userid)", 3);
 			return $errorText;		
 		}
 	
@@ -475,7 +475,7 @@ function formProcess($option)
 		if (!updateProject($data, $id))
 		{
 			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom update projekta $id u bazi(predmet p$predmet, korisnik u$userid)", 3);
+			zamgerlog("greška prilikom update projekta $id u bazi(predmet pp$predmet, korisnik u$userid)", 3);
 			return $errorText;		
 		}
 	
@@ -669,7 +669,7 @@ function formProcess_param()
 	if (!replacePredmetParams($data, $predmet, $ag))
 	{
 		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat(predmet p$predmet, korisnik u$userid)", 3);
+		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat(predmet pp$predmet, korisnik u$userid)", 3);
 		return $errorText;		
 	}
 
