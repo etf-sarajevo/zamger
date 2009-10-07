@@ -22,6 +22,7 @@
 // v4.0.9.6 (2009/09/03) + Sprijeceno slanje podataka iz coolboxa ako je prethodno slanje u toku
 // v4.0.9.7 (2009/09/13) + Linkovi na koliziju i ugovor o ucenju; detalji dizajna studentskog menija (sugestije by Teo)
 // v4.0.9.8 (2009/10/02) + Ispravke u coolboxu pruzaju bolju podrsku za razne browsere
+// v4.0.9.9 (2009/10/07) + Ne insistiraj na kosoj crti kao znaku za brisanje u coolboxu
 
 
 
@@ -224,7 +225,7 @@ function getmimeicon($file) {
 function cool_box($izvrsi) {
 
 // Opis situacije:
-// Zelja nam je da se primjena prihvati kada korisnik pritisne ENTER
+// Zelja nam je da se promjena prihvati kada korisnik pritisne ENTER
 // a ako samo klikne pored prozora da se promjena ponisti.
 
 // U svim browserima pritisak na tipku ENTER ce pozvati metodu onchange,
@@ -273,6 +274,7 @@ function coolboxopen(callobj) {
 	coolboxedit.style.width = callobj.offsetWidth - 6; // 2=padding
 	coolboxedit.style.height = callobj.offsetHeight - 6;
 	coolboxedit.value = callobj.innerHTML;
+	if (coolboxedit.value == "/") coolboxedit.value="";
 	coolboxedit.focus();
 }
 
@@ -297,12 +299,14 @@ function coolboxsubmit() {
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	if (coolbox.style.visibility == 'hidden') return;
+	if (coolboxedit.value == "") coolboxedit.value="/";
 	coolbox.style.visibility = 'hidden';
 	coolboxedit.blur();
 	if (coolboxedit.value != zamger_coolbox_origvalue) {
 		zamger_coolbox_origcaller.innerHTML = coolboxedit.value;
 		<?=$izvrsi?>
 	}
+	zamger_coolbox_origcaller=false;
 }
 
 // Svrha ove funkcije je da uhvati ENTER tipku
