@@ -31,6 +31,7 @@
 // v4.0.9.8 (2009/05/18) + AJAH komponente za fiksnu komponentu i konacnu ocjenu sada primaju predmet i ag
 // v4.0.9.9 (2009/09/03) + Stavljam ime studenta kao link na saradnik/student, da vidim hoce li iko primijetiti
 // v4.0.9.10 (2009/10/02) + Sprijecena promjena prisustva ako je slanje u toku
+// v4.0.9.11 (2009/10/07) + Omogucujem ulazak u grupu "svi studenti" preko predmeta i akademske godine
 
 
 function saradnik_grupa() {
@@ -50,16 +51,31 @@ $labgrupa = intval($_REQUEST['id']);
 $kreiranje = intval($_GET['kreiranje']);
 
 
-// Određujemo predmet i ag za labgrupu
-$q30 = myquery("select naziv, predmet, akademska_godina from labgrupa where id=$labgrupa");
-if (mysql_num_rows($q30)<1) {
-	biguglyerror("Nemate pravo ulaska u ovu grupu!");
-	zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
-	return;
+if ($labgrupa>0) {
+	// Određujemo predmet i ag za labgrupu
+	$q30 = myquery("select naziv, predmet, akademska_godina from labgrupa where id=$labgrupa");
+	if (mysql_num_rows($q30)<1) {
+		biguglyerror("Nemate pravo ulaska u ovu grupu!");
+		zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
+		return;
+	}
+	$naziv = mysql_result($q30,0,0);
+	$predmet = mysql_result($q30,0,1);
+	$ag = mysql_result($q30,0,2);
+} else {
+	// Ako nije definisana grupa, probacemo preko predmeta i ag uci u virtuelnu grupu
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
+	$q35 = myquery("select id, naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+	if (mysql_num_rows($q35)<1) {
+		biguglyerror("Nemate pravo ulaska u ovu grupu!");
+		zamgerlog("nepostojeca virtualna labgrupa za predmet pp$predmet ag$ag",3); // 3 = greska
+		return;
+	}
+	$labgrupa = mysql_result($q35,0,0);
+	$naziv = mysql_result($q35,0,1);
 }
-$naziv = mysql_result($q30,0,0);
-$predmet = mysql_result($q30,0,1);
-$ag = mysql_result($q30,0,2);
+
 
 
 // Da li korisnik ima pravo ući u grupu?
