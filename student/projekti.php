@@ -39,7 +39,7 @@ function student_projekti() {
 
 	// Broj članova po projektu
 	$broj_studenata = array();
-	$q30 = myquery("select p.id, count(sp.student) FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$userid AND p.predmet=$predmet AND p.akademska_godina=$ag GROUP BY sp.projekat");
+	$q30 = myquery("select p.id, count(sp.student) FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND p.predmet=$predmet AND p.akademska_godina=$ag GROUP BY sp.projekat");
 	while ($r30 = mysql_fetch_row($q30))
 		$broj_studenata[$r30[0]]=$r30[1];
 
@@ -92,38 +92,40 @@ function student_projekti() {
 
 		// Da li je projekat sa ovog predmeta?
 		$nasao=false;
-		foreach ($svi_projekati as $proj) {
+		foreach ($svi_projekti as $proj) {
 			if ($proj[id]==$projekat) { $nasao=true; break; }
 		}
 
 		if ($nasao==false) {
 			niceerror("Nepoznat projekat!");
-			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji nije sa predmeta pp$predmet", 3);
+			zamgerlog("prijava na projekat $projekat koji nije sa predmeta pp$predmet", 3);
 		} 
 
 		else if ($zakljucani_projekti) {
 			niceerror("Zaključane su prijave na projekte.");
-			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji je zaključan na predmetu pp$predmet", 3);
+			zamgerlog("prijava na projekat $projekat koji je zaključan na predmetu pp$predmet", 3);
 		}
 
 		else if ($broj_studenata[$projekat]>=$max_clanova_tima) {
 			niceerror("Dosegnut je limit broja članova po projektu.");
-			zamgerlog("student u$userid pokusao da se prijavi na projekat $projekat koji je popunjen", 3);
+			zamgerlog("prijava na projekat $projekat koji je popunjen", 3);
 		}
 
 		else if ($broj_studenata[$projekat]==0 && $limit_timova) {
 			niceerror("Dosegnut je maksimalan broj timova. Ne možete kreirati novi tim.");
-			zamgerlog("student u$userid pokusao da se kreira novi tim na predmetu pp$predmet cime je dosegnut limit", 3);
+			zamgerlog("dosegnut limit broja timova na predmetu pp$predmet", 3);
 		}
 
 		else {
 			// Upisujemo u novi projekat
-			$q110 = myquery("INSERT INTO student_projekat SET student=$userid AND projekat=$projekat");
+			$q110 = myquery("INSERT INTO student_projekat SET student=$userid, projekat=$projekat");
 			nicemessage("Uspješno ste prijavljeni na projekat");
+			zamgerlog("student upisan na projekat $projekat (predmet pp$predmet)", 2);
 			// Ispisujemo studenta sa postojećih projekata
 			if ($clan_projekta>0) {
 				$q100 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
 				nicemessage("Odjavljeni ste sa starog projekta");
+				zamgerlog("student ispisan sa projekta $projekat (predmet pp$predmet)", 2);
 			}
 		}
 
@@ -137,28 +139,29 @@ function student_projekti() {
 		
 		// Da li je projekat sa ovog predmeta?
 		$nasao=false;
-		foreach ($svi_projekati as $proj) {
+		foreach ($svi_projekti as $proj) {
 			if ($proj[id]==$projekat) { $nasao=true; break; }
 		}
 
 		if ($nasao==false) {
 			niceerror("Nepoznat projekat!");
-			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat koji nije sa predmeta pp$predmet", 3);
+			zamgerlog("odjava sa projekta $projekat koji nije sa predmeta pp$predmet", 3);
 		}
 
 		else if ($zakljucani_projekti) {
 			niceerror("Zaključane su liste timova za projekte. Odustajanja nisu dozvoljena.");
-			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat koji je zaključan na predmetu pp$predmet", 3);
+			zamgerlog("odjava sa projekta $projekat koji je zakljucan na predmetu pp$predmet", 3);
 		}
 
 		else if ($projekat != $clan_projekta) {
 			niceerror("Niste prijavljeni na ovaj projekat");
-			zamgerlog("student u$userid pokusao da se odjavi sa projekta $projekat na koji nije prijavljen", 3);
+			zamgerlog("odjavs sa projekta $projekat na koji nije prijavljen", 3);
 		}
 
 		else {
-			$q120 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
+			$q120 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$projekat");
 			nicemessage("Uspješno ste odjavljeni sa projekta");
+			zamgerlog("student ispisan sa projekta $projekat (predmet pp$predmet)", 2);
 		}
 
 		print '<a href="'.$linkprefix.'">Povratak.</a>';
@@ -207,9 +210,9 @@ function student_projekti() {
 
 	// Ako je upisivanje zaključano, ispisaćemo samo onaj projekat u koji je student upisan
 	$projekti_za_ispis = array();
-	if ($zakljucani_projekti==1 && $upisan_u_projekat>0) {
+	if ($zakljucani_projekti==1 && $clan_projekta>0) {
 		foreach ($svi_projekti as $projekat) {
-			if ($projekat[id]==$upisan_u_projekat)
+			if ($projekat[id]==$clan_projekta)
 				$projekti_za_ispis[] = $projekat;
 		}
 	} else 
@@ -232,7 +235,7 @@ function student_projekti() {
 		<?
 
 		if ($zakljucani_projekti == 0) {
-			if ($projekat[id]==$upisan_u_projekat) {
+			if ($projekat[id]==$clan_projekta) {
 				?>
 				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=odjava"?>">Odustani od prijave na ovom projektu</a></li>	
 				<?
@@ -247,7 +250,7 @@ function student_projekti() {
 				<div style="color:red; margin-top: 10px;">Limit za broj timova dostignut. Ne možete kreirati novi tim. Prijavite se na projekte u kojima ima mjesta.</div>	
 				<?
 
-			} else if ($upisan_u_projekat==0) {
+			} else if ($clan_projekta==0) {
 				?>
 				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=prijava"?>">Prijavi se na ovaj projekat</a></li>
 				<?
