@@ -85,10 +85,20 @@ function common_raspored($tip) {
 		}
 		
 		$sqlWhere = "godinaR = '".$adId."' AND smijerR = '".$studijId."' AND semestarR = '".$semId."' AND labgrupa = '0' ".$sqlRasG;*/
+
+		// Koji je aktuelni semestar?
+		$q5 = myquery("select ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$userid and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
+		if (mysql_num_rows($q5)<1) {
+			// Student nije upisan na fakultet.
+			print "Nema rasporeda časova za korisnika<br/><br/>";
+			return;
+		}
+		$semestar_paran = mysql_result($q5,0,0) % 2;
+
 		
 		$sqlUpit = "SELECT rs.id, p.naziv, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv
 		FROM raspored_stavka as rs, raspored as r, predmet as p, ponudakursa as pk, student_predmet as sp, student_labgrupa as sl, raspored_sala as rsala, akademska_godina as ag
-		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id and ag.aktuelna=1 AND p.id=rs.predmet AND rs.raspored=r.id AND r.aktivan=1 AND sl.student=$userid AND (rs.labgrupa=0 or rs.labgrupa=sl.labgrupa) AND rs.sala=rsala.id
+		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id and pk.semestar mod 2=$semestar_paran and ag.aktuelna=1 AND p.id=rs.predmet AND rs.raspored=r.id AND r.aktivan=1 AND sl.student=$userid AND (rs.labgrupa=0 or rs.labgrupa=sl.labgrupa) AND rs.sala=rsala.id
 		GROUP BY rs.labgrupa, rs.dan_u_sedmici, rs.vrijeme_pocetak, p.naziv
 		ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
 
@@ -134,7 +144,7 @@ function common_raspored($tip) {
 	// Selektuj podatke iz baze
 	$q10 = myquery($sqlUpit);
 	if(mysql_num_rows($q10) == 0)
-		print "Nema rasporeda casova za korisnika<br/><br/>";
+		print "Nema rasporeda časova za korisnika<br/><br/>";
 	else {
 		// Zaglavlje sa danima
 		?><div class="dan_header" style="width:50px"></div>
@@ -176,7 +186,7 @@ function common_raspored($tip) {
 			$tip_stavke = $row[4];
 			$vpocetak = $row[5];
 			$vkraj = $row[6];
-			$naziv_sale = $row[7];
+			$naziv_sale = $row[8];
 
 
 			$cssFontSize = "";
