@@ -87,17 +87,13 @@ if ($akcija == "ogranicenja") {
 	if ($_POST['subakcija']=="izmjena" && check_csrf_token()) {
 		// Provjera podataka...
 		$q374 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag");
-		$izabrane=0; $nisuizabrane=0; $grupe=0; $upitdodaj=""; $upitbrisi="";
+		$izabrane=0; $grupe=0; $upitdodaj="";
 		while ($r374 = mysql_fetch_row($q374)) {
 			$labgrupa = $r374[0];
 			if ($_REQUEST['lg'.$labgrupa]) {
 				$izabrane++;
 				if ($upitdodaj) $upitdodaj .= ",";
 				$upitdodaj .= "($nastavnik,$labgrupa)";
-			} else {
-				$nisuizabrane++;
-				if ($upitbrisi) $upitbrisi .= " OR ";
-				$upitbrisi .= "(nastavnik=$nastavnik and labgrupa=$labgrupa)";
 			}
 			$grupe++;
 		}
@@ -106,9 +102,8 @@ if ($akcija == "ogranicenja") {
 			niceerror("Nastavnik mora imati pristup barem jednoj grupi");
 			print "<br/>Ako ne želite da ima pristup, odjavite ga/je sa predmeta.";
 		} else {
-			if ($upitbrisi)
-				$q375 = myquery("delete from ogranicenje where nastavnik=$nastavnik");
-			if ($upitdodaj)
+			$q375 = myquery("delete from ogranicenje where nastavnik=$nastavnik");
+			if ($grupe>$izabrane) // Ukidamo ogranicenja ako su sve grupe izabrane
 				$q376 = myquery("insert into ogranicenje values $upitdodaj");
 
 			nicemessage ("Postavljena nova ograničenja.");
