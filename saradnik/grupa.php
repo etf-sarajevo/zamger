@@ -32,6 +32,7 @@
 // v4.0.9.9 (2009/09/03) + Stavljam ime studenta kao link na saradnik/student, da vidim hoce li iko primijetiti
 // v4.0.9.10 (2009/10/02) + Sprijecena promjena prisustva ako je slanje u toku
 // v4.0.9.11 (2009/10/07) + Omogucujem ulazak u grupu "svi studenti" preko predmeta i akademske godine
+// v4.0.9.12 (2009/10/14) + Ne prikazuj formu za kreiranje casa ako ne postoji nijedna klasicna komponenta za prisustvo
 
 
 function saradnik_grupa() {
@@ -118,7 +119,12 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 
 	// Ako se klikne na refresh, datum moze biti 0-0-0...
 	if ($datum != "0-0-0") {
-		$q55 = myquery("select id from komponenta where tipkomponente=3");
+		$q55 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+		if (mysql_num_rows($q55)<1) {
+			niceerror("Nije definisana komponenta za prisustvo na ovom predmetu.");
+			zamgerlog("nije definisana komponenta za prisustvo na pp$predmet", 3);
+			return;
+		}
 		$komponenta = mysql_result($q55,0,0);
 	
 		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta");
@@ -254,6 +260,9 @@ if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 $dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
 $vrijeme=date("H:i");
 
+// Ne prikazujemo formu ako nema nijedna komponenta za prisustvo
+$q160 = myquery("select count(*) from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+if (mysql_result($q160,0,0)>0) {
 
 ?>
 <table border="0" width="100%"><tr><td valign="top" width="50%">&nbsp;</td>
@@ -294,7 +303,6 @@ $vrijeme=date("H:i");
 </form>
 </td></tr></table>
 <?
-
 
 // AJAH za prisustvo
 
@@ -339,10 +347,12 @@ function upozorenje(cas) {
 <input type="hidden" name="_lv_casid" value="">
 </form>
 
-
 <?
 
 // _lv_casid osigurava da genform() neće dodati još jedno hidden polje
+
+} // if (mysql_result($q160,0,0)>0) {
+
 
 
 
