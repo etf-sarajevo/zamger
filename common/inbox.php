@@ -20,6 +20,7 @@
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/06/20) + Greska kod citanja poruke u opsegu 6
 // v4.0.9.4 (2009/09/16) + Akademska godina je neispravno uzimana kao najnovija, umjesto kao aktuelna, sto je dovodilo do problema sa permisijama u opsegu 3
+// v4.0.9.5 (2009/10/21) + Kod prikaza obavjestenja stavi naslov OBAVJESTENJE a naslov dodaj na pocetak teksta
 
 
 function common_inbox() {
@@ -90,7 +91,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	$prim_id = mysql_result($q300,0,0);
 
 	// Samo slanje licnih poruka je dozvoljeno...
-	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, ref=".intval($_REQUEST['ref']).", naslov='".my_escape($_REQUEST['naslov'])."', tekst='".my_escape($_REQUEST['tekst'])."'");
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, vrijeme=NOW(), ref=".intval($_REQUEST['ref']).", naslov='".my_escape($_REQUEST['naslov'])."', tekst='".my_escape($_REQUEST['tekst'])."'");
 	nicemessage("Poruka uspješno poslana");
 	zamgerlog("poslana poruka za u$prim_id",2);
 }
@@ -269,7 +270,7 @@ $dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Peta
 $poruka = intval($_REQUEST['poruka']);
 if ($poruka>0) {
 	// Dobavljamo podatke o poruci
-	$q10 = myquery("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst from poruka where id=$poruka");
+	$q10 = myquery("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst, tip from poruka where id=$poruka");
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Poruka ne postoji");
 		zamgerlog("pristup nepostojecoj poruci $poruka",3);
@@ -280,6 +281,7 @@ if ($poruka>0) {
 	$opseg =  mysql_result($q10,0,0);
 	$prim_id = mysql_result($q10,0,1);
 	$pos_id = mysql_result($q10,0,2);
+
 	if ($opseg == 2 || $opseg==3 && $prim_id!=$studij || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $pos_id!=$userid) {
 		niceerror("Nemate pravo pristupa ovoj poruci!");
 		zamgerlog("pokusao pristupiti poruci $poruka",3);
@@ -375,8 +377,15 @@ if ($poruka>0) {
 	$vrijeme .= $dani[date("w",$vr)].date(", j. ",$vr).$mjeseci[date("n",$vr)].date(" Y. H:i",$vr);
 
 	// Naslov
-	$naslov = mysql_result($q10,0,4);
-	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
+	$tip = mysql_result($q10,0,6);
+	if ($tip == 1) {
+		$naslov = "O B A V J E Š T E N J E";
+		$tekst = mysql_result($q10,0,4) . "\n\n";
+	} else {
+		$naslov = mysql_result($q10,0,4);
+		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
+		$tekst = "";
+	}
 
 	?><h3>Prikaz poruke</h3>
 	<table cellspacing="0" cellpadding="0" border="0"  style="border:1px;border-color:silver;border-style:solid;"><tr><td bgcolor="#f2f2f2">
@@ -390,10 +399,11 @@ if ($poruka>0) {
 		<br/>
 		<table border="0" cellpadding="5"><tr><td>
 		<?
-		$tekst = mysql_result($q10,0,5);
+		$tekst .= mysql_result($q10,0,5); // Dodajemo na eventualni naslov obavještenja
 		$i=0;
-		while (strpos($tekst,"http://",$i)!==false) {
+		while (strpos($tekst,"http://",$i)!==false || strpos($tekst,"https://",$i)!==false) {
 			$j = strpos($tekst,"http://",$i);
+			if ($j==false) $j = strpos($tekst,"https://",$i);
 			$k = strpos($tekst," ",$j);
 			$k2 = strpos($tekst,"\n",$j);
 			if ($k2<$k && $k2!=0) $k=$k2;

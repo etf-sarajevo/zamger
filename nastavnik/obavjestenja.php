@@ -144,12 +144,12 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 			zamgerlog("izmjena obavjestenja (id $io)",2);
 		} else {
 			if ($primalac>0) {
-				$q6 = myquery("insert into poruka set tip=1, opseg=6, primalac=$primalac, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst'");
+				$q6 = myquery("insert into poruka set tip=1, opseg=6, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
 
 				// Spisak studenata u grupi
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_labgrupa as sl where sl.labgrupa=$primalac and sl.student=o.id and sl.student=a.id";
 			} else {
-				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst'");
+				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
 
 				// Spisak studenata na predmetu
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";

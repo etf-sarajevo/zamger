@@ -514,7 +514,7 @@ CREATE TABLE IF NOT EXISTS `poruka` (
   `opseg` tinyint(4) NOT NULL,
   `primalac` int(11) NOT NULL,
   `posiljalac` int(11) NOT NULL,
-  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `vrijeme` datetime NOT NULL,
   `ref` int(11) NOT NULL default '0',
   `naslov` text collate utf8_slovenian_ci NOT NULL,
   `tekst` text collate utf8_slovenian_ci NOT NULL,

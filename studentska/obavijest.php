@@ -92,7 +92,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 		zamgerlog("izmijenjena obavijest $poruka",2);
 	} else {
 		// Nova obavijest
-		$q310 = myquery("insert into poruka set tip=1, opseg=$opseg, primalac=$primalac, posiljalac=$userid, naslov='$naslov', tekst='$tekst'");
+		$q310 = myquery("insert into poruka set tip=1, opseg=$opseg, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), naslov='$naslov', tekst='$tekst'");
 
 		// Saljem mail...
 		if ($email && ($opseg==3 || $opseg==5)) { // nema spamanja!
