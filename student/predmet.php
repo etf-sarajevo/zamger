@@ -15,6 +15,7 @@
 // v4.0.9.6 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.7 (2009/05/01) + Parametri su sada predmet i ag
 // v4.0.9.8 (2009/05/06) + Kod ispisa naziva grupe u kojoj je student, necemo uzimati u obzir virtualne grupe; ispis prisustva pojednostavljen ukidanjem labgrupe 0
+// v4.0.9.9 (2009/10/20) + Ne prikazuj link na student/pdf ako je zadaca tipa attachment
 
 
 function student_predmet() {
@@ -320,7 +321,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
@@ -354,7 +355,11 @@ while ($r21 = mysql_fetch_row($q21)) {
 		}
 	}
 	?>
-	<td><?=$bodova_zadaca?></td><td><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a></td></tr>
+	<td><?=$bodova_zadaca?></td><td><?
+	if ($r21[5]==0) { // -- attachment
+	?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
+	} else { print "&nbsp;"; }
+	?></td></tr>
 	<?
 	$bodova_sve_zadace += $bodova_zadaca;
 }
