@@ -5,6 +5,7 @@
 // v4.0.9.1 (2009/07/19) + Novi modul saradnik/student prema sugestiji doc. dr Dzenane Djonko
 // v4.0.9.2 (2009/09/03) + Dodajem AJAHe za unos ispita i konačne ocjene
 // v4.0.9.3 (2009/10/07) + Koristim gen_ldap_uid za email adresu (bilo gresaka); dodana promjena grupe; dodana fiksna komponenta; konacna ocjena na isti nacin kao ostalo; tacna informacija sta slusa i koji put
+// v4.0.9.4 (2009/10/21) + Popravljen bug gdje je student ispisivan iz grupe "Svi studenti"; nesto pametniji logging kod promjene grupe; dodao linkove na dosjee za ranije godine
 
 
 // TODO: dodati:
@@ -109,10 +110,20 @@ if (mysql_num_rows($q8)<1) {
 	if (mysql_result($q8,0,3)==1) $ponovac=", ponovac"; else $ponovac = "";
 }
 
-$q9 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina<=$ag");
-if (mysql_result($q9,0,0)>1) {
-	$kojiput = "(".mysql_result($q9,0,0).". put sluša predmet)";
-} else $kojiput="";
+$q9 = myquery("select ag.id, ag.naziv from student_predmet as sp, ponudakursa as pk, akademska_godina as ag where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina<$ag and pk.akademska_godina=ag.id order by ag.id");
+if (mysql_num_rows($q9)>0) {
+	$kojiput = "(".(mysql_num_rows($q9)+1).". put sluša predmet)";
+	$dosjei = "&nbsp;&nbsp;&nbsp;&nbsp;Pogledajte dosje za: ";
+	$zarez=0;
+	while ($r9 = mysql_fetch_row($q9)) {
+		if ($zarez==0) $zarez=1; else $dosjei.= ", ";
+		$dosjei .= "<a href=\"?sta=saradnik/student&student=$student&predmet=$predmet&ag=$r9[0]\">$r9[1]</a>";
+	}
+	$dosjei .= "<br />\n";
+} else {
+	$kojiput="";
+	$dosjei="";
+}
 
 
 // U kojoj je grupi student
@@ -166,28 +177,40 @@ if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 
 if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 	$novagrupa = intval($_POST['grupa']);
-	if ($labgrupa>0) ispis_studenta_sa_labgrupe($student, $labgrupa);
-	if ($novagrupa>0) 
-		$q55 = myquery("insert into student_labgrupa set student=$student, labgrupa=$novagrupa");
-	zamgerlog("student u$student prebacen iz grupe g$labgrupa u g$novagrupa", 2); // 2 = edit
+	$staragrupa=0;
 
-	// Fini ispis
-	if ($labgrupa>0) {
-		$q56 = myquery("select naziv from labgrupa where id=$labgrupa");
-		nicemessage("Student ispisan iz grupe ".mysql_result($q56,0,0).". Podaci o prisustvu su izgubljeni.");
+	// Da li je student u nekoj grupi i u kojoj?
+	//   (Ne smijemo se osloniti na vrijednost varijable $labgrupa jer 
+	//   to može biti virtualna grupa iz koje ga ne smijemo ispisati)
+	$q53 = myquery("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+	if (mysql_num_rows($q53)>0) {
+		$staragrupa = mysql_result($q53,0,0);
+		ispis_studenta_sa_labgrupe($student, $staragrupa);
+		nicemessage("Student ispisan iz grupe ".mysql_result($q53,0,1).". Podaci o prisustvu su izgubljeni.");
 	}
+
 	if ($novagrupa>0) {
+		$q55 = myquery("insert into student_labgrupa set student=$student, labgrupa=$novagrupa");
 		$q57 = myquery("select naziv from labgrupa where id=$novagrupa");
 		nicemessage("Student upisan u grupu ".mysql_result($q57,0,0).". Kreirani su default podaci o prisustvu.");
 	}
 
+	// Pametni logging
+	if ($staragrupa>0 && $novagrupa>0) 
+		zamgerlog("student u$student prebacen iz grupe g$staragrupa u g$novagrupa", 2); // 2 = edit
+	else if ($staragrupa>0)
+		zamgerlog("student u$student ispisan iz grupe g$staragrupa", 2);
+	else
+		zamgerlog("student u$student upisan u grupu g$novagrupa", 2);
+
+	// Linkovi za dalje
 	print "<p>Gdje želite sada ići?:<br />\n";
-	if ($labgrupa>0) {
-		print '- <a href="?sta=saradnik/grupa&id='.$labgrupa.'">Spisak studenata u grupi '.mysql_result($q56,0,0).'</a><br />'."\n";
-	}
-	if ($novagrupa>0) {
+	if ($staragrupa>0)
+		print '- <a href="?sta=saradnik/grupa&id='.$staragrupa.'">Spisak studenata u grupi '.mysql_result($q53,0,1).'</a><br />'."\n";
+	else
+		print '- <a href="?sta=saradnik/grupa&predmet='.$predmet.'&ag='.$ag.'">Spisak svih studenata na predmetu</a><br />'."\n"; // Ovo je jedini slučaj kad $staragrupa može biti nula
+	if ($novagrupa>0)
 		print '- <a href="?sta=saradnik/grupa&id='.$novagrupa.'">Spisak studenata u grupi '.mysql_result($q57,0,0).'</a><br />'."\n";
-	}
 	print '- <a href="?sta=saradnik/student&student='.$student.'&predmet='.$predmet.'&ag='.$ag.'">Nazad na detalje studenta '.$ime.' '.$prezime.'</a>'."\n";
 	return;
 }
@@ -201,9 +224,10 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 // Naslov
 ?>
 <h1><?=$ime?> <?=$prezime?> (<?=$brindexa?>)</h1>
-<p>Upisan na (<?=$nazivag?>): <b><?=$nazivstudija?>, <?=$semestar?>. semestar <?=$ponovac?> <?=$kolpren?> <?=$kojiput?>
+<p>Upisan na (<?=$nazivag?>): <b><?=$nazivstudija?>, <?=$semestar?>. semestar <?=$ponovac?> <?=$kolpren?> <?=$kojiput?></b>
 <br />
-Email: <?=$mailprint?><br />
+<?=$dosjei?>
+<b>Email: <?=$mailprint?><br />
 <a href="?sta=common/inbox&akcija=compose&primalac=<?=$studentusername?>">Pošaljite Zamger poruku</a></b></p>
 <h3>Predmet: <?=$nazivpredmeta?> <br />
 <?
