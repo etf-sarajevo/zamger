@@ -21,6 +21,7 @@
 // v4.0.9.7 (2009/05/08) + Popravljen typo, popravljeno prosljedjivanje akcija=edit parametra, dodano malo feedback poruka
 // v4.0.9.8 (2009/05/20) + Dodajem akciju brisanje ponude kursa; ne prikazuj svaku ponudu kursa zasebno kod pretrage, prikazi predmete bez ponude kursa; akcija novi je pogresno prijavljivala da predmet vec postoji (ali je inace sve radilo ispravno); izbacio sam kreiranje default ponudekursa (svakako je viska), kreiranje virtualne labgrupe se radi samo ako ne postoji u aktuelnoj godini; renumerisem upite
 // v4.0.9.9 (2009/09/27) + Popravljena provjera da li je ista izabrano u akciji ogranicenja; popravljeno prosljedjivanje IDa nastavnika kod izbacivanja nastavnika sa predmeta
+// v4.0.9.10 (2009/10/20) + Prethodna izmjena je brisala podatke o ogranicenjima na drugim predmetima
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -87,14 +88,19 @@ if ($akcija == "ogranicenja") {
 	if ($_POST['subakcija']=="izmjena" && check_csrf_token()) {
 		// Provjera podataka...
 		$q374 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag");
-		$izabrane=0; $grupe=0; $upitdodaj="";
+		$izabrane=0; $grupe=0; $upitdodaj=$upitbrisi=$upitbrisisve="";
 		while ($r374 = mysql_fetch_row($q374)) {
 			$labgrupa = $r374[0];
 			if ($_REQUEST['lg'.$labgrupa]) {
 				$izabrane++;
 				if ($upitdodaj) $upitdodaj .= ",";
 				$upitdodaj .= "($nastavnik,$labgrupa)";
+			} else {
+				if ($upitbrisi) $upitbrisi .= " OR ";
+				$upitbrisi .= "(nastavnik=$nastavnik AND labgrupa=$labgrupa)";
 			}
+			if ($upitbrisisve) $upitbrisisve .= " OR ";
+			$upitbrisisve .= "(nastavnik=$nastavnik AND labgrupa=$labgrupa)";
 			$grupe++;
 		}
 		if ($upitdodaj == "") {
@@ -102,10 +108,12 @@ if ($akcija == "ogranicenja") {
 			niceerror("Nastavnik mora imati pristup barem jednoj grupi");
 			print "<br/>Ako ne želite da ima pristup, odjavite ga/je sa predmeta.";
 		} else {
-			$q375 = myquery("delete from ogranicenje where nastavnik=$nastavnik");
-			if ($grupe>$izabrane) // Ukidamo ogranicenja ako su sve grupe izabrane
-				$q376 = myquery("insert into ogranicenje values $upitdodaj");
-
+			if ($grupe==$izabrane) { // Sve izabrano
+				$q375 = myquery("delete from ogranicenje where $upitbrisisve");
+			} else {
+				$q376 = myquery("delete from ogranicenje where $upitbrisi");
+				$q377 = myquery("insert into ogranicenje values $upitdodaj");
+			}
 			nicemessage ("Postavljena nova ograničenja.");
 			zamgerlog("izmijenjena ogranicenja nastavniku u$nastavnik, predmet pp$predmet, ag$ag",4);
 		}
