@@ -33,6 +33,7 @@
 // v4.0.9.10 (2009/10/02) + Sprijecena promjena prisustva ako je slanje u toku
 // v4.0.9.11 (2009/10/07) + Omogucujem ulazak u grupu "svi studenti" preko predmeta i akademske godine
 // v4.0.9.12 (2009/10/14) + Ne prikazuj formu za kreiranje casa ako ne postoji nijedna klasicna komponenta za prisustvo
+// v4.0.9.13 (2009/10/24) + Novi modul "sve zadace"
 
 
 function saradnik_grupa() {
@@ -63,6 +64,7 @@ if ($labgrupa>0) {
 	$naziv = mysql_result($q30,0,0);
 	$predmet = mysql_result($q30,0,1);
 	$ag = mysql_result($q30,0,2);
+
 } else {
 	// Ako nije definisana grupa, probacemo preko predmeta i ag uci u virtuelnu grupu
 	$predmet = intval($_REQUEST['predmet']);
@@ -419,7 +421,7 @@ while ($r205 = mysql_fetch_row($q205)) {
 	// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
 	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by id");
 	while ($r210 = mysql_fetch_row($q210)) {
-		$zadace_zaglavlje .= "<td width=\"60\">$r210[1]</td>\n";
+		$zadace_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
 		$zad_id_array[] = $r210[0];
 		$zad_brz_array[$r210[0]] = $r210[2];
 		$mogucih_bodova += $r210[3];
