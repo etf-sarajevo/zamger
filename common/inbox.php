@@ -25,7 +25,7 @@
 
 function common_inbox() {
 
-global $userid,$user_student;
+global $userid,$user_student, $user_nastavnik;
 
 // LEGENDA tabele poruke
 // Tip:
@@ -282,7 +282,7 @@ if ($poruka>0) {
 	$prim_id = mysql_result($q10,0,1);
 	$pos_id = mysql_result($q10,0,2);
 
-	if ($opseg == 2 || $opseg==3 && $prim_id!=$studij || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $pos_id!=$userid) {
+	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $pos_id!=$userid) {
 		niceerror("Nemate pravo pristupa ovoj poruci!");
 		zamgerlog("pokusao pristupiti poruci $poruka",3);
 		return;
