@@ -68,6 +68,7 @@ $naziv_zadace = mysql_result($q70,0,0);
 // Naziv za ZIP fajl...
 $naziv_zip_fajla = mysql_result($q60,0,1)." ".$naziv_grupe." ".$naziv_zadace;
 $naziv_zip_fajla = preg_replace("/\W/", "", str_replace(" ", "_", strtr($naziv_zip_fajla, $trans)));
+$naziv_fajla_bez_puta = "$naziv_zip_fajla.zip";
 $naziv_zip_fajla = "$conf_files_path/zadace/$naziv_zip_fajla.zip";
 
 
@@ -110,6 +111,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 }
 
 // Petlja koja kopira fajlove u privremeni folder
+$fajlova=0;
 for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 	$zadatakfolder = $tmpfolder;
 	// Ako je $brzadataka>1 pravimo folder za svaki zadatak
@@ -124,6 +126,7 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 		if ($attach==0) {
 			$oldfile = "$lokacijazadaca$student_id/$zadaca/$zadatak$ekst";
 			if (!file_exists($oldfile)) continue; // Nije poslao zadaću...
+			$fajlova++;
 
 		} else {
 			$q120 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student_id order by id desc limit 1");
@@ -133,6 +136,7 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 				//print "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* Nisam uspio pronaći fajl '".mysql_result($q120,0,0)."' na serveru (student $student_id, zadatak $zadatak). Molimo prijavite ovo administratoru.</p>\n";
 				continue;
 			}
+			$fajlova++;
 
 			// Želimo da $newfile ima istu ekstenziju kao $oldfile
 			// Specijalni slučajevi
@@ -152,9 +156,6 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 }
 
 
-// Zipujemo folder
-exec("cd $tmpfolder; zip -r $naziv_zip_fajla *"); // ZIP čuva kompletan put ako se ne nalazi u istom direktoriju
-
 //Delete folder function 
 function deleteDirectory($dir) { 
     if (!file_exists($dir)) return true; 
@@ -170,12 +171,26 @@ function deleteDirectory($dir) {
     } 
 
 
+
+
+if ($fajlova==0) {
+	niceerror("Nijedan student nije poslao zadaću kroz Zamger.");
+	print "<p>Ova funkcionalnost služi kako bi se odjednom mogle preuzeti sve zadaće poslane kroz Zamger. No u izabranoj grupi nijedan student nije poslao zadaću kroz Zamger!</p>\n<p>Da li su zadaće poslane na neki drugi način?</p>";
+	deleteDirectory($tmpfolder);
+	zamgerlog("niko nije poslao zadacu (z$zadaca, pp$predmet, g$labgrupa)", 3);
+	return;
+}
+
+
+// Zipujemo folder
+exec("cd $tmpfolder; zip -r $naziv_zip_fajla *"); // ZIP čuva kompletan put ako se ne nalazi u istom direktoriju
+
 deleteDirectory($tmpfolder);
 
 
 $type = `file -bi '$naziv_zip_fajla'`;
 header("Content-Type: $type");
-header('Content-Disposition: attachment; filename="' . $naziv_zip_fajla.'"', false);
+header('Content-Disposition: attachment; filename="' . $naziv_fajla_bez_puta.'"', false);
 
 $k = readfile($naziv_zip_fajla,false);
 if ($k == false) {
