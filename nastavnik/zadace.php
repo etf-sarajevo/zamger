@@ -16,6 +16,7 @@
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 // v4.0.9.4 (2009/05/08) + Izdvajam brisanje zadace da se ne bi izvrsilo i azuriranje i sve ostalo
 // v4.0.9.5 (2009/09/13) + Dozvoljavam da naziv zadace bude jedno slovo
+// v4.0.9.6 (2009/10/26) + Popravljeno brisanje zadace, dodana zastita od visestrukog submitanja
 
 
 function nastavnik_zadace() {
@@ -166,42 +167,9 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 
 
-// Brisanje zadaće
-if ($_POST['akcija']=="edit" && $_POST['brisanje'] == " Obriši " && $_POST['potvrdabrisanja'] != " Nazad " && $edit_zadaca>0) {
-	$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
-	if (mysql_num_rows($q86)<1) {
-		niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
-		zamgerlog("brisanje nepostojece zadace $edit_zadaca", 3);
-		return 0;
-	}
-	if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
-		niceerror("Zadaća nije sa izabranog predmeta");
-		zamgerlog("brisanje zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
-		return 0;
-	}
+// Akcija za kreiranje novek, promjenu postojeće ili brisanje zadaće
 
-	if ($_POST['potvrdabrisanja']==" Briši ") {
-		$q88 = myquery("delete from zadaca where id=$edit_zadaca");
-		$q89 = myquery("delete from zadatak where zadaca=$edit_zadaca");
-		zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
-	} else {
-		$q96 = myquery("select count(*) from zadatak where zadaca=$edit_zadaca");
-		$brojzadataka=mysql_result($q96,0,0);
-		print genform("POST");
-		?>
-		Brisanjem zadaće obrisaćete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to želite?<br>
-		U pitanju je <b><?=$brojzadataka?></b> jedinstvenih slogova u bazi!<br><br>
-		<input type="submit" name="potvrdabrisanja" value=" Briši ">
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
-		<?
-		return;
-	}
-}
-
-
-// Akcija za kreiranje nove ili promjenu postojeće zadaće
-
-else if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
+if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	$edit_zadaca = intval($_POST['zadaca']);
 	
 	// Prava pristupa
@@ -219,6 +187,50 @@ else if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		}
 	}
 
+
+	// Brisanje zadaće
+	
+	if ($_POST['brisanje'] == " Obriši ") {
+		if ($edit_zadaca <= 0) return; // Ne bi se smjelo desiti
+		$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
+		if (mysql_num_rows($q86)<1) {
+			niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
+			zamgerlog("brisanje nepostojece zadace $edit_zadaca", 3);
+			return 0;
+		}
+		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
+			niceerror("Zadaća nije sa izabranog predmeta");
+			zamgerlog("brisanje zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
+			return 0;
+		}
+	
+		if ($_POST['potvrdabrisanja']==" Briši ") {
+			$q88 = myquery("delete from zadaca where id=$edit_zadaca");
+			$q89 = myquery("delete from zadatak where zadaca=$edit_zadaca");
+			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
+			nicemessage ("Zadaća uspješno obrisana");
+			?>
+			<script language="JavaScript">
+			location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
+			</script>
+			<?
+			return;
+		} else {
+			$q96 = myquery("select count(*) from zadatak where zadaca=$edit_zadaca");
+			$brojzadataka=mysql_result($q96,0,0);
+			print genform("POST");
+			?>
+			Brisanjem zadaće obrisaćete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to želite?<br>
+			U pitanju je <b><?=$brojzadataka?></b> jedinstvenih slogova u bazi!<br><br>
+			<input type="submit" name="potvrdabrisanja" value=" Briši ">
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
+			<?
+			return;
+		}
+	}
+
+
+	// Kreiranje ili izmjena zadaće
 
 	$naziv = trim(my_escape($_POST['naziv']));
 	$zadataka = intval($_POST['zadataka']);
@@ -298,6 +310,8 @@ else if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
 }
+
+
 
 
 // Spisak postojećih zadaća
