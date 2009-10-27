@@ -362,14 +362,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 function upozorenje(grupa) {
 	var a = confirm("Svi studenti će biti ispisani iz ove grupe.");
 	if (a) {
-		document.brisanjegrupe.grupaid.value=grupa;
+		document.getElementById('grupaid').value=grupa;
 		document.brisanjegrupe.submit();
 	}
 }
 </script>
 <?=genform("POST", "brisanjegrupe")?>
 <input type="hidden" name="akcija" value="obrisi_grupu">
-<input type="hidden" name="grupaid" value=""></form>
+<input type="hidden" name="grupaid" id="grupaid" value=""></form>
 
 Spisak grupa:<br/>
 <?
