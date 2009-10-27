@@ -36,6 +36,9 @@ if (intval($_REQUEST['double'])==1 && $tip=="") $tip = "double"; // kompatibilno
 $komentari = intval($_REQUEST['komentari']);
 $prisustvo = intval($_REQUEST['prisustvo']);
 
+$grupa = intval($_REQUEST['grupa']); // Za samo jednu grupu
+if ($grupa>0) $sql_dodaj = "and id=$grupa"; else $sql_dodaj = "and virtualna=0"; // U suprotnom sakrivamo virtualnu grupu
+
 if ($tip=="") $tip="single";
 
 
@@ -93,7 +96,7 @@ if ($tip=="double") {
 
 	$parni=0;
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
@@ -137,7 +140,7 @@ if ($tip=="double") {
 		} else $parni=1;
 	}
 
-	if (count($imeprezime)>0) {
+	if ($grupe==0 && count($imeprezime)>0) {
 		if ($parni == 0) 
 			print "<tr>";
 		else
@@ -191,7 +194,7 @@ else if ($tip=="single") {
 	<?*/
 	print "<center>\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
 	$grupe = array();
 	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
@@ -254,7 +257,7 @@ else if ($tip=="single") {
 		<?
 	}
 
-	if (count($imeprezime)>0) {
+	if ($grupe==0 && count($imeprezime)>0) {
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
 				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
