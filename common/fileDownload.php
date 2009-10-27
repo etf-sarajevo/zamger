@@ -30,7 +30,11 @@ function common_fileDownload()
 	$type = `file -bi '$filepath'`;
 	header("Content-Type: $type");
 	header("Content-Disposition: attachment; filename=\"" . $entry[filename] . "\"", false);
-	
+
+	// workaround za http://support.microsoft.com/kb/316431 (zamger bug 94)
+	header("Pragma: dummy=bogus"); 
+	header("Cache-Control: private");
+
 	$k = readfile($filepath,false);
 	if ($k == false) 
 	{
