@@ -172,7 +172,7 @@ function common_raspored($tip) {
 			for($r2=0; $r2<6; $r2++) {
 				print '<div style = "float: left; border-right: 1px solid #E0E4F3; width: 129px; height: 35px; padding: 4px 0px 0px 1px;"></div>'."\n";
 			}
-			print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 54px; width: 650px; height: 30px; padding: 10px 0px 0px 2px;"></div>'."\n";
+			print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 54px; width: 782px; height: 30px; padding: 10px 0px 0px 2px;"></div>'."\n";
 		}
 		
 		print "\n".'<div style = "position:absolute; margin: -370px 0px 0px 53px">'."\n";
