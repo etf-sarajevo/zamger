@@ -12,6 +12,7 @@
 // v4.0.9.3 (2009/04/06) + Attachment se nije mogao otvoriti osim ako je status 1
 // v4.0.9.4 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.5 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
+// v4.0.9.6 (2009/10/07) + Dodajem navodnike radi ispravnog downloada fajlova sa razmacima u imenu
 
 
 function common_attachment() {
@@ -117,7 +118,11 @@ $filepath = $lokacijazadaca.$filename;
 
 $type = `file -bi '$filepath'`;
 header("Content-Type: $type");
-header('Content-Disposition: attachment; filename=' . $filename, false);
+header('Content-Disposition: attachment; filename="' . $filename.'"', false);
+
+// workaround za http://support.microsoft.com/kb/316431 (zamger bug 94)
+header("Pragma: dummy=bogus"); 
+header("Cache-Control: private");
 
 $k = readfile($filepath,false);
 if ($k == false) {
