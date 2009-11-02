@@ -1167,27 +1167,111 @@ else if ($akcija == "edit") {
 
 	// Promjena korisničkog pristupa i pristupnih podataka
 	if ($_POST['subakcija'] == "auth" && check_csrf_token()) {
+		$login = my_escape(trim($_REQUEST['login']));
+		$login_ldap = ldap_escape(trim($_REQUEST['login']));
+		$stari_login = my_escape($_REQUEST['stari_login']);
+		$password = my_escape($_REQUEST['password']);
+		$aktivan = intval($_REQUEST['aktivan']);
 
-		// LDAP
-		if ($conf_system_auth == "ldap") {
+		if ($login=="") {
+			niceerror("Ne možete postaviti prazan login");
+			zamgerlog("prazan login za u$osoba", 3);
+		}
+		else if ($stari_login=="") {
+			// Provjeravamo LDAP?
+			if ($conf_system_auth=="ldap") do { // Simuliramo GOTO...
+				// Tražimo ovaj login na LDAPu...
+				$ds = ldap_connect($conf_ldap_server);
+				ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+				if (!ldap_bind($ds)) {
+					zamgerlog("Ne mogu se spojiti na LDAP server",3); // 3 - greska
+					niceerror("Ne mogu se spojiti na LDAP server - nastavljam dalje bez provjere");
+					break;
+				}
 
+				$sr = ldap_search($ds, "", "uid=$login_ldap", array() /* just dn */ );
+				if (!$sr) {
+					zamgerlog("ldap_search() nije uspio.",3);
+					niceerror("ldap_search() nije uspio - nastavljam dalje bez provjere");
+					break;
+				} 
+				$results = ldap_get_entries($ds, $sr);
+				if ($results['count'] > 0) {
+					nicemessage("Login '$login' pronađen na LDAP serveru");
+					break;
+				}
+
+				// Pokušavamo mail alias
+				$sr = ldap_search($ds, "", "mail=$login_ldap$conf_ldap_domain", array() );
+				if (!$sr) {
+					zamgerlog("ldap_search() 2 nije uspio.",3);
+					niceerror("ldap_search() nije uspio - nastavljam dalje bez provjere");
+					break;
+				} 
+				$results = ldap_get_entries($ds, $sr); // pretpostavka je da će druga pretraga raditi
+				if ($results['count'] > 0) {
+					nicemessage("Email '$login$conf_ldap_domain' pronađen na LDAP serveru");
+				} else {
+					zamgerlog("login ne postoji na LDAPu ($login)",3);
+					niceerror("Predloženi login ($login) nije pronađen na LDAP serveru!");
+					print "<p>Nastaviću dalje sa dodavanjem logina, ali korisnik vjerovatno neće moći pristupiti Zamgeru.</p>";
+				}
+			} while (false);
+
+			// Dodavanje novog logina
+			$q120 = myquery("insert into auth set id=$osoba, login='$login', password='$password', aktivan=$aktivan");
+			nicemessage("Uspješno kreiran novi login za korisnika");
+			zamgerlog("dodan novi login '$login' za korisnika u$osoba", 4);
+
+		} else {
+			// Izmjena starog logina
+			$q123 = myquery("select count(*) from auth where id=$osoba and login='$stari_login'");
+			if (mysql_result($q123,0,0)<1) {
+				niceerror("Nije pronađen login... molimo pokušajte ponovo");
+				zamgerlog("nije pronadjen stari login '$stari_login' za korisnika u$osoba", 3);
+			} else {
+				if ($_REQUEST['brisanje']==" Obriši ") {
+					$q125 = myquery("delete from auth where id=$osoba and login='$stari_login'");
+					nicemessage("Uspješno obrisan login '$stari_login'");
+					zamgerlog("obrisan login '$stari_login' za korisnika u$osoba", 4);
+
+				} else {
+					$q127 = myquery("update auth set login='$login', password='$password', aktivan=$aktivan where id=$osoba and login='$stari_login'");
+					nicemessage("Uspješno izmijenjen login '$login'");
+					zamgerlog("izmijenjen login '$stari_login' u '$login' za korisnika u$osoba", 4);
+				}
+			}
+		}
+
+
+	} // if ($_REQUEST['subakcija'] == "auth")
+
+
+	// Pojednostavljena promjena podataka za studentsku službu u slučaju korištenja 
+	// eksterne baze korisnika
+	if ($_POST['subakcija'] == "auth_ldap" && check_csrf_token()) {
+		$aktivan = intval($_REQUEST['aktivan']);
+
+		// Postoji li zapis u tabeli auth?
+		$q103 = myquery("select count(*) from auth where id=$osoba");
+		if (mysql_result($q103,0,0)>0) { // Da!
 			// Ako isključujemo pristup, stavljamo aktivan na 0
-			$pristup = intval($_REQUEST['pristup']);
-			if ($pristup!=0) {
+			if ($aktivan!=0) {
 				$q105 = myquery("update auth set aktivan=0 where id=$osoba");
 				zamgerlog("ukinut login za korisnika u$osoba (ldap)",4);
 			} else {
-
-			$q107 = myquery("select count(*) from auth where id=$osoba");
-			if (mysql_result($q107,0,0)>0) {
 				$q105 = myquery("update auth set aktivan=1 where id=$osoba");
 				zamgerlog("aktiviran login za korisnika u$osoba (ldap)",4);
-			} else {
+			}
 
+		} else if ($aktivan!=0) { // Nema zapisa u tabeli auth
+			// Ako je izabrano isključenje pristupa, ne radimo nista
+			// (ne bi se smjelo desiti)
+			// U suprotnom kreiramo login
 
 			// predloženi login
 			$suggest_login = gen_ldap_uid($osoba);
-
+	
 			// Tražimo ovaj login na LDAPu...
 			$ds = ldap_connect($conf_ldap_server);
 			ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -1196,7 +1280,7 @@ else if ($akcija == "edit") {
 				niceerror("Ne mogu se spojiti na LDAP server");
 				return;
 			}
-
+	
 			$sr = ldap_search($ds, "", "uid=$suggest_login", array() /* just dn */ );
 			if (!$sr) {
 				zamgerlog("ldap_search() nije uspio.",3);
@@ -1208,9 +1292,9 @@ else if ($akcija == "edit") {
 				zamgerlog("login ne postoji na LDAPu ($suggest_login)",3);
 				niceerror("Predloženi login ($suggest_login) nije pronađen na LDAP serveru!");
 				print "<p>Da li ste uspravno unijeli broj indeksa, ime i prezime? Ako jeste, kontaktirajte administratora!</p>";
-
+	
 				// Nastavljamo dalje sa edit akcijom kako bi studentska mogla popraviti podatke
-
+	
 			} else {
 				// Dodajemo login, ako nije podešen
 				$q110 = myquery("select login, aktivan from auth where id=$osoba");
@@ -1228,7 +1312,7 @@ else if ($akcija == "edit") {
 						zamgerlog("kreiran login za korisnika u$osoba (ldap - aktivan=1)",4);
 					}
 				}
-
+	
 				// Generišemo email adresu ako nije podešena
 				$q115 = myquery("select email from osoba where id=$osoba");
 				if (mysql_result($q115,0,0) == "") {
@@ -1237,22 +1321,8 @@ else if ($akcija == "edit") {
 					zamgerlog("promijenjen email za korisnika u$osoba",2); // nivo 2 - edit
 				}
 			}
+		} // else if ($pristup!=0)
 
-			} // if ($q107...) ... else ...
-			} // if ($auth!=0) ... else ...
-
-		} // if ($conf_system_auth == "ldap")
-
-		// Lokalna tabela sa šiframa
-		else if ($conf_system_auth == "table") {
-
-			$login = my_escape($_REQUEST['login']);
-			$password = my_escape($_REQUEST['password']);
-
-			$q120 = myquery("replace auth set id=$osoba, login='$login', password='$password', aktivan=1");
-			zamgerlog("dodan/izmijenjen login za korisnika u$osoba (table)",4);
-
-		}
 	} // if ($_REQUEST['subakcija'] == "auth")
 
 
@@ -1382,28 +1452,20 @@ else if ($akcija == "edit") {
 
 	// Login&password
 
-	$q201 = myquery("select login,password,aktivan from auth where id=$osoba");
-	if (mysql_num_rows($q201)>0) {
-		$login=mysql_result($q201,0,0);
-		$password=mysql_result($q201,0,1);
-		$pristup=mysql_result($q201,0,2);
-	} else $pristup=0;
 
 	if ($conf_system_auth == "table" || $user_siteadmin) {
-		if ($pristup==0) {
-			?>
-			<?=genform("POST")?>
-			<input type="hidden" name="subakcija" value="auth">
+		print "<p>Korisnički pristup:\n";
+		$q201 = myquery("select aktivan from auth where id=$osoba and aktivan=1");
+		if (mysql_num_rows($q201)<1) print "<font color=\"red\">NEMA</font>";
+		?></p>
 			<table border="0">
 			<tr>
-				<td colspan="2">Korisnički pristup:<br/> <font color="red">NEMA</font></td>
-				<td>Korisničko ime:<br/> <input type="text" size="10" name="login" autocomplete="off"></td>
-				<td>Šifra:<br/> <input type="password" size="10" name="password" autocomplete="off"></td>
-				<td>Aktivan:<br/> <input type="checkbox" size="10" name="ima_auth" value="1"></td>
-				<td><input type="Submit" value=" Dodaj "></td>
-			</tr></table></form>
-			<?
-		}
+				<td>Korisničko ime:</td>
+				<td width="80">Šifra:</td>
+				<td>Aktivan:</td>
+				<td>&nbsp;</td>
+			</tr>
+		<?
 
 		$q201 = myquery("select login,password,aktivan from auth where id=$osoba");
 		while ($r201 = mysql_fetch_row($q201)) {
@@ -1413,19 +1475,32 @@ else if ($akcija == "edit") {
 			?>
 			<?=genform("POST")?>
 			<input type="hidden" name="subakcija" value="auth">
-			<table border="0">
+			<input type="hidden" name="stari_login" value="<?=$login?>">
 			<tr>
-				<td colspan="2">Korisnički pristup:</td>
-				<td>Korisničko ime:<br/> <input type="text" size="10" name="login" value="<?=$login?>"></td>
-				<td>Šifra:<br/> <input type="password" size="10" name="password" value="<?=$password?>"></td>
-				<td>Aktivan:<br/> <input type="checkbox" size="10" name="ima_auth" value="1" <? if ($pristup==1) print "CHECKED"; ?>></td>
-				<td><input type="Submit" value=" Izmijeni "></td>
-			</tr></table></form>
+				<td><input type="text" size="10" name="login" value="<?=$login?>"></td>
+				<td valign="center"><? if ($conf_system_auth=="ldap") print "<b>LDAP</b>"; else { ?><input type="password" size="10" name="password" value="<?=$password?>"><? } ?></td>
+				<td><input type="checkbox" size="10" name="aktivan" value="1" <? if ($pristup==1) print "CHECKED"; ?>></td>
+				<td><input type="Submit" value=" Izmijeni "> <input type="Submit" name="brisanje" value=" Obriši "></td>
+			</tr></form>
 			<?
 		}
+
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="auth">
+		<input type="hidden" name="stari_login" value="">
+		<tr>
+			<td><input type="text" size="10" name="login" value=""></td>
+			<td><? if ($conf_system_auth=="ldap") print "<b>LDAP</b>"; else { ?><input type="password" size="10" name="password" value=""><? } ?></td>
+			<td><input type="checkbox" size="10" name="aktivan" value="1"></td>
+			<td><input type="Submit" value=" Dodaj novi "></td>
+		</tr></form></table>
+		<?
 	}
 
 	else if ($conf_system_auth == "ldap") {
+		$q201 = myquery("select aktivan from auth where id=$osoba and aktivan=1");
+		if (mysql_num_rows($q201)>0) $pristup=1; else $pristup=0;
 		?>
 		
 		<script language="JavaScript">
@@ -1435,13 +1510,13 @@ else if ($akcija == "edit") {
 		}
 		</script>
 		<?=genform("POST", "authforma")?>
-		<input type="hidden" name="subakcija" value="auth">
+		<input type="hidden" name="subakcija" value="auth_ldap">
 		<input type="hidden" name="pristup" value="">
 		</form>
 
 		<table border="0">
 		<tr>
-			<td colspan="5">Korisnički pristup: <input type="checkbox" name="ima_auth" onchange="javascript:upozorenje('<?=$pristup?>');" <? if ($pristup==1) print "CHECKED"; ?>></td>
+			<td colspan="5">Korisnički pristup: <input type="checkbox" name="aktivan" onchange="javascript:upozorenje('<?=$pristup?>');" <? if ($pristup==1) print "CHECKED"; ?>></td>
 		</tr></table></form>
 		<?
 	}
@@ -1768,14 +1843,10 @@ else if ($akcija == "edit") {
 		}
 
 
-		// Upis studenta na predmet
-		if ($nova_ak_god==0) { 
-			// Ovaj uslov će važiti samo ako je student trenutno upisan na fakultet, 
-			// a novi upis nije trenutno u toku
-			?>
-			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=predmeti">Manuelni upis studenta na predmete / ispis sa predmeta.</a></p>
-			<?
-		}
+		// Upis studenta na pojedinačne predmete
+		?>
+		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=predmeti">Manuelni upis studenta na predmete / ispis sa predmeta.</a></p>
+		<?
 
 		print "\n<div style=\"clear:both\"></div>\n";
 	} // STUDENT
