@@ -99,7 +99,7 @@ while ($r17 = mysql_fetch_row($q17)) {
 // Ima li ovo smisla? Ako natrpamo 5 poruka u obavjestenja, nece se nista drugo prikazati :(
 /*if ($modul_anketa) {
 	$q19a = myquery("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
-	$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa where aktivna = 1");
+	$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa_anketa where aktivna = 1");
 
 	// provjeravamo da li postoji aktivna anketa
 	if (mysql_num_rows($q19b)!= 0) {

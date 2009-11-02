@@ -525,11 +525,11 @@ function studentski_meni($fj) {
 
 			// Da li ima aktivna anketa i da li je istekao rok?
 			if ($modul_anketa) {
-				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna = 1");
+				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna = 1");
 				if (mysql_num_rows($q42)!=0) { // da li uopce ima kreirana anketa ako ne , ne radi nista
 					$rok=mysql_result($q42,0,0);
 					if (time () < $rok) {
-						$q42b =  myquery("select id  from anketa a where a.aktivna=1 ");
+						$q42b =  myquery("select id  from anketa_anketa a where a.aktivna=1 ");
 						if(mysql_num_rows($q42b)>0)
 							$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
 					}

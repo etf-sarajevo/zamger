@@ -19,7 +19,7 @@ if ($semestar != 3)
 $smjerovi;
 
 //kupimo pitanja za datu anketu
-$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
+$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
 $k=0;
 $l=0;
 while($pitanje = mysql_fetch_row($result2077)){
@@ -29,9 +29,9 @@ while($pitanje = mysql_fetch_row($result2077)){
 	
 	// za prvu godinu je poseban upit gdje ne postoji uslov za studije vec samo uslov na semestar
 	if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar in(1,2) AND zavrsena='Y'");
+		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar in(1,2) AND zavrsena='Y'");
 	else // ako nije onda biramo parne ili neparene semestre
-		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar=$semestarPGS AND zavrsena='Y'");
+		$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar=$semestarPGS AND zavrsena='Y'");
 	
 	$prosjek[$l]=mysql_result($q6730PGS,0,0);
 	$smjerovi[1][$k] = $prosjek[$l];
@@ -41,9 +41,9 @@ while($pitanje = mysql_fetch_row($result2077)){
 	while($studij = mysql_fetch_row($result409)){
 		//kupimo vrijednosti
 		if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y' and a.semestar not in (1,2)");
+			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y' and a.semestar not in (1,2)");
 		else // ako nije onda biramo parne ili neparene semestre
-			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y' and a.semestar not in (1,2)");
+			$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y' and a.semestar not in (1,2)");
 		$prosjek[$l]=mysql_result($q6730,0,0);
 		
 		$smjerovi[$studij[0]][$k] = $prosjek[$l];

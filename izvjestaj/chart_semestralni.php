@@ -11,7 +11,7 @@ $pitanje = $_GET['pitanje'];
 $semestar = $_GET['semestar'];
 $studij=$_GET['studij'];
 
-$result2077=myquery("SELECT tekst FROM pitanje WHERE id=$pitanje");
+$result2077=myquery("SELECT tekst FROM anketa_pitanje WHERE id=$pitanje");
 $title = mysql_result($result2077,0,0);
 
 $l=0;
@@ -26,7 +26,7 @@ else
 	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
 while($predmet = mysql_fetch_row($result409)){
 
-	$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM rezultat a, odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje AND a.predmet =$predmet[0] AND 	
+	$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje AND a.predmet =$predmet[0] AND 	
 					zavrsena='Y'");
 	$data[$l]=mysql_result($q6730,0,0);
 	$predmeti[$predmet[1]] =$data[$l] ;

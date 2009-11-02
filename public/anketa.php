@@ -8,14 +8,14 @@ function public_anketa(){
 	$ag = mysql_result($q10,0,0);
 
 	// uzimamo id aktivne ankete
-	$q01 = myquery("select id from anketa where  akademska_godina=$ag and aktivna = 1");
+	$q01 = myquery("select id from anketa_anketa where  akademska_godina=$ag and aktivna = 1");
 	if (mysql_num_rows($q01)==0){
 		biguglyerror("Ne postoji aktivna anketa!");
 		return;
 	}
 	$id_ankete = mysql_result($q01,0,0);
 
-	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna=1 and akademska_godina=$ag");
+	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1 and akademska_godina=$ag");
 	$anketa = mysql_result($q09,0,0);
 	$naziv= mysql_result($q09,0,1);
 	$rok=mysql_result($q09,0,2);
@@ -31,7 +31,7 @@ function public_anketa(){
 		$id_ankete = $_POST['id_ankete'];
 				
 		// broj rank pitanja
-		$q203=myquery("SELECT count(*) FROM pitanje WHERE anketa =$id_ankete and tip_pitanja =1");
+		$q203=myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa =$id_ankete and tip_pitanja =1");
 		$broj_rank_pitanja= mysql_result($q203,0,0);
 		 
 		$j=1;
@@ -47,11 +47,11 @@ function public_anketa(){
 		
 		// ubaciti sve odgovore u tabelu odgovori_rank
 		for ($i=0; $i< sizeof($izbori) ; $i++){
-			$q590 = myquery("insert into odgovor_rank set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], izbor_id=$izbori[$i]");
+			$q590 = myquery("insert into anketa_odgovor_rank set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], izbor_id=$izbori[$i]");
 		}
 		
 		// broj esejskih pitanja
-		$result204=myquery ("SELECT count(*) FROM pitanje WHERE anketa =$id_ankete and tip_pitanja =2");
+		$result204=myquery ("SELECT count(*) FROM anketa_pitanje WHERE anketa =$id_ankete and tip_pitanja =2");
 		$broj_esej_pitanja= mysql_result($result204,0,0);
 		 
 		for ($i=0; $i<$broj_esej_pitanja ; $i++){
@@ -61,7 +61,7 @@ function public_anketa(){
 		}
 		// ubaciti sve odgoovre u tabelu odgovori_text
 		for ($i=0; $i<$broj_esej_pitanja ; $i++){
-			$q590 = myquery("insert into odgovor_text set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], odgovor='$komentar[$i]'");
+			$q590 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], odgovor='$komentar[$i]'");
 		}
 		
 		?>	
@@ -71,7 +71,7 @@ function public_anketa(){
     	</center>
 		<?
         // nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
-        $q600 = myquery("update rezultat set zavrsena='Y' where id=$id_rezultata");
+        $q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
 	}
 
 	//  ----------------  AKCIJA PRIKAZI dio koji ide nakon sto je student unio kod za anketu te stistnuo dugme ----------------------
@@ -80,7 +80,7 @@ function public_anketa(){
 		$unique_hash_code = my_escape($_POST['kod']);
 		
 		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem zavrsena
-		$q590 = myquery("SELECT count( * ),id,predmet FROM rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N' GROUP BY id, predmet");
+		$q590 = myquery("SELECT count( * ),id,predmet FROM anketa_rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N' GROUP BY id, predmet");
 		
 		if ( !mysql_num_rows($q590) )	{
 			// dio koji ide ako dati hesh ne postoji u bazi tj ako student pokusava da izmisli hesh :P
@@ -165,7 +165,7 @@ function public_anketa(){
 
 function Ubaci_pitanje($tip_pitanja,$id_ankete,$j){
 	// kupitmo pitanja u zavisnosti od argumenta koji je poslan
-	$results1= myquery("select id,tekst from pitanje p where tip_pitanja = $tip_pitanja and anketa=$id_ankete");
+	$results1= myquery("select id,tekst from anketa_pitanje p where tip_pitanja = $tip_pitanja and anketa=$id_ankete");
 	
 	$par =1;
 	// ako je pitanje rank

@@ -11,7 +11,7 @@ function student_anketa() {
 	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 	$ag = mysql_result($q10,0,0);
 	
-	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa where aktivna=1 and akademska_godina=$ag");
+	$q09= myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1 and akademska_godina=$ag");
 	$anketa = mysql_result($q09,0,0);
 	$naziv= mysql_result($q09,0,1);
 	$rok=mysql_result($q09,0,2);
@@ -60,7 +60,7 @@ function student_anketa() {
 	<?
 	// kreiramo novi slog u tabeli rezultat
 	
-	$result700=myquery("SELECT id FROM rezultat ORDER BY id desc limit 1");
+	$result700=myquery("SELECT id FROM anketa_rezultat ORDER BY id desc limit 1");
 	//$result700 = mysql_query($q700);
 	if (mysql_num_rows($result700)==0) 
 		$id_rezultata=1;
@@ -69,12 +69,12 @@ function student_anketa() {
 	// jedan student (userID ) moze isputniti anektu za jedna predmet samo jednom u jednoj akademskoj godini
 	$unique_hash_code = md5($userid.$predmet.$ag);
 	// da li je vec taj slog u tabeli 
-	$q589 = myquery("select count(*) from rezultat where unique_id='$unique_hash_code'");
+	$q589 = myquery("select count(*) from anketa_rezultat where unique_id='$unique_hash_code'");
 	
 	$postoji_slog= mysql_result($q589,0,0);
 	
 	if(!$postoji_slog)
-		$q590 = myquery("INSERT INTO rezultat (id ,anketa ,vrijeme ,zavrsena ,predmet,unique_id,akademska_godina,studij,semestar)
+		$q590 = myquery("INSERT INTO anketa_rezultat (id ,anketa ,vrijeme ,zavrsena ,predmet,unique_id,akademska_godina,studij,semestar)
 			VALUES ($id_rezultata, $anketa, curdate(), 'N', $predmet, '$unique_hash_code',$ag,$studij,$semestar)");
 	
 	?>

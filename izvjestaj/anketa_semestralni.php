@@ -21,7 +21,7 @@ function izvjestaj_anketa_semestralni(){
 	
 	<?
     $ak_god = intval($_REQUEST['akademska_godina']);
-	$q011 = myquery("select id from anketa where akademska_godina= $ak_god");
+	$q011 = myquery("select id from anketa_anketa where akademska_godina= $ak_god");
 	if (mysql_num_rows($q011)==0){ // da li postoji anketa uopce
 		biguglyerror("Ne postoji anketa za datu akademsku godinu!");
 		return;
@@ -43,7 +43,7 @@ function izvjestaj_anketa_semestralni(){
 			
 		$id_ankete = mysql_result($q011,0,0);	
 		
-		$result203=myquery("SELECT count(*) FROM pitanje WHERE anketa =$id_ankete and tip_pitanja =1");
+		$result203=myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa =$id_ankete and tip_pitanja =1");
 		$broj_rank_pitanja= mysql_result($result203,0,0);
 	
 		?>
@@ -61,7 +61,7 @@ function izvjestaj_anketa_semestralni(){
 			</tr>
 		<?
 		// biramo pitanja za glavnu petlju
-		$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM pitanje p,tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
+		$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
 		
 		$i=0;
 		while ($r202 = mysql_fetch_row($result2077 	)) {			
@@ -84,7 +84,7 @@ function izvjestaj_anketa_semestralni(){
 		$naziv_ak_god = mysql_result($q0111,0,0);
 		
 		//anketa za datu godinu :
-		$q011 = myquery("select id from anketa where akademska_godina= $ak_god");	
+		$q011 = myquery("select id from anketa_anketa where akademska_godina= $ak_god");	
 		$anketa = mysql_result($q011,0,0);
 		
 		?>
