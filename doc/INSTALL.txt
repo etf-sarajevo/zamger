@@ -14,9 +14,38 @@ tako da radi sa MySQL v3.x)
 - Web server - testirano samo sa Apache web serverom
 
 
-1. Kopirajte sadrzaj Zamger stabla na neku lokaciju na web serveru:
+0. Konfiguracija PHPa
+
+Da bi Zamger radio ispravno, potrebno je podesiti sljedece 
+konfiguracijske parametre za PHP. Ova konfiguracije se moze napraviti u 
+datoteci php.ini (na Linux/UNIX masinama obicno se nalazi u /etc 
+direktoriju) ili koristeci neki alat za konfigurisanje PHPa:
+
+- Ukljuciti opciju Short open tags:
+	short_open_tag = On
+
+- Iskljuciti prijavljivanje gresaka tipa NOTICE (obavjestenje):
+	error_reporting  =  E_ALL & ~E_NOTICE
+
+- Omoguciti minimalno 32MB memorije za PHP procese:
+	memory_limit = 32M
+
+- Radi sigurnosti, iskljuciti opciju Register globals:
+	register_globals = Off
+
+Ukoliko vam vas web hosting ne dozvoljava da podesite neki od ovih 
+parametara, potrazite drugi. Administrator koji nije dovoljno 
+kompetentan da omoguci konfigurisanje PHPa vjerovatno je napravio i 
+mnogo drugih propusta.
+
+
+
+1. Raspakujte arhivu i kopirajte sadrzaj Zamger stabla na neku lokaciju 
+na web serveru:
 
 # tar xzvf zamger_4.0.tar.gz
+
+Ukoliko koristite SVN, napravite checkout i zatim kopirajte stablo.
 
 
 2. Kreirajte bazu u mysqlu:
@@ -46,13 +75,14 @@ Bye
 # mysql zamger -u zamger -p <zamger-dump.sql
 
 
-5. Ako zelite omoguciti slanje zadaca, trebate kreirati neke foldere
+5. Ako zelite omoguciti upload fajlova, trebate kreirati neke foldere
 kojima web korisnik moze pristupiti, ali koji nisu direktno dostupni 
 kroz browser.
 
 # mkdir /home/zamger
 # mkdir /home/zamger/tmp
 # mkdir /home/zamger/zadace
+# mkdir /home/zamger/projekti
 # chown -R apache:apache /home/zamger
 
 
@@ -102,8 +132,8 @@ kliknite na dugme Dodaj
 - U dijelu pod naslovom Tip korisnika treba biti aktivirana opcija 
 Student - ako nije, aktivirajte je
 - Ispod toga nalazi se naslov STUDENT. Pod ovim naslovom jedna od opcija 
-zove se Upisi studenta na predmet. Izaberite naziv predmeta i kliknite 
-na dugme Upisi
+zove se Manuelni upis studenta na predmete. Pored naziva predmeta 
+kliknite na link "upisi".
 
 
 10. Klikom na link Spisak predmeta i grupa u gornjem lijevom uglu ekrana 
