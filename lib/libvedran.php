@@ -24,6 +24,7 @@
 # v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
 # v0.0.14.1 (2009/01/22) + omogucen unos float vrijednosti sa zarezom u form generatorima
 # v0.0.14.2 (2009/03/24) + dodan escaping u genform
+# v0.0.14.3 (2009/11/07) + izbaceno polje "pass" i iz genuri()
 
 
 # + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
@@ -373,7 +374,7 @@ function genuri() {
 	$result = $_SERVER['PHP_SELF']."?";
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
-		if ((substr($key,0,4) != "_lv_") && $key != "PHPSESSID")
+		if ((substr($key,0,4) != "_lv_") && $key != "PHPSESSID" && $key != "pass")
 		$result .= urlencode($key).'='.urlencode($value).'&';
 	}
 	if (substr($result,strlen($result)-1) == "&") 
