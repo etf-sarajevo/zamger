@@ -344,7 +344,7 @@ else if ($akcija == "upis") {
 	if ($stari_studij != $studij) {
 		$ponovac=0;
 		$q515 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-		$plan_studija = mysql_result($q515,0,0);
+		if (mysql_num_rows($q515)>0) $plan_studija = mysql_result($q515,0,0);
 	}
 
 
