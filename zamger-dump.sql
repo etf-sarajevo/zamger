@@ -1084,6 +1084,30 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tipstudija`
+--
+
+CREATE TABLE IF NOT EXISTS `tipstudija` (
+  `id` int(11) NOT NULL,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `ciklus` tinyint(2) NOT NULL,
+  `trajanje` tinyint(3) NOT NULL,
+  `moguc_upis` tinyint(1) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `tipstudija`
+--
+
+INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VALUES
+(1, 'Virtualni studij PGS', 1, 2, 0),
+(2, 'Bakalaureat', 1, 6, 1),
+(3, 'Master', 2, 4, 1),
+(4, 'Diplomski studij - Ante-Bologna', 1, 9, 0);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `ugovoroucenju`
 --
 
