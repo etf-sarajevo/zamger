@@ -1447,10 +1447,9 @@ CREATE TABLE  IF NOT EXISTS `student_projekat` (
 DROP TABLE IF EXISTS `ispit_termin`;
 CREATE TABLE IF NOT EXISTS `ispit_termin` (
   `id` int(11) NOT NULL auto_increment,
-  `datumvrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  `komponenta` int(11) NOT NULL,
+  `datumvrijeme` datetime NOT NULL default '0000-00-00 00:00:00',
   `maxstudenata` int(11) NOT NULL,
-  `deadline` timestamp NOT NULL default '0000-00-00 00:00:00',
+  `deadline` datetime NOT NULL default '0000-00-00 00:00:00',
   `ispit` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=30 ;

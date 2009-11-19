@@ -8,191 +8,207 @@ function student_prijava_ispita() {
 global $userid;
 
 
+?>
+<h3>Prijava ispita</h3>
+<?
 
-//dio koda koji se izvrsava kad se klikne na "odjavi"
-if ($_GET["akcija"]=="odjavi")
-{
+// Trebaće nam aktuelna godina
+
+$q5 = myquery("select id from akademska_godina where aktuelna=1");
+$ag = mysql_result($q5,0,0);
+
+
+
+// Odjavljivanje sa prijavljenog ispita
+
+if ($_GET["akcija"]=="odjavi") {
 	$termin = intval($_GET['termin']);
 	if ($termin) {
-	$sqlDelete="DELETE FROM student_ispit_termin WHERE student=" .$userid . " AND ispit_termin=" . $termin . ";";
-	myquery($sqlDelete);
-	}
-?>
-	<script language="JavaScript">
-		window.location="?sta=student/prijava_ispita";
-	</script>
-<?php
-}
-
-//dio koda koji se izvrsava kad se klikne na "prijavi"
-if ($_GET["akcija"]=="prijavi")
-{
-	$termin = intval($_GET['termin']);
-    if ($termin) {
-	//sljedeci dio koda ispituje da li je popunjen ispitni termin
-	$s0 = "SELECT it.id FROM ispit_termin as it, osoba as o, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.id AND pk.id=sp.predmet AND sp.student=o.id AND o.id=$userid";
-	$s1 = "SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$termin";
-	$s2 = "SELECT maxstudenata FROM ispit_termin WHERE id=$termin";
-	$q0 = myquery ($s0);
-	$q1 = myquery ($s1);
-	$q2 = myquery ($s2);
-	$temp0 = mysql_fetch_row($q0);
-	$temp1 = mysql_fetch_row($q1);
-	$temp2 = mysql_fetch_row($q2);
-	if(!$temp0[0])
-	{
-		niceerror("Niste upisani na taj predmet!");
-		zamgerlog("nije upisan na predmet", 3);
-		return 0;
-	} 
-	if($temp1[0]<$temp2[0])
-		{	
-		$sqlInsert="INSERT INTO student_ispit_termin (student,ispit_termin) VALUES (" .
-		$userid . "," . $termin . ");";
-		myquery($sqlInsert);
+		$q200 = myquery("select count(*) from student_ispit_termin where student=$userid and ispit_termin=$termin");
+		if (mysql_result($q200,0,0)<1) {
+			niceerror("Već ste ispisani sa termina.");
+			?>
+			<script language="JavaScript">
+			location.href='?sta=student/prijava_ispita';
+			</script>
+			<?
+			return;
 		}
-    }
-	else 
-	{
-		niceerror("Popunjen ispitni termin!");
-		zamgerlog("popunjen termin", 3);
-		return 0;
+		$q210 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
+		nicemessage("Uspješno ste odjavljeni sa ispita");
+		zamgerlog("odjavljen sa ispita", 2);
 	}
-?>
-	<script language="JavaScript">
-		window.location="?sta=student/prijava_ispita";
-	</script>
-<?php
+}
+
+
+// Prijava na ispit
+
+if ($_GET["akcija"]=="prijavi") {
+	$termin = intval($_REQUEST['termin']);
+	if (!$termin) {
+		niceerror("Neispravan termin.");
+		return;
+	}
+
+	// Da li je student upisan na predmet?
+	$q100 = myquery ("SELECT count(*) FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=$ag and pk.akademska_godina=$ag and pk.id=sp.predmet AND sp.student=$userid");
+	if (mysql_result($q100,0,0)<1) {
+		niceerror("Niste upisani na taj predmet!");
+		return;
+	}
+
+	// Da li je popunjen termin?
+	$q110 = myquery("SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$termin");
+	$q120 = myquery("SELECT maxstudenata FROM ispit_termin WHERE id=$termin");
+	if (mysql_result($q110,0,0) >= mysql_result($q120,0,0)) {
+		niceerror("Ispitni termin je popunjen.");
+	} else {
+		$q130 = myquery("select ispit from ispit_termin where id=$termin");
+		$ispit = mysql_result($q130,0,0);
+
+		// Da li je već prijavio termin na istom ispitu?
+		$q135 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$ispit");
+		if (mysql_result($q135,0,0)>0) {
+			niceerror("Već ste prijavljeni na neki termin za ovaj ispit.");
+		} else {
+			$q140 = myquery("INSERT INTO student_ispit_termin (student,ispit_termin) VALUES ($userid, $termin)");
+			nicemessage("Uspješno ste prijavljeni na termin");
+			zamgerlog("prijavljen na termin za ispit", 2);
+		}
+	}
 }
 
 
 
+// GLAVNI EKRAN
 
-$s3="SELECT DISTINCT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.id, it.maxstudenata, k.id
-             FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk, akademska_godina as ag
-		 WHERE it.ispit=i.id AND it.komponenta=k.id AND i.predmet=pk.id AND p.id=pk.predmet AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND pk.akademska_godina=ag.id AND ag.aktuelna=1
-                   AND it.id NOT IN (SELECT ispit_termin FROM student_ispit_termin WHERE student=$userid)";
-$s4="SELECT io.ocjena, i.komponenta FROM ispit as i, ispit_termin as it, ispitocjene as io WHERE io.student=$userid AND io.ispit=i.id AND it.ispit=i.id";
+// Spisak ispita koji se mogu prijaviti
 
-$q3 = myquery($s3);
-$q4 = myquery($s4);
+$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND i.akademska_godina=$ag AND pk.predmet=p.id and pk.akademska_godina=$ag AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW()");
 
 
 ?>
 <br><br>
 <b>Ispiti otvoreni za prijavu:</b>
 <br><br>
-<table width="750" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
-	<tr>
-	<td width=20><b>R.br.</b></td>
-	<td width=300><b>Predmet</b></td>
-     	<td align="center" width=110><b>Vrijeme ispita</b></td>
-      <td align="center" width=110><b>Rok za prijavu</b></td>
-	<td align="center" width=80><b>Tip ispita</b></td>
-	<td align="center"><b>Opcije</b></td>
-	</tr>
+<table border="0" cellspacing="1" cellpadding="5">
+<thead>
+<tr bgcolor="#999999">
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Predmet</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Rok za prijavu</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
+</tr>
+</thead>
+<tbody>
 
-<?php
+<?
+
 $brojac=1;
 
-while ($ispit=mysql_fetch_row($q3)) {
+while ($r10=mysql_fetch_row($q10)) {
+	$id_termina = $r10[0];
+	$id_predmeta = $r10[1];
+	$id_komponente = $r10[2];
+	$id_ispita = $r10[3];
 
-//sljedeci dio koda izbacuje iz tabele polozene ispite
-    $br=0;
-	while ($a=mysql_fetch_row($q4))
-	{
-		if($ispit[6]==$a[1] && $a[0]>=10 && $a[1]==1) $br++;
-		if($ispit[6]==$a[1] && $a[0]>=10 && $a[1]==2) $br++;
-		if($ispit[6]==$a[1] && $a[0]>=20 && $a[1]==3) $br++;
-		if($ispit[6]==$a[1] && $a[0]>=20 && $a[1]==4) $br++;
-	}
-	if($br!=0) continue;
-//sljedeci dio koda ispituje da li je popunjen ispitni termin
-	$s5 = "SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=" . $ispit[4];
-	$q5 = myquery ($s5);
-	$temp = mysql_fetch_row($q5);
-	if($temp[0]==$ispit[5]) continue;
+	$naziv_predmeta = $r10[4];
+	$vrijeme_ispita = date("d.m.Y. H:i",date($r10[5]));
+	$rok_za_prijavu = date("d.m.Y. H:i",date($r10[6]));
+	$tip_ispita = $r10[7];
+	$max_studenata =$r10[8];
 
-//naredne 2 linije provjeravaju da li je istekao rok za prijavu ispita
-	$mytime = time(); // Set time to now
-      if($mytime>$ispit[2]) continue;
+	// Da li je student već položio ovu vrstu ispita?
+	$q20 = myquery("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$userid and io.ispit=i.id and i.predmet=$id_predmeta and i.akademska_godina=$ag and i.komponenta=k.id and k.id=$id_komponente and io.ocjena>=k.prolaz");
+	if (mysql_result($q20,0,0)>0) continue;
 
-//naredne 2 linije provjeravaju da li je ispit zavrsen (ako je slucajno neko postavio veci 'deadline' od 'datumvrijeme' ispita)
-	if($mytime>$ispit[1]) continue;
+	// Da li je položio predmet?
+	$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
+	if (mysql_result($q30,0,0)>0) continue;
 
+	// Da li je već prijavio ovaj ispit u nekom od termina?
+	$q40 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$id_ispita");
+	if (mysql_result($q40,0,0)>0) continue;
+
+
+	?>
+	<tr>
+		<td><?=$brojac?></td>
+		<td><?=$naziv_predmeta?></td>
+		<td align="center"><?=$vrijeme_ispita?></td>
+		<td align="center"><?=$rok_za_prijavu?></td>
+		<td align="center"><?=$tip_ispita?></td>
+		<td align="center"><?
+
+	// Da li je termin popunjen?
+	$q50 = myquery("SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$id_termina");
+	if(mysql_result($q50,0,0)>=$max_studenata) {
+		?><font color="#FF0000">Termin popunjen</font><?
+
+	// Da li je istekao rok za prijavu?
+	} else if ($r10[6]<time()) {
+		?><font color="#FF0000">Rok je istekao</font><?
+
+	} else {
+		?><a href="?sta=student/prijava_ispita&akcija=prijavi&termin=<?=$id_termina?>">Prijavi</a><?
+	}?></td>
+	</tr>
+	<?
+	$brojac++;
+}
 
 ?>
-	<tr>
-	<td><? echo "$brojac"; ?></td>
-	<td><?=$ispit[0]; ?></td>
-	<td align="center"><?=date("d.m.Y. H:i",date($ispit[1]));?></td>
-	<td align="center"><font color="#FF0000"><?=date("d.m.Y. H:i",date($ispit[2]));?></font></td>
+</table>
+<? if($brojac==1) { ?><p>Trenutno nema termina na koje se možete prijaviti.</p><? } ?>
+<br><br><br>
 
-	<td align="center"><?=$ispit[3];?></td>
+<b>Prijavljeni ispiti:</b>
 
-	<td align="center"><a href="?sta=student/prijava_ispita&akcija=prijavi&termin=<?php echo $ispit[4];?> ">Prijavi</a></td>
-	</tr>
-
-<?php
-$brojac++;
-}
-echo "</table>";
-
-if($brojac==1) echo "<p><font color=\"#FF0000\">Trenutno nemate ispitnih termina koji su otvoreni za prijavu.</font></p>";
-
-echo "<br><br><br>";
-echo "<b>Prijavljeni ispiti:</b>";
-
-
-
-
+<?
 
 
 //slijedeci dio koda sluzi za tabelarni prikaz prijavljenih predmeta
 
-
-$s6="SELECT DISTINCT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id
-             FROM ispit_termin as it, ispit as i, predmet as p, osoba as o, student_predmet as sp, komponenta k, ponudakursa as pk, student_ispit_termin as si
-             WHERE it.ispit=i.id AND pk.id=i.predmet  AND p.id=pk.predmet AND it.komponenta=k.id AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND si.student=$userid AND si.student=o.id AND si.ispit_termin=it.id";
-
-$q6 = myquery($s6);
+$q60 = myquery("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id
+             FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
+             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id AND it.datumvrijeme>=NOW()");
 
 ?>
 <br><br>
-<table width="630" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
-	<tr>
-	<td width=20><b>R.br.</b></td>
-	<td width=300><b>Predmet</b></td>
-     	<td align="center" width=110><b>Vrijeme ispita</b></td>
-	<td align="center" width=80><b>Tip ispita</b></td>
-	<td align="center"><b>Opcije</b></td>
-	</tr>
-
-<?php
+<table border="0" cellspacing="1" cellpadding="5">
+<thead>
+<tr bgcolor="#999999">
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Predmet</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
+</tr>
+</thead>
+<tbody>
+<?
 $brojac=1;
 
-while ($ispit=mysql_fetch_row($q6)) {
-	$mytime = time(); // Postavi vrijeme na trenutno
-      if($mytime>$ispit[1]) continue;
-
-?>
+while ($r60=mysql_fetch_row($q60)) {
+	?>
 	<tr>
-	<td><? echo "$brojac"; ?></td>
-	<td><?=$ispit[0]; ?></td>
-	<td align="center"><?=date("d.m.Y. H:i",date($ispit[1]));?></td>
-
-	<td align="center"><?=$ispit[2];?></td>
-	</td>
-	<td align="center"><a href="?sta=student/prijava_ispita&akcija=odjavi&termin=<?php echo $ispit[3];?> ">Odjavi</a></td>
+		<td><?=$brojac?></td>
+		<td><?=$r60[0]?></td>
+		<td align="center"><?=date("d.m.Y. H:i",date($r60[1]));?></td>
+		<td align="center"><?=$r60[2];?></td>
+		<td align="center"><a href="?sta=student/prijava_ispita&akcija=odjavi&termin=<?=$r60[3];?> ">Odjavi</a></td>
 	</tr>
-
-<?php
-$brojac++;
+	<?
+	$brojac++;
 }
 
-echo "</table>";
+?>
+</table>
+<?
 
-if($brojac==1) echo "<p><font color=\"#FF0000\">Trenutno nemate prijavljenih ispita.</font></p>";
+if($brojac==1) print "<p>Niste prijavljeni niti na jedan ispit</p>";
 
 
 

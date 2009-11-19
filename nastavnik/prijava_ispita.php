@@ -16,203 +16,202 @@ $ispit = intval($_REQUEST['ispit']);
 $termin = intval($_REQUEST['termin']);
 
 
-if ($predmet==0) { 
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
-	biguglyerror("Nije izabran predmet."); 
-	return; 
+
+// Funkcija dodaje nulu na početak stringa
+function nuliraj($v) {
+	if ($v<10) $v='0'.$v; return $v;
 }
 
-//provjera da li ispitni termin pripada ispitu
-if($termin){
-	$q0 = myquery("SELECT it.id FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.id=$ispit ");
-	$result = mysql_result($q0,0,0);
-	if (!$result) {
-	zamgerlog("termin ne pripada ispitu",3);
-	biguglyerror("Ispitni termin ne pripada datom ispitu"); 
-	return;
-	}
-}
 
 // Da li korisnik ima pravo uci u modul?
 
-if (!$user_siteadmin) { // 3 = site admin
+if (!$user_siteadmin) {
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
-		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet)",3);
-		biguglyerror("Nemate pravo ulaska u ovu grupu!");
+		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
+		biguglyerror("Nemate pravo ulaska u ovaj modul!");
 		return;
 	} 
 }
 
 
+// Provjera ispita
 
-$q1 = myquery("select naziv from predmet where id=$predmet");
-$predmet_naziv = mysql_result($q1,0,0);
+$q20 = myquery("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
+if (mysql_num_rows($q20)<1) {
+	niceerror("Nepostojeći ispit");
+	zamgerlog("nepostojeci ispit $ispit ili nije sa predmeta (pp$predmet, ag$ag)", 3);
+	return;
+}
 
-$dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
-$sat=date("H"); $minuta=date("i"); $sekunda=date("s");
-$dan1=date("d"); $mjesec1=date("m"); $godina1=date("Y"); 
-$sat1=date("H"); $minuta1=date("i"); $sekunda1=date("s");
-$limit=0;
+
+// Podaci za ispis
+
+$finidatum = date("d. m. Y", mysql_result($q20,0,0));
+$tipispita = mysql_result($q20,0,2);
+
+$q30 = myquery("select naziv from predmet where id=$predmet");
+$predmet_naziv = mysql_result($q30,0,0);
+
+
+
 ?>
 
 <br/>
-<p><h3><?=$predmet_naziv?> - Prijava ispita</h3></p>
+<h3><?=$predmet_naziv?> - Termini ispita</h3>
+
+<h4><?=$tipispita?>, <?=$finidatum?></h4>
 
 <?
 
 
+// Informativna poruka 
 
-//akcija koja brise ispitni termin
-
-if ($_REQUEST["akcija"]=="obrisi")
-{
-	$s555 = "SELECT it.id FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=$predmet";
-	$q555 = myquery($s555);
-	$r555 = mysql_result($q555,0,0);
+if (!$_REQUEST['akcija']) {
+	?>
+	<p>Definisanjem jednog ili više termina ispita omogućujete studentima da se prijavljuju za ispit kroz Zamger koristeći modul "Prijava ispita".<br />
+	Korištenje ove mogućnosti nije obavezno - ukoliko samo želite unijeti rezultate, nemojte kreirati termine.</p>
 	
-	if (($termin) && ($r555)) {
-	$delete1="DELETE FROM ispit_termin WHERE id=" . $termin;
-	$delete2="DELETE FROM student_ispit_termin WHERE ispit_termin=" . $termin;
-	myquery($delete1);
-	myquery($delete2);
-	zamgerlog("Izbrisan ispitni termin id=$termin", 2);
+	<p><a href="?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>"><<< Nazad</a></p>
+	
+	<?
+}
+
+$dan=0; // Ovo će biti promijenjeno u slučaju izmjene
+
+
+
+// Provjera da li ispitni termin pripada ispitu
+if ($termin) {
+	$q40 = myquery("SELECT count(*) FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.id=$ispit ");
+	if (mysql_result($q40,0,0)<1) {
+		zamgerlog("termin ne pripada ispitu",3);
+		biguglyerror("Ispitni termin ne pripada datom ispitu"); 
+		return;
 	}
-	
-?>
-	<script language="JavaScript">
-		window.location="?sta=nastavnik/prijava_ispita&predmet=<? print $predmet; ?>&ag=<? print $ag; ?>";
-	</script>
-<?
 }
 
 
 
-//ispisivanje tabele studenata koji su se vec prijavili za neki ispitni termin
-if ($_REQUEST["akcija"]=="studenti")
-{
-   print '<br>';
-   if ($termin) {
-	
-	
-	$s2="SELECT o.ime, o.prezime, o.brindexa FROM osoba as o, student_ispit_termin as si, ispit_termin as it WHERE o.id=si.student AND it.id=si.ispit_termin AND it.id=" . $termin;
-	$q2=myquery($s2);
+// AKCIJE
 
-	print '<table width="360" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">';
-	print '<tr>';
-	print '<td width=20><b>R.br.</b></td>';
-    print '<td width=250><b>Ime i Prezime</b></td>';
-    print '<td align="center" width=90><b>Broj indexa</b></td>';
-	print '</tr>';
-	
+// Akcija koja briše ispitni termin
+
+if ($_REQUEST['akcija']=="obrisi") {
+	$q70 = myquery("select count(*) from student_ispit_termin where ispit_termin=$termin");
+	$broj_studenata = mysql_result($q70,0,0);
+
+	$q80 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
+	$datumvrijeme = date("d. m. Y. h:i:s", mysql_result($q80,0,0));
+
+	?>
+	<h4>Brisanje ispitnog termina <?=$datumvrijeme?></h4>
+	<p>Za ovaj termin se do sada prijavilo <b><?=$broj_studenata?></b> studenata.<br />
+	Da li ste sigurni da ga želite obrisati?</p>
+
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="obrisi_potvrda">
+	<input type="submit" value=" Briši ">
+	<input type="submit" name="povratak" value=" Nazad ">
+	</form>
+	<?
+	return;
+}
+
+
+// Potvrda brisanja
+
+if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " && check_csrf_token()) {
+	$q90 = myquery("DELETE FROM student_ispit_termin WHERE ispit_termin=$termin");
+	$q95 = myquery("DELETE FROM ispit_termin WHERE id=$termin");
+	zamgerlog("izbrisan ispitni termin $termin (pp$predmet, ag$ag)", 2);
+	nicemessage("Termin uspješno obrisan ");
+}
+
+
+
+
+// Tabela studenata koji su se prijavili za ovaj ispitni termin
+
+if ($_REQUEST["akcija"]=="studenti") {
+	$q200 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
+	$datumvrijeme = date("d. m. Y. H:i:s", mysql_result($q200,0,0));
+
+	$q200=myquery("SELECT o.ime, o.prezime, o.brindexa FROM osoba as o, student_ispit_termin as si WHERE o.id=si.student AND si.ispit_termin=$termin order by o.prezime, o.ime");
+
+
+	?>
+	<p><b>Tabela prijavljenih za: <?=$datumvrijeme?></b></p>
+
+	<table border="0" cellspacing="1" cellpadding="2">
+	<thead>
+	<tr bgcolor="#999999">
+		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
+		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Ime i prezime</font></td>
+		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Broj indexa</font></td>
+	</tr>
+	</thead>
+	<tbody>
+	<?
+
 	$brojac=1;
-	while ($r=mysql_fetch_row($q2)) {
-	print '<tr>';
-	 print '<td>';
-	   print $brojac; 
-	 print '</td>';
-	 print '<td>'; 
-         print $r[0]." ".$r[1];
-       print'</td>';
-	 print '<td align="center">';
-         print $r[2]; 
-       print '</td>';
-	print '</tr>';
-	$brojac++;	
-	}
-	
-	print '</table>';
-	if($brojac==1) print '<br><font color="red">Do sada se niko nije prijavio za ovaj termin.</font>';
-
-	print '<br>';
-	print '<p><hr/></p>';
-	print '<br>';
-    }
-	
-	$s2="SELECT UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline) , maxstudenata
-             FROM ispit_termin WHERE id=$termin";
-
-	$q2 = myquery($s2);
-	
-	$limit = mysql_result($q2,0,2);
-	$t1 = mysql_result($q2,0,0);
-	$t2 = mysql_result($q2,0,1);
-
-	if($t1){
-	$dan = date('d',$t1);
-	$mjesec = date('m',$t1);
-	$godina = date('Y',$t1);
-	$sat = date('H',$t1);
-	$minuta = date('i',$t1);
-	$sekunda = date('s',$t1);
-	}
-	if($t2){
-	$dan1 = date('d',$t2);
-	$mjesec1 = date('m',$t2);
-	$godina1 = date('Y',$t2);
-	$sat1 = date('H',$t2);
-	$minuta1 = date('i',$t2);
-	$sekunda1 = date('s',$t2);
+	while ($r200=mysql_fetch_row($q200)) {
+		?>
+		<tr>
+			<td><?=$brojac?></td>
+			<td><?=$r200[0]?> <?=$r200[1]?></td>
+			<td><?=$r200[2]?></td>
+		</tr>
+		<?
+		$brojac++;	
 	}
 
+
+	?>
+	</table>
+	<? if($brojac==1) print '<br>Do sada se niko nije prijavio za ovaj termin.'; ?>
+	<br><hr/><br>
+	<?
+
+	// Omogućićemo izmjenu ovog termina
+	$_REQUEST['akcija']="izmijeni";
 }
 
 
-//u ovoj akciji se samo iz baze podataka uzimaju vrijednosti, konkretna promjena se vrsi u akciji "izmijenitermin"
-if ($_REQUEST["akcija"]=="izmijeni")
-{
-	if ($termin) {
-	
-	$s2="SELECT UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline) , maxstudenata
-             FROM ispit_termin WHERE id=$termin";
+// U ovoj akciji se samo iz baze podataka uzimaju vrijednosti, konkretna promjena se vrsi u akciji "izmijeni_potvrda"
 
-	$q2 = myquery($s2);
-	
-	$limit = mysql_result($q2,0,2);
-	$t1 = mysql_result($q2,0,0);
-	$t2 = mysql_result($q2,0,1);
-	
+if ($_REQUEST["akcija"]=="izmijeni") {
+	if (!$termin) {
+		niceerror("Nije izabran termin.");
+		return 0;
 	}
 
-	if($t1){
-	$dan = date('d',$t1);
-	$mjesec = date('m',$t1);
-	$godina = date('Y',$t1);
-	$sat = date('H',$t1);
-	$minuta = date('i',$t1);
-	$sekunda = date('s',$t1);
-	}
-	if($t2){
-	$dan1 = date('d',$t2);
-	$mjesec1 = date('m',$t2);
-	$godina1 = date('Y',$t2);
-	$sat1 = date('H',$t2);
-	$minuta1 = date('i',$t2);
-	$sekunda1 = date('s',$t2);
-	}
-	
+	$q100 = myquery("SELECT UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline) , maxstudenata FROM ispit_termin WHERE id=$termin");
 
+	$t1 = mysql_result($q100,0,0);
+	$dan = date('d',$t1); $mjesec = date('m',$t1); $godina = date('Y',$t1); $sat = date('H',$t1); $minuta = date('i',$t1); $sekunda = date('s',$t1);
+
+	$t2 = mysql_result($q100,0,0);
+	$dan1 = date('d',$t2); $mjesec1 = date('m',$t2); $godina1 = date('Y',$t2); $sat1 = date('H',$t2); $minuta1 = date('i',$t2); $sekunda1 = date('s',$t2);
+
+	$limit = mysql_result($q100,0,2);
 }
 
 
-//dodavanje novog ispitnog termina
+// Potvrda izmjene postojeceg ispitnog termina
 
-if ($_POST['akcija'] == 'dodajtermin' && check_csrf_token()) {
-
-	$s4 = "SELECT komponenta FROM ispit WHERE id=$ispit";
-	$q4 = myquery($s4);
-		
+if ($_POST['akcija'] == 'izmijeni_potvrda' && check_csrf_token()) {
 	$limit = intval($_POST['limit']);
-	$tip = mysql_result($q4,0,0);
-	$dan = intval($_POST['dan']);
-	$mjesec = intval($_POST['mjesec']);
-	$godina = intval($_POST['godina']);
+
+	$dan = intval($_POST['day']);
+	$mjesec = intval($_POST['month']);
+	$godina = intval($_POST['year']);
 	$sat = intval($_POST['sat']);
 	$minuta = intval($_POST['minuta']);
 	$sekunda = intval($_POST['sekunda']);
-	$dan1 = intval($_POST['dan1']);
-	$mjesec1 = intval($_POST['mjesec1']);
-	$godina1 = intval($_POST['godina1']);
+	$dan1 = intval($_POST['1day']);
+	$mjesec1 = intval($_POST['1month']);
+	$godina1 = intval($_POST['1year']);
 	$sat1 = intval($_POST['sat1']);
 	$minuta1 = intval($_POST['minuta1']);
 	$sekunda1 = intval($_POST['sekunda1']);
@@ -221,65 +220,52 @@ if ($_POST['akcija'] == 'dodajtermin' && check_csrf_token()) {
 	$t2 = mktime($sat1,$minuta1,$sekunda1,$mjesec1,$dan1,$godina1);
 
 
-//Provjera ispravnosti
+	//Provjera ispravnosti
 
 	if (!checkdate($mjesec,$dan,$godina)) {
-		niceerror("Odabrani datum je nemoguc");
-		zamgerlog("los datum", 3);
-		return 0;
+		niceerror("Odabrani datum je nemoguć");
 	}
-	if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
-		niceerror("Vrijeme nije dobro");
-		zamgerlog("lose vrijeme", 3);
-		return 0;
+	else if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
+		niceerror("Odabrano vrijeme je nemoguće");
 	}
-	if (!checkdate($mjesec1,$dan1,$godina1)) {
-		niceerror("Odabrani datum je nemoguc");
-		zamgerlog("los datum", 3);
-		return 0;
+	else if (!checkdate($mjesec1,$dan1,$godina1)) {
+		niceerror("Odabrani datum za rok prijave je nemoguć");
 	}
-	if ($sat1<0 || $sat1>24 || $minuta1<0 || $minuta1>60 || $sekunda1<0 || $sekunda1>60) {
-		niceerror("Vrijeme nije dobro");
-		zamgerlog("lose vrijeme", 3);
-		return 0;
+	else if ($sat1<0 || $sat1>24 || $minuta1<0 || $minuta1>60 || $sekunda1<0 || $sekunda1>60) {
+		niceerror("Odabrano vrijeme za rok prijave je nemoguće");
 	}
-	if ($limit<=0){
-		niceerror("Maksimalni broj studenata na ispitu mora biti veci od nule");
-		zamgerlog("los max broj studenata po ispitu",3);
-		return 0;
+	else if ($limit<=0){
+		niceerror("Maksimalni broj studenata na ispitu mora biti veći od nule");
 	}
-	if ($t1<=$t2){
-		niceerror("Krajnji rok za prijavu ispita mora raniji od tacnog vremena odzavanja ispita");
-		zamgerlog("los datum",3);
-		return 0;
+	else if ($t1<$t2){
+		niceerror("Krajnji rok za prijavu ispita mora raniji od tačnog vremena održavanja ispita");
 	}
-	
-	$sqlInsert="INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , komponenta=$tip , maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')";
-	$q=myquery($sqlInsert);
-	zamgerlog("Kreiran novi ispitni termin", 2);
-?>
-	<script language="JavaScript">
-		window.location="?sta=nastavnik/ispiti&predmet=<? print $predmet; ?>&ag=<? print $ag; ?>";
-	</script>
-<?
+	else {
+		nicemessage("Uspješno izmijenjen termin.");
+		$q110=myquery("UPDATE ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , maxstudenata=$limit , deadline=FROM_UNIXTIME('$t2'), ispit=$ispit WHERE id=$termin");
+		zamgerlog("izmijenjen ispitni termin", 2);
+	}
 
+	// Radi ljepšeg ispisa, dodajemo nule
+	$dan=nuliraj($dan); $mjesec=nuliraj($mjesec); $sat=nuliraj($sat); $minuta=nuliraj($minuta); $sekunda=nuliraj($sekunda);
+	$dan1=nuliraj($dan1); $mjesec1=nuliraj($mjesec1); $sat1=nuliraj($sat1); $minuta1=nuliraj($minuta1); $sekunda1=nuliraj($sekunda1);
 }
 
 
-//izmjena postojeceg ispitnog termina
+// Dodavanje novog ispitnog termina
 
-if ($_POST['akcija'] == 'izmijenitermin' && check_csrf_token()) {
-
+if ($_POST['akcija'] == 'dodaj_potvrda' && check_csrf_token()) {
 	$limit = intval($_POST['limit']);
-    $dan = intval($_POST['dan']);
-	$mjesec = intval($_POST['mjesec']);
-	$godina = intval($_POST['godina']);
+
+	$dan = intval($_POST['day']);
+	$mjesec = intval($_POST['month']);
+	$godina = intval($_POST['year']);
 	$sat = intval($_POST['sat']);
 	$minuta = intval($_POST['minuta']);
 	$sekunda = intval($_POST['sekunda']);
-	$dan1 = intval($_POST['dan1']);
-	$mjesec1 = intval($_POST['mjesec1']);
-	$godina1 = intval($_POST['godina1']);
+	$dan1 = intval($_POST['1day']);
+	$mjesec1 = intval($_POST['1month']);
+	$godina1 = intval($_POST['1year']);
 	$sat1 = intval($_POST['sat1']);
 	$minuta1 = intval($_POST['minuta1']);
 	$sekunda1 = intval($_POST['sekunda1']);
@@ -288,192 +274,155 @@ if ($_POST['akcija'] == 'izmijenitermin' && check_csrf_token()) {
 	$t2 = mktime($sat1,$minuta1,$sekunda1,$mjesec1,$dan1,$godina1);
 
 
-//Provjera ispravnosti
+	//Provjera ispravnosti
 
 	if (!checkdate($mjesec,$dan,$godina)) {
-		niceerror("Odabrani datum je nemoguc");
-		zamgerlog("los datum", 3);
-		return 0;
+		niceerror("Odabrani datum je nemoguć");
 	}
-	if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
-		niceerror("Vrijeme nije dobro");
-		zamgerlog("lose vrijeme", 3);
-		return 0;
+	else if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
+		niceerror("Odabrano vrijeme je nemoguće");
 	}
-	if (!checkdate($mjesec1,$dan1,$godina1)) {
-		niceerror("Odabrani datum je nemoguc");
-		zamgerlog("los datum", 3);
-		return 0;
+	else if (!checkdate($mjesec1,$dan1,$godina1)) {
+		niceerror("Odabrani datum za rok prijave je nemoguć");
 	}
-	if ($sat1<0 || $sat1>24 || $minuta1<0 || $minuta1>60 || $sekunda1<0 || $sekunda1>60) {
-		niceerror("Vrijeme nije dobro");
-		zamgerlog("lose vrijeme", 3);
-		return 0;
+	else if ($sat1<0 || $sat1>24 || $minuta1<0 || $minuta1>60 || $sekunda1<0 || $sekunda1>60) {
+		niceerror("Odabrano vrijeme za rok prijave je nemoguće");
 	}
-	if ($limit<=0){
-		niceerror("Maksimalni broj studenata na ispitu mora biti veci od nule");
-		zamgerlog("los max broj studenata po ispitu",3);
-		return 0;
+	else if ($limit<=0){
+		niceerror("Maksimalni broj studenata na ispitu mora biti veći od nule");
 	}
-	if ($t1<=$t2){
-		niceerror("Krajnji rok za prijavu ispita mora raniji od tacnog vremena odzavanja ispita");
-		zamgerlog("los datum",3);
-		return 0;
+	else if ($t1<$t2){
+		niceerror("Krajnji rok za prijavu ispita mora raniji od tačnog vremena održavanja ispita");
 	}
-	
-		$sqlUpdate="UPDATE ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , maxstudenata=$limit , deadline=FROM_UNIXTIME('$t2') WHERE id=$termin";
-		$q5=myquery($sqlUpdate);
-		zamgerlog("Izmijenjen ispitni termin", 2);
-?>
-		<script language="JavaScript">
-		window.location="?sta=nastavnik/ispiti&predmet=<? print $predmet; ?>&ag=<? print $ag; ?>";
-		</script>
-<?
+	else {
+		nicemessage("Uspješno kreiran novi termin.");
+		$q=myquery("INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1'), maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')");
+		zamgerlog("kreiran novi ispitni termin pp$predmet, ag$ag", 2);
+	}
+
+	// Radi ljepšeg ispisa, dodajemo nule
+	$dan=nuliraj($dan); $mjesec=nuliraj($mjesec); $sat=nuliraj($sat); $minuta=nuliraj($minuta); $sekunda=nuliraj($sekunda);
+	$dan1=nuliraj($dan1); $mjesec1=nuliraj($mjesec1); $sat1=nuliraj($sat1); $minuta1=nuliraj($minuta1); $sekunda1=nuliraj($sekunda1);
 }
 
 
 
-//forma za unos novog ispitnog termina
+
+// GLAVNI EKRAN
+
+// Tabela objavljenih termina za predmet
+
+$q10=myquery("SELECT id, UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline), maxstudenata FROM ispit_termin WHERE ispit=$ispit order by datumvrijeme");
 
 ?>
+<b>Objavljeni termini:</b>
+<br><br>
+<table border="0" cellspacing="1" cellpadding="2">
+<thead>
+<tr bgcolor="#999999">
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme termina</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Rok za prijavu</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Prijavljeno</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Max.</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
+</tr>
+</thead>
+<tbody>
 
-	<? if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmijeni termin:';
-	   else print 'Registruj novi ispitni termin za prijavu:';
-        ?>
+<?
+$brojac=1;
+$uk_prijavljeno=0;
+
+while ($r10=mysql_fetch_row($q10)) {
+	$id_termina = $r10[0];
+	$vrijeme_termina = date("d.m.Y. H:i",date($r10[1]));
+	$rok_prijave = date("d.m.Y. H:i",date($r10[2]));
+	$max_studenata = $r10[3];
+
+	$q20 = myquery("select count(*) from student_ispit_termin where ispit_termin=$id_termina");
+	$prijavljeno = mysql_result($q20,0,0);
+	$uk_prijavljeno += $prijavljeno;
+
+	?>
+	<tr>
+		<td><?=$brojac ?></td>
+		<td align="center"><?=$vrijeme_termina?></td>
+		<td align="center"><font color="#FF0000"><?=$rok_prijave?></font></td>
+		<td align="center"><?=$prijavljeno?></td>
+		<td align="center"><?=$max_studenata?></td>
+		<td align="center">
+			<a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Izmijeni</a>&nbsp;&nbsp;
+			<a href="?sta=nastavnik/prijava_ispita&akcija=obrisi&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Obriši</a>&nbsp;&nbsp;
+			<a href="?sta=nastavnik/prijava_ispita&akcija=studenti&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Studenti</a>
+		</td>
+	</tr>
+	<?
+	$brojac++;
+}
+
+?>
+	<tr>
+		<td colspan="3" align="right">UKUPNO: &nbsp;</td>
+		<td align="center"><?=$uk_prijavljeno?></td>
+		<td colspan="2">&nbsp;</td>
+	</tr>
+</tbody></table>
+<? if ($brojac==1) { ?><br>Nije registrovan nijedan termin za ovaj ispit<br><br><? } ?>
+<br><hr />
+<?
+
+
+
+
+// Forma za unos novog ispitnog termina ili editovanje postojećeg
+
+if ($dan==0) {
+	$dan=$dan1=date('d'); $mjesec=$mjesec1=date('m'); $godina=$godina1=date('Y');
+	$sat=$sat1=date('h'); $minuta=$minuta1=date('i'); $sekunda=$sekunda1=date('s');
+	if ($sat<10) $sat.='0';
+	$limit=0;
+
+	// Ako akcija nije izmjena, brišemo vrijednost varijable termin
+	$termin=0;
+}
+
+
+?>
 	<?=genform("POST")?>
 	<input type="hidden" name="termin" value="<?=$termin?>">
-	<? if($termin<=0) print '<input type="hidden" name="akcija" value="dodajtermin">';
-	   else print '<input type="hidden" name="akcija" value="izmijenitermin">';
-	?>
-	<? 
-	$q1 = myquery("select k.gui_naziv from ispit as i, komponenta as k where i.komponenta=k.id and i.id=$ispit");
-	$komponenta_naziv = mysql_result($q1,0,0); 
-	?>
-	Tip ispita: <b><? print $komponenta_naziv ?></b>
+	<input type="hidden" name="akcija" value="<? 
+		if($termin<=0) print 'dodaj_potvrda';
+		else print 'izmijeni_potvrda';
+	?>">
+
+	<p><b><? if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmijena termina';
+	   else print 'Registrovanje novog termina';
+        ?></b>
+
 	<br/><br/>
 	Datum i vrijeme ispita:<br/>
-	<select name="dan" class="default"><?
-	for ($i=1; $i<=31; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$dan) print " selected";
-		print ">$i</option>";
-	}
-	?></select>&nbsp;&nbsp;
-	<select name="mjesec" class="default"><?
-	for ($i=1; $i<=12; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$mjesec) print " selected";
-		print ">$i</option>";
-	}
-	?></select>&nbsp;&nbsp;
-	<select name="godina" class="default"><?
-	for ($i=2005; $i<=2015; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$godina) print " selected";
-		print ">$i</option>";
-	}
-	?></select>
+	<?=datectrl($dan, $mjesec, $godina); ?>
 
 	&nbsp;&nbsp; <input type="text" name="sat" size="2" value="<?=$sat?>"> <b>:</b> <input type="text" name="minuta" size="2" value="<?=$minuta?>"> <b>:</b> <input type="text" name="sekunda" size="2" value="<?=$sekunda?>">
 	<br/><br/>
 
-      Krajnji rok za prijavu ispita:
+	Krajnji rok za prijavu ispita:
 	<br/>
-	<select name="dan1" class="default"><?
-	for ($i=1; $i<=31; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$dan1) print " selected";
-		print ">$i</option>";
-	}
-	?></select>&nbsp;&nbsp;
-	<select name="mjesec1" class="default"><?
-	for ($i=1; $i<=12; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$mjesec1) print " selected";
-		print ">$i</option>";
-	}
-	?></select>&nbsp;&nbsp;
-	<select name="godina1" class="default"><?
-	for ($i=2005; $i<=2015; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$godina1) print " selected";
-		print ">$i</option>";
-	}
-	?></select>
+	<?=datectrl($dan1, $mjesec1, $godina1, "1"); ?>
 
 	&nbsp;&nbsp; <input type="text" name="sat1" size="2" value="<?=$sat1?>"> <b>:</b> <input type="text" name="minuta1" size="2" value="<?=$minuta1?>"> <b>:</b> <input type="text" name="sekunda1" size="2" value="<?=$sekunda1?>">
 	<br/><br/>
 	Maksimalan broj studenata: <input type="text" size="2" name="limit" value="<?=$limit?>"  class="default">
 	<br/><br/>
 
-	<? 
-       if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print '<input type="submit" value="Izmijeni"  class="default"><br/><br/>';
-	   else print '<input type="submit" value="Dodaj"  class="default"><br/><br/>';
-	   
-     	 print '<a href="?sta=nastavnik/ispiti&predmet='. $predmet . '&ag=' . $ag . '"><<< Nazad</a><br/>';
-	?>
+	<input type="submit" value="<? 
+	if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmijeni'; else print 'Dodaj';
+	?>"  class="default"><br/><br/>
+	<a href="?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>">&lt;&lt;&lt; Nazad</a><br/>
 </form>
 
 <?
-
-echo "<p><hr/></p>";
-
-
-
-
-//tabela objavljenih termina za predmet
-
-$s1="SELECT DISTINCT it.id, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata
-             FROM ispit_termin as it, komponenta as k,ispit as i, akademska_godina as ag WHERE it.ispit=i.id AND it.komponenta=k.id AND i.predmet=$predmet AND ag.id=$ag";
-
-$q1 = myquery($s1);
-?>
-<b>Objavljeni termini:</b>
-<br><br>
-<table width="600" border="1" cellpadding="1" cellspacing="1" bordercolor="#000000">
-	<tr>
-	<td width=20><b>R.br.</b></td>
-     	<td align="center" width=110><b>Vrijeme ispita</b></td>
-      <td align="center" width=110><b>Rok za prijavu</b></td>
-	<td align="center" width=80><b>Tip ispita</b></td>
-	<td align="center" width=60><b>Max studenata</b></td>
-	<td align="center"><b>Opcije</b></td>
-	</tr>
-
-<?
-$brojac=1;
-
-while ($r1=mysql_fetch_row($q1)) {
-
-	$temp=$r1[0];
-	$s5="SELECT i.id FROM ispit_termin as it, ispit as i WHERE it.id=$temp AND it.ispit=i.id";
-	$q5=myquery($s5);
-	$i=mysql_result($q5,0,0);
-
-?>
-	<tr>
-	<td><?=$brojac ?></td>
-	<td align="center"><?=date("d.m.Y. H:i",date($r1[1]));?></td>
-	<td align="center"><font color="#FF0000"><?=date("d.m.Y. H:i",date($r1[2]));?></font></td>
-
-	<td align="center"><?=$r1[3]?></td>
-
-	<td align="center"><?=$r1[4]?></td>
-	<td align="center"><a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&ispit=<? print $i;?>&termin=<? print $r1[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Izmijeni</a>&nbsp;&nbsp;
-				 <a href="?sta=nastavnik/prijava_ispita&akcija=obrisi&ispit=<? print $i;?>&termin=<? print $r1[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Obrisi</a>&nbsp;&nbsp;
-				 <a href="?sta=nastavnik/prijava_ispita&akcija=studenti&ispit=<? print $i;?>&termin=<? print $r1[0];?>&predmet=<? print $predmet ?>&ag=<? print $ag ?> ">Studenti</a></td>
-	
-
-	</tr>
-
-<?
-$brojac++;
-}
-
-print "</table>";
-if ($brojac==1) echo "<br><font color=\"red\">Nema objavljenih termina trenutno.</font><br><br>
-					      <font color=\"red\">* Napomena: Da bi objavili termine za prijavu ispita morate prvo kreirati ispit</font>";
-print "<br>";
 
 
 
