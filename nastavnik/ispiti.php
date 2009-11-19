@@ -274,14 +274,23 @@ if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad "
 		while ($r210 = mysql_result($q210)) {
 			$student = $r210[0];
 			$ponudakursa = $r210[1];
+			print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
 
 			$q220 = myquery("delete from ispitocjene where ispit=$ispit and student=$student");
 			update_komponente($student,$ponudakursa,$komponenta);
 
-			print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
 			$brojac++;
 		}
-		$q230 = myquery("delete from ispit where id=$ispit");
+
+		print "Brišem termine za prijavu ispita i prijave<br />\n\n";
+		$q230 = myquery("select id from ispit_termin where ispit=$ispit");
+		while ($r230 = mysql_fetch_row($q230)) {
+			$termin = $r230[0];
+			$q240 = myquery("delete from student_ispit_termin where ispit_termin=$termin");
+			$q250 = myquery("delete from ispit_termin where id=$termin");
+		}
+
+		$q260 = myquery("delete from ispit where id=$ispit");
 		nicemessage("Svi podaci su ažurirani.");
 		print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";
 		return;
@@ -290,12 +299,16 @@ if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad "
 		$finidatum = date("d. m. Y", mysql_result($q30,0,0));
 		$tipispita = mysql_result($q30,0,2);
 
+		$q270 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where it.ispit=$ispit and sit.ispit_termin=it.id");
+		$brojprijava = mysql_result($q270,0,0);
+
 		print genform("POST");
 		?>
 		<h2>Zatražili ste brisanje ispita &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
 		<p><font color="red"><b>Brisanje ispita je vrlo destruktivna akcija!</b></font></p>
-		<p>Brisanjem ispita potpuno ćete promijeniti bodovanje svih studenata na predmetu. Ova operacija se ne može vratiti! Da li ste sigurni da to želite?<br />
-		Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
+		<p>Brisanjem ispita potpuno ćete promijeniti bodovanje svih studenata na predmetu. Ova operacija se ne može vratiti! Da li ste sigurni da to želite?<br /><br />
+		Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br /><br />
+		<? if ($brojprijava>0) { ?>Za polaganje ovog ispita je prijavljeno <b><?=$brojprijava?> studenata</b>.<br /><br /><? } ?>
 		<input type="submit" name="potvrdabrisanja" value=" Briši ">
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
 		<?
@@ -331,11 +344,11 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 			while ($r320 = mysql_result($q320)) {
 				$student = $r320[0];
 				$ponudakursa = $r320[1];
-	
+				print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
+
 				update_komponente($student,$ponudakursa,$komponenta);
 				update_komponente($student,$ponudakursa,$nova_komponenta);
 
-				print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
 				$brojac++;
 			}
 		}
