@@ -55,7 +55,7 @@ if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za promjenu ličnih podataka. Vaš zahtjev je prihvaćen. Klikom na link Profil možete vidjeti vaše nove podatke.";
 	if (strlen($_REQUEST['komentar'])>2)
 		$tekst_poruke .= "\n\nPovodom Vašeg zahtjeva, Studentska služba vam je uputila sljedeći komentar:\n\t".$_REQUEST['komentar'];
-	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, ref=0, naslov='Vaš zahtjev za promjenu podataka je prihvaćen', tekst='$tekst_poruke'");
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='Vaš zahtjev za promjenu podataka je prihvaćen', tekst='$tekst_poruke'");
 
 	return;
 }
@@ -80,7 +80,7 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za promjenu ličnih podataka. Vaš zahtjev je odbijen.";
 	if (strlen($_REQUEST['komentar'])>2)
 		$tekst_poruke .= "\n\nRazlog odbijanja zahtjeva je:\n\t".$_REQUEST['komentar'];
-	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, ref=0, naslov='Vaš zahtjev za promjenu podataka je odbijen!', tekst='$tekst_poruke'");
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$osoba, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='Vaš zahtjev za promjenu podataka je odbijen!', tekst='$tekst_poruke'");
 
 	return;
 }
