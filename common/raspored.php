@@ -165,14 +165,24 @@ function common_raspored($tip) {
 		// Satnica
 		print "<div style=\"float:left\">\n";
 		for ($i=8; $i<=20; $i++)
+			if (strstr($_SERVER['HTTP_USER_AGENT'], "MSIE"))
+			print "<div class=\"satnica\" valign=\"center\"><img src=\"images/fnord.gif\" width=\"1\" height=\"27\">$i:00</div>\n";
+			else
 			print "<div class=\"satnica\">$i:00</div>\n";
 		print "</div>\n";
 		
 		for($r=0; $r<13; $r++) {
 			for($r2=0; $r2<6; $r2++) {
+			if (strstr($_SERVER['HTTP_USER_AGENT'], "MSIE"))
+				print '<div style = "float: left; border-right: 1px solid #E0E4F3; width: 130px; height: 40px; padding: 4px 0px 0px 1px;"></div>';
+			else
 				print '<div style = "float: left; border-right: 1px solid #E0E4F3; width: 129px; height: 35px; padding: 4px 0px 0px 1px;"></div>'."\n";
 			}
-			print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 54px; width: 782px; height: 30px; padding: 10px 0px 0px 2px;"></div>'."\n";
+			if (strstr($_SERVER['HTTP_USER_AGENT'], "MSIE"))
+				print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 0px; margin-top: -18px; width: 777px; height: 1px; padding: 0px 0px 0px 2px;"></div>';
+			else
+				print '<div style = "border-bottom: 1px solid #E0E4F3; margin-left: 54px; width: 782px; height: 30px; padding: 10px 0px 0px 2px;"></div>'."\n";
+
 		}
 		
 		print "\n".'<div style = "position:absolute; margin: -370px 0px 0px 53px">'."\n";
