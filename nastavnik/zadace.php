@@ -138,8 +138,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if ($ispis) {
 			print "Student '$prezime $ime' - zadaća $zadaca, bodova $bodova<br/>";
 		} else {
-			$q30 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=5, bodova=$bodova"); 
-			// status 5: pregledana
+			// Odredjujemo zadnji filename
+			$q25 = myquery("select filename from zadatak where zadaca=$zadaca, redni_broj=$zadatak, student=$student order by id desc limit 1");
+			if (mysql_num_rows($q25)>0) {
+				$filename=mysql_result($q25,0,0);
+			} else $filename='';
+
+			$status_pregledana = 5; // status 5: pregledana
+			$q30 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$status_pregledana, bodova=$bodova, vrijeme=NOW(), filename='$filename', userid=$userid"); 
 
 			// Treba nam ponudakursa za update komponente
 			$q35 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
