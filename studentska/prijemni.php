@@ -46,13 +46,23 @@ if ($termin==0) {
 	}
 } else {
 	$q10 = myquery("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	if (mysql_num_rows($q10)<1) {
+		niceerror("Nepostojeći termin.");
+		zamgerlog ("nepostojeci termin $termin", 3);
+		return;
+	}
 }
 
-$datum = date("d. m. Y.",mysql_result($q10,0,2));
-$ciklus_studija = mysql_result($q10,0,3);
-
-$naziv = " za ".mysql_result($q10,0,1)." akademsku godinu (".mysql_result($q10,0,3)." ciklus studija), $datum";
-
+if (mysql_num_rows($q10)<1) {
+	// Ovo će se desiti samo ako nije kreiran niti jedan termin
+	$datum = "/";
+	$ciklus_studija=1;
+} else {
+	$datum = date("d. m. Y.",mysql_result($q10,0,2));
+	$ciklus_studija = mysql_result($q10,0,3);
+	
+	$naziv = " za ".mysql_result($q10,0,1)." akademsku godinu (".mysql_result($q10,0,3)." ciklus studija), $datum";
+}
 
 
 
