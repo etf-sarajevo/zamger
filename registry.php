@@ -62,7 +62,7 @@ array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0")
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
 array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
-array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
+//array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
 
 
