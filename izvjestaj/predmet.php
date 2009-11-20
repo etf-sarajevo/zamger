@@ -323,8 +323,9 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 
 			if ($grupa_id!=0) 
 				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum");
-			else
+			else if ($id_virtualne_grupe>0)
 				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum");
+			else continue; // ako nema virtualne grupe - preskacemo
 
 			while ($r110 = mysql_fetch_row($q110)) {
 				$cas_id = $r110[0];
