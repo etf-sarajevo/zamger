@@ -20,7 +20,7 @@ $conf_files_path = "/srv/httpd/zamger";
 $conf_script_path = "/srv/httpd/zamger/www";
 
 $conf_appname = "ZAMGER";
-$conf_appversion = "4.0 beta2";
+$conf_appversion = "4.1";
 
 //$conf_system_auth = "ldap";
 $conf_system_auth = "table";
@@ -30,7 +30,7 @@ $conf_ldap_server = "localhost";
 $conf_ldap_domain = "@moja.domena.ba"; // string koji se dodaje na uid da bi se dobila email adresa
 // Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
 
-// URL za promjenu sifre (u slucaju LDAPa)
+// URL za promjenu sifre (u slucaju LDAPa) - ne koristi se trenutno
 $conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
 
 $conf_use_mysql_utf8 = true; // potreban mysql 5.0+
