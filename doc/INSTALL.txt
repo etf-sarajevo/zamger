@@ -1,6 +1,6 @@
 ZAMGER v4.0
 
-Copyright (c) 2006-2009 Vedran Ljubovic
+Copyright (c) 2006-2009 Vedran Ljubovic i drugi
 Elektrotehnicki fakultet Sarajevo
 
 
