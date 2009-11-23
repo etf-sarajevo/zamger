@@ -17,6 +17,8 @@
 // v4.0.9.6 (2009/04/16) + Popravljen link na izvjestaj/ispit
 // v4.0.9.7 (2009/04/22) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 // v4.0.9.8 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
+// v4.1.0.0 (2009/11/20) + Release
+// v4.1.0.1 (2009/11/23) + Popravljen tipfeler u provjeri da li ispit vec postoji prilikom kreiranja
 
 
 function nastavnik_ispiti() {
@@ -457,13 +459,13 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 
 	// Da li je ispit vec registrovan?
 	$q450 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
-	if (mysql_num_rows($q4500)>0) {
+	if (mysql_num_rows($q450)>0) {
 		nicemessage("Ispit već postoji.");
 	} else {
 		$q460 = myquery("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
+		nicemessage("Ispit uspješno kreiran.");
+		zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 	}
-	nicemessage("Ispit uspješno kreiran.");
-	zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 }
 
 
