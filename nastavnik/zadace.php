@@ -139,7 +139,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			print "Student '$prezime $ime' - zadaća $zadaca, bodova $bodova<br/>";
 		} else {
 			// Odredjujemo zadnji filename
-			$q25 = myquery("select filename from zadatak where zadaca=$zadaca, redni_broj=$zadatak, student=$student order by id desc limit 1");
+			$q25 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
 			if (mysql_num_rows($q25)>0) {
 				$filename=mysql_result($q25,0,0);
 			} else $filename='';
