@@ -343,7 +343,7 @@ if ($attachment) {
 	if (mysql_num_rows($q120)>0) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
-		if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
+		if ($filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
 			$vrijeme = mysql_result($q120,0,1);
 			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));

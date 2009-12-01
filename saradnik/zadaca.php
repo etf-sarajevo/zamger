@@ -309,7 +309,7 @@ if ($attach == 0) {
 	$filename = mysql_result($q130,0,0);
 	$the_file = "$lokacijazadaca$zadaca/$filename";
 
-	if (file_exists($the_file)) {
+	if ($filename && file_exists($the_file)) {
 		$vrijeme = date("d. m. Y. h:i:s", mysql_result($q130,0,1));
 		$velicina = nicesize(filesize($the_file));
 		$icon = "images/mimetypes/" . getmimeicon($the_file);
