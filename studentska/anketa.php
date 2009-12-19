@@ -1,4 +1,4 @@
-﻿<?php 
+<?php 
 // STUDENTSKA/ANKETA - administracija ankete, studentska slu�ba
 
 
@@ -77,9 +77,9 @@ function studentska_anketa(){
 	$anketa = intval($_REQUEST['anketa']);
 	$id = intval($_REQUEST['anketa']);
 	
-	// deaktivizacija ankete
+	// deaktivacija ankete
 	if ($_REQUEST['akcija']=="deaktivacija" ){			
-			$result401=myquery("update anketa_anketa set aktivna = 0 where id=$id");	
+		$result401=myquery("update anketa_anketa set aktivna = 0 where id=$id");	
 	}
 	
 	// ako korinik želi da mijenja podatke vezane za anketu -- ime -- opis -- datum pocetka i kraja
@@ -224,7 +224,7 @@ function studentska_anketa(){
 		$naziv = substr($_POST['naziv'], 0, 100);
 		$prethodna_anketa = $_POST['prethodna_anketa'];
 	
-		print "Nova anketa.<br/><br/>";
+		print "Nova anketa je kreirana. Molimo sačekajte.<br/><br/>";
 				
 		$q393 = myquery("insert into anketa_anketa (naziv,akademska_godina) values ('$naziv',$ak_godina)");
 		$q391 = myquery("select id from anketa_anketa where naziv='$naziv'");
@@ -242,7 +242,8 @@ function studentska_anketa(){
 		<?
 	} 
 	//  *****************************  KRAJ AKCIJA NOVI   ************************************************************		
-	
+
+
 	//  ******************* AKCIJA EDIT - dio koji se prikazuje ako se klikne DETALJI ******************************
 	else if ($_GET['akcija'] == "edit" ) {
 		
@@ -336,9 +337,10 @@ function studentska_anketa(){
 			</tr>
 		</table>
 		
-		<?php 
+		<? 
 		}
 		else print "</table>";
+
 		// podaci o pitanjima koja pripadaju toj anketi
 		function dropdown_anketa($tip){
 			$q283=myquery("SELECT id, tip from anketa_tip_pitanja");
@@ -355,35 +357,49 @@ function studentska_anketa(){
 			$lista.= "</select>";
 			return $lista;
 		}
-			
-		print "<br/>";
-		print '<table width="800" border="0">';
-		print "<tr bgcolor='#00AAFF'> <td  > <strong> Tekst pitanja </strong></td> <td> <strong> Tip pitanja </strong></td> ";
+		
+		?>
+		<br/>
+		<table width="800" border="0">
+			<tr bgcolor='#00AAFF'>
+				<td><strong>Tekst pitanja</strong></td>
+				<td><strong>Tip pitanja</strong></td>
+		<?
 				
 			// da li se mogu dodavati nova pitanja ili mijenjati postojeca
 		if($editable == 0){
 			print "</tr>";
 			$i=1;
 			while ($r202 = mysql_fetch_row($result202)) {					
-				print  "<tr> <td colspan='2'> <hr/> </td> </tr>";
-				print "<tr "; if ($i%2==0) print "bgcolor=\"#EEEEEE\""; 
-				print ">";
-				print "<td >$i. $r202[1]  </td><td width='150'>$r202[2]  </td> </tr>";				
+				?>
+			<tr>
+				<td colspan='2'><hr/></td>
+			</tr>
+			<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""; ?>>
+				<td><?=$i?>. <?=$r202[1]?></td>
+				<td width='150'><?=$r202[2]?></td>
+			</tr>
+				<?
 				$i++;
 			}		
-		}		
-		else{	
+		} else {
 			print "<td>  </td></tr>";
 			$i=1;
 			while ($r202 = mysql_fetch_row($result202)) {
-				print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>
-					<tr> <td colspan='3'> <hr/> </td> </tr>";
-				print "<input type='hidden' name='subakcija' value='edit_pitanje'>";
-				print "<tr "; if ($i%2==0) print "bgcolor=\"#EEEEEE\""; print ">";
-				print "<input type='hidden' name='column_id' value='$r202[0]'>";
-				print  "<td> <input name ='tekst_pitanja' size='100' value='$r202[1]'/> </td> <td> ". dropdown_anketa($r202[2]); 
-				print "</td><td><input type='submit' value='Posalji '><input type='submit' name='obrisi'  value='Obrisi '></td></tr> ";
-				print "</form>";				
+				?>
+				<form name="" action="<?=genuri()?>&akcija=edit&anketa=<?=$anketa?>" method="POST">
+				<tr>
+					<td colspan='3'> <hr/> </td> 
+				</tr>
+				<input type='hidden' name='subakcija' value='edit_pitanje'>
+				<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""?>>
+				<input type='hidden' name='column_id' value='<?=$r202[0]?>'>
+					<td><input name ='tekst_pitanja' size='100' value='<?=$r202[1]?>'/> </td> 
+					<td><?=dropdown_anketa($r202[2])?></td>
+					<td><input type='submit' value='Pošalji '><input type='submit' name='obrisi'  value=' Obriši '></td>
+				</tr>
+				</form>
+				<?
 				$i++;
 			}	
 			$q284=myquery("SELECT id, tekst,tip_pitanja FROM anketa_pitanje");
@@ -396,216 +412,231 @@ function studentska_anketa(){
 			}
 			$lista_pitanja.= "</select>";
 			
-			print "<tr> <td colspan='3'> <hr/><br> </td> </tr>";
-			print "<tr > <td colspan='3'> Dodajte novo pitanje: </td> </tr>";
-			print "<tr > <td colspan='3'> Odaberite postojece pitanja: </td> </tr>";
-			print "<tr > <td colspan='3'> $lista_pitanja </td> </tr>";
-			print "<tr > <td colspan='3'> Novo pitanje: </td> </tr>";
-			print "<form name='' action='".genuri()."&akcija=edit&anketa=$anketa' method='POST'>";
-			print "<input type='hidden' name='subakcija' value='novo_pitanje'>";
-			print "<tr >";  	
-			print  "<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='100' /> </td> <td> Tip:". dropdown_anketa(1); 
-			print "</td><td><input type='submit' value='Dodaj '><input type='reset'  value='Reset '></td></tr> 
-			</form>";
-			
+			?>
+			<tr><td colspan='3'><hr/><br> </td> </tr>
+			<tr><td colspan='3'>Dodajte novo pitanje: </td> </tr>
+			<tr><td colspan='3'>Odaberite postojeće pitanje za izmjenu: </td> </tr>
+			<tr><td colspan='3'><?=$lista_pitanja?></td> </tr>
+			<tr><td colspan='3'>Novo pitanje: </td> </tr>
+			<form name='' action="<?=genuri()?>&akcija=edit&anketa=<?=$anketa?>" method='POST'>
+			<input type='hidden' name='subakcija' value='novo_pitanje'>
+			<tr >
+				<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='100' /> </td> <td> Tip: <?=dropdown_anketa(1)?></td>
+				<td><input type='submit' value=' Dodaj '><input type='reset'  value='Poništi'></td>
+			</tr>
+			</form>
+			<?
 		}
 		print "</table>";
 		?>
 	</center>
 	<?
 	} 
+
+
 	// ************************************* KRAJ AKCIJA EDIT  *************************************************
 	
-	// ----------------------------          DIO koji se pojavljuje na pocetku  -----------------------------------------
+	// ----------------------------          Početna stranica  ----------------------------------------------------------
 	//-------------------------------------------------------------------------------------------------------------------
 	else {
+
 		$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 		$ag = mysql_result($q10,0,0);
 		?>
 		<center>
 	
 		<table width="600" border="0">
-			<tr>
-				<td align="left">
-					<p><h3>Studentska sluzba - Anketa</h3></p>
-					<div class="anketa_naslov">
-						<p><h4>Aktuelna akademska godina</h4></p>
-					</div>
-					<?php 
-					// gledamo da li je za ovu akademsku godinu kreirana anketa
-					$q199=myquery("select id,naziv,opis,aktivna from anketa_anketa where akademska_godina=$ag");
-					// kupimo ako postoje ankete od proslih godina
-					$q199b=myquery("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
-					if (mysql_num_rows($q199) ==0){
-						print "Za ovu akademsku godinu nije kreirana ankete!";
-						?>	  
-						<hr>
-						<!--                    Forma za kreiranje ankete:              -->   
-						<?=genform("POST")?>
-							<input type="hidden" name="akcija" value="novi">
-							<input type="hidden" name="ak_godina" value="<?=$ag?>">
-							<b>Nova anketa :</b><br/>
-							<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
-							<br />Ponovi pitanja od: 
-							<select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
-								<option value='0'> Bez ponavljanja </option>
-								<?php 
-								while ($r199b = mysql_fetch_row($q199b)){
-									print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
-								}
-								?>
-							</select>
-						</form>
-						<hr>								
-						<?							
-					}
-					else { // ako je vec kreirana anketa
-						$anekta_row = mysql_fetch_row($q199);
-						print '<table width="100%" border="0">';
-						print "<tr><td width='50%'>  ";
-						print " $anekta_row[1]  </td>";
-						
-						if ($anekta_row[3] == 0 ) 
-							print "<td> <a href='".genuri()."&akcija=podaci&anketa=$anekta_row[0]&subakcija=aktivacija'>Aktiviraj</a>";
-						else
-							print "<td> <a href='".genuri()."&akcija=deaktivacija&anketa=$anekta_row[0]'>Deaktiviraj</a>";
-						
-						print "</td><td ><a href='".genuri()."&akcija=edit&anketa=$anekta_row[0]'>Detalji</a>";
-						print "</td></tr>";				
-						print "</table>";
-					}
+			<tr><td align="left">
+				<p><h3>Studentska sluzba - Anketa</h3></p>
+				<div class="anketa_naslov">
+					<p><h4>Aktuelna akademska godina</h4></p>
+				</div>
+				<?
+
+				// gledamo da li je za ovu akademsku godinu kreirana anketa
+				$q199=myquery("select id,naziv,opis,aktivna from anketa_anketa where akademska_godina=$ag");
+
+				// kupimo ako postoje ankete od proslih godina
+				$q199b=myquery("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
+
+				if (mysql_num_rows($q199) ==0){
+					print "Za ovu akademsku godinu nije kreirana nijedna anketa";
 					?>
-					<hr />
-					<div class="anketa_naslov">
-						<p> <h4> Prosle akademske godine </h4> </p>
-					</div>
-					<?
-					$q200=myquery("select a.id, a.datum_otvaranja, a.datum_zatvaranja, a.naziv, a.opis, a.aktivna, ak.naziv from anketa_anketa a, akademska_godina ak 
-									where a.akademska_godina = ak.id and akademska_godina!=$ag");
-					print '<table width="100%" border="0">';
-					if (mysql_num_rows($q200)==0) 
-						print " <tr > <td>Ne postoji anekta za prethodne akademske godine!</td></tr>";
-					else{
-						while ($r200 = mysql_fetch_row($q200)){
-							print "<tr><td width='50%' > $r200[3] ($r200[6]) ";
-							print "</td><td ><a href='".genuri()."&akcija=edit&anketa=$r200[0]'> Detalji</a></td>";							
-							print "</tr>";
+					<hr>
+					<!--                    Forma za kreiranje ankete:              -->
+					<?=genform("POST")?>
+					<input type="hidden" name="akcija" value="novi">
+					<input type="hidden" name="ak_godina" value="<?=$ag?>">
+					<b>Nova anketa</b><br/><br/>
+					Naziv ankete:<br/>
+					<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
+					<br />Ponovi pitanja od: 
+					<select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
+						<option value='0'> Bez ponavljanja </option>
+						<? 
+						while ($r199b = mysql_fetch_row($q199b)){
+							print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
 						}
-					}
-					print "</table>";	
+						?>
+					</select>
+					</form>
+					<hr>								
+					<?							
+				}
+				else { // ako je vec kreirana anketa
+					$anketa_row = mysql_fetch_row($q199);
 					?>
-					<!-- -------------------------------       REZULTATI -------------------------------------------------->
-					<hr />
-					<div class="anketa_naslov">
-						<p><h4>Rezultati ankete </h4></p>
-					</div>
-					<a onclick="switch_poredjenje()" style="cursor:pointer"> Sumarni izvjestaji </a>
-					<div id="poredjenje_1" style="display:none" class="izvjestaji">
-						<ul>
-						  <li> <a onclick="switch_izvjestaj()" style="cursor:pointer">  &nbsp;Semestralni izvjestaj </a> </li>
-							<div id="semestralni" style="display:none">
-							<form method="post" action="?sta=izvjestaj/anketa_semestralni">
-							<table width="450" align="center">
-								<tr>
-									<td width="200"> Odaberite  akademsku godinu : </td>
-									<td>
-                                        <select name="akademska_godina">
-											<?
-                                            $q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
-                                            while ($r295=mysql_fetch_row($q295)) {
-                                            ?>
-                                               <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
-                                            <? } 
-											?>
-                                        </select><br/> 
-									</td>
-								</tr>
-								<tr>
-									<td>  Odaberite  studij :	</td>
-									<td>
-                                    	<select onchange="javascript:promjeniListu()" name="studij" id="studij">
-											<?
-											$q295 = myquery("select id,naziv from studij order by id");
-											while ($r295=mysql_fetch_row($q295)) {
-											?>
-												<option value="<?=$r295[0]?>"><?=$r295[1]?></option>
-											<? }
-											?>
-                                         </select><br/>
-										</td>
-								</tr>    
-								<tr>
-									<td> Odaberite semestar : 	</td>
-                                    <td>
-                                        <div id="pgs">
-                                        <select name="semestar" id="semestar">
-                                            <option value="1"> 1</option>
-                                            <option value="2"> 2</option>
-                                        </select>
-                                        </div>
-                                        <div id="ostalo" style="display:none">
-                                        <select name="semestar2" id="semestar2">
-                                            <option value="3"> 3</option>
-                                            <option value="4"> 4</option>
-                                            <option value="5"> 5</option>
-                                            <option value="6"> 6</option>
-                                        </select>
-                                        </div>											
-                                     </td>
-								</tr>
-								<tr>
-                                    <td colspan="2">
-                                        <input type="hidden" name="akcija" value="semestralni">                                
-                                        <input size="100px" type="submit" value="Kreiraj izvjestaj"> 
-                                    </td>
-                                </tr>
-                            </table>	
-						</form>
-						</div>
-						
-						<li> <a onclick="switch_izvjestaj2()" style="cursor:pointer">  &nbsp;Izvjestaj po smjerovima</a> </li>
-							<div id="po_smjerovima" style="display:none">
-							<form method="post" action="?sta=izvjestaj/anketa_semestralni">
-							<table width="450" align="center" >
-								<tr>
-									<td width="200"> Odaberite  akademsku godinu  : </td>
-									<td align="left">
-                                        <select name="akademska_godina">
-                                        <?
-                                        $q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
-                                        while ($r295=mysql_fetch_row($q295)) {
-                                        ?>
-                                            <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?> &nbsp;&nbsp;&nbsp;&nbsp;</option>
-                                        <?
-                                        }
-                                        ?></select><br/> 
-									</td>
-								 </tr>
-								 <tr>
-                                    <td> Odaberite semestar : </td>
-                                    <td>
-                                        <div id="semestar">
-                                        <select name="semestar" id="semestar">
-                                            <option value="1"> Zimski</option>
-                                            <option value="2"> Ljetni</option>
-                                             <option value="3"> Cijela godina &nbsp;</option>
-                                        </select>
-                                        </div>                                                                            
-                                     </td>
-                                 </tr>
-								 <tr>
-                                    <td colspan="2">
-                                            <input type="hidden" name="akcija" value="po_smjerovima">                                
-                                            <input size="100px" type="submit" value="Kreiraj izvjestaj">                                            
-                                    </td>
-                            	</tr>
-                            </table>
-                            </form>
+					<table width="100%" border="0">
+						<tr><td width='50%'><?=$anketa_row[1]?></td>
+						<td><?					
+					if ($anketa_row[3] == 0 ) 
+						print "<a href='".genuri()."&akcija=podaci&anketa=$anketa_row[0]&subakcija=aktivacija'>Aktiviraj</a>";
+					else
+						print "<a href='".genuri()."&akcija=deaktivacija&anketa=$anketa_row[0]'>Deaktiviraj</a>";
+						?>
+						</td>
+						<td><a href="<?=genuri()?>&akcija=edit&anketa=<?=$anketa_row[0]?>">Detalji</a></td></tr>
+					</table>
+					<?
+				}
+
+				?>
+				<hr />
+				<div class="anketa_naslov">
+					<p><h4>Prethodne akademske godine</h4></p>
+				</div>
+				<?
+				$q200=myquery("select a.id, a.datum_otvaranja, a.datum_zatvaranja, a.naziv, a.opis, a.aktivna, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
+				print '<table width="100%" border="0">';
+				if (mysql_num_rows($q200)==0) {
+					?><tr><td>Prethodnih akademskih godina nije bila definisana nijedna anketa</td></tr><?
+				} else {
+					while ($r200 = mysql_fetch_row($q200)){
+						?>
+						<tr>
+							<td width="50%"><?=$r200[3]?> (<?=$r200[6]?>)</td>
+							<td><a href="<?=genuri()?>&akcija=edit&anketa=<?=$r200[0]?>">Detalji</a></td>
+						</tr>
+						<?
+					}
+				}
+				?>
+				</table>
+
+				<!-- -------------------------------       REZULTATI -------------------------------------------------->
+				<hr />
+				<div class="anketa_naslov">
+					<p><h4>Rezultati ankete </h4></p>
+				</div>
+				<a onclick="switch_poredjenje()" style="cursor:pointer">Sumarni izvještaji</a>
+				<div id="poredjenje_1" style="display:none" class="izvjestaji">
+				<ul>
+					<li> <a onclick="switch_izvjestaj()" style="cursor:pointer">  &nbsp;Semestralni izvještaj </a> </li>
+					<div id="semestralni" style="display:none">
+					<form method="post" action="?sta=izvjestaj/anketa_semestralni">
+					<table width="450" align="center">
+						<tr>
+							<td width="200">Odaberite akademsku godinu:</td>
+							<td>
+							<select name="akademska_godina">
+				<?
+					$q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
+					while ($r295=mysql_fetch_row($q295)) {
+					?>
+					<option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
+					<? } 
+				?>
+							</select><br/>
+							</td>
+						</tr>
+						<tr>
+							<td>Odaberite studij:</td>
+							<td>
+								<select onchange="javascript:promjeniListu()" name="studij" id="studij">
+				<?
+					$q295 = myquery("select id,naziv from studij order by id");
+					while ($r295=mysql_fetch_row($q295)) {
+					?>
+						<option value="<?=$r295[0]?>"><?=$r295[1]?></option>
+					<? }
+				?>
+								</select><br/>
+							</td>
+						</tr>
+						<tr>
+							<td> Odaberite semestar:</td>
+							<td>
+							<div id="pgs">
+								<select name="semestar" id="semestar">
+									<option value="1"> 1</option>
+									<option value="2"> 2</option>
+								</select>
 							</div>
-						</ul>					
-					</div>					
-					<?php 
-					print " <hr />";
+							<div id="ostalo" style="display:none">
+								<select name="semestar2" id="semestar2">
+									<option value="3"> 3</option>
+									<option value="4"> 4</option>
+									<option value="5"> 5</option>
+									<option value="6"> 6</option>
+								</select>
+							</div>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<input type="hidden" name="akcija" value="semestralni">
+								<input size="100px" type="submit" value="Kreiraj izvještaj"> 
+							</td>
+						</tr>
+					</table>	
+					</form>
+					</div>
+
+					<li> <a onclick="switch_izvjestaj2()" style="cursor:pointer">  &nbsp;Izvještaj po smjerovima</a> </li>
+					<div id="po_smjerovima" style="display:none">
+					<form method="post" action="?sta=izvjestaj/anketa_semestralni">
+					<table width="450" align="center" >
+						<tr>
+							<td width="200"> Odaberite  akademsku godinu  : </td>
+							<td align="left">
+							<select name="akademska_godina">
+					<?
+						$q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
+						while ($r295=mysql_fetch_row($q295)) {
+						?>
+						<option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?> &nbsp;&nbsp;&nbsp;&nbsp;</option>
+						<?
+					}
+					?></select><br/> 
+							</td>
+						</tr>
+						<tr>
+							<td>Odaberite semestar:</td>
+							<td>
+							<div id="semestar">
+								<select name="semestar" id="semestar">
+								<option value="1"> Zimski</option>
+								<option value="2"> Ljetni</option>
+								<option value="3"> Cijela godina &nbsp;</option>
+								</select>
+							</div>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<input type="hidden" name="akcija" value="po_smjerovima">                                
+								<input size="100px" type="submit" value="Kreiraj izvjestaj">                                            
+							</td>
+						</tr>
+					</table>
+					</form>
+					</div>
+				</ul>
+				</div>
+
+
+				<hr />
+				<?
 					$src = my_escape($_REQUEST["search"]);
 					$limit = 20;
 					$offset = intval($_REQUEST["offset"]);
