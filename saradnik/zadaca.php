@@ -329,11 +329,7 @@ if ($attach == 0) {
 
 // Prikaz statusa sa log-om i izmjena
 
-?>
-<?=genform("POST")?>
-<input type="hidden" name="akcija" value="slanje">
 
-<? 
 
 
 $q140 = myquery("select status,bodova,izvjestaj_skripte,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
@@ -347,8 +343,14 @@ $komentar = str_replace("\"","&quot;",$komentar);
 $q150 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
 $vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
 
+if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
+	print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
+else
+	print genform("POST");  
 
 ?>
+<input type="hidden" name="akcija" value="slanje">
+
 <table border="0">
 <tr>
 	<td>Vrijeme slanja:</td>
@@ -389,7 +391,10 @@ for ($i=0;$i<$brstatusa;$i++)
 	<td><textarea cols="50" rows="5" name="komentar"><?=$komentar?></textarea></td>
 </tr>
 <tr>
-	<td colspan="2" align="Center"><input type="submit" value="Izmijeni vrijednosti"></td>
+	<td colspan="2" align="center"><? 
+	if ($status!=1 || $user_siteadmin) {
+		?><input type="submit" value="Izmijeni vrijednosti"><?
+	} ?></td>
 </tr>
 </table>
 </form>
