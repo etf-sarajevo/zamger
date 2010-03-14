@@ -91,7 +91,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 
 	// Spisak komponenti
 	$knazivi=$kprolaz=$ktip=$kpolozilo=array();
-	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id");
+	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
 	while ($r50 = mysql_fetch_row($q50)) {
 		$knazivi[$r50[0]]=$r50[1]; // k.gui_naziv
 		$kprolaz[$r50[0]]=$r50[2]; // k.prolaz
@@ -118,26 +118,30 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		$upisano_puta[$puta]++;
 
 		// Komponente
-		$izasao=$pao=$sumbodovi=0;
+		$sumbodovi=0;
+		$polozene_komponente=array();
 		foreach($ktip as $komponenta=>$tip) {
 			$q60 = myquery("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
 			if (mysql_num_rows($q60)>0) {
+				$komponente[$komponenta]=1;
 				$bodovi = mysql_result($q60,0,0);
 				if ($tip==1 || $tip==2) $izasao++;
-				if ($kprolaz[$komponenta]==0) 
+				if ($kprolaz[$komponenta]==0) {
 					$kpolozilo[$komponenta]++;
-				else if ($bodovi>=$kprolaz[$komponenta])
+					$polozene_komponente[$komponenta]=1;
+				}
+				else if ($bodovi>=$kprolaz[$komponenta]) {
 					$kpolozilo[$komponenta]++;
+					$polozene_komponente[$komponenta]=1;
+				}
 				else $pao++;
 
 				$sumbodovi += $bodovi;
 			}
 		}
-		
+
 		// Da li je zadovoljio uslove?
-		if ($pao==0 && $izasao>0) {
-			// FIXME: ovo će brojati studente koji su položili samo jedan parcijalni, a na drugi nisu nikad izašli
-			// Jedino rješenje je da se na nivou predmeta definiše šta je tačno uslov
+		if (count($komponente)==count($polozene_komponente)) {
 			if ($sumbodovi>=40) $uslov40++;
 			if ($sumbodovi>=35) $uslov35++;
 			$uslov0++;
