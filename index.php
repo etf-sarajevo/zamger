@@ -12,6 +12,7 @@
 // v3.9.1.6 (2008/10/02) + Popravljen logging
 // v4.0.0.0 (2009/02/19) + Release
 // v4.0.0.1 (2009/04/01) + Dodan link na RSS u header
+// v4.0.9.1.(2009/06/16) + Dodan link na dokumentaciju na sve stranice
 
 
 require("lib/libvedran.php");
@@ -80,6 +81,8 @@ if ($userid>0) {
 }
 
 
+
+
 // Određivanje privilegija korisnika
 
 $user_student=$user_nastavnik=$user_studentska=$user_siteadmin=false;
@@ -124,7 +127,8 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 
 	// Pretraga
 	foreach ($registry as $r) {
-		if ($r[0] == $sta) { //$r[5] == nevidljiv
+
+		if ($r[0] == $sta) { //$r[5] == debug
 			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin)) {
 				$naslov=$r[1];
 				$template=$r[4];
@@ -198,6 +202,9 @@ if ($found==1 && $template==0 && $greska=="") {
 			<font color="#FFFFFF" size="5">
 			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br/>
 			<font color="#FFFFFF" size="1">
+			<a href="doc/zamger-uputstva-40-nastavnik.pdf" target="_new">
+			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" align="center">&nbsp;
+			Uputstva</a>&nbsp;&nbsp;&nbsp;
 			<a href="http://195.130.59.135/bugzilla" target="_new">
 			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" align="center">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
@@ -223,17 +230,26 @@ if ($userid>0) {
 		?>
 		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();">
 		<script language="javascript">
+		var mywidth,myheight;
+		if (window.innerWidth && window.innerHeight) {
+			mywidth=window.innerWidth;
+			myheight=window.innerHeight;
+		} else if (document.body.clientWidth && document.body.clientHeight) {
+			mywidth=document.body.clientWidth;
+			myheight=document.body.clientHeight;
+		}
+
 		var flashes=0;
 		function newmail_show() {
 			var newmail = document.getElementById('newmail');
 			newmail.style.visibility='visible';
 			newmail.style.top=-188;
-			newmail.style.left=document.width/2-225;
+			newmail.style.left=mywidth/2-225;
 			setTimeout("newmail_scroll()",10);
 		}
 		function newmail_scroll() {
 			var newmail = document.getElementById('newmail');
-			if (parseInt(newmail.style.top) < document.height/2-94) {
+			if (parseInt(newmail.style.top) < myheight/2-94) {
 				newmail.style.top=parseInt(newmail.style.top)+1;
 				setTimeout("newmail_scroll()",10);
 			} else {
