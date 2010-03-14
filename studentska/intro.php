@@ -44,7 +44,26 @@ if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$osoba = intval($_REQUEST['osoba']);
 	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
-		$q110 = myquery("update osoba set ime='$r100[1]', prezime='$r100[2]', email='$r100[3]', brindexa='$r100[4]', datum_rodjenja='$r100[5]', mjesto_rodjenja=$r100[6], drzavljanstvo='$r100[7]', jmbg='$r100[8]', adresa='$r100[9]', adresa_mjesto=$r100[10], telefon='$r100[11]', kanton=".intval($r100[12])." where id=".intval($r100[0]));
+		// Sve parametre treba ponovo escape-ati
+		// Npr: korisnik je ukucao Meho'
+		// - prilikom inserta u tabelu promjena podataka ovo se pretvara u Meho\'
+		// - u tabeli se ustvari nalazi Meho'
+		// - vrijednost varijable $r100[1] je Meho'
+		$ime = my_escape($r100[1]);
+		$prezime = my_escape($r100[2]);
+		$email = my_escape($r100[3]);
+		$brindexa = my_escape($r100[4]);
+		$datum_rodjenja = my_escape($r100[5]);
+		// mjesto rodjenja je tipa int
+		$drzavljanstvo = my_escape($r100[7]);
+		$jmbg = my_escape($r100[8]);
+		$adresa = my_escape($r100[9]);
+		// adresa_mjesto je tipa int
+		$telefon = my_escape($r100[11]);
+		// kanton je tipa int
+		// osoba je tipa int
+
+		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[6], drzavljanstvo='$drzavljanstvo', jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[10], telefon='$telefon', kanton=".intval($r100[12])." where id=".intval($r100[0]));
 		$vrijeme_zahtjeva=$r100[13];
 	}
 	$q120 = myquery("delete from promjena_podataka where id=$id");
