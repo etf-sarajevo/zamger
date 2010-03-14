@@ -119,7 +119,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 
 		// Komponente
 		$sumbodovi=0;
-		$komponente=$polozene_komponente=array();
+		$polozene_komponente=array();
 		foreach($ktip as $komponenta=>$tip) {
 			$q60 = myquery("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
 			if (mysql_num_rows($q60)>0) {
