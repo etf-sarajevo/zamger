@@ -1013,7 +1013,7 @@ else if ($akcija == "predmeti") {
 	$ak_god = mysql_result($q2010,0,0);
 	$naziv_ag = mysql_result($q2010,0,1);
 
-	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god");
+	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god order by semestar desc");
 	if (mysql_num_rows($q2020)>0) {
 		$studij = mysql_result($q2020,0,0);
 		$semestar = mysql_result($q2020,0,1);
@@ -1897,7 +1897,7 @@ else if ($akcija == "edit") {
 	// PRIJEMNI
 
 	$q600 = myquery("select prijemni_termin, broj_dosjea, redovan, studij_prvi, studij_drugi, studij_treci, studij_cetvrti, izasao, rezultat from prijemni_prijava where osoba=$osoba");
-	if (!$korisnik_student && !$korisnik_nastavnik && mysql_num_rows($q600)>0) {
+	if (mysql_num_rows($q600)>0) {
 		?>
 		<br/><hr>
 		<h3>KANDIDAT NA PRIJEMNOM ISPITU</h3>
@@ -1926,13 +1926,14 @@ else if ($akcija == "edit") {
 //			$nova_ak_god = mysql_result($q630,0,0)+1;
 
 //			if ($godina_prijemnog==$nova_ak_god) {
+			if (!$korisnik_student && !$korisnik_nastavnik) {
 				?>
 				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na &quot;<?
 				$q630 = myquery("select naziv from studij where id=$r600[3]");
 				print mysql_result($q630,0,0);
 				?>&quot;, 1. semestar, u akademskoj <?=mysql_result($q610,0,1)?> godini</a></li>
 			<?
-//			}
+			}
 			?>
 			</ul><?
 		}
