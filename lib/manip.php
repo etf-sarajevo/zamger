@@ -66,8 +66,9 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 	}
 
 	// Konacne ocjene
-	/*$q70 = myquery("delete from konacna_ocjena where student=$student and predmet=$predmet");*/
+	$q70 = myquery("delete from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
 	// Ima li smisla brisati konacnu ocjenu kod ispisa sa predmeta!?
+	// Ima, zato što bi u suprotnom student imao položen predmet koji nikada nije slušao
 
 	// Zadace
 	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$student/";
@@ -107,6 +108,10 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 
 }
 
+
+// Za upis studenta na labgrupu kucajte:
+// $q = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa")
+// Ne treba nista osim ovoga
 
 
 // Upis studenta na predmet
@@ -376,7 +381,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 			$q20 = myquery("select io.ocjena from ispit as i, ispitocjene as io, ponudakursa as pk where i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.id=$predmet and i.komponenta=$k and i.id=io.ispit and io.student=$student order by io.ocjena desc limit 1");
 			// Ako nema ispita, komponenta ostaje obrisana
-			if (mysql_num_rows($q20)<1) break; 
+			if (mysql_num_rows($q20)<1) break;
 			$bodovi=mysql_result($q20,0,0);
 
 			$q25 = myquery("insert into komponentebodovi set student=$student, predmet=$predmet, komponenta=$k, bodovi=$bodovi");
