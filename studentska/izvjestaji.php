@@ -40,11 +40,21 @@ if (!$user_studentska && !$user_siteadmin) {
 
 
 <script language="JavaScript">
+
+var mywidth,myheight;
+if (window.innerWidth && window.innerHeight) {
+	mywidth=window.innerWidth;
+	myheight=window.innerHeight;
+} else if (document.body.clientWidth && document.body.clientHeight) {
+	mywidth=document.body.clientWidth;
+	myheight=document.body.clientHeight;
+}
+
 function izvjestaj() {
 	document.getElementById('prekrivac').style.display="inline";
 	document.getElementById('obavijest').style.display="inline";
-	document.getElementById('obavijest').style.top=document.height/2-25;
-	document.getElementById('obavijest').style.left=document.width/2-150;
+	document.getElementById('obavijest').style.top=myheight/2-25;
+	document.getElementById('obavijest').style.left=mywidth/2-150;
 
 	//alert("Hello");
 	return true;
