@@ -14,10 +14,13 @@
 // v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/05/18) + Integrisi ponude istog kursa npr. kod izvjestaja "Svi studiji", dodano polje "ponovac"
 // v4.0.9.5 (2009/08/29) + Popravljeno poravnanje footera tabele, popravljen broj studenata u koliziji
-// v4.0.9.6 (2009/10/03) + Dodan parametar "tip studija", za prikaz podataka za sve studije istog tipa; razjasnjene sumarne statistike; respektuj polje ponovac u tabeli student_studij
+// v4.0.9.6 (2009/10/03) + Dodan parametar "tip studija" za prikaz podataka za sve studije istog tipa; razjasnjene sumarne statistike; respektuj polje ponovac u tabeli student_studij
 
 
 // TODO: Zašto ovo nije prebačeno na komponente?
+
+// FIXME: Izvještaj prolaznost ne radi jer se za studij -1 kao ključ u nizovima koristi predmet a za ostale studije ponudakursa!
+// Dalje, za studij -1 očekuje se parametar tipstudija kojeg forma ne šalje
 
 
 function izvjestaj_prolaznost() {
@@ -78,7 +81,8 @@ Obuhvaćeni studenti: <b><?
 if ($cista_gen==0) print "Redovni, Ponovci, Preneseni predmeti i kolizija";
 elseif ($cista_gen==1) print "Redovni, Ponovci";
 elseif ($cista_gen==2) print "Redovni studenti";
-elseif ($cista_gen==3) print "Čista generacija";?></b><br/><br/>
+elseif ($cista_gen==3) print "Čista generacija";
+elseif ($cista_gen==4) print "Ponovci";?></b><br/><br/>
 Vrsta izvještaja: <b><?
 if ($ispit==1) print "I parcijalni ispit";
 elseif ($ispit==2) print "II parcijalni ispit";
@@ -153,6 +157,10 @@ if ($cista_gen==3) {
 
 	$upit_studenti .= " and (select count(*) from student_studij as ss2 where ss2.student=io.student and ss2.akademska_godina<=$upisao_godine)=0";
 }
+if ($cista_gen==4) {
+	// Samo ponovci
+	$upit_studenti .= " and (select count(*) from student_studij as ss2 where ss2.student=io.student $studij_upit_ss2 and ss2.$sem_stud_upit and ss2.akademska_godina<$akgod)>0";
+}
 
 
 // PODIZVJESTAJ 1
@@ -217,7 +225,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		<tr bgcolor="#CCCCCC">
 			<td><b>R. br.</b></td>
 			<td><b>Student</b></td>
-			<td><b>Broj indexa</b></td>
+			<td><b>Br. indeksa</b></td>
 		<?
 		if ($studij==-1) {
 			print "<td><b>Studij</b></td>\n";
@@ -315,6 +323,14 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.ponovac=0 and (select count(*) from student_studij as ss2 where ss2.student=ss.student and ss2.akademska_godina<=$upisao_godine)=0");
 		$uk_studenata = mysql_num_rows($q40);
 		$ispis_br_studenata = "Semestar upisalo: <b>$uk_studenata</b> studenata &quot;čiste generacije&quot;";
+
+	} else if ($cista_gen==4) {
+		// Samo ponovci
+
+		$q40 = myquery("select ss.student from student_studij as ss where ss.akademska_godina=$akgod $studij_upit_ss and ss.$sem_stud_upit and ss.ponovac=1");
+
+		$uk_studenata = mysql_num_rows($q40);
+		$ispis_br_studenata = "Semestar upisalo: <b>$uk_studenata</b> ponovaca";
 	}
 
 
