@@ -188,7 +188,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			}
 
 			// Ispis studenta sa svih grupa u kojima je trenutno
-			$q110 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa");
+			$q110 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa and l.virtualna=0");
 			while ($r110 = mysql_fetch_row($q110)) {
 				ispis_studenta_sa_labgrupe($student,$r110[0]);
 			}
@@ -230,6 +230,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	$greska=mass_input($ispis); // Funkcija koja parsira podatke
 
+	// Cache IDova grupa prema imenu
 	$idovi_grupa=array();
 
 
@@ -245,22 +246,38 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 		// Ispis studenta iz svih grupa
 		$ispisispis = "";
+		$ispis_grupe=$upis_grupe=array();
 		$q230 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+		$found=1;
 		while ($r230 = mysql_fetch_row($q230)) {
+			$ispis_grupe[$r230[0]] = $r230[1];
+			if (!in_array($r230[1], $mass_rezultat['podatak1'][$student])) $found=0;
+		}
+
+		if ($found==1) {
 			if ($ispis) {
-				$ispisispis .= "<br/>Ispis iz grupe '$r230[1]'";
-			} else {
-				ispis_studenta_sa_labgrupe($student,$r230[0]);
+				?>
+				<tr bgcolor="<?=$bojae?>">
+					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td>Već upisan u grupu <?
+					foreach ($ispis_grupe as $gid => $gime) print "'$gime' ";
+					?> - preskačem</td>
+				</tr>
+				<?
 			}
+			continue;
 		}
 
 		// spisak grupa u koje treba upisati studenta
 		foreach ($mass_rezultat['podatak1'][$student] as $imegrupe) {
 			$imegrupe = trim($imegrupe);
+
+			// Da li grupa postoji u cache-u ?
 			if (array_key_exists($imegrupe,$idovi_grupa)) {
 				$labgrupa=$idovi_grupa[$imegrupe];
-			} else {
 
+			// Ne postoji, tražimo u bazi
+			} else {
 				// Da li je ime ispravno?
 				if (!preg_match("/\w/", $imegrupe)) {
 					?>
@@ -296,17 +313,45 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				$idovi_grupa[$imegrupe]=$labgrupa;
 			}
 
-			// Upis u novu grupu
-			if ($ispis) {
-				?>
-				<tr bgcolor="<?=$boja?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
-					<td>Upis u grupu '<?=$imegrupe?>'<?=$ispisispis?></td>
-				</tr>
-				<?
-				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
-			} else {
-				$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
+			// Da li je grupa već jednom spomenuta?
+			foreach ($upis_grupe as $gid => $gime) {
+				if ($gid==$labgrupa) {
+					if ($ispis) {
+						?>
+						<tr bgcolor="<?=$bojae?>">
+							<td><?=$prezime?></td><td><?=$ime?></td>
+							<td>Grupa '<?=$gime?>' je navedena dvaput - greška?</td>
+						</tr>
+						<?
+					}
+					continue;
+				}
+			}
+
+			$upis_grupe[$labgrupa]=$imegrupe;
+		}
+
+		// Obavljam ispisivanje i upisivanje u grupe
+		if ($ispis) { // na ekran
+			?>
+			<tr bgcolor="<?=$boja?>">
+				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td>
+			<?
+			foreach ($ispis_grupe as $gid => $gime) {
+				print "Ispis iz grupe '$gime'<br />\n";
+			}
+			foreach ($upis_grupe as $gid => $gime) {
+				print "Upis u grupu '$gime'<br />\n";
+			}
+			print "</td></tr>\n";
+			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
+		} else {
+			foreach ($ispis_grupe as $gid => $gime) {
+				ispis_studenta_sa_labgrupe($student,$gid);
+			}
+			foreach ($upis_grupe as $gid => $gime) {
+				$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$gid");
 			}
 		}
 	}
@@ -343,7 +388,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	} else {
 		zamgerlog("masovan upis grupa za predmet pp$predmet",4);
 		?>
-		Grupe su kreirane.
+		Masovan upis studenata u grupe je uspješno obavljen.
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>';
 		</script>
