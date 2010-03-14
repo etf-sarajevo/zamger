@@ -45,7 +45,7 @@ if (mysql_num_rows($q10)<1) {
 // Da li student slusa predmet?
 $q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_num_rows($q17)<1) {
-	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
