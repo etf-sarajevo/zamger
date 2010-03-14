@@ -52,7 +52,7 @@ function procenat($dio,$total) {
 
 function spol($ime) {
 	if ($ime == "Ines" || $ime == "Iris") return "Z";
-	if (substr($ime,strlen($ime)-1) == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Novica" && $ime != "Avdija")
+	if (substr($ime,strlen($ime)-1) == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Novica" && $ime != "Avdija" && $ime != "Zikrija")
 		return "Z";
 	else
 		return "M";
