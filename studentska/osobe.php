@@ -1013,7 +1013,7 @@ else if ($akcija == "predmeti") {
 	$ak_god = mysql_result($q2010,0,0);
 	$naziv_ag = mysql_result($q2010,0,1);
 
-	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god");
+	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god order by semestar desc");
 	if (mysql_num_rows($q2020)>0) {
 		$studij = mysql_result($q2020,0,0);
 		$semestar = mysql_result($q2020,0,1);
