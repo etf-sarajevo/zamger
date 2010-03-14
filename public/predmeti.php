@@ -18,6 +18,42 @@ function public_predmeti($modul) {
 	$linka = "</a>";
 	if ($modul == "") $link=$linka="";
 
+	// Javascript za ajah
+	?>
+	<script language="JavaScript">
+	function ucitavaj(semestar, studij, ag) {
+		var rp=document.getElementById('sem-'+semestar+'-'+studij+'-'+ag);
+		if (rp.innerHTML != "prazan") return; // Vec je ucitan
+		rp.innerHTML = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Molimo sačekajte...";
+		ajah_start("?sta=common/ajah&akcija=spisak_predmeta&ag="+ag+"&studij="+studij+"&semestar="+semestar, "", "napuni_rezultate("+semestar+","+studij+","+ag+")");
+	}
+	function napuni_rezultate(semestar,studij,ag) {
+		var rp=document.getElementById('sem-'+semestar+'-'+studij+'-'+ag);
+		var tekst = frames['zamger_ajah'].document.body.innerHTML;
+		rp.innerHTML="";
+		var oldpozicija=0, pozicija=0;
+		do {
+			// Uzimam jedan red
+			var pozicija = tekst.indexOf('|',oldpozicija);
+			var tmptekst = tekst.substr(oldpozicija,pozicija-oldpozicija);
+			if (tmptekst.length<2) { oldpozicija=pozicija+1; continue; }
+			if (tmptekst == "OK") break;
+			rp.innerHTML += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+			oldpozicija=pozicija+1;
+
+			// Razdvajam id predmeta od naziva predmeta
+			var pidpos = tmptekst.indexOf(' ');
+			var predmetid = tmptekst.substr(0,pidpos);
+			var predmetnaziv = tmptekst.substr(pidpos+1);
+			var linkp = '<?=$link?>';
+			linkp=linkp.replace("--PK--", predmetid+"&ag="+ag);
+			rp.innerHTML += linkp+predmetnaziv+"</a>";
+		} while (pozicija>=0);
+	}
+	</script>
+
+	<?
+
 	// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
 
 	$q1 = myquery("select ag.id,ag.naziv from akademska_godina as ag where (select count(*) from ponudakursa as pk where pk.akademska_godina=ag.id)>0 order by ag.id");
@@ -31,25 +67,14 @@ function public_predmeti($modul) {
 			$q3 = myquery("select semestar from ponudakursa where studij=$r2[0] and akademska_godina=$r1[0] group by semestar order by semestar");
 			while ($r3 = mysql_fetch_row($q3)) {
 				print "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-				print dajplus("sem-$r3[0]-$r2[0]-$r1[0]","$r3[0]. semestar");
-				$q4 = myquery("select p.id,p.naziv,pk.akademska_godina from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$r1[0] and pk.studij=$r2[0] and pk.semestar=$r3[0] order by p.naziv");
-				while ($r4 = mysql_fetch_row($q4)) {
-					print  "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-					$linkp = str_replace("--PK--","$r4[0]&ag=$r4[2]",$link);
-					print $linkp.$r4[1].$linka;
-				}
-				print "</div>\n";
+				print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-sem-$r3[0]-$r2[0]-$r1[0]\" onclick=\"daj_stablo('sem-$r3[0]-$r2[0]-$r1[0]'); ucitavaj('$r3[0]', '$r2[0]', '$r1[0]');\"> $r3[0]. semestar <div id=\"sem-$r3[0]-$r2[0]-$r1[0]\" style=\"display:none\">prazan</div>";
 			}
 			print "</div>\n";
 		}
 		print "</div>\n";
 	}
-	
-//	$q1 = myquery("select pk.id,p.naziv,ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag where ag.id=pk.akademska_godina and pk.predmet=p.id order by ag.naziv,p.naziv");
-//	print "<p>Izaberite predmet:</p>\n<ul>";
-//	while ($r1 = mysql_fetch_row($q1)) {
-//		print "<li><a href=\"pregled-public.php?predmet=$r1[0]\">$r1[1] ($r1[2])</a></li>";
-//	}
+
+	print ajah_box();
 }
 
 function dajplus($layerid,$layername) {

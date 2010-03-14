@@ -158,7 +158,7 @@ case "izmjena_ispita":
 	if (!preg_match("/\d/", $vrijednost)) {
 		if ($vrijednost != "/") {
 			zamgerlog("AJAH ispit - vrijednost $vrijednost nije ni broj ni /",3);
-			print "ne valja vrijednost"; break;
+			print "Vrijednost $vrijednost nije ni broj ni /"; break;
 		}
 	} else {
 		$vrijednost = floatval(str_replace(",",".",$vrijednost));
@@ -507,6 +507,21 @@ case "prosli_ciklus_ects": // 1500,5 / 157,5 = 9,52698413 / 6 = 1,58783069
 			$q120 = myquery("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ects=$nova");
 		else
 			$q130 = myquery("update prosliciklus_ocjene set ects=$nova where osoba=$osoba and redni_broj=$rednibroj");
+	}
+
+	print "OK";
+
+	break;
+
+
+case "spisak_predmeta":
+	$ag = intval($_REQUEST['ag']);
+	$studij = intval($_REQUEST['studij']);
+	$semestar = intval($_REQUEST['semestar']);
+
+	$q4 = myquery("select p.id,p.naziv,pk.akademska_godina from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$ag and pk.studij=$studij and pk.semestar=$semestar order by p.naziv");
+	while ($r4 = mysql_fetch_row($q4)) {
+		print "$r4[0] $r4[1]|";
 	}
 
 	print "OK";
