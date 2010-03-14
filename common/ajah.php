@@ -177,6 +177,11 @@ case "izmjena_ispita":
 	if ($ime == "ispit") {
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
+                if ($user_siteadmin)
+                        $q40 = myquery("select 1,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
+                else
+                        $q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
+
 		if ($user_siteadmin)
 			$q40 = myquery("select 1,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina");
 		else
