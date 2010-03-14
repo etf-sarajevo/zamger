@@ -337,7 +337,7 @@ else if ($akcija == "edit") {
 			</td></tr>
 			<tr><td align="center"><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">
 			<img src="images/32x32/izvjestaj.png" border="0"><br/>Spisak grupa</a></td></tr>
-			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>">
+			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da">
 			<img src="images/32x32/izvjestaj.png" border="0"><br/>Puni izvještaj</a></td></tr><?
 			$q359 = myquery("select i.id,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 			if (mysql_num_rows($q359)>0) {
