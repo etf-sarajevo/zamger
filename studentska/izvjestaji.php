@@ -83,6 +83,7 @@ function izvjestaj() {
 <li><a href="?sta=izvjestaj/granicni&predmet=2&akademska_godina=4" onclick="izvjestaj();">Studenti kojima fale 2 predmeta - 2008/2009</a></li>
 <li><a href="?sta=izvjestaj/prolaznosttab" onclick="izvjestaj();">Tabelarni pregled prolaznosti</a></li>
 <li><a href="?sta=izvjestaj/pregled" onclick="izvjestaj();">Pregled upisanih studenata u školsku 2009/10 godinu</a></li>
+<li><a href="?sta=izvjestaj/ugovoroucenju" onclick="izvjestaj();">Broj studenata koji su odabrali izborne predmete (po Ugovoru o učenju)</a></li>
 <li>Spiskovi studenata po prosječnoj ocjeni (svi studiji, prosjek 8,0 i više, dat uslov):<br />
 - <a href="?sta=izvjestaj/genijalci&akademska_godina=4&limit_prosjek=8&studij=0&godina_studija=1&limit_ects=22" onclick="izvjestaj()";>prva godina</a><br />
 - <a href="?sta=izvjestaj/genijalci&akademska_godina=4&limit_prosjek=8&studij=0&godina_studija=2&limit_ects=22" onclick="izvjestaj();">druga godina</a><br />
