@@ -103,7 +103,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
 			} else if ($opseg == 5) {
 				// Saljemo mail samo studentima na aktuelnoj akademskoj godini
-				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
+				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
 				$q330 = myquery("select naziv from predmet where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
 			}
