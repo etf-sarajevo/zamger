@@ -140,7 +140,7 @@ if ($tip=="double") {
 		} else $parni=1;
 	}
 
-	if ($grupe==0 && count($imeprezime)>0) {
+	if ($grupa==0 && count($imeprezime)>0) {
 		if ($parni == 0) 
 			print "<tr>";
 		else
@@ -257,7 +257,7 @@ else if ($tip=="single") {
 		<?
 	}
 
-	if ($grupe==0 && count($imeprezime)>0) {
+	if ($grupa==0 && count($imeprezime)>0) {
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
 				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
