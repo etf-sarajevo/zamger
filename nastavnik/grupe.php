@@ -254,7 +254,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if (!in_array($r230[1], $mass_rezultat['podatak1'][$student])) $found=0;
 		}
 
-		if ($found==1) {
+		if ($found==1 && mysql_num_rows($q230)>0) {
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
