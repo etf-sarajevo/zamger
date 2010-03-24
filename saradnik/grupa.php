@@ -219,7 +219,7 @@ function firefoxopen(p1,p2,p3) {
 
 // Cool editing box
 if ($predmet_admin==1 || $user_siteadmin) {
-	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");'); 
+	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
 	?>
 	<script language="JavaScript">
 	function undo_coolbox() {
@@ -304,13 +304,7 @@ if (mysql_result($q160,0,0)>0) {
 
 </form>
 </td></tr></table>
-<?
 
-// AJAH za prisustvo
-
-print ajah_box();
-
-?>
 <script language="JavaScript">
 // Funkcija koja se poziva klikom na polje u tabeli
 function prisustvo(student,cas) {
@@ -355,6 +349,10 @@ function upozorenje(cas) {
 
 } // if (mysql_result($q160,0,0)>0) {
 
+
+// Ispis AJAH box-a neposredno iznad tablice grupe
+
+print ajah_box();
 
 
 
@@ -494,6 +492,9 @@ if ($broj_ispita>0) {
 //}
 
 //if ($casova==0) $casova=1;
+
+
+// ISPIS ZAGLAVLJA
 
 $minw += 70; // ukupno
 $minw += 45; // broj indexa
