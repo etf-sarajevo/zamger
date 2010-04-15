@@ -13,9 +13,18 @@
 function izvjestaj_index() {
 
 
+global $userid, $user_studentska, $user_siteadmin;
+
 // Ulazni parametar
 $student = intval($_REQUEST['student']);
 
+
+// Prava pristupa
+if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
+	biguglyerror("Nemate pravo pristupa ovom izvještaju");
+	zamgerlog("nije studentska, a pristupa tudjem izvjestaju ($student)", 3);
+	return;
+}
 
 ?>
 <p>Univerzitet u Sarajevu<br/>
@@ -37,20 +46,24 @@ if (!($r100 = mysql_fetch_row($q100))) {
 
 
 ?>
-<p>&nbsp;</br>
-Student:</br>
-<h1><?=$r100[0]." ".$r100[1]?></h1><br/>
+<h2>Uvjerenje o položenim predmetima</h2>
+<p>&nbsp;<br />
+<big>Student:
+<b><?=$r100[0]." ".$r100[1]?></b></big><br />
 Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 
 <?
 
 $imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
 
+
 // Ocjene po odluci:
 
 $q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
 if (mysql_num_rows($q105)>0) {
-	print "<p><b>Ocjene po odluci:</b><br/><ul>\n";
+	?>
+	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br/><ul>
+	<?
 }
 while ($r105 = mysql_fetch_row($q105)) {
 	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
@@ -72,7 +85,7 @@ if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 $i=1;
 $q110 = myquery("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar 
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, akademska_godina as ag
-WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student order by ag.id, pk.semestar, p.naziv");
+WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student and pk.akademska_godina=ag.id order by ag.id, pk.semestar, p.naziv");
 while ($r110 = mysql_fetch_row($q110)) {
 	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$r110[1]." (".$imena_ocjena[$r110[1]-5].")</td></tr>\n";
 }

@@ -16,10 +16,20 @@
 
 function izvjestaj_progress() {
 
+global $userid, $user_studentska, $user_siteadmin;
+
 
 // Ulazni parametar
 $student = intval($_REQUEST['student']);
 $razdvoji = intval($_REQUEST['razdvoji_ispite']); // da li prikazivati nepoložene pokušaje ispita
+
+
+// Prava pristupa
+if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
+	biguglyerror("Nemate pravo pristupa ovom izvještaju");
+	zamgerlog("nije studentska, a pristupa tudjem izvjestaju ($student)", 3);
+	return;
+}
 
 
 ?>
@@ -43,9 +53,10 @@ if (!($r100 = mysql_fetch_row($q100))) {
 
 
 ?>
+<h2>Pregled ostvarenih rezultata na predmetima</h2>
 <p>&nbsp;</br>
-Student:</br>
-<h1><?=$r100[0]." ".$r100[1]?></h1><br/>
+<big>Student:
+<b><?=$r100[0]." ".$r100[1]?></b></big><br />
 Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 
 <?
@@ -57,7 +68,9 @@ $imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset"
 
 $q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
 if (mysql_num_rows($q105)>0) {
-	print "<p><b>Ocjene po odluci:</b><br/><ul>\n";
+	?>
+	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br/><ul>
+	<?
 }
 while ($r105 = mysql_fetch_row($q105)) {
 	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
