@@ -1,5 +1,6 @@
-<?php
-// IZVJESTAJ/CHART_SEMESTRALNI - stranica koja generi�e grafove za semestralni izvjestaj uz pomoc GD biblioteke
+<?
+
+// IZVJESTAJ/CHART_SEMESTRALNI - stranica koja generiše grafove za semestralni izvještaj uz pomoć GD biblioteke
 
 require("../lib/libvedran.php");
 require("../lib/zamger.php");
@@ -7,35 +8,35 @@ require("../lib/config.php");
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
-$pitanje = $_GET['pitanje'];
-$semestar = $_GET['semestar'];
-$studij=$_GET['studij'];
+$pitanje = intval($_GET['pitanje']);
+$semestar = intval($_GET['semestar']);
+$studij = intval($_GET['studij']);
 
 $result2077=myquery("SELECT tekst FROM anketa_pitanje WHERE id=$pitanje");
 $title = mysql_result($result2077,0,0);
 
 $l=0;
 $predmeti;
-// ako je za studij odabrana Prva godina studija onda izbacujemo uslov
-// studij iz sljedeceg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 
-// vi�e studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
-// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
-if ($studij == 1)
-	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and semestar = $semestar");
-else
-	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij = $studij and semestar = $semestar");
-while($predmet = mysql_fetch_row($result409)){
 
-	$q6730 = myquery("SELECT sum( b.izbor_id ) / count( * ) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje AND a.predmet =$predmet[0] AND 	
-					zavrsena='Y'");
+// ako je za studij odabrana Prva godina studija onda izbacujemo uslov
+// studij iz sljedećeg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 
+// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
+// način objedinjujemo razultate svih ponuda kursa za isti predmet
+if ($studij == 1)
+	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and semestar=$semestar");
+else
+	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij=$studij and semestar=$semestar");
+
+while ($predmet = mysql_fetch_row($result409)) {
+	$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
 	$data[$l]=mysql_result($q6730,0,0);
 	$predmeti[$predmet[1]] =$data[$l] ;
 	
 	$l++;
-
 }
+
 $prosjek = array_sum($predmeti)/sizeof($predmeti);
-// izbacio prosjek ali ako se odkomentarise sljedeca linija koda dodaje se jos jedan dodatni bar u graf sa srednjom vrijedno�cu za to pitanje
+// izbacio prosjek ali ako se odkomentarise sljedeca linija koda dodaje se jos jedan dodatni bar u graf sa srednjom vrijednošću za to pitanje
 // $predmeti['AVG']=$prosjek;
 
 crtaj($predmeti,$title);
@@ -140,7 +141,14 @@ function crtaj ($data,$title){
 			$ypos = $ymax + 3; // distance from x axis
 		
 			imagestring($image, $labelfont, $xpos, $ypos, $xval, $black);
-		} 
+
+			$txtsz = imagefontwidth($labelfont) * strlen($yval);
+			$xpos = $xmin + (int)(($base - $txtsz) / 2)-5;
+			$xpos = max($xmin, $xpos);
+			$ypos = $ymin-imagefontheight($labelfont)-1;
+
+			imagestring($image, $labelfont, $xpos, $ypos, $yval, $black);
+		}
 		
 		// flush image
 		header("Content-type: image/gif"); // or "Content-type: image/png"
