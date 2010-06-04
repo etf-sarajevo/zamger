@@ -71,7 +71,7 @@ $code_poruke = array();
 
 $q10 = myquery("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and z.rok>curdate() and sp.predmet=pk.id and sp.student=$userid and pk.predmet=p.id and z.aktivna=1 order by rok limit 5");
 while ($r10 = mysql_fetch_row($q10)) {
-	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y",$r10[2]).".<br/><br/>\n";
+	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y h:i:s",$r10[2]).".<br/><br/>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
