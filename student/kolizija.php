@@ -26,6 +26,11 @@ function student_kolizija() {
 		$zagodinu  = mysql_result($q1,0,0);
 		$zagodinunaziv  = mysql_result($q1,0,1);
 		$q3 = myquery("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
+		if (mysql_num_rows($q3)<1) {
+			// Definisana je samo jedna akademska godina u bazi
+			nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
+			return;
+		}
 		$proslagodina = mysql_result($q3,0,0);
 	} else {
 		$proslagodina = mysql_result($q1,0,0);
