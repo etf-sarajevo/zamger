@@ -17,18 +17,6 @@ function studentska_anketa(){
 	// JavaScript
 	?>
 	<script type="text/javascript">
-		function promjeniListu(){
-			studij = document.getElementById('studij').value;
-			if (studij !=1){
-				document.getElementById('pgs').style.display = 'none';
-				document.getElementById('ostalo').style.display = '';
-			}
-			else{
-				document.getElementById('pgs').style.display = '';
-				document.getElementById('ostalo').style.display = 'none';
-			}	
-		}
-		
 		function setVal(){
 			document.getElementById('tekst_novo_pitanje').value = pitanje_array[document.getElementById('pitanja').selectedIndex];
 			document.getElementById('tip_novo_pitanja').selectedIndex = tip_array[document.getElementById('pitanja').selectedIndex];
@@ -563,13 +551,17 @@ function studentska_anketa(){
 						<tr>
 							<td>Odaberite studij:</td>
 							<td>
-								<select onchange="javascript:promjeniListu()" name="studij" id="studij">
+								<select name="studij" id="studij">
+								<option value="-1">--- Prva godina studija ---</option>
 				<?
-					$q295 = myquery("select id,naziv from studij order by id");
+					$q295 = myquery("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 order by s.tipstudija, s.naziv");
+					$maxsemestara=0;
 					while ($r295=mysql_fetch_row($q295)) {
-					?>
+						?>
 						<option value="<?=$r295[0]?>"><?=$r295[1]?></option>
-					<? }
+						<?
+						if ($r295[2]>$maxsemestara) $maxsemestara=$r295[2];
+					}
 				?>
 								</select><br/>
 							</td>
@@ -579,16 +571,13 @@ function studentska_anketa(){
 							<td>
 							<div id="pgs">
 								<select name="semestar" id="semestar">
-									<option value="1"> 1</option>
-									<option value="2"> 2</option>
-								</select>
-							</div>
-							<div id="ostalo" style="display:none">
-								<select name="semestar2" id="semestar2">
-									<option value="3"> 3</option>
-									<option value="4"> 4</option>
-									<option value="5"> 5</option>
-									<option value="6"> 6</option>
+								<?
+								for ($sem=1; $sem<=$maxsemestara; $sem++) {
+									?>
+									<option value="<?=$sem?>"> <?=$sem?></option>
+									<?
+								}
+								?>
 								</select>
 							</div>
 							</td>
@@ -635,8 +624,8 @@ function studentska_anketa(){
 						</tr>
 						<tr>
 							<td colspan="2">
-								<input type="hidden" name="akcija" value="po_smjerovima">                                
-								<input size="100px" type="submit" value="Kreiraj izvjestaj">                                            
+								<input type="hidden" name="akcija" value="po_smjerovima">
+								<input size="100px" type="submit" value="Kreiraj izvjestaj">
 							</td>
 						</tr>
 					</table>

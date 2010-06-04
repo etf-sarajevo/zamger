@@ -1,7 +1,8 @@
 <?
+
 // IZVJESTAJ/ANKETA_SEMESTRALNI - stranica koja generiše izvjestaje: SEMESTRALNI i IZVJESTAJ PO SMJEROVIMA
 
-function izvjestaj_anketa_semestralni(){
+function izvjestaj_anketa_semestralni() {
 	
 	$ak_god = intval($_REQUEST['akademska_godina']);
 	$studij = intval($_REQUEST['studij']);
@@ -18,19 +19,19 @@ function izvjestaj_anketa_semestralni(){
 
 
 	// -----------------------------------------  SEMESTRALNI IZVJEŠTAJ ---------------------------------------
-	if ($_REQUEST['akcija']=="semestralni"){
+	if ($_REQUEST['akcija']=="semestralni") {
 	
-		if ($studij == 1)
-			$semestar = intval($_REQUEST['semestar']);
-		else 
-			$semestar = intval($_REQUEST['semestar2']);
 		$q0111 = myquery("select naziv from akademska_godina where id=$ak_god");
 		$naziv_ak_god = mysql_result($q0111,0,0);
 		
-		$q0112 = myquery("select naziv from studij where id=$studij");
-		$naziv_studija = mysql_result($q0112,0,0);
-			
-		$id_ankete = mysql_result($q011,0,0);	
+		if ($studij==-1) {
+			$naziv_studija = "Svi studiji";
+		} else {
+			$q0112 = myquery("select naziv from studij where id=$studij");
+			$naziv_studija = mysql_result($q0112,0,0);
+		}
+
+		$id_ankete = mysql_result($q011,0,0);
 		
 		$result203 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
 		$broj_rank_pitanja = mysql_result($result203,0,0);

@@ -22,13 +22,16 @@ $predmeti;
 // studij iz sljedećeg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 
 // više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 // način objedinjujemo razultate svih ponuda kursa za isti predmet
-if ($studij == 1)
-	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and semestar=$semestar");
+if ($studij == -1)
+	$result409=myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 else
-	$result409=myquery("select p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and studij=$studij and semestar=$semestar");
+	$result409=myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 
 while ($predmet = mysql_fetch_row($result409)) {
-	$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
+	if ($studij==-1)
+		$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
+	else
+		$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' and studij=$studij");
 	$data[$l]=mysql_result($q6730,0,0);
 	$predmeti[$predmet[1]] =$data[$l] ;
 	
