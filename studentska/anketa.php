@@ -1,6 +1,6 @@
-<?php 
-// STUDENTSKA/ANKETA - administracija ankete, studentska slu�ba
+<?
 
+// STUDENTSKA/ANKETA - administracija ankete, studentska služba
 
 function studentska_anketa(){
 	global $userid,$user_siteadmin,$user_studentska;
@@ -13,6 +13,8 @@ function studentska_anketa(){
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 	}
+
+	// JavaScript
 	?>
 	<script type="text/javascript">
 		function promjeniListu(){
@@ -29,65 +31,63 @@ function studentska_anketa(){
 		
 		function setVal(){
 			document.getElementById('tekst_novo_pitanje').value = pitanje_array[document.getElementById('pitanja').selectedIndex];
-			document.getElementById('tip_novo_pitanja').selectedIndex = tip_array[document.getElementById('pitanja').selectedIndex];		
+			document.getElementById('tip_novo_pitanja').selectedIndex = tip_array[document.getElementById('pitanja').selectedIndex];
 		}
 		var pitanje_array = new Array();
 		var tip_array = new Array();
 		
 		var par=1;
 		
-		function switch_poredjenje(){			
-			if (par==1){			
+		function switch_poredjenje(){
+			if (par==1){
 				document.getElementById('poredjenje_1').style.display = '';
 				par=0;
-			}
-			else { 			
+			} else {
 				document.getElementById('poredjenje_1').style.display = 'none';
 				par=1;
 			}
 		}
 		var help=1;
 		
-		function switch_izvjestaj(){			
-			if (help==1){			
+		function switch_izvjestaj(){
+			if (help==1) {
 				document.getElementById('semestralni').style.display = '';
 				help=0;
-			}
-			else { 			
+			} else {
 				document.getElementById('semestralni').style.display = 'none';
-				help=1;		
+				help=1;
 			}
 		}
 		
 		var help2=1;
 		
-		function switch_izvjestaj2(){
-			if (help2==1){			
+		function switch_izvjestaj2() {
+			if (help2==1){
 				document.getElementById('po_smjerovima').style.display = '';
 				help2=0;
-			}
-			else { 			
+			} else {
 				document.getElementById('po_smjerovima').style.display = 'none';
-				help2=1;		
+				help2=1;
 			}
 		}
 	</script>
 	<?
+
+	// Određujemo akciju
 	$akcija = $_REQUEST['akcija'];
 	$anketa = intval($_REQUEST['anketa']);
 	$id = intval($_REQUEST['anketa']);
 	
-	// deaktivacija ankete
-	if ($_REQUEST['akcija']=="deaktivacija" ){			
-		$result401=myquery("update anketa_anketa set aktivna = 0 where id=$id");	
+	// Deaktivacija ankete
+	if ($_REQUEST['akcija']=="deaktivacija") {
+		$result401=myquery("update anketa_anketa set aktivna = 0 where id=$id");
 	}
 	
-	// ako korinik želi da mijenja podatke vezane za anketu -- ime -- opis -- datum pocetka i kraja
-	// ++++++++++++++++++++++++++++++   AKCIJA PODACI  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	if ($akcija =="podaci"){
-		if ($_POST['subakcija']=="potvrda" && check_csrf_token() ) {
-			$naziv = $_REQUEST['naziv'];
-			$opis = $_REQUEST['opis'];
+	// Promjena podataka o anketi
+	if ($akcija =="podaci") {
+		if ($_POST['subakcija']=="potvrda" && check_csrf_token()) {
+			$naziv = my_escape($_REQUEST['naziv']);
+			$opis = my_escape($_REQUEST['opis']);
 			
 			$dan = intval($_POST['1day']);
 			$mjesec = intval($_POST['1month']);
@@ -104,28 +104,26 @@ function studentska_anketa(){
 			$sekunda2 = intval($_POST['sekunda2']);
 			
 			if (!checkdate($mjesec,$dan,$godina)) {
-				niceerror("Odabrani datum je nemoguc");
-				zamgerlog("los datum", 3);
+				niceerror("Odabrani datum je nemoguć");
+				zamgerlog("los datum za anketu", 3);
 				return 0;
 			}
 			if (!checkdate($mjesec2,$dan2,$godina2)) {
-				niceerror("Odabrani datum je nemoguc");
-				zamgerlog("los datum", 3);
+				niceerror("Odabrani datum je nemoguć");
+				zamgerlog("los datum za anketu", 3);
 				return 0;
 			}
 			if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
 				niceerror("Vrijeme nije dobro");
-				zamgerlog("lose vrijeme", 3);
+				zamgerlog("lose vrijeme za anketu", 3);
 				return 0;
 			}
-				
-				
+			
 			
 			$mysqlvrijeme1 = time2mysql(mktime($sat,$minuta,$sekunda,$mjesec,$dan,$godina));
 			$mysqlvrijeme2 = time2mysql(mktime($sat2,$minuta2,$sekunda2,$mjesec2,$dan2,$godina2));
 			
-			$q395 = myquery("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2',
-							  opis='$opis' where id=$anketa");
+			$q395 = myquery("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2', opis='$opis' where id=$anketa");
 			
 			?>
 			<script language="JavaScript">
@@ -136,104 +134,113 @@ function studentska_anketa(){
 		}
 		print "<a href='?sta=studentska/anketa&akcija=edit&anketa=$anketa'>Povratak nazad</a>";
 		
-		// subakcija kojom se data anketa postavlja kao aktivna
+		// Subakcija kojom se data anketa postavlja kao aktivna
 		if ($_REQUEST['subakcija']=="aktivacija" ){
-			
-			// automatski postavljamo i to da vise nije moguce editovati pitanja date ankete posto je postala aktivna
-			$result401a = myquery("update anketa_anketa set editable = 0 where id=$id");
-			
-			// prvo sve ankete postavimo na neaktivne 
-			$result401 = myquery("update anketa_anketa set aktivna = 0");
-			//a zatim datu postavimo kao aktivnu jer u datom trenu samo jedna ankete moze biti aktivna
-			$result402=myquery("update anketa_anketa set aktivna = 1 where id=$id");
-			print " <center> <span style='color:#009900'> Anekta je postavljena kao aktivna! </span> </center>";
-		
+			// Prvo sve ankete postavimo na neaktivne
+			$result401 = myquery("update anketa_anketa set aktivna=0");
+
+			// ...a zatim datu postavimo kao aktivnu jer u datom trenutku samo jedna anketa može biti aktivna.
+			// Automatski postavljamo i to da vise nije moguće editovati pitanja date ankete pošto je postala aktivna
+			$result402 = myquery("update anketa_anketa set aktivna=1, editable=0 where id=$id");
+
+			print " <center> <span style='color:#009900'> Anketa je postavljena kao aktivna! </span> </center>";
 		}
-		$result401=myquery("select id,datum_otvaranja,datum_zatvaranja,naziv,opis from anketa_anketa where id=$id");
-		//$result401 = mysql_query($q401);
+
+		$result401 = myquery("select id,UNIX_TIMESTAMP(datum_otvaranja),UNIX_TIMESTAMP(datum_zatvaranja),naziv,opis from anketa_anketa where id=$id");
+		$datum_otvaranja = mysql_result($result401,0,1);
+		$datum_zatvaranja = mysql_result($result401,0,2);
 		$naziv = mysql_result($result401,0,3);
 	
 		?>
 		<center>
-            <h2> <?=$naziv?>  - izmjena podataka </h2>
-            <?
-            $tmpvrijeme=time();
-            
-            $zdan = date('d',$tmpvrijeme);
-            $zmjesec = date('m',$tmpvrijeme);
-            $zgodina = date('Y',$tmpvrijeme);
-            $zsat = date('H',$tmpvrijeme);
-            $zminuta = date('i',$tmpvrijeme);
-            $zsekunda = date('s',$tmpvrijeme);		
-            ?>
-            <?=genform("POST")?>
-            <input type="hidden" name="subakcija" value="potvrda">
-            <table border="0" width="600">
-                <tr>
-                    <td valign="top" align="right" >
-                        Naziv : &nbsp; 
-                    </td>
-                    <td valign="top">
-                    <b><input type="text" name="naziv" value="<?=$naziv?>" class="default"></b><br/>
-                    </td>
-                </tr>
-                <tr>
-                    <td valign="top" align="right">
-                         Datum otvaranja : &nbsp;  
-                    </td>
-                    <td valign="top">
-                        <b> <?=datectrl($zdan,$zmjesec,$zgodina,"1")?>   
-                        <input type="text" name="sat1" size="1" value="<?=$zsat?>"> <b>:</b> 
-                        <input type="text" name="minuta1" size="1" value="<?=$zminuta?>"> <b>:</b> 
-                        <input type="text" name="sekunda1" size="1" value="<?=$zsekunda?>"> <br></b><br/>
-                    </td>
-                </tr>			
-                <tr>
-                    <td valign="top" align="right">
-                         Datum zatvaranja : &nbsp; 
-                    </td>
-                    <td valign="top">
-                        <b><b><?=datectrl($zdan,$zmjesec,$zgodina,"2")?>  
-                        <input type="text" name="sat2" size="1" value="<?=$zsat?>"> <b>:</b> 
-                        <input type="text" name="minuta2" size="1" value="<?=$zminuta?>"> <b>:</b> 
-                        <input type="text" name="sekunda2" size="1" value="<?=$zsekunda?>"> <br></b><br/>
-                    </td>
-                </tr> 
-                <tr>
-                    <td valign="top" align="right">
-                         Opis : &nbsp; 
-                    </td>
-                    <td valign="top">
-                        <b><b><textarea name="opis" cols="30"  rows="15" class="default"><?=mysql_result($result401,0,4)?> </textarea></b><br/>
-                    </td>
-                </tr>
-            </table>
-        
-            <p>
-                <input type="Submit" value=" Izmijeni "></form>
-            </p>
+		<h2> <?=$naziv?>  - izmjena podataka </h2>
+		<?
+		$tmpvrijeme=time();
+		
+		$odan = date('d',$datum_otvaranja);
+		$omjesec = date('m',$datum_otvaranja);
+		$ogodina = date('Y',$datum_otvaranja);
+		$osat = date('H',$datum_otvaranja);
+		$ominuta = date('i',$datum_otvaranja);
+		$osekunda = date('s',$datum_otvaranja);
+
+		$zdan = date('d',$datum_zatvaranja);
+		$zmjesec = date('m',$datum_zatvaranja);
+		$zgodina = date('Y',$datum_zatvaranja);
+		$zsat = date('H',$datum_zatvaranja);
+		$zminuta = date('i',$datum_zatvaranja);
+		$zsekunda = date('s',$datum_zatvaranja);
+
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="potvrda">
+		<table border="0" width="600">
+		<tr>
+			<td valign="top" align="right" >
+				Naziv: &nbsp; 
+			</td>
+			<td valign="top">
+			<b><input type="text" name="naziv" value="<?=$naziv?>" class="default"></b><br/>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top" align="right">
+				Datum otvaranja: &nbsp;
+			</td>
+			<td valign="top">
+				<b> <?=datectrl($odan,$omjesec,$ogodina,"1")?>   
+				<input type="text" name="sat1" size="1" value="<?=$osat?>"> <b>:</b> 
+				<input type="text" name="minuta1" size="1" value="<?=$ominuta?>"> <b>:</b> 
+				<input type="text" name="sekunda1" size="1" value="<?=$osekunda?>"> <br></b><br/>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top" align="right">
+				Datum zatvaranja: &nbsp; 
+			</td>
+			<td valign="top">
+				<b><b><?=datectrl($zdan,$zmjesec,$zgodina,"2")?>  
+				<input type="text" name="sat2" size="1" value="<?=$zsat?>"> <b>:</b> 
+				<input type="text" name="minuta2" size="1" value="<?=$zminuta?>"> <b>:</b> 
+				<input type="text" name="sekunda2" size="1" value="<?=$zsekunda?>"> <br></b><br/>
+			</td>
+		</tr> 
+		<tr>
+			<td valign="top" align="right">
+				Opis: &nbsp; 
+			</td>
+			<td valign="top">
+				<b><b><textarea name="opis" cols="30"  rows="15" class="default"><?=mysql_result($result401,0,4)?> </textarea></b><br/>
+			</td>
+		</tr>
+		</table>
+	
+		<p>
+		<input type="Submit" value=" Izmijeni "></form>
+		</p>
 		</center>
 		<?
 	}
 	// ++++++++++++++++++++++++++++++ KRAJ AKCIJA PODACI  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	
+
+
 	//  *******************   AKCIJA NOVI - dio koji se prikazuje kada se kreira nova anketa ****************************	
-	else if ($_POST['akcija'] == "novi" && check_csrf_token()){
+	else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		// TODO dodati provjeru naziva
-		$ak_godina = $_POST['ak_godina'];
-		$naziv = substr($_POST['naziv'], 0, 100);
-		$prethodna_anketa = $_POST['prethodna_anketa'];
+		$ak_godina = intval($_POST['ak_godina']);
+		$naziv = my_escape(substr($_POST['naziv'], 0, 100));
+		$prethodna_anketa = intval($_POST['prethodna_anketa']);
 	
 		print "Nova anketa je kreirana. Molimo sačekajte.<br/><br/>";
 				
-		$q393 = myquery("insert into anketa_anketa (naziv,akademska_godina) values ('$naziv',$ak_godina)");
-		$q391 = myquery("select id from anketa_anketa where naziv='$naziv'");
+		$q393 = myquery("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
+		$q391 = myquery("select id from anketa_anketa where naziv='$naziv', akademska_godina=$ak_godina");
 		$anketa = mysql_result($q391,0,0);
 		
-		// da li cemo prekopirati pitanja od proslogodisnje ankete ?
-		if ($prethodna_anketa != 0){
-			// ubaci pitanja od izabrane ankete za ponavljanje
-			$q377=myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) select $anketa,tip_pitanja,tekst from anketa_pitanje where anketa=$prethodna_anketa");			
+		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?
+		if ($prethodna_anketa != 0) {
+			// Ubaci pitanja od izabrane ankete za ponavljanje
+			$q377=myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) select $anketa,tip_pitanja,tekst from anketa_pitanje where anketa=$prethodna_anketa");
 		}
 		?>
 		<script language="JavaScript">
@@ -249,32 +256,32 @@ function studentska_anketa(){
 		
 		print "<a href='?sta=studentska/anketa'>Povratak nazad</a>";
 		
-		// subakcija koja se izvrsava kada se edituje neko od pitanja 
-		if($_POST['subakcija']=="edit_pitanje"  ){
-			$obrisi = $_REQUEST['obrisi'];
-			$pitanje = $_REQUEST['column_id'];
-			if ($obrisi){				
-				$q800=myquery("delete from anketa_pitanje where id = $pitanje");
+		// Subakcija koja se izvrsava kada se edituje neko od pitanja 
+		if($_POST['subakcija']=="edit_pitanje") {
+			$obrisi = intval($_REQUEST['obrisi']);
+			$pitanje = intval($_REQUEST['column_id']);
+			if ($obrisi) {
+				$q800=myquery("delete from anketa_pitanje where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno obrisano! </span> </center>";
-			}
-			else{
+			} else {
 				$tekst_pitanja = $_REQUEST['tekst_pitanja'];
-				$tip_pitanja= $_REQUEST['tip_pitanja'];				
-				$q800=myquery("update anketa_pitanje set tip_pitanja=$tip_pitanja,tekst= '$tekst_pitanja' where id = $pitanje");
-				print " <center> <span style='color:#009900'> Pitanje uspješno izmjenjeno! </span> </center>";				
-			}		
+				$tip_pitanja= $_REQUEST['tip_pitanja'];
+				$q800=myquery("update anketa_pitanje set tip_pitanja=$tip_pitanja, tekst='$tekst_pitanja' where id=$pitanje");
+				print " <center> <span style='color:#009900'> Pitanje uspješno izmjenjeno! </span> </center>";
+			}
 		}
 		
 		// subakcija koja se izvrsava kada se dodaje novo pitanje
-		if($_POST['subakcija']=="novo_pitanje"){
+		if($_POST['subakcija']=="novo_pitanje") {
 			$tekst_pitanja = my_escape($_REQUEST['tekst_novo_pitanje']);
-			$tip_pitanja= $_REQUEST['tip_novo_pitanja'];		
-			$q891=myquery("select id from anketa_pitanje ORDER BY id desc limit 1");
-			$id_pitanja=mysql_result($q891,0,0)+1;		
-			$q800=myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
-			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";			
+			$tip_pitanja = intval($_REQUEST['tip_novo_pitanja']);
+
+			$q891 = myquery("select id from anketa_pitanje ORDER BY id desc limit 1");
+			$id_pitanja = mysql_result($q891,0,0)+1;
+			$q800 = myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
+			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
 		}
-		$id=$_GET['anketa'];
+		$id = intval($_GET['anketa']);
 			
 		// Osnovni podaci
 		
@@ -306,23 +313,24 @@ function studentska_anketa(){
 					<h2><?=$naziv?> za godinu <?=$naziv_ak_godina_ankete?> </h2>	
 				</td>
 			</tr>
-			<? 
-			   if ($ak_godina_ankete == $aktuelna_ak_god){
+			<?
+
+		if ($ak_godina_ankete == $aktuelna_ak_god) {
 			?>
 			<tr>
-				<td valign="top" align="right" > Naziv : &nbsp; </td>
+				<td valign="top" align="right" > Naziv: &nbsp; </td>
 				<td valign="top"> <b><?=$naziv?></b><br/> 	</td>
 			</tr>
 			<tr>
-				<td valign="top" align="right">  Datum otvaranja : &nbsp; 	</td>
+				<td valign="top" align="right">  Datum otvaranja: &nbsp; 	</td>
 				<td valign="top">  <b><?=mysql_result($result201,0,1)?></b><br/> </td>
 			</tr>
 			<tr>
-				<td valign="top" align="right">  Datum zatvranja : &nbsp; 	</td>
+				<td valign="top" align="right">  Datum zatvranja: &nbsp; 	</td>
 				<td valign="top"> <b><b><?=mysql_result($result201,0,2)?></b><br/> 	</td>
 			</tr>
 			<tr>
-				<td valign="top" align="right">	 Opis : &nbsp; 	</td>
+				<td valign="top" align="right">	 Opis: &nbsp; 	</td>
 				<td valign="top"> <b><b><?=mysql_result($result201,0,4)?></b><br/>	</td>
 			</tr> 
 			<tr>
@@ -345,10 +353,11 @@ function studentska_anketa(){
 		function dropdown_anketa($tip){
 			$q283=myquery("SELECT id, tip from anketa_tip_pitanja");
 			if ($tip == 1)
-			$lista="<select id='tip_novo_pitanja' name='tip_novo_pitanja'>";
+				$lista="<select id='tip_novo_pitanja' name='tip_novo_pitanja'>";
 			else
-			$lista="<select name='tip_pitanja'>";
-			while ($r283=mysql_fetch_row($q283)) {					
+				$lista="<select name='tip_pitanja'>";
+
+			while ($r283=mysql_fetch_row($q283)) {
 				$lista.="<option value='$r283[0]'"; 
 				if($r283[1]==$tip) 
 					$lista.=" selected"; 
@@ -366,11 +375,11 @@ function studentska_anketa(){
 				<td><strong>Tip pitanja</strong></td>
 		<?
 				
-			// da li se mogu dodavati nova pitanja ili mijenjati postojeca
+		// Da li se mogu dodavati nova pitanja ili mijenjati postojeća
 		if($editable == 0){
 			print "</tr>";
 			$i=1;
-			while ($r202 = mysql_fetch_row($result202)) {					
+			while ($r202 = mysql_fetch_row($result202)) {
 				?>
 			<tr>
 				<td colspan='2'><hr/></td>
@@ -381,7 +390,7 @@ function studentska_anketa(){
 			</tr>
 				<?
 				$i++;
-			}		
+			}
 		} else {
 			print "<td>  </td></tr>";
 			$i=1;
@@ -447,58 +456,60 @@ function studentska_anketa(){
 	
 		<table width="600" border="0">
 			<tr><td align="left">
-				<p><h3>Studentska sluzba - Anketa</h3></p>
+				<p><h3>Studentska služba - Anketa</h3></p>
 				<div class="anketa_naslov">
 					<p><h4>Aktuelna akademska godina</h4></p>
 				</div>
 				<?
 
-				// gledamo da li je za ovu akademsku godinu kreirana anketa
+				// Gledamo da li je za ovu akademsku godinu kreirana ijedna anketa
 				$q199=myquery("select id,naziv,opis,aktivna from anketa_anketa where akademska_godina=$ag");
-
-				// kupimo ako postoje ankete od proslih godina
-				$q199b=myquery("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
-
-				if (mysql_num_rows($q199) ==0){
+				if (mysql_num_rows($q199)==0) {
 					print "Za ovu akademsku godinu nije kreirana nijedna anketa";
-					?>
-					<hr>
-					<!--                    Forma za kreiranje ankete:              -->
-					<?=genform("POST")?>
-					<input type="hidden" name="akcija" value="novi">
-					<input type="hidden" name="ak_godina" value="<?=$ag?>">
-					<b>Nova anketa</b><br/><br/>
-					Naziv ankete:<br/>
-					<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
-					<br />Ponovi pitanja od: 
-					<select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
-						<option value='0'> Bez ponavljanja </option>
-						<? 
-						while ($r199b = mysql_fetch_row($q199b)){
-							print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
-						}
+				} else { 
+					?><table width="100%" border="0"><?
+					while ($anketa_row = mysql_fetch_row($q199)) {
 						?>
-					</select>
-					</form>
-					<hr>								
-					<?							
-				}
-				else { // ako je vec kreirana anketa
-					$anketa_row = mysql_fetch_row($q199);
-					?>
-					<table width="100%" border="0">
 						<tr><td width='50%'><?=$anketa_row[1]?></td>
 						<td><?					
-					if ($anketa_row[3] == 0 ) 
-						print "<a href='".genuri()."&akcija=podaci&anketa=$anketa_row[0]&subakcija=aktivacija'>Aktiviraj</a>";
-					else
-						print "<a href='".genuri()."&akcija=deaktivacija&anketa=$anketa_row[0]'>Deaktiviraj</a>";
+						if ($anketa_row[3] == 0 ) 
+							print "<a href='".genuri()."&akcija=podaci&anketa=$anketa_row[0]&subakcija=aktivacija'>Aktiviraj</a>";
+						else
+							print "<a href='".genuri()."&akcija=deaktivacija&anketa=$anketa_row[0]'>Deaktiviraj</a>";
 						?>
 						</td>
 						<td><a href="<?=genuri()?>&akcija=edit&anketa=<?=$anketa_row[0]?>">Detalji</a></td></tr>
-					</table>
-					<?
+						<?
+					}
+					print "</table>";
 				}
+
+				// Forma za kreiranje ankete
+				// Spisak anketa od prošlih godina, radi ponavljanja pitanja
+				$q199b=myquery("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id order by a.akademska_godina desc");
+				?>
+
+				<hr>
+				<?=genform("POST")?>
+				<input type="hidden" name="akcija" value="novi">
+				<input type="hidden" name="akademska_godina" value="<?=$ag?>">
+				<p><br><b>Nova anketa</b><br/><br/>
+				Naziv ankete:<br/>
+				<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
+				<br />Ponovi pitanja od: 
+				<select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
+					<option value='0'> Bez ponavljanja </option>
+					<? 
+					while ($r199b = mysql_fetch_row($q199b)){
+						print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
+					}
+					?>
+				</select>
+				</form>
+				<?
+
+
+				// Spisak anketa u prethodnim akademskim godinama
 
 				?>
 				<hr />
@@ -597,7 +608,7 @@ function studentska_anketa(){
 					<form method="post" action="?sta=izvjestaj/anketa_semestralni">
 					<table width="450" align="center" >
 						<tr>
-							<td width="200"> Odaberite  akademsku godinu  : </td>
+							<td width="200"> Odaberite akademsku godinu: </td>
 							<td align="left">
 							<select name="akademska_godina">
 					<?
