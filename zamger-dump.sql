@@ -1556,7 +1556,8 @@ CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
   `akademska_godina` int(10) NOT NULL,
   `studij` int(10) NOT NULL,
   `semestar` int(10) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `unique_id` (`unique_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=27 ;
 
 
