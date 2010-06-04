@@ -2,35 +2,63 @@
 
 // PUBLIC/ANKETA - stranica za ispunjavanje ankete
 
-function public_anketa(){
+function public_anketa() {
+
 	global $_lv_; 
+
 	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 	$ag = mysql_result($q10,0,0);
 
-	// uzimamo id aktivne ankete
+	// Uzimamo id aktivne ankete
 	$q09 = myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1 and akademska_godina=$ag");
 	if (mysql_num_rows($q09)==0) {
 		biguglyerror("Ne postoji aktivna anketa!");
 		return;
 	}
-	$id_ankete = mysql_result($q09,0,0);
-	$naziv= mysql_result($q09,0,1);
-	$rok=mysql_result($q09,0,2);
+	$anketa = mysql_result($q09,0,0);
+	$naziv_ankete = mysql_result($q09,0,1);
+	$rok = mysql_result($q09,0,2);
 	if (time () > $rok){
 		biguglyerror("Isteklo vrijeme za ispunjavanje ankete");
 		return;
 	}
-	
-	// da li je student zavrsio anketu
+
+	// Kupimo kod koji je student unio
+	$hash_code = my_escape($_POST['hash_code']);
+
+	// Provjeravamo da li je dati student zatražio kod te da li je već ispunjavao datu anketu sa poljem zavrsena
+	$q590 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code'");
+	if (mysql_num_rows($q590)==0) {
+		// dio koji ide ako dati hash ne postoji u bazi tj. ako student pokušava da izmisli hash :P
+		?>
+		<center>
+			<p>Greška: neispravan kod '<?=$hash_code?>'.</p>
+			<a href="index.php">Nazad na početnu stranicu</a>
+		</center>
+		<?	
+	}
+
+	$rezultat = mysql_result($q590,0,0);
+	$predmet = mysql_result($q590,0,1);
+	$zavrsena = mysql_result($q590,0,2);
+
+	if ($zavrsena != 'N') {
+		?>
+		<center>
+			<p>Već ste jednom popunili anketu. Nema mogućnosti izmjene jednom popunjene ankete.</p>
+			<a href="index.php">Nazad na početnu stranicu</a>
+		</center>
+		<?	
+	}
+
+
+	// da li je student završio anketu
 	if ($_POST['akcija'] == "finish" && check_csrf_token()) {
 		
-		$id_rezultata = $_POST['id_rezultata'];
-		$id_ankete = $_POST['id_ankete'];
-		
 		// broj rank pitanja
-		$q203 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa =$id_ankete and tip_pitanja =1");
+		$q203 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$anketa and tip_pitanja=1");
 		$broj_rank_pitanja = mysql_result($q203,0,0);
-		 
+		
 		$j=1;
 		for ($i=0; $j<=$broj_rank_pitanja ; $i++){
 			if ($_POST['izbor'.$j]){ // provjeravamo prvo da li pitanje uopce odgovoreno
@@ -44,11 +72,11 @@ function public_anketa(){
 		
 		// ubaciti sve odgovore u tabelu odgovori_rank
 		for ($i=0; $i<count($izbori); $i++) {
-			$q590 = myquery("insert into anketa_odgovor_rank set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], izbor_id=$izbori[$i]");
+			$q590 = myquery("insert into anketa_odgovor_rank set rezultat=$rezultat, pitanje=$id_pitanja[$i], izbor_id=$izbori[$i]");
 		}
 		
 		// broj esejskih pitanja
-		$result204 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa =$id_ankete and tip_pitanja =2");
+		$result204 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$anketa and tip_pitanja =2");
 		$broj_esej_pitanja = mysql_result($result204,0,0);
 		
 		for ($i=0; $i<$broj_esej_pitanja; $i++) {
@@ -58,11 +86,11 @@ function public_anketa(){
 		}
 		// ubaciti sve odgoovre u tabelu odgovori_text
 		for ($i=0; $i<$broj_esej_pitanja; $i++) {
-			$q590 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$id_pitanja[$i], odgovor='$komentar[$i]'");
+			$q590 = myquery("insert into anketa_odgovor_text set rezultat=$rezultat, pitanje=$id_pitanja[$i], odgovor='$komentar[$i]'");
 		}
 		
 		// nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
-		$q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
+		$q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$rezultat");
 		
 		?>
 		<center>
@@ -73,64 +101,43 @@ function public_anketa(){
 	}
 
 	//  ----------------  AKCIJA PRIKAZI dio koji ide nakon sto je student unio kod za anketu te stistnuo dugme ----------------------
-	else if($_POST['akcija'] == "prikazi" && check_csrf_token()) {
-		// kupimo kod koji je student unio
-		$unique_hash_code = my_escape($_POST['kod']);
-		
-		// provjeravamo da li je dati student zatrazio kod te da li je vec ispunjavao datu anketu sa poljem zavrsena
-		$q590 = myquery("SELECT count( * ),id,predmet FROM anketa_rezultat WHERE unique_id = '$unique_hash_code' AND zavrsena = 'N' GROUP BY id, predmet");
-		
-		if ( !mysql_num_rows($q590) ) {
-			// dio koji ide ako dati hesh ne postoji u bazi tj ako student pokusava da izmisli hesh :P
-			?>
-			<center>
-				<p>Žao nam je ali ili ste već ispunili anketu ili dati kod ne postoji u bazi!!</p>
-				<a href="index.php">Nazad na početnu stranicu</a>
-			</center>
-			<?	
-		}
-		else  { // else 15   uspjesno 
-		
-			$id_rezultata =mysql_result($q590,0,1);
-			$predmet = mysql_result($q590,0,2);
-			$q011= myquery("select naziv from predmet where id = $predmet");
-			$naziv_predmeta = mysql_result($q011,0,0);
-		
-			?>
-			<center>
-				<h2>Anketa za predmet <?= $naziv_predmeta?></h2>
-			</center>
-			<?=genform("POST")?>
-			<input type="hidden" name="akcija" value="finish">
-			<input type="hidden" name="id_rezultata" value="<?=$id_rezultata?>">
-			<input type="hidden" name="id_ankete" value="<?=$id_ankete?>">
-				
-			<table align="center" cellpadding="4" border="0" >
-				<tr>  
-					<td colspan = '6'>
-					<hr/> 
-					<strong> U sljedećoj tabeli izaberite samo jednu od ocjena za iskazanu tvrdnju na skali od 1 (apsolutno se ne slažem) do 5 (apsolutno se slažem). </strong>
-					</td>
-				</tr>
-		<?
-		echo "<tr><td colspan = '6'><hr/> </td></tr>";
-		$broj_pitanja = Ubaci_pitanje(1,$id_ankete,1);
-		echo "<tr><td colspan = '6'><hr/> </td></tr>";
-		$broj_pitanja = Ubaci_pitanje(2,$id_ankete,$broj_pitanja); 
-		echo "<tr><td colspan = '6'><hr/> </td></tr>";
+	else if ($_POST['akcija'] == "prikazi" && check_csrf_token()) {
+		$q011= myquery("select naziv from predmet where id = $predmet");
+		$naziv_predmeta = mysql_result($q011,0,0);
+	
 		?>
-			</table>
-			<br />
-			<table align="center">
-				<tr>
-					<td>
-						<input align="middle"  type="submit" value="Posalji" />
-					</td>
-				</tr>
-			</table>
+		<center>
+			<h2>Anketa za predmet <?= $naziv_predmeta?></h2>
+		</center>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="finish">
+		<input type="hidden" name="hash_code" value="<?=$hash_code?>">
+
+		<table align="center" cellpadding="4" border="0" >
+			<tr>  
+				<td colspan = '6'>
+				<hr/> 
+				<strong> U sljedećoj tabeli izaberite samo jednu od ocjena za iskazanu tvrdnju na skali ocjena od 1 (apsolutno se ne slažem) do 5 (apsolutno se slažem). </strong>
+				</td>
+			</tr>
+			<tr><td colspan='6'><hr/></td></tr>
+			<?=$broj_pitanja = Ubaci_pitanje(1,$anketa,1);?>
+			<tr><td colspan='6'><hr/></td></tr>
+			<?=$broj_pitanja = Ubaci_pitanje(2,$anketa,$broj_pitanja);?>
+			<tr><td colspan='6'><hr/></td></tr>
+
+		</table>
+		<br />
+		<table align="center">
+			<tr>
+				<td>
+					<input align="middle"  type="submit" value="Posalji" />
+				</td>
+			</tr>
+		</table>
 		</form>
+
 		<?
-		} // kraj od else 15
 	} // ---------------  KRAJ AKCIJA PRIKAZI  --------------------------
 
 	else	{
@@ -145,7 +152,7 @@ function public_anketa(){
 				<td>
 					<br/>
 					<input type="hidden" id="akcija" name="akcija" value="prikazi">
-					<input type="text" id="kod" name="kod"  size="60">	
+					<input type="text" id="kod" name="hash_code"  size="60">	
 				</td>
 			</tr>
 			<tr>
@@ -156,16 +163,24 @@ function public_anketa(){
 			</tr>
 		</table>
 		</form>
-		<?	
+
+		<?
 	}
 }//  ----------------- KRAJ FUNKCIJE PUBLIC_ANKETA -------------
 
-function Ubaci_pitanje($tip_pitanja,$id_ankete,$j){
+
+// Pomoćna funkcija ubacuje sva pitanja datog tipa u anketi
+// Vraća zadnji redni broj
+
+function Ubaci_pitanje($tip_pitanja,$id_ankete,$pocetni_broj) {
+
 	// kupitmo pitanja u zavisnosti od argumenta koji je poslan
 	$results1 = myquery("select id,tekst from anketa_pitanje p where tip_pitanja=$tip_pitanja and anketa=$id_ankete");
 	
-	$par=1;
-	// ako je pitanje rank
+	$par = 1;
+	$j = $pocetni_broj;
+
+	// rank pitanja
 	if ($tip_pitanja == 1) {
 		while ($pitanje = mysql_fetch_assoc($results1)) {
 			$id = $pitanje['id'];
@@ -188,6 +203,8 @@ function Ubaci_pitanje($tip_pitanja,$id_ankete,$j){
 			$j++;
 		}	
 	}
+
+	// esejska pitanja
 	else if ($tip_pitanja == 2) {
 		while ($pitanje = mysql_fetch_assoc($results1)) {
 			$id = $pitanje['id'];
