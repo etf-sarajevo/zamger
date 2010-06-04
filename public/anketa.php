@@ -26,29 +26,31 @@ function public_anketa() {
 	// Kupimo kod koji je student unio
 	$hash_code = my_escape($_POST['hash_code']);
 
-	// Provjeravamo da li je dati student zatražio kod te da li je već ispunjavao datu anketu sa poljem zavrsena
-	$q590 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code'");
-	if (mysql_num_rows($q590)==0) {
-		// dio koji ide ako dati hash ne postoji u bazi tj. ako student pokušava da izmisli hash :P
-		?>
-		<center>
-			<p>Greška: neispravan kod '<?=$hash_code?>'.</p>
-			<a href="index.php">Nazad na početnu stranicu</a>
-		</center>
-		<?	
-	}
-
-	$rezultat = mysql_result($q590,0,0);
-	$predmet = mysql_result($q590,0,1);
-	$zavrsena = mysql_result($q590,0,2);
-
-	if ($zavrsena != 'N') {
-		?>
-		<center>
-			<p>Već ste jednom popunili anketu. Nema mogućnosti izmjene jednom popunjene ankete.</p>
-			<a href="index.php">Nazad na početnu stranicu</a>
-		</center>
-		<?	
+	if ($_POST['akcija'] == "finish" || $_POST['akcija'] == "prikazi") {
+		// Provjeravamo da li kod postoji i da li je već iskorišten (polje zavrsena)
+		$q590 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code'");
+		if (mysql_num_rows($q590)==0) {
+			// dio koji ide ako dati hash ne postoji u bazi tj. ako student pokušava da izmisli hash :P
+			?>
+			<center>
+				<p>Greška: neispravan kod '<?=$hash_code?>'.</p>
+				<a href="index.php">Nazad na početnu stranicu</a>
+			</center>
+			<?	
+		}
+	
+		$rezultat = mysql_result($q590,0,0);
+		$predmet = mysql_result($q590,0,1);
+		$zavrsena = mysql_result($q590,0,2);
+	
+		if ($zavrsena != 'N') {
+			?>
+			<center>
+				<p>Već ste jednom popunili anketu. Nema mogućnosti izmjene jednom popunjene ankete.</p>
+				<a href="index.php">Nazad na početnu stranicu</a>
+			</center>
+			<?	
+		}
 	}
 
 
@@ -114,16 +116,16 @@ function public_anketa() {
 		<input type="hidden" name="hash_code" value="<?=$hash_code?>">
 
 		<table align="center" cellpadding="4" border="0" >
-			<tr>  
+			<tr>
 				<td colspan = '6'>
 				<hr/> 
 				<strong> U sljedećoj tabeli izaberite samo jednu od ocjena za iskazanu tvrdnju na skali ocjena od 1 (apsolutno se ne slažem) do 5 (apsolutno se slažem). </strong>
 				</td>
 			</tr>
 			<tr><td colspan='6'><hr/></td></tr>
-			<?=$broj_pitanja = Ubaci_pitanje(1,$anketa,1);?>
+			<? $broj_pitanja = Ubaci_pitanje(1,$anketa,1);?>
 			<tr><td colspan='6'><hr/></td></tr>
-			<?=$broj_pitanja = Ubaci_pitanje(2,$anketa,$broj_pitanja);?>
+			<? $broj_pitanja = Ubaci_pitanje(2,$anketa,$broj_pitanja);?>
 			<tr><td colspan='6'><hr/></td></tr>
 
 		</table>
@@ -131,7 +133,7 @@ function public_anketa() {
 		<table align="center">
 			<tr>
 				<td>
-					<input align="middle"  type="submit" value="Posalji" />
+					<input align="middle"  type="submit" value="Pošalji" />
 				</td>
 			</tr>
 		</table>
@@ -158,7 +160,7 @@ function public_anketa() {
 			<tr>
 				<td colspan="2" align="center">
 					<br/>
-					 <input type="submit" value="Posalji">
+					 <input type="submit" value="Pošalji">
 				</td>
 			</tr>
 		</table>
