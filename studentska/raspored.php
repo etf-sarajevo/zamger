@@ -807,7 +807,7 @@ function pogledajRasporede() {
 	<?
 	
 	$brojacRK = 1;
-	$sqlRasporediK = myquery("SELECT DISTINCT(a.raspored), a.semestarR, b.naziv AS nStudij, c.naziv AS nAkademska FROM raspored_stavka a, studij b, akademska_godina c WHERE b.id = a.smijerR AND c.id = a.godinaR ORDER BY a.id DESC");
+	$sqlRasporediK = myquery("SELECT DISTINCT(a.raspored), pk.semestar, b.naziv AS nStudij, c.naziv AS nAkademska FROM raspored_stavka a, studij b, akademska_godina c, ponudakursa pk WHERE b.id = pk.studij AND c.id = pk.akademska_godina and pk.id=a.predmet ORDER BY a.id DESC");
 	if(mysql_num_rows($sqlRasporediK) < 1)
 		echo "Nema kreiranih rasporeda";
 	else {
