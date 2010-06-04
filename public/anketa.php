@@ -10,7 +10,7 @@ function public_anketa() {
 	$ag = mysql_result($q10,0,0);
 
 	// Uzimamo id aktivne ankete
-	$q09 = myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1 and akademska_godina=$ag");
+	$q09 = myquery("select id,naziv,UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1 and akademska_godina=$ag order by id desc");
 	if (mysql_num_rows($q09)==0) {
 		biguglyerror("Ne postoji aktivna anketa!");
 		return;
