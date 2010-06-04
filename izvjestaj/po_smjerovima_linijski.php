@@ -1,13 +1,15 @@
-<?php
-// IZVJESTAJ/PO_SMJEROVIMA_LINIJSKI - stranica koja generi�e grafove za izvjestaj po smjerovima uz pomoc GD biblioteke
+<?
+
+// IZVJESTAJ/PO_SMJEROVIMA_LINIJSKI - stranica koja generiše grafove za izvještaj po smjerovima uz pomoć GD biblioteke
 
 require("../lib/libvedran.php");
 require("../lib/zamger.php");
 require("../lib/config.php");
+
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
-$id_ankete = $_GET['anketa'];
-$semestar = $_GET['semestar'];
+$id_ankete = intval($_GET['anketa']);
+$semestar = intval($_GET['semestar']);
 $semestarPGS = $semestar;
 
 $q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
@@ -18,14 +20,14 @@ if ($semestar != 3)
  
 $smjerovi;
 
-//kupimo pitanja za datu anketu
-$result2077=myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
+// Kupimo pitanja za datu anketu
+$result2077 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
 $k=0;
 $l=0;
-while($pitanje = mysql_fetch_row($result2077)){
-	// kupimo studije s tim da nakon promjena u Zamgeru ne postoji vise studij PGS stoga
-	// ga treba izbaciti u ovom upitu te naknadno izracunati statistiku za prvu godinu studija posebnim upitom
-	$result409=myquery("select id,kratkinaziv from studij where id !=1");
+
+while ($pitanje = mysql_fetch_row($result2077)) {
+	// Kupimo studije
+	$result409 = myquery("select id, kratkinaziv from studij where moguc_upis=1");
 	
 	// za prvu godinu je poseban upit gdje ne postoji uslov za studije vec samo uslov na semestar
 	if ($semestar==3)  // ako je izvjestaj za cijelu godinu

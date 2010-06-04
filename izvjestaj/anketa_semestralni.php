@@ -68,6 +68,8 @@ function izvjestaj_anketa_semestralni() {
 
 	// -----------------------------------------  IZVJEŠTAJ PO SMJEROVIMA ---------------------------------------
 	else if ($_REQUEST['akcija']=="po_smjerovima") {
+		biguglyerror("Nije u funkciji... žalimo");
+		return;
 		
 		$q0111=myquery("select naziv from akademska_godina where id = $ak_god");
 		$naziv_ak_god = mysql_result($q0111,0,0);
@@ -87,6 +89,7 @@ function izvjestaj_anketa_semestralni() {
 		
 		<table align="center">
 			<tr>
+			<!-- FIXME povući studije iz baze -->
 			<td align="center" bgcolor='#00FF00' height="20" width="150">PGS</td>
 			<td align="center" bgcolor='#FF0000' width="150">RI</td>
 			<td align="center" bgcolor='#0000FF' width="150">AE</td>
