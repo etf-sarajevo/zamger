@@ -304,13 +304,7 @@ if (mysql_result($q160,0,0)>0) {
 
 </form>
 </td></tr></table>
-<?
 
-// AJAH za prisustvo
-
-print ajah_box();
-
-?>
 <script language="JavaScript">
 // Funkcija koja se poziva klikom na polje u tabeli
 function prisustvo(student,cas) {
@@ -355,6 +349,10 @@ function upozorenje(cas) {
 
 } // if (mysql_result($q160,0,0)>0) {
 
+
+// Ispis AJAH box-a neposredno iznad tablice grupe
+
+print ajah_box();
 
 
 
