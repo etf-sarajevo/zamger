@@ -76,10 +76,14 @@ print $code_poruke[1];*/
 
 $q10 = myquery("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
 while ($r10 = mysql_fetch_row($q10)) {
+	// Da li je aktivan modul za zadaće?
+	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
+	if (mysql_result($q12,0,0)==0) continue;
+
 	$code_poruke["z".$r10[0]] = "<item>
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
-		<description><![CDATA[Rok za slanje je ".date("d. m. Y  h:i:s",$r10[2]).".]]></description>
+		<description><![CDATA[Rok za slanje je ".date("d. m. Y  h:i",$r10[2]).".]]></description>
 	</item>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
