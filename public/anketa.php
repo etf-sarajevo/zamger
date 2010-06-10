@@ -1,4 +1,4 @@
-<?php 
+<?
 
 // PUBLIC/ANKETA - stranica za ispunjavanje ankete
 
@@ -36,7 +36,8 @@ function public_anketa() {
 				<p>Greška: neispravan kod '<?=$hash_code?>'.</p>
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
-			<?	
+			<?
+			return;
 		}
 	
 		$rezultat = mysql_result($q590,0,0);
@@ -49,7 +50,8 @@ function public_anketa() {
 				<p>Već ste jednom popunili anketu. Nema mogućnosti izmjene jednom popunjene ankete.</p>
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
-			<?	
+			<?
+			return;
 		}
 	}
 
@@ -86,7 +88,7 @@ function public_anketa() {
 			$id_pitanja[$i] = $_POST['id_pitanja'.$j];
 			$j++;
 		}
-		// ubaciti sve odgoovre u tabelu odgovori_text
+		// ubaciti sve odgovore u tabelu odgovori_text
 		for ($i=0; $i<$broj_esej_pitanja; $i++) {
 			$q590 = myquery("insert into anketa_odgovor_text set rezultat=$rezultat, pitanje=$id_pitanja[$i], odgovor='$komentar[$i]'");
 		}
@@ -100,6 +102,7 @@ function public_anketa() {
 			<a href="index.php">Nazad na početnu stranicu</a>
 		</center>
 		<?
+		return;
 	}
 
 	//  ----------------  AKCIJA PRIKAZI dio koji ide nakon sto je student unio kod za anketu te stistnuo dugme ----------------------
@@ -212,10 +215,16 @@ function Ubaci_pitanje($tip_pitanja,$id_ankete,$pocetni_broj) {
 			$id = $pitanje['id'];
 			$tekst = nl2br($pitanje['tekst']);
 			
-			echo "<tr><td colspan='6'>".$tekst." <input type='hidden' name='id_pitanja$j' value=$id></td></tr>";
-			echo "<tr>";
-			echo "<td colspan='6' align='center'><textarea name='komentar$j' rows='7' cols='40'></textarea></td>";
-			echo "</tr>";
+			?>
+			<tr>
+				<td colspan='6'><?=$tekst?><input type='hidden' name='id_pitanja<?=$j?>' value="<?=$id?>"></td>
+			</tr>
+			<tr>
+				<td colspan='6' align='center'>
+					<textarea name='komentar<?=$j?>' rows='7' cols='40'></textarea>
+				</td>
+			</tr>
+			<?
 			$j++;
 		}
 	}
