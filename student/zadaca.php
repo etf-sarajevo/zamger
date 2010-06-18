@@ -69,6 +69,7 @@ $ponudakursa = mysql_result($q17,0,0);
 
 $q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
+	zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
 	niceerror("Nijedna zadaća nije aktivna");
 	return;
 }
