@@ -20,8 +20,9 @@ global $userid, $conf_naziv_institucije;
 
 
 // Ako se ne koriste planovi studija, dajemo prosjek svega što je student slušao
-$q5 = myquery("select count(*) from plan_studija");
-if (mysql_num_rows($q5)==0) {
+//$q5 = myquery("select count(*) from plan_studija");
+//if (mysql_num_rows($q5)==0) {
+if (true) {
 	// Ovo će dati neprecizne rezultate u slučaju da je student mijenjao studij u toku studiranja
 	// (objašnjenje u komentaru drugog dijela)
 
@@ -45,7 +46,7 @@ if (mysql_num_rows($q5)==0) {
 	foreach ($ciklusi as $ciklus) {
 		?>
 		
-		<h3><?=$ciklus?>. ciklus</h3>
+		<h3><?=$ciklus?>. ciklus studija</h3>
 		<?
 
 		if ($broj_ciklus_semestar["$ciklus-1"]==0) {
@@ -56,7 +57,7 @@ if (mysql_num_rows($q5)==0) {
 		}
 
 		?>
-		<p>Ukupan prosjek: <?=round($suma_ciklus[$ciklus]/$broj_ciklus[$ciklus], 2)?>
+		<p>Ukupan prosjek ciklusa: <?=round($suma_ciklus[$ciklus]/$broj_ciklus[$ciklus], 2)?>
 		<p>
 		<?
 		$i=1;
