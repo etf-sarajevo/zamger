@@ -281,7 +281,6 @@ function coolboxopen(callobj) {
 function coolboxclose() {
 	if (zamger_coolbox_submitted) return;
 	if (!zamger_coolbox_origcaller) return;
-	zamger_coolbox_origcaller=false;
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	coolbox.style.visibility = 'hidden';
@@ -306,7 +305,6 @@ function coolboxsubmit() {
 		zamger_coolbox_origcaller.innerHTML = coolboxedit.value;
 		<?=$izvrsi?>
 	}
-	zamger_coolbox_origcaller=false;
 }
 
 // Svrha ove funkcije je da uhvati ENTER tipku
@@ -525,11 +523,11 @@ function studentski_meni($fj) {
 
 			// Da li ima aktivna anketa i da li je istekao rok?
 			if ($modul_anketa) {
-				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna = 1");
+				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1");
 				if (mysql_num_rows($q42)!=0) { // da li uopce ima kreirana anketa ako ne , ne radi nista
 					$rok=mysql_result($q42,0,0);
 					if (time () < $rok) {
-						$q42b =  myquery("select id  from anketa_anketa a where a.aktivna=1 ");
+						$q42b =  myquery("select id from anketa_anketa a where a.aktivna=1");
 						if(mysql_num_rows($q42b)>0)
 							$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
 					}
@@ -614,6 +612,9 @@ function zamgerlog($event,$nivo) {
 	$event=preg_replace("/pass=([^&]*)/","",$event);
 	// brisemo tekstove poruka i sl.
 	$event=preg_replace("/tekst=([^&]*)/","",$event);
+	// brisemo suvisan tekst koji ubacuje mysql
+	$event=str_replace("You have an error in your SQL syntax;","SQL syntax error",$event);
+	$event=str_replace("check the manual that corresponds","",$event);
 
 	if (intval($userid)==0) $userid=0;
 
