@@ -24,8 +24,8 @@ $ag = mysql_result($q5,0,0);
 if ($_GET["akcija"]=="odjavi") {
 	$termin = intval($_GET['termin']);
 	if ($termin) {
-		$q200 = myquery("select count(*) from student_ispit_termin where student=$userid and ispit_termin=$termin");
-		if (mysql_result($q200,0,0)<1) {
+		$q200 = myquery("select i.predmet, i.akademska_godina from student_ispit_termin as sit, ispit_termin as ist, ispit as i where sit.student=$userid and sit.ispit_termin=$termin and ist.id=$termin and ist.ispit=i.id");
+		if (mysql_num_rows($q200)<1) {
 			niceerror("Već ste ispisani sa termina.");
 			?>
 			<script language="JavaScript">
@@ -34,9 +34,10 @@ if ($_GET["akcija"]=="odjavi") {
 			<?
 			return;
 		}
+		$predmet = mysql_result($q200,0,0);
 		$q210 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
-		nicemessage("Uspješno ste odjavljeni sa ispita");
-		zamgerlog("odjavljen sa ispita", 2);
+		nicemessage("Uspješno ste odjavljeni sa ispita.");
+		zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
 	}
 }
 
@@ -51,11 +52,12 @@ if ($_GET["akcija"]=="prijavi") {
 	}
 
 	// Da li je student upisan na predmet?
-	$q100 = myquery ("SELECT count(*) FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=$ag and pk.akademska_godina=$ag and pk.id=sp.predmet AND sp.student=$userid");
-	if (mysql_result($q100,0,0)<1) {
+	$q100 = myquery ("SELECT i.predmet FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=$ag and pk.akademska_godina=$ag and pk.id=sp.predmet AND sp.student=$userid");
+	if (mysql_num_rows($q100)<1) {
 		niceerror("Niste upisani na taj predmet!");
 		return;
 	}
+	$predmet = mysql_result($q100,0,0);
 
 	// Da li je popunjen termin?
 	$q110 = myquery("SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$termin");
@@ -73,7 +75,7 @@ if ($_GET["akcija"]=="prijavi") {
 		} else {
 			$q140 = myquery("INSERT INTO student_ispit_termin (student,ispit_termin) VALUES ($userid, $termin)");
 			nicemessage("Uspješno ste prijavljeni na termin");
-			zamgerlog("prijavljen na termin za ispit", 2);
+			zamgerlog("prijavljen na termin za ispit (pp$predmet)", 2);
 		}
 	}
 }
