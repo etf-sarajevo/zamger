@@ -79,7 +79,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$code_poruke["z".$r10[0]] = "<item>
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
-		<description><![CDATA[Rok za slanje je ".date("d. m. Y",$r10[2]).".]]></description>
+		<description><![CDATA[Rok za slanje je ".date("d. m. Y h:i ",$r10[2]).".]]></description>
 	</item>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
