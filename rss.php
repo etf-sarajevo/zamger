@@ -44,17 +44,18 @@ if (mysql_num_rows($q5)<1) {
 }
 $ime = mysql_result($q5,0,0); $prezime = mysql_result($q5,0,1);
 
+
+header("Content-type: application/rss+xml");
+
 ?>
 <<?='?'?>xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://my.n
-etscape.com/publish/formats/rss-0.91.dtd">
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://www.rssboard.org/rss-0.91.dtd">
 <rss version="0.91">
 <channel>
-        <title>Zamger RSS2</title>
+        <title>Zamger RSS</title>
         <link><?=$conf_site_url?></link>
         <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
         <language>bs-ba</language>
-
 <?
 
 
@@ -67,9 +68,9 @@ $code_poruke[1]="<item>
 		<title>hello</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[4]</link>
 		<description><![CDATA[hello hello]]>
-	</item>";*/
+	</item>";
 
-print $code_poruke[1];
+print $code_poruke[1];*/
 
 // Rokovi za slanje zadaća
 
@@ -79,8 +80,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
 		<description><![CDATA[Rok za slanje je ".date("d. m. Y",$r10[2]).".]]></description>
-		<pubDate>".date(DATE_RFC822, $r10[5])."</pubDate>
-	</item>";
+	</item>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
@@ -94,8 +94,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
 		<description></description>
-		<pubDate>".date(DATE_RFC822, $r15[3])."</pubDate>
-	</item>";
+	</item>\n";
 	$vrijeme_poruke["i".$r15[0]] = $r15[3];
 }
 
@@ -110,8 +109,7 @@ while ($r17 = mysql_fetch_row($q17)) {
 		<title>Čestitamo! Dobili ste $r17[1] -- predmet $r17[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[4]&amp;ag=$r17[5]</link>
 		<description></description>
-		<pubDate>".date(DATE_RFC822, $r17[2])."</pubDate>
-	</item>";
+	</item>\n";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
 
@@ -120,17 +118,16 @@ while ($r17 = mysql_fetch_row($q17)) {
 // pregledane zadace
 // (ok, ovo moze biti JAAAKO sporo ali dacemo sve od sebe da ne bude ;) )
 
-$q18 = myquery("select zk.id, zk.redni_broj, UNIX_TIMESTAMP(zk.vrijeme), p.naziv, z.naziv, pk.id, z.id from zadatak as zk, zadaca as z, ponudakursa as pk, predmet as p where zk.student=$userid and zk.status!=1 and zk.status!=4 and zk.zadaca=z.id and z.predmet=p.id and pk.predmet=p.id and pk.akademska_godina=z.akademska_godina order by zk.id desc limit 10");
+$q18 = myquery("select zk.id, zk.redni_broj, UNIX_TIMESTAMP(zk.vrijeme), p.naziv, z.naziv, pk.id, z.id, p.id, pk.akademska_godina from zadatak as zk, zadaca as z, ponudakursa as pk, predmet as p where zk.student=$userid and zk.status!=1 and zk.status!=4 and zk.zadaca=z.id and z.predmet=p.id and pk.predmet=p.id and pk.akademska_godina=z.akademska_godina order by zk.id desc limit 10");
 $zadaca_bila = array();
 while ($r18 = mysql_fetch_row($q18)) {
 	if (in_array($r18[6],$zadaca_bila)) continue; // ne prijavljujemo vise puta istu zadacu
 	if ($r18[2] < time()-60*60*24*30) break; // IDovi bi trebali biti hronoloskim redom, tako da ovdje mozemo prekinuti petlju
 	$code_poruke["zp".$r18[0]] = "<item>
 		<title>Pregledana zadaća $r18[4], predmet $r18[3]</title>
-		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r18[5]</link>
-		<description>Posljednja izmjena: ".date("d. m. Y. h:i:s",$r18[2])."</description>
-		<pubDate>".date(DATE_RFC822, $r18[2])."</pubDate>
-	</item>";
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r18[7]&amp;ag=$r18[8]</link>
+		<description><![CDATA[Posljednja izmjena: ".date("d. m. Y. h:i:s",$r18[2])."]]></description>
+	</item>\n";
 	array_push($zadaca_bila,$r18[6]);
 	$vrijeme_poruke["zp".$r18[0]] = $r18[2];
 }
@@ -185,6 +182,10 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$vrijeme .= date("H:i",$vr);
 
 	$naslov = $r100[4];
+	// Ukidam nove redove u potpunosti
+	$naslov = str_replace("\n", " ", $naslov);
+	// RSS ne podržava &quot; entitet!?
+	$naslov = str_replace("&quot;", '"', $naslov);
 	if (strlen($naslov)>30) $naslov = substr($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
@@ -209,16 +210,26 @@ while ($r100 = mysql_fetch_row($q100)) {
 		<title>$title: $naslov ($vrijeme)</title>
 		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
 		<description>Poslao: $posiljalac</description>
-		<pubDate>".date(DATE_RFC822, $r100[1])."</pubDate>
-	</item>";
+	</item>\n";
 }
 
 
 // Sortiramo po vremenu
 arsort($vrijeme_poruke);
 $count=0;
+
+
 foreach ($vrijeme_poruke as $id=>$vrijeme) {
-	print $id." ".$code_poruke[$id];
+	if ($count==0) {
+		// Polje pubDate u zaglavlju sadrži vrijeme zadnje izmjene tj. najnovije poruke
+
+		//print "        <pubDate>".date(DATE_RSS, $vrijeme)."</pubDate>\n";
+		// U verziji PHP 5.1.6 (i vjerovatno starijim) DATE_RSS je nekorektno 
+		// izjednačeno sa "D, j M Y H:i:s T"
+		print "        <pubDate>".date("D, j M Y H:i:s O", $vrijeme)."</pubDate>\n";
+	}
+
+	print $code_poruke[$id];
 	$count++;
 	if ($count==$broj_poruka) break; // prikazujemo 5 poruka
 }
