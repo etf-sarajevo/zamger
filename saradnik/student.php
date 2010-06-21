@@ -185,8 +185,14 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 	$q53 = myquery("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
 	if (mysql_num_rows($q53)>0) {
 		$staragrupa = mysql_result($q53,0,0);
+		$naziv_stare_grupe = mysql_result($q53,0,1);
+		if ($novagrupa==$staragrupa) {
+			nicemessage("Student se već nalazi u grupi $naziv_stare_grupe!");
+			print '<a href="?sta=saradnik/student&student='.$student.'&predmet='.$predmet.'&ag='.$ag.'">Nazad</a>'."\n";
+			return;
+		}
 		ispis_studenta_sa_labgrupe($student, $staragrupa);
-		nicemessage("Student ispisan iz grupe ".mysql_result($q53,0,1).". Podaci o prisustvu su izgubljeni.");
+		nicemessage("Student ispisan iz grupe $naziv_stare_grupe. Podaci o prisustvu su izgubljeni.");
 	}
 
 	if ($novagrupa>0) {
@@ -247,7 +253,7 @@ if (mysql_num_rows($q60)>0) {
 	<?=genform("POST");?>
 	<input type="hidden" name="akcija" value="promjena_grupe">
 	<p>Promijenite grupu: 
-	<select name="grupa"><option value="0"<?=$nijedna?>>-- Nije ni u jednoj grupi --</option>
+	<select name="grupa" class="default"><option value="0"<?=$nijedna?>>-- Nije ni u jednoj grupi --</option>
 	<?
 	while ($r60 = mysql_fetch_row($q60)) {
 		if ($r60[0]==$labgrupa) $value="SELECTED"; else $value="";
@@ -257,7 +263,7 @@ if (mysql_num_rows($q60)>0) {
 	}
 	?>
 	</select>
-	<input type="submit" value=" Promijeni ">
+	<input type="submit" value=" Promijeni grupu " class="default">
 	</form>
 	<?
 }
