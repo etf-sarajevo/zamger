@@ -379,10 +379,8 @@ while ($r10=mysql_fetch_row($q10)) {
 
 if ($dan==0) {
 	$dan=$dan1=date('d'); $mjesec=$mjesec1=date('m'); $godina=$godina1=date('Y');
-	$sat=$sat1=date('h'); $minuta=$minuta1=date('i'); $sekunda=$sekunda1=date('s');
-	if ($sat<10) $sat.='0';
+	$sat=$sat1=date('H'); $minuta=$minuta1=date('i'); $sekunda=$sekunda1=date('s');
 	$limit=0;
-
 	// Ako akcija nije izmjena, brišemo vrijednost varijable termin
 	$termin=0;
 }
@@ -396,7 +394,7 @@ if ($dan==0) {
 		else print 'izmijeni_potvrda';
 	?>">
 
-	<p><b><? if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmijena termina';
+	<p><b><? if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmjena termina';
 	   else print 'Registrovanje novog termina';
         ?></b>
 
