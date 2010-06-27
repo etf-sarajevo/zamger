@@ -45,6 +45,9 @@ array("nastavnik/prijava_ispita", "Prijava ispita", "Prijava ispita", "N", "1", 
 array("nastavnik/zadace", "Kreiranje i unos zadaća", "Zadaće", "N", "1", "0"),
 array("nastavnik/ocjena", "Konačna ocjena", "Konačna ocjena", "N", "1", "0"),
 array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
+// Hani Zahirovic- modul za definisanje tipa predmeta
+
+array("nastavnik/tip", "Tip predmeta", "Definisanje tipa predmeta", "N", "1", "0"),
 
 
 array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
