@@ -182,7 +182,9 @@ if ($imaintegralni==1 && $broj_ispita<2) {
 $ostale_komponente = array();
 
 // 1 = parcijalni ispit, 2 = integralni ispit
-$q40 = myquery("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, predmet as p, tippredmeta_komponenta as tpk where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2");
+//$q40 = myquery("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, predmet as p, tippredmeta_komponenta as tpk where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2");
+
+$q40 = myquery("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, akademska_godina_predmet as p, tippredmeta_komponenta as tpk where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2 and p.akademska_godina=$ag");
 while ($r40 = mysql_fetch_row($q40)) {
 	$mogucih_bodova += $r40[3];
 
@@ -204,8 +206,11 @@ if ($skrati!=1) {
 	$komponente_zadace = $zadace_maxbodova = array();
 	$zad_id_array = $zad_brz_array = $zad_mogucih = array();
 
-	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p
-	WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+	//	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p
+	//WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+
+	$q115 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as p
+	WHERE p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 and p.akademska_godina=$ag ORDER BY k.id");
 	while ($r115 = mysql_fetch_row($q115)) {
 		$komponente_zadace[] = $r115[0];
 		$zadace_maxbodova[$r115[0]] = $r115[2];
@@ -311,7 +316,9 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 	$prisustvo_casovi = array();
 	$prisustvo_mogucih = array();
 
-	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+		//$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, predmet as p WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+
+	$q105 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as p WHERE p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag ORDER BY k.id");
 	while ($r105 = mysql_fetch_row($q105)) {
 		$prisustvo_id_array[] = $r105[0];
 		$prisustvo_mogucih[$r105[0]] =  $r105[2];

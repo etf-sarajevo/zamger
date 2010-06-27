@@ -44,7 +44,7 @@ if (!$user_studentska && !$user_siteadmin) {
 
 // Naziv predmeta, akademske godine
 
-$q10 = myquery("select naziv, tippredmeta from predmet where id=$predmet");
+$q10 = myquery("select p.naziv, a.tippredmeta from predmet p, akademska_godina_predmet a where p.id=$predmet and p.id=a.predmet and a.akademska_godina=$ag");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog ("nepoznat predmet $predmet", 3);

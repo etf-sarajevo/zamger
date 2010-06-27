@@ -235,8 +235,15 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$q265 = myquery("select id from tippredmeta order by id limit 1");
 	$tippredmeta = mysql_result($q265,0,0);
 
-	// Dodajem predmet u bazu
-	$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=$tippredmeta, institucija=$institucija"); 
+		// Dodajem predmet u bazu
+	$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', institucija=$institucija");
+	$q_hani0 = myquery("select id from predmet where naziv='$naziv' and kratki_naziv='$kratki_naziv' and institucija=$institucija");
+	$broj_predmeta=mysql_fetch_array($q_hani0);
+	$q_hani0 = myquery("select id from akademska_godina where aktuelna=1");
+	$akademska=mysql_fetch_array($q_hani0);
+	$q_hani=myquery("insert into akademska_godina_predmet(akademska_godina, predmet, tippredmeta) VALUES(".$akademska[0].",".$broj_predmeta[0].",$tippredmeta)");
+	
+	//$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=$tippredmeta, institucija=$institucija"); 
 
 	// Koji id predmeta smo dobili?
 	$q280 = myquery("select id from predmet where naziv='$naziv'");
@@ -423,7 +430,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci o predmetu
 
-	$q350 = myquery("select id, sifra, naziv, kratki_naziv, institucija, tippredmeta, ects from predmet where id=$predmet");
+		$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, a.tippredmeta, p.ects from predmet p, akademska_godina_predmet a where p.id=$predmet and a.akademska_godina=$ag and p.id=a.predmet");
 	if (!($r350 = mysql_fetch_row($q350))) {
 		zamgerlog("nepostojeci predmet $predmet",3);
 		niceerror("Nepostojeći predmet!");

@@ -121,7 +121,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 
 	// Ako se klikne na refresh, datum moze biti 0-0-0...
 	if ($datum != "0-0-0") {
-		$q55 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+			$q55 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
 		if (mysql_num_rows($q55)<1) {
 			niceerror("Nije definisana komponenta za prisustvo na ovom predmetu.");
 			zamgerlog("nije definisana komponenta za prisustvo na pp$predmet", 3);
@@ -263,7 +263,7 @@ $dan=date("d"); $mjesec=date("m"); $godina=date("Y");
 $vrijeme=date("H:i");
 
 // Ne prikazujemo formu ako nema nijedna komponenta za prisustvo
-$q160 = myquery("select count(*) from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+$q160 = myquery("select count(*) from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
 if (mysql_result($q160,0,0)>0) {
 
 ?>
@@ -367,8 +367,11 @@ $zaglavlje2 = "";
 
 // Zaglavlje prisustvo
 
-$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
+WHERE p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and p.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+
+//$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
+//WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
 
 while ($r195 = mysql_fetch_row($q195)) {
 	$casova = 0;
@@ -410,8 +413,8 @@ while ($r195 = mysql_fetch_row($q195)) {
 // Zaglavlje zadaće
 
 $zad_id_array = array();
-$q205 = myquery("SELECT k.id, k.gui_naziv FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+$q205 = myquery("SELECT k.id, k.gui_naziv FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
+WHERE p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
 while ($r205 = mysql_fetch_row($q205)) {
 	$brzadaca = 0;
 	$zadace_zaglavlje = "";
@@ -438,8 +441,11 @@ while ($r205 = mysql_fetch_row($q205)) {
 
 $fiksna_prolaz = array();
 $fiksna_id_array = array();
-$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
+WHERE p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+
+//$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
+//WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
 while ($r215 = mysql_fetch_row($q215)) {
 	$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">$r215[1]";
 	$mogucih_bodova += $r215[2];

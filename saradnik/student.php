@@ -374,8 +374,11 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
-where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p
+where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag"); // 3 = prisustvo
+
+//$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
+//where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];
@@ -538,7 +541,9 @@ function undo_coolbox() {
 // FIKSNE KOMPONENTE
 
 
-$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
+$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
+
+//$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
 if (mysql_num_rows($q25)>0) {
 ?>
 
@@ -943,7 +948,7 @@ if ($bilo==0) {
 // Log za fiksne komponente
 // Radimo samo ako ima fiksnih komponenti
 
-$q200 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
+$q200 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 and p.akademska_godina=$ag"); // 5 = fiksna komponenta
 while ($r200 = mysql_fetch_row($q200)) {
 	$komponenta = $r200[0];
 

@@ -303,7 +303,9 @@ function _izmijeni_profil($student,$predmet) {
 		$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$grupa");
 
 		// Update komponente za prisustvo
-		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
+		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, akademska_godina_predmet as p where pk.id=$predmet and pk.predmet=p.predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag");
+				
+				//$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
 		// Ovo za sada ne radi jer update_komponente trazi ponudukursa sto mi ovdje ne mozemo znati
 /*		while ($r250 = mysql_fetch_row($q250))
 			update_komponente($student, $predmet, $r250[0]);*/

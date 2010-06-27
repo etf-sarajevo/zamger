@@ -1,0 +1,31 @@
+-- phpMyAdmin SQL Dump
+-- version 3.2.0.1
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Vrijeme kreiranja: 27. jun 2010. u 21:56
+-- Verzija servera: 5.1.36
+-- verzija PHP-a: 5.3.0
+
+SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
+
+--
+-- Baza podataka: `zamger`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Struktura tabele `akademska_godina_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
+  `akademska_godina` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `tippredmeta` int(11) NOT NULL,
+  PRIMARY KEY (`akademska_godina`,`predmet`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Prikaz podataka tabele `akademska_godina_predmet`
+--
