@@ -550,10 +550,15 @@ function akcijaslanje() {
 		$program = $_FILES['attachment']['tmp_name'];
 		if ($program && (file_exists($program))) {
 			// Nećemo pokušavati praviti diff
-			$ime_fajla = strtr(my_escape($_FILES['attachment']['name']), "/", "_");
+			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
+			// Ukidam HTML znakove radi potencijalnog XSSa
+			$ime_fajla = str_replace("&", "", $ime_fajla);
 			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
 			unlink ($puni_put);
 			rename($program, $puni_put);
+
+			// Escaping za SQL
+			$ime_fajla = my_escape($ime_fajla);
 
 			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
 
