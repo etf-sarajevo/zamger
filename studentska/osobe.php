@@ -1555,6 +1555,7 @@ else if ($akcija == "edit") {
 	// Admin dio
 
 	if ($user_siteadmin) {
+		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'] );
 		?>
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="uloga">
