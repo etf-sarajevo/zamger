@@ -69,6 +69,7 @@ $ponudakursa = mysql_result($q17,0,0);
 
 $q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
+	zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
 	niceerror("Nijedna zadaća nije aktivna");
 	return;
 }
@@ -549,11 +550,12 @@ function akcijaslanje() {
 		$program = $_FILES['attachment']['tmp_name'];
 		if ($program && (file_exists($program))) {
 			// Nećemo pokušavati praviti diff
-			$filename = "$lokacijazadaca$zadaca/".$_FILES['attachment']['name'];
-			unlink ($filename);
-			rename($program, $filename);
+			$ime_fajla = strtr(my_escape($_FILES['attachment']['name']), "/", "_");
+			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
+			unlink ($puni_put);
+			rename($program, $puni_put);
 
-			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
