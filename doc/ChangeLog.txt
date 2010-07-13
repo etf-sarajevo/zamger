@@ -1,0 +1,159 @@
+------------------------------------------------------------------------
+r831 | vedran | 2010-07-13 23:39:50 +0200 (Tue, 13 Jul 2010) | 2 lines
+
+Objavljujem v4.1.1
+
+------------------------------------------------------------------------
+r830 | vedran | 2010-07-13 23:29:44 +0200 (Tue, 13 Jul 2010) | 2 lines
+
+(v4.1) Disablujem module za anketu
+
+------------------------------------------------------------------------
+r829 | vedran | 2010-07-13 23:23:32 +0200 (Tue, 13 Jul 2010) | 2 lines
+
+(v4.1) Dodajem potrebne fajlove
+
+------------------------------------------------------------------------
+r825 | vedran | 2010-07-10 20:57:38 +0200 (Sat, 10 Jul 2010) | 2 lines
+
+(v4.1) student/zadaca: Bolje rjesenje za prethodni problem
+
+------------------------------------------------------------------------
+r823 | vedran | 2010-07-10 20:24:06 +0200 (Sat, 10 Jul 2010) | 3 lines
+
+(v4.1) student/zadaca: Dodatni escaping imena fajla prilikom slanja 
+attachmenta
+
+------------------------------------------------------------------------
+r821 | vedran | 2010-07-10 03:30:04 +0200 (Sat, 10 Jul 2010) | 3 lines
+
+(v4.1) studentska/osobe: Podesavanje tipa korisnika (za admina) je 
+prestajalo raditi nakon par upotreba (bug otkrio Amer Zec)
+
+------------------------------------------------------------------------
+r816 | vedran | 2010-06-21 03:28:23 +0200 (Mon, 21 Jun 2010) | 3 lines
+
+(v4.1) saradnik/student: Onemoguceno prebacivanje u istu grupu (bug 
+#103), interfejs je blago modifikovan
+
+------------------------------------------------------------------------
+r815 | vedran | 2010-06-21 03:25:45 +0200 (Mon, 21 Jun 2010) | 3 lines
+
+(v4.1) Ne prikazuj obavijest o zadaci ako slanje zadaca nije aktivirano 
+u adminu.
+
+------------------------------------------------------------------------
+r814 | vedran | 2010-06-21 03:22:21 +0200 (Mon, 21 Jun 2010) | 2 lines
+
+(v4.1) Kod roka za slanje zadace i vrijeme je bitno
+
+------------------------------------------------------------------------
+r813 | vedran | 2010-06-21 03:19:25 +0200 (Mon, 21 Jun 2010) | 2 lines
+
+(v4.1) student/kolizija: Sprijeci SQL error kad je prazna baza
+
+------------------------------------------------------------------------
+r812 | vedran | 2010-06-21 03:16:35 +0200 (Mon, 21 Jun 2010) | 3 lines
+
+(v4.1) izvjestaj/index: Popravljen bug sa visestrukim prikazivanjem 
+istog predmeta
+
+------------------------------------------------------------------------
+r811 | vedran | 2010-06-21 03:13:49 +0200 (Mon, 21 Jun 2010) | 2 lines
+
+(v4.1) rss.php: razne ispravke na osnovu sajta feedvalidator.org
+
+------------------------------------------------------------------------
+r785 | vedran | 2010-06-04 11:45:08 +0200 (Fri, 04 Jun 2010) | 3 lines
+
+(v4.1) saradnik/grupa: ajah_box nije bio ispisivan ako na predmetu ne 
+postoji nijedna "klasicna" komponenta za prisustvo
+
+------------------------------------------------------------------------
+r784 | vedran | 2010-06-04 11:43:07 +0200 (Fri, 04 Jun 2010) | 3 lines
+
+(v4.1) izvjestaj/grupe: Zbog greske u nazivu varijable nije se ispisivao 
+spisak studenata koji nisu ni u jednoj grupi
+
+------------------------------------------------------------------------
+r783 | vedran | 2010-06-04 11:41:54 +0200 (Fri, 04 Jun 2010) | 3 lines
+
+(v4.1) nastavnik/grupe: Kod masovnog upisa, za studente koji nisu 
+upisani ni u jednu grupu pisalo "Student vec upisan u grupu '' "
+
+------------------------------------------------------------------------
+r777 | vedran | 2010-03-14 04:00:03 +0100 (Sun, 14 Mar 2010) | 4 lines
+
+(v4.1) common/ajah: U akciji izmjena_ispita (tip "ispit") ponuda kursa 
+nije bila dobro odredjena u slucaju vise ponuda istog kursa, uzimana je 
+random ponuda kursa umjesto one koju student slusa
+
+------------------------------------------------------------------------
+r776 | vedran | 2010-03-14 03:57:06 +0100 (Sun, 14 Mar 2010) | 7 lines
+
+(v4.1) izvjestaj/statistika_predmeta: Pored poznatog problema sa 
+studentom koji je izasao na samo jedan ispit, izvjestaj je davao netacne 
+rezultate i ako je odrzano vise ispita istog tipa. Privremeno "hack" 
+rjesenje preskace komponentu koja se zove Usmeni (sto nece raditi ako se 
+ispit preimenuje u npr. Zavrsni ispit). Moguce rjesenje je definisanje 
+uslova za izlazak na ispit sto se moze uvezati sa prijavom ispita.
+
+------------------------------------------------------------------------
+r775 | vedran | 2010-03-14 03:56:13 +0100 (Sun, 14 Mar 2010) | 2 lines
+
+(v4.1) studentska/izvjestaji: Popravljen prikaz prozora za cekanje na IE8
+
+------------------------------------------------------------------------
+r774 | vedran | 2010-03-14 03:55:25 +0100 (Sun, 14 Mar 2010) | 5 lines
+
+(v4.1) nastavnik/grupe: Izbjegnuta SQL greska za slucaj da se student 
+dva puta upisuje u istu grupu. Dodana poruka za slucaj ispisa i upisa u 
+istu grupu (ali se to ne uzima kao greska). Popravljen ispis kod upisa u 
+vise grupa istovremeno.
+
+------------------------------------------------------------------------
+r773 | vedran | 2010-03-14 03:53:35 +0100 (Sun, 14 Mar 2010) | 3 lines
+
+(v4.1) studentska/osobe: Ponekad nije ispravno detektovano da je student 
+upisan u parni semestar tekuce ak. godine.
+
+------------------------------------------------------------------------
+r772 | vedran | 2010-03-14 03:52:21 +0100 (Sun, 14 Mar 2010) | 3 lines
+
+(v4.1) studentska/obavijest: Zbog greske u SQLu nije radilo slanje maila 
+svim studentima na godini
+
+------------------------------------------------------------------------
+r771 | vedran | 2010-03-14 03:51:17 +0100 (Sun, 14 Mar 2010) | 3 lines
+
+(v4.1) index.php: Dodan link na dokumentaciju na sve stranice. Popravljen 
+prikaz nove poste na IE8
+
+------------------------------------------------------------------------
+r770 | vedran | 2010-03-14 03:50:30 +0100 (Sun, 14 Mar 2010) | 2 lines
+
+(v4.1) student/prijava_ispita: Sortiraj ispite po datumu
+
+------------------------------------------------------------------------
+r769 | vedran | 2010-03-14 03:49:32 +0100 (Sun, 14 Mar 2010) | 3 lines
+
+(v4.1) studentska/intro: Popravljen escaping kod potvrde prepisa iz 
+tabele promjena_podataka u tabelu osoba
+
+------------------------------------------------------------------------
+r748 | vedran | 2009-12-01 02:27:50 +0100 (Tue, 01 Dec 2009) | 3 lines
+
+(v4.1) Ne prikazuj formu za attachment ako je filename prazan (sto se 
+desava nakon masovnog unosa za attachment koji nije poslan)
+
+------------------------------------------------------------------------
+r747 | vedran | 2009-12-01 02:27:33 +0100 (Tue, 01 Dec 2009) | 2 lines
+
+(v4.1) nastavnik/zadace: Greska u SQL upitu je sprjecavala masovni unos zadaca
+
+------------------------------------------------------------------------
+r744 | vedran | 2009-11-23 16:36:37 +0100 (Mon, 23 Nov 2009) | 3 lines
+
+(v4.1) nastavnik/ispiti: Popravljen tipfeler u provjeri da li ispit vec 
+postoji prilikom kreiranja
+
