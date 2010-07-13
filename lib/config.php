@@ -20,7 +20,7 @@ $conf_files_path = "/srv/httpd/zamger";
 $conf_script_path = "/srv/httpd/zamger/www";
 
 $conf_appname = "ZAMGER";
-$conf_appversion = "4.1";
+$conf_appversion = "4.1.1";
 
 //$conf_system_auth = "ldap";
 $conf_system_auth = "table";
