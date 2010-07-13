@@ -1,0 +1,32 @@
+Zamger v4.1
+===========
+
+CREDITS.txt - popis autora i kontributora
+
+13. 7. 2010.
+
+Veliku većinu koda (oko 95%) Zamgera od nule je razvio Vedran Ljubović. 
+Pored njega, na projektu su učestvovali i sljedeći autori:
+
+- Kenan Hodžić - modul za raspored (rana verzija)
+- Eldin Starčević - modul za prijemni ispit
+- Nermin Softić - modul za ankete
+- Haris Agić - modul za upravljanje projektima
+- Admir Herić - modul za prijavu ispita (studentski dio)
+- Aida Hasagić, Dženita Hadrović - modul za štampanje prijava (koji 
+nažalost nije bio iskoristiv)
+- Teo Eterović, Armin Beširović - redizajn studentskog dijela i ispravke 
+u HTMLu
+- svi studenti na predmetu Pouzdanost i kontrola kvalitete softvera u 
+godinama 2008/2009 i 2009/2010 koji su testirali Zamger u sklopu zadatka
+"Black box testiranje", na čemu posebno zahvaljujem njihovoj asistentici 
+Dušanki Bošković.
+
+Pored navedenih osoba, sugestijama i prijavama bugova su pomogli još i: 
+Alvin Abdagić, Amila Akagić, Dušanka Bošković, Alvin Huseinović, Samim 
+Konjicija, Saša Mrdović, Elma Pezo, Tarik Poplata, Samir Ribić, Adisa 
+Sinanović, Nedim Skenderović, Ernedin Zajko.
+
+Zahvaljujem svima koji su učestvovali na projektu! Njihov doprinos će 
+ostati zabilježen i zapamćen. Hvala!!!
+
