@@ -514,7 +514,8 @@ if (!$_POST['separator']) {
 
 ?>
 
-<p><hr/></p><p><b>Masovni unos studenata</b><br/>
+<p><hr/></p><p><b>Masovni upis studenata u grupe</b><br/>
+U prozoru ispod navedite ime i prezime studenta, znak za separator i naziv grupe u koju želite da ga/je upišete.<br/>
 <?=genform("POST")?>
 <input type="hidden" name="fakatradi" value="0">
 <input type="hidden" name="akcija" value="massinput">
