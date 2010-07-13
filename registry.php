@@ -12,7 +12,7 @@ $registry = array(
 # Sablon == 2 znaci da se ne prikazuje ni header
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
-array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
+#array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 
 
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
@@ -22,7 +22,7 @@ array("student/pdf", "Prikaz zadaće u PDF formatu", "PDF", "S", "2", "0"),
 array("student/prosjeci", "Kalkulator prosjeka ocjena", "Kalkulator prosjeka", "S", "1", "0"),
 array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
-array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
+#array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/ugovoroucenju", "Ugovor o učenju", "Ugovor o učenju", "S", "1", "0"),
 array("student/ugovoroucenjupdf", "Ugovor o učenju (PDF)", "Ugovor o učenju (PDF)", "S", "2", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
@@ -55,7 +55,7 @@ array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B
 array("studentska/izvjestaji", "Izvještaji o prolaznosti", "Izvještaji", "B", "1", "0"),
 array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0"),
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
-array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
+#array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
 
 
@@ -77,9 +77,9 @@ array("izvjestaj/granicni", "Granični slučajevi", "Granični", "BA", "0", "0")
 array("izvjestaj/genijalci", "Pregled studenata po prosjeku", "Prosjek", "BA", "0", "0"),
 array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistika predmeta", "NBA", "0", "0"),
 array("izvjestaj/historija", "Historija studenta", "Historija studenta", "BA", "0", "0"),
-array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
-array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
-array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
+#array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
+#array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
+#array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 
 
