@@ -640,9 +640,11 @@ while ($r30 = mysql_fetch_row($q30)) {
 	<tr>
 		<td><?=$r30[2]?></td>
 		<td><?=date("d. m. Y",$r30[1])?></td>
-		<td><img src="images/16x16/<?
-			if ($ocjenaedit>=$r30[4]) print "zad_ok"; else print "brisanje"; // najljepše slike
-		?>.png" width="16" height="16"></td>
+		<td><?
+		if ($ocjenaedit=="/") print "&nbsp;";
+		else if ($ocjenaedit>=$r30[4]) print "<img src=\"images/16x16/zad_ok.png\" width=\"16\" height=\"16\">"; 
+		else print "<img src=\"images/16x16/brisanje.png\" width=\"16\" height=\"16\">"; // najljepše slike
+		?></td>
 		<td id="ispit-<?=$student?>-<?=$ispit?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
 		<td><? 
 		if ($predmet_admin || $user_siteadmin) { 
@@ -672,7 +674,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 if (mysql_num_rows($q30) > 0) {
 ?>
 </tbody></table>
-<p>Dvokliknite na bodove da promijenite podatak ili upišete novi. Za brisanje rezultata, upišite znak "kosa crta" (/).</p>
+<p>Dvokliknite na bodove da promijenite podatak ili upišete novi. Za brisanje rezultata, pobrišite postojeći podatak i pritisnite Enter.</p>
 <?
 }
 
@@ -681,9 +683,11 @@ if (mysql_num_rows($q30) > 0) {
 
 // KONAČNA OCJENA
 
+$vrijeme_konacne_ocjene=0;
 $q50 = myquery("select ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q50)>0) {
 	$konacnaocjena = mysql_result($q50,0,0);
+	$vrijeme_konacne_ocjene = mysql_result($q50,0,1);
 } else {
 	$konacnaocjena = "/";
 }
@@ -711,7 +715,10 @@ print "</tr></table>\n";
 
 
 
+// **************************************
 // POPUNA LOGOVA
+// **************************************
+
 // Ne radimo ništa ako korisnik nije admin
 
 if (!$predmet_admin && !$user_siteadmin) return;
@@ -734,6 +741,8 @@ while ($r90 = mysql_fetch_row($q90)) array_push($pkovi, $r90[0]);
 $q100 = myquery("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 
 while ($r100 = mysql_fetch_row($q100)) {
+	$vrijeme_ispita = $r100[1];
+
 	// Utvrdjujemo ocjenu da bismo lakse mogli rekonstruisati izmjene kroz log
 	$q105 = myquery("select ocjena from ispitocjene where ispit=$r100[0] and student=$student");
 	if (mysql_num_rows($q105)<1)
@@ -742,14 +751,17 @@ while ($r100 = mysql_fetch_row($q100)) {
 		$ispitocjena=mysql_result($q105,0,0);
 
 	// Spisak izmjena ocjene
-	$q110 = myquery("select dogadjaj, UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj like 'AJAH ispit - upisan novi rezultat % (ispit i$r100[0], student u$student)' or dogadjaj like 'AJAH ispit - izbrisan rezultat % (ispit i$r100[0], student u$student)' or dogadjaj like 'AJAH ispit - izmjena rezultata % (ispit i$r100[0], student u$student)' order by id desc");
+	$q110 = myquery("select dogadjaj, UNIX_TIMESTAMP(vrijeme), userid from log where 
+	dogadjaj like 'AJAH ispit - upisan novi rezultat % (ispit i$r100[0], student u$student)' or 
+	dogadjaj like 'AJAH ispit - izbrisan rezultat % (ispit i$r100[0], student u$student)' or 
+	dogadjaj like 'AJAH ispit - izmjena rezultata % (ispit i$r100[0], student u$student)' order by id desc");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$datum = date("d.m.Y. H:i:s", $r110[1]);
 		$q120 = myquery("select ime,prezime from osoba where id=".$r110[2]);
 		if (mysql_num_rows($q120)>0) {
 			$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik $r110[2]/";
 		}
 
 		if (strstr($r110[0], "upisan novi rezultat")) {
@@ -776,27 +788,20 @@ while ($r100 = mysql_fetch_row($q100)) {
 		}
 	}
 
-	// Sakrivamo link na log ako nema ništa u njemu
-	if ($ispitocjena == "/" && mysql_num_rows($q110)<1) {
-/*		?>
-		toggleVisibilityObj('ispitlink<?=$r100[0]?>');
-		<?*/
-	}
-
 	// Necemo traziti masovne unose ako student nije ni izlazio na ispit
 	if ($ispitocjena == "/") continue; 
 
 
 	// Masovni unosi
 
-	$q110 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' AND ABS(UNIX_TIMESTAMP(vrijeme)-$r100[1])<10"); // uzimamo apsolutnu razliku 10 sekundi, jer moze doci do malog kasnjenja prilikom unosa u log
+	$q110 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' AND UNIX_TIMESTAMP(vrijeme)>$r100[1]-10 ORDER BY vrijeme"); // uzimamo razliku 10 sekundi, jer moze doci do malog kasnjenja prilikom unosa u log
 	if (mysql_num_rows($q110)>0) {
 		$datum = date("d.m.Y. H:i:s", mysql_result($q110,0,0));
 		$q120 = myquery("select ime,prezime from osoba where id=".mysql_result($q110,0,1));
 		if (mysql_num_rows($q120)>0) {
 			$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik ".mysql_result($q110,0,1)."/";
 		}
 		?>
 		document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
@@ -804,18 +809,19 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 	// Nema pod oznakom predmeta, pokusacemo ponudu kursa
 	} else foreach ($pkovi as $ponudakursa) {
-		$q110 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovni rezultati ispita za predmet p$ponudakursa' AND ABS(UNIX_TIMESTAMP(vrijeme)-$r100[1])<10");
+		$q110 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovni rezultati ispita za predmet p$ponudakursa' AND UNIX_TIMESTAMP(vrijeme)>$r100[1]-10");
 		if (mysql_num_rows($q110)>0) {
 			$datum = date("d.m.Y. H:i:s", mysql_result($q110,0,0));
 			$q120 = myquery("select ime,prezime from osoba where id=".mysql_result($q110,0,1));
 			if (mysql_num_rows($q120)>0) {
 				$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 			} else {
-				$korisnik = "<nepoznat korisnik>";
+				$korisnik = "/nepoznat korisnik ".mysql_result($q110,0,1)."/";
 			}
 			?>
 			document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
 			<?
+			break;
 		}
 	}
 	
@@ -823,21 +829,26 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 
 // Log za konacnu ocjenu
-
-$q150 = myquery("select dogadjaj, UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj like 'AJAH ko - dodana ocjena % (predmet pp$predmet, student u$student)' or dogadjaj like 'AJAH ko - obrisana ocjena % (predmet pp$predmet, student u$student)' or dogadjaj like 'AJAH ko - izmjena ocjene % (predmet pp$predmet, student u$student)' or dogadjaj like 'dopisana ocjena % prilikom upisa na studij (predmet pp$predmet, student u$student)' order by id desc");
 $bilo=0;
+$upit = "
+dogadjaj like 'AJAH ko - dodana ocjena % (predmet pp$predmet, student u$student)' or 
+dogadjaj like 'AJAH ko - obrisana ocjena % (predmet pp$predmet, student u$student)' or 
+dogadjaj like 'AJAH ko - izmjena ocjene % (predmet pp$predmet, student u$student)' or 
+dogadjaj like 'dopisana ocjena % prilikom upisa na studij (predmet pp$predmet, student u$student)' or 
+dogadjaj like 'masovno dodana ocjena % (predmet pp$predmet, student u$student)'";
 
+$q150 = myquery("select dogadjaj, UNIX_TIMESTAMP(vrijeme), userid from log where $upit order by id desc");
 while ($r150 = mysql_fetch_row($q150)) {
 	$bilo=1;
 	$datum = date("d.m.Y. H:i:s", $r150[1]);
 	$q160 = myquery("select ime,prezime from osoba where id=$r150[2]");
-	if (mysql_num_rows($q120)>0) {
+	if (mysql_num_rows($q160)>0) {
 		$korisnik = mysql_result($q160,0,0)." ".mysql_result($q160,0,1);
 	} else {
-		$korisnik = "<nepoznat korisnik>";
+		$korisnik = "/nepoznat korisnik $r150[2]/";
 	}
 
-	if (strstr($r150[0], "dodana ocjena")) {
+	if (strstr($r150[0], " - dodana ocjena")) {
 		$rezultat = intval(substr($r150[0], 24));
 		if ($rezultat != $konacnaocjena) $rezultat .= " ?";
 		$konacnaocjena = "/";
@@ -859,15 +870,23 @@ while ($r150 = mysql_fetch_row($q150)) {
 		document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjena ocjena u <b><?=$rezultat?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
 		<?
 	} else if (strstr($r150[0], "dopisana ocjena")) {
-		$rezultat = intval(substr($r150[0], 26));
-		if ($konacnaocjena != "/") $rezultat .= " ?"; else $konacnaocjena=$rezultat;
+		$rezultat = intval(substr($r150[0], 16));
+		if ($konacnaocjena != $rezultat) $rezultat .= " ?";
+		$konacnaocjena = "/";
 		?>
 		document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> studentska služba dopisala ocjenu <b><?=$rezultat?></b> prilikom upisa u sljedeći semestar (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
+		<?
+	} else if (strstr($r150[0], "masovno dodana ocjena")) {
+		$rezultat = intval(substr($r150[0], 22));
+		if ($konacnaocjena != $rezultat) $rezultat .= " ?";
+		$konacnaocjena = "/";
+		?>
+		document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovno upisana ocjena <b><?=$rezultat?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
 		<?
 	}
 }
 
-if (mysql_num_rows($q150)<1) foreach ($pkovi as $ponudakursa) {
+/*if (mysql_num_rows($q150)<1) foreach ($pkovi as $ponudakursa) {
 	$q150 = myquery("select dogadjaj, UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj like 'AJAH ko - dodana ocjena % (predmet p$ponudakursa, student u$student)' or dogadjaj like 'AJAH ko - obrisana ocjena % (predmet p$ponudakursa, student u$student)' or dogadjaj like 'AJAH ko - izmjena ocjene % (predmet p$ponudakursa, student u$student)' order by id desc");
 
 	while ($r150 = mysql_fetch_row($q150)) {
@@ -904,18 +923,18 @@ if (mysql_num_rows($q150)<1) foreach ($pkovi as $ponudakursa) {
 		}
 //print "$r150[0] $r150[1] $r150[2]\n";
 	}
-}
+}*/
 
-if ($konacnaocjena != "/") {
+if (mysql_num_rows($q150)==0 && $vrijeme_konacne_ocjene > 0) {
 	$bilo=1;
-	$q170 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' AND ABS(UNIX_TIMESTAMP(vrijeme)-".mysql_result($q50,0,1).")<10"); // uzimamo apsolutnu razliku 10 sekundi, jer moze doci do malog kasnjenja prilikom unosa u log
+	$q170 = myquery("select UNIX_TIMESTAMP(vrijeme), userid from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' AND ABS(UNIX_TIMESTAMP(vrijeme)-$vrijeme_konacne_ocjene)<10"); // uzimamo apsolutnu razliku 10 sekundi, jer moze doci do malog kasnjenja prilikom unosa u log
 	if (mysql_num_rows($q170)>0) {
 		$datum = date("d.m.Y. H:i:s", mysql_result($q170,0,0));
 		$q180 = myquery("select ime,prezime from osoba where id=".mysql_result($q170,0,1));
 		if (mysql_num_rows($q180)>0) {
 			$korisnik = mysql_result($q180,0,0)." ".mysql_result($q180,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik ".mysql_result($q170,0,1)."/";
 		}
 		?>
 		document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovno unesene ocjene - <b><?=$konacnaocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
@@ -930,7 +949,7 @@ if ($konacnaocjena != "/") {
 			if (mysql_num_rows($q180)>0) {
 				$korisnik = mysql_result($q180,0,0)." ".mysql_result($q180,0,1);
 			} else {
-				$korisnik = "<nepoznat korisnik>";
+				$korisnik = "/nepoznat korisnik ".mysql_result($q170,0,1)."/";
 			}
 			?>
 			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovno unesene ocjene - <b><?=$konacnaocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
@@ -969,7 +988,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 		if (mysql_num_rows($q220)>0) {
 			$korisnik = mysql_result($q220,0,0)." ".mysql_result($q220,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik $r210[2]/";
 		}
 		
 		$rezultat = floatval(substr($r210[0], 29));
@@ -987,7 +1006,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 		if (mysql_num_rows($q120)>0) {
 			$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik/";
 		}
 		?>
 		document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
@@ -1012,7 +1031,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 
 }
 
-$q100 = myquery("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+/*$q100 = myquery("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 
 while ($r100 = mysql_fetch_row($q100)) {
 	// Utvrdjujemo ocjenu da bismo lakse mogli rekonstruisati izmjene kroz log
@@ -1062,7 +1081,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 /*		?>
 		toggleVisibilityObj('ispitlink<?=$r100[0]?>');
 		<?*/
-	}
+/*	}
 
 	// Necemo traziti masovne unose ako student nije ni izlazio na ispit
 	if ($ispitocjena == "/") continue; 
@@ -1100,7 +1119,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		}
 	}
 	
-}
+}*/
 
 
 
