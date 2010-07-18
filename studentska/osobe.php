@@ -165,15 +165,29 @@ if ($akcija == "podaci") {
 
 		$ime = my_escape($_REQUEST['ime']);
 		$prezime = my_escape($_REQUEST['prezime']);
-		$email = my_escape($_REQUEST['email']);
-		$brindexa = my_escape($_REQUEST['brindexa']);
-		$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
+		$spol = $_REQUEST['spol']; if ($spol!="M" && $spol!="Z") $spol="";
 		$jmbg = my_escape($_REQUEST['jmbg']);
+		$nacionalnost = my_escape($_REQUEST['nacionalnost']);
+		$brindexa = my_escape($_REQUEST['brindexa']);
+
+		$imeoca = my_escape($_REQUEST['imeoca']);
+		$prezimeoca = my_escape($_REQUEST['prezimeoca']);
+		$imemajke = my_escape($_REQUEST['imemajke']);
+		$prezimemajke = my_escape($_REQUEST['prezimemajke']);
+
+		$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
+		$opcina_rodjenja = my_escape($_REQUEST['opcina_rodjenja']);
+		$drzava_rodjenja = my_escape($_REQUEST['drzava_rodjenja']);
 		$drzavljanstvo = my_escape($_REQUEST['drzavljanstvo']);
+		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
-		$telefon = my_escape($_REQUEST['telefon']);
 		$kanton = intval($_REQUEST['_lv_column_kanton']);
+		$telefon = my_escape($_REQUEST['telefon']);
+		$email = my_escape($_REQUEST['email']);
+
+		$strucni_stepen = intval($_REQUEST['_lv_column_strucni_stepen']);
+		$naucni_stepen = intval($_REQUEST['_lv_column_naucni_stepen']);
 
 		// Sredjujem datum
 		if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
@@ -187,10 +201,35 @@ if ($akcija == "podaci") {
 		// Mjesto
 		$mjrid=0;
 		if ($mjesto_rodjenja != "") {
-			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+			$qa = myquery("select id from opcina where naziv='$opcina_rodjenja'");
+			if (mysql_num_rows($qa)<1) {
+				nicemessage("Dodajem novu opcinu '$opcina_rodjenja'");
+				$qb = myquery("insert into opcina set naziv='$opcina_rodjenja'");
+				$qa = myquery("select id from opcina where naziv='$opcina_rodjenja'");
+			}
+			$opcina_id = mysql_result($qa,0,0);
+
+			$qc = myquery("select id from drzava where naziv='$drzava_rodjenja'");
+			if (mysql_num_rows($qc)<1) {
+				nicemessage("Dodajem novu drzavu '$drzava_rodjenja'");
+				$qd = myquery("insert into drzava set naziv='$drzava_rodjenja'");
+				$qc = myquery("select id from drzava where naziv='$drzava_rodjenja'");
+			}
+			$drzava_id = mysql_result($qc,0,0);
+
+
+			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_id and drzava=$drzava_id");
 			if (mysql_num_rows($q1)<1) {
-				$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja'");
-				$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+				$q2 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+				if (mysql_num_rows($q2)<1) {
+					nicemessage("Dodajem novo mjesto '$mjesto_rodjenja'");
+					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_id, drzava=$drzava_id");
+					$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
+				} else {
+					nicemessage("Promjena općine/države za mjesto '$mjesto_rodjenja'");
+					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_id, drzava=$drzava_id");
+					$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_id and drzava=$drzava_id");
+				}
 			}
 			$mjrid = mysql_result($q1,0,0);
 		}
@@ -206,7 +245,34 @@ if ($akcija == "podaci") {
 		}
 
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, jmbg='$jmbg', drzavljanstvo='$drzavljanstvo', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton' where id=$osoba");
+		// Nacionalnost
+		$nacion_id=0;
+		if ($nacionalnost != "") {
+			$q5 = myquery("select id from nacionalnost where naziv='$nacionalnost'");
+			if (mysql_num_rows($q5)<1) {
+				$q6 = myquery("insert into nacionalnost set naziv='$nacionalnost'");
+				$q5 = myquery("select id from nacionalnost where naziv='$nacionalnost'");
+			}
+			$nacion_id = mysql_result($q5,0,0);
+		}
+
+
+		// Drzavljanstvo
+		$drzavlj_id=0;
+		if ($drzavljanstvo != "") {
+			$q7 = myquery("select id from drzava where naziv='$drzavljanstvo'");
+			if (mysql_num_rows($q7)<1) {
+				$q8 = myquery("insert into drzava set naziv='$drzavljanstvo'");
+				$q7 = myquery("select id from drzava where naziv='$drzavljanstvo'");
+			}
+			$drzavlj_id = mysql_result($q7,0,0);
+		}
+/*		$mjrid = intval($mjesto_rodjenja);
+		$nacion_id = intval($nacionalnost);
+		$drzavlj_id = intval($drzavljanstvo);
+		$admid = intval($adresa_mjesto);*/
+
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', email='$email', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacion_id, drzavljanstvo=$drzavlj_id, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		?>
@@ -217,7 +283,104 @@ if ($akcija == "podaci") {
 		return;
 	}
 
-	$q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton from osoba where id=$osoba");
+
+	// Postavljanje ili promjena slike
+
+	if ($_POST['subakcija']=="postavisliku" && check_csrf_token()) {
+		$slika = $_FILES['slika']['tmp_name'];
+		if ($slika && (file_exists($slika))) {
+			// Provjeravamo ispravnost slike
+			$podaci = getimagesize($slika);
+			$koef = $podaci[0]/$podaci[1];
+			if ($koef < 0.5 || $koef > 2) {
+				niceerror("Omjer širine i visine slike nije povoljan.");
+				print "<p>Slika bi trebala biti uobičajenog formata slike za lične dokumente. Ova je formata $podaci[0]x$podaci[1].</p>\n";
+				return;
+			}
+
+			if ($podaci[2] != IMAGETYPE_GIF && $podaci[2] != IMAGETYPE_JPEG && $podaci[2] != IMAGETYPE_PNG && $podaci[2] != IMAGETYPE_TIFF_II) {
+				niceerror("Nepoznat tip slike.");
+				print "<p>Podržane su samo slike tipa GIF, JPEG ili PNG.</p>";
+				return;
+			}
+
+			// Brisemo evt. postojecu sliku
+			$q498 = myquery("select slika from osoba where id=$osoba");
+			if (mysql_result($q498,0,0)!="")
+				unlink ("$conf_files_path/slike/".mysql_result($q498,0,0));
+	
+			// Kopiramo novu sliku
+			$novavisina = 150;
+			$novasirina = $novavisina * $koef;
+			$filename = "$conf_files_path/slike/$osoba";
+			if (!file_exists("$conf_files_path/slike"))
+				mkdir ("$conf_files_path/slike", 0777, true);
+	
+			$dest = imagecreatetruecolor($novasirina, $novavisina);
+			switch ($podaci[2]) {
+				case IMAGETYPE_GIF:
+					$source = imagecreatefromgif($slika);
+					imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
+					imagegif($dest, $filename.".gif");
+					$slikabaza = "$osoba.gif";
+					break;
+				case IMAGETYPE_JPEG:
+					$source = imagecreatefromjpeg($slika);
+					imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
+					imagejpeg($dest, $filename.".jpg");
+					$slikabaza = "$osoba.jpg";
+					break;
+				case IMAGETYPE_PNG:
+					$source = imagecreatefrompng($slika);
+					imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
+					imagepng($dest, $filename.".png");
+					$slikabaza = "$osoba.png";
+					break;
+				case IMAGETYPE_TIFF_II:
+					nicemessage("Nije moguća promjena dimenzija slike tipa TIFF... Ostavljam zadate dimenzije.");
+					rename ($slika, $filename.".tiff");
+					$slikabaza = "$osoba.tiff";
+					break;
+			}
+		
+			$q310 = myquery("update osoba set slika='$slikabaza' where id=$osoba");
+
+			zamgerlog("postavljena slika za korisnika u$osoba", 2);
+			?>
+			<script language="JavaScript">
+			location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit';
+			</script>
+			<?
+			return;
+		} else {
+			nicemessage("Greška pri slanju slike");
+		}
+	}
+
+
+	// Brisanje slike
+
+	if ($_POST['subakcija']=="obrisisliku" && check_csrf_token()) {
+		// Brisemo evt. postojecu sliku
+		$q496 = myquery("select slika from osoba where id=$osoba");
+		if (mysql_result($q498,0,0)!="")
+			unlink ("$conf_files_path/slike/".mysql_result($q496,0,0));
+
+		$q497 = myquery("update osoba set slika='' where id=$osoba");
+
+		zamgerlog("obrisana slika za korisnika u$osoba", 2);
+		?>
+		<script language="JavaScript">
+		location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit';
+		</script>
+		<?
+		return;
+	}
+
+
+	// Prikaz podataka
+
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -225,44 +388,161 @@ if ($akcija == "podaci") {
 	}
 	$ime = mysql_result($q400,0,0);
 	$prezime = mysql_result($q400,0,1);
+	$muski=$zenski="";
+	if (mysql_result($q400,0,6)=="M") $muski=" CHECKED";
+	if (mysql_result($q400,0,6)=="Z") $zenski=" CHECKED";
+
 
 	// Spisak gradova
-	$q410 = myquery("select id,naziv from mjesto order by naziv");
+	$q410 = myquery("select id,naziv,opcina,drzava from mjesto order by naziv");
 	$gradovir="<option></option>";
 	$gradovia="<option></option>";
 	while ($r410 = mysql_fetch_row($q410)) { 
 		$gradovir .= "<option"; $gradovia .= "<option";
-		if ($r410[0]==mysql_result($q400,0,5)) { $gradovir  .= " SELECTED"; }
-		if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; }
+		if ($r410[0]==mysql_result($q400,0,10)) { 
+			$gradovir  .= " SELECTED"; 
+			$eopcinarodjenja = $r410[2];
+			$edrzavarodjenja = $r410[3];
+		}
+		if ($r410[0]==mysql_result($q400,0,15)) { $gradovia  .= " SELECTED"; }
 		$gradovir .= ">$r410[1]</option>\n";
 		$gradovia .= ">$r410[1]</option>\n";
+	}
+
+	// Spisak država
+	
+	$q257 = myquery("select id, naziv from drzava order by naziv");
+	$drzaverodjr="<option></option>";
+	$drzavljanstvor="<option></option>";
+	while ($r257 = mysql_fetch_row($q257)) {
+		$drzaverodjr .= "<option";
+		if ($r257[0]==$edrzavarodjenja) { $drzaverodjr  .= " SELECTED"; }
+		$drzaverodjr .= ">$r257[1]</option>\n";
+		$drzavljanstvor .= "<option";
+		if ($r257[0]==mysql_result($q400,0,13)) { $drzavljanstvor .= " SELECTED"; }
+		$drzavljanstvor .= ">$r257[1]</option>\n";
+	}
+
+	// Spisak nacionalnosti
+	
+	$q258 = myquery("select id, naziv from nacionalnost order by naziv");
+	$nacionalnostr="<option></option>";
+	while ($r258 = mysql_fetch_row($q258)) {
+		$nacionalnostr .= "<option";
+		if ($r258[0]==mysql_result($q400,0,12)) { $nacionalnostr .= " SELECTED"; }
+		$nacionalnostr .= ">$r258[1]</option>\n";
+	}
+
+	// Spisak opičina
+	
+	$q259 = myquery("select id, naziv from opcina order by naziv");
+	$opcinar="<option></option>";
+	while ($r259 = mysql_fetch_row($q259)) {
+		$opcinar .= "<option";
+		if ($r259[0]==$eopcinarodjenja) { $opcinar .= " SELECTED"; }
+		$opcinar .= ">$r259[1]</option>\n";
 	}
 
 	?>
 
 	<script type="text/javascript" src="js/combo-box.js"></script>
 	<h2><?=$ime?> <?=$prezime?> - izmjena ličnih podataka</h2>
+	<p>ID: <b><?=$osoba?></b></p>
+	<?
+	if (mysql_result($q400,0,20)=="") {
+		print genform("POST", "\"  enctype=\"multipart/form-data");
+		?>
+		<input type="hidden" name="subakcija" value="postavisliku">
+		<p>Dodaj sliku:<br /><input type="file" name="slika"> <input type="submit" value="Dodaj"></p>
+		</form>
+		<?
+	} else {
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="obrisisliku">
+		<p>Slika:<br />
+		<img src="?sta=common/slika&osoba=<?=$osoba?>"><br/>
+		<input type="submit" value="Obriši sliku"><br></form>
+		<?
+		print genform("POST", "\"  enctype=\"multipart/form-data");
+		?>
+		<input type="hidden" name="subakcija" value="postavisliku">
+		<input type="file" name="slika"> <input type="submit" value="Promijeni sliku"></p>
+		</form>
+		<?
+	}
+	?>
 	<?=genform("POST")?>
 	<input type="hidden" name="subakcija" value="potvrda">
-	<table border="0" width="600"><tr><td valign="top">
-		Ime: <input type="text" name="ime" value="<?=$ime?>" class="default"><br/>
-		Prezime: <input type="text" name="prezime" value="<?=$prezime?>" class="default"><br/>
-		Broj indexa (za studente): <input type="text" name="brindexa" value="<?=mysql_result($q400,0,3)?>" class="default"><br/>
-		JMBG: <input type="text" name="jmbg" value="<?=mysql_result($q400,0,6)?>" class="default"><br/>
-		<br/>
-		Datum rođenja: <input type="text" name="datum_rodjenja" value="<?
-		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,4))?>" class="default"><br/>
-		Mjesto rođenja: <select name="mjesto_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovir?></select><br/>
-		Državljanstvo: <input type="text" name="drzavljanstvo" value="<?=mysql_result($q400,0,7)?>" class="default"><br/>
-		</td><td valign="top">
-		Adresa: <input type="text" name="adresa" value="<?=mysql_result($q400,0,8)?>" class="default"><br/>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<select name="adresa_mjesto" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovia?></select><br />
-		Kanton: <?=db_dropdown("kanton",mysql_result($q400,0,11), "--Izaberite kanton--") ?> <br/>
-		Telefon: <input type="text" name="telefon" value="<?=mysql_result($q400,0,10)?>" class="default"><br/>
-		Kontakt e-mail: <input type="text" name="email" value="<?=mysql_result($q400,0,2)?>" class="default"><br/>
-		<br/>
-		ID: <b><?=$osoba?></b></td>
+	<table border="0" width="600"><tr>
+		<td>Ime:</td>
+		<td><input type="text" name="ime" value="<?=$ime?>" class="default"></td>
+	</tr><tr>
+		<td>Prezime:</td>
+		<td><input type="text" name="prezime" value="<?=$prezime?>" class="default"></tr>
+	</tr><tr>
+		<td>Spol:</td>
+		<td><input type="radio" name="spol" value="M" <?=$muski?>> Muški &nbsp; <input type="radio" name="spol" value="Z" <?=$zenski?>> Ženski</td>
+	</tr><tr>
+		<td>JMBG:</td>
+		<td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,11)?>" class="default"></td>
+	</tr><tr>
+		<td>Nacionalnost:</td>
+		<td><select name="nacionalnost" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$nacionalnostr?></select></td>
+	</tr><tr>
+		<td>Broj indexa<br>(za studente):</td>
+		<td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,8)?>" class="default"></td>
+	</tr><tr><td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td>Ime oca:</td>
+		<td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,2)?>" class="default"></td>
+	</tr><tr>
+		<td>Prezime oca:</td>
+		<td><input type="text" name="prezimeoca" value="<?=mysql_result($q400,0,3)?>" class="default"></tr>
+	</tr><tr>
+		<td>Ime majke:</td>
+		<td><input type="text" name="imemajke" value="<?=mysql_result($q400,0,4)?>" class="default"></td>
+	</tr><tr>
+		<td>Prezime majke:</td>
+		<td><input type="text" name="prezimemajke" value="<?=mysql_result($q400,0,5)?>" class="default"></td>
+	</tr><tr><td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td>Datum rođenja:</td>
+		<td><input type="text" name="datum_rodjenja" value="<?
+		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,9))?>" class="default"></td>
+	</tr><tr>
+		<td>Mjesto rođenja:</td>
+		<td><select name="mjesto_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovir?></select></td>
+	</tr><tr>
+		<td>Općina rođenja:</td>
+		<td><select name="opcina_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$opcinar?></select></td>
+	</tr><tr>
+		<td>Država rođenja:</td>
+		<td><select name="drzava_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$drzaverodjr?></select></td>
+	</tr><tr>
+		<td>Državljanstvo:</td>
+		<td><select name="drzavljanstvo" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$drzavljanstvor?></select></td>
+	</tr><tr><td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td>Adresa:</td>
+		<td><input type="text" name="adresa" value="<?=mysql_result($q400,0,14)?>" class="default"><br>
+		<select name="adresa_mjesto" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovia?></select></td>
+	</tr><tr>
+		<td>Kanton:</td>
+		<td><?=db_dropdown("kanton",mysql_result($q400,0,17), "--Izaberite kanton--") ?></td>
+	</tr><tr>
+		<td>Telefon:</td>
+		<td><input type="text" name="telefon" value="<?=mysql_result($q400,0,16)?>" class="default"></td>
+	</tr><tr>
+		<td>Kontakt e-mail:</td>
+		<td><input type="text" name="email" value="<?=mysql_result($q400,0,7)?>" class="default"></td>
+	</tr><tr><td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td>Stručni stepen:</td>
+		<td><?=db_dropdown("strucni_stepen",mysql_result($q400,0,18)) ?></td>
+	</tr><tr>
+		<td>Naučni stepen:</td>
+		<td><?=db_dropdown("naucni_stepen",mysql_result($q400,0,19)) ?></td>
 	</tr></table>
 
 	<p>
@@ -1393,7 +1673,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci
 
-	$q200 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton from osoba where id=$osoba");
+	$q200 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r200 = mysql_fetch_row($q200))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -1401,18 +1681,27 @@ else if ($akcija == "edit") {
 	}
 	$ime = mysql_result($q200,0,0);
 	$prezime = mysql_result($q200,0,1);
+	$slika = mysql_result($q200,0,14);
 
 	// Pripremam neke podatke za ispis
+	// Ovo nije u istom upitu jer nije pravi FK, podaci ne moraju biti definisani
+	// TODO dodati polje "nedefinisano" u sve tabele, po mogućnosti sa IDom nula
 	$mjesto_rodj = "";
 	if (mysql_result($q200,0,5)!=0) {
 		$q201 = myquery("select naziv from mjesto where id=".mysql_result($q200,0,5));
 		$mjesto_rodj = mysql_result($q201,0,0);
 	}
 
+	$drzavljanstvo = "";
+	if (mysql_result($q200,0,7)!=0) {
+		$q202 = myquery("select naziv from drzava where id=".mysql_result($q200,0,7));
+		$drzavljanstvo = mysql_result($q202,0,0);
+	}
+
 	$adresa = mysql_result($q200,0,8);
 	if (mysql_result($q200,0,9)!=0) {
-		$q202 = myquery("select naziv from mjesto where id=".mysql_result($q200,0,9));
-		$adresa .= ", ".mysql_result($q202,0,0);
+		$q203 = myquery("select naziv from mjesto where id=".mysql_result($q200,0,9));
+		$adresa .= ", ".mysql_result($q203,0,0);
 	}
 
 	$kanton = "";
@@ -1421,9 +1710,21 @@ else if ($akcija == "edit") {
 		$kanton = mysql_result($q205,0,0);
 	}
 
+	if (mysql_result($q200,0,12)!=0) {
+		$q206 = myquery("select naziv from strucni_stepen where id=".mysql_result($q200,0,12));
+		$strucni_stepen = mysql_result($q206,0,0);
+	}
+	if (mysql_result($q200,0,13)!=0) {
+		$q207 = myquery("select naziv from naucni_stepen where id=".mysql_result($q200,0,13));
+		$naucni_stepen = mysql_result($q207,0,0);
+	}
+
 	?>
 
 	<h2><?=$ime?> <?=$prezime?></h2>
+	<?
+	if ($slika!="") { print "<img src=\"?sta=common/slika&osoba=$osoba\"><br/>\n"; }
+	?>
 	<table border="0" width="600"><tr><td valign="top">
 		Ime: <b><?=$ime?></b><br/>
 		Prezime: <b><?=$prezime?></b><br/>
@@ -1433,12 +1734,15 @@ else if ($akcija == "edit") {
 		Datum rođenja: <b><?
 		if (mysql_result($q200,0,4)) print date("d. m. Y.", mysql_result($q200,0,4))?></b><br/>
 		Mjesto rođenja: <b><?=$mjesto_rodj?></b><br/>
-		Državljanstvo: <b><?=mysql_result($q200,0,7)?></b><br/>
+		Državljanstvo: <b><?=$drzavljanstvo?></b><br/>
 		</td><td valign="top">
 		Adresa: <b><?=$adresa?></b><br/>
 		Kanton: <b><?=$kanton?></b><br/>
 		Telefon: <b><?=mysql_result($q200,0,10)?></b><br/>
 		Kontakt e-mail: <b><?=mysql_result($q200,0,2)?></b><br/>
+		<br/>
+		Stručni stepen: <b><?=$strucni_stepen?></b><br/>
+		Naučni stepen: <b><?=$naucni_stepen?></b><br/>
 		<br/>
 		ID: <b><?=$osoba?></b><br/>
 		<br/>
@@ -1555,7 +1859,7 @@ else if ($akcija == "edit") {
 	// Admin dio
 
 	if ($user_siteadmin) {
-		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_POST['siteadmin'] );
+		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'] );
 		?>
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="uloga">

@@ -14,7 +14,7 @@
 
 function studentska_intro() {
 
-global $userid,$user_siteadmin,$user_studentska;
+global $userid,$user_siteadmin,$user_studentska,$conf_files_path;
 
 
 // Provjera privilegija
@@ -42,29 +42,49 @@ function promjena($nominativ, $u, $iz) {
 if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, pp.imeoca, pp.prezimeoca, pp.imemajke, pp.prezimemajke, pp.spol, pp.nacionalnost, pp.slika, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
 		// Sve parametre treba ponovo escape-ati
 		// Npr: korisnik je ukucao Meho'
 		// - prilikom inserta u tabelu promjena podataka ovo se pretvara u Meho\'
 		// - u tabeli se ustvari nalazi Meho'
 		// - vrijednost varijable $r100[1] je Meho'
-		$ime = my_escape($r100[1]);
-		$prezime = my_escape($r100[2]);
-		$email = my_escape($r100[3]);
-		$brindexa = my_escape($r100[4]);
-		$datum_rodjenja = my_escape($r100[5]);
+		$ime = mysql_real_escape_string($r100[1]);
+		$prezime = mysql_real_escape_string($r100[2]);
+		$email = mysql_real_escape_string($r100[3]);
+		$brindexa = mysql_real_escape_string($r100[4]);
+		$datum_rodjenja = mysql_real_escape_string($r100[5]);
 		// mjesto rodjenja je tipa int
-		$drzavljanstvo = my_escape($r100[7]);
-		$jmbg = my_escape($r100[8]);
-		$adresa = my_escape($r100[9]);
+		// drzavljanstvo je tipa int
+		$jmbg = mysql_real_escape_string($r100[8]);
+		$adresa = mysql_real_escape_string($r100[9]);
 		// adresa_mjesto je tipa int
-		$telefon = my_escape($r100[11]);
+		$telefon = mysql_real_escape_string($r100[11]);
 		// kanton je tipa int
-		// osoba je tipa int
+		$imeoca = mysql_real_escape_string($r100[13]);
+		$prezimeoca = mysql_real_escape_string($r100[14]);
+		$imemajke = mysql_real_escape_string($r100[15]);
+		$prezimemajke = mysql_real_escape_string($r100[16]);
+		// spol je tipa enum
+		// nacionalnost je tipa int
+		$slikapromjena = $r100[19];
 
-		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[6], drzavljanstvo='$drzavljanstvo', jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[10], telefon='$telefon', kanton=".intval($r100[12])." where id=".intval($r100[0]));
-		$vrijeme_zahtjeva=$r100[13];
+		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[6], drzavljanstvo=$r100[7], jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[10], telefon='$telefon', kanton=$r100[12], imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$r100[17]', nacionalnost=$r100[18] where id=$r100[0]");
+		$vrijeme_zahtjeva = $r100[20];
+
+		// Provjera izmjene slike
+		$q115 = myquery("select slika from osoba where id=$r100[0]");
+		$staraslika = mysql_result($q115,0,0);
+		if ($staraslika != $slikapromjena) {
+			$novaslika = $slikapromjena;
+			$novaslika = str_replace("-promjena", "", $novaslika);
+			$prefiks = "$conf_files_path/slike/";
+			if (file_exists($prefiks.$staraslika))
+				unlink($prefiks.$staraslika);
+			if ($slikapromjena != "")
+				rename($prefiks.$slikapromjena, $prefiks.$novaslika);
+			$q117 = myquery("update osoba set slika='$novaslika' where id=$r100[0]");
+		}
 	}
 	$q120 = myquery("delete from promjena_podataka where id=$id");
 	zamgerlog("prihvacen zahtjev za promjenu podataka korisnika u$osoba", 4);
@@ -83,13 +103,19 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
 
-	$q195 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where id=$id");
+	$q195 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva), slika from promjena_podataka where id=$id");
 	if (mysql_num_rows($q195)<1) {
 		niceerror("Nepostojeci zahtjev sa IDom $id.");
 		zamgerlog("Nepostojeci zahtjev sa IDom $id.", 3);
 		return;
 	}
 	$vrijeme_zahtjeva=mysql_result($q195,0,0);
+	$slikapromjena=mysql_result($q195,0,1);
+
+	// Treba li obrisati viška sliku?
+	$q197 = myquery("select slika from osoba where id=$osoba");
+	if (mysql_result($q197,0,0) != $slikapromjena)
+		unlink ("$conf_files_path/slike/$slikapromjena");
 
 	$q200 = myquery("delete from promjena_podataka where id=$id");
 	zamgerlog("odbijen zahtjev za promjenu podataka korisnika u$osoba", 2);
@@ -106,14 +132,15 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 
 
 if ($_GET['akcija'] == "zahtjev") {
+
 	$id = intval($_REQUEST['id']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, o.ime, o.prezime, o.email, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.email, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, o.ime, o.prezime, o.email, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.imeoca, o.imeoca, pp.prezimeoca, o.prezimeoca, pp.imemajke, o.imemajke, pp.prezimemajke, o.prezimemajke, pp.spol, o.spol, pp.nacionalnost, o.nacionalnost, pp.slika, o.slika from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
 	if (mysql_num_rows($q100)<1) {
 		niceerror("Nepoznat ID zahtjeva $id.");
 		zamgerlog("nepoznat id zahtjeva za promjenu podataka $id", 3);
 		return;
 	}
-
+	$osoba=mysql_result($q100,0,0);
 
 	?>
 	<p>Korisnik <b><?=mysql_result($q100,0,13)?> <?=mysql_result($q100,0,14)?></b> zatražio je sljedeće izmjene svojih ličnih podataka:
@@ -121,6 +148,20 @@ if ($_GET['akcija'] == "zahtjev") {
 	<?
 	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,13));
 	promjena("prezime", mysql_result($q100,0,2), mysql_result($q100,0,14));
+	promjena("ime oca", mysql_result($q100,0,25), mysql_result($q100,0,26));
+	promjena("prezime oca", mysql_result($q100,0,27), mysql_result($q100,0,28));
+	promjena("ime majke", mysql_result($q100,0,29), mysql_result($q100,0,30));
+	promjena("prezime majke", mysql_result($q100,0,31), mysql_result($q100,0,32));
+
+	$starispol = mysql_result($q100,0,33); $novispol = mysql_result($q100,0,34);
+	if ($starispol != $novispol) {
+		if ($starispol=="M") $starispol="muški";
+		if ($starispol=="Z") $starispol="ženski";
+		if ($novispol=="M") $novispol="muški";
+		if ($novispol=="Z") $novispol="ženski";
+		promjena ("spol", $starispol, $novispol);
+	}
+
 	promjena("kontakt e-mail adresa", mysql_result($q100,0,3), mysql_result($q100,0,15));
 	promjena("broj indexa", mysql_result($q100,0,4), mysql_result($q100,0,16));
 	promjena("datum rođenja", date("d. m. Y.", mysql_result($q100,0,5)), date("d. m. Y.", mysql_result($q100,0,17)));
@@ -139,7 +180,34 @@ if ($_GET['akcija'] == "zahtjev") {
 		promjena("mjesto rođenja", $staromj, $novomj);
 	}
 
-	promjena("državljanstvo", mysql_result($q100,0,7), mysql_result($q100,0,19));
+	// Drzavljanstvo
+	$starodrz=mysql_result($q100,0,7); $novodrz=mysql_result($q100,0,19);
+	if ($starodrz!=$novodrz) {
+		if ($starodrz != 0) {
+			$q101 = myquery("select naziv from drzava where id=$starodrz");
+			$starodrz = mysql_result($q101,0,0);
+		}
+		if ($novodrz != 0) {
+			$q102 = myquery("select naziv from drzava where id=$novodrz");
+			$novodrz = mysql_result($q102,0,0);
+		}
+		promjena("državljanstvo", $starodrz, $novodrz);
+	}
+
+	// Nacionalnost
+	$staronac=mysql_result($q100,0,35); $novonac=mysql_result($q100,0,36);
+	if ($staronac!=$novonac) {
+		if ($staronac != 0) {
+			$q101 = myquery("select naziv from nacionalnost where id=$staronac");
+			$staronac = mysql_result($q101,0,0);
+		}
+		if ($novonac != 0) {
+			$q102 = myquery("select naziv from nacionalnost where id=$novonac");
+			$novonac = mysql_result($q102,0,0);
+		}
+		promjena("nacionalnost", $staronac, $novonac);
+	}
+
 	promjena("JMBG", mysql_result($q100,0,8), mysql_result($q100,0,20));
 
 	// Adresa
@@ -172,8 +240,33 @@ if ($_GET['akcija'] == "zahtjev") {
 
 	?>
 	</ul><p>&nbsp;</p>
+	<?
+
+	$staraslika = mysql_result($q100,0,38); $novaslika = mysql_result($q100,0,37);
+	if ($staraslika != $novaslika) {
+		if ($staraslika=="") {
+			?>
+			<p>Dodavanje slike:<br><img src="?sta=common/slika&osoba=<?=$osoba?>&promjena=1"></p>
+			<?
+		}
+		else if ($novaslika=="") {
+			?>
+			<p>Brisanje slike (stara slika):<br><img src="?sta=common/slika&osoba=<?=$osoba?>"></p>
+			<?
+		}
+		else {
+			?>
+			<p>Promjena slike</p>
+			<table border="0"><tr><td valign="top">Iz:<br><img src="?sta=common/slika&osoba=<?=$osoba?>"></td>
+			<td valign="top">U<br><img src="?sta=common/slika&osoba=<?=$osoba?>&promjena=1"></td></tr></table>
+			<?
+		}
+		print "<p>&nbsp;</p>\n";
+	}
+
+	?>
 	<?=genform("POST")?>
-	<input type="hidden" name="osoba" value="<?=mysql_result($q100,0,0)?>">
+	<input type="hidden" name="osoba" value="<?=$osoba?>">
 	<input type="submit" name="akcija" value="Prihvati zahtjev">
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<input type="submit" name="akcija" value="Odbij zahtjev"><br><br>

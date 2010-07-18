@@ -38,7 +38,7 @@ $ag = intval($_REQUEST['ag']);
 // Provjera ulaznih podataka i podaci za naslov
 
 // Student
-$q40 = myquery("select ime, prezime, brindexa, email from osoba where id=$student");
+$q40 = myquery("select ime, prezime, brindexa, email, slika from osoba where id=$student");
 if (mysql_num_rows($q40)<1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("nepoznat student $student", 3);
@@ -48,6 +48,7 @@ $ime = mysql_result($q40,0,0);
 $prezime = mysql_result($q40,0,1);
 $brindexa = mysql_result($q40,0,2);
 $email = mysql_result($q40,0,3);
+$slika = mysql_result($q40,0,4);
 $mailprint = "";
 if (strstr($email,"@")) $mailprint = "<a href=\"mailto:$email\">$email</a>";
 
@@ -226,6 +227,9 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 
 
 // --- ISPIS 
+
+if ($slika != "") { print "<img src=\"?sta=common/slika&osoba=$student\" align=\"left\">\n"; }
+
 
 // Naslov
 ?>

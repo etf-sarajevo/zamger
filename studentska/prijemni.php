@@ -482,7 +482,7 @@ if ($_REQUEST["akcija"]=="obrisi") {
 
 if ($_REQUEST['akcija'] == "pregled") {
 	
-	if ($ciklus_studija==1) $sirina="2500"; else $sirina="2000";
+	if ($ciklus_studija==1) $sirina="4000"; else $sirina="3000";
 
 	?>
 	<h3>Pregled kandidata</h3>
@@ -499,30 +499,58 @@ if ($_REQUEST['akcija'] == "pregled") {
 	
 	<?
 	
+	$imena_godina=array();
+	$q = myquery("select id, naziv from akademska_godina");
+	while ($r = mysql_fetch_row($q)) {
+		$imena_godina[$r[0]]=$r[1];
+	}
+	
 	$imena_studija=array();
 	$q = myquery("select id,kratkinaziv from studij");
 	while ($r = mysql_fetch_row($q)) {
 		$imena_studija[$r[0]]=$r[1];
 	}
 
-	$imena_skola=array();
-	$q = myquery("select id, naziv from srednja_skola");
+	$imena_opcina=array();
+	$q = myquery("select id, naziv from opcina");
 	while ($r = mysql_fetch_row($q)) {
-		$imena_skola[$r[0]]=$r[1];
+		$imena_opcina[$r[0]]=$r[1];
 	}
 
-	$imena_mjesta=array();
-	$q = myquery("select id, naziv from mjesto");
+	$imena_drzava=array();
+	$q = myquery("select id, naziv from drzava");
+	while ($r = mysql_fetch_row($q)) {
+		$imena_drzava[$r[0]]=$r[1];
+	}
+
+	$imena_nacionalnosti=array();
+	$q = myquery("select id, naziv from nacionalnost");
+	while ($r = mysql_fetch_row($q)) {
+		$imena_nacionalnosti[$r[0]]=$r[1];
+	}
+
+	$imena_skola=$opcina_skola=$domaca_skola=array();
+	$q = myquery("select id, naziv, opcina, domaca from srednja_skola");
+	while ($r = mysql_fetch_row($q)) {
+		$imena_skola[$r[0]]=$r[1];
+		$opcina_skola[$r[0]]=$imena_opcina[$r[2]];
+		$domaca_skola[$r[0]]=$r[3];
+	}
+
+	$imena_mjesta=$opcine_mjesta=$drzave_mjesta=array();
+	$q = myquery("select id, naziv, opcina, drzava from mjesto");
 	while ($r = mysql_fetch_row($q)) {
 		$imena_mjesta[$r[0]]=$r[1];
+		$opcine_mjesta[$r[0]]=$imena_opcina[$r[2]];
+		$drzave_mjesta[$r[0]]=$imena_drzava[$r[3]];
 	}
 	
 	if ($ciklus_studija==1) {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, us.srednja_skola, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, us.ucenik_generacije, pp.broj_dosjea
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
 		FROM osoba as o, kanton as k, uspjeh_u_srednjoj as us, prijemni_prijava as pp
 		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and o.kanton=k.id ";
 	} else {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, 0, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, 0, 0, 0, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, 0, pp.broj_dosjea
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, 0, 0, 0, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
 		FROM osoba as o, kanton as k, prijemni_prijava as pp
 		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and o.kanton=k.id ";
 	} 
@@ -541,16 +569,28 @@ if ($_REQUEST['akcija'] == "pregled") {
 	<td align="center"><b>Opcije</b></td>
 	<td><b>Prezime</b></td>
 	<td><b>Ime</b></td>
+	<td><b>Prezime oca</b></td>
+	<td><b>Ime oca</b></td>
+	<td><b>Prezime majke</b></td>
+	<td><b>Ime majke</b></td>
+	<td><b>Spol</b></td>
 	<td width="100"><b>Datum rođenja</b></td>
 	<td><b>Mjesto rođenja</b></td>
+	<td><b>Općina rođenja</b></td>
+	<td><b>Država rođenja</b></td>
+	<td><b>Nacionalnost</b></td>
 	<td><b>Državljanstvo</b></td>
+	<td><b>Por. šeh / RVI</b></td>
+	<td><b>JMBG</b></td>
 	<? if ($ciklus_studija==1) { ?>
 	<td><b>Završena škola</b></td>
+	<td><b>Općina</b></td>
+	<td><b>Domaća škola</b></td>
+	<td><b>Šk. god.</b></td>
 	<td><b>Uč. gen.</b></td><? } ?>
-	<td width="115"><b>Jmbg</b></td>
 	<td><b>Adresa</b></td>
-	<td><b>Telefon</b></td>
 	<td width="200"><b>Kanton</b></td>
+	<td><b>Telefon</b></td>
 	<? if ($ciklus_studija==1) { ?>
 	<td width="90"><b>Opći uspjeh</b></td>
 	<td width="90"><b>Ključni pred.</b></td>
@@ -582,27 +622,39 @@ if ($_REQUEST['akcija'] == "pregled") {
 
 		<td><?=$kandidat[2];?></td>
 		<td><?=$kandidat[1];?></td>
-		<td><?=date("d. m. Y",$kandidat[3]);?></td>
-		<td><?=$imena_mjesta[$kandidat[4]];?></td>
+		<td><?=$kandidat[4];?></td>
+		<td><?=$kandidat[3];?></td>
+		<td><?=$kandidat[6];?></td>
 		<td><?=$kandidat[5];?></td>
-		<? if ($ciklus_studija==1) { ?>
-		<td><?=$imena_skola[$kandidat[6]];?></td>
-		<td><? if ($kandidat[23]>0) print "DA"; else print "&nbsp;"?></td><? } ?>
 		<td><?=$kandidat[7];?></td>
-		<td><?=$kandidat[8];?>, <?=$imena_mjesta[$kandidat[9]]?></td>
-		<td><?=$kandidat[10];?></td>
-		<td><?=$kandidat[11];?></td>
+		<td><?=date("d. m. Y",$kandidat[8]);?></td>
+		<td><?=$imena_mjesta[$kandidat[9]];?></td>
+		<td><?=$opcine_mjesta[$kandidat[9]];?></td>
+		<td><?=$drzave_mjesta[$kandidat[9]];?></td>
+		<td><?=$imena_nacionalnosti[$kandidat[10]];?></td>
+		<td><?=$imena_drzava[$kandidat[11]];?></td>
+		<td><? if ($kandidat[12]==1) print "DA"; else print "&nbsp;";?></td>
+		<td><?=$kandidat[13];?></td>
 		<? if ($ciklus_studija==1) { ?>
-		<td align="center"><?=$kandidat[12];?></td>
-		<td align="center"><?=$kandidat[13];?></td>
-		<td align="center"><?=$kandidat[14];?></td><? } ?>
-		<td align="center"><?=$kandidat[17];?></td>
-		<td align="center"><? if ($kandidat[16]) echo "redovni"; else echo "paralelni";?></td>
-		<td align="center"><?=$imena_studija[$kandidat[19]];?></td>
+		<td><?=$imena_skola[$kandidat[14]];?></td>
+		<td><?=$opcina_skola[$kandidat[14]];?></td>
+		<td><? if ($domaca_skola[$kandidat[14]]>0) print "DA"; else print "&nbsp;"?></td>
+		<td><?=$imena_godina[$kandidat[15]];?></td>
+		<td><? if ($kandidat[16]>0) print "DA"; else print "&nbsp;"?></td><? } ?>
+		<td><?=$kandidat[17];?>, <?=$imena_mjesta[$kandidat[18]]?></td>
+		<td><?=$kandidat[20];?></td>
+		<td><?=$kandidat[19];?></td>
 		<? if ($ciklus_studija==1) { ?>
-		<td align="center"><?=$imena_studija[$kandidat[20]];?></td>
-		<td align="center"><?=$imena_studija[$kandidat[21]];?></td>
-		<td align="center"><?=$imena_studija[$kandidat[22]];?></td><? } ?>
+		<td align="center"><?=$kandidat[21];?></td>
+		<td align="center"><?=$kandidat[22];?></td>
+		<td align="center"><?=$kandidat[23];?></td><? } ?>
+		<td align="center"><?=$kandidat[26];?></td>
+		<td align="center"><? if ($kandidat[25]) echo "redovni"; else echo "paralelni";?></td>
+		<td align="center"><?=$imena_studija[$kandidat[28]];?></td>
+		<? if ($ciklus_studija==1) { ?>
+		<td align="center"><?=$imena_studija[$kandidat[29]];?></td>
+		<td align="center"><?=$imena_studija[$kandidat[30]];?></td>
+		<td align="center"><?=$imena_studija[$kandidat[31]];?></td><? } ?>
 		<td align="center"><?=$kandidat[24];?></td>
 		
 		<td align="center">
@@ -652,16 +704,30 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$rbrojdosjea=intval($_REQUEST['broj_dosjea']);
 	$rime=my_escape(trim($_REQUEST['ime']));
 	$rprezime=my_escape(trim($_REQUEST['prezime']));
+	$rimeoca=my_escape(trim($_REQUEST['imeoca']));
+	$rprezimeoca=my_escape(trim($_REQUEST['prezimeoca']));
+	$rimemajke=my_escape(trim($_REQUEST['imemajke']));
+	$rprezimemajke=my_escape(trim($_REQUEST['prezimemajke']));
+	$rspol=$_REQUEST['spol']; // Moze biti samo 'M', 'Z' ili ''
 	$rmjestorod=my_escape(trim($_REQUEST['mjesto_rodjenja']));
-	$rdrzavljanstvo=my_escape(trim($_REQUEST['drzavljanstvo']));
+	$ropcinarod=intval($_REQUEST['opcina_rodjenja']);
+	$rdrzavarod=intval($_REQUEST['drzava_rodjenja']);
+	$rnacionalnost=my_escape(trim($_REQUEST['nacionalnost']));
+	$rdrzavljanstvo=intval($_REQUEST['drzavljanstvo']);
+	$rjmbg=$_REQUEST['jmbg']; // Bice bolje provjeren
+	$rborac=intval($_REQUEST['borac']);
+
 	$rzavrskola=my_escape(trim($_REQUEST['zavrsena_skola']));
-	$rjmbg=$_REQUEST['jmbg'];
+	$rskolaopcina=intval($_REQUEST['zavrsena_skola_opcina']);
+	$rskoladomaca=intval($_REQUEST['zavrsena_skola_domaca']);
+	$rskolagodina=intval($_REQUEST['zavrsena_skola_godina']);
+	if ($_REQUEST['ucenik_generacije']) $rgener=1; else $rgener=0;
+
 	$radresa=my_escape(trim($_REQUEST['adresa']));
 	$radresamjesto=my_escape(trim($_REQUEST['adresa_mjesto']));
 	$rtelefon=my_escape(trim($_REQUEST['telefon_roditelja']));
-	$rkanton=intval($_REQUEST['_lv_column_kanton']);
+	$rkanton=intval($_REQUEST['kanton']);
 	if ($_REQUEST['tip_studija']) $rredovni=1; else $rredovni=0;
-	if ($_REQUEST['ucenik_generacije']) $rgener=1; else $rgener=0;
 	$opi=intval($_REQUEST['studij_prvi_izbor']);
 	$odi=intval($_REQUEST['studij_drugi_izbor']);
 	$oti=intval($_REQUEST['studij_treci_izbor']);
@@ -670,6 +736,12 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$rkljucni=floatval(str_replace(",",".",$_REQUEST['kljucni_predmeti']));
 	$rdodatni=floatval(str_replace(",",".",$_REQUEST['dodatni_bodovi']));
 	$rprijemni=floatval(str_replace(",",".",$_REQUEST['prijemni']));
+
+	if ($ciklus_studija==1) {
+		$rstrucni_stepen=5;
+	} else if ($ciklus_studija==2) {
+		$rstrucni_stepen=2; // Ovo bi vjerovatno trebalo unositi
+	}
 
 	// Obrada datuma
 	if (preg_match("/(\d+).*?(\d+).*?(\d+)/",$_REQUEST['datum_rodjenja'],$matches)) {
@@ -685,11 +757,30 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	if ($rmjestorod != "") {
 		$q300 = myquery("select id from mjesto where naziv like '$rmjestorod'");
 		if (mysql_num_rows($q300)<1) {
-			$q301 = myquery("insert into mjesto set naziv='$rmjestorod'");
+			$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
 			$q300 = myquery("select id from mjesto where naziv='$rmjestorod'");
 			zamgerlog("upisano novo mjesto rodjenja $rmjestorod", 2);
+		} else {
+			$q300 = myquery("select id from mjesto where naziv like '$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
+			if (mysql_num_rows($q300)<1) {
+				// Napravicemo novo mjesto
+				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
+				$q300 = myquery("select id from mjesto where naziv='$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
+				zamgerlog("promjena opcine/drzave za mjesto rodjenja $rmjestorod", 2);
+			}
 		}
 		$rmjrid = mysql_result($q300,0,0);
+	}
+
+	$rnacid=0;
+	if ($rnacionalnost != "") {
+		$q302 = myquery("select id from nacionalnost where naziv like '$rnacionalnost'");
+		if (mysql_num_rows($q302)<1) {
+			$q303 = myquery("insert into nacionalnost set naziv='$rnacionalnost'");
+			$q302 = myquery("select id from nacionalnost where naziv='$rnacionalnost'");
+			zamgerlog("upisana nova nacionalnost $rnacionalnost", 2);
+		}
+		$rnacid = mysql_result($q302,0,0);
 	}
 
 	$radmid=0;
@@ -709,10 +800,18 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		$rzavrskola = str_replace("\\\'", "\'", $rzavrskola);
 		$q304 = myquery("select id from srednja_skola where naziv like '$rzavrskola'");
 		if (mysql_num_rows($q304)<1) {
-			$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola'");
-			$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola'");
+			$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
+			$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 			zamgerlog("upisana nova srednja skola $rzavrskola", 2);
+		} else {
+			$q304 = myquery("select id from srednja_skola where naziv like '$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
+			if (mysql_num_rows($q304)<1) {
+				$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
+				$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
+				zamgerlog("promjena opcine / statusa domacinstva za skolu $rzavrskola", 2);
+			}
 		}
+
 		$rskolaid = mysql_result($q304,0,0);
 	}
 
@@ -727,15 +826,15 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		niceerror("Prezime nije ispravno"); 
 		$greska=1; $greskaprezme=1;
 	}
+	if ($rspol != 'M' && $rspol != 'Z' && $rspol != '') {
+		niceerror("Spol nije ispravan"); 
+		$greska=1;
+	}
 	if ($rmjrid==0) {
-		niceerror("Mjesto rođenja nije ispravno"); 
+		niceerror("Nije uneseno mjesto rođenja");
 		$greska=1; $greskamjestorod=1;
 	}
-	if (!preg_match("/\w/",$rdrzavljanstvo)) {
-		niceerror("Državljanstvo nije ispravno"); 
-		$greska=1; $greskadrzavljanstvo=1;
-	}
-	if ($rdrzavljanstvo != "BiH" && $rkanton!=13) {
+	if ($rdrzavljanstvo != 1 && $rkanton!=13) { // 1 = bih
 		niceerror("Državljanstvo je različito od 'BiH' (".$rdrzavljanstvo."), a kanton nije stavljen na 'Strani državljanin'"); 
 		$greska=1; $greskadrzavljanstvo=1;
 	}
@@ -795,14 +894,14 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		else
 			$rosoba=mysql_result($q310,0,0);
 
-		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', email='', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo='$rdrzavljanstvo', jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0");
+		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', email='', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=0");
 
 		// Nova prijava prijemni
 		$q330 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, redovan=$rredovni, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
 
 		// Novi uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
-			$q340 = myquery("insert into uspjeh_u_srednjoj set osoba=$rosoba, srednja_skola=$rskolaid, opci_uspjeh=0, kljucni_predmeti=0, dodatni_bodovi=0, ucenik_generacije=$rgener");
+			$q340 = myquery("insert into uspjeh_u_srednjoj set osoba=$rosoba, srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=0, kljucni_predmeti=0, dodatni_bodovi=0, ucenik_generacije=$rgener");
 		}
 
 		zamgerlog("novi kandidat za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -819,14 +918,14 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	else { // Editovanje postojeceg kandidata
 
 		// Updatujem osobu
-		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo='$rdrzavljanstvo', jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0 where id=$rosoba");
+		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=0 where id=$rosoba");
 
 		// Updatujem prijavu prijemnog
 		$q360 = myquery("update prijemni_prijava set broj_dosjea=$rbrojdosjea, redovan=$rredovni, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
 
 		// Updatujem uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
-			$q370 = myquery("update uspjeh_u_srednjoj set srednja_skola=$rskolaid, opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, ucenik_generacije=$rgener where osoba=$rosoba");
+			$q370 = myquery("update uspjeh_u_srednjoj set srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, ucenik_generacije=$rgener where osoba=$rosoba");
 		}
 
 		zamgerlog("izmjena kandidata za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -953,43 +1052,62 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 }
 
 
-$eredovni=1;
-$ekanton=$eopci=$ekljucni=$edodatni=$eprijemni=0;
+// Preuzimanje podataka iz baze u slučaju editovanja
+
+// Neke default vrijednosti
+$eredovni=1; // Redovni studij
+$eopci=$ekljucni=$edodatni=$eprijemni=0; // Bodove postavljamo na nulu
+$edrzavarodjenja = $edrzavljanstvo = 1; // BiH
+$eskoladomaca = 1; // domaća škola je default
+$eskolazavrsena = 0; // godina završetka škole će biti prošla
+
 
 if ($osoba>0) {
-	$q = myquery("select o.ime, o.prezime, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.redovan, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
+	$q = myquery("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.redovan, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
 	$eime = mysql_result($q,0,0);
 	$eprezime = mysql_result($q,0,1);
-	$edatum = date("d. m. Y.",mysql_result($q,0,2));
-	$emjesto = mysql_result($q,0,3);
-	$edrz = mysql_result($q,0,4);
-	$ejmbg = mysql_result($q,0,5);
-	$eadresa = mysql_result($q,0,6);
-	$eadresamjesto = mysql_result($q,0,7);
-	$etelefon = mysql_result($q,0,8);
-	$ekanton = mysql_result($q,0,9);
-	$eredovni = mysql_result($q,0,10);
-	$eopi = mysql_result($q,0,11);
-	$eodi = mysql_result($q,0,12);
-	$eoti = mysql_result($q,0,13);
-	$eoci = mysql_result($q,0,14);
-	$eprijemni = mysql_result($q,0,15);
-	$ebrojdosjea = mysql_result($q,0,16);
-	$eizasao = mysql_result($q,0,17);
+	$eimeoca = mysql_result($q,0,2);
+	$eprezimeoca = mysql_result($q,0,3);
+	$eimemajke = mysql_result($q,0,4);
+	$eprezimemajke = mysql_result($q,0,5);
+	$espol = mysql_result($q,0,6);
+
+	$edatum = date("d. m. Y.",mysql_result($q,0,7));
+	$emjesto = mysql_result($q,0,8);
+	$edrzavljanstvo = mysql_result($q,0,9);
+	$enacionalnost = mysql_result($q,0,10);
+	$ejmbg = mysql_result($q,0,11);
+	$eborac = mysql_result($q,0,12);
+
+	$eadresa = mysql_result($q,0,13);
+	$eadresamjesto = mysql_result($q,0,14);
+	$etelefon = mysql_result($q,0,15);
+	$ekanton = mysql_result($q,0,16);
+
+	$eredovni = mysql_result($q,0,17);
+	$eopi = mysql_result($q,0,18);
+	$eodi = mysql_result($q,0,19);
+	$eoti = mysql_result($q,0,20);
+	$eoci = mysql_result($q,0,21);
+	$eprijemni = mysql_result($q,0,22);
+	$ebrojdosjea = mysql_result($q,0,23);
+	$eizasao = mysql_result($q,0,24);
 
 	if ($ciklus_studija==1) { // Uzimamo podatke za srednju skolu - samo ako se upisuje na prvi ciklus
-		$q300 = myquery("select srednja_skola, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
+		$q300 = myquery("select srednja_skola, godina, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
 		$eskola = mysql_result($q300,0,0);
-		$eopci = mysql_result($q300,0,1);
-		$ekljucni = mysql_result($q300,0,2);
-		$edodatni = mysql_result($q300,0,3);
-		$egener = mysql_result($q300,0,4);
+		$eskolazavr = mysql_result($q300,0,1);
+		$eopci = mysql_result($q300,0,2);
+		$ekljucni = mysql_result($q300,0,3);
+		$edodatni = mysql_result($q300,0,4);
+		$egener = mysql_result($q300,0,5);
 	} else { // podaci za prosli ciklus
-		$q310 = myquery("select fakultet, opci_uspjeh, dodatni_bodovi, broj_semestara from prosliciklus_uspjeh where osoba=$osoba");
+		$q310 = myquery("select fakultet, akademska_godina, opci_uspjeh, dodatni_bodovi, broj_semestara from prosliciklus_uspjeh where osoba=$osoba");
 		$efakultet = mysql_result($q310,0,0);
-		$eopci = mysql_result($q310,0,1);
-		$edodatni = mysql_result($q310,0,2);
-		$ebrojsem = mysql_result($q310,0,3);
+		$eskolazavr = mysql_result($q300,0,1);
+		$eopci = mysql_result($q310,0,2);
+		$edodatni = mysql_result($q310,0,3);
+		$ebrojsem = mysql_result($q310,0,4);
 	}
 }
 
@@ -1020,14 +1138,20 @@ while ($r230 = mysql_fetch_row($q230)) {
 
 // Spisak gradova za mjesto rodjenja i adresu
 
-$q240 = myquery("select id, naziv from mjesto order by naziv");
+$q240 = myquery("select id, naziv, opcina, drzava from mjesto order by naziv");
 $gradovir="<option></option>";
 $gradovia="<option></option>";
+$eopcinarodjenja = $edrzavarodjenja = 0;
 while ($r240 = mysql_fetch_row($q240)) {
 	$gradovir .= "<option"; $gradovia .= "<option";
- 	if ($r240[0]==$emjesto) { $gradovir  .= " SELECTED"; $mjestorvalue = $r240[1]; }
+ 	if ($r240[0]==$emjesto) { 
+		$gradovir  .= " SELECTED"; 
+		$mjestorvalue = $r240[1]; 
+		$eopcinarodjenja = $r240[2];
+		$edrzavarodjenja = $r240[3];
+	}
  	if ($r240[0]==$eadresamjesto) { $gradovia  .= " SELECTED"; $adresarvalue = $r240[1]; }
-	$gradovir .= ">$r240[1]</option>\n";
+	$gradovir .= " onClick=\"javascript:selectujOpcinuRodjenja('$r240[2]', '$r240[3]');\">$r240[1]</option>\n";
 	$gradovia .= ">$r240[1]</option>\n";
 }
 
@@ -1035,14 +1159,83 @@ while ($r240 = mysql_fetch_row($q240)) {
 
 // Spisak srednjih skola
 
-$q250 = myquery("select id, naziv from srednja_skola order by naziv");
+$q250 = myquery("select id, naziv, opcina, domaca from srednja_skola order by naziv");
 $srednjer="<option></option>";
+$eskolaopcina = $eskoladomaca = 0;
 while ($r250 = mysql_fetch_row($q250)) {
 	$srednjer .= "<option";
- 	if ($r250[0]==$eskola) { $srednjer  .= " SELECTED"; $skolarvalue = $r250[1]; }
-	$srednjer .= ">$r250[1]</option>\n";
+ 	if ($r250[0]==$eskola) { 
+		$srednjer  .= " SELECTED"; 
+		$skolarvalue = $r250[1]; 
+		$eskolaopcina=$r250[2]; 
+		$eskoladomaca=$r250[3];
+	}
+	$srednjer .= " onClick=\"javascript:selectujOpcinuSkola('$r250[2]', '$r250[3]');\">$r250[1]</option>\n";
 }
 
+
+// Spisak opština
+
+$q255 = myquery("select id, naziv from opcina order by naziv");
+$opciner="<option></option>";
+$opcinerodjr="<option></option>";
+while ($r255 = mysql_fetch_row($q255)) {
+	$opciner .= "<option value=\"$r255[0]\" ";
+ 	if ($r255[0]==$eskolaopcina) { $opciner  .= " SELECTED"; }
+	$opciner .= ">$r255[1]</option>\n";
+	$opcinerodjr .= "<option value=\"$r255[0]\" ";
+ 	if ($r255[0]==$eopcinarodjenja) { $opcinerodjr .= " SELECTED"; }
+	$opcinerodjr .= ">$r255[1]</option>\n";
+}
+
+
+// Spisak nacionalnosti
+
+$q256 = myquery("select id, naziv from nacionalnost order by naziv");
+$nacionalnostr="<option></option>";
+while ($r256 = mysql_fetch_row($q256)) {
+	$nacionalnostr .= "<option";
+	if ($r256[0]==$enacionalnost) { $nacionalnostr  .= " SELECTED"; $nacionalnostrvalue = $r256[1]; }
+	$nacionalnostr .= ">$r256[1]</option>\n";
+}
+
+
+// Spisak država
+
+$q257 = myquery("select id, naziv from drzava order by naziv");
+$drzaverodjr="<option></option>";
+$drzavljanstvor="<option></option>";
+while ($r257 = mysql_fetch_row($q257)) {
+	$drzaverodjr .= "<option value=\"$r257[0]\" ";
+ 	if ($r257[0]==$edrzavarodjenja) { $drzaverodjr  .= " SELECTED"; }
+	$drzaverodjr .= ">$r257[1]</option>\n";
+	$drzavljanstvor .= "<option value=\"$r257[0]\" ";
+ 	if ($r257[0]==$edrzavljanstvo) { $drzavljanstvor .= " SELECTED"; }
+	$drzavljanstvor .= ">$r257[1]</option>\n";
+}
+
+
+// Spisak ak. godina
+
+$q258 = myquery("select id, naziv, aktuelna from akademska_godina order by naziv");
+$skolazavr="<option></option>";
+while ($r258 = mysql_fetch_row($q258)) {
+	$skolazavr .= "<option value=\"$r258[0]\" ";
+	if ($r258[0]==$eskolazavrsena) { $skolazavr  .= " SELECTED"; }
+	if ($r258[2]==1 && $eskolazavrsena==0) { $skolazavr  .= " SELECTED"; }
+	$skolazavr .= ">$r258[1]</option>\n";
+}
+
+
+// Spisak kantona
+
+$q259 = myquery("select id, naziv from kanton order by naziv");
+$kantonr="<option></option>";
+while ($r259 = mysql_fetch_row($q259)) {
+	$kantonr .= "<option value=\"$r259[0]\" ";
+ 	if ($r259[0]==$ekanton) { $kantonr  .= " SELECTED"; }
+	$kantonr .= ">$r259[1]</option>\n";
+}
 
 
 // Tabela za unos podataka - design
@@ -1111,6 +1304,38 @@ function jmbg_trazi() {
 	document.location.replace('index.php?sta=studentska/prijemni&akcija=unos&trazijmbg='+jmbg+'&termin=<?=$termin?>');
 }
 
+// Automatski izbor općine za školu
+function selectujOpcinuSkola(idOpcine, domaca) {
+	var selOpcine = document.getElementById('zavrsena_skola_opcina');
+	for (i=0; i<selOpcine.length; i++)
+		if (parseInt(selOpcine.options[i].value)==idOpcine) selOpcine.selectedIndex=i;
+	if (idOpcine==0) selOpcine.selectedIndex=0;
+	else odzuti(selOpcine);
+
+	// Ovo moze ne raditi...
+	if (document.glavnaforma && document.glavnaforma.zavrsena_skola_domaca) {
+		var radioDomaca = document.glavnaforma.zavrsena_skola_domaca;
+		for (i=0; i<radioDomaca.length; i++) {
+			//alert ("forma "+i);
+			if (parseInt(radioDomaca[i].value) == domaca) radioDomaca[i].checked=true;
+		}
+	}
+}
+
+// Automatski izbor općine za mjesto rođenja
+function selectujOpcinuRodjenja(idOpcine, idDrzave) {
+	var selOpcine = document.getElementById('opcina_rodjenja');
+	for (i=0; i<selOpcine.length; i++)
+		if (parseInt(selOpcine.options[i].value)==idOpcine) selOpcine.selectedIndex=i;
+	if (idOpcine==0) selOpcine.selectedIndex=0;
+	else odzuti(selOpcine);
+
+	var selDrzave = document.getElementById('drzava_rodjenja');
+	for (i=0; i<selDrzave.length; i++)
+		if (parseInt(selDrzave.options[i].value)==idDrzave) selDrzave.selectedIndex=i;
+	if (idDrzave==0) selDrzave.selectedIndex=0;
+	else odzuti(selDrzave);
+}
 </SCRIPT>
 
 <script type="text/javascript" src="js/combo-box.js"></script>
@@ -1204,10 +1429,12 @@ function jmbg_trazi() {
 <?
 
 // Nećemo da se ove varijable pojavljuju u genform
-unset($_REQUEST['broj_dosjea']); unset($_REQUEST['ime']); unset($_REQUEST['prezime']); unset($_REQUEST['datum_rodjenja']); unset($_REQUEST['osoba']); unset($_REQUEST['vrstaunosa']); unset($_REQUEST['mjesto_rodjenja']); unset($_REQUEST['drzavljanstvo']); unset($_REQUEST['zavrsena_skola']); unset($_REQUEST['jmbg']); unset($_REQUEST['adresa']); unset($_REQUEST['adresa_mjesto']); unset($_REQUEST['telefon_roditelja']); unset($_REQUEST['tip_studija']); unset($_REQUEST['ucenik_generacije']); unset($_REQUEST['studij_prvi_izbor']); unset($_REQUEST['studij_drugi_izbor']); unset($_REQUEST['studij_treci_izbor']); unset($_REQUEST['studij_cetvrti_izbor']); unset($_REQUEST['prijemni']); unset($_REQUEST['opci_uspjeh']); unset($_REQUEST['kljucni_predmeti']); unset($_REQUEST['dodatni_bodovi']);
+unset($_REQUEST['osoba']); unset($_REQUEST['vrstaunosa']); unset($_REQUEST['broj_dosjea']); unset($_REQUEST['ime']); unset($_REQUEST['prezime']); unset($_REQUEST['imeoca']); unset($_REQUEST['prezimeoca']); unset($_REQUEST['imemajke']); unset($_REQUEST['prezimemajke']); unset($_REQUEST['spol']); unset($_REQUEST['datum_rodjenja']); unset($_REQUEST['mjesto_rodjenja']); unset($_REQUEST['opcina_rodjenja']); unset($_REQUEST['drzava_rodjenja']); unset($_REQUEST['nacionalnost']); unset($_REQUEST['drzavljanstvo']); unset($_REQUEST['jmbg']); unset($_REQUEST['borac']); unset($_REQUEST['zavrsena_skola']); unset($_REQUEST['zavrsena_skola_opcina']); unset($_REQUEST['zavrsena_skola_godina']); unset($_REQUEST['zavrsena_skola_domaca']); unset($_REQUEST['adresa']); unset($_REQUEST['adresa_mjesto']); unset($_REQUEST['telefon_roditelja']); unset($_REQUEST['tip_studija']); unset($_REQUEST['ucenik_generacije']); unset($_REQUEST['studij_prvi_izbor']); unset($_REQUEST['studij_drugi_izbor']); unset($_REQUEST['studij_treci_izbor']); unset($_REQUEST['studij_cetvrti_izbor']); unset($_REQUEST['prijemni']); unset($_REQUEST['opci_uspjeh']); unset($_REQUEST['kljucni_predmeti']); unset($_REQUEST['dodatni_bodovi']);
 unset($_REQUEST['trazijmbg']);
 
-// Sljedeci i prethodni broj dosjea
+// Navigacija na sljedeći i prethodni broj dosjea
+// Dostupna samo ako postoji broj
+
 $q260 = myquery("select osoba from prijemni_prijava where broj_dosjea<".intval($ebrojdosjea)." and prijemni_termin=$termin order by broj_dosjea desc limit 1");
 if (mysql_num_rows($q260)>0) {
 	$lijevodugme = '<input type="button" value="  <<  " onclick="javascript:document.location.replace(\'index.php?sta=studentska/prijemni&akcija=unos&izmjena='.mysql_result($q260,0,0).'&termin='.$termin.'\')"> ';
@@ -1237,6 +1464,7 @@ print genform("POST", "glavnaforma");?>
 		} 
 		?>><font color="#FF0000">*</font> <?=$desnodugme?></td>
 	</tr>
+	<tr><td colspan="2"><br>LIČNI PODACI:</td></tr>
 	<tr>
 		<td width="130" align="left">Ime kandidata:</td>
 		<td><input maxlength="50" size="17" name="ime" id="ime" type="text" class="default" 
@@ -1259,7 +1487,29 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFF00" oninput="odzuti(this)" <? 
 		} 
-		?> autocomplete="off" onkeypress="return enterhack(event,'datum_rodjenja')"><font color="#FF0000">*</font></td>
+		?> autocomplete="off" onkeypress="return enterhack(event,'imeoca')"><font color="#FF0000">*</font></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Ime oca:</td>
+		<td><input maxlength="50" size="17" name="imeoca" id="imeoca" type="text" class="default" value="<?=$eimeoca?>" <? if (!$eimeoca) { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="return enterhack(event,'prezimeoca')"></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Prezime oca:</td>
+		<td><input maxlength="50" size="17" name="prezimeoca" id="prezimeoca" type="text" class="default" value="<?=$eprezimeoca?>" <? if (!$eprezimeoca) { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="return enterhack(event,'imemajke')"></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Ime majke:</td>
+		<td><input maxlength="50" size="17" name="imemajke" id="imemajke" type="text" class="default" value="<?=$eimemajke?>" <? if (!$eimemajke) { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="return enterhack(event,'prezimemajke')"></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Prezime majke:</td>
+		<td><input maxlength="50" size="17" name="prezimemajke" id="prezimemajke" type="text" class="default" value="<?=$eprezimemajke?>" <? if (!$eprezimemajke) { ?> style="background-color:#FFFF00" oninput="odzuti(this)" <? } ?> autocomplete="off" onkeypress="return enterhack(event,'datum_rodjenja')"></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Spol:</td>
+		<td><input type="radio" name="spol" id="spol" value="M" <? if ($espol=='M') print "CHECKED"?>> Muški
+		<input type="radio" name="spol" id="spol" value="Z" <? if ($espol=='Z') print "CHECKED"?>> Ženski
+		</td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Datum rođenja:</td>
@@ -1271,7 +1521,7 @@ print genform("POST", "glavnaforma");?>
 		} else { 
 			?> style="background-color:#FFFF00" oninput="odzuti(this)" <? 
 		} 
-		?> autocomplete="off" onkeypress="return enterhack(event,'mjesto_rodjenja')"><font color="#FF0000">*</font></td>
+		?> autocomplete="off" onkeypress="return enterhack(event,'mjesto_rodjenja')"> <font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Mjesto rođenja:</td>
@@ -1289,20 +1539,58 @@ print genform("POST", "glavnaforma");?>
 		<div id="comboBoxDiv_mjesto_rodjenja" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')"><?=$gradovir?></select>
 		</div><font color="#FF0000">*</font></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Općina rođenja:</td>
+		<td><select name="opcina_rodjenja" id="opcina_rodjenja" class="default" <? if ($eopcinarodjenja==0) { ?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';" <? } ?>><?=$opcinerodjr?></select> <font color="#FF0000">*</font></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Država rođenja:</td>
+		<td><select name="drzava_rodjenja" id="drzava_rodjenja" class="default" <? if ($edrzavarodjenja==0) { ?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';" <? } ?>><?=$drzaverodjr?></select> <font color="#FF0000">*</font></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Nacionalnost:</td>
 
+		<td><input type="text" name="nacionalnost" id="nacionalnost" value="<?=$nacionalnostrvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'nacionalnost'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" <?
+		if ($enacionalnost==0) {
+			?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF'"<? 
+		} else {
+			?> style="background-color:#FFFFFF"<? 
+		} 
+		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('nacionalnost')" id="comboBoxImg_nacionalnost" valign="bottom">
+		<!-- Rezultati pretrage primaoca -->
+		<div id="comboBoxDiv_nacionalnost" style="position:absolute;visibility:hidden">
+			<select name="comboBoxMenu_nacionalnost" id="comboBoxMenu_nacionalnost" size="10" onClick="comboBoxOptionSelected('nacionalnost')"><?=$nacionalnostr?></select>
+		</div><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Državljanstvo:</td>
-		<td><input maxlength="40" size="17" name="drzavljanstvo" id="drzavljanstvo" type="text" class="default"  
-		<? if ($greskadrzavljanstvo) {
-			?> value="<?=$edrz?>" style="background-color:#FF0000"<? 
-		} else if ($edrz) {
-			?> value="<?=$edrz?>"<? 
-		} else {
-			?> value="BiH" <? 
-		} 
-		?> onkeypress="return enterhack(event,'zavrsena_skola')"><font color="#FF0000">*</font></td>
+		<!-- Nije žute boje zato što ima default vrijednost -->
+		<td><select name="drzavljanstvo" id="drzavljanstvo" class="default"
+		<?
+		if ($greskadrzavljanstvo) {
+			?> style="background-color:#FF0000" onChange="this.style.backgroundColor = '#FFFFFF'"<?
+		}
+		?>><?=$drzavljanstvor?></select> <font color="#FF0000">*</font></td>
 	</tr>
+	<tr>
+		<td width="125" align="left">JMBG:</td>
+		<td><input maxlength="13" size="17" name="jmbg" id="jmbg" type="text" class="default" 
+		<? if ($greskajmbg) {
+			?> value="<?=$ejmbg?>" style="background-color:#FF0000" oninput="odzuti(this)" <? 
+		} else if ($ejmbg) {
+			?> value="<?=$ejmbg?>"<? 
+		} else {
+			?> style="background-color:#FFFF00" oninput="odzuti(this)" <? 
+		} 
+		?> autocomplete="off" onkeypress="return enterhack(event,'adresa')"><font color="#FF0000">*</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value=" Traži " onclick="javascript:jmbg_trazi();"></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">&nbsp;</td>
+		<td><input type="checkbox" name="borac"  <? if ($eborac) { ?> checked="checked" <? } ?> value="1"> Dijete šehida / borca / pripadnik RVI</td>
+	</tr>
+	<tr><td colspan="2"><br>PODACI O ZAVRŠENOM PRETHODNOM OBRAZOVANJU:</td></tr>
+
 <?
 	// Srednju školu prikazujemo samo za prvi ciklus
 	if ($ciklus_studija==1) {
@@ -1320,23 +1608,30 @@ print genform("POST", "glavnaforma");?>
 		<div id="comboBoxDiv_zavrsena_skola" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_zavrsena_skola" id="comboBoxMenu_zavrsena_skola" size="10" onClick="comboBoxOptionSelected('zavrsena_skola')"><?=$srednjer?></select>
 		</div></td>
-
+	</tr>
+	<tr>
+		<td width="125" align="left">Općina škole:</td>
+		<td><select name="zavrsena_skola_opcina" id="zavrsena_skola_opcina" class="default" <? if ($eskolaopcina==0) { ?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';" <? } ?>><?=$opciner?></select></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">&nbsp;</td>
+		<td><input type="radio" name="zavrsena_skola_domaca" id="zavrsena_skola_domaca" value="1" <? if ($eskoladomaca==1) print "CHECKED"?>> Domaća škola
+		<input type="radio" name="zavrsena_skola_domaca" id="zavrsena_skola_domaca" value="0" <? if ($eskoladomaca==0) print "CHECKED"?>> Strana škola
+		</td>
+	</tr>
+	<tr>
+		<td width="125" align="left">U školskoj godini:</td>
+		<!-- Nije žute boje zato što ima default vrijednost -->
+		<td><select name="zavrsena_skola_godina" id="zavrsena_skola_godina" class="default"><?=$skolazavr?></select></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Učenik generacije?</td>
+		<td><input type="checkbox" name="ucenik_generacije" <? if ($egener) { ?> checked="checked" <? } ?> value="1"></td>
 	</tr>
 <?
 	}
 ?>
-	<tr>
-		<td width="125" align="left">JMBG:</td>
-		<td><input maxlength="13" size="17" name="jmbg" id="jmbg" type="text" class="default" 
-		<? if ($greskajmbg) {
-			?> value="<?=$ejmbg?>" style="background-color:#FF0000" oninput="odzuti(this)" <? 
-		} else if ($ejmbg) {
-			?> value="<?=$ejmbg?>"<? 
-		} else {
-			?> style="background-color:#FFFF00" oninput="odzuti(this)" <? 
-		} 
-		?> autocomplete="off" onkeypress="return enterhack(event,'adresa')"><font color="#FF0000">*</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value=" Traži " onclick="javascript:jmbg_trazi();"></td>
-	</tr>
+	<tr><td colspan="2"><br>KONTAKT PODACI:</td></tr>
 	<tr>
 		<td width="125" align="left">Adresa:</td>
 		<td><input maxlength="50" size="17" name="adresa" id="adresa" type="text" class="default" <? 
@@ -1350,9 +1645,7 @@ print genform("POST", "glavnaforma");?>
 	<tr>
 		<td width="125" align="left">Adresa (mjesto):</td>
 		<td><input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'adresa_mjesto'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" <?
-		if ($greskamjestorod) {
-			?> style="background-color:#FF0000" onChange="this.style.backgroundColor = '#FFFFFF'"<?
-		} else if ($emjesto==0) {
+		if ($eadresamjesto==0) {
 			?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF'"<? 
 		} else {
 			?> style="background-color:#FFFFFF"<? 
@@ -1362,7 +1655,10 @@ print genform("POST", "glavnaforma");?>
 		<div id="comboBoxDiv_adresa_mjesto" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')"><?=$gradovia?></select>
 		</div><font color="#FF0000">*</font></td>
-
+	</tr>
+	<tr>
+		<td width="125" align="left">Kanton:</td>
+		<td><select name="kanton" id="kanton" class="default" <? if ($ekanton==0) { ?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';" <? } ?>><?=$kantonr?></select> <font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Telefon roditelja:</td>
@@ -1374,24 +1670,13 @@ print genform("POST", "glavnaforma");?>
 		} 
 		?> autocomplete="off" onkeypress="return enterhack(event,'kanton')"></td>
 	</tr>
-	<tr>
-		<td width="125" align="left">Kanton:</td>
-		<td><?=db_dropdown("kanton",$ekanton,"-- Izaberite kanton --")?></td>
-	</tr>
+	<tr><td colspan="2"><br>IZBOR STUDIJA:</td></tr>
 	<tr>
 		<td width="125" align="left">Redovni studij?</td>
 		<td><input type="checkbox" name="tip_studija"  <? if ($eredovni) { ?> checked="checked" <? } ?> value="1"></td>
 	</tr>
 <?
-	// Polje "učenik generacije" prikazujemo samo kod upisa u prvi ciklus
-	if ($ciklus_studija==1) {
-?>
-	<tr>
-		<td width="125" align="left">Učenik generacije?</td>
-		<td><input type="checkbox" name="ucenik_generacije" <? if ($egener) { ?> checked="checked" <? } ?> value="1"></td>
-	</tr>
-<? } ?>
-<?
+
 	// Više izbora nudimo samo za prvi ciklus studija (svakako je to hack)
 	if ($ciklus_studija==1) {
 ?>
@@ -1473,8 +1758,15 @@ function provjeri_sve() {
 	if (!provjeri('prezime')) return false;
 	if (!provjeri('datum_rodjenja')) return false;
 	if (!provjeri('mjesto_rodjenja')) return false;
+	if (!provjeri('opcina_rodjenja')) return false;
+	if (!provjeri('drzava_rodjenja')) return false;
+	if (!provjeri('nacionalnost')) return false;
 	if (!provjeri('drzavljanstvo')) return false;
 	if (!provjeri('broj_dosjea')) return false;
+	if (!provjeri('jmbg')) return false;
+<? if ($ciklus_studija==1) { ?>
+	if (!provjeri('studij_prvi_izbor')) return false;
+<? } ?>
 
 	// Da li je broj dosjea pozitivan broj?
 	var nesto = document.getElementById('broj_dosjea');
@@ -1485,7 +1777,7 @@ function provjeri_sve() {
 		return false;
 	}
 
-	var nesto = document.getElementsByName('_lv_column_kanton');
+	var nesto = document.getElementsByName('kanton');
 	if (nesto[0].value=='-1') {
 		alert("Niste izabrali kanton");
 		nesto[0].focus();

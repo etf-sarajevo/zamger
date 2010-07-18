@@ -72,9 +72,33 @@ CREATE TABLE IF NOT EXISTS `cas` (
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `cas`
+-- Table structure for table `drzava`
 --
+
+CREATE TABLE IF NOT EXISTS `drzava` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=12 ;
+
+--
+-- Dumping data for table `drzava`
+--
+
+INSERT INTO `drzava` (`id`, `naziv`) VALUES
+(1, 'Bosna i Hercegovina'),
+(2, 'Srbija'),
+(3, 'Hrvatska'),
+(4, 'Crna Gora'),
+(5, 'Slovenija'),
+(6, 'Kosovo'),
+(7, 'Turska'),
+(8, 'Njemačka'),
+(9, 'Makedonija'),
+(10, 'Iran');
 
 
 -- --------------------------------------------------------
@@ -344,12 +368,27 @@ CREATE TABLE IF NOT EXISTS `log` (
 CREATE TABLE IF NOT EXISTS `mjesto` (
   `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(40) collate utf8_slovenian_ci NOT NULL,
+  `opcina` int(11) NOT NULL,
+  `drzava` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=79 ;
 
 --
--- Dumping data for table `log`
+-- Dumping data for table `mjesto`
 --
+
+
+INSERT INTO `mjesto` (`id`, `naziv`, `opcina`, `drzava`) VALUES
+(1, 'Sarajevo', 0, 1),
+(2, 'Sarajevo', 13, 1),
+-- Sarajevo je mjesto koje se prostire na vise opcina,
+-- ali dodajemo i varijantu sa opcinom Centar radi oznacavanja
+-- mjesta rodjenja
+(3, 'Zenica', 77, 1),
+(4, 'Mostar', 46, 1),
+(5, 'Banja Luka', 93, 1),
+(6, 'Bihać', 2, 1),
+(7, 'Tuzla', 69, 1);
 
 
 -- --------------------------------------------------------
@@ -378,6 +417,31 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `nacionalnost`
+--
+
+CREATE TABLE IF NOT EXISTS `nacionalnost` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
+
+--
+-- Dumping data for table `nacionalnost`
+--
+
+INSERT INTO `nacionalnost` (`id`, `naziv`) VALUES
+(1, 'Bošnjak/Bošnjakinja'),
+(2, 'Srbin/Srpkinja'),
+(3, 'Hrvat/Hrvatica'),
+(4, 'Rom/Romkinja'),
+(5, 'Ostalo'),
+(6, 'Nepoznato / Nije se izjasnio/la');
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `nastavnik_predmet`
 --
 
@@ -392,6 +456,29 @@ CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
 --
 -- Dumping data for table `nastavnik_predmet`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `naucni_stepen`
+--
+
+CREATE TABLE IF NOT EXISTS `naucni_stepen` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `titula` varchar(15) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `naucni_stepen`
+--
+
+INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
+(1, 'Doktor nauka', 'dr'),
+(2, 'Magistar nauka', 'mr'),
+(6, 'Bez naučnog stepena', '');
 
 
 -- --------------------------------------------------------
@@ -432,6 +519,168 @@ CREATE TABLE IF NOT EXISTS `ogranicenje` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `opcina`
+--
+
+CREATE TABLE IF NOT EXISTS `opcina` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=145 ;
+
+--
+-- Dumping data for table `opcina`
+--
+
+INSERT INTO `opcina` (`id`, `naziv`) VALUES
+(1, 'Banovići'),
+(2, 'Bihać'),
+(3, 'Bosanska Krupa'),
+(4, 'Bosanski Petrovac'),
+(5, 'Bosansko Grahovo'),
+(6, 'Breza'),
+(7, 'Bugojno'),
+(8, 'Busovača'),
+(9, 'Bužim'),
+(10, 'Čapljina'),
+(11, 'Cazin'),
+(12, 'Čelić'),
+(13, 'Centar, Sarajevo'),
+(14, 'Čitluk'),
+(15, 'Drvar'),
+(16, 'Doboj Istok'),
+(17, 'Doboj Jug'),
+(18, 'Dobretići'),
+(19, 'Domaljevac-Šamac'),
+(20, 'Donji Vakuf'),
+(21, 'Foča-Ustikolina'),
+(22, 'Fojnica'),
+(23, 'Glamoč'),
+(24, 'Goražde'),
+(25, 'Gornji Vakuf-Uskoplje'),
+(26, 'Gračanica'),
+(27, 'Gradačac'),
+(28, 'Grude'),
+(29, 'Hadžići'),
+(30, 'Ilidža'),
+(31, 'Ilijaš'),
+(32, 'Jablanica'),
+(33, 'Jajce'),
+(34, 'Kakanj'),
+(35, 'Kalesija'),
+(36, 'Kiseljak'),
+(37, 'Kladanj'),
+(38, 'Ključ'),
+(39, 'Konjic'),
+(40, 'Kreševo'),
+(41, 'Kupres'),
+(42, 'Livno'),
+(43, 'Ljubuški'),
+(44, 'Lukavac'),
+(45, 'Maglaj'),
+(46, 'Mostar'),
+(47, 'Neum'),
+(48, 'Novi Grad, Sarajevo'),
+(49, 'Novo Sarajevo'),
+(50, 'Novi Travnik'),
+(51, 'Odžak'),
+(52, 'Olovo'),
+(53, 'Orašje'),
+(54, 'Pale-Prača'),
+(55, 'Posušje'),
+(56, 'Prozor-Rama'),
+(57, 'Ravno'),
+(58, 'Sanski Most'),
+(59, 'Sapna'),
+(60, 'Široki Brijeg'),
+(61, 'Srebrenik'),
+(62, 'Stari Grad, Sarajevo'),
+(63, 'Stolac'),
+(64, 'Teočak'),
+(65, 'Tešanj'),
+(66, 'Tomislavgrad'),
+(67, 'Travnik'),
+(68, 'Trnovo (FBiH)'),
+(69, 'Tuzla'),
+(70, 'Usora'),
+(71, 'Vareš'),
+(72, 'Velika Kladuša'),
+(73, 'Visoko'),
+(74, 'Vitez'),
+(75, 'Vogošća'),
+(76, 'Zavidovići'),
+(77, 'Zenica'),
+(78, 'Žepče'),
+(79, 'Živinice'),
+(80, 'Berkovići'),
+(81, 'Bijeljina'),
+(82, 'Bileća'),
+(83, 'Bosanska Kostajnica'),
+(84, 'Bosanski Brod'),
+(85, 'Bratunac'),
+(86, 'Čajniče'),
+(87, 'Čelinac'),
+(88, 'Derventa'),
+(89, 'Doboj'),
+(90, 'Donji Žabar'),
+(91, 'Foča'),
+(92, 'Gacko'),
+(93, 'Banja Luka'),
+(94, 'Gradiška'),
+(95, 'Han Pijesak'),
+(96, 'Istočni Drvar'),
+(97, 'Istočna Ilidža'),
+(98, 'Istočni Mostar'),
+(99, 'Istočni Stari Grad'),
+(100, 'Istočno Novo Sarajevo'),
+(101, 'Jezero'),
+(102, 'Kalinovik'),
+(103, 'Kneževo'),
+(104, 'Kozarska Dubica'),
+(105, 'Kotor Varoš'),
+(106, 'Krupa na Uni'),
+(107, 'Kupres (RS)'),
+(108, 'Laktaši'),
+(109, 'Ljubinje'),
+(110, 'Lopare'),
+(111, 'Milići'),
+(112, 'Modriča'),
+(113, 'Mrkonjić Grad'),
+(114, 'Nevesinje'),
+(115, 'Novi Grad (RS)'),
+(116, 'Novo Goražde'),
+(117, 'Osmaci'),
+(118, 'Oštra Luka'),
+(119, 'Pale'),
+(120, 'Pelagićevo'),
+(121, 'Petrovac'),
+(122, 'Petrovo'),
+(123, 'Prijedor'),
+(124, 'Prnjavor'),
+(125, 'Ribnik'),
+(126, 'Rogatica'),
+(127, 'Rudo'),
+(128, 'Šamac'),
+(129, 'Šekovići'),
+(130, 'Šipovo'),
+(131, 'Sokolac'),
+(132, 'Srbac'),
+(133, 'Srebrenica'),
+(134, 'Teslić'),
+(135, 'Trebinje'),
+(136, 'Trnovo (RS)'),
+(137, 'Ugljevik'),
+(138, 'Višegrad'),
+(139, 'Vlasenica'),
+(140, 'Vukosavlje'),
+(141, 'Zvornik'),
+(142, 'Brčko'),
+(143, '(nije u BiH)');
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `osoba`
 --
 
@@ -439,17 +688,27 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `id` int(11) NOT NULL,
   `ime` varchar(30) collate utf8_slovenian_ci NOT NULL,
   `prezime` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `imeoca` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `prezimeoca` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `imemajke` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `prezimemajke` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `spol` enum('M','Z','') collate utf8_slovenian_ci NOT NULL,
   `email` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) collate utf8_slovenian_ci NOT NULL,
   `datum_rodjenja` date NOT NULL,
   `mjesto_rodjenja` int(11) NOT NULL,
-  `drzavljanstvo` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `nacionalnost` int(11) NOT NULL,
+  `drzavljanstvo` int(11) NOT NULL,
+  `boracke_kategorije` tinyint(1) NOT NULL,
   `jmbg` varchar(14) collate utf8_slovenian_ci NOT NULL,
   `adresa` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `adresa_mjesto` int(11) NOT NULL,
   `telefon` varchar(15) collate utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
   `treba_brisati` tinyint(1) NOT NULL default '0',
+  `strucni_stepen` int(11) NOT NULL,
+  `naucni_stepen` int(11) NOT NULL,
+  `slika` varchar(50) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -720,11 +979,43 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `kanton` int(11) NOT NULL,
   `vrijeme_zahtjeva` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 --
 -- Dumping data for table `promjena_podataka`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `prosliciklus_ocjene`
+--
+
+CREATE TABLE IF NOT EXISTS `prosliciklus_ocjene` (
+  `osoba` int(11) NOT NULL,
+  `redni_broj` int(11) NOT NULL,
+  `ocjena` tinyint(5) NOT NULL,
+  `ects` float NOT NULL,
+  PRIMARY KEY  (`osoba`,`redni_broj`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `prosliciklus_uspjeh`
+--
+
+CREATE TABLE IF NOT EXISTS `prosliciklus_uspjeh` (
+  `osoba` int(11) NOT NULL,
+  `fakultet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `broj_semestara` int(11) NOT NULL,
+  `opci_uspjeh` double NOT NULL,
+  `dodatni_bodovi` double NOT NULL,
+  PRIMARY KEY  (`osoba`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -846,7 +1137,8 @@ CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
   `razred` tinyint(4) NOT NULL,
   `redni_broj` int(1) NOT NULL,
   `ocjena` tinyint(5) NOT NULL,
-  `tipocjene` tinyint(5) NOT NULL
+  `tipocjene` tinyint(5) NOT NULL,
+  PRIMARY KEY  (`osoba`,`razred`,`redni_broj`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
@@ -864,8 +1156,10 @@ CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
 CREATE TABLE IF NOT EXISTS `srednja_skola` (
   `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `opcina` int(11) NOT NULL,
+  `domaca` tinyint(1) NOT NULL default '1',
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=431 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 --
 -- Dumping data for table `srednja_skola`
@@ -890,6 +1184,34 @@ CREATE TABLE IF NOT EXISTS `stdin` (
 --
 -- Dumping data for table `stdin`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `strucni_stepen`
+--
+
+CREATE TABLE IF NOT EXISTS `strucni_stepen` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `titula` varchar(15) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
+
+--
+-- Dumping data for table `strucni_stepen`
+--
+
+INSERT INTO `strucni_stepen` (`id`, `naziv`, `titula`) VALUES
+(1, 'Magistar elektrotehnike - Diplomirani inženjer elektrotehnike', 'M.E.'),
+(2, 'Bakalaureat elektrotehnike - Inženjer elektrotehnike', 'B.E.'),
+(3, 'Diplomirani inženjer elektrotehnike', 'dipl.ing.el.'),
+(4, 'Diplomirani matematičar', 'dipl.mat.'),
+(5, 'Srednja stručna sprema', ''),
+(6, 'Diplomirani inženjer mašinstva', 'dipl.ing.'),
+(7, 'Diplomirani inženjer građevinarstva', 'dipl.ing.'),
+(8, 'Diplomirani ekonomista', 'dipl.ecc.');
 
 
 -- --------------------------------------------------------
@@ -1173,6 +1495,7 @@ CREATE TABLE IF NOT EXISTS `upis_kriterij` (
 CREATE TABLE IF NOT EXISTS `uspjeh_u_srednjoj` (
   `osoba` int(11) NOT NULL,
   `srednja_skola` int(11) NOT NULL,
+  `godina` int(11) NOT NULL,
   `opci_uspjeh` double NOT NULL,
   `kljucni_predmeti` double NOT NULL,
   `dodatni_bodovi` double NOT NULL,
