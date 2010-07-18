@@ -402,10 +402,12 @@ if ($_REQUEST['akcija']=="prijemni") {
 	<SCRIPT language="JavaScript">
 	function dobio_focus(element) {
 		element.style.borderColor='red';
+		if (element.value == "/") element.value="";
 	}
 	function izgubio_focus(element) {
 		element.style.borderColor='black';
 		var id = parseInt(element.id.substr(8));
+		if (element.value == "") element.value="/";
 		var vrijednost = element.value;
 		if (vrijednost!=origval[id])
 			ajah_start("index.php?c=N&sta=common/ajah&akcija=prijemni_unos&osoba="+id+"&vrijednost="+vrijednost+"&termin=<?=$termin?>","document.getElementById('prijemni'+"+id+").focus()");
@@ -444,7 +446,7 @@ if ($_REQUEST['akcija']=="prijemni") {
 		if ($r[4]==0) $bodova="/"; else $bodova=$r[3]; // izasao na prijemni?
 
 		?>
-		<SCRIPT language="JavaScript"> origval[<?=$id?>]=<?=$bodova?></SCRIPT>
+		<SCRIPT language="JavaScript"> origval[<?=$id?>]="<?=$bodova?>";</SCRIPT>
 		<tr><td><?=$r[6]?></td>
 		<td><?=$r[2]?> <?=$r[1]?></td>
 		<td align="center"><?=(round($r[5]*10)/10)?></td>
@@ -485,6 +487,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	if ($ciklus_studija==1) $sirina="4000"; else $sirina="3000";
 
 	?>
+	<p><a href="?sta=studentska/prijemni">&lt; &lt; Nazad na unos kandidata</a></p>
 	<h3>Pregled kandidata</h3>
 	<br />
 	
@@ -504,7 +507,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	while ($r = mysql_fetch_row($q)) {
 		$imena_godina[$r[0]]=$r[1];
 	}
-	
+
 	$imena_studija=array();
 	$q = myquery("select id,kratkinaziv from studij");
 	while ($r = mysql_fetch_row($q)) {
@@ -1111,7 +1114,10 @@ if ($osoba>0) {
 	}
 }
 
-else { // Nova osoba
+else if ($vrstaunosa=="novigreska") {
+	$ebrojdosjea = $rbrojdosjea;
+
+} else { // Nova osoba
 	// Odredjujemo broj dosjea
 	$q220 = myquery("select broj_dosjea+1 from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
 	if (mysql_num_rows($q220)<1)
@@ -1371,6 +1377,8 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 			return false;
 
 		} else if (keycode==13 && list.style.visibility == 'visible') { // Enter key - select option and hide
+			if (listsel.options[listsel.selectedIndex].onclick)
+				listsel.options[listsel.selectedIndex].onclick(); // execute onclick event, if any
 			comboBoxOptionSelected(elname);
 			return false;
 
@@ -1420,6 +1428,7 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 	function comboBoxOptionSelected(elname) {
 		var ib = document.getElementById(elname);
 		var listsel = document.getElementById("comboBoxMenu_"+elname);
+		odzuti(ib);
 		
 		ib.value = listsel.options[listsel.selectedIndex].value;
 		comboBoxShowHide(elname);
@@ -1431,6 +1440,7 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 // Nećemo da se ove varijable pojavljuju u genform
 unset($_REQUEST['osoba']); unset($_REQUEST['vrstaunosa']); unset($_REQUEST['broj_dosjea']); unset($_REQUEST['ime']); unset($_REQUEST['prezime']); unset($_REQUEST['imeoca']); unset($_REQUEST['prezimeoca']); unset($_REQUEST['imemajke']); unset($_REQUEST['prezimemajke']); unset($_REQUEST['spol']); unset($_REQUEST['datum_rodjenja']); unset($_REQUEST['mjesto_rodjenja']); unset($_REQUEST['opcina_rodjenja']); unset($_REQUEST['drzava_rodjenja']); unset($_REQUEST['nacionalnost']); unset($_REQUEST['drzavljanstvo']); unset($_REQUEST['jmbg']); unset($_REQUEST['borac']); unset($_REQUEST['zavrsena_skola']); unset($_REQUEST['zavrsena_skola_opcina']); unset($_REQUEST['zavrsena_skola_godina']); unset($_REQUEST['zavrsena_skola_domaca']); unset($_REQUEST['adresa']); unset($_REQUEST['adresa_mjesto']); unset($_REQUEST['telefon_roditelja']); unset($_REQUEST['tip_studija']); unset($_REQUEST['ucenik_generacije']); unset($_REQUEST['studij_prvi_izbor']); unset($_REQUEST['studij_drugi_izbor']); unset($_REQUEST['studij_treci_izbor']); unset($_REQUEST['studij_cetvrti_izbor']); unset($_REQUEST['prijemni']); unset($_REQUEST['opci_uspjeh']); unset($_REQUEST['kljucni_predmeti']); unset($_REQUEST['dodatni_bodovi']);
 unset($_REQUEST['trazijmbg']);
+
 
 // Navigacija na sljedeći i prethodni broj dosjea
 // Dostupna samo ako postoji broj
