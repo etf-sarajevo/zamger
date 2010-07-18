@@ -90,7 +90,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 	while ($r40 = mysql_fetch_row($q40)) array_push($ispiti,$r40[0]);
 
 	// Spisak komponenti
-	$knazivi=$kprolaz=$ktip=$kpolozilo=array();
+	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=array();
 	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
 	while ($r50 = mysql_fetch_row($q50)) {
 		$knazivi[$r50[0]]=$r50[1]; // k.gui_naziv
@@ -99,13 +99,15 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		$kpolozilo[$r50[0]]=0;
 	}
 
-	$q55 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena>5");
-	$polozilo = mysql_result($q55,0,0);
-
 	// Prolazimo kroz studente
-	$uslov40=$uslov35=$uslov0=$nisu_izlazili=0;
+	$uslov40=$uslov35=$uslov0=$nisu_izlazili=$polozilo=$integralno=$usmeni=$puk=0;
 	while ($r30 = mysql_fetch_row($q30)) {
 		$student = $r30[0];
+
+		// Da li je polozio predmet?
+		$q52 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag and ocjena>5");
+		$polozio_predmet = mysql_result($q52,0,0);
+		if ($polozio_predmet>0) $polozilo++;
 
 		// Odredjujem ponudukursa
 		$q55 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
@@ -118,8 +120,8 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		$upisano_puta[$puta]++;
 
 		// Komponente
-		$sumbodovi=0;
-		$polozene_komponente=array();
+		$sumbodovi=$pao=0;
+		$komponente=$polozene_komponente=array();
 		foreach($ktip as $komponenta=>$tip) {
 			$q60 = myquery("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
 			if (mysql_num_rows($q60)>0) {
@@ -137,17 +139,41 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 				else $pao++;
 
 				$sumbodovi += $bodovi;
-			}
+
+			// Ako student nije imao bodova, neće postojati zapis u tabeli komponentebodovi
+			} else if ($kprolaz[$komponenta]==0) {
+				// Komponenta ne traži bodove za prolaz
+				$kpolozilo[$komponenta]++;
+				$polozene_komponente[$komponenta]=1;
+
+			} else if ($tip!=2) // tip 2 = integralni ispit
+				$pao++;
 		}
 
 		// Da li je zadovoljio uslove?
-		if (count($komponente)==count($polozene_komponente)) {
+		if ($pao==0) {
 			if ($sumbodovi>=40) $uslov40++;
 			if ($sumbodovi>=35) $uslov35++;
 			$uslov0++;
-		}
+			if ($polozio_predmet==0) $usmeni++;
 
-		// Da probamo ovako...
+		} else if ($pao==1) {
+			// Studenti kojima je ostao samo jedan ispit i koji
+			if ($polozio_predmet==0) {
+				foreach ($ktip as $komponenta => $tip) {
+					if ($tip!=1) continue;
+					if ($polozene_komponente[$komponenta]!=1)
+						$kfalisamo[$komponenta]++;
+				}
+			}
+
+		// PUK
+		} else if ($sumbodovi<20) $puk++;
+
+		// Ostali izlaze integralno
+		else $integralno++;
+
+		// Studenti koji nikada nisu izašli niti na jedan ispit
 		if ($izasao==0) $nisu_izlazili++;
 	}
 
@@ -193,10 +219,29 @@ if ($odrzano_ispita==0) {
 		}
 	}
 
+	print "<br/>\n";
+
+	// Ostalo samo
+	foreach ($ktip as $komponenta=>$tip) {
+		if ($kpolozilo[$komponenta]==0) continue; // ova komponenta nije u funkciji
+		if ($tip==1) {
+			if ($kfalisamo[$komponenta]==0) $kfalisamo[$komponenta]="0";
+			?>
+			Ostao samo <?=$knazivi[$komponenta]?> ispit: <b><?=$kfalisamo[$komponenta]?></b> studenata.<br/>
+			<?
+		}
+	}
+
 	?>
+	Ostao integralni ispit: <b><?=$integralno?></b> studenata.<br/>
+	Ostao usmeni ispit**: <b><?=$usmeni?></b> studenata.<br/>
+	Ponovo upisuje kurs***: <b><?=$puk?></b> studenata.<br/>
 	</p>
 
-	<p>* - Napomena: pod "uslov za usmeni" misli se na uobičajenu šemu dva parcijalna ispita + jedan integralni ispit.</p>
+	<p><b>Napomene:</b><br>
+	* - Pod "uslov za usmeni" misli se na uobičajenu šemu dva parcijalna ispita + jedan integralni ispit.<br>
+	** - Ovaj broj je određen pod pretpostavkom da ne postoji minimalan broj bodova kao uslov za usmeni ispit. Ukoliko postoji takav uslov, profesor posebno definiše na koji način ovi studenti mogu prikupiti preostale potrebne bodove.<br>
+	*** - Studenti koji nisu skupili 20 bodova ne mogu pristupiti popravnom ispitu. Ukoliko se ovo pravilo ne odnosi na ovaj predmet, ove studente treba pribrojiti studentima koji izlaze na ispit integralno.</p>
 	<?
 	return;
 }
