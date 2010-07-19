@@ -694,20 +694,20 @@ function studentska_anketa(){
 								if ($i==$offset)
 									print "<b>$br</b> ";
 								else
-									print "<a href=\"&offset=$i&_lv_column_akademska_godina=$ak_god\">$br</a> ";
+									print "<a href=\"?sta=studentska/anketa&offset=$i&_lv_column_akademska_godina=$ak_god\">$br</a> ";
 							}
 							print "<br/>";
 						}
 						
 				
 						if ($ak_god>0 && $src != "") {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id, pk.semestar from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and pk.studij=s.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($ak_god>0) {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id, pk.semestar from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and pk.studij=s.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($src != "") {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id, pk.semestar from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and pk.studij=s.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, s.kratkinaziv, ag.id, pk.semestar from predmet as p, ponudakursa as pk, akademska_godina as ag, studij as s where pk.akademska_godina=ag.id and pk.predmet=p.id and pk.studij=s.id GROUP BY p.id, ag.id order by ag.naziv desc,p.naziv limit $offset,$limit");
+							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc,p.naziv limit $offset,$limit");
 						}
 										
 						print '<table width="100%" border="0">';
@@ -718,7 +718,7 @@ function studentska_anketa(){
 								if ($r301[5] == 1 || $r301[5]==2)
 									print "<tr><td>$i. $r301[1] (PGS)</td>\n";
 								else
-									print "<tr><td>$i. $r301[1] ($r301[3])$r301[5]</td>\n";
+									print "<tr><td>$i. $r301[1] ($r301[3])</td>\n";
 								}
 							else
 								if ($r301[5] == 1 || $r301[5]==2)
