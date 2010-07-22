@@ -69,6 +69,7 @@ function studentska_anketa(){
 	// Deaktivacija ankete
 	if ($_REQUEST['akcija']=="deaktivacija") {
 		$result401=myquery("update anketa_anketa set aktivna = 0 where id=$id");
+		zamgerlog("deaktivirana anketa $id", 4); // nivo 4 = audit
 	}
 	
 	// Promjena podataka o anketi
@@ -112,6 +113,7 @@ function studentska_anketa(){
 			$mysqlvrijeme2 = time2mysql(mktime($sat2,$minuta2,$sekunda2,$mjesec2,$dan2,$godina2));
 			
 			$q395 = myquery("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2', opis='$opis' where id=$anketa");
+			zamgerlog("promijenjeni podaci za anketu $anketa", 2);
 			
 			?>
 			<script language="JavaScript">
@@ -132,6 +134,7 @@ function studentska_anketa(){
 			$result402 = myquery("update anketa_anketa set aktivna=1, editable=0 where id=$id");
 
 			print "<center><span style='color:#009900'>Anketa je postavljena kao aktivna!</span></center>";
+			zamgerlog("aktivirana anketa $id", 4);
 		}
 
 		$result401 = myquery("select id,UNIX_TIMESTAMP(datum_otvaranja),UNIX_TIMESTAMP(datum_zatvaranja),naziv,opis from anketa_anketa where id=$id");
@@ -223,6 +226,7 @@ function studentska_anketa(){
 		$q393 = myquery("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
 		$q391 = myquery("select id from anketa_anketa where naziv='$naziv' and akademska_godina=$ak_godina");
 		$anketa = mysql_result($q391,0,0);
+		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		
 		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?
 		if ($prethodna_anketa != 0) {
@@ -250,11 +254,13 @@ function studentska_anketa(){
 			if ($obrisi) {
 				$q800=myquery("delete from anketa_pitanje where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno obrisano! </span> </center>";
+				zamgerlog("obrisano pitanje na anketi $anketa", 2);
 			} else {
 				$tekst_pitanja = $_REQUEST['tekst_pitanja'];
 				$tip_pitanja= $_REQUEST['tip_pitanja'];
 				$q800=myquery("update anketa_pitanje set tip_pitanja=$tip_pitanja, tekst='$tekst_pitanja' where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno izmjenjeno! </span> </center>";
+				zamgerlog("izmijenjeno pitanje na anketi $anketa", 2);
 			}
 		}
 		
@@ -267,6 +273,7 @@ function studentska_anketa(){
 			$id_pitanja = mysql_result($q891,0,0)+1;
 			$q800 = myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
 			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
+			zamgerlog("dodano pitanje na anketi $anketa", 2);
 		}
 		$id = intval($_GET['anketa']);
 			
