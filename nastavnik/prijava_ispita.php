@@ -1,4 +1,4 @@
-<?php
+<?
 
 //novi modul nastavnik/prijava_ispita
 
@@ -134,6 +134,11 @@ if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " 
 // Tabela studenata koji su se prijavili za ovaj ispitni termin
 
 if ($_REQUEST["akcija"]=="studenti") {
+	if ($_REQUEST['subakcija']=="dodaj_studenta" && check_csrf_token()) {
+		$student = intval($_REQUEST['student']);
+		$q220 = myquery("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
+	}
+
 	$q200 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
 	$datumvrijeme = date("d. m. Y. H:i:s", mysql_result($q200,0,0));
 
@@ -147,7 +152,7 @@ if ($_REQUEST["akcija"]=="studenti") {
 	<thead>
 	<tr bgcolor="#999999">
 		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
-		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Ime i prezime</font></td>
+		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Prezime i ime</font></td>
 		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Broj indexa</font></td>
 	</tr>
 	</thead>
@@ -159,7 +164,7 @@ if ($_REQUEST["akcija"]=="studenti") {
 		?>
 		<tr>
 			<td><?=$brojac?></td>
-			<td><?=$r200[0]?> <?=$r200[1]?></td>
+			<td><?=$r200[1]?> <?=$r200[0]?></td>
 			<td><?=$r200[2]?></td>
 		</tr>
 		<?
@@ -170,6 +175,23 @@ if ($_REQUEST["akcija"]=="studenti") {
 	?>
 	</table>
 	<? if($brojac==1) print '<br>Do sada se niko nije prijavio za ovaj termin.'; ?>
+	<?
+
+	// Dodavanje studenta na termin
+	print genform("POST");
+	?>
+	<br>
+	<input type="hidden" name="subakcija" value="dodaj_studenta">
+	Dodajte studenta na termin:<br>
+	<select name="student">
+	<?
+	$q210 = myquery("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
+	while ($r210 = mysql_fetch_row($q210)) {
+		print "<option value=\"$r210[0]\">$r210[1] $r210[2]</option>\n";
+	}
+	?>
+	</select> <input type="submit" value=" Dodaj ">
+	</form>
 	<br><hr/><br>
 	<?
 
