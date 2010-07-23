@@ -156,6 +156,19 @@ CREATE TABLE IF NOT EXISTS `ispitocjene` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `izborni_slot`
+--
+
+CREATE TABLE IF NOT EXISTS `izborni_slot` (
+  `id` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  PRIMARY KEY  (`id`,`predmet`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `kanton`
 --
 
