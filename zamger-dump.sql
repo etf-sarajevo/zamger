@@ -38,6 +38,46 @@ INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `angazman`
+--
+
+CREATE TABLE IF NOT EXISTS `angazman` (
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `osoba` int(11) NOT NULL,
+  `angazman_status` int(11) NOT NULL,
+  PRIMARY KEY  (`predmet`,`akademska_godina`,`osoba`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `angazman_status`
+--
+
+CREATE TABLE IF NOT EXISTS `angazman_status` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `angazman_status`
+--
+
+INSERT INTO `angazman_status` (`id`, `naziv`) VALUES
+(1, 'odgovorni nastavnik'),
+(2, 'asistent'),
+(3, 'demonstrator'),
+(4, 'predavač - istaknuti stručnjak iz prakse'),
+(5, 'asistent - istaknuti stručnjak iz prakse'),
+(6, 'profesor emeritus');
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `auth`
 --
 
@@ -179,6 +219,24 @@ CREATE TABLE IF NOT EXISTS `ispitocjene` (
 --
 -- Dumping data for table `ispitocjene`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `izbor`
+--
+
+CREATE TABLE IF NOT EXISTS `izbor` (
+  `osoba` int(11) NOT NULL,
+  `zvanje` int(11) NOT NULL,
+  `datum_izbora` date NOT NULL,
+  `datum_isteka` date NOT NULL,
+  `oblast` int(11) NOT NULL,
+  `podoblast` int(11) NOT NULL,
+  `dopunski` tinyint(1) NOT NULL,
+  `druga_institucija` tinyint(1) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -501,6 +559,24 @@ INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `oblast`
+--
+
+CREATE TABLE IF NOT EXISTS `oblast` (
+  `id` int(11) NOT NULL auto_increment,
+  `institucija` int(11) NOT NULL,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `oblast`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `odluka`
 --
 
@@ -753,6 +829,24 @@ CREATE TABLE IF NOT EXISTS `plan_studija` (
 
 --
 -- Dumping data for table `plan_studija`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `podoblast`
+--
+
+CREATE TABLE IF NOT EXISTS `podoblast` (
+  `id` int(11) NOT NULL auto_increment,
+  `oblast` int(11) NOT NULL,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `podoblast`
 --
 
 
@@ -1593,6 +1687,33 @@ CREATE TABLE IF NOT EXISTS `zadatakdiff` (
 --
 -- Dumping data for table `zadatakdiff`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `zvanje`
+--
+
+CREATE TABLE IF NOT EXISTS `zvanje` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `titula` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `zvanje`
+--
+
+INSERT INTO `zvanje` (`id`, `naziv`, `titula`) VALUES
+(1, 'Redovni profesor', 'R. prof.'),
+(2, 'Vanredni profesor', 'V. prof.'),
+(3, 'Docent', 'Doc.'),
+(4, 'Viši asistent', 'V. asis.'),
+(5, 'Asistent', 'Asis.'),
+(6, 'Profesor emeritus', '');
+
 
 -- --------------------------------------------------------
 

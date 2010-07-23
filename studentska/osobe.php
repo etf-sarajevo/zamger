@@ -42,7 +42,7 @@
 function studentska_osobe() {
 
 global $userid,$user_siteadmin,$user_studentska;
-global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain;
+global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$conf_files_path;
 global $registry; // šta je od modula aktivno
 
 global $_lv_; // Potrebno za genform() iz libvedran
@@ -1415,6 +1415,160 @@ else if ($akcija == "predmeti") {
 			print "</ul>\n";
 		}
 	}
+}
+
+
+// Izbori za nastavnike
+
+else if ($akcija == "izbori") {
+	if ($_POST['subakcija'] == "novi" && check_csrf_token()) {
+		$zvanje = intval($_POST['_lv_column_zvanje']);
+		$datum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
+		$datum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
+		// Ove vrijednosti moraju biti ovakve
+		if ($datum_izbora == mktime(0,0,0,1,1,1990)) $datum_izbora=0;
+		if ($datum_isteka == mktime(0,0,0,1,1,1990)) $datum_isteka=0;
+
+		$oblast = intval($_POST['_lv_column_oblast']);
+		$podoblast = intval($_POST['_lv_column_podoblast']);
+		if ($_POST['dopunski']) $dopunski=1; else $dopunski=0;
+		if ($_POST['druga_institucija']) $drugainst=1; else $drugainst=0;
+		if ($_POST['neodredjeno'])
+			$sqlisteka = "'2999-01-01'";
+		else
+			$sqlisteka = "FROM_UNIXTIME($datum_isteka)";
+
+		$q3030 = myquery("insert into izbor set osoba=$osoba, zvanje=$zvanje, datum_izbora=FROM_UNIXTIME($datum_izbora), datum_isteka=$sqlisteka, oblast=$oblast, podoblast=$podoblast, dopunski=$dopunski, druga_institucija=$drugainst");
+		zamgerlog("dodani podaci o izboru za u$osoba", 2);
+	}
+	if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
+		$izvanje = intval($_POST['_lv_column_zvanje']);
+		$idatum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
+		$idatum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
+		// Ove vrijednosti moraju biti ovakve
+		if ($idatum_izbora == mktime(0,0,0,1,1,1990)) $idatum_izbora=0;
+		if ($idatum_isteka == mktime(0,0,0,1,1,1990)) $idatum_isteka=0;
+
+		$ioblast = intval($_POST['_lv_column_oblast']);
+		$ipodoblast = intval($_POST['_lv_column_podoblast']);
+		if ($_POST['dopunski']) $idopunski=1; else $idopunski=0;
+		if ($_POST['druga_institucija']) $idrugainst=1; else $idrugainst=0;
+		if ($_POST['neodredjeno']) 
+			$isqlisteka = "'2999-01-01'";
+		else
+			$isqlisteka = "FROM_UNIXTIME($idatum_isteka)";
+
+		// Bice azurirano prilikom ispisa...
+	}
+
+	$broj_izbora = intval($_REQUEST['broj_izbora']);
+	$q3000 = myquery("select ime, prezime from osoba where id=$osoba");
+	$imeprezime = mysql_result($q3000,0,0)." ".mysql_result($q3000,0,1);
+
+	?>
+	<h3>Izbor nastavnika u zvanja</h3>
+	<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o osobi <?=$imeprezime?></a></p>
+	<p>&nbsp;</p>
+	<?
+
+	$t_zvanje=$t_datumiz=$t_datumis=$t_oblast=$t_podoblast=$t_dopunski=0;
+	$ispis="";
+
+	$q3010 = myquery("select zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), oblast, podoblast, dopunski, druga_institucija from izbor WHERE osoba=$osoba order by datum_isteka, datum_izbora");
+	if (mysql_num_rows($q3010)==1 && $broj_izbora!=-1)
+		$broj_izbora=1; // Ako postoji samo jedan izbor, editujemo ga; -1 znači ipak dodavanje novog
+	for ($i=1; $i<=mysql_num_rows($q3010); $i++) {
+		$zvanje=mysql_result($q3010,$i-1,0);
+		$datumiz=mysql_result($q3010,$i-1,1);
+		$datumis=mysql_result($q3010,$i-1,2);
+		$oblast=mysql_result($q3010,$i-1,3);
+		$podoblast=mysql_result($q3010,$i-1,4);
+		$dopunski=mysql_result($q3010,$i-1,5);
+		$drugainst=mysql_result($q3010,$i-1,6);
+
+		$q3020 = myquery("select naziv from zvanje where id=$zvanje");
+		$nzvanje = mysql_result($q3020,0,0);
+		
+		$ndatumiz = date("d. m. Y", $datumiz);
+		if ($datumiz==0)
+			$ndatumiz = "nepoznato";
+		$ndatumis = date("d. m. Y", $datumis);
+		if ($datumis==0)
+			$ndatumis = "neodređeno";
+
+		if ($i==$broj_izbora) {
+			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_podoblast=$podoblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
+			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
+			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
+				$q3040 = myquery("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and oblast=$oblast and podoblast=$podoblast and dopunski=$dopunski and druga_institucija=$drugainst");
+				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
+				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
+				$q3020 = myquery("select naziv from zvanje where id=$izvanje");
+				$nzvanje = mysql_result($q3020,0,0);
+				
+				$ndatumiz = date("d. m. Y", $t_datumiz);
+				if ($t_datumiz==0)
+					$ndatumiz = "nepoznato";
+				$ndatumis = date("d. m. Y", $t_datumis);
+				if ($t_datumis==0)
+					$ndatumis = "neodređeno";
+			}
+			$ispis .= "<br/>* $nzvanje ($ndatumiz - $ndatumis)\n";
+		} else {
+			$ispis .= "<br/>* <a href=\"?sta=studentska/osobe&osoba=$osoba&akcija=izbori&broj_izbora=$i\">$nzvanje ($ndatumiz - $ndatumis)</a>\n";
+		}
+	}
+	if (mysql_num_rows($q3010)>0) {
+		?>
+		<p><b>Historija izbora:</b>
+		<?=$ispis?></p>
+		<?
+	}
+
+	if ($broj_izbora<1) {
+		?>
+		<p><b>Unos novog izbora:</b></p>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="novi">
+		<?
+	} else {
+		?>
+		<p><b>Izmjena podataka o izboru:</b></p>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="izmjena">
+		<?
+	}
+	?>
+	<table border="0"><tr>
+		<td>Zvanje:</td>
+		<td><?=db_dropdown("zvanje", $t_zvanje)?></td>
+	</tr><tr>
+		<td>Datum izbora:</td>
+		<td><?=datectrl(date("d",$t_datumiz), date("m",$t_datumiz), date("Y",$t_datumiz), "izbor")?></td>
+	</tr><tr>
+		<td valign="top">Datum isteka:</td>
+		<td><input type="checkbox" name="neodredjeno" <? if ($t_neodredjeno==1) print "CHECKED"; ?>> Neodređeno<br/>
+		<?=datectrl(date("d",$t_datumis), date("m",$t_datumis), date("Y",$t_datumis), "istek")?></td>
+	</tr><tr>
+		<td>Oblast:</td>
+		<td><?=db_dropdown("oblast", $t_oblast, "--Nepoznato--")?></td>
+	</tr><tr>
+		<td>Podoblast:</td>
+		<td><?=db_dropdown("podoblast", $t_podoblast, "--Nepoznato--")?></td>
+	</tr><tr>
+		<td colspan="2"><input type="checkbox" name="dopunski" <? if ($t_dopunski==1) print "CHECKED"; ?>> Dopunski radni odnos</td>
+	</tr><tr>
+		<td colspan="2"><input type="checkbox" name="druga_institucija" <? if ($t_drugainst==1) print "CHECKED"; ?>> Biran/a na drugoj VŠO</td>
+	</tr>
+	</table>
+	<input type="submit" value=" Pošalji ">
+	</form>
+	<?
+	if ($broj_izbora>0) {
+		?>
+		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=izbori&broj_izbora=-1">Kliknite ovdje za unos novog izbora</a></p>
+		<?
+	}
 
 }
 
@@ -1625,20 +1779,37 @@ else if ($akcija == "edit") {
 	}
 
 
-	// Prijava nastavnika na predmet
-	if ($_POST['subakcija'] == "angazuj" && check_csrf_token()) {
+	// Dodjela prava nastavniku na predmetu
+	if ($_POST['subakcija'] == "daj_prava" && check_csrf_token()) {
 
-		$ponudakursa = intval($_POST['predmet']);
+		$predmet = intval($_POST['predmet']);
 		$admin_predmeta = intval($_POST['admin_predmeta']);
 
-		$q115 = myquery("select p.id, p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
-		$predmet = mysql_result($q115,0,0);
-		$naziv_predmeta = mysql_result($q115,0,1);
+		$q115 = myquery("select naziv from predmet where id=$predmet");
+		$naziv_predmeta = mysql_result($q115,0,0);
 
 		$q130 = myquery("replace nastavnik_predmet set admin=$admin_predmeta, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
 
-		zamgerlog("nastavnik u$osoba prijavljen na predmet p$ponudakursa (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
-		nicemessage("Nastavnik prijavljen na predmet $naziv_predmeta.");
+		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
+		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
+		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
+	}
+
+
+	// Angažman nastavnika na predmetu
+	if ($_POST['subakcija'] == "angazuj" && check_csrf_token()) {
+
+		$predmet = intval($_POST['predmet']);
+		$status = intval($_POST['_lv_column_angazman_status']);
+
+		$q115 = myquery("select naziv from predmet where id=$predmet");
+		$naziv_predmeta = mysql_result($q115,0,0);
+
+		$q130 = myquery("replace angazman set osoba=$osoba, predmet=$predmet, akademska_godina=$id_ak_god, angazman_status=$status");
+
+		zamgerlog("nastavnik u$osoba angazovan na predmetu pp$predmet (status: $status, akademska godina: $id_ak_god)",4);
+		nicemessage("Nastavnik angažovan na predmetu $naziv_predmeta.");
+		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
 	}
 
 
@@ -2164,10 +2335,104 @@ else if ($akcija == "edit") {
 		?>
 		<br/><hr>
 		<h3>NASTAVNIK</h3>
-		<p>Angažovan/a na predmetima (akademska godina <b><?=$naziv_ak_god?></b>):</p>
+		<p><b>Podaci o izboru</b></p>
+		<?
+
+
+		// Izbori
+
+		$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.oblast, i.podoblast, i.dopunski, i.druga_institucija from izbor as i, zvanje as z WHERE i.osoba=$osoba and i.zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+		if (mysql_num_rows($q400)==0) {
+			print "<p>Nema podataka o izboru.</p>\n";
+		} else {
+			$datum_izbora = date("d. m. Y", mysql_result($q400,0,1));
+			if (mysql_result($q400,0,1)==0)
+				$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
+			$datum_isteka = date("d. m. Y", mysql_result($q400,0,2));
+			if (mysql_result($q400,0,2)==0)
+				$datum_isteka = "Neodređeno";
+			$oblast = mysql_result($q400,0,3);
+			if ($oblast<1)
+				$oblast = "<font color=\"red\">(nepoznato)</font>";
+			else {
+				$q410 = myquery("select naziv from oblast where id=$oblast");
+				if (mysql_num_rows($q410)<1)
+					$oblast = "<font color=\"red\">GREŠKA</font>";
+				else
+					$oblast = mysql_result($q410,0,0);
+			}
+			$podoblast = mysql_result($q400,0,4);
+			if ($podoblast<1)
+				$podoblast = "<font color=\"red\">(nepoznato)</font>";
+			else {
+				$q420 = myquery("select naziv from podoblast where id=$podoblast");
+				if (mysql_num_rows($q420)<1)
+					$podoblast = "<font color=\"red\">GREŠKA</font>";
+				else
+					$podoblast = mysql_result($q420,0,0);
+			}
+			if (mysql_result($q400,0,5)==0) $radniodnos = "Stalni";
+			else $radniodnos = "Dopunski";
+			
+			?>
+			<table border="0">
+			<tr><td>Zvanje:</td><td><?=mysql_result($q400,0,0)?></td></tr>
+			<tr><td>Datum izbora:</td><td><?=$datum_izbora?></td></tr>
+			<tr><td>Datum isteka:</td><td><?=$datum_isteka?></td></tr>
+			<tr><td>Oblast:</td><td><?=$oblast?></td></tr>
+			<tr><td>Podoblast:</td><td><?=$podoblast?></td></tr>
+			<tr><td>Radni odnos:</td><td><?=$radniodnos?></td></tr>
+			<?
+			if (mysql_result($q400,0,6)==1) print "<tr><td colspan=\"2\">Biran/a na drugoj VŠO</td></tr>\n";
+			?>
+			</table>
+			<?
+		}
+
+		?>
+		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=izbori">Izmijenite podatke o izboru ili pogledajte historijske podatke</a></p>
+		<?
+
+
+		// Angažman
+
+		?>
+		<p><b>Angažman u nastavi (akademska godina <?=$naziv_ak_god?>)</b></p>
 		<ul>
 		<?
-		$q180 = myquery("select p.id, p.naziv, np.admin, s.kratkinaziv from nastavnik_predmet as np, predmet as p, ponudakursa as pk, studij as s where np.nastavnik=$osoba and np.predmet=pk.predmet and np.akademska_godina=$id_ak_god and pk.akademska_godina=$id_ak_god and pk.predmet=p.id and pk.studij=s.id"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
+		
+		$q430 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i where a.osoba=$osoba and a.akademska_godina=$id_ak_god and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by angs.id, p.naziv");
+		if (mysql_num_rows($q430) < 1)
+			print "<li>Uposlenik nije angažovan niti na jednom predmetu u ovoj godini.</li>\n";
+		while ($r430 = mysql_fetch_row($q430)) {
+			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r430[0]\">$r430[1] ($r430[3])</a> - $r430[2]</li>\n";
+		}
+
+
+		// Angažman
+	
+		?></ul>
+		<p>Angažuj nastavnika na predmetu:
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="angazuj">
+		<select name="predmet" class="default"><?
+		$q190 = myquery("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id order by p.naziv");
+		while ($r190 = mysql_fetch_row($q190)) {
+			print "<option value=\"$r190[0]\">$r190[1] ($r190[2])</a>\n";
+		}
+		?></select><br/>
+		<?=db_dropdown("angazman_status")?>
+		<input type="submit" value=" Dodaj "></form></p>
+		<?
+
+
+		// Prava pristupa
+
+		?>
+		<p><b>Prava pristupa (akademska godina <?=$naziv_ak_god?>)</b></p>
+		<ul>
+		<?
+		$q180 = myquery("select p.id, p.naziv, np.admin, i.kratki_naziv from nastavnik_predmet as np, predmet as p, institucija as i where np.nastavnik=$osoba and np.predmet=p.id and np.akademska_godina=$id_ak_god and p.institucija=i.id order by np.admin desc, p.naziv"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
 		if (mysql_num_rows($q180) < 1)
 			print "<li>Nijedan</li>\n";
 		while ($r180 = mysql_fetch_row($q180)) {
@@ -2176,17 +2441,17 @@ else if ($akcija == "edit") {
 			print "</li>\n";
 		}
 		?></ul>
-		<p>Za prethodne akademske godine, koristite pretragu na kartici &quot;Predmeti&quot;<br/></p>
-	
+		<p>Za prava pristupa na prethodnim akademskim godinama, koristite pretragu na kartici &quot;Predmeti&quot;<br/></p>
 		<?
 
-		// Angažman na predmetu
+
+		// Dodjela prava pristupa
 	
-		?><p>Angažuj nastavnika na:
+		?><p>Dodijeli prava za predmet:
 		<?=genform("POST")?>
-		<input type="hidden" name="subakcija" value="angazuj">
+		<input type="hidden" name="subakcija" value="daj_prava">
 		<select name="predmet" class="default"><?
-		$q190 = myquery("select pk.id, p.naziv, s.kratkinaziv from predmet as p, ponudakursa as pk, studij as s where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and pk.studij=s.id order by p.naziv");
+		$q190 = myquery("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id order by p.naziv");
 		while ($r190 = mysql_fetch_row($q190)) {
 			print "<option value=\"$r190[0]\">$r190[1] ($r190[2])</a>\n";
 		}
@@ -2270,6 +2535,12 @@ else {
 	$limit = 20;
 	$offset = intval($_REQUEST["offset"]);
 
+	// Naucni stepeni
+	$naucni_stepen = array();
+	$q99 = myquery("select id, titula from naucni_stepen");
+	while ($r99 = mysql_fetch_row($q99))
+		$naucni_stepen[$r99[0]]=$r99[1];
+
 	?>
 	<p><h3>Studentska služba - Studenti i nastavnici</h3></p>
 
@@ -2285,7 +2556,7 @@ else {
 		$rezultata=0;
 		if ($src == "sve") {
 			$q100 = myquery("select count(*) from osoba");
-			$q101 = myquery("select id,ime,prezime,brindexa from osoba order by prezime,ime limit $offset,$limit");
+			$q101 = myquery("select id,ime,prezime,brindexa,naucni_stepen from osoba order by prezime,ime limit $offset,$limit");
 			$rezultata = mysql_result($q100,0,0);
 		} else {
 			$src = preg_replace("/\s+/"," ",$src);
@@ -2296,10 +2567,10 @@ else {
 			// Probavamo traziti ime i prezime istovremeno
 			if (count($dijelovi)==2) {
 				$q100 = myquery("select count(*) from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
-				$q101 = myquery("select id,ime,prezime,brindexa from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%' order by prezime,ime limit $offset,$limit");
+				$q101 = myquery("select id,ime,prezime,brindexa,naucni_stepen from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%' order by prezime,ime limit $offset,$limit");
 				if (mysql_result($q100,0,0)==0) {
 					$q100 = myquery("select count(*) from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
-					$q101 = myquery("select id,ime,prezime,brindexa from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%' order by prezime,ime limit $offset,$limit");
+					$q101 = myquery("select id,ime,prezime,brindexa,naucni_stepen from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%' order by prezime,ime limit $offset,$limit");
 				}
 				$rezultata = mysql_result($q100,0,0);
 			}
@@ -2312,7 +2583,7 @@ else {
 					if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
 				}
 				$q100 = myquery("select count(*) from osoba where ($query)");
-				$q101 = myquery("select id,ime,prezime,brindexa from osoba where ($query) order by prezime,ime limit $offset,$limit");
+				$q101 = myquery("select id,ime,prezime,brindexa,naucni_stepen from osoba where ($query) order by prezime,ime limit $offset,$limit");
 				$rezultata = mysql_result($q100,0,0);
 			}
 
@@ -2324,7 +2595,7 @@ else {
 					$query .= "a.login like '%$dio%' ";
 				}
 				$q100 = myquery("select count(*) from osoba as o, auth as a where ($query) and a.id=o.id");
-				$q101 = myquery("select o.id,o.ime,o.prezime,o.brindexa from osoba as o, auth as a where ($query) and a.id=o.id order by o.prezime,o.ime limit $offset,$limit");
+				$q101 = myquery("select o.id,o.ime,o.prezime,o.brindexa,o.naucni_stepen from osoba as o, auth as a where ($query) and a.id=o.id order by o.prezime,o.ime limit $offset,$limit");
 				$rezultata = mysql_result($q100,0,0);
 			}
 
@@ -2354,7 +2625,9 @@ else {
 		while ($r101 = mysql_fetch_row($q101)) {
 			print "<tr ";
 			if ($i%2==0) print "bgcolor=\"#EEEEEE\"";
-			print "><td>$i. $r101[2] $r101[1]";
+			print "><td>$i. $r101[2] ";
+			if ($r101[4]>0) print $naucni_stepen[$r101[4]]." ";
+			print $r101[1];
 			if (intval($r101[3])>0) print " ($r101[3])";
 			print "</td><td><a href=\"".genuri()."&akcija=edit&osoba=$r101[0]\">Detalji</a></td></tr>";
 			$i++;
