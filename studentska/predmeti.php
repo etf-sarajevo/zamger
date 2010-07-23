@@ -379,7 +379,7 @@ else if ($akcija == "edit") {
 			if (mysql_result($q360,0,0) < 1) {
 				$q361 = myquery("insert into nastavnik_predmet set nastavnik=$nastavnik, predmet=$predmet, akademska_godina=$ag");
 			}
-			nicemessage ("Nastavnik angažovan na predmetu");
+			nicemessage ("Nastavniku dato pravo pristupa predmetu");
 			zamgerlog("nastavnik u$nastavnik dodan na predmet pp$predmet",4);
 		}
 	}
@@ -401,7 +401,7 @@ else if ($akcija == "edit") {
 	else if ($_POST['subakcija'] == "izbaci_nastavnika" && check_csrf_token()) {
 		$nastavnik = intval($_POST['nastavnik']);
 		$q363 = myquery("delete from nastavnik_predmet where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
-		nicemessage ("Nastavnik više nije angažovan na predmetu");
+		nicemessage ("Nastavnik više nema pravo pristupa predmetu");
 		zamgerlog("nastavnik u$nastavnik izbacen sa predmeta pp$predmet",4);
 	}
 
@@ -425,6 +425,12 @@ else if ($akcija == "edit") {
 		zamgerlog("obrisana ponudakursa $ponudakursa (predmet pp$predmet, godina ag$ag)",4);
 	}
 
+	else if ($_GET['subakcija'] == "deangazuj") {
+		$osoba = intval($_GET['osoba']);
+		$q367 = myquery("delete from angazman where osoba=$osoba and predmet=$predmet and akademska_godina=$ag");
+		nicemessage ("Nastavnik više nije angažovan na predmetu");
+		zamgerlog("osoba u$osoba deangazovana sa predmeta pp$predmet, godina $ag", 4);
+	}
 
 
 
@@ -480,6 +486,21 @@ else if ($akcija == "edit") {
 
 	<hr>
 	<?
+
+
+
+	// Nastavni ansambl
+
+	?><h3>Nastavni ansambl:</h3>
+	<ul>
+	<?
+
+	$q355 = myquery("select o.id, o.ime, o.prezime, ns.titula, angs.naziv from angazman as a, osoba as o, angazman_status as angs, naucni_stepen as ns where a.predmet=$predmet and a.akademska_godina=$ag and a.osoba=o.id and o.naucni_stepen=ns.id and a.angazman_status=angs.id order by angs.id, o.prezime");
+	if (mysql_num_rows($q355)<1) print "<li>Niko nije angažovan na ovom predmetu</li>\n";
+	while ($r355 = mysql_fetch_row($q355)) {
+		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">$r355[2] $r355[3] $r355[1]</a> - $r355[4] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&akademska_godina=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
+	}
+	print "</ul>\n";
 
 
 
@@ -549,11 +570,11 @@ else if ($akcija == "edit") {
 
 
 
-	// Nastavnici na predmetu
+	// Prava pristupa na predmetu
 
 	?>
 	<hr>
-	<p>Nastavnici angažovani na predmetu (<?=$agnaziv?>):</p>
+	<p>Osobe sa pravima pristupa na predmetu (<?=$agnaziv?>):</p>
 	<?
 	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 	if (mysql_num_rows($q351) < 1) {
