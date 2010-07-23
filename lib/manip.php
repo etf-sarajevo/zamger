@@ -118,6 +118,7 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Parametar funkcije je ustvari ponudakursa
 
 function upis_studenta_na_predmet($student,$ponudakursa) {
+	$ag = intval($_REQUEST['ag']); // akademska godina
 	// Zapis u tabeli student_predmet
 	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
 
@@ -131,6 +132,7 @@ function upis_studenta_na_predmet($student,$ponudakursa) {
 	// Potrebno je upisati max. bodova za sve komponente prisustva!
 	
 	//	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+	
 	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag"); // tip komponente 3 = klasično prisustvo
 	while ($r40 = mysql_fetch_row($q40)) {
 		$q50 = myquery("insert into komponentebodovi set student=$student, predmet=$ponudakursa, komponenta=$r40[0], bodovi=$r40[1]");
@@ -366,7 +368,7 @@ function mass_input($ispis) {
 
 function update_komponente($student,$predmet,$komponenta=0) {
 	// Ako nije navedena komponenta, racunaju se sve komponente
-
+$ag = intval($_REQUEST['ag']); // akademska godina
 	// Glavni upit - spisak komponenti
 	$dodaj="";
 	if ($komponenta!=0) $dodaj="and k.id=$komponenta";

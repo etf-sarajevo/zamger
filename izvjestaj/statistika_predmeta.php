@@ -91,18 +91,21 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 
 	// Spisak komponenti
 	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=array();
-	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
+	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente, k.uslov from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
 	while ($r50 = mysql_fetch_row($q50)) {
 		$knazivi[$r50[0]]=$r50[1]; // k.gui_naziv
 		$kprolaz[$r50[0]]=$r50[2]; // k.prolaz
 		$ktip[$r50[0]]=$r50[3]; // k.tipkomponente
 		$kpolozilo[$r50[0]]=0;
+		$kuslov[$r50[0]]=$r50[4];
 	}
 
 	// Prolazimo kroz studente
 	$uslov40=$uslov35=$uslov0=$nisu_izlazili=$polozilo=$integralno=$usmeni=$puk=0;
+	$uslovkomponente=0;
 	while ($r30 = mysql_fetch_row($q30)) {
 		$student = $r30[0];
+		$uslovUslov=1;
 
 		// Da li je polozio predmet?
 		$q52 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag and ocjena>5");
@@ -136,7 +139,10 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 					$kpolozilo[$komponenta]++;
 					$polozene_komponente[$komponenta]=1;
 				}
-				else $pao++;
+				else{ $pao++;
+					if($kuslov[$komponenta]==1)
+						$uslovUslov=0;
+				}
 
 				$sumbodovi += $bodovi;
 
@@ -147,13 +153,18 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 				$polozene_komponente[$komponenta]=1;
 
 			} else if ($tip!=2) // tip 2 = integralni ispit
-				$pao++;
+				{
+					$pao++;
+					if($kuslov[$komponenta]==1)
+						$uslovUslov=0;
+				}
 		}
 
 		// Da li je zadovoljio uslove?
 		if ($pao==0) {
 			if ($sumbodovi>=40) $uslov40++;
 			if ($sumbodovi>=35) $uslov35++;
+			if($uslovUslov==1) $uslovkomponente++;
 			$uslov0++;
 			if ($polozio_predmet==0) $usmeni++;
 
@@ -207,6 +218,7 @@ if ($odrzano_ispita==0) {
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 35 bodova: <b><?=$uslov35?></b> studenata (<b><?=procenat($uslov35,$stvarno_slusa)?></b>).<br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti: <b><?=$uslov0?></b> studenata (<b><?=procenat($uslov0,$stvarno_slusa)?></b>).<br/>
 	<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponenta?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
 	<?
 
 	// Komponente

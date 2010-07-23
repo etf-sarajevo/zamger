@@ -8,7 +8,20 @@ alert (textstring) }
 
 // - End of JavaScript - -->
 </SCRIPT>
+<style type="text/css">
+#fiksne{
+	font-family:"Times New Roman", Times, serif;
+	font-size:14px;
+	
+}
 
+#opomena{
+	font:"Times New Roman", Times, serif;
+	color:#F00;
+	font-size:16px;
+	font-weight:500;
+}
+</style>
 
 <?
 //NASTAVNIK/TIP-modul koji ce omoguciti definisanja sistema bodovanja na predmetu
@@ -32,8 +45,22 @@ if(!isset($_SESSION['brojZadaca'])) {$_SESSION['brojZadaca']=$brojZadaca=0;}
 
 //dijelovi koda koji vode racuna o broju definisanih komponenti
 
-include("nastavnik/dodaj_ispit.php");
+//include("nastavnik/dodaj_ispit.php");
 
+if($_REQUEST['funkcija']=='dodajIspit'){
+	$_SESSION['brojIspita']=$_SESSION['brojIspita']+1;
+	header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=ispiti&komp=".$brojK);
+}
+if($_REQUEST['funkcija']=='dodajZadacu'){
+	$_SESSION['brojZadaca']=$_SESSION['brojZadaca']+1;
+	header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=zadace&komp=".$brojK);
+}
+if($_REQUEST['funkcija']=='dodajPrisustvo'){
+	$_SESSION['brojPrisustva']=$_SESSION['brojPrisustva']+1;
+	header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=prisustvo&komp=".$brojK);
+}
+
+   
 // Naziv predmeta
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
@@ -60,10 +87,58 @@ if (!$user_siteadmin) { // 3 = site admin
 
 <?
 if(isset($_POST['submit'])){
-	//spasavanje izmjena za novodefinisani tip predmeta
+	//spašavanje izmjena za novodefinisani tip predmeta
 	
-	//sabira broj poena na pojedinim komponentama i smijesta u $suma
-	include("suma.php");
+	//sabira broj poena na pojedinim komponentama i smiješta u $suma
+	//include("suma.php");
+	
+	
+
+	$suma=0;
+	$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
+	$pomocna=count($TabelaPismenihIspita[0]);
+				for($i=0;$i<$pomocna;$i++){
+					if($TabelaPismenihIspita[3][$i]==1 && $i!=2){
+					$suma=$suma+$TabelaPismenihIspita[1][$i];
+					}
+				}
+				
+	$TabelaZadaca=$_SESSION['TabelaZadaca'];
+	$pomocna=count($TabelaZadaca[0]);
+				for($i=0;$i<$pomocna;$i++){
+					
+					if($TabelaZadaca[2][$i]==1){
+						$suma=$suma+$TabelaZadaca[1][$i];
+					}
+				}
+				
+	$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
+	$pomocna=count($TabelaPrisustva[0]);
+				for($i=0;$i<$pomocna;$i++){
+					
+					if($TabelaPrisustva[3][$i]==1){
+						$suma=$suma+$TabelaPrisustva[1][$i];
+					}
+				}
+				
+	
+	$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
+				if($TabelaZavrsni[3][0]==1){
+					$suma=$suma+$TabelaZavrsni[1][0];
+				}
+				
+	$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
+	$pomocna=count($TabelaFiksnih[0]);
+				for($i=0;$i<$pomocna;$i++){
+					if($TabelaFiksnih[3][$i]==1){
+						$suma=$suma+$TabelaFiksnih[1][$i];
+					}
+				}
+		
+
+
+
+
 
 if($suma>100){
 	
@@ -104,9 +179,164 @@ else{
 						
 	}
 	
-	//spasavamo nase novodefinisane komponente
+	//spašavamo naše novodefinisane komponente
 	
-	include("nastavnik/spasi.php");
+	//include("nastavnik/spasi.php");
+
+		$prvi=0;
+		$drugi=0;
+		$q14=myquery("INSERT INTO tippredmeta(naziv) VALUES('".$naziv.$ag."')");
+		
+		$q11 = myquery("select id from tippredmeta where naziv='".$naziv.$ag."'");
+		if($r11=mysql_fetch_row($q11)){
+		$id_predmeta=$r11[0];
+		}
+									
+									
+		$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
+		$pomocna=count($TabelaPismenihIspita[0]);
+					for($i=0;$i<$pomocna;$i++){
+					if($TabelaPismenihIspita[3][$i]==1){
+						if($i==0){
+							$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,uslov)
+										 VALUES('".$TabelaPismenihIspita[0][0]."".$naziv."','".$TabelaPismenihIspita[0][0]."','".$TabelaPismenihIspita[0][0]."',1,".$TabelaPismenihIspita[1][0].",".$TabelaPismenihIspita[2][0].",".$TabelaPismenihIspita[4][0].");");
+									$q14 = myquery("select id from komponenta where naziv='".$TabelaPismenihIspita[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+						}
+						elseif($i==1){
+							$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,uslov)
+										 VALUES('".$TabelaPismenihIspita[0][$i].$naziv."','".$TabelaPismenihIspita[0][$i]."','".$TabelaPismenihIspita[0][$i]."'
+										 ,1,".$TabelaPismenihIspita[1][$i].",".$TabelaPismenihIspita[2][$i].",".$TabelaPismenihIspita[4][$i].");");
+										 $q14 = myquery("select id from komponenta where naziv='".$TabelaPismenihIspita[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$drugi=$r14[0];
+									}
+										$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$drugi);");
+				
+						}
+						elseif($i==2){
+							if($prvi!=0 && $drugi!=0){
+							$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,opcija,uslov)
+										 VALUES('".$TabelaPismenihIspita[0][$i].$naziv."','".$TabelaPismenihIspita[0][$i]."','".$TabelaPismenihIspita[0][$i]."'
+										 ,2,".$TabelaPismenihIspita[1][$i].",".$TabelaPismenihIspita[2][$i].",'".$prvi."+".$drugi."',".$TabelaPismenihIspita[4][$i].");");
+										 $q14 = myquery("select id from komponenta where naziv='".$TabelaPismenihIspita[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+							}
+				
+						}
+						else{
+										$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,uslov)
+										 VALUES('".$TabelaPismenihIspita[0][$i].$naziv."','".$TabelaPismenihIspita[0][$i]."','".$TabelaPismenihIspita[0][$i]."'
+										 ,1,".$TabelaPismenihIspita[1][$i].",".$TabelaPismenihIspita[2][$i].",".$TabelaPismenihIspita[4][$i].");");
+										 $q14 = myquery("select id from komponenta where naziv='".$TabelaPismenihIspita[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+							
+						}
+					}
+					}
+					
+								$TabelaZadaca=$_SESSION['TabelaZadaca'];
+					$pomocna=count($TabelaZadaca[0]);
+					for($i=0;$i<$pomocna;$i++){
+						
+					if($TabelaZadaca[2][$i]==1){
+						
+							$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,uslov)
+										 VALUES('".$TabelaZadaca[0][$i].$naziv."','".$TabelaZadaca[0][$i]."','".$TabelaZadaca[0][$i]."'
+										 ,4,".$TabelaZadaca[1][$i].",".$TabelaZadaca[3][$i].");");
+									$q14 = myquery("select id from komponenta where naziv='".$TabelaZadaca[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+							
+						
+						}
+					}
+					$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
+					$pomocna=count($TabelaPrisustva[0]);
+					for($i=0;$i<$pomocna;$i++){
+						
+					if($TabelaPrisustva[3][$i]==1){
+											$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,opcija,uslov)
+										 VALUES('".$TabelaPrisustva[0][$i].$naziv."','".$TabelaPrisustva[0][$i]."','".$TabelaPrisustva[0][$i]."'
+										 ,3,".$TabelaPrisustva[1][$i].",'".$TabelaPrisustva[2][$i]."',".$TabelaPrisustva[4][$i].");");
+									$q14 = myquery("select id from komponenta where naziv='".$TabelaPrisustva[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+						}
+					}
+					
+					$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
+					if($TabelaZavrsni[3][0]==1){
+											$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,uslov)
+										 VALUES('".$TabelaZavrsni[0][0].$naziv."','".$TabelaZavrsni[0][0]."','".$TabelaZavrsni[0][0]."'
+										 ,1,".$TabelaZavrsni[1][0].",".$TabelaZavrsni[2][0].",0);");
+									$q14 = myquery("select id from komponenta where naziv='".$TabelaZavrsni[0][0].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+					}
+					
+					$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
+					$pomocna=count($TabelaFiksnih[0]);
+					for($i=0;$i<$pomocna;$i++){
+					if($TabelaFiksnih[3][$i]==1){
+													$q14=myquery("INSERT INTO
+										 komponenta(naziv,gui_naziv,kratki_gui_naziv,tipkomponente,maxbodova,prolaz,uslov)
+										 VALUES('".$TabelaFiksnih[0][$i].$naziv."','".$TabelaFiksnih[0][$i]."','".$TabelaFiksnih[0][$i]."'
+										 ,1,".$TabelaFiksnih[1][$i].",".$TabelaFiksnih[2][$i].",".$TabelaFiksnih[2][$i].");");
+									$q14 = myquery("select id from komponenta where naziv='".$TabelaFiksnih[0][$i].$naziv."'");
+									if($r14=mysql_fetch_row($q14)){
+									$prvi=$r14[0];
+									}
+							$q14=myquery("INSERT INTO
+										 tippredmeta_komponenta 
+										 VALUES($id_predmeta,$prvi);");
+						}
+					}
+				
+		//$q14=myquery("UPDATE predmet
+			//		 SET tippredmeta=$id_predmeta
+				//	 WHERE id=$predmet;");
+		
+		$q15=myquery("INSERT INTO akademska_godina_predmet(akademska_godina, predmet, tippredmeta)
+					 VALUES($ag,$predmet,$id_predmeta)");
+		
+
 	
 	
 	
@@ -114,7 +344,7 @@ else{
 }
 }
 elseif(isset($_POST['submit2'])){
- 	//spasavanje izmjena za novodefinisani tip predmeta
+ 	//spašavanje izmjena za novodefinisani tip predmeta
 	$pregled=$_SESSION['spasi'];
 	
 	//$q14=myquery("UPDATE predmet
@@ -132,6 +362,8 @@ elseif(isset($_POST['submit2'])){
 else{
 
 ?>
+<link href="../css/zamger.css" rel="stylesheet" type="text/css" />
+
 
 <p>&nbsp;</p>
 
@@ -163,7 +395,7 @@ if($_REQUEST['obiljezeno']!=false){
 					}
 	     ?>
      		</br>
-        	 <font size="2">Naziv Vaseg novokreiranog tipa predmeta ce biti <? echo $naziv; ?> .</font>
+        	 <font size="2">Naziv Vaseg novokreiranog tipa predmeta ce biti <? print $naziv; ?> .</font>
             </br></br></br>
             <table>
             <tr>
@@ -178,38 +410,125 @@ if($_REQUEST['obiljezeno']!=false){
 	}
 	else if($_REQUEST['obiljezeno']=="dodaj"){
 		//definisanje fiksnih komponenti
-			//uzimanje podataka sa forme i smijestanje u varijablu $TabelaFiksnih
-			include("nastavnik/uzmi_fiksne.php");
+			//uzimanje podataka sa forme i smiještanje u varijablu $TabelaFiksnih
+			//include("nastavnik/uzmi_fiksne.php");
+			
+			
+				//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
+				
+				$kontrola1=true;
+				$kontrola2=true;
+				$kontrola3=true;
+				
+				
+					
+					for($i=0;$i<$brojK;$i++){
+						if($_POST['maxBodova'.$i]<$_POST['prolazBodova'.$i]){
+							$kontrola1=false;
+							
+						}
+						if(  (($_POST['maxBodova'.$i]==false) && isset($_POST['Fiksne'.$i])) || (($_POST['nazivKomponente'.$i]==false) && isset($_POST['Fiksne'.$i])))
+							{
+								$kontrola2=false;
+							}
+							if(($_POST['maxBodova'.$i]==0) && isset($_POST['Fiksne'.$i])){  $kontrola3=false;}
+					}
+					
+					
+				if(($kontrola1==false) || ($kontrola2==false) || ($kontrola3==false)){
+					if($kontrola1==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+						</SCRIPT>
+						
+						<?
+					}
+					elseif($kontrola2==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Potrebno je definisati sve parametre kako biste dodali komponentu!");
+						</SCRIPT>
+						
+						<?		
+					}
+					else{
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+						</SCRIPT>
+						
+						<?	
+					}
+						$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
+					}
+				else{
+				if(isset($_POST['maxBodova0'])){
+						 $TabelaFiksnih=array(array(),array(),array(),array(),array());
+				
+				for($i=0;$i<$brojK;$i++){
+					if(isset($_POST['nazivKomponente'.$i]) && isset($_POST['maxBodova'.$i]) && isset($_POST['prolazBodova'.$i])){
+								array_push($TabelaFiksnih[0],my_escape($_POST['nazivKomponente'.$i]));
+								array_push($TabelaFiksnih[1],floatval($_POST['maxBodova'.$i]));
+								array_push($TabelaFiksnih[2],floatval($_POST['prolazBodova'.$i]));
+								if(isset($_POST['Fiksne'.$i]))
+								array_push($TabelaFiksnih[3],1);
+								else
+								array_push($TabelaFiksnih[3],0);
+								if(isset($_POST['UslovFiksne'.$i]))
+								array_push($TabelaFiksnih[4],1);
+								else
+								array_push($TabelaFiksnih[4],0);
+					}
+				}
+				
+				$_SESSION['TabelaFiksnih']=$TabelaFiksnih;
+								}
+								
+								
+						 else{
+							 $TabelaFiksnih=$_SESSION['TabelaFiksnih'];
+						 }
+				}
+		 
+	//    if (!check_csrf_token()) {
+      //  biguglyerror("Greska prilikom uzimanja podataka sa forme za fiksne komponente.");
+        //zamgerlog("Uzimanje podataka sa forme za fiksne komponente",3);
+        //return;
+    //}
+
 		
 		?>
-        	<font size="3" style="font-family:'Times New Roman', Times, serif">
+        	<div id="fiksne">
             Ovdje možete definisati vlastite komponente predmeta, koje se boduju, npr. seminarski rad i sl.
+            </div>
             </br></br>
-            </font>
+            
+            
             
 <table>
             <tr>
             <td>
             
-        	<form method="post" action="">
-            	<table border="0"><tr bgcolor="#bbbbbb">
+        	<form method="post" action=""> 
+           	  <table border="0"><tr bgcolor="#bbbbbb">
 				<td>Naziv komponente</td><td>Max. bodova</td><td>Prolaz</td><td>Dodaj</td><td>Uslov</td>
 				</tr>
                 <? 
 				for($i=0;$i<$brojK;$i++){
 				if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor=""; ?>
                 <tr <? $bgcolor ?>>
-                <td width="30"><input style="text" name="nazivKomponente<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaFiksnih[0][$i]?>"/></td>
-                <td width="30"><input style="text" name="maxBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaFiksnih[1][$i]?>"/></td>
-                <td width="30"><input style="text" name="prolazBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaFiksnih[2][$i]?>"/></td>
-                <td width="30"><input type="checkbox" name="Fiksne<? echo $i; ?>" value="Dodaj" onclick="this.form.submit();" <? if($TabelaFiksnih[3][$i]==1) echo "checked=\"yes\""; ?> /></td>
-                <td width="30"><input type="checkbox" name="UslovFiksne<? echo $i; ?>" value="Uslov" onclick="this.form.submit();" <? if($TabelaFiksnih[4][$i]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="nazivKomponente<? print $i; ?>" width="29" align="middle" value="<? print $TabelaFiksnih[0][$i]?>"/></td>
+                <td width="30"><input style="text" name="maxBodova<? print $i; ?>" width="29" align="middle" value="<? print $TabelaFiksnih[1][$i]?>"/></td>
+                <td width="30"><input style="text" name="prolazBodova<? print $i; ?>" width="29" align="middle" value="<? print $TabelaFiksnih[2][$i]?>"/></td>
+                <td width="30"><input type="checkbox" name="Fiksne<? print $i; ?>" value="Dodaj" onclick="this.form.submit();" <? if($TabelaFiksnih[3][$i]==1) print "checked=\"yes\""; ?> /></td>
+                <td width="30"><input type="checkbox" name="UslovFiksne<? print $i; ?>" value="Uslov" onclick="this.form.submit();" <? if($TabelaFiksnih[4][$i]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                 <? } ?>
                 </table>
                 </form>
                 </br>
-                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? echo $brojK+1; ?>'><font size="1" color="#000066">Dodaj Komponentu</font></a>
+                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? print $brojK+1; ?>'><font size="1" color="#000066">Dodaj Komponentu</font></a>
                   </br></br>
             </td>
             <td width="20 px">
@@ -219,8 +538,8 @@ if($_REQUEST['obiljezeno']!=false){
             </tr>
                         <tr>
             <td>
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=usmeni&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=pregled&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=usmeni&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=pregled&komp=<? print $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
             </td>
             </tr>
             </table>
@@ -231,8 +550,151 @@ if($_REQUEST['obiljezeno']!=false){
 
 	else if($_REQUEST['obiljezeno']=="ispiti"){
 		//definisanje ispita
-		    //uzimanje podataka sa forme i smijestanje u varijablu $TabelaPismenihIspita
-			include("nastavnik/uzmi_pismene.php");
+		    //uzimanje podataka sa forme i smiještanje u varijablu $TabelaPismenihIspita
+			//include("nastavnik/uzmi_pismene.php");
+			
+								//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
+					
+					$kontrola1=true;
+					$kontrola2=true;
+					$kontrola3=true;
+					
+						if(($_POST['maxBodovaPrvi']<$_POST['prolazBodovaPrvi']) || ($_POST['maxBodovaDrugi']<$_POST['prolazBodovaDrugi'])){
+							
+							$kontrola1=false;
+						}
+						if(  (($_POST['maxBodovaPrvi']==false) && isset($_POST['Prvi'])) || (($_POST['prolazBodovaDrugi']==false) && isset($_POST['Drugi'])) || (($_POST['maxBodovaDrugi']==false) && isset($_POST['Drugi'])) || (($_POST['prolazBodovaPrvi']==false) && isset($_POST['Prvi'])))
+						{
+							$kontrola2=false;
+						}
+						
+						
+						if( (($_POST['maxBodovaPrvi']==0) && isset($_POST['Prvi'])) || ($_POST['maxBodovaDrugi']==0 && isset($_POST['Drugi']))){ 
+						$kontrola3=false;
+						}
+						
+						for($i=0;$i<$brojIspita;$i++){
+							if($_POST['IspitmaxBodova'.$i]<$_POST['IspitprolazBodova'.$i]){
+								$kontrola1=false;
+								
+							}
+							if(  (($_POST['IspitmaxBodova'.$i]==false) && isset($_POST['IspitDodaj'.$i])) || (($_POST['IspitprolazBodova'.$i]==false) && isset($_POST['IspitDodaj'.$i])) || (($_POST['nazivKomponente'.$i]==false) && isset($_POST['IspitDodaj'.$i])))
+								{
+									$kontrola2=false;
+								}
+							if(($_POST['IspitmaxBodova'.$i]==0) && isset($_POST['IspitDodaj'.$i])){  $kontrola3=false;}
+						}
+						
+						
+					if(($kontrola1==false) || ($kontrola2==false) || ($kontrola3==false)){
+						if($kontrola1==false){
+								?>
+							<SCRIPT language=JavaScript>
+									MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+							</SCRIPT>
+							
+							<?
+						}
+						elseif($kontrola2==false){
+								?>
+							<SCRIPT language=JavaScript>
+									MsgBox("Potrebno je definisati sve parametre kako biste dodali komponentu!");
+							</SCRIPT>
+							
+							<?		
+						}
+						else{
+								?>
+							<SCRIPT language=JavaScript>
+									MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+							</SCRIPT>
+							
+			<?	
+						}
+							$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
+						}
+					else{
+							
+					
+					if(isset($_POST['maxBodovaDrugi'])){
+							 $TabelaPismenihIspita=array(array(),array(),array(),array(),array());
+									 
+					if(isset($_POST['maxBodovaPrvi']) && isset($_POST['prolazBodovaPrvi'])){
+					
+						
+							array_push($TabelaPismenihIspita[0],"Prvi parcijalni ispit");
+							array_push($TabelaPismenihIspita[1],floatval($_POST['maxBodovaPrvi']));
+							array_push($TabelaPismenihIspita[2],floatval($_POST['prolazBodovaPrvi']));
+							if(isset($_POST['Prvi']))
+							array_push($TabelaPismenihIspita[3],1);
+							else
+							array_push($TabelaPismenihIspita[3],0);
+							if(isset($_POST['UslovPrvi']))
+							array_push($TabelaPismenihIspita[4],1);
+							else
+							array_push($TabelaPismenihIspita[4],0);
+						
+					
+					}
+					
+					if(isset($_POST['maxBodovaDrugi']) && isset($_POST['prolazBodovaDrugi'])){
+					array_push($TabelaPismenihIspita[0],"Drugi parcijalni ispit");
+					array_push($TabelaPismenihIspita[1],floatval($_POST['maxBodovaDrugi']));
+					array_push($TabelaPismenihIspita[2],floatval($_POST['prolazBodovaDrugi']));
+					if(isset($_POST['Drugi']))
+					array_push($TabelaPismenihIspita[3],1);
+					else
+					array_push($TabelaPismenihIspita[3],0);
+					if(isset($_POST['UslovDrugi']))
+					array_push($TabelaPismenihIspita[4],1);
+					else
+					array_push($TabelaPismenihIspita[4],0);
+					
+					}
+					
+					if(isset($_POST['maxBodovaPrvi']) && isset($_POST['prolazBodovaPrvi']) && isset($_POST['maxBodovaDrugi']) && isset($_POST['prolazBodovaDrugi'])){
+					array_push($TabelaPismenihIspita[0],"Integralni ispit");
+					array_push($TabelaPismenihIspita[1],(floatval($_POST['maxBodovaPrvi'])+floatval($_POST['maxBodovaDrugi'])));
+					array_push($TabelaPismenihIspita[2],(floatval($_POST['prolazBodovaPrvi'])+floatval($_POST['prolazBodovaDrugi'])));
+					if(isset($_POST['Integralni']))
+					array_push($TabelaPismenihIspita[3],1);
+					else
+					array_push($TabelaPismenihIspita[3],0);
+					if(isset($_POST['UslovIntegralni']))
+					array_push($TabelaPismenihIspita[4],1);
+					else
+					array_push($TabelaPismenihIspita[4],0);
+					
+					}
+					for($i=0;$i<$brojIspita;$i++){
+						if(isset($_POST['nazivKomponente'.$i]) && isset($_POST['IspitmaxBodova'.$i]) && isset($_POST['IspitprolazBodova'.$i])){
+									array_push($TabelaPismenihIspita[0],my_escape($_POST['nazivKomponente'.$i]));
+									array_push($TabelaPismenihIspita[1],floatval($_POST['IspitmaxBodova'.$i]));
+									array_push($TabelaPismenihIspita[2],floatval($_POST['IspitprolazBodova'.$i]));
+									if(isset($_POST['IspitDodaj'.$i]))
+									array_push($TabelaPismenihIspita[3],1);
+									else
+									array_push($TabelaPismenihIspita[3],0);
+									if(isset($_POST['UslovIspit'.$i]))
+									array_push($TabelaPismenihIspita[4],1);
+									else
+									array_push($TabelaPismenihIspita[4],0);
+						}
+					}
+					
+					$_SESSION['TabelaPismenihIspita']=$TabelaPismenihIspita;
+									}
+							 else{
+								 $TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
+							 }
+							 
+					}
+					
+		//			    if (!check_csrf_token()) {
+        	//				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
+        		//			zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
+        			//		return;
+    					//}
 	
 		?>
         <table>
@@ -244,10 +706,10 @@ if($_REQUEST['obiljezeno']!=false){
 				</tr>
                 <tr <? $bgcolor ?>>
                 <td width="150">Prvi parcijalni ispit </td>
-                <td width="30"><input style="text" name="maxBodovaPrvi" width="29" align="middle" value="<? echo $TabelaPismenihIspita[1][0]?>" /></td>
-                <td width="30"><input style="text" name="prolazBodovaPrvi" width="29" align="middle" value="<? echo $TabelaPismenihIspita[2][0]?>" /></td>
-                <td width="30"><input type="checkbox" name="Prvi" value="PrviDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][0]==1) echo "checked=\"yes\""; ?>/></td>
-                <td width="30"><input type="checkbox" name="UslovPrvi" value="UslovPrviDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][0]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="maxBodovaPrvi" width="29" align="middle" value="<? print $TabelaPismenihIspita[1][0]?>" /></td>
+                <td width="30"><input style="text" name="prolazBodovaPrvi" width="29" align="middle" value="<? print $TabelaPismenihIspita[2][0]?>" /></td>
+                <td width="30"><input type="checkbox" name="Prvi" value="PrviDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][0]==1) print "checked=\"yes\""; ?>/></td>
+                <td width="30"><input type="checkbox" name="UslovPrvi" value="UslovPrviDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][0]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                 <? 
 				
@@ -255,10 +717,10 @@ if($_REQUEST['obiljezeno']!=false){
                 
                 <tr <? $bgcolor ?>>
                 <td width="150">Drugi parcijalni ispit </td>
-                <td width="30"><input style="text" name="maxBodovaDrugi" width="29" align="middle" value="<? echo $TabelaPismenihIspita[1][1]?>"/></td>
-                <td width="30"><input style="text" name="prolazBodovaDrugi" width="29" align="middle" value="<? echo $TabelaPismenihIspita[2][1]?>"/></td>
-                <td width="30"><input type="checkbox" name="Drugi" value="DrugiDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][1]==1) echo "checked=\"yes\""; ?>/></td>
-                <td width="30"><input type="checkbox" name="UslovDrugi" value="UslovDrugiDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][1]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="maxBodovaDrugi" width="29" align="middle" value="<? print $TabelaPismenihIspita[1][1]?>"/></td>
+                <td width="30"><input style="text" name="prolazBodovaDrugi" width="29" align="middle" value="<? print $TabelaPismenihIspita[2][1]?>"/></td>
+                <td width="30"><input type="checkbox" name="Drugi" value="DrugiDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][1]==1) print "checked=\"yes\""; ?>/></td>
+                <td width="30"><input type="checkbox" name="UslovDrugi" value="UslovDrugiDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][1]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                 
                 <? 
@@ -269,19 +731,19 @@ if($_REQUEST['obiljezeno']!=false){
                 <td width="150">Integralni ispit </td>
                 <td width="30"></td>
                 <td width="30"></td>
-                <td width="30"><input type="checkbox" name="Integralni" value="IntegralniDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][2]==1) echo "checked=\"yes\""; ?>/></td>
-                <td width="30"><input type="checkbox" name="UslovIntegralni" value="UslovIntegralniDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][2]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input type="checkbox" name="Integralni" value="IntegralniDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][2]==1) print "checked=\"yes\""; ?>/></td>
+                <td width="30"><input type="checkbox" name="UslovIntegralni" value="UslovIntegralniDodaj" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][2]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                 <tr>
                                 <? 
 				for($i=0;$i<$brojIspita;$i++){
 				if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor=""; ?>
                 <tr <? $bgcolor ?>>
-                <td width="30"><input style="text" name="nazivKomponente<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPismenihIspita[0][3+$i]?>"/></td>
-                <td width="30"><input style="text" name="IspitmaxBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPismenihIspita[1][3+$i]?>"/></td>
-                <td width="30"><input style="text" name="IspitprolazBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPismenihIspita[2][3+$i]?>"/></td>
-                <td width="30"><input type="checkbox" name="IspitDodaj<? echo $i; ?>" value="IspitDodaj"  onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][3+$i]==1) echo "checked=\"yes\""; ?> /></td>
-                <td width="30"><input type="checkbox" name="UslovIspit<? echo $i; ?>" value="UslovIspit" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][3+$i]==1) echo "checked=\"yes\""; ?> /></td>
+                <td width="30"><input style="text" name="nazivKomponente<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPismenihIspita[0][3+$i]?>"/></td>
+                <td width="30"><input style="text" name="IspitmaxBodova<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPismenihIspita[1][3+$i]?>"/></td>
+                <td width="30"><input style="text" name="IspitprolazBodova<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPismenihIspita[2][3+$i]?>"/></td>
+                <td width="30"><input type="checkbox" name="IspitDodaj<? echo $i; ?>" value="IspitDodaj"  onclick="this.form.submit();" <? if($TabelaPismenihIspita[3][3+$i]==1) print "checked=\"yes\""; ?> /></td>
+                <td width="30"><input type="checkbox" name="UslovIspit<? echo $i; ?>" value="UslovIspit" onclick="this.form.submit();" <? if($TabelaPismenihIspita[4][3+$i]==1) print "checked=\"yes\""; ?> /></td>
                 </tr>
                 <? } ?>
                  </tr>
@@ -295,7 +757,7 @@ if($_REQUEST['obiljezeno']!=false){
           </tr>
                     <tr><td>
                             </br>
-                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=ispiti&komp=<? echo $brojK; 
+                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=ispiti&komp=<? print $brojK; 
 				 ?>&funkcija=dodajIspit'><font size="1" color="#000066">Dodaj Ispit</font></a>
                   </br></br>
                         </td>
@@ -304,8 +766,8 @@ if($_REQUEST['obiljezeno']!=false){
           <tr>
          
           <td>
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=naziv&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=naziv&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? print $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
             </td>
             </tr>
             </table>
@@ -316,7 +778,109 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="zadace"){
 		//definisanje zadace
 		//uzima podatke sa forme i stavlja u varijablu $TabelaZadaca
-		include("nastavnik/uzmi_zadace.php");
+		//include("nastavnik/uzmi_zadace.php");
+		
+		
+						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
+				
+				$kontrola1=true;
+				$kontrola2=true;
+				$kontrola3=true;
+				
+					if( (($_POST['maxBodovaZadace']==false) && isset($_POST['Zadace'])))
+					{
+						$kontrola2=false;
+					}
+					if( (($_POST['maxBodovaZadace']==0) && isset($_POST['Zadace']))){ 
+					$kontrola3=false;
+					}
+					
+					for($i=0;$i<$brojZadaca;$i++){
+				
+						if(  (($_POST['ZadacamaxBodova'.$i]==false) && isset($_POST['ZadacaDodaj'.$i])) || (($_POST['nazivKomponenteZadaca'.$i]==false) && isset($_POST['ZadacaDodaj'.$i])))
+							{
+								$kontrola2=false;
+							}
+						
+						if(($_POST['ZadacamaxBodova'.$i]==0) && isset($_POST['ZadacaDodaj'.$i])){  $kontrola3=false;}
+					}
+					
+					
+				if(($kontrola1==false) || ($kontrola2==false) || ($kontrola3==false)){
+					if($kontrola1==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+						</SCRIPT>
+						
+						<?
+					}
+					elseif($kontrola2==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Potrebno je definisati sve parametre kako biste dodali komponentu!");
+						</SCRIPT>
+						
+						<?		
+					}
+					else{
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+						</SCRIPT>
+						
+		<?	
+					}
+						$TabelaZadaca=$_SESSION['TabelaZadaca'];
+					}
+				else{
+					
+				//sve podatke sa forme kupimo u varijablu $TabelaZadaca ili, ako nije submitano, uzimamo podatke iz sesije
+				if(isset($_POST['maxBodovaZadace'])){
+					
+					
+					$TabelaZadaca=array(array(),array(),array(),array());
+					
+				if(isset($_POST['maxBodovaZadace'])){
+				array_push($TabelaZadaca[0],"Zadace");
+				array_push($TabelaZadaca[1],floatval($_POST['maxBodovaZadace']));
+				if(isset($_POST['Zadace']))
+				array_push($TabelaZadaca[2],1);
+				else
+				array_push($TabelaZadaca[2],0);
+				if(isset($_POST['UslovZadace']))
+				array_push($TabelaZadaca[3],1);
+				else
+				array_push($TabelaZadaca[3],0);
+				
+				}
+				
+				for($i=0;$i<$brojZadaca;$i++){
+					if(isset($_POST['nazivKomponenteZadaca'.$i]) && isset($_POST['ZadacamaxBodova'.$i])){
+								array_push($TabelaZadaca[0],my_escape($_POST['nazivKomponenteZadaca'.$i]));
+								array_push($TabelaZadaca[1],floatval($_POST['ZadacamaxBodova'.$i]));
+								if(isset($_POST['ZadacaDodaj'.$i]))
+								array_push($TabelaZadaca[2],1);
+								else
+								array_push($TabelaZadaca[2],0);
+								if(isset($_POST['ZadacaIspit'.$i]))
+								array_push($TabelaZadaca[3],1);
+								else
+								array_push($TabelaZadaca[3],0);
+					}
+				}
+				
+				$_SESSION['TabelaZadaca']=$TabelaZadaca;
+								}
+						 else{
+							 $TabelaZadaca=$_SESSION['TabelaZadaca'];
+						 }
+				}
+	//	if (!check_csrf_token()) {
+      //  	biguglyerror("Greska prilikom uzimanja podataka sa forme za zadace.");
+        //	zamgerlog("Uzimanje podataka sa forme za zadace",3);
+        	//return;
+    	//}
 		
 		?>
         <table>
@@ -329,19 +893,19 @@ if($_REQUEST['obiljezeno']!=false){
                
                 <tr <? $bgcolor ?>>
                 <td width="150">Zadace </td>
-                <td width="30"><input style="text" name="maxBodovaZadace" width="29" align="middle" value="<? echo $TabelaZadaca[1][0]?>"/></td>
-                <td width="30"><input type="checkbox" name="Zadace" value="ZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[2][0]==1) echo "checked=\"yes\""; ?>/></td>
-                <td width="30"><input type="checkbox" name="UslovZadace" value="UslovZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[3][0]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="maxBodovaZadace" width="29" align="middle" value="<? print $TabelaZadaca[1][0]?>"/></td>
+                <td width="30"><input type="checkbox" name="Zadace" value="ZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[2][0]==1) print "checked=\"yes\""; ?>/></td>
+                <td width="30"><input type="checkbox" name="UslovZadace" value="UslovZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[3][0]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                                 <tr>
                                 <? 
 				for($i=0;$i<$brojZadaca;$i++){
 				if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor=""; ?>
                 <tr <? $bgcolor ?>>
-                <td width="30"><input style="text" name="nazivKomponenteZadaca<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaZadaca[0][1+$i]?>"/></td>
-                <td width="30"><input style="text" name="ZadacamaxBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaZadaca[1][1+$i]?>"/></td>
-                <td width="30"><input type="checkbox" name="ZadacaDodaj<? echo $i; ?>" value="ZadacaDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[2][1+$i]==1) echo "checked=\"yes\""; ?> /></td>
-                <td width="30"><input type="checkbox" name="ZadacaIspit<? echo $i; ?>" value="ZadacaUslov" onclick="this.form.submit();" <? if($TabelaZadaca[3][1+$i]==1) echo "checked=\"yes\""; ?> /></td>
+                <td width="30"><input style="text" name="nazivKomponenteZadaca<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaZadaca[0][1+$i]?>"/></td>
+                <td width="30"><input style="text" name="ZadacamaxBodova<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaZadaca[1][1+$i]?>"/></td>
+                <td width="30"><input type="checkbox" name="ZadacaDodaj<? echo $i; ?>" value="ZadacaDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[2][1+$i]==1) print "checked=\"yes\""; ?> /></td>
+                <td width="30"><input type="checkbox" name="ZadacaIspit<? echo $i; ?>" value="ZadacaUslov" onclick="this.form.submit();" <? if($TabelaZadaca[3][1+$i]==1) print "checked=\"yes\""; ?> /></td>
                 </tr>
                 <? } ?>
                  </tr>
@@ -361,15 +925,15 @@ if($_REQUEST['obiljezeno']!=false){
           </tr>
            <tr><td>
                             </br>
-                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? echo $brojK; 
+                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? print $brojK; 
 				 ?>&funkcija=dodajZadacu'><font size="1" color="#000066">Dodaj zadacu</font></a>
                   </br></br>
                         </td>
                         </tr>
             <tr>
             <td>
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=ispiti&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=ispiti&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? print $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
             </td>
             </tr>
 </table>
@@ -378,8 +942,111 @@ if($_REQUEST['obiljezeno']!=false){
 	
 	else if($_REQUEST['obiljezeno']=="prisustvo"){
 		//definisanje ispita
-        //uzimamo podatke sa forme za prisustvo i smjestamo u varijablu $TabelaPrisustva
-		include("nastavnik/uzmi_prisustvo.php");
+        //uzimamo podatke sa forme za prisustvo i smještamo u varijablu $TabelaPrisustva
+		//include("nastavnik/uzmi_prisustvo.php");
+		
+						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
+				
+				$kontrola1=true;
+				$kontrola2=true;
+				$kontrola3=true;
+				
+					if(  (($_POST['maxBodovaPrisustvo']==false) && isset($_POST['Prisustvo'])) || (($_POST['BrojIzostanaka']==false) && isset($_POST['Prisustvo'])))
+					{
+						$kontrola2=false;
+					}
+						if( (($_POST['maxBodovaPrisustvo']==0) && isset($_POST['Prisustvo'])) || ($_POST['BrojIzostanaka']==0 && isset($_POST['Prisustvo']))){ 
+					$kontrola3=false;
+					}
+					
+					for($i=0;$i<$brojPrisustva;$i++){
+				
+						if(  (($_POST['PrisustvoMaxBodova'.$i]==false) && isset($_POST['PrisustvoDodaj'.$i])) || (($_POST['PrisustvoBrojIzostanaka'.$i]==false) && isset($_POST['PrisustvoDodaj'.$i])) || (($_POST['PrisustvoNazivKomponente'.$i]==false) && isset($_POST['PrisustvoDodaj'.$i])))
+							{
+								$kontrola2=false;
+							}
+							if((($_POST['PrisustvoMaxBodova'.$i]==0) && isset($_POST['PrisustvoDodaj'.$i])) || (($_POST['PrisustvoBrojIzostanaka'.$i]==0) && isset($_POST['PrisustvoDodaj'.$i]))){  $kontrola3=false;}
+					}
+					
+					
+				if(($kontrola1==false) || ($kontrola2==false) || ($kontrola3==false)){
+					if($kontrola1==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+						</SCRIPT>
+						
+						<?
+					}
+					elseif($kontrola2==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Potrebno je definisati sve parametre kako biste dodali komponentu!");
+						</SCRIPT>
+						
+						<?		
+					}
+					else{
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+						</SCRIPT>
+						
+		<?	
+					}
+						$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
+					}
+				else{
+				
+				//Popunjavamo $TabelaPrisustva, ili sa forme ili iz sesije
+				
+				if(isset($_POST['maxBodovaPrisustvo'])){
+					
+						 $TabelaPrisustva=array(array(),array(),array(),array(),array());
+				
+				if(isset($_POST['maxBodovaPrisustvo']) && isset($_POST['BrojIzostanaka'])){
+				array_push($TabelaPrisustva[0],"Prisustvo");
+				array_push($TabelaPrisustva[1],floatval($_POST['maxBodovaPrisustvo']));
+				array_push($TabelaPrisustva[2],intval($_POST['BrojIzostanaka']));
+				if(isset($_POST['Prisustvo']))
+				array_push($TabelaPrisustva[3],1);
+				else
+				array_push($TabelaPrisustva[3],0);
+				if(isset($_POST['UslovPrisustvo']))
+				array_push($TabelaPrisustva[4],1);
+				else
+				array_push($TabelaPrisustva[4],0);
+				
+				}
+				
+				for($i=0;$i<$brojPrisustva;$i++){
+				
+					if(isset($_POST['PrisustvoNazivKomponente'.$i]) && isset($_POST['PrisustvoMaxBodova'.$i]) && isset($_POST['PrisustvoBrojIzostanaka'.$i])){
+								array_push($TabelaPrisustva[0],my_escape($_POST['PrisustvoNazivKomponente'.$i]));
+								array_push($TabelaPrisustva[1],floatval($_POST['PrisustvoMaxBodova'.$i]));
+								array_push($TabelaPrisustva[2],intval($_POST['PrisustvoBrojIzostanaka'.$i]));
+								if(isset($_POST['PrisustvoDodaj'.$i]))
+								array_push($TabelaPrisustva[3],1);
+								else
+								array_push($TabelaPrisustva[3],0);
+								if(isset($_POST['PrisustvoIspit'.$i]))
+								array_push($TabelaPrisustva[4],1);
+								else
+								array_push($TabelaPrisustva[4],0);
+					}
+				}
+				
+				$_SESSION['TabelaPrisustva']=$TabelaPrisustva;
+								}
+						 else{
+							 $TabelaPrisustva=$_SESSION['TabelaPrisustva'];
+						 }
+				}
+		//if (!check_csrf_token()) {
+        	//biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
+        	//zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
+        	//return;
+    	//}
 		
 		?>
         <table>
@@ -392,21 +1059,21 @@ if($_REQUEST['obiljezeno']!=false){
                
                 <tr <? $bgcolor ?>>
                 <td width="100">Prisustvo</td>
-                <td width="30"><input style="text" name="maxBodovaPrisustvo" width="29" align="middle" value="<? echo $TabelaPrisustva[1][0]?>" /></td>
-                <td width="100"><input style="text" name="BrojIzostanaka" width="29" align="middle" value="<? echo $TabelaPrisustva[2][0]?>" /></td>
-                <td width="30"><input type="checkbox" name="Prisustvo" value="PrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[3][0]==1) echo "checked=\"yes\""; ?> /></td>
-                <td width="30"><input type="checkbox" name="UslovPrisustvo" value="UslovPrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[4][0]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="maxBodovaPrisustvo" width="29" align="middle" value="<? print $TabelaPrisustva[1][0]?>" /></td>
+                <td width="100"><input style="text" name="BrojIzostanaka" width="29" align="middle" value="<? print $TabelaPrisustva[2][0]?>" /></td>
+                <td width="30"><input type="checkbox" name="Prisustvo" value="PrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[3][0]==1) print "checked=\"yes\""; ?> /></td>
+                <td width="30"><input type="checkbox" name="UslovPrisustvo" value="UslovPrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[4][0]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                  <tr>
                   <? 
 				for($i=0;$i<$brojPrisustva;$i++){
 				if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor=""; ?>
                 <tr <? $bgcolor ?>>
-                <td width="30"><input style="text" name="PrisustvoNazivKomponente<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPrisustva[0][1+$i]?>" /></td>
-                <td width="30"><input style="text" name="PrisustvoMaxBodova<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPrisustva[1][1+$i]?>"/></td>
-                <td width="30"><input style="text" name="PrisustvoBrojIzostanaka<? echo $i; ?>" width="29" align="middle" value="<? echo $TabelaPrisustva[2][1+$i]?>"/></td>
-                <td width="30"><input type="checkbox" name="PrisustvoDodaj<? echo $i; ?>" value="PrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[3][1+$i]==1) echo "checked=\"yes\""; ?> /></td>
-                <td width="30"><input type="checkbox" name="PrisustvoIspit<? echo $i; ?>" value="PrisustvoUslov" onclick="this.form.submit();" <? if($TabelaPrisustva[4][1+$i]==1) echo "checked=\"yes\""; ?>/></td>
+                <td width="30"><input style="text" name="PrisustvoNazivKomponente<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPrisustva[0][1+$i]?>" /></td>
+                <td width="30"><input style="text" name="PrisustvoMaxBodova<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPrisustva[1][1+$i]?>"/></td>
+                <td width="30"><input style="text" name="PrisustvoBrojIzostanaka<? echo $i; ?>" width="29" align="middle" value="<? print $TabelaPrisustva[2][1+$i]?>"/></td>
+                <td width="30"><input type="checkbox" name="PrisustvoDodaj<? echo $i; ?>" value="PrisustvoDodaj" onclick="this.form.submit();" <? if($TabelaPrisustva[3][1+$i]==1) print "checked=\"yes\""; ?> /></td>
+                <td width="30"><input type="checkbox" name="PrisustvoIspit<? echo $i; ?>" value="PrisustvoUslov" onclick="this.form.submit();" <? if($TabelaPrisustva[4][1+$i]==1) print "checked=\"yes\""; ?>/></td>
                 </tr>
                 <? } ?>
                  </tr>
@@ -425,15 +1092,15 @@ if($_REQUEST['obiljezeno']!=false){
           </tr>
                      <tr><td>
                             </br>
-                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? echo $brojK; 
+                 <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? print $brojK; 
 				 ?>&funkcija=dodajPrisustvo'><font size="1" color="#000066">Dodaj prisustvo</font></a>
                   </br></br>
                         </td>
                         </tr>
                         <tr>
             <td>
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td> <td></td><td align="right" width="450 px">
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=usmeni&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td> <td></td><td align="right" width="450 px">
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=usmeni&komp=<? print $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
             </td>
             </tr>
 </table>
@@ -442,8 +1109,91 @@ if($_REQUEST['obiljezeno']!=false){
 	
 	else if($_REQUEST['obiljezeno']=="usmeni"){
 		//definisanje usmenog ispita
-		//uzimamo podatke sa forme i smijestamo u varijablu $TabelaZavrsni
-		include("nastavnik/uzmi_zavrsni.php");
+		//uzimamo podatke sa forme i smiještamo u varijablu $TabelaZavrsni
+		//include("nastavnik/uzmi_zavrsni.php");
+		
+						
+						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
+				
+				$kontrola1=true;
+				$kontrola2=true;
+				$kontrola3=true;
+				
+					if(($_POST['maxBodovaUsmeni']<$_POST['prolazBodovaUsmeni'])){
+						
+						$kontrola1=false;
+					}
+					if(  (($_POST['maxBodovaUsmeni']==false) && isset($_POST['Usmeni'])) || (($_POST['prolazBodovaUsmeni']==false) && isset($_POST['Usmeni'])))
+					{
+						$kontrola2=false;
+					}
+						if( (($_POST['maxBodovaUsmeni']==0) && isset($_POST['Usmeni'])) || ($_POST['prolazBodovaUsmeni']==0 && isset($_POST['Usmeni']))){ 
+					$kontrola3=false;
+					}
+					
+					
+					
+				if(($kontrola1==false) || ($kontrola2==false) || ($kontrola3==false)){
+					if($kontrola1==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+						</SCRIPT>
+						
+						<?
+					}
+					elseif($kontrola2==false){
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Potrebno je definisati sve parametre kako biste dodali komponentu!");
+						</SCRIPT>
+						
+						<?		
+					}
+					else{
+							?>
+						<SCRIPT language=JavaScript>
+								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+						</SCRIPT>
+						
+		<?	
+					}
+						$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
+					}
+				else{
+				
+				//Uzimamo podatke sa forme ili iz sesije
+				
+				if(isset($_POST['maxBodovaUsmeni'])){
+					
+						 $TabelaZavrsni=array(array(),array(),array(),array());
+				
+				if(isset($_POST['maxBodovaUsmeni']) && isset($_POST['prolazBodovaUsmeni'])){
+				array_push($TabelaZavrsni[0],"Zavrsni ispit");
+				array_push($TabelaZavrsni[1],floatval($_POST['maxBodovaUsmeni']));
+				array_push($TabelaZavrsni[2],floatval($_POST['prolazBodovaUsmeni']));
+				if(isset($_POST['Usmeni']))
+				array_push($TabelaZavrsni[3],1);
+				else
+				array_push($TabelaZavrsni[3],0);
+				
+				
+				}
+				
+				
+				
+				$_SESSION['TabelaZavrsni']=$TabelaZavrsni;
+				}
+						 else{
+							 $TabelaZavrsni=$_SESSION['TabelaZavrsni'];
+						 }
+				}
+//	    if (!check_csrf_token()) {
+		     //biguglyerror("Greska prilikom uzimanja podataka sa forme za zavrsni ispit.");
+       		 //zamgerlog("Uzimanje podataka sa forme za zavrsni ispit",3);
+        	//return;
+   	 //}
+
 		?>
         <table>
         <tr>
@@ -455,9 +1205,9 @@ if($_REQUEST['obiljezeno']!=false){
                
                 <tr <? $bgcolor ?>>
                 <td width="150">Zavrsni ispit </td>
-                <td width="30"><input style="text" name="maxBodovaUsmeni" width="29" align="middle" value="<? echo $TabelaZavrsni[1][0]?>" /></td>
-                <td width="30"><input style="text" name="prolazBodovaUsmeni" width="29" align="middle" value="<? echo $TabelaZavrsni[2][0]?>" /></td>
-                <td width="30"><input type="checkbox" name="Usmeni" value="UsmeniDodaj" onclick="this.form.submit();" <? if($TabelaZavrsni[3][0]==1) echo "checked=\"yes\""; ?> /></td>
+                <td width="30"><input style="text" name="maxBodovaUsmeni" width="29" align="middle" value="<? print $TabelaZavrsni[1][0]?>" /></td>
+                <td width="30"><input style="text" name="prolazBodovaUsmeni" width="29" align="middle" value="<? print $TabelaZavrsni[2][0]?>" /></td>
+                <td width="30"><input type="checkbox" name="Usmeni" value="UsmeniDodaj" onclick="this.form.submit();" <? if($TabelaZavrsni[3][0]==1) print "checked=\"yes\""; ?> /></td>
                 
                 </tr>
                 
@@ -475,8 +1225,8 @@ if($_REQUEST['obiljezeno']!=false){
           </tr>
                         <tr>
             <td>
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
-            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=prisustvo&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a></td><td></td><td align="right" width="450 px">
+            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? print $brojK; ?>'><font size="2" color="#000066">Dalje</font></a>        
             </td>
             </tr>
 </table>
@@ -499,9 +1249,9 @@ if($_REQUEST['obiljezeno']!=false){
             <table>
             <tr>
             <td>
-           <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? echo $brojK; ?>'><font size="2" color="#000066">Nazad</font></a>   
+           <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? print $brojK; ?>'><font size="2" color="#000066">Nazad</font></a>   
             <td align="right" width="700 px">
-          <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? echo $predmet; ?>&ag=<? echo $ag;?>&komp=<? echo $brojK;?>" method="post" name="ZaSpasavanje">
+          <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? echo $predmet; ?>&ag=<? print $ag;?>&komp=<? print $brojK;?>" method="post" name="ZaSpasavanje">
            <input type="submit" name="submit" value="Spasi" />     </form>       
             </td>
             </tr>
@@ -534,9 +1284,9 @@ else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
 	 //}
 	 while ($r10 = mysql_fetch_row($q10)) {
 		 if($r10[0]!=$pregled)
-     			echo "<option value='$r10[0]'>$r10[1]</option>";
+     			print "<option value='$r10[0]'>$r10[1]</option>";
 	 	  else
-		 		 echo "<option selected value='$r10[0]'>$r10[1]</option>";
+		 		 print "<option selected value='$r10[0]'>$r10[1]</option>";
 	 }
 	 ?>
      </select>
@@ -556,7 +1306,7 @@ else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
             <td>
            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'><font size="2" color="#000066">Nazad</font></a>   
             <td align="right" width="700 px">
-           <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? echo $predmet; ?>&ag=<? echo $ag;?>" method="post" name="ZaSpasavanje">
+           <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? print $predmet; ?>&ag=<? print $ag;?>" method="post" name="ZaSpasavanje">
            <input type="submit" name="submit2" value="Spasi" />     </form>   
             </td>
 </tr>
@@ -567,8 +1317,11 @@ else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
 else{
 	//odabir jednog od unaprijed definisanih predmeta
 	?>
-	<table>
-    <tr>
+     <span id="opomena">
+    	Promjenom tipa predmeta gube se svi pohranjeni podaci o ispitima, zadaćama i sl.
+    </span>
+	<table> 
+      <tr>
     <td ><a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&postojeci=1'><font size=2 color="#000066">->Odaberite postojeći tip predmeta</font></a></td>
 	</tr>
         <tr>
@@ -660,15 +1413,15 @@ function pregled_predmeta($pregled){
 			<?
 			$q20 = myquery("select k.id, k.gui_naziv, k.maxbodova, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$pregled");
 			while ($r20 = mysql_fetch_row($q20)){
-		     echo "<td>";
+		     print "<td>";
 			print $r20[1];
-			echo "</td><td>";
+			print "</td><td>";
 			print $r20[2];
-			echo "</td><td>";
+			print "</td><td>";
 			if($r20[3]!=0)
 			print $r20[3];
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor><td></td>";
+			print "</td></tr><tr $bgcolor><td></td>";
 			}
 			?>
 			</tr>
@@ -689,91 +1442,91 @@ function pregled_predmeta_bez_naziva($pregled){
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
-		     echo "<td>";
+		     print "<td>";
 			print $TabelaPismenihIspita[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaPismenihIspita[1][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaPismenihIspita[2][$i]!=0)
 			print $TabelaPismenihIspita[2][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaPismenihIspita[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 						$TabelaZadaca=$_SESSION['TabelaZadaca'];
 			$pomocna=count($TabelaZadaca[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaZadaca[2][$i]==1){
-		     echo "<td>";
+		     print "<td>";
 			print $TabelaZadaca[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaZadaca[1][$i];
-			echo "</td><td>";
-			echo "</td><td>";
+			print "</td><td>";
+			print "</td><td>";
 			if($TabelaZadaca[3][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
 			$pomocna=count($TabelaPrisustva[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPrisustva[3][$i]==1){
-		     echo "<td>";
+		     print "<td>";
 			print $TabelaPrisustva[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaPrisustva[1][$i];
-			echo "</td><td>";
-			echo "</td><td>";
+			print "</td><td>";
+			print "</td><td>";
 			if($TabelaPrisustva[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			
 			$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
 			if($TabelaZavrsni[3][0]==1){
-		     echo "<td>";
+		     print "<td>";
 			print $TabelaZavrsni[0][0];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaZavrsni[1][0];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaZavrsni[2][0]!=0)
 			print $TabelaZavrsni[2][0];
-			echo "</td><td>";
+			print "</td><td>";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 			}
 			
 			$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
 			$pomocna=count($TabelaFiksnih[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaFiksnih[3][$i]==1){
-		     echo "<td>";
+		     print "<td>";
 			print $TabelaFiksnih[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaFiksnih[1][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaFiksnih[2][$i]!=0)
 			print $TabelaFiksnih[2][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaFiksnih[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			?>
@@ -805,21 +1558,21 @@ function pregled_predmeta_sa_nazivom($pregled){
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
-				echo "<td></td>";
-		     echo "<td>";
+				print "<td></td>";
+		     print "<td>";
 			print $TabelaPismenihIspita[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaPismenihIspita[1][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaPismenihIspita[2][$i]!=0)
 			print $TabelaPismenihIspita[2][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaPismenihIspita[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 						$TabelaZadaca=$_SESSION['TabelaZadaca'];
@@ -827,19 +1580,19 @@ function pregled_predmeta_sa_nazivom($pregled){
 			for($i=0;$i<$pomocna;$i++){
 				
 			if($TabelaZadaca[2][$i]==1){
-				echo "<td></td>";
-		     echo "<td>";
+				print "<td></td>";
+		     print "<td>";
 			print $TabelaZadaca[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaZadaca[1][$i];
-			echo "</td><td>";
-			echo "</td><td>";
+			print "</td><td>";
+			print "</td><td>";
 			if($TabelaZadaca[3][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
@@ -847,56 +1600,56 @@ function pregled_predmeta_sa_nazivom($pregled){
 			for($i=0;$i<$pomocna;$i++){
 				
 			if($TabelaPrisustva[3][$i]==1){
-				echo "<td></td>";
-		     echo "<td>";
+				print "<td></td>";
+		     print "<td>";
 			print $TabelaPrisustva[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaPrisustva[1][$i];
-			echo "</td><td>";
-			echo "</td><td>";
+			print "</td><td>";
+			print "</td><td>";
 			if($TabelaPrisustva[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			
 			$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
 			if($TabelaZavrsni[3][0]==1){
-				echo "<td></td>";
-		     echo "<td>";
+				print "<td></td>";
+		     print "<td>";
 			print $TabelaZavrsni[0][0];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaZavrsni[1][0];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaZavrsni[2][0]!=0)
 			print $TabelaZavrsni[2][0];
-			echo "</td><td>";
+			print "</td><td>";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 			}
 			
 			$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
 			$pomocna=count($TabelaFiksnih[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaFiksnih[3][$i]==1){
-				echo "<td></td>";
-		     echo "<td>";
+				print "<td></td>";
+		     print "<td>";
 			print $TabelaFiksnih[0][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			print $TabelaFiksnih[1][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaFiksnih[2][$i]!=0)
 			print $TabelaFiksnih[2][$i];
-			echo "</td><td>";
+			print "</td><td>";
 			if($TabelaFiksnih[4][$i]==1)
 			print "Da";
 			else
 			print "Ne";
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-			echo "</td></tr><tr $bgcolor>";
+			print "</td></tr><tr $bgcolor>";
 				}
 			}
 			?>
