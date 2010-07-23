@@ -351,7 +351,10 @@ else if ($akcija == "edit") {
 				?><tr><td align="center"><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Statistika predmeta</a></td></tr><?
 			}
-			?><tr><td align="left">Ispiti:<br/><?
+			?>
+			<tr><td align="center"><a href="?sta=studentska/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>">
+			<img src="images/32x32/izvjestaj.png" border="0"><br/>Štampanje prijava</a></td></tr>
+			<tr><td align="left">Ispiti:<br/><?
 			while ($r359 = mysql_fetch_row($q359)) {
 				$ispit=$r359[0];
 				$datum = date("d. m. Y.",$r359[1]);

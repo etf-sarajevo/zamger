@@ -60,6 +60,7 @@ array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
 array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
+array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
@@ -84,6 +85,7 @@ array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
+array("izvjestaj/prijave", "Štampanje prijava", "Štampanje prijava", "B", "2", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
