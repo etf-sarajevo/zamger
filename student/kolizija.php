@@ -16,7 +16,6 @@ function student_kolizija() {
 	<h3>Kolizija</h3>
 	<?
 	// Za koju godinu se prijavljuje?
-	// Za koju godinu se prijavljuje?
 	$q1 = myquery("select id, naziv from akademska_godina where aktuelna=1");
 	$q2 = myquery("select id, naziv from akademska_godina where id>".mysql_result($q1,0,0)." order by id limit 1");
 	if (mysql_num_rows($q2)<1) {
@@ -26,12 +25,12 @@ function student_kolizija() {
 		$zagodinu  = mysql_result($q1,0,0);
 		$zagodinunaziv  = mysql_result($q1,0,1);
 		$q3 = myquery("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
+		$proslagodina = mysql_result($q3,0,0);
 		if (mysql_num_rows($q3)<1) {
 			// Definisana je samo jedna akademska godina u bazi
 			nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
 			return;
 		}
-		$proslagodina = mysql_result($q3,0,0);
 	} else {
 		$proslagodina = mysql_result($q1,0,0);
 		$zagodinu = mysql_result($q2,0,0);
@@ -80,6 +79,11 @@ function student_kolizija() {
 	} else {
 		niceerror("Niste nikada bili naš student!");
 		return; // dozvoliti testiranje nestudentima bi bilo prilično komplikovano, obzirom na dio "provjera uslova za koliziju"
+	}
+
+	// Sta ako je student u koliziji položio dovoljno predmeta da može i sljedeću godinu slušati u koliziji?
+	if (intval($_REQUEST['probaj_semestar'])>0) {
+		$trenutni_semestar = intval($_REQUEST['probaj_semestar']);
 	}
 
 	// Modul kolizija zahtijeva plan studija
@@ -139,20 +143,33 @@ function student_kolizija() {
 
 	// Uslov za upis u sljedeću godinu 
 	if (count($predmet_naziv)==0) {
-		?><p>Vi ste dali uslov za upis u <?=$snazivstudija?>, <?=($trenutni_semestar+1)?>. semestar bez kolizije! Možete popuniti <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a> kako biste izabrali izborne predmete.</p><?
+		?><p>Vi ste dali uslov za upis u <?=$snazivstudija?>, <?=($trenutni_semestar+1)?>. semestar bez kolizije! Možete popuniti <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a> kako biste izabrali izborne predmete.</p>
+		<?
+		if ($trenutni_semestar+3<$szavrsni_semestar) {
+			?>
+			<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+1?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
+			<?
+		}
 		return;
 
 	} else if (count($predmet_naziv)<=1) {
 		$da_stari_je=0;
 		foreach ($predmet_stari as $stari) { if ($stari) $da_stari_je=1; }
 		if ($da_stari_je==0) {
-			?><p>Vi ste dali uslov za upis u <?=$snazivstudija?>, <?=($trenutni_semestar+1)?>. semestar bez kolizije! Možete popuniti <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a> kako biste izabrali izborne predmete.</p><?
+			?><p>Vi ste dali uslov za upis u <?=$snazivstudija?>, <?=($trenutni_semestar+1)?>. semestar bez kolizije! Možete popuniti <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a> kako biste izabrali izborne predmete.</p>
+			<?
+			if ($trenutni_semestar+3<$szavrsni_semestar) {
+				?>
+				<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+1?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
+				<?
+			}
 			return;
 		} // else ide na koliziju
 
 	} else if (count($predmet_naziv)>3) {
-		?><p>Ne ispunjavate uslov za koliziju jer imate <?=count($predmet_naziv)?> nepoložena predmeta, a možete imati maksimalno tri.</p>
-		<p>Prema trenutnoj evidenciji, Vaši nepoloženi predmeti su:</p>
+		?><p>Trenutno ne ispunjavate uslov za koliziju jer imate <?=count($predmet_naziv)?> nepoložena predmeta, a možete imati maksimalno tri.</p>
+		<?
+/*		<p>Prema trenutnoj evidenciji, Vaši nepoloženi predmeti su:</p>
 		<ul><?
 		foreach ($predmet_naziv as $id=>$naziv) {
 			print "<li>$naziv";
@@ -160,10 +177,11 @@ function student_kolizija() {
 			print "</li>\n";
 		}
 		?>
-		</ul>
+		</ul>*/
+		?>
 		<p>Ukoliko je ovo greška i položili ste neki od ovih predmeta, hitno kontaktirajte predmetnog nastavnika kako bi unio ocjenu!!!</p>
 		<?
-		return;
+//		return;
 	}
 
 	// Nemoguće je da student ima previše starih predmeta (trenutno: više od jedan) jer onda ne bi mogao upisati godinu. Eventualno je mogao koristiti koliziju prošle godine, ali bi onda varijabla $trenutni_semestar bila niža pa ti predmeti ne bi bili "stari"
@@ -185,7 +203,7 @@ function student_kolizija() {
 	if ($_POST['akcija']=="korak2" && $studij>0 && $godina>0 && $prenosi>0) {
 		// Provjeravamo da li je odabran ispravan broj ECTSova po semestru
 		foreach ($predmet_ects as $id => $ects) {
-			if ($id==$_POST['prenosi']) continue;
+			if ($id==$_POST['prenosi'] || $_POST["polaze-$id"]) continue;
 			if ($predmet_semestar[$id]%2==1) $zimskiects += $ects;
 			else $ljetnjiects += $ects;
 		}
@@ -215,7 +233,7 @@ function student_kolizija() {
 			}
 		}
 		if ($zze>(30-$zimskiects) || $zle>(30-$ljetnjiects)) {
-			niceerror("Izabrano je previše ECTS kredita u jednom od semestara! $zze>$zimskiects $zle>$ljetnjiects");
+			niceerror("Izabrano je previše ECTS kredita u jednom od semestara! $zze>".(30-$zimskiects)." $zle>".(30-$ljetnjiects));
 			return;
 		}
 
@@ -226,6 +244,11 @@ function student_kolizija() {
 		}
 		foreach($predmeti2 as $predmet) {
 			$q210 = myquery("insert into kolizija set student=$userid, akademska_godina=$zagodinu, semestar=2, predmet=$predmet");
+		}
+		foreach ($predmet_ects as $id => $ects) {
+			if ($_POST["polaze-$id"]) {
+				$q210 = myquery("insert into septembar set student=$userid, akademska_godina=$zagodinu, predmet=$id");
+			}
 		}
 		zamgerlog("student u$userid kreirao zahtjev za koliziju", 2); // 2 - edit
 		nicemessage("Kreirali ste zahtjev za koliziju.");
@@ -267,13 +290,36 @@ function student_kolizija() {
 		}
 		$najnoviji_plan = mysql_result($q6,0,0);
 
-
-		// Ispis izbora predmeta koji će student prenijeti
 		?>
 		<form action="index.php" method="POST" name="mojaforma">
 		<input type="hidden" name="sta" value="student/kolizija">
 		<input type="hidden" name="akcija" value="korak1">
 		<?
+		if (intval($_REQUEST['probaj_semestar'])>0) {
+			?>
+		<input type="hidden" name="probaj_semestar" value="<?=intval($_REQUEST['probaj_semestar'])?>">
+			<?
+		}
+
+		// Ispis ponude za polaganje
+		if (count($predmet_naziv)>3) {
+			?>
+			<p><b>Izaberite predmete koje ste položili ili ih planirate položiti do kraja septembarskog roka:</b><br />
+			<?
+
+			foreach ($predmet_naziv as $id=>$naziv) {
+				?>
+				<input type="checkbox" name="polaze-<?=$id?>" <?
+				?>><?=$naziv?> (<?=$predmet_semestar[$id]?>. semestar, <?=$predmet_ects[$id]?> ECTS)<br />
+				<?
+			}
+	
+			?>
+			<p>VAŽNO: Ako ne položite neki od ovih predmeta, Vaš zahtjev za koliziju se poništava!</p>
+			<?
+		}
+
+		// Ispis izbora predmeta koji će student prenijeti
 
 		// Ima li ijedan predmet koji se može prenijeti?
 		$ima=0;
@@ -345,6 +391,11 @@ if (($godina>=1 && $godina<4) && $studij>6) $godina+=3;
 	<input type="hidden" name="sta" value="student/kolizija">
 	<input type="hidden" name="akcija" value="korak2">
 	<?
+	if (intval($_REQUEST['probaj_semestar'])>0) {
+		?>
+	<input type="hidden" name="probaj_semestar" value="<?=intval($_REQUEST['probaj_semestar'])?>">
+		<?
+	}
 
 
 
@@ -365,6 +416,14 @@ if (($godina>=1 && $godina<4) && $studij>6) $godina+=3;
 	<p>Kolizija za studij <b><?=$naziv_studija?></b> (<b><?=$godina?>.</b> godina)<br />
 	<?
 	foreach ($predmet_naziv as $id => $naziv) {
+		if ($_POST["polaze-$id"]) {
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Položiće: <b><?=$naziv?></b> (<?=$predmet_ects[$id]?> ECTS)<br />
+			<input type="hidden" name="polaze-<?=$id?>" value="on">
+			<?
+		}
+	}
+	foreach ($predmet_naziv as $id => $naziv) {
 		if ($id==$_POST['prenosi']) { 
 			?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Preneseni predmet: <b><?=$naziv?></b> (<?=$predmet_ects[$id]?> ECTS)<br />
@@ -372,13 +431,28 @@ if (($godina>=1 && $godina<4) && $studij>6) $godina+=3;
 			<?
 		}
 	}
+	$broj_kolizionih_predmeta = 0;
 	foreach ($predmet_naziv as $id => $naziv) {
-		if ($id!=$_POST['prenosi']) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kolizioni predmet: <b>$naziv</b> (".$predmet_ects[$id]." ECTS) <br />\n";
+		if ($id != $_POST['prenosi'] && !$_POST["polaze-$id"]) {
+			?>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Kolizioni predmet: <b><?=$naziv?></b> (<?=$predmet_ects[$id]?> ECTS)<br />
+			<?
+			$broj_kolizionih_predmeta++;
+		}
+	}
+
+	if ($broj_kolizionih_predmeta>3) {
+		?>
+		<? nicemessage("Izabrali ste više od dva koliziona predmeta"); ?>
+		<p>Možete imati maksimalno dva predmeta u koliziji, ostale predmete trebate ili položiti ili prenijeti.</p>
+		<p><a href="?sta=student/kolizija">Nazad na izbor studija, godine i prenesenog predmeta</a></p>
+		<?
+		return;
 	}
 
 	// Računamo broj ECTSova u zimskom i ljetnjem periodu
 	foreach ($predmet_ects as $id => $ects) {
-		if ($id==$_POST['prenosi']) continue;
+		if ($id==$_POST['prenosi'] || $_POST["polaze-$id"]) continue;
 		if ($predmet_semestar[$id]%2==1) $zimskiects += $ects;
 		else $ljetnjiects += $ects;
 	}

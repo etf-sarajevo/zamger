@@ -1240,6 +1240,19 @@ CREATE TABLE IF NOT EXISTS `rss` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `septembar`
+--
+
+CREATE TABLE IF NOT EXISTS `septembar` (
+  `student` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `srednja_ocjene`
 --
 
