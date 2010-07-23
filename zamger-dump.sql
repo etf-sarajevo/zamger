@@ -13,6 +13,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Database: `zamgerdemo`
 --
 
+
 -- --------------------------------------------------------
 
 --
@@ -31,7 +32,8 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 --
 
 INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
-(1, '2008/2009', 1);
+(1, '2009/2010', 1);
+
 
 -- --------------------------------------------------------
 
@@ -56,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
 INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`) VALUES
 (1, 'admin', 'admin', 0, '', 1);
 
+
 -- --------------------------------------------------------
 
 --
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `cas` (
   `komponenta` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -175,6 +179,19 @@ CREATE TABLE IF NOT EXISTS `ispitocjene` (
 --
 -- Dumping data for table `ispitocjene`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `izborni_slot`
+--
+
+CREATE TABLE IF NOT EXISTS `izborni_slot` (
+  `id` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  PRIMARY KEY  (`id`,`predmet`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
