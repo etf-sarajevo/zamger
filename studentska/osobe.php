@@ -2222,12 +2222,12 @@ else if ($akcija == "edit") {
 			$ects_pao=$predmeti_pao=$izborni_pao=$nize_godine=$ects_polozio=0;
 			while ($r250 = mysql_fetch_row($q250)) {
 				$q260 = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$r250[0]");
-				if (mysql_result($q260,0,0)<1) { 
+				if (mysql_result($q260,0,0)<1) {
+					// Predmet se ne može prenijeti preko dvije godine
+					if ($r250[2]<$semestar-1) $nize_godine++;
 					if ($r250[3]==1) { // Obavezni predmeti se ne smiju pasti!
 						$ects_pao+=$r250[1];
-
 						$predmeti_pao++;
-						if ($r250[2]<$semestar-1) $nize_godine++;
 					} else {
 						$izborni_pao++; // Za izborne cemo uporediti sumu ECTSova kasnije
 					}
@@ -2246,10 +2246,16 @@ else if ($akcija == "edit") {
 
 			} else if ($semestar<$studij_trajanje && $predmeti_pao<=1) {
 				// Provjeravamo broj nepolozenih izbornih predmeta i razliku ects-ova
-				if ($predmeti_pao==0 && ($ects_pao+$ects_polozio)%60<7) { // nema izbornog predmeta sa 7 ili više kredita
+				if ($predmeti_pao==0 && ($ects_pao+$ects_polozio)%60<7 && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
 					$ima_uslov=1;
-				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0) {
+
+				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0 && $nize_godine==0) {
 					$ima_uslov=1;
+
+				} else if ($nize_godine>0) {
+					$niza_godina = ($semestar-2)/2;
+					$objasnjenje="nije položen predmet sa $niza_godina. godine";
+
 				} else {
 					if ($predmeti_pao==1) $objasnjenje="nepoložen jedan obavezan i jedan ili više izborni predmet";
 					else $objasnjenje="nepoloženo dva ili više izbornih predmeta";
