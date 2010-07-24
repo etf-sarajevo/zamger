@@ -156,7 +156,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			<?
 			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
-			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena");
+			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW()");
 		}
 	}
 

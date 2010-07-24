@@ -298,7 +298,7 @@ case "izmjena_ispita":
 		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
 		$c = mysql_num_rows($q70);
 		if ($c==0 && $vrijednost!="/") {
-			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost");
+			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW()");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = mysql_result($q70,0,0);
@@ -306,7 +306,7 @@ case "izmjena_ispita":
 			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0) {
 			$staraocjena = mysql_result($q70,0,0);
-			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost where predmet=$predmet and student=$stud_id");
+			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost, datum=NOW() where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		}
 	}
