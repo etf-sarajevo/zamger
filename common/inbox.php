@@ -508,6 +508,10 @@ if ($_REQUEST['mode']=="outbox") {
 //////////////////////
 
 } else {
+	$velstranice = 20; // Broj poruka po stranici
+	$count=0; $ispis="";
+	$stranica=intval($_REQUEST['stranica']);
+	if ($stranica==0) $stranica=1;
 
 	print "<h3>Poruke u vašem sandučetu:</h3>\n";
 	
@@ -561,20 +565,29 @@ if ($_REQUEST['mode']=="outbox") {
 	
 		if ($_REQUEST['poruka'] == $id) $bgcolor="#EEEECC"; else $bgcolor="#FFFFFF";
 	
-		$code_poruke[$id]="<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$vrijeme</td><td>$posiljalac</td><td><a href=\"?sta=common/inbox&poruka=$id\">$naslov</a></td></tr>\n";
-	}
-	
-	// Sortiramo po vremenu
-	arsort($vrijeme_poruke);
-	$count=0;
-	foreach ($vrijeme_poruke as $id=>$vrijeme) {
-		print $code_poruke[$id];
+		//$count++;
 		$count++;
-		// if ($count==20) break; // prikazujemo 20 poruka  -- TODO: stranice
+		if ($count>($stranica-1)*$velstranice && $count<=$stranica*$velstranice)
+			$ispis .= "<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$vrijeme</td><td>$posiljalac</td><td><a href=\"?sta=common/inbox&poruka=$id&stranica=$stranica\">$naslov</a></td></tr>\n";
 	}
+
 	if ($count==0) {
 		print "<li>Nemate nijednu poruku.</li>\n";
 	}
+
+	if ($count>$velstranice) {
+		$broj_stranica = ($count-1)/$velstranice + 1;
+		print "<p>Stranica: ";
+		for ($i=1; $i<=$broj_stranica; $i++) {
+			if ($stranica==$i)
+				print "$i ";
+			else
+				print "<a href=\"?sta=common/inbox&stranica=$i\">$i</a> ";
+		}
+		print "</p>\n";
+	}
+	
+	print $ispis;
 	
 	print "</tbody></table>";
 
