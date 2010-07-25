@@ -558,6 +558,30 @@ a#backLink:hover
 	font-size: 1.1em;
 }
 
+span.napomena{
+	color:red;
+	font-weight: bold;
+}
+
+div.obradaStudentaDiv{
+	background-color: #EFEFEF;
+	border-top-width: 1px;
+	border-top-color: coral;
+	border-top-style: solid;
+	
+	border-bottom-width: 1px;
+	border-bottom-color: coral;
+	border-bottom-style: solid;
+	
+	display: table-cell;
+}
+
+
+div.obradaStudentaDiv > div{
+	
+	display: table-cell;
+}
+
 #mainWrapper
 {
 	width: 736px;
@@ -673,4 +697,45 @@ a#backLink:hover
 	
 	border-left: 1px solid #c2c1c1;
 }
+
+#member_list{
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 5px;
+	text-align: left;
+
+}
+
+#project_name{
+	vertical-align: top;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 5px;
+	text-align: left;
+}
+
+#project_name .detail_text{
+	padding-left: 20px;
+	color: green;
+	font-family:Verdana;
+	font-size: 11px;
+}
+
+#project_name a:link {color:orange;}
+#project_name a:visited{color:orange;}
+#project_name a:hover{color:orange;}
+#project_name a:active{color:orange;}
+
+.marked_row{
+	background-color:#EFEFEF;
+}
+
+#project_list_header{
+	background-color:#BBBBBB;
+	text-align:center;
+	padding-top:5px;
+	padding-left:10px;
+}
+
 

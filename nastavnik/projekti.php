@@ -27,18 +27,47 @@ function nastavnik_projekti()
 		
 	?>
 <LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+			window.onload = function() {
+				var table = document.getElementById('expandable_table');
+				if (table) {
+					var trs = table.getElementsByTagName('tr');
+					for(var i = 0; i < trs.length; i++) {
+						var a = trs[i].getElementsByTagName('td')[1].getElementsByTagName('a')[0];
+						if(a){
+							a.onclick = function() {
+								var span = this.parentNode.getElementsByTagName('span')[0];
+								span.style.display = span.style.display == 'none' ? 'block' : 'none';
+								this.firstChild.nodeValue = span.style.display == 'none' ? '|+|' : '|-|';
+							
+								var studSpan = this.parentNode.parentNode.getElementsByTagName('td')[0].getElementsByTagName('span')[0];
+								studSpan.style.display = studSpan.style.display == 'none' ? 'block' : 'none';
+							};
+						}	
+					}
+				}
+			};
+
+			function removeTable(divId, tableId) {
+				  var d = document.getElementById(divId);
+				  var child = document.getElementById(tableId);
+				  d.removeChild(child);
+			}
+	
+</script>
 <h2>Projekti</h2>
 <?php	
 	
 	$params = getPredmetParams($predmet, $ag);
-	if ($action!= 'page')
+	if ($action != 'page')
 	{
 	?>
      <div class="links">
             <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix . "&action=param"?>">Parametri projekata</a></li>
                 <li><a href="<?php echo $linkPrefix ?>">Lista projekata</a></li>
-                <li class="last"><a href="<?php echo $linkPrefix . "&action=addProject" ?>">Novi projekat</a></li>
+                <li><a href="<?php echo $linkPrefix . "&action=addProject" ?>">Novi projekat</a></li>
+                <li class="last"><a href="<?php echo $linkPrefix . "&action=addStudent"?>">Dodjela projekata studentima</a></li>
             </ul>   
     </div>	
     <?php	
@@ -96,6 +125,7 @@ function nastavnik_projekti()
 <div class="links">
             <ul class="clearfix" style="margin-bottom: 10px;">
             <li><a href="<?php echo $linkPrefix . "&action=editProject&id=$project[id]" ?>">Uredi projekat</a></li>
+            <li><a href="<?php echo $linkPrefix . "&action=addNoteOnProject&id=$project[id]" ?>">Dodaj biljesku</a></li>
             <li <?php if ($params[zakljucani_projekti] == 0) echo 'class="last"' ?>><a href="<?php echo $linkPrefix . "&action=delProject&id=$project[id]" ?>">Obriši projekat</a></li>
      	<?php
 			if ($params[zakljucani_projekti] == 1)
@@ -365,6 +395,49 @@ function nastavnik_projekti()
 			
 		
 		} //action == editProject
+		elseif ($action == 'addNoteOnProject'){
+			
+			$entry = getProject($id);
+			if(!isset($_REQUEST['addNote'])){
+				//plot form
+				
+?>
+				<h3>Dodaj bilješku za projekat</h3>	
+<?php 
+				print genform('POST','addNote');					
+?>			
+				<div class="row">
+					<span class="label">Bilješka:</span>
+					<span class="formw"><textarea name="note" cols="60" rows="15" wrap="physical" id="opis"><?php echo $entry['biljeska'] ?></textarea></span>
+				</div> 
+					
+				<div class="row">	
+					<span class="formw" style="margin-left:150px;"><input name="addNote" type="submit" id="submit" value="Potvrdi"/></span>
+				</div>
+				</form>
+<?php 
+			}
+			else{
+				//process form
+				$errorText = processAddNoteOnProjectForm($predmet, $ag);
+				if($errorText == '')
+				{
+					nicemessage('Uspješno ste dodali biljesku.');
+					zamgerlog("korisnik u$userid dodao biljesku na projekat $id na predmetu pp$_REQUEST[predmet]", 2);		
+					$link = $linkPrefix;									
+				}
+				else
+				{	
+					//an error occured trying to process the form
+					niceerror($errorText);
+					$link = "javascript:history.back();";	
+					
+				}
+				nicemessage('<a href="'. $link .'">Povratak.</a>');
+				
+				
+			}			
+		}
 		elseif ($action == 'delProject')
 		{
 			//delete item
@@ -408,16 +481,253 @@ function nastavnik_projekti()
 			common_projektneStrane();
 				
 		} //action == page
-
-	
+		elseif ( $action == 'addStudent' or $action=='addStudent#'  )
+		{
+						
+?>
+			<div id="parentDiv">
+			<!-- Ako je prvi put ucitano, dohvati predmete i dohvati sve studente na predmetu, prikazi formu. -->
+			<?php 
+			if (!isset($_REQUEST['dodaj']) && !isset($_REQUEST['brisi']))
+			{
+				drawStudentAndProjectTable($predmet, $ag); //iscrtaj tabelu
+				
+			?>	
+				<div class="obradaStudentaDiv">
+				<div>
+				<div><b>DODAVANJE STUDENTA NA PROJEKAT</b></div>
+				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konačno kliknite Upiši!</div>
+			<?php 
+				print genform("POST", "moveStudent"); //generisi prvu liniju forme
+			?>
+					
+					Student : <select name="student">
+								<?php 
+									$cnt = 0;
+									$studentsOnPredmet = fetchStudentsOnPredmet($predmet,$ag);
+									foreach($studentsOnPredmet as $stud)
+									{
+										$cnt = $cnt+1;
+									
+								?>	
+									<option value="<?= $stud['id']?>"><?= filtered_output_string($cnt . '.' . $stud['ime'] . ' ' . $stud['prezime'])?></option>
+								<?	} ?>
+						  	</select><br/>
+					
+					
+					Projekat :<select name="projekat">
+								<?php 
+									$cnt2 = 0;
+									$projects = fetchProjects($predmet, $ag);
+				  					$rowcounter = 0;
+									foreach($projects as $proj)
+									{
+										$cnt2 = $cnt2 +1;
+								?>
+									<option value="<?= $proj['id']?>"><?= filtered_output_string($cnt2 . '.' . $proj['naziv'])?></option>
+								<?  }?>
+		   				  	</select>
+		   					<br />
+		   			
+							<input name="dodaj" type="submit" value="Upiši" onclick="removeTable('parentDiv','expandable_table')"/>
+				</form>
+				</div>
+				</div>
+				
+				
+				<!-- Forma za izbacivanje studenta sa projekta -->
+				<div class="obradaStudentaDiv">
+				<div>
+				<div><b>BRISANJE STUDENTA SA PROJEKTA</b></div>
+				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konacno kliknite Ispiši!</div>
+			<?php 
+				print genform("POST", "unregStudent"); //generisi prvu liniju forme
+			?>
+					
+					Student : <select name="student">
+								<?php 
+									$cnt = 0;
+									$studentsOnPredmet = fetchStudentsOnPredmet($predmet,$ag);
+									foreach($studentsOnPredmet as $stud)
+									{
+										$cnt = $cnt+1;
+									
+								?>	
+									<option value="<?= $stud['id']?>"><?= filtered_output_string($cnt . '.' . $stud['ime'] . ' ' . $stud['prezime'])?></option>
+								<?	} ?>
+						  	</select><br/>
+					
+					
+					Projekat :<select name="projekat">
+								<?php 
+									$cnt2 = 0;
+									$projects = fetchProjects($predmet, $ag);
+				  					$rowcounter = 0;
+									foreach($projects as $proj)
+									{
+										$cnt2 = $cnt2 +1;
+								?>
+									<option value="<?= $proj['id']?>"><?= filtered_output_string($cnt2 . '.' . $proj['naziv'])?></option>
+								<?  }?>
+		   				  	</select>
+		   					<br />
+		   			
+							<input name="brisi" type="submit" value="Ispiši" onclick="removeTable('parentDiv','expandable_table')"/>
+				</form>
+				</div>
+				</div>	
+				
+				<!-- Kraj forme za izbacivanje studenta sa projekta -->
+				
+			<? 
+			}
+			else //on submit
+			{
+				if(isset($_REQUEST['dodaj']))
+				{
+					
+					$errorText = processChangeProjectForm($predmet, $ag);
+					drawStudentAndProjectTable($predmet, $ag);
+					if($errorText == '')
+					{
+						nicemessage('Student je uspiješno prijavljen na projekat!');
+						zamgerlog("korisnik $userid uspješno promijenio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
+						$link = "?sta=nastavnik/projekti&predmet=1&ag=1&action=addStudent";
+					}
+					else
+					{	
+						//an error occured trying to process the form
+						niceerror($errorText);
+						$link = "javascript:history.back();";	
+					}
+					nicemessage('<a href="'. $link .'">Povratak.</a>');
+				
+				} //forma za dodavanje studenta submitana
+				else if(isset($_REQUEST['brisi']))
+				{
+					$errorText = processDeleteFromProjectForm($predmet, $ag);
+					drawStudentAndProjectTable($predmet, $ag);
+					if($errorText == '')
+					{
+						nicemessage('Student je uspiješno obrisan sa projekta!');
+						zamgerlog("korisnik $userid uspješno odbacio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
+						$link = "?sta=nastavnik/projekti&predmet=1&ag=1&action=addStudent";
+					}
+					else
+					{	
+						//an error occured trying to process the form
+						niceerror($errorText);
+						$link = "javascript:history.back();";	
+					}
+					nicemessage('<a href="'. $link .'">Povratak.</a>');
+				
+				}
+			}
+			?>
+			</div>
+			
+<?php 		
+			}//action -addStudent
 	} //else - action is set
-
-
-
-
 } //function
 
+function drawStudentAndProjectTable($predmet, $ag){
+	print "<table id=\"expandable_table\">
+			<thead id=\"project_list_header\">
+				<tr><td><b>ČLANOVI PROJEKTA</b></td>
+		            <td><b>NAZIV PROJEKTA</b></td>
+		       </tr>
+		    </thead>
+            <tbody>";
+			
+				  $projects = fetchProjects($predmet, $ag);
+				  $rowcounter = 0;
+				  foreach ($projects as $project){
+					$membs = fetchProjectMembers($project['id']);
 
+					if ($rowcounter % 2 == 0){
+						echo "<tr class=\"marked_row\">";
+					}else{
+						echo "<tr>";
+					}
+						 
+					print "<td id=\"member_list\"><ul style=\"list-style-type:decimal\">";
+							 foreach($membs as $memb){
+									print "<li>" . filtered_output_string($memb[prezime] . ' ' . $memb[ime] . ' ' . $memb[brindexa]);
+									print "</li>";
+						     }
+						    print "</ul>";
+						    print "<span style=\"display:none\"></span></td>";
+	                	print "<td id=\"project_name\">" . filtered_output_string($project['naziv']) . "  "; 
+	                	print "<a href=\"#\">|+|</a>";
+	                	print "<span class=\"detail_text\" style=\"display:none;\">" . filtered_output_string($project['biljeska']) . "</span></td>";
+	                print "</tr>";
+                
+				  	$rowcounter = $rowcounter +1;
+				  }
+			
+            print"</tbody></table>";
+	
+}
+
+
+function processDeleteFromProjectForm($predmet, $ag){
+	$errorText = '';
+	if(!check_csrf_token())
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+	}
+	//get variables
+	$stud_id = intval($_REQUEST['student']);
+	$proj_id = intval($_REQUEST['projekat']);
+	
+	$errorText = unregisterFromProject($stud_id, $proj_id, $predmet, $ag);
+	return $errorText;
+	
+}
+
+function processAddNoteOnProjectForm($predmet, $ag){
+	
+	$errorText = '';
+	if (!check_csrf_token()) 
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+   	}
+   	
+   	$biljeska = $_REQUEST['note'];
+   	$project_id = $_REQUEST['id'];
+   	
+   	if(!updateProjectNote($project_id,$biljeska)){
+   		$errorText = "Doslo je do greske prilikom dodavanja biljeske, kontaktirajte administratora!";
+   		zamgerlog("greška prilikom unosa biljeske za projekat $project_id u bazu(predmet pp$predmet, korisnik u$userid)", 3);
+   	}
+   	
+   	return $errorText;
+	
+}
+
+
+function processChangeProjectForm($predmet, $ag){
+
+	$errorText = '';
+	if(!check_csrf_token())
+	{
+		biguglyerror("Mrš odavle");
+		zamgerlog("1337 h4x0r detected",3);
+		return "ERROR";
+	}
+	
+	//get variables
+	$stud_id = intval($_REQUEST['student']);
+	$proj_id = intval($_REQUEST['projekat']);
+		
+	$errorText = applyForProject($stud_id, $proj_id, $predmet, $ag);
+	return $errorText;
+}
 
 function formProcess($option)
 {
@@ -515,6 +825,7 @@ function updateProject($data, $id)
 
 	return ( $result == false ) ? false : true;
 }
+
 
 function deleteProject($id)
 {

@@ -1,5 +1,16 @@
 <?php
 // LIB/PROJEKTI - funkcije za module nastavnik/projekti, student/projekti, common/projektneStrane
+function fetchStudentsOnPredmet($predmet_id, $ag){
+
+	$result = myquery("SELECT * FROM osoba o INNER JOIN student_predmet op ON o.id=op.student WHERE op.predmet='$predmet_id' ORDER BY prezime ASC, ime ASC");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;
+	mysql_free_result($result);
+	
+	return $list;
+}
+
 function fetchProjects($predmet, $ag)
 {
 	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' ORDER BY vrijeme DESC");
@@ -30,6 +41,55 @@ function fetchProjectMembers($id)
 	mysql_free_result($result);
 	
 	return $list;	
+}
+
+function fetchProjectById($predmet,$ag,$proj_id){
+	
+	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' AND id='$proj_id' ORDER BY vrijeme DESC");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+	
+}
+
+function updateProjectNote($project_id,$note){
+	
+	$query = sprintf("UPDATE projekat SET biljeska='%s' WHERE id='%d' LIMIT 1", 
+											my_escape($note), 
+											intval($project_id)); 
+	$result = myquery($query);	
+	return ( $result == false ) ? false : true;
+}
+
+function unregisterFromProject($stud_id, $proj_id, $predmet, $ag){
+	$errorText = '';
+	if (areApplicationsLockedForPredmet($predmet, $ag))
+	{
+		$errorText = 'Zaključane su prijave na projekte. Odjave nisu dozvoljene.';
+		zamgerlog("pokusano je odjavljivanje studenta $stud_id sa projekta $proj_id koji je zaključan na predmetu $predmet", 3);
+		return $errorText;	
+	}
+	$actualProjectForUser = getActualProjectForUserInPredmet($stud_id, $predmet, $ag);
+	if(!empty($actualProjectForUser)){
+		if($proj_id != $actualProjectForUser[id]){
+			$pr = fetchProjectById($predmet,$ag,$proj_id);
+			$errorText='Nemoguće izbrisati studenta sa projekta ' . $pr[naziv] .', svakako nije pridruzen ovom projektu!';
+			zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan!",3);
+		}else{
+			//Brisi studenta sa tekuceg projekta
+			$result = myquery("DELETE FROM student_projekat WHERE student='$stud_id' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
+		}
+	}else{
+		//Greska - student nije nigdje upisan
+		$errorText='Nemoguće izbrisati studenta sa projekta ' . $pr[naziv] .', student nije ni na jednom projektu!';
+		zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan ni na jedan projekat!");
+		
+	}
+	return $errorText;
+	
 }
 
 function applyForProject($userid, $project, $predmet, $ag)

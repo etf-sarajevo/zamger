@@ -1825,6 +1825,7 @@ CREATE TABLE  IF NOT EXISTS `projekat` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL default '0',
   `opis` text collate utf8_slovenian_ci NOT NULL,
+  `biljeska` text collate utf8_slovenian_ci NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
