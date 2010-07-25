@@ -592,7 +592,7 @@ function nastavnik_projekti()
 					{
 						nicemessage('Student je uspiješno prijavljen na projekat!');
 						zamgerlog("korisnik $userid uspješno promijenio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
-						$link = "?sta=nastavnik/projekti&predmet=1&ag=1&action=addStudent";
+						$link = $linkPrefix . "&action=addStudent";
 					}
 					else
 					{	
@@ -611,7 +611,7 @@ function nastavnik_projekti()
 					{
 						nicemessage('Student je uspiješno obrisan sa projekta!');
 						zamgerlog("korisnik $userid uspješno odbacio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
-						$link = "?sta=nastavnik/projekti&predmet=1&ag=1&action=addStudent";
+						$link = $linkPrefix . "&action=addStudent";
 					}
 					else
 					{	
