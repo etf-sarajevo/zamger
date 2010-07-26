@@ -500,7 +500,7 @@ function nastavnik_projekti()
 					
 						<? $lijencine=fetchStudentiBezProjekta($predmet,$ag);
 							if(empty($lijencine)){
-								print "<span> Svim studentima je dodijeljen projekat </span>";
+								nicemessage('Svim studentima je dodijeljen projekat!';
 							}else{
 								$cnt = 0;
 								
