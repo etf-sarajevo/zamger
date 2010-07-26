@@ -493,6 +493,30 @@ function nastavnik_projekti()
 				drawStudentAndProjectTable($predmet, $ag); //iscrtaj tabelu
 				
 			?>	
+				
+				<div class="obradaStudentaDiv">
+					<div>
+					<b>LISTA STUDENATA BEZ PROJEKTA:</b>
+					
+						<? $lijencine=fetchStudentiBezProjekta($predmet,$ag);
+							if(empty($lijencine)){
+								print "<span> Svim studentima je dodijeljen projekat </span>";
+							}else{
+								$cnt = 0;
+								
+								foreach($lijencine as $lijen){
+									$cnt = $cnt+1;
+									print "</br>";
+									print  "<span id=\"noProjectStudent\">" . $cnt . ".  " . $lijen['ime'] . " " . $lijen['prezime'] . "</span>";
+								}
+								
+							}
+						
+						?>
+						
+					</div>
+				</div>
+				
 				<div class="obradaStudentaDiv">
 				<div>
 				<div><b>DODAVANJE STUDENTA NA PROJEKAT</b></div>

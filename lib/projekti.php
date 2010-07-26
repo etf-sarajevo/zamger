@@ -11,6 +11,19 @@ function fetchStudentsOnPredmet($predmet_id, $ag){
 	return $list;
 }
 
+function fetchStudentiBezProjekta($predmet_id){
+	$result = myquery("SELECT o.ime, o.prezime, o.brindexa
+						FROM student_predmet spr join osoba o on spr.student = o.id
+     					left outer join student_projekat sp on sp.student = o.id
+						where sp.projekat is null and spr.predmet=$predmet_id");
+	while($row = mysql_fetch_assoc($result))
+			$list[] = $row;
+	mysql_free_result($result);
+	
+	return $list;
+		
+}
+
 function fetchProjects($predmet, $ag)
 {
 	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' ORDER BY vrijeme DESC");

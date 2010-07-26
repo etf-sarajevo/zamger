@@ -582,6 +582,17 @@ div.obradaStudentaDiv > div{
 	display: table-cell;
 }
 
+#noProjectStudent {
+	
+	font-family: "Arial";
+	font-size: 12px;
+	font-weight: 100;
+	color: red;
+	padding-left: 10px;
+	
+	
+}
+
 #mainWrapper
 {
 	width: 736px;
