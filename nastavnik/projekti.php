@@ -493,7 +493,7 @@ function nastavnik_projekti()
 				drawStudentAndProjectTable($predmet, $ag); //iscrtaj tabelu
 				
 			?>	
-				
+				</br>
 				<div class="obradaStudentaDiv">
 					<div>
 					<b>LISTA STUDENATA BEZ PROJEKTA:</b>
