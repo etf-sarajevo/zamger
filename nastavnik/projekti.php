@@ -516,7 +516,7 @@ function nastavnik_projekti()
 						
 					</div>
 				</div>
-				
+				</br>				
 				<div class="obradaStudentaDiv">
 				<div>
 				<div><b>DODAVANJE STUDENTA NA PROJEKAT</b></div>
@@ -558,7 +558,7 @@ function nastavnik_projekti()
 				</div>
 				</div>
 				
-				
+				</br>
 				<!-- Forma za izbacivanje studenta sa projekta -->
 				<div class="obradaStudentaDiv">
 				<div>
