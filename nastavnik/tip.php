@@ -343,7 +343,7 @@ else{
 	zamgerlog("Osoba u".$userid." kreirala tip predmeta $naziv"."$ag",4);
 	
 	
-	header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);  
+	//header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);  
 }
 }
 elseif(isset($_POST['submit2'])){
@@ -363,10 +363,10 @@ elseif(isset($_POST['submit2'])){
 	zamgerlog("Osoba u".$userid." promijenila tip predmeta p".$predmet." u $pregled",4);
 	
 	
-	header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);
+	//header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);
 }
 
-else{
+//else{
 
 ?>
 <link href="../css/zamger.css" rel="stylesheet" type="text/css" />
@@ -1446,7 +1446,7 @@ pregled_predmeta($pregled);
             <?
 }
 }
-}
+
 function meni_za_tip_predmeta(){
 		
         
