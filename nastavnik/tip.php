@@ -1340,7 +1340,7 @@ if($_REQUEST['obiljezeno']!=false){
             <td>
            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=dodaj&komp=<? print $brojK; ?>&brojIspita=<? print $brojIspita; ?>&brojZadaca=<? print $brojZadaca; ?>&brojPrisustva=<? print $brojPrisustva; ?>'><font size="2" color="#000066">Nazad</font></a>   
             <td align="right" width="700 px">
-          <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? echo $predmet; ?>&ag=<? print $ag;?>&komp=<? print $brojK;?>&brojIspita=<? print $brojIspita; ?>$brojZadaca=<? print $brojZadaca; ?>$brojPrisustva=<? print $brojPrisustva; ?>" method="post" name="ZaSpasavanje">
+          <form action="index.php?sta=nastavnik/tip&predmet=<? echo $predmet; ?>&ag=<? print $ag;?>&komp=<? print $brojK;?>&brojIspita=<? print $brojIspita; ?>$brojZadaca=<? print $brojZadaca; ?>$brojPrisustva=<? print $brojPrisustva; ?>" method="post" name="ZaSpasavanje">
            <input type="submit" name="submit" value="Spasi" />     </form>       
             </td>
             </tr>
@@ -1396,7 +1396,7 @@ else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
             <td>
            <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'><font size="2" color="#000066">Nazad</font></a>   
             <td align="right" width="700 px">
-           <form action="../zamger/index.php?sta=nastavnik/tip&predmet=<? print $predmet; ?>&ag=<? print $ag;?>" method="post" name="ZaSpasavanje">
+           <form action="index.php?sta=nastavnik/tip&predmet=<? print $predmet; ?>&ag=<? print $ag;?>" method="post" name="ZaSpasavanje">
            <input type="submit" name="submit2" value="Spasi" />     </form>   
             </td>
 </tr>
