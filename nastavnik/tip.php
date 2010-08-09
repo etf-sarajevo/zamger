@@ -145,7 +145,13 @@ if(isset($_POST['submit'])){
 
 if($suma>100){
 	
-	header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=pregled&komp=".$brojK."&greska=1");
+					   		?>
+	    
+		<SCRIPT language=JavaScript>
+        		MsgBox("Maksimalan broj bodova za Vas tip predmeta ne smije biti veci od 100!");
+		</SCRIPT>
+        
+        <?
 }
 else{
 	
@@ -378,17 +384,7 @@ elseif(isset($_POST['submit2'])){
 
 <?
 
-if(isset($_REQUEST['greska'])){
-				   //ukoliko je broj bodova na novodefinisanom predmetu preko 100
-				   
-				   		?>
-	    
-		<SCRIPT language=JavaScript>
-        		MsgBox("Maksimalan broj bodova za Vas tip predmeta ne smije biti veci od 100!");
-		</SCRIPT>
-        
-        <?
-				   }
+
 if($_REQUEST['obiljezeno']!=false){
 	//Definisanje vlastitog tipa predmeta
 	meni_za_tip_predmeta();
