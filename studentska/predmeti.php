@@ -239,9 +239,15 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', institucija=$institucija");
 	$q_hani0 = myquery("select id from predmet where naziv='$naziv' and kratki_naziv='$kratki_naziv' and institucija=$institucija");
 	$broj_predmeta=mysql_fetch_array($q_hani0);
-	$q_hani0 = myquery("select id from akademska_godina where aktuelna=1");
-	$akademska=mysql_fetch_array($q_hani0);
-	$q_hani=myquery("insert into akademska_godina_predmet(akademska_godina, predmet, tippredmeta) VALUES(".$akademska[0].",".$broj_predmeta[0].",$tippredmeta)");
+	//$q_hani0 = myquery("select id from akademska_godina where aktuelna=1");
+	//$akademska=mysql_fetch_array($q_hani0);
+	$q_hani0=myquery("select id from akademska_godina");
+	while($akademska=mysql_fetch_array($q_hani0)){
+		$q_hani1=myquery("select * from akademska_godina_predmet where akademska_godina=".$akademska[0]." and predmet=".$broj_predmeta[0]."");
+		if(mysql_fetch_array($q_hani1)==FALSE){
+			$q_hani=myquery("insert into akademska_godina_predmet(akademska_godina, predmet, tippredmeta) VALUES(".$akademska[0].",".$broj_predmeta[0].",$tippredmeta)");
+		}
+	}
 	
 	//$q270 = myquery("insert into predmet set naziv='$naziv', kratki_naziv='$kratki_naziv', tippredmeta=$tippredmeta, institucija=$institucija"); 
 
