@@ -38,7 +38,7 @@ function common_projektneStrane()
 	
 
 	if ($user_student && !$user_siteadmin)
-		$linkPrefix = "?sta=student/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag";
+		$linkPrefix = "?sta=student/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag&akcija=projektnastranica";
 	elseif ($user_nastavnik)
 		$linkPrefix = "?sta=nastavnik/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag";
 	else
@@ -699,6 +699,7 @@ function common_projektneStrane()
 					{
 	?>
 <div class="links clearfix" id="rss">
+    <p>&nbsp;</p>
     <ul>
         <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=$link[id]"?>">Uredi</a></li>
         <li><a href="<?php echo $linkPrefix . "&subaction=del&id=$link[id]"?>">Briši</a></li>
@@ -709,8 +710,8 @@ function common_projektneStrane()
 	?>
 <table class="rss" border="0" cellspacing="0" cellpadding="2">
   <tr>
-    <th width="200" align="left" valign="top" scope="row">URL</th>
-    <td width="490" align="left" valign="top">
+    <th align="left" valign="top" scope="row">URL</th>
+    <td align="left" valign="top">
     <?php
 						$url = $link[url];
 						$scheme = parse_url($url);
@@ -734,6 +735,50 @@ function common_projektneStrane()
  <?php
  						} //opis
  ?>
+ 
+ <!-- Merisin kod -->
+ <tr>
+ 	<td colspan="2">
+ 	<?php 
+			$hashfromURL = hash("md5",$url);
+ 			$cachefile = "cache/rss".$hashfromURL.".html";
+			
+ 			$cachetime = 5*60; //5 minuta TODO:Pri deployment-u povecati na sat-dva.
+ 			//Serviraj is kesha ako je mladji od $cachetime 
+			if(file_exists($cachefile) && (time() - filemtime($cachefile) < $cachetime ))
+			{
+				include($cachefile);
+				echo "RSS ucitan iz kesha!";
+				
+			}
+			else{//Ucitaj RSS ponovo	
+ 						
+				$XMLfilename = $url;
+			
+				//Pocni dump buffera
+				ob_start();
+			
+				include("rss2html.php");//HTML parsiran sadrzaj RSS-a
+			
+				//Otvori kesh fajl za pisanje
+				$fp = fopen($cachefile, 'w');
+			
+				//Sacuvaj sadrzaj izlaznog buffer-a u fajl
+				fwrite($fp, ob_get_contents());
+			
+				//zatvori fajl
+				fclose($fp);
+			
+				//Posalji izlaz na browser
+				ob_end_flush();	
+				echo "RSS osvjezen - feed ponovo ucitan!";
+			}
+			
+ 	?>
+ 	</td>
+</tr>
+ 
+ <!-- END Merisin kod -->
 </table>
     <?php
 				} //foreach link

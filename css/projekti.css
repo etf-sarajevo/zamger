@@ -82,16 +82,29 @@ textarea
 .rss
 {
 	border: 1px solid silver;
-	
+	width:70%;
 	margin-bottom: 15px;
 	clear: both;
 }
 .linkovi td, 
-.rss td,
-.linkovi th, 
-.rss th
+.linkovi th 
 {
 	padding: 7px 11px;
+	border-bottom: 1px solid silver;
+	border-right: 1px solid silver;
+	
+}
+
+.rss th{
+	width: 20%;
+	padding: 7px 1em;
+	border-bottom: 1px solid silver;
+	border-right: 1px solid silver;
+}
+
+.rss td{
+	width: 80%;
+	padding: 7px 1em;
 	border-bottom: 1px solid silver;
 	border-right: 1px solid silver;
 }

@@ -10,8 +10,8 @@ $conf_skr_naziv_institucije = "ETF";
 $conf_skr_naziv_institucije_genitiv = "ETFa";
 
 $conf_dbhost = "localhost";
-$conf_dbuser = "root";
-$conf_dbpass = "";
+$conf_dbuser = "zamger";
+$conf_dbpass = "zamger";
 $conf_dbdb = "zamger";
 
 $conf_site_url = "https://zamger.etf.unsa.ba";
