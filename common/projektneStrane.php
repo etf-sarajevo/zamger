@@ -741,7 +741,7 @@ function common_projektneStrane()
  	<td colspan="2">
  	<?php 
 			$hashfromURL = hash("md5",$url);
- 			$cachefile = "cache/rss".$hashfromURL.".html";
+ 			$cachefile = "cache/rss/".$hashfromURL.".html";
 			
  			$cachetime = 5*60; //5 minuta TODO:Pri deployment-u povecati na sat-dva.
  			//Serviraj is kesha ako je mladji od $cachetime 
