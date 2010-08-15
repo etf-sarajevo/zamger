@@ -740,9 +740,24 @@ function common_projektneStrane()
  <tr>
  	<td colspan="2">
  	<?php 
-			$hashfromURL = hash("md5",$url);
- 			$cachefile = "cache/rss/".$hashfromURL.".html";
-			
+			global $conf_files_path; //Ukljucimo koristenje globalne varijable privatni direktorij sa datotekama koji nije dostupan preko weba
+ 			$hashfromURL = hash("md5",$url);
+ 			
+			$cachefile = "";
+ 			//Provjeri postojanost $conf_files_path/cache/rss direktorija
+			if(file_exists($conf_files_path."/cache")){
+				if(!file_exists($conf_files_path."/cache/rss")){
+					mkdir($conf_files_path."/cache/rss");
+				}
+				$cachefile = $conf_files_path."/cache/rss/".$hashfromURL.".html";					
+			}else{
+				if(mkdir($conf_files_path."/cache")){
+					if(mkdir($conf_files_path."/cache/rss/")){
+						$cachefile = $conf_files_path."/cache/rss/".$hashfromURL.".html";
+					}
+				}	
+			}	
+ 						
  			$cachetime = 5*60; //5 minuta TODO:Pri deployment-u povecati na sat-dva.
  			//Serviraj is kesha ako je mladji od $cachetime 
 			if(file_exists($cachefile) && (time() - filemtime($cachefile) < $cachetime ))
