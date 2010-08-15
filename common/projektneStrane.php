@@ -740,7 +740,7 @@ function common_projektneStrane()
  <tr>
  	<td colspan="2">
  	<?php 
-			global $conf_files_path; //Ukljucimo koristenje globalne varijable privatni direktorij sa datotekama koji nije dostupan preko weba
+			global $conf_files_path; //Ukljucimo koristenje globalne varijable koja pokazuje na privatni direktorij sa datotekama koji nije dostupan preko weba
  			$hashfromURL = hash("md5",$url);
  			
 			$cachefile = "";
