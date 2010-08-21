@@ -98,7 +98,7 @@ function user_box() {
 
 ?>
 
-<div id="kocka" style="position:absolute;right:10px">
+<div id="kocka" style="position:absolute;right:10px;top:55px">
 	<table style="border:1px;border-style:solid"><tr><td>
 	<img src="images/fnord.gif" width="200" height="1"><br/>
 	<img src="images/16x16/<?=$slika?>" border="0"> <?=$ime?> <?=$prezime?><br/>
