@@ -736,7 +736,7 @@ function common_projektneStrane()
  						} //opis
  ?>
  
- <!-- Merisin kod -->
+
  <tr>
  	<td colspan="2">
  	<?php 
@@ -763,7 +763,7 @@ function common_projektneStrane()
 			if(file_exists($cachefile) && (time() - filemtime($cachefile) < $cachetime ))
 			{
 				include($cachefile);
-				echo "RSS ucitan iz kesha!";
+				print "RSS ucitan iz kesha!";
 				
 			}
 			else{//Ucitaj RSS ponovo	
@@ -773,7 +773,7 @@ function common_projektneStrane()
 				//Pocni dump buffera
 				ob_start();
 			
-				include("rss2html.php");//HTML parsiran sadrzaj RSS-a
+				include("lib/rss2html.php");//HTML parsiran sadrzaj RSS-a
 			
 				//Otvori kesh fajl za pisanje
 				$fp = fopen($cachefile, 'w');
@@ -786,14 +786,13 @@ function common_projektneStrane()
 			
 				//Posalji izlaz na browser
 				ob_end_flush();	
-				echo "RSS osvjezen - feed ponovo ucitan!";
+				print "RSS osvjezen - feed ponovo ucitan!";
 			}
 			
  	?>
  	</td>
 </tr>
  
- <!-- END Merisin kod -->
 </table>
     <?php
 				} //foreach link
