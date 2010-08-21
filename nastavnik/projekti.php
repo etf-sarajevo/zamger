@@ -487,7 +487,7 @@ function nastavnik_projekti()
 ?>
 			<div id="parentDiv">
 			<!-- Ako je prvi put ucitano, dohvati predmete i dohvati sve studente na predmetu, prikazi formu. -->
-			<?php 
+			<? 
 			if (!isset($_REQUEST['dodaj']) && !isset($_REQUEST['brisi']))
 			{
 				drawStudentAndProjectTable($predmet, $ag); //iscrtaj tabelu
@@ -521,12 +521,12 @@ function nastavnik_projekti()
 				<div>
 				<div><b>DODAVANJE STUDENTA NA PROJEKAT</b></div>
 				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konačno kliknite Upiši!</div>
-			<?php 
+			<? 
 				print genform("POST", "moveStudent"); //generisi prvu liniju forme
 			?>
 					
 					Student : <select name="student">
-								<?php 
+								<? 
 									$cnt = 0;
 									$studentsOnPredmet = fetchStudentsOnPredmet($predmet,$ag);
 									foreach($studentsOnPredmet as $stud)
@@ -540,7 +540,7 @@ function nastavnik_projekti()
 					
 					
 					Projekat :<select name="projekat">
-								<?php 
+								<? 
 									$cnt2 = 0;
 									$projects = fetchProjects($predmet, $ag);
 				  					$rowcounter = 0;
@@ -564,12 +564,12 @@ function nastavnik_projekti()
 				<div>
 				<div><b>BRISANJE STUDENTA SA PROJEKTA</b></div>
 				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konacno kliknite Ispiši!</div>
-			<?php 
+			<? 
 				print genform("POST", "unregStudent"); //generisi prvu liniju forme
 			?>
 					
 					Student : <select name="student">
-								<?php 
+								<? 
 									$cnt = 0;
 									$studentsOnPredmet = fetchStudentsOnPredmet($predmet,$ag);
 									foreach($studentsOnPredmet as $stud)
@@ -583,7 +583,7 @@ function nastavnik_projekti()
 					
 					
 					Projekat :<select name="projekat">
-								<?php 
+								<? 
 									$cnt2 = 0;
 									$projects = fetchProjects($predmet, $ag);
 				  					$rowcounter = 0;
@@ -650,7 +650,7 @@ function nastavnik_projekti()
 			?>
 			</div>
 			
-<?php 		
+<? 		
 			}//action -addStudent
 	} //else - action is set
 } //function
