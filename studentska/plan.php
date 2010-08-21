@@ -12,13 +12,13 @@ $godina=intval($_REQUEST['godina']);
 $studij=intval($_REQUEST['studij']);
 
 
-?><h2>Nastavni plan studija</h2><?
+?><h2 style="margin-left: 30px;">Nastavni plan studija</h2><?
 
 // Spisak planova
 if ($godina==0 || $studij==0) {
 
 ?>
-<p>Planovi, po godinama usvajanja (početka važenja):<br/>
+<p style="margin-left: 30px;">Planovi, po godinama usvajanja (početka važenja):<br/>
 <?
 
 $q10 = myquery("select distinct ag.id, ag.naziv, s.id, s.naziv from plan_studija as ps, akademska_godina as ag, studij as s where ps.godina_vazenja=ag.id and ps.studij=s.id order by ps.godina_vazenja, s.naziv");
@@ -34,7 +34,7 @@ return;
 $q15=myquery("select naziv from studij where id=$studij");
 $q20=myquery("select naziv from akademska_godina where id=$godina");
 
-print "<h3>".mysql_result($q15,0,0)." (".mysql_result($q20,0,0).")</h3>\n";
+print "<h3 style=\"margin-left: 30px;\">".mysql_result($q15,0,0)." (".mysql_result($q20,0,0).")</h3>\n";
 
 
 
@@ -46,7 +46,7 @@ while ($r20 = mysql_fetch_row($q20)) {
 
 	$q30 = myquery("select p.id, p.naziv from predmet as p, plan_studija as ps where ps.godina_vazenja=$godina and ps.studij=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.predmet=p.id order by p.naziv");
 	while ($r30 = mysql_fetch_row($q30)) {
-		print $space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r30[0]\">$r30[1]</a><br/>\n";
+		print $space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r30[0]\" >$r30[1]</a><br/>\n";
 	}
 
 	$q40 = myquery("select predmet, count(predmet) from plan_studija where godina_vazenja=$godina and studij=$studij and semestar=$semestar and obavezan=0 group by predmet order by predmet");
