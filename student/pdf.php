@@ -14,6 +14,10 @@
 
 // TODO: koristiti tcpdf
 
+//mb_internal_encoding('UTF-8');
+
+//mysql_query('SET NAMES UTF8');
+
 
 function student_pdf() {
 
@@ -30,6 +34,7 @@ if ($zadaca == 0) {
 }
 
 // Da li neko pokušava da spoofa zadaću?
+
 $q10 = myquery("SELECT z.predmet, z.akademska_godina FROM zadaca as z, student_predmet as sp, ponudakursa as pk
 WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 if (mysql_num_rows($q10)<1) {
@@ -43,7 +48,7 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/";
 
 
 // Podaci o zadaći
-
+//echo "select z.zadataka,p.naziv,z.naziv,pj.ekstenzija from zadaca as z,predmet as p,programskijezik as pj where z.id=$zadaca and z.predmet=p.id and z.programskijezik=pj.id";
 $q20 = myquery("select z.zadataka,p.naziv,z.naziv,pj.ekstenzija from zadaca as z,predmet as p,programskijezik as pj where z.id=$zadaca and z.predmet=p.id and z.programskijezik=pj.id");
 if (mysql_num_rows($q20) < 1) {
 	biguglyerror("Ne mogu pronaći zadaću");
@@ -51,13 +56,13 @@ if (mysql_num_rows($q20) < 1) {
 	return;
 }
 $brzad = mysql_result($q20,0,0);
-$imepredmeta = mysql_result($q20,0,1);
+$imepredmeta = strtoupper(mysql_result($q20,0,1));
 $imezad = mysql_result($q20,0,2);
 $ekst = mysql_result($q20,0,3);
 
 
 // Podaci o studentu
-
+//echo "select ime, prezime, brindexa from osoba where id=$userid";
 $q30 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
 if (mysql_num_rows($q30) < 1) {
 	biguglyerror("Ne mogu pronaći studenta");
@@ -96,22 +101,24 @@ for ($zadatak=1;$zadatak<=$brzad;$zadatak++) {
 	}
 }
 
+//print_r($filename);
+
+require_once('lib\tcpdf\config\lang\eng.php');
+require_once('lib\tcpdf\tcpdf.php');
 
 
 
-// PDF rendering
+// Extend the TCPDF class to create custom Header and Footer
+class MYPDF extends TCPDF {
 
-require('lib/fpdf153/fpdf.php');
-
-class PDF extends FPDF
-{
-
-function Header()
-{
+	//Page header
+	public function Header() {
+	
+	$this->SetMargins(10,35,25,true);	
 	$this->Image("images/etf-100x100.png",10,8,20);
 	$this->Image("images/unsa.png",180,8,20);
 	
-	$this->SetFont("DejaVu Sans B",'',10);
+        $this->SetFont("DejaVu Sans",'',10);
 	$this->SetY(15);
 	$this->SetX(80);
 	$this->Cell(50,5,'UNIVERZITET U SARAJEVU',0,0,'C');
@@ -122,64 +129,60 @@ function Header()
 	$this->Cell(190,5,'','B',0,'C');
 	$this->Ln();
 	$this->Ln();
-}
+	}
 
-function Footer()
-{
-
+	// Page footer
+	public function Footer() {
+		
 	if ($this->PageNo() > 1) {
 		//Position at 1.5 cm from bottom
 		$this->SetY(-15);
 		//Arial italic 8
-		$this->SetFont('Arial','I',8);
+		$this->SetFont('DejaVu Sans B','I',8);
 		//Text color in gray
 		$this->SetTextColor(128);
 		//Page number
 		$this->Cell(0,10,'Stranica '.$this->PageNo(),0,0,'C');
 	}
+	}
 }
-}
-
 
 // Prva stranica
+$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
-//$pdf=new PDF("P","mm","A4");
-$pdf=new PDF();
-$pdf->AddFont("DejaVu Sans","","DejaVuSans.php");
-$pdf->AddFont("DejaVu Sans B","","DejaVuSans-Bold.php");
-$pdf->AddFont("Nimbus Mono","","n022003l.php");
 
+$pdf->AddFont("DejaVuSans","","DejaVuSans.php");
+$pdf->AddFont("DejaVuSans","","DejaVuSans-Bold.php");
 $pdf->AddPage();
 
 $pdf->SetY(100);
-$pdf->SetFont('DejaVu Sans B','',30);
+$pdf->SetFont('DejaVuSans','',30);
 $pdf->Cell(190,10,iconv('utf-8','iso-8859-2',$imezad),0,0,'C');
 $pdf->Ln();
-$pdf->SetFont('DejaVu Sans B','',16);
-$pdf->Cell(190,10,'- '.strtoupper(iconv("utf8","iso-8859-2",$imepredmeta)).' -',0,0,'C');
+$pdf->SetFont('DejaVuSans','',16);
+$pdf->Cell(190,10,'- '.iconv('utf-8','iso-8859-2',$imepredmeta).'-',0,0,'C');
 
 
 
-$pdf->SetY(-90);
-
+$pdf->SetY(-90); 
 $pdf->SetFont('DejaVu Sans','',12);
 $pdf->Cell(40,10,'Student:');
 $pdf->SetFont('DejaVu Sans B','',12);
-$pdf->Cell(40,10,iconv("utf8","iso-8859-2",$ime.' '.$prezime));
+$pdf->Cell(24,10,iconv('utf-8','iso-8859-2',$ime.' '.$prezime),0,0,'C');
 $pdf->Ln();
 
 if ($labgrupa != "") {
 	$pdf->SetFont('DejaVu Sans','',12);
 	$pdf->Cell(40,10,'Grupa:');
-	$pdf->SetFont('DejaVu Sans B','',12);
-	$pdf->Cell(40,10,iconv("utf8","iso-8859-2",$labgrupa));
+	$pdf->SetFont('DejaVu Sans','',12);
+	$pdf->Cell(19,10,iconv('utf-8','iso-8859-2',$labgrupa),0,0,'C');
 	$pdf->Ln();
 }
 
 $pdf->SetFont('DejaVu Sans','',12);
 $pdf->Cell(40,10,'Broj indeksa:');
-$pdf->SetFont('DejaVu Sans B','',12);
-$pdf->Cell(40,10,$brindexa);
+$pdf->SetFont('DejaVu Sans','',12);
+$pdf->Cell(38,10,$brindexa);
 $pdf->Ln();
 
 $pdf->Ln();
@@ -195,7 +198,7 @@ $pdf->SetX(-80);
 
 $pdf->SetFont('DejaVu Sans','',12);
 $pdf->Cell(40,10,'Ocjena:');
-$pdf->SetFont('DejaVu Sans B','',16);
+$pdf->SetFont('DejaVu Sans','',16);
 $pdf->Cell(40,10,$bodova_zadaca);
 $pdf->Ln();
 $pdf->Ln();
@@ -209,32 +212,86 @@ $pdf->Ln();
 $pdf->SetX(-80);
 $pdf->Cell(60,10,'','B',0,'C');
 
+include_once('lib/geshi/geshi.php');
+
+
+$brzad = count($filename);
 
 // Zadaci
-for ($i=1; $i<=$brzad; $i++) {
-	$txt = file_get_contents($lokacijazadaca.$filename[$i]);
+include('lib/pclzip/pclzip.lib.php');
 
+//Omogucio sam da se fajlovi tipa cpp,c mogu slati i u formi attachmenta i da se vrsi bojenja uradjeno otvaranje zip-a i generisaje pdf ali samo c,cpp,php(radi testiranja zipa) fajlova.Treba uraditi
+//konvertovanje office fajlova u pdf na tome se radi..
+for ($i=1; $i<=$brzad; $i++) {
+	 $extrenut=strtolower(end(explode('.',$filename[$i])));
+//Extract zip fajlovaa
+     if($extrenut=="pdf"){
+		
+	 }
+	 if($extrenut=="zip")
+	
+	 {
+		if (!file_exists("$lokacijazadaca$userid")){
+		mkdir ("$lokacijazadaca$userid",0777);
+		}
+		$archive = new PclZip("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
+		if ($archive->extract(PCLZIP_OPT_ADD_PATH, "$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid") == 0) {
+                   die("Error : ".$archive->errorInfo(true));
+  }
+		
+
+	 
+		
+         $dir="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid";
+	 if(!($handle=opendir($dir))) die ("Ne moze se otvoriti $dir");
+	 
+	 $fajlovi=array();
+	 while($file= readdir($handle)){
+		if( $file !="." && $file!=".."){
+		if(!in_array($file,$fajlovi))
+		$fajlovi[]=$file;
+		
+		
+	 }
+	 }
+			
+	$naziv=$fajlovi[$i-1];
+	
+	$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid/$naziv");
+	$extrenut=strtolower(end(explode('.',$naziv)));
+		
+	}else{
+	$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
+	$extrenut=strtolower(end(explode('.',$filename[$i])));
+	}
+	
+	$geshi =& new GeSHi($txt,$extrenut);
+	$txt = $geshi->parse_code(); 
+	
 	if ($txt != false) {
 		// Zamijeni tabove sa po 8 razmaka
 		$txt = str_replace("\t","        ",$txt);
-
-		$pdf->AddPage();
 		
+		$pdf->SetAutoPageBreak(1,15);
+		$pdf->AddPage();
 		$pdf->SetX(15);
-		$pdf->SetFont('DejaVu Sans B','',16);
+		
+		$pdf->SetFont('DejaVu Sans','',16);
+		//$pdf->Ln();
 		$pdf->Cell(40,10,'Zadatak '.$i.'.');
 		$pdf->Ln();
 		
 		$pdf->SetX(15);
-		$pdf->SetFont('Nimbus Mono','',10);
-		$pdf->MultiCell(0,4,$txt);
+		$pdf->SetFont('DejaVu Sans','',10);
+		//$pdf->Ln();
+		//$pdf->Ln();
+		$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $txt, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
+
+		//$pdf->MultiCell(0,4,$txt);
 	}
 }
 
-// Kraj
-$pdf->Output();
-
-
+$pdf->Output($ime.'_'.$prezime.'_'.$imezad.'.pdf', 'I');
 
 }
 
