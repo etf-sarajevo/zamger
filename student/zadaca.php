@@ -26,7 +26,7 @@
 
 function student_zadaca() {
 
-global $userid,$conf_files_path;
+global $zadaca_dozvoljene_ekstenzije,$userid,$conf_files_path;
 
 
 // Akcije
@@ -69,7 +69,6 @@ $ponudakursa = mysql_result($q17,0,0);
 
 $q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
-	zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
 	niceerror("Nijedna zadaća nije aktivna");
 	return;
 }
@@ -143,12 +142,13 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
 
 
 // Ove vrijednosti će nam trebati kasnije
-$q60 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment from zadaca where id=$zadaca");
+$q60 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment,dozvoljene_ekstenzije from zadaca where id=$zadaca");
 $naziv = mysql_result($q60,0,0);
 $brojzad = mysql_result($q60,0,1);
 $rok = mysql_result($q60,0,2);
 $jezik = mysql_result($q60,0,3);
 $attachment = mysql_result($q60,0,4);
+$zadaca_dozvoljene_ekstenzije = mysql_result($q60,0,5);
 
 
 
@@ -344,7 +344,7 @@ if ($attachment) {
 	if (mysql_num_rows($q120)>0) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
-		if ($filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
+		if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
 			$vrijeme = mysql_result($q120,0,1);
 			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
@@ -362,7 +362,7 @@ if ($attachment) {
 			print "<p>Ako želite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
 		}
 	} else {
-		print "<p>Izaberite datoteku koju želite poslati i kliknite na dugme za slanje:</p>";
+		print "<p>Izaberite datoteku (<strong>$zadaca_dozvoljene_ekstenzije</strong>) koju želite poslati i kliknite na dugme za slanje:</p>";
 	}
 
 	?>
@@ -473,13 +473,19 @@ function akcijaslanje() {
 	}
 
 	// Podaci o zadaći
-	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta from zadaca where id=$zadaca");
+	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije from zadaca where id=$zadaca");
 	$jezik = mysql_result($q210,0,0);
 	$rok = mysql_result($q210,0,1);
 	$attach = mysql_result($q210,0,2);
 	$naziv_zadace = mysql_result($q210,0,3);
 	$komponenta = mysql_result($q210,0,4);
-
+        $zadaca_dozvoljene_ekstenzije = mysql_result($q210,0,5);
+	
+	$provjera=0;
+	//Odredjujemo da li postoji neka ekstenzija koja ke selektovana
+	if($zadaca_dozvoljene_ekstenzije=="")
+	    $provjera=1;
+	
 	// Ako nije zadat jezik, postavi status na 4 (ceka pregled), inace na 1 (automatska kontrola)
 	if ($jezik==0) $prvi_status=4; else $prvi_status=1;
 
@@ -548,26 +554,40 @@ function akcijaslanje() {
 
 	} else { // if ($attach==0)...
 		$program = $_FILES['attachment']['tmp_name'];
-		if ($program && (file_exists($program))) {
+		
+		$file_ext = strtolower(end(explode('.',$_FILES['attachment']['name'])));
+		$db_doz_eks = explode(',',$zadaca_dozvoljene_ekstenzije);
+								
+		if ($program && file_exists($program) && in_array($file_ext,$db_doz_eks)&& $provjera==0) {
 			// Nećemo pokušavati praviti diff
-			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
-			// Ukidam HTML znakove radi potencijalnog XSSa
-			$ime_fajla = str_replace("&", "", $ime_fajla);
-			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
-			unlink ($puni_put);
-			rename($program, $puni_put);
+			$filename = "$lokacijazadaca$zadaca/".$_FILES['attachment']['name'];
+			unlink ($filename);
+			rename($program, $filename);
 
-			// Escaping za SQL
-			$ime_fajla = my_escape($ime_fajla);
-
-			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
-		} else {
+		}
+		else if($provjera==1)//ako nije selktovana niti jedna ekstenzija, u tom slucaju omogucujemo da moze poslati fajl sa bilo kojom ekstenzijom
+		{
+		        // Nećemo pokušavati praviti diff
+			$filename = "$lokacijazadaca$zadaca/".$_FILES['attachment']['name'];
+			unlink ($filename);
+			rename($program, $filename);
+
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
+
+			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
+			update_komponente($userid,$ponudakursa,$komponenta);
+			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit	
+		
+		}
+		else {
 			zamgerlog("greska kod attachmenta (zadaca z$zadaca, varijabla program je: $program)",3);
-			niceerror("Greška pri slanju zadaće. Kontaktirajte tutora.");
+			niceerror("Greška pri slanju zadaće. Provjerite da li je ekstenzija datoteke dozvoljena. <br />Vaša ima $file_ext, a dozvoljene su:
+				  $zadaca_dozvoljene_ekstenzije ekstenzije. Kontaktirajte tutora. ");
 		}
 	}
 }
