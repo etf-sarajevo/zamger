@@ -11,10 +11,8 @@ $dozvoljene_ekstenzije[4] = 'ppt';
 $dozvoljene_ekstenzije[5] = 'pptx';
 $dozvoljene_ekstenzije[6] = 'odt';
 $dozvoljene_ekstenzije[7] = 'zip';
-$dozvoljene_ekstenzije[8] = 'c';
+$dozvoljene_ekstenzije[8] = 'rar';
 $dozvoljene_ekstenzije[9] = 'pdf';
-$dozvoljene_ekstenzije[10] = 'cpp';
-
 
 
 
@@ -532,7 +530,7 @@ print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubm
 Naziv: <input type="text" name="naziv" id="naziv" size="30" value="<?=$znaziv?>"><br><br>
 
 Broj zadataka: <input type="text" name="zadataka" id="zadataka" size="4" value="<?=$zzadataka?>">
-&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
 
 Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 &nbsp;&nbsp; <input type="text" name="sat" size="1" value="<?=$zsat?>"> <b>:</b> <input type="text" name="minuta" size="1" value="<?=$zminuta?>"> <b>:</b> <input type="text" name="sekunda" size="1" value="<?=$zsekunda?>"> <br><br>
