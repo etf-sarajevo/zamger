@@ -1,4 +1,4 @@
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -1649,6 +1649,8 @@ CREATE TABLE IF NOT EXISTS `zadaca` (
   `aktivna` tinyint(1) NOT NULL default '0',
   `programskijezik` int(10) NOT NULL default '0',
   `attachment` tinyint(1) NOT NULL default '0',
+  `dozvoljene_ekstenzije` varchar(255) NOT NULL default '0',
+  `postavka_zadace` varchar(255) NOT NULL default '0',
   `komponenta` int(11) NOT NULL,
   `vrijemeobjave` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
