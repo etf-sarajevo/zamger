@@ -33,7 +33,7 @@ $dozvoljene_ekstenzije[10] = 'cpp';
 
 function nastavnik_zadace() {
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$dozvoljene_ekstenzije,$conf_files_path;
 
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
@@ -516,7 +516,7 @@ function onemoguci_ekstenzije(chk)
 
 // Forma za kreiranje zadaće
 
-print genform("POST", "kreiranje_zadace\" onsubmit=\"return provjera();");
+print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubmit=\"return provjera();");
 
 ?>
 <input type="hidden" name="akcija" value="edit">
