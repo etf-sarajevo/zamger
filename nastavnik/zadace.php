@@ -1,5 +1,23 @@
 <?
 
+
+
+// Dozvoljene ekstenzije dokumenta za upload zadaće
+$dozvoljene_ekstenzije[0] = 'doc';
+$dozvoljene_ekstenzije[1] = 'docx';
+$dozvoljene_ekstenzije[2] = 'xls';
+$dozvoljene_ekstenzije[3] = 'xlsx';
+$dozvoljene_ekstenzije[4] = 'ppt';
+$dozvoljene_ekstenzije[5] = 'pptx';
+$dozvoljene_ekstenzije[6] = 'odt';
+$dozvoljene_ekstenzije[7] = 'zip';
+$dozvoljene_ekstenzije[8] = 'c';
+$dozvoljene_ekstenzije[9] = 'pdf';
+$dozvoljene_ekstenzije[10] = 'cpp';
+
+
+
+
 // NASTAVNIK/ZADACE - kreiranje zadaća i masovni unos
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
@@ -18,22 +36,10 @@
 // v4.0.9.5 (2009/09/13) + Dozvoljavam da naziv zadace bude jedno slovo
 // v4.0.9.6 (2009/10/26) + Popravljeno brisanje zadace, dodana zastita od visestrukog submitanja
 
-// Dozvoljene ekstenzije dokumenta za upload zadaće
-$dozvoljene_ekstenzije[0] = 'doc';
-$dozvoljene_ekstenzije[1] = 'docx';
-$dozvoljene_ekstenzije[2] = 'xls';
-$dozvoljene_ekstenzije[3] = 'xlsx';
-$dozvoljene_ekstenzije[4] = 'ppt';
-$dozvoljene_ekstenzije[5] = 'pptx';
-$dozvoljene_ekstenzije[6] = 'odt';
-$dozvoljene_ekstenzije[7] = 'zip';
-$dozvoljene_ekstenzije[8] = 'c';
-$dozvoljene_ekstenzije[9] = 'pdf';
-$dozvoljene_ekstenzije[10] = 'cpp';
 
 function nastavnik_zadace() {
 
-global $userid,$user_siteadmin,$dozvoljene_ekstenzije,$conf_files_path;
+global $userid,$user_siteadmin, $dozvoljene_ekstenzije,$conf_files_path;
 
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
@@ -151,7 +157,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			print "Student '$prezime $ime' - zadaća $zadaca, bodova $bodova<br/>";
 		} else {
 			// Odredjujemo zadnji filename
-			$q25 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
+			$q25 = myquery("select filename from zadatak where zadaca=$zadaca, redni_broj=$zadatak, student=$student order by id desc limit 1");
 			if (mysql_num_rows($q25)>0) {
 				$filename=mysql_result($q25,0,0);
 			} else $filename='';
@@ -262,8 +268,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	if ($_POST['aktivna']) $aktivna=1; else $aktivna=0;
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
-
-	// Spajanje ekstenzija u string
+	
 	if (intval($_POST['attachment']) == 1)
 	{
 		//$dozvoljene_ekstenzije_selected = $_POST['dozvoljene_eks'];
@@ -274,7 +279,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	{
 		$dozvoljene_ekstenzije_selected = null;
 	}
-	
+
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
 		niceerror("Naziv zadaće nije dobar.");
@@ -305,14 +310,16 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		zamgerlog("zadaca sa nazivom '$naziv' vec postoji", 3);
 		return 0;
 	}
-
+       
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-	
-	    $postavka_file = $_FILES['postavka_zadace_file']['name'];
 		
+		
+		$postavka_file = $_FILES['postavka_zadace_file']['name'];
+
 		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
-		$q92 = myquery("insert into zadaca set postavka_zadace = '$postavka_file',dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected',predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
+		$q92 = myquery("insert into zadaca set postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
+		$zadaca_id=mysql_insert_id();
 		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=6");
 		$edit_zadaca = mysql_result($q93,0,0);
 		nicemessage("Kreirana nova zadaća '$naziv'");
@@ -330,7 +337,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 
 	// Izmjena postojece zadace
 	} else {
-	    
+		
 		$postavka_file = $_FILES['postavka_zadace_file']['name'];
 		// Ako se smanjuje broj zadataka, moraju se obrisati bodovi
 		$q94 = myquery("select zadataka, komponenta from zadaca where id=$edit_zadaca");
@@ -349,8 +356,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 			if ($oldstudent!=0) // log samo ako je bilo nesto
 				zamgerlog("Smanjen broj zadataka u zadaci z$edit_zadaca", 4);
 		}
-        
-		        if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
+                if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
 		{
 			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke");
 		}
@@ -360,8 +366,8 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		 copy ( $_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/".$_FILES['postavka_zadace_file']['name']) ;
 		
 		}
-		
-		$q94 = myquery("update zadaca set postavka_zadace = '$postavka_file',naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
+
+		$q94 = myquery("update zadaca set postavka_zadace = '$postavka_file', naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
@@ -410,6 +416,7 @@ if ($izabrana==0) {
 	$zjezik = mysql_result($q100,0,7);
 	if (mysql_result($q100,0,8)==1) $zattachment="CHECKED"; else $zattachment="";
 	$dozvoljene_ekstenzije_selected=mysql_result($q100,0,9);
+	
 }
 
 $zdan = date('d',$tmpvrijeme);
@@ -482,9 +489,9 @@ function provjera() {
 		bodova.focus();
 		return false;
 	}
+	
 	return true;
 }
-//funkcija koja enable-uje i disable-uje ekstenzije
 
 function onemoguci_ekstenzije(chk)
 {
@@ -508,7 +515,8 @@ function onemoguci_ekstenzije(chk)
 		chk[i].checked = false;
 	}
 
-}
+	}
+
 </script>
 <?
 
@@ -524,14 +532,13 @@ print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubm
 Naziv: <input type="text" name="naziv" id="naziv" size="30" value="<?=$znaziv?>"><br><br>
 
 Broj zadataka: <input type="text" name="zadataka" id="zadataka" size="4" value="<?=$zzadataka?>">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
 
 Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 &nbsp;&nbsp; <input type="text" name="sat" size="1" value="<?=$zsat?>"> <b>:</b> <input type="text" name="minuta" size="1" value="<?=$zminuta?>"> <b>:</b> <input type="text" name="sekunda" size="1" value="<?=$zsekunda?>"> <br><br>
 
 <input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
 <span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite željene ekstenzije">
 Dozvoljene ekstenzije: 
 <? $dozvoljene_ekstenzije_selected=explode(',',$dozvoljene_ekstenzije_selected);
@@ -540,14 +547,19 @@ foreach($dozvoljene_ekstenzije as $doz_ext) { ?>
 <? } ?>
 <br><br>
 </span>
-
 Programski jezik: <?=db_dropdown("programskijezik", $zjezik)?><br><br>
-
+Postavka zadaće: <br>
+<input type="file" name="postavka_zadace_file" size="45">
+  <br><br>
 <input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
 <?
 if ($izabrana>0) {
-	?><input type="submit" name="brisanje" value=" Obriši "><?
+	?><input type="submit" name="brisanje" value=" Obriši ">
+         	
+<?
+
 }
+echo "<script> onemoguci_ekstenzije('');</script>";
 ?>
 </form>
 <?
