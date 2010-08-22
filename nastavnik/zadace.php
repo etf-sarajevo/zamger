@@ -11,9 +11,9 @@ $dozvoljene_ekstenzije[4] = 'ppt';
 $dozvoljene_ekstenzije[5] = 'pptx';
 $dozvoljene_ekstenzije[6] = 'odt';
 $dozvoljene_ekstenzije[7] = 'zip';
-$dozvoljene_ekstenzije[8] = 'rar';
-$dozvoljene_ekstenzije[9] = 'pdf';
-
+$dozvoljene_ekstenzije[8] = 'c';
+$dozvoljene_ekstenzije[9] = 'cpp';
+$dozvoljene_ekstenzije[10] = 'pdf';
 
 
 // NASTAVNIK/ZADACE - kreiranje zadaća i masovni unos
