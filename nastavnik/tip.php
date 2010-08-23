@@ -18,8 +18,6 @@ alert (textstring) }
 // - End of JavaScript - -->
 </SCRIPT>
 
-<link rel="stylesheet" type="text/css" href="../css/zamger.css"/>
-
 <?
 //pokupimo parametre
 
