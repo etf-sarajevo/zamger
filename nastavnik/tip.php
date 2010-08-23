@@ -1,3 +1,12 @@
+<?
+//NASTAVNIK/TIP-modul koji ce omogućiti definisanja sistema bodovanja na predmetu
+
+function nastavnik_tip() {
+
+global $userid,$user_siteadmin;
+
+?>
+
 <SCRIPT LANGUAGE="JavaScript">
 <!-- Beginning of JavaScript -
 
@@ -8,28 +17,10 @@ alert (textstring) }
 
 // - End of JavaScript - -->
 </SCRIPT>
-<style type="text/css">
-#fiksne{
-	font-family:"Times New Roman", Times, serif;
-	font-size:14px;
-	
-}
 
-#opomena{
-	font:"Times New Roman", Times, serif;
-	color:#F00;
-	font-size:16px;
-	font-weight:500;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="../css/zamger.css"/>
 
 <?
-//NASTAVNIK/TIP-modul koji ce omoguciti definisanja sistema bodovanja na predmetu
-
-function nastavnik_tip() {
-
-global $userid,$user_siteadmin;
-
 //pokupimo parametre
 
 $predmet = intval($_REQUEST['predmet']);
@@ -42,33 +33,12 @@ $brojPrisustva=intval($_REQUEST['brojPrisustva']);
 if(!isset($_REQUEST['brojPrisustva'])) {$brojPrisustva=0;}
 $brojZadaca=intval($_REQUEST['brojZadaca']);
 if(!isset($_REQUEST['brojZadaca'])) {$brojZadaca=0;}
-
-//dijelovi koda koji vode racuna o broju definisanih komponenti
-
-//include("nastavnik/dodaj_ispit.php");
-
-//if($_REQUEST['funkcija']=='dodajIspit'){
-	//$_SESSION['brojIspita']=$_SESSION['brojIspita']+1;
-	//$brojIspita=$brojIspita+1;
-	//header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=ispiti&komp=".$brojK);
-//}
-//if($_REQUEST['funkcija']=='dodajZadacu'){
-	//$_SESSION['brojZadaca']=$_SESSION['brojZadaca']+1;
-	//$brojZadaca=$brojZadaca+1;
-	//header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=zadace&komp=".$brojK);
-//}
-//if($_REQUEST['funkcija']=='dodajPrisustvo'){
-	//$_SESSION['brojPrisustva']=$_SESSION['brojPrisustva']+1;
-	//$brojPrisustva=$brojPrisustva+1;
-	//header("Location:?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag."&obiljezeno=prisustvo&komp=".$brojK);
-//}
-
    
 // Naziv predmeta
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greška
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -92,87 +62,15 @@ if (!$user_siteadmin) { // 3 = site admin
 if(isset($_POST['submit'])){
 	//spašavanje izmjena za novodefinisani tip predmeta
 	
-	//sabira broj poena na pojedinim komponentama i smiješta u $suma
-	//include("suma.php");
-	
-	
-
-	$suma=0;
-	$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
-	$pomocna=count($TabelaPismenihIspita[0]);
-				for($i=0;$i<$pomocna;$i++){
-					if($TabelaPismenihIspita[3][$i]==1 && $i!=2){
-					$suma=$suma+$TabelaPismenihIspita[1][$i];
-					}
-				}
-				
-	$TabelaZadaca=$_SESSION['TabelaZadaca'];
-	$pomocna=count($TabelaZadaca[0]);
-				for($i=0;$i<$pomocna;$i++){
-					
-					if($TabelaZadaca[2][$i]==1){
-						$suma=$suma+$TabelaZadaca[1][$i];
-					}
-				}
-				
-	$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
-	$pomocna=count($TabelaPrisustva[0]);
-				for($i=0;$i<$pomocna;$i++){
-					
-					if($TabelaPrisustva[3][$i]==1){
-						$suma=$suma+$TabelaPrisustva[1][$i];
-					}
-				}
-				
-	
-	$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
-				if($TabelaZavrsni[3][0]==1){
-					$suma=$suma+$TabelaZavrsni[1][0];
-				}
-				
-	$TabelaFiksnih=$_SESSION['TabelaFiksnih'];
-	$pomocna=count($TabelaFiksnih[0]);
-				for($i=0;$i<$pomocna;$i++){
-					if($TabelaFiksnih[3][$i]==1){
-						$suma=$suma+$TabelaFiksnih[1][$i];
-					}
-				}
-		
-
-
-
-
-
-if($suma>100){
-	
-					   		?>
-	    
-		<SCRIPT language=JavaScript>
-        		MsgBox("Maksimalan broj bodova za Vas tip predmeta ne smije biti veci od 100!");
-		</SCRIPT>
-        
-        <?
-}
-else{
-	
-	
 	$q10 = myquery("select naziv from predmet where id=".$predmet."");
 
 	while($r10 = mysql_fetch_row($q10)){
-		$naziv=$r10[0];
-			//$q11 = myquery("select tippredmeta from akademska_godina_predmet where predmet=".$predmet." AND akademska_godina=".$ag."");
-				//		$r11 = mysql_fetch_row($q11);
-					//	$id_predmeta=$r11[0];
+						$naziv=$r10[0];
 						$q11 = myquery("select id from tippredmeta where  naziv ='".$naziv.$ag."'");
 						$id_predmeta=$r11[0];
-						//$q11 = myquery("select naziv from tippredmeta where id=".$id_predmeta." AND naziv LIKE '".$naziv."%'");
 						if($r11 = mysql_fetch_row($q11)){
 							$id_predmeta=$r11[0];
-						//$naziv2=$r11[0];
-						//if(($naziv.$ag)==$naziv2){
-							
-		
-							//brisemo sve komponente definisane na ovom predmetu
+							//brišemo sve komponente definisane na ovom predmetu
 							$q12 = myquery("select tippredmeta, komponenta from tippredmeta_komponenta where tippredmeta=".$id_predmeta."");
 							while($r12=mysql_fetch_row($q12)){
 								$id_komponente=$r12[1];
@@ -189,8 +87,6 @@ else{
 	}
 	
 	//spašavamo naše novodefinisane komponente
-	
-	//include("nastavnik/spasi.php");
 
 		$prvi=0;
 		$drugi=0;
@@ -281,9 +177,7 @@ else{
 									}
 							$q14=myquery("INSERT INTO
 										 tippredmeta_komponenta 
-										 VALUES($id_predmeta,$prvi);");
-							
-						
+										 VALUES($id_predmeta,$prvi);");						
 						}
 					}
 					$TabelaPrisustva=$_SESSION['TabelaPrisustva'];
@@ -337,10 +231,6 @@ else{
 										 VALUES($id_predmeta,$prvi);");
 						}
 					}
-				
-		//$q14=myquery("UPDATE predmet
-			//		 SET tippredmeta=$id_predmeta
-				//	 WHERE id=$predmet;");
 		
 		$q15=myquery("INSERT INTO akademska_godina_predmet(akademska_godina, predmet, tippredmeta)
 					 VALUES($ag,$predmet,$id_predmeta)");
@@ -348,20 +238,12 @@ else{
 
 	zamgerlog("Osoba u".$userid." kreirala tip predmeta $naziv"."$ag",4);
 	
-	
-	//header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);  
-}
 }
 elseif(isset($_POST['submit2'])){
  	//spašavanje izmjena za novodefinisani tip predmeta
 	$pregled=my_escape($_SESSION['spasi']);
 	$predmet=my_escape($predmet);
 	$ag=my_escape($ag);
-	
-	//$q14=myquery("UPDATE predmet
-		//	 SET tippredmeta=$pregled
-			// WHERE id=$predmet;");
-		
 	$q14=myquery("UPDATE akademska_godina_predmet
 			 SET tippredmeta=$pregled
 			 WHERE predmet=$predmet AND akademska_godina=$ag;");
@@ -369,10 +251,7 @@ elseif(isset($_POST['submit2'])){
 	zamgerlog("Osoba u".$userid." promijenila tip predmeta p".$predmet." u $pregled",4);
 	
 	
-	//header("location:index.php?sta=nastavnik/tip&predmet=".$predmet."&ag=".$ag);
 }
-
-//else{
 
 ?>
 <link href="../css/zamger.css" rel="stylesheet" type="text/css" />
@@ -398,7 +277,7 @@ if($_REQUEST['obiljezeno']!=false){
 					}
 	     ?>
      		</br>
-        	 <font size="2">Naziv Vaseg novokreiranog tipa predmeta ce biti <? print $naziv; ?> .</font>
+        	 <font size="2">Naziv Vašeg novokreiranog tipa predmeta će biti <? print $naziv.$ag; ?> .</font>
             </br></br></br>
             <table>
             <tr>
@@ -414,17 +293,12 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="dodaj"){
 		//definisanje fiksnih komponenti
 			//uzimanje podataka sa forme i smiještanje u varijablu $TabelaFiksnih
-			//include("nastavnik/uzmi_fiksne.php");
-			
-			
-				//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
-				
+				//Validacija podataka-bodovi za prolaz ne smiju biti veći od maksimalnog broja bodova.
+
 				$kontrola1=true;
 				$kontrola2=true;
 				$kontrola3=true;
-				
-				
-					
+
 					for($i=0;$i<$brojK;$i++){
 						if($_POST['maxBodova'.$i]<$_POST['prolazBodova'.$i]){
 							$kontrola1=false;
@@ -442,7 +316,7 @@ if($_REQUEST['obiljezeno']!=false){
 					if($kontrola1==false){
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veći od broja bodova potrebnih za prolaz!");
 						</SCRIPT>
 						
 						<?
@@ -458,7 +332,7 @@ if($_REQUEST['obiljezeno']!=false){
 					else{
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+								MsgBox("Provjerite ispravnost podataka koje želite registrovati!");
 						</SCRIPT>
 						
 						<?	
@@ -471,24 +345,14 @@ if($_REQUEST['obiljezeno']!=false){
 				
 				for($i=0;$i<$brojK;$i++){
 					if(isset($_POST['nazivKomponente'.$i]) && isset($_POST['maxBodova'.$i]) && isset($_POST['prolazBodova'.$i])){
+			    				if (!check_csrf_token()) {
+     								biguglyerror("Greska prilikom uzimanja podataka sa forme za fiksne komponente.");
+        							zamgerlog("Uzimanje podataka sa forme za fiksne komponente",3);
+                  				    return;
+    							}
 								array_push($TabelaFiksnih[0],my_escape($_POST['nazivKomponente'.$i]));
-								   if (!check_csrf_token()) {
-     							   		biguglyerror("Greska prilikom uzimanja podataka sa forme za fiksne komponente.");
-        						   		zamgerlog("Uzimanje podataka sa forme za fiksne komponente",3);
-                                   		return;
-    								}
-								array_push($TabelaFiksnih[1],floatval($_POST['maxBodova'.$i]));
-								   if (!check_csrf_token()) {
-     							   		biguglyerror("Greska prilikom uzimanja podataka sa forme za fiksne komponente.");
-        						   		zamgerlog("Uzimanje podataka sa forme za fiksne komponente",3);
-                                   		return;
-    								}								
+								array_push($TabelaFiksnih[1],floatval($_POST['maxBodova'.$i]));							
 								array_push($TabelaFiksnih[2],floatval($_POST['prolazBodova'.$i]));
-								   if (!check_csrf_token()) {
-     							   		biguglyerror("Greska prilikom uzimanja podataka sa forme za fiksne komponente.");
-        						   		zamgerlog("Uzimanje podataka sa forme za fiksne komponente",3);
-                                   		return;
-    								}
 								if(isset($_POST['Fiksne'.$i]))
 								array_push($TabelaFiksnih[3],1);
 								else
@@ -508,10 +372,7 @@ if($_REQUEST['obiljezeno']!=false){
 							 $TabelaFiksnih=$_SESSION['TabelaFiksnih'];
 						 }
 				}
-		 
-
-
-		
+		 		
 		?>
         	<div id="fiksne">
             Ovdje možete definisati vlastite komponente predmeta, koje se boduju, npr. seminarski rad i sl.
@@ -566,10 +427,7 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="ispiti"){
 		//definisanje ispita
 		    //uzimanje podataka sa forme i smiještanje u varijablu $TabelaPismenihIspita
-			//include("nastavnik/uzmi_pismene.php");
-			
-								//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
-					
+			//Validacija podataka-bodovi za prolaz ne smiju biti veći od maksimalnog broja bodova.					
 					$kontrola1=true;
 					$kontrola2=true;
 					$kontrola3=true;
@@ -605,7 +463,7 @@ if($_REQUEST['obiljezeno']!=false){
 						if($kontrola1==false){
 								?>
 							<SCRIPT language=JavaScript>
-									MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+									MsgBox("Maksimalan broj bodova za komponentu mora biti veći od broja bodova potrebnih za prolaz!");
 							</SCRIPT>
 							
 							<?
@@ -621,7 +479,7 @@ if($_REQUEST['obiljezeno']!=false){
 						else{
 								?>
 							<SCRIPT language=JavaScript>
-									MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+									MsgBox("Provjerite ispravnost podataka koje želite registrovati!");
 							</SCRIPT>
 							
 			<?	
@@ -635,21 +493,14 @@ if($_REQUEST['obiljezeno']!=false){
 							 $TabelaPismenihIspita=array(array(),array(),array(),array(),array());
 									 
 					if(isset($_POST['maxBodovaPrvi']) && isset($_POST['prolazBodovaPrvi'])){
-					
-						
-							array_push($TabelaPismenihIspita[0],"Prvi parcijalni ispit");
-							array_push($TabelaPismenihIspita[1],floatval($_POST['maxBodovaPrvi']));
-		            		if (!check_csrf_token()) {
+				            if (!check_csrf_token()) {
         						biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
         						zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
         						return;
     						}
+							array_push($TabelaPismenihIspita[0],"Prvi parcijalni ispit");
+							array_push($TabelaPismenihIspita[1],floatval($_POST['maxBodovaPrvi']));
 							array_push($TabelaPismenihIspita[2],floatval($_POST['prolazBodovaPrvi']));
-		            		if (!check_csrf_token()) {
-        						biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        						zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        						return;
-    						}	
 							if(isset($_POST['Prvi']))
 							array_push($TabelaPismenihIspita[3],1);
 							else
@@ -658,24 +509,18 @@ if($_REQUEST['obiljezeno']!=false){
 							array_push($TabelaPismenihIspita[4],1);
 							else
 							array_push($TabelaPismenihIspita[4],0);
-						
-					
 					}
 					
 					if(isset($_POST['maxBodovaDrugi']) && isset($_POST['prolazBodovaDrugi'])){
+						
+			        if (!check_csrf_token()) {
+        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
+        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
+        				return;
+    				}
 					array_push($TabelaPismenihIspita[0],"Drugi parcijalni ispit");
 					array_push($TabelaPismenihIspita[1],floatval($_POST['maxBodovaDrugi']));
-		            if (!check_csrf_token()) {
-        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        				return;
-    				}	
-					array_push($TabelaPismenihIspita[2],floatval($_POST['prolazBodovaDrugi']));
-		            if (!check_csrf_token()) {
-        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        				return;
-    				}	
+					array_push($TabelaPismenihIspita[2],floatval($_POST['prolazBodovaDrugi']));	
 					if(isset($_POST['Drugi']))
 					array_push($TabelaPismenihIspita[3],1);
 					else
@@ -688,19 +533,15 @@ if($_REQUEST['obiljezeno']!=false){
 					}
 					
 					if(isset($_POST['maxBodovaPrvi']) && isset($_POST['prolazBodovaPrvi']) && isset($_POST['maxBodovaDrugi']) && isset($_POST['prolazBodovaDrugi'])){
+						
+			        if (!check_csrf_token()) {
+        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
+        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
+        				return;
+    				}
 					array_push($TabelaPismenihIspita[0],"Integralni ispit");
-					array_push($TabelaPismenihIspita[1],(floatval($_POST['maxBodovaPrvi'])+floatval($_POST['maxBodovaDrugi'])));
-		            if (!check_csrf_token()) {
-        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        				return;
-    				}	
-					array_push($TabelaPismenihIspita[2],(floatval($_POST['prolazBodovaPrvi'])+floatval($_POST['prolazBodovaDrugi'])));
-		            if (!check_csrf_token()) {
-        				biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        				zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        				return;
-    				}					
+					array_push($TabelaPismenihIspita[1],(floatval($_POST['maxBodovaPrvi'])+floatval($_POST['maxBodovaDrugi'])));	
+					array_push($TabelaPismenihIspita[2],(floatval($_POST['prolazBodovaPrvi'])+floatval($_POST['prolazBodovaDrugi'])));					
 					if(isset($_POST['Integralni']))
 					array_push($TabelaPismenihIspita[3],1);
 					else
@@ -715,23 +556,8 @@ if($_REQUEST['obiljezeno']!=false){
 					for($i=0;$i<$brojIspita;$i++){
 						if(isset($_POST['nazivKomponente'.$i]) && isset($_POST['IspitmaxBodova'.$i]) && isset($_POST['IspitprolazBodova'.$i])){
 									array_push($TabelaPismenihIspita[0],my_escape($_POST['nazivKomponente'.$i]));
-					                if (!check_csrf_token()) {
-        								biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        								zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        								return;
-    								}
-									array_push($TabelaPismenihIspita[1],floatval($_POST['IspitmaxBodova'.$i]));
-					                if (!check_csrf_token()) {
-        								biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        								zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        								return;
-    								}									
-									array_push($TabelaPismenihIspita[2],floatval($_POST['IspitprolazBodova'.$i]));
-					                if (!check_csrf_token()) {
-        								biguglyerror("Greska prilikom uzimanja podataka sa forme za pismene ispite.");
-        								zamgerlog("Uzimanje podataka sa forme za pismene ispite",3);
-        								return;
-    								}									
+									array_push($TabelaPismenihIspita[1],floatval($_POST['IspitmaxBodova'.$i]));								
+									array_push($TabelaPismenihIspita[2],floatval($_POST['IspitprolazBodova'.$i]));								
 									if(isset($_POST['IspitDodaj'.$i]))
 									array_push($TabelaPismenihIspita[3],1);
 									else
@@ -750,15 +576,11 @@ if($_REQUEST['obiljezeno']!=false){
 								 
 							 }
 							 
-					}
-					
-					   
-	
+					}	
 		?>
         <table>
         <tr>
   <td>
-        	<!-- <form method="post" action="<? // $PHP_SELF ?>"> -->
              <? print genform_hani(); ?>
             	<table border="0"><tr bgcolor="#bbbbbb">
 				<td>Naziv</td><td>Max. bodova</td><td>Prolaz</td><td>Dodaj</td><td>Uslov</td>
@@ -837,11 +659,7 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="zadace"){
 		//definisanje zadace
 		//uzima podatke sa forme i stavlja u varijablu $TabelaZadaca
-		//include("nastavnik/uzmi_zadace.php");
-		
-		
-						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
-				
+		//Validacija podataka-bodovi za prolaz ne smiju biti veći od maksimalnog broja bodova.		
 				$kontrola1=true;
 				$kontrola2=true;
 				$kontrola3=true;
@@ -869,7 +687,7 @@ if($_REQUEST['obiljezeno']!=false){
 					if($kontrola1==false){
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veći od broja bodova potrebnih za prolaz!");
 						</SCRIPT>
 						
 						<?
@@ -885,7 +703,7 @@ if($_REQUEST['obiljezeno']!=false){
 					else{
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+								MsgBox("Provjerite ispravnost podataka koje želite registrovati!");
 						</SCRIPT>
 						
 		<?	
@@ -901,6 +719,11 @@ if($_REQUEST['obiljezeno']!=false){
 					$TabelaZadaca=array(array(),array(),array(),array());
 					
 				if(isset($_POST['maxBodovaZadace'])){
+					if (!check_csrf_token()) {
+        				biguglyerror("Greska prilikom uzimanja podataka sa forme za zadace.");
+    			   		zamgerlog("Uzimanje podataka sa forme za zadace",3);
+        				return;
+    				}	
 				array_push($TabelaZadaca[0],"Zadace");
 				array_push($TabelaZadaca[1],floatval($_POST['maxBodovaZadace']));
 				if(isset($_POST['Zadace']))
@@ -916,18 +739,13 @@ if($_REQUEST['obiljezeno']!=false){
 				
 				for($i=0;$i<$brojZadaca;$i++){
 					if(isset($_POST['nazivKomponenteZadaca'.$i]) && isset($_POST['ZadacamaxBodova'.$i])){
+								if (!check_csrf_token()) {
+        							biguglyerror("Greska prilikom uzimanja podataka sa forme za zadace.");
+    			   					zamgerlog("Uzimanje podataka sa forme za zadace",3);
+        							return;
+    							}	
 								array_push($TabelaZadaca[0],my_escape($_POST['nazivKomponenteZadaca'.$i]));
-								if (!check_csrf_token()) {
-        							biguglyerror("Greska prilikom uzimanja podataka sa forme za zadace.");
-    						    	zamgerlog("Uzimanje podataka sa forme za zadace",3);
-        							return;
-    							}
 								array_push($TabelaZadaca[1],floatval($_POST['ZadacamaxBodova'.$i]));
-								if (!check_csrf_token()) {
-        							biguglyerror("Greska prilikom uzimanja podataka sa forme za zadace.");
-    						    	zamgerlog("Uzimanje podataka sa forme za zadace",3);
-        							return;
-    							}
 								if(isset($_POST['ZadacaDodaj'.$i]))
 								array_push($TabelaZadaca[2],1);
 								else
@@ -951,14 +769,13 @@ if($_REQUEST['obiljezeno']!=false){
         <table>
         <tr>
         <td>
-        	<!-- <form method="post" action=""> -->
              <? print genform_hani(); ?>
             	<table border="0"><tr bgcolor="#bbbbbb">
 				<td>Naziv</td><td>Max. bodova</td><td>Dodaj</td><td>Uslov</td>
 				</tr>
                
                 <tr <? $bgcolor ?>>
-                <td width="150">Zadace </td>
+                <td width="150">Zadaće </td>
                 <td width="30"><input style="text" name="maxBodovaZadace" width="29" align="middle" value="<? print $TabelaZadaca[1][0]?>"/></td>
                 <td width="30"><input type="checkbox" name="Zadace" value="ZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[2][0]==1) print "checked=\"yes\""; ?>/></td>
                 <td width="30"><input type="checkbox" name="UslovZadace" value="UslovZadaceDodaj" onclick="this.form.submit();" <? if($TabelaZadaca[3][0]==1) print "checked=\"yes\""; ?>/></td>
@@ -991,9 +808,11 @@ if($_REQUEST['obiljezeno']!=false){
           </tr>
            <tr><td>
                             </br>
+            <? if($user_siteadmin){ ?>
                  <a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&obiljezeno=zadace&komp=<? print $brojK; 
 				 ?>&brojIspita=<? print $brojIspita; ?>&brojZadaca=<? print $brojZadaca+1; ?>&brojPrisustva=<? print $brojPrisustva; ?>'><font size="1" color="#000066">Dodaj zadacu</font></a>
                   </br></br>
+                  <? } ?>
                         </td>
                         </tr>
             <tr>
@@ -1009,10 +828,7 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="prisustvo"){
 		//definisanje ispita
         //uzimamo podatke sa forme za prisustvo i smještamo u varijablu $TabelaPrisustva
-		//include("nastavnik/uzmi_prisustvo.php");
-		
-						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
-				
+		//Validacija podataka-bodovi za prolaz ne smiju biti veći od maksimalnog broja bodova.		
 				$kontrola1=true;
 				$kontrola2=true;
 				$kontrola3=true;
@@ -1039,7 +855,7 @@ if($_REQUEST['obiljezeno']!=false){
 					if($kontrola1==false){
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veći od broja bodova potrebnih za prolaz!");
 						</SCRIPT>
 						
 						<?
@@ -1055,7 +871,7 @@ if($_REQUEST['obiljezeno']!=false){
 					else{
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+								MsgBox("Provjerite ispravnost podataka koje želite registrovati!");
 						</SCRIPT>
 						
 		<?	
@@ -1071,6 +887,12 @@ if($_REQUEST['obiljezeno']!=false){
 						 $TabelaPrisustva=array(array(),array(),array(),array(),array());
 				
 				if(isset($_POST['maxBodovaPrisustvo']) && isset($_POST['BrojIzostanaka'])){
+					
+					if (!check_csrf_token()) {
+        				biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
+        				zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
+        				return;
+    				}
 				array_push($TabelaPrisustva[0],"Prisustvo");
 				array_push($TabelaPrisustva[1],floatval($_POST['maxBodovaPrisustvo']));
 				array_push($TabelaPrisustva[2],intval($_POST['BrojIzostanaka']));
@@ -1088,24 +910,14 @@ if($_REQUEST['obiljezeno']!=false){
 				for($i=0;$i<$brojPrisustva;$i++){
 				
 					if(isset($_POST['PrisustvoNazivKomponente'.$i]) && isset($_POST['PrisustvoMaxBodova'.$i]) && isset($_POST['PrisustvoBrojIzostanaka'.$i])){
+								if (!check_csrf_token()) {
+        							biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
+        							zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
+        							return;
+    							}
 								array_push($TabelaPrisustva[0],my_escape($_POST['PrisustvoNazivKomponente'.$i]));
-								if (!check_csrf_token()) {
-        							biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
-        							zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
-        							return;
-    							}
 								array_push($TabelaPrisustva[1],floatval($_POST['PrisustvoMaxBodova'.$i]));
-								if (!check_csrf_token()) {
-        							biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
-        							zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
-        							return;
-    							}
 								array_push($TabelaPrisustva[2],intval($_POST['PrisustvoBrojIzostanaka'.$i]));
-								if (!check_csrf_token()) {
-        							biguglyerror("Greska prilikom uzimanja podataka sa forme za prisustvo.");
-        							zamgerlog("Uzimanje podataka sa forme za prisustvo",3);
-        							return;
-    							}
 								if(isset($_POST['PrisustvoDodaj'.$i]))
 								array_push($TabelaPrisustva[3],1);
 								else
@@ -1129,7 +941,6 @@ if($_REQUEST['obiljezeno']!=false){
         <table>
         <tr>
   <td>
-        	<!-- <form method="post" action=""> -->
              <? print genform_hani(); ?>
             	<table border="0"><tr bgcolor="#bbbbbb">
 				<td>Naziv</td><td>Max. bodova</td><td>Dozvoljen broj izostanaka</td><td>Dodaj</td><td>Uslov</td>
@@ -1188,11 +999,7 @@ if($_REQUEST['obiljezeno']!=false){
 	else if($_REQUEST['obiljezeno']=="usmeni"){
 		//definisanje usmenog ispita
 		//uzimamo podatke sa forme i smiještamo u varijablu $TabelaZavrsni
-		//include("nastavnik/uzmi_zavrsni.php");
-		
-						
-						//Validacijja podataka-bodovi za prolaz ne smiju biti veci od maksimalnog broja bodova.
-				
+		//Validacija podataka-bodovi za prolaz ne smiju biti veći od maksimalnog broja bodova.			
 				$kontrola1=true;
 				$kontrola2=true;
 				$kontrola3=true;
@@ -1215,7 +1022,7 @@ if($_REQUEST['obiljezeno']!=false){
 					if($kontrola1==false){
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Maksimalan broj bodova za komponentu mora biti veci od broja bodova potrebnih za prolaz!");
+								MsgBox("Maksimalan broj bodova za komponentu mora biti veći od broja bodova potrebnih za prolaz!");
 						</SCRIPT>
 						
 						<?
@@ -1231,7 +1038,7 @@ if($_REQUEST['obiljezeno']!=false){
 					else{
 							?>
 						<SCRIPT language=JavaScript>
-								MsgBox("Provjerite ispravnost podataka koje zelite registrovati!");
+								MsgBox("Provjerite ispravnost podataka koje želite registrovati!");
 						</SCRIPT>
 						
 		<?	
@@ -1247,29 +1054,20 @@ if($_REQUEST['obiljezeno']!=false){
 						 $TabelaZavrsni=array(array(),array(),array(),array());
 				
 				if(isset($_POST['maxBodovaUsmeni']) && isset($_POST['prolazBodovaUsmeni'])){
+					
+					if (!check_csrf_token()) {
+		     			biguglyerror("Greska prilikom uzimanja podataka sa forme za zavrsni ispit.");
+       		 			zamgerlog("Uzimanje podataka sa forme za zavrsni ispit",3);
+        				return;
+   	 				}
 				array_push($TabelaZavrsni[0],"Zavrsni ispit");
 				array_push($TabelaZavrsni[1],floatval($_POST['maxBodovaUsmeni']));
-			    if (!check_csrf_token()) {
-		     		biguglyerror("Greska prilikom uzimanja podataka sa forme za zavrsni ispit.");
-       		 		zamgerlog("Uzimanje podataka sa forme za zavrsni ispit",3);
-        			return;
-   	 			}
 				array_push($TabelaZavrsni[2],floatval($_POST['prolazBodovaUsmeni']));
-			    if (!check_csrf_token()) {
-		     		biguglyerror("Greska prilikom uzimanja podataka sa forme za zavrsni ispit.");
-       		 		zamgerlog("Uzimanje podataka sa forme za zavrsni ispit",3);
-        			return;
-   	 			}
 				if(isset($_POST['Usmeni']))
 				array_push($TabelaZavrsni[3],1);
 				else
-				array_push($TabelaZavrsni[3],0);
-				
-				
+				array_push($TabelaZavrsni[3],0);		
 				}
-				
-				
-				
 				$_SESSION['TabelaZavrsni']=$TabelaZavrsni;
 				}
 						 else{
@@ -1282,14 +1080,13 @@ if($_REQUEST['obiljezeno']!=false){
         <table>
         <tr>
   <td>
-        	<!-- <form method="post" action=""> -->
              <? print genform_hani(); ?>
             	<table border="0"><tr bgcolor="#bbbbbb">
 				<td></td><td>Max. bodova</td><td>Prolaz</td><td>Dodaj</td>
 				</tr>
                
                 <tr <? $bgcolor ?>>
-                <td width="150">Zavrsni ispit </td>
+                <td width="150">Završni ispit </td>
                 <td width="30"><input style="text" name="maxBodovaUsmeni" width="29" align="middle" value="<? print $TabelaZavrsni[1][0]?>" /></td>
                 <td width="30"><input style="text" name="prolazBodovaUsmeni" width="29" align="middle" value="<? print $TabelaZavrsni[2][0]?>" /></td>
                 <td width="30"><input type="checkbox" name="Usmeni" value="UsmeniDodaj" onclick="this.form.submit();" <? if($TabelaZavrsni[3][0]==1) print "checked=\"yes\""; ?> /></td>
@@ -1320,7 +1117,6 @@ if($_REQUEST['obiljezeno']!=false){
 	
 	else if($_REQUEST['obiljezeno']=="pregled"){
 		//pregled definisanog tipa predmeta
-		/* Treba promijeniti */
 			 ?>
       </br>
    <font size=2 >Pregled definisanog tipa predmeta:</font>
@@ -1346,7 +1142,7 @@ if($_REQUEST['obiljezeno']!=false){
 	}
 }
 else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
-	//ponudeni tipovi predmeta u obliku array(ID,naziv)
+	//ponuđeni tipovi predmeta u obliku array(ID,naziv)
 	//$ponudeni_tipovi=array(array(1,'ETF Bologna standard'));
 	$pregled=my_escape($_REQUEST['pregled']);
 	if(!$pregled)
@@ -1357,17 +1153,10 @@ else if($_REQUEST['postojeci']!=false && $_REQUEST['postojeci']>0){
      ?>
 
   </form>
-     <!-- <form name="zsPregled" method="post" action="<?php //echo $PHP_SELF;?>"> -->
       <? print genform_hani("POST", "zaPregled"); ?>
      <font size=2 >Izaberite tip predmeta:</font>
      <select name="pregled" onchange="submit()">
      <?
-	 //for($i=0;$i<count($ponudeni_tipovi);$i++){
-		//  if($ponudeni_tipovi[$i][0]!=$pregled)
-     		//	echo "<option value='".$ponudeni_tipovi[$i][0]."'>".$ponudeni_tipovi[$i][1]."</option>";
-	 	  //else
-		 	//	echo "<option selected value='".$ponudeni_tipovi[$i][0]."'>".$ponudeni_tipovi[$i][1]."</option>";
-	 //}
 	 while ($r10 = mysql_fetch_row($q10)) {
 		 if($r10[0]!=$pregled)
      			print "<option value='$r10[0]'>$r10[1]</option>";
@@ -1428,10 +1217,6 @@ $pregled=$r10[0];
 }
 pregled_predmeta($pregled);
 
-//resetovanje svih varijabli koje se koriste prilikom definicije predmeta
-	//$_SESSION['brojIspita']=0;
-	//$_SESSION['brojPrisustva']=0;
-	//$_SESSION['brojZadaca']=0;
 	unset($_SESSION['TabelaPismenihIspita']);
 	unset($_SESSION['TabelaFiksnih']);
 	unset($_SESSION['TabelaZadaca']);
@@ -1444,9 +1229,6 @@ pregled_predmeta($pregled);
 }
 
 function meni_za_tip_predmeta(){
-		
-        
-	
 
 		$predmet=intval($_REQUEST['predmet']);
 		$ag=intval($_REQUEST['ag']);
@@ -1473,7 +1255,7 @@ function meni_za_tip_predmeta(){
 		<?
 
 if($obiljezeno==false) $obiljezeno="naziv";
-	$registry=array(array("Naziv tipa-->","naziv"),array("Pismeni ispiti-->","ispiti"),array("Zadace-->","zadace"),array("Prisustvo-->","prisustvo"),array("Zavrsni ispit-->","usmeni"),array("Fiksne komponente-->","dodaj"), array("Pregled","pregled"));
+	$registry=array(array("Naziv tipa-->","naziv"),array("Pismeni ispiti-->","ispiti"),array("Zadaće-->","zadace"),array("Prisustvo-->","prisustvo"),array("Završni ispit-->","usmeni"),array("Fiksne komponente-->","dodaj"), array("Pregled","pregled"));
 	foreach ($registry as $r) { 
 			if ($r[1]==$obiljezeno ) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
 			?><td height="20"  bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
@@ -1773,7 +1555,4 @@ function genform_hani($method="POST", $name="") {
 
 	return $result;
 }
-
-
-
 	?>

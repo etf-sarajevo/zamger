@@ -54,10 +54,6 @@ print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>
 $labgrupa = intval($_REQUEST['id']);
 $kreiranje = intval($_GET['kreiranje']);
 
-$q_godina=myquery("select id from akademska_godina where aktuelna=1");
-if($r_godina=mysql_fetch_row($q_godina)){
-	$ag=$r_godina[0];
-}
 
 if ($labgrupa>0) {
 	// Određujemo predmet i ag za labgrupu

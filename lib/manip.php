@@ -118,14 +118,15 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Parametar funkcije je ustvari ponudakursa
 
 function upis_studenta_na_predmet($student,$ponudakursa) {
-	$ag = intval($_REQUEST['ag']); // akademska godina
+	
 	// Zapis u tabeli student_predmet
 	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
 
 	// Pronalazimo labgrupu "(Svi studenti)" i upisujemo studenta u nju
-	$q20 = myquery("select l.id, pk.predmet from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
+	$q20 = myquery("select l.id, pk.predmet, pk.akademska_godina from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
 	$labgrupa = mysql_result($q20,0,0); // mora postojati
 	$predmet = mysql_result($q20,0,1); // treba nam za $q40
+	$ag=mysql_result($q20,0,2);
 	
 	$q30 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 
@@ -368,7 +369,7 @@ function mass_input($ispis) {
 
 function update_komponente($student,$predmet,$komponenta=0) {
 	// Ako nije navedena komponenta, racunaju se sve komponente
-$ag = intval($_REQUEST['ag']); // akademska godina
+	$ag = intval($_REQUEST['ag']); // akademska godina
 	// Glavni upit - spisak komponenti
 	$dodaj="";
 	if ($komponenta!=0) $dodaj="and k.id=$komponenta";
