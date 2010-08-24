@@ -1989,6 +1989,17 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
+-- 
+-- Table structure for table `ekstenzije`
+-- 
+
+CREATE TABLE `ekstenzije` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `naziv` text collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=26 ;
+
+
 
 --
 -- Table structure for table `odgovor_text`
