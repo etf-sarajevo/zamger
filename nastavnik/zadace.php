@@ -1,7 +1,7 @@
 <?
 
 
-
+/*
 // Dozvoljene ekstenzije dokumenta za upload zadaæe
 $dozvoljene_ekstenzije[0] = 'doc';
 $dozvoljene_ekstenzije[1] = 'docx';
@@ -14,7 +14,7 @@ $dozvoljene_ekstenzije[7] = 'zip';
 $dozvoljene_ekstenzije[8] = 'c';
 $dozvoljene_ekstenzije[9] = 'pdf';
 $dozvoljene_ekstenzije[10] = 'cpp';
-
+*/
 
 
 
@@ -59,7 +59,14 @@ if (mysql_num_rows($q10)<1) {
 }
 $predmet_naziv = mysql_result($q10,0,0);
 
-
+//Dozvoljene ekstenzije
+$q99 = myquery("select naziv from ekstenzije");
+$dozvoljene_ekstenzije =array();
+ 
+  for($i=0 ; $i<mysql_num_rows( $q99 ) ; $i++ ) 
+  {
+      $dozvoljene_ekstenzije[$i]=mysql_result($q99,$i,0);
+  }
 
 // Da li korisnik ima pravo uæi u modul?
 
