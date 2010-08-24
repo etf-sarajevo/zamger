@@ -107,13 +107,24 @@ if (!$user_siteadmin) {
 	}
 }
 
+//Smještamo sve tipove komponenti određenog tipa predmeta u jedan niz
 
+$q_tip=myquery("select tippredmeta from akademska_godina_predmet where akademska_godina=$ag and predmet=$predmet");
+$r_tip=mysql_fetch_array($q_tip);
+$tip=$r_tip[0];
+$q_komp=myquery("select k.tipkomponente from tippredmeta_komponenta t inner join komponenta k on t.komponenta=k.id where t.tippredmeta=$tip");
+$kontrolni=array();
+while($komp=mysql_fetch_array($q_komp)){
+	array_push($kontrolni,$komp[0]);
+}
+
+print_r($kontrolni);
 
 // ------- AKCIJE
 
 // Dodavanje casa
 
-if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
+if ($_POST['akcija'] == 'dodajcas' && check_csrf_token() && in_array(3,$kontrolni)) {
 	// KOMPONENTA
 	// Ovaj kod radi samo sa jednom komponentom prisustva. U budućnosti to bi moglo biti popravljeno, ali realno nema prevelike potrebe
 
@@ -166,7 +177,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 
 // Brisanje casa
 
-if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
+if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token() && in_array(3,$kontrolni)) {
 	$cas_id = intval($_POST['_lv_casid']);
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
@@ -236,6 +247,7 @@ if ($predmet_admin==1 || $user_siteadmin) {
 
 // ------- SPISAK NEPREGLEDANIH ZADAĆA
 
+if(in_array(4,$kontrolni)){
 
 $q150 = myquery(
 "SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
@@ -255,11 +267,12 @@ while ($r150 = mysql_fetch_row($q150)) {
 if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 
 
-
+}
 
 
 // ------- FORMA ZA NOVI ČAS
 
+if(in_array(3,$kontrolni)){
 
 $dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
 $vrijeme=date("H:i");
@@ -410,7 +423,9 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$zaglavlje2 .= "<td>BOD.</td>\n";
 }
 
+}
 
+if(in_array(4,$kontrolni)){
 
 // Zaglavlje zadaće
 
@@ -438,7 +453,8 @@ while ($r205 = mysql_fetch_row($q205)) {
 	}
 }
 
-
+}
+if(in_array(5,$kontrolni)){
 // Zaglavlje fiksne komponente
 
 $fiksna_prolaz = array();
@@ -456,6 +472,9 @@ while ($r215 = mysql_fetch_row($q215)) {
 	$fiksna_prolaz[$r215[0]]=$r215[3];
 }
 
+}
+
+if(in_array(1,$kontrolni)){
 
 // Zaglavlje ispiti
 
@@ -488,7 +507,7 @@ if ($broj_ispita>0) {
 	$zaglavlje2 .= $ispit_zaglavlje;
 }
 
-
+}
 
 // Zaglavlje konacna ocjena
 
@@ -583,6 +602,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
 	$bodova=0;
 
+if(in_array(3,$kontrolni)){
 
 	// PRISUSTVO - ISPIS
 
@@ -623,7 +643,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	} // foreach ($prisustvo... as $pid)
 
+}
 
+if(in_array(4,$kontrolni)){
 	// ZADACE - ISPIS
 
 	foreach ($zad_id_array as $zid) {
@@ -651,9 +673,12 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$zadace_ispis .= "&nbsp;</td>\n";
 	}
 
+}
+
 
 	// FIKSNE KOMPONENTE - ISPIS
 
+if(in_array(5,$kontrolni)){
 	$fiksne_ispis="";
 	foreach ($fiksna_id_array as $fiksna) {
 		$q328 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$fiksna");
@@ -666,9 +691,12 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		}
 	}
 
+}
 
 	// ISPITI - ISPIS
 
+if(in_array(1,$kontrolni)){
+	
 	$ispiti_ispis="";
 	$komponente=$kmax=array();
 	foreach ($ispit_id_array as $ispit) {
@@ -715,7 +743,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		}
 	}
 
-
+}
 	// KONACNA OCJENA - ISPIS
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
