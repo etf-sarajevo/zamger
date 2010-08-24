@@ -118,7 +118,6 @@ while($komp=mysql_fetch_array($q_komp)){
 	array_push($kontrolni,$komp[0]);
 }
 
-print_r($kontrolni);
 
 // ------- AKCIJE
 
