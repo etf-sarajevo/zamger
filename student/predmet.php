@@ -45,7 +45,7 @@ if (mysql_num_rows($q10)<1) {
 // Da li student slusa predmet?
 $q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_num_rows($q17)<1) {
-	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
@@ -179,8 +179,12 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
-where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p
+where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and p.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+
+//$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
+//where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];
@@ -273,7 +277,6 @@ if (mysql_result($q100,0,0)==0) {
 	?>
 	<td><?=$uk_bodova?></td></tr>
 </tbody>
-
 </table>
 
 &nbsp;<br/>
@@ -322,7 +325,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 
 $bodova_sve_zadace=0;
-
+//dodana dozvoljena_ekstenzija
 $q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, dozvoljene_ekstenzije from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
@@ -374,7 +377,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 	}
 	else{
 	?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
-	//} else { print "&nbsp;"; }
+	
 	}
 	
 	?></td></tr>
