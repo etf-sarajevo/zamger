@@ -4,7 +4,7 @@
 
 // v3.9.1.0 (2008/02/21) + Kopiran raniji stud_zadaca
 // v3.9.1.1 (2008/03/21) + Popravljeni stari linkovi, $conf_files_path, typo u akcijaslanje(), popravljen logging
-// v3.9.1.2 (2008/03/26) + Staza za diff je bila lo≈°a
+// v3.9.1.2 (2008/03/26) + Staza za diff je bila loöa
 // v3.9.1.3 (2008/03/28) + Navigacija v3.0 kopirana sa predmet.php, fixevi za widescreen
 // v3.9.1.4 (2008/04/10) + Navigacija je prikazivala visak zadataka; dodan update komponente nakon slanja
 // v3.9.1.5 (2008/04/27) + Zamijenjen obican zadatak i attachment u log zapisu
@@ -69,21 +69,22 @@ $ponudakursa = mysql_result($q17,0,0);
 
 $q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
-	niceerror("Nijedna zadaƒáa nije aktivna");
+    zamgerlog("nijedna zadaÊa nije aktivna, predmet pp$predmet", 3);
+	niceerror("Nijedna zadaÊa nije aktivna");
 	return;
 }
 
 
 
-//  ODREƒêIVANJE ID ZADAƒÜE
+//  ODRE–IVANJE ID ZADA∆E
 
-// Da li neko poku≈°ava da spoofa zadaƒáu?
+// Da li neko pokuöava da spoofa zadaÊu?
 if ($zadaca!=0) {
 	$q20 = myquery("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
 	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q20,0,0)==0) {
 		zamgerlog("student nije upisan na predmet (zadaca z$zadaca)",3);
-		biguglyerror("Ova zadaƒáa nije iz va≈°eg predmeta");
+		biguglyerror("Ova zadaÊa nije iz vaöeg predmeta");
 		return;
 	}
 }
@@ -101,7 +102,7 @@ if ($ponudakursa != 0) {
 		$q27 = myquery("select count(*) from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_result($q27,0,0)==0) {
 			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$ponudakursa, zadaca z$zadaca)",3);
-			biguglyerror("Ova zadaƒáa nije iz va≈°eg predmeta");
+			biguglyerror("Ova zadaÊa nije iz vaöeg predmeta");
 			return;
 		}
 	}
@@ -124,8 +125,8 @@ if ($zadaca==0) {
 		if (mysql_num_rows($q40)>0)
 			$zadaca = mysql_result($q40,0,0);
 		else {
-			// Ako ni ovdje nema rezultata, znaƒçi da je svim 
-			// zadaƒáama istekao rok. Daƒáemo zadnju zadaƒáu.
+			// Ako ni ovdje nema rezultata, znaËi da je svim 
+			// zadaÊama istekao rok. DaÊemo zadnju zadaÊu.
 			// Da li ima aktivnih provjerili smo u $q10
 			$q50 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1 order by id desc limit 1");
 			$zadaca = mysql_result($q50,0,0);
@@ -141,7 +142,7 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
 
 
 
-// Ove vrijednosti ƒáe nam trebati kasnije
+// Ove vrijednosti Êe nam trebati kasnije
 $q60 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment,dozvoljene_ekstenzije from zadaca where id=$zadaca");
 $naziv = mysql_result($q60,0,0);
 $brojzad = mysql_result($q60,0,1);
@@ -152,13 +153,13 @@ $zadaca_dozvoljene_ekstenzije = mysql_result($q60,0,5);
 
 
 
-//  ODREƒêIVANJE ZADATKA
+//  ODRE–IVANJE ZADATKA
 
 // Poslani parametar:
 $zadatak = intval($_REQUEST['zadatak']);
 
 if ($zadatak==0) { 
-	// Prvi neuraƒëeni zadatak u datoj zadaƒái
+	// Prvi neuraeni zadatak u datoj zadaÊi
 	// NOTE: subquery
 	$q70 = myquery("select zk.redni_broj from zadatak as zk where zk.student=$userid and zk.zadaca=$zadaca and (select count(*) from zadatak as zk2 where zk2.student=$userid and zk2.zadaca=$zadaca and zk2.redni_broj=zk.redni_broj)=0 order by zk.redni_broj limit 1");
 	
@@ -178,7 +179,7 @@ print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 // Statusne ikone:
 $stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaƒáa prepisana", "Bug u programu", "Pregled u toku", "Zadaƒáa OK");
+$stat_tekst = array("Bug u programu", "Pregled u toku", "ZadaÊa prepisana", "Bug u programu", "Pregled u toku", "ZadaÊa OK");
 
 
 ?>
@@ -216,10 +217,10 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 // LEGENDA STATUS POLJA:
 // 0 - nepoznat status
-// 1 - nova zadaƒáa
+// 1 - nova zadaÊa
 // 2 - prepisana
-// 3 - ne mo≈æe se kompajlirati
-// 4 - pro≈°la test, predstoji kontrola
+// 3 - ne moûe se kompajlirati
+// 4 - proöla test, predstoji kontrola
 // 5 - pregledana
 
 
@@ -240,7 +241,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 	<?
 
 	for ($m_zadatak=1;$m_zadatak<=$broj_zadataka;$m_zadatak++) {
-		// Ako tekuƒáa zadaƒáa nema toliko zadataka, ispisujemo blank polje
+		// Ako tekuÊa zadaÊa nema toliko zadataka, ispisujemo blank polje
 		if ($m_zadatak>$m_maxzadataka) {
 			?><td>&nbsp;</td><?
 			continue;
@@ -323,8 +324,8 @@ if (mysql_num_rows($q110)>0) {
 // Istek roka za slanje zadace
 
 if ($rok <= time()) {
-	print "<p><b>Vrijeme za slanje ove zadaƒáe je isteklo.</b></p>";
-	// Ovo je onemoguƒáavalo copy&paste u Firefoxu :(
+	print "<p><b>Vrijeme za slanje ove zadaÊe je isteklo.</b></p>";
+	// Ovo je onemoguÊavalo copy&paste u Firefoxu :(
 	//$readonly = "DISABLED";
 } else {
 	$readonly = "";
@@ -344,7 +345,7 @@ if ($attachment) {
 	if (mysql_num_rows($q120)>0) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
-		if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
+		if ($filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
 			$vrijeme = mysql_result($q120,0,1);
 			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
@@ -356,13 +357,13 @@ if ($attachment) {
 			</td><td>
 			<p>Poslani fajl: <b><a href="<?=$dllink?>"><?=$filename?></a></b><br/>
 			Datum slanja: <b><?=$vrijeme?></b><br/>
-			Veliƒçina: <b><?=$velicina?></b></p>
+			VeliËina: <b><?=$velicina?></b></p>
 			</td></tr></table></center>
 			<?
-			print "<p>Ako ≈æelite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
+			print "<p>Ako ûelite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
 		}
 	} else {
-		print "<p>Izaberite datoteku (<strong>$zadaca_dozvoljene_ekstenzije</strong>) koju ≈æelite poslati i kliknite na dugme za slanje:</p>";
+		print "<p>Izaberite datoteku (<strong>$zadaca_dozvoljene_ekstenzije</strong>) koju ûelite poslati i kliknite na dugme za slanje:</p>";
 	}
 
 	?>
@@ -387,7 +388,7 @@ if ($attachment) {
 	$ekst = mysql_result($q130,0,0);
 
 	if ($rok > time()) {
- 		?><p>Kopirajte va≈° zadatak u tekstualno polje ispod:</p>
+ 		?><p>Kopirajte vaö zadatak u tekstualno polje ispod:</p>
 		</td></tr></table>
 
 		<?
@@ -418,8 +419,8 @@ if ($attachment) {
 
 <center>
 <table width="600" border="0">
-<tr><td align="center"><input type="reset" value=" Poni≈°ti izmjene "></td>
-<td align="center"><input type="submit" value=" Po≈°alji zadatak! "></td></tr>
+<tr><td align="center"><input type="reset" value=" Poniöti izmjene "></td>
+<td align="center"><input type="submit" value=" Poöalji zadatak! "></td></tr>
 </table>
 </center>
 </form>
@@ -445,7 +446,7 @@ function akcijaslanje() {
 	// Da li student slusa predmet?
 	$q195 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	if (mysql_num_rows($q195)<1) {
-		// student_zadaca() ce ispisati gre≈°ku
+		// student_zadaca() ce ispisati greöku
 		return;
 	}
 	$ponudakursa = mysql_result($q195,0,0);	
@@ -458,12 +459,12 @@ function akcijaslanje() {
 	}
 
 
-	// Da li neko poku≈°ava da spoofa zadaƒáu?
+	// Da li neko pokuöava da spoofa zadaÊu?
 	$q200 = myquery("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
 	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q200,0,0)==0) {
-//		biguglyeerror("Ova zadaƒáa nije iz va≈°eg predmeta");
-		// student_zadaca() ce ispisati gre≈°ku
+//		biguglyeerror("Ova zadaÊa nije iz vaöeg predmeta");
+		// student_zadaca() ce ispisati greöku
 		return;
 	}
 
@@ -472,7 +473,7 @@ function akcijaslanje() {
 		$program = stripslashes($program);
 	}
 
-	// Podaci o zadaƒái
+	// Podaci o zadaÊi
 	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije from zadaca where id=$zadaca");
 	$jezik = mysql_result($q210,0,0);
 	$rok = mysql_result($q210,0,1);
@@ -491,8 +492,8 @@ function akcijaslanje() {
 
 	// Provjera roka
 	if ($rok <= time()) {
-		niceerror("Vrijeme za slanje zadaƒáe je isteklo!");
-		zamgerlog("isteklo vrijeme za slanje zadaƒáe z$zadaca",3); // nivo 3 - greska
+		niceerror("Vrijeme za slanje zadaÊe je isteklo!");
+		zamgerlog("isteklo vrijeme za slanje zadaÊe z$zadaca",3); // nivo 3 - greska
 		return; 
 	}
 
@@ -501,15 +502,15 @@ function akcijaslanje() {
 	if ($zadaca>0 && !file_exists("$lokacijazadaca$zadaca")) 
 		mkdir ("$lokacijazadaca$zadaca",0777);
 
-	// Vrsta zadaƒáe: textarea ili attachment
+	// Vrsta zadaÊe: textarea ili attachment
 	if ($attach == 0) {
-		// Odreƒëivanje ekstenzije iz jezika
+		// Odreivanje ekstenzije iz jezika
 		$q220 = myquery("select ekstenzija from programskijezik where id=$jezik");
 		$ekst = mysql_result($q220,0,0);
 
 		$filename = "$lokacijazadaca$zadaca/$zadatak$ekst";
 
-		// Temp fajl radi odreƒëivanja diff-a 
+		// Temp fajl radi odreivanja diff-a 
 		$diffing=0;
 		if (file_exists($filename)) {
 			if (file_exists("$lokacijazadaca$zadaca/difftemp")) 
@@ -520,13 +521,13 @@ function akcijaslanje() {
 
 		// Kreiranje datoteke
 		if (strlen($program)<=10) {
-			niceerror("Niste kopirali zadaƒáu!");
+			niceerror("Niste kopirali zadaÊu!");
 			zamgerlog("poslao praznu zadacu z$zadaca zadatak $zadatak",3); // nivo 3 - greska
 		} else if ($zadaca>0 && $zadatak>0 && ($f = fopen($filename,'w'))) {
 			fwrite($f,$program);
 			fclose($f);
 
-			// Tabela "zadatak" funkcioni≈°e kao log dogaƒëaja u
+			// Tabela "zadatak" funkcioniöe kao log dogaaja u
 			// koji se stvari samo dodaju
 			$q230 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$zadatak$ekst', userid=$userid");
 
@@ -544,12 +545,12 @@ function akcijaslanje() {
 				unlink ("$lokacijazadaca$zadaca/difftemp");
 			}
 
-			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspje≈°no poslan!");
+			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspjeöno poslan!");
 			update_komponente($userid,$ponudakursa);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak",2); // nivo 2 - edit
 		} else {
 			zamgerlog("greska pri slanju zadace (zadaca z$zadaca zadatak $zadatak filename $filename)",3);
-			niceerror("Gre≈°ka pri slanju zadaƒáe. Kontaktirajte tutora.");
+			niceerror("Greöka pri slanju zadaÊe. Kontaktirajte tutora.");
 		}
 
 	} else { // if ($attach==0)...
@@ -559,34 +560,46 @@ function akcijaslanje() {
 		$db_doz_eks = explode(',',$zadaca_dozvoljene_ekstenzije);
 								
 		if ($program && file_exists($program) && in_array($file_ext,$db_doz_eks)&& $provjera==0) {
-			// Neƒáemo poku≈°avati praviti diff
-			$filename = "$lokacijazadaca$zadaca/".$_FILES['attachment']['name'];
-			unlink ($filename);
-			rename($program, $filename);
+			// NeÊemo pokuöavati praviti diff
+			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
+			// Ukidam HTML znakove radi potencijalnog XSSa
+			$ime_fajla = str_replace("&", "", $ime_fajla);
+			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
+			unlink ($puni_put);
+			rename($program, $puni_put);
 
-			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
+			// Escaping za SQL
+			$ime_fajla = my_escape($ime_fajla);
+			
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
 
-			nicemessage("Z".$naziv_zadace."/".$zadatak." uspje≈°no poslan!");
+			nicemessage("Z".$naziv_zadace."/".$zadatak." uspjeöno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
 		}
 		else if($provjera==1)//ako nije selktovana niti jedna ekstenzija, u tom slucaju omogucujemo da moze poslati fajl sa bilo kojom ekstenzijom
 		{
-		        // Neƒáemo poku≈°avati praviti diff
-			$filename = "$lokacijazadaca$zadaca/".$_FILES['attachment']['name'];
-			unlink ($filename);
-			rename($program, $filename);
+		    // NeÊemo pokuöavati praviti diff
+			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
+			// Ukidam HTML znakove radi potencijalnog XSSa
+			$ime_fajla = str_replace("&", "", $ime_fajla);
+			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
+			unlink ($puni_put);
+			rename($program, $puni_put);
 
-			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='".$_FILES['attachment']['name']."', userid=$userid");
+			// Escaping za SQL
+			$ime_fajla = my_escape($ime_fajla);
+			
+			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
 
-			nicemessage("Z".$naziv_zadace."/".$zadatak." uspje≈°no poslan!");
+			nicemessage("Z".$naziv_zadace."/".$zadatak." uspjeöno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
-			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit	
+			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
 		
 		}
 		else {
 			zamgerlog("greska kod attachmenta (zadaca z$zadaca, varijabla program je: $program)",3);
-			niceerror("Gre≈°ka pri slanju zadaƒáe. Provjerite da li je ekstenzija datoteke dozvoljena. <br />Va≈°a ima $file_ext, a dozvoljene su:
+			niceerror("Greöka pri slanju zadaÊe. Provjerite da li je ekstenzija datoteke dozvoljena. <br />Vaöa ima $file_ext, a dozvoljene su:
 				  $zadaca_dozvoljene_ekstenzije ekstenzije. Kontaktirajte tutora. ");
 		}
 	}
