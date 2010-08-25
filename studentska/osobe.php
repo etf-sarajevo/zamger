@@ -2246,7 +2246,7 @@ else if ($akcija == "edit") {
 
 			} else if ($semestar<$studij_trajanje && $predmeti_pao<=1) {
 				// Provjeravamo broj nepolozenih izbornih predmeta i razliku ects-ova
-				if ($predmeti_pao==0 && ($ects_pao+$ects_polozio)%60<7 && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
+				if ($predmeti_pao==0 && (60-($ects_pao+$ects_polozio)%60)<7 && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
 					$ima_uslov=1;
 
 				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0 && $nize_godine==0) {
