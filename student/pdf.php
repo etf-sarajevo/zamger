@@ -103,8 +103,8 @@ for ($zadatak=1;$zadatak<=$brzad;$zadatak++) {
 
 //print_r($filename);
 
-require_once('lib\tcpdf\config\lang\eng.php');
-require_once('lib\tcpdf\tcpdf.php');
+//require_once('lib\tcpdf\config\lang\eng.php');
+require_once('lib/tcpdf/tcpdf.php');
 
 
 
@@ -215,7 +215,7 @@ $pdf->Cell(60,10,'','B',0,'C');
 include_once('lib/geshi/geshi.php');
 
 
-$brzad = count($filename);
+//$brzad = count($filename);
 
 // Zadaci
 include('lib/pclzip/pclzip.lib.php');
@@ -223,6 +223,7 @@ include('lib/pclzip/pclzip.lib.php');
 //Omogucio sam da se fajlovi tipa cpp,c mogu slati i u formi attachmenta i da se vrsi bojenja uradjeno otvaranje zip-a i generisaje pdf ali samo c,cpp,php(radi testiranja zipa) fajlova.Treba uraditi
 //konvertovanje office fajlova u pdf na tome se radi..
 for ($i=1; $i<=$brzad; $i++) {
+	if ($filename[$i]=="") continue;
 	 $extrenut=strtolower(end(explode('.',$filename[$i])));
 //Extract zip fajlovaa
      if($extrenut=="pdf"){
@@ -244,7 +245,10 @@ for ($i=1; $i<=$brzad; $i++) {
 		
          $dir="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid";
 	 if(!($handle=opendir($dir))) die ("Ne moze se otvoriti $dir");
-	 
+	
+
+	// TODO: Prepraviti tako da se svi fajlovi iz arhive ispišu!!!
+	// TODO: Po završetku pobrisati i fajlove i folder!!!
 	 $fajlovi=array();
 	 while($file= readdir($handle)){
 		if( $file !="." && $file!=".."){
