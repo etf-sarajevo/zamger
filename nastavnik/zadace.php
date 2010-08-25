@@ -2,7 +2,7 @@
 
 
 /*
-// Dozvoljene ekstenzije dokumenta za upload zadaæe
+// Dozvoljene ekstenzije dokumenta za upload zadaÄ‡e
 $dozvoljene_ekstenzije[0] = 'doc';
 $dozvoljene_ekstenzije[1] = 'docx';
 $dozvoljene_ekstenzije[2] = 'xls';
@@ -18,7 +18,7 @@ $dozvoljene_ekstenzije[10] = 'cpp';
 
 
 
-// NASTAVNIK/ZADACE - kreiranje zadaæa i masovni unos
+// NASTAVNIK/ZADACE - kreiranje zadaÄ‡a i masovni unos
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
 // v3.9.1.1 (2008/04/03) + Koristim lib/manip
@@ -68,7 +68,7 @@ $dozvoljene_ekstenzije =array();
       $dozvoljene_ekstenzije[$i]=mysql_result($q99,$i,0);
   }
 
-// Da li korisnik ima pravo uæi u modul?
+// Da li korisnik ima pravo uÄ‡i u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
@@ -85,11 +85,11 @@ if (!$user_siteadmin) { // 3 = site admin
 
 <p>&nbsp;</p>
 
-<p><h3><?=$predmet_naziv?> - Zadaæe</h3></p>
+<p><h3><?=$predmet_naziv?> - ZadaÄ‡e</h3></p>
 
 <?
 
-# Masovni unos zadaæa
+# Masovni unos zadaÄ‡a
 
 if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
 
@@ -101,20 +101,20 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	$q20 = myquery("select naziv,zadataka,bodova,komponenta,predmet,akademska_godina from zadaca where id=$zadaca");
 	if (mysql_num_rows($q20)<1) {
-		zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greška
-		niceerror("Morate najprije kreirati zadaæu");
-		print "\n<p>Koristite formular &quot;Kreiranje zadaæe&quot; koji se nalazi na prethodnoj stranici. Ukoliko ne vidite nijednu zadaæu na spisku &quot;Postojeæe zadaæe&quot;, koristite dugme Refresh vašeg web preglednika.</p>\n";
+		zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greÅ¡ka
+		niceerror("Morate najprije kreirati zadaÄ‡u");
+		print "\n<p>Koristite formular &quot;Kreiranje zadaÄ‡e&quot; koji se nalazi na prethodnoj stranici. Ukoliko ne vidite nijednu zadaÄ‡u na spisku &quot;PostojeÄ‡e zadaÄ‡e&quot;, koristite dugme Refresh vaÅ¡eg web preglednika.</p>\n";
 		return;
 	}
 	if (mysql_result($q20,0,1)<$zadatak) {
 		zamgerlog("zadaca $zadaca nema $zadatak zadataka",3);
-		niceerror("Zadaæa \"".mysql_result($q20,0,0)."\" nema $zadatak zadataka.");
+		niceerror("ZadaÄ‡a \"".mysql_result($q20,0,0)."\" nema $zadatak zadataka.");
 		return;
 	}
 	$maxbodova=mysql_result($q20,0,2);
 	$komponenta=mysql_result($q20,0,3);
 
-	// Provjera spoofanja zadaæe
+	// Provjera spoofanja zadaÄ‡e
 	if ($predmet != mysql_result($q20,0,4) || $ag != mysql_result($q20,0,5)) {
 		zamgerlog("zadaca z$zadaca nije u predmetu pp$predme",3);
 		niceerror("Pogresan ID zadace!");
@@ -124,12 +124,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	$greska=mass_input($ispis); // Funkcija koja parsira podatke
 
 	if (count($mass_rezultat)==0) {
-		niceerror("Niste unijeli ništa.");
+		niceerror("Niste unijeli niÅ¡ta.");
 		return;
 	}
 
 	if ($ispis) {
-		?>Akcije koje æe biti urağene:<br/><br/>
+		?>Akcije koje Ä‡e biti uraÄ‘ene:<br/><br/>
 		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="_lv_column_zadaca" value="<?=$zadaca?>">
@@ -145,7 +145,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		// Student neocijenjen (prazno mjesto za ocjenu)
 		if (floatval($bodova)==0 && strpos($bodova,"0")===FALSE) {
 			if ($ispis)
-				print "Student '$prezime $ime' - nema zadaæu (nije unesen broj bodova $bodova)<br/>";
+				print "Student '$prezime $ime' - nema zadaÄ‡u (nije unesen broj bodova $bodova)<br/>";
 			continue;
 		}
 
@@ -153,15 +153,15 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$bodova = floatval($bodova);
 		if ($bodova>$maxbodova) {
 			if ($ispis) {
-				print "-- Studenta '$prezime $ime' ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
+				print "-- Studenta '$prezime $ime' ima $bodova bodova Å¡to je viÅ¡e od maksimalnih $maxbodova<br/>";
 				//$greska=1;
 				continue;
 			}
 		}
 
-		// Zakljuèak
+		// ZakljuÄak
 		if ($ispis) {
-			print "Student '$prezime $ime' - zadaæa $zadaca, bodova $bodova<br/>";
+			print "Student '$prezime $ime' - zadaÄ‡a $zadaca, bodova $bodova<br/>";
 		} else {
 			// Odredjujemo zadnji filename
 			$q25 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
@@ -186,9 +186,9 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		print "</form>";
 		return;
 	} else {
-		zamgerlog("masovno upisane zadaæe na predmet pp$predmet, zadaæa z$zadaca, zadatak $zadatak",2); // 2 = edit
+		zamgerlog("masovno upisane zadaÄ‡e na predmet pp$predmet, zadaÄ‡a z$zadaca, zadatak $zadatak",2); // 2 = edit
 		?>
-		Bodovi iz zadaæa su upisani.
+		Bodovi iz zadaÄ‡a su upisani.
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
 		</script>
@@ -198,7 +198,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 
 
-// Akcija za kreiranje novek, promjenu postojeæe ili brisanje zadaæe
+// Akcija za kreiranje novek, promjenu postojeÄ‡e ili brisanje zadaÄ‡e
 
 if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	$edit_zadaca = intval($_POST['zadaca']);
@@ -207,39 +207,39 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	if ($edit_zadaca>0) {
 		$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
 		if (mysql_num_rows($q86)<1) {
-			niceerror("Nepostojeæa zadaæa sa IDom $edit_zadaca");
+			niceerror("NepostojeÄ‡a zadaÄ‡a sa IDom $edit_zadaca");
 			zamgerlog("promjena nepostojece zadace $edit_zadaca", 3);
 			return 0;
 		}
 		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
-			niceerror("Zadaæa nije sa izabranog predmeta");
+			niceerror("ZadaÄ‡a nije sa izabranog predmeta");
 			zamgerlog("promjena zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
 			return 0;
 		}
 	}
 
 
-	// Brisanje zadaæe
+	// Brisanje zadaÄ‡e
 	
-	if ($_POST['brisanje'] == " Obriši ") {
+	if ($_POST['brisanje'] == " ObriÅ¡i ") {
 		if ($edit_zadaca <= 0) return; // Ne bi se smjelo desiti
 		$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
 		if (mysql_num_rows($q86)<1) {
-			niceerror("Nepostojeæa zadaæa sa IDom $edit_zadaca");
+			niceerror("NepostojeÄ‡a zadaÄ‡a sa IDom $edit_zadaca");
 			zamgerlog("brisanje nepostojece zadace $edit_zadaca", 3);
 			return 0;
 		}
 		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
-			niceerror("Zadaæa nije sa izabranog predmeta");
+			niceerror("ZadaÄ‡a nije sa izabranog predmeta");
 			zamgerlog("brisanje zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
 			return 0;
 		}
 	
-		if ($_POST['potvrdabrisanja']==" Briši ") {
+		if ($_POST['potvrdabrisanja']==" BriÅ¡i ") {
 			$q88 = myquery("delete from zadaca where id=$edit_zadaca");
 			$q89 = myquery("delete from zadatak where zadaca=$edit_zadaca");
 			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
-			nicemessage ("Zadaæa uspješno obrisana");
+			nicemessage ("ZadaÄ‡a uspjeÅ¡no obrisana");
 			?>
 			<script language="JavaScript">
 			location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
@@ -251,9 +251,9 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 			$brojzadataka=mysql_result($q96,0,0);
 			print genform("POST");
 			?>
-			Brisanjem zadaæe obrisaæete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to elite?<br>
+			Brisanjem zadaÄ‡e obrisaÄ‡ete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to Å¾elite?<br>
 			U pitanju je <b><?=$brojzadataka?></b> jedinstvenih slogova u bazi!<br><br>
-			<input type="submit" name="potvrdabrisanja" value=" Briši ">
+			<input type="submit" name="potvrdabrisanja" value=" BriÅ¡i ">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
 			<?
 			return;
@@ -261,7 +261,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	}
 
 
-	// Kreiranje ili izmjena zadaæe
+	// Kreiranje ili izmjena zadaÄ‡e
 
 	$naziv = trim(my_escape($_POST['naziv']));
 	$zadataka = intval($_POST['zadataka']);
@@ -290,7 +290,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
     //-------------------------------------------------
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
-		niceerror("Naziv zadaæe nije dobar.");
+		niceerror("Naziv zadaÄ‡e nije dobar.");
 		zamgerlog("los naziv zadace", 3);
 		return 0;
 	}
@@ -300,7 +300,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		return 0;
 	}
 	if (!checkdate($mjesec,$dan,$godina)) {
-		niceerror("Odabrani datum je nemoguæ");
+		niceerror("Odabrani datum je nemoguÄ‡");
 		zamgerlog("los datum", 3);
 		return 0;
 	}
@@ -314,7 +314,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	// Provjera duplog imena zadace
 	$q90 = myquery("select count(*) from zadaca where naziv like '$naziv' and predmet=$predmet and akademska_godina=$ag and id!=$edit_zadaca");
 	if (mysql_result($q90,0,0)>0) {
-		niceerror("Zadaæa pod imenom '$naziv' veæ postoji! Izaberite neko drugo ime.");
+		niceerror("ZadaÄ‡a pod imenom '$naziv' veÄ‡ postoji! Izaberite neko drugo ime.");
 		zamgerlog("zadaca sa nazivom '$naziv' vec postoji", 3);
 		return 0;
 	}
@@ -329,7 +329,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		$q92 = myquery("insert into zadaca set postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
 		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=6");
 		$edit_zadaca = mysql_result($q93,0,0);
-		nicemessage("Kreirana nova zadaæa '$naziv'");
+		nicemessage("Kreirana nova zadaÄ‡a '$naziv'");
 		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
 		
 		if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
@@ -375,7 +375,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		}
 
 		$q94 = myquery("update zadaca set postavka_zadace = '$postavka_file', naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
-		nicemessage("Aurirana zadaæa '$naziv'");
+		nicemessage("AÅ¾urirana zadaÄ‡a '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
 }
@@ -383,34 +383,34 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 
 
 
-// Spisak postojeæih zadaæa
+// Spisak postojeÄ‡ih zadaÄ‡a
 
 $_lv_["where:predmet"] = $predmet;
 $_lv_["where:akademska_godina"] = $ag;
-$_lv_["where:komponenta"] = 6; // nameæemo standardnu komponentu za zadaæe... FIXME
+$_lv_["where:komponenta"] = 6; // nameÄ‡emo standardnu komponentu za zadaÄ‡e... FIXME
 
-print "Postojeæe zadaæe:<br/>\n";
+print "PostojeÄ‡e zadaÄ‡e:<br/>\n";
 print db_list("zadaca");
 
 
-// Kreiranje nove zadace ili izmjena postojeæe
+// Kreiranje nove zadace ili izmjena postojeÄ‡e
 
 $izabrana = intval($_REQUEST['_lv_nav_id']);
 if ($izabrana==0) $izabrana=intval($edit_zadaca);
 if ($izabrana==0) {
 	?><p><hr/></p>
-	<p><b>Kreiranje zadaæe</b><br/>
+	<p><b>Kreiranje zadaÄ‡e</b><br/>
 	<?
 	$znaziv=$zaktivna=$zattachment=$zjezik="";
 	$zzadataka=0; $zbodova=0;
 	$tmpvrijeme=time();
 } else {
 	?><p><hr/></p>
-	<p><b>Izmjena zadaæe</b></p>
+	<p><b>Izmjena zadaÄ‡e</b></p>
 	<?
 	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment,dozvoljene_ekstenzije from zadaca where id=$izabrana");
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
-		niceerror("Zadaæa ne pripada vašem predmetu");
+		niceerror("ZadaÄ‡a ne pripada vaÅ¡em predmetu");
 		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
 		return;
 	}
@@ -468,7 +468,7 @@ function provjera() {
 	}
 	var zadataka=document.getElementById("zadataka");
 	if (zadataka.value=="0") {
-		alert("Broj zadataka u zadaæi mora biti veæi od nule, npr. 1");
+		alert("Broj zadataka u zadaÄ‡i mora biti veÄ‡i od nule, npr. 1");
 		zadataka.style.border=1;
 		zadataka.style.backgroundColor="#FF9999";
 		zadataka.focus();
@@ -483,7 +483,7 @@ function provjera() {
 	}
 	var bodova=document.getElementById("bodova");
 	if (bodova.value=="0") {
-		alert("Broj bodova koje nosi zadaæa mora biti veæi od nule, npr. 2 boda");
+		alert("Broj bodova koje nosi zadaÄ‡a mora biti veÄ‡i od nule, npr. 2 boda");
 		bodova.style.border=1;
 		bodova.style.backgroundColor="#FF9999";
 		bodova.focus();
@@ -529,7 +529,7 @@ function onemoguci_ekstenzije(chk)
 
 
 
-// Forma za kreiranje zadaæe
+// Forma za kreiranje zadaÄ‡e
 
 print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubmit=\"return provjera();");
 
@@ -546,7 +546,7 @@ Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 
 <input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
-<span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite eljene ekstenzije">
+<span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite Å¾eljene ekstenzije">
 Dozvoljene ekstenzije: 
 <? $dozvoljene_ekstenzije_selected=explode(',',$dozvoljene_ekstenzije_selected);
 foreach($dozvoljene_ekstenzije as $doz_ext) { ?>
@@ -555,13 +555,13 @@ foreach($dozvoljene_ekstenzije as $doz_ext) { ?>
 <br><br>
 </span>
 Programski jezik: <?=db_dropdown("programskijezik", $zjezik)?><br><br>
-Postavka zadaæe: <br>
+Postavka zadaÄ‡e: <br>
 <input type="file" name="postavka_zadace_file" size="45">
   <br><br>
-<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
+<input type="submit" value=" PoÅ¡alji "> <input type="reset" value=" PoniÅ¡ti ">
 <?
 if ($izabrana>0) {
-	?><input type="submit" name="brisanje" value=" Obriši ">
+	?><input type="submit" name="brisanje" value=" ObriÅ¡i ">
          	
 <?
 
@@ -584,7 +584,7 @@ print db_form("zadaca");*/
 
 
 
-// Formular za masovni unos zadaæa
+// Formular za masovni unos zadaÄ‡a
 
 $format = intval($_POST['format']);
 if (!$_POST['format']) {
@@ -606,7 +606,7 @@ $q130 = myquery("select count(*) from zadaca where predmet=$predmet and akademsk
 if (mysql_result($q130,0,0)>0) {
 
 ?><p><hr/></p>
-<p><b>Masovni unos zadaæa</b><br/>
+<p><b>Masovni unos zadaÄ‡a</b><br/>
 <?
 
 print genform("POST");
@@ -616,7 +616,7 @@ print genform("POST");
 <input type="hidden" name="brpodataka" value="1">
 <input type="hidden" name="duplikati" value="0">
 
-Izaberite zadaæu: <?=db_dropdown("zadaca");?>
+Izaberite zadaÄ‡u: <?=db_dropdown("zadaca");?>
 Izaberite zadatak: <select name="zadatak"><?
 $q112 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
 for ($i=1; $i<=mysql_result($q112,0,0); $i++) {
@@ -643,8 +643,8 @@ Separator: <select name="separator" class="default">
 } else {
 
 	?><p><hr/></p>
-	<p><b>Masovni unos zadaæa NIJE MOGUÆ</b><br/>
-	Najprije kreirajte zadaæu koristeæi formular iznad</p>
+	<p><b>Masovni unos zadaÄ‡a NIJE MOGUÄ†</b><br/>
+	Najprije kreirajte zadaÄ‡u koristeÄ‡i formular iznad</p>
 	<?
 }
 
