@@ -564,7 +564,7 @@ function akcijaslanje() {
 			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
 			// Ukidam HTML znakove radi potencijalnog XSSa
 			$ime_fajla = str_replace("&", "", $ime_fajla);
-			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
+			$puni_put = "$lokacijazadaca$zadaca/$ime_fajla";
 			unlink ($puni_put);
 			rename($program, $puni_put);
 
@@ -583,7 +583,7 @@ function akcijaslanje() {
 			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
 			// Ukidam HTML znakove radi potencijalnog XSSa
 			$ime_fajla = str_replace("&", "", $ime_fajla);
-			$puni_put = "$lokacijazadaca$zadaca/$imefajla";
+			$puni_put = "$lokacijazadaca$zadaca/$ime_fajla";
 			unlink ($puni_put);
 			rename($program, $puni_put);
 
