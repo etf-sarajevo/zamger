@@ -182,7 +182,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		} else if ($sumbodovi<20) $puk++;
 
 		// Ostali izlaze integralno
-		else $integralno++;
+		else if ($polozio_predmet==0)  $integralno++;
 
 		// Studenti koji nikada nisu izašli niti na jedan ispit
 		if ($izasao==0) $nisu_izlazili++;
