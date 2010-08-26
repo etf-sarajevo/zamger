@@ -2135,6 +2135,16 @@ else if ($akcija == "edit") {
 				$studij_id = $ikad_studij_id;
 				$studij_trajanje = $ikad_studij_trajanje;
 
+
+			} else {
+				// Nikada nije slušao ništa - ima li podataka o prijemnom ispitu?
+				$q225 = myquery("select pt.akademska_godina, ag.naziv, s.id, s.naziv from prijemni_termin as pt, prijemni_prijava as pp, akademska_godina as ag, studij as s where pp.osoba=$osoba and pp.prijemni_termin=pt.id and pt.akademska_godina=ag.id and pp.studij_prvi=s.id order by ag.id desc, pt.id desc limit 1");
+				if (mysql_num_rows($q225)>0) {
+					$nova_ak_god = mysql_result($q225,0,0);
+					$naziv_nove_ak_god = mysql_result($q225,0,1);
+					$novi_studij = mysql_result($q225,0,3);
+					$novi_studij_id = mysql_result($q225,0,2);
+				}
 			}
 
 		} else {
@@ -2185,9 +2195,16 @@ else if ($akcija == "edit") {
 			// Upis na prvu godinu
 
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p>
-			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p>
-			<?
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nemamo podataka da je ovaj student ikada bio upisan na fakultet.</p><?
+			if ($novi_studij_id) { // Podatak sa prijemnog
+				?>
+				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$novi_studij_id?>&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$novi_studij?>, 1. semestar.</a></p>
+				<?
+			} else {
+				?>
+				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$novi_studij_id?>&semestar=1&godina=<?=$nova_ak_god?>">Upiši studenta na Prvu godinu studija, 1. semestar.</a></p>
+				<?
+			}
 
 		} else if ($studij=="0") {
 			if ($ikad_semestar%2==0) $ikad_semestar--;
@@ -2246,7 +2263,7 @@ else if ($akcija == "edit") {
 
 			} else if ($semestar<$studij_trajanje && $predmeti_pao<=1) {
 				// Provjeravamo broj nepolozenih izbornih predmeta i razliku ects-ova
-				if ($predmeti_pao==0 && (60-($ects_pao+$ects_polozio)%60)<7 && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
+				if ($predmeti_pao==0 && ((60-($ects_pao+$ects_polozio)%60)<7 || ($ects_pao+$ects_polozio)%60==0) && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
 					$ima_uslov=1;
 
 				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0 && $nize_godine==0) {
