@@ -115,21 +115,18 @@ class MYPDF extends TCPDF {
 	$this->SetMargins(10,35,25,true);	
 	$this->Image("images/etf-100x100.png",10,8,20);
 	$this->Image("images/unsa.png",180,8,20);
-	
         $this->SetFont("DejaVu Sans",'',10);
 	$this->SetY(15);
 	$this->SetX(80);
-	$this->Cell(50,5,'UNIVERZITET U SARAJEVU',0,0,'C');
+	/*$this->Cell(50,5,'UNIVERZITET U SARAJEVU',0,0,'C');
 	$this->Ln();
 	$this->SetX(80);
-	
 	$this->Cell(50,5,'ELEKTROTEHNIČKI FAKULTET',0,0,'C');
 	$this->Ln();
 	$this->Cell(190,5,'','B',0,'C');
 	$this->Ln();
-	$this->Ln();
+	$this->Ln();*/
 	}
-
 	// Page footer
 	public function Footer() {
 		
