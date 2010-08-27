@@ -123,7 +123,7 @@ class MYPDF extends TCPDF {
 	$this->Ln();
 	$this->SetX(80);
 	
-	$this->Cell(50,5,'ELEKTROTEHNIČKI FAKULTET','UTF-8',0,0,'C');
+	$this->Cell(50,5,'ELEKTROTEHNIČKI FAKULTET',0,0,'C');
 	$this->Ln();
 	$this->Cell(190,5,'','B',0,'C');
 	$this->Ln();
