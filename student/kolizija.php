@@ -147,7 +147,7 @@ function student_kolizija() {
 		<?
 		if ($trenutni_semestar+3<$szavrsni_semestar) {
 			?>
-			<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+1?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
+			<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+2?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
 			<?
 		}
 		return;
@@ -160,7 +160,7 @@ function student_kolizija() {
 			<?
 			if ($trenutni_semestar+3<$szavrsni_semestar) {
 				?>
-				<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+1?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
+				<p><a href="?sta=student/kolizija&probaj_semestar=<?=$trenutni_semestar+2?>">Provjerite uslove za slušanje predmeta sa <?=$trenutni_semestar+3?>. semestra u koliziji.</a>
 				<?
 			}
 			return;
@@ -200,7 +200,7 @@ function student_kolizija() {
 	// UNOS U BAZU
 
 	// Akcija za unos podataka o koliziji u bazu
-	if ($_POST['akcija']=="korak2" && $studij>0 && $godina>0 && $prenosi>0) {
+	if ($_POST['akcija']=="korak2" && $studij>0 && $godina>0) {
 		// Provjeravamo da li je odabran ispravan broj ECTSova po semestru
 		foreach ($predmet_ects as $id => $ects) {
 			if ($id==$_POST['prenosi'] || $_POST["polaze-$id"]) continue;
@@ -261,7 +261,7 @@ function student_kolizija() {
 	// PRVI EKRAN - IZBOR STUDIJA I PREDMETA ZA PRENOS
 
 	// Ako je bilo koji od primljenih parametara nula, dajemo izbor studija, godine i prenesenog predmeta
-	if (!$_POST['akcija']=="korak1" || $studij==0 || $godina==0 || $prenosi==0) {
+	if (!$_POST['akcija']=="korak1" || $studij==0 || $godina==0) {
 
 		// Odredjujemo ciljni studij
 		$studij=$trenutni_studij;
