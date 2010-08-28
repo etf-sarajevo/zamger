@@ -125,7 +125,7 @@ class MYPDF extends TCPDF {
 	$this->Ln();
 	$this->Cell(190,5,'','B',0,'C');
 	$this->Ln();
-	$this->Ln();*/
+	$this->Ln();
 	}
 	// Page footer
 	public function Footer() {
