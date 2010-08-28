@@ -118,7 +118,7 @@ class MYPDF extends TCPDF {
         $this->SetFont("DejaVu Sans",'',10);
 	$this->SetY(15);
 	$this->SetX(80);
-	/*$this->Cell(50,5,'UNIVERZITET U SARAJEVU',0,0,'C');
+	$this->Cell(50,5,'UNIVERZITET U SARAJEVU',0,0,'C');
 	$this->Ln();
 	$this->SetX(80);
 	$this->Cell(50,5,'ELEKTROTEHNIČKI FAKULTET',0,0,'C');
