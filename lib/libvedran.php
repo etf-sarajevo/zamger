@@ -45,9 +45,10 @@ if (!$_lv_) $_lv_ = array(); // Prevent PHP warnings
 
 function dbconnect() {
 	// Default database
-	//dbconnect2("localhost","root","","zamger");
-	dbconnect2("localhost","vedran_studenti","itneduts","zamger");
+	dbconnect2("localhost","zamgerdemo","zamgerdemo","zamger");
+	//dbconnect2("localhost","vedran_studenti","itneduts","zamger");
 }
+
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
 	global $__lv_connection,$_lv_,$conf_use_mysql_utf8;
@@ -70,6 +71,34 @@ function dbdisconnect() {
 	
 	mysql_close($__lv_connection);
 }
+
+function dbconnect3() {
+	//Moodle MySQL podatci - ovdje treba da se unesu moodle mysql podatci
+	$dbhost="localhost";
+	$dbuser="arnes_korisni";
+	$dbpass="korisnik";
+	$dbdb="arnes_moodle";
+	global $__lvv_connection,$_lvv_,$conf_use_mysql_utf8;
+
+	if (!($__lvv_connection = mysql_connect($dbhost, $dbuser, $dbpass))) {
+		if ($_lvv_["debug"]) biguglyerror(mysql_error());
+		exit;
+	}
+	if (!mysql_select_db($dbdb)) {
+		if ($_lvv_["debug"]) biguglyerror(mysql_error());
+		exit;
+	}
+	if ($conf_use_mysql_utf8) {
+		mysql_set_charset("utf8");
+	}
+}
+
+function dbdisconnect3() {
+	global $__lvv_connection;
+	
+	mysql_close($__lvv_connection);
+}
+
 
 /*function myquery($query) {
 	global $_lv_;
