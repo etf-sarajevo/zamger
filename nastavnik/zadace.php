@@ -1,23 +1,5 @@
 <?
 
-
-/*
-// Dozvoljene ekstenzije dokumenta za upload zadaće
-$dozvoljene_ekstenzije[0] = 'doc';
-$dozvoljene_ekstenzije[1] = 'docx';
-$dozvoljene_ekstenzije[2] = 'xls';
-$dozvoljene_ekstenzije[3] = 'xlsx';
-$dozvoljene_ekstenzije[4] = 'ppt';
-$dozvoljene_ekstenzije[5] = 'pptx';
-$dozvoljene_ekstenzije[6] = 'odt';
-$dozvoljene_ekstenzije[7] = 'zip';
-$dozvoljene_ekstenzije[8] = 'c';
-$dozvoljene_ekstenzije[9] = 'pdf';
-$dozvoljene_ekstenzije[10] = 'cpp';
-*/
-
-
-
 // NASTAVNIK/ZADACE - kreiranje zadaća i masovni unos
 
 // v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
@@ -547,7 +529,7 @@ Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 <input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
 <span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite željene ekstenzije">
-Dozvoljene ekstenzije: 
+Dozvoljene ekstenzije (Napomena:Ukoliko ne odaberete ni jednu ekstenziju sve ekstenzije postaju dozvoljene): 
 <? $dozvoljene_ekstenzije_selected=explode(',',$dozvoljene_ekstenzije_selected);
 foreach($dozvoljene_ekstenzije as $doz_ext) { ?>
 <input type="checkbox" name="dozvoljene_eks[]" <? if(in_array($doz_ext,$dozvoljene_ekstenzije_selected)) echo 'checked="checked"'?> value="<? echo $doz_ext; ?>" /> <? echo $doz_ext; ?>
