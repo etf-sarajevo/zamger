@@ -301,6 +301,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 ?>
 		<td><b>Ukupno bodova</b></td>
+		<td><b>Postavka zadaća</b></td>
 		<td><b>Kreiranje zadaća u pdf-u</b></td>
 		</tr>
 	</thead>
