@@ -265,11 +265,8 @@ function delete_directory($dirname) {
 // Zadaci
 include('lib/pclzip/pclzip.lib.php');
 
-//Omogucio sam da se fajlovi tipa cpp,c mogu slati i u formi attachmenta i da se vrsi bojenja uradjeno otvaranje zip-a i generisaje pdf ali samo c,cpp,php(radi testiranja zipa) fajlova.Treba uraditi
-//konvertovanje office fajlova u pdf na tome se radi..
+//Omogucio sam da se fajlovi tipa cpp,c mogu slati i u formi attachmenta i da se vrsi bojenja uradjeno otvaranje zip-a i generisaje pdf 
 
-$brojac=0;
-$brzad = count($filename);
 for ($i=1; $i<=$brzad; $i++) {
 	
 	if ($filename[$i]=="") continue;
@@ -290,13 +287,12 @@ for ($i=1; $i<=$brzad; $i++) {
 		$dir="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid";
 		$files=OtvaranjeDirektorija("$dir/$i");
 		
-                //------------------------------------------------------------------------------
-	        // TODO: Prepraviti tako da se svi fajlovi iz arhive ispišu!!!
-	        // TODO: Po završetku pobrisati i fajlove i folder!!!
+//------------------------------------------------------------------------------
+
 	        $txt = "";
 		foreach($files as $putanjaFajla)
 		{
-			$naslov='<html><p><font size="13" color="black">'.basename($putanjaFajla).'</font></p></html>';
+			$naslov='<html><p><font size="14" color="black">'.basename($putanjaFajla).'</font></p></html>';
 			$txt="";
 			$txt =$txt.file_get_contents($putanjaFajla);
 			$extrenut=strtolower(end(explode('.',$putanjaFajla)));
@@ -310,11 +306,8 @@ for ($i=1; $i<=$brzad; $i++) {
 				$pdf->SetAutoPageBreak(1,15);
 				$pdf->AddPage();
 				$pdf->SetX(15);
-				
 				$pdf->SetFont('DejaVu Sans','',16);
-				//$pdf->Ln();
 				$pdf->Cell(40,10,'Zadatak '.$i.'.');
-				
 				$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $naslov, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
 				$pdf->Ln();
 				$pdf->SetX(15);
@@ -323,12 +316,11 @@ for ($i=1; $i<=$brzad; $i++) {
 		
 			}
 		}
-		delete_directory($dir);		
-        }
+		}
 	else{
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
 		$extrenut=strtolower(end(explode('.',$filename[$i])));
-		$naslov='<html><p><font size="13" color="black">'.$filename[$i].'</font></p></html>';
+		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
 		
 		$geshi =& new GeSHi($txt,$extrenut);
 		$txt = $geshi->parse_code();
@@ -338,18 +330,19 @@ for ($i=1; $i<=$brzad; $i++) {
 		$pdf->AddPage();
 		$pdf->SetX(15);
 			
-	        $pdf->Cell(40,10,'Zadatak '.$i.'.');					
+	    $pdf->Cell(40,10,'Zadatak '.$i.'.');					
 		$pdf->SetFont('DejaVu Sans','',16);
 		
 		$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $naslov, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
 		$pdf->SetX(15);
 		$pdf->SetFont('DejaVu Sans','',10);
-	
 		$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $txt, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
 			
 	}
+	$files=null;
 	
 }
+delete_directory($dir);	
 
 $pdf->Output($ime.'_'.$prezime.'_'.$imezad.'.pdf', 'I');
 
