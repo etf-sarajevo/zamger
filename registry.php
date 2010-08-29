@@ -97,6 +97,7 @@ array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
 array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/slika", "Slika", "Slika", "SNBA", "2", "0"),
+array("common/preuzmi_postavku", "Download postavke zadace", "Download", "SN", "2", "0"),
 /************************************
  * Haris Agic
 *************************************/
