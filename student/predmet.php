@@ -359,8 +359,24 @@ while ($r21 = mysql_fetch_row($q21)) {
 	<?
 		}
 	}
+	//dodao upit da probjerim jeli postavljena postavka
+	$qp = myquery("select postavka_zadace from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag order by id desc limit 1");
+		if (mysql_num_rows($qp) < 1) {
+			zamgerlog("ne postoji attachment ()",3);
+			niceerror("Ne postoji attachment");
+			return;
+		}
+
+	$postavka_zadace = mysql_result($qp,0,0);
 	?>
-	<td><?=$bodova_zadaca?></td><td><?
+	<td><?=$bodova_zadaca?></td><td>
+	<?
+	if($postavka_zadace!=""){
+		?><a href="?sta=common/preuzmi_postavku&zadaca=<?=$zadaca?>&predmet=<?=$predmet?>&ag=<?=$ag?>"<img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
+	}else { print "&nbsp;"; }
+	?>
+	</td><td>
+	<?
 	//Omogucili da se moze generisati pdf zadataka koji se salju kao attachment
 	$ext=explode(',',$r21[6]);
 	$pdf[0]='pdf';
