@@ -314,7 +314,7 @@ if ($statistika == 1) {
 	}
 
 }
-
+print"</table>";
 
 }
 
