@@ -1315,10 +1315,14 @@ function pregled_predmeta_bez_naziva($pregled){
 	</tr>
 		<tr <?=$bgcolor?>>
 			<?
+			$suma=0;
+			$suma_p=0;
 			$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
+				$suma=$suma+$TabelaPismenihIspita[1][$i];
+				$suma_p=$suma_p+$TabelaPismenihIspita[2][$i];
 		     print "<td>";
 			print my_escape($TabelaPismenihIspita[0][$i]);
 			print "</td><td>";
@@ -1339,6 +1343,8 @@ function pregled_predmeta_bez_naziva($pregled){
 			$pomocna=count($TabelaZadaca[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaZadaca[2][$i]==1){
+				$suma=$suma+$TabelaZadaca[1][$i];
+				
 		     print "<td>";
 			print my_escape($TabelaZadaca[0][$i]);
 			print "</td><td>";
@@ -1357,6 +1363,7 @@ function pregled_predmeta_bez_naziva($pregled){
 			$pomocna=count($TabelaPrisustva[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPrisustva[3][$i]==1){
+				$suma=$suma+$TabelaPrisustva[1][$i];
 		     print "<td>";
 			print my_escape($TabelaPrisustva[0][$i]);
 			print "</td><td>";
@@ -1374,6 +1381,8 @@ function pregled_predmeta_bez_naziva($pregled){
 			
 			$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
 			if($TabelaZavrsni[3][0]==1){
+				$suma=$suma+$TabelaZavrsni[1][0];
+				$suma_p=$suma_p+$TabelaZavrsni[2][0];
 		     print "<td>";
 			print my_escape($TabelaZavrsni[0][0]);
 			print "</td><td>";
@@ -1390,6 +1399,8 @@ function pregled_predmeta_bez_naziva($pregled){
 			$pomocna=count($TabelaFiksnih[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaFiksnih[3][$i]==1){
+				$suma=$suma+$TabelaFiksnih[1][$i];
+				$suma_p=$suma_p+$TabelaFiksnih[2][$i];
 		     print "<td>";
 			print my_escape($TabelaFiksnih[0][$i]);
 			print "</td><td>";
@@ -1408,6 +1419,7 @@ function pregled_predmeta_bez_naziva($pregled){
 			}
 			?>
 			</tr>
+            <tr><td> Ukupno</td><td><? print $suma; ?></td><td><? print $suma_p; ?></td></tr>
             </table>
             <?
 	
@@ -1430,11 +1442,14 @@ function pregled_predmeta_sa_nazivom($pregled){
             </tr>
             <tr>
             <?
-					
+				$suma=0;
+				$suma_p=0;
 			$TabelaPismenihIspita=$_SESSION['TabelaPismenihIspita'];
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
+				$suma=$suma+$TabelaPismenihIspita[1][$i];
+				$suma_p=$suma_p+$TabelaPismenihIspita[2][$i];
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaPismenihIspita[0][$i]);
@@ -1457,6 +1472,7 @@ function pregled_predmeta_sa_nazivom($pregled){
 			for($i=0;$i<$pomocna;$i++){
 				
 			if($TabelaZadaca[2][$i]==1){
+				$suma=$suma+$TabelaZadaca[1][$i];
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaZadaca[0][$i]);
@@ -1477,6 +1493,7 @@ function pregled_predmeta_sa_nazivom($pregled){
 			for($i=0;$i<$pomocna;$i++){
 				
 			if($TabelaPrisustva[3][$i]==1){
+				$suma=$suma+$TabelaPrisustva[1][$i];
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaPrisustva[0][$i]);
@@ -1495,6 +1512,8 @@ function pregled_predmeta_sa_nazivom($pregled){
 			
 			$TabelaZavrsni=$_SESSION['TabelaZavrsni'];
 			if($TabelaZavrsni[3][0]==1){
+				$suma=$suma+$TabelaZavrsni[1][0];
+				$suma_p=$suma_p+$Tabelazavrsni[2][0];
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaZavrsni[0][0]);
@@ -1512,6 +1531,8 @@ function pregled_predmeta_sa_nazivom($pregled){
 			$pomocna=count($TabelaFiksnih[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaFiksnih[3][$i]==1){
+				$suma=$suma+$TabelaFiksnih[1][$i];
+				$suma_p=$suma_p+$TabelaFiksnih[2][$i];
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaFiksnih[0][$i]);
@@ -1531,6 +1552,7 @@ function pregled_predmeta_sa_nazivom($pregled){
 			}
 			?>
 			</tr>
+                <tr><td> Ukupno</td><td><? print $suma; ?></td><td><? print $suma_p; ?></td></tr>
             </table>
             <?
 	
