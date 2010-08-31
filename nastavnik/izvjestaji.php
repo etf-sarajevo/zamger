@@ -53,15 +53,15 @@ $virtualna=mysql_result($q20,0,0);
 
 <p><h3><?=$predmet_naziv?> - Izvještaji</h3></p>
 
-<p><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 1. Sumarni izvještaj za predmet</a> <a href="?sta=student/pdf&zadaca=1" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a</p>
+<p><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 1. Sumarni izvještaj za predmet</a></p>
 
 <p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 2. Spisak studenata
 <ul>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&grupa=<?=$virtualna?>">Bez grupa</a> <a href="http://localhost/zamger41/index.php?sta=izvjestaj/pdf_converter&predmet=1&ag=1&grupa=2" target="_new">PDF</a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">Jedna kolona po grupama</a> <a href="?sta=student/pdf&zadaca=1" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&double=1">Dvije kolone (za lakše printanje)</a><a href="?sta=student/pdf&zadaca=1" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&komentari=1">Sa komentarima na rad</a> <a href="?sta=student/pdf&zadaca=1" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a> <a href="?sta=student/pdf&zadaca=1" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a</li></ul>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&grupa=<?=$virtualna?>">Bez grupa</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">Jedna kolona po grupama</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&double=1">Dvije kolone (za lakše printanje)</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&komentari=1">Sa komentarima na rad</a></a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></a</li></ul>
 </p>
 
 <p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
