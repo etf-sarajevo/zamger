@@ -179,6 +179,18 @@ if ($found==1 && $template==2 && $greska=="") {
 if ($found==1 && $template==0 && $greska=="") {
 	// Greske uvijek prikazujemo u template-u
 	print "<body bgcolor=\"#FFFFFF\">\n";
+	if (strstr($sta, "izvjestaj/")) {
+		
+		$k="";
+		foreach ($_REQUEST as $kljuc => $vrijednost) {
+			if ($kljuc != "sta")
+				$k .= "$kljuc=$vrijednost&";
+		}
+		
+		?>
+		<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/16x16/pdf.png" align=right width="16" height="16" border="0"></a>
+		<?
+	}
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 	include ("$sta.php");
 	eval("$staf();");
