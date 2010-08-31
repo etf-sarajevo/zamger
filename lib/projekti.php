@@ -98,7 +98,7 @@ function unregisterFromProject($stud_id, $proj_id, $predmet, $ag){
 	}else{
 		//Greska - student nije nigdje upisan
 		$errorText='Nemoguće izbrisati studenta sa projekta ' . $pr[naziv] .', student nije ni na jednom projektu!';
-		zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan ni na jedan projekat!");
+		zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan ni na jedan projekat!",3);
 		
 	}
 	return $errorText;
