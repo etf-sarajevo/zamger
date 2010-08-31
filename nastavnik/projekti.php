@@ -668,30 +668,28 @@ function drawStudentAndProjectTable($predmet, $ag){
 				  $rowcounter = 0;
 				  foreach ($projects as $project){
 					$membs = fetchProjectMembers($project['id']);
-
-					if ($rowcounter % 2 == 0){
-						echo "<tr class=\"marked_row\">";
-					}else{
-						echo "<tr>";
-					}
-						 
-					print "<td id=\"member_list\"><ul style=\"list-style-type:decimal\">";
-							 foreach($membs as $memb){
-									print "<li>" . filtered_output_string($memb[prezime] . ' ' . $memb[ime] . ' ' . $memb[brindexa]);
-									print "</li>";
-						     }
-						    print "</ul>";
-						    print "<span style=\"display:none\"></span></td>";
+					if(count($membs) > 0 ){
+						if ($rowcounter % 2 == 0){
+							print "<tr class=\"marked_row\">";
+						}else{
+							print "<tr>";
+						}
+						print "<td id=\"member_list\"><ul style=\"list-style-type:decimal\">";
+						 	foreach($membs as $memb){
+								print "<li>" . filtered_output_string($memb[prezime] . ' ' . $memb[ime] . ' ' . $memb[brindexa]);
+								print "</li>";
+						   	}
+						print "</ul>";
+						print "<span style=\"display:none\"></span></td>";
 	                	print "<td id=\"project_name\">" . filtered_output_string($project['naziv']) . "  "; 
 	                	print "<a href=\"#\">|+|</a>";
 	                	print "<span class=\"detail_text\" style=\"display:none;\">" . filtered_output_string($project['biljeska']) . "</span></td>";
-	                print "</tr>";
-                
-				  	$rowcounter = $rowcounter +1;
-				  }
+	                	print "</tr>";
+                  		$rowcounter = $rowcounter +1;
+					}  
+				}
 			
             print"</tbody></table>";
-	
 }
 
 
