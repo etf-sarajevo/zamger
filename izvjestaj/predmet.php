@@ -527,7 +527,7 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			$q230 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
 			if (mysql_num_rows($q230)>0) {
 				$ocjena = mysql_result($q230,0,0);
-				$tip = mysql_result($q230,0,1);
+				//$tip = mysql_result($q230,0,1);
 				if ($razdvoji_ispite==1) $ispis .= "<td align=\"center\">$ocjena</td>\n";
 				if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
 					$kmax[$k]=$ocjena;
