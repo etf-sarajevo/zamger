@@ -21,7 +21,7 @@
 
 function nastavnik_zadace() {
 
-global $userid,$user_siteadmin, $dozvoljene_ekstenzije,$conf_files_path;
+global $userid,$user_siteadmin;
 
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
@@ -41,14 +41,7 @@ if (mysql_num_rows($q10)<1) {
 }
 $predmet_naziv = mysql_result($q10,0,0);
 
-//Dozvoljene ekstenzije
-$q99 = myquery("select naziv from ekstenzije");
-$dozvoljene_ekstenzije =array();
- 
-  for($i=0 ; $i<mysql_num_rows( $q99 ) ; $i++ ) 
-  {
-      $dozvoljene_ekstenzije[$i]=mysql_result($q99,$i,0);
-  }
+
 
 // Da li korisnik ima pravo ući u modul?
 
@@ -257,19 +250,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	if ($_POST['aktivna']) $aktivna=1; else $aktivna=0;
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
-	
-	//-----------------------------------------------
-	if (intval($_POST['attachment']) == 1)
-	{
-		//$dozvoljene_ekstenzije_selected = $_POST['dozvoljene_eks'];
-		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
 
-	}
-	else
-	{
-		$dozvoljene_ekstenzije_selected = null;
-	}
-    //-------------------------------------------------
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
 		niceerror("Naziv zadaće nije dobar.");
@@ -300,34 +281,18 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		zamgerlog("zadaca sa nazivom '$naziv' vec postoji", 3);
 		return 0;
 	}
-       
+
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-		
-		
-		$postavka_file = $_FILES['postavka_zadace_file']['name'];
-
 		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
-		$q92 = myquery("insert into zadaca set postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
+		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, komponenta=6");
 		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=6");
 		$edit_zadaca = mysql_result($q93,0,0);
 		nicemessage("Kreirana nova zadaća '$naziv'");
 		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
-		
-		if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
-		{
-			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke");
-		}
-		 
-		 if( $_FILES['postavka_zadace_file']['name'] != "" )
-		{
-		  copy ( $_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/".$_FILES['postavka_zadace_file']['name']) ;
-		}
 
 	// Izmjena postojece zadace
 	} else {
-		
-		$postavka_file = $_FILES['postavka_zadace_file']['name'];
 		// Ako se smanjuje broj zadataka, moraju se obrisati bodovi
 		$q94 = myquery("select zadataka, komponenta from zadaca where id=$edit_zadaca");
 		$oldzadataka = mysql_result($q94,0,0);
@@ -345,18 +310,8 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 			if ($oldstudent!=0) // log samo ako je bilo nesto
 				zamgerlog("Smanjen broj zadataka u zadaci z$edit_zadaca", 4);
 		}
-                if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
-		{
-			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke");
-		}
-		 
-		 if( $_FILES['postavka_zadace_file']['name'] != "" )
-		{
-		 copy ( $_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/".$_FILES['postavka_zadace_file']['name']) ;
-		
-		}
 
-		$q94 = myquery("update zadaca set postavka_zadace = '$postavka_file', naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
+		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
@@ -390,7 +345,7 @@ if ($izabrana==0) {
 	?><p><hr/></p>
 	<p><b>Izmjena zadaće</b></p>
 	<?
-	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment,dozvoljene_ekstenzije from zadaca where id=$izabrana");
+	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment from zadaca where id=$izabrana");
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
 		niceerror("Zadaća ne pripada vašem predmetu");
 		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
@@ -404,8 +359,6 @@ if ($izabrana==0) {
 	if (mysql_result($q100,0,6)==1) $zaktivna="CHECKED"; else $zaktivna="";
 	$zjezik = mysql_result($q100,0,7);
 	if (mysql_result($q100,0,8)==1) $zattachment="CHECKED"; else $zattachment="";
-	$dozvoljene_ekstenzije_selected=mysql_result($q100,0,9);
-	
 }
 
 $zdan = date('d',$tmpvrijeme);
@@ -478,34 +431,8 @@ function provjera() {
 		bodova.focus();
 		return false;
 	}
-	
 	return true;
 }
-
-function onemoguci_ekstenzije(chk)
-{
-	var attachment=document.getElementById("attachment");
-	var dozvoljene_ekstenzije = document.getElementById("dozvoljene_ekstenzije");
-	var jezik = document.getElementById("_lv_column_programskijezik");
-
-	if (attachment.checked)
-	{
-		dozvoljene_ekstenzije.style.display = '';
-		
-		jezik.setAttribute("disabled","disabled");
-		
-	}
-	else
-	{
-		dozvoljene_ekstenzije.style.display = 'none';
-		jezik.removeAttribute("disabled");
-
-		for (i = 0; i < chk.length; i++)
-		chk[i].checked = false;
-	}
-
-	}
-
 </script>
 <?
 
@@ -513,7 +440,7 @@ function onemoguci_ekstenzije(chk)
 
 // Forma za kreiranje zadaće
 
-print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubmit=\"return provjera();");
+print genform("POST", "kreiranje_zadace\" onsubmit=\"return provjera();");
 
 ?>
 <input type="hidden" name="akcija" value="edit">
@@ -521,34 +448,21 @@ print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubm
 Naziv: <input type="text" name="naziv" id="naziv" size="30" value="<?=$znaziv?>"><br><br>
 
 Broj zadataka: <input type="text" name="zadataka" id="zadataka" size="4" value="<?=$zzadataka?>">
-&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
 
 Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 &nbsp;&nbsp; <input type="text" name="sat" size="1" value="<?=$zsat?>"> <b>:</b> <input type="text" name="minuta" size="1" value="<?=$zminuta?>"> <b>:</b> <input type="text" name="sekunda" size="1" value="<?=$zsekunda?>"> <br><br>
 
 <input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
-<span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite željene ekstenzije">
-Dozvoljene ekstenzije (Napomena:Ukoliko ne odaberete ni jednu ekstenziju sve ekstenzije postaju dozvoljene): 
-<? $dozvoljene_ekstenzije_selected=explode(',',$dozvoljene_ekstenzije_selected);
-foreach($dozvoljene_ekstenzije as $doz_ext) { ?>
-<input type="checkbox" name="dozvoljene_eks[]" <? if(in_array($doz_ext,$dozvoljene_ekstenzije_selected)) echo 'checked="checked"'?> value="<? echo $doz_ext; ?>" /> <? echo $doz_ext; ?>
-<? } ?>
-<br><br>
-</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
+
 Programski jezik: <?=db_dropdown("programskijezik", $zjezik)?><br><br>
-Postavka zadaće: <br>
-<input type="file" name="postavka_zadace_file" size="45">
-  <br><br>
+
 <input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
 <?
 if ($izabrana>0) {
-	?><input type="submit" name="brisanje" value=" Obriši ">
-         	
-<?
-
+	?><input type="submit" name="brisanje" value=" Obriši "><?
 }
-echo "<script> onemoguci_ekstenzije('');</script>";
 ?>
 </form>
 <?
@@ -620,6 +534,83 @@ Separator: <select name="separator" class="default">
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
 <input type="submit" value="  Dodaj  ">
 </form></p>
+
+
+<?=genform("POST")?>
+<p><hr/></p>
+<h4>Import zadaca iz Moodle-a</h4>
+<p><br/><b>Napomena: </b>Sve zadace moraju imati ista imena kao u Moodle-u!</p>
+<input type="hidden" name="akcija" value="import_svih">
+
+<?
+//Import svih zadaca
+if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
+	//Tabelama sam pristupao preko moodle.ime_tabele i zamger.ime_tabele tako da ne treba mysql_select_db('ime_baze')
+	$link_moodle = mysql_connect("localhost", "moodle", "moodle") or die ("Greska pri konekciji: " .mysql_error());
+	$link_zamger = mysql_connect("localhost", "zamger", "zamger") or die ("Greska pri konekciji: " .mysql_error());
+	/*
+	if (!$link_moodle) {
+		mysql_select_db("moodle");
+	}
+	if (!$link_zamger) {
+		mysql_select_db("zamger");
+	}*/
+
+	//Prikupljanje sifre predmeta iz zamger baze radi poredjenja
+	$sifra = mysql_query("SELECT sifra FROM zamger.predmet WHERE id='$predmet'", $link_zamger) or die ("Greska u sifra: " .mysql_error());
+	$sifra_value = mysql_fetch_array($sifra);
+	
+	//Prikupljanje imena zadaca iz Zamger baze
+	$zadaca_ime = mysql_query("SELECT naziv FROM zamger.zadaca", $link_zamger) or die ("Greska u zadaca_id: " .mysql_error());
+	while ($zi = mysql_fetch_array($zadaca_ime)) {
+		//Prikupljanje podataka iz Moodle tabele
+		//Prikupljaju se sifra predmeta, ime zadace i JMBG svih studenata
+		//Posto se pri prikupljanju zadace porede po imenu trebaju imati isti naziv u Moodle-u kao i u Zamgeru
+		$query1 = mysql_query("SELECT c.idnumber, gi.itemname, u.idnumber
+			FROM moodle.mdl_grade_grades gg, moodle.mdl_user u, moodle.mdl_grade_items gi, moodle.mdl_course c
+			WHERE gi.itemname = '$zi[0]' AND c.idnumber = '$sifra_value[0]' AND
+			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $link_moodle) or die ("Greska u query1: " .mysql_error());
+		
+		//Ubacivanje podataka u zamger tabelu
+		while ($row1 = mysql_fetch_array($query1)) {
+			//$bodovi sadrzi vrijednost zadace iz $row1 za date vrijednosti (trenutni student, trenutna zadaca i trenutni predmet)
+			$bodovi = mysql_query("SELECT gg.finalgrade
+				FROM moodle.mdl_grade_grades gg, moodle.mdl_user u, moodle.mdl_grade_items gi, moodle.mdl_course c
+				WHERE gi.itemname='$row1[1]' AND c.idnumber='$row1[0]' AND u.idnumber='$row1[2]' AND
+				gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $link_moodle) or die ("Greska u bodovi: " .mysql_error());
+			$bodovi_value = mysql_fetch_array($bodovi);
+		
+			//zadaca_id sadrzi id zadace trenutne vrijednosti u $row1
+			$zadaca_id = mysql_query("SELECT z.id
+				FROM zamger.zadaca z, zamger.predmet p
+				WHERE z.naziv='$row1[1]' AND p.sifra='$row1[0]' AND p.id=z.predmet", $link_zamger) or die ("Greska u zadaca_id: " .mysql_error());
+			$zadaca_id_value = mysql_fetch_array($zadaca_id);
+		
+			//$student_id vraca id studenta koji si trenutno cita iz $row1
+			$student_id = mysql_query("SELECT o.id
+				FROM zamger.osoba o
+				WHERE o.jmbg='$row1[2]'", $link_zamger) or die ("Greska u student_id: " .mysql_error());
+			$student_id_value = mysql_fetch_array($student_id);
+		
+			$query2 = "INSERT INTO zamger.zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
+				VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
+		
+			mysql_query($query2, $link_zamger) or die ("Greska u query2: " .mysql_error());
+		}
+	}
+}
+?>
+<table>
+<tr>
+	<td><input type="submit" name="sve_zadace" value="Import"><br/></td>
+</tr>
+<tr>
+	<td><a href="http://localhost/zamger/index.php?sta=saradnik/grupa&id=<?=$predmet?>">Link na tabelu sa zadacama</a></td>
+</tr>
+</table>
+</form>
+
+
 <?
 
 } else {
@@ -635,3 +626,4 @@ Separator: <select name="separator" class="default">
 }
 
 ?>
+

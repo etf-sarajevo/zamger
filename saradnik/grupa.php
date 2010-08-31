@@ -744,9 +744,6 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 ?> * <a href="?sta=saradnik/grupa&id=<?=$labgrupa?>">Refresh</a></p>
 
 
-<form name="Import" action="saradnik/import.php" method="POST">
-<h4 align="center">Import bodova iz Moodle-a</h4>
-<tr><td align="center"><input type="submit" value="Import"></td></tr>
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
