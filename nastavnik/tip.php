@@ -1321,8 +1321,10 @@ function pregled_predmeta_bez_naziva($pregled){
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
+				if($i!=2){
 				$suma=$suma+$TabelaPismenihIspita[1][$i];
 				$suma_p=$suma_p+$TabelaPismenihIspita[2][$i];
+				}
 		     print "<td>";
 			print my_escape($TabelaPismenihIspita[0][$i]);
 			print "</td><td>";
@@ -1448,8 +1450,10 @@ function pregled_predmeta_sa_nazivom($pregled){
 			$pomocna=count($TabelaPismenihIspita[0]);
 			for($i=0;$i<$pomocna;$i++){
 			if($TabelaPismenihIspita[3][$i]==1){
+				if($i!=2){
 				$suma=$suma+$TabelaPismenihIspita[1][$i];
 				$suma_p=$suma_p+$TabelaPismenihIspita[2][$i];
+				}
 				print "<td></td>";
 		     print "<td>";
 			print my_escape($TabelaPismenihIspita[0][$i]);
