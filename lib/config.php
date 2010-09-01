@@ -9,15 +9,18 @@ $conf_naziv_institucije = "Elektrotehnički fakultet Sarajevo";
 $conf_skr_naziv_institucije = "ETF";
 $conf_skr_naziv_institucije_genitiv = "ETFa";
 
-$conf_dbhost = "localhost";
-$conf_dbuser = "arnes_zuser";
-$conf_dbpass = "zamger";
-$conf_dbdb = "arnes_zamger";
+$conf_dbhost = "195.130.59.135";
+$conf_dbuser = "zamgerdemo";
+$conf_dbpass = "zamgerdemo";
+$conf_dbdb = "zamgerdemo";
+
 $conf_dbdb_moodle = "arnes_moodle";
-$conf_site_url = "http://arnes.inashost.biz/zamger";
+
+$conf_site_url = "http://195.130.59.135/zamger-demo/"";
 $conf_dbdb_moodle_url= "http://arnes.inashost.biz/moodle/";
-$conf_files_path = "/home/arnes/public_html/zamger";
-$conf_script_path = "/home/arnes/public_html/zamger";
+
+$conf_files_path = "/var/www/zamger";
+$conf_script_path = "/var/www/html/zamger-demo";
 
 $conf_appname = "ZAMGER";
 $conf_appversion = "4.1.1";
