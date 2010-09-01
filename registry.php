@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 // REGISTRY - baza komponenti ZAMGERa
 
@@ -89,7 +89,7 @@ array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 array("izvjestaj/prijave", "Štampanje prijava", "Štampanje prijava", "B", "2", "0"),
 array("izvjestaj/pdf_converter", "Za generisanje PDF izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
-
+array("izvjestaj/csv_converter", "Za generisanje excel izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "2", "0"),
