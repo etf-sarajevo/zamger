@@ -13,7 +13,7 @@ function ob_file_callback($buffer)
 
 
 function izvjestaj_csv_converter() {
-global $string_pdf,$string,$sadrzaj_bafera_za_csv;
+global $string_pdf,$string,$sadrzaj_bafera_za_csv,$conf_files_path;
 
 ob_start('ob_file_callback');
 $koji = my_escape($_REQUEST['koji_izvjestaj']);
@@ -41,7 +41,7 @@ if ($k == false) {
 }
 exit;*/
 
-  $myFile = "Izvjestaj.csv";
+  $myFile = $conf_files_path."/Izvjestaj.csv";
   $fh = fopen($myFile, 'w') or die("can't open file");
   $stringData = "one, two, three, four";
   fwrite($fh, $sadrzaj_bafera_za_csv);
