@@ -5,22 +5,22 @@
 // v3.9.1.0 (2008/02/12) + Pocetak
 // v3.9.1.1 (2008/09/05) + Dodane opcije: $conf_naziv_intitucije + skraceni oblik, $conf_site_url, $conf_promjena_sifre
 
-$conf_naziv_institucije = "ElektrotehniÄ�ki fakultet Sarajevo";
+$conf_naziv_institucije = "Elektrotehnički fakultet Sarajevo";
 $conf_skr_naziv_institucije = "ETF";
 $conf_skr_naziv_institucije_genitiv = "ETFa";
 
-$conf_dbhost = "195.130.59.135";
-$conf_dbuser = "zamgerdemo";
-$conf_dbpass = "zamgerdemo";
-$conf_dbdb = "zamger";
-
-$conf_site_url = "http://195.130.59.135/zamger-demo/";
-
-$conf_files_path = "/srv/httpd/zamger";
-$conf_script_path = "/srv/httpd/zamger/www";
+$conf_dbhost = "localhost";
+$conf_dbuser = "arnes_zuser";
+$conf_dbpass = "zamger";
+$conf_dbdb = "arnes_zamger";
+$conf_dbdb_moodle = "arnes_moodle";
+$conf_site_url = "http://arnes.inashost.biz/zamger";
+$conf_dbdb_moodle_url= "http://arnes.inashost.biz/moodle/";
+$conf_files_path = "/home/arnes/public_html/zamger";
+$conf_script_path = "/home/arnes/public_html/zamger";
 
 $conf_appname = "ZAMGER";
-$conf_appversion = "4.1";
+$conf_appversion = "4.1.1";
 
 //$conf_system_auth = "ldap";
 $conf_system_auth = "table";
@@ -31,7 +31,7 @@ $conf_ldap_domain = "@moja.domena.ba"; // string koji se dodaje na uid da bi se 
 // Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
 
 // URL za promjenu sifre (u slucaju LDAPa) - ne koristi se trenutno
-$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena Å¡ifre</a>";
+$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
 
 $conf_use_mysql_utf8 = true; // potreban mysql 5.0+
 
