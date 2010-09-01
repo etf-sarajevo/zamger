@@ -9,7 +9,7 @@ $conf_naziv_institucije = "Elektrotehnički fakultet Sarajevo";
 $conf_skr_naziv_institucije = "ETF";
 $conf_skr_naziv_institucije_genitiv = "ETFa";
 
-$conf_dbhost = "195.130.59.135";
+$conf_dbhost = "localhost";
 $conf_dbuser = "zamgerdemo";
 $conf_dbpass = "zamgerdemo";
 $conf_dbdb = "zamgerdemo";
