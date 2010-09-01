@@ -1,4 +1,5 @@
-﻿<?
+
+<?
 
 // REGISTRY - baza komponenti ZAMGERa
 
