@@ -41,14 +41,14 @@ else
 // Sakrij module ako ih nema u registry-ju
 $modul_raspored=$modul_anketa=0;
 foreach ($registry as $r) {
-	if ($r[0]=="common/raspored") $modul_raspored=1;
+	if ($r[0]=="common/raspored1") $modul_raspored=1;
 	if ($r[0]=="student/anketa") $modul_anketa=1;
 }
 
 // Prikazujem raspored
 if ($modul_raspored==1) {
-	require "common/raspored.php";
-	common_raspored("student");
+	require "common/raspored1.php";
+	common_raspored1("student");
 }
 
 

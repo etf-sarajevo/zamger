@@ -46,6 +46,7 @@ array("nastavnik/prijava_ispita", "Prijava ispita", "Prijava ispita", "N", "1", 
 array("nastavnik/zadace", "Kreiranje i unos zadaća", "Zadaće", "N", "1", "0"),
 array("nastavnik/ocjena", "Konačna ocjena", "Konačna ocjena", "N", "1", "0"),
 array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
+array("nastavnik/raspored", "Raspored", "Raspored", "N", "1", "0"),
 // Hani Zahirovic- modul za definisanje tipa predmeta
 
 array("nastavnik/tip", "Tip predmeta", "Definisanje tipa predmeta", "N", "1", "0"),
@@ -55,7 +56,8 @@ array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
 array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
 array("studentska/predmeti", "Predmeti", "Predmeti", "B", "1", "0"),
 array("studentska/prijemni", "Prijemni ispit", "Prijemni", "B", "1", "0"),
-array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
+//array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
+array("studentska/raspored1", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 array("studentska/izvjestaji", "Izvještaji o prolaznosti", "Izvještaji", "B", "1", "0"),
 array("studentska/obavijest", "Slanje obavještenja", "Obavijesti", "B", "1", "0"),
 array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", "0"),
@@ -96,9 +98,11 @@ array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "2", "0"),
 array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
-array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
+//array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
+array("common/raspored1", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/slika", "Slika", "Slika", "SNBA", "2", "0"),
 array("common/preuzmi_postavku", "Download postavke zadace", "Download", "SN", "2", "0"),
+array("common/pdfraspored", "Prikaz rasporeda u pdf formatu", "PDF_RASPORED", "SNBA", "1", "0"),
 /************************************
  * Haris Agic
 *************************************/

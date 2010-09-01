@@ -32,11 +32,11 @@ else
 // Sakrij raspored ako ga nema u registry-ju
 $nasao=0;
 foreach ($registry as $r) {
-	if ($r[0]=="common/raspored") { $nasao=1; break; }
+	if ($r[0]=="common/raspored1") { $nasao=1; break; }
 }
 if ($nasao==1) {
-	require "common/raspored.php";
-	common_raspored("nastavnik");
+	require "common/raspored1.php";
+	common_raspored1("nastavnik");
 }
 
 
