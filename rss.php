@@ -12,23 +12,20 @@
 // v4.0.9.5 (2009/04/19) + Popravljen link na rezultate ispita
 // v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke); jos uvijek koristena auth tabela za ime i prezime, sto spada u davnu historiju zamgera
 // v4.0.9.7 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
-	
-	
+
+
 $broj_poruka = 10;
 
 
 require("lib/libvedran.php");
 require("lib/zamger.php");
 require("lib/config.php");
-require("novosti.php");
-require("obavjestenja.php");
 
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
 // Pretvaramo rss id u userid
 $id = my_escape($_REQUEST['id']);
-
 $q1 = myquery("select auth from rss where id='$id'");
 if (mysql_num_rows($q1)<1) {
 	print "Greska! Nepoznat RSS ID $id";
@@ -52,12 +49,16 @@ header("Content-type: application/rss+xml");
 
 ?>
 <<?='?'?>xml version="1.0" encoding="utf-8"?>
-<rss version="2">
+<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://www.rssboard.org/rss-0.91.dtd">
+<rss version="0.91">
 <channel>
-<title>Zamger feed</title>
-<link>http://zamger.etf.unsa.ba/rss.php?id=delohQv8Hk</link>
-<description> obavjestenja od zamgera</description>
+        <title>Zamger RSS</title>
+        <link><?=$conf_site_url?></link>
+        <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
+        <language>bs-ba</language>
 <?
+
+
 
 $vrijeme_poruke = array();
 $code_poruke = array();
@@ -216,97 +217,29 @@ while ($r100 = mysql_fetch_row($q100)) {
 	</item>\n";
 }
 
-     //Promjene na Coursewaru
-	$q0 = myquery("Select predmet from student_predmet where student=$userid",$con);
-	
 
-	$q11 =myquery("Select UNIX_TIMESTAMP(max(vrijeme)) from log where userid=$userid 
-		and dogadjaj ='login'"); 
-	
-	$vrijeme = mysql_result($q11,0)-(2*24*60*60);
-	
-	while($r0 = mysql_fetch_array($q0)){
-		$q21 = myquery("Select sifra from predmet where id=".$r0['0']);
-		$sifra = mysql_result($q21,0);
-		
-		$q3 = myquery("Select vrijeme_promjene from rss_cache where sifra_kursa='".$sifra."' 
-		order by vrijeme_promjene desc limit 1");
-		
-		if(mysql_num_rows($q3)<1){
-			if(novosti($sifra)==1){
-				$q4 = myquery("Select naslov, link, sadrzaj, vrijeme_promjene from rss_cache where
-				sifra_kursa='".$sifra."' order by vrijeme_promjene desc limit 5");
-				
-					while($r4 = mysql_fetch_array($q4)){
-							$vrijeme_poruke["Cw".$r4[0]] = $r4['3'];
-							$code_poruke["Cw".$r4[0]]="
-								<item>
-								<title>$r4[0]</title>
-								<link>$r4[1]</link>
-								<description>$r4[2]</description>
-								<pubDate>".date("d.m.Y H:i", $r4['3'])."</pubDate>
-								</item>
-							";
-					}
-			}
-		}
-		else{
-			$vrijeme_promjene = mysql_result($q3,0);
-			if(obavijesti($sifra,$vrijeme_promjene)==1){
-				$q51 = myquery("Select naslov, link, sadrzaj, vrijeme_promjene from rss_cache where
-				sifra_kursa='".$sifra."' and vrijeme_promjene>".$vrijeme_promjene." order by 
-				vrijeme_promjene desc limit 5");
-				
-					while($r5 = mysql_fetch_array($q51)){
-							$vrijeme_poruke["Cw".$r5[0]] = $r5['3'];
-							$code_poruke["Cw".$r5[0]]="
-								<item>
-								<title>$r5[0]</title>
-								<link>$r5[1]</link>
-								<description>$r5[2]</description>
-								<pubDate>".date("d.m.Y H:i", $r5['3'])."</pubDate>
-								</item>
-							";
-					}
-			}
-			else{
-				$q6 = myquery("Select naslov, link, sadrzaj, vrijeme_promjene from rss_cache where
-				sifra_kursa='".$sifra."' and vrijeme_promjene>".$vrijeme." order by 
-				vrijeme_promjene desc limit 5");
-					//ukoliko nema nikakvih novijih novosti na stranicama c2.etf.unsa.ba
-					//onda se ispisuju obavjestenja koja su stara najvise 2 dana od vremena
-					//studentskog trenutnog logina
-					while($r6 = mysql_fetch_array($q6)){
-							$vrijeme_poruke["Cw".$r6[0]] = $r6['3'];
-							$code_poruke["Cw".$r6[0]]="
-								<item>
-								<title>$r6[0]</title>
-								<link>$r6[1]</link>
-								<description>$r6[2]</description>
-								<pubDate>".date("d.m.Y H:i", $r6['3'])."</pubDate>
-								</item>
-							";
-					}
-			}
-		}
-	}
 // Sortiramo po vremenu
 arsort($vrijeme_poruke);
-$count=count($vrijeme_poruke);
-;
+$count=0;
+
+
 foreach ($vrijeme_poruke as $id=>$vrijeme) {
 	if ($count==0) {
 		// Polje pubDate u zaglavlju sadrži vrijeme zadnje izmjene tj. najnovije poruke
 
 		//print "        <pubDate>".date(DATE_RSS, $vrijeme)."</pubDate>\n";
-		// U verziji PHP 5.1.6 (i vjerovatno starijim) DATE_RSS je nekorektno
+		// U verziji PHP 5.1.6 (i vjerovatno starijim) DATE_RSS je nekorektno 
 		// izjednačeno sa "D, j M Y H:i:s T"
 		print "        <pubDate>".date("D, j M Y H:i:s O", $vrijeme)."</pubDate>\n";
 	}
+
 	print $code_poruke[$id];
 	$count++;
 	if ($count==$broj_poruka) break; // prikazujemo 5 poruka
 }
+
+
+
 
 ?>
 </channel>
