@@ -16,7 +16,7 @@ $conf_dbdb = "zamgerdemo";
 
 $conf_dbdb_moodle = "arnes_moodle";
 
-$conf_site_url = "http://195.130.59.135/zamger-demo/"";
+$conf_site_url = "http://195.130.59.135/zamger-demo/";
 $conf_dbdb_moodle_url= "http://arnes.inashost.biz/moodle/";
 
 $conf_files_path = "/var/www/zamger";
