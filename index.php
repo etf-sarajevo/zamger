@@ -189,6 +189,8 @@ if ($found==1 && $template==0 && $greska=="") {
 		
 		?>
 		<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/16x16/pdf.png" align=right width="16" height="16" border="0"></a>
+		<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/16x16/excel.png" align=right width="16" height="16" border="0"></a>
+		
 		<?
 	}
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
