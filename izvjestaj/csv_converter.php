@@ -24,6 +24,8 @@ eval("$staf();");
 ob_end_clean();
 
 //Brisemo tagove iz teksta
+$sadrzaj_bafera_za_csv=str_replace("</tr>","\n",$sadrzaj_bafera_za_csv);
+$sadrzaj_bafera_za_csv=str_replace("</td>",";",$sadrzaj_bafera_za_csv);
 $sadrzaj_bafera_za_csv=strip_tags($sadrzaj_bafera_za_csv);
 $sadrzaj_bafera_za_csv=str_replace("&nbsp","",$sadrzaj_bafera_za_csv);
 
