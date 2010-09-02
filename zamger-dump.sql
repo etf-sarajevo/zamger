@@ -2073,27 +2073,19 @@ INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora
 -- SOFTIC NERMIN END
 -- -------------------------------------------------------
 --
--- Table structure for table `rss_cache`
+-- Table structure for table `moodle_predmet_rss`
 --
 
-CREATE TABLE IF NOT EXISTS `rss_cache` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sifra_kursa` varchar(20) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `kurs` varchar(20) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `naslov` varchar(255) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `sadrzaj` text CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `link` varchar(254) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
+CREATE TABLE IF NOT EXISTS `moodle_predmet_rss` (
+  `id` int(11) NOT NULL auto_increment,
+  `vrstanovosti` int(2) NOT NULL,
+  `moodle_id` int(11) NOT NULL,
+  `sadrzaj` text collate utf8_slovenian_ci NOT NULL,
   `vrijeme_promjene` bigint(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
 
 --
--- Dumping data for table `rss_cache`
---
-
-INSERT INTO `rss_cache` (`id`, `sifra_kursa`, `kurs`, `naslov`, `sadrzaj`, `link`, `vrijeme_promjene`) VALUES
-(1, 'RIORA2460', '3', 'Predavanje 1', '', 'http://localhost/moodle/course/view.php?id=3', 1283265046),
-(2, 'RIORA2460', '3', 'Obavjestavaju se studenti 3.grupe da se vjezbe za ...', 'Obavjestavaju se studenti 3.grupe da se vjezbe za ovu sedmicu odgadjaju.', 'http://localhost/moodle/course/view.php?id=3', 1283264971);
-
+-- Dumping data for table `moodle_predmet_rss`
 --
 -- -------------------------------------------------------
