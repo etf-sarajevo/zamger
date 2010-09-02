@@ -13,6 +13,7 @@ $conf_dbhost = "localhost";
 $conf_dbuser = "zamgerdemo";
 $conf_dbpass = "zamgerdemo";
 $conf_dbdb = "zamgerdemo";
+$conf_dbdb1 = "moodle";
 
 $conf_dbdb_moodle = "arnes_moodle";
 
