@@ -663,7 +663,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 	//Prikupljanje imena zadaca iz Zamger baze (dodao i prikupljanje komponente)
 	$zadaca_ime = myquery("SELECT naziv, komponenta
 		FROM zadaca
-		WHERE predmet='$predmet' AND akademska_godina='ag'");
+		WHERE predmet='$predmet' AND akademska_godina='$ag'");
 	if (mysql_num_rows($zadaca_ime)<1) {
 		niceerror("Nema zadaća u zamgeru");
 		zamgerlog("Predmet $predmet ne sadrzi niti jednu zadacu u zamgeru",3);
