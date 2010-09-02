@@ -726,7 +726,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 				WHERE o.ime='$row1[2]' AND o.prezime='$row1[3]'");
 			if (mysql_num_rows($student_id)<1) {
 				niceerror("Student ne postoji");
-				zamgerlog("Ne postoji student sa indeksom $row1[2]",3);
+				zamgerlog("Student $row1[2] $row1[3] ne postoji",3);
 				return;
 			}
 			$student_id_value = mysql_fetch_array($student_id);
@@ -765,6 +765,3 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 }
 
 ?>
-
-
-
