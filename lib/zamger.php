@@ -590,15 +590,15 @@ function studentski_meni($fj) {
 				$komentariforum = $_REQUEST['predmet'];
 					$predmet = intval($_REQUEST['predmet']);
 					$ag = intval($_REQUEST['ag']);
-					$qsm = myquery("select aktivan from arnes_zamger.studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
+					$qsm = myquery("select aktivan from zamger.studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
 					$aktivan_provjera = mysql_result($qsm,0,0);
 					if($aktivan_provjera==1){
-					$q = myquery("select moodle_id from arnes_zamger.etf_moodle where predmet=$predmet and akademska_godina=$ag");
+					$q = myquery("select moodle_id from zamger.etf_moodle where predmet=$predmet and akademska_godina=$ag");
 					//Uzimanje Moodle_ID ako je predmet povezan sa moodle
 					if (mysql_num_rows($q)>0) {
 					$moodle_id = @mysql_result($q,0,0);
 					//Citanje komentara iz Moodle Baze
-						$query3="SELECT * FROM arnes_moodle.mdl_forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
+						$query3="SELECT * FROM moodle.mdl_forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
 						$rs3=myquery($query3);
 						?>
 							<table border="0" cellspacing="2" cellpadding="1">
