@@ -618,6 +618,23 @@ Separator: <select name="separator" class="default">
 </form></p>
 
 
+
+
+
+<?
+
+
+} else {
+
+	?><p><hr/></p>
+	<p><b>Masovni unos zadaća NIJE MOGUĆ</b><br/>
+	Najprije kreirajte zadaću koristeći formular iznad</p>
+	<?
+}
+?>
+
+
+
 <?
 
 if ($conf_moodle) {
@@ -754,19 +771,9 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 </table>
 </form>
 
-
 <?
+
 }
-
-} else {
-
-	?><p><hr/></p>
-	<p><b>Masovni unos zadaća NIJE MOGUĆ</b><br/>
-	Najprije kreirajte zadaću koristeći formular iznad</p>
-	<?
-}
-
-
 
 }
 
