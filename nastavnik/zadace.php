@@ -618,6 +618,19 @@ Separator: <select name="separator" class="default">
 </form></p>
 
 
+
+<?
+}
+
+} else {
+
+	?><p><hr/></p>
+	<p><b>Masovni unos zadaća NIJE MOGUĆ</b><br/>
+	Najprije kreirajte zadaću koristeći formular iznad</p>
+	<?
+}
+?>
+
 <?
 
 if ($conf_moodle) {
@@ -625,8 +638,9 @@ if ($conf_moodle) {
 print genform("POST");
 ?>
 <p><hr/></p>
-<h4>Import zadaca iz Moodle-a</h4>
-<p><br/><b>Napomena: </b>Sve zadace moraju imati ista imena kao u Moodle-u!</p>
+<h4>Import svih zadaća iz Moodle-a</h4>
+<p>Klikom na import importuju se sve zadaće za sve studente</p>
+<p><br/><b>Napomena: </b>Sve zadaće moraju imati ista imena kao u Moodle-u!</p>
 <input type="hidden" name="akcija" value="import_svih">
 
 <?
@@ -650,48 +664,89 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 	}
 	// myquery() interno koristi zamger konekciju, tako da moramo koristiti mysql_query() i specificirati $moodle_con za upite na moodle
 
-	//Prikupljanje sifre predmeta iz zamger baze radi poredjenja
-	$sifra = myquery("SELECT sifra FROM predmet WHERE id='$predmet'");
-	$sifra_value = mysql_fetch_array($sifra);
+	//Prikupljanje id-a moodle predmeta iz zamger baze radi poredjenja
+	$id_predmeta = myquery("SELECT moodle_id FROM moodle_predmet_id WHERE predmet='$predmet'");
+	if (mysql_num_rows($id_predmeta)<1) {
+		niceerror("Nema predmeta");
+		zamgerlog("Predmet $predmet ne postoji u Moodle-u",3);
+		return;
+	}
+	$id_predmeta_value = mysql_fetch_array($id_predmeta);
 	
-	//Prikupljanje imena zadaca iz Zamger baze
-	$zadaca_ime = myquery("SELECT naziv FROM zadaca");
+	//Prikupljanje imena zadaca iz Zamger baze (dodao i prikupljanje komponente)
+	$zadaca_ime = myquery("SELECT naziv, komponenta
+		FROM zadaca
+		WHERE predmet='$predmet' AND akademska_godina='ag'");
+	if (mysql_num_rows($zadaca_ime)<1) {
+		niceerror("Nema zadaća u zamgeru");
+		zamgerlog("Predmet $predmet ne sadrzi niti jednu zadacu u zamgeru",3);
+		return;
+	}
 	while ($zi = mysql_fetch_array($zadaca_ime)) {
 		//Prikupljanje podataka iz Moodle tabele
-		//Prikupljaju se sifra predmeta, ime zadace i JMBG svih studenata
+		//Prikupljaju se id predmeta, ime zadace i JMBG svih studenata
 		//Posto se pri prikupljanju zadace porede po imenu trebaju imati isti naziv u Moodle-u kao i u Zamgeru
-		$query1 = mysql_query("SELECT c.idnumber, gi.itemname, u.idnumber
+		$query1 = mysql_query("SELECT c.id, gi.itemname, u.firstname, u.lastname
 			FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
-			WHERE gi.itemname = '$zi[0]' AND c.idnumber = '$sifra_value[0]' AND
+			WHERE gi.itemname = '$zi[0]' AND c.id = 'id_predmeta_value[0]' AND
 			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u query1: " .mysql_error());
-		
+		if (mysql_num_rows($query1)<1) {
+			niceerror("Nema podataka u Moodle-u");
+			zamgerlog("Nema podataka u Moodle-u za zadacu $zi[1]",3);
+			return;
+		}
 		//Ubacivanje podataka u zamger tabelu
 		while ($row1 = mysql_fetch_array($query1)) {
 			//$bodovi sadrzi vrijednost zadace iz $row1 za date vrijednosti (trenutni student, trenutna zadaca i trenutni predmet)
 			$bodovi = mysql_query("SELECT gg.finalgrade
 				FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
-				WHERE gi.itemname='$row1[1]' AND c.idnumber='$row1[0]' AND u.idnumber='$row1[2]' AND
+				WHERE gi.itemname='$row1[1]' AND c.id='$row1[0]' AND u.firstname='$row1[2]' AND u.lastname='$row1[3]' AND
 				gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u bodovi: " .mysql_error());
+			if (mysql_num_rows($bodovi)<1) {
+				niceerror("Zadaća nema bodova u Moodle-u");
+				zamgerlog("Zadaca: $zi[0] nema bodova",3);
+				return;
+			}
 			$bodovi_value = mysql_fetch_array($bodovi);
 		
 			//zadaca_id sadrzi id zadace trenutne vrijednosti u $row1
 			$zadaca_id = myquery("SELECT z.id
-				FROM zadaca z, predmet p
-				WHERE z.naziv='$row1[1]' AND p.sifra='$row1[0]' AND p.id=z.predmet");
+				FROM zadaca z, moodle_predmet_id p
+				WHERE z.naziv='$row1[1]' AND p.moodle_id='$row1[0]' AND p.predmet=z.predmet");
+			if (mysql_num_rows($zadaca_id)<1) {
+				niceerror("Nema zadaća u zamgeru");
+				zamgerlog("Predmet $predmet ne sadrzi niti jednu zadacu u zamgeru",3);
+				return;
+			}
 			$zadaca_id_value = mysql_fetch_array($zadaca_id);
 		
 			//$student_id vraca id studenta koji si trenutno cita iz $row1
 			$student_id = myquery("SELECT o.id
 				FROM osoba o
-				WHERE o.jmbg='$row1[2]'");
+				WHERE o.ime='$row1[2]' AND o.prezime='$row1[3]'");
+			if (mysql_num_rows($student_id)<1) {
+				niceerror("Student ne postoji");
+				zamgerlog("Ne postoji student sa indeksom $row1[2]",3);
+				return;
+			}
 			$student_id_value = mysql_fetch_array($student_id);
 		
 			$query2 = "INSERT INTO zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
 				VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
 		
 			myquery($query2);
+			
+			// Treba nam ponudakursa za update komponente
+			$pk = myquery("SELECT sp.predmet
+				FROM student_predmet as sp, ponudakursa as pk
+				WHERE sp.student=$student_id[0] and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$pk_value = mysql_result($pk,0,0);
+			//komponenta se nalazi u upitu $zadaca_ime
+			update_komponente($student_id_value[0],$pk_value,$zi[1]);
 		}
 	}
+	nicemessage("Import uspješan");
+	zamgerlog("Zadace su importovane iz Moodle-a", 2);
 
 	// Diskonektujemo moodle
 	if (!$conf_moodle_reuse_connection) {
@@ -703,26 +758,13 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 <tr>
 	<td><input type="submit" name="sve_zadace" value="Import"><br/></td>
 </tr>
-<tr>
-	<td><a href="index.php?sta=saradnik/grupa&id=<?=$predmet?>">Link na tabelu sa zadacama</a></td>
-</tr>
 </table>
 </form>
-
 
 <?
 }
 
-} else {
-
-	?><p><hr/></p>
-	<p><b>Masovni unos zadaća NIJE MOGUĆ</b><br/>
-	Najprije kreirajte zadaću koristeći formular iznad</p>
-	<?
-}
-
-
-
-}
-
 ?>
+
+
+
