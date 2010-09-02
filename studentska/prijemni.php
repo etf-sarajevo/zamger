@@ -487,7 +487,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	if ($ciklus_studija==1) $sirina="4000"; else $sirina="3000";
 
 	?>
-	<p><a href="?sta=studentska/prijemni">&lt; &lt; Nazad na unos kandidata</a></p>
+	<p><a href="?sta=studentska/prijemni&termin=<?=$termin?>">&lt; &lt; Nazad na unos kandidata</a></p>
 	<h3>Pregled kandidata</h3>
 	<br />
 	
@@ -548,14 +548,20 @@ if ($_REQUEST['akcija'] == "pregled") {
 		$drzave_mjesta[$r[0]]=$imena_drzava[$r[3]];
 	}
 	
+	$imena_kantona=array();
+	$q = myquery("select id, naziv from kanton");
+	while ($r = mysql_fetch_row($q)) {
+		$imena_kantona[$r[0]]=$r[1];
+	}
+
 	if ($ciklus_studija==1) {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
-		FROM osoba as o, kanton as k, uspjeh_u_srednjoj as us, prijemni_prijava as pp
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and o.kanton=k.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
+		FROM osoba as o, uspjeh_u_srednjoj as us, prijemni_prijava as pp
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id ";
 	} else {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, k.naziv, 0, 0, 0, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
-		FROM osoba as o, kanton as k, prijemni_prijava as pp
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and o.kanton=k.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
+		FROM osoba as o, prosliciklus_uspjeh as pcu, prijemni_prijava as pp
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id ";
 	} 
 
 	if ($_REQUEST['sort'] == "bd") $sqlSelect .= "ORDER BY pp.broj_dosjea";
@@ -597,8 +603,10 @@ if ($_REQUEST['akcija'] == "pregled") {
 	<? if ($ciklus_studija==1) { ?>
 	<td width="90"><b>Opći uspjeh</b></td>
 	<td width="90"><b>Ključni pred.</b></td>
+	<td width="90"><b>Dodatni bod.</b></td>
+	<td width="90"><b>Prijemni ispit</b></td><? } else { ?>
+	<td width="90"><b>Prethodni ciklus</b></td>
 	<td width="90"><b>Dodatni bod.</b></td><? } ?>
-	<td width="90"><b>Prijemni ispit</b></td>
 	<td width="70"><b>Tip studija</b></td>
 	<? if ($ciklus_studija==1) { ?>
 	<td width="80"><b>Odsjek prvi</b></td>
@@ -645,13 +653,15 @@ if ($_REQUEST['akcija'] == "pregled") {
 		<td><?=$imena_godina[$kandidat[15]];?></td>
 		<td><? if ($kandidat[16]>0) print "DA"; else print "&nbsp;"?></td><? } ?>
 		<td><?=$kandidat[17];?>, <?=$imena_mjesta[$kandidat[18]]?></td>
-		<td><?=$kandidat[20];?></td>
+		<td><?=$imena_kantona[$kandidat[20]];?></td>
 		<td><?=$kandidat[19];?></td>
 		<? if ($ciklus_studija==1) { ?>
 		<td align="center"><?=$kandidat[21];?></td>
 		<td align="center"><?=$kandidat[22];?></td>
-		<td align="center"><?=$kandidat[23];?></td><? } ?>
-		<td align="center"><?=$kandidat[26];?></td>
+		<td align="center"><?=$kandidat[23];?></td>
+		<td align="center"><?=$kandidat[26];?></td><? } else { ?>
+		<td align="center"><?=$kandidat[21];?></td>
+		<td align="center"><?=$kandidat[22];?></td><? } ?>
 		<td align="center"><? if ($kandidat[25]) echo "redovni"; else echo "paralelni";?></td>
 		<td align="center"><?=$imena_studija[$kandidat[28]];?></td>
 		<? if ($ciklus_studija==1) { ?>
@@ -868,7 +878,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 
 	// Transakcija!
-	$q305 = myquery("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, log write");
+	$q305 = myquery("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, log write, prosliciklus_uspjeh write");
 
 	// Da li se broj dosjea ponavlja??
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
@@ -905,6 +915,9 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		// Novi uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
 			$q340 = myquery("insert into uspjeh_u_srednjoj set osoba=$rosoba, srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=0, kljucni_predmeti=0, dodatni_bodovi=0, ucenik_generacije=$rgener");
+		} else {
+			$broj_semestara = intval($_REQUEST['broj_semestara']);
+			$q340 = myquery("insert into prosliciklus_uspjeh set osoba=$rosoba, fakultet=0, akademska_godina=0, broj_semestara=$broj_semestara, opci_uspjeh=0, dodatni_bodovi=0");
 		}
 
 		zamgerlog("novi kandidat za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -929,6 +942,9 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		// Updatujem uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
 			$q370 = myquery("update uspjeh_u_srednjoj set srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, ucenik_generacije=$rgener where osoba=$rosoba");
+		} else {
+			$broj_semestara = intval($_REQUEST['broj_semestara']);
+			$q340 = myquery("update prosliciklus_uspjeh set broj_semestara=$broj_semestara, opci_uspjeh=$ropci, dodatni_bodovi=$rdodatni where osoba=$rosoba");
 		}
 
 		zamgerlog("izmjena kandidata za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -1040,15 +1056,23 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			$rednibroj=1;
 			$maxsemestar=0;
 			$sumaects=0;
+			$sumaocjena=0;
+			$brojocjena=0;
 			while ($r9 = mysql_fetch_row($q9)) {
 				$q10 = myquery("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ocjena=$r9[0], ects=$r9[1]");
 				$rednibroj++;
 				$bodovi += ($r9[0]*$r9[1]);
 				$sumaects += $r9[1];
 				if ($r9[2]>$maxsemestar) $maxsemestar=$r9[2];
+				$sumaocjena += $r9[0];
+				$brojocjena++;
 			}
 			// bodovi = suma od (ocjena*ects) / suma ects / brojsemestara
-			$bodovi = $bodovi / $sumaects / $maxsemestar;
+			//$bodovi = $bodovi / $sumaects / $maxsemestar;
+			// Po novom konkursu od 2010. godine za rangiranje se uzima samo prosjek
+			if ($brojocjena>0)
+				$bodovi = $sumaocjena / $brojocjena;
+			else $bodovi=0;
 			$q11 = myquery("insert into prosliciklus_uspjeh set osoba=$osoba, opci_uspjeh=$bodovi, broj_semestara=$maxsemestar");
 		}
 	}
@@ -2106,7 +2130,7 @@ else {
 	// Funkcija koja racuna bodove za prethodni ciklus studija
 	function izracunaj_bodove() {
 
-		// Bodovi se racunaju po formuli:
+/*		// Bodovi se racunaju po formuli:
 		// suma(ocjena*ects) / suma(ects) / brojsemestara
 		var sumabodovi=0, sumaects=0;
 		var brojsemestara=parseInt(document.getElementById('broj_semestara').value);
@@ -2131,10 +2155,27 @@ else {
 			return; // ne mozemo dijeliti s nulom
 		}
 
-		alert("sumabodovi: "+sumabodovi+" sumaects: "+sumaects+" brojsemestara: "+brojsemestara);
-
 		var rezultat = sumabodovi / sumaects / brojsemestara;
-		document.getElementById('opci_uspjeh').value = rezultat;
+		document.getElementById('opci_uspjeh').value = rezultat;*/
+
+		// Po konkursu iz 2010. godine, za rangiranje se koristi samo prosjek
+		var suma=0, broj=0;
+		for (i=1; i<=40; i++) {
+			var idoc=2*i-1;
+			var idec=2*i;
+			var ocjena = document.getElementById('prijemniocjene'+idoc).value;
+			var ects = document.getElementById('prijemniocjene'+idec).value;
+			if (ocjena != "/" && ocjena != "" && ects != "/" && ects != "") {
+				suma += parseInt(ocjena);
+				broj++;
+			}
+		}
+		if (broj>0) {
+			var rezultat = suma / broj;
+			document.getElementById('opci_uspjeh').value = rezultat;
+		} else {
+			document.getElementById('opci_uspjeh').value = "0";
+		}
 	}
 
 	function dobio_focus(element) {
@@ -2175,8 +2216,8 @@ else {
 			ajah_start("index.php?c=N&sta=common/ajah&akcija=prosli_ciklus_ocjena&osoba="+osoba+"&nova="+vrijednost+"&rednibroj="+rednibroj,"document.getElementById('prijemniocjene'+"+id+").focus()");
 
 		} else { // ECTS
-			if (vrijednost != "/" && (!parseFloat(vrijednost) || parseFloat(vrijednost)<=0 || parseFloat(vrijednost)>10)) {
-				alert("Neispravan ECTS: "+vrijednost+" !\nECTS mora biti u opsegu 0-10 ili znak / za poništavanje "+id);
+			if (vrijednost != "/" && (!parseFloat(vrijednost) || parseFloat(vrijednost)<=0 || parseFloat(vrijednost)>20)) {
+				alert("Neispravan ECTS: "+vrijednost+" !\nECTS mora biti u opsegu 0-20 ili znak / za poništavanje "+id);
 				element.value = origval[id];
 				if (origval[id]=="/") element.value="";
 				element.focus();

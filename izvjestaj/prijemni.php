@@ -74,7 +74,11 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	// Glavni upit
 
-	$q = myquery("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba $uslov $orderby");
+	if ($ciklus==1)
+		$q = myquery("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba $uslov $orderby");
+	else
+		$q = myquery("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba $uslov $orderby");
+
 	
 	?>
 	<table width="" align="center" border="1" cellpadding="1" cellspacing="0" bordercolor="#000000">
@@ -84,7 +88,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	if (!$sakrij_bodove) { 
 		?>
 		<td width="100"><b>Opći uspjeh</b></td>
-		<td width="110"><b>Ključni predmeti</b></td>
+		<? if ($ciklus==1) { ?><td width="110"><b>Ključni predmeti</b></td><? } ?>
 		<td width="105"><b>Dodatni bodovi</b></td>
 		<td width="105"><b>Ukupno bodova</b></td>
 		<? 
@@ -103,7 +107,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 			<td align="center"><?=$kandidat[2]?></td>
 			<td align="center"><?=$kandidat[3]?></td>
 			<td align="center"><?=$kandidat[4]?></td>
-			<td align="center"><?=$kandidat[5]?></td><? 
+			<? if ($ciklus==1) { ?><td align="center"><?=$kandidat[5]?></td><? }
 		} 
 		?></tr>
 		<?
@@ -158,7 +162,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<h4>Univerzitet u Sarajevu<br />
 	Elektrotehnički fakultet Sarajevo</h4>
 
-	<h3 align="left">Preliminarna rang lista kandidata nakon <?=$naslov2?> održanog dana <?=$datum?> godine za upis kandidata u akademsku <?=$ag?> godinu</h3>
+	<h3 align="left">Preliminarna rang lista kandidata nakon <?=$naslov2?> održanog dana <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
 	<h2 align="left">Studij: <?=$naziv_studija?></h2>
 	<br/>
 	<?
@@ -175,10 +179,16 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$prijemnimax = floatval(mysql_result($quk,0,5));
 
 	// Spisak svih kandidata se učitava u niz
-	$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', k.kratki_naziv, us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno
-	FROM prijemni_prijava as pp, kanton as k, osoba as o, uspjeh_u_srednjoj as us
-	WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND o.kanton=k.id
-	ORDER BY ukupno DESC");
+	if ($ciklus==1)
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', k.kratki_naziv, us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno
+		FROM prijemni_prijava as pp, kanton as k, osoba as o, uspjeh_u_srednjoj as us
+		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND o.kanton=k.id
+		ORDER BY ukupno DESC");
+	else
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', k.kratki_naziv, pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno
+		FROM prijemni_prijava as pp, kanton as k, osoba as o, prosliciklus_uspjeh as pcu
+		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND o.kanton=k.id
+		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
 	while($rezultat = mysql_fetch_row($qispis)) {
@@ -194,7 +204,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 			<td align="left"><b>Prezime i ime</b></td>
 			<td align="center" width="6%"><b>Kanton</b></td>
 			<td align="center" width="10%"><b>Opći uspjeh</b></td>
-			<td align="center" width="10%"><b>Ključni predmeti</b></td>
+			<? if ($ciklus==1) { ?><td align="center" width="10%"><b>Ključni predmeti</b></td><? } ?>
 			<td align="center" width="10%"><b>Dodatni bodovi</b></td>
 			<td align="center" width="10%"><b>Rezultat ispita</b></td>
 			<td align="center" width="10%"><b>Ukupno</b></td>
@@ -221,7 +231,7 @@ STUDIJ - Troškove studija snosi Kanton Sarajevo</b></td>
 				<td><?=$kandidat['prezime_ime']?></td>
 				<td align="center"><?=$kandidat['kanton']?></td>
 				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-				<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
@@ -251,7 +261,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				<td><?=$kandidat['prezime_ime']?></td>
 				<td align="center"><?=$kandidat['kanton']?></td>
 				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-				<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
@@ -280,7 +290,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				<td><?=$kandidat['prezime_ime']?></td>
 				<td align="center"><?=$kandidat['kanton']?></td>
 				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-				<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
@@ -313,7 +323,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				<td><?=$kandidat['prezime_ime']?></td>
 				<td align="center"><?=$kandidat['kanton']?></td>
 				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-				<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
@@ -344,7 +354,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 					<td><?=$kandidat['prezime_ime']?></td>
 					<td align="center"><?=$kandidat['kanton']?></td>
 					<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-					<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+					<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 					<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 					<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 					<td align="center"><b><?=$kandidat['ukupno']?></b></td>
@@ -377,7 +387,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				<td><?=$kandidat['prezime_ime']?></td>
 				<td align="center"><?=$kandidat['kanton']?></td>
 				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
-				<td align="center"><?=$kandidat['kljucni_predmeti']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?><? 
