@@ -660,8 +660,8 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 	}
 	$id_predmeta_value = mysql_fetch_array($id_predmeta);
 	
-	//Prikupljanje imena zadaca iz Zamger baze (dodao i prikupljanje komponente)
-	$zadaca_ime = myquery("SELECT naziv, komponenta
+	//Prikupljanje imena zadaca iz Zamger baze
+	$zadaca_ime = myquery("SELECT naziv
 		FROM zadaca
 		WHERE predmet='$predmet' AND akademska_godina='$ag'");
 	if (mysql_num_rows($zadaca_ime)<1) {
@@ -675,7 +675,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 		//Posto se pri prikupljanju zadace porede po imenu trebaju imati isti naziv u Moodle-u kao i u Zamgeru
 		$query1 = mysql_query("SELECT c.id, gi.itemname, u.firstname, u.lastname
 			FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
-			WHERE gi.itemname = '$zi[0]' AND c.id = 'id_predmeta_value[0]' AND
+			WHERE gi.itemname = '$zi[0]' AND c.id = '$id_predmeta_value[0]' AND
 			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u query1: " .mysql_error());
 		if (mysql_num_rows($query1)<1) {
 			niceerror("Nema podataka u Moodle-u");
@@ -722,14 +722,20 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 				VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
 		
 			myquery($query2);
-			
+			//upit za dobijanje komponente za zadace
+			$komponenta = myquery ("SELECT id FROM komponenta WHERE naziv='Zadace (ETF BSc)'");
+			if (mysql_num_rows($komponenta)<1) {
+				niceerror("Nema komponente");
+				zamgerlog("Nema komponenti u zamgeru",3);
+				return;
+			}
+			$komponenta_value = mysql_fetch_array($komponenta);
 			// Treba nam ponudakursa za update komponente
 			$pk = myquery("SELECT sp.predmet
 				FROM student_predmet as sp, ponudakursa as pk
 				WHERE sp.student=$student_id[0] and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 			$pk_value = mysql_result($pk,0,0);
-			//komponenta se nalazi u upitu $zadaca_ime
-			update_komponente($student_id_value[0],$pk_value,$zi[1]);
+			update_komponente($student_id_value[0],$pk_value,$komponenta_value[0]);
 		}
 	}
 	nicemessage("Import uspješan");
