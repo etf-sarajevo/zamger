@@ -27,6 +27,11 @@ require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
 global $_lv_; // radi autogenerisanih formi
 
+// Parametri potrebni za Moodle integraciju
+global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
+global $__lv_connection, $conf_use_mysql_utf8;
+
+
 
 // Parametri
 $predmet = intval($_REQUEST['predmet']);
@@ -180,7 +185,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 
 
-// Akcija za kreiranje novek, promjenu postojeće ili brisanje zadaće
+// Akcija za kreiranje nove, promjenu postojeće ili brisanje zadaće
 
 if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	$edit_zadaca = intval($_POST['zadaca']);
@@ -258,18 +263,12 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
 	
-	//-----------------------------------------------
-	if (intval($_POST['attachment']) == 1)
-	{
-		//$dozvoljene_ekstenzije_selected = $_POST['dozvoljene_eks'];
+	if (intval($_POST['attachment']) == 1) {
 		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
-
-	}
-	else
-	{
+	} else {
 		$dozvoljene_ekstenzije_selected = null;
 	}
-    //-------------------------------------------------
+
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
 		niceerror("Naziv zadaće nije dobar.");
@@ -303,8 +302,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
        
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-		
-		
+
 		$postavka_file = $_FILES['postavka_zadace_file']['name'];
 
 		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
@@ -314,13 +312,11 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		nicemessage("Kreirana nova zadaća '$naziv'");
 		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
 		
-		if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
-		{
+		if (!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke")) {
 			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke");
 		}
-		 
-		 if( $_FILES['postavka_zadace_file']['name'] != "" )
-		{
+		
+		if ( $_FILES['postavka_zadace_file']['name'] != "" ) {
 		  copy ( $_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/".$_FILES['postavka_zadace_file']['name']) ;
 		}
 
@@ -622,7 +618,12 @@ Separator: <select name="separator" class="default">
 </form></p>
 
 
-<?=genform("POST")?>
+<?
+
+if ($conf_moodle) {
+
+print genform("POST");
+?>
 <p><hr/></p>
 <h4>Import zadaca iz Moodle-a</h4>
 <p><br/><b>Napomena: </b>Sve zadace moraju imati ista imena kao u Moodle-u!</p>
@@ -631,58 +632,70 @@ Separator: <select name="separator" class="default">
 <?
 //Import svih zadaca
 if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
-	//Tabelama sam pristupao preko moodle.ime_tabele i zamger.ime_tabele tako da ne treba mysql_select_db('ime_baze')
-	$link_moodle = mysql_connect("localhost", "moodle", "moodle") or die ("Greska pri konekciji: " .mysql_error());
-	$link_zamger = mysql_connect("localhost", "zamger", "zamger") or die ("Greska pri konekciji: " .mysql_error());
-	/*
-	if (!$link_moodle) {
-		mysql_select_db("moodle");
+	// Konekcija na bazu?
+	$moodle_con = $__lv_connection;
+	if (!$conf_moodle_reuse_connection) {
+		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+		if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if ($conf_use_mysql_utf8) {
+			mysql_set_charset("utf8",$moodle_con);
+		}
 	}
-	if (!$link_zamger) {
-		mysql_select_db("zamger");
-	}*/
+	// myquery() interno koristi zamger konekciju, tako da moramo koristiti mysql_query() i specificirati $moodle_con za upite na moodle
 
 	//Prikupljanje sifre predmeta iz zamger baze radi poredjenja
-	$sifra = mysql_query("SELECT sifra FROM zamger.predmet WHERE id='$predmet'", $link_zamger) or die ("Greska u sifra: " .mysql_error());
+	$sifra = myquery("SELECT sifra FROM predmet WHERE id='$predmet'");
 	$sifra_value = mysql_fetch_array($sifra);
 	
 	//Prikupljanje imena zadaca iz Zamger baze
-	$zadaca_ime = mysql_query("SELECT naziv FROM zamger.zadaca", $link_zamger) or die ("Greska u zadaca_id: " .mysql_error());
+	$zadaca_ime = myquery("SELECT naziv FROM zadaca");
 	while ($zi = mysql_fetch_array($zadaca_ime)) {
 		//Prikupljanje podataka iz Moodle tabele
 		//Prikupljaju se sifra predmeta, ime zadace i JMBG svih studenata
 		//Posto se pri prikupljanju zadace porede po imenu trebaju imati isti naziv u Moodle-u kao i u Zamgeru
 		$query1 = mysql_query("SELECT c.idnumber, gi.itemname, u.idnumber
-			FROM moodle.mdl_grade_grades gg, moodle.mdl_user u, moodle.mdl_grade_items gi, moodle.mdl_course c
+			FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
 			WHERE gi.itemname = '$zi[0]' AND c.idnumber = '$sifra_value[0]' AND
-			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $link_moodle) or die ("Greska u query1: " .mysql_error());
+			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u query1: " .mysql_error());
 		
 		//Ubacivanje podataka u zamger tabelu
 		while ($row1 = mysql_fetch_array($query1)) {
 			//$bodovi sadrzi vrijednost zadace iz $row1 za date vrijednosti (trenutni student, trenutna zadaca i trenutni predmet)
 			$bodovi = mysql_query("SELECT gg.finalgrade
-				FROM moodle.mdl_grade_grades gg, moodle.mdl_user u, moodle.mdl_grade_items gi, moodle.mdl_course c
+				FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
 				WHERE gi.itemname='$row1[1]' AND c.idnumber='$row1[0]' AND u.idnumber='$row1[2]' AND
-				gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $link_moodle) or die ("Greska u bodovi: " .mysql_error());
+				gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u bodovi: " .mysql_error());
 			$bodovi_value = mysql_fetch_array($bodovi);
 		
 			//zadaca_id sadrzi id zadace trenutne vrijednosti u $row1
-			$zadaca_id = mysql_query("SELECT z.id
-				FROM zamger.zadaca z, zamger.predmet p
-				WHERE z.naziv='$row1[1]' AND p.sifra='$row1[0]' AND p.id=z.predmet", $link_zamger) or die ("Greska u zadaca_id: " .mysql_error());
+			$zadaca_id = myquery("SELECT z.id
+				FROM zadaca z, predmet p
+				WHERE z.naziv='$row1[1]' AND p.sifra='$row1[0]' AND p.id=z.predmet");
 			$zadaca_id_value = mysql_fetch_array($zadaca_id);
 		
 			//$student_id vraca id studenta koji si trenutno cita iz $row1
-			$student_id = mysql_query("SELECT o.id
-				FROM zamger.osoba o
-				WHERE o.jmbg='$row1[2]'", $link_zamger) or die ("Greska u student_id: " .mysql_error());
+			$student_id = myquery("SELECT o.id
+				FROM osoba o
+				WHERE o.jmbg='$row1[2]'");
 			$student_id_value = mysql_fetch_array($student_id);
 		
-			$query2 = "INSERT INTO zamger.zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
+			$query2 = "INSERT INTO zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
 				VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
 		
-			mysql_query($query2, $link_zamger) or die ("Greska u query2: " .mysql_error());
+			myquery($query2);
 		}
+	}
+
+	// Diskonektujemo moodle
+	if (!$conf_moodle_reuse_connection) {
+		mysql_close($moodle_con);
 	}
 }
 ?>
@@ -698,6 +711,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 
 
 <?
+}
 
 } else {
 
