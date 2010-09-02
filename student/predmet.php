@@ -20,29 +20,22 @@
 
 function student_predmet() {
 
-require ("lib/config.php");
-
-//ukoliko nemate instaliran Moodle, potrebno je staviti pod komentar sljedeće dvije definicije konekcija, kao i samo zatvaranje konekcija na kraju ovoga file-a, tako da ne bi došlo do bespotrebnih javljanja grešaka
-
-dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb1);
-dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
-
 global $userid;
 
-
+$tren_zadatak = intval($_REQUEST['zadatak']);
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']); // akademska godina
 
 
 // Podaci za zaglavlje
-$q10 = myquery("select naziv from $conf_dbdb.predmet where id=$predmet");
+$q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 	biguglyerror("Nepoznat predmet");
 	return;
 }
 
-$q15 = myquery("select naziv from $conf_dbdb.akademska_godina where id=$ag");
+$q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 	biguglyerror("Nepoznata akademska godina");
@@ -50,13 +43,14 @@ if (mysql_num_rows($q10)<1) {
 }
 
 // Da li student slusa predmet?
-$q17 = myquery("select sp.predmet from $conf_dbdb.student_predmet as sp, $conf_dbdb.ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_num_rows($q17)<1) {
-	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
 $ponudakursa = mysql_result($q17,0,0);
+
 
 ?>
 <br/>
@@ -64,7 +58,7 @@ $ponudakursa = mysql_result($q17,0,0);
 <?
 
 // Određivanje labgrupe
-$q20 = myquery("select l.naziv from $conf_dbdb.labgrupa as l, $conf_dbdb.student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
+$q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
 // Ispisujemo naziv prve nevirtualne grupe koju upit vrati
 if (mysql_num_rows($q20)>0) {
 	?>Grupa: <b><?=mysql_result($q20,0,0)?></b></p><?
@@ -76,7 +70,7 @@ print "<br/>\n";
 
 // PROGRESS BAR
 
-$q30 = myquery("select kb.bodovi,k.maxbodova from $conf_dbdb.komponentebodovi as kb, $conf_dbdb.komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+$q30 = myquery("select kb.bodovi,k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
 
 $bodova=$mogucih=0;
 while ($r30 = mysql_fetch_row($q30)) {
@@ -130,138 +124,6 @@ if ($tabela1>$tabela2) {
 <!-- end progress bar -->
 <?
 
-//ukoliko nemate instaliran Moodle, onda je potrebno zakomentarisati dio koda počevši od NOVOSTI SA COURSWARe-a do početka dijela sa komentarom ispred //PRISUSTVO NA VJEŽBAMA
-
-//NOVOSTI SA COURSEWARE-a
-
-//pretraga za novostima
-
-$q59 = myquery("Select unix_timestamp(vrijeme) from $conf_dbdb.log where userid=$userid and dogadjaj='login' order by vrijeme desc limit 2");
-
-$vrijeme_logina = array();
-
-while($r59 = mysql_fetch_array($q59))
-	array_push($vrijeme_logina,$r59[0]);
-
-$vrijeme_posljednjeg_logina = $vrijeme_logina[1]+(2*60*60);
-$vrijeme_za_novosti = $vrijeme_logina[0]-(14*22*60*60);
-
-//potrebno je pronaci u tabeli etf_moodle koji je id kursa koristen na Moodle stranici za određeni predmet sa Zamger-a..tačno jedan id kursa iz moodle baze odgovara jednom predmetu u zamger bazi
-$q60 = myquery("Select moodle_id from $conf_dbdb.etf_moodle where predmet=$predmet and akademska_godina=(Select id from $conf_dbdb.akademska_godina where aktuelna=1)");
-
-//pretraga moodle baze za novostima
-if(mysql_num_rows($q60)==1){
-	$course_id = mysql_result($q60,0);
-	
-	$id_modula = array();
-	$id_sekcije = array();
-	$moodle_vrijeme = array();
-	
-	$q61 = myquery("Select module, section, added from $conf_dbdb1.mdl_course_modules where course=$course_id");
-	
-	while($r61 = mysql_fetch_array($q61)){
-		array_push($id_modula,$r61['0']);
-		array_push($id_sekcije,$r61['1']);
-		array_push($moodle_vrijeme,$r61['2']);
-	}
-	
-	for($i=0;$i<sizeof($id_modula);$i++){
-	
-		//modul 5 sadrži inforamacije o obavijesti koja je samo editovana na moodle stranici
-		if($id_modula[$i]==5){
-			$q66 = myquery("Select summary from $conf_dbdb1.mdl_course_sections where id =$id_sekcije[$i] and course=$course_id");
-			
-			if(mysql_result($q66,0)!=""){
-				$sadrzaj = mysql_result($q66,0);
-				
-				$q67 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='$sadrzaj'");
-
-				if(mysql_num_rows($q67)<1){
-					if($moodle_vrijeme[$i]>$vrijeme_za_novosti){
-					myquery("Insert into $conf_dbdb.predmet_moodle_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjeneS) values('1','$course_id','$sadrzaj','".$moodle_vrijeme[$i]."')");
-					}
-				}
-			}
-		}
-		//modul 9 je zadužen za čuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
-		if($id_modula[$i]== 9){
-			$q62 = myquery("Select name, timemodified from $conf_dbdb1.mdl_label where timemodified>$vrijeme_za_novosti order by timemodified desc");
-			
-			if(mysql_num_rows($q62)>=1){
-				while($r62 = mysql_fetch_array($q62)){
-				
-				$q63 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='".$r62['0']."' and vrijeme_promjene=".$r62['1']);
-				
-				//ako novost ne postoji u tabeli predmet_moodle_rss , onda se ona tamo pohranjuje
-				if(mysql_num_rows($q63)<1){
-				myquery("Insert into $conf_dbdb.predmet_moodle_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('1','$course_id','".$r62['0']."','".$r62['1']."')");
-					}
-				}
-			}
-		}
-		
-		//modul 13 je zadužen za čuvanje informacija o dodatom resursu na moodle stranici
-		if($id_modula[$i]==13){
-			$q64 = myquery("Select name, timemodified from $conf_dbdb1.mdl_resource where timemodified>$vrijeme_za_novosti order by timemodified desc");
-			
-			if(mysql_num_rows($q64)>=1){
-				while($r64 = mysql_fetch_array($q64)){
-				
-				$q65 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=2 and moodle_id=$course_id and sadrzaj='".$r64['0']."' and vrijeme_promjene=".$r64['1']);
-				
-				if(mysql_num_rows($q65)<1){
-				myquery("Insert into $conf_dbdb.predmet_moodle_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('2','$course_id','".$r64['0']."','".$r64['1']."')");
-					}
-				}
-			}
-		}
-	}
-}
-
-//ispis novosti na stranici predmeta
-
-$q68 = myquery("Select vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.predmet_moodle_rss where vrijeme_promjene>$vrijeme_za_novosti and moodle_id=$predmet order by vrijeme_promjene desc");
-
-if(mysql_num_rows($q68)>=1){
-	?><table border="0" cellpadding="8"><h3><b>>> Novosti <<</b></h3><?
-	while($r68 = mysql_fetch_array($q68)){
-		$tekst = $r68[2];
-		if($r68[0]==1){
-		$vrijeme_promjene = ($r68[3]+(2*60*60));
-		?>
-		<!-- NAPOMENA: link u nastavku je potrebno promijeniti ukoliko vam  se predmet nalazi na nekoj drugo stranici...Bitno je samo promijeniti dio : localhost/moodle...Ostatak url-a se ne smije mijenjati.Ovo također primijeniti i u iduća 4 ispisa novosti na stranici predmeta na Zamger-u.-->
-			<?if($vrijeme_promjene > $vrijeme_posljednjeg_logina){?>
-			<tr ><td bgcolor="rgb(255,255,121)">Obavijest (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): <br/>
-			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?></a>
-			</td></tr>
-			<?}
-			else{?>
-			<tr><td><p>Obavijest (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): <br/>
-			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?></a>
-			</p></td></tr>
-			<?}
-		}
-		else if($r68[0]==2){
-			if($vrijeme_promjene > $vrijeme_posljednjeg_logina){?>
-			<tr><td bgcolor="rgb(255,255,121)">Postavljen resurs (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): 
-			<br/>
-			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?>
-			</td></tr>
-			<?}
-			else{?>
-			<tr><td>Postavljen resurs (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): 
-			<br/>
-			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?>
-			</a></td></tr>
-			<?}
-		}
-		else{
-			?><tr><td>Nema nikakvih novosti na ovom predmetu!</td></tr><?
-		}
-	}
-	?>
-	</table><?
-}
 
 
 
@@ -274,7 +136,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	if (!preg_match("/\w/",$imegrupe)) $imegrupe = "[Bez naziva]";
 
 	$odsustva=0;
-	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from $conf_dbdb.cas where labgrupa=$idgrupe and komponenta=$komponenta order by vrijeme");
+	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta order by vrijeme");
 	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
 
 	$datumi = $vremena = $statusi = "";
@@ -282,7 +144,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 		$datumi .= "<td>".date("d.m",$r70[1])."</td>\n";
 		list($sati,$minute,$sekunde) = explode(":", $r70[2]);
 		$vremena .= "<td>$sati<sup>$minute</sup></td>\n";
-		$q80 = myquery("select prisutan from $conf_dbdb.prisustvo where student=$userid and cas=$r70[0]");
+		$q80 = myquery("select prisutan from prisustvo where student=$userid and cas=$r70[0]");
 		if (mysql_num_rows($q80)<1) {
 			$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\">/</td>\n";
 		} else if (mysql_result($q80,0,0)==1) {
@@ -317,8 +179,12 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from $conf_dbdb.komponenta as k, $conf_dbdb.tippredmeta_komponenta as tpk, $conf_dbdb.predmet as p
-where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p
+where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and p.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+
+//$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
+//where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];
@@ -327,7 +193,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$max_izostanaka = $r40[3];
 
 	$odsustva = 0;
-	$q60 = myquery("select l.id,l.naziv from $conf_dbdb.labgrupa as l, $conf_dbdb.student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid");
+	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$userid");
 	
 	while ($r60 = mysql_fetch_row($q60)) {
 		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente);
@@ -367,12 +233,12 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 <?
 
 
-$q100 = myquery("select count(*) from $conf_dbdb.studentski_modul_predmet as smp, $conf_dbdb.studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
+$q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
 
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
-	$q110 = myquery("select id,naziv,zadataka from $conf_dbdb.zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
+	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];
@@ -391,7 +257,7 @@ if (mysql_result($q100,0,0)==0) {
 		$bodova=0;
 		$status=-1;
 		for ($zadatak=1; $zadatak<=$brzad[$zadaca]; $zadatak++) {
-			$q120 = myquery("select status,bodova from $conf_dbdb.zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+			$q120 = myquery("select status,bodova from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 			if (mysql_num_rows($q120)>0) {
 				$status = mysql_result($q120,0,0);
 				$bodova += mysql_result($q120,0,1);
@@ -427,16 +293,16 @@ if (mysql_result($q100,0,0)==0) {
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$q20 = myquery("select zadataka from $conf_dbdb.zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
-if(mysql_num_rows($q20)>=1){
+$q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
 $broj_zadataka = mysql_result($q20,0,0);
 for ($i=1;$i<=$broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
 }
-}
+
 ?>
 		<td><b>Ukupno bodova</b></td>
-		<td>&nbsp;</td>
+		<td><b>Postavka zadaća</b></td>
+		<td><b>Kreiranje zadaća u pdf-u</b></td>
 		</tr>
 	</thead>
 <tbody>
@@ -460,8 +326,8 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 
 $bodova_sve_zadace=0;
-
-$q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment from $conf_dbdb.zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+//dodana dozvoljena_ekstenzija
+$q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, dozvoljene_ekstenzije from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
@@ -479,7 +345,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 		}
 
 		// Uzmi samo rjesenje sa zadnjim IDom
-		$q22 = myquery("select status,bodova,komentar from $conf_dbdb.zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+		$q22 = myquery("select status,bodova,komentar from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 		if (mysql_num_rows($q22)<1) {
 			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
@@ -494,11 +360,43 @@ while ($r21 = mysql_fetch_row($q21)) {
 	<?
 		}
 	}
+	//dodao upit da probjerim jeli postavljena postavka
+	$qp = myquery("select postavka_zadace from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag order by id desc limit 1");
+		if (mysql_num_rows($qp) < 1) {
+			zamgerlog("ne postoji attachment ()",3);
+			niceerror("Ne postoji attachment");
+			return;
+		}
+
+	$postavka_zadace = mysql_result($qp,0,0);
 	?>
-	<td><?=$bodova_zadaca?></td><td><?
-	if ($r21[5]==0) { // -- attachment
+	<td><?=$bodova_zadaca?></td><td>
+	<?
+	if($postavka_zadace!=""){
+		?><a href="?sta=common/preuzmi_postavku&zadaca=<?=$zadaca?>&predmet=<?=$predmet?>&ag=<?=$ag?>"<img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
+	}else { print "&nbsp;"; }
+	?>
+	</td><td>
+	<?
+	//Omogucili da se moze generisati pdf zadataka koji se salju kao attachment
+	$ext=explode(',',$r21[6]);
+	$pdf[0]='pdf';
+	$broj=0;
+	foreach($ext as $dozext)
+	{
+	if(in_array("pdf",$ext)){
+	$broj=1;
+	}}
+	
+	if($broj!=0)
+	{
+	print "&nbsp;";
+	}
+	else{
 	?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
-	} else { print "&nbsp;"; }
+	
+	}
+	
 	?></td></tr>
 	<?
 	$bodova_sve_zadace += $bodova_zadaca;
@@ -538,13 +436,13 @@ $bodova += $bodova_sve_zadace;
 <?
 	
 
-$q30 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.id from $conf_dbdb.ispit as i, $conf_dbdb.komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+$q30 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv,k.id from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 if (mysql_num_rows($q30) == 0) {
 	print "<p>Nije bilo parcijalnih ispita.</p>";
 }
 
 while ($r30 = mysql_fetch_row($q30)) {
-	$q40 = myquery("select ocjena from $conf_dbdb.ispitocjene where ispit=$r30[0] and student=$userid");
+	$q40 = myquery("select ocjena from ispitocjene where ispit=$r30[0] and student=$userid");
 	if (mysql_num_rows($q40)<1) {
 //		print "Nije izašao/izašla";
 	} else {
@@ -556,7 +454,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 
 // KONAČNA OCJENA
 
-$q50 = myquery("select ocjena from $conf_dbdb.konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
+$q50 = myquery("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q50)>0) {
 	?>
 	<center>
@@ -569,7 +467,8 @@ if (mysql_num_rows($q50)>0) {
 	</center>
 	<?
 }
-dbdisconnect();
+
+
 }
 
 ?>
