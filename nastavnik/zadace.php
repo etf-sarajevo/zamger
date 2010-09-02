@@ -711,8 +711,8 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 			$id_studenta = myquery("SELECT id
 				FROM osoba
 				WHERE ime='$row1[2]' AND prezime='$row1[3]'");
-			if (mysql_num_rows($student_id)<1) {
-				niceerror("Student ne postoji");
+			if (mysql_num_rows($id_studenta)<1) {
+				niceerror("Student ne postoji u zamgeru ali postoji u Moodle-u");
 				zamgerlog("Student $row1[2] $row1[3] ne postoji",3);
 				return;
 			}
