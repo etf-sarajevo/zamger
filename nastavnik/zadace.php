@@ -1,4 +1,4 @@
-<?
+﻿<?
 
 // NASTAVNIK/ZADACE - kreiranje zadaća i masovni unos
 
@@ -26,11 +26,6 @@ global $userid,$user_siteadmin, $dozvoljene_ekstenzije,$conf_files_path;
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
 global $_lv_; // radi autogenerisanih formi
-
-// Parametri potrebni za Moodle integraciju
-global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
-global $__lv_connection, $conf_use_mysql_utf8;
-
 
 
 // Parametri
@@ -185,7 +180,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 
 
-// Akcija za kreiranje nove, promjenu postojeće ili brisanje zadaće
+// Akcija za kreiranje novek, promjenu postojeće ili brisanje zadaće
 
 if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	$edit_zadaca = intval($_POST['zadaca']);
@@ -263,12 +258,18 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
 	
-	if (intval($_POST['attachment']) == 1) {
+	//-----------------------------------------------
+	if (intval($_POST['attachment']) == 1)
+	{
+		//$dozvoljene_ekstenzije_selected = $_POST['dozvoljene_eks'];
 		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
-	} else {
+
+	}
+	else
+	{
 		$dozvoljene_ekstenzije_selected = null;
 	}
-
+    //-------------------------------------------------
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
 		niceerror("Naziv zadaće nije dobar.");
@@ -302,7 +303,8 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
        
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-
+		
+		
 		$postavka_file = $_FILES['postavka_zadace_file']['name'];
 
 		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
@@ -312,11 +314,13 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
 		nicemessage("Kreirana nova zadaća '$naziv'");
 		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
 		
-		if (!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke")) {
+		if(!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke"))
+		{
 			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke");
 		}
-		
-		if ( $_FILES['postavka_zadace_file']['name'] != "" ) {
+		 
+		 if( $_FILES['postavka_zadace_file']['name'] != "" )
+		{
 		  copy ( $_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/".$_FILES['postavka_zadace_file']['name']) ;
 		}
 
@@ -616,11 +620,7 @@ Separator: <select name="separator" class="default">
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
 <input type="submit" value="  Dodaj  ">
 </form></p>
-
-
-
 <?
-
 
 } else {
 
@@ -761,7 +761,9 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 </table>
 </form>
 
+
 <?
+}
 }
 
 ?>
