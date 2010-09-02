@@ -16,7 +16,7 @@ tako da radi sa MySQL v3.x)
 
 0. Konfiguracija PHPa
 
-Da bi Zamger radio ispravno, potrebno je podesiti sljedeće 
+Da bi Zamger radio ispravno, potrebno je podesiti sljedece 
 konfiguracijske parametre za PHP. Ova konfiguracija se moze napraviti u 
 datoteci php.ini (na Linux/UNIX masinama obicno se nalazi u /etc 
 direktoriju) ili koristeci neki alat za konfigurisanje PHPa:
@@ -96,10 +96,10 @@ $conf_files_path postavite na ranije kreirani direktorij za fajlove
 
 # nano zamger/lib/config.php
 
-Zamger ima određene mogućnosti povezivanja sa Moodle serverom. Ako NE
-želite da povezujete Zamger sa nekim Moodle serverom, u config.php
-fajlu potražite stavku $conf_moodle i postavite je na false! U suprotnom,
-u nastavku ovog teksta možete naći detaljnije upute za povezivanje s
+Zamger ima odredjene mogucnosti povezivanja sa Moodle serverom. Ako NE
+zelite da povezujete Zamger sa nekim Moodle serverom, u config.php
+fajlu potrazite stavku $conf_moodle i postavite je na false! U suprotnom,
+u nastavku ovog teksta mozete naci detaljnije upute za povezivanje s
 Moodlom.
 
 
@@ -155,39 +155,39 @@ prirucnik je u pripremi.
 
 13. MOODLE INTEGRACIJA
 
-Zamger ima određene mogućnosti povezivanja sa Moodle serverom. Da
+Zamger ima odredjene mogucnosti povezivanja sa Moodle serverom. Da
 biste to istestirali, postupite ovako:
 
-a) Preuzmite Moodle sa stranice http://download.moodle.org/. Možete
+a) Preuzmite Moodle sa stranice http://download.moodle.org/. Mozete
 koristiti weekly verziju.
 
-b) Raspakujte ga u neki folder kojem se može pristupiti preko web 
+b) Raspakujte ga u neki folder kojem se moze pristupiti preko web 
 servera (recimo da je to lokacija http://ime.servera.ba/moodle)
 
-c) U konfiguraciji php.ini o kojoj smo govorili u tački 0 potrebno je
+c) U konfiguraciji php.ini o kojoj smo govorili u tacki 0 potrebno je
 da postavite memory_limit na neku grozno veliku vrijednost, u ovom
 trenutku (v1.9.9) to je minimalno 128M
 
-d) Kreirajte bazu za Moodle, slično kao u tački 2
+d) Kreirajte bazu za Moodle, slicno kao u tacki 2
 
 mysql> CREATE DATABASE moodle;
 
-e) Dajte Zamger useru privilegije nad tom bazom, slično kao u tački 3
+e) Dajte Zamger useru privilegije nad tom bazom, slicno kao u tacki 3
 
 mysql> GRANT ALL PRIVILEGES ON moodle.* to zamger@localhost identified 
 by '1A2s3D4f';
 mysql> FLUSH PRIVILEGES;
 
-f) Kreirajte jedan direktorij kojem se ne može pristupiti sa weba, a 
-kojem može pristupiti apache korisnik, slično kao u tački 5, npr.
+f) Kreirajte jedan direktorij kojem se ne moze pristupiti sa weba, a 
+kojem moze pristupiti apache korisnik, slicno kao u tacki 5, npr.
 /home/moodle
 
 g) Web browserom pristupite Moodle lokaciji (http://ime.servera.ba/moodle)
-i pratite uputstva. Tu će vam install skripta reći ako vam eventualno
+i pratite uputstva. Tu ce vam install skripta reci ako vam eventualno
 fale neki php moduli.
 
-h) Kada ste sve ovo završili, otvorite Zamgerov config.php fajl o kojem smo 
-govorili u tački 6. i dođite do kraja fajla, dio pod naslovom "MOODLE 
+h) Kada ste sve ovo zavrsili, otvorite Zamgerov config.php fajl o kojem smo 
+govorili u tacki 6. i dodjite do kraja fajla, dio pod naslovom "MOODLE 
 INTEGRACIJA". 
 
 i) Vrijednost $conf_moodle stavite na true. 
@@ -199,9 +199,9 @@ urla).
 k) Vrijednost $conf_moodle_db postavite na naziv baze koji ste postavili pod
 d).
 
-l) Vrijednost $conf_moodle_prefix može ostati na deafultnoj vrijednosti
+l) Vrijednost $conf_moodle_prefix moze ostati na deafultnoj vrijednosti
 "mdl_" osim ako ste to iz nekog razloga promijenili u wizardu koji smo
-spominjali u tački g).
+spominjali u tacki g).
 
 m) Vrijednost $conf_moodle_reuse_connection postavite na true. Ostale
 konfiguracione parametre možete ignorisati.
