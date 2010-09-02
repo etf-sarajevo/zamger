@@ -26,6 +26,7 @@ array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/ugovoroucenju", "Ugovor o učenju", "Ugovor o učenju", "S", "1", "0"),
 array("student/ugovoroucenjupdf", "Ugovor o učenju (PDF)", "Ugovor o učenju (PDF)", "S", "2", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
+array("student/forum_komentari", "Forum Komentari", "Forum Komentari", "S", "2", "0"),
 
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),
