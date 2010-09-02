@@ -753,6 +753,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 		mysql_close($moodle_con);
 	}
 }
+}
 ?>
 <table>
 <tr>
@@ -763,7 +764,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 
 
 <?
-}
+
 
 }
 ?>
