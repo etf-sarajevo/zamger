@@ -733,7 +733,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 			// Treba nam ponudakursa za update komponente
 			$pk = myquery("SELECT sp.predmet
 				FROM student_predmet as sp, ponudakursa as pk
-				WHERE sp.student=$student_id[0] and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+				WHERE sp.student='$student_id_value[0]' and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina='$ag'");
 			$pk_value = mysql_result($pk,0,0);
 			update_komponente($student_id_value[0],$pk_value,$komponenta_value[0]);
 		}
