@@ -1,4 +1,4 @@
-﻿-- phpMyAdmin SQL Dump
+-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -148,10 +148,10 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `etf_moodle`
+-- Table structure for table `moodle_predmet_id`
 --
 
-CREATE TABLE IF NOT EXISTS `etf_moodle` (
+CREATE TABLE IF NOT EXISTS `moodle_predmet_id` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `moodle_id` int(11) NOT NULL

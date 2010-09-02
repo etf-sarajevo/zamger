@@ -22,6 +22,12 @@ function student_predmet() {
 
 global $userid;
 
+
+// Parametri potrebni za Moodle integraciju
+global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
+global $__lv_connection, $conf_use_mysql_utf8;
+
+
 $tren_zadatak = intval($_REQUEST['zadatak']);
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']); // akademska godina
@@ -123,6 +129,160 @@ if ($tabela1>$tabela2) {
 
 <!-- end progress bar -->
 <?
+
+
+
+
+// PRIKAZ NOVOSTI SA MOODLE-a (by fzilic)
+
+$q60 = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
+
+if ($conf_moodle && mysql_num_rows($q60)>0) {
+	// Da li je definisan moodle id za predmet
+	$course_id = mysql_result($q60,0);
+
+	// Vrijeme zadnjeg logina usera
+	$q59 = myquery("select unix_timestamp(vrijeme) from log where userid=$userid and dogadjaj='login' order by vrijeme desc limit 2");
+
+	$vrijeme_logina = array();
+	while($r59 = mysql_fetch_array($q59))
+		array_push($vrijeme_logina,$r59[0]);
+
+	$vrijeme_posljednjeg_logina = $vrijeme_logina[1]+(2*60*60);
+	$vrijeme_za_novosti = $vrijeme_logina[0]-(14*22*60*60);
+
+	$moodle_con = $__lv_connection;
+	if (!$conf_moodle_reuse_connection) {
+		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+		if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if ($conf_use_mysql_utf8) {
+			mysql_set_charset("utf8",$moodle_con);
+		}
+	}
+
+	$id_modula = array();
+	$id_sekcije = array();
+	$moodle_vrijeme = array();
+	
+	// myquery() interno koristi zamger konekciju, tako da moramo koristiti mysql_query() i specificirati $moodle_con
+	$q61 = mysql_query("select module, section, added from $conf_moodle_db.mdl_course_modules where course=$course_id",$moodle_con);
+	
+	while($r61 = mysql_fetch_array($q61)){
+		array_push($id_modula,$r61['0']);
+		array_push($id_sekcije,$r61['1']);
+		array_push($moodle_vrijeme,$r61['2']);
+	}
+	
+	for ($i=0;$i<count($id_modula);$i++) {
+	
+		//modul 5 sadrži inforamacije o obavijesti koja je samo editovana na moodle stranici
+		if ($id_modula[$i]==5) {
+			$q66 = mysql_query("Select summary from $conf_moodle_db.mdl_course_sections where id =$id_sekcije[$i] and course=$course_id", $moodle_con);
+			
+			if (mysql_result($q66,0)!="") {
+				$sadrzaj = mysql_result($q66,0);
+				
+				$q67 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='$sadrzaj'");
+
+				if(mysql_num_rows($q67)<1){
+					if($moodle_vrijeme[$i]>$vrijeme_za_novosti){
+					myquery("Insert into $conf_dbdb.predmet_moodle_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjeneS) values('1','$course_id','$sadrzaj','".$moodle_vrijeme[$i]."')");
+					}
+				}
+			}
+		}
+		//modul 9 je zadužen za čuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
+		if ($id_modula[$i]== 9) {
+			$q62 = mysql_query("Select name, timemodified from $conf_moodle_db.mdl_label where timemodified>$vrijeme_za_novosti order by timemodified desc", $moodle_con);
+			
+			if (mysql_num_rows($q62)>=1) {
+				while($r62 = mysql_fetch_array($q62)) {
+					$q63 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='".$r62['0']."' and vrijeme_promjene=".$r62['1']);
+					
+					//ako novost ne postoji u tabeli predmet_moodle_rss , onda se ona tamo pohranjuje
+					if(mysql_num_rows($q63)<1) {
+						myquery("Insert into $conf_dbdb.predmet_moodle_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('1','$course_id','".$r62['0']."','".$r62['1']."')");
+					}
+				}
+			}
+		}
+		
+		//modul 13 je zadužen za čuvanje informacija o dodatom resursu na moodle stranici
+		if ($id_modula[$i]==13) {
+			$q64 = mysql_query("Select name, timemodified from $conf_moodle_db.mdl_resource where timemodified>$vrijeme_za_novosti order by timemodified desc", $moodle_con);
+			
+			if (mysql_num_rows($q64)>=1) {
+				while($r64 = mysql_fetch_array($q64)) {
+					$q65 = myquery("Select id from $conf_dbdb.predmet_moodle_rss where vrstanovosti=2 and moodle_id=$course_id and sadrzaj='".$r64['0']."' and vrijeme_promjene=".$r64['1']);
+					
+					if(mysql_num_rows($q65)<1){
+						myquery("Insert into $conf_dbdb.predmet_moodle_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('2','$course_id','".$r64['0']."','".$r64['1']."')");
+					}
+				}
+			}
+		}
+	}
+
+	// Diskonektujemo moodle
+	if (!$conf_moodle_reuse_connection) {
+		mysql_close($moodle_con);
+	}
+}
+
+//ispis novosti na stranici predmeta
+
+$q68 = myquery("Select vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.predmet_moodle_rss where vrijeme_promjene>$vrijeme_za_novosti and moodle_id=$predmet order by vrijeme_promjene desc");
+
+if(mysql_num_rows($q68)>=1){
+	?><table border="0" cellpadding="8"><h3><b>>> Novosti <<</b></h3><?
+	while($r68 = mysql_fetch_array($q68)){
+		$tekst = $r68[2];
+		if($r68[0]==1){
+		$vrijeme_promjene = ($r68[3]+(2*60*60));
+		?>
+		<!-- NAPOMENA: link u nastavku je potrebno promijeniti ukoliko vam  se predmet nalazi na nekoj drugo stranici...Bitno je samo promijeniti dio : localhost/moodle...Ostatak url-a se ne smije mijenjati.Ovo također primijeniti i u iduća 4 ispisa novosti na stranici predmeta na Zamger-u.-->
+			<?if($vrijeme_promjene > $vrijeme_posljednjeg_logina){?>
+			<tr ><td bgcolor="rgb(255,255,121)">Obavijest (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): <br/>
+			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?></a>
+			</td></tr>
+			<?}
+			else{?>
+			<tr><td><p>Obavijest (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): <br/>
+			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?></a>
+			</p></td></tr>
+			<?}
+		}
+		else if($r68[0]==2){
+			if($vrijeme_promjene > $vrijeme_posljednjeg_logina){?>
+			<tr><td bgcolor="rgb(255,255,121)">Postavljen resurs (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): 
+			<br/>
+			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?>
+			</td></tr>
+			<?}
+			else{?>
+			<tr><td>Postavljen resurs (<?=date('d.m.Y H:i:s',$vrijeme_promjene)?>): 
+			<br/>
+			<a href="http://localhost/moodle/course/view.php?id=<?=$r68['1']?>"><?=$tekst?>
+			</a></td></tr>
+			<?}
+		}
+		else{
+			?><tr><td>Nema nikakvih novosti na ovom predmetu!</td></tr><?
+		}
+	}
+	?>
+	</table><?
+}
+
+}
+
 
 
 
