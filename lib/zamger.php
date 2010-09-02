@@ -578,25 +578,27 @@ function studentski_meni($fj) {
 			</div>
 			<br /><br />
 			<?
+		
 
 			$dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
 			$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
  
  
-			//Ako je izabran predmet neki da prikaze komentare sa moodle foruma tog predmeta			
-			if(isset($_REQUEST['predmet'])){
+	//Ako je izabran predmet neki da prikaze komentare sa moodle foruma tog predmeta			
+			if(isset($_REQUEST['predmet']) && isset($_REQUEST['ag'])){
 				//Varijabla komentariforum postaje ID predmeta koji je izabran
 				$komentariforum = $_REQUEST['predmet'];
 					$predmet = intval($_REQUEST['predmet']);
 					$ag = intval($_REQUEST['ag']);
-					$q = myquery("select moodle_id from zamger.etf_moodle where predmet=$predmet and akademska_godina=$ag");
+					$qsm = myquery("select aktivan from arnes_zamger.studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
+					$aktivan_provjera = mysql_result($qsm,0,0);
+					if($aktivan_provjera==1){
+					$q = myquery("select moodle_id from arnes_zamger.etf_moodle where predmet=$predmet and akademska_godina=$ag");
 					//Uzimanje Moodle_ID ako je predmet povezan sa moodle
+					if (mysql_num_rows($q)>0) {
 					$moodle_id = @mysql_result($q,0,0);
-					
 					//Citanje komentara iz Moodle Baze
-					if($moodle_id!=''){
-						//Ako je predmet povezan sa moodle nastavi dalje
-						$query3="SELECT * FROM moodle.mdl_forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
+						$query3="SELECT * FROM arnes_moodle.mdl_forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
 						$rs3=myquery($query3);
 						?>
 							<table border="0" cellspacing="2" cellpadding="1">
@@ -609,6 +611,7 @@ function studentski_meni($fj) {
 								<td>
 						<?
 							$provjerakomentara=0;
+							global $conf_dbdb_moodle_url;
 							while ($numrows3=mysql_fetch_array($rs3))
 							{
 								$brojac=$brojac+1;
@@ -619,7 +622,7 @@ function studentski_meni($fj) {
 								$forum=$numrows3['forum'];
 								//Ako postoji komentar ispisi ga
 								if(!empty($naziv)){
-									$provjerakomentara++;
+									$provjerakomentara++;									
 									print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_dbdb_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br></div>';
 								}
 							}
@@ -631,7 +634,7 @@ function studentski_meni($fj) {
 							</table> 
 						<?
 					}
-				
+				}
 			}
  
  
