@@ -620,7 +620,7 @@ Separator: <select name="separator" class="default">
 
 
 <?
-}
+
 
 } else {
 
