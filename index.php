@@ -188,8 +188,8 @@ if ($found==1 && $template==0 && $greska=="") {
 		}
 		
 		?>
-		<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/16x16/pdf.png" align=right width="16" height="16" border="0"></a>
-		<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/16x16/excel.png" align=right width="16" height="16" border="0"></a>
+		<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0"></a>
+		<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0"></a>
 		
 		<?
 	}
