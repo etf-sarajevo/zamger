@@ -29,9 +29,9 @@ if (mysql_num_rows($q)<1) {
 $moodle_id = mysql_result($q,0,0);
 
 if ($tip == "forum")
-	header("Location: $conf_moodle_url/mod/forum/index.php?id=$moodle_id");
+	header("Location: $conf_moodle_url"."mod/forum/index.php?id=$moodle_id");
 else
-	header("Location: $conf_moodle_url/course/view.php?id=$moodle_id");
+	header("Location: $conf_moodle_url"."course/view.php?id=$moodle_id");
 
 }
 
