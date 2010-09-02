@@ -707,16 +707,16 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 			}
 			$zadaca_id_value = mysql_fetch_array($zadaca_id);
 		
-			//$student_id vraca id studenta koji si trenutno cita iz $row1
-			$student_id = myquery("SELECT o.id
-				FROM osoba o
-				WHERE o.ime='$row1[2]' AND o.prezime='$row1[3]'");
+			//$student_id vraca id studenta koji se trenutno cita iz $row1
+			$id_studenta = myquery("SELECT id
+				FROM osoba
+				WHERE ime='$row1[2]' AND prezime='$row1[3]'");
 			if (mysql_num_rows($student_id)<1) {
 				niceerror("Student ne postoji");
 				zamgerlog("Student $row1[2] $row1[3] ne postoji",3);
 				return;
 			}
-			$student_id_value = mysql_fetch_array($student_id);
+			$student_id_value = mysql_fetch_array($id_studenta);
 		
 			$query2 = "INSERT INTO zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
 				VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
