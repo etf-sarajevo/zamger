@@ -771,6 +771,151 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 </table>
 </form>
 
+
+<?
+}
+if ($conf_moodle) {
+
+$moodle_con = $__lv_connection;
+if (!$conf_moodle_reuse_connection) {
+	// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+	if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+		biguglyerror(mysql_error());
+		exit;
+	}
+	if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+		biguglyerror(mysql_error());
+		exit;
+	}
+	if ($conf_use_mysql_utf8) {
+		mysql_set_charset("utf8",$moodle_con);
+	}
+}
+$za = mysql_query("SELECT itemname
+	FROM $conf_moodle_db.$conf_moodle_prefix"."grade_items
+	WHERE itemmodule='assignment' AND itemtype='mod'", $moodle_con) or die ("Greska u za: " .mysql_error());
+$za_value = mysql_result($za,0,0);
+// Diskonektujemo moodle
+if (!$conf_moodle_reuse_connection) {
+	mysql_close($moodle_con);
+}
+
+print genform("POST");
+?>
+<h4></br>Import zadaća iz Moodle-a sa advanced upload-a</h4>
+<input type="hidden" name="akcija" value="import_selected">
+
+<?
+if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
+	// Konekcija na bazu?
+	
+	if (!$conf_moodle_reuse_connection) {
+		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+		if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+			biguglyerror(mysql_error());
+			exit;
+		}
+		if ($conf_use_mysql_utf8) {
+			mysql_set_charset("utf8",$moodle_con);
+		}
+	}
+	// myquery() interno koristi zamger konekciju, tako da moramo koristiti mysql_query() i specificirati $moodle_con za upite na moodle
+
+	//Prikupljanje id-a moodle predmeta iz zamger baze radi poredjenja
+	$id_predmeta = myquery("SELECT moodle_id FROM moodle_predmet_id WHERE predmet='$predmet'");
+	if (mysql_num_rows($id_predmeta)<1) {
+		niceerror("Nema predmeta");
+		zamgerlog("Predmet $predmet ne postoji u Moodle-u",3);
+		return;
+	}
+	$id_predmeta_value = mysql_fetch_array($id_predmeta);
+	
+	$query1 = mysql_query("SELECT u.firstname, u.lastname, gi.itemname, gi.grademax
+		FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
+		WHERE gi.itemmodule='assignment' AND gi.itemtype='mod' AND c.id = '$id_predmeta_value[0]' AND
+		gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u query1: " .mysql_error());
+	while ($row1 = mysql_fetch_array($query1)) {
+		
+		$bodovi = mysql_query("SELECT gg.finalgrade
+			FROM $conf_moodle_db.$conf_moodle_prefix"."grade_grades gg, $conf_moodle_db.$conf_moodle_prefix"."user u, $conf_moodle_db.$conf_moodle_prefix"."grade_items gi, $conf_moodle_db.$conf_moodle_prefix"."course c
+			WHERE gi.itemmodule='assignment' AND c.id='$id_predmeta_value' AND u.firstname='$row1[0]' AND u.lastname='$row1[1]' AND
+			gg.userid=u.id AND gg.itemid=gi.id AND gi.courseid=c.id", $moodle_con) or die ("Greska u bodovi: " .mysql_error());
+		if (mysql_num_rows($bodovi)<1) {
+			niceerror("Zadaća nema bodova u Moodle-u");
+			zamgerlog("Zadaca: $row1[2] nema bodova",3);
+			return;
+		}
+		$bodovi_value = mysql_fetch_array($bodovi);
+		
+		$komponenta = myquery ("SELECT id FROM komponenta WHERE naziv='Zadace (ETF BSc)'");
+		if (mysql_num_rows($komponenta)<1) {
+			niceerror("Nema komponente");
+			zamgerlog("Nema komponenti u zamgeru",3);
+			return;
+		}
+		$komponenta_value = mysql_fetch_array($komponenta);
+		
+		$zadaca_id = myquery("SELECT z.id
+			FROM zadaca z, moodle_predmet_id p
+			WHERE z.naziv='$za_value' AND p.moodle_id='$id_predmeta_value' AND p.predmet=z.predmet");
+		if (mysql_num_rows($zadaca_id)<1) {
+			$kreiraj_novu = myquery ("INSERT INTO zadaca (naziv, predmet, akademska_godina, zadataka, bodova, rok, aktivna, programskijezik, attachment, komponenta, vrijemeobjave)
+				VALUES ('$row1[2]', '$predmet', '$ag', 1, 'row1[3]', 'SYSDATE()', 1, 0, 0, '$komponenta_value[0]', 'SYSDATE()')");
+			nicemessage("Kreirana nova zadaća '$naziv'");
+			zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
+			$zadaca_id = myquery("SELECT z.id
+				FROM zadaca z, moodle_predmet_id p
+				WHERE z.naziv='$za_value' AND p.moodle_id='$id_predmeta_value' AND p.predmet=z.predmet");
+		}
+		$zadaca_id_value = mysql_fetch_array($zadaca_id);
+	
+		$id_studenta = myquery("SELECT id
+			FROM osoba
+			WHERE ime='$row1[0]' AND prezime='$row1[1]'");
+		if (mysql_num_rows($id_studenta)<1) {
+			niceerror("Student ne postoji zamgeru");
+			zamgerlog("Student $row1[2] $row1[3] ne postoji u zamgeru",3);
+			return;
+		}
+		$student_id_value = mysql_fetch_array($id_studenta);
+		
+		$query2 = "INSERT INTO zadatak (zadaca, redni_broj, student, status, bodova, vrijeme, userid)
+			VALUES ('$zadaca_id_value[0]', '1', '$student_id_value[0]', '5', '$bodovi_value[0]', 'SYSDATE()', '$userid')";
+	
+		myquery($query2);
+			
+			
+		$pk = myquery("SELECT sp.predmet
+			FROM student_predmet as sp, ponudakursa as pk
+			WHERE sp.student='$student_id_value[0]' and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina='$ag'");
+		$pk_value = mysql_result($pk,0,0);
+		update_komponente($student_id_value[0],$pk_value,$komponenta_value[0]);
+	}
+	nicemessage("Import uspješan");
+	zamgerlog("Zadace su importovane iz Moodle-a", 2);
+
+	// Diskonektujemo moodle
+	if (!$conf_moodle_reuse_connection) {
+		mysql_close($moodle_con);
+	}
+}
+?>
+<table>
+<tr>
+	<td>Izaberite zadaću: <?=db_dropdown("moodle_zadace", $za_value)?>
+<tr>
+	<td><input type="submit" name="advanced_zadace" value="Import"><br/></td>
+</tr>
+</table>
+</form>
+
+
+
+
 <?
 
 }
