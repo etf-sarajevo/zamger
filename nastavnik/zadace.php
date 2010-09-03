@@ -773,7 +773,8 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 
 
 <?
-
+}
+if ($conf_moodle) {
 
 $moodle_con = $__lv_connection;
 if (!$conf_moodle_reuse_connection) {
@@ -790,12 +791,20 @@ if (!$conf_moodle_reuse_connection) {
 		mysql_set_charset("utf8",$moodle_con);
 	}
 }
-
+$za = mysql_query("SELECT itemname
+	FROM $conf_moodle_db.$conf_moodle_prefix"."grade_items
+	WHERE itemmodule='assignment' AND itemtype='mod'", $moodle_con) or die ("Greska u za: " .mysql_error());
+$za_value = mysql_result($za,0,0);
+// Diskonektujemo moodle
+if (!$conf_moodle_reuse_connection) {
+	mysql_close($moodle_con);
+}
 
 print genform("POST");
 ?>
 <h4></br>Import zadaća iz Moodle-a sa advanced upload-a</h4>
 <input type="hidden" name="akcija" value="import_selected">
+<input type="hidden" name="moodle_zadace" value="<?=$za_value?>">
 
 <?
 if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
@@ -898,21 +907,7 @@ if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
 ?>
 <table>
 <tr>
-	<td>Izaberite zadaću: <select name="moodle_zadaca"><?
-		$za = mysql_query("SELECT itemname
-		FROM $conf_moodle_db.$conf_moodle_prefix"."grade_items
-		WHERE itemmodule='assignment' AND itemtype='mod'
-		ORDER BY itemname desc
-		LIMIT 1", $moodle_con) or die ("Greska u za: " .mysql_error());
-		for ($i=1; $i<=mysql_result($za,0,0); $i++) {
-		print "<option value=\"$i\">$i</option>\n";
-}
-
-// Diskonektujemo moodle
-if (!$conf_moodle_reuse_connection) {
-	mysql_close($moodle_con);
-}
-?>
+	<td>Izaberite zadaću: <?=db_dropdown("moodle_zadace", $za_value);?>
 <tr>
 	<td><input type="submit" name="advanced_zadace" value="Import"><br/></td>
 </tr>
