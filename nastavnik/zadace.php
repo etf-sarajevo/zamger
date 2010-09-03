@@ -901,7 +901,9 @@ if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
 	<td>Izaberite zadaću: <select name="moodle_zadaca"><?
 		$za = mysql_query("SELECT itemname
 		FROM $conf_moodle_db.$conf_moodle_prefix"."grade_items
-		WHERE itemmodule='assignment' AND itemtype='mod'", $moodle_con) or die ("Greska u za: " .mysql_error());
+		WHERE itemmodule='assignment' AND itemtype='mod'
+		ORDER BY itemname desc
+		LIMIT 1", $moodle_con) or die ("Greska u za: " .mysql_error());
 		for ($i=1; $i<=mysql_result($za,0,0); $i++) {
 		print "<option value=\"$i\">$i</option>\n";
 }
