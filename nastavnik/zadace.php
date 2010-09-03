@@ -907,7 +907,7 @@ if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
 ?>
 <table>
 <tr>
-	<td>Izaberite zadaću: <?=db_dropdown("moodle_zadace", $za_value);?>
+	<td>Izaberite zadaću: <?=db_dropdown("$conf_moodle_db.$conf_moodle_prefix"."grade_items", $za_value);?>
 <tr>
 	<td><input type="submit" name="advanced_zadace" value="Import"><br/></td>
 </tr>
