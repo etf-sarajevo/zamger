@@ -595,7 +595,7 @@ function studentski_meni($fj) {
 		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
 		if (mysql_num_rows($qsm)>0) {
 		$aktivan_provjera = mysql_result($qsm,0,0);
-
+ 
 		if ($aktivan_provjera==1) {
 			$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
 
