@@ -4,16 +4,12 @@ function ob_file_callback($buffer)
 {
   global $sadrzaj_bafera_za_csv;
   $sadrzaj_bafera_za_csv=$buffer;
-  $ob_file = fopen('test.txt','w');
-  fwrite($ob_file,$buffer);
-  fclose($ob_file);
-  
-  
+ 
 }
 
 
 function izvjestaj_csv_converter() {
-global $string_pdf,$string,$sadrzaj_bafera_za_csv,$conf_files_path;
+global $sadrzaj_bafera_za_csv,$conf_files_path;
 
 ob_start('ob_file_callback');
 $koji = my_escape($_REQUEST['koji_izvjestaj']);
@@ -35,25 +31,8 @@ header("Content-Type: text/csv");
 
 header("Pragma: dummy=bogus"); 
 header("Cache-Control: private");
+print $sadrzaj_bafera_za_csv;
 
-/*$k = readfile($filepath,false);
-if ($k == false) {
-	print "Otvaranje attachmenta nije uspjelo! Kontaktirajte administratora";
-	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadaca $zadaca zadatak $zadatak student $stud_id)", 3);
-}
-exit;*/
-
-  $myFile = $conf_files_path."/Izvjestaj.csv";
-  $fh = fopen($myFile, 'w') or die("can't open file");
-  $stringData = "one, two, three, four";
-  fwrite($fh, $sadrzaj_bafera_za_csv);
-  fclose($fh);
-  $k = readfile($myFile,false);
-if ($k == false) {
-	print "Otvaranje attachmenta nije uspjelo! Kontaktirajte administratora";
-	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadaca $zadaca zadatak $zadatak student $stud_id)", 3);
-}
-exit;
 
 }
 
