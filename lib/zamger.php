@@ -593,6 +593,7 @@ function studentski_meni($fj) {
 		$ag = intval($_REQUEST['ag']);
 
 		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
+		if (mysql_num_rows($qsm)>0) {
 		$aktivan_provjera = mysql_result($qsm,0,0);
 
 		if ($aktivan_provjera==1) {
@@ -650,6 +651,7 @@ function studentski_meni($fj) {
 					dbconnect2($conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb);
 				}
 			}
+		}
 		}
 	}
 
