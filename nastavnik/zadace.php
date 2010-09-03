@@ -740,7 +740,7 @@ if ($_POST['akcija'] == "import_svih" && check_csrf_token()) {
 		
 			myquery($query2);
 			//upit za dobijanje komponente za zadace
-			$komponenta = myquery ("SELECT id FROM komponenta WHERE naziv='Zadace (ETF BSc)'");
+			$komponenta = myquery ("SELECT komponenta FROM zadaca WHERE id=$zadaca_id_value[0]");
 			if (mysql_num_rows($komponenta)<1) {
 				niceerror("Nema komponente");
 				zamgerlog("Nema komponenti u zamgeru",3);
