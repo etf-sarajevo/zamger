@@ -596,62 +596,62 @@ function studentski_meni($fj) {
 		if (mysql_num_rows($qsm)>0) {
 		$aktivan_provjera = mysql_result($qsm,0,0);
  
-		if ($aktivan_provjera==1) {
-			$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
+			if ($aktivan_provjera==1) {
+				$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
 
-			// Uzimanje Moodle_ID ako je predmet povezan sa moodle
-			if (mysql_num_rows($q)>0) {
-				$moodle_id = mysql_result($q,0,0);
+				// Uzimanje Moodle_ID ako je predmet povezan sa moodle
+				if (mysql_num_rows($q)>0) {
+					$moodle_id = mysql_result($q,0,0);
 
-				// Konekcija na bazu?
-				if (!$conf_moodle_reuse_connection) {
-					dbdisconnect();
-					dbconnect2($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass, $conf_moodle_db);
-				}
+					// Konekcija na bazu?
+					if (!$conf_moodle_reuse_connection) {
+						dbdisconnect();
+						dbconnect2($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass, $conf_moodle_db);
+					}
 
-				// Citanje komentara iz Moodle Baze
-				$query3 = "SELECT * FROM $conf_moodle_db.$conf_moodle_prefix"."forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
-				$rs3 = myquery($query3);
-				?>
-					<table border="0" cellspacing="2" cellpadding="1">
-						<tr>
-							<td colspan="2">
-								<br/><img src="images/16x16/komentar-plavi.png"> <b>Predmet komentari:</b><br/>
-							</td>
-						</tr> 
-						<tr>
-						<td>
-				<?
-				$provjerakomentara=0;
-				while ($numrows3=mysql_fetch_array($rs3))
-				{
-					$brojac=$brojac+1;
-					$idkom=$numrows3['id'];
-					$kurs=$numrows3['course'];
-					$vrijeme=$numrows3['timemodified'];
-					$naziv=$numrows3['name'];
-					$forum=$numrows3['forum'];
-					//Ako postoji komentar ispisi ga
-					if(!empty($naziv)){
-						$provjerakomentara++;									
-						print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br></div>';
+					// Citanje komentara iz Moodle Baze
+					$query3 = "SELECT * FROM $conf_moodle_db.$conf_moodle_prefix"."forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
+					$rs3 = myquery($query3);
+					?>
+						<table border="0" cellspacing="2" cellpadding="1">
+							<tr>
+								<td colspan="2">
+									<br/><img src="images/16x16/komentar-plavi.png"> <b>Predmet komentari:</b><br/>
+								</td>
+							</tr> 
+							<tr>
+								<td>
+									<?
+									$provjerakomentara=0;
+									while ($numrows3=mysql_fetch_array($rs3))
+									{
+										$brojac=$brojac+1;
+										$idkom=$numrows3['id'];
+										$kurs=$numrows3['course'];
+										$vrijeme=$numrows3['timemodified'];
+										$naziv=$numrows3['name'];
+										$forum=$numrows3['forum'];
+										//Ako postoji komentar ispisi ga
+										if(!empty($naziv)){
+											$provjerakomentara++;									
+											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br></div>';
+										}
+									}
+									if($provjerakomentara==0){
+										print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';}
+									?>
+								</td>
+							</tr> 
+						</table> 
+					<?
+
+					// Vraćamo Zamger konekciju
+					if (!$conf_moodle_reuse_connection) {
+						dbdisconnect();
+						dbconnect2($conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb);
 					}
 				}
-				if($provjerakomentara==0){
-					print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';}
-				?>
-						</td>
-						</tr> 
-					</table> 
-				<?
-
-				// Vraćamo Zamger konekciju
-				if (!$conf_moodle_reuse_connection) {
-					dbdisconnect();
-					dbconnect2($conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb);
-				}
 			}
-		}
 		}
 	}
 
