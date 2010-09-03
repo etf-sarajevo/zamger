@@ -63,7 +63,7 @@ $ponudakursa = mysql_result($q17,0,0);
 <p style="font-size: small;">Predmet: <b><?=mysql_result($q10,0,0)?> (<?=mysql_result($q15,0,0)?>)</b><br/>
 <?
 
-// Određivanje labgrupe
+// Odredivanje labgrupe
 $q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
 // Ispisujemo naziv prve nevirtualne grupe koju upit vrati
 if (mysql_num_rows($q20)>0) {
@@ -86,7 +86,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
 
-// boja označava napredak studenta
+// boja oznacava napredak studenta
 if ($mogucih==0) $procent=0;
 else $procent = intval(($bodova/$mogucih)*100);
 if ($procent>=75) 
@@ -123,7 +123,7 @@ if ($tabela1>$tabela2) {
 <td width="68">0</td>
 <td align="center" width="68">50</td>
 <td align="right" width="69">100</td></tr></table>
-što je <?=$procent?>% od trenutno mogućih <?=$mogucih?> bodova.</p>
+što je <?=$procent?>% od trenutno mogucih <?=$mogucih?> bodova.</p>
 </td></tr></table></center>
 
 
@@ -152,105 +152,7 @@ while($r59 = mysql_fetch_array($q59))
 $vrijeme_posljednjeg_logina = $vrijeme_logina[1]+(2*60*60);
 $vrijeme_za_novosti = $vrijeme_logina[0]-(14*22*60*60);
  
- //ispis novosti na stranici predmeta
- 
- $q68 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=1 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
- 
- $q69 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=2 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
- 
- $moodle_id_obavijesti =array();
- $tekst_obavijesti = array();
- $vrijeme_obavijesti = array();
- 
- $moodle_id_resursa = array();
- $naziv_resursa = array();
- $vrijeme_resursa = array();
- 
- if(mysql_num_rows($q60)>0){
 
-if(mysql_num_rows($q68)>0 || mysql_num_rows($q69)>0){
-		while($r68 = mysql_fetch_array($q68)){
-			
-			array_push($moodle_id_obavijesti,$r68[0]);
-			array_push($tekst_obavijesti,$r68[1]);
-			array_push($vrijeme_obavijesti,$r68[2]);
-			
-		}
-		while($r69 = mysql_fetch_array($q69)){
-			array_push($moodle_id_resursa,$r69[0]);
-			array_push($naziv_resursa,$r69[1]);
-			array_push($vrijeme_resursa,$r69[2]);
-		}
-	}
-}
-if(sizeof($moodle_id_obavijesti)>0){
-?><table border="0" width="99%"><h3>Obavjestenja</h3><?
-$i=0;
-while($i<sizeof($moodle_id_obavijesti)){
-		?><tr>
-		<?if($tekst_obavijesti[$i]!=""){?>
-		<td>
-		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i]?>"><?=substr($tekst_obavijesti[$i],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i]+(2*60*60))?></td>
-		<?}
-		else break;
-		if($tekst_obavijesti[$i+1]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i++]?>"><?=substr($tekst_obavijesti[$i++],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+1]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;
-		if($tekst_obavijesti[$i+2]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+2]?>"><?=substr($tekst_obavijesti[$i+2],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+2]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;
-		if($tekst_obavijesti[$i+3]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+3]?>"><?=substr($tekst_obavijesti[$i+3],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+3]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;?>
-		</tr><?
-		$i = $i+4;
-	}
-	?></table><?
-}
-if(sizeof($moodle_id_resursa)>0){
-?><table border="0" width="99%"><h3>Resursi</h3><?
-$i=0;
-while($i<sizeof($moodle_id_resursa)){
-		?><tr>
-		<?if($naziv_resursa[$i]!=""){?>
-		<td>
-		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
-		<?}
-		else break;
-		if($naziv_resursa[$i+1]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i++]?>"><?=substr($naziv_resursa[$i++],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+1]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;
-		if($naziv_resursa[$i+2]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+2]?>"><?=substr($naziv_resursa[$i+2],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+2]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;
-		if($naziv_resursa[$i+3]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+3]?>"><?=substr($naziv_resursa[$i+3],0,34)?></a><br/>
-		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+3]+(2*60*60))?> 
-		</td>
-		<?}
-		else break;?>
-		</tr><?
-		$i = $i+4;
-	}
-	?></table><?
-}
 //pretraga moodle baze za novostima
 if(mysql_num_rows($q60)==1){
 	$course_id = mysql_result($q60,0);
@@ -322,9 +224,135 @@ if(mysql_num_rows($q60)==1){
 		mysql_close($moodle_con);
 	}
 
+//prikupljanje podataka iz baze radi ispisa novosti
+ 
+ $q68 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=1 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
+ 
+ $q69 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=2 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
+ 
+ $moodle_id_obavijesti =array();
+ $tekst_obavijesti = array();
+ $vrijeme_obavijesti = array();
+ 
+ $moodle_id_resursa = array();
+ $naziv_resursa = array();
+ $vrijeme_resursa = array();
+ 
+ if(mysql_num_rows($q60)>0){
 
+if(mysql_num_rows($q68)>0 || mysql_num_rows($q69)>0){
+		while($r68 = mysql_fetch_array($q68)){
+			
+			array_push($moodle_id_obavijesti,$r68[0]);
+			array_push($tekst_obavijesti,$r68[1]);
+			array_push($vrijeme_obavijesti,$r68[2]);
+			
+		}
+		while($r69 = mysql_fetch_array($q69)){
+			array_push($moodle_id_resursa,$r69[0]);
+			array_push($naziv_resursa,$r69[1]);
+			array_push($vrijeme_resursa,$r69[2]);
+		}
+	}
+}
 
-
+//ispis novosti na stranici predmeta
+if(sizeof($moodle_id_obavijesti)>0){
+?><table border="0" width="70%"><h3>Obavjestenja</h3><?
+$i=0;
+while($i<sizeof($moodle_id_obavijesti)){
+		?><tr>
+		<?if($tekst_obavijesti[$i]!=""){
+			if($vrijeme_obavijesti[$i]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)">
+		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i]?>"><?=substr($tekst_obavijesti[$i],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i]+(2*60*60))?></td<?
+		}
+		else{?>
+		<td>
+		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i]?>"><?=substr($tekst_obavijesti[$i],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i]+(2*60*60))?></td<?	
+		}
+		}
+		else break;
+		if($tekst_obavijesti[$i+1]!=""){
+			if($vrijeme_obavijesti[$i+1]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i++]?>"><?=substr($tekst_obavijesti[$i++],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+1]+(2*60*60))?> 
+		</td><?
+		}
+		else{?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i++]?>"><?=substr($tekst_obavijesti[$i++],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+1]+(2*60*60))?> 
+		</td><?
+		}
+		}
+		else break;
+		if($tekst_obavijesti[$i+2]!=""){
+			if($vrijeme_obavijesti[$i+2]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+2]?>"><?=substr($tekst_obavijesti[$i+2],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+2]+(2*60*60))?> 
+		</td>
+		<?}
+		else{?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+2]?>"><?=substr($tekst_obavijesti[$i+2],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+2]+(2*60*60))?> 
+		</td><?
+		}
+		}
+		else break;
+		if($tekst_obavijesti[$i+3]!=""){
+			if($vrijeme_obavijesti[$i+3]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+3]?>"><?=substr($tekst_obavijesti[$i+3],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+3]+(2*60*60))?> 
+		</td>
+		<?}
+		else{?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+3]?>"><?=substr($tekst_obavijesti[$i+3],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i+3]+(2*60*60))?> 
+		</td><?
+		}
+		}
+		else break;?>
+		</tr><?
+		$i = $i+4;
+	}
+	?></table><?
+}
+if(sizeof($moodle_id_resursa)>0){
+?><table border="0" width="70%"><h3>Resursi</h3><?
+$i=0;
+while($i<sizeof($moodle_id_resursa)){
+		?><tr>
+		<?if($naziv_resursa[$i]!=""){?>
+		<td>
+		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
+		<?}
+		else break;
+		if($naziv_resursa[$i+1]!=""){?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i++]?>"><?=substr($naziv_resursa[$i++],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+1]+(2*60*60))?> 
+		</td>
+		<?}
+		else break;
+		if($naziv_resursa[$i+2]!=""){?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+2]?>"><?=substr($naziv_resursa[$i+2],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+2]+(2*60*60))?> 
+		</td>
+		<?}
+		else break;
+		if($naziv_resursa[$i+3]!=""){?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+3]?>"><?=substr($naziv_resursa[$i+3],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+3]+(2*60*60))?> 
+		</td>
+		<?}
+		else break;?>
+		</tr><?
+		$i = $i+4;
+	}
+	?></table><?
+}
 
 
 
@@ -339,7 +367,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 
 	$odsustva=0;
 	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta order by vrijeme");
-	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
+	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih casova
 
 	$datumi = $vremena = $statusi = "";
 	while ($r70 = mysql_fetch_row($q70)) {
@@ -415,12 +443,12 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 
 
-//  ZADAĆE
+//  ZADACE
 
 
 // Statusne ikone:
 $stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaca prepisana", "Bug u programu", "Pregled u toku", "Zadaca OK");
 
 
 ?>
@@ -428,7 +456,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 <!-- zadace -->
 
-<b>Zadaće:</b><br/>
+<b>Zadace:</b><br/>
 <table cellspacing="0" cellpadding="2" border="0" id="zadace">
 	<thead>
 		<tr>
@@ -437,9 +465,9 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
 
-// Prikaz sa predmete kod kojih nije aktivno slanje zadaća
+// Prikaz sa predmete kod kojih nije aktivno slanje zadaca
 if (mysql_result($q100,0,0)==0) {
-	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
+	// U pravilu ovdje ima samo jedan zadatak, pa cemo sumirati
 	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
@@ -503,8 +531,8 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 ?>
 		<td><b>Ukupno bodova</b></td>
-		<td><b>Postavka zadaća</b></td>
-		<td><b>Kreiranje zadaća u pdf-u</b></td>
+		<td><b>Postavka zadaca</b></td>
+		<td><b>Kreiranje zadaca u pdf-u</b></td>
 		</tr>
 	</thead>
 <tbody>
@@ -515,7 +543,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 // LEGENDA STATUS POLJA:
 // 0 - nepoznat status
-// 1 - nova zadaća
+// 1 - nova zadaca
 // 2 - prepisana
 // 3 - ne može se kompajlirati
 // 4 - prošla test, predstoji kontrola
@@ -540,7 +568,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 	$bodova_zadaca = 0;
 
 	for ($zadatak=1;$zadatak<=$broj_zadataka;$zadatak++) {
-		// Ako tekuća zadaća nema toliko zadataka, ispisujemo blank polje
+		// Ako tekuca zadaca nema toliko zadataka, ispisujemo blank polje
 		if ($zadatak>$zzadataka) {
 			?><td>&nbsp;</td><?
 			continue;
@@ -615,7 +643,7 @@ $bodova += $bodova_sve_zadace;
 </tbody>
 </table>
 
-<p>Za ponovno slanje zadatka, kliknite na sličicu u tabeli iznad. <a href="#" onclick="javascript:window.open('legenda-zadace.html','blah6','width=320,height=130');">Legenda simbola</a></p>
+<p>Za ponovno slanje zadatka, kliknite na slicicu u tabeli iznad. <a href="#" onclick="javascript:window.open('legenda-zadace.html','blah6','width=320,height=130');">Legenda simbola</a></p>
 <br/>
 
 <!-- end zadace -->
@@ -654,7 +682,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 
 
 
-// KONAČNA OCJENA
+// KONACNA OCJENA
 
 $q50 = myquery("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q50)>0) {
@@ -662,7 +690,7 @@ if (mysql_num_rows($q50)>0) {
 	<center>
 		<table width="100px" style="border-width: 3px; border-style: solid; border-color: silver">
 			<tr><td align="center">
-				KONAČNA OCJENA<br/>
+				KONACNA OCJENA<br/>
 				<font size="6"><b><?=mysql_result($q50,0,0)?></b></font>
 			</td></tr>
 		</table>
