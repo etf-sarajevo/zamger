@@ -275,6 +275,7 @@ while($i<sizeof($moodle_id_obavijesti)){
 		}
 		}
 		else break;
+		
 		if($tekst_obavijesti[$i+1]!=""){
 			if($vrijeme_obavijesti[$i+1]+2*60*60>$vrijeme_posljednjeg_logina){?>
 		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i++]?>"><?=substr($tekst_obavijesti[$i++],0,34)?></a><br/>
@@ -288,6 +289,7 @@ while($i<sizeof($moodle_id_obavijesti)){
 		}
 		}
 		else break;
+		
 		if($tekst_obavijesti[$i+2]!=""){
 			if($vrijeme_obavijesti[$i+2]+2*60*60>$vrijeme_posljednjeg_logina){?>
 		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+2]?>"><?=substr($tekst_obavijesti[$i+2],0,34)?></a><br/>
@@ -301,6 +303,7 @@ while($i<sizeof($moodle_id_obavijesti)){
 		}
 		}
 		else break;
+		
 		if($tekst_obavijesti[$i+3]!=""){
 			if($vrijeme_obavijesti[$i+3]+2*60*60>$vrijeme_posljednjeg_logina){?>
 		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i+3]?>"><?=substr($tekst_obavijesti[$i+3],0,34)?></a><br/>
@@ -324,29 +327,61 @@ if(sizeof($moodle_id_resursa)>0){
 $i=0;
 while($i<sizeof($moodle_id_resursa)){
 		?><tr>
-		<?if($naziv_resursa[$i]!=""){?>
-		<td>
+		<?if($naziv_resursa[$i]!=""){
+			if($vrijeme_resursa[$i]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)">
+		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
+		<?
+		}else{
+		?><td>
 		<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
 		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
 		<?}
+		}
 		else break;
-		if($naziv_resursa[$i+1]!=""){?>
+		
+		if($naziv_resursa[$i+1]!=""){
+			if($vrijeme_resursa[$i+1]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i++]?>"><?=substr($naziv_resursa[$i++],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+1]+(2*60*60))?> 
+		</td>
+		<?}
+		else{?>
 		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i++]?>"><?=substr($naziv_resursa[$i++],0,34)?></a><br/>
 		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+1]+(2*60*60))?> 
 		</td>
 		<?}
+		}
 		else break;
-		if($naziv_resursa[$i+2]!=""){?>
-		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+2]?>"><?=substr($naziv_resursa[$i+2],0,34)?></a><br/>
+		
+		if($naziv_resursa[$i+2]!=""){
+			if($vrijeme_resursa[$i+2]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+2]?>"><?=substr($naziv_resursa[$i+2],0,34)?></a><br/>
 		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+2]+(2*60*60))?> 
 		</td>
 		<?}
+		else{?>
+		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+2]?>"><?=substr($naziv_resursa[$i+2],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+2]+(2*60*60))?> 
+		</td>
+		<?
+		}
+		}
 		else break;
-		if($naziv_resursa[$i+3]!=""){?>
+		
+		if($naziv_resursa[$i+3]!=""){
+			if($vrijeme_resursa[$i+3]+2*60*60>$vrijeme_posljednjeg_logina){?>
+		<td bgcolor="rgb(255,255,121)"> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+3]?>"><?=substr($naziv_resursa[$i+3],0,34)?></a><br/>
+		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+3]+(2*60*60))?> 
+		</td>
+		<?}
+		else{?>
 		<td> <a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i+3]?>"><?=substr($naziv_resursa[$i+3],0,34)?></a><br/>
 		<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i+3]+(2*60*60))?> 
 		</td>
 		<?}
+		}
 		else break;?>
 		</tr><?
 		$i = $i+4;
