@@ -791,7 +791,7 @@ if (!$conf_moodle_reuse_connection) {
 		mysql_set_charset("utf8",$moodle_con);
 	}
 }
-$za = mysql_query("SELECT itemname
+$za = mysql_query("SELECT itemname, id
 	FROM $conf_moodle_db.$conf_moodle_prefix"."grade_items
 	WHERE itemmodule='assignment' AND itemtype='mod'", $moodle_con) or die ("Greska u za: " .mysql_error());
 $za_value = mysql_result($za,0,0);
@@ -799,6 +799,7 @@ $za_value = mysql_result($za,0,0);
 if (!$conf_moodle_reuse_connection) {
 	mysql_close($moodle_con);
 }
+
 
 print genform("POST");
 ?>
@@ -808,7 +809,6 @@ print genform("POST");
 
 <?
 if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
-	// Konekcija na bazu?
 	
 	if (!$conf_moodle_reuse_connection) {
 		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
@@ -907,7 +907,16 @@ if ($_POST['akcija'] == "import_selected" && check_csrf_token()) {
 ?>
 <table>
 <tr>
-	<td>Izaberite zadaću: <?=db_dropdown("moodle_zadace", $za_value);?>
+	<td><?
+	echo "<select name=moodle_zadace value=''>Izaberite Zadaću: </option>";
+	// printing the list box select command
+
+	while($za_value=mysql_fetch_array($za)) {
+	echo "<option value=$za_value[1]>$za_value[0]</option>";
+	/* Option values are added by looping through the array */
+	}
+	echo "</select>";// Closing of list box
+	?>
 <tr>
 	<td><input type="submit" name="advanced_zadace" value="Import"><br/></td>
 </tr>
