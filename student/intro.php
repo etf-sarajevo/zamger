@@ -350,7 +350,7 @@ if (mysql_num_rows($q200)<1) {
 
 
 ?>
-<a href="http://zamger.etf.unsa.ba/zamgerrss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
+<a href="http://zamger.etf.unsa.ba/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
 
 <!--
 <table border="0" bgcolor="#DDDDDD" width="100%">
