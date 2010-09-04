@@ -158,8 +158,7 @@ if(mysql_num_rows($q60)==1){
 	$course_id = mysql_result($q60,0);
 	
 	$id_modula = array();
-	$id_sekcije = array();
-	$moodle_vrijeme = array();
+	
 	$moodle_con = $__lv_connection;
 	if (!$conf_moodle_reuse_connection) {
 		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
@@ -175,12 +174,10 @@ if(mysql_num_rows($q60)==1){
 			mysql_set_charset("utf8",$moodle_con);
 		}
 	}
-	$q61 = mysql_query("Select module, section, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
+	$q61 = mysql_query("Select module from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
 	
 	while($r61 = mysql_fetch_array($q61)){
 		array_push($id_modula,$r61['0']);
-		array_push($id_sekcije,$r61['1']);
-		array_push($moodle_vrijeme,$r61['2']);
 	}
 	
 	for($i=0;$i<sizeof($id_modula);$i++){
@@ -225,7 +222,7 @@ if(mysql_num_rows($q60)==1){
 	}
 
 //prikupljanje podataka iz baze radi ispisa novosti
- 
+ if(mysql_num_rows($q60)==1){
  $q68 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=1 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
  
  $q69 = myquery("Select  moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=2 and moodle_id=".mysql_result($q60,0)." order by vrijeme_promjene desc limit 8");
@@ -389,7 +386,7 @@ while($i<sizeof($moodle_id_resursa)){
 	?></table><?
 }
 
-
+}
 
 
 //  PRISUSTVO NA VJEŽBAMA
