@@ -23,6 +23,9 @@ require("lib/config.php");
 
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
+// Parametri potrebni za Moodle integraciju
+global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
+global $__lv_connection, $conf_use_mysql_utf8;
 
 // Pretvaramo rss id u userid
 $id = my_escape($_REQUEST['id']);
@@ -80,11 +83,12 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
 	if (mysql_result($q12,0,0)==0) continue;
 
-	$code_poruke["z".$r10[0]] = "<item>
+	$code_poruke["z".$r10[0]] = "
+		<item>
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
 		<description><![CDATA[Rok za slanje je ".date("d. m. Y h:i ",$r10[2]).".]]></description>
-	</item>\n";
+		</item>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
@@ -94,26 +98,26 @@ while ($r10 = mysql_fetch_row($q10)) {
 $q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["i".$r15[0]] = "<item>
+	$code_poruke["i".$r15[0]] = "
+		<item>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
 		<description></description>
-	</item>\n";
+		</item>\n";
 	$vrijeme_poruke["i".$r15[0]] = $r15[3];
 }
-
-
 
 // konacna ocjena
 
 $q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id order by ko.datum desc limit $broj_poruka");
 while ($r17 = mysql_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["k".$r17[0]] = "<item>
+	$code_poruke["k".$r17[0]] = "
+		<item>
 		<title>Čestitamo! Dobili ste $r17[1] -- predmet $r17[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[4]&amp;ag=$r17[5]</link>
 		<description></description>
-	</item>\n";
+		</item>\n";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
 
@@ -127,11 +131,12 @@ $zadaca_bila = array();
 while ($r18 = mysql_fetch_row($q18)) {
 	if (in_array($r18[6],$zadaca_bila)) continue; // ne prijavljujemo vise puta istu zadacu
 	if ($r18[2] < time()-60*60*24*30) break; // IDovi bi trebali biti hronoloskim redom, tako da ovdje mozemo prekinuti petlju
-	$code_poruke["zp".$r18[0]] = "<item>
+	$code_poruke["zp".$r18[0]] = "
+		<item>
 		<title>Pregledana zadaća $r18[4], predmet $r18[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r18[7]&amp;ag=$r18[8]</link>
 		<description><![CDATA[Posljednja izmjena: ".date("d. m. Y. h:i:s",$r18[2])."]]></description>
-	</item>\n";
+		</item>\n";
 	array_push($zadaca_bila,$r18[6]);
 	$vrijeme_poruke["zp".$r18[0]] = $r18[2];
 }
@@ -210,12 +215,129 @@ while ($r100 = mysql_fetch_row($q100)) {
 	else
 		$title="Poruka";
 
-	$code_poruke[$id]="<item>
+	$code_poruke[$id]="
+		<item>
 		<title>$title: $naslov ($vrijeme)</title>
 		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
 		<description>Poslao: $posiljalac</description>
-	</item>\n";
+		</item>\n";
 }
+
+
+//Novosti sa Courseware-a
+
+$q30 = myquery("Select unix_timestamp(vrijeme) from log where userid=$userid  and dogadjaj='logout' order by vrijeme desc limit 1");
+
+$vrijeme_loga = mysql_result($q30,0);
+
+//prikupljanje podatak o novostima na Moodle stranicama
+$q40 = myquery("Select predmet from student_predmet where student=$userid");
+if(mysql_num_rows($q40)>0){
+	while($r40 = mysql_fetch_array($q40)){
+		$predmet = $r40[0];
+		
+		$q41 = myquery("Select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
+		
+		if(mysql_num_rows($q41)==1){
+		
+		$moodle_id = mysql_result($q41,0);
+		$id_modula = array();
+		
+		//provjera konekcije na moodle bazu
+		$moodle_con = $__lv_connection;
+		if (!$conf_moodle_reuse_connection) {
+		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+			if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+				biguglyerror(mysql_error());
+				exit;
+			}
+			if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+				biguglyerror(mysql_error());
+				exit;
+			}
+			if ($conf_use_mysql_utf8) {
+				mysql_set_charset("utf8",$moodle_con);
+			}
+		}
+		$q42 = mysql_query("Select module from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$moodle_id and module=9 or module=13 order by added desc limit 10",$moodle_con);
+		
+			while($r42 = mysql_fetch_array($q42)){
+				if($r42[0]==9){
+					$q43 = mysql_query("Select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where timemodified>$vrijeme_loga order by timemodified desc limit 5",$moodle_con);
+					if(mysql_num_rows($q43)>0){
+					while($r43 = mysql_fetch_array($q43)){
+						$q44 = myquery("Select id from $conf_dbdb.moodle_predmet_rss where vrstanovosti=1 and moodle_id=$moodle_id and sadrzaj='$r43[0]' and vrijeme_promjene=$r43[1]");
+						
+						if(mysql_num_rows($q44)<1){
+						myquery("Insert into moodle_predmet_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values ('1', '$moodle_id', '$r43[0]','$r43[1]')");
+						}
+						}
+					}
+				}
+				if($r42[0]==13){
+					$q45 = mysql_query("Select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where timemodified>$vrijeme_loga order by timemodified desc limit 5",$moodle_con);
+					if(mysql_num_rows($q45)>0){
+					while($r45 = mysql_fetch_array($q45)){
+						$q46 = myquery("Select id from $conf_dbdb.moodle_predmet_rss where vrstanovosti=2 and moodle_id=$moodle_id and sadrzaj='$r45[0]' and vrijeme_promjene=$r45[1]");
+						
+						if(mysql_num_rows($q46)<1){
+						myquery("Insert into moodle_predmet_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values ('2', '$moodle_id', '$r45[0]','$r45[1]')");
+						}
+						}
+					}
+				}
+			}
+		}
+		
+	}
+}
+// Diskonektujemo moodle o
+	if (!$conf_moodle_reuse_connection) {
+		mysql_close($moodle_con);
+	}
+
+
+//ispis novosti sa courseware-a u RSS feed-u
+$q50 =myquery("Select predmet from student_predmet where student=$userid");
+
+if(mysql_num_rows($q50)>0){
+	while($r50 = mysql_fetch_array($q50)){
+		$predmet = $r50[0];
+		
+		$q51 = myquery("Select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
+		
+		if(mysql_num_rows($q51)>0){
+			$moodle_id = mysql_result($q51,0);
+			
+			$q52 = myquery("Select vrstanovosti, sadrzaj, vrijeme_promjene from moodle_predmet_rss where moodle_id=$moodle_id and vrijeme_promjene>$vrijeme_loga order by vrijeme_promjene desc limit 5");
+			
+			$temp = 0;
+			
+			while($r52 = mysql_fetch_array($q52)){
+				if($r52[0]==1){
+				$code_poruke["mo".$temp]= "
+		<item>
+		<title>Obavijest : ".substr($r52[1],0,23)." </title>
+		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
+		<decription>".date('d.m.Y H:i:s',$r52[2]+2*60*60)."</descritpion>
+		</item>\n";
+					$vrijeme_poruke["mo".$temp] = $r52[2]+2*60*60;
+				}
+				if($r52[0]==2){
+				$code_poruke["mr".$temp]= "
+		<item>
+		<title>Obavijest : ".substr($r52[1],0,23)." </title>
+		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
+		<decription>".date('d.m.Y H:i:s',($r52[2]+2*60*60))."</descritpion>
+		</item>\n";
+					$vrijeme_poruke["mr".$temp] = $r52[2]+2*60*60;
+				}	
+				$temp++;
+			}
+		}
+	}
+}
+
 
 
 // Sortiramo po vremenu
