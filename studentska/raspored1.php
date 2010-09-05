@@ -1218,35 +1218,32 @@ elseif(isset($_REQUEST['edit_rasp']) && $_REQUEST['edit_rasp']==1){
 								<td colspan=\"$interval\">
 									<table class=\"cas\" align=\"center\">
 										<tr>
-											<td>Tip:</td>
 											<td><p class=\"bold\">$tip</p></td>
 										</tr>
 										<tr>
-											<td>Predmet:</td>
 											<td><p class=\"bold\">$predmet_naziv";
 								if($obavezan==0) print " (IZB) ";
 							print "
 											</p></td>
 										</tr>
 										<tr>
-											<td>Sala:</td>
 											<td><p class=\"bold\">$sala_naziv</p></td>
 										</tr>";
 
 							if($tip!='P'){
 								print "
 										<tr>
-											<td>Grupa:</td>
 											<td><p class=\"bold\">$labgrupa_naziv</p></td>
 										</tr>";
 							}
 								print "
 										<tr>
-											<td>Vrijeme:</td>
-											<td><p class=\"bold\">$vrijemeP-$vrijemeK</p></td>
+											<td><p class=\"bold\">$vrijemeP-</p></td>
 										</tr>
 										<tr>
-											<td></td>
+											<td><p class=\"bold\">$vrijemeK</p></td>
+										</tr>
+										<tr>
 											<td><p><a  href=\"javascript:onclick=brisanje_casa('$id_stavke')\"> obriši čas </a></p></td>
 										</tr>
 									</table>
