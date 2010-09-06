@@ -594,7 +594,7 @@ function studentski_meni($fj) {
 		$predmet = intval($_REQUEST['predmet']);
 		$ag = intval($_REQUEST['ag']);
 
-		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=5");
+		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($qsm)>0) {
 		$aktivan_provjera = mysql_result($qsm,0,0);
  
@@ -633,10 +633,14 @@ function studentski_meni($fj) {
 										$vrijeme=$numrows3['timemodified'];
 										$naziv=$numrows3['name'];
 										$forum=$numrows3['forum'];
+										$query4 = "SELECT * FROM $conf_moodle_db.$conf_moodle_prefix"."forum WHERE id=$forum";
+										$rs4 = myquery($query3);
+										$numrows4=mysql_fetch_array($rs4);
+										$naziv_foruma=$numrows4['name'];
 										//Ako postoji komentar ispisi ga
 										if(!empty($naziv)){
 											$provjerakomentara++;									
-											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br></div>';
+											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'['.$naziv_foruma.']</a><br></div>';
 										}
 									}
 									if($provjerakomentara==0){
