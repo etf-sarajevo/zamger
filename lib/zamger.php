@@ -640,7 +640,7 @@ function studentski_meni($fj) {
 										//Ako postoji komentar ispisi ga
 										if(!empty($naziv)){
 											$provjerakomentara++;									
-											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'<br> ['.$naziv_foruma.']</a><br></div>';
+											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'<br /> ['.$naziv_foruma.']</a><br></div>';
 										}
 									}
 									if($provjerakomentara==0){
