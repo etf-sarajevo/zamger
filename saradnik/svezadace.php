@@ -3,7 +3,7 @@
 // SARADNIK/SVEZADACE - download svih zadaca u jednoj grupi
 
 // v4.0.9.1 (2009/10/24) + Novi modul saradnik/svezadace
-// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti grupi
+// v5.0.0.0 (2010/09/07) + Manje modifikacije zbog promjenjene tabele nastavnik_predmet (nivo_pristupa umjesto admin kolone)
 
 function saradnik_svezadace() {
 
@@ -32,15 +32,13 @@ $ag = mysql_result($q30,0,2);
 
 // Da li korisnik ima pravo ući u grupu?
 if (!$user_siteadmin) {
-	$q40 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	$q41 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if ((mysql_num_rows($q40)<1) || (mysql_num_rows($q41)<1)){
+	$q40 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q40)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
 		return;
 	}
-	$predmet_admin = mysql_result($q40,0,0);
-	$predmet_superasistent = mysql_result($q41,0,0);
+	$privilegija = mysql_result($q40,0,0);
 
 	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	if (mysql_num_rows($q50)>0) {

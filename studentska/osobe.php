@@ -36,6 +36,7 @@
 // v4.0.9.12 (2009/09/15) + Redizajniran kod za akciju upis, uz podrsku za plan studija i nova polja u tabelama studij i tipstudija; u akciji "edit", sekcija "Prijemni", daj link za upis samo ako je student polagao prijemni za godinu iza aktuelne; popravljen prikaz upisa u sljedecu godinu za studente upravo upisane na prijemnom
 // v4.0.9.13 (2009/09/23) + Manuelni upis na predmete / ispis sa predmeta napravljen kao zasebna akcija
 // v4.0.9.14 (2009/10/03) + Dodajem kod za ispis studenta sa studija (prethodno u modulu prodsjeka)
+// v5.0.0.0 (2010/09/08) + Manje modifikacije zbog promjenjene tabele nastavnik_predmet (nivo_pristupa umjesto admin kolone); Kod prikaza osobe, u dijelu Prava pristupa, ako je osoba Super asistent na predmetu, pored naziva predmeta se ispisuje (Super asistent predmeta) (ista logika kao (Administrator predmeta))
 
 
 
@@ -1784,13 +1785,17 @@ else if ($akcija == "edit") {
 
 		$predmet = intval($_POST['predmet']);
 		$admin_predmeta = intval($_POST['admin_predmeta']);
+		if ($admin_predmeta==1)
+		$privilegija="nastavnik";
+		else
+		$privilegija="asistent";
 
 		$q115 = myquery("select naziv from predmet where id=$predmet");
 		$naziv_predmeta = mysql_result($q115,0,0);
 
-		$q130 = myquery("replace nastavnik_predmet set admin=$admin_predmeta, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
+		$q130 = myquery("replace nastavnik_predmet set nivo_pristupa=$privilegija, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
 
-		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
+		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (nivo pristupa: $privilegija, akademska godina: $id_ak_god)",4);
 		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
 		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
 	}
@@ -2455,12 +2460,13 @@ else if ($akcija == "edit") {
 		<p><b>Prava pristupa (akademska godina <?=$naziv_ak_god?>)</b></p>
 		<ul>
 		<?
-		$q180 = myquery("select p.id, p.naziv, np.admin, i.kratki_naziv from nastavnik_predmet as np, predmet as p, institucija as i where np.nastavnik=$osoba and np.predmet=p.id and np.akademska_godina=$id_ak_god and p.institucija=i.id order by np.admin desc, p.naziv"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
+		$q180 = myquery("select p.id, p.naziv, np.nivo_pristupa, i.kratki_naziv from nastavnik_predmet as np, predmet as p, institucija as i where np.nastavnik=$osoba and np.predmet=p.id and np.akademska_godina=$id_ak_god and p.institucija=i.id order by np.nivo_pristupa desc, p.naziv"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
 		if (mysql_num_rows($q180) < 1)
 			print "<li>Nijedan</li>\n";
 		while ($r180 = mysql_fetch_row($q180)) {
 			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r180[0]\">$r180[1] ($r180[3])</a>";
-			if ($r180[2] == 1) print " (Administrator predmeta)";
+			if ($r180[2] == "nastavnik") print " (Administrator predmeta)";
+			else if ($r180[2] == "super_asistent") print " (Super asistent predmeta)";
 			print "</li>\n";
 		}
 		?></ul>

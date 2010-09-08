@@ -33,9 +33,8 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	return;
 }
 if (!$user_studentska && !$user_siteadmin) {
-	$q2 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	$q3 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if ((mysql_num_rows($q2) < 1) || (mysql_num_rows($q3) < 1)) {
+	$q2 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q2) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet, godina ag$ag",3); // 3 = error
 		return;

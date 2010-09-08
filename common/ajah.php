@@ -33,6 +33,7 @@
 // v4.0.9.11 (2009/06/22) + Provjera prava pristupa kod fiksne komponente i konacne ocjene nije prebacena sa ponudekursa na predmet+ag
 // v4.0.9.12 (2009/07/15) + Dodajem kod za upis na drugi ciklus
 // v4.0.9.13 (2009/10/02) + Ljepsa poruka za sesiju koja je istekla; jos zastite za module studentske sluzbe
+// v5.0.0.0 (2010/09/08) + Manje modifikacije zbog promjenjene tabele nastavnik_predmet (nivo_pristupa umjesto admin kolone)
 
 
 // Prebaciti u lib/manip?
@@ -179,9 +180,9 @@ case "izmjena_ispita":
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
 		if ($user_siteadmin)
-			$q40 = myquery("select 1,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
+			$q40 = myquery("select 'nastavnik',pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
 		else
-			$q40 = myquery("select np.admin,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
+			$q40 = myquery("select np.nivo_pristupa,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
 		if (mysql_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
 			print "nepoznat ispit $ispit ili niste saradnik na predmetu"; break;
@@ -216,7 +217,7 @@ case "izmjena_ispita":
 				print "niste saradnik na predmetu"; break;
 			}
 		}
-		$padmin=1; // Dozvoljavamo saradnicima da unose fiksne komponente
+		$padmin="nastavnik"; // Dozvoljavamo saradnicima da unose fiksne komponente
 
 	} else if ($ime == "ko") {
 		// konacna ocjena
@@ -227,7 +228,7 @@ case "izmjena_ispita":
 
 		$max=10;
 		if (!$user_siteadmin) {
-			$q41 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+			$q41 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (mysql_num_rows($q41)<1) {
 				zamgerlog("AJAH ispit/ko - niste saradnik (ispit pp$predmet, ag$ag)",3);
 				print "niste saradnik na predmetu $predmet";
@@ -236,7 +237,7 @@ case "izmjena_ispita":
 			$padmin=mysql_result($q41,0,0);
 		}
 	}
-	if ($padmin==0 && !$user_siteadmin) {
+	if ($padmin=="asistent" && !$user_siteadmin) {
 		zamgerlog("AJAH ispit - pogresne privilegije (ispit i$ispit)",3);
 		print "niste nastavnik na predmetu $predmet niti admin!"; break;
 	}

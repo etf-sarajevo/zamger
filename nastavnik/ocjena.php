@@ -11,6 +11,7 @@
 // v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 // v4.0.9.4 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
+// v5.0.0.0 (2010/09/08) + Manje modifikacije zbog promjenjene tabele nastavnik_predmet (nivo_pristupa umjesto admin kolone)
 
 
 function nastavnik_ocjena() {
@@ -40,8 +41,9 @@ $predmet_naziv = mysql_result($q10,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent" || mysql_result($q10,0,0)=="super_asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;

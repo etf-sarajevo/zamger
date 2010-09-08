@@ -22,7 +22,7 @@
 // v4.0.9.8 (2009/05/20) + Dodajem akciju brisanje ponude kursa; ne prikazuj svaku ponudu kursa zasebno kod pretrage, prikazi predmete bez ponude kursa; akcija novi je pogresno prijavljivala da predmet vec postoji (ali je inace sve radilo ispravno); izbacio sam kreiranje default ponudekursa (svakako je viska), kreiranje virtualne labgrupe se radi samo ako ne postoji u aktuelnoj godini; renumerisem upite
 // v4.0.9.9 (2009/09/27) + Popravljena provjera da li je ista izabrano u akciji ogranicenja; popravljeno prosljedjivanje IDa nastavnika kod izbacivanja nastavnika sa predmeta
 // v4.0.9.10 (2009/10/20) + Prethodna izmjena je brisala podatke o ogranicenjima na drugim predmetima
-// v5.0.0.0 (2010/09/07) + Dodate privilegije za Super asistenta; Kod prava pristupa predmetu, u tabelu dodana kolona Super asistent, a elementi tabele u toj koloni cu check box-ovi, isto kao za Administratora predmeta. Odabirom check box-a, osoba postaje Super asistent na tom predmetu; Dodate funkcije za ova 2 check boxa, jer ne mogu biti istovremeno oba ukljucena
+// v5.0.0.0 (2010/09/08) + Dodate privilegije za Super asistenta; Kod prava pristupa predmetu, u tabelu dodana kolona Super asistent, a elementi tabele u toj koloni cu check box-ovi, isto kao za Administratora predmeta. Odabirom check box-a, osoba postaje Super asistent na tom predmetu; Dodate funkcije za ova 2 check boxa, jer ne mogu biti istovremeno oba ukljucena
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -399,11 +399,14 @@ else if ($akcija == "edit") {
 		$nastavnik = intval($_GET['nastavnik']);
 
 		$yesno = intval($_GET['yesno']);
-		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
-		if ($yesno==1) 
+		if ($yesno==1) {
+			$q362 = myquery("update nastavnik_predmet set nivo_pristupa='nastavnik' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
 			nicemessage("Nastavnik proglašen za administratora predmeta");
-		else
+			}
+		else {
+			$q362 = myquery("update nastavnik_predmet set nivo_pristupa='asistent' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
 			nicemessage("Nastavnik više nije administrator predmeta");
+			}
 		zamgerlog("nastavnik u$nastavnik proglasen za admina predmeta pp$predmet ($yesno)",4);
 	}
 	
@@ -412,11 +415,14 @@ else if ($akcija == "edit") {
 		$nastavnik = intval($_GET['nastavnik']);
 
 		$yesnosuper = intval($_GET['yesnosuper']);
-		$q368 = myquery("update nastavnik_predmet set super_asistent=$yesnosuper where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
-		if ($yesnosuper==1) 
+		if ($yesnosuper==1) {
+			$q368 = myquery("update nastavnik_predmet set nivo_pristupa='super_asistent' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
 			nicemessage("Nastavnik proglašen za super asistenta predmeta");
-		else
-			nicemessage("Nastavnik više nije super asistent predmeta");
+			}
+		else {
+			$q368 = myquery("update nastavnik_predmet set nivo_pristupa='asistent' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
+			nicemessage("Nastavnik više nije administrator predmeta");
+			}
 		zamgerlog("nastavnik u$nastavnik proglasen za super asistenta predmeta pp$predmet ($yesnosuper)",4);
 	}
 
@@ -599,7 +605,7 @@ else if ($akcija == "edit") {
 	<hr>
 	<p>Osobe sa pravima pristupa na predmetu (<?=$agnaziv?>):</p>
 	<?
-	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime,np.super_asistent from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+	$q351 = myquery("select np.nastavnik,np.nivo_pristupa,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 	if (mysql_num_rows($q351) < 1) {
 		print "<ul><li>Na predmetu nije angažovan nijedan nastavnik</li></ul>\n";
 	} else {
@@ -621,7 +627,7 @@ else if ($akcija == "edit") {
 		$nastavnik = $r351[0];
 		$imeprezime = "$r351[2] $r351[3]";
 
-		if ($r351[1]==1) {
+		if ($r351[1]=="nastavnik") {
 			$alterlink="0";
 			$cbstanje="CHECKED";
 		} else {
@@ -629,7 +635,7 @@ else if ($akcija == "edit") {
 			$cbstanje="";
 		}
 		
-		if ($r351[4]==1) {
+		if ($r351[1]=="super_asistent") {
 			$alterlinkSA="0";
 			$cbstanjeSA="CHECKED";
 		} else {
@@ -644,27 +650,28 @@ else if ($akcija == "edit") {
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
 			<td>
 			<input id="check1" type="checkbox" onchange="javascript:fcheck1()" <?=$cbstanje?>></td>
+			<td>
 			<input id="check2" type="checkbox" onchange="javascript:fcheck2()" <?=$cbstanjeSA?>></td>
-			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>"><?
+			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>">
 			
-		//Skripta za checkboxove; funkcije koje se brinu da ne budu oba istovremeno ukljucena
+			<!-- Skripta za checkboxove; funkcije koje se brinu da ne budu oba istovremeno ukljucena -->
 		
 		<script type="text/javascript">
 			function fcheck1() {
 			document.getElementById("check2").checked = false;
 
-			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'
+			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>';
 		}
 
 			function fcheck2() {
 			document.getElementById("check1").checked = false;
 			
-			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_super_asistenta&nastavnik=<?=$nastavnik?>&yesnosuper=<?=$alterlinkSA?>'
+			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_super_asistenta&nastavnik=<?=$nastavnik?>&yesnosuper=<?=$alterlinkSA?>';
 		}
 		</script>
-
-
-		// Spisak grupa na koje ima ogranicenje
+			
+			<?
+			// Spisak grupa na koje ima ogranicenje
 		$q352 = myquery("select l.naziv from ogranicenje as o, labgrupa as l where o.nastavnik=$nastavnik and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 		if (mysql_num_rows($q352)<1)
 			print "Nema";

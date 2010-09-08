@@ -38,9 +38,9 @@ $predmet_naziv = mysql_result($q10,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)){
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
@@ -67,9 +67,9 @@ if (!$user_siteadmin) { // 3 = site admin
 <ul>
 <?
 
-$q100 = myquery("select o.ime, o.prezime, np.admin, np.super_asistent from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+$q100 = myquery("select o.ime, o.prezime, np.nivo_pristupa from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 while ($r100 = mysql_fetch_row($q100)) {
-	if ($r100[2]==1) $dodaj=" (A)"; else if )$r100[3]==1 $dodaj=" (S)"; else $dodaj="";
+	if ($r100[2]=="nastavnik") $dodaj=" (A)"; else if )$r100[2]=="super_asistent" $dodaj=" (S)"; else $dodaj="";
 	print "<li>$r100[0] $r100[1]$dodaj</li>\n";
 }
 

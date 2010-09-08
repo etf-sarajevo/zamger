@@ -70,15 +70,14 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$ag_naziv = $r1a[1];
 
 	// Prikaži sve predmete siteadminu
-	$uslov=""; $nppolje="1"; $sapolje="1";
+	$uslov=""; $nppolje="nastavnik";
 	if (!$user_siteadmin) {
 		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
-		$nppolje="np.admin";
-		$sapolje="np.super_asistent";
+		$nppolje="np.nivo_pristupa";
 	}
 
 	// Upit za spisak predmeta
-	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv, $sapolje from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
+	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
 
 	// Format - šest predmeta u jednom redu
 	$nr = mysql_num_rows($q10);
@@ -90,10 +89,9 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$br=0;
 	while ($r10 = mysql_fetch_row($q10)) {
 		$predmet = $r10[0];
-		$admin_predmeta = $r10[1];
+		$privilegija = $r10[1];
 		$naziv_predmeta = $r10[2];
 		$studij = $r10[3];
-		$super_asistent = $r10[4];
 
 		// Spacer
 		if ($br>0) print '<td bgcolor="#666666" width="1"></td>'."\n";
@@ -112,7 +110,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 			print "<b>$naziv_predmeta ($studij)</b>\n";
 	
 		// Edit link
-		if ($user_siteadmin || $admin_predmeta || $super_asistent) {
+		if ($user_siteadmin || $privilegija == "nastavnik" || privilegija == "super_asistent") {
 			print ' [<b><a href="?sta=nastavnik/predmet&predmet='.$predmet.'&ag='.$ag.'"><font color="red">EDIT</font></a></b>]'."\n";
 		}
 	
