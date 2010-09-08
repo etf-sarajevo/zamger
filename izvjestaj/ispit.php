@@ -14,6 +14,7 @@
 // v4.0.9.7 (2009/04/27) + Parametar "predmet" je ustvari ponudakursa, pa treba dodati upit koji saznaje predmet i akademsku godinu za izvjestaj/statistika_predmeta
 // v4.0.9.8 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 // v4.0.9.9 (2009/05/05) + Ne prikazuj virtualne grupe posto je statistika za sve studente vec data
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti ovom tipu izvjestaja
 
 
 // Provjeriti ispravnost dijela sa grupama
@@ -80,7 +81,8 @@ $ag = mysql_result($q10,0,5);
 // Dodatna provjera privilegija
 if (!$user_studentska && !$user_siteadmin) {
 	$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q20) < 1) {
+	$q30 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q20) < 1) || (mysql_num_rows($q30) < 1)) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet godina ag$ag",3); // 3 = error
 		return;

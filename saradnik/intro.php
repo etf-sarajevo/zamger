@@ -10,6 +10,7 @@
 // v4.0.9.2 (2009/04/23) + labgrupa preusmjerena sa tabele ponudakursa na tabelu predmet, spojene ponudekursa u prikazu za nastavnike, EDIT link preusmjeren na predmet
 // v4.0.9.3 (2009/05/05) + Ukidam "virtualnu grupu" 0
 // v4.0.9.4 (2009/05/17) + Prikazi site adminu predmete cak i u slucaju kada nijedan nastavnik nije angazovan na predmetu
+// v5.0.0.0 (2010/09/07) + Sada se EDIT link prikazuje i pored predmeta na kojima je nastavnik Super asistent
 
 
 function saradnik_intro() {
@@ -69,14 +70,15 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$ag_naziv = $r1a[1];
 
 	// Prikaži sve predmete siteadminu
-	$uslov=""; $nppolje="1";
+	$uslov=""; $nppolje="1"; $sapolje="1";
 	if (!$user_siteadmin) {
 		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
 		$nppolje="np.admin";
+		$sapolje="np.super_asistent";
 	}
 
 	// Upit za spisak predmeta
-	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
+	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv, $sapolje from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
 
 	// Format - šest predmeta u jednom redu
 	$nr = mysql_num_rows($q10);
@@ -91,6 +93,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 		$admin_predmeta = $r10[1];
 		$naziv_predmeta = $r10[2];
 		$studij = $r10[3];
+		$super_asistent = $r10[4];
 
 		// Spacer
 		if ($br>0) print '<td bgcolor="#666666" width="1"></td>'."\n";
@@ -109,7 +112,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 			print "<b>$naziv_predmeta ($studij)</b>\n";
 	
 		// Edit link
-		if ($user_siteadmin || $admin_predmeta) {
+		if ($user_siteadmin || $admin_predmeta || $super_asistent) {
 			print ' [<b><a href="?sta=nastavnik/predmet&predmet='.$predmet.'&ag='.$ag.'"><font color="red">EDIT</font></a></b>]'."\n";
 		}
 	

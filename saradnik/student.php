@@ -6,6 +6,7 @@
 // v4.0.9.2 (2009/09/03) + Dodajem AJAHe za unos ispita i konačne ocjene
 // v4.0.9.3 (2009/10/07) + Koristim gen_ldap_uid za email adresu (bilo gresaka); dodana promjena grupe; dodana fiksna komponenta; konacna ocjena na isti nacin kao ostalo; tacna informacija sta slusa i koji put
 // v4.0.9.4 (2009/10/21) + Popravljen bug gdje je student ispisivan iz grupe "Svi studenti"; nesto pametniji logging kod promjene grupe; dodao linkove na dosjee za ranije godine
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kod pristupa studentu; Dodat Super asistent kod Fiksnih komponenti i kod popune LOGova
 
 
 // TODO: dodati:
@@ -142,12 +143,14 @@ if (mysql_num_rows($q20)>0) {
 
 if (!$user_siteadmin) {
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1) {
+	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q10)<1) || (mysql_num_rows($q11)<1)){
 		biguglyerror("Nemate pravo pristupa ovom studentu");
 		zamgerlog ("nastavnik nije na predmetu (pp$predmet ag$ag)", 3);
 		return;
 	}
 	$predmet_admin = mysql_result($q10,0,0);
+	$predmet_superasistent = mysql_result($q11,0,0);
 
 	// Provjera ogranicenja
 	$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, student_labgrupa as sl where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
@@ -575,7 +578,7 @@ while ($r25 = mysql_fetch_row($q25)) {
 		<td><?=$r25[1]?></td>
 		<td id="fiksna-<?=$student?>-<?=$predmet?>-<?=$komponenta?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
 		<td><? 
-		if ($predmet_admin || $user_siteadmin) { 
+		if ($predmet_admin || $user_siteadmin || $predmet_superasistent) { 
 			?><div id="fiksnalog<?=$komponenta?>"></div><?
 		} else print "/";
 		?></td>
@@ -647,7 +650,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 		?></td>
 		<td id="ispit-<?=$student?>-<?=$ispit?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
 		<td><? 
-		if ($predmet_admin || $user_siteadmin) { 
+		if ($predmet_admin || $user_siteadmin || $predmet_superasistent) { 
 			?><div id="ispitlog<?=$ispit?>"></div><?
 		} else print "/";
 		?></td>
@@ -721,7 +724,7 @@ print "</tr></table>\n";
 
 // Ne radimo ništa ako korisnik nije admin
 
-if (!$predmet_admin && !$user_siteadmin) return;
+if (!$predmet_admin && !$user_siteadmin && !$predmet_superasistent) return;
 
 ?>
 

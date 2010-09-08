@@ -2,6 +2,8 @@
 
 // IZVJESTAJ/ANKETA - stranica koja generise izvjestaje za predmete koje mogu pregledati profesori ili clanovi studentske sluzbe
 
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti ovom tipu izvjestaja
+
 function izvjestaj_anketa(){
 
 	global $userid,$user_siteadmin,$user_studentska;
@@ -16,7 +18,8 @@ function izvjestaj_anketa(){
 	// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
 	if (!$user_siteadmin && !$user_studentska) {
 		$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q20)==0) {
+		$q21 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if ((mysql_num_rows($q20)==0) || (mysql_num_rows($q21)==0)) {
 			zamgerlog("nastavnik/izvjestaj_anketa privilegije ",3);
 			biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
 			return;

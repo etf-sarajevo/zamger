@@ -1,4 +1,4 @@
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -525,6 +525,7 @@ CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   `admin` tinyint(1) NOT NULL default '0',
+  `super_asistent` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`nastavnik`,`akademska_godina`,`predmet`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

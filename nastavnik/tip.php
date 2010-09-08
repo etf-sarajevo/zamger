@@ -1,6 +1,10 @@
 <?
 //NASTAVNIK/TIP-modul koji ce omogućiti definisanja sistema bodovanja na predmetu
 
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti modulu
+
+
+
 function nastavnik_tip() {
 
 global $userid,$user_siteadmin;
@@ -47,7 +51,8 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q30 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q30)<1 || mysql_result($q30,0,0)<1)) {
 		zamgerlog("nastavnik/tip privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;

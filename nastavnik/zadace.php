@@ -17,6 +17,7 @@
 // v4.0.9.4 (2009/05/08) + Izdvajam brisanje zadace da se ne bi izvrsilo i azuriranje i sve ostalo
 // v4.0.9.5 (2009/09/13) + Dozvoljavam da naziv zadace bude jedno slovo
 // v4.0.9.6 (2009/10/26) + Popravljeno brisanje zadace, dodana zastita od visestrukog submitanja
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti modulu
 
 
 function nastavnik_zadace() {
@@ -59,7 +60,8 @@ $dozvoljene_ekstenzije =array();
 
 if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)) {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;

@@ -11,6 +11,7 @@
 // v4.0.9.2 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 // v4.0.9.4 (2009/05/01) + Nove tabele za studentske module; popravljen bug sa redirekcijom
+// v5.0.0.0 (2010/09/07) + Kod spisak nastavnika i saradnika koji imaju pristup predmetu, sada je pored imena Super asistenata slovo S
 
 
 function nastavnik_predmet() {
@@ -38,7 +39,8 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 if (!$user_siteadmin) { // 3 = site admin
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)){
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;
@@ -60,14 +62,14 @@ if (!$user_siteadmin) { // 3 = site admin
 
 ?>
 
-<p>Pristup predmetu imaju sljedeći nastavnici i saradnici (slovo A označava da saradnik ima administratorske privilegije):</p>
+<p>Pristup predmetu imaju sljedeći nastavnici i saradnici (slovo A označava da saradnik ima administratorske privilegije, a S da je super asistent):</p>
 
 <ul>
 <?
 
-$q100 = myquery("select o.ime, o.prezime, np.admin from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+$q100 = myquery("select o.ime, o.prezime, np.admin, np.super_asistent from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 while ($r100 = mysql_fetch_row($q100)) {
-	if ($r100[2]==1) $dodaj=" (A)"; else $dodaj="";
+	if ($r100[2]==1) $dodaj=" (A)"; else if )$r100[3]==1 $dodaj=" (S)"; else $dodaj="";
 	print "<li>$r100[0] $r100[1]$dodaj</li>\n";
 }
 

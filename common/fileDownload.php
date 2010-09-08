@@ -1,5 +1,9 @@
 <?php
 // COMMON/FILEDOWNLOAD - download fajlova na projektima
+
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kod uslova provjere privilegija
+
+
 function common_fileDownload()
 {
 	require_once("lib/projekti.php");
@@ -11,8 +15,9 @@ function common_fileDownload()
 	$id = intval($_REQUEST['id']); //file ID
 	
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	$actualProject = getActualProjectForUserInPredmet($userid, $predmet, $ag);
-	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) && ($actualProject[id] != $projekat)) {
+	if (((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1)) && ($actualProject[id] != $projekat)) {
 		zamgerlog("nije ni student ni nastavnik (projekat $projekat, predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		return;

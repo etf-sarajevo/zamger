@@ -22,6 +22,7 @@
 // v4.0.9.8 (2009/05/20) + Dodajem akciju brisanje ponude kursa; ne prikazuj svaku ponudu kursa zasebno kod pretrage, prikazi predmete bez ponude kursa; akcija novi je pogresno prijavljivala da predmet vec postoji (ali je inace sve radilo ispravno); izbacio sam kreiranje default ponudekursa (svakako je viska), kreiranje virtualne labgrupe se radi samo ako ne postoji u aktuelnoj godini; renumerisem upite
 // v4.0.9.9 (2009/09/27) + Popravljena provjera da li je ista izabrano u akciji ogranicenja; popravljeno prosljedjivanje IDa nastavnika kod izbacivanja nastavnika sa predmeta
 // v4.0.9.10 (2009/10/20) + Prethodna izmjena je brisala podatke o ogranicenjima na drugim predmetima
+// v5.0.0.0 (2010/09/07) + Dodate privilegije za Super asistenta; Kod prava pristupa predmetu, u tabelu dodana kolona Super asistent, a elementi tabele u toj koloni cu check box-ovi, isto kao za Administratora predmeta. Odabirom check box-a, osoba postaje Super asistent na tom predmetu; Dodate funkcije za ova 2 check boxa, jer ne mogu biti istovremeno oba ukljucena
 
 
 // TODO: Podatke o angazmanu prebaciti na novu tabelu angazman
@@ -405,6 +406,19 @@ else if ($akcija == "edit") {
 			nicemessage("Nastavnik više nije administrator predmeta");
 		zamgerlog("nastavnik u$nastavnik proglasen za admina predmeta pp$predmet ($yesno)",4);
 	}
+	
+	// Super asistent privilegije
+	else if ($_GET['subakcija'] == "proglasi_za_super_asistenta") {
+		$nastavnik = intval($_GET['nastavnik']);
+
+		$yesnosuper = intval($_GET['yesnosuper']);
+		$q368 = myquery("update nastavnik_predmet set super_asistent=$yesnosuper where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
+		if ($yesnosuper==1) 
+			nicemessage("Nastavnik proglašen za super asistenta predmeta");
+		else
+			nicemessage("Nastavnik više nije super asistent predmeta");
+		zamgerlog("nastavnik u$nastavnik proglasen za super asistenta predmeta pp$predmet ($yesnosuper)",4);
+	}
 
 	// De-angazman nastavnika sa predmeta
 	else if ($_POST['subakcija'] == "izbaci_nastavnika" && check_csrf_token()) {
@@ -585,7 +599,7 @@ else if ($akcija == "edit") {
 	<hr>
 	<p>Osobe sa pravima pristupa na predmetu (<?=$agnaziv?>):</p>
 	<?
-	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime,np.super_asistent from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
 	if (mysql_num_rows($q351) < 1) {
 		print "<ul><li>Na predmetu nije angažovan nijedan nastavnik</li></ul>\n";
 	} else {
@@ -601,7 +615,7 @@ else if ($akcija == "edit") {
 		<input type="hidden" name="subakcija" value="izbaci_nastavnika">
 		<input type="hidden" name="nastavnik" id="nastavnik" value=""></form>
 
-		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
+		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Super asistent</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
 	}
 	while ($r351 = mysql_fetch_row($q351)) {
 		$nastavnik = $r351[0];
@@ -614,13 +628,41 @@ else if ($akcija == "edit") {
 			$alterlink="1";
 			$cbstanje="";
 		}
+		
+		if ($r351[4]==1) {
+			$alterlinkSA="0";
+			$cbstanjeSA="CHECKED";
+		} else {
+			$alterlinkSA="1";
+			$cbstanjeSA="";
+		}
+		
+		
 
 		?>
 		<tr>
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
 			<td>
-			<input type="checkbox" onchange="javascript:location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'" <?=$cbstanje?>></td>
+			<input id="check1" type="checkbox" onchange="javascript:fcheck1()" <?=$cbstanje?>></td>
+			<input id="check2" type="checkbox" onchange="javascript:fcheck2()" <?=$cbstanjeSA?>></td>
 			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>"><?
+			
+		//Skripta za checkboxove; funkcije koje se brinu da ne budu oba istovremeno ukljucena
+		
+		<script type="text/javascript">
+			function fcheck1() {
+			document.getElementById("check2").checked = false;
+
+			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'
+		}
+
+			function fcheck2() {
+			document.getElementById("check1").checked = false;
+			
+			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_super_asistenta&nastavnik=<?=$nastavnik?>&yesnosuper=<?=$alterlinkSA?>'
+		}
+		</script>
+
 
 		// Spisak grupa na koje ima ogranicenje
 		$q352 = myquery("select l.naziv from ogranicenje as o, labgrupa as l where o.nastavnik=$nastavnik and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");

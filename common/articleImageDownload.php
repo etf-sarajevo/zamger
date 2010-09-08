@@ -1,5 +1,9 @@
 <?php
 // COMMON/ARTICLEIMAGEDOWNLOAD - download slika vezanih za clanke na projektima
+
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kod uslova provjere privilegija
+
+
 function common_articleImageDownload()
 {
 	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;	
@@ -20,7 +24,8 @@ function common_articleImageDownload()
 	if ($user_nastavnik && !$user_siteadmin)
 	{
 		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+		$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)) {
 			zamgerlog("common/projektneStrane privilegije (predmet pp$predmet)",3);
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			return;

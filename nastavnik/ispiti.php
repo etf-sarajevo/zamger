@@ -19,6 +19,7 @@
 // v4.0.9.8 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 // v4.1.0.0 (2009/11/20) + Release
 // v4.1.0.1 (2009/11/23) + Popravljen tipfeler u provjeri da li ispit vec postoji prilikom kreiranja
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti modulu
 
 
 function nastavnik_ispiti() {
@@ -49,7 +50,8 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 if (!$user_siteadmin) { // 3 = site admin
 	$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q20)<1 || mysql_result($q20,0,0)<1) {
+	$q21 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q20)<1 || mysql_result($q20,0,0)<1) || (mysql_num_rows($q21)<1 || mysql_result($q21,0,0)<1)) {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska modul za ispite!");
 		return;

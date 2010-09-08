@@ -2,6 +2,8 @@
 
 //novi modul nastavnik/prijava_ispita
 
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti modulu
+
 
 function nastavnik_prijava_ispita() {
 
@@ -27,7 +29,8 @@ function nuliraj($v) {
 
 if (!$user_siteadmin) {
 	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)) {
 		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
 		biguglyerror("Nemate pravo ulaska u ovaj modul!");
 		return;

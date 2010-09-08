@@ -5,6 +5,7 @@
 // v4.0.9.1 (2009/04/22) + Novi izvjestaj napravljen na osnovu koda iz izvjestaj/ispit
 // v4.0.9.2 (2009/09/05) + Optimizovan izvjestaj koristeci komponente
 // v4.0.9.3 (2009/09/22) + Dodan broj ponovaca
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti ovom tipu izvjestaja
 
 
 
@@ -33,7 +34,8 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 }
 if (!$user_studentska && !$user_siteadmin) {
 	$q2 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q2) < 1) {
+	$q3 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q2) < 1) || (mysql_num_rows($q3) < 1)) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet, godina ag$ag",3); // 3 = error
 		return;

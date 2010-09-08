@@ -1,5 +1,9 @@
 <?php
 // NASTAVNIK/PROJEKTI - nastavnicki modul za definisanje projekata, parametara
+
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti modulu
+
+
 require_once("lib/projekti.php");
 
 function nastavnik_projekti()
@@ -14,7 +18,8 @@ function nastavnik_projekti()
 	if (!$user_siteadmin) 
 	{ // 3 = site admin
 		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+		$q11 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if ((mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) || (mysql_num_rows($q11)<1 || mysql_result($q11,0,0)<1)) {
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			return;

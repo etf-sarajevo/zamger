@@ -34,6 +34,7 @@
 // v4.0.9.11 (2009/10/07) + Omogucujem ulazak u grupu "svi studenti" preko predmeta i akademske godine
 // v4.0.9.12 (2009/10/14) + Ne prikazuj formu za kreiranje casa ako ne postoji nijedna klasicna komponenta za prisustvo
 // v4.0.9.13 (2009/10/24) + Novi modul "sve zadace"
+// v5.0.0.0 (2010/09/07) + Dodat Super asistent kao korisnik koji moze pristupiti grupi; Cool editing box se koristi i kod Super asistenta; Ispisuje se "Vi ste super asistent ovog predmeta." ako je u pitanju isti
 
 
 function saradnik_grupa() {
@@ -86,12 +87,14 @@ if ($labgrupa>0) {
 // Da li korisnik ima pravo ući u grupu?
 if (!$user_siteadmin) {
 	$q40 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q40)<1) {
+	$q41 = myquery("select super_asistent from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if ((mysql_num_rows($q40)<1) || (mysql_num_rows($q41)<1)){
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
 		return;
 	}
 	$predmet_admin = mysql_result($q40,0,0);
+	$predmet_superasistent = mysql_result($q41,0,0);
 
 	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	if (mysql_num_rows($q50)>0) {
@@ -230,7 +233,7 @@ function firefoxopen(p1,p2,p3) {
 
 
 // Cool editing box
-if ($predmet_admin==1 || $user_siteadmin) {
+if ($predmet_admin==1 || $user_siteadmin || $predmet_superasistent==1) {
 	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
 	?>
 	<script language="JavaScript">
@@ -783,6 +786,8 @@ if(in_array(1,$kontrolni)){
 
 <?
 if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
+<?
+if ($predmet_superasistent>0) { ?><p>Vi ste super asistent ovog predmeta.</p><? } ?>
 <p>&nbsp;</p>
 <?
 
