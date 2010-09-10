@@ -34,6 +34,16 @@ table.raspored th p.mala_slova{
 	font-size:9px;
 }
 
+table.raspored td p.plavo{
+	font-size: 13px;
+	font-weight: bold;
+	color: blue;
+}
+
+table.raspored td p.mala_slova{
+	font-size:9px;
+}
+
 table.cas td p.bold{
 	font-weight:bold;
 }
