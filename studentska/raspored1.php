@@ -68,6 +68,13 @@ function studentska_raspored1(){
 			document.brisanjerasporeda.submit();
 		}
 	}
+
+	function kopiranjeSvihRasporeda() {
+		var a = confirm("Ovom akcijom brišete eventualno postojeći sadržaj destinacijskog rasporeda!!");
+		if (a) {
+			document.kopiranjerasporeda.submit();
+		}
+	}
 	
 </script>
 
@@ -681,6 +688,90 @@ else{
 		zamgerlog("obrisan raspored za akademsku $naziv_akademske_godine godinu, studij $naziv_studija, semestar $semestar",4); // nivo 4: audit
 	}
 	
+	
+	//kopiranje rasporeda iz jedne akademske godine u drugu
+	if ($_POST['akcija'] == "kopiraj_raspored" && check_csrf_token()) {
+		$izvor = intval($_POST['izvor']);
+		$odrediste = intval($_POST['odrediste']);
+		$greska_kopiranja_rasporeda=false;
+		if($izvor==$odrediste) { $greska_kopiranja_rasporeda=true;niceerror("Izvor i destinacija ne mogu biti isti!");}
+		if($greska_kopiranja_rasporeda==false){
+			$q0=myquery("select naziv from akademska_godina where id=$odrediste");
+			$naziv_akademske_godine=mysql_result($q0,0,0);
+			$q1=myquery("delete from raspored where akademska_godina=$odrediste");
+			$q2=myquery("select id from raspored where akademska_godina=$odrediste");
+			for($i=0;$i<mysql_num_rows($q2);$i++){
+				$id_odr=mysql_result($q2,$i,0);
+				$q3=myquery("delete from raspored_stavka rs where raspored=$id_odr");
+			}	
+			zamgerlog("obrisani svi rasporedi u akademskoj $naziv_akademske_godine godini",4);
+			$q4=myquery("select studij,semestar,id from raspored where akademska_godina=$izvor");
+			$broj_redova=mysql_num_rows($q4);
+			for($i=0;$i<$broj_redova;$i++){
+				$studij=mysql_result($q4,$i,0);
+				$semestar=mysql_result($q4,$i,1);
+				$id_rasp_izvora=mysql_result($q4,$i,2);
+				$q5=myquery("insert into raspored set id='NULL', akademska_godina=$odrediste, studij=$studij, semestar=$semestar");
+				$q6=myquery("select rs.dan_u_sedmici,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.dupla,rs.id
+				from raspored_stavka rs,raspored r where rs.raspored=r.id and r.id=$id_rasp_izvora and rs.dupla=0");
+				$q7=myquery("select max(id) from raspored");
+				$id_rasp_odredista=mysql_result($q7,0,0);
+				$q8=myquery("select naziv from akademska_godina where id=$izvor");
+				$q9=myquery("select naziv from akademska_godina where id=$odrediste");
+				$naziv_izvora=mysql_result($q8,0,0);
+				$naziv_odredista=mysql_result($q9,0,0);
+				for($j=0;$j<mysql_num_rows($q6);$j++){
+					$dan=mysql_result($q6,$j,0);
+					$predmet=mysql_result($q6,$j,1);
+					$pocetak=mysql_result($q6,$j,2);
+					$kraj=mysql_result($q6,$j,3);
+					$sala=mysql_result($q6,$j,4);
+					$tip=mysql_result($q6,$j,5);
+					$labgrupa=mysql_result($q6,$j,6);
+					if($labgrupa!=0){
+						$q71=myquery("select naziv,virtualna from labgrupa where akademska_godina=$izvor and predmet=$predmet and id=$labgrupa");
+						$naziv_grupe=mysql_result($q71,0,0);
+						$virtualna=mysql_result($q71,0,1);
+						$novi_naziv=$naziv_grupe.'_'.$izvor;
+						$q72=myquery("select naziv from labgrupa where predmet=$predmet and akademska_godina=$odrediste");
+						$postoji_labgrupa=false;
+						for($k=0;$k<mysql_num_rows($q72);$k++){
+							$lab_naziv=mysql_result($q72,$k,0);
+							if($lab_naziv==$novi_naziv) $postoji_labgrupa=true;
+						}
+						if($postoji_labgrupa==false){
+							$q73=myquery("insert into labgrupa set id='NULL',naziv='$novi_naziv',predmet=$predmet,akademska_godina=$odrediste,virtualna=$virtualna");
+							zamgerlog("Uspjesno unesena labgrupa", 2);
+							$q74=myquery("select max(id) from labgrupa");
+						}
+						else{
+							$q74=myquery("select id from labgrupa where naziv='$novi_naziv'");
+						}		
+					}
+					$labgrupa=mysql_result($q74,0,0);
+					$dupla=mysql_result($q6,$j,7);
+					$id_stavke=mysql_result($q6,$j,8);
+					$q0=myquery("insert into raspored_stavka set id='NULL', raspored=$id_rasp_odredista, dan_u_sedmici=$dan, predmet=$predmet,
+							vrijeme_pocetak=$pocetak,vrijeme_kraj=$kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$dupla");
+					$q1=myquery("select max(id) from raspored_stavka");
+					$id_nove_stavke=mysql_result($q1,0,0);
+					$q2=myquery("select r.studij,r.semestar from raspored_stavka rs,raspored r where rs.raspored=r.id and rs.dupla=$id_stavke");
+					for($k=0;$k<mysql_num_rows($q2);$k++){
+						$studij_k=mysql_result($q2,$k,0);
+						$semestar_k=mysql_result($q2,$k,1);
+						$q3=myquery("select id from raspored where semestar=$semestar_k and studij=$studij_k and akademska_godina=$odrediste");
+						$rasp=mysql_result($q3,0,0);
+						$q4=myquery("insert into raspored_stavka set id='NULL', raspored=$rasp, dan_u_sedmici=$dan, predmet=$predmet,
+								vrijeme_pocetak=$pocetak,vrijeme_kraj=$kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$id_nove_stavke");
+					}	
+				}		
+			}
+			zamgerlog("Uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.", 2);
+			nicemessage("Uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.");
+		}
+	}
+	
+		
 	// ako se klikne na link izmijeni raspored ispunjen je sljedeći uslov i prikazuje se taj html kod
 	if(isset($_REQUEST['raspored_za_edit'])){
 		$raspored_za_edit=$_REQUEST['raspored_za_edit'];
@@ -1251,7 +1342,9 @@ else{
 					?>
 				</tr>
 				<?
-				// petlja za 5 dana u sedmici
+				
+				
+				// petlja za 6 dana u sedmici
 				for($i=1;$i<=6;$i++){
 					print "<tr>";
 					$q0=myquery("select vrijeme_pocetak,vrijeme_kraj from raspored_stavka where dan_u_sedmici=$i and raspored=$raspored_za_edit");
@@ -1445,8 +1538,7 @@ else{
 		if($uspjesno_obrisan_raspored==1) nicemessage("Raspored je uspješno obrisan.");
 		
 		print "<p><a href=\"?sta=studentska/raspored1&edit_sala=1\">Administracija sala</a></p>";
-		print "<p><a href=\"?sta=studentska/raspored1\">vrati se na početnu</a></p>";
-		print "<h4>Dodavanje novog rasporeda:</h4>";
+		print "<hr></hr><h4>Dodavanje novog rasporeda:</h4>";
 		print genform("POST", "forma_za_unos_rasporeda"); ?>
 		<input type="hidden" name="akcija" value="unos_novog_rasporeda">
 		<? if($greska_postoji_raspored==1) print "<p class=\"crveno\">Postoji raspored sa tim parametrima.</p>";?>
@@ -1511,43 +1603,68 @@ else{
 		</tr>
 		</table>
 		</form>
-	<?=genform("POST","brisanjerasporeda")?>
-	<input type="hidden" name="akcija" value="obrisi_raspored">
-	<input type="hidden" name="id_rasporeda_za_brisanje" id="id_rasporeda_za_brisanje" value=""></form>
-	
-	<h4>Postojeći rasporedi:</h4>
-	<table class="sale" border="1" cellspacing="0">
-		<?
-		$q1=myquery("select id,studij,akademska_godina,semestar from raspored order by studij,semestar");
-		if(mysql_num_rows($q1)<1) print "<p>Nema kreiranih rasporeda</p>";
-		else{
-		?>
-			<th>Studij</th>
-			<th>Akademska godina</th>
-			<th>Semestar</th>
-			<th colspan="2">Akcije</th>
-			<?  
-			for($i=0;$i<mysql_num_rows($q1);$i++){
-				$id_rasporeda=mysql_result($q1,$i,0);
-				$studij=mysql_result($q1,$i,1);
-				$akademska_godina=mysql_result($q1,$i,2);
-				$semestar=mysql_result($q1,$i,3);;
-				$q2=myquery("select naziv from studij where id=$studij");
-				$naziv_studija=mysql_result($q2,0,0);
-				$q3=myquery("select naziv from akademska_godina where id=$akademska_godina");
-				$naziv_akademske_godine=mysql_result($q3,0,0);
-				print "<tr>";
-				print "<td>$naziv_studija</td>";
-				print "<td>$naziv_akademske_godine</td>";
-				print "<td>$semestar</td>";
-				print "<td width=\"80\"><a  href=\"?sta=studentska/raspored1&raspored_za_edit=$id_rasporeda\"> izmijeni </a></td>";
-				print "<td width=\"80\"><a  href=\"javascript:onclick=brisanje_rasporeda('$id_rasporeda')\"> obriši </a></td>";
-				print "</tr>";
+		<?=genform("POST","brisanjerasporeda")?>
+		<input type="hidden" name="akcija" value="obrisi_raspored">
+		<input type="hidden" name="id_rasporeda_za_brisanje" id="id_rasporeda_za_brisanje" value=""></form>
+		
+		<hr></hr>
+		<h4>Postojeći rasporedi:</h4>
+		<table class="sale" border="1" cellspacing="0">
+			<?
+			$q1=myquery("select id,studij,akademska_godina,semestar from raspored order by akademska_godina,studij,semestar");
+			if(mysql_num_rows($q1)<1) print "<p>Nema kreiranih rasporeda</p>";
+			else{
+			?>
+				<th>Studij</th>
+				<th>Akademska godina</th>
+				<th>Semestar</th>
+				<th colspan="2">Akcije</th>
+				<?  
+				for($i=0;$i<mysql_num_rows($q1);$i++){
+					$id_rasporeda=mysql_result($q1,$i,0);
+					$studij=mysql_result($q1,$i,1);
+					$akademska_godina=mysql_result($q1,$i,2);
+					$semestar=mysql_result($q1,$i,3);;
+					$q2=myquery("select naziv from studij where id=$studij");
+					$naziv_studija=mysql_result($q2,0,0);
+					$q3=myquery("select naziv from akademska_godina where id=$akademska_godina");
+					$naziv_akademske_godine=mysql_result($q3,0,0);
+					print "<tr>";
+					print "<td>$naziv_studija</td>";
+					print "<td>$naziv_akademske_godine</td>";
+					print "<td>$semestar</td>";
+					print "<td width=\"80\"><a  href=\"?sta=studentska/raspored1&raspored_za_edit=$id_rasporeda\"> izmijeni </a></td>";
+					print "<td width=\"80\"><a  href=\"javascript:onclick=brisanje_rasporeda('$id_rasporeda')\"> obriši </a></td>";
+					print "</tr>";
+				}
 			}
+			?>
+		</table>
+		<br></br>
+		<hr></hr>
+		<h4>Kopiranje rasporeda:</h4>
+		<?=genform("POST","kopiranjerasporeda")?>
+		<input type="hidden" name="akcija" value="kopiraj_raspored">
+		<?
+		$q01=myquery("select id,naziv from akademska_godina order by id");
+		print "<p>Kopiraj sve rasporede iz";
+		print "<select name=\"izvor\">";
+		for($i=0;$i<mysql_num_rows($q01);$i++){
+			$id=mysql_result($q01,$i,0);
+			$naziv=mysql_result($q01,$i,1);
+			print "<option value=\"$id\">$naziv</option>";
 		}
-		?>
-	</table>
-	<? 
+		print "</select>";
+		print "     u     ";
+		print "<select name=\"odrediste\">";
+		for($i=0;$i<mysql_num_rows($q01);$i++){
+			$id=mysql_result($q01,$i,0);
+			$naziv=mysql_result($q01,$i,1);
+			print "<option value=\"$id\">$naziv</option>";
+		}
+		print "</select>";
+		print " akademsku godinu? ";
+		print "<input type=\"submit\" value=\" OK \" onclick=\"javascript:kopiranjeSvihRasporeda()\"></p>"; 
 	}
 	
 	
