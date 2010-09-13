@@ -94,8 +94,10 @@ function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 	$dan=mysql_result($q1,0,5);
 	$dupla=mysql_result($q1,0,6);
 	if($labgrupa!=0){
-		$q4=myquery("select naziv from labgrupa where id=$labgrupa");
-		$labgrupa_naziv=mysql_result($q4,0,0);
+		if($labgrupa!=-1){
+			$q4=myquery("select naziv from labgrupa where id=$labgrupa");
+			$labgrupa_naziv=mysql_result($q4,0,0);
+		}		
 	}
 	$interval=$kraj-$pocetak;
 	$konflikt=array();
@@ -105,7 +107,7 @@ function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 	$konflikt['kraj']=array();
 	$q2=myquery("select rs.sala,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.predmet,rs.tip,rs.labgrupa,r.semestar,rs.id 
 	from raspored_stavka rs,raspored r where rs.dan_u_sedmici=$dan and rs.raspored=r.id and r.akademska_godina=$akademska_godina 
-	and r.semestar mod 2 = $semestar_je_neparan and rs.dupla=0");
+	and r.semestar mod 2 = $semestar_je_neparan and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 		for($f=0;$f<mysql_num_rows($q2);$f++){
 			$sala_i=mysql_result($q2,$f,0);
 			$vrijeme_pocetak_i=mysql_result($q2,$f,1);
@@ -713,7 +715,7 @@ else{
 				$id_rasp_izvora=mysql_result($q4,$i,2);
 				$q5=myquery("insert into raspored set id='NULL', akademska_godina=$odrediste, studij=$studij, semestar=$semestar");
 				$q6=myquery("select rs.dan_u_sedmici,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.dupla,rs.id
-				from raspored_stavka rs,raspored r where rs.raspored=r.id and r.id=$id_rasp_izvora and rs.dupla=0");
+				from raspored_stavka rs,raspored r where rs.raspored=r.id and r.id=$id_rasp_izvora and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 ");
 				$q7=myquery("select max(id) from raspored");
 				$id_rasp_odredista=mysql_result($q7,0,0);
 				$q8=myquery("select naziv from akademska_godina where id=$izvor");
@@ -805,7 +807,7 @@ else{
 			if($dan==0 || $tip=='0' || $predmet==0 || $sala==0 || $vrijeme_pocetak_sati==-1 || $vrijeme_pocetak_minute==0 || $vrijeme_kraj_sati==-1 || $vrijeme_kraj_minute==0 || ($labgrupa==0 && $tip!='P')){
 				$greska_u_dodavanju_casa=1;$greska_prazni_parametri_u_casu=1;
 			}
-			$q0=myquery("select sala,vrijeme_pocetak,vrijeme_kraj,predmet,tip,labgrupa from raspored_stavka where dan_u_sedmici=$dan and raspored=$raspored_za_edit");
+			$q0=myquery("select sala,vrijeme_pocetak,vrijeme_kraj,predmet,tip,labgrupa from raspored_stavka where dan_u_sedmici=$dan and raspored=$raspored_za_edit and (isjeckana=0 or isjeckana=2) and labgrupa!= -1");
 			if($vrijeme_kraj>53) {$greska_u_dodavanju_casa=1;$greska_nevalja_termin=1;}
 			if($predmet!=0){
 				$q1=myquery("select obavezan from ponudakursa where akademska_godina=$akademska_godina and semestar=$semestar and predmet=$predmet");
@@ -830,7 +832,8 @@ else{
 				}
 			}
 			$semestar_je_neparan= $semestar % 2;
-			$q1=myquery("select rs.sala,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.predmet,rs.tip from raspored_stavka rs,raspored r where rs.dan_u_sedmici=$dan and rs.raspored=r.id and r.akademska_godina=$akademska_godina and r.semestar mod 2 = $semestar_je_neparan and rs.dupla=0");
+			$q1=myquery("select rs.sala,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.predmet,rs.tip from raspored_stavka rs,raspored r where rs.dan_u_sedmici=$dan 
+			and rs.raspored=r.id and r.akademska_godina=$akademska_godina and r.semestar mod 2 = $semestar_je_neparan and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 ");
 			for($i=0;$i<mysql_num_rows($q1);$i++){
 				$sala_i=mysql_result($q1,$i,0);
 				$vrijeme_pocetak_i=mysql_result($q1,$i,1);
@@ -851,7 +854,9 @@ else{
 				$konflikt['predmet']=array();
 				$konflikt['pocetak']=array();
 				$konflikt['kraj']=array();
-				$q1=myquery("select rs.sala,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.predmet,rs.tip,rs.labgrupa,r.semestar from raspored_stavka rs,raspored r where rs.dan_u_sedmici=$dan and rs.raspored=r.id and r.akademska_godina=$akademska_godina and r.semestar mod 2 = $semestar_je_neparan and rs.dupla=0");
+				$q1=myquery("select rs.sala,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.predmet,rs.tip,rs.labgrupa,r.semestar from raspored_stavka rs,
+				raspored r where rs.dan_u_sedmici=$dan and rs.raspored=r.id and r.akademska_godina=$akademska_godina and r.semestar mod 2 = $semestar_je_neparan 
+				and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 ");
 				for($i=0;$i<mysql_num_rows($q1);$i++){
 					$sala_i=mysql_result($q1,$i,0);
 					$vrijeme_pocetak_i=mysql_result($q1,$i,1);
@@ -1347,7 +1352,7 @@ else{
 				// petlja za 6 dana u sedmici
 				for($i=1;$i<=6;$i++){
 					print "<tr>";
-					$q0=myquery("select vrijeme_pocetak,vrijeme_kraj from raspored_stavka where dan_u_sedmici=$i and raspored=$raspored_za_edit");
+					$q0=myquery("select vrijeme_pocetak,vrijeme_kraj from raspored_stavka where dan_u_sedmici=$i and raspored=$raspored_za_edit and (isjeckana=0 or isjeckana=2) and labgrupa!= -1");
 					// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 					// poredimo svaki interval casa sa svakim
 					$broj_preklapanja=array();
@@ -1378,7 +1383,8 @@ else{
 					}
 					// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 					
-					$q1=myquery("select id,raspored,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa from raspored_stavka where dan_u_sedmici=$i and raspored=$raspored_za_edit order by id");
+					$q1=myquery("select id,raspored,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa from raspored_stavka where dan_u_sedmici=$i and raspored=$raspored_za_edit 
+					and (isjeckana=0 or isjeckana=2) and labgrupa != -1 order by id");
 					$gdje=array();
 					$gdje["id_stavke"]=array(); 
 					$gdje["red_stavke"]=array(); // red u kojem stavka ide
@@ -1424,7 +1430,7 @@ else{
 						for($m=1;$m<=52;$m++){
 							for($k=0;$k<mysql_num_rows($q1);$k++){
 								$id_stavke=mysql_result($q1,$k,0);
-								$q00=myquery("select r.akademska_godina,r.semestar from raspored r, raspored_stavka rs where r.id=rs.raspored and rs.id=$id_stavke");
+								$q00=myquery("select r.akademska_godina,r.semestar from raspored r, raspored_stavka rs where r.id=rs.raspored and (rs.isjeckana=0 or rs.isjeckana=2) and rs.id=$id_stavke");
 								$akademska_godina=mysql_result($q00,0,0);
 								$semestar=mysql_result($q00,0,1);
 								$semestar_je_neparan= $semestar % 2;
@@ -1439,8 +1445,10 @@ else{
 								$tip=mysql_result($q1,$k,6);
 								$labgrupa=mysql_result($q1,$k,7);
 								if($labgrupa!=0){
-									$q4=myquery("select naziv from labgrupa where id=$labgrupa");
-									$labgrupa_naziv=mysql_result($q4,0,0);
+									if($labgrupa!=-1){
+										$q4=myquery("select naziv from labgrupa where id=$labgrupa");
+										$labgrupa_naziv=mysql_result($q4,0,0);
+									}
 								}
 								$interval=$kraj-$pocetak;
 								

@@ -81,7 +81,10 @@ function common_raspored1($tip) {
 			// petlja za 6 dana u sedmici
 			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id and rs.predmet=p.id and rs.raspored=r.id  and r.akademska_godina=$ag and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0");
+				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r 
+				where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id and rs.predmet=p.id and rs.raspored=r.id  and r.akademska_godina=$ag 
+				and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0 
+				and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
 				$broj_preklapanja=array();
@@ -114,7 +117,8 @@ function common_raspored1($tip) {
 				
 				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,sp.predmet 
 					from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id 
-					and rs.raspored=r.id and rs.predmet=p.id and sp.student=$userid and r.akademska_godina=$ag and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0 order by rs.id");
+					and rs.raspored=r.id and rs.predmet=p.id and sp.student=$userid and r.akademska_godina=$ag and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan 
+					and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
 				$gdje=array();
 				$gdje["id_stavke"]=array(); 
 				$gdje["red_stavke"]=array(); // red u kojem stavka ide
@@ -313,7 +317,8 @@ function common_raspored1($tip) {
 			// petlja za 6 dana u sedmici
 			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p,raspored r where ". $sqlWhere. " and rs.predmet=p.id and rs.raspored=r.id and r.akademska_godina=$ak_god and rs.dupla=0");
+				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p,raspored r where ". $sqlWhere. " and rs.predmet=p.id 
+				and rs.raspored=r.id and r.akademska_godina=$ak_god and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
 				$broj_preklapanja=array();
@@ -345,7 +350,8 @@ function common_raspored1($tip) {
 				// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 				
 				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa from raspored_stavka rs,
-				predmet p,raspored r where " .$sqlWhere. " and rs.dan_u_sedmici=$i and rs.predmet=p.id and rs.raspored=r.id and r.akademska_godina=$ak_god and rs.dupla=0 order by rs.id");
+				predmet p,raspored r where " .$sqlWhere. " and rs.dan_u_sedmici=$i and rs.predmet=p.id and rs.raspored=r.id and r.akademska_godina=$ak_god 
+				and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
 				$gdje=array();
 				$gdje["id_stavke"]=array(); 
 				$gdje["red_stavke"]=array(); // red u kojem stavka ide
