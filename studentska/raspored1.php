@@ -16,6 +16,7 @@ function studentska_raspored1(){
 		return;
 		}
 ?>
+
 <script language="JavaScript" type="text/javascript">
 	function daj_uputstvo(){
 		var x=document.getElementById('uputstvo_za_mas_unos_sala');
@@ -80,6 +81,7 @@ function studentska_raspored1(){
 
 <?
 
+
 function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 	$q0=myquery("select r.akademska_godina,r.semestar from raspored r, raspored_stavka rs where r.id=rs.raspored and rs.id=$id_stavke_rasporeda");
 	$akademska_godina=mysql_result($q0,0,0);
@@ -119,6 +121,7 @@ function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 			$id_stavke_i=mysql_result($q2,$f,7);
 			if(($id_stavke_i==$id_stavke_rasporeda)||($id_stavke_i==$dupla)) continue;
 			if($tip_i=="P") $labgrupa_i=0;
+
 			//ukoliko postoji preklapanje termina (sada gledamo sve rasporede) tačan je uslov ispod
 			if (($vrijeme_pocetak_i>=$pocetak && $vrijeme_pocetak_i<$kraj)||($vrijeme_kraj_i>$pocetak && $vrijeme_kraj_i<=$kraj)){
 				// provjera preklapanja studenata u terminu
@@ -150,6 +153,7 @@ function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 			}
 		}
 		$broj_konflikata=count($konflikt['student']);
+		
 		
 		if($ispis==1){
 			print "<p>Prikaz konflikata:</p>";
@@ -187,10 +191,12 @@ function prikaziKonflikte($id_stavke_rasporeda,$ispis=0){
 }
 ?>
 
+
 <center>
 
 <table border="0"><tr><td>
 <?
+
 
 // uslov ispod se koristi ako prikazujemo stranicu za rad sa salama
 if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){	
@@ -234,6 +240,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			zamgerlog("upisana nova sala $ime_sale", 2); // nivo 2 je izmjena podataka u bazi
 		}
 	}
+
 	//uslov ispod je ispunjen ako je prihvaćena forma za unos nove sale
 	elseif ($_POST['akcija'] == 'editovanje_sale' && check_csrf_token()) {
 		$id_sale_za_edit=intval($_POST['id_sale_za_edit']);
@@ -270,6 +277,8 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 		}
 	}
 	$greska_masovnog_unosa=0;
+	
+	
 	// uslov ispod je ispunjen ako je prihvaćena forma za masovni unos sala
 	if ($_POST['akcija'] == 'masovni_unos_sala' && check_csrf_token()){
 		$redovi=explode("\n", $_POST['mas_unos_sala']);
@@ -325,6 +334,33 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			}
 		}
 		
+
+		if($greska_masovnog_unosa==0){
+			$unesene_sale=array();
+			foreach ($redovi as $red){
+				$red=trim($red);
+				if(strlen($red)<1) continue; // prazan red
+				if($_POST['separator']==1) {
+					list($ime_sale,$tip_sale,$kapacitet)=explode(",", $red);
+					$ime_sale=trim($ime_sale);
+				}
+				elseif ($_POST['separator']==2) {
+					list($ime_sale,$tip_sale,$kapacitet)=explode("\t", $red);
+					$ime_sale=trim($ime_sale);
+				}
+				$unesene_sale[]=$ime_sale;
+			}
+			$postoji_dupla=false;
+			for($i=0;$i<count($unesene_sale);$i++){
+				$prva=$unesene_sale[$i];
+				for($j=$i+1;$j<count($unesene_sale);$j++){
+					$druga=$unesene_sale[$j];
+					if($prva==$druga) { $greska_masovnog_unosa=1; $greska_postoje_duple_sale=1; }
+				}		
+			}
+		}
+		
+		
 		// ako nema grešaka u unosu dodajemo sale
 		if($greska_masovnog_unosa==0){
 			$unesene_sale=array();
@@ -364,6 +400,8 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			$uspjesan_masovni_unos_sala=1;
 		} 
 	}
+	
+	
 	
 	// Obrisi salu
 	if ($_POST['akcija'] == "obrisi_salu" && check_csrf_token()) {
@@ -564,6 +602,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			} 
 		}
 	}
+	if($greska_masovnog_unosa==1 && $greska_postoje_duple_sale==1) print "<p class=\"crveno\">GREŠKA: Unijeli ste sale sa istim imenom!</p>";
 	if($uspjesan_masovni_unos_sala==1 && (count($unesene_sale)>0)){
 		print "<p class=\"crveno\">Uspješno unešena sala $unesene_sale[0]";
 			if(count($unesene_sale)==1) print ".</p>";
@@ -576,7 +615,9 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 	}
 	if($greska_prazan_prostor_za_mas_unos_sala==1) print "<p class=\"crveno\">GREŠKA: Niste unijeli nikakve podatke u prostor za masovni unos.</p>";
 	?>
+	
 	<a href="#" onclick="daj_uputstvo()"><img id="slika_za_mas_unos_sala" src = "images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
+	
 	<div id="uputstvo_za_mas_unos_sala" style="display:none">
 		<p>Unesite ime sale, tip sale (amf,lab ili kab) i kapacitet odvojene zarezom</p>
 		<p>Ukoliko unosite podatke iz Excel-a odaberite opciju unos iz excela(odvajanje sa [tab]-om)</p>
@@ -586,12 +627,14 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 		<p>s02,amf,60</p>
 		<p>s03,kab,40</p>
 	</div>
+	
 	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="masovni_unos_sala">
 	<textarea name="mas_unos_sala" rows="10" cols="40">
 	<? if(isset($_POST['mas_unos_sala'])) print trim($_POST['mas_unos_sala']) ?>
 	</textarea>
 	<br/>
+	
 	<p>Tip unosa:
 	<select name="separator">
 		<option value="1">standardan unos (odvajanje zarezom)</option>
@@ -618,6 +661,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 	<input type="hidden" name="id_sale_za_brisanje" id="id_sale_za_brisanje" value=""></form>
 	
 	<h4>Postojeće sale:</h4>
+	
 	<table class="sale" border="1" cellspacing="0">
 		<?
 		$q1=myquery("select id,naziv,tip,kapacitet from raspored_sala order by id");
@@ -648,10 +692,6 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 <?
 }
 
-/*##############################################################################################################
-  #	if uslov iznad se koristi za rad sa salama (dodavanje i izmjenu sala)                                      #      
-  #	a uslov ispod se koristi za rad sa rasporedom (dodavanje i izmjenu rasporeda)                              #   
-  ##############################################################################################################*/ 
 
 // uslov ispod se koristi ako prikazujemo stranicu za rad sa rasporedom
 else{
@@ -946,6 +986,258 @@ else{
 							
 			}
 		}
+		
+		
+		
+		$greska_masovnog_unosa_casova=0;
+		
+		// uslov ispod je ispunjen ako je prihvaćena forma za masovni unos sala
+		if ($_POST['akcija'] == 'masovni_unos_casova' && check_csrf_token()){
+			$redovi=explode("\n", $_POST['mas_unos_casova']);
+			if(trim($_POST['mas_unos_casova'])==''){
+				$greska_masovnog_unosa_casova=1; $greska_prazan_prostor_za_mas_unos_casova=1;
+			}
+			$greska_u_redu=array();
+			$greska_prazni_parametri_u_redu=array();
+			$greska_nevalja_tip_casa_u_redu=array();
+			$greska_nevalja_dan_u_redu=array();
+			$greska_postoji_sala_u_redu=array();
+			$greska_ne_postoji_predmet_u_redu=array();
+			$greska_ne_postoji_labgrupa_u_redu=array();
+			$greska_pogresno_vrijeme_u_redu=array();
+			$greska_nevalja_interval_u_redu=array();
+			$i=0;
+			foreach ($redovi as $red){
+				$i++;
+				$red=trim($red);
+				if(strlen($red)<1) continue; // prazan red
+				if($_POST['separator']==1) {
+					list($dan,$predmet,$pocetak,$kraj,$sala,$tip,$labgrupa)=explode(",", $red);
+					$dan=trim($dan);
+					$predmet=trim($predmet);
+					$pocetak=trim($pocetak);
+					$kraj=trim($kraj);
+					$sala=trim($sala);
+					$tip=trim($tip);
+					$labgrupa=trim($labgrupa);
+					$niz=explode(",", $red);
+				}
+				elseif ($_POST['separator']==2) {
+					list($dan,$predmet,$pocetak,$kraj,$sala,$tip,$labgrupa)=explode("\t", $red);
+					$dan=trim($dan);
+					$predmet=trim($predmet);
+					$pocetak=trim($pocetak);
+					$kraj=trim($kraj);
+					$sala=trim($sala);
+					$tip=trim($tip);
+					$labgrupa=trim($labgrupa);
+					$niz=explode("\t", $red);
+				}
+				list($pocS,$pocM)=explode(":",$pocetak);
+				list($krajS,$krajM)=explode(":",$kraj);
+				
+				if (count($niz)!=7){
+					if(count($niz)==6){
+						if($tip!='P') { $greska_masovnog_unosa_casova=1; $greska_u_redu[]=$i; }
+					}
+					else { $greska_masovnog_unosa_casova=1; $greska_u_redu[]=$i; }
+				}
+				else{
+					if($dan=='' || $predmet=='' || $pocetak=='' || $kraj=='' || $sala=='' || $tip=='' || $labgrupa==''){
+						$greska_masovnog_unosa_casova=1; $greska_prazni_parametri_u_redu[]=$i; 
+					}
+					else{
+						if (strtoupper($tip)!='P' && strtoupper($tip)!='T' && strtoupper($tip)!='L'){
+							$greska_masovnog_unosa_casova=1; $greska_nevalja_tip_casa_u_redu[]=$i;
+						}
+						if($dan!='pon' && $dan!='uto' && $dan!='sri' && $dan!='cet' && $dan!='pet' && $dan!='sub'){
+							$greska_masovnog_unosa_casova=1; $greska_nevalja_dan_u_redu[]=$i;
+						}
+						$raspored_za_edit=$_REQUEST['raspored_za_edit'];
+						$q1=myquery("select studij,akademska_godina,semestar from raspored where id=$raspored_za_edit");
+						$studij=mysql_result($q1,0,0);
+						$akademska_godina=mysql_result($q1,0,1);
+						$semestar=mysql_result($q1,0,2);
+						$q2=myquery("select p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.akademska_godina=$akademska_godina
+						and pk.semestar=$semestar and pk.studij=$studij");
+						$postoji_predmet=false;
+						for($j=0;$j<mysql_num_rows($q2);$j++)
+						{
+							if(mysql_result($q2,$j,0)==strtoupper($predmet)){
+								$postoji_predmet=true;
+							}
+						}
+						if($postoji_predmet==false){
+							$greska_masovnog_unosa_casova=1; $greska_ne_postoji_predmet_u_redu[]=$i;
+						}
+						else{
+							$q0=myquery("select id from predmet where kratki_naziv='$predmet'");
+							$predmet_id=mysql_result($q0,0,0);
+							if($tip!="P"){
+							$q1=myquery("select naziv from labgrupa where predmet=$predmet_id");
+							$postoji_labgrupa=false;
+							for($j=0;$j<mysql_num_rows($q1);$j++)
+							{
+								if(mysql_result($q1,$j,0)==$labgrupa){
+									$postoji_labgrupa=true;
+								}
+							}
+							if($postoji_labgrupa==false){
+								$greska_masovnog_unosa_casova=1; $greska_ne_postoji_labgrupa_u_redu[]=$i;
+							}
+							}	
+						}	
+						if((intval($pocS)<8 || intval($pocS)>20 ) || (intval($krajS)<8 || intval($krajS)>21 )) { $greska_masovnog_unosa_casova=1; $greska_pogresno_vrijeme_u_redu[]=$i; }
+						elseif (($pocM!='00' && $pocM!='15' && $pocM!='30' && $pocM!='45')||($krajM!='00' && $krajM!='15' && $krajM!='30' && $krajM!='45')) { 
+							$greska_masovnog_unosa_casova=1; $greska_pogresno_vrijeme_u_redu[]=$i; 
+						}
+						else{
+							if($pocM=="00") $pocM=1;
+							elseif($pocM=="15") $pocM=2;
+							elseif($pocM=="30") $pocM=3;
+							elseif($pocM=="45") $pocM=4;
+							if($krajM=="00") $krajM=1;
+							elseif($krajM=="15") $krajM=2;
+							elseif($krajM=="30") $krajM=3;
+							elseif($krajM=="45") $krajM=4;
+							$pocetak_broj=((intval($pocS)-8)*4 +$pocM);
+							$kraj_broj=((intval($krajS)-8)*4 +$krajM);
+							if($kraj_broj<=$pocetak_broj) { $greska_masovnog_unosa_casova=1; $greska_nevalja_interval_u_redu[]=$i; }
+						}			
+						$q0=myquery("select id from raspored_sala where naziv='$sala'");
+						$sala_id=mysql_result($q0,0,0);
+						$dani=array("pon","uto","sri","cet","pet","sub");
+						for($j=0;$j<count($dani);$j++){
+							if(strtolower($dan)==$dani[$j]) {$dan_broj=$j+1;break;}
+						}	
+						$q2=myquery("select sala,vrijeme_pocetak,vrijeme_kraj from raspored_stavka where raspored=$raspored_za_edit and dan_u_sedmici=$dan_broj and (isjeckana=0 or isjeckana=2)");
+						for($j=0;$j<mysql_num_rows($q2);$j++){
+							$sala_j=mysql_result($q2,$j,0);
+							$vrijeme_pocetak_j=mysql_result($q2,$j,1);
+							$vrijeme_kraj_j=mysql_result($q2,$j,2);
+							if (($vrijeme_pocetak_j>=$pocetak_broj && $vrijeme_pocetak_j<$kraj_broj)||($vrijeme_kraj_j>$pocetak_broj && $vrijeme_kraj_j<=$kraj_broj)){
+								if($sala_id==$sala_j){
+								$greska_masovnog_unosa_casova=1;
+								$greska_postoji_sala_u_redu[]=$i; 
+								break;
+								}
+							}
+							
+						}
+					}	
+				}
+			}
+			
+			
+			// ako nema grešaka u unosu dodajemo sale
+			if($greska_masovnog_unosa_casova==0){
+				$i=0;
+				foreach ($redovi as $red){
+					$i++;
+					$red=trim($red);
+					if(strlen($red)<1) continue; // prazan red
+					if($_POST['separator']==1) {
+						list($dan,$predmet,$pocetak,$kraj,$sala,$tip,$labgrupa)=explode(",", $red);
+						$dan=trim($dan);
+						$predmet=trim($predmet);
+						$pocetak=trim($pocetak);
+						$kraj=trim($kraj);
+						$sala=trim($sala);
+						$tip=trim($tip);
+						$labgrupa=trim($labgrupa);
+						$niz=explode(",", $red);
+					}
+					elseif ($_POST['separator']==2) {
+						list($dan,$predmet,$pocetak,$kraj,$sala,$tip,$labgrupa)=explode("\t", $red);
+						$dan=trim($dan);
+						$predmet=trim($predmet);
+						$pocetak=trim($pocetak);
+						$kraj=trim($kraj);
+						$sala=trim($sala);
+						$tip=trim($tip);
+						$labgrupa=trim($labgrupa);
+						$niz=explode("\t", $red);
+					}
+					list($pocS,$pocM)=explode(":",$pocetak);
+					list($krajS,$krajM)=explode(":",$kraj);
+					if($pocM=="00") $pocM=1;
+					elseif($pocM=="15") $pocM=2;
+					elseif($pocM=="30") $pocM=3;
+					elseif($pocM=="45") $pocM=4;
+					if($krajM=="00") $krajM=1;
+					elseif($krajM=="15") $krajM=2;
+					elseif($krajM=="30") $krajM=3;
+					elseif($krajM=="45") $krajM=4;
+					$pocetak_broj=((intval($pocS)-8)*4 +$pocM);
+					$kraj_broj=((intval($krajS)-8)*4 +$krajM);
+					
+					$q0=myquery("select id from raspored_sala where naziv='$sala'");
+					$sala_id=mysql_result($q0,0,0);
+					
+					$dani=array("pon","uto","sri","cet","pet","sub");
+					for($j=0;$j<count($dani);$j++){
+						if(strtolower($dan)==$dani[$j]) {$dan_broj=$j+1;break;}
+					}
+					
+					$q0=myquery("select id from predmet where kratki_naziv='$predmet'");
+					$predmet_id=mysql_result($q0,0,0);
+					
+					$tip=strtoupper($tip);
+					
+					if($tip=="P") $labgrupa_id=0;
+					else{
+						$q0=myquery("select id from labgrupa where naziv='$labgrupa'");
+						$labgrupa_id=mysql_result($q0,0,0);
+					}
+					
+					
+					
+					$semestar_je_neparan=$semestar % 2;
+					$q0=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored_za_edit, dan_u_sedmici=$dan_broj, predmet=$predmet_id,
+						vrijeme_pocetak=$pocetak_broj,vrijeme_kraj=$kraj_broj,sala=$sala_id,tip='$tip',labgrupa=$labgrupa_id");
+					$q00=myquery("select max(id) from raspored_stavka");
+					$id_unesene_stavke=mysql_result($q00,0,0);
+						$q1=myquery("select studij,semestar from ponudakursa where predmet=$predmet_id and akademska_godina=$akademska_godina and semestar mod 2 = $semestar_je_neparan");
+						for($k=0;$k<mysql_num_rows($q1);$k++){
+							$studij_i=mysql_result($q1,$k,0);
+							$semestar_i=mysql_result($q1,$k,1);
+							$postoji_raspored=0;
+							if($semestar_i==$semestar && $studij_i==$studij){
+									$postoji_raspored=1;
+							}
+							else
+							{	
+								$q01=myquery("select semestar,studij,id from raspored where akademska_godina=$akademska_godina and semestar mod 2 = $semestar_je_neparan");
+								for($j=0;$j<mysql_num_rows($q01);$j++){
+									$studij_j=mysql_result($q01,$j,1);
+									$semestar_j=mysql_result($q01,$j,0);
+									$raspored_j=mysql_result($q01,$j,2);	
+									if($semestar_i==$semestar_j && $studij_i==$studij_j){
+										$postoji_raspored=1; break;
+									}		
+								}
+							}
+							if($postoji_raspored==0){
+								$q02=myquery("insert into raspored set id='NULL', akademska_godina=$akademska_godina, studij=$studij_i, semestar=$semestar_i");
+							}		
+							$q2=myquery("select id from raspored where akademska_godina=$akademska_godina and semestar=$semestar_i and studij=$studij_i");
+							if(mysql_num_rows($q2)>0){
+								$raspored_i=mysql_result($q2,0,0);
+								if($raspored_i!=$raspored_za_edit){
+									$q3=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored_i, dan_u_sedmici=$dan_broj, predmet=$predmet_id,
+										vrijeme_pocetak=$pocetak_broj,vrijeme_kraj=$kraj_broj,sala=$sala_id,tip='$tip',labgrupa=$labgrupa_id,dupla=$id_unesene_stavke");
+								}	
+							}	
+						}	
+				}
+				$uspjesan_masovni_unos_casova=1;
+				zamgerlog("Izvršen masovni unos časova", 2);
+			} 
+		}
+		
+		
+		
+		
 		if ($_POST['akcija'] == "obrisi_cas" && check_csrf_token()) {
 			$id_casa_za_brisanje = intval($_POST['id_casa_za_brisanje']);
 			$q0=myquery("select dupla from raspored_stavka where id=$id_casa_za_brisanje");
@@ -1312,9 +1604,160 @@ else{
 					<td align="right"><input type="submit" value=" Dodaj čas"></form></td>
 				</tr>
 			</table>
+			
+			
+			<h4>Masovni unos časova:</h4>
+			<?
+			if((count($greska_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Nema potreban broj parametara u redu $greska_u_redu[0]";
+				if(count($greska_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_u_redu);$i++){
+						if($i==(count($greska_u_redu)-1)) print " i {$greska_u_redu[$i]}.</p>";
+						else print ", {$greska_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_prazni_parametri_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Postoje prazni parametri u redu $greska_prazni_parametri_u_redu[0]";
+				if(count($greska_prazni_parametri_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_prazni_parametri_u_redu);$i++){
+						if($i==(count($greska_prazni_parametri_u_redu)-1)) print " i {$greska_prazni_parametri_u_redu[$i]}.</p>";
+						else print ", {$greska_prazni_parametri_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_nevalja_tip_casa_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Tip časa nije ispravan  u redu $greska_nevalja_tip_casa_u_redu[0]";
+				if(count($greska_nevalja_tip_casa_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_nevalja_tip_casa_u_redu);$i++){
+						if($i==(count($greska_nevalja_tip_casa_u_redu)-1)) print " i {$greska_nevalja_tip_casa_u_redu[$i]}.</p>";
+						else print ", {$greska_nevalja_tip_casa_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_nevalja_dan_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Dan nije ispravan u redu $greska_nevalja_dan_u_redu[0]";
+				if(count($greska_nevalja_dan_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_nevalja_dan_u_redu);$i++){
+						if($i==(count($greska_nevalja_dan_u_redu)-1)) print " i {$greska_nevalja_dan_u_redu[$i]}.</p>";
+						else print ", {$greska_nevalja_dan_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_postoji_sala_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Sala zauzeta u datom terminu u redu $greska_postoji_sala_u_redu[0]";
+				if(count($greska_postoji_sala_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_postoji_sala_u_redu);$i++){
+						if($i==(count($greska_postoji_sala_u_redu)-1)) print " i {$greska_postoji_sala_u_redu[$i]}.</p>";
+						else print ", {$greska_postoji_sala_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_ne_postoji_labgrupa_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Ne postoji grupa u redu $greska_ne_postoji_labgrupa_u_redu[0]";
+				if(count($greska_ne_postoji_labgrupa_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_ne_postoji_labgrupa_u_redu);$i++){
+						if($i==(count($greska_ne_postoji_labgrupa_u_redu)-1)) print " i {$greska_ne_postoji_labgrupa_u_redu[$i]}.</p>";
+						else print ", {$greska_ne_postoji_labgrupa_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_ne_postoji_predmet_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Ne postoji predmet u redu $greska_ne_postoji_predmet_u_redu[0]";
+				if(count($greska_ne_postoji_predmet_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_ne_postoji_predmet_u_redu);$i++){
+						if($i==(count($greska_ne_postoji_predmet_u_redu)-1)) print " i {$greska_ne_postoji_predmet_u_redu[$i]}.</p>";
+						else print ", {$greska_ne_postoji_predmet_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_pogresno_vrijeme_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Vrijeme nije ispravno unešeno u redu $greska_pogresno_vrijeme_u_redu[0]";
+				if(count($greska_pogresno_vrijeme_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_pogresno_vrijeme_u_redu);$i++){
+						if($i==(count($greska_pogresno_vrijeme_u_redu)-1)) print " i {$greska_pogresno_vrijeme_u_redu[$i]}.</p>";
+						else print ", {$greska_pogresno_vrijeme_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if((count($greska_nevalja_interval_u_redu)>0) && $greska_masovnog_unosa_casova==1){
+				print "<p class=\"crveno\">GREŠKA: Interval nije ispravan u redu $greska_nevalja_interval_u_redu[0]";
+				if(count($greska_nevalja_interval_u_redu)==1) print ".</p>";
+				else{
+					for($i=1;$i<count($greska_nevalja_interval_u_redu);$i++){
+						if($i==(count($greska_nevalja_interval_u_redu)-1)) print " i {$greska_nevalja_interval_u_redu[$i]}.</p>";
+						else print ", {$greska_nevalja_interval_u_redu[$i]}";
+					} 
+				}
+			}
+			
+			if($greska_prazan_prostor_za_mas_unos_casova==1) print "<p class=\"crveno\">GREŠKA: Niste unijeli nikakve podatke u prostor za masovni unos.</p>";
+			if($uspjesan_masovni_unos_casova==1) nicemessage("Uspješno unešeni časovi!");
+			?>
+			
+			<a href="#" onclick="daj_stablo('uputstvo_za_mas_unos_casova')"><img id="img-uputstvo_za_mas_unos_casova" src = "images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
+			<div id="uputstvo_za_mas_unos_casova" style="display:none">
+				<p>Unesite sljedeće podatke odvojene zarezom (ili [tab]-om ):</p> 
+				<ul>
+				<li><p><span class="plavo_bold">dan u sedmici: </span> (pon, uto, sri, cet, pet, sub)</p></li>
+				<li><p><span class="plavo_bold">predmet: </span> unesite skraćeni naziv predmeta, npr im za inžinjersku matematiku</p></li>
+				<li><p><span class="plavo_bold">vrijeme početka: </span> unesite vrijeme u intervalu 8:00 do 20:45</p></li>
+				<li><p><span class="plavo_bold">vrijeme kraja: </span> unesite vrijeme u intervalu 8:15 do 21:00</p></li>
+				<li><p><span class="plavo_bold">ime sale </span></p></li>
+				<li>
+					<p><span class="plavo_bold">tip časa: </span></p>
+					<ul>
+						<li><p><span class="plavo_bold">P: </span> za predavanje</p></li>
+						<li><p><span class="plavo_bold">T: </span> za tutorijal</p></li>
+						<li><p><span class="plavo_bold">L: </span> za laboratorijsku vježbu</p></li>
+					</ul>
+				</li>
+				<li><p><span class="plavo_bold">ime grupe: </span>za predavanje ovaj parametar je prazan</p></li>
+				</ul>
+				<p>Ukoliko unosite podatke iz Excel-a odaberite opciju unos iz excela(odvajanje sa [tab]-om)</p>
+				<p>Svaki novi čas dodajte u novom redu</p>
+				<p>primjer:</p>
+				<p>pon, im, 8:15, 9:30, s01, P</p>
+				<p>pon, if, 9:30, 10:30, s02, T, g1</p>
+			</div>
+			<?=genform("POST")?>
+			<input type="hidden" name="akcija" value="masovni_unos_casova">
+			<textarea name="mas_unos_casova" rows="10" cols="40">
+			<? if(isset($_POST['mas_unos_casova'])) print trim($_POST['mas_unos_casova']) ?>
+			</textarea>
+			<br/>
+			<p>Tip unosa:
+			<select name="separator">
+				<option value="1">standardan unos (odvajanje zarezom)</option>
+				<option value="2">unos iz excela(odvajanje sa [tab]-om)</option>
+			</select>
+			</p>
+			<input type="submit" value=" Dodaj "></form>
+			<br></br>
+			
+			
 			<?=genform("POST","brisanjecasa")?>
 			<input type="hidden" name="akcija" value="obrisi_cas">
 			<input type="hidden" name="id_casa_za_brisanje" id="id_casa_za_brisanje" value=""></form>
+			
+			
+			
 			<h4>Izgled rasporeda:</h4>
 			<table class="raspored" border="1" cellspacing="0">
 				<tr>

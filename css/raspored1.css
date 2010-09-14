@@ -1,39 +1,42 @@
-p.crveno {
-	color : red;
+p.crveno{
+	color: red;
 }
 
-table.sale th {
-	font-size : 11px; 
+.plavo_bold{
+	font-weight:bold;
+	color: blue;
 }
 
+table.sale th{
+	font-size:11px; 
+}
 table.sale {
-	text-align : center;
+	text-align: center;
 }
 
-table.nastavnik_raspored th {
-	font-size : 11px; 
+table.nastavnik_raspored th{
+	font-size:11px; 
 }
-
 table.nastavnik_raspored {
-	text-align : center;
+	text-align: center;
 }
 
-table.raspored th {
-	font-weight : normal;
-	font-size : 11px;
-	text-align : center;
+table.raspored th{
+	font-weight:normal;
+	font-size:11px;
+	text-align: center;
 }
 
-table.raspored td {
-	text-align : center;
+table.raspored td{
+	text-align: center;
 }
 
-table.raspored th p.bold {
-	font-weight : bold;
+table.raspored th p.bold{
+	font-weight:bold;
 }
 
-table.raspored th p.mala_slova {
-	font-size : 9px;
+table.raspored th p.mala_slova{
+	font-size:9px;
 }
 
 table.raspored td p.plavo{

@@ -1,5 +1,10 @@
 <?
   
+function common_pdfraspored() {
+?>
+<LINK href="css/raspored1.css" rel="stylesheet" type="text/css">
+<?
+
 function ob_file_callback($buffer)
 {
   global $sadrzaj_bafera_za_pdf;
@@ -7,39 +12,35 @@ function ob_file_callback($buffer)
 
 }
 
-
-function common_pdfraspored() {
 global $string_pdf,$string,$sadrzaj_bafera_za_pdf,$userid;
 
 ob_start('ob_file_callback');
 $tip = my_escape($_GET['tip']);
 if($tip=="student") {
-	// Aktuelna akademska godina
-	$q0 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-	$ag = mysql_result($q0,0,0);
+		// Aktuelna akademska godina
+		$q0 = myquery("select id,naziv from akademska_godina where aktuelna=1");
+		$ag = mysql_result($q0,0,0);
 		
-	// Studij koji student trenutno sluša
-	$q1 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-	$semestar = mysql_result($q1,0,1);
-	$semestar_neparan=$semestar%2;
-	if($semestar==1 || $semestar==2){
-		$studij=1;
-	}
-	else $studij = mysql_result($q1,0,0);
+		// Studij koji student trenutno sluša
+		$q1 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+		$semestar = mysql_result($q1,0,1);
+		$semestar_neparan=$semestar%2;
+		$studij = mysql_result($q1,0,0);
+		$q0=myquery("select id from raspored where akademska_godina=$ag and studij=$studij and semestar=$semestar");
+		$id_rasporeda=mysql_result($q0,0,0);
 ?>
-		<h4>Raspored časova:</h4>
-		<br></br>
 		<table border="1" cellspacing="0">
 			<tr>
 				<th>
-					Sat/Dan
+					<p>Sat/</p>
+					<p>Dan</p>
 				</th>
 				<?
-				for($i=9;$i<=20;$i++){
+				for($i=8;$i<=20;$i++){
 					$j=$i+1;
 				?>
 					<th>
-						<p class="bold"><? print "$i";?></p>
+						<p><? print "$i";?></p>
 						<p><? print "00";?></p>
 					</th>
 					<th>
@@ -59,14 +60,17 @@ if($tip=="student") {
 				?>
 			</tr>
 			<?
-			// petlja za 5 dana u sedmici
-			for($i=1;$i<=5;$i++){
+			// petlja za 6 dana u sedmici
+			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id and rs.predmet=p.id and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0");
+				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r 
+				where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id and rs.predmet=p.id and rs.raspored=r.id  and r.akademska_godina=$ag 
+				and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0 
+				and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
 				$broj_preklapanja=array();
-				for($j=0;$j<40;$j++){
+				for($j=0;$j<53;$j++){
 					$broj_preklapanja[]=0;
 				}
 				for($j=0;$j<mysql_num_rows($q0);$j++){
@@ -80,32 +84,34 @@ if($tip=="student") {
 				elseif ($i==3) $dan_tekst="SRI";
 				elseif ($i==4) $dan_tekst="ČET";
 				elseif ($i==5) $dan_tekst="PET";
+				elseif ($i==6) $dan_tekst="SUB";
 				// sada pravimo dvodimenzionalni niz, koji predstavlja zauzetost termina u određenom redu
 				$zauzet=array();
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					$zauzet=array();
 				}
 				for($j=0;$j<$max_broj_preklapanja;$j++){
-					for($k=0;$k<40;$k++){
+					for($k=0;$k<=52;$k++){
 						$zauzet[$j][]=0;
 					}
 				}
 				// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 				
 				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,sp.predmet 
-					from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id 
-					and rs.predmet=p.id and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0 order by rs.id");
+					from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id 
+					and rs.raspored=r.id and rs.predmet=p.id and sp.student=$userid and r.akademska_godina=$ag and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan 
+					and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
 				$gdje=array();
-				$gdje[0]=array(); // indeks 0 predstavlja id stavke rasporeda
-				$gdje[1]=array(); // indeks 1 predstavlja red u kojem ta stavka ide
+				$gdje["id_stavke"]=array(); 
+				$gdje["red_stavke"]=array(); // red u kojem stavka ide
 				// primjer 
-				// gdje[0][0]=5 znaci da je id prve stavke 5
-				// gdje[1][0]=3 znaci da stavka 1 ide u 4. red
+				// gdje["id_stavke"][0]=5 znaci da je id prve stavke 5
+				// gdje["red_stavke"][0]=3 znaci da stavka 1 ide u 4. red
 				// [0] pretstavlja prvu stavku jer indeksi kreću od nule i druga kolona treba biti ista-- u ovom slucaju [0]
 				for($j=0;$j<mysql_num_rows($q1);$j++){
 					$id_stavke=mysql_result($q1,$j,0);
-					$gdje[0][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
-					$gdje[1][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
+					$gdje["id_stavke"][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
+					$gdje["red_stavke"][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
 				}
 				for($j=0;$j<mysql_num_rows($q1);$j++){
 					$id_stavke=mysql_result($q1,$j,0);
@@ -122,7 +128,7 @@ if($tip=="student") {
 						}
 						if($zauzet_red==0){
 							// ako nije zauzet termin u tom redu dodajemo termin u taj red i prekidamo petlju
-							$gdje[1][$j]=$k; // $stavka $j ide u red $k
+							$gdje["red_stavke"][$j]=$k; // $stavka $j ide u red $k
 							//sada proglasavamo termin zauzetim u tom redu $k+1
 							$pocetak=mysql_result($q1,$j,3);
 							while($pocetak!=$kraj){
@@ -138,7 +144,7 @@ if($tip=="student") {
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
 					$zadnji_m=0;
-					for($m=1;$m<=48;$m++){
+					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<mysql_num_rows($q1);$k++){
 							$id_stavke=mysql_result($q1,$k,0);
@@ -158,15 +164,15 @@ if($tip=="student") {
 								$labgrupa_naziv=mysql_result($q4,0,0);
 							}
 							$interval=$kraj-$pocetak;
-							if($gdje[1][$k]==$j && $pocetak==$m){
-							$vrijemePocS=floor(($pocetak-1)/4+9);
+							if($gdje["red_stavke"][$k]==$j && $pocetak==$m){
+							$vrijemePocS=floor(($pocetak-1)/4+8);
 							$vrijemePocMin=$pocetak%4;
 							if($vrijemePocMin==1) $vrijemePocM="00";
 							elseif($vrijemePocMin==2) $vrijemePocM="15";
 							elseif($vrijemePocMin==3) $vrijemePocM="30";
 							elseif($vrijemePocMin==0) $vrijemePocM="45";
 							$vrijemeP="$vrijemePocS:$vrijemePocM";
-							$vrijemeKrajS=floor(($kraj-1)/4+9);
+							$vrijemeKrajS=floor(($kraj-1)/4+8);
 							$vrijemeKrajMin=$kraj%4;
 							if($vrijemeKrajMin==1) $vrijemeKrajM="00";
 							elseif($vrijemeKrajMin==2) $vrijemeKrajM="15";
@@ -191,7 +197,7 @@ if($tip=="student") {
 							$zadnji=$kraj;		
 							print "
 								<td colspan=\"$interval\">
-									<table class=\"cas\" align=\"center\">
+									<table>
 										<tr>
 											<td><p>$tip</p></td>
 										</tr>
@@ -204,13 +210,23 @@ if($tip=="student") {
 
 							if($tip!='P'){
 								print "
+										<tr>";
+											if($labgrupa_naziv=="(Svi studenti)") print "<td><p class=\"plavo\">--</p></td>";
+											else print "<td><p>$labgrupa_naziv</p></td>";
+										print "</tr>";
+							}
+							else{
+								print "
 										<tr>
-											<td><p>$labgrupa_naziv</p></td>
+											<td>--</td>
 										</tr>";
 							}
 								print "
 										<tr>
-											<td><p>$vrijemeP-$vrijemeK</p></td>
+											<td><p>$vrijemeP-</p></td>
+										</tr>
+										<tr>
+											<td><p>$vrijemeK</p></td>
 										</tr>
 									</table>
 								</td>";
@@ -244,24 +260,19 @@ if($tip=="student") {
 			$brojac++;
 		}
 		if (strlen($sqlPredmet)>0) $sqlWhere="(".$sqlPredmet.")"; 
-		else
-		{
-			print "Korisnik nije angažovan ni na jednom predmetu u ovom semestru.<br/><br/></div>";
-			return;
-		}
 		?>
-		<table class="raspored" border="1" cellspacing="0">
+		<table border="1" cellspacing="0">
 			<tr>
 				<th>
 					<p>Sat/</p>
 					<p>Dan</p>
 				</th>
 				<?
-				for($i=9;$i<=20;$i++){
+				for($i=8;$i<=20;$i++){
 					$j=$i+1;
 				?>
 					<th>
-						<p class="bold"><? print "$i";?></p>
+						<p><? print "$i";?></p>
 						<p><? print "00";?></p>
 					</th>
 					<th>
@@ -281,14 +292,15 @@ if($tip=="student") {
 				?>
 			</tr>
 			<?
-			// petlja za 5 dana u sedmici
-			for($i=1;$i<=5;$i++){
+			// petlja za 6 dana u sedmici
+			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p where ". $sqlWhere. " and rs.predmet=p.id and rs.dupla=0");
+				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p,raspored r where ". $sqlWhere. " and rs.predmet=p.id 
+				and rs.raspored=r.id and r.akademska_godina=$ak_god and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
 				$broj_preklapanja=array();
-				for($j=0;$j<40;$j++){
+				for($j=0;$j<=52;$j++){
 					$broj_preklapanja[]=0;
 				}
 				for($j=0;$j<mysql_num_rows($q0);$j++){
@@ -302,30 +314,33 @@ if($tip=="student") {
 				elseif ($i==3) $dan_tekst="SRI";
 				elseif ($i==4) $dan_tekst="ČET";
 				elseif ($i==5) $dan_tekst="PET";
+				elseif ($i==6) $dan_tekst="SUB";
 				// sada pravimo dvodimenzionalni niz, koji predstavlja zauzetost termina u određenom redu
 				$zauzet=array();
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					$zauzet=array();
 				}
 				for($j=0;$j<$max_broj_preklapanja;$j++){
-					for($k=0;$k<40;$k++){
+					for($k=0;$k<=52;$k++){
 						$zauzet[$j][]=0;
 					}
 				}
 				// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 				
-				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa from raspored_stavka rs,predmet p where " .$sqlWhere. " and rs.dan_u_sedmici=$i and rs.predmet=p.id and rs.dupla=0 order by rs.id");
+				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa from raspored_stavka rs,
+				predmet p,raspored r where " .$sqlWhere. " and rs.dan_u_sedmici=$i and rs.predmet=p.id and rs.raspored=r.id and r.akademska_godina=$ak_god 
+				and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
 				$gdje=array();
-				$gdje[0]=array(); // indeks 0 predstavlja id stavke rasporeda
-				$gdje[1]=array(); // indeks 1 predstavlja red u kojem ta stavka ide
+				$gdje["id_stavke"]=array(); 
+				$gdje["red_stavke"]=array(); // red u kojem stavka ide
 				// primjer 
-				// gdje[0][0]=5 znaci da je id prve stavke 5
-				// gdje[1][0]=3 znaci da stavka 1 ide u 4. red
+				// gdje["id_stavke"][0]=5 znaci da je id prve stavke 5
+				// gdje["red_stavke"][0]=3 znaci da stavka 1 ide u 4. red
 				// [0] pretstavlja prvu stavku jer indeksi kreću od nule i druga kolona treba biti ista-- u ovom slucaju [0]
 				for($j=0;$j<mysql_num_rows($q1);$j++){
 					$id_stavke=mysql_result($q1,$j,0);
-					$gdje[0][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
-					$gdje[1][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
+					$gdje["id_stavke"][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
+					$gdje["red_stavke"][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
 				}
 				for($j=0;$j<mysql_num_rows($q1);$j++){
 					$id_stavke=mysql_result($q1,$j,0);
@@ -342,7 +357,7 @@ if($tip=="student") {
 						}
 						if($zauzet_red==0){
 							// ako nije zauzet termin u tom redu dodajemo termin u taj red i prekidamo petlju
-							$gdje[1][$j]=$k; // $stavka $j ide u red $k
+							$gdje["red_stavke"][$j]=$k; // $stavka $j ide u red $k
 							//sada proglasavamo termin zauzetim u tom redu $k+1
 							$pocetak=mysql_result($q1,$j,3);
 							while($pocetak!=$kraj){
@@ -358,7 +373,7 @@ if($tip=="student") {
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
 					$zadnji_m=0;
-					for($m=1;$m<=48;$m++){
+					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<mysql_num_rows($q1);$k++){
 							$id_stavke=mysql_result($q1,$k,0);
@@ -377,15 +392,15 @@ if($tip=="student") {
 								$labgrupa_naziv=mysql_result($q4,0,0);
 							}
 							$interval=$kraj-$pocetak;
-							if($gdje[1][$k]==$j && $pocetak==$m){
-							$vrijemePocS=floor(($pocetak-1)/4+9);
+							if($gdje["red_stavke"][$k]==$j && $pocetak==$m){
+							$vrijemePocS=floor(($pocetak-1)/4+8);
 							$vrijemePocMin=$pocetak%4;
 							if($vrijemePocMin==1) $vrijemePocM="00";
 							elseif($vrijemePocMin==2) $vrijemePocM="15";
 							elseif($vrijemePocMin==3) $vrijemePocM="30";
 							elseif($vrijemePocMin==0) $vrijemePocM="45";
 							$vrijemeP="$vrijemePocS:$vrijemePocM";
-							$vrijemeKrajS=floor(($kraj-1)/4+9);
+							$vrijemeKrajS=floor(($kraj-1)/4+8);
 							$vrijemeKrajMin=$kraj%4;
 							if($vrijemeKrajMin==1) $vrijemeKrajM="00";
 							elseif($vrijemeKrajMin==2) $vrijemeKrajM="15";
@@ -394,20 +409,6 @@ if($tip=="student") {
 							$vrijemeK="$vrijemeKrajS:$vrijemeKrajM";
 							$q3=myquery("select obavezan from ponudakursa where id=$predmet");
 							if(mysql_num_rows($q3)>0) $obavezan=mysql_result($q3,0,0);
-							/*
-							if($tip!='P' && $labgrupa_naziv!="(Svi studenti)"){
-								$q5=myquery("select l.naziv from student_labgrupa sl,labgrupa l where sl.labgrupa=l.id and sl.student=$userid and l.predmet=$predmet");
-								$brojac=0;
-								for($s=0;$s<mysql_num_rows($q5);$s++){
-									$naziv_studentove_labgrupe=mysql_result($q5,$s,0);
-									if($naziv_studentove_labgrupe=="(Svi studenti)") continue;
-									else { $brojac=1;break;}
-								}
-								if($brojac==1 && $naziv_studentove_labgrupe!=$labgrupa_naziv) { $zadnji_m=$kraj; $viska_cas=1; break;}
-								//if($naziv_studentove_labgrupe=="(Svi studenti)") { $zadnji_m=$kraj; $viska_cas=1; break;}	
-								// ako je iskljucena opcija iznad studentu koji nije ni u jednoj grupi se prikazuju termini ostalih grupa
-							}
-							*/
 							$q4=myquery("select o.labgrupa,l.naziv from ogranicenje o, labgrupa l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet");
 							if(mysql_num_rows($q4)>0){
 								$postoji_labgrupa=0;
@@ -423,7 +424,7 @@ if($tip=="student") {
 							$zadnji=$kraj;		
 							print "
 								<td colspan=\"$interval\">
-									<table class=\"cas\" align=\"center\">
+									<table align=\"center\">
 										<tr>
 											<td><p>$tip</p></td>
 										</tr>
@@ -436,13 +437,23 @@ if($tip=="student") {
 
 							if($tip!='P'){
 								print "
+										<tr>";
+											if($labgrupa_naziv=="(Svi studenti)") print "<td><p>--</p></td>";
+											else print "<td><p>$labgrupa_naziv</p></td>";
+										print "</tr>";
+							}
+							else{
+								print "
 										<tr>
-											<td><p>$labgrupa_naziv</p></td>
+											<td>--</td>
 										</tr>";
 							}
 								print "
 										<tr>
-											<td><p>$vrijemeP-$vrijemeK</p></td>
+											<td><p>$vrijemeP-</p></td>
+										</tr>
+										<tr>
+											<td><p>$vrijemeK</p></td>
 										</tr>
 									</table>
 								</td>";
@@ -456,7 +467,7 @@ if($tip=="student") {
 			
 		</table>
 <?
-}
+	}
 ob_end_clean();
 
 require_once('lib/tcpdf/tcpdf.php');
@@ -513,7 +524,7 @@ $sadrzaj_bafera_za_pdf = str_replace("\t","        ",$sadrzaj_bafera_za_pdf);
 
 $pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $sadrzaj_bafera_za_pdf, $border=0, $ln=1, $fill=0, $reseth=true, $align='center', $autopadding=true);
 ob_end_clean();
-$pdf->Output('Izjestaj.pdf', 'I');
+$pdf->Output('Raspored.pdf', 'I');
 }
 
 ?>

@@ -5,8 +5,6 @@
 function common_raspored1($tip) {
 
 	global $userid;
-
-	// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
 ?>
 
 
@@ -43,7 +41,7 @@ function common_raspored1($tip) {
 		}
 		else{ // ako postoji raspored za korisnika
 		?>
-		<!--<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a> -->
+		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a>
 		<?
 		$id_rasporeda=mysql_result($q0,0,0);
 ?>
@@ -282,7 +280,7 @@ function common_raspored1($tip) {
 			return;
 		}
 		?>
-		<!-- <a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a> 	-->
+		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a>
 		<table class="raspored" border="1" cellspacing="0">
 			<tr>
 				<th>
@@ -322,7 +320,7 @@ function common_raspored1($tip) {
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
 				$broj_preklapanja=array();
-				for($j=0;$j<40;$j++){
+				for($j=0;$j<=52;$j++){
 					$broj_preklapanja[]=0;
 				}
 				for($j=0;$j<mysql_num_rows($q0);$j++){
