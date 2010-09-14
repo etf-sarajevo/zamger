@@ -29,7 +29,7 @@ if($tip=="student") {
 		$q0=myquery("select id from raspored where akademska_godina=$ag and studij=$studij and semestar=$semestar");
 		$id_rasporeda=mysql_result($q0,0,0);
 ?>
-		<table border="1" cellspacing="0">
+		<table border="1" cellspacing="0" align="center">
 			<tr>
 				<th>
 					<p>Sat/</p>
