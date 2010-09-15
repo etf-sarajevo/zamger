@@ -421,7 +421,7 @@ else if ($akcija == "edit") {
 			}
 		else {
 			$q368 = myquery("update nastavnik_predmet set nivo_pristupa='asistent' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
-			nicemessage("Nastavnik više nije administrator predmeta");
+			nicemessage("Nastavnik više nije super asistent predmeta");
 			}
 		zamgerlog("nastavnik u$nastavnik proglasen za super asistenta predmeta pp$predmet ($yesnosuper)",4);
 	}
