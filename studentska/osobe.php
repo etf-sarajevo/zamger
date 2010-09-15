@@ -1788,7 +1788,7 @@ else if ($akcija == "edit") {
 		if ($admin_predmeta==1)
 		$privilegija="nastavnik";
 		else
-		$privilegija="asistent";
+		$privilegija='asistent';
 
 		$q115 = myquery("select naziv from predmet where id=$predmet");
 		$naziv_predmeta = mysql_result($q115,0,0);
