@@ -627,7 +627,7 @@ else if ($akcija == "edit") {
 		$nastavnik = $r351[0];
 		$imeprezime = "$r351[2] $r351[3]";
 
-		if ($r351[1]=="nastavnik") {
+		if ($r351[1]=='nastavnik') {
 			$alterlink="0";
 			$cbstanje="CHECKED";
 		} else {
@@ -635,7 +635,7 @@ else if ($akcija == "edit") {
 			$cbstanje="";
 		}
 		
-		if ($r351[1]=="super_asistent") {
+		if ($r351[1]=='super_asistent') {
 			$alterlinkSA="0";
 			$cbstanjeSA="CHECKED";
 		} else {
