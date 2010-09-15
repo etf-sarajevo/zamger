@@ -38,7 +38,7 @@ $predmet_naziv = mysql_result($q10,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag"); test
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent")	{
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
