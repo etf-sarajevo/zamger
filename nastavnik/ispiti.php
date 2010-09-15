@@ -51,7 +51,7 @@ $predmet_naziv = mysql_result($q10,0,0);
 if (!$user_siteadmin) { // 3 = site admin
 	$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	
-	if ((mysql_num_rows($q20)<1 || mysql_result($q20,0,0)=="asistent") {
+	if (mysql_num_rows($q20)<1 || mysql_result($q20,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo ulaska modul za ispite!");
 		return;
