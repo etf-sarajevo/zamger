@@ -649,26 +649,12 @@ else if ($akcija == "edit") {
 		<tr>
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
 			<td>
-			<input id="check1" type="checkbox" onchange="javascript:fcheck1()" <?=$cbstanje?>></td>
+			<input id="check1" type="checkbox" onchange="location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'" <?=$cbstanje?>></td>
 			<td>
-			<input id="check2" type="checkbox" onchange="javascript:fcheck2()" <?=$cbstanjeSA?>></td>
+			<input id="check2" type="checkbox" onchange="location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_super_asistenta&nastavnik=<?=$nastavnik?>&yesnosuper=<?=$alterlinkSA?>'" <?=$cbstanjeSA?>></td>
 			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>">
 			
-			<!-- Skripta za checkboxove; funkcije koje se brinu da ne budu oba istovremeno ukljucena -->
-		
-		<script type="text/javascript">
-			function fcheck1() {
-			document.getElementById("check2").checked = false;
-
-			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>';
-		}
-
-			function fcheck2() {
-			document.getElementById("check1").checked = false;
 			
-			location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_super_asistenta&nastavnik=<?=$nastavnik?>&yesnosuper=<?=$alterlinkSA?>';
-		}
-		</script>
 			
 			<?
 			// Spisak grupa na koje ima ogranicenje
