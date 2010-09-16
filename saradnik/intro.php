@@ -110,7 +110,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 			print "<b>$naziv_predmeta ($studij)</b>\n";
 	
 		// Edit link
-		if ($user_siteadmin || $privilegija == "nastavnik" || privilegija == "super_asistent") {
+		if ($user_siteadmin || $privilegija == "nastavnik" || $privilegija == "super_asistent") {
 			print ' [<b><a href="?sta=nastavnik/predmet&predmet='.$predmet.'&ag='.$ag.'"><font color="red">EDIT</font></a></b>]'."\n";
 		}
 	
