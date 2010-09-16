@@ -70,7 +70,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$ag_naziv = $r1a[1];
 
 	// Prikaži sve predmete siteadminu
-	$uslov=""; $nppolje="nastavnik";
+	$uslov=""; $nppolje="'nastavnik'";
 	if (!$user_siteadmin) {
 		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
 		$nppolje="np.nivo_pristupa";
