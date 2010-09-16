@@ -70,17 +70,14 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$ag_naziv = $r1a[1];
 
 	// Prikaži sve predmete siteadminu
-	if ($user_siteadmin) 
-		$q10 = myquery("select distinct p.id, 'nastavnik', p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
-	
-	
+	$uslov=""; $nppolje="'nastavnik'";
 	if (!$user_siteadmin) {
 		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
-		// Upit za spisak predmeta
-		$q10 = myquery("select distinct p.id, np.nivo_pristupa, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
+		$nppolje="np.nivo_pristupa";
 	}
 
-	
+	// Upit za spisak predmeta
+	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
 
 	// Format - šest predmeta u jednom redu
 	$nr = mysql_num_rows($q10);
