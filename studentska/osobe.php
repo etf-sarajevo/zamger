@@ -1793,7 +1793,7 @@ else if ($akcija == "edit") {
 		$q115 = myquery("select naziv from predmet where id=$predmet");
 		$naziv_predmeta = mysql_result($q115,0,0);
 
-		$q130 = myquery("replace nastavnik_predmet set nivo_pristupa=$privilegija, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
+		$q130 = myquery("replace nastavnik_predmet set nivo_pristupa='$privilegija', nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
 
 		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (nivo pristupa: $privilegija, akademska godina: $id_ak_god)",4);
 		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
