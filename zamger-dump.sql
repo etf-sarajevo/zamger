@@ -34,6 +34,23 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
 (1, '2009/2010', 1);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `akademska_godina_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
+  `akademska_godina` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `tippredmeta` int(11) NOT NULL,
+  PRIMARY KEY (`akademska_godina`,`predmet`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `akademska_godina_predmet`
+--
+
 
 -- --------------------------------------------------------
 
