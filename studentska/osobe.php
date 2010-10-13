@@ -2056,7 +2056,7 @@ else if ($akcija == "edit") {
 		<?
 
 		// Trenutno upisan na semestar:
-		$q220 = myquery("select s.naziv,ss.semestar,ss.akademska_godina,ag.naziv, s.id, ts.trajanje from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id order by ag.naziv desc");
+		$q220 = myquery("select s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
@@ -2070,6 +2070,7 @@ else if ($akcija == "edit") {
 				$semestar = $r220[1];
 				$studij_id=$r220[4];
 				$studij_trajanje=$r220[5];
+				$nacin_studiranja="kao $r220[6]";
 			}
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
@@ -2137,7 +2138,6 @@ else if ($akcija == "edit") {
 				$studij_id = $ikad_studij_id;
 				$studij_trajanje = $ikad_studij_trajanje;
 
-
 			} else {
 				// Nikada nije slušao ništa - ima li podataka o prijemnom ispitu?
 				$q225 = myquery("select pt.akademska_godina, ag.naziv, s.id, s.naziv from prijemni_termin as pt, prijemni_prijava as pp, akademska_godina as ag, studij as s where pp.osoba=$osoba and pp.prijemni_termin=pt.id and pt.akademska_godina=ag.id and pp.studij_prvi=s.id order by ag.id desc, pt.id desc limit 1");
@@ -2151,7 +2151,7 @@ else if ($akcija == "edit") {
 
 		} else {
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put)  (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>)</p>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put) <?=$nacin_studiranja?> (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>)</p>
 			<?
 			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
 			if (mysql_num_rows($q230)>0) {
@@ -2328,16 +2328,55 @@ else if ($akcija == "edit") {
 		// Kolizija
 		if ($modul_kolizija==1) {
 			$q280 = myquery("select count(*) from kolizija where student=$osoba and akademska_godina=$nova_ak_god");
+			$ima_koliziju=0;
 			if (mysql_result($q280,0,0)>0) {
-				?>
-				<p>Student je popunio/la <b>Zahtjev za koliziju</b>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=kolizija&godina=<?=$nova_ak_god?>">Kliknite ovdje da potvrdite upis na kolizione predmete.</a>
-				<?
+				$ima_koliziju=$nova_ak_god;
 			} else {
 				// Probavamo i za trenutnu
 				$q280 = myquery("select count(*) from kolizija where student=$osoba and akademska_godina=$id_ak_god");
 				if (mysql_result($q280,0,0)>0) {
+					$ima_koliziju=$id_ak_god;
+				}
+			}
+
+			if ($ima_koliziju) { // provjeravamo septembar
+				$kolizija_ok = true;
+				$qc = myquery("select distinct predmet from septembar where student=$osoba and akademska_godina=$ima_koliziju");
+				while ($rc = mysql_fetch_row($qc)) {
+					$predmet = $rc[0];
+			
+					// Da li ima ocjenu?
+					$qd = myquery("select count(*) from konacna_ocjena where student=$osoba and predmet=$predmet and ocjena>=6");
+					if (mysql_result($qd,0,0)>0) continue;
+			
+					// Da li ima septembarskog roka?
+					$qe = myquery("select i.id, k.prolaz from ispit as i, komponenta as k where i.akademska_godina=".($ima_koliziju-1)." and (MONTH(i.datum)=8 or MONTH(i.datum)=9) and (select count(*) from ispitocjene as io where io.ispit=i.id)>0 and i.predmet=$predmet and i.komponenta=k.id and k.naziv NOT LIKE 'Usmeni%'");
+					if (mysql_num_rows($qe)==0) continue; // nema
+			
+					$polozio=false;
+					$septembar_razlog = "";
+					while ($re = mysql_fetch_row($qe)) {
+						$qf = myquery("select ocjena from ispitocjene where ispit=$re[0] and student=$osoba");
+						if (mysql_num_rows($qf)>0 && mysql_result($qf,0,0)>=$re[1]) {
+							$polozio=true;
+							break;
+						}
+					}
+					if (!$polozio) {
+						$kolizija_ok=false; 
+						$qg = myquery("select naziv from predmet where id=$predmet");
+						$paopredmet=mysql_result($qg,0,0);
+						break;
+					}
+				}
+
+				if ($kolizija_ok) {
 					?>
-					<p>Student je popunio/la <b>Zahtjev za koliziju</b>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=kolizija&godina=<?=$id_ak_god?>">Kliknite ovdje da potvrdite upis na kolizione predmete.</a>
+					<p>Student je popunio/la <b>Zahtjev za koliziju</b>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=kolizija&godina=<?=$ima_koliziju?>">Kliknite ovdje da potvrdite upis na kolizione predmete.</a></p>
+					<?
+				} else {
+					?>
+					<p>Student je popunio/la <b>Zahtjev za koliziju</b> koji je neispravan (nije položio/la <?=$paopredmet?>). Potrebno ga je ponovo popuniti.</p>
 					<?
 				}
 			}
