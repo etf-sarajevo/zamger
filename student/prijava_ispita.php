@@ -52,7 +52,7 @@ if ($_GET["akcija"]=="prijavi") {
 	}
 
 	// Da li je student upisan na predmet?
-	$q100 = myquery ("SELECT i.predmet FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=$ag and pk.akademska_godina=$ag and pk.id=sp.predmet AND sp.student=$userid");
+	$q100 = myquery ("SELECT i.predmet FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND pk.akademska_godina=i.akademska_godina and pk.id=sp.predmet AND sp.student=$userid");
 	if (mysql_num_rows($q100)<1) {
 		niceerror("Niste upisani na taj predmet!");
 		return;
@@ -86,7 +86,7 @@ if ($_GET["akcija"]=="prijavi") {
 
 // Spisak ispita koji se mogu prijaviti
 
-$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND i.akademska_godina=$ag AND pk.predmet=p.id and pk.akademska_godina=$ag AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
+$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
 
 
 ?>
