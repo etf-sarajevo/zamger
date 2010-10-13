@@ -57,6 +57,95 @@ if (!$user_studentska && !$user_siteadmin) {
 $akcija = $_REQUEST['akcija'];
 
 
+// AKCIJA: Unos ocjena na predmetu
+
+if ($akcija == "ocjene") {
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
+
+	$q500 = myquery("select naziv from predmet where id=$predmet");
+	$q510 = myquery("select naziv from akademska_godina where id=$ag");
+
+	?>
+	<h3>Unos konačne ocjene</h3>
+	<br />
+	Predmet: <b><?=mysql_result($q500,0,0)?>, <?=mysql_result($q510,0,0)?></b><br>
+	<br>
+	<a href="?sta=studentska/predmeti&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=edit">&lt; &lt; Nazad na stranicu predmeta</a><br>
+	<br>
+	<?
+
+	// AJAH i prateće funkcije
+
+	print ajah_box();
+
+	?>
+	<SCRIPT language="JavaScript">
+	function dobio_focus(element) {
+		element.style.borderColor='red';
+		if (element.value == "/") element.value="";
+	}
+	function izgubio_focus(element) {
+		element.style.borderColor='black';
+		var id = parseInt(element.id.substr(6));
+		if (element.value == "") element.value="/";
+		var vrijednost = element.value;
+		if (vrijednost!=origval[id])
+			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+id+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('ocjena'+"+id+").focus()");
+		origval[id]=vrijednost;
+	}
+	function enterhack(element,e,gdje) {
+		if(e.keyCode==13) {
+			element.blur();
+			document.getElementById('ocjena'+gdje).focus();
+			document.getElementById('ocjena'+gdje).select();
+		}
+	}
+	var origval=new Array();
+	</SCRIPT>
+
+
+	<table border="1" bordercolordark="grey" cellspacing="0">
+		<tr><td><b>R. br.</b></td><td width="300"><b>Prezime i ime</b></td>
+		<td><b>Broj indeksa</b></td>
+		<td><b>Ocjena</b></td></tr>
+	<?
+
+	$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime";
+
+	$q520 = myquery($upit);
+	$id=0;
+	$rbr=0;
+	while ($r520 = mysql_fetch_row($q520)) {
+		$rbr++;
+		if ($id!=0)
+			print "$r520[0])\"></tr>\n";
+		$id=$r520[0];
+
+		$q530 = myquery("select ocjena from konacna_ocjena where student=$r520[0] and predmet=$predmet");
+		if(mysql_num_rows($q530)>0)
+			$ocjena = mysql_result($q530,0,0);
+		else
+			$ocjena = "/";
+
+		?>
+		<SCRIPT language="JavaScript"> origval[<?=$id?>]="<?=$ocjena?>";</SCRIPT>
+		<tr><td><?=$rbr?></td>
+		<td><?=$r520[2]?> <?=$r520[1]?></td>
+		<td><?=$r520[3]?></td>
+		<td align="center"><input type="text" id="ocjena<?=$id?>" size="2" value="<?=$ocjena?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event,<?
+	}
+	if ($id != 0) { ?>0)"><? }
+	?></tr>
+	<?
+	?>
+	</table>
+	<?
+
+	return;
+} // if ($akcija == "ocjene")
+
+
 // AKCIJA: Ogranicenje nastavnika na odredjene grupe
 
 if ($akcija == "ogranicenja") {
@@ -360,6 +449,10 @@ else if ($akcija == "edit") {
 			?>
 			<tr><td align="center"><a href="?sta=studentska/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>">
 			<img src="images/32x32/izvjestaj.png" border="0"><br/>Štampanje prijava</a></td></tr>
+			<tr><td align="center"><a href="?sta=studentska/predmeti&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ocjene">
+			<img src="images/32x32/izvjestaj.png" border="0"><br/>Unos ocjena</a></td></tr>
+
+
 			<tr><td align="left">Ispiti:<br/><?
 			while ($r359 = mysql_fetch_row($q359)) {
 				$ispit=$r359[0];
