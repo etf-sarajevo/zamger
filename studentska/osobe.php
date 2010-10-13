@@ -1802,11 +1802,12 @@ else if ($akcija == "edit") {
 
 		$predmet = intval($_POST['predmet']);
 		$status = intval($_POST['_lv_column_angazman_status']);
+		$angazman_ak_god = intval($_POST['_lv_column_akademska_godina']);
 
 		$q115 = myquery("select naziv from predmet where id=$predmet");
 		$naziv_predmeta = mysql_result($q115,0,0);
 
-		$q130 = myquery("replace angazman set osoba=$osoba, predmet=$predmet, akademska_godina=$id_ak_god, angazman_status=$status");
+		$q130 = myquery("replace angazman set osoba=$osoba, predmet=$predmet, akademska_godina=$angazman_ak_god, angazman_status=$status");
 
 		zamgerlog("nastavnik u$osoba angazovan na predmetu pp$predmet (status: $status, akademska godina: $id_ak_god)",4);
 		nicemessage("Nastavnik angažovan na predmetu $naziv_predmeta.");
@@ -2355,6 +2356,12 @@ else if ($akcija == "edit") {
 
 	// NASTAVNIK
 
+	// Akademska godina se promijenila :( CLEANUP
+	$id_ak_god = $orig_iag;
+	$q399 = myquery("select naziv from akademska_godina where id=$id_ak_god");
+	$naziv_ak_god=mysql_result($q399,0,0);
+
+
 	if ($korisnik_nastavnik) {
 		?>
 		<br/><hr>
@@ -2446,6 +2453,7 @@ else if ($akcija == "edit") {
 		}
 		?></select><br/>
 		<?=db_dropdown("angazman_status")?>
+		<?=db_dropdown("akademska_godina", $id_ak_god)?>
 		<input type="submit" value=" Dodaj "></form></p>
 		<?
 
