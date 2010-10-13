@@ -178,22 +178,34 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$kandidatikp = intval(mysql_result($quk,0,4));
 	$prijemnimax = floatval(mysql_result($quk,0,5));
 
+	// Kantoni
+	$qkanton = myquery("select id, kratki_naziv from kanton");
+	$kantoni = array();
+	while ($rkanton = mysql_fetch_row($qkanton))
+		$kantoni[$rkanton[0]] = $rkanton[1];
+
 	// Spisak svih kandidata se učitava u niz
 	if ($ciklus==1)
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', k.kratki_naziv, us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno
-		FROM prijemni_prijava as pp, kanton as k, osoba as o, uspjeh_u_srednjoj as us
-		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND o.kanton=k.id
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno
+		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us
+		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij
 		ORDER BY ukupno DESC");
 	else
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', k.kratki_naziv, pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno
-		FROM prijemni_prijava as pp, kanton as k, osoba as o, prosliciklus_uspjeh as pcu
-		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND o.kanton=k.id
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno
+		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu
+		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij
 		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
 	while($rezultat = mysql_fetch_row($qispis)) {
 		$id = $rezultat[0];
-		$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$rezultat[2], 'opci_uspjeh'=>$rezultat[3], 'kanton_id'=>$rezultat[4], 'kljucni_predmeti'=>$rezultat[5], 'dodatni_bodovi'=>$rezultat[6], 'prijemni_ispit'=>$rezultat[7], 'ukupno'=>$rezultat[8]);
+		$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$kantoni[$rezultat[3]], 'opci_uspjeh'=>$rezultat[2], 'kanton_id'=>$rezultat[3], 'kljucni_predmeti'=>$rezultat[4], 'dodatni_bodovi'=>$rezultat[5], 'prijemni_ispit'=>$rezultat[6], 'ukupno'=>$rezultat[7]);
+
+		// Iako u konkursu ne piše da se uspjeh zaokružuje, radi ljepšeg ispisa zaokružićemo na dvije decimale
+		if ($ciklus!=1) {
+			$kandidati[$id]['opci_uspjeh'] = round($kandidati[$id]['opci_uspjeh'], 2);
+			$kandidati[$id]['ukupno'] = round($kandidati[$id]['ukupno'], 2);
+		}
 	}
 
 	// Zaglavlje tabele
@@ -215,7 +227,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Troskove studija snosi Kanton
 	$i = 1;
 	foreach($kandidati as $id => $kandidat) {
-		if ($i >= $kandidatikp) break;
+		if ($i > $kandidatikp) break;
 		if($kandidat['prijemni_ispit'] >= $bodovisoft) {
 			if ($i == 1) {
 				?>
@@ -245,7 +257,7 @@ STUDIJ - Troškove studija snosi Kanton Sarajevo</b></td>
 	// Troskove studija snose studenti (polozili prijemni)
 	$j = 1;
 	foreach($kandidati as $id => $kandidat) {
-		if ($j >= $kandidatisp) break;
+		if ($j > $kandidatisp) break;
 		if(($kandidat['prijemni_ispit'] >= $bodovisoft && $i >= $kandidatikp)) {
 			if ($j == 1) {
 				?>
@@ -275,7 +287,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 	// Troskove studija snose studenti (nisu polozili ali su iznad soft limita i ima mjesta)
 	$iznadsoftlimita=0;
 	foreach($kandidati as $id => $kandidat) {
-		if ($j >= $kandidatisp) break;
+		if ($j > $kandidatisp) break;
 		if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $j<$kandidatisp)) {
 			if ($j == 1) {
 				?>
@@ -308,7 +320,7 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 	$k = 1;
 	$stranidrzavljani=0;
 	foreach($kandidati as $id => $kandidat){
-		if ($k >= $kandidatisd) break;
+		if ($k > $kandidatisd) break;
 		if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13)  {
 			if ($j == 1 && $k == 1) {
 				?>
