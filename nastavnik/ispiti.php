@@ -85,6 +85,13 @@ if ($ispit>0) {
 
 if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
 
+	if ($ispit>0) {
+		$finidatum = date("d. m. Y", mysql_result($q30,0,0));
+		$tipispita = mysql_result($q30,0,2);
+		print "<p><b>Masovni unos ocjena za ispit $tipispita, održan $finidatum</b></p>";
+	}
+
+
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 
 	if ($ispis) {
@@ -419,7 +426,7 @@ if ($_REQUEST['akcija']=="masovni_unos") {
 	}
 
 	?>
-	<h4>Masovni unos ocjena za ispit <?=$tipispita?>, <?=$finidatum?></h4>
+	<h4>Masovni unos ocjena za ispit <?=$tipispita?>, održan <?=$finidatum?></h4>
 
 	<?=genform("POST");?>
 	<input type="hidden" name="fakatradi" value="0">
