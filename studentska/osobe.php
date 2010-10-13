@@ -791,7 +791,7 @@ else if ($akcija == "upis") {
 			$predmet = $r650[0];
 			$psemestar = $r650[2];
 			$pnaziv = $r650[3];
-			$q660 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+			$q660 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
 			if (mysql_result($q660,0,0)<1 && !$predmeti_pao[$predmet]) { 
 				$predmeti_pao[$predmet]=$pnaziv;
 				if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
@@ -838,6 +838,7 @@ else if ($akcija == "upis") {
 	}
 
 	// Nema potrebe gledati dalje ako treba tek izabrati studij
+	$uou=0;
 	if ($mijenja_studij==0) {
 		// Da li je popunjen ugovor o učenju?
 		$q680 = myquery("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
@@ -853,16 +854,22 @@ else if ($akcija == "upis") {
 				if ($ok_izvrsiti_upis==0) print "<br/>* $r690[1]\n";
 
 				// Da li je već položio predmet
-				$q695 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+				$q695 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
 				if (mysql_result($q695,0,0)>0) {
 					if ($ok_izvrsiti_upis==0) print " - već položen! Preskačem";
-				}
+				} else {
 	
-				// Tražimo ponudukursa
-				$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-				if (mysql_num_rows($q700)<1) {
-					if ($ok_izvrsiti_upis==0) print " - nije pronađena ponuda kursa!!\n";
-				} else $uoupk[$predmet] = mysql_result($q700,0,0);
+					// Tražimo ponudukursa
+					$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+					if (mysql_num_rows($q700)<1) {
+						if ($ok_izvrsiti_upis==0) print " - nije pronađena ponuda kursa!! Kreiram.\n";
+						$q701 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
+						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
+					} 
+					
+					if ($ok_izvrsiti_upis==0) print '<input type="hidden" name="izborni-'.mysql_result($q700,0,0).'" value="on">'."\n";
+				}
 			}
 			if ($ok_izvrsiti_upis==0) print "</p>\n";
 		} else {
@@ -873,7 +880,7 @@ else if ($akcija == "upis") {
 		// Nalazim izborne predmete 
 
 		// Ako postoji plan studija, problem je jednostavan
-		if ($plan_studija>0) {
+		if ($plan_studija>0 && $uou==0) {
 			$bio_predmet=array();
 			$q710 = myquery("select predmet from plan_studija where godina_vazenja=$plan_studija and studij=$studij and semestar=$semestar and obavezan=0");
 			while ($r710 = mysql_fetch_row($q710)) {
@@ -892,12 +899,6 @@ else if ($akcija == "upis") {
 					// Da li je položen?
 					$q730 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
 					if (mysql_result($q730,0,0)>0) {
-						$nastavak=1; break;
-					}
-
-					// Da li je već izabran u Ugovoru o učenju?
-					if ($uoupk[$predmet]>0) {
-						if ($ok_izvrsiti_upis==0) print '<input type="hidden" name="izborni-'.$uoupk[$predmet].'" value="on">'."\n";
 						$nastavak=1; break;
 					}
 
@@ -926,7 +927,7 @@ else if ($akcija == "upis") {
 				}
 			}
 
-		} else { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
+		} else if ($uou==0) { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
 
 			// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
 			$q560 = myquery("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
