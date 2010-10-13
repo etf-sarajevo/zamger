@@ -200,7 +200,7 @@ if ($akcija == "ogranicenja") {
 			if ($grupe==$izabrane) { // Sve izabrano
 				$q375 = myquery("delete from ogranicenje where $upitbrisisve");
 			} else {
-				$q376 = myquery("delete from ogranicenje where $upitbrisi");
+				$q376 = myquery("delete from ogranicenje where $upitbrisisve");
 				$q377 = myquery("insert into ogranicenje values $upitdodaj");
 			}
 			nicemessage ("Postavljena nova ograničenja.");
@@ -600,7 +600,7 @@ else if ($akcija == "edit") {
 	$q355 = myquery("select o.id, o.ime, o.prezime, ns.titula, angs.naziv from angazman as a, osoba as o, angazman_status as angs, naucni_stepen as ns where a.predmet=$predmet and a.akademska_godina=$ag and a.osoba=o.id and o.naucni_stepen=ns.id and a.angazman_status=angs.id order by angs.id, o.prezime");
 	if (mysql_num_rows($q355)<1) print "<li>Niko nije angažovan na ovom predmetu</li>\n";
 	while ($r355 = mysql_fetch_row($q355)) {
-		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">$r355[2] $r355[3] $r355[1]</a> - $r355[4] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&akademska_godina=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
+		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">$r355[2] $r355[3] $r355[1]</a> - $r355[4] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&ag=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
 	}
 	print "</ul>\n";
 
