@@ -136,13 +136,21 @@ if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " 
 if ($_REQUEST["akcija"]=="studenti") {
 	if ($_REQUEST['subakcija']=="dodaj_studenta" && check_csrf_token()) {
 		$student = intval($_REQUEST['student']);
-		$q220 = myquery("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
+		$q215 = myquery("select count(*) from student_ispit_termin where student=$student and ispit_termin=$termin");
+		if (mysql_result($q215,0,0)>0)
+			nicemessage("Student je već prijavljen na ovaj termin!");
+		else
+			$q220 = myquery("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
+	}
+	if ($_REQUEST['subakcija']=="izbaci_studenta" && check_csrf_token()) {
+		$student = intval($_REQUEST['student']);
+		$q225 = myquery("delete from student_ispit_termin where student=$student and ispit_termin=$termin");
 	}
 
 	$q200 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
 	$datumvrijeme = date("d. m. Y. H:i:s", mysql_result($q200,0,0));
 
-	$q200=myquery("SELECT o.ime, o.prezime, o.brindexa FROM osoba as o, student_ispit_termin as si WHERE o.id=si.student AND si.ispit_termin=$termin order by o.prezime, o.ime");
+	$q200=myquery("SELECT o.ime, o.prezime, o.brindexa, o.id FROM osoba as o, student_ispit_termin as si WHERE o.id=si.student AND si.ispit_termin=$termin order by o.prezime, o.ime");
 
 
 	?>
@@ -154,6 +162,7 @@ if ($_REQUEST["akcija"]=="studenti") {
 		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
 		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Prezime i ime</font></td>
 		<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Broj indexa</font></td>
+		<td>&nbsp;</td>
 	</tr>
 	</thead>
 	<tbody>
@@ -166,6 +175,13 @@ if ($_REQUEST["akcija"]=="studenti") {
 			<td><?=$brojac?></td>
 			<td><?=$r200[1]?> <?=$r200[0]?></td>
 			<td><?=$r200[2]?></td>
+			<td><?=genform("POST")?>
+				<input type="hidden" name="akcija" value="studenti">
+				<input type="hidden" name="subakcija" value="izbaci_studenta">
+				<input type="hidden" name="student" value="<?=$r200[3]?>">
+				<input type="submit" value="Izbaci" class="default">
+				</form>
+			</td>
 		</tr>
 		<?
 		$brojac++;	
