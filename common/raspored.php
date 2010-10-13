@@ -90,7 +90,7 @@ function common_raspored($tip) {
 		$q5 = myquery("select ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$userid and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
 		if (mysql_num_rows($q5)<1) {
 			// Student nije upisan na fakultet.
-			print "Nema rasporeda časova za korisnika<br/><br/>";
+			print "Nema rasporeda časova za korisnika<br/><br/></div>\n";
 			return;
 		}
 		$semestar_paran = mysql_result($q5,0,0) % 2;
