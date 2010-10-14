@@ -560,7 +560,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 
 	// Download zadaće u PDF formatu - sada je moguć i za attachmente
 	if ($slao_zadacu) {
-		?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
+		?><a href="?sta=student/zadacapdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
 	} else { print "&nbsp;"; }
 	?>
 	</td></tr>

@@ -1,25 +1,9 @@
 <?
 
-// STUDENT/PDF - ispis zadace u PDF formatu
-
-// v3.9.1.0 (2008/02/19) + Kopiran raniji stud_pdf
-// v3.9.1.1 (2008/03/28) + Nova auth tabela
-// v3.9.1.2 (2008/03/30) + Popravljen put za zadaće
-// v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/05/25) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
-// v4.0.9.4 (2009/05/26) + Varijabla $predmet je koristena u dva znacenja :)
-
-// TODO: koristiti tcpdf
-
-//mb_internal_encoding('UTF-8');
-
-//mysql_query('SET NAMES UTF8');
+// STUDENT/ZADACAPDF - ispis zadace u PDF formatu
 
 
-function student_pdf() {
+function student_zadacapdf() {
 
 global $userid,$conf_files_path,$files,$i;
 $files=array();
