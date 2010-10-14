@@ -117,7 +117,7 @@ if ($tabela1>$tabela2) {
 <td width="68">0</td>
 <td align="center" width="68">50</td>
 <td align="right" width="69">100</td></tr></table>
-što je <?=$procent?>% od trenutno mogucih <?=$mogucih?> bodova.</p>
+što je <?=$procent?>% od trenutno mogućih <?=$mogucih?> bodova.</p>
 </td></tr></table></center>
 
 
@@ -396,7 +396,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 // Statusne ikone:
 $stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaca prepisana", "Bug u programu", "Pregled u toku", "Zadaca OK");
+$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
 ?>
@@ -404,7 +404,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaca prepisana", "Bug
 
 <!-- zadace -->
 
-<b>Zadace:</b><br/>
+<b>Zadaće:</b><br/>
 <table cellspacing="0" cellpadding="2" border="0" id="zadace">
 	<thead>
 		<tr>
@@ -413,7 +413,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaca prepisana", "Bug
 
 $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
 
-// Prikaz sa predmete kod kojih nije aktivno slanje zadaca
+// Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa cemo sumirati
 	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
@@ -469,18 +469,24 @@ if (mysql_result($q100,0,0)==0) {
 	<td>&nbsp;</td>
 <?
 
-// Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
+// Zaglavlje tabele - potreban nam je max. broj zadataka u zadaći
 
-$q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
-$broj_zadataka = mysql_result($q20,0,0);
+$q20 = myquery("select zadataka, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag");
+$ima_postavka = false;
+$broj_zadataka = 0;
+while ($r20 = mysql_fetch_row($q20)) {
+	if ($r20[0]>$broj_zadataka) $broj_zadataka=$r20[0];
+	if (preg_match("/\w/", $r20[1])) $ima_postavka=true;
+}
+
 for ($i=1;$i<=$broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
 }
 
 ?>
 		<td><b>Ukupno bodova</b></td>
-		<td><b>Postavka zadaca</b></td>
-		<td><b>Kreiranje zadaca u pdf-u</b></td>
+		<? if ($ima_postavka) { ?><td><b>Postavka zadaća</b></td><? } ?>
+		<td><b>PDF</b></td>
 		</tr>
 	</thead>
 <tbody>
@@ -491,7 +497,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 // LEGENDA STATUS POLJA:
 // 0 - nepoznat status
-// 1 - nova zadaca
+// 1 - nova zadaća
 // 2 - prepisana
 // 3 - ne može se kompajlirati
 // 4 - prošla test, predstoji kontrola
@@ -505,11 +511,12 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 //dodana dozvoljena_ekstenzija
-$q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, dozvoljene_ekstenzije from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
 	$zzadataka = $r21[3];
+	$postavka_zadace = $r21[6];
 	?><tr>
 	<th><?=$r21[1]?></th>
 	<?
@@ -538,45 +545,27 @@ while ($r21 = mysql_fetch_row($q21)) {
 	<?
 		}
 	}
-	//dodao upit da probjerim jeli postavljena postavka
-	$qp = myquery("select postavka_zadace from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag order by id desc limit 1");
-		if (mysql_num_rows($qp) < 1) {
-			zamgerlog("ne postoji attachment ()",3);
-			niceerror("Ne postoji attachment");
-			return;
-		}
-
-	$postavka_zadace = mysql_result($qp,0,0);
+	
 	?>
 	<td><?=$bodova_zadaca?></td><td>
 	<?
-	if($postavka_zadace!=""){
-		?><a href="?sta=common/preuzmi_postavku&zadaca=<?=$zadaca?>&predmet=<?=$predmet?>&ag=<?=$ag?>"<img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
-	}else { print "&nbsp;"; }
+	
+	// Link za download postavke zadaće
+	if ($ima_postavka) {
+		if ($postavka_zadace != "") {
+			?><a href="?sta=common/preuzmi_postavku&zadaca=<?=$zadaca?>&predmet=<?=$predmet?>&ag=<?=$ag?>"<img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
+		} else { print "&nbsp;"; }
+		print "</td><td>\n";
+	}
+
+	// Download zadaće u PDF formatu - sada je moguć i za attachmente
+	if ($slao_zadacu) {
+		?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
+	} else { print "&nbsp;"; }
 	?>
-	</td><td>
+	</td></tr>
 	<?
-	//Omogucili da se moze generisati pdf zadataka koji se salju kao attachment
-	$ext=explode(',',$r21[6]);
-	$pdf[0]='pdf';
-	$broj=0;
-	foreach($ext as $dozext)
-	{
-	if(in_array("pdf",$ext)){
-	$broj=1;
-	}}
 	
-	if($broj!=0)
-	{
-	print "&nbsp;";
-	}
-	else{
-	?><a href="?sta=student/pdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
-	
-	}
-	
-	?></td></tr>
-	<?
 	$bodova_sve_zadace += $bodova_zadaca;
 }
 
@@ -591,7 +580,7 @@ $bodova += $bodova_sve_zadace;
 </tbody>
 </table>
 
-<p>Za ponovno slanje zadatka, kliknite na slicicu u tabeli iznad. <a href="#" onclick="javascript:window.open('legenda-zadace.html','blah6','width=320,height=130');">Legenda simbola</a></p>
+<p>Za ponovno slanje zadatka, kliknite na sličicu u tabeli iznad. <a href="#" onclick="javascript:window.open('legenda-zadace.html','blah6','width=320,height=130');">Legenda simbola</a></p>
 <br/>
 
 <!-- end zadace -->
@@ -630,7 +619,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 
 
 
-// KONACNA OCJENA
+// KONAČNA OCJENA
 
 $q50 = myquery("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q50)>0) {
@@ -638,7 +627,7 @@ if (mysql_num_rows($q50)>0) {
 	<center>
 		<table width="100px" style="border-width: 3px; border-style: solid; border-color: silver">
 			<tr><td align="center">
-				KONACNA OCJENA<br/>
+				KONAČNA OCJENA<br/>
 				<font size="6"><b><?=mysql_result($q50,0,0)?></b></font>
 			</td></tr>
 		</table>
