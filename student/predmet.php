@@ -57,7 +57,7 @@ $ponudakursa = mysql_result($q17,0,0);
 <p style="font-size: small;">Predmet: <b><?=mysql_result($q10,0,0)?> (<?=mysql_result($q15,0,0)?>)</b><br/>
 <?
 
-// Odredivanje labgrupe
+// Određivanje labgrupe
 $q20 = myquery("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
 // Ispisujemo naziv prve nevirtualne grupe koju upit vrati
 if (mysql_num_rows($q20)>0) {
@@ -80,7 +80,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
 
-// boja oznacava napredak studenta
+// boja označava napredak studenta
 if ($mogucih==0) $procent=0;
 else $procent = intval(($bodova/$mogucih)*100);
 if ($procent>=75) 
@@ -315,7 +315,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 
 	$odsustva=0;
 	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta order by vrijeme");
-	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih casova
+	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
 
 	$datumi = $vremena = $statusi = "";
 	while ($r70 = mysql_fetch_row($q70)) {
@@ -391,7 +391,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 
 
-//  ZADACE
+//  ZADAĆE
 
 
 // Statusne ikone:
@@ -415,7 +415,7 @@ $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentsk
 
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
-	// U pravilu ovdje ima samo jedan zadatak, pa cemo sumirati
+	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
 	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
@@ -510,7 +510,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 
 $bodova_sve_zadace=0;
-//dodana dozvoljena_ekstenzija
+
 $q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
@@ -521,9 +521,10 @@ while ($r21 = mysql_fetch_row($q21)) {
 	<th><?=$r21[1]?></th>
 	<?
 	$bodova_zadaca = 0;
+	$slao_zadacu = false;
 
 	for ($zadatak=1;$zadatak<=$broj_zadataka;$zadatak++) {
-		// Ako tekuca zadaca nema toliko zadataka, ispisujemo blank polje
+		// Ako tekuća zadaća nema toliko zadataka, ispisujemo blank polje
 		if ($zadatak>$zzadataka) {
 			?><td>&nbsp;</td><?
 			continue;
@@ -534,6 +535,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 		if (mysql_num_rows($q22)<1) {
 			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
+			$slao_zadacu = true;
 			$status = mysql_result($q22,0,0);
 			$bodova_zadatak = mysql_result($q22,0,1);
 			$bodova_zadaca += $bodova_zadatak;
