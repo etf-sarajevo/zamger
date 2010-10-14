@@ -153,7 +153,7 @@ function moodle_novosti($predmet, $ag) {
 		array_push($vrijeme_logina,$r59[0]);
 
 	$vrijeme_posljednjeg_logina = $vrijeme_logina[1]+(2*60*60);
-	$vrijeme_za_novosti = $vrijeme_logina[0]-(14*22*60*60);
+	$vrijeme_za_novosti = $vrijeme_logina[0]-(14*24*60*60);
 
 
 	$moodle_con = $__lv_connection;
@@ -172,22 +172,18 @@ function moodle_novosti($predmet, $ag) {
 		}
 	}
 
-	$id_modula = array();
-	$q61 = mysql_query("select module from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
+	$q61 = mysql_query("select module, instance, visible from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
 	
 	while ($r61 = mysql_fetch_array($q61)) {
-		array_push($id_modula,$r61['0']);
-	}
-	
-	for ($i=0; $i<count($id_modula); $i++) {
 		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
-		if ($id_modula[$i] == 9) {
-			$q62 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
+		// Ako visible != 1 instanca je sakrivena i ne treba je prikazati u Zamgeru
+		if ($r61[0] == 9 && $r61[2] == 1) {
+			$q62 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
 			if (mysql_num_rows($q62)>0) {
 				while ($r62 = mysql_fetch_array($q62)) {
 					$q63 = myquery("select id from moodle_predmet_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='".mysql_real_escape_string($r62['0'])."' and vrijeme_promjene=".$r62['1']);
-					
+
 					// Ako novost ne postoji u tabeli moodle_predmet_rss , onda se ona tamo pohranjuje
 					if (mysql_num_rows($q63)<1) {
 						myquery("insert into $conf_dbdb.moodle_predmet_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('1','$course_id','".mysql_real_escape_string($r62['0'])."','".$r62['1']."')");
@@ -197,8 +193,8 @@ function moodle_novosti($predmet, $ag) {
 		}
 		
 		// Modul 13 je zaduzen za cuvanje informacija o dodatom resursu na moodle stranici
-		if ($id_modula[$i]==13) {
-			$q64 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
+		if ($r61[0] == 13 && $r61[2] == 1) {
+			$q64 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
 			if (mysql_num_rows($q64)>0) {
 				while ($r64 = mysql_fetch_array($q64)) {
@@ -267,8 +263,13 @@ function moodle_novosti($predmet, $ag) {
 			if ($i%4==3) print "</tr>\n";
 			$i++;
 		}
+		while ($i%4!=0) {
+			print "<td width=\"17.5%\">&nbsp;</td>\n";
+			if ($i%4==3) print "</tr>\n";
+			$i++;
+		}
 		?></table><?
-	}
+	} // if (count($moodle_id_obavijesti)>0)
 	
 	
 	if (count($moodle_id_resursa)>0) {
@@ -292,6 +293,11 @@ function moodle_novosti($predmet, $ag) {
 				<?
 			}
 
+			if ($i%4==3) print "</tr>\n";
+			$i++;
+		}
+		while ($i%4!=0) {
+			print "<td width=\"17.5%\">&nbsp;</td>\n";
 			if ($i%4==3) print "</tr>\n";
 			$i++;
 		}
