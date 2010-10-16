@@ -100,7 +100,6 @@ array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
 //array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/raspored1", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/slika", "Slika", "Slika", "SNBA", "2", "0"),
-array("common/preuzmi_postavku", "Download postavke zadace", "Download", "SN", "2", "0"),
 array("common/pdfraspored", "Prikaz rasporeda u pdf formatu", "PDF_RASPORED", "SNBA", "1", "0"),
 /************************************
  * Haris Agic
@@ -108,7 +107,6 @@ array("common/pdfraspored", "Prikaz rasporeda u pdf formatu", "PDF_RASPORED", "S
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
 array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
-array("common/fileDownload", "Download projektnih fajlova", "Projektni fajlovi", "SNA", "2", "0"),
 array("common/articleImageDownload", "Slike projektnih članaka", "Slike članaka", "SNA", "2", "0"),
 array()
 

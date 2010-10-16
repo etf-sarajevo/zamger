@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // COMMON/PROJEKTNESTRANE - projektna strana projekta
 function common_projektneStrane()
 {
@@ -317,7 +317,7 @@ function common_projektneStrane()
         ?>
                             <div class="item">
                                 <span class="date"><?=date('d.m H:i  ', mysql2time($file[vrijeme])) ?></span>
-                                <a href="<?="index.php?sta=common/fileDownload&predmet=$predmet&ag=$ag&projekat=$projekat&id=$file[id]" ?>" title="<?=$file['filename']?>" ><?php
+                                <a href="<?="index.php?sta=common/attachment&tip=projekat&projekat=$projekat&id=$file[id]" ?>" title="<?=$file['filename']?>" ><?php
                                 
                                     $maxLen = 100;	
                                     $len = strlen($file[filename]);
@@ -1439,7 +1439,7 @@ function common_projektneStrane()
 			echo nicesize($filesize);
 			?>        </td><!--filesize-->
         <td class="options">
-			<a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>">Snimi</a>        
+			<a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>">Snimi</a>        
 	<?php
 					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
 					{
@@ -1474,7 +1474,7 @@ function common_projektneStrane()
                     ?>
                 </td><!--filesize-->
                 <td class="options">
-                    <a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $revision[id] ?>">Snimi</a>        
+                    <a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $revision[id] ?>">Snimi</a>        
                 </td><!--options-->
             </tr><!--file_revision-->	
     <?php					
@@ -1625,7 +1625,7 @@ function common_projektneStrane()
 						<b>Limit za upload je 20MB.</b> <br />							
 					   <div class="row">
 							<span class="label">Trenutni fajl</span>
-							<span class="formw"><a href="<?='index.php?sta=common/fileDownload' . "&predmet=$predmet&ag=$ag&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
+							<span class="formw"><a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
 								<?=filtered_output_string($lastRevisionEntry[filename]) ?>
 							</a>
 							</span>
