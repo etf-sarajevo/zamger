@@ -15,6 +15,7 @@ function izvjestaj_pregled() {
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
 
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 
@@ -35,19 +36,25 @@ if ($ak_god==0) {
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = array();
 $trajanje_bsc = $trajanje_msc = 0;
-$q20 = myquery("select s.id, s.kratkinaziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q20 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
 while ($r20 = mysql_fetch_row($q20)) {
 	$studiji_bsc[$r20[0]]=$r20[1];
 	if ($r20[2]>$trajanje_bsc) $trajanje_bsc=$r20[2];
+	$institucije[$r20[0]]=$r20[3];
 }
 $trajanje_bsc /= 2; // broj godina umjesto broj semestara
 
-$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and ts.moguc_upis=1 order by s.kratkinaziv");
 while ($r30 = mysql_fetch_row($q30)) {
 	$studiji_msc[$r30[0]]=$r30[1];
 	if ($r30[2]>$trajanje_msc) $trajanje_msc=$r30[2];
+	$institucije[$r30[0]]=$r30[3];
 }
 $trajanje_msc /= 2; // broj godina umjesto broj semestara
+
+
+
+// Sumarni izvještaj za studije
 
 // Da li su isti studiji za bsc i msc?
 $istisu=1;
@@ -122,9 +129,9 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc; $godina++) {
 		$redovnih_godina += $redovnih_studij_godina[$id];
 		$ponovaca_godina += $ponovaca_studij_godina[$id];
 
-		$redovnih_studij[$id] += $redovnih_studij_godina[$id];
-		$ponovaca_studij[$id] += $ponovaca_studij_godina[$id];
-		$ukupno_studij[$id] += $ukupno_studij_godina[$id];
+		$redovnih_studij[$institucije[$id]] += $redovnih_studij_godina[$id];
+		$ponovaca_studij[$institucije[$id]] += $ponovaca_studij_godina[$id];
+		$ukupno_studij[$institucije[$id]] += $ukupno_studij_godina[$id];
 	}
 
 
@@ -182,7 +189,7 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc; $godina++) {
 		<td bgcolor="#EEEEEE" align="left" valign="center"><b>redovan</b></td>
 		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$redovnih_total?></b></td>
 <? foreach ($studiji as $id=>$ime) { ?>
-		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$redovnih_studij[$id]?></b></td>
+		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$redovnih_studij[$institucije[$id]]?></b></td>
 <? } ?>
 	</tr>
 	<tr>
@@ -190,7 +197,7 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc; $godina++) {
 		<td bgcolor="#EEEEEE" align="left" valign="center"><b>ponovac</b></td>
 		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ponovaca_total?></b></td>
 <? foreach ($studiji as $id=>$ime) { ?>
-		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ponovaca_studij[$id]?></b></td>
+		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ponovaca_studij[$institucije[$id]]?></b></td>
 <? } ?>
 	</tr>
 	<tr>
@@ -198,7 +205,7 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc; $godina++) {
 		<td bgcolor="#EEEEEE" align="left" valign="center"><b>ukupno</b></td>
 		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ukupno_total?></b></td>
 <? foreach ($studiji as $id=>$ime) { ?>
-		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ukupno_studij[$id]?></b></td>
+		<td bgcolor="#EEEEEE" align="center" valign="center"><b><?=$ukupno_studij[$institucije[$id]]?></b></td>
 <? } ?>
 	</tr>
 <?
