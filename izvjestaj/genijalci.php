@@ -13,6 +13,8 @@ function izvjestaj_genijalci() {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 // Akademska godina
@@ -44,17 +46,31 @@ if ($studij>0) {
 	?><h3><?=mysql_result($q20,0,0)?></h3><?
 	$wherestudij="and ss.studij=$studij";
 } else {
-	?><h3>Svi studiji</h3><?
+	$ciklus = -$studij;
+
+	?><h3>Svi studiji (<?=$ciklus?>. ciklus)</h3><?
+
+	$q25 = myquery("select s.id from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus");
+	$wherestudij="and (";
+	while ($r25 = mysql_fetch_row($q25)) {
+		if (strlen($wherestudij)>5) $wherestudij .= " or ";
+		$wherestudij .= "ss.studij=$r25[0]";
+	}
+	$wherestudij .= ")";
 }
 
 
 // Parametar: godina studija
 $godinastudija = intval($_REQUEST['godina_studija']);
+$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']);
 $wheresemestar="";;
 if ($godinastudija>0) {
 	?><h3><?=$godinastudija?>. godina studija</h3><?
-	$wheresemestar="and ss.semestar=".($godinastudija*2); // gledamo samo ljetnji semestar, jer ako ima ljetnji onda je sigurno zavrsio i zimski, dok obrnuto ne mora biti
+	$wheresemestar="and ss.semestar=".($godinastudija*2); 
+	// za upit šta trenutno sluša gledamo samo ljetnji semestar, jer ako ima ljetnji onda je sigurno završio i zimski, dok obrnuto ne mora biti
 }
+
+$limit_predmet = intval($_REQUEST['limit_predmet']);
 
 
 
@@ -62,21 +78,25 @@ $q1 = myquery("SELECT a.id, a.prezime, a.ime, a.brindexa, ns.naziv FROM `osoba` 
 a, student_studij as ss, nacin_studiranja as ns WHERE a.id=ss.student and ss.akademska_godina=$ak_god and ss.nacin_studiranja=ns.id $wherestudij $wheresemestar");
 
 while ($r1 = mysql_fetch_row($q1)) {
-	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp where ko.student=$r1[0] and ko.predmet=p.id and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and pk.semestar<".($godinastudija*2+1));
+	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp where ko.student=$r1[0] and ko.predmet=p.id and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = mysql_fetch_row($q2)) { 
 		$suma += $r2[0]; $broj++; $sumaects += $r2[1]; 
 	}
 
 	// preskacemo studente sa premalo polozenih predmeta
-	$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']);
-	if ($sumaects<$minsumaects) continue; 
+	if ($limit_predmet>0) {
+		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet)=0");
+		if (mysql_result($q3,0,0)>$limit_predmet) continue;
+	} else if ($sumaects<$minsumaects) continue; 
+
 
 	$prosjek = $suma/$broj;
 	$prosjeci[$r1[0]]=$prosjek;
 	$imeprezime[$r1[0]]="$r1[1] $r1[2]";
 	$brindexa[$r1[0]]=$r1[3];
 	$nacinstudiranja[$r1[0]]=$r1[4];
+	$ects[$r1[0]]=$sumaects;
 }
 
 arsort($prosjeci);
