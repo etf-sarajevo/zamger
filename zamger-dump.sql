@@ -1,4 +1,4 @@
--- phpMyAdmin SQL Dump
+﻿-- phpMyAdmin SQL Dump
 -- version 2.11.5.2
 -- http://www.phpmyadmin.net
 --
@@ -2106,3 +2106,66 @@ CREATE TABLE IF NOT EXISTS `moodle_predmet_rss` (
 -- Dumping data for table `moodle_predmet_rss`
 --
 -- -------------------------------------------------------
+
+--
+-- Table structure for table `raspored`
+--
+DROP TABLE IF EXISTS `raspored`;
+CREATE TABLE IF NOT EXISTS `raspored` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `studij` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `raspored`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `raspored_sala`
+--
+DROP TABLE IF EXISTS `raspored_sala`;
+CREATE TABLE IF NOT EXISTS `raspored_sala` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `kapacitet` int(5) DEFAULT NULL,
+  `tip` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `raspored_sala`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `raspored_stavka`
+--
+DROP TABLE IF EXISTS `raspored_stavka`;
+CREATE TABLE IF NOT EXISTS `raspored_stavka` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `raspored` int(11) NOT NULL,
+  `dan_u_sedmici` tinyint(1) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `vrijeme_pocetak` int(11) NOT NULL,
+  `vrijeme_kraj` int(11) NOT NULL,
+  `sala` int(11) NOT NULL,
+  `tip` varchar(1) CHARACTER SET latin1 NOT NULL DEFAULT 'P',
+  `labgrupa` int(11) NOT NULL,
+  `dupla` int(11) NOT NULL DEFAULT '0',
+  `isjeckana` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `raspored_stavka`
+--
+
+
