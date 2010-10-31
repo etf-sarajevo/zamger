@@ -159,7 +159,7 @@ if (mysql_num_rows($q30)>0) {
 }
 
 
-
+$br = 0;
 $q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc");
 while ($r100 = mysql_fetch_row($q100)) {
 	$id = $r100[0];
@@ -180,6 +180,9 @@ while ($r100 = mysql_fetch_row($q100)) {
 		$q115 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$primalac");
 		if (mysql_result($q115,0,0)<1) continue;
 	}
+
+	// Poruka je ok
+	if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
 	$vrijeme_poruke[$id]=$r100[1];
 
 	// Fino vrijeme
@@ -226,11 +229,9 @@ while ($r100 = mysql_fetch_row($q100)) {
 
 //Novosti sa Courseware-a
 
-$q30 = myquery("Select unix_timestamp(vrijeme) from log where userid=$userid  and dogadjaj='logout' order by vrijeme desc limit 1");
+// Cache nećemo puniti jer je to sporo, a student/predmet se često otvara
 
-$vrijeme_loga = mysql_result($q30,0);
-
-//prikupljanje podatak o novostima na Moodle stranicama
+/*//prikupljanje podatak o novostima na Moodle stranicama
 $q40 = myquery("Select predmet from student_predmet where student=$userid");
 if(mysql_num_rows($q40)>0){
 	while($r40 = mysql_fetch_array($q40)){
@@ -295,46 +296,46 @@ if(mysql_num_rows($q40)>0){
 	if (!$conf_moodle_reuse_connection) {
 		mysql_close($moodle_con);
 	}
+*/
 
 
-//ispis novosti sa courseware-a u RSS feed-u
-$q50 =myquery("Select predmet from student_predmet where student=$userid");
 
-if(mysql_num_rows($q50)>0){
-	while($r50 = mysql_fetch_array($q50)){
-		$predmet = $r50[0];
-		
-		$q51 = myquery("Select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
-		
-		if(mysql_num_rows($q51)>0){
-			$moodle_id = mysql_result($q51,0);
-			
-			$q52 = myquery("Select vrstanovosti, sadrzaj, vrijeme_promjene from moodle_predmet_rss where moodle_id=$moodle_id and vrijeme_promjene>$vrijeme_loga order by vrijeme_promjene desc limit 5");
-			
-			$temp = 0;
-			
-			while($r52 = mysql_fetch_array($q52)){
-				if($r52[0]==1){
-				$code_poruke["mo".$temp]= "
-		<item>
-		<title>Obavijest : ".substr($r52[1],0,23)." </title>
+
+// Vijesti iz cache-a stavljamo u niz
+
+$q200 = myquery("select mpi.moodle_id, mpr.id, mpr.vrstanovosti, mpr.sadrzaj, mpr.vrijeme_promjene, p.kratki_naziv, p.naziv from moodle_predmet_id as mpi, moodle_predmet_rss as mpr, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag and mpi.moodle_id=mpr.moodle_id and pk.predmet=p.id order by mpr.vrijeme_promjene desc limit $broj_poruka");
+while ($r200 = mysql_fetch_row($q200)) {
+	$moodle_id = $r200[0];
+
+	// Skraćeni naslov
+	$naslov = $r200[3];
+	if (strlen($naslov)>30) 
+		$naslov = substr($naslov,0,28)."...";
+
+	// Fino vrijeme
+	$vrijeme="";
+	if (date("d.m.Y",$r200[4])==date("d.m.Y")) $vrijeme = "danas ";
+	else if (date("d.m.Y",$r200[4]+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
+	else $vrijeme .= date("d.m. ",$r200[4]);
+	$vrijeme .= date("H:i",$r200[4]);
+
+	if ($r200[2]==1) { // 1 = labela
+		$code_poruke["mo".$r200[1]]= "<item>
+		<title>Obavijest ($r200[5]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
-		<decription>".date('d.m.Y H:i:s',$r52[2]+2*60*60)."</descritpion>
+		<description>Detaljnije na Moodle stranici predmeta $r200[6]</description>
 		</item>\n";
-					$vrijeme_poruke["mo".$temp] = $r52[2]+2*60*60;
-				}
-				if($r52[0]==2){
-				$code_poruke["mr".$temp]= "
-		<item>
-		<title>Obavijest : ".substr($r52[1],0,23)." </title>
+		$vrijeme_poruke["mo".$r200[1]] = $r200[4];
+	}
+
+	if ($r200[2]==2) { // 2 = resurs
+		$code_poruke["mr".$r200[1]]= "<item>
+		<title>Resurs ($r200[5]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
-		<decription>".date('d.m.Y H:i:s',($r52[2]+2*60*60))."</descritpion>
+		<description>Detaljnije na Moodle stranici predmeta $r200[6]</description>
 		</item>\n";
-					$vrijeme_poruke["mr".$temp] = $r52[2]+2*60*60;
-				}	
-				$temp++;
-			}
-		}
+
+		$vrijeme_poruke["mr".$r200[1]] = $r200[4];
 	}
 }
 
