@@ -118,7 +118,6 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Parametar funkcije je ustvari ponudakursa
 
 function upis_studenta_na_predmet($student,$ponudakursa) {
-	
 	// Zapis u tabeli student_predmet
 	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
 
@@ -126,15 +125,12 @@ function upis_studenta_na_predmet($student,$ponudakursa) {
 	$q20 = myquery("select l.id, pk.predmet, pk.akademska_godina from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
 	$labgrupa = mysql_result($q20,0,0); // mora postojati
 	$predmet = mysql_result($q20,0,1); // treba nam za $q40
-	$ag=mysql_result($q20,0,2);
+	$ag = mysql_result($q20,0,2); // treba nam za $q40
 	
 	$q30 = myquery("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 
 	// Potrebno je upisati max. bodova za sve komponente prisustva!
-	
-	//	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
-	
-	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag"); // tip komponente 3 = klasično prisustvo
+	$q40 = myquery("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // tip komponente 3 = klasično prisustvo
 	while ($r40 = mysql_fetch_row($q40)) {
 		$q50 = myquery("insert into komponentebodovi set student=$student, predmet=$ponudakursa, komponenta=$r40[0], bodovi=$r40[1]");
 	}
@@ -369,13 +365,11 @@ function mass_input($ispis) {
 
 function update_komponente($student,$predmet,$komponenta=0) {
 	// Ako nije navedena komponenta, racunaju se sve komponente
-	$ag = intval($_REQUEST['ag']); // akademska godina
+
 	// Glavni upit - spisak komponenti
 	$dodaj="";
 	if ($komponenta!=0) $dodaj="and k.id=$komponenta";
-	$q10 = myquery("select k.id, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, akademska_godina_predmet as p where tpk.komponenta=k.id and p.akademska_godina=$ag and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.predmet $dodaj");
-	
-	//$q10 = myquery("select k.id, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where tpk.komponenta=k.id and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.id $dodaj");
+	$q10 = myquery("select k.id, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, akademska_godina_predmet as agp where tpk.komponenta=k.id and tpk.tippredmeta=agp.tippredmeta and pk.id=$predmet and pk.predmet=agp.predmet and pk.akademska_godina=agp.akademska_godina $dodaj");
 
 	while ($r10 = mysql_fetch_row($q10)) {
 		$k=$r10[0];
@@ -395,8 +389,7 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 
 			// Provjeravamo integralni
-			$q30 = myquery("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, akademska_godina_predmet as p where tpk.komponenta=k.id and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.predmet and k.tipkomponente=2 and k.opcija like '%$k%' and p.akademska_godina=$ag");
-			//$q30 = myquery("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, predmet as p where tpk.komponenta=k.id and tpk.tippredmeta=p.tippredmeta and pk.id=$predmet and pk.predmet=p.id and k.tipkomponente=2 and k.opcija like '%$k%'");
+			$q30 = myquery("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, ponudakursa as pk, akademska_godina_predmet as agp where tpk.komponenta=k.id and tpk.tippredmeta=agp.tippredmeta and pk.id=$predmet and pk.predmet=agp.predmet and pk.akademska_godina=agp.akademska_godina and k.tipkomponente=2 and k.opcija like '%$k%'");
 			if (mysql_num_rows($q30)<1) break;
 			$intk = mysql_result($q30,0,0);
 			$intdijelovi = mysql_result($q30,0,1);
@@ -675,6 +668,5 @@ function uslov($student, $ag=0) {
 
 	return $ima_uslov;
 }
-
 
 ?>
