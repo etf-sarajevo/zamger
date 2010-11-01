@@ -170,8 +170,8 @@ if ($tip == "projekat") {
 
 	if ($user_siteadmin) $ok = true;
 	if ($user_nastavnik && !$ok) {
-		$q210 = myquery("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-		if (mysql_result($q210,0,0)>0) $ok = true;
+		$q210 = myquery("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+		if (mysql_num_rows($q210)>0 && mysql_result($q210,0,0)!="asistent") $ok = true;
 	}
 	if ($user_student && !$ok) {
 		$q220 = myquery("SELECT count(*) FROM student_projekat WHERE student=$userid and projekat=$projekat");

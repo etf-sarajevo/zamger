@@ -32,18 +32,18 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 // Da li korisnik ima pravo ući u modul?
 
-if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+if (!$user_siteadmin) {
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
-		biguglyerror("Nemate pravo ulaska u ovu grupu!");
+		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
 }
 
 
 // Virtualna grupa
-$q20 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
+$q20 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
 $virtualna=mysql_result($q20,0,0);
 
 
@@ -60,8 +60,8 @@ $virtualna=mysql_result($q20,0,0);
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&grupa=<?=$virtualna?>">Bez grupa</a></li>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">Jedna kolona po grupama</a></li>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&double=1">Dvije kolone (za lakše printanje)</a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&komentari=1">Sa komentarima na rad</a></a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></a</li></ul>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&komentari=1">Sa komentarima na rad</a></li>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></li></ul>
 </p>
 
 <p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:

@@ -12,11 +12,11 @@ function nastavnik_projekti()
 	// Da li korisnik ima pravo ući u modul?
 	
 	if (!$user_siteadmin) 
-	{ // 3 = site admin
-		$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	{
+		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
-			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			biguglyerror("Nemate pravo pristupa ovoj opciji");
 			return;
 		} 
 	}

@@ -39,11 +39,11 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 // Da li korisnik ima pravo ući u modul?
 
-if (!$user_siteadmin) { // 3 = site admin
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+if (!$user_siteadmin) {
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
-		biguglyerror("Nemate pravo ulaska u ovu grupu!");
+		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
 }
@@ -157,6 +157,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
 			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW()");
+			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 		}
 	}
 

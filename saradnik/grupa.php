@@ -85,13 +85,13 @@ if ($labgrupa>0) {
 
 // Da li korisnik ima pravo ući u grupu?
 if (!$user_siteadmin) {
-	$q40 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q40 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q40)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
 		return;
 	}
-	$predmet_admin = mysql_result($q40,0,0);
+	$privilegija = mysql_result($q40,0,0);
 
 	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	if (mysql_num_rows($q50)>0) {
@@ -230,7 +230,7 @@ function firefoxopen(p1,p2,p3) {
 
 
 // Cool editing box
-if ($predmet_admin==1 || $user_siteadmin) {
+if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) {
 	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
 	?>
 	<script language="JavaScript">
@@ -746,10 +746,18 @@ if(in_array(1,$kontrolni)){
 	// KONACNA OCJENA - ISPIS
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q350)>0) {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
+	if ($privilegija == "super_asistent") {
+		if (mysql_num_rows($q350)>0) {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">".mysql_result($q350,0,0)."</td>\n";
+		} else {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">/</td>\n";
+		}
 	} else {
-		$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		if (mysql_num_rows($q350)>0) {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q350,0,0)."</td>\n";
+		} else {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		}
 	}
 
 
@@ -782,7 +790,12 @@ if(in_array(1,$kontrolni)){
 ?> * <a href="?sta=saradnik/grupa&id=<?=$labgrupa?>">Refresh</a></p>
 
 <?
-if ($predmet_admin>0) { ?><p>Vi ste administrator ovog predmeta.</p><? } ?>
+if ($privilegija=="nastavnik") { 
+	?><p>Vi ste administrator ovog predmeta.</p><? 
+} else if ($privilegija=="super_asistent") {
+	?><p>Vi ste super-asistent ovog predmeta.</p><? 
+}
+?>
 <p>&nbsp;</p>
 <?
 

@@ -26,10 +26,10 @@ function nuliraj($v) {
 // Da li korisnik ima pravo uci u modul?
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
-		biguglyerror("Nemate pravo ulaska u ovaj modul!");
+		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
 }

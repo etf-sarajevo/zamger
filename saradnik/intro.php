@@ -69,10 +69,10 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$ag_naziv = $r1a[1];
 
 	// Prikaži sve predmete siteadminu
-	$uslov=""; $nppolje="1";
+	$uslov=""; $nppolje="nastavnik";
 	if (!$user_siteadmin) {
 		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
-		$nppolje="np.admin";
+		$nppolje="np.nivo_pristupa";
 	}
 
 	// Upit za spisak predmeta
@@ -88,7 +88,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$br=0;
 	while ($r10 = mysql_fetch_row($q10)) {
 		$predmet = $r10[0];
-		$admin_predmeta = $r10[1];
+		$privilegija = $r10[1];
 		$naziv_predmeta = $r10[2];
 		$studij = $r10[3];
 
@@ -109,7 +109,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 			print "<b>$naziv_predmeta ($studij)</b>\n";
 	
 		// Edit link
-		if ($user_siteadmin || $admin_predmeta) {
+		if ($user_siteadmin || $privilegija=="nastavnik" || $privilegija=="super_asistent") {
 			print ' [<b><a href="?sta=nastavnik/predmet&predmet='.$predmet.'&ag='.$ag.'"><font color="red">EDIT</font></a></b>]'."\n";
 		}
 	

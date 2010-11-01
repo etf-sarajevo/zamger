@@ -15,9 +15,9 @@ function izvjestaj_anketa(){
 
 	// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
 	if (!$user_siteadmin && !$user_studentska) {
-		$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q20)==0) {
-			zamgerlog("nastavnik/izvjestaj_anketa privilegije ",3);
+			zamgerlog("nastavnik/izvjestaj_anketa privilegije",3);
 			biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
 			return;
 		}

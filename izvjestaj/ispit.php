@@ -53,11 +53,11 @@ if ($_REQUEST['ispit'] == "svi") {
 
 // Elementarna provjera privilegija
 
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+/*if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
 	zamgerlog ("pristup izvjestaju a nije NBA",3); // 3 = error
 	return;
-}
+}*/
 
 
 // Upit za ispit
@@ -79,7 +79,7 @@ $ag = mysql_result($q10,0,5);
 
 // Dodatna provjera privilegija
 if (!$user_studentska && !$user_siteadmin) {
-	$q20 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q20) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet godina ag$ag",3); // 3 = error

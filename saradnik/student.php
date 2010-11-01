@@ -141,13 +141,13 @@ if (mysql_num_rows($q20)>0) {
 // Provjera prava pristupa
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1) {
 		biguglyerror("Nemate pravo pristupa ovom studentu");
 		zamgerlog ("nastavnik nije na predmetu (pp$predmet ag$ag)", 3);
 		return;
 	}
-	$predmet_admin = mysql_result($q10,0,0);
+	$privilegija = mysql_result($q10,0,0);
 
 	// Provjera ogranicenja
 	$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, student_labgrupa as sl where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
@@ -575,7 +575,7 @@ while ($r25 = mysql_fetch_row($q25)) {
 		<td><?=$r25[1]?></td>
 		<td id="fiksna-<?=$student?>-<?=$predmet?>-<?=$komponenta?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
 		<td><? 
-		if ($predmet_admin || $user_siteadmin) { 
+		if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) { 
 			?><div id="fiksnalog<?=$komponenta?>"></div><?
 		} else print "/";
 		?></td>
@@ -647,7 +647,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 		?></td>
 		<td id="ispit-<?=$student?>-<?=$ispit?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
 		<td><? 
-		if ($predmet_admin || $user_siteadmin) { 
+		if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) { 
 			?><div id="ispitlog<?=$ispit?>"></div><?
 		} else print "/";
 		?></td>
@@ -699,7 +699,7 @@ if (mysql_num_rows($q50)>0) {
 	<td><b>Konačna ocjena:</b></td>
 <?
 
-if ($predmet_admin || $user_siteadmin) {
+if ($privilegija=="nastavnik" || $user_siteadmin) {
 	?>
 	<td id="ko-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$konacnaocjena?></td>
 	<td><div id="kolog"></div></td>
@@ -719,9 +719,9 @@ print "</tr></table>\n";
 // POPUNA LOGOVA
 // **************************************
 
-// Ne radimo ništa ako korisnik nije admin
+// Ne radimo ništa ako korisnik nema privilegije
 
-if (!$predmet_admin && !$user_siteadmin) return;
+if ($privilegija!="nastavnik" && $privilegija!="super_asistent" && !$user_siteadmin) return;
 
 ?>
 

@@ -26,13 +26,13 @@ $ag = intval($_REQUEST['ag']); // akademska godina
 
 // Provjera permisija
 
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+/*if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
 	zamgerlog ("pristup izvjestaju a nije NBA",3); // 3 = error
 	return;
-}
+}*/
 if (!$user_studentska && !$user_siteadmin) {
-	$q2 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q2 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q2) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet, godina ag$ag",3); // 3 = error

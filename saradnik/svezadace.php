@@ -31,13 +31,13 @@ $ag = mysql_result($q30,0,2);
 
 // Da li korisnik ima pravo ući u grupu?
 if (!$user_siteadmin) {
-	$q40 = myquery("select admin from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	$q40 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q40)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
 		return;
 	}
-	$predmet_admin = mysql_result($q40,0,0);
+	$privilegija = mysql_result($q40,0,0);
 
 	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	if (mysql_num_rows($q50)>0) {

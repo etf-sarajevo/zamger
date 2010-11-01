@@ -486,17 +486,20 @@ else if ($akcija == "edit") {
 		}
 	}
 
-	// Admin privilegije
-	else if ($_GET['subakcija'] == "proglasi_za_admina") {
-		$nastavnik = intval($_GET['nastavnik']);
+	// Podešavanje privilegija na predmetu
+	else if ($_POST['subakcija'] == "postavi_nivo_pristupa" && check_csrf_token()) {
+		$nastavnik = intval($_POST['nastavnik']);
+		$nivo_pristupa = $_POST['nivo_pristupa'];
 
-		$yesno = intval($_GET['yesno']);
-		$q362 = myquery("update nastavnik_predmet set admin=$yesno where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
-		if ($yesno==1) 
-			nicemessage("Nastavnik proglašen za administratora predmeta");
-		else
-			nicemessage("Nastavnik više nije administrator predmeta");
-		zamgerlog("nastavnik u$nastavnik proglasen za admina predmeta pp$predmet ($yesno)",4);
+		if ($nivo_pristupa != 'nastavnik' && $nivo_pristupa != 'super_asistent' && $nivo_pristupa != 'asistent') {
+			niceerror("Nepoznat nivo pristupa");
+			zamgerlog("nepoznat nivo pristupa ".my_escape($nivo_pristupa), 3);
+			return;
+		}
+
+		$q362a = myquery("update nastavnik_predmet set nivo_pristupa='$nivo_pristupa' where nastavnik=$nastavnik and predmet=$predmet and akademska_godina=$ag");
+		nicemessage("Promijenjeni nivoi pristupa korisnika na predmetu");
+		zamgerlog("nastavnik u$nastavnik dat nivo '$nivo_pristupa' na predmetu pp$predmet",4);
 	}
 
 	// De-angazman nastavnika sa predmeta
@@ -678,9 +681,9 @@ else if ($akcija == "edit") {
 	<hr>
 	<p>Osobe sa pravima pristupa na predmetu (<?=$agnaziv?>):</p>
 	<?
-	$q351 = myquery("select np.nastavnik,np.admin,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+	$q351 = myquery("select np.nastavnik,np.nivo_pristupa,o.ime,o.prezime from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag order by np.nivo_pristupa, o.prezime, o.ime");
 	if (mysql_num_rows($q351) < 1) {
-		print "<ul><li>Na predmetu nije angažovan nijedan nastavnik</li></ul>\n";
+		print "<ul><li>Nijedan nastavnik nema pravo pristupa predmetu.</li></ul>\n";
 	} else {
 		?>
 		<script language="JavaScript">
@@ -694,25 +697,39 @@ else if ($akcija == "edit") {
 		<input type="hidden" name="subakcija" value="izbaci_nastavnika">
 		<input type="hidden" name="nastavnik" id="nastavnik" value=""></form>
 
-		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Administrator predmeta</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
+		<table width="100%" border="1" cellspacing="0"><tr><td>Ime i prezime</td><td>Nivo pristupa</td><td>Ograničenja</td><td>&nbsp;</td></tr><?
 	}
 	while ($r351 = mysql_fetch_row($q351)) {
 		$nastavnik = $r351[0];
 		$imeprezime = "$r351[2] $r351[3]";
+		$nivo_pristupa = $r351[1];
 
-		if ($r351[1]==1) {
-			$alterlink="0";
-			$cbstanje="CHECKED";
-		} else {
-			$alterlink="1";
-			$cbstanje="";
+		if ($nivo_pristupa=='nastavnik') {
+			$option_nastavnik="SELECTED";
+			$option_sa=$option_asistent="";
+		} else if ($nivo_pristupa=='super_asistent') {
+			$option_sa="SELECTED";
+			$option_nastavnik=$option_asistent="";
+		} else if ($nivo_pristupa=='asistent') {
+			$option_asistent="SELECTED";
+			$option_nastavnik=$option_sa="";
 		}
 
 		?>
 		<tr>
 			<td><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$nastavnik?>"><?=$imeprezime?></td>
-			<td>
-			<input type="checkbox" onchange="javascript:location.href='<?=genuri()?>&akcija=edit&subakcija=proglasi_za_admina&nastavnik=<?=$nastavnik?>&yesno=<?=$alterlink?>'" <?=$cbstanje?>></td>
+			<td><?=genform("POST")?>
+				<input type="hidden" name="akcija" value="edit">
+				<input type="hidden" name="nastavnik" value="<?=$nastavnik?>">
+				<input type="hidden" name="subakcija" value="postavi_nivo_pristupa">
+				<select name="nivo_pristupa" class="default">
+					<option value="nastavnik" <?=$option_nastavnik?>>Nastavnik</option>
+					<option value="super_asistent" <?=$option_sa?>>Super-asistent</option>
+					<option value="asistent" <?=$option_asistent?>>Asistent</option>
+				</select>
+				<input type="submit" class="default" value=" Postavi ">
+				</form>
+			</td>
 			<td><a href="<?=genuri()?>&akcija=ogranicenja&nastavnik=<?=$nastavnik?>"><?
 
 		// Spisak grupa na koje ima ogranicenje
