@@ -356,6 +356,7 @@ CREATE TABLE IF NOT EXISTS `komponenta` (
   `maxbodova` double NOT NULL,
   `prolaz` double NOT NULL,
   `opcija` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `uslov` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
