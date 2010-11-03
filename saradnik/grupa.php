@@ -132,8 +132,8 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		// Tražimo komponentu prisustva i uzimamo prvu
 		// FIXME: praktično je nemoguće registrovati čas za drugu komponentu
 		$komponenta=0;
-		foreach ($tipovi_komponente as $k_id => $tip) {
-			if ($tip==3) {// 3 = prisustvo
+		foreach ($tipovi_komponenti as $k_id => $tip) {
+			if ($tip==3) { // 3 = prisustvo
 				$komponenta = $k_id;
 				break;
 			}
@@ -324,7 +324,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	
 		<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="prisustvo" value="0">Svi odustni
+		<input type="radio" name="prisustvo" value="0">Svi odsutni
 	
 	</form>
 	</td></tr></table>
