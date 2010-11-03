@@ -37,8 +37,6 @@
 
 
 function saradnik_grupa() {
-	
-	
 
 global $userid,$user_siteadmin;
 
@@ -107,23 +105,21 @@ if (!$user_siteadmin) {
 	}
 }
 
-//Smještamo sve tipove komponenti određenog tipa predmeta u jedan niz
 
-$q_tip=myquery("select tippredmeta from akademska_godina_predmet where akademska_godina=$ag and predmet=$predmet");
-$r_tip=mysql_fetch_array($q_tip);
-$tip=$r_tip[0];
-$q_komp=myquery("select k.tipkomponente from tippredmeta_komponenta t inner join komponenta k on t.komponenta=k.id where t.tippredmeta=$tip");
-$kontrolni=array();
-while($komp=mysql_fetch_array($q_komp)){
-	array_push($kontrolni,$komp[0]);
-}
+// Spisak komponenti koje su zastupljene na predmetu
+
+$tipovi_komponenti=array();
+$q52 = myquery("select k.id, k.tipkomponente from akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id");
+while ($r52 = mysql_fetch_row($q52))
+	$tipovi_komponenti[$r52[0]] = $r52[1];
+
 
 
 // ------- AKCIJE
 
 // Dodavanje casa
 
-if ($_POST['akcija'] == 'dodajcas' && check_csrf_token() && in_array(3,$kontrolni)) {
+if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 	// KOMPONENTA
 	// Ovaj kod radi samo sa jednom komponentom prisustva. U budućnosti to bi moglo biti popravljeno, ali realno nema prevelike potrebe
 
@@ -133,13 +129,20 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token() && in_array(3,$kontroln
 
 	// Ako se klikne na refresh, datum moze biti 0-0-0...
 	if ($datum != "0-0-0") {
-			$q55 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
-		if (mysql_num_rows($q55)<1) {
+		// Tražimo komponentu prisustva i uzimamo prvu
+		// FIXME: praktično je nemoguće registrovati čas za drugu komponentu
+		$komponenta=0;
+		foreach ($tipovi_komponente as $k_id => $tip) {
+			if ($tip==3) {// 3 = prisustvo
+				$komponenta = $k_id;
+				break;
+			}
+		}
+		if ($komponenta==0) {
 			niceerror("Nije definisana komponenta za prisustvo na ovom predmetu.");
 			zamgerlog("nije definisana komponenta za prisustvo na pp$predmet", 3);
 			return;
 		}
-		$komponenta = mysql_result($q55,0,0);
 	
 		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta");
 		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
@@ -176,7 +179,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token() && in_array(3,$kontroln
 
 // Brisanje casa
 
-if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token() && in_array(3,$kontrolni)) {
+if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
 	$cas_id = intval($_POST['_lv_casid']);
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
@@ -210,17 +213,11 @@ if (mysql_result($q140,0,0)<1) {
 
 
 
-// JavaScript za prikaz zadaće i drugih popup prozora
-//  * Kod IE naslov prozora ('blah') ne smije sadržavati razmak, a inače je nebitan
+// JavaScript za prikaz popup prozora (trenutno se koristi samo za komentare)
 //  * FF ne podržava direktan poziv window.open() iz eventa 
 
 ?>
 <script language="JavaScript">
-function openzadaca(student,zadaca,zadatak) {
-	var url='index.php?sta=saradnik/zadaca&student='+student+'&zadaca='+zadaca+'&zadatak='+zadatak;
-	window.open(url,'blah','width=600,height=600,scrollbars=yes');
-}
-
 function firefoxopen(p1,p2,p3) { 
 	window.open(p1,p2,p3);
 }
@@ -235,6 +232,8 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 	?>
 	<script language="JavaScript">
 	function undo_coolbox() {
+		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+		alert(greska);
 		zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
 		zamger_coolbox_origcaller=false;
 	}
@@ -246,122 +245,133 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 
 // ------- SPISAK NEPREGLEDANIH ZADAĆA
 
-if(in_array(4,$kontrolni)){
+if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
+	// JavaScript za prikaz popup prozora sa zadaćom
+	//  * Kod IE naslov prozora ('blah') ne smije sadržavati razmak i
+	// ne smije biti prazan, a inače je nebitan
 
-$q150 = myquery(
-"SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
-FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
-WHERE zk.student=a.id AND zk.student=sl.student 
-AND sl.labgrupa=$labgrupa AND zk.zadaca=z.id AND z.predmet=$predmet AND z.akademska_godina=$ag
-ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
+	?>
+	<script language="JavaScript">
+	function openzadaca(student,zadaca,zadatak) {
+		var url='index.php?sta=saradnik/zadaca&student='+student+'&zadaca='+zadaca+'&zadatak='+zadatak;
+		window.open(url,'blah','width=600,height=600,scrollbars=yes');
+	}
+	</script>
+	
+	<?
 
-
-$mzadaca=0; $mzadatak=0; $mstudent=0; $print="";
-while ($r150 = mysql_fetch_row($q150)) {
-	if ($r150[0]==$mzadaca && $r150[1]==$mzadatak && $r150[2]==$mstudent) continue;
-	$mzadaca=$r150[0]; $mzadatak=$r150[1]; $mstudent=$r150[2];
-	if ($r150[5]!=4) continue;
-	$print .= '<li><a href="#" onclick="javascript:openzadaca(\''.$r150[2].'\',\''.$r150[0].'\',\''.$r150[1].'\')">'.$r150[3]." ".$r150[4]." - ".$r150[6].", zadatak ".$r150[1]."</a></li>";
+	$q150 = myquery(
+	"SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
+	FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
+	WHERE zk.student=a.id AND zk.student=sl.student 
+	AND sl.labgrupa=$labgrupa AND zk.zadaca=z.id AND z.predmet=$predmet AND z.akademska_godina=$ag
+	ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
+	
+	
+	$mzadaca=0; $mzadatak=0; $mstudent=0; $print="";
+	while ($r150 = mysql_fetch_row($q150)) {
+		if ($r150[0]==$mzadaca && $r150[1]==$mzadatak && $r150[2]==$mstudent) continue;
+		$mzadaca=$r150[0]; $mzadatak=$r150[1]; $mstudent=$r150[2];
+		if ($r150[5]!=4) continue;
+		$print .= '<li><a href="#" onclick="javascript:openzadaca(\''.$r150[2].'\',\''.$r150[0].'\',\''.$r150[1].'\')">'.$r150[3]." ".$r150[4]." - ".$r150[6].", zadatak ".$r150[1]."</a></li>";
+	}
+	if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 }
-if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 
 
-}
+
 
 
 // ------- FORMA ZA NOVI ČAS
 
-if(in_array(3,$kontrolni)){
+if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
+	$dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
+	$vrijeme=date("H:i");
 
-$dan=date("d"); $mjesec=date("m"); $godina=date("Y"); 
-$vrijeme=date("H:i");
+	// Ujedno ćemo definisati i neke JavaScripte za prisustvo
 
-// Ne prikazujemo formu ako nema nijedna komponenta za prisustvo
-$q160 = myquery("select count(*) from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
-if (mysql_result($q160,0,0)>0) {
-
-?>
-<table border="0" width="100%"><tr><td valign="top" width="50%">&nbsp;</td>
-<td valign="top" width="50%">
-	Registrujte novi čas:<br/>
-	<?=genform("POST")?>
-	<input type="hidden" name="akcija" value="dodajcas">
-
-	Datum:
-	<select name="dan" class="default"><?
-	for ($i=1; $i<=31; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$dan) print " selected";
-		print ">$i</option>";
+	?>
+	<table border="0" width="100%"><tr><td valign="top" width="50%">&nbsp;</td>
+	<td valign="top" width="50%">
+		Registrujte novi čas:<br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="dodajcas">
+	
+		Datum:
+		<select name="dan" class="default"><?
+		for ($i=1; $i<=31; $i++) {
+			print "<option value=\"$i\"";
+			if ($i==$dan) print " selected";
+			print ">$i</option>";
+		}
+		?></select>&nbsp;&nbsp;
+		<select name="mjesec" class="default"><?
+		for ($i=1; $i<=12; $i++) {
+			print "<option value=\"$i\"";
+			if ($i==$mjesec) print " selected";
+			print ">$i</option>";
+		}
+		?></select>&nbsp;&nbsp;
+		<select name="godina" class="default"><?
+		for ($i=2005; $i<=2010; $i++) {
+			print "<option value=\"$i\"";
+			if ($i==$godina) print " selected";
+			print ">$i</option>";
+		}
+		?></select><br/>
+		Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>"  class="default">
+		<input type="submit" value="Registruj"  class="default"><br/><br/>
+	
+		<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="radio" name="prisustvo" value="0">Svi odustni
+	
+	</form>
+	</td></tr></table>
+	
+	<script language="JavaScript">
+	// Funkcija koja se poziva klikom na polje u tabeli
+	function prisustvo(student,cas) {
+		if (zamger_ajah_sending) {
+			alert("Slanje u toku. Sačekajte malo.");
+			return false;
+		}
+		var prisutan = invert(student,cas);
+		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+student+","+cas+")");
+		// U slucaju da ajah ne uspije, ponovo se poziva funkcija invert
 	}
-	?></select>&nbsp;&nbsp;
-	<select name="mjesec" class="default"><?
-	for ($i=1; $i<=12; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$mjesec) print " selected";
-		print ">$i</option>";
+	// Switchuje DA i NE
+	function invert(student,cas) {
+		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
+		if (val == "DA") {
+			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
+			return 1;
+		} else {
+			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
+			return 2;
+		}
 	}
-	?></select>&nbsp;&nbsp;
-	<select name="godina" class="default"><?
-	for ($i=2005; $i<=2010; $i++) {
-		print "<option value=\"$i\"";
-		if ($i==$godina) print " selected";
-		print ">$i</option>";
+	function upozorenje(cas) {
+		// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
+		document.brisanjecasa._lv_casid.value=cas;
+		document.brisanjecasa.submit();
 	}
-	?></select><br/>
-	Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>"  class="default">
-	<input type="submit" value="Registruj"  class="default"><br/><br/>
+	
+	</script>
 
-	<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	<input type="radio" name="prisustvo" value="0">Svi odustni
+	<!-- Pomocna forma za POST brisanje casa -->
+	
+	<?=genform("POST", "brisanjecasa")?>
+	<input type="hidden" name="akcija" value="brisi_cas">
+	<input type="hidden" name="_lv_casid" value="">
+	</form>
 
-</form>
-</td></tr></table>
+	<?
 
-<script language="JavaScript">
-// Funkcija koja se poziva klikom na polje u tabeli
-function prisustvo(student,cas) {
-	if (zamger_ajah_sending) {
-		alert("Slanje u toku. Sačekajte malo.");
-		return false;
-	}
-	var prisutan = invert(student,cas);
-	ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+student+","+cas+")");
-	// U slucaju da ajah ne uspije, ponovo se poziva funkcija invert
-}
-// Switchuje DA i NE
-function invert(student,cas) {
-	var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
-	if (val == "DA") {
-		document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
-		document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
-		return 1;
-	} else {
-		document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
-		document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
-		return 2;
-	}
-}
-function upozorenje(cas) {
-	document.brisanjecasa._lv_casid.value=cas;
-	document.brisanjecasa.submit();
-}
 
-</script>
-
-<!-- Pomocna forma za POST brisanje casa -->
-
-<?=genform("POST", "brisanjecasa")?>
-<input type="hidden" name="akcija" value="brisi_cas">
-<input type="hidden" name="_lv_casid" value="">
-</form>
-
-<?
-
-// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
-
-} // if (mysql_result($q160,0,0)>0) {
+} // if (in_array(3, $tipovi_komponenti))
 
 
 // Ispis AJAH box-a neposredno iznad tablice grupe
@@ -381,12 +391,9 @@ $zaglavlje2 = "";
 
 // Zaglavlje prisustvo
 
-$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and p.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
-
-//$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-//WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
-
+$q195 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova FROM akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k
+WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 ORDER BY k.id");
+// Ako nema nijedne komponente prisustva, upit neće vratiti ništa
 while ($r195 = mysql_fetch_row($q195)) {
 	$casova = 0;
 	$prisustvo_zaglavlje = "";
@@ -422,15 +429,14 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$zaglavlje2 .= "<td>BOD.</td>\n";
 }
 
-}
 
-if(in_array(4,$kontrolni)){
 
 // Zaglavlje zadaće
 
 $zad_id_array = array();
-$q205 = myquery("SELECT k.id, k.gui_naziv FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+$q205 = myquery("SELECT k.id, k.gui_naziv FROM akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k
+WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+// Ako nema nijedne komponente zadaća, upit neće vratiti ništa
 while ($r205 = mysql_fetch_row($q205)) {
 	$brzadaca = 0;
 	$zadace_zaglavlje = "";
@@ -452,17 +458,14 @@ while ($r205 = mysql_fetch_row($q205)) {
 	}
 }
 
-}
-if(in_array(5,$kontrolni)){
+
 // Zaglavlje fiksne komponente
 
 $fiksna_prolaz = array();
 $fiksna_id_array = array();
-$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM akademska_godina_predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-WHERE p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
-
-//$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM predmet as p, tippredmeta_komponenta as tpk, komponenta as k
-//WHERE p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+$q215 = myquery("SELECT k.id, k.gui_naziv, k.maxbodova, k.prolaz FROM akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k
+WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 ORDER BY k.id");
+// Ako nema nijedne fiksne komponente, upit neće vratiti ništa
 while ($r215 = mysql_fetch_row($q215)) {
 	$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">$r215[1]";
 	$mogucih_bodova += $r215[2];
@@ -471,9 +474,6 @@ while ($r215 = mysql_fetch_row($q215)) {
 	$fiksna_prolaz[$r215[0]]=$r215[3];
 }
 
-}
-
-if(in_array(1,$kontrolni)){
 
 // Zaglavlje ispiti
 
@@ -481,6 +481,7 @@ $broj_ispita=0;
 $ispit_zaglavlje="";
 $ispit_id_array=array();
 $q220 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+// Ako nema komponenti sa ispitima, neće biti registrovan nijedan ispit
 while ($r220 = mysql_fetch_row($q220)) {
 	if ($r220[4]==5)
 		$ispit_zaglavlje .= "<td align=\"center\">$r220[3]</td>\n";
@@ -506,7 +507,7 @@ if ($broj_ispita>0) {
 	$zaglavlje2 .= $ispit_zaglavlje;
 }
 
-}
+
 
 // Zaglavlje konacna ocjena
 
@@ -601,7 +602,6 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
 	$bodova=0;
 
-if(in_array(3,$kontrolni)){
 
 	// PRISUSTVO - ISPIS
 
@@ -642,9 +642,7 @@ if(in_array(3,$kontrolni)){
 
 	} // foreach ($prisustvo... as $pid)
 
-}
 
-if(in_array(4,$kontrolni)){
 	// ZADACE - ISPIS
 
 	foreach ($zad_id_array as $zid) {
@@ -672,12 +670,9 @@ if(in_array(4,$kontrolni)){
 		$zadace_ispis .= "&nbsp;</td>\n";
 	}
 
-}
-
 
 	// FIKSNE KOMPONENTE - ISPIS
 
-if(in_array(5,$kontrolni)){
 	$fiksne_ispis="";
 	foreach ($fiksna_id_array as $fiksna) {
 		$q328 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$fiksna");
@@ -690,12 +685,9 @@ if(in_array(5,$kontrolni)){
 		}
 	}
 
-}
 
 	// ISPITI - ISPIS
 
-if(in_array(1,$kontrolni)){
-	
 	$ispiti_ispis="";
 	$komponente=$kmax=array();
 	foreach ($ispit_id_array as $ispit) {
@@ -742,7 +734,7 @@ if(in_array(1,$kontrolni)){
 		}
 	}
 
-}
+
 	// KONACNA OCJENA - ISPIS
 
 	$q350 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
