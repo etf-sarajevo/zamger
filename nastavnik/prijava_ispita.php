@@ -229,7 +229,7 @@ if ($_REQUEST["akcija"]=="izmijeni") {
 	$t1 = mysql_result($q100,0,0);
 	$dan = date('d',$t1); $mjesec = date('m',$t1); $godina = date('Y',$t1); $sat = date('H',$t1); $minuta = date('i',$t1); $sekunda = date('s',$t1);
 
-	$t2 = mysql_result($q100,0,0);
+	$t2 = mysql_result($q100,0,1);
 	$dan1 = date('d',$t2); $mjesec1 = date('m',$t2); $godina1 = date('Y',$t2); $sat1 = date('H',$t2); $minuta1 = date('i',$t2); $sekunda1 = date('s',$t2);
 
 	$limit = mysql_result($q100,0,2);
