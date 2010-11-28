@@ -225,8 +225,8 @@ if ($odrzano_ispita==0) {
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 40 bodova: <b><?=$uslov40?></b> studenata (<b><?=procenat($uslov40,$stvarno_slusa)?></b>).<br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 35 bodova: <b><?=$uslov35?></b> studenata (<b><?=procenat($uslov35,$stvarno_slusa)?></b>).<br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti: <b><?=$uslov0?></b> studenata (<b><?=procenat($uslov0,$stvarno_slusa)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponente?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
 	<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponenta?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
 	<?
 
 	// Komponente
