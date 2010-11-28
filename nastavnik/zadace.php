@@ -185,8 +185,19 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 // Akcija za kreiranje nove, promjenu postojeće ili brisanje zadaće
 
-if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad ") {
+if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_csrf_token()) {
 	$edit_zadaca = intval($_POST['zadaca']);
+
+	if ($_POST['dugmeobrisi'] == "Obriši") {
+		$q100 = myquery("select postavka_zadace from zadaca where id=$edit_zadaca");
+		$filepath = "$conf_files_path/zadace/$predmet-$ag/postavke/".mysql_result($q100,0,0);
+		unlink ($filepath);
+		$q110 = myquery("update zadaca set postavka_zadace='' where id=$edit_zadaca");
+		nicemessage ("Postavka zadaće obrisana");
+		print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&_lv_nav_id=$edit_zadaca\">Nazad</a>\n";
+		zamgerlog("obrisana postavka zadace z$edit_zadaca",2);
+		return;
+	}
 	
 	// Prava pristupa
 	if ($edit_zadaca>0) {
@@ -513,6 +524,7 @@ if ($postavka_zadace == "") {
 	?><input type="file" name="postavka_zadace_file" size="45"><?
 } else {
 	?><a href="?sta=common/attachment&zadaca=<?=$izabrana?>&tip=postavka"><img src="images/16x16/preuzmi.png" width="16" height="16" border="0"> <?=$postavka_zadace?></a>
+	<input type="submit" name="dugmeobrisi" value="Obriši">
 	<?
 }
 ?>
@@ -605,6 +617,9 @@ Separator: <select name="separator" class="default">
 	Najprije kreirajte zadaću koristeći formular iznad</p>
 	<?
 }
+
+
+
 
 
 
