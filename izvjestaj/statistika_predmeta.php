@@ -219,13 +219,13 @@ if ($odrzano_ispita==0) {
 
 } else {
 	?>
-	Nije izašlo ni na jedan ispit (pretpostavka je da ne slušaju predmet, biće isključeni iz daljnjih statistika): <b><?=$nisu_izlazili?></b> studenata.<br/>
-	Položilo (konačna ocjena 6 ili više): <b><?=$polozilo?></b> studenata (<b><?=procenat($polozilo,$stvarno_slusa)?></b>).<br/>
+	Nije izašlo ni na jedan ispit: <b><?=$nisu_izlazili?></b> studenata.<br/>
+	Položilo (konačna ocjena 6 ili više): <b><?=$polozilo?></b> studenata (<b><?=procenat($polozilo,$slusa_predmet)?></b>).<br/>
 	Zadovoljilo uslove za usmeni *:<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 40 bodova: <b><?=$uslov40?></b> studenata (<b><?=procenat($uslov40,$stvarno_slusa)?></b>).<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 35 bodova: <b><?=$uslov35?></b> studenata (<b><?=procenat($uslov35,$stvarno_slusa)?></b>).<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti: <b><?=$uslov0?></b> studenata (<b><?=procenat($uslov0,$stvarno_slusa)?></b>).<br/>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponente?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 40 bodova: <b><?=$uslov40?></b> studenata (<b><?=procenat($uslov40,$slusa_predmet)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 35 bodova: <b><?=$uslov35?></b> studenata (<b><?=procenat($uslov35,$slusa_predmet)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti: <b><?=$uslov0?></b> studenata (<b><?=procenat($uslov0,$slusa_predmet)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponente?></b> studenata (<b><?=procenat($uslovkomponente,$slusa_predmet)?></b>).<br/>
 	<br/>
 	<?
 
@@ -234,7 +234,7 @@ if ($odrzano_ispita==0) {
 		if ($kpolozilo[$komponenta]==0) continue; // ova komponenta nije u funkciji
 		if ($tip==1 || $tip==2) {
 			?>
-			Položilo <?=$knazivi[$komponenta]?> ispit: <b><?=$kpolozilo[$komponenta]?></b> studenata  (<b><?=procenat($kpolozilo[$komponenta],$stvarno_slusa)?></b>).<br/>
+			Položilo <?=$knazivi[$komponenta]?> ispit: <b><?=$kpolozilo[$komponenta]?></b> studenata  (<b><?=procenat($kpolozilo[$komponenta],$slusa_predmet)?></b>).<br/>
 			<?
 		}
 	}
