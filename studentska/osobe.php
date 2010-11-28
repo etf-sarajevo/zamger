@@ -1781,20 +1781,19 @@ else if ($akcija == "edit") {
 
 
 	// Dodjela prava nastavniku na predmetu
-	/*if ($_POST['subakcija'] == "daj_prava" && check_csrf_token()) {
+	if ($_POST['subakcija'] == "daj_prava" && check_csrf_token()) {
 
 		$predmet = intval($_POST['predmet']);
-		$admin_predmeta = intval($_POST['admin_predmeta']);
 
 		$q115 = myquery("select naziv from predmet where id=$predmet");
 		$naziv_predmeta = mysql_result($q115,0,0);
 
-		$q130 = myquery("replace nastavnik_predmet set admin=$admin_predmeta, nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god");
+		$q130 = myquery("replace nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god, nivo_pristupa='asistent'");
 
 		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
 		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
 		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
-	}*/
+	}
 
 
 	// Angažman nastavnika na predmetu
