@@ -385,8 +385,7 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 		<p>Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
 		<p>Datum ispita: <?=datectrl($dan, $mjesec, $godina)?></p>
 		<p>Tip ispita: <select name="tipispita" class="default"><?
-		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) and p.akademska_godina=$ag order by k.id");
-				//$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 		while ($r340 = mysql_fetch_row($q340)) {
 			print '<option value="'.$r340[0].'"';
 			if ($komponenta==$r340[0]) print ' SELECTED';
@@ -543,8 +542,7 @@ while ($r500 = mysql_fetch_row($q500)) {
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
 <p>Tip ispita: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) and p.akademska_godina=$ag order by k.id");
-	//$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 	while ($r510 = mysql_fetch_row($q510)) {
 		print '<option value="'.$r510[0].'"';
 		if ($tipispita==$r510[0]) print ' SELECTED';

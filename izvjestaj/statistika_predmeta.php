@@ -44,13 +44,20 @@ if (!$user_studentska && !$user_siteadmin) {
 
 // Naziv predmeta, akademske godine
 
-$q10 = myquery("select p.naziv, a.tippredmeta from predmet p, akademska_godina_predmet a where p.id=$predmet and p.id=a.predmet and a.akademska_godina=$ag");
+$q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog ("nepoznat predmet $predmet", 3);
 	return;
 }
-$tippredmeta = mysql_result($q10,0,1);
+
+$q12 = myquery("select tippredmeta from akademska_godina_predmet where predmet=$predmet and akademska_godina=$ag");
+if (mysql_num_rows($q10)<1) {
+	biguglyerror("Nepoznat predmet");
+	zamgerlog ("nepoznat predmet $predmet", 3);
+	return;
+}
+$tippredmeta = mysql_result($q12,0,0);
 
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q15)<1) {
@@ -139,7 +146,8 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 					$kpolozilo[$komponenta]++;
 					$polozene_komponente[$komponenta]=1;
 				}
-				else{ $pao++;
+				else {
+					$pao++;
 					if($kuslov[$komponenta]==1)
 						$uslovUslov=0;
 				}
@@ -152,12 +160,11 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 				$kpolozilo[$komponenta]++;
 				$polozene_komponente[$komponenta]=1;
 
-			} else if ($tip!=2) // tip 2 = integralni ispit
-				{
-					$pao++;
-					if($kuslov[$komponenta]==1)
-						$uslovUslov=0;
-				}
+			} else if ($tip!=2) { // tip 2 = integralni ispit
+				$pao++;
+				if($kuslov[$komponenta]==1)
+					$uslovUslov=0;
+			}
 		}
 
 		// Da li je zadovoljio uslove?
@@ -182,7 +189,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		} else if ($sumbodovi<20) $puk++;
 
 		// Ostali izlaze integralno
-		else if ($polozio_predmet==0)  $integralno++;
+		else if ($polozio_predmet==0) $integralno++;
 
 		// Studenti koji nikada nisu izašli niti na jedan ispit
 		if ($izasao==0) $nisu_izlazili++;
@@ -206,7 +213,8 @@ for ($i=0; $i<=$maxput; $i++) {
 print "</ul>\n";
 
 if ($odrzano_ispita==0) {
-	?>Nije održan nijedan ispit.</p><?
+	?>Nije održan nijedan ispit.</p>
+	<p>Položilo (konačna ocjena 6 ili više): <b><?=$polozilo?></b> studenata (<b><?=procenat($polozilo,$slusa_predmet)?></b>).</p><?
 	return;
 
 } else {
@@ -218,7 +226,7 @@ if ($odrzano_ispita==0) {
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti i min. 35 bodova: <b><?=$uslov35?></b> studenata (<b><?=procenat($uslov35,$stvarno_slusa)?></b>).<br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi ispiti: <b><?=$uslov0?></b> studenata (<b><?=procenat($uslov0,$stvarno_slusa)?></b>).<br/>
 	<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponenta?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;svi uslovni ispiti: <b><?=$uslovkomponenta?></b> studenata (<b><?=procenat($uslovkomponenta,$stvarno_slusa)?></b>).<br/>
 	<?
 
 	// Komponente

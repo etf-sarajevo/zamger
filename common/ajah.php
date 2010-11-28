@@ -128,8 +128,7 @@ case "prisustvo":
 	$q3 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	$ponudakursa = mysql_result($q3,0,0);
 
-	//$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
-	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3");
 	while ($r4 = mysql_fetch_row($q4))
 		update_komponente($student,$ponudakursa,$r4[0]);
 	zamgerlog("AJAH prisustvo - student: u$student cas: c$cas prisutan: $prisutan",2); // nivo 2 - edit
