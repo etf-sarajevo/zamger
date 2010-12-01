@@ -111,21 +111,34 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		// Usmeni pretvaramo u običan ispit
 		if ($tipKomponente == -1) $tipKomponente = 1;
 
-		
-		// Ovaj naziv komponente bi trebao biti unique
-		// osim ako korisnik da npr. ispitu ime "Zadaća" ili tako nešto :s
-		$naziv_komponente = $guiNaziv." (".$tip_predmeta.")";
-		$q90=myquery("INSERT INTO komponenta set naziv='$naziv_komponente', gui_naziv='$guiNaziv', kratki_gui_naziv='$kratkiNaziv', tipkomponente=$tipKomponente, maxbodova=$maxBodova, prolaz=$prolazBodova, uslov=$uslov, opcija='$opcija'");
+		// Da li je predmet već imao ovakvu komponentu?
+		// Koristimo istu kako bi bili sačuvani bodovi ako je moguće
+		$q85 = myquery("select k.id from tippredmeta_komponenta as tpk, komponenta as k where tpk.tippredmeta=$stari_tip_predmeta and tpk.komponenta=k.id and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
+		if (mysql_num_rows($q85)>0) {
+			$id_komponente = mysql_result($q85,0,0);
+		} else {
+			// Da li uopće postoji takva komponenta?
+			$q90 = myquery("select k.id from komponenta as k where k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
+			if (mysql_num_rows($q90)>0) {
+				$id_komponente = mysql_result($q90,0,0);
+			} else {
+				// Kreiramo novu komponentu
+				// Ovaj naziv komponente bi trebao biti unique
+				// osim ako korisnik da npr. ispitu ime "Zadaća" ili tako nešto :s
+				$naziv_komponente = $guiNaziv." (".$tip_predmeta.")";
+				$q95 = myquery("INSERT INTO komponenta set naziv='$naziv_komponente', gui_naziv='$guiNaziv', kratki_gui_naziv='$kratkiNaziv', tipkomponente=$tipKomponente, maxbodova=$maxBodova, prolaz=$prolazBodova, uslov=$uslov, opcija='$opcija'");
 
-		$q100 = myquery("select id from komponenta where naziv='$naziv_komponente'");
-		$id_komponente = mysql_result($q100,0,0);
+				$q100 = myquery("select id from komponenta where naziv='$naziv_komponente'");
+				$id_komponente = mysql_result($q100,0,0);
+			}
+		}
 
 		if ($tipKomponente == 1) {
 			if ($prvi_parcijalni_id==0) $prvi_parcijalni_id = $id_komponente;
 			else if ($drugi_parcijalni_id==0) $drugi_parcijalni_id = $id_komponente;
 		}
 
-		$q110=myquery("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
+		$q110 = myquery("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
 	}
 
 
@@ -695,7 +708,25 @@ if ($akcija == "wizard") {
 	}
 	
 	else if ($korak == "pregled") {
-		//pregled definisanog tipa predmeta
+		// Posljednje upozorenje
+		$q220 = myquery("select count(*) from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+		$broj_casova = mysql_result($q220,0,0);
+		$q230 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
+		$broj_zadaca = mysql_result($q230,0,0);
+		$q240 = myquery("select count(*) from ispit where predmet=$predmet and akademska_godina=$ag");
+		$broj_ispita = mysql_result($q240,0,0);
+
+		if ($broj_casova>0)
+			print "Na predmetu imate <b>$broj_casova</b> kreiranih časova sa prisustvom.<br>\n";
+		if ($broj_zadaca>0)
+			print "Na predmetu imate <b>$broj_zadaca</b> kreiranih zadaća sa ocjenama, poslanim datotekama itd.<br>\n";
+		if ($broj_ispita>0)
+			print "Na predmetu imate <b>$broj_ispita</b> kreiranih ispita.<br>\n";
+		if ($broj_casova+$broj_zadaca+$broj_ispita>0)
+			print "<br><font color=\"red\"><b>SVI OVI PODACI ĆE BITI IZGUBLJENI</b> ako kliknete na dugme Spasi!!!</font><br><br><br>\n";
+
+
+		// Pregled definisanog tipa predmeta
 		?>
 		</br>
 		<font size="2">Pregled definisanog tipa predmeta:</font>
@@ -806,10 +837,6 @@ if ($akcija == "") {
 	pregled_predmeta(mysql_result($q10,0,0));
 	
 	unset($_SESSION['TabelaKomponenti']);
-	unset($_SESSION['TabelaFiksnih']);
-	unset($_SESSION['TabelaZadaca']);
-	unset($_SESSION['TabelaPrisustva']);
-	unset($_SESSION['TabelaZavrsni']);
 	?>
 	</div>
 	<?
@@ -867,7 +894,6 @@ function pregled_predmeta($tippredmeta) {
 function pregled_predmeta_bez_naziva() {
 
 	$TabelaKomponenti = $_SESSION['TabelaKomponenti'];
-	$BrojKomponenti = $_SESSION['BrojKomponenti'];
 	
 	?>
 	<table border="0">
@@ -877,14 +903,21 @@ function pregled_predmeta_bez_naziva() {
 	<?
 
 	$suma=$suma_p=0;
-	for ($i=0; $i<$BrojKomponenti; $i++) {
+	for ($i=0; $i<count($TabelaKomponenti); $i++) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
 		?>
 		<tr <?=$bgcolor?>>
 			<td><?=my_escape($TabelaKomponenti[$i]['naziv'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['maxBodova'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['prolazBodova'])?></td>
-			<td><? if ($TabelaKomponenti[$i]['uslov'] == 1) print "Da"; else print "Ne"; ?></td>
+			<td><? 
+			if ($TabelaKomponenti[$i]['tip'] == -1)
+				print "&nbsp;"; // Završni ispit
+			else if ($TabelaKomponenti[$i]['uslov'] == 1) 
+				print "Da"; 
+			else 
+				print "Ne"; 
+			?></td>
 		</tr>
 		<?
 		if ($TabelaKomponenti[$i]['tip'] != 2) { // 2 = integralni ispit
@@ -893,7 +926,7 @@ function pregled_predmeta_bez_naziva() {
 		}
 	}
 	?>
-	<tr><td> Ukupno</td><td><? print $suma; ?></td><td><? print $suma_p; ?></td></tr>
+	<tr><td> Ukupno</td><td><?=$suma?></td><td>&nbsp;</td></tr>
 	</table>
 	<?
 	
