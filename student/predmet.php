@@ -363,12 +363,8 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p
-where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and p.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
-
-//$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
-//where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
-
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+where agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];
@@ -561,7 +557,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 	// Link za download postavke zadaće
 	if ($ima_postavka) {
 		if ($postavka_zadace != "") {
-			?><a href="?sta=common/preuzmi_postavku&zadaca=<?=$zadaca?>&predmet=<?=$predmet?>&ag=<?=$ag?>"<img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
+			?><a href="?sta=common/attachment&zadaca=<?=$zadaca?>&tip=postavka"><img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
 		} else { print "&nbsp;"; }
 		print "</td><td>\n";
 	}
@@ -584,7 +580,8 @@ $bodova += $bodova_sve_zadace;
 
 ?>
 	<tr><td colspan="<?=$broj_zadataka+1?>" align="right">UKUPNO: </td>
-	<td><?=$bodova_sve_zadace?></td><td>&nbsp;</td></tr>
+	<td><?=$bodova_sve_zadace?></td><td>&nbsp;</td>
+	<? if ($ima_postavka) { ?><td>&nbsp;</td><? } ?></tr>
 </tbody>
 </table>
 
