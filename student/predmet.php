@@ -68,6 +68,20 @@ print "<br/>\n";
 
 
 
+// Nastavni ansambl
+$q25 = myquery("select o.id, ns.titula, o.ime, o.prezime, ast.naziv, ss.titula from angazman as a, angazman_status as ast, naucni_stepen as ns, strucni_stepen as ss, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id and o.naucni_stepen=ns.id and o.strucni_stepen=ss.id order by ast.id");
+while ($r25 = mysql_fetch_row($q25)) {
+	// Zvanje - potreban je posljednji izbor
+	$q27 = myquery("select z.titula from zvanje as z, izbor as i where i.zvanje=z.id and i.osoba=$r25[0] order by i.datum_izbora desc limit 1");
+	if (mysql_num_rows($q27)>0)
+		$zvanje_titula = mysql_result($q27,0,0);
+	else
+		$zvanje_titula = ""; // Nema nijedan izbor
+	print "<b>".ucfirst($r25[4])."</b>: $zvanje_titula $r25[1] $r25[2] $r25[3] $r25[5]<br/>";
+}
+print "<br/>\n";
+
+
 // PROGRESS BAR
 
 $q30 = myquery("select kb.bodovi,k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
@@ -145,15 +159,17 @@ function moodle_novosti($predmet, $ag) {
 
 
 	// Prikazujemo vijesti od posljednjeg logina minus dvije sedmice
-	$q59 = myquery("select unix_timestamp(vrijeme) from log where userid=$userid and dogadjaj='login' order by vrijeme desc limit 2");
+//	$q59 = myquery("select unix_timestamp(vrijeme) from log where userid=$userid and dogadjaj='login' order by vrijeme desc limit 2");
 
-	$vrijeme_logina = array();
+	//$vrijeme_logina = array();
 
-	while($r59 = mysql_fetch_array($q59))
-		array_push($vrijeme_logina,$r59[0]);
+	//while($r59 = mysql_fetch_array($q59))
+	//	array_push($vrijeme_logina,$r59[0]);
 
-	$vrijeme_posljednjeg_logina = $vrijeme_logina[1]+(2*60*60);
-	$vrijeme_za_novosti = $vrijeme_logina[0]-(14*24*60*60);
+	//$vrijeme_posljednjeg_logina = $vrijeme_logina[1];
+	//$vrijeme_za_novosti = $vrijeme_logina[0]-(14*24*60*60);
+	$vrijeme_za_novosti = time()-(14*24*60*60);
+	$vrijeme_posljednjeg_logina = time();
 
 
 	$moodle_con = $__lv_connection;
@@ -172,7 +188,7 @@ function moodle_novosti($predmet, $ag) {
 		}
 	}
 
-	$q61 = mysql_query("select module, instance, visible from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
+	$q61 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id and added>$vrijeme_za_novosti",$moodle_con);
 	
 	while ($r61 = mysql_fetch_array($q61)) {
 		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
@@ -180,15 +196,9 @@ function moodle_novosti($predmet, $ag) {
 		if ($r61[0] == 9 && $r61[2] == 1) {
 			$q62 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
-			if (mysql_num_rows($q62)>0) {
-				while ($r62 = mysql_fetch_array($q62)) {
-					$q63 = myquery("select id from moodle_predmet_rss where vrstanovosti=1 and moodle_id=$course_id and sadrzaj='".mysql_real_escape_string($r62['0'])."' and vrijeme_promjene=".$r62['1']);
-
-					// Ako novost ne postoji u tabeli moodle_predmet_rss , onda se ona tamo pohranjuje
-					if (mysql_num_rows($q63)<1) {
-						myquery("insert into $conf_dbdb.moodle_predmet_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('1','$course_id','".mysql_real_escape_string($r62['0'])."','".$r62['1']."')");
-					}
-				}
+			while ($r62 = mysql_fetch_array($q62)) {
+				$code_poruke["o".$r61[3]] = $r62[0];
+				$vrijeme_poruke_obavijest["o".$r61[3]] = $r61[4];
 			}
 		}
 		
@@ -196,14 +206,9 @@ function moodle_novosti($predmet, $ag) {
 		if ($r61[0] == 13 && $r61[2] == 1) {
 			$q64 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
-			if (mysql_num_rows($q64)>0) {
-				while ($r64 = mysql_fetch_array($q64)) {
-					$q65 = myquery("select id from $conf_dbdb.moodle_predmet_rss where vrstanovosti=2 and moodle_id=$course_id and sadrzaj='".mysql_real_escape_string($r64['0'])."' and vrijeme_promjene=".$r64['1']);
-					
-					if (mysql_num_rows($q65)<1) {
-						myquery("insert into $conf_dbdb.moodle_predmet_rss (vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values('2','$course_id','".mysql_real_escape_string($r64['0'])."','".$r64['1']."')");
-					}
-				}
+			while ($r64 = mysql_fetch_array($q64)) {
+				$code_poruke["r".$r61[3]] = "<a href=\"$conf_moodle_url"."mod/resource/view.php?id=$r61[3]\">$r64[0]</a>";
+				$vrijeme_poruke_resurs["r".$r61[3]] = $r61[4];
 			}
 		}
 	}
@@ -213,97 +218,36 @@ function moodle_novosti($predmet, $ag) {
 		mysql_close($moodle_con);
 	}
 
-	// Prikupljanje podataka iz baze radi ispisa novosti
-	$q68 = myquery("select moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=1 and moodle_id=$course_id order by vrijeme_promjene desc limit 8");
- 
-	$q69 = myquery("select moodle_id, sadrzaj, vrijeme_promjene from $conf_dbdb.moodle_predmet_rss where vrijeme_promjene>$vrijeme_za_novosti and vrstanovosti=2 and moodle_id=$course_id order by vrijeme_promjene desc limit 8");
- 
-	$moodle_id_obavijesti =array();
-	$tekst_obavijesti = array();
-	$vrijeme_obavijesti = array();
-
-	$moodle_id_resursa = array();
-	$naziv_resursa = array();
-	$vrijeme_resursa = array();
- 
-
-	while ($r68 = mysql_fetch_array($q68)) {
-		array_push($moodle_id_obavijesti,$r68[0]);
-		array_push($tekst_obavijesti,$r68[1]);
-		array_push($vrijeme_obavijesti,$r68[2]);
-	}
-	while ($r69 = mysql_fetch_array($q69)) {
-		array_push($moodle_id_resursa,$r69[0]);
-		array_push($naziv_resursa,$r69[1]);
-		array_push($vrijeme_resursa,$r69[2]);
+	if (count($vrijeme_poruke_obavijest)>0) {
+		?><h3>Obavještenja</h3>
+		<ul><?
+		arsort($vrijeme_poruke_obavijest);
+		$count=0;
+		foreach ($vrijeme_poruke_obavijest as $id=>$vrijeme) {
+			$code = $code_poruke[$id];
+			if ($vrijeme>$vrijeme_posljednjeg_logina) $code = "<b>$code</b>";
+			print "<li>(".date("d.m. H:i:s", $vrijeme).") $code</li>\n";
+			$count++;
+			if ($count==5) break; // prikazujemo 5 poruka
+		}
+		print "<li><a href=\"$conf_moodle_url"."course/view.php?id=$course_id\">Opširnije...</a></li></ul>\n";
 	}
 
-	// Ispis novosti na stranici predmeta
-	if (count($moodle_id_obavijesti)>0) {
-		?><table border="0" width="70%"><h3>Obavještenja</h3><?
-		$i=0;
-		while ($i<count($moodle_id_obavijesti)) {
-			if ($tekst_obavijesti[$i]=="") break;
-			if ($i%4 == 0) print "<tr>\n";
-			
-			if ($vrijeme_obavijesti[$i]+2*60*60>$vrijeme_posljednjeg_logina) {
-				?>
-				<td bgcolor="rgb(255,255,121)">
-				<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i]?>"><?=substr($tekst_obavijesti[$i],0,34)?></a><br/>
-				<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i]+(2*60*60))?></td>
-				<?
-			} else {
-				?>
-				<td>
-				<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_obavijesti[$i]?>"><?=substr($tekst_obavijesti[$i],0,34)?></a><br/>
-				<?=date('d.m.Y H:i:s',$vrijeme_obavijesti[$i]+(2*60*60))?></td>
-				<?
-			}
+	if (count($vrijeme_poruke_resurs)>0) {
+		?><h3>Resursi</h3>
+		<ul><?
+		arsort($vrijeme_poruke_resurs);
+		$count=0;
+		foreach ($vrijeme_poruke_resurs as $id=>$vrijeme) {
+			$code = $code_poruke[$id];
+			if ($vrijeme>$vrijeme_posljednjeg_logina) $code = "<b>$code</b>";
+			print "<li>(".date("d.m. H:i:s", $vrijeme).") $code</li>\n";
+			$count++;
+			if ($count==5) break; // prikazujemo 5 poruka
+		}
+		print "</ul>\n<br>\n";
+	}
 
-			if ($i%4==3) print "</tr>\n";
-			$i++;
-		}
-		while ($i%4!=0) {
-			print "<td width=\"17.5%\">&nbsp;</td>\n";
-			if ($i%4==3) print "</tr>\n";
-			$i++;
-		}
-		?></table><?
-	} // if (count($moodle_id_obavijesti)>0)
-	
-	
-	if (count($moodle_id_resursa)>0) {
-		?><table border="0" width="70%"><h3>Resursi</h3><?
-		$i=0;
-		while ($i<count($moodle_id_resursa)) {
-			if ($naziv_resursa[$i]=="") break;
-			if ($i%4 == 0) print "<tr>\n";
-
-			if ($vrijeme_resursa[$i]+2*60*60>$vrijeme_posljednjeg_logina) { 
-				?>
-				<td bgcolor="rgb(255,255,121)">
-				<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
-				<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
-				<?
-			} else {
-				?>
-				<td>
-				<a href="<?=$conf_moodle_url?>course/view.php?id=<?=$moodle_id_resursa[$i]?>"><?=substr($naziv_resursa[$i],0,34)?></a><br/>
-				<?=date('d.m.Y H:i:s',$vrijeme_resursa[$i]+(2*60*60))?></td>
-				<?
-			}
-
-			if ($i%4==3) print "</tr>\n";
-			$i++;
-		}
-		while ($i%4!=0) {
-			print "<td width=\"17.5%\">&nbsp;</td>\n";
-			if ($i%4==3) print "</tr>\n";
-			$i++;
-		}
-		?></table><br><br><?
-	} // if (count($moodle_id_resursa)>0)
-	
 } // function moodle_novosti()
 
 

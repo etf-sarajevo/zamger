@@ -227,118 +227,93 @@ while ($r100 = mysql_fetch_row($q100)) {
 }
 
 
-//Novosti sa Courseware-a
 
-// Cache nećemo puniti jer je to sporo, a student/predmet se često otvara
+// Novosti sa Courseware-a
 
-/*//prikupljanje podatak o novostima na Moodle stranicama
-$q40 = myquery("Select predmet from student_predmet where student=$userid");
-if(mysql_num_rows($q40)>0){
-	while($r40 = mysql_fetch_array($q40)){
-		$predmet = $r40[0];
-		
-		$q41 = myquery("Select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
-		
-		if(mysql_num_rows($q41)==1){
-		
-		$moodle_id = mysql_result($q41,0);
-		$id_modula = array();
-		
-		//provjera konekcije na moodle bazu
-		$moodle_con = $__lv_connection;
-		if (!$conf_moodle_reuse_connection) {
-		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
-			if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
-				biguglyerror(mysql_error());
-				exit;
-			}
-			if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
-				biguglyerror(mysql_error());
-				exit;
-			}
-			if ($conf_use_mysql_utf8) {
-				mysql_set_charset("utf8",$moodle_con);
-			}
-		}
-		$q42 = mysql_query("Select module from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$moodle_id and module=9 or module=13 order by added desc limit 10",$moodle_con);
-		
-			while($r42 = mysql_fetch_array($q42)){
-				if($r42[0]==9){
-					$q43 = mysql_query("Select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where timemodified>$vrijeme_loga order by timemodified desc limit 5",$moodle_con);
-					if(mysql_num_rows($q43)>0){
-					while($r43 = mysql_fetch_array($q43)){
-						$q44 = myquery("Select id from $conf_dbdb.moodle_predmet_rss where vrstanovosti=1 and moodle_id=$moodle_id and sadrzaj='$r43[0]' and vrijeme_promjene=$r43[1]");
-						
-						if(mysql_num_rows($q44)<1){
-						myquery("Insert into moodle_predmet_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values ('1', '$moodle_id', '$r43[0]','$r43[1]')");
-						}
-						}
-					}
-				}
-				if($r42[0]==13){
-					$q45 = mysql_query("Select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where timemodified>$vrijeme_loga order by timemodified desc limit 5",$moodle_con);
-					if(mysql_num_rows($q45)>0){
-					while($r45 = mysql_fetch_array($q45)){
-						$q46 = myquery("Select id from $conf_dbdb.moodle_predmet_rss where vrstanovosti=2 and moodle_id=$moodle_id and sadrzaj='$r45[0]' and vrijeme_promjene=$r45[1]");
-						
-						if(mysql_num_rows($q46)<1){
-						myquery("Insert into moodle_predmet_rss(vrstanovosti, moodle_id, sadrzaj, vrijeme_promjene) values ('2', '$moodle_id', '$r45[0]','$r45[1]')");
-						}
-						}
-					}
-				}
-			}
-		}
-		
+
+if ($conf_moodle) {
+
+// Prikazujemo vijesti od posljednjeg logina minus dvije sedmice
+$vrijeme_za_novosti = time()-(14*24*60*60);
+$vrijeme_posljednjeg_logina = time();
+
+
+$moodle_con = $__lv_connection;
+if (!$conf_moodle_reuse_connection) {
+	// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
+	if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
+		biguglyerror(mysql_error());
+		exit;
+	}
+	if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
+		biguglyerror(mysql_error());
+		exit;
+	}
+	if ($conf_use_mysql_utf8) {
+		mysql_set_charset("utf8",$moodle_con);
 	}
 }
-// Diskonektujemo moodle o
-	if (!$conf_moodle_reuse_connection) {
-		mysql_close($moodle_con);
-	}
-*/
 
 
-
-
-// Vijesti iz cache-a stavljamo u niz
-
-$q200 = myquery("select mpi.moodle_id, mpr.id, mpr.vrstanovosti, mpr.sadrzaj, mpr.vrijeme_promjene, p.kratki_naziv, p.naziv from moodle_predmet_id as mpi, moodle_predmet_rss as mpr, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag and mpi.moodle_id=mpr.moodle_id and pk.predmet=p.id order by mpr.vrijeme_promjene desc limit $broj_poruka");
+// Potrebno je pronaci u tabeli moodle_predmet_id koji je id kursa koristen na Moodle stranici za odredjeni predmet sa Zamger-a..tacno jedan id kursa iz moodle baze odgovara jednom predmetu u zamger bazi
+$q200 = myquery("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=mpi.akademska_godina");
 while ($r200 = mysql_fetch_row($q200)) {
-	$moodle_id = $r200[0];
+	$course_id = $r200[0];
 
-	// Skraćeni naslov
-	$naslov = $r200[3];
-	if (strlen($naslov)>30) 
-		$naslov = substr($naslov,0,28)."...";
+	$q210 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id and added>$vrijeme_za_novosti",$moodle_con);
+	
+	while ($r210 = mysql_fetch_array($q210)) {
 
-	// Fino vrijeme
-	$vrijeme="";
-	if (date("d.m.Y",$r200[4])==date("d.m.Y")) $vrijeme = "danas ";
-	else if (date("d.m.Y",$r200[4]+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
-	else $vrijeme .= date("d.m. ",$r200[4]);
-	$vrijeme .= date("H:i",$r200[4]);
+		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
+		// Ako visible != 1 instanca je sakrivena i ne treba je prikazati u Zamgeru
+		if ($r210[0] == 9 && $r210[2] == 1) {
+			$q220 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r210[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
+			
+			while ($r220 = mysql_fetch_array($q220)) {
+				$vrijeme = date("d.m. H:i",$r210[4]);
 
-	if ($r200[2]==1) { // 1 = labela
-		$code_poruke["mo".$r200[1]]= "<item>
-		<title>Obavijest ($r200[5]): $naslov ($vrijeme)</title>
-		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
-		<description>Detaljnije na Moodle stranici predmeta $r200[6]</description>
+				// Skraćeni naslov
+				$naslov = $r220[0];
+				if (strlen($naslov)>30) 
+					$naslov = substr($naslov,0,28)."...";
+
+				$code_poruke["mo".$r210[3]] = "<item>
+		<title>Obavijest ($r200[1]): $naslov ($vrijeme)</title>
+		<link>".$conf_moodle_url."course/view.php?id=$course_id</link>
+		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
 		</item>\n";
-		$vrijeme_poruke["mo".$r200[1]] = $r200[4];
-	}
+				$vrijeme_poruke["mo".$r210[3]] = $r210[4];
+			}
+		}
+		
+		// Modul 13 je zaduzen za cuvanje informacija o dodatom resursu na moodle stranici
+		if ($r210[0] == 13 && $r210[2] == 1) {
+			$q230 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r210[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
+			
+			while ($r230 = mysql_fetch_array($q230)) {
+				$vrijeme = date("d.m. H:i",$r210[4]);
 
-	if ($r200[2]==2) { // 2 = resurs
-		$code_poruke["mr".$r200[1]]= "<item>
-		<title>Resurs ($r200[5]): $naslov ($vrijeme)</title>
-		<link>".$conf_moodle_url."course/view.php?id=$moodle_id</link>
-		<description>Detaljnije na Moodle stranici predmeta $r200[6]</description>
+				// Skraćeni naslov
+				$naslov = $r230[0];
+				if (strlen($naslov)>30) 
+					$naslov = substr($naslov,0,28)."...";
+
+				$code_poruke["mr".$r210[3]] = "<item>
+		<title>Resurs ($r200[1]): $naslov ($vrijeme)</title>
+		<link>".$conf_moodle_url."mod/resource/view.php?id=$r210[3]</link>
+		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
 		</item>\n";
-
-		$vrijeme_poruke["mr".$r200[1]] = $r200[4];
+				$vrijeme_poruke["mr".$r210[3]] = $r210[4];
+			}
+		}
 	}
 }
-
+	
+// Diskonektujemo moodle
+if (!$conf_moodle_reuse_connection) {
+	mysql_close($moodle_con);
+}
+}
 
 
 // Sortiramo po vremenu
