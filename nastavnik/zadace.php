@@ -292,7 +292,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		zamgerlog("los naziv zadace", 3);
 		return 0;
 	}
-	if ($zadataka<=0 || $bodova<=0 || $zadataka>100 || $bodova>100) {
+	if ($zadataka<=0 || $bodova<0 || $zadataka>100 || $bodova>100) {
 		niceerror("Broj zadataka ili broj bodova nije dobar");
 		zamgerlog("los broj zadataka ili bodova", 3);
 		return 0;
@@ -439,13 +439,6 @@ function provjera() {
 		return false;
 	}
 	var zadataka=document.getElementById("zadataka");
-	if (zadataka.value=="0") {
-		alert("Broj zadataka u zadaći mora biti veći od nule, npr. 1");
-		zadataka.style.border=1;
-		zadataka.style.backgroundColor="#FF9999";
-		zadataka.focus();
-		return false;
-	}
 	if (!IsNumeric(zadataka.value)) {
 		alert("Neispravan broj zadataka!");
 		zadataka.style.border=1;
@@ -453,16 +446,23 @@ function provjera() {
 		zadataka.focus();
 		return false;
 	}
+	if (parseInt(zadataka.value)<=0) {
+		alert("Broj zadataka u zadaći mora biti veći od nule, npr. 1");
+		zadataka.style.border=1;
+		zadataka.style.backgroundColor="#FF9999";
+		zadataka.focus();
+		return false;
+	}
 	var bodova=document.getElementById("bodova");
-	if (bodova.value=="0") {
-		alert("Broj bodova koje nosi zadaća mora biti veći od nule, npr. 2 boda");
+	if (!IsNumeric(bodova.value)) {
+		alert("Neispravan broj bodova!");
 		bodova.style.border=1;
 		bodova.style.backgroundColor="#FF9999";
 		bodova.focus();
 		return false;
 	}
-	if (!IsNumeric(bodova.value)) {
-		alert("Neispravan broj bodova!");
+	if (parseFloat(bodova.value)<0) {
+		alert("Broj bodova koje nosi zadaća mora biti veći ili jednak nuli, npr. 2 boda");
 		bodova.style.border=1;
 		bodova.style.backgroundColor="#FF9999";
 		bodova.focus();
