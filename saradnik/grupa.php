@@ -313,7 +313,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		}
 		?></select>&nbsp;&nbsp;
 		<select name="godina" class="default"><?
-		for ($i=2005; $i<=2010; $i++) {
+		for ($i=2005; $i<=2020; $i++) {
 			print "<option value=\"$i\"";
 			if ($i==$godina) print " selected";
 			print ">$i</option>";
