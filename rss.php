@@ -14,6 +14,14 @@
 // v4.0.9.7 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
 
 
+function z_substr($string, $start, $len) {
+	do {
+		$result = substr($string, $start, $len);
+		$len++;
+	} while (ord(substr($result, strlen($result)-1, 1)) > 128);
+	return $result;
+}
+
 $broj_poruka = 10;
 
 
@@ -26,6 +34,7 @@ dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 // Parametri potrebni za Moodle integraciju
 global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
 global $__lv_connection, $conf_use_mysql_utf8;
+
 
 // Pretvaramo rss id u userid
 $id = my_escape($_REQUEST['id']);
@@ -98,13 +107,26 @@ while ($r10 = mysql_fetch_row($q10)) {
 $q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["i".$r15[0]] = "
-		<item>
+	// Ima li kakvih rezultata?
+	$q16 = myquery("select count(*) from ispitocjene where ispit=$r15[0]");
+	if (mysql_result($q16,0,0)==0) {
+		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0]");
+		if (mysql_result($q17,0,0)>0) 
+			$code_poruke["i".$r15[0]] = "<item>
+		<title>Objavljeni termini za ispit $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
+		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+	</item>\n";
+		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+	}
+	else {
+		$code_poruke["i".$r15[0]] = "<item>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
-		<description></description>
-		</item>\n";
-	$vrijeme_poruke["i".$r15[0]] = $r15[3];
+		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+	</item>\n";
+		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+	}
 }
 
 // konacna ocjena
@@ -160,7 +182,7 @@ if (mysql_num_rows($q30)>0) {
 
 
 $br = 0;
-$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc");
+$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc limit $broj_poruka");
 while ($r100 = mysql_fetch_row($q100)) {
 	$id = $r100[0];
 	$opseg = $r100[2];
@@ -188,9 +210,9 @@ while ($r100 = mysql_fetch_row($q100)) {
 	// Fino vrijeme
 	$vr = $vrijeme_poruke[$id];
 	$vrijeme="";
-	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
+	/* if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
 	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
-	else $vrijeme .= date("d.m. ",$vr);
+	else*/ $vrijeme .= date("d.m. ",$vr);
 	$vrijeme .= date("H:i",$vr);
 
 	$naslov = $r100[4];
@@ -198,7 +220,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$naslov = str_replace("\n", " ", $naslov);
 	// RSS ne podržava &quot; entitet!?
 	$naslov = str_replace("&quot;", '"', $naslov);
-	if (strlen($naslov)>30) $naslov = substr($naslov,0,28)."...";
+	if (strlen($naslov)>30) $naslov = z_substr($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
 	// Posiljalac
@@ -270,19 +292,19 @@ while ($r200 = mysql_fetch_row($q200)) {
 			$q220 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r210[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
 			while ($r220 = mysql_fetch_array($q220)) {
-				$vrijeme = date("d.m. H:i",$r210[4]);
+				$vrijeme = date("d.m. H:i",($r210[4]>$r220[1])?$r210[4]:$r220[1]);
 
 				// Skraćeni naslov
 				$naslov = $r220[0];
 				if (strlen($naslov)>30) 
-					$naslov = substr($naslov,0,28)."...";
+					$naslov = z_substr($naslov,0,28)."...";
 
 				$code_poruke["mo".$r210[3]] = "<item>
 		<title>Obavijest ($r200[1]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."course/view.php?id=$course_id</link>
 		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
 		</item>\n";
-				$vrijeme_poruke["mo".$r210[3]] = $r210[4];
+				$vrijeme_poruke["mo".$r210[3]] = ($r210[4]>$r220[1])?$r210[4]:$r220[1];
 			}
 		}
 		
@@ -291,19 +313,19 @@ while ($r200 = mysql_fetch_row($q200)) {
 			$q230 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r210[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
 			while ($r230 = mysql_fetch_array($q230)) {
-				$vrijeme = date("d.m. H:i",$r210[4]);
+				$vrijeme = date("d.m. H:i",($r210[4]>$r230[1])?$r210[4]:$r230[1]);
 
 				// Skraćeni naslov
 				$naslov = $r230[0];
 				if (strlen($naslov)>30) 
-					$naslov = substr($naslov,0,28)."...";
+					$naslov = z_substr($naslov,0,28)."...";
 
 				$code_poruke["mr".$r210[3]] = "<item>
 		<title>Resurs ($r200[1]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."mod/resource/view.php?id=$r210[3]</link>
 		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
 		</item>\n";
-				$vrijeme_poruke["mr".$r210[3]] = $r210[4];
+				$vrijeme_poruke["mr".$r210[3]] = ($r210[4]>$r230[1])?$r210[4]:$r230[1];
 			}
 		}
 	}
@@ -333,7 +355,7 @@ foreach ($vrijeme_poruke as $id=>$vrijeme) {
 
 	print $code_poruke[$id];
 	$count++;
-	if ($count==$broj_poruka) break; // prikazujemo 5 poruka
+	if ($count==$broj_poruka) break; // prikazujemo samo prvih $broj_poruka poruka
 }
 
 
