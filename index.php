@@ -15,6 +15,44 @@
 // v4.0.9.1.(2009/06/16) + Dodan link na dokumentaciju na sve stranice
 
 
+$uspjeh=0;
+
+
+function greska_u_modulima() {
+	global $uspjeh, $sta;
+	if ($uspjeh==0) {
+		?>
+		<html><head></head>
+		<body>
+		<p><font color='red'><b>GREŠKA: U toku su radovi na Zamgeru</b></font></p>
+		<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href="javascript:location.reload(true)">Refresh</a>.</p>
+		</body></html>
+		<?
+	}
+	if ($uspjeh==1) {
+                if (function_exists('error_get_last')) {
+			$err = error_get_last();
+			$file = $err['file'];
+			$line = $err['line'];
+			$msg = $err['message'];
+			$file = substr($file, strlen($file)-20);
+
+			zamgerlog("sintaksna greska u $sta, $line: '$msg'",2);
+		} else {
+			$file = $sta;
+			zamgerlog("sintaksna greska u $sta",2);
+			$msg = "";
+		}
+
+	
+		niceerror("U toku su radovi na modulu $sta");
+		print "<p>$line Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href=\"javascript:location.reload(true)\">Refresh</a>.</p>";
+	}
+}
+
+register_shutdown_function("greska_u_modulima");
+
+
 require("lib/libvedran.php");
 require("lib/zamger.php");
 require("lib/config.php");
@@ -157,7 +195,9 @@ if ($naslov=="") $naslov = "ETF Bolognaware"; // default naslov
 // template==2 - ne prikazujemo ni header (npr. PDF ispis)
 if ($found==1 && $template==2 && $greska=="") {
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	$uspjeh=1;
 	include ("$sta.php");
+	$uspjeh=2;
 	eval("$staf();");
 	exit;
 }
@@ -194,7 +234,9 @@ if ($found==1 && $template==0 && $greska=="") {
 		<?
 	}
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	$uspjeh=1;
 	include ("$sta.php");
+	$uspjeh=2;
 	eval("$staf();");
 	print "</body></html>\n";
 	exit;
@@ -338,7 +380,9 @@ if ($userid>0) {
 }
 
 // Prikaz modula uglavljenog u template
+$uspjeh=1;
 include ("$sta.php");
+$uspjeh=2;
 
 
 // Prikaz menija specificnih za odredjene grupe modula
