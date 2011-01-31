@@ -69,7 +69,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 	// Kreiramo novi tip predmeta i uzimamo njegov id
 	// Biramo naziv koji ne postoji već
-	$naziv_tipa = $predmet_naziv;
+	$naziv_tipa = substr($predmet_naziv,0,49);
 	$q65 = myquery("select count(*) from tippredmeta where naziv='$naziv_tipa'");
 	$broj=0;
 	while (mysql_result($q65,0,0)>0) {
@@ -89,6 +89,8 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	$BrojKomponenti = count($TabelaKomponenti);
 
 	$prvi_parcijalni_id = $drugi_parcijalni_id = 0;
+
+	$komponente_za_update = array();
 
 	for ($i=0; $i<$BrojKomponenti; $i++) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
@@ -131,6 +133,47 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 				$q100 = myquery("select id from komponenta where naziv='$naziv_komponente'");
 				$id_komponente = mysql_result($q100,0,0);
 			}
+
+
+			// Pokušavamo migrirati eventualne postojeće podatke
+			// Posljedica će biti da su podaci izvan dozvoljenog opsega, što će korisnik morati popraviti ručno
+
+			$potreban_update = false;
+
+			if ($tipKomponente == 1 || $tipKomponente == 2) { // ispit
+				$q300 = myquery("select i.id, k.kratki_gui_naziv, k.tipkomponente from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
+				while ($r300 = mysql_result($q300)) {
+					if ($r300[2]==2 && $tipKomponente==2) {
+						$q310 = myquery("update ispit set komponenta=$id_komponente where id=$r300[0]");
+						$potreban_update = true;
+					}
+					if ($r300[2]==1 && $tipKomponente==1 && $r300[1]==$kratkiNaziv) {
+						$q310 = myquery("update ispit set komponenta=$id_komponente where id=$r300[0]");
+						$potreban_update = true;
+					}
+				}
+			}
+
+			if ($tipKomponente == 3) { // prisustvo
+				$q320 = myquery("select count(*) from cas where predmet=$predmet and akademska_godina=$ag");
+				if (mysql_num_rows($q300)>0) {
+					$q330 = myquery("update cas set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
+					$potreban_update = true;
+				}
+			}
+
+			if ($tipKomponente == 4) { // zadace
+				$q320 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
+				if (mysql_num_rows($q300)>0) {
+					$q330 = myquery("update zadaca set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
+					$potreban_update = true;
+				}
+			}
+
+			// Fiksne komponente ignorišemo, ali ih nećemo brisati za slučaj da se korisnik predomisli
+
+			// Dodajemo komponentu u niz za kasniji update
+			if ($potreban_update) array_push($komponente_za_update, $id_komponente);
 		}
 
 		if ($tipKomponente == 1) {
@@ -160,6 +203,15 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 			$q170 = myquery("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
 			if (mysql_result($q170,0,0)==0)
 				$q180 = myquery("delete from komponenta where id=$r150[0]");
+		}
+	}
+
+
+	// Updatujemo studentima bodove u tabeli komponentebodovi
+	foreach ($komponente_za_update as $k) {
+		$q185 = myquery("select sp.student, sp.predmet from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		while ($r185 = mysql_fetch_row($q185)) {
+			update_komponente($r185[0], $r185[1], $k);
 		}
 	}
 
