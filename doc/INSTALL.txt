@@ -1,6 +1,6 @@
 ZAMGER v4.2
 
-Copyright (c) 2006-2010 Vedran Ljubovic i drugi
+Copyright (c) 2006-2011 Vedran Ljubovic i drugi
 Elektrotehnicki fakultet Sarajevo
 
 
@@ -32,6 +32,18 @@ direktoriju) ili koristeci neki alat za konfigurisanje PHPa:
 
 - Radi sigurnosti, iskljuciti opciju Register globals:
 	register_globals = Off
+
+- Ukoliko koristite mogucnosti slanja datoteka (zadace, projekti...), 
+nije zgoreg podesiti maksimalnu velicinu datoteke prilikom slanja, npr. 
+na 8 MB:
+	upload_max_filesize = 8M
+Ali imajte na umu da trebate podesiti i varijablu post_max_size. Ako 
+korisnik posalje datoteku koja prelazi post_max_size, nece dobiti 
+nikakvu poruku o gresci sto moze biti zbunjujuce. Stoga preporucujemo 
+da postavite post_max_size na vrijednost znatno vecu od 
+upload_max_filesize, npr. 100 MB:
+	post_max_size = 100M
+
 
 Ukoliko vam vas web hosting ne dozvoljava da podesite neki od ovih 
 parametara, potrazite drugi. Administrator koji nije dovoljno 
