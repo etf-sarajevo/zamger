@@ -1,15 +1,15 @@
 <?php
 // NASTAVNIK/PROJEKTI - nastavnicki modul za definisanje projekata, parametara
 
-function nastavnik_projekti()
-{
-	//debug mod aktivan
+function nastavnik_projekti() {
+
 	global $userid, $user_nastavnik, $user_siteadmin;
+	global $conf_files_path;
+
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
-		
+
 	// Da li korisnik ima pravo ući u modul?
-	
 	if (!$user_siteadmin) 
 	{
 		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
@@ -17,47 +17,19 @@ function nastavnik_projekti()
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
 			biguglyerror("Nemate pravo pristupa ovoj opciji");
 			return;
-		} 
+		}
 	}
-	
-	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet&ag=$ag";
-	$action 	= $_REQUEST['action'];
-	$id			= intval($_REQUEST['id']);
-		
-	?>
-<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
-<script type="text/javascript">
-			window.onload = function() {
-				var table = document.getElementById('expandable_table');
-				if (table) {
-					var trs = table.getElementsByTagName('tr');
-					for(var i = 0; i < trs.length; i++) {
-						var a = trs[i].getElementsByTagName('td')[1].getElementsByTagName('a')[0];
-						if(a){
-							a.onclick = function() {
-								var span = this.parentNode.getElementsByTagName('span')[0];
-								span.style.display = span.style.display == 'none' ? 'block' : 'none';
-								this.firstChild.nodeValue = span.style.display == 'none' ? '|+|' : '|-|';
-							
-								var studSpan = this.parentNode.parentNode.getElementsByTagName('td')[0].getElementsByTagName('span')[0];
-								studSpan.style.display = studSpan.style.display == 'none' ? 'block' : 'none';
-							};
-						}	
-					}
-				}
-			};
 
-			function removeTable(divId, tableId) {
-				  var d = document.getElementById(divId);
-				  var child = document.getElementById(tableId);
-				  d.removeChild(child);
-			}
+	$linkPrefix = "?sta=nastavnik/projekti&predmet=$predmet&ag=$ag";
+	$akcija = $_REQUEST['akcija'];
+	$id = intval($_REQUEST['id']);
 	
-</script>
-<h2>Projekti</h2>
-<?php	
+	?>
+	<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+	<h2>Projekti</h2>
+	<?
 	
-	//$params = getPredmetParams($predmet, $ag);
+	// Preuzimanje projektnih parametara
 	$q10 = myquery("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet=$predmet AND akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1)
 		$nema_parametara = true;
@@ -70,1061 +42,607 @@ function nastavnik_projekti()
 		$param_zakljucan = mysql_result($q10,0,4);
 	}
 
-	if ($action != 'page')
-	{
-	?>
-     <div class="links">
-            <ul class="clearfix">
-            	<li><a href="<?php echo $linkPrefix . "&action=param"?>">Parametri projekata</a></li>
-                <li><a href="<?php echo $linkPrefix ?>">Lista projekata</a></li>
-                <li><a href="<?php echo $linkPrefix . "&action=addProject" ?>">Novi projekat</a></li>
-                <li class="last"><a href="<?php echo $linkPrefix . "&action=addStudent"?>">Dodjela projekata studentima</a></li>
-            </ul>   
-    </div>	
-    <?php	
-	}
-	
-	if (!isset($action))
-	{
-		
-?>
-<h2>Lista projekata</h2>
-<?php
-	$q10 = myquery("SELECT id, naziv, opis FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-	if (mysql_num_rows($q10)>0)
-	{
-		if ($param_zakljucan == 1)
-		{
-?>
-	<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
-<?php
-		} //locked projects
-		else
-		{
-?>
-	<span class="noticeGreen">Studenti se još uvijek mogu prijaviti u projektne timove. Niste zaključali spiskove u parametrima prijekata.</span>	
-
-<?php
-		}
-		//$countTeamsForPredmet = getCountNONEmptyProjectsForPredmet($predmet, $ag);
-		if (mysql_num_rows($q10) < $param_min_timova)
-		{
-?>
-	<span class="notice">Trenutni broj timova (<?=mysql_num_rows($q10)?>) je ispod minimalnog broj timova koji ste definisali za ovaj predmet (<?=$param_min_timova?>).</span>	
-<?php
-		
-		} //if min teams is not achieved yet
-		
-		
-	} //if there are projects
-	else
-	{
-?>
-	<span class="notice">Nema kreiranih projekata na ovom predmetu.</span>	
-<?php	
-	}
-
-?>
-	
-<?php
-	
-	while ($r10 = mysql_fetch_row($q10))
-	{
-		$id_projekta = $r10[0];
-		$naziv_projekta = $r10[1];
-
-		$q20 = myquery("SELECT o.prezime, o.ime, o.brindexa FROM osoba as o, student_projekat as sp WHERE sp.student=o.id and sp.projekat=$id ORDER BY o.prezime, o.ime");
-		//$members = fetchProjectMembers($id_projekta);
-?>
-<h3><?=$naziv_projekta?></h3>
-<div class="links">
-            <ul class="clearfix" style="margin-bottom: 10px;">
-            <li><a href="<?=$linkPrefix . "&action=editProject&id=$id_projekta" ?>">Uredi projekat</a></li>
-            <li><a href="<?=$linkPrefix . "&action=addNoteOnProject&id=$id_projekta" ?>">Dodaj biljesku</a></li>
-            <li <? if ($param_zakljucan == 0) echo 'class="last"' ?>><a href="<?=$linkPrefix . "&action=delProject&id=$id_projekta" ?>">Obriši projekat</a></li>
-     	<?
-			if ($param_zakljucan == 1)
-			{
+	// Glavni meni
+	if ($akcija != 'projektna_stranica') {
 		?>
-                <li class="last"><a href="<?= $linkPrefix . "&action=page&projekat=$id_projekta" ?>">Projektna stranica</a></li>
-        <?
-			} //locked projects
-		?>
-            </ul> 
-        <?
-			$q20 = myquery("SELECT COUNT(id) FROM osoba as o, student_projekat as sp where o.id=sp.student and sp.projekat=$id_projekta");
-			$broj_clanova = mysql_result($q20,0,0);
-			if ($broj_clanova < $param_min_clanova_tima)
-			{
-		?>
-			<span class="notice">Broj prijavljenih studenata (<?=$broj_clanova?>) je ispod minimuma koji ste definisali za ovaj predmet (<?=$param_min_clanova_tima?>).</span>	
+		<div class="links">
+			<ul class="clearfix">
+				<li><a href="<?=$linkPrefix."&akcija=param"?>">Parametri projekata</a></li>
+				<li><a href="<?=$linkPrefix ?>">Lista projekata</a></li>
+				<li><a href="<?=$linkPrefix."&akcija=dodaj_projekat" ?>">Novi projekat</a></li>
+				<li class="last"><a href="<?=$linkPrefix."&akcija=dodjela_studenata"?>">Dodjela projekata studentima</a></li>
+			</ul>
+		</div>	
 		<?
-			} //if count members < minimal defined
-		?>
-        
-    </div>	
-<table class="projekti" border="0" cellspacing="0" cellpadding="2">
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Naziv</th>
-    <td width="490" align="left" valign="top"><?=$naziv_projekta?></td>
-  </tr>
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Prijavljeni studenti</th>
-    <td width="490" align="left" valign="top">
-    	<?php
-			if (mysql_num_rows($q20)<1)
-				echo 'Nema prijavljenih studenata.';
-			else {
-		?>
-        <ul>
-        <?php
-				while ($r20 = mysql_fetch_row($q20)) {
-		?>
-        	<li><?="$r20[0] $r20[1] ($r20[2])"?></li>
-		<?php		
-				}
-		?>
-        </ul>	
-		<?php	
-			}
-		
-		?>
-    
-    </td>
-  </tr>
-  <tr>
-    <th width="200" align="left" valign="top" scope="row">Opis</th>
-    <td width="490" align="left" valign="top"><?=$r10[2]?></td>
-  </tr>
-</table>
-
-
-<?php
-	} //foreach project
+	}
 	
-	} //action not set
-	else
-	{
-		if ($action == 'param')
-		{
-		
-			if (!isset($_REQUEST['submit']))
-			{
-?>
-				 <h2>Parametri projekata</h2>
-				<?php
-					print genform("POST", "editForm");
+	// Default akcija - LISTA PROJEKATA
+	if (!isset($akcija)) {
+		?>
+		<h2>Lista projekata</h2>
+		<?
+
+		// Početne informacije
+		$q100 = myquery("SELECT id, naziv, opis FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
+		$broj_projekata = mysql_num_rows($q100);
+		if ($broj_projekata > 0) {
+			if ($param_zakljucan == 1) {
 				?>
-				<!--<action="<?=$linkPrefix . "&action=param" ?>" method="post" enctype="multipart/form-data" name="editForm" id="editForm">-->
-				<div id="formDiv">
-					Polja sa * su obavezna. <br />
-                	<div class="row">
-						<span class="label">Zaključaj stanje projekata i timova</span>
-						<span class="formw"><input name="lock" type="checkbox" id="lock" <?
-							if ($param_zakljucan == 1)
-								echo 'checked';
-						?> /></span> <br /><br />
-                        Ova opcija će onemogućiti prijavljivanje na projekte i pokrenuti projektne stranice.
-					</div>
-                    
-					<div class="row">
-						<span class="label">MIN timova *</span>
-						<span class="formw"><input name="min_timova" type="text" id="min_timova" size="10" value="<?=$param_min_timova;?>" /></span> 
-					</div>
-                    <div class="row">
-						<span class="label">MAX timova *</span>
-						<span class="formw"><input name="max_timova" type="text" id="max_timova" size="10" value="<?=$param_max_timova?>" /></span> 
-					</div>
-                    
-                    <div class="row">
-						<span class="label">MIN članova tima *</span>
-						<span class="formw"><input name="min_clanova_tima" type="text" id="min_clanova_tima" size="10" value="<?=$param_min_clanova_tima?>" /></span> 
-					</div>
-                    <div class="row">
-						<span class="label">MAX članova tima *</span>
-						<span class="formw"><input name="max_clanova_tima" type="text" id="max_clanova_tima" size="10" value="<?=$param_max_clanova_tima?>" /></span> 
-					</div>
+				<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
+				<?
+			} else {
+				?>
+				<span class="noticeGreen">Studenti se još uvijek mogu prijaviti u projektne timove. Niste zaključali spiskove u parametrima prijekata.</span>	
+				<?
+			}
 
-					<div class="row">	
-						<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-					</div>
-				
-				</div><!--formDiv-->
-				
-				
-				</form>
-				
-				
-<?php				
-						
-			}
-			else
-			{
-				$errorText = formProcess_param();
-				if($errorText == '')
-				{
-					nicemessage('Uspješno ste uredili parametre projekata.');
-					zamgerlog("uredio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
-					$link = $linkPrefix;
-				}
-				else
-				{	
-					//an error occured trying to process the form
-					niceerror($errorText);
-					$link = "javascript:history.back();";					
-				}
-				nicemessage('<a href="'. $link .'">Povratak.</a>');
-				
-			} //submitted the form
-		
-		} //action == param		
-		elseif ($action == 'addProject')
-		{
-		
-			if ($nema_parametara && !isset($_REQUEST['submit']))
-			{
-				nicemessage("Prvo podesite parametre projekata.");
-				nicemessage('<a href="'. $linkPrefix .'&action=param">Parametri projekata</a>');
-				return;
-			}
-			if ($param_zakljucan == 1)
-			{
-				niceerror("Zaključali ste stanje projekata na ovom predmetu. Nije moguće napraviti novi projekat.");
-				nicemessage('<a href="'. $linkPrefix .'&action=param">Parametri projekata</a>');
-				return;
-			}
-			
-			if (!isset($_REQUEST['submit']))
-			{
-		
-	?>	
-				 <h2>Novi projekat</h2>
-	<?php
-   				 print genform("POST", "addForm");
-    ?>
-                
-                <div id="formDiv">
-                	Polja sa * su obavezna. <br />
-                
-                	<div class="row">
-                        <span class="label">Naziv *</span>
-                        <span class="formw"><input name="naziv" type="text" id="naziv" size="70" /></span> 
-                  	</div>
-                    <div class="row">
-                        <span class="label">Opis *</span>
-                        <span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"></textarea></span>
-                   	</div> 
-                    
-                    <div class="row">	
-                      	<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-                    </div>
-                
-                </div><!--formDiv-->
-                
-                
-                </form>
-                
-			
-	<?php	
-			} //not submitted yet
-			else
-			{
-				$errorText = formProcess('add');
-				if($errorText == '')
-				{
-					nicemessage('Novi projekat uspješno dodan.');
-					zamgerlog("dodao novi projekat na predmetu pp$_REQUEST[predmet]", 2);
-					$link = $linkPrefix;
-				}
-				else
-				{	
-					niceerror($errorText);
-					$link = "javascript:history.back();";		
-				}
-				nicemessage('<a href="'. $link .'">Povratak.</a>');
-			
-			
-			} //submitted the form
-	
-		} //action == addProject
-		elseif ($action == 'editProject')
-		{
-			//edit item
-			if (!isset($_REQUEST['submit']))
-			{
-				$q10 = myquery("SELECT naziv, opis FROM projekat WHERE id=$id");
+			$q460 = myquery("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+			$broj_nepraznih = mysql_num_rows($q460);
 
-			
-?>
-				 <h1>Uredi projekat</h1>
-	<?php
-   				 print genform("POST", "editForm");
-    ?>
-				
-				<div id="formDiv">
-					Polja sa * su obavezna. <br />
-				
-					<div class="row">
-						<span class="label">Naziv *</span>
-						<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?=mysql_result($q10,0,0)?>" /></span> 
-					</div>
-					<div class="row">
-						<span class="label">Opis *</span>
-						<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q10,0,1)?></textarea></span>
-					</div> 
-					
-					<div class="row">	
-						<span class="formw" style="margin-left:150px;"><input name="submit" type="submit" id="submit" value="Potvrdi"/></span>
-					</div>
-				
-				</div><!--formDiv-->
-				
-				
-				</form>
-				
-				
-<?php				
-						
+			if ($broj_nepraznih < $param_min_timova) {
+				?>
+				<span class="notice">Trenutni broj timova sa barem jednim studentom (<?=$broj_nepraznih?>) je ispod minimalnog broj timova koji ste definisali za ovaj predmet (<?=$param_min_timova?>).</span>
+				<?
 			}
-			else
-			{
-				$errorText = formProcess('edit');
-				if($errorText == '')
-				{
-					nicemessage('Uspješno ste uredili projekat.');
-					zamgerlog("uredio projekat $id na predmetu pp$_REQUEST[predmet]", 2);
-					$link = $linkPrefix;
-				}
-				else
-				{	
-					//an error occured trying to process the form
-					niceerror($errorText);
-					$link = "javascript:history.back();";	
-					
-				}
-				nicemessage('<a href="'. $link .'">Povratak.</a>');
-				
-			} //submitted the form
-			
-		
-		} //action == editProject
-		elseif ($action == 'addNoteOnProject'){
-			
-			$q10 = myquery("SELECT biljeska FROM projekat WHERE id=$id");
-			if(!isset($_REQUEST['addNote'])){
-				//plot form
-				
-?>
-				<h3>Dodaj bilješku za projekat</h3>	
-<?php 
-				print genform('POST','addNote');					
-?>			
-				<div class="row">
-					<span class="label">Bilješka:</span>
-					<span class="formw"><textarea name="note" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q10,0,0)?></textarea></span>
-				</div> 
-					
-				<div class="row">	
-					<span class="formw" style="margin-left:150px;"><input name="addNote" type="submit" id="submit" value="Potvrdi"/></span>
-				</div>
-				</form>
-<?php 
-			}
-			else{
-				//process form
-				$errorText = processAddNoteOnProjectForm($predmet, $ag);
-				if($errorText == '')
-				{
-					nicemessage('Uspješno ste dodali biljesku.');
-					zamgerlog("korisnik u$userid dodao biljesku na projekat $id na predmetu pp$_REQUEST[predmet]", 2);		
-					$link = $linkPrefix;									
-				}
-				else
-				{	
-					//an error occured trying to process the form
-					niceerror($errorText);
-					$link = "javascript:history.back();";	
-					
-				}
-				nicemessage('<a href="'. $link .'">Povratak.</a>');
-				
-				
-			}			
+
+		} else {
+			?>
+			<span class="notice">Nema kreiranih projekata na ovom predmetu.</span>	
+			<?
 		}
-		elseif ($action == 'delProject')
-		{
-			//delete item
-			if (isset($id) && is_int($id) && $id > 0)
-			{
-				if (!isset($_REQUEST['c']))
-				{
-					echo "Da li ste sigurni da zelite obrisati ovaj projekat? Svi podaci vezani za aktivnosti na ovom projektu ce biti obrisane.<br />";	
-					echo '<a href="' . $linkPrefix .'&amp;action=delProject&amp;id=' . $id . '&amp;c=true">Da</a> | <a href="' . $linkPrefix . '">Odustani</a>';			
-				}
-				else
-				{
-					if ($_REQUEST['c'] == 'true')
-					{
-						//delete the record
-						if (deleteProject($id))
-						{
-							nicemessage('Uspješno ste obrisali projekat.');	
-							zamgerlog("izbrisao projekat ID=$id na predmetu pp$_REQUEST[predmet]", 4);
-							$link = $linkPrefix;
-						}
-						else
-						{
-							niceerror('Došlo je do greške prilikom brisanja projekta. Molimo kontaktirajte administratora.');
-							$link = "javascript:history.back();";	
-						}
-						nicemessage('<a href="'. $link .'">Povratak.</a>');
-					}
-					
-				} //else isset c get parameter
-						
-				
-			} //id is okay		
-		
-		} //action == delProject
-		elseif ($action == 'page')
-		{
-			require_once('common/projektneStrane.php');
-			common_projektneStrane();
-				
-		} //action == page
-		elseif ( $action == 'addStudent' or $action=='addStudent#'  )
-		{
-						
-?>
-			<div id="parentDiv">
-			<!-- Ako je prvi put ucitano, dohvati predmete i dohvati sve studente na predmetu, prikazi formu. -->
-			<? 
-			if (!isset($_REQUEST['dodaj']) && !isset($_REQUEST['brisi']))
-			{
-				drawStudentAndProjectTable($predmet, $ag); //iscrtaj tabelu
-				
-			?>	
-				</br>
-				<div class="obradaStudentaDiv">
-					<div>
-					<b>LISTA STUDENATA BEZ PROJEKTA:</b>
-					
-						<?
-							$q10 = myquery("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
-
-							if (mysql_num_rows($q10)==0) {
-								nicemessage('Svim studentima je dodijeljen projekat!');
-							} else {
-								$cnt = 0;
-								
-								while ($r10 = mysql_fetch_row($q10)) {
-									$q20 = myquery("select count(*) from student_projekat as sp, projekat as p where sp.student=$r10[0] and sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
-									if (mysql_result($q20,0,0)>0) continue;
-									$cnt = $cnt+1;
-									print "</br>";
-									print "<span id=\"noProjectStudent\">$cnt. $r10[2] $r10[1]</span>";
-								}
-								
-							}
-						
+	
+		while ($r100 = mysql_fetch_row($q100)) {
+			$id_projekta = $r100[0];
+			$naziv_projekta = $r100[1];
+	
+			?>
+			<h3><?=$naziv_projekta?></h3>
+			<div class="links">
+				<ul class="clearfix" style="margin-bottom: 10px;">
+					<li><a href="<?=$linkPrefix."&akcija=izmjena_projekta&id=$id_projekta" ?>">Izmijeni projekat</a></li>
+					<li><a href="<?=$linkPrefix."&akcija=dodaj_biljesku&id=$id_projekta" ?>">Dodaj bilješku</a></li>
+					<li <? if ($param_zakljucan == 0) { print 'class="last"'; } ?>><a href="<?=$linkPrefix."&akcija=obrisi_projekat&id=$id_projekta" ?>">Obriši projekat</a></li>
+					<?
+					if ($param_zakljucan == 1) {
 						?>
-						
-					</div>
-				</div>
-				</br>				
-				<div class="obradaStudentaDiv">
-				<div>
-				<div><b>DODAVANJE STUDENTA NA PROJEKAT</b></div>
-				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konačno kliknite Upiši!</div>
-			<? 
-				print genform("POST", "moveStudent"); //generisi prvu liniju forme
-			?>
-					
-					Student : <select name="student">
-								<? 
-									$cnt = 0;
-									$q10 = myquery("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
-									while ($r10 = mysql_fetch_row($q10)) {
-										$cnt = $cnt+1;
-									
-								?>	
-									<option value="<?=$r10[0]?>"><?=$r10[1]?> <?=$r10[2]?></option>
-								<?	} ?>
-						  	</select><br/>
-					
-					
-					Projekat :<select name="projekat">
-								<? 
-									$cnt2 = 0;
-									$q10 = myquery("SELECT id, naziv FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-				  					$rowcounter = 0;
-									while ($r10 = mysql_fetch_row($q10)) {
-										$cnt2 = $cnt2 +1;
-								?>
-									<option value="<?=$r10[0]?>"><?="$cnt2. $r10[1]"?></option>
-								<?  }?>
-		   				  	</select>
-		   					<br />
-		   			
-							<input name="dodaj" type="submit" value="Upiši" onclick="removeTable('parentDiv','expandable_table')"/>
-				</form>
-				</div>
-				</div>
-				
-				</br>
-				<!-- Forma za izbacivanje studenta sa projekta -->
-				<div class="obradaStudentaDiv">
-				<div>
-				<div><b>BRISANJE STUDENTA SA PROJEKTA</b></div>
-				<div><span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konacno kliknite Ispiši!</div>
-			<? 
-				print genform("POST", "unregStudent"); //generisi prvu liniju forme
-			?>
-					
-					Student : <select name="student">
-								<? 
-									$cnt = 0;
-									$q10 = myquery("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
-									while ($r10 = mysql_fetch_row($q10)) {
-										$cnt = $cnt+1;
-									
-								?>	
-z									<option value="<?=$r10[0]?>"><?=$r10[1]?> <?=$r10[2]?></option>
-								<?	} ?>
-						  	</select><br/>
-					
-					
-					Projekat :<select name="projekat">
-								<? 
-									$cnt2 = 0;
-									$q10 = myquery("SELECT id, naziv FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-				  					$rowcounter = 0;
-									while ($r10 = mysql_fetch_row($q10)) {
-										$cnt2 = $cnt2 +1;
-								?>
-									<option value="<?=$r10[0]?>"><?="$cnt2. $r10[1]"?></option>
-								<?  }?>
-		   				  	</select>
-		   					<br />
-		   			
-							<input name="brisi" type="submit" value="Ispiši" onclick="removeTable('parentDiv','expandable_table')"/>
-				</form>
-				</div>
-				</div>	
-				
-				<!-- Kraj forme za izbacivanje studenta sa projekta -->
-				
-			<? 
-			}
-			else //on submit
-			{
-				if(isset($_REQUEST['dodaj']))
-				{
-					
-					$errorText = processChangeProjectForm($predmet, $ag);
-					drawStudentAndProjectTable($predmet, $ag);
-					if($errorText == '')
-					{
-						nicemessage('Student je uspiješno prijavljen na projekat!');
-						zamgerlog("korisnik $userid uspješno promijenio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
-						$link = $linkPrefix . "&action=addStudent";
+						<li class="last"><a href="<?= $linkPrefix . "&akcija=projektna_stranica&projekat=$id_projekta" ?>">Projektna stranica</a></li>
+						<?
 					}
-					else
-					{	
-						//an error occured trying to process the form
-						niceerror($errorText);
-						$link = "javascript:history.back();";	
-					}
-					nicemessage('<a href="'. $link .'">Povratak.</a>');
-				
-				} //forma za dodavanje studenta submitana
-				else if(isset($_REQUEST['brisi']))
-				{
-					$errorText = processDeleteFromProjectForm($predmet, $ag);
-					drawStudentAndProjectTable($predmet, $ag);
-					if($errorText == '')
-					{
-						nicemessage('Student je uspiješno obrisan sa projekta!');
-						zamgerlog("korisnik $userid uspješno odbacio članstvo studenta $_REQUEST[student] na projektu $_REQUEST[projekat]", 2);		
-						$link = $linkPrefix . "&action=addStudent";
-					}
-					else
-					{	
-						//an error occured trying to process the form
-						niceerror($errorText);
-						$link = "javascript:history.back();";	
-					}
-					nicemessage('<a href="'. $link .'">Povratak.</a>');
-				
+					?>
+				</ul> 
+				<?
+
+				$q110 = myquery("SELECT COUNT(id) FROM osoba as o, student_projekat as sp where o.id=sp.student and sp.projekat=$id_projekta");
+				$broj_clanova = mysql_result($q110,0,0);
+				if ($broj_clanova < $param_min_clanova_tima) {
+					?>
+					<span class="notice">Broj prijavljenih studenata (<?=$broj_clanova?>) je ispod minimuma koji ste definisali za ovaj predmet (<?=$param_min_clanova_tima?>).</span>	
+					<?
 				}
-			}
-			?>
+
+				?>
 			</div>
-			
-<? 		
-			}//action -addStudent
-	} //else - action is set
-} //function
 
-function drawStudentAndProjectTable($predmet, $ag){
-	print "<table id=\"expandable_table\">
-			<thead id=\"project_list_header\">
-				<tr><td><b>ČLANOVI PROJEKTA</b></td>
-		            <td><b>NAZIV PROJEKTA</b></td>
-		       </tr>
-		    </thead>
-            <tbody>";
-			
-				$q10 = myquery("SELECT id, naziv, biljeska FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-				
-				  $rowcounter = 0;
-				while ($r10 = mysql_fetch_row($q10)) {
-//					$membs = fetchProjectMembers($r10[0]);
-					$q20 = myquery("SELECT o.prezime, o.ime, o.brindexa FROM osoba as o, student_projekat as sp WHERE sp.student=o.id and sp.projekat=$id ORDER BY o.prezime, o.ime");
-					if (mysql_num_rows($q20)>0) {
-						if ($rowcounter % 2 == 0){
-							print "<tr class=\"marked_row\">";
-						}else{
-							print "<tr>";
+			<table class="projekti" border="0" cellspacing="0" cellpadding="2">
+				<tr>
+					<th width="200" align="left" valign="top" scope="row">Naziv</th>
+					<td width="490" align="left" valign="top"><?=$naziv_projekta?></td>
+				</tr>
+				<tr>
+					<th width="200" align="left" valign="top" scope="row">Prijavljeni studenti</th>
+					<td width="490" align="left" valign="top">
+					<?
+
+					// Spisak studenata
+					$q120 = myquery("SELECT o.id, o.prezime, o.ime, o.brindexa FROM osoba as o, student_projekat as sp WHERE sp.student=o.id and sp.projekat=$id_projekta ORDER BY o.prezime, o.ime");
+					if (mysql_num_rows($q120)<1)
+						print 'Nema prijavljenih studenata.';
+					else {
+						print "<ul>\n";
+						while ($r120 = mysql_fetch_row($q120)) {
+							print "<li>$r120[1] $r120[2] ($r120[3])";
+							if ($param_zakljucan==0) {
+								print ' - (<a href="'.$linkPrefix."&akcija=izbaci_studenta&student=$r120[0]&projekat=$id_projekta".'">izbaci</a>)';
+							}
+							print "</li>\n";
 						}
-						print "<td id=\"member_list\"><ul style=\"list-style-type:decimal\">";
-						 	while ($r20 = mysql_fetch_row($q20)) {
-								print "<li>$r20[0] $r20[1] ($r20[2])</li>";
-						   	}
-						print "</ul>";
-						print "<span style=\"display:none\"></span></td>";
-	                	print "<td id=\"project_name\">$r10[1]"; 
-	                	print "<a href=\"#\">|+|</a>";
-	                	print "<span class=\"detail_text\" style=\"display:none;\">$r10[2]</span></td>";
-	                	print "</tr>";
-                  		$rowcounter = $rowcounter +1;
-					}  
-				}
+						print "</ul>\n";
+					}
+					?>
+					</td>
+				</tr>
+				<tr>
+					<th width="200" align="left" valign="top" scope="row">Opis</th>
+					<td width="490" align="left" valign="top"><?=$r100[2]?></td>
+				</tr>
+			</table>
+			<?
+		} // while ($r100...
+	} // if (!isset($akcija)
+
+
+
+	// Akcija PARAMETRI PROJEKATA
+
+	if ($akcija == 'param') {
+
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			// Poslana forma za promjenu
+			$min_timova = intval($_REQUEST['min_timova']);
+			$max_timova  = intval($_REQUEST['max_timova']);
 			
-            print"</tbody></table>";
-}
+			$min_clanova_tima = intval($_REQUEST['min_clanova_tima']);
+			$max_clanova_tima = intval($_REQUEST['max_clanova_tima']);
+			
+			$zakljucani_projekti = 0;
+			if (isset($_REQUEST['lock'])) $zakljucani_projekti = 1;
+			
+			if ($min_timova <= 0 || $max_timova <= 0 || $min_clanova_tima <= 0 || $max_clanova_tima <= 0)
+			{
+				niceerror("Morate unijeti ispravne vrijednosti u sva polja");
+				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+				return;
+			}
 
+			$q200 = myquery("REPLACE predmet_projektni_parametri SET predmet=$predmet, akademska_godina=$ag, min_timova=$min_timova, max_timova=$max_timova, min_clanova_tima=$min_clanova_tima, max_clanova_tima=$max_clanova_tima, zakljucani_projekti=$zakljucani_projekti");
 
-function processDeleteFromProjectForm($predmet, $ag){
-	$errorText = '';
-	if(!check_csrf_token())
-	{
-		biguglyerror("Mrš odavle");
-		zamgerlog("1337 h4x0r detected",3);
-		return "ERROR";
-	}
-	//get variables
-	$stud_id = intval($_REQUEST['student']);
-	$proj_id = intval($_REQUEST['projekat']);
-	
-	if ($param_zakljucan==1)
-	{
-		$errorText = 'Zaključane su prijave na projekte. Odjave nisu dozvoljene.';
-		zamgerlog("pokusano je odjavljivanje studenta $stud_id sa projekta $proj_id koji je zaključan na predmetu $predmet", 3);
-		return $errorText;	
-	}
-
-	$q10 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$stud_id AND sp.predmet=$predmet AND sp.akademska_godina=$ag");
-
-	//$actualProjectForUser = getActualProjectForUserInPredmet($stud_id, $predmet, $ag);
-	//if(!empty($actualProjectForUser)){
-	if (mysql_num_rows($q10) > 0) {
-		$student_projekat = mysql_result($q10,0,0);
-		if ($proj_id != $student_projekat) {
-			$pr = fetchProjectById($predmet,$ag,$proj_id);
-			$errorText='Nemoguće izbrisati studenta sa projekta ' . $pr[naziv] .', svakako nije pridruzen ovom projektu!';
-			zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan!",3);
-		}else{
-			//Brisi studenta sa tekuceg projekta
-			$result = myquery("DELETE FROM student_projekat WHERE student=$stud_id AND projekat=$student_projekat");
+			nicemessage('Uspješno ste uredili parametre projekata.');
+			zamgerlog("izmijenio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+			return;
 		}
-	} else {
-		//Greska - student nije nigdje upisan
-		$errorText='Nemoguće izbrisati studenta sa projekta ' . $pr[naziv] .', student nije ni na jednom projektu!';
-		zamgerlog("pokusano je brisanje studenta $stud_id sa projekta $pr[naziv], ali svakako nije bio upisan ni na jedan projekat!",3);
-		
-	}
-	return $errorText;
-}
 
-function processAddNoteOnProjectForm($predmet, $ag){
-	
-	$errorText = '';
-	if (!check_csrf_token()) 
-	{
-		biguglyerror("Mrš odavle");
-		zamgerlog("1337 h4x0r detected",3);
-		return "ERROR";
-   	}
-	
-	$biljeska = my_escape($_REQUEST['note']);
-	$project_id = intval($_REQUEST['id']);
-	
-	$q10 = myquery("UPDATE projekat SET biljeska='$note' WHERE id='$project_id' LIMIT 1");
+		?>
+		<h2>Parametri projekata</h2>
 
-   	return "";
-	
-}
-
-
-function processChangeProjectForm($predmet, $ag){
-
-	$errorText = '';
-	if(!check_csrf_token())
-	{
-		biguglyerror("Mrš odavle");
-		zamgerlog("1337 h4x0r detected",3);
-		return "ERROR";
-	}
-	
-	//get variables
-	$stud_id = intval($_REQUEST['student']);
-	$project = intval($_REQUEST['projekat']);
-		
-	$errorText = '';
-	
-	if (areApplicationsLockedForPredmet($predmet, $ag))
-	{
-		$errorText = 'Zaključane su prijave na projekte. Prijave nisu dozvoljene.';
-		zamgerlog("student $stud_id pokusao da se prijavi na projekat $project koji je zaključan na predmetu p$predmet", 3);
-		return $errorText;	
-	}
-	
-	//$teamLimitReached = isTeamLimitReachedForPredmet($predmet, $ag);
-		
-	//$actualProjectForUser = getActualProjectForUserInPredmet($stud_id, $predmet, $ag);
-	//if (!empty($actualProjectForUser))
-	//{
-	$q10 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$stud_id AND sp.predmet=$predmet AND sp.akademska_godina=$ag");
-	if (mysql_num_rows($q10)>0) {
-		//user already in a project on this predmet
-		$q20 = myquery("SELECT COUNT(id) FROM osoba as o, student_projekat as sp where o.id=sp.student and sp.projekat=".mysql_result($q10,0,0));
-		$nMembers = mysql_result($q20,0,0);
-		//after I leave actual team, I will be able to create a new project team because this one will be empty...
-		if ($nMembers -1 == 0)
-		{
-			//reset the team limit
-			$teamLimitReached = false;
-		}	
-	}
-	//$newTeamDeny = isProjectEmpty($project) == true && $teamLimitReached == true;
-	
-	
-/*	if ( $newTeamDeny == true )
-	{
-		$errorText = 'Limit timova dostignut. Nije moguće kreirati projektni tim. Prijavite se na drugi projekat.';
-		zamgerlog("student u$stud_id pokusao da se prijavi na projekat $project na predmetu p$predmet iako je limit za broj timova dostignut.", 3);
-		return $errorText;	
-	}*/
-	
-/*	if (isProjectFull($project, $predmet, $ag) == true)
-	{
-		$errorText = 'Projekat je popunjen. Nije moguće prijaviti se.';
-		zamgerlog("student u$stud_id pokusao da se prijavi na projekat $project koji je popunjen na predmetu p$predmet", 3);
-		return $errorText;	
-	}*/
-	
-	
-	//clear person from all projects on this predmet
-	$result = myquery("DELETE FROM student_projekat WHERE student='$stud_id' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
-	$query = sprintf("INSERT INTO student_projekat (student, projekat) VALUES ('%d', '%d')", 
-					$stud_id,
-					$project
-	);
-	
-	$result = myquery($query);
-	
-	if ($result == false)
-	{
-		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-		return $errorText;	
-	}
-	
-	return $errorText;
-
-}
-
-function formProcess($option)
-{
-	$errorText = '';
-	if (!check_csrf_token()) 
-	{
-		biguglyerror("Mrš odavle");
-		zamgerlog("1337 h4x0r detected",3);
-		return "ERROR";
-   	}
-	
-	if (!in_array($option, array('add', 'edit') ) )
-	{
-		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';		
-		return $errorText;		
-	}
-	
-	//get variables
-	$naziv = $_REQUEST['naziv'];
-	$opis  = $_REQUEST['opis'];
-	
-	$predmet = intval($_REQUEST['predmet']);
-	$ag = intval($_REQUEST['ag']);
-	$id = intval($_REQUEST['id']);
-	
-	if (empty($naziv) || empty($opis))
-	{
-		$errorText = 'Unesite sva obavezna polja.';
-		return $errorText;
+		<?=genform("POST", "editForm"); ?>
+		<input type="hidden" name="subakcija" value="potvrda">
+		<div id="formDiv">
+			Polja sa * su obavezna. <br />
+			<div class="row">
+				<span class="label">Zaključaj stanje projekata i timova</span>
+				<span class="formw"><input name="lock" type="checkbox" id="lock" <? if ($param_zakljucan == 1) print 'checked';?> /></span> 
+				<br /><br /> Ova opcija će onemogućiti prijavljivanje na projekte i pokrenuti projektne stranice.
+			</div>
+			<div class="row">
+				<span class="label">MIN timova *</span>
+				<span class="formw"><input name="min_timova" type="text" id="min_timova" size="10" value="<?=$param_min_timova;?>" /></span> 
+			</div>
+			<div class="row">
+				<span class="label">MAX timova *</span>
+				<span class="formw"><input name="max_timova" type="text" id="max_timova" size="10" value="<?=$param_max_timova?>" /></span> 
+			</div>
+			<div class="row">
+				<span class="label">MIN članova tima *</span>
+				<span class="formw"><input name="min_clanova_tima" type="text" id="min_clanova_tima" size="10" value="<?=$param_min_clanova_tima?>" /></span> 
+			</div>
+			<div class="row">
+				<span class="label">MAX članova tima *</span>
+				<span class="formw"><input name="max_clanova_tima" type="text" id="max_clanova_tima" size="10" value="<?=$param_max_clanova_tima?>" /></span> 
+			</div>
+			<div class="row">	
+				<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"/></span>
+			</div>
+		</div><!--formDiv-->
+		</form>
+		<?
 	}
 
-	$naziv = trim($naziv);
-	$opis = trim($opis);
-		
-	$data = array(
-				'naziv' => $naziv, 
-				'opis'  => $opis, 
-				'predmet' => $predmet,
-				'ag' => $ag	
-	);
-	
-	
-	if ($option == 'add')
-	{
-		if (!insertProject($data))
-		{
-			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom unosa novog projekta u bazu (predmet pp$predmet)", 3);
-			return $errorText;
+
+
+	// Akcija DODAJ PROJEKAT
+
+	elseif ($akcija == 'dodaj_projekat') {
+		if ($nema_parametara && !isset($_REQUEST['submit'])) {
+			nicemessage("Prvo podesite parametre projekata.");
+			nicemessage('<a href="'. $linkPrefix .'&akcija=param">Parametri projekata</a>');
+			return;
 		}
-	
-	} //option == add
-	else
-	{
-		if (!updateProject($data, $id))
-		{
-			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom update projekta $id u bazi (predmet pp$predmet)", 3);
-			return $errorText;
+
+		if ($param_zakljucan == 1) {
+			niceerror("Zaključali ste stanje projekata na ovom predmetu. Nije moguće napraviti novi projekat.");
+			nicemessage('<a href="'. $linkPrefix .'&akcija=param">Parametri projekata</a>');
+			return;
 		}
-	
-	} //option == edit
-	
-	return $errorText;
-	
-}
 
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			// Poslana forma za dodavanje projekta
+			$naziv = my_escape(trim($_REQUEST['naziv']));
+			$opis  = my_escape(trim($_REQUEST['opis']));
+	
+			$id = intval($_REQUEST['id']);
+	
+			if (empty($naziv) || empty($opis)) {
+				niceerror('Unesite sva obavezna polja.');
+				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+				return;
+			}
 
-function insertProject($data)
-{
-	//generate unique id value
-	$qnesta = myquery("select id from projekat order by id desc limit 1");
-	if (mysql_num_rows($qnesta)<1)
-		$id = 1;
-	else
-		$id = mysql_result($qnesta,0,0)+1;
+			// Generišemo jedinstven ID
+			$qnesta = myquery("select id from projekat order by id desc limit 1");
+			if (mysql_num_rows($qnesta)<1)
+				$id = 1;
+			else
+				$id = mysql_result($qnesta,0,0)+1;
 	
-	$query = sprintf("INSERT INTO projekat (id, naziv, opis, predmet, akademska_godina) VALUES ('%d', '%s', '%s', '%d', '%d')", 
-											$id, 
-											my_escape($data['naziv']), 
-											my_escape($data['opis']), 
-											intval($data['predmet']),
-											intval($data['ag']) 
-											
-					);
-	$result = myquery($query);	
-	
-	return ( $result == false ) ? false : true;
-}
-function updateProject($data, $id)
-{
-	$query = sprintf("UPDATE projekat SET naziv='%s', opis='%s' WHERE id='%d' LIMIT 1", 
-											my_escape($data['naziv']), 
-											my_escape($data['opis']), 
-											intval($id) 
-											
-					);
-	$result = myquery($query);	
+			$q210 = myquery("INSERT INTO projekat (id, naziv, opis, predmet, akademska_godina) VALUES ($id, '$naziv', '$opis', '$predmet', '$ag')");
 
-	return ( $result == false ) ? false : true;
-}
-
-
-function deleteProject($id)
-{
-	//delete all data bound to this project
-	deleteArticlesForProject($id);
-	deleteFilesForProject($id);
-	deleteLinksForProject($id);
-	deleteRssForProject($id);
-	deleteForumForProject($id);
-	deleteStudentsForProject($id);
-	
-	$query = sprintf("DELETE FROM projekat WHERE id='%d' LIMIT 1", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-	
-	return ( $result == false ) ? false : true;
-}
-
-function deleteArticlesForProject($id)
-{
-	//bl_clanak	
-	
-	global $conf_files_path;
-	$lokacijaclanaka ="$conf_files_path/projekti/clanci/";
-	
-	if (!rmdir_recursive($lokacijaclanaka . $id)) //delete all article files - images for this project
-	{
-		zamgerlog("greška prilikom brisanja direktorija clanci za projekat $id iz fajl sistema", 3);
-		return false;	
-	}
-	
-	$query = sprintf("DELETE FROM bl_clanak WHERE projekat='%d'", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-}
-
-function deleteFilesForProject($id)
-{
-	//projekat_file
-	
-	global $conf_files_path;
-	
-	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/";
-	
-	if (!rmdir_recursive($lokacijafajlova . $id))
-	{
-		zamgerlog("greška prilikom brisanja direktorija fajlovi za projekat $id iz fajl sistema", 3);
-		return false;	
-	}
+			nicemessage('Novi projekat uspješno dodan.');
+			zamgerlog("dodao novi projekat na predmetu pp$predmet", 2);
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+			return;
+		}
 		
-}
-
-function deleteLinksForProject($id)
-{
-	$query = sprintf("DELETE FROM projekat_link WHERE projekat='%d' ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-
-}
-
-function deleteRssForProject($id)
-{
-	$query = sprintf("DELETE FROM projekat_rss WHERE projekat='%d' ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-}
-
-function deleteForumForProject($id)
-{
-	//bb_tema...	
-	$query = sprintf("DELETE FROM bb_post_text WHERE post IN (SELECT id FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat='%d') ) ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-	
-	$query = sprintf("DELETE FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat='%d') ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-	
-	$query = sprintf("DELETE FROM bb_tema WHERE projekat='%d' ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-}
-
-function deleteStudentsForProject($id)
-{
-	$query = sprintf("DELETE FROM student_projekat WHERE projekat='%d' ", 
-					intval($id)
-					);
-	
-	$result = myquery($query);
-}
-
-function formProcess_param()
-{
-	$errorText = '';
-	if (!check_csrf_token()) 
-	{
-		biguglyerror("Mrš odavle");
-		zamgerlog("1337 h4x0r detected",3);
-		return "ERROR";
-   	}
-	
-	//get variables
-	$min_timova = intval($_REQUEST['min_timova']);
-	$max_timova  = intval($_REQUEST['max_timova']);
-	
-	$min_clanova_tima = intval($_REQUEST['min_clanova_tima']);
-	$max_clanova_tima = intval($_REQUEST['max_clanova_tima']);
-	
-	$zakljucani_projekti = 0;
-	if (isset($_REQUEST['lock']))
-		$zakljucani_projekti = 1;
-	
-	$predmet = intval($_REQUEST['predmet']);
-	$ag		 = intval($_REQUEST['ag']);
-	
-	
-	if (empty($min_timova) || empty($max_timova)
-	 || empty($min_clanova_tima) || empty($max_clanova_tima))
-	{
-		$errorText = 'Unesite sva obavezna polja.';
-		return $errorText;
-	}
-	if ($min_timova <= 0 || $max_timova <= 0 || $min_clanova_tima <= 0 || $max_clanova_tima <= 0)
-	{
-		$errorText = 'Unesite pozitivne vrijednosti u formu.';
-		return $errorText;
-	}
-
-	$data = array(
-				'min_timova' => $min_timova, 
-				'max_timova' => $max_timova, 
-				'min_clanova_tima' => $min_clanova_tima, 
-				'max_clanova_tima' => $max_clanova_tima, 
-				'zakljucani_projekti' => $zakljucani_projekti 
-	);
-	
-	if (!replacePredmetParams($data, $predmet, $ag))
-	{
-		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat (predmet pp$predmet)", 3);
-		return $errorText;
+		?>	
+		<h2>Novi projekat</h2>
+		<?=genform("POST", "addForm");?>
+		<input type="hidden" name="subakcija" value="potvrda">
+			<div id="formDiv">
+				Polja sa * su obavezna. <br />
+			
+				<div class="row">
+					<span class="label">Naziv *</span>
+					<span class="formw"><input name="naziv" type="text" id="naziv" size="70" /></span> 
+				</div>
+				<div class="row">
+					<span class="label">Opis *</span>
+					<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"></textarea></span>
+				</div> 
+				<div class="row">	
+					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"/></span>
+				</div>
+			</div><!--formDiv-->
+		</form>
+		<?
 	}
 
 
-	return $errorText;
+
+	// Akcija IZMJENA PROJEKTA
+
+	elseif ($akcija == 'izmjena_projekta') {
+
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			// Poslana forma za izmjenu projekta
+			$naziv = my_escape(trim($_REQUEST['naziv']));
+			$opis  = my_escape(trim($_REQUEST['opis']));
 	
-}
-function replacePredmetParams($data, $predmet, $ag)
-{
-	$query = sprintf("REPLACE predmet_projektni_parametri SET predmet='%d', akademska_godina='%d', min_timova='%d', max_timova='%d', min_clanova_tima='%d', max_clanova_tima='%d', zakljucani_projekti='%d'", 
-											$predmet,
-											$ag, 
-											$data['min_timova'], 
-											$data['max_timova'],
-											$data['min_clanova_tima'],
-											$data['max_clanova_tima'], 
-											$data['zakljucani_projekti']
-											
-					);
-	$result = myquery($query);	
+			if (empty($naziv) || empty($opis)) {
+				niceerror('Unesite sva obavezna polja.');
+				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+				return;
+			}
 
-	return ( $result == false ) ? false : true;
+			$q220 = myquery("select count(*) from projekat where id=$id");
+			if (mysql_result($q220,0,0)==0) {
+				niceerror("Projekat sa IDom $id ne postoji.");
+				nicemessage('<a href="'.$linkPrefix.'">Povratak.</a>');
+				return;
+			}
 
 
-}
+			$q230 = myquery("UPDATE projekat SET naziv='$naziv', opis='$opis' WHERE id='$id'");
+
+			nicemessage('Uspješno ste izmijenili projekat.');
+			zamgerlog("izmijenio projekat $id na predmetu pp$predmet", 2);
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+			return;
+		}
+
+		// Prikaz forme
+		$q240 = myquery("SELECT naziv, opis FROM projekat WHERE id=$id");
+
+		?>
+		<h1>Izmijeni projekat</h1>
+		<?=genform("POST", "editForm");?>
+		<input type="hidden" name="subakcija" value="potvrda">
+			<div id="formDiv">
+				Polja sa * su obavezna. <br />
+			
+				<div class="row">
+					<span class="label">Naziv *</span>
+					<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?=mysql_result($q10,0,0)?>" /></span> 
+				</div>
+				<div class="row">
+					<span class="label">Opis *</span>
+					<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q10,0,1)?></textarea></span>
+				</div> 
+				
+				<div class="row">	
+					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"/></span>
+				</div>
+			
+			</div><!--formDiv-->
+		</form>
+		<?
+	} //akcija == izmjena_projekta
+
+
+
+	// Akcija DODAJ BILJEŠKU
+
+	elseif ($akcija == 'dodaj_biljesku') {
+
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			// Poslana forma za dodavanje bilješke
+			$biljeska = my_escape($_REQUEST['biljeska']);
+			$q250 = myquery("UPDATE projekat SET biljeska='$biljeska' WHERE id=$id");
+
+			nicemessage('Uspješno ste dodali bilješku.');
+			zamgerlog("dodao biljesku na projekat $id na predmetu pp$predmet", 2);		
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+			return; 
+		}
+
+		// Forma za izmjenu/dodavanje bilješke
+		$q260 = myquery("SELECT biljeska FROM projekat WHERE id=$id");
+
+		?>
+		<h3>Dodaj bilješku za projekat</h3>	
+		<?=genform('POST','addNote'); ?>			
+		<input type="hidden" name="subakcija" value="potvrda">
+			<div class="row">
+				<span class="label">Bilješka:</span>
+				<span class="formw"><textarea name="biljeska" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q260,0,0)?></textarea></span>
+			</div> 
+					
+			<div class="row">	
+				<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"/></span>
+			</div>
+		</form>
+		<?
+	} //akcija == dodaj biljesku
+
+
+	// Akcija OBRIŠI PROJEKAT
+
+	elseif ($akcija == 'obrisi_projekat') {
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			// Brisanje projekta
+
+			// Brisanje fajlova
+			$lokacijafajlova = "$conf_files_path/projekti/fajlovi/";
+			if (!rmdir_recursive($lokacijafajlova . $id)) {
+				// Ignorišemo greške jer šta ako fajlovi nisu ni postojali??
+
+				//niceerror("Greška prilikom brisanja direktorija sa člancima!");
+				//zamgerlog("greška prilikom brisanja direktorija fajlovi za projekat $id", 3);
+				//return;
+			}
+
+			// Brisanje članaka
+			$lokacijaclanaka ="$conf_files_path/projekti/clanci/";
+			if (!rmdir_recursive($lokacijaclanaka . $id)) { 
+				// Ignorišemo greške jer šta ako fajlovi nisu ni postojali??
+
+				//niceerror("Greška prilikom brisanja direktorija sa člancima!");
+				//zamgerlog("greška prilikom brisanja direktorija clanci za projekat $id", 3);
+				//return;
+			}
+			
+			$q300 = myquery("DELETE FROM bl_clanak WHERE projekat=$id");
+
+			// Brisanje linkova
+			$q310 = myquery("DELETE FROM projekat_link WHERE projekat=$id");
+	
+			// Brisanje RSSa
+			$q320 = myquery("DELETE FROM projekat_rss WHERE projekat=$id"); 
+
+			// Brisanje foruma
+			$q330 = myquery("DELETE FROM bb_post_text WHERE post IN (SELECT id FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id) )");
+			$q340 = myquery("DELETE FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id)");
+			$q350 = sprintf("DELETE FROM bb_tema WHERE projekat=$id");
+
+			// Ispis studenata sa projekta
+			$q360 = myquery("DELETE FROM student_projekat WHERE projekat=$id");
+			
+			// Brisanje samog projekta
+			$q370 = myquery("DELETE FROM projekat WHERE id=$id");
+
+			nicemessage('Uspješno ste obrisali projekat.');	
+			zamgerlog("izbrisan projekat $id na predmetu pp$predmet", 4);
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+			return;
+		}
+
+		?>
+		Da li ste sigurni da želite obrisati ovaj projekat? Svi podaci vezani za aktivnosti na ovom projektu će biti nepovratno izgubljeni.<br />
+		<?=genform('POST'); ?>
+		<input type="hidden" name="subakcija" value="potvrda">
+		<input type="submit" value="Potvrda brisanja">
+		<input type="button" onclick="location.replace('<?=$linkPrefix?>');" value="Odustani">
+		</form>
+		<?
+	
+	} //akcija == obrisi_projekat
+
+
+	// Akcija PROJEKTNA STRANICA
+
+	elseif ($akcija == 'projektna_stranica') {
+		require_once ('common/projektneStrane.php');
+		common_projektneStrane();
+	} //akcija == projektna_stranica
+
+
+
+	// Akcija DODJELA STUDENATA NA PROJEKTE
+
+	elseif ($akcija == 'dodjela_studenata') {
+		if ($_REQUEST['subakcija'] == "dodaj" && check_csrf_token()) {
+			// Dodavanje studenta na projekat
+
+			$student = intval($_REQUEST['student']);
+			$projekat = intval($_REQUEST['projekat']);
+
+			if ($param_zakljucan) {
+				// Ne bi se smjelo desiti
+				niceerror("Zaključane su prijave na projekte.");
+				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+				return;
+			}
+
+			// Da li je projekat popunjen?
+			$q430 = myquery("select count(*) from student_projekat where projekat=$projekat");
+			if (mysql_result($q430,0,0)>=$param_max_clanova_tima) {
+				// Ne bi se smjelo desiti
+				niceerror("Projekat je popunjen.");
+				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+				return;
+			}
+
+			// Da li je student već na nekom projektu?
+			$stari_projekat=0;
+			$q440 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
+			while ($r440 = mysql_fetch_row($q440)) {
+				$stari_projekat = $r440[0];
+			}
+
+			// Da li je prekoračen maksimalan broj nepraznih projekata?
+			$q460 = myquery("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+			$broj_nepraznih = mysql_num_rows($q460);
+			if ($broj_nepraznih >= $param_max_timova) {
+				// No ako studenta ispisujemo iz projekta koji će postati prazan onda je sve ok
+				$prekoracenje = true;
+				if ($stari_projekat!=0) {
+					$q470 = myquery("select count(*) from student_projekat where projekat=$stari_projekat");
+					if (mysql_result($q470,0,0) == 1) $prekoracenje = false;
+				}
+
+				if ($prekoracenje) {
+					niceerror("Ne mogu upisati studenta na ovaj projekat jer bi time bio prekoračen maksimalan broj timova. $broj_nepraznih");
+					print "<p>Koristite <a href='$linkPrefix&akcija=param'>Parametre projekata</a> da biste povećali ograničenje broja timova.</p>";
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+			}
+
+			// Potvrđujemo prijavu
+			$q450 = myquery("delete from student_projekat where student=$student and projekat=$stari_projekat");
+			$q480 = myquery("INSERT INTO student_projekat (student, projekat) VALUES ($student, $projekat)");
+
+			nicemessage('Student je uspješno prijavljen na projekat!');
+			if ($stari_projekat==0)
+				zamgerlog ("student u$student prijavljen na projekat $projekat (predmet pp$predmet", 2);
+			else
+				zamgerlog ("student u$student prebacen sa projekta $stari_projekat na $projekat (predmet pp$predmet", 2);
+
+			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+		}
+
+
+		$opcije = "";
+
+		?>
+		<!-- Ako je prvi put ucitano, dohvati predmete i dohvati sve studente na predmetu, prikazi formu. -->
+
+		</br>
+		<b>LISTA STUDENATA BEZ PROJEKTA:</b>
+		<?
+			$q400 = myquery("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
+
+			if (mysql_num_rows($q400)==0) {
+				nicemessage('Svim studentima je dodijeljen projekat!');
+			} else {
+				$cnt = 0;
+				
+				while ($r400 = mysql_fetch_row($q400)) {
+					// Odmah kreiramo i opcije za selektovanje studenta
+					$opcije .= "<option value='$r400[0]'>$r400[2] $r400[1]</option>\n";
+
+					$q410 = myquery("select count(*) from student_projekat as sp, projekat as p where sp.student=$r400[0] and sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+					if (mysql_result($q410,0,0)>0) continue;
+					$cnt = $cnt+1;
+					print "</br>";
+					print "<span id=\"noProjectStudent\">$cnt. $r400[2] $r400[1]</span>";
+				}
+				
+			}
+		?>
+		<br><br><br>
+		<b>DODAVANJE STUDENTA NA PROJEKAT</b><br>
+		<span class="napomena">*Uputa:</span> Izaberite studenta, a zatim projekat i konačno kliknite Upiši!<br>
+		<?=genform("POST"); ?>
+		<input type="hidden" name="subakcija" value="dodaj">
+			Student: <select name="student"><?=$opcije?></select><br/>
+			Projekat: <select name="projekat"><? 
+			$cnt2 = 0;
+			$q420 = myquery("SELECT id, naziv FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
+			$rowcounter = 0;
+			while ($r420 = mysql_fetch_row($q420)) {
+				$cnt2 = $cnt2 +1;
+				?>
+				<option value="<?=$r420[0]?>"><?=$r420[1]?></option>
+				<?  
+			}
+			?></select>
+			<br />
+			<input name="dodaj" type="submit" value="Upiši"/>
+		</form>
+
+		<p>Za ispisivanje studenta sa projekta, koristite listu projekata.</p>
+		<?
+
+	} //akcija - dodjela_studenata
+
+
+
+	// Akcija BRISANJE STUDENTA SA PROJEKTA
+
+	elseif ($akcija == 'izbaci_studenta') {
+		$student = intval($_REQUEST['student']);
+		$projekat = intval($_REQUEST['projekat']);
+		
+		if ($param_zakljucan==1) {
+			niceerror('Zaključane su prijave na projekte. Odjave nisu dozvoljene.');
+			return;
+		}
+
+		$q500 = myquery("select naziv from projekat where id=$projekat");
+		if (mysql_num_rows($q500)<1) {
+			niceerror("Nepostojeći projekat $projekat");
+			return;
+		}
+		$naziv_projekta = mysql_result($q500,0,0);
+
+		$q505 = myquery("select ime, prezime from osoba where id=$student");
+		if (mysql_num_rows($q505)<1) {
+			niceerror("Nepostojeći student $student");
+			return;
+		}
+		$imeprezime = mysql_result($q505,0,0)." ".mysql_result($q505,0,1);
+
+		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+			$q510 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
+			if (mysql_num_rows($q510) > 0) {
+				$student_projekat = mysql_result($q510,0,0);
+				if ($projekat != $student_projekat) {
+					niceerror("Student uopšte nije prijavljen na projekat $naziv_projekta.");
+				} else {
+					$q520 = myquery("DELETE FROM student_projekat WHERE student=$student AND projekat=$student_projekat");
+					print "Student $imeprezime uspješno odjavljen sa projekta $naziv_projekta";
+					zamgerlog("student u$student odjavljen sa projekta $projekat (pp$predmet)", 2);
+					nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+				}
+			} else {
+				//Greska - student nije nigdje upisan
+				niceerror("Student nije prijavljen niti na jedan projekat.");
+			}
+			return;
+		}
+
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="potvrda">
+		Da li ste sigurni da želite ispisati studenta <?=$imeprezime?> sa projekta <?=$naziv_projekta?>?<br>
+		<input type="submit" value="Potvrda ispisa">
+		<input type="button" onclick="location.replace('<?=$linkPrefix?>');" value="Odustani">
+		</form>
+		<?
+	}
+
+} // function
+
 
 function rmdir_recursive($dirname)
 {
