@@ -48,7 +48,7 @@ array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
 array("nastavnik/raspored", "Raspored", "Raspored", "N", "1", "0"),
 // Hani Zahirovic- modul za definisanje tipa predmeta
 
-array("nastavnik/tip", "Tip predmeta", "Definisanje tipa predmeta", "N", "1", "0"),
+array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1", "0"),
 
 
 array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
