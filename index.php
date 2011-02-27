@@ -46,7 +46,7 @@ function greska_u_modulima() {
 
 	
 		niceerror("U toku su radovi na modulu $sta");
-		print "<p>$line Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href=\"javascript:location.reload(true)\">Refresh</a>.</p>";
+		print "<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href=\"javascript:location.reload(true)\">Refresh</a>.</p>";
 	}
 }
 
@@ -199,6 +199,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	include ("$sta.php");
 	$uspjeh=2;
 	eval("$staf();");
+	dbdisconnect();
 	exit;
 }
 
@@ -210,8 +211,8 @@ if ($found==1 && $template==2 && $greska=="") {
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
 	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php" />
-	
-</head><?
+</head>
+<?
 
 
 // Prikaz modula bez template-a
@@ -227,11 +228,13 @@ if ($found==1 && $template==0 && $greska=="") {
 				$k .= "$kljuc=$vrijednost&";
 		}
 		
-		?>
-		<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0"></a>
-		<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0"></a>
-		
-		<?
+		if ($userid>0) {
+			?>
+			<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0"></a>
+			<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0"></a>
+			
+			<?
+		}
 	}
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 	$uspjeh=1;
@@ -239,6 +242,7 @@ if ($found==1 && $template==0 && $greska=="") {
 	$uspjeh=2;
 	eval("$staf();");
 	print "</body></html>\n";
+	dbdisconnect();
 	exit;
 }
 
@@ -262,7 +266,7 @@ if ($found==1 && $template==0 && $greska=="") {
 			<a href="doc/zamger-uputstva-40-nastavnik.pdf" target="_new">
 			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" align="center">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
-			<a href="http://195.130.59.135/bugzilla" target="_new">
+			<a href="http://f.etf.unsa.ba:3000/projects/zamger/issues" target="_new">
 			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" align="center">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
 			</td>
@@ -403,7 +407,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2009 Vedran Ljubović i drugi<br/>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2011 Vedran Ljubović i drugi<br/>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
