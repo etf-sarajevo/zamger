@@ -85,7 +85,7 @@ function nastavnik_projekti()
 		if ($params[zakljucani_projekti] == 1)
 		{
 ?>
-	<span class="notice">Onemogučene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
+	<span class="notice">Onemogućene su prijave u projektne timove. Otvorene su projektne stranice.</span>	
 <?php
 		} //locked projects
 		else
@@ -250,8 +250,8 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili parametre projekata.');
-					zamgerlog("korisnik u$userid uredio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);		
-					$link = $linkPrefix;		
+					zamgerlog("uredio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
+					$link = $linkPrefix;
 				}
 				else
 				{	
@@ -319,9 +319,8 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Novi projekat uspješno dodan.');
-					zamgerlog("korisnik u$userid dodao novi projekat na predmetu pp$_REQUEST[predmet]", 2);		
-
-					$link = $linkPrefix;			
+					zamgerlog("dodao novi projekat na predmetu pp$_REQUEST[predmet]", 2);
+					$link = $linkPrefix;
 				}
 				else
 				{	
@@ -378,9 +377,8 @@ function nastavnik_projekti()
 				if($errorText == '')
 				{
 					nicemessage('Uspješno ste uredili projekat.');
-					zamgerlog("korisnik u$userid uspješno uredio projekat na predmetu pp$_REQUEST[predmet]", 2);		
-
-					$link = $linkPrefix;									
+					zamgerlog("uredio projekat $id na predmetu pp$_REQUEST[predmet]", 2);
+					$link = $linkPrefix;
 				}
 				else
 				{	
@@ -455,15 +453,13 @@ function nastavnik_projekti()
 						//delete the record
 						if (deleteProject($id))
 						{
-							nicemessage('Uspjesno ste obrisali projekat.');	
-							zamgerlog("korisnik u$userid izbrisao projekat ID=$id na predmetu pp$_REQUEST[predmet]", 4);		
-
-							$link = $linkPrefix;		
+							nicemessage('Uspješno ste obrisali projekat.');	
+							zamgerlog("izbrisao projekat ID=$id na predmetu pp$_REQUEST[predmet]", 4);
+							$link = $linkPrefix;
 						}
 						else
 						{
-							niceerror('Doslo je do greske prilikom brisanja projekta. Molimo kontaktirajte administratora.');		
-
+							niceerror('Došlo je do greške prilikom brisanja projekta. Molimo kontaktirajte administratora.');
 							$link = "javascript:history.back();";	
 						}
 						nicemessage('<a href="'. $link .'">Povratak.</a>');
@@ -797,8 +793,8 @@ function formProcess($option)
 		if (!insertProject($data))
 		{
 			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom unosa novog projekta u bazu(predmet pp$predmet, korisnik u$userid)", 3);
-			return $errorText;		
+			zamgerlog("greška prilikom unosa novog projekta u bazu (predmet pp$predmet)", 3);
+			return $errorText;
 		}
 	
 	} //option == add
@@ -807,8 +803,8 @@ function formProcess($option)
 		if (!updateProject($data, $id))
 		{
 			$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-			zamgerlog("greška prilikom update projekta $id u bazi(predmet pp$predmet, korisnik u$userid)", 3);
-			return $errorText;		
+			zamgerlog("greška prilikom update projekta $id u bazi (predmet pp$predmet)", 3);
+			return $errorText;
 		}
 	
 	} //option == edit
@@ -877,7 +873,7 @@ function deleteArticlesForProject($id)
 	
 	if (!rmdir_recursive($lokacijaclanaka . $id)) //delete all article files - images for this project
 	{
-		zamgerlog("greška prilikom brisanja direktorija clanci za projekat ID=$id iz fajl sistema", 3);
+		zamgerlog("greška prilikom brisanja direktorija clanci za projekat $id iz fajl sistema", 3);
 		return false;	
 	}
 	
@@ -898,7 +894,7 @@ function deleteFilesForProject($id)
 	
 	if (!rmdir_recursive($lokacijafajlova . $id))
 	{
-		zamgerlog("greška prilikom brisanja direktorija fajlovi za projekat ID=$id iz fajl sistema", 3);
+		zamgerlog("greška prilikom brisanja direktorija fajlovi za projekat $id iz fajl sistema", 3);
 		return false;	
 	}
 		
@@ -1002,8 +998,8 @@ function formProcess_param()
 	if (!replacePredmetParams($data, $predmet, $ag))
 	{
 		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
-		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat(predmet pp$predmet, korisnik u$userid)", 3);
-		return $errorText;		
+		zamgerlog("greska prilikom spasavanja parametara na projektu $projekat (predmet pp$predmet)", 3);
+		return $errorText;
 	}
 
 
