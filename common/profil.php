@@ -14,7 +14,374 @@
 
 function common_profil() {
 
-global $userid, $conf_system_auth, $conf_files_path, $conf_promjena_sifre, $conf_skr_naziv_institucije, $conf_skr_naziv_institucije_genitiv, $user_student;
+global $userid, $conf_system_auth, $conf_files_path, $conf_promjena_sifre, $conf_skr_naziv_institucije, $conf_skr_naziv_institucije_genitiv;
+global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
+
+
+$akcija = $_REQUEST['akcija'];
+
+// Ispis menija
+
+$boja_licni = $boja_opcije = $boja_izbori = "#BBBBBB";
+if ($akcija=="opcije") $boja_opcije="#DDDDDD";
+else if ($akcija=="izbori") $boja_izbori="#DDDDDD";
+else $boja_licni = "#DDDDDD";
+
+
+// Za sada ne postoje dodatne mogućnosti ponuđene studentima
+
+if ($user_nastavnik) {
+	?>
+	<br>
+	
+	<table border="0" cellspacing="0" cellpadding="0">
+	<tr height="25">
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+		<td bgcolor="<?=$boja_licni?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_licni?>';"><a href="?sta=common/profil&akcija=licni">Lični podaci</a></td>
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+		<td bgcolor="<?=$boja_opcije?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_opcije?>';"><a href="?sta=common/profil&akcija=opcije">Zamger opcije</a></td>
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=izbori">Izbori i nastavni ansambl</a></td>
+		<td bgcolor="#FFFFFF" width="100">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="7" height="1" bgcolor="#000000" bgimage="images/fnord.gif">
+	</tr>
+	</table>
+	<?
+}
+
+
+
+// Zamger opcije
+
+if ($akcija=="opcije") {
+	if ($_REQUEST['subakcija'] == "promjena" && check_csrf_token()) {
+		$csv_separator = $_REQUEST['csv-separator'];
+		if ($csv_separator != ";" && $csv_separator != ",") $csv_separator = my_escape($csv_separator);
+
+		$q500 = myquery("delete from preference where korisnik=$userid and preferenca='csv-separator'");
+		$q510 = myquery("insert into preference set korisnik=$userid, preferenca='csv-separator', vrijednost='$csv_separator'");
+		
+		$savjet_dana = intval($_REQUEST['savjet_dana']);
+
+		$q520 = myquery("delete from preference where korisnik=$userid and preferenca='savjet_dana'");
+		$q530 = myquery("insert into preference set korisnik=$userid, preferenca='savjet_dana', vrijednost=$savjet_dana");
+
+		nicemessage("Zamger opcije uspješno promijenjene");
+		zamgerlog("promijenjene zamger opcije", 2);
+	}
+
+	?>
+	<h2>Opcije Zamgera</h2>
+	<p>U ovom trenutku možete prilagoditi sljedeće opcije koje se odnose samo na vaš korisnički nalog:</p>
+
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="promjena">
+	<table border="0" cellspacing="0" cellpadding="0">
+
+	<?
+
+	// mass-input-format
+	// mass-input-separator
+	// - Pošto se ova dva jednostavno zapamte od zadnje primjene, ne vidim svrhu da ih dodajem ovdje
+
+	// csv-separator
+
+	$csv_separatori = array(";", ",");
+	$csv_vrijednosti = array("SELECTED", ""); // default je tačka-zarez
+
+	$q100 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-separator'");
+	if (mysql_num_rows($q100)>0) {
+		if (mysql_result($q100,0,0) == ",") {
+			$csv_vrijednosti[0] = "";
+			$csv_vrijednosti[1] = "SELECTED";
+		} else if (mysql_result($q100,0,0) != ";") {
+			$csv_vrijednosti[0] = "";
+			array_push($csv_separatori, mysql_result($q100,0,0));
+			array_push($csv_vrijednosti, "SELECTED");
+		}
+	}
+
+	?>
+	<tr>
+		<td>Separator za izvoz u CSV format (Excel):</td>
+		<td><select name="csv-separator">
+		<?
+		for ($i=0; $i<count($csv_separatori); $i++) 
+			print "<option value=\"$csv_separatori[$i]\" $csv_vrijednosti[$i]\">$csv_separatori[$i]</option>\n";
+		?>
+		</select></td>
+	</tr>
+	<?
+
+	// csv-encoding
+	// - Treba uvijek biti Windows-1250
+
+	// savjet_dana
+
+	$savjet_dana = "CHECKED";
+	$q110 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
+	if (mysql_num_rows($q110)>0 && mysql_result($q110,0,0)==0)
+		$savjet_dana = "";
+
+	?>
+	<tr>
+		<td>Prikaži "Savjet dana":</td>
+		<td><input type="checkbox" name="savjet_dana" value="1" <?=$savjet_dana?>></td>
+	</tr>
+	<?
+
+	// Kraj tabele
+
+	?>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><input type="submit" value="Promijeni"></td>
+	</tr>
+
+	</table>
+	</form>
+	<?
+
+	return;
+}
+
+
+
+// Akcija: izbori i imenovanja
+
+if ($akcija=="izbori") {
+
+	?>
+	<h2>Izbori, imenovanja, nastavni ansambl</h2>
+	<p>Podaci u tabelama ispod za sada se ne mogu mijenjati! Molimo da sve greške i dopune prijavite službama <?=$conf_skr_naziv_institucije_genitiv?>.</p>
+
+	<?
+
+
+	if ($_REQUEST['subakcija'] == "arhiva_izbora") {
+		?>
+		<h3>Historijski pregled izbora u zvanja</h3>
+		<table border="1" cellspacing="0" cellpadding="2">
+		<tr>
+			<th>Zvanje</th><th>Datum izbora</th><th>Datum isteka</th><th>Oblast</th><th>Podoblast</th><th>Radni odnos</th><th>Druga VŠO?</th>
+		</tr>
+		<?
+
+		$q500 = myquery("select zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), oblast, podoblast, dopunski, druga_institucija from izbor WHERE osoba=$userid order by datum_isteka, datum_izbora");
+		if (mysql_num_rows($q500) < 1) {
+			?>
+			<tr><td colspan="7">Nemamo nikakvih podataka o vašim izborima.</td></tr>
+			<?
+		}
+		while ($r500 = mysql_fetch_row($q500)) {
+			$q510 = myquery("select naziv from zvanje where id=$r500[0]");
+			$nzvanje = mysql_result($q510,0,0);
+
+			$datum_izbora = date("d. m. Y", $r500[1]);
+			if ($r500[1] == 0)
+				$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
+			$datum_isteka = date("d. m. Y", $r500[2]);
+			if ($r500[2] == 0)
+				$datum_isteka = "Neodređeno";
+			$oblast = $r500[3];
+			if ($oblast<1)
+				$oblast = "<font color=\"red\">(nepoznato)</font>";
+			else {
+				$q520 = myquery("select naziv from oblast where id=$oblast");
+				if (mysql_num_rows($q520)<1)
+					$oblast = "<font color=\"red\">GREŠKA</font>";
+				else
+					$oblast = mysql_result($q520,0,0);
+			}
+			$podoblast = $r500[4];
+			if ($podoblast<1)
+				$podoblast = "<font color=\"red\">(nepoznato)</font>";
+			else {
+				$q530 = myquery("select naziv from podoblast where id=$podoblast");
+				if (mysql_num_rows($q530)<1)
+					$podoblast = "<font color=\"red\">GREŠKA</font>";
+				else
+					$podoblast = mysql_result($q530,0,0);
+			}
+			if ($r500[5]==0) $radniodnos = "Stalni";
+			else $radniodnos = "Dopunski";
+
+			if ($r500[6]==1) $druga_vso = "DA";
+
+			?>
+			<tr><td><?=$nzvanje?></td><td><?=$datum_izbora?></td><td><?=$datum_isteka?></td><td><?=$oblast?></td><td><?=$podoblast?></td><td><?=$radniodnos?></td><td><?=$druga_vso?></td></tr>
+			<?
+		}
+
+		?>
+		</table>
+		<br>
+		<a href="?sta=common/profil&akcija=izbori">&lt; &lt; Nazad</a>
+		<?
+
+
+		return;
+	}
+
+
+
+	if ($_REQUEST['subakcija'] == "arhiva_angazman") {
+		?>
+		<h3>Historijski pregled angažmana u nastavnom ansamblu</h3>
+		<table border="1" cellspacing="0" cellpadding="2">
+		<tr>
+			<th>Akademska godina</th><th>Predmet</th><th>Status</th>
+		</tr>
+		<?
+
+		$q540 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv, ag.naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$userid and a.akademska_godina=ag.id and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by ag.naziv desc, angs.id, p.naziv");
+		if (mysql_num_rows($q540) < 1) {
+			?>
+			<tr><td colspan="7">Nemamo nikakvih podataka o vašem angažmanu u nastavi.</td></tr>
+			<?
+		}
+		while ($r540 = mysql_fetch_row($q540)) {
+			?>
+			<tr><td><?=$r540[4]?></td><td><?="$r540[1] ($r540[3])"?></td><td><?=$r540[2]?></td></tr>
+			<?
+		}
+
+		?>
+		</table>
+		<br>
+		<a href="?sta=common/profil&akcija=izbori">&lt; &lt; Nazad</a>
+		<?
+
+
+		return;
+	}
+
+
+	// Izbori u zvanja
+
+	?>
+	<table border="0" width="600">
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">IZBORI U ZVANJA:</font></td></tr>
+	<tr>
+	<?
+
+	$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.oblast, i.podoblast, i.dopunski, i.druga_institucija from izbor as i, zvanje as z WHERE i.osoba=$userid and i.zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+	if (mysql_num_rows($q400)==0) {
+		?>
+		<tr><td colspan="2">Nema podataka o izboru ili nikada niste bili izabrani u zvanje.</td></tr>
+		<?
+	} else {
+		$datum_izbora = date("d. m. Y", mysql_result($q400,0,1));
+		if (mysql_result($q400,0,1)==0)
+			$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
+		$datum_isteka = date("d. m. Y", mysql_result($q400,0,2));
+		if (mysql_result($q400,0,2)==0)
+			$datum_isteka = "Neodređeno";
+		$oblast = mysql_result($q400,0,3);
+		if ($oblast<1)
+			$oblast = "<font color=\"red\">(nepoznato)</font>";
+		else {
+			$q410 = myquery("select naziv from oblast where id=$oblast");
+			if (mysql_num_rows($q410)<1)
+				$oblast = "<font color=\"red\">GREŠKA</font>";
+			else
+				$oblast = mysql_result($q410,0,0);
+		}
+		$podoblast = mysql_result($q400,0,4);
+		if ($podoblast<1)
+			$podoblast = "<font color=\"red\">(nepoznato)</font>";
+		else {
+			$q420 = myquery("select naziv from podoblast where id=$podoblast");
+			if (mysql_num_rows($q420)<1)
+				$podoblast = "<font color=\"red\">GREŠKA</font>";
+			else
+				$podoblast = mysql_result($q420,0,0);
+		}
+		if (mysql_result($q400,0,5)==0) $radniodnos = "Stalni";
+		else $radniodnos = "Dopunski";
+		
+		?>
+		<tr><td>Zvanje:</td><td><b><?=mysql_result($q400,0,0)?></b></td></tr>
+		<tr><td>Datum izbora:</td><td><b><?=$datum_izbora?></b></td></tr>
+		<tr><td>Datum isteka:</td><td><b><?=$datum_isteka?></b></td></tr>
+		<tr><td>Oblast:</td><td><b><?=$oblast?></b></td></tr>
+		<tr><td>Podoblast:</td><td><b><?=$podoblast?></b></td></tr>
+		<tr><td>Radni odnos:</td><td><b><?=$radniodnos?></b></td></tr>
+		<?
+		if (mysql_result($q400,0,6)==1) print "<tr><td colspan=\"2\"><b>Biran/a na drugoj VŠO</b></td></tr>\n";
+
+		?>
+		<tr><td colspan="2">&nbsp;</td></tr>
+		<tr><td>&nbsp;</td><td><a href="?sta=common/profil&akcija=izbori&subakcija=arhiva_izbora">Historijski pregled izbora u zvanja</a></td></tr>
+		<?
+	}
+
+
+	// Stručni i naučni stepen
+
+	?>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">STRUČNI I NAUČNI STEPEN:</font></td></tr>
+	<?
+
+	$q430 = myquery("select strucni_stepen, naucni_stepen from osoba where id=$userid");
+	$strucni_stepen = "Nepoznato / Bez stručnog stepena";
+	$naucni_stepen = "Nepoznato / Bez naučnog stepena";
+	if (mysql_result($q430,0,0)!=0) {
+		$q440 = myquery("select naziv from strucni_stepen where id=".mysql_result($q430,0,0));
+		$strucni_stepen = mysql_result($q440,0,0);
+	}
+	if (mysql_result($q430,0,1)!=0) {
+		$q450 = myquery("select naziv from naucni_stepen where id=".mysql_result($q430,0,1));
+		$naucni_stepen = mysql_result($q450,0,0);
+	}
+
+	?>
+	<tr><td>Stručni stepen:</td><td><b><?=$strucni_stepen?></b></td></tr>
+	<tr><td>Naučni stepen:</td><td><b><?=$naucni_stepen?></b></td></tr>
+	<?
+
+
+	// Nastavni ansambl
+
+	?>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">UČEŠĆE U NASTAVNOM ANSAMBLU:</font></td></tr>
+	<?
+
+
+	$q460 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$userid and a.akademska_godina=ag.id and ag.aktuelna=1 and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by angs.id, p.naziv");
+	if (mysql_num_rows($q460) == 0) {
+		?>
+		<tr><td colspan="2">Niste angažovani niti na jednom predmetu u ovoj godini.</td></tr>
+		<?
+	}
+	else {
+		?>
+		<tr><td valign="top">Predmeti:</td><td>
+		<?
+		while ($r460 = mysql_fetch_row($q460)) {
+			print "$r460[1] ($r460[3]) - <b>$r460[2]</b><br>\n";
+		}
+		?>
+		</td></tr>
+		<?
+	}
+	?>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr><td>&nbsp;</td><td><a href="?sta=common/profil&akcija=izbori&subakcija=arhiva_angazman">Historijski pregled angažmana u nastavi</a></td></tr>
+	<?
+
+	return;
+}
+
+
+
+
+// Akcija za lične podatke
 
 ?>
 <h2>Zahtjev za promjenu ličnih podataka u Informacionom sistemu <?=$conf_skr_naziv_institucije_genitiv?></h2>
@@ -216,7 +583,7 @@ if ($_POST['subakcija']=="obrisisliku" && check_csrf_token()) {
 	<h2>Zahvaljujemo!</h2>
 
 	<p>Zahtjev je poslan!</p>
-	<p>Nakon što Studentska služba provjeri ispravnost podataka, oni će biti uneseni u Informacioni sistem. Molimo da budete dostupni za slučaj da je potrebna dokumentacija za neku od izmjena koje ste zatražili.</p>
+	<p>Nakon što Službe <?=$conf_skr_naziv_institucije_genitiv?> provjere ispravnost podataka, oni će biti uneseni u Informacioni sistem. Molimo da budete dostupni za slučaj da je potrebna dokumentacija za neku od izmjena koje ste zatražili.</p>
 	<?
 	return;
 }
@@ -402,6 +769,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 
 	<table border="0" width="600">
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">SLIKA:</font></td></tr>
+	<tr><td colspan="2">Slika koju ovdje odaberete nije vaš "avatar" nego zvanična fotografija u formatu lične karte / pasoša koja ide u dokumentaciju fakulteta i vezuje se za vaše zvanične dokumente. Slika mora imati bijelu/svijetlu pozadinu. Molimo vas da pošaljete sliku zadovoljavajuće kvalitete radi lakšeg štampanja dokumenata.</td></tr>
 	<?
 	if (mysql_result($q400,0,20)=="") {
 		print genform("POST", "a\"  enctype=\"multipart/form-data");
@@ -450,7 +818,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">KONTAKT PODACI:</font></td></tr>
-	<tr><td colspan="2">Ovi podaci će se koristiti kako bi Studentska služba lakše stupila u kontakt s vama.</td></tr>
+	<tr><td colspan="2">Ovi podaci će se koristiti kako bi Službe <?=$conf_skr_naziv_institucije_genitiv?> mogle lakše stupiti u kontakt s vama.</td></tr>
 
 	</td></tr>
 	<tr><td>
@@ -535,7 +903,10 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 	<input type="hidden" name="subakcija" value="potvrda">
 	<input type="Submit" value=" Pošalji zahtjev "></form>
 
-<?
+	<p>&nbsp;</p>
+	<p>Klikom na dugme iznad biće poslan zahtjev koji službe <?=$conf_skr_naziv_institucije_genitiv?> trebaju da provjere i potvrde. Ovo može potrajati nekoliko dana. Molimo da budete strpljivi.</p>
+
+	<?
 
 
 
