@@ -96,8 +96,8 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
 
 		$tipKomponente = intval($TabelaKomponenti[$i]['tip']);
-		$guiNaziv = my_escape($TabelaKomponenti[$i]['naziv']);
-		$kratkiNaziv = my_escape($TabelaKomponenti[$i]['kratkiNaziv']);
+		$guiNaziv = substr(my_escape($TabelaKomponenti[$i]['naziv']), 0, 20); // Dužina naziva je 20 slova
+		$kratkiNaziv = substr(my_escape($TabelaKomponenti[$i]['kratkiNaziv']), 0, 20);
 		$maxBodova = floatval($TabelaKomponenti[$i]['maxBodova']);
 		$prolazBodova = floatval($TabelaKomponenti[$i]['prolazBodova']);
 		$opcija = my_escape($TabelaKomponenti[$i]['opcija']);
@@ -115,7 +115,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 		// Da li je predmet već imao ovakvu komponentu?
 		// Koristimo istu kako bi bili sačuvani bodovi ako je moguće
-		$q85 = myquery("select k.id from tippredmeta_komponenta as tpk, komponenta as k where tpk.tippredmeta=$stari_tip_predmeta and tpk.komponenta=k.id and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
+		$q85 = myquery("select k.id from tippredmeta_komponenta as tpk, komponenta as k where tpk.tippredmeta=$stari_tip_predmeta and tpk.komponenta=k.id and k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
 		if (mysql_num_rows($q85)>0) {
 			$id_komponente = mysql_result($q85,0,0);
 		} else {
@@ -184,7 +184,6 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		$q110 = myquery("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
 	}
 
-
 	// Od sada ovaj predmet je novokreiranog tipa
 	$q120 = myquery("UPDATE akademska_godina_predmet set tippredmeta=$tip_predmeta where akademska_godina=$ag and predmet=$predmet");
 
@@ -201,7 +200,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 			// Ako nijedan tip predmeta više ne koristi ovu komponentu, brišemo i nju
 			$q170 = myquery("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
-			if (mysql_result($q170,0,0)==0)
+			if (mysql_result($q170,0,0)==0) 
 				$q180 = myquery("delete from komponenta where id=$r150[0]");
 		}
 	}
@@ -227,9 +226,30 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 // Izbor jednog od postojećih tipova predmeta
 
 if ($akcija == "postojeci_tip_potvrda" && check_csrf_token()) {
-	$tip_predmeta = intval($_POST['tip_predmeta']); // ?? POST?
+	// Odredjujemo stari tip predmeta
+	$q20 = myquery("select t.id, t.naziv from akademska_godina_predmet as agp, tippredmeta as t where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=t.id");
+	$stari_tip_predmeta=mysql_result($q20,0,0);
+
+	$tip_predmeta = intval($_POST['tip_predmeta']); // novi tip predmeta
 	$q190 = myquery("UPDATE akademska_godina_predmet SET tippredmeta=$tip_predmeta WHERE predmet=$predmet AND akademska_godina=$ag");
-	
+
+	// Ako nijedan predmet više ne koristi stari tip predmeta, brišemo ga
+	$q130 = myquery("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
+	if (mysql_result($q130,0,0)==0) {
+		$q140 = myquery("delete from tippredmeta where id=$stari_tip_predmeta");
+
+		// Brišemo veze iz tabele tippredmeta_komponenta
+		$q150 = myquery("select komponenta from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta");
+		while ($r150 = mysql_fetch_row($q150)) {
+			$q160 = myquery("delete from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta and komponenta=$r150[0]");
+
+			// Ako nijedan tip predmeta više ne koristi ovu komponentu, brišemo i nju
+			$q170 = myquery("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
+			if (mysql_result($q170,0,0)==0) 
+				$q180 = myquery("delete from komponenta where id=$r150[0]");
+		}
+	}
+
 	zamgerlog("Osoba u".$userid." promijenila tip predmeta pp".$predmet." u $tip_predmeta",4);
 	nicemessage("Odabran je sistem bodovanja na predmetu");
 	print "<a href=\"?sta=nastavnik/tip&predmet=$predmet&ag=$ag\">Nazad na početnu stranicu</a>";
