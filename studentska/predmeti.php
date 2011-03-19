@@ -340,9 +340,9 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$predmet = mysql_result($q280,0,0);
 
 	// Potrebno je definisati zapis u tabeli akademska_godina_predmet. Biramo 
-	// default tip a korisnik ga može promijeniti kasnije
+	// default tip predmeta (ETF Bologna standard) a korisnik ga može promijeniti kasnije
 	$q285 = myquery("select id from tippredmeta order by id limit 1");
-	$tippredmeta = mysql_result($q265,0,0);
+	$tippredmeta = mysql_result($q285,0,0);
 	$q287 = myquery("insert into akademska_godina_predmet set akademska_godina=$ak_god, predmet=$predmet, tippredmeta=$tippredmeta");
 
 	// Kreiramo virtualnu labgrupu "Svi studenti"
