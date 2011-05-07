@@ -84,7 +84,7 @@ Bye
 
 4. Importujte standardnu Zamger schemu u mysql:
 
-# mysql zamger -u zamger -p <zamger-dump.sql
+# mysql zamger -u zamger -p1A2s3D4f <zamger-dump.sql
 
 
 5. Ako zelite omoguciti upload fajlova, trebate kreirati neke foldere
