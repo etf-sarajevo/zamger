@@ -40,7 +40,7 @@ function common_projektneStrane()
 	if ($user_student && !$user_siteadmin)
 		$linkPrefix = "?sta=student/projekti&akcija=projektnastranica&projekat=$projekat&predmet=$predmet&ag=$ag";
 	elseif ($user_nastavnik)
-		$linkPrefix = "?sta=nastavnik/projekti&action=page&projekat=$projekat&predmet=$predmet&ag=$ag";
+		$linkPrefix = "?sta=nastavnik/projekti&akcija=projektna_stranica&projekat=$projekat&predmet=$predmet&ag=$ag";
 	else
 		return;
 
