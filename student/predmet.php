@@ -84,12 +84,16 @@ print "<br/>\n";
 
 // PROGRESS BAR
 
-$q30 = myquery("select kb.bodovi,k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+$q30 = myquery("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
 
 $bodova=$mogucih=0;
 while ($r30 = mysql_fetch_row($q30)) {
 	$bodova += $r30[0];
-	$mogucih += $r30[1];
+	if ($r30[2] == 4) { // Tip komponente: zadaće
+		$q35 = myquery("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
+		$mogucih += round(mysql_result($q35,0,0), 2);
+	} else
+		$mogucih += $r30[1];
 }
 if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
@@ -131,7 +135,7 @@ if ($tabela1>$tabela2) {
 <td width="68">0</td>
 <td align="center" width="68">50</td>
 <td align="right" width="69">100</td></tr></table>
-što je <?=$procent?>% od trenutno mogućih <?=$mogucih?> bodova.</p>
+što je <?=$procent?>% od trenutno mogućih <?=round($mogucih,2) /* Rješavamo nepreciznost floata */ ?> bodova.</p>
 </td></tr></table></center>
 
 
@@ -188,7 +192,7 @@ function moodle_novosti($predmet, $ag) {
 		}
 	}
 
-	$q61 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id and added>$vrijeme_za_novosti",$moodle_con);
+	$q61 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
 	
 	while ($r61 = mysql_fetch_array($q61)) {
 		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
@@ -198,7 +202,7 @@ function moodle_novosti($predmet, $ag) {
 			
 			while ($r62 = mysql_fetch_array($q62)) {
 				$code_poruke["o".$r61[3]] = $r62[0];
-				$vrijeme_poruke_obavijest["o".$r61[3]] = $r61[4];
+				$vrijeme_poruke_obavijest["o".$r61[3]] = ($r61[4]>$r62[1])?$r61[4]:$r62[1];
 			}
 		}
 		
@@ -208,7 +212,7 @@ function moodle_novosti($predmet, $ag) {
 			
 			while ($r64 = mysql_fetch_array($q64)) {
 				$code_poruke["r".$r61[3]] = "<a href=\"$conf_moodle_url"."mod/resource/view.php?id=$r61[3]\">$r64[0]</a>";
-				$vrijeme_poruke_resurs["r".$r61[3]] = $r61[4];
+				$vrijeme_poruke_resurs["r".$r61[3]] = ($r61[4]>$r64[1])?$r61[4]:$r64[1];
 			}
 		}
 	}
