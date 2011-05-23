@@ -609,13 +609,14 @@ else if ($akcija == "upis") {
 
 
 	// Šta je student slušao i kako?
-	$q510 = myquery("select studij, nacin_studiranja, plan_studija, semestar from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
+	$q510 = myquery("select studij, nacin_studiranja, plan_studija, semestar, ponovac from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
 	$stari_studij=$nacin_studiranja=$plan_studija=$ponovac=0;
 	if (mysql_num_rows($q510)>0) {
 		$stari_studij=mysql_result($q510,0,0);
 		$nacin_studiranja=mysql_result($q510,0,1);
 		$plan_studija=mysql_result($q510,0,2);
 		if (mysql_result($q510,0,3)>=$semestar) $ponovac=1;
+		else if ($semestar%2==0) $ponovac=mysql_result($q510,0,4);
 	} else if (intval($_REQUEST['nacin_studiranja'])>0) {
 		$nacin_studiranja=intval($_REQUEST['nacin_studiranja']);
 	}
@@ -895,6 +896,16 @@ else if ($akcija == "upis") {
 					$predmet=$r720[0];
 					if (in_array($predmet, $bio_predmet)) continue;
 					array_push($bio_predmet, $predmet);
+
+					// Da li je izabran na formi?
+					foreach($_REQUEST as $key=>$value) {
+						if (substr($key,0,8) != "izborni-") continue;
+						if ($value=="") continue;
+						$ponudakursa = intval(substr($key,8));
+						$q566 = myquery("select predmet from ponudakursa where id=$ponudakursa");
+						if ($predmet==mysql_result($q566,0,0)) { $nastavak=1; break; }
+					}
+
 
 					// Da li je položen?
 					$q730 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
@@ -1365,7 +1376,7 @@ else if ($akcija == "predmeti") {
 
 			} else {
 				// Da li je položen?
-				$q2110 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+				$q2110 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
 				if (mysql_result($q2110,0,0)>0) {
 					print " - položen</li>\n";
 
@@ -2474,7 +2485,7 @@ else if ($akcija == "edit") {
 		if (mysql_num_rows($q430) < 1)
 			print "<li>Uposlenik nije angažovan niti na jednom predmetu u ovoj godini.</li>\n";
 		while ($r430 = mysql_fetch_row($q430)) {
-			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r430[0]\">$r430[1] ($r430[3])</a> - $r430[2]</li>\n";
+			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r430[0]&ag=$id_ak_god\">$r430[1] ($r430[3])</a> - $r430[2]</li>\n";
 		}
 
 
@@ -2506,7 +2517,7 @@ else if ($akcija == "edit") {
 		if (mysql_num_rows($q180) < 1)
 			print "<li>Nijedan</li>\n";
 		while ($r180 = mysql_fetch_row($q180)) {
-			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r180[0]\">$r180[1] ($r180[3])</a>";
+			print "<li><a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r180[0]&ag=$id_ak_god\">$r180[1] ($r180[3])</a>";
 			if ($r180[2] == "nastavnik") print " (Nastavnik)";
 			else if ($r180[2] == "super_asistent") print " (Super asistent)";
 			print "</li>\n";
