@@ -46,12 +46,6 @@ if (mysql_num_rows($q5)<1) {
 }
 $predmet_naziv = mysql_result($q5,0,0);
 
-//Dozvoljene ekstenzije
-$q7 = myquery("select naziv from ekstenzije");
-$dozvoljene_ekstenzije = array();
-while ($r7 = mysql_fetch_row($q7)) {
-	array_push($dozvoljene_ekstenzije, $r7[0]);
-}
 
 // Da li korisnik ima pravo ući u modul?
 
@@ -65,6 +59,29 @@ if (!$user_siteadmin) {
 }
 
 
+
+// Dozvoljene ekstenzije
+
+$q13 = myquery("select naziv from ekstenzije");
+$dozvoljene_ekstenzije = array();
+while ($r13 = mysql_fetch_row($q13)) {
+	array_push($dozvoljene_ekstenzije, $r13[0]);
+}
+
+// Da li predmet posjeduje komponente za zadaće?
+$q15 = myquery("select k.id, k.naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4");
+if (mysql_num_rows($q15)<1) {
+	zamgerlog("ne postoji komponenta za zadaće na predmetu pp$predmet ag$ag", 3);
+	niceerror("U sistemu bodovanja za ovaj predmet nije definisana nijedna komponenta zadaće.");
+	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
+	return;
+}
+if (mysql_num_rows($q15)>1) {
+	niceerror("U sistemu bodovanja za ovaj predmet je definisano više od jedne komponente za zadaće.");
+	print "<p>Ovaj modul trenutno podržava samo jednu komponentu zadaća. Ako imate potrebu za rad sa više od jedne komponente zadaća istovremeno, kontaktirajte administratora Zamgera. U suprotnom, provjerite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet za slučaj da je ova situacija posljedica greške.</p>\n";
+	print "<p>Koristićemo komponentu označenu nazivom: <b>".mysql_result($q15,0,1)."</b></p>"
+}
+$komponenta_za_zadace = mysql_result($q15,0,0);
 
 ?>
 
@@ -319,9 +336,9 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-		// Komponentu postavljamo na 6, defaultna komponenta za zadace - FIXME
-		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=6");
-		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=6");
+		// $komponenta_za_zadace određena na početku fajla
+		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace");
+		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=$komponenta_za_zadace");
 		$edit_zadaca = mysql_result($q93,0,0);
 		nicemessage("Kreirana nova zadaća '$naziv'");
 		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
@@ -359,7 +376,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 
 $_lv_["where:predmet"] = $predmet;
 $_lv_["where:akademska_godina"] = $ag;
-$_lv_["where:komponenta"] = 6; // namećemo standardnu komponentu za zadaće... FIXME
+$_lv_["where:komponenta"] = $komponenta_za_zadace; // određena na početku fajla
 
 print "Postojeće zadaće:<br/>\n";
 print db_list("zadaca");
