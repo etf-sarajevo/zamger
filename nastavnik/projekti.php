@@ -3,6 +3,7 @@
 
 function nastavnik_projekti() {
 
+	require_once ('lib/projekti.php');
 	global $userid, $user_nastavnik, $user_siteadmin;
 	global $conf_files_path;
 
@@ -177,8 +178,7 @@ function nastavnik_projekti() {
 			$zakljucani_projekti = 0;
 			if (isset($_REQUEST['lock'])) $zakljucani_projekti = 1;
 			
-			if ($min_timova <= 0 || $max_timova <= 0 || $min_clanova_tima <= 0 || $max_clanova_tima <= 0)
-			{
+			if ($min_timova <= 0 || $max_timova <= 0 || $min_clanova_tima <= 0 || $max_clanova_tima <= 0) {
 				niceerror("Morate unijeti ispravne vrijednosti u sva polja");
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
@@ -644,7 +644,7 @@ function nastavnik_projekti() {
 } // function
 
 
-function rmdir_recursive($dirname)
+/*function rmdir_recursive($dirname)
 {
     // Sanity check
     if (!file_exists($dirname)) 
@@ -675,7 +675,7 @@ function rmdir_recursive($dirname)
     // Clean up
     $dir->close();
     return rmdir($dirname);
-}
+}*/
 
 
 ?>
