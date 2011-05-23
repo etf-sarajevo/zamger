@@ -114,7 +114,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 			$prisustvo = $zadace = $parc1 = $parc2 = $int = $zavrsni = $ukupno = "&nbsp;";
 			$kp1 = $kp2 = 0; // Čuvamo id-ove komponenti za 1 i 2 parcijalni, radi kasnijeg ispisa
 
-			$q130 = myquery("select k.id, k.gui_naziv, k.tipkomponente, kb.bodovi from komponenta as k, tippredmeta_komponenta as tpk, predmet as p, komponentebodovi as kb where p.id=$r120[2] and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and kb.komponenta=k.id and kb.student=$student and kb.predmet=$r120[0]");
+			$q130 = myquery("select k.id, k.gui_naziv, k.tipkomponente, kb.bodovi from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, komponentebodovi as kb where agp.predmet=$r120[2] and agp.akademska_godina=$r110[0] and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and kb.komponenta=k.id and kb.student=$student and kb.predmet=$r120[0]");
 			while ($r130 = mysql_fetch_row($q130)) {
 				$bodovi = $r130[3];
 				if ($r130[2] == 1) { // tip komponente = ispit
