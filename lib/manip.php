@@ -367,7 +367,8 @@ function update_komponente($student,$predmet,$komponenta=0) {
 	// Ako nije navedena komponenta, racunaju se sve komponente
 
 	// Brišemo podatke trenutno u bazi ako je komponenta=0
-	$q5 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet");
+	if ($komponenta==0)
+		$q5 = myquery("delete from komponentebodovi where student=$student and predmet=$predmet");
 
 	// Glavni upit - spisak komponenti
 	$dodaj="";
