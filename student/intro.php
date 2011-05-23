@@ -83,12 +83,26 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), io.ocjena, k.prolaz, p.id, pk.akademska_godina from ispitocjene as io, ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where io.student=$userid and io.ispit=i.id and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
+$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), true, k.prolaz, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
 while ($r15 = mysql_fetch_row($q15)) {
-	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	if ($r15[6]>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
-	$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $r15[6] bodova.$cestitka<br/><br/>\n";
-	$vrijeme_poruke["i".$r15[0]] = $r15[3];
+	if ($r15[3] < time()-60*60*24*30) continue; // preskačemo starije od mjesec dana
+
+	// Da li je ovaj student izlazio na ispit?
+	$q16 = myquery("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
+	if (mysql_result($q16,0,0)==0) { // Ne
+		// Ima li termina na koje se može prijaviti?
+		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
+		if (mysql_result($q17,0,0)>0) {
+			$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a>\n";
+			$vrijeme_poruke["i".$r15[0]] = $r15[3];
+		}
+	}
+	else { // Student je dobio $bodova
+		$bodova = mysql_result($q16,0,0);
+		if ($bodova>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
+		$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $bodova bodova.$cestitka<br/><br/>\n";
+		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+	}
 }
 
 // Konačne ocjene
