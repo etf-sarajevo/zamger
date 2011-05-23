@@ -249,8 +249,10 @@ if ($attach == 0) {
 	// Nije attachment
 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
+	$no_lines = 0;
 	if (file_exists($the_file)) { 
 		$src = file_get_contents($the_file);  
+		$no_lines = count(file($the_file));
 	}
 	
 	// textarea.... mozda jednog dana
@@ -265,7 +267,10 @@ if ($attach == 0) {
 	include_once('lib/geshi/geshi.php');
 	$geshi =& new GeSHi($src, $jezik);
 	?>
-	<center><table width="95%" style="border:1px solid silver;" bgcolor="#F3F3F3"><tr><td>
+	<center><table width="95%" style="border:1px solid silver;"><tr>
+	<!-- Brojevi linija -->
+	<td bgcolor="#CCCCCC"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
+	<td  bgcolor="#F3F3F3">
 	<?
 	print $geshi->parse_code();
 	// print join("",file($the_file));
