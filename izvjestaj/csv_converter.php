@@ -8,9 +8,15 @@ function ob_file_callback($buffer) {
 
 function izvjestaj_csv_converter() {
 	global $sadrzaj_bafera_za_csv,$conf_files_path, $registry;
-	global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
+	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 
-	$separator = ";"; // treba biti konfigurabilno
+	// Određujemo separator iz korisničkih preferenci
+	$separator = ";";
+	if ($userid>0) {
+		$q10 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-separator'");
+		if (mysql_num_rows($q10)>0)
+			$separator = mysql_result($q10,0,0);
+	}
 
 	ob_start('ob_file_callback');
 	$koji = my_escape($_REQUEST['koji_izvjestaj']);
@@ -39,6 +45,15 @@ function izvjestaj_csv_converter() {
 	include("$koji.php");//ovdje ga ukljucujem
 	eval("$staf();");
 	ob_end_clean();
+
+	// Konverzija charseta
+	$encoding = "Windows-1250";
+	if ($userid>0) {
+		$q10 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-encoding'");
+		if (mysql_num_rows($q10)>0)
+			$encoding = mysql_result($q10,0,0);
+	}
+	if ($encoding != "UTF-8") $sadrzaj_bafera_za_csv = iconv("UTF-8", $encoding, $sadrzaj_bafera_za_csv);
 
 	// Neke uobičajene tagove za novi red unutar polja tabele pretvaramo u space
 	// a van polja tabele u novi red
@@ -125,8 +140,8 @@ function izvjestaj_csv_converter() {
 	$sadrzaj_bafera_za_csv = str_replace("$separator ","$separator",$sadrzaj_bafera_za_csv);
 
 
-	header("Content-Disposition: attachment; filename=".$staf.".csv");
-	header("Content-Type: text/csv");
+	header("Content-Disposition: inline; filename=".$staf.".csv");
+	header("Content-Type: text/csv; charset=".$encoding);
 
 	header("Pragma: dummy=bogus"); 
 	header("Cache-Control: private");
