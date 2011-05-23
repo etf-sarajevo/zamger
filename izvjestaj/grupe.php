@@ -104,15 +104,15 @@ if ($tip=="double") {
 
 	foreach ($grupe as $id => $naziv) {
 		if ($parni == 0) 
-			print "<tr>";
+			print "<tr>\n";
 		else
-			print "</td>";
+			print "</td>\n";
 		?>
-		<td width="13%">&nbsp;</td><td width="30%" valign="top">
-			<table width="100%" border="2" cellspacing="0">
+		<td width="12%">&nbsp;</td>
+		<td width="31%" valign="top">
+			<table width="100%" border="1" cellspacing="0" cellpadding="2">
 				<tr><td colspan="2"><b><?=$naziv?></b></td></tr>
-				<tr><td>
-		<?
+				<tr><td width="80%"><?
 
 		$idovi = array();
 		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
@@ -128,51 +128,70 @@ if ($tip=="double") {
 			unset($brindexa[$stud_id]);
 			$n++;
 		}
-		print "$imena</td><td>$brojevi_indexa</td></tr></table>\n";
+
+		?><?=$imena?>
+				</td><td width="20%"><?=$brojevi_indexa?></td></tr>
+			</table>
+		<?
 		$imena=$brojevi_indexa="";
 
 		if ($parni==1) {
 			$parni=0;
 			?>
-		</td><td width="13%">&nbsp;</td></tr>
+		</td>
+		<td width="12%">&nbsp;</td></tr>
 		<tr><td colspan="5">&nbsp;</td></tr>
-			<?
+		<?
 		} else $parni=1;
 	}
 
 	if ($grupa==0 && count($imeprezime)>0) {
 		if ($parni == 0) 
-			print "<tr>";
+			print "<tr>\n";
 		else
-			print "</td>";
+			print "</td>\n";
 		?>
-		<td width="13%">&nbsp;</td><td width="30%" valign="top">
-			<table width="100%" border="2" cellspacing="0">
+		<td width="12%">&nbsp;</td>
+		<td width="31%" valign="top">
+			<table width="100%" border="1" cellspacing="0" cellpadding="2">
 				<tr><td colspan="2"><b>Nisu ni u jednoj grupi</b></td></tr>
-				<tr><td>
-		<?
+				<tr><td width="80%"><?
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
 			print "$n. $stud_imepr<br/>\n";
 			$n++;
 		}
-		print "</td><td>";
+		?>
+				</td><td width="20%"><?
 		foreach ($brindexa as $stud_id => $brind) {
 			print "$brind<br/>\n";
 		}
-		print "</td></tr></table>\n";
+		?>
+				</td></tr>
+			</table>
+		<?
 
 		if ($parni==1) {
 			$parni=0;
 			?>
-		</td><td width="13%">&nbsp;</td></tr>
+		</td>
+		<td width="12%">&nbsp;</td></tr>
 		<tr><td colspan="5">&nbsp;</td></tr>
-			<?
+		<?
 		} else $parni=1;
-		
 	}
 
+	if ($parni==1) {
+		?>
+		</td>
+		<td width="12%">&nbsp; </td>
+		<td width="31%" valign="top">&nbsp; </td>
+		<td width="12%">&nbsp; </td>
+	</tr>
+	<?
+	}
+	print "</table>\n";
 }
 
 
