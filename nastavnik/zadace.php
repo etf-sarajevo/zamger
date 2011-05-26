@@ -79,7 +79,7 @@ if (mysql_num_rows($q15)<1) {
 if (mysql_num_rows($q15)>1) {
 	niceerror("U sistemu bodovanja za ovaj predmet je definisano više od jedne komponente za zadaće.");
 	print "<p>Ovaj modul trenutno podržava samo jednu komponentu zadaća. Ako imate potrebu za rad sa više od jedne komponente zadaća istovremeno, kontaktirajte administratora Zamgera. U suprotnom, provjerite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet za slučaj da je ova situacija posljedica greške.</p>\n";
-	print "<p>Koristićemo komponentu označenu nazivom: <b>".mysql_result($q15,0,1)."</b></p>"
+	print "<p>Koristićemo komponentu označenu nazivom: <b>".mysql_result($q15,0,1)."</b></p>";
 }
 $komponenta_za_zadace = mysql_result($q15,0,0);
 
@@ -640,7 +640,7 @@ Separator: <select name="separator" class="default">
 
 
 
-
+/*
 // IMPORT ZADAĆA IZ MOODLA
 
 //Prikupljanje id-a moodle predmeta iz zamger baze radi poredjenja
@@ -886,7 +886,7 @@ if (!$conf_moodle_reuse_connection) {
 }
 
 
-}
+}*/
 
 }
 
