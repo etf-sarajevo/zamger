@@ -93,7 +93,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 		// Ima li termina na koje se može prijaviti?
 		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
 		if (mysql_result($q17,0,0)>0) {
-			$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a>\n";
+			$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
 			$vrijeme_poruke["i".$r15[0]] = $r15[3];
 		}
 	}
