@@ -24,12 +24,6 @@ global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
 
 
-?>
-<p>Univerzitet u Sarajevu<br/>
-Elektrotehnički fakultet Sarajevo</p>
-<?
-
-
 // Parametri upita
 
 $predmet = intval($_REQUEST['predmet']);
@@ -61,7 +55,11 @@ if (mysql_num_rows($q15)<1) {
 	return;
 }
 
+
 ?>
+<p>Univerzitet u Sarajevu<br/>
+Elektrotehnički fakultet Sarajevo</p>
+
 <h1><?=mysql_result($q10,0,0)?></h1>
 <h3>Akademska <?=mysql_result($q15,0,0)?> godina - Izvještaj o predmetu</h3>
 <?
@@ -163,12 +161,13 @@ while ($r30 = mysql_fetch_row($q30)) {
 // Racunamo koliko je bilo moguce ostvariti bodova na predmetu (radi racunanja procenta)
 $mogucih_bodova=0; 
 foreach($komponenta_maxb as $kid => $kmb) 
-	if ($komponenta_tip[$kid] != 2) // 2 = integralni ne racunamo
+	if ($komponenta_tip[$kid] != 2 || // 2 = integralni ne racunamo
+		($imaintegralni == 1 && $broj_ispita < 2)) // osim ako je to jedini ispit
 		$mogucih_bodova += $kmb;
 // Ostale komponente cemo sabrati nesto kasnije...
 
 // Za slucaj da prof odrzi integralni bez parcijalnih
-if ($imaintegralni==1 && $broj_ispita<2) {
+if ($imaintegralni==1 && $broj_ispita < 2) {
 	// $razvdoji_ispite=1; goto // Zaglavlje tabele ispita
 	// no php ne podržava goto :(
 	$broj_ispita=2;
