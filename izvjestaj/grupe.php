@@ -271,7 +271,11 @@ else if ($tip=="single") {
 				<!--/table></td></tr-->
 			</table>
 			<p>&nbsp;</p>
+			<?
+			if ($grupa>0) {
+			?>
 			<div class="breakafter"></div>
+			<? } ?>
 			<p>&nbsp;</p>
 		<?
 	}
