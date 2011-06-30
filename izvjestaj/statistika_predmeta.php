@@ -16,6 +16,7 @@ global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 

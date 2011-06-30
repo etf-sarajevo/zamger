@@ -29,6 +29,7 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 // Podaci o studentu
