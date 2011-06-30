@@ -215,7 +215,7 @@ while ($r60=mysql_fetch_row($q60)) {
 	if ($r60[1] < time()) {
 		$q70=myquery("SELECT count(*)
 		FROM ispit_termin as it, ispit as i
-		WHERE it.ispit=i.id AND i.predmet=$r60[4] AND i.akademska_godina=$ag AND it.datumvrijeme>=NOW()");
+		WHERE it.ispit=i.id AND i.predmet=$r60[4] AND i.akademska_godina=$ag AND it.deadline>=NOW()");
 		if (mysql_result($q70,0,0)==0) continue;
 	}
 	
