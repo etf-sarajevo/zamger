@@ -23,22 +23,35 @@ $ag = mysql_result($q5,0,0);
 
 if ($_GET["akcija"]=="odjavi") {
 	$termin = intval($_GET['termin']);
-	if ($termin) {
-		$q200 = myquery("select i.predmet, i.akademska_godina from student_ispit_termin as sit, ispit_termin as ist, ispit as i where sit.student=$userid and sit.ispit_termin=$termin and ist.id=$termin and ist.ispit=i.id");
-		if (mysql_num_rows($q200)<1) {
-			niceerror("Već ste ispisani sa termina.");
-			?>
-			<script language="JavaScript">
-			location.href='?sta=student/prijava_ispita';
-			</script>
-			<?
-			return;
-		}
-		$predmet = mysql_result($q200,0,0);
-		$q210 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
-		nicemessage("Uspješno ste odjavljeni sa ispita.");
-		zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
+	$q200 = myquery("select i.predmet, i.akademska_godina, UNIX_TIMESTAMP(ist.deadline) from student_ispit_termin as sit, ispit_termin as ist, ispit as i where sit.student=$userid and sit.ispit_termin=$termin and ist.id=$termin and ist.ispit=i.id");
+	if (mysql_num_rows($q200)<1) {
+		niceerror("Već ste ispisani sa termina.");
+		?>
+		<script language="JavaScript">
+		location.href='?sta=student/prijava_ispita';
+		</script>
+		<?
+		return;
 	}
+	
+	if (mysql_result($q200,0,2) < time() && $_GET['potvrda_odjave'] != "da") {
+		niceerror("Rok za prijavljivanje na ovaj ispit je istekao!");
+		?>
+		<p>Ako se sada odjavite, više se nećete moći ponovo prijaviti za ovaj isti termin! Da li ste sigurni da želite da se odjavite?</p>
+		<?=genform("GET");?>
+		<input type="hidden" name="potvrda_odjave" value="da">
+		<input type="submit" value="Da, odjavi me!">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Nazad" onclick="javascript:location.href='?sta=student/prijava_ispita'">
+		</form>
+		<?
+		return;
+	}
+	
+	$predmet = mysql_result($q200,0,0);
+	$q210 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
+	nicemessage("Uspješno ste odjavljeni sa ispita.");
+	zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
 }
 
 
@@ -86,7 +99,10 @@ if ($_GET["akcija"]=="prijavi") {
 
 // Spisak ispita koji se mogu prijaviti
 
-$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
+$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata 
+	FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk 
+	WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
+	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
 
 
 ?>
@@ -173,9 +189,9 @@ while ($r10=mysql_fetch_row($q10)) {
 
 //slijedeci dio koda sluzi za tabelarni prikaz prijavljenih predmeta
 
-$q60 = myquery("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id
+$q60 = myquery("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
-             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id AND it.datumvrijeme>=NOW()");
+             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id");
 
 ?>
 <br><br>
@@ -194,6 +210,19 @@ $q60 = myquery("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it
 $brojac=1;
 
 while ($r60=mysql_fetch_row($q60)) {
+
+	// Ako je ispit u prošlosti, provjeravamo da li ima još termina da bi se student mogao odjaviti sa prošlog termina
+	if ($r60[1] < time()) {
+		$q70=myquery("SELECT count(*)
+		FROM ispit_termin as it, ispit as i
+		WHERE it.ispit=i.id AND i.predmet=$r60[4] AND i.akademska_godina=$ag AND it.datumvrijeme>=NOW()");
+		if (mysql_result($q70,0,0)==0) continue;
+	}
+	
+	// Takođe ne dozvoljavamo da se student odjavi sa ispita za koje ima ocjenu jer bi to moglo pobrkati izvoz ocjena
+	$q80 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[4] and ocjena>=6");
+	if (mysql_result($q80,0,0)>0) continue;
+
 	?>
 	<tr>
 		<td><?=$brojac?></td>
