@@ -98,8 +98,8 @@ $q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvr
 <tr bgcolor="#999999">
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Predmet</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Rok za prijavu</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
@@ -127,8 +127,8 @@ while ($r10=mysql_fetch_row($q10)) {
 	if (mysql_result($q20,0,0)>0) continue;
 
 	// Da li je položio predmet?
-	$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
-	if (mysql_result($q30,0,0)>0) continue;
+	//$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
+	//if (mysql_result($q30,0,0)>0) continue;
 
 	// Da li je već prijavio ovaj ispit u nekom od termina?
 	$q40 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$id_ispita");
@@ -139,8 +139,8 @@ while ($r10=mysql_fetch_row($q10)) {
 	<tr>
 		<td><?=$brojac?></td>
 		<td><?=$naziv_predmeta?></td>
-		<td align="center"><?=$vrijeme_ispita?></td>
 		<td align="center"><?=$rok_za_prijavu?></td>
+		<td align="center"><?=$vrijeme_ispita?></td>
 		<td align="center"><?=$tip_ispita?></td>
 		<td align="center"><?
 
