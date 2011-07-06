@@ -11,6 +11,8 @@ Za instalaciju je potrebno:
 - MySQL v4.0 ili noviji (relativno jednostavno je prepraviti aplikaciju 
 tako da radi sa MySQL v3.x)
 - PHP v5.0 ili noviji (ponovo, relativno jednostavno portati na PHP 4.x)
+  * Za logging sintaksnih gresaka (korisno prilikom razvoja) potreban je 
+PHP v5.2
 - Web server - testirano samo sa Apache web serverom
 
 
@@ -95,18 +97,20 @@ kroz browser.
 # mkdir /home/zamger/tmp
 # mkdir /home/zamger/zadace
 # mkdir /home/zamger/projekti
+# mkdir /home/zamger/slike
 # chown -R apache:apache /home/zamger
 
 
 
 6. Editujte fajl zamger/lib/config.php. Fajl bi trebalo da bude 
-relativno ocigledan, samo pratite komentare. Ostavite debug poruke 
-aktivne do daljnjeg, kasnije ih mozete iskljuciti. Opciju 
-$conf_files_path postavite na ranije kreirani direktorij za fajlove 
-( /home/zamger ), dok script_path treba biti web root (na primjer: 
-/srv/www/htdocs/zamger ).
+relativno ocigledan, samo pratite komentare. 
 
 # nano zamger/lib/config.php
+
+Ostavite debug poruke aktivne do daljnjeg, kasnije ih mozete iskljuciti. 
+Opciju $conf_files_path postavite na ranije kreirani direktorij za 
+fajlove ( /home/zamger ), dok script_path treba biti web root (na 
+primjer: /srv/www/htdocs/zamger ).
 
 Zamger ima odredjene mogucnosti povezivanja sa Moodle serverom. Ako NE
 zelite da povezujete Zamger sa nekim Moodle serverom, u config.php
