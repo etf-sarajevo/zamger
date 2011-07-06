@@ -73,7 +73,7 @@ $sta = my_escape($_REQUEST['sta']);
 
 if ($_POST['loginforma'] == "1") {
 	$login = my_escape($_POST['login']);
-	$pass = my_escape($_POST['pass']);
+	$pass = $_POST['pass'];
 	
 	if (!preg_match("/[\w\d]/",$login)) {
 		$greska="Nepoznat korisnik";
