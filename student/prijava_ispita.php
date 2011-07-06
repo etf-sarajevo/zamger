@@ -143,8 +143,8 @@ while ($r10=mysql_fetch_row($q10)) {
 	if (mysql_result($q20,0,0)>0) continue;
 
 	// Da li je položio predmet?
-	//$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
-	//if (mysql_result($q30,0,0)>0) continue;
+	$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
+	if (mysql_result($q30,0,0)>0) continue;
 
 	// Da li je već prijavio ovaj ispit u nekom od termina?
 	$q40 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$id_ispita");
