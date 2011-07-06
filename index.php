@@ -14,7 +14,6 @@
 // v4.0.0.1 (2009/04/01) + Dodan link na RSS u header
 // v4.0.9.1.(2009/06/16) + Dodan link na dokumentaciju na sve stranice
 
-
 $uspjeh=0;
 
 
@@ -247,10 +246,45 @@ if ($found==1 && $template==0 && $greska=="") {
 }
 
 
+// Savjet dana
+if ($_POST['loginforma'] == "1" && $userid>0) {
+	// Savjet dana
+	$nasao=0;
+	foreach ($registry as $r) {
+		if ($r[0]=="common/savjet_dana") { $nasao=1; break; }
+	}
+	if ($nasao==1) {
+		$q2 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
+		// Ako nema rezultata, pretpostavljamo 1
+		if (mysql_num_rows($q2)==0 || mysql_result($q2,0,0) != 0) {
+			// Provjeravamo ima li savjeta za ovu vrstu korisnika?
+			$upit="";
+			if ($user_nastavnik) $upit .= "vrsta_korisnika='nastavnik' or ";
+			if ($user_student) $upit .= "vrsta_korisnika='student' or ";
+			if ($user_siteadmin) $upit .= "vrsta_korisnika='siteadmin' or ";
+			if ($user_studentska) $upit .= "vrsta_korisnika='studentska' or ";
+
+			$q3 = myquery("select count(*) from savjet_dana where $upit 0"); // 0 zbog zadnjeg or
+			if (mysql_result($q3,0,0)>0) {
+				?>
+				<script language="JavaScript">
+				function savjet_dana() {
+					var url='index.php?sta=common/savjet_dana';
+					window.open(url,'savjet_dana','width=600,height=600,scrollbars=yes');
+				}
+				</script>
+				<?
+				$onload_funkcija = " onload=\"savjet_dana()\"";
+			}
+		}
+	}
+}
+
+
 // Slijedi template
 
 ?>
-<body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
+<body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF"<?=$onload_funkcija?>>
 
 <script type="text/javascript" src="js/stablo.js"></script> <!-- Cesto koristena skripta -->
 
