@@ -101,6 +101,8 @@ array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
 array("common/raspored1", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/slika", "Slika", "Slika", "SNBA", "2", "0"),
 array("common/pdfraspored", "Prikaz rasporeda u pdf formatu", "PDF_RASPORED", "SNBA", "1", "0"),
+array("common/savjet_dana", "Da li ste znali...", "Da li ste znali...", "SNBA", "0", "0"),
+
 /************************************
  * Haris Agic
 *************************************/
