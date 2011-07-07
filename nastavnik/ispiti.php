@@ -21,9 +21,19 @@
 // v4.1.0.1 (2009/11/23) + Popravljen tipfeler u provjeri da li ispit vec postoji prilikom kreiranja
 
 
+
+  
+function ob_file_callback($buffer)
+{
+	global $sadrzaj_bafera;
+	$sadrzaj_bafera=$buffer;
+}
+
+
 function nastavnik_ispiti() {
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$user_studentska,$conf_files_path;
+global $sadrzaj_bafera;
 
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
@@ -47,9 +57,9 @@ $predmet_naziv = mysql_result($q10,0,0);
 
 // Da li korisnik ima pravo ući u modul?
 
-if (!$user_siteadmin) {
+if (!$user_siteadmin && !$user_studentska) {
 	$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q20)<1 || mysql_result($q10,0,0)=="asistent") {
+	if (mysql_num_rows($q20)<1 || mysql_result($q20,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
@@ -87,8 +97,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	if ($ispit>0) {
 		$finidatum = date("d. m. Y", mysql_result($q30,0,0));
-		$tipispita = mysql_result($q30,0,2);
-		print "<p><b>Masovni unos ocjena za ispit $tipispita, održan $finidatum</b></p>";
+		$tipispita = mysql_result($q30,0,1);
+		print "<p><b>Masovni unos ocjena za ispit ".mysql_result($q30,0,2).", održan $finidatum</b></p>";
 	}
 
 
@@ -249,6 +259,21 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 		return;
 	} else {
+		// Generisem statičku verziju izvještaja predmet
+		$_REQUEST['skrati'] = "da";
+		$_REQUEST['sakrij_imena'] = "da";
+
+		ob_start('ob_file_callback');
+		include("izvjestaj/predmet.php");//ovdje ga ukljucujem
+		eval("izvjestaj_predmet();");
+		ob_end_clean();
+		
+		if (!file_exists("$conf_files_path/izvjestaj_predmet")) {
+			mkdir ("$conf_files_path/izvjestaj_predmet",0777, true);
+		}
+		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY").".html";
+		file_put_contents($filename, $sadrzaj_bafera);
+
 		zamgerlog("masovni rezultati ispita za predmet pp$predmet",4);
 		?>
 		Rezultati ispita su upisani.
