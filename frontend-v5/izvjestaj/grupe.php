@@ -1,0 +1,322 @@
+<?
+
+// IZVJESTAJ/GRUPE - spisak studenata po grupama
+
+// v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_izvjestaj(), spojeni izvjestaji grupe i grupedouble
+// v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
+// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
+// v3.9.1.3 (2008/09/17) + Sortiraj grupe po nazivu; dodana tablica za prisustvo; dodano polje tip; dodan page break (vidljiv prilikom stampanja) izmedju grupa
+// v4.0.0.0 (2009/02/19) + Release
+// v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
+// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
+// v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
+// v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
+// v4.0.9.4 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
+// v4.0.9.5 (2009/10/01) + Kod izvjestaja "double", brojevi indexa unutar grupe nisu bili sortirani a imena jesu
+
+
+
+function izvjestaj_grupe() {
+
+global $userid,$user_siteadmin,$user_studentska;
+
+
+?>
+<p>Univerzitet u Sarajevu<br/>
+Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
+
+<?
+
+
+$predmet = intval($_REQUEST['predmet']);
+$ag = intval($_REQUEST['ag']); // akademska godina
+
+$tip = $_REQUEST['tip'];
+if (intval($_REQUEST['double'])==1 && $tip=="") $tip = "double"; // kompatibilnost unazad
+$komentari = intval($_REQUEST['komentari']);
+$prisustvo = intval($_REQUEST['prisustvo']);
+
+$grupa = intval($_REQUEST['grupa']); // Za samo jednu grupu
+if ($grupa>0) $sql_dodaj = "and id=$grupa"; else $sql_dodaj = "and virtualna=0"; // U suprotnom sakrivamo virtualnu grupu
+
+if ($tip=="") $tip="single";
+
+
+// Naziv predmeta - ovo ujedno provjerava da li predmet postoji
+
+$q10 = myquery("select naziv from predmet where id=$predmet");
+if (mysql_num_rows($q10)<1) {
+	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	biguglyerror("Traženi predmet ne postoji");
+	return;
+}
+$q15 = myquery("select naziv from akademska_godina where id=$ag");
+if (mysql_num_rows($q15)<1) {
+	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	biguglyerror("Tražena godina ne postoji");
+	return;
+}
+
+?>
+<h1><?=mysql_result($q10,0,0)?></h1>
+<h3>Akademska <?=mysql_result($q15,0,0)?> godina - Spisak grupa</h3>
+<?
+
+
+
+// Prava pristupa
+
+$q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
+	zamgerlog("permisije (predmet pp$predmet)",3);
+	biguglyerror("Nemate permisije za pristup ovom izvještaju");
+	return;
+}
+
+
+// Spisak studenata
+// (iz kojeg ćemo vaditi članove grupa, tako da će na kraju ostati oni van svih grupa)
+
+$imeprezime=array();
+$brindexa=array();
+$q30 = myquery("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+while ($r30 = mysql_fetch_row($q30)) {
+	$imeprezime[$r30[0]] = "$r30[1] $r30[2]";
+	$brindexa[$r30[0]] = $r30[3];
+	
+}
+uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+
+
+// Dvije kolone
+
+if ($tip=="double") {
+	print '<table width="100%" border="0">'."\n";
+
+	$parni=0;
+
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
+	$grupe = array();
+	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
+
+	natsort($grupe);
+
+	foreach ($grupe as $id => $naziv) {
+		if ($parni == 0) 
+			print "<tr>\n";
+		else
+			print "</td>\n";
+		?>
+		<td width="12%">&nbsp;</td>
+		<td width="31%" valign="top">
+			<table width="100%" border="1" cellspacing="0" cellpadding="2">
+				<tr><td colspan="2"><b><?=$naziv?></b></td></tr>
+				<tr><td width="80%"><?
+
+		$idovi = array();
+		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			if (!in_array($stud_id,$idovi)) continue;
+			unset($imeprezime[$stud_id]);
+
+			$imena .= "$n. $stud_imepr<br/>\n";
+			$brojevi_indexa .= $brindexa[$stud_id]."<br/>\n";
+			unset($brindexa[$stud_id]);
+			$n++;
+		}
+
+		?><?=$imena?>
+				</td><td width="20%"><?=$brojevi_indexa?></td></tr>
+			</table>
+		<?
+		$imena=$brojevi_indexa="";
+
+		if ($parni==1) {
+			$parni=0;
+			?>
+		</td>
+		<td width="12%">&nbsp;</td></tr>
+		<tr><td colspan="5">&nbsp;</td></tr>
+		<?
+		} else $parni=1;
+	}
+
+	if ($grupa==0 && count($imeprezime)>0) {
+		if ($parni == 0) 
+			print "<tr>\n";
+		else
+			print "</td>\n";
+		?>
+		<td width="12%">&nbsp;</td>
+		<td width="31%" valign="top">
+			<table width="100%" border="1" cellspacing="0" cellpadding="2">
+				<tr><td colspan="2"><b>Nisu ni u jednoj grupi</b></td></tr>
+				<tr><td width="80%"><?
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			print "$n. $stud_imepr<br/>\n";
+			$n++;
+		}
+		?>
+				</td><td width="20%"><?
+		foreach ($brindexa as $stud_id => $brind) {
+			print "$brind<br/>\n";
+		}
+		?>
+				</td></tr>
+			</table>
+		<?
+
+		if ($parni==1) {
+			$parni=0;
+			?>
+		</td>
+		<td width="12%">&nbsp;</td></tr>
+		<tr><td colspan="5">&nbsp;</td></tr>
+		<?
+		} else $parni=1;
+	}
+
+	if ($parni==1) {
+		?>
+		</td>
+		<td width="12%">&nbsp; </td>
+		<td width="31%" valign="top">&nbsp; </td>
+		<td width="12%">&nbsp; </td>
+	</tr>
+	<?
+	}
+	print "</table>\n";
+}
+
+
+// Jedna kolona
+
+else if ($tip=="single") {
+	$nr=3;
+	if ($komentari==1) $nr++;
+	if ($prisustvo==1) $nr+=14;
+
+	$sirina_tabele = "70%";
+	if ($prisustvo==1) $sirina_tabele = "100%";
+
+
+/*	?>
+	<table width="100%" border="0"><tr>
+		<td width="20%">&nbsp;</td>
+		<td width="60%">
+	<?*/
+	print "<center>\n";
+
+	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
+	$grupe = array();
+	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
+
+	natsort($grupe);
+
+	foreach ($grupe as $id => $naziv) {
+		?>
+			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
+				<tr><td colspan="<?=$nr?>" align="center"><b><?=strtoupper($naziv)?></b></td></tr>
+				<tr><td width="40"><b>R. br.</b></td><td><b>Prezime i ime</b></td><td width="80"><b>Br. indeksa</b></td>
+		<?
+
+		if ($prisustvo>0) { ?><td colspan="7" align="center"><b>I semestar</b></td><td colspan="7" align="center"><b>II semestar</b></td><? }
+
+		if ($komentari>0) { ?><td align="center"><b>Komentari</b></td><? }
+		print "</tr>\n";
+
+		$idovi = array();
+		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			if (!in_array($stud_id,$idovi)) continue;
+			unset($imeprezime[$stud_id]);
+
+			if ($brindexa[$stud_id]=="") $brindexa[$stud_id]="&nbsp;";
+
+			$komentar="";
+			if ($komentari>0) {
+				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id order by id");
+				$i=0;
+				while ($r402 = mysql_fetch_row($q402)) {
+					if ($i>0) $komentar .= "<br/>\n";
+					$i=1;
+					$komentar .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
+				}
+				if (mysql_num_rows($q402)<1) $komentar = "&nbsp;";
+			}
+
+			?>
+				<tr>
+					<td><?=$n++?></td>
+					<td><?=$stud_imepr?></td>
+					<td><?=$brindexa[$stud_id]?></td>
+			<?
+			if ($prisustvo>0)
+				for ($i=0; $i<14; $i++) print "<td>&nbsp;</td>";
+			if ($komentari>0)
+				print "<td>$komentar</td>\n";
+			print "</tr>\n";
+		}
+
+		?>
+				<!--/table></td></tr-->
+			</table>
+			<p>&nbsp;</p>
+			<?
+			if ($grupa == 0) {
+			?>
+			<div class="breakafter"></div>
+			<? } ?>
+			<p>&nbsp;</p>
+		<?
+	}
+
+	if ($grupa==0 && count($imeprezime)>0) {
+		?>
+			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
+				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
+				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
+		<?
+
+		$n=1;
+		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			?>
+				<tr>
+					<td><?=$n++?></td>
+					<td><?=$stud_imepr?></td>
+					<td><?=$brindexa[$stud_id]?></td>
+			<?
+			print "</tr>\n";
+		}
+
+		?>
+				<!--/table></td></tr-->
+			</table>
+			<p>&nbsp;</p>
+		<?
+		
+	}
+
+/*	?>
+		</td>
+		<td width="20%">&nbsp;</td>
+	</tr></table>
+	<?*/
+	print "</center>";
+}
+
+}
+
+
+
+?>
