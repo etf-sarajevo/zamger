@@ -29,6 +29,23 @@ class Person {
 		return $p;
 	}
 
+	public static function fromLogin($login) {
+		$q1 = DB::query("select o.id, o.ime, o.prezime, o.brindexa from osoba as o, auth as a where o.id=a.id and a.login='$login'");
+		if (mysql_num_rows($q1) < 1) {
+			throw new Exception("nepoznata osoba");
+		}
+		
+		$p = new Person;
+		$p->id = mysql_result($q1,0,0);
+		$p->name = mysql_result($q1,0,1);
+		$p->surname = mysql_result($q1,0,2);
+		$p->studentIdNr = mysql_result($q1,0,3);
+		$p->login = $login;
+		// TODO dodati ostalo što neće ići u ExtendedPerson - odlučiti
+		
+		return $p;
+	}
+
 	public static function search($query) {
 		if (!preg_match("/\w/",$query)) { return array(); }
 

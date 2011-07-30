@@ -14,6 +14,7 @@ require_once("Config.php"); // pomjeriti u index.php?
 
 require_once(Config::$backend_path."core/Portfolio.php");
 require_once(Config::$backend_path."core/RSS.php");
+require_once(Config::$backend_path."core/Util.php");
 
 // FIXME sve ispod mora biti opcionalno
 require_once(Config::$backend_path."lms/homework/Homework.php");
@@ -176,15 +177,11 @@ foreach ($obavijesti as $o) {
 	// Ako je tekst obavještenja prevelik, skraćujemo
 	$tekst = $o->shortText;
 	if ($tekst == "") $tekst = $o->longerText;
+
 	$skracen=false;
-	if (strlen($tekst)>200) {
-		$pos = strpos($tekst," ",200);
-		if ($pos > 220) $pos = 220;
-		if ($pos > 0) { // ako je 0 znači da nema razmaka poslije 200. znaka
-			$tekst = substr($tekst,0,$pos)."...";
-			$skracen = true;
-		}
-	}
+	$tmp = Util::ellipsize($tekst, 200 /* dužina teksta */, 20 /* soft limit za dužinu riječi */);
+	if ($tmp != $tekst) $skracen=true; else $skracen=false;
+	$tekst = $tmp;
 	
 	// Treba li dodati link na dalje?
 	if ( $skracen || ($o->shortText != "" && $o->longerText != "") )
@@ -230,7 +227,7 @@ foreach ($poruke as $p) {
 
 	// Skraćujemo naslov ako treba
 	$naslov = $p->subject;
-	if (strlen($naslov)>30) $naslov = substr($naslov,0,28)."...";
+	if (strlen($naslov)>30) $naslov = Util::substr_utf8($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
 	print "<li><a href=\"?sta=common/inbox&poruka=".$p->id."\">$naslov</a><br/>($vrijeme)</li>\n";

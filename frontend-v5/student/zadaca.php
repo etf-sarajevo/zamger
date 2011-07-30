@@ -15,8 +15,9 @@ require_once(Config::$backend_path."core/CourseUnit.php");
 require_once(Config::$backend_path."core/AcademicYear.php");
 require_once(Config::$backend_path."core/Portfolio.php");
 require_once(Config::$backend_path."core/Person.php");
+require_once(Config::$backend_path."core/Util.php");
 
-// Pošto je ovo ustvari dio lms/homework modula, ovo ispod ne treba biti opcionalno
+// Pošto je ova skripta ustvari dio lms/homework modula, ovo ispod ne treba biti opcionalno
 require_once(Config::$backend_path."lms/homework/Homework.php");
 require_once(Config::$backend_path."lms/homework/Assignment.php");
 require_once(Config::$backend_path."lms/homework/ProgrammingLanguage.php");
@@ -300,7 +301,7 @@ if ($zadaca->attachment) {
 		$the_file = "$lokacijazadaca/$id_zadace/".$a->filename;
 		if ($a->filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
 			$vrijeme = date("d. m. Y. h:i:s", $a->time);
-			$velicina = nicesize(filesize($the_file));
+			$velicina = Util::nicesize(filesize($the_file));
 			// Funkciju getmimeicon iz libvedran prebaciti u neku od backend klasa
 			$icon = "images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "index.php?sta=common/attachment&zadaca=$id_zadace&zadatak=$trenutni_zadatak";

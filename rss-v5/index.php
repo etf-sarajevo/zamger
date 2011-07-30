@@ -1,5 +1,5 @@
 <?
- 
+
 // ------------------------------------------------
 // rss-v5 - RSS feed za studente
 // ------------------------------------------------
@@ -12,6 +12,7 @@ require_once(Config::$backend_path."core/DB.php");
 require_once(Config::$backend_path."core/Person.php");
 require_once(Config::$backend_path."core/Portfolio.php");
 require_once(Config::$backend_path."core/RSS.php");
+require_once(Config::$backend_path."core/Util.php");
 
 // FIXME sve ispod mora biti opcionalno
 require_once(Config::$backend_path."lms/CourseOptions.php");
@@ -26,17 +27,6 @@ require_once(Config::$backend_path."lms/moodle/MoodleID.php");
 require_once(Config::$backend_path."lms/moodle/MoodleDB.php");
 require_once(Config::$backend_path."lms/moodle/MoodleItem.php");
 require_once(Config::$backend_path."lms/moodle/MoodleConfig.php");
-
-
-
-// Substr funkcija koja nema problema sa prelomom Unicode karaktera - prebaciti u util?
-function z_substr($string, $start, $len) {
-	do {
-		$result = substr($string, $start, $len);
-		$len++;
-	} while (ord(substr($result, strlen($result)-1, 1)) > 128);
-	return $result;
-}
 
 
 
@@ -224,7 +214,7 @@ foreach ($poruke as $p) {
 
 	// Skraćujemo naslov ako treba
 	$naslov = $p->subject;
-	if (strlen($naslov)>30) $naslov = substr($naslov,0,28)."...";
+	if (strlen($naslov)>30) $naslov = Util::substr_utf8($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 	
 	// Ukidam nove redove u potpunosti
@@ -267,7 +257,7 @@ foreach ($obavijesti as $o) {
 	// Koristimo prvih 30 znakova teksta kao naslov
 	$naslov = $o->shortText;
 	if ($naslov == "") $naslov = $o->longerText;
-	if (strlen($naslov)>30) $naslov = substr($naslov,0,28)."...";
+	if (strlen($naslov)>30) $naslov = Util::substr_utf8($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 	
 	// Ukidam nove redove u potpunosti
@@ -306,7 +296,7 @@ foreach ($predmeti as $p) {
 		// Skraćeni naslov
 		$naslov = $mdl->text;
 		if (strlen($naslov)>30) 
-			$naslov = z_substr($naslov,0,28)."...";
+			$naslov = Util::substr_utf8($naslov,0,28)."...";
 
 		if ($mdl->type == "label") {
 			$code_poruke["mo".$mdl->id] = genRssItem(
