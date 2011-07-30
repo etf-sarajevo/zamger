@@ -7,6 +7,12 @@ function student_prosjeci() {
 
 global $userid, $conf_naziv_institucije;
 
+require_once("Config.php");
+
+// Backend stuff
+require_once(Config::$backend_path."core/Portfolio.php");
+require_once(Config::$backend_path."core/Programme.php");
+
 
 ?>
 <h2>Prosjeci</h2>
@@ -20,21 +26,33 @@ if (true) {
 	// Ovo će dati neprecizne rezultate u slučaju da je student mijenjao studij u toku studiranja
 	// (objašnjenje u komentaru drugog dijela)
 
-	$maxgod=0;
-	$q10 = myquery("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id");
-	$ciklusi=array();
-	while ($r10 = mysql_fetch_row($q10)) {
-		$ciklus=$r10[0]; $semestar=$r10[1]; $ocjena=$r10[2];
+	$pfs = Portfolio::getAllForStudent($userid);
+	$ciklusi = array();
+	$predmeti = array();
+	foreach ($pfs as $pf) {
+		// Sprječavamo ponavljanje predmeta (ako je student više puta slušao predmet)
+		if (in_array($pf->courseUnitId, $predmeti)) continue;
+		$predmeti[] = $pf->courseUnitId;
 
-		if (!in_array($ciklus,$ciklusi)) $ciklusi[]=$ciklus;
-		$suma_ciklus[$ciklus] += $ocjena; $broj_ciklus[$ciklus]++;
-		$suma_ciklus_semestar["$ciklus-$semestar"] += $ocjena; $broj_ciklus_semestar["$ciklus-$semestar"]++;
-	
-		if ($r10[1]/2>$maxgod) $maxgod=$r10[1]/2;
-	//print "Ocjena: $r10[0] ($r10[1])<br/>";
+		// Preskačemo predmete koje student nije položio
+		$ocjena = $pf->getGrade();
+		if ($ocjena == -1) continue;
+
+		$semestar = $pf->courseOffering->semester;
+
+		// Kreiramo podatke po ciklusima
+		$p = Programme::fromId($pf->courseOffering->programmeId);
+		$ciklus = $p->type->cycle;
+
+		if (!in_array($ciklus, $ciklusi)) $ciklusi[]=$ciklus;
+		$suma_ciklus[$ciklus] += $ocjena;
+		$broj_ciklus[$ciklus]++;
+		$suma_ciklus_semestar["$ciklus-$semestar"] += $ocjena; 
+		$broj_ciklus_semestar["$ciklus-$semestar"]++;
+		
+		// Broj godina studija
+		if ($semestar/2 > $maxgod) $maxgod = $semestar/2;
 	}
-	//$maxgod=intval($maxgod);
-
 
 	sort($ciklusi);
 	foreach ($ciklusi as $ciklus) {

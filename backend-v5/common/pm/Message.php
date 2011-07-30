@@ -37,7 +37,7 @@ class Message {
 	}
 
 	// Tests if this message is for specified person
-	public function forPerson($person, $isStudent = true, $currentEnrollment = -1) {
+	public function forPerson($person, $isStudent = true) {
 		// Cache some variables to optimise getLatestForPerson
 		if (Message::$cachePerson != $person) {
 			Message::$cachePerson = $person;

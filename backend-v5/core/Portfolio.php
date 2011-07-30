@@ -12,7 +12,7 @@ require_once(Config::$backend_path."core/ScoringElement.php");
 
 class Portfolio {
 	public $studentId, $courseOfferingId, $courseUnitId, $academicYearId;
-	public $courseUnit;
+	public $courseUnit, $courseOffering;
 	public $grade, $gradeDate; /* although these are public, please use getGrade() to update */
 	
 	// Da li je $student upisan na $courseOffering
@@ -27,8 +27,10 @@ class Portfolio {
 		
 		// To be determined later, if needed:
 		$p->courseUnitId = 0;
-		$p->courseUnit = 0;
 		$p->academicYearId = 0;
+
+		$p->courseUnit = 0;
+		$p->courseOffering = 0;
 		$p->grade = 0;
 		$p->gradeDate = 0;
 		return $p;
@@ -211,6 +213,7 @@ LIMIT $limit");
 			$semester = $r10[0];
 
 			$p = new Portfolio;
+			$p->studentId = $studentId;
 			$p->grade = 0;
 			$p->gradeDate = 0;
 			$p->courseOfferingId = $r10[1];
@@ -224,6 +227,42 @@ LIMIT $limit");
 			$p->courseUnit->shortName = $r10[5];
 			// TODO dodati ostalo
 			
+			array_push($portfolios, $p);
+		}
+		return $portfolios;
+	}
+	
+	// List of all portfolios for courses ever attended by student, ordered by academic year, semester, then alphabetically
+	public static function getAllForStudent($studentId) {
+		if ($winterSemester) $modulo=0; else $modulo=1;
+		$q10 = DB::query("select pk.id, p.id, pk.akademska_godina, p.naziv, p.kratki_naziv, pk.studij, pk.semestar, pk.obavezan from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$studentId and sp.predmet=pk.id and pk.predmet=p.id order by pk.akademska_godina, pk.semestar, p.naziv");
+		$portfolios = array();
+		$semester = 0;
+		while ($r10 = mysql_fetch_row($q10)) {
+
+			$p = new Portfolio;
+			$p->studentId = $studentId;
+			$p->grade = 0;
+			$p->gradeDate = 0;
+			$p->courseOfferingId = $r10[0];
+			$p->courseUnitId = $r10[1];
+			$p->academicYearId = $r10[2];
+			// TODO dodati ostalo
+			
+			$p->courseUnit = new CourseUnit;
+			$p->courseUnit->id = $r10[1];
+			$p->courseUnit->name = $r10[3];
+			$p->courseUnit->shortName = $r10[4];
+			// TODO dodati ostalo
+			
+			$p->courseOffering = new CourseOffering;
+			$p->courseOffering->id = $r10[0];
+			$p->courseOffering->courseUnitId = $r10[1];
+			$p->courseOffering->academicYearId = $r10[2];
+			$p->courseOffering->programmeId = $r10[5];
+			$p->courseOffering->semester = $r10[6];
+			if ($r10[7]==1) $p->courseOffering->mandatory = true; else $p->courseOffering->mandatory = false;
+
 			array_push($portfolios, $p);
 		}
 		return $portfolios;
