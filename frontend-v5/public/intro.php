@@ -3,13 +3,6 @@
 // PUBLIC/INTRO - uvodna stranica za javni dio sajta
 // Editujte funkciju public_intro() da biste prikazali nešto drugo na početnoj stranici zamgera
 
-// v3.9.1.0 (2008/02/09) + Novi modul: public/intro, prikazuje stablo predmeta i login formu
-// v3.9.1.1 (2008/03/08) + Popravljena redirekcija
-// v3.9.1.2 (2008/11/21) + Dodajem link na dokumentaciju
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/05/02) + Posto botovi stalno napadaju izvjestaj/predmet, dodajem opciju "skrati" koja puno brze kreira izvjestaj
-
-
 
 function public_intro() {
 
@@ -38,6 +31,9 @@ function public_intro() {
 
 function login_forma() {
 	global $greska, $registry;
+	
+	require_once("Config.php");
+	require_once(Config::$backend_path."lms/poll/Poll.php");
 
 	// Redirekciju na isti URI vršimo samo ako je greška = istek sesije
 	$uri=$_SERVER['PHP_SELF'];
@@ -49,8 +45,12 @@ function login_forma() {
 	$anketa_aktivna=0;
 	foreach ($registry as $r) {
 		if ($r[0]=="public/anketa" && $r[5]==0) {
-			$q01 = myquery("select id from anketa_anketa where aktivna = 1");
-			if (mysql_num_rows($q01)>0) $anketa_aktivna=1;
+			$anketa_aktivna = true; // Pretpostavljamo da jeste
+			try{
+				$poll = Poll::getActiveForAllCourses();
+			} catch(Exception $e) {
+				$anketa_aktivna = false; // ipak nije
+			}
 		}
 	}
 

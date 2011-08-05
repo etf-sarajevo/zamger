@@ -8,7 +8,21 @@ function public_anketa() {
 	global $_lv_; 
 
 
-	// Predmet i a.g. mogu biti opcionalno parametri
+	require_once("Config.php");
+
+	// Backend stuff
+	require_once(Config::$backend_path."core/CourseUnit.php");
+	require_once(Config::$backend_path."core/CourseUnitYear.php");
+	require_once(Config::$backend_path."core/Portfolio.php");
+
+	// Pošto je ova skripta ustvari dio lms/poll modula, ovo ispod ne treba biti opcionalno
+	require_once(Config::$backend_path."lms/poll/Poll.php");
+	require_once(Config::$backend_path."lms/poll/PollResult.php");
+	require_once(Config::$backend_path."lms/poll/PollQuestion.php");
+	require_once(Config::$backend_path."lms/poll/PollAnswer.php");
+
+
+	// Predmet i a.g. mogu biti parametri, a ako nisu zadati koristi se aktuelna anketa za sve predmete
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 
@@ -18,9 +32,13 @@ function public_anketa() {
 		$ok = false;
 		if ($user_studentska || $user_siteadmin) $ok = true;
 
+		$cuy = new CourseUnitYear;
+		$cuy->courseUnitId = $predmet;
+		$cuy->academicYearId = $ag;
+		
 		if ($predmet>0 && $ag>0 && $user_nastavnik) {
-			$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q10)>0 && mysql_result($q10,0,0)!="asistent") $ok = true;
+			$pristup = $cuy->teacherAccess($userid);
+			if ($pristup != "nema" && $pristup != "asistent") $ok = true;
 		}
 
 		if (!$ok) {
@@ -32,47 +50,25 @@ function public_anketa() {
 
 	// Da li je dat ID ankete kao parametar?
 	if (isset($_REQUEST['anketa'])) {
-		$id_ankete = intval($_REQUEST['anketa']);
+		$poll = Poll::fromId(intval($_REQUEST['anketa']));
 
 	} else {
-		if ($predmet>0) 
-			$sql_dodaj = " and ((ap.predmet=$predmet and ap.akademska_godina=$ag) or ap.predmet=0)";
-		else
-			$sql_dodaj = " and aa.akademska_godina=ag.id and ag.aktuelna=1";
-
-		// Nije, uzimamo trenutno aktivnu anketu
-		$q20 = myquery("select aa.id from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 $sql_dodaj order by aa.id desc");
-		if (mysql_num_rows($q20)==0) {
+		try {
+			if ($predmet>0) 
+				$poll = Poll::getActiveForCourse($predmet, $ag);
+			else
+				$poll = Poll::getActiveForAllCourses();
+				
+		} catch(Exception $e) {
 			biguglyerror("Anketa trenutno nije aktivna.");
 			return;
 		}
-		$id_ankete = mysql_result($q20,0,0);
 	}
 
-	// Metapodaci o anketi
-	$q30 = myquery("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), opis from anketa_anketa where id=$id_ankete");
-	if (mysql_num_rows($q30)==0) {
-		biguglyerror("Ne postoji anketa sa tim IDom");
-		return;
-	}
-	$naziv_ankete = mysql_result($q30,0,0);
-	$otvaranje = mysql_result($q30,0,1);
-	$zatvaranje = mysql_result($q30,0,2);
-	$opis_ankete = nl2br(mysql_result($q30,0,3));
-	
 
 	// Da li je istekao rok?
-	if ($_GET['akcija'] != "preview" && (time () > $zatvaranje || time () < $otvaranje)) {
+	if ($_GET['akcija'] != "preview" && (time () > $poll->closeDate || time () < $poll->openDate)) {
 		biguglyerror("Anketa trenutno nije aktivna");
-		return;
-	}
-
-	// Da li je anketa aktivna? 
-	// Ako je aktivna samo za određeni predmet, on mora biti zadat kao parametar
-	$q40 = myquery("select aktivna from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet=0)");
-	$anketa_aktivna = mysql_result($q40,0,0);
-	if ($_GET['akcija'] != "preview" && (mysql_num_rows($q40)<1 || $anketa_aktivna==0)) {
-		biguglyerror("Anketa trenutno nije aktivna!");
 		return;
 	}
 
@@ -98,8 +94,9 @@ function public_anketa() {
 		$hash_code = my_escape($_POST['hash_code']);
 
 		// Provjeravamo da li kod postoji i da li je već iskorišten (polje zavrsena)
-		$q50 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code' and anketa=$id_ankete");
-		if (mysql_num_rows($q50)==0) {
+		try {
+			$pr = PollResult::fromHash($hash_code);
+		} catch (Exception $e) {
 			// Dati hash ne postoji u bazi tj. student pokušava da izmisli hash :P
 			?>
 			<center>
@@ -109,10 +106,27 @@ function public_anketa() {
 			<?
 			return;
 		}
+		
+		if ($pr->pollId != $poll->id) {
+			// Kod je za drugu anketu
+			// Dati hash ne postoji u bazi tj. student pokušava da izmisli hash :P
+			?>
+			<center>
+				<p>Greška: neispravan kod '<?=$hash_code?>'.</p>
+				<a href="index.php">Nazad na početnu stranicu</a>
+			</center>
+			<?
+			return;
+		}
+
+		// Postavljamo predmet i ag iz PollResult
+		$predmet = $pr->courseUnitId;
+		$ag = $pr->academicYearId;
+/*$q50 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code' and anketa=$id_ankete");
 	
 		$id_rezultata = mysql_result($q50,0,0);
 		$predmet = mysql_result($q50,0,1);
-		$zavrsena = mysql_result($q50,0,2);
+		$zavrsena = mysql_result($q50,0,2);*/
 
 
 	// Student je logiran, pa ćemo pokušati iskoristiti njegove kredencijale
@@ -124,27 +138,26 @@ function public_anketa() {
 		}
 		
 		// Da li student sluša predmet?
-		$q60 = myquery("select pk.studij, pk.semestar from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		if (mysql_num_rows($q60)<1) {
-			zamgerlog("student ne slusa predmet pp$predmet", 3);
-			biguglyerror("Niste upisani na ovaj predmet");
-			return;
-		}
+		$pf = Portfolio::fromCourseUnit($userid, $predmet, $ag); // Ako ne, baciće izuzetak
 
-		// Određujemo studij i semestar radi insertovanja u tabelu anketa_rezultat
-		$studij = mysql_result($q60,0,0);
-		$semestar = mysql_result($q60,0,1);
-	
-		$q70 = myquery("SELECT id, zavrsena FROM anketa_rezultat WHERE student=$userid and anketa=$id_ankete");
+		try {
+			$pr = PollResult::fromStudentAndPoll($userid, $poll->id);
+		} catch(Exception $e) {
+			// Aktuelni studij i semestar za studenta
+			$en = Enrollment::getCurrentForStudent($userid);
 
-		// Kreiramo zapis u tabeli anketa_rezultat
-		if (mysql_num_rows($q70)==0) {
-			$q80 = myquery("insert into anketa_rezultat set anketa=$id_ankete, vrijeme=NOW(), zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=$userid");
-			$q70 = myquery("SELECT id, zavrsena FROM anketa_rezultat WHERE student=$userid and anketa=$id_ankete");
+			// Ne postoji rezultat za ovog studenta, kreiramo novi
+			$pr = new PollResult;
+			$pr->pollID = $poll->id;
+			$pr->finished = false;
+			$pr->courseUnitId = $predmet;
+			$pr->academicYearID = $ag;
+			$pr->programmeId = $en->programmeId;
+			$pr->semester = $en->semester;
+			$pr->studentId = $userid;
+			
+			$pr->add(); // Dodavanje u bazu
 		}
-		
-		$id_rezultata = mysql_result($q70,0,0);
-		$zavrsena = mysql_result($q70,0,1);
 		
 		$_POST['akcija'] = "prikazi"; // Možemo odmah prikazati anketu
 
@@ -193,56 +206,36 @@ function public_anketa() {
 	// Završetak i prijem ankete
 	if ($_POST['akcija'] == "finish" && check_csrf_token()) {
 		
-		if ($_POST['odbija'] != "da") {
-			$q300 = myquery("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
-			while ($r300 = mysql_fetch_row($q300)) {
-				$pitanje = $r300[0];
-				$tip = $r300[1];
-				
-				if ($tip == 1) { // Rank pitanje
-					$izbor = intval($_POST['izbor'.$pitanje]);
-					if ($izbor > 0) { // Odgovor N/A ima vrijednost 0
-						$q310 = myquery("insert into anketa_odgovor_rank set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
-					}
-				}
-				
-				if ($tip == 2) { // Esejsko pitanje
-					$komentar = my_escape($_POST['komentar'.$pitanje]);
-					if (preg_match("/\w/", $_POST['komentar'.$pitanje]))  // Ima li slova u komentaru?
-						$q320 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
-				}
-				
-				if ($tip == 3) { // MCSA
-					$izbor = intval($_POST['izbor'.$pitanje]);
-					$q330 = myquery("select dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje and id=$izbor");
-					if (mysql_result($q330,0,0)==1) {
-						$dopisani_odgovor = my_escape($_POST["dopis$pitanje-$odgovor"]);
-						$q590 = myquery("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
-					}
-					$q590 = myquery("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
-				}
-				
-				if ($tip == 4) { // MCMA
-					$izbor = intval($_POST['izbor'.$pitanje]);
-					$q340 = myquery("select id, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje");
-					while ($r340 = mysql_fetch_row($q340)) {
-						$odgovor = $r340[0];
-						if ($_POST["izbor$pitanje-$odgovor"]) {
-							if ($r340[1] == 1) { // Odgovor je dopisani
-								$dopisani_odgovor = my_escape($_POST["dopis$pitanje-$odgovor"]);
-								$q590 = myquery("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
-							}
-							$q590 = myquery("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$odgovor");
+		if ($_POST['odbija'] != "da") { // Regularno popunjena anketa
+			$pitanja = PollQuestion::getAllForPoll($poll->id);
+			foreach ($pitanja as $pi) {
+				switch ($pi->typeId) {
+					case 1: // Rank pitanje
+						$pi->setAnswerRank($pr->id, intval($_POST['izbor'.$pi->id]))
+						break;
+					case 2: // Esejsko pitanje
+						$pi->setAnswerEssay($pr->id, my_escape($_POST['komentar'.$pi->id]))
+						break;
+					case 3: // MCSA
+						$izbor = intval($_POST['izbor'.$pi->id]);
+						$pi->setAnswerChoice($pr->id, intval($_POST['izbor'.$pi->id]), my_escape($_POST['dopis'.$pi->id."-$izbor"]))
+						break;
+					case 4: // MCMA
+						// Moramo testirati request varijable za sve moguće odgovore
+						// Zato prvo skidamo listu odgovora
+						$odgovori = PollAnswer::forQuestion($pi->id);
+						foreach ($odgovori as $o) {
+							if ($_POST["izbor".$pi->id."-".$o->id])
+								$pi->setAnswerChoice($pr->id, $o->id, my_escape($_POST["dopis".$pi->id."-".$o->id]));
 						}
-					}
+					break;
 				}
-
-				// Za naslov i podnaslov ne radimo ništa ;)
 			}
 		}
 		
 		// nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
-		$q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
+		$pr->finished = true;
+		$pr->update();
 		
 		zamgerlog("popunjena anketa za predmet pp$predmet", 2);
 
@@ -261,13 +254,13 @@ function public_anketa() {
 		if ($predmet==0) { // ovo se može desiti samo ako je preview!
 			$naziv_predmeta = "NAZIV PREDMETA";
 		} else {
-			$q190 = myquery("select naziv from predmet where id=$predmet");
-			$naziv_predmeta = mysql_result($q190,0,0);
+			$cu = CourseUnit::fromId($predmet);
+			$naziv_predmeta = $cu->name;
 		}
 		
 		?>
 		<center>
-			<h2><?=$naziv_ankete?> (<?=$naziv_predmeta?>)</h2>
+			<h2><?=$poll->name?> (<?=$naziv_predmeta?>)</h2>
 		</center>
 		<?=genform("POST")?>
 		<input type="hidden" name="akcija" value="finish">
@@ -275,7 +268,7 @@ function public_anketa() {
 		<table align="center" cellpadding="4" border="0" >
 			<tr>
 				<td colspan = '7'>
-					<?=$opis_ankete?>
+					<?=$poll->description?>
 					<br />&nbsp;<br />
 				</td>
 			</tr>
@@ -289,14 +282,13 @@ function public_anketa() {
 			<?
 
 
-
-			$q200 = myquery("select id, tip_pitanja, tekst from anketa_pitanje where anketa=$id_ankete order by id");
+			$pitanja = PollQuestion::getAllForPoll($poll->id);
 			$boja = "#FFFFFF";
-			while ($r200 = mysql_fetch_row($q200)) {
-				ubaci_pitanje($r200[0], $r200[1], $r200[2], $boja);
+			foreach ($pitanja as $pi) {
+				ubaci_pitanje($pi, $boja);
 				if ($boja == "#FFFFFF") $boja = "#CCCCFF"; else $boja = "#FFFFFF";
 				// Resetujemo boju poslije naslova
-				if ($r200[1]==5 || $r200[1]==6) $boja = "#FFFFFF";
+				if ($pi->typeId == 5 || $pi->typeId == 6) $boja = "#FFFFFF";
 			}
 
 			/*
@@ -354,12 +346,12 @@ function public_anketa() {
 }//  ----------------- KRAJ FUNKCIJE PUBLIC_ANKETA -------------
 
 
-// Nova pomoćna funkcija, samo ubacuje pitanje :)
-function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
-	$tekst = nl2br($tekst);
+// Pomoćna funkcija, samo ubacuje pitanje :)
+function ubaci_pitanje($pitanje, $bgcolor) {
+	$tekst = nl2br($pitanje->text);
 
 	// Tip 1: rank pitanje
-	if ($tip==1) {
+	if ($pitanje->typeId == 1) {
 		?>
 		<tr bgcolor="<?=$bgcolor?>">
 			<td><?=$tekst?></td>
@@ -374,7 +366,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 	}
 
 	// Tip 2: esejsko pitanje
-	if ($tip==2) {
+	if ($pitanje->typeId == 2) {
 		?>
 		<tr bgcolor="<?=$bgcolor?>">
 			<td colspan='7' align='center'>
@@ -387,7 +379,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 
 	// Tip 3: MCSA
 	// Tip 4: MCMA
-	if ($tip==3 || $tip==4) {
+	if ($pitanje->typeId == 3 || $pitanje->typeId == 4) {
 		?>
 		<tr bgcolor="<?=$bgcolor?>">
 			<td colspan="7">
@@ -395,17 +387,16 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 				<?
 
 				// Spisak izbora
-				$q300 = myquery("select id, izbor, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$id");
-				while ($r300 = mysql_fetch_row($q300)) {
-					if ($r300[2]==1)
+				$odgovori = PollAnswer::forQuestion($pitanje->id);
+				foreach ($odgovori as $o) {
+					if ($o->allowsWritein)
 						$dopis = " (dopisati): <input type=\"text\" size=\"30\" name=\"dopis$id-$r300[0]\">";
 					else $dopis="";
 	
-					if ($pitanje['tip_pitanja']==3) { // radio button
+					if ($pi->typeId == 3) // MCSA - radio button
 						print "<input type='radio' name='izbor$id' value='$r300[0]'> $r300[1]$dopis<br>\n";
-					} else {
+					else
 						print "<input type='checkbox' name='izbor$id-$r300[0]'> $r300[1]$dopis<br>\n";
-					}
 				}
 				?>
 			</td>
@@ -414,7 +405,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 	}
 
 	// Tip 5: Naslov
-	if ($tip==5) {
+	if ($pitanje->typeId == 5) {
 		$tekst = strtoupper($tekst);
 		$tekst = str_replace(array("č","ć","š","đ","ž"), array("Č","Ć","Š","Đ","Ž"), $tekst);
 		?>
@@ -426,7 +417,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 	}
 
 	// Tip 6: Podnaslov
-	if ($tip==6) {
+	if ($pitanje->typeId == 6) {
 		?>
 		<tr>
 			<td colspan="7"><?=$tekst?></td>
