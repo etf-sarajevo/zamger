@@ -30,7 +30,7 @@ class Poll {
 	// Gets just one poll that is active for all courses in current academic year 
 	// (usually there aren't more such polls)
 	public static function getActiveForAllCourses() {
-		$q10 = DB::query("select aa.id, aa.naziv, aa.opis, UNIX_TIMESTAMP(aa.datum_otvaranja), UNIX_TIMESTAMP(aa.datum_zatvaranja), aa.editable from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where where aa.id=ap.anketa and ap.aktivna=1 and ap.predmet=0 and aa.akademska_godina=ag.id and ag.aktuelna=1 order by id desc limit 1");
+		$q10 = DB::query("select aa.id, aa.naziv, aa.opis, UNIX_TIMESTAMP(aa.datum_otvaranja), UNIX_TIMESTAMP(aa.datum_zatvaranja), aa.editable from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 and ap.predmet=0 and aa.akademska_godina=ag.id and ag.aktuelna=1 order by id desc limit 1");
 		if (mysql_num_rows($q10)<1) {
 			throw new Exception("no currently active poll");
 		}

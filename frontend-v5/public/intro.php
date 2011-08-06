@@ -32,9 +32,6 @@ function public_intro() {
 function login_forma() {
 	global $greska, $registry;
 	
-	require_once("Config.php");
-	require_once(Config::$backend_path."lms/poll/Poll.php");
-
 	// Redirekciju na isti URI vršimo samo ako je greška = istek sesije
 	$uri=$_SERVER['PHP_SELF'];
 
@@ -45,6 +42,8 @@ function login_forma() {
 	$anketa_aktivna=0;
 	foreach ($registry as $r) {
 		if ($r[0]=="public/anketa" && $r[5]==0) {
+			require_once("Config.php");
+			require_once(Config::$backend_path."lms/poll/Poll.php");
 			$anketa_aktivna = true; // Pretpostavljamo da jeste
 			try{
 				$poll = Poll::getActiveForAllCourses();
