@@ -1,3 +1,15 @@
+<?php
+	if (ini_get("short_open_tag") != 1) {
+		?>
+		<html><head></head>
+		<body>
+		<p><font color='red'><b>GREŠKA: Potrebno aktivirati opciju short_open_tag</b></font></p>
+		<p>Molimo vas da još jednom pročitate uputstva za instalaciju.</p>
+		</body></html>
+		<?
+		exit;
+	}
+?>
 <?
 
 
@@ -297,7 +309,7 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 			<font color="#FFFFFF" size="5">
 			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br/>
 			<font color="#FFFFFF" size="1">
-			<a href="doc/zamger-uputstva-40-nastavnik.pdf" target="_new">
+			<a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
 			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" align="center">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
 			<a href="http://f.etf.unsa.ba:3000/projects/zamger/issues" target="_new">
