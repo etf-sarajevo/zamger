@@ -16,6 +16,7 @@ class Config {
 
 	// Konfiguracija backenda
 	public static $backend_path = "";
+	public static $backend_file_path = "";
 	public static $backend_url = ""; // API URL - nije još napravljeno
 
 	public static $dbhost = "localhost";

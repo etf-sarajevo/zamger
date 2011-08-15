@@ -100,6 +100,24 @@ class Util {
 			return $_SERVER["REMOTE_ADDR"];
 		}
 	}
+
+	// Escape stringova radi koristenja u mysql upitima - kopirao sa php.net
+	function my_escape($value) {
+		// Convert special HTML chars to protect against XSS
+		// If chars are needed for something, escape manually
+		$value = htmlspecialchars($value);
+	
+		// If magic quotes is on, stuff would be double-escaped here
+		if (get_magic_quotes_gpc()) {
+			$value = stripslashes($value);
+		}
+	
+		// Quote if not a number or a numeric string
+		if (!is_numeric($value)) {
+			$value = mysql_real_escape_string($value); // Detecting quotes later is a pain
+		}
+		return $value;
+	}
 }
 
 ?>
