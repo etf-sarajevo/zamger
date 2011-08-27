@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  student_id: 1
+  programme_id: 1
+  academic_year_id: 1
+  type: 1
+  repeat: false
+  curriculum_id: 1
+  document_id: 1
+
+two:
+  student_id: 1
+  programme_id: 1
+  academic_year_id: 1
+  type: 1
+  repeat: false
+  curriculum_id: 1
+  document_id: 1

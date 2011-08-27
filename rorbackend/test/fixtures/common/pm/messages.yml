@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  type: 
+  scope: 1
+  to_id: 1
+  from_id: 1
+  time: 2011-08-04 15:26:52
+  ref_id: 1
+  subject: MyString
+  text: MyString
+
+two:
+  type: 
+  scope: 1
+  to_id: 1
+  from_id: 1
+  time: 2011-08-04 15:26:52
+  ref_id: 1
+  subject: MyString
+  text: MyString

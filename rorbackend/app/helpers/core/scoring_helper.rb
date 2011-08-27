@@ -1,0 +1,2 @@
+module Core::ScoringHelper
+end

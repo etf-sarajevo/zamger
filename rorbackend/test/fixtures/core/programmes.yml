@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  name_en: MyString
+  short_name: MyString
+  institution_id: 1
+  accepts_students: false
+  type_id: 1
+
+two:
+  name: MyString
+  name_en: MyString
+  short_name: MyString
+  institution_id: 1
+  accepts_students: false
+  type_id: 1

@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  poll_question_id: 1
+  choice: MyText
+
+two:
+  poll_question_id: 1
+  choice: MyText

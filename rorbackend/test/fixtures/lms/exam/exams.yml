@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  course_unit_id: 1
+  academic_year_id: 1
+  date: 2011-08-04
+  published_date_time: 2011-08-04 15:18:28
+  scoring_element_id: 1
+
+two:
+  course_unit_id: 1
+  academic_year_id: 1
+  date: 2011-08-04
+  published_date_time: 2011-08-04 15:18:28
+  scoring_element_id: 1

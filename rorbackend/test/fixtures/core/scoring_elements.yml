@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  gui_name: MyString
+  short_gui_name: MyString
+  type: 
+  max: 1.5
+  pass: 1.5
+  option: MyString
+  mandatory: false
+
+two:
+  name: MyString
+  gui_name: MyString
+  short_gui_name: MyString
+  type: 
+  max: 1.5
+  pass: 1.5
+  option: MyString
+  mandatory: false

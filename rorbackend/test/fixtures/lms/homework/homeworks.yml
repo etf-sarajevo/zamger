@@ -1,0 +1,31 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  nr_assignments: 1
+  score: 1.5
+  deadline: 2011-08-10 15:03:16
+  active: false
+  programming_language_id: 1
+  attachment: false
+  allowed_extensions: MyString
+  text: MyString
+  scoring_element_id: 1
+  published_date_time: 2011-08-10 15:03:16
+
+two:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  nr_assignments: 1
+  score: 1.5
+  deadline: 2011-08-10 15:03:16
+  active: false
+  programming_language_id: 1
+  attachment: false
+  allowed_extensions: MyString
+  text: MyString
+  scoring_element_id: 1
+  published_date_time: 2011-08-10 15:03:16

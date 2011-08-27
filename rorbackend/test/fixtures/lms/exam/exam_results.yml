@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  student_id: 1
+  exam_id: 1
+  result: 1.5
+  exists: false
+
+two:
+  student_id: 1
+  exam_id: 1
+  result: 1.5
+  exists: false

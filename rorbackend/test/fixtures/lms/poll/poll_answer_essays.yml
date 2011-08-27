@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  poll_result_id: 1
+  poll_question_id: 1
+  answer: MyText
+
+two:
+  poll_result_id: 1
+  poll_question_id: 1
+  answer: MyText

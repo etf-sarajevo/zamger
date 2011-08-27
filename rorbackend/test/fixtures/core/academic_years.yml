@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: "Godina 1"
+  current: false
+
+two:
+  name: "Godina 2"
+  current: false
+  
+three:
+  name: "Godina 3"
+  current: true

@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  student_id: 1
+  course_unit_id: 1
+  scoring_element_id: 1
+  score: 1.5
+
+two:
+  student_id: 1
+  course_unit_id: 1
+  scoring_element_id: 1
+  score: 1.5

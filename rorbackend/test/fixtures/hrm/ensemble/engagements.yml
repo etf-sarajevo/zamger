@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  course_unit_id: 1
+  academic_year_id: 1
+  person_id: 1
+  engagement_statis_id: 1
+
+two:
+  course_unit_id: 1
+  academic_year_id: 1
+  person_id: 1
+  engagement_statis_id: 1

@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  poll_id: 1
+  time: 2011-08-19 04:56:54
+  closed: 
+  course_unit_id: 1
+  unique_id: MyString
+  academic_year_id: 1
+  programme_id: 1
+  semester: 1
+
+two:
+  poll_id: 1
+  time: 2011-08-19 04:56:54
+  closed: 
+  course_unit_id: 1
+  unique_id: MyString
+  academic_year_id: 1
+  programme_id: 1
+  semester: 1

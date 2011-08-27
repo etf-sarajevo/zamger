@@ -1,0 +1,2 @@
+module Core::RssHelper
+end

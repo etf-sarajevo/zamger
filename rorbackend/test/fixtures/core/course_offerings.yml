@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  course_unit_id: 1
+  academic_year_id: 1
+  programme_id: 1
+  semester: 1
+  mandatory: false
+
+two:
+  course_unit_id: 1
+  academic_year_id: 1
+  programme_id: 1
+  semester: 1
+  mandatory: false

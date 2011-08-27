@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  open_date: 2011-08-17 21:32:11
+  close_date: 2011-08-17 21:32:11
+  name: MyString
+  description: MyText
+  active: false
+  editable: false
+  academic_year_id: 1
+
+two:
+  open_date: 2011-08-17 21:32:11
+  close_date: 2011-08-17 21:32:11
+  name: MyString
+  description: MyText
+  active: false
+  editable: false
+  academic_year_id: 1

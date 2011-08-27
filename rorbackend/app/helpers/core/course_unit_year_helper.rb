@@ -1,0 +1,2 @@
+module Core::CourseUnitYearHelper
+end

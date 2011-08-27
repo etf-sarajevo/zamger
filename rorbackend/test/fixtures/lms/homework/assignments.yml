@@ -1,0 +1,25 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  homework_id: 1
+  assign_no: 1
+  student_id: 1
+  status: 1
+  score: 1.5
+  compileReport: MyText
+  time: 2011-08-10 02:19:50
+  comment: MyText
+  filename: MyString
+  author_id: 1
+
+two:
+  homework_id: 1
+  assign_no: 1
+  student_id: 1
+  status: 1
+  score: 1.5
+  compileReport: MyText
+  time: 2011-08-10 02:19:50
+  comment: MyText
+  filename: MyString
+  author_id: 1

@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  description: MyText
+  note: MyText
+  time: 2011-08-20 14:56:23
+
+two:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  description: MyText
+  note: MyText
+  time: 2011-08-20 14:56:23

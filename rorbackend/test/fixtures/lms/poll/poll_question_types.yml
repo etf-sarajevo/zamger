@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  type: 
+  choice_exists: 
+  answers_table: MyString
+
+two:
+  type: 
+  choice_exists: 
+  answers_table: MyString

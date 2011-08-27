@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  course_unit_id: 1
+  academic_year_id: 1
+  min_teams: 1
+  max_teams: 1
+  min_team_members: 1
+  max_team_members: 1
+  locked: false
+
+two:
+  course_unit_id: 1
+  academic_year_id: 1
+  min_teams: 1
+  max_teams: 1
+  min_team_members: 1
+  max_team_members: 1
+  locked: false

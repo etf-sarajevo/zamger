@@ -1,0 +1,2 @@
+module Core::PersonHelper
+end

@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  virtual: false
+
+two:
+  name: MyString
+  course_unit_id: 1
+  academic_year_id: 1
+  virtual: false

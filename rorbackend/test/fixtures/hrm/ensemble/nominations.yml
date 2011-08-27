@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  person_id: 1
+  rank: 
+  date_named: 2011-08-23
+  date_expired: 2011-08-23
+  domain: 1
+  subdomain: 1
+  part_time: false
+  other_institution: 1
+
+two:
+  person_id: 1
+  rank: 
+  date_named: 2011-08-23
+  date_expired: 2011-08-23
+  domain: 1
+  subdomain: 1
+  part_time: false
+  other_institution: 1

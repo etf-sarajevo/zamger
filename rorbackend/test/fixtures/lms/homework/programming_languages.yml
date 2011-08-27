@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  name: MyString
+  geshi: MyString
+  extension: MyString
+
+two:
+  name: MyString
+  geshi: MyString
+  extension: MyString

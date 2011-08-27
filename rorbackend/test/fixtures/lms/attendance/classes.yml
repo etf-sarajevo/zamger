@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/Fixtures.html
+
+one:
+  datetime: 2011-08-04 15:13:50
+  teacher_id: 1
+  group_id: 1
+  scoring_element_id: 1
+
+two:
+  datetime: 2011-08-04 15:13:50
+  teacher_id: 1
+  group_id: 1
+  scoring_element_id: 1

@@ -1,0 +1,2 @@
+module Core::InstitutionHelper
+end
