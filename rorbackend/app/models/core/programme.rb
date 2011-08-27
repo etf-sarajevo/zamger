@@ -45,7 +45,7 @@ class Core::Programme < ActiveRecord::Base
   
   def self.from_id(id)
     select_columns = (Core::Programme)::ALL_COLUMNS | (Core::ProgrammeType)::ALL_COLUMNS
-    programme = (Core::Programme).joins(:programme_type).where((Core::Programme)::ID => id).select(select_columns).first
+    programme = (Core::Programme).includes(:programme_type).where(:id => id).select(select_columns).first
     
     return programme
   end

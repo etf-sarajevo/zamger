@@ -44,7 +44,7 @@ class Core::CourseOffering < ActiveRecord::Base
     query_parameters["semester"] = semester if semester != '0'
     
     select_columns = [(Core::CourseOffering)::ID, (Core::CourseOffering)::COURSE_UNIT_ID, (Core::CourseOffering)::ACADEMIC_YEAR_ID, (Core::CourseOffering)::PROGRAMME_ID, (Core::CourseOffering)::SEMESTER, (Core::CourseOffering)::MANDATORY, (Core::CourseUnit)::NAME, (Core::CourseUnit)::CODE]
-    courses_offered = (Core::CourseOffering).where(query_parameters).joins(:course_unit).select(select_columns)
+    courses_offered = (Core::CourseOffering).where(query_parameters).includes(:course_unit).select(select_columns)
     
     return courses_offered
   end

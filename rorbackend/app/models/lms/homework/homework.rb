@@ -65,7 +65,7 @@ class Lms::Homework::Homework < ActiveRecord::Base
   
   def self.from_id(id)
     select_columns = (Lms::Homework::Homework)::ALL_COLUMNS | [(Core::CourseUnit)::NAME]    
-    homework = (Lms::Homework::Homework).where(:id => id).joins(:course_unit).select(select_columns)
+    homework = (Lms::Homework::Homework).where(:id => id).includes(:course_unit).select(select_columns)
     
     return homework
   end
@@ -73,7 +73,7 @@ class Lms::Homework::Homework < ActiveRecord::Base
   
   def self.get_latest_for_student(student_id, limit)
     select_columns = (Lms::Homework::Homework)::ALL_COLUMNS | [(Core::CourseUnit)::NAME]
-    homeworks_pass = (Lms::Homework::Homework).joins(:course_unit => [{:course_offerings => :portfolios}]).where((Core::Portfolio)::STUDENT_ID => student_id).select(select_columns).order(:deadline)
+    homeworks_pass = (Lms::Homework::Homework).includes(:course_unit => [{:course_offerings => :portfolios}]).where((Core::Portfolio)::STUDENT_ID => student_id).select(select_columns).order(:deadline)
     homeworks = []
     
     homeworks_pass.each do |homework|

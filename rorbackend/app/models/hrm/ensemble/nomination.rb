@@ -44,7 +44,7 @@ class Hrm::Ensemble::Nomination < ActiveRecord::Base
   def self.get_latest_for_person(person_id)
     select_columns = [(Hrm::Ensemble::Rank)::ID, (Hrm::Ensemble::Rank)::NAME, (Hrm::Ensemble::Rank)::TITLE, (Hrm::Ensemble::Nomination)::DATE_NAMED, (Hrm::Ensemble::Nomination)::DATE_EXPIRED]
     
-    nomination = (Hrm::Ensemble::Nomination).joins(:rank).where(:person_id => person_id).select(select_columns).order(:date_named).first
+    nomination = (Hrm::Ensemble::Nomination).includes(:rank).where(:person_id => person_id).select(select_columns).order(:date_named).first
     
     return nomination
   end

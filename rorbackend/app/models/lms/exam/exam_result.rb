@@ -103,7 +103,7 @@ class Lms::Exam::ExamResult < ActiveRecord::Base
   
 private
   def result_in_bounds
-    result_bounds = (Lms::Exam::Exam).where(:id => self.exam_id).joins(:scoring_element).select([:max]).first
+    result_bounds = (Lms::Exam::Exam).where(:id => self.exam_id).includes(:scoring_element).select([:max]).first
     if (self.result.to_f > result_bounds[:max] or self.result < 0)
       errors.add(:result, 'Result must be within allowed range: [0, ' + result_bounds[:max].to_s + '].')
     end

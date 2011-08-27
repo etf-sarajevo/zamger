@@ -57,7 +57,7 @@ class Lms::Forum::ForumTopic < ActiveRecord::Base
   def self.get_all_posts(id, limit)
     limit = nil if limit == '0'
     select_columns = (Lms::Forum::ForumPost).ALL_COLUMNS | [(Core::Forum::ForumPostText).TEXT, (Core::People).ID, (Core::People).NAME, (Core::People).SURNAME, (Core::People).STUDENT_ID_NUMBER]
-    topic_posts = (Lms::Forum::ForumPost).where(:forum_topic_id => id).joins([:author, :forum_post_text]).select(select_columns).order((Lms::Forum::ForumPost).TIME + " ASC").limit(limit)
+    topic_posts = (Lms::Forum::ForumPost).where(:forum_topic_id => id).includes([:author, :forum_post_text]).select(select_columns).order((Lms::Forum::ForumPost).TIME + " ASC").limit(limit)
       
     return topic_posts
   end

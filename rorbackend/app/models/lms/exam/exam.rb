@@ -37,7 +37,7 @@ class Lms::Exam::Exam < ActiveRecord::Base
   after_validation :set_published_time_to_now_if_not_present
     
   def self.from_id(id)
-    exam = (Lms::Exam::Exam).where(:id => id).joins(:scoring_element).select((Lms::Exam::Exam)::ALL_COLUMNS | (Core::ScoringElement)::ALL_COLUMNS)
+    exam = (Lms::Exam::Exam).where(:id => id).includes(:scoring_element).select((Lms::Exam::Exam)::ALL_COLUMNS | (Core::ScoringElement)::ALL_COLUMNS)
     return exam
   end
   

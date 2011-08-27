@@ -28,8 +28,8 @@ class Core::CourseUnitYear < ActiveRecord::Base
   
   
   def self.from_course_and_year(course_unit_id, academic_year_id)
-    select_columns = [(Core::CourseUnitYear)::COURSE_UNIT_ID, (Core::CourseUnitYear)::ACADEMIC_YEAR_ID, (Core::CourseUnitYear)::COURSE_UNIT_TYPE_ID, (Core::SCORING)::ID, (Core::SCORING)::NAME]
-    course_unit_year = (Core::CourseUnitYear).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id).joins(:scoring).select(select_columns).first
+    select_columns = [(Core::CourseUnitYear)::COURSE_UNIT_ID, (Core::CourseUnitYear)::ACADEMIC_YEAR_ID, (Core::CourseUnitYear)::COURSE_UNIT_TYPE_ID, (Core::Scoring)::ID, (Core::Scoring)::NAME]
+    course_unit_year = (Core::CourseUnitYear).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id).includes(:scoring).select(select_columns).first
     
     return course_unit_year
   end

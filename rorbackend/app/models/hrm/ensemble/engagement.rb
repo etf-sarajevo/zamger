@@ -32,14 +32,14 @@ class Hrm::Ensemble::Engagement < ActiveRecord::Base
   
   
   def self.from_teacher_and_course(person_id, course_unit_id, academic_year_id)
-    engagement = (Hrm::Ensemble::Engagement).joins(:engagement_status).where(:person_id => person_id,  :course_unit_id => course_unit_id, :academic_year_id => academic_year_id).select((Hrm::Ensemble::EngagementStatus)::ID, (Hrm::Ensemble::EngagementStatus)::NAME).first
+    engagement = (Hrm::Ensemble::Engagement).includes(:engagement_status).where(:person_id => person_id,  :course_unit_id => course_unit_id, :academic_year_id => academic_year_id).select((Hrm::Ensemble::EngagementStatus)::ID, (Hrm::Ensemble::EngagementStatus)::NAME).first
     
     return engagement
   end
   
   def self.get_teachers_on_course(course_unit_id, academic_year_id)
     select_columns = [(Hrm::Ensemble::Engagement)::PERSON_ID, (Hrm::Ensemble::Engagement)::ID, (Hrm::Ensemble::Engagement)::NAME, (Core::Person)::NAME, (Core::Person)::SURNAME, (Core::ScienceLevel)::TITLE, (Core::ProfessionalLevel)::TITLE]
-    engagements = (Hrm::Ensemble::Engagement).joins(:engagement_status, :person => [:science_level, :professional_level]).where(:academic_year_id => academic_year_id, :course_unit_id => course_unit_id).select(select_columns).order((Hrm::Ensemble::EngagementStatus)::ID)
+    engagements = (Hrm::Ensemble::Engagement).includes(:engagement_status, :person => [:science_level, :professional_level]).where(:academic_year_id => academic_year_id, :course_unit_id => course_unit_id).select(select_columns).order((Hrm::Ensemble::EngagementStatus)::ID)
     
     return engagements
   end

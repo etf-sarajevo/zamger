@@ -33,7 +33,7 @@ class Lms::Forum::ForumPost < ActiveRecord::Base
   
   def self.from_id(id)
     select_columns = [(Lms::Forum::ForumPost).SUBJECT, (Lms::Forum::ForumPost).TIME, (Lms::Forum::ForumPost).AUTHOR_ID, (Lms::Forum::ForumPost).TOPIC_ID, (Lms::Forum::ForumPost).TEXT, (Core::Person).ID, (Core::Person).NAME, (Core::Person).SURNAME, (Core::Person).STUDENT_ID_NUMBER, (Core::Auth).EMAIL]
-    post = (Lms::Forum::ForumPost).joins(:author => :auth).joins(:forum_post_text).where(:id => id).select(select_columns)
+    post = (Lms::Forum::ForumPost).includes(:author => :auth).joins(:forum_post_text).where(:id => id).select(select_columns)
     
     return post
   end

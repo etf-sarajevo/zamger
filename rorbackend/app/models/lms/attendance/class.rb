@@ -38,7 +38,7 @@ class Lms::Attendance::Class < ActiveRecord::Base
   def self.from_id(id)
     select_columns = [(Lms::Attendance::Class)::DATE, (Lms::Attendance::Class)::TIME, (Lms::Attendance::Class)::TEACHER_ID, (Lms::Attendance::Class)::GROUP_ID, (Lms::Attendance::Class)::SCORING_ELEMENT_ID, (Lms::Attendance::Group)::NAME, (Lms::Attendance::Group)::COURSE_UNIT_ID, (Lms::Attendance::Group)::ACADEMIC_YEAR_ID]
     
-    class_t = (Lms::Attendance::Class).where(:id => id).joins(:group).select(select_columns).first
+    class_t = (Lms::Attendance::Class).where(:id => id).includes(:group).select(select_columns).first
     
     return class_t
   end

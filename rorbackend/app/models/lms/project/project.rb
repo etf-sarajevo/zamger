@@ -61,7 +61,7 @@ class Lms::Project::Project < ActiveRecord::Base
   
   def self.get_members(id)
     select_columns = [(Core::People).ID, (Core::People).NAME, (Core::People).SURNAME, (Core::People).STUDENT_ID_NUMBER]
-    members = (Lms::Project::ProjectStudent).joins(:student).where(:project_id => id).select(select_columns)
+    members = (Lms::Project::ProjectStudent).includes(:student).where(:project_id => id).select(select_columns)
     return members
   end
   

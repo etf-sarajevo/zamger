@@ -39,7 +39,7 @@ class Lms::Forum::Forum < ActiveRecord::Base
   
   
   def self.get_all_topics(id, limit)
-    all_topics = (Lms::Forum::ForumTopic).joins(:last_post).where(:forum_id => id).order((Lms::Forum::ForumPost).TIME + " DESC").limit(limit)
+    all_topics = (Lms::Forum::ForumTopic).includes(:last_post).where(:forum_id => id).order((Lms::Forum::ForumPost).TIME + " DESC").limit(limit)
     
     return all_topics
   end
@@ -54,7 +54,7 @@ class Lms::Forum::Forum < ActiveRecord::Base
   def self.get_latest_posts(id, limit)
     limit = nil if limit == '0'
     select_columns = (Lms::Forum::ForumPost).ALL_COLUMNS | [(Core::Forum::ForumPostText).TEXT, (Core::People).ID, (Core::People).NAME, (Core::People).SURNAME, (Core::People).STUDENT_ID_NUMBER]
-    latest_posts = (Lms::Forum::ForumTopic).joins(:forum_posts => :forum_post_text).where(:forum_id => id).select(select_columns).limit(limit).order((Lms::Forum::ForumPost).TIME + " DESC")
+    latest_posts = (Lms::Forum::ForumTopic).includes(:forum_posts => :forum_post_text).where(:forum_id => id).select(select_columns).limit(limit).order((Lms::Forum::ForumPost).TIME + " DESC")
     
     return latest_posts
   end

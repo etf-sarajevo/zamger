@@ -44,7 +44,7 @@ class Core::Portfolio < ActiveRecord::Base
   def self.get_latest_grades_for_student(student_id, limit)
     select_columns = (Core::FinalGrade)::ALL_COLUMNS | [(Core::CourseUnit)::NAME]
     
-    latest_grades = (Core::FinalGrade).joins(:course_unit).where(:student_id => student_id).where((Core::FinalGrade)::DATE + ">?", "#{1.month.ago}").order(:date + " DESC").limit(limit).select(select_columns)
+    latest_grades = (Core::FinalGrade).includes(:course_unit).where(:student_id => student_id).where((Core::FinalGrade)::DATE + ">?", "#{1.month.ago}").order(:date + " DESC").limit(limit).select(select_columns)
     
     return latest_grades
   end
@@ -53,7 +53,7 @@ class Core::Portfolio < ActiveRecord::Base
   def self.get_current_for_student(student_id)
     select_columns = [(Core::CourseOffering)::SEMESTER, (Core::CourseOffering)::ID, (Core::AcademicYear)::ID, (Core::CourseUnit)::NAME, (Core::CourseUnit)::SHORT_NAME]
     
-    portfolio = (Core::Portfolio).joins(:course_offering => [:academic_year, :course_unit]).where((Core::Portfolio)::STUDENT_ID => student_id, (Core::AcademicYear)::CURRENT => true).select(select_columns).order((Core::CourseOffering)::SEMESTER + " DESC", (Core::CourseUnit)::NAME).first
+    portfolio = (Core::Portfolio).includes(:course_offering => [:academic_year, :course_unit]).where((Core::Portfolio)::STUDENT_ID => student_id, (Core::AcademicYear)::CURRENT => true).select(select_columns).order((Core::CourseOffering)::SEMESTER + " DESC", (Core::CourseUnit)::NAME).first
     
     return portfolio
   end
@@ -67,7 +67,7 @@ class Core::Portfolio < ActiveRecord::Base
   
   
   def self.from_course_unit(student_id, course_unit_id, academic_year_id)
-    portfolio = (Core::Portfolio).joins(:course_offering).where(:student_id => student_id, :course_offering_id => course_unit_id, :academic_year_id => academic_year_id)
+    portfolio = (Core::Portfolio).joins(:course_offering).where(:student_id => student_id, :course_offering_id => course_unit_id, :course_offering => {:academic_year_id => academic_year_id})
     
     return portfolio
   end
@@ -137,7 +137,7 @@ end
   def self.get_all_for_student(student_id)
     select_columns = [(Core::CourseOffering)::ID, (Core::CourseUnit)::ID, (Core::CourseOffering)::ACADEMIC_YEAR_ID, (Core::CourseUnit)::NAME, (Core::CourseUnit)::SHORT_NAME, (Core::CourseOffering)::PROGRAMME_ID, (Core::CourseOffering)::MANDATORY]
     
-    all_portfolios = (Core::Portfolio).joins(:course_offering => :course_unit).where(:student_id => student_id).select(select_columns).order((Core::CourseOffering)::ACADEMIC_YEAR_ID, :semester, (Core::CourseUnit)::NAME)
+    all_portfolios = (Core::Portfolio).includes(:course_offering => :course_unit).where(:student_id => student_id).select(select_columns).order((Core::CourseOffering)::ACADEMIC_YEAR_ID, :semester, (Core::CourseUnit)::NAME)
     
     return all_portfolios
   end
