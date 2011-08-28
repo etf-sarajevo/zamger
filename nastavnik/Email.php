@@ -3,7 +3,7 @@
 $subject = "Zamger: Dnevni izvjestaj upisanih ocjena" ;
 
 //kreiranje konekcije na bazu
-$link = mysql_connect('mysql2.com.ba', 'mostic', 'mersiha');
+$link = mysql_connect('localhost', 'root', '');
 if (!$link) {
     die('<i>Konekcija na Zamger bazu nije uspjela; razlog: </i>' . mysql_error());
 }
