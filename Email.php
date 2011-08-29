@@ -1,17 +1,22 @@
 <?php
+require("/lib/config.php");
+if($email) {
+
+
 //dobavljanje parametara sa html forme
 $subject = "Zamger: Dnevni izvjestaj upisanih ocjena" ;
 
 //kreiranje konekcije na bazu
-$link = mysql_connect('localhost', 'root', '');
-if (!$link) {
-    die('<i>Konekcija na Zamger bazu nije uspjela; razlog: </i>' . mysql_error());
-}
-else {
-echo '<i>Uspjesna konekcija na Zamger bazu.</i>';
-echo "<br>";
-echo "<br>";
-}
+
+
+
+
+require("lib/libvedran.php");
+require("lib/zamger.php");
+require("lib/config.php");
+
+
+dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 //dobavljanje liste profesora koji su angazovani sa njihovim ID-om i EMAILom
 $result = mysql_query('SELECT DISTINCT o.id,o.ime,o.prezime,o.email FROM zamger.osoba o INNER JOIN zamger.angazman a ON a.osoba = o.id WHERE a.angazman_status = 1');
@@ -94,5 +99,6 @@ if ($link) {
 mysql_close($link);
 echo '<i>Konekcija na Zamger bazu terminirana.</i>';
 }
-
+}
+else echo '<i>Onemoguæeno slanje emaila. Molimo provjerite vaše konfiguracijske postavke u config.php</i>';
 ?> 
