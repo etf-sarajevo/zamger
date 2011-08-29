@@ -12,10 +12,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 --
 -- Database: `zamgerdemo`
 --
-
-
 -- --------------------------------------------------------
-
 --
 -- Table structure for table `akademska_godina`
 --
@@ -2207,4 +2204,10 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
 -- Dumping data for table `raspored_stavka`
 --
 
-
+DROP TABLE IF EXISTS `anketa_predmet`;
+CREATE TABLE IF NOT EXISTS `anketa_predmet` (   
+  `anketa` int(11) NOT NULL,   
+  `predmet` int(11) NOT NULL,   
+  `akademska_godina` int(11) NOT NULL,   
+  `aktivna` tinyint(1) NOT NULL,   PRIMARY KEY  (`anketa`,`predmet`,`akademska_godina`) 
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
