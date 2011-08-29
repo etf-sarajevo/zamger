@@ -87,6 +87,6 @@ $conf_moodle_dbhost = "localhost";
 $conf_moodle_dbuser = "zamgerdemo";
 $conf_moodle_dbpass = "zamgerdemo";
 
-
+$email = true;
 
 ?>
