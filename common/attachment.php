@@ -1,7 +1,4 @@
 <?
-
-
-
 // COMMON/ATTACHMENT - download bilo čega
 
 
@@ -196,6 +193,53 @@ if ($tip == "projekat") {
 	$filename = mysql_result($q230,0,2);
 
 	$filepath = "$conf_files_path/projekti/fajlovi/$projekat/$fileosoba/$filename/v$revizija/$filename";
+}
+
+// Tip: zavrsni rad
+
+if ($tip == "zavrsni") {
+	$zavrsni = intval($_REQUEST['zavrsni']);
+	$id = intval($_REQUEST['id']); //file ID
+
+	$q300 = myquery("select predmet, akademska_godina from zavrsni where id=$zavrsni");
+	if (mysql_num_rows($q300)<1) {
+		zamgerlog("nepostojeca tema zavrsnog rada $zavrsni",3);
+		niceerror("Nepostojeći zavrsni rad");
+		return;
+	}
+	$predmet = mysql_result($q300,0,0);
+	$ag = mysql_result($q300,0,1);
+
+	$ok = false;
+
+	if ($user_siteadmin) $ok = true;
+	if ($user_nastavnik && !$ok) {
+		$q310 = myquery("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+		if (mysql_num_rows($q310)>0 && mysql_result($q310,0,0)!="asistent") $ok = true;
+	}
+	if ($user_student && !$ok) {
+		$q320 = myquery("SELECT count(*) FROM student_zavrsni WHERE student=$userid and zavrsni=$zavrsni");
+		if (mysql_result($q320,0,0)>0) $ok = true;
+	}
+
+	if (!$ok) {
+		zamgerlog("nema pravo pristupa zavrsnom radu $zavrsni",3);
+		niceerror("Nemate pravo pristupa ovom zavrsnom radu");
+		return;
+	}
+	
+	$q330 = myquery("select osoba, revizija, filename from zavrsni_file where id=$id");
+	if (mysql_num_rows($q330)<1) {
+		zamgerlog("nepostojeci file $id na zavrsnom radu $zavrsni", 3);
+		niceerror("Nepoznat ID $id");
+		return;
+	}
+	
+	$fileosoba = mysql_result($q330,0,0);
+	$revizija = mysql_result($q330,0,1);
+	$filename = mysql_result($q330,0,2);
+
+	$filepath = "$conf_files_path/zavrsni/fajlovi/$zavrsni/$fileosoba/$filename/v$revizija/$filename";
 }
 
 
