@@ -110,11 +110,11 @@ array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
 array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
 array("common/articleImageDownload", "Slike projektnih članaka", "Slike članaka", "SNA", "2", "0"),
+
+
+array ("nastavnik/zavrsni", "Zavrsni radovi", "Zavrsni", "N", "1", "0"),
+array ("student/zavrsni", "Zavrsni radovi", "Zavrsni", "S", "1", "0"),
+array ("studentska/zavrsni", "Zavrsni radovi", "Zavrsni", "B", "1", "0"),
 array()
-
 );
-
-
-
-
 ?>
