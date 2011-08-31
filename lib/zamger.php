@@ -448,6 +448,7 @@ function studentski_meni($fj) {
 		if ($r[0]=="student/prijava_ispita") $modul_prijava=1;
 		if ($r[0]=="student/prosjeci") $modul_prosjek=1;
 		if ($r[0]=="student/anketa") $modul_anketa=1;
+		if ($r[0]=="student/zavrsni") $modul_zavrsni=1;
 	}
 
 	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
