@@ -280,10 +280,12 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 		if (mysql_num_rows($q80)<1) {
 			$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\">/</td>\n";
 		} else if (mysql_result($q80,0,0)==1) {
-			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
-		} else {
+			$statusi .= "<td bgcolor=\"#FFE303\" align=\"center\">NP</td>\n";
+		} else if(mysql_result($q80,0,0)==2){
 			$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
 			$odsustva++;
+		} else if(mysql_result($q80,0,0)==3){
+			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
 		}
 	}
 
