@@ -86,7 +86,7 @@ if ($ispit>0) {
 
 <p>&nbsp;</p>
 
-<p><h3><?=$predmet_naziv?> - Ispiti</h3></p>
+<p><h3><?=$predmet_naziv?> - Ispiti / Događaji</h3></p>
 
 <?
 
@@ -406,11 +406,11 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 
 		print genform("POST");
 		?>
-		<h2>Zatražili ste promjenu podataka ispita &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
+		<h2>Zatražili ste promjenu podataka ispita/događaja &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
 		<p>Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
-		<p>Datum ispita: <?=datectrl($dan, $mjesec, $godina)?></p>
-		<p>Tip ispita: <select name="tipispita" class="default"><?
-		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+		<p>Datum ispita/događaja: <?=datectrl($dan, $mjesec, $godina)?></p>
+		<p>Tip ispita/događaja: <select name="tipispita" class="default"><?
+		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2 or k.tipkomponente=5) order by k.id");
 		while ($r340 = mysql_fetch_row($q340)) {
 			print '<option value="'.$r340[0].'"';
 			if ($komponenta==$r340[0]) print ' SELECTED';
@@ -500,6 +500,37 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	}
 }
 
+// Unos novog tipa ispita ili događaja (u tabelu komponenta)
+
+if ($_REQUEST['akcija']=="novi_dogadjaj") {
+	
+	$naziv = my_escape($_POST['naziv']);
+	$ime=strval($_POST['ime']);
+	//print '$_POST[ime]';
+	
+
+	// Da li je događaj vec registrovan?
+	$q520 = myquery("select id from komponenta where naziv='$_POST[ime]'"); 
+	if (mysql_num_rows($q520)>0) {
+		nicemessage("Događaj već postoji.");
+	} 
+	elseif ($ime=="") {
+	nicemessage("Polje za unos novog događaja je prazno!");
+	}
+	elseif($ime=="Zadace"||$ime=="I parcijalni"||$ime=="II parcijalni"||$ime=="Integralni"||$ime=="Usmeni"||$ime=="Prisustvo"){
+	nicemessage("Događaj već postoji.");
+	}
+	else {
+		
+		$q540 = myquery("insert into komponenta set naziv='$_POST[ime]', gui_naziv='$_POST[ime]', kratki_gui_naziv='$_POST[ime]', tipkomponente=5, maxbodova=0, prolaz=0");
+		$q550= myquery("select id from komponenta");
+		$temp2=mysql_num_rows($q550);
+		$q560 = myquery("insert into tippredmeta_komponenta set tippredmeta=1, komponenta=$temp2");
+		nicemessage("Događaj uspješno kreiran.");
+		zamgerlog("kreiran novi događaj (predmet pp$ime, ag$ag)", 4); // 4 - audit
+	}
+}
+
 
 
 // GLAVNI EKRAN
@@ -513,7 +544,7 @@ $q500 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i
 <table border="0" cellspacing="1" cellpadding="2">
 <thead>
 <tr bgcolor="#999999">
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita/događaja</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
@@ -562,12 +593,12 @@ while ($r500 = mysql_fetch_row($q500)) {
 <?=genform("POST")?>
 <input type="hidden" name="akcija" value="novi_ispit">
 
-<p><b>Kreiranje novog ispita</b></p>
+<p><b>Dodaj novi ispit/događaj</b></p>
 
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
-<p>Tip ispita: <select name="tipispita" class="default"><?
+<p>Tip ispita/događaja: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
+	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2 or k.tipkomponente=5) order by k.id");
 	while ($r510 = mysql_fetch_row($q510)) {
 		print '<option value="'.$r510[0].'"';
 		if ($tipispita==$r510[0]) print ' SELECTED';
@@ -582,10 +613,26 @@ else print datectrl(date('d'),date('m'),date('Y'));
 ?><br/><br/>
 
 <input type="submit" value="  Dodaj  ">
+<br/><br/><br/>
+
 </form></p>
 <?
 
+// Forma za unos novih tipova ispita i novih događaja
 
+?>
+<p>&nbsp;</p>
+<?=genform("POST")?>
+<input type="hidden" name="akcija" value="novi_dogadjaj">
+
+<p><b>Unesi novi tip ispita ili događaj :</b></p>
+Naziv:  
+<input name="ime" type="text" >
+<br>
+<input name="submitaj" type="submit" value="Spasi">
+</form></p>
+
+<?
 
 
 }
