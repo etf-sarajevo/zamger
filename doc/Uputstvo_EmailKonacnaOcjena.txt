@@ -1,0 +1,40 @@
+EmailKonacnaOcjena.php
+
+Projektni zadatak:
+skripta za slanje emaila svim profesorima na ETF-u,u formi izvjestaja o upisu konacnih ocjena u posljednja 24h. 
+
+Podaci koje ce biti sadrzani u mailu su :
+-NAziv predmeta
+-Ime i prezime studenta
+-index
+-Ocjena
+-Datum i vrijeme upisa ocjene
+-Unosilac ocjene
+
+U slucaju da predmetni nastavnik nije upisao niti jednu ocjenu u posljednja 24h onemoguceno je slanje mail-a , tako da usustini prazan mail nece biti poslan.
+
+Izvještaj ima slijedeæi izgled:
+Postovani/a prof. Prezime,
+U nastavku maila se nalazi spisak unesenih ocjena na predmetima koje Vi predajete, a unesene su unutar prethodna 24 sata.
+
+Predmet: NazivPredmeta
+Red.br. ImeStudenta PrezimeStudenta, index broj br.indexa je upisao/-la ocjenu: ocjena (upisano: datum vrijeme, Ime i Prezime UnosiocaOcjene)
+
+	...
+
+Ugodan ostatak dana,
+Zamger@ETF.
+
+npr:
+Predmet: Inzenjerska matematika 1
+1. Mujo Mujic, indeks broj 14563 je upisao/-la ocjenu: 9 (upisano: 27.08. 20:57, Meho Mehic)
+2. Skolarac poletarac, indeks broj 16589 je upisao/-la ocjenu: 9 (upisano: 27.08. 20:51, Suljo Suljic)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Konfiguracija:
+
+Da biste uspjesno koristili skriptu EmailKonacnaOcjena.php morate podesiti slijedece parametre:
+
+- U config.php potrebno je ukljuciti opciju za koristenje Email izvjestaja o konacnim ocjenama upisanim u posljednja 24h. To cete uciniti tako sto cete vrijednost varijable $conf_email postaviti na true, odnosno $conf_email = true;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
