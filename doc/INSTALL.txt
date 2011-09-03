@@ -8,11 +8,10 @@ UPUTA ZA INSTALACIJU
 ====================
 
 Za instalaciju je potrebno:
-- MySQL v4.0 ili noviji (relativno jednostavno je prepraviti aplikaciju 
-tako da radi sa MySQL v3.x)
-- PHP v5.0 ili noviji (ponovo, relativno jednostavno portati na PHP 4.x)
+- MySQL v4.0 ili noviji
+- PHP v5.0 ili noviji
   * Za logging sintaksnih gresaka (korisno prilikom razvoja) potreban je 
-PHP v5.2
+PHP v5.2 ili noviji
 - Web server - testirano samo sa Apache web serverom
 
 
@@ -98,7 +97,11 @@ kroz browser.
 # mkdir /home/zamger/zadace
 # mkdir /home/zamger/projekti
 # mkdir /home/zamger/slike
-# chown -R apache:apache /home/zamger
+# chown -R apache /home/zamger
+
+Napomena: na nekim distribucijama korisnik se ne zove apache nego www-data.
+Najlaksi nacin da provjerite ime usera je da otkucate
+# ps aux | grep apache
 
 
 
@@ -110,7 +113,7 @@ relativno ocigledan, samo pratite komentare.
 Ostavite debug poruke aktivne do daljnjeg, kasnije ih mozete iskljuciti. 
 Opciju $conf_files_path postavite na ranije kreirani direktorij za 
 fajlove ( /home/zamger ), dok script_path treba biti web root (na 
-primjer: /srv/www/htdocs/zamger ).
+primjer: /srv/www/zamger ili /var/www/zamger ).
 
 Zamger ima odredjene mogucnosti povezivanja sa Moodle serverom. Ako NE
 zelite da povezujete Zamger sa nekim Moodle serverom, u config.php
@@ -146,6 +149,8 @@ i sifru
 - U dnu ekrana imate polje Novi predmet - tu upisite naziv predmeta i 
 kliknite na dugme Dodaj
 - Sada cete dobiti priliku da popunite ostale osobine predmeta
+- Neke osobine su obavezne - Zamger ce oznaciti ove osobine crvenom
+bojom kako bi vas upozorio da ih morate popuniti
 
 
 10. Sada upisite studente na predmet:
@@ -167,6 +172,7 @@ opisane dostupne opcije) mozete naci u folderu doc/
 12. Klikom na link Site admin vidite administracijske opcije, kao sto su 
 Parametri studija. itd. Upoznajte se sa interfejsom. Administratorski 
 prirucnik je u pripremi.
+
 
 
 13. MOODLE INTEGRACIJA
@@ -221,3 +227,16 @@ spominjali u tacki g).
 
 m) Vrijednost $conf_moodle_reuse_connection postavite na true. Ostale
 konfiguracione parametre možete ignorisati.
+
+
+
+14. CRON SKRIPTE
+
+U folderu "skripte" nalazi se jedan broj PHP skripti koje su predvidjene da 
+se periodicno izvrsavaju. Potrebno je da ove skripte kopirate na mjesto kojem
+se ne moze pristupiti preko weba, a zatim da podesite cron. Ovaj dokument
+ne pretenduje da vas nauci kako koristiti cron tako da cete se za to morati 
+snaci sami. 
+
+Vise informacija o pojedinim skriptama, ukljucujuci i opis koja od njih cemu 
+sluzi, mozete naci u uputstvima za pojedinu skriptu.
