@@ -2513,7 +2513,7 @@ else if ($akcija == "edit") {
 		<p><b>Prava pristupa (akademska godina <?=$naziv_ak_god?>)</b></p>
 		<ul>
 		<?
-		$q180 = myquery("select p.id, p.naziv, np.nivo_pristupa, i.kratki_naziv from nastavnik_predmet as np, predmet as p, institucija as i where np.nastavnik=$osoba and np.predmet=p.id and np.akademska_godina=$id_ak_god and p.institucija=i.id order by np.admin desc, p.naziv"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
+		$q180 = myquery("select p.id, p.naziv, np.nivo_pristupa, i.kratki_naziv from nastavnik_predmet as np, predmet as p, institucija as i where np.nastavnik=$osoba and np.predmet=p.id and np.akademska_godina=$id_ak_god and p.institucija=i.id order by np.nivo_pristupa, p.naziv"); // FIXME: moze li se ovdje izbaciti tabela ponudakursa? studij ili institucija?
 		if (mysql_num_rows($q180) < 1)
 			print "<li>Nijedan</li>\n";
 		while ($r180 = mysql_fetch_row($q180)) {
