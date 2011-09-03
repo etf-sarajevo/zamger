@@ -71,7 +71,7 @@ Your MySQL connection id is 3299027 to server version: 5.0.22
 
 Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
 
-mysql> CREATE DATABASE zamger;
+mysql> CREATE DATABASE zamger DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 3. Kreirajte korisnika koji ima prava pristupa toj bazi:
