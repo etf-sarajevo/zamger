@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 	if (ini_get("short_open_tag") != 1) exit;
 ?>
 <?
@@ -57,14 +57,24 @@ $conf_use_mysql_utf8 = true;
 
 // Da li ispisivati debugging poruke?
 $conf_debug = true;
-$_lv_["debug"] = true; // libvedran debugging poruke
+$_lv_["debug"] = true; // libvedran
+
+// Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
+// U suprotnom, postavite vrijednost na false 
+ $cong_email = true;
+
+debugging poruke
 
 
 // ------ MOODLE INTEGRACIJA ---------
 
+
 // Postavite parametar ispod na true ako želite integraciju sa Moodle serverom
+
 // Ako je vrijednost false, ostale parametre u ovoj sekciji možete zanemariti
+
 $conf_moodle = true;
+
 
 // URL do početne Moodle stranice (bez index.php i slično, samo direktorij,
 // obavezno kosa crta na kraju)
@@ -87,6 +97,6 @@ $conf_moodle_dbhost = "localhost";
 $conf_moodle_dbuser = "zamgerdemo";
 $conf_moodle_dbpass = "zamgerdemo";
 
-$email = true;
+
 
 ?>
