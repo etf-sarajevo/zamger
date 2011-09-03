@@ -1,12 +1,12 @@
 <?php
 	if (ini_get("short_open_tag") != 1) {
 		?>
-		<html><head></head>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
 		<body>
 		<p><font color='red'><b>GREŠKA: Potrebno aktivirati opciju short_open_tag</b></font></p>
 		<p>Molimo vas da još jednom pročitate uputstva za instalaciju.</p>
 		</body></html>
-		<?
+		<?php
 		exit;
 	}
 ?>
@@ -33,7 +33,7 @@ function greska_u_modulima() {
 	global $uspjeh, $sta;
 	if ($uspjeh==0) {
 		?>
-		<html><head></head>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
 		<body>
 		<p><font color='red'><b>GREŠKA: U toku su radovi na Zamgeru</b></font></p>
 		<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href="javascript:location.reload(true)">Refresh</a>.</p>
@@ -219,7 +219,7 @@ if ($found==1 && $template==2 && $greska=="") {
 <html>
 <head>
 	<title><?=$naslov?></title>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
 	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php" />
 </head>
