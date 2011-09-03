@@ -328,7 +328,7 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 // Provjera maila
 if ($userid>0) {
 	$q20 = myquery("select UNIX_TIMESTAMP(vrijeme) from log where userid=$userid order by id desc limit 2");
-	if (mysql_num_rows($q20)>0)
+	if (mysql_num_rows($q20)>1)
 		$vrijeme=intval(mysql_result($q20,1,0));
 	else 
 		$vrijeme=0;
