@@ -14,10 +14,10 @@ global $userid;
 <img src="images/poruka.png"/> </div>
 
 <div id="tabela1" style="font-family:Arial;font-size:10px;position:absolute;visibility:hidden;right:20px;bottom:50px;">
-
+</div>
 
 <div id="tabela2" style="font-family:Arial;font-size:10px;position:absolute;visibility:hidden;right:60px;bottom:50px;">
-
+</div>
 
 <script language="javascript" type="text/javascript">
 var int1=self.setInterval("prikaziNotifikaciju()",60000);
