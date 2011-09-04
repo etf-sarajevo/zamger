@@ -1,5 +1,7 @@
 <?php
-require("/lib/config.php");
+require("../lib/libvedran.php");
+require("../lib/zamger.php");
+require("../lib/config.php");
 
 if($conf_email) {
 
@@ -9,9 +11,6 @@ $subject = "Zamger: Dnevni izvjestaj upisanih ocjena" ;
 
 //kreiranje konekcije na bazu
 
-require("lib/libvedran.php");
-require("lib/zamger.php");
-require("lib/config.php");
 
 
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
