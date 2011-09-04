@@ -93,7 +93,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$tip=1;
 	$procitana=0;
 	$vrijeme_poruke=$r10[5];
-	$q200 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke");
+	$q200 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke, student=$userid");
 }
 
 
@@ -115,7 +115,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 	$tip=1;
 	$procitana=0;
 	$vrijeme_poruke=$r15[3];
-	$q201 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke");
+	$q201 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke, student=$userid");
 }
 
 
@@ -138,7 +138,7 @@ while ($r17 = mysql_fetch_row($q17)) {
 	$tip=1;
 	$vrijeme_poruke=$r17[2];
 	$procitana=0;
-	$q202 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke");
+	$q202 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke, student=$userid");
 }
 
 
@@ -165,7 +165,7 @@ while ($r18 = mysql_fetch_row($q18)) {
 	$tip=1;
 	$procitana=0;
 	$vrijeme_poruke=$r18[2];
-	$q203 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke");
+	$q203 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme_poruke, student=$userid");
 }
 
 
@@ -259,7 +259,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$link=$conf_site_url."/index.php?sta=common%2Finbox&amp;poruka=".$id;
 	$tip=2;
 	$procitana=0;
-	$q204 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme");
+	$q204 = myquery("insert into notifikacija set tekst=$poruka, link=$link, tip=$tip, procitana=$procitana, vrijeme=$vrijeme, student=$userid");
 }
 
 
