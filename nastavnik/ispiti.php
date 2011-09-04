@@ -71,7 +71,7 @@ if (!$user_siteadmin && !$user_studentska) {
 
 $ispit = intval($_REQUEST['ispit']);
 if ($ispit>0) {
-	$q30 = myquery("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
+	$q30 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaji as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
 	if (mysql_num_rows($q30)<1) {
 		niceerror("Nepostojeći ispit");
 		print "Moguće je da ste ga već obrisali? Ako ste koristili dugme Back vašeg browsera da biste došli na ovu stranicu, predlažemo da kliknete na link Ispiti sa lijeve strane kako biste dobili ažurnu informaciju.";
@@ -410,7 +410,7 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 		<p>Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
 		<p>Datum ispita/događaja: <?=datectrl($dan, $mjesec, $godina)?></p>
 		<p>Tip ispita/događaja: <select name="tipispita" class="default"><?
-		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2 or k.tipkomponente=5) order by k.id");
+		$q340 = myquery("(select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id) union (select id,naziv from dogadjaji order by id);");
 		while ($r340 = mysql_fetch_row($q340)) {
 			print '<option value="'.$r340[0].'"';
 			if ($komponenta==$r340[0]) print ' SELECTED';
@@ -492,15 +492,15 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	// Da li je ispit vec registrovan?
 	$q450 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
 	if (mysql_num_rows($q450)>0) {
-		nicemessage("Ispit već postoji.");
+		nicemessage("Ispit/Događaj već postoji.");
 	} else {
 		$q460 = myquery("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
-		nicemessage("Ispit uspješno kreiran.");
-		zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
+		nicemessage("Ispit/Događaj uspješno kreiran.");
+		zamgerlog("kreiran novi ispit/događaj (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 	}
 }
 
-// Unos novog tipa ispita ili događaja (u tabelu komponenta)
+// Unos novog tipa ispita ili događaja (u tabelu dogadjaji)
 
 if ($_REQUEST['akcija']=="novi_dogadjaj") {
 	
@@ -510,22 +510,25 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 	
 
 	// Da li je događaj vec registrovan?
-	$q520 = myquery("select id from komponenta where naziv='$_POST[ime]'"); 
+	//$q520 = myquery("select id from komponenta where naziv='$_POST[ime]'"); 
+	$q520 = myquery("select id from dogadjaji where naziv='$_POST[ime]'"); 
 	if (mysql_num_rows($q520)>0) {
 		nicemessage("Događaj već postoji.");
 	} 
 	elseif ($ime=="") {
-	nicemessage("Polje za unos novog događaja je prazno!");
+		nicemessage("Polje za unos novog događaja je prazno!");
 	}
 	elseif($ime=="Zadace"||$ime=="I parcijalni"||$ime=="II parcijalni"||$ime=="Integralni"||$ime=="Usmeni"||$ime=="Prisustvo"){
-	nicemessage("Događaj već postoji.");
+		nicemessage("Događaj već postoji u obliku ispita.");
 	}
 	else {
 		
-		$q540 = myquery("insert into komponenta set naziv='$_POST[ime]', gui_naziv='$_POST[ime]', kratki_gui_naziv='$_POST[ime]', tipkomponente=5, maxbodova=0, prolaz=0");
-		$q550= myquery("select id from komponenta");
+		//$q540 = myquery("insert into komponenta set naziv='$_POST[ime]', gui_naziv='$_POST[ime]', kratki_gui_naziv='$_POST[ime]', tipkomponente=5, maxbodova=0, prolaz=0");
+		$q540 = myquery("insert into dogadjaji set naziv='$_POST[ime]'");
+		//$q550= myquery("select id from komponenta");
+		$q550= myquery("select id from dogadjaji");
 		$temp2=mysql_num_rows($q550);
-		$q560 = myquery("insert into tippredmeta_komponenta set tippredmeta=1, komponenta=$temp2");
+		//$q560 = myquery("insert into tippredmeta_komponenta set tippredmeta=1, komponenta=$temp2");
 		nicemessage("Događaj uspješno kreiran.");
 		zamgerlog("kreiran novi događaj (predmet pp$ime, ag$ag)", 4); // 4 - audit
 	}
@@ -537,7 +540,8 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 
 // Tabela unesenih ispita
 
-$q500 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+//$q500 = myquery("(select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta) union (select i.id,UNIX_TIMESTAMP(i.datum),d.naziv from ispit as i, dogadjaji as d where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
+$q500 = myquery("(select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta) union (select i.id,UNIX_TIMESTAMP(i.datum),d.naziv from ispit as i, dogadjaji as d where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
 
 ?>
 <br>
@@ -545,7 +549,7 @@ $q500 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i
 <thead>
 <tr bgcolor="#999999">
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita/događaja</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita/događaja</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
 </thead>
@@ -558,6 +562,7 @@ if (mysql_num_rows($q500)<1)
 	print "Nije unesen nijedan ispit.";
 
 while ($r500 = mysql_fetch_row($q500)) {
+	 if(($r500[2]=="I parcijalni")||($r500[2]=="II parcijalni")||($r500[2]=="Integralni")||($r500[2]=="Usmeni")){
 	?>
 	<tr>
 		<td align="left"><?=$r500[2]?></td>
@@ -575,6 +580,23 @@ while ($r500 = mysql_fetch_row($q500)) {
 		</td>
 	</tr>
 	<?
+	 }
+	 else{
+		?>
+	<tr>
+		<td align="left"><?=$r500[2]?></td>
+		<td align="left"><?=date("d.m.Y.",date($r500[1]));?></td>
+		<td align="left">
+		
+			<a href="?sta=nastavnik/ispiti&akcija=promjena&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Promjena</a>
+			*
+			<a href="?sta=nastavnik/ispiti&akcija=brisanje&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Brisanje</a>
+			*
+			<a href="?sta=nastavnik/prijava_ispita&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Termini</a>
+		</td>
+	</tr>
+	<?
+	 }
 	$brojac++;
 }
 ?>
@@ -598,7 +620,7 @@ while ($r500 = mysql_fetch_row($q500)) {
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
 <p>Tip ispita/događaja: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2 or k.tipkomponente=5) order by k.id");
+	$q510 = myquery("(select k.id,k.gui_naziv from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id) union (select id, naziv from dogadjaji order by id);");
 	while ($r510 = mysql_fetch_row($q510)) {
 		print '<option value="'.$r510[0].'"';
 		if ($tipispita==$r510[0]) print ' SELECTED';
