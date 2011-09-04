@@ -506,11 +506,9 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 	
 	$naziv = my_escape($_POST['naziv']);
 	$ime=strval($_POST['ime']);
-	//print '$_POST[ime]';
 	
 
 	// Da li je događaj vec registrovan?
-	//$q520 = myquery("select id from komponenta where naziv='$_POST[ime]'"); 
 	$q520 = myquery("select id from dogadjaji where naziv='$_POST[ime]'"); 
 	if (mysql_num_rows($q520)>0) {
 		nicemessage("Događaj već postoji.");
@@ -523,12 +521,9 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 	}
 	else {
 		
-		//$q540 = myquery("insert into komponenta set naziv='$_POST[ime]', gui_naziv='$_POST[ime]', kratki_gui_naziv='$_POST[ime]', tipkomponente=5, maxbodova=0, prolaz=0");
 		$q540 = myquery("insert into dogadjaji set naziv='$_POST[ime]'");
-		//$q550= myquery("select id from komponenta");
 		$q550= myquery("select id from dogadjaji");
 		$temp2=mysql_num_rows($q550);
-		//$q560 = myquery("insert into tippredmeta_komponenta set tippredmeta=1, komponenta=$temp2");
 		nicemessage("Događaj uspješno kreiran.");
 		zamgerlog("kreiran novi događaj (predmet pp$ime, ag$ag)", 4); // 4 - audit
 	}
@@ -540,7 +535,6 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 
 // Tabela unesenih ispita
 
-//$q500 = myquery("(select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta) union (select i.id,UNIX_TIMESTAMP(i.datum),d.naziv from ispit as i, dogadjaji as d where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
 $q500 = myquery("(select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta) union (select i.id,UNIX_TIMESTAMP(i.datum),d.naziv from ispit as i, dogadjaji as d where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
 
 ?>
