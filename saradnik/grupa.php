@@ -322,11 +322,11 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>"  class="default">
 		<input type="submit" value="Registruj"  class="default"><br/><br/>
 	
-		<input type="radio" name="prisustvo" value="3">Svi prisutni
+		<input type="radio" name="prisustvo" value="1">Svi prisutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="prisustvo" value="2">Svi odsutni
+		<input type="radio" name="prisustvo" value="0">Svi odsutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type ="radio" name="prisustvo" value="1" CHECKED>NP (Nije poznato)
+		<input type ="radio" name="prisustvo" value="2" CHECKED>NP (Nije poznato)
 	
 	</form>
 	</td></tr></table>
@@ -334,7 +334,6 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	<script language="JavaScript">
 	// Funkcija koja se poziva klikom na polje u tabeli
 	function prisustvo(student,cas) {
-		
 		if (zamger_ajah_sending) {
 			alert("Slanje u toku. Sačekajte malo.");
 			return false;
@@ -347,19 +346,19 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	function invert(student,cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
 		if (val == "DA") {
-			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFE303";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NP";
-			return 1;
-		}
-		else if (val == "NP"){
 			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
 			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
+			return 0;
+		}
+		else if (val == "NE"){
+			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFE303";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NP";
 			return 2;	
 		}
 		else {
 			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
 			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
-			return 3;
+			return 1;
 		}
 	}
 	function upozorenje(cas) {
@@ -623,12 +622,12 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	foreach ($cas_id_array as $cid) {
 		$q320 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cid");
 		if (mysql_num_rows($q320)>0) {
-			if (mysql_result($q320,0,0) == 1) { 
+			if (mysql_result($q320,0,0) == 2) { 
 				$prisustvo_ispis .= "<td bgcolor=\"#FFE303\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NP</div></td>";
-			} else if(mysql_result($q320,0,0) == 2){ 
+			} else if(mysql_result($q320,0,0) == 0){ 
 				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NE</div></td>";
 				$odsustvo++;
-			} else if( mysql_result($q320,0,0) == 3){
+			} else if( mysql_result($q320,0,0) == 1){
 				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">DA</div></td>";
 			}
 			//$ocj = mysql_result($q14,0,1);

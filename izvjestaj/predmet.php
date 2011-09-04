@@ -426,12 +426,12 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 				foreach ($cas_id_array as $cid) {
 					$q200 = mysql_query("select prisutan,plus_minus from prisustvo where student=$stud_id and cas=$cid");
 					if (mysql_num_rows($q200)>0) {
-						if (mysql_result($q200,0,0) == 1) { 
+						if (mysql_result($q200,0,0) == 2) { 
 							$ispis .= "<td bgcolor=\"#FFE303\" align=\"center\">NP</td>\n";
-						} else if(mysql_result($q200,0,0) == 2){ 
+						} else if(mysql_result($q200,0,0) == 0){ 
 							$ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
 							$odsustvo++;
-						} else if(mysql_result($q200,0,0) == 3){
+						} else if(mysql_result($q200,0,0) == 1){
 							$ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
 						}
 						//$ocj = mysql_result($r4,0,1);

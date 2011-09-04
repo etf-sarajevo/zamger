@@ -110,8 +110,8 @@ case "prisustvo":
 
 	// Akcija
 
-	if ($student>0 && $cas>0 && $prisutan>0) {
-		$prisutan--;
+	if ($student>0 && $cas>0 && $prisutan>=0) {
+		//$prisutan--;
 		$q1 = myquery("select prisutan from prisustvo where student=$student and cas=$cas");
 		if (mysql_num_rows($q1)<1) {
 			$q2 = myquery("insert into prisustvo set prisutan=$prisutan, student=$student, cas=$cas");

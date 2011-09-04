@@ -279,12 +279,12 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 		$q80 = myquery("select prisutan from prisustvo where student=$userid and cas=$r70[0]");
 		if (mysql_num_rows($q80)<1) {
 			$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\">/</td>\n";
-		} else if (mysql_result($q80,0,0)==1) {
+		} else if (mysql_result($q80,0,0)==2) {
 			$statusi .= "<td bgcolor=\"#FFE303\" align=\"center\">NP</td>\n";
-		} else if(mysql_result($q80,0,0)==2){
+		} else if(mysql_result($q80,0,0)==0){
 			$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
 			$odsustva++;
-		} else if(mysql_result($q80,0,0)==3){
+		} else if(mysql_result($q80,0,0)==1){
 			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
 		}
 	}
