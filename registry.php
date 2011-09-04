@@ -65,7 +65,7 @@ array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
 array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana studija", "B", "1", "0"),
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
-
+array("studentska/plan_studija", "Novo kreiranje plana studija", "Novo kreiranje plana studija", "B", "1", "0"),
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
