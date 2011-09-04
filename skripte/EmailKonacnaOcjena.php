@@ -114,5 +114,5 @@ else {
 
 ?> 
 }
-else echo '<i>Onemoguæeno slanje emaila. Molimo provjerite vaše konfiguracijske postavke u config.php</i>';
+else echo '<i>Onemoguceno slanje emaila. Molimo provjerite vase konfiguracijske postavke u config.php</i>';
 ?> 
