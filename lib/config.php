@@ -61,9 +61,7 @@ $_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
- $cong_email = true;
-
-debugging poruke
+ $conf_email = true;
 
 
 // ------ MOODLE INTEGRACIJA ---------
