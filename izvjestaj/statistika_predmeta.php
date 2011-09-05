@@ -264,10 +264,40 @@ if ($odrzano_ispita==0) {
 	** - Ovaj broj je određen pod pretpostavkom da ne postoji minimalan broj bodova kao uslov za usmeni ispit. Ukoliko postoji takav uslov, profesor posebno definiše na koji način ovi studenti mogu prikupiti preostale potrebne bodove.<br>
 	*** - Studenti koji nisu skupili 20 bodova ne mogu pristupiti popravnom ispitu. Ukoliko se ovo pravilo ne odnosi na ovaj predmet, ove studente treba pribrojiti studentima koji izlaze na ispit integralno.</p>
 	<?
+		$niz = array(1,2,3,4);
+		$niz = implode(',', $niz)
+	?>
+	<h4>Distribucija ocjena</h4>
+	<div id="grafik">
+		 <? 
+		 	$moguce_ocjene = array(5,6,7,8,9,10);
+		 	$broj_ocjena = array();
+		 	foreach ($moguce_ocjene as $moguca_ocjena){
+		 		$q100 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena=$moguca_ocjena");
+		 		$br_ocjena = mysql_result($q100,0,0);
+		 		$broj_ocjena[$moguca_ocjena] = $br_ocjena;
+		 		
+		 	}
+		 	$max_ocjena =max($broj_ocjena); 
+		 	foreach ($broj_ocjena as $oc => $broj){
+		 		?>
+		 		<div style="width:45px; height:
+		 			<?
+		 				if($broj==0) print "30";
+		 				else {
+		 					$broj_pixela = ($broj/$max_ocjena)*200;
+		 					$broj_pixela = intval($broj_pixela);
+		 					print $broj_pixela;
+		 				}
+		 			?>
+		 		px; background:green;margin-left:5px;float:left;"><span style="color:white;font-size: 25px;"><?=$broj?></span><span>&nbsp;(<?=$oc?>)</span></div>	
+		 		<?
+		 	}
+		 ?>
+	</div>
+	<?
 	return;
 }
-
-
 }
 
 ?>
