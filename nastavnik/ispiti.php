@@ -305,7 +305,7 @@ if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad "
 		print "<p>Brisanje u toku. Molimo budite strpljivi, ova akcija može potrajati nekoliko minuta.</p>\n\n\n\n";
 		$q210 = myquery("select io.student, pk.id from ispitocjene as io, student_predmet as sp, ponudakursa as pk where io.ispit=$ispit and io.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		$brojac=1;
-		while ($r210 = mysql_result($q210)) {
+		while ($r210 = mysql_fetch_row($q210)) {
 			$student = $r210[0];
 			$ponudakursa = $r210[1];
 			print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
