@@ -84,8 +84,8 @@ INSERT INTO `angazman_status` (`id`, `naziv`) VALUES
 (1, 'odgovorni nastavnik'),
 (2, 'asistent'),
 (3, 'demonstrator'),
-(4, 'predavač - istaknuti stručnjak iz prakse'),
-(5, 'asistent - istaknuti stručnjak iz prakse'),
+(4, 'predavaÄ� - istaknuti struÄ�njak iz prakse'),
+(5, 'asistent - istaknuti struÄ�njak iz prakse'),
 (6, 'profesor emeritus');
 
 
@@ -154,7 +154,7 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 (5, 'Slovenija'),
 (6, 'Kosovo'),
 (7, 'Turska'),
-(8, 'Njemačka'),
+(8, 'NjemaÄ�ka'),
 (9, 'Makedonija'),
 (10, 'Iran');
 
@@ -190,11 +190,11 @@ CREATE TABLE IF NOT EXISTS `institucija` (
 --
 
 INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`) VALUES
-(2, 'Odsjek za računarstvo i informatiku', 1, 'RI'),
+(2, 'Odsjek za raÄ�unarstvo i informatiku', 1, 'RI'),
 (3, 'Odsjek za automatiku i elektroniku', 1, 'AE'),
 (4, 'Odsjek za elektroenergetiku', 1, 'EE'),
 (5, 'Odsjek za telekomunikacije', 1, 'TK'),
-(1, 'Elektrotehnički fakultet Sarajevo', 0, 'ETF');
+(1, 'ElektrotehniÄ�ki fakultet Sarajevo', 0, 'ETF');
 
 -- --------------------------------------------------------
 
@@ -285,18 +285,18 @@ CREATE TABLE IF NOT EXISTS `kanton` (
 
 INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 (1, 'Bosansko-Podrinjski kanton', 'BPK'),
-(2, 'Hercegovačko-Neretvanski kanton', 'HNK'),
+(2, 'HercegovaÄ�ko-Neretvanski kanton', 'HNK'),
 (3, 'Livanjski kanton', 'LK'),
 (4, 'Posavski kanton', 'PK'),
 (5, 'Sarajevski kanton', 'SK'),
 (6, 'Srednjobosanski kanton', 'SBK'),
 (7, 'Tuzlanski kanton', 'TK'),
 (8, 'Unsko-Sanski kanton', 'USK'),
-(9, 'Zapadno-Hercegovački kanton', 'ZHK'),
-(10, 'Zeničko-Dobojski kanton', 'ZDK'),
+(9, 'Zapadno-HercegovaÄ�ki kanton', 'ZHK'),
+(10, 'ZeniÄ�ko-Dobojski kanton', 'ZDK'),
 (11, 'Republika Srpska', 'RS'),
-(12, 'Distrikt Brčko', 'DB'),
-(13, 'Strani državljanin', 'SD');
+(12, 'Distrikt BrÄ�ko', 'DB'),
+(13, 'Strani drÅ¾avljanin', 'SD');
 
 -- --------------------------------------------------------
 
@@ -477,7 +477,7 @@ INSERT INTO `mjesto` (`id`, `naziv`, `opcina`, `drzava`) VALUES
 (3, 'Zenica', 77, 1),
 (4, 'Mostar', 46, 1),
 (5, 'Banja Luka', 93, 1),
-(6, 'Bihać', 2, 1),
+(6, 'BihaÄ‡', 2, 1),
 (7, 'Tuzla', 69, 1);
 
 
@@ -500,7 +500,7 @@ CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
 INSERT INTO `nacin_studiranja` (`id`, `naziv`) VALUES
 (1, 'Redovan'),
 (2, 'Paralelan'),
-(3, 'Redovan samofinansirajući'),
+(3, 'Redovan samofinansirajuÄ‡i'),
 (0, 'Nepoznat status');
 
 
@@ -521,7 +521,7 @@ CREATE TABLE IF NOT EXISTS `nacionalnost` (
 --
 
 INSERT INTO `nacionalnost` (`id`, `naziv`) VALUES
-(1, 'Bošnjak/Bošnjakinja'),
+(1, 'BoÅ¡njak/BoÅ¡njakinja'),
 (2, 'Srbin/Srpkinja'),
 (3, 'Hrvat/Hrvatica'),
 (4, 'Rom/Romkinja'),
@@ -568,7 +568,24 @@ CREATE TABLE IF NOT EXISTS `naucni_stepen` (
 INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 (1, 'Doktor nauka', 'dr'),
 (2, 'Magistar nauka', 'mr'),
-(6, 'Bez naučnog stepena', '');
+(6, 'Bez nauÄ�nog stepena', '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifikacija`
+--
+
+CREATE TABLE IF NOT EXISTS `notifikacija` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`tekst` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+`link` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+`tip` int(1) NOT NULL,
+`procitana` int(1) NOT NULL,
+`vrijeme` timestamp NOT NULL,
+`student` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -641,49 +658,49 @@ CREATE TABLE IF NOT EXISTS `opcina` (
 --
 
 INSERT INTO `opcina` (`id`, `naziv`) VALUES
-(1, 'Banovići'),
-(2, 'Bihać'),
+(1, 'BanoviÄ‡i'),
+(2, 'BihaÄ‡'),
 (3, 'Bosanska Krupa'),
 (4, 'Bosanski Petrovac'),
 (5, 'Bosansko Grahovo'),
 (6, 'Breza'),
 (7, 'Bugojno'),
-(8, 'Busovača'),
-(9, 'Bužim'),
-(10, 'Čapljina'),
+(8, 'BusovaÄ�a'),
+(9, 'BuÅ¾im'),
+(10, 'ÄŒapljina'),
 (11, 'Cazin'),
-(12, 'Čelić'),
+(12, 'ÄŒeliÄ‡'),
 (13, 'Centar, Sarajevo'),
-(14, 'Čitluk'),
+(14, 'ÄŒitluk'),
 (15, 'Drvar'),
 (16, 'Doboj Istok'),
 (17, 'Doboj Jug'),
-(18, 'Dobretići'),
-(19, 'Domaljevac-Šamac'),
+(18, 'DobretiÄ‡i'),
+(19, 'Domaljevac-Å amac'),
 (20, 'Donji Vakuf'),
-(21, 'Foča-Ustikolina'),
+(21, 'FoÄ�a-Ustikolina'),
 (22, 'Fojnica'),
-(23, 'Glamoč'),
-(24, 'Goražde'),
+(23, 'GlamoÄ�'),
+(24, 'GoraÅ¾de'),
 (25, 'Gornji Vakuf-Uskoplje'),
-(26, 'Gračanica'),
-(27, 'Gradačac'),
+(26, 'GraÄ�anica'),
+(27, 'GradaÄ�ac'),
 (28, 'Grude'),
-(29, 'Hadžići'),
-(30, 'Ilidža'),
-(31, 'Ilijaš'),
+(29, 'HadÅ¾iÄ‡i'),
+(30, 'IlidÅ¾a'),
+(31, 'IlijaÅ¡'),
 (32, 'Jablanica'),
 (33, 'Jajce'),
 (34, 'Kakanj'),
 (35, 'Kalesija'),
 (36, 'Kiseljak'),
 (37, 'Kladanj'),
-(38, 'Ključ'),
+(38, 'KljuÄ�'),
 (39, 'Konjic'),
-(40, 'Kreševo'),
+(40, 'KreÅ¡evo'),
 (41, 'Kupres'),
 (42, 'Livno'),
-(43, 'Ljubuški'),
+(43, 'LjubuÅ¡ki'),
 (44, 'Lukavac'),
 (45, 'Maglaj'),
 (46, 'Mostar'),
@@ -691,76 +708,76 @@ INSERT INTO `opcina` (`id`, `naziv`) VALUES
 (48, 'Novi Grad, Sarajevo'),
 (49, 'Novo Sarajevo'),
 (50, 'Novi Travnik'),
-(51, 'Odžak'),
+(51, 'OdÅ¾ak'),
 (52, 'Olovo'),
-(53, 'Orašje'),
-(54, 'Pale-Prača'),
-(55, 'Posušje'),
+(53, 'OraÅ¡je'),
+(54, 'Pale-PraÄ�a'),
+(55, 'PosuÅ¡je'),
 (56, 'Prozor-Rama'),
 (57, 'Ravno'),
 (58, 'Sanski Most'),
 (59, 'Sapna'),
-(60, 'Široki Brijeg'),
+(60, 'Å iroki Brijeg'),
 (61, 'Srebrenik'),
 (62, 'Stari Grad, Sarajevo'),
 (63, 'Stolac'),
-(64, 'Teočak'),
-(65, 'Tešanj'),
+(64, 'TeoÄ�ak'),
+(65, 'TeÅ¡anj'),
 (66, 'Tomislavgrad'),
 (67, 'Travnik'),
 (68, 'Trnovo (FBiH)'),
 (69, 'Tuzla'),
 (70, 'Usora'),
-(71, 'Vareš'),
-(72, 'Velika Kladuša'),
+(71, 'VareÅ¡'),
+(72, 'Velika KladuÅ¡a'),
 (73, 'Visoko'),
 (74, 'Vitez'),
-(75, 'Vogošća'),
-(76, 'Zavidovići'),
+(75, 'VogoÅ¡Ä‡a'),
+(76, 'ZavidoviÄ‡i'),
 (77, 'Zenica'),
-(78, 'Žepče'),
-(79, 'Živinice'),
-(80, 'Berkovići'),
+(78, 'Å½epÄ�e'),
+(79, 'Å½ivinice'),
+(80, 'BerkoviÄ‡i'),
 (81, 'Bijeljina'),
-(82, 'Bileća'),
+(82, 'BileÄ‡a'),
 (83, 'Bosanska Kostajnica'),
 (84, 'Bosanski Brod'),
 (85, 'Bratunac'),
-(86, 'Čajniče'),
-(87, 'Čelinac'),
+(86, 'ÄŒajniÄ�e'),
+(87, 'ÄŒelinac'),
 (88, 'Derventa'),
 (89, 'Doboj'),
-(90, 'Donji Žabar'),
-(91, 'Foča'),
+(90, 'Donji Å½abar'),
+(91, 'FoÄ�a'),
 (92, 'Gacko'),
 (93, 'Banja Luka'),
-(94, 'Gradiška'),
+(94, 'GradiÅ¡ka'),
 (95, 'Han Pijesak'),
-(96, 'Istočni Drvar'),
-(97, 'Istočna Ilidža'),
-(98, 'Istočni Mostar'),
-(99, 'Istočni Stari Grad'),
-(100, 'Istočno Novo Sarajevo'),
+(96, 'IstoÄ�ni Drvar'),
+(97, 'IstoÄ�na IlidÅ¾a'),
+(98, 'IstoÄ�ni Mostar'),
+(99, 'IstoÄ�ni Stari Grad'),
+(100, 'IstoÄ�no Novo Sarajevo'),
 (101, 'Jezero'),
 (102, 'Kalinovik'),
-(103, 'Kneževo'),
+(103, 'KneÅ¾evo'),
 (104, 'Kozarska Dubica'),
-(105, 'Kotor Varoš'),
+(105, 'Kotor VaroÅ¡'),
 (106, 'Krupa na Uni'),
 (107, 'Kupres (RS)'),
-(108, 'Laktaši'),
+(108, 'LaktaÅ¡i'),
 (109, 'Ljubinje'),
 (110, 'Lopare'),
-(111, 'Milići'),
-(112, 'Modriča'),
-(113, 'Mrkonjić Grad'),
+(111, 'MiliÄ‡i'),
+(112, 'ModriÄ�a'),
+(113, 'MrkonjiÄ‡ Grad'),
 (114, 'Nevesinje'),
 (115, 'Novi Grad (RS)'),
-(116, 'Novo Goražde'),
+(116, 'Novo GoraÅ¾de'),
 (117, 'Osmaci'),
-(118, 'Oštra Luka'),
+(118, 'OÅ¡tra Luka'),
 (119, 'Pale'),
-(120, 'Pelagićevo'),
+(120, 'PelagiÄ‡evo'),
 (121, 'Petrovac'),
 (122, 'Petrovo'),
 (123, 'Prijedor'),
@@ -768,21 +785,21 @@ INSERT INTO `opcina` (`id`, `naziv`) VALUES
 (125, 'Ribnik'),
 (126, 'Rogatica'),
 (127, 'Rudo'),
-(128, 'Šamac'),
-(129, 'Šekovići'),
-(130, 'Šipovo'),
+(128, 'Å amac'),
+(129, 'Å ekoviÄ‡i'),
+(130, 'Å ipovo'),
 (131, 'Sokolac'),
 (132, 'Srbac'),
 (133, 'Srebrenica'),
-(134, 'Teslić'),
+(134, 'TesliÄ‡'),
 (135, 'Trebinje'),
 (136, 'Trnovo (RS)'),
 (137, 'Ugljevik'),
-(138, 'Višegrad'),
+(138, 'ViÅ¡egrad'),
 (139, 'Vlasenica'),
 (140, 'Vukosavlje'),
 (141, 'Zvornik'),
-(142, 'Brčko'),
+(142, 'BrÄ�ko'),
 (143, '(nije u BiH)');
 
 
@@ -1269,26 +1286,26 @@ CREATE TABLE IF NOT EXISTS `savjet_dana` (
 --
 
 INSERT INTO `savjet_dana` (`id`, `tekst`, `vrsta_korisnika`) VALUES
-(1, '<p>...da je Charles Babbage, matematičar i filozof iz 19. vijeka za kojeg se smatra da je otac ideje prvog programabilnog računara, u svojoj biografiji napisao:</p>\r\n\r\n<p><i>U dva navrata su me pitali</i></p>\r\n\r\n<p><i>"Molim Vas gospodine Babbage, ako u Vašu mašinu stavite pogrešne brojeve, da li će izaći tačni odgovori?"</i></p>\r\n\r\n<p><i>Jednom je to bio pripadnik Gornjeg, a jednom Donjeg doma. Ne mogu da potpuno shvatim tu vrstu konfuzije ideja koja bi rezultirala takvim pitanjem.</i></p>', 'nastavnik'),
-(2, '<p>...da sada možete podesiti sistem bodovanja na vašem predmetu (broj bodova koje studenti dobijaju za ispite, prisustvo, zadaće, seminarski rad, projekte...)?</p>\r\n<ul><li>Kliknite na dugme [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite opciju <i>Sistem bodovanja</i>.</li>\r\n<li>Slijedite uputstva.</li></ul>\r\n<p><b>Važna napomena:</b> Promjena sistema bodovanja može dovesti do gubitka do sada upisanih bodova na predmetu!</p>', 'nastavnik'),
-(3, '<p>...da možete pristupiti Dosjeu studenta sa svim podacima koji se tiču uspjeha studenta na datom predmetu? Dosje studenta sadrži, između ostalog:</p>\r\n<ul><li>Fotografiju studenta;</li>\r\n<li>Koliko puta je student ponavljao predmet, da li je u koliziji, da li je prenio predmet na višu godinu;</li>\r\n<li>Sve podatke sa pogleda grupe (prisustvo, zadaće, rezultati ispita, konačna ocjena) sa mogućnošću izmjene svakog podatka;</li>\r\n<li>Za ispite i konačnu ocjenu možete vidjeti dnevnik izmjena sa informacijom ko je i kada izmijenio podatak.</li>\r\n<li>Brze linkove na dosjee istog studenta sa ranijih akademskih godina (ako je ponavljao/la predmet).</li></ul>\r\n\r\n<p>Dosjeu studenta možete pristupiti tako što kliknete na ime studenta u pregledu grupe. Na vašem početnom ekranu kliknite na ime grupe ili link <i>(Svi studenti)</i>, a zatim na ime i prezime studenta.</p>\r\n	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik'),
-(4, '<p>...da možete ostavljati kratke tekstualne komentare na rad studenata?</p>\r\n<p>Na vašem početnom ekranu kliknite na ime grupe ili na link <i>(Svi studenti)</i>. Zatim kliknite na ikonu sa oblačićem pored imena studenta:<br>\r\n<img src="images/16x16/komentar-plavi.png" width="16" height="16"></p>\r\n<p>Možete dobiti pregled studenata sa komentarima na sljedeći način:<br>\r\n<ul><li>Pored naziva predmeta kliknite na link [EDIT].</li>\r\n<li>Zatim s lijeve strane kliknite na link <i>Izvještaji</i>.</li>\r\n<li>Konačno, kliknite na opciju <i>Spisak studenata</i> - <i>Sa komentarima na rad</i>.</li></ul>\r\n<p>Na istog studenta možete ostaviti više komentara pri čemu je svaki komentar datiran i označeno je ko ga je ostavio.</p>	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 7-8.</i></p>', 'nastavnik'),
-(5, '<p>...da možete brzo i lako pomoću nekog spreadsheet programa (npr. MS Excel) kreirati grupe na predmetu?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>Izvještaji</i>, zatim s desne idite na <i>Spisak studenata</i> - <i>Bez grupa</i>.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvještaja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"><br>\r\nDobićete spisak svih studenata na predmetu sa brojevima indeksa.</li>\r\n<li>Desno od imena studenta stoji broj indeksa. <i>Umjesto broja indeksa</i> ukucajte naziv grupe npr. "Grupa 1" (bez navodnika). Koristite Copy i Paste opcije Excela da biste brzo definisali grupu za sve studente.</li>\r\n<li>Kada završite definisanje grupa, koristeći tipku Shift i tipke sa strelicama označite imena studenata i imena grupa. Nemojte označiti naslov niti redni broj. Držeći tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vašeg web preglednika da se vratite na spisak izvještaja. Sada s lijeve strane izaberite opciju <i>Grupe za predavanja i vježbe</i>.</li>\r\n<li>Pozicionirajte kursor miša u polje ispod naslova <i>Masovni unos studenata u grupe</i> i pritisnite Ctrl+V. Trebalo bi da ugledate raspored studenata po grupama unutar tekstualnog polja.</li>\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> a pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger će vam ponuditi još jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li></ul>\r\n<p>Ovim su grupe kreirane!</p>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 16.</i></p>', 'nastavnik'),
-(6, '<p>...da možete brzo i lako ocijeniti zadaću svim studentima na predmetu ili u grupi, koristeći neki spreadsheet program (npr. MS Excel)?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>Izvještaji</i>, a s desne izaberite izvještaj <i>Spisak studenata</i> - <i>Bez grupa</i>. Alternativno, ako želite unositi ocjene samo za jednu grupu, možete koristiti izvještaj <i>Jedna kolona po grupama</i> pa u Excelu pobrisati sve grupe osim one koja vas interesuje.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvještaja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"></li>\r\n<li>Pored imena svakog studenta nalazi se broj indeksa. <b>Umjesto broja indeksa</b> upišite broj bodova ostvarenih na određenom zadatku određene zadaće.</li>\r\n<li>Korištenjem tipke Shift i tipki sa strelicama izaberite samo imena studenata i bodove. Nemojte selektovati naslov ili redne brojeve. Držeći tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vašeg web preglednika da se vratite na spisak izvještaja. Sada s lijeve strane izaberite opciju <i>Kreiranje i unos zadaća</i>.</li>\r\n<li>Uvjerite se da je na spisku <i>Postojeće zadaće</i> definisana zadaća koju želite unijeti. Ako nije, popunite formular ispod naslova <i>Kreiranje zadaće</i> sa odgovarajućim podacima.</li>\r\n<li>Pozicionirajte kursor miša u polje ispod naslova <i>Masovni unos zadaća</i> i pritisnite Ctrl+V. Trebalo bi da ugledate raspored studenata po grupama unutar tekstualnog polja.</li>\r\n<li>U polju <i>Izaberite zadaću</i> odaberite upravo kreiranu zadaću. Ako zadaća ima više zadataka, u polju <i>Izaberite zadatak</i> odaberite koji zadatak masovno unosite.\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> a pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger će vam ponuditi još jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li>\r\n<li>Ovu proceduru sada vrlo lako možete ponoviti za sve zadatke i sve zadaće zato što već imate u Excelu sve podatke osim broja bodova.</li></ul>\r\n<p>Ovim su rezultati zadaće uneseni za sve studente!</p>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 27-28.</i></p>', 'nastavnik'),
-(12, '<p>...da možete ograničiti format datoteke u kojem studenti šalju zadaću?</p>\r\n<p>Prilikom kreiranja nove zadaće, označite opciju pod nazivom <i>Slanje zadatka u formi attachmenta</i>. Pojaviće se spisak tipova datoteka koje studenti mogu koristiti prilikom slanja zadaće u formi attachmenta.</p>\r\n<p>Izaberite jedan ili više formata kako bi studenti dobili grešku u slučaju da pokušaju poslati zadaću u nekom od formata koje niste izabrali. Ako ne izaberete nijednu od ponuđenih opcija, biće dozvoljeni svi formati datoteka, uključujući i one koji nisu navedeni na spisku.</p>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 26-27.</i></p>', 'nastavnik'),
-(7, '<p>...da možete preuzeti odjednom sve zadaće koje su poslali studenti u grupi u formi ZIP fajla, pri čemu su zadaće imenovane po sistemu Prezime_Ime_BrojIndeksa?</p>\r\n<ul><li>Na vašem početnom ekranu kliknite na ime grupe ili na link <i>(Svi studenti)</i>.</li>\r\n<li>U zaglavlju tabele sa spiskom studenata možete vidjeti navedene zadaće: npr. Zadaća 1, Zadaća 2 itd.</li>\r\n<li>Ispod naziva svake zadaće nalazi se riječ <i>Download</i> koja predstavlja link - kliknite na njega.</li></ul>	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 11-12.</i></p>', 'nastavnik'),
-(8, '<p>...da možete imati više termina jednog ispita? Pri tome se datum termina ne mora poklapati sa datumom ispita.</p>\r\n<p>Datum ispita se daje samo okvirno, kako bi se po nečemu razlikovali npr. junski rok i septembarski rok. Datum koji studentu piše na prijavi je datum koji pridružite terminu za prijavu ispita.</p>\r\n<p>Da biste definisali termine ispita:</p>\r\n<ul><li>Najprije kreirajte ispit, tako što ćete kliknuti na link [EDIT] a zatim izabrati opciju Ispiti s lijeve strane. Zatim popunite formular ispod naslova <i>Kreiranje novog ispita</i>.</li>\r\n<li>U tabeli ispita možete vidjeti novi ispit. Desno od ispita možete vidjeti link <i>Termini</i>. Kliknite na njega.</li>\r\n<li>Zatim kreirajte proizvoljan broj termina popunjavajući formular ispod naslova <i>Registrovanje novog termina</i>.</li></ul>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, poglavlje "Prijavljivanje za ispit" (str. 21-26).</i></p>', 'nastavnik'),
-(9, '<p>...da, u slučaju da se neki student nije prijavio/la za vaš ispit, možete ih manuelno prijaviti na termin kako bi imao/la korektan datum na prijavi?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta. S lijeve strane izaberite link <i>Ispiti</i>.</li>\r\n<li>U tabeli ispita locirajte ispit koji želite i kliknite na link <i>Termini</i> desno od željenog ispita.</li>\r\n<li>Ispod naslova <i>Objavljeni termini</i> izaberite željeni termin i kliknite na link <i>Studenti</i> desno od željenog termina.</li>\r\n<li>Sada možete vidjeti sve studente koji su se prijavili za termin. Pored imena i prezimena studenta možete vidjeti dugme <i>Izbaci</i> kako student više ne bi bio prijavljen za taj termin.</li>\r\n<li>Ispod tabele studenata možete vidjeti padajući spisak svih studenata upisanih na vaš predmet. Izaberite na padajućem spisku studenta kojeg želite prijaviti za termin i kliknite na dugme <i>Dodaj</i>.</li></ul>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 26.</i></p>', 'nastavnik'),
-(10, '<p>...da upisom studenata na predmete u Zamgeru sada u potpunosti rukuje Studentska služba?</p>\r\n<p>Ako vam se pojavi student kojeg nemate na spiskovima u Zamgeru, recite mu da se <b>obavezno</b> javi u Studentsku službu, ne samo radi vašeg predmeta nego generalno radi regulisanja statusa (npr. neplaćenih školarina, taksi i slično).</p>', 'nastavnik'),
-(11, '<p>...da svaki korisnik može imati jedan od tri nivoa pristupa bilo kojem predmetu:</p><ul><li><i>asistent</i> - može unositi prisustvo časovima i ocjenjivati zadaće</li><li><i>super-asistent</i> - može unositi sve podatke osim konačne ocjene</li><li><i>nastavnik</i> - može unositi i konačnu ocjenu.</li></ul><p>Početni nivoi pristupa se određuju na osnovu zvanično usvojenog nastavnog ansambla, a u slučaju da želite promijeniti nivo pristupa bez izmjena u ansamblu (npr. kako biste asistentu dali privilegije unosa rezultata ispita), kontaktirajte Studentsku službu.</p>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 3-4.</i></p>', 'nastavnik'),
-(13, '<p>...da možete utjecati na format u kojem se izvještaj prosljeđuje Excelu kada kliknete na Excel ikonu u gornjem desnom uglu izvještaja?<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"></p>\r\n<p>Može se desiti da izvještaj ne izgleda potpuno kako treba u vašem spreadsheet programu. Podaci se šalju u CSV formatu pod pretpostavkom da koristite regionalne postavke za BiH (ili Hrvatsku ili Srbiju). Ako izvještaj u vašem programu ne izgleda kako treba, slijedi nekoliko savjeta kako možete utjecati na to.</p>\r\n<ul><li>Ako se svi podaci nalaze u jednoj koloni, vjerovatno je da koristite sistem sa Američkim regionalnim postavkama. U vašem Profilu možete pod Zamger opcije izabrati CSV separator "zarez" umjesto "tačka-zarez", ali vjerovatno je da vam naša slova i dalje neće izgledati kako treba.</li>\r\n<li>Moguće je da će dokument izgledati ispravno, osim slova sa afrikatima koja će biti zamijenjena nekim drugim. Na žalost, ne postoji način da se ovo riješi. Excel može učitati CSV datoteke isključivo u formatu koji ne podržava prikaz naših slova. Možete uraditi zamjenu koristeći Replace opciju vašeg programa. Nešto složenija varijanta je da koristite "Save Link As" opciju vašeg web preglednika, promijenite naziv dokumenta iz izvjestaj.csv u izvjestaj.txt, a zatim koristite <a href="http://office.microsoft.com/en-us/excel-help/text-import-wizard-HP010102244.aspx">Excel Text Import Wizard</a>.</li>\r\n<li>Ako koristite OpenOffice.org uredski paket, prilikom otvaranja dokumenta izaberite Text encoding "Eastern European (Windows-1250)", a kao razdjelnik (Delimiter) izaberite tačka-zarez (Semicolon). Ostale opcije obavezno isključite. Takođe isključite opciju spajanja razdjelnika (Merge delimiters).</li>\r\n<li>Može se desiti da vaš program prepozna određene stavke (npr. redne brojeve ili ostvarene bodove) kao datum, pogotovo ako ste poslušali savjet iz prve tačke - odnosno, ako ste kao CSV separator podesili "zarez".</li>\r\n<li>U velikoj većini slučajeva možete dobiti potpuno zadovoljavajuće rezultate ako otvorite prazan dokument u vašem spreadsheet programu (npr. Excel) i zatim napravite copy-paste kompletnog sadržaja web stranice.</li></ul>\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, strana 32-33.</i></p>', 'nastavnik'),
-(14, '<p>...da možete brzo i lako pomoću nekog spreadsheet programa (npr. MS Excel) unijeti rezultate ispita ili konačne ocjene?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>Izvještaji</i>, zatim s desne idite na <i>Spisak studenata</i> - <i>Bez grupa</i>. Ili, ako vam je lakše unositi podatke po grupama, izaberite izvještaj <i>Jedna kolona po grupama</i>.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvještaja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"><br>\r\nDobićete spisak svih studenata na predmetu sa brojevima indeksa.</li>\r\n<li>Desno od imena studenta stoji broj indeksa. <i>Umjesto broja indeksa</i> ukucajte broj bodova koje je student ostvario na ispitu ili konačnu ocjenu.</li>\r\n<li>Kada završite unos rezultata/ocjena, koristeći tipku Shift i tipke sa strelicama označite imena studenata i ocjene. Nemojte označiti naslov niti redni broj studenta. Držeći tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vašeg web preglednika da se vratite na spisak izvještaja.</li>\r\n<li>Ako unosite konačne ocjene, s lijeve strane izaberite opciju <i>Konačna ocjena</i>.</li>\r\n<li>Ako unosite rezultate ispita, s lijeve strane izaberite opciju <i>Ispiti</i>, kreirajte novi ispit, a zatim kliknite na link <i>Masovni unos rezultata</i> pored novokreiranog ispita.</li>\r\n<li>Pozicionirajte kursor miša u polje ispod naslova <i>Masovni unos ocjena</i> i pritisnite Ctrl+V. Trebalo bi da ugledate rezultate ispita odnosno ocjene.</li>\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> (a ne Prezime[TAB]Ime), te da pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger će vam ponuditi još jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li></ul>\r\n<p>Ovim su unesene ocjene / rezultati ispita!</p>\r\n\r\n\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 18-20 (masovni unos ispita) i str. 28-29 (masovni unos konačne ocjene).</i></p>', 'nastavnik'),
-(15, '<p>...da kod evidencije prisustva, pored stanja "prisutan" (zelena boja) i stanja "odsutan" (crvena boja) postoji i nedefinisano stanje (žuta boja). Ovo stanje se dodjeljuje ako je student upisan u grupu nakon što su održani određeni časovi.</p>\r\n<p>Drečavo žuta boja je odabrana kako bi se predmetni nastavnik odnosno asistent podsjetio da se mora odlučiti da li će studentu priznati časove kao prisustva ili ne. U međuvremenu, nedefinisano stanje će se tumačiti u korist studenta, odnosno neće ulaziti u broj izostanaka prilikom određivanja da li je student izgubio bodove za prisustvo.</p>\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik'),
-(16, '<p>...da ne morate voditi evidenciju o prisustvu kroz Zamger ako ne želite, a i dalje možete imati ažuran broj bodova ostvarenih na prisustvo?</p>\r\n<p>Sistem bodovanja je takav da student dobija 10 bodova ako je odsustvovao manje od 4 puta, a 0 bodova ako je odsustvovao 4 ili više puta. Podaci o konkretnim održanim časovima u Zamgeru se ne koriste nigdje osim za internu evidenciju na predmetu.</p>\r\n<p>Dakle, u slučaju da imate vlastitu evidenciju, samo kreirajte četiri časa (datum je nebitan) i unesite četiri izostanka studentima koji nisu zadovoljili prisustvo.</p>	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 4-5.</i></p>', 'nastavnik'),
-(17, '<p>...da možete podesiti drugačiji sistem bodovanja za prisustvo od ponuđenog?</p>\r\n<p>Možete podesiti ukupan broj bodova za prisustvo (različit od 10). Možete promijeniti maksimalan broj dozvoljenih izostanaka (različit od 3) ili pak podesiti linearno bodovanje u odnosu na broj izostanaka (npr. ako je student od 14 časova izostao 2 puta, dobiće (12/14)*10 = 8,6 bodova). Konačno, umjesto evidencije pojedinačnih časova, možete odabrati da direktno unosite broj bodova za prisustvo po uzoru na rezultate ispita.</p>\r\n<p>Da biste aktivirali ovu mogućnost, trebate promijeniti sistem bodovanja samog predmeta.</p>', 'nastavnik'),
-(18, '<p>...da možete unijeti bodove za zadaću čak i ako je student nije poslao kroz Zamger?</p>\r\n<p>Da biste to uradili, potrebno je da kliknete na link <i>Prikaži dugmad za kreiranje zadataka</i> koji se nalazi u dnu stranice sa prikazom grupe (vidi sliku). Nakon što ovo uradite, ćelije tabele koje odgovaraju neposlanim zadaćama će se popuniti ikonama za kreiranje zadaće koje imaju oblik sijalice.</p>\r\n<p><a href="doc/savjet_sijalice.png" target="_new">Slika</a> - ukoliko ne vidite detalje, raširite prozor!</p>	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 10-11.</i></p>\r\n<p>U slučaju da se na vašem predmetu zadaće generalno ne šalju kroz Zamger, vjerovatno će brži način rada za vas biti da koristite masovni unos. Više informacija na str. 27-28. Uputstava.</p>', 'nastavnik'),
-(19, '<p>...da pomoću Zamgera možete poslati cirkularni mail svim studentima na vašem predmetu ili u pojedinim grupama?</p>\r\n<p>Da biste pristupili ovoj opciji:</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta</li>\r\n<li>U meniju sa lijeve strane odaberite opciju <i>Obavještenja za studente</i>.</li>\r\n<li>Pod menijem <i>Obavještenje za:</i> odaberite da li obavještenje šaljete svim studentima na predmetu ili samo studentima koji su članovi određene grupe.</li>\r\n<li>Aktivirajte opciju <i>Slanje e-maila</i>. Ako ova opcija nije aktivna, studenti će i dalje vidjeti vaše obavještenje na svojoj Zamger početnoj stranici (sekcija Obavještenja) kao i putem RSSa.</li>\r\n<li>U dio pod naslovom <i>Kraći tekst</i> unesite udarnu liniju vaše informacije.</li>\r\n<li>U dio pod naslovom <i>Detaljan tekst</i> možete napisati dodatna pojašnjenja, a možete ga i ostaviti praznim.</li>\r\n<li>Kliknite na dugme <i>Pošalji</i>. Vidjećete jedno po jedno ime studenta kojem je poslan mail kao i e-mail adresu na koju je mail poslan. Slanje veće količine mailova može potrajati nekoliko minuta.</li></ul>\r\n<p>Mailovi će biti poslani na adrese koje su studenti podesili koristeći svoj profil, ali i na zvanične fakultetske adrese.</p>\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 12-14.</i></p>', 'nastavnik'),
-(20, '<p>...da je promjena grupe studenta destruktivna operacija kojom se nepovratno gube podaci o prisustvu studenta na časovima registrovanim za tu grupu?</p>\r\n<p>Studenta možete prebaciti u drugu grupu putem ekrana Dosje studenta: na pogledu grupe (npr. <i>Svi studenti</i>) kliknite na ime i prezime studenta da biste ušli u njegov ili njen dosje.</p>\r\n<p>Promjenom grupe nepovratno se gubi evidencija prisustva studenta na časovima registrovanim za prethodnu grupu. Naime, između časova registrovanih za dvije različite grupe ne postoji jednoznačno mapiranje. U nekom datom trenutku vremena u jednoj grupi može biti registrovano 10 časova a u drugoj 8. Kako znati koji od tih 10 časova odgovara kojem od onih 8? I šta raditi sa suvišnim časovima? Dakle, kada premjestite studenta u grupu u kojoj već postoje registrovani časovi, prisustvo studenta tim časovima će biti označeno kao nedefinisano (žuta boja). Prepušta se nastavnom ansamblu da odluči koje od tih časova će priznati kao prisutne, a koje markirati kao odsutne. Vjerovatno ćete se pitati šta ako se student ponovo vrati u polaznu grupu. Odgovor je da će podaci ponovo biti izgubljeni, jer šta raditi sa časovima registrovanim u međuvremenu?</p>\r\n<p>Preporučujemo da ne vršite promjene grupe nakon što počne akademska godina.</p>\r\n	\r\n<p><i>Više informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik');
+(1, '<p>...da je Charles Babbage, matematiÄ�ar i filozof iz 19. vijeka za kojeg se smatra da je otac ideje prvog programabilnog raÄ�unara, u svojoj biografiji napisao:</p>\r\n\r\n<p><i>U dva navrata su me pitali</i></p>\r\n\r\n<p><i>"Molim Vas gospodine Babbage, ako u VaÅ¡u maÅ¡inu stavite pogreÅ¡ne brojeve, da li Ä‡e izaÄ‡i taÄ�ni odgovori?"</i></p>\r\n\r\n<p><i>Jednom je to bio pripadnik Gornjeg, a jednom Donjeg doma. Ne mogu da potpuno shvatim tu vrstu konfuzije ideja koja bi rezultirala takvim pitanjem.</i></p>', 'nastavnik'),
+(2, '<p>...da sada moÅ¾ete podesiti sistem bodovanja na vaÅ¡em predmetu (broj bodova koje studenti dobijaju za ispite, prisustvo, zadaÄ‡e, seminarski rad, projekte...)?</p>\r\n<ul><li>Kliknite na dugme [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite opciju <i>Sistem bodovanja</i>.</li>\r\n<li>Slijedite uputstva.</li></ul>\r\n<p><b>VaÅ¾na napomena:</b> Promjena sistema bodovanja moÅ¾e dovesti do gubitka do sada upisanih bodova na predmetu!</p>', 'nastavnik'),
+(3, '<p>...da moÅ¾ete pristupiti Dosjeu studenta sa svim podacima koji se tiÄ�u uspjeha studenta na datom predmetu? Dosje studenta sadrÅ¾i, izmeÄ‘u ostalog:</p>\r\n<ul><li>Fotografiju studenta;</li>\r\n<li>Koliko puta je student ponavljao predmet, da li je u koliziji, da li je prenio predmet na viÅ¡u godinu;</li>\r\n<li>Sve podatke sa pogleda grupe (prisustvo, zadaÄ‡e, rezultati ispita, konaÄ�na ocjena) sa moguÄ‡noÅ¡Ä‡u izmjene svakog podatka;</li>\r\n<li>Za ispite i konaÄ�nu ocjenu moÅ¾ete vidjeti dnevnik izmjena sa informacijom ko je i kada izmijenio podatak.</li>\r\n<li>Brze linkove na dosjee istog studenta sa ranijih akademskih godina (ako je ponavljao/la predmet).</li></ul>\r\n\r\n<p>Dosjeu studenta moÅ¾ete pristupiti tako Å¡to kliknete na ime studenta u pregledu grupe. Na vaÅ¡em poÄ�etnom ekranu kliknite na ime grupe ili link <i>(Svi studenti)</i>, a zatim na ime i prezime studenta.</p>\r\n	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik'),
+(4, '<p>...da moÅ¾ete ostavljati kratke tekstualne komentare na rad studenata?</p>\r\n<p>Na vaÅ¡em poÄ�etnom ekranu kliknite na ime grupe ili na link <i>(Svi studenti)</i>. Zatim kliknite na ikonu sa oblaÄ�iÄ‡em pored imena studenta:<br>\r\n<img src="images/16x16/komentar-plavi.png" width="16" height="16"></p>\r\n<p>MoÅ¾ete dobiti pregled studenata sa komentarima na sljedeÄ‡i naÄ�in:<br>\r\n<ul><li>Pored naziva predmeta kliknite na link [EDIT].</li>\r\n<li>Zatim s lijeve strane kliknite na link <i>IzvjeÅ¡taji</i>.</li>\r\n<li>KonaÄ�no, kliknite na opciju <i>Spisak studenata</i> - <i>Sa komentarima na rad</i>.</li></ul>\r\n<p>Na istog studenta moÅ¾ete ostaviti viÅ¡e komentara pri Ä�emu je svaki komentar datiran i oznaÄ�eno je ko ga je ostavio.</p>	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 7-8.</i></p>', 'nastavnik'),
+(5, '<p>...da moÅ¾ete brzo i lako pomoÄ‡u nekog spreadsheet programa (npr. MS Excel) kreirati grupe na predmetu?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>IzvjeÅ¡taji</i>, zatim s desne idite na <i>Spisak studenata</i> - <i>Bez grupa</i>.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvjeÅ¡taja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"><br>\r\nDobiÄ‡ete spisak svih studenata na predmetu sa brojevima indeksa.</li>\r\n<li>Desno od imena studenta stoji broj indeksa. <i>Umjesto broja indeksa</i> ukucajte naziv grupe npr. "Grupa 1" (bez navodnika). Koristite Copy i Paste opcije Excela da biste brzo definisali grupu za sve studente.</li>\r\n<li>Kada zavrÅ¡ite definisanje grupa, koristeÄ‡i tipku Shift i tipke sa strelicama oznaÄ�ite imena studenata i imena grupa. Nemojte oznaÄ�iti naslov niti redni broj. DrÅ¾eÄ‡i tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vaÅ¡eg web preglednika da se vratite na spisak izvjeÅ¡taja. Sada s lijeve strane izaberite opciju <i>Grupe za predavanja i vjeÅ¾be</i>.</li>\r\n<li>Pozicionirajte kursor miÅ¡a u polje ispod naslova <i>Masovni unos studenata u grupe</i> i pritisnite Ctrl+V. Trebalo bi da ugledate raspored studenata po grupama unutar tekstualnog polja.</li>\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> a pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger Ä‡e vam ponuditi joÅ¡ jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li></ul>\r\n<p>Ovim su grupe kreirane!</p>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 16.</i></p>', 'nastavnik'),
+(6, '<p>...da moÅ¾ete brzo i lako ocijeniti zadaÄ‡u svim studentima na predmetu ili u grupi, koristeÄ‡i neki spreadsheet program (npr. MS Excel)?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>IzvjeÅ¡taji</i>, a s desne izaberite izvjeÅ¡taj <i>Spisak studenata</i> - <i>Bez grupa</i>. Alternativno, ako Å¾elite unositi ocjene samo za jednu grupu, moÅ¾ete koristiti izvjeÅ¡taj <i>Jedna kolona po grupama</i> pa u Excelu pobrisati sve grupe osim one koja vas interesuje.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvjeÅ¡taja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"></li>\r\n<li>Pored imena svakog studenta nalazi se broj indeksa. <b>Umjesto broja indeksa</b> upiÅ¡ite broj bodova ostvarenih na odreÄ‘enom zadatku odreÄ‘ene zadaÄ‡e.</li>\r\n<li>KoriÅ¡tenjem tipke Shift i tipki sa strelicama izaberite samo imena studenata i bodove. Nemojte selektovati naslov ili redne brojeve. DrÅ¾eÄ‡i tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vaÅ¡eg web preglednika da se vratite na spisak izvjeÅ¡taja. Sada s lijeve strane izaberite opciju <i>Kreiranje i unos zadaÄ‡a</i>.</li>\r\n<li>Uvjerite se da je na spisku <i>PostojeÄ‡e zadaÄ‡e</i> definisana zadaÄ‡a koju Å¾elite unijeti. Ako nije, popunite formular ispod naslova <i>Kreiranje zadaÄ‡e</i> sa odgovarajuÄ‡im podacima.</li>\r\n<li>Pozicionirajte kursor miÅ¡a u polje ispod naslova <i>Masovni unos zadaÄ‡a</i> i pritisnite Ctrl+V. Trebalo bi da ugledate raspored studenata po grupama unutar tekstualnog polja.</li>\r\n<li>U polju <i>Izaberite zadaÄ‡u</i> odaberite upravo kreiranu zadaÄ‡u. Ako zadaÄ‡a ima viÅ¡e zadataka, u polju <i>Izaberite zadatak</i> odaberite koji zadatak masovno unosite.\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> a pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger Ä‡e vam ponuditi joÅ¡ jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li>\r\n<li>Ovu proceduru sada vrlo lako moÅ¾ete ponoviti za sve zadatke i sve zadaÄ‡e zato Å¡to veÄ‡ imate u Excelu sve podatke osim broja bodova.</li></ul>\r\n<p>Ovim su rezultati zadaÄ‡e uneseni za sve studente!</p>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 27-28.</i></p>', 'nastavnik'),
+(12, '<p>...da moÅ¾ete ograniÄ�iti format datoteke u kojem studenti Å¡alju zadaÄ‡u?</p>\r\n<p>Prilikom kreiranja nove zadaÄ‡e, oznaÄ�ite opciju pod nazivom <i>Slanje zadatka u formi attachmenta</i>. PojaviÄ‡e se spisak tipova datoteka koje studenti mogu koristiti prilikom slanja zadaÄ‡e u formi attachmenta.</p>\r\n<p>Izaberite jedan ili viÅ¡e formata kako bi studenti dobili greÅ¡ku u sluÄ�aju da pokuÅ¡aju poslati zadaÄ‡u u nekom od formata koje niste izabrali. Ako ne izaberete nijednu od ponuÄ‘enih opcija, biÄ‡e dozvoljeni svi formati datoteka, ukljuÄ�ujuÄ‡i i one koji nisu navedeni na spisku.</p>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 26-27.</i></p>', 'nastavnik'),
+(7, '<p>...da moÅ¾ete preuzeti odjednom sve zadaÄ‡e koje su poslali studenti u grupi u formi ZIP fajla, pri Ä�emu su zadaÄ‡e imenovane po sistemu Prezime_Ime_BrojIndeksa?</p>\r\n<ul><li>Na vaÅ¡em poÄ�etnom ekranu kliknite na ime grupe ili na link <i>(Svi studenti)</i>.</li>\r\n<li>U zaglavlju tabele sa spiskom studenata moÅ¾ete vidjeti navedene zadaÄ‡e: npr. ZadaÄ‡a 1, ZadaÄ‡a 2 itd.</li>\r\n<li>Ispod naziva svake zadaÄ‡e nalazi se rijeÄ� <i>Download</i> koja predstavlja link - kliknite na njega.</li></ul>	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 11-12.</i></p>', 'nastavnik'),
+(8, '<p>...da moÅ¾ete imati viÅ¡e termina jednog ispita? Pri tome se datum termina ne mora poklapati sa datumom ispita.</p>\r\n<p>Datum ispita se daje samo okvirno, kako bi se po neÄ�emu razlikovali npr. junski rok i septembarski rok. Datum koji studentu piÅ¡e na prijavi je datum koji pridruÅ¾ite terminu za prijavu ispita.</p>\r\n<p>Da biste definisali termine ispita:</p>\r\n<ul><li>Najprije kreirajte ispit, tako Å¡to Ä‡ete kliknuti na link [EDIT] a zatim izabrati opciju Ispiti s lijeve strane. Zatim popunite formular ispod naslova <i>Kreiranje novog ispita</i>.</li>\r\n<li>U tabeli ispita moÅ¾ete vidjeti novi ispit. Desno od ispita moÅ¾ete vidjeti link <i>Termini</i>. Kliknite na njega.</li>\r\n<li>Zatim kreirajte proizvoljan broj termina popunjavajuÄ‡i formular ispod naslova <i>Registrovanje novog termina</i>.</li></ul>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, poglavlje "Prijavljivanje za ispit" (str. 21-26).</i></p>', 'nastavnik'),
+(9, '<p>...da, u sluÄ�aju da se neki student nije prijavio/la za vaÅ¡ ispit, moÅ¾ete ih manuelno prijaviti na termin kako bi imao/la korektan datum na prijavi?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta. S lijeve strane izaberite link <i>Ispiti</i>.</li>\r\n<li>U tabeli ispita locirajte ispit koji Å¾elite i kliknite na link <i>Termini</i> desno od Å¾eljenog ispita.</li>\r\n<li>Ispod naslova <i>Objavljeni termini</i> izaberite Å¾eljeni termin i kliknite na link <i>Studenti</i> desno od Å¾eljenog termina.</li>\r\n<li>Sada moÅ¾ete vidjeti sve studente koji su se prijavili za termin. Pored imena i prezimena studenta moÅ¾ete vidjeti dugme <i>Izbaci</i> kako student viÅ¡e ne bi bio prijavljen za taj termin.</li>\r\n<li>Ispod tabele studenata moÅ¾ete vidjeti padajuÄ‡i spisak svih studenata upisanih na vaÅ¡ predmet. Izaberite na padajuÄ‡em spisku studenta kojeg Å¾elite prijaviti za termin i kliknite na dugme <i>Dodaj</i>.</li></ul>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 26.</i></p>', 'nastavnik'),
+(10, '<p>...da upisom studenata na predmete u Zamgeru sada u potpunosti rukuje Studentska sluÅ¾ba?</p>\r\n<p>Ako vam se pojavi student kojeg nemate na spiskovima u Zamgeru, recite mu da se <b>obavezno</b> javi u Studentsku sluÅ¾bu, ne samo radi vaÅ¡eg predmeta nego generalno radi regulisanja statusa (npr. neplaÄ‡enih Å¡kolarina, taksi i sliÄ�no).</p>', 'nastavnik'),
+(11, '<p>...da svaki korisnik moÅ¾e imati jedan od tri nivoa pristupa bilo kojem predmetu:</p><ul><li><i>asistent</i> - moÅ¾e unositi prisustvo Ä�asovima i ocjenjivati zadaÄ‡e</li><li><i>super-asistent</i> - moÅ¾e unositi sve podatke osim konaÄ�ne ocjene</li><li><i>nastavnik</i> - moÅ¾e unositi i konaÄ�nu ocjenu.</li></ul><p>PoÄ�etni nivoi pristupa se odreÄ‘uju na osnovu zvaniÄ�no usvojenog nastavnog ansambla, a u sluÄ�aju da Å¾elite promijeniti nivo pristupa bez izmjena u ansamblu (npr. kako biste asistentu dali privilegije unosa rezultata ispita), kontaktirajte Studentsku sluÅ¾bu.</p>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 3-4.</i></p>', 'nastavnik'),
+(13, '<p>...da moÅ¾ete utjecati na format u kojem se izvjeÅ¡taj prosljeÄ‘uje Excelu kada kliknete na Excel ikonu u gornjem desnom uglu izvjeÅ¡taja?<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"></p>\r\n<p>MoÅ¾e se desiti da izvjeÅ¡taj ne izgleda potpuno kako treba u vaÅ¡em spreadsheet programu. Podaci se Å¡alju u CSV formatu pod pretpostavkom da koristite regionalne postavke za BiH (ili Hrvatsku ili Srbiju). Ako izvjeÅ¡taj u vaÅ¡em programu ne izgleda kako treba, slijedi nekoliko savjeta kako moÅ¾ete utjecati na to.</p>\r\n<ul><li>Ako se svi podaci nalaze u jednoj koloni, vjerovatno je da koristite sistem sa AmeriÄ�kim regionalnim postavkama. U vaÅ¡em Profilu moÅ¾ete pod Zamger opcije izabrati CSV separator "zarez" umjesto "taÄ�ka-zarez", ali vjerovatno je da vam naÅ¡a slova i dalje neÄ‡e izgledati kako treba.</li>\r\n<li>MoguÄ‡e je da Ä‡e dokument izgledati ispravno, osim slova sa afrikatima koja Ä‡e biti zamijenjena nekim drugim. Na Å¾alost, ne postoji naÄ�in da se ovo rijeÅ¡i. Excel moÅ¾e uÄ�itati CSV datoteke iskljuÄ�ivo u formatu koji ne podrÅ¾ava prikaz naÅ¡ih slova. MoÅ¾ete uraditi zamjenu koristeÄ‡i Replace opciju vaÅ¡eg programa. NeÅ¡to sloÅ¾enija varijanta je da koristite "Save Link As" opciju vaÅ¡eg web preglednika, promijenite naziv dokumenta iz izvjestaj.csv u izvjestaj.txt, a zatim koristite <a href="http://office.microsoft.com/en-us/excel-help/text-import-wizard-HP010102244.aspx">Excel Text Import Wizard</a>.</li>\r\n<li>Ako koristite OpenOffice.org uredski paket, prilikom otvaranja dokumenta izaberite Text encoding "Eastern European (Windows-1250)", a kao razdjelnik (Delimiter) izaberite taÄ�ka-zarez (Semicolon). Ostale opcije obavezno iskljuÄ�ite. TakoÄ‘e iskljuÄ�ite opciju spajanja razdjelnika (Merge delimiters).</li>\r\n<li>MoÅ¾e se desiti da vaÅ¡ program prepozna odreÄ‘ene stavke (npr. redne brojeve ili ostvarene bodove) kao datum, pogotovo ako ste posluÅ¡ali savjet iz prve taÄ�ke - odnosno, ako ste kao CSV separator podesili "zarez".</li>\r\n<li>U velikoj veÄ‡ini sluÄ�ajeva moÅ¾ete dobiti potpuno zadovoljavajuÄ‡e rezultate ako otvorite prazan dokument u vaÅ¡em spreadsheet programu (npr. Excel) i zatim napravite copy-paste kompletnog sadrÅ¾aja web stranice.</li></ul>\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, strana 32-33.</i></p>', 'nastavnik'),
+(14, '<p>...da moÅ¾ete brzo i lako pomoÄ‡u nekog spreadsheet programa (npr. MS Excel) unijeti rezultate ispita ili konaÄ�ne ocjene?</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta.</li>\r\n<li>S lijeve strane izaberite link <i>IzvjeÅ¡taji</i>, zatim s desne idite na <i>Spisak studenata</i> - <i>Bez grupa</i>. Ili, ako vam je lakÅ¡e unositi podatke po grupama, izaberite izvjeÅ¡taj <i>Jedna kolona po grupama</i>.</li>\r\n<li>Kliknite na Excel ikonu u gornjem desnom uglu izvjeÅ¡taja:<br>\r\n<img src="images/32x32/excel.png" width="32" height="32"><br>\r\nDobiÄ‡ete spisak svih studenata na predmetu sa brojevima indeksa.</li>\r\n<li>Desno od imena studenta stoji broj indeksa. <i>Umjesto broja indeksa</i> ukucajte broj bodova koje je student ostvario na ispitu ili konaÄ�nu ocjenu.</li>\r\n<li>Kada zavrÅ¡ite unos rezultata/ocjena, koristeÄ‡i tipku Shift i tipke sa strelicama oznaÄ�ite imena studenata i ocjene. Nemojte oznaÄ�iti naslov niti redni broj studenta. DrÅ¾eÄ‡i tipku Ctrl pritisnite tipku C.</li>\r\n<li>Vratite se na prozor Zamgera. Ako ste zatvorili Zamger - ponovo ga otvorite, prijavite se i kliknite na [EDIT]. U suprotnom koristite dugme Back vaÅ¡eg web preglednika da se vratite na spisak izvjeÅ¡taja.</li>\r\n<li>Ako unosite konaÄ�ne ocjene, s lijeve strane izaberite opciju <i>KonaÄ�na ocjena</i>.</li>\r\n<li>Ako unosite rezultate ispita, s lijeve strane izaberite opciju <i>Ispiti</i>, kreirajte novi ispit, a zatim kliknite na link <i>Masovni unos rezultata</i> pored novokreiranog ispita.</li>\r\n<li>Pozicionirajte kursor miÅ¡a u polje ispod naslova <i>Masovni unos ocjena</i> i pritisnite Ctrl+V. Trebalo bi da ugledate rezultate ispita odnosno ocjene.</li>\r\n<li>Uvjerite se da pored natpisa <i>Format imena i prezimena</i> stoji <i>Prezime Ime</i> (a ne Prezime[TAB]Ime), te da pored <i>Separator</i> da stoji <i>TAB</i>.</li>\r\n<li>Kliknite na dugme <i>Dodaj</i>.</li>\r\n<li>Zamger Ä‡e vam ponuditi joÅ¡ jednu priliku da provjerite da li su svi podaci uspravno uneseni. Ako jesu kliknite na dugme <i>Potvrda</i>.</li></ul>\r\n<p>Ovim su unesene ocjene / rezultati ispita!</p>\r\n\r\n\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 18-20 (masovni unos ispita) i str. 28-29 (masovni unos konaÄ�ne ocjene).</i></p>', 'nastavnik'),
+(15, '<p>...da kod evidencije prisustva, pored stanja "prisutan" (zelena boja) i stanja "odsutan" (crvena boja) postoji i nedefinisano stanje (Å¾uta boja). Ovo stanje se dodjeljuje ako je student upisan u grupu nakon Å¡to su odrÅ¾ani odreÄ‘eni Ä�asovi.</p>\r\n<p>DreÄ�avo Å¾uta boja je odabrana kako bi se predmetni nastavnik odnosno asistent podsjetio da se mora odluÄ�iti da li Ä‡e studentu priznati Ä�asove kao prisustva ili ne. U meÄ‘uvremenu, nedefinisano stanje Ä‡e se tumaÄ�iti u korist studenta, odnosno neÄ‡e ulaziti u broj izostanaka prilikom odreÄ‘ivanja da li je student izgubio bodove za prisustvo.</p>\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik'),
+(16, '<p>...da ne morate voditi evidenciju o prisustvu kroz Zamger ako ne Å¾elite, a i dalje moÅ¾ete imati aÅ¾uran broj bodova ostvarenih na prisustvo?</p>\r\n<p>Sistem bodovanja je takav da student dobija 10 bodova ako je odsustvovao manje od 4 puta, a 0 bodova ako je odsustvovao 4 ili viÅ¡e puta. Podaci o konkretnim odrÅ¾anim Ä�asovima u Zamgeru se ne koriste nigdje osim za internu evidenciju na predmetu.</p>\r\n<p>Dakle, u sluÄ�aju da imate vlastitu evidenciju, samo kreirajte Ä�etiri Ä�asa (datum je nebitan) i unesite Ä�etiri izostanka studentima koji nisu zadovoljili prisustvo.</p>	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 4-5.</i></p>', 'nastavnik'),
+(17, '<p>...da moÅ¾ete podesiti drugaÄ�iji sistem bodovanja za prisustvo od ponuÄ‘enog?</p>\r\n<p>MoÅ¾ete podesiti ukupan broj bodova za prisustvo (razliÄ�it od 10). MoÅ¾ete promijeniti maksimalan broj dozvoljenih izostanaka (razliÄ�it od 3) ili pak podesiti linearno bodovanje u odnosu na broj izostanaka (npr. ako je student od 14 Ä�asova izostao 2 puta, dobiÄ‡e (12/14)*10 = 8,6 bodova). KonaÄ�no, umjesto evidencije pojedinaÄ�nih Ä�asova, moÅ¾ete odabrati da direktno unosite broj bodova za prisustvo po uzoru na rezultate ispita.</p>\r\n<p>Da biste aktivirali ovu moguÄ‡nost, trebate promijeniti sistem bodovanja samog predmeta.</p>', 'nastavnik'),
+(18, '<p>...da moÅ¾ete unijeti bodove za zadaÄ‡u Ä�ak i ako je student nije poslao kroz Zamger?</p>\r\n<p>Da biste to uradili, potrebno je da kliknete na link <i>PrikaÅ¾i dugmad za kreiranje zadataka</i> koji se nalazi u dnu stranice sa prikazom grupe (vidi sliku). Nakon Å¡to ovo uradite, Ä‡elije tabele koje odgovaraju neposlanim zadaÄ‡ama Ä‡e se popuniti ikonama za kreiranje zadaÄ‡e koje imaju oblik sijalice.</p>\r\n<p><a href="doc/savjet_sijalice.png" target="_new">Slika</a> - ukoliko ne vidite detalje, raÅ¡irite prozor!</p>	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 10-11.</i></p>\r\n<p>U sluÄ�aju da se na vaÅ¡em predmetu zadaÄ‡e generalno ne Å¡alju kroz Zamger, vjerovatno Ä‡e brÅ¾i naÄ�in rada za vas biti da koristite masovni unos. ViÅ¡e informacija na str. 27-28. Uputstava.</p>', 'nastavnik'),
+(19, '<p>...da pomoÄ‡u Zamgera moÅ¾ete poslati cirkularni mail svim studentima na vaÅ¡em predmetu ili u pojedinim grupama?</p>\r\n<p>Da biste pristupili ovoj opciji:</p>\r\n<ul><li>Kliknite na link [EDIT] pored naziva predmeta</li>\r\n<li>U meniju sa lijeve strane odaberite opciju <i>ObavjeÅ¡tenja za studente</i>.</li>\r\n<li>Pod menijem <i>ObavjeÅ¡tenje za:</i> odaberite da li obavjeÅ¡tenje Å¡aljete svim studentima na predmetu ili samo studentima koji su Ä�lanovi odreÄ‘ene grupe.</li>\r\n<li>Aktivirajte opciju <i>Slanje e-maila</i>. Ako ova opcija nije aktivna, studenti Ä‡e i dalje vidjeti vaÅ¡e obavjeÅ¡tenje na svojoj Zamger poÄ�etnoj stranici (sekcija ObavjeÅ¡tenja) kao i putem RSSa.</li>\r\n<li>U dio pod naslovom <i>KraÄ‡i tekst</i> unesite udarnu liniju vaÅ¡e informacije.</li>\r\n<li>U dio pod naslovom <i>Detaljan tekst</i> moÅ¾ete napisati dodatna pojaÅ¡njenja, a moÅ¾ete ga i ostaviti praznim.</li>\r\n<li>Kliknite na dugme <i>PoÅ¡alji</i>. VidjeÄ‡ete jedno po jedno ime studenta kojem je poslan mail kao i e-mail adresu na koju je mail poslan. Slanje veÄ‡e koliÄ�ine mailova moÅ¾e potrajati nekoliko minuta.</li></ul>\r\n<p>Mailovi Ä‡e biti poslani na adrese koje su studenti podesili koristeÄ‡i svoj profil, ali i na zvaniÄ�ne fakultetske adrese.</p>\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 12-14.</i></p>', 'nastavnik'),
+(20, '<p>...da je promjena grupe studenta destruktivna operacija kojom se nepovratno gube podaci o prisustvu studenta na Ä�asovima registrovanim za tu grupu?</p>\r\n<p>Studenta moÅ¾ete prebaciti u drugu grupu putem ekrana Dosje studenta: na pogledu grupe (npr. <i>Svi studenti</i>) kliknite na ime i prezime studenta da biste uÅ¡li u njegov ili njen dosje.</p>\r\n<p>Promjenom grupe nepovratno se gubi evidencija prisustva studenta na Ä�asovima registrovanim za prethodnu grupu. Naime, izmeÄ‘u Ä�asova registrovanih za dvije razliÄ�ite grupe ne postoji jednoznaÄ�no mapiranje. U nekom datom trenutku vremena u jednoj grupi moÅ¾e biti registrovano 10 Ä�asova a u drugoj 8. Kako znati koji od tih 10 Ä�asova odgovara kojem od onih 8? I Å¡ta raditi sa suviÅ¡nim Ä�asovima? Dakle, kada premjestite studenta u grupu u kojoj veÄ‡ postoje registrovani Ä�asovi, prisustvo studenta tim Ä�asovima Ä‡e biti oznaÄ�eno kao nedefinisano (Å¾uta boja). PrepuÅ¡ta se nastavnom ansamblu da odluÄ�i koje od tih Ä�asova Ä‡e priznati kao prisutne, a koje markirati kao odsutne. Vjerovatno Ä‡ete se pitati Å¡ta ako se student ponovo vrati u polaznu grupu. Odgovor je da Ä‡e podaci ponovo biti izgubljeni, jer Å¡ta raditi sa Ä�asovima registrovanim u meÄ‘uvremenu?</p>\r\n<p>PreporuÄ�ujemo da ne vrÅ¡ite promjene grupe nakon Å¡to poÄ�ne akademska godina.</p>\r\n	\r\n<p><i>ViÅ¡e informacija u <a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">Uputstvima za upotrebu</a>, str. 6.</i></p>', 'nastavnik');
 
 -- --------------------------------------------------------
 
@@ -1381,13 +1398,13 @@ CREATE TABLE IF NOT EXISTS `strucni_stepen` (
 --
 
 INSERT INTO `strucni_stepen` (`id`, `naziv`, `titula`) VALUES
-(1, 'Magistar elektrotehnike - Diplomirani inženjer elektrotehnike', 'M.E.'),
-(2, 'Bakalaureat elektrotehnike - Inženjer elektrotehnike', 'B.E.'),
-(3, 'Diplomirani inženjer elektrotehnike', 'dipl.ing.el.'),
-(4, 'Diplomirani matematičar', 'dipl.mat.'),
-(5, 'Srednja stručna sprema', ''),
-(6, 'Diplomirani inženjer mašinstva', 'dipl.ing.'),
-(7, 'Diplomirani inženjer građevinarstva', 'dipl.ing.'),
+(1, 'Magistar elektrotehnike - Diplomirani inÅ¾enjer elektrotehnike', 'M.E.'),
+(2, 'Bakalaureat elektrotehnike - InÅ¾enjer elektrotehnike', 'B.E.'),
+(3, 'Diplomirani inÅ¾enjer elektrotehnike', 'dipl.ing.el.'),
+(4, 'Diplomirani matematiÄ�ar', 'dipl.mat.'),
+(5, 'Srednja struÄ�na sprema', ''),
+(6, 'Diplomirani inÅ¾enjer maÅ¡instva', 'dipl.ing.'),
+(7, 'Diplomirani inÅ¾enjer graÄ‘evinarstva', 'dipl.ing.'),
 (8, 'Diplomirani ekonomista', 'dipl.ecc.');
 
 
@@ -1411,7 +1428,7 @@ CREATE TABLE IF NOT EXISTS `studentski_modul` (
 
 INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUES
 (1, 'student/moodle', 'Materijali (Moodle)', 1),
-(2, 'student/zadaca', 'Slanje zadaće', 0),
+(2, 'student/zadaca', 'Slanje zadaÄ‡e', 0),
 (3, 'izvjestaj/predmet', 'Dnevnik', 1),
 (4, 'student/projekti', 'Projekti', 0);
 
@@ -1509,7 +1526,7 @@ CREATE TABLE IF NOT EXISTS `studij` (
 
 INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
 (1, 'Prva godina studija', 2, 1, 'PGS', 0, 1, 0),
-(2, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 2, 1),
+(2, 'RaÄ�unarstvo i informatika (BSc)', 6, 2, 'RI', 1, 2, 1),
 (3, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 2, 1),
 (4, 'Elektroenergetika (BSc)', 6, 4, 'EE', 1, 2, 1),
 (5, 'Telekomunikacije (BSc)', 6, 5, 'TK', 1, 2, 1);
@@ -1778,7 +1795,7 @@ INSERT INTO `zvanje` (`id`, `naziv`, `titula`) VALUES
 (1, 'Redovni profesor', 'R. prof.'),
 (2, 'Vanredni profesor', 'V. prof.'),
 (3, 'Docent', 'Doc.'),
-(4, 'Viši asistent', 'V. asis.'),
+(4, 'ViÅ¡i asistent', 'V. asis.'),
 (5, 'Asistent', 'Asis.'),
 (6, 'Profesor emeritus', '');
 
