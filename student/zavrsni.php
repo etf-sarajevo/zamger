@@ -2,9 +2,8 @@
 
 // STUDENT/ZAVRSNI - studenski modul za prijavu na teme zavrsnih radova i ulazak na stanicu zavrsnih
 
-
-function student_zavrsni() {
-
+function student_zavrsni() 
+{
 	require_once("lib/zavrsni.php");
 
 	//debug mod aktivan
@@ -15,8 +14,9 @@ function student_zavrsni() {
 	
 	// Da li student slusa predmet?
 	$q900 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (mysql_num_rows($q900)<1) {
-		zamgerlog("student ne slusa predmet pp$predmet", 3);
+	if (mysql_num_rows($q900)<1) 
+	{
+		zamgerlog("student ne sluša predmet pp$predmet", 3);
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
@@ -25,10 +25,8 @@ function student_zavrsni() {
 	$akcija = $_REQUEST['akcija'];
 	$id = intval($_REQUEST['id']);
 
-	// KORISNI UPITI
-
 	// Spisak svih tema zavrsnih radova
-	$q932 = myquery("SELECT id, naziv, opis, vrijeme FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY vrijeme DESC");
+	$q932 = myquery("SELECT id, naziv, predmet, opis, nastavnik FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY vrijeme DESC");
 	$svi_zavrsni = array();
 	while ($r932 = mysql_fetch_assoc($q932))
 		$svi_zavrsni[] = $r932;
@@ -44,77 +42,49 @@ function student_zavrsni() {
 	$q934 = myquery("SELECT z.id FROM zavrsni as z, student_zavrsni as sz WHERE z.id=sz.zavrsni AND sz.student=$userid AND z.predmet=$predmet AND z.akademska_godina=$ag LIMIT 1");
 	if (mysql_num_rows($q934)>0) 
 		$clan_zavrsni = mysql_result($q934,0,0);
-
-	// Parametri zavrsnih radova na predmetu
-	$q935 = myquery("SELECT min_tema, max_tema, min_clanova, max_clanova, zakljucani_zavrsni FROM predmet_parametri_zavrsni WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
-	if (mysql_num_rows($q935)<1) {
-		niceerror("Predmetni nastavnik nije podesio parametre završnih radova.");
-		print "Prijavljivanje na teme završnih radova za sada nije moguće. Obratite se predmetnom nastavniku ili asistentu za dodatne informacije.";
-		return;
-	}
-
-	$min_tema = mysql_result($q935,0,0);
-	$max_tema = mysql_result($q935,0,1);
-	$min_clanova = mysql_result($q935,0,2);
-	$max_clanova = mysql_result($q935,0,3);
-	$zakljucani_zavrsni = mysql_result($q935,0,4);
-
-
-	// Da li je dostignut limit broja tema?
-	$brtema=0;
-	foreach ($svi_zavrsni as $zavrsni) {
-		if ($broj_studenata[$zavrsni[id]]>0) $brtema++;
-	}
-	$limit_tema=false;
-	if ($brtema>=$max_tema) {
-		$limit_tema=true;
-
-		if ($clan_zavrsni>0 && $broj_studenata[$clan_zavrsni]==1) $limit_tema=false;
-	}
-
 	?>
 	<LINK href="css/zavrsni.css" rel="stylesheet" type="text/css">
 	<?
 
-
 	// Akcije
-
-	if ($akcija == 'prijava') {
+	if ($akcija == 'prijava') 
+	{
 		$zavrsni = intval($_REQUEST['zavrsni']);
 
 		// Da li je tema na ovom predmetu?
 		$nasao=false;
-		foreach ($svi_zavrsni as $zavrsni2) {
+		foreach ($svi_zavrsni as $zavrsni2) 
+		{
 			if ($zavrsni2[id]==$zavrsni) { $nasao=true; break; }
 		}
 
-		if ($nasao==false) {
+		if ($nasao==false) 
+		{
 			niceerror("Nepoznata tema završnog rada!");
 			zamgerlog("prijava na temu završnog rada $zavrsni koji nije na predmetu pp$predmet", 3);
 		} 
 
-		else if ($zakljucani_zavrsni) {
-			niceerror("Zaključane su prijave na teme završnih radova.");
-			zamgerlog("prijava na temu završnog rada $zavrsni koji je zaključan na predmetu pp$predmet", 3);
-		}
-
-		else if ($broj_studenata[$zavrsni]>=$max_clanova) {
-			niceerror("Dosegnut je limit broja članova koji mogu raditi istu temu završnog.");
+		else if ($broj_studenata[$zavrsni]>=1) 
+		{
+			niceerror("Tema završnog rada je zauzeta.");
 			zamgerlog("prijava na temu završnog rada $zavrsni koja je popunjena", 3);
 		}
 
-		else if ($broj_studenata[$zavrsni]==0 && $limit_tema) {
-			niceerror("Dosegnut je maksimalan broj tema. Ne možete kreirati novu temu završnog rada.");
+		else if ($broj_studenata[$zavrsni]==0) 
+		{
+			niceerror("Ne možete kreirati novu temu završnog rada.");
 			zamgerlog("dosegnut limit broja tema završnih radova na predmetu pp$predmet", 3);
 		}
 
-		else {
+		else 
+		{
 			// Upisujemo u novu temu
 			$q903 = myquery("INSERT INTO student_zavrsni SET student=$userid, zavrsni=$zavrsni");
 			nicemessage("Uspješno ste prijavljeni na temu završnog rada");
 			zamgerlog("student upisan na temu završnog rada $zavrsni (predmet pp$predmet)", 2);
 			// Ispisujemo studenta sa postojećih tema završnih radova
-			if ($clan_zavrsni>0) {
+			if ($clan_zavrsni>0) 
+			{
 				$q901 = myquery("DELETE FROM student_zavrsni WHERE student=$userid AND zavrsni=$clan_zavrsni");
 				nicemessage("Odjavljeni ste sa stare teme završnog rada");
 				zamgerlog("student ispisan sa teme završnog rada $zavrsni (predmet pp$predmet)", 2);
@@ -126,31 +96,31 @@ function student_zavrsni() {
 	} // akcija == prijava
 
 
-	if ($akcija == 'odjava') {
+	if ($akcija == 'odjava') 
+	{
 		$zavrsni = intval($_REQUEST['zavrsni']);
 		
 		// Da li je tema sa ovog predmeta?
 		$nasao=false;
-		foreach ($svi_zavrsni as $zavrsni2) {
+		foreach ($svi_zavrsni as $zavrsni2) 
+		{
 			if ($zavrsni2[id]==$zavrsni) { $nasao=true; break; }
 		}
 
-		if ($nasao==false) {
+		if ($nasao==false) 
+		{
 			niceerror("Nepoznata tema završnog rada!");
 			zamgerlog("odjava sa teme završnog rada $zavrsni koja nije sa predmeta pp$predmet", 3);
 		}
 
-		else if ($zakljucani_zavrsni) {
-			niceerror("Zaključane su liste tema završnih radova. Odustajanja nisu dozvoljena.");
-			zamgerlog("odjava sa teme završnog rada $zavrsni koja je zakljucana na predmetu pp$predmet", 3);
-		}
-
-		else if ($zavrsni != $clan_zavrsni) {
+		else if ($zavrsni != $clan_zavrsni) 
+		{
 			niceerror("Niste prijavljeni na ovu temu završnog rada");
 			zamgerlog("odjava sa teme završnog rada $zavrsni na koji nije prijavljen", 3);
 		}
 
-		else {
+		else 
+		{
 			$q904 = myquery("DELETE FROM student_zavrsni WHERE student=$userid AND zavrsni=$zavrsni");
 			nicemessage("Uspješno ste odjavljeni sa teme završnog rada");
 			zamgerlog("student ispisan sa teme završnog rada $zavrsni (predmet pp$predmet)", 2);
@@ -161,7 +131,8 @@ function student_zavrsni() {
 	} // akcija == odjava
 
 
-	if ($akcija == 'zavrsnistranica') {
+	if ($akcija == 'zavrsnistranica') 
+	{
 		require_once('common/zavrsniStrane.php');
 		common_zavrsniStrane();
 		return;
@@ -172,87 +143,73 @@ function student_zavrsni() {
 	?>
 	<h2>Završni radovi</h2>
 	<span class="notice">
-	Nastavnik je definisao sljedeće parametre svih tema završnih radova na ovom predmetu:
-	<ul>
-		<li>Broj tema: <?
-			if ($min_tema == $max_tema) print "tačno $max_tema";
-			else print "od $min_tema do $max_tema";
-		?></li>
-		<li>Broj članova koji mogu raditi istu temu: <?
-			if ($min_clanova == $max_clanova) print "tačno $max_clanova";
-			else print "od $min_clanova do $max_clanova";
-		?></li>
-	</ul>
-	Prijavite se na neku od tema završnih radova ili pričekajte kreiranje neke nove teme. Da biste promjenili temu, prijavite se na neku drugu.	</span><br /><?
-
-
-	// Ispis - zakljucani_zavrsni
-
-	if ($zakljucani_zavrsni == 1) {
-		?>
-		<span class="notice">Onemogućene su prijave na teme završnih radova. Otvorene su stranice završnih radova.</span>	
-		<?
-	} else {
-		?>
-		<span class="noticeGreen">Moguće su prijave na teme završnih radova. Nastavnik još uvijek nije kompletirao prijave.</span>	
-		<?
-	}
-
-
-	// Ako je upisivanje zaključano, ispisaćemo samo onu temu koju je student prijavio
+	<?	// Ako je upisivanje zaključano, ispisaćemo samo onu temu koju je student prijavio
 	$zavrsni_za_ispis = array();
-	if ($zakljucani_zavrsni==1 && $clan_zavrsni>0) {
-		foreach ($svi_zavrsni as $zavrsni) {
+	if ($zakljucani_zavrsni==1 && $clan_zavrsni>0) 
+	{
+		foreach ($svi_zavrsni as $zavrsni) 
+		{
 			if ($zavrsni[id]==$clan_zavrsni)
 				$zavrsni_za_ispis[] = $zavrsni;
 		}
-	} else 
+	} 
+	else 
 		$zavrsni_za_ispis = $svi_zavrsni;
 
-
 	// Nema tema završnih radova
-	if (count($svi_zavrsni)==0) {
-		nicemessage("Predmetni nastavnik još uvijek nije definisao teme završnih radova na ovom predmetu. Imajte strpljenja.");
+	if (count($svi_zavrsni)==0) 
+	{
+		nicemessage("Još uvijek nisu definisane teme završnih radova. Imajte strpljenja.");
 	}
 
-
 	// Ispis tema zavrsnih radova
-	foreach ($zavrsni_za_ispis as $zavrsni) {
-
+	foreach ($zavrsni_za_ispis as $zavrsni) 
+	{
 		?>
 		<h3><?=$zavrsni['naziv']?></h3>
 		<div class="links">
 			<ul class="clearfix">
 		<?
-
-		if ($zakljucani_zavrsni == 0) {
-			if ($zavrsni[id]==$clan_zavrsni) {
+		if ($zakljucani_zavrsni == 0) 
+		{
+			if ($zavrsni[id]==$clan_zavrsni) 
+			{
 				?>
 				<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=odjava"?>">Odustani od prijave na ovu temu završnog rada</a></li>	
 				<?
 
-			} else if ($broj_studenata[$zavrsni[id]]>=$max_clanova) {
+			} 
+			else if ($broj_studenata[$zavrsni[id]]>=1) 
+			{
 				?>
 				<li style="color:red" class="last">Tema završnog rada je zauzeta i ne možete se prijaviti.</li>
 				<?
 
-			} else if ($broj_studenata[$zavrsni[id]]==0 && $limit_tema) {
+			} 
+			else if ($broj_studenata[$zavrsni[id]]==0 && $limit_tema) 
+			{
 				?>
-				<div style="color:red; margin-top: 10px;">Limit za broj tema je dostignut. Ne možete kreirati novu temu završnog rada. Prijavite se na teme na kojima ima mjesta.</div>	
+				<div style="color:red; margin-top: 10px;">Ne možete kreirati novu temu završnog rada. Prijavite se na teme na kojima ima mjesta.</div>	
 				<?
 
-			} else if ($clan_zavrsni==0) {
+			} 
+			else if ($clan_zavrsni==0) 
+			{
 				?>
 				<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=prijava"?>">Prijavi se na ovu temu završnog rada</a></li>
 				<?
 
-			} else {
+			} 
+			else 
+			{
 				?>	
-				<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=prijava"?>">Prijavi se na ovu temu završnog rada / Promijeni članstvo</a></li>   	
+				<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=prijava"?>">Prijavi se na ovu temu završnog rada.</a></li>   	
 				<?
 			}
 
-		} else { // Završni su zaključani
+		}
+		else 
+		{ // Završni su zaključani
 			?>
 			<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=zavrsnistranica"?>">Stranice završnih radova</a></li>
 			<?
@@ -268,7 +225,7 @@ function student_zavrsni() {
 				<td width="490" align="left" valign="top"><?=$zavrsni['naziv']?></td>
 			</tr>
 			<tr>
-				<th width="200" align="left" valign="top" scope="row">Prijavljeni tim / student</th>
+				<th width="200" align="left" valign="top" scope="row">Prijavljeni student</th>
 				<td width="490" align="left" valign="top">
 					<?
 					// Spisak članova završnih
@@ -278,7 +235,8 @@ function student_zavrsni() {
 					else
 						print "<ul>\n";
 					
-					while ($r905 = mysql_fetch_row($q905)) {
+					while ($r905 = mysql_fetch_row($q905)) 
+					{
 						?>
 						<li><?=$r905[1].' '.$r905[0].', '.$r905[2]?></li>
 						<?
@@ -296,6 +254,4 @@ function student_zavrsni() {
 	} // foreach ($zavrsni_za_ispis...
 
 } //function
-
-
 ?>
