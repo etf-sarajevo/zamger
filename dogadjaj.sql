@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 04, 2011 at 11:59 AM
+-- Generation Time: Sep 05, 2011 at 11:31 AM
 -- Server version: 5.5.8
 -- PHP Version: 5.3.5
 
@@ -22,16 +22,16 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `dogadjaji`
+-- Table structure for table `dogadjaj`
 --
 
-CREATE TABLE IF NOT EXISTS `dogadjaji` (
+CREATE TABLE IF NOT EXISTS `dogadjaj` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(45) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
 --
--- Dumping data for table `dogadjaji`
+-- Dumping data for table `dogadjaj`
 --
 
