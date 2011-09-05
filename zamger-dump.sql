@@ -133,6 +133,23 @@ CREATE TABLE IF NOT EXISTS `cas` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `dogadjaji`
+--
+
+CREATE TABLE IF NOT EXISTS `dogadjaji` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(45) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `dogadjaji`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `drzava`
 --
 
