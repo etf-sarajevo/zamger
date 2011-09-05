@@ -37,7 +37,7 @@ if (!$user_siteadmin) {
 
 // Provjera ispita
 
-$q20 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaji as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
+$q20 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaj as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
 if (mysql_num_rows($q20)<1) {
 	niceerror("Nepostojeći ispit");
 	zamgerlog("nepostojeci ispit $ispit ili nije sa predmeta (pp$predmet, ag$ag)", 3);
