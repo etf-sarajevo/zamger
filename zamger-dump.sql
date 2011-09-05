@@ -133,23 +133,6 @@ CREATE TABLE IF NOT EXISTS `cas` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `dogadjaji`
---
-
-CREATE TABLE IF NOT EXISTS `dogadjaji` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(45) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
-
---
--- Dumping data for table `dogadjaji`
---
-
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `drzava`
 --
 
@@ -633,8 +616,7 @@ CREATE TABLE IF NOT EXISTS `odluka` (
 
 CREATE TABLE IF NOT EXISTS `ogranicenje` (
   `nastavnik` int(11) NOT NULL default '0',
-  `labgrupa` int(11) NOT NULL default '0',
-`zavrsnirad` int(11) NOT NULL default '0'
+  `labgrupa` int(11) NOT NULL default '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
@@ -2229,104 +2211,3 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
   `akademska_godina` int(11) NOT NULL,   
   `aktivna` tinyint(1) NOT NULL,   PRIMARY KEY  (`anketa`,`predmet`,`akademska_godina`) 
  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_zavrsni`
---
-
-CREATE TABLE IF NOT EXISTS `student_zavrsni` (
-  `student` int(11) NOT NULL,
-  `zavrsni` int(11) NOT NULL,
-  PRIMARY KEY (`student`,`zavrsni`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `student_zavrsni`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `zavrsni`
---
-
-CREATE TABLE IF NOT EXISTS `zavrsni` (
-  `id` int(11) NOT NULL,
-  `naziv` varchar(200) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `predmet` int(11) NOT NULL,
-  `akademska_godina` int(11) NOT NULL DEFAULT '0',
-  `opis` text CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `biljeska` text CHARACTER SET utf8 COLLATE utf8_slovenian_ci,
-  `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
-
---
--- Dumping data for table `zavrsni`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `zavrsni_file`
---
-
-CREATE TABLE IF NOT EXISTS `zavrsni_file` (
-  `id` int(11) NOT NULL,
-  `filename` varchar(100) NOT NULL,
-  `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `revizija` tinyint(4) NOT NULL,
-  `osoba` int(11) NOT NULL,
-  `zavrsni` int(11) NOT NULL,
-  `file` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
-
---
--- Dumping data for table `zavrsni_file`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `zavrsni_file_diff`
---
-
-CREATE TABLE IF NOT EXISTS `zavrsni_file_diff` (
-  `file` int(11) NOT NULL,
-  `diff` text CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`file`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `zavrsni_file_diff`
---
--- --------------------------------------------------------
-
---
--- Table structure for table `predmet_zavrsni_rad`
---
-
-CREATE TABLE IF NOT EXISTS `predmet_zavrsni_rad` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sifra` varchar(20) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `naziv` varchar(100) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'Završni rad',
-  `institucija` int(11) NOT NULL DEFAULT '0',
-  `kratki_naziv` varchar(10) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `tip_predmeta` int(11) NOT NULL,
-  `etcs` float NOT NULL,
-  `tema_zavrsnog_rada` varchar(100) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `predsjedavajuci_komisije` varchar(50) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `drugi_clan_komisije` varchar(50) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `treci_clan_komisije` varchar(50) CHARACTER SET utf8 COLLATE utf8_slovenian_ci NOT NULL,
-  `termin_odbrane` date NOT NULL,
-  `konacna_ocjena` tinyint(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `predmet_zavrsni_rad`
---
