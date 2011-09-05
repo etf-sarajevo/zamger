@@ -103,7 +103,7 @@ $q10=myquery("(SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumv
 	FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk 
 	WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
 	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme) union (SELECT it.id, p.id, d.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), d.naziv, it.maxstudenata 
-	FROM ispit_termin as it, ispit as i, predmet as p, dogadjaji as d, osoba as o, student_predmet as sp, ponudakursa as pk 
+	FROM ispit_termin as it, ispit as i, predmet as p, dogadjaj as d, osoba as o, student_predmet as sp, ponudakursa as pk 
 	WHERE it.ispit=i.id AND i.komponenta=d.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
 	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme);");
 
@@ -195,7 +195,7 @@ while ($r10=mysql_fetch_row($q10)) {
 $q60 = myquery("(SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
              WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id) union (SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), d.naziv, it.id, p.id
-             FROM ispit_termin as it, ispit as i, predmet as p, dogadjaji as d, student_ispit_termin as sit
+             FROM ispit_termin as it, ispit as i, predmet as p, dogadjaj as d, student_ispit_termin as sit
              WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=d.id AND sit.student=$userid AND sit.ispit_termin=it.id);");
 
 ?>
