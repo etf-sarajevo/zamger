@@ -325,13 +325,33 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		<input type="radio" name="prisustvo" value="1">Svi prisutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="prisustvo" value="0">Svi odsutni
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type ="radio" name="prisustvo" value="2" CHECKED>NP (Nije poznato)
+		<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type ="radio" name="prisustvo" value="2" CHECKED>NP (Nije poznato) -->
 	
 	</form>
 	</td></tr></table>
 	
 	<script language="JavaScript">
+	//Kod koji aktivira specijalni kljuc za stanje prisustva NP (Nije Poznato)
+	var shiftPressed = false;
+	document.onkeydown=shiftDown;
+	document.onkeyup=shiftUp;
+	
+	function shiftDown(e){
+		var e=window.event || e
+		if(e.keyCode == 16){//Shift key code
+			shiftPressed=true;
+		}
+	}
+
+	function shiftUp(e){
+		var e = window.event || e
+		if(e.keyCode == 16){
+			shiftPressed=false;
+		}
+	}
+
+	
 	// Funkcija koja se poziva klikom na polje u tabeli
 	function prisustvo(student,cas) {
 		if (zamger_ajah_sending) {
@@ -345,17 +365,21 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	// Switchuje DA i NE
 	function invert(student,cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
-		if (val == "DA") {
+		if((val == "DA" || val=="NE") && (shiftPressed == true)){
+			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFE303";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NP";
+			return 2;
+		} else if (val == "DA" && shiftPressed==false) {
 			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
 			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
 			return 0;
 		}
-		else if (val == "NE"){
-			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFE303";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NP";
-			return 2;	
+		else if (val == "NE" && shiftPressed==false){
+			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
+			return 1;	
 		}
-		else {
+		else if(val == "NP"){ //Defaultni izlaz iz NP bez obzira na Shift.
 			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
 			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
 			return 1;
