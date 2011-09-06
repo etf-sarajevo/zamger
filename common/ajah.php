@@ -222,7 +222,11 @@ case "izmjena_ispita":
 	} else if ($ime == "ko") {
 		// konacna ocjena
 		$stud_id = intval($parametri[1]);
-		if ($vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
+		if ($vrijednost!="/" && $vrijednost != intval($vrijednost)) {
+			print "ocjena mora biti okrugao broj";
+			break;
+		}
+			
 		$predmet=intval($parametri[2]);
 		$ag = intval($parametri[3]);
 
