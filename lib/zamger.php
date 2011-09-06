@@ -250,7 +250,7 @@ var zamger_coolbox_origvalue=false;
 var zamger_coolbox_submitted=false;
 
 function coolboxopen(callobj) {
-	if (zamger_coolbox_origcaller) return;
+	if (zamger_coolbox_origcaller) return; // Box je već otvoren
 	zamger_coolbox_submitted=false;
 	zamger_coolbox_origcaller = callobj;
 	zamger_coolbox_origvalue = callobj.innerHTML;
@@ -271,7 +271,7 @@ function coolboxopen(callobj) {
 	coolbox.style.visibility = 'visible';
 	coolbox.style.left = curleft+2;
 	coolbox.style.top = curtop+2;
-	coolboxedit.style.width = callobj.offsetWidth - 6; // 2=padding
+	coolboxedit.style.width = callobj.offsetWidth - 6; // 6=padding
 	coolboxedit.style.height = callobj.offsetHeight - 6;
 	coolboxedit.value = callobj.innerHTML;
 	if (coolboxedit.value == "/") coolboxedit.value="";
@@ -279,12 +279,17 @@ function coolboxopen(callobj) {
 }
 
 function coolboxclose() {
-	if (zamger_coolbox_submitted) return;
-	if (!zamger_coolbox_origcaller) return;
+	if (zamger_coolbox_submitted) return; // U toku je slanje na server
+	if (!zamger_coolbox_origcaller) return; // Box nije otvoren
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	coolbox.style.visibility = 'hidden';
 	coolboxedit.blur();
+	
+	// Pošto se onblur/onchange izvršava poslije onkeypress, sada je
+	// sigurno da poništimo vrijednost ove varijable, jer je u slučaju
+	// klika pored kocke ništa neće poništiti!
+	zamger_coolbox_origcaller = false; 
 }
 
 function coolboxsubmit() {
@@ -307,7 +312,7 @@ function coolboxsubmit() {
 	}
 }
 
-// Svrha ove funkcije je da uhvati ENTER tipku
+// Svrha ove funkcije je da uhvati ENTER tipku u IE7/IE8
 function coolboxkey(e) {
 	var coolboxedit = document.getElementById("coolboxedit");
 	if (e.keyCode==13 && coolboxedit.value!=zamger_coolbox_origvalue) { 
