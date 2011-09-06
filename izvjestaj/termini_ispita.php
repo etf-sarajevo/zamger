@@ -15,21 +15,30 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 // Parametar
-$ispit = intval($_REQUEST['ispit']);
-
-// Upit za ispit
-
-$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prolaz, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-if (mysql_num_rows($q10)<1) {
-	biguglyerror("Nepoznat ispit!");
-	zamgerlog ("nepoznat ispit $ispit",3);
-	return;
+if(isset($_REQUEST['termin'])){
+	$termin_id_url = intval($_REQUEST['termin']);
+}
+if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
+else{
+	$q8 = myquery("select ispit from ispit_termin where id=$termin_id_url");
+	$ispit = mysql_result($q8,0,0);
 }
 
-$predmet = mysql_result($q10,0,4);
-$ag = mysql_result($q10,0,5);
+$q9 = myquery("select komponenta from ispit where id=$ispit");
+$komp = mysql_result($q9,0,0);
+// Upit za ispit
+
+if($komp<=4){
+	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
+}
+else{
+	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), d.naziv, i.predmet, i.akademska_godina from ispit as i, dogadjaj as d where i.id=$ispit and i.komponenta=d.id");	
+}
+$predmet = mysql_result($q10,0,2);
+$ag = mysql_result($q10,0,3);
 $finidatum = date("d. m. Y.", mysql_result($q10,0,0));
 $naziv = mysql_result($q10,0,1);
+
 
 // Dodatna provjera privilegija
 if (!$user_studentska && !$user_siteadmin) {
@@ -83,12 +92,12 @@ $broj_termina =0;
 if(isset($_REQUEST['termin'])){
 		$termin_id_from_url = intval($_REQUEST['termin']);
 	?>
-		<p><a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>&predmet=<?=$predmet ?>&termin=<?=$termin_id_from_url?>">Refresh</a></p>
+		<p><a href="?sta=izvjestaj/termini_ispita&termin=<?=$termin_id_from_url?>">Refresh</a></p>
 	<?
 	}
 	else{
 	?>
-		<p><a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>&predmet=<?=$predmet ?>">Refresh</a></p>
+		<p><a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>">Refresh</a></p>
 	<?
 	}
 while ($rtermini = mysql_fetch_row($qtermini)) {
@@ -102,7 +111,11 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	}
 	
 	$datum_termina= date("d. m. Y. ( H:i )",$rtermini[1]);
-	$ispit = intval($_REQUEST['ispit']);
+	if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
+	else{
+		$q8 = myquery("select ispit from ispit_termin where id=$termin_id_url");
+		$ispit = mysql_result($q8,0,0);
+	}
 	print "Termin $broj_termina : <h4 style=\"display:inline\"> $datum_termina</h4><br></br>";
 	$q10 = myquery("select o.id, o.prezime, o.ime, o.brindexa 
 					from osoba as o, student_predmet as sp, ponudakursa as pk, student_ispit_termin sit, ispit_termin it, ispit i
@@ -112,7 +125,6 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 						and sit.student=o.id
 						and sit.ispit_termin=it.id
 						and it.ispit = i.id
-						
 						and pk.predmet=$predmet 
 						and pk.akademska_godina=$ag
 						and i.id=$ispit
