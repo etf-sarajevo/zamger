@@ -9,7 +9,7 @@ function studentska_plan_studija(){
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 	}
-}
+
 
 // Konfigurabilna sekcija
 
@@ -42,10 +42,7 @@ $data_semestar[] = 'X';
 $data_studij = array();
 $data_zavrsni_semestar = array();
 $sql_studij = " SELECT id, naziv, zavrsni_semestar FROM `studij` ";
-if(!($query_studij = myquery($sql_studij))){
-	niceerror('Upit nije uspio: '.(mysql_error()));
-	exit;
-}
+$query_studij = myquery($sql_studij);
 if(mysql_num_rows($query_studij) > 0){
 
 	while($row = mysql_fetch_array($query_studij)){
@@ -62,10 +59,8 @@ if(mysql_num_rows($query_studij) > 0){
 
 $data_akademska_godina = array();
 $sql_akademska_godina = " SELECT id, naziv FROM `akademska_godina` ";
-if(!($query_akademska_godina = myquery($sql_akademska_godina))){
-	niceerror('Upit nije uspio: '.(mysql_error()));
-	exit;
-}
+$query_akademska_godina = myquery($sql_akademska_godina);
+
 if(mysql_num_rows($query_akademska_godina) > 0){
 
 	while($row = mysql_fetch_array($query_akademska_godina)){
@@ -81,10 +76,7 @@ if(mysql_num_rows($query_akademska_godina) > 0){
 // Podaci o predmetima
 $data_predmet = array();
 $sql_predmet = " SELECT id, naziv FROM `predmet` ";
-if(!($query_predmet = myquery($sql_predmet))){
-	niceerror('Upit nije uspio: '.(mysql_error()));
-	exit;
-}
+$query_predmet = myquery($sql_predmet);
 if(mysql_num_rows($query_predmet) > 0){
 
 	while($row = mysql_fetch_array($query_predmet)){
@@ -99,10 +91,7 @@ if(mysql_num_rows($query_predmet) > 0){
 // Podaci o predmetima s kratki_naziv
 $data_predmetk = array();
 $sql_predmetk = " SELECT id, kratki_naziv FROM `predmet` ";
-if(!($query_predmetk = myquery($sql_predmetk))){
-	niceerror('Upit nije uspio: '.(mysql_error()));
-	exit;
-}
+$query_predmetk = myquery($sql_predmetk);
 if(mysql_num_rows($query_predmetk) > 0){
 
 	while($row = mysql_fetch_array($query_predmetk)){
@@ -121,10 +110,7 @@ $slotovi = array();
 $slot_predmeti = array();
 
 $izborni_slotovi = myquery("SELECT * FROM izborni_slot");
-if(!($izborni_slotovi)){
-	niceerror('Upit nije uspio: '.(mysql_error()));
-	exit;
-}
+
 if(mysql_num_rows($izborni_slotovi) > 0){
 
 	while($row = mysql_fetch_array($izborni_slotovi)){
@@ -141,21 +127,31 @@ if(mysql_num_rows($izborni_slotovi) > 0){
 	exit;
 }
 
-// Niz predmeta, zbog prikupljanja POST/GET podataka
-$get_post_array = array('posted', 'studij','akademska_godina');
+
+
+// Varijable, kako bi pokupio POST/GET podatke
+$get_post_array = array('posted', 'studij', 'akademska_godina');
 for($i = 0; $i < BROJ_SEMESTARA; $i++){
 
-	for($j = 0; $j < MAX_BROJ_PREDMETA_PO_SEMESTRU; $j++){
-		$get_post_array[] = 'semestar_'.$i.'_predmet_'.$j;
-	}
+    for($j = 0; $j < MAX_BROJ_PREDMETA_PO_SEMESTRU; $j++){
+     $get_post_array[] = 'semestar_'.$i.'_predmet_'.$j;
+    }
 
-	for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
-		$get_post_array[] = 'semestar_'.$i.'_izborni_predmet_'.$j;
-	}
+    for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
+     $get_post_array[] = 'semestar_'.$i.'_izborni_predmet_'.$j;
+    }
 }
 
-// Preuzmi potrebne GET/POST varijable
-getpost_ifset($get_post_array);
+foreach($get_post_array as $variable){
+
+    $$variable = false;
+    if(isset($_POST[$variable])){
+        $$variable = addslashes($_POST[$variable]);
+    }else if(isset($_GET[$variable])){
+        $$variable = addslashes($_GET[$variable]);
+    }
+}
+
 
 
 //Provjeri je li se desilo da u jednom semestru ima da je neki slot postavljen dva puta ili neki predmet
@@ -241,6 +237,7 @@ if(!$studij){
 	</td>
 	</tr>
 </table>
+</form>
 </td>
 </tr>
 </table>
@@ -256,9 +253,7 @@ if(!$studij){
 	$sql_pretraga_id="SELECT * FROM `plan_studija` WHERE `godina_vazenja` = '$akademska_godina' and `studij` = '$studij'";
 
 	$rez=myquery($sql_pretraga_id);
-	if(!$rez){
-		die('Upit za godinu vazenja nije uspio: '.mysql_error());
-	}
+	
 	if(mysql_num_rows($rez) > 0){
 			
 		//Izbacivanje greske u slučaju da vec plan postoji u bazi
@@ -353,7 +348,7 @@ if(!$studij){
 			<tr style="padding-left: 30px; border-bottom: 1px solid #cecfce;"><td width="50%">Predmet <?=($j+1)?></td>
 			<td width="50%">
 			<select name="semestar_<?=$i?>_predmet_<?=$j?>">
-<?		echo "jdfrtnhdfk";
+<?		
 			// Po default-u, nije nista odabrano
 	?>
 			<option value="0" selected>izaberi</option>
@@ -477,17 +472,12 @@ if(!$studij){
 	
 	$sql_brisi_stari_plan = " DELETE FROM plan_studija ";
 	$sql_brisi_stari_plan .= " WHERE studij = ".$studij;
-	if(!($query = myquery($sql_brisi_stari_plan))){
-		niceerror('Upit nije uspio: '.(mysql_error()));
-		exit;
-	}
-
+	$query = myquery($sql_brisi_stari_plan);
 	$sql_pretraga_id="SELECT * FROM `plan_studija` WHERE `godina_vazenja` = '$akademska_godina' and `studij` = '$studij'";
 	
+
 	$rez=myquery($sql_pretraga_id);
-	if(!$rez){
-		die('Upit za godinu vazenja nije uspio: '.mysql_error());
-	}
+	
 
 
 	// Prodji kroz primljene podatke i vidi sta mozes sa njima
@@ -520,20 +510,17 @@ if(!$studij){
 			//biranje id od akademske godine za upis u bazu
 
 			$id_akademske_godine="SELECT `id` FROM `akademska_godina` WHERE `id` = '$akademska_godina'";
+		
 			$rezultat=myquery($id_akademske_godine);
-			if(!$rezultat){
-				die('Upit za ID nije uspio: '.mysql_error());
-			}
+			
 			$number = preg_replace("/[^0-9]/", '', $id_akademske_godine);
 			
 			// Ubaci red u bazu
 			
 			$sql_insert = " INSERT INTO plan_studija (godina_vazenja, studij, semestar, predmet, obavezan) VALUES ";
 			$sql_insert .= " ($number, $studij, $semestar, $predmet, $obavezan) ";
-			if(!($query = myquery($sql_insert))){
-				niceerror('Upit za ubacivanje u bazu nije uspio: '.(mysql_error()));
-				exit;
-			}
+			
+			$query = myquery($sql_insert);
 			
 			
 		}
@@ -546,11 +533,9 @@ if(!$studij){
 	// Citaj iz baze i prikazi
 	$data_plan = array();
 	$sql_plan = " SELECT studij, semestar, predmet, obavezan FROM `plan_studija` ";
-	$sql_plan .= " ORDER BY semestar ASC ";
-	if(!($query_plan = myquery($sql_plan))){
-		niceerror('Upit nije uspio: '.(mysql_error()));
-		exit;
-	}
+	$sql_plan .= " ORDER BY studij ASC ";
+	
+	$query_plan = myquery($sql_plan);
 	if(mysql_num_rows($query_plan) > 0){
 
 		while($row = mysql_fetch_array($query_plan)){
@@ -583,7 +568,7 @@ if(!$studij){
 	echo listingHtml($data_plan, '80%', 'Plan studija');
 
 }
-
+}
 
 function listingHtml($data, $table_width, $table_name){
 
@@ -658,7 +643,7 @@ return;
 }
 
 
-function getpost_ifset($test_vars){
+/*function getpost_ifset($test_vars){
 
 	if(!is_array($test_vars)){
 		$test_vars = array($test_vars);
@@ -682,7 +667,7 @@ function getpost_ifset($test_vars){
 			$$test_var = '';
 		}
 	}
-}
+}*/
 
 
 
