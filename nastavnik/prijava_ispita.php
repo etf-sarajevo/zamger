@@ -61,7 +61,7 @@ $predmet_naziv = mysql_result($q30,0,0);
 <h3><?=$predmet_naziv?> - Termini ispita</h3>
 
 <h4><?=$tipispita?>, <?=$finidatum?></h4>
-<a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>&predmet=<?=$predmet ?>">Izvještaj</a> 
+<a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>">Izvještaj</a> 
 
 <?
 
@@ -394,7 +394,7 @@ while ($r10=mysql_fetch_row($q10)) {
 			<a href="?sta=nastavnik/prijava_ispita&akcija=izmijeni&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Izmijeni</a>&nbsp;&nbsp;
 			<a href="?sta=nastavnik/prijava_ispita&akcija=obrisi&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Obriši</a>&nbsp;&nbsp;
 			<a href="?sta=nastavnik/prijava_ispita&akcija=studenti&termin=<?=$id_termina?>&ispit=<?=$ispit?>&predmet=<?=$predmet?>&ag=<?=$ag?>">Studenti</a>&nbsp;&nbsp;
-			<a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>&predmet=<?=$predmet ?>&termin=<?=$id_termina?>">Izvještaj</a>
+			<a href="?sta=izvjestaj/termini_ispita&termin=<?=$id_termina?>">Izvještaj</a>
 		</td>
 	</tr>
 	<?
