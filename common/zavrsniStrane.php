@@ -14,7 +14,7 @@ function common_zavrsniStrane()
 	$section 	= $_REQUEST['section'];
 	$subaction  = $_REQUEST['subaction'];
 	$id			= intval($_REQUEST['id']);  
-	if ($user_student && !$user_siteadmin) //ordinary student
+	if ($user_student && !$user_siteadmin) 
 	{
 		$actualZavrsni = getActualZavrsniForUserInPredmet($userid, $predmet, $ag);
 		if ($actualZavrsni[id] != $zavrsni)
@@ -29,11 +29,6 @@ function common_zavrsniStrane()
 	$zavrsni1 = getZavrsni($zavrsni);	
 	$membersZavrsni = fetchZavrsniMembers($zavrsni1[id]);
 	
-	if ($paramsZavrsni[zakljucani_zavrsni] == 0)
-	{
-		zamgerlog("strane završnih radova: još nisu otvorene! (pp$predmet, ag$ag)", 3);
-		return;
-	}
 	
 	if ($user_student && !$user_siteadmin)
 		$linkPrefix = "?sta=student/zavrsni&akcija=zavrsnistranica&zavrsni=$zavrsni&predmet=$predmet&ag=$ag";
@@ -689,5 +684,188 @@ function deleteFileZavrsni($id)
 		return false;
 	
 	return true;
+}
+
+function fetchZavrsniMembers($id)
+{
+	$result = myquery("SELECT * FROM osoba o INNER JOIN student_zavrsni oz ON o.id=oz.student WHERE oz.zavrsni='$id' ORDER BY prezime ASC, ime ASC");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list;	
+}
+
+function getZavrsni($id)
+{
+	$result = myquery("SELECT * FROM zavrsni WHERE id='$id' LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];	
+}
+
+function generateIdFromTable($table)
+{
+	$result = myquery("select id from $table order by id desc limit 1");
+	
+	if (mysql_num_rows($result) == 0)
+	{
+		$id = 0;
+	}
+	else
+	{	
+		$id = mysql_fetch_row($result);
+		$id = $id[0];
+	}
+	
+	return intval($id+1);
+}
+
+function getActualZavrsniForUserInPredmet($userid, $predmet, $ag)
+{
+	$result = myquery("SELECT z.* FROM zavrsni z, student_zavrsni oz WHERE z.id=oz.zavrsni AND oz.student='$userid' AND z.predmet='$predmet' AND z.akademska_godina='$ag' LIMIT 1");
+	
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];	
+}
+
+function filtered_output_string($string)
+{
+	//performing nl2br function to display text from the database
+	return nl2br($string);
+}
+
+function fetchFilesForZavrsniAllRevisions($id, $offset = 0, $rowsPerPage = 0)
+{
+	$query = "SELECT * FROM zavrsni_file WHERE zavrsni='$id' AND file=0 ORDER BY vrijeme DESC ";
+	if ($offset == 0 && $rowsPerPage == 0)
+	{}
+	else
+		$query .="LIMIT $offset, $rowsPerPage";
+	
+	$result = myquery($query);
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	$files = array();
+
+	foreach ($list as $item)
+	{
+		$files[] = fetchAllRevisionsForFileZavrsni($item[id]);	
+	}
+	return $files;	
+}
+
+function fetchFilesForZavrsniLatestRevisions($id, $offset = 0, $rowsPerPage = 0)
+{
+	$query = "SELECT * FROM zavrsni_file WHERE zavrsni='$id' AND file=0 ORDER BY vrijeme DESC ";
+	if ($offset == 0 && $rowsPerPage == 0)
+	{}
+	else
+		$query .="LIMIT $offset, $rowsPerPage";
+	
+	$result = myquery($query);
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list;
+}
+
+function getAuthorOfFileForZavrsni($id)
+{
+	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT f.osoba FROM zavrsni_file f WHERE f.id='$id' LIMIT 1) LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
+
+function isUserAuthorOfFileForZavrsni($file, $user)
+{
+	$result = myquery("SELECT id FROM zavrsni_file WHERE osoba='$user' AND id='$file' LIMIT 1");
+	if (mysql_num_rows($result) > 0)
+		return true;
+	return false;
+}
+
+function getFileFirstRevisionZavrsni($id)
+{
+	$result = myquery("SELECT * FROM zavrsni_file WHERE id='$id' AND revizija=1 LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
+
+function getFileZavrsni($id)
+{
+	$result = myquery("SELECT * FROM zavrsni_file WHERE id='$id' LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	return $list[0];
+}
+
+function isThisFileFirstRevisionZavrsni($id)
+{
+	$result = myquery("SELECT id FROM zavrsni_file WHERE id='$id' AND revizija=1 LIMIT 1");
+	if (mysql_num_rows($result) > 0)
+		return true;
+	return false;
+}
+
+function getFileLastRevisionZavrsni($id)
+{
+	$result = myquery("SELECT * FROM zavrsni_file WHERE file='$id' ORDER BY revizija DESC LIMIT 1");
+	$list = array();
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;	
+	mysql_free_result($result);
+	
+	if (empty($list))
+	{
+		//samo jedna revizija
+		$list[0] = getFileFirstRevisionZavrsni($id);
+	}
+	
+	return $list[0];
+}
+
+function fetchAllRevisionsForFileZavrsni($id)
+{
+	$list = array();	
+	$result = myquery("SELECT * FROM zavrsni_file WHERE file='$id' ORDER BY revizija DESC");
+	while ($row = mysql_fetch_assoc($result))
+		$list[] = $row;
+	
+	$list[] = getFileFirstRevisionZavrsni($id);
+	return $list;	
+}
+
+function getCountFilesForZavrsniWithoutRevisions($id)
+{
+	$result = myquery("SELECT COUNT(id) FROM zavrsni_file WHERE zavrsni='$id' AND revizija=1 LIMIT 1");
+	$row = mysql_fetch_row($result);
+	$row = $row[0];
+	
+	return $row;
 }
 ?>
