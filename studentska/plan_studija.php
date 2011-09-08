@@ -157,7 +157,10 @@ for($i = 0; $i < BROJ_SEMESTARA; $i++){
 		$niz[] = $$varijabla;
 	}
 	}
-	for($k = 0; $k < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $k++){
+	if(count($niz) > count(array_unique($niz))){
+		$greskaSlotovi = true;
+	}
+	/*for($k = 0; $k < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $k++){
 		for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
 		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$k.'_slot_'.$p;
 		if($$varijabla == 0) continue;
@@ -167,7 +170,7 @@ for($i = 0; $i < BROJ_SEMESTARA; $i++){
 	
 	if(count($niz) > count(array_unique($niz))){
 		$greskaSlotovi = true;
-	}
+	}*/
 }
 
 $niz = array();
