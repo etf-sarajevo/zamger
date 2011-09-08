@@ -1,8 +1,7 @@
 <?php
 
 function student_notifikacija() {
-	check_cookie();
-
+	global $userid;
 	$tip = $_GET['tip'];
 
 	if (tip==1){
@@ -104,7 +103,7 @@ and UNIX_TIMESTAMP(zk.vrijeme)>$vrijeme order by zk.id desc limit 5");
 
 
 		$br = 0;
-		$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 5");
+		$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka where UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 5");
 		while ($r100 = mysql_fetch_row($q100)) {
 			$id = $r100[0];
 			$opseg = $r100[2];
