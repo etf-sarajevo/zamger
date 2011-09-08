@@ -377,26 +377,26 @@ if ($userid>0) {
 	}
 }
 
-if($user_student)
+if($userid>0)
 {
 	?>
 
-	<div id="notifikacija" style="position:absolute;visibility:hidden;right:40px;bottom:10px;"> 
-	<img src="images/notifikacija.png" onClick="Klik1()"/> </div>
-	<div id="notifikacija2" style="position:absolute;visibility:visible;right:40px;bottom:10px;"> 
+	<div id="notifikacija" style="position:fixed;visibility:hidden;right:40px;bottom:10px;"> 
+	<img src="images/notifikacija.png" onClick="Klik1()" onload="prikaziNotifikaciju();"/> </div>
+	<div id="notifikacija2" style="position:fixed;visibility:hidden;right:40px;bottom:10px;"> 
 	<img src="images/notifikacija2.png" onClick="Klik4()"/> </div>
-	<div id="poruka" style="position:absolute;visibility:hidden;right:120px;bottom:10px;">
-	<img src="images/poruka.png" onClick="Klik2()"/> </div>
-	<div id="poruka2" style="position:absolute;visibility:visible;right:120px;bottom:10px;">
+	<div id="poruka" style="position:fixed;visibility:hidden;right:120px;bottom:10px;">
+	<img src="images/poruka.png" onClick="Klik2()" onload="prikaziPoruku();"/> </div>
+	<div id="poruka2" style="position:fixed;visibility:hidden;right:120px;bottom:10px;">
 	<img src="images/poruka2.png" onClick="Klik3()"/> </div>
 
 	<div id="tabela1" style="font-family:Arial;font-size:10px;position:absolute;visibility:hidden;right:20px;bottom:50px;"></div>
 	<div id="tabela2" style="font-family:Arial;font-size:10px;position:absolute;visibility:hidden;right:100px;bottom:50px;"></div>
 
 	<script language="javascript" type="text/javascript">
-
-	var int1=self.setInterval("prikaziNotifikaciju()",10000);
-    var int2=self.setInterval("prikaziPoruku()",10000);
+	var int1=self.setInterval("prikaziNotifikaciju()",20000);
+    var int2=self.setInterval("prikaziPoruku()",20000);
+	
     var tabela2 = document.getElementById('tabela2');
 	var poruka = document.getElementById('poruka');
 	var tabela1 = document.getElementById('tabela2');
@@ -416,16 +416,16 @@ if($user_student)
   		{
   			if (xmlhttp.readyState==4 && xmlhttp.status==200){
   			    tabela2.innerHTML=xmlhttp.responseText;
+				poruka2.style.visibility='hidden';
 				var redovi = document.getElementById('tabela2').getElementsByTagName('tr');
     			var redova = redovi.length;
 				if (redova>0){
 					poruka.style.visibility='visible';
-					poruka2.style.visibility='hidden';
 
 				}
     		}
   		}
-		xmlhttp.open("GET","?sta=student/notifikacija&tip=2",true);
+		xmlhttp.open("GET","?sta=common/notifikacija&tip=2",true);
 		xmlhttp.send();
 	}
 
@@ -443,24 +443,31 @@ if($user_student)
     			tabela2.innerHTML=xmlhttp.responseText;
 				var redovi = document.getElementById('tabela1').getElementsByTagName('tr');
     			var redova = redovi.length;
+				notifikacija2.style.visibility='hidden';
 				if (redova>0){
 					notifikacija.style.visibility='visible';
-					notifikacija2.style.visibility='hidden';
+				
 				}
     		}
   		}
-		xmlhttp.open("GET","?sta=student/notifikacija&tip=1",true);
+		xmlhttp.open("GET","?sta=common/notifikacija&tip=1",true);
 		xmlhttp.send();
 	}
-		
+
 	function Klik1()
 	{
 		if (notifikacija.style.visibility=='visible'){
-			<? 
-			$q243 = myquery("INSERT INTO log (vrijeme, userid, dogadjaj, nivo) VALUES 
-							(NOW(), $userid, 'procitana_notifikacija', '0')");
-
-			?>
+			
+			if (window.XMLHttpRequest){
+			xmlhttp=new XMLHttpRequest();
+  		}
+		else{
+  			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  		}
+	
+		xmlhttp.open("GET","?sta=common/notifikacija&tip=3",true);
+		xmlhttp.send();
+			
 			tabela2.style.visibility='hidden';
 			tabela1.style.visibility='visible';
 			notifikacija.style.visibility='hidden';
@@ -470,13 +477,17 @@ if($user_student)
 		
 	function Klik2()
 	{
+		
 		if (poruka.style.visibility=='visible'){
-			<? 
-						
-			$q248 = myquery("INSERT INTO log (vrijeme, userid, dogadjaj, nivo) VALUES 
-							(NOW(), $userid, 'procitana_poruka', '0')");
+				if (window.XMLHttpRequest){
+			xmlhttp=new XMLHttpRequest();
+  		}
+		else{
+  			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  		}
 	
-			?>
+		xmlhttp.open("GET","?sta=common/notifikacija&tip=4",true);
+		xmlhttp.send();
 			tabela1.style.visibility='hidden';
 			tabela2.style.visibility='visible';
 			poruka.style.visibility='hidden';
