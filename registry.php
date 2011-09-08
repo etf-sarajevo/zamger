@@ -14,7 +14,6 @@ $registry = array(
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 
-
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/zadaca", "Slanje zadaće", "Slanje zadaće", "S", "1", "0"),
@@ -26,8 +25,6 @@ array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/ugovoroucenju", "Ugovor o učenju", "Ugovor o učenju", "S", "1", "0"),
 array("student/ugovoroucenjupdf", "Ugovor o učenju (PDF)", "Ugovor o učenju (PDF)", "S", "2", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
-array("student/notifikacija", "Notifikacija", "Notifikacija", "S", "1", "0"),
-
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),
 array("saradnik/grupa", "Pregled grupe", "Pregled grupe", "N", "1", "0"),
@@ -36,7 +33,6 @@ array("saradnik/izmjena_studenta", "Izmjena podataka o studentu", "Izmjena stude
 array("saradnik/komentar", "Komentari na rad studenta", "Komentar", "N", "0", "0"),
 array("saradnik/student", "Detalji studenta na predmetu", "Detalji studenta", "N", "1", "0"),
 array("saradnik/svezadace", "Download svih zadaća u grupi", "Sve zadaće", "N", "2", "0"),
-
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
 array("nastavnik/obavjestenja", "Obavještenja za studente", "Obavještenja", "N", "1", "0"),
@@ -51,7 +47,6 @@ array("nastavnik/raspored", "Raspored", "Raspored", "N", "1", "0"),
 
 array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1", "0"),
 
-
 array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
 array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
 array("studentska/predmeti", "Predmeti", "Predmeti", "B", "1", "0"),
@@ -65,7 +60,6 @@ array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
 array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana studija", "B", "1", "0"),
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
-array("studentska/plan_studija", "Novo kreiranje plana studija", "Novo kreiranje plana studija", "B", "1", "0"),
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
@@ -73,7 +67,6 @@ array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
-
 
 array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"),
 array("izvjestaj/grupe", "Spisak studenata po grupama", "Grupe", "NBA", "0", "0"),
@@ -112,10 +105,9 @@ array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
 array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
 array("common/articleImageDownload", "Slike projektnih članaka", "Slike članaka", "SNA", "2", "0"),
 
-
 array ("nastavnik/zavrsni", "Zavrsni radovi", "Zavrsni", "N", "1", "0"),
-array ("student/zavrsni", "Zavrsni radovi", "Zavrsni", "S", "1", "0"),
-array ("studentska/zavrsni", "Zavrsni radovi", "Zavrsni", "B", "1", "0"),
+array ("student/zavrsni", "Zavrsni radovi", "Završni", "S", "1", "0"),
+array ("studentska/zavrsni", "Zavrsni radovi", "Završni rad", "B", "1", "0"),
 array()
 );
 ?>
