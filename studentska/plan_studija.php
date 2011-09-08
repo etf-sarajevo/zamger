@@ -137,7 +137,7 @@ foreach($get_post_array as $variable){
 
 //Provjeri je li se desilo da u jednom semestru ima da je neki slot postavljen dva puta ili neki predmet, isto tako provjerava da u 2 razlicita semestra nema istih predmeta
 $greskaSlotovi = false;
-$greskaSlotovi_za_izborne = false;
+
 if($studij and $posted){
 for($i = 0; $i < BROJ_SEMESTARA; $i++){
 
@@ -150,17 +150,25 @@ for($i = 0; $i < BROJ_SEMESTARA; $i++){
 	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi = true; }
 
 	$niz = array();
+	for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
 	for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
-		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$j;
+		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$j.'_slot_'.$p;
 		if($$varijabla == 0) continue;
 		$niz[] = $$varijabla;
 	}
+	}
+	for($k = 0; $k < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $k++){
+		for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
+		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$k.'_slot_'.$p;
+		if($$varijabla == 0) continue;
+		$niz[] = $$varijabla;
+	}
+	}
+	
 	if(count($niz) > count(array_unique($niz))){
 		$greskaSlotovi = true;
 	}
 }
-if($greskaSlotovi){ $posted=false; }
-
 
 $niz = array();
 	for($p = 0; $p < MAX_BROJ_PREDMETA_PO_SEMESTRU; $p++){
@@ -170,26 +178,26 @@ $niz = array();
 		$niz[] = $$varijabla;
 	}
 	}
-	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi_za_izborne = true; }
+	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi = true; }
 	
 	
 	for($s = 0; $s < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $s++){
 		
 		for($i = 0; $i < BROJ_SEMESTARA; $i++){
-		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$s;
+			for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
+		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$s.'_slot_'.$p;
 		if($$varijabla == 0) continue;
 		$niz[] = $$varijabla;
 	}
-	if(count($niz) > count(array_unique($niz))){
-		$greskaSlotovi_za_izborne = true;
+		}
 	}
-	
-	
-	
+	if(count($niz) > count(array_unique($niz))){
+		$greskaSlotovi = true;
 	
 }
+if($greskaSlotovi){ $posted=false; }	
+	
 
-if($greskaSlotovi_za_izborne){ $posted=false; }
 }
 
 
@@ -306,14 +314,7 @@ if(!$studij){
 <?
 	if($greskaSlotovi){
 ?>
-		<tr><td style="color:red;"><b>Semestar ne može imati dva ista slota ili dva ista predmeta!</b></td></tr>
-<?
-	}
-?>	
-<?
-	if($greskaSlotovi_za_izborne){
-?>
-		<tr><td style="color:red;"><b>Različiti semestri ne mogu imati dva ista slota ili dva ista predmeta!</b></td></tr>
+		<tr><td style="color:red;"><b>Ne mogu postojati 2 ista slota ili 2 ista predmeta!</b></td></tr>
 <?
 	}
 ?>	
