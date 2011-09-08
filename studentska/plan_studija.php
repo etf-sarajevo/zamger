@@ -149,17 +149,20 @@ for($i = 0; $i < BROJ_SEMESTARA; $i++){
 	}
 	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi = true; }
 
-	$niz = array();
+
 	for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
-	for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
+		$niz = array();
+		for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
 		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$j.'_slot_'.$p;
 		if($$varijabla == 0) continue;
 		$niz[] = $$varijabla;
 	}
-	}
-	if(count($niz) > count(array_unique($niz))){
+if(count($niz) > count(array_unique($niz))){
 		$greskaSlotovi = true;
 	}
+
+	}
+	
 	/*for($k = 0; $k < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $k++){
 		for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
 		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$k.'_slot_'.$p;
@@ -184,20 +187,7 @@ $niz = array();
 	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi = true; }
 	
 	
-	for($s = 0; $s < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $s++){
-		
-		for($i = 0; $i < BROJ_SEMESTARA; $i++){
-			for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
-		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$s.'_slot_'.$p;
-		if($$varijabla == 0) continue;
-		$niz[] = $$varijabla;
-	}
-		}
-	}
-	if(count($niz) > count(array_unique($niz))){
-		$greskaSlotovi = true;
 	
-}
 if($greskaSlotovi){ $posted=false; }	
 	
 
@@ -733,6 +723,7 @@ function listingHtml($data, $table_width, $table_name){
 <?
 	}
 ?>
+
 	</table>
 	</td>
     </tr>
