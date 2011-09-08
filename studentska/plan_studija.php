@@ -15,14 +15,29 @@ function studentska_plan_studija(){
 
 
 define('BROJ_SEMESTARA', 10);
-define('MAX_BROJ_PREDMETA_PO_SEMESTRU', 10);
+
 
 if(isset($_POST['max_izbornih']) and $_POST['max_izbornih'] > 0 ){
 	define('MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU', $_POST['max_izbornih']);
 } else {
 	define('MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU', 6);
 }
-my_escape($_POST['max_izbornih']);
+$max_izbornih=intval($_POST['max_izbornih']);
+
+if(isset($_POST['max_predmeta']) and $_POST['max_predmeta'] > 0 ){
+	define('MAX_BROJ_PREDMETA_PO_SEMESTRU', $_POST['max_predmeta']);
+} else {
+	define('MAX_BROJ_PREDMETA_PO_SEMESTRU', 6);
+}
+$max_predmeta=intval($_POST['max_predmeta']);
+
+if(isset($_POST['max_broj_slotova']) and $_POST['max_broj_slotova'] > 0 ){
+	define('MAX_BROJ_SLOTOVA_PO_SEMESTRU', $_POST['max_broj_slotova']);
+} else {
+	define('MAX_BROJ_SLOTOVA_PO_SEMESTRU', 6);
+}
+$max_predmeta=intval($_POST['max_broj_slotova']);
+
 
 // Formiraj niz semestara
 $data_semestar = array();
@@ -75,7 +90,7 @@ if(mysql_num_rows($query_akademska_godina) > 0){
 
 // Podaci o predmetima
 $data_predmet = array();
-$sql_predmet = " SELECT id, naziv FROM `predmet` ";
+$sql_predmet = " SELECT id, naziv FROM `predmet` ORDER BY naziv";
 $query_predmet = myquery($sql_predmet);
 if(mysql_num_rows($query_predmet) > 0){
 
@@ -88,59 +103,25 @@ if(mysql_num_rows($query_predmet) > 0){
 	exit;
 }
 
-// Podaci o predmetima s kratki_naziv
-$data_predmetk = array();
-$sql_predmetk = " SELECT id, kratki_naziv FROM `predmet` ";
-$query_predmetk = myquery($sql_predmetk);
-if(mysql_num_rows($query_predmetk) > 0){
-
-	while($row = mysql_fetch_array($query_predmetk)){
-		$data_predmetk[$row['id']] = $row['kratki_naziv'];
-	}
-
-}else{
-	niceerror('Nema podataka o predmetima');
-	exit;
-}
-
-
-//Podaci o slotovima
-
-$slotovi = array();
-$slot_predmeti = array();
-
-$izborni_slotovi = myquery("SELECT * FROM izborni_slot");
-
-if(mysql_num_rows($izborni_slotovi) > 0){
-
-	while($row = mysql_fetch_array($izborni_slotovi)){
-		
-		if(! in_array($row['id'], $slotovi)){
-			$slotovi[] = $row['id'];
-		}
-		
-		$slot_predmeti[$row['id']][] = $row['predmet'];
-	}
-
-}else{
-	niceerror('Nema podataka o predmetima');
-	exit;
-}
-
-
 
 // Varijable, kako bi pokupio POST/GET podatke
-$get_post_array = array('posted', 'studij', 'akademska_godina');
+$get_post_array = array('posted', 'studij', 'akademska_godina'); 
+
+
 for($i = 0; $i < BROJ_SEMESTARA; $i++){
 
     for($j = 0; $j < MAX_BROJ_PREDMETA_PO_SEMESTRU; $j++){
      $get_post_array[] = 'semestar_'.$i.'_predmet_'.$j;
+	 
     }
-
+for($p = 0; $p < MAX_BROJ_SLOTOVA_PO_SEMESTRU; $p++){
     for($j = 0; $j < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $j++){
-     $get_post_array[] = 'semestar_'.$i.'_izborni_predmet_'.$j;
+     $get_post_array[] = 'semestar_'.$i.'_izborni_predmet_'.$j.'_slot_'.$p;
+	 
     }
 }
+}
+
 
 foreach($get_post_array as $variable){
 
@@ -154,8 +135,9 @@ foreach($get_post_array as $variable){
 
 
 
-//Provjeri je li se desilo da u jednom semestru ima da je neki slot postavljen dva puta ili neki predmet
+//Provjeri je li se desilo da u jednom semestru ima da je neki slot postavljen dva puta ili neki predmet, isto tako provjerava da u 2 razlicita semestra nema istih predmeta
 $greskaSlotovi = false;
+$greskaSlotovi_za_izborne = false;
 if($studij and $posted){
 for($i = 0; $i < BROJ_SEMESTARA; $i++){
 
@@ -178,7 +160,38 @@ for($i = 0; $i < BROJ_SEMESTARA; $i++){
 	}
 }
 if($greskaSlotovi){ $posted=false; }
+
+
+$niz = array();
+	for($p = 0; $p < MAX_BROJ_PREDMETA_PO_SEMESTRU; $p++){
+		for($i = 0; $i < BROJ_SEMESTARA; $i++){
+		$varijabla = 'semestar_'.$i.'_predmet_'.$p;
+		if($$varijabla == 0) continue;
+		$niz[] = $$varijabla;
+	}
+	}
+	if(count($niz) > count(array_unique($niz))){ $greskaSlotovi_za_izborne = true; }
+	
+	
+	for($s = 0; $s < MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU; $s++){
+		
+		for($i = 0; $i < BROJ_SEMESTARA; $i++){
+		$varijabla = 'semestar_'.$i.'_izborni_predmet_'.$s;
+		if($$varijabla == 0) continue;
+		$niz[] = $$varijabla;
+	}
+	if(count($niz) > count(array_unique($niz))){
+		$greskaSlotovi_za_izborne = true;
+	}
+	
+	
+	
+	
 }
+
+if($greskaSlotovi_za_izborne){ $posted=false; }
+}
+
 
 //FORMA 1: Odabir godine i studija
 if(!$studij){
@@ -224,9 +237,18 @@ if(!$studij){
 ?>
 	</select></td>
 	</tr>
-	<tr><td>Max. broj izbornih predmeta u semetru:</td><td>
+    <tr><td>Max. broj obaveznih predmeta u semetru:</td><td>
+    <input type="text" name="max_predmeta" value="<?=(MAX_BROJ_PREDMETA_PO_SEMESTRU)?>">
+	</td></tr>
+    
+    <tr><td>Max. broj slotova u semetru:</td><td>
+    <input type="text" name="max_broj_slotova" value="<?=(MAX_BROJ_SLOTOVA_PO_SEMESTRU)?>">
+	</td></tr>
+    
+	<tr><td>Max. broj izbornih predmeta u slotu:</td><td>
     <input type="text" name="max_izbornih" value="<?=(MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU)?>">
 	</td></tr>
+    
 
 <?
 	// Submit input
@@ -275,20 +297,35 @@ if(!$studij){
 	<input type="hidden" name="posted" value="1">
 	<input type="hidden" name="studij" value="<?=$studij?>">
 	<input type="hidden" name="akademska_godina" value="<?=$_POST['akademska_godina']?>">
+    <input type="hidden" name="max_predmeta" value="<?=(MAX_BROJ_PREDMETA_PO_SEMESTRU)?>" >
+    <input type="hidden" name="max_broj_slotova" value="<?=(MAX_BROJ_SLOTOVA_PO_SEMESTRU)?>" >
+    <input type="hidden" name="max_izbornih" value="<?=(MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU)?>" >
+    
 	<table align="center" border="1" width="60%" style="border-style:solid;">
 	<tr><td style="border:1px solid #ffffff; background:#ffffff; font-weight: bold;">Kreiranje plana studija (<?=($data_studij[$studij])?>)</td></tr>
 <?
 	if($greskaSlotovi){
 ?>
-		<tr><td style="color:red;"><b>Semestar ne moze imati dva ista slota ili dva ista predmeta!</b></td></tr>
+		<tr><td style="color:red;"><b>Semestar ne može imati dva ista slota ili dva ista predmeta!</b></td></tr>
 <?
 	}
 ?>	
-    <tr><td>Ukoliko semestar ima manje predmeta ostavite polja viska prazna (vrijednost "izaberi").</td></tr>
+<?
+	if($greskaSlotovi_za_izborne){
+?>
+		<tr><td style="color:red;"><b>Različiti semestri ne mogu imati dva ista slota ili dva ista predmeta!</b></td></tr>
+<?
+	}
+?>	
+
+
+
+    <tr><td>Ukoliko semestar ima manje predmeta ostavite polja viška prazna (vrijednost "izaberi").</td></tr>
 
 <?
 	// Petlja po semestrima
-	
+	$slot_id=0;
+		@$slot;
 	for($i = 0; $i < BROJ_SEMESTARA; $i++){
 
 
@@ -297,7 +334,7 @@ if(!$studij){
 		$broj_semestra = $i + 1;
 		if($data_zavrsni_semestar[$studij] > 2){
 
-			if($broj_semestra < 3){
+			if($broj_semestra < 1){
 				continue;
 			}else if($broj_semestra > $data_zavrsni_semestar[$studij]){
 				break;
@@ -326,6 +363,21 @@ if(!$studij){
 		<?
 
 		// Petlja po predmetima
+		
+		
+		$obaveznih_broj = MAX_BROJ_PREDMETA_PO_SEMESTRU;
+
+		$test_broj_obaveznih = myquery("SELECT COUNT(*) FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='1' LIMIT 1");
+
+		if($test_broj_obaveznih != false AND mysql_num_rows($test_broj_obaveznih) == 1){
+			
+			$test_broj_obaveznih_red = mysql_fetch_row($test_broj_obaveznih);
+			
+			if($obaveznih_broj < $test_broj_obaveznih_red[0])
+			{
+				$obaveznih_broj = $test_broj_obaveznih_red[0];
+			}			
+		}
 		
 		
 		$semestar_i = $i+1;
@@ -369,82 +421,87 @@ if(!$studij){
 			</tr>
 		<?
 		}
+//Petlja po slotovima
 
 
-		// Petlja po izbornim predmetima
-		
-		$izbornih_broj = MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU;
+	$izbornih_broj = MAX_BROJ_IZBORNIH_PREDMETA_PO_SEMESTRU;
 
-		$test_broj_izbornih = myquery("SELECT COUNT(*) FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='0' LIMIT 1");
-
-		if($test_broj_izbornih != false AND mysql_num_rows($test_broj_izbornih) == 1){
-			
-			$test_broj_izbornih_red = mysql_fetch_row($test_broj_izbornih);
-			
-			if($izbornih_broj < $test_broj_izbornih_red[0])
-			{
-				$izbornih_broj = $test_broj_izbornih_red[0];
-			}			
+//ako vec postoji u bazi da ga ispise u padajucem meniju za izborne predmete		
+		for($m=0;$m<sizeof($slot);$m++)
+		{
+			for($n=0;$n<sizeof($slot[$m]);$n++)
+			$slot[$m][$n]=0;
 		}
-		
 		
 		$brojac_izborni = 0;
 		$snimljeni_izborni = array();
-		$staro_izborni = myquery("SELECT * FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='0'");
+		$staro_izborni = myquery("SELECT * FROM plan_studija as p, izborni_slot as i WHERE p.godina_vazenja='$akademska_godina' AND p.studij='$studij' AND p.semestar='$semestar_i' AND p.obavezan='0' AND p.predmet=i.predmet");
 		while($red = mysql_fetch_assoc($staro_izborni)){
 			$snimljeni_izborni[$brojac_izborni] = $red['predmet']; 
+			$it=$red['id']; 
+			$postoji=0;
+			for($k=0;$k<sizeof($slot);$k++)
+				{
+					if($it==$slot[$k][0]) $postoji++;
+					
+				}
+				if($postoji==0){
+					$upit=myquery("SELECT * FROM izborni_slot WHERE id='$it'");
+					while($row=mysql_fetch_array($upit)){
+						$slot[$slot_id][0]=$it;
+						$slot[$slot_id][]=$row['predmet'];
+						
+					}
+					$slot_id++;
+				}
 			$brojac_izborni++;
 		}
 		
-		for($j = 0; $j < $izbornih_broj; $j++){
+		
+//echo "slot id  ".$slot_id."<br>";
 
+for($p=0;$p<MAX_BROJ_SLOTOVA_PO_SEMESTRU;$p++){
+	?>
+    <td width="50%"><b>Slot: <?=$p+1?></b><hr></td>
+    <?
+	// Petlja po predmetima
+		
+		for($j = 1; $j <= $izbornih_broj; $j++){
+
+ 
 
 			// Odabir predmeta
 			?>
             
-			<tr style="padding-left: 30px; border-bottom: 1px solid #cecfce;"><td width="50%">
-			<?
-            if(!$j){
-				?>
-				<hr>
-                <?
-			}
-			?>
-			Izborni Predmet <?=($j+1)?>
-			</td>
-
+			<tr style="padding-left: 30px; border-bottom: 1px solid #cecfce;"><td width="50%">Izborni predmet <?=($j)?></td>
 			<td width="50%">
-			<select name="semestar_<?=$i?>_izborni_predmet_<?=$j?>">
-
-			<?
-            // Po default-u, nije nista odabrano
-		?>
-        	<option value="0" selected>izaberi</option>
-		<?
-			foreach($slotovi as $id){
+			<select name="semestar_<?=$i?>_izborni_predmet_<?=$j-1?>_slot_<?=$p?>">
+<?		
+			// Po default-u, nije nista odabrano
+	?>
+			<option value="0" selected>izaberi</option>
+<?			$a=0;
+			foreach($data_predmet as $id => $naziv){
 				$odabran = '';
-				if(isset($snimljeni_izborni[$j]) and $snimljeni_izborni[$j] == $id){
+				if(isset($slot[$p][0]) and $slot[$p][$j] == $id){
 					$odabran = 'selected="selected"';
 				}
-			?>
-            <option value="<?=$id?>" <?=($odabran)?>>
-				<?
-				$nizpredmeta=array();
-				
-				foreach($slot_predmeti[$id] as $idp=>$predmet){
-					$nizpredmeta[] = $data_predmetk[$predmet];
-				}
-				print implode(', ', $nizpredmeta);
-			?>
-            	</option>
-                <?
-			}
-			?>
+				?>
+				<option value="<?=$id?>" <?=($odabran)?>><?=$naziv?></option>';
+		<?	}
+		?>
 
 			</select>
-			</td></tr>
-<?
+			</td>
+
+			</tr>
+		<?
 		}
+
+}
+    
+    
+
 ?>
 </table></td></tr>
 		<?
@@ -479,19 +536,21 @@ if(!$studij){
 	$rez=myquery($sql_pretraga_id);
 	
 
-
+$slot=-1;
+$brojac=0;
+@$slot_id;
 	// Prodji kroz primljene podatke i vidi sta mozes sa njima
 	foreach($get_post_array as $field){
 
 		if($$field && $field != 'semestar' && $field != 'posted'){
-			
+			//echo "field jee ".$field;
 			// Inicijalizacija
 			$semestar = 0;
 			$predmet = 0;
 			$obavezan = 1;
 
 			// Iz imena primljene varijable odredi o kom semestru se radi, vrijednost varijable je predmet
-			$field_name_data = explode('_', $field);
+			$field_name_data = explode('_', $field); 
 			if($field_name_data[0] == 'semestar' && ($field_name_data[2] == 'predmet' || $field_name_data[2] == 'izborni')){
 				$semestar = $field_name_data[1] + 1;
 				$predmet = $$field;
@@ -503,24 +562,45 @@ if(!$studij){
 			if($field_name_data[2] == 'izborni'){
 				$obavezan = 0;
 			}
-
-			
-			
-			
-			//biranje id od akademske godine za upis u bazu
-
-			$id_akademske_godine="SELECT `id` FROM `akademska_godina` WHERE `id` = '$akademska_godina'";
-		
-			$rezultat=myquery($id_akademske_godine);
-			
-			$number = preg_replace("/[^0-9]/", '', $id_akademske_godine);
+			@$sl;
+			if($field_name_data[5] == 'slot'){
+				$sl = $field_name_data[6];
+			}
+	
 			
 			// Ubaci red u bazu
 			
 			$sql_insert = " INSERT INTO plan_studija (godina_vazenja, studij, semestar, predmet, obavezan) VALUES ";
-			$sql_insert .= " ($number, $studij, $semestar, $predmet, $obavezan) ";
+			$sql_insert .= " ($akademska_godina, $studij, $semestar, $predmet, $obavezan) ";
 			
 			$query = myquery($sql_insert);
+			
+		
+					
+			if($obavezan==0){
+				$novi_id=0;
+			$izborni_slot_max_id="SELECT MAX(id) as id from `izborni_slot`";
+			$query = myquery($izborni_slot_max_id);
+			while($red = mysql_fetch_assoc($query)){
+				if($sl!=$slot){
+						$novi_id=$red['id']+1;
+						$slot=$sl;
+						$slot_id[$brojac]=$novi_id;
+						$brojac++;
+				}
+				else {
+					$novi_id=$red['id'];
+					$slot=$sl;
+				}
+		}
+		
+				$sql_insert_slot="INSERT INTO izborni_slot (id,predmet) VALUES ($novi_id,$predmet) ";
+				$query = myquery($sql_insert_slot);
+		
+				
+
+
+				}
 			
 			
 		}
@@ -534,6 +614,7 @@ if(!$studij){
 	$data_plan = array();
 	$sql_plan = " SELECT studij, semestar, predmet, obavezan FROM `plan_studija` ";
 	$sql_plan .= " ORDER BY studij ASC ";
+	$slot_id=0;
 	
 	$query_plan = myquery($sql_plan);
 	if(mysql_num_rows($query_plan) > 0){
@@ -541,18 +622,34 @@ if(!$studij){
 		while($row = mysql_fetch_array($query_plan)){
 
 			$tmp_array = array();
-			$tmp_array['semestar'] = $data_semestar[($row['semestar']-1)];
-			$tmp_array['studij'] = $data_studij[$row['studij']];
+			$sem=$data_semestar[($row['semestar']-1)];
+			$stud=$data_studij[$row['studij']];
 			
+			$pr=$row['predmet'];
 			if($row['obavezan']==0){
-				$predmeti = myquery("SELECT predmet FROM izborni_slot WHERE id='".($row['predmet'])."'");
-				$tmp_niz = array();
-				while($predmet = mysql_fetch_array($predmeti)){
-					$tmp_niz[] = $data_predmet[$predmet['predmet']];
+				$predmeti = myquery("SELECT id,predmet FROM izborni_slot WHERE predmet='$pr'");
+				while($predmet = @mysql_fetch_array($predmeti)){
+					$sl_id=$predmet['id'];
+					if($sl_id!=$slot_id){
+						$slot_id=$sl_id;
+						$predmet1=myquery("SELECT predmet FROM izborni_slot WHERE id='$sl_id'");
+						$tmp_niz = array();
+						while($predmet2 = @mysql_fetch_array($predmet1)){
+							$tmp_niz[] = $data_predmet[$predmet2['predmet']];
+						}
+						$tmp_array['semestar'] = $sem;
+						$tmp_array['studij'] = $stud;
+						$tmp_array['predmet'] = implode(" / ", $tmp_niz);
+						
+						
+					}
 				}
-				$tmp_array['predmet'] = implode(" / ", $tmp_niz);
+				
 			} else {
+				$tmp_array['semestar'] = $sem;
+						$tmp_array['studij'] = $stud;
 				$tmp_array['predmet'] = $data_predmet[$row['predmet']];
+				
 			}
 
 			$data_plan[] = $tmp_array;
@@ -641,34 +738,5 @@ return;
 	
 
 }
-
-
-/*function getpost_ifset($test_vars){
-
-	if(!is_array($test_vars)){
-		$test_vars = array($test_vars);
-	}
-
-	foreach($test_vars as $test_var){
-
-		if(isset($_POST[$test_var])){
-
-			global $$test_var;
-			$$test_var = addslashes($_POST[$test_var]);
-
-		}else if(isset($_GET[$test_var])){
-
-			global $$test_var;
-			$$test_var = addslashes($_GET[$test_var]);
-
-		}else{
-
-			global $$test_var;
-			$$test_var = '';
-		}
-	}
-}*/
-
-
 
 ?>
