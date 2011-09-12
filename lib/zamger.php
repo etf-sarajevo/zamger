@@ -28,8 +28,7 @@
 
 // Funkcija koja pretvara naša slova iz velikih u mala
 
-function malaslova($string) 
-{
+function malaslova($string) {
 	$slovo = substr($string,0,1);
 	if ($slovo>='A' && $slovo<='Z') {
 		$string = strtr($string, "ČĆŽŠĐ", "čćžšđ");
@@ -43,8 +42,7 @@ function malaslova($string)
 
 // Vraća procentni ispis
 
-function procenat($dio,$total) 
-{
+function procenat($dio,$total) {
 	return (intval($dio/$total*10000)/100)."%";
 }
 
@@ -52,8 +50,7 @@ function procenat($dio,$total)
 // Pokušava pogoditi spol na osnovu imena
 //   Z = ženski, M = muški
 
-function spol($ime) 
-{
+function spol($ime) {
 	if ($ime == "Ines" || $ime == "Iris") return "Z";
 	if (substr($ime,strlen($ime)-1) == "a" && $ime != "Vanja" && $ime != "Peđa" && $ime != "Mirza" && $ime != "Feđa" && $ime != "Saša" && $ime != "Alija" && $ime != "Mustafa" && $ime != "Novica" && $ime != "Avdija" && $ime != "Zikrija")
 		return "Z";
@@ -64,8 +61,7 @@ function spol($ime)
 
 // Vraća genitiv riječi (primitivno)
 
-function genitiv($rijec,$spol) 
-{
+function genitiv($rijec,$spol) {
 	if ($spol=="Z") return $rijec;
 	$slovo = substr($rijec,strlen($rijec)-1);
 	if ($slovo == "a" || $slovo == "e" || $slovo == "i" || $slovo == "o" || $slovo == "u" || $slovo == "k")
@@ -77,26 +73,18 @@ function genitiv($rijec,$spol)
 
 // Floating layer sa podacima o korisniku i loginom
 
-function user_box() 
-{
+function user_box() {
 	global $user_nastavnik,$user_studentska,$user_siteadmin,$userid,$su;
 
 	$q1 = myquery("select ime,prezime from osoba where id=$userid");
 
-	if ($user_siteadmin) 
-	{
+	if ($user_siteadmin) {
 		$slika="admin.png";
-	} 
-	else if ($user_studentska) 
-	{
+	} else if ($user_studentska) {
 		$slika="teta.png";
-	} 
-	else if ($user_nastavnik) 
-	{
+	} else if ($user_nastavnik) {
 		$slika="tutor.png";
-	} 
-	else 
-	{
+	} else {
 		$slika="user.png";
 	}
 	
@@ -104,28 +92,28 @@ function user_box()
 	$prezime = mysql_result($q1,0,1);
 
 	$unsu = "";
-	if ($su>0) 
-	{
+	if ($su>0) {
 		$unsu = "<a href=\"?unsu=1\">UnSU</a> * ";
 	}
+
 ?>
 
-	<div id="kocka" style="position:absolute;right:10px;top:55px">
-		<table style="border:1px;border-style:solid"><tr><td>
-			<img src="images/fnord.gif" width="200" height="1"><br/>
-			<img src="images/16x16/<?=$slika?>" border="0"> <?=$ime?> <?=$prezime?><br/>
-			<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
-			</td></tr>
-     	</table>
-	</div>
+<div id="kocka" style="position:absolute;right:10px;top:55px">
+	<table style="border:1px;border-style:solid"><tr><td>
+	<img src="images/fnord.gif" width="200" height="1"><br/>
+	<img src="images/16x16/<?=$slika?>" border="0"> <?=$ime?> <?=$prezime?><br/>
+	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
+	</td></tr></table>
+</div>
 
 <?
 }
+
+
 // Prikazi skriveni IFRAME za AJAH i layer u kojem se ispisuju poruke 
 // name i id IFRAMEa je $naziv, a layera je $naziv-info
 
-function ajah_box() 
-{
+function ajah_box() {
 	global $zamger_ajah_inited;
 
 	$naziv="zamger_ajah";
@@ -142,24 +130,20 @@ function ajah_box()
 	var zamger_ajah_success="";
 	var zamger_ajah_fail="";
 	
-	function ajah_stop() 
-	{
+	function ajah_stop() {
 		zamger_ajah_sending=false;
 		var pozicija=frames['<?=$naziv?>'].document.body.innerHTML.indexOf("OK");
-		if (pozicija!=-1) 
-		{
+		if (pozicija!=-1) {
 			document.getElementById("<?=$naziv?>-info").innerHTML="&nbsp;";
 			eval(zamger_ajah_success);
-		} else 
-		{
+		} else {
 //			document.getElementById("<?=$naziv?>-info").innerHTML="Greška!";
 document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].document.body.innerHTML;
 			eval(zamger_ajah_fail);
 		}
 	}
 
-	function ajah_start(url, fail, success) 
-	{
+	function ajah_start(url, fail, success) {
 		if (zamger_ajah_sending) return; // semawhore
 		zamger_ajah_sending=true;
 		zamger_ajah_fail=fail;
@@ -175,23 +159,20 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 
 // Reimplementacija file_put_contents, za staru verziju PHPa
 
-if (!function_exists('file_put_contents')) 
-{
-	function file_put_contents($file,$tekst) 
-	{
-		if (!($file = fopen($file,"w"))) return false;
-		$bytes = fwrite($file,$tekst);
-		fclose($file);
-		return $bytes;
-	}
+if (!function_exists('file_put_contents')) {
+function file_put_contents($file,$tekst) {
+	if (!($file = fopen($file,"w"))) return false;
+	$bytes = fwrite($file,$tekst);
+	fclose($file);
+	return $bytes;
+}
 }
 
 
 // Vrati odgovarajuću ikonu za fajl
 // (Kandidat za prebacivanje u libvedran)
 
-function getmimeicon($file) 
-{
+function getmimeicon($file) {
 	$mimetypes = array(
 		"text/x-c" => "source_c.png",
 		"audio/mpeg" => "sound.png",
@@ -241,120 +222,119 @@ function getmimeicon($file)
 
 // Funkcija koja omogucuje dinamicko editovanje polja tabele
 
-function cool_box($izvrsi) 
-{
+function cool_box($izvrsi) {
 
-	// Opis situacije:
-	// Zelja nam je da se promjena prihvati kada korisnik pritisne ENTER
-	// a ako samo klikne pored prozora da se promjena ponisti.
+// Opis situacije:
+// Zelja nam je da se promjena prihvati kada korisnik pritisne ENTER
+// a ako samo klikne pored prozora da se promjena ponisti.
 
-	// U svim browserima pritisak na tipku ENTER ce pozvati metodu onchange,
-	// osim na IE7/IE8 gdje pritisak na ENTER ne proizvodi nikakav event ako
-	// nije definisana propisna forma. Iz tog razloga moramo koristiti 
-	// onkeypress da uhvatimo ENTER. Sto se tice klika pored, browseri ce
-	// pozvati onchange i/ili onblur redoslijedom koji je nemoguce 
-	// predvidjeti :( zato moramo izvrsiti istu akciju u oba.
+// U svim browserima pritisak na tipku ENTER ce pozvati metodu onchange,
+// osim na IE7/IE8 gdje pritisak na ENTER ne proizvodi nikakav event ako
+// nije definisana propisna forma. Iz tog razloga moramo koristiti 
+// onkeypress da uhvatimo ENTER. Sto se tice klika pored, browseri ce
+// pozvati onchange i/ili onblur redoslijedom koji je nemoguce 
+// predvidjeti :( zato moramo izvrsiti istu akciju u oba.
 
-	// U svim testiranim browserima onkeypress ce se izvrsiti prije onchange
-	// i onblur. Ako nadjete izuzetak, prijavite bug.
-	?>
+// U svim testiranim browserima onkeypress ce se izvrsiti prije onchange
+// i onblur. Ako nadjete izuzetak, prijavite bug.
 
-	<!-- COOL BOX -->
-	<div id="coolbox" style="position:absolute;visibility:hidden"><input style="font-size:11px; border:1px solid red" type="text" size="3" onblur="coolboxclose()" onchange="coolboxclose()" onkeypress="coolboxkey(event)" id="coolboxedit"></div>
 
-	<script language="JavaScript">
-		var zamger_coolbox_origcaller=false;
-		var zamger_coolbox_origvalue=false;
-		var zamger_coolbox_submitted=false;
+?>
 
-	function coolboxopen(callobj) 
-	{
-		if (zamger_coolbox_origcaller) return;
-		zamger_coolbox_submitted=false;
-		zamger_coolbox_origcaller = callobj;
-		zamger_coolbox_origvalue = callobj.innerHTML;
+<!-- COOL BOX -->
+<div id="coolbox" style="position:absolute;visibility:hidden"><input style="font-size:11px; border:1px solid red" type="text" size="3" onblur="coolboxclose()" onchange="coolboxclose()" onkeypress="coolboxkey(event)" id="coolboxedit"></div>
 
-		// Nadji poziciju objekta
-		var curleft = curtop = 0;
-		var obj=callobj;
-		if (obj.offsetParent) 
-		{
-			do 
-			{
-				curleft += obj.offsetLeft;
-				curtop += obj.offsetTop;
-			} while (obj = obj.offsetParent);
-		}
+<script language="JavaScript">
+var zamger_coolbox_origcaller=false;
+var zamger_coolbox_origvalue=false;
+var zamger_coolbox_submitted=false;
 
-		// postavi coolbox
-		var coolbox = document.getElementById("coolbox");
-		var coolboxedit = document.getElementById("coolboxedit");
-		coolbox.style.visibility = 'visible';
-		coolbox.style.left = curleft+2;
-		coolbox.style.top = curtop+2;
-		coolboxedit.style.width = callobj.offsetWidth - 6; // 2=padding
-		coolboxedit.style.height = callobj.offsetHeight - 6;
-		coolboxedit.value = callobj.innerHTML;
-		if (coolboxedit.value == "/") coolboxedit.value="";
-		coolboxedit.focus();
+function coolboxopen(callobj) {
+	if (zamger_coolbox_origcaller) return; // Box je već otvoren
+	zamger_coolbox_submitted=false;
+	zamger_coolbox_origcaller = callobj;
+	zamger_coolbox_origvalue = callobj.innerHTML;
+
+	// Nadji poziciju objekta
+	var curleft = curtop = 0;
+	var obj=callobj;
+	if (obj.offsetParent) {
+		do {
+			curleft += obj.offsetLeft;
+			curtop += obj.offsetTop;
+		} while (obj = obj.offsetParent);
 	}
 
-	function coolboxclose() 
-	{
-		if (zamger_coolbox_submitted) return;
-		if (!zamger_coolbox_origcaller) return;
-		var coolbox = document.getElementById("coolbox");
-		var coolboxedit = document.getElementById("coolboxedit");
-		coolbox.style.visibility = 'hidden';
-		coolboxedit.blur();
-	}	
-
-	function coolboxsubmit() 
-	{
-		if (zamger_ajah_sending) 
-		{ // Detektujemo ispad mreže
-			alert("Slanje u toku. Molimo sačekajte.");
-			return;
-		}
-		if (!zamger_coolbox_origcaller) return;
-		if (zamger_coolbox_submitted) return;
-		zamger_coolbox_submitted=true;
-		var coolbox = document.getElementById("coolbox");
-		var coolboxedit = document.getElementById("coolboxedit");
-		if (coolbox.style.visibility == 'hidden') return;
-		if (coolboxedit.value == "") coolboxedit.value="/";
-		coolbox.style.visibility = 'hidden';
-		coolboxedit.blur();
-		if (coolboxedit.value != zamger_coolbox_origvalue) 
-		{
-			zamger_coolbox_origcaller.innerHTML = coolboxedit.value;
-			<?=$izvrsi?>
-		}
-	}
-
-	// Svrha ove funkcije je da uhvati ENTER tipku
-	function coolboxkey(e) 
-	{
-		var coolboxedit = document.getElementById("coolboxedit");
-		if (e.keyCode==13 && coolboxedit.value!=zamger_coolbox_origvalue) 
-		{ 
-			// Ne saljemo podatke ako nije doslo do promjene
-			coolboxsubmit(); 
-		}
-	}
-	</script>
-
-	<?
+	// postavi coolbox
+	var coolbox = document.getElementById("coolbox");
+	var coolboxedit = document.getElementById("coolboxedit");
+	coolbox.style.visibility = 'visible';
+	coolbox.style.left = curleft+2;
+	coolbox.style.top = curtop+2;
+	coolboxedit.style.width = callobj.offsetWidth - 6; // 6=padding
+	coolboxedit.style.height = callobj.offsetHeight - 6;
+	coolboxedit.value = callobj.innerHTML;
+	if (coolboxedit.value == "/") coolboxedit.value="";
+	coolboxedit.focus();
 }
 
+function coolboxclose() {
+	if (zamger_coolbox_submitted) return; // U toku je slanje na server
+	if (!zamger_coolbox_origcaller) return; // Box nije otvoren
+	var coolbox = document.getElementById("coolbox");
+	var coolboxedit = document.getElementById("coolboxedit");
+	coolbox.style.visibility = 'hidden';
+	coolboxedit.blur();
+	
+	// Pošto se onblur/onchange izvršava poslije onkeypress, sada je
+	// sigurno da poništimo vrijednost ove varijable, jer je u slučaju
+	// klika pored kocke ništa neće poništiti!
+	zamger_coolbox_origcaller = false; 
+}
+
+function coolboxsubmit() {
+	if (zamger_ajah_sending) { // Detektujemo ispad mreže
+		alert("Slanje u toku. Molimo sačekajte.");
+		return;
+	}
+	if (!zamger_coolbox_origcaller) return;
+	if (zamger_coolbox_submitted) return;
+	zamger_coolbox_submitted=true;
+	var coolbox = document.getElementById("coolbox");
+	var coolboxedit = document.getElementById("coolboxedit");
+	if (coolbox.style.visibility == 'hidden') return;
+	if (coolboxedit.value == "") coolboxedit.value="/";
+	coolbox.style.visibility = 'hidden';
+	coolboxedit.blur();
+	if (coolboxedit.value != zamger_coolbox_origvalue) {
+		zamger_coolbox_origcaller.innerHTML = coolboxedit.value;
+		<?=$izvrsi?>
+	}
+}
+
+// Svrha ove funkcije je da uhvati ENTER tipku u IE7/IE8
+function coolboxkey(e) {
+	var coolboxedit = document.getElementById("coolboxedit");
+	if (e.keyCode==13 && coolboxedit.value!=zamger_coolbox_origvalue) { 
+		// Ne saljemo podatke ako nije doslo do promjene
+		coolboxsubmit(); 
+	}
+}
+</script>
+
+<?
+}
+
+
 // "Mali meni" - koji se pokazuje u modulima za nastavnika, studentsku i site admin
-function malimeni($fj) 
-{
+
+function malimeni($fj) {
+
 	global $sta, $registry;
+
 	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
 
-	if ($sekcija=="nastavnik/") 
-	{
+	if ($sekcija=="nastavnik/") {
 		$predmet=intval($_REQUEST['predmet']);
 		$ag=intval($_REQUEST['ag']);
 		$dodaj="&predmet=$predmet&ag=$ag";
@@ -375,11 +355,9 @@ function malimeni($fj)
 		<?
 
 	$k=0;
-	foreach ($registry as $r) 
-	{
+	foreach ($registry as $r) {
 		if($r[5] != 0) continue; // nevidljiv
-		if (strstr($r[0],$sekcija)) 
-		{ 
+		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
@@ -389,13 +367,14 @@ function malimeni($fj)
 		}
 	}
 
-	if ($sekcija=="nastavnik/") 
-	{
+	if ($sekcija=="nastavnik/") {
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='#ffffff'">
 				<a href="?sta=saradnik/intro" class="malimeni">Nazad na spisak predmeta i grupa</a>
 			</tr></tr>
 			<?
 	}
+
+
 			?>
 			</table>
 		</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
@@ -413,15 +392,13 @@ function malimeni($fj)
 
 // Varijanta "horizontalni meni" za studentsku službu
 
-function horizontalni_meni($fj) 
-{
+function horizontalni_meni($fj) {
 
 	global $sta, $registry;
 
 	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
 
-	if ($sekcija=="nastavnik/") 
-	{
+	if ($sekcija=="nastavnik/") {
 		$predmet=intval($_REQUEST['predmet']);
 		$dodaj="&predmet=$predmet";
 	}
@@ -438,11 +415,9 @@ function horizontalni_meni($fj)
 		<?
 
 	$k=0;
-	foreach ($registry as $r) 
-	{
+	foreach ($registry as $r) {
 		if($r[5] != 0) continue;
-		if (strstr($r[0],$sekcija)) 
-		{ 
+		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
 			?><td height="20" width="100" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[2]?></a>
@@ -462,8 +437,7 @@ function horizontalni_meni($fj)
 
 // "Studentski meni" - prikazuje se u prozoru studenta
 
-function studentski_meni($fj) 
-{
+function studentski_meni($fj) {
 	global $userid, $sta, $registry;
 
 	// Parametri potrebni za Moodle integraciju
@@ -479,33 +453,26 @@ function studentski_meni($fj)
 		if ($r[0]=="student/prijava_ispita") $modul_prijava=1;
 		if ($r[0]=="student/prosjeci") $modul_prosjek=1;
 		if ($r[0]=="student/anketa") $modul_anketa=1;
-		if ($r[0]=="student/zavrsni") $modul_zavrsni=1;
 	}
 
 	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
 	$arhiva = intval($_REQUEST['sm_arhiva']);
-	if ($arhiva==1) 
-	{
+	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
 		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar mod 2 desc,p.naziv");
 
-	} 
-	else 
-	{
+	} else {
 		// Aktuelna akademska godina
 		$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 		$ag = mysql_result($q10,0,0);
 
 		// Studij koji student trenutno sluša
 		$q20 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-		if (mysql_num_rows($q20)<1) 
-		{
+		if (mysql_num_rows($q20)<1) {
 			$sem_ispis = "Niste upisani na studij!";
 			$q30 = myquery("SELECT * from student_studij where 1=0"); // dummy upit koji ne vraca ništa
 			// Može li ovo bolje!?
-		} 
-		else 
-		{
+		} else {
 			$studij = mysql_result($q20,0,0);
 			$semestar = mysql_result($q20,0,1);
 
@@ -525,8 +492,7 @@ function studentski_meni($fj)
 	$oldsem=$oldag=0; 
 
 	// Glavna petlja za generisanje ispisa
-	while ($r30 = mysql_fetch_row($q30)) 
-	{
+	while ($r30 = mysql_fetch_row($q30)) {
 		$ponudakursa = $r30[0];
 		$predmet_naziv = $r30[1];
 		$predmet = $r30[4];
@@ -534,8 +500,7 @@ function studentski_meni($fj)
 		$zimskiljetnji = $r30[2]%2;
 
 		// Zaglavlje sa imenom akademske godine i semestrom
-		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) 
-		{
+		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) {
 			if ($r30[2]%2==1)
 				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
 			else
@@ -545,8 +510,7 @@ function studentski_meni($fj)
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
-		if (intval($_REQUEST['predmet'])==$predmet) 
-		{
+		if (intval($_REQUEST['predmet'])==$predmet) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
 			if ($_REQUEST['sta'] != "student/predmet")
 				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
@@ -557,8 +521,7 @@ function studentski_meni($fj)
 			
 			// Studentski moduli aktivirani za ovaj predmet
 			$q40 = myquery("select sm.gui_naziv, sm.modul, sm.novi_prozor from studentski_modul as sm, studentski_modul_predmet as smp where smp.predmet=$predmet and smp.akademska_godina=$pag and smp.aktivan=1 and smp.studentski_modul=sm.id order by sm.id");
-			while ($r40 = mysql_fetch_row($q40)) 
-			{
+			while ($r40 = mysql_fetch_row($q40)) {
 			$tip_forum="";
 			if ($r40[0]=="Forum Komentari") $tip_forum="&tip=forum";
 				if ($r40[1]==$_REQUEST['sta'])
@@ -570,14 +533,11 @@ function studentski_meni($fj)
 			}
 
 			// Da li ima aktivna anketa i da li je istekao rok?
-			if ($modul_anketa) 
-			{
+			if ($modul_anketa) {
 				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1");
-				if (mysql_num_rows($q42)!=0) 
-				{ // da li uopce ima kreirana anketa ako ne , ne radi nista
+				if (mysql_num_rows($q42)!=0) { // da li uopce ima kreirana anketa ako ne , ne radi nista
 					$rok=mysql_result($q42,0,0);
-					if (time () < $rok) 
-					{
+					if (time () < $rok) {
 						$q42b =  myquery("select id from anketa_anketa a where a.aktivna=1");
 						if(mysql_num_rows($q42b)>0)
 							$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
@@ -586,9 +546,7 @@ function studentski_meni($fj)
 			}
 
 			$ispis .= "</td></tr>\n";
-		} 
-		else 
-		{
+		} else {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 		}
 	}
@@ -599,56 +557,35 @@ function studentski_meni($fj)
 	<table width="100%" border="0" cellspacing="4" cellpadding="0">
 		<tr><td valign="top">
 			<img src="images/fnord.gif" width="197" height="1"><br/><br/>
-			<? if ($sta != "student/intro") 
-			{ 
-			?>
+			<? if ($sta != "student/intro") { ?>
 			<a href="?sta=student/intro">&lt;-- Nazad na početnu</a>
-			<? 
-			} 
-			else 
-			{ 
-			?>&nbsp;
-			<? 
-			} 
-			?><?=$ispis?>
+			<? } else { ?>&nbsp;<? } ?><?=$ispis?>
 			
 			<br />
-			<? if ($arhiva==0) 
-			{ ?>
+			<? if ($arhiva==0) { ?>
 			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
-			<? 
-			} else 
-			{ ?>
+			<? } else { ?>
 			<a href="<?=genuri()?>&sm_arhiva=0">Sakrij arhivirane predmete</a>
-			<? 
-			} ?>
+			<? } ?>
 			<br /><br />
 			<img src="images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
 			<a href="#" onclick="daj_stablo('dokumenti'); return false;">Dokumenti</a><br />
 			<div id="dokumenti" style="display:none">
 				&nbsp;&nbsp;&nbsp; <a href="?sta=izvjestaj/index&student=<?=$userid?>">Uvjerenje o položenim predmetima</a> <i><font color="red">NOVO!</font></i><br />
 				&nbsp;&nbsp;&nbsp; <a href="?sta=izvjestaj/progress&student=<?=$userid?>&razdvoji_ispite=1">Pregled ostvarenog rezultata</a> <i><font color="red">NOVO!</font></i><br />
-				<? if ($modul_uou) 
-				{ ?>
+				<? if ($modul_uou) { ?>
 				&nbsp;&nbsp;&nbsp; <a href="?sta=student/ugovoroucenju">Ugovor o učenju</a><br />
-				<? 
-				} ?>
-				<? if ($modul_prijava) 
-				{ ?>
+				<? } ?>
+				<? if ($modul_prijava) { ?>
 				&nbsp;&nbsp;&nbsp; <a href="?sta=student/prijava_ispita">Prijava ispita</a><br />
-				<? 
-				} ?>
+				<? } ?>
 				&nbsp;&nbsp;&nbsp; Promjena odsjeka <i><font color="red">USKORO!</font></i><br />
-				<? if ($modul_kolizija) 
-				{ ?>
+				<? if ($modul_kolizija) { ?>
 				&nbsp;&nbsp;&nbsp; <a href="?sta=student/kolizija">Zahtjev za koliziju</a><br />
-				<? 
-				} ?>
-				<? if ($modul_prosjek) 
-				{ ?>
+				<? } ?>
+				<? if ($modul_prosjek) { ?>
 				&nbsp;&nbsp;&nbsp; <a href="?sta=student/prosjeci">Prosjeci po godinama</a><br />
-				<? 
-				} ?>
+				<? } ?>
 			</div>
 			<br /><br />
 			<?
@@ -656,30 +593,25 @@ function studentski_meni($fj)
 
 	// Prikaz poruka sa Moodle foruma
 
-	if (isset($_REQUEST['predmet']) && isset($_REQUEST['ag']) && $conf_moodle) 
-	{
+	if (isset($_REQUEST['predmet']) && isset($_REQUEST['ag']) && $conf_moodle) {
 		// Varijabla komentariforum postaje ID predmeta koji je izabran
 		$komentariforum = $_REQUEST['predmet'];
 		$predmet = intval($_REQUEST['predmet']);
 		$ag = intval($_REQUEST['ag']);
 
 		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($qsm)>0) 
-		{
+		if (mysql_num_rows($qsm)>0) {
 		$aktivan_provjera = mysql_result($qsm,0,0);
  
-			if ($aktivan_provjera==1) 
-			{
+			if ($aktivan_provjera==1) {
 				$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
 
 				// Uzimanje Moodle_ID ako je predmet povezan sa moodle
-				if (mysql_num_rows($q)>0) 
-				{
+				if (mysql_num_rows($q)>0) {
 					$moodle_id = mysql_result($q,0,0);
 
 					// Konekcija na bazu?
-					if (!$conf_moodle_reuse_connection) 
-					{
+					if (!$conf_moodle_reuse_connection) {
 						dbdisconnect();
 						dbconnect2($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass, $conf_moodle_db);
 					}
@@ -716,10 +648,8 @@ function studentski_meni($fj)
 											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br> ['.$naziv_foruma.']<br></div>';
 										}
 									}
-									if($provjerakomentara==0)
-									{
-										print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';
-									}
+									if($provjerakomentara==0){
+										print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';}
 									?>
 								</td>
 							</tr> 
@@ -727,8 +657,7 @@ function studentski_meni($fj)
 					<?
 
 					// Vraćamo Zamger konekciju
-					if (!$conf_moodle_reuse_connection) 
-					{
+					if (!$conf_moodle_reuse_connection) {
 						dbdisconnect();
 						dbconnect2($conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb);
 					}
@@ -756,11 +685,14 @@ function studentski_meni($fj)
 			</td></tr>
 		</table>
 <?
+
+
 }
 
+
 // Logging
-function zamgerlog($event,$nivo) 
-{
+
+function zamgerlog($event,$nivo) {
 	global $userid;
 
 	// Brisemo gluposti iz eventa
@@ -780,10 +712,12 @@ function zamgerlog($event,$nivo)
 	myquery("insert into log set dogadjaj='".my_escape($event)."', userid=$userid, nivo=$nivo");
 }
 
+
+
 // Ova funkcija definiše pravila za kreiranje UIDa za LDAP.
 // Ispod je dato pravilo: prvo slovo imena + prvo slovo prezimena + broj indexa
-function gen_ldap_uid($userid) 
-{
+
+function gen_ldap_uid($userid) {
 	$q10 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
 	$ime = mysql_result($q10,0,0);
 	$prezime = mysql_result($q10,0,1);
@@ -806,8 +740,7 @@ function gen_ldap_uid($userid)
 function myquery($query) {
 	global $_lv_;
 
-	if ($r = @mysql_query($query)) 
-	{
+	if ($r = @mysql_query($query)) {
 		return $r;
 	}
 	
@@ -820,4 +753,8 @@ function myquery($query) {
 	zamgerlog("SQL greska ($file : $line):".mysql_error(), 3);
 	exit;
 }
+
+
+
+
 ?>
