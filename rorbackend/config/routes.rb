@@ -1,4 +1,6 @@
 Zamger::Application.routes.draw do
+  get "/core/Report/courseUnit", :controller => "Core::Report", :action => "course_unit"
+  get "/core/Report/courseUnitWORest", :controller => "Core::Report", :action => "course_unit_wo_rest"
   get "/hrm/ensemble/Nomination/getLatestForPerson", :controller => "Hrm::Ensemble::Nomination", :action => "get_latest_for_person"
   get "/hrm/ensemble/Nomination/:id", :controller => "Hrm::Ensemble::Nomination", :action => "show"
 
@@ -58,7 +60,9 @@ Zamger::Application.routes.draw do
   get "/lms/moodle/MoodleId/getMoodleId", :controller => "Lms::Moodle::MoodleId", :action => "get_moodle_id"
 
   get "/lms/homework/programmingLanguage/:id", :controller => "Lms::Homework::ProgrammingLanguage", :action => "show"
-
+  
+  get "/lms/homework/Homework/getScoreFromCourseUnit", :controller => "Lms::Homework::Homework", :action => "get_score_from_course_unit"
+  get "/lms/homework/Homework/fromCourseScoringElement", :controller => "Lms::Homework::Homework", :action => "from_course_scoring_element"
   get "/lms/homework/Homework/getLatestForStudent", :controller => "Lms::Homework::Homework", :action => "get_latest_for_student"
   get "/lms/homework/Homework/getReviewedForStudent", :controller => "Lms::Homework::Homework", :action => "get_reviewed_for_student"
   get "/lms/homework/Homework/fromCourse", :controller => "Lms::Homework::Homework", :action => "from_course"
@@ -66,7 +70,9 @@ Zamger::Application.routes.draw do
   get "/lms/homework/Homework/:id", :controller => "Lms::Homework::Homework", :action => "show"
 
   put "/lms/homework/Diff", :controller => "Lms::Homework::Diff", :action => "create"
-
+  
+  get "/lms/homework/Assignment/fromGroup", :controller => "Lms::Homework::Assignment", :action => "from_group"
+  get "/lms/homework/Assignment/fromCourseUnit", :controller => "Lms::Homework::Assignment", :action => "from_course_unit"
   get "/lms/homework/Assignment/fromStudentHomeworkNumber", :controller => "Lms::Homework::Assignment", :action => "from_student_homework_number"
   put "/lms/homework/Assignment", :controller => "Lms::Homework::Assignment", :action => "create"
   get "/lms/homework/Assignment/:id", :controller => "Lms::Homework::Assignment", :action => "show"
@@ -89,17 +95,23 @@ Zamger::Application.routes.draw do
   
   get "/lms/attendance/Class/fromGroupAndScoringElement", :controller => "Lms::Attendance::Class", :action => "from_group_and_scoring_element"
   get "/lms/attendance/Class/:id", :controller => "Lms::Attendance::Class", :action => "show"
-
+  
+  get "/lms/attendance/Group/fromCourseUnitVirtual", :controller => "Lms::Attendance::Group", :action => "from_course_unit_virtual"
+  get "/lms/attendance/Group/fromCourseUnit", :controller => "Lms::Attendance::Group", :action => "from_course_unit"
   get "/lms/attendance/Group/fromStudentAndCourse", :controller => "Lms::Attendance::Group", :action => "from_student_and_course"
+  get "/lms/attendance/Group/:id/getAllStudents", :controller => "Lms::Attendance::Group", :action => "get_all_students"
   get "/lms/attendance/Group/:id/isMember", :controller => "Lms::Attendance::Group", :action => "is_member"
   get "/lms/attendance/Group/:id/isTeacher", :controller => "Lms::Attendance::Group", :action => "is_teacher"
   get "/lms/attendance/Group/:id", :controller => "Lms::Attendance::Group", :action => "show"
-
+  
+  get "/lms/attendance/Attendance/getScoreFromCourseUnit", :controller => "Lms::Attendance::Attendance", :action => "get_score_from_course_unit"
+  get "/lms/attendance/Attendance/fromCourseUnit", :controller => "Lms::Attendance::Attendance", :action => "from_course_unit"
   get "/lms/attendance/Attendance/fromStudentAndClass", :controller => "Lms::Attendance::Attendance", :action => "from_student_and_class"
   get "/lms/attendance/Attendance/:id/getPresence", :controller => "Lms::Attendance::Attendance", :action => "get_presence"
   post "/lms/attendance/Attendance/:id/setPresence", :controller => "Lms::Attendance::Attendance", :action => "get_presence"
   post "/lms/attendance/Attendance/:id/updateScore", :controller => "Lms::Attendance::Attendance", :action => "update_score"
-
+  
+  get "/core/ScoringElement/fromCourseUnitExceptExams", :controller => "Core::ScoringElement", :action => "from_course_unit_except_exams"
   get "/core/ScoringElement/:id", :controller => "Core::ScoringElement", :action => "show"
   
   get "/core/Scoring/:id/getScoringElements", :controller => "Core::Scoring", :action => "get_scoring_elements"
@@ -113,6 +125,7 @@ Zamger::Application.routes.draw do
   
   get "/core/Programme/:id", :controller => "Core::Programme", :action => "show"
   
+  get "/core/Portfolio/:id/getScoreFromCourseUnitStudent", :controller => "Core::Portfolio", :action => "get__grade_from_course_unit_student"
   get "/core/Portfolio/fromCourseOffering", :controller => "Core::Portfolio", :action => "from_course_offering"
   get "/core/Portfolio/fromCourseUnit", :controller => "Core::Portfolio", :action => "from_course_unit"
   get "/core/Portfolio/:id/getGrade", :controller => "Core::Portfolio", :action => "get_grade"
@@ -141,6 +154,7 @@ Zamger::Application.routes.draw do
   get "/core/CourseUnitYear/teacherAccessLevel", :controller => "Core::CourseUnitYear", :action => "teacher_access_level"
   get "/core/CourseUnitYear/:id", :controller => "Core::CourseUnitYear", :action => "show"
   
+  get "core/CourseUnit/:id/getAllStudents", :controller => "Core::CourseUnit", :action => "get_all_students"
   get "/core/CourseUnit/:id", :controller => "Core::CourseUnit", :action => "show"
   
   get "/core/AcademicYear/getCurrent", :controller => "Core::AcademicYear", :action => "get_current"
@@ -150,60 +164,4 @@ Zamger::Application.routes.draw do
   get "/core/Auth/login", :controller => "Core::Auth", :action => "login"
   get "/core/Auth/logout", :controller => "Core::Auth", :action => "logout"
 
-  # The priority is based upon order of creation:
-  # first created -> highest priority.
-
-  # Sample of regular route:
-  #   match 'products/:id' => 'catalog#view'
-  # Keep in mind you can assign values other than :controller and :action
-
-  # Sample of named route:
-  #   match 'products/:id/purchase' => 'catalog#purchase', :as => :purchase
-  # This route can be invoked with purchase_url(:id => product.id)
-
-  # Sample resource route (maps HTTP verbs to controller actions automatically):
-  #   resources :products
-
-  # Sample resource route with options:
-  #   resources :products do
-  #     member do
-  #       get 'short'
-  #       post 'toggle'
-  #     end
-  #
-  #     collection do
-  #       get 'sold'
-  #     end
-  #   end
-
-  # Sample resource route with sub-resources:
-  #   resources :products do
-  #     resources :comments, :sales
-  #     resource :seller
-  #   end
-
-  # Sample resource route with more complex sub-resources
-  #   resources :products do
-  #     resources :comments
-  #     resources :sales do
-  #       get 'recent', :on => :collection
-  #     end
-  #   end
-
-  # Sample resource route within a namespace:
-  #   namespace :admin do
-  #     # Directs /admin/products/* to Admin::ProductsController
-  #     # (app/controllers/admin/products_controller.rb)
-  #     resources :products
-  #   end
-
-  # You can have the root of your site routed with "root"
-  # just remember to delete public/index.html.
-  # root :to => 'welcome#index'
-
-  # See how all your routes lay out with "rake routes"
-
-  # This is a legacy wild controller route that's not recommended for RESTful applications.
-  # Note: This route will make all actions in every controller accessible via GET requests.
-  # match ':controller(/:action(/:id(.:format)))'
 end

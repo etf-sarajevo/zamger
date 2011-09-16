@@ -58,4 +58,16 @@ class Lms::Homework::Assignment < ActiveRecord::Base
   end
   
   
+  def self.from_group(group_id)
+    assignments = (Lms::Homework::Assignment).joins("INNER JOIN " + (Lms::Attendance::StudentGroup)::TABLE_NAME + " ON " + (Lms::Attendance::StudentGroup)::STUDENT_ID + '=' + (Lms::Homework::Assignment)::AUTHOR_ID).where((Lms::Attendance::StudentGroup)::GROUP_ID => group_id)
+    return assignments
+  end
+  
+  
+  def self.from_course_unit(course_unit_id, academic_year_id)
+    assignments = (Lms::Homework::Assignment).joins("INNER JOIN " + (Core::Portfolio)::TABLE_NAME + " ON " + (Lms::Homework::Assignment)::AUTHOR_ID + '=' + (Core::Portfolio)::STUDENT_ID).joins("INNER JOIN " + (Core::CourseOffering)::TABLE_NAME + " ON " + (Core::CourseOffering)::ID + '=' + (Core::Portfolio)::COURSE_OFFERING_ID).where((Core::CourseOffering)::COURSE_UNIT_ID => course_unit_id, (Core::CourseOffering)::ACADEMIC_YEAR_ID => academic_year_id)
+    
+   return assignments
+  end
+  
 end

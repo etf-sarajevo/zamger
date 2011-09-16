@@ -63,4 +63,21 @@ class Lms::Attendance::Group < ActiveRecord::Base
     
     return teacher
   end
+  
+  def self.from_course_unit(course_unit_id, academic_year_id)
+    groups = (Lms::Attendance::Group).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id, :virtual => false)
+    return groups
+  end
+  
+  def self.from_course_unit_virtual_id(course_unit_id, academic_year_id)
+    groups = (Lms::Attendance::Group).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id, :virtual => true).select(:id).first
+    return groups
+  end
+  
+  
+  def self.get_all_students(id)
+    students = (Lms::Attendance::StudentGroup).joins(:group).where(:group_id => id).select(:student_id)
+    return students
+  end
+  
 end

@@ -79,6 +79,11 @@ class Core::Portfolio < ActiveRecord::Base
     return grade
   end
   
+  def self.get_grade_from_course_unit_student(course_unit_id, student_id, academic_year_id)
+    grade = (Core::FinalGrade).where(:course_unit_id => course_unit_id, :student_id => student_id, :academic_year_id => academic_year_id).select(:grade, :date).first
+    return grade
+  end
+  
   def self.set_grade(id, grade)
     portfolio = (Core::Portfolio).find(id)
     grade_r = (Core::FinalGrade).where(:course_unit_id => portfolio[:course_unit_id], :student_id => portfolio[:student_id]).first

@@ -7,7 +7,10 @@ class CreateCorePeople < ActiveRecord::Migration
       t.string :fathers_surname, :limit => 30
       t.string :mothers_name, :limit => 30
       t.string :mothers_surname, :limit => 30
-      t.enum :gender, :limit => ['M', 'Z', '']
+      # mysql version
+      # t.enum :gender, :limit => ['M', 'Z', '']
+      # postgresql version
+      t.string :gender, :limit => 1
       t.string :email, :limit => 100
       t.string :student_id_number, :limit => 10
       t.date :date_of_birth

@@ -62,4 +62,11 @@ class Lms::Attendance::Attendance < ActiveRecord::Base
   end
   
   
+  def self.from_course_unit(course_unit_id, academic_year_id)
+    attendances = (Core::ScoringElement).joins(:course_unit_type_scoring_elements).joins("INNER JOIN " + (Core::CourseUnitYear)::TABLE_NAME + " ON " + (Core::CourseUnitYear)::COURSE_UNIT_TYPE_ID + '=' + (Core::CourseUnitTypeScoringElement)::COURSE_UNIT_TYPE_ID).where((Core::CourseUnitYear)::COURSE_UNIT_ID => course_unit_id, (Core::CourseUnitYear)::ACADEMIC_YEAR_ID => academic_year_id, :scoring_id => 3).order(:id)
+    
+    return attendances
+  end
+  
+  
 end

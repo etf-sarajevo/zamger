@@ -1,4 +1,7 @@
 class Lms::Attendance::AttendanceController < ApplicationController
+  caches_action :from_course_unit, :cache_path => Proc.new { |c| c.params }
+  caches_action :from_student_and_class, :cache_path => Proc.new { |c| c.params }
+  caches_action :get_score_from_course_unit, :cache_path => Proc.new { |c| c.params }
   # get "/lms/attendance/Attendance/fromStudentAndClass", :controller => "Lms::Attendance::Attendance", :action => "from_student_and_class"
   def from_student_and_class
     attendance = (Lms::Attendance::Attendance).from_student_and_class(params[:student_id], params[:class_id])
@@ -17,7 +20,20 @@ class Lms::Attendance::AttendanceController < ApplicationController
   end
 
   def update_score
-    respond_save((Lms::Attendance::Attendance).update_score(params[:student_id], params[:scoring_element_id], params[:course_unit_id], params[:academic_year_id]))
+  end
+  
+  
+  
+  # get "/lms/attendance/Attendance/fromCourseUnit", :controller => "Lms::Attendance::Attendance", :action => "from_course_unit"
+  def from_course_unit
+    attendances = (Lms::Attendance::Attendance).from_course_unit(params[:course_unit_id], params[:academic_year_id])
+    respond_with_object(attendances)
+  end
+  
+  # get "/lms/attendance/Attendance/getScoreFromCourseUnit", :controller => "Lms::Attendance::Attendance", :action => "get_score_from_course_unit"
+  def get_score_from_course_unit
+    score = (Core::ScoringElementScore).get_score_from_course_unit(params[:student_id], params[:course_unit_id], params[:academic_year_id], params[:attendance_id])
+    respond_with_object(score)
   end
   
 end

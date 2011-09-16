@@ -27,7 +27,7 @@ class Lms::Exam::ExamResult < ActiveRecord::Base
 
 
   def self.from_student_and_exam(student_id, exam_id)
-    exam_result = (Lms::Exam::ExamResult).where(:student_id => student_id, :exam_id => exam_id).select([:result])
+    exam_result = (Lms::Exam::ExamResult).where(:student_id => student_id, :exam_id => exam_id).select([:result]).first
     
     return exam_result
   end

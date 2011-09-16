@@ -1,4 +1,5 @@
 class Lms::Exam::ExamResultController < ApplicationController
+  caches_action :from_student_and_exam,:cache_path => Proc.new { |c| c.params }
   # get "/lms/exam/ExamResult/:id", :controller => "Lms::Exam::ExamResult", :action => "show"
   def show
     exam_result = (Lms::Exam::ExamResult).find(params[:id])
@@ -19,7 +20,7 @@ class Lms::Exam::ExamResultController < ApplicationController
 
   # delete "/lms/exam/ExamResult/:id/deleteExamResult", :controller => "Lms::Exam::ExamResult", :action => "delete_exam_result"
   def delete_exam_result
-    respond_delete(Lms::Exam::ExamResult).delete(params[:id]))
+    respond_delete((Lms::Exam::ExamResult).delete(params[:id]))
   end
   
   # Not availaible

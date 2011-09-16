@@ -1,4 +1,5 @@
 class Core::PortfolioController < ApplicationController
+  caches_action :get_grade_from_course_unit, :cache_path => Proc.new { |c| c.params }
   # get "/core/Portfolio/:id", :controller => "Core::Portfolio", :action => "show"
   def show
     portfolio = (Core::Portfolio).find(params[:id])
@@ -37,6 +38,12 @@ class Core::PortfolioController < ApplicationController
   def get_score
     score = (Core::Portfolio).get_score(params[:id], params[:scoring_element_id], params[:score])
     respond_with_object(score)
+  end
+  
+  # get "/core/Portfolio/:id/getScoreFromCourseUnitStudent", :controller => "Core::Portfolio", :action => "get__grade_from_course_unit_student"
+  def get__grade_from_course_unit_student
+    grade = (Core::Portfolio).get__grade_from_course_unit_student(params[:course_unit_id], params[:student_id])
+    respond_with_object(grade)
   end
   
   # post "/core/Portfolio/:id/setScore", :controller => "Core::Portfolio", :action => "set_score"
@@ -79,6 +86,12 @@ class Core::PortfolioController < ApplicationController
   def get_all_for_student
     all_portfolios = (Core::Portfolio).get_all_for_student(params[:student_id])
     respond_with_object(all_portfolios)
-  end  
+  end
+  
+  # get "/core/Portfolio/getAllForStudent", :controller => "Core::Portfolio", :action => "get_all_for_student"
+  def self.get_grade_from_course_unit_student
+    grade = (Core::FinalGrade).get_grade_from_course_unit_student(params[:course_unit_id], params[:student_id], params[:academic_year_id])
+    return grade
+  end
 
 end

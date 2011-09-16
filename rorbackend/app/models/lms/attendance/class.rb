@@ -44,7 +44,7 @@ class Lms::Attendance::Class < ActiveRecord::Base
   end
   
   def self.from_group_and_scoring_element(group_id, scoring_element_id)
-    class_t = (Lms::Attendance::Class).where(:group_id => group_id, :scoring_element_id => scoring_element_id).select([:id, :date, :time, :teacher_id]).order(:time).first
+    class_t = (Lms::Attendance::Class).where(:group_id => group_id, :scoring_element_id => scoring_element_id).select([:id, :date, :time, :teacher_id]).order(:time)
     
     return class_t
   end

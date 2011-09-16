@@ -1,7 +1,7 @@
 class Core::RssController < ApplicationController
   # get "/core/RSS/:id", :controller => "Core::Rss", :action => "show"
   def show
-    rss = (Core::Rss).where(:id => params[:id])select(:auth_id).first
+    rss = (Core::Rss).where(:id => params[:id]).select(:auth_id).first
     respond_with_object(rss)
   end
   

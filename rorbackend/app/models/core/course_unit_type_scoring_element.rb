@@ -19,4 +19,5 @@ class Core::CourseUnitTypeScoringElement < ActiveRecord::Base
   
   belongs_to :course_unit_type
   belongs_to :scoring_element
+  
 end

@@ -1,4 +1,5 @@
 class Lms::Attendance::ClassController < ApplicationController
+  caches_action :from_group_and_scoring_element, :cache_path => Proc.new { |c| c.params }
   # get "/lms/attendance/Class/:id", :controller => "Lms::Attendance::Class", :action => "show"
   def show
     class_t = (Lms::Attendance::Class).from_id(id)

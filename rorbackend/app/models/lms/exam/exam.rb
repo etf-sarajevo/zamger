@@ -42,8 +42,15 @@ class Lms::Exam::Exam < ActiveRecord::Base
   end
   
   
-  def self.from_course(course_unit_id, academic_year_id)
-    exams = (Lms::Exam::Exam).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id).joins(:scoring_element).select((Lms::Exam::Exam)::ALL_COLUMNS | (Core::ScoringElement)::ALL_COLUMNS)
+  def self.from_course(course_unit_id, academic_year_id, order = "date")
+    if order == "date"
+      order_by = [(Lms::Exam::Exam)::DATE, (Lms::Exam::Exam)::SCORING_ELEMENT_ID]
+    else
+      order by = [(Lms::Exam::Exam)::SCORING_ELEMENT_ID, (Lms::Exam::Exam)::DATE]
+    end
+    exams = (Lms::Exam::Exam).where(:course_unit_id => course_unit_id, :academic_year_id => academic_year_id).includes(:scoring_element).select((Lms::Exam::Exam)::ALL_COLUMNS | (Core::ScoringElement)::ALL_COLUMNS).order(order_by)
+    
+    return exams
   end
   
   

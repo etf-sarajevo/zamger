@@ -9,7 +9,7 @@ class CreateLmsHomeworkHomeworks < ActiveRecord::Migration
       t.time :deadline, :default => nil
       t.boolean :active, :default => false
       t.integer :programming_language_id, :default => 0
-      t.boolean :attachment, :default => 0
+      t.boolean :attachment, :default => false
       t.string :allowed_extensions, :default => nil
       t.string :text, :default => nil
       t.integer :scoring_element_id

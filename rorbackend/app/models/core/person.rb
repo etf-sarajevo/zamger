@@ -83,7 +83,7 @@ class Core::Person < ActiveRecord::Base
 
   ALL_COLUMNS = [ID, NAME, SURNAME, FATHERS_NAME, FATHERS_SURNAME, MOTHERS_NAME, MOTHERS_SURNAME, GENDER, EMAIL, STUDENT_ID_NUMBER, DATE_OF_BIRTH, PLACE_OF_BIRTH_ID, ETHNICITY_ID, NATIONALITY_ID, SOLDIER_CATEGORY, PERSONAL_ID_NUMBER, ADDRESS, ADDRESS_PLACE_ID, PHONE, CANTON_ID, FOR_DELETE, PROFESSIONAL_LEVEL_ID, SCIENCE_LEVEL_ID, PICTURE]
   
-  has_many :portfolios
+  has_many :portfolios, :foreign_key => :student_id
   has_many :attendances, :class_name => "Lms::Attendance::Attendance"
   has_many :messages_sent, :class_name => "Common::Pm::Message", :foreign_key => "from_id"
   has_many :messages_inbox, :class_name => "Common::Pm::Message", :foreign_key => "to_id"

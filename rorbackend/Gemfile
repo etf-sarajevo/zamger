@@ -1,15 +1,18 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.0.rc6'
+gem 'rails', '3.1.0'
 
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
-
 gem 'mysql2'
 gem 'therubyracer'
-# gem 'mongrel'
-gem 'enum_column', :git => 'git://github.com/electronick/enum_column.git'
-
+gem 'resque'
+#gem 'mongrel'
+# gem 'enum_column', :git => 'git://github.com/electronick/enum_column.git'
+gem 'rest-client'
+#gem 'naturalsort'
+# gem 'pg', "~> 0.11"
+gem 'pg'
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do

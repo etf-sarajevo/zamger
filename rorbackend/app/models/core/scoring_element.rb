@@ -46,4 +46,10 @@ class Core::ScoringElement < ActiveRecord::Base
   
   validates_presence_of :name, :gui_name, :short_gui_name, :scoring_id, :max, :pass, :option, :mandatory
   
+  def self.from_course_unit_except_exams(course_unit_id, academic_year_id)
+    scoring_elements = (Core::ScoringElement).joins(:course_unit_type_scoring_elements).joins("INNER JOIN " + (Core::CourseUnitYear)::TABLE_NAME + " ON " + (Core::CourseUnitYear)::COURSE_UNIT_TYPE_ID + '=' + (Core::CourseUnitTypeScoringElement)::COURSE_UNIT_TYPE_ID).where((Core::CourseUnitYear)::COURSE_UNIT_ID + '=' + course_unit_id.to_s).where((Core::ScoringElement)::SCORING_ID + '<> 1 AND ' + (Core::ScoringElement)::SCORING_ID + '<> 2').where((Core::CourseUnitYear)::ACADEMIC_YEAR_ID => academic_year_id)
+    
+    return scoring_elements
+  end
+  
 end

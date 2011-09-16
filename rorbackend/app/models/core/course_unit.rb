@@ -43,4 +43,9 @@ class Core::CourseUnit < ActiveRecord::Base
   
   validates_presence_of :core, :name, :short_name, :course_unit_type_id, :ects
   
+  
+  def self.get_all_students(id, academic_year_id)
+    students = (Core::Person).joins(:portfolios).joins("INNER JOIN " + (Core::CourseOffering)::TABLE_NAME + " ON " + (Core::CourseOffering)::ID + '=' + (Core::Portfolio)::COURSE_OFFERING_ID).where((Core::CourseOffering)::COURSE_UNIT_ID => id, (Core::CourseOffering)::ACADEMIC_YEAR_ID => academic_year_id).select([(Core::Person)::ID, :name, :surname, :student_id_number])
+    return students
+  end
 end

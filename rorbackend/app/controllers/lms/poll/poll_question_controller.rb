@@ -14,7 +14,6 @@ class Lms::Poll::PollQuestionController < ApplicationController
   # post "/lms/poll/PollQuestion/:id/setAnswerRank", :controller => "Lms::Poll::PollQuestion", :action => "set_answer_rank"
   def set_answer_rank
       respond_create((Lms::Poll::PollQuestion).set_answer_rank(params[:type_id], params[:response], params[:id], params[:poll_result_id], params[:poll_question_choice_id]))
-    end
   end
   
   # post "/lms/poll/PollQuestion/:id/setAnswerEssay", :controller => "Lms::Poll::PollQuestion", :action => "set_answer_essay"

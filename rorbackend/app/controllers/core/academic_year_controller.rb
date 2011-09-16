@@ -1,5 +1,5 @@
 class Core::AcademicYearController < ApplicationController
-  
+  caches_action :show, :cache_path => Proc.new { |c| c.params }
   # get "/core/AcademicYear/:id", :controller => "Core::AcademicYear", :action => "show"
   def show
     academic_year = (Core::AcademicYear).find(params[:id])

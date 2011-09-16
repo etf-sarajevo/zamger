@@ -1,0 +1,305 @@
+<p>Univerzitet u Sarajevu<br/>
+Elektrotehnički fakultet Sarajevo</p>
+<h1><%=@data_course_unit['name'] %></h1>
+<h3>Akademska <%=@data_academic_year['name']%></h3>
+<p>Datum i vrijeme izvještaja: <%= Time.now.strftime("%d. %m. %Y. %H:%M") %></p>
+<% if @names_option == false %>
+	<p><b>Napomena:</b> Radi zaštite privatnosti studenata, imena će biti prikazana samo ako ste prijavljeni kao nastavnik/saradnik.</p>
+<% end %>
+
+
+<% @groups.each do |group|
+	@header1 = @header2 = ''
+	  # Override this part
+      next if group['id'] == 0
+      if (@shorten != true)
+        @attendance_ids = []
+        @attendance_classes = []
+        @attendances_max = []
+        @attendances_possible = {}
+        begin
+          attendances = (Lms::Attendance::Attendance).from_course_unit(@course_unit_id, @academic_year_id)
+        rescue
+          attendaces = []
+        end
+        attendances.each do |attendance|
+          @attendance_ids << attendance['id'].to_i
+          @attendances_possible[attendance['id']] = attendance['max']
+          if @shorten == false
+            @class_id_array = []
+            @classes_num = 0
+            @attendance_header = ""
+            if (@group_id != 0)
+              @classes = (Lms::Attendance::Class).from_group_and_scoring_element(@group_id, attendance['id'])
+            elsif @virtual_group_id != 0
+              @classes = (Lms::Attendance::Class).from_group_and_scoring_element(@virtual_group_id, attendance['id'])
+            else
+              next
+            end
+            
+			
+            @classes.each do |classs|
+              @attendance_header += "<td align=\"center\">"+Date.parse(classs['date']).strftime("%d.%m.")+"<br/>"+Time.parse(classs['time']).strftime("%H:%M")+"</td>\n"
+              @class_id_array << classs['id'].to_i
+              @classes_num += 1
+            end
+            @attendance_classes[attendance['id'].to_i] = @class_id_array
+            if (@attendance_header == "")
+              @attendance_header +="<td>&nbsp;</td>"
+              @classes_num = 0
+            end
+            @header1 += "<td align=\"center\" colspan=\""+(@classes_num+1).to_s+ "\">"+ attendance['gui_name'] +"</td>\n"
+            @header2 += @attendance_header
+            @header2 += "<td>BOD.</td>\n"
+              
+          end
+        end
+        
+        @header1 += @homework_header1
+        @header2 += @homework_header2
+        
+      end
+      
+      @other_scoring_elements.each do |i, scoring_element|
+         @header1 += "<td rowspan=\"2\" align=\"center\">"+scoring_element.to_s+"</td>\n"
+      end
+      %>
+	<center><h2><%= group['name'].html_safe %></h2></center>
+	<table border="1" cellspacing="0" cellpadding="2">
+	<tr><td rowspan="2" align="center">R.br.</td>
+	<% if (@names_option==true) %>
+		<td rowspan="2" align="center">Prezime i ime</td>
+	<% end %>
+	<td rowspan="2" align="center">Br. indexa</td>
+	<%= @header1.html_safe %>
+	<td align="center" 
+	<% if (@exams_number==0) %> 
+		rowspan="2" 
+	<% else  %> 
+		colspan="<%= @exams_number %>" 
+	<% end %>
+	>Ispiti</td>
+	<td rowspan="2" align="center"><b>UKUPNO</b></td>
+	<td rowspan="2" align="center">Konačna<br/>ocjena</td>
+	</tr>
+	<tr>
+		<%= @header2.html_safe %>
+		<%= @exam_header.html_safe %>
+	</tr>
+<%
+# Students
+      @student_ids = []
+      if (group['id'] == 0)
+        @students.each do |student|
+          @student_ids << student['id']
+        end
+      else
+        begin
+        	@group_students = (Lms::Attendance::Group).get_all_students(group['id'])
+        rescue
+        	@group_students = []
+        end
+        @group_students.each do |group_student|
+        	@student_ids << group_student['student_id'].to_i
+        end
+      end
+%>
+
+<% ord_num = 0
+  @students.each do |student|
+	next if !(@student_ids.include?(student['id'].to_i))
+	@student_ids.delete(student['id'].to_i)
+	ord_num += 1
+%>
+<tr>
+	<td><%= ord_num %>.</td>
+		<% if (@names_option) %>
+			<td><%=(@student['name'] + " " + student['surname']).html_safe%></td>
+		<% end %>
+		<td><%=student['student_id_number']%></td>
+		<%
+
+		output = ""
+		student_score = 0
+		@class_ids_array = []
+		if (@shorten!=true)
+			@attendance_ids.each do |attendance_id|
+				@class_ids_array = @attendance_classes[attendance_id]
+				if (@class_ids_array.length==0)
+					output += "<td>&nbsp;</td>\n"
+				end
+				not_present = 0;
+				@class_ids_array.each do |cid|
+					begin
+        				presence = (Lms::Attendance::Attendance).from_student_and_class(student['id'].to_i, cid)
+        				if presence['present'] == true
+        					output += "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n"
+        				else
+        					output += "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n"
+							not_present += 1
+						end
+					rescue
+						output += "<td bgcolor=\"#FFFFCC\"> / </td>\n"
+					end
+					
+				end
+
+        		begin
+        			student_attendance = (Core::ScoringElementScore).get_score_from_course_unit(student['id'], @course_unit_id, @academic_year_id, attendance_id)
+        			student_score1 = student_attendance['score'].to_f
+        			
+        		rescue
+        			student_score1 = 0.0
+        		end
+				output += "<td>"+student_score1.to_s+"</td>\n"
+				student_score += student_score1
+			end
+
+		end
+		if (@shorten != true)
+			sc_score = 0
+			@homeworks_ids.each do |homework_id|
+				@homework = 0
+				@has = 0
+				to_output = 1
+				sc = 0
+				(1..@homeworks_brz[homework_id]).each do |i| 
+
+					bass = @homeworks[[homework_id,i,student['id']]]
+					if (bass > 0)
+						sc+=(bass-1)
+						@has=1
+					end
+					if (bass == -1)
+						to_output = 0
+					end
+				end
+	
+				if (@has == 0 or to_output==0)
+					output += "<td> / </td>\n"
+				else
+					output += "<td>"+sc.to_s+"</td>\n"
+					sc_score = sc_score + sc
+				end
+			end
+			if (@homeworks_ids.length == 0)
+				output += "<td>&nbsp;</td>"
+			end
+			
+			@scoring_elements_homeworks.each do |sc_homework|
+
+				begin
+	    			homeworks1 = (Lms::Homework::Homework).get_score_from_course_unit(@student['id'], @course_unit_id, @academic_year_id, sc_homework['id'])
+					total_score=0
+					homeworks1.each do |homework1|
+						total_score += homework['score']
+					end
+					student_score += total_score
+				rescue
+				end
+			end
+	    end
+		@other_scoring_elements.each do |i, other_sc|
+			other_element_score = 0 
+			begin
+				other_scoring_element = (Core::ScoringElementScore).get_score_from_course_unit(student['id'], @course_unit_id, @academic_year_id, i)
+				other_element_score = other_scoring_element['score']
+			rescue
+				other_scoring_element = 0
+			end
+			output += "<td>"+other_element_score.to_s+"</td>"
+			student_score += other_element_score
+		end
+		if (@exams_number == 0)
+			output += "<td>&nbsp;</td>"
+		end
+		scoring_elems= []
+		sc_output= {}
+		sc_max={}
+		
+		@exam_ids.each do |id|
+			sc_elem = @exams_scoring_elements[id].to_i
+			sc_max[sc_elem] = 0 if sc_max[sc_elem] == nil
+			begin
+				exam1 = (Lms::Exam::ExamResult).from_student_and_exam(student['id'], id)
+				result = exam1['result']
+				if (@separate_exams == true)
+					output += "<td align=\"center\">"+result.to_s+"</td>\n"
+				end
+				if (!scoring_elems.include?(sc_elem) or result>sc_max[sc_elem])
+					sc_max[sc_elem]=result;
+					sc_output[sc_elem] = "<td align=\"center\">"+result.to_s+"</td>\n"
+				end
+			rescue
+				if (@separate_exams == true)
+					output += "<td align=\"center\">/</td>\n"
+				end
+				if (sc_output[sc_elem] == "")
+					sc_output[sc_elem] = "<td align=\"center\">/</td>\n"
+				end
+			end
+			if (!scoring_elems.include?(sc_elem))
+				scoring_elems << sc_elem
+			end
+		end
+		scoring_elems.each do |scoring_elem|
+			if (@scoring_elements_scoring[scoring_elem] == 2)
+				parts= @scoring_elements_option[scoring_elem].split('+')
+	
+				sum=0;
+				fail=0;
+				parts.each do |part|
+					sum += sc_max[part]
+					fail=1 if (sc_max[part]<@scoring_elements_pass[part])
+						
+				end
+				
+				if (sc_max[scoring_elem]>sum or fail==1 && sc_max[scoring_elem]>=@scoring_elements_pass[scoring_elem])
+					student_score += sc_max[scoring_elem];
+					parts.each do |part|
+						sc_max[part]=0;
+						sc_output[part]="";
+					end
+					sc_output[scoring_elem] = "<td align=\"center\" colspan=\"" + parts.length.to_s + "\">" + sc_max[scoring_elem] + "</td>\n"
+				else
+					sc_output[scoring_elem]=""
+				end
+			end
+		end
+	
+		scoring_elems.each do |sc_elem|
+			if (@scoring_elements_scoring[sc_elem] != 2)
+				student_score += sc_max[sc_elem]
+			end
+			if (@separate_exams != true)
+				output += sc_output[sc_elem]
+			end
+		end
+
+		topscore=[]
+		topscore[student['id'].to_i]=student_score
+		begin
+			percentage = student_score*100/@scoring_elements_max[scoring_elem].to_f
+		rescue
+			percentage = 0
+		end
+		%> <%= output.html_safe %>
+
+		<td align="center"><%= student_score%> <%= percentage %>%</td>
+
+<%
+    	begin
+    		grade = (Core::Portfolio).get_grade_from_course_unit(@course_unit_id, student['id'], @academic_year_id)
+    	%>
+			<td><%= grade['grade'] %></td>
+		<% rescue %>
+			<td>/</td>
+		<% end %>
+		</tr>
+	<% end %>
+	</table><p>&nbsp;</p>
+
+	<% end
+%>
+
+

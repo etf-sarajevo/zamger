@@ -109,6 +109,12 @@ class Lms::Homework::Homework < ActiveRecord::Base
     return homeworks
   end
   
+  def self.from_course_scoring_element(course_unit_id, academic_year_id)
+    scoring_elements = (Core::ScoringElement).joins(:course_unit_type_scoring_elements).joins("INNER JOIN " + (Core::CourseUnitYear)::TABLE_NAME + " ON " + (Core::CourseUnitYear)::COURSE_UNIT_TYPE_ID + '=' + (Core::CourseUnitTypeScoringElement)::COURSE_UNIT_TYPE_ID).where((Core::CourseUnitYear)::ACADEMIC_YEAR_ID => academic_year_id, (Core::CourseUnitYear)::COURSE_UNIT_ID => course_unit_id, (Core::ScoringElement)::SCORING_ID => 4).order(:id)
+    
+    return scoring_elements
+  end
+  
   
   def self.update_score_for_student(student_id, course_unit_id, academic_year_id)
     portfolio = (Core::Portfolio).from_course_unit(student_id, course_unit_id, academic_year_id)
@@ -133,6 +139,12 @@ class Lms::Homework::Homework < ActiveRecord::Base
     return true
   end
   
+  
+  def self.get_score_from_course_unit(student_id, course_unit_id, academic_year_id, homework_id)
+    score = (Core::ScoringElementScore).joins(:course_offering).where((Core::ScoringElementScore)::STUDENT_ID => student_id, (Core::CourseOffering)::COURSE_UNIT_ID => course_unit_id, (Core::CourseOffering)::ACADEMIC_YEAR_ID => academic_year_id, (Core::ScoringElementScore)::SCORING_ELEMENT_ID => homework_id)
+    
+    return score
+  end
   
 private
   def set_published_date_time_to_now

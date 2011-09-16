@@ -28,4 +28,11 @@ class Core::ScoringElementScore < ActiveRecord::Base
   belongs_to :scoring_element
   
   validates_presence_of :score, :student_id, :course_offering_id, :scoring_element_id
+  
+  def self.get_score_from_course_unit(student_id, course_unit_id, academic_year_id, attendance_id)
+    score1 = (Core::ScoringElementScore).joins(:course_offering).where((Core::ScoringElementScore)::STUDENT_ID => student_id, (Core::CourseOffering)::COURSE_UNIT_ID => course_unit_id, (Core::CourseOffering)::ACADEMIC_YEAR_ID => academic_year_id, (Core::ScoringElementScore)::SCORING_ELEMENT_ID => attendance_id).sum(:score)
+    score = (Core::ScoringElementScore).new(:score => score1)
+    return score
+  end
+  
 end

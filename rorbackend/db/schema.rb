@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -35,7 +36,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
     t.integer  "person_id"
     t.integer  "course_unit_id"
     t.integer  "academic_year_id"
-    t.enum     "access_level",     :limit => [:teacher, :super_assistent, :assistent]
+    t.string   "access_level",     :limit => 20
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -132,7 +133,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
     t.integer "student_id"
     t.integer "course_unit_id"
     t.integer "academic_year_id"
-    t.integer "grade",            :limit => 3
+    t.integer "grade"
     t.time    "date"
     t.integer "document_id"
   end
@@ -150,7 +151,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
     t.string  "fathers_surname",       :limit => 30
     t.string  "mothers_name",          :limit => 30
     t.string  "mothers_surname",       :limit => 30
-    t.enum    "gender",                :limit => [:M, :Z]
+    t.string  "gender",                :limit => 1
     t.string  "email",                 :limit => 100
     t.string  "student_id_number",     :limit => 10
     t.date    "date_of_birth"
@@ -163,7 +164,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
     t.integer "address_place_id"
     t.string  "phone",                 :limit => 15
     t.integer "canton_id"
-    t.boolean "for_delete",                                :default => false
+    t.boolean "for_delete",                           :default => false
     t.integer "professional_level_id"
     t.integer "science_level_id"
     t.string  "picture",               :limit => 50
@@ -328,7 +329,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
   create_table "lms_exam_exams", :force => true do |t|
     t.integer "course_unit_id",      :default => 0
     t.integer "academic_year_id",    :default => 0
-    t.date    "date"
+    t.date    "date",                :default => '2000-01-01'
     t.time    "published_date_time"
     t.integer "scoring_element_id",  :default => 0
   end
@@ -428,7 +429,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
 
   create_table "lms_poll_poll_question_types", :force => true do |t|
     t.string "type",          :limit => 32
-    t.enum   "choice_exists", :limit => [:Y, :N]
+    t.string "choice_exists", :limit => 1
     t.string "answers_table", :limit => 32
   end
 
@@ -441,7 +442,7 @@ ActiveRecord::Schema.define(:version => 20110823004356) do
   create_table "lms_poll_poll_results", :force => true do |t|
     t.integer "poll_id"
     t.time    "time"
-    t.enum    "closed",           :limit => [:Y, :N]
+    t.string  "closed",           :limit => 1
     t.integer "course_unit_id"
     t.string  "unique_id",        :limit => 50
     t.integer "academic_year_id"

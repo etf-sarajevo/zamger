@@ -4,8 +4,10 @@ class CreateCoreAccessLevels < ActiveRecord::Migration
       t.integer :person_id
       t.integer :course_unit_id
       t.integer :academic_year_id
-      t.enum :access_level, :limit => ['teacher', 'super_assistent', 'assistent']
-
+      # mysql version
+      # t.enum :access_level, :limit => ['teacher', 'super_assistent', 'assistent']
+      # postgresql_version
+      t.string :access_level, :limit => 20
       t.timestamps
     end
   end

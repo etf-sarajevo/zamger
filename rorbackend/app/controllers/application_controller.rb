@@ -4,12 +4,14 @@ class ApplicationController < ActionController::Base
   respond_to :json
   rescue_from ActiveRecord::RecordNotFound, :with => :record_not_found
   rescue_from ArgumentError, :with => :method_not_allowed
+  REST_SERVICE_URL = 'http://localhost:3000'
+  attr_accessor :user_teacher
+  attr_accessor :user_student_service
+  attr_accessor :user_site_admin
   def authenticate
-    #@message = "Not allowed"
-    #respond_to do |format|
-    #  format.json { render :json => @message}
-    #end
-    #redirect_to "www.google.com"
+    self.user_teacher = false
+    self.user_student_service = false
+    self.user_site_admin = false
   end
   
   def record_not_found
