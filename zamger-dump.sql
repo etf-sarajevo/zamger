@@ -1199,6 +1199,7 @@ CREATE TABLE IF NOT EXISTS `poruka` (
   `vrijeme` datetime NOT NULL,
   `ref` int(11) NOT NULL DEFAULT '0',
   `naslov` text COLLATE utf8_slovenian_ci NOT NULL,
+
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
@@ -1838,7 +1839,6 @@ INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUE
 (2, 'student/zadaca', 'Slanje zadaće', 0),
 (3, 'izvjestaj/predmet', 'Dnevnik', 1),
 (4, 'student/projekti', 'Projekti', 0),
-(5, 'student/zavrsni', 'Završni rad', 0);
 
 -- --------------------------------------------------------
 
@@ -2228,9 +2228,11 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `naziv` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   `predmet` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `akademska_godina` varchar(10) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '0',
-  `opis` text COLLATE utf8_slovenian_ci NOT NULL,
+  `kratki_pregled` text COLLATE utf8_slovenian_ci NOT NULL,
+  `literatura` text COLLATE utf8_slovenian_ci NOT NULL,
   `nastavnik` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `student` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `biljeska` text COLLATE utf8_slovenian_ci NOT NULL,
   `prvi_clan_komisije` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'Niste unijeli člana komisije',
   `drugi_clan_komisije` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'Niste unijeli člana komisije',
   `treci_clan_komisije` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'Niste unijeli člana komisije',
