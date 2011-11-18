@@ -131,9 +131,9 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 		$upisano_puta[$puta]++;
 
 		// Komponente
-		$sumbodovi=$pao=0;
+		$sumbodovi=$pao=$izasao=0;
 		$komponente=$polozene_komponente=array();
-		foreach($ktip as $komponenta=>$tip) {
+		foreach ($ktip as $komponenta => $tip) {
 			$q60 = myquery("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
 			if (mysql_num_rows($q60)>0) {
 				$komponente[$komponenta]=1;
@@ -159,6 +159,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 			} else if ($kprolaz[$komponenta]==0) {
 				// Komponenta ne traži bodove za prolaz
 				$kpolozilo[$komponenta]++;
+				$knemabodova[$komponenta]++;
 				$polozene_komponente[$komponenta]=1;
 
 			} else if ($tip!=2) { // tip 2 = integralni ispit
@@ -232,7 +233,7 @@ if ($odrzano_ispita==0) {
 
 	// Komponente
 	foreach ($ktip as $komponenta=>$tip) {
-		if ($kpolozilo[$komponenta]==0) continue; // ova komponenta nije u funkciji
+		if ($kpolozilo[$komponenta]==0 || $knemabodova[$komponenta]==$slusa_predmet) continue; // ova komponenta nije u funkciji
 		if ($tip==1 || $tip==2) {
 			?>
 			Položilo <?=$knazivi[$komponenta]?> ispit: <b><?=$kpolozilo[$komponenta]?></b> studenata  (<b><?=procenat($kpolozilo[$komponenta],$slusa_predmet)?></b>).<br/>
@@ -244,7 +245,7 @@ if ($odrzano_ispita==0) {
 
 	// Ostalo samo
 	foreach ($ktip as $komponenta=>$tip) {
-		if ($kpolozilo[$komponenta]==0) continue; // ova komponenta nije u funkciji
+		if ($kpolozilo[$komponenta]==0 || $knemabodova[$komponenta]==$slusa_predmet) continue; // ova komponenta nije u funkciji
 		if ($tip==1) {
 			if ($kfalisamo[$komponenta]==0) $kfalisamo[$komponenta]="0";
 			?>
@@ -263,43 +264,64 @@ if ($odrzano_ispita==0) {
 	* - Pod "uslov za usmeni" misli se na uobičajenu šemu dva parcijalna ispita + jedan integralni ispit.<br>
 	** - Ovaj broj je određen pod pretpostavkom da ne postoji minimalan broj bodova kao uslov za usmeni ispit. Ukoliko postoji takav uslov, profesor posebno definiše na koji način ovi studenti mogu prikupiti preostale potrebne bodove.<br>
 	*** - Studenti koji nisu skupili 20 bodova ne mogu pristupiti popravnom ispitu. Ukoliko se ovo pravilo ne odnosi na ovaj predmet, ove studente treba pribrojiti studentima koji izlaze na ispit integralno.</p>
-	
-	<h4>Distribucija ocjena</h4>
-	<div id="grafik">
-		 <? 
-		 	$moguce_ocjene = array(6,7,8,9,10); 
-		 	$broj_ocjena = array(); 
-		 	foreach ($moguce_ocjene as $moguca_ocjena){
-		 		$q100 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena=$moguca_ocjena");
-		 		$br_ocjena = mysql_result($q100,0,0);
-		 		$broj_ocjena[$moguca_ocjena] = $br_ocjena;
-		 		
-		 	}
-		 	
-		 	$max_ocjena =max($broj_ocjena); 
-		 	?>
-		 	<div style="width:250px;height:200;margin:5px;">
-			 	<?
-			 	foreach ($broj_ocjena as $oc => $broj){
-			 		if($broj==0) $broj_pixela_print =170;
-	 				else {
-	 					$broj_pixela = ($broj/$max_ocjena)*200;
-	 					$broj_pixela_print = intval(200-$broj_pixela);
-	 				}	
-			 		?>
-			 		<div style="width:45px; height:200px; background:green;margin-left:5px;float:left;">
-			 			<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;">&nbsp;</div>
-			 			<span style="color:white;font-size: 25px;"><?=$broj?></span><span>&nbsp;(<?=$oc?>)</span>
-			 		</div>	
-			 		<?
-			 	}
-		 ?>
-		 	</div>
-		 
-	</div>
 	<?
+
+
+	// DISTRIBUCIJA OCJENA
+
+	$moguce_ocjene = array(6,7,8,9,10); 
+	$broj_ocjena = array(); 
+	$uk_broj=0;
+	foreach ($moguce_ocjene as $moguca_ocjena){
+		$q100 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena=$moguca_ocjena");
+		$br_ocjena = mysql_result($q100,0,0);
+		$broj_ocjena[$moguca_ocjena] = $br_ocjena;
+		$uk_broj += $br_ocjena;
+	}
+	
+	if ($uk_broj>0) {
+		?>
+		<h4>Distribucija ocjena</h4>
+		<div id="grafik">
+			<?
+			$max_ocjena =max($broj_ocjena); 
+			?>
+			<div style="width:250px;height:200px;margin:5px;">
+				<?
+				foreach ($broj_ocjena as $oc => $broj) {
+					if($broj==0) $broj_pixela_print =170;
+					else {
+						$broj_pixela = ($broj/$max_ocjena)*200;
+						$broj_pixela_print = intval(200-$broj_pixela);
+					}	
+					?>
+					<div style="width:45px; height:200px; background:green;margin-left:5px;float:left;">
+						<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;">&nbsp;</div>
+						<span style="color:white;font-size: 25px; text-align: center; ">&nbsp;<?=$oc?></span>
+					</div>	
+					<?
+				}
+			?>
+			</div>
+			<div style="width:250px;height:200px;margin:5px;">
+				<?
+				foreach ($broj_ocjena as $oc => $broj) {
+					?>
+					<div style="width:45px; margin-left:5px; text-align: center; float:left; ">
+						<?=$broj?> (<?=procenat($broj, $uk_broj)?>)
+					</div>
+					<?
+				}
+				?>
+			</div>
+		</div>
+		<?
+	}
+
 	return;
 }
+
+
 }
 
 ?>
