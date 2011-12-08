@@ -155,9 +155,9 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 			}
 
 			if ($tipKomponente == 3) { // prisustvo
-				$q320 = myquery("select count(*) from cas where predmet=$predmet and akademska_godina=$ag");
-				if (mysql_num_rows($q300)>0) {
-					$q330 = myquery("update cas set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
+				$q320 = myquery("select c.id from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				while ($r320 = mysql_fetch_row($q320)) {
+					$q330 = myquery("update cas set komponenta=$id_komponente where id=$r230[0]");
 					$potreban_update = true;
 				}
 			}
