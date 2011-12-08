@@ -36,6 +36,9 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 -- Dumping data for table `akademska_godina`
 --
 
+INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
+(1, '2009/2010', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -276,6 +279,9 @@ CREATE TABLE IF NOT EXISTS `auth` (
 -- Dumping data for table `auth`
 --
 
+INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`) VALUES
+(1, 'admin', 'admin', 0, '', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -371,7 +377,7 @@ CREATE TABLE IF NOT EXISTS `cas` (
   `nastavnik` int(11) NOT NULL DEFAULT '0',
   `komponenta` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `cas`
@@ -421,6 +427,23 @@ CREATE TABLE IF NOT EXISTS `ekstenzije` (
 -- Dumping data for table `ekstenzije`
 --
 
+INSERT INTO `ekstenzije` (`id`, `naziv`) VALUES
+(1, '.zip'),
+(2, '.doc'),
+(3, '.pdf'),
+(4, '.odt'),
+(5, '.docx'),
+(6, '.txt'),
+(7, '.rtf'),
+(8, '.7z'),
+(9, '.rar'),
+(10, '.c'),
+(11, '.cpp'),
+(12, '.m'),
+(13, '.fig'),
+(14, '.jar'),
+(15, '.java'),
+(16, '.gz');
 
 -- --------------------------------------------------------
 
@@ -700,7 +723,7 @@ CREATE TABLE IF NOT EXISTS `labgrupa` (
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
   `virtualna` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `labgrupa`
@@ -719,7 +742,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   `dogadjaj` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `nivo` tinyint(2) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=600 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `log`
@@ -745,6 +768,9 @@ CREATE TABLE IF NOT EXISTS `mjesto` (
 INSERT INTO `mjesto` (`id`, `naziv`, `opcina`, `drzava`) VALUES
 (1, 'Sarajevo', 0, 1),
 (2, 'Sarajevo', 13, 1),
+-- Sarajevo je mjesto koje se prostire na vise opcina,
+-- ali dodajemo i varijantu sa opcinom Centar radi oznacavanja
+-- mjesta rodjenja
 (3, 'Zenica', 77, 1),
 (4, 'Mostar', 46, 1),
 (5, 'Banja Luka', 93, 1),
@@ -781,7 +807,7 @@ CREATE TABLE IF NOT EXISTS `moodle_predmet_rss` (
   `sadrzaj` text COLLATE utf8_slovenian_ci NOT NULL,
   `vrijeme_promjene` bigint(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `moodle_predmet_rss`
@@ -798,7 +824,7 @@ CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=4 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `nacin_studiranja`
@@ -1128,6 +1154,9 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 -- Dumping data for table `osoba`
 --
 
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `email`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
+(1, 'Site', 'Admin', 'site@admin.com', '', '0000-00-00', 0, '', '', '', 0, '', 0, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -1178,7 +1207,7 @@ CREATE TABLE IF NOT EXISTS `ponudakursa` (
   `obavezan` tinyint(1) NOT NULL DEFAULT '0',
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=12 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `ponudakursa`
@@ -1199,7 +1228,6 @@ CREATE TABLE IF NOT EXISTS `poruka` (
   `vrijeme` datetime NOT NULL,
   `ref` int(11) NOT NULL DEFAULT '0',
   `naslov` text COLLATE utf8_slovenian_ci NOT NULL,
-
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
@@ -1224,7 +1252,7 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `tippredmeta` int(11) NOT NULL,
   `ects` float NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `predmet`
@@ -1307,7 +1335,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_termin` (
   `datum` date NOT NULL,
   `ciklus_studija` tinyint(2) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `prijemni_termin`
@@ -1346,6 +1374,12 @@ CREATE TABLE IF NOT EXISTS `privilegije` (
 --
 -- Dumping data for table `privilegije`
 --
+
+INSERT INTO `privilegije` (`osoba`, `privilegija`) VALUES
+(1, 'siteadmin'),
+(1, 'studentska'),
+(1, 'student'),
+(1, 'nastavnik');
 
 -- --------------------------------------------------------
 
@@ -1672,9 +1706,6 @@ CREATE TABLE IF NOT EXISTS `rss` (
 -- Dumping data for table `rss`
 --
 
-INSERT INTO `rss` (`id`, `auth`, `access`) VALUES
-('QJcV656JSX', 8, '0000-00-00 00:00:00');
-
 -- --------------------------------------------------------
 
 --
@@ -1838,7 +1869,7 @@ INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUE
 (1, 'student/moodle', 'Materijali (Moodle)', 1),
 (2, 'student/zadaca', 'Slanje zadaće', 0),
 (3, 'izvjestaj/predmet', 'Dnevnik', 1),
-(4, 'student/projekti', 'Projekti', 0),
+(4, 'student/projekti', 'Projekti', 0);
 
 -- --------------------------------------------------------
 
@@ -1982,6 +2013,14 @@ CREATE TABLE IF NOT EXISTS `studij` (
 -- Dumping data for table `studij`
 --
 
+INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratki
+naziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
+(1, 'Prva godina studija', 2, 1, 'PGS', 0, 1, 0),
+(2, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 2, 1),
+(3, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 2, 1),
+(4, 'Elektroenergetika (BSc)', 6, 4, 'EE', 1, 2, 1),
+(5, 'Telekomunikacije (BSc)', 6, 5, 'TK', 1, 2, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -2039,6 +2078,14 @@ CREATE TABLE IF NOT EXISTS `tippredmeta_komponenta` (
 --
 -- Dumping data for table `tippredmeta_komponenta`
 --
+
+INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6);
 
 -- --------------------------------------------------------
 
