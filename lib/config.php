@@ -15,21 +15,21 @@ $conf_skr_naziv_institucije_genitiv = "ETFa";
 
 // Pristupni podaci za bazu podataka
 $conf_dbhost = "localhost";
-$conf_dbuser = "zamgerdemo";
-$conf_dbpass = "zamgerdemo";
-$conf_dbdb = "zamgerdemo";
+$conf_dbuser = "zamger";
+$conf_dbpass = "1A2s3D4f";
+$conf_dbdb = "zamger";
 
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
-$conf_site_url = "http://195.130.59.135/zamger-demo/";
+$conf_site_url = "http://127.0.0.1/zamger/";
 
 // Lokacija na disku gdje je Zamger instaliran
-$conf_script_path = "/var/www/html/zamger-demo";
+$conf_script_path = "C:/xampp/htdocs/zamger";
 
 // Lokacija gdje Zamger drži privremene datoteke
 // PAZITE da web server korisnik (npr. apache, nobody i slični) ima pravo pisanja
 // u ovaj direktorij, te da se direktorij ne može "nasurfati" (pristupiti mu kroz
 // web preglednik)
-$conf_files_path = "/var/www/zamger";
+$conf_files_path = "C:/xampp/htdocs/zamger";
 
 // Podaci koji se ispisuju u gornjem desnom uglu svake stranice :)
 $conf_appname = "ZAMGER";
@@ -71,7 +71,7 @@ $_lv_["debug"] = true; // libvedran
 
 // Ako je vrijednost false, ostale parametre u ovoj sekciji možete zanemariti
 
-$conf_moodle = true;
+$conf_moodle = false;
 
 
 // URL do početne Moodle stranice (bez index.php i slično, samo direktorij,

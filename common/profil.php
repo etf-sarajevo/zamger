@@ -42,6 +42,8 @@ if ($user_nastavnik) {
 		<td bgcolor="<?=$boja_opcije?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_opcije?>';"><a href="?sta=common/profil&akcija=opcije">Zamger opcije</a></td>
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
 		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=izbori">Izbori i nastavni ansambl</a></td>
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+				<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=hr">UNSA HR</a></td>
 		<td bgcolor="#FFFFFF" width="100">&nbsp;</td>
 	</tr>
 	<tr>
@@ -378,6 +380,11 @@ if ($akcija=="izbori") {
 	return;
 }
 
+
+if ($akcija=="hr") {
+	include("common/profil_hr.php");
+	return;
+}
 
 
 
@@ -766,6 +773,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 	</script>
 
 	<!--script type="text/javascript" src="js/combo-box.js"></script-->
+
 
 	<table border="0" width="600">
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">SLIKA:</font></td></tr>
