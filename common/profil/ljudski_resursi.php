@@ -1,28 +1,15 @@
-
-<!DOCTYPE html>
-
-<html>
-
-<head>
-
-<title>CSS3 tabs with beveled corners - demo</title>
-
 <style>
-
 h2, h3, p
 {
     margin: 0 0 15px 0;
 }
-
 #tabs{
   overflow: auto;
-
   width: 100%;
   list-style: none;
   margin: 0;
   padding: 1px;
 }
-
 #tabs li{
     margin: 0;
     padding: 1;
@@ -53,13 +40,11 @@ h2, h3, p
     text-decoration: none;
 }
 
-#tabs #current a{
+#tabs #trenutni a{
     background: #fff;
     text-shadow: none;    
     color: #333;
 }
-
-
 
 #content {
     background-color: #fff;
@@ -72,14 +57,12 @@ h2, h3, p
     padding: 30px;
     
 }
-
-
 </style>
+<link rel="stylesheet" href="css/libs/validator/validationEngine.jquery.css" type="text/css"/>
+<link rel="stylesheet" href="css/libs/ui.all.css" type="text/css" media="screen" />
 
 
 <br><br>
-
-
 
 <ul id="tabs">
 <li><a href="#" title="OpstiPodaci">Opsti podaci</a></li>
@@ -94,11 +77,36 @@ h2, h3, p
     <li><a href="#" title="tab8">Licne vjestine/kompetencije</a></li> 
 </ul>
 
-
+<form id="hrforma" class="formular" method="post" action="">
 <div id="content"> 
     <div id="OpstiPodaci">
         <h2>Opsti podaci</h2>
-        <p>djevojacko prezime</p>    
+
+   <table border="0" width="600">
+      <tr>
+        <td colspan="2" bgcolor="#999999">
+          <font color="#FFFFFF">OSNOVNI PODACI:</font>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Ime:
+        </td>
+        <td>
+          <input type="text" class="validate[required] text-input" name="ime" value="" id="ime" />
+        </td>
+      </tr>
+      
+      <tr>
+        <td>
+          Datum:
+        </td>
+        <td>
+          <input value="" class="validate[required,custom[date],past[2010/01/01]]" type="text" name="datum" id="datum" />
+        </td>
+      </tr>
+
+      </table>  
     </div>
     
      <div id="KontaktInformacije">
@@ -142,19 +150,29 @@ h2, h3, p
         <p></p>     
     </div>
 </div>
+</form>
 
-<script src="http://code.jquery.com/jquery-1.6.3.min.js"></script>
+<script src="js/libs/jquery-1.6.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="js/libs/jquery.validationEngine-hr.js" ></script>
+<script src="js/libs/jquery.validationEngine.js" ></script>
+<script src="js/libs/jquery-ui.min.js" ></script>
+
 <script>
 $(document).ready(function() {
 	$("#content div").hide();
-	$("#tabs li:first").attr("id","current"); 
+	$("#tabs li:first").attr("id","trenutni"); 
 	$("#content div:first").fadeIn(); 
     $('#tabs a').click(function(e) {
         e.preventDefault();        
         $("#content div").hide(); 
         $("#tabs li").attr("id",""); 
-        $(this).parent().attr("id","current"); 
+        $(this).parent().attr("id","trenutni"); 
         $('#' + $(this).attr('title')).fadeIn(); 
     });
+    $("#datum").datepicker({ dateFormat: 'yy-mm-dd', yearRange: '-40:0'  });
+    jQuery("#hrforma").validationEngine();
 })();
+
+
+
 </script>
