@@ -2013,8 +2013,7 @@ CREATE TABLE IF NOT EXISTS `studij` (
 -- Dumping data for table `studij`
 --
 
-INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratki
-naziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
+INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
 (1, 'Prva godina studija', 2, 1, 'PGS', 0, 1, 0),
 (2, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 2, 1),
 (3, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 2, 1),

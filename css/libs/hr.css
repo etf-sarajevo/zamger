@@ -1,0 +1,62 @@
+h2, h3, p
+{
+    margin: 0 0 15px 0;
+}
+#tabs{
+  overflow: auto;
+  width: 100%;
+  list-style: none;
+  margin: 0;
+  padding: 1px;
+}
+#tabs li{
+    margin: 0;
+    padding: 1;
+    float: left;
+}
+
+.tdheader td {
+color:white; font-weight: bold; text-align:center;
+}
+
+#tabs a {
+    background: #0067AC;
+    color: #fff;
+    float: left;
+ 	font-weight: bold;
+    height: 20px;
+    padding: 10px 10px 5px 10px;
+    text-decoration: none;
+}
+
+#tabs a:focus{
+    outline: 0;
+}
+
+#tabs a:hover{
+    background: #84A6C6;
+    color: #fff;
+    float: left;
+    font-weight: bold;
+    height: 20px;
+    padding: 10px 10px 5px 10px;
+    text-decoration: none;
+}
+
+#tabs #trenutni a{
+    background: #fff;
+    text-shadow: none;    
+    color: #333;
+}
+
+#content {
+    background-color: #fff;
+    -moz-border-radius: 0 2px 2px 2px;
+    -webkit-border-radius: 0 2px 2px 2px;
+    border-radius: 0 2px 2px 2px;
+    -moz-box-shadow: 0 2px 2px #000, 0 -1px 0 #fff inset;
+    -webkit-box-shadow: 0 2px 2px #000, 0 -1px 0 #fff inset;
+    box-shadow: 0 2px 2px #000, 0 -1px 0 #fff inset;
+    padding: 30px;
+    
+}
