@@ -2278,6 +2278,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `literatura` text COLLATE utf8_slovenian_ci NOT NULL,
   `mentor` INT(11) NOT NULL,
   `student` INT(11) NOT NULL,
+  `kandidat_potvrdjen` tinyint(4) NOT NULL,
   `biljeska` text COLLATE utf8_slovenian_ci NOT NULL,
   `predsjednik_komisije` INT(11) NOT NULL,
   `clan_komisije` INT(11) NOT NULL,
