@@ -42,7 +42,7 @@ if ($nasao==1) {
 
 
 // Prikaz obavještenja za saradnike
-$prikaz_sekundi=60; // Koliko dugo se prikazuje obavještenje
+$prikaz_sekundi=600; // Koliko dugo se prikazuje obavještenje
 $q20 = myquery("select UNIX_TIMESTAMP(vrijeme) from log where userid=$userid order by id desc limit 2");
 if (mysql_num_rows($q20)>0)
 	$vrijeme=intval(mysql_result($q20,1,0))-$prikaz_sekundi;
@@ -50,7 +50,7 @@ else
 	$vrijeme=0;
 $q30 = myquery("select id from poruka where tip=1 and (opseg=0 or opseg=2) and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 1");
 if (mysql_num_rows($q30)>0) {
-	?><p><a href="?sta=common/inbox&poruka=<?=mysql_result($q30,0,0)?>"><font color="red">Imate novo sistemsko obavještenje</font></a></p><?
+	?><p><a href="?sta=common/inbox&poruka=<?=mysql_result($q30,0,0)?>"><div style="color:red; text-decoration: underline">Imate novo sistemsko obavještenje. Kliknite ovdje.</div></a></p><?
 }
 
 
@@ -71,10 +71,8 @@ while ($r1a = mysql_fetch_row($q1a)) {
 
 	// Prikaži sve predmete siteadminu
 	$uslov=""; $nppolje="nastavnik";
-	if (!$user_siteadmin) {
-		$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
-		$nppolje="np.nivo_pristupa";
-	}
+	$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
+	$nppolje="np.nivo_pristupa";
 
 	// Upit za spisak predmeta
 	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
