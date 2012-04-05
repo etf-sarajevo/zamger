@@ -55,6 +55,8 @@ if (!$user_siteadmin) {
 
 <p><h3><?=$predmet_naziv?> - Konačna ocjena</h3></p>
 
+<p><a href="?sta=nastavnik/unos_ocjene&predmet=<?=$predmet?>&ag=<?=$ag?>">Pojedinačni unos konačnih ocjena</a></p>
+
 <?
 
 
@@ -75,6 +77,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ocjena / Komentar</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Datum</font></td>
 		</tr>
 		</thead>
 		<tbody>
@@ -108,7 +111,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				?>
 				<tr bgcolor="<?=$boja?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
-					<td>nije ocijenjen/a (unesena je ocjena: <?=$ocjena?>)</td>
+					<td colspan="2">nije ocijenjen/a (unesena je ocjena: <?=$ocjena?>)</td>
 				</tr>
 				<?
 				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
@@ -123,7 +126,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				?>
 				<tr bgcolor="<?=$bojae?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
-					<td>ocjena nije u opsegu 6-10 (ocjena: <?=$ocjena?>)</td>
+					<td colspan="2">ocjena nije u opsegu 6-10 (ocjena: <?=$ocjena?>)</td>
 				</tr>
 				<?
 				$greska=1;
@@ -139,7 +142,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				?>
 				<tr bgcolor="<?=$bojae?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
-					<td>već ima ocjenu <?=$oc2?>; koristite pogled grupe za izmjenu</td>
+					<td colspan="2">već ima ocjenu <?=$oc2?>; koristite pogled grupe za izmjenu</td>
 				</tr>
 				<?
 				$greska=1;
@@ -147,16 +150,33 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			}
 		}
 
+		// Određivanje datuma za indeks
+		$q105 = myquery("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
+		FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
+		WHERE sit.student=$student and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
+		ORDER BY i.datum DESC LIMIT 1");
+		if (mysql_num_rows($q105) > 0) {
+			$datum_u_indeksu = mysql_result($q105,0,0);
+			if ($datum_u_indeksu > time())
+				$datum_provjeren = 0;
+			else
+				$datum_provjeren = 1;
+		} else {
+			$datum_u_indeksu = time();
+			$datum_provjeren = 0;
+		}
+
 		if ($ispis) {
 			?>
 			<tr bgcolor="<?=$boja?>">
 				<td><?=$prezime?></td><td><?=$ime?></td>
 				<td>ocjena: <?=$ocjena?></td>
+				<td><?=date("d. m. Y", $datum_u_indeksu)?></td>
 			</tr>
 			<?
 			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
-			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW()");
+			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 		}
 	}

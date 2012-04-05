@@ -157,22 +157,25 @@ case "izmjena_ispita":
 	// Provjera validnosti primljenih podataka
 	$idpolja = $_REQUEST['idpolja'];
 	$vrijednost = $_REQUEST['vrijednost'];
-	if (!preg_match("/\d/", $vrijednost)) {
-		if ($vrijednost != "/") {
-			zamgerlog("AJAH ispit - vrijednost $vrijednost nije ni broj ni /",3);
-			print "Vrijednost $vrijednost nije ni broj ni /"; break;
-		}
-	} else {
-		$vrijednost = floatval(str_replace(",",".",$vrijednost));
-	}
 
 	$parametri = array();
 	$parametri = explode("-",$idpolja);
 	$ime = $parametri[0];
-	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna") {
+	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna" && $ime!="kodatum") {
 		// ko = konacna ocjena
 		zamgerlog("AJAH ispit - ne valja id polja ($idpolja)",3);
 		print "ne valja ID polja $idpolja"; break;
+	}
+
+	if ($ime != "kodatum") {
+		if (!preg_match("/\d/", $vrijednost)) {
+			if ($vrijednost != "/") {
+				zamgerlog("AJAH ispit - vrijednost $vrijednost nije ni broj ni /",3);
+				print "Vrijednost $vrijednost nije ni broj ni /"; break;
+			}
+		} else {
+			$vrijednost = floatval(str_replace(",",".",$vrijednost));
+		}
 	}
 
 	// Provjera prava pristupa i dodatna validacija parametara
@@ -219,14 +222,10 @@ case "izmjena_ispita":
 		}
 		$padmin=1; // Dozvoljavamo saradnicima da unose fiksne komponente
 
-	} else if ($ime == "ko") {
+	} else if ($ime == "ko" || $ime == "kodatum") {
 		// konacna ocjena
 		$stud_id = intval($parametri[1]);
-		if ($vrijednost!="/" && $vrijednost != intval($vrijednost)) {
-			print "ocjena mora biti okrugao broj";
-			break;
-		}
-			
+		if ($ime == "ko" && $vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
 		$predmet=intval($parametri[2]);
 		$ag = intval($parametri[3]);
 
@@ -254,7 +253,7 @@ case "izmjena_ispita":
 	}
 
 	// Maksimalan i minimalan broj bodova
-	if ($vrijednost>$max) {
+	if ($ime != "kodatum" && $vrijednost>$max) {
 		zamgerlog("AJAH ispit - vrijednost $vrijednost > max $max",3);
 		if ($ime=="ko")
 			print "stavili ste ocjenu veću od 10";
@@ -266,6 +265,25 @@ case "izmjena_ispita":
 		zamgerlog("AJAH ispit - konacna ocjena manja od 6 ($vrijednost)",3);
 		print "stavili ste ocjenu manju od 6";
 		break;
+	}
+
+	if ($ime=="kodatum") { // Parsiranje datuma
+		if (!preg_match("/(\d+).*?(\d+).*?(\d+)/", $vrijednost, $matches)) {
+			zamgerlog("AJAH ispit - datum konacne ocjene nije u trazenom formatu ($vrijednost)", 3);
+			print "los format datuma";
+			break;
+		}
+		$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
+		if ($godina<100)
+			if ($godina<50) $godina+=2000; else $godina+=1900;
+		if ($godina<1000)
+			if ($godina<900) $godina+=2000; else $godina+=1000;
+		if (!checkdate($mjesec,$dan,$godina)) {
+			zamgerlog("AJAH ispit - datum konacne ocjene je nemoguc ($vrijednost)", 3);
+			print "uneseni datum $dan. $mjesec. $godina je kalendarski nemoguc";
+			break;
+		}
+		$novidatum = mktime(0, 0, 0, $mjesec, $dan, $godina);
 	}
 
 	// Ažuriranje podataka u bazi
@@ -299,11 +317,28 @@ case "izmjena_ispita":
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
+
 		// Ne koristimo REPLACE i slicno zbog logginga
 		$q70 = myquery("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
 		$c = mysql_num_rows($q70);
 		if ($c==0 && $vrijednost!="/") {
-			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW()");
+			// Određivanje datuma za indeks
+			$q105 = myquery("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
+			FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
+			WHERE sit.student=$stud_id and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
+			ORDER BY i.datum DESC LIMIT 1");
+			if (mysql_num_rows($q105) > 0) {
+				$datum_u_indeksu = mysql_result($q105,0,0);
+				if ($datum_u_indeksu > time())
+					$datum_provjeren = 0;
+				else
+					$datum_provjeren = 1;
+			} else {
+				$datum_u_indeksu = time();
+				$datum_provjeren = 0;
+			}
+
+			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = mysql_result($q70,0,0);
@@ -313,6 +348,21 @@ case "izmjena_ispita":
 			$staraocjena = mysql_result($q70,0,0);
 			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost, datum=NOW() where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+		}
+
+	} else if ($ime == "kodatum") {
+		// AJAH "kodatum" je uvijek promjena
+		$q85 = myquery("select UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where predmet=$predmet and student=$stud_id");
+		if (mysql_num_rows($q85) == 0) {
+			print "ne moze se mijenjati datum dok se ne unese ocjena";
+			break;
+		}
+		$staridatum = mysql_result($q85,0,0);
+		$datum_provjeren = mysql_result($q85,0,1);
+
+		if ($staridatum != $novidatum || $datum_provjeren == 0) {
+			$q87 = myquery("update konacna_ocjena set datum_u_indeksu=FROM_UNIXTIME($novidatum), datum_provjeren=1 where predmet=$predmet and student=$stud_id");
+			zamgerlog("AJAH kodatum - promijenjen datum u indeksu (predmet pp$predmet, student u$stud_id)", 4);
 		}
 	}
 

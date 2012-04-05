@@ -701,7 +701,9 @@ CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
   `ocjena` int(3) NOT NULL DEFAULT '0',
   `datum` datetime NOT NULL,
+  `datum_u_indeksu` date NOT NULL,
   `odluka` int(11) NOT NULL DEFAULT '0',
+  `datum_provjeren` tinyint(1) NOT NULL default '0',
   PRIMARY KEY (`student`,`predmet`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

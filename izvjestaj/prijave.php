@@ -145,10 +145,11 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 	} else {
 		// Da li je student polozio predmet?
-		$q40 = myquery("select ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$student and predmet=$predmet");
+		$q40 = myquery("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$student and predmet=$predmet");
 		if (mysql_num_rows($q40)>0) {
 			$ocjena = mysql_result($q40,0,0);
-			//$datumIspita=$datumPrijave=$datumPolaganja=$datumUsmenog=date("d. m. Y.", mysql_result($q40,0,1));
+			$datum_provjeren = mysql_result($q40,0,2);
+			if ($datum_provjeren) $datumIspita=$datumPrijave=$datumPolaganja=$datumUsmenog=date("d. m. Y.", mysql_result($q40,0,1));
 		} else $ocjena=0;
 
 		kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik);

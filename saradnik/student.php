@@ -685,10 +685,11 @@ if (mysql_num_rows($q30) > 0) {
 // KONAČNA OCJENA
 
 $vrijeme_konacne_ocjene=0;
-$q50 = myquery("select ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
+$q50 = myquery("select ocjena, UNIX_TIMESTAMP(datum), UNIX_TIMESTAMP(datum_u_indeksu) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q50)>0) {
 	$konacnaocjena = mysql_result($q50,0,0);
 	$vrijeme_konacne_ocjene = mysql_result($q50,0,1);
+	$datum_u_indeksu = mysql_result($q50,0,2);
 } else {
 	$konacnaocjena = "/";
 }
@@ -697,12 +698,19 @@ if (mysql_num_rows($q50)>0) {
 <p>&nbsp;</p>
 <table cellspacing="0" cellpadding="2" border="0" id="zadace">
 <tr>
+	<td>&nbsp;</td>
+	<td>Ocjena:</td>
+	<td>Datum u indeksu:</td>
+	<td>Dnevnik izmjena:</td>
+</tr>
+<tr>
 	<td><b>Konačna ocjena:</b></td>
 <?
 
 if ($privilegija=="nastavnik" || $user_siteadmin) {
 	?>
 	<td id="ko-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$konacnaocjena?></td>
+	<td id="kodatum-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=date("d. m. Y", $datum_u_indeksu)?></td>
 	<td><div id="kolog"></div></td>
 	<?
 } else {
@@ -712,7 +720,6 @@ if ($privilegija=="nastavnik" || $user_siteadmin) {
 }
 
 print "</tr></table>\n";
-
 
 
 
@@ -904,12 +911,14 @@ while ($r150 = mysql_fetch_row($q150)) {
 			$rezultat = intval(substr($r150[0], 24));
 			if ($rezultat != $konacnaocjena) $rezultat .= " ?";
 			$konacnaocjena = "/";
+			$vrijeme_konacne_ocjene=$r150[1];
 			?>
 			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> dodana ocjena <b><?=$rezultat?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
 			<?
 		} else if (strstr($r150[0], "obrisana ocjena")) {
 			$rezultat = intval(substr($r150[0], 26));
 			if ($konacnaocjena != "/") $rezultat .= " ?"; else $konacnaocjena=$rezultat;
+			$vrijeme_konacne_ocjene=0;
 			?>
 			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> obrisana ocjena (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
 			<?
@@ -918,6 +927,7 @@ while ($r150 = mysql_fetch_row($q150)) {
 			$rezultat = intval($matches[2]);
 			if ($konacnaocjena != $rezultat) $rezultat .= " ?";
 			$konacnaocjena = $starirezultat;
+			$vrijeme_konacne_ocjene=$r150[1];
 			?>
 			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjena ocjena u <b><?=$rezultat?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('kolog').innerHTML;
 			<?
@@ -925,6 +935,7 @@ while ($r150 = mysql_fetch_row($q150)) {
 //print "$r150[0] $r150[1] $r150[2]\n";
 	}
 }*/
+
 
 if (mysql_num_rows($q150)==0 && $vrijeme_konacne_ocjene > 0) {
 	$bilo=1;
