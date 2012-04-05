@@ -9,11 +9,7 @@
 
 
 // TODO: dodati:
-// - promjenu grupe
-// - tačan studij koji je student upisao, koji put, a ne kojem studiju pripada predmet
-// - koji put sluša predmet, da li je kolizija
 // - fiksne komponente, sa AJAHom
-// - sliku
 
 
 
@@ -201,6 +197,11 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 		$q57 = myquery("select naziv from labgrupa where id=$novagrupa");
 		nicemessage("Student upisan u grupu ".mysql_result($q57,0,0).". Kreirani su default podaci o prisustvu.");
 	}
+	
+	// Potrebno je updatovati komponentu za prisustvo jer su podaci sada promijenjeni
+	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3");
+	while ($r4 = mysql_fetch_row($q4))
+		update_komponente($student,$ponudakursa,$r4[0]);
 
 	// Pametni logging
 	if ($staragrupa>0 && $novagrupa>0) 
@@ -378,11 +379,8 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p
-where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag"); // 3 = prisustvo
-
-//$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, predmet as p
-//where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
+$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
 while ($r40 = mysql_fetch_row($q40)) {
 	$id_komponente = $r40[0];
@@ -434,9 +432,11 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
 $q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
-$broj_zadataka = mysql_result($q20,0,0);
-for ($i=1;$i<=$broj_zadataka;$i++) {
-	?><td>Zadatak <?=$i?>.</td><?
+if (mysql_num_rows($q20)>0) {
+	$broj_zadataka = mysql_result($q20,0,0);
+	for ($i=1;$i<=$broj_zadataka;$i++) {
+		?><td>Zadatak <?=$i?>.</td><?
+	}
 }
 
 ?>
@@ -533,6 +533,9 @@ cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolj
 ?>
 <script language="JavaScript">
 function undo_coolbox() {
+	var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+	if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
+	alert(greska);
 	zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
 	zamger_coolbox_origcaller=false;
 }
@@ -545,9 +548,7 @@ function undo_coolbox() {
 // FIKSNE KOMPONENTE
 
 
-$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.akademska_godina=$ag and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
-
-//$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
+$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
 if (mysql_num_rows($q25)>0) {
 ?>
 
@@ -896,7 +897,7 @@ while ($r150 = mysql_fetch_row($q150)) {
 		if (mysql_num_rows($q160)>0) {
 			$korisnik = mysql_result($q160,0,0)." ".mysql_result($q160,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik $r150[2]/";
 		}
 	
 		if (strstr($r150[0], "dodana ocjena")) {
@@ -971,7 +972,7 @@ if ($bilo==0) {
 // Log za fiksne komponente
 // Radimo samo ako ima fiksnih komponenti
 
-$q200 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as p where p.predmet=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=5 and p.akademska_godina=$ag"); // 5 = fiksna komponenta
+$q200 = myquery("select k.id from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
 while ($r200 = mysql_fetch_row($q200)) {
 	$komponenta = $r200[0];
 
@@ -1021,7 +1022,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 			if (mysql_num_rows($q120)>0) {
 				$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 			} else {
-				$korisnik = "<nepoznat korisnik>";
+				$korisnik = "/nepoznat korisnik/";
 			}
 			?>
 			document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
@@ -1049,7 +1050,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		if (mysql_num_rows($q120)>0) {
 			$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik $r110[2]/";
 		}
 
 		if (strstr($r110[0], "upisan novi rezultat")) {
@@ -1096,7 +1097,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 		if (mysql_num_rows($q120)>0) {
 			$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 		} else {
-			$korisnik = "<nepoznat korisnik>";
+			$korisnik = "/nepoznat korisnik ".mysql_result($q110,0,1)."/";
 		}
 		?>
 		document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
@@ -1111,7 +1112,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 			if (mysql_num_rows($q120)>0) {
 				$korisnik = mysql_result($q120,0,0)." ".mysql_result($q120,0,1);
 			} else {
-				$korisnik = "<nepoznat korisnik>";
+				$korisnik = "/nepoznat korisnik ".mysql_result($q110,0,1)."/";
 			}
 			?>
 			document.getElementById('ispitlog<?=$r100[0]?>').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> masovni rezultati ispita - <b><?=$ispitocjena?></b> (<?=$korisnik?>, <?=$datum?>)<br />' + document.getElementById('ispitlog<?=$r100[0]?>').innerHTML;
