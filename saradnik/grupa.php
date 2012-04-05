@@ -148,6 +148,11 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
 		$cas_id = mysql_result($q70,0,0);
 	
+		// Max bodova za komponentu
+		$q75 = myquery("select maxbodova, opcija from komponenta where id=$komponenta");
+		$maxbodova = mysql_result($q75,0,0);
+		$opcija = mysql_result($q75,0,1);
+	
 		// dodajemo u bazu default podatke za prisustvo i ocjene
 	
 		$q80 = myquery("select student from student_labgrupa where labgrupa=$labgrupa");
@@ -160,14 +165,15 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 			$ponudakursa = mysql_result($q53,0,0);
 
 			$q90 = mysql_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
-			if ($prisustvo==0)
-				 // Update radimo samo ako se registruje odsustvo
+			
+			// Update radimo samo ako se registruje odsustvo ili ako je opcija=-1 (proporcionalni bodovi)
+			if ($prisustvo==0 || $opcija==-1)
 				update_komponente($stud_id,$ponudakursa,$komponenta);
 			else {
-				// Ako nema uopšte bodova za komponentu, ubacićemo 10
+				// Ako nema uopšte bodova za komponentu, ubacićemo broj bodova
 				$q95 = myquery("select count(*) from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
 				if (mysql_result($q95,0,0)==0) {
-					$q97 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=10");
+					$q97 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$maxbodova");
 				}
 			}
 		}
@@ -181,8 +187,24 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 
 if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
 	$cas_id = intval($_POST['_lv_casid']);
+
+	// Updatujemo komponentu svima koji su bili prisutni
+	$q103 = myquery("select komponenta from cas where id=$cas_id");
+	$komponenta = mysql_result($q103,0,0);
+	
+	$q105 = myquery("select sp.student, sp.predmet from prisustvo as pr, student_predmet as sp, ponudakursa as pk where pr.cas=$cas_id and pr.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	$studenti = $ponudekursa = array();
+	while ($r105 = mysql_fetch_row($q105)) {
+		array_push($studenti, $r105[0]);
+		$ponudekursa[$r105[0]] = $r105[1];
+	}
+
 	$q100 = myquery("delete from prisustvo where cas=$cas_id");
 	$q110 = myquery("delete from cas where id=$cas_id");
+	
+	foreach($studenti as $student)
+		update_komponente($student, $ponudekursa[$student], $komponenta);
+	
 	zamgerlog("obrisan cas $cas_id",2);
 }
 
@@ -233,6 +255,7 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 	<script language="JavaScript">
 	function undo_coolbox() {
 		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+		if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
 		alert(greska);
 		zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
 		zamger_coolbox_origcaller=false;
@@ -322,7 +345,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>"  class="default">
 		<input type="submit" value="Registruj"  class="default"><br/><br/>
 	
-		<input type="radio" name="prisustvo" value="1">Svi prisutni
+		<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="prisustvo" value="0">Svi odsutni
 		<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
