@@ -203,6 +203,9 @@ iz.predmet=p.id");
 	if (mysql_result($q18,0,0)>0) {
 		?>
 		<p>Već imate jedan zahtjev za koliziju. Možete ponovo popuniti zahtjev, pri čemu se stari briše.</p>
+		<p>Kliknite na jedan od linkova ispod za printanje zahtjeva za:<br>
+		- <a href="?sta=student/kolizijapdf&semestar=1">zimski semestar</a><br>
+		- <a href="?sta=student/kolizijapdf&semestar=2">ljetnji semestar</a></p>
 		<?
 	}
 
