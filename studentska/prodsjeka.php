@@ -16,9 +16,6 @@ function studentska_prodsjeka() {
 global $userid,$user_siteadmin,$user_studentska;
 
 
-require("lib/manip.php"); // zbog ispisa studenta sa predmeta
-
-
 // Provjera privilegija
 
 if (!$user_studentska && !$user_siteadmin) {
