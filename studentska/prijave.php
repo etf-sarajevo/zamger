@@ -79,6 +79,20 @@ while ($r40 = mysql_fetch_row($q40)) {
 </ul>
 <?
 
+	$q33 = myquery("select o.id, o.ime, o.prezime, ns.titula from osoba as o, angazman as a, naucni_stepen as ns where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=1 and a.osoba=o.id and o.naucni_stepen=ns.id");
+	if (mysql_num_rows($q33)==0) {
+		?><p><b>Napomena:</b> Za ovaj predmet nije podešen odgovorni nastavnik!</p><?
+	} else if (mysql_num_rows($q33)>1) { // Ako imaju dva odgovorna nastavnika, ne znam kojeg da stavim
+		?><p><b>Napomena:</b> Za ovaj predmet je podešen više od jednog odgovornog nastavnika! Polje za odgovornog nastavnika na prijavi neće biti popunjeno. Morate ga popuniti ručno.</p><?
+	} else {
+		$id_nastavnika = mysql_result($q33,0,0);
+		// Određujemo zvanje
+		$q34 = myquery("select z.titula from zvanje as z, izbor as i where i.osoba=$id_nastavnika and i.zvanje=z.id order by datum_isteka desc");
+		if (mysql_num_rows($q34)<1) {
+			?><p><b>Napomena:</b> Predmetnom nastavniku je istekao izbor ili nisu popunjeni odgovarajući podaci. Bez podataka o izboru ne možemo ispravno popuniti titulu nastavnika. Polje za odgovornog nastavnika na prijavi neće biti popunjeno. Morate ga popuniti ručno.</p><?
+		}
+	}
+
 
 }
 
