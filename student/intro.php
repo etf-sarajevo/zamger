@@ -76,7 +76,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
 	if (mysql_result($q12,0,0)==0) continue;
 
-	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y. u h:i",$r10[2]).".<br/><br/>\n";
+	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y. u H:i",$r10[2]).".<br/><br/>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
@@ -87,9 +87,13 @@ $q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave)
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskačemo starije od mjesec dana
 
+	// Da li je student položio predmet? Preskačemo ako jeste
+	$q15a = myquery("select count(*) from konacna_ocjena where predmet=$r15[8] and ocjena>=6 and student=$userid");
+	if (mysql_result($q15a,0,0)>0) continue;
+
 	// Da li je ovaj student izlazio na ispit?
 	$q16 = myquery("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
-	if (mysql_result($q16,0,0)==0) { // Ne
+	if (mysql_num_rows($q16)==0) { // Ne
 		// Ima li termina na koje se može prijaviti?
 		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
 		if (mysql_result($q17,0,0)>0) {
@@ -100,7 +104,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 	else { // Student je dobio $bodova
 		$bodova = mysql_result($q16,0,0);
 		if ($bodova>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
-		$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $bodova bodova.$cestitka<br/><br/>\n";
+		$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $bodova bodova.$cestitka<br /><br />\n";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
 	}
 }
@@ -110,7 +114,7 @@ while ($r15 = mysql_fetch_row($q15)) {
 $q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id and ko.ocjena>5");
 while ($r17 = mysql_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[4]&ag=$r17[5]\">Dobili ste $r17[1]</a><br/><br/>\n";
+	$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[4]&ag=$r17[5]\">Dobili ste $r17[1]</a><br /><br />\n";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
 
@@ -192,6 +196,7 @@ if (mysql_num_rows($q30)>0) {
 $q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
 $printed=0;
 while ($r40 = mysql_fetch_row($q40)) {
+	if (time() - $r40[1] > 60*60*24*365) continue;
 	$opseg = $r40[2];
 	$primalac = $r40[3];
 	$posiljalac = $r40[6];
@@ -366,6 +371,7 @@ if (mysql_num_rows($q200)<1) {
 
 ?>
 <a href="http://zamger.etf.unsa.ba/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
+<a href="http://feedvalidator.org/check.cgi?url=http%3A//zamger.etf.unsa.ba/rss.php%3Fid%3D<?=$rssid?>"><img src="images/valid-rss-rogers.png" width="88" height="31" border="0" align="center"></a>
 
 <!--
 <table border="0" bgcolor="#DDDDDD" width="100%">
