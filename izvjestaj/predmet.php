@@ -133,6 +133,7 @@ else
 
 $q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by $orderby");
 $imaintegralni=0;
+$ispit_id_array = $ispit_komponenta = $komponenta_maxb = array();
 while ($r30 = mysql_fetch_row($q30)) {
 	$komponenta = $r30[2];
 	$imeispita = $r30[3];
@@ -426,13 +427,11 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 				foreach ($cas_id_array as $cid) {
 					$q200 = mysql_query("select prisutan,plus_minus from prisustvo where student=$stud_id and cas=$cid");
 					if (mysql_num_rows($q200)>0) {
-						if (mysql_result($q200,0,0) == 2) { 
-							$ispis .= "<td bgcolor=\"#FFE303\" align=\"center\">NP</td>\n";
-						} else if(mysql_result($q200,0,0) == 0){ 
+						if (mysql_result($q200,0,0) == 1) { 
+							$ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
+						} else { 
 							$ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
 							$odsustvo++;
-						} else if(mysql_result($q200,0,0) == 1){
-							$ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
 						}
 						//$ocj = mysql_result($r4,0,1);
 					} else {

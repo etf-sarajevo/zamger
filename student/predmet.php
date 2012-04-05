@@ -279,13 +279,11 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 		$q80 = myquery("select prisutan from prisustvo where student=$userid and cas=$r70[0]");
 		if (mysql_num_rows($q80)<1) {
 			$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\">/</td>\n";
-		} else if (mysql_result($q80,0,0)==2) {
-			$statusi .= "<td bgcolor=\"#FFE303\" align=\"center\">NP</td>\n";
-		} else if(mysql_result($q80,0,0)==0){
+		} else if (mysql_result($q80,0,0)==1) {
+			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
+		} else {
 			$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
 			$odsustva++;
-		} else if(mysql_result($q80,0,0)==1){
-			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
 		}
 	}
 
@@ -368,8 +366,8 @@ $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentsk
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
-	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	$idovi_zadaca = array();
+	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];

@@ -357,8 +357,6 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="radio" name="prisustvo" value="0">Svi odsutni
-		<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type ="radio" name="prisustvo" value="2" CHECKED>NP (Nije poznato) -->
 		<?
 		
 		// Kreiraj čas sa kvizom
@@ -386,26 +384,8 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	</td></tr></table>
 	
 	<script language="JavaScript">
-	//Kod koji aktivira specijalni kljuc za stanje prisustva NP (Nije Poznato)
-	var shiftPressed = false;
-	document.onkeydown=shiftDown;
-	document.onkeyup=shiftUp;
-	
-	function shiftDown(e){
-		var e=window.event || e
-		if(e.keyCode == 16){//Shift key code
-			shiftPressed=true;
-		}
-	}
+	var oldState = 0;
 
-	function shiftUp(e){
-		var e = window.event || e
-		if(e.keyCode == 16){
-			shiftPressed=false;
-		}
-	}
-
-	
 	// Funkcija koja se poziva klikom na polje u tabeli
 	function prisustvo(student,cas) {
 		if (zamger_ajah_sending) {
@@ -419,24 +399,29 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	// Switchuje DA i NE
 	function invert(student,cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
-		if((val == "DA" || val=="NE") && (shiftPressed == true)){
-			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFE303";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NP";
-			return 2;
-		} else if (val == "DA" && shiftPressed==false) {
+		var evt = window.event;
+
+		// Shift služi za pristup neutralnom stanju /
+		if (evt.shiftKey) {
+			if (oldState == 0) {
+				if (val == "DA") oldState = 1; else oldState = 2;
+				document.getElementById("dane-"+student+"-"+cas).style.background = "#FFFFCC";
+				document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "/";
+				return 3;
+			} else {
+				if (oldState==1) val="NE"; else val="DA"; // Invertujemo sa NE na DA i obrnuto
+				oldState=0;
+			}
+		}
+
+		if (val == "DA") {
 			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
 			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
-			return 0;
-		}
-		else if (val == "NE" && shiftPressed==false){
-			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
-			return 1;	
-		}
-		else if(val == "NP"){ //Defaultni izlaz iz NP bez obzira na Shift.
-			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
 			return 1;
+		} else {
+			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
+			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
+			return 2;
 		}
 	}
 	function upozorenje(cas) {
@@ -743,13 +728,11 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 		$q320 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cid");
 		if (mysql_num_rows($q320)>0) {
-			if (mysql_result($q320,0,0) == 2) { 
-				$prisustvo_ispis .= "<td bgcolor=\"#FFE303\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NP</div> $uspjeh_na_kvizu</td>";
-			} else if(mysql_result($q320,0,0) == 0){ 
-				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NE</div> $uspjeh_na_kvizu</td>";
+			if (mysql_result($q320,0,0) == 1) { 
+				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">DA</span> $uspjeh_na_kvizu</td>";
+			} else { 
+				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">NE</span> $uspjeh_na_kvizu</td>";
 				$odsustvo++;
-			} else if( mysql_result($q320,0,0) == 1){
-				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">DA</div> $uspjeh_na_kvizu</td>";
 			}
 			//$ocj = mysql_result($q14,0,1);
 		} else {
