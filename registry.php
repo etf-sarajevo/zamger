@@ -75,6 +75,8 @@ array("izvjestaj/index", "Uvjerenje o položenim predmetima", "Indeks", "SBA", "
 array("izvjestaj/prolaznost", "Prolaznost", "Prolaznost", "BA", "0", "0"),
 array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodovi", "SBA", "0", "0"),
 array("izvjestaj/prijemni", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),
+array("izvjestaj/prijemni_brzi_unos", "Sifra kandidata i pregled vaznijih datuma", "Sifra kandidata", "BA", "2", "0"),
+array("izvjestaj/prijemni_top10posto", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),
 array("izvjestaj/granicni", "Granični slučajevi", "Granični", "BA", "0", "0"),
 array("izvjestaj/genijalci", "Pregled studenata po prosjeku", "Prosjek", "BA", "0", "0"),
 array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistika predmeta", "NBA", "0", "0"),
@@ -106,9 +108,9 @@ array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1
 array("common/articleImageDownload", "Slike projektnih članaka", "Slike članaka", "SNA", "2", "0"),
 array("common/notifikacija", "Notifikacija", "Notifikacija", "SNBA", "0", "0"),
 
-array ("nastavnik/zavrsni", "Zavrsni radovi", "Završni rad", "N", "1", "0"),
-array ("student/zavrsni", "Zavrsni radovi", "Završni rad", "S", "1", "0"),
-array ("studentska/zavrsni", "Zavrsni radovi", "Završni rad", "B", "1", "0"),
+array ("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
+array ("student/zavrsni", "Završni rad", "Završni rad", "S", "1", "0"),
+array ("studentska/zavrsni", "Završni rad", "Završni rad", "B", "1", "0"),
 array()
 );
 ?>
