@@ -329,7 +329,8 @@ function studentska_zavrsni()  {
 				<div class="row">
 					<span class="label">Predsjednik komisije *</span>
 					<span class="formw">
-						<select name="predsjednik_komisije"><?
+						<select name="predsjednik_komisije">
+							<option value="0">(nije definisan)</option><?
 							$cnt5 = 0;
 							$q952 = myquery("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
 							$rowcounter5 = 0;
@@ -348,9 +349,10 @@ function studentska_zavrsni()  {
 				<div class="row">
 					<span class="label">Član komisije *</span>
 					<span class="formw">
-						<select name="clan_komisije"><?
+						<select name="clan_komisije">
+							<option value="0">(nije definisan)</option><?
 							$cnt5 = 0;
-							$q952 = myquery("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
+							$q952 = myquery("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND (a.angazman_status=1 OR a.angazman_status=2) AND a.osoba=o.id ORDER BY o.prezime, o.ime");
 							$rowcounter5 = 0;
 							while ($r952 = mysql_fetch_row($q952)) {
 								$cnt5 = $cnt5 + 1;
@@ -372,7 +374,7 @@ function studentska_zavrsni()  {
 					<span class="label">Student</span>
 					<span class="formw">
 						<select name="student">
-							<option value="0" CHECKED>(niko nije preuzeo temu)</option><?
+							<option value="0" SELECTED>(niko nije preuzeo temu)</option><?
 							$q954 = myquery("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet AS sp, ponudakursa AS pk, osoba AS o WHERE pk.predmet=$predmet AND pk.akademska_godina=$ag AND pk.id=sp.predmet AND sp.student=o.id ORDER BY o.prezime, o.ime");
 							$rowcounter5 = 0;
 							while ($r954 = mysql_fetch_row($q954)) {
