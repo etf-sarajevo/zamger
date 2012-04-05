@@ -1301,6 +1301,21 @@ CREATE TABLE IF NOT EXISTS `preference` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `prijemni_obrazac`
+--
+
+CREATE TABLE IF NOT EXISTS `prijemni_obrazac` (
+  `prijemni_termin` int(11) NOT NULL,
+  `osoba` int(11) NOT NULL,
+  `sifra` varchar(6) collate utf8_slovenian_ci NOT NULL,
+  `jezik` enum('bs','en') collate utf8_slovenian_ci NOT NULL default 'bs'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `prijemni_prijava`
 --
 

@@ -89,6 +89,10 @@ if ($_REQUEST['akcija'] != "pregled") {
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=brzi_unos&termin=<?=$termin?>">Brzi unos</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
 		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=<?=$termin?>">Tabelarni pregled kandidata</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
@@ -97,12 +101,20 @@ if ($_REQUEST['akcija'] != "pregled") {
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=upis_kriterij&termin=<?=$termin?>">Kriteriji za upis</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&akcija=prijemni_sifre&termin=<?=$termin?>">Unos bodova po šiframa</a></td>
 	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&akcija=upis_kriterij&termin=<?=$termin?>">Kriteriji za upis</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
 		<td><a href="?sta=studentska/prijemni&akcija=spisak&termin=<?=$termin?>">Spisak kandidata</a></td>
+	</tr>
+        <tr>&nbsp;</tr> 	 
+	<tr>
+		<td><a href="?sta=izvjestaj/prijemni_top10posto&termin=<?=$termin?>">Najboljih 10% po školama</a></td>
+	</tr>
         <tr>&nbsp;</tr> 	 
 	<tr> 	 
 		<td>Rang liste kandidata:<br /><?
@@ -237,6 +249,277 @@ if ($_REQUEST['akcija'] == "arhiva_ispita") {
 ?>
 <p><?=$naziv?></p>
 <?
+
+
+
+
+// BRZI UNOS SA AUTOMATSKOM OBRADOM
+
+if ($_REQUEST['akcija']=="promijeni_kod") {
+	$osoba = intval($_REQUEST['osoba']);
+	do {
+		$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
+		$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+	} while (mysql_result($q3015,0,0)>0);
+	$q3040 = myquery("update prijemni_obrazac set sifra='$sifra' where prijemni_termin=$termin and osoba=$osoba");
+	print "Kod promijenjen";
+	return;
+}
+
+
+
+if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
+	if ($_POST['fakatradi'] != 1) $ispis=0; else $ispis=0;
+	$redovi = explode("\n",$_POST['massinput']);
+
+	$separator = intval($_REQUEST['separator']);
+	if ($separator==1) $sepchar=','; else $sepchar="\t";
+
+	$kolona = 2;
+	
+	$sifra_izasao=array();
+	$q6 = myquery("select sifra from prijemni_obrazac where prijemni_termin=$termin");
+	while ($r6 = mysql_fetch_row($q6)) 
+		$sifra_izasao[$r6[0]] = "nije";
+
+	foreach ($redovi as $red) {
+		$red = trim($red);
+		if (strlen($red)<2) continue; // prazan red
+		// popravljamo nbsp Unicode karakter
+		$red = str_replace("¡", " ", $red);
+		$red = str_replace(" ", " ", $red);
+		$red = my_escape($red);
+
+		$nred = explode($sepchar, $red, $kolona);
+		$sifra = $nred[0];
+		$bodovi = floatval(str_replace(",",".",$nred[1]));
+
+		// Da li korisnik postoji u bazi?
+		$q10 = myquery("select osoba from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+		if (mysql_num_rows($q10)<1) {
+			if ($ispis)  {
+				print "<font color=\"red\">Nepoznata šifra $sifra</font><br>\n";
+			}
+			$greska=1;
+			continue;
+		} else {
+			$osoba = mysql_result($q10,0,0);
+			$q20 = myquery("select izasao from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
+			if (mysql_result($q20,0,0)==1) {
+				if ($ispis)  {
+					print "<font color=\"red\">Kandidatu pod šifrom $sifra je već evidentiran izlazak na prijemni.</font><br>\n";
+				}
+				$greska=1;
+				continue;
+			}
+			if ($ispis) {
+				//print "-- Upisujem $bodovi bodova za kandidata pod šifrom $sifra<br>\n";
+			} else {
+				$q20 = myquery("update prijemni_prijava set izasao=1, rezultat=$bodovi where prijemni_termin=$termin and osoba=$osoba");
+			}
+			$sifra_izasao[$sifra] = "jeste";
+		}
+	}
+
+	// Potvrda i Nazad
+	if ($ispis) {
+		foreach ($sifra_izasao as $sifra => $izasao) {
+			if ($izasao=="nije") print "Nije izasao: $sifra<br />\n";
+		}
+
+		print '<input type="submit" name="nazad" value=" Nazad "> ';
+		if ($greska==0) print '<input type="submit" value=" Potvrda ">';
+		print "</form>";
+		return;
+	} else {
+		?>
+		Upisani rezultati prijemnog.
+		<?
+	}
+
+}
+
+if ($_REQUEST['akcija']=="prijemni_sifre") {
+
+?>
+
+<p><hr/></p><p><b>Masovni unos broja indexa</b><br/>
+<?=genform("POST")?>
+<input type="hidden" name="fakatradi" value="0">
+<input type="hidden" name="akcija" value="prijemni_sifre_submit">
+<input type="hidden" name="nazad" value="">
+<input type="hidden" name="visestruki" value="1">
+<input type="hidden" name="duplikati" value="0">
+<input type="hidden" name="brpodataka" value="1">
+
+<textarea name="massinput" cols="50" rows="10"><?
+if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
+?></textarea><br/>
+<br/>Separator: <select name="separator" class="default">
+<option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
+<option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
+<br/><br/>
+
+<input type="submit" value="  Dodaj  ">
+</form></p><?
+
+
+}
+
+
+if ($_REQUEST['akcija']=="brzi_unos") {
+	$bojaime = $bojaimerod = $bojaprezime = $bojajmbg = "#FFFF00";
+	$rjezik = 'bs';
+
+	if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
+		$rime = my_escape($_REQUEST['ime']);
+		$rprezime = my_escape($_REQUEST['prezime']);
+		$rimeroditelja = my_escape($_REQUEST['imeroditelja']);
+		$rjmbg = my_escape($_REQUEST['jmbg']);
+		$rjezik = my_escape($_REQUEST['jezik']);
+
+		if (!preg_match("/\w/",$rime)) {
+			niceerror("Ime nije ispravno"); 
+			$greska=1; $greskaime=1; $bojaime = "#FF0000";
+		}
+		if (!preg_match("/\w/",$rprezime)) {
+			niceerror("Prezime nije ispravno"); 
+			$greska=1; $greskaprezme=1; $bojaprezime = "#FF0000";
+		}
+		if (!preg_match("/\w/",$rimeroditelja)) {
+			niceerror("Ime roditelja nije ispravno"); 
+			$greska=1; $greskaime=1; $bojaimerod = "#FF0000";
+		}
+		if (testjmbg($rjmbg) != "") {
+			niceerror("JMBG neispravan: ".testjmbg($rjmbg)); 
+			$greska=1; $greskajmbg=1; $bojajmbg = "#FF0000";
+		}
+
+		$q2995 = myquery("select count(*) from osoba where jmbg='$rjmbg'");
+		if (mysql_result($q3015,0,0)>0) {
+			niceerror("Osoba sa ovim JMBGom već postoji u bazi");
+			
+			print "<p>Moguće je da sljedeće:<br />
+			1. Pogrešno unesen JMBG. Molimo da ga popravite ispod.<br />
+			2. Moguće je da ste ovog kandidata već unijeli! Koristite tabelarni pregled da biste ušli u dosje kandidata, a zatim kliknite na link <i>Odštampaj obrazac</i> koji se nalazi odmah ispod broja dosjea.<br />
+			3. Ako se isti kandidat ponovo prijavljuje za prijemni ispit, kliknite na link <i>Unos kandidata</i> a zatim koristite pretragu po broju JMBGa kako biste automatski povukli podatke ovog kandidata i generisali novi obrazac za njega.</p>";
+			$greska=1; $greskajmbg=1; $bojajmbg = "#FF0000";
+		}
+
+		if ($greska==0) {
+			$q3000 = myquery("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+			$broj_dosjea = mysql_result($q3000,0,0)+1;
+
+			$q3010 = myquery("select id from osoba order by id desc limit 1");
+			$osoba = mysql_result($q3010,0,0)+1;
+			
+			// Određivanje šifre
+			do {
+				$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
+				$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+			} while (mysql_result($q3015,0,0)>0);
+			
+			// Određivanje datuma rođenja iz JMBGa
+			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rmjbg,0,2), substr($rjmbg,4,3)+1000);
+
+			$q3020 = myquery("insert into osoba set id=$osoba, ime='$rime', prezime='$rprezime', imeoca='$rimeroditelja', jmbg='$rjmbg', datum_rodjenja=FROM_UNIXTIME($datumrod)");
+			$q3030 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
+			$q3040 = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='$rjezik'");
+
+			$q3050 = myquery("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
+			if (mysql_result($q3050,0,0) == 0)
+				// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
+				$q3060 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
+
+			zamgerlog("Brzo unesen kandidat $rime $rprezime za termin $termin", 2);
+
+			?>
+			<table border="1" cellspacing="0" cellpadding="3"><tr><td>
+			<table border="0">
+				<tr><td>Broj dosjea:</td><td><b><?=$broj_dosjea?></b></td></tr>
+				<tr><td>Šifra za prijemni ispit:</td><td><b><?=$sifra?></b></td></tr>
+				<tr><td>Ime:</td><td><b><?=$rime?></b></td></tr>
+				<tr><td>Prezime:</td><td><b><?=$rprezime?></b></td></tr>
+				<tr><td>Ime roditelja:</td><td><b><?=$rimeroditelja?></b></td></tr>
+				<tr><td>JMBG:</td><td><b><?=$rjmbg?></b></td></tr>
+			</table>
+			</td></tr></table>
+			<p><a href="?sta=izvjestaj/prijemni_brzi_unos&termin=<?=$termin?>&osoba=<?=$osoba?>" target="_new">Odštampaj obrazac</a></p>
+			<p><a href="?sta=studentska/prijemni&termin=<?=$termin?>&akcija=brzi_unos">Unos sljedećeg studenta</a></p>
+			<?
+			return;
+		}
+		
+	}
+
+	?>
+	<script language="JavaScript">
+// Kada korisnik ukuca nesto u obavezno polje, ono prestaje biti zuto (postaje bijelo)
+function odzuti(nesto) {
+	nesto.style.backgroundColor = '#FFFFFF';
+}
+
+// Predji na sljedece polje pritiskom na dugme enter
+function enterhack(e,gdje) {
+	if(e.keyCode==13) {
+		document.getElementById(gdje).focus();
+		return false;
+	}
+}
+function provjeri(varijablu) {
+	var nesto = document.getElementById(varijablu);
+	if(nesto.value=="") {
+		alert("Niste unijeli "+varijablu);
+		nesto.focus();
+		self.scrollTo(nesto.offsetLeft,nesto.offsetTop);
+		return false;
+	}
+	return true;
+}
+function provjeri_sve() {
+	if (!provjeri('ime')) return false;
+	if (!provjeri('imeroditelja')) return false;
+	if (!provjeri('prezime')) return false;
+	if (!provjeri('jmbg')) return false;
+
+	document.getElementById('slanje').disabled = true;
+	document.getElementsByName('brzaforma')[0].submit();
+	return true;
+}
+	</script>
+
+	<?=genform("POST", "brzaforma");?>
+	<input type="hidden" name="subakcija" value="potvrda">
+	<h2>Brzi unos kandidata za prijemni ispit</h2>
+
+	<table border="0">
+		<tr>
+			<td>Ime:</td><td><input type="text" name="ime" id="ime" size="20" style="background-color:<?=$bojaime?>" oninput="odzuti(this)" autocomplete="off" onkeypress="return enterhack(event,'prezimeoca')" value="<?=$rime?>" /></td>
+		</tr>
+		<tr>
+			<td>Ime roditelja:</td><td><input type="text" name="imeroditelja" id="imeroditelja" size="20" style="background-color:<?=$bojaimerod?>" oninput="odzuti(this)" autocomplete="off" onkeypress="return enterhack(event,'prezimeoca')" value="<?=$rimeroditelja?>" /></td>
+		</tr>
+		<tr>
+			<td>Prezime:</td><td><input type="text" name="prezime" id="prezime" size="20" style="background-color:<?=$bojaprezime?>" oninput="odzuti(this)" autocomplete="off" onkeypress="return enterhack(event,'prezimeoca')" value="<?=$rprezime?>" /></td>
+		</tr>
+		<tr>
+			<td>JMBG:</td><td><input type="text" name="jmbg" id="jmbg" size="20" style="background-color:<?=$bojajmbg?>" oninput="odzuti(this)" autocomplete="off" onkeypress="return enterhack(event,'prezimeoca')" value="<?=$rjmbg?>" /></td>
+		</tr>
+		<tr>
+			<td>Jezik:</td><td>
+				<select name="jezik">
+					<option value="bs" <? if ($rjezik=="bs") print "CHECKED"?>>Bosanski</option>
+					<option value="en" <? if ($rjezik=="en") print "CHECKED"?>>Engleski</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td><td><input type="button" id="slanje" value="Pošalji" onclick="provjeri_sve()"></td>
+		</tr>
+	</table>
+	</form>
+	<?
+}
 
 
 
@@ -1038,6 +1321,16 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 
 			$q6 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$nbrojdosjea, studij_prvi=$sp");
 
+			// Treba li kreirati novi obrazac?
+			$q6a = myquery("select count(*) from prijemni_obrazac where prijemni_termin=$termin and osoba=$osoba");
+			if (mysql_result($q6a,0,0)==0) {
+				do {
+					$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
+					$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+				} while (mysql_result($q3015,0,0)>0);
+				$q6b = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
+			}
+
 			nicemessage("Prijavljujem osobu na prijemni ispit");
 		}
 
@@ -1498,6 +1791,12 @@ print genform("POST", "glavnaforma");?>
 		} 
 		?>><font color="#FF0000">*</font> <?=$desnodugme?></td>
 	</tr>
+	<? if ($osoba>0) {
+	?>
+	<tr><td colspan="2">
+		<a href="?sta=izvjestaj/prijemni_brzi_unos&termin=<?=$termin?>&osoba=<?=$osoba?>" target="_new">Odštampaj obrazac</a>
+	</tr></tr>
+	<? } ?>
 	<tr><td colspan="2"><br>LIČNI PODACI:</td></tr>
 	<tr>
 		<td width="130" align="left">Ime kandidata:</td>
@@ -1887,10 +2186,11 @@ if ($vrstaunosa!="editovanje") {
 			}
 		}
 		var prosjeku;
-		if (brojocjena>0) prosjeku=Math.round((sumaocjena/brojocjena)*10)/10; 
+		if (brojocjena>0) prosjeku=Math.round((sumaocjena/brojocjena)*100)/100; 
 		else prosjeku=0;
-		document.getElementById('opci_uspjeh').value = prosjeku*8;
+		document.getElementById('opci_uspjeh').value = prosjeku * 4;
 
+		// Kljucni predmeti
 		var sumekljucni=new Array(), brojkljucni=new Array(), prosjecikljucni=new Array();
 		for (var i=1; i<=3; i++) {
 			sumekljucni[i]=0; brojkljucni[i]=0;
@@ -1908,7 +2208,7 @@ if ($vrstaunosa!="editovanje") {
 				prosjecikljucni[i] = sumekljucni[i]/brojkljucni[i];
 			else prosjecikljucni[i]=0;
 		}
-		var bodovi_kljucni = (prosjecikljucni[1]+prosjecikljucni[2]+prosjecikljucni[3])/3 * 4;
+		var bodovi_kljucni = (prosjecikljucni[1]+prosjecikljucni[2]+prosjecikljucni[3])/3 * 8;
 		bodovi_kljucni = Math.round(bodovi_kljucni*10)/10;
 		document.getElementById('kljucni_predmeti').value=bodovi_kljucni;
 	}
@@ -1933,8 +2233,8 @@ if ($vrstaunosa!="editovanje") {
 			vrijednost="/";
 		}
 		if (origval[id]=="") origval[id]="/";
-		if (vrijednost != "/" && (!parseInt(vrijednost) || parseInt(vrijednost)<1 || parseInt(vrijednost)>5)) {
-			alert("Neispravna ocjena: "+vrijednost+" !\nOcjena mora biti u opsegu 1-5 ili znak / za poništavanje "+id);
+		if (vrijednost != "/" && vrijednost != "0" && (!parseInt(vrijednost) || parseInt(vrijednost)<0 || parseInt(vrijednost)>5)) {
+			alert("Neispravna ocjena: "+vrijednost+" !\nOcjena mora biti u opsegu 0-5 ili znak / za poništavanje "+id);
 			element.value = origval[id];
 			if (origval[id]=="/") element.value="";
 			element.focus();
