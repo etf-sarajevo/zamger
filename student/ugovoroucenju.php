@@ -330,20 +330,58 @@ function student_ugovoroucenju() {
 			print "<input type=\"radio\" name=\"is$ops\" value=\"odsjek$semestar\" onchange=\"drugiodsjek('$ops',$semestar,true);\">Predmet sa drugog odsjeka</input><br />\n";
 			print "<select name=\"odsjek-$ops\">\n";
 
+			$spisak_predmeta_drugi_studij = array();
+			$drugi_studiji = array();
+
 			$q46 = myquery("select tipstudija from studij where id=$studij");
 			$studij_ts = intval(mysql_result($q46,0,0));
 
-			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
+			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv, s.id from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
 			while ($r47 = mysql_fetch_row($q47)) {
+				$drugi_studiji[$r47[3]]=$r47[2];
+
 				// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
 				$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r47[0]");
 				if (mysql_result($q48,0,0)>0) continue;
 
 				// Ne nudimo predmete koje je student eventualno vec polozio
-				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
-				if (mysql_result($q49,0,0)>0) continue;
+//				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
+//				if (mysql_result($q49,0,0)>0) continue;
 
-				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+				$spisak_predmeta_drugi_studij[$r47[0]] = "$r47[1] ($r47[2])";
+
+				//print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			// A sada i izborni
+			$q51 = myquery("select ps.predmet, s.kratkinaziv, s.id from plan_studija as ps, studij as s where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=0 and ps.studij=s.id and s.tipstudija=$studij_ts order by s.kratkinaziv");
+			while ($r51 = mysql_fetch_row($q51)) {
+				$drugi_studiji[$r51[2]]=$r51[1];
+
+				$q52 = myquery("select izs.predmet, p.naziv from izborni_slot as izs, predmet as p where izs.id=$r51[0] and izs.predmet=p.id order by p.naziv");
+				while ($r52 = mysql_fetch_row($q52)) {
+					// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
+					$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r52[0]");
+					if (mysql_result($q48,0,0)>0) continue;
+
+					// Ne nudimo predmete koje je student eventualno vec polozio
+//					$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r52[0] and ocjena>5");
+//					if (mysql_result($q49,0,0)>0) continue;
+
+					$spisak_predmeta_drugi_studij[$r52[0]] = "$r52[1] ($r51[1])";
+				}
+
+//				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			sort($drugi_studiji);
+//			sort($spisak_predmeta_drugi_studij);
+			foreach ($drugi_studiji as $studij_id=>$studij_naziv) {
+				foreach ($spisak_predmeta_drugi_studij as $predmet_id=>$predmet_naziv) {
+					if (strstr($predmet_naziv, "($studij_naziv)")) {
+						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+					}
+				}
 			}
 			print "</select><br>\n";
 		} else {
@@ -360,20 +398,58 @@ function student_ugovoroucenju() {
 			print "<input type=\"checkbox\" name=\"iz$ops-odsjek\" value=\"odsjek$semestar\" onchange=\"javascript:jedanod('$ops',this); drugiodsjek('$ops',$semestar,this.checked);\">Predmet sa drugog odsjeka</input><br />\n";
 			print "<select name=\"odsjek-$ops\">\n";
 
+			$spisak_predmeta_drugi_studij = array();
+			$drugi_studiji = array();
+
 			$q46 = myquery("select tipstudija from studij where id=$studij");
 			$studij_ts = intval(mysql_result($q46,0,0));
 
-			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
+			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv, s.id from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
 			while ($r47 = mysql_fetch_row($q47)) {
+				$drugi_studiji[$r47[3]]=$r47[2];
+
 				// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
 				$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r47[0]");
 				if (mysql_result($q48,0,0)>0) continue;
 
 				// Ne nudimo predmete koje je student eventualno vec polozio
-				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
-				if (mysql_result($q49,0,0)>0) continue;
+//				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
+//				if (mysql_result($q49,0,0)>0) continue;
 
-				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+				$spisak_predmeta_drugi_studij[$r47[0]] = "$r47[1] ($r47[2])";
+
+				//print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			// A sada i izborni
+			$q51 = myquery("select ps.predmet, s.kratkinaziv, s.id from plan_studija as ps, studij as s where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=0 and ps.studij=s.id and s.tipstudija=$studij_ts order by s.kratkinaziv");
+			while ($r51 = mysql_fetch_row($q51)) {
+				$drugi_studiji[$r51[2]]=$r51[1];
+
+				$q52 = myquery("select izs.predmet, p.naziv from izborni_slot as izs, predmet as p where izs.id=$r51[0] and izs.predmet=p.id order by p.naziv");
+				while ($r52 = mysql_fetch_row($q52)) {
+					// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
+					$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r52[0]");
+					if (mysql_result($q48,0,0)>0) continue;
+
+					// Ne nudimo predmete koje je student eventualno vec polozio
+//					$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r52[0] and ocjena>5");
+//					if (mysql_result($q49,0,0)>0) continue;
+
+					$spisak_predmeta_drugi_studij[$r52[0]] = "$r52[1] ($r51[1])";
+				}
+
+//				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			sort($drugi_studiji);
+//			sort($spisak_predmeta_drugi_studij);
+			foreach ($drugi_studiji as $studij_id=>$studij_naziv) {
+				foreach ($spisak_predmeta_drugi_studij as $predmet_id=>$predmet_naziv) {
+					if (strstr($predmet_naziv, "($studij_naziv)")) {
+						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+					}
+				}
 			}
 			print "</select><br>\n";
 		}
@@ -412,21 +488,60 @@ function student_ugovoroucenju() {
 			print "<input type=\"radio\" name=\"is$ops\" value=\"odsjek$semestar\" onchange=\"drugiodsjek('$ops',$semestar,true);\">Predmet sa drugog odsjeka</input><br />\n";
 			print "<select name=\"odsjek-$ops\">\n";
 
+			$spisak_predmeta_drugi_studij = array();
+			$drugi_studiji = array();
+
 			$q46 = myquery("select tipstudija from studij where id=$studij");
 			$studij_ts = intval(mysql_result($q46,0,0));
 
-			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
+			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv, s.id from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
 			while ($r47 = mysql_fetch_row($q47)) {
+				$drugi_studiji[$r47[3]]=$r47[2];
+
 				// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
 				$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r47[0]");
 				if (mysql_result($q48,0,0)>0) continue;
 
 				// Ne nudimo predmete koje je student eventualno vec polozio
 				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
-				if (mysql_result($q49,0,0)>0) continue;
+//				if (mysql_result($q49,0,0)>0) continue;
 
-				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+				$spisak_predmeta_drugi_studij[$r47[0]] = "$r47[1] ($r47[2])";
+
+				//print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
 			}
+
+			// A sada i izborni
+			$q51 = myquery("select ps.predmet, s.kratkinaziv, s.id from plan_studija as ps, studij as s where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=0 and ps.studij=s.id and s.tipstudija=$studij_ts order by s.kratkinaziv");
+			while ($r51 = mysql_fetch_row($q51)) {
+				$drugi_studiji[$r51[2]]=$r51[1];
+
+				$q52 = myquery("select izs.predmet, p.naziv from izborni_slot as izs, predmet as p where izs.id=$r51[0] and izs.predmet=p.id order by p.naziv");
+				while ($r52 = mysql_fetch_row($q52)) {
+					// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
+					$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r52[0]");
+					if (mysql_result($q48,0,0)>0) continue;
+
+					// Ne nudimo predmete koje je student eventualno vec polozio
+					$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r52[0] and ocjena>5");
+//					if (mysql_result($q49,0,0)>0) continue;
+
+					$spisak_predmeta_drugi_studij[$r52[0]] = "$r52[1] ($r51[1])";
+				}
+
+//				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			sort($drugi_studiji);
+			//sort($spisak_predmeta_drugi_studij);
+			foreach ($drugi_studiji as $studij_id=>$studij_naziv) {
+				foreach ($spisak_predmeta_drugi_studij as $predmet_id=>$predmet_naziv) {
+					if (strstr($predmet_naziv, "($studij_naziv)")) {
+						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+					}
+				}
+			}
+
 			print "</select><br>\n";
 		} else {
 			print "(izaberite ".($count+1)." predmeta)<br />\n";
@@ -442,21 +557,60 @@ function student_ugovoroucenju() {
 			print "<input type=\"checkbox\" name=\"iz$ops-odsjek\" value=\"odsjek$semestar\" onchange=\"javascript:jedanod('$ops',this); drugiodsjek('$ops',$semestar,this.checked);\">Predmet sa drugog odsjeka</input><br />\n";
 			print "<select name=\"odsjek-$ops\">\n";
 
+			$spisak_predmeta_drugi_studij = array();
+			$drugi_studiji = array();
+
 			$q46 = myquery("select tipstudija from studij where id=$studij");
 			$studij_ts = intval(mysql_result($q46,0,0));
 
-			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
+			$q47 = myquery("select ps.predmet, p.naziv, s.kratkinaziv, s.id from plan_studija as ps, studij as s, predmet as p where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.studij=s.id and s.tipstudija=$studij_ts and ps.predmet=p.id order by s.kratkinaziv, ps.semestar, p.naziv");
 			while ($r47 = mysql_fetch_row($q47)) {
+				$drugi_studiji[$r47[3]]=$r47[2];
+
 				// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
 				$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r47[0]");
 				if (mysql_result($q48,0,0)>0) continue;
 
 				// Ne nudimo predmete koje je student eventualno vec polozio
 				$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r47[0] and ocjena>5");
-				if (mysql_result($q49,0,0)>0) continue;
+//				if (mysql_result($q49,0,0)>0) continue;
 
-				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+				$spisak_predmeta_drugi_studij[$r47[0]] = "$r47[1] ($r47[2])";
+
+				//print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
 			}
+
+			// A sada i izborni
+			$q51 = myquery("select ps.predmet, s.kratkinaziv, s.id from plan_studija as ps, studij as s where ps.godina_vazenja=$najnoviji_plan and ps.studij!=$studij and ps.semestar=$semestar and ps.obavezan=0 and ps.studij=s.id and s.tipstudija=$studij_ts order by s.kratkinaziv");
+			while ($r51 = mysql_fetch_row($q51)) {
+				$drugi_studiji[$r51[2]]=$r51[1];
+
+				$q52 = myquery("select izs.predmet, p.naziv from izborni_slot as izs, predmet as p where izs.id=$r51[0] and izs.predmet=p.id order by p.naziv");
+				while ($r52 = mysql_fetch_row($q52)) {
+					// Ne uzimamo u obzir predmete koji su zajednicki za vise studija, pa ce ih student svakako slusati ili ih je vec slusao
+					$q48 = myquery("select count(*) from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and obavezan=1 and predmet=$r52[0]");
+					if (mysql_result($q48,0,0)>0) continue;
+
+					// Ne nudimo predmete koje je student eventualno vec polozio
+					$q49 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r52[0] and ocjena>5");
+//					if (mysql_result($q49,0,0)>0) continue;
+
+					$spisak_predmeta_drugi_studij[$r52[0]] = "$r52[1] ($r51[1])";
+				}
+
+//				print "<option value=\"$r47[0]\">$r47[1] ($r47[2])</option>\n";
+			}
+
+			sort($drugi_studiji);
+			//sort($spisak_predmeta_drugi_studij);
+			foreach ($drugi_studiji as $studij_id => $studij_naziv) {
+				foreach ($spisak_predmeta_drugi_studij as $predmet_id => $predmet_naziv) {
+					if (strstr($predmet_naziv, "($studij_naziv)")) {
+						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+					}
+				}
+			}
+
 			print "</select><br>\n";
 		}
 		$ops=$slot;
