@@ -297,7 +297,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		copy ($_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/$postavka_file");
 	}
 
-	if (intval($_POST['attachment']) == 1) {
+	if (intval($_POST['attachment']) == 1 && isset($_POST['dozvoljene_eks'])) {
 		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
 	} else {
 		$dozvoljene_ekstenzije_selected = null;

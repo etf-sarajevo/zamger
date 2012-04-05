@@ -3,6 +3,7 @@
 function common_notifikacija() {
 	global $userid;
 	$tip = $_GET['tip'];
+	$vrijeme_poruke = array();
 
 	if ($tip==3){
 		$q243 = myquery("INSERT INTO log (vrijeme, userid, dogadjaj, nivo) VALUES 

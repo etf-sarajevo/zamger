@@ -82,7 +82,7 @@ $sta = my_escape($_REQUEST['sta']);
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
-if ($_POST['loginforma'] == "1") {
+if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1") {
 	$login = my_escape($_POST['login']);
 	$pass = $_POST['pass'];
 	
@@ -113,9 +113,10 @@ if ($_POST['loginforma'] == "1") {
 // SU = switch user
 
 if ($userid>0) {
-	$su = intval($_REQUEST['su']);
+	$su = $unsu = 0;
+	if (isset($_REQUEST['su'])) $su = intval($_REQUEST['su']);
 	if ($su==0) $su = intval($_SESSION['su']);
-	$unsu = intval($_REQUEST['unsu']);
+	if (isset($_REQUEST['unsu'])) $unsu = intval($_REQUEST['unsu']);
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
 		// Provjeravamo da li je korisnik admin
@@ -259,7 +260,7 @@ if ($found==1 && $template==0 && $greska=="") {
 
 
 // Savjet dana
-if ($_POST['loginforma'] == "1" && $userid>0) {
+if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1" && $userid>0) {
 	// Savjet dana
 	$nasao=0;
 	foreach ($registry as $r) {

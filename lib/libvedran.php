@@ -40,7 +40,7 @@
 
 // ------------ FUNKCIJE
 
-if (!$_lv_) $_lv_ = array(); // Prevent PHP warnings 
+if (!isset($_lv_)) $_lv_ = array(); // Prevent PHP warnings 
 
 
 function dbconnect() {
