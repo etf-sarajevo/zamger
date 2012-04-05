@@ -26,10 +26,6 @@ function student_zavrsni()  {
 	$linkprefix = "?sta=student/zavrsni&predmet=$predmet&ag=$ag";
 	$akcija = $_REQUEST['akcija'];
 	$id = intval($_REQUEST['id']);
-
-	?>
-	<LINK href="css/zavrsni.css" rel="stylesheet" type="text/css">
-	<?
 	
 	if ($akcija == 'prijava') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
