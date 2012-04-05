@@ -575,7 +575,7 @@ function akcijaslanje() {
 				return;
 			}
 
-			unlink ($puni_put);
+			if (file_exists($puni_put)) unlink ($puni_put);
 			rename($program, $puni_put);
 
 			// Escaping za SQL

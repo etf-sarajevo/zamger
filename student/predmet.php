@@ -36,7 +36,7 @@ if (mysql_num_rows($q10)<1) {
 }
 
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
-if (mysql_num_rows($q10)<1) {
+if (mysql_num_rows($q15)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 	biguglyerror("Nepoznata akademska godina");
 	return;
@@ -369,6 +369,7 @@ $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentsk
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
 	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
+	$idovi_zadaca = array();
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];

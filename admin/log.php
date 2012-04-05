@@ -407,7 +407,7 @@ foreach ($eventshtml as $logid => $event) {
 
 		if ($userid==0) {
 			$imeprezime = "ANONIMNI PRISTUPI";
-			$usrimg="";
+			$usrimg="zad_bug";
 
 		} else {
 			$q202 = myquery("select ime, prezime from osoba where id=$userid");
