@@ -376,6 +376,7 @@ CREATE TABLE IF NOT EXISTS `cas` (
   `labgrupa` int(11) NOT NULL DEFAULT '0',
   `nastavnik` int(11) NOT NULL DEFAULT '0',
   `komponenta` int(11) NOT NULL,
+  `kviz` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
@@ -710,6 +711,78 @@ CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
 --
 -- Dumping data for table `konacna_ocjena`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kviz`
+--
+
+CREATE TABLE IF NOT EXISTS `kviz` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `vrijeme_pocetak` datetime NOT NULL,
+  `vrijeme_kraj` datetime NOT NULL,
+  `labgrupa` int(11) NOT NULL,
+  `ip_adrese` text collate utf8_slovenian_ci NOT NULL,
+  `prolaz_bodova` float NOT NULL,
+  `broj_pitanja` int(11) NOT NULL,
+  `trajanje_kviza` int(11) NOT NULL COMMENT 'u sekundama',
+  `aktivan` tinyint(1) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=112 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kviz_odgovor`
+--
+
+CREATE TABLE IF NOT EXISTS `kviz_odgovor` (
+  `id` int(11) NOT NULL auto_increment,
+  `kviz_pitanje` int(11) NOT NULL,
+  `tekst` text collate utf8_slovenian_ci NOT NULL,
+  `tacan` tinyint(1) NOT NULL,
+  `vidljiv` tinyint(1) NOT NULL default '1',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1867 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kviz_pitanje`
+--
+	
+CREATE TABLE IF NOT EXISTS `kviz_pitanje` (
+  `id` int(11) NOT NULL auto_increment,
+  `kviz` int(11) NOT NULL,
+  `tip` enum('mcsa','mcma','tekstualno') collate utf8_slovenian_ci NOT NULL default 'mcsa',
+  `tekst` text collate utf8_slovenian_ci NOT NULL,
+  `bodova` float NOT NULL default '1',
+  `vidljivo` tinyint(1) NOT NULL default '1',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1193 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kviz_student`
+--
+
+CREATE TABLE IF NOT EXISTS `kviz_student` (
+  `student` int(11) NOT NULL,
+  `kviz` int(11) NOT NULL,
+  `dovrsen` tinyint(1) NOT NULL default '0',
+  `bodova` float NOT NULL,
+  `vrijeme_aktivacije` datetime NOT NULL,
+  PRIMARY KEY  (`student`,`kviz`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------

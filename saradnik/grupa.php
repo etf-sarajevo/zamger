@@ -143,9 +143,11 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 			zamgerlog("nije definisana komponenta za prisustvo na pp$predmet", 3);
 			return;
 		}
-	
-		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta");
-		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
+
+		$kviz = intval($_REQUEST['kviz']);
+
+		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta, kviz=$kviz");
+		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa and kviz=$kviz order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
 		$cas_id = mysql_result($q70,0,0);
 	
 		// Max bodova za komponentu
@@ -176,6 +178,13 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 					$q97 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$maxbodova");
 				}
 			}
+		}
+		
+		// Ako je odabrano "sa kvizom" kreiramo kviz
+		if ($kviz > 0) {
+			$q98 = myquery("select trajanje_kviza from kviz where id=$kviz");
+			$trajanje = mysql_result($q98,0,0)*2;
+			$q99 = myquery("update kviz set vrijeme_pocetak=NOW(), vrijeme_kraj=NOW() + INTERVAL $trajanje SECOND, labgrupa=$labgrupa where id=$kviz");
 		}
 	
 		zamgerlog("registrovan cas c$cas_id",2); // nivo 2: edit
@@ -350,6 +359,28 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		<input type="radio" name="prisustvo" value="0">Svi odsutni
 		<!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type ="radio" name="prisustvo" value="2" CHECKED>NP (Nije poznato) -->
+		<?
+		
+		// Kreiraj čas sa kvizom
+		$q160 = myquery("select smp.aktivan from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.studentski_modul=sm.id and sm.modul='student/kviz'");
+		if (mysql_num_rows($q160)>0 && mysql_result($q160,0,0)==1) {
+			?>
+			<br>
+			Sa kvizom: <select name="kviz"><option value="0">/</option>
+			<?
+			
+			$q170 = myquery("select id,naziv from kviz where predmet=$predmet and akademska_godina=$ag and aktivan=1");
+			while ($r170 = mysql_fetch_row($q170)) {
+				print "<option value=\"$r170[0]\">$r170[1]</option>\n";
+			}
+			
+			?>
+			</select>
+			<?
+		}
+		
+		
+		?>
 	
 	</form>
 	</td></tr></table>
@@ -454,8 +485,9 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$prisustvo_zaglavlje = "";
 	$prisustvo_id_array[] = $r195[0];
 	$cas_id_array = array();
+	$cas_kviz_array = array();
 
-	$q200 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum");
+	$q200 = myquery("SELECT id,datum,vrijeme,kviz FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum");
 	while ($r200 = mysql_fetch_row($q200)) {
 		$cas_id = $r200[0];
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
@@ -466,6 +498,36 @@ while ($r195 = mysql_fetch_row($q195)) {
 		$cas_id_array[] = $cas_id;
 		$casova++;
 		$minw += 40;
+
+		// Kviz
+		if ($r200[3] > 0) {
+			$cas_kviz[$cas_id] = $r200[3];
+
+			// Odredjujemo bodove za prolaz
+			$q202 = myquery("select prolaz_bodova from kviz where id=$r200[3]");
+			$cas_kviz_prolaz[$cas_id] = mysql_result($q202,0,0);
+			
+			// Ako sam nekom drugom casu ranije dao ovaj id, moram ga obrisati
+			foreach ($cas_id_array as $cid) {
+				if ($cid == $cas_id) continue;
+				if ($cas_kviz[$cid] == $r200[3]) $cas_kviz[$cid]=0;
+			}
+			
+		} else {
+			// Ako kviz nije unesen u bazu, tražimo najbliži
+			$q203 = myquery("select id, prolaz_bodova from kviz where predmet=$predmet and akademska_godina=$ag and vrijeme_pocetak>='$r200[1]' and vrijeme_pocetak<'$r200[1]' + interval 5 day order by vrijeme_pocetak desc");
+			while ($r203 = mysql_fetch_row($q203)) {
+				// Da li je već bio?
+				$bio = false;
+				foreach ($cas_id_array as $cid) {
+					if ($cas_kviz[$cid] == $r203[0]) $bio=true;
+				}
+				if ($bio) continue;
+				$cas_kviz[$cas_id] = $r203[0];
+				$cas_kviz_prolaz[$cas_id] = $r203[1];
+				break;
+			}
+		}
 	}
 	$prisustvo_casovi[$r195[0]] = $cas_id_array;
 //	$prisustvo_maxbodova[$r195[0]] = $r195[2];
@@ -667,19 +729,31 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	if (count($cas_id_array)==0) $prisustvo_ispis .= "<td>&nbsp;</td>";
 	$odsustvo=0;
 	foreach ($cas_id_array as $cid) {
+		// Postoji li kviz za ovaj čas?
+		$uspjeh_na_kvizu = "";
+		if ($cas_kviz[$cid] > 0) {
+			$q317 = myquery("select dovrsen, bodova from kviz_student where student=$stud_id and kviz=".$cas_kviz[$cid]);
+			if (mysql_num_rows($q317)>0) {
+				if (mysql_result($q317,0,0)==1 && mysql_result($q317,0,1)>=$cas_kviz_prolaz[$cid])
+					$uspjeh_na_kvizu='<img src="images/16x16/zad_ok.png" width="8" height="8">';
+				else
+					$uspjeh_na_kvizu='<img src="images/16x16/brisanje.png" width="8" height="8">';
+			}
+		}
+
 		$q320 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cid");
 		if (mysql_num_rows($q320)>0) {
 			if (mysql_result($q320,0,0) == 2) { 
-				$prisustvo_ispis .= "<td bgcolor=\"#FFE303\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NP</div></td>";
+				$prisustvo_ispis .= "<td bgcolor=\"#FFE303\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NP</div> $uspjeh_na_kvizu</td>";
 			} else if(mysql_result($q320,0,0) == 0){ 
-				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NE</div></td>";
+				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">NE</div> $uspjeh_na_kvizu</td>";
 				$odsustvo++;
 			} else if( mysql_result($q320,0,0) == 1){
-				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">DA</div></td>";
+				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\">DA</div> $uspjeh_na_kvizu</td>";
 			}
 			//$ocj = mysql_result($q14,0,1);
 		} else {
-			$prisustvo_ispis .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\"> / </div></td>";
+			$prisustvo_ispis .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\"> / </div> $uspjeh_na_kvizu</td>";
 		}
 	}
 

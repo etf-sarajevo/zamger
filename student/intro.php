@@ -137,6 +137,26 @@ while ($r17 = mysql_fetch_row($q17)) {
 }*/
 
 
+// Kvizovi
+$q18 = myquery("select k.id, k.naziv, UNIX_TIMESTAMP(k.vrijeme_pocetak), k.labgrupa, k.predmet, k.akademska_godina, p.naziv from kviz as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=k.predmet and pk.predmet=p.id and pk.akademska_godina=k.akademska_godina and k.vrijeme_pocetak<NOW() and k.vrijeme_kraj>NOW() and k.aktivan=1");
+while ($r18 = mysql_fetch_row($q18)) {
+	$labgrupa = $r18[3];
+	$predmet = $r18[4];
+	$ag = $r18[5];
+
+	if ($labgrupa > 0) { // definisana je labgrupa
+		$nasao = false;
+		$q19 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+		while ($r19 = mysql_fetch_row($q19)) {
+			if ($r19[0] == $labgrupa) $nasao = true;
+		}
+		if (!$nasao) continue; // nije ta labgrupa
+	}
+	
+	$code_poruke["kv".$r18[0]] = "<b>$r18[6]:</b> Otvoren je kviz <a href=\"?sta=student/kviz&predmet=$predmet&ag=$ag\">$r18[1]</a><br/><br/>\n";
+	$vrijeme_poruke["kv".$r18[0]] = $r18[2];
+}
+
 
 // Sortiramo po vremenu
 arsort($vrijeme_poruke);

@@ -26,6 +26,8 @@ array("student/ugovoroucenju", "Ugovor o učenju", "Ugovor o učenju", "S", "1",
 array("student/ugovoroucenjupdf", "Ugovor o učenju (PDF)", "Ugovor o učenju (PDF)", "S", "2", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
 array("student/kolizijapdf", "Kolizija (PDF)", "Kolizija (PDF)", "S", "2", "0"),
+array("student/kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "1", "0"), 
+array("student/popuni_kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "2", "0"), 
 
 array("saradnik/intro", "Predmeti i grupe za saradnike", "Predmeti", "N", "1", "0"),
 array("saradnik/grupa", "Pregled grupe", "Pregled grupe", "N", "1", "0"),
@@ -45,9 +47,8 @@ array("nastavnik/ocjena", "Konačna ocjena", "Konačna ocjena", "N", "1", "0"),
 array("nastavnik/unos_ocjene", "Unos konačne ocjene", "Konačna ocjena", "NB", "1", "1"),
 array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
 array("nastavnik/raspored", "Raspored", "Raspored", "N", "1", "0"),
-// Hani Zahirovic- modul za definisanje tipa predmeta
-
 array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1", "0"),
+array("nastavnik/kvizovi", "Kvizovi (beta)", "Kvizovi (beta)", "N", "1", "0"),
 
 array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
 array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
