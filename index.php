@@ -313,7 +313,7 @@ if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1" && $userid>0) {
 			<a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
 			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" align="center">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
-			<a href="http://f.etf.unsa.ba:3000/projects/zamger/issues" target="_new">
+			<a href="http://f.etf.unsa.ba/redmine/projects/zamger/issues/new" target="_new">
 			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" align="center">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
 			</td>
@@ -599,7 +599,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2011 Vedran Ljubović i drugi<br/>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2012 Vedran Ljubović i drugi<br/>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
