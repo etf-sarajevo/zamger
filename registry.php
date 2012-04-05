@@ -86,6 +86,7 @@ array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistik
 array("izvjestaj/historija", "Historija studenta", "Historija studenta", "BA", "0", "0"),
 array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
+array("izvjestaj/anketa_sumarno", "Sumarne statistike ankete", "Anketa sumarno", "BA", "0", "0"),
 array("izvjestaj/anketa_komparacija", "Poredjenje rezultata ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 array("izvjestaj/prijave", "Štampanje prijava", "Štampanje prijava", "B", "2", "0"),

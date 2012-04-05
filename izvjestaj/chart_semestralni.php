@@ -25,12 +25,13 @@ function izvjestaj_chart_semestralni() {
 	
 	while ($predmet = mysql_fetch_row($result409)) {
 		if ($studij==-1)
-			$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
+			$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
 		else
-			$q6730 = myquery("SELECT avg(b.izbor_id) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' and studij=$studij");
+			$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' AND a.studij=$studij");
+		if (mysql_result($q6730,0,2)==0) continue; // preskačemo ankete bez rezultata
 		$data[$l]=mysql_result($q6730,0,0);
 		$predmeti[$predmet[1]] =$data[$l] ;
-		
+		$stddev[$predmet[1]]=mysql_result($q6730,0,1);
 		$l++;
 	}
 	
@@ -38,11 +39,11 @@ function izvjestaj_chart_semestralni() {
 	// izbacio prosjek ali ako se odkomentarise sljedeca linija koda dodaje se jos jedan dodatni bar u graf sa srednjom vrijednošću za to pitanje
 	// $predmeti['AVG']=$prosjek;
 	
-	crtaj($predmeti,$title);
+	crtaj($predmeti,$title,$stddev);
 }
 
 
-function crtaj ($data,$title) {
+function crtaj($data,$title,$stddev) {
 	
 	$nval = sizeof($data); // broj vrijednosti
 	
@@ -149,6 +150,20 @@ function crtaj ($data,$title) {
 		$ypos = $ymin-imagefontheight($labelfont)-1;
 
 		imagestring($image, $labelfont, $xpos, $ypos, $yval, $black);
+		$sd = $stddev[$xval];
+//		imagestring($image, $labelfont, $xpos, $ypos, $sd, $black);
+/*
+		// Error bars
+		$sd = $stddev[$xval];
+		$xmid = ($xmin+$xmax)/2;
+		$ytop = $ymin+1 - $sd*$yscale;
+		$ybtm = $ymin+1 + $sd*$yscale;
+		
+		imagesetthickness($image, 2);
+		imageline($image, $xmid, $ytop, $xmid, $ybtm, $red);
+		imageline($image, $xmid-5, $ytop, $xmid+5, $ytop, $red);
+		imageline($image, $xmid-5, $ybtm, $xmid+5, $ybtm, $red);*/
+
 	}
 	
 	// flush image

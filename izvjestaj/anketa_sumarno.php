@@ -1,40 +1,78 @@
 <?
 
-// IZVJESTAJ/ANKETA - stranica koja generise izvjestaje za predmete koje mogu pregledati profesori ili clanovi studentske sluzbe
+// IZVJESTAJ/ANKETA_SUMARNO - sumarni izvještaj za anketu
 
-function izvjestaj_anketa(){
+function izvjestaj_anketa_sumarno(){
 
-	global $userid,$user_siteadmin,$user_studentska, $user_student, $user_nastavnik;
-	global $conf_skr_naziv_institucije_genitiv;
+	?><p>Univerzitet u Sarajevu<br/>
+	Elektrotehnički fakultet Sarajevo</p>
+	<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
+	<?
 
-	$predmet = intval($_REQUEST['predmet']);
-	$ag = intval($_REQUEST['ag']);
 	$anketa = intval($_REQUEST['anketa']);
+	
+	$q10 = myquery("select UNIX_TIMESTAMP(aa.datum_otvaranja),UNIX_TIMESTAMP(aa.datum_zatvaranja),aa.naziv,ag.naziv from anketa_anketa as aa, akademska_godina as ag where aa.id=$anketa and aa.akademska_godina=ag.id");
+	if (mysql_num_rows($q10)<1) {
+		biguglyerror("Nepostojeća anketa!");
+		zamgerlog("Pristup nepostojećoj anketi $anketa",3);
+		return;
+	}
+	
+	
+	?>
+	<h2>Sumarni izvještaj za anketu <?=mysql_result($q10,0,2)?> (godina <?=mysql_result($q10,0,3)?>)</h2>
+	<?
+	
+	if (mysql_result($q10,0,0)>time()) {
+		print "<p><font color=\"red\">Anketa još uvijek nije održana! Datum otvaranja je u budućnosti.</font></p>\n";
+	}
+	else if (mysql_result($q10,0,1)>time()) {
+		print "<p><font color=\"red\">Anketa je još uvijek otvorena! Datum zatvaranja je u budućnosti.</font></p>\n";
+	}
+	
+	
+	// Glavna tabela
+	?>
+	<table cellspacing="0" border="1">
+	<tr><td>Predmet</td><td>Uk. studenata</td><td>Nije popunilo anketu</td><td>Poništilo anketu</td><td>Učestvovalo u anketi</td></tr>
+	<?
+	
+	$q20 = myquery("select DISTINCT p.id, p.naziv, ar.studij, ar.semestar, ar.akademska_godina, s.kratkinaziv from anketa_rezultat as ar, predmet as p, studij as s where ar.anketa=$anketa and ar.zavrsena='Y' and ar.predmet=p.id and ar.studij=s.id order by s.tipstudija, s.kratkinaziv, ar.semestar, p.naziv");
+	while ($r20 = mysql_fetch_row($q20)) {
+		print "<tr><td>$r20[1] ($r20[5])</td>\n";
+		
+		$q30 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$r20[0] and pk.akademska_godina=$r20[4]");
+		$broj_studenata = mysql_result($q30,0,0);
+		print "<td>$broj_studenata</td>\n";
+		
+		$q40 = myquery("select id from anketa_rezultat where anketa=$anketa and zavrsena='Y' and predmet=$r20[0]");
+		$broj_neuradjenih = $broj_studenata - mysql_num_rows($q40);
+		print "<td>$broj_neuradjenih (".procenat($broj_neuradjenih, $broj_studenata).")</td>\n";
+		
+		$ponistenih = $uradjenih = 0;
+		while ($r40 = mysql_fetch_row($q40)) {
+			$q50 = myquery("select count(*) from anketa_odgovor_rank where rezultat=$r40[0]"); // TODO: dodati i ostale tipove pitanja
+			if (mysql_result($q50,0,0)==0) $ponistenih++;
+			else $uradjenih++;
+		}
+
+		print "<td>$ponistenih (".procenat($ponistenih, $broj_studenata).")</td>\n";
+
+		print "<td>$uradjenih (".procenat($uradjenih, $broj_studenata).")</td>\n";
+		
+		print "</tr>\n";
+	}
+	print "</table>\n";
+	return;
 
 	// naziv predmeta
 	$q10 = myquery("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag; ");
 	$naziv_predmeta = mysql_result($q10,0,0);
 
+	// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
 	if (!$user_siteadmin && !$user_studentska) {
-		$pristup_nastavnik = $pristup_student = false;
-
-		// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
-		if ($user_nastavnik) {
-			$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q20)>0) {
-				$pristup_nastavnik = true;
-			}
-		}
-		
-		// pravo pristupa studentima za ankete 
-		if (!$pristup_nastavnik && $user_student) {
-			$q20 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-			if (mysql_result($q20,0,0)>0) {
-				$pristup_student = true;
-			}
-		}
-		
-		if (!$pristup_nastavnik && !$pristup_student) {
+		$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q20)==0) {
 			zamgerlog("nastavnik/izvjestaj_anketa privilegije",3);
 			biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
 			return;
@@ -45,12 +83,11 @@ function izvjestaj_anketa(){
 	$q30 = myquery("select naziv from akademska_godina where id=$ag");
 	$naziv_ak_god = mysql_result($q30,0,0);
 	
-	// da li je dat ID ankete kao parametar
+	// da li postoji anketa?
 	if ($anketa>0) 
 		$q40 = myquery("select id, aktivna from anketa_anketa where akademska_godina= $ag and id=$anketa");
 	else {
-		// ...nije, uzimamo zadnju anketu na predmetu za koju postoje rezultati
-		$q40 = myquery("select aa.id, aa.aktivna from anketa_anketa as aa where aa.akademska_godina=$ag and (select count(*) from anketa_rezultat as ar where ar.anketa=aa.id and ar.predmet=$predmet)>0 order by id desc");
+		$q40 = myquery("select aa.id, aa.aktivna from anketa_anketa as aa where aa.akademska_godina=$ag and (select count(*) from anketa_rezultat as ar where ar.anketa=aa.id and ar.predmet=$predmet)>0 order by id desc"); // prikaži anketu koju je neko popunjavao
 		if (mysql_num_rows($q40)<1)
 			$q40 = myquery("select id, aktivna from anketa_anketa where akademska_godina=$ag");
 	}
@@ -65,19 +102,12 @@ function izvjestaj_anketa(){
 	if (!$user_siteadmin && !$user_studentska && $aktivna==1) {
 		?>
 		<h2>Pristup rezultatima ankete nije moguć</h2>
-		<p><?=$pristup_student?> <?=$userid?> Rezultatima ankete se može pristupiti tek nakon isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
+		<p>Odlukom uprave <?=$conf_skr_naziv_institucije_genitiv?>, nastavni ansambl ne može pristupiti rezultatima ankete do isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
 		<?
 		return;
 	}
 
 	if ($_REQUEST['komentar'] == "da") {
-		// Studenti ne mogu vidjeti komentare
-		if ($pristup_student) {
-			zamgerlog("nastavnik/izvjestaj_anketa student pristupa komentarima",3);
-			biguglyerror("Studenti nemaju pravo pristupa komentarima");
-			return;
-		}
-	
 		// ---------------------------------------------   IZVJESTAJ ZA KOMENTARE ---------------------------------------------
 		
 		$limit = 5; // broj kometara prikazanih po stranici
@@ -205,9 +235,8 @@ function izvjestaj_anketa(){
 			
 			$i++;
 		}
-
-		// Prosječan broj bodova na svim pitanjima
 		$prosjek = array_sum($prosjek)/count($prosjek);
+
 
 		
 		// PITANJA TIPA IZBOR
