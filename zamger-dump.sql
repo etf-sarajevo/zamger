@@ -1144,8 +1144,8 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
   `treba_brisati` tinyint(1) NOT NULL DEFAULT '0',
-  `strucni_stepen` int(11) NOT NULL,
-  `naucni_stepen` int(11) NOT NULL,
+  `strucni_stepen` int(11) NOT NULL DEFAULT '5', --- 5 = srednja strucna sprema
+  `naucni_stepen` int(11) NOT NULL DEFAULT '6', --- 6 = bez naucnog stepena
   `slika` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
