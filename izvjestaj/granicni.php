@@ -10,9 +10,84 @@
 // v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
 // v4.0.9.4 (2009/09/14) + Izmjene u bazi su izazvale da predmeti nisu bili ispravno sortirani; predmeti su sada sortirani po studiju i semestru, a studenti po imenu
 
-// FIXME: Ovaj izvjestaj treba prebaciti na plan studija zbog izbornih predmeta
 
 
+// Funkcija koja provjerava da li je student položio ili pao predmet
+// Vraća:
+//    0 - student je položio predmet u datoj akademskoj godini ili nekoj ranijoj
+//    1 - studentu fali jedan parcijalni ili jedan usmeni ispit na predmetu u datoj akademskoj godini
+//    2 - studentu fali više od jednog parcijalnog ispita na predmetu u datoj akademskoj godini
+//    3 - student nije slušao predmet u datoj akademskoj godini niti ga je položio ranije
+// (ne bi se smjelo desiti, osim ako student uopšte nije na studiju?)
+// TODO: prebaciti u lib/manip ?
+function pao_predmet($student, $predmet, $ak_god) {
+	// Da li je student ikada položio predmet
+	$q10 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+	if (mysql_result($q10,0,0)>0) return 0;
+
+	// Da li student sluša predmet u datoj akademskoj godini?
+	$qa20 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ak_god");
+	if (mysql_result($qa20,0,0)==0) return 3;
+
+
+	// Statistika za parcijalne ispite
+	$nepolozenih_ispita=0;
+
+	// Koje sve vrste ispita postoje na predmetu?
+	// Integralni i usmeni nas ne interesuju
+	$q100 = myquery("select k.id, k.prolaz from tippredmeta_komponenta as tpk, predmet as p, komponenta as k where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=1 and k.gui_naziv != 'Usmeni'"); 
+	$broj_vrsta_ispita = mysql_num_rows($q100);
+	while ($r100=mysql_fetch_row($q100)) {
+		$prolaz = $r100[1];
+
+		// Da li je student položio tu vrstu ispita?
+		$q110 = myquery("select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ak_god and i.komponenta=$r100[0] and i.id=io.ispit and io.student=$student and io.ocjena>=$prolaz");
+		if (mysql_result($q110,0,0)==0) { 
+			$nepolozenih_ispita++;
+		}
+	}
+
+	if ($nepolozenih_ispita==1) {
+		// Postoje dvije mogućnosti
+		//    1. Student je položio ispit integralno, ali nema ocjenu, što znači da mu fali usmeni ispit
+		//    2. Student nije položio ispit integralno, fali mu jedan parcijalni ispit
+		return 1;
+	}
+
+	else if ($nepolozenih_ispita==0) {
+		// Da li su uopšte definisane komponente ispita?
+		if ($broj_vrsta_ispita>0) {
+			// Student je položio sve predviđene tipove ispita, ali nema konačnu ocjenu
+			// Pretpostavljamo da mu fali usmeni ispit
+			return 1;
+		} else {
+			// U sistemu bodovanja predmeta uopšte nisu predviđeni ispiti
+			// Ne možemo ništa osim proglasiti da student nije položio predmet
+			return 2;
+		}
+	}
+
+	else {
+		// Studentu fali više od jedne parcijale, ispiti nisu održani ili nisu uneseni u Zamger
+		// Mi tu ne možemo ništa osim proglasiti da student nije položio predmet
+		return 2;
+	}
+}
+
+
+
+// Vraća naziv predmeta iz cache-a na osnovu IDa
+function naziv_predmeta_cache($id_predmeta) {
+	static $nazivi_predmeta = array();
+	if ($nazivi_predmeta[$id_predmeta]) return $nazivi_predmeta[$id_predmeta];
+	$q10 = myquery("select naziv from predmet where id=$id_predmeta");
+	$nazivi_predmeta[$id_predmeta] = mysql_result($q10,0,0);
+	return $nazivi_predmeta[$id_predmeta];
+}
+
+
+
+// Početak izvještaja
 
 function izvjestaj_granicni() {
 
@@ -20,9 +95,392 @@ function izvjestaj_granicni() {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 
 <?
 
+$varijanta = intval($_REQUEST['varijanta']);
+if ($varijanta==1) {
+
+
+// Druga varijanta izvjestaja
+
+$ak_god = intval($_REQUEST['akademska_godina']);
+if ($ak_god==0) {
+	// Aktuelna godina
+	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = mysql_result($q10,0,0);
+	$ak_god_naziv = mysql_result($q10,0,1);
+} else {
+	$q10 = myquery("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = mysql_result($q10,0,0);
+}
+
+// Daj spisak studenata, a ne sumarne statistike
+$prikaz = $_REQUEST['prikaz'];
+
+$svi_studenti = intval($_REQUEST['svi_studenti']);
+
+$limit_studij = $limit_godina = 0;
+if ($_REQUEST['studij_godina'] == "izbor") {
+	$limit_studij = intval($_REQUEST['studij']);
+	$limit_godina = intval($_REQUEST['godina_studija']);
+}
+
+global $limit_predmet, $limit_parcijalni, $douslova;
+$limit_predmet = $limit_parcijalni = -1;
+if ($_REQUEST['vrste_granicnih'] == "izbor") {
+	$limit_predmet = intval($_REQUEST['predmeta']);
+	$limit_parcijalni = intval($_REQUEST['parcijalnih']);
+}
+
+$ispis_predmeta=array();
+
+
+
+// Naslov
+
+?>
+<h2>Studenti po broju položenih predmeta - <?=$ak_god_naziv?></h2>
+<p>
+<?
+
+if ($limit_studij > 0) {
+	$q15 = myquery("select naziv from studij where id=$limit_studij");
+	print "Studij: ".mysql_result($q15,0,0).",\n";
+}
+if ($limit_studij < 0) {
+	print "Svi studiji ".(-$limit_studij).". ciklusa,\n";
+}
+if ($limit_godina > 0) {
+	print "$limit_godina. godina studija<br>\n";
+}
+if ($limit_predmet>-1 && $limit_parcijalni>-1) {
+	print "Studenti kojima je ostalo $limit_predmet nepoloženih predmeta integralno i $limit_parcijalni parcijalno";
+	if ($_REQUEST['douslova']) print " <b>do uslova</b>";
+}
+
+print "</p>";
+
+// Spisak studenata po studiju
+
+$q20 = myquery("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+
+if (mysql_num_rows($q20)==0) 
+	// Nema nikog u parnom semestru, probavamo neparni
+	$q20 = myquery("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+
+$studij_id=-1; $plan_studija=-1; $semestar=-1;
+$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
+$nazivi_predmeta=array();
+
+while ($r20 = mysql_fetch_row($q20)) {
+	// Provjeravam limite
+	if ($limit_studij != 0 && $limit_studij != $r20[6] && $limit_studij != - $r20[8]) continue;
+	if ($limit_godina != 0 && $limit_godina != ceil($r20[2]/2)) continue;
+
+	$old_studij_id = $studij_id;
+	$studij_id = $r20[6];
+	$old_plan_studija = $plan_studija;
+	$ss_plan_studija = $r20[7];
+	$old_semestar = $semestar;
+	$semestar = $r20[2];
+	$godina = ceil($semestar/2);
+	$ciklus_studija = $r20[8];
+	$semestara_na_ciklusu = $r20[9];
+
+//print "ciklus $ciklus_studija limit $limit_studij uslov ".($limit_studij==-$ciklus_studija)." godina $godina<br>";
+
+
+	// Ako se promijenio studij ili semestar, ispisujemo statistiku
+	if (($studij_id != $old_studij_id || $plan_studija != $old_plan_studija || $semestar != $old_semestar) &&
+		($old_studij_id!=-1 && $old_plan_studija != -1 && $old_semestar != -1)) {
+
+		if ($prikaz=="po_studiju") {
+			// Da li se uzima u obzir parametar "do uslova"?
+			$pdouslova=0;
+			if ($_REQUEST['douslova'] && $old_semestar%2==0)
+//				if ($old_semestar != $semestara_na_ciklusu)
+				// Uslov izbacujemo jer na završnom semestru postoji završni rad
+					$pdouslova=1;
+
+			// Ispisujemo podatke za svakog pojedinačnog studenta
+			?>
+			<p><b><?=$studij?>, <?=($old_semestar)?>. semestar</b></p>
+			<table>
+			<tr bgcolor="#CCCCCC"><td><b>Student</b></td><td><b>Broj nepoloženih / Broj parcijalnih</b></td><td><b>Nepoloženi predmeti</b></td><td><b>Parcijalni predmeti</b></td></tr>
+			<?
+			for ($i=0; $i<=$max_nepolozenih; $i++) {
+				for ($j=0; $j<=$max_parcijalnih; $j++) {
+					if ($limit_predmet>=0 && $limit_parcijalni>=0 && $i+$j != $limit_predmet+$limit_parcijalni+$pdouslova || $j<$limit_parcijalni) continue;
+					if ($koliko_nepolozenih[$i][$j]>0) {
+						print $ispis_nepolozenih[$i][$j];
+					}
+				}
+			}
+			$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0; $ispis_nepolozenih=array();
+
+			print "</table>\n";
+
+		} else if ($prikaz=="sumarno") {
+			?>
+			<p><b><?=$studij?>, <?=$old_semestar?>. semestar</b></p>
+			<table>
+			<tr bgcolor="#CCCCCC"><td><b>Broj predmeta koji nisu položeni</b></td><td><b>Broj studenata</b></td></tr>
+			<?
+
+			for ($i=0; $i<=$max_nepolozenih; $i++) {
+				if ($i==0) {
+					?>
+					<tr><td>Sve položeno</td><td><?=$koliko_nepolozenih[0][0]?> studenata</td></tr>
+					<tr><td>Jedan parcijalni ili završni ispit</td><td><?=$koliko_nepolozenih[0][1]?> studenata</td></tr>
+					<tr><td>Dva parcijalna ili završna ispita</td><td><?=$koliko_nepolozenih[0][2]?> studenata</td></tr>
+					<?
+				} else if ($i==1) {
+					?>
+					<tr><td>Jedan čitav predmet</td><td><?=$koliko_nepolozenih[1][0]?> studenata</td></tr>
+					<tr><td>Jedan predmet i jedan parcijalni ili završni ispit</td><td><?=$koliko_nepolozenih[1][1]?> studenata</td></tr>
+					<?
+				} else if ($koliko_nepolozenih[$i][0]>0) {
+					?>
+					<tr><td><?=$i?>. predmeta</td><td><?=$koliko_nepolozenih[$i][0]?> studenata</td></tr>
+					<?
+				}
+			}
+
+			if ($old_semestar%2==0) {
+				?>
+				<tr><td>UKUPNO DALO USLOV:</td><td><?= ($koliko_nepolozenih[0][0]+$koliko_nepolozenih[0][1]+$koliko_nepolozenih[1][0])?> studenata</td></tr>
+				<?
+			}
+			?>
+			<tr><td>UKUPNO:</td><td><?=$ukupno?> studenata</td></tr>
+			</table>
+			<?
+			$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
+		}
+	}
+
+	// Ostali parametri upita
+	$student = $r20[0];
+	$oldoldstudij=$oldstudij;
+	$oldstudij = $studij;
+	$studij = $r20[1];
+	$imeprezime = $r20[4]." ".$r20[3];
+	$brindexa = $r20[5];
+
+	// Ako se studij promijenio, uzimamo novi plan studija
+	if ($studij_id != $old_studij_id || $plan_studija != $old_plan_studija || $semestar != $old_semestar) {
+		$plan_studija = $plan_studija_obavezan = array();
+
+		for ($i=1; $i<10; $i++) // 10 - neće valjda biti više od 10 semestara? FIXME
+			$plan_studija[$i] = $plan_studija_obavezan[$i] = array();
+
+		$q30 = myquery("select semestar, predmet, obavezan from plan_studija where studij=$studij_id and godina_vazenja=$ss_plan_studija and semestar<=$semestar order by semestar");
+		while ($r30 = mysql_fetch_row($q30)) {
+			$plan_studija[$r30[0]][] = $r30[1];
+			$plan_studija_obavezan[$r30[0]][] = $r30[2];
+		}
+	}
+
+	$nepolozenih=0;
+	$parcijalnih=0;
+	$nepolozeni_predmet=array();
+	$parcijalni_predmet=array();
+	$pao_niza_godina=array();
+	$ne_gledaj_predmet=0;
+
+	// Koliko predmeta iz plana student nije polozio?
+	for ($pssem=$semestar; $pssem>=0; $pssem--) {
+		foreach ($plan_studija[$pssem] as $redni_broj => $predmet) {
+			// Obavezan predmet
+			if ($plan_studija_obavezan[$pssem][$redni_broj]==1) {
+				$pao_predmet = pao_predmet($student, $predmet, $ak_god);
+				if ($pao_predmet==1) {
+					$parcijalnih++;
+					$parcijalni_predmet[] = naziv_predmeta_cache($predmet);
+				} else if ($pao_predmet!=0) {
+					$nepolozenih++;
+					$nepolozeni_predmet[] = naziv_predmeta_cache($predmet);
+				}
+
+				// Predmet sa niže godine
+				if ($pao_predmet != 0 && ceil($pssem/2)<ceil($semestar/2))
+					$pao_niza_godina[] = naziv_predmeta_cache($predmet);
+
+			// Izborni predmet
+			} else {
+				$q50 = myquery("select predmet from izborni_slot where id=$predmet");
+				$ijedan=false;
+				$zapamti_parcijalni=$zapamti_izborni=0;
+				while ($r50 = mysql_fetch_row($q50)) {
+					if ($r50[0]==$ne_gledaj_predmet) continue;
+					$pao_predmet = pao_predmet($student, $r50[0], $ak_god);
+					if ($pao_predmet==0) {
+						$ne_gledaj_predmet=$r50[0];
+						$ijedan=true;
+						break; 
+					} else if ($pao_predmet==1) {
+						$zapamti_parcijalni=$r50[0];
+					} else if ($pao_predmet==2) {
+						$zapamti_izborni=$r50[0];
+					}
+				}
+				if (!$ijedan) {
+					if ($zapamti_parcijalni>0) {
+						$parcijalnih++;
+						$parcijalni_predmet[] = naziv_predmeta_cache($zapamti_parcijalni);
+					} else {
+						$nepolozenih++;
+						if ($zapamti_izborni>0)
+							$nepolozeni_predmet[] = naziv_predmeta_cache($zapamti_izborni);
+						else
+							$nepolozeni_predmet[] = "[IZBORNI PREDMET]"; // Ne znamo koji
+					}
+				}
+			}
+		}
+	}
+
+	// Pretvaramo parcijalne predmete u nepoložene
+//	while ($parcijalnih>2) { $parcijalnih--; $nepolozenih++; }
+//	if ($parcijalnih==2 && $nepolozenih==1) { $nepolozenih=3; $parcijalnih=0; }
+//	if ($nepolozenih>1) { $nepolozenih+=$parcijalnih; $parcijalnih=0; }
+
+
+	$koliko_nepolozenih[$nepolozenih][$parcijalnih]++;
+	if ($nepolozenih>$max_nepolozenih) $max_nepolozenih=$nepolozenih;
+	if ($parcijalnih>$max_parcijalnih) $max_parcijalnih=$parcijalnih;
+	$ukupno++;
+
+	// Generišem ispis pojedinačnih studenata
+	if ($prikaz=="po_studiju") {
+		$ispis_nepolozenih[$nepolozenih][$parcijalnih] .= "<tr><td>$imeprezime ($brindexa)</td><td>$nepolozenih / $parcijalnih</td><td>";
+		foreach ($nepolozeni_predmet as $np) $ispis_nepolozenih[$nepolozenih][$parcijalnih] .= $np;
+		$ispis_nepolozenih[$nepolozenih][$parcijalnih] .= "</td><td>";
+		foreach ($parcijalni_predmet as $np) $ispis_nepolozenih[$nepolozenih][$parcijalnih] .= $np;
+		$ispis_nepolozenih[$nepolozenih][$parcijalnih] .= "</td><tr>\n";
+	}
+
+	if ($prikaz=="po_predmetu") {
+		$pdouslova=0;
+		if ($_REQUEST['douslova'] && $semestar%2==0)
+			// Želimo vidjeti koliko je studenata kojim fali završni rad
+			if ($semestar != $semestara_na_ciklusu)
+				$pdouslova=1;
+
+		// Preskacemo studenta ako 
+		if ($limit_predmet>=0 && $limit_parcijalni>=0 && $nepolozenih+$parcijalnih != $limit_predmet+$limit_parcijalni+$pdouslova || $parcijalnih < $limit_parcijalni) continue;
+
+		// Ako je limit jedan predmet i ima predmeta sa niže godine, taj predmet mora biti sa niže godine jer u suprotnom student nema uslov
+		if ($limit_predmet+$limit_parcijalni == 1 && !empty($pao_niza_godina)) {
+			$tmp = array();
+			foreach ($nepolozeni_predmet as $np)
+				if (in_array($np, $pao_niza_godina))
+					$tmp[]=$np;
+			$nepolozeni_predmet = $tmp;
+			$tmp = array();
+			foreach ($parcijalni_predmet as $np)
+				if (in_array($np, $pao_niza_godina))
+					$tmp[]=$np;
+			$parcijalni_predmet = $tmp;
+		}
+
+		// Ako je limit 0 integralnih, ne mogu se polagati integralni odnosno moraju se ostaviti za uslov
+		if ($limit_predmet>0) { 
+			foreach ($nepolozeni_predmet as $np) {
+				if ($np == "[IZBORNI PREDMET]") continue;
+				$ispis_predmeta[$np] .= "$imeprezime ($brindexa)<br/>";
+			}
+		}
+
+		foreach ($parcijalni_predmet as $np) {
+			if ($np == "[IZBORNI PREDMET]") continue;
+			$ispis_predmeta[$np] .= "$imeprezime ($brindexa)<br/>";
+		}
+	}
+}
+
+
+// Zavrsni ispis
+
+if ($prikaz=="po_studiju") {
+	// Ispisujemo podatke za svakog pojedinačnog studenta
+	?>
+	<p><b><?=$studij?>, <?=$old_semestar?>. semestar</b></p>
+	<table>
+	<tr bgcolor="#CCCCCC"><td><b>Student</b></td><td><b>Broj nepoloženih / Broj parcijalnih</b></td><td><b>Nepoloženi predmeti</b></td><td><b>Parcijalni predmeti</b></td></tr>
+	<?
+	for ($i=0; $i<=$max_nepolozenih; $i++) {
+		for ($j=0; $j<=$max_parcijalnih; $j++) {
+			if ($limit_predmet>=0 && $limit_parcijalni>=0 && $i+$j != $limit_predmet+$limit_parcijalni+$douslova || $j<$limit_parcijalni) continue;
+			if ($koliko_nepolozenih[$i][$j]>0) {
+				print $ispis_nepolozenih[$i][$j];
+			}
+		}
+	}
+	$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0; $ispis_nepolozenih=array();
+	print "</table>\n";
+
+
+} else if ($prikaz=="sumarno") {
+	?>
+	<p><b><?=$studij?>, <?=$old_semestar?>. semestar</b></p>
+	<table>
+	<tr bgcolor="#CCCCCC"><td><b>Broj predmeta koji nisu položeni</b></td><td><b>Broj studenata</b></td></tr>
+	<?
+
+	for ($i=0; $i<=$max_nepolozenih; $i++) {
+		if ($i==0) {
+			?>
+			<tr><td>Sve položeno</td><td><?=$koliko_nepolozenih[0][0]?> studenata</td></tr>
+			<tr><td>Jedan parcijalni ili završni ispit</td><td><?=$koliko_nepolozenih[0][1]?> studenata</td></tr>
+			<tr><td>Dva parcijalna ili završna ispita</td><td><?=$koliko_nepolozenih[0][2]?> studenata</td></tr>
+			<?
+		} else if ($i==1) {
+			?>
+			<tr><td>Jedan čitav predmet</td><td><?=$koliko_nepolozenih[1][0]?> studenata</td></tr>
+			<tr><td>Jedan predmet i jedan parcijalni ili završni ispit</td><td><?=$koliko_nepolozenih[1][1]?> studenata</td></tr>
+			<?
+		} else if ($koliko_nepolozenih[$i][0]>0) {
+			?>
+			<tr><td><?=$i?>. predmeta</td><td><?=$koliko_nepolozenih[$i][0]?> studenata</td></tr>
+			<?
+		}
+	}
+
+	if ($old_semestar%2==0) {
+		?>
+		<tr><td>UKUPNO DALO USLOV:</td><td><?= ($koliko_nepolozenih[0][0]+$koliko_nepolozenih[0][1]+$koliko_nepolozenih[1][0])?> studenata</td></tr>
+		<?
+	}
+	?>
+	<tr><td>UKUPNO:</td><td><?=$ukupno?> studenata</td></tr>
+	</table>
+	<?
+	$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
+
+} else if ($prikaz == "po_predmetu") {
+	foreach ($ispis_predmeta as $ime => $ispis) {
+		print "<b>$ime</b>\n<br/>\n$ispis\n<br/><br/>\n";
+	}
+}
+
+
+
+return 0;
+
+} // if ($varijanta==1)
+
+
+
+
+
+
+
+
+
+// Prva varijanta izvjestaja
 
 $ak_god = intval($_REQUEST['akademska_godina']);
 if ($ak_god==0) {
@@ -314,7 +772,7 @@ if ($statistika == 1) {
 	}
 
 }
-print"</table>";
+
 
 }
 
