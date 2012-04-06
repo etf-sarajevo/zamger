@@ -49,7 +49,6 @@ function dbconnect() {
 	//dbconnect2("localhost","vedran_studenti","itneduts","zamger");
 }
 
-
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
 	global $__lv_connection,$_lv_,$conf_use_mysql_utf8;
 
@@ -71,9 +70,6 @@ function dbdisconnect() {
 	
 	mysql_close($__lv_connection);
 }
-
-
-
 
 /*function myquery($query) {
 	global $_lv_;
@@ -112,10 +108,12 @@ function my_escape($value) {
 	// Convert special HTML chars to protect against XSS
 	// If chars are needed for something, escape manually
 	$value = htmlspecialchars($value);
-	// Stripslashes
+
+	// If magic quotes is on, stuff would be double-escaped here
 	if (get_magic_quotes_gpc()) {
 		$value = stripslashes($value);
 	}
+
 	// Quote if not a number or a numeric string
 	if (!is_numeric($value)) {
 		$value = mysql_real_escape_string($value); // Detecting quotes later is a pain
@@ -226,6 +224,7 @@ function login($pass) {
 
 	// All OK, start session
 	session_start();
+	//session_regenerate_id(); // prevent session fixation
 	$_SESSION['login']=$login;
 	session_write_close();
 
@@ -911,7 +910,11 @@ function db_list($table,$selected=0) {
 	// Link for new entry
 /*	while (preg_match("/_lv_where_.*?=.*?[\&^]/",$uri))
 		preg_replace("/(_lv_where_.*?=.*?)[\&^]/","",$uri);*/
-	$result .= '<p><a href="'.$uri.'">Unesi novu</a>';
+	if (empty($_lv_["new_link"]))
+		$new_link = "Unesi novu";
+	else
+		$new_link = $_lv_["new_link"];
+	$result .= '<p><a href="'.$uri.'">'.$new_link.'</a>';
 	return $result;
 }
 
