@@ -300,6 +300,7 @@ if ($_REQUEST['akcija'] == "ugovoroucenju") {
 <li><a href="?sta=izvjestaj/ugovoroucenju" onclick="izvjestaj();">Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini i/ili Procjena za sljedeću akademsku godinu</a> - <a href="?sta=studentska/izvjestaji&akcija=ugovoroucenju">ranije akademske godine</a></li>
 <li><a href="?sta=studentska/izvjestaji&akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
 <li><a href="?sta=studentska/izvjestaji&akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
+<li><a href="?sta=izvjestaj/po_kantonima">Spisak studenata po kantonima</a></li>
 </ul></p>
 
 <hr/>
