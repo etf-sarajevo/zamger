@@ -17,11 +17,6 @@
 // v4.0.9.6 (2009/10/03) + Dodan parametar "tip studija" za prikaz podataka za sve studije istog tipa; razjasnjene sumarne statistike; respektuj polje ponovac u tabeli student_studij
 
 
-// TODO: Zašto ovo nije prebačeno na komponente?
-
-// FIXME: Izvještaj prolaznost ne radi jer se za studij -1 kao ključ u nizovima koristi predmet a za ostale studije ponudakursa!
-// Dalje, za studij -1 očekuje se parametar tipstudija kojeg forma ne šalje
-
 
 function izvjestaj_prolaznost() {
 
@@ -29,21 +24,24 @@ function izvjestaj_prolaznost() {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 
 // parametri izvjestaja
 $akgod = intval($_REQUEST['_lv_column_akademska_godina']);
 $studij = intval($_REQUEST['_lv_column_studij']);
-$period = intval($_REQUEST['period']);
+$period = intval($_REQUEST['period']); // 0 = semestar, 1 = godina
 $semestar = intval($_REQUEST['semestar']);
 $godina = intval($_REQUEST['godina']);
-$ispit = intval($_REQUEST['ispit']);
-$cista_gen = intval($_REQUEST['cista_gen']);
-$studenti = intval($_REQUEST['studenti']);
-$sortiranje = intval($_REQUEST['sortiranje']);
-$oboji = $_REQUEST['oboji'];
-$tipstudija = intval($_REQUEST['tipstudija']);
+$ispit = intval($_REQUEST['ispit']); // 1 = prvi parc., 2 = drugi p., 3 = broj bodova, 4 = konacna ocjena, 5 = uslov za usmeni
+$cista_gen = intval($_REQUEST['cista_gen']); // 0 = svi, 1 = bez kolizije i prenesenih, 2 = redovni, 3 = cista gen. 
+$studenti = intval($_REQUEST['studenti']); // 1 = prikazi pojedinacne studente
+$sortiranje = intval($_REQUEST['sortiranje']); // 0 = po prezimenu, 1 = po broju bodova, 2 = po broju indexa
+$oboji = $_REQUEST['oboji']; // "tajna" opcija za bojenje studija
+$tipstudija = intval($_REQUEST['tipstudija']); // "tajna" opcija koja se koristi u kombinaciji sa $studij = -1 (svi studiji)
+
+if ($tipstudija==0) $tipstudija=2;
 
 
 // Naslov
@@ -88,6 +86,7 @@ if ($ispit==1) print "I parcijalni ispit";
 elseif ($ispit==2) print "II parcijalni ispit";
 elseif ($ispit==3) print "Ukupni bodovi";
 elseif ($ispit==4) print "Konačna ocjena";
+elseif ($ispit==5) print "Uslovi za usmeni ispit";
 ?></b><br/>
 </p><?
 
@@ -132,7 +131,7 @@ if ($studij>-1) { // Izbor studija
 if ($studij==-1) 
 	$q30 = myquery("select distinct p.id, p.naziv, 1 from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 else
-	$q30 = myquery("select pk.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+	$q30 = myquery("select p.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 
 // Dodatak upitu za studente
 $upit_studenti="";
@@ -165,7 +164,7 @@ if ($cista_gen==4) {
 
 // PODIZVJESTAJ 1
 // 1 = I parc., 2 = II parc., 4 = Konacna ocjena
-if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
+if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 	global $polozio;
 	$polozio = array(); // ne znam kako bez global :(
 	global $suma_bodova;
@@ -174,34 +173,36 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 	$brindexa = array();
 
 	// Zaglavlja tabela, ovisno o tome da li su navedeni pojedinacni studenti ili ne
-	print "<p>Pregled po studentima.";
-	if ($sortiranje==1 && $ispit==4) 
-		print " Spisak je sortiran po broju položenih predmeta i ocjenama.</p>\n";
-	else if ($sortiranje==1) 
-		print " Spisak je sortiran po broju položenih ispita i bodovima.</p>\n";
-	else print " Spisak je sortiran po prezimenu.</p>\n";
+	if ($studenti==1) {
+		print "<p>Pregled po studentima.";
+		if ($sortiranje==1 && $ispit==4) 
+			print " Spisak je sortiran po broju položenih predmeta i ocjenama.</p>\n";
+		else if ($sortiranje==1) 
+			print " Spisak je sortiran po broju položenih ispita i bodovima.</p>\n";
+		else print " Spisak je sortiran po prezimenu.</p>\n";
 
-	if ($oboji=="odsjek") {
-		?>
-		<table width="100%" border="0" cellpadding="4" cellspacing="4"><tr>
-			<td align="left">
-				<table border="1" bgcolor="#FF9999" width="100"><tr><td>&nbsp;</td></tr></table>
-				Računarstvo i informatika
-			</td>
-			<td align="left">
-				<table border="1" bgcolor="#99FF99" width="100"><tr><td>&nbsp;</td></tr></table>
-				Automatika i elektronika
-			</td>
-			<td align="left">
-				<table border="1" bgcolor="#9999FF" width="100"><tr><td>&nbsp;</td></tr></table>
-				Elektroenergetika
-			</td>
-			<td align="left">
-				<table border="1" bgcolor="#FF99FF" width="100"><tr><td>&nbsp;</td></tr></table>
-				Telekomunikacije
-			</td>
-		</tr></table>
-		<?
+		if ($oboji=="odsjek") {
+			?>
+			<table width="100%" border="0" cellpadding="4" cellspacing="4"><tr>
+				<td align="left">
+					<table border="1" bgcolor="#FF9999" width="100"><tr><td>&nbsp;</td></tr></table>
+					Računarstvo i informatika
+				</td>
+				<td align="left">
+					<table border="1" bgcolor="#99FF99" width="100"><tr><td>&nbsp;</td></tr></table>
+					Automatika i elektronika
+				</td>
+				<td align="left">
+					<table border="1" bgcolor="#9999FF" width="100"><tr><td>&nbsp;</td></tr></table>
+					Elektroenergetika
+				</td>
+				<td align="left">
+					<table border="1" bgcolor="#FF99FF" width="100"><tr><td>&nbsp;</td></tr></table>
+					Telekomunikacije
+				</td>
+			</tr></table>
+			<?
+		}
 	}
 
 
@@ -210,6 +211,13 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			<tr><td><b>Predmet</b></td>
 			<td><b>Upisalo</b></td>
 			<td><b>Položilo</b></td>
+			<td><b>%</b></td>
+		</tr><?
+	} else if ($studenti==0 && ($ispit==5 || $ispit==3)) {
+		?><table border="1" cellspacing="0" cellpadding="2">
+			<tr><td><b>Predmet</b></td>
+			<td><b>Upisalo</b></td>
+			<td><b>Ima uslove</b></td>
 			<td><b>%</b></td>
 		</tr><?
 	} else if ($studenti==0) {
@@ -345,6 +353,23 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		}
 	}
 
+	// Cache komponenti
+	if ($ispit==5) {
+		$cache_komponente = array();
+		if ($studij==-1) 
+			$q31 = myquery("select distinct p.id, p.naziv, 1 from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+		else
+			$q31 = myquery("select p.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+		while ($r31 = mysql_fetch_row($q31)) {
+			$predmet = $r31[0];
+			$cache_komponente[$predmet] = array();
+			$q95 = myquery("select k.id, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=2 and k.gui_naziv != 'Usmeni'");
+			while ($r95 = mysql_fetch_row($q95)) {
+				$cache_komponente[$predmet][$r95[0]] = $r95[1];
+			}
+		}
+	}
+
 
 	// GLAVNA PETLJA
 	// Izracunavanje statistickih podataka
@@ -405,7 +430,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			if ($studij==-1)
 				$q200 = myquery("select pk.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
 			else
-				$q200 = myquery("select kb.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+				$q200 = myquery("select pk.predmet, kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
 			while ($r200 = mysql_fetch_row($q200)) {
 				$suma_bodova[$stud_id] += $r200[1];
 				$ispitocjena[$stud_id][$r200[0]] += $r200[1];
@@ -427,9 +452,9 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 		// Konacna ocjena
 		} else if ($ispit==4) {
 			if ($studij==-1) 
-				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id");
+				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka=0"); // Eliminisemo ocjene po odluci
 			else
-				$q110 = myquery("select pk.id,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit");
+				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka=0");
 			$broj_polozenih=0;
 			while ($r110 = mysql_fetch_row($q110)) {
 				if ($r110[1] >= 6 ) {
@@ -449,7 +474,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 			if ($studij==-1)
 				$q120 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
 			else
-				$q120 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+				$q120 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
 			while ($r120 = mysql_fetch_row($q120)) {
 				$izaslo[$r120[0]]++;
 				if ($studenti==1 && $ispitocjena[$stud_id][$r120[0]]<6) {
@@ -457,6 +482,38 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4) {
 					$ispitocjena[$stud_id][$r120[0]]="-";
 				}
 			}
+
+		// Ima li uslove za usmeni?
+		} else if ($ispit==5) {
+			$broj_polozenih=0;
+			if ($studij==-1)
+				$q120 = myquery("select pk.predmet, pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+			else
+				$q120 = myquery("select pk.predmet, pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+			while ($r120 = mysql_fetch_row($q120)) {
+				$predmet = $r120[0];
+				$ponudakursa = $r120[1];
+				$izaslo[$predmet]++;
+				$polozenih_komponenti = 0;
+				foreach ($cache_komponente[$predmet] as $komponenta_id => $komponenta_prolaz) {
+					$q250 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta_id");
+					if (mysql_num_rows($q250)>0 || $komponenta_prolaz==0) {
+						$bodovi = mysql_result($q250,0,0);
+						$ispitocjena[$stud_id][$predmet] += $bodovi;
+						if ($bodovi >= $komponenta_prolaz) $polozenih_komponenti++;
+					}
+				}
+				if ($polozenih_komponenti == count($cache_komponente[$predmet])) {
+					$polozilo[$predmet]++;
+					$broj_polozenih++;
+				}
+			}
+			$ispita_polozenih[$broj_polozenih]++;
+			if ($broj_polozenih>$max_broj_polozenih) 
+				$max_broj_polozenih = $broj_polozenih;
+			if ($studenti==1) 
+				$polozio[$stud_id] = $broj_polozenih;
+
 		}
 	}
 
