@@ -98,6 +98,7 @@ if ($_REQUEST['akcija'] == "po_prosjeku") {
 		<tr><td>Studij:</td><td><select name="studij">
 			<option value="-1">Svi studiji (BSc)</option>
 			<option value="-2">Svi studiji (MSc)</option>
+			<option value="-3">Svi studiji (MSc bez BSca)</option>
 			<?
 				$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
 				while ($r505 = mysql_fetch_row($q505)) {

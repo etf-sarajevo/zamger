@@ -40,11 +40,24 @@ $limit_prosjek = intval($_REQUEST['limit_prosjek']);
 
 // Parametar: studij
 $studij = intval($_REQUEST['studij']);
-$wherestudij="";
+$wherestudij=$whereprosliciklus="";
 if ($studij>0) {
 	$q20 = myquery("select naziv from studij where id=$studij");
 	?><h3><?=mysql_result($q20,0,0)?></h3><?
 	$wherestudij="and ss.studij=$studij";
+
+} else if ($studij == -3) {
+	$ciklus = 2;
+	?><h3>Svi studiji (MSc bez BSca)</h3><?
+	$q25 = myquery("select s.id from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2");
+	$wherestudij="and (";
+	while ($r25 = mysql_fetch_row($q25)) {
+		if (strlen($wherestudij)>5) $wherestudij .= " or ";
+		$wherestudij .= "ss.studij=$r25[0]";
+	}
+	$wherestudij .= ")";
+	$whereprosliciklus = "and ts.ciklus=2";
+
 } else {
 	$ciklus = -$studij;
 
@@ -62,7 +75,10 @@ if ($studij>0) {
 
 // Parametar: godina studija
 $godinastudija = intval($_REQUEST['godina_studija']);
-$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']);
+if ($studij == -2)
+	$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']) + 180;
+else
+	$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']);
 $wheresemestar="";;
 if ($godinastudija>0) {
 	?><h3><?=$godinastudija?>. godina studija</h3><?
@@ -78,15 +94,15 @@ $q1 = myquery("SELECT a.id, a.prezime, a.ime, a.brindexa, ns.naziv FROM `osoba` 
 a, student_studij as ss, nacin_studiranja as ns WHERE a.id=ss.student and ss.akademska_godina=$ak_god and ss.nacin_studiranja=ns.id $wherestudij $wheresemestar");
 
 while ($r1 = mysql_fetch_row($q1)) {
-	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp where ko.student=$r1[0] and ko.predmet=p.id and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god order by pk.semestar");
+	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
-	while ($r2 = mysql_fetch_row($q2)) { 
+	while ($r2 = mysql_fetch_row($q2)) {
 		$suma += $r2[0]; $broj++; $sumaects += $r2[1]; 
 	}
 
 	// preskacemo studente sa premalo polozenih predmeta
 	if ($limit_predmet>0) {
-		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet)=0");
+		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet)=0");
 		if (mysql_result($q3,0,0)>$limit_predmet) continue;
 	} else if ($sumaects<$minsumaects) continue; 
 
