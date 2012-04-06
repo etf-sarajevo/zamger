@@ -512,7 +512,9 @@ function studentski_meni($fj) {
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
 		if (intval($_REQUEST['predmet'])==$predmet) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
-			if ($_REQUEST['sta'] != "student/predmet")
+			if (substr($predmet_naziv, 0, 12) == "Završni rad")
+				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
+			else if ($_REQUEST['sta'] != "student/predmet")
 				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
 			$ispis .= "<b>$predmet_naziv</b>";
 			if ($_REQUEST['sta'] != "student/predmet")
@@ -547,7 +549,10 @@ function studentski_meni($fj) {
 
 			$ispis .= "</td></tr>\n";
 		} else {
-			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
+			if (substr($predmet_naziv, 0, 12) == "Završni rad")
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
+			else
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 		}
 	}
 	$ispis .= "</table>\n";
@@ -672,11 +677,10 @@ function studentski_meni($fj) {
 	$dani = array("","Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota", "Nedjelja");
 	$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
 
-
 	print $dani[date("N",time())];
 	print ", ".date("j",time()).". ".$mjeseci[date("n",time())]." ".date("Y",time()).".";
 
-			?>
+	?>
 		</td>
 		<td width="1" bgcolor="#888888"><img src="images/fnord.gif" width="1" height="1"></td>
 		<td width="5" bgcolor="#FFFFFF"><img src="images/fnord.gif" width="5" height="1"></td>
@@ -684,8 +688,7 @@ function studentski_meni($fj) {
 		<? eval ($fj); ?>
 			</td></tr>
 		</table>
-<?
-
+	<?
 
 }
 
@@ -704,8 +707,8 @@ function zamgerlog($event,$nivo) {
 	// brisemo tekstove poruka i sl.
 	$event=preg_replace("/tekst=([^&]*)/","",$event);
 	// brisemo suvisan tekst koji ubacuje mysql
-	$event=str_replace("You have an error in your SQL syntax;","SQL syntax error",$event);
-	$event=str_replace("check the manual that corresponds","",$event);
+	$event=str_replace("You have an error in your SQL syntax;","",$event);
+	$event=str_replace("check the manual that corresponds to your MySQL server version for the right syntax to use","",$event);
 
 	if (intval($userid)==0) $userid=0;
 
@@ -754,7 +757,28 @@ function myquery($query) {
 	exit;
 }
 
+// Vraca puni naziv osobe sa svim titulama
+function tituliraj($osoba) {
+	$q10 = myquery("select ime, prezime, naucni_stepen, strucni_stepen from osoba where id=$osoba");
+	if (!($r10 = mysql_fetch_row($q10))) {
+		return "";
+	}
+	$ime = $r10[0]." ".$r10[1];
 
+	$q20 = myquery("select titula from naucni_stepen where id=$r10[2]");
+	if ($r20 = mysql_fetch_row($q20))
+		$ime = $r20[0]." ".$ime;
+	
+	$q30 = myquery("select titula from strucni_stepen where id=$r10[3]");
+	if ($r30 = mysql_fetch_row($q30))
+		$ime = $ime.", ".$r30[0];
+	
+	$q40 = myquery("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
+	if ($r40 = mysql_fetch_row($q40))
+		$ime = $r40[0]." ".$ime;
+
+	return $ime;
+}
 
 
 ?>
