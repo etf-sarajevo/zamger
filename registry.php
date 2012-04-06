@@ -75,6 +75,7 @@ array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"
 array("izvjestaj/grupe", "Spisak studenata po grupama", "Grupe", "NBA", "0", "0"),
 array("izvjestaj/ispit", "Izvještaj za ispit", "Ispit", "NBA", "0", "0"),
 array("izvjestaj/index", "Uvjerenje o položenim predmetima", "Indeks", "SBA", "0", "0"),
+array("izvjestaj/index2", "Uvjerenje o položenim predmetima", "Indeks", "SBA", "0", "0"),
 array("izvjestaj/prolaznost", "Prolaznost", "Prolaznost", "BA", "0", "0"),
 array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodovi", "SBA", "0", "0"),
 array("izvjestaj/prijemni", "Rang liste kandidata za upis", "Prijemni", "BA", "0", "0"),

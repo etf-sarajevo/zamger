@@ -2105,7 +2105,7 @@ else if ($akcija == "edit") {
 				</td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/historija&student=<?=$osoba?>">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Historija</a></td></tr>
-				<tr><td align="center"><a href="?sta=izvjestaj/index&student=<?=$osoba?>">
+				<tr><td align="center"><a href="?sta=izvjestaj/index2&student=<?=$osoba?>">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Indeks</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=0">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Bodovi</a></td></tr>
