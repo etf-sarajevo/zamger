@@ -21,19 +21,27 @@ if(isset($_REQUEST['termin'])){
 if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
 else{
 	$q8 = myquery("select ispit from ispit_termin where id=$termin_id_url");
+	if (mysql_num_rows($q8)<1) {
+		niceerror("Nepostojeći termin.");
+		return;
+	}
 	$ispit = mysql_result($q8,0,0);
 }
 
 $q9 = myquery("select komponenta from ispit where id=$ispit");
+if (mysql_num_rows($q9)<1) {
+	niceerror("Nepostojeći ispit.");
+	return;
+}
 $komp = mysql_result($q9,0,0);
 // Upit za ispit
 
-if($komp<=4){
+if ($komp<=4) { // FIXME Oznake komponente <= 4 se koriste za regularne ispite
 	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-}
-else{
+} else {
 	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), d.naziv, i.predmet, i.akademska_godina from ispit as i, dogadjaj as d where i.id=$ispit and i.komponenta=d.id");	
 }
+
 $predmet = mysql_result($q10,0,2);
 $ag = mysql_result($q10,0,3);
 $finidatum = date("d. m. Y.", mysql_result($q10,0,0));
