@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 	if (ini_get("short_open_tag") != 1) exit;
 ?>
 <?
@@ -61,7 +61,10 @@ $_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
- $conf_email = true;
+$conf_email = true;
+
+// Mailovi koje šalje zamger će imati ovu vrijednost u From: polju
+$conf_admin_email = "vljubovic@etf.unsa.ba";
 
 
 // ------ MOODLE INTEGRACIJA ---------
