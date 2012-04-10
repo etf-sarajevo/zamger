@@ -113,7 +113,12 @@ if ($sastavi_grupe==0) {
 
 // ID grupe "[Svi studenti]" trebamo saznati iz baze
 $q25 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-$id_virtualne_grupe = mysql_result($q25,0,0);
+if (mysql_num_rows($q25)<1) {
+	zamgerlog("predmet pp$predmet ag$ag nema virtuelnu grupu!", 3);
+	$id_virtualne_grupe = 0;
+} else {
+	$id_virtualne_grupe = mysql_result($q25,0,0);
+}
 
 $spisak_grupa[0] = "[Bez grupe]"; // Dodajemo "nultu grupu" kojoj svi pripadaju
 

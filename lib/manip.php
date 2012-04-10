@@ -145,7 +145,8 @@ function upis_studenta_na_predmet($student,$ponudakursa) {
 
 function mass_input($ispis) {
 	global $mass_rezultat,$userid;
-	$mass_rezultat=array(); // brisemo niz
+	$mass_rezultat = array(); // brišemo niz
+	$mass_rezultat['ime'] = array(); // sprječavamo upozorenja
 
 
 	// Da li treba ispisivati akcije na ekranu ili ne?

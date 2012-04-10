@@ -170,12 +170,14 @@ function login($pass) {
 					exit;
 				}
 				$results = ldap_get_entries($ds, $sr);
+				// Ako ldap_get_entries vrati false, pretpostavićemo da nema rezultata
+				// To se dešava rijetko ali se dešava i nije mi jasno zašto
 
 				// Ovaj upit ce vratiti i aliase, koje moramo profiltrirati
-				while (is_alias($results[$i]) && $i<$results['count']) $i++;
+				while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
 
 				// Probavamo email adresu
-				if ($i == $results['count']) {
+				if (!$results || $i == $results['count']) {
 					$sr = ldap_search($ds, "", "mail=$login", array() );
 					if (!$sr) {
 						niceerror("ldap_search() 1 failed.");
@@ -184,11 +186,11 @@ function login($pass) {
 					$results = ldap_get_entries($ds, $sr);
 
 					$i=0;
-					while (is_alias($results[$i]) && $i<$results['count']) $i++;
+					while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
 				}
 
 				// Probavamo email adresu + domena
-				if ($i == $results['count']) {
+				if (!$results || $i == $results['count']) {
 					$sr = ldap_search($ds, "", "mail=$login$conf_ldap_domain", array() );
 					if (!$sr) {
 						niceerror("ldap_search() 2 failed.");
@@ -197,13 +199,14 @@ function login($pass) {
 					$results = ldap_get_entries($ds, $sr);
 
 					$i=0;
-					while (is_alias($results[$i]) && $i<$results['count']) $i++;
+					while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
 				}
 
-				if ($i == $results['count']) return 1;
+				if (!$results || $i == $results['count']) return 1;
 				$dn = $results[$i]['dn'];
 				
-				if (!ldap_bind($ds, $dn, $pass)) {
+				if (!@ldap_bind($ds, $dn, $pass)) {
+					// ldap_bind generiše warning svaki put kad je pogrešna šifra :(
 					return 2;
 				}
 				// ldap_bind succeeded, user is authenticated

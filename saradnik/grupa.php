@@ -458,6 +458,7 @@ $minw = 0; // minimalna sirina tabele
 $mogucih_bodova = 0; // koliko bodova su studenti mogli osvojiti, radi procenta
 $zaglavlje1 = "";
 $zaglavlje2 = "";
+$prisustvo_id_array = array();
 
 
 // Zaglavlje prisustvo

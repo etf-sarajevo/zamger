@@ -292,7 +292,7 @@ function student_projekti() {
 						<li><?=$r200[1].' '.$r200[0].', '.$r200[2]?></li>
 						<?
 					}
-					if (mysql_num_rows($r200)>0) print "</ul>\n";
+					if (mysql_num_rows($q200)>0) print "</ul>\n";
 					?>
 				</td>
 			</tr>

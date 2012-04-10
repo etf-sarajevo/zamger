@@ -254,11 +254,15 @@ include('lib/pclzip/pclzip.lib.php');
 for ($i=1; $i<=$brzad; $i++) {
 	
 	if ($filename[$i]=="") continue;
-	 $extrenut=strtolower(end(explode('.',$filename[$i])));
+	if (!file_exists("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]")) {
+		zamgerlog("ne postoji fajl za zadacu z$zadaca zadatak $i student u$userid", 3);
+		continue;
+	}
+	$extrenut=strtolower(end(explode('.',$filename[$i])));
 
 //Extract zip fajlovaa
 
-	 if($extrenut=="zip"){
+	if($extrenut=="zip") {
 		if (!file_exists("$lokacijazadaca$userid")){
 			mkdir ("$lokacijazadaca$userid",0777);
 			mkdir ("$lokacijazadaca$userid/$i",0777);
@@ -301,7 +305,7 @@ for ($i=1; $i<=$brzad; $i++) {
 			}
 		}
 		}
-	else{
+	else {
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
 		$extrenut=strtolower(end(explode('.',$filename[$i])));
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
@@ -314,7 +318,7 @@ for ($i=1; $i<=$brzad; $i++) {
 		$pdf->AddPage();
 		$pdf->SetX(15);
 			
-	    $pdf->Cell(40,10,'Zadatak '.$i.'.');					
+		$pdf->Cell(40,10,'Zadatak '.$i.'.');					
 		$pdf->SetFont('DejaVu Sans','',16);
 		
 		$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $naslov, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
