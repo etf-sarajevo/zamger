@@ -387,19 +387,19 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	var oldState = 0;
 
 	// Funkcija koja se poziva klikom na polje u tabeli
-	function prisustvo(student,cas) {
+	function prisustvo(e,student,cas) {
 		if (zamger_ajah_sending) {
 			alert("Slanje u toku. Sačekajte malo.");
 			return false;
 		}
-		var prisutan = invert(student,cas);
-		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+student+","+cas+")");
+		var prisutan = invert(e,student,cas);
+		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+e+","+student+","+cas+")");
 		// U slucaju da ajah ne uspije, ponovo se poziva funkcija invert
 	}
 	// Switchuje DA i NE
-	function invert(student,cas) {
+	function invert(e,student,cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
-		var evt = window.event;
+		var evt = e || window.event;
 
 		// Shift služi za pristup neutralnom stanju /
 		if (evt.shiftKey) {
@@ -730,14 +730,14 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 		$q320 = myquery("select prisutan from prisustvo where student=$stud_id and cas=$cid");
 		if (mysql_num_rows($q320)>0) {
 			if (mysql_result($q320,0,0) == 1) { 
-				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">DA</span> $uspjeh_na_kvizu</td>";
+				$prisustvo_ispis .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(event,".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">DA</span> $uspjeh_na_kvizu</td>";
 			} else { 
-				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">NE</span> $uspjeh_na_kvizu</td>";
+				$prisustvo_ispis .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(event,".$stud_id.",".$cid.")\"><span id=\"danetekst-".$stud_id."-".$cid."\">NE</span> $uspjeh_na_kvizu</td>";
 				$odsustvo++;
 			}
 			//$ocj = mysql_result($q14,0,1);
 		} else {
-			$prisustvo_ispis .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\"> / </div> $uspjeh_na_kvizu</td>";
+			$prisustvo_ispis .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$stud_id."-".$cid."\" onclick=\"javascript:prisustvo(event,".$stud_id.",".$cid.")\"><div id=\"danetekst-".$stud_id."-".$cid."\"> / </div> $uspjeh_na_kvizu</td>";
 		}
 	}
 
