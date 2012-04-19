@@ -1,7 +1,7 @@
 <?php
 	if (ini_get("short_open_tag") != 1) {
 		?>
-		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
 		<body>
 		<p><font color='red'><b>GREŠKA: Potrebno aktivirati opciju short_open_tag</b></font></p>
 		<p>Molimo vas da još jednom pročitate uputstva za instalaciju.</p>
@@ -33,7 +33,7 @@ function greska_u_modulima() {
 	global $uspjeh, $sta;
 	if ($uspjeh==0) {
 		?>
-		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
 		<body>
 		<p><font color='red'><b>GREŠKA: U toku su radovi na Zamgeru</b></font></p>
 		<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href="javascript:location.reload(true)">Refresh</a>.</p>
@@ -82,7 +82,7 @@ $sta = my_escape($_REQUEST['sta']);
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
-if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1") {
+if ($_POST['loginforma'] == "1") {
 	$login = my_escape($_POST['login']);
 	$pass = $_POST['pass'];
 	
@@ -117,10 +117,9 @@ if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1") {
 // SU = switch user
 
 if ($userid>0) {
-	$su = $unsu = 0;
-	if (isset($_REQUEST['su'])) $su = intval($_REQUEST['su']);
+	$su = intval($_REQUEST['su']);
 	if ($su==0) $su = intval($_SESSION['su']);
-	if (isset($_REQUEST['unsu'])) $unsu = intval($_REQUEST['unsu']);
+	$unsu = intval($_REQUEST['unsu']);
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
 		// Provjeravamo da li je korisnik admin
@@ -221,12 +220,14 @@ if ($found==1 && $template==2 && $greska=="") {
 
 
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 	<title><?=$naslov?></title>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<link href="css/zamger.css" rel="stylesheet" type="text/css" />
-	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link href="css/zamger.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/print.css" type="text/css" media="print">
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php">
 </head>
 <?
 
@@ -241,14 +242,15 @@ if ($found==1 && $template==0 && $greska=="") {
 		$k="";
 		foreach ($_REQUEST as $kljuc => $vrijednost) {
 			if ($kljuc != "sta")
-				$k .= "$kljuc=$vrijednost&";
+				$k .= "$kljuc=$vrijednost&amp;";
 		}
 		
 		if ($userid>0) {
 			?>
-			<a href="?sta=izvjestaj/pdf_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0"></a>
-			<a href="?sta=izvjestaj/csv_converter&koji_izvjestaj=<?=$sta?>&<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0"></a>
-			
+			<div id="izvjestaji">
+			<a href="?sta=izvjestaj/pdf_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0" alt="PDF"></a>
+			<a href="?sta=izvjestaj/csv_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0" alt="Excel"></a>
+			</div>
 			<?
 		}
 	}
@@ -264,7 +266,7 @@ if ($found==1 && $template==0 && $greska=="") {
 
 
 // Savjet dana
-if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1" && $userid>0) {
+if ($_POST['loginforma'] == "1" && $userid>0) {
 	// Savjet dana
 	$nasao=0;
 	foreach ($registry as $r) {
@@ -301,7 +303,7 @@ if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1" && $userid>0) {
 // Slijedi template
 
 ?>
-<body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF"<?=$onload_funkcija?>>
+<body style="margin:0px" bgcolor="#FFFFFF"<?=$onload_funkcija?>>
 
 <script type="text/javascript" src="js/stablo.js"></script> <!-- Cesto koristena skripta -->
 
@@ -309,16 +311,16 @@ if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1" && $userid>0) {
 	<tr bgcolor="#BBBBFF">
 		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->
 			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href="index.php"><img src="images/etf-50x50.png" width="50" height="50" border="0"></a>
+			<a href="index.php"><img src="images/etf-50x50.png" width="50" height="50" border="0" alt="ETF"></a>
 			</td><td width="50%" align="right">
 			<font color="#FFFFFF" size="5">
-			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br/>
+			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br>
 			<font color="#FFFFFF" size="1">
 			<a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
-			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" align="center">&nbsp;
+			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
 			<a href="http://f.etf.unsa.ba/redmine/projects/zamger/issues/new" target="_new">
-			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" align="center">&nbsp;
+			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
 			</td>
 		<!--/tr></table></td-->
@@ -340,7 +342,7 @@ if ($userid>0) {
 	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$vrijeme");
 	if (mysql_result($q30,0,0)>0) {
 		?>
-		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();">
+		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
 		<script language="javascript">
 		var mywidth,myheight;
 		if (window.innerWidth && window.innerHeight) {
@@ -381,6 +383,7 @@ if ($userid>0) {
 		<?
 	}
 }
+
 
 // Standardne greske
 if ($greska != "") {
@@ -457,7 +460,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2012 Vedran Ljubović i drugi<br/>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2012 Vedran Ljubović i drugi<br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>

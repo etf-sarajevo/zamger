@@ -63,14 +63,14 @@ function login_forma() {
 		<!-- Ikone za javne servise -->
 		<table  border="0" cellpadding="10" bgcolor="#FFFFFF"><tr>
 			<td align="center" valign="top">
-				<p><a href="doc/zamger-uputstva-40-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0"><br/>Uputstva za<br/>nastavnike</a></p>
+				<p><a href="doc/zamger-uputstva-42-nastavnik.pdf"><img src="images/32x32/dokumentacija.png" width="32" height="32" border="0" alt="Dokumentacija"><br>Uputstva za<br>nastavnike</a></p>
 			</td>
 	<? 
 
 	if ($anketa_aktivna) {
 		?>
 			<td align="center" valign="top">
-				<p><a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0"><br/>Anketa</a></p>
+				<p><a href="?sta=public/anketa"><img src="images/32x32/info.png" width="32" height="32" border="0" alt="Anketa"><br/>Anketa</a></p>
 			</td>
 		<?
 	}
