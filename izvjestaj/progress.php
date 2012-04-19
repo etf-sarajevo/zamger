@@ -90,18 +90,18 @@ while ($r110 = mysql_fetch_row($q110)) {
 			// Zaglavlje tabele
 			?>
 			<p><b>Akademska godina: <?=$r110[1]?>, <?=$naziv_sem?></b></p>
-			<table width="850" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
-				<td width="20">&nbsp;</td>
-				<td width="155">Predmet</td>
-				<td width="75">Ak. godina</td>
-				<td width="75">Prisustvo</td>
-				<td width="75">Zadaće i seminarski</td>
-				<td width="75">I parcijalni</td>
-				<td width="75">II parcijalni</td>
-				<td width="75">Integralni</td>
-				<td width="75">Završni</td>
-				<td width="75">UKUPNO</td>
-				<td width="75">Ocjena</td>
+			<table width="850" border="1" cellspacing="0" cellpadding="3"><tr>
+				<th width="20">&nbsp;</th>
+				<th width="155">Predmet</th>
+				<th width="75">Ak. godina</th>
+				<th width="75">Prisustvo</th>
+				<th width="75">Zadaće i seminarski</th>
+				<th width="75">I parcijalni</th>
+				<th width="75">II parcijalni</th>
+				<th width="75">Integralni</th>
+				<th width="75">Završni</th>
+				<th width="75">UKUPNO</th>
+				<th width="75">Ocjena</th>
 			</tr>
 			<?
 

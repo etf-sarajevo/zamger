@@ -1,6 +1,7 @@
 	body{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
 	.default{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
 	td{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	th{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;font-weight: bold; background-color: #CCCCCC; text-align: left;}
 	a{color:#333399;text-decoration:none;}
 	a:hover{color:red;text-decoration:underline;}
 	.grupa {color:#666666;font-weight:bold;font-size:11px}
@@ -45,18 +46,3 @@
 }
 
 div.breakafter {page-break-after:always;}
-
-
-#fiksne{
-	font-family:DejaVu Sans,Verdana,Arial,sans-serif;
-	font-size:14px;
-	
-}
-
-#opomena{
-	font-family:DejaVu Sans,Verdana,Arial,sans-serif;
-	color:#F00;
-	font-size:16px;
-	font-weight:500;
-}
-

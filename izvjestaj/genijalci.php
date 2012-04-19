@@ -118,9 +118,9 @@ while ($r1 = mysql_fetch_row($q1)) {
 arsort($prosjeci);
 
 ?>
-<table border="1">
-<tr><td>R.br</td><td>Prezime i ime</td><td>Broj 
-indexa</td><td>Način studiranja</td><td>Prosjek</td></tr>
+<table border="1" cellspacing="0" cellpadding="2">
+<tr><th>R.br</th><th>Prezime i ime</th><th>Broj 
+indexa</th><th>Način studiranja</th><th>Prosjek</th></tr>
 <?
 
 $k=1;

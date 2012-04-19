@@ -208,43 +208,43 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 
 	if ($studenti==0 && $ispit==4) { // $studenti = prikaz individualnih studenata
 		?><table border="1" cellspacing="0" cellpadding="2">
-			<tr><td><b>Predmet</b></td>
-			<td><b>Upisalo</b></td>
-			<td><b>Položilo</b></td>
-			<td><b>%</b></td>
+			<tr><th>Predmet</th>
+			<th>Upisalo</th>
+			<th>Položilo</th>
+			<th>%</th>
 		</tr><?
 	} else if ($studenti==0 && ($ispit==5 || $ispit==3)) {
 		?><table border="1" cellspacing="0" cellpadding="2">
-			<tr><td><b>Predmet</b></td>
-			<td><b>Upisalo</b></td>
-			<td><b>Ima uslove</b></td>
-			<td><b>%</b></td>
+			<tr><th>Predmet</th>
+			<th>Upisalo</th>
+			<th>Ima uslove</th>
+			<th>%</th>
 		</tr><?
 	} else if ($studenti==0) {
 		?><table border="1" cellspacing="0" cellpadding="2">
-			<tr><td><b>Predmet</b></td>
-			<td><b>Izašlo</b></td>
-			<td><b>Položilo</b></td>
-			<td><b>%</b></td>
+			<tr><th><b>Predmet</b></th>
+			<th><b>Izašlo</b></th>
+			<th><b>Položilo</b></th>
+			<th><b>%</b></th>
 		</tr><?
 	} else {
 		?>
 		<table  border="1" cellspacing="0" cellpadding="2">
-		<tr bgcolor="#CCCCCC">
-			<td><b>R. br.</b></td>
-			<td><b>Student</b></td>
-			<td><b>Br. indeksa</b></td>
+		<tr>
+			<th>R. br.</th>
+			<th>Student</th>
+			<th>Br. indeksa</th>
 		<?
 		if ($studij==-1) {
-			print "<td><b>Studij</b></td>\n";
+			print "<th>Studij</th>\n";
 		}
 		while ($r30 = mysql_fetch_row($q30)) {
 			$kursevi[$r30[0]] = $r30[1];
 			$naziv = $r30[1];
 			if ($r30[2]==0) $naziv .= " *";
-			print "<td><b>$naziv</b></td>\n";
+			print "<th>$naziv</th>\n";
 		}
-		print "<td><b>UKUPNO:</b></td></tr>\n";
+		print "<th>UKUPNO:</th></tr>\n";
 	}
 
 
