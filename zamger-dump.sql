@@ -384,7 +384,47 @@ CREATE TABLE IF NOT EXISTS `cas` (
 -- Dumping data for table `cas`
 --
 
+
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `cron`
+--
+
+CREATE TABLE IF NOT EXISTS `cron` (
+  `id` int(11) NOT NULL auto_increment,
+  `path` varchar(200) collate utf8_slovenian_ci NOT NULL,
+  `aktivan` tinyint(1) NOT NULL,
+  `godina` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `mjesec` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `dan` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `sat` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `minuta` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `sekunda` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `zadnje_izvrsenje` datetime NOT NULL,
+  `sljedece_izvrsenje` datetime NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cron_rezultat`
+--
+
+CREATE TABLE IF NOT EXISTS `cron_rezultat` (
+  `id` int(11) NOT NULL auto_increment,
+  `cron` int(11) NOT NULL,
+  `izlaz` mediumtext collate utf8_slovenian_ci NOT NULL,
+  `return_value` int(11) NOT NULL,
+  `vrijeme` datetime NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=15 ;
+
+
+-- --------------------------------------------------------
+
 
 --
 -- Table structure for table `drzava`

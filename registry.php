@@ -70,6 +70,7 @@ array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
+array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 
 array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"),
 array("izvjestaj/grupe", "Spisak studenata po grupama", "Grupe", "NBA", "0", "0"),

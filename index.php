@@ -97,6 +97,10 @@ if (isset($_POST['loginforma']) && $_POST['loginforma'] == "1") {
 		} 
 	}
 	if ($greska=="") zamgerlog("login",1); // nivo 1 = posjeta stranici
+	
+	// Pozivamo cron
+	require("common/cron.php");
+	common_cron();
 
 } else {
 	check_cookie();
