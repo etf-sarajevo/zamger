@@ -1,6 +1,7 @@
 <?
 
 // STUDENT/ZADACAPDF - ispis zadace u PDF formatu
+// Preraditi kod!
 
 
 function student_zadacapdf() {
@@ -249,7 +250,7 @@ function delete_directory($dirname) {
 // Zadaci
 include('lib/pclzip/pclzip.lib.php');
 
-//Omogucio sam da se fajlovi tipa cpp,c mogu slati i u formi attachmenta i da se vrsi bojenja uradjeno otvaranje zip-a i generisaje pdf 
+// Fajlovi tipa cpp,c se mogu slati i u formi attachmenta i vrsi se bojenje sintakse
 
 for ($i=1; $i<=$brzad; $i++) {
 	
@@ -305,7 +306,7 @@ for ($i=1; $i<=$brzad; $i++) {
 			}
 		}
 		}
-	else {
+	else if($extrenut=="cpp" || $extrenut=="c") {
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
 		$extrenut=strtolower(end(explode('.',$filename[$i])));
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
@@ -326,6 +327,10 @@ for ($i=1; $i<=$brzad; $i++) {
 		$pdf->SetFont('DejaVu Sans','',10);
 		$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $txt, $border=0, $ln=1, $fill=0, $reseth=true, $align='', $autopadding=true);
 			
+	}
+	else {
+		niceerror("Ovaj tip datoteke nije podržan");
+		return;
 	}
 	$files=null;
 	
