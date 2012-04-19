@@ -31,7 +31,7 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 
 
 ?>
-<p>Univerzitet u Sarajevu<br/>
+<p>Univerzitet u Sarajevu<br>
 Elektrotehnički fakultet Sarajevo</p>
 <p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
@@ -52,10 +52,10 @@ if (!($r100 = mysql_fetch_row($q100))) {
 
 ?>
 <h2>Pregled ostvarenih rezultata na predmetima</h2>
-<p>&nbsp;</br>
+<p>&nbsp;<br>
 <big>Student:
-<b><?=$r100[0]." ".$r100[1]?></b></big><br />
-Broj indeksa: <?=$r100[2]?><br/><br/><br/>
+<b><?=$r100[0]." ".$r100[1]?></b></big><br>
+Broj indeksa: <?=$r100[2]?><br><br><br>
 
 <?
 
@@ -67,11 +67,11 @@ $imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset"
 $q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
 if (mysql_num_rows($q105)>0) {
 	?>
-	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br/><ul>
+	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br><ul>
 	<?
 }
 while ($r105 = mysql_fetch_row($q105)) {
-	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
 }
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
@@ -90,7 +90,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 			// Zaglavlje tabele
 			?>
 			<p><b>Akademska godina: <?=$r110[1]?>, <?=$naziv_sem?></b></p>
-			<table width="775" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
+			<table width="850" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
 				<td width="20">&nbsp;</td>
 				<td width="155">Predmet</td>
 				<td width="75">Ak. godina</td>
@@ -104,6 +104,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 				<td width="75">Ocjena</td>
 			</tr>
 			<?
+
 		}
 
 		while ($r120 = mysql_fetch_row($q120)) {
@@ -168,12 +169,12 @@ while ($r110 = mysql_fetch_row($q110)) {
 					if ($r140[0] == -1) continue; // skip
 					list ($g,$m,$d) = explode("-",$r140[2]);
 					if ($r140[3] == 2) { // tipkomponente 2 = integralni
-						$ispisint .= "$r140[0] ($d.$m.)<br/>";
+						$ispisint .= "$r140[0] ($d.$m.)<br>";
 					} else {
 						if ($r140[1]==$kp1)
-							$ispis1p .= "$r140[0] ($d.$m.)<br/>";
+							$ispis1p .= "$r140[0] ($d.$m.)<br>";
 						else if ($r140[1]==$kp2)
-							$ispis2p .= "$r140[0] ($d.$m.)<br/>";
+							$ispis2p .= "$r140[0] ($d.$m.)<br>";
 						//else
 						// Ostale komponente ispita nećemo ni uzimati u obzir
 						// To može biti usmeni, a može biti i neprepoznata komponenta
@@ -201,7 +202,8 @@ while ($r110 = mysql_fetch_row($q110)) {
 	
 			print "</tr>";
 		} // while ($r120...
-		print "</table>\n\n";
+		if (mysql_num_rows($q120)>0)
+			print "</table>\n\n";
 	} // for ($i=0...
 
 }
