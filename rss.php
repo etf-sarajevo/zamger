@@ -61,13 +61,13 @@ header("Content-type: application/rss+xml");
 
 ?>
 <<?='?'?>xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE rss PUBLIC "-//Netscape Communications//DTD RSS 0.91//EN" "http://www.rssboard.org/rss-0.91.dtd">
-<rss version="0.91">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
         <title>Zamger RSS</title>
         <link><?=$conf_site_url?></link>
         <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
         <language>bs-ba</language>
+        <atom:link href="<?=$conf_site_url?>/rss.php?id=<?=$id?>" rel="self" type="application/rss+xml" />
 <?
 
 
@@ -92,13 +92,14 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
 	if (mysql_result($q12,0,0)==0) continue;
 
-	$code_poruke["z".$r10[0]] = "
-		<item>
+	$vrijeme_poruke["z".$r10[0]] = $r10[5];
+	$code_poruke["z".$r10[0]] = "<item>
+		<guid isPermaLink=\"false\">z".$r10[0]."</guid>
 		<title>Objavljena zadaća $r10[1], predmet $r10[3]</title>
 		<link>$conf_site_url/index.php?sta=student/zadaca&amp;zadaca=$r10[0]&amp;predmet=$r10[6]&amp;ag=$r10[7]</link>
-		<description><![CDATA[Rok za slanje je ".date("d. m. Y h:i ",$r10[2]).".]]></description>
-		</item>\n";
-	$vrijeme_poruke["z".$r10[0]] = $r10[5];
+		<description><![CDATA[Rok za slanje je ".date("d. m. Y  h:i",$r10[2]).".]]></description>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["z".$r10[0]])."</pubDate>
+	</item>\n";
 }
 
 
@@ -107,40 +108,53 @@ while ($r10 = mysql_fetch_row($q10)) {
 $q15 = myquery("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = mysql_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
+
+	// Da li je student položio predmet? Preskačemo ako jeste
+	$q15a = myquery("select count(*) from konacna_ocjena where predmet=$r15[7] and ocjena>=6 and student=$userid");
+	if (mysql_result($q15a,0,0)>0) continue;
+
 	// Ima li kakvih rezultata?
 	$q16 = myquery("select count(*) from ispitocjene where ispit=$r15[0]");
 	if (mysql_result($q16,0,0)==0) {
 		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0]");
-		if (mysql_result($q17,0,0)>0) 
+		if (mysql_result($q17,0,0)>0) {
+			$vrijeme_poruke["i".$r15[0]] = $r15[3];
 			$code_poruke["i".$r15[0]] = "<item>
+		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
 		<title>Objavljeni termini za ispit $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
 		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["i".$r15[0]])."</pubDate>
 	</item>\n";
-		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+		}
 	}
 	else {
+		$vrijeme_poruke["i".$r15[0]] = $r15[3];
 		$code_poruke["i".$r15[0]] = "<item>
+		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
 		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["i".$r15[0]])."</pubDate>
 	</item>\n";
-		$vrijeme_poruke["i".$r15[0]] = $r15[3];
 	}
 }
+
+
 
 // konacna ocjena
 
 $q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id order by ko.datum desc limit $broj_poruka");
 while ($r17 = mysql_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["k".$r17[0]] = "
-		<item>
+	$vrijeme_poruke["k".$r17[0]] = $r17[2];
+	$code_poruke["k".$r17[0]] = "<item>
+		<guid isPermaLink=\"false\">k".$r17[0]."</guid>
 		<title>Čestitamo! Dobili ste $r17[1] -- predmet $r17[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r17[4]&amp;ag=$r17[5]</link>
 		<description></description>
-		</item>\n";
-	$vrijeme_poruke["k".$r17[0]] = $r17[2];
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["k".$r17[0]])."</pubDate>
+	</item>\n";
 }
 
 
@@ -153,14 +167,15 @@ $zadaca_bila = array();
 while ($r18 = mysql_fetch_row($q18)) {
 	if (in_array($r18[6],$zadaca_bila)) continue; // ne prijavljujemo vise puta istu zadacu
 	if ($r18[2] < time()-60*60*24*30) break; // IDovi bi trebali biti hronoloskim redom, tako da ovdje mozemo prekinuti petlju
-	$code_poruke["zp".$r18[0]] = "
-		<item>
+	$vrijeme_poruke["zp".$r18[0]] = $r18[2];
+	$code_poruke["zp".$r18[0]] = "<item>
+		<guid isPermaLink=\"false\">zp".$r18[0]."</guid>
 		<title>Pregledana zadaća $r18[4], predmet $r18[3]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r18[7]&amp;ag=$r18[8]</link>
 		<description><![CDATA[Posljednja izmjena: ".date("d. m. Y. h:i:s",$r18[2])."]]></description>
-		</item>\n";
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["zp".$r18[0]])."</pubDate>
+	</item>\n";
 	array_push($zadaca_bila,$r18[6]);
-	$vrijeme_poruke["zp".$r18[0]] = $r18[2];
 }
 
 
@@ -210,9 +225,10 @@ while ($r100 = mysql_fetch_row($q100)) {
 	// Fino vrijeme
 	$vr = $vrijeme_poruke[$id];
 	$vrijeme="";
-	/* if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
-	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
-	else*/ $vrijeme .= date("d.m. ",$vr);
+//	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
+//	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
+//	else 
+	$vrijeme .= date("d.m. ",$vr);
 	$vrijeme .= date("H:i",$vr);
 
 	$naslov = $r100[4];
@@ -240,12 +256,13 @@ while ($r100 = mysql_fetch_row($q100)) {
 	else
 		$title="Poruka";
 
-	$code_poruke[$id]="
-		<item>
+	$code_poruke[$id]="<item>
+		<guid isPermaLink=\"false\">".$id."</guid>
 		<title>$title: $naslov ($vrijeme)</title>
 		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
 		<description>Poslao: $posiljalac</description>
-		</item>\n";
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+	</item>\n";
 }
 
 
@@ -299,12 +316,14 @@ while ($r200 = mysql_fetch_row($q200)) {
 				if (strlen($naslov)>30) 
 					$naslov = z_substr($naslov,0,28)."...";
 
+				$vrijeme_poruke["mo".$r210[3]] = ($r210[4]>$r220[1])?$r210[4]:$r220[1];
 				$code_poruke["mo".$r210[3]] = "<item>
+		<guid isPermaLink=\"false\">mo".$r210[3]."</guid>
 		<title>Obavijest ($r200[1]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."course/view.php?id=$course_id</link>
 		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["mo".$r210[3]])."</pubDate>
 		</item>\n";
-				$vrijeme_poruke["mo".$r210[3]] = ($r210[4]>$r220[1])?$r210[4]:$r220[1];
 			}
 		}
 		
@@ -320,12 +339,14 @@ while ($r200 = mysql_fetch_row($q200)) {
 				if (strlen($naslov)>30) 
 					$naslov = z_substr($naslov,0,28)."...";
 
+				$vrijeme_poruke["mr".$r210[3]] = ($r210[4]>$r230[1])?$r210[4]:$r230[1];
 				$code_poruke["mr".$r210[3]] = "<item>
+		<guid isPermaLink=\"false\">mr".$r210[3]."</guid>
 		<title>Resurs ($r200[1]): $naslov ($vrijeme)</title>
 		<link>".$conf_moodle_url."mod/resource/view.php?id=$r210[3]</link>
 		<description>Detaljnije na Moodle stranici predmeta $r200[2]</description>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["mr".$r210[3]])."</pubDate>
 		</item>\n";
-				$vrijeme_poruke["mr".$r210[3]] = ($r210[4]>$r230[1])?$r210[4]:$r230[1];
 			}
 		}
 	}
@@ -338,7 +359,9 @@ if (!$conf_moodle_reuse_connection) {
 }
 
 
+// KRAJ I ISPIS
 // Sortiramo po vremenu
+
 arsort($vrijeme_poruke);
 $count=0;
 
