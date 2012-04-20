@@ -347,6 +347,7 @@ function genform($method="POST", $name="") {
 	$result = '<form name="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
 	foreach ($_REQUEST as $key=>$value) {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
+		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
 		$key = htmlspecialchars($key);
 		$value = htmlspecialchars($value);
 		if (substr($key,0,4) != "_lv_") 
@@ -381,10 +382,10 @@ function genuri() {
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
 		if ((substr($key,0,4) != "_lv_") && $key != "PHPSESSID" && $key != "pass")
-		$result .= urlencode($key).'='.urlencode($value).'&';
+		$result .= urlencode($key).'='.urlencode($value).'&amp;';
 	}
-	if (substr($result,strlen($result)-1) == "&") 
-		$result = substr($result,0,strlen($result)-1); // drop last &
+	if (substr($result,strlen($result)-5) == "&amp;") 
+		$result = substr($result,0,strlen($result)-5); // drop last &
 	return $result;
 }
 
