@@ -385,6 +385,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	
 	<script language="JavaScript">
 	var oldState = 0;
+	var oldEvent;
 
 	// Funkcija koja se poziva klikom na polje u tabeli
 	function prisustvo(e,student,cas) {
@@ -393,13 +394,22 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 			return false;
 		}
 		var prisutan = invert(e,student,cas);
-		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "invert("+e+","+student+","+cas+")");
-		// U slucaju da ajah ne uspije, ponovo se poziva funkcija invert
+		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "undo_prisustvo("+student+","+cas+","+prisutan+")");
 	}
+
+	// Funkcija koja se poziva u slučaju greške sa prisustvom
+	function undo_prisustvo(student,cas,prisutan) {
+		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+		if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
+		alert(greska);
+		invert(oldEvent, student, cas);
+	}
+
 	// Switchuje DA i NE
 	function invert(e,student,cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
 		var evt = e || window.event;
+		oldEvent = e;
 
 		// Shift služi za pristup neutralnom stanju /
 		if (evt.shiftKey) {
