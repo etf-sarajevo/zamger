@@ -55,6 +55,22 @@ function common_cron() {
 	}
 	
 	while ($r10 = mysql_fetch_row($q10)) {
+		// Određujemo sljedeće vrijeme izvršenja
+		$localtime = localtime();
+		$localtime = cron_find($localtime, 0, $r10[8]);
+		$localtime = cron_find($localtime, 1, $r10[7]);
+		$localtime = cron_find($localtime, 2, $r10[6]);
+		$localtime = cron_find($localtime, 3, $r10[5]);
+		$localtime = cron_find($localtime, 4, $r10[4]);
+		$localtime = cron_find($localtime, 5, $r10[3]);
+		$nexttime = mktime($localtime[2], $localtime[1], $localtime[0], $localtime[4]+1, $localtime[3], $localtime[5]+1900);
+
+		// Ažuriramo bazu
+		$q20 = myquery("UPDATE cron SET zadnje_izvrsenje=NOW(), sljedece_izvrsenje=FROM_UNIXTIME($nexttime) WHERE id=$r10[0]");
+		$q30 = myquery("INSERT INTO cron_rezultat SET cron=$r10[0], izlaz='(Nije završeno)', return_value=0, vrijeme=NOW()");
+		$id = mysql_insert_id();
+
+		// Pripremamo za izvršenje
 		$exec = str_replace("---LASTTIME---", $r10[2], $r10[1]);
 		$exec = "php $conf_files_path/$exec";
 		$return = 0;
@@ -65,18 +81,7 @@ function common_cron() {
 		
 		// Stavljamo izlaz u bazu
 		$izlaz = my_escape(iconv("UTF-8","UTF-8//IGNORE", join("\n",$blah)));
-		$q20 = myquery("INSERT INTO cron_rezultat SET cron=$r10[0], izlaz='$izlaz', return_value=$return, vrijeme=NOW()");
-		
-		// Određujemo sljedeće vrijeme izvršenja
-		$localtime = localtime();
-		$localtime = cron_find($localtime, 0, $r10[8]);
-		$localtime = cron_find($localtime, 1, $r10[7]);
-		$localtime = cron_find($localtime, 2, $r10[6]);
-		$localtime = cron_find($localtime, 3, $r10[5]);
-		$localtime = cron_find($localtime, 4, $r10[4]);
-		$localtime = cron_find($localtime, 5, $r10[3]);
-		$nexttime = mktime($localtime[2], $localtime[1], $localtime[0], $localtime[4]+1, $localtime[3], $localtime[5]+1900);
-		$q30 = myquery("UPDATE cron SET zadnje_izvrsenje=NOW(), sljedece_izvrsenje=FROM_UNIXTIME($nexttime) WHERE id=$r10[0]");
+		$q40 = myquery("UPDATE cron_rezultat SET return_value=$return, izlaz='$izlaz' WHERE id=$id");
 		
 		if ($force>0) {
 			nicemessage("Uspješno izvršena skripta.");
