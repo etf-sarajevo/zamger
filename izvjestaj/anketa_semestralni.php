@@ -93,9 +93,9 @@ function izvjestaj_anketa_semestralni() {
 		// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 		// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
 		if ($studij == -1)
-			$q50 = myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+			$q50 = myquery("select distinct p.id, p.kratki_naziv, pk.obavezan from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 		else
-			$q50 = myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
+			$q50 = myquery("select distinct p.id, p.kratki_naziv, pk.obavezan from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 
 		while ($r50 = mysql_fetch_row($q50)) {
 			// Da li je ovaj predmet imao ijednu anketu?
@@ -105,6 +105,7 @@ function izvjestaj_anketa_semestralni() {
 				$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y' and studij=$studij");
 			if (mysql_result($q55,0,0)==0) continue;
 			$predmeti[$r50[0]]=$r50[1];
+			$obavezan[$r50[0]]=$r50[2];
 		}
 		
 	
@@ -149,13 +150,21 @@ function izvjestaj_anketa_semestralni() {
 				$sumpitanje += mysql_result($q6730,0,0);
 				if (mysql_result($q6730,0,2) > $maxpredmet[$pid]) $maxpredmet[$pid]=mysql_result($q6730,0,2);
 			}
-			print "<td>".round($sumpitanje/count($predmeti),2)."</td>\n</tr>\n";
+			if (count($predmeti)==0)
+				print "<td>0</td>\n</tr>\n";
+			else
+				print "<td>".round($sumpitanje/count($predmeti),2)."</td>\n</tr>\n";
 		}
 		print "<tr>\n<td>Br.st</td>\n";
+		$sumaobaveznih = $brobaveznih = 0;
 		foreach ($predmeti as $pid => $pnaziv) {
 			print "<td>".$maxpredmet[$pid]."</td>\n";
+			if ($obavezan[$pid]) { $sumaobaveznih += $maxpredmet[$pid]; $brobaveznih++; }
 		}
-		print "<td>&nbsp;</td></tr>\n";
+		if ($brobaveznih==0)
+			print "<td>0</td></tr>\n";
+		else
+			print "<td>".round($sumaobaveznih/$brobaveznih,1)."</td></tr>\n";
 
 		?>
 			</tbody>
