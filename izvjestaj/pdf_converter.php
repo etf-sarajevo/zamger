@@ -14,6 +14,8 @@ function izvjestaj_pdf_converter() {
 	ob_start('ob_file_callback');
 	$koji = my_escape($_REQUEST['koji_izvjestaj']);
 	$staf = str_replace("/","_",$koji);
+	if ($_REQUEST['o'] == "l") $orientation="L";
+	else $orientation="P";
 
 	$found=false;
 	foreach ($registry as $r) {
@@ -80,7 +82,7 @@ function izvjestaj_pdf_converter() {
 	}
 
 	// Prva stranica
-	$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+	$pdf = new MYPDF($orientation, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
 	$pdf->AddFont("DejaVuSans","","DejaVuSans.php");
 	$pdf->AddFont("DejaVuSans","","DejaVuSans-Bold.php");
