@@ -43,6 +43,7 @@ function malaslova($string) {
 // Vraća procentni ispis
 
 function procenat($dio,$total) {
+	if ($total==0) return "0.00%";
 	return (intval($dio/$total*10000)/100)."%";
 }
 
@@ -701,9 +702,12 @@ function zamgerlog($event,$nivo) {
 	// Brisemo gluposti iz eventa
 	if (($k=strpos($event,"sta="))>0) $event=substr($event,$k+4);
 	if (strstr($event,"MOODLEID_=")) $event=preg_replace("/MOODLEID_=([^&]*)/","",$event);
+	$event = str_replace("&amp;"," ",$event);
 	$event = str_replace("&"," ",$event);
 	// sakrij sifru!
 	$event=preg_replace("/pass=([^&]*)/","",$event);
+	// brisemo PHPSESSID
+	$event=preg_replace("/PHPSESSID=([^&]*)/","",$event);
 	// brisemo tekstove poruka i sl.
 	$event=preg_replace("/tekst=([^&]*)/","",$event);
 	// brisemo suvisan tekst koji ubacuje mysql
