@@ -1783,6 +1783,8 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
   `labgrupa` int(11) NOT NULL,
   `dupla` int(11) NOT NULL DEFAULT '0',
   `isjeckana` tinyint(1) NOT NULL DEFAULT '0',
+  `fini_pocetak` time NOT NULL,
+  `fini_kraj` time NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 

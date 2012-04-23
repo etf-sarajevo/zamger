@@ -36,6 +36,7 @@ array("saradnik/izmjena_studenta", "Izmjena podataka o studentu", "Izmjena stude
 array("saradnik/komentar", "Komentari na rad studenta", "Komentar", "N", "0", "0"),
 array("saradnik/student", "Detalji studenta na predmetu", "Detalji studenta", "N", "1", "0"),
 array("saradnik/svezadace", "Download svih zadaća u grupi", "Sve zadaće", "N", "2", "0"),
+array("saradnik/raspored", "Podešavanje rasporeda", "Raspored", "N", "1", "0"),
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
 array("nastavnik/obavjestenja", "Obavještenja za studente", "Obavještenja", "N", "1", "0"),

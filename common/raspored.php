@@ -119,7 +119,7 @@ function common_raspored($tip) {
 					
 
 		
-	} else {
+	} else { // tip = nastavnik
 		// Da li je aktuelan neparni ili parni semestar?
 		$qneparni = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
 		if (mysql_num_rows($qneparni)>0) $neparni=1; else $neparni=0;
@@ -143,7 +143,7 @@ function common_raspored($tip) {
 		if (strlen($sqlPredmet)>0) $sqlWhere = "(".$sqlPredmet.")";
 		else $sqlWhere="1=0"; // Nije angazovan nigdje, prikaži prazan raspored
 		
-		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rsala.naziv FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
+		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND (r.privatno=0 OR r.privatno=$userid) ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
 	}
 
 	// Selektuj podatke iz baze
@@ -156,7 +156,7 @@ function common_raspored($tip) {
 			<div class="dan_header">Ponedjeljak</div>
 			<div class="dan_header">Utorak</div>
 			<div class="dan_header">Srijeda</div>
-			<div class="dan_header">Cetvrtak</div>
+			<div class="dan_header">Četvrtak</div>
 			<div class="dan_header">Petak</div>
 			<div class="dan_header">Subota</div>
 			<div class="razmak"></div>
@@ -201,7 +201,10 @@ function common_raspored($tip) {
 			$tip_stavke = $row[4];
 			$vpocetak = $row[5];
 			$vkraj = $row[6];
+			$labgrupa = $row[7];
 			$naziv_sale = $row[8];
+			$fini_pocetak = substr($row[9],0,5); // Odsjecamo sekunde
+			$fini_kraj = substr($row[10],0,5);
 
 
 			$cssFontSize = "";
@@ -253,11 +256,37 @@ function common_raspored($tip) {
 
 			$polaDone = false; // next box ide desno
 			
-			$stylePlus = 'onMouseMove = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.'\', event)" onMouseOver = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.'\', event)" onMouseOut = "sakrijTT()"';
+			if ($fini_pocetak == "00:00") {
+				// Nije zadano fino vrijeme časa, koristimo grube blokove od 45 minuta + 15 minuta pauze
+				$vrijeme_ispis = $vrijeme_pocetak[$vpocetak]." - ".$vrijeme_kraj[$vkraj]; // Šta će se napisati kao vrijeme časa
+				$pozicija = ($vpocetak-4)*41+$pomak;
+				$visina = 28+($vkraj-$vpocetak)*41;
+			} else {
+				$vrijeme_ispis = $fini_pocetak." - ".$fini_kraj;
+				$pocetak_sati = intval(substr($fini_pocetak, 0, 2));
+				$pocetak_minute = intval(substr($fini_pocetak, 3, 2));
+				$kraj_sati = intval(substr($fini_kraj, 0, 2));
+				$kraj_minute = intval(substr($fini_kraj, 3, 2));
+				$pozicija = ($pocetak_sati-12)*41 + intval($pocetak_minute*(41/60))+$pomak;
+				$visina = intval ( ( $kraj_sati*60 + $kraj_minute - $pocetak_sati*60 - $pocetak_minute ) * (41/60) );
+			}
+			
+			// Pogrešni unosi u bazi?
+			if ($pozicija < -4*41) $pozicija = -4*41;
+			if ($visina > 12*41 - $pozicija) $visina = 12*41 - $pozicija;
+
+			$ime_grupe = "";
+			if ($tip != "student" && $labgrupa != 0) {
+				$qmomoc = myquery("select naziv from labgrupa where id=$labgrupa");
+				$ime_grupe = "<br />".mysql_result($qmomoc,0,0);
+			}
+			
+			// Mouseover efekat
+			$stylePlus = 'onMouseMove = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.$ime_grupe.'\', event)" onMouseOver = "prikaziTT(\'<b>'.$predmet_naziv.'</b> - '.$altT.$ime_grupe.'\', event)" onMouseOut = "sakrijTT()"';
 
 			// Ispisuje box sa predmetom
-			print "<div $stylePlus class=\"$css\" style=\"$transparentno $cssFontSize2 height:".(28+($vkraj-$vpocetak)*41)."px; margin-top:".(($vpocetak-4)*41+$pomak)."px; margin-left:$cssMarLeft"."px\">\n";
-			print "<div class = \"naslov\" style = \"background: $bojaTrake; $cssFontSize2\">".$vrijeme_pocetak[$vpocetak]." - ".$vrijeme_kraj[$vkraj]."</div> <b>$predmet_kratki_naziv</b> - $naziv_sale</div>\n";
+			print "<div $stylePlus class=\"$css\" style=\"$transparentno $cssFontSize2 height:".$visina."px; margin-top:".$pozicija."px; margin-left:$cssMarLeft"."px\">\n";
+			print "<div class = \"naslov\" style = \"background: $bojaTrake; $cssFontSize2\">".$vrijeme_ispis."</div> <b>$predmet_kratki_naziv</b> - $naziv_sale $ime_grupe</div>\n";
 
 			$lastCas = $vkraj;
 		}
@@ -267,6 +296,10 @@ function common_raspored($tip) {
 			<div class = "razmak"></div>
 		</div><br/>
 		<div style = "float: left; background: #E95026; padding: 2px; margin: 1px">Predavanje</div> <div style = "float: left; background: #FF8100; padding: 2px; margin: 1px">Tutorijal</div> <div style = "float: left; background: #E9DE26; padding: 2px; margin: 1px">Laboratorijska vježba</div><div class = "razmak"></div><?
+	}
+
+	if ($tip != "student") {
+		print "<a href=\"?sta=saradnik/raspored\">Prilagodite vaš raspored!</a><br />";
 	}
 		
 	?>
