@@ -429,10 +429,13 @@ function horizontalni_meni($fj) {
 
 	?>
 	</tr></table>
-	<p>&nbsp;</p>
 
+	<div style="margin: 30px">
 	<?
 	eval($fj);
+	?>
+	</div>
+	<?
 }
 
 
