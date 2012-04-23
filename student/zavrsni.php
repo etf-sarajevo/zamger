@@ -94,14 +94,15 @@ function student_zavrsni()  {
 	
 	if ($akcija == 'detalji') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
-		$q130 = myquery("select naziv, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE id=$zavrsni");
-		$naziv = mysql_result($q130,0,0);
-		$kpregled = mysql_result($q130,0,1);
-		$literatura = mysql_result($q130,0,2);
-		$id_mentor = mysql_result($q130,0,3);
-		$id_predkom = mysql_result($q130,0,4);
-		$id_clankom = mysql_result($q130,0,5);
-		$student = mysql_result($q130,0,6);
+		$q130 = myquery("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE id=$zavrsni");
+		$naslov = mysql_result($q130,0,0);
+		$podnaslov = mysql_result($q130,0,1);
+		$kpregled = mysql_result($q130,0,2);
+		$literatura = mysql_result($q130,0,3);
+		$id_mentor = mysql_result($q130,0,4);
+		$id_predkom = mysql_result($q130,0,5);
+		$id_clankom = mysql_result($q130,0,6);
+		$student = mysql_result($q130,0,7);
 		
 		$q99 = myquery("select id, titula from naucni_stepen");
 		while ($r99 = mysql_fetch_row($q99))
@@ -121,7 +122,8 @@ function student_zavrsni()  {
 		<h2>Završni rad</h2>
 		<h3>Detaljnije informacije o temi završnog rada</h3>
 		<table border="0" cellpadding="10">
-		<tr><td align="right" valign="top"><b>Naziv teme:</b></td><td><?=$naziv?></td></tr>
+		<tr><td align="right" valign="top"><b>Naslov teme:</b></td><td><?=$naslov?></td></tr>
+		<tr><td align="right" valign="top"><b>Podnaslov:</b></td><td><?=$podnaslov?></td></tr>
 		<tr><td align="right" valign="top"><b>Kratki pregled teme:</b></td><td><?=$kpregled?></td></tr>
 		<tr><td align="right" valign="top"><b>Literatura:</b></td><td><?=$literatura?></td></tr>
 		<tr><td align="right" valign="top"><b>Mentor:</b></td><td><?=dajIme($id_mentor, $naucni_stepen)?></td></tr>
@@ -177,7 +179,7 @@ function student_zavrsni()  {
 			$naucni_stepen[$r99[0]]=$r99[1];
 		
 		// Početne informacije
-		$q901 = myquery("SELECT z.id, z.naziv, o.ime, o.prezime, o.naucni_stepen, z.student FROM zavrsni AS z, osoba AS o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.mentor=o.id AND 1=0 ORDER BY o.prezime, o.ime, z.naziv");
+		$q901 = myquery("SELECT z.id, z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student FROM zavrsni AS z, osoba AS o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.mentor=o.id AND 1=0 ORDER BY o.prezime, o.ime, z.naslov");
 		$broj_tema = mysql_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
@@ -193,8 +195,8 @@ function student_zavrsni()  {
 	
 		while ($r901 = mysql_fetch_row($q901)) {
 			$id_zavrsni = $r901[0];
-			$naziv_teme = $r901[1];
-			$naziv_teme = "<a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=detalji\">$naziv_teme</a>";
+			$naslov_teme = $r901[1];
+			$naslov_teme = "<a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=detalji\">$naslov_teme</a>";
 			$mentor = $r901[3]." ".$naucni_stepen[$r901[4]]." ".$r901[2];
 			$rbr++;
 			if ($r901[5] == $userid) {
@@ -208,40 +210,11 @@ function student_zavrsni()  {
 			?>
 			<tr>
 				<td><?=$rbr?>.</td>
-				<td><?=$naziv_teme?></td>
+				<td><?=$naslov_teme?></td>
 				<td><?=$mentor?></td>
 				<td><?=$link?></td> 
 			</tr>
 			<?
-			
-/*			?>
-			<h3><?=$naziv_teme?></h3>
-			<div class="links">
-				<ul class="clearfix" style="margin-bottom: 10px;">
-					<li><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=prijava"?>">Prijavi se na ovu temu završnog rada</a></li>
-					<li class="last"><a href="<?=$linkprefix."&zavrsni=".$zavrsni[id]."&akcija=zavrsnistranica"?>">Stranica završnih radova</a></li>
-				</ul> 
-			</div>
-
-			<table class="zavrsni" border="0" cellspacing="0" cellpadding="2">
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Naziv teme završnog rada</th>
-					<td width="490" align="left" valign="top"><?=$r901[1]?></td>
-				</tr>
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Kratki pregled</th>
-					<td width="490" align="left" valign="top"><?=$r901[2]?></td>
-				</tr>
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Preporučena literatura</th>
-					<td width="490" align="left" valign="top"><?=$r901[4]?></td>
-				</tr>
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Odgovorni profesor</th>
-					<td width="490" align="left" valign="top"><?=$r901[3]?></td>
-				</tr>
-			</table>
-			<?*/
 		} // while ($r901...
 	} // if (!isset($akcija)
 } //function

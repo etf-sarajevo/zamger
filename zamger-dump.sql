@@ -2110,22 +2110,6 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `student_zavrsni`
---
-
-CREATE TABLE IF NOT EXISTS `student_zavrsni` (
-  `student` int(11) NOT NULL,
-  `zavrsni` int(11) NOT NULL,
-  PRIMARY KEY (`student`,`zavrsni`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
---
--- Dumping data for table `student_zavrsni`
---
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `studij`
 --
 
@@ -2403,11 +2387,14 @@ CREATE TABLE IF NOT EXISTS `zadatakdiff` (
 
 CREATE TABLE IF NOT EXISTS `zavrsni` (
   `id` int(11) NOT NULL,
-  `naziv` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `naslov` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `podnaslov` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   `predmet` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `akademska_godina` varchar(10) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '0',
   `kratki_pregled` text COLLATE utf8_slovenian_ci NOT NULL,
   `literatura` text COLLATE utf8_slovenian_ci NOT NULL,
+  `sazetak` text COLLATE utf8_slovenian_ci NOT NULL,
+  `summary` text COLLATE utf8_slovenian_ci NOT NULL,
   `mentor` INT(11) NOT NULL,
   `student` INT(11) NOT NULL,
   `kandidat_potvrdjen` tinyint(4) NOT NULL,
@@ -2422,6 +2409,50 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
 --
 -- Dumping data for table `zavrsni`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `zavrsni_bb_post`
+--
+
+CREATE TABLE IF NOT EXISTS `zavrsni_bb_post` (
+  `id` int(11) NOT NULL,
+  `naslov` varchar(300) collate utf8_slovenian_ci NOT NULL,
+  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `osoba` int(11) NOT NULL,
+  `tema` int(11) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `zavrsni_bb_post_text`
+--
+
+CREATE TABLE IF NOT EXISTS `zavrsni_bb_post_text` (
+  `post` int(11) NOT NULL,
+  `tekst` text collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`post`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `zavrsni_bb_tema`
+--
+
+CREATE TABLE IF NOT EXISTS `zavrsni_bb_tema` (
+  `id` int(11) NOT NULL,
+  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `prvi_post` int(11) NOT NULL default '0',
+  `zadnji_post` int(11) NOT NULL default '0',
+  `pregleda` int(11) unsigned NOT NULL default '0',
+  `osoba` int(11) NOT NULL,
+  `zavrsni` int(11) NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
