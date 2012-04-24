@@ -483,7 +483,7 @@ while ($r195 = mysql_fetch_row($q195)) {
 	$cas_id_array = array();
 	$cas_kviz_array = array();
 
-	$q200 = myquery("SELECT id,datum,vrijeme,kviz FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum");
+	$q200 = myquery("SELECT id,datum,vrijeme,kviz FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum, vrijeme");
 	while ($r200 = mysql_fetch_row($q200)) {
 		$cas_id = $r200[0];
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);

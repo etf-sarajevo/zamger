@@ -327,9 +327,9 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			$prisustvo_zaglavlje = "";
 
 			if ($grupa_id!=0) 
-				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum");
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum,vrijeme");
 			else if ($id_virtualne_grupe>0)
-				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum");
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum,vrijeme");
 			else continue; // ako nema virtualne grupe - preskacemo
 
 			while ($r110 = mysql_fetch_row($q110)) {
