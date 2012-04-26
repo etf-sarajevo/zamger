@@ -357,14 +357,14 @@ if ($userid>0) {
 		function newmail_show() {
 			var newmail = document.getElementById('newmail');
 			newmail.style.visibility='visible';
-			newmail.style.top=-188;
-			newmail.style.left=mywidth/2-225;
+			newmail.style.top="-188px";
+			newmail.style.left=mywidth/2-225 + "px";
 			setTimeout("newmail_scroll()",10);
 		}
 		function newmail_scroll() {
 			var newmail = document.getElementById('newmail');
 			if (parseInt(newmail.style.top) < myheight/2-94) {
-				newmail.style.top=parseInt(newmail.style.top)+1;
+				newmail.style.top=(parseInt(newmail.style.top)+1) + "px";
 				setTimeout("newmail_scroll()",10);
 			} else {
 				setTimeout("newmail_flash()",500);
