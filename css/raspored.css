@@ -1,14 +1,5 @@
 /* body pozicioniranje */
-body {
-	background-color:#FFFFFF;
-	margin-left: 0px;
-	margin-top: 0px;
-	margin-right: 0px;
-	margin-bottom: 0px;
-	text-align: center;
-	font-family: Tahoma;
-	font-size: 10px;
-}
+
 #container {
 	width: auto;
 	margin-left: auto;
