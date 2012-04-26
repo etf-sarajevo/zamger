@@ -26,6 +26,11 @@ while ($r20 = mysql_fetch_row($q20)) {
 	$predmet = $r20[2];
 	$ag = $r20[3];
 	$ekstenzija = $r20[4];
+
+	if (!($programski_jezik == "C" || $programski_jezik == "C++" || $programski_jezik == "Java")) {
+		print "Programski jezik $programski_jezik trenutno nije podržan.\n";
+		continue;
+	}
 //$zadaca = 1220;
 //$programski_jezik = "C++";
 //$predmet = 2;
