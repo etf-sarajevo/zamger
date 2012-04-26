@@ -143,7 +143,10 @@ function common_raspored($tip) {
 		if (strlen($sqlPredmet)>0) $sqlWhere = "(".$sqlPredmet.")";
 		else $sqlWhere="1=0"; // Nije angazovan nigdje, prikaži prazan raspored
 		
-		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND (r.privatno=0 OR r.privatno=$userid) ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
+		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj 
+		FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p, raspored as r, akademska_godina as ag
+		WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND rs.raspored=r.id AND (r.privatno=0 OR r.privatno=$userid) AND r.akademska_godina=ag.id AND ag.aktuelna=1
+		ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
 	}
 
 	// Selektuj podatke iz baze
