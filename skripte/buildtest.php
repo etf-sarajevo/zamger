@@ -272,8 +272,12 @@ function autotest() {
 		unlink($log_file);
 
 		// Tražim rezultate u izlazu
-		$rezultat = $r110[1];
+		$rezultat = str_replace("\r\n", "\n", $r110[1]);
 		$alt_rezultat = $r110[2];
+		// Dozvoljavamo zadavanje novog reda preko \n
+		$rezultat = str_replace("\\n", "\n", $rezultat);
+		$alt_rezultat = str_replace("\\n", "\n", $alt_rezultat);
+
 		$fuzzy = $r110[3];
 		$nalaz_testa = ""; // Gomilamo rezultate u jedan string
 		if (preg_match("/====TEST$rbr====(.*?)====KRAJ$rbr====/s", $izlaz, $matches)) {
