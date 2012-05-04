@@ -298,7 +298,7 @@ CREATE TABLE IF NOT EXISTS `autotest` (
   `fuzzy` tinyint(1) NOT NULL default '0',
   `global_scope` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=190 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -315,7 +315,7 @@ CREATE TABLE IF NOT EXISTS `autotest_replace` (
   `specifikacija` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `zamijeni` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=36 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -440,7 +440,7 @@ CREATE TABLE IF NOT EXISTS `cron` (
   `zadnje_izvrsenje` datetime NOT NULL,
   `sljedece_izvrsenje` datetime NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -521,6 +521,20 @@ INSERT INTO `ekstenzije` (`id`, `naziv`) VALUES
 (14, '.jar'),
 (15, '.java'),
 (16, '.gz');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `email`
+--
+
+CREATE TABLE IF NOT EXISTS `email` (
+  `id` int(11) NOT NULL auto_increment,
+  `osoba` int(11) NOT NULL,
+  `adresa` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `sistemska` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1282,7 +1296,6 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `imemajke` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   `prezimemajke` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   `spol` enum('M','Z','') COLLATE utf8_slovenian_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `datum_rodjenja` date NOT NULL,
   `mjesto_rodjenja` int(11) NOT NULL,

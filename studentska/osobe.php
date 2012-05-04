@@ -130,14 +130,14 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		$q30 = myquery("select id from osoba order by id desc limit 1");
 		$osoba = mysql_result($q30,0,0)+1;
 
-		$upit = "insert into osoba set id=$osoba, ime='$ime', prezime='$prezime'";
+		$q40 = myquery("insert into osoba set id=$osoba, ime='$ime', prezime='$prezime', naucni_stepen=6, strucni_stepen=5");
+		// 6 = bez naučnog stepena, 5 = srednja stručna sprema
 
 		if ($conf_system_auth == "ldap" && $uid != "") {
 			// Ako je LDAP onda imamo email adresu
-			$upit = $upit.", email='".$uid.$conf_ldap_domain."'";
-			// a ako je student, imamo i brindexa
-			if (preg_match("/\w\w(\d\d\d\d\d)/", $uid, $matches))
-				$upit = $upit.", brindexa='".$matches[1]."'";
+			$email = $uid.$conf_ldap_domain;
+			$q33 = myquery("INSERT INTO email SET osoba=$osoba, adresa='$email', sistemska=1");
+			// Adresu podešavamo kao sistemsku što znači da je korisnik ne može mijenjati niti brisati
 
 			// Mozemo ga dodati i u auth tabelu
 			$q35 = myquery("select count(*) from auth where id=$osoba");
@@ -145,8 +145,6 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 				$q37 = myquery("insert into auth set id=$osoba, login='$uid', admin=1, aktivan=1");
 			}
 		}
-
-		$q40 = myquery($upit);
 
 		nicemessage("Novi korisnik je dodan.");
 		zamgerlog("dodan novi korisnik u$osoba (ID: $osoba)",4); // nivo 4: audit

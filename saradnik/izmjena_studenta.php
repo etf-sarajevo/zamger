@@ -28,6 +28,9 @@
 
 function saradnik_izmjena_studenta() {
 
+print "Ne radi";
+return;
+
 global $userid,$user_siteadmin,$user_studentska;
 
 
@@ -48,7 +51,7 @@ $ag=intval($_REQUEST['ag']);
 
 // Podaci o studentu...
 
-$q140=myquery("select ime,prezime,email,brindexa from osoba where id=$student");
+$q140=myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (mysql_num_rows($q140)<1) {
 	zamgerlog("nepostojeci student (student $student)",3);
 	biguglyerror("Nepoznat student");
@@ -124,7 +127,7 @@ if ($user_siteadmin || $user_studentska) {
 
 // TODO: prikaži read-only podatke o studentu
 if ($izmjena_moguca ==0) {
-	zamgerlog("nije moguca izmjena (student u$student predmet pp$predmet)",3);
+	zamgerlog("saradnik/izmjena_studenta: nije moguca izmjena (student u$student predmet pp$predmet)",3);
 	niceerror("Nemate pravo pristupa ovom studentu!");
 	return;
 }
@@ -168,12 +171,8 @@ if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 		<td><input type="text" name="prezime" size="20" value="<?=mysql_result($q140,0,1)?>"></td>
 	</tr>
 	<tr>
-		<td>Kontakt e-mail:</td>
-		<td><input type="text" name="email" size="20" value="<?=mysql_result($q140,0,2)?>"></td>
-	</tr>
-	<tr>
 		<td>Broj indexa:</td>
-		<td><input type="text" name="brind" size="10" value="<?=mysql_result($q140,0,3)?>"></td>
+		<td><input type="text" name="brind" size="10" value="<?=mysql_result($q140,0,2)?>"></td>
 	</tr>
 	<tr>
 		<td>Upisan na:</td>
@@ -266,7 +265,6 @@ if ($user_siteadmin) {
 function _izmijeni_profil($student,$predmet) {
 	$ime = my_escape($_POST['ime']);
 	$prezime = my_escape($_POST['prezime']);
-	$email = my_escape($_POST['email']);
 	$brind = my_escape($_POST['brind']);
 	if ($brind==0) {
 		// Obsolete?
@@ -283,7 +281,7 @@ function _izmijeni_profil($student,$predmet) {
 		return; 
 	}
 
-	$q210 = myquery("update osoba set ime='$ime', prezime='$prezime', email='$email', brindexa='$brind' where id=$student");
+	$q210 = myquery("update osoba set ime='$ime', prezime='$prezime', brindexa='$brind' where id=$student");
 
 	// Update grupe - prvo obrisati staru pa ubaciti novu
 	$q220 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa where sl.student=$student and sl.labgrupa=labgrupa.id and labgrupa.predmet=$predmet and labgrupa.virtualna=0");
@@ -303,9 +301,7 @@ function _izmijeni_profil($student,$predmet) {
 		$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$grupa");
 
 		// Update komponente za prisustvo
-		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, akademska_godina_predmet as p where pk.id=$predmet and pk.predmet=p.predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3 and p.akademska_godina=$ag");
-				
-				//$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, predmet as p where pk.id=$predmet and pk.predmet=p.id and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3");
+		$q250 = myquery("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, akademska_godina_predmet as agp where pk.id=$predmet and pk.predmet=agp.predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
 		// Ovo za sada ne radi jer update_komponente trazi ponudukursa sto mi ovdje ne mozemo znati
 /*		while ($r250 = mysql_fetch_row($q250))
 			update_komponente($student, $predmet, $r250[0]);*/

@@ -97,10 +97,15 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 		// Saljem mail...
 		if ($email && ($opseg==3 || $opseg==5)) { // nema spamanja!
 
+			// Podaci za konverziju naših slova
+			$nasaslova = array("č", "ć", "đ", "š", "ž", "Č", "Ć", "Đ", "Š", "Ž");
+			$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
+
 			if ($opseg == 3) {
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
 				$q320 = myquery("select naziv from studij where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
+
 			} else if ($opseg == 5) {
 				// Saljemo mail samo studentima na aktuelnoj akademskoj godini
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
@@ -108,6 +113,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
 			}
 
+			// Subject email poruke
 			$subject = iconv("UTF-8", "ISO-8859-2", $subject); // neki mail klijenti ne znaju prikazati utf-8 u subjektu
 			$preferences = array(
 				"input-charset" => "ISO-8859-2",
@@ -118,39 +124,49 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 			$preferences["scheme"] = "Q"; // quoted-printable
 			$subject = iconv_mime_encode("", $subject, $preferences);
 
-			// Vracamo naslov i tekst koji su ranije escapovani
+			// Vraćamo naslov i tekst obavještenja koji su ranije escapovani
+			// mail() nema poznatih eksploita po tom pitanju
 			$naslov = $_REQUEST['naslov'];
 			$tekst = $_REQUEST['tekst'];
 			
  			$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nStudentska služba $conf_skr_naziv_institucije_genitiv poslala vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
 
-			$q9 = myquery("select o.ime, o.prezime, o.email, a.login from osoba as o, auth as a where o.id=$userid and a.id=$userid");
-			$imeprezime = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+			// Podaci za from polje
+			$q9 = myquery("select o.ime, o.prezime from osoba as o where o.id=$userid");
+			$from = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+			$from = str_replace($nasaslova, $beznasihslova, $from);
 
-			$email = mysql_result($q9,0,2);
-			if (!(strpos($email,"@"))) $email = mysql_result($q9,0,3) . $conf_ldap_domain;
-			
+			$q9a = myquery("SELECT adresa FROM email WHERE osoba=$userid ORDER BY sistemska DESC, id");
+			if (mysql_num_rows($q9a)<1) {
+				niceerror("Ne možemo poslati mail jer nemate definisanu adresu.");
+				print "Da bi se mail mogao poslati, mora biti definisana odlazna adresa (adresa pošiljaoca). Molimo vas da u vašem <a href=\"?sta=common/profil\">profilu</a> podesite vašu e-mail adresu.";
+				return 0;
+			}
+			$from .= " <".mysql_result($q9a,0,0).">";
+
+			$add_header = "From: $from\r\nContent-Type: text/plain; charset=utf-8\r\n";
 
 			$broj=0;
 			$q7 = myquery($upit);
-			$nasaslova = array("č", "ć", "đ", "š", "ž", "Č", "Ć", "Đ", "Š", "Ž");
-			$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
-
-
-			$imeprezime = str_replace($nasaslova, $beznasihslova, $imeprezime);
-			$add_header = "From: $imeprezime <$email>\r\nContent-Type: text/plain; charset=utf-8\r\n";
 
 			while ($r7 = mysql_fetch_row($q7)) {
-				$studentimeprezime = str_replace($nasaslova, $beznasihslova, "$r7[2] $r7[3]");
-				$nmailto = "$studentimeprezime <$r7[1]$conf_ldap_domain>; ";
-				$broj++;
-				if ($r7[0]!="$r7[1]$conf_ldap_domain") {
-					$nmailto .= "$studentimeprezime <$r7[0]>; ";
-					$broj++;
-				}
-				mail("$r7[1]$conf_ldap_domain", $subject, $mail_body, "$add_header"."Cc: $nmailto");
-				nicemessage ("Mail poslan za $studentimeprezime &lt;$r7[1]$conf_ldap_domain&gt;");
+				$student_id = $r7[0];
+				$student_ime_prezime = str_replace($nasaslova, $beznasihslova, "$r7[1] $r7[2]");
 
+				// Određujemo email adrese studenta
+				$q9b = myquery("SELECT adresa FROM email WHERE osoba=$student_id ORDER BY sistemska DESC, id");
+				$mail_to = "";
+				$mail_cc = "";
+				// Prvu adresu stavljamo u To: a sve ostale u Cc: kako bi mail server otkrio eventualne aliase
+				while ($r9b = mysql_fetch_row($q9b)) {
+					if ($mail_to == "") $mail_to = $r9b[0];
+					$mail_cc .= "$student_ime_prezime <$r9b[0]>; ";
+				}
+
+				if ($mail_to != "") { // Da li student ima ijednu adresu?
+					mail($mail_to, $subject, $mail_body, "$add_header"."Cc: $mail_cc");
+					nicemessage ("Mail poslan za $student_ime_prezime &lt;$mail_to&gt;");
+				}
 			}
 
 		} // if ($email==1)...

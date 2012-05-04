@@ -34,7 +34,7 @@ $ag = intval($_REQUEST['ag']);
 // Provjera ulaznih podataka i podaci za naslov
 
 // Student
-$q40 = myquery("select ime, prezime, brindexa, email, slika from osoba where id=$student");
+$q40 = myquery("select ime, prezime, brindexa, slika from osoba where id=$student");
 if (mysql_num_rows($q40)<1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("nepoznat student $student", 3);
@@ -43,17 +43,13 @@ if (mysql_num_rows($q40)<1) {
 $ime = mysql_result($q40,0,0);
 $prezime = mysql_result($q40,0,1);
 $brindexa = mysql_result($q40,0,2);
-$email = mysql_result($q40,0,3);
-$slika = mysql_result($q40,0,4);
+$slika = mysql_result($q40,0,3);
+
 $mailprint = "";
-if (strstr($email,"@")) $mailprint = "<a href=\"mailto:$email\">$email</a>";
-
-
-// Odredjujemo default email adresu
-$defaultmail = gen_ldap_uid($student) . $conf_ldap_domain;
-if ($email != $defaultmail) {
+$q45 = myquery("SELECT adresa FROM email WHERE osoba=$student ORDER BY sistemska DESC, id");
+while ($r45 = mysql_fetch_row($q45)) {
 	if ($mailprint) $mailprint .= ", ";
-	$mailprint .= "<a href=\"mailto:$defaultmail\">$defaultmail</a>";
+	$mailprint .= "<a href=\"mailto:$r45[0]\">$r45[0]</a>";
 }
 
 // Predmet
@@ -229,7 +225,7 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 
 // --- ISPIS 
 
-if ($slika != "") { print "<img src=\"?sta=common/slika&osoba=$student\" align=\"left\">\n"; }
+if ($slika != "") { print "<img src=\"?sta=common/slika&osoba=$student\" align=\"left\" style=\"margin: 10px\">\n"; }
 
 
 // Naslov
