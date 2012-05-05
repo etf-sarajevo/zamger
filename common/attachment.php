@@ -221,7 +221,7 @@ if ($tip == "zavrsni") {
 		if (mysql_num_rows($q310)>0 && mysql_result($q310,0,0)!="asistent") $ok = true;
 	}
 	if ($user_student && !$ok) {
-		$q320 = myquery("SELECT count(*) FROM zavrsni WHERE student=$userid and zavrsni=$zavrsni");
+		$q320 = myquery("SELECT count(*) FROM zavrsni WHERE student=$userid and id=$zavrsni");
 		if (mysql_result($q320,0,0)>0) $ok = true;
 	}
 
