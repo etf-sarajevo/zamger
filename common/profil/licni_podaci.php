@@ -303,13 +303,13 @@ $gradovir="<option></option>";
 $gradovia="<option></option>";
 while ($r410 = mysql_fetch_row($q410)) { 
 	$gradovir .= "<option"; $gradovia .= "<option";
- 	if ($r410[0]==mysql_result($q400,0,5)) { 
+ 	if ($r410[0]==mysql_result($q400,0,4)) { 
 		$gradovir  .= " SELECTED"; 
 		$mjestorvalue = $r410[1]; 
 		$opcinar = $r410[2];
 		$drzavar = $r410[3];
 	}
- 	if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
+ 	if ($r410[0]==mysql_result($q400,0,8)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
 	$gradovir .= ">$r410[1]</option>\n";
 	$gradovia .= ">$r410[1]</option>\n";
 }
@@ -334,7 +334,7 @@ while ($r430 = mysql_fetch_row($q430)) {
  	if ($r430[0]==$drzavar) { $drzaver  .= " SELECTED";  }
 	$drzaver .= ">$r430[1]</option>\n";
 	$drzavlj .= "<option value=\"$r430[0]\"";
- 	if ($r430[0]==mysql_result($q400,0,17)) { $drzavlj  .= " SELECTED";  }
+ 	if ($r430[0]==mysql_result($q400,0,16)) { $drzavlj  .= " SELECTED";  }
 	$drzavlj .= ">$r430[1]</option>\n";
 }
 
@@ -344,16 +344,16 @@ $q440 = myquery("select id,naziv from nacionalnost order by naziv");
 $nacion="<option></option>";
 while ($r440 = mysql_fetch_row($q440)) {
 	$nacion .= "<option value=\"$r440[0]\"";
- 	if ($r440[0]==mysql_result($q400,0,18)) { $nacion  .= " SELECTED";  }
+ 	if ($r440[0]==mysql_result($q400,0,17)) { $nacion  .= " SELECTED";  }
 	$nacion .= ">$r440[1]</option>\n";
 }
 
 // Spol
-if (mysql_result($q400,0,12)=="M") $muskir = "CHECKED"; else $muskir="";
-if (mysql_result($q400,0,12)=="Z") $zenskir = "CHECKED"; else $zenskir="";
+if (mysql_result($q400,0,11)=="M") $muskir = "CHECKED"; else $muskir="";
+if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
 
 // Pripadnik borackih kategorija
-if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
+if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 
 
 ?>
@@ -458,7 +458,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">SLIKA:</font></td></tr>
 	<tr><td colspan="2">Slika koju ovdje odaberete nije vaš "avatar" nego zvanična fotografija u formatu lične karte / pasoša koja ide u dokumentaciju fakulteta i vezuje se za vaše zvanične dokumente. Slika mora imati bijelu/svijetlu pozadinu. Molimo vas da pošaljete sliku zadovoljavajuće kvalitete radi lakšeg štampanja dokumenata.</td></tr>
 	<?
-	if (mysql_result($q400,0,20)=="") {
+	if (mysql_result($q400,0,19)=="") {
 		print genform("POST", "a\"  enctype=\"multipart/form-data");
 		?>
 		<input type="hidden" name="subakcija" value="postavisliku">
@@ -496,11 +496,11 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 
 	<? if ($user_student) { ?>
 	<tr><td>
-		Broj indexa:</td><td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,3)?>" class="default">
+		Broj indexa:</td><td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,2)?>" class="default">
 	</td></tr>
 	<? } ?>
 	<tr><td>
-		JMBG:</td><td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,6)?>" class="default">
+		JMBG:</td><td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,5)?>" class="default">
 	</td></tr>
 
 	<tr><td colspan="2">&nbsp;</td></tr>
@@ -509,7 +509,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 
 	</td></tr>
 	<tr><td>
-		Adresa (ulica i broj):</td><td><input type="text" name="adresa" value="<?=mysql_result($q400,0,8)?>" class="default">
+		Adresa (ulica i broj):</td><td><input type="text" name="adresa" value="<?=mysql_result($q400,0,7)?>" class="default">
 	</td></tr>
 	<tr><td>
 		Adresa (mjesto):</td><td>
@@ -520,7 +520,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 		</div>
 	</td></tr>
 	<tr><td>
-		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,10)?>" class="default">
+		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,9)?>" class="default">
 	</td></tr>
 	<tr><td valign="top">
 		Kontakt e-mail:</td><td>
@@ -550,21 +550,21 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">LIČNI PODACI:</font></td></tr>
 	<tr><td colspan="2">Ovi podaci će se koristiti za automatsko popunjavanje formulara i obrazaca. Podaci su preuzeti iz formulara koje ste popunili prilikom upisa na fakultet. Ovim putem preuzimate punu odgovornost za ispravnost podataka koje navedete u formularu ispod.</td></tr>
 	<tr><td>
-		Ime oca:</td><td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,13)?>" class="default">
+		Ime oca:</td><td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,12)?>" class="default">
 	</td></tr>
 	<tr><td>
-		Prezime oca:</td><td><input type="text" name="prezimeoca" value="<?=mysql_result($q400,0,14)?>" class="default">
+		Prezime oca:</td><td><input type="text" name="prezimeoca" value="<?=mysql_result($q400,0,13)?>" class="default">
 	</td></tr>
 	<tr><td>
-		Ime majke:</td><td><input type="text" name="imemajke" value="<?=mysql_result($q400,0,15)?>" class="default">
+		Ime majke:</td><td><input type="text" name="imemajke" value="<?=mysql_result($q400,0,14)?>" class="default">
 	</td></tr>
 	<tr><td>
-		Prezime majke:</td><td><input type="text" name="prezimemajke" value="<?=mysql_result($q400,0,16)?>" class="default">
+		Prezime majke:</td><td><input type="text" name="prezimemajke" value="<?=mysql_result($q400,0,15)?>" class="default">
 	</td></tr>
 	<tr><td>
 		Datum rođenja:<br/>
 		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?
-		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,4))?>" class="default">
+		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,3))?>" class="default">
 	</td></tr>
 	<tr><td>
 		Mjesto rođenja:</td><td>
@@ -584,7 +584,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 		Nacionalnost:</td><td><select name="nacionalnost" class="default"><?=$nacion?></select>
 	</td></tr>
 	<tr><td>
-		Kanton / regija:</td><td><?=db_dropdown("kanton",mysql_result($q400,0,11), "--Izaberite kanton--") ?> <br/>
+		Kanton / regija:</td><td><?=db_dropdown("kanton",mysql_result($q400,0,10), "--Izaberite kanton--") ?> <br/>
 	</td></tr>
 	<tr><td>
 		Državljanstvo:</td><td><select name="drzavljanstvo" class="default"><?=$drzavlj?></select>
@@ -598,7 +598,7 @@ if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">PODACI O PRETHODNOM CIKLUSU STUDIJA:</font></td></tr>
 	<tr><td>
-		Završena srednja škola:</td><td><input type="text" name="srednja_skola" value="<?=mysql_result($q400,0,13)?>" class="default">
+		Završena srednja škola:</td><td><input type="text" name="srednja_skola" value="<?=mysql_result($q400,0,12)?>" class="default">
 	</td></tr>
 	<? } ?>
 
