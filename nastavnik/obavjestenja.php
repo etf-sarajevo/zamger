@@ -147,12 +147,12 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 				$q6 = myquery("insert into poruka set tip=1, opseg=6, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
 
 				// Upit za spisak studenata u grupi
-				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_labgrupa as sl where sl.labgrupa=$primalac and sl.student=o.id and sl.student=a.id";
+				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_labgrupa as sl where sl.labgrupa=$primalac and sl.student=o.id";
 			} else {
 				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
 
 				// Upit za spisak studenata na predmetu
-				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
+				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id";
 			}
 
 			// Šaljem mail studentima
