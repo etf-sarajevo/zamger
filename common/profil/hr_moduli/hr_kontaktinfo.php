@@ -1,6 +1,6 @@
 <?
 
-	$nacinstanovanja= getSifrarnikData("sifrarnik_nacin_stanovanja",mysql_result($q400,0,25));
+	$nacinstanovanja= getSifrarnikData("sifrarnik_nacin_stanovanja",mysql_result($q400,0,24));
 
 ?>
      <div id="Korak2">
@@ -22,7 +22,7 @@
       <tr>
         <td>Adresa stanovanja:</td>
         <td>
-          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,8)?>"   />
+          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,15)?>"   />
         </td>
       </tr>
       
@@ -36,7 +36,7 @@
       <tr>
         <td>Telefon:</td>
         <td>
-          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,10)?>" />
+          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,9)?>" />
         </td>
       </tr>
       
@@ -44,16 +44,16 @@
       <tr>
         <td>Mobilni telefon:</td>
         <td>
-          <input type="text" name="mobitel" value="<?=mysql_result($q400,0,24)?>" />  <b><font color=red>*</font></b>
+          <input type="text" name="mobitel" value="<?=mysql_result($q400,0,23)?>" />  <b><font color=red>*</font></b>
         </td>
       </tr>
       
-      <tr>
+      <!--tr>
         <td>E-mail:</td>
         <td>
           <input type="text" disabled=disabled value="<?=mysql_result($q400,0,2)?>" />
         </td>
-      </tr>
+      </tr-->
       
       <tr>
         <td>Nacin stanovanja:</td>

@@ -11,7 +11,7 @@
 		case 7: evidentirajJezik($userid); break;
 	}
 
-	$q400 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, mobilni_telefon,nacin_stanovanja from osoba where id=$userid");
+	$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, mobilni_telefon,nacin_stanovanja from osoba where id=$userid");
 	
 	// Spisak gradova
 	$q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
@@ -19,13 +19,13 @@
 	$gradovia="<option></option>";
 	while ($r410 = mysql_fetch_row($q410)) { 
 		$gradovir .= "<option"; $gradovia .= "<option";
-	 	if ($r410[0]==mysql_result($q400,0,5)) { 
+	 	if ($r410[0]==mysql_result($q400,0,4)) { 
 			$gradovir  .= " SELECTED"; 
 			$mjestorvalue = $r410[1]; 
 			$opcinar = $r410[2];
 			$drzavar = $r410[3];
 		}
-	 	if ($r410[0]==mysql_result($q400,0,9)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
+	 	if ($r410[0]==mysql_result($q400,0,8)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
 		$gradovir .= ">$r410[1]</option>\n";
 		$gradovia .= ">$r410[1]</option>\n";
 	}
@@ -50,7 +50,7 @@
 	 	if ($r430[0]==$drzavar) { $drzaver  .= " SELECTED";  }
 		$drzaver .= ">$r430[1]</option>\n";
 		$drzavlj .= "<option value=\"$r430[0]\"";
-	 	if ($r430[0]==mysql_result($q400,0,17)) { $drzavlj  .= " SELECTED";  }
+	 	if ($r430[0]==mysql_result($q400,0,16)) { $drzavlj  .= " SELECTED";  }
 		$drzavlj .= ">$r430[1]</option>\n";
 	}
 	
@@ -60,16 +60,16 @@
 	$nacion="<option></option>";
 	while ($r440 = mysql_fetch_row($q440)) {
 		$nacion .= "<option value=\"$r440[0]\"";
-	 	if ($r440[0]==mysql_result($q400,0,18)) { $nacion  .= " SELECTED";  }
+	 	if ($r440[0]==mysql_result($q400,0,17)) { $nacion  .= " SELECTED";  }
 		$nacion .= ">$r440[1]</option>\n";
 	}
 	
 	// Spol
-	if (mysql_result($q400,0,12)=="M") $muskir = "CHECKED"; else $muskir="";
-	if (mysql_result($q400,0,12)=="Z") $zenskir = "CHECKED"; else $zenskir="";
+	if (mysql_result($q400,0,11)=="M") $muskir = "CHECKED"; else $muskir="";
+	if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
 	
 	// Pripadnik borackih kategorija
-	if (mysql_result($q400,0,19)==1) $boracke = "CHECKED"; else $boracke="";
+	if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 ?>
 
 <link rel="stylesheet" href="css/libs/hr.css" type="text/css" media="screen" />

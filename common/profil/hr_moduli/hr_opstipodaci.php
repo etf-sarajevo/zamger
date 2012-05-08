@@ -34,14 +34,14 @@
             <tr>
         <td>JMBG:</td>
         <td>
-          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,6)?>" />
+          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,5)?>" />
         </td>
       </tr>
       
             <tr>
         <td>Djevojacko prezime:</td>
         <td>
-          <input type="text" name="djevojacko" value="<?=mysql_result($q400,0,21)?>" /> <b><font color=red>*</font></b>
+          <input type="text" name="djevojacko" value="<?=mysql_result($q400,0,20)?>" /> <b><font color=red>*</font></b>
         </td>
       </tr>
       
@@ -49,7 +49,7 @@
             <tr>
         <td>Ime roditelja:</td>
         <td>
-          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,1)?>" />
+          <input type="text" disabled=disabled value="<?=mysql_result($q400,0,2)?>" />
         </td>
       </tr>
       
@@ -66,7 +66,7 @@
         <td>Datum rodenja:</td>
         <td>
           <input type="text" disabled=disabled value="<?
-							if (mysql_result($q400,0,4)) print date("d.m.Y", mysql_result($q400,0,4))?>" />
+							if (mysql_result($q400,0,8)) print date("d.m.Y", mysql_result($q400,0,8))?>" />
         </td>
       </tr>
       
