@@ -539,6 +539,103 @@ CREATE TABLE IF NOT EXISTS `email` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `hr_kompetencije`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_kompetencije` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `jezik` int(11) NOT NULL,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `razumjevanje` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `govor` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `pisanje` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hr_mentorstvo`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_mentorstvo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `fk_fakultet` int(11) NOT NULL,
+  `fk_vrsta_mentora` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `ime_kandidata` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv_teme` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hr_nagrade_priznanja`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_nagrade_priznanja` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `opis` text COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hr_naucni_radovi`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_naucni_radovi` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `naziv_rada` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv_casopisa` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv_izdavaca` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hr_publikacija`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_publikacija` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `fk_tip_publikacije` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `casopis` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hr_usavrsavanje`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_usavrsavanje` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `datum` date NOT NULL,
+  `naziv_usavrsavanja` int(11) NOT NULL,
+  `obrazovna_institucija` int(11) NOT NULL,
+  `kvalifikacija` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `institucija`
 --
 
@@ -1308,9 +1405,14 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
   `treba_brisati` tinyint(1) NOT NULL DEFAULT '0',
-  `strucni_stepen` int(11) NOT NULL DEFAULT '5', --- 5 = srednja strucna sprema
-  `naucni_stepen` int(11) NOT NULL DEFAULT '6', --- 6 = bez naucnog stepena
+  `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
+  `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `slika` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `djevojacko_prezime` VARCHAR( 50 ) NOT NULL,
+  `maternji_jezik` INT NOT NULL,
+  `vozacka_dozvola` INT NOT NULL,
+  `mobilni_telefon` VARCHAR( 15 ) NOT NULL,
+  `nacin_stanovanja` INT NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -1318,8 +1420,8 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 -- Dumping data for table `osoba`
 --
 
-INSERT INTO `osoba` (`id`, `ime`, `prezime`, `email`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
-(1, 'Site', 'Admin', 'site@admin.com', '', '0000-00-00', 0, '', '', '', 0, '', 0, 0);
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
+(1, 'Site', 'Admin', '', '0000-00-00', 0, '', '', '', 0, '', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -1957,6 +2059,199 @@ CREATE TABLE IF NOT EXISTS `septembar` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `sifrarnik_akademska_zvanja`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_akademska_zvanja` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_banka`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_banka` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_fakulteti`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_fakulteti` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_fascati`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_fascati` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_fascati_podoblast`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_fascati_podoblast` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_maternji_jezik`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_maternji_jezik` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_nacin_stanovanja`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_nacin_stanovanja` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_naucna_oblast`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_naucna_oblast` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_nivo_jezika`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_nivo_jezika` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_oblik_zaposlenja`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_oblik_zaposlenja` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_radno_mjesto`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_radno_mjesto` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_strucna_sprema`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_strucna_sprema` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_tip_mentorstva`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_tip_mentorstva` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_tip_publikacije`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_tip_publikacije` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_uza_naucna_oblast`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_uza_naucna_oblast` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_vozacki_kategorija`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_vozacki_kategorija` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `srednja_ocjene`
 --
 
@@ -2366,6 +2661,19 @@ CREATE TABLE IF NOT EXISTS `uspjeh_u_srednjoj` (
 -- Dumping data for table `uspjeh_u_srednjoj`
 --
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vozacka_dozvola`
+--
+
+CREATE TABLE IF NOT EXISTS `vozacka_dozvola` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `fk_vozacki_kategorija` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
