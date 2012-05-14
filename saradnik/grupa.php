@@ -204,22 +204,24 @@ if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
 
 	// Updatujemo komponentu svima koji su bili prisutni
 	$q103 = myquery("select komponenta from cas where id=$cas_id");
-	$komponenta = mysql_result($q103,0,0);
-	
-	$q105 = myquery("select sp.student, sp.predmet from prisustvo as pr, student_predmet as sp, ponudakursa as pk where pr.cas=$cas_id and pr.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	$studenti = $ponudekursa = array();
-	while ($r105 = mysql_fetch_row($q105)) {
-		array_push($studenti, $r105[0]);
-		$ponudekursa[$r105[0]] = $r105[1];
-	}
+	if (mysql_num_rows($q103)>0) {
+		$komponenta = mysql_result($q103,0,0);
+		
+		$q105 = myquery("select sp.student, sp.predmet from prisustvo as pr, student_predmet as sp, ponudakursa as pk where pr.cas=$cas_id and pr.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		$studenti = $ponudekursa = array();
+		while ($r105 = mysql_fetch_row($q105)) {
+			array_push($studenti, $r105[0]);
+			$ponudekursa[$r105[0]] = $r105[1];
+		}
 
-	$q100 = myquery("delete from prisustvo where cas=$cas_id");
-	$q110 = myquery("delete from cas where id=$cas_id");
-	
-	foreach($studenti as $student)
-		update_komponente($student, $ponudekursa[$student], $komponenta);
-	
-	zamgerlog("obrisan cas $cas_id",2);
+		$q100 = myquery("delete from prisustvo where cas=$cas_id");
+		$q110 = myquery("delete from cas where id=$cas_id");
+		
+		foreach($studenti as $student)
+			update_komponente($student, $ponudekursa[$student], $komponenta);
+		
+		zamgerlog("obrisan cas $cas_id",2);
+	}
 }
 
 
