@@ -68,8 +68,8 @@ if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 		// nacionalnost je tipa int
 		$slikapromjena = $r100[18];
 
-		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[6], drzavljanstvo=$r100[7], jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[10], telefon='$telefon', kanton=$r100[12], imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$r100[17]', nacionalnost=$r100[18] where id=$r100[0]");
-		$vrijeme_zahtjeva = $r100[20];
+		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[5], drzavljanstvo=$r100[6], jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[9], telefon='$telefon', kanton=$r100[11], imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$r100[16]', nacionalnost=$r100[17] where id=$r100[0]");
+		$vrijeme_zahtjeva = $r100[19];
 
 		// Provjera izmjene slike
 		$q115 = myquery("select slika from osoba where id=$r100[0]");
