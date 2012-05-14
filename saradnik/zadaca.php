@@ -62,7 +62,7 @@ if (!$user_siteadmin) {
 
 // Podaci o zadaci
 
-$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
+$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
 if (mysql_num_rows($q20)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
 	niceerror("Neispravna zadaća.");
@@ -76,6 +76,7 @@ $naziv_zadace = mysql_result($q20,0,3);
 $komponenta = mysql_result($q20,0,5);
 $predmet = mysql_result($q20,0,6);
 $ag = mysql_result($q20,0,7);
+$id_jezika = mysql_result($q20,0,8);
 
 
 if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
@@ -215,9 +216,12 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	$komentar = my_escape($_POST['komentar']);
 	$status = intval($_POST['status']);
 	$bodova = floatval(str_replace(",",".",$_POST['bodova']));
-	// Filename
+
+	// Osiguravamo da se filename prenese u svaku sljedeću instancu zadatka
+	$filename = '';
 	$q90 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
-	$filename = mysql_result($q90,0,0);
+	if (mysql_num_rows($q90) > 0)
+		$filename = mysql_result($q90,0,0);
 
 	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', userid=$userid");
 
@@ -248,62 +252,53 @@ print "<h1>$ime_studenta $prezime_studenta, $naziv_zadace, Zadatak $zadatak.</h1
 if ($attach == 0) {
 	// Nije attachment
 
+	$src = "";
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
 	$no_lines = 0;
 	if (file_exists($the_file)) { 
 		$src = file_get_contents($the_file);  
 		$no_lines = count(file($the_file));
-	}
 	
-	// textarea.... mozda jednog dana
-	/*?>
-	<textarea rows="20" cols="80" name="program">
-	</textarea><br/>
-	<?*/
+		// geshi - biblioteka za syntax highlighting
+		
+		include_once('lib/geshi/geshi.php');
+		$geshi =& new GeSHi($src, $jezik);
 
-	
-	// geshi - biblioteka za syntax highlighting
-	
-	include_once('lib/geshi/geshi.php');
-	$geshi =& new GeSHi($src, $jezik);
-	?>
-	<center><table width="95%" style="border:1px solid silver;"><tr>
-	<!-- Brojevi linija -->
-	<td bgcolor="#CCCCCC"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
-	<td  bgcolor="#F3F3F3">
-	<?
-	print $geshi->parse_code();
-	// print join("",file($the_file));
-	?></td></tr></table></center><br/><?
-
-
-	// Formular za izvršavanje programa
-	$q110 = myquery("select programskijezik from zadaca where id=$zadaca");
-	$r110 = mysql_result($q110,0,0);
-	if ($r110>0) {
 		?>
-		<script type="text/javascript" src="js/combo-box.js"></script>
-		<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
-		Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
-		<?=genform("POST")?>
-		<input type="hidden" name="akcija" value="izvrsi">
-		<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
+		<center><table width="95%" style="border:1px solid silver;"><tr>
+		<!-- Brojevi linija -->
+		<td bgcolor="#CCCCCC" align="left"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
+		<td  bgcolor="#F3F3F3" align="left">
 		<?
+		print $geshi->parse_code();
+		?></td></tr></table></center><br/><?
 
-		// Zadnje korišteni stdin se čuva u bazi
-		$q120 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
-		if (mysql_num_rows($q120)<1)
-			print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
-		while ($r120 = mysql_fetch_row($q120)) {
-			print "<option value=\"$r120[0]\">$r120[0]</option>\n";
+		// Formular za izvršavanje programa
+		if ($id_jezika > 0) {
+			?>
+			<script type="text/javascript" src="js/combo-box.js"></script>
+			<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
+			Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
+			<?=genform("POST")?>
+			<input type="hidden" name="akcija" value="izvrsi">
+			<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
+			<?
+
+			// Zadnje korišteni stdin se čuva u bazi
+			$q120 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+			if (mysql_num_rows($q120)<1)
+				print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
+			while ($r120 = mysql_fetch_row($q120)) {
+				print "<option value=\"$r120[0]\">$r120[0]</option>\n";
+			}
+			?>
+			</select><br/>
+		
+			<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
+			<input type="submit" value=" Izvrši program ">
+			</form></table></center><br/>&nbsp;<br/>
+			<?
 		}
-		?>
-		</select><br/>
-	
-		<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
-		<input type="submit" value=" Izvrši program ">
-		</form></table></center><br/>&nbsp;<br/>
-		<?
 	}
 
 
@@ -311,22 +306,30 @@ if ($attach == 0) {
 	// Attachment
 
 	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
-	$filename = mysql_result($q130,0,0);
-	$the_file = "$lokacijazadaca$zadaca/$filename";
+	if (mysql_num_rows($q130) > 0) {
+		$filename = mysql_result($q130,0,0);
+		$the_file = "$lokacijazadaca$zadaca/$filename";
 
-	if ($filename && file_exists($the_file)) {
-		$vrijeme = date("d. m. Y. h:i:s", mysql_result($q130,0,1));
-		$velicina = nicesize(filesize($the_file));
-		$icon = "images/mimetypes/" . getmimeicon($the_file);
-		$dllink = "index.php?sta=common/attachment&student=$stud_id&zadaca=$zadaca&zadatak=$zadatak";
-		?>
-		<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
-		<a href="<?=$dllink?>"><img src="<?=$icon?>" border="0"></a>
-		</td><td>
-		<p>Poslani fajl: <b><a href="<?=$dllink?>"><?=$filename?></a></b><br/>
-		Veličina: <b><?=$velicina?></b></p>
-		</td></tr></table></center><br/>
-		<?
+		if ($filename && file_exists($the_file)) {
+			$vrijeme = date("d. m. Y. h:i:s", mysql_result($q130,0,1));
+			$velicina = nicesize(filesize($the_file));
+			$icon = "images/mimetypes/" . getmimeicon($the_file);
+			$dllink = "index.php?sta=common/attachment&student=$stud_id&zadaca=$zadaca&zadatak=$zadatak";
+			?>
+			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
+			<a href="<?=$dllink?>"><img src="<?=$icon?>" border="0"></a>
+			</td><td>
+			<p>Poslani fajl: <b><a href="<?=$dllink?>"><?=$filename?></a></b><br/>
+			Veličina: <b><?=$velicina?></b></p>
+			</td></tr></table></center><br/>
+			<?
+		} else {
+			?>
+			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
+			<b><font color="red">Student je zaboravio priložiti datoteku.</font></b>
+			</td></tr></table></center><br/>
+			<?
+		}
 	}
 }
 
@@ -334,40 +337,64 @@ if ($attach == 0) {
 
 // Prikaz statusa sa log-om i izmjena
 
-
-
-
 $q140 = myquery("select status,bodova,izvjestaj_skripte,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
+if (mysql_num_rows($q140) > 0) {
+	$status = mysql_result($q140,0,0);
+	$bodova = mysql_result($q140,0,1);
+	$izvjestaj_skripte = str_replace("\n","<br/>",mysql_result($q140,0,2));
+	$komentar = mysql_result($q140,0,3);
+	$komentar = str_replace("\"","&quot;",$komentar);
 
-$status = mysql_result($q140,0,0);
-$bodova = mysql_result($q140,0,1);
-$izvjestaj_skripte = str_replace("\n","<br/>",mysql_result($q140,0,2));
-$komentar = mysql_result($q140,0,3);
-$komentar = str_replace("\"","&quot;",$komentar);
+	// Koristimo poseban upit da bismo odredili vrijeme slanja prve verzije
+	$q150 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
+	$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
 
-$q150 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
-$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
+	if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
+		print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
+	else
+		print genform("POST");
 
-if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
-	print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
-else
-	print genform("POST");  
+
+	?>
+	<input type="hidden" name="akcija" value="slanje">
+
+	<table border="0">
+	<tr>
+		<td>Vrijeme slanja:</td>
+		<td><b><?=$vrijeme_slanja?></b></td>
+	</tr>
+	<?
+
+	if ($programskijezik > 0) {
+		?>
+	<tr>
+		<td>Izvještaj skripte:</td>
+		<td><i><?=$izvjestaj_skripte?></i></td>
+	</tr>
+		<?
+	}
+
+} else {
+	
+	print genform("POST");
+	?>
+	<input type="hidden" name="akcija" value="slanje">
+
+	<table border="0">
+	<tr>
+		<td>&nbsp;</td>
+		<td><b>Unos bodova za zadaću koja nije poslana:</b></td>
+	</tr>
+	<?
+
+}
+
+// Dio forme koji se prikazuje bez obzira da li je u pitanju kreiranje nove zadaće ili promjena postojeće
 
 ?>
-<input type="hidden" name="akcija" value="slanje">
-
-<table border="0">
-<tr>
-	<td>Vrijeme slanja:</td>
-	<td><b><?=$vrijeme_slanja?></b></td>
-</tr>
-<tr>
-	<td>Izvještaj skripte:</td>
-	<td><i><?=$izvjestaj_skripte?></i></td>
-</tr>
 <tr>
 	<td>Status</td>
-	<td><select name="status"><?
+	<td><select id="status" name="status"><?
 
 function myoption($nr,$tx,$sel) {
 print "$sel";
@@ -389,7 +416,7 @@ for ($i=0;$i<$brstatusa;$i++)
 </tr>
 <tr>
 	<td>Bodova:</td>
-	<td><input type="text" size="20" name="bodova" value="<?=$bodova?>"></td>
+	<td><input type="text" size="20" name="bodova" value="<?=$bodova?>" onchange="javascript:document.getElementById('status').value=5;"></td>
 </tr>
 <tr>
 	<td valign="top">Komentar:</td>
