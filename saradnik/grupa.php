@@ -125,6 +125,12 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 
 	$datum = intval($_POST['godina'])."-". intval($_POST['mjesec'])."-". intval($_POST['dan']);
 	$vrijeme = my_escape($_POST['vrijeme']);
+	if (!preg_match("/^\d?\d\:\d\d$/", $vrijeme)) {
+		niceerror("Vrijeme nije u ispravnom formatu!");
+		print "<p>Vrijeme mora biti oblika HH:MM, a vi ste unijeli '$vrijeme'.</p>";
+		print "<p><a href=\"?sta=saradnik/grupa&id=$labgrupa\">Nazad</a></p>";
+		return;
+	}
 	$predavanje = intval($_POST['predavanje']);
 
 	// Ako se klikne na refresh, datum moze biti 0-0-0...
@@ -147,8 +153,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		$kviz = intval($_REQUEST['kviz']);
 
 		$q60 = myquery("insert into cas set datum='$datum', vrijeme='$vrijeme', labgrupa=$labgrupa, nastavnik=$userid, komponenta=$komponenta, kviz=$kviz");
-		$q70 = myquery("select id from cas where datum='$datum' and vrijeme='$vrijeme' and labgrupa=$labgrupa and kviz=$kviz order by id desc limit 1"); // Ako je vise casova sa istim datumom i vremenom, uzmi zadnji po IDu
-		$cas_id = mysql_result($q70,0,0);
+		$cas_id = mysql_insert_id();
 	
 		// Max bodova za komponentu
 		$q75 = myquery("select maxbodova, opcija from komponenta where id=$komponenta");
