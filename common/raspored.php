@@ -302,8 +302,31 @@ function common_raspored($tip) {
 	}
 
 	if ($tip != "student") {
-		print "<a href=\"?sta=saradnik/raspored\">Prilagodite vaš raspored!</a><br />";
+		print "<a href=\"?sta=saradnik/raspored\">Prilagodite vaš raspored!</a> * ";
 	}
+
+	// RSS ID
+
+	$q200 = myquery("select id from rss where auth=$userid");
+	if (mysql_num_rows($q200)<1) {
+		srand(time());
+		// kreiramo novi ID
+		do {
+			$rssid="";
+			for ($i=0; $i<10; $i++) {
+				$slovo = rand()%62;
+				if ($slovo<10) $sslovo=$slovo;
+				else if ($slovo<36) $sslovo=chr(ord('a')+$slovo-10);
+				else $sslovo=chr(ord('A')+$slovo-36);
+				$rssid .= $sslovo;
+			}
+			$q210 = myquery("select count(*) from rss where id='$rssid'");
+		} while (mysql_result($q210,0,0)>0);
+		$q220 = myquery("insert into rss set id='$rssid', auth=$userid");
+	} else {
+		$rssid = mysql_result($q200,0,0);
+	}
+	print "<a href=\"?sta=public/ical&id=$rssid\">iCal</a><br>\n";
 		
 	?>
 </div>

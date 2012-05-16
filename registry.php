@@ -13,6 +13,7 @@ $registry = array(
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
+array("public/ical", "Raspored u iCal formatu", "Raspored u iCal formatu", "PSNBA", "2", "0"),
 
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
