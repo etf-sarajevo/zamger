@@ -284,6 +284,17 @@ if ($_REQUEST['akcija'] == "ugovoroucenju") {
 	<?
 }
 
+if ($_REQUEST['akcija'] == "uspjesnost") {
+	?>
+	<h3>Uspješnost studenata i prosječno trajanje studija</h3>
+	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">
+	<input type="hidden" name="sta" value="izvjestaj/uspjesnost">
+	<p>Izaberite studij:<br>
+	<?=db_dropdown("studij")?><br/><br/>
+	<input type="submit" value=" Prikaži "></form>
+	<?
+}
+
 
 // SPISAK IZVJEŠTAJA
 
@@ -301,6 +312,7 @@ if ($_REQUEST['akcija'] == "ugovoroucenju") {
 <li><a href="?sta=studentska/izvjestaji&akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
 <li><a href="?sta=studentska/izvjestaji&akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
 <li><a href="?sta=izvjestaj/po_kantonima">Spisak studenata po kantonima</a></li>
+<li><a href="?sta=studentska/izvjestaji&akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
 </ul></p>
 
 <hr/>

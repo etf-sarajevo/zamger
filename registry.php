@@ -99,6 +99,7 @@ array("izvjestaj/po_kantonima", "Spisak studenata po kantonima", "Po kantonima",
 array("izvjestaj/pdf_converter", "Za generisanje PDF izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
 array("izvjestaj/csv_converter", "Za generisanje excel izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
 array("izvjestaj/for_looper", "For looper", "For looper", "PSNBA", "0", "0"),
+array("izvjestaj/uspjesnost", "Uspješnost studenata i prosječno trajanje studija", "Uspješnost studenata", "BA", "0", "0"),
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "2", "0"),
