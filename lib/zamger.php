@@ -178,6 +178,7 @@ function getmimeicon($file) {
 		"text/x-c" => "source_c.png",
 		"audio/mpeg" => "sound.png",
 		"application/msword" => "document.png",
+		"application/msword application/msword" => "document.png",
 		"application/x-rar" => "zip.png",
 		"application/x-tar" => "tar.png",
 		"application/x-gzip" => "tar.png",
@@ -201,13 +202,16 @@ function getmimeicon($file) {
 		"application/x-zip.odt" => "document.png",
 		"application/x-zip.ods" => "spreadsheet.png",
 		"application/x-zip.odg" => "vectorgfx.png",
+		"application/x-zip.docx" => "document.png",
+		"application/x-zip.xslx" => "spreadsheet.png",
 		".svg" => "vectorgfx.png",
 		".xls" => "spreadsheet.png",
 		".html" => "html.png"
 	);
 
 
-	$file_output = `file -bi $file`;
+	$file_output = `file -bi '$file'`;
+	$file_output = str_replace("\n", "", $file_output);
 	if (strstr($file_output, ";"))
 		$file_output = substr($file_output, 0, strpos($file_output, ";"));
 	if (strstr($file_output, ","))
