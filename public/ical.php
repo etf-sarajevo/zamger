@@ -33,8 +33,6 @@ function public_ical() {
 		// Da li je aktuelan neparni ili parni semestar?
 		$qneparni = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
 		if (mysql_num_rows($qneparni)>0) $neparni_semestar=0; else $neparni_semestar=1;
-		// Testno forsiramo neparni semestar
-		$neparni_semestar=1;
 
 		// Spisak predmeta na kojima je nastavnik angažovan
 		$whereCounter = 0;

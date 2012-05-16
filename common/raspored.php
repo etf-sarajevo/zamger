@@ -122,7 +122,7 @@ function common_raspored($tip) {
 	} else { // tip = nastavnik
 		// Da li je aktuelan neparni ili parni semestar?
 		$qneparni = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
-		if (mysql_num_rows($qneparni)>0) $neparni=1; else $neparni=0;
+		if (mysql_num_rows($qneparni)>0) $neparni=0; else $neparni=1;
 
 		$whereCounter = 0;
 		$selUserData = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
