@@ -20,7 +20,7 @@ $conf_dbpass = "";
 $conf_dbdb = "zamger";
 
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
-$conf_site_url = "http://192.168.42.193/svn/";
+$conf_site_url = "http://localhost/zamger";
 
 // Lokacija na disku gdje je Zamger instaliran
 $conf_script_path = "/var/www/html/svn";
@@ -62,7 +62,10 @@ $_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
- $conf_email = true;
+$conf_email = true;
+
+// Mailovi koje šalje zamger će imati ovu vrijednost u From: polju
+$conf_admin_email = "vljubovic@etf.unsa.ba";
 
 
 // ------ MOODLE INTEGRACIJA ---------
@@ -77,7 +80,7 @@ $conf_moodle = false;
 
 // URL do početne Moodle stranice (bez index.php i slično, samo direktorij,
 // obavezno kosa crta na kraju)
-$conf_moodle_url = "http://195.130.59.135/moodle/";
+$conf_moodle_url = "http://localhost/moodle/";
 
 // MySQL baza u kojoj se nalaze moodle tabele
 $conf_moodle_db = "moodledemo";
