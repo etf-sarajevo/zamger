@@ -235,12 +235,24 @@ function login($pass) {
 
 
 function check_cookie() {
-	global $userid,$admin,$login;
+	global $userid,$admin,$login,$conf_system_auth;
 
 	$userid=0;
 	$admin=0;
-	session_start();
-	$login = my_escape($_SESSION['login']);
+
+	if ($conf_system_auth == "cas") {
+		global $conf_cas_server, $conf_cas_port, $conf_cas_context;
+		require("lib/phpcas/CAS.php");
+		phpCAS::setDebug();
+		phpCAS::client(CAS_VERSION_2_0, $conf_cas_server, $conf_cas_port, $conf_cas_context);
+		phpCAS::setNoCasServerValidation();
+		phpCAS::forceAuthentication();
+		$login = phpCAS::getUser();
+	} else {
+		session_start();
+		$login = my_escape($_SESSION['login']);
+	}
+	
 	if (!preg_match("/[a-zA-Z0-9]/",$login)) return;
 
 	$q1 = myquery("select id,admin from auth where login='$login'");
@@ -251,11 +263,16 @@ function check_cookie() {
 }
 
 function logout() {
-	$_SESSION = array();
-	if (isset($_COOKIE[session_name()])) {
-		setcookie(session_name(), '', time()-42000, '/');
+	global $conf_system_auth;
+	if ($conf_system_auth == "cas") {
+		phpCAS::logout();
+	} else {
+		$_SESSION = array();
+		if (isset($_COOKIE[session_name()])) {
+			setcookie(session_name(), '', time()-42000, '/');
+		}
+		session_destroy();
 	}
-	session_destroy();
 /*
 	?><center><h1>Bye-bye</h1></center>
 	<script language="JavaScript">

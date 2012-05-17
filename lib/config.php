@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 	if (ini_get("short_open_tag") != 1) exit;
 ?>
 <?
@@ -15,21 +15,21 @@ $conf_skr_naziv_institucije_genitiv = "ETFa";
 
 // Pristupni podaci za bazu podataka
 $conf_dbhost = "localhost";
-$conf_dbuser = "zamger";
-$conf_dbpass = "1A2s3D4f";
+$conf_dbuser = "root";
+$conf_dbpass = "";
 $conf_dbdb = "zamger";
 
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
-$conf_site_url = "http://127.0.0.1/zamger/";
+$conf_site_url = "http://192.168.42.193/svn/";
 
 // Lokacija na disku gdje je Zamger instaliran
-$conf_script_path = "C:/xampp/htdocs/zamger";
+$conf_script_path = "/var/www/html/svn";
 
 // Lokacija gdje Zamger drži privremene datoteke
 // PAZITE da web server korisnik (npr. apache, nobody i slični) ima pravo pisanja
 // u ovaj direktorij, te da se direktorij ne može "nasurfati" (pristupiti mu kroz
 // web preglednik)
-$conf_files_path = "C:/xampp/htdocs/zamger";
+$conf_files_path = "/home/zamger";
 
 // Podaci koji se ispisuju u gornjem desnom uglu svake stranice :)
 $conf_appname = "ZAMGER";
@@ -38,7 +38,8 @@ $conf_appversion = "4.1.1";
 // Gdje su smještene šifre korisnika?
 // "table" - u tabeli auth zamgerove baze podataka
 // "ldap" - na LDAP serveru; ako izaberete ovu opciju, promjena šifre je onemogućena
-//$conf_system_auth = "ldap";
+// "cas" - koristi se CAS single-sign on (SSO) servis
+
 $conf_system_auth = "table";
 
 // Pristupni podaci za LDAP
@@ -61,10 +62,7 @@ $_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
-$conf_email = true;
-
-// Mailovi koje šalje zamger će imati ovu vrijednost u From: polju
-$conf_admin_email = "vljubovic@etf.unsa.ba";
+ $conf_email = true;
 
 
 // ------ MOODLE INTEGRACIJA ---------
@@ -97,6 +95,13 @@ $conf_moodle_reuse_connection = true;
 $conf_moodle_dbhost = "localhost";
 $conf_moodle_dbuser = "zamgerdemo";
 $conf_moodle_dbpass = "zamgerdemo";
+
+
+// ---------- CAS podrška
+
+$conf_cas_server = ""; // hostname CAS servera, ne možete koristiti localhost (mora biti FQDN)
+$conf_cas_port = 443; // CAS uvijek koristi HTTPS
+$conf_cas_context = "cas"; // dio url-a iza hostname
 
 
 
