@@ -365,7 +365,7 @@ if (mysql_num_rows($q140) > 0) {
 	</tr>
 	<?
 
-	if ($programskijezik > 0) {
+	if ($id_jezika > 0) {
 		?>
 	<tr>
 		<td>Izvještaj skripte:</td>
