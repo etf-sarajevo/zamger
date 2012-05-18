@@ -142,7 +142,7 @@ if ($_GET['akcija'] == "zahtjev") {
 	$osoba=mysql_result($q100,0,0);
 
 	?>
-	<p>Korisnik <b><?=mysql_result($q100,0,13)?> <?=mysql_result($q100,0,14)?></b> zatražio je sljedeće izmjene svojih ličnih podataka:
+	<p>Korisnik <b><?=mysql_result($q100,0,12)?> <?=mysql_result($q100,0,13)?></b> zatražio je sljedeće izmjene svojih ličnih podataka:
 	<ul>
 	<?
 	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,12));
