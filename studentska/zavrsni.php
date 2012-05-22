@@ -289,7 +289,7 @@ function studentska_zavrsni()  {
 		}
 
 		?>	
-		<h2>Nova tema završnog rada</h2>
+		<h2><?=$tekst?></h2>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
 		<?=genform("POST", "addForm");?>
 			<input type="hidden" name="subakcija" value="potvrda">
