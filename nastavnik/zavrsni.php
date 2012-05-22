@@ -30,7 +30,7 @@ function nastavnik_zavrsni() {
 	<?
 	
 	//Preuzimanje parametara završnih radova
-	$q900 = myquery("SELECT naziv, kratki_pregled, literatura, student FROM  zavrsni WHERE predmet=$predmet AND akademska_godina=$ag");
+	$q900 = myquery("SELECT naslov, kratki_pregled, literatura, student FROM  zavrsni WHERE predmet=$predmet AND akademska_godina=$ag");
 	if (mysql_num_rows($q900)<1)
 		$nema_parametara = true;
 	else {
@@ -39,134 +39,187 @@ function nastavnik_zavrsni() {
 		$param_kratki_pregled = mysql_result($q900,0,1);
 		$param_literatura = mysql_result($q900,0,2);
 	}
-	
-	// Glavni meni
-	if ($akcija != 'projektna_stranica') {
-		?>
-		<div class="links">
-			<ul class="clearfix">
-				<li><a href="<?=$linkPrefix ?>">Lista završnih radova</a></li>
-			</ul>
-		</div>	
-		<?
-	}
+
 	
 	// Default akcija - LISTA ZAVRSNIH RADOVA
 	if (!isset($akcija)) {
 		?>
-		<h2>Lista tema završnih radova</h2>
+		<h3>Lista tema završnih radova</h3>
+
+		<p>Radovi za koje ste mentor:</p>
 		<?
 
-		// Početne informacije
-		$q980 = myquery("SELECT id, naziv, kratki_pregled, literatura, student FROM zavrsni WHERE nastavnik=$userid and predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-		$broj_tema = mysql_num_rows($q980);
-		if ($broj_tema > 0) {
-			$q981 = myquery("select distinct z.id from student_zavrsni as sz, zavrsni as z where sz.zavrsni=z.id and z.predmet=$predmet and z.akademska_godina=$ag");
-			$broj_nepraznih = mysql_num_rows($q981);
-		} 
-		else {
-			?>
-			<span class="notice">Nema kreiranih tema završnih radova.</span>	
-			<?
-		}
-	
-		while ($r980 = mysql_fetch_row($q980)) {
-			$id_zavrsni = $r980[0];
-			$naziv_teme = $r980[1];
-			?>
-			<h3><?=$naziv_teme?></h3>
-			<div class="links">
-				<ul class="clearfix" style="margin-bottom: 10px;">
-					<li><a href="<?=$linkPrefix."&akcija=izmjena_zavrsni&id=$id_zavrsni" ?>">Izmijeni temu završnog rada</a></li>
-                    <li><a href="<?=$linkPrefix."&akcija=dodaj_biljesku&id=$id_zavrsni" ?>">Dodaj bilješku</a></li>
-                    <li class="last"><a href="<?= $linkPrefix . "&akcija=zavrsni_stranica&zavrsni=$id_zavrsni" ?>">Stranica završnih radova</a></li>
-				</ul> 
-			</div>
 
-			<table class="zavrsni" border="0" cellspacing="0" cellpadding="2">
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Naziv teme završnog rada</th>
-					<td width="490" align="left" valign="top"><?=$r980[1]?></td>
-				</tr>
-                <tr>
-					<th width="200" align="left" valign="top" scope="row">Kratki pregled</th>
-					<td width="490" align="left" valign="top"><?=$r980[2]?></td>
-				</tr>
-                <tr>
-					<th width="200" align="left" valign="top" scope="row">Preporučena literatura</th>
-					<td width="490" align="left" valign="top"><?=$r980[3]?></td>
-				</tr>                
-				<tr>
-					<th width="200" align="left" valign="top" scope="row">Prijavljeni student</th>
-					<td width="490" align="left" valign="top"><?=$r980[4]?></td>
-				</tr>
-			</table>
+		function dajIme($osoba, $naucni_stepen) {
+			$q902 = myquery("SELECT ime, prezime, naucni_stepen FROM osoba WHERE id=$osoba");
+			if (mysql_num_rows($q902)>0) {
+				$r902 = mysql_fetch_row($q902);
+				$ime = $r902[1]." ".$naucni_stepen[$r902[2]]." ".$r902[0];
+			} else
+				$ime = "";
+			return $ime;
+		}
+
+		// Početne informacije
+		$q900 = myquery("SELECT id, naslov, kratki_pregled, mentor, student, predsjednik_komisije, clan_komisije, UNIX_TIMESTAMP(termin_odbrane), kandidat_potvrdjen FROM zavrsni WHERE mentor=$userid and predmet=$predmet AND akademska_godina=$ag ORDER BY mentor,naslov");
+		if (mysql_num_rows($q900) == 0) {
+			?>
+			<span class="notice">Niste mentor niti za jedan rad.</span>	
 			<?
-		} // while 
+		} else {
+
+			?>
+			<table border="1" cellspacing="0" cellpadding="4">
+				<tr bgcolor="#CCCCCC">
+					<td>R.br.</td>
+					<td>Naslov</td>
+					<td>Mentor</td>
+					<td>Student</td>
+					<td>Predsjednik komisije</td>
+					<td>Član komisije</td>
+					<td>Termin odbrane</td>
+					<td>Konačna ocjena</td>
+					<td>Akcije</td>
+				</tr>
+			<?
+
+	
+			while ($r900 = mysql_fetch_row($q900)) {
+				$rbr++;
+				$id_zavrsni = $r900[0];
+				$naslov_teme = $r900[1];
+
+				$kratki_pregled = $r900[2];
+				if ($kratki_pregled == "") $kratki_pregled = $nema;
+				else $kratki_pregled = substr($kratki_pregled, 0, 200)."...";
+				
+				$mentor = dajIme($r900[3], $naucni_stepen);
+				if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
+
+				$student = dajIme($r900[4], $naucni_stepen);
+				if ($student=="") $student = "<font color=\"gray\">niko nije izabrao temu</font>";
+				else if ($r900[8]==0) // Kandidat nije potvrđen
+					$student .= "<br>(<a href=\"$linkPrefix&akcija=potvrdi_kandidata&id=$id_zavrsni\">potvrdi kandidata</a>)";
+
+				$predsjednik_komisije = dajIme($r900[5], $naucni_stepen);
+				if ($predsjednik_komisije=="") $predsjednik_komisije = "<font color=\"gray\">(nije definisan)</font>";
+
+				$clan_komisije = dajIme($r900[6], $naucni_stepen);
+				if ($clan_komisije=="") $clan_komisije = "<font color=\"gray\">(nije definisan)</font>";
+
+				$termin_odbrane = date("d.m.Y h:i",$r900[7]);
+				if ($r900[7] == 0) $termin_odbrane = "<font color=\"gray\">(nije definisan)</font>";
+
+				$konacna_ocjena = "<font color=\"gray\">(nije ocijenjen)</font>";
+				if ($student>0) {
+					$q903 = myquery("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+					if (mysql_num_rows($q903)>0 && mysql_result($q903,0,0)>5)
+						$konacna_ocjena = mysql_result($q903,0,0);
+				}
+
+				?>
+				<tr>
+					<td><?=$rbr?>.</td>
+					<td><?=$naslov_teme?></td>
+					<td><?=$mentor?></td>
+					<td><?=$student?></td>
+					<td><?=$predsjednik_komisije?></td>
+					<td><?=$clan_komisije?></td>
+					<td><?=$termin_odbrane?></td>
+					<td><?=$konacna_ocjena?></td>
+					<td><a href="?sta=nastavnik/zavrsni&akcija=izmjena_zavrsni&id=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">izmijeni</a> *
+					<a href="?sta=nastavnik/zavrsni&akcija=zavrsni_stranica&zavrsni=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">stranica</a> *
+					<a href="?sta=nastavnik/zavrsni&akcija=dodaj_biljesku&id=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">bilješka</a>
+					</td>
+				</tr>
+				<?
+			} // while
+		} // else
 	} // if (!isset($akcija) - lista završnih radova
 	
 	//Otvaranje stranica zavrsnih radova
 	elseif ($akcija == 'zavrsni_stranica') {
+		?> <p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p> <?
 		require_once ('common/zavrsniStrane.php');
-		common_projektneStrane();
+		common_zavrsniStrane();
 	} //akcija == zavrsni_stranica
 
 	//akcija IZMJENA TEME ZAVRŠNOG RADA
 	elseif ($akcija == 'izmjena_zavrsni') {
+		if ($id<=0) {
+			biguglyerror("Niste odabrali temu.");
+			return;
+		}
+
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
-			// Poslana forma za izmjenu teme zavrsnog rada
-			$naziv = my_escape(trim($_REQUEST['naziv']));
+			// Poslana forma za dodavanje teme zavrsnog rada
+			$predmet = intval($_REQUEST['predmet']);
+			$ag = intval($_REQUEST['ag']);
+
+			$naslov = my_escape(trim($_REQUEST['naslov']));
+			$podnaslov = my_escape(trim($_REQUEST['podnaslov']));
 			$kratki_pregled  = my_escape(trim($_REQUEST['kratki_pregled']));
-			$literatura  = my_escape(trim($_REQUEST['literatura']));
+			$literatura = my_escape(trim($_REQUEST['literatura']));
 	
-			if (empty($naziv) || empty($kratki_pregled) || empty($literatura)) {
+			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
 			}
 
-			$q982 = myquery("select count(*) from zavrsni where id=$id");
-			if (mysql_result($q982,0,0)==0) {
-				niceerror("Završni rad sa IDom $id ne postoji.");
-				nicemessage('<a href="'.$linkPrefix.'">Povratak.</a>');
-				return;
-			}
-
-			$q908 = myquery("UPDATE zavrsni SET naziv='$naziv', kratki_pregled='$kratki_pregled', literatura='$literatura', WHERE id='$id'");
-
-			nicemessage('Uspješno ste izmijenili temu završnog rada.');
-			zamgerlog("izmijenio temu završnog rada $id na predmetu pp$predmet", 2);
+			$q905 = myquery("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura' WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+			nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
+			zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
+
 			return;
 		}
+		
 
-		// Prikaz forme
-		$q909 = myquery("SELECT naziv, kratki_pregled, literatura FROM zavrsni WHERE id=$id");
+		$q99 = myquery("select id, titula from naucni_stepen");
+		while ($r99 = mysql_fetch_row($q99))
+			$naucni_stepen[$r99[0]]=$r99[1];
 
-		?>
-		<h1>Izmijeni temu završnog rada</h1>
-		<?=genform("POST", "editForm");?>
-		<input type="hidden" name="subakcija" value="potvrda">
+		$q98 = myquery("SELECT student, mentor, predsjednik_komisije, clan_komisije, naslov, podnaslov, kratki_pregled, literatura FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+		if (mysql_num_rows($q98)<1) {
+			niceerror("Nepostojeći završni rad");
+			zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
+			return;
+		}
+		$id_studenta = mysql_result($q98, 0, 0);
+		$id_mentora = mysql_result($q98, 0, 1);
+		$id_predkom = mysql_result($q98, 0, 2);
+		$id_clankom = mysql_result($q98, 0, 3);
+		$naslov = mysql_result($q98, 0, 4);
+		$podnaslov = mysql_result($q98, 0, 5);
+		$kratki_pregled = mysql_result($q98, 0, 6);
+		$literatura = mysql_result($q98, 0, 7);
+
+		?>	
+		<h3>Izmjena podataka o završnom radu</h3>
+		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
+		<?=genform("POST", "addForm");?>
+			<input type="hidden" name="subakcija" value="potvrda">
 			<div id="formDiv">
-				Polja sa * su obavezna. <br />
-			
 				<div class="row">
-					<span class="label">Naziv *</span>
-					<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?=mysql_result($q900,0,0)?>" /></span> 
-				</div> 
-                <div class="row">
-					<span class="label">Kratki pregled *</span>
-					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="15" wrap="physical" id="kratki_pregled"><?=mysql_result($q900,0,3)?></textarea></span>
+					<span class="label">Naslov teme</span>
+					<span class="formw"><input name="naslov" type="text" id="naslov" size="70" value="<?=$naslov?>"></span> 
 				</div>
-                <div class="row">
-					<span class="label">Preporučena literatura *</span>
-					<span class="formw"><textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=mysql_result($q900,0,4)?></textarea></span>
+				<div class="row">
+					<span class="label">Podnaslov</span>
+					<span class="formw"><input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$podnaslov?>"></span> 
 				</div>
-				
+				<div class="row">
+					<span class="label">Kratki pregled</span>
+					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" wrap="physical" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
+				</div>
+				<div class="row">
+					<span class="label">Preporučena literatura</span>
+					<span class="formw"><textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=$literatura?></textarea></span> 
+				</div>
 				<div class="row">	
-					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"/></span>
+					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></span>
 				</div>
-			
 			</div><!--formDiv-->
 		</form>
 		<?
@@ -181,17 +234,19 @@ function nastavnik_zavrsni() {
 			$q250 = myquery("UPDATE zavrsni SET biljeska='$biljeska' WHERE id=$id");
 
 			nicemessage('Uspješno ste dodali bilješku.');
-			zamgerlog("dodao biljesku na zavrsni rad $id", 2);		
+			zamgerlog("dodao biljesku na zavrsni rad $id", 2);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return; 
 		}
 
 		// Forma za izmjenu/dodavanje bilješke
-		$q260 = myquery("SELECT biljeska FROM zavrsni WHERE id=$id");
+		$q260 = myquery("SELECT biljeska, naslov FROM zavrsni WHERE id=$id");
 
 		?>
-		<h3>Dodaj bilješku za temu završnog rada</h3>	
-		<?=genform('POST','addNote'); ?>			
+		<h3>Bilješka na završni rad: <?=mysql_result($q260,0,1)?></h3>
+		<p>Ovdje možete ostaviti bilješku koja je samo vama vidljiva.</p>
+		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
+		<?=genform('POST','addNote'); ?>
 		<input type="hidden" name="subakcija" value="potvrda">
 			<div class="row">
 				<span class="label">Bilješka:</span>
