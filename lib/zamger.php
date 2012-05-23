@@ -274,10 +274,10 @@ function coolboxopen(callobj) {
 	var coolbox = document.getElementById("coolbox");
 	var coolboxedit = document.getElementById("coolboxedit");
 	coolbox.style.visibility = 'visible';
-	coolbox.style.left = curleft+2;
-	coolbox.style.top = curtop+2;
-	coolboxedit.style.width = callobj.offsetWidth - 6; // 6=padding
-	coolboxedit.style.height = callobj.offsetHeight - 6;
+	coolbox.style.left = curleft+2 + "px";
+	coolbox.style.top = curtop+2 + "px";
+	coolboxedit.style.width = (callobj.offsetWidth - 6) + "px"; // 6=padding
+	coolboxedit.style.height = (callobj.offsetHeight - 6) + "px";
 	coolboxedit.value = callobj.innerHTML;
 	if (coolboxedit.value == "/") coolboxedit.value="";
 	coolboxedit.focus();
