@@ -65,7 +65,7 @@ if (!$user_siteadmin) {
 <ul>
 <?
 
-$q100 = myquery("select o.ime, o.prezime, np.nivo_pristupa from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag");
+$q100 = myquery("select o.ime, o.prezime, np.nivo_pristupa from osoba as o, nastavnik_predmet as np where np.nastavnik=o.id and np.predmet=$predmet and np.akademska_godina=$ag order by np.nivo_pristupa");
 while ($r100 = mysql_fetch_row($q100)) {
 	if ($r100[2]=="nastavnik") $dodaj=" (N)";
 	else if ($r100[2]=="super_asistent") $dodaj=" (S)";
