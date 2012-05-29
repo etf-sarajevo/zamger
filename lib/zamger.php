@@ -344,6 +344,9 @@ function malimeni($fj) {
 		$ag=intval($_REQUEST['ag']);
 		$dodaj="&predmet=$predmet&ag=$ag";
 	}
+	
+	$q10 = myquery("select naziv from predmet where id=$predmet");
+	$predmet_naziv = mysql_result($q10,0,0);
 
 	?>
 	<style>
@@ -364,6 +367,7 @@ function malimeni($fj) {
 		if($r[5] != 0) continue; // nevidljiv
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
+			if ($r[0]=="nastavnik/zavrsni" && substr($predmet_naziv, 0, 12) != "Završni rad") continue;
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
 			</tr></tr>
