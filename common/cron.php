@@ -24,11 +24,12 @@ function cron_find($localtime, $idx, $opseg) {
 	if ($opseg == "*") return $localtime;
 	$dozvoljene = cron_fill_array($dozvoljene, $opseg);
 	$stara = $localtime[$idx];
-	while (!in_array($localtime[$idx], $dozvoljene)) {
+	do {
 		$localtime[$idx]++;
 		$localtime = localtime(mktime($localtime[2], $localtime[1], $localtime[0], $localtime[4]+1, $localtime[3], $localtime[5]+1900));
 		if ($localtime[$idx]==$stara) break;
-	}
+	} while (!in_array($localtime[$idx], $dozvoljene));
+	
 	return $localtime;
 }
 
