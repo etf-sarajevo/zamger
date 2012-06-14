@@ -78,7 +78,9 @@ print "Zadaca $zadaca zadatak $zadatak student $student\n";
 
 		// Autotest, beta
 		autotest();
+//break;
 	}
+//break;
 }
 
 $q40 = myquery("update preference set vrijednost='$novo_vrijeme' where korisnik=0 and preferenca='cron-vrijeme-izvrsenja'");
@@ -302,7 +304,7 @@ function autotest() {
 			}
 
 		// Ako je bačen izuzetak
-		} else if ($programski_jezik == "C++" && preg_match("/====TEST$rbr====(.*?)====IZUZETAK$rbr====/", $izlaz, $matches)) {
+		} else if ($programski_jezik == "C++" && preg_match("/====TEST$rbr====(.*?)====IZUZETAK$rbr====/s", $izlaz, $matches)) {
 			if ($rezultat == "===IZUZETAK===") {
 				print "Autotest $rbr: izuzetak ok!\n";
 			} else {
@@ -418,6 +420,7 @@ function autotest() {
 
 
 	if ($nalaz != "") {
+		$nalaz = iconv("UTF-8", "UTF-8//IGNORE", $nalaz);
 		$q120 = myquery("insert into zadatak set status=1, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
 		return false;
 	} else return true;
