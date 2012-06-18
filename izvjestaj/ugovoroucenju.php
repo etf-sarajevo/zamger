@@ -21,7 +21,8 @@ $debug_predmet = 0;
 
 
 $novaag = intval($_REQUEST['akademska_godina']);
-if ($ag==0) {
+if ($novaag==0) $novaag = intval($_REQUEST['ag']);
+if ($novaag==0) {
 	$q3 = myquery("select id, naziv, aktuelna from akademska_godina order by id desc limit 1");
 	$novaag = mysql_result($q3,0,0);
 } else {
