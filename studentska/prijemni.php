@@ -159,7 +159,7 @@ if ($_REQUEST['akcija'] != "pregled") {
 
 if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 	$ciklus = intval($_REQUEST['ciklus']);
-	if ($ciklus!=1 && $ciklus !=2) {
+	if ($ciklus!=1 && $ciklus !=2 && $ciklus !=3) {
 		biguglyerror("Neispravan ciklus studija");
 		zamgerlog("neispravan ciklus za novi termin prijemnog", 3); // 3 = greska
 		return;
@@ -200,7 +200,7 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="novi_ispit_potvrda">
 	<table border="0"><tr><td>
-	Ciklus studija:</td><td><select name="ciklus"><option value="1">Prvi</option><option value="2">Drugi</option></select>
+	Ciklus studija:</td><td><select name="ciklus"><option value="1">Prvi</option><option value="2">Drugi</option><option value="3">Treći</option></select>
 	</td></tr><tr><td>
 	Akademska godina:</td><td><?=db_dropdown("akademska_godina")?>
 	</td></tr><tr><td>
