@@ -363,7 +363,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 		while ($r31 = mysql_fetch_row($q31)) {
 			$predmet = $r31[0];
 			$cache_komponente[$predmet] = array();
-			$q95 = myquery("select k.id, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, predmet as p where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=2 and k.gui_naziv != 'Usmeni'");
+			$q95 = myquery("select k.id, k.prolaz, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.akademska_godina=$akgod and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=2 and k.gui_naziv != 'Usmeni' and k.gui_naziv != 'Završni ispit'");
 			while ($r95 = mysql_fetch_row($q95)) {
 				$cache_komponente[$predmet][$r95[0]] = $r95[1];
 			}
