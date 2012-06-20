@@ -8,7 +8,7 @@ function nastavnik_tip() {
 
 global $userid,$user_siteadmin;
 
-require("lib/manip.php"); // Zbog update_komponente)
+require("lib/manip.php"); // Zbog update_komponente
 
 
 // Parametri
@@ -164,7 +164,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 			if ($tipKomponente == 4) { // zadace
 				$q320 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
-				if (mysql_num_rows($q300)>0) {
+				if (mysql_num_rows($q320)>0) {
 					$q330 = myquery("update zadaca set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
 					$potreban_update = true;
 				}
