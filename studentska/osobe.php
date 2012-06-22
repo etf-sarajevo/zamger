@@ -2593,16 +2593,17 @@ else if ($akcija == "edit") {
 
 		$q640 = myquery("select ss.naziv, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.ucenik_generacije from srednja_skola as ss, uspjeh_u_srednjoj as us where us.srednja_skola=ss.id and us.osoba=$osoba");
 
-		?>
-		<b>Uspjeh u srednjoj školi:</b>
-		<ul>
-		<li>Škola: <?=mysql_result($q640,0,0)?></li>
-		<li>Opći uspjeh: <?=mysql_result($q640,0,1)?>. Ključni predmeti: <?=mysql_result($q640,0,2)?>. Dodatni bodovi: <?=mysql_result($q640,0,3)?>. <?
-		if (mysql_result($q640,0,4)>0) print "Učenik generacije.";
-		?></li>
-		</ul>
-		<?
-		
+		if (mysql_num_rows($q640)>0) {
+			?>
+			<b>Uspjeh u srednjoj školi:</b>
+			<ul>
+			<li>Škola: <?=mysql_result($q640,0,0)?></li>
+			<li>Opći uspjeh: <?=mysql_result($q640,0,1)?>. Ključni predmeti: <?=mysql_result($q640,0,2)?>. Dodatni bodovi: <?=mysql_result($q640,0,3)?>. <?
+			if (mysql_result($q640,0,4)>0) print "Učenik generacije.";
+			?></li>
+			</ul>
+			<?
+		}
 	}
 
 	?></td></tr></table></center><? // Vanjska tabela
