@@ -132,7 +132,7 @@ for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
 	$studenata = mysql_result($q300,0,0);
 	if ($studenata>$max) $max=$studenata;
 }
-$koef = 80/$max;
+if ($max>0) $koef = 80/$max; else $koef=80;
 
 ?><table border="0" cellspacing="0" cellpadding="0"><tr><?
 for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
