@@ -25,7 +25,6 @@ function nastavnik_zavrsni() {
 	$id = intval($_REQUEST['id']);
 	
 	?>
-	<LINK href="css/zavrsni.css" rel="stylesheet" type="text/css">
 	<h2>Završni rad</h2>
 	<?
 	
