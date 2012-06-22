@@ -2580,8 +2580,11 @@ else if ($akcija == "edit") {
 				?>
 				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na &quot;<?
 				$q630 = myquery("select naziv from studij where id=$r600[3]");
-				print mysql_result($q630,0,0);
-				?>&quot;, 1. semestar, u akademskoj <?=mysql_result($q610,0,1)?> godini</a></li>
+				if (mysql_num_rows($q630) > 0) 
+					print "&quot;".mysql_result($q630,0,0)."&quot;";
+				else
+					print "prvu godinu studija";
+				?>, 1. semestar, u akademskoj <?=mysql_result($q610,0,1)?> godini</a></li>
 			<?
 			}
 			?>
