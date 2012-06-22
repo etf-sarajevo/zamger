@@ -408,7 +408,10 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 
 		if ($greska==0) {
 			$q3000 = myquery("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
-			$broj_dosjea = mysql_result($q3000,0,0)+1;
+			if (mysql_num_rows($q3000)>0)
+				$broj_dosjea = mysql_result($q3000,0,0)+1;
+			else
+				$broj_dosjea = 1;
 
 			$q3010 = myquery("select id from osoba order by id desc limit 1");
 			$osoba = mysql_result($q3010,0,0)+1;
