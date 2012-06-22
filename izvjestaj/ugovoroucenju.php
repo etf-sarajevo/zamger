@@ -340,6 +340,7 @@ if ($student==$debug_student) { print "polozio koliziono"; print_r ($polozio_kol
 	$pao_septembar=$polozio_septembar=array();
 	foreach ($zamger_predmeti_pao as $predmet) {
 		$polozio=$pao=false;
+		if ($ispit_septembar[$predmet])
 		foreach ($ispit_septembar[$predmet] as $ispitkomponenta) {
 			list($ispit,$komponenta) = explode("-", $ispitkomponenta);
 
