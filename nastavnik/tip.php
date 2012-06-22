@@ -142,7 +142,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 			if ($tipKomponente == 1 || $tipKomponente == 2) { // ispit
 				$q300 = myquery("select i.id, k.kratki_gui_naziv, k.tipkomponente from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
-				while ($r300 = mysql_result($q300)) {
+				while ($r300 = mysql_fetch_row($q300)) {
 					if ($r300[2]==2 && $tipKomponente==2) {
 						$q310 = myquery("update ispit set komponenta=$id_komponente where id=$r300[0]");
 						$potreban_update = true;
