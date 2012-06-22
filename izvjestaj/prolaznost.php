@@ -497,11 +497,13 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 				$polozenih_komponenti = 0;
 				foreach ($cache_komponente[$predmet] as $komponenta_id => $komponenta_prolaz) {
 					$q250 = myquery("select bodovi from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta_id");
-					if (mysql_num_rows($q250)>0 || $komponenta_prolaz==0) {
+					if (mysql_num_rows($q250)>0) {
 						$bodovi = mysql_result($q250,0,0);
 						$ispitocjena[$stud_id][$predmet] += $bodovi;
 						if ($bodovi >= $komponenta_prolaz) $polozenih_komponenti++;
 					}
+					// Ako je prolaz=0 priznajemo čak i ako student nije izašao na ispit
+					else if ($komponenta_prolaz==0) $polozenih_komponenti++;
 				}
 				if ($polozenih_komponenti == count($cache_komponente[$predmet])) {
 					$polozilo[$predmet]++;
