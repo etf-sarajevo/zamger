@@ -171,6 +171,7 @@ if (mysql_num_rows($q20)==0)
 	$q20 = myquery("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
 
 $studij_id=-1; $plan_studija=-1; $semestar=-1;
+$plan_studija = $plan_studija_obavezan = array();
 $ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
 $nazivi_predmeta=array();
 
