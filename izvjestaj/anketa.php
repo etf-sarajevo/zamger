@@ -160,6 +160,7 @@ function izvjestaj_anketa(){
 		$q110 = myquery("SELECT id FROM anketa_pitanje WHERE anketa =$anketa and tip_pitanja =1");
 		
 		$i = 0;
+		$prosjek = array();
 		while ($r110 = mysql_fetch_row($q110)) {
 			$j=$i+1;
 			$q120 = myquery("SELECT avg(izbor_id), count(izbor_id) FROM anketa_odgovor_rank WHERE rezultat IN (SELECT id FROM anketa_rezultat WHERE predmet=$predmet and anketa=$anketa AND zavrsena='Y') AND pitanje = $r110[0]");
