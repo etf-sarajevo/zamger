@@ -396,7 +396,7 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 		}
 
 		$q2995 = myquery("select count(*) from osoba where jmbg='$rjmbg'");
-		if (mysql_result($q3015,0,0)>0) {
+		if (mysql_result($q2995,0,0)>0) {
 			niceerror("Osoba sa ovim JMBGom već postoji u bazi");
 			
 			print "<p>Moguće je da sljedeće:<br />
