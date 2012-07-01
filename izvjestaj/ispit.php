@@ -179,7 +179,7 @@ while ($r320 = mysql_fetch_row($q320)) {
 }
 
 print "<p>Prolaznost po grupama:</p>";
-$koef = 80/$maxprol;
+if ($maxprol > 0) $koef = 80/$maxprol; else $koef = 0;
 ?><table border="0" cellspacing="0" cellpadding="0"><tr><?
 foreach ($grupe as $id => $naziv) {
 	$height = intval($polozilo[$id]/$ukupno[$id] * $koef);
@@ -202,7 +202,7 @@ print "</tr></table>\n";
 // Broj bodova po grupama
 
 print "<p>Prosječan broj bodova po grupama:</p>";
-$koef = 80/$maxprosj;
+if ($maxprosj > 0) $koef = 80/$maxprosj; else $koef = 0;
 ?><table border="0" cellspacing="0" cellpadding="0"><tr><?
 foreach ($grupe as $id => $naziv) {
 	$height = intval($prosjek[$id] * $koef);

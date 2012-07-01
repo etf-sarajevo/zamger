@@ -427,8 +427,9 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 	
 				$cas_id_array = $prisustvo_casovi[$pid];
 
-				if (count($cas_id_array)==0) $ispis .= "<td>&nbsp;</td>\n";
 				$odsustvo=0;
+				if (count($cas_id_array)==0) $ispis .= "<td>&nbsp;</td>\n";
+				else
 				foreach ($cas_id_array as $cid) {
 					$q200 = mysql_query("select prisutan,plus_minus from prisustvo where student=$stud_id and cas=$cid");
 					if (mysql_num_rows($q200)>0) {
