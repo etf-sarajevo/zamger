@@ -170,6 +170,14 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Kriteriji za upis
 	$quk = myquery ("SELECT donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, prijemni_max
 	FROM upis_kriterij WHERE studij=$studij AND prijemni_termin=$termin");
+	if (mysql_num_rows($quk) < 1) {
+		niceerror("Nisu definisani kriteriji za upis na studij");
+		print "<p>Ne možemo napraviti rang listu ako ne znamo koliko studenata se prima na studij. Idite na link \"Kriteriji za upis\" i podesite parametre.</p>";
+		print "<a href=\"javascript:history.go(-1);\">Nazad</a>";
+		zamgerlog("nisu definisani kriteriji za upis $studij, $termin", 3);
+		zamgerlog2("nisu definisani kriteriji za upis", $studij, $termin);
+		return;
+	}
 	
 	$bodovihard = floatval(mysql_result($quk, 0, 0));
 	$bodovisoft = floatval(mysql_result($quk, 0, 1));
