@@ -2546,7 +2546,7 @@ else if ($akcija == "edit") {
 
 	// PRIJEMNI
 
-	$q600 = myquery("select prijemni_termin, broj_dosjea, redovan, studij_prvi, studij_drugi, studij_treci, studij_cetvrti, izasao, rezultat from prijemni_prijava where osoba=$osoba");
+	$q600 = myquery("select prijemni_termin, broj_dosjea, nacin_studiranja, studij_prvi, studij_drugi, studij_treci, studij_cetvrti, izasao, rezultat from prijemni_prijava where osoba=$osoba");
 	if (mysql_num_rows($q600)>0) {
 		?>
 		<br/><hr>
@@ -2560,7 +2560,11 @@ else if ($akcija == "edit") {
 				if ($r600[7]>0) print "$r600[8] bodova"; else print "(nije izašao/la)";
 			?></li>
 			<li>Broj dosjea: <?=$r600[1]?>, <?
-			if ($r600[2]==1) print "redovan"; else print "paralelan";
+			$q615 = myquery("select naziv from nacin_studiranja where id=$r600[2]");
+			if (mysql_num_rows($q615)>0)
+				print mysql_result($q615,0,0);
+			else
+				print "nepoznato";
 			for ($i=3; $i<=6; $i++) {
 				if ($r600[$i]>0) {
 					$q620 = myquery("select kratkinaziv from studij where id=".$r600[$i]);
@@ -2578,7 +2582,7 @@ else if ($akcija == "edit") {
 //			if ($godina_prijemnog==$nova_ak_god) {
 			if (!$korisnik_student && !$korisnik_nastavnik) {
 				?>
-				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na &quot;<?
+				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na <?
 				$q630 = myquery("select naziv from studij where id=$r600[3]");
 				if (mysql_num_rows($q630) > 0) 
 					print "&quot;".mysql_result($q630,0,0)."&quot;";

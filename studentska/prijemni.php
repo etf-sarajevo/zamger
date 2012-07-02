@@ -161,7 +161,6 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 	$ciklus = intval($_REQUEST['ciklus']);
 	if ($ciklus!=1 && $ciklus !=2 && $ciklus !=3) {
 		biguglyerror("Neispravan ciklus studija");
-		zamgerlog("neispravan ciklus za novi termin prijemnog", 3); // 3 = greska
 		return;
 	}
 	$ag = intval($_REQUEST['_lv_column_akademska_godina']);
@@ -174,7 +173,6 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 			if ($godina<900) $godina+=2000; else $godina+=1000;
 	} else {
 		biguglyerror("Neispravan datum");
-		zamgerlog("neispravan datum za novi termin prijemnog", 3); // 3 = greska
 		return;
 	}
 
@@ -434,7 +432,7 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 				// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
 				$q3060 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
 
-			zamgerlog("Brzo unesen kandidat $rime $rprezime za termin $termin", 2);
+			zamgerlog("brzo unesen kandidat $rime $rprezime za termin $termin", 2);
 
 			?>
 			<table border="1" cellspacing="0" cellpadding="3"><tr><td>
@@ -841,13 +839,13 @@ if ($_REQUEST['akcija'] == "pregled") {
 	}
 
 	if ($ciklus_studija==1) {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
-		FROM osoba as o, uspjeh_u_srednjoj as us, prijemni_prijava as pp
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
+		FROM osoba as o, uspjeh_u_srednjoj as us, prijemni_prijava as pp, nacin_studiranja as ns
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and pp.nacin_studiranja=ns.id ";
 	} else {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, pp.redovan, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
-		FROM osoba as o, prosliciklus_uspjeh as pcu, prijemni_prijava as pp
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
+		FROM osoba as o, prosliciklus_uspjeh as pcu, prijemni_prijava as pp, nacin_studiranja as ns
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id and pp.nacin_studiranja=ns.id ";
 	} 
 
 	if ($_REQUEST['sort'] == "bd") $sqlSelect .= "ORDER BY pp.broj_dosjea";
@@ -948,7 +946,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 		<td align="center"><?=$kandidat[26];?></td><? } else { ?>
 		<td align="center"><?=$kandidat[21];?></td>
 		<td align="center"><?=$kandidat[22];?></td><? } ?>
-		<td align="center"><? if ($kandidat[25]) echo "redovni"; else echo "paralelni";?></td>
+		<td align="center"><?=$kandidat[25];?></td>
 		<td align="center"><?=$imena_studija[$kandidat[28]];?></td>
 		<? if ($ciklus_studija==1) { ?>
 		<td align="center"><?=$imena_studija[$kandidat[29]];?></td>
@@ -1026,7 +1024,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$radresamjesto=my_escape(trim($_REQUEST['adresa_mjesto']));
 	$rtelefon=my_escape(trim($_REQUEST['telefon_roditelja']));
 	$rkanton=intval($_REQUEST['kanton']);
-	if ($_REQUEST['tip_studija']) $rredovni=1; else $rredovni=0;
+	$rnacinstudiranja = intval($_REQUEST['nacin_studiranja']);
 	$opi=intval($_REQUEST['studij_prvi_izbor']);
 	$odi=intval($_REQUEST['studij_drugi_izbor']);
 	$oti=intval($_REQUEST['studij_treci_izbor']);
@@ -1196,7 +1194,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=0");
 
 		// Nova prijava prijemni
-		$q330 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, redovan=$rredovni, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
+		$q330 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
 
 		// Novi uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
@@ -1223,7 +1221,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=0 where id=$rosoba");
 
 		// Updatujem prijavu prijemnog
-		$q360 = myquery("update prijemni_prijava set broj_dosjea=$rbrojdosjea, redovan=$rredovni, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
+		$q360 = myquery("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
 
 		// Updatujem uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
@@ -1378,7 +1376,7 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 // Preuzimanje podataka iz baze u slučaju editovanja
 
 // Neke default vrijednosti
-$eredovni=1; // Redovni studij
+$enacinstudiranja=1; // Redovni studij
 $eopci=$ekljucni=$edodatni=$eprijemni=0; // Bodove postavljamo na nulu
 $edrzavarodjenja = $edrzavljanstvo = 1; // BiH
 $eskoladomaca = 1; // domaća škola je default
@@ -1386,7 +1384,7 @@ $eskolazavrsena = 0; // godina završetka škole će biti prošla
 
 
 if ($osoba>0) {
-	$q = myquery("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.redovan, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
+	$q = myquery("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
 	$eime = mysql_result($q,0,0);
 	$eprezime = mysql_result($q,0,1);
 	$eimeoca = mysql_result($q,0,2);
@@ -1407,7 +1405,7 @@ if ($osoba>0) {
 	$etelefon = mysql_result($q,0,15);
 	$ekanton = mysql_result($q,0,16);
 
-	$eredovni = mysql_result($q,0,17);
+	$enacinstudiranja = mysql_result($q,0,17);
 	$eopi = mysql_result($q,0,18);
 	$eodi = mysql_result($q,0,19);
 	$eoti = mysql_result($q,0,20);
@@ -1561,6 +1559,17 @@ while ($r259 = mysql_fetch_row($q259)) {
 	$kantonr .= "<option value=\"$r259[0]\" ";
  	if ($r259[0]==$ekanton) { $kantonr  .= " SELECTED"; }
 	$kantonr .= ">$r259[1]</option>\n";
+}
+
+
+// Spisak načina studiranja
+
+$q259a = myquery("select id, naziv from nacin_studiranja where moguc_upis=1 order by id");
+$nacinstudiranjar=""; // Nema blank opcije
+while ($r259a = mysql_fetch_row($q259a)) {
+	$nacinstudiranjar .= "<option value=\"$r259a[0]\" ";
+ 	if ($r259a[0]==$enacinstudiranja) { $nacinstudiranjar  .= " SELECTED"; }
+	$nacinstudiranjar .= ">$r259a[1]</option>\n";
 }
 
 
@@ -2009,8 +2018,8 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr><td colspan="2"><br>IZBOR STUDIJA:</td></tr>
 	<tr>
-		<td width="125" align="left">Redovni studij?</td>
-		<td><input type="checkbox" name="tip_studija"  <? if ($eredovni) { ?> checked="checked" <? } ?> value="1"></td>
+		<td width="125" align="left">Način studiranja</td>
+		<td><select name="nacin_studiranja" id="kanton" class="default"><?=$nacinstudiranjar?></select></td>
 	</tr>
 <?
 

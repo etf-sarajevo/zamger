@@ -1084,7 +1084,8 @@ CREATE TABLE IF NOT EXISTS `moodle_predmet_rss` (
 
 CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `moguc_upis` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
@@ -1096,7 +1097,8 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`) VALUES
 (1, 'Redovan'),
 (2, 'Paralelan'),
 (3, 'Redovan samofinansirajući'),
-(0, 'Nepoznat status');
+(0, 'Nepoznat status', 0),
+(4, 'Vanredan', 1);
 
 -- --------------------------------------------------------
 
@@ -1589,7 +1591,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_prijava` (
   `prijemni_termin` int(11) NOT NULL,
   `osoba` int(11) NOT NULL,
   `broj_dosjea` int(11) NOT NULL,
-  `redovan` tinyint(1) NOT NULL DEFAULT '1',
+  `nacin_studiranja` tinyint(1) NOT NULL DEFAULT '1',
   `studij_prvi` int(11) NOT NULL,
   `studij_drugi` int(11) NOT NULL,
   `studij_treci` int(11) NOT NULL,
