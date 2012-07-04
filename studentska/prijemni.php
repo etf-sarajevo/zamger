@@ -38,7 +38,7 @@ if ($termin==0) {
 	// Daj najskoriji ispit
 	$q10 = myquery("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum desc limit 1");
 
-	if (mysql_num_rows($q10)<1 && $_REQUEST['akcija'] != "novi_ispit") {
+	if (mysql_num_rows($q10)<1) {
 		$_REQUEST['akcija'] = "novi_ispit";
 		$termin=0;
 	} else {
