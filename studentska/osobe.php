@@ -376,9 +376,54 @@ if ($akcija == "podaci") {
 	}
 
 
+	// Mailovi
+
+	if ($_GET['subakcija']=="obrisimail") {
+		$mailid = intval($_GET['mailid']);
+		$q497a = myquery("select adresa from email where id=$mailid and osoba=$osoba");
+		if (mysql_num_rows($q497a)<1) {
+			niceerror("Greška");
+			return;
+		}
+		$staraadresa = mysql_result($q497a,0,0);
+
+		$q498 = myquery("delete from email where osoba=$osoba and id=$mailid");
+
+		zamgerlog("obrisana email adresa za u$osoba", 2);
+		zamgerlog2("email adresa obrisana", $osoba, $mailid, 0, $staraadresa);
+		nicemessage("Obrisana email adresa $staraadresa");
+	}
+
+	if ($_GET['subakcija']=="izmijenimail") {
+		$mailid = intval($_GET['mailid']);
+		$adresa = my_escape($_GET['adresa']);
+		$q497a = myquery("select adresa from email where id=$mailid and osoba=$osoba");
+		if (mysql_num_rows($q497a)<1) {
+			niceerror("Greška");
+			return;
+		}
+		$staraadresa = mysql_result($q497a,0,0);
+
+		$q498 = myquery("update email set adresa='$adresa' where osoba=$osoba and id=$mailid");
+
+		zamgerlog("promijenjena email adresa za u$osoba", 2);
+		zamgerlog2("email adresa promijenjena", $osoba, $mailid, 0, "$staraadresa -> $adresa");
+		nicemessage("Promijenjena email adresa $staraadresa u $adresa");
+	}
+
+	if ($_GET['subakcija']=="dodajmail") {
+		$adresa = my_escape($_GET['adresa']);
+		$q498 = myquery("insert into email set adresa='$adresa', osoba=$osoba, sistemska=0");
+
+		zamgerlog("dodana email adresa za u$osoba", 2);
+		zamgerlog2("email adresa dodana", $osoba, intval(mysql_insert_id()), 0, "$adresa");
+		nicemessage("Dodana email adresa $adresa");
+	}
+
+
 	// Prikaz podataka
 
-	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -439,6 +484,14 @@ if ($akcija == "podaci") {
 		$opcinar .= "<option";
 		if ($r259[0]==$eopcinarodjenja) { $opcinar .= " SELECTED"; }
 		$opcinar .= ">$r259[1]</option>\n";
+	}
+
+	// Spisak mailova
+	
+	$q260 = myquery("select id, adresa from email where osoba=$osoba");
+	$email_adrese = "";
+	while ($r260 = mysql_fetch_row($q260)) {
+		$email_adrese .= "<input type=\"text\" class=\"default\" name=\"email\" id=\"email$r260[0]\" value=\"$r260[1]\"> <input type=\"button\" class=\"default\" value=\"Izmijeni\" onclick=\"javascript:location.href='?sta=studentska/osobe&osoba=$osoba&akcija=podaci&subakcija=izmijenimail&mailid=$r260[0]&adresa='+document.getElementById('email$r260[0]').value;\"> <input type=\"button\" class=\"default\" value=\"Obriši\" onclick=\"javascript:location.href='?sta=studentska/osobe&osoba=$osoba&akcija=podaci&subakcija=obrisimail&mailid=$r260[0]';\"><br>\n";
 	}
 
 	?>
@@ -532,8 +585,9 @@ if ($akcija == "podaci") {
 		<td>Telefon:</td>
 		<td><input type="text" name="telefon" value="<?=mysql_result($q400,0,16)?>" class="default"></td>
 	</tr><tr>
-		<td>Kontakt e-mail:</td>
-		<td><input type="text" name="email" value="<?=mysql_result($q400,0,7)?>" class="default"></td>
+		<td valign="top">Kontakt e-mail:</td>
+		<td><?=$email_adrese?>
+		<input type="text" name="emailnovi" id="emailnovi" class="default"> <input type="button" class="default" value="Dodaj" onclick="javascript:location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=podaci&subakcija=dodajmail&adresa='+document.getElementById('emailnovi').value;"></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Stručni stepen:</td>
@@ -1854,7 +1908,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci
 
-	$q200 = myquery("select ime, prezime, email, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
+	$q200 = myquery("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r200 = mysql_fetch_row($q200))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -1900,6 +1954,15 @@ else if ($akcija == "edit") {
 		$naucni_stepen = mysql_result($q207,0,0);
 	}
 
+	// Spisak mailova
+	
+	$q260 = myquery("select adresa from email where osoba=$osoba");
+	$email_adrese = "";
+	while ($r260 = mysql_fetch_row($q260)) {
+		if ($email_adrese !== "") $email_adrese .= ", ";
+		$email_adrese .= $r260[0];
+	}
+
 	?>
 
 	<h2><?=$ime?> <?=$prezime?></h2>
@@ -1920,7 +1983,7 @@ else if ($akcija == "edit") {
 		Adresa: <b><?=$adresa?></b><br/>
 		Kanton: <b><?=$kanton?></b><br/>
 		Telefon: <b><?=mysql_result($q200,0,10)?></b><br/>
-		Kontakt e-mail: <b><?=mysql_result($q200,0,2)?></b><br/>
+		Kontakt e-mail: <b><?=$email_adrese?></b><br/>
 		<br/>
 		Stručni stepen: <b><?=$strucni_stepen?></b><br/>
 		Naučni stepen: <b><?=$naucni_stepen?></b><br/>
