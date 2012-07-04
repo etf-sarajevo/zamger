@@ -2771,7 +2771,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `biljeska` text COLLATE utf8_slovenian_ci NOT NULL,
   `predsjednik_komisije` INT(11) NOT NULL,
   `clan_komisije` INT(11) NOT NULL,
-  `termin_odbrane` date NOT NULL,
+  `termin_odbrane` datetime NOT NULL,
   `konacna_ocjena` int(11) NOT NULL DEFAULT '5',
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
