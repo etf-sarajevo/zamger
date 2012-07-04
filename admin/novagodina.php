@@ -25,7 +25,7 @@ if ($_POST['akcija'] == "novagodina") {
 		print "-- Kreirana nova akademska godina '$naziv' (ID: $ag). Koristite modul 'Parametri studija' da je proglasite za aktuelnu.<br/>\n";
 	} else {
 		$ag = mysql_result($q10,0,0);
-		print "-- Pronađena akademska godina (ID: $ag).<br/>\n";
+		print "-- Pronađena postojeća akademska godina (ID: $ag) - neće biti kreirana nova godina.<br/>\n";
 	}
 	
 	$q40 = myquery("select s.id, s.naziv, ts.trajanje, ts.moguc_upis from studij as s, tipstudija as ts where s.tipstudija=ts.id");
