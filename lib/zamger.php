@@ -345,9 +345,11 @@ function malimeni($fj) {
 		$dodaj="&predmet=$predmet&ag=$ag";
 	}
 	
-	$q10 = myquery("select naziv from predmet where id=$predmet");
-	$predmet_naziv = mysql_result($q10,0,0);
-
+	if ($predmet>0) {
+		$q10 = myquery("select naziv from predmet where id=$predmet");
+		$predmet_naziv = mysql_result($q10,0,0);
+	}
+		
 	?>
 	<style>
 		a.malimeni {color:#333399;text-decoration:none;}
