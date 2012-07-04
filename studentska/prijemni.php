@@ -117,17 +117,7 @@ if ($_REQUEST['akcija'] != "pregled") {
 	</tr>
         <tr>&nbsp;</tr> 	 
 	<tr> 	 
-		<td>Rang liste kandidata:<br /><?
-
-	// Spisak studija
-	$q20 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija order by s.naziv");
-	while ($r20 = mysql_fetch_row($q20)) {
-		?>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="?sta=izvjestaj/prijemni&_lv_column_studij=<?=$r20[0]?>&termin=<?=$termin?>"><?=$r20[1]?></a><br />
-		<?
-	}
-	?>
-		</td> 	 
+		<td><a href="?sta=studentska/prijemni&akcija=rang_liste&termin=<?=$termin?>">Rang liste kandidata</a></td>
 	</tr> 	 
 </table>
 
@@ -525,7 +515,7 @@ function provjeri_sve() {
 
 
 
-// PREDLINK ZA IZVJEŠTAJ
+// GENERATORI IZVJEŠTAJA
 
 
 if ($_REQUEST['akcija']=="spisak") {
@@ -549,6 +539,40 @@ if ($_REQUEST['akcija']=="spisak") {
 }
 
 
+if ($_REQUEST['akcija']=="rang_liste") {
+	?>
+	<form action="index.php" method="GET">
+	<input type="hidden" name="sta" value="izvjestaj/prijemni">
+	<input type="hidden" name="akcija" value="rang_liste">
+	<input type="hidden" name="termin" value="<?=$termin?>">
+	<h2>Rang liste kandidata</h2>
+
+	<p>Vrsta izvještaja: <select name="vrsta"><option value="preliminarni">Preliminarni rezultati</option>
+	<option value="konacni">Konačni rezultati</option></select></p>
+
+	<p>Studij: <select name="studij"><?
+	$q1000 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	while ($r1000 = mysql_fetch_row($q1000)) {
+		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
+	}
+	?></select></p>
+
+	<p>Državljanstvo: <select name="iz"><option value="bih">BiH</option>
+	<option value="strani">Strani državljani</option>
+	<option>Svi zajedno</option>
+	</select></p>
+
+	<p>Način studiranja: <select name="nacin"><option value="redovni">Redovni i samofinansirajući</option>
+	<option value="vanredni">Vanredni</option>
+	<option>Svi zajedno</option>
+	</select></p>
+
+	<input type="submit" value=" Kreni ">
+	</form>
+	<?
+}
+
+
 
 // UNOS KRITERIJA ZA UPIS
 
@@ -560,10 +584,11 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 		$rkandidatisd = intval($_REQUEST['kandidati_sd']);
 		$rkandidatisp = intval($_REQUEST['kandidati_sp']);
 		$rkandidatikp = intval($_REQUEST['kandidati_kp']);
+		$rkandidativan = intval($_REQUEST['kandidati_van']);
 		$rprijemnimax = floatval($_REQUEST['prijemni_max']);
 		$rstudij = intval($_REQUEST['rstudij']);
 
-		$qInsert = myquery("REPLACE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, prijemni_max=$rprijemnimax, studij=$rstudij, prijemni_termin=$termin");
+		$qInsert = myquery("REPLACE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, kandidati_vanredni=$rkandidativan, prijemni_max=$rprijemnimax, studij=$rstudij, prijemni_termin=$termin");
 
 		$_REQUEST['prikazi'] = true; // prikazi upravo unesene podatke
 
@@ -572,7 +597,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 
 	if ($_REQUEST['prikazi']) {
 		$rstudij = intval($_REQUEST['rstudij']);
-		$q120 = myquery("select donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, prijemni_max from upis_kriterij where studij=$rstudij and prijemni_termin=$termin");
+		$q120 = myquery("select donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max from upis_kriterij where studij=$rstudij and prijemni_termin=$termin");
 		if (mysql_num_rows($q120)<1) {
 			$pdonja=$pgornja=$pksd=$pksp=$pkkp=$ppmax=0;
 		} else {
@@ -581,6 +606,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 			$pksd=mysql_result($q120,0,2);
 			$pksp=mysql_result($q120,0,3);
 			$pkkp=mysql_result($q120,0,4);
+			$pkvan=mysql_result($q120,0,5);
 			$ppmax=mysql_result($q120,0,5);
 		}
 	}
@@ -646,6 +672,10 @@ function odzuti(nesto) {
 	<tr>
 		<td width="70%" align="left">Broj kandidata (kanton plaća školovanje):</td>
 		<td><input type="text" size="12" name="kandidati_kp" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pkkp?>"></td>
+	</tr>
+	<tr>
+		<td width="70%" align="left">Broj kandidata (vanrednih):</td>
+		<td><input type="text" size="12" name="kandidati_van" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pkvan?>"></td>
 	</tr>
 	<tr>
 		<td>&nbsp;<td>

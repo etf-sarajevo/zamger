@@ -124,8 +124,30 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 
 
-	$studij = intval($_REQUEST['_lv_column_studij']);
+	$studij = intval($_REQUEST['studij']);
 	$termin = intval($_REQUEST['termin']);
+
+	$upit_dodaj = $naslov_dodaj = "";
+	if ($_REQUEST['iz'] == "bih") {
+		$upit_dodaj = " AND o.drzavljanstvo=1";
+	} else if ($_REQUEST['iz'] == "strani") {
+		$upit_dodaj = " AND o.drzavljanstvo!=1";
+		$naslov_dodaj = " stranih državljana";
+	}
+
+	if ($_REQUEST['nacin'] == "redovni") {
+		$upit_dodaj .= " AND (pp.nacin_studiranja=1 OR pp.nacin_studiranja=3)";
+		$naslov_dodaj .= " prijavljenih za redovan studij";
+	} else if ($_REQUEST['nacin'] == "vanredni") {
+		$upit_dodaj .= " AND pp.nacin_studiranja=4";
+		$naslov_dodaj .= " prijavljenih za vanredni studij";
+	}
+
+	if ($_REQUEST['vrsta'] == "preliminarni") {
+		$vrsta_rang_liste = "Preliminarna";
+	} else {
+		$vrsta_rang_liste = "Konačna";
+	}
 
 
 	// Naslov
@@ -143,18 +165,15 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$datum = date("d. m. Y.", mysql_result($q10,0,1));
 	$ciklus = mysql_result($q10,0,2);
 
-	$naslov3 = "";
-	if ($ciklus>1) {
-		$naslov3 = " na $ciklus. ciklus studija";
-	}
+	$naslov3 = " u prvu godinu $ciklus. ciklusa studija";
 
 	// Koji po redu termin?
 	$q20 = myquery("select count(*)+1 from prijemni_termin where ciklus_studija=$ciklus and akademska_godina=".mysql_result($q10,0,3)." and datum='".mysql_result($q10,0,4)."' and id<$termin");
 	$rednibroj = mysql_result($q20,0,0);
 	if ($rednibroj==1) { 
-		$naslov2 = "kvalifikacionog ispita"; 
+		$naslov2 = "prijemnog ispita"; 
 	} else { 
-		$naslov2 = "$rednibroj. termina kvalifikacionog ispita"; 
+		$naslov2 = "$rednibroj. termina prijemnog ispita"; 
 	}
 
 	
@@ -162,13 +181,13 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<h4>Univerzitet u Sarajevu<br />
 	Elektrotehnički fakultet Sarajevo</h4>
 
-	<h3 align="left">Preliminarna rang lista kandidata nakon <?=$naslov2?> održanog dana <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
+	<h3 align="left"><?=$vrsta_rang_liste?> rang lista kandidata <?=$naslov_dodaj?> nakon <?=$naslov2?> održanog dana <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
 	<h2 align="left">Studij: <?=$naziv_studija?></h2>
 	<br/>
 	<?
 
 	// Kriteriji za upis
-	$quk = myquery ("SELECT donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, prijemni_max
+	$quk = myquery ("SELECT donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max
 	FROM upis_kriterij WHERE studij=$studij AND prijemni_termin=$termin");
 	if (mysql_num_rows($quk) < 1) {
 		niceerror("Nisu definisani kriteriji za upis na studij");
@@ -184,7 +203,8 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$kandidatisd = intval(mysql_result($quk,0,2));
 	$kandidatisp = intval(mysql_result($quk,0,3));
 	$kandidatikp = intval(mysql_result($quk,0,4));
-	$prijemnimax = floatval(mysql_result($quk,0,5));
+	$kandidativan = intval(mysql_result($quk,0,5));
+	$prijemnimax = floatval(mysql_result($quk,0,6));
 
 	// Kantoni
 	$qkanton = myquery("select id, kratki_naziv from kanton");
@@ -194,20 +214,20 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	// Spisak svih kandidata se učitava u niz
 	if ($ciklus==1)
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
 		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us
-		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij
+		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
 		ORDER BY ukupno DESC");
 	else
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno
+		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
 		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu
-		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij
+		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
 		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
 	while($rezultat = mysql_fetch_row($qispis)) {
 		$id = $rezultat[0];
-		$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$kantoni[$rezultat[3]], 'opci_uspjeh'=>$rezultat[2], 'kanton_id'=>$rezultat[3], 'kljucni_predmeti'=>$rezultat[4], 'dodatni_bodovi'=>$rezultat[5], 'prijemni_ispit'=>$rezultat[6], 'ukupno'=>$rezultat[7]);
+		$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$kantoni[$rezultat[3]], 'opci_uspjeh'=>$rezultat[2], 'kanton_id'=>$rezultat[3], 'kljucni_predmeti'=>$rezultat[4], 'dodatni_bodovi'=>$rezultat[5], 'prijemni_ispit'=>$rezultat[6], 'ukupno'=>$rezultat[7], 'nacin_studiranja'=>$rezultat[8]);
 
 		// Iako u konkursu ne piše da se uspjeh zaokružuje, radi ljepšeg ispisa zaokružićemo na dvije decimale
 		if ($ciklus!=1) {
@@ -236,12 +256,11 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$i = 1;
 	foreach($kandidati as $id => $kandidat) {
 		if ($i > $kandidatikp) break;
-		if($kandidat['prijemni_ispit'] >= $bodovisoft) {
+		if($kandidat['prijemni_ispit'] >= $bodovisoft && $kandidat['nacin_studiranja'] == 1) { // 1 = redovan
 			if ($i == 1) {
 				?>
 				<tr>
-					<td colspan="8"><b>REDOVNI 
-STUDIJ - Troškove studija snosi Kanton Sarajevo</b></td>
+					<td colspan="8"><b>Troškove studija snosi Kanton Sarajevo</b></td>
 				</tr>
 				<?
 			}
@@ -266,12 +285,12 @@ STUDIJ - Troškove studija snosi Kanton Sarajevo</b></td>
 	$j = 1;
 	foreach($kandidati as $id => $kandidat) {
 		if ($j > $kandidatisp) break;
-		if(($kandidat['prijemni_ispit'] >= $bodovisoft && $i >= $kandidatikp)) {
+		// 1 = redovan, 3 = samofinansirajući
+		if ($kandidat['prijemni_ispit'] >= $bodovisoft && $i >= $kandidatikp && ($kandidat['nacin_studiranja'] == 1 || $kandidat['nacin_studiranja'] == 3)) {
 			if ($j == 1) {
 				?>
 				<tr>
-					<td colspan="8"><b>REDOVNI 
-STUDIJ - Troškove studija snose sami studenti</b></td>
+					<td colspan="8"><b>Troškove studija snose sami studenti</b></td>
 				</tr>
 				<?
 			}
@@ -296,11 +315,11 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 	$iznadsoftlimita=0;
 	foreach($kandidati as $id => $kandidat) {
 		if ($j > $kandidatisp) break;
-		if(($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $j<$kandidatisp)) {
+		if ($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['prijemni_ispit'] <= $bodovisoft && $j<$kandidatisp && ($kandidat['nacin_studiranja'] == 1 || $kandidat['nacin_studiranja'] == 3)) {
 			if ($j == 1) {
 				?>
 				<tr>
-					<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
+					<td colspan="8"><b>Troškove studija snose sami studenti</b></td>
 				</tr>
 				<?
 			}
@@ -329,11 +348,11 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 	$stranidrzavljani=0;
 	foreach($kandidati as $id => $kandidat){
 		if ($k > $kandidatisd) break;
-		if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13)  {
+		if ($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] == 13 && ($kandidat['nacin_studiranja'] == 1 || $kandidat['nacin_studiranja'] == 3))  {
 			if ($j == 1 && $k == 1) {
 				?>
 				<tr>
-					<td colspan="8"><b>REDOVNI STUDIJ - Troškove studija snose sami studenti</b></td>
+					<td colspan="8"><b>Troškove studija snose sami studenti</b></td>
 				</tr>
 				<?
 			}
@@ -356,11 +375,11 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 		}
 	}
 	
-	// Studenti upadaju na mjesta za strane drzavljane
+/*	// Studenti upadaju na mjesta za strane drzavljane
 	$mjestazasd=0;
 	if($k <= $kandidatisd) {
 		foreach($kandidati as $id => $kandidat) {
-			if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] != 13) {
+			if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] != 13 && ($kandidat['nacin_studiranja'] == 1 || $kandidat['nacin_studiranja'] == 3)) {
 				if ($j == 1 && $k == 1) {
 					?>
 					<tr>
@@ -386,14 +405,77 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				if ($k++ >= $kandidatisd) break;
 			}
 		}
+	}*/
+
+	
+	// Vanredni studenti
+	$l = 1;
+	if ($l <= $kandidativan) {
+		foreach($kandidati as $id => $kandidat) {
+			if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['nacin_studiranja'] == 4) {
+				if ($j == 1 && $k == 1 && $l == 1) {
+					?>
+					<tr>
+						<td colspan="8"><b>Kandidati koji su stekli uvjete za upis</b></td>
+					</tr>
+					<?
+				}
+				?>
+				<tr>
+					<td align="center"><?=$i++?></td>
+					<td><?=$kandidat['prezime_ime']?></td>
+					<td align="center"><?=$kandidat['kanton']?></td>
+					<td align="center"><?=$kandidat['opci_uspjeh']?></td>
+					<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
+					<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
+					<td align="center"><?=$kandidat['prijemni_ispit']?></td>
+					<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				</tr>
+				<?
+				unset($kandidati[$id]);
+				if ($l++ >= $kandidativan) break;
+			}
+		}
 	}
 
-	// Nisu se upisali
+
+	// Položili prijemni ali nisu stekli uvjete
 	$j = 1;
 	$palo=0;
 	$drugiodsjek=0;
 	foreach ($kandidati as $id => $kandidat) {
+		if ($kandidat['prijemni_ispit'] < $bodovihard) continue;
 		if ($j == 1) {
+			$palo=1;
+			?>
+			<tr>
+				<td colspan="8"><b>Kandidati koji su položili prijemni ispit i za koje će se tražiti saglasnost za upis</b></td>
+			</tr>
+			<?
+		}
+		?>
+		<tr>
+				<td align="center"><?=$i++?></td>
+				<td><?=$kandidat['prezime_ime']?></td>
+				<td align="center"><?=$kandidat['kanton']?></td>
+				<td align="center"><?=$kandidat['opci_uspjeh']?></td>
+				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
+				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
+				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
+				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				?></b></td>
+			</tr>
+		<?
+		$j++;
+		unset($kandidati[$id]);
+	}
+
+	// Nisu se upisali
+	$k = 1;
+	$palo=0;
+	$drugiodsjek=0;
+	foreach ($kandidati as $id => $kandidat) {
+		if ($k == 1) {
 			$palo=1;
 			?>
 			<tr>
@@ -410,15 +492,10 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?><? 
-				if ($kandidat['prijemni_ispit']>=20) {
-					?><td><font color="red">****</font></td><?
-					$drugiodsjek++;
-				}
-				?></b></td>
+				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
 			</tr>
 		<?
-		$j++;
+		$k++;
 	}
 
 	// Legenda
@@ -444,6 +521,20 @@ STUDIJ - Troškove studija snose sami studenti</b></td>
 		?>**** - Kandidati su položili prijemni ispit ali nisu ušli u kvotu predviđenu konkursom za ovaj odsjek. Kandidati se pozivaju na razgovor radi eventualnog izbora drugog odsjeka.<br /><?
 	}
 
+
+	?>
+	<p>&nbsp;</p>
+
+	<table border="0" width="100%">
+	<tr>
+	<td>
+	Sarajevo, <?=date("d. m. Y.")?> godine.</td>
+	<td align="center">Predsjednik komisije:<br>
+	<br>
+	<br>
+	Prof. dr Narcis Behlilović, dipl. ing. el.</td>
+	</tr></table>
+	<?
 
 }
 
