@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 --
 
 INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
-(1, '2009/2010', 1);
+(1, '2012/2013', 1);
 
 -- --------------------------------------------------------
 
