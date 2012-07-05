@@ -71,7 +71,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 <li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=bez_ocjene">Sve studente koji nemaju upisanu ocjenu (<?=$studenata_bez_ocjene?> studenata)</a><br/>&nbsp;</li>
 <li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=sve">Sve studente (<?=$svih_studenata?> studenata)</a><br/>&nbsp;</li>
 <li>Pojedinačnog studenta:<br/>
-<form action="/index.php" method="GET">
+<form action="index.php" method="GET">
 <input type="hidden" name="sta" value="izvjestaj/prijave">
 <input type="hidden" name="predmet" value="<?=$predmet?>">
 <input type="hidden" name="ag" value="<?=$ag?>">
