@@ -34,7 +34,7 @@ function studentska_zavrsni()  {
 		<ul><?
 		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, akademska_godina as ag, predmet as p, studij AS s WHERE pk.akademska_godina = ag.id AND ag.aktuelna=1 AND pk.predmet=p.id AND SUBSTRING(p.naziv, 1, 12)='Završni rad' AND pk.studij=s.id ORDER BY p.naziv, s.naziv");
 		if (mysql_num_rows($q100) == 0) {
-			niceerror("Nije definisan niti jedan predmet za završni rad.");
+			niceerror("Nije definisan niti jedan predmet pod imenom Završni rad.");
 		}
 		while ($r100 = mysql_fetch_row($q100)) {
 			?><li><a href="?sta=studentska/zavrsni&predmet=<?=$r100[0]?>&ag=<?=$r100[1]?>"><?=$r100[2]?> (<?=$r100[3]?>)</a></li><?
