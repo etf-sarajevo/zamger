@@ -80,10 +80,10 @@ function comboBoxShowHide(elname) {
 		list.style.visibility = 'visible';
 		list.style.left=curleft;
 		list.style.top=curtop+ib.offsetHeight;
-		image.src = "../images/cb_down.png";
+		image.src = "images/cb_down.png";
 	} else {
 		list.style.visibility = 'hidden';
-		image.src = "../images/cb_up.png";
+		image.src = "images/cb_up.png";
 	}
 }
 function comboBoxHide(elname) {
@@ -92,7 +92,7 @@ function comboBoxHide(elname) {
 	var image = document.getElementById("comboBoxImg_"+elname);
 	if (list.style.visibility == 'visible' && listsel!==document.activeElement) {
 		list.style.visibility = 'hidden';
-		image.src = "../images/cb_up.png";
+		image.src = "images/cb_up.png";
 	}
 }
 function comboBoxOptionSelected(elname) {
