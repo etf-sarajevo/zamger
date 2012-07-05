@@ -764,7 +764,7 @@ else if ($akcija == "upis") {
 		?>
 		<p><b>Izaberite način studiranja studenta:</b><br/>
 		<?
-		$q560 = myquery("select id, naziv from nacin_studiranja where id!=0"); // 0 = nepoznat status
+		$q560 = myquery("select id, naziv from nacin_studiranja where moguc_upis=1");
 		while ($r560 = mysql_fetch_row($q560)) {
 			if ($r560[0]==$prijedlog_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
 			print '<input type="radio" name="nacin_studiranja" value="'.$r560[0].'"'.$dodaj.'>'.$r560[1]."<br/>\n";
@@ -1068,6 +1068,7 @@ else if ($akcija == "upis") {
 		}
 
 		// Upisujemo ocjene za predmete koje su dopisane
+		if (count($predmeti_pao) > 0)
 		foreach ($predmeti_pao as $predmet=>$naziv_predmeta) {
 			$ocjena = intval($_REQUEST["pao-$predmet"]);
 			if ($ocjena>5) {
@@ -1812,11 +1813,15 @@ else if ($akcija == "edit") {
 				}
 	
 				// Generišemo email adresu ako nije podešena
-				$q115 = myquery("select email from osoba where id=$osoba");
-				if (mysql_result($q115,0,0) == "") {
-					$email = $suggest_login.$conf_ldap_domain;
-					$q114 = myquery("update osoba set email='$email' where id=$osoba");
-					zamgerlog("promijenjen email za korisnika u$osoba",2); // nivo 2 - edit
+				$email_adresa = $suggest_login.$conf_ldap_domain;
+				$q115 = myquery("select sistemska from email where osoba=$osoba and adresa='$email_adresa'");
+				if (mysql_num_rows($q115) < 1) {
+					$q114 = myquery("insert into email set osoba=$osoba, adresa='$email_adresa', sistemska=1");
+					zamgerlog("dodana sistemska email adresa za u$osoba", 2);
+				}
+				else if (mysql_result($q115,0,0) == 0) {
+					$q114 = myquery("update email set sistemska=1 where email='$email_adresa' and osoba=$osoba");
+					zamgerlog("email adresa proglasena za sistemsku za u$osoba", 2);
 				}
 			}
 		} // else if ($pristup!=0)
