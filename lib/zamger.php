@@ -331,6 +331,31 @@ function coolboxkey(e) {
 }
 
 
+// DHTML combo box kontrola
+// Upotreba: na početku dokumenta uključiti js/mycombobox.js
+// Zatim po potrebi mycombobox($name, $value, $valueslist)
+// - $name - string, jedinstveni DOM ID za combobox
+// - $value - default vrijednost comboboxa
+// - $valueslist - niz vrijednosti koje treba popuniti u combobox
+
+function mycombobox($name, $value, $valueslist) {
+	?>
+	<input type="text" name="<?=$name?>" id="<?=$name?>" value="<?=$value?>" class="default" onKeyDown="return comboBoxEdit(event, '<?=$name?>')" autocomplete="off" onBlur="comboBoxHide('<?=$name?>')">
+	<img src="../images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('<?=$name?>')" id="comboBoxImg_<?=$name?>" valign="bottom"> <img src="../images/cb_down.png" style="visibility:hidden">
+	<!-- Rezultati pretrage primaoca -->
+	<div id="comboBoxDiv_<?=$name?>" style="position:absolute;visibility:hidden">
+		<select name="comboBoxMenu_<?=$name?>" id="comboBoxMenu_<?=$name?>" size="10" onClick="comboBoxOptionSelected('<?=$name?>')" onFocus="this.focused=true;" onBlur="this.focused=false;"><option></option><?
+	foreach ($valueslist as $listitem) {
+		print "<option";
+		if ($value == $listitem) print " SELECTED";
+		print ">$listitem</option>\n";
+	}
+	?></select>
+	</div>
+	<?
+}
+
+
 // "Mali meni" - koji se pokazuje u modulima za nastavnika, studentsku i site admin
 
 function malimeni($fj) {
