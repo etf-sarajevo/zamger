@@ -341,7 +341,7 @@ function coolboxkey(e) {
 function mycombobox($name, $value, $valueslist) {
 	?>
 	<input type="text" name="<?=$name?>" id="<?=$name?>" value="<?=$value?>" class="default" onKeyDown="return comboBoxEdit(event, '<?=$name?>')" autocomplete="off" onBlur="comboBoxHide('<?=$name?>')">
-	<img src="../images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('<?=$name?>')" id="comboBoxImg_<?=$name?>" valign="bottom"> <img src="../images/cb_down.png" style="visibility:hidden">
+	<img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('<?=$name?>')" id="comboBoxImg_<?=$name?>" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
 	<!-- Rezultati pretrage primaoca -->
 	<div id="comboBoxDiv_<?=$name?>" style="position:absolute;visibility:hidden">
 		<select name="comboBoxMenu_<?=$name?>" id="comboBoxMenu_<?=$name?>" size="10" onClick="comboBoxOptionSelected('<?=$name?>')" onFocus="this.focused=true;" onBlur="this.focused=false;"><option></option><?
