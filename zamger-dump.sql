@@ -2487,11 +2487,10 @@ CREATE TABLE IF NOT EXISTS `studij` (
 --
 
 INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
-(1, 'Prva godina studija', 2, 1, 'PGS', 0, 1, 0),
-(2, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 2, 1),
-(3, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 2, 1),
-(4, 'Elektroenergetika (BSc)', 6, 4, 'EE', 1, 2, 1),
-(5, 'Telekomunikacije (BSc)', 6, 5, 'TK', 1, 2, 1);
+(1, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 1, 1),
+(2, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 1, 1),
+(3, 'Elektroenergetika (BSc)', 6, 4, 'EE', 1, 1, 1),
+(4, 'Telekomunikacije (BSc)', 6, 5, 'TK', 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -2578,10 +2577,9 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
 --
 
 INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VALUES
-(1, 'Virtualni studij PGS', 1, 2, 0),
-(2, 'Bakalaureat', 1, 6, 1),
-(3, 'Master', 2, 4, 1),
-(4, 'Diplomski studij - Ante-Bologna', 1, 9, 0);
+(1, 'Bakalaureat', 1, 6, 1),
+(2, 'Master', 2, 4, 1),
+(3, 'Doktorski studij', 3, 6, 1);
 
 -- --------------------------------------------------------
 
