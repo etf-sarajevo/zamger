@@ -1093,10 +1093,10 @@ CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
 -- Dumping data for table `nacin_studiranja`
 --
 
-INSERT INTO `nacin_studiranja` (`id`, `naziv`) VALUES
-(1, 'Redovan'),
-(2, 'Paralelan'),
-(3, 'Redovan samofinansirajući'),
+INSERT INTO `nacin_studiranja` (`id`, `naziv`, `moguc_upis`) VALUES
+(1, 'Redovan', 1),
+(2, 'Paralelan', 0),
+(3, 'Redovan samofinansirajući', 1),
 (0, 'Nepoznat status', 0),
 (4, 'Vanredan', 1);
 
