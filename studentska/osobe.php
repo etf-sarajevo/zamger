@@ -165,7 +165,7 @@ if ($akcija == "podaci") {
 		$prezime = my_escape($_REQUEST['prezime']);
 		$spol = $_REQUEST['spol']; if ($spol!="M" && $spol!="Z") $spol="";
 		$jmbg = my_escape($_REQUEST['jmbg']);
-		$nacionalnost = my_escape($_REQUEST['nacionalnost']);
+		$nacionalnost = intval($_REQUEST['nacionalnost']);
 		$brindexa = my_escape($_REQUEST['brindexa']);
 
 		$imeoca = my_escape($_REQUEST['imeoca']);
@@ -174,9 +174,9 @@ if ($akcija == "podaci") {
 		$prezimemajke = my_escape($_REQUEST['prezimemajke']);
 
 		$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
-		$opcina_rodjenja = my_escape($_REQUEST['opcina_rodjenja']);
-		$drzava_rodjenja = my_escape($_REQUEST['drzava_rodjenja']);
-		$drzavljanstvo = my_escape($_REQUEST['drzavljanstvo']);
+		$opcina_rodjenja = intval($_REQUEST['opcina_rodjenja']);
+		$drzava_rodjenja = intval($_REQUEST['drzava_rodjenja']);
+		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']);
 		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
@@ -196,42 +196,26 @@ if ($akcija == "podaci") {
 				if ($godina<900) $godina+=2000; else $godina+=1000;
 		}
 
-		// Mjesto
+		// Mjesto rođenja
 		$mjrid=0;
 		if ($mjesto_rodjenja != "") {
-			$qa = myquery("select id from opcina where naziv='$opcina_rodjenja'");
-			if (mysql_num_rows($qa)<1) {
-				nicemessage("Dodajem novu opcinu '$opcina_rodjenja'");
-				$qb = myquery("insert into opcina set naziv='$opcina_rodjenja'");
-				$qa = myquery("select id from opcina where naziv='$opcina_rodjenja'");
-			}
-			$opcina_id = mysql_result($qa,0,0);
-
-			$qc = myquery("select id from drzava where naziv='$drzava_rodjenja'");
-			if (mysql_num_rows($qc)<1) {
-				nicemessage("Dodajem novu drzavu '$drzava_rodjenja'");
-				$qd = myquery("insert into drzava set naziv='$drzava_rodjenja'");
-				$qc = myquery("select id from drzava where naziv='$drzava_rodjenja'");
-			}
-			$drzava_id = mysql_result($qc,0,0);
-
-
-			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_id and drzava=$drzava_id");
+			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_rodjenja and drzava=$drzava_rodjenja");
 			if (mysql_num_rows($q1)<1) {
 				$q2 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
 				if (mysql_num_rows($q2)<1) {
 					nicemessage("Dodajem novo mjesto '$mjesto_rodjenja'");
-					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_id, drzava=$drzava_id");
+					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_rodjenja, drzava=$drzava_rodjenja");
 					$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja'");
 				} else {
 					nicemessage("Promjena općine/države za mjesto '$mjesto_rodjenja'");
-					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_id, drzava=$drzava_id");
-					$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_id and drzava=$drzava_id");
+					$q2 = myquery("insert into mjesto set naziv='$mjesto_rodjenja', opcina=$opcina_rodjenja, drzava=$drzava_rodjenja");
+					$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_rodjenja and drzava=$drzava_rodjenja");
 				}
 			}
 			$mjrid = mysql_result($q1,0,0);
 		}
 	
+		// Mjesto adresa
 		$admid=0;
 		if ($adresa_mjesto != "") {
 			$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
@@ -242,35 +226,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-
-		// Nacionalnost
-		$nacion_id=0;
-		if ($nacionalnost != "") {
-			$q5 = myquery("select id from nacionalnost where naziv='$nacionalnost'");
-			if (mysql_num_rows($q5)<1) {
-				$q6 = myquery("insert into nacionalnost set naziv='$nacionalnost'");
-				$q5 = myquery("select id from nacionalnost where naziv='$nacionalnost'");
-			}
-			$nacion_id = mysql_result($q5,0,0);
-		}
-
-
-		// Drzavljanstvo
-		$drzavlj_id=0;
-		if ($drzavljanstvo != "") {
-			$q7 = myquery("select id from drzava where naziv='$drzavljanstvo'");
-			if (mysql_num_rows($q7)<1) {
-				$q8 = myquery("insert into drzava set naziv='$drzavljanstvo'");
-				$q7 = myquery("select id from drzava where naziv='$drzavljanstvo'");
-			}
-			$drzavlj_id = mysql_result($q7,0,0);
-		}
-/*		$mjrid = intval($mjesto_rodjenja);
-		$nacion_id = intval($nacionalnost);
-		$drzavlj_id = intval($drzavljanstvo);
-		$admid = intval($adresa_mjesto);*/
-
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', email='$email', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacion_id, drzavljanstvo=$drzavlj_id, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		?>
@@ -440,16 +396,17 @@ if ($akcija == "podaci") {
 	$q410 = myquery("select id,naziv,opcina,drzava from mjesto order by naziv");
 	$gradovir="<option></option>";
 	$gradovia="<option></option>";
+	$gradovilist = array();
 	while ($r410 = mysql_fetch_row($q410)) { 
-		$gradovir .= "<option"; $gradovia .= "<option";
 		if ($r410[0]==mysql_result($q400,0,10)) { 
-			$gradovir  .= " SELECTED"; 
+			$mjestorvalue = $r410[1];
 			$eopcinarodjenja = $r410[2];
 			$edrzavarodjenja = $r410[3];
 		}
-		if ($r410[0]==mysql_result($q400,0,15)) { $gradovia  .= " SELECTED"; }
-		$gradovir .= ">$r410[1]</option>\n";
-		$gradovia .= ">$r410[1]</option>\n";
+		if ($r410[0]==mysql_result($q400,0,15)) { 
+			$mjestoavalue = $r410[1];
+		}
+		$gradovilist[] = $r410[1];
 	}
 
 	// Spisak država
@@ -458,10 +415,10 @@ if ($akcija == "podaci") {
 	$drzaverodjr="<option></option>";
 	$drzavljanstvor="<option></option>";
 	while ($r257 = mysql_fetch_row($q257)) {
-		$drzaverodjr .= "<option";
+		$drzaverodjr .= "<option value=\"$r257[0]\"";
 		if ($r257[0]==$edrzavarodjenja) { $drzaverodjr  .= " SELECTED"; }
 		$drzaverodjr .= ">$r257[1]</option>\n";
-		$drzavljanstvor .= "<option";
+		$drzavljanstvor .= "<option value=\"$r257[0]\"";
 		if ($r257[0]==mysql_result($q400,0,13)) { $drzavljanstvor .= " SELECTED"; }
 		$drzavljanstvor .= ">$r257[1]</option>\n";
 	}
@@ -471,7 +428,7 @@ if ($akcija == "podaci") {
 	$q258 = myquery("select id, naziv from nacionalnost order by naziv");
 	$nacionalnostr="<option></option>";
 	while ($r258 = mysql_fetch_row($q258)) {
-		$nacionalnostr .= "<option";
+		$nacionalnostr .= "<option value=\"$r258[0]\"";
 		if ($r258[0]==mysql_result($q400,0,12)) { $nacionalnostr .= " SELECTED"; }
 		$nacionalnostr .= ">$r258[1]</option>\n";
 	}
@@ -479,9 +436,9 @@ if ($akcija == "podaci") {
 	// Spisak opičina
 	
 	$q259 = myquery("select id, naziv from opcina order by naziv");
-	$opcinar="<option></option>";
+	$opcinar="";
 	while ($r259 = mysql_fetch_row($q259)) {
-		$opcinar .= "<option";
+		$opcinar .= "<option value=\"$r259[0]\"";
 		if ($r259[0]==$eopcinarodjenja) { $opcinar .= " SELECTED"; }
 		$opcinar .= ">$r259[1]</option>\n";
 	}
@@ -496,7 +453,7 @@ if ($akcija == "podaci") {
 
 	?>
 
-	<script type="text/javascript" src="js/combo-box.js"></script>
+	<script type="text/javascript" src="js/mycombobox.js"></script>
 	<h2><?=$ime?> <?=$prezime?> - izmjena ličnih podataka</h2>
 	<p>ID: <b><?=$osoba?></b></p>
 	<?
@@ -539,7 +496,7 @@ if ($akcija == "podaci") {
 		<td><input type="text" name="jmbg" value="<?=mysql_result($q400,0,11)?>" class="default"></td>
 	</tr><tr>
 		<td>Nacionalnost:</td>
-		<td><select name="nacionalnost" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$nacionalnostr?></select></td>
+		<td><select name="nacionalnost" class="default"><?=$nacionalnostr?></select></td>
 	</tr><tr>
 		<td>Broj indexa<br>(za studente):</td>
 		<td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,8)?>" class="default"></td>
@@ -563,21 +520,21 @@ if ($akcija == "podaci") {
 		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,9))?>" class="default"></td>
 	</tr><tr>
 		<td>Mjesto rođenja:</td>
-		<td><select name="mjesto_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovir?></select></td>
+		<td><?=mycombobox("mjesto_rodjenja", $mjestorvalue, $gradovilist)?></td>
 	</tr><tr>
 		<td>Općina rođenja:</td>
-		<td><select name="opcina_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$opcinar?></select></td>
+		<td><select name="opcina_rodjenja" class="default"><?=$opcinar?></select></td>
 	</tr><tr>
 		<td>Država rođenja:</td>
-		<td><select name="drzava_rodjenja" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$drzaverodjr?></select></td>
+		<td><select name="drzava_rodjenja" class="default"><?=$drzaverodjr?></select></td>
 	</tr><tr>
 		<td>Državljanstvo:</td>
-		<td><select name="drzavljanstvo" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$drzavljanstvor?></select></td>
+		<td><select name="drzavljanstvo" class="default"><?=$drzavljanstvor?></select></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Adresa:</td>
 		<td><input type="text" name="adresa" value="<?=mysql_result($q400,0,14)?>" class="default"><br>
-		<select name="adresa_mjesto" onKeyPress="edit(event)" onBlur="this.editing = false;" class="default"><?=$gradovia?></select></td>
+		<?=mycombobox("adresa_mjesto", $mjestoavalue, $gradovilist)?></td>
 	</tr><tr>
 		<td>Kanton:</td>
 		<td><?=db_dropdown("kanton",mysql_result($q400,0,17), "--Izaberite kanton--") ?></td>
