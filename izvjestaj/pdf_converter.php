@@ -91,6 +91,8 @@ function izvjestaj_pdf_converter() {
 
 
 	$sadrzaj_bafera_za_pdf = str_replace("\t","        ",$sadrzaj_bafera_za_pdf);
+	// Ukidam JavaScript koji izgleda TCPDF ne ignoriše kako bi trebalo
+	$sadrzaj_bafera_za_pdf = preg_replace("/\<script.*?\<\/script\>/is","",$sadrzaj_bafera_za_pdf);
 
 	$pdf->writeHTMLCell($w=0, $h=0, $x='', $y='', $sadrzaj_bafera_za_pdf, $border=0, $ln=1, $fill=0, $reseth=true, $align='center', $autopadding=true);
 
