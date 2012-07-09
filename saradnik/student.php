@@ -71,7 +71,7 @@ if (mysql_num_rows($q6)<1) {
 $nazivag = mysql_result($q6,0,0);
 
 
-// Da li student slusa predmet
+// Da li student sluša predmet
 $q7 = myquery("select pk.id, pk.semestar from student_predmet as sp, ponudakursa as pk, studij as s where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=s.id");
 if (mysql_num_rows($q7)<1) {
 	biguglyerror("Student nije upisan na ovaj predmet");
@@ -82,7 +82,7 @@ $ponudakursa = mysql_result($q7,0,0);
 $semestar = mysql_result($q7,0,1);
 
 
-// Koji studij student slusa, koji put
+// Koji studij student sluša, koji put
 $q8 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = ".($semestar%2)." and ss.studij=s.id and ss.nacin_studiranja=ns.id");
 if (mysql_num_rows($q8)<1) {
 	$q8 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = 1 and ss.studij=s.id and ss.nacin_studiranja=ns.id");
@@ -228,14 +228,20 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 if ($slika != "") { print "<img src=\"?sta=common/slika&osoba=$student\" align=\"left\" style=\"margin: 10px\">\n"; }
 
 
+// Određujemo username radi slanja poruke
+$poruka_link = "";
+$q59 = myquery("select login from auth where id=$student");
+if (mysql_num_rows($q59)>0)
+	$poruka_link = "<br><a href=\"?sta=common/inbox&akcija=compose&primalac=" . mysql_result($q59,0,0) . "\">Pošaljite Zamger poruku</a>";
+
+
 // Naslov
 ?>
 <h1><?=$ime?> <?=$prezime?> (<?=$brindexa?>)</h1>
 <p>Upisan na (<?=$nazivag?>): <b><?=$nazivstudija?>, <?=$semestar?>. semestar <?=$ponovac?> <?=$kolpren?> <?=$kojiput?></b>
 <br />
 <?=$dosjei?>
-<b>Email: <?=$mailprint?><br />
-<a href="?sta=common/inbox&akcija=compose&primalac=<?=$studentusername?>">Pošaljite Zamger poruku</a></b></p>
+<b>Email: <?=$mailprint?><?=$poruka_link?></b></p>
 <h3>Predmet: <?=$nazivpredmeta?> <br />
 <?
 if ($labgrupa>0) print "Grupa: <a href=\"?sta=saradnik/grupa&id=$labgrupa\">$lgnaziv</a>";
