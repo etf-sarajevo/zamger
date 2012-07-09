@@ -346,7 +346,6 @@ if ($akcija == "podaci") {
 		$q498 = myquery("delete from email where osoba=$osoba and id=$mailid");
 
 		zamgerlog("obrisana email adresa za u$osoba", 2);
-		zamgerlog2("email adresa obrisana", $osoba, $mailid, 0, $staraadresa);
 		nicemessage("Obrisana email adresa $staraadresa");
 	}
 
@@ -363,7 +362,6 @@ if ($akcija == "podaci") {
 		$q498 = myquery("update email set adresa='$adresa' where osoba=$osoba and id=$mailid");
 
 		zamgerlog("promijenjena email adresa za u$osoba", 2);
-		zamgerlog2("email adresa promijenjena", $osoba, $mailid, 0, "$staraadresa -> $adresa");
 		nicemessage("Promijenjena email adresa $staraadresa u $adresa");
 	}
 
@@ -372,7 +370,6 @@ if ($akcija == "podaci") {
 		$q498 = myquery("insert into email set adresa='$adresa', osoba=$osoba, sistemska=0");
 
 		zamgerlog("dodana email adresa za u$osoba", 2);
-		zamgerlog2("email adresa dodana", $osoba, intval(mysql_insert_id()), 0, "$adresa");
 		nicemessage("Dodana email adresa $adresa");
 	}
 
