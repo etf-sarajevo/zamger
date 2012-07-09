@@ -2630,10 +2630,11 @@ CREATE TABLE IF NOT EXISTS `upis_kriterij` (
   `kandidati_strani` int(5) NOT NULL,
   `kandidati_sami_placaju` int(5) NOT NULL,
   `kandidati_kanton_placa` int(5) NOT NULL,
+  `kandidati_vanredni` int(5) NOT NULL,
   `prijemni_max` int(5) NOT NULL,
   `studij` int(11) NOT NULL,
   PRIMARY KEY (`prijemni_termin`,`studij`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tabela za pohranu kriterija za upis' AUTO_INCREMENT=5 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tabela za pohranu kriterija za upis' ;
 
 --
 -- Dumping data for table `upis_kriterij`
