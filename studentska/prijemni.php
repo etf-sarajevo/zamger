@@ -1882,7 +1882,7 @@ print genform("POST", "glavnaforma");?>
 ?>
 	<tr>
 		<td width="125" align="left">Završena škola:</td>
-		<td><input type="text" name="zavrsena_skola" id="zavrsena_skola" value="<?=$skolarvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'zavrsena_skola'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="35" class="default" 
+		<td><input type="text" name="zavrsena_skola" id="zavrsena_skola" value="<?=$skolarvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'zavrsena_skola'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="35" onInput="this.style.backgroundColor = '#FFFFFF';"
 		<? if ($eskola==0) {
 			?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF'"<? 
 		} else {
@@ -1891,7 +1891,7 @@ print genform("POST", "glavnaforma");?>
 		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('zavrsena_skola')" id="comboBoxImg_zavrsena_skola" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_zavrsena_skola" style="position:absolute;visibility:hidden">
-			<select name="comboBoxMenu_zavrsena_skola" id="comboBoxMenu_zavrsena_skola" size="10" onClick="comboBoxOptionSelected('zavrsena_skola')"><?=$srednjer?></select>
+			<select name="comboBoxMenu_zavrsena_skola" id="comboBoxMenu_zavrsena_skola" size="10" onClick="comboBoxOptionSelected('zavrsena_skola')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$srednjer?></select>
 		</div></td>
 	</tr>
 	<tr>
