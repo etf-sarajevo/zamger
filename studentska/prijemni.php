@@ -1703,96 +1703,7 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 }
 </SCRIPT>
 
-<script type="text/javascript" src="js/combo-box.js"></script>
-
-	<script type="text/javascript">
-	function comboBoxEdit(evt, elname) {
-		var ib = document.getElementById(elname);
-		var list = document.getElementById("comboBoxDiv_"+elname);
-		var listsel = document.getElementById("comboBoxMenu_"+elname);
-
-		var key, keycode;
-		if (evt) {
-			key = evt.which;
-			keycode = evt.keyCode;
-		} else if (window.event) {
-			key = window.event.keyCode;
-			keycode = key; // wtf?
-		} else return true;
-
-		if (keycode==40) { // arrow down
-			if (list.style.visibility == 'visible') {
-				if (listsel.selectedIndex<listsel.length)
-					listsel.selectedIndex = listsel.selectedIndex+1;
-			} else {
-				comboBoxShowHide(elname);
-			}
-			return false;
-
-		} else if (keycode==38) { // arrow up
-			if (list.style.visibility == 'visible' && listsel.selectedIndex>0) {
-				listsel.selectedIndex = listsel.selectedIndex-1;
-			}
-			return false;
-
-		} else if (keycode==13 && list.style.visibility == 'visible') { // Enter key - select option and hide
-			if (listsel.options[listsel.selectedIndex].onclick)
-				listsel.options[listsel.selectedIndex].onclick(); // execute onclick event, if any
-			comboBoxOptionSelected(elname);
-			return false;
-
-		} else if (key>31 && key<127) {
-			// This executes before the letter is added to text
-			// so we have to add it manually
-			var ibtxt = ib.value.toLowerCase() + String.fromCharCode(key).toLowerCase();
-
-			for (i=0; i<listsel.length; i++) {
-				var listtxt = listsel.options[i].value.toLowerCase();
-				if (ibtxt == listtxt.substr(0,ibtxt.length)) {
-					listsel.selectedIndex=i;
-					if (list.style.visibility == 'hidden') comboBoxShowHide(elname);
-					return true;
-				}
-			}
-			return true;
-		}
-		return true;
-	}
-
-	function comboBoxShowHide(elname) {
-		var ib = document.getElementById(elname);
-		var list = document.getElementById("comboBoxDiv_"+elname);
-		var image = document.getElementById("comboBoxImg_"+elname);
-
-		if (list.style.visibility == 'hidden') {
-			// Nadji poziciju objekta
-			var curleft = curtop = 0;
-			var obj=ib;
-			if (obj.offsetParent) {
-				do {
-					curleft += obj.offsetLeft;
-					curtop += obj.offsetTop;
-				} while (obj = obj.offsetParent);
-			}
-	
-			list.style.visibility = 'visible';
-			list.style.left=curleft;
-			list.style.top=curtop+ib.offsetHeight;
-			image.src = "images/cb_down.png";
-		} else {
-			list.style.visibility = 'hidden';
-			image.src = "images/cb_up.png";
-		}
-	}
-	function comboBoxOptionSelected(elname) {
-		var ib = document.getElementById(elname);
-		var listsel = document.getElementById("comboBoxMenu_"+elname);
-		odzuti(ib);
-		
-		ib.value = listsel.options[listsel.selectedIndex].value;
-		comboBoxShowHide(elname);
-	}
-	</script>
+<script type="text/javascript" src="js/mycombobox.js"></script>
 
 <?
 
@@ -1901,8 +1812,7 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr>
 		<td width="125" align="left">Mjesto rođenja:</td>
-
-		<td><input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'mjesto_rodjenja'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" <?
+		<td><input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'mjesto_rodjenja'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" onInput="this.style.backgroundColor = '#FFFFFF';" onBlur="comboBoxHide('<?=$name?>')" <?
 		if ($greskamjestorod) {
 			?> style="background-color:#FF0000" onChange="this.style.backgroundColor = '#FFFFFF'"<?
 		} else if ($emjesto==0) {
@@ -1913,7 +1823,7 @@ print genform("POST", "glavnaforma");?>
 		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_mjesto_rodjenja" style="position:absolute;visibility:hidden">
-			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')"><?=$gradovir?></select>
+			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovir?></select>
 		</div><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
@@ -1926,8 +1836,7 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr>
 		<td width="125" align="left">Nacionalnost:</td>
-
-		<td><input type="text" name="nacionalnost" id="nacionalnost" value="<?=$nacionalnostrvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'nacionalnost'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" <?
+		<td><input type="text" name="nacionalnost" id="nacionalnost" value="<?=$nacionalnostrvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'nacionalnost'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" onInput="this.style.backgroundColor = '#FFFFFF';" <?
 		if ($enacionalnost==0) {
 			?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF'"<? 
 		} else {
@@ -1936,7 +1845,7 @@ print genform("POST", "glavnaforma");?>
 		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('nacionalnost')" id="comboBoxImg_nacionalnost" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_nacionalnost" style="position:absolute;visibility:hidden">
-			<select name="comboBoxMenu_nacionalnost" id="comboBoxMenu_nacionalnost" size="10" onClick="comboBoxOptionSelected('nacionalnost')"><?=$nacionalnostr?></select>
+			<select name="comboBoxMenu_nacionalnost" id="comboBoxMenu_nacionalnost" size="10" onClick="comboBoxOptionSelected('nacionalnost')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$nacionalnostr?></select>
 		</div><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
@@ -2020,7 +1929,7 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr>
 		<td width="125" align="left">Adresa (mjesto):</td>
-		<td><input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'adresa_mjesto'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" <?
+		<td><input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'adresa_mjesto'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" onInput="this.style.backgroundColor = '#FFFFFF';" <?
 		if ($eadresamjesto==0) {
 			?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF'"<? 
 		} else {
@@ -2029,7 +1938,7 @@ print genform("POST", "glavnaforma");?>
 		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_adresa_mjesto" style="position:absolute;visibility:hidden">
-			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')"><?=$gradovia?></select>
+			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovia?></select>
 		</div><font color="#FF0000">*</font></td>
 	</tr>
 	<tr>
@@ -2049,7 +1958,7 @@ print genform("POST", "glavnaforma");?>
 	<tr><td colspan="2"><br>IZBOR STUDIJA:</td></tr>
 	<tr>
 		<td width="125" align="left">Način studiranja</td>
-		<td><select name="nacin_studiranja" id="kanton" class="default"><?=$nacinstudiranjar?></select></td>
+		<td><select name="nacin_studiranja" id="kanton" class="default" style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';"><?=$nacinstudiranjar?></select></td>
 	</tr>
 <?
 
