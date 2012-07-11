@@ -68,9 +68,7 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 	// Da li je istekao rok?
 	if ($_GET['akcija'] != "preview" && (time () > $zatvaranje || time () < $otvaranje)) {
 		if (time() < $otvaranje)
-			print "<center><h1><font color=\"#00AA00\">Anketa 
-će postati aktivna ".date("d. m. Y. u H:i", 
-$otvaranje)."</font></h1></center>";
+			print "<center><h1><font color=\"#00AA00\">Anketa će postati aktivna ".date("d. m. Y. \u H:i", $otvaranje)."</font></h1></center>";
 		else
 			biguglyerror("Anketa trenutno nije aktivna");
 		return;

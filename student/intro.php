@@ -76,7 +76,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
 	if (mysql_result($q12,0,0)==0) continue;
 
-	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y. u H:i",$r10[2]).".<br/><br/>\n";
+	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y. \u H:i",$r10[2]).".<br/><br/>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
