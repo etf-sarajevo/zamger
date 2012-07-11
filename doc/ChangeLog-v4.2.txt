@@ -1,0 +1,193 @@
+ZAMGER v4.2
+
+Copyright (c) 2006-2012 Vedran Ljubovic i drugi
+Elektrotehnicki fakultet Sarajevo
+	
+	
+SPISAK IZMJENA U v4.2 U ODNOSU NA v4.1.1
+=================================================
+
+VEĆE IZMJENE U NAČINU RADA:
+- Na osnovu analize potreba nastavnog kadra na ETFu, pored dosadašnjih
+nivoa pristupa "nastavnik" i "asistent", uveden je jedan međunivo pod nazivom
+"superasistent".
+- Razdvojen je angažman na predmetu od prava pristupa, te su uvedeni izbori i 
+imenovanja čime je započet rad na HRM komponenti.
+- Dodana podrška za CAS SSO (single sign-on) servis.
+- Veći dio generisanog HTML koda je sada validan HTML 4.01 Transitional, ali
+još ima dosta posla u tom segmentu.
+
+NOVE FUNKCIONALNOSTI:
+- Omogućeno je profesorima da promijene sistem bodovanja na predmetu: koliko
+bodova nosi prisustvo, zadaće, ispiti, koliko ispita ima i kojeg tipa itd.
+- Anonimno polaganje prijemnog ispita (dodjeljivanje kodova prilikom prijave)
+- Modul za završne radove, sa pripremom integracije sa institucionalnim 
+repozitorijem.
+- Omogućeno studentskoj službi da štampaju prijave na ispite čime je ukinut
+jedan vrlo iritantan komad papirologije. Također, uvjerenje o položenim 
+ispitima je sada u zvaničnom univerzitetskom formatu.
+- Nastavnici putem maila dobijaju obavještenje o unesenim ocjenama za 
+predmete za koje su odgovorni.
+- Omogućeno kreiranje plana studija (u v4.1.1 se to radilo kroz bazu, ali je
+svakako bilo opcionalno). Omogućeno kreiranje nove akademske godine sa svim
+ponudama kursa na osnovu plana studija (u admin dijelu).
+- Novi eksperimentalni modul za kvizove (njegovo korištenje se za sada ne 
+preporučuje).
+- Svaki izvještaj se sada može dobiti u PDF i CSV (Excel) formatu. Ipak
+preporučujem da se koristi opcija Print to PDF odnosno copy&paste u Excel
+jer generalno daju bolje rezultate.
+- Novi modul admin/cron omogućuje periodično izvršavanje sistemskih zadataka
+(kao što je slanje obavještenja na email).
+- Nova varijanta modula za raspored - može se koristiti stara ili nova 
+varijanta po želji izmjenom registry-ja. Omogućeno je nastavnicima da 
+kreiraju svoj privatni raspored. Izvoz rasporeda u ICAL formatu.
+- "Savjet dana" prozor sa savjetima za korištenje Zamgera.
+- Ažurirana dokumentacija, nova i znatno detaljnija / bolje napisana 
+korisnička uputstva.
+- U folderu "skripte" nalaze se neke korisne skripte kao što je test 
+kompajliranja i unit test za programerske zadaće. Automatski testovi se mogu
+zadavati kroz nastavnički modul za zadaće.
+
+VEĆE ISPRAVKE U FUNKCIONALNOSTIMA:
+- Prijemni ispit
+   * popravka niza bugova u modulima,
+   * bodovanje je popravljeno i usklađeno sa novim konkursima,
+   * izvještaji su generalizirani (nema više ETF specifičnih elemenata),
+   * mnoge opcije su učinjene konfigurabilnim kroz kriterije za upis, 
+   * dorađena podrška za više cikluse studija, 
+   * uveden tip studija "Vanredni",
+   * novi izvještaj "Najboljih 10% po školama" tražen od ministarstva KS,
+   * omogućen masovni unos rezultata ispita.
+- Dodan niz novih podataka u profil (uključujući sliku) čime su obuhvaćeni 
+svi podaci traženi od strane eksternih institucija (ISSS, HRM itd.)
+   * također omogućen proizvoljan broj email adresa.
+- Integracija Zamgera i Moodle LMS v1.x kroz bazu podataka. Omogućuje:
+   * povezivanje Moodle foruma sa Zamgerom,
+   * novi resursi postavljeni na Moodle stranicu predmeta biće prikazani na
+Zamger stranici i u RSSu,
+   * import rezultata ocjenjivanja zadaća (bodova) iz Moodlea u Zamger.
+- Unos ocjena:
+   * uz svaku ocjenu pridružen je datum ocjene koji se štampa na prijavu,
+   * omogućeno je studentskoj službi da unosi, verifikuje ocjene i datume,
+   * nakon višegodišnjih zahtjeva, nastavnici sada imaju i treći način unosa 
+ocjena (koliko god se ja protivio tome da postoji X načina da se uradi ista
+stvar...)
+- Niz ispravki u modulima za Ugovor o učenju i Koliziju koji su i dalje 
+poprilično ETF specific (mada je kod sada znatno čišći), dodano printanje
+"Zahtjeva za koliziju".
+- Novi izvještaji:
+   * ugovor o učenju (broj studenata koji su odabrali pojedini predmet),
+   * uspješnost - izvještaj tražen akreditacijom kod ASIINa,
+   * prolaznost po kantonima,
+   * tabelarna prolaznost kroz godine (tražen od ministarstva KS),
+   * broj studenata koji imaju uslov za usmeni ispit po predmetu,
+   * sređen izvještaj sa sveukupnom statistikom predmeta i dodata 
+distribucija ocjena,
+   * više interaktivnih izvještaja vezanih za prijavu ispita,
+   * student sada može vidjeti izvještaje index i progress.
+- Zadaće: 
+   * prikaz postavke zadaće, 
+   * generisanje PDFa za razne formate zadaća (DOC, HTML...) kao i iz ZIPa,
+   * syntax highlighting u generisanom PDFu za source code,
+   * definisanje spiska dozvoljenih tipova datoteke za zadaću u formi 
+attachmenta.
+- Popravljen veliki broj bugova u modulu za ankete (uključujući i neke 
+sigurnosne propuste!) čime je ovaj modul postao potpuno zreo za upotrebu te 
+se preporučuje njegovo korištenje:
+   * kreiranje anketa na nivou predmeta, više anketa u toku godine, 
+anonimnih i neanonimnih anketa i druge mogućnosti koje su postojale negdje u 
+kodu sada su dorađene i pružene kroz GUI,
+   * studentima je dat pristup rezultatima ankete za predmete koje su 
+slušali,
+   * novi tip pitanja "izbor" (MCSA),
+   * novi sumarni izvještaj o izlaznosti na anketu, 
+   * semestralni izvještaj tabelarno (pored grafova), 
+   * izvještaj: usporedba prijavljenog broja sati (opterećenja studenata) sa 
+ECTS kreditima, 
+   * izvještaj: odstupanje distribucije ocjena od Gausove krive,
+
+ISPRAVKE BUGOVA:
+- Eliminisani su svi warnings koje ispisuju verzije PHPa 5.1 do 5.4
+- Podrška za novije browsere (FF6+, IE8+, Chrome): ispravljeni bugovi u JSu 
+(combobox kontrola, notifikacija za nove poruke, interaktivna tabela grupe 
+itd.)
+- Ponovo napisan dosta bugovit dio koda za dodjeljivanje logina korisnicima.
+- Znatno dorađen dio koda koji određuje uslove za upis, bolje uvezani moduli 
+za prijemni ispit i promjenu odsjeka sa dijelom koda za upis na semestar,
+bolje riješeno kreiranje ponuda kursa na osnovu plana studija.
+- Slanje obavještenja nije radilo kada se koristi autentikacija korisnika iz
+baze (umjesto LDAPa) jer se email adresa generisala iz logina.
+- RSS modul prebačen na RSS 2.0 pošto RSS 1.0 nije dobro podržan od strane
+mnogih readera.
+- Refactoring koda modula za projekte čime je još jedan broj bugova 
+ispravljen, napravljen prikaz RSS feedova (umjesto linka na feed).
+- Korisnija notifikacija kod neuspjelog uploada fajla (zadaća, projekat, 
+završni rad) što je bila vrlo česta primjedba studenata ETFa.
+- Admin više ne vidi sve predmete (pošto ih je previše).
+- Veliki broj bugova u modulu saradnik/grupa kao što je bug 2k10 (spisak
+godina se završavao sa 2010. godinom :-) ), prikazuje se popup prozor ako je 
+sesija istekla, omogućeno postavljanje neodređenog statusa prisustva.
+- Počišćen automatski generisani URL od nekog smeća (povremeno je šifra
+bila vidljiva u URLu).
+- Biblioteke FPDF i TCPDF v4.6 zamijenjeni sa TCPDF v5.9 zbog bolje podrške
+za HTML.
+- Popravljeno nekoliko izvještaja koji praktično nisu imali podršku za više
+ciklusa studija (što je slučajno jedno vrijeme radilo ispravno na ETFu).
+- Rewrite izvještaja "granični slučajevi".
+- U većini izvještaja dodani datum i vrijeme generisanja.
+- Poruke u inboxu razdvojene po stranicama.
+- Spisak linkova na dnevnik na naslovnoj prebačen na AJAH zbog performansi.
+- Zamger će sada izbaciti warning ako nije aktivan short_open_tag, logiraće
+se sintaksne greške itd.
+- Bezbrojni sitniji bugovi su otklonjeni... pogledajte revision log za 
+detalje!
+
+
+
+SPISAK IZMJENA U v4.1.1 U ODNOSU NA v4.1
+=================================================
+
+Možete ga naći u datoteci ChangeLog-v4.1.1.txt.
+
+
+
+SPISAK IZMJENA U v4.1 U ODNOSU NA v4.0
+=================================================
+
+VEĆE IZMJENE U NAČINU RADA:
+- više instanci istog predmeta (npr. predmet koji je zajednički za više studija) su spojene u prikazu i u bazi, što je zahtijevalo značajan redizajn baze, a time je ukinut i studij "Prva godina studija" - ovim je uveden termin "ponudekursa" za razliku od "predmeta",
+- uvedena virtuelna labgrupa "svi studenti na predmetu" (koja se ne može npr. obrisati i slično što je bio bug u v4.0),
+
+NOVE FUNKCIONALNOSTI:
+- modul za prijavu ispita,
+- potpuno anonimne ankete,
+- modul za upravljanje projektima, nudi mjesto za komunikaciju između studenata koji rade u manjem timu i nastavnika,
+- plan studija, omogućuje automatsko kreiranje predmeta u novoj akademskoj godini i štošta drugog,
+- moduli Kolizija i Ugovor o učenju omogućuju studentima izbor predmeta za sljedeću godinu u skladu sa planom studija,
+- dodan pogled na dosje studenta na predmetu za predmetnog nastavnika (svi podaci vezani za aktivnosti jednog studenta na predmetu, sa mogućnošću izmjene),
+- novi izvještaji: 
+   * historija studenta, 
+   * pregled upisanih studenata na predmetu bez labgrupa, 
+   * ukupna statistika predmeta, 
+   * za studente: kalkulator prosjeka,
+
+ISPRAVKE U FUNKCIONALNOSTIMA I POPRAVKE BUGOVA:
+- modul za prijemni ispit:
+   * podrška za više termina prijemnog ispita za razne cikluse, 
+   * kandidat se sada može upisati na studij jednim klikom (kroz modul za administraciju osoba),
+- raspored: modul je sređen i stavljen u funkciju na ETFu, 
+- dorade u modulu za obavještenja, 
+- administracija predmeta u dijelu za studentsku službu: 
+   * moguć pregled ponuda kursa i opcije specifične za to, 
+   * popravljen dio za definisanje ograničenja na nivou labgrupe, 
+- upravljanje osobama u dijelu za studentsku službu:
+   * manuelni upis na predmete, 
+   * upis na studij, 
+   * podaci o prijemnom ispitu, 
+   * bolji ispis statusa studenta, 
+- administracija ispita u dijelu za nastavnika: omogućena promjena i brisanje ispita, 
+- moguć download svih zadaća odjednom, 
+- modul za promjenu studija koji je ranije samo čuvao evidenciju zahtjeva za promjenu sada omogućuje da se student upiše na drugi studij jednim klikom,
+- poboljšana provjera isteka sesije za interaktivne kontrole (prisustvo, ispiti, ocjene),
+- unaprijeđena podrška za Internet Explorer,
+- više novih opcija u raznim modulima (spisak je predugačak da ga ovdje navedemo), kao i veliki broj ispravljenih grešaka... Detaljan spisak možete naći u logu izmjena (rad na v4.1 je započet sa SVN revizijom 186, što sam propustio markirati u logu).
