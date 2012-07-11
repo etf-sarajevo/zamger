@@ -33,7 +33,7 @@ $conf_files_path = "/home/zamger";
 
 // Podaci koji se ispisuju u gornjem desnom uglu svake stranice :)
 $conf_appname = "ZAMGER";
-$conf_appversion = "4.1.1";
+$conf_appversion = "4.2";
 
 // Gdje su smještene šifre korisnika?
 // "table" - u tabeli auth zamgerove baze podataka
