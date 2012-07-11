@@ -14,7 +14,6 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 $ispit = intval($_REQUEST['ispit']);
 $termin = intval($_REQUEST['termin']);
-$dogadjaj = intval($_REQUEST['dogadjaj']);
 
 
 
@@ -38,58 +37,14 @@ if (!$user_siteadmin && !$user_studentska) {
 
 // Provjera ispita
 
-if ($dogadjaj==0 && $ispit>0) { // Odredjujemo događaj iz ispita
-	$q20 = myquery("select d.id, UNIX_TIMESTAMP(i.datum), k.gui_naziv from dogadjaj as d, ispit as i, komponenta as k where d.predmet=$predmet and d.akademska_godina=$ag and d.ispit=$ispit and i.id=$ispit and i.komponenta=k.id");
-	
-	// Događaj nije kreiran za ispit! Kreiramo ga
-	if (mysql_num_rows($q20) == 0) {
-		$q23 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
-		if (mysql_num_rows($q23) == 0) {
-			zamgerlog("nastavnik/prijava_ispita nepoznat ispit $ispit", 3);
-			biguglyerror("Nepoznat ispit.");
-			return;
-		}
-		
-		$q25 = myquery("insert into dogadjaj set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME(".mysql_result($q23,0,0)."), ispit=$ispit");
-		$dogadjaj = mysql_insert_id();
-		
-		$finidatum = date("d. m. Y", mysql_result($q23,0,0));
-		$tip_dogadjaja = mysql_result($q23,0,1);
-
-	} else {
-		$dogadjaj = mysql_result($q20,0,0);
-		$finidatum = date("d. m. Y", mysql_result($q20,0,1));
-		$tip_dogadjaja = mysql_result($q20,0,2);
-	}
-	
-} else { // Određujemo ispit iz događaja
-	$q20 = myquery("select ispit, UNIX_TIMESTAMP(datum), tip_dogadjaja from dogadjaj where predmet=$predmet and akademska_godina=$ag and id=$dogadjaj");
-	if (mysql_num_rows($q20) == 0) {
-		zamgerlog("nastavnik/prijava_ispita nepoznat dogadjaj $dogadjaj", 3);
-		biguglyerror("Nepoznat događaj.");
-		return;
-	}
-	
-	$ispit = mysql_result($q20,0,0);
-	$finidatum = date("d. m. Y", mysql_result($q20,0,1));
-	$id_tipa_dogadjaja = mysql_result($q20,0,2);
-	if ($tip_dogadjaja > 0) {
-		$q23 = myquery("select naziv from tip_dogadjaja where id=$id_tipa_dogadjaja");
-		$tip_dogadjaja = mysql_result($q23,0,0);
-	} else {
-		$q25 = myquery("select k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-		$tip_dogadjaja = mysql_result($q25,0,0);
-	}
-}
-
-/*
-//$q20 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaj as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id)");
 $q20 = myquery("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
 if (mysql_num_rows($q20)<1) {
 	niceerror("Nepostojeći ispit");
 	zamgerlog("nepostojeci ispit $ispit ili nije sa predmeta (pp$predmet, ag$ag)", 3);
 	return;
-}*/
+}
+$finidatum = date("d. m. Y", mysql_result($q20,0,0));
+$tip_dogadjaja = mysql_result($q20,0,2);
 
 
 // Podaci za ispis
