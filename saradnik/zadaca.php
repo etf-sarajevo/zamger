@@ -262,7 +262,7 @@ if ($attach == 0) {
 		// geshi - biblioteka za syntax highlighting
 		
 		include_once('lib/geshi/geshi.php');
-		$geshi =& new GeSHi($src, $jezik);
+		$geshi = new GeSHi($src, $jezik);
 
 		?>
 		<center><table width="95%" style="border:1px solid silver;"><tr>
