@@ -732,7 +732,10 @@ function db_form($table) {
 				// auto_increment fields (__lv_cai) should not be added at all... 
 				// for others, use the first unused value
 				$q203 = myquery("select $name from $table order by $name desc limit 1");
-				$r202[$name] = mysql_result($q203,0,0)+1;
+				if (mysql_num_rows($q203)<1)
+					$r202[$name] = 1;
+				else
+					$r202[$name] = mysql_result($q203,0,0)+1;
 			}
 
 			$result .= '<input type="hidden" name="_lv_where_id" value="'.$r202[$name].'">'."\n";
