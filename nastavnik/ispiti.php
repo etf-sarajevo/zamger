@@ -44,6 +44,7 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 $termin = intval($_REQUEST['termin']);
 
+
 // Naziv predmeta
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
@@ -71,7 +72,7 @@ if (!$user_siteadmin && !$user_studentska) {
 
 $ispit = intval($_REQUEST['ispit']);
 if ($ispit>0) {
-	$q30 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv, k.maxbodova from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaj as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id)");
+	$q30 = myquery("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv, k.maxbodova from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
 	if (mysql_num_rows($q30)<1) {
 		niceerror("Nepostojeći ispit");
 		print "Moguće je da ste ga već obrisali? Ako ste koristili dugme Back vašeg browsera da biste došli na ovu stranicu, predlažemo da kliknete na link Ispiti sa lijeve strane kako biste dobili ažurnu informaciju.";
@@ -81,14 +82,14 @@ if ($ispit>0) {
 }
 
 
-
 ?>
 
 <p>&nbsp;</p>
 
-<p><h3><?=$predmet_naziv?> - Ispiti / Događaji</h3></p>
+<p><h3><?=$predmet_naziv?> - Ispiti</h3></p>
 
 <?
+
 
 
 // Masovni unos rezultata ispita
@@ -152,6 +153,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	
 			if (mysql_num_rows($q130)<1) {
 				zamgerlog("unos ispita nije uspio (predmet pp$predmet, ag$ag, datum $mdat, tipispita $tipispita)",3);
+				// Ovo se ne može desiti??
 				niceerror("Unos ispita nije uspio.");
 				return;
 			} 
@@ -208,7 +210,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if (mysql_num_rows($q135)<1) {
 			if ($ispis) {
 				?>
-				<tr bgcolor="<?=$boja?>">
+				<tr bgcolor="<?=$bojae?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
 					<td>nije upisan/a na predmet</td>
 				</tr>
@@ -308,7 +310,7 @@ if ($_POST['akcija'] == "massinput" && $_POST['nazad']==" Nazad ") {
 
 // Brisanje ispita
 
-if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad ") {
+if ($_REQUEST['akcija']=="brisanje" && $ispit > 0 && $_REQUEST['potvrdabrisanja'] != " Nazad ") {
 
 	$q200 = myquery("select count(*) from ispitocjene where ispit=$ispit");
 	$brojstudenata = mysql_result($q200,0,0);
@@ -369,7 +371,7 @@ if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad "
 
 // Promjena ispita
 
-if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad ") {
+if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'] != " Nazad ") {
 	$komponenta = mysql_result($q30,0,1);
 
 	$q300 = myquery("select count(*) from ispitocjene where ispit=$ispit");
@@ -421,11 +423,11 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 
 		print genform("POST");
 		?>
-		<h2>Zatražili ste promjenu podataka ispita/događaja &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
+		<h2>Zatražili ste promjenu podataka ispita &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
 		<p>Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
-		<p>Datum ispita/događaja: <?=datectrl($dan, $mjesec, $godina)?></p>
-		<p>Tip ispita/događaja: <select name="tipispita" class="default"><?
-		$q340 = myquery("(select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id) union (select id,naziv from dogadjaj order by id)");
+		<p>Datum ispita: <?=datectrl($dan, $mjesec, $godina)?></p>
+		<p>Tip ispita: <select name="tipispita" class="default"><?
+		$q340 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 		while ($r340 = mysql_fetch_row($q340)) {
 			print '<option value="'.$r340[0].'"';
 			if ($komponenta==$r340[0]) print ' SELECTED';
@@ -439,6 +441,7 @@ if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad "
 		return;
 	}
 }
+
 
 
 // Masovni unos rezultata ispita
@@ -502,47 +505,20 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	$godina = intval($_POST['year']);
 	$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
+
 	$tipispita = intval($_POST['tipispita']);
 
 	// Da li je ispit vec registrovan?
 	$q450 = myquery("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
 	if (mysql_num_rows($q450)>0) {
-		nicemessage("Ispit/događaj već postoji.");
+		nicemessage("Ispit već postoji.");
 	} else {
 		$q460 = myquery("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
-		nicemessage("Ispit/događaj uspješno kreiran.");
-		zamgerlog("kreiran novi ispit/događaj (predmet pp$predmet, ag$ag)", 4); // 4 - audit
+		nicemessage("Ispit uspješno kreiran.");
+		zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 	}
 }
 
-// Unos novog tipa ispita ili događaja (u tabelu dogadjaj)
-
-if ($_REQUEST['akcija']=="novi_dogadjaj") {
-	
-	$naziv = my_escape($_POST['naziv']);
-	$ime=strval($_POST['ime']);
-	
-
-	// Da li je događaj vec registrovan?
-	$q520 = myquery("select id from dogadjaj where naziv='$_POST[ime]'"); 
-	if (mysql_num_rows($q520)>0) {
-		nicemessage("Događaj već postoji.");
-	} 
-	elseif ($ime=="") {
-		nicemessage("Polje za unos novog događaja je prazno!");
-	}
-	elseif($ime=="Zadace"||$ime=="I parcijalni"||$ime=="II parcijalni"||$ime=="Integralni"||$ime=="Usmeni"||$ime=="Prisustvo"){
-		nicemessage("Događaj već postoji u obliku ispita.");
-	}
-	else {
-		
-		$q540 = myquery("insert into dogadjaj set naziv='$_POST[ime]'");
-		$q550= myquery("select id from dogadjaj");
-		$temp2=mysql_num_rows($q550);
-		nicemessage("Događaj uspješno kreiran.");
-		zamgerlog("kreiran novi događaj (predmet pp$ime, ag$ag)", 4); // 4 - audit
-	}
-}
 
 
 
@@ -550,15 +526,15 @@ if ($_REQUEST['akcija']=="novi_dogadjaj") {
 
 // Tabela unesenih ispita
 
-$q500 = myquery("(select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv,0 from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta) union (select i.id,UNIX_TIMESTAMP(i.datum),d.naziv,1 from ispit as i, dogadjaj as d where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id)");
+$q500 = myquery("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, k.gui_naziv");
 
 ?>
 <br>
 <table border="0" cellspacing="1" cellpadding="2">
 <thead>
 <tr bgcolor="#999999">
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita/događaja</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita/događaja</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
 </thead>
@@ -571,7 +547,6 @@ if (mysql_num_rows($q500)<1)
 	print "Nije unesen nijedan ispit.";
 
 while ($r500 = mysql_fetch_row($q500)) {
-	 if($r500[3]==0){
 	?>
 	<tr>
 		<td align="left"><?=$r500[2]?></td>
@@ -589,23 +564,7 @@ while ($r500 = mysql_fetch_row($q500)) {
 		</td>
 	</tr>
 	<?
-	 }
-	 else{
-		?>
-	<tr>
-		<td align="left"><?=$r500[2]?></td>
-		<td align="left"><?=date("d.m.Y.",date($r500[1]));?></td>
-		<td align="left">
-		
-			<a href="?sta=nastavnik/ispiti&akcija=promjena&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Promjena</a>
-			*
-			<a href="?sta=nastavnik/ispiti&akcija=brisanje&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Brisanje</a>
-			*
-			<a href="?sta=nastavnik/prijava_ispita&ispit=<?=$r500[0];?>&predmet=<?=$predmet ?>&ag=<?=$ag ?>">Termini</a>
-		</td>
-	</tr>
-	<?
-	 }
+
 	$brojac++;
 }
 ?>
@@ -624,12 +583,12 @@ while ($r500 = mysql_fetch_row($q500)) {
 <?=genform("POST")?>
 <input type="hidden" name="akcija" value="novi_ispit">
 
-<p><b>Dodaj novi ispit/događaj</b></p>
+<p><b>Dodaj novi ispit</b></p>
 
 <!--br/>Naziv ispita: <input type="text" name="naziv" size="20">&nbsp;-->
-<p>Tip ispita/događaja: <select name="tipispita" class="default"><?
+<p>Tip ispita: <select name="tipispita" class="default"><?
 	$tipispita = intval($_POST['tipispita']);
-	$q510 = myquery("(select k.id,k.gui_naziv from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id) union (select id, naziv from dogadjaj order by id)");
+	$q510 = myquery("select k.id,k.gui_naziv from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 	while ($r510 = mysql_fetch_row($q510)) {
 		print '<option value="'.$r510[0].'"';
 		if ($tipispita==$r510[0]) print ' SELECTED';
@@ -647,21 +606,6 @@ else print datectrl(date('d'),date('m'),date('Y'));
 <br/><br/><br/>
 
 </form></p>
-<?
-
-// Forma za unos novih događaja
-
-?>
-<p>&nbsp;</p>
-<?=genform("POST")?>
-<input type="hidden" name="akcija" value="novi_dogadjaj">
-
-<p><b>Kreiraj novi tip događaja:</b></p>
-Naziv: <input name="ime" type="text" >
-<br /><br />
-<input name="submitaj" type="submit" value="Spasi">
-</form></p>
-
 <?
 
 
