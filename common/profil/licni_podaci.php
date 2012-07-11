@@ -522,6 +522,9 @@ if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 	<tr><td>
 		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,9)?>" class="default">
 	</td></tr>
+	<?
+	$q450 = myquery("select id, adresa, sistemska from email where osoba=$userid");
+	?>
 	<tr><td valign="top">
 		Kontakt e-mail:</td><td>
 		<?
