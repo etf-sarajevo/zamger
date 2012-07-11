@@ -45,6 +45,10 @@ da postavite post_max_size na vrijednost znatno vecu od
 upload_max_filesize, npr. 100 MB:
 	post_max_size = 100M
 
+- Generisanje izvještaja koristeći TCPDF nekada zahtijeva više od 30
+sekundi:
+	max_execution_time = 60
+
 
 Ukoliko vam vas web hosting ne dozvoljava da podesite neki od ovih 
 parametara, potrazite drugi. Administrator koji nije dovoljno 
