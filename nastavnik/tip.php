@@ -719,6 +719,8 @@ if ($akcija == "wizard") {
 		<tr>
 			<td>
 				</br>
+				<p>Da bi se bodovi za prisustvo skalirali sa brojem izostanaka, pod Dozvoljen broj izostanaka unesite -1.<p>
+				</br></br>
 				<? 
 				// Samo site admin može dodavati komponente prisustva
 				if ($user_siteadmin) { 
