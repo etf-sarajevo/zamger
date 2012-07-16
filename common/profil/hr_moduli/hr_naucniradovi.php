@@ -1,15 +1,15 @@
     <div id="Korak6">
-        <h2>Naucno-strucni radovi</h2>
+        <h2>Naučni i stručni radovi</h2>
         <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga - naucni radovi:</b></font>
+	          <font color="#FFFFFF"><b>Unos podataka o naučnom ili stručnom radu:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Unos uradite hronoloski: naucni clanak, strucni clanak, zbornici radova domacih i medunarodnih skupova - od najnovijeg prema najstarijem
+	          <b>Unos uradite hronološki: naučni članak, stručni članak, zbornici radova domaćih i međunarodnih skupova - od najnovijeg prema najstarijem
 	          </b>
 	        </td>
 	      </tr>
@@ -27,14 +27,14 @@
 	        </td>
 	      </tr> 
 	      <tr>
-	        <td>Naziv naucnog/strucnog casopisa:</td>
+	        <td>Naziv naučnog/stručnog časopisa:</td>
 	        <td>
 	           <input type="text"  name="naziv_casopisa" id="naziv_casopisa" >
 	        </td>
 	      </tr> 
 	      
 	      <tr>
-	        <td>Puni naziv izdavaca:</td>
+	        <td>Puni naziv izdavača:</td>
 	        <td>
 	           <input type="text"  name="naziv_izdavaca" id="naziv_izdavaca" >
 	        </td>
@@ -60,11 +60,11 @@
 	        </td>
 	      </tr>
 	      <tr bgcolor="#84A6C6"  class="tdheader">
-	        <td >Datum</td>
-	        <td >Naziv rada</td>
-	        <td>Naziv caspopisa</td>
-	        <td >Naziv izdavaca</td>
-	        <td >Obrada</td>
+	        <td>Datum</td>
+	        <td>Naziv rada</td>
+	        <td>Naziv časopisa</td>
+	        <td>Naziv izdavača</td>
+	        <td>Obrada</td>
 	      </tr>
 	      
 	    <?

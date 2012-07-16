@@ -3,28 +3,28 @@
 	$nivo=getSifrarnikData("sifrarnik_nivo_jezika");
 ?>
   	<div id="Korak0">
-        <h2>Licne vjestine/kompetencije</h2>
+        <h2>Lične vještine/kompetencije</h2>
         <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga:</b></font>
+	          <font color="#FFFFFF"><b>Unos podatka:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Poznavanje stranih jezika, drustvene i organizacijske vjestine</b>
+	          <b>Poznavanje stranih jezika, društvene i organizacijske vještine</b>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td>Naziv jezika:</td>
 	        <td>
 	           <select name="jezik" id="jezik"><?=$jezici ?></select>
-	           Fali neki jezik? Pritisnite <a href="">ovdje</a> 
+	           Nedostaje neki jezik? Pritisnite <a href="">ovdje</a> 
 	        </td>
 	      </tr> 
 	      <tr>
-	        <td>Razumjevanje:</td>
+	        <td>Razumijevanje:</td>
 	        <td>
 	          <select  name="razumjevanje" id = "razumjevanje"><?=$nivo ?></select>
 	          <b><a href="" onclick="window.open('common/profil/hr_moduli/pomoc_jezik.html', 'windowname1','width=640, height=480'); return false;">(?)</a></b>

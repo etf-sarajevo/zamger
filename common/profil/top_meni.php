@@ -20,11 +20,11 @@ if ($user_nastavnik) {
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
 		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=izbori">Izbori i nastavni ansambl</a></td>
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
-				<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=ljudskiresursi">UNSA HR</a></td>
+		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=ljudskiresursi">UNSA HR</a></td>
 		<td bgcolor="#FFFFFF" width="100">&nbsp;</td>
 	</tr>
 	<tr>
-		<td colspan="7" height="1" bgcolor="#000000" bgimage="images/fnord.gif">
+		<td colspan="9" height="1" bgcolor="#000000" bgimage="images/fnord.gif">
 	</tr>
 	</table>
 	<?

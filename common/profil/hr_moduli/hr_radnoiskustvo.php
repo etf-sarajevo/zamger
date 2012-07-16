@@ -8,13 +8,13 @@
 	     <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga - radno iskustvo:</b></font>
+	          <font color="#FFFFFF"><b>Unos podatka o radnom iskustvu:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Molim vas unesite podatke oznacene sa <font color=red>*</font>; Hronoloski</b>
+	          <b>Molim vas unesite podatke označene sa <font color=red>*</font>; Hronološki</b>
 	        </td>
 	      </tr>
 	      
@@ -38,9 +38,9 @@
 	      
 	      
 	      <tr>
-	        <td>Pocetak i kraj zaposljenja:</td>
+	        <td>Početak i kraj zaposlenja:</td>
 	        <td>
-	        Pocetak:
+	        Početak:
 	          <input type="text" class="validate[required,custom[date2]]" name="poc" id="poc" >
 	          
 	          Kraj:
@@ -50,7 +50,7 @@
 	      
 	      
 	      <tr>
-	        <td>Radni staz:</td>
+	        <td>Radni staž:</td>
 	        <td>
 	          <select name="radni_staz" >
 	          	<? for ($i=0;$i<100; $i++) echo "<option value=\"$i\">$i</option>"; ?>
@@ -59,7 +59,7 @@
 	      </tr>
 	      
 	      <tr>
-	        <td>Radni staz u nastavi:</td>
+	        <td>Radni staž u nastavi:</td>
 	        <td>
 	          <select name="radni_staz_nastava" >
 	          <? for ($i=0;$i<100; $i++) echo "<option value=\"$i\">$i</option>"; ?>
@@ -68,7 +68,7 @@
 	      </tr>
 	      
 	      <tr>
-	        <td>Broj radne knjizice:</td>
+	        <td>Broj radne knjižice:</td>
 	        <td>
 	          <input class="validate[required]" type="text" id="brknjizice" name="brknjizice" />
 	        </td>
@@ -83,7 +83,7 @@
 	      
 	      
 	      <tr>
-	        <td>Ugovorna placa:</td>
+	        <td>Ugovorna plaća:</td>
 	        <td>
 	          <input type="text" class="validate[required,custom[number]]" id="placa" name="placa" />
 	        </td>

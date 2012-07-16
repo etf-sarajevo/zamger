@@ -87,6 +87,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 	$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
 	$telefon = my_escape($_REQUEST['telefon']);
 
+	$djevojacko_prezime = my_escape($_REQUEST['djevojacko_prezime']);
 	$imeoca = my_escape($_REQUEST['imeoca']);
 	$prezimeoca = my_escape($_REQUEST['prezimeoca']);
 	$imemajke = my_escape($_REQUEST['imemajke']);
@@ -134,8 +135,8 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 
 
 	// Da li je uopste bilo promjene?
-	$q05 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, jmbg, adresa, adresa_mjesto, telefon, kanton, boracke_kategorije from osoba where id=$userid");
-	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$imeoca && mysql_result($q05,0,3)==$prezimeoca && mysql_result($q05,0,4)==$imemajke && mysql_result($q05,0,5)==$prezimemajke && mysql_result($q05,0,6)==$spol && mysql_result($q05,0,7)==$brindexa && mysql_result($q05,0,8)=="$godina-$mjesec-$dan" && mysql_result($q05,0,9)==$mjrid && mysql_result($q05,0,10)==$nacionalnost && mysql_result($q05,0,11)==$drzavljanstvo && mysql_result($q05,0,12)==$jmbg && mysql_result($q05,0,13)==$adresa && mysql_result($q05,0,14)==$admid && mysql_result($q05,0,15)==$telefon && mysql_result($q05,0,16)==$kanton && mysql_result($q05,0,17)==$borac) {
+	$q05 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, jmbg, adresa, adresa_mjesto, telefon, kanton, boracke_kategorije, djevojacko_prezime from osoba where id=$userid");
+	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$imeoca && mysql_result($q05,0,3)==$prezimeoca && mysql_result($q05,0,4)==$imemajke && mysql_result($q05,0,5)==$prezimemajke && mysql_result($q05,0,6)==$spol && mysql_result($q05,0,7)==$brindexa && mysql_result($q05,0,8)=="$godina-$mjesec-$dan" && mysql_result($q05,0,9)==$mjrid && mysql_result($q05,0,10)==$nacionalnost && mysql_result($q05,0,11)==$drzavljanstvo && mysql_result($q05,0,12)==$jmbg && mysql_result($q05,0,13)==$adresa && mysql_result($q05,0,14)==$admid && mysql_result($q05,0,15)==$telefon && mysql_result($q05,0,16)==$kanton && mysql_result($q05,0,17)==$borac && mysql_result($q05,0,18)==$djevojacko_prezime) {
 		?><p><b>Ništa nije promijenjeno?</b><br>
 		Podaci koje ste unijeli ne razlikuju se od podataka koje već imamo u bazi. Zahtjev za promjenu neće biti poslan.</p><?
 		return;
@@ -164,6 +165,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if ($kanton != 0) $upit .= ", kanton=$kanton";
 		if ($godina!=1970) $upit .= ", datum_rodjenja='$godina-$mjesec-$dan'";
 		if ($borac != 0) $upit .= ", boracke_kategorije=$borac";
+		if ($djevojacko_prezime != "") $upit .= ", djevojacko_prezime='$djevojacko_prezime'";
 		$q20 = myquery("update promjena_podataka set $upit where id=$id");
 	} else {
 		$q25 = myquery("select slika from osoba where id=$userid");
@@ -295,7 +297,7 @@ if (mysql_num_rows($q390)>0) {
 	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p><?
 }
 
-$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika from osoba where id=$userid");
+$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime from osoba where id=$userid");
 
 // Spisak gradova
 $q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
@@ -355,6 +357,14 @@ if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
 // Pripadnik borackih kategorija
 if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 
+
+// Određujemo tekst poruke u kategoriji "Lični podaci"
+
+if ($user_nastavnik || $user_studentska) {
+	$tekst_licni_podaci = "Molimo da popunite dodatne lične podatke potrebne za sistem upravljanja ljudskim resursima. Ovim putem preuzimate punu odgovornost za ispravnost i redovno ažuriranje podataka koje navedete u formularu ispod.";
+} else {
+	$tekst_licni_podaci = "Ovi podaci će se koristiti za automatsko popunjavanje formulara i obrazaca. Podaci su preuzeti iz formulara koje ste popunili prilikom upisa na fakultet. Ovim putem preuzimate punu odgovornost za ispravnost podataka koje navedete u formularu ispod.";
+}
 
 ?>
 	<script type="text/javascript">
@@ -551,7 +561,10 @@ if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">LIČNI PODACI:</font></td></tr>
-	<tr><td colspan="2">Ovi podaci će se koristiti za automatsko popunjavanje formulara i obrazaca. Podaci su preuzeti iz formulara koje ste popunili prilikom upisa na fakultet. Ovim putem preuzimate punu odgovornost za ispravnost podataka koje navedete u formularu ispod.</td></tr>
+	<tr><td colspan="2"><?=$tekst_licni_podaci?></td></tr>
+	<tr><td>
+		Djevojačko prezime:</td><td><input type="text" name="djevojacko_prezime" value="<?=mysql_result($q400,0,20)?>" class="default">
+	</td></tr>
 	<tr><td>
 		Ime oca:</td><td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,12)?>" class="default">
 	</td></tr>

@@ -6,13 +6,13 @@
         <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga:</b></font>
+	          <font color="#FFFFFF"><b>Unos podatka:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Unos uradite hronoloski: udzbenik, monografija, knjiga, prirucnik, praktikum - od najnovijeg prema najstarijem
+	          <b>Unos uradite hronološki: udžbenik, monografija, knjiga, priručnik, praktikum - od najnovijeg prema najstarijem
 	          </b>
 	        </td>
 	      </tr>
@@ -30,7 +30,7 @@
 	        </td>
 	      </tr> 
 	      <tr>
-	        <td>Naziv casopisa/ izdavaca:</td>
+	        <td>Naziv časopisa/ izdavača:</td>
 	        <td>
 	           <input type="text"  class="validate[required]" name="naziv_ci" id="naziv_ci" >
 	        </td>
@@ -65,11 +65,11 @@
 	        </td>
 	      </tr>
 	      <tr bgcolor="#84A6C6"  class="tdheader">
-	        <td >Datum</td>
-	        <td >Naziv publikacije</td>
-	        <td>Naziv izdavaca/casopisa</td>
-	        <td >Vrsta publikacije</td>
-	        <td >Obrada</td>
+	        <td>Datum</td>
+	        <td>Naziv publikacije</td>
+	        <td>Naziv izdavača/časopisa</td>
+	        <td>Vrsta publikacije</td>
+	        <td>Obrada</td>
 	      </tr>
 	      
 	    <?

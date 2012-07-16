@@ -3,13 +3,13 @@
         <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga:</b></font>
+	          <font color="#FFFFFF"><b>Unos podatka:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Unos uradite hronoloski od najnovijeg prema najstarijem !
+	          <b>Unos uradite hronološki od najnovijeg prema najstarijem !
 	          </b>
 	        </td>
 	      </tr>

@@ -19,12 +19,12 @@
       <tr>
         <td style="height:30px">NAPOMENA:</td>
         <td>
-          <b>Molim vas unesite podatke oznacene sa <font color=red>*</font>; Hronoloski</b>
+          <b>Molim vas unesite podatke označene sa <font color=red>*</font>; Hronološki</b>
         </td>
       </tr>
       
       <tr>
-        <td>Strucna sprema:</td>
+        <td>Stručna sprema:</td>
         <td>
           <select ><?=$strucnasprema ?></select>  <b><font color=red>*</font></b>
         </td>
@@ -38,7 +38,7 @@
       </tr>
       
       <tr>
-        <td>Naucna oblast:</td>
+        <td>Naučna oblast:</td>
         <td>
           <select ><?=$naucnaoblast ?></select>  <b><font color=red>*</font></b>
         </td>
@@ -46,7 +46,7 @@
       
       
       <tr>
-        <td>Uza naucna oblast:</td>
+        <td>Uža naučna oblast:</td>
         <td>
           <select ><?=$uzaoblast ?></select>  <b><font color=red>*</font></b>
         </td>
@@ -76,7 +76,7 @@
       </tr>
       
       <tr>
-        <td>Zavrsena skola:	</td>
+        <td>Završena škola:</td>
         <td>
           <input type="text"  value="" /> 
         </td>
@@ -84,7 +84,7 @@
       
       
       <tr>
-        <td>Zavrsen fakultet:</td>
+        <td>Završen fakultet:</td>
         <td>
           <input type="text"  value="" /> 
         </td>
@@ -99,25 +99,25 @@
       </tr>
       
       <tr>
-        <td>Drustvene sposobnosti i vjestine:	</td>
+        <td>Društvene sposobnosti i vještine:</td>
         <td>
           <textarea rows="3" cols="40"></textarea>
         </td>
       </tr>
        <tr>
-        <td>Organizacione sposobnosti i vjestine:	</td>
+        <td>Organizacione sposobnosti i vještine:</td>
         <td>
           <textarea rows="3" cols="40"></textarea>
         </td>
       </tr>
        <tr>
-        <td>Informaticke sposobnostii vjestine:	</td>
+        <td>Informatičke sposobnosti i vještine:</td>
         <td>
           <textarea rows="3" cols="40"></textarea>
         </td>
       </tr>
        <tr>
-        <td>Ostale informacije:	</td>
+        <td>Ostale informacije:</td>
         <td>
           <textarea rows="3" cols="40"></textarea>
         </td>

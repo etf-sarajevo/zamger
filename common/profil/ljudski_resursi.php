@@ -1,16 +1,69 @@
 <?
 	include("lib/procesiraj.php");
-	 // ukoliko smo uradili submit form pozovi funkciju iz procesiraj.php
-	switch ($_REQUEST['save']) {
-		case 1: spasiPodatkeHR($userid); break;
-		case 2: evidentirajUsavrsavanje($userid); break;
-		case 3: evidentirajNaucniRad($userid); break;
-		case 4: evidentirajMentorstvo($userid); break;
-		case 5: evidentirajPublikaciju($userid); break;
-		case 6: evidentirajNagradu($userid); break;
-		case 7: evidentirajJezik($userid); break;
+
+	// AKCIJE
+	// FIXME prebaciti na stringove
+
+	if (intval($_REQUEST['save']) == 1) { // lični podaci
+		$djevojacko= my_escape($_REQUEST['djevojacko']);
+		$vozacka= intval($_REQUEST['vozacka']);
+		$mjezik= intval($_REQUEST['mjezik']);
+		$mobitel= intval($_REQUEST['mobitel']);
+		$nacin_stanovanja= intval($_REQUEST['nacin_stanovanja']);		
+		myquery("update osoba set djevojacko_prezime='$djevojacko', maternji_jezik=$mjezik , vozacka_dozvola=$vozacka , mobilni_telefon='$mobitel', nacin_stanovanja=$nacin_stanovanja where id=$userid");
 	}
 
+	if (intval($_REQUEST['save']) == 2) { // usavršavanje
+		$naziv= my_escape($_REQUEST['naziv_usavrsavanja']);
+		$datum= strtotime(my_escape($_REQUEST['datum_usavrsavanja']));
+		$institucija= my_escape($_REQUEST['naziv_institucije']);
+		$kvalifikacija= my_escape($_REQUEST['kvalifikacija']);
+		myquery("INSERT INTO hr_usavrsavanje (fk_osoba ,datum ,naziv_usavrsavanja ,obrazovna_institucija ,kvalifikacija)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$institucija',  '$kvalifikacija')");
+	}
+
+	if (intval($_REQUEST['save']) == 3) { // Radovi
+		$naziv= my_escape($_REQUEST['naziv_rada']);
+		$datum= strtotime(my_escape($_REQUEST['datum_rada']));
+		$naziv_casopisa= my_escape($_REQUEST['naziv_casopisa']);
+		$naziv_izdavaca= my_escape($_REQUEST['naziv_izdavaca']);
+		myquery("INSERT INTO hr_naucni_radovi (fk_osoba ,datum ,naziv_rada ,naziv_casopisa ,naziv_izdavaca)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$naziv_casopisa',  '$naziv_izdavaca')");
+	}
+
+	if (intval($_REQUEST['save']) == 4) { // Mentorstva
+		$datum= strtotime(my_escape($_REQUEST['datum_mentorstva']));
+		$ime_kandidata= my_escape($_REQUEST['ime_kandidata']);
+		$naziv_teme= my_escape($_REQUEST['naziv_teme']);
+		$mfakultet= intval($_REQUEST['mfakultet']);
+		$mmentorstvo= intval($_REQUEST['mmentorstvo']);
+		myquery("INSERT INTO hr_mentorstvo (fk_osoba ,datum ,ime_kandidata ,naziv_teme ,fk_fakultet,fk_vrsta_mentora)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$ime_kandidata',  '$naziv_teme',  $mfakultet,$mmentorstvo)");
+	}
+
+	if (intval($_REQUEST['save']) == 5) { // Publikacije
+		$datum= strtotime(my_escape($_REQUEST['datum_publikacije']));
+		$naziv= my_escape($_REQUEST['naziv_publikacije']);
+		$casopis= my_escape($_REQUEST['naziv_ci']);
+		$fk_tip_publikacije= intval($_REQUEST['vrsta_publikacije']);
+		myquery("INSERT INTO  hr_publikacija (fk_osoba,datum ,naziv ,casopis ,fk_tip_publikacije) VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$casopis',  $fk_tip_publikacije)");
+	}
+
+
+	if (intval($_REQUEST['save']) == 6) { // Nagrade
+		$datum= strtotime(my_escape($_REQUEST['datum_nagrade']));
+		$naziv= my_escape($_REQUEST['naziv_nagrade']);
+		$opis= my_escape($_REQUEST['opis_nagrade']);
+		myquery("INSERT INTO `hr_nagrade_priznanja` (`fk_osoba`, `datum`, `naziv`, `opis`) VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$opis')");
+	}
+
+	if (intval($_REQUEST['save']) == 7) { // Jezik
+		$jezik= intval($_REQUEST['jezik']);
+		$razumjevanje= intval($_REQUEST['razumjevanje']);
+		$govor= intval($_REQUEST['govor']);
+		$pisanje= intval($_REQUEST['pisanje']);
+		myquery("INSERT INTO `hr_kompetencije` (`fk_osoba`, `jezik`, `razumjevanje`, `govor`, pisanje) VALUES ('$userid', $jezik, $razumjevanje,$govor, $pisanje )");
+	}
+
+
+	// Lični podaci
 	$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, mobilni_telefon,nacin_stanovanja from osoba where id=$userid");
 	
 	// Spisak gradova
@@ -80,16 +133,16 @@
 <br><br>
 
 <ul id="tabs">
-	<li class="tab1"><a href="#" title="Korak1">1.Opsti podaci</a></li>
-	<li class="tab2"><a href="#" title="Korak2">2.Kontakt informacije</a></li>
-    <li class="tab3"><a href="#" title="Korak3">3.Radno iskustvo</a></li>
-    <li class="tab4"><a href="#" title="Korak4">4.Obrazovanje</a></li>
-    <li class="tab5"><a href="#" title="Korak5">5.Usavrsavanje</a></li>
-    <li class="tab6"><a href="#" title="Korak6">6.Naucno-strucni radovi</a></li>    
-    <li class="tab7"><a href="#" title="Korak7">7.Mentorstvo</a></li> 
-    <li class="tab8"><a href="#" title="Korak8">8.Izdate publikacije</a></li> 
-    <li class="tab9"><a href="#" title="Korak9">9.Nagrade/Priznanja</a></li> 
-    <li class="tab0"><a href="#" title="Korak0">10.Licne vjestine/kompetencije</a></li> 
+	<li class="tab1"><a href="#" title="Korak1">1. Opšti podaci</a></li>
+	<li class="tab2"><a href="#" title="Korak2">2. Kontakt informacije</a></li>
+    <li class="tab3"><a href="#" title="Korak3">3. Radno iskustvo</a></li>
+    <li class="tab4"><a href="#" title="Korak4">4. Obrazovanje</a></li>
+    <li class="tab5"><a href="#" title="Korak5">5. Usavršavanje</a></li>
+    <li class="tab6"><a href="#" title="Korak6">6. Naučni i stručni radovi</a></li>    
+    <li class="tab7"><a href="#" title="Korak7">7. Mentorstvo</a></li> 
+    <li class="tab8"><a href="#" title="Korak8">8. Izdate publikacije</a></li> 
+    <li class="tab9"><a href="#" title="Korak9">9. Nagrade/Priznanja</a></li> 
+    <li class="tab0"><a href="#" title="Korak0">10. Lične vjestine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">
@@ -112,8 +165,8 @@
   	}
   
   	// Pojedini tabovi odvojeni radi preglednosti
-  	include("common/profil/hr_moduli/hr_opstipodaci.php");
-  	include("common/profil/hr_moduli/hr_kontaktinfo.php");
+  	include ("common/profil/hr_moduli/hr_opstipodaci.php");
+  	include ("common/profil/hr_moduli/hr_kontaktinfo.php");
   	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
   	include ("common/profil/hr_moduli/hr_obrazovanje.php");
   	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
@@ -130,7 +183,8 @@
   </span>
 </div>
 </form>
-<b>VAZNO: Ukoliko nedostaje neka opcija(npr. vas maternji jezik) kontaktirajte administratora !</b>
+<br>
+<b>VAŽNO: Ukoliko nedostaje neka opcija (npr. vas maternji jezik) kontaktirajte administratora !</b>
 
 <script src="js/libs/jquery-1.6.min.js" type="text/javascript" charset="utf-8"></script>
 <script src="js/libs/jquery.validationEngine-hr.js" ></script>

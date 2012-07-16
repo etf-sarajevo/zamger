@@ -9,7 +9,7 @@
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Unos uradite hronoloski: specijalisticki kursevi, seminari, treninzi - od najnovijeg prema najstarijem
+	          <b>Unos uradite hronološki: specijalistički kursevi, seminari, treninzi - od najnovijeg prema najstarijem
 	          </b>
 	        </td>
 	      </tr>
@@ -21,7 +21,7 @@
 	        </td>
 	      </tr> 
 	      <tr>
-	        <td>Naziv usavrsavanja:</td>
+	        <td>Naziv usavršavanja:</td>
 	        <td>
 	           <input type="text" class="validate[required]" name="naziv_usavrsavanja" id="naziv_usavrsavanja" >
 	        </td>
@@ -60,11 +60,11 @@
 	        </td>
 	      </tr>
 	      <tr bgcolor="#84A6C6"  class="tdheader">
-	        <td >Datum</td>
-	        <td >Naziv usavrsavanja:</td>
+	        <td>Datum</td>
+	        <td>Naziv usavršavanja:</td>
 	        <td>Naziv obrazovne institucije:</td>
-	        <td >Dodijeljena kvalifikacija:</td>
-	        <td >Obrada</td>
+	        <td>Dodijeljena kvalifikacija:</td>
+	        <td>Obrada</td>
 	      </tr>
 	      
 	      
