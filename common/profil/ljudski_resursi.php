@@ -1,6 +1,4 @@
 <?
-	include("lib/procesiraj.php");
-
 	// AKCIJE
 	// FIXME prebaciti na stringove
 
