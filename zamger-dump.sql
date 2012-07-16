@@ -1410,7 +1410,7 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
   `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `slika` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `djevojacko_prezime` VARCHAR( 50 ) NOT NULL,
+  `djevojacko_prezime` VARCHAR(30) NOT NULL,
   `maternji_jezik` INT NOT NULL,
   `vozacka_dozvola` INT NOT NULL,
   `mobilni_telefon` VARCHAR( 15 ) NOT NULL,
@@ -1823,16 +1823,29 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `osoba` int(11) NOT NULL,
   `ime` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   `prezime` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `imeoca` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `prezimeoca` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `imemajke` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `prezimemajke` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `spol` enum('M','Z','') COLLATE utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `datum_rodjenja` date NOT NULL,
   `mjesto_rodjenja` int(11) NOT NULL,
-  `drzavljanstvo` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `nacionalnost` int(11) NOT NULL,
+  `drzavljanstvo` int(11) NOT NULL,
+  `boracke_kategorije` tinyint(1) NOT NULL,
   `jmbg` varchar(14) COLLATE utf8_slovenian_ci NOT NULL,
   `adresa` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `adresa_mjesto` int(11) NOT NULL,
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
+  `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
+  `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
+  `djevojacko_prezime` VARCHAR(30) NOT NULL,
+  `maternji_jezik` INT NOT NULL,
+  `vozacka_dozvola` INT NOT NULL,
+  `mobilni_telefon` VARCHAR( 15 ) NOT NULL,
+  `nacin_stanovanja` INT NOT NULL,
   `vrijeme_zahtjeva` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
@@ -2130,6 +2143,30 @@ CREATE TABLE IF NOT EXISTS `sifrarnik_maternji_jezik` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
+--
+-- Dumping data for table `sifrarnik_maternji_jezik`
+--
+
+INSERT INTO `sifrarnik_maternji_jezik` (`id`, `naziv`) VALUES
+(1, 'Bosanski jezik'),
+(2, 'Hrvatski jezik'),
+(3, 'Srpski jezik'),
+(4, 'Engleski jezik'),
+(5, 'Bosanski/hrvatski/srpski jezik'),
+(6, 'Slovenski jezik'),
+(7, 'Francuski jezik'),
+(8, 'Turski jezik'),
+(9, 'Perzijski jezik'),
+(10, 'Mađarski jezik'),
+(11, 'Makedonski jezik'),
+(12, 'Bugarski jezik'),
+(13, 'Talijanski jezik'),
+(14, 'Španski jezik'),
+(15, 'Njemački jezik'),
+(16, 'Esperanto jezik'),
+(17, 'Ruski jezik'),
+(18, 'Latinski jezik');
+
 -- --------------------------------------------------------
 
 --
@@ -2250,6 +2287,25 @@ CREATE TABLE IF NOT EXISTS `sifrarnik_vozacki_kategorija` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
+
+--
+-- Dumping data for table `sifrarnik_vozacki_kategorija`
+--
+
+INSERT INTO `sifrarnik_vozacki_kategorija` (`id`, `naziv`) VALUES
+(1, 'A kategorija'),
+(2, 'A1 kategorija'),
+(3, 'A2 kategorija'),
+(4, 'B kategorija'),
+(5, 'B+E kategorija'),
+(6, 'C1 kategorija'),
+(7, 'C1+E kategorija'),
+(8, 'C kategorija'),
+(9, 'C+E kategorija'),
+(10, 'D kategorija'),
+(11, 'D+E kategorija'),
+(12, 'F kategorija'),
+(13, 'G kategorija');
 
 -- --------------------------------------------------------
 
