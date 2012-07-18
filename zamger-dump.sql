@@ -2167,10 +2167,10 @@ CREATE TABLE IF NOT EXISTS `sifrarnik_fascati_podoblast` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sifrarnik_maternji_jezik`
+-- Table structure for table `sifrarnik_jezik`
 --
 
-CREATE TABLE IF NOT EXISTS `sifrarnik_maternji_jezik` (
+CREATE TABLE IF NOT EXISTS `sifrarnik_jezik` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
@@ -2180,7 +2180,7 @@ CREATE TABLE IF NOT EXISTS `sifrarnik_maternji_jezik` (
 -- Dumping data for table `sifrarnik_maternji_jezik`
 --
 
-INSERT INTO `sifrarnik_maternji_jezik` (`id`, `naziv`) VALUES
+INSERT INTO `sifrarnik_jezik` (`id`, `naziv`) VALUES
 (1, 'Bosanski jezik'),
 (2, 'Hrvatski jezik'),
 (3, 'Srpski jezik'),
