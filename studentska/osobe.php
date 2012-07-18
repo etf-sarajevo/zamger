@@ -168,6 +168,7 @@ if ($akcija == "podaci") {
 		$nacionalnost = intval($_REQUEST['nacionalnost']);
 		$brindexa = my_escape($_REQUEST['brindexa']);
 
+		$djevojacko_prezime = my_escape($_REQUEST['djevojacko_prezime']);
 		$imeoca = my_escape($_REQUEST['imeoca']);
 		$prezimeoca = my_escape($_REQUEST['prezimeoca']);
 		$imemajke = my_escape($_REQUEST['imemajke']);
@@ -186,6 +187,10 @@ if ($akcija == "podaci") {
 
 		$strucni_stepen = intval($_REQUEST['_lv_column_strucni_stepen']);
 		$naucni_stepen = intval($_REQUEST['_lv_column_naucni_stepen']);
+
+		$maternji_jezik = intval($_REQUEST['_lv_column_sifrarnik_jezik']);
+		$vozacka_dozvola = intval($_REQUEST['_lv_column_sifrarnik_vozacki_kategorija']);
+		$nacin_stanovanja = intval($_REQUEST['_lv_column_nacin_stanovanja']);
 
 		// Sredjujem datum
 		if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
@@ -226,7 +231,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		?>
@@ -376,7 +381,7 @@ if ($akcija == "podaci") {
 
 	// Prikaz podataka
 
-	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -499,6 +504,9 @@ if ($akcija == "podaci") {
 		<td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,8)?>" class="default"></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
+		<td>Djevojačko prezime:</td>
+		<td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,21)?>" class="default"></td>
+	</tr><tr>
 		<td>Ime oca:</td>
 		<td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,2)?>" class="default"></td>
 	</tr><tr>
@@ -542,6 +550,16 @@ if ($akcija == "podaci") {
 		<td valign="top">Kontakt e-mail:</td>
 		<td><?=$email_adrese?>
 		<input type="text" name="emailnovi" id="emailnovi" class="default"> <input type="button" class="default" value="Dodaj" onclick="javascript:location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=podaci&subakcija=dodajmail&adresa='+document.getElementById('emailnovi').value;"></td>
+	</tr><tr><td colspan="2">&nbsp;</td>
+	</tr><tr>
+		<td>Maternji jezik:</td>
+		<td><?=db_dropdown("sifrarnik_jezik",mysql_result($q400,0,22), " ") ?></td>
+	</tr><tr>
+		<td>Vozačka dozvola:</td>
+		<td><?=db_dropdown("sifrarnik_vozacki_kategorija",mysql_result($q400,0,23), " ") ?></td>
+	</tr><tr>
+		<td>Način stanovanja:</td>
+		<td><?=db_dropdown("sifrarnik_nacin_stanovanja",mysql_result($q400,0,24), " ") ?></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Stručni stepen:</td>

@@ -1413,7 +1413,6 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `djevojacko_prezime` VARCHAR(30) NOT NULL,
   `maternji_jezik` INT NOT NULL,
   `vozacka_dozvola` INT NOT NULL,
-  `mobilni_telefon` VARCHAR( 15 ) NOT NULL,
   `nacin_stanovanja` INT NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -1841,6 +1840,7 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `kanton` int(11) NOT NULL,
   `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
   `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
+  `slika` VARCHAR(50) NOT NULL,
   `djevojacko_prezime` VARCHAR(30) NOT NULL,
   `maternji_jezik` INT NOT NULL,
   `vozacka_dozvola` INT NOT NULL,
@@ -2287,7 +2287,7 @@ INSERT INTO `sifrarnik_nacin_stanovanja` (`id`, `naziv`) VALUES
 (4, 'kolektivni smještaj'),
 (5, 'privremeni smještaj'),
 (6, 'u hotelu'),
-(7, 'u spcijaliziranoj ustanovi'),
+(7, 'u specijaliziranoj ustanovi'),
 (8, 'drugo'),
 (9, 'kod roditelja');
 

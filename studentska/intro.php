@@ -42,7 +42,7 @@ function promjena($nominativ, $u, $iz) {
 if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 	$id = intval($_REQUEST['id']);
 	$osoba = intval($_REQUEST['osoba']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, pp.imeoca, pp.prezimeoca, pp.imemajke, pp.prezimemajke, pp.spol, pp.nacionalnost, pp.slika, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva) from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.brindexa, pp.datum_rodjenja, pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, pp.imeoca, pp.prezimeoca, pp.imemajke, pp.prezimemajke, pp.spol, pp.nacionalnost, pp.slika, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva), djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from promjena_podataka as pp where pp.id=$id order by pp.vrijeme_zahtjeva");
 	while ($r100 = mysql_fetch_row($q100)) {
 		// Sve parametre treba ponovo escape-ati
 		// Npr: korisnik je ukucao Meho'
@@ -68,7 +68,12 @@ if ($_POST['akcija'] == "Prihvati zahtjev" && check_csrf_token()) {
 		// nacionalnost je tipa int
 		$slikapromjena = $r100[18];
 
-		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[5], drzavljanstvo=$r100[6], jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[9], telefon='$telefon', kanton=$r100[11], imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$r100[16]', nacionalnost=$r100[17] where id=$r100[0]");
+		$djevojacko_prezime = mysql_real_escape_string($r100[20]);
+		// maternji_jezik je tipa integer
+		// vozacka_dozvola je tipa int
+		// nacin_stanovanja je tipa integer
+
+		$q110 = myquery("update osoba set ime='$ime', prezime='$prezime', brindexa='$brindexa', datum_rodjenja='$datum_rodjenja', mjesto_rodjenja=$r100[5], drzavljanstvo=$r100[6], jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$r100[9], telefon='$telefon', kanton=$r100[11], imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$r100[16]', nacionalnost=$r100[17], djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$r100[21], vozacka_dozvola=$r100[22], nacin_stanovanja=$r100[23] where id=$r100[0]");
 		$vrijeme_zahtjeva = $r100[19];
 
 		// Provjera izmjene slike
@@ -133,7 +138,7 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 if ($_GET['akcija'] == "zahtjev") {
 
 	$id = intval($_REQUEST['id']);
-	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, o.ime, o.prezime, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.imeoca, o.imeoca, pp.prezimeoca, o.prezimeoca, pp.imemajke, o.imemajke, pp.prezimemajke, o.prezimemajke, pp.spol, o.spol, pp.nacionalnost, o.nacionalnost, pp.slika, o.slika from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
+	$q100 = myquery("select pp.osoba, pp.ime, pp.prezime, pp.brindexa, UNIX_TIMESTAMP(pp.datum_rodjenja), pp.mjesto_rodjenja, pp.drzavljanstvo, pp.jmbg, pp.adresa, pp.adresa_mjesto, pp.telefon, pp.kanton, o.ime, o.prezime, o.brindexa, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.imeoca, o.imeoca, pp.prezimeoca, o.prezimeoca, pp.imemajke, o.imemajke, pp.prezimemajke, o.prezimemajke, pp.spol, o.spol, pp.nacionalnost, o.nacionalnost, pp.slika, o.slika, pp.djevojacko_prezime, o.djevojacko_prezime, pp.maternji_jezik, o.maternji_jezik, pp.vozacka_dozvola, o.vozacka_dozvola, pp.nacin_stanovanja, o.nacin_stanovanja from promjena_podataka as pp, osoba as o where o.id=pp.osoba and pp.id=$id");
 	if (mysql_num_rows($q100)<1) {
 		niceerror("Nepoznat ID zahtjeva $id.");
 		zamgerlog("nepoznat id zahtjeva za promjenu podataka $id", 3);
@@ -147,6 +152,7 @@ if ($_GET['akcija'] == "zahtjev") {
 	<?
 	promjena("ime", mysql_result($q100,0,1), mysql_result($q100,0,12));
 	promjena("prezime", mysql_result($q100,0,2), mysql_result($q100,0,13));
+	promjena("djevojačko prezime", mysql_result($q100,0,37), mysql_result($q100,0,38));
 	promjena("ime oca", mysql_result($q100,0,23), mysql_result($q100,0,24));
 	promjena("prezime oca", mysql_result($q100,0,25), mysql_result($q100,0,26));
 	promjena("ime majke", mysql_result($q100,0,27), mysql_result($q100,0,28));
@@ -234,6 +240,45 @@ if ($_GET['akcija'] == "zahtjev") {
 			$novikanton = mysql_result($q112,0,0);
 		}
 		promjena("kanton", $starikanton, $novikanton);
+	}
+
+	$starimaternji = mysql_result($q100,0,39); $novimaternji = mysql_result($q100,0,40);
+	if ($starimaternji != $novimaternji) {
+		if ($starimaternji != 0) {
+			$q110 = myquery("select naziv from sifrarnik_jezik where id=$starimaternji");
+			$starimaternji = mysql_result($q110,0,0);
+		}
+		if ($novimaternji != 0) {
+			$q112 = myquery("select naziv from sifrarnik_jezik where id=$novimaternji");
+			$novimaternji = mysql_result($q112,0,0);
+		}
+		promjena("maternji jezik", $starimaternji, $novimaternji);
+	}
+
+	$staravozacka = mysql_result($q100,0,41); $novavozacka = mysql_result($q100,0,42);
+	if ($staravozacka != $novavozacka) {
+		if ($staravozacka != 0) {
+			$q110 = myquery("select naziv from sifrarnik_vozacki_kategorija where id=$staravozacka");
+			$staravozacka = mysql_result($q110,0,0);
+		}
+		if ($novavozacka != 0) {
+			$q112 = myquery("select naziv from sifrarnik_vozacki_kategorija where id=$novavozacka");
+			$novavozacka = mysql_result($q112,0,0);
+		}
+		promjena("vozačka dozvola", $staravozacka, $novimaternji);
+	}
+
+	$starinacinst = mysql_result($q100,0,43); $novinacinst = mysql_result($q100,0,44);
+	if ($starinacinst != $novinacinst) {
+		if ($starinacinst != 0) {
+			$q110 = myquery("select naziv from sifrarnik_nacin_stanovanja where id=$starinacinst");
+			$starinacinst = mysql_result($q110,0,0);
+		}
+		if ($novinacinst != 0) {
+			$q112 = myquery("select naziv from sifrarnik_nacin_stanovanja where id=$novinacinst");
+			$novinacinst = mysql_result($q112,0,0);
+		}
+		promjena("način stanovanja", $starinacinst, $novinacinst);
 	}
 
 	?>
