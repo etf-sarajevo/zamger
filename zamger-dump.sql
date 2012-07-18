@@ -1740,6 +1740,7 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
   `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `vrijeme_zahtjeva` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `slika` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
