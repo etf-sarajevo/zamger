@@ -1,6 +1,6 @@
 
 	<h2>Izbori, imenovanja, nastavni ansambl</h2>
-	<p>Podaci u tabelama ispod za sada se ne mogu mijenjati! Molimo da sve greške i dopune prijavite službama <?=$conf_skr_naziv_institucije_genitiv?>.</p>
+	<p>Za ažuriranje podataka u tabelama datim ispod zadužene su službe <?=$conf_skr_naziv_institucije_genitiv?>. Molimo Vas da sve eventualne propuste i omaške prijavite nadležnim službama! Hvala.</p>
 
 	<?
 
@@ -104,11 +104,36 @@
 	}
 
 
-	// Izbori u zvanja
+	// Akademsko zvanje i naučni stepen
 
 	?>
 	<table border="0" width="600">
-	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">IZBORI U ZVANJA:</font></td></tr>
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">DOSTIGNUTO AKADEMSKO ZVANJE I NAUČNI STEPEN:</font></td></tr>
+	<?
+
+	$q430 = myquery("select fk_akademsko_zvanje, fk_naucni_stepen from osoba where id=$userid");
+	$akademsko_zvanje = "Nepoznato / Bez akademskog zvanja";
+	$naucni_stepen = "Nepoznato / Bez naučnog stepena";
+	if (mysql_result($q430,0,0)!=0) {
+		$q440 = myquery("select naziv from sifrarnik_akademsko_zvanje where id=".mysql_result($q430,0,0));
+		$akademsko_zvanje = ucfirst(mysql_result($q440,0,0));
+	}
+	if (mysql_result($q430,0,1)!=0) {
+		$q450 = myquery("select naziv from sifrarnik_naucni_stepen where id=".mysql_result($q430,0,1));
+		$naucni_stepen = ucfirst(mysql_result($q450,0,0));
+	}
+
+	?>
+	<tr><td>Akademsko zvanje:</td><td><b><?=$akademsko_zvanje?></b></td></tr>
+	<tr><td>Naučni stepen:</td><td><b><?=$naucni_stepen?></b></td></tr>
+	<?
+
+
+	// Izbori u nn zvanja
+
+	?>
+	<tr><td colspan="2">&nbsp;</td></tr>
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">IZBORI U NAUČNONASTAVNA ZVANJA:</font></td></tr>
 	<tr>
 	<?
 
@@ -164,36 +189,14 @@
 	}
 
 
-	// Akademsko zvanje i naučni stepen
-
-	?>
-	<tr><td colspan="2">&nbsp;</td></tr>
-	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">AKADEMSKO ZVANJE I NAUČNI STEPEN:</font></td></tr>
-	<?
-
-	$q430 = myquery("select fk_akademsko_zvanje, fk_naucni_stepen from osoba where id=$userid");
-	$akademsko_zvanje = "Nepoznato / Bez akademskog zvanja";
-	$naucni_stepen = "Nepoznato / Bez naučnog stepena";
-	if (mysql_result($q430,0,0)!=0) {
-		$q440 = myquery("select naziv from sifrarnik_akademsko_zvanje where id=".mysql_result($q430,0,0));
-		$akademsko_zvanje = ucfirst(mysql_result($q440,0,0));
-	}
-	if (mysql_result($q430,0,1)!=0) {
-		$q450 = myquery("select naziv from sifrarnik_naucni_stepen where id=".mysql_result($q430,0,1));
-		$naucni_stepen = ucfirst(mysql_result($q450,0,0));
-	}
-
-	?>
-	<tr><td>Akademsko zvanje:</td><td><b><?=$akademsko_zvanje?></b></td></tr>
-	<tr><td>Naučni stepen:</td><td><b><?=$naucni_stepen?></b></td></tr>
-	<?
-
-
 	// Nastavni ansambl
 
+	$q455 = myquery("select naziv from akademska_godina where aktuelna=1");
+	$naziv_ag = mysql_result($q455, 0, 0);
+
 	?>
 	<tr><td colspan="2">&nbsp;</td></tr>
-	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">UČEŠĆE U NASTAVNOM ANSAMBLU:</font></td></tr>
+	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">UČEŠĆE U NASTAVNOM ANSAMBLU <?=$naziv_ag?> GODINE:</font></td></tr>
 	<?
 
 
@@ -216,4 +219,4 @@
 	}
 	?>
 	<tr><td colspan="2">&nbsp;</td></tr>
-	<tr><td>&nbsp;</td><td><a href="?sta=common/profil&akcija=izbori&subakcija=arhiva_angazman">Historijski pregled angažmana u nastavi</a></td></tr>
+	<tr><td>&nbsp;</td><td><a href="?sta=common/profil&akcija=izbori&subakcija=arhiva_angazman">Podaci o angažmanu u nastavi ranijih godina</a></td></tr>

@@ -1,4 +1,4 @@
-    <div id="Korak7">
+    <div id="Korak5">
         <h2>Nagrade / Priznanja</h2>
         <table border="0" width="600">
 	      <tr>

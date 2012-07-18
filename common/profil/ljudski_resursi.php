@@ -132,12 +132,10 @@
 <ul id="tabs">
     <li class="tab1"><a href="#" title="Korak1">1. Radno iskustvo</a></li>
     <li class="tab2"><a href="#" title="Korak2">2. Obrazovanje</a></li>
-    <li class="tab3"><a href="#" title="Korak3">3. Usavršavanje</a></li>
-    <li class="tab4"><a href="#" title="Korak4">4. Naučni i stručni radovi</a></li>    
-    <li class="tab5"><a href="#" title="Korak5">5. Mentorstvo</a></li> 
-    <li class="tab6"><a href="#" title="Korak6">6. Izdate publikacije</a></li> 
-    <li class="tab7"><a href="#" title="Korak7">7. Nagrade/Priznanja</a></li> 
-    <li class="tab8"><a href="#" title="Korak8">8. Lične vjestine/kompetencije</a></li> 
+    <li class="tab4"><a href="#" title="Korak3">3. Publikacije</a></li>    
+    <li class="tab5"><a href="#" title="Korak4">4. Mentorstva</a></li> 
+    <li class="tab7"><a href="#" title="Korak5">5. Nagrade/Priznanja</a></li> 
+    <li class="tab8"><a href="#" title="Korak6">6. Lične vjestine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">
@@ -161,11 +159,11 @@
   
   	// Pojedini tabovi odvojeni radi preglednosti
   	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
-  	include ("common/profil/hr_moduli/hr_obrazovanje.php");
   	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
-  	include ("common/profil/hr_moduli/hr_naucniradovi.php");
-  	include ("common/profil/hr_moduli/hr_mentorstvo.php");
+//  	include ("common/profil/hr_moduli/hr_obrazovanje.php");
+//  	include ("common/profil/hr_moduli/hr_naucniradovi.php");
   	include ("common/profil/hr_moduli/hr_publikacije.php");
+  	include ("common/profil/hr_moduli/hr_mentorstvo.php");
   	include ("common/profil/hr_moduli/hr_nagrade.php");
   	include ("common/profil/hr_moduli/hr_kompetencije.php");
   ?>

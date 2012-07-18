@@ -1,31 +1,44 @@
-    <div id="Korak3">
-        <h2>Usavrsavanje</h2>
+<?
+	// pokupi sifrarnike iz baze i zamotaj ih u <option> </option>
+	$strucnasprema=getSifrarnikData("sifrarnik_strucna_sprema");
+	$zvanja=getSifrarnikData("sifrarnik_akademsko_zvanje");
+	$naucni_stepen=getSifrarnikData("sifrarnik_naucni_stepen");
+?>
+
+    <div id="Korak2">
+        <h2>Obrazovanje</h2>
         <table border="0" width="600">
 	      <tr>
 	        <td colspan="2" bgcolor="#999999">
-	          <font color="#FFFFFF"><b>Unos sloga:</b></font>
+	          <font color="#FFFFFF"><b>Unos podatka o stečenom obrazovanju ili usavršavanju:</b></font>
 	        </td>
 	      </tr>
 	      <tr>
 	        <td style="height:30px">NAPOMENA:</td>
 	        <td>
-	          <b>Unos uradite hronološki: specijalistički kursevi, seminari, treninzi - od najnovijeg prema najstarijem
+	          <b>Unesite podatke o završenim školama ili fakultetima, specijalističkim kursevima, seminarima, treninzima itd.
 	          </b>
 	        </td>
 	      </tr>
 	      
 	      <tr>
-	        <td>Datum objave:</td>
+	        <td>Datum sticanja kvalifikacije:</td>
 	        <td>
-	           <input type="text" class="validate[required,custom[date2]]" name="datum_usavrsavanja" id="datum_usavrsavanja" >
+	           <input type="text" class="validate[required,custom[date2]]" name="datum_kvalifikacije" id="datum_kvalifikacije" >
 	        </td>
 	      </tr> 
+
 	      <tr>
-	        <td>Naziv usavršavanja:</td>
+	        <td>Početak i kraj obrazovanja:</td>
 	        <td>
-	           <input type="text" class="validate[required]" name="naziv_usavrsavanja" id="naziv_usavrsavanja" >
+	        Početak:
+	          <input type="text" class="validate[required,custom[date2]]" name="poc" id="poc" >
+	          
+	          Kraj:
+	          <input type="text" class="validate[required,custom[date2]]" name="kraj" id="kraj" >
 	        </td>
 	      </tr> 
+
 	      <tr>
 	        <td>Naziv obrazovne institucije:</td>
 	        <td>
@@ -34,11 +47,33 @@
 	      </tr> 
 	      
 	      <tr>
-	        <td>Dodijeljena kvalifikacija:</td>
+	        <td>Dodijeljena kvalifikacija (naziv):</td>
 	        <td>
 	          <input type="text"  class="validate[required]" name="kvalifikacija" id="kvalifikacija" >
 	        </td>
 	      </tr>
+	      
+	      <tr>
+	        <td>Stručna sprema:</td>
+	        <td>
+	          <select ><?=$strucnasprema ?></select>  <b><font color=red>*</font></b>
+	        </td>
+	      </tr>
+	      
+	      <tr>
+	        <td>Akademsko zvanje:</td>
+	        <td>
+	          <select ><?=$zvanja ?></select>  <b><font color=red>*</font></b>
+	        </td>
+	      </tr>
+	      
+	      <tr>
+	        <td>Naučni stepen:</td>
+	        <td>
+	          <select ><?=$naucni_stepen ?></select>  <b><font color=red>*</font></b>
+	        </td>
+	      </tr>
+
 	       <tr colspan="2">
 	        <td><input type="button" class="evidentiraj_usavrsavanje" value="Evidentiraj" \></td>
 	        <td>

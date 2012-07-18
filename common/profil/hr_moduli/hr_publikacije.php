@@ -1,7 +1,7 @@
  <?
 	$publikacija=getSifrarnikData("sifrarnik_tip_publikacije");
 ?>
-    <div id="Korak6">
+    <div id="Korak3">
         <h2>Publikacije</h2>
         <table border="0" width="600">
 	      <tr>

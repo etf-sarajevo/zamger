@@ -2,7 +2,7 @@
  	$jezici=getSifrarnikData("sifrarnik_jezik");
 	$nivo=getSifrarnikData("sifrarnik_nivo_jezika");
 ?>
-  	<div id="Korak8">
+  	<div id="Korak6">
         <h2>Lične vještine/kompetencije</h2>
         <table border="0" width="600">
 	      <tr>

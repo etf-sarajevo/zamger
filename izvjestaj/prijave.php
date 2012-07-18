@@ -4,7 +4,6 @@
 
 
 function izvjestaj_prijave() {
-//global $sadrzaj_bafera_za_pdf;
 
 require_once('lib/tcpdf/tcpdf.php');
 

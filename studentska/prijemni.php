@@ -1065,9 +1065,9 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$rprijemni=floatval(str_replace(",",".",$_REQUEST['prijemni']));
 
 	if ($ciklus_studija==1) {
-		$rakademsko_zvanje=5;
+		$rakademsko_zvanje=5; // 5 = bez akademskog zvanja
 	} else if ($ciklus_studija==2) {
-		$rakademsko_zvanje=2; // Ovo bi vjerovatno trebalo unositi
+		$rakademsko_zvanje=2; // 2 = bakalaureat elektrotehnike - ovo bi vjerovatno trebalo unositi
 	}
 
 	// Obrada datuma
