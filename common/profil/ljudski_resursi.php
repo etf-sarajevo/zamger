@@ -123,19 +123,18 @@
 ?>
 
 <link rel="stylesheet" href="css/libs/hr.css" type="text/css" media="screen" />
-<link rel="stylesheet" href="css/libs/validator/validationEngine.jquery.css" type="text/css"/>
 <link rel="stylesheet" href="css/libs/ui.all.css" type="text/css" media="screen" />
 
 
 <br><br>
 
 <ul id="tabs">
-    <li class="tab1"><a href="#" title="Korak1">1. Radno iskustvo</a></li>
-    <li class="tab2"><a href="#" title="Korak2">2. Obrazovanje</a></li>
-    <li class="tab4"><a href="#" title="Korak3">3. Publikacije</a></li>    
-    <li class="tab5"><a href="#" title="Korak4">4. Mentorstva</a></li> 
-    <li class="tab7"><a href="#" title="Korak5">5. Nagrade/Priznanja</a></li> 
-    <li class="tab8"><a href="#" title="Korak6">6. Lične vjestine/kompetencije</a></li> 
+    <li class="tab1"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=radnoiskustvo" title="Radno iskustvo">1. Radno iskustvo</a></li>
+    <li class="tab2"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=usavrsavanje" title="Obrazovanje">2. Obrazovanje</a></li>
+    <li class="tab4"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=publikacije" title="Publikacije">3. Publikacije</a></li>    
+    <li class="tab5"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=mentorstva" title="Mentorstva">4. Mentorstva</a></li> 
+    <li class="tab7"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=nagrade" title="Nagrade/Priznanja">5. Nagrade/Priznanja</a></li> 
+    <li class="tab8"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=kompetencije" title="Lične vjestine/kompetencije">6. Lične vjestine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">
@@ -157,192 +156,30 @@
 		return $zavratiti;
   	}
   
-  	// Pojedini tabovi odvojeni radi preglednosti
-  	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
-  	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
+// Pojedini tabovi odvojeni radi preglednosti
+$subakcija = $_REQUEST['subakcija'];
+if ($subakcija == "radnoiskustvo")
+	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
+else if ($subakcija == "usavrsavanje")
+	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
 //  	include ("common/profil/hr_moduli/hr_obrazovanje.php");
 //  	include ("common/profil/hr_moduli/hr_naucniradovi.php");
-  	include ("common/profil/hr_moduli/hr_publikacije.php");
-  	include ("common/profil/hr_moduli/hr_mentorstvo.php");
-  	include ("common/profil/hr_moduli/hr_nagrade.php");
-  	include ("common/profil/hr_moduli/hr_kompetencije.php");
+else if ($subakcija == "publikacije")
+	include ("common/profil/hr_moduli/hr_publikacije.php");
+else if ($subakcija == "mentorstva")
+	include ("common/profil/hr_moduli/hr_mentorstva.php");
+else if ($subakcija == "nagrade")
+	include ("common/profil/hr_moduli/hr_nagrade.php");
+else if ($subakcija == "kompetencije")
+	include ("common/profil/hr_moduli/hr_kompetencije.php");
+else
+	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
+
   ?>
   <br><br>
-  <span id="dodatni_info" >
-	  Molim vas pratite korake 1-10 i ispunite podatke, pohranjivanje podataka se nalazi na koraku 10.<br><br>
-	  <input type="button" class="dalje" id="next" value="Iduci korak >>" />
-  </span>
 </div>
 </form>
 <br>
-<b>VAŽNO: Ukoliko nedostaje neka opcija (npr. vas maternji jezik) kontaktirajte administratora !</b>
-
-<script src="js/libs/jquery-1.6.min.js" type="text/javascript" charset="utf-8"></script>
-<script src="js/libs/jquery.validationEngine-hr.js" ></script>
-<script src="js/libs/jquery.validationEngine.js" ></script>
-<script src="js/libs/jquery-ui.min.js" ></script>
-
-<script>
-$(document).ready(function() {
-	$("#content div").hide();
-	$("#dodatni_info").show();
-	$("#tabs li:first").attr("id","trenutni"); 
-	$("#content div:first").fadeIn(); 
-    $('#tabs a').click(function(e) {
-    	$("#dodatni_info").show(); 
-        e.preventDefault();        
-        $("#content div").hide(); 
-        $("#tabs li").attr("id",""); 
-        $(this).parent().attr("id","trenutni"); 
-        $('#' + $(this).attr('title')).fadeIn();
-        if (korak==10 || $(this).attr('title')[5] ==0) { 
-            korak=0;
-            $("#dodatni_info").hide();
-        } 
-        korak=$(this).attr('title')[5];
-    });
-
-    $('.dalje').click(function(e) {
-        e.preventDefault();     
-        $("#dodatni_info").show();   
-        $("#content div").hide(); 
-        $("#tabs li").attr("id",""); 
-
-        korak++;
-        if (korak==10 ) { 
-            korak=0;
-           $("#dodatni_info").hide();
-        }
-        $('#Korak'+korak).fadeIn();
-        $(".tab"+korak).attr("id","trenutni");   
-    });
-
-    $('.evidentiraj_usavrsavanje').click(function(e) {
-        var du=$("#datum_usavrsavanja").val();
-        var nu=$("#naziv_usavrsavanja").val();
-        var ni=$("#naziv_institucije").val();
-        var kval=$("#kvalifikacija").val();
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 2, 
-        													datum_usavrsavanja: du, 
-        													naziv_usavrsavanja: nu, 
-        													naziv_institucije: ni,
-        													kvalifikacija: kval },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#tusavrsavanje').append('<tr><td>'+du+'</td><td>'+nu+'</td><td>'+ni+'</td><td>'+kval+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
+<b>VAŽNO: Ukoliko nedostaje neka opcija (npr. vaš maternji jezik) kontaktirajte administratora!</b>
 
 
-
-    $('.evidentiraj_rad').click(function(e) {
-        var du=$("#datum_rada").val();
-        var nu=$("#naziv_rada").val();
-        var ni=$("#naziv_casopisa").val();
-        var kval=$("#naziv_izdavaca").val();
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 3, 
-													    		datum_rada: du, 
-													    		naziv_rada: nu, 
-													    		naziv_casopisa: ni,
-													    		naziv_izdavaca: kval },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#trad').append('<tr><td>'+du+'</td><td>'+nu+'</td><td>'+ni+'</td><td>'+kval+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
-
-
-    $('.evidentiraj_mentorstvo').click(function(e) {
-        var du=$("#datum_mentorstva").val();
-        var nu=$("#ime_kandidata").val();
-        var ni=$("#naziv_teme").val();
-        var kval=$("#mfakultet").val();
-        var mment=$("#mmentorstvo").val();
-
-        var mf=$("#mfakultet option:selected").text();
-        var mm=$("#mmentorstvo option:selected").text();
-        
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 4, 
-											    		datum_mentorstva: du, 
-											    		ime_kandidata: nu, 
-											    		naziv_teme: ni,
-											    		mfakultet: kval,
-											    		mmentorstvo: mment
-    		 },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#tmentorstvo').append('<tr><td>'+du+'</td><td>'+nu+'</td><td>'+ni+'</td><td>'+mf+'</td><td>'+mm+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
-
-    $('.evidentiraj_publikaciju').click(function(e) {
-        var du=$("#datum_publikacije").val();
-        var nu=$("#naziv_publikacije").val();
-        var ni=$("#naziv_ci").val();
-        var kval=$("#vrsta_publikacije").val();
-        var kval2=$("#vrsta_publikacije option:selected").text();
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 5, 
-												    		datum_publikacije: du, 
-												    		naziv_publikacije: nu, 
-												    		naziv_ci: ni,
-												    		vrsta_publikacije: kval },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#tpublikacije').append('<tr><td>'+du+'</td><td>'+nu+'</td><td>'+ni+'</td><td>'+kval2+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
-
-
-    $('.evidentiraj_nagradu').click(function(e) {
-        var du=$("#datum_nagrade").val();
-        var nu=$("#naziv_nagrade").val();
-        var ni=$("#opis_nagrade").val();
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 6, 
-	    		datum_nagrade: du, 
-	    		naziv_nagrade: nu, 
-	    		opis_nagrade: ni
-    		 },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#tnagrade').append('<tr><td>'+du+'</td><td>'+nu+'</td><td>'+ni+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
-
-    $('.evidentiraj_jezik').click(function(e) {
-        var du=$("#jezik").val();
-        var nu=$("#razumjevanje").val();
-        var ni=$("#govor").val();
-        var pi=$("#pisanje").val();
-        var du1=$("#jezik option:selected").text();
-        var nu1=$("#razumjevanje option:selected").text();;
-        var ni1=$("#govor option:selected").text();
-        var pi1=$("#pisanje option:selected").text();
-    	$.post("?sta=common/profil&akcija=ljudskiresursi", { save: 7, 
-								    		jezik: du, 
-								    		razumjevanje: nu, 
-								    		govor: ni,
-								    		pisanje: pi
-    		 },
-    		function(data) {
-    		 alert("Podaci uspjesno evidentirani!");
-    		 $('#tjezik').append('<tr><td>'+du1+'</td><td>'+nu1+'</td><td>'+ni1+'</td><td>'+pi1+'</td><td><img src="images/16x16/brisanje.png" /></td></tr>');
-    	});	
-    });
-    
-    
-    var korak=1;
-    $("#poc").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#kraj").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_rada").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_publikacije").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_mentorstva").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_rada").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_usavrsavanja").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    $("#datum_nagrade").datepicker({ dateFormat: 'dd.mm.yy', yearRange: '-80:0'  });
-    jQuery("#hrforma").validationEngine();
-})();
-
-
-
-</script>

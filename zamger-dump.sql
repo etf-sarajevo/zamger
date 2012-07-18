@@ -620,6 +620,28 @@ CREATE TABLE IF NOT EXISTS `hr_publikacija` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `hr_radno_iskustvo`
+--
+
+CREATE TABLE IF NOT EXISTS `hr_radno_iskustvo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `fk_osoba` int(11) NOT NULL,
+  `datum_pocetka` date NOT NULL,
+  `datum_kraja` date NOT NULL,
+  `poslodavac` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `adresa_poslodavca` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `radno_mjesto` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `opis_radnog_mjesta` text COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `hr_radno_iskustvo`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `hr_usavrsavanje`
 --
 
@@ -2300,6 +2322,34 @@ INSERT INTO `sifrarnik_naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `sifrarnik_naucnonastavno_zvanje`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_naucnonastavno_zvanje` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `titula` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=10 ;
+
+--
+-- Dumping data for table `sifrarnik_naucnonastavno_zvanje`
+--
+
+INSERT INTO `sifrarnik_naucnonastavno_zvanje` (`id`, `naziv`, `titula`) VALUES
+(1, 'redovni profesor', 'r. prof.'),
+(2, 'vanredni profesor', 'v. prof.'),
+(3, 'docent', 'doc.'),
+(4, 'viši asistent', 'v. asis.'),
+(5, 'asistent', 'asis.'),
+(6, 'profesor emeritus', 'prof. emer.'),
+(7, 'predavač', 'pred.'),
+(8, 'viši lektor', 'v. lec.'),
+(9, 'lektor', 'lec.');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `sifrarnik_nivo_jezika`
 --
 
@@ -3409,27 +3459,3 @@ CREATE TABLE IF NOT EXISTS `zavrsni_rad_predmet` (
 -- Dumping data for table `zavrsni_rad_predmet`
 --
 
--- --------------------------------------------------------
-
---
--- Table structure for table `zvanje`
---
-
-CREATE TABLE IF NOT EXISTS `zvanje` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `titula` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
-
---
--- Dumping data for table `zvanje`
---
-
-INSERT INTO `zvanje` (`id`, `naziv`, `titula`) VALUES
-(1, 'Redovni profesor', 'R. prof.'),
-(2, 'Vanredni profesor', 'V. prof.'),
-(3, 'Docent', 'Doc.'),
-(4, 'Viši asistent', 'V. asis.'),
-(5, 'Asistent', 'Asis.'),
-(6, 'Profesor emeritus', '');
