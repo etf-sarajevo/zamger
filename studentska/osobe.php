@@ -130,8 +130,8 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		$q30 = myquery("select id from osoba order by id desc limit 1");
 		$osoba = mysql_result($q30,0,0)+1;
 
-		$q40 = myquery("insert into osoba set id=$osoba, ime='$ime', prezime='$prezime', naucni_stepen=6, strucni_stepen=5");
-		// 6 = bez naučnog stepena, 5 = srednja stručna sprema
+		$q40 = myquery("insert into osoba set id=$osoba, ime='$ime', prezime='$prezime', fk_naucni_stepen=6, fk_akademsko_zvanje=5");
+		// 6 = bez naučnog stepena, 5 = bez akademskog zvanja
 
 		if ($conf_system_auth == "ldap" && $uid != "") {
 			// Ako je LDAP onda imamo email adresu
@@ -185,8 +185,8 @@ if ($akcija == "podaci") {
 		$telefon = my_escape($_REQUEST['telefon']);
 		$email = my_escape($_REQUEST['email']);
 
-		$strucni_stepen = intval($_REQUEST['_lv_column_strucni_stepen']);
-		$naucni_stepen = intval($_REQUEST['_lv_column_naucni_stepen']);
+		$akademsko_zvanje = intval($_REQUEST['_lv_column_sifrarnik_akademsko_zvanje']);
+		$naucni_stepen = intval($_REQUEST['_lv_column_sifrarnik_naucni_stepen']);
 
 		$maternji_jezik = intval($_REQUEST['_lv_column_sifrarnik_jezik']);
 		$vozacka_dozvola = intval($_REQUEST['_lv_column_sifrarnik_vozacki_kategorija']);
@@ -231,7 +231,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', fk_akademsko_zvanje=$akademsko_zvanje, fk_naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		?>
@@ -381,7 +381,7 @@ if ($akcija == "podaci") {
 
 	// Prikaz podataka
 
-	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, fk_akademsko_zvanje, fk_naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -562,11 +562,11 @@ if ($akcija == "podaci") {
 		<td><?=db_dropdown("sifrarnik_nacin_stanovanja",mysql_result($q400,0,24), " ") ?></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
-		<td>Stručni stepen:</td>
-		<td><?=db_dropdown("strucni_stepen",mysql_result($q400,0,18)) ?></td>
+		<td>Akademsko zvanje:</td>
+		<td><?=db_dropdown("sifrarnik_akademsko_zvanje",mysql_result($q400,0,18)) ?></td>
 	</tr><tr>
 		<td>Naučni stepen:</td>
-		<td><?=db_dropdown("naucni_stepen",mysql_result($q400,0,19)) ?></td>
+		<td><?=db_dropdown("sifrarnik_naucni_stepen",mysql_result($q400,0,19)) ?></td>
 	</tr></table>
 
 	<p>
@@ -1459,15 +1459,15 @@ else if ($akcija == "predmeti") {
 
 else if ($akcija == "izbori") {
 	if ($_POST['subakcija'] == "novi" && check_csrf_token()) {
-		$zvanje = intval($_POST['_lv_column_zvanje']);
+		$zvanje = intval($_POST['_lv_column_sifrarnik_naucnonastavno_zvanje']);
 		$datum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
 		$datum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
 		// Ove vrijednosti moraju biti ovakve
 		if ($datum_izbora == mktime(0,0,0,1,1,1990)) $datum_izbora=0;
 		if ($datum_isteka == mktime(0,0,0,1,1,1990)) $datum_isteka=0;
 
-		$oblast = intval($_POST['_lv_column_oblast']);
-		$podoblast = intval($_POST['_lv_column_podoblast']);
+		$oblast = intval($_POST['_lv_column_sifrarnik_naucna_oblast']);
+		$uza_oblast = intval($_POST['_lv_column_sifrarnik_uza_naucna_oblast']);
 		if ($_POST['dopunski']) $dopunski=1; else $dopunski=0;
 		if ($_POST['druga_institucija']) $drugainst=1; else $drugainst=0;
 		if ($_POST['neodredjeno'])
@@ -1475,19 +1475,19 @@ else if ($akcija == "izbori") {
 		else
 			$sqlisteka = "FROM_UNIXTIME($datum_isteka)";
 
-		$q3030 = myquery("insert into izbor set osoba=$osoba, zvanje=$zvanje, datum_izbora=FROM_UNIXTIME($datum_izbora), datum_isteka=$sqlisteka, oblast=$oblast, podoblast=$podoblast, dopunski=$dopunski, druga_institucija=$drugainst");
+		$q3030 = myquery("insert into izbor set fk_osoba=$osoba, fk_naucnonastavno_zvanje=$zvanje, datum_izbora=FROM_UNIXTIME($datum_izbora), datum_isteka=$sqlisteka, fk_naucna_oblast=$oblast, fk_uza_naucna_oblast=$uza_oblast, dopunski=$dopunski, druga_institucija=$drugainst");
 		zamgerlog("dodani podaci o izboru za u$osoba", 2);
 	}
 	if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-		$izvanje = intval($_POST['_lv_column_zvanje']);
+		$izvanje = intval($_POST['_lv_column_sifrarnik_naucnonastavno_zvanje']);
 		$idatum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
 		$idatum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
 		// Ove vrijednosti moraju biti ovakve
 		if ($idatum_izbora == mktime(0,0,0,1,1,1990)) $idatum_izbora=0;
 		if ($idatum_isteka == mktime(0,0,0,1,1,1990)) $idatum_isteka=0;
 
-		$ioblast = intval($_POST['_lv_column_oblast']);
-		$ipodoblast = intval($_POST['_lv_column_podoblast']);
+		$ioblast = intval($_POST['_lv_column_sifrarnik_naucna_oblast']);
+		$iuza_oblast = intval($_POST['_lv_column_sifrarnik_uza_naucna_oblast']);
 		if ($_POST['dopunski']) $idopunski=1; else $idopunski=0;
 		if ($_POST['druga_institucija']) $idrugainst=1; else $idrugainst=0;
 		if ($_POST['neodredjeno']) 
@@ -1511,7 +1511,7 @@ else if ($akcija == "izbori") {
 	$t_zvanje=$t_datumiz=$t_datumis=$t_oblast=$t_podoblast=$t_dopunski=0;
 	$ispis="";
 
-	$q3010 = myquery("select zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), oblast, podoblast, dopunski, druga_institucija from izbor WHERE osoba=$osoba order by datum_isteka, datum_izbora");
+	$q3010 = myquery("select fk_naucnonastavno_zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), fk_naucna_oblast, fk_uza_naucna_oblast, dopunski, druga_institucija from izbor WHERE fk_osoba=$osoba order by datum_isteka, datum_izbora");
 	if (mysql_num_rows($q3010)==1 && $broj_izbora!=-1)
 		$broj_izbora=1; // Ako postoji samo jedan izbor, editujemo ga; -1 znači ipak dodavanje novog
 	for ($i=1; $i<=mysql_num_rows($q3010); $i++) {
@@ -1519,11 +1519,11 @@ else if ($akcija == "izbori") {
 		$datumiz=mysql_result($q3010,$i-1,1);
 		$datumis=mysql_result($q3010,$i-1,2);
 		$oblast=mysql_result($q3010,$i-1,3);
-		$podoblast=mysql_result($q3010,$i-1,4);
+		$uza_oblast=mysql_result($q3010,$i-1,4);
 		$dopunski=mysql_result($q3010,$i-1,5);
 		$drugainst=mysql_result($q3010,$i-1,6);
 
-		$q3020 = myquery("select naziv from zvanje where id=$zvanje");
+		$q3020 = myquery("select naziv from sifrarnik_naucnonastavno_zvanje where id=$zvanje");
 		$nzvanje = mysql_result($q3020,0,0);
 		
 		$ndatumiz = date("d. m. Y", $datumiz);
@@ -1534,13 +1534,14 @@ else if ($akcija == "izbori") {
 			$ndatumis = "neodređeno";
 
 		if ($i==$broj_izbora) {
-			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_podoblast=$podoblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
+			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_uza_oblast=$uza_oblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
 			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
 			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-				$q3040 = myquery("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and oblast=$oblast and podoblast=$podoblast and dopunski=$dopunski and druga_institucija=$drugainst");
+print "iuza $iuza_oblast";
+				$q3040 = myquery("update izbor set fk_naucnonastavno_zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, fk_naucna_oblast=$ioblast, fk_uza_naucna_oblast=$iuza_oblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE fk_naucnonastavno_zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and fk_naucna_oblast=$oblast and fk_uza_naucna_oblast=$uza_oblast and dopunski=$dopunski and druga_institucija=$drugainst");
 				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
-				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
-				$q3020 = myquery("select naziv from zvanje where id=$izvanje");
+				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_uza_oblast=$iuza_oblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
+				$q3020 = myquery("select naziv from sifrarnik_naucnonastavno_zvanje where id=$izvanje");
 				$nzvanje = mysql_result($q3020,0,0);
 				
 				$ndatumiz = date("d. m. Y", $t_datumiz);
@@ -1578,7 +1579,7 @@ else if ($akcija == "izbori") {
 	?>
 	<table border="0"><tr>
 		<td>Zvanje:</td>
-		<td><?=db_dropdown("zvanje", $t_zvanje)?></td>
+		<td><?=db_dropdown("sifrarnik_naucnonastavno_zvanje", $t_zvanje)?></td>
 	</tr><tr>
 		<td>Datum izbora:</td>
 		<td><?=datectrl(date("d",$t_datumiz), date("m",$t_datumiz), date("Y",$t_datumiz), "izbor")?></td>
@@ -1588,10 +1589,10 @@ else if ($akcija == "izbori") {
 		<?=datectrl(date("d",$t_datumis), date("m",$t_datumis), date("Y",$t_datumis), "istek")?></td>
 	</tr><tr>
 		<td>Oblast:</td>
-		<td><?=db_dropdown("oblast", $t_oblast, "--Nepoznato--")?></td>
+		<td><?=db_dropdown("sifrarnik_naucna_oblast", $t_oblast, "--Nepoznato--")?></td>
 	</tr><tr>
 		<td>Podoblast:</td>
-		<td><?=db_dropdown("podoblast", $t_podoblast, "--Nepoznato--")?></td>
+		<td><?=db_dropdown("sifrarnik_uza_naucna_oblast", $t_uza_oblast, "--Nepoznato--")?></td>
 	</tr><tr>
 		<td colspan="2"><input type="checkbox" name="dopunski" <? if ($t_dopunski==1) print "CHECKED"; ?>> Dopunski radni odnos</td>
 	</tr><tr>
@@ -1885,7 +1886,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci
 
-	$q200 = myquery("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
+	$q200 = myquery("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, fk_akademsko_zvanje, fk_naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r200 = mysql_fetch_row($q200))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -1923,11 +1924,11 @@ else if ($akcija == "edit") {
 	}
 
 	if (mysql_result($q200,0,12)!=0) {
-		$q206 = myquery("select naziv from strucni_stepen where id=".mysql_result($q200,0,12));
-		$strucni_stepen = mysql_result($q206,0,0);
+		$q206 = myquery("select naziv from sifrarnik_akademsko_zvanje where id=".mysql_result($q200,0,12));
+		$akademsko_zvanje = mysql_result($q206,0,0);
 	}
 	if (mysql_result($q200,0,13)!=0) {
-		$q207 = myquery("select naziv from naucni_stepen where id=".mysql_result($q200,0,13));
+		$q207 = myquery("select naziv from sifrarnik_naucni_stepen where id=".mysql_result($q200,0,13));
 		$naucni_stepen = mysql_result($q207,0,0);
 	}
 
@@ -1962,7 +1963,7 @@ else if ($akcija == "edit") {
 		Telefon: <b><?=mysql_result($q200,0,10)?></b><br/>
 		Kontakt e-mail: <b><?=$email_adrese?></b><br/>
 		<br/>
-		Stručni stepen: <b><?=$strucni_stepen?></b><br/>
+		Akademsko zvanje: <b><?=$akademsko_zvanje?></b><br/>
 		Naučni stepen: <b><?=$naucni_stepen?></b><br/>
 		<br/>
 		ID: <b><?=$osoba?></b><br/>
@@ -2459,7 +2460,7 @@ else if ($akcija == "edit") {
 
 		// Izbori
 
-		$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.oblast, i.podoblast, i.dopunski, i.druga_institucija from izbor as i, zvanje as z WHERE i.osoba=$osoba and i.zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+		$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.fk_naucna_oblast, i.fk_uza_naucna_oblast, i.dopunski, i.druga_institucija from izbor as i, sifrarnik_naucnonastavno_zvanje as z WHERE i.fk_osoba=$osoba and i.fk_naucnonastavno_zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
 		if (mysql_num_rows($q400)==0) {
 			print "<p>Nema podataka o izboru.</p>\n";
 		} else {
@@ -2473,32 +2474,32 @@ else if ($akcija == "edit") {
 			if ($oblast<1)
 				$oblast = "<font color=\"red\">(nepoznato)</font>";
 			else {
-				$q410 = myquery("select naziv from oblast where id=$oblast");
+				$q410 = myquery("select naziv from sifrarnik_naucna_oblast where id=$oblast");
 				if (mysql_num_rows($q410)<1)
 					$oblast = "<font color=\"red\">GREŠKA</font>";
 				else
 					$oblast = mysql_result($q410,0,0);
 			}
-			$podoblast = mysql_result($q400,0,4);
-			if ($podoblast<1)
-				$podoblast = "<font color=\"red\">(nepoznato)</font>";
+			$uza_oblast = mysql_result($q400,0,4);
+			if ($uza_oblast<1)
+				$uza_oblast = "<font color=\"red\">(nepoznato)</font>";
 			else {
-				$q420 = myquery("select naziv from podoblast where id=$podoblast");
+				$q420 = myquery("select naziv from sifrarnik_uza_naucna_oblast where id=$uza_oblast");
 				if (mysql_num_rows($q420)<1)
-					$podoblast = "<font color=\"red\">GREŠKA</font>";
+					$uza_oblast = "<font color=\"red\">GREŠKA</font>";
 				else
-					$podoblast = mysql_result($q420,0,0);
+					$uza_oblast = mysql_result($q420,0,0);
 			}
 			if (mysql_result($q400,0,5)==0) $radniodnos = "Stalni";
 			else $radniodnos = "Dopunski";
 			
 			?>
 			<table border="0">
-			<tr><td>Zvanje:</td><td><?=mysql_result($q400,0,0)?></td></tr>
+			<tr><td>Naučnonastavno zvanje:</td><td><?=ucfirst(mysql_result($q400,0,0))?></td></tr>
 			<tr><td>Datum izbora:</td><td><?=$datum_izbora?></td></tr>
 			<tr><td>Datum isteka:</td><td><?=$datum_isteka?></td></tr>
-			<tr><td>Oblast:</td><td><?=$oblast?></td></tr>
-			<tr><td>Podoblast:</td><td><?=$podoblast?></td></tr>
+			<tr><td>Naučna oblast:</td><td><?=$oblast?></td></tr>
+			<tr><td>Uža naučna oblast:</td><td><?=$uza_oblast?></td></tr>
 			<tr><td>Radni odnos:</td><td><?=$radniodnos?></td></tr>
 			<?
 			if (mysql_result($q400,0,6)==1) print "<tr><td colspan=\"2\">Biran/a na drugoj VŠO</td></tr>\n";
@@ -2665,7 +2666,7 @@ else {
 
 	// Naucni stepeni
 	$naucni_stepen = array();
-	$q99 = myquery("select id, titula from naucni_stepen");
+	$q99 = myquery("select id, titula from sifrarnik_naucni_stepen");
 	while ($r99 = mysql_fetch_row($q99))
 		$naucni_stepen[$r99[0]]=$r99[1];
 
@@ -2684,7 +2685,7 @@ else {
 		$rezultata=0;
 		if ($src == "sve") {
 			$q100 = myquery("select count(*) from osoba");
-			$q101 = myquery("select id,ime,prezime,brindexa,naucni_stepen from osoba order by prezime,ime limit $offset,$limit");
+			$q101 = myquery("select id, ime, prezime, brindexa, fk_naucni_stepen from osoba order by prezime, ime limit $offset,$limit");
 			$rezultata = mysql_result($q100,0,0);
 		} else {
 			$src = preg_replace("/\s+/"," ",$src);

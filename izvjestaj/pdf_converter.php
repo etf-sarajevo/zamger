@@ -1,5 +1,5 @@
 <?
-  
+
 function ob_file_callback($buffer)
 {
 	global $sadrzaj_bafera_za_pdf;

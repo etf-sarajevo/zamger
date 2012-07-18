@@ -48,17 +48,6 @@ function nastavnik_zavrsni() {
 		<p>Radovi za koje ste mentor:</p>
 		<?
 
-
-		function dajIme($osoba, $naucni_stepen) {
-			$q902 = myquery("SELECT ime, prezime, naucni_stepen FROM osoba WHERE id=$osoba");
-			if (mysql_num_rows($q902)>0) {
-				$r902 = mysql_fetch_row($q902);
-				$ime = $r902[1]." ".$naucni_stepen[$r902[2]]." ".$r902[0];
-			} else
-				$ime = "";
-			return $ime;
-		}
-
 		// Početne informacije
 		$q900 = myquery("SELECT id, naslov, kratki_pregled, mentor, student, predsjednik_komisije, clan_komisije, UNIX_TIMESTAMP(termin_odbrane), kandidat_potvrdjen FROM zavrsni WHERE mentor=$userid and predmet=$predmet AND akademska_godina=$ag ORDER BY mentor,naslov");
 		if (mysql_num_rows($q900) == 0) {
@@ -92,18 +81,18 @@ function nastavnik_zavrsni() {
 				if ($kratki_pregled == "") $kratki_pregled = $nema;
 				else $kratki_pregled = substr($kratki_pregled, 0, 200)."...";
 				
-				$mentor = dajIme($r900[3], $naucni_stepen);
+				$mentor = tituliraj($r900[3], false);
 				if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
 
-				$student = dajIme($r900[4], $naucni_stepen);
+				$student = tituliraj($r900[4], false);
 				if ($student=="") $student = "<font color=\"gray\">niko nije izabrao temu</font>";
 				else if ($r900[8]==0) // Kandidat nije potvrđen
 					$student .= "<br>(<a href=\"$linkPrefix&akcija=potvrdi_kandidata&id=$id_zavrsni\">potvrdi kandidata</a>)";
 
-				$predsjednik_komisije = dajIme($r900[5], $naucni_stepen);
+				$predsjednik_komisije = tituliraj($r900[5], false);
 				if ($predsjednik_komisije=="") $predsjednik_komisije = "<font color=\"gray\">(nije definisan)</font>";
 
-				$clan_komisije = dajIme($r900[6], $naucni_stepen);
+				$clan_komisije = tituliraj($r900[6], false);
 				if ($clan_komisije=="") $clan_komisije = "<font color=\"gray\">(nije definisan)</font>";
 
 				$termin_odbrane = date("d.m.Y h:i",$r900[7]);
@@ -174,11 +163,6 @@ function nastavnik_zavrsni() {
 			return;
 		}
 		
-
-		$q99 = myquery("select id, titula from naucni_stepen");
-		while ($r99 = mysql_fetch_row($q99))
-			$naucni_stepen[$r99[0]]=$r99[1];
-
 		$q98 = myquery("SELECT student, mentor, predsjednik_komisije, clan_komisije, naslov, podnaslov, kratki_pregled, literatura FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 		if (mysql_num_rows($q98)<1) {
 			niceerror("Nepostojeći završni rad");

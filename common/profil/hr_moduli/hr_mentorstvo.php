@@ -2,7 +2,7 @@
 	$fakultet=getSifrarnikData("sifrarnik_fakulteti");
 	$mentorstvo=getSifrarnikData("sifrarnik_tip_mentorstva");
 ?>
-    <div id="Korak7">
+    <div id="Korak5">
         <h2>Mentorstvo</h2>
         <table border="0" width="600">
 	      <tr>

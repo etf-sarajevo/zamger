@@ -3,7 +3,7 @@
 	$oblik=getSifrarnikData("sifrarnik_oblik_zaposlenja");
 	$banka=getSifrarnikData("sifrarnik_banka");
 ?>
-    <div id="Korak3">
+    <div id="Korak1">
         <h2>Radno iskustvo</h2>
 	     <table border="0" width="600">
 	      <tr>

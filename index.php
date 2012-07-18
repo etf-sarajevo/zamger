@@ -9,8 +9,7 @@
 		<?php
 		exit;
 	}
-?>
-<?
+?><?
 
 
 // INDEX - master skripta za ZAMGER

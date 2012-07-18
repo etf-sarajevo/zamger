@@ -1,14 +1,14 @@
 <?
 	// pokupi sifrarnike iz baze i zamotaj ih u <option> </option>
 	$strucnasprema=getSifrarnikData("sifrarnik_strucna_sprema");
-	$zvanja=getSifrarnikData("sifrarnik_akademska_zvanja");
+	$zvanja=getSifrarnikData("sifrarnik_akademsko_zvanje");
 	$naucnaoblast=getSifrarnikData("sifrarnik_naucna_oblast");
 	$uzaoblast = getSifrarnikData("sifrarnik_uza_naucna_oblast");
 	$fascati = getSifrarnikData("sifrarnik_fascati");
 	$fascatipod = getSifrarnikData("sifrarnik_fascati_podoblast"); // napravio sam sifrarnik ali je na hr.unsa.ba prazan
 ?>
 
-    <div id="Korak4">
+    <div id="Korak2">
         <h2>Obrazovanje</h2>
    <table border="0" width="600">
       <tr>

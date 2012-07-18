@@ -17,22 +17,20 @@ function common_zavrsniStrane() {
 	$lokacijafajlova ="$conf_files_path/zavrsni/fajlovi/$zavrsni/";
 
 	// Osnovne informacije o radu
-	$q10 = myquery("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.sazetak, z.summary FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
+	$q10 = myquery("SELECT naslov, mentor, student, sazetak, summary FROM zavrsni WHERE id=$zavrsni");
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći rad");
 		zamgerlog("zavrsniStrane: nepostojeci rad $zavrsni", 3);
 		return;
 	}
-
-	// Cache naučnog stepena
-	$q20 = myquery("select id, titula from naucni_stepen");
-	while ($r20 = mysql_fetch_row($q20))
-		$naucni_stepen[$r20[0]]=$r20[1];
-
 	$naslov_rada = mysql_result($q10,0,0);
-	$mentor = mysql_result($q10,0,2)." ".$naucni_stepen[mysql_result($q10,0,3)]." ".mysql_result($q10,0,1);
+	$mentor = tituliraj ( mysql_result($q10,0,1), $sa_akademskim_zvanjem=false, $sa_naucnonastavnim_zvanjem = false, $prezime_prvo = true ) ;
+	$sazetak = mysql_result($q10,0,3);
+	$summary = mysql_result($q10,0,4);
+
+	// Ime studenta ćemo prikazati samo profesoru pošto je zaboravan ;)
 	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
-		$q30 = myquery("select ime,prezime,brindexa from osoba where id=".mysql_result($q10,0,4));
+		$q30 = myquery("select ime,prezime,brindexa from osoba where id=".mysql_result($q10,0,2));
 		$student = "Student: ".mysql_result($q30,0,1)." ".mysql_result($q30,0,0)." (".mysql_result($q30,0,2).")";
 	}
 	
@@ -48,11 +46,8 @@ function common_zavrsniStrane() {
 	// Prikaz ako nije odabrana subakcija
 
 	if (!isset($subakcija)) {
-
-		
+	
 	// Da li je definisan sazetak?
-	$sazetak = mysql_result($q10,0,5);
-	$summary = mysql_result($q10,0,6);
 	if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
 		?>
 		<p><b><font color="red">Nije definisan sažetak teme</font></b></p>

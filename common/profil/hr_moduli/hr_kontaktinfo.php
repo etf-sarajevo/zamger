@@ -1,6 +1,6 @@
 <?
 
-	$nacinstanovanja= getSifrarnikData("sifrarnik_nacin_stanovanja",mysql_result($q400,0,24));
+	$nacinstanovanja= getSifrarnikData("sifrarnik_nacin_stanovanja",mysql_result($q400,0,23));
 
 ?>
      <div id="Korak2">
@@ -40,13 +40,6 @@
         </td>
       </tr>
       
-      
-      <tr>
-        <td>Mobilni telefon:</td>
-        <td>
-          <input type="text" name="mobitel" value="<?=mysql_result($q400,0,23)?>" />  <b><font color=red>*</font></b>
-        </td>
-      </tr>
       
       <!--tr>
         <td>E-mail:</td>

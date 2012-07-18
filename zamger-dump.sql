@@ -724,12 +724,12 @@ CREATE TABLE IF NOT EXISTS `ispit_termin` (
 --
 
 CREATE TABLE IF NOT EXISTS `izbor` (
-  `osoba` int(11) NOT NULL,
-  `zvanje` int(11) NOT NULL,
+  `fk_osoba` int(11) NOT NULL,
+  `fk_naucnonastavno_zvanje` int(11) NOT NULL,
   `datum_izbora` date NOT NULL,
   `datum_isteka` date NOT NULL,
-  `oblast` int(11) NOT NULL,
-  `podoblast` int(11) NOT NULL,
+  `fk_naucna_oblast` int(11) NOT NULL,
+  `fk_uza_naucna_oblast` int(11) NOT NULL,
   `dopunski` tinyint(1) NOT NULL,
   `druga_institucija` tinyint(1) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -1146,46 +1146,6 @@ CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `naucni_stepen`
---
-
-CREATE TABLE IF NOT EXISTS `naucni_stepen` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `titula` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
-
---
--- Dumping data for table `naucni_stepen`
---
-
-INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
-(1, 'Doktor nauka', 'dr'),
-(2, 'Magistar nauka', 'mr'),
-(6, 'Bez naučnog stepena', '');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `oblast`
---
-
-CREATE TABLE IF NOT EXISTS `oblast` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `institucija` int(11) NOT NULL,
-  `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
-
---
--- Dumping data for table `oblast`
---
-
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `odluka`
 --
 
@@ -1407,8 +1367,8 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
   `treba_brisati` tinyint(1) NOT NULL DEFAULT '0',
-  `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
-  `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
+  `fk_akademsko_zvanje` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
+  `fk_naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `slika` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `djevojacko_prezime` VARCHAR(30) NOT NULL,
   `maternji_jezik` INT NOT NULL,
@@ -1444,23 +1404,6 @@ CREATE TABLE IF NOT EXISTS `plan_studija` (
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `podoblast`
---
-
-CREATE TABLE IF NOT EXISTS `podoblast` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `oblast` int(11) NOT NULL,
-  `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
-
---
--- Dumping data for table `podoblast`
---
-
-
--- --------------------------------------------------------
 
 --
 -- Table structure for table `ponudakursa`
@@ -1838,8 +1781,8 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `adresa_mjesto` int(11) NOT NULL,
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `kanton` int(11) NOT NULL,
-  `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
-  `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
+  `fk_akademsko_zvanje` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
+  `fk_naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `slika` VARCHAR(50) NOT NULL,
   `djevojacko_prezime` VARCHAR(30) NOT NULL,
   `maternji_jezik` INT NOT NULL,
@@ -2074,36 +2017,29 @@ CREATE TABLE IF NOT EXISTS `septembar` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sifrarnik_akademska_zvanja`
+-- Table structure for table `sifrarnik_akademsko_zvanje`
 --
 
-CREATE TABLE IF NOT EXISTS `sifrarnik_akademska_zvanja` (
+CREATE TABLE IF NOT EXISTS `sifrarnik_akademsko_zvanje` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  `izborni_perion` int(11) NOT NULL,
-  `period_reizbora` int(11) NOT NULL,
-  `skracenica` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `titula` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=14 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
 
 --
--- Dumping data for table `sifrarnik_akademska_zvanja`
+-- Dumping data for table `sifrarnik_akademsko_zvanje`
 --
 
-INSERT INTO `sifrarnik_akademska_zvanja` (`id`, `naziv`, `izborni_perion`, `period_reizbora`, `skracenica`) VALUES
-(1, 'akademik', 0, 0, 'prof.'),
-(2, 'redovni profesor', 0, 0, 'prof.'),
-(3, 'vanredni profesor', 6, 6, 'van. prof.'),
-(4, 'docent', 5, 5, 'doc.'),
-(5, 'predavač', 5, 5, ''),
-(6, 'viši asistent', 5, 5, 'v. ass.'),
-(7, 'asistent', 4, 0, 'ass.'),
-(8, 'profesor visoke škole', 0, 0, ''),
-(9, 'predavač visoke škole', 5, 5, ''),
-(10, 'viši umjetnički saradnik', 0, 0, ''),
-(11, 'umjetnički saradnik', 0, 0, ''),
-(12, 'viši lektor', 0, 0, ''),
-(13, 'lektor', 5, 0, '');
+INSERT INTO `sifrarnik_akademsko_zvanje` (`id`, `naziv`, `titula`) VALUES
+(1, 'magistar elektrotehnike - diplomirani inženjer elektrotehnike', 'M.E.'),
+(2, 'bakalaureat elektrotehnike - inženjer elektrotehnike', 'B.E.'),
+(3, 'diplomirani inženjer elektrotehnike', 'dipl.ing.el.'),
+(4, 'diplomirani matematičar', 'dipl.mat.'),
+(5, 'srednja stručna sprema', ''),
+(6, 'diplomirani inženjer mašinstva', 'dipl.ing.'),
+(7, 'diplomirani inženjer građevinarstva', 'dipl.ing.'),
+(8, 'diplomirani ekonomista', 'dipl.ecc.');
 
 -- --------------------------------------------------------
 
@@ -2300,6 +2236,7 @@ INSERT INTO `sifrarnik_nacin_stanovanja` (`id`, `naziv`) VALUES
 CREATE TABLE IF NOT EXISTS `sifrarnik_naucna_oblast` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `fk_maticna_institucija` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
@@ -2337,6 +2274,28 @@ INSERT INTO `sifrarnik_naucna_oblast` (`id`, `naziv`) VALUES
 (354, 'Elektroenergetika'),
 (356, 'Računarstvo i informatika'),
 (358, 'Telekomunikacije');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_naucni_stepen`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_naucni_stepen` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `titula` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+
+--
+-- Dumping data for table `naucni_stepen`
+--
+
+INSERT INTO `sifrarnik_naucni_stepen` (`id`, `naziv`, `titula`) VALUES
+(1, 'doktor nauka', 'dr'),
+(2, 'magistar nauka', 'mr'),
+(6, 'bez naučnog stepena', '');
 
 -- --------------------------------------------------------
 
@@ -2906,33 +2865,6 @@ CREATE TABLE IF NOT EXISTS `stdin` (
 -- Dumping data for table `stdin`
 --
 
-
--- --------------------------------------------------------
-
---
--- Table structure for table `strucni_stepen`
---
-
-CREATE TABLE IF NOT EXISTS `strucni_stepen` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  `titula` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
-
---
--- Dumping data for table `strucni_stepen`
---
-
-INSERT INTO `strucni_stepen` (`id`, `naziv`, `titula`) VALUES
-(1, 'Magistar elektrotehnike - Diplomirani inženjer elektrotehnike', 'M.E.'),
-(2, 'Bakalaureat elektrotehnike - Inženjer elektrotehnike', 'B.E.'),
-(3, 'Diplomirani inženjer elektrotehnike', 'dipl.ing.el.'),
-(4, 'Diplomirani matematičar', 'dipl.mat.'),
-(5, 'Srednja stručna sprema', ''),
-(6, 'Diplomirani inženjer mašinstva', 'dipl.ing.'),
-(7, 'Diplomirani inženjer građevinarstva', 'dipl.ing.'),
-(8, 'Diplomirani ekonomista', 'dipl.ecc.');
 
 -- --------------------------------------------------------
 

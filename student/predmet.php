@@ -69,15 +69,9 @@ print "<br/>\n";
 
 
 // Nastavni ansambl
-$q25 = myquery("select o.id, ns.titula, o.ime, o.prezime, ast.naziv, ss.titula from angazman as a, angazman_status as ast, naucni_stepen as ns, strucni_stepen as ss, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id and o.naucni_stepen=ns.id and o.strucni_stepen=ss.id order by ast.id");
+$q25 = myquery("select o.id, ast.naziv from angazman as a, angazman_status as ast, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id order by ast.id");
 while ($r25 = mysql_fetch_row($q25)) {
-	// Zvanje - potreban je posljednji izbor
-	$q27 = myquery("select z.titula from zvanje as z, izbor as i where i.zvanje=z.id and i.osoba=$r25[0] order by i.datum_izbora desc limit 1");
-	if (mysql_num_rows($q27)>0)
-		$zvanje_titula = mysql_result($q27,0,0);
-	else
-		$zvanje_titula = ""; // Nema nijedan izbor
-	print "<b>".ucfirst($r25[4])."</b>: $zvanje_titula $r25[1] $r25[2] $r25[3] $r25[5]<br/>";
+	print "<b>".ucfirst($r25[1])."</b>: ".tituliraj($r25[0])."<br/>";
 }
 print "<br/>\n";
 

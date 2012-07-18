@@ -6,9 +6,8 @@
 		$djevojacko= my_escape($_REQUEST['djevojacko']);
 		$vozacka= intval($_REQUEST['vozacka']);
 		$mjezik= intval($_REQUEST['mjezik']);
-		$mobitel= intval($_REQUEST['mobitel']);
 		$nacin_stanovanja= intval($_REQUEST['nacin_stanovanja']);		
-		myquery("update osoba set djevojacko_prezime='$djevojacko', maternji_jezik=$mjezik , vozacka_dozvola=$vozacka , mobilni_telefon='$mobitel', nacin_stanovanja=$nacin_stanovanja where id=$userid");
+		myquery("update osoba set djevojacko_prezime='$djevojacko', maternji_jezik=$mjezik , vozacka_dozvola=$vozacka , nacin_stanovanja=$nacin_stanovanja where id=$userid");
 	}
 
 	if (intval($_REQUEST['save']) == 2) { // usavršavanje
@@ -62,7 +61,7 @@
 
 
 	// Lični podaci
-	$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, mobilni_telefon,nacin_stanovanja from osoba where id=$userid");
+	$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, nacin_stanovanja from osoba where id=$userid");
 	
 	// Spisak gradova
 	$q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
@@ -131,16 +130,14 @@
 <br><br>
 
 <ul id="tabs">
-	<li class="tab1"><a href="#" title="Korak1">1. Opšti podaci</a></li>
-	<li class="tab2"><a href="#" title="Korak2">2. Kontakt informacije</a></li>
-    <li class="tab3"><a href="#" title="Korak3">3. Radno iskustvo</a></li>
-    <li class="tab4"><a href="#" title="Korak4">4. Obrazovanje</a></li>
-    <li class="tab5"><a href="#" title="Korak5">5. Usavršavanje</a></li>
-    <li class="tab6"><a href="#" title="Korak6">6. Naučni i stručni radovi</a></li>    
-    <li class="tab7"><a href="#" title="Korak7">7. Mentorstvo</a></li> 
-    <li class="tab8"><a href="#" title="Korak8">8. Izdate publikacije</a></li> 
-    <li class="tab9"><a href="#" title="Korak9">9. Nagrade/Priznanja</a></li> 
-    <li class="tab0"><a href="#" title="Korak0">10. Lične vjestine/kompetencije</a></li> 
+    <li class="tab1"><a href="#" title="Korak1">1. Radno iskustvo</a></li>
+    <li class="tab2"><a href="#" title="Korak2">2. Obrazovanje</a></li>
+    <li class="tab3"><a href="#" title="Korak3">3. Usavršavanje</a></li>
+    <li class="tab4"><a href="#" title="Korak4">4. Naučni i stručni radovi</a></li>    
+    <li class="tab5"><a href="#" title="Korak5">5. Mentorstvo</a></li> 
+    <li class="tab6"><a href="#" title="Korak6">6. Izdate publikacije</a></li> 
+    <li class="tab7"><a href="#" title="Korak7">7. Nagrade/Priznanja</a></li> 
+    <li class="tab8"><a href="#" title="Korak8">8. Lične vjestine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">
@@ -163,8 +160,6 @@
   	}
   
   	// Pojedini tabovi odvojeni radi preglednosti
-  	include ("common/profil/hr_moduli/hr_opstipodaci.php");
-  	include ("common/profil/hr_moduli/hr_kontaktinfo.php");
   	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
   	include ("common/profil/hr_moduli/hr_obrazovanje.php");
   	include ("common/profil/hr_moduli/hr_usavrsavanje.php");

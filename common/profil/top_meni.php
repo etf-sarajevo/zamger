@@ -1,7 +1,8 @@
 <?
-$boja_licni = $boja_opcije = $boja_izbori = "#BBBBBB";
+$boja_licni = $boja_opcije = $boja_izbori = $boja_ljudski = "#BBBBBB";
 if ($akcija=="opcije") $boja_opcije="#DDDDDD";
 else if ($akcija=="izbori") $boja_izbori="#DDDDDD";
+else if ($akcija=="ljudskiresursi") $boja_ljudski="#DDDDDD";
 else $boja_licni = "#DDDDDD";
 
 
@@ -20,7 +21,7 @@ if ($user_nastavnik) {
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
 		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=izbori">Izbori i nastavni ansambl</a></td>
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
-		<td bgcolor="<?=$boja_izbori?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_izbori?>';"><a href="?sta=common/profil&akcija=ljudskiresursi">UNSA HR</a></td>
+		<td bgcolor="<?=$boja_ljudski?>" width="200" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_ljudski?>';"><a href="?sta=common/profil&akcija=ljudskiresursi">UNSA HR</a></td>
 		<td bgcolor="#FFFFFF" width="100">&nbsp;</td>
 	</tr>
 	<tr>

@@ -4,6 +4,7 @@
 
 
 function izvjestaj_prijave() {
+//global $sadrzaj_bafera_za_pdf;
 
 require_once('lib/tcpdf/tcpdf.php');
 
@@ -117,17 +118,10 @@ while ($r10 = mysql_fetch_row($q10)) {
 //	$datumDrPar=$r10[14];
 
 	// Ispis nastavnika
-	$q33 = myquery("select o.id, o.ime, o.prezime, ns.titula from osoba as o, angazman as a, naucni_stepen as ns where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=1 and a.osoba=o.id and o.naucni_stepen=ns.id");
+	$q33 = myquery("select osoba from angazman where predmet=$predmet and akademska_godina=$ag and angazman_status=1");
 	if (mysql_num_rows($q33)==1) { // Ako imaju dva odgovorna nastavnika, ne znam kojeg da stavim
 		$id_nastavnika = mysql_result($q33,0,0);
-		// Određujemo zvanje
-		$q34 = myquery("select z.titula from zvanje as z, izbor as i where i.osoba=$id_nastavnika and i.zvanje=z.id order by datum_isteka desc"); // Ako je izbor istekao, to nije naš problem
-		if (mysql_num_rows($q34)>0) {
-			$nastavnik=mysql_result($q34,0,0)." ".mysql_result($q33,0,3)." ".mysql_result($q33,0,1)." ".mysql_result($q33,0,2);
-		} else {
-			// Ako ne znamo zvanje, bolje ne pisati ništa
-			$nastavnik="";
-		}
+		$nastavnik = tituliraj($id_nastavnika, $sa_akademskim_zvanjem=false);
 	} else {
 		$nastavnik="";
 	}
@@ -158,8 +152,10 @@ while ($r10 = mysql_fetch_row($q10)) {
 }
 
 // Kraj
+//	ob_end_clean();
+//	ob_clean();
+//file_put_contents("/tmp/debug", $sadrzaj_bafera_za_pdf);
 $pdf->Output($filename, 'I');
-
 
 } // function izvjestaj_prijave()
 

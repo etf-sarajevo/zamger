@@ -516,10 +516,10 @@ else if ($akcija == "edit") {
 	<ul>
 	<?
 
-	$q355 = myquery("select o.id, o.ime, o.prezime, ns.titula, angs.naziv from angazman as a, osoba as o, angazman_status as angs, naucni_stepen as ns where a.predmet=$predmet and a.akademska_godina=$ag and a.osoba=o.id and o.naucni_stepen=ns.id and a.angazman_status=angs.id order by angs.id, o.prezime");
+	$q355 = myquery("select o.id, angs.naziv from angazman as a, osoba as o, angazman_status as angs where a.predmet=$predmet and a.akademska_godina=$ag and a.osoba=o.id and a.angazman_status=angs.id order by angs.id, o.prezime");
 	if (mysql_num_rows($q355)<1) print "<li>Niko nije angažovan na ovom predmetu</li>\n";
 	while ($r355 = mysql_fetch_row($q355)) {
-		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">$r355[2] $r355[3] $r355[1]</a> - $r355[4] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&ag=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
+		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">".tituliraj($r355[0], false, false, true)."</a> - $r355[1] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&ag=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
 	}
 	print "</ul>\n";
 

@@ -103,20 +103,6 @@ function student_zavrsni()  {
 		$id_predkom = mysql_result($q130,0,5);
 		$id_clankom = mysql_result($q130,0,6);
 		$student = mysql_result($q130,0,7);
-		
-		$q99 = myquery("select id, titula from naucni_stepen");
-		while ($r99 = mysql_fetch_row($q99))
-			$naucni_stepen[$r99[0]]=$r99[1];
-
-		function dajIme($osoba, $naucni_stepen) {
-			$q902 = myquery("SELECT ime, prezime, naucni_stepen FROM osoba WHERE id=$osoba");
-			if (mysql_num_rows($q902)>0) {
-				$r902 = mysql_fetch_row($q902);
-				$ime = $r902[1]." ".$naucni_stepen[$r902[2]]." ".$r902[0];
-			} else
-				$ime = "";
-			return $ime;
-		}
 
 		?>
 		<h2>Završni rad</h2>
@@ -126,9 +112,9 @@ function student_zavrsni()  {
 		<tr><td align="right" valign="top"><b>Podnaslov:</b></td><td><?=$podnaslov?></td></tr>
 		<tr><td align="right" valign="top"><b>Kratki pregled teme:</b></td><td><?=$kpregled?></td></tr>
 		<tr><td align="right" valign="top"><b>Literatura:</b></td><td><?=$literatura?></td></tr>
-		<tr><td align="right" valign="top"><b>Mentor:</b></td><td><?=dajIme($id_mentor, $naucni_stepen)?></td></tr>
-		<tr><td align="right" valign="top"><b>Predsjednik komisije:</b></td><td><?=dajIme($id_predkom, $naucni_stepen)?></td></tr>
-		<tr><td align="right" valign="top"><b>Član komisije:</b></td><td><?=dajIme($id_clankom, $naucni_stepen)?></td></tr>
+		<tr><td align="right" valign="top"><b>Mentor:</b></td><td><?=tituliraj($id_mentor, false)?></td></tr>
+		<tr><td align="right" valign="top"><b>Predsjednik komisije:</b></td><td><?=tituliraj($id_predkom, false)?></td></tr>
+		<tr><td align="right" valign="top"><b>Član komisije:</b></td><td><?=tituliraj($id_clankom, false)?></td></tr>
 		</table>
 		<?
 		
@@ -174,12 +160,9 @@ function student_zavrsni()  {
 		<h2>Lista tema završnih radova</h2>
 		<?
 
-		$q99 = myquery("select id, titula from naucni_stepen");
-		while ($r99 = mysql_fetch_row($q99))
-			$naucni_stepen[$r99[0]]=$r99[1];
-		
+
 		// Početne informacije
-		$q901 = myquery("SELECT z.id, z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student FROM zavrsni AS z, osoba AS o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.mentor=o.id AND 1=0 ORDER BY o.prezime, o.ime, z.naslov");
+		$q901 = myquery("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag AND ORDER BY naslov");
 		$broj_tema = mysql_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
@@ -197,11 +180,11 @@ function student_zavrsni()  {
 			$id_zavrsni = $r901[0];
 			$naslov_teme = $r901[1];
 			$naslov_teme = "<a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=detalji\">$naslov_teme</a>";
-			$mentor = $r901[3]." ".$naucni_stepen[$r901[4]]." ".$r901[2];
+			$mentor = tituliraj($r901[2], false, false, true);
 			$rbr++;
-			if ($r901[5] == $userid) {
+			if ($r901[3] == $userid) {
 				$link = "<a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=odjava\">odjava</a> * <a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=zavrsnistranica\">stranica</a>";
-			} else if ($r901[5] == 0) {
+			} else if ($r901[3] == 0) {
 				$link = "<a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=prijava\">prijava</a> * <a href=\"$linkprefix&zavrsni=$id_zavrsni&akcija=detalji\">detalji</a>";
 			} else {
 				$link = "<font color='red'>zauzeta</font>";
