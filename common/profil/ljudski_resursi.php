@@ -130,11 +130,11 @@
 
 <ul id="tabs">
     <li class="tab1"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=radnoiskustvo" title="Radno iskustvo">1. Radno iskustvo</a></li>
-    <li class="tab2"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=usavrsavanje" title="Obrazovanje">2. Obrazovanje</a></li>
+    <li class="tab2"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=obrazovanje" title="Obrazovanje">2. Obrazovanje</a></li>
     <li class="tab4"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=publikacije" title="Publikacije">3. Publikacije</a></li>    
     <li class="tab5"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=mentorstva" title="Mentorstva">4. Mentorstva</a></li> 
     <li class="tab7"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=nagrade" title="Nagrade/Priznanja">5. Nagrade/Priznanja</a></li> 
-    <li class="tab8"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=kompetencije" title="Lične vjestine/kompetencije">6. Lične vjestine/kompetencije</a></li> 
+    <li class="tab8"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=kompetencije" title="Lične vjestine/kompetencije">6. Lične vještine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">
@@ -160,9 +160,9 @@
 $subakcija = $_REQUEST['subakcija'];
 if ($subakcija == "radnoiskustvo")
 	include ("common/profil/hr_moduli/hr_radnoiskustvo.php");
-else if ($subakcija == "usavrsavanje")
-	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
-//  	include ("common/profil/hr_moduli/hr_obrazovanje.php");
+else if ($subakcija == "obrazovanje")
+//	include ("common/profil/hr_moduli/hr_usavrsavanje.php");
+  	include ("common/profil/hr_moduli/hr_obrazovanje.php");
 //  	include ("common/profil/hr_moduli/hr_naucniradovi.php");
 else if ($subakcija == "publikacije")
 	include ("common/profil/hr_moduli/hr_publikacije.php");
