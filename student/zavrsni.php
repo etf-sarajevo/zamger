@@ -179,7 +179,7 @@ function student_zavrsni()  {
 			$naucni_stepen[$r99[0]]=$r99[1];
 		
 		// Početne informacije
-		$q901 = myquery("SELECT z.id, z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student FROM zavrsni AS z, osoba AS o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.mentor=o.id AND 1=0 ORDER BY o.prezime, o.ime, z.naslov");
+		$q901 = myquery("SELECT z.id, z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student FROM zavrsni AS z, osoba AS o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.mentor=o.id ORDER BY z.naslov, o.prezime, o.ime");
 		$broj_tema = mysql_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
