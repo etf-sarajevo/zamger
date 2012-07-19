@@ -681,7 +681,7 @@ function uslov($student, $ag=0) {
 
 
 // Funkcija koja kreira jednu ponudu kursa i dodaje sve ostalo što treba
-function kreirajPonuduKursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis) {
+function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis) {
 	// Naziv predmeta nam treba za poruke
 	$q60 = myquery("select naziv from predmet where id=$predmet");
 	$naziv_predmeta = mysql_result($q60,0,0);

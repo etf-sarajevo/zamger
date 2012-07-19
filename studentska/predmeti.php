@@ -305,7 +305,7 @@ else if ($akcija == "dodaj_pk") {
 		$semestar = intval($_REQUEST['semestar']);
 		if ($_REQUEST['obavezan']) $obavezan=1; else $obavezan=0;
 
-		kreirajPonuduKursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0);
+		kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0);
 		nicemessage("Ponuda kursa uspješno kreirana");
 	}
 
