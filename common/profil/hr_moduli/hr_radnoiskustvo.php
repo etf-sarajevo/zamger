@@ -16,6 +16,7 @@ if (($_REQUEST['operacija'] == "dodavanje" || $_REQUEST['operacija'] == "izmjena
 	$poslodavac = my_escape($_REQUEST['poslodavac']);
 	$adresa_poslodavca = my_escape($_REQUEST['adresa_poslodavca']);
 	$radno_mjesto = my_escape($_REQUEST['radno_mjesto']);
+	$radno_mjesto_en = my_escape($_REQUEST['radno_mjesto_en']);
 	$opis_radnog_mjesta = my_escape($_REQUEST['opis_radnog_mjesta']);
 
 	$pocetak = mktime(0, 0, 0, $pocetak_mjesec, $pocetak_dan, $pocetak_godina);
@@ -24,19 +25,19 @@ if (($_REQUEST['operacija'] == "dodavanje" || $_REQUEST['operacija'] == "izmjena
 	// Validacija
 	if ($kraj<=$pocetak) {
 		niceerror("Datum kraja je prije datuma početka");
-	} else if (!preg_match("/\w/", $poslodavac) || !preg_match("/\w/", $radno_mjesto)) {
+	} else if (!preg_match("/\w/", $poslodavac) || !preg_match("/\w/", $radno_mjesto) || !preg_match("/\w/", $radno_mjesto_en)) {
 		niceerror("Nisu unesena sva obavezna polja");
 	} else {
 		if ($_REQUEST['operacija'] == "dodavanje") {
-			$q10 = myquery("INSERT INTO hr_radno_iskustvo SET fk_osoba=$userid, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', opis_radnog_mjesta='$opis_radnog_mjesta'");
+			$q10 = myquery("INSERT INTO hr_radno_iskustvo SET fk_osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta'");
 			zamgerlog("dodano radno iskustvo", 2);
 		} else {
-			$q10 = myquery("UPDATE hr_radno_iskustvo SET fk_osoba=$userid, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', opis_radnog_mjesta='$opis_radnog_mjesta' WHERE id=$id");
+			$q10 = myquery("UPDATE hr_radno_iskustvo SET fk_osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta' WHERE id=$id");
 			zamgerlog("izmijenjeno radno iskustvo", 2);
 		}
 		// Default vrijednosti
 		$pocetak_dan = $pocetak_mjesec = $pocetak_godina = $kraj_dan = $kraj_mjesec = $kraj_godina = 1;
-		$poslodavac = $adresa_poslodavca = $radno_mjesto = $opis_radnog_mjesta = "";
+		$poslodavac = $adresa_poslodavca = $radno_mjesto = $radno_mjesto_en = $opis_radnog_mjesta = "";
 	}
 }
 
@@ -44,7 +45,7 @@ if (($_REQUEST['operacija'] == "dodavanje" || $_REQUEST['operacija'] == "izmjena
 
 else if ($_REQUEST['operacija'] == "izmjena") {
 	$id = intval($_REQUEST['id']);
-	$q20 = myquery("SELECT UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, opis_radnog_mjesta from hr_radno_iskustvo where id=$id and fk_osoba=$userid");
+	$q20 = myquery("SELECT UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where id=$id and fk_osoba=$osoba");
 	if (mysql_num_rows($q20)>0) {
 		$r20 = mysql_fetch_assoc($q20);
 		$pocetak_dan = date("d", $r20['pocetak']);
@@ -56,6 +57,7 @@ else if ($_REQUEST['operacija'] == "izmjena") {
 		$poslodavac = $r20['poslodavac'];
 		$adresa_poslodavca = $r20['adresa_poslodavca'];
 		$radno_mjesto = $r20['radno_mjesto'];
+		$radno_mjesto_en = $r20['radno_mjesto_en'];
 		$opis_radnog_mjesta = $r20['opis_radnog_mjesta'];
 	}
 	$podnaslov = "Izmjena radnog mjesta";
@@ -66,7 +68,7 @@ else if ($_REQUEST['operacija'] == "izmjena") {
 
 else if ($_REQUEST['operacija'] == "brisanje") {
 	$id = intval($_REQUEST['id']);
-	$q20 = myquery("SELECT id from hr_radno_iskustvo where id=$id and fk_osoba=$userid");
+	$q20 = myquery("SELECT id from hr_radno_iskustvo where id=$id and fk_osoba=$osoba");
 	if (mysql_num_rows($q20)>0) {
 		$q30 = myquery("DELETE FROM hr_radno_iskustvo WHERE id=$id");
 	}
@@ -101,7 +103,7 @@ else {
 	<?
 	$starikraj = -1;
 	$greska = false;
-	$q420 = myquery("select id, UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, opis_radnog_mjesta from hr_radno_iskustvo where fk_osoba=$userid order by datum_pocetka");
+	$q420 = myquery("select id, UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where fk_osoba=$osoba order by datum_pocetka");
 	while ($r420 = mysql_fetch_assoc($q420)) {
 		$pocetak = date("d. m. Y", $r420['pocetak']);
 		$kraj = date("d. m. Y", $r420['kraj']);
@@ -115,7 +117,7 @@ else {
 			<td><?=$kraj ?></td>
 			<td><?=$r420['poslodavac'] ?></td>
 			<td><?=$r420['adresa_poslodavca'] ?></td>
-			<td><?=$r420['radno_mjesto'] ?></td>
+			<td><?=$r420['radno_mjesto'] ?><br><?=$r420['radno_mjesto_en'] ?></td>
 			<td><?=$r420['opis_radnog_mjesta'] ?></td>
 			<td style="text-align:center;" >
 				<a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=radnoiskustvo&operacija=izmjena&id=<?=$r420['id']?>"><img src="images/16x16/log_edit.png" /></a>
@@ -145,12 +147,16 @@ else {
 	      </tr>
 	      
 	      <tr>
-	        <td>Početak i kraj zaposlenja:</td>
+	        <td>Početak zaposlenja:</td>
 	        <td>
-	        Početak:
 	          <?=datectrl($pocetak_dan, $pocetak_mjesec, $pocetak_godina, "pocetak")?>
-	          Kraj:
-	          <?=datectrl($kraj_dan, $kraj_mjesec, $kraj_godina, "kraj")?>
+	        </td>
+	      </tr>
+	      
+	      <tr>
+	        <td>Kraj zaposlenja:</td>
+	        <td>
+	          <?=datectrl($pocetak_dan, $pocetak_mjesec, $pocetak_godina, "kraj")?>
 	        </td>
 	      </tr>
 
@@ -169,9 +175,16 @@ else {
 	      </tr>
 	      
 	      <tr>
-	        <td>Radno mjesto: <b><font color=red>*</font></b></td>
+	        <td>Naziv radnog mjesta: <b><font color=red>*</font></b></td>
 	        <td>
 	          	<input class="default" type="text" id="radno_mjesto" name="radno_mjesto" value="<?=$radno_mjesto?>" />
+	        </td>
+	      </tr>
+	      
+	      <tr>
+	        <td>Naziv radnog mjesta<br>(engleski jezik): <b><font color=red>*</font></b></td>
+	        <td>
+	          	<input class="default" type="text" id="radno_mjesto_en" name="radno_mjesto_en" value="<?=$radno_mjesto_en?>" />
 	        </td>
 	      </tr>
 	      

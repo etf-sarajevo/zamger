@@ -7,7 +7,7 @@
 		$vozacka= intval($_REQUEST['vozacka']);
 		$mjezik= intval($_REQUEST['mjezik']);
 		$nacin_stanovanja= intval($_REQUEST['nacin_stanovanja']);		
-		myquery("update osoba set djevojacko_prezime='$djevojacko', maternji_jezik=$mjezik , vozacka_dozvola=$vozacka , nacin_stanovanja=$nacin_stanovanja where id=$userid");
+		myquery("update osoba set djevojacko_prezime='$djevojacko', maternji_jezik=$mjezik , vozacka_dozvola=$vozacka , nacin_stanovanja=$nacin_stanovanja where id=$osoba");
 	}
 
 	if (intval($_REQUEST['save']) == 2) { // usavršavanje
@@ -15,7 +15,7 @@
 		$datum= strtotime(my_escape($_REQUEST['datum_usavrsavanja']));
 		$institucija= my_escape($_REQUEST['naziv_institucije']);
 		$kvalifikacija= my_escape($_REQUEST['kvalifikacija']);
-		myquery("INSERT INTO hr_usavrsavanje (fk_osoba ,datum ,naziv_usavrsavanja ,obrazovna_institucija ,kvalifikacija)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$institucija',  '$kvalifikacija')");
+		myquery("INSERT INTO hr_usavrsavanje (fk_osoba ,datum ,naziv_usavrsavanja ,obrazovna_institucija ,kvalifikacija)VALUES ('$osoba',  FROM_UNIXTIME('$datum'),  '$naziv',  '$institucija',  '$kvalifikacija')");
 	}
 
 	if (intval($_REQUEST['save']) == 3) { // Radovi
@@ -23,7 +23,7 @@
 		$datum= strtotime(my_escape($_REQUEST['datum_rada']));
 		$naziv_casopisa= my_escape($_REQUEST['naziv_casopisa']);
 		$naziv_izdavaca= my_escape($_REQUEST['naziv_izdavaca']);
-		myquery("INSERT INTO hr_naucni_radovi (fk_osoba ,datum ,naziv_rada ,naziv_casopisa ,naziv_izdavaca)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$naziv_casopisa',  '$naziv_izdavaca')");
+		myquery("INSERT INTO hr_naucni_radovi (fk_osoba ,datum ,naziv_rada ,naziv_casopisa ,naziv_izdavaca)VALUES ('$osoba',  FROM_UNIXTIME('$datum'),  '$naziv',  '$naziv_casopisa',  '$naziv_izdavaca')");
 	}
 
 	if (intval($_REQUEST['save']) == 4) { // Mentorstva
@@ -32,7 +32,7 @@
 		$naziv_teme= my_escape($_REQUEST['naziv_teme']);
 		$mfakultet= intval($_REQUEST['mfakultet']);
 		$mmentorstvo= intval($_REQUEST['mmentorstvo']);
-		myquery("INSERT INTO hr_mentorstvo (fk_osoba ,datum ,ime_kandidata ,naziv_teme ,fk_fakultet,fk_vrsta_mentora)VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$ime_kandidata',  '$naziv_teme',  $mfakultet,$mmentorstvo)");
+		myquery("INSERT INTO hr_mentorstvo (fk_osoba ,datum ,ime_kandidata ,naziv_teme ,fk_fakultet,fk_vrsta_mentora)VALUES ('$osoba',  FROM_UNIXTIME('$datum'),  '$ime_kandidata',  '$naziv_teme',  $mfakultet,$mmentorstvo)");
 	}
 
 	if (intval($_REQUEST['save']) == 5) { // Publikacije
@@ -40,7 +40,7 @@
 		$naziv= my_escape($_REQUEST['naziv_publikacije']);
 		$casopis= my_escape($_REQUEST['naziv_ci']);
 		$fk_tip_publikacije= intval($_REQUEST['vrsta_publikacije']);
-		myquery("INSERT INTO  hr_publikacija (fk_osoba,datum ,naziv ,casopis ,fk_tip_publikacije) VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$casopis',  $fk_tip_publikacije)");
+		myquery("INSERT INTO  hr_publikacija (fk_osoba,datum ,naziv ,casopis ,fk_tip_publikacije) VALUES ('$osoba',  FROM_UNIXTIME('$datum'),  '$naziv',  '$casopis',  $fk_tip_publikacije)");
 	}
 
 
@@ -48,7 +48,7 @@
 		$datum= strtotime(my_escape($_REQUEST['datum_nagrade']));
 		$naziv= my_escape($_REQUEST['naziv_nagrade']);
 		$opis= my_escape($_REQUEST['opis_nagrade']);
-		myquery("INSERT INTO `hr_nagrade_priznanja` (`fk_osoba`, `datum`, `naziv`, `opis`) VALUES ('$userid',  FROM_UNIXTIME('$datum'),  '$naziv',  '$opis')");
+		myquery("INSERT INTO `hr_nagrade_priznanja` (`fk_osoba`, `datum`, `naziv`, `opis`) VALUES ('$osoba',  FROM_UNIXTIME('$datum'),  '$naziv',  '$opis')");
 	}
 
 	if (intval($_REQUEST['save']) == 7) { // Jezik
@@ -56,70 +56,9 @@
 		$razumjevanje= intval($_REQUEST['razumjevanje']);
 		$govor= intval($_REQUEST['govor']);
 		$pisanje= intval($_REQUEST['pisanje']);
-		myquery("INSERT INTO `hr_kompetencije` (`fk_osoba`, `jezik`, `razumjevanje`, `govor`, pisanje) VALUES ('$userid', $jezik, $razumjevanje,$govor, $pisanje )");
+		myquery("INSERT INTO `hr_kompetencije` (`fk_osoba`, `jezik`, `razumjevanje`, `govor`, pisanje) VALUES ('$osoba', $jezik, $razumjevanje,$govor, $pisanje )");
 	}
 
-
-	// Lični podaci
-	$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, vozacka_dozvola, maternji_jezik, nacin_stanovanja from osoba where id=$userid");
-	
-	// Spisak gradova
-	$q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
-	$gradovir="<option></option>";
-	$gradovia="<option></option>";
-	while ($r410 = mysql_fetch_row($q410)) { 
-		$gradovir .= "<option"; $gradovia .= "<option";
-	 	if ($r410[0]==mysql_result($q400,0,4)) { 
-			$gradovir  .= " SELECTED"; 
-			$mjestorvalue = $r410[1]; 
-			$opcinar = $r410[2];
-			$drzavar = $r410[3];
-		}
-	 	if ($r410[0]==mysql_result($q400,0,8)) { $gradovia  .= " SELECTED"; $adresarvalue = $r410[1]; }
-		$gradovir .= ">$r410[1]</option>\n";
-		$gradovia .= ">$r410[1]</option>\n";
-	}
-	
-	
-	// Spisak opcina
-	$q420 = myquery("select id,naziv from opcina order by naziv");
-	$opciner="<option></option>";
-	while ($r420 = mysql_fetch_row($q420)) {
-		$opciner .= "<option value=\"$r420[0]\"";
-	 	if ($r420[0]==$opcinar) { $opciner  .= " SELECTED";  }
-		$opciner .= ">$r420[1]</option>\n";
-	}
-	
-	
-	// Spisak drzava
-	$q430 = myquery("select id,naziv from drzava order by naziv");
-	$drzaver="<option></option>";
-	$drzavlj="<option></option>";
-	while ($r430 = mysql_fetch_row($q430)) {
-		$drzaver .= "<option value=\"$r430[0]\"";
-	 	if ($r430[0]==$drzavar) { $drzaver  .= " SELECTED";  }
-		$drzaver .= ">$r430[1]</option>\n";
-		$drzavlj .= "<option value=\"$r430[0]\"";
-	 	if ($r430[0]==mysql_result($q400,0,16)) { $drzavlj  .= " SELECTED";  }
-		$drzavlj .= ">$r430[1]</option>\n";
-	}
-	
-	
-	// Spisak nacionalnosti
-	$q440 = myquery("select id,naziv from nacionalnost order by naziv");
-	$nacion="<option></option>";
-	while ($r440 = mysql_fetch_row($q440)) {
-		$nacion .= "<option value=\"$r440[0]\"";
-	 	if ($r440[0]==mysql_result($q400,0,17)) { $nacion  .= " SELECTED";  }
-		$nacion .= ">$r440[1]</option>\n";
-	}
-	
-	// Spol
-	if (mysql_result($q400,0,11)=="M") $muskir = "CHECKED"; else $muskir="";
-	if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
-	
-	// Pripadnik borackih kategorija
-	if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 ?>
 
 <link rel="stylesheet" href="css/libs/hr.css" type="text/css" media="screen" />
@@ -129,12 +68,12 @@
 <br><br>
 
 <ul id="tabs">
-    <li class="tab1"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=radnoiskustvo" title="Radno iskustvo">1. Radno iskustvo</a></li>
-    <li class="tab2"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=obrazovanje" title="Obrazovanje">2. Obrazovanje</a></li>
-    <li class="tab4"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=publikacije" title="Publikacije">3. Publikacije</a></li>    
-    <li class="tab5"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=mentorstva" title="Mentorstva">4. Mentorstva</a></li> 
-    <li class="tab7"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=nagrade" title="Nagrade/Priznanja">5. Nagrade/Priznanja</a></li> 
-    <li class="tab8"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=kompetencije" title="Lične vjestine/kompetencije">6. Lične vještine/kompetencije</a></li> 
+    <li class="tab1"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=radnoiskustvo&osoba=<?=$osoba?>" title="Radno iskustvo">1. Radno iskustvo</a></li>
+    <li class="tab2"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=obrazovanje&osoba=<?=$osoba?>" title="Obrazovanje">2. Obrazovanje</a></li>
+    <li class="tab4"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=publikacije&osoba=<?=$osoba?>" title="Publikacije">3. Publikacije</a></li>    
+    <li class="tab5"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=mentorstva&osoba=<?=$osoba?>" title="Mentorstva">4. Mentorstva</a></li> 
+    <li class="tab7"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=nagrade&osoba=<?=$osoba?>" title="Nagrade/Priznanja">5. Nagrade/Priznanja</a></li> 
+    <li class="tab8"><a href="?sta=common/profil&akcija=ljudskiresursi&subakcija=kompetencije&osoba=<?=$osoba?>" title="Lične vjestine/kompetencije">6. Lične vještine/kompetencije</a></li> 
 </ul>
 <!-- 
 <div style="float:right; padding-right:30px;padding-top:10px;">

@@ -3,13 +3,13 @@
 		$csv_separator = $_REQUEST['csv-separator'];
 		if ($csv_separator != ";" && $csv_separator != ",") $csv_separator = my_escape($csv_separator);
 
-		$q500 = myquery("delete from preference where korisnik=$userid and preferenca='csv-separator'");
-		$q510 = myquery("insert into preference set korisnik=$userid, preferenca='csv-separator', vrijednost='$csv_separator'");
+		$q500 = myquery("delete from preference where korisnik=$osoba and preferenca='csv-separator'");
+		$q510 = myquery("insert into preference set korisnik=$osoba, preferenca='csv-separator', vrijednost='$csv_separator'");
 		
 		$savjet_dana = intval($_REQUEST['savjet_dana']);
 
-		$q520 = myquery("delete from preference where korisnik=$userid and preferenca='savjet_dana'");
-		$q530 = myquery("insert into preference set korisnik=$userid, preferenca='savjet_dana', vrijednost=$savjet_dana");
+		$q520 = myquery("delete from preference where korisnik=$osoba and preferenca='savjet_dana'");
+		$q530 = myquery("insert into preference set korisnik=$osoba, preferenca='savjet_dana', vrijednost=$savjet_dana");
 
 		nicemessage("Zamger opcije uspješno promijenjene");
 		zamgerlog("promijenjene zamger opcije", 2);
@@ -34,7 +34,7 @@
 	$csv_separatori = array(";", ",");
 	$csv_vrijednosti = array("SELECTED", ""); // default je tačka-zarez
 
-	$q100 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-separator'");
+	$q100 = myquery("select vrijednost from preference where korisnik=$osoba and preferenca='csv-separator'");
 	if (mysql_num_rows($q100)>0) {
 		if (mysql_result($q100,0,0) == ",") {
 			$csv_vrijednosti[0] = "";
@@ -64,7 +64,7 @@
 	// savjet_dana
 
 	$savjet_dana = "CHECKED";
-	$q110 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
+	$q110 = myquery("select vrijednost from preference where korisnik=$osoba and preferenca='savjet_dana'");
 	if (mysql_num_rows($q110)>0 && mysql_result($q110,0,0)==0)
 		$savjet_dana = "";
 

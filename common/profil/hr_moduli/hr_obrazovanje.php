@@ -23,7 +23,7 @@
 	      
 	<?
 
-	$q420 = myquery("select * from hr_usavrsavanje where fk_osoba=$userid");
+	$q420 = myquery("select * from hr_usavrsavanje where fk_osoba=$osoba");
 	while ($r420 = mysql_fetch_assoc($q420)) {
 		$dat= explode(" ", $r420['datum']);
 		?>

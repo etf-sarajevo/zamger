@@ -7,6 +7,12 @@ function common_profil() {
 	global $userid, $conf_system_auth, $conf_files_path, $conf_promjena_sifre, $conf_skr_naziv_institucije, $conf_skr_naziv_institucije_genitiv;
 	global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 	
+
+	global $osoba;
+	if (($user_siteadmin || $user_studentska) && intval($_REQUEST['osoba'])>0)
+		$osoba = intval($_REQUEST['osoba']);
+	else
+		$osoba = $userid;
 	
 	$akcija = $_REQUEST['akcija'];
 	

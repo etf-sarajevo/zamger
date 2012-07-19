@@ -14,7 +14,7 @@
 		</tr>
 		<?
 
-		$q500 = myquery("select fk_naucnonastavno_zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), fk_naucna_oblast, fk_uza_naucna_oblast, dopunski, druga_institucija from izbor WHERE fk_osoba=$userid order by datum_isteka, datum_izbora");
+		$q500 = myquery("select fk_naucnonastavno_zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), fk_naucna_oblast, fk_uza_naucna_oblast, dopunski, druga_institucija from izbor WHERE fk_osoba=$osoba order by datum_isteka, datum_izbora");
 		if (mysql_num_rows($q500) < 1) {
 			?>
 			<tr><td colspan="7">Nemamo nikakvih podataka o vašim izborima.</td></tr>
@@ -81,7 +81,7 @@
 		</tr>
 		<?
 
-		$q540 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv, ag.naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$userid and a.akademska_godina=ag.id and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by ag.naziv desc, angs.id, p.naziv");
+		$q540 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv, ag.naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$osoba and a.akademska_godina=ag.id and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by ag.naziv desc, angs.id, p.naziv");
 		if (mysql_num_rows($q540) < 1) {
 			?>
 			<tr><td colspan="7">Nemamo nikakvih podataka o vašem angažmanu u nastavi.</td></tr>
@@ -111,7 +111,7 @@
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">DOSTIGNUTO AKADEMSKO ZVANJE I NAUČNI STEPEN:</font></td></tr>
 	<?
 
-	$q430 = myquery("select fk_akademsko_zvanje, fk_naucni_stepen from osoba where id=$userid");
+	$q430 = myquery("select fk_akademsko_zvanje, fk_naucni_stepen from osoba where id=$osoba");
 	$akademsko_zvanje = "Nepoznato / Bez akademskog zvanja";
 	$naucni_stepen = "Nepoznato / Bez naučnog stepena";
 	if (mysql_result($q430,0,0)!=0) {
@@ -137,7 +137,7 @@
 	<tr>
 	<?
 
-	$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.fk_naucna_oblast, i.fk_uza_naucna_oblast, i.dopunski, i.druga_institucija from izbor as i, sifrarnik_naucnonastavno_zvanje as z WHERE i.fk_osoba=$userid and i.fk_naucnonastavno_zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+	$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.fk_naucna_oblast, i.fk_uza_naucna_oblast, i.dopunski, i.druga_institucija from izbor as i, sifrarnik_naucnonastavno_zvanje as z WHERE i.fk_osoba=$osoba and i.fk_naucnonastavno_zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
 	if (mysql_num_rows($q400)==0) {
 		?>
 		<tr><td colspan="2">Nema podataka o izboru ili nikada niste bili izabrani u zvanje.</td></tr>
@@ -200,7 +200,7 @@
 	<?
 
 
-	$q460 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$userid and a.akademska_godina=ag.id and ag.aktuelna=1 and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by angs.id, p.naziv");
+	$q460 = myquery("select p.id, p.naziv, angs.naziv, i.kratki_naziv from angazman as a, angazman_status as angs, predmet as p, institucija as i, akademska_godina as ag where a.osoba=$osoba and a.akademska_godina=ag.id and ag.aktuelna=1 and a.predmet=p.id and a.angazman_status=angs.id and p.institucija=i.id order by angs.id, p.naziv");
 	if (mysql_num_rows($q460) == 0) {
 		?>
 		<tr><td colspan="2">Niste angažovani niti na jednom predmetu u ovoj godini.</td></tr>

@@ -631,6 +631,7 @@ CREATE TABLE IF NOT EXISTS `hr_radno_iskustvo` (
   `poslodavac` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `adresa_poslodavca` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   `radno_mjesto` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `radno_mjesto_en` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   `opis_radnog_mjesta` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;

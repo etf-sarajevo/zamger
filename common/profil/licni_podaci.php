@@ -3,7 +3,7 @@
 
 if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 	// Da li je u pitanju izmjena ili brisanje maila
-	$q1000 = myquery("select id, adresa, sistemska from email where osoba=$userid");
+	$q1000 = myquery("select id, adresa, sistemska from email where osoba=$osoba");
 	while ($r1000 = mysql_fetch_row($q1000)) {
 		if ($_POST['obrisi_email'.$r1000[0]]) {
 			$q1010 = myquery("DELETE FROM email WHERE id=$r1000[0]");
@@ -68,7 +68,7 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 			}
 		}
 
-		$q1030 = myquery("INSERT INTO email SET osoba=$userid, adresa='$email', sistemska=0");
+		$q1030 = myquery("INSERT INTO email SET osoba=$osoba, adresa='$email', sistemska=0");
 		nicemessage("E-mail adresa dodana.");
 		print "<a href=\"javascript:history.go(-1);\">Nazad</a>";
 		zamgerlog("dodana nova email adresa ".$email,2);
@@ -139,17 +139,17 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 
 
 	// Da li je uopste bilo promjene?
-	$q05 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, jmbg, adresa, adresa_mjesto, telefon, kanton, boracke_kategorije, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$userid");
+	$q05 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, jmbg, adresa, adresa_mjesto, telefon, kanton, boracke_kategorije, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
 	if (mysql_result($q05,0,0)==$ime && mysql_result($q05,0,1)==$prezime && mysql_result($q05,0,2)==$imeoca && mysql_result($q05,0,3)==$prezimeoca && mysql_result($q05,0,4)==$imemajke && mysql_result($q05,0,5)==$prezimemajke && mysql_result($q05,0,6)==$spol && mysql_result($q05,0,7)==$brindexa && mysql_result($q05,0,8)=="$godina-$mjesec-$dan" && mysql_result($q05,0,9)==$mjrid && mysql_result($q05,0,10)==$nacionalnost && mysql_result($q05,0,11)==$drzavljanstvo && mysql_result($q05,0,12)==$jmbg && mysql_result($q05,0,13)==$adresa && mysql_result($q05,0,14)==$admid && mysql_result($q05,0,15)==$telefon && mysql_result($q05,0,16)==$kanton && mysql_result($q05,0,17)==$borac && mysql_result($q05,0,18)==$djevojacko_prezime && mysql_result($q05,0,19)==$maternji_jezik && mysql_result($q05,0,20)==$vozacka_dozvola && mysql_result($q05,0,21)==$nacin_stanovanja) {
 		?><p><b>Ništa nije promijenjeno?</b><br>
 		Podaci koje ste unijeli ne razlikuju se od podataka koje već imamo u bazi. Zahtjev za promjenu neće biti poslan.</p><?
 		return;
 	}
 
-	$q10 = myquery("select id from promjena_podataka where osoba=$userid");
+	$q10 = myquery("select id from promjena_podataka where osoba=$osoba");
 	if (mysql_num_rows($q10)>0) {
 		$id = mysql_result($q10,0,0);
-		$upit = "osoba=$userid";
+		$upit = "osoba=$osoba";
 		if ($ime != "") $upit .= ", ime='$ime'";
 		if ($prezime != "") $upit .= ", prezime='$prezime'";
 		if ($imeoca != "") $upit .= ", imeoca='$imeoca'";
@@ -175,9 +175,9 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 		if ($nacin_stanovanja != "") $upit .= ", nacin_stanovanja=$nacin_stanovanja";
 		$q20 = myquery("update promjena_podataka set $upit where id=$id");
 	} else {
-		$q25 = myquery("select slika from osoba where id=$userid");
+		$q25 = myquery("select slika from osoba where id=$osoba");
 		$slika = mysql_result($q25,0,0);
-		$q30 = myquery("insert into promjena_podataka set osoba=$userid, ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', jmbg='$jmbg', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton=$kanton, datum_rodjenja='$godina-$mjesec-$dan', boracke_kategorije=$borac, slika='".my_escape($slika)."', djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja");
+		$q30 = myquery("insert into promjena_podataka set osoba=$osoba, ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', jmbg='$jmbg', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton=$kanton, datum_rodjenja='$godina-$mjesec-$dan', boracke_kategorije=$borac, slika='".my_escape($slika)."', djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja");
 	}
 	zamgerlog("zatrazena promjena ličnih podataka",2); // 2 = edit
 
@@ -207,7 +207,7 @@ if ($_POST['subakcija']=="postavisliku" && check_csrf_token()) {
 
 		$novavisina = 150;
 		$novasirina = $novavisina * $koef;
-		$filename = "$conf_files_path/slike/$userid-promjena";
+		$filename = "$conf_files_path/slike/$osoba-promjena";
 		if (!file_exists("$conf_files_path/slike"))
 			mkdir ("$conf_files_path/slike", 0777, true);
 
@@ -217,24 +217,24 @@ if ($_POST['subakcija']=="postavisliku" && check_csrf_token()) {
 				$source = imagecreatefromgif($slika);
 				imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
 				imagegif($dest, $filename.".gif");
-				$slikabaza = "$userid-promjena.gif";
+				$slikabaza = "$osoba-promjena.gif";
 				break;
 			case IMAGETYPE_JPEG:
 				$source = imagecreatefromjpeg($slika);
 				imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
 				imagejpeg($dest, $filename.".jpg");
-				$slikabaza = "$userid-promjena.jpg";
+				$slikabaza = "$osoba-promjena.jpg";
 				break;
 			case IMAGETYPE_PNG:
 				$source = imagecreatefrompng($slika);
 				imagecopyresampled($dest, $source, 0, 0, 0, 0, $novasirina, $novavisina, $podaci[0], $podaci[1]);
 				imagepng($dest, $filename.".png");
-				$slikabaza = "$userid-promjena.png";
+				$slikabaza = "$osoba-promjena.png";
 				break;
 			case IMAGETYPE_TIFF_II:
 				nicemessage("Nije moguća promjena dimenzija slike tipa TIFF... Ostavljam zadate dimenzije.");
 				rename ($slika, $filename.".tiff");
-				$slikabaza = "$userid-promjena.tiff";
+				$slikabaza = "$osoba-promjena.tiff";
 				break;
 			default:
 				niceerror("Nepoznat tip slike.");
@@ -242,11 +242,11 @@ if ($_POST['subakcija']=="postavisliku" && check_csrf_token()) {
 				return;
 		}
 	
-		$q300 = myquery("select id from promjena_podataka where osoba=$userid");
+		$q300 = myquery("select id from promjena_podataka where osoba=$osoba");
 		if (mysql_num_rows($q300)>0) {
-			$q310 = myquery("update promjena_podataka set slika='$slikabaza' where osoba=$userid");
+			$q310 = myquery("update promjena_podataka set slika='$slikabaza' where osoba=$osoba");
 		} else {
-			$q320 = myquery("insert into promjena_podataka select 0, $userid, ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, email, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, boracke_kategorije, jmbg, adresa, adresa_mjesto, telefon, kanton, '$slikabaza', NOW() from osoba where id=$userid");
+			$q320 = myquery("insert into promjena_podataka select 0, $osoba, ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, email, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, boracke_kategorije, jmbg, adresa, adresa_mjesto, telefon, kanton, '$slikabaza', NOW() from osoba where id=$osoba");
 		}
 	
 		zamgerlog("zatrazeno postavljanje/promjena slike", 2);
@@ -266,11 +266,11 @@ if ($_POST['subakcija']=="postavisliku" && check_csrf_token()) {
 // Brisanje slike
 
 if ($_POST['subakcija']=="obrisisliku" && check_csrf_token()) {
-	$q300 = myquery("select id from promjena_podataka where osoba=$userid");
+	$q300 = myquery("select id from promjena_podataka where osoba=$osoba");
 	if (mysql_num_rows($q300)>0) {
-		$q310 = myquery("update promjena_podataka set slika='' where osoba=$userid");
+		$q310 = myquery("update promjena_podataka set slika='' where osoba=$osoba");
 	} else {
-		$q320 = myquery("insert into promjena_podataka select 0, $userid, ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, boracke_kategorije, jmbg, adresa, adresa_mjesto, telefon, kanton, '', NOW() from osoba where id=$userid");
+		$q320 = myquery("insert into promjena_podataka select 0, $osoba, ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, brindexa, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, boracke_kategorije, jmbg, adresa, adresa_mjesto, telefon, kanton, '', NOW() from osoba where id=$osoba");
 	}
 
 	zamgerlog("zatrazeno brisanje slike", 2);
@@ -295,16 +295,16 @@ if ($conf_system_auth == "ldap") {
 
 }
 
-$q390 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where osoba=$userid order by vrijeme_zahtjeva desc limit 1");
+$q390 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where osoba=$osoba order by vrijeme_zahtjeva desc limit 1");
 
 if (mysql_num_rows($q390)>0) {
-	?><p><b>Već ste uputili zahtjev za promjenu ličnih podataka</b> (na dan <?=date("d. m. Y. \u H:i:s", mysql_result($q390,0,0))?>). Vaš zahtjev se trenutno razmatra. U međuvremenu, ispod možete vidjeti stare podatke i eventualno ponovo poslati zahtjev (stari zahtjev će u tom slučaju biti zanemaren.</p><?
+	?><p><b>Već ste uputili zahtjev za promjenu ličnih podataka</b> (na dan <?=date("d. m. Y. \u H:i:s", mysql_result($q390,0,0))?>). Vaš zahtjev se trenutno razmatra. U međuvremenu, ispod možete vidjeti stare podatke i eventualno ponovo poslati zahtjev (stari zahtjev će u tom slučaju biti zanemaren).</p><?
 } else {
 ?>
 	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p><?
 }
 
-$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$userid");
+$q400 = myquery("select ime, prezime, brindexa, datum_rodjenja, mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
 
 // Spisak gradova
 $q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
@@ -360,6 +360,13 @@ if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
 // Pripadnik borackih kategorija
 if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 
+// Fino formatiran datum rođenja
+$datum_rodjenja = mysql_result($q400,0,3);
+if ($datum_rodjenja == "0000-00-00")
+	$datum_rodjenja = "";
+else
+	$datum_rodjenja = substr($datum_rodjenja, 8, 2). ". " . substr($datum_rodjenja, 5, 2) . ". " . substr($datum_rodjenja, 0, 4) . ".";
+
 
 // Određujemo tekst poruke u kategoriji "Lični podaci"
 
@@ -390,7 +397,7 @@ if ($user_nastavnik || $user_studentska) {
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="obrisisliku">
 		<tr><td colspan="2"><p>
-		<img src="?sta=common/slika&osoba=<?=$userid?>"><br/>
+		<img src="?sta=common/slika&osoba=<?=$osoba?>"><br/>
 		<input type="submit" value="Obriši sliku"><br></form>
 		<?
 		print genform("POST", "b\"  enctype=\"multipart/form-data");
@@ -438,7 +445,7 @@ if ($user_nastavnik || $user_studentska) {
 		Kontakt telefon:</td><td><input type="text" name="telefon" value="<?=mysql_result($q400,0,9)?>" class="default">
 	</td></tr>
 	<?
-	$q450 = myquery("select id, adresa, sistemska from email where osoba=$userid");
+	$q450 = myquery("select id, adresa, sistemska from email where osoba=$osoba");
 	?>
 	<tr><td valign="top">
 		Kontakt e-mail:</td><td>
@@ -482,8 +489,7 @@ if ($user_nastavnik || $user_studentska) {
 	</td></tr>
 	<tr><td>
 		Datum rođenja:<br/>
-		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?
-		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,3))?>" class="default">
+		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?=$datum_rodjenja?>" class="default">
 	</td></tr>
 	<tr><td>
 		Mjesto rođenja:</td><td><?=mycombobox("mjesto_rodjenja", $mjestorvalue, $gradovilist)?>
