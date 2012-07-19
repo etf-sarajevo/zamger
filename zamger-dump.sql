@@ -1153,7 +1153,6 @@ INSERT INTO `nacionalnost` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
-  `id` int(11) NOT NULL,
   `nastavnik` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,

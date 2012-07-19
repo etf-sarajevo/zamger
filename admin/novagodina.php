@@ -8,6 +8,7 @@
 
 function admin_novagodina() {
 
+
 require("lib/manip.php");
 
 
@@ -48,33 +49,17 @@ if ($_POST['akcija'] == "novagodina") {
 			}
 			while ($r50 = mysql_fetch_row($q50)) {
 				if ($r50[2]==1) { // obavezan
-					$predmet=$r50[0];
-					$q60 = myquery("select naziv from predmet where id=$predmet");
-					if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem predmet ".mysql_result($q60,0,0)." (obavezan)<br/>\n";
-					else {
-						$q63 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$sem, obavezan=1, akademska_godina=$ag");
-						// Kreiranje labgrupe "svi studenti"
-						$q65 = myquery("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-						if (mysql_result($q65,0,0)==0)
-							$q67 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ag, virtualna=1");
-					}
+					kreirajPonuduKursa ($predmet = $r50[0], $studij, $sem, $ag, $obavezan=1, $ispis);
 
 				} else { // izborni
 					$iz = $r50[0];
+					// $iz je slot, uzimamo sve predmete u tom slotu
 					$q70 = myquery("select p.id, p.naziv from predmet as p, izborni_slot as iz where iz.id=$iz and iz.predmet=p.id");
 					while ($r70 = mysql_fetch_row($q70)) {
 						$predmet = $r70[0];
 						if (in_array($predmet, $bio)) continue;
 						array_push($bio, $predmet);
-
-						if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem predmet ".$r70[1]." (izborni)<br/>\n";
-						else {
-							$q80 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$sem, obavezan=0, akademska_godina=$ag");
-							// Kreiranje labgrupe "svi studenti"
-							$q90 = myquery("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-							if (mysql_result($q90,0,0)==0)
-								$q67 = myquery("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ag, virtualna=1");
-						}
+						kreirajPonuduKursa ($predmet, $studij, $sem, $ag, $obavezan=0, $ispis);
 					}
 				}
 			}
