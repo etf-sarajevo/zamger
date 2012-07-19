@@ -1064,13 +1064,13 @@ if ($conf_system_auth == "ldap") {
 $q390 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva) from promjena_podataka where osoba=$userid order by vrijeme_zahtjeva desc limit 1");
 
 if (mysql_num_rows($q390)>0) {
-	?><p><b>Već ste uputili zahtjev za promjenu ličnih podataka</b> (na dan <?=date("d. m. Y. \u H:i:s", mysql_result($q390,0,0))?>). Vaš zahtjev se trenutno razmatra. U međuvremenu, ispod možete vidjeti stare podatke i eventualno ponovo poslati zahtjev (stari zahtjev će u tom slučaju biti zanemaren.</p><?
+	?><p><b>Već ste uputili zahtjev za promjenu ličnih podataka</b> (na dan <?=date("d. m. Y. \u H:i:s", mysql_result($q390,0,0))?>). Vaš zahtjev se trenutno razmatra. U međuvremenu, ispod možete vidjeti stare podatke i eventualno ponovo poslati zahtjev (stari zahtjev će u tom slučaju biti zanemaren).</p><?
 } else {
 ?>
 	<p>Pozivamo Vas da podržite rad Studentske službe <?=$conf_skr_naziv_institucije_genitiv?> tako što ćete prijaviti sve eventualne greške u vašim ličnim podacima (datim ispod).</p><?
 }
 
-$q400 = myquery("select ime, prezime, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika from osoba where id=$userid");
+$q400 = myquery("select ime, prezime, brindexa, datum_rodjenja, mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, spol, imeoca, prezimeoca, imemajke, prezimemajke, drzavljanstvo, nacionalnost, boracke_kategorije, slika from osoba where id=$userid");
 
 // Spisak gradova
 $q410 = myquery("select id,naziv, opcina, drzava from mjesto order by naziv");
@@ -1130,6 +1130,13 @@ if (mysql_result($q400,0,11)=="Z") $zenskir = "CHECKED"; else $zenskir="";
 // Pripadnik borackih kategorija
 if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 
+
+// Fino formatiran datum rođenja
+$datum_rodjenja = mysql_result($q400,0,3);
+if ($datum_rodjenja == "0000-00-00")
+	$datum_rodjenja = "";
+else
+	$datum_rodjenja = substr($datum_rodjenja, 8, 2). ". " . substr($datum_rodjenja, 5, 2) . ". " . substr($datum_rodjenja, 0, 4) . ".";
 
 ?>
 	<script type="text/javascript">
@@ -1340,8 +1347,7 @@ if (mysql_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 	</td></tr>
 	<tr><td>
 		Datum rođenja:<br/>
-		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?
-		if (mysql_result($q400,0,4)) print date("d. m. Y.", mysql_result($q400,0,3))?>" class="default">
+		(D.M.G)</td><td><input type="text" name="datum_rodjenja" value="<?=$datum_rodjenja?>" class="default">
 	</td></tr>
 	<tr><td>
 		Mjesto rođenja:</td><td>
