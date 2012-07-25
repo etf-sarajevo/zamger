@@ -77,9 +77,9 @@ if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 <p><b>Pregled položenih predmeta sa ocjenama</b></p>
 <table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
 	<td width="20">&nbsp;</td>
-	<td width="330">Naziv predmeta</td>
-	<td width="200">Akademska godina</td>
-	<td width="150">Konačna ocjena</td>
+	<td>Naziv predmeta</td>
+	<td>Akademska godina</td>
+	<td>Konačna ocjena</td>
 </tr>
 <?
 
