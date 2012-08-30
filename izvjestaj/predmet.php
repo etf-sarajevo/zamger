@@ -484,7 +484,7 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 					$zbodova = $zbodova + $ocjena;
 				}
 			}
-			if (count($zad_id_array)==0) $ispis .= "<td>&nbsp;</td>";
+			if (count($zad_id_array)==0 && count($komponente_zadace)!=0) $ispis .= "<td>&nbsp;</td>";
 
 			foreach($komponente_zadace as $kz) {
 				$q220 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$kz");
