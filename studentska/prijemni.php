@@ -2424,6 +2424,7 @@ else {
 		}
 		if (broj>0) {
 			var rezultat = suma / broj;
+			rezultat =  Math.round(rezultat*100) / 10; // Konkurs 2012.
 			document.getElementById('opci_uspjeh').value = rezultat;
 		} else {
 			document.getElementById('opci_uspjeh').value = "0";
