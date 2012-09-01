@@ -18,28 +18,6 @@ if (!$user_studentska && !$user_siteadmin) {
 	return;
 }
 
-
-/*
-SELECT p.naziv AS predmet, ag.naziv AS akademska_godina, ime, prezime, l.naziv AS labgrupa, k.br_predavanja, k.br_vjezbi, k.br_tutorijala
-FROM kolicina_predavanja AS k
-JOIN osoba AS o ON k.osoba_id = o.id
-JOIN labgrupa AS l ON l.id = k.labgrupa_id
-JOIN akademska_godina AS ag ON ag.id = l.akademska_godina
-JOIN predmet AS p ON p.id = l.predmet
-WHERE ag.aktuelna = 1
-ORDER BY ime ASC
-*/
-
-/*$res2 = myquery("SELECT k.id, sifra, p.naziv AS predmet, ime, prezime, l.naziv AS labgrupa, k.br_predavanja, k.br_vjezbi, k.br_tutorijala, ag.naziv AS godina
-FROM predmet AS p
-JOIN labgrupa AS l ON p.id = l.predmet
-JOIN angazman AS a ON p.id = a.predmet
-JOIN osoba AS o ON o.id = a.osoba
-JOIN kolicina_predavanja as k ON k.osoba_id = o.id
-JOIN akademska_godina AS ag ON ag.id = a.akademska_godina
-ORDER BY ime ASC"); */
-
-
 ?>
 <!-- echo "<table border=\"1\">"; -->
 <?
@@ -56,7 +34,7 @@ JOIN angazman AS a ON p.id = a.predmet
 JOIN osoba AS o ON o.id = a.osoba
 JOIN kolicina_predavanja as k ON k.osoba_id = o.id
 JOIN akademska_godina AS ag ON ag.id = a.akademska_godina
-WHERE ag.aktuelna = 1 AND l.id = k.labgrupa_id
+WHERE ag.aktuelna = 1 AND l.id = k.labgrupa_id AND p.id = $pred
 ORDER BY ime ASC"); // ovo je query za 1. tabelu
 
 $res3 = myquery("SELECT o.id, p.naziv AS predmet, ime, prezime, l.naziv AS labgrupa 
@@ -71,11 +49,6 @@ GROUP BY ime");
 
 <font size="3">Izmjena kolicine predavanja, vjezbi i tutorijala za predmet za pojedinacne nastavnike (koji predaju)</font>
 <br><br>
-<!-- tabela za editovanje kolicina predavanja pojedinacnih nastavnika -->
-<!--
-<form action="?sta=nastavnik/unos_kolicine_pred&predmet=<? echo $pred ?>&ag=<? echo $agod ?>&action=edit" method="POST">
-	<input type="hidden" name="akcija" value="edit_1">
--->
 	<table border="1" cellspacing="1" font size="big">
 		<tr>
 			<td>Naziv predmeta</td>
@@ -122,7 +95,6 @@ GROUP BY ime");
 			<td><input type="text" name="br_tut" value="<? echo $br_tut; ?>" /></td>
 			<td><input type="submit" value="Spasi postavke" /></td>
 			<td><input name="delete" type="submit" value="Izbrisi postavke" /></td>
-			<!-- <td><a href="?sta=nastavnik/unos_kolicine_pred&predmet=<? echo $pred ?>&ag=<? echo $agod ?>&kol_id=<? echo $kol_id; ?>">SPASI</td> -->
 		</tr>
 		</form>
 		<?
@@ -130,17 +102,11 @@ GROUP BY ime");
 		?>
 	</table>
 	<input type="submit" value="Spasi postavke" />
-<!--
-</form>
--->
 <br><br><br>
 <!-- kraj tabele za editovanje kolicina predavanja pojedinacnih nastavnika -->
 
 
 <font size="3">Unosenje kolicine predavanja, vjezbi i tutorijala za predmet za pojedinacne nastavnike (koji ne predaju)</font>
-<!-- tabela za dodavanje kolicina predavanja pojedinacnih nastavnika koji trenutno ne predaju -->
-<form action="?sta=nastavnik/unos_kolicine_pred&predmet=<? echo $pred ?>&ag=<? echo $agod ?>&action=edit" method="POST">
-<input type="hidden" name="akcija" value="edit_2">
 	<table border="1" cellspacing="1" font size="big">
 		<tr>
 			<td>Ime</td>
@@ -159,6 +125,8 @@ GROUP BY ime");
 				$predmet_id = $pred;
 				$ak_godina = $agod;
 				?>
+				<form action="?sta=nastavnik/unos_kolicine_pred&predmet=<? echo $pred ?>&ag=<? echo $agod ?>&action=edit" method="POST">
+				<input type="hidden" name="akcija" value="edit_2">
 				<tr>
 					<td><? echo $ime; ?></td>
 					<td><? echo $prezime; ?></td>
@@ -185,12 +153,12 @@ GROUP BY ime");
 					<td><input type="submit" value="Dodaj nastavnika" /></td>
 					<!-- <td><? echo "<a href=\"\">Dodaj nastavnika</a>"; ?></td> -->
 				</tr>
+				</form>
 				<br>
 				<?
 			}
 		?>
 	</table>
-</form>
 <br><br><br>
 <!-- kraj tabele za dodavanje kolicina predavanja pojedinacnih nastavnika koji trenutno ne predaju -->
 
