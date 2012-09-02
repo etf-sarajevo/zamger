@@ -145,11 +145,40 @@ iz.predmet=p.id");
 				}
 	
 				if ($polozio==0) { // nije polozio nijedan moguci predmet
-					$predmet_naziv[$r30[1]] = $naziv . ")";
-					$predmet_ects[$r30[1]] = $ects;
-					$predmet_semestar[$r30[1]] = $r30[0];
-					if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r30[1]]=1;
-					else $predmet_stari[$r30[1]]=0;
+					// Spisak izbornih
+					$q71 = myquery("select iz.predmet from izborni_slot as iz, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$trenutni_studij and ps.semestar<=$trenutni_semestar and ps.obavezan=0 and ps.predmet=iz.id");
+					$validni_izborni = array();
+					while ($r71 = mysql_fetch_row($q71))
+						$validni_izborni[] = $r71[0];
+
+					// Određujemo predmet sa drugog odsjeka koji je slušao
+					$nadjen = 0;
+					$q72 = myquery("select pk.predmet, p.naziv, p.ects from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.akademska_godina=$proslagodina and pk.semestar=$r30[0] and pk.obavezan=0 and pk.predmet=p.id");
+					while ($r72 = mysql_fetch_row($q72)) {
+						if (!in_array($r72[0], $validni_izborni)) {
+							$nadjen = 1;
+
+							// Da li ga je položio?
+							$q74 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r72[0] and ocjena>5");
+							if (mysql_result($q74,0,0)==0) {
+								$predmet_naziv[$r72[0]] = $r71[1];
+								$predmet_ects[$r72[0]] = $r71[2];
+								$predmet_semestar[$r72[0]] = $r30[0];
+								if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r72[0]]=1;
+								else $predmet_stari[$r72[0]]=0;
+							}
+						}
+					}
+
+					// Nismo pronašli predmet sa drugog odsjeka koji je student slušao
+					// Znači da student nije ni upisao sve potrebne izborne predmete
+					if ($nadjen == 0) {
+						$predmet_naziv[$r30[1]] = $naziv . ")";
+						$predmet_ects[$r30[1]] = $ects;
+						$predmet_semestar[$r30[1]] = $r30[0];
+						if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r30[1]]=1;
+						else $predmet_stari[$r30[1]]=0;
+					}
 				}
 			}
 		}
