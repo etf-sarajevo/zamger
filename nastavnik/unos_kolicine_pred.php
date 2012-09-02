@@ -18,9 +18,6 @@ if (!$user_studentska && !$user_siteadmin) {
 	return;
 }
 
-?>
-<!-- echo "<table border=\"1\">"; -->
-<?
 //ovim se provjerava da li se prvi put otvara ovaj modul, tj. da li je bilo nekih promjena vrsenih pomocu ovog modula
 if($action == null or $action == "")
 {
@@ -101,7 +98,6 @@ GROUP BY ime");
 		}	
 		?>
 	</table>
-	<input type="submit" value="Spasi postavke" />
 <br><br><br>
 <!-- kraj tabele za editovanje kolicina predavanja pojedinacnih nastavnika -->
 
