@@ -32,6 +32,10 @@ if ($user_nastavnik || $user_siteadmin || $user_studentska) {
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
 		<td bgcolor="<?=$boja_ljudski?>" width="150" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_cv?>';"><a href="?sta=common/profil&akcija=ljudskiresursi&osoba=<?=$osoba?>">Curriculum Vitae</a></td>
 		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+		<td bgcolor="<?=$boja_ljudski?>" width="150" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_cv?>';"><a href="?sta=common/profil&akcija=norma_plata&osoba=<?=$osoba?>">Norma plate</a></td>
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
+		<td bgcolor="<?=$boja_ljudski?>" width="150" align="center" onmouseover="this.style.backgroundColor='#FFFFFF';" onmouseout="this.style.backgroundColor='<?=$boja_cv?>';"><a href="?sta=common/profil&akcija=plata&osoba=<?=$osoba?>">Plata</a></td>
+		<td bgcolor="#FFFFFF" width="50">&nbsp;</td>
 	</tr>
 	<tr>
 		<td colspan="9" height="1" bgcolor="#000000" bgimage="images/fnord.gif">
