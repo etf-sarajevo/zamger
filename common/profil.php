@@ -30,6 +30,12 @@ function common_profil() {
 		case "ljudskiresursi": 
 			include("common/profil/ljudski_resursi.php");
 			break;
+		case "norma_plata":
+			include("common/profil/norma_plata.php");
+			break;
+		case "plata":
+			include("common/profil/plata.php");
+			break;
 		default: 
 			include("common/profil/licni_podaci.php");
 			break;	
