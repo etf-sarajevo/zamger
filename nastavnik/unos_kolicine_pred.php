@@ -24,7 +24,7 @@ if($action == null or $action == "")
 // ovo se izvrsava ako se 1. put otvara ovaj modul, ili ako se vraca na njega nakon nekih promjena
 prikazi_tabele:{
 
-$res = myquery("SELECT k.id, sifra, p.naziv AS predmet, ime, prezime, l.naziv AS labgrupa, k.br_predavanja, k.br_vjezbi, k.br_tutorijala, ag.naziv AS godina
+$res = myquery("SELECT k.id, sifra, p.naziv AS predmet, ime, prezime, l.naziv AS labgrupa, k.sati_predavanja, k.sati_vjezbi, k.sati_tutorijala, ag.naziv AS godina
 FROM predmet AS p
 JOIN labgrupa AS l ON p.id = l.predmet
 JOIN angazman AS a ON p.id = a.predmet
@@ -53,9 +53,9 @@ GROUP BY ime");
 			<td>Ime</td>
 			<td>Prezime</td>
 			<td>Labgrupa</td>
-			<td>Broj predavanja</td>
-			<td>Broj vjezbi</td>
-			<td>Broj tutorijala</td>
+			<td>Sati predavanja</td>
+			<td>Sati vjezbi</td>
+			<td>Sati tutorijala</td>
 			<td></td>
 			<td></td>
 			<!-- <td></td> -->
@@ -108,9 +108,9 @@ GROUP BY ime");
 			<td>Ime</td>
 			<td>Prezime</td>
 			<td>Labgrupa</td>
-			<td>Broj predavanja</td>
-			<td>Broj vjezbi</td>
-			<td>Broj tutorijala</td>
+			<td>Sati predavanja</td>
+			<td>Sati vjezbi</td>
+			<td>Sati tutorijala</td>
 			<td></td>
 		</tr>
 		<?
@@ -168,12 +168,12 @@ GROUP BY ime");
 		<tr>
 			<td>Sifra</td>
 			<td>Naziv predmeta</td>
-			<td>Broj predavanja</td>
-			<td>Broj vjezbi</td>
-			<td>Broj tutorijala</td>
+			<td>Sati predavanja</td>
+			<td>Sati vjezbi</td>
+			<td>Sati tutorijala</td>
 		</tr>
 	<?
-		$predmet_query = myquery("SELECT sifra, naziv, br_predavanja, br_vjezbi, br_tutorijala FROM predmet where id = $pred order by id asc");
+		$predmet_query = myquery("SELECT sifra, naziv, sati_predavanja, sati_vjezbi, sati_tutorijala FROM predmet where id = $pred order by id asc");
 		 // ovo je query za 3. tabelu
 		while($row = mysql_fetch_row($predmet_query)){
 		$sifra = $row[0];
@@ -216,49 +216,115 @@ else if($action == "edit"){
 $akcija = $_POST['akcija'];
 
 if($akcija == "edit_1"){
-	//ovo se izvrsava ako se mijenjaju podaci za broj predavanja pojedinacnih nastavnika (1. tabela)
+	//ovo se izvrsava ako se mijenjaju podaci za Sati predavanja pojedinacnih nastavnika (1. tabela)
+	$greska = 0; // 0-nema greske, 1-vrijednost nula za varijablu(e), 2-broj predavanja za nastavnika veci od broja predavanja na predmetu
 	$kol_id = $_POST['kol_id'];
+	$br_predavanja_predmet =  mysql_result(myquery("SELECT sati_predavanja FROM predmet WHERE id = $pred"),0,0);
 	$br_pred = $_POST['br_pred'];
+	if($br_pred > $br_predavanja_predmet)
+		$greska1 = 2;
+	else if($br_pred == '0' or NULL)
+		$greska1 = 1;
+	$br_vjezbi_predmet =  mysql_result(myquery("SELECT sati_vjezbi FROM predmet WHERE id = $pred"),0,0);
 	$br_vj = $_POST['br_vj'];
+	if($br_vj > $br_vjezbi_predmet)
+		$greska2 = 2;
+	else if($br_vj == '0' or NULL)
+		$greska2 = 1;
+	$br_tutorijala_predmet = mysql_result(myquery("SELECT sati_tutorijala FROM predmet WHERE id = $pred"),0,0);
 	$br_tut = $_POST['br_tut'];
+	if($br_tut > $br_tutorijala_predmet)
+		$greska3 = 2;
+	else if($br_tut == '0' or NULL)
+		$greska3 = 1;
+	if($greska1 == 1 AND $greska2 == 1 AND $greska3 == 1)
+		$greska = 1;
+	else if($greska1 == 2 OR $greska2 == 2 OR $greska3 == 2)
+		$greska = 2;
 	$query = FALSE;
 	if(isset($_POST['delete'])){
 		$query = myquery("DELETE FROM kolicina_predavanja WHERE id = $kol_id");
-	} else
-		$query = myquery("UPDATE kolicina_predavanja set br_predavanja = $br_pred, br_vjezbi = $br_vj, br_tutorijala = $br_tut WHERE id = $kol_id");
-	if($query){
+		echo "<br>Uspjesno ste izbrisali nastavniku predavanja.Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.";
+	} else{
+		switch($greska){
+			case 0:
+				$query = myquery("UPDATE kolicina_predavanja set sati_predavanja = $br_pred, sati_vjezbi = $br_vj, sati_tutorijala = $br_tut WHERE id = $kol_id");
+				if($query)
+					goto prikazi_tabele;
+					//echo "<br>Uspjesno ste dodali nastavniku predavanja.Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.";
+				else
+					niceerror("Doslo je do greske prilikom izmjene podataka u bazi podataka.");
+				break;
+			case 1:
+				niceerror("Doslo je do greske prilikom unosa podataka. Ne smiju sve 3 varijable imati vrijednost 0.<br>Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.");
+				break;
+			case 2:
+				niceerror("Doslo je do greske prilikom unosa podataka. Broj predavanja/vjezbi/tutorijala za nastavnika ne smije biti veci od broja predavanja/vjezbi/tutorijala registrovanih za predmet.<br>Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.");
+				break;
+		}
+	}
+	/*if($query){
 		goto prikazi_tabele;
 	} else {
 		myerror("Doslo je do greske prilikom izmjene podataka.");
-	}
+	}*/
 	//echo "<font size=\"10\">$kol_id</font>";
 }
 else if($akcija == "edit_2"){
 	//ovo se izvrsava kada se nastavnicima dodaju kolicine predavanja po 1. put (2. tabela)
+	$greska = 0; // 0-nema greske, 1-vrijednost nula za varijablu(e), 2-broj predavanja za nastavnika veci od broja predavanja na predmetu
 	$osoba_id = $_POST['osoba_id'];
 	$predmet_id = $_POST['predmet_id'];
 	$labgrupa_id  = $_POST['labgroup'];
 	$ak_godina = $_POST['ak_godina'];
+	$br_predavanja_predmet =  mysql_result(myquery("SELECT sati_predavanja FROM predmet WHERE id = $pred"),0,0);
 	$br_predavanja = $_POST['br_pred_nastavnik'];
+	if($br_predavanja > $br_predavanja_predmet)
+		$greska1 = 2;
+	else if($br_predavanja == '0' or NULL)
+		$greska1 = 1;
+	$br_vjezbi_predmet =  mysql_result(myquery("SELECT sati_vjezbi FROM predmet WHERE id = $pred"),0,0);
 	$br_vjezbi = $_POST['br_vjezbi_nastavnik'];
+	if($br_vjezbi > $br_vjezbi_predmet)
+		$greska2 = 2;
+	else if($br_vjezbi == '0' or NULL)
+		$greska2 = 1;
+	$br_tutorijala_predmet = mysql_result(myquery("SELECT sati_tutorijala FROM predmet WHERE id = $pred"),0,0);
 	$br_tutorijala = $_POST['br_tutorijala_nastavnik'];
-	$query = myquery("INSERT INTO kolicina_predavanja VALUES(null, '$osoba_id','$predmet_id','$labgrupa_id','$ak_godina','$br_predavanja','$br_vjezbi','$br_tutorijala')");
-	//echo $query; za provjeravanje ispravnosti querija
-	if($query)
-		echo "<br>Uspjesno ste dodali nastavniku predavanja.Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak";
-	else
-		myerror("Doslo je do greske prilikom unosa u bazu podataka.");
+	if($br_tutorijala > $br_tutorijala_predmet)
+		$greska3 = 2;
+	else if($br_tutorijala == '0' or NULL)
+		$greska3 = 1;
+	if($greska1 == 1 AND $greska2 == 1 AND $greska3 == 1)
+		$greska = 1;
+	else if($greska1 == 2 OR $greska2 == 2 OR $greska3 == 2)
+		$greska = 2;
+	switch($greska){
+		case 0:
+			$query = myquery("INSERT INTO kolicina_predavanja VALUES(null, '$osoba_id','$predmet_id','$labgrupa_id','$ak_godina','$br_predavanja','$br_vjezbi','$br_tutorijala')");
+			if($query)
+				echo "<br>Uspjesno ste dodali nastavniku predavanja.Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.";
+			else
+				niceerror("Doslo je do greske prilikom unosa u bazu podataka.");
+			break;
+		case 1:
+			niceerror("Doslo je do greske prilikom unosa podataka. Ne smiju sve 3 varijable imati vrijednost 0.<br>Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.");
+			break;
+		case 2:
+			niceerror("Doslo je do greske prilikom unosa podataka. Broj predavanja/vjezbi/tutorijala za nastavnika ne smije biti<br> veci od broja predavanja/vjezbi/tutorijala registrovanih za predmet.<br>Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak.");
+			break;
+	}
 }
 else if($akcija == "edit_3"){
-	//ovo se izvrsava ako se mijenjaju podaci za broj predavanja predmeta (3. tabela)
+	//ovo se izvrsava ako se mijenjaju podaci za Sati predavanja predmeta (3. tabela)
 	$br_pred = $_POST['br_pred_predmet'];
 	$br_vj = $_POST['br_vj_predmet'];
 	$br_tut = $_POST['br_tut_predmet'];
-	$query = myquery("update predmet set br_predavanja = $br_pred, br_vjezbi = $br_vj, br_tutorijala = $br_tut where id = $pred");
+	$query = myquery("update predmet set sati_predavanja = $br_pred, sati_vjezbi = $br_vj, sati_tutorijala = $br_tut where id = $pred");
 	if($query)
 		echo "Uspjesno ste promijenili podatke. Kliknite <a href=\"?sta=nastavnik/unos_kolicine_pred&predmet=$pred&ag=$agod\">OVDJE</a> za povratak";
 	else
-		myerror("Doslo je do greske prilikom unosa u bazu podataka.");
+		niceerror("Doslo je do greske prilikom unosa u bazu podataka.");
 	}
 }
 
