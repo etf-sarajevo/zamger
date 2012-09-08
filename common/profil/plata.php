@@ -15,9 +15,12 @@ $ime = mysql_result($ime_prezime,0,0);
 $prezime = mysql_result($ime_prezime,0,1);
 echo "<h2>Detalji o plati korisnika $ime $prezime</h2><br>";
 
-$zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $osoba"), 0, 0));
-	if($zvanje == 1 || $zvanje == 2 || $zvanje == 6){ //u slucaju redovnog profesora, vandrednog profesora ili profesora emeritusa
-		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.br_vjezbi ) + SUM( k.br_tutorijala ) AS ukupno_casova
+
+//stari metod(ne valja) $fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba"), 0, 0));
+$fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba and CONCAT(year(datum_izbora),'/',year(datum_isteka)) = (SELECT naziv FROM akademska_godina WHERE aktuelna = 1)"), 0, 0));
+$fk_naucnonastavno_zvanje2 = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba ORDER BY year(datum_isteka) DESC"), 0, 0));
+	if($fk_naucnonastavno_zvanje == 1 || $fk_naucnonastavno_zvanje == 2 || $fk_naucnonastavno_zvanje == 6){ //u slucaju redovnog profesora, vandrednog profesora ili profesora emeritusa
+		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.sati_vjezbi ) + SUM( k.sati_tutorijala ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
@@ -36,8 +39,8 @@ $zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $o
 		$vjezbe_tutorijali_norma = $broj_vjezbi_tutorijala / 12;
 		$norma = $predmet_norma + $vjezbe_tutorijali_norma;
 	}
-	else if($zvanje == 4 || $zvanje == 5){ //u slucaju asistenta ili viseg asistenta
-		$broj_predavanja = intval(mysql_result(myquery("SELECT  SUM( k.br_predavanja ) AS ukupno_casova
+	else if($fk_naucnonastavno_zvanje == 4 || $fk_naucnonastavno_zvanje == 5){ //u slucaju asistenta ili viseg asistenta
+		$broj_predavanja = intval(mysql_result(myquery("SELECT  SUM( k.sati_predavanja ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
@@ -46,7 +49,7 @@ $zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $o
 			JOIN akademska_godina AS ag ON ag.id = a.akademska_godina
 			WHERE ag.aktuelna = 1 AND l.id = k.labgrupa_id AND o.id = $osoba
 			GROUP BY ime"), 0, 0));
-		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.br_predavanja ) + SUM( k.br_vjezbi ) + SUM( k.br_tutorijala ) AS ukupno_casova
+		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.sati_predavanja ) + SUM( k.sati_vjezbi ) + SUM( k.sati_tutorijala ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
@@ -60,7 +63,7 @@ $zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $o
 		$norma = $predavanja_norma + $vjezbe_tutorijali_norma;
 	}
 
-switch ($zvanje){
+switch ($fk_naucnonastavno_zvanje){
 	case 1:
 		$koeficijent_slozenosti = 16;
 		break;
@@ -84,24 +87,25 @@ switch ($zvanje){
 $godine_staza = intval(mysql_result(myquery("SELECT count(akademska_godina) FROM angazman WHERE osoba=$osoba  GROUP BY osoba"), 0, 0));
 //echo "godine_staza: $godine_staza";
 	
-	
-	$koeficijent_opterecenja = 0.9;       //unosi se
-	$koeficijent_broja_studenata = 0.1;       //unosi se
+$default_vrijednosti=myquery("SELECT * FROM defaultne_vrijednosti_plate"); //defaultne vrijednosti varijabli potrebnih za racunanje plate, kao sto su porezi, broj radnih dana, itd.
+
+	$koeficijent_opterecenja = mysql_result($default_vrijednosti, 0, 0);//0.9;       //unosi se
+	$koeficijent_broja_studenata = mysql_result($default_vrijednosti, 0, 1);//0.1;       //unosi se
 	$koeficijent_minulog_rada = 1 + 0.006 * $godine_staza;
-	$vrijednost_boda = 150;       //unosi se
+	$vrijednost_boda = mysql_result($default_vrijednosti, 0, 2);//150;       //unosi se
 	$koeficijent_place = $koeficijent_slozenosti * $norma * ($koeficijent_opterecenja + koeficijent_broja_studenata) * $koeficijent_minulog_rada;
 	$minuli_rad = ($godine_staza/2) * 0.01; //izracunati (godine_staza/2) * 0.01
 	$bruto_placa = (1 + $minuli_rad) * $koeficijent_place * $vrijednost_boda;
-	$penziono_i_invalidno_osiguranje = 0.17;       //unosi se, ostaju default vrijednosti
-	$zdravstveno_osiguranje = 0.12;       //unosi se, ostaju default vrijednosti
-	$zaposljavanje_na_teret_osiguranja = 0.015;       //unosi se, ostaju default vrijednosti
+	$penziono_i_invalidno_osiguranje = mysql_result($default_vrijednosti, 0, 3) * 100;//0.17;       //unosi se, ostaju default vrijednosti
+	$zdravstveno_osiguranje = mysql_result($default_vrijednosti, 0, 4) * 100;//0.12;       //unosi se, ostaju default vrijednosti
+	$zaposljavanje_na_teret_osiguranja = mysql_result($default_vrijednosti, 0, 5) * 100;//0.015;       //unosi se, ostaju default vrijednosti
 	$neto_placa_sa_porezom = (1 - $penziono_i_invalidno_osiguranje - $zdravstveno_osiguranje - $zaposljavanje_na_teret_osiguranja) * $bruto_placa;
 	$porezna_olaksica = 0;       //unosi se
 	$porez_na_placu = 0.1;
 	$POR = ($neto_placa_sa_porezom - $porezna_olaksica) * $porez_na_placu;
 	$NBP = $neto_placa_sa_porezom - $POR;
-	$broj_radnih_dana_u_mjesecu = 22;       //unosi se
-	$dnevni_topli_obrok = 16;       //unosi se
+	$broj_radnih_dana_u_mjesecu = mysql_result($default_vrijednosti, 0, 6);//22;       //unosi se
+	$dnevni_topli_obrok = mysql_result($default_vrijednosti, 0, 7);//16;       //unosi se
 	$topli_obrok = $broj_radnih_dana_u_mjesecu * $dnevni_topli_obrok;
 	$ukupno_za_isplatu = $NBP + $topli_obrok;
 	
@@ -110,39 +114,39 @@ $godine_staza = intval(mysql_result(myquery("SELECT count(akademska_godina) FROM
 		<table>
 			<tr>
 				<td><font size="3">Koeficijent opterecenja:</font></td>
-				<td><font size="3"><input type="text" name="koeficijent_opterecenja" value="0.9"></font></td>
+				<td><font size="3"><input type="text" name="koeficijent_opterecenja" value="<? echo $koeficijent_opterecenja; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Koeficijent broja studenata:</font></td>
-				<td><font size="3"><input type="text" name="koeficijent_broja_studenata" value="0.1"></font></td>
+				<td><font size="3"><input type="text" name="koeficijent_broja_studenata" value="<? echo $koeficijent_broja_studenata; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Vrijednost boda</font></td>
-				<td><font size="3"><input type="text" name="vrijednost_boda"></font></td>
+				<td><font size="3"><input type="text" name="vrijednost_boda" value="<? echo $vrijednost_boda; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Penziono i invalidno osiguranje (unijeti u procentima)</font></td>
-				<td><font size="3"><input type="text" name="penziono_i_invalidno_osiguranje" value="17"></font></td>
+				<td><font size="3"><input type="text" name="penziono_i_invalidno_osiguranje" value="<? echo $penziono_i_invalidno_osiguranje; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Zdravstveno osiguranje (unijeti u procentima)</font></td>
-				<td><font size="3"><input type="text" name="zdravstveno_osiguranje" value="12"></font></td>
+				<td><font size="3"><input type="text" name="zdravstveno_osiguranje" value="<? echo $zdravstveno_osiguranje; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Zaposljavanje na teret osiguranja (unijeti u procentima)</font></td>
-				<td><font size="3"><input type="text" name="zaposljavanje_na_teret_osiguranja" value="1.5"></font></td>
+				<td><font size="3"><input type="text" name="zaposljavanje_na_teret_osiguranja" value="<? echo $zaposljavanje_na_teret_osiguranja; ?>"></font></td>
 			</tr>
 			<tr>
-				<td><font size="3">Porezna olaksica</font></td>
+				<td><font size="3">Porezna olaksica (u KM)</font></td>
 				<td><font size="3"><input type="text" name="porezna_olaksica"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Broj radnih dana u mjesecu</font></td>
-				<td><font size="3"><input type="text" name="broj_radnih_dana_u_mjesecu" value="22"></font></td>
+				<td><font size="3"><input type="text" name="broj_radnih_dana_u_mjesecu" value="<? echo $broj_radnih_dana_u_mjesecu; ?>"></font></td>
 			</tr>
 			<tr>
 				<td><font size="3">Dnevni topli obrok (u KM)</font></td>
-				<td><font size="3"><input type="text" name="dnevni_topli_obrok" value="16"></font></td>
+				<td><font size="3"><input type="text" name="dnevni_topli_obrok" value="<? echo $dnevni_topli_obrok; ?>"></font></td>
 			</tr>
 		</table>
 		<input type="hidden" name="norma" value="<? echo $norma; ?>">
@@ -258,15 +262,15 @@ $godine_staza = intval(mysql_result(myquery("SELECT count(akademska_godina) FROM
 					<td><font size="3"><input type="text" name="bruto_placa" value="<? echo "$bruto_placa KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>
-					<td><font size="3">Penziono i invalidno osiguranje (unijeti u procentima):</font></td>
+					<td><font size="3">Penziono i invalidno osiguranje:</font></td>
 					<td><font size="3"><input type="text" name="penziono_i_invalidno_osiguranje_num" value="<? echo "$penziono_i_invalidno_osiguranje_num KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>
-					<td><font size="3">Zdravstveno osiguranje (unijeti u procentima):</font></td>
+					<td><font size="3">Zdravstveno osiguranje:</font></td>
 					<td><font size="3"><input type="text" name="zdravstveno_osiguranje_num" value="<? echo "$zdravstveno_osiguranje_num KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>
-					<td><font size="3">Zaposljavanje na teret osiguranja (unijeti u procentima):</font></td>
+					<td><font size="3">Zaposljavanje na teret osiguranja:</font></td>
 					<td><font size="3"><input type="text" name="zaposljavanje_na_teret_osiguranja_num" value="<? echo "$zaposljavanje_na_teret_osiguranja_num KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>
@@ -274,7 +278,7 @@ $godine_staza = intval(mysql_result(myquery("SELECT count(akademska_godina) FROM
 					<td><font size="3"><input type="text" name="neto_placa_sa_porezom" value="<? echo "$neto_placa_sa_porezom KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>
-					<td><font size="3">Porezna olaksica:</font></td>
+					<td><font size="3">Porezna olaksica (u KM):</font></td>
 					<td><font size="3"><input type="text" name="porezna_olaksica" value="<? echo "$porezna_olaksica KM";?>" disabled="disabled"></font></td>
 				</tr>
 				<tr>

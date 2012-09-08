@@ -11,9 +11,11 @@ $ime = mysql_result($ime_prezime,0,0);
 $prezime = mysql_result($ime_prezime,0,1);
 echo "<h2>Detalji o normi korisnika $ime $prezime</h2><br>\n";
 
-$zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $osoba"), 0, 0));
-	if($zvanje == 1 || $zvanje == 2 || $zvanje == 6){ //u slucaju redovnog profesora, vandrednog profesora ili profesora emeritusa
-		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.br_vjezbi ) + SUM( k.br_tutorijala ) AS ukupno_casova
+//stari metod(ne valja) $fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba"), 0, 0));
+$fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba and CONCAT(year(datum_izbora),'/',year(datum_isteka)) = (SELECT naziv FROM akademska_godina WHERE aktuelna = 1)"), 0, 0));
+$fk_naucnonastavno_zvanje2 = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba ORDER BY year(datum_isteka) DESC"), 0, 0));
+	if($fk_naucnonastavno_zvanje == 1 || $fk_naucnonastavno_zvanje == 2 || $fk_naucnonastavno_zvanje == 6){ //u slucaju redovnog profesora, vandrednog profesora ili profesora emeritusa
+		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.sati_vjezbi ) + SUM( k.sati_tutorijala ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
@@ -39,8 +41,8 @@ $zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $o
 		echo "<tr><td><font size=\"3\">Vasa norma iznosi:</td><td>$norma</td></font></tr><br>\n\t\t";
 		echo "<br></table>\n";
 	}
-	else if($zvanje == 4 || $zvanje == 5){ //u slucaju asistenta ili viseg asistenta
-		$broj_predavanja = intval(mysql_result(myquery("SELECT  SUM( k.br_predavanja ) AS ukupno_casova
+	else if($fk_naucnonastavno_zvanje == 4 || $fk_naucnonastavno_zvanje == 5){ //u slucaju asistenta ili viseg asistenta
+		$broj_predavanja = intval(mysql_result(myquery("SELECT  SUM( k.sati_predavanja ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
@@ -49,7 +51,7 @@ $zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $o
 			JOIN akademska_godina AS ag ON ag.id = a.akademska_godina
 			WHERE ag.aktuelna = 1 AND l.id = k.labgrupa_id AND o.id = $osoba
 			GROUP BY ime"), 0, 0));
-		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.br_predavanja ) + SUM( k.br_vjezbi ) + SUM( k.br_tutorijala ) AS ukupno_casova
+		$broj_vjezbi_tutorijala = intval(mysql_result(myquery("SELECT  SUM( k.sati_predavanja ) + SUM( k.sati_vjezbi ) + SUM( k.sati_tutorijala ) AS ukupno_casova
 			FROM predmet AS p
 			JOIN labgrupa AS l ON p.id = l.predmet
 			JOIN angazman AS a ON p.id = a.predmet
