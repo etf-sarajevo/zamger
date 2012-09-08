@@ -461,7 +461,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci o predmetu
 
-	$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, agp.tippredmeta, p.ects from predmet as p, akademska_godina_predmet as agp where p.id=$predmet and agp.akademska_godina=$ag and p.id=agp.predmet");
+	$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, agp.tippredmeta, p.ects, p.sati_predavanja, p.sati_vjezbi, p.sati_tutorijala from predmet as p, akademska_godina_predmet as agp where p.id=$predmet and agp.akademska_godina=$ag and p.id=agp.predmet");
 	if (!($r350 = mysql_fetch_row($q350))) {
 		zamgerlog("nepostojeci predmet $predmet",3);
 		niceerror("Nepostojeći predmet!");
@@ -474,6 +474,9 @@ else if ($akcija == "edit") {
 	$sifra=$r350[1]; if ($sifra=="") { $sifra="<font color=\"red\">(?)</font>"; $greska=1; }
 	$kratkinaziv=$r350[3]; if ($kratkinaziv=="") { $kratkinaziv="<font color=\"red\">(?)</font>"; $greska=1; }
 	$ects=floatval($r350[6]); if ($ects==0) { $ects="<font color=\"red\">(?)</font>"; $greska=1; }
+	$sati_predavanja=floatval($r350[7]); if ($sati_predavanja==0) { $ects="<font color=\"red\">(?)</font>"; $greska=1; }
+	$sati_vjezbi=floatval($r350[8]); if ($sati_vjezbi==0) { $ects="<font color=\"red\">(?)</font>"; $greska=1; }
+	$sati_tutorijala=floatval($r350[9]); if ($sati_tutorijala==0) { $ects="<font color=\"red\">(?)</font>"; $greska=1; }
 
 	// Institucija
 	$q352 = myquery("select naziv from institucija where id=$r350[4]");
@@ -498,7 +501,10 @@ else if ($akcija == "edit") {
 	Institucija: <b><?=$institucija?></b><br />
 	Tip predmeta: <b><?=$tippredmeta?></b><br />
 	ECTS: <b><?=$ects?> bodova</b><br />
-	ID: <?=$predmet?></p>
+	Sati predavanja: <b><?=$sati_predavanja?> </b><br />
+	Sati vjezbi: <b><?=$sati_vjezbi?> </b><br />
+	Sati tutorijala: <b><?=$sati_tutorijala?> </b><br />
+	ID: <?=$predmet?><br /></p>
 
 	<?
 	if ($greska==1) print "<font color=\"red\">Imate grešaka u definiciji predmeta. Kliknite na dugme <b>Izmijeni</b>.</font>\n";
