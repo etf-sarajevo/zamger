@@ -77,7 +77,8 @@ if (!$user_siteadmin) {
 
 if ($_POST['akcija'] == "nova_grupa" && check_csrf_token()) {
 	$ime = my_escape($_POST['ime']);
-	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+	$tip = my_escape($_POST['tip']);
+	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet, tip='$tip', akademska_godina=$ag, virtualna=0");
 	zamgerlog("dodana nova labgrupa '$ime' (predmet pp$predmet godina ag$ag)",4); // nivo 4: audit
 }
 
@@ -120,6 +121,7 @@ if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 if ($_POST['akcija'] == "preimenuj_grupu" && check_csrf_token()) {
 	$grupaid = intval($_POST['grupaid']);
 	$ime = my_escape($_POST['ime']);
+	$tip = my_escape($_POST['tip']);
 
 	// Provjera ispravnosti podataka
 	$q29 = myquery("select predmet, akademska_godina from labgrupa where id=$grupaid");
@@ -134,7 +136,7 @@ if ($_POST['akcija'] == "preimenuj_grupu" && check_csrf_token()) {
 		return;
 	}
 
-	$q50 = myquery("update labgrupa set naziv='$ime' where id=$grupaid");
+	$q50 = myquery("update labgrupa set naziv='$ime', tip='$tip' where id=$grupaid");
 
 	// Grupa treba ostati otvorena:
 	$_GET['akcija']="studenti_grupa";
@@ -462,7 +464,14 @@ if ($_GET['akcija']=="studenti_grupa") {
 	print genform("POST");
 	print '<input type="hidden" name="akcija" value="preimenuj_grupu">'."\n";
 	print '<input type="hidden" name="grupaid" value="'.$gg.'">'."\n";
-	print 'Promijenite naziv grupe: <input type="text" name="ime" size="20" value="'.$zapamti_grupu.'"> <input type="submit" value="Izmijeni"></form></p>'."\n";
+	print 'Promijenite naziv grupe: <input type="text" name="ime" size="20" value="'.$zapamti_grupu.'">';
+	print 'Tip grupe:<select name="tip">
+	<option value="predavanja">Predavanja</a>
+	<option value="vjezbe">Vjezbe</a>
+	<option value="tutorijali">Tutorijali</a>
+	<option value="vjezbe+tutorijali">Vjezbe + tutorijali</a>
+	</select>';	
+	print '<input type="submit" value="Izmijeni"></form></p>'."\n";
 }
 
 
@@ -473,7 +482,14 @@ if ($_GET['akcija']=="studenti_grupa") {
 <p>
 <?=genform("POST")?>
 <input type="hidden" name="akcija" value="nova_grupa">
-Dodaj grupu: <input type="text" name="ime" size="20"> <input type="submit" value="Dodaj"></form></p>
+Dodaj grupu: <input type="text" name="ime" size="20">
+Tip grupe:<select name="tip">
+	<option value="predavanja">Predavanja</a>
+	<option value="vjezbe">Vjezbe</a>
+	<option value="tutorijali">Tutorijali</a>
+	<option value="vjezbe+tutorijali">Vjezbe + tutorijali</a>
+</select>
+<input type="submit" value="Dodaj"></form></p>
 <?
 
 
