@@ -607,7 +607,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 			$pksp=mysql_result($q120,0,3);
 			$pkkp=mysql_result($q120,0,4);
 			$pkvan=mysql_result($q120,0,5);
-			$ppmax=mysql_result($q120,0,5);
+			$ppmax=mysql_result($q120,0,6);
 		}
 	}
 
@@ -2381,34 +2381,6 @@ else {
 	<SCRIPT language="JavaScript">
 	// Funkcija koja racuna bodove za prethodni ciklus studija
 	function izracunaj_bodove() {
-
-/*		// Bodovi se racunaju po formuli:
-		// suma(ocjena*ects) / suma(ects) / brojsemestara
-		var sumabodovi=0, sumaects=0;
-		var brojsemestara=parseInt(document.getElementById('broj_semestara').value);
-		if (brojsemestara==0) {
-			document.getElementById('opci_uspjeh').value = "0";
-			return; // ne mozemo dijeliti s nulom
-		}
-
-		for (i=1; i<=40; i++) {
-			var idoc=2*i-1;
-			var idec=2*i;
-			var ocjena = document.getElementById('prijemniocjene'+idoc).value;
-			var ects = document.getElementById('prijemniocjene'+idec).value;
-			if (ocjena != "/" && ocjena != "" && ects != "/" && ects != "") {
-				sumabodovi += parseInt(ocjena)*parseFloat(ects);
-				sumaects += parseFloat(ects);
-			}
-		}
-
-		if (sumaects==0) {
-			document.getElementById('opci_uspjeh').value = "0";
-			return; // ne mozemo dijeliti s nulom
-		}
-
-		var rezultat = sumabodovi / sumaects / brojsemestara;
-		document.getElementById('opci_uspjeh').value = rezultat;*/
 
 		// Po konkursu iz 2010. godine, za rangiranje se koristi samo prosjek
 		var suma=0, broj=0;
