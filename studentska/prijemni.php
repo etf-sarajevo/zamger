@@ -417,10 +417,17 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 			$q3030 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
 			$q3040 = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='$rjezik'");
 
-			$q3050 = myquery("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
-			if (mysql_result($q3050,0,0) == 0)
-				// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
-				$q3060 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
+			if ($ciklus_studija == 1) {
+				$q3050 = myquery("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
+				if (mysql_result($q3050,0,0) == 0)
+					// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
+					$q3060 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
+			} else {
+				$q3050 = myquery("select count(*) from prosliciklus_uspjeh where osoba=$osoba");
+				if (mysql_result($q3050,0,0) == 0)
+					// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
+					$q3060 = myquery("insert into prosliciklus_uspjeh set osoba=$osoba");
+			}
 
 			zamgerlog("brzo unesen kandidat $rime $rprezime za termin $termin", 2);
 
