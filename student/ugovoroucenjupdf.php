@@ -70,7 +70,7 @@ $najnoviji_plan = mysql_result($q6,0,0);
 
 
 // Da li je ponovac?
-$q20 = myquery("select semestar from student_studij where student=$userid and studij=$studij and akademska_godina=$proslagodina order by semestar desc limit 1");
+$q20 = myquery("select ss.semestar from student_studij as ss, studij as s where ss.student=$userid and ss.akademska_godina=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
 if ($sem1>mysql_result($q20,0,0)) 
 	$ponovac=0;
 else
