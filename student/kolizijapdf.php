@@ -62,6 +62,16 @@ $studij_naziv = mysql_result($q4,0,1);
 $institucija_naziv = mysql_result($q4,0,2);
 $godina_studija = ceil(mysql_result($q4,0,3)/2);
 
+
+// Da li je student popunio ugovor za drugi odsjek?
+$tekst_mijenja = "";
+$q7 = myquery("select s.id, s.naziv, i.naziv from studij as s, ugovoroucenju as uou, institucija as i where uou.student=$userid and uou.studij=s.id and s.institucija=i.id and uou.akademska_godina=$zagodinu");
+if (mysql_num_rows($q7)>1 && $studij != mysql_result($q7,0,0)) {
+	$institucija_naziv = mysql_result($q7,0,2);
+	$tekst_mijenja = "predao sam zahtjev za promjenu studija na ".mysql_result($q7,0,1).". S tim u vezi, ";
+}
+
+
 // Zapis u tabeli kolizija
 $predmeti_kolizija=$predmeti_ects=array();
 $q10 = myquery("select p.id, p.naziv, p.ects from kolizija as k, predmet as p where k.student=$userid and k.akademska_godina=$zagodinu and k.semestar=$semestar and k.predmet=p.id");
@@ -80,13 +90,7 @@ if ($semestar==1) $s2=1; else $s2=0;
 
 // Predmeti koje nije polozio
 $predmeti_prenos=array();
-$q20 = myquery("select p.id, p.naziv, p.ects from student_predmet as sp, 
-ponudakursa as pk, predmet as p where sp.student=$userid and 
-sp.predmet=pk.id and pk.predmet=p.id and 
-pk.akademska_godina=$proslagodina and pk.semestar MOD 2=$s2
-and pk.semestar<$godina_studija*2+1 and (select 
-count(*) from konacna_ocjena as ko where ko.student=$userid and 
-ko.predmet=p.id and ko.ocjena != 5)=0");
+$q20 = myquery("select p.id, p.naziv, p.ects from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$proslagodina and pk.semestar MOD 2=$s2 and pk.semestar<$godina_studija*2+1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id and ko.ocjena != 5)=0");
 while ($r20 = mysql_fetch_row($q20)) {
 	if (array_key_exists($r20[0], $predmeti_kolizija)) continue;
 	$predmeti_prenos[$r20[0]]=$r20[1];
@@ -106,6 +110,11 @@ if ($spol=="M") { $student="student"; $polozio="položio"; }
 else { $student="studentica"; $polozio="položila"; }
 
 ?>
+<html>
+<head>
+<title>Zahtjev za koliziju</title>
+</head>
+<body>
 <p>Univerzitet u Sarajevu<br>
 Elektrotehnički fakultet Sarajevo<br>
 <?=$institucija_naziv?></p>
@@ -120,7 +129,7 @@ Elektrotehnički fakultet Sarajevo<br>
 
 <p>&nbsp;</p>
 
-<p>Ja, <?="$ime $prezime"?>, <?=$student?> studija <?=$studij_naziv?>, <?=$godina_studija?>. godina, broj indexa <?=$brindexa?>, molim Vas da mi u skladu sa Zakonom o visokom obrazovanju Kantona Sarajevo, u <?=$tekst_semestar?> semestru akademske <?=$agnaziv?> godine odobrite slušanje sljedećih predmeta sa <?=($godina_studija+1)?>. godine studija u koliziji:</p>
+<p>Ja, <?="$ime $prezime"?>, <?=$student?> studija <?=$studij_naziv?>, <?=$godina_studija?>. godina, broj indexa <?=$brindexa?>, <?=$tekst_mijenja?> molim Vas da mi u skladu sa Zakonom o visokom obrazovanju Kantona Sarajevo, u <?=$tekst_semestar?> semestru akademske <?=$agnaziv?> godine odobrite slušanje sljedećih predmeta sa <?=($godina_studija+1)?>. godine studija u koliziji:</p>
 
 <ul>
 <?
@@ -150,6 +159,8 @@ te da se jedan predmet prenosi, nije prekoračen maksimalan broj od 30 ECTS kred
 
 <table border="0"><tr><td width="100%">&nbsp;</td><td align="right"><p>&nbsp;</p><p>_____________________________________</p></td></tr>
 <tr><td width="100%">&nbsp;</td><td align="center"><?="$ime $prezime"?></td></tr></table>
+</body>
+</html>
 <?
 
 return;
