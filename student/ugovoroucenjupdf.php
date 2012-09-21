@@ -69,12 +69,19 @@ if (mysql_num_rows($q6)<1) {
 $najnoviji_plan = mysql_result($q6,0,0);
 
 
-// Da li je ponovac?
-$q20 = myquery("select ss.semestar from student_studij as ss, studij as s where ss.student=$userid and ss.akademska_godina=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
-if ($sem1>mysql_result($q20,0,0)) 
-	$ponovac=0;
-else
-	$ponovac=1;
+// Da li je ponovac (ikada slušao isti tip studija)?
+$q20 = myquery("select ss.semestar from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina<=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
+if (mysql_num_rows($q20)<1) { 
+	/*niceerror("Ne možete popunjavati ugovor o učenju ako prvi put slušate prvu godinu studija.");
+	return;*/
+	// Zašto ne bismo dozvolili?
+	$ponovac = 0;
+} else {
+	if ($sem1>mysql_result($q20,0,0)) 
+		$ponovac=0;
+	else
+		$ponovac=1;
+}
 
 // Odredjujemo da li ima prenesenih predmeta
 // TODO: ovo sada ne radi za izborne predmete
@@ -104,7 +111,7 @@ if ($tipstudija==3) {
 
 
 // Ako čovjek upisuje prvu godinu nečeka (mastera), broj indexa je netačan!
-if ($godina==1) $brindexa="";
+if ($godina==1 && $tipstudija==3) $brindexa="";
 
 
 
