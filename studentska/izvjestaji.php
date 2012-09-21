@@ -51,22 +51,23 @@ if (window.innerWidth && window.innerHeight) {
 }
 
 function izvjestaj() {
+	var n = ""; // Stupid hack for stupid specification
+	document.getElementById('prekrivac').style.width = n.concat(mywidth, "px");
+	document.getElementById('prekrivac').style.height = n.concat(myheight, "px");
 	document.getElementById('prekrivac').style.display="inline";
-	document.getElementById('obavijest').style.display="inline";
-	document.getElementById('obavijest').style.top=myheight/2-25;
-	document.getElementById('obavijest').style.left=mywidth/2-150;
 
-	//alert("Hello");
+	document.getElementById('obavijest').style.top = n.concat(myheight/2-25, "px");
+	document.getElementById('obavijest').style.left = n.concat(mywidth/2-150, "px");
+	document.getElementById('obavijest').style.display="inline";
+
+	//alert(n);
 	return true;
 }
 </script>
 
 <img src="images/blur.gif" width="1" height="1" border="0"> <!-- preloading -->
 
-<div id="prekrivac" name="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px">
-<table width="1024" height="900" border="0" cellspacing="0" cellpadding="0"><tr><td background="images/blur.gif" align="center" valign="center">
-&nbsp;
-</td></tr></table>
+<div id="prekrivac" name="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px; background-image:url('images/blur.gif'); background-repeat:repeat;">
 </div>
 
 <div id="obavijest" name="obavijest" style="display:none; position: absolute; left: 0px; top: 55px">
