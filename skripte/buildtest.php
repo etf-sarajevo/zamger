@@ -324,7 +324,7 @@ function autotest() {
 				sleep(1); // 1 sekunda je realno da bude gotov
 				if (file_exists("core.$pid")) {
 					$blah = $ispis = "";
-					exec("gdb --batch -ex bt --core=core.$pid $exe_file", $blah);
+					exec("gdb --batch -ex \"bt 100\" --core=core.$pid $exe_file", $blah);
 //					for ($i=count($blah)-1; $i>=0; $i--) {
 					$pocela_linija = false;
 					for ($i=0; $i<count($blah); $i++) {
