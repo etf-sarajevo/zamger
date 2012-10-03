@@ -168,9 +168,9 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 		$imegrupe = $r60[1];
 
 		// Da li već postoji grupa sa tim imenom?
-		$q70 = myquery("select id from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
+		$q70 = myquery("select id, tip from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
 		if (mysql_num_rows($q70) == 0) {
-			$q80 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag");
+			$q80 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='".mysql_result($q70,0,1)."'");
 			$q70 = myquery("select id from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
 		}
 		$novagrupa = mysql_result($q70,0,0);
@@ -304,7 +304,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 						<?
 						if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 					} else {
-						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='vjezbe+tutorijali', virtualna=0");
 						$q210 = myquery("select id from labgrupa where naziv like '$imegrupe' and predmet=$predmet and akademska_godina=$ag");
 						$labgrupa = mysql_result($q210,0,0);
 					}
@@ -421,13 +421,14 @@ function upozorenje(grupa) {
 Spisak grupa:<br/>
 <?
 
-$q100 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by id");
+$q100 = myquery("select id, naziv, tip from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by id");
 
 // TODO: koristiti natsort za sortiranje grupa
 
 print "<ul>\n";
 if (mysql_num_rows($q100) == 0)
 	print "<li>Nema definisanih grupa</li>\n";
+$tip_selektovan = array();
 while ($r100 = mysql_fetch_row($q100)) {
 	$grupa = $r100[0];
 	$naziv = $r100[1];
@@ -451,7 +452,8 @@ while ($r100 = mysql_fetch_row($q100)) {
 			?><li><a href="#" onclick="javascript:window.open('?sta=saradnik/izmjena_studenta&student=<?=$r102[0]?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah6','width=320,height=320');"><? print $r102[1]." ".$r102[2]."</a></li>\n";
 		}
 		print "</ul>";
-		$zapamti_grupu=$naziv;
+		$zapamti_grupu = $naziv;
+		$tip_selektovan[$r100[2]] = " SELECTED";
 	}
 }
 print "</ul>\n";
@@ -459,19 +461,19 @@ print "</ul>\n";
 # Editovanje grupe
 if ($_GET['akcija']=="studenti_grupa") {
 	$gg = intval($_GET['grupaid']);
-	# Dodavanje grupe
-	print "<p>\n";
-	print genform("POST");
-	print '<input type="hidden" name="akcija" value="preimenuj_grupu">'."\n";
-	print '<input type="hidden" name="grupaid" value="'.$gg.'">'."\n";
-	print 'Promijenite naziv grupe: <input type="text" name="ime" size="20" value="'.$zapamti_grupu.'">';
-	print 'Tip grupe:<select name="tip">
-	<option value="predavanja">Predavanja</a>
-	<option value="vjezbe">Vjezbe</a>
-	<option value="tutorijali">Tutorijali</a>
-	<option value="vjezbe+tutorijali">Vjezbe + tutorijali</a>
-	</select>';	
-	print '<input type="submit" value="Izmijeni"></form></p>'."\n";
+	?><p>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="preimenuj_grupu">
+	<input type="hidden" name="grupaid" value="<?=$gg?>">
+	Promijenite naziv grupe: <input type="text" name="ime" size="20" value="<?=$zapamti_grupu?>">
+	Promijenite tip grupe: <select name="tip">
+	<option value="predavanja" <?=$tip_selektovan['predavanja']?>>Grupa za predavanja</a>
+	<option value="vjezbe" <?=$tip_selektovan['vjezbe']?>>Grupa za vježbe</a>
+	<option value="tutorijali" <?=$tip_selektovan['tutorijali']?>>Grupa za tutorijale</a>
+	<option value="vjezbe+tutorijali" <?=$tip_selektovan['vjezbe+tutorijali']?>>Grupa za vježbe i tutorijale</a>
+	</select>
+	<input type="submit" value="Izmijeni"></form></p>
+	<?
 }
 
 
@@ -484,10 +486,10 @@ if ($_GET['akcija']=="studenti_grupa") {
 <input type="hidden" name="akcija" value="nova_grupa">
 Dodaj grupu: <input type="text" name="ime" size="20">
 Tip grupe:<select name="tip">
-	<option value="predavanja">Predavanja</a>
-	<option value="vjezbe">Vjezbe</a>
-	<option value="tutorijali">Tutorijali</a>
-	<option value="vjezbe+tutorijali">Vjezbe + tutorijali</a>
+	<option value="predavanja">Grupa za predavanja</a>
+	<option value="vjezbe">Grupa za vježbe</a>
+	<option value="tutorijali">Grupa za tutorijale</a>
+	<option value="vjezbe+tutorijali">Grupa za vježbe i tutorijale</a>
 </select>
 <input type="submit" value="Dodaj"></form></p>
 <?
