@@ -181,25 +181,25 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			$student = $r100[0];
 
 			// Da li student uopste slusa ovaj predmet?
-			$q90 = myquery("select o.ime, o.prezime from student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and o.id=$student");
-			if (mysql_num_rows($q90)<1) {
+			$q110 = myquery("select o.ime, o.prezime from student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and o.id=$student");
+			if (mysql_num_rows($q110)<1) {
 				// Pošto upit nije vratio ništa, moramo nekako saznati ime i prezime
-				$q100 = myquery("select ime, prezime from osoba where id=$student");
-				print "-- Student ".mysql_result($q100,0,0)." ".mysql_result($q100,0,1)." ne sluša ovaj predmet, pa ćemo ga preskočiti.<br/>";
+				$q120 = myquery("select ime, prezime from osoba where id=$student");
+				print "-- Student ".mysql_result($q120,0,0)." ".mysql_result($q120,0,1)." ne sluša ovaj predmet, pa ćemo ga preskočiti.<br/>";
 				continue;
 			}
 
 			// Ispis studenta sa svih grupa u kojima je trenutno
-			$q110 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa and l.virtualna=0");
-			while ($r110 = mysql_fetch_row($q110)) {
-				ispis_studenta_sa_labgrupe($student,$r110[0]);
+			$q130 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa and l.virtualna=0");
+			while ($r130 = mysql_fetch_row($q130)) {
+				ispis_studenta_sa_labgrupe($student,$r130[0]);
 			}
 
 			// Upis u novu grupu
-			$q120 = myquery("select count(*) from student_labgrupa where student=$student and labgrupa=$novagrupa");
-			if (mysql_result($q120,0,0)<1) {
-				$q130 = myquery("insert into student_labgrupa set labgrupa=$novagrupa, student=$student");
-//				print "Upisujem studenta $r23[0] u grupu $novagrupa<br/>";
+			$q140 = myquery("select count(*) from student_labgrupa where student=$student and labgrupa=$novagrupa");
+			if (mysql_result($q140,0,0)<1) {
+				$q150 = myquery("insert into student_labgrupa set labgrupa=$novagrupa, student=$student");
+				//print "Upisujem studenta $student u grupu $novagrupa<br/>";
 			}
 		}
 	}
