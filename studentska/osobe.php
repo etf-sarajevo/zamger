@@ -634,14 +634,15 @@ else if ($akcija == "upis") {
 
 	// Šta je student slušao i kako?
 	$q510 = myquery("select studij, nacin_studiranja, plan_studija, semestar, ponovac from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
-	$stari_studij=$nacin_studiranja=$plan_studija=$ponovac=0;
+	$stari_studij=$nacin_studiranja=$plan_studija=$ponovac=$stari_nacin_studiranja=0;
 	if (mysql_num_rows($q510)>0) {
 		$stari_studij=mysql_result($q510,0,0);
-		$nacin_studiranja=mysql_result($q510,0,1);
+		$stari_nacin_studiranja=mysql_result($q510,0,1);
 		$plan_studija=mysql_result($q510,0,2);
 		if (mysql_result($q510,0,3)>=$semestar) $ponovac=1;
 		else if ($semestar%2==0) $ponovac=mysql_result($q510,0,4);
-	} else if (intval($_REQUEST['nacin_studiranja'])>0) {
+	}
+	if (intval($_REQUEST['nacin_studiranja'])>0) {
 		$nacin_studiranja=intval($_REQUEST['nacin_studiranja']);
 	}
 
@@ -738,7 +739,7 @@ else if ($akcija == "upis") {
 		<?
 		$q560 = myquery("select id, naziv from nacin_studiranja where moguc_upis=1");
 		while ($r560 = mysql_fetch_row($q560)) {
-			if ($r560[0]==$prijedlog_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
+			if ($r560[0]==$stari_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
 			print '<input type="radio" name="nacin_studiranja" value="'.$r560[0].'"'.$dodaj.'>'.$r560[1]."<br/>\n";
 		}
 		$ok_izvrsiti_upis=0;
