@@ -191,6 +191,7 @@ deleteDirectory($tmpfolder);
 $type = `file -bi '$naziv_zip_fajla'`;
 header("Content-Type: $type");
 header('Content-Disposition: attachment; filename="' . $naziv_fajla_bez_puta.'"', false);
+header("Content-Length: ".(string)(filesize($naziv_zip_fajla)));
 
 $k = readfile($naziv_zip_fajla,false);
 if ($k == false) {
