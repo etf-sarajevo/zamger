@@ -249,6 +249,7 @@ if ($tip == "zavrsni") {
 $type = `file -bi '$filepath'`;
 header("Content-Type: $type");
 header('Content-Disposition: attachment; filename="' . $filename.'"', false);
+header("Content-Length: ".(string)(filesize($filepath)));
 
 // workaround za http://support.microsoft.com/kb/316431 (zamger bug 94)
 header("Pragma: dummy=bogus"); 
