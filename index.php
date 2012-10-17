@@ -246,9 +246,11 @@ if ($found==1 && $template==0 && $greska=="") {
 		
 		if ($userid>0) {
 			?>
-			<div id="izvjestaji">
-			<a href="?sta=izvjestaj/pdf_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align=right width="32" height="32" border="0" alt="PDF"></a>
-			<a href="?sta=izvjestaj/csv_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/excel.png" align=right width="32" height="32" border="0" alt="Excel"></a>
+			<div id="konverteri" style="position:absolute;right:10px;top:10px;border:1px white solid;">
+			<a href="" onclick="javascript:document.getElementById('konverteri').style.display='none'; window.print(); return false;" target="_new"><img src="images/32x32/print.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
+			<a href="?sta=izvjestaj/csv_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/excel.png" align="top" width="32" height="32" border="0" alt="Excel"></a>
+			<a href="?sta=izvjestaj/pdf_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
+			<a href="#" onclick="javascript:document.getElementById('konverteri').style.display='none'; return false;" style="color:white;" onmouseover="javascript:document.getElementById('konverteri').style.border='1px gray solid'; this.style.color='gray';" onmouseout="javascript:document.getElementById('konverteri').style.border='1px white solid'; this.style.color='white';">X</a>
 			</div>
 			<?
 		}
