@@ -35,19 +35,16 @@ function public_anketa() {
 		$id_ankete = intval($_REQUEST['anketa']);
 
 	} else {
-		if ($predmet>0) 
-			$sql_dodaj = " and ((ap.predmet=$predmet and 
-ap.akademska_godina=$ag) or ap.predmet=0)";
-		else
-			$sql_dodaj = " and aa.akademska_godina=ag.id and 
-ag.aktuelna=1";
-
 		// Nije, uzimamo trenutno aktivnu anketu
-		$q20 = myquery("select aa.id from anketa_anketa as aa, 
-akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and 
-ap.aktivna=1 $sql_dodaj order by aa.id desc");
+		if ($predmet>0) 
+			// Možda je anketa samo za jedan predmet?
+			$sql_dodaj = " and ((ap.predmet=$predmet and ap.akademska_godina=$ag) or ap.predmet=0)";
+		else
+			$sql_dodaj = " and aa.akademska_godina=ag.id and ag.aktuelna=1";
+
+		$q20 = myquery("select aa.id from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 $sql_dodaj order by aa.id desc");
 		if (mysql_num_rows($q20)==0) {
-			biguglyerror("Anketa trenutno nije aktivna.");
+			biguglyerror("Anketa trenutno nije aktivna. A");
 			return;
 		}
 		$id_ankete = mysql_result($q20,0,0);
@@ -70,7 +67,7 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 		if (time() < $otvaranje)
 			print "<center><h1><font color=\"#00AA00\">Anketa će postati aktivna ".date("d. m. Y. \u H:i", $otvaranje)."</font></h1></center>";
 		else
-			biguglyerror("Anketa trenutno nije aktivna");
+			biguglyerror("Anketa trenutno nije aktivna B");
 		return;
 	}
 
@@ -90,7 +87,7 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 	
 
 	// Ako je student unio hash code, koristimo ga radi anonimnosti rezultata
-	} else if (isset($_POST['hash_code'])) {
+	} else if (isset($_POST['hash_code']) && $_POST['hash_code'] != "") {
 		// CSRF zaštita
 		if (!check_csrf_token()) {
 			?>
@@ -114,6 +111,10 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
+			return;
+		}
+		if (mysql_num_rows($q50)>1) {
+			// Hash nije unique!?
 			return;
 		}
 	
@@ -142,18 +143,23 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 		$studij = mysql_result($q60,0,0);
 		$semestar = mysql_result($q60,0,1);
 	
-		$q70 = myquery("SELECT id, zavrsena FROM anketa_rezultat WHERE student=$userid and anketa=$id_ankete");
+		$q70 = myquery("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 
-		// Kreiramo zapis u tabeli anketa_rezultat
+		// Kreiramo zapise u tabelama anketa_rezultat i anketa_student_zavrsio
 		if (mysql_num_rows($q70)==0) {
-			$q80 = myquery("insert into anketa_rezultat set anketa=$id_ankete, vrijeme=NOW(), zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=$userid");
-			$q70 = myquery("SELECT id, zavrsena FROM anketa_rezultat WHERE student=$userid and anketa=$id_ankete");
+			$q90 = myquery("INSERT INTO anketa_rezultat SET anketa=$id_ankete, vrijeme=NOW(), zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=NULL");
+			$id_rezultata = mysql_insert_id();
+
+			$q80 = myquery("INSERT INTO anketa_student_zavrsio SET student=$userid, predmet=$predmet, akademska_godina=$ag, anketa=$id_ankete, zavrsena='N', anketa_rezultat=$id_rezultata");
+			$q70 = myquery("SELECT zavrsena FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+			$zavrsena = 'N';
+
+		} else {
+			$zavrsena     = mysql_result($q70,0,0);
+			$id_rezultata = mysql_result($q70,0,1);
 		}
-		
-		$id_rezultata = mysql_result($q70,0,0);
-		$zavrsena = mysql_result($q70,0,1);
-		
-		$_POST['akcija'] = "prikazi"; // Možemo odmah prikazati anketu
+
+		if (!isset($_POST['akcija'])) $_POST['akcija'] = "prikazi"; // Možemo odmah prikazati anketu
 
 
 	// Ništa od navedenog, prikazujemo ekran za unos koda
@@ -193,6 +199,7 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 			<a href="index.php">Nazad na početnu stranicu</a>
 		</center>
 		<?
+		zamgerlog("anketa vec popunjena", 3);
 		return;
 	}
 
@@ -246,11 +253,29 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 
 				// Za naslov i podnaslov ne radimo ništa ;)
 			}
+
+		} else { // odbija učestvovati u anketi
+			$q300 = myquery("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
+			while ($r300 = mysql_fetch_row($q300)) {
+				$pitanje = $r300[0];
+				$tip = $r300[1];
+				if ($tip == 2) { // Esejsko pitanje
+					$komentar = my_escape($_POST['komentar'.$pitanje]);
+					if (preg_match("/\w/", $_POST['komentar'.$pitanje]))  // Ima li slova u komentaru?
+						$q320 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
+				}
+			}
 		}
 		
 		// nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
 		$q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
 		
+		// Za logirane studente moramo ažurirati i tabelu anketa_student_zavrsio
+		if ($userid>0) {
+			$q610 = myquery("UPDATE anketa_student_zavrsio SET zavrsena='Y', anketa_rezultat=0 WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+			// Brišemo vezu na tabelu anketa_rezultat da se ne bi znalo ko je šta popunio :)
+		}
+
 		zamgerlog("popunjena anketa za predmet pp$predmet", 2);
 
 		?>
@@ -289,7 +314,12 @@ ap.aktivna=1 $sql_dodaj order by aa.id desc");
 			<tr>
 				<td colspan = '7' align="center">
 					<input type="checkbox" name="odbija" value="da"> Odbijam da učestvujem u anketi za ovaj predmet.
-					<br />&nbsp;<br />
+					<br />
+					&nbsp;<br />
+					<i><font color="#999999">U slučaju da izaberete ovu opciju, biće evidentirano da je X studenata odbilo da učestvuje u anketi,<br />
+					vaš kod za anketu će biti poništen a odgovori dati ispod biće zanemareni.<br />
+					U polju za komentar možete napisati zašto ste odbili učestvovati u anketi.</font></i><br />
+					&nbsp;<br />
 				</td>
 			</tr>
 
@@ -436,7 +466,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 	if ($tip==6) {
 		?>
 		<tr>
-			<td colspan="7"><?=$tekst?></td>
+			<td colspan="7"><i><font color="#999999"><?=$tekst?></font></i></td>
 		</tr>
 		<?
 	}
