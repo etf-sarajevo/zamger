@@ -74,8 +74,8 @@ function student_anketa() {
 	$postoji_slog= mysql_result($q589,0,0);
 	
 	if(!$postoji_slog)
-		$q590 = myquery("INSERT INTO anketa_rezultat (id ,anketa ,vrijeme ,zavrsena ,predmet,unique_id,akademska_godina,studij,semestar)
-			VALUES ($id_rezultata, $anketa, curdate(), 'N', $predmet, '$unique_hash_code',$ag,$studij,$semestar)");
+		$q590 = myquery("INSERT INTO anketa_rezultat (id ,anketa, zavrsena, predmet,unique_id,akademska_godina,studij,semestar)
+			VALUES ($id_rezultata, $anketa, 'N', $predmet, '$unique_hash_code',$ag,$studij,$semestar)");
 	
 	?>
   	<center>

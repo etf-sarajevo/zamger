@@ -147,7 +147,7 @@ function public_anketa() {
 
 		// Kreiramo zapise u tabelama anketa_rezultat i anketa_student_zavrsio
 		if (mysql_num_rows($q70)==0) {
-			$q90 = myquery("INSERT INTO anketa_rezultat SET anketa=$id_ankete, vrijeme=NOW(), zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=NULL");
+			$q90 = myquery("INSERT INTO anketa_rezultat SET anketa=$id_ankete, zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=NULL");
 			$id_rezultata = mysql_insert_id();
 
 			$q80 = myquery("INSERT INTO anketa_student_zavrsio SET student=$userid, predmet=$predmet, akademska_godina=$ag, anketa=$id_ankete, zavrsena='N', anketa_rezultat=$id_rezultata");

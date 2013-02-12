@@ -221,13 +221,13 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
 CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `anketa` int(10) unsigned NOT NULL,
-  `vrijeme` timestamp NULL DEFAULT '0000-00-00 00:00:00',
   `zavrsena` enum('Y','N') COLLATE utf8_slovenian_ci DEFAULT 'N',
   `predmet` int(11) DEFAULT NULL,
   `unique_id` varchar(50) COLLATE utf8_slovenian_ci DEFAULT NULL,
   `akademska_godina` int(10) NOT NULL,
   `studij` int(10) NOT NULL,
   `semestar` int(10) NOT NULL,
+  `student` int(11) default NULL,
   PRIMARY KEY (`id`),
   KEY `unique_id` (`unique_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=27 ;
@@ -235,6 +235,23 @@ CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
 --
 -- Dumping data for table `anketa_rezultat`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `anketa_student_zavrsio`
+--
+
+CREATE TABLE IF NOT EXISTS `anketa_student_zavrsio` (
+  `student` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `anketa` int(11) NOT NULL,
+  `zavrsena` enum('Y','N') collate utf8_slovenian_ci NOT NULL default 'N',
+  `anketa_rezultat` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`predmet`,`akademska_godina`,`anketa`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
