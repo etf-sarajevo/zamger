@@ -347,8 +347,13 @@ if ($attachment) {
 		$filename = mysql_result($q120,0,0);
 		$the_file = "$lokacijazadaca/$zadaca/$filename";
 		if ($filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
-			$vrijeme = mysql_result($q120,0,1);
-			$vrijeme = date("d. m. Y. h:i:s",$vrijeme);
+			// Utvrđujemo stvarno vrijeme slanja
+			$q130 = myquery("SELECT UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and userid=$userid order by id desc limit 1");
+			if (mysql_num_rows($q130)>0)
+				$vrijeme = mysql_result($q130,0,0);
+			else
+				$vrijeme = mysql_result($q120,0,1);
+			$vrijeme = date("d. m. Y. H:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
 			$icon = "images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "index.php?sta=common/attachment&zadaca=$zadaca&zadatak=$zadatak";
