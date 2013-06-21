@@ -305,6 +305,7 @@ if (mysql_num_rows($q110)>0) {
 		?><p>Poruka kod kompajliranja:<br/><b><?=$poruka?></b></p><?
 	}
 	if (preg_match("/\w/",$komentar)) {
+		$komentar = str_replace("\n","<br/>\n",$komentar);
 		// Link za odgovor na komentar
 		$link="";
 		if ($tutor>0) {
