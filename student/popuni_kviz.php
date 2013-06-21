@@ -213,7 +213,8 @@ function student_popuni_kviz() {
 		}
 
 		alert('Vaš kviz je obustavljen jer ste pokušali raditi nešto što nije popunjavanje kviza!\nIzgubili ste bodove.');
-		window.close();
+		var forma=document.getElementsByName('slanje');
+		forma[0].submit();
 	}
 
 	function ucitavanje() {
@@ -225,6 +226,15 @@ function student_popuni_kviz() {
 		} else {
 			window.onblur = onBlur;
 		}
+		setTimeout("clp_clear();",1000);
+	}
+	
+	function clp_clear() {
+		var content=window.clipboardData.getData("Text");
+		if (content==null) {
+			window.clipboardData.clearData();
+		}
+		setTimeout("clp_clear();",1000);
 	}
 	
 	function provjeriVrijeme() {
