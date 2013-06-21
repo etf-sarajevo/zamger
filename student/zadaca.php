@@ -431,12 +431,7 @@ if ($attachment) {
 
 ?>
 
-<center>
-<table width="600" border="0">
-<tr><td align="center"><input type="reset" value=" Poništi izmjene "></td>
-<td align="center"><input type="submit" value=" Pošalji zadatak! "></td></tr>
-</table>
-</center>
+<center><input type="submit" value=" Pošalji zadatak! "></center>
 </form>
 <?
 
