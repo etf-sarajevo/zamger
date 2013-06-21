@@ -420,7 +420,9 @@ if ($attachment) {
 	
 	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
-	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) print join("",file($the_file)); 
+	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) $tekst_zadace = join("",file($the_file)); 
+	$tekst_zadace = htmlspecialchars($tekst_zadace);
+	print $tekst_zadace;
 	?></textarea>
 	</center>	
 
