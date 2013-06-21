@@ -572,6 +572,22 @@ while ($r30 = mysql_fetch_row($q30)) {
 }
 
 
+//  FIKSNE KOMPONENTE
+
+$q400 = myquery("SELECT k.gui_naziv, kb.bodovi FROM komponenta as k, komponentebodovi as kb WHERE k.tipkomponente=5 AND k.id=kb.komponenta AND kb.student=$userid AND kb.predmet=$ponudakursa");
+if (mysql_num_rows($q400)>0) {
+	?>
+
+	<!-- ostalo -->
+
+	<b>Ostalo:</b><br/>
+
+	<?
+}
+while ($r400 = mysql_fetch_row($q400)) {
+	?><p><?=$r400[0]?>: <b><?=$r400[1]?> bodova</b></p><?
+}
+
 
 // KONAČNA OCJENA
 
