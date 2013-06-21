@@ -361,11 +361,13 @@ $q100 = myquery("select count(*) from studentski_modul_predmet as smp, studentsk
 if (mysql_result($q100,0,0)==0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
 	$idovi_zadaca = array();
+	$max_bodova_zadaca = array();
 	$q110 = myquery("select id,naziv,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,naziv");
 	while ($r110 = mysql_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];
 		$naziv_zadace = $r110[1];
+		$max_bodova_zadaca[$r110[0]] = $r110[3];
 		if (!preg_match("/\w/",$naziv_zadace)) $naziv_zadace = "[Bez naziva]";
 		?><td><?=$naziv_zadace?></td><?
 	}
@@ -392,13 +394,14 @@ if (mysql_result($q100,0,0)==0) {
 		<?
 		} else {
 		?>
-		<td><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova?></td>
+		<td><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova?> / <?=$max_bodova_zadaca[$zadaca]?></td>
 		<?
 		}
 		$uk_bodova+=$bodova;
+		$total_max_bodova += $max_bodova_zadaca[$zadaca];
 	}
 	?>
-	<td><?=$uk_bodova?></td></tr>
+	<td><?=$uk_bodova?> / <?=$total_max_bodova?></td></tr>
 </tbody>
 </table>
 
@@ -430,6 +433,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 ?>
 		<td><b>Ukupno bodova</b></td>
+		<td><b>Mogućih</b></td>
 		<? if ($ima_postavka) { ?><td><b>Postavka zadaća</b></td><? } ?>
 		<td><b>PDF</b></td>
 		</tr>
@@ -454,12 +458,13 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 2. MySQL <4.1 ne podrzava subqueries */
 
 
-$bodova_sve_zadace=0;
+$bodova_sve_zadace=$total_max_bodova=0;
 
 $q21 = myquery("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$zadaca = $r21[0];
-	$mogucih += $r21[2];
+	$max_bodova_zadaca = $r21[2];
+	$total_max_bodova += $max_bodova_zadaca;
 	$zzadataka = $r21[3];
 	$postavka_zadace = $r21[6];
 	?><tr>
@@ -494,7 +499,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 	}
 	
 	?>
-	<td><?=$bodova_zadaca?></td><td>
+	<td><?=$bodova_zadaca?></td><td><?=$max_bodova_zadaca?></td><td>
 	<?
 	
 	// Link za download postavke zadaće
@@ -520,10 +525,11 @@ while ($r21 = mysql_fetch_row($q21)) {
 // Ukupno bodova za studenta
  
 $bodova += $bodova_sve_zadace;
+$mogucih += $total_max_bodova;
 
 ?>
 	<tr><td colspan="<?=$broj_zadataka+1?>" align="right">UKUPNO: </td>
-	<td><?=$bodova_sve_zadace?></td><td>&nbsp;</td>
+	<td><?=$bodova_sve_zadace?></td><td><?=$total_max_bodova?></td><td>&nbsp;</td>
 	<? if ($ima_postavka) { ?><td>&nbsp;</td><? } ?></tr>
 </tbody>
 </table>
