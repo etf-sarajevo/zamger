@@ -110,7 +110,7 @@ if ($tipstudija==3) {
 }
 
 
-// Ako čovjek upisuje prvu godinu nečeka (mastera), broj indexa je netačan!
+// Ako čovjek upisuje prvu godinu mastera, broj indexa je netačan!
 if ($godina==1 && $tipstudija==3) $brindexa="";
 
 
