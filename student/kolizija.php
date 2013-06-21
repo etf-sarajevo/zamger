@@ -92,6 +92,7 @@ function student_kolizija() {
 	// PROVJERA USLOVA ZA KOLIZIJU
 	// Od predmeta koje je slušao, koliko je pao?
 	$predmet_naziv=$predmet_ects=$predmet_semestar=$predmet_stari=array();
+	$izborni = array();
 	$q30 = myquery("select semestar, predmet, obavezan from plan_studija where godina_vazenja=$najnoviji_plan and studij=$trenutni_studij and semestar<=$trenutni_semestar order by semestar");
 	while ($r30 = mysql_fetch_row($q30)) {
 		if ($r30[2]==1) { // obavezan
@@ -104,12 +105,10 @@ function student_kolizija() {
 				if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r30[1]]=1; // predmet sa nizih godina se ne moze prenijeti
 				else $predmet_stari[$r30[1]]=0;
 			}
+			
 		} else { // izborni predmet
-			$q60 = myquery("select p.id, p.naziv, p.ects 
-from izborni_slot as iz, predmet as p, ponudakursa as pk, 
-student_predmet as sp where iz.id=$r30[1] and iz.predmet=p.id and 
-p.id=pk.predmet and pk.akademska_godina=$proslagodina and 
-pk.id=sp.predmet and sp.student=$userid");
+			$izborni[$r30[1]]++;
+			$q60 = myquery("select p.id, p.naziv, p.ects from izborni_slot as iz, predmet as p, ponudakursa as pk, student_predmet as sp where iz.id=$r30[1] and iz.predmet=p.id and p.id=pk.predmet and pk.akademska_godina=$proslagodina and pk.id=sp.predmet and sp.student=$userid");
 
 			// Upit vraća više redova ako postoji više slotova za isti skup predmeta
 			while ($r60 = mysql_fetch_row($q60)) {
@@ -124,13 +123,10 @@ pk.id=sp.predmet and sp.student=$userid");
 				}
 			}
 
-
-			// Student nije slušao nijedan od ponuđenih izbornih predmeta
+			// Student nije slušao dovoljan broj ponuđenih izbornih predmeta
 			// Dešava se u slučaju da je izabran predmet sa drugog odsjeka
-			if (mysql_num_rows($q60)==0) {
-				$q60 = myquery("select p.id, p.naziv, 
-p.ects from izborni_slot as iz, predmet as p where iz.id=$r30[1] and 
-iz.predmet=p.id");
+			if (mysql_num_rows($q60) < $izborni[$r30[1]]) {
+				$q60 = myquery("select p.id, p.naziv, p.ects from izborni_slot as iz, predmet as p where iz.id=$r30[1] and iz.predmet=p.id");
 				$naziv="Izborni predmet ("; // Kombinovani naziv svih predmeta
 				$polozio=0;
 				$ects = 100; // treba nam minimalni ects
@@ -141,10 +137,10 @@ iz.predmet=p.id");
 					if ($r60[2]<$ects) $ects=$r60[2];
 	
 					$q70 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[0] and ocjena>5");
-					if (mysql_result($q70,0,0)>0) $polozio=1;
+					if (mysql_result($q70,0,0)>0) $polozio++;
 				}
 	
-				if ($polozio==0) { // nije polozio nijedan moguci predmet
+				if ($polozio < $izborni[$r30[1]]) { // nije polozio dovoljno izbornih predmeta predmet
 					// Spisak izbornih
 					$q71 = myquery("select iz.predmet from izborni_slot as iz, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$trenutni_studij and ps.semestar<=$trenutni_semestar and ps.obavezan=0 and ps.predmet=iz.id");
 					$validni_izborni = array();
@@ -153,7 +149,7 @@ iz.predmet=p.id");
 
 					// Određujemo predmet sa drugog odsjeka koji je slušao
 					$nadjen = 0;
-					$q72 = myquery("select pk.predmet, p.naziv, p.ects from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.akademska_godina=$proslagodina and pk.semestar=$r30[0] and pk.obavezan=0 and pk.predmet=p.id");
+					$q72 = myquery("select pk.predmet, p.naziv, p.ects, pk.semestar from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.akademska_godina=$proslagodina and pk.semestar=$r30[0] and pk.obavezan=0 and pk.predmet=p.id");
 					while ($r72 = mysql_fetch_row($q72)) {
 						if (!in_array($r72[0], $validni_izborni)) {
 							$nadjen = 1;
@@ -161,10 +157,10 @@ iz.predmet=p.id");
 							// Da li ga je položio?
 							$q74 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r72[0] and ocjena>5");
 							if (mysql_result($q74,0,0)==0) {
-								$predmet_naziv[$r72[0]] = $r71[1];
-								$predmet_ects[$r72[0]] = $r71[2];
-								$predmet_semestar[$r72[0]] = $r30[0];
-								if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r72[0]]=1;
+								$predmet_naziv[$r72[0]] = $r72[1];
+								$predmet_ects[$r72[0]] = $r72[2];
+								$predmet_semestar[$r72[0]] = $r72[3];
+								if ($r72[3]<$trenutni_semestar-1) $predmet_stari[$r72[0]]=1;
 								else $predmet_stari[$r72[0]]=0;
 							}
 						}
@@ -296,7 +292,12 @@ iz.predmet=p.id");
 		}
 		zamgerlog("student u$userid kreirao zahtjev za koliziju", 2); // 2 - edit
 		nicemessage("Kreirali ste zahtjev za koliziju.");
-		print "Studentska služba će vas upisati na odgovarajuće predmete prilikom upisa na godinu.";
+		?>
+		<p>Studentska služba će vas upisati na odgovarajuće predmete prilikom upisa na godinu.</p>
+		<p>Kliknite na jedan od linkova ispod za printanje zahtjeva za:<br>
+		- <a href="?sta=student/kolizijapdf&semestar=1">zimski semestar</a><br>
+		- <a href="?sta=student/kolizijapdf&semestar=2">ljetnji semestar</a></p>
+		<?
 		return;
 	}
 
