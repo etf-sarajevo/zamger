@@ -294,11 +294,12 @@ while ($r21 = mysql_fetch_row($q21)) {
 <table width="600" border="0"><tr><td>
 <?
 
-$q110 = myquery("select izvjestaj_skripte,komentar,userid from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+$q110 = myquery("select izvjestaj_skripte, komentar, userid, status from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 if (mysql_num_rows($q110)>0) {
 	$poruka = mysql_result($q110,0,0);
 	$komentar = mysql_result($q110,0,1);
 	$tutor = mysql_result($q110,0,2);
+	$status_zadace = mysql_result($q110,0,3);
 
 	if (preg_match("/\w/",$poruka)) {
 		$poruka = str_replace("\n","<br/>\n",$poruka);
@@ -396,7 +397,9 @@ if ($attachment) {
 	$q130 = myquery("select ekstenzija from programskijezik where id=$jezik");
 	$ekst = mysql_result($q130,0,0);
 
-	if ($rok > time()) {
+	if ($status_zadace == 2) {
+		?><p>Zadaća je prepisana i ne može se ponovo poslati</p><?
+	} else if ($rok > time()) {
  		?><p>Kopirajte vaš zadatak u tekstualno polje ispod:</p>
 		</td></tr></table>
 
@@ -498,6 +501,13 @@ function akcijaslanje() {
 	if ($rok <= time()) {
 		niceerror("Vrijeme za slanje zadaće je isteklo!");
 		zamgerlog("isteklo vrijeme za slanje zadaće z$zadaca",3); // nivo 3 - greska
+		return; 
+	}
+
+	// Prepisane zadaće se ne mogu ponovo slati
+	$q240 = myquery("select status from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
+	if (mysql_num_rows($q240) > 1 && mysql_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
+		niceerror("Zadaća je prepisana i ne može se ponovo poslati.");
 		return; 
 	}
 
