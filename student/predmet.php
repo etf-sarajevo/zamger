@@ -262,7 +262,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta) {
 	if (!preg_match("/\w/",$imegrupe)) $imegrupe = "[Bez naziva]";
 
 	$odsustva=0;
-	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta order by vrijeme");
+	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta order by datum, vrijeme");
 	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
 
 	$datumi = $vremena = $statusi = "";
