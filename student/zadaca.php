@@ -207,6 +207,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 }
 
 ?>
+		<td>Rok za slanje</td>
 		</tr>
 	</thead>
 <tbody>
@@ -231,7 +232,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = myquery("select id, naziv, bodova, zadataka, UNIX_TIMESTAMP(rok) from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta, id");
 while ($r21 = mysql_fetch_row($q21)) {
 	$m_zadaca = $r21[0];
 	$m_mogucih += $r21[2];
@@ -266,6 +267,11 @@ while ($r21 = mysql_fetch_row($q21)) {
 		}
 	}
 	?>
+		<td><?
+		if ($r21[4]<time()) print "<font color=\"red\">";
+		print date("d. m. Y. H:i:s", $r21[4]);
+		if ($r21[4]<time()) print "</font>";
+		?></td>
 	</tr>
 	<?
 }
@@ -420,6 +426,7 @@ if ($attachment) {
 	
 	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
+	$tekst_zadace = "";
 	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) $tekst_zadace = join("",file($the_file)); 
 	$tekst_zadace = htmlspecialchars($tekst_zadace);
 	print $tekst_zadace;
