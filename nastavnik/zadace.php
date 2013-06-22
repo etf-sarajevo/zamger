@@ -338,10 +338,14 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	if ($edit_zadaca==0) {
 		// $komponenta_za_zadace određena na početku fajla
 		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace");
-		$q93 = myquery("select id from zadaca where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and zadataka=$zadataka and bodova=$bodova and aktivna=$aktivna and attachment=$attachment and programskijezik=$programskijezik and komponenta=$komponenta_za_zadace");
-		$edit_zadaca = mysql_result($q93,0,0);
-		nicemessage("Kreirana nova zadaća '$naziv'");
-		zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
+		$edit_zadaca = mysql_insert_id();
+		if ($edit_zadaca == 0) {
+			niceerror("Dodavanje zadaće nije uspjelo");
+			zamgerlog("dodavanje zadace nije uspjelo pp$predmet, naziv '$naziv'",3);
+		} else {
+			nicemessage("Kreirana nova zadaća '$naziv'");
+			zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
+		}
 
 	// Izmjena postojece zadace
 	} else {
@@ -441,7 +445,8 @@ if ($_REQUEST['akcija'] == "autotestovi") {
 			$specifikacija = my_escape($_REQUEST['specifikacija']);
 			$q330 = myquery("INSERT INTO autotest_replace SET zadaca=$zadaca, zadatak=$zadatak, tip='funkcija', zamijeni='', specifikacija='$specifikacija'");
 			nicemessage("Dodan uslov za autotest");
-			zamgerlog("dodan uslov ".mysql_insert_id()." za autotest (zadaca z$zadaca)", 2);
+			$id = mysql_insert_id();
+			zamgerlog("dodan uslov $id za autotest (zadaca z$zadaca)", 2);
 			print "<a href=\"$linkPrefix\">Nazad</a>\n";
 			return 0;
 		}
