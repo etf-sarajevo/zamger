@@ -218,12 +218,14 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	$bodova = floatval(str_replace(",",".",$_POST['bodova']));
 
 	// Osiguravamo da se filename prenese u svaku sljedeću instancu zadatka
-	$filename = '';
-	$q90 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
-	if (mysql_num_rows($q90) > 0)
+	$filename = $izvjestaj_skripte = '';
+	$q90 = myquery("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
+	if (mysql_num_rows($q90) > 0) {
 		$filename = mysql_result($q90,0,0);
+		$izvjestaj_skripte = mysql_real_escape_string(mysql_result($q90,0,1)); // Već je sanitiziran HTML
+	}
 
-	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', userid=$userid");
+	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', izvjestaj_skripte='$izvjestaj_skripte', userid=$userid");
 
 	// Odredjujemo ponudu kursa (za update komponente)
 	$q110 = myquery("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
