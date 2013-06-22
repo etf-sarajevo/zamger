@@ -160,9 +160,8 @@ function student_zavrsni()  {
 		<h2>Lista tema završnih radova</h2>
 		<?
 
-
 		// Početne informacije
-		$q901 = myquery("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag AND ORDER BY naslov");
+		$q901 = myquery("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naslov");
 		$broj_tema = mysql_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
