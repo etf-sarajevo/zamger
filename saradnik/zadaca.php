@@ -238,6 +238,84 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 }
 
 
+if ($_REQUEST["akcija"] == "test_detalji") {
+	$test = intval($_REQUEST['test']);
+	$q1000 = myquery("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status FROM autotest AS a, autotest_rezultat AS ar WHERE a.id=$test AND autotest=$test AND a.zadaca=$zadaca AND a.zadatak=$zadatak AND ar.student=$stud_id");
+	if (mysql_num_rows($q1000)==0) {
+		print "Nije testirano.";
+		return;
+	}
+	
+	$r1000 = mysql_fetch_row($q1000);
+	
+	$kod = str_replace("&", "&amp;", $r1000[0]);
+	$kod = str_replace("<", "&lt;", $kod);
+	$kod = str_replace(">", "&gt;", $kod);
+
+	$nalaz = str_replace("\n", "<br>", $r1000[5]);
+	
+	$ulaz =  str_replace("\r\n", "<br>", $r1000[2]);
+	$ulaz =  str_replace("\\n", "<br>", $r1000[2]);
+	$ulaz =  str_replace(" ", "&nbsp;", $ulaz);
+	$alt_ulaz =  str_replace("\n", "<br>", $r1000[3]);
+	$alt_ulaz =  str_replace(" ", "&nbsp;", $alt_ulaz);
+	$izlaz =  str_replace("\n", "<br>", $r1000[6]);
+	$izlaz =  str_replace(" ", "&nbsp;", $izlaz);
+	
+	?>
+		<h2>Detaljnije informacije o testu</h2>
+		<h3>Kod testa:</h3>
+		<pre><?=$kod?></pre>
+		<?
+		if ($r1000[1] != "") {
+		?>
+		<p>U globalnom opsegu:</p>
+		<pre><?=$r1000[1]?></pre>
+		<?
+		}
+		
+		if ($r1000[7] != "no_func") {
+			?>
+			<p><a href="<?=genuri()?>&akcija=test_sa_kodom">Prikaži kod testa unutar zadaće</a></p>
+			<?
+		}
+		?>
+		<hr>
+		<h3>Izlaz programa</h3>
+		<table border="0" cellspacing="5">
+			<tr><td>Očekivan je izlaz:</td>
+			<td><span style="background: #fcc"><code><?=$ulaz?></code></span></td></tr>
+			<?
+			if ($r1000[3] != "") {
+				?>
+				<tr><td>Alternativni izlaz:</td>
+				<td><span style="background: #fcc"><code><?=$alt_ulaz?></code></span></td></tr>
+				<?
+			}
+			?>
+			<tr><td>Vaš program je ispisao:</td>
+			<td><span style="background: #cfc"><code><?=$izlaz?></code></span></td></tr>
+		</table>
+		<?
+		if ($r1000[4] == 1) {
+		  print "<p><i>Fuzzy matching</i></p>\n";
+		}
+		?>
+		<hr>
+		<h3>Nalaz testa:</h3>
+		<code><?=$nalaz?></code>
+		<?
+	
+	
+	if (mysql_num_rows($q1000)>0) {
+		$k = mysql_fetch_row($q1000);
+		print $k[0];
+	}
+	else
+		print "Nije testirano.";
+	return;
+}
+
 
 
 // --------------------
@@ -336,6 +414,8 @@ if ($attach == 0) {
 }
 
 
+$stat_autotest = array("ok" => "OK", "wrong" => "Pogrešan rezultat", "error" => "Ne može se kompajlirati", "no_func" => "Ne postoji funkcija", "exec_fail" => "Ne može se izvršiti", "too_long" => "Predugo izvršavanje", "crash" => "Testni program se krahira", "find_fail" => "Nije pronađen rezultat", "oob" => "Pristup ilegalnom pokazivaču", "uninit" => "Nije inicijalizovano", "memleak" => "Curenje memorije", "invalid_free" => "Loša dealokacija", "mismatched_free" => "Pogrešan dealokator");
+
 
 // Prikaz statusa sa log-om i izmjena
 
@@ -366,6 +446,46 @@ if (mysql_num_rows($q140) > 0) {
 		<td><b><?=$vrijeme_slanja?></b></td>
 	</tr>
 	<?
+
+	// Autotest nalaz
+	$q115 = myquery("SELECT a.id, ar.status, UNIX_TIMESTAMP(ar.vrijeme) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$stud_id");
+	if (mysql_num_rows($q115)>0) {
+		?>
+	<tr>
+		<td>Rezultati testa:</td>
+		<td>
+		<table border="1" cellspacing="0" cellpadding="2">
+			<thead><tr>
+				<th>Test</th>
+				<th>Rezultat</th>
+				<th>Vrijeme testiranja</th>
+				<th>&nbsp;</th>
+			</tr></thead>
+		<?
+	}
+	$rbr=1;
+	while ($r115 = mysql_fetch_row($q115)) {
+		if ($r115[1] == "ok") $ikona = "zad_ok"; else $ikona = "brisanje";
+		$fino_vrijeme = date("d. m. y. H:i:s", $r115[2]);
+		?>
+		<tr>
+			<td><?=$rbr++?></td>
+			<td><img src="images/16x16/<?=$ikona?>.png" width="8" height="8"> <?=$stat_autotest[$r115[1]]?></td>
+			<td><?=$fino_vrijeme?></td>
+			<td>
+				<a href="<?=genuri()?>&test=<?=$r115[0]?>&akcija=test_detalji">Detalji</a>
+			</td>
+		</tr>
+		<?
+	}
+	
+	if (mysql_num_rows($q115)>0) {
+		?>
+		</table>
+		</td>
+	</tr>
+		<?
+	}
 
 	if ($id_jezika > 0) {
 		?>

@@ -172,6 +172,175 @@ if ($zadatak==0) {
 
 
 
+// Akcije vezane za autotest
+
+if ($_REQUEST['akcija'] == "test_detalji") {
+	$test = intval($_REQUEST['test']);
+	$q1000 = myquery("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status FROM autotest AS a, autotest_rezultat AS ar WHERE a.id=$test AND autotest=$test AND a.zadaca=$zadaca AND a.zadatak=$zadatak AND ar.student=$userid");
+	if (mysql_num_rows($q1000)==0) {
+		print "Nije testirano.";
+		return;
+	}
+	
+	$r1000 = mysql_fetch_row($q1000);
+	
+	$kod = str_replace("&", "&amp;", $r1000[0]);
+	$kod = str_replace("<", "&lt;", $kod);
+	$kod = str_replace(">", "&gt;", $kod);
+	
+	$global = htmlentities($r1000[1]);
+
+	$nalaz = str_replace("\n", "<br>", $r1000[5]);
+
+	$ulaz =  str_replace("\n", "<br>", $r1000[2]);
+	$ulaz =  str_replace("\\n", "<br>", $r1000[2]);
+	$ulaz =  str_replace(" ", "&nbsp;", $ulaz);
+	$alt_ulaz =  str_replace("\n", "<br>", $r1000[3]);
+	$alt_ulaz =  str_replace(" ", "&nbsp;", $alt_ulaz);
+	$izlaz =  str_replace("\n", "<br>", $r1000[6]);
+	$izlaz =  str_replace(" ", "&nbsp;", $izlaz);
+	
+	?>
+		<h2>Detaljnije informacije o testu</h2>
+		<h3>Kod testa:</h3>
+		<pre><?=$kod?></pre>
+		<?
+		if ($r1000[1] != "") {
+		?>
+		<p>U globalnom opsegu:</p>
+		<pre><?=$global?></pre>
+		<?
+		}
+		
+		if ($r1000[7] != "no_func") {
+			?>
+			<p><a href="<?=genuri()?>&akcija=test_sa_kodom">Prikaži kod testa unutar zadaće</a></p>
+			<?
+		}
+		?>
+		<hr>
+		<h3>Izlaz programa</h3>
+		<table border="0" cellspacing="5">
+			<tr><td>Očekivan je izlaz:</td>
+			<td><span style="background: #fcc"><code><?=$ulaz?></code></span></td></tr>
+			<?
+			if ($r1000[3] != "") {
+				?>
+				<tr><td>Alternativni izlaz:</td>
+				<td><span style="background: #fcc"><code><?=$alt_ulaz?></code></span></td></tr>
+				<?
+			}
+			?>
+			<tr><td>Vaš program je ispisao:</td>
+			<td><span style="background: #cfc"><code><?=$izlaz?></code></span></td></tr>
+		</table>
+		<?
+		if ($r1000[4] == 1) {
+		  print "<p><i>Fuzzy matching</i></p>\n";
+		}
+		?>
+		<hr>
+		<h3>Nalaz testa:</h3>
+		<code><?=$nalaz?></code>
+		<?
+	
+	
+	if (mysql_num_rows($q1000)>0) {
+		$k = mysql_fetch_row($q1000);
+		print $k[0];
+	}
+	else
+		print "Nije testirano.";
+	return;
+}
+
+
+
+if ($_REQUEST['akcija'] == "test_sa_kodom") {
+	if ($attachment) {
+		niceerror("Download zadaće poslane kao attachment sa ugrađenim testnim kodom trenutno nije podržano.");
+		return;
+	}
+
+	$test_id = intval($_REQUEST['test']);
+
+	// Uzimanje koda
+	$q130 = myquery("select naziv, ekstenzija from programskijezik where id=$jezik");
+	$programski_jezik = mysql_result($q130,0,0);
+	$ekst = mysql_result($q130,0,1);
+
+	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
+	$kod = "";
+	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) $kod = join("",file($the_file)); 
+
+	// Popravke u kodu koje su potrebne da bi testcase-ovi radili
+	$q100 = myquery("select tip, specifikacija, zamijeni from autotest_replace where zadaca=$zadaca and zadatak=$zadatak");
+	while ($r100 = mysql_fetch_row($q100)) {
+		$spec = $r100[1];
+		$zamjena = $r100[2];
+
+		// Tip zamjene: funkcija
+		if ($r100[0] == "funkcija" && ($programski_jezik == "C" || $programski_jezik == "C++" || $programski_jezik == "Java")) {
+
+			// Pretvaramo spec u validan regex
+			$spec = str_replace(" ", "\\s+", $spec);
+			$spec = str_replace("(", "\s*\\(\s*", $spec);
+			$spec = str_replace(")", ".*?\\)", $spec);
+			$spec = str_replace("TIP,", ".*?,", $spec);
+			$spec = str_replace("TIP", ".*?", $spec);
+			$spec = str_replace(",", ".*?,\s*", $spec);
+			$spec = str_replace("FUNKCIJA", "(\\w+)", $spec);
+			$results = preg_match("/$spec/", $kod, $matches);
+
+			if ($results == 0) {
+				niceerror("Nije pronađena funkcija sa očekivanim prototipom $r100[1]");
+				return;
+			}
+			
+			// Ako se u specifikaciji ne nalazi ključna riječ "FUNKCIJA", ovo je samo assert da funkcija postoji
+			if (strstr($r100[1], "FUNKCIJA") && $zamjena != $matches[1]) { 
+				$kod = "#define $zamjena $matches[1]\n" . $kod;
+			}
+		}
+	}
+
+	// Uzimamo odabrani test
+	$q110 = myquery("select kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala from autotest where zadaca=$zadaca and zadatak=$zadatak and id=$test_id");
+	$r110 = mysql_fetch_row($q110);
+
+	$testni_kod = "";
+	$test = $r110[0];
+	$global="\n".$r110[4]."\n";
+	$pozicija_globala=$r110[5];
+
+	// Sadržaj maina
+	if ($programski_jezik == "C") {
+		$testni_kod .= "printf(\"====TEST$rbr====\");\n $test\n printf(\"====KRAJ$rbr====\");\n";
+	} else if ($programski_jezik == "C++") {
+		// Hvatanje izuzetaka
+		$testni_kod .= "try {\n std::cout<<\"====TEST$rbr====\";\n $test\n std::cout<<\"====KRAJ$rbr====\";\n } catch (...) {\n cout<<\"====IZUZETAK$rbr====\";\n }\n";
+	}
+
+	// Ubacujem u kod zadaće
+	// U slučaju C i C++ dodaćemo naš kod na početak main-a i završiti returnom
+	if ($programski_jezik == "C" || $programski_jezik == "C++") {
+		$testni_kod .= "\nreturn 0;\n";
+		$kod = preg_replace("/main\s?\(/", "_main(", $kod);
+		if ($pozicija_globala == "prije_maina")
+			$kod .= "\n$global\n"."int main() {\n$testni_kod\n}\n";
+		else if ($pozicija_globala == "prije_svega")
+			$kod = "$global\n\n$kod\n\nint main() {\n$testni_kod\n}\n";
+	}
+
+	?>
+	<textarea rows="20" cols="80" name="program" wrap="off"><?=$kod?></textarea>
+	<?
+
+	return;
+}
+
+
+
 //  NAVIGACIJA
 
 print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
@@ -180,6 +349,7 @@ print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 // Statusne ikone:
 $stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+$stat_autotest = array("ok" => "OK", "wrong" => "Pogrešan rezultat", "error" => "Ne može se kompajlirati", "no_func" => "Ne postoji funkcija", "exec_fail" => "Ne može se izvršiti", "too_long" => "Predugo izvršavanje", "crash" => "Testni program se krahira", "find_fail" => "Nije pronađen rezultat", "oob" => "Pristup ilegalnom pokazivaču", "uninit" => "Nije inicijalizovano", "memleak" => "Curenje memorije", "invalid_free" => "Loša dealokacija", "mismatched_free" => "Pogrešan dealokator");
 
 
 ?>
@@ -307,6 +477,56 @@ if (mysql_num_rows($q110)>0) {
 	$tutor = mysql_result($q110,0,2);
 	$status_zadace = mysql_result($q110,0,3);
 
+	// Vrijeme slanja
+	$q113 = myquery("SELECT UNIX_TIMESTAMP(vrijeme) FROM zadatak WHERE student=$userid AND userid=$userid AND zadaca=$zadaca AND redni_broj=$zadatak ORDER BY id DESC LIMIT 1");
+	
+	if (mysql_num_rows($q113)>0) {
+		?>
+		<p>Zadatak poslan: <?=date("d.m.Y. H:i:s", mysql_result($q113,0,0))?></p>
+		<?
+	} else {
+		?>
+		<p>Zadatak nije poslan (tutor upisao/la bodove)</p>
+		<?
+	}
+	
+	// Rezultati automatskog testiranja
+	$q115 = myquery("SELECT a.id, ar.status, UNIX_TIMESTAMP(ar.vrijeme) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$userid");
+	if (mysql_num_rows($q115)>0) {
+		?>
+		<p>Rezultati testiranja:</p>
+		<table border="1" cellspacing="0" cellpadding="2">
+			<thead><tr>
+				<th>Test</th>
+				<th>Rezultat</th>
+				<th>Vrijeme testiranja</th>
+				<th>&nbsp;</th>
+			</tr></thead>
+		<?
+	}
+	$rbr=1;
+	while ($r115 = mysql_fetch_row($q115)) {
+		if ($r115[1] == "ok") $ikona = "zad_ok"; else $ikona = "brisanje";
+		$fino_vrijeme = date("d. m. y. H:i:s", $r115[2]);
+		?>
+		<tr>
+			<td><?=$rbr++?></td>
+			<td><img src="images/16x16/<?=$ikona?>.png" width="8" height="8"> <?=$stat_autotest[$r115[1]]?></td>
+			<td><?=$fino_vrijeme?></td>
+			<td>
+				<a href="<?=genuri()?>&test=<?=$r115[0]?>&akcija=test_detalji">Detalji</a>
+			</td>
+		</tr>
+		<?
+	}
+	
+	if (mysql_num_rows($q115)>0) {
+		?>
+		</table>
+		<?
+	}
+	
+	// Poruke i komentari tutora
 	if (preg_match("/\w/",$poruka)) {
 		$poruka = str_replace("\n","<br/>\n",$poruka);
 		?><p>Poruka kod kompajliranja:<br/><b><?=$poruka?></b></p><?
@@ -417,6 +637,7 @@ if ($attachment) {
 
 	?>
 	
+		</td></tr></table>
 	<center>
 	<?=genform("POST")?>
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">

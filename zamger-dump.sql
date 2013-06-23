@@ -314,6 +314,7 @@ CREATE TABLE IF NOT EXISTS `autotest` (
   `alt_rezultat` text collate utf8_slovenian_ci NOT NULL,
   `fuzzy` tinyint(1) NOT NULL default '0',
   `global_scope` text collate utf8_slovenian_ci NOT NULL,
+  `pozicija_globala` enum('prije_svega','prije_maina') collate utf8_slovenian_ci NOT NULL default 'prije_maina',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
@@ -333,6 +334,23 @@ CREATE TABLE IF NOT EXISTS `autotest_replace` (
   `zamijeni` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `autotest_rezultat`
+--
+
+CREATE TABLE IF NOT EXISTS `autotest_rezultat` (
+  `autotest` int(11) NOT NULL,
+  `student` int(11) NOT NULL,
+  `izlaz_programa` text collate utf8_slovenian_ci NOT NULL,
+  `status` enum('ok','wrong','error','no_func','exec_fail','too_long','crash','find_fail','oob','uninit','memleak','invalid_free','mismatched_free') collate utf8_slovenian_ci NOT NULL default 'error',
+  `nalaz` text collate utf8_slovenian_ci NOT NULL,
+  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`autotest`,`student`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------

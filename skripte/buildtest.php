@@ -19,13 +19,14 @@ if (mysql_num_rows($q10)>0) {
 
 
 // Zadace za koje je definisan programski jezik
-$q20 = myquery("select z.id, pj.naziv, z.predmet, ag.id, pj.ekstenzija from zadaca as z, akademska_godina as ag, programskijezik as pj where z.akademska_godina=ag.id and ag.aktuelna=1 and z.programskijezik!=0 and z.programskijezik=pj.id");
+$q20 = myquery("select z.id, pj.naziv, z.predmet, ag.id, pj.ekstenzija, z.zadataka, z.bodova from zadaca as z, akademska_godina as ag, programskijezik as pj where z.akademska_godina=ag.id and ag.aktuelna=1 and z.programskijezik!=0 and z.programskijezik=pj.id");
 while ($r20 = mysql_fetch_row($q20)) {
 	$zadaca = $r20[0];
 	$programski_jezik = $r20[1];
 	$predmet = $r20[2];
 	$ag = $r20[3];
 	$ekstenzija = $r20[4];
+	$bodova_po_zadatku = $r20[6] / $r20[5];
 
 	if (!($programski_jezik == "C" || $programski_jezik == "C++" || $programski_jezik == "Java")) {
 		print "Programski jezik $programski_jezik trenutno nije podržan.\n";
@@ -69,6 +70,7 @@ print "Zadaca $zadaca zadatak $zadatak student $student\n";
 				print "Nema fajlova sa ekstenzijom $ekstenzija!\n";
 				continue;
 			}
+			$buildpath = $blah[0];
 			$filepath = $blah[0]."/*$ekstenzija";
 			$filepath = str_replace(" ", "\ ", $filepath);
 		}
@@ -76,8 +78,11 @@ print "Zadaca $zadaca zadatak $zadatak student $student\n";
 		// Test kompajliranja
 		if (!kompajliraj()) continue;
 
-		// Autotest, beta
-		autotest();
+		// Ako je ZIP moram pripremiti globalne varijable za autotest
+		if (substr($filename, strlen($filename)-4) == ".zip")
+			autotest_zip();
+		else
+			autotest();
 //break;
 	}
 //break;
@@ -89,7 +94,7 @@ $q40 = myquery("update preference set vrijednost='$novo_vrijeme' where korisnik=
 
 function kompajliraj() {
 	global $programski_jezik,$filename, $filepath;
-	global $student,$zadaca,$zadatak,$novo_vrijeme;
+	global $student,$zadaca,$zadatak,$novo_vrijeme,$nalaz;
 
 	print "Kompajliram ($student,$zadaca,$zadatak)...\n";
 	$blah = array();
@@ -113,6 +118,7 @@ print "K: $k\n";
 	if ($return == 0) {
 		// Status: 4 - "prošla test"
 		$q3 = myquery("insert into zadatak set status=1, izvjestaj_skripte='$k', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
+		$nalaz = $k;
 		return true;
 	} else {
 		// Status: 3 - "ne može se kompajlirati"
@@ -126,7 +132,7 @@ print "K: $k\n";
 
 function autotest() {
 	global $programski_jezik,$ekstenzija,$filename, $filepath;
-	global $student,$zadaca,$zadatak,$novo_vrijeme;
+	global $student,$zadaca,$zadatak,$novo_vrijeme,$nalaz,$ocijeni,$bodova_po_zadatku;
 
 	print "Autotestiram ($student,$zadaca,$zadatak)...\n";
 
@@ -135,7 +141,400 @@ function autotest() {
 	// Popravke u kodu koje su potrebne da bi testcase-ovi radili
 	$q100 = myquery("select tip, specifikacija, zamijeni from autotest_replace where zadaca=$zadaca and zadatak=$zadatak");
 	$fali_funkcija = false;
+	while ($r100 = mysql_fetch_row($q100)) {
+		$spec = $r100[1];
+		$zamjena = $r100[2];
+
+		// Tip zamjene: funkcija
+		if ($r100[0] == "funkcija" && ($programski_jezik == "C" || $programski_jezik == "C++" || $programski_jezik == "Java")) {
+
+			// Pretvaramo spec u validan regex
+			$spec = str_replace(" ", "\\s+", $spec);
+			$spec = str_replace("(", "\s*\\(\s*", $spec);
+			$spec = str_replace(")", ".*?\\)", $spec);
+			$spec = str_replace("TIP,", ".*?,", $spec);
+			$spec = str_replace("TIP", ".*?", $spec);
+			$spec = str_replace(",", ".*?,\s*", $spec);
+			$spec = str_replace("FUNKCIJA", "(\\w+)", $spec);
+			$results = preg_match("/$spec/", $kod, $matches);
+			if ($results == 0) {
+				$opsti_nalaz = "Nije pronađena funkcija sa prototipom $r100[1]";
+				$fali_funkcija = true;
+			} else if ($results == 2) {
+				$opsti_nalaz = "Pronađene dvije funkcije sa prototipom $r100[1] - koristim prvu\n";
+			}
+			print "Autotest: $opsti_nalaz\n";
+			
+			// Ako se u specifikaciji ne nalazi ključna riječ "FUNKCIJA", ovo je samo assert da funkcija postoji
+			if (strstr($r100[1], "FUNKCIJA") && $zamjena != $matches[1]) { 
+				$kod = "#define $zamjena $matches[1]\n" . $kod;
+			}
+		}
+	}
+	
+	if ($fali_funkcija) {
+		if ($ocijeni==$zadaca)
+			$q105 = myquery("insert into zadatak set status=5, bodova=0, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
+		else
+			$q105 = myquery("insert into zadatak set status=1, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
+
+		$q106 = myquery("select id from autotest where zadaca=$zadaca and zadatak=$zadatak");
+		while ($r106 = mysql_fetch_row($q106)) {
+			$q107 = myquery("DELETE FROM autotest_rezultat WHERE autotest=".$r106[0]." AND student=$student");
+			$q108 = myquery("insert into autotest_rezultat set autotest=".$r106[0].", student=$student, status='no_func', nalaz='$opsti_nalaz'");
+		}
+		return false; // Nema smisla da nastavimo dalje
+	}
+
+	// Kreiramo testcase-ove
+	$q110 = myquery("select kod, rezultat, alt_rezultat, fuzzy, global_scope, id, pozicija_globala from autotest where zadaca=$zadaca and zadatak=$zadatak");
+	if (mysql_num_rows($q110)<1) return;
+	$rbr = 0;
+	$orig_kod = $kod;
+	$nnalaz = $nalaz;
 	$nalaz = "";
+	$total_testova = $uspjesnih_testova = 0;
+	while ($r110 = mysql_fetch_row($q110)) {
+		$total_testova++;
+		$rbr++;
+		// Kreiram kod testa
+		$testni_kod = "";
+		$test = $r110[0];
+		$global="\n".$r110[4]."\n";
+		$test_id = $r110[5];
+		$pozicija_globala=$r110[6];
+
+		$autotest_status = "";
+		$izlaz_programa = "";
+		$nalaz_testa = ""; // Gomilamo rezultate u jedan string
+
+		if ($programski_jezik == "C") {
+			$testni_kod .= "printf(\"====TEST$rbr====\");\n $test\n printf(\"====KRAJ$rbr====\");\n";
+		} else if ($programski_jezik == "C++") {
+			$testni_kod .= "try {\n std::cout<<\"====TEST$rbr====\";\n $test\n std::cout<<\"====KRAJ$rbr====\";\n } catch (...) {\n cout<<\"====IZUZETAK$rbr====\";\n }\n";
+		}
+
+		// Ubacujem u kod zadaće
+		// U slučaju C i C++ dodaćemo naš kod na početak main-a i završiti returnom
+		if ($programski_jezik == "C" || $programski_jezik == "C++") {
+			$testni_kod .= "\nreturn 0;\n";
+//			$kod = preg_replace("/\n([^\n]*?main\s?\(.*?\)\s?\n?\s?\n?\s?{)/s", "$global$1$testni_kod", $orig_kod);
+			$kod = preg_replace("/main\s?\(/", "_main(", $orig_kod);
+			if ($pozicija_globala == "prije_maina")
+				$kod .= "\n$global\n"."int main() {\n$testni_kod\n}\n";
+			else if ($pozicija_globala == "prije_svega")
+				$kod = "$global\n\n$kod\n\nint main() {\n$testni_kod\n}\n";
+		}
+
+		// Kompajliranje
+		$source_file = "/tmp/autotest$ekstenzija";
+		$exe_file = "/tmp/autotest_exec";
+		$log_file = "/tmp/autotest_log";
+		file_put_contents($source_file, $kod);
+		$return=0;
+	
+		if ($programski_jezik == "C") {
+			$k = exec("/usr/bin/gcc -ggdb -o $exe_file -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+		} elseif ($programski_jezik == "C++") {
+			$k = exec("/usr/bin/g++ -ggdb -o $exe_file -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+		} else { // DEFAULT JEZIK: C++
+			$k = exec("/usr/bin/g++ -ggdb -o $exe_filet -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+		}
+
+		// Došlo je do greške prilikom kompajliranja
+		if ($return != 0) {
+			$blah = join("\n", $blah);
+			//print "---GRESKA:\n$blah\n";
+			$blah .= "\n";
+			if (preg_match("/error: (.*?)\\n/", $blah, $matches)) {
+				print "Autotest $rbr: greška prilikom kompajliranja autotesta: $matches[1]\nKod je glasio: $test\n";
+				$nalaz_testa .= "Greška prilikom kompajliranja autotesta:\n".my_escape($matches[1]);
+			} else {
+				print "Autotest $rbr: nepoznata greška prilikom kompajliranja. Kod je glasio: $test\n";
+				$nalaz_testa .= "Nepoznata greška prilikom kompajliranja";
+			}
+
+			$q118 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$test_id AND student=$student");
+			$q107 = myquery("insert into autotest_rezultat set autotest=$test_id, student=$student, status='error', nalaz='$nalaz_testa'");
+
+			continue; // sljedeći test
+		}
+
+		// Izvršenje testa
+		$timeout = 10; // 10 sekundi bi trebalo biti dovoljno
+		$sleep = 5; // probaj svakih 5 sekundi
+		chmod($exe_file, 0755);
+		$blah = "";
+		exec("$exe_file &> $log_file & echo $!", $blah);
+		$pid = (int)$blah[0];
+		if ($pid == "") {
+			print "Autotest $rbr: nisam uspio pokrenuti test. Kod je glasio: $test\n";
+			$nalaz_testa .= "Nisam uspio pokrenuti test";
+			//unlink($exe_file); // moramo saznati zašto! mada se ovo ne bi trebalo dešavati
+			unlink($log_file);
+
+			$q118 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$test_id AND student=$student");
+			$q107 = myquery("insert into autotest_rezultat set autotest=$test_id, student=$student, status='exec_fail', nalaz='$nalaz_testa'");
+
+			continue; // sljedeći test
+		}
+		$trajanje = 1;
+		sleep(1); // 1 sekunda je realno da bude gotov
+		while ($trajanje < $timeout) {
+			$trajanje += $sleep;
+			$found = false;
+			$blah = "";
+			exec ("ps ax | grep $pid 2>&1", $blah);
+			while (list(,$row) = each($blah)) {
+				$row = ltrim($row);
+				$ps_stavke = explode(" ", $row);
+				if ($pid == $ps_stavke[0]) $found=true;
+			}
+			if (!$found) break;
+			sleep($sleep);
+			print "čekam $trajanje\n";
+		}
+
+		if ($trajanje >= $timeout) { // Nije se završio prije $timeout
+			exec("kill -9 $pid");
+			print "Autotest $rbr: izgleda da je program upao u beskonačnu petlju za kod: $test\n";
+			$nalaz_testa .= "Program je radio duže od $timeout sekundi - prekidam";
+			unlink($exe_file);
+			unlink($log_file);
+
+			$q118 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$test_id AND student=$student");
+			$q107 = myquery("insert into autotest_rezultat set autotest=$test_id, student=$student, status='too_long', nalaz='$nalaz_testa'");
+
+			continue; // sljedeći test
+		}
+
+		$izlaz = file_get_contents($log_file);
+		unlink($log_file);
+
+		// Tražim rezultate u izlazu
+		$rezultat = str_replace("\r\n", "\n", $r110[1]);
+		$alt_rezultat = $r110[2];
+		// Dozvoljavamo zadavanje novog reda preko \n
+		$rezultat = str_replace("\\n", "\n", $rezultat);
+		$alt_rezultat = str_replace("\\n", "\n", $alt_rezultat);
+
+		$fuzzy = $r110[3];
+		if (preg_match("/====TEST$rbr====(.*?)====KRAJ$rbr====/s", $izlaz, $matches)) {
+			$izlaz_programa = my_escape($matches[1]);
+
+			// fuzzy pretraga samo traži da li se rezultat nalazi bile gdje u stringu, uključujući i regex
+			if ($fuzzy==1 && preg_match("/$rezultat/", $matches[1])) { 
+				print "Autotest $rbr: rezultat ok!\n";
+
+			// u suprotnom, exact match se traži (zanemarujući okolni whitespace)
+			} else if (trim($matches[1]) == trim($rezultat)) {
+				print "Autotest $rbr: rezultat ok!\n";
+
+			// alternativni rezultat
+			} else if ($alt_rezultat != "" && trim($matches[1]) == trim($alt_rezultat)) {
+				print "Autotest $rbr: rezultat ok (alt)!\n";
+
+			// rezultat ne odgovara datom
+			} else {
+				if ($rezultat == "===IZUZETAK===") $rezultat = "izuzetak";
+				$nalaz_testa .= "Očekivan rezultat $rezultat, a dobio ".my_escape($matches[1]).".\n";
+				$autotest_status = "wrong";
+			}
+
+		// Ako je bačen izuzetak
+		} else if ($programski_jezik == "C++" && preg_match("/====TEST$rbr====(.*?)====IZUZETAK$rbr====/s", $izlaz, $matches)) {
+			$izlaz_programa = "===IZUZETAK===";
+
+			if ($rezultat == "===IZUZETAK===") {
+				print "Autotest $rbr: izuzetak ok!\n";
+			} else {
+				$nalaz_testa .= "Očekivan rezultat $rezultat, a dobio izuzetak.\n";
+				$autotest_status = "wrong";
+			}
+
+		// Ni jedno ni drugo, izlaz nije parsabilan
+		} else {
+			// Pokušavamo dobiti core dump
+			$pronadjen_krah = false;
+			$blah = "";
+			exec("ulimit -c 1000000; $exe_file &> $log_file & echo $!", $blah);
+			$pid = (int)$blah[0];
+
+			if ($pid != "") {
+				sleep(1); // 1 sekunda je realno da bude gotov
+				if (file_exists("core.$pid")) {
+					$blah = $ispis = "";
+					exec("gdb --batch -ex \"bt 100\" --core=core.$pid $exe_file", $blah);
+//					for ($i=count($blah)-1; $i>=0; $i--) {
+					$pocela_linija = false;
+					for ($i=0; $i<count($blah); $i++) {
+						if (preg_match("/\#\d\s+/", $blah[$i])) {
+							$pocela_linija = true;
+							$ispis = "";
+						}
+						if ($pocela_linija) {
+							$ispis .= $blah[$i];
+							if (strstr($blah[$i], $source_file)) break;
+						}
+					}
+
+					// utf8_encode osigurava da se ilegalni karakteri (kojih nekad ima u debugger izlazu) zamijene upitnicima
+					$nalaz_testa .= "Program se krahirao. Detalji:\n" . my_escape(utf8_encode($ispis))."\n";
+					$autotest_status = "crash";
+					unlink("core.$pid");
+					//unlink($exe_file);
+					unlink($log_file);
+					$pronadjen_krah = true;
+				}
+			}
+
+			if (!$pronadjen_krah) {
+				$nalaz_testa .= "Rezultat nije pronadjen u ispisu.\nMogući razlozi: program se krahira, funkcija poziva exit()\n";
+				$autotest_status = "find_fail";
+			}
+		}
+		
+		// Valgrind
+		print "valgrind\n";
+		$blah="";
+		exec("valgrind --leak-check=full --log-file-exactly=/tmp/valgrind.out $exe_file &> /tmp/null & echo $!", $blah);
+		$pid = (int)$blah[0];
+
+		if ($pid == "") {
+			// Valgrind se nije pokrenuo
+			print "Valgrind se nije pokrenuo!\n";
+			unlink("/tmp/valgrind.out");
+			continue; // sljedeći test
+		}
+		$trajanje = 1;
+		sleep(1); // 1 sekunda je realno da bude gotov
+		while ($trajanje < $timeout) {
+			$trajanje += $sleep;
+			$found = false;
+			$blah = "";
+			exec ("ps ax | grep $pid 2>&1", $blah);
+			while (list(,$row) = each($blah)) {
+				$row = ltrim($row);
+				$ps_stavke = explode(" ", $row);
+				if ($pid == $ps_stavke[0]) $found=true;
+			}
+			if (!$found) break;
+			sleep($sleep);
+			print "čekam $trajanje\n";
+		}
+
+		if ($found && $trajanje >= $timeout) { // Nije se završio prije $timeout
+			exec("kill -9 $pid");
+			print "Valgrind je radio predugo... probavamo nastaviti.\n";
+		}
+
+		$valgrind = file("/tmp/valgrind.out");
+		$greska=0;
+		foreach ($valgrind as $valgrind_linija) {
+			if (strstr($valgrind_linija, "Invalid read of size")) $greska=1;
+			if (strstr($valgrind_linija, "Use of uninitialised value")) $greska=2;
+			if (strstr($valgrind_linija, "are definitely lost")) $greska=3;
+			if (strstr($valgrind_linija, "cannot throw exceptions and so is aborting")) 
+				if (strstr($nalaz, "očekivan rezultat izuzetak")) $nalaz="";
+			if (strstr($valgrind_linija, "Invalid free")) $greska=4;
+			if (strstr($valgrind_linija, "Mismatched free")) $greska=5;
+			if ($greska==1) {
+				if (preg_match("/autotest$ekstenzija:(\d+)/", $valgrind_linija, $matches)) {
+					$greska=0;
+					$nalaz_testa .= "Pristup izvan opsega niza u liniji $matches[1].\n";
+					if ($autotest_status == "") $autotest_status = "oob";
+				}
+			}
+			if ($greska==2) {
+				if (preg_match("/autotest$ekstenzija:(\d+)/", $valgrind_linija, $matches)) {
+					$greska=0;
+					$nalaz_testa .= "Pristup varijabli koja nije inicijalizovana u liniji $matches[1].\n";
+					if ($autotest_status == "") $autotest_status = "uninit";
+				}
+			}
+			if ($greska==3) {
+				if (preg_match("/autotest$ekstenzija:(\d+)/", $valgrind_linija, $matches)) {
+					$greska=0;
+					$nalaz_testa .= "Curenje memorije alocirane u liniji $matches[1].\n";
+					if ($autotest_status == "") $autotest_status = "memleak";
+				}
+			}
+			if ($greska==4) {
+				if (preg_match("/autotest$ekstenzija:(\d+)/", $valgrind_linija, $matches)) {
+					$greska=0;
+					$nalaz_testa .= "Dealokacija visećeg pokazivača u liniji $matches[1].\n";
+					if ($autotest_status == "") $autotest_status = "invalid_free";
+				}
+			}
+			if ($greska==5) {
+				if (preg_match("/autotest$ekstenzija:(\d+)/", $valgrind_linija, $matches)) {
+					$greska=0;
+					$nalaz_testa .= "Nije korišten odgovarajući dealokator (delete[] vs. delete) u liniji $matches[1].\n";
+					if ($autotest_status == "") $autotest_status = "mismatched_free";
+				}
+			}
+		}
+		
+		if ($autotest_status == "") $autotest_status="ok";
+		if ($autotest_status === "ok") $uspjesnih_testova++;
+		if ($opsti_nalaz != "") $nalaz_testa = $opsti_nalaz . "\n" . $nalaz_testa;
+		$nalaz_testa = iconv("UTF-8", "UTF-8//IGNORE", $nalaz_testa);
+
+		$q118 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$test_id AND student=$student");
+		$q119 = myquery("INSERT INTO autotest_rezultat SET autotest=$test_id, student=$student, izlaz_programa='$izlaz_programa', status='$autotest_status', nalaz='$nalaz_testa'");
+
+		if ($nalaz_testa != "") {
+			print "Autotest $rbr: \n$nalaz_testa\nTestni kod je glasio:\n$test\n\n";
+		}
+		
+		unlink($exe_file);
+	}
+
+
+	if ($nalaz != "") {
+		$nalaz = $nnalaz."\n".$nalaz;
+		$nalaz = iconv("UTF-8", "UTF-8//IGNORE", $nalaz);
+	}
+	
+	if ($ocijeni==$zadaca) {
+		$tmp_bodova = round(($bodova_po_zadatku * $uspjesnih_testova) / $total_testova, 2);
+		print "bpz $bodova_po_zadatku ut $uspjesnih_testova tt $total_testova tmpb $tmp_bodova\n";
+		$q120 = myquery("insert into zadatak set status=5, bodova=$tmp_bodova, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
+	} else {
+		$q120 = myquery("insert into zadatak set status=1, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
+		
+		// Nijedan test nije prošao! Neko se zeza
+		if ($uspjesnih_testova == 0 && $student != 3979 && $student != 3918) 
+			$q125 = myquery("DELETE FROM autotest_rezultat WHERE student=$student AND autotest in (SELECT id FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak)");
+	}
+
+	return $sve_ok;
+}
+
+
+
+function autotest_zip() {
+	global $programski_jezik,$ekstenzija,$filename, $filepath, $buildpath;
+	global $student,$zadaca,$zadatak,$novo_vrijeme,$nalaz;
+
+	print "Autotestiram ZIP ($student,$zadaca,$zadatak)...\n";
+
+	$escpath = str_replace(" ", "\ ", $buildpath);
+	$mainfile = $buildpath . "/main.cpp";
+	$kod = file_get_contents($mainfile);
+
+	$cppfiles = "";
+	if ($dh = opendir($buildpath)) {
+		while (($file = readdir($dh)) !== false) {
+			if (substr($file, strlen($file)-4) == ".cpp" && $file != "main.cpp")
+				$cppfiles .= "$escpath/$file ";
+		}
+	}
+	closedir($dh);
+
+	// Popravke u kodu koje su potrebne da bi testcase-ovi radili
+	$q100 = myquery("select tip, specifikacija, zamijeni from autotest_replace where zadaca=$zadaca and zadatak=$zadatak");
+	$fali_funkcija = false;
 	while ($r100 = mysql_fetch_row($q100)) {
 		$spec = $r100[1];
 		$zamjena = $r100[2];
@@ -177,6 +576,7 @@ function autotest() {
 	if (mysql_num_rows($q110)<1) return;
 	$rbr = 0;
 	$orig_kod = $kod;
+	$nnalaz = $nalaz;
 	$nalaz = "";
 	while ($r110 = mysql_fetch_row($q110)) {
 		$rbr++;
@@ -201,24 +601,25 @@ function autotest() {
 		}
 
 		// Kompajliranje
-		$source_file = "/tmp/autotest$ekstenzija";
+		$source_file = "$buildpath/autotest$ekstenzija";
 		$exe_file = "/tmp/autotest_exec";
 		$log_file = "/tmp/autotest_log";
 		file_put_contents($source_file, $kod);
+		$source_file = "$escpath/autotest$ekstenzija";
 		$return=0;
 	
 		if ($programski_jezik == "C") {
-			$k = exec("/usr/bin/gcc -ggdb -o $exe_file -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+			$k = exec("/usr/bin/gcc -ggdb -o $exe_file -lm -pass-exit-codes $source_file $cppfiles 2>&1", $blah, $return);
 		} elseif ($programski_jezik == "C++") {
-			$k = exec("/usr/bin/g++ -ggdb -o $exe_file -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+			$k = exec("/usr/bin/g++ -ggdb -o $exe_file -lm -pass-exit-codes $source_file $cppfiles 2>&1", $blah, $return);
 		} else { // DEFAULT JEZIK: C++
-			$k = exec("/usr/bin/g++ -ggdb -o $exe_filet -lm -pass-exit-codes $source_file 2>&1", $blah, $return);
+			$k = exec("/usr/bin/g++ -ggdb -o $exe_filet -lm -pass-exit-codes $source_file $cppfiles 2>&1", $blah, $return);
 		}
 
 		// Došlo je do greške prilikom kompajliranja
 		if ($return != 0) {
 			$blah = join("\n", $blah);
-			//print "---GRESKA:\n$blah\n";
+			print "---GRESKA:\n$blah\n";
 			$blah .= "\n";
 			if (preg_match("/error: (.*?)\\n/", $blah, $matches)) {
 				print "Autotest $rbr: greška prilikom kompajliranja autotesta: $matches[1]\nKod je glasio: $test\n";
@@ -288,11 +689,11 @@ function autotest() {
 				print "Autotest $rbr: rezultat ok!\n";
 
 			// u suprotnom, exact match se traži
-			} else if ($matches[1] == $rezultat) {
+			} else if (trim($matches[1]) == trim($rezultat)) {
 				print "Autotest $rbr: rezultat ok!\n";
 
 			// alternativni rezultat
-			} else if ($alt_rezultat != "" && $matches[1] == $alt_rezultat) {
+			} else if ($alt_rezultat != "" && trim($matches[1]) == trim($alt_rezultat)) {
 				print "Autotest $rbr: rezultat ok (alt)!\n";
 
 			// rezultat ne odgovara datom
@@ -300,7 +701,7 @@ function autotest() {
 				if ($rezultat == "===IZUZETAK===") $rezultat = "izuzetak";
 //				print "Autotest $rbr: nije uspio, za kod $test očekivan rezultat $rezultat, a dobio $matches[1]!\n";
 //				$nalaz .= "Autotest $rbr: nije uspio, za kod ".my_escape($test)." očekivan rezultat $rezultat, a dobio $matches[1]!\n";
-				$nalaz_testa .= "Očekivan rezultat $rezultat, a dobio $matches[1].\n";
+				$nalaz_testa .= "Očekivan rezultat ".my_escape($rezultat).", a dobio ".my_escape($matches[1]).".\n";
 			}
 
 		// Ako je bačen izuzetak
@@ -310,7 +711,7 @@ function autotest() {
 			} else {
 //				print "Autotest $rbr: nije uspio, za kod $test očekivan rezultat $rezultat, a dobio izuzetak!\n";
 //				$nalaz .= "Autotest $rbr: nije uspio, za kod ".my_escape($test)." očekivan rezultat $rezultat, a dobio izuzetak!\n";
-				$nalaz_testa .= "Očekivan rezultat $rezultat, a dobio izuzetak.\n";
+				$nalaz_testa .= "Očekivan rezultat ".my_escape($rezultat).", a dobio izuzetak.\n";
 			}
 
 		// Ni jedno ni drugo, izlaz nije parsabilan
@@ -320,6 +721,7 @@ function autotest() {
 			$blah = "";
 			exec("ulimit -c 1000000; $exe_file &> $log_file & echo $!", $blah);
 			$pid = (int)$blah[0];
+
 			if ($pid != "") {
 				sleep(1); // 1 sekunda je realno da bude gotov
 				if (file_exists("core.$pid")) {
@@ -357,7 +759,39 @@ function autotest() {
 		}
 		
 		// Valgrind
-		exec("valgrind --leak-check=full --log-file-exactly=/tmp/valgrind.out $exe_file", $blah);
+print "valgrind\n";
+		$blah="";
+		exec("valgrind --leak-check=full --log-file-exactly=/tmp/valgrind.out $exe_file &> /tmp/null & echo $!", $blah);
+		$pid = (int)$blah[0];
+		if ($pid == "") {
+			// Valgrind se nije pokrenuo
+			print "Valgrind se nije pokrenuo!\n";
+			unlink("/tmp/valgrind.out");
+			continue; // sljedeći test
+		}
+		$trajanje = 1;
+		sleep(1); // 1 sekunda je realno da bude gotov
+		while ($trajanje < $timeout) {
+			$trajanje += $sleep;
+			$found = false;
+			$blah = "";
+			exec ("ps ax | grep $pid 2>&1", $blah);
+			while (list(,$row) = each($blah)) {
+				$row = ltrim($row);
+				$ps_stavke = explode(" ", $row);
+				if ($pid == $ps_stavke[0]) $found=true;
+			}
+			if (!$found) break;
+			sleep($sleep);
+			print "čekam $trajanje\n";
+		}
+
+		if ($found && $trajanje >= $timeout) { // Nije se završio prije $timeout
+			exec("kill -9 $pid");
+			print "Valgrind je radio predugo... probavamo nastaviti.\n";
+		}
+
+
 		$valgrind = file("/tmp/valgrind.out");
 		$greska=0;
 		foreach ($valgrind as $valgrind_linija) {
@@ -420,6 +854,7 @@ function autotest() {
 
 
 	if ($nalaz != "") {
+		$nalaz = $nnalaz."\n".$nalaz;
 		$nalaz = iconv("UTF-8", "UTF-8//IGNORE", $nalaz);
 		$q120 = myquery("insert into zadatak set status=1, izvjestaj_skripte='$nalaz', zadaca=$zadaca, redni_broj=$zadatak, student=$student, vrijeme=FROM_UNIXTIME($novo_vrijeme), filename='$filename'");
 		return false;
