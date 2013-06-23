@@ -248,6 +248,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	<option value="izvjestaj/pregled">Po tipu studiranja</option>
 	<option value="izvjestaj/pregled_nacin">Po tipu i načinu studiranja</option>
 	<option value="izvjestaj/po_kantonima">Po kantonima</option>
+	</select><br><br>
 	Akademska godina: <select name="akademska_godina">
 	<?
 		$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
