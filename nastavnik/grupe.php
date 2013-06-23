@@ -157,7 +157,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	}
 
 	// Spisak labgrupa na odabranom predmetu
-	$q60 = myquery("select id,naziv from labgrupa where predmet=$kopiraj and akademska_godina=$ag and virtualna=0");
+	$q60 = myquery("select id, naziv, tip from labgrupa where predmet=$kopiraj and akademska_godina=$ag and virtualna=0");
 	if (mysql_num_rows($q60) == 0) {
 		zamgerlog("kopiranje sa predmeta pp$kopiraj na kojem nema grupa",3);
 		niceerror("Na odabranom predmetu nije definisana nijedna grupa.");
@@ -166,17 +166,18 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	while ($r60 = mysql_fetch_row($q60)) {
 		$staragrupa = $r60[0];
 		$imegrupe = $r60[1];
+		$tipgrupe = $r60[2];
 
 		// Da li već postoji grupa sa tim imenom?
-		$q70 = myquery("select id, tip from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
+		$q70 = myquery("select id from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
 		if (mysql_num_rows($q70) == 0) {
-			$q80 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='".mysql_result($q70,0,1)."'");
+			$q80 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='$tipgrupe'");
 			$q70 = myquery("select id from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
 		}
 		$novagrupa = mysql_result($q70,0,0);
 
 		// Spisak studenata u grupi koja se kopira
-		$q100 = myquery("select student from student_labgrupa as sl where labgrupa=$staragrupa");
+		$q100 = myquery("select student from student_labgrupa where labgrupa=$staragrupa");
 		while ($r100 = mysql_fetch_row($q100)) {
 			$student = $r100[0];
 
@@ -305,8 +306,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 						if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 					} else {
 						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='vjezbe+tutorijali', virtualna=0");
-						$q210 = myquery("select id from labgrupa where naziv like '$imegrupe' and predmet=$predmet and akademska_godina=$ag");
-						$labgrupa = mysql_result($q210,0,0);
+						$labgrupa = mysql_insert_id();
 					}
 				} else {
 					$labgrupa = mysql_result($q210,0,0);
@@ -489,7 +489,7 @@ Tip grupe:<select name="tip">
 	<option value="predavanja">Grupa za predavanja</a>
 	<option value="vjezbe">Grupa za vježbe</a>
 	<option value="tutorijali">Grupa za tutorijale</a>
-	<option value="vjezbe+tutorijali">Grupa za vježbe i tutorijale</a>
+	<option value="vjezbe+tutorijali" SELECTED>Grupa za vježbe i tutorijale</a>
 </select>
 <input type="submit" value="Dodaj"></form></p>
 <?
