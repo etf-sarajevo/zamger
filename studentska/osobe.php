@@ -178,6 +178,7 @@ if ($akcija == "podaci") {
 		$opcina_rodjenja = intval($_REQUEST['opcina_rodjenja']);
 		$drzava_rodjenja = intval($_REQUEST['drzava_rodjenja']);
 		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']);
+		if ($_REQUEST['boracke_kategorije'] == "on") $boracke_kategorije = 1; else $boracke_kategorije = 0;
 		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
@@ -231,7 +232,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', fk_akademsko_zvanje=$akademsko_zvanje, fk_naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', fk_akademsko_zvanje=$akademsko_zvanje, fk_naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja, boracke_kategorije=$boracke_kategorije where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		?>
@@ -381,7 +382,7 @@ if ($akcija == "podaci") {
 
 	// Prikaz podataka
 
-	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, fk_akademsko_zvanje, fk_naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja from osoba where id=$osoba");
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, fk_akademsko_zvanje, fk_naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja, boracke_kategorije from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		niceerror("Nepostojeća osoba!");
@@ -389,9 +390,10 @@ if ($akcija == "podaci") {
 	}
 	$ime = mysql_result($q400,0,0);
 	$prezime = mysql_result($q400,0,1);
-	$muski=$zenski="";
+	$muski=$zenski=$boracke_kategorije="";
 	if (mysql_result($q400,0,6)=="M") $muski=" CHECKED";
 	if (mysql_result($q400,0,6)=="Z") $zenski=" CHECKED";
+	if (mysql_result($q400,0,25) == 1) $boracke_kategorije = " CHECKED";
 
 
 	// Spisak gradova
@@ -535,6 +537,9 @@ if ($akcija == "podaci") {
 	</tr><tr>
 		<td>Državljanstvo:</td>
 		<td><select name="drzavljanstvo" class="default"><?=$drzavljanstvor?></select></td>
+	</tr><tr>
+		<td>Boračke kategorije:</td>
+		<td><input type="checkbox" name="boracke_kategorije" <?=$boracke_kategorije?>></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Adresa:</td>
