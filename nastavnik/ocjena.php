@@ -66,6 +66,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0; // fakatradi=0 --> ispis=1
 
+	if ($_REQUEST['datum']) { 
+		$uneseni_datumi=true;
+		$_REQUEST['brpodataka'] = 2; 
+	} else {
+		$uneseni_datumi=false;
+		$_REQUEST['brpodataka'] = 1;
+	}
+
 	if ($ispis) {
 		?>Akcije koje će biti urađene:<br/><br/>
 		<?=genform("POST")?>
@@ -150,20 +158,36 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			}
 		}
 
-		// Određivanje datuma za indeks
-		$q105 = myquery("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
-		FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
-		WHERE sit.student=$student and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
-		ORDER BY i.datum DESC LIMIT 1");
-		if (mysql_num_rows($q105) > 0) {
-			$datum_u_indeksu = mysql_result($q105,0,0);
-			if ($datum_u_indeksu > time())
-				$datum_provjeren = 0;
-			else
-				$datum_provjeren = 1;
+		// Ako je unesen datum, taj datum postaje datum_u_indeksu i provjeren je
+		if ($uneseni_datumi) {
+			$datum_ulaz = str_replace("/", ".", $mass_rezultat['podatak2'][$student]);
+			$datum_ulaz = str_replace(". ", ".", $datum_ulaz);
+			$matches = array();
+			if (preg_match("/^(\d\d)\.(\d\d)\.(\d\d)\.?$/", $datum_ulaz, $matches)) {
+				if ($matches[3] < 20) $godina = "20".$matches[3]; else $godina = "19".$matches[3];
+				$datum_ulaz = $matches[1].".".$matches[2].".".$godina;
+			}
+			//$datum_ulaz = $mass_rezultat['podatak2'][$student];
+			//if (
+			$datum_u_indeksu = strtotime($datum_ulaz);
+			$datum_provjeren = 1;
+			
 		} else {
-			$datum_u_indeksu = time();
-			$datum_provjeren = 0;
+			// Određivanje datuma za indeks
+			$q105 = myquery("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
+			FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
+			WHERE sit.student=$student and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
+			ORDER BY i.datum DESC LIMIT 1");
+			if (mysql_num_rows($q105) > 0) {
+				$datum_u_indeksu = mysql_result($q105,0,0);
+				if ($datum_u_indeksu > time())
+					$datum_provjeren = 0;
+				else
+					$datum_provjeren = 1;
+			} else {
+				$datum_u_indeksu = time();
+				$datum_provjeren = 0;
+			}
 		}
 
 		if ($ispis) {
@@ -251,6 +275,9 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
+
+<input type="checkbox" name="datum"> Treća kolona: datum u formatu D. M. G.<br/><br/>
+
 <input type="submit" value="  Dodaj  ">
 </form></p>
 <?
