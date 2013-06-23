@@ -124,7 +124,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 	// Ovaj kod radi samo sa jednom komponentom prisustva. U budućnosti to bi moglo biti popravljeno, ali realno nema prevelike potrebe
 
 	$datum = intval($_POST['godina'])."-". intval($_POST['mjesec'])."-". intval($_POST['dan']);
-	$vrijeme = my_escape($_POST['vrijeme']);
+	$vrijeme = $_POST['vrijeme'];
 	if (!preg_match("/^\d?\d\:\d\d$/", $vrijeme)) {
 		niceerror("Vrijeme nije u ispravnom formatu!");
 		print "<p>Vrijeme mora biti oblika HH:MM, a vi ste unijeli '$vrijeme'.</p>";
@@ -906,12 +906,12 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 <p><?
 	if ($kreiranje>0) {
-		$k=str_replace("&kreiranje=1","",genuri());
+		$k=str_replace("&amp;kreiranje=1","",genuri());
 ?><a href="<?=$k?>">Sakrij dugmad za kreiranje zadataka</a><?
 	} else {
-?><a href="<?=genuri()?>&kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
+?><a href="<?=genuri()?>&amp;kreiranje=1">Prikaži dugmad za kreiranje zadataka</a><?
 	}
-?> * <a href="?sta=saradnik/grupa&id=<?=$labgrupa?>">Refresh</a></p>
+?> * <a href="?sta=saradnik/grupa&amp;id=<?=$labgrupa?>">Refresh</a></p>
 
 <?
 if ($privilegija=="nastavnik") { 
