@@ -44,7 +44,10 @@ if (!$user_siteadmin) {
 
 // Virtualna grupa
 $q20 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-$virtualna=mysql_result($q20,0,0);
+if (mysql_num_rows($q20) > 0)
+	$virtualna = mysql_result($q20,0,0);
+else
+	$virtualna = 0;
 
 
 ?>
