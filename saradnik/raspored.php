@@ -5,7 +5,7 @@
 		
 function saradnik_raspored($tip) {
 
-	global $userid;
+	global $userid, $user_nastavnik, $user_studentska;
 
 	// Nizovi sa imenima termina
 	$vrijeme_pocetak = array("0" => "08:00", "1" => "09:00", "2" => "10:00", "3" => "11:00", "4" => "12:00", "5" => "13:00",
@@ -57,7 +57,6 @@ function saradnik_raspored($tip) {
 
 		$q200 = myquery("select id from akademska_godina where aktuelna=1");
 		$ag = mysql_result($q200,0,0);
-		$ag=7; // hack
 
 		if ($labgrupa == 0) {
 		
@@ -158,7 +157,6 @@ function saradnik_raspored($tip) {
 
 		$q200 = myquery("select id from akademska_godina where aktuelna=1");
 		$ag = mysql_result($q200,0,0);
-		$ag=7; // hack
 
 		// Dodati studij, semestar
 		
@@ -181,12 +179,22 @@ function saradnik_raspored($tip) {
 	
 	// SPISAK PREDMETA NA KOJIMA JE ANGAŽOVAN NASTAVNIK
 	
-	$q10 = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.id=7 and ss.semestar mod 2=0");
-	if (mysql_num_rows($q10)>0) $neparni=1; else $neparni=0;
+	$q10 = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
+	if (mysql_num_rows($q10)>0) $neparni=0; else $neparni=1;
 
 	$whereCounter = 0;
 	$spisak_predmeta = "";
-	$q20 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND np.predmet=p.id and pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.id=7");
+	
+	if ($user_studentska && $_REQUEST['dajsve']==1) {
+		$q20 = myquery("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM 
+ponudakursa as pk, akademska_godina as ag, predmet as p WHERE pk.akademska_godina = ag.id and 
+ag.aktuelna=1 and pk.predmet=p.id");
+	} else if ($user_nastavnik) {
+		$q20 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND np.predmet=p.id and pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+	} else {
+		$q20 = myquery("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM student_predmet as sp, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE sp.student = $userid AND pk.id = sp.predmet AND pk.akademska_godina = ag.id and ag.aktuelna=1 and pk.predmet=p.id");
+	}
+	
 	while($r20 = mysql_fetch_row($q20)) {
 		$ag = $r20[1];
 		$semestar = $r20[2];
@@ -278,7 +286,6 @@ function saradnik_raspored($tip) {
 		
 			$q410 = myquery("select id from akademska_godina where aktuelna=1");
 			$ag = mysql_result($q410,0,0);
-			$ag=7; // hack
 
 			$q420 = myquery("select id, naziv from labgrupa where predmet=$mpredmet and akademska_godina=$ag order by naziv");
 			while ($r420 = mysql_fetch_row($q420)) {
@@ -286,7 +293,7 @@ function saradnik_raspored($tip) {
 				print "<option value=\"$r420[0]\" $sel>$r420[1]</option>\n";
 			}
 		?></select><br />
-		Da li želite da čas bude vidljiv i studentima? <input type="checkbox" name="javan" <?=$javno?>> DA<br />
+		Da li želite da čas bude vidljiv svima? <input type="checkbox" name="javan" <?=$javno?>> DA<br />
 		<br />
 		<input type="submit" value=" Potvrdite izmjene časa ">
 		</form>
@@ -322,7 +329,7 @@ function saradnik_raspored($tip) {
 			print "<option value=\"$r100[0]\">$r100[1] ($r100[2] mjesta$r100[3])</option>\n";
 		}
 	?></select><br />
-	Da li želite da čas bude vidljiv i studentima? <input type="checkbox" name="javan"> DA<br />
+	Da li želite da čas bude vidljiv svima? <input type="checkbox" name="javan"> DA<br />
 	<br />
 	<input type="submit" value=" Dodaj čas u raspored ">
 	</form>
@@ -342,8 +349,8 @@ function saradnik_raspored($tip) {
 	
 	
 	$q30 = myquery("SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, r.privatno
-	FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p, raspored as r 
-	WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND rs.raspored=r.id and r.akademska_godina=7 and (r.privatno=0 or r.privatno=$userid)
+	FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p, raspored as r, akademska_godina as ag
+	WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND rs.raspored=r.id and r.akademska_godina=ag.id and ag.aktuelna=1 and (r.privatno=0 or r.privatno=$userid)
 	ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC");
 	if (mysql_num_rows($q30) == 0)
 		print "<br />Nijedan čas nije definisan u vašem rasporedu.";
