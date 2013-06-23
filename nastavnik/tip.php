@@ -213,7 +213,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	}
 
 
-	zamgerlog("osoba u".$userid." kreirala tip predmeta '$predmet_naziv"."$ag",4);
+	zamgerlog("kreiran tip predmeta '$predmet_naziv"."$ag",4);
 	nicemessage("Novi sistem bodovanja je potvrđen");
 	print "<a href=\"?sta=nastavnik/tip&predmet=$predmet&ag=$ag\">Nazad na početnu stranicu</a>";
 	return;
@@ -248,7 +248,7 @@ if ($akcija == "postojeci_tip_potvrda" && check_csrf_token()) {
 		}
 	}
 
-	zamgerlog("Osoba u".$userid." promijenila tip predmeta pp".$predmet." u $tip_predmeta",4);
+	zamgerlog("promijenjen tip predmeta pp".$predmet." u $tip_predmeta",4);
 	nicemessage("Odabran je sistem bodovanja na predmetu");
 	print "<a href=\"?sta=nastavnik/tip&predmet=$predmet&ag=$ag\">Nazad na početnu stranicu</a>";
 	return;
