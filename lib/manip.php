@@ -348,9 +348,9 @@ function mass_input($ispis) {
 		for ($i=1; $i<=$brpodataka; $i++) {
 			if ($duplikati==1 && $visestruki==1) {
 				if (count($mass_rezultat["podatak$i"][$student])==0) $mass_rezultat["podatak$i"][$student]=array();
-				array_push($mass_rezultat["podatak$i"][$student],$nred[$kolona-$i]);
+				array_push($mass_rezultat["podatak$i"][$student],$nred[$kolona-$brpodataka-1+$i]);
 			} else
-				$mass_rezultat["podatak$i"][$student]=$nred[$kolona-$i];
+				$mass_rezultat["podatak$i"][$student]=$nred[$kolona-$brpodataka-1+$i];
 		}
 	}
 	if ($f) {
