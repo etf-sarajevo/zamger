@@ -103,6 +103,7 @@ array("izvjestaj/csv_converter", "Za generisanje excel izvjestaja", "Dnevnik", "
 array("izvjestaj/for_looper", "For looper", "For looper", "PSNBA", "0", "0"),
 array("izvjestaj/uspjesnost", "Uspješnost studenata i prosječno trajanje studija", "Uspješnost studenata", "BA", "0", "0"),
 array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisnik - završni rad", "BA", "0", "0"),
+array("izvjestaj/svi_studenti", "Spisak svih studenata", "Spisak svih studenata", "BA", "0", "0"),
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
 array("common/attachment", "Download zadaće u formi attachmenta", "Attachment", "SN", "2", "0"),

@@ -299,6 +299,26 @@ if ($_REQUEST['akcija'] == "uspjesnost") {
 	<?
 }
 
+if ($_REQUEST['akcija'] == "svi_studenti") {
+	?>
+	<h3>Spisak svih studenata abecedno</h3>
+	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">
+	<input type="hidden" name="sta" value="izvjestaj/svi_studenti">
+	<p><input type="checkbox" name="ime_oca">Ime oca<br />
+	<input type="checkbox" name="jmbg">JMBG<br />
+	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
+	Studij: <select name="studij">
+	<option value="-1">Svi studiji</option>
+	<?
+		$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
+		while ($r505 = mysql_fetch_row($q505)) {
+			print "<option value=\"$r505[0]\">$r505[1]</option>\n";
+		}
+	?></select><br />
+	<input type="submit" value=" Prikaži "></form>
+	<?
+}
+
 
 // SPISAK IZVJEŠTAJA
 
@@ -315,7 +335,7 @@ if ($_REQUEST['akcija'] == "uspjesnost") {
 <li><a href="?sta=izvjestaj/ugovoroucenju" onclick="return izvjestaj();">Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini i/ili Procjena za sljedeću akademsku godinu</a> - <a href="?sta=studentska/izvjestaji&akcija=ugovoroucenju">ranije akademske godine</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
-<li><a href="?sta=izvjestaj/po_kantonima">Spisak studenata po kantonima</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=svi_studenti">Spisak svih studenata abecedno</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
 </ul></p>
 
