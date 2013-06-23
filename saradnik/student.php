@@ -219,7 +219,10 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 	return;
 }
 
-
+if ($_GET['akcija'] == "ponisti_kviz") {
+	$kviz = intval($_REQUEST['kviz']);
+	$q2000 = myquery("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
+}
 
 
 
@@ -286,6 +289,7 @@ if ($user_siteadmin) {
 
 
 
+// PRISUSTVO:
 
 print ajah_box();
 
@@ -408,6 +412,52 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 
 
+// KVIZOVI
+
+$q200 = myquery("SELECT id, naziv, prolaz_bodova FROM kviz WHERE predmet=$predmet AND akademska_godina=$ag");
+if (mysql_num_rows($q200) > 0) {
+	?>
+
+	<b>Kvizovi:</b><br/>
+	<table cellspacing="0" cellpadding="2" border="0" id="kvizovi">
+	<thead>
+	<tr>
+		<th>Naziv kviza</th>
+		<th>Rezultat</th>
+		<th>Akcije</th>
+	</tr>
+	</thead>
+	<?
+
+	while ($r200 = mysql_fetch_row($q200)) {
+		$q210 = myquery("SELECT dovrsen, bodova FROM kviz_student WHERE student=$student AND kviz=$r200[0]");
+		$tekst = "";
+
+		if (mysql_num_rows($q210) > 0) {
+			$bodova = mysql_result($q210,0,1);
+			if (mysql_result($q210,0,0) == 0) {
+				$tekst = "<img src=\"images/16x16/zad_cekaj.png\" width=\"8\" height=\"8\"> Nije završio/la";
+			} else if ($bodova < $r200[2]) {
+				$tekst = "<img src=\"images/16x16/brisanje.png\" width=\"8\" height=\"8\"> $bodova bodova";
+			} else {
+				$tekst = "<img src=\"images/16x16/zad_ok.png\" width=\"8\" height=\"8\"> $bodova bodova";
+			}
+		}
+
+		?>
+		<tr>
+			<td><?=$r200[1]?></td>
+			<td><?=$tekst?></td>
+			<td><? if ($tekst !== "") { ?><a href="?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ponisti_kviz&kviz=<?=$r200[0]?>">Poništi kviz</a><? } ?></td>
+		</tr>
+		<?
+	}
+
+	?>
+	</table>
+	</p>
+	<?
+}
 
 
 
