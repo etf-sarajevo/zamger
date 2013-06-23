@@ -49,12 +49,12 @@ function vrijemeZaIspis($vrijeme){
 	}
 	
 	if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
-	$novagrupa = intval($_POST['grupa']);
-	$id_stavke=intval($_POST['stavka_rasporeda']);
-	$q01=myquery("update raspored_stavka set labgrupa=$novagrupa where id=$id_stavke");
-	$q02=myquery("update raspored_stavka set labgrupa=$novagrupa where dupla=$id_stavke");
-	$uspjesno_promijenjena_grupa=1;		
-	zamgerlog("Promijenjena grupa na predmetu $predmet_naziv", 2);
+		$novagrupa = intval($_POST['grupa']);
+		$id_stavke=intval($_POST['stavka_rasporeda']);
+		$q01=myquery("update raspored_stavka set labgrupa=$novagrupa where id=$id_stavke");
+		$q02=myquery("update raspored_stavka set labgrupa=$novagrupa where dupla=$id_stavke");
+		$uspjesno_promijenjena_grupa=1;		
+		zamgerlog("Promijenjena grupa na predmetu $predmet_naziv", 2);
 	}
 	
 	if ($_POST['akcija'] == "sjeckanje termina" && check_csrf_token()) {
