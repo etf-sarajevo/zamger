@@ -309,14 +309,14 @@ if ($_REQUEST['akcija'] == "uspjesnost") {
 
 <p>Najčešći izvještaji:
 <ul>
-<li><a href="?sta=studentska/izvjestaji&akcija=prolaznost">Prolaznost studenata po predmetima</a></li>
-<li><a href="?sta=izvjestaj/prolaznosttab" onclick="izvjestaj();">Tabelarni pregled prolaznosti (sumarno za sve godine)</a></li>
-<li><a href="?sta=studentska/izvjestaji&akcija=pregled">Pregled broja upisanih studenata u aktuelnoj akademskoj godini</a></li>
-<li><a href="?sta=izvjestaj/ugovoroucenju" onclick="izvjestaj();">Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini i/ili Procjena za sljedeću akademsku godinu</a> - <a href="?sta=studentska/izvjestaji&akcija=ugovoroucenju">ranije akademske godine</a></li>
-<li><a href="?sta=studentska/izvjestaji&akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
-<li><a href="?sta=studentska/izvjestaji&akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=prolaznost">Prolaznost studenata po predmetima</a></li>
+<li><a href="?sta=izvjestaj/prolaznosttab" onclick="return izvjestaj();">Tabelarni pregled prolaznosti (sumarno za sve godine)</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=pregled">Pregled broja upisanih studenata u aktuelnoj akademskoj godini</a></li>
+<li><a href="?sta=izvjestaj/ugovoroucenju" onclick="return izvjestaj();">Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini i/ili Procjena za sljedeću akademsku godinu</a> - <a href="?sta=studentska/izvjestaji&akcija=ugovoroucenju">ranije akademske godine</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
 <li><a href="?sta=izvjestaj/po_kantonima">Spisak studenata po kantonima</a></li>
-<li><a href="?sta=studentska/izvjestaji&akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
 </ul></p>
 
 <hr/>
