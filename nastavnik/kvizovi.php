@@ -74,15 +74,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$tip = my_escape($_REQUEST['tip']);
 
 		$q300 = myquery("insert into kviz_pitanje set kviz=$kviz, tip='$tip', tekst='$tekst', bodova=$bodova, vidljivo=$vidljivo");
-		$q310 = myquery("select id from kviz_pitanje where kviz=$kviz and tekst='$tekst' and bodova=$bodova and vidljivo=$vidljivo");
-		if (mysql_num_rows($q310)<1) {
-			niceerror("Problem prilikom dodavanja novog pitanja");
-			print "Pitanje je vjerovatno uspješno dodano, ali ako ste unijeli i neke odgovore oni nisu pridruženi odgovarajućem pitanju. U svakom slučaju ovo se ne bi smjelo desiti. Kontaktirajte administratora.";
-			zamgerlog("nije pronadjeno pitanje koje je navodno dodano", 3);
-			return;
-		}
-		
-		$pitanje = mysql_result($q310,0,0);
+		$pitanje = mysql_insert_id();
 
 		// Ako je korisnik unosio odgovore prije kreiranja pitanja, njihov id pitanja je 0
 		$q315 = myquery("update kviz_odgovor set kviz_pitanje=$pitanje where kviz_pitanje=0");
@@ -223,7 +215,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$q370 = myquery("select kp.kviz, kp.id, ko.tacan from kviz_pitanje as kp, kviz_odgovor as ko where ko.id=$odgovor and ko.kviz_pitanje=kp.id");
 		if (mysql_num_rows($q370)==0 || mysql_result($q370,0,0) != $kviz) {
 			niceerror("Odgovor ne postoji ili pitanje nije sa ovog kviza");
-			zamgerlog("brisanje odgovora: odgovor $odgovor nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog("toggle tacnost: odgovor $odgovor nije sa kviza $kviz (pp$predmet ag$ag)", 3);
 			return;
 		}
 
@@ -386,12 +378,12 @@ if ($_REQUEST['_lv_action_delete']) {
 	$q200 = myquery("select naziv, predmet, akademska_godina from kviz where id=$kviz");
 	if (mysql_num_rows($q200)<1) {
 		niceerror("Nepostojeći kviz $kviz");
-		zamgerlog("editovanje pitanja: nepostojeci kviz $kviz", 3);
+		zamgerlog("brisanje kviza: nepostojeci kviz $kviz", 3);
 		return;
 	}
 	if ((mysql_result($q200,0,1) != $predmet) || (mysql_result($q200,0,2) != $ag)) {
 		niceerror("Kviz nije sa ovog predmeta");
-		zamgerlog("editovanje pitanja: kviz $kviz nije sa predmeta pp$predmet ag$ag", 3);
+		zamgerlog("brisanje kviza: kviz $kviz nije sa predmeta pp$predmet ag$ag", 3);
 		return;
 	}
 	
