@@ -244,7 +244,10 @@ if ($_REQUEST['akcija'] == "pregled") {
 	?>
 	<p><h3>Pregled broja upisanih studenata u aktuelnoj akademskoj godini</h3></p>
 	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">
-	<input type="hidden" name="sta" value="izvjestaj/pregled">
+	Tip izvještaja: <select name="sta">
+	<option value="izvjestaj/pregled">Po tipu studiranja</option>
+	<option value="izvjestaj/pregled_nacin">Po tipu i načinu studiranja</option>
+	<option value="izvjestaj/po_kantonima">Po kantonima</option>
 	Akademska godina: <select name="akademska_godina">
 	<?
 		$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
@@ -308,7 +311,7 @@ if ($_REQUEST['akcija'] == "uspjesnost") {
 <ul>
 <li><a href="?sta=studentska/izvjestaji&akcija=prolaznost">Prolaznost studenata po predmetima</a></li>
 <li><a href="?sta=izvjestaj/prolaznosttab" onclick="izvjestaj();">Tabelarni pregled prolaznosti (sumarno za sve godine)</a></li>
-<li><a href="?sta=izvjestaj/pregled" onclick="izvjestaj();">Pregled broja upisanih studenata u aktuelnoj akademskoj godini</a> - <a href="?sta=studentska/izvjestaji&akcija=pregled">ranije akademske godine</a></li>
+<li><a href="?sta=studentska/izvjestaji&akcija=pregled">Pregled broja upisanih studenata u aktuelnoj akademskoj godini</a></li>
 <li><a href="?sta=izvjestaj/ugovoroucenju" onclick="izvjestaj();">Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini i/ili Procjena za sljedeću akademsku godinu</a> - <a href="?sta=studentska/izvjestaji&akcija=ugovoroucenju">ranije akademske godine</a></li>
 <li><a href="?sta=studentska/izvjestaji&akcija=po_nepolozenim">Spisak studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</a></li>
 <li><a href="?sta=studentska/izvjestaji&akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
