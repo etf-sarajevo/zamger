@@ -2520,7 +2520,7 @@ else {
 	<table border="0" cellspacing="0" cellpadding="1">
 		<tr><td>Predmet&nbsp;</td><td align="center"><b>Ocjena</b></td><td align="center"><b>ECTS</b></td></td></tr>
 	<?
-	for ($i=21; $i<=50; $i++) {
+	for ($i=26; $i<=50; $i++) {
 		?>
 		<tr><td align="right"><?=$i?>.</td>
 		<td align="center"><input type="text" id="prijemniocjene<?=$i*2-1?>" size="4" value="<?=$ocjene[$i]?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="return enterhack2(this,event,<?=($i*2)?>)"></td>
