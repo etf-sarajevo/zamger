@@ -101,8 +101,8 @@ function user_box() {
 
 <div id="kocka" style="position:absolute;right:10px;top:55px">
 	<table style="border:1px;border-style:solid"><tr><td>
-	<img src="images/fnord.gif" width="200" height="1"><br/>
-	<img src="images/16x16/<?=$slika?>" border="0"> <?=$ime?> <?=$prezime?><br/>
+	<img src="images/fnord.gif" width="200" height="1" alt="fnord"><br>
+	<img src="images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$ime?> <?=$prezime?><br>
 	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
 	</td></tr></table>
 </div>
@@ -374,7 +374,7 @@ function malimeni($fj) {
 		$q10 = myquery("select naziv from predmet where id=$predmet");
 		$predmet_naziv = mysql_result($q10,0,0);
 	}
-		
+
 	?>
 	<style>
 		a.malimeni {color:#333399;text-decoration:none;}
@@ -783,7 +783,7 @@ function gen_ldap_uid($userid) {
 
 
 function myquery($query) {
-	global $_lv_;
+	global $_lv_, $conf_script_path;
 
 	if ($r = @mysql_query($query)) {
 		return $r;
@@ -793,9 +793,14 @@ function myquery($query) {
 	if ($_lv_["debug"])
 		print "<br/><hr/><br/>MYSQL query:<br/><pre>".$query."</pre><br/>MYSQL error:<br/><pre>".mysql_error()."</pre>";
 	$backtrace = debug_backtrace();
-	$file = substr($backtrace[0]['file'], strlen($backtrace[0]['file'])-20);
+	$file = $backtrace[0]['file'];
+	$file = str_replace($conf_script_path."/", "", $file);
 	$line = intval($backtrace[0]['line']);
-	zamgerlog("SQL greska ($file : $line):".mysql_error(), 3);
+
+	$error = mysql_error();
+	$error = str_replace("You have an error in your SQL syntax;", "", $error); 
+	$error = str_replace("check the manual that corresponds to your MySQL server version for the right syntax to use", "", $error);
+	zamgerlog("SQL greska ($file : $line): $error", 3);
 	exit;
 }
 
