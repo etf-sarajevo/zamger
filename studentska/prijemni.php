@@ -1355,7 +1355,7 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			if ($ciklus_studija>1) {
 				$q4 = myquery("select s.institucija from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
 				if (mysql_num_rows($q4)>0) { // Da li je ikada studirao išta ovdje?
-					$q5 = myquery("select s.id from studij as s, tipstudija as ts where s.institucija=".mysql_result($q4,0,0)." and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija");
+					$q5 = myquery("select s.id from studij as s, tipstudija as ts where s.institucija=".mysql_result($q4,0,0)." and s.tipstudija=ts.id and ts.ciklus<=$ciklus_studija");
 					$sp = mysql_result($q5,0,0);
 				}
 
