@@ -533,6 +533,13 @@ if ($_REQUEST['akcija']=="spisak") {
 	<input type="hidden" name="termin" value="<?=$termin?>">
 	<h2>Spisak kandidata za prijemni ispit</h2>
 
+	<p>Studij: <select name="studij"><option value="0">Svi zajedno</option><?
+	$q1000 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	while ($r1000 = mysql_fetch_row($q1000)) {
+		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
+	}
+	?></select></p>
+
 	<p>Državljanstvo: <select name="iz"><option value="bih">BiH</option>
 	<option value="strani">Strani državljani</option>
 	<option>Svi zajedno</option>

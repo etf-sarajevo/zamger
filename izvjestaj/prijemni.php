@@ -16,6 +16,9 @@ function izvjestaj_prijemni() {
 
 if ($_REQUEST['akcija']=="kandidati") {
 
+	$studij = intval($_REQUEST['studij']);
+	$termin=intval($_REQUEST['termin']);
+
 	$uslov="";
 	if ($_REQUEST['iz']=='bih') {
 		$uslov="AND o.kanton!=13"; 
@@ -25,8 +28,6 @@ if ($_REQUEST['akcija']=="kandidati") {
 		$uslov="AND o.kanton=13"; 
 		$naslov1="(strani državljani)";
 	}
-
-	$termin=intval($_REQUEST['termin']);
 
 	if ($_REQUEST['sort']=="abecedno") {
 		$orderby="ORDER BY o.prezime,o.ime";
@@ -38,6 +39,12 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 
 	// Naslov
+
+	if ($studij != 0) {
+		$q10 = myquery("SELECT naziv FROM studij WHERE id=$studij");
+		$naziv_studija = mysql_result($q10,0,0);
+		$uslov .= "  AND pp.studij_prvi=$studij";
+	}
 
 	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
 	if (mysql_num_rows($q10)<1) {
@@ -69,6 +76,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	Elektrotehnički fakultet Sarajevo</h4>
 
 	<h3>Spisak kandidata <?=$naslov1?> za <?=$naslov2?> <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
+	<? if ($studij!=0) { ?><h2 align="left">Studij: <?=$naziv_studija?></h2><? } ?>
 	<br /><?
 
 
@@ -104,10 +112,10 @@ if ($_REQUEST['akcija']=="kandidati") {
 		<td><?=$kandidat[1]?> <?=$kandidat[0]?></td><? 
 		if (!$sakrij_bodove) { 
 			?>
-			<td align="center"><?=$kandidat[2]?></td>
-			<td align="center"><?=$kandidat[3]?></td>
-			<td align="center"><?=$kandidat[4]?></td>
-			<? if ($ciklus==1) { ?><td align="center"><?=$kandidat[5]?></td><? }
+			<td align="center"><? vprintf("%3.2f",$kandidat[2])?></td>
+			<td align="center"><? vprintf("%3.2f",$kandidat[3])?></td>
+			<td align="center"><? vprintf("%3.2f",$kandidat[4])?></td>
+			<? if ($ciklus==1) { ?><td align="center"><? vprintf("%3.2f",$kandidat[5])?></td><? }
 		} 
 		?></tr>
 		<?
@@ -463,7 +471,6 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
 				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
-				?></b></td>
 			</tr>
 		<?
 		$j++;
