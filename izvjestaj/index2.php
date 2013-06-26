@@ -26,10 +26,6 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 	return;
 }
 
-?>
-<img src="images/content/ETF-memorandum.png">
-<?
-
 
 // Deklaracije nizova
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
@@ -58,6 +54,8 @@ if ($r110[4] == 1) {
 } else $koji_put = "1";
 
 ?>
+<img src="images/content/ETF-memorandum.png">
+<p>&nbsp;</p>
 <p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99) i člana 147. (4) Zakona o visokom obrazovanju Kantona Sarajevo - prečišćeni tekst (Službene novine Kantona Sarajevo, broj 22/10) izdaje se</p>
 
 <h2>Uvjerenje o prepisu ocjena</h2>
@@ -137,7 +135,7 @@ $i=1;
 $q130 = myquery("SELECT p.sifra, p.naziv, p.ects, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), UNIX_TIMESTAMP(ko.datum), pk.semestar, ts.ciklus
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
 WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet 
-and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id
+and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5
 ORDER BY ts.ciklus, pk.semestar, p.naziv");
 while ($r130 = mysql_fetch_row($q130)) {
 	$godina = round($r130[6]/2);
