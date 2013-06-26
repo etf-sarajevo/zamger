@@ -194,9 +194,11 @@ while ($r10=mysql_fetch_row($q10)) {
 
 $q60 = myquery("(SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
-             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id) union (SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), d.naziv, it.id, p.id
+             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id
+             ORDER BY it.datumvrijeme) union (SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), d.naziv, it.id, p.id
              FROM ispit_termin as it, ispit as i, predmet as p, dogadjaj as d, student_ispit_termin as sit
-             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=d.id AND sit.student=$userid AND sit.ispit_termin=it.id);");
+             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=d.id AND sit.student=$userid AND sit.ispit_termin=it.id
+             ORDER BY it.datumvrijeme);");
 
 ?>
 <br><br>
