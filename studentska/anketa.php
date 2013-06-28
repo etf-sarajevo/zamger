@@ -69,7 +69,7 @@ function studentska_anketa(){
 	// Deaktivacija ankete
 	if ($_REQUEST['akcija']=="deaktivacija") {
 		$q500 = myquery("update anketa_anketa set aktivna=0 where id=$id");
-		$q510 = myquery("update anketa_predmet set aktivna=0 where anketa=$id and predmet=0");
+		$q510 = myquery("update anketa_predmet set aktivna=0 where anketa=$id");
 		zamgerlog("deaktivirana anketa $id", 4); // nivo 4 = audit
 	}
 	
@@ -77,12 +77,12 @@ function studentska_anketa(){
 	if ($_REQUEST['akcija']=="aktivacija") {
 		// Prvo sve ankete postavimo na neaktivne
 		$q520 = myquery("update anketa_anketa set aktivna=0");
-		$q530 = myquery("update anketa_predmet set aktivna=0 where anketa=$id and predmet=0");
+		$q530 = myquery("update anketa_predmet set aktivna=0 where anketa=$id");
 
 		// ...a zatim datu postavimo kao aktivnu jer u datom trenutku samo jedna anketa može biti aktivna.
 		// Automatski postavljamo i to da vise nije moguće editovati pitanja date ankete pošto je postala aktivna
 		$q540 = myquery("update anketa_anketa set aktivna=1, editable=0 where id=$id");
-		$q550 = myquery("update anketa_predmet set aktivna=1 where anketa=$id and predmet=0");
+		$q550 = myquery("update anketa_predmet set aktivna=1 where anketa=$id");
 
 		print "<center><span style='color:#009900'>Anketa je postavljena kao aktivna!</span></center>";
 		zamgerlog("aktivirana anketa $id", 4);
@@ -228,7 +228,7 @@ function studentska_anketa(){
 				
 		$q393 = myquery("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
 		$anketa = mysql_insert_id();
-		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=0, akademska_godina=0, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
+		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=0, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		
 		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?

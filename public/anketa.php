@@ -38,7 +38,7 @@ function public_anketa() {
 		// Nije, uzimamo trenutno aktivnu anketu
 		if ($predmet>0) 
 			// Možda je anketa samo za jedan predmet?
-			$sql_dodaj = " and ((ap.predmet=$predmet and ap.akademska_godina=$ag) or ap.predmet=0)";
+			$sql_dodaj = " and ((ap.predmet=$predmet and ap.akademska_godina=$ag) or ap.predmet IS NULL)";
 		else
 			$sql_dodaj = " and aa.akademska_godina=ag.id and ag.aktuelna=1";
 
@@ -73,7 +73,7 @@ function public_anketa() {
 
 	// Da li je anketa aktivna? 
 	// Ako je aktivna samo za određeni predmet, on mora biti zadat kao parametar
-	$q40 = myquery("select aktivna from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet=0)");
+	$q40 = myquery("select aktivna from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet IS NULL)");
 	$anketa_aktivna = mysql_result($q40,0,0);
 	if ($_GET['akcija'] != "preview" && (mysql_num_rows($q40)<1 || $anketa_aktivna==0)) {
 		biguglyerror("Anketa trenutno nije aktivna!");
