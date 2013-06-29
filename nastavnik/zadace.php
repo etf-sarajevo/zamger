@@ -205,6 +205,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_csrf_token()) {
 	$edit_zadaca = intval($_POST['zadaca']);
 
+	// Brisanje postavke zadaće (a ne čitave zadaće!)
 	if ($_POST['dugmeobrisi'] == "Obriši") {
 		$q100 = myquery("select postavka_zadace from zadaca where id=$edit_zadaca");
 		$filepath = "$conf_files_path/zadace/$predmet-$ag/postavke/".mysql_result($q100,0,0);
@@ -231,9 +232,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		}
 	}
 
-
 	// Brisanje zadaće
-	
 	if ($_POST['brisanje'] == " Obriši ") {
 		if ($edit_zadaca <= 0) return; // Ne bi se smjelo desiti
 		$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
@@ -249,8 +248,15 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		}
 	
 		if ($_POST['potvrdabrisanja']==" Briši ") {
+			// Brišemo srodne testove
+			$q84 = myquery("delete from autotest_replace where zadaca=$edit_zadaca");
+			$q85 = myquery("delete from autotest_rezultat where autotest in (select id from autotest where zadaca=$edit_zadaca)");
+			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca");
+			
+			// Brišemo zadaću
+			$q87 = myquery("delete from zadatak where zadaca=$edit_zadaca");
 			$q88 = myquery("delete from zadaca where id=$edit_zadaca");
-			$q89 = myquery("delete from zadatak where zadaca=$edit_zadaca");
+			
 			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
 			nicemessage ("Zadaća uspješno obrisana");
 			?>
@@ -261,11 +267,22 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			return;
 		} else {
 			$q96 = myquery("select count(*) from zadatak where zadaca=$edit_zadaca");
-			$brojzadataka=mysql_result($q96,0,0);
+			$broj_zadataka = mysql_result($q96,0,0);
+			$q97 = myquery("select count(*) from autotest where zadaca=$edit_zadaca");
+			$broj_testova = mysql_result($q97,0,0);
 			print genform("POST");
 			?>
 			Brisanjem zadaće obrisaćete i sve do sada unesene ocjene i poslane zadatke! Da li ste sigurni da to želite?<br>
-			U pitanju je <b><?=$brojzadataka?></b> jedinstvenih slogova u bazi!<br><br>
+			U pitanju je <b><?=$broj_zadataka?></b> jedinstvenih slogova u bazi!<br><br>
+			<?
+			
+			if ($broj_testova > 0) {
+				?>
+				Također ćete obrisati i <b><?=$broj_testova?></b> testova.<br><br>
+				<?
+			}
+			
+			?>
 			<input type="submit" name="potvrdabrisanja" value=" Briši ">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdabrisanja" value=" Nazad ">
 			<?
@@ -365,6 +382,11 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			}
 			if ($oldstudent!=0) // log samo ako je bilo nesto
 				zamgerlog("Smanjen broj zadataka u zadaci z$edit_zadaca", 4);
+				
+			// Brišemo i relevantne testove
+			$q84 = myquery("delete from autotest_replace where zadaca=$edit_zadaca and zadatak>$zadataka");
+			$q85 = myquery("delete from autotest_rezultat where autotest in (select id from autotest where zadaca=$edit_zadaca and zadatak>$zadataka)");
+			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca and zadatak>$zadataka");
 		}
 
 		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
@@ -516,6 +538,7 @@ if ($_REQUEST['akcija'] == "autotestovi") {
 		}
 
 		if ($_POST['subakcija'] == "obrisi_at" && check_csrf_token()) {
+			$q345 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$id");
 			$q350 = myquery("DELETE FROM autotest WHERE id=$id");
 			nicemessage("Obrisan autotest");
 			zamgerlog("obrisan autotest $id (zadaca z$zadaca)", 2);
