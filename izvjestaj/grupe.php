@@ -282,20 +282,46 @@ else if ($tip=="single") {
 	}
 
 	if ($grupa==0 && count($imeprezime)>0) {
+		$q410 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+		$id_grupe_svi_studenti = mysql_result($q410,0,0);
+
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
-				<tr><td colspan="3"><b>Nisu ni u jednoj grupi</b></td></tr>
+				<tr><td colspan="<?=$nr?>"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<tr><td>&nbsp;</td><td>Prezime i ime</td><td>Br. indeksa</td>
 		<?
 
+		if ($prisustvo>0) { ?><td colspan="7" align="center"><b>I semestar</b></td><td colspan="7" align="center"><b>II semestar</b></td><? }
+
+		if ($komentari>0) { ?><td align="center"><b>Komentari</b></td><? }
+		print "</tr>\n";
+
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
+			if ($brindexa[$stud_id]=="") $brindexa[$stud_id]="&nbsp;";
+
+			$komentar="";
+			if ($komentari>0) {
+				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id_grupe_svi_studenti order by id");
+				$i=0;
+				while ($r402 = mysql_fetch_row($q402)) {
+					if ($i>0) $komentar .= "<br/>\n";
+					$i=1;
+					$komentar .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
+				}
+				if (mysql_num_rows($q402)<1) $komentar = "&nbsp;";
+			}
+
 			?>
 				<tr>
 					<td><?=$n++?></td>
 					<td><?=$stud_imepr?></td>
 					<td><?=$brindexa[$stud_id]?></td>
 			<?
+			if ($prisustvo>0)
+				for ($i=0; $i<14; $i++) print "<td>&nbsp;</td>";
+			if ($komentari>0)
+				print "<td>$komentar</td>\n";
 			print "</tr>\n";
 		}
 
