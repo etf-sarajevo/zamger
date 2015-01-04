@@ -312,7 +312,9 @@ while ($r200 = mysql_fetch_row($q200)) {
 				$vrijeme = date("d.m. H:i",($r210[4]>$r220[1])?$r210[4]:$r220[1]);
 
 				// Skraćeni naslov
-				$naslov = $r220[0];
+				$naslov = strip_tags($r220[0]);
+				$naslov = str_replace("&nbsp;", " ", $naslov); // HTML entiteti u polju
+				$naslov = str_replace("&", "&#x26;", $naslov); // Kodiranje za ampersand
 				if (strlen($naslov)>30) 
 					$naslov = z_substr($naslov,0,28)."...";
 
@@ -335,7 +337,9 @@ while ($r200 = mysql_fetch_row($q200)) {
 				$vrijeme = date("d.m. H:i",($r210[4]>$r230[1])?$r210[4]:$r230[1]);
 
 				// Skraćeni naslov
-				$naslov = $r230[0];
+				$naslov = strip_tags($r230[0]);
+				$naslov = str_replace("&nbsp;", " ", $naslov); // HTML entiteti u polju
+				$naslov = str_replace("&", "&#x26;", $naslov); // Kodiranje za ampersand
 				if (strlen($naslov)>30) 
 					$naslov = z_substr($naslov,0,28)."...";
 
