@@ -80,7 +80,8 @@ function izvjestaj_anketa(){
 	
 		// ---------------------------------------------   IZVJESTAJ ZA KOMENTARE ---------------------------------------------
 		
-		$limit = 5; // broj kometara prikazanih po stranici
+		$limit = intval($_REQUEST["limit"]); // broj kometara prikazanih po stranici
+		if ($limit == 0) $limit = 5;
 		$offset = intval($_REQUEST["offset"]);
 
 	 	$q50 = myquery("select count(*) from anketa_rezultat where predmet=$predmet and anketa = $anketa AND zavrsena='Y'");
@@ -159,18 +160,15 @@ function izvjestaj_anketa(){
 		// broj rank pitanja
 		$q110 = myquery("SELECT id FROM anketa_pitanje WHERE anketa =$anketa and tip_pitanja =1");
 		
-		$i = 0;
 		$prosjek = array();
 		while ($r110 = mysql_fetch_row($q110)) {
-			$j=$i+1;
 			$q120 = myquery("SELECT avg(izbor_id), count(izbor_id) FROM anketa_odgovor_rank WHERE rezultat IN (SELECT id FROM anketa_rezultat WHERE predmet=$predmet and anketa=$anketa AND zavrsena='Y') AND pitanje = $r110[0]");
-			$prosjek[$i]=mysql_result($q120,0,0);
-			$broj_odgovora[$i]=mysql_result($q120,0,1);
-			$i++;
+			$prosjek[$r110[0]]=mysql_result($q120,0,0);
+			$broj_odgovora[$r110[0]]=mysql_result($q120,0,1);
 		}
 		
 		// kupimo pitanja
-		$q130 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$anketa and p.tip_pitanja=1");
+		$q130 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$anketa and p.tip_pitanja=1 order by p.id");
 
 		?>
 		
@@ -190,14 +188,14 @@ function izvjestaj_anketa(){
 		$i=0;
 		while ($r130 = mysql_fetch_row($q130)) {
 			$tekst=$r130[1];
-			$procenat=($prosjek[$i]/5)*100;
+			$procenat=($prosjek[$r130[0]]/5)*100;
 
 			?><tr height='35'>
-				<td><?=($i+1)?>. <?=$tekst?><br><font color="#999999"><small>(<?=$broj_odgovora[$i]?> odgovora)</small></font></td>
+				<td><?=($i+1)?>. <?=$tekst?><br><font color="#999999"><small>(<?=$broj_odgovora[$r130[0]]?> odgovora)</small></font></td>
 				<td>
 					<table border='0' width='350px'>
 					<tr> 
-	        				<td height='30' width='<?=$procenat?>%' bgcolor="#CCCCFF"> &nbsp;<?=round($prosjek[$i],2)?></td>
+	        				<td height='30' width='<?=$procenat?>%' bgcolor="#CCCCFF"> &nbsp;<?=round($prosjek[$r130[0]],2)?></td>
 						<td width='<?=(100-$procenat)?>%'> </td>
         				</tr></table> 
 				</td>
@@ -214,7 +212,7 @@ function izvjestaj_anketa(){
 		// PITANJA TIPA IZBOR
 		
 		//kupimo pitanja
-		$q200 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$anketa and (p.tip_pitanja=3 or p.tip_pitanja=4)");
+		$q200 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$anketa and (p.tip_pitanja=3 or p.tip_pitanja=4) order by p.id");
 
 		if (mysql_num_rows($q200)>0) {
 		?>
