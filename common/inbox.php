@@ -217,7 +217,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 		sakrij_pretragu();
 	}
 	function blur_dogadjaj(e) {
-		setTimeout('sakrij_pretragu()',100);
+		setTimeout('sakrij_pretragu()',1000);
 	}
 	</script>
 	<table border="0">
