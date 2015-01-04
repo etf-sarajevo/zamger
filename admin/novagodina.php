@@ -49,7 +49,8 @@ if ($_POST['akcija'] == "novagodina") {
 			}
 			while ($r50 = mysql_fetch_row($q50)) {
 				if ($r50[2]==1) { // obavezan
-					kreiraj_ponudu_kursa ($predmet = $r50[0], $studij, $sem, $ag, $obavezan=1, $ispis);
+					kreiraj_ponudu_kursa ($r50[0], $studij, $sem, $ag, 1, $ispis);
+
 
 				} else { // izborni
 					$iz = $r50[0];
@@ -59,7 +60,7 @@ if ($_POST['akcija'] == "novagodina") {
 						$predmet = $r70[0];
 						if (in_array($predmet, $bio)) continue;
 						array_push($bio, $predmet);
-						kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, $obavezan=0, $ispis);
+						kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, 0, $ispis);
 					}
 				}
 			}
