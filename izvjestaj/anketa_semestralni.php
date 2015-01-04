@@ -72,6 +72,8 @@ function izvjestaj_anketa_semestralni() {
 		$q20 = myquery("select naziv from akademska_godina where id=$ak_god");
 		$naziv_ak_god = mysql_result($q20,0,0);
 		
+		$tekst_pitanja = $_REQUEST['tekst_pitanja'];
+		
 		if ($studij==-1) {
 			$naziv_studija = "Svi studiji";
 		} else {
@@ -127,7 +129,7 @@ function izvjestaj_anketa_semestralni() {
 			<tbody>
 		<?
 		// biramo pitanja za glavnu petlju
-		$q60 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1");
+		$q60 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1 order by p.id");
 		
 		$i=0;
 		$maxpredmet=array();
@@ -138,7 +140,10 @@ function izvjestaj_anketa_semestralni() {
 				print "<tr bgcolor=\"#FFFF00\">\n";
 			else
 				print "<tr>\n";
-			print "<td>$i</td>\n";
+			if ($tekst_pitanja === "da")
+				print "<td width=\"400\">$i. $r60[1]</td>\n";
+			else
+				print "<td>$i</td>\n";
 			$sumpitanje=0;
 			foreach ($predmeti as $pid => $pnaziv) {
 				if ($studij==-1)
