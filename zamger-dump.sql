@@ -30,14 +30,14 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
   `naziv` varchar(20) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `aktuelna` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `akademska_godina`
 --
 
 INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
-(1, '2012/2013', 1);
+(1, '2014/2015', 1);
 
 -- --------------------------------------------------------
 
@@ -49,8 +49,9 @@ CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   `tippredmeta` int(11) NOT NULL,
-  PRIMARY KEY (`akademska_godina`,`predmet`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`akademska_godina`,`predmet`),
+  KEY `predmet` (`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `akademska_godina_predmet`
@@ -67,8 +68,11 @@ CREATE TABLE IF NOT EXISTS `angazman` (
   `akademska_godina` int(11) NOT NULL,
   `osoba` int(11) NOT NULL,
   `angazman_status` int(11) NOT NULL,
-  PRIMARY KEY (`predmet`,`akademska_godina`,`osoba`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`predmet`,`akademska_godina`,`osoba`),
+  KEY `angazman_status` (`angazman_status`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `osoba` (`osoba`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `angazman`
@@ -84,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `angazman_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
 --
 -- Dumping data for table `angazman_status`
@@ -113,8 +117,9 @@ CREATE TABLE IF NOT EXISTS `anketa_anketa` (
   `aktivna` tinyint(1) DEFAULT '0',
   `editable` tinyint(1) DEFAULT '1',
   `akademska_godina` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=16 ;
+  PRIMARY KEY (`id`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_anketa`
@@ -130,8 +135,9 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `pitanje` int(10) unsigned NOT NULL,
   `izbor` text COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=26 ;
+  PRIMARY KEY (`id`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_izbori_pitanja`
@@ -148,8 +154,10 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
   `rezultat` int(10) unsigned NOT NULL,
   `pitanje` int(10) unsigned NOT NULL,
   `izbor_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`),
+  KEY `rezultat` (`rezultat`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_odgovor_rank`
@@ -166,8 +174,9 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
   `rezultat` int(10) unsigned NOT NULL,
   `pitanje` int(10) unsigned NOT NULL,
   `odgovor` text COLLATE utf8_slovenian_ci,
-  PRIMARY KEY (`rezultat`,`pitanje`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`rezultat`,`pitanje`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_odgovor_text`
@@ -185,8 +194,10 @@ CREATE TABLE IF NOT EXISTS `anketa_pitanje` (
   `anketa` int(10) unsigned NOT NULL DEFAULT '0',
   `tip_pitanja` int(10) unsigned NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=92 ;
+  PRIMARY KEY (`id`),
+  KEY `anketa` (`anketa`),
+  KEY `tip_pitanja` (`tip_pitanja`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_pitanje`
@@ -207,7 +218,7 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
   KEY `predmet` (`predmet`),
   KEY `anketa` (`anketa`),
   KEY `akademska_godina` (`akademska_godina`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_predmet`
@@ -231,8 +242,11 @@ CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
   `semestar` int(10) NOT NULL,
   `student` int(11) default NULL,
   PRIMARY KEY (`id`),
-  KEY `unique_id` (`unique_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=27 ;
+  KEY `unique_id` (`unique_id`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `studij` (`studij`),
+  KEY `student` (`student`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_rezultat`
@@ -253,7 +267,7 @@ CREATE TABLE IF NOT EXISTS `anketa_student_zavrsio` (
   `zavrsena` enum('Y','N') collate utf8_slovenian_ci NOT NULL default 'N',
   `anketa_rezultat` int(11) NOT NULL,
   PRIMARY KEY  (`student`,`predmet`,`akademska_godina`,`anketa`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -268,7 +282,7 @@ CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
   `postoji_izbor` enum('Y','N') COLLATE utf8_slovenian_ci NOT NULL,
   `tabela_odgovora` char(32) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `anketa_tip_pitanja`
@@ -292,7 +306,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `external_id` varchar(50) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `aktivan` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`,`login`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `auth`
@@ -317,8 +331,10 @@ CREATE TABLE IF NOT EXISTS `autotest` (
   `fuzzy` tinyint(1) NOT NULL default '0',
   `global_scope` text collate utf8_slovenian_ci NOT NULL,
   `pozicija_globala` enum('prije_svega','prije_maina') collate utf8_slovenian_ci NOT NULL default 'prije_maina',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+  PRIMARY KEY  (`id`),
+  KEY `zadaca` (`zadaca`),
+  KEY `zadaca_2` (`zadaca`,`zadatak`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -334,8 +350,9 @@ CREATE TABLE IF NOT EXISTS `autotest_replace` (
   `tip` enum('funkcija','klasa','metoda') collate utf8_slovenian_ci NOT NULL,
   `specifikacija` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `zamijeni` varchar(100) collate utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+  PRIMARY KEY  (`id`),
+  KEY `zadaca` (`zadaca`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -351,8 +368,9 @@ CREATE TABLE IF NOT EXISTS `autotest_rezultat` (
   `status` enum('ok','wrong','error','no_func','exec_fail','too_long','crash','find_fail','oob','uninit','memleak','invalid_free','mismatched_free') collate utf8_slovenian_ci NOT NULL default 'error',
   `nalaz` text collate utf8_slovenian_ci NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-  PRIMARY KEY  (`autotest`,`student`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY  (`autotest`,`student`),
+  KEY `student` (`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -367,8 +385,10 @@ CREATE TABLE IF NOT EXISTS `bb_post` (
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `osoba` int(11) NOT NULL,
   `tema` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`),
+  KEY `osoba` (`osoba`),
+  KEY `tema` (`tema`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `bb_post`
@@ -385,7 +405,7 @@ CREATE TABLE IF NOT EXISTS `bb_post_text` (
   `post` int(11) NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`post`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `bb_post_text`
@@ -406,8 +426,12 @@ CREATE TABLE IF NOT EXISTS `bb_tema` (
   `pregleda` int(11) unsigned NOT NULL DEFAULT '0',
   `osoba` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`),
+  KEY `prvi_post` (`prvi_post`),
+  KEY `zadnji_post` (`zadnji_post`),
+  KEY `osoba` (`osoba`),
+  KEY `projekat` (`projekat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `bb_tema`
@@ -428,8 +452,10 @@ CREATE TABLE IF NOT EXISTS `bl_clanak` (
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `osoba` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`),
+  KEY `osoba` (`osoba`),
+  KEY `projekat` (`projekat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `bl_clanak`
@@ -446,12 +472,15 @@ CREATE TABLE IF NOT EXISTS `cas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `datum` date NOT NULL DEFAULT '0000-00-00',
   `vrijeme` time NOT NULL DEFAULT '00:00:00',
-  `labgrupa` int(11) NOT NULL DEFAULT '0',
-  `nastavnik` int(11) NOT NULL DEFAULT '0',
+  `labgrupa` int(11) NOT NULL,
+  `nastavnik` int(11) NOT NULL,
   `komponenta` int(11) NOT NULL,
   `kviz` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `labgrupa` (`labgrupa`),
+  KEY `nastavnik` (`nastavnik`),
+  KEY `komponenta` (`komponenta`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `cas`
@@ -477,7 +506,7 @@ CREATE TABLE IF NOT EXISTS `cron` (
   `zadnje_izvrsenje` datetime NOT NULL,
   `sljedece_izvrsenje` datetime NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 -- --------------------------------------------------------
@@ -492,8 +521,9 @@ CREATE TABLE IF NOT EXISTS `cron_rezultat` (
   `izlaz` mediumtext collate utf8_slovenian_ci NOT NULL,
   `return_value` int(11) NOT NULL,
   `vrijeme` datetime NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=15 ;
+  PRIMARY KEY  (`id`),
+  KEY `cron` (`cron`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -507,7 +537,7 @@ CREATE TABLE IF NOT EXISTS `drzava` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=12 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=32 ;
 
 --
 -- Dumping data for table `drzava`
@@ -523,7 +553,28 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 (7, 'Turska'),
 (8, 'Njemačka'),
 (9, 'Makedonija'),
-(10, 'Iran');
+(10, 'Iran'),
+(11, 'Libija'),
+(12, 'Švedska'),
+(13, 'Austrija'),
+(14, 'SAD'),
+(15, 'Italija'),
+(16, 'Australija'),
+(17, 'Velika Britanija'),
+(18, 'Malezija'),
+(19, 'Holandija'),
+(20, 'Švicarska'),
+(21, 'Tajland'),
+(22, 'Češka'),
+(23, 'Slovačka'),
+(24, 'Norveška'),
+(25, 'Južna Koreja'),
+(26, 'Jordan'),
+(27, 'Francuska'),
+(28, 'Egipat'),
+(29, 'Rusija'),
+(30, 'Irak'),
+(31, 'Kuvajt');
 
 -- --------------------------------------------------------
 
@@ -533,9 +584,9 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 
 CREATE TABLE IF NOT EXISTS `ekstenzije` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `naziv` text COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=26 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=19 ;
 
 --
 -- Dumping data for table `ekstenzije`
@@ -557,7 +608,9 @@ INSERT INTO `ekstenzije` (`id`, `naziv`) VALUES
 (13, '.fig'),
 (14, '.jar'),
 (15, '.java'),
-(16, '.gz');
+(16, '.gz'),
+(17, '.html'),
+(18, '.php');
 
 -- --------------------------------------------------------
 
@@ -570,8 +623,9 @@ CREATE TABLE IF NOT EXISTS `email` (
   `osoba` int(11) NOT NULL,
   `adresa` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `sistemska` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+  PRIMARY KEY  (`id`),
+  KEY `osoba` (`osoba`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -588,7 +642,7 @@ CREATE TABLE IF NOT EXISTS `hr_kompetencije` (
   `govor` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `pisanje` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -605,7 +659,7 @@ CREATE TABLE IF NOT EXISTS `hr_mentorstvo` (
   `ime_kandidata` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `naziv_teme` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -620,7 +674,7 @@ CREATE TABLE IF NOT EXISTS `hr_nagrade_priznanja` (
   `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `opis` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -636,7 +690,7 @@ CREATE TABLE IF NOT EXISTS `hr_naucni_radovi` (
   `naziv_casopisa` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `naziv_izdavaca` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -652,7 +706,7 @@ CREATE TABLE IF NOT EXISTS `hr_publikacija` (
   `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `casopis` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -671,7 +725,7 @@ CREATE TABLE IF NOT EXISTS `hr_radno_iskustvo` (
   `radno_mjesto_en` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   `opis_radnog_mjesta` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
 --
 -- Dumping data for table `hr_radno_iskustvo`
@@ -691,7 +745,7 @@ CREATE TABLE IF NOT EXISTS `hr_usavrsavanje` (
   `obrazovna_institucija` int(11) NOT NULL,
   `kvalifikacija` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -705,7 +759,7 @@ CREATE TABLE IF NOT EXISTS `institucija` (
   `roditelj` int(11) NOT NULL DEFAULT '0',
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
 
 --
 -- Dumping data for table `institucija`
@@ -731,8 +785,11 @@ CREATE TABLE IF NOT EXISTS `ispit` (
   `datum` date NOT NULL DEFAULT '0000-00-00',
   `komponenta` int(2) NOT NULL DEFAULT '0',
   `vrijemeobjave` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `komponenta` (`komponenta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `ispit`
@@ -746,11 +803,12 @@ CREATE TABLE IF NOT EXISTS `ispit` (
 --
 
 CREATE TABLE IF NOT EXISTS `ispitocjene` (
-  `ispit` int(11) NOT NULL DEFAULT '0',
-  `student` int(11) NOT NULL DEFAULT '0',
-  `ocjena` float NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ispit`,`student`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `ispit` int(11) NOT NULL,
+  `student` int(11) NOT NULL,
+  `ocjena` float NOT NULL,
+  PRIMARY KEY (`ispit`,`student`),
+  KEY `student` (`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `ispitocjene`
@@ -769,8 +827,9 @@ CREATE TABLE IF NOT EXISTS `ispit_termin` (
   `maxstudenata` int(11) NOT NULL,
   `deadline` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ispit` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=30 ;
+  PRIMARY KEY (`id`),
+  KEY `ispit` (`ispit`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `ispit_termin`
@@ -792,7 +851,7 @@ CREATE TABLE IF NOT EXISTS `izbor` (
   `fk_uza_naucna_oblast` int(11) NOT NULL,
   `dopunski` tinyint(1) NOT NULL,
   `druga_institucija` tinyint(1) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `izbor`
@@ -808,8 +867,9 @@ CREATE TABLE IF NOT EXISTS `izbor` (
 CREATE TABLE IF NOT EXISTS `izborni_slot` (
   `id` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`predmet`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`,`predmet`),
+  KEY `predmet` (`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `izborni_slot`
@@ -827,7 +887,7 @@ CREATE TABLE IF NOT EXISTS `kanton` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `kratki_naziv` varchar(5) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=14 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=14 ;
 
 --
 -- Dumping data for table `kanton`
@@ -859,8 +919,10 @@ CREATE TABLE IF NOT EXISTS `kolizija` (
   `akademska_godina` int(11) NOT NULL,
   `semestar` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
-  KEY `student` (`student`,`akademska_godina`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  KEY `student` (`student`,`akademska_godina`),
+  KEY `predmet` (`predmet`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `kolizija`
@@ -875,13 +937,16 @@ CREATE TABLE IF NOT EXISTS `kolizija` (
 
 CREATE TABLE IF NOT EXISTS `komentar` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `student` int(11) NOT NULL DEFAULT '0',
-  `nastavnik` int(11) NOT NULL DEFAULT '0',
-  `labgrupa` int(11) NOT NULL DEFAULT '0',
+  `student` int(11) NOT NULL,
+  `nastavnik` int(11) NOT NULL,
+  `labgrupa` int(11) NOT NULL,
   `datum` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `komentar` text COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `student` (`student`),
+  KEY `nastavnik` (`nastavnik`),
+  KEY `labgrupa` (`labgrupa`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `komentar`
@@ -904,8 +969,9 @@ CREATE TABLE IF NOT EXISTS `komponenta` (
   `prolaz` double NOT NULL,
   `opcija` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `uslov` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+  PRIMARY KEY (`id`),
+  KEY `tipkomponente` (`tipkomponente`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
 --
 -- Dumping data for table `komponenta`
@@ -930,8 +996,10 @@ CREATE TABLE IF NOT EXISTS `komponentebodovi` (
   `predmet` int(11) NOT NULL,
   `komponenta` int(11) NOT NULL,
   `bodovi` double NOT NULL,
-  PRIMARY KEY (`student`,`predmet`,`komponenta`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`student`,`predmet`,`komponenta`),
+  KEY `predmet` (`predmet`),
+  KEY `komponenta` (`komponenta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `komponentebodovi`
@@ -944,16 +1012,19 @@ CREATE TABLE IF NOT EXISTS `komponentebodovi` (
 --
 
 CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
-  `student` int(11) NOT NULL DEFAULT '0',
-  `predmet` int(11) NOT NULL DEFAULT '0',
-  `akademska_godina` int(11) NOT NULL DEFAULT '0',
-  `ocjena` int(3) NOT NULL DEFAULT '0',
+  `student` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `ocjena` int(3) NOT NULL,
   `datum` datetime NOT NULL,
   `datum_u_indeksu` date NOT NULL,
-  `odluka` int(11) NOT NULL DEFAULT '0',
+  `odluka` int(11) default NULL,
   `datum_provjeren` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY (`student`,`predmet`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`student`,`predmet`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `odluka` (`odluka`),
+  KEY `predmet` (`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `konacna_ocjena`
@@ -979,8 +1050,11 @@ CREATE TABLE IF NOT EXISTS `kviz` (
   `broj_pitanja` int(11) NOT NULL,
   `trajanje_kviza` int(11) NOT NULL COMMENT 'u sekundama',
   `aktivan` tinyint(1) NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=112 ;
+  PRIMARY KEY  (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `labgrupa` (`labgrupa`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -995,8 +1069,9 @@ CREATE TABLE IF NOT EXISTS `kviz_odgovor` (
   `tekst` text collate utf8_slovenian_ci NOT NULL,
   `tacan` tinyint(1) NOT NULL,
   `vidljiv` tinyint(1) NOT NULL default '1',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1867 ;
+  PRIMARY KEY  (`id`),
+  KEY `kviz_pitanje` (`kviz_pitanje`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -1012,8 +1087,9 @@ CREATE TABLE IF NOT EXISTS `kviz_pitanje` (
   `tekst` text collate utf8_slovenian_ci NOT NULL,
   `bodova` float NOT NULL default '1',
   `vidljivo` tinyint(1) NOT NULL default '1',
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1193 ;
+  PRIMARY KEY  (`id`),
+  KEY `kviz` (`kviz`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -1029,7 +1105,7 @@ CREATE TABLE IF NOT EXISTS `kviz_student` (
   `bodova` float NOT NULL,
   `vrijeme_aktivacije` datetime NOT NULL,
   PRIMARY KEY  (`student`,`kviz`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -1044,8 +1120,10 @@ CREATE TABLE IF NOT EXISTS `labgrupa` (
   `predmet` int(11) NOT NULL DEFAULT '0',
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
   `virtualna` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `labgrupa`
@@ -1063,7 +1141,8 @@ CREATE TABLE IF NOT EXISTS `log` (
   `userid` int(11) NOT NULL DEFAULT '0',
   `dogadjaj` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   `nivo` tinyint(2) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `dogadjaj` (`dogadjaj`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
@@ -1080,8 +1159,10 @@ CREATE TABLE IF NOT EXISTS `mjesto` (
   `naziv` varchar(40) COLLATE utf8_slovenian_ci NOT NULL,
   `opcina` int(11) NOT NULL,
   `drzava` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=79 ;
+  PRIMARY KEY (`id`),
+  KEY `opcina` (`opcina`),
+  KEY `drzava` (`drzava`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=79 ;
 
 --
 -- Dumping data for table `mjesto`
@@ -1109,7 +1190,7 @@ CREATE TABLE IF NOT EXISTS `moodle_predmet_id` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `moodle_id` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `moodle_predmet_id`
@@ -1128,8 +1209,9 @@ CREATE TABLE IF NOT EXISTS `moodle_predmet_rss` (
   `moodle_id` int(11) NOT NULL,
   `sadrzaj` text COLLATE utf8_slovenian_ci NOT NULL,
   `vrijeme_promjene` bigint(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `moodle_id` (`moodle_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `moodle_predmet_rss`
@@ -1147,7 +1229,7 @@ CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
   `naziv` varchar(30) collate utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `nacin_studiranja`
@@ -1170,7 +1252,7 @@ CREATE TABLE IF NOT EXISTS `nacionalnost` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=9 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `nacionalnost`
@@ -1195,8 +1277,10 @@ CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   `nivo_pristupa` enum('nastavnik','super_asistent','asistent') COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'asistent',
-  PRIMARY KEY (`nastavnik`,`akademska_godina`,`predmet`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`nastavnik`,`akademska_godina`,`predmet`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `predmet` (`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `nastavnik_predmet`
@@ -1213,8 +1297,9 @@ CREATE TABLE IF NOT EXISTS `odluka` (
   `datum` date NOT NULL,
   `broj_protokola` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `student` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `student` (`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `odluka`
@@ -1230,8 +1315,10 @@ CREATE TABLE IF NOT EXISTS `odluka` (
 CREATE TABLE IF NOT EXISTS `ogranicenje` (
   `nastavnik` int(11) NOT NULL DEFAULT '0',
   `labgrupa` int(11) NOT NULL DEFAULT '0',
-  `zavrsnirad` int(11) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `zavrsnirad` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`nastavnik`,`labgrupa`),
+  KEY `labgrupa` (`labgrupa`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `ogranicenje`
@@ -1248,7 +1335,7 @@ CREATE TABLE IF NOT EXISTS `opcina` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=145 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=145 ;
 
 --
 -- Dumping data for table `opcina`
@@ -1433,8 +1520,13 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `maternji_jezik` INT NOT NULL,
   `vozacka_dozvola` INT NOT NULL,
   `nacin_stanovanja` INT NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`),
+  KEY `mjesto_rodjenja` (`mjesto_rodjenja`),
+  KEY `adresa_mjesto` (`adresa_mjesto`),
+  KEY `kanton` (`kanton`),
+  KEY `nacionalnost` (`nacionalnost`),
+  KEY `drzavljanstvo` (`drzavljanstvo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `osoba`
@@ -1455,7 +1547,7 @@ CREATE TABLE IF NOT EXISTS `plan_studija` (
   `semestar` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   `obavezan` tinyint(1) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `plan_studija`
@@ -1470,13 +1562,16 @@ CREATE TABLE IF NOT EXISTS `plan_studija` (
 
 CREATE TABLE IF NOT EXISTS `ponudakursa` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `predmet` int(11) NOT NULL DEFAULT '0',
-  `studij` int(11) NOT NULL DEFAULT '0',
-  `semestar` int(11) NOT NULL DEFAULT '0',
+  `predmet` int(11) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
   `obavezan` tinyint(1) NOT NULL DEFAULT '0',
-  `akademska_godina` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  `akademska_godina` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `studij` (`studij`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 --
 -- Dumping data for table `ponudakursa`
@@ -1499,7 +1594,7 @@ CREATE TABLE IF NOT EXISTS `poruka` (
   `naslov` text COLLATE utf8_slovenian_ci NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `poruka`
@@ -1520,8 +1615,9 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `tippredmeta` int(11) NOT NULL,
   `ects` float NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `institucija` (`institucija`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `predmet`
@@ -1542,7 +1638,7 @@ CREATE TABLE IF NOT EXISTS `predmet_projektni_parametri` (
   `max_clanova_tima` tinyint(3) NOT NULL,
   `zakljucani_projekti` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`predmet`,`akademska_godina`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `predmet_projektni_parametri`
@@ -1558,9 +1654,8 @@ CREATE TABLE IF NOT EXISTS `predmet_projektni_parametri` (
 CREATE TABLE IF NOT EXISTS `preference` (
   `korisnik` int(11) NOT NULL,
   `preferenca` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  `vrijednost` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY (`korisnik`,`preferenca`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `vrijednost` varchar(100) COLLATE utf8_slovenian_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `preference`
@@ -1578,7 +1673,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_obrazac` (
   `osoba` int(11) NOT NULL,
   `sifra` varchar(6) collate utf8_slovenian_ci NOT NULL,
   `jezik` enum('bs','en') collate utf8_slovenian_ci NOT NULL default 'bs'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 
@@ -1600,7 +1695,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_prijava` (
   `izasao` tinyint(1) NOT NULL,
   `rezultat` double NOT NULL,
   PRIMARY KEY (`prijemni_termin`,`osoba`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `prijemni_prijava`
@@ -1619,7 +1714,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_termin` (
   `datum` date NOT NULL,
   `ciklus_studija` tinyint(2) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `prijemni_termin`
@@ -1638,7 +1733,7 @@ CREATE TABLE IF NOT EXISTS `prisustvo` (
   `prisutan` tinyint(1) NOT NULL DEFAULT '0',
   `plus_minus` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`student`,`cas`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `prisustvo`
@@ -1653,7 +1748,7 @@ CREATE TABLE IF NOT EXISTS `prisustvo` (
 CREATE TABLE IF NOT EXISTS `privilegije` (
   `osoba` int(11) NOT NULL,
   `privilegija` varchar(30) COLLATE utf8_slovenian_ci NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `privilegije`
@@ -1677,7 +1772,7 @@ CREATE TABLE IF NOT EXISTS `programskijezik` (
   `geshi` varchar(20) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `ekstenzija` varchar(10) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `programskijezik`
@@ -1686,7 +1781,14 @@ CREATE TABLE IF NOT EXISTS `programskijezik` (
 INSERT INTO `programskijezik` (`id`, `naziv`, `geshi`, `ekstenzija`) VALUES
 (0, '--Nije odredjen--', '', ''),
 (1, 'C', 'C', '.c'),
-(2, 'C++', 'C++', '.cpp');
+(2, 'C++', 'C++', '.cpp'),
+(3, 'Java', 'Java', '.java'),
+(4, 'Matlab .m', 'Matlab M', '.m'),
+(5, 'HTML', 'HTML', '.html'),
+(6, 'PHP', 'PHP', '.php'),
+(7, 'C++11', 'C++', '.cpp'),
+(8, 'JavaScript', 'JAVASCRIPT', '.js'),
+(9, 'Python', 'Python', '.py');
 
 -- --------------------------------------------------------
 
@@ -1702,8 +1804,10 @@ CREATE TABLE IF NOT EXISTS `projekat` (
   `opis` text COLLATE utf8_slovenian_ci NOT NULL,
   `biljeska` text COLLATE utf8_slovenian_ci,
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `projekat`
@@ -1725,7 +1829,7 @@ CREATE TABLE IF NOT EXISTS `projekat_file` (
   `projekat` int(11) NOT NULL,
   `file` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `projekat_file`
@@ -1742,7 +1846,7 @@ CREATE TABLE IF NOT EXISTS `projekat_file_diff` (
   `file` int(11) NOT NULL,
   `diff` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`file`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `projekat_file_diff`
@@ -1764,7 +1868,7 @@ CREATE TABLE IF NOT EXISTS `projekat_link` (
   `osoba` int(11) NOT NULL,
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `projekat_link`
@@ -1786,7 +1890,7 @@ CREATE TABLE IF NOT EXISTS `projekat_rss` (
   `osoba` int(11) NOT NULL,
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `projekat_rss`
@@ -1806,7 +1910,7 @@ CREATE TABLE IF NOT EXISTS `promjena_odsjeka` (
   `u_odsjek` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `promjena_odsjeka`
@@ -1869,7 +1973,7 @@ CREATE TABLE IF NOT EXISTS `prosliciklus_ocjene` (
   `ocjena` tinyint(5) NOT NULL,
   `ects` float NOT NULL,
   PRIMARY KEY (`osoba`,`redni_broj`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `prosliciklus_ocjene`
@@ -1888,9 +1992,8 @@ CREATE TABLE IF NOT EXISTS `prosliciklus_uspjeh` (
   `akademska_godina` int(11) NOT NULL,
   `broj_semestara` int(11) NOT NULL,
   `opci_uspjeh` double NOT NULL,
-  `dodatni_bodovi` double NOT NULL,
-  PRIMARY KEY (`osoba`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `dodatni_bodovi` double NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `prosliciklus_uspjeh`
@@ -1909,7 +2012,7 @@ CREATE TABLE IF NOT EXISTS `raspored` (
   `akademska_godina` int(11) NOT NULL,
   `semestar` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `raspored`
@@ -1926,7 +2029,7 @@ CREATE TABLE IF NOT EXISTS `raspored_sala` (
   `kapacitet` int(5) DEFAULT NULL,
   `tip` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `raspored_sala`
@@ -1954,7 +2057,7 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
   `fini_pocetak` time NOT NULL,
   `fini_kraj` time NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `raspored_stavka`
@@ -2000,7 +2103,7 @@ CREATE TABLE IF NOT EXISTS `rss` (
   `auth` int(11) NOT NULL,
   `access` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `rss`
@@ -2017,7 +2120,7 @@ CREATE TABLE IF NOT EXISTS `savjet_dana` (
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   `vrsta_korisnika` enum('nastavnik','student','studentska','siteadmin') COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'nastavnik',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=21 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=21 ;
 
 --
 -- Dumping data for table `savjet_dana`
@@ -2066,7 +2169,7 @@ CREATE TABLE IF NOT EXISTS `septembar` (
   `student` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `septembar`
@@ -2908,7 +3011,7 @@ CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
   `ocjena` tinyint(5) NOT NULL,
   `tipocjene` tinyint(5) NOT NULL,
   PRIMARY KEY (`osoba`,`razred`,`redni_broj`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `srednja_ocjene`
@@ -2927,7 +3030,7 @@ CREATE TABLE IF NOT EXISTS `srednja_skola` (
   `opcina` int(11) NOT NULL,
   `domaca` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `srednja_skola`
@@ -2946,7 +3049,7 @@ CREATE TABLE IF NOT EXISTS `stdin` (
   `redni_broj` int(11) NOT NULL DEFAULT '0',
   `ulaz` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `stdin`
@@ -2965,7 +3068,7 @@ CREATE TABLE IF NOT EXISTS `studentski_modul` (
   `gui_naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `novi_prozor` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `studentski_modul`
@@ -2989,7 +3092,7 @@ CREATE TABLE IF NOT EXISTS `studentski_modul_predmet` (
   `studentski_modul` int(11) NOT NULL,
   `aktivan` tinyint(1) NOT NULL,
   PRIMARY KEY (`predmet`,`akademska_godina`,`studentski_modul`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `studentski_modul_predmet`
@@ -3003,8 +3106,9 @@ CREATE TABLE IF NOT EXISTS `studentski_modul_predmet` (
 
 CREATE TABLE IF NOT EXISTS `student_ispit_termin` (
   `student` int(11) NOT NULL,
-  `ispit_termin` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `ispit_termin` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`ispit_termin`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `student_ispit_termin`
@@ -3019,8 +3123,9 @@ CREATE TABLE IF NOT EXISTS `student_ispit_termin` (
 
 CREATE TABLE IF NOT EXISTS `student_labgrupa` (
   `student` int(11) NOT NULL DEFAULT '0',
-  `labgrupa` int(11) NOT NULL DEFAULT '0'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `labgrupa` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`student`,`labgrupa`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `student_labgrupa`
@@ -3036,7 +3141,7 @@ CREATE TABLE IF NOT EXISTS `student_predmet` (
   `student` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   PRIMARY KEY (`student`,`predmet`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `student_predmet`
@@ -3052,7 +3157,7 @@ CREATE TABLE IF NOT EXISTS `student_projekat` (
   `student` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
   PRIMARY KEY (`student`,`projekat`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `student_projekat`
@@ -3075,7 +3180,7 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `odluka` int(11) NOT NULL DEFAULT '0',
   `plan_studija` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `student_studij`
@@ -3097,7 +3202,7 @@ CREATE TABLE IF NOT EXISTS `studij` (
   `tipstudija` int(11) NOT NULL,
   `preduslov` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
 
 --
 -- Dumping data for table `studij`
@@ -3120,7 +3225,7 @@ CREATE TABLE IF NOT EXISTS `tipkomponente` (
   `naziv` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
   `opis_opcija` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `tipkomponente`
@@ -3143,7 +3248,7 @@ CREATE TABLE IF NOT EXISTS `tippredmeta` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
 
 --
 -- Dumping data for table `tippredmeta`
@@ -3161,7 +3266,7 @@ INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
 CREATE TABLE IF NOT EXISTS `tippredmeta_komponenta` (
   `tippredmeta` int(11) NOT NULL,
   `komponenta` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `tippredmeta_komponenta`
@@ -3187,7 +3292,7 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `ciklus` tinyint(2) NOT NULL,
   `trajanje` tinyint(3) NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `tipstudija`
@@ -3211,7 +3316,7 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
   `studij` int(11) NOT NULL,
   `semestar` int(5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 --
 -- Dumping data for table `ugovoroucenju`
@@ -3227,7 +3332,7 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
 CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
   `ugovoroucenju` int(11) NOT NULL,
   `predmet` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `ugovoroucenju_izborni`
@@ -3251,7 +3356,7 @@ CREATE TABLE IF NOT EXISTS `upis_kriterij` (
   `prijemni_max` int(5) NOT NULL,
   `studij` int(11) NOT NULL,
   PRIMARY KEY (`prijemni_termin`,`studij`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tabela za pohranu kriterija za upis' ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tabela za pohranu kriterija za upis' ;
 
 --
 -- Dumping data for table `upis_kriterij`
@@ -3273,7 +3378,7 @@ CREATE TABLE IF NOT EXISTS `uspjeh_u_srednjoj` (
   `dodatni_bodovi` double NOT NULL,
   `ucenik_generacije` tinyint(1) NOT NULL,
   PRIMARY KEY (`osoba`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `uspjeh_u_srednjoj`
@@ -3291,7 +3396,7 @@ CREATE TABLE IF NOT EXISTS `vozacka_dozvola` (
   `fk_osoba` int(11) NOT NULL,
   `fk_vozacki_kategorija` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
@@ -3315,7 +3420,7 @@ CREATE TABLE IF NOT EXISTS `zadaca` (
   `komponenta` int(11) NOT NULL,
   `vrijemeobjave` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `zadaca`
@@ -3341,8 +3446,8 @@ CREATE TABLE IF NOT EXISTS `zadatak` (
   `filename` varchar(200) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `userid` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `pomocni` (`zadaca`,`redni_broj`,`student`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+  KEY `uobicajen` (`zadaca`,`redni_broj`,`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `zadatak`
@@ -3357,8 +3462,9 @@ CREATE TABLE IF NOT EXISTS `zadatak` (
 
 CREATE TABLE IF NOT EXISTS `zadatakdiff` (
   `zadatak` bigint(11) NOT NULL DEFAULT '0',
-  `diff` text COLLATE utf8_slovenian_ci NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `diff` text COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`zadatak`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `zadatakdiff`
@@ -3391,7 +3497,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `termin_odbrane` datetime NOT NULL,
   `konacna_ocjena` int(11) NOT NULL DEFAULT '5',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `zavrsni`
@@ -3410,7 +3516,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni_bb_post` (
   `osoba` int(11) NOT NULL,
   `tema` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
@@ -3422,7 +3528,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni_bb_post_text` (
   `post` int(11) NOT NULL,
   `tekst` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`post`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
@@ -3439,7 +3545,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni_bb_tema` (
   `osoba` int(11) NOT NULL,
   `zavrsni` int(11) NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
@@ -3456,7 +3562,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni_file` (
   `zavrsni` int(11) NOT NULL,
   `file` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `zavrsni_file`
@@ -3497,3 +3603,280 @@ CREATE TABLE IF NOT EXISTS `zavrsni_rad_predmet` (
 -- Dumping data for table `zavrsni_rad_predmet`
 --
 
+
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `akademska_godina_predmet`
+--
+ALTER TABLE `akademska_godina_predmet`
+  ADD CONSTRAINT `akademska_godina_predmet_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `akademska_godina_predmet_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
+
+--
+-- Constraints for table `angazman`
+--
+ALTER TABLE `angazman`
+  ADD CONSTRAINT `angazman_ibfk_10` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `angazman_ibfk_11` FOREIGN KEY (`angazman_status`) REFERENCES `angazman_status` (`id`),
+  ADD CONSTRAINT `angazman_ibfk_8` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `angazman_ibfk_9` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `anketa_anketa`
+--
+ALTER TABLE `anketa_anketa`
+  ADD CONSTRAINT `anketa_anketa_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `anketa_izbori_pitanja`
+--
+ALTER TABLE `anketa_izbori_pitanja`
+  ADD CONSTRAINT `anketa_izbori_pitanja_ibfk_1` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
+
+--
+-- Constraints for table `anketa_odgovor_rank`
+--
+ALTER TABLE `anketa_odgovor_rank`
+  ADD CONSTRAINT `anketa_odgovor_rank_ibfk_2` FOREIGN KEY (`rezultat`) REFERENCES `anketa_rezultat` (`id`),
+  ADD CONSTRAINT `anketa_odgovor_rank_ibfk_3` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
+
+--
+-- Constraints for table `anketa_odgovor_text`
+--
+ALTER TABLE `anketa_odgovor_text`
+  ADD CONSTRAINT `anketa_odgovor_text_ibfk_2` FOREIGN KEY (`rezultat`) REFERENCES `anketa_rezultat` (`id`),
+  ADD CONSTRAINT `anketa_odgovor_text_ibfk_3` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
+
+--
+-- Constraints for table `anketa_pitanje`
+--
+ALTER TABLE `anketa_pitanje`
+  ADD CONSTRAINT `anketa_pitanje_ibfk_1` FOREIGN KEY (`anketa`) REFERENCES `anketa_anketa` (`id`),
+  ADD CONSTRAINT `anketa_pitanje_ibfk_2` FOREIGN KEY (`tip_pitanja`) REFERENCES `anketa_tip_pitanja` (`id`);
+
+--
+-- Constraints for table `anketa_predmet`
+--
+ALTER TABLE `anketa_predmet`
+  ADD CONSTRAINT `anketa_predmet_ibfk_1` FOREIGN KEY (`anketa`) REFERENCES `anketa_anketa` (`id`),
+  ADD CONSTRAINT `anketa_predmet_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `anketa_predmet_ibfk_3` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `auth`
+--
+ALTER TABLE `auth`
+  ADD CONSTRAINT `auth_ibfk_1` FOREIGN KEY (`id`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `autotest`
+--
+ALTER TABLE `autotest`
+  ADD CONSTRAINT `autotest_ibfk_1` FOREIGN KEY (`zadaca`) REFERENCES `zadaca` (`id`);
+
+--
+-- Constraints for table `autotest_replace`
+--
+ALTER TABLE `autotest_replace`
+  ADD CONSTRAINT `autotest_replace_ibfk_1` FOREIGN KEY (`zadaca`) REFERENCES `zadaca` (`id`);
+
+--
+-- Constraints for table `autotest_rezultat`
+--
+ALTER TABLE `autotest_rezultat`
+  ADD CONSTRAINT `autotest_rezultat_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `bb_post`
+--
+ALTER TABLE `bb_post`
+  ADD CONSTRAINT `bb_post_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `bb_post_ibfk_2` FOREIGN KEY (`tema`) REFERENCES `bb_tema` (`id`);
+
+--
+-- Constraints for table `bb_post_text`
+--
+ALTER TABLE `bb_post_text`
+  ADD CONSTRAINT `bb_post_text_ibfk_1` FOREIGN KEY (`post`) REFERENCES `bb_post` (`id`);
+
+--
+-- Constraints for table `bb_tema`
+--
+ALTER TABLE `bb_tema`
+  ADD CONSTRAINT `bb_tema_ibfk_1` FOREIGN KEY (`prvi_post`) REFERENCES `bb_post` (`id`),
+  ADD CONSTRAINT `bb_tema_ibfk_2` FOREIGN KEY (`zadnji_post`) REFERENCES `bb_post` (`id`),
+  ADD CONSTRAINT `bb_tema_ibfk_3` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `bb_tema_ibfk_4` FOREIGN KEY (`projekat`) REFERENCES `projekat` (`id`);
+
+--
+-- Constraints for table `bl_clanak`
+--
+ALTER TABLE `bl_clanak`
+  ADD CONSTRAINT `bl_clanak_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `bl_clanak_ibfk_2` FOREIGN KEY (`projekat`) REFERENCES `projekat` (`id`);
+
+--
+-- Constraints for table `cas`
+--
+ALTER TABLE `cas`
+  ADD CONSTRAINT `cas_ibfk_6` FOREIGN KEY (`labgrupa`) REFERENCES `labgrupa` (`id`),
+  ADD CONSTRAINT `cas_ibfk_7` FOREIGN KEY (`nastavnik`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `cas_ibfk_8` FOREIGN KEY (`komponenta`) REFERENCES `komponenta` (`id`);
+
+--
+-- Constraints for table `cron_rezultat`
+--
+ALTER TABLE `cron_rezultat`
+  ADD CONSTRAINT `cron_rezultat_ibfk_1` FOREIGN KEY (`cron`) REFERENCES `cron` (`id`);
+
+--
+-- Constraints for table `email`
+--
+ALTER TABLE `email`
+  ADD CONSTRAINT `email_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `ispit`
+--
+ALTER TABLE `ispit`
+  ADD CONSTRAINT `ispit_ibfk_3` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `ispit_ibfk_4` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `ispit_ibfk_5` FOREIGN KEY (`komponenta`) REFERENCES `komponenta` (`id`);
+
+--
+-- Constraints for table `ispitocjene`
+--
+ALTER TABLE `ispitocjene`
+  ADD CONSTRAINT `ispitocjene_ibfk_1` FOREIGN KEY (`ispit`) REFERENCES `ispit` (`id`),
+  ADD CONSTRAINT `ispitocjene_ibfk_2` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `ispit_termin`
+--
+ALTER TABLE `ispit_termin`
+  ADD CONSTRAINT `ispit_termin_ibfk_1` FOREIGN KEY (`ispit`) REFERENCES `ispit` (`id`);
+
+--
+-- Constraints for table `izborni_slot`
+--
+ALTER TABLE `izborni_slot`
+  ADD CONSTRAINT `izborni_slot_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
+
+--
+-- Constraints for table `kolizija`
+--
+ALTER TABLE `kolizija`
+  ADD CONSTRAINT `kolizija_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `kolizija_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `kolizija_ibfk_3` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
+
+--
+-- Constraints for table `komentar`
+--
+ALTER TABLE `komentar`
+  ADD CONSTRAINT `komentar_ibfk_2` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `komentar_ibfk_3` FOREIGN KEY (`nastavnik`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `komentar_ibfk_4` FOREIGN KEY (`labgrupa`) REFERENCES `labgrupa` (`id`);
+
+--
+-- Constraints for table `komponenta`
+--
+ALTER TABLE `komponenta`
+  ADD CONSTRAINT `komponenta_ibfk_1` FOREIGN KEY (`tipkomponente`) REFERENCES `tipkomponente` (`id`);
+
+--
+-- Constraints for table `komponentebodovi`
+--
+ALTER TABLE `komponentebodovi`
+  ADD CONSTRAINT `komponentebodovi_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `komponentebodovi_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `ponudakursa` (`id`),
+  ADD CONSTRAINT `komponentebodovi_ibfk_3` FOREIGN KEY (`komponenta`) REFERENCES `komponenta` (`id`);
+
+--
+-- Constraints for table `konacna_ocjena`
+--
+ALTER TABLE `konacna_ocjena`
+  ADD CONSTRAINT `konacna_ocjena_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `konacna_ocjena_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `konacna_ocjena_ibfk_3` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `konacna_ocjena_ibfk_4` FOREIGN KEY (`odluka`) REFERENCES `odluka` (`id`);
+
+--
+-- Constraints for table `kviz`
+--
+ALTER TABLE `kviz`
+  ADD CONSTRAINT `kviz_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `kviz_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `kviz_ibfk_3` FOREIGN KEY (`labgrupa`) REFERENCES `labgrupa` (`id`);
+
+--
+-- Constraints for table `kviz_pitanje`
+--
+ALTER TABLE `kviz_pitanje`
+  ADD CONSTRAINT `kviz_pitanje_ibfk_1` FOREIGN KEY (`kviz`) REFERENCES `kviz` (`id`);
+
+--
+-- Constraints for table `labgrupa`
+--
+ALTER TABLE `labgrupa`
+  ADD CONSTRAINT `labgrupa_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `labgrupa_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `mjesto`
+--
+ALTER TABLE `mjesto`
+  ADD CONSTRAINT `mjesto_ibfk_1` FOREIGN KEY (`drzava`) REFERENCES `drzava` (`id`);
+
+--
+-- Constraints for table `nastavnik_predmet`
+--
+ALTER TABLE `nastavnik_predmet`
+  ADD CONSTRAINT `nastavnik_predmet_ibfk_1` FOREIGN KEY (`nastavnik`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `nastavnik_predmet_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `nastavnik_predmet_ibfk_3` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
+
+--
+-- Constraints for table `odluka`
+--
+ALTER TABLE `odluka`
+  ADD CONSTRAINT `odluka_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `ogranicenje`
+--
+ALTER TABLE `ogranicenje`
+  ADD CONSTRAINT `ogranicenje_ibfk_2` FOREIGN KEY (`nastavnik`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `ogranicenje_ibfk_3` FOREIGN KEY (`labgrupa`) REFERENCES `labgrupa` (`id`);
+
+--
+-- Constraints for table `osoba`
+--
+ALTER TABLE `osoba`
+  ADD CONSTRAINT `osoba_ibfk_3` FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `mjesto` (`id`),
+  ADD CONSTRAINT `osoba_ibfk_4` FOREIGN KEY (`adresa_mjesto`) REFERENCES `mjesto` (`id`);
+
+--
+-- Constraints for table `ponudakursa`
+--
+ALTER TABLE `ponudakursa`
+  ADD CONSTRAINT `ponudakursa_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `ponudakursa_ibfk_2` FOREIGN KEY (`studij`) REFERENCES `studij` (`id`),
+  ADD CONSTRAINT `ponudakursa_ibfk_3` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `predmet`
+--
+ALTER TABLE `predmet`
+  ADD CONSTRAINT `predmet_ibfk_1` FOREIGN KEY (`institucija`) REFERENCES `institucija` (`id`);
+
+--
+-- Constraints for table `projekat`
+--
+ALTER TABLE `projekat`
+  ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
