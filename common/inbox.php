@@ -99,7 +99,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 	if ($_REQUEST['akcija']=='odgovor') {
 		$poruka = intval($_REQUEST['poruka']);
-		$q200 = myquery("select posiljalac, naslov, tekst from poruka where id=$poruka");
+		$q200 = myquery("select posiljalac, naslov, tekst, primalac from poruka where id=$poruka");
 		if (mysql_num_rows($q200) < 1) {
 			niceerror("Poruka ne postoji");
 			zamgerlog("pokusaj odgovora na nepostojecu poruku $poruka",3);
@@ -108,6 +108,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 
 		// Ko je poslao originalnu poruku (tj. kome odgovaramo)
 		$prim_id = mysql_result($q200,0,0);
+		if ($prim_id == $userid) // U slučaju odgovora na poslanu poruku, ponovo šaljemo poruku istoj osobi
+			$prim_id = mysql_result($q200,0,3);
 		$q210 = myquery("select a.login,o.ime,o.prezime from auth as a, osoba as o where a.id=o.id and o.id=$prim_id");
 		if (mysql_num_rows($q210)<1) {
 			niceerror("Nepoznat pošiljalac");
