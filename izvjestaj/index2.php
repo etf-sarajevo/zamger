@@ -278,15 +278,19 @@ if ($oldgodina != 0 && $brojgodine != 0) {
 
 <?
 
-// Određivanje dekana
+// Određivanje dekana i broja protokola
 $institucija = $r110[7];
 do {
-	$q140 = myquery("select tipinstitucije, roditelj, dekan from institucija where id=$institucija");
+	$q140 = myquery("select tipinstitucije, roditelj, dekan, broj_protokola from institucija where id=$institucija");
 	if (!($r140 = mysql_fetch_row($q140))) {
 		return;
 	}
 	if ($r140[0] == 1 && $r140[2] != 0) {
 		$dekan = $r140[2];
+		if ($r140[3] !== "")
+			$dodaj_broj_protokola = "<p>Broj protokola: $r140[3]</p>";
+		else
+			$dodaj_broj_protokola = "";
 		break;
 	}
 	$institucija = $r140[1];
@@ -299,6 +303,8 @@ do {
 <p>&nbsp;</p>
 
 <p>Sarajevo, <?=date("d. m. Y.")?> godine</p>
+
+<?=$dodaj_broj_protokola?>
 
 <table border="0" width="100%">
 <tr>
