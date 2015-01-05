@@ -35,10 +35,11 @@ function pao_predmet($student, $predmet, $ak_god) {
 
 	// Koje sve vrste ispita postoje na predmetu?
 	// Integralni i usmeni nas ne interesuju
-	$q100 = myquery("select k.id, k.prolaz from tippredmeta_komponenta as tpk, predmet as p, komponenta as k where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=1 and k.gui_naziv != 'Usmeni'"); 
+	$q100 = myquery("select k.id, k.prolaz from tippredmeta_komponenta as tpk, predmet as p, komponenta as k where p.id=$predmet and p.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=1 and k.gui_naziv != 'Usmeni' and k.gui_naziv != 'Završni'"); 
 	$broj_vrsta_ispita = mysql_num_rows($q100);
 	while ($r100=mysql_fetch_row($q100)) {
 		$prolaz = $r100[1];
+		if ($prolaz == 0) continue; // Preskačemo ispite bez prolaza
 
 		// Da li je student položio tu vrstu ispita?
 		$q110 = myquery("select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ak_god and i.komponenta=$r100[0] and i.id=io.ispit and io.student=$student and io.ocjena>=$prolaz");
