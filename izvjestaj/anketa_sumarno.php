@@ -19,9 +19,15 @@ function izvjestaj_anketa_sumarno(){
 	}
 	
 	
-	?>
-	<h2>Sumarni izvještaj za anketu <?=mysql_result($q10,0,2)?> (godina <?=mysql_result($q10,0,3)?>)</h2>
-	<?
+	if (!isset($_REQUEST['tip']) || $_REQUEST['tip'] == "izlaznost") {
+		?>
+		<h2>Izlaznost na anketu <?=$naziv_ankete?> (godina <?=$naziv_ag?>)</h2>
+		<?
+	} else if ($_REQUEST['tip'] == "sveukupna") {
+		?>
+		<h2>Sveukupna ocjena predmeta, anketa <?=$naziv_ankete?> (godina <?=$naziv_ag?>)</h2>
+		<?
+	}
 	
 	if (mysql_result($q10,0,0)>time()) {
 		print "<p><font color=\"red\">Anketa još uvijek nije održana! Datum otvaranja je u budućnosti.</font></p>\n";
@@ -30,6 +36,8 @@ function izvjestaj_anketa_sumarno(){
 		print "<p><font color=\"red\">Anketa je još uvijek otvorena! Datum zatvaranja je u budućnosti.</font></p>\n";
 	}
 	
+	
+	if (!isset($_REQUEST['tip']) || $_REQUEST['tip'] == "izlaznost") {
 	
 	// Glavna tabela
 	?>
@@ -64,6 +72,92 @@ function izvjestaj_anketa_sumarno(){
 	}
 	print "</table>\n";
 	return;
+
+
+	if ($_REQUEST['tip'] == "sveukupna") {
+
+	// Anketno pitanje "sveukupna ocjena predmeta"
+	$q17 = myquery("SELECT p.id, p.tekst FROM anketa_pitanje as p,anketa_tip_pitanja as t WHERE p.tip_pitanja = t.id and p.anketa=$anketa and p.tip_pitanja=1 order by p.id");
+	$the_pitanje = 0;
+	while ($r17 = mysql_fetch_row($q17)) {
+		if (strstr($r17[1], "ocjena predmeta"))
+			$the_pitanje = $r17[0];
+	}
+	if ($the_pitanje == 0) {
+		biguglyerror("Nije pronađeno anketno pitanje 'sveukupna ocjena predmeta'");
+		return;
+	}
+
+	// Glavna tabela
+	?>
+	<table cellspacing="0" border="1">
+	<tr><th>Predmet</th><th>Sveukupna ocjena</th><th>Odgovora</th></tr>
+	<?
+
+	$predmet_bio = array();
+	$stari_studij = $stari_semestar = 0;
+	$q20 = myquery("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
+		FROM predmet as p, ponudakursa as pk, studij as s
+		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
+		and s.id<=10 ". /* Izbjegavamo ekvivalenciju */ "
+		ORDER BY s.tipstudija, s.naziv, pk.semestar, p.naziv");
+	while ($r20 = mysql_fetch_row($q20)) {
+		// Svrstavamo predmete pod njihov odsjek
+		if ($r20[5] != $r20[6] && $r20[5] != 1) continue;
+
+		// Da li je predmet bio?
+		$predmet = $r20[0];
+		if (in_array($predmet, $predmet_bio)) continue;
+		array_push($predmet_bio, $predmet);
+
+		// Preskačemo predmete bez studenata
+		if ($broj_studenata[$predmet] == 0) continue;
+
+		// Da li je novi studij
+		$naziv_predmeta = $r20[1];
+		$studij = $r20[2];
+		$semestar = $r20[3];
+		if ($studij != $stari_studij || $semestar != $stari_semestar) {
+			$naziv_studija = $r20[4];
+			print "<tr><td colspan='3'><b>$naziv_studija, $semestar semestar</b></td></tr>\n";
+			$stari_studij=$studij;
+			$stari_semestar=$semestar;
+		}
+
+		print "<tr><td>$naziv_predmeta</td>\n";
+		
+		$bs = $broj_studenata[$predmet]; // Kraće pisanje
+		
+		$q40 = myquery("select id from anketa_rezultat where anketa=$anketa and zavrsena='Y' and predmet=$r20[0]");
+		$suma_ocjena = $br_ocjena = 0;
+		while ($r40 = mysql_fetch_row($q40)) {
+			$q50 = myquery("select izbor_id from anketa_odgovor_rank where rezultat=$r40[0] and pitanje=$the_pitanje");
+			if (mysql_num_rows($q50) > 0) {
+				$suma_ocjena += mysql_result($q50, 0, 0);
+				$br_ocjena++;
+			}
+		}
+
+		if ($br_ocjena > 0) {
+			$prosjek = round($suma_ocjena/$br_ocjena, 2);
+			$suma_suma_ocjena += ($suma_ocjena/$br_ocjena);
+		} else
+			$prosjek = 0;
+		print "<td>$prosjek</td><td>$br_ocjena (".procenat($br_ocjena, $bs).")</td>\n";
+
+		print "</tr>\n";
+
+		$suma_uradjenih += $br_ocjena;
+		$suma_bs += $bs;
+		$br_predmeta ++;
+	}
+
+	print "<tr><td colspan='3'><b>UKUPNO:</b></td></tr>\n";
+	print "<tr><td>&nbsp;</td><td>".round($suma_suma_ocjena/$br_predmeta, 2)."</td><td>$suma_uradjenih (".procenat($suma_uradjenih, $suma_bs).")</td></tr>\n";
+	print "</table>\n";
+	return;
+
+	}
 
 	// naziv predmeta
 	$q10 = myquery("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag; ");
