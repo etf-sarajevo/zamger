@@ -11,10 +11,29 @@ function izvjestaj_anketa_sumarno(){
 
 	$anketa = intval($_REQUEST['anketa']);
 	
-	$q10 = myquery("select UNIX_TIMESTAMP(aa.datum_otvaranja),UNIX_TIMESTAMP(aa.datum_zatvaranja),aa.naziv,ag.naziv from anketa_anketa as aa, akademska_godina as ag where aa.id=$anketa and aa.akademska_godina=ag.id");
+	$q10 = myquery("SELECT UNIX_TIMESTAMP(aa.datum_otvaranja), UNIX_TIMESTAMP(aa.datum_zatvaranja), aa.naziv, ag.naziv, ag.id, ap.semestar, ap.predmet 
+		FROM anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap 
+		WHERE aa.id=$anketa and ap.anketa=$anketa and aa.akademska_godina=ag.id");
 	if (mysql_num_rows($q10)<1) {
 		biguglyerror("Nepostojeća anketa!");
 		zamgerlog("Pristup nepostojećoj anketi $anketa",3);
+		return;
+	}
+
+	$datum_otvaranja = mysql_result($q10,0,0);
+	$datum_zatvaranja = mysql_result($q10,0,1);
+	$naziv_ankete = mysql_result($q10,0,2);
+	$naziv_ag = mysql_result($q10,0,3);
+	$ag = mysql_result($q10,0,4);
+	$semestar = mysql_result($q10,0,5);
+	$anketa_predmet = mysql_result($q10,0,6);
+
+
+	// Ova vrsta izvještaja nema smisla za ankete koje su samo za jedan predmet
+	// Stoga ćemo prikazati sve predmete u datoj akademskoj godini i semestru
+	if ($anketa_predmet != 0) {
+		niceerror("Ova anketa je vezana samo za jedan predmet");
+		print "Nema smisla prikazivati sumarni izvještaj za takvu anketu.";
 		return;
 	}
 	
@@ -29,12 +48,20 @@ function izvjestaj_anketa_sumarno(){
 		<?
 	}
 	
-	if (mysql_result($q10,0,0)>time()) {
+	if ($datum_otvaranja > time()) {
 		print "<p><font color=\"red\">Anketa još uvijek nije održana! Datum otvaranja je u budućnosti.</font></p>\n";
 	}
-	else if (mysql_result($q10,0,1)>time()) {
+	else if ($datum_zatvaranja > time()) {
 		print "<p><font color=\"red\">Anketa je još uvijek otvorena! Datum zatvaranja je u budućnosti.</font></p>\n";
 	}
+	
+
+	// Cachiramo broj studenata po predmetu u nizove
+	$broj_studenata = array();
+	$q15 = myquery("SELECT pk.predmet, count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar GROUP BY pk.id");
+	while ($r15 = mysql_fetch_row($q15))
+		$broj_studenata[$r15[0]] += $r15[1];
+	
 	
 	
 	if (!isset($_REQUEST['tip']) || $_REQUEST['tip'] == "izlaznost") {
@@ -42,20 +69,49 @@ function izvjestaj_anketa_sumarno(){
 	// Glavna tabela
 	?>
 	<table cellspacing="0" border="1">
-	<tr><td>Predmet</td><td>Uk. studenata</td><td>Nije popunilo anketu</td><td>Poništilo anketu</td><td>Učestvovalo u anketi</td></tr>
+	<tr><th>Predmet</th><th>Uk. studenata</th><th>Nije popunilo anketu</th><th>Poništilo anketu</th><th>Učestvovalo u anketi</th></tr>
 	<?
 	
-	$q20 = myquery("select DISTINCT p.id, p.naziv, ar.studij, ar.semestar, ar.akademska_godina, s.kratkinaziv from anketa_rezultat as ar, predmet as p, studij as s where ar.anketa=$anketa and ar.zavrsena='Y' and ar.predmet=p.id and ar.studij=s.id order by s.tipstudija, s.kratkinaziv, ar.semestar, p.naziv");
+	$predmet_bio = array();
+	$stari_studij = $stari_semestar = 0;
+	$q20 = myquery("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
+		FROM predmet as p, ponudakursa as pk, studij as s
+		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
+		and s.id<=10 ". /* Izbjegavamo ekvivalenciju */ "
+		ORDER BY s.tipstudija, s.naziv, pk.semestar, p.naziv");
 	while ($r20 = mysql_fetch_row($q20)) {
-		print "<tr><td>$r20[1] ($r20[5])</td>\n";
+		// Svrstavamo predmete pod njihov odsjek
+		if ($r20[5] != $r20[6] && $r20[5] != 1) continue;
+
+		// Da li je predmet bio?
+		$predmet = $r20[0];
+		if (in_array($predmet, $predmet_bio)) continue;
+		array_push($predmet_bio, $predmet);
+
+		// Preskačemo predmete bez studenata
+		if ($broj_studenata[$predmet] == 0) continue;
+
+		// Da li je novi studij
+		$naziv_predmeta = $r20[1];
+		$studij = $r20[2];
+		$semestar = $r20[3];
+		if ($studij != $stari_studij || $semestar != $stari_semestar) {
+			$naziv_studija = $r20[4];
+			print "<tr><td colspan='5'><b>$naziv_studija, $semestar semestar</b></td></tr>\n";
+			$stari_studij=$studij;
+			$stari_semestar=$semestar;
+		}
+
+		print "<tr><td>$naziv_predmeta</td>\n";
 		
-		$q30 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$r20[0] and pk.akademska_godina=$r20[4]");
-		$broj_studenata = mysql_result($q30,0,0);
-		print "<td>$broj_studenata</td>\n";
+		/*$q30 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$r20[0] and pk.akademska_godina=$r20[4]");
+		$broj_studenata = mysql_result($q30,0,0);*/
+		$bs = $broj_studenata[$predmet]; // Kraće pisanje
+		print "<td>$bs</td>\n";
 		
 		$q40 = myquery("select id from anketa_rezultat where anketa=$anketa and zavrsena='Y' and predmet=$r20[0]");
-		$broj_neuradjenih = $broj_studenata - mysql_num_rows($q40);
-		print "<td>$broj_neuradjenih (".procenat($broj_neuradjenih, $broj_studenata).")</td>\n";
+		$broj_neuradjenih = $bs - mysql_num_rows($q40);
+		print "<td>$broj_neuradjenih (".procenat($broj_neuradjenih, $bs).")</td>\n";
 		
 		$ponistenih = $uradjenih = 0;
 		while ($r40 = mysql_fetch_row($q40)) {
@@ -64,12 +120,20 @@ function izvjestaj_anketa_sumarno(){
 			else $uradjenih++;
 		}
 
-		print "<td>$ponistenih (".procenat($ponistenih, $broj_studenata).")</td>\n";
+		print "<td>$ponistenih (".procenat($ponistenih, $bs).")</td>\n";
 
-		print "<td>$uradjenih (".procenat($uradjenih, $broj_studenata).")</td>\n";
+		print "<td>$uradjenih (".procenat($uradjenih, $bs).")</td>\n";
 		
 		print "</tr>\n";
+
+		$suma_bs += $bs;
+		$suma_neuradjenih += $broj_neuradjenih;
+		$suma_ponistenih += $ponistenih;
+		$suma_uradjenih += $uradjenih;
 	}
+
+	print "<tr><td colspan='5'><b>UKUPNO:</b></td></tr>\n";
+	print "<tr><td>&nbsp;</td><td>$suma_bs</td><td>$suma_neuradjenih (".procenat($suma_neuradjenih, $suma_bs).")</td><td>$suma_ponistenih (".procenat($suma_ponistenih, $suma_bs).")</td><td>$suma_uradjenih (".procenat($suma_uradjenih, $suma_bs).")</td></tr>\n";
 	print "</table>\n";
 	return;
 
