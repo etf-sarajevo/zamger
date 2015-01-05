@@ -109,6 +109,8 @@ if ($_REQUEST['akcija'] == "po_prosjeku") {
 		<tr><td>Godina:</td><td><input type="text" name="godina_studija" size="5" value="1"></td></tr>
 		<tr><td>Limit prosjeka:</td><td><input type="text" name="limit_prosjek" value="8.0"></td></tr>
 		<tr><td>Maksimalan broj<br>nepoloženih predmeta:</td><td><input type="text" name="limit_predmet" value="1"></td></tr>
+		<tr><td colspan="2"><input type="radio" name="samo_tekuca_gs" value="da" checked> Prosjek samo za odabranu godinu studija<br>
+		<input type="radio" name="samo_tekuca_gs" value="ne"> Prosjek za odabrani studij</td></tr>
 	</table>
 	<input type="submit" value=" Prikaži "></form>
 	<?

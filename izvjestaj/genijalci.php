@@ -88,6 +88,7 @@ if ($godinastudija>0) {
 
 $limit_predmet = intval($_REQUEST['limit_predmet']);
 
+if ($_REQUEST['samo_tekuca_gs'] == "da") $samo_tekuca_gs = true; else $samo_tekuca_gs = false;
 
 
 $q1 = myquery("SELECT a.id, a.prezime, a.ime, a.brindexa, ns.naziv FROM `osoba` as 
@@ -97,7 +98,10 @@ while ($r1 = mysql_fetch_row($q1)) {
 	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and ko.ocjena>5 and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = mysql_fetch_row($q2)) {
-		$suma += $r2[0]; $broj++; $sumaects += $r2[1]; 
+		$sumaects += $r2[1]; 
+		if ($samo_tekuca_gs) 
+			if ($r2[2] < $godinastudija*2-1) continue;
+		$suma += $r2[0]; $broj++; 
 	}
 
 	// preskacemo studente sa premalo polozenih predmeta
