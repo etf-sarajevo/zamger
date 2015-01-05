@@ -150,6 +150,10 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 
 
 
+$sumagodine = $brojgodine = $sumauk = $brojuk = $sumaects = 0;
+
+
+
 // Ocjene po odluci:
 
 $q105 = myquery("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
@@ -160,6 +164,9 @@ if (mysql_num_rows($q105)>0) {
 }
 while ($r105 = mysql_fetch_row($q105)) {
 	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+	$sumauk += $r105[0];
+	$brojuk++;
+	$sumaects += $r105[4];
 }
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
@@ -188,7 +195,6 @@ function nuliraj($broj) {
 $upisanagodina = round($r110[2]/2);
 
 $oldgodina = 0;
-$sumagodine = $brojgodine = $sumauk = $brojuk = $sumaects = 0;
 $i=1;
 $q130 = myquery("SELECT p.sifra, p.naziv, p.ects, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), UNIX_TIMESTAMP(ko.datum), pk.semestar, ts.ciklus
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
