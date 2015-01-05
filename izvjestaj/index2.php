@@ -42,19 +42,45 @@ if (!($r100 = mysql_fetch_row($q100))) {
 	return;
 }
 
+$ime_prezime = "$r100[0] $r100[1]";
+$brindexa    = $r100[2];
+$jmbg        = $r100[3];
+
 
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
 
-$q110 = myquery("select s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija from student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts where ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj order by ag.id desc, ss.semestar desc limit 1");
+$q110 = myquery("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects 
+FROM student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts 
+WHERE ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj
+ORDER BY ag.id desc, ss.semestar DESC LIMIT 1");
 if (!($r110 = mysql_fetch_row($q110))) {
 	niceerror("Nemamo podataka o studiju za studenta ".$r100[0]." ".$r100[1]);
 	zamgerlog("student u$student nikada nije studirao", 3);
 	return;
 }
-if ($r110[4] == 1) {
+
+$naziv_studija     = $r110[0];
+$naziv_ag          = $r110[1];
+$trenutno_semestar = $r110[2];
+$nacin_studiranja  = $r110[3];
+$ponovac           = $r110[4];
+$studij_ciklus     = $r110[6];
+$studij_trajanje   = $r110[8];
+$studij_ects       = $r110[9];
+
+if ($ponovac == 1) {
 	$q120 = myquery("select count(*) from student_studij where student=$student and studij=$r110[5] and semestar=$r110[2]");
 	$koji_put = mysql_result($q120,0,0);
 } else $koji_put = "1";
+
+// Kod izvještaja za sve cikluse sumiramo ECTS bodove na svim studijima koje je student slušao
+if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
+	$q115 = myquery("select ts.ects from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=1 and ss.semestar=ts.trajanje order by ss.akademska_godina desc limit 1");
+	if (mysql_num_rows($q115) > 0) {
+		$studij_ects += mysql_result($q115,0,0);
+	}
+}
+
 
 ?>
 <img src="images/content/ETF-memorandum.png">
@@ -66,15 +92,15 @@ if ($r110[4] == 1) {
 <table border="0">
 <tr>
 	<td>Ime i prezime studenta:</td>
-	<td><b><?=$r100[0]." ".$r100[1]?></b></td>
+	<td><b><?=$ime_prezime?></b></td>
 </tr>
 <tr>
 	<td>Broj dosijea:</td>
-	<td><b><?=$r100[2]?></b></td>
+	<td><b><?=$brindexa?></b></td>
 </tr>
 <tr>
 	<td>JMBG:</td>
-	<td><b><?=$r100[3]?></b></td>
+	<td><b><?=$jmbg?></b></td>
 </tr>
 </table>
 
@@ -83,14 +109,43 @@ if ($r110[4] == 1) {
 $spol = $r100[4];
 if ($spol == "") $spol = spol($r100[0]);
 
-if ($spol == "Z") {
-	?>
-	<p>Studentica <?=$r100[0]." ".$r100[1]?> je upisana u akademskoj <?=$r110[1]?>. godini u <?=$rimski_brojevi[$r110[2]]?> (<?=$imena_semestara[$r110[2]]?>) semestar <?=$koji_put?>. put kao <?=$r110[3]?> student, studij "<?=$r110[0]?>" (<?=$r110[6]?>. ciklus), pri čemu je položila sljedeće predmete:</p>
-	<?
+
+// Da li je student završio/la studij?
+$q88 = myquery("SELECT COUNT(*), SUM(p.ects) 
+FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
+WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet 
+and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5 $upit_dodaj");
+$broj_polozenih_predmeta = mysql_result($q88,0,0);
+$suma_ects = mysql_result($q88,0,1);
+
+// Određujemo na osnovu sume ECTS kredita
+if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
+	$q89 = myquery("SELECT UNIX_TIMESTAMP(ko.datum_u_indeksu) 
+	FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts 
+	WHERE ko.student=$student and ko.predmet=p.id and p.naziv like 'Završni rad%' and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id $upit_dodaj
+	ORDER BY ko.datum_u_indeksu desc");
+	$datum_diplomiranja = date("d. m. Y.", mysql_result($q89,0,0));
+
+	if ($spol == "Z") {
+		?>
+		<p>Studentica <?=$ime_prezime?> je završila <?=$studij_ciklus?>. ciklus studija dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" , pri čemu je položila sljedeće predmete:</p>
+		<?
+	} else {
+		?>
+		<p>Student <?=$ime_prezime?> je završio <?=$studij_ciklus?>. ciklus studija dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>", pri čemu je položio sljedeće predmete:</p>
+		<?
+	}
+
 } else {
-	?>
-	<p>Student <?=$r100[0]." ".$r100[1]?> je upisan u akademskoj <?=$r110[1]?>. godini u <?=$rimski_brojevi[$r110[2]]?> (<?=$imena_semestara[$r110[2]]?>) semestar <?=$koji_put?>. put kao <?=$r110[3]?> student, studij "<?=$r110[0]?>" (<?=$r110[6]?>. ciklus), pri čemu je položio sljedeće predmete:</p>
-	<?
+	if ($spol == "Z") {
+		?>
+		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=$rimski_brojevi[$trenutno_semestar]?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položila sljedeće predmete:</p>
+		<?
+	} else {
+		?>
+		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=$rimski_brojevi[$trenutno_semestar]?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položio sljedeće predmete:</p>
+		<?
+	}
 }
 
 
