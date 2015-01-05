@@ -758,6 +758,8 @@ CREATE TABLE IF NOT EXISTS `institucija` (
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `roditelj` int(11) NOT NULL DEFAULT '0',
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
+  `tipinstitucije` int(11) NOT NULL,
+  `dekan` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
 
@@ -766,11 +768,12 @@ CREATE TABLE IF NOT EXISTS `institucija` (
 --
 
 INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`) VALUES
-(2, 'Odsjek za računarstvo i informatiku', 1, 'RI'),
-(3, 'Odsjek za automatiku i elektroniku', 1, 'AE'),
-(4, 'Odsjek za elektroenergetiku', 1, 'EE'),
-(5, 'Odsjek za telekomunikacije', 1, 'TK'),
-(1, 'Elektrotehnički fakultet Sarajevo', 0, 'ETF');
+(0, 'Nepoznato', 0, 'N', 0, 0),
+(1, 'Elektrotehnički fakultet Sarajevo', 0, 'ETF', 1, 3010),
+(2, 'Odsjek za računarstvo i informatiku', 1, 'RI', 0, 0),
+(3, 'Odsjek za automatiku i elektroniku', 1, 'AE', 0, 0),
+(4, 'Odsjek za elektroenergetiku', 1, 'EE', 0, 0),
+(5, 'Odsjek za telekomunikacije', 1, 'TK', 0, 0);
 
 -- --------------------------------------------------------
 
