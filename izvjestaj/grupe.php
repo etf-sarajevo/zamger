@@ -160,15 +160,12 @@ if ($tip=="double") {
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			print "$n. $stud_imepr<br/>\n";
+			$imena .= "$n. $stud_imepr<br/>\n";
+			$brojevi_indexa .= $brindexa[$stud_id]."<br/>\n";
 			$n++;
 		}
-		?>
-				</td><td width="20%"><?
-		foreach ($brindexa as $stud_id => $brind) {
-			print "$brind<br/>\n";
-		}
-		?>
+		?><?=$imena?>
+				</td><td width="20%"><?=$brojevi_indexa?>
 				</td></tr>
 			</table>
 		<?
