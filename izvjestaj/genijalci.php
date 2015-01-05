@@ -94,7 +94,7 @@ $q1 = myquery("SELECT a.id, a.prezime, a.ime, a.brindexa, ns.naziv FROM `osoba` 
 a, student_studij as ss, nacin_studiranja as ns WHERE a.id=ss.student and ss.akademska_godina=$ak_god and ss.nacin_studiranja=ns.id $wherestudij $wheresemestar");
 
 while ($r1 = mysql_fetch_row($q1)) {
-	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
+	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and ko.ocjena>5 and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = mysql_fetch_row($q2)) {
 		$suma += $r2[0]; $broj++; $sumaects += $r2[1]; 
@@ -102,7 +102,7 @@ while ($r1 = mysql_fetch_row($q1)) {
 
 	// preskacemo studente sa premalo polozenih predmeta
 	if ($limit_predmet>0) {
-		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet)=0");
+		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet and ko.ocjena>5)=0");
 		if (mysql_result($q3,0,0)>$limit_predmet) continue;
 	} else if ($sumaects<$minsumaects) continue; 
 
