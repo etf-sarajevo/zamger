@@ -2140,6 +2140,12 @@ else if ($akcija == "edit") {
 			}
 		}
 
+		$prepisi_ocjena = "";
+		if ($ikad_ciklus>1 || $studij_ciklus>1) {
+			for ($i=1; $i<=$ikad_ciklus; $i++)
+				$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo $i. ciklus</a>";
+		}
+
 
 		// Izvjestaji
 		
@@ -2152,7 +2158,7 @@ else if ($akcija == "edit") {
 				<tr><td align="center"><a href="?sta=izvjestaj/historija&student=<?=$osoba?>">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Historija</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/index2&student=<?=$osoba?>">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Indeks</a></td></tr>
+				<img src="images/32x32/izvjestaj.png" border="0"><br/>Prepis ocjena</a> <?=$prepisi_ocjena?></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=0">
 				<img src="images/32x32/izvjestaj.png" border="0"><br/>Bodovi</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=1">

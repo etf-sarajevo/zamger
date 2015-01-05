@@ -15,8 +15,9 @@ function izvjestaj_index2() {
 
 global $userid, $user_studentska, $user_siteadmin;
 
-// Ulazni parametar
-$student = intval($_REQUEST['student']);
+// Ulazni parametri
+$student      = intval($_REQUEST['student']);
+$param_ciklus = intval($_REQUEST['ciklus']);
 
 
 // Prava pristupa
@@ -42,7 +43,9 @@ if (!($r100 = mysql_fetch_row($q100))) {
 }
 
 
-$q110 = myquery("select s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija from student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts where ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id order by ag.id desc, ss.semestar desc limit 1");
+if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
+
+$q110 = myquery("select s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija from student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts where ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj order by ag.id desc, ss.semestar desc limit 1");
 if (!($r110 = mysql_fetch_row($q110))) {
 	niceerror("Nemamo podataka o studiju za studenta ".$r100[0]." ".$r100[1]);
 	zamgerlog("student u$student nikada nije studirao", 3);
@@ -135,7 +138,7 @@ $i=1;
 $q130 = myquery("SELECT p.sifra, p.naziv, p.ects, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), UNIX_TIMESTAMP(ko.datum), pk.semestar, ts.ciklus
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
 WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet 
-and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5
+and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5 $upit_dodaj
 ORDER BY ts.ciklus, pk.semestar, p.naziv");
 while ($r130 = mysql_fetch_row($q130)) {
 	$godina = round($r130[6]/2);
