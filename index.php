@@ -218,6 +218,34 @@ if ($found==1 && $template==2 && $greska=="") {
 }
 
 
+
+// RSS ID
+
+$rsslink = "";
+if ($userid>0) {
+	srand(time());
+	$q200 = myquery("select id from rss where auth=$userid");
+	if (mysql_num_rows($q200)<1) {
+		// kreiramo novi ID
+		do {
+			$rssid="";
+			for ($i=0; $i<10; $i++) {
+				$slovo = rand()%62;
+				if ($slovo<10) $sslovo=$slovo;
+				else if ($slovo<36) $sslovo=chr(ord('a')+$slovo-10);
+				else $sslovo=chr(ord('A')+$slovo-36);
+				$rssid .= $sslovo;
+			}
+			$q210 = myquery("select count(*) from rss where id='$rssid'");
+		} while (mysql_result($q210,0,0)>0);
+		$q220 = myquery("insert into rss set id='$rssid', auth=$userid");
+	} else {
+		$rssid = mysql_result($q200,0,0);
+	}
+	$rsslink = "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"$conf_site_url/rss.php?id=$rssid\">";
+}
+
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -226,7 +254,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<link href="css/zamger.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="css/print.css" type="text/css" media="print">
-	<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://zamger.etf.unsa.ba/rss.php">
+	<?=$rsslink?>
 </head>
 <?
 
