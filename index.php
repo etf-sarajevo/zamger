@@ -452,6 +452,8 @@ if ($userid>0) {
 		print "<a href=\"?sta=studentska/intro\">Studentska služba</a><br/>\n";
 	if ($user_siteadmin && !strstr($sta,"admin/"))
 		print "<a href=\"?sta=admin/intro\">Site admin</a><br/>\n";
+	if ($user_studentska && !$user_siteadmin && !$user_nastavnik && !$user_student && strstr($sta,"studentska/"))
+		print "<p>&nbsp;</p>";
 }
 
 
@@ -485,7 +487,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2013 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2015 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
