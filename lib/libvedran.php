@@ -140,9 +140,9 @@ function login($pass) {
 	//  $admin - user has admin privileges (from auth table)
 	//  $userid - whatever is used internally (aside from login)
 
-	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain;
+	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$posljednji_pristup;
 
-	$q1 = myquery("select id,password,admin from auth where login='$login' and aktivan=1");
+	$q1 = myquery("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
 	if (mysql_num_rows($q1)<=0)
 		return 1;
 
@@ -224,6 +224,8 @@ function login($pass) {
 
 	$userid = mysql_result($q1,0,0);
 	$admin = mysql_result($q1,0,2);
+	$posljednji_pristup = mysql_result($q1,0,3);
+	$q2 = myquery("update auth set posljednji_pristup=NOW() where id=$userid");
 
 	// All OK, start session
 	session_start();

@@ -305,6 +305,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `admin` tinyint(1) NOT NULL DEFAULT '0',
   `external_id` varchar(50) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `aktivan` tinyint(1) NOT NULL DEFAULT '1',
+  `posljednji_pristup` datetime NOT NULL,
   PRIMARY KEY (`id`,`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -312,8 +313,8 @@ CREATE TABLE IF NOT EXISTS `auth` (
 -- Dumping data for table `auth`
 --
 
-INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`) VALUES
-(1, 'admin', 'admin', 0, '', 1);
+INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`, `posljednji_pristup`) VALUES
+(1, 'admin', 'admin', 0, '', 1, '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -768,7 +769,7 @@ CREATE TABLE IF NOT EXISTS `institucija` (
 -- Dumping data for table `institucija`
 --
 
-INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`) VALUES
+INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`, `tipinstitucije`, `dekan`, `broj_protokola`) VALUES
 (0, 'Nepoznato', 0, 'N', 0, 0, ''),
 (1, 'Elektrotehnički fakultet Sarajevo', 0, 'ETF', 1, 3010, '06-4-1-'),
 (2, 'Odsjek za računarstvo i informatiku', 1, 'RI', 0, 0, ''),

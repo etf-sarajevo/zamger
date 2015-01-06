@@ -74,6 +74,7 @@ dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 $greska="";
 $sta = my_escape($_REQUEST['sta']);
+$posljednji_pristup = 0;
 
 // Ovaj kod smo ukinuli da bi se moglo sa login stranice redirektovati tamo gdje je korisnik već bio
 //if ($_REQUEST['greska']==1) {
@@ -363,12 +364,7 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 
 // Provjera maila
 if ($userid>0) {
-	$q20 = myquery("select UNIX_TIMESTAMP(vrijeme) from log where userid=$userid order by id desc limit 2");
-	if (mysql_num_rows($q20)>1)
-		$vrijeme=intval(mysql_result($q20,1,0));
-	else 
-		$vrijeme=0;
-	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$vrijeme");
+	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$posljednji_pristup");
 	if (mysql_result($q30,0,0)>0) {
 		?>
 		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
