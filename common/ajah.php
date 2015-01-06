@@ -286,6 +286,11 @@ case "izmjena_ispita":
 			break;
 		}
 		$novidatum = mktime(0, 0, 0, $mjesec, $dan, $godina);
+		if ($novidatum === false) {
+			zamgerlog("AJAH ispit - datum konacne ocjene je neispravan ($vrijednost)", 3);
+			print "uneseni datum $dan. $mjesec. $godina nije ispravan";
+			break;
+		}
 	}
 
 	// Ažuriranje podataka u bazi
