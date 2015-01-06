@@ -34,8 +34,8 @@ if ($ak_god==0) {
 
 
 // Kreiranje niza studija za bsc i msc
-$studiji_bsc = $studiji_msc = array();
-$trajanje_bsc = $trajanje_msc = 0;
+$studiji_bsc = $studiji_msc = $studiji_phd = array();
+$trajanje_bsc = $trajanje_msc = $trajanje_phd = 0;
 $q20 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
 while ($r20 = mysql_fetch_row($q20)) {
 	$studiji_bsc[$r20[0]]=$r20[1];
@@ -44,13 +44,21 @@ while ($r20 = mysql_fetch_row($q20)) {
 }
 $trajanje_bsc /= 2; // broj godina umjesto broj semestara
 
-$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r30 = mysql_fetch_row($q30)) {
 	$studiji_msc[$r30[0]]=$r30[1];
 	if ($r30[2]>$trajanje_msc) $trajanje_msc=$r30[2];
 	$institucije[$r30[0]]=$r30[3];
 }
 $trajanje_msc /= 2; // broj godina umjesto broj semestara
+
+$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=3 and s.moguc_upis=1 order by s.kratkinaziv");
+while ($r30 = mysql_fetch_row($q30)) {
+	$studiji_phd[$r30[0]]=$r30[1];
+	if ($r30[2]>$trajanje_phd) $trajanje_phd=$r30[2];
+	$institucije[$r30[0]]=$r30[3];
+}
+$trajanje_phd /= 2; // broj godina umjesto broj semestara
 
 
 
@@ -63,7 +71,7 @@ foreach ($studiji_bsc as $naziv) {
 }
 // TODO napisati kod
 if ($istisu==0) {
-	niceerror("Ovaj izvještaj za sada podržava samo isti set studija na oba ciklusa.");
+	niceerror("Ovaj izvještaj za sada podržava samo isti set studija na svim ciklusima.");
 	return;
 }
 
@@ -94,9 +102,13 @@ foreach ($studiji_bsc as $id=>$ime) {
 $ukupno_studij = $redovnih_studij = $ponovaca_studij = array();
 $ukupno_total = $redovnih_total = $ponovaca_total = 0;
 
-for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc; $godina++) {
+for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 
-	if ($godina>$trajanje_bsc) {
+	if ($godina>$trajanje_bsc+$trajanje_msc) {
+		$studiji = $studiji_phd;
+		$godina_real = $godina-($trajanje_bsc+$trajanje_msc);
+		$dodatak = "PhD";
+	} else if ($godina>$trajanje_bsc) {
 		$studiji = $studiji_msc;
 		$godina_real = $godina-$trajanje_bsc;
 		$dodatak = "MSc";
