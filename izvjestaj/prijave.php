@@ -155,10 +155,6 @@ while ($r10 = mysql_fetch_row($q10)) {
 	}
 }
 
-// Kraj
-//	ob_end_clean();
-//	ob_clean();
-//file_put_contents("/tmp/debug", $sadrzaj_bafera_za_pdf);
 $pdf->Output($filename, 'I');
 
 } // function izvjestaj_prijave()
