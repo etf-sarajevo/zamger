@@ -24,8 +24,8 @@ $jmbg = mysql_result($q10,0,3);
 
 $q20 = myquery("select sifra, jezik from prijemni_obrazac where osoba=$osoba and prijemni_termin=$termin");
 if (mysql_num_rows($q20)<1) {
-	biguglyerror("Osoba nije kandidat na prijemnom");
-	zamgerlog("Osoba $osoba nije kandidat na prijemnom $termin", 3);
+	biguglyerror("Ne postoji obrazac za ovu osobu");
+	zamgerlog("za osobu u$osoba ne postoji obrazac na terminu $termin", 3);
 	return;
 }
 $sifra = mysql_result($q20,0,0);
