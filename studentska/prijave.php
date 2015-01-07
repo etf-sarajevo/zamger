@@ -69,6 +69,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 </li>
 <li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=uslov">Sve studente koji imaju uslove za usmeni (<?=$studenata_uslov?> studenata)</a><br/>&nbsp;</li>
 <li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=bez_ocjene">Sve studente koji nemaju upisanu ocjenu (<?=$studenata_bez_ocjene?> studenata)</a><br/>&nbsp;</li>
+<li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=sa_ocjenom">Sve studente koji imaju upisanu ocjenu (<?=$studenata_sa_ocjenom?> studenata)</a><br/>&nbsp;</li>
 <li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=sve">Sve studente (<?=$svih_studenata?> studenata)</a><br/>&nbsp;</li>
 <li>Pojedinačnog studenta:<br/>
 <form action="index.php" method="GET">
