@@ -136,19 +136,26 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$termin = intval($_REQUEST['termin']);
 
 	$upit_dodaj = $naslov_dodaj = "";
-	if ($_REQUEST['iz'] == "bih") {
-		$upit_dodaj = " AND o.drzavljanstvo=1";
-	} else if ($_REQUEST['iz'] == "strani") {
-		$upit_dodaj = " AND o.drzavljanstvo!=1";
-		$naslov_dodaj = " stranih državljana";
-	}
 
-	if ($_REQUEST['nacin'] == "redovni") {
+	if ($_REQUEST['nacin'] == "o_trosku_kantona") {
+		$upit_dodaj .= " AND pp.nacin_studiranja=1";
+		$naslov_dodaj .= " prijavljenih za redovan studij (o trošku kantona)";
+	} else if ($_REQUEST['nacin'] == "samofinansirajuci") {
+		$upit_dodaj .= " AND pp.nacin_studiranja=3";
+		$naslov_dodaj .= " prijavljenih za redovan studij (samofinansirajući)";
+	} else if ($_REQUEST['nacin'] == "redovni") {
 		$upit_dodaj .= " AND (pp.nacin_studiranja=1 OR pp.nacin_studiranja=3)";
-		$naslov_dodaj .= " prijavljenih za redovan studij";
+		$naslov_dodaj .= " prijavljenih za redovan studij (o trošku kantona ili samofinansirajući)";
 	} else if ($_REQUEST['nacin'] == "vanredni") {
 		$upit_dodaj .= " AND pp.nacin_studiranja=4";
 		$naslov_dodaj .= " prijavljenih za vanredni studij";
+	}
+
+	if ($_REQUEST['iz'] == "bih") {
+		$upit_dodaj .= " AND o.drzavljanstvo=1";
+	} else if ($_REQUEST['iz'] == "strani") {
+		$upit_dodaj .= " AND o.drzavljanstvo!=1";
+		$naslov_dodaj = " stranih državljana";
 	}
 
 	if ($_REQUEST['vrsta'] == "preliminarni") {

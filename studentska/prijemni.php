@@ -576,7 +576,10 @@ if ($_REQUEST['akcija']=="rang_liste") {
 	<option>Svi zajedno</option>
 	</select></p>
 
-	<p>Način studiranja: <select name="nacin"><option value="redovni">Redovni i samofinansirajući</option>
+	<p>Način studiranja: <select name="nacin">
+	<option value="o_trosku_kantona">O trošku kantona</option>
+	<option value="samofinansirajuci">Samofinansirajući</option>
+	<option value="redovni">O trošku kantona i samofinansirajući</option>
 	<option value="vanredni">Vanredni</option>
 	<option>Svi zajedno</option>
 	</select></p>
