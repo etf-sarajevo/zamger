@@ -58,6 +58,11 @@ if ($ispit_termin>0) {
 	// Uzecemo danasnji datum
 	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet)=0 order by o.prezime, o.ime";
 
+// Sve studente koji imaju ocjenu
+} else if ($_GET['tip'] == "sa_ocjenom") {
+	// Uzecemo danasnji datum
+	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet)>0 order by o.prezime, o.ime";
+
 // Sve studente na predmetu
 } else if ($_GET['tip'] == "sve") {
 	// Uzecemo danasnji datum
