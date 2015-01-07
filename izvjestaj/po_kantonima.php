@@ -12,8 +12,6 @@ function izvjestaj_po_kantonima() {
 Elektrotehnički fakultet Sarajevo</p>
 
 <p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
-
-<h2>Spisak studenata po kantonima</h2>
 <?
 
 
@@ -38,6 +36,10 @@ while ($r20 = mysql_fetch_row($q20))
 
 
 ?>
+
+<h2>Spisak studenata po kantonima</h2>
+<h3>Za akademsku <?=$ak_god_naziv?>. godinu</h3>
+
 <table border="1" cellspacing="0">
 <tr>
 <td rowspan="2">&nbsp;</td>
@@ -47,8 +49,12 @@ ENTITET - STRANI DRŽ.</td>
 <td colspan="6" align="center">Studenti koji se finansiraju iz budžeta</td>
 <td rowspan="2" width="2"></td>
 <td colspan="6" align="center">Studenti koji sami plaćaju troškove studija</td>
+<td rowspan="2" width="2"></td>
+<td colspan="6" align="center">Vanredni studenti</td>
 </tr>
 <tr>
+<td>I god.<br>I cik.</td><td>II god.<br>I cik.</td><td>III god.<br>I cik.</td>
+<td>I god.<br>II cik.</td><td>II god.<br>II cik.</td><td>Svega</td>
 <td>I god.<br>I cik.</td><td>II god.<br>I cik.</td><td>III god.<br>I cik.</td>
 <td>I god.<br>II cik.</td><td>II god.<br>II cik.</td><td>Svega</td>
 <td>I god.<br>I cik.</td><td>II god.<br>I cik.</td><td>III god.<br>I cik.</td>
@@ -86,10 +92,12 @@ foreach ($kanton as $id_kantona => $naziv_kantona) {
 			<?
 		}
 
-		for ($nacin=1; $nacin<=3; $nacin+=2) {
+		for ($nacin=1; $nacin<=4; $nacin++) {
+			if ($nacin == 2) continue; // Zanemarujemo paralelne
 			$suma=0;
 			for ($ciklus=1; $ciklus<=2; $ciklus++) {
-				for ($godina=1; $godina<=1+$ciklus; $godina++) {
+				if ($ciklus==1) $maxgodina=3; else $maxgodina=2; // Koristiti studij.trajanje?
+				for ($godina=1; $godina<=$maxgodina; $godina++) {
 					$semestar = $godina*2-1;
 					if ($id_kantona==1000) {
 						$broj = $summa_summarum[$ponovac][$nacin][$ciklus][$godina];
@@ -104,7 +112,7 @@ foreach ($kanton as $id_kantona => $naziv_kantona) {
 				}
 			}
 			print "<td>$suma</td>"; // kolona "Svega"
-			if ($nacin==1) print "<td width=\"2\"></td>\n"; // dvostruka linija
+			if ($nacin < 4) print "<td width=\"2\"></td>\n"; // dvostruka linija
 		}
 	}
 
@@ -113,6 +121,18 @@ foreach ($kanton as $id_kantona => $naziv_kantona) {
 }
 
 print "</table>";
+
+$q40 = myquery("select o.ime, o.prezime, o.id from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ak_god and ss.semestar mod 2 = 1 and (o.kanton=0 or o.kanton=-1) order by o.prezime, o.id");
+if (mysql_num_rows($q40)>0) {
+	?>
+	<p><font color="red"><?=mysql_num_rows($q40)?> studenata nema unesen validan kanton!</font></p>
+	<p><a href="#" onclick="javascript:document.getElementById('nema_kanton').style.display='inline'; return false;">Prikaži</a></p>
+	<div id="nema_kanton" style="display:none"><?
+	while ($r40 = mysql_fetch_row($q40)) {
+		print "<a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r40[2]\">$r40[1] $r40[0]</a><br>";
+	}
+	print "</div>\n";
+}
 
 
 }
