@@ -43,11 +43,6 @@ if (!($r100 = mysql_fetch_row($q100))) {
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
 	return;
 }
-/*if ($r100[3] != 1) {
-	biguglyerror("Nepoznat student");
-	zamgerlog("korisnik u$student nema status studenta",3);
-	return;
-}*/
 
 
 ?>
@@ -74,6 +69,35 @@ while ($r105 = mysql_fetch_row($q105)) {
 	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
 }
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
+
+
+
+// Ocjene priznavanje
+
+$q125 = myquery("select naziv_predmeta, ocjena, odluka, akademska_godina, strana_institucija from priznavanje where student=$student order by odluka, akademska_godina, naziv_predmeta");
+if (mysql_num_rows($q125)>0) {
+	?>
+	<p><b>Priznavanje ocjena ostvarenih na drugoj instituciji po osnovu mobilnosti studenata:</b></p>
+	<?
+}
+$i = 1; $stara_odluka = $stara_ag = $stara_inst = 0;
+while ($r125 = mysql_fetch_row($q125)) {
+	if ($r125[2] != $stara_odluka || $r125[3] != $stara_ag || $r125[4] != $stara_inst) {
+		if ($stara_odluka != 0) print "</ul>\n";
+		$stara_odluka = $r125[2];
+		$stara_ag = $r125[3];
+		$stara_inst = $r125[4];
+		$q115 = myquery("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$stara_odluka");
+		if (mysql_num_rows($q115) > 0)
+			$odluka_ispis = " (odluka br. ".mysql_result($q115,0,1)." od ".date("d. m. Y.", mysql_result($q115,0,0)).")";
+		$q127 = myquery("SELECT naziv FROM akademska_godina WHERE id=$stara_ag");
+		?>
+		<p>Institucija: &quot;<?=$stara_inst?>&quot;, akademska <?=mysql_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
+		<?
+	}
+	print "<li><b>$r125[0]</b> - ocjena: $r125[1] (".$imena_ocjena[$r125[1]-5].")</li>\n";
+}
+print "</ul>";
 
 
 

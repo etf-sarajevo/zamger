@@ -171,6 +171,55 @@ while ($r105 = mysql_fetch_row($q105)) {
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
 
+
+// Ocjene priznavanje
+
+if ($param_ciklus != 0) $dod_priznavanje = " and ciklus=$param_ciklus"; else $dod_priznavanje = "";
+$q125 = myquery("select naziv_predmeta, sifra_predmeta, ects, ocjena, odluka, akademska_godina, strana_institucija from priznavanje where student=$student $dod_priznavanje order by odluka, akademska_godina, naziv_predmeta");
+if (mysql_num_rows($q125)>0) {
+	?>
+	<p><b>Priznavanje ocjena ostvarenih na drugoj instituciji po osnovu mobilnosti studenata:</b></p>
+	<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
+		<td width="20"><b>R.br.</b></td>
+		<td width="60"><b>Šifra</b></td>
+		<td width="280"><b>Naziv predmeta</b></td>
+		<td width="30"><b>ECTS bodovi</b></td>
+		<td width="60"><b>Konačna ocjena</b></td>
+		<td width="40"><b>ECTS ocjena</b></td>
+	</tr>
+	<?
+}
+$i = 1; $stara_odluka = $stara_ag = $stara_inst = 0;
+while ($r125 = mysql_fetch_row($q125)) {
+	if ($r125[4] != $stara_odluka || $r125[5] != $stara_ag || $r125[6] != $stara_inst) {
+		$stara_odluka = $r125[4];
+		$stara_ag = $r125[5];
+		$stara_inst = $r125[6];
+		$q115 = myquery("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$stara_odluka");
+		if (mysql_num_rows($q115) > 0)
+			$odluka_ispis = " (odluka br. ".mysql_result($q115,0,1)." od ".date("d. m. Y.", mysql_result($q115,0,0)).")";
+		$q127 = myquery("SELECT naziv FROM akademska_godina WHERE id=$stara_ag");
+		?>
+		<tr bgcolor="#CCCCCC">
+			<td colspan="6"><b><?=$stara_inst?>, akademska <?=mysql_result($q127,0,0)?>. godina <?=$odluka_ispis?>:</b></td>
+		</tr>
+		<?
+	}
+	?>
+	<tr>
+		<td><?=$i++?></td><td><?=$r125[1]?></td><td><?=$r125[0]?></td>
+		<td><?=$r125[2]?></td>
+		<td><?=$r125[3]?> (<?=$imena_ocjena[$r125[3]]?>)</td>
+		<td align="center"><?=$ects_ocjene[$r125[3]]?></td>
+	</tr>
+	<?
+	$sumauk += $r125[3];
+	$brojuk++;
+	$sumaects += $r125[2];
+}
+if (mysql_num_rows($q125)>0) print "</table><p>&nbsp;</p><p><b>Ocjene ostvarene na matičnoj instituciji:</b></p>\n";
+
+
 ?>
 
 <table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">

@@ -72,6 +72,35 @@ while ($r105 = mysql_fetch_row($q105)) {
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
 
+
+// Ocjene priznavanje
+
+$q125 = myquery("select naziv_predmeta, sifra_predmeta, ects, ocjena, odluka, akademska_godina, strana_institucija from priznavanje where student=$student order by odluka, akademska_godina, naziv_predmeta");
+if (mysql_num_rows($q125)>0) {
+	?>
+	<p><b>Priznavanje ocjena ostvarenih na drugoj instituciji po osnovu mobilnosti studenata:</b></p>
+	<?
+}
+$i = 1; $stara_odluka = $stara_ag = $stara_inst = 0;
+while ($r125 = mysql_fetch_row($q125)) {
+	if ($r125[4] != $stara_odluka || $r125[5] != $stara_ag || $r125[6] != $stara_inst) {
+		if ($stara_odluka != 0) print "</ul>\n";
+		$stara_odluka = $r125[4];
+		$stara_ag = $r125[5];
+		$stara_inst = $r125[6];
+		$q115 = myquery("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$stara_odluka");
+		if (mysql_num_rows($q115) > 0)
+			$odluka_ispis = " (odluka br. ".mysql_result($q115,0,1)." od ".date("d. m. Y.", mysql_result($q115,0,0)).")";
+		$q127 = myquery("SELECT naziv FROM akademska_godina WHERE id=$stara_ag");
+		?>
+		<p>Institucija <?=$stara_inst?>, akademska <?=mysql_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
+		<?
+	}
+	print "<li><b>$r125[0]</b> - ocjena: $r125[1] (".$imena_ocjena[$r125[1]-5].")</li>\n";
+}
+print "</ul>";
+
+
 ?>
 
 <p><b>Pregled položenih predmeta sa ocjenama</b></p>

@@ -1768,6 +1768,28 @@ INSERT INTO `privilegije` (`osoba`, `privilegija`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `priznavanje`
+--
+
+CREATE TABLE IF NOT EXISTS `priznavanje` (
+  `student` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `ciklus` int(1) NOT NULL,
+  `naziv_predmeta` varchar(250) collate utf8_slovenian_ci NOT NULL,
+  `sifra_predmeta` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `ects` float NOT NULL,
+  `ocjena` int(11) NOT NULL,
+  `odluka` int(11) NOT NULL,
+  `strana_institucija` varchar(250) collate utf8_slovenian_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `priznavanje`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `programskijezik`
 --
 
