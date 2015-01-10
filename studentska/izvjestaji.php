@@ -309,15 +309,32 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<input type="hidden" name="sta" value="izvjestaj/svi_studenti">
 	<p><input type="checkbox" name="ime_oca">Ime oca<br />
 	<input type="checkbox" name="jmbg">JMBG<br />
+	<input type="checkbox" name="nacin_studiranja">Način studiranja (redovni, samofinansirajući...)<br />
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
+	<input type="checkbox" name="login">Korisničko ime<br /><br />
+	<input type="checkbox" name="tabelarno">Prikaži u obliku tabele umjesto numerisane liste<br />
+	Akademska godina: <select name="ag">
+	<?
+		$q506 = myquery("select id, naziv, aktuelna from akademska_godina order by naziv");
+		while ($r506 = mysql_fetch_row($q506)) {
+			print "<option value=\"$r506[0]\"";
+			if ($r506[2] == 1) print " selected";
+			print ">$r506[1]</option>\n";
+		}
+	?></select><br />
 	Studij: <select name="studij">
-	<option value="-1">Svi studiji</option>
+	<option value="0">Svi studiji</option>
+	<option value="-1">Prvi ciklus</option>
+	<option value="-2">Drugi ciklus</option>
 	<?
 		$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
 		while ($r505 = mysql_fetch_row($q505)) {
 			print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 		}
 	?></select><br />
+	Godina studija: <select name="godina"><option value="0">Sve godine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><br />
+	<input type="checkbox" name="prvi_put">Prvi put (bez ponovaca)<br />
+	
 	<input type="submit" value=" Prikaži "></form>
 	<?
 }
