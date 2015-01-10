@@ -53,6 +53,14 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Ovo bi se dalo optimizovati
 	global $conf_files_path;
 
+	// Odredjujem ponudukursa
+	$q225 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (mysql_num_rows($q225) == 0) {
+		biguglyerror("Student nije upisan na odabrani predmet");
+		return;
+	}
+	$ponudakursa = mysql_result($q225,0,0);
+
 	// Odredjivanje labgrupa ciji je student eventualno clan
 	$q40 = myquery("select sl.labgrupa from student_labgrupa as sl,labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	while ($r40 = mysql_fetch_row($q40)) {
@@ -92,10 +100,6 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 		}
 		$q120 = myquery("delete from zadatak where student=$student and zadaca=$r90[0]");
 	}
-
-	// Odredjujem ponudukursa sto je potrebno za naredna dva upita
-	$q225 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	$ponudakursa = mysql_result($q225,0,0);
 
 	// Brisanje komponenti
 	$q230 = myquery("delete from komponentebodovi where student=$student and predmet=$ponudakursa");
