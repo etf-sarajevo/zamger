@@ -67,6 +67,10 @@ function genitiv($rijec,$spol) {
 	$slovo = substr($rijec,strlen($rijec)-1);
 	if ($slovo == "a" || $slovo == "e" || $slovo == "i" || $slovo == "o" || $slovo == "u" || $slovo == "k")
 		return $rijec;
+	else if ($slovo == "h")
+		return substr($rijec,0,strlen($rijec)-1)."še";
+	else if ($slovo == "g")
+		return substr($rijec,0,strlen($rijec)-1)."že";
 	else
 		return $rijec."e";
 }
