@@ -8,6 +8,7 @@ function izvjestaj_zavrsni_zapisnik() {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
 
@@ -26,7 +27,6 @@ if (mysql_num_rows($q10)<1) {
 
 $r10 = mysql_fetch_assoc($q10);
 
-print "id = ".$r10["student_id"]."<br>";
 $q20 = myquery("select o.prezime as prezime, o.imeoca as imeoca, o.ime as ime, o.brindexa as brindexa, o.spol as spol, UNIX_TIMESTAMP(o.datum_rodjenja) as datum_rodjenja, o.telefon as telefon, o.mjesto_rodjenja as mjesto_rodjenja, o.adresa as adresa, o.adresa_mjesto as adresa_mjesto_id
 from osoba as o
 where o.id=".$r10["student_id"]);
