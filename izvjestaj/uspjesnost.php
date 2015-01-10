@@ -18,7 +18,7 @@ Elektrotehnički fakultet Sarajevo</p>
 $studij = intval($_REQUEST['studij']);
 if ($studij==0) $studij = intval($_REQUEST['_lv_column_studij']);
 
-$q10 = myquery("SELECT s.naziv, ts.id, ts.trajanje FROM studij as s, tipstudija as ts WHERE s.id=$studij AND s.tipstudija=ts.id");
+$q10 = myquery("SELECT s.naziv, ts.id, ts.trajanje, ts.ects FROM studij as s, tipstudija as ts WHERE s.id=$studij AND s.tipstudija=ts.id");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepostojeći studij");
 	return;
@@ -26,6 +26,7 @@ if (mysql_num_rows($q10)<1) {
 
 $tipstudija = mysql_result($q10,0,1);
 $trajanje_studija = mysql_result($q10,0,2); // u semestrima
+$ects_studija = mysql_result($q10,0,2);
 
 ?>
 <h3><?=mysql_result($q10,0,0)?></h3>
@@ -64,7 +65,7 @@ foreach ($student_pocetna_godina as $student => $pocetna_godina) {
 		// Da bismo odredili da li je student završio studij, provjerićemo da li ima min. 180 ECTS kredita u zbiru
 		// Koristimo početnu i krajnju godinu da eliminišemo predmete sa drugog ciklusa
 		$q30 = myquery("SELECT SUM(p.ects) FROM predmet AS p, konacna_ocjena AS ko WHERE ko.student=$student AND ko.predmet=p.id AND ko.akademska_godina>=$pocetna_godina AND ko.akademska_godina<=".$student_krajnja_godina[$student]); 
-		if (mysql_result($q30,0,0) >= 180) {
+		if (mysql_result($q30,0,0) >= $ects_studija) {
 			$godina_zavrsilo[$pocetna_godina]++;
 			$godina_suma_trajanja[$pocetna_godina] += ($student_krajnja_godina[$student] - $pocetna_godina + 1);
 		} else if ($student_krajnja_godina[$student] == $maxgodina) {
