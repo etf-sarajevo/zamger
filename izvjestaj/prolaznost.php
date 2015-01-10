@@ -452,9 +452,9 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 		// Konacna ocjena
 		} else if ($ispit==4) {
 			if ($studij==-1) 
-				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka=0"); // Eliminisemo ocjene po odluci
+				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka NOT NULL"); // Eliminisemo ocjene po odluci
 			else
-				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka=0");
+				$q110 = myquery("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka NOT NULL");
 			$broj_polozenih=0;
 			while ($r110 = mysql_fetch_row($q110)) {
 				if ($r110[1] >= 6 ) {
