@@ -151,13 +151,18 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	}
 	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 	
-	$q25 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-	$id_virtualne_grupe = mysql_result($q25,0,0);
+	// Ima li grupa na predmetu?
+	$q27 = myquery("SELECT count(*) FROM labgrupa WHERE predmet=$predmet AND akademska_godina=$ag AND virtualna=0");
+	if (mysql_result($q27,0,0)>0)
+		$treba_grupe = true;
+	else
+		$treba_grupe = false;
 	
-	$spisak_grupa[0] = "[Bez grupe]"; // Dodajemo "nultu grupu" kojoj svi pripadaju
 	$broj_ispita=0;
 	$ispit_zaglavlje="";
 	$oldkomponenta=0;
+	
+	$ispit_id_array = array();
 	
 	$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
 	$imaintegralni=0;
@@ -210,18 +215,12 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	}
 	
 	
-	// GLAVNA PETLJA ZA GRUPE
-	
-	foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
+	$zaglavlje1=$zaglavlje2=""; // Dva reda zaglavlja tabele
 
-	
-		$zaglavlje1=$zaglavlje2=""; // Dva reda zaglavlja tabele
-	
-	
-		// Ostale komponente
-		foreach ($ostale_komponente as $kid => $knaziv)
-			$zaglavlje1 .= "<td rowspan=\"2\" align=\"center\">$knaziv</td>\n";
-	
+
+	// Ostale komponente
+	foreach ($ostale_komponente as $kid => $knaziv)
+		$zaglavlje1 .= "<td rowspan=\"2\" align=\"center\">$knaziv</td>\n";
 	
 	
 		?>
@@ -229,6 +228,7 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 		<tr><td rowspan="2" align="center">R.br.</td>
 			<td rowspan="2" align="center">Prezime i ime</td>
 			<td rowspan="2" align="center">Br. indexa</td>
+			<? if ($treba_grupe) { ?><td rowspan="2" align="center">Grupa</td><? } ?>
 			<?=$zaglavlje1?>
 			<td align="center" <? if ($broj_ispita==0) { ?> rowspan="2" <? } else { ?> colspan="<?=$broj_ispita?>" <? } ?>>Ispiti</td>
 			<td rowspan="2" align="center"><b>UKUPNO</b></td>
@@ -241,26 +241,17 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 		<?
 	
 	
+	// ------ SPISAK STUDENATA ------
+
+	$idovi = array_keys($imeprezime);
 	
-	
-		// ------ SPISAK STUDENATA ------
-	
-		$idovi = array();
-		if ($grupa_id==0) {
-			$idovi = array_keys($imeprezime);
-		} else {
-			$q190 = myquery("select student from student_labgrupa where labgrupa=$grupa_id");
-			while ($r190 = mysql_fetch_row($q190)) $idovi[] = $r190[0];
-		}
-	
-	
-		// Petlja za ispis studenata
-		$redni_broj=0;
-		foreach ($imeprezime as $stud_id => $stud_imepr) {
-			if (!in_array($stud_id, $idovi)) continue;
-			unset ($imeprezime[$stud_id]); // Vise se nece javljati
-	
-			$redni_broj++;
+	// Petlja za ispis studenata
+	$redni_broj=0;
+	foreach ($imeprezime as $stud_id => $stud_imepr) {
+		if (!in_array($stud_id, $idovi)) continue;
+		unset ($imeprezime[$stud_id]); // Vise se nece javljati
+
+		$redni_broj++;
 			?>
 		<tr>
 			<td><?=$redni_broj?>.</td>
@@ -268,103 +259,112 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 			<td><?=$brindexa[$stud_id]?></td>
 			<?
 	
-			$ispis="";
-			$bodova=0; // Zbir bodova koje je student ostvario
-	
-			// OSTALE KOMPONENTE
-	
-			foreach ($ostale_komponente as $kid => $knaziv) {
-				$q230 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$kid");
-				$obodova=0; 
-				if (mysql_num_rows($q230)>0) {
-					$obodova = mysql_result($q230,0,0);
-				}
-				$ispis .= "<td>$obodova</td>";
-				$bodova += $obodova;
-			}
-	
-	
-	
-			// ISPITI
-	
-			if ($broj_ispita==0) {
-				$ispis .= "<td>&nbsp;</td>";
-			}
-			$komponente=$kmax=$kispis=array();
-			foreach ($ispit_id_array as $ispit) {
-				$k = $ispit_komponenta[$ispit];
-		
-				$q230 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
-				if (mysql_num_rows($q230)>0) {
-					$ocjena = mysql_result($q230,0,0);
-					$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
-					if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
-						$kmax[$k]=$ocjena;
-						$kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
-					}
-				} else {
-					$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
-					if ($kispis[$k] == "") $kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
-				}
-				if (!in_array($k,$komponente)) $komponente[]=$k;
-			}
-		
-			// Prvo trazimo integralne ispite
-			foreach ($komponente as $k) {
-				if ($komponenta_tip[$k] == 2) {
-					// Koje parcijalne ispite obuhvata integralni
-					$dijelovi = explode("+", $komponenta_opcija[$k]);
-		
-					// Racunamo zbir
-					$zbir=0;
-					$pao=0;
-					foreach ($dijelovi as $dio) {
-						$zbir += $kmax[$dio];
-						if ($kmax[$dio]<$komponenta_prolaz[$dio]) $pao=1;
-					}
-		
-					// Eliminisemo parcijalne obuhvacene integralnim
-					if ($kmax[$k]>$zbir || $pao==1 && $kmax[$k]>=$komponenta_prolaz[$k]) {
-						$bodova += $kmax[$k];
-						foreach ($dijelovi as $dio) {
-							$kmax[$dio]=0;
-							$kispis[$dio]="";
-						}
-						$kispis[$k] = "<td align=\"center\" colspan=\"".count($dijelovi)."\">".$kmax[$k]."</td>\n";
-					}
-					else $kispis[$k]="";
-				}
-			}
-		
-			// Sabiremo preostale parcijalne ispite na sumu bodova
-			foreach ($komponente as $k) {
-				if ($komponenta_tip[$k] != 2) {
-					$bodova += $kmax[$k];
-				}
-			}
-	
-	
-			// STATISTIKE
-			$topscore[$stud_id]=$bodova;
-	
-			print $ispis;
-	
-			print "<td align=\"center\">$bodova (".procenat($bodova,$mogucih_bodova).")</td>\n";
-	
-	
-			// Konacna ocjena
-			$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q508)>0) {
-				print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q508,0,0)."</td>\n";
-			} else {
-				print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
-			}
-	
-			print "</tr>\n";
+		if ($treba_grupe) {
+			$q220 = myquery("SELECT l.naziv FROM labgrupa as l, student_labgrupa as sl WHERE l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0 AND l.id=sl.labgrupa AND sl.student=$stud_id");
+			if (mysql_num_rows($q220)==0) 
+				$grupa = "&nbsp;";
+			else
+				$grupa = mysql_result($q220,0,0);
+			?>
+			<td><?=$grupa?></td>
+			<?
 		}
-		print "</table><p>&nbsp;</p>";
+
+		$ispis="";
+		$bodova=0; // Zbir bodova koje je student ostvario
+
+		// OSTALE KOMPONENTE
+
+		foreach ($ostale_komponente as $kid => $knaziv) {
+			$q230 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$kid");
+			$obodova=0; 
+			if (mysql_num_rows($q230)>0) {
+				$obodova = mysql_result($q230,0,0);
+			}
+			$ispis .= "<td>$obodova</td>";
+			$bodova += $obodova;
+		}
 	
-	} // while ($r40...
+	
+	
+		// ISPITI
+
+		if ($broj_ispita==0) {
+			$ispis .= "<td>&nbsp;</td>";
+		}
+		$komponente=$kmax=$kispis=array();
+		foreach ($ispit_id_array as $ispit) {
+			$k = $ispit_komponenta[$ispit];
+	
+			$q230 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
+			if (mysql_num_rows($q230)>0) {
+				$ocjena = mysql_result($q230,0,0);
+				$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
+				if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
+					$kmax[$k]=$ocjena;
+					$kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
+				}
+			} else {
+				$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+				if ($kispis[$k] == "") $kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+			}
+			if (!in_array($k,$komponente)) $komponente[]=$k;
+		}
+		
+		// Prvo trazimo integralne ispite
+		foreach ($komponente as $k) {
+			if ($komponenta_tip[$k] == 2) {
+				// Koje parcijalne ispite obuhvata integralni
+				$dijelovi = explode("+", $komponenta_opcija[$k]);
+	
+				// Racunamo zbir
+				$zbir=0;
+				$pao=0;
+				foreach ($dijelovi as $dio) {
+					$zbir += $kmax[$dio];
+					if ($kmax[$dio]<$komponenta_prolaz[$dio]) $pao=1;
+				}
+	
+				// Eliminisemo parcijalne obuhvacene integralnim
+				if ($kmax[$k]>$zbir || $pao==1 && $kmax[$k]>=$komponenta_prolaz[$k]) {
+					$bodova += $kmax[$k];
+					foreach ($dijelovi as $dio) {
+						$kmax[$dio]=0;
+						$kispis[$dio]="";
+					}
+					$kispis[$k] = "<td align=\"center\" colspan=\"".count($dijelovi)."\">".$kmax[$k]."</td>\n";
+				}
+				else $kispis[$k]="";
+			}
+		}
+	
+		// Sabiremo preostale parcijalne ispite na sumu bodova
+		foreach ($komponente as $k) {
+			if ($komponenta_tip[$k] != 2) {
+				$bodova += $kmax[$k];
+			}
+		}
+
+
+		// STATISTIKE
+		$topscore[$stud_id]=$bodova;
+
+		print $ispis;
+
+		print "<td align=\"center\">$bodova (".procenat($bodova,$mogucih_bodova).")</td>\n";
+
+
+		// Konacna ocjena
+		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
+		if (mysql_num_rows($q508)>0) {
+			print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q508,0,0)."</td>\n";
+		} else {
+			print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+		}
+
+		print "</tr>\n";
+	}
+	print "</table><p>&nbsp;</p>";
 }
 ?>
 
