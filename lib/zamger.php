@@ -553,7 +553,7 @@ function studentski_meni($fj) {
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
-		if (intval($_REQUEST['predmet'])==$predmet) {
+		if (intval($_REQUEST['predmet'])==$predmet && intval($_REQUEST['ag'])==$pag) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
 			if (substr($predmet_naziv, 0, 12) == "Završni rad")
 				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
@@ -574,7 +574,7 @@ function studentski_meni($fj) {
 				else if ($r40[2]==1)
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag$tip_forum\" target=\"_blank\">$r40[0]</a><br/>\n";
 				else
-					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag\">$r40[0]</a><br/>\n";
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r40[0]</a><br/>\n";
 			}
 
 			// Da li ima aktivna anketa i da li je istekao rok?
