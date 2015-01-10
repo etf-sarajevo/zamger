@@ -159,19 +159,15 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	$ispit_zaglavlje="";
 	$oldkomponenta=0;
 	
-	$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.komponenta,i.datum");
+	$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
 	$imaintegralni=0;
 	while ($r30 = mysql_fetch_row($q30)) {
 		$komponenta = $r30[2];
 		$imeispita = $r30[3];
-		$tipkomponente = $r30[4];	
-		if ($komponenta != $oldkomponenta && $tipkomponente != 2) { // 2 = integralni
-			$oldkomponenta=$komponenta;
-			$ispit_zaglavlje .= "<td align=\"center\">$imeispita</td>\n";
-			$broj_ispita++;
-		} else if ($tipkomponente == 2) {
-			$imaintegralni=1;
-		}
+		$tipkomponente = $r30[4];
+		
+		$ispit_zaglavlje .= "<td align=\"center\">$imeispita<br/> ".date("d.m.",$r30[1])."</td>\n";
+		$broj_ispita++;
 	
 		$ispit_id_array[] = $r30[0];
 		$ispit_komponenta[$r30[0]] = $r30[2];
@@ -301,13 +297,13 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 				$q230 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
 				if (mysql_num_rows($q230)>0) {
 					$ocjena = mysql_result($q230,0,0);
-					if ($razdvoji_ispite==1) $ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
+					$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
 					if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
 						$kmax[$k]=$ocjena;
 						$kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
 					}
 				} else {
-					if ($razdvoji_ispite==1) $ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+					$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 					if ($kispis[$k] == "") $kispis[$k] = "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 				}
 				if (!in_array($k,$komponente)) $komponente[]=$k;
@@ -345,7 +341,6 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 				if ($komponenta_tip[$k] != 2) {
 					$bodova += $kmax[$k];
 				}
-				if ($razdvoji_ispite!=1) $ispis .= $kispis[$k];
 			}
 	
 	
