@@ -46,7 +46,6 @@ if (!isset($_lv_)) $_lv_ = array(); // Prevent PHP warnings
 function dbconnect() {
 	// Default database
 	dbconnect2("localhost","zamgerdemo","zamgerdemo","zamger");
-	//dbconnect2("localhost","vedran_studenti","itneduts","zamger");
 }
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
@@ -427,7 +426,9 @@ function __lv_parsetable($table) {
 	$q200 = myquery("show create table $table");
 	$__lv_showcreate = mysql_result($q200,0,1);
 	foreach (explode("\n", $__lv_showcreate) as $line) {
-		if (preg_match("/`(\w+)` (\w+)\((\d+)\)/", $line, $matches)) {
+		if (strstr($line, "CONSTRAINT")) {
+			continue;
+		} else if (preg_match("/`(\w+)` (\w+)\((\d+)\)/", $line, $matches)) {
 			$__lv_cn[] = $matches[1]; // adds at the end
 			$__lv_ct[] = $matches[2];
 			$__lv_cs[] = $matches[3];
@@ -585,6 +586,9 @@ function db_dropdown($table,$selected=0,$empty=0) {
 				$name=$__lv_cn[$i];
 			}
 		}
+		
+		// Find foreign keys - TODO
+
 		// First field other then ID
 		if ($name == "")
 		for ($i=0; $i<count($__lv_cn); $i++) {
@@ -1149,5 +1153,43 @@ if (function_exists('mysql_set_charset') === false) {
      }
  }
 
+
+
+// Test if string ends with some other string without invoking the overhead of regex
+function ends_with($string, $substring) {
+	if (strlen($string) >= strlen($substring))
+		if (substr($string, strlen($string)-strlen($substring)) === $substring)
+			return true;
+	return false;
+}
+
+
+
+function rmMinusR($path) 
+{
+	if ($handle = opendir($path)) {
+		while ($file = readdir($handle)) {
+			if ($file == "." || $file == "..") continue;
+			$filepath = "$path/$file";
+			if (is_dir($filepath)) {
+				rmMinusR($filepath);
+				rmdir($filepath);
+			} else {
+				unlink($filepath);
+			}
+		}
+	}
+	closedir($handle);
+}
+
+// Remove illegal and harmful unicode characters from output
+function clear_unicode($text) 
+{
+	// We can't use this due to bug in php: https://bugs.php.net/bug.php?id=48147
+	//if (function_exists('iconv'))
+	//	return iconv("UTF-8", "UTF-8//IGNORE", $text);
+	ini_set('mbstring.substitute_character', "none"); 
+	return mb_convert_encoding($text, 'UTF-8', 'UTF-8'); 
+}
 
 ?>
