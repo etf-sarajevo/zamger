@@ -260,13 +260,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if ($found==1 && mysql_num_rows($q230)>0) {
 			if ($ispis) {
 				?>
-				<tr bgcolor="<?=$bojae?>">
+				<tr bgcolor="<?=$boja?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
 					<td>Već upisan u grupu <?
 					foreach ($ispis_grupe as $gid => $gime) print "'$gime' ";
 					?> - preskačem</td>
 				</tr>
 				<?
+				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 			}
 			continue;
 		}
