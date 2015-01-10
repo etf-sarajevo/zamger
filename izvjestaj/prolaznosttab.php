@@ -12,9 +12,17 @@ function izvjestaj_prolaznosttab() {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
+
+<h2>Tabelarni pregled prolaznosti</h2>
 <?
 
 
+if ($_REQUEST['sa_ponovcima'] == "da") {
+	$sa_ponovcima = "";
+} else {
+	$sa_ponovcima = "and ponovac=0";
+}
 
 // FIXME: Ovaj izvještaj radi samo za dva ciklusa studija koji traju 6 odnosno 4 semestara
 
@@ -65,7 +73,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	for ($ciklus=1; $ciklus<=2; $ciklus++) {
 		if ($ciklus==1) $maxsemestar=6; else $maxsemestar=4;
 		for ($semestar=1; $semestar<$maxsemestar; $semestar+=2) {
-			$q20 = myquery("select count(*) from student_studij as ss, studij as s, tipstudija as ts where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus");
+			$q20 = myquery("select count(*) from student_studij as ss, studij as s, tipstudija as ts where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus $sa_ponovcima");
 			$broj = mysql_result($q20,0,0);
 
 			// Redni broj generacije
@@ -94,6 +102,12 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 			$varijable[$ime]=$broj; // ovo cemo koristiti kasnije
 
+			if ($ime == $_REQUEST["imena"]) {
+				$q20 = myquery("select o.prezime, o.ime from student_studij as ss, studij as s, tipstudija as ts, osoba as o where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus and ss.student=o.id $sa_ponovcima");
+				while ($r20 = mysql_fetch_row($q20)) 
+					print "$r20[0] $r20[1]<br>\n";
+			}
+
 			// Ispisujemo broj studenata na semestru
 			?>
 			<td bgcolor="#<?=$boja?>" align="center" valign="center"><b><?=$ime?><br><?=$broj?></b></td>
@@ -103,10 +117,11 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 	// Procenti
 
-	for ($i=0; $i<3; $i++) {
+	for ($i=0; $i<4; $i++) {
 		if ($i==0) { $brojnik="b"; $nazivnik="a"; }
 		else if ($i==1) { $brojnik="c"; $nazivnik="b"; }
-		else { $brojnik="d"; $nazivnik="c"; }
+		else if ($i==2) { $brojnik="d"; $nazivnik="c"; }
+		else if ($i==3) { $brojnik="e"; $nazivnik="d"; }
 
 		$k = $ag-2;
 		if ($k<$i) {
@@ -114,18 +129,23 @@ while ($r10 = mysql_fetch_row($q10)) {
 			<td align="center" valign="center"><b>-</b></td>
 			<?
 			continue;
-		} else if ($k==$i+1) {
+		} /*else if ($k==$i+1) {
 			$brojnik .= "'"; $nazivnik .= "'";
 		} else if ($k==$i+2) {
 			$brojnik .= "''"; $nazivnik .= "''";
-		}
+		}*/
+		$gen_br = $ag - $i - 1;
+		$brojnik .= $gen_br;
+		$nazivnik .= $gen_br;
 
 		$vrijednost = round( $varijable[$brojnik]/$varijable[$nazivnik] * 100, 2);
 		?>
 		<td bgcolor="#DDDDDD" align="center" valign="center"><b><?=$brojnik?>/<?=$nazivnik?> x 100%<br><?=$vrijednost?>%</b></td>
 		<?
 	}
-	?></tr><?
+	?>
+		<td align="center" valign="center"><b>-</b></td>
+	</tr><?
 }
 
 
