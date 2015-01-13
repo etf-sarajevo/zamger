@@ -590,18 +590,55 @@ if ($_REQUEST['akcija'] == "autotestovi") {
 		return 0;
 	}
 	
+	if ($_POST['subakcija'] == "kopiraj_at" && check_csrf_token()) {
+		$stara_zadaca = intval($_REQUEST['stara_zadaca']);
+		$q190 = myquery("SELECT zadatak, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala FROM autotest WHERE zadaca=$stara_zadaca");
+		while ($r190 = mysql_fetch_row($q190)) {
+			$q195 = myquery("INSERT INTO autotest SET zadaca=$zadaca, zadatak=$r190[0], kod='".mysql_real_escape_string($r190[1])."', rezultat='".mysql_real_escape_string($r190[2])."', alt_rezultat='".mysql_real_escape_string($r190[3])."', fuzzy=$r190[4], global_scope='".mysql_real_escape_string($r190[5])."', pozicija_globala='$r190[6]'");
+		}
+		nicemessage("Iskopirani testovi sa stare zadaće.");
+		zamgerlog("iskopirani autotestovi sa zadace z$stara_zadaca na zadacu z$zadaca)", 2);
+		zamgerlog2("iskopirani autotestovi", $stara_zadaca, $zadaca);
+	}
+	
 	$q200 = myquery("SELECT naziv, zadataka FROM zadaca WHERE id=$zadaca AND predmet=$predmet AND akademska_godina=$ag");
 	if (mysql_num_rows($q200)<1) {
 		niceerror("Nepostojeća zadaća");
 		zamgerlog("spoofing zadace $zadaca", 3);
 		return 0;
 	}
+	
+	$naziv_zadace = mysql_result($q200,0,0);
+	$broj_zadataka = mysql_result($q200,0,1);
+
 	?>
-	<h2>Autotestovi, <?=mysql_result($q200,0,0)?></h2>
+	<h2>Autotestovi, <?=$naziv_zadace?></h2>
 	<p><a href="?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$zadaca?>">Nazad na popis zadaća</a></p>
 	<?
+	
+	$q205 = myquery("SELECT distinct z.id, z.naziv, ag.naziv FROM zadaca as z, autotest as a, akademska_godina as ag WHERE z.predmet=$predmet AND z.akademska_godina<$ag AND z.akademska_godina=ag.id AND a.zadaca=z.id ORDER BY ag.id desc, z.id");
+	if (mysql_num_rows($q205) > 0) {
+		?>
+		<h3>Kopiraj testove sa ranijih godina</h3>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="kopiraj_at">
+		<select name="stara_zadaca">
+		<?
+	}
+	$found = 0;
+	while ($r205 = mysql_fetch_row($q205)) {
+		print "<option value=\"$r205[0]\"";
+		if ($r205[1] == $naziv_zadace && $found == 0) {
+			$found=1;
+			print " CHECKED";
+		}
+		print ">$r205[1] ($r205[2])</option>\n";
+	}
+	if (mysql_num_rows($q205) > 0) {
+		print "</select> <input type=\"submit\" value=\" Kreni \"></form>\n";
+	}
 
-	for ($zadatak=1; $zadatak<=mysql_result($q200,0,1); $zadatak++) {
+	for ($zadatak=1; $zadatak<=$broj_zadataka; $zadatak++) {
 		print "<h3>Zadatak $zadatak</h3>\n";
 
 		print "<p>Prototipovi funkcija koje moraju postojati u zadatku:\n";
