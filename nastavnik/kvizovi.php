@@ -231,6 +231,40 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		return;
 	}
 
+	if ($_REQUEST['subakcija'] == "kopiraj_pitanja" && check_csrf_token()) {
+		$drugi_kviz = intval($_REQUEST['_lv_column_kviz']);
+		$q740 = myquery("SELECT naziv FROM kviz WHERE id=$drugi_kviz"); // Dozvoljavamo kopiranje sa kviza sa drugog predmeta!?
+		if (mysql_num_rows($q740) == 0) {
+			niceerror("Nepoznat kviz");
+			zamgerlog2("nepoznat ID kviza", $drugi_kviz);
+			return;
+		}
+		$q700 = myquery("SELECT id, tip, tekst, bodova, vidljivo FROM kviz_pitanje WHERE kviz=$drugi_kviz");
+		while ($r700 = mysql_fetch_row($q700)) {
+			$staro_pitanje = $r700[0];
+			$tekst = mysql_real_escape_string($r700[2]);
+			
+			$q710 = myquery("INSERT INTO kviz_pitanje SET kviz=$kviz, tip='$r700[1]', tekst='$tekst', bodova=$r700[3], vidljivo=$r700[4]");
+			$novo_pitanje = mysql_insert_id();
+			
+			// Kreiranje odgovora na pitanje
+			$q720 = myquery("SELECT tekst, tacan, vidljiv FROM kviz_odgovor WHERE kviz_pitanje=$staro_pitanje");
+			while ($r720 = mysql_fetch_row($q720)) {
+				$tekst = mysql_real_escape_string($r720[0]);
+				$q730 = myquery("INSERT INTO kviz_odgovor SET kviz_pitanje=$novo_pitanje, tekst='$tekst', tacan=$r720[1], vidljiv=$r720[2]");
+			}
+		}
+
+		nicemessage("Prekopirana pitanja sa kviza");
+		zamgerlog2("prekopirana pitanja sa kviza", $kviz, $drugi_kviz);
+		?>
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja';
+		</script>
+		<?
+		return;
+	}
+
 	?>
 	<h3>Izmjena pitanja za kviz "<?=$naziv_kviza?>"</h3>
 	<a href="?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$kviz?>">Nazad na podešavanje parametara kviza</a><br><br>
@@ -283,7 +317,20 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		<?
 	}
 
+
 	print "</table>\n<br><br>\n";
+	if (mysql_num_rows($q210)==0) {
+		print genform("POST");
+		?>
+		<input type="hidden" name="subakcija" value="kopiraj_pitanja">
+		<p>Kopiraj pitanja sa kviza:<?
+		$_lv_["where:predmet"] = $predmet;
+		$_lv_["where:akademska_godina"] = $ag;
+		print db_dropdown("kviz");
+		?>
+		<input type="submit" value=" Kreni ">
+		</p></form><?
+	}
 
 	if ($_REQUEST['subakcija']=="izmijeni") {
 		?>
