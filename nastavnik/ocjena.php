@@ -145,8 +145,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		// Da li vec ima ocjena u bazi?
 		$q100 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$predmet");
 		if (mysql_num_rows($q100)>0) {
-			if ($ispis) {
-				$oc2 = mysql_result($q100,0,0);
+			$oc2 = mysql_result($q100,0,0);
+			if ($oc2>5 && $ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
@@ -200,7 +200,10 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			<?
 			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
-			$q110 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
+			if (mysql_num_rows($q100)>0)
+				$q110 = myquery("UPDATE konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren WHERE student=$student AND predmet=$predmet");
+			else
+				$q110 = myquery("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 		}
 	}
