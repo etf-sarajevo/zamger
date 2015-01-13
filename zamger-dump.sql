@@ -241,6 +241,7 @@ CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
   `studij` int(10) NOT NULL,
   `semestar` int(10) NOT NULL,
   `student` int(11) default NULL,
+  `labgrupa` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `unique_id` (`unique_id`),
   KEY `akademska_godina` (`akademska_godina`),
