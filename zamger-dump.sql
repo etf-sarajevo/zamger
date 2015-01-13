@@ -1092,6 +1092,8 @@ CREATE TABLE IF NOT EXISTS `kviz_pitanje` (
   `tekst` text collate utf8_slovenian_ci NOT NULL,
   `bodova` float NOT NULL default '1',
   `vidljivo` tinyint(1) NOT NULL default '1',
+  `ukupno` int(11) NOT NULL,
+  `tacnih` int(11) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `kviz` (`kviz`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;

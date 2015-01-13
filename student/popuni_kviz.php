@@ -139,8 +139,11 @@ function student_popuni_kviz() {
 			if ($tacan_odgovor) {
 				$uk_bodova += $bodova_pitanje;
 				$ispis_rezultata .= '<img src="images/16x16/zad_ok.png" width="16" height="16">'."</td><td>$bodova_pitanje</td></tr>";
-			} else
+				$q205 = myquery("UPDATE kviz_pitanje SET ukupno=ukupno+1, tacnih=tacnih+1 WHERE id=$id_pitanja");
+			} else {
 				$ispis_rezultata .= '<img src="images/16x16/brisanje.png" width="16" height="16">'."</td><td>0</td></tr>";
+				$q208 = myquery("UPDATE kviz_pitanje SET ukupno=ukupno+1 WHERE id=$id_pitanja");
+			}
 		}
 		/*
 		$q200 = myquery("select kp.id, kp.bodova, ko.id, ko.tacan, kp.tekst from kviz_pitanje as kp, kviz_odgovor as ko where ko.kviz_pitanje=kp.id and kp.kviz=$kviz");

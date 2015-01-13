@@ -418,6 +418,103 @@ if ($_REQUEST['akcija'] == "pitanja") {
 }
 
 
+
+// Akcija - statistički pregled rezultata kviza
+
+if ($_REQUEST['akcija'] == "rezultati") {
+	$kviz = intval($_REQUEST['kviz']);
+	$q600 = myquery("select naziv, predmet, akademska_godina, broj_pitanja, prolaz_bodova from kviz where id=$kviz");
+	if (mysql_num_rows($q600)<1) {
+		niceerror("Nepostojeći kviz $kviz");
+		zamgerlog("editovanje pitanja: nepostojeci kviz $kviz", 3);
+		zamgerlog2("nepostojeci kviz (editovanje pitanja)", $kviz);
+		return;
+	}
+	if ((mysql_result($q600,0,1) != $predmet) || (mysql_result($q600,0,2) != $ag)) {
+		niceerror("Kviz nije sa ovog predmeta");
+		zamgerlog("editovanje pitanja: kviz $kviz nije sa predmeta pp$predmet ag$ag", 3);
+		zamgerlog2("id kviza i predmeta se ne poklapaju (editovanje pitanja)", $predmet, $ag, $kviz);
+		return;
+	}
+	$naziv_kviza = mysql_result($q600, 0, 0);
+	$max_bodova = mysql_result($q600, 0, 3);
+	$prolaz_bodova = mysql_result($q600, 0, 4);
+	
+	$broj_bodova = array();
+	$ukupno = $max_broj = $ukupno_prolaz = 0;
+	for ($i=0; $i<=$max_bodova; $i++) {
+		$q620 = myquery("SELECT COUNT(*) FROM kviz_student WHERE kviz=$kviz AND dovrsen=1 AND bodova>=$i AND bodova<".($i+1));
+		$broj_bodova[$i] = mysql_result($q620,0,0);
+		$ukupno += $broj_bodova[$i];
+		if ($broj_bodova[$i] > $max_broj) $max_broj = $broj_bodova[$i];
+		if ($i>=$prolaz_bodova) $ukupno_prolaz += $broj_bodova[$i];
+	}
+	
+	$q630 = myquery("SELECT COUNT(*) FROM kviz_student WHERE kviz=$kviz AND dovrsen=0");
+	$nedovrsenih = mysql_result($q630,0,0);
+
+	?>
+	<p>Popunilo kviz: <b><?=$ukupno?></b> studenata<br />
+	Nisu dovršili popunjavanje kviza: <b><?=$nedovrsenih?></b> studenata<br />
+	Ostvarilo prolazne bodove: <b><?=$ukupno_prolaz?></b> studenata (<?=procenat($ukupno_prolaz, $ukupno)?>)</p>
+	
+	<h3><?=$naziv_kviza?></h3>
+	<h4>Distribucija bodova</h4>
+	<div id="grafik">
+		<div style="width:300px;height:200px;margin:5px;">
+			<?
+			foreach ($broj_bodova as $bod => $broj) {
+				if($broj==0) $broj_pixela_print =170;
+				else {
+					$broj_pixela = ($broj/$max_broj)*200;
+					$broj_pixela_print = intval(200-$broj_pixela);
+				}
+				if ($bod < $prolaz_bodova) $boja="red"; else $boja="green";
+				?>
+				<div style="width:45px; height:200px; background:<?=$boja?>;margin-left:5px;float:left;">
+					<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;">&nbsp;</div>
+					<span style="color:white;font-size: 25px; text-align: center; ">&nbsp;<?=$bod?></span>
+				</div>	
+				<?
+			}
+		?>
+		</div>
+		<div style="width:300px;height:50px;margin:5px;">
+			<?
+			foreach ($broj_bodova as $bod => $broj) {
+				?>
+				<div style="width:45px; margin-left:5px; text-align: center; float:left; ">
+					<?=$broj?> (<?=procenat($broj, $ukupno)?>)
+				</div>
+				<?
+			}
+			?>
+		</div>
+	</div>
+	<?
+	
+	// Statistika pitanja
+	
+	?>
+	<h3>Statistika pitanja</h3>
+	<table border="1" style="border-collapse:collapse">
+	<tr><th>Pitanje</th><th>Uk. odgovora</th><th>Tačnih</th></tr>
+	<?
+	
+		
+	$q640 = myquery("SELECT id, tekst, ukupno, tacnih FROM kviz_pitanje WHERE kviz=$kviz ORDER BY tacnih/ukupno");
+	while ($r640 = mysql_fetch_row($q640)) {
+		print "<tr><td><a href=\"?sta=nastavnik/kvizovi&predmet=$predmet&ag=$ag&kviz=$kviz&akcija=pitanja&subakcija=izmijeni&pitanje=".$r640[0]."\">".substr($r640[1],0,50)."...</a></td><td>$r640[2]</td><td>$r640[3] (".procenat($r640[3], $r640[2]).")</td></tr>\n";
+	}
+
+	?>
+	</table>
+	<?
+
+	return;
+}
+
+
 // Kopiranje kvizova sa prošlogodišnjeg predmeta
 
 if ($_REQUEST['akcija'] === "prosla_godina" && strlen($_POST['nazad'])<1) {
