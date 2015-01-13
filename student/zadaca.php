@@ -711,17 +711,18 @@ function akcijaslanje() {
 	}
 
 	// Podaci o zadaći
-	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije from zadaca where id=$zadaca");
+	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzijev from zadaca where id=$zadaca");
 	$jezik = mysql_result($q210,0,0);
 	$rok = mysql_result($q210,0,1);
 	$attach = mysql_result($q210,0,2);
 	$naziv_zadace = mysql_result($q210,0,3);
 	$komponenta = mysql_result($q210,0,4);
 	$zadaca_dozvoljene_ekstenzije = mysql_result($q210,0,5);
+	$automatsko_testiranje = mysql_result($q210,0,6);
 
-	// Ako nije zadat jezik, postavi status na 4 (ceka pregled), inace na 1 (automatska kontrola)
-	if ($jezik==0) $prvi_status=4; else $prvi_status=1;
-
+	// Ako je aktivno automatsko testiranje, postavi status na 1 (automatska kontrola), inace na 4 (ceka pregled)
+	if ($automatsko_testiranje==1) $prvi_status=1; else $prvi_status=4;
+s
 	// Provjera roka
 	if ($rok <= time()) {
 		niceerror("Vrijeme za slanje zadaće je isteklo!");

@@ -305,6 +305,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	if ($_POST['aktivna']) $aktivna=1; else $aktivna=0;
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
+	if ($_POST['automatsko_testiranje']) $automatsko_testiranje=1; else $automatsko_testiranje=0;
 
 	$postavka_file = $_FILES['postavka_zadace_file']['name'];
 	if ($postavka_file != "") {
@@ -356,7 +357,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
 		// $komponenta_za_zadace određena na početku fajla
-		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace $sql_add_postavka_file");
+		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace $sql_add_postavka_file");
 		$edit_zadaca = mysql_insert_id();
 		if ($edit_zadaca == 0) {
 			niceerror("Dodavanje zadaće nije uspjelo");
@@ -391,7 +392,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca and zadatak>$zadataka");
 		}
 
-		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' $sql_add_postavka_file where id=$edit_zadaca");
+		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' $sql_add_postavka_file where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
@@ -682,7 +683,7 @@ if ($izabrana==0) {
 	?><p><hr/></p>
 	<p><b>Izmjena zadaće</b></p>
 	<?
-	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment, dozvoljene_ekstenzije, postavka_zadace from zadaca where id=$izabrana");
+	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment, dozvoljene_ekstenzije, postavka_zadace, automatsko_testiranje from zadaca where id=$izabrana");
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
 		niceerror("Zadaća ne pripada vašem predmetu");
 		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
@@ -698,6 +699,7 @@ if ($izabrana==0) {
 	if (mysql_result($q100,0,8)==1) $zattachment="CHECKED"; else $zattachment="";
 	$dozvoljene_ekstenzije_selected = mysql_result($q100,0,9);
 	$postavka_zadace = mysql_result($q100,0,10);
+	$automatsko_testiranje = mysql_result($q100,0,11);
 }
 
 $zdan = date('d',$tmpvrijeme);
@@ -822,8 +824,13 @@ Programski jezik: <?=db_dropdown("programskijezik", $zjezik)?><br><br>
 
 <?
 
-if ($zjezik == "2") // FIXME
-	print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&zadaca=$izabrana&akcija=autotestovi\">Automatsko testiranje</a><br><br>\n";
+if ($zjezik != 0) {// Ako nije definisan programski jezik, nećemo ni nuditi automatsko testiranje... ?
+	if ($automatsko_testiranje == 1) $add_testiranje = "CHECKED"; else $add_testiranje = "";
+	?>
+	<input type="checkbox" name="automatsko_testiranje" <?=$add_testiranje?>> Automatsko testiranje<br>
+	<a href="?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&akcija=autotestovi">Kliknite ovdje da definišete testove</a><br><br>
+	<?
+}
 
 ?>
 

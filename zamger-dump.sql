@@ -3443,6 +3443,7 @@ CREATE TABLE IF NOT EXISTS `zadaca` (
   `rok` datetime DEFAULT NULL,
   `aktivna` tinyint(1) NOT NULL DEFAULT '0',
   `programskijezik` int(10) NOT NULL DEFAULT '0',
+  `automatsko_testiranje` tinyint(1) NOT NULL default '0',
   `attachment` tinyint(1) NOT NULL DEFAULT '0',
   `dozvoljene_ekstenzije` varchar(255) COLLATE utf8_slovenian_ci DEFAULT NULL,
   `postavka_zadace` varchar(255) COLLATE utf8_slovenian_ci DEFAULT NULL,
