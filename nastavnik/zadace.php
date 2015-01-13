@@ -326,22 +326,18 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	// Provjera ispravnosti
 	if (!preg_match("/\w/",$naziv)) {
 		niceerror("Naziv zadaće nije dobar.");
-		zamgerlog("los naziv zadace", 3);
 		return 0;
 	}
 	if ($zadataka<=0 || $bodova<0 || $zadataka>100 || $bodova>100) {
 		niceerror("Broj zadataka ili broj bodova nije dobar");
-		zamgerlog("los broj zadataka ili bodova", 3);
 		return 0;
 	}
 	if (!checkdate($mjesec,$dan,$godina)) {
 		niceerror("Odabrani datum je nemoguć");
-		zamgerlog("los datum", 3);
 		return 0;
 	}
 	if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
 		niceerror("Vrijeme nije dobro");
-		zamgerlog("lose vrijeme", 3);
 		return 0;
 	}
 	$mysqlvrijeme = time2mysql(mktime($sat,$minuta,$sekunda,$mjesec,$dan,$godina));
