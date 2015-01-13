@@ -418,6 +418,82 @@ if ($_REQUEST['akcija'] == "pitanja") {
 }
 
 
+// Kopiranje kvizova sa prošlogodišnjeg predmeta
+
+if ($_REQUEST['akcija'] === "prosla_godina" && strlen($_POST['nazad'])<1) {
+	$old_ag = $ag-1; // Ovo je po definiciji prošla godina
+	$greska = false;
+	
+	$q499 = myquery("SELECT naziv FROM akademska_godina WHERE id=$old_ag");
+	if (mysql_num_rows($q499) == 0) {
+		niceerror("Nije pronađena prošla akademska godina.");
+		zamgerlog("nije pronadjena akademska godina $old_ag");
+		zamgerlog2("nije pronadjena akademska godina", $old_ag);
+		$greska = true;
+	}
+	
+	if (!$greska) {
+		$q500 = myquery("SELECT naziv FROM kviz WHERE predmet=$predmet AND akademska_godina=$old_ag");
+		if (mysql_num_rows($q500) == 0) {
+			niceerror("Prošle godine nije bio definisan nijedan kviz");
+			zamgerlog("prosle godine nije bio definisan nijedan kviz $predmet $old_ag");
+			zamgerlog2("prosle godine nije bio definisan nijedan kviz", $predmet, $old_ag);
+			$greska = true;
+		}
+	}
+	
+	if (!$greska && $_REQUEST['potvrda'] === "potvrdjeno" && check_csrf_token()) {
+		$q510 = myquery("SELECT id, naziv, vrijeme_pocetak, vrijeme_kraj, ip_adrese, prolaz_bodova, broj_pitanja, trajanje_kviza, aktivan FROM kviz WHERE predmet=$predmet AND akademska_godina=$old_ag");
+		while ($r510 = mysql_fetch_row($q510)) {
+			// Kreiranje novog kviza
+			$stari_kviz = $r510[0];
+			print "<p>Kopiram kviz $r510[1]...</p>";
+			$naziv = mysql_real_escape_string($r510[1]);
+			
+			$q520 = myquery("INSERT INTO kviz SET naziv='$naziv', predmet=$predmet, akademska_godina=$ag, vrijeme_pocetak='$r510[2]', vrijeme_kraj='$r510[3]', ip_adrese='$r510[4]', prolaz_bodova=$r510[5], broj_pitanja=$r510[6], trajanje_kviza=$r510[7], aktivan=$r510[8]");
+			$novi_kviz = mysql_insert_id();
+			
+			// Kreiranje pitanja
+			$q530 = myquery("SELECT id, tip, tekst, bodova, vidljivo FROM kviz_pitanje WHERE kviz=$stari_kviz");
+			while ($r530 = mysql_fetch_row($q530)) {
+				$staro_pitanje = $r530[0];
+				$tekst = mysql_real_escape_string($r530[2]);
+				
+				$q540 = myquery("INSERT INTO kviz_pitanje SET kviz=$novi_kviz, tip='$r530[1]', tekst='$tekst', bodova=$r530[3], vidljivo=$r530[4]");
+				$novo_pitanje = mysql_insert_id();
+				
+				// Kreiranje odgovora na pitanje
+				$q550 = myquery("SELECT tekst, tacan, vidljiv FROM kviz_odgovor WHERE kviz_pitanje=$staro_pitanje");
+				while ($r550 = mysql_fetch_row($q550)) {
+					$tekst = mysql_real_escape_string($r550[0]);
+					$q560 = myquery("INSERT INTO kviz_odgovor SET kviz_pitanje=$novo_pitanje, tekst='$tekst', tacan=$r550[1], vidljiv=$r550[2]");
+				}
+			}
+		}
+		nicemessage("Kopiranje završeno!");
+		print "<a href=\"?sta=nastavnik/kvizovi&predmet=$predmet&ag=$ag\">Povratak na stranicu kvizova</a>\n";
+		return;
+	}
+	
+	else if (!$greska) {
+		nicemessage("Kopiram sljedeće kvizove iz akademske ".mysql_result($q499,0,0).". godine.");
+		print "\n<ul>\n";
+		while ($r500 = mysql_fetch_row($q500)) {
+			print "<li>$r500[0]</li>\n";
+		}
+		print "</ul>\n";
+		print genform("POST");
+		?>
+		<input type="hidden" name="potvrda" value="potvrdjeno">
+		<p>Da li ste sigurni?</p>
+		<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
+		</form>
+		<?
+	}
+	return;
+}
+
+
 // Korektno brisanje kviza
 
 if ($_REQUEST['_lv_action_delete']) {
@@ -508,6 +584,10 @@ $_lv_["new_link"] = "Unos novog kviza";
 
 print "Odaberite neki od postojećih kvizova koji želite administrirati:<br/>\n";
 print db_list("kviz");
+
+$q1000 = myquery("SELECT COUNT(*) FROM kviz WHERE predmet=$predmet AND akademska_godina=$ag");
+if (mysql_result($q1000,0,0) == 0)
+	print "<p><a href=\"?sta=nastavnik/kvizovi&predmet=$predmet&ag=$ag&akcija=prosla_godina\">Prekopiraj kvizove sa prošle akademske godine</a></p>\n";
 
 print "<hr>\n";
 $kviz = intval($_REQUEST['_lv_nav_id']);
