@@ -128,7 +128,7 @@ function public_anketa() {
 	} else if ($userid>0) {
 		// Korisnik nije izabrao predmet, pa je najvjerovatnije pokušao ući na anketu bez logouta
 		if ($predmet==0 || $ag==0) {
-			biguglyerror("Niste napravili logout!");
+			biguglyerror("Niste napravili logout niti izabrali predmet!");
 			return;
 		}
 		
