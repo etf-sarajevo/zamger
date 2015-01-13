@@ -98,7 +98,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	if ($ispit>0) {
 		$finidatum = date("d. m. Y", mysql_result($q30,0,0));
 		$tipispita = mysql_result($q30,0,1);
-		print "<p><b>Masovni unos ocjena za ispit ".mysql_result($q30,0,2).", održan $finidatum</b></p>";
+		$fini_naziv_ispita = mysql_result($q30,0,2);
+		print "<p><b>Masovni unos ocjena za ispit $fini_naziv_ispita, održan $finidatum</b></p>";
 		$maxbodova = mysql_result($q30,0,3);
 	}
 
@@ -151,6 +152,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			$q130 = myquery("select id from ispit where predmet=$predmet and akademska_godina=$ag and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita");
 	
 			if (mysql_num_rows($q130)<1) {
+				// Ovo se ne može desiti??
 				zamgerlog("unos ispita nije uspio (predmet pp$predmet, ag$ag, datum $mdat, tipispita $tipispita)",3);
 				niceerror("Unos ispita nije uspio.");
 				return;
@@ -208,7 +210,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if (mysql_num_rows($q135)<1) {
 			if ($ispis) {
 				?>
-				<tr bgcolor="<?=$boja?>">
+				<tr bgcolor="<?=$bojae?>">
 					<td><?=$prezime?></td><td><?=$ime?></td>
 					<td>nije upisan/a na predmet</td>
 				</tr>
@@ -308,7 +310,7 @@ if ($_POST['akcija'] == "massinput" && $_POST['nazad']==" Nazad ") {
 
 // Brisanje ispita
 
-if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad ") {
+if ($_REQUEST['akcija']=="brisanje" && $ispit > 0 && $_REQUEST['potvrdabrisanja'] != " Nazad ") {
 
 	$q200 = myquery("select count(*) from ispitocjene where ispit=$ispit");
 	$brojstudenata = mysql_result($q200,0,0);
@@ -369,7 +371,7 @@ if ($_REQUEST['akcija']=="brisanje" && $_REQUEST['potvrdabrisanja'] != " Nazad "
 
 // Promjena ispita
 
-if ($_REQUEST['akcija']=="promjena" && $_REQUEST['potvrdapromjene'] != " Nazad ") {
+if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'] != " Nazad ") {
 	$komponenta = mysql_result($q30,0,1);
 
 	$q300 = myquery("select count(*) from ispitocjene where ispit=$ispit");
