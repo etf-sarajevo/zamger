@@ -73,8 +73,9 @@ function public_anketa() {
 
 	// Da li je anketa aktivna? 
 	// Ako je aktivna samo za određeni predmet, on mora biti zadat kao parametar
-	$q40 = myquery("select aktivna from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet IS NULL)");
+	$q40 = myquery("select aktivna, semestar from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet IS NULL)");
 	$anketa_aktivna = mysql_result($q40,0,0);
+	$anketa_semestar = mysql_result($q40,0,1);
 	if ($_GET['akcija'] != "preview" && (mysql_num_rows($q40)<1 || $anketa_aktivna==0)) {
 		biguglyerror("Anketa trenutno nije aktivna!");
 		return;
@@ -144,6 +145,11 @@ function public_anketa() {
 		$semestar = mysql_result($q60,0,1);
 	
 		$q70 = myquery("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+		
+		if ($semestar % 2 != $anketa_semestar) {
+			biguglyerror("Predmet nije u odgovarajućem semestru");
+			return;
+		}
 
 		// Kreiramo zapise u tabelama anketa_rezultat i anketa_student_zavrsio
 		if (mysql_num_rows($q70)==0) {
