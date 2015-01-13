@@ -312,7 +312,9 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke", 0755, true);
 		}
 		copy ($_FILES['postavka_zadace_file']['tmp_name'], "$conf_files_path/zadace/$predmet-$ag/postavke/$postavka_file");
-	}
+		$sql_add_postavka_file = ", postavka_zadace = '$postavka_file'";
+	} else
+		$sql_add_postavka_file = "";
 
 	if (intval($_POST['attachment']) == 1 && isset($_POST['dozvoljene_eks'])) {
 		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
@@ -354,7 +356,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
 		// $komponenta_za_zadace određena na početku fajla
-		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace");
+		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace $sql_add_postavka_file");
 		$edit_zadaca = mysql_insert_id();
 		if ($edit_zadaca == 0) {
 			niceerror("Dodavanje zadaće nije uspjelo");
@@ -389,7 +391,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca and zadatak>$zadataka");
 		}
 
-		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' where id=$edit_zadaca");
+		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, postavka_zadace = '$postavka_file', dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' $sql_add_postavka_file where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 	}
