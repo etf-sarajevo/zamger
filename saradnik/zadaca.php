@@ -121,8 +121,8 @@ if ($_GET['akcija'] == "diff") {
 	// $diff = str_replace("\n\n","\n",$diff);
 	// $diff = htmlspecialchars($diff);
 
-	print "<pre>$diff</pre>";
-	print "</body></html>";
+	print "<pre>$diff</pre>\n\n";
+	print "</body></html>\n\n";
 	return;
 }
 
@@ -160,8 +160,8 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 	exec("$kompajler -lm  -ggdb $the_file -o $conf_files_path/tmp/zamger.out 2>&1", $stdout, $retvar);
 	if ($retvar != 0) {
 		niceerror("Kompajliranje nije uspjelo! Slijedi ispis");
-		print "<pre>".join("\n",$stdout)."</pre>";
-		print "</body></html>";
+		print "<pre>".join("\n",$stdout)."</pre>\n\n";
+		print "</body></html>\n\n";
 		// čišćenje
 //		unlink("$conf_files_path/tmp/zamger-gdb.txt");
 //		unlink("$conf_files_path/tmp/zamger-input.txt");
@@ -221,7 +221,7 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	$filename = $izvjestaj_skripte = '';
 	$q90 = myquery("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
 	if (mysql_num_rows($q90) > 0) {
-		$filename = mysql_result($q90,0,0);
+		$filename = mysql_real_escape_string(mysql_result($q90,0,0));
 		$izvjestaj_skripte = mysql_real_escape_string(mysql_result($q90,0,1)); // Već je sanitiziran HTML
 	}
 
