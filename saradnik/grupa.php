@@ -286,14 +286,18 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 
 if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 	// JavaScript za prikaz popup prozora sa zadaćom
-	//  * Kod IE naslov prozora ('blah') ne smije sadržavati razmak i
+	//  * Kod IE naslov prozora ('zadaca') ne smije sadržavati razmak i
 	// ne smije biti prazan, a inače je nebitan
 
 	?>
 	<script language="JavaScript">
-	function openzadaca(student,zadaca,zadatak) {
+	function openzadaca(e, student,zadaca,zadatak) {
+		var evt = e || window.event;
 		var url='index.php?sta=saradnik/zadaca&student='+student+'&zadaca='+zadaca+'&zadatak='+zadatak;
-		window.open(url,'blah','width=600,height=600,scrollbars=yes');
+		if (evt.shiftKey)
+			window.open(url,'_blank','width=600,height=600,scrollbars=yes');
+		else
+			window.open(url,'zadaca','width=600,height=600,scrollbars=yes');
 	}
 	</script>
 	
@@ -312,7 +316,7 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 		if ($r150[0]==$mzadaca && $r150[1]==$mzadatak && $r150[2]==$mstudent) continue;
 		$mzadaca=$r150[0]; $mzadatak=$r150[1]; $mstudent=$r150[2];
 		if ($r150[5]!=4) continue;
-		$print .= '<li><a href="#" onclick="javascript:openzadaca(\''.$r150[2].'\',\''.$r150[0].'\',\''.$r150[1].'\')">'.$r150[3]." ".$r150[4]." - ".$r150[6].", zadatak ".$r150[1]."</a></li>";
+		$print .= '<li><a href="#" onclick="javascript:openzadaca(event, \''.$r150[2].'\',\''.$r150[0].'\',\''.$r150[1].'\')">'.$r150[3]." ".$r150[4]." - ".$r150[6].", zadatak ".$r150[1]."</a></li>";
 	}
 	if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 }
@@ -786,7 +790,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			$status = $zadace_statusi[$zid][$i][$stud_id];
 			if ($status == 0) { // Zadatak nije poslan
 				if ($kreiranje>0) {
-					$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/16x16/zad_novi.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\"></a>&nbsp;";
+					$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"images/16x16/zad_novi.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\"></a>&nbsp;";
 					//if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				}
 			} else {
@@ -794,7 +798,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 				$icon = $stat_icon[$status];
 				$title = $stat_tekst[$status];
 				$zb = $zadace_bodovi[$zid][$i][$stud_id];
-				$zadace_ispis .= "<a href=\"javascript:openzadaca('".$stud_id."', '".$zid."', '".$i."')\"><img src=\"images/16x16/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$title."\" alt=\"".$title."\">&nbsp;".$zb."</a>";
+				$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"images/16x16/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\">&nbsp;".$zb."</a>";
 //				if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				$bodova += $zb;
 			}
