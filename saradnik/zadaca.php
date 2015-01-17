@@ -334,6 +334,23 @@ if ($_REQUEST["akcija"] == "test_detalji") {
 
 
 
+if ($_REQUEST["akcija"] == "brisi_testove" && check_csrf_token()) {
+	$zadaca = intval($_REQUEST['zadaca']);
+	$zadatak = intval($_REQUEST['zadatak']);
+	$student = intval($_REQUEST['student']);
+	$q115 = myquery("SELECT a.id FROM autotest AS a WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak");
+	while ($r115 = mysql_fetch_row($q115)) {
+		$q120 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$r115[0] AND student=$student");
+	}
+	nicemessage("Rezultati testova obrisani.");
+	?>
+	<p><a href="?sta=saradnik/zadaca&amp;student=<?=$stud_id?>&amp;zadaca=<?=$zadaca?>&amp;zadatak=<?=$zadatak?>">Nazad</a></p>
+	<?
+	return;
+}
+
+
+
 // --------------------
 // PRIKAZ ZADATKA
 
@@ -470,6 +487,10 @@ if (mysql_num_rows($q140) > 0) {
 	<tr>
 		<td>Rezultati testa:</td>
 		<td>
+		<p><?=genform("POST")?>
+		<input type="hidden" name="akcija" value="brisi_testove">
+		<input type="submit" value=" Obriši sve rezultate testiranja ">
+		</form></p>
 		<table border="1" cellspacing="0" cellpadding="2">
 			<thead><tr>
 				<th>Test</th>
