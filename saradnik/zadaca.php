@@ -357,7 +357,9 @@ if ($_REQUEST["akcija"] == "brisi_testove" && check_csrf_token()) {
 
 // Header
 
-print "<h1>$ime_studenta $prezime_studenta, $naziv_zadace, Zadatak $zadatak.</h1>";
+?>
+<h1><a href="?sta=saradnik/student&amp;student=<?=$stud_id?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>" onclick="window.opener.open(this.href); return false;"><?=$ime_studenta." ".$prezime_studenta?></a>, <?=$naziv_zadace.", Zadatak ".$zadatak."."?></h1>
+<?
 
 
 // Da li ispisati zadatak ili dugme za download attachmenta?
