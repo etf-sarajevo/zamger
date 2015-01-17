@@ -125,79 +125,102 @@ if ($_GET['akcija'] == "diff") {
 
 if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 
+
 	// čuvamo poslane podatke u bazi (ako ih nema)
-	$stdin = $_POST['stdin'];
-	$mstdin = my_escape($stdin);
-	$q70 = myquery("select count(*) from stdin where ulaz='$mstdin' and zadaca=$zadaca and redni_broj=$zadatak");
-	if (mysql_result($q70,0,0)==0) 
-		$q80 = myquery("insert into stdin set ulaz='$mstdin', zadaca=$zadaca, redni_broj=$zadatak");
+	function izvrsi($stdin, $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst) {
+		global $conf_files_path;
 
-	// priprema fajlova
-	$tstdin = str_replace('\\n',"\n",$stdin); // više nije dvostruki escape
-	$tstdin = str_replace('\\N',"\n",$tstdin);
-	$tstdin .= "\n";
-	$result = file_put_contents("$conf_files_path/tmp/zamger-gdb.txt","run\nbt\n");
-	if ($result) $result = file_put_contents("$conf_files_path/tmp/zamger-input.txt",$tstdin);
-	if (!$result) {
-		zamgerlog("nije uspjelo kreiranje datoteka",3);
-		niceerror("Ne mogu kreirati potrebne datoteke u direktoriju /tmp");
-		return;
-	}
+		// priprema fajlova
+		$tstdin = str_replace('\\n',"\n",$stdin); // više nije dvostruki escape
+		$tstdin = str_replace('\\N',"\n",$tstdin);
+		$tstdin .= "\n";
+		$result = file_put_contents("$conf_files_path/tmp/zamger-gdb.txt","run\nbt\n");
+		if ($result) $result = file_put_contents("$conf_files_path/tmp/zamger-input.txt",$tstdin);
+		if (!$result) {
+			zamgerlog("nije uspjelo kreiranje datoteka",3);
+			niceerror("Ne mogu kreirati potrebne datoteke u direktoriju /tmp");
+			return;
+		}
 	
-	// kompajliranje - FIXME: nema podrške za jezike?
-	if ($jezik == "C++")
-		$kompajler = "g++";
-	else
-		$kompajler = "gcc";
-	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
-	$stdout = array();
-	exec("$kompajler -lm  -ggdb $the_file -o $conf_files_path/tmp/zamger.out 2>&1", $stdout, $retvar);
-	if ($retvar != 0) {
-		niceerror("Kompajliranje nije uspjelo! Slijedi ispis");
-		print "<pre>".join("\n",$stdout)."</pre>\n\n";
+		// kompajliranje - FIXME: nema podrške za jezike?
+		if ($jezik == "C++")
+			$kompajler = "g++";
+		else
+			$kompajler = "gcc";
+		$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
+		$stdout = array();
+		exec("$kompajler -lm  -ggdb $the_file -o $conf_files_path/tmp/zamger.out 2>&1", $stdout, $retvar);
+		if ($retvar != 0) {
+			niceerror("Kompajliranje nije uspjelo! Slijedi ispis");
+			print "<pre>".join("\n",$stdout)."</pre>\n\n";
+			// čišćenje
+			unlink("$conf_files_path/tmp/zamger-gdb.txt");
+			unlink("$conf_files_path/tmp/zamger-input.txt");
+			unlink("$conf_files_path/tmp/zamger.out");
+			return;
+		}
+
+		// izvršenje
+		unset($stdout);
+		chmod("$conf_files_path/tmp/zamger.out", 0755);
+		exec("gdb --batch --command=$conf_files_path/tmp/zamger-gdb.txt $conf_files_path/tmp/zamger.out <$conf_files_path/tmp/zamger-input.txt 2>&1", $stdout, $retvar);
+
+		// Čistimo viškove iz stdout-a
+		$ispis = join("\n",$stdout);
+		$ispis = preg_replace("/^Using .*? library .*?\n/", "", $ispis);
+		$ok = strpos($ispis,"\nProgram exited normally.\n");
+		if ($ok)
+			$ispis = substr($ispis,0,$ok);
+		else {
+			$greska = strpos($ispis,"\nProgram received signal SIGABRT, Aborted.\n");
+			$backtrace = substr($ispis,$greska+42);
+			$ispis = substr($ispis,0,$greska);
+		}
+		
+		?>
+		<center><table width="95%" style="border:1px solid silver;" bgcolor="#FFF3F3"><tr><td>
+		<pre><?=$ispis?></pre>
+		</td></tr></table></center><br/><?
+		if ($ok) {
+			?><p><img src="images/16x16/zad_ok.png" width="16" height="16"> 
+			Program se izvršio bez problema.</p><?
+		} else {
+			?><p><img src="images/16x16/zad_bug.png" width="16" height="16">
+			Program se krahirao. Backtrace (obratiti pažnju na zadnje linije):</p>
+			<pre><?=$backtrace?></pre>
+			<?
+		}
+
 		// čišćenje
-//		unlink("$conf_files_path/tmp/zamger-gdb.txt");
-//		unlink("$conf_files_path/tmp/zamger-input.txt");
-//		unlink("$conf_files_path/tmp/zamger.out");
-		return;
+		unlink("$conf_files_path/tmp/zamger-gdb.txt");
+		unlink("$conf_files_path/tmp/zamger-input.txt");
+		unlink("$conf_files_path/tmp/zamger.out");
 	}
 
-	// izvršenje
-	unset($stdout);
-	chmod("$conf_files_path/tmp/zamger.out", 0755);
-	exec("gdb --batch --command=$conf_files_path/tmp/zamger-gdb.txt $conf_files_path/tmp/zamger.out <$conf_files_path/tmp/zamger-input.txt 2>&1", $stdout, $retvar);
 
-	// Čistimo viškove iz stdout-a
-	$ispis = join("\n",$stdout);
-	$ispis = preg_replace("/^Using .*? library .*?\n/", "", $ispis);
-	$ok = strpos($ispis,"\nProgram exited normally.\n");
-	if ($ok)
-		$ispis = substr($ispis,0,$ok);
-	else {
-		$greska = strpos($ispis,"\nProgram received signal SIGABRT, Aborted.\n");
-		$backtrace = substr($ispis,$greska+42);
-		$ispis = substr($ispis,0,$greska);
-	}
 	?>
 	<h1>Rezultat izvršenja:</h1>
-	<center><table width="95%" style="border:1px solid silver;" bgcolor="#FFF3F3"><tr><td>
-	<pre><?=$ispis?></pre>
-	</td></tr></table></center><br/><?
-	if ($ok) {
-		?><p><img src="images/16x16/zad_ok.png" width="16" height="16"> 
-		Program se izvršio bez problema.</p><?
-	} else {
-		?><p><img src="images/16x16/zad_bug.png" width="16" height="16">
-		Program se krahirao. Backtrace (obratiti pažnju na zadnje linije):</p>
-		<pre><?=$backtrace?></pre>
-		<?
-	}
-	?><p><a href="javascript:history.go(-1)">Nazad</a></p><?
+	<?
 
-	// čišćenje
-//	unlink("$conf_files_path/tmp/zamger-gdb.txt");
-//	unlink("$conf_files_path/tmp/zamger-input.txt");
-//	unlink("$conf_files_path/tmp/zamger.out");
+	if ($_POST['sve']) {
+		$q70 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak");
+		while ($r70 = mysql_fetch_row($q70)) {
+			print "<h2>Ulaz: '$r70[0]'</h2>";
+			izvrsi($r70[0], $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst);
+		}
+	} else {
+		$stdin = $_POST['stdin'];
+		$mstdin = my_escape($stdin);
+		$q70 = myquery("select count(*) from stdin where ulaz='$mstdin' and zadaca=$zadaca and redni_broj=$zadatak");
+		if (mysql_result($q70,0,0)==0) 
+			$q80 = myquery("insert into stdin set ulaz='$mstdin', zadaca=$zadaca, redni_broj=$zadatak");
+		izvrsi($stdin, $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst);
+	}
+	
+	?>
+	<p><a href="javascript:history.go(-1)">Nazad</a></p>
+	<?
+	
 	return;
 }
 
@@ -368,7 +391,7 @@ if ($attach == 0) {
 			</select><br/>
 		
 			<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
-			<input type="submit" value=" Izvrši program ">
+			<input type="submit" value=" Izvrši program "> <input type="submit" name="sve" value=" Izvrši sve primjere odjednom ">
 			</form></table></center><br/>&nbsp;<br/>
 			<?
 		}
