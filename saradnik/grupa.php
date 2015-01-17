@@ -308,7 +308,7 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 	FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
 	WHERE zk.student=a.id AND zk.student=sl.student 
 	AND sl.labgrupa=$labgrupa AND zk.zadaca=z.id AND z.predmet=$predmet AND z.akademska_godina=$ag
-	ORDER BY zk.zadaca, zk.student, zk.redni_broj, zk.id DESC");
+	ORDER BY zk.zadaca, zk.redni_broj, a.prezime, a.ime, zk.id DESC");
 	
 	
 	$mzadaca=0; $mzadatak=0; $mstudent=0; $print="";
