@@ -29,11 +29,6 @@ global $conf_files_path,$userid,$user_siteadmin;
 require("lib/manip.php"); // radi update_komponente
 
 
-?>
-<body topmargin="0" leftmargin="0" bottommargin="0" rightmargin="0" bgcolor="#FFFFFF">
-
-<?
-
 // --------------------
 // Standardni ulazni podaci i potrebne varijable
 
@@ -122,7 +117,6 @@ if ($_GET['akcija'] == "diff") {
 	// $diff = htmlspecialchars($diff);
 
 	print "<pre>$diff</pre>\n\n";
-	print "</body></html>\n\n";
 	return;
 }
 
@@ -161,7 +155,6 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 	if ($retvar != 0) {
 		niceerror("Kompajliranje nije uspjelo! Slijedi ispis");
 		print "<pre>".join("\n",$stdout)."</pre>\n\n";
-		print "</body></html>\n\n";
 		// čišćenje
 //		unlink("$conf_files_path/tmp/zamger-gdb.txt");
 //		unlink("$conf_files_path/tmp/zamger-input.txt");
@@ -199,7 +192,7 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 		<pre><?=$backtrace?></pre>
 		<?
 	}
-	?><p><a href="javascript:history.go(-1)">Nazad</a></p></body></html><?
+	?><p><a href="javascript:history.go(-1)">Nazad</a></p><?
 
 	// čišćenje
 //	unlink("$conf_files_path/tmp/zamger-gdb.txt");
