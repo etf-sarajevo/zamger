@@ -464,15 +464,8 @@ if (mysql_num_rows($q140) > 0) {
 	$q150 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
 	$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
 
-	if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
-		print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
-	else
-		print genform("POST");
-
-
 	?>
-	<input type="hidden" name="akcija" value="slanje">
-
+	
 	<table border="0">
 	<tr>
 		<td>Vrijeme slanja:</td>
@@ -500,6 +493,16 @@ if (mysql_num_rows($q140) > 0) {
 			</tr></thead>
 		<?
 	}
+
+	if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
+		print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
+	else
+		print genform("POST");
+
+	?>
+	<input type="hidden" name="akcija" value="slanje">
+	<?
+	
 	$rbr=1;
 	while ($r115 = mysql_fetch_row($q115)) {
 		if ($r115[1] == "ok") $ikona = "zad_ok"; else $ikona = "brisanje";
