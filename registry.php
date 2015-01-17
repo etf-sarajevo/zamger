@@ -72,6 +72,7 @@ array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"
 array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
+array("admin/prijemni", "Alati za prijemni", "Prijemni", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
 array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 
