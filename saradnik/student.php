@@ -61,6 +61,20 @@ if (mysql_num_rows($q5)<1) {
 }
 $nazivpredmeta = mysql_result($q5,0,0);
 
+// TODO bolje riješiti
+if (substr($nazivpredmeta,0,12) == "Završni rad") {
+	$q4 = myquery("SELECT id FROM zavrsni WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+	if (mysql_num_rows($q4)>0) {
+		$zavrsni = mysql_result($q4,0,0);
+		?>
+		<script language="JavaScript">
+		location.href='?sta=nastavnik/zavrsni&akcija=zavrsni_stranica&zavrsni=<?=$zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>';
+		</script>
+		<?
+		return;
+	}
+}
+
 // Akademska godina
 $q6 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q6)<1) {
