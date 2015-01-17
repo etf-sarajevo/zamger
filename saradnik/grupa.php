@@ -446,9 +446,12 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		}
 	}
 	function upozorenje(cas) {
-		// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
-		document.brisanjecasa._lv_casid.value=cas;
-		document.brisanjecasa.submit();
+		if (confirm("Da li ste sigurni da želite obrisati čas?")) {
+			// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
+			document.brisanjecasa._lv_casid.value=cas;
+			document.brisanjecasa.submit();
+		}
+		return false;
 	}
 	
 	</script>
@@ -500,7 +503,7 @@ while ($r195 = mysql_fetch_row($q195)) {
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
 		list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$r200[2]);
 		$prisustvo_zaglavlje .= "<td align=\"center\">$cas_dan.$cas_mjesec<br/>$cas_sat:$cas_minuta";
-		$prisustvo_zaglavlje .= '<br/><a href="javascript:onclick=upozorenje('."'$cas_id'".')"><img src="images/16x16/brisanje.png" border="0"></a>';
+		$prisustvo_zaglavlje .= '<br/><a href="javascript:onclick=upozorenje('."'$cas_id'".');"><img src="images/16x16/brisanje.png" border="0"></a>';
 		$prisustvo_zaglavlje .= "</td>\n";
 		$cas_id_array[] = $cas_id;
 		$casova++;
