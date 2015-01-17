@@ -293,6 +293,69 @@ if (mysql_num_rows($q60)>0) {
 }
 
 
+
+// PROGRESS BAR
+// Kod kopiran iz student/predmet - trebalo bi izdvojiti u lib
+
+$q30 = myquery("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+
+$bodova=$mogucih=0;
+while ($r30 = mysql_fetch_row($q30)) {
+	$bodova += $r30[0];
+	if ($r30[2] == 4) { // Tip komponente: zadaće
+		$q35 = myquery("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
+		$mogucih += round(mysql_result($q35,0,0), 2);
+	} else
+		$mogucih += $r30[1];
+}
+if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
+
+
+// boja označava napredak studenta
+if ($mogucih==0) $procent=0;
+else $procent = intval(($bodova/$mogucih)*100);
+if ($procent>=75) 
+	$color="#00FF00";
+else if ($procent>=50)
+	$color="#FFFF00";
+else
+	$color="#FF0000";
+
+
+$tabela1=$procent*2;
+$tabela2=200-$tabela1;
+
+$ispis1 = "<img src=\"images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
+$ispis2 = "<img src=\"images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br/> $bodova bodova";
+
+if ($tabela1>$tabela2) { 
+	$ispis1="<img src=\"images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br/> $bodova bodova";
+	$ispis2="<img src=\"images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
+}
+
+?>
+
+
+<!-- progress bar -->
+
+<table border="0"><tr><td align="left">
+<p>
+<table style="border:1px;border-style:solid" width="206" cellpadding="0" cellspacing="2"><tr>
+<td width="<?=$tabela1?>" bgcolor="<?=$color?>"><?=$ispis1?></td>
+<td width="<?=$tabela2?>" bgcolor="#FFFFFF"><?=$ispis2?></td></tr></table>
+
+<table width="208" border="0" cellspacing="0" cellpadding="0"><tr>
+<td width="68">0</td>
+<td align="center" width="68">50</td>
+<td align="right" width="69">100</td></tr></table>
+što je <?=$procent?>% od trenutno mogućih <?=round($mogucih,2) /* Rješavamo nepreciznost floata */ ?> bodova.</p>
+</td></tr></table>
+
+
+<!-- end progress bar -->
+<?
+
+
 // Nekoliko korisnih operacija za site admina
 
 if ($user_siteadmin) {
