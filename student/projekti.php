@@ -155,7 +155,7 @@ function student_projekti() {
 
 		else if ($projekat != $clan_projekta) {
 			niceerror("Niste prijavljeni na ovaj projekat");
-			zamgerlog("odjavs sa projekta $projekat na koji nije prijavljen", 3);
+			zamgerlog("odjava sa projekta $projekat na koji nije prijavljen", 3);
 		}
 
 		else {
