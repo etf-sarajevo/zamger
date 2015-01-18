@@ -450,6 +450,28 @@ function student_kolizija() {
 	}
 	$najnoviji_plan = mysql_result($q6,0,0);
 
+	foreach ($predmet_naziv as $id => $naziv) {
+		if ($_POST["polaze-$id"] && $id==$_POST['prenosi']) {
+			niceerror("Pogrešni podaci!");
+			?>
+			Ne možete istovremeno izabrati da ćete predmet položiti i da ga prenosite.
+			<?
+			return; 
+		}
+	}
+	$br_polozice=0;
+	foreach ($predmet_naziv as $id => $naziv) {
+		if ($_POST["polaze-$id"])
+			$br_polozice++;
+	}
+	if ($br_polozice > count($predmet_naziv)-2) {
+			niceerror("Pa nećete sve položiti :)");
+			?>
+			<p>Vratite se nazad i ostavite barem dva predmeta koja nećete položiti kako biste bili kolizija. Ako sve položite onda niste kolizija.</p>
+			<?
+			return; 
+	}
+
 
 	// Ispisujemo izabrani studij, godinu i preneseni predmet
 	?>
