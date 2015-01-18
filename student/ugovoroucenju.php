@@ -12,6 +12,8 @@
 function student_ugovoroucenju() {
 
 	global $userid;
+	
+	require("lib/manip.php");
 
 	// Naslov
 	?>
@@ -100,6 +102,13 @@ function student_ugovoroucenju() {
 						niceerror("Ilegalan izborni predmet");
 						return;
 					}
+					
+					if (provjeri_kapacitet($izabran, $zagodinu, $najnoviji_plan) == 0) {
+						niceerror("Predmet ".mysql_result($q120,0,1)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
+						zamgerlog2("popunjen kapacitet za predmet", $predmet);
+						return;
+					}
+
 					$semestar_ects += mysql_result($q120,0,0);
 					if ($sem==$godina*2-1)
 						$s1predmeti[]=$izabran;
@@ -117,11 +126,18 @@ function student_ugovoroucenju() {
 						else
 							$izabran = intval($vrijednost);
 
-						$q130 = myquery("select ects from predmet where id=$izabran");
+						$q130 = myquery("select ects, naziv from predmet where id=$izabran");
 						if (mysql_num_rows($q130)<1) {
 							niceerror("Ilegalan izborni predmet");
 							return;
 						}
+						
+						if (provjeri_kapacitet($izabran, $zagodinu, $najnoviji_plan) == 0) {
+							niceerror("Predmet ".mysql_result($q130,0,1)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
+							zamgerlog2("popunjen kapacitet za predmet", $predmet);
+							return;
+						}
+						
 						$semestar_ects += mysql_result($q130,0,0);
 						if ($sem==$godina*2-1)
 							$s1predmeti[]=$izabran;

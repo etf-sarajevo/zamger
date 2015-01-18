@@ -3372,6 +3372,24 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ugovoroucenju_kapacitet`
+--
+
+CREATE TABLE IF NOT EXISTS `ugovoroucenju_kapacitet` (
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `kapacitet` int(11) NOT NULL default '0',
+  `kapacitet_ekstra` int(11) NOT NULL default '0'
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `ugovoroucenju_kapacitet`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `upis_kriterij`
 --
 

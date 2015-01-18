@@ -11,6 +11,8 @@ function student_kolizija() {
 
 	global $userid;
 
+	require("lib/manip.php");
+
 	// Naslov
 	?>
 	<h3>Kolizija</h3>
@@ -274,6 +276,17 @@ function student_kolizija() {
 		if ($zze>(30-$zimskiects) || $zle>(30-$ljetnjiects)) {
 			niceerror("Izabrano je previše ECTS kredita u jednom od semestara! $zze>".(30-$zimskiects)." $zle>".(30-$ljetnjiects));
 			return;
+		}
+		
+		// Provjera kapaciteta
+		foreach(array_merge($predmeti1, $predmeti2) as $predmet) {
+			if (provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) == 0) {
+	 			$q117 = myquery("SELECT naziv FROM predmet WHERE id=$predmet");
+				niceerror("Predmet ".mysql_result($q117,0,0)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
+				zamgerlog2("popunjen kapacitet za predmet", $predmet);
+				return;
+			}
+
 		}
 
 		// Sve ok, ubacujemo

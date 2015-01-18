@@ -766,4 +766,56 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 
 }
 
+
+// Funkcija provjerava da li ima slobodnog mjesta na predmetu kao izbornom ili u koliziji
+
+// Tabela ugovoroucenju_kapacitet sadrzi polja:
+//  - kapacitet (ukupan dozvoljeni broj studenata) 
+//  - kapacitet_ekstra (dozvoljeni broj preko onih kojima je predmet obavezan)
+//   TODO: kapacitet_drugi_odsjek (maksimalan broj studenata sa drugog odsjeka)
+
+// Parametri:
+//  - $predmet - ID predmeta koji student zeli izabrati
+//  - $zagodinu - ID akademske godine
+//  - $najnoviji_plan - ID NPP za koji gledamo da li je predmet obavezan 
+//    (to se da zakljuciti iz parametra $zagodinu, ali bi potencijalno usporilo upite?)
+
+// Povratna vrijednost: 0 - nema vise mjesta, 1 - ima jos mjesta
+
+// TODO: studenti sa maticnog odsjeka koji biraju predmet kao izborni trebaju imati prednost u odnosu 
+// na koliziju, ali trenutno ne vidim kako to izvesti a da nekome ne postane invalidan odabir predmeta
+
+function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
+//	print "Provjeravam kapacitet $predmet za godinu $zagodinu<br>";
+	// Provjera kapaciteta
+	$q112 = myquery("SELECT kapacitet, kapacitet_ekstra FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$zagodinu");
+	if (mysql_num_rows($q112)>0) {
+		$kapacitet = mysql_result($q112,0,0);
+		$kapacitet_ekstra = mysql_result($q112,0,0);
+		
+		// Koliko je studenata izabralo predmet kao izborni?
+		$q113 = myquery("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$zagodinu AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet");
+		$popunjeno = mysql_result($q113,0,0);
+		
+		// Koliko sluša na koliziju?
+		$q114 = myquery("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet");
+		$popunjeno += mysql_result($q114,0,0);
+		
+		if ($kapacitet_ekstra > 0 && $popunjeno >= $kapacitet_ekstra)
+			return 0;
+		
+		// Koliko studenata slusa predmet kao obavezan na svom studiju?
+		$q115 = myquery("SELECT studij, semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND predmet=$predmet AND obavezan=1");
+		if (mysql_num_rows($q115)>0) {
+			$q116 = myquery("SELECT COUNT(*) FROM ugovoroucenju WHERE akademska_godina=$zagodinu AND studij=".mysql_result($q115,0,0)." AND semestar=".mysql_result($q115,0,1));
+			$popunjeno += mysql_result($q116,0,0);
+		}
+//		print "popunjeno $popunjeno<br>";
+		
+		if ($kapacitet > 0 && $popunjeno >= $kapacitet) 
+			return 0;
+	}
+	return 1;
+}
+
 ?>
