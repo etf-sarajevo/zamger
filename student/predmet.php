@@ -85,7 +85,12 @@ while ($r30 = mysql_fetch_row($q30)) {
 	$bodova += $r30[0];
 	if ($r30[2] == 4) { // Tip komponente: zadaće
 		$q35 = myquery("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
-		$mogucih += round(mysql_result($q35,0,0), 2);
+		$do_sada_zadace = round(mysql_result($q35,0,0), 2);
+		// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
+		if ($do_sada_zadace > $r30[1])
+			$mogucih += $r30[1];
+		else
+			$mogucih += $do_sada_zadace;
 	} else
 		$mogucih += $r30[1];
 }
