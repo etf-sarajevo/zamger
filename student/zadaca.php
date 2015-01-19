@@ -32,6 +32,7 @@ global $userid,$conf_files_path;
 // Akcije
 if ($_REQUEST['akcija'] == "slanje") {
 	akcijaslanje();
+	return;
 }
 
 
@@ -679,11 +680,15 @@ function akcijaslanje() {
 	$zadaca = intval($_POST['zadaca']); 
 	$zadatak = intval($_POST['zadatak']);
 	$program = $_POST['program'];
+	
+	$povratak_url = "?sta=student/zadaca&predmet=$predmet&ag=$ag&zadaca=$zadaca&zadatak=$zadatak";
+	$povratak_html = "<a href=\"$povratak_url\">Nastavak</a>";
+	$povratak_js = "<script>window.onload = function() { setTimeout('redirekcija()', 3000); }\nfunction redirekcija() { window.location='$povratak_url'; } </script>\n";
 
 	// Da li student slusa predmet?
 	$q195 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	if (mysql_num_rows($q195)<1) {
-		// student_zadaca() ce ispisati grešku
+		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
 	$ponudakursa = mysql_result($q195,0,0);	
@@ -700,8 +705,7 @@ function akcijaslanje() {
 	$q200 = myquery("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
 	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q200,0,0)==0) {
-//		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
-		// student_zadaca() ce ispisati grešku
+		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
 
@@ -727,6 +731,7 @@ function akcijaslanje() {
 	if ($rok <= time()) {
 		niceerror("Vrijeme za slanje zadaće je isteklo!");
 		zamgerlog("isteklo vrijeme za slanje zadaće z$zadaca",3); // nivo 3 - greska
+		print $povratak_html;
 		return; 
 	}
 
@@ -734,6 +739,7 @@ function akcijaslanje() {
 	$q240 = myquery("select status from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
 	if (mysql_num_rows($q240) > 1 && mysql_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
 		niceerror("Zadaća je prepisana i ne može se ponovo poslati.");
+		print $povratak_html;
 		return; 
 	}
 
@@ -744,7 +750,12 @@ function akcijaslanje() {
 
 	// Vrsta zadaće: textarea ili attachment
 	if ($attach == 0) { // textarea
-		if (!check_csrf_token()) return;
+		if (!check_csrf_token()) {
+			niceerror("Forma za slanje zadaće je istekla.");
+			print "<p>Kada otvorite prozor za unos zadaće, imate određeno vrijeme (npr. 15 minuta) da pošaljete zadaću, u suprotnom zahtjev neće biti prihvaćen iz sigurnosnih razloga. Preporučujemo da zadaću ne radite direktno u prozoru za slanje zadaće nego u nekom drugom programu (npr. CodeBlocks) iz kojeg kopirate u Zamger.</p>";
+			print $povratak_html;
+			return;
+		}
 
 		// Određivanje ekstenzije iz jezika
 		$q220 = myquery("select ekstenzija from programskijezik where id=$jezik");
@@ -763,8 +774,11 @@ function akcijaslanje() {
 
 		// Kreiranje datoteke
 		if (strlen($program)<=10) {
-			niceerror("Niste kopirali zadaću!");
+			niceerror("Pokušali ste poslati praznu zadaću!");
+			print "<p>Vjerovatno ste zaboravili kopirati kod u prozor za slanje.</p>";
 			zamgerlog("poslao praznu zadacu z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+			print $povratak_html;
+			return;
 		} else if ($zadaca>0 && $zadatak>0 && ($f = fopen($filename,'w'))) {
 			fwrite($f,$program);
 			fclose($f);
@@ -790,9 +804,14 @@ function akcijaslanje() {
 			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak",2); // nivo 2 - edit
+			print $povratak_html;
+			print $povratak_js;
+			return;
 		} else {
 			zamgerlog("greska pri slanju zadace (zadaca z$zadaca zadatak $zadatak filename $filename)",3);
 			niceerror("Greška pri slanju zadaće. Kontaktirajte tutora.");
+			print $povratak_html;
+			return;
 		}
 
 	} else { // if ($attach==0)...
@@ -814,6 +833,7 @@ function akcijaslanje() {
 				print "<p>Na ovoj zadaći dozvoljeno je slati samo datoteke jednog od sljedećih tipova: <b>$zadaca_dozvoljene_ekstenzije</b>.<br>
 				Vi ste poslali datoteku tipa: <b>$ext</b>.</p>";
 				zamgerlog("pogresan tip datoteke (z$zadaca)", 3);
+				print $povratak_html;
 				return;
 			}
 
@@ -828,6 +848,9 @@ function akcijaslanje() {
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
+			print $povratak_html;
+			print $povratak_js;
+			return;
 		} else {
 			switch ($_FILES['attachment']['error']) { 
 				case UPLOAD_ERR_OK:
@@ -859,6 +882,8 @@ function akcijaslanje() {
 			} 
 			zamgerlog("greska kod attachmenta (z$zadaca): $greska",3);
 			niceerror("$greska");
+			print $povratak_html;
+			return;
 		}
 	}
 }
