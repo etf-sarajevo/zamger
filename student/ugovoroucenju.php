@@ -105,7 +105,7 @@ function student_ugovoroucenju() {
 					
 					if (provjeri_kapacitet($izabran, $zagodinu, $najnoviji_plan) == 0) {
 						niceerror("Predmet ".mysql_result($q120,0,1)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
-						zamgerlog2("popunjen kapacitet za predmet", $predmet);
+						zamgerlog2("popunjen kapacitet za predmet", $izabran);
 						return;
 					}
 
