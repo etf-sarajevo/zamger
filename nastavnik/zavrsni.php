@@ -84,6 +84,7 @@ function nastavnik_zavrsni() {
 				$mentor = tituliraj($r900[3], false);
 				if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
 
+				$student_id = $r900[4];
 				$student = tituliraj($r900[4], false);
 				if ($student=="") $student = "<font color=\"gray\">niko nije izabrao temu</font>";
 				else if ($r900[8]==0) // Kandidat nije potvrđen
@@ -99,8 +100,8 @@ function nastavnik_zavrsni() {
 				if ($r900[7] == 0) $termin_odbrane = "<font color=\"gray\">(nije definisan)</font>";
 
 				$konacna_ocjena = "<font color=\"gray\">(nije ocijenjen)</font>";
-				if ($student>0) {
-					$q903 = myquery("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+				if ($student_id>0) {
+					$q903 = myquery("SELECT ocjena FROM konacna_ocjena WHERE student=$student_id AND predmet=$predmet AND akademska_godina=$ag");
 					if (mysql_num_rows($q903)>0 && mysql_result($q903,0,0)>5)
 						$konacna_ocjena = mysql_result($q903,0,0);
 				}
