@@ -123,6 +123,10 @@ function nastavnik_zavrsni() {
 				</tr>
 				<?
 			} // while
+
+			?>
+			</table>
+			<?
 		} // else
 	} // if (!isset($akcija) - lista završnih radova
 	
