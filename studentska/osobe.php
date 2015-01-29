@@ -2142,7 +2142,7 @@ else if ($akcija == "edit") {
 
 		$prepisi_ocjena = "";
 		if ($ikad_ciklus>1 || $studij_ciklus>1) {
-			for ($i=1; $i<=$ikad_ciklus; $i++)
+			for ($i=1; $i <= max($ikad_ciklus,$studij_ciklus); $i++)
 				$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo $i. ciklus</a>";
 		}
 
