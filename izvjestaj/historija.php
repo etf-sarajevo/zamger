@@ -75,7 +75,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	}
 
 	// Upisi u studije
-	$q20 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac, ss.odluka from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.semestar");
+	$q20 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac, ss.odluka from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.akademska_godina,ss.semestar");
 	while ($r20 = mysql_fetch_row($q20)) {
 		$semestar = $r20[1];
 		$parni = $semestar%2;
