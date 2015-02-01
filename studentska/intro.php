@@ -175,13 +175,20 @@ if ($_GET['akcija'] == "zahtjev") {
 	if ($staromj!=$novomj) {
 		if ($staromj != 0) {
 			$q101 = myquery("select naziv from mjesto where id=$staromj");
-			$staromj = mysql_result($q101,0,0);
+			$staromjn = mysql_result($q101,0,0);
 		}
 		if ($novomj != 0) {
 			$q102 = myquery("select naziv from mjesto where id=$novomj");
-			$novomj = mysql_result($q102,0,0);
+			$novomjn = mysql_result($q102,0,0);
 		}
-		promjena("mjesto rođenja", $staromj, $novomj);
+		if ($staromjn == $novomjn) {
+			$q101 = myquery("select o.naziv from mjesto as m, opcina as o where m.id=$staromj and m.opcina=o.id");
+			$staromjn .= " (".mysql_result($q101,0,0).")";
+			$q102 = myquery("select o.naziv from mjesto as m, opcina as o where m.id=$novomj and m.opcina=o.id");
+			$novomjn .= " (".mysql_result($q102,0,0).")";
+		}
+
+		promjena("mjesto rođenja", $staromjn, $novomjn);
 	}
 
 	// Drzavljanstvo
