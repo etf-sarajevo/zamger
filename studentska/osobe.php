@@ -1334,9 +1334,20 @@ else if ($akcija == "predmeti") {
 
 	// Aktuelna akademska godina
 
-	$q2010 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q2010,0,0);
-	$naziv_ag = mysql_result($q2010,0,1);
+	if ($_REQUEST['ag'] || $_REQUEST['_lv_column_akademska_godina']) {
+		$ak_god = intval($_REQUEST['ag']);
+		if ($_REQUEST['_lv_column_akademska_godina']) $ak_god = intval($_REQUEST['_lv_column_akademska_godina']);
+		$q2005 = myquery("select naziv from akademska_godina where id=$ak_god");
+		if (mysql_num_rows($q2005)<1) {
+			biguglyerror("Nepoznata akademska godina");
+			return;
+		}
+		$naziv_ag = mysql_result($q2005,0,0);
+	} else {
+		$q2010 = myquery("select id, naziv from akademska_godina where aktuelna=1");
+		$ak_god = mysql_result($q2010,0,0);
+		$naziv_ag = mysql_result($q2010,0,1);
+	}
 
 	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god order by semestar desc");
 	if (mysql_num_rows($q2020)>0) {
@@ -1359,13 +1370,18 @@ else if ($akcija == "predmeti") {
 		$q2030 = myquery("select studij, semestar, akademska_godina from student_studij where student=$osoba order by akademska_godina desc limit 1");
 		if (mysql_num_rows($q2030)>0) {
 			$studij = mysql_result($q2030,0,0);
+			$ag_studija = mysql_result($q2030,0,2);
 
 			$q2040 = myquery("select naziv from studij where id=$studij");
 			$naziv_studija = mysql_result($q2040,0,0);
 
-			$q2050 = myquery("select naziv from akademska_godina  where id=".mysql_result($q2030,0,2));
+			$q2050 = myquery("select naziv from akademska_godina where id=$ag_studija");
 
-			print "<p>Student trenutno ($naziv_ag) nije upisan na fakultet! Posljednji put slušao $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			if ($ag_studija > $ak_god) {
+				print "<p>Student nije bio upisan u odabranoj akademskoj godini ($naziv_ag), ali je upisan na studij $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			} else {
+				print "<p>Student trenutno ($naziv_ag) nije upisan na fakultet! Posljednji put slušao $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			}
 		} else {
 			// Nikada nije bio student?
 			$studij=0;
@@ -1383,10 +1399,11 @@ else if ($akcija == "predmeti") {
 
 	?>
 	<?=genform("GET");?>
+	Akademska godina: <?=db_dropdown("akademska_godina", $ak_god);?><br>
 	<input type="radio" name="spisak" value="0" <?=$s0?>> Prikaži predmete sa izabranog studija i semestra<br/>
 	<input type="radio" name="spisak" value="1" <?=$s1?>> Prikaži predmete sa svih semestara<br/>
 	<input type="radio" name="spisak" value="2" <?=$s2?>> Prikaži predmete sa drugih studija<br/>
-	<input type="submit" value=" Kreni "></form>
+	<input type="submit" value=" Kreni "></form><br><br>
 	<?
 
 
@@ -1405,7 +1422,7 @@ else if ($akcija == "predmeti") {
 			// Zbog mogućih bugova, prvo gledamo da li je upisan...
 			$q2120 = myquery("select count(*) from student_predmet where student=$student and predmet=$ponudakursa");
 			if (mysql_result($q2120,0,0)>0) {
-				print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=ispisi&ponudakursa=$ponudakursa&spisak=$spisak\">ispiši</a></li>\n";
+				print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=ispisi&ponudakursa=$ponudakursa&spisak=$spisak&ag=$ag\">ispiši</a></li>\n";
 
 			} else {
 				// Da li je položen?
@@ -1414,7 +1431,7 @@ else if ($akcija == "predmeti") {
 					print " - položen</li>\n";
 
 				} else {
-					print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=upisi&ponudakursa=$ponudakursa&spisak=$spisak\">upiši</a></li>\n";
+					print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=upisi&ponudakursa=$ponudakursa&spisak=$spisak&ag=$ag\">upiši</a></li>\n";
 				}
 			}
 		}
