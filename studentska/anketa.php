@@ -110,17 +110,14 @@ function studentska_anketa(){
 			
 			if (!checkdate($mjesec,$dan,$godina)) {
 				niceerror("Odabrani datum je nemoguć");
-				zamgerlog("los datum za anketu", 3);
 				return 0;
 			}
 			if (!checkdate($mjesec2,$dan2,$godina2)) {
 				niceerror("Odabrani datum je nemoguć");
-				zamgerlog("los datum za anketu", 3);
 				return 0;
 			}
 			if ($sat<0 || $sat>24 || $minuta<0 || $minuta>60 || $sekunda<0 || $sekunda>60) {
 				niceerror("Vrijeme nije dobro");
-				zamgerlog("lose vrijeme za anketu", 3);
 				return 0;
 			}
 
