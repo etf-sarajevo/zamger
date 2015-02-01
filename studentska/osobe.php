@@ -1562,7 +1562,6 @@ else if ($akcija == "izbori") {
 			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_uza_oblast=$uza_oblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
 			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
 			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-print "iuza $iuza_oblast";
 				$q3040 = myquery("update izbor set fk_naucnonastavno_zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, fk_naucna_oblast=$ioblast, fk_uza_naucna_oblast=$iuza_oblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE fk_naucnonastavno_zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and fk_naucna_oblast=$oblast and fk_uza_naucna_oblast=$uza_oblast and dopunski=$dopunski and druga_institucija=$drugainst");
 				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
 				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_uza_oblast=$iuza_oblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
@@ -1672,7 +1671,6 @@ else if ($akcija == "edit") {
 
 		if ($login=="") {
 			niceerror("Ne možete postaviti prazan login");
-			zamgerlog("prazan login za u$osoba", 3);
 		}
 		else if ($stari_login=="") {
 			// Provjeravamo LDAP?
@@ -2131,13 +2129,16 @@ else if ($akcija == "edit") {
 		<?
 
 		// Trenutno upisan na semestar:
-		$q220 = myquery("select s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");
+		$q220 = myquery("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus 
+		FROM student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns 
+		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id 
+		ORDER BY ag.naziv DESC");
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
 
 		// Da li je ikada slusao nesto?
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=0;
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=0;
 	
 		while ($r220=mysql_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2146,6 +2147,7 @@ else if ($akcija == "edit") {
 				$studij_id=$r220[4];
 				$studij_trajanje=$r220[5];
 				$nacin_studiranja="kao $r220[6]";
+				$studij_ciklus=$r220[7];
 			}
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
@@ -2156,6 +2158,7 @@ else if ($akcija == "edit") {
 				$ikad_ak_god_naziv=$r220[3];
 				$ikad_studij_id=$r220[4];
 				$ikad_studij_trajanje=$r220[5];
+				$ikad_ciklus=$r220[7];
 			}
 		}
 
