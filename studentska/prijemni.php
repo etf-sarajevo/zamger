@@ -257,7 +257,7 @@ if ($_REQUEST['akcija']=="promijeni_kod") {
 
 
 if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
-	if ($_POST['fakatradi'] != 1) $ispis=0; else $ispis=0;
+	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 	$redovi = explode("\n",$_POST['massinput']);
 
 	$separator = intval($_REQUEST['separator']);
