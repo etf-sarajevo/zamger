@@ -807,7 +807,11 @@ function akcijaslanje() {
 	if (!file_exists($lokacijazadaca)) mkdir ($lokacijazadaca,0777);
 	if ($zadaca>0 && !file_exists("$lokacijazadaca$zadaca")) 
 		mkdir ("$lokacijazadaca$zadaca",0777);
-
+	
+	// Temp fajl radi određivanja diff-a 
+	if (file_exists("$lokacijazadaca$zadaca/difftemp")) 
+		unlink ("$lokacijazadaca$zadaca/difftemp");
+	
 	// Vrsta zadaće: textarea ili attachment
 	if ($attach == 0) { // textarea
 		if (!check_csrf_token()) {
@@ -823,15 +827,6 @@ function akcijaslanje() {
 
 		$filename = "$lokacijazadaca$zadaca/$zadatak$ekst";
 
-		// Temp fajl radi određivanja diff-a 
-		$diffing=0;
-		if (file_exists($filename)) {
-			if (file_exists("$lokacijazadaca$zadaca/difftemp")) 
-				unlink ("$lokacijazadaca$zadaca/difftemp");
-			rename ($filename, "$lokacijazadaca$zadaca/difftemp"); 
-			$diffing=1;
-		}
-
 		// Kreiranje datoteke
 		if (strlen($program)<=10) {
 			niceerror("Pokušali ste poslati praznu zadaću!");
@@ -839,24 +834,37 @@ function akcijaslanje() {
 			zamgerlog("poslao praznu zadacu z$zadaca zadatak $zadatak",3); // nivo 3 - greska
 			print $povratak_html;
 			return;
-		} else if ($zadaca>0 && $zadatak>0 && ($f = fopen($filename,'w'))) {
+		} else if ($zadaca>0 && $zadatak>0) {
+			// Pravimo backup fajla za potrebe računanja diff-a
+			$postoji_prosla_verzija = false;
+			if (file_exists($filename)) {
+				rename ($filename, "$lokacijazadaca$zadaca/difftemp"); 
+				$postoji_prosla_verzija = true;
+			}
+			
+			$f = fopen($filename,'w');
+			if (!$f) {
+				niceerror("Greška pri pisanju fajla za zadaću.");
+				zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+				if ($postoji_prosla_verzija)
+					rename ("$lokacijazadaca$zadaca/difftemp", $filename);
+				print $povratak_html;
+				return;
+			}
 			fwrite($f,$program);
 			fclose($f);
 
 			// Tabela "zadatak" funkcioniše kao log događaja u
 			// koji se stvari samo dodaju
 			$q230 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$zadatak$ekst', userid=$userid");
+			$id_zadatka = mysql_insert_id();
 
 			// Pravljenje diffa
-			if ($diffing==1) {
+			if ($postoji_prosla_verzija) {
 				$diff = `/usr/bin/diff -u $lokacijazadaca$zadaca/difftemp $filename`;
 				$diff = my_escape($diff);
 				if (strlen($diff)>1) {
-					$q240 = myquery("select id from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and status=1 order by id desc limit 1");
-					if (mysql_num_rows($q240) > 0) {
-						$id = mysql_result($q240,0,0);
-						$q250 = myquery("insert into zadatakdiff set zadatak=$id, diff='$diff'");
-					}
+					$q250 = myquery("insert into zadatakdiff set zadatak=$id, diff='$diff'");
 				}
 				unlink ("$lokacijazadaca$zadaca/difftemp");
 			}
@@ -877,7 +885,6 @@ function akcijaslanje() {
 	} else { // if ($attach==0)...
 		$program = $_FILES['attachment']['tmp_name'];
 		if ($program && (file_exists($program)) && $_FILES['attachment']['error']===UPLOAD_ERR_OK) {
-			// Nećemo pokušavati praviti diff
 			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
 
 			// Ukidam HTML znakove radi potencijalnog XSSa
@@ -896,14 +903,50 @@ function akcijaslanje() {
 				print $povratak_html;
 				return;
 			}
+			
+			// Diffing
+			$diff = "";
+			$q255 = myquery("SELECT filename FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$userid ORDER BY id DESC LIMIT 1");
+			if (mysql_num_rows($q255) > 0) {
+				$stari_filename = "$lokacijazadaca$zadaca/".mysql_result($q255, 0, 0);
 
+				// Podržavamo diffing ako je i stara i nova ekstenzija ZIP (TODO ostale vrste arhiva)
+				if (ends_with($stari_filename, ".zip") && ends_with($puni_put, ".zip")) {
+				
+					// Pripremamo temp dir
+					$zippath = "/tmp/difftemp";
+					if (!file_exists($zippath)) {
+						mkdir($zippath, 0777, true);
+					} else if (!is_dir($zippath)) {
+						unlink($zippath);
+						mkdir($zippath);
+					} else {
+						rmMinusR($zippath);
+					}
+					$oldpath = "$zippath/old";
+					$newpath = "$zippath/new";
+					mkdir ($oldpath);
+					mkdir ($newpath);
+					`unzip -j "$stari_filename" -d $oldpath`;
+					`unzip -j "$program" -d $newpath`;
+					$diff = `/usr/bin/diff -ur $oldpath $newpath`;
+					$diff = clear_unicode(my_escape($diff));
+				}
+			}
+			
 			if (file_exists($puni_put)) unlink ($puni_put);
 			rename($program, $puni_put);
+			chmod($puni_put, 0640);
 
 			// Escaping za SQL
 			$ime_fajla = my_escape($ime_fajla);
 
 			$q260 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
+			$id_zadatka = mysql_insert_id();
+
+			if (strlen($diff)>1) {
+				$q270 = myquery("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
+			}
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
