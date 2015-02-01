@@ -300,28 +300,25 @@ else if ($akcija == "dodaj_pk") {
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']); // akademska godina
 
-	if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
-		$studij = intval($_REQUEST['_lv_column_studij']);
-		$semestar = intval($_REQUEST['semestar']);
-		if ($_REQUEST['obavezan']) $obavezan=1; else $obavezan=0;
-
-		kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0);
-		nicemessage("Ponuda kursa uspješno kreirana");
-	}
-
 	$q400 = myquery("select naziv from predmet where id=$predmet");
 	$q410 = myquery("select naziv from akademska_godina where id=$ag");
 
 	print "<h3>Nova ponuda kursa za predmet ".mysql_result($q400,0,0).",<br/> akademska godina ".mysql_result($q410,0,0)."</h3>";
 
-	print genform("POST");
-	?>
-	<input type="hidden" name="subakcija" value="potvrda">
-	Studij: <?=db_dropdown("studij");?><br><br>
-	Semestar: <input type="text" name="semestar" size="5"><br><br>
-	<input type="checkbox" name="obavezan"> Obavezan<br><br>
-	<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi "></form>
+	$_lv_['where:predmet']=$predmet;
+	$_lv_['where:akademska_godina']=$ag;
+	$forma=db_form("ponudakursa");
 
+	if ($_REQUEST['_lv_action']=="add") {
+		nicemessage("Dodana nova ponuda kursa");
+		zamgerlog("dodana ponuda kursa na predmet pp$predmet",4);
+		zamgerlog2("dodana ponuda kursa na predmet", $predmet, $ag);
+
+	} else {
+		print $forma;
+	}
+
+	?>
 	<p><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
 	<?
 
