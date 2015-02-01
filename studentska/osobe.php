@@ -989,7 +989,7 @@ else if ($akcija == "upis") {
 		
 				if ($ects_suma != 30) {
 					$ok_izvrsiti_upis=0;
-					niceerror("Izabrani izborni predmeti čine sumu $ects ECTS kredita, umjesto 30");
+					niceerror("Izabrani izborni predmeti čine sumu $ects_suma ECTS kredita, umjesto 30");
 				}
 			}
 		
