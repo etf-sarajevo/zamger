@@ -1012,7 +1012,7 @@ else if ($akcija == "upis") {
 	}  // if ($stari_studij!=0 && $semestar<=$trajanje)
 
 	// Studentu nikada nije zadat broj indexa (npr. prvi put se upisuje)
-	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0) {
+	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0 && !isset($_REQUEST['novi_brindexa']) {
 		if ($brindexa==0) $brindexa="";
 		?>
 		<p><b>Unesite broj indeksa za ovog studenta:</b><br/>
