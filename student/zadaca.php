@@ -797,7 +797,7 @@ function akcijaslanje() {
 
 	// Prepisane zadaće se ne mogu ponovo slati
 	$q240 = myquery("select status from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
-	if (mysql_num_rows($q240) > 1 && mysql_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
+	if (mysql_num_rows($q240) > 0 && mysql_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
 		niceerror("Zadaća je prepisana i ne može se ponovo poslati.");
 		print $povratak_html;
 		return; 
