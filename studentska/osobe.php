@@ -2216,6 +2216,7 @@ else if ($akcija == "edit") {
 					$id_ak_god = $ikad_ak_god;
 					$naziv_ak_god = $ikad_ak_god_naziv;
 					$semestar = $ikad_semestar;
+					if ($semestar % 2 != 0) $semestar++; // Da ga ne bi pokušavalo upisati u parni semestar
 				}
 				// Zelimo da se provjeri ECTS:
 				$studij = $ikad_studij;
