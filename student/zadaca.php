@@ -864,7 +864,7 @@ function akcijaslanje() {
 				$diff = `/usr/bin/diff -u $lokacijazadaca$zadaca/difftemp $filename`;
 				$diff = my_escape($diff);
 				if (strlen($diff)>1) {
-					$q250 = myquery("insert into zadatakdiff set zadatak=$id, diff='$diff'");
+					$q250 = myquery("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
 				}
 				unlink ("$lokacijazadaca$zadaca/difftemp");
 			}
