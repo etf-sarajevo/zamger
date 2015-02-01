@@ -142,39 +142,54 @@ while ($r10=mysql_fetch_row($q10)) {
 	$max_studenata =$r10[8];
 
 	// Da li je student već položio ovu vrstu ispita?
-	$q20 = myquery("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$userid and io.ispit=i.id and i.predmet=$id_predmeta and i.akademska_godina=$ag and i.komponenta=k.id and k.id=$id_komponente and io.ocjena>=k.prolaz");
-	if (mysql_result($q20,0,0)>0) continue;
+//	$q20 = myquery("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$userid and io.ispit=i.id and i.predmet=$id_predmeta and i.akademska_godina=$ag and i.komponenta=k.id and k.id=$id_komponente and io.ocjena>=k.prolaz");
+//	if (mysql_result($q20,0,0)>0) continue;
 
 	// Da li je položio predmet?
 	$q30 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$id_predmeta and ocjena>=6");
 	if (mysql_result($q30,0,0)>0) continue;
 
-	// Da li je već prijavio ovaj ispit u nekom od termina?
-	$q40 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$id_ispita");
-	if (mysql_result($q40,0,0)>0) continue;
-
-
-	?>
-	<tr>
-		<td><?=$brojac?></td>
-		<td><?=$naziv_predmeta?></td>
-		<td align="center"><?=$rok_za_prijavu?></td>
-		<td align="center"><?=$vrijeme_ispita?></td>
-		<td align="center"><?=$tip_ispita?></td>
-		<td align="center"><?
+	$greska = $greska_long = "";
 
 	// Da li je termin popunjen?
 	$q50 = myquery("SELECT count(*) FROM student_ispit_termin WHERE ispit_termin=$id_termina");
-	if(mysql_result($q50,0,0)>=$max_studenata) {
-		?><font color="#FF0000">Termin popunjen</font><?
+	if (mysql_result($q50,0,0)>=$max_studenata) { $greska .= "P"; $greska_long = "Termin popunjen. "; }
+
+	// Da li je već prijavio ovaj ispit u nekom od termina?
+	$q40 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$id_ispita");
+	if (mysql_result($q40,0,0)>0) {
+		$q55 = myquery("SELECT COUNT(*) FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$id_termina");
+		if (mysql_result($q55,0,0) > 0) {
+			$greska .= "O";
+			$greska_long .= "Već ste prijavljeni za ovaj termin. ";
+		} else {
+			$greska .= "D";
+			$greska_long .= "Prijavljeni ste za drugi termin ovog ispita. ";
+		}
+	}
 
 	// Da li je istekao rok za prijavu?
-	} else if ($r10[6]<time()) {
-		?><font color="#FF0000">Rok je istekao</font><?
+	$color = "";
+	if ($r10[6]<time()) {
+		$color = " style=\"color: #999\"";
+	}
 
-	} else {
+	?>
+	<tr<?=$color?>>
+		<td<?=$color?>><?=$brojac?></td>
+		<td<?=$color?>><?=$naziv_predmeta?></td>
+		<td align="center"<?=$color?>><?=$rok_za_prijavu?></td>
+		<td align="center"<?=$color?>><?=$vrijeme_ispita?></td>
+		<td align="center"<?=$color?>><?=$tip_ispita?></td>
+		<td align="center"<?=$color?> title="<?=$greska_long?>"><?
+
+	if ($r10[6]<time()) {
+		?>Rok za prijavu je istekao<?
+	} else if ($greska === "") {
 		?><a href="?sta=student/prijava_ispita&akcija=prijavi&termin=<?=$id_termina?>">Prijavi</a><?
-	}?></td>
+	} else {
+		?><font color="#FF0000">Prijava nije moguća (<?=$greska?>)</font><?
+	} ?></td>
 	</tr>
 	<?
 	$brojac++;
@@ -182,7 +197,17 @@ while ($r10=mysql_fetch_row($q10)) {
 
 ?>
 </table>
-<? if($brojac==1) { ?><p>Trenutno nema termina na koje se možete prijaviti.</p><? } ?>
+<? if($brojac==1) { 
+	?><p>Trenutno nema termina na koje se možete prijaviti.</p><? 
+} else {
+	?><p><b>LEGENDA GREŠAKA:</b><br>
+	<b>P</b> - termin je popunjen (ako nema ove oznake, postoji još slobodnih mjesta na ovom terminu)<br>
+	<b>O</b> - već ste prijavljeni za ovaj termin<br>
+	<b>D</b> - prijavljeni ste za drugi termin istog ispita; potrebno je da se odjavite sa tog termina da biste se mogli prijaviti za ovaj termin</p>
+	<?
+}
+
+?>
 <br><br><br>
 
 <b>Prijavljeni ispiti/događaji:</b>
