@@ -957,13 +957,16 @@ else if ($akcija == "upis") {
 					// Odredjujemo ponudu kursa
 					$q740 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
 					if (mysql_num_rows($q740)<1) {
-						niceerror("Kurs '$pnaziv' nije ponuđen za studij $naziv_studija, $semestar. semestar, godina $naziv_ak_god");
-						zamgerlog("nije ponudjen predmet pp$predmet, studij s$studij, semestar $semestar, ag$godina", 3); // 3 - greska
+						$q701 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
+						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+						$pkid = mysql_result($q700,0,0);
+						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
 					} else {
-						?>
-						<input type="checkbox" name="izborni-<?=mysql_result($q740,0,0)?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
-						<?
+						$pkid = mysql_result($q740,0,0);
 					}
+					?>
+					<input type="checkbox" name="izborni-<?=$pkid?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
+					<?
 				}
 			}
 
