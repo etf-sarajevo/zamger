@@ -264,6 +264,15 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 	if ($separator==1) $sepchar=','; else $sepchar="\t";
 
 	$kolona = 2;
+
+	unset($_REQUEST['fakatradi']);
+
+	if ($ispis) {
+		print genform("POST");
+		?>
+		<input type="hidden" name="fakatradi" value="1">
+		<?
+	}
 	
 	$sifra_izasao=array();
 	$q6 = myquery("select sifra from prijemni_obrazac where prijemni_termin=$termin");
@@ -293,15 +302,15 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 		} else {
 			$osoba = mysql_result($q10,0,0);
 			$q20 = myquery("select izasao from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
-			if (mysql_result($q20,0,0)==1) {
+			/*if (mysql_result($q20,0,0)==1) {
 				if ($ispis)  {
 					print "<font color=\"red\">Kandidatu pod šifrom $sifra je već evidentiran izlazak na prijemni.</font><br>\n";
 				}
 				$greska=1;
 				continue;
-			}
+			}*/
 			if ($ispis) {
-				//print "-- Upisujem $bodovi bodova za kandidata pod šifrom $sifra<br>\n";
+				print "-- Upisujem $bodovi bodova za kandidata pod šifrom $sifra<br>\n";
 			} else {
 				$q20 = myquery("update prijemni_prijava set izasao=1, rezultat=$bodovi where prijemni_termin=$termin and osoba=$osoba");
 			}
@@ -331,7 +340,7 @@ if ($_REQUEST['akcija']=="prijemni_sifre") {
 
 ?>
 
-<p><hr/></p><p><b>Masovni unos broja indexa</b><br/>
+<p><hr/></p><p><b>Masovni unos rezultata prijemnog ispita po šiframa</b><br/>
 <?=genform("POST")?>
 <input type="hidden" name="fakatradi" value="0">
 <input type="hidden" name="akcija" value="prijemni_sifre_submit">
