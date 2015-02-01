@@ -42,6 +42,8 @@ while ($r30 = mysql_fetch_row($q30)) {
 	}
 }
 
+$studenata_sa_ocjenom = $svih_studenata - $studenata_bez_ocjene;
+
 ?>
 <p><h3>Studentska služba - Štampanje prijava</h3></p>
 
