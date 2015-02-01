@@ -77,7 +77,6 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 
 	$ime = substr(my_escape($_POST['ime']), 0, 100);
 	if (!preg_match("/\w/", $ime)) {
-		zamgerlog("ime nije ispravno ($ime)",3);
 		niceerror("Ime nije ispravno");
 		return;
 	}
@@ -165,7 +164,7 @@ if ($akcija == "podaci") {
 		$prezime = my_escape($_REQUEST['prezime']);
 		$spol = $_REQUEST['spol']; if ($spol!="M" && $spol!="Z") $spol="";
 		$jmbg = my_escape($_REQUEST['jmbg']);
-		$nacionalnost = intval($_REQUEST['nacionalnost']);
+		$nacionalnost = intval($_REQUEST['nacionalnost']); if ($nacionalnost==0) $nacionalnost = "NULL";
 		$brindexa = my_escape($_REQUEST['brindexa']);
 
 		$djevojacko_prezime = my_escape($_REQUEST['djevojacko_prezime']);
@@ -177,12 +176,12 @@ if ($akcija == "podaci") {
 		$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
 		$opcina_rodjenja = intval($_REQUEST['opcina_rodjenja']);
 		$drzava_rodjenja = intval($_REQUEST['drzava_rodjenja']);
-		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']);
+		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']); if ($drzavljanstvo==0) $drzavljanstvo = "NULL";
 		if ($_REQUEST['boracke_kategorije'] == "on") $boracke_kategorije = 1; else $boracke_kategorije = 0;
 		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
-		$kanton = intval($_REQUEST['_lv_column_kanton']);
+		$kanton = intval($_REQUEST['_lv_column_kanton']); if ($kanton==-1) $kanton = "NULL";
 		$telefon = my_escape($_REQUEST['telefon']);
 		$email = my_escape($_REQUEST['email']);
 
@@ -203,7 +202,7 @@ if ($akcija == "podaci") {
 		}
 
 		// Mjesto rođenja
-		$mjrid=0;
+		$mjrid="NULL";
 		if ($mjesto_rodjenja != "") {
 			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_rodjenja and drzava=$drzava_rodjenja");
 			if (mysql_num_rows($q1)<1) {
@@ -222,7 +221,7 @@ if ($akcija == "podaci") {
 		}
 	
 		// Mjesto adresa
-		$admid=0;
+		$admid="NULL";
 		if ($adresa_mjesto != "") {
 			$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
 			if (mysql_num_rows($q3)<1) {
