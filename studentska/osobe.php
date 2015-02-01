@@ -2657,7 +2657,7 @@ else if ($akcija == "edit") {
 //			$nova_ak_god = mysql_result($q630,0,0)+1;
 
 //			if ($godina_prijemnog==$nova_ak_god) {
-			if (!$korisnik_student && !$korisnik_nastavnik) {
+			if (!$korisnik_student) {
 				?>
 				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na <?
 				$q630 = myquery("select naziv from studij where id=$r600[3]");
