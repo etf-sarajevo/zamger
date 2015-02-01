@@ -471,13 +471,73 @@ while ($r21 = mysql_fetch_row($q21)) {
 <table width="600" border="0"><tr><td>
 <?
 
-$q110 = myquery("select izvjestaj_skripte, komentar, userid, status from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+$q110 = myquery("select izvjestaj_skripte, komentar, userid, status, bodova from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 if (mysql_num_rows($q110)>0) {
 	$poruka = mysql_result($q110,0,0);
 	$komentar = mysql_result($q110,0,1);
 	$tutor = mysql_result($q110,0,2);
 	$status_zadace = mysql_result($q110,0,3);
+	$bodova = mysql_result($q110,0,4);
 
+	// Statusni ekran
+	if ($status_zadace == 3) {
+		$bgcolor = "#fcc";
+		$status_tekst = "<b>Ne može se kompajlirati</b>";
+		$status_ikona = "zad_bug";
+	}
+	else if ($status_zadace == 2) {
+		$bgcolor = "#fcc";
+		$status_tekst = "<b>Zadaća prepisana</b>";
+		$status_ikona = "zad_copy";
+	}
+	else if ($status_zadace == 1 || $status_zadace == 4) {
+		$bgcolor = "#ffc";
+		$status_tekst = "<b>Pregled u toku</b>";
+		$status_ikona = "zad_preg";
+	}
+	else if ($status_zadace == 5) {
+		$status_tekst = "<b>Zadaća pregledana: $bodova bodova</b>";
+		$status_ikona = "zad_ok";
+	}
+
+	// Status testova
+	if ($status_zadace == 1 || $status_zadace == 4 || $status_zadace == 5) {
+		$q111 = myquery("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$userid");
+		$ukupno_testova = mysql_result($q111,0,0);
+	}
+	if ($status_zadace == 4 || $status_zadace == 5) {
+		$q112 = myquery("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$userid AND ar.status='ok'");
+		$proslo_testova = mysql_result($q112,0,0);
+	}
+
+	if ($status_zadace == 1 || $status_zadace == 3) {
+		if ($ukupno_testova > 0)
+			$status_tekst .= "<br>Ispod su stari rezultati testova za prošlu verziju zadaće";
+	}
+	else if ($status_zadace == 4 || $status_zadace == 5) {
+		if ($ukupno_testova > 0 && $ukupno_testova > $proslo_testova) {
+			$bgcolor = "#ffc";
+			$status_tekst .= ". <b>".($ukupno_testova-$proslo_testova)." od $ukupno_testova testova nije prošlo</b>";
+		}
+		else if ($ukupno_testova > 0) {
+			$bgcolor = "#cfc";
+			$status_tekst .= ". <b>Prošli svi testovi</b>";
+		} else if ($status_zadace == 5) {
+			$bgcolor = "#cfc";
+		} else {
+			$bgcolor = "#ffc";
+		}
+	}
+
+	?>
+	<table width="95%" style="border: 1px solid silver; background-color: <?=$bgcolor?>" cellpadding="5">
+	<tr><td align="center">
+		<p>Status zadaće:<br>
+		<img src="images/16x16/<?=$status_ikona?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status_zadace]?>"> <?=$status_tekst?></p>
+	</td></tr>
+	</table>
+	<?
+	
 	// Vrijeme slanja
 	$q113 = myquery("SELECT UNIX_TIMESTAMP(vrijeme) FROM zadatak WHERE student=$userid AND userid=$userid AND zadaca=$zadaca AND redni_broj=$zadatak ORDER BY id DESC LIMIT 1");
 	
