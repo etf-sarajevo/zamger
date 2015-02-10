@@ -38,11 +38,11 @@ function public_anketa() {
 		// Nije, uzimamo trenutno aktivnu anketu
 		if ($predmet>0) 
 			// Možda je anketa samo za jedan predmet?
-			$sql_dodaj = " and ((ap.predmet=$predmet and ap.akademska_godina=$ag) or ap.predmet IS NULL)";
+			$upit = "select aa.id from anketa_anketa as aa, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 and (ap.predmet=$predmet or ap.predmet IS NULL) and ap.akademska_godina=$ag order by aa.id desc";
 		else
-			$sql_dodaj = " and aa.akademska_godina=ag.id and ag.aktuelna=1";
+			$upit = "select aa.id from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 and aa.akademska_godina=ag.id and ag.aktuelna=1 order by aa.id desc";
 
-		$q20 = myquery("select aa.id from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 $sql_dodaj order by aa.id desc");
+		$q20 = myquery($upit);
 		if (mysql_num_rows($q20)==0) {
 			biguglyerror("Anketa trenutno nije aktivna. A");
 			return;
