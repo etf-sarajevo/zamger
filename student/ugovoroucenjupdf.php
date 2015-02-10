@@ -60,13 +60,22 @@ $imeprezime = mysql_result($q10,0,0)." ".mysql_result($q10,0,1);
 $brindexa = mysql_result($q10,0,2);
 
 
-// Najnoviji plan za odabrani studij
-$q6 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-if (mysql_num_rows($q6)<1) { 
-	niceerror("Nepostojeći studij");
-	return;
+// Odabir plana studija
+$plan_studija = 0;
+$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
+if (mysql_num_rows($q5a)>0 && $studij ==  mysql_result($q5a,0,0))
+	$plan_studija = mysql_result($q5a,0,1);
+
+if ($plan_studija == 0) {
+	// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
+	// Uzimamo najnoviji plan za odabrani studij
+	$q6 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+	if (mysql_num_rows($q6)<1) { 
+		niceerror("Nepostojeći studij");
+		return;
+	}
+	$plan_studija = mysql_result($q6,0,0);
 }
-$najnoviji_plan = mysql_result($q6,0,0);
 
 
 // Da li je ponovac (ikada slušao isti tip studija)?
@@ -85,7 +94,7 @@ if (mysql_num_rows($q20)<1) {
 
 // Odredjujemo da li ima prenesenih predmeta
 // TODO: ovo sada ne radi za izborne predmete
-$q20 = myquery("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+$q20 = myquery("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 if (mysql_num_rows($q20)>1) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
@@ -196,10 +205,10 @@ $pdf->AddPage();
 	// Spisak obaveznih predmeta na neparnom semestru
 	// Ako je ponovac, ne prikazujemo predmete koje je polozio
 	if ($ponovac==1) 
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
 	// Ako nije, trebamo prikazati one koje je položio u koliziji
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
 
 	$ykoord = 95;
 	$ects = 0;
@@ -278,9 +287,9 @@ $pdf->AddPage();
 	
 	// Spisak obaveznih predmeta na parnom semestru
 	if ($ponovac==1)
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$najnoviji_plan and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
 	$ykoord = 95;
 	$ects = 0;
 	while ($r100 = mysql_fetch_row($q100)) {
