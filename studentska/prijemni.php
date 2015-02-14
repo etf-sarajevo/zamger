@@ -2624,8 +2624,13 @@ function testjmbg($jmbg) {
 		$cifre[$i] = $slovo-'0';
 	}
 	// Datum
-	if (!checkdate($cifre[2]*10+$cifre[3], $cifre[0]*10+$cifre[1], $cifre[4]*10+$cifre[5]))
-		return "Datum rođenja je kalendarski nemoguć";
+	$dan    = $cifre[2]*10+$cifre[3];
+	$mjesec = $cifre[0]*10+$cifre[1];
+	$godina = $cifre[4]*100+$cifre[5]*10+$cifre[6];
+	if ($cifre[4] > 5) $godina += 1000; else $godina += 2000;
+	if (!checkdate($dan,$mjesec,$godina))
+		return "Datum rođenja je kalendarski nemoguć: $dan $mjesec $godina";
+	
 	// Checksum
 	$k = 11 - (( 7*($cifre[0]+$cifre[6]) + 6*($cifre[1]+$cifre[7]) + 5*($cifre[2]+$cifre[8]) + 4*($cifre[3]+$cifre[9]) + 3*($cifre[4]+$cifre[10]) + 2*($cifre[5]+$cifre[11]) ) % 11);
 	if ($k==11) $k=0;
