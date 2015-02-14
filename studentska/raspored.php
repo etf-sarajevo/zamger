@@ -296,7 +296,7 @@ function ispisPocetne() {
 		<div><a href = "#" onclick="daj_stablo(\'sg\'); document.getElementById(\'formP1\').reset();"><img id = "img-sg" src = "images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sg" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP1" id = "formP1" action = "studentska/print.php?act=PG" target = "_blank" method = "post">
-				Printanje grupa za pedmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
+				Printanje grupa za predmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
 				<input type = "hidden" name = "predmetNameH" id = "predmetNameH" />
 				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
 			</form>
