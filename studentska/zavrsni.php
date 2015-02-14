@@ -58,7 +58,7 @@ function studentska_zavrsni()  {
 		
 		<p>Izaberite predmet:</p>
 		<ul><?
-		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, akademska_godina as ag, predmet as p, studij AS s WHERE pk.akademska_godina = ag.id AND ag.aktuelna=1 AND pk.predmet=p.id AND SUBSTRING(p.naziv, 1, 12)='Završni rad' AND pk.studij=s.id ORDER BY p.naziv, s.naziv");
+		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, predmet as p, studij AS s WHERE pk.akademska_godina = $ag AND pk.predmet=p.id AND SUBSTRING(p.naziv, 1, 12)='Završni rad' AND pk.studij=s.id ORDER BY p.naziv, s.naziv");
 		if (mysql_num_rows($q100) == 0) {
 			niceerror("Nije definisan niti jedan predmet pod imenom Završni rad.");
 		}
