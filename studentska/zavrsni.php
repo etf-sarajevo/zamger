@@ -272,7 +272,7 @@ function studentska_zavrsni()  {
 
 					$q921 = myquery("SELECT COUNT(*) FROM nastavnik_predmet WHERE nastavnik=$mentor AND predmet=$predmet AND akademska_godina=$ag");
 					if (mysql_result($q921,0,0)==0) {
-						$q922 = myquery("INSERT INTO nastavnik_predmet SET nastavnik=$mentor, predmet=$predmet, akademska_godina=$ag, admin=0, nivo_pristupa='asistent'");
+						$q922 = myquery("INSERT INTO nastavnik_predmet SET nastavnik=$mentor, predmet=$predmet, akademska_godina=$ag, admin=0, nivo_pristupa='nastavnik'");
 					}
 					$q922 = myquery("INSERT INTO ogranicenje SET nastavnik=$mentor, labgrupa=$id_labgrupe");
 				} else
