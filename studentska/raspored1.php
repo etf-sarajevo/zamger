@@ -709,7 +709,7 @@ else{
 		if($greska_postoji_raspored==0){
 			$q0=myquery("insert into raspored set id='NULL', akademska_godina=$akademska_godina, studij=$studij, semestar=$semestar");
 			$uspjesno_unesen_raspored=1;
-			zamgerlog("Unesen novi raspored", 2);
+			zamgerlog("unesen novi raspored", 2);
 		}
 	}
 	
@@ -783,7 +783,7 @@ else{
 						}
 						if($postoji_labgrupa==false){
 							$q73=myquery("insert into labgrupa set id='NULL',naziv='$novi_naziv',predmet=$predmet,akademska_godina=$odrediste,virtualna=$virtualna");
-							zamgerlog("Uspjesno unesena labgrupa", 2);
+							zamgerlog("uspjesno unesena labgrupa", 2);
 							$q74=myquery("select max(id) from labgrupa");
 						}
 						else{
@@ -808,7 +808,7 @@ else{
 					}	
 				}		
 			}
-			zamgerlog("Uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.", 2);
+			zamgerlog("uspjesno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.", 2);
 			nicemessage("Uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.");
 		}
 	}
@@ -945,7 +945,7 @@ else{
 					$q0=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored_za_edit, dan_u_sedmici=$dan, predmet=$predmet,
 						vrijeme_pocetak=$vrijeme_pocetak,vrijeme_kraj=$vrijeme_kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa");
 					$cas_uspjesno_dodan=1;
-					zamgerlog("Unesen novi cas za akademsku $naziv_akademske_godine, studij $naziv_studija, semestar $semestar", 2);
+					zamgerlog("unesen novi cas za akademsku $naziv_akademske_godine, studij $naziv_studija, semestar $semestar", 2);
 					if (count($konflikt['student'])>0 && $cas_sa_konfliktima==1) $cas_dodan_sa_konfliktima=1;
 					$q00=myquery("select max(id) from raspored_stavka");
 					$id_unesene_stavke=mysql_result($q00,0,0);
@@ -979,7 +979,7 @@ else{
 								if($raspored_i!=$raspored_za_edit){
 									$q3=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored_i, dan_u_sedmici=$dan, predmet=$predmet,
 										vrijeme_pocetak=$vrijeme_pocetak,vrijeme_kraj=$vrijeme_kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$id_unesene_stavke");
-									zamgerlog("Unesen novi cas za akademsku $naziv_akademske_godine godinu", 2);
+									zamgerlog("unesen novi cas za akademsku $naziv_akademske_godine godinu", 2);
 								}	
 							}	
 						}
