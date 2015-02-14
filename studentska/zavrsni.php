@@ -106,7 +106,7 @@ function studentska_zavrsni()  {
 	// Default akcija - LISTA ZAVRSNIH RADOVA
 	if (!isset($akcija)) {
 		?>
-		<h2>Lista tema završnih radova</h2>
+		<h3>Lista tema završnih radova</h3>
 		<?
 
 		// Početne informacije
@@ -129,7 +129,9 @@ function studentska_zavrsni()  {
 		}
 
 		$nema = "<font color=\"gray\">(nema)</font>";
-
+		
+		$ocjene = array("Šest", "Sedam", "Osam", "Devet", "Deset");
+		
 		?>
 		<table border="1" cellspacing="0" cellpadding="4">
 			<tr bgcolor="#CCCCCC">
@@ -179,7 +181,7 @@ function studentska_zavrsni()  {
 			if ($student>0) {
 				$q903 = myquery("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
 				if (mysql_num_rows($q903)>0 && mysql_result($q903,0,0)>5)
-					$konacna_ocjena = mysql_result($q903,0,0);
+					$konacna_ocjena = mysql_result($q903,0,0) . " (" . $ocjene[mysql_result($q903,0,0)-6] . ")";
 			}
 
 			?>
