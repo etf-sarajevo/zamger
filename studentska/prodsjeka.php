@@ -102,10 +102,11 @@ if ($_REQUEST['akcija']=="prihvati") {
 	$u_odsjek = mysql_result($q500,0,2);
 
 	// Da li trenutno studira
-	$q510 = myquery("select s.id, s.naziv from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god");
+	$q510 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god");
 	if (mysql_num_rows($q510)>0) {
 		$studij=mysql_result($q510,0,0);
 		$naziv_studija=mysql_result($q510,0,1);
+		$semestar=mysql_result($q510,0,2);
 
 		if ($studij==$u_odsjek) {
 			nicemessage("Student je već upisan na studij $naziv_studija");
@@ -119,7 +120,7 @@ if ($_REQUEST['akcija']=="prihvati") {
 
 		// Ispis sa studija
 		?>
-		<p>Najprije morate ispisati studenta sa studija <?=$naziv_studija?>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$u_odsjek?>&semestar=<?=$manji?>&godina=<?=$ak_god?>">Kliknite ovdje da ispišete studenta sa studija,</a> a zatim se vratite na stranicu &quot;Promjena odsjeka&quot; kako biste ga/je upisali na novi studij.</p>
+		<p>Najprije morate ispisati studenta sa studija <?=$naziv_studija?>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$iz_odsjeka?>&semestar=<?=$semestar?>&godina=<?=$ak_god?>">Kliknite ovdje da ispišete studenta sa studija,</a> a zatim se vratite na stranicu &quot;Promjena odsjeka&quot; kako biste ga/je upisali na novi studij.</p>
 		<?
 		return;
 	}
