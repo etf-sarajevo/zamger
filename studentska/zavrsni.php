@@ -114,7 +114,12 @@ function studentska_zavrsni()  {
 		if ($order_by == "mentor") $order_by="o2.prezime $dir, o2.ime $dir";
 		if ($order_by == "naslov") $order_by="z.naslov $dir";
 
-		$q900 = myquery("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen FROM zavrsni as z, osoba as o, osoba as o2 WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.student=o.id AND z.mentor=o2.id ORDER BY $order_by");
+		$q900 = myquery("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen 
+		FROM zavrsni as z
+		LEFT JOIN osoba as o ON z.student=o.id 
+		LEFT JOIN osoba as o2 ON z.mentor=o2.id 
+		WHERE z.predmet=$predmet AND z.akademska_godina=$ag
+		ORDER BY $order_by");
 		$broj_tema = mysql_num_rows($q900);
 		if ($broj_tema == 0) {
 			?>
