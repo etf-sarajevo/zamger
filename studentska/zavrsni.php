@@ -344,6 +344,14 @@ function studentska_zavrsni()  {
 			$tekst = "Nova tema završnog rada";
 			$id_studenta = $id_mentora = $id_predkom = $id_clankom = $rad_na_predmetu = 0;
 			$naslov = $kratki_pregled = $literatura = "";
+			
+			$q99 = myquery("SELECT count(*) FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
+			if (mysql_result($q99,0,0) < 1) {
+				niceerror("Nije moguće kreirati novi završni rad pošto se ne može izabrati mentor.");
+				print "<p>Potrebno je pridružiti barem jednog nastavnika kao odgovornog nastavnika na predmetu ".mysql_result($q110,0,0)." (".mysql_result($q110,0,1).").</p>";
+				print "<p><a href=\"$linkPrefix\">Nazad na spisak tema</a></p>";
+				return;
+			}
 		}
 
 		?>	
