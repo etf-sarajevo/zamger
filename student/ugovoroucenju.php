@@ -65,7 +65,7 @@ function student_ugovoroucenju() {
 	// Odabir plana studija
 	$plan_studija = 0;
 	if ($studij>0) {
-		$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
+		$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
 		if (mysql_num_rows($q5a)>0 && $studij ==  mysql_result($q5a,0,0))
 			$plan_studija = mysql_result($q5a,0,1);
 		
@@ -141,7 +141,7 @@ function student_ugovoroucenju() {
 						
 						if (provjeri_kapacitet($izabran, $zagodinu, $plan_studija) == 0) {
 							niceerror("Predmet ".mysql_result($q130,0,1)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
-							zamgerlog2("popunjen kapacitet za predmet", $predmet);
+							zamgerlog2("popunjen kapacitet za predmet", $izabran);
 							return;
 						}
 						

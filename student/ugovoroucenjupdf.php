@@ -62,7 +62,7 @@ $brindexa = mysql_result($q10,0,2);
 
 // Odabir plana studija
 $plan_studija = 0;
-$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
+$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
 if (mysql_num_rows($q5a)>0 && $studij ==  mysql_result($q5a,0,0))
 	$plan_studija = mysql_result($q5a,0,1);
 
