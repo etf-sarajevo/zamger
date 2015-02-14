@@ -33,7 +33,29 @@ function studentska_zavrsni()  {
 	// Da li je odabran predmet
 	if ($predmet == 0) {
 		?>
+		<form action="index.php" method="GET">
+		<input type="hidden" name="sta" value="studentska/zavrsni">
 		<h2>Završni rad</h2>
+		<p>Akademska godina: <select name="ag">
+		<?
+		
+		$ag = intval($_REQUEST['ag']);
+		$q95 = myquery("SELECT id, naziv, aktuelna FROM akademska_godina ORDER BY id DESC");
+		while ($r95 = mysql_fetch_row($q95)) {
+			if ($r95[0] == $ag) {
+				$add = "SELECTED";
+			} else if ($ag == 0 && $r95[2] == 1) {
+				$add = "SELECTED";
+				$ag = $r95[0];
+			} else
+				$add = "";
+			print "<option value=\"$r95[0]\" $add>$r95[1]</option>\n";
+		}
+
+		?>
+		</select> <input type="submit" value=" Ok ">
+		</form>
+		
 		<p>Izaberite predmet:</p>
 		<ul><?
 		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, akademska_godina as ag, predmet as p, studij AS s WHERE pk.akademska_godina = ag.id AND ag.aktuelna=1 AND pk.predmet=p.id AND SUBSTRING(p.naziv, 1, 12)='Završni rad' AND pk.studij=s.id ORDER BY p.naziv, s.naziv");
