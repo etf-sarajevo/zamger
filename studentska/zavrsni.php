@@ -279,7 +279,7 @@ function studentska_zavrsni()  {
 					$id_labgrupe = mysql_result($q907,0,0);
 
 				// Stavljamo studenta u grupu određenog profesora
-				if ($id>0) {
+				if ($id_labgrupe>0) {
 					$q911 = myquery("SELECT l.id FROM student_labgrupa AS sl, labgrupa AS l WHERE sl.student=$student AND sl.labgrupa=l.id AND l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0");
 					while ($r911 = mysql_fetch_row($q911)) {
 						$q912 = myquery("DELETE FROM student_labgrupa WHERE student=$student AND labgrupa=".$r911[0]);
