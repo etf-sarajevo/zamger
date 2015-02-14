@@ -1420,8 +1420,9 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			// bodovi = suma od (ocjena*ects) / suma ects / brojsemestara
 			//$bodovi = $bodovi / $sumaects / $maxsemestar;
 			// Po novom konkursu od 2010. godine za rangiranje se uzima samo prosjek
+			// Po konkursu iz 2012. godine prosjek se množi sa 10 (max. 100 bodova) da bi se sabrao sa 40 bodova sa prijemnog ispita
 			if ($brojocjena>0)
-				$bodovi = $sumaocjena / $brojocjena;
+				$bodovi = round(($sumaocjena / $brojocjena) * 100) / 10;
 			else $bodovi=0;
 			$q11 = myquery("insert into prosliciklus_uspjeh set osoba=$osoba, opci_uspjeh=$bodovi, broj_semestara=$maxsemestar");
 		}
