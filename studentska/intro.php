@@ -110,7 +110,7 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 	$q195 = myquery("select UNIX_TIMESTAMP(vrijeme_zahtjeva), slika from promjena_podataka where id=$id");
 	if (mysql_num_rows($q195)<1) {
 		niceerror("Nepostojeci zahtjev sa IDom $id.");
-		zamgerlog("Nepostojeci zahtjev sa IDom $id.", 3);
+		zamgerlog("nepostojeci zahtjev sa IDom $id", 3);
 		return;
 	}
 	$vrijeme_zahtjeva=mysql_result($q195,0,0);
@@ -330,6 +330,175 @@ if ($_GET['akcija'] == "zahtjev") {
 
 
 
+// Zahtjevi za dokumenta / potvrde
+
+
+if ($_GET['akcija'] == "obradi_potvrdu") {
+	$id = intval($_GET['id']);
+	$status = intval($_GET['status']);
+	$q210 = myquery("UPDATE zahtjev_za_potvrdu SET status=$status WHERE id=$id");
+	zamgerlog("obradjen zahtjev za potvrdu $id (status: $status)", 2);
+	zamgerlog2("obradjen zahtjev za potvrdu", $id, $status);;
+
+	nicemessage("Zahtjev obrađen");
+
+
+	// Poruka korisniku
+	$q215 = myquery("SELECT UNIX_TIMESTAMP(datum_zahtjeva), student FROM zahtjev_za_potvrdu WHERE id=$id");
+	$vrijeme_zahtjeva = mysql_result($q215,0,0);
+	$student = mysql_result($q215,0,1);
+	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za ovjereno uvjerenje ili potvrdu o redovnom studiju. Vaše uvjerenje je spremno i možete ga preuzeti u studentskoj službi.";
+	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$student, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='Vaša potvrda/uvjerenje je spremno', tekst='$tekst_poruke'");
+
+	// Slanje GCM poruke
+	require("gcm/push_message.php");
+	push_message(array($student), "Potvrde", "Vaša potvrda/uvjerenje je spremno");
+	$_GET['akcija'] = "potvrda";
+}
+
+if ($_GET['akcija'] == "obrisi_potvrdu") {
+	$id = intval($_GET['id']);
+	$q210 = myquery("DELETE FROM zahtjev_za_potvrdu WHERE id=$id");
+	zamgerlog("obrisan zahtjev za potvrdu $id", 2);
+	zamgerlog2("obrisan zahtjev za potvrdu", $id, $status);;
+
+	nicemessage("Zahtjev obrisan");
+
+	$_GET['akcija'] = "potvrda";
+}
+
+
+if ($_GET['akcija'] == "potvrda") {
+
+	if ($_REQUEST['sort'] == "prezime") {
+		$order_by = "ORDER BY o.prezime, o.ime";
+		$link1 = "prezime_desc";
+		$link2 = "brindexa";
+		$link3 = "datum";
+	} else if ($_REQUEST['sort'] == "prezime_desc") {
+		$order_by = "ORDER BY o.prezime DESC, o.ime DESC";
+		$link1 = "prezime";
+		$link2 = "brindexa";
+		$link3 = "datum";
+	} else if ($_REQUEST['sort'] == "datum")  {
+		$order_by = "ORDER BY zzp.datum_zahtjeva";
+		$link1 = "prezime";
+		$link2 = "brindexa";
+		$link3 = "datum_desc";
+	} else if ($_REQUEST['sort'] == "datum_desc") {
+		$order_by = "ORDER BY zzp.datum_zahtjeva DESC";
+		$link1 = "prezime";
+		$link2 = "brindexa";
+		$link3 = "datum";
+	} else if ($_REQUEST['sort'] == "brindexa")  {
+		$order_by = "ORDER BY o.brindexa";
+		$link1 = "prezime";
+		$link2 = "brindexa_desc";
+		$link3 = "datum";
+	} else if ($_REQUEST['sort'] == "brindexa_desc") {
+		$order_by = "ORDER BY o.brindexa DESC";
+		$link1 = "prezime";
+		$link2 = "brindexa";
+		$link3 = "datum";
+	} else { // Default
+		$order_by = "ORDER BY zzp.datum_zahtjeva";
+		$link1 = "prezime";
+		$link2 = "brindexa";
+		$link3 = "datum_desc";
+	}
+
+	?>
+	<p><b>Neobrađeni zahtjevi</b></p>
+	<table border="1" cellspacing="0" cellpadding="2">
+		<tr>
+			<th>R.br.</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link1?>">Prezime i ime studenta</a></th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link2?>">Broj indeksa</a></th><th>Tip zahtjeva</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link3?>">Datum</a></th><th>Opcije</th>
+		</tr>
+	<?
+
+	$q200 = myquery("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
+	$rbr = 1;
+	while ($r200 = mysql_fetch_row($q200)) {
+		if ($r200[3] == 1)
+			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&svrha=$r200[7]";
+		else
+			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
+
+		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td><td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
+
+		// Dodatne kontrole
+		$error = 0;
+		$q210 = myquery("SELECT count(*) FROM student_studij AS ss, akademska_godina AS ag WHERE ss.student=$r200[6] AND ss.akademska_godina=ag.id AND ag.aktuelna=1");
+		if (mysql_result($q210,0,0) == 0) {
+			print " - <font color=\"red\">trenutno nije upisan na studij!</font>"; $error=1;
+		}
+		
+		$q220 = myquery("SELECT mjesto_rodjenja, datum_rodjenja, jmbg FROM osoba WHERE id=$r200[6]");
+		if (mysql_result($q220,0,0) == 0) {
+			print " - <font color=\"red\">nedostaje mjesto rođenja</font>"; $error=1;
+		}
+		if (mysql_result($q220,0,1) == '0000-00-00') {
+			print " - <font color=\"red\">nedostaje datum rođenja</font>"; $error=1;
+		}
+
+		if (mysql_result($q220,0,2) == "") {
+			print " - <font color=\"red\">nedostaje JMBG</font>"; $error=1;
+		}
+		if ($error == 1)
+			print " <a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r200[6]\">popravi</a>";
+		print "</td></tr>\n";
+		$rbr++;
+	}
+
+	?>
+	</table>
+	<p><b>Obrađeni zahtjevi</b></p>
+	<?
+	if ($_REQUEST['subakcija'] == "arhiva") {
+		?>
+		<p><a href="?sta=studentska/intro&akcija=potvrda">Sakrij zahtjeve starije od mjesec dana</a></p>
+		<?
+	} else {
+		?>
+		<p><a href="?sta=studentska/intro&akcija=potvrda&subakcija=arhiva">Prikaži zahtjeve starije od mjesec dana</a></p>
+		<?
+	}
+	?>
+	<table border="1" cellspacing="0" cellpadding="2">
+		<tr>
+			<th>R.br.</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link1?>">Prezime i ime studenta</a></th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link2?>">Broj indeksa</a></th><th>Tip zahtjeva</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link3?>">Datum</a></th><th>Opcije</th>
+		</tr>
+	<?
+
+	if ($_REQUEST['subakcija'] == "arhiva") $arhiva = "";
+	else $arhiva = "AND zzp.datum_zahtjeva > DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+
+	$q200 = myquery("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=2 $arhiva $order_by");
+	$rbr = 1;
+	while ($r200 = mysql_fetch_row($q200)) {
+		if ($r200[3] == 1)
+			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&svrha=$r200[7]";
+		else
+			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
+
+		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td><td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=1\">postavi kao neobrađen</a> * <a href=\"?sta=studentska/intro&akcija=obrisi_potvrdu&id=$r200[0]\">obriši</a></td></tr>\n";
+		$rbr++;
+	}
+
+	print "</table>\n";
+	return;
+}
+
+
+
+// -----------------------------------------
+//
+// POCETNA STRANICA
+//
+// -----------------------------------------
+
+
+
+
 // Dobrodošlica
 
 $q1 = myquery("select ime, spol from osoba where id=$userid");
@@ -371,6 +540,16 @@ Kliknite na zahtjev da biste ga prihvatili ili odbili.
 <?
 
 }
+
+
+// Zathjevi za dokumenta
+
+$q40 = myquery("SELECT count(*) FROM zahtjev_za_potvrdu WHERE status=1");
+$br_zahtjeva = mysql_result($q40, 0, 0);
+if ($br_zahtjeva > 0)
+	print "<p><a href=\"?sta=studentska/intro&akcija=potvrda\">Imate $br_zahtjeva neobrađenih zahtjeva za dokumenta.</a></p>";
+else
+	print "<p>Nema neobrađenih zahtjeva za dokumenta.</p>";
 
 
 

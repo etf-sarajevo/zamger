@@ -3248,6 +3248,60 @@ INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkin
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `svrha_potvrde`
+--
+
+CREATE TABLE IF NOT EXISTS `svrha_potvrde` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=37 ;
+
+--
+-- Dumping data for table `svrha_potvrde`
+--
+
+INSERT INTO `svrha_potvrde` (`id`, `naziv`) VALUES
+(1, 'regulisanja stipendije'),
+(2, 'regulisanja prava na prevoz'),
+(3, 'regulisanja zdravstvenog osiguranja'),
+(4, 'regulisanja prava na šehidsku penziju'),
+(5, 'regulisanja prava prijave na biro za zapošljavanje'),
+(6, 'regulisanja socijalnog statusa'),
+(7, 'regulisanja alimentacije'),
+(8, 'regulisanja dječijeg dodatka'),
+(9, 'regulisanja donacije'),
+(10, 'regulisanja ferijalne prakse'),
+(11, 'regulisanja penzije za civilne žrtve rata'),
+(12, 'regulisanja prava na boračku penziju'),
+(13, 'regulisanja prava na honorar'),
+(14, 'regulisanja prava na invalidninu'),
+(15, 'regulisanja prava na izdavanje pasoša'),
+(16, 'regulisanja prava na poreske olakšice'),
+(17, 'regulisanja prava na porodičnu penziju'),
+(18, 'regulisanja prava na porodiljsku naknadu'),
+(19, 'regulisanja prava na pristup internetu'),
+(20, 'regulisanja prava na studentski dom'),
+(21, 'regulisanja prava privremenog boravka'),
+(22, 'regulisanja prava na izdavanje studentske kartice'),
+(24, 'regulisanja radne vize'),
+(25, 'regulisanja slobodnih dana za zaposlene studente'),
+(26, 'regulisanja stambenog pitanja'),
+(27, 'regulisanja statusnih pitanja'),
+(29, 'regulisanja studentskog kredita'),
+(30, 'regulisanja subvencije'),
+(31, 'regulisanja turističke vize'),
+(32, 'regulisanja vojne obaveze'),
+(33, 'regulisanja vozačkog ispita'),
+(35, 'učlanjenja u studentsku zadrugu'),
+(36, 'regulisanja telekom usluga'),
+(101, 'aplikacije na drugi fakultet'),
+(102, 'hospitovanja u školi'),
+(103, 'ostvarivanja prava na jednokratnu novčanu pomoć');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tipkomponente`
 --
 
@@ -3333,6 +3387,26 @@ INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VAL
 (1, 'Bakalaureat', 1, 6, 1),
 (2, 'Master', 2, 4, 1),
 (3, 'Doktorski studij', 3, 6, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tip_potvrde`
+--
+
+CREATE TABLE IF NOT EXISTS `tip_potvrde` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(100) collate utf8_slovenian_ci default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `tip_potvrde`
+--
+
+INSERT INTO `tip_potvrde` (`id`, `naziv`) VALUES
+(1, 'potvrda o redovnom studiju'),
+(2, 'uvjerenje o položenim ispitima');
 
 -- --------------------------------------------------------
 
@@ -3519,6 +3593,23 @@ CREATE TABLE IF NOT EXISTS `zadatakdiff` (
 --
 -- Dumping data for table `zadatakdiff`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `zahtjev_za_potvrdu`
+--
+
+CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
+  `id` int(11) NOT NULL auto_increment,
+  `student` int(11) default NULL,
+  `tip_potvrde` int(11) default NULL,
+  `svrha_potvrde` int(11) default NULL,
+  `datum_zahtjeva` datetime default NULL,
+  `status` int(11) default NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=10972 ;
 
 
 -- --------------------------------------------------------
