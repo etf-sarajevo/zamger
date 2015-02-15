@@ -66,6 +66,14 @@ function studentska_zavrsni()  {
 			?><li><a href="?sta=studentska/zavrsni&predmet=<?=$r100[0]?>&ag=<?=$r100[1]?>"><?=$r100[2]?> (<?=$r100[3]?>)</a></li><?
 		}
 		print "</ul>";
+
+		// Izvještaj "spisak završenih studenata"
+		?>
+		<h3>Izvještaji</h3>
+		<p>- <a href="?sta=izvjestaj/zavrsni_spisak&ciklus=1&ag=<?=$ag?>">Spisak završenih studenata 1. ciklusa</a><br>
+		- <a href="?sta=izvjestaj/zavrsni_spisak&ciklus=2&ag=<?=$ag?>">Spisak završenih studenata 2. ciklusa</a></p>
+		<?
+
 		return;
 	} else {
 		$q110 = myquery("SELECT p.naziv, s.kratkinaziv FROM predmet as p, ponudakursa as pk, studij as s WHERE p.id=$predmet AND p.id=pk.predmet AND pk.akademska_godina=$ag AND pk.studij=s.id");
@@ -204,7 +212,15 @@ function studentska_zavrsni()  {
 			<?
 		} // while ($r901...
 
-		?></table><?
+		?></table>
+		
+		<h3>Izvještaji</h3>
+		
+		<p>- <a href="?sta=izvjestaj/zavrsni_teme&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Prijedlog tema za završne radove po mentoru</a><br>
+		-  <a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Spisak tema sa kandidatima i komisijama</a>
+		</p>
+		
+		<?
 	} // if (!isset($akcija) - lista završnih radova
 
 

@@ -67,6 +67,9 @@ array("izvjestaj/termini_ispita", "Izvještaj za termine ispita", "Termin ispita
 array("izvjestaj/ugovoroucenju", "Spisak odabranih izbornih predmeta", "Izborni predmeti", "NBA", "0", "0"),
 array("izvjestaj/uspjesnost", "Uspješnost studenata i prosječno trajanje studija", "Uspješnost studenata", "BA", "0", "0"),
 array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisnik - završni rad", "BA", "0", "0"),
+array("izvjestaj/zavrsni_spisak", "Spisak završenih studenata", "Spisak završenih studenata", "NBA", "0", "0"),
+array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za završne", "NBA", "0", "0"),
+array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
 
 
 array("nastavnik/grupe", "Grupe za predavanja i vježbe", "Grupe", "N", "1", "0"),
