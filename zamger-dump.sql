@@ -1617,7 +1617,7 @@ CREATE TABLE IF NOT EXISTS `poruka` (
 
 CREATE TABLE IF NOT EXISTS `predmet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sifra` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
+  `sifra` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `institucija` int(11) NOT NULL DEFAULT '0',
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
@@ -3545,6 +3545,7 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `clan_komisije` INT(11) NOT NULL,
   `termin_odbrane` datetime NOT NULL,
   `konacna_ocjena` int(11) NOT NULL DEFAULT '5',
+  `broj_diplome` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

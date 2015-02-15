@@ -226,6 +226,7 @@ function studentska_zavrsni()  {
 			$rad_na_predmetu = intval($_REQUEST['rad_na_predmetu']);
 			if ($student > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
 			$literatura = my_escape(trim($_REQUEST['literatura']));
+			$broj_diplome = my_escape($_REQUEST['broj_diplome']);
 			
 			// Kontrola termina odbrane
 			if ($_REQUEST['termin_odbrane'] != "") {
@@ -292,7 +293,7 @@ function studentska_zavrsni()  {
 
 	
 			if ($id > 0) { // Izmjena teme
-				$q905 = myquery("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = myquery("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu, broj_diplome='$broj_diplome' WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Tema završnog rada je uspješno izmijenjena.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
@@ -305,7 +306,7 @@ function studentska_zavrsni()  {
 				else
 					$id = mysql_result($znesta,0,0)+1;
 
-				$q906 = myquery("INSERT INTO zavrsni (id, naslov, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, termin_odbrane, rad_na_predmetu) VALUES ($id, '$naslov', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu)");
+				$q906 = myquery("INSERT INTO zavrsni (id, naslov, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, termin_odbrane, rad_na_predmetu, broj_diplome) VALUES ($id, '$naslov', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu, '$broj_diplome')");
 
 				nicemessage('Nova tema završnog rada je uspješno dodana.');
 				zamgerlog("dodana nova tema zavrsnog rada $id na predmetu pp$predmet", 2);
@@ -322,7 +323,7 @@ function studentska_zavrsni()  {
 		// Ako je definisan ID, onda je u pitanju izmjena
 		if ($id>0) {
 			$tekst = "Izmjena teme završnog rada";
-			$q98 = myquery("SELECT student, mentor, predsjednik_komisije, clan_komisije, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+			$q98 = myquery("SELECT student, mentor, predsjednik_komisije, clan_komisije, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu, broj_diplome FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 			if (mysql_num_rows($q98)<1) {
 				niceerror("Nepostojeći završni rad");
 				zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
@@ -339,11 +340,12 @@ function studentska_zavrsni()  {
 			$termin_odbrane = date("d. m. Y. H:i", mysql_result($q98, 0, 8));
 			if (mysql_result($q98, 0, 8) == 0) $termin_odbrane = "";
 			$rad_na_predmetu = mysql_result($q98, 0, 9);
+			$broj_diplome = mysql_result($q98, 0, 10);
 
 		} else {
 			$tekst = "Nova tema završnog rada";
 			$id_studenta = $id_mentora = $id_predkom = $id_clankom = $rad_na_predmetu = 0;
-			$naslov = $kratki_pregled = $literatura = "";
+			$naslov = $kratki_pregled = $literatura = $broj_diplome = "";
 			
 			$q99 = myquery("SELECT count(*) FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
 			if (mysql_result($q99,0,0) < 1) {
@@ -445,6 +447,10 @@ function studentska_zavrsni()  {
 				<div class="row">
 					<span class="label">Podnaslov</span>
 					<span class="formw"><input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$podnaslov?>"></span> 
+				</div>
+				<div class="row">
+					<span class="label">Broj diplome</span>
+					<span class="formw"><input name="broj_diplome" type="text" id="broj_diplome" size="20" value="<?=$broj_diplome?>"></span> 
 				</div>
 				<div class="row">
 					<span class="label">Termin odbrane<br> (format: dd. mm. gggg. hh:mm)</span>
