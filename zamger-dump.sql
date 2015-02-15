@@ -1167,6 +1167,7 @@ CREATE TABLE IF NOT EXISTS `mjesto` (
   `naziv` varchar(40) COLLATE utf8_slovenian_ci NOT NULL,
   `opcina` int(11) NOT NULL,
   `drzava` int(11) NOT NULL,
+  `opcina_van_bih` varchar(40) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `opcina` (`opcina`),
   KEY `drzava` (`drzava`)

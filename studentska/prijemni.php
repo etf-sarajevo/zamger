@@ -1064,6 +1064,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$rspol=$_REQUEST['spol']; // Moze biti samo 'M', 'Z' ili ''
 	$rmjestorod=my_escape(trim($_REQUEST['mjesto_rodjenja']));
 	$ropcinarod=intval($_REQUEST['opcina_rodjenja']);
+	$ropcinavanbihrod=my_escape(trim($_REQUEST['opcina_rodjenja_van_bih']));
 	$rdrzavarod=intval($_REQUEST['drzava_rodjenja']);
 	$rnacionalnost=my_escape(trim($_REQUEST['nacionalnost']));
 	$rdrzavljanstvo=intval($_REQUEST['drzavljanstvo']);
@@ -1110,14 +1111,20 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	if ($rmjestorod != "") {
 		$q300 = myquery("select id from mjesto where naziv like '$rmjestorod'");
 		if (mysql_num_rows($q300)<1) {
-			$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
+			if ($ropcinarod == 143)
+				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
+			else
+				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
 			$q300 = myquery("select id from mjesto where naziv='$rmjestorod'");
 			zamgerlog("upisano novo mjesto rodjenja $rmjestorod", 2);
 		} else {
 			$q300 = myquery("select id from mjesto where naziv like '$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
 			if (mysql_num_rows($q300)<1) {
 				// Napravicemo novo mjesto
-				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
+				if ($ropcinarod == 143)
+					$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
+				else
+					$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
 				$q300 = myquery("select id from mjesto where naziv='$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
 				zamgerlog("promjena opcine/drzave za mjesto rodjenja $rmjestorod", 2);
 			}
@@ -1519,7 +1526,7 @@ while ($r230 = mysql_fetch_row($q230)) {
 
 // Spisak gradova za mjesto rodjenja i adresu
 
-$q240 = myquery("select id, naziv, opcina, drzava from mjesto order by naziv");
+$q240 = myquery("select id, naziv, opcina, drzava, opcina_van_bih from mjesto order by naziv");
 $gradovir="<option></option>";
 $gradovia="<option></option>";
 $eopcinarodjenja = $edrzavarodjenja = 0;
@@ -1530,6 +1537,10 @@ while ($r240 = mysql_fetch_row($q240)) {
 		$mjestorvalue = $r240[1]; 
 		$eopcinarodjenja = $r240[2];
 		$edrzavarodjenja = $r240[3];
+		if ($edrzavarodjenja == 1)
+			$eopcinavanbih = "";
+		else
+			$eopcinavanbih = $r240[4];
 	}
  	if ($r240[0]==$eadresamjesto) { $gradovia  .= " SELECTED"; $adresarvalue = $r240[1]; }
 	$gradovir .= " onClick=\"javascript:selectujOpcinuRodjenja('$r240[2]', '$r240[3]');\">$r240[1]</option>\n";
@@ -1855,7 +1866,11 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr>
 		<td width="125" align="left">Općina rođenja:</td>
-		<td><select name="opcina_rodjenja" id="opcina_rodjenja" class="default" <? if ($eopcinarodjenja==0) { ?> style="background-color:#FFFF00" onChange="this.style.backgroundColor = '#FFFFFF';" <? } ?>><?=$opcinerodjr?></select> <font color="#FF0000">*</font></td>
+		<td><select name="opcina_rodjenja" id="opcina_rodjenja" class="default" onChange="this.style.backgroundColor = '#FFFFFF'; if (this.value == 143) document.getElementById('opcina_rodjenja_van_bih').disabled = false; else document.getElementById('opcina_rodjenja_van_bih').disabled = true;" <? if ($eopcinarodjenja==0) { ?> style="background-color:#FFFF00"  <? } ?>><?=$opcinerodjr?></select> <font color="#FF0000">*</font></td>
+	</tr>
+	<tr>
+		<td width="125" align="left">Općina rođenja (van BiH):</td>
+		<td><input maxlength="40" size="17" name="opcina_rodjenja_van_bih" id="opcina_rodjenja_van_bih" type="text" class="default" autocomplete="off" <? if ($eopcinarodjenja != 143) echo "disabled"; ?> value="<?=$eopcinavanbih?>"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">Država rođenja:</td>
