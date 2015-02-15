@@ -129,11 +129,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 			<td align="center" valign="center"><b>-</b></td>
 			<?
 			continue;
-		} /*else if ($k==$i+1) {
-			$brojnik .= "'"; $nazivnik .= "'";
-		} else if ($k==$i+2) {
-			$brojnik .= "''"; $nazivnik .= "''";
-		}*/
+		}
+		
 		$gen_br = $ag - $i - 1;
 		$brojnik .= $gen_br;
 		$nazivnik .= $gen_br;
