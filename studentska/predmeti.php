@@ -729,11 +729,11 @@ else {
 		<br/>
 	<?
 	if ($ak_god>=0 && $src != "") {
-		$q300 = myquery("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id");
+		$q300 = myquery("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and pk.predmet=p.id");
 	} else if ($ak_god>=0) {
 		$q300 = myquery("select count(distinct pk.predmet) from ponudakursa as pk where pk.akademska_godina=$ak_god");
 	} else if ($src != "") {
-		$q300 = myquery("select count(*) from predmet as p where p.naziv like '%$src%'");
+		$q300 = myquery("select count(*) from predmet as p where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%')");
 	} else {
 		$q300 = myquery("select count(*) from predmet as p");
 	}
@@ -757,11 +757,11 @@ else {
 		print "<br/>";
 
 		if ($ak_god>=0 && $src != "") {
-			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($ak_god>=0) {
 			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 		} else if ($src != "") {
-			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where p.naziv like '%$src%' and p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
 		} else {
 			$q301 = myquery("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where p.institucija=i.id order by p.naziv limit $offset,$limit");
 		}
