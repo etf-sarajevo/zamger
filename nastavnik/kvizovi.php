@@ -335,8 +335,11 @@ if ($_REQUEST['akcija'] == "pitanja") {
 	if ($_REQUEST['subakcija']=="izmijeni") {
 		?>
 		<a href="?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja">Dodaj novo pitanje</a><br><br>
+		
+		<a name="izmjena"></a>
+		<b>Izmjena pitanja</b><br>
 		<?
-		print "<b>Izmjena pitanja</b><br>\n";
+
 		$pitanje = intval($_REQUEST['pitanje']);
 		$q230 = myquery("select kviz, tip, tekst, bodova, vidljivo from kviz_pitanje where id=$pitanje");
 		if (mysql_num_rows($q230)<1) {
@@ -504,7 +507,22 @@ if ($_REQUEST['akcija'] == "rezultati") {
 		
 	$q640 = myquery("SELECT id, tekst, ukupno, tacnih FROM kviz_pitanje WHERE kviz=$kviz ORDER BY tacnih/ukupno");
 	while ($r640 = mysql_fetch_row($q640)) {
-		print "<tr><td><a href=\"?sta=nastavnik/kvizovi&predmet=$predmet&ag=$ag&kviz=$kviz&akcija=pitanja&subakcija=izmijeni&pitanje=".$r640[0]."\">".substr($r640[1],0,50)."...</a></td><td>$r640[2]</td><td>$r640[3] (".procenat($r640[3], $r640[2]).")</td></tr>\n";
+		$id_pitanja = $r640[0];
+		$pitanje = $r640[1];
+		if (strlen($pitanje) > 60)
+			$skr_pitanje = mb_substr($pitanje,0,50)."...";
+		else
+			$skr_pitanje = $pitanje;
+		$odgovora = $r640[2];
+		$tacnih = $r640[3];
+		?>
+		<tr>
+			<td title="<?=$pitanje?>">
+			<a href="?sta=nastavnik/kvizovi&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;kviz=<?=$kviz?>&amp;akcija=pitanja&amp;subakcija=izmijeni&amp;pitanje=<?=$id_pitanja?>#izmjena"><?=$skr_pitanje?></a></td>
+			<td><?=$odgovora?></td>
+			<td><?=$tacnih?> (<?=procenat($tacnih, $odgovora)?>)</td>
+		</tr>
+		<?
 	}
 
 	?>
