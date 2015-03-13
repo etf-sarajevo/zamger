@@ -44,9 +44,9 @@ while ($r20 = mysql_fetch_row($q20)) {
 	$semestar=$r20[0];
 	print $space."<b>".$semestar.". semestar</b><br/>\n";
 
-	$q30 = myquery("select p.id, p.naziv from predmet as p, plan_studija as ps where ps.godina_vazenja=$godina and ps.studij=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.predmet=p.id order by p.naziv");
+	$q30 = myquery("select p.id, p.naziv, p.sifra, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$godina and ps.studij=$studij and ps.semestar=$semestar and ps.obavezan=1 and ps.predmet=p.id order by p.naziv");
 	while ($r30 = mysql_fetch_row($q30)) {
-		print $space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r30[0]\">$r30[1]</a><br/>\n";
+		print $space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r30[0]\">$r30[1]</a> ($r30[2]), $r30[3] ECTS<br/>\n";
 	}
 
 	$q40 = myquery("select predmet, count(predmet) from plan_studija where godina_vazenja=$godina and studij=$studij and semestar=$semestar and obavezan=0 group by predmet order by predmet");
@@ -61,9 +61,9 @@ while ($r20 = mysql_fetch_row($q20)) {
 		} else $count++;
 		print "<br/>\n";
 
-		$q50 = myquery("select p.id, p.naziv from predmet as p, izborni_slot as iz where iz.id=$r40[0] and iz.predmet=p.id order by p.naziv");
+		$q50 = myquery("select p.id, p.naziv, p.sifra, p.ects from predmet as p, izborni_slot as iz where iz.id=$r40[0] and iz.predmet=p.id order by p.naziv");
 		while ($r50 = mysql_fetch_row($q50)) {
-			print $space.$space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r50[0]\">$r50[1]</a><br/>\n";
+			print $space.$space.$space."<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$r50[0]\">$r50[1]</a> ($r50[2]), $r50[3] ECTS<br/>\n";
 		}
 	}
 }
