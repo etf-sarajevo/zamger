@@ -200,6 +200,7 @@ print $vijesti;
 //    5 - svi studenti na predmetu (primalac - id predmeta)
 //    6 - svi studenti na labgrupi (primalac - id labgrupe)
 //    7 - korisnik (primalac - user id)
+//    8 - svi studenti na godini studija (primalac - idstudija*10+godina_studija)
 
 // Zadnja akademska godina
 $q20 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
@@ -208,9 +209,12 @@ $ag_naziv = mysql_result($q20,0,1);
 
 // Studij koji student trenutno sluša
 $studij=0;
-$q30 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+$q30 = myquery("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
 if (mysql_num_rows($q30)>0) {
-	$studij = mysql_result($q30,0,0);
+	$studij   = mysql_result($q30,0,0);
+	$semestar = mysql_result($q30,0,1);
+	$ciklus   = mysql_result($q30,0,2);
+	$godina_studija = ($semestar+1)/2;
 }
 
 $q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
@@ -220,7 +224,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$opseg = $r40[2];
 	$primalac = $r40[3];
 	$posiljalac = $r40[6];
-	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
+	if ($opseg == 2 || $opseg==3 && $primalac!=$studij && $primalac!=-$ciklus || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid || $opseg==8 && $primalac!= ($studij*10+$godina_studija) && $primalac!= (-$ciklus*10-$godina_studija))
 		continue;
 	if ($opseg==5) {
 		// Poruke od starih akademskih godina nisu relevantne

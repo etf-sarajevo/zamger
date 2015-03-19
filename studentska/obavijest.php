@@ -10,9 +10,6 @@
 // v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
 
 
-// TODO: popraviti slanje svim studentima na godini studija
-
-
 
 function studentska_obavijest() {
 
@@ -31,6 +28,7 @@ global $userid,$conf_ldap_domain,$user_siteadmin,$conf_skr_naziv_institucije_gen
 //    5 - svi studenti na predmetu (primalac - id predmeta)
 //    6 - svi studenti na labgrupi (primalac - id labgrupe)
 //    7 - korisnik (primalac - user id)
+//    8 - svi studenti na godini studija (primalac - idstudija*10+godina_studija)
 
 
 
@@ -230,6 +228,34 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 				print ");\n";
 			}
 			?>
+		} else if (opseg==8) {
+			<?
+			// Prvi ciklus
+			for ($i=1; $i<=3; $i++) {
+				$kod = -10+$i;
+				print "	lista.options[lista.length]=new Option(\"Svi studiji, Prvi ciklus, $i. godina\",\"$kod\"";
+				if ($opseg==8 && $primalac==$kod) print ",true";
+				print ");\n";
+			}
+			// Drugi ciklus
+			for ($i=1; $i<=2; $i++) {
+				$kod = -20+$i;
+				print "	lista.options[lista.length]=new Option(\"Svi studiji, Drugi ciklus, $i. godina\",\"$kod\"";
+				if ($opseg==8 && $primalac==$kod) print ",true";
+				print ");\n";
+			}
+			// Ostali
+			$q210 = myquery("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id");
+			while ($r210 = mysql_fetch_row($q210)) {
+				$trajanje_godina = ($r210[2]+1) / 2;
+				for ($i=1; $i<=$trajanje_godina; $i++) {
+					$kod = $r210[0] * 10 + $i;
+					print "	lista.options[lista.length]=new Option(\"$r210[1], $i. godina\",\"$kod\"";
+					if ($opseg==3 && $primalac==$kod) print ",true";
+					print ");\n";
+				}
+			}
+			?>
 		} else if (opseg==4) {
 			// Godini!?
 		} else if (opseg==5) {
@@ -252,6 +278,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		<option value="1" <? if ($opseg==1) print "selected"; ?>>Svi studenti</option>
 		<option value="2">Svi nastavnici</option>
 		<option value="3" <? if ($opseg==3) print "selected"; ?>>Svi studenti na studiju</option>
+		<option value="8" <? if ($opseg==8) print "selected"; ?>>Svi studenti na godini studija</option>
 		<option value="5" <? if ($opseg==5) print "selected"; ?>>Svi studenti na predmetu</option>
 		</select><br/>
 	&nbsp;<br/>
@@ -259,7 +286,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		<select name="primalac" id="primalac"></select>
 	</p>
 
- 	<? if ($opseg==3 || $opseg==5) {
+	<? if ($opseg==3 || $opseg==5 || $opseg==8) {
 		?><script language="JavaScript">
 		spisak_primalaca(<?=$opseg?>);
 		</script><?

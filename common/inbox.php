@@ -288,7 +288,7 @@ if ($poruka>0) {
 	$prim_id = mysql_result($q10,0,1);
 	$pos_id = mysql_result($q10,0,2);
 
-	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij && $prim_id!=-$ciklus || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $_REQUEST['mode']!=="outbox" || $opseg==7 && $_REQUEST['mode']==="outbox" && $pos_id!=$userid) {
+	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij && $prim_id!=-$ciklus || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $_REQUEST['mode']!=="outbox" || $opseg==7 && $_REQUEST['mode']==="outbox" && $pos_id!=$userid || $opseg==8 && $prim_id != ($studij*10+$godina_studija) && $prim_id != (-$ciklus*10-$godina_studija)) {
 		niceerror("Nemate pravo pristupa ovoj poruci!");
 		zamgerlog("pokusao pristupiti poruci $poruka",3);
 		return;
@@ -370,6 +370,26 @@ if ($poruka>0) {
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
 		} else
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
+	}
+	else if ($opseg==8) {
+		$studij = $prim_id / 10;
+		if ($studij == -1) {
+			$godina = $prim_id+10;
+			$primalac = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
+		} else if ($studij == -2) {
+			$godina = $prim_id+20;
+			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
+		} else {
+			$godina = $prim_id%10;
+			$q30 = myquery("select naziv from studij where id=$studij");
+			if (mysql_num_rows($q30)<1) {
+				$primalac="Nepoznato!?";
+				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
+				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
+			} else {
+				$primalac = "Svi studenti na: ".mysql_result($q30,0,0).", $godina. godina";
+			}
+		}
 	}
 	else {
 		$primalac = "Nepoznato!?";
