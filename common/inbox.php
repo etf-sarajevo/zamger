@@ -40,6 +40,7 @@ global $userid,$user_student, $user_nastavnik;
 //    5 - svi studenti na predmetu (primalac - id predmeta)
 //    6 - svi studenti na labgrupi (primalac - id labgrupe)
 //    7 - korisnik (primalac - user id)
+//    8 - svi studenti na godini studija (primalac - idstudija*10+godina_studija)
 
 
 
@@ -52,9 +53,12 @@ $ag = mysql_result($q20,0,0);
 // Studij koji student trenutno sluša
 $studij=0;
 if ($user_student) {
-	$q30 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+	$q30 = myquery("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
 	if (mysql_num_rows($q30)>0) {
-		$studij = mysql_result($q30,0,0);
+		$studij   = mysql_result($q30,0,0);
+		$semestar = mysql_result($q30,0,1);
+		$ciklus   = mysql_result($q30,0,2);
+		$godina_studija = ($semestar+1)/2;
 	}
 }
 
@@ -284,7 +288,7 @@ if ($poruka>0) {
 	$prim_id = mysql_result($q10,0,1);
 	$pos_id = mysql_result($q10,0,2);
 
-	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $pos_id!=$userid) {
+	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij && $prim_id!=-$ciklus || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $_REQUEST['mode']!=="outbox" || $opseg==7 && $_REQUEST['mode']==="outbox" && $pos_id!=$userid) {
 		niceerror("Nemate pravo pristupa ovoj poruci!");
 		zamgerlog("pokusao pristupiti poruci $poruka",3);
 		return;
