@@ -303,7 +303,7 @@ if ($oldgodina != 0 && $brojgodine != 0) {
 	<?
 }
 
-
+if ($brojuk == 0) $prosjek = 0; else $prosjek = $sumauk/$brojuk;
 
 ?>
 </table>
@@ -317,7 +317,7 @@ if ($oldgodina != 0 && $brojgodine != 0) {
 </tr>
 <tr>
 	<td>Prosječna ocjena položenih predmeta:</td>
-	<td><b><?=nuliraj(round($sumauk/$brojuk, 2))?></b></td>
+	<td><b><?=nuliraj(round($prosjek, 2))?></b></td>
 </tr>
 <tr>
 	<td>Ukupan broj ECTS bodova:</td>
@@ -363,6 +363,16 @@ do {
 </table>
 
 <?
+
+
+// Označi izvještaj kao obrađen - FIXME: ovo treba biti event na klik u studentska/intro
+if ($user_studentska) {
+	$q200 = myquery("SELECT id, status FROM zahtjev_za_potvrdu WHERE student=$student AND svrha_potvrde=1");
+	while ($r200 = mysql_fetch_row($q200)) {
+		if ($r200[1] == 1)
+			$q210 = myquery("UPDATE zahtjev_za_potvrdu SET status=2 WHERE id=$r200[0]");
+	}
+}
 
 
 }
