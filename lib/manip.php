@@ -492,7 +492,10 @@ function update_komponente($student,$predmet,$komponenta=0) {
 			if ($maxodsustva == -1) { // Bodovi proporcionalni prisustvu
 				$q205 = myquery("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$predmet and c.komponenta=$k and c.id=p.cas and p.student=$student");
 				$casova = mysql_result($q205,0,0);
-				$bodovi = $minbodova + round(($maxbodova - $minbodova) * (($casova-$odsustva) / $casova), 2 );
+				if ($casova == 0)
+					$bodovi = $maxbodova;
+				else
+					$bodovi = $minbodova + round(($maxbodova - $minbodova) * (($casova-$odsustva) / $casova), 2 );
 			} else if ($odsustva > $maxodsustva)
 				$bodovi=$minbodova;
 			else
