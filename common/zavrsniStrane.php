@@ -48,16 +48,18 @@ function common_zavrsniStrane() {
 	if (!isset($subakcija)) {
 	
 	// Da li je definisan sazetak?
-	if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
+	if ($userid == $id_studenta) {
+		if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
+			?>
+			<p><b><font color="red">Nije definisan sažetak teme</font></b></p>
+			<p>Molimo vas da prije slanja finalne verzije rada definišete sažetak.</p>
+			<?
+		}
+
 		?>
-		<p><b><font color="red">Nije definisan sažetak teme</font></b></p>
-		<p>Molimo vas da prije slanja finalne verzije rada definišete sažetak.</p>
+		<p><a href="<?=$linkPrefix?>&subakcija=sazetak">Kliknite ovdje da definišete sažetak</a></p>
 		<?
 	}
-
-	?>
-	<p><a href="<?=$linkPrefix?>&subakcija=sazetak">Kliknite ovdje da definišete sažetak</a></p>
-	<?
 	
 
 	// Spisak fajlova
