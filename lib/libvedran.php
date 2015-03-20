@@ -367,7 +367,6 @@ function genform($method="POST", $name="") {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
 		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
 		$key = htmlspecialchars($key);
-		$value = htmlspecialchars($value);
 		if (substr($key,0,4) != "_lv_") {
 			if (is_array($value)) {
 				foreach ($value as $val) {
