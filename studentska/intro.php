@@ -118,7 +118,7 @@ if ($_POST['akcija'] == "Odbij zahtjev" && check_csrf_token()) {
 
 	// Treba li obrisati viška sliku?
 	$q197 = myquery("select slika from osoba where id=$osoba");
-	if (mysql_result($q197,0,0) != $slikapromjena)
+	if ($slikapromjena != "" && mysql_result($q197,0,0) != $slikapromjena)
 		unlink ("$conf_files_path/slike/$slikapromjena");
 
 	$q200 = myquery("delete from promjena_podataka where id=$id");
