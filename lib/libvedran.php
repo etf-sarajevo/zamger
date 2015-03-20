@@ -368,8 +368,17 @@ function genform($method="POST", $name="") {
 		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
 		$key = htmlspecialchars($key);
 		$value = htmlspecialchars($value);
-		if (substr($key,0,4) != "_lv_") 
-		$result .= '<input type="hidden" name="'.$key.'" value="'.$value.'">'."\n";
+		if (substr($key,0,4) != "_lv_") {
+			if (is_array($value)) {
+				foreach ($value as $val) {
+					$val = htmlspecialchars($val);
+					$result .= '<input type="hidden" name="'.$key.'[]" value="'.$val.'">'."\n";
+				}
+			} else {
+				$value = htmlspecialchars($value);
+				$result .= '<input type="hidden" name="'.$key.'" value="'.$value.'">'."\n";
+			}
+		}
 	}
 
 	//   CSRF protection
@@ -400,7 +409,11 @@ function genuri() {
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
 		if ((substr($key,0,4) != "_lv_") && $key != "PHPSESSID" && $key != "pass")
-		$result .= urlencode($key).'='.urlencode($value).'&amp;';
+		if (is_array($value)) {
+			foreach ($value as $val) 
+				$result .= urlencode($key).'[]='.urlencode($val).'&amp;';
+		} else
+			$result .= urlencode($key).'='.urlencode($value).'&amp;';
 	}
 	if (substr($result,strlen($result)-5) == "&amp;") 
 		$result = substr($result,0,strlen($result)-5); // drop last &
