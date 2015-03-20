@@ -204,18 +204,6 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_csrf_token()) {
 	$edit_zadaca = intval($_POST['zadaca']);
-
-	// Brisanje postavke zadaće (a ne čitave zadaće!)
-	if ($_POST['dugmeobrisi'] == "Obriši") {
-		$q100 = myquery("select postavka_zadace from zadaca where id=$edit_zadaca");
-		$filepath = "$conf_files_path/zadace/$predmet-$ag/postavke/".mysql_result($q100,0,0);
-		unlink ($filepath);
-		$q110 = myquery("update zadaca set postavka_zadace='' where id=$edit_zadaca");
-		nicemessage ("Postavka zadaće obrisana");
-		print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&_lv_nav_id=$edit_zadaca\">Nazad</a>\n";
-		zamgerlog("obrisana postavka zadace z$edit_zadaca",2);
-		return;
-	}
 	
 	// Prava pristupa
 	if ($edit_zadaca>0) {
@@ -230,6 +218,18 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			zamgerlog("promjena zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
 			return 0;
 		}
+	}
+
+	// Brisanje postavke zadaće (a ne čitave zadaće!)
+	if ($_POST['dugmeobrisi'] == "Obriši") {
+		$q100 = myquery("select postavka_zadace from zadaca where id=$edit_zadaca");
+		$filepath = "$conf_files_path/zadace/$predmet-$ag/postavke/".mysql_result($q100,0,0);
+		unlink ($filepath);
+		$q110 = myquery("update zadaca set postavka_zadace='' where id=$edit_zadaca");
+		nicemessage ("Postavka zadaće obrisana");
+		print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&_lv_nav_id=$edit_zadaca\">Nazad</a>\n";
+		zamgerlog("obrisana postavka zadace z$edit_zadaca",2);
+		return;
 	}
 
 	// Brisanje zadaće
