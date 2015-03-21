@@ -24,6 +24,8 @@ function nastavnik_zadace() {
 global $userid,$user_siteadmin,$conf_files_path;
 
 require("lib/manip.php");
+require("lib/autotest.php");
+
 global $mass_rezultat; // za masovni unos studenata u grupe
 global $_lv_; // radi autogenerisanih formi
 
@@ -318,7 +320,8 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		$sql_add_postavka_file = "";
 
 	if (intval($_POST['attachment']) == 1 && isset($_POST['dozvoljene_eks'])) {
-		$dozvoljene_ekstenzije_selected = implode(',',$_POST['dozvoljene_eks']);
+		$ekstenzije = array_unique($_POST['dozvoljene_eks']);
+		$dozvoljene_ekstenzije_selected = implode(',',$ekstenzije);
 	} else {
 		$dozvoljene_ekstenzije_selected = null;
 	}
@@ -399,293 +402,19 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 
 if ($_REQUEST['akcija'] == "autotestovi") {
 	$zadaca = intval($_REQUEST['zadaca']);
+	$backLink = "?sta=nastavnik/zadace&amp;predmet=$predmet&amp;ag=$ag";
+	$linkPrefix = "$backLink&amp;zadaca=$zadaca&amp;akcija=autotestovi";
+	$backLink = "<a href=\"?$backLink&amp;_lv_nav_id=$zadaca\">Nazad na popis zadaća</a>";
 
-	$linkPrefix = "?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&zadaca=$zadaca&akcija=autotestovi";
-
-	if ($_REQUEST['subakcija'] == "promijeni_uslov") {
-		$id = intval($_REQUEST['id']);
-		$zadatak = intval($_REQUEST['zadatak']);
-		$q300 = myquery("SELECT specifikacija FROM autotest_replace WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='funkcija' AND zamijeni='' AND id=$id");
-		if (mysql_num_rows($q300)<1) {
-			niceerror("Nepostojeći uslov");
-			zamgerlog("spoofing uslovne funkcije $id", 3);
-			return 0;
-		}
-
-		if ($_POST['subakcija'] == "promijeni_uslov" && check_csrf_token()) {
-			$specifikacija = my_escape($_REQUEST['specifikacija']);
-			$q310 = myquery("UPDATE autotest_replace SET specifikacija='$specifikacija' WHERE id=$id");
-			nicemessage("Izmijenjen uslov za autotest");
-			zamgerlog("izmijenjen uslov $id za autotest (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		?>
-		<b>Izmjena prototipa funkcije koja mora postojati u zadatku:</b><br>
-		<input type="text" name="specifikacija" size="50" value="<?=mysql_result($q300,0,0)?>"><br>
-		<input type="submit" value="Izmijeni">
-		<input type="button" value="Nazad" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
+	// Provjera spoofinga zadaće
+	$q10 = myquery("SELECT COUNT(*) FROM zadaca WHERE id=$zadaca AND predmet=$predmet AND akademska_godina=$ag");
+	if (mysql_result($q10,0,0) == 0) {
+		nicemessage("Nepoznat ID zadaće $zadaca.");
+		return;
 	}
 
-	if ($_REQUEST['subakcija'] == "obrisi_uslov") {
-		$id = intval($_REQUEST['id']);
-		$zadatak = intval($_REQUEST['zadatak']);
-		$q300 = myquery("SELECT specifikacija FROM autotest_replace WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='funkcija' AND zamijeni='' AND id=$id");
-		if (mysql_num_rows($q300)<1) {
-			niceerror("Nepostojeći uslov");
-			zamgerlog("spoofing uslovne funkcije $id", 3);
-			return 0;
-		}
+	autotest_admin($zadaca, $linkPrefix, $backLink);
 
-		if ($_POST['subakcija'] == "obrisi_uslov" && check_csrf_token()) {
-			$q320 = myquery("DELETE FROM autotest_replace WHERE id=$id");
-			nicemessage("Obrisan uslov za autotest");
-			zamgerlog("obrisan uslov $id za autotest (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		?>
-		<b>Da li ste sigurni da želite obrisati obavezni prototip &quot;<?=mysql_result($q300,0,0)?>&quot; ?</b><br>
-		<input type="submit" value="Da">
-		<input type="button" value="Ne" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
-	}
-
-	if ($_REQUEST['subakcija'] == "dodaj_uslov") {
-		$zadatak = intval($_REQUEST['zadatak']);
-		if ($_POST['subakcija'] == "dodaj_uslov" && check_csrf_token()) {
-			$specifikacija = my_escape($_REQUEST['specifikacija']);
-			$q330 = myquery("INSERT INTO autotest_replace SET zadaca=$zadaca, zadatak=$zadatak, tip='funkcija', zamijeni='', specifikacija='$specifikacija'");
-			nicemessage("Dodan uslov za autotest");
-			$id = mysql_insert_id();
-			zamgerlog("dodan uslov $id za autotest (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		?>
-		<b>Unesite prototip funkcije koja mora postojati u zadatku:</b><br>
-		<input type="text" name="specifikacija" size="50" value=""><br>
-		<input type="submit" value="Dodaj">
-		<input type="button" value="Nazad" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
-	}
-
-	if ($_REQUEST['subakcija'] == "promijeni_at") {
-		$id = intval($_REQUEST['id']);
-		$zadatak = intval($_REQUEST['zadatak']);
-		$q340 = myquery("SELECT kod, rezultat, alt_rezultat, fuzzy, global_scope FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND id=$id");
-		if (mysql_num_rows($q340)<1) {
-			niceerror("Nepostojeći autotest");
-			zamgerlog("spoofing autotesta $id", 3);
-			return 0;
-		}
-
-		if ($_POST['subakcija'] == "promijeni_at" && check_csrf_token()) {
-			// Ne možemo koristiti my_escape jer htmlspecialchars zezne znakove < > (između ostalog)
-			$kod = mysql_real_escape_string($_REQUEST['kod']);
-			$rezultat = mysql_real_escape_string($_REQUEST['rezultat']);
-			$alt_rezultat = mysql_real_escape_string($_REQUEST['alt_rezultat']);
-			$fuzzy = intval($_REQUEST['fuzzy']);
-			$global_scope = mysql_real_escape_string($_REQUEST['global_scope']);
-
-			$q350 = myquery("UPDATE autotest SET kod='$kod', rezultat='$rezultat', alt_rezultat='$alt_rezultat', fuzzy=$fuzzy, global_scope='$global_scope' WHERE id=$id");
-			nicemessage("Izmijenjen autotest");
-			zamgerlog("izmijenjen autotest $id (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		// Pošto nije pozvan htmlspecialchars prilikom ubacivanja u bazu, moramo ga pozvati sada (prilikom prikaza)
-
-		?>
-		<b>Izmjena autotesta:</b><br><br>
-		Kod testa:<br><textarea name="kod" rows="10" cols="50"><?=htmlspecialchars(mysql_result($q340,0,0))?></textarea><br>
-		Rezultat: <input type="text" name="rezultat" size="50" value="<?=htmlspecialchars(mysql_result($q340,0,1))?>"><br><br>
-		Alt. rezultat: <input type="text" name="alt_rezultat" size="50" value="<?=htmlspecialchars(mysql_result($q340,0,2))?>"><br>
-		(Ostaviti prazno ako ne želite da ponudite dvije varijante rezultata)<br><br>
-		Fuzzy matching rezultata: <input type="checkbox" name="fuzzy" value="1" <? if (mysql_result($q340,0,3)==1) print "CHECKED"; ?>><br><br>
-		Kod koji treba ubaciti u globalni opseg:<br><textarea name="global_scope" rows="10" cols="50"><?=htmlspecialchars(mysql_result($q340,0,4))?></textarea><br>
-		<input type="submit" value="Izmijeni">
-		<input type="button" value="Nazad" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
-	}
-
-	if ($_REQUEST['subakcija'] == "obrisi_at") {
-		$id = intval($_REQUEST['id']);
-		$zadatak = intval($_REQUEST['zadatak']);
-		$q340 = myquery("SELECT kod FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND id=$id");
-		if (mysql_num_rows($q340)<1) {
-			niceerror("Nepostojeći autotest");
-			zamgerlog("spoofing autotesta $id", 3);
-			return 0;
-		}
-
-		if ($_POST['subakcija'] == "obrisi_at" && check_csrf_token()) {
-			$q345 = myquery("DELETE FROM autotest_rezultat WHERE autotest=$id");
-			$q350 = myquery("DELETE FROM autotest WHERE id=$id");
-			nicemessage("Obrisan autotest");
-			zamgerlog("obrisan autotest $id (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		?>
-		<b>Brisanje autotesta:</b><br><br>
-		Da li ste sigurni da želite obrisati autotest sa sljedećim kodom:<br>
-		<textarea name="kod" rows="10" cols="50"><?=mysql_result($q340,0,0)?></textarea><br>
-		<input type="submit" value="Da">
-		<input type="button" value="Ne" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
-	}
-
-	if ($_REQUEST['subakcija'] == "dodaj_at") {
-		$zadatak = intval($_REQUEST['zadatak']);
-
-		if ($_POST['subakcija'] == "dodaj_at" && check_csrf_token()) {
-			// Ne možemo koristiti my_escape jer htmlspecialchars zezne znakove < > (između ostalog)
-			$kod = mysql_real_escape_string($_REQUEST['kod']);
-			$rezultat = mysql_real_escape_string($_REQUEST['rezultat']);
-			$alt_rezultat = mysql_real_escape_string($_REQUEST['alt_rezultat']);
-			$fuzzy = intval($_REQUEST['fuzzy']);
-			$global_scope = mysql_real_escape_string($_REQUEST['global_scope']);
-			$q350 = myquery("INSERT INTO autotest SET zadaca=$zadaca, zadatak=$zadatak, kod='$kod', rezultat='$rezultat', alt_rezultat='$alt_rezultat', fuzzy=$fuzzy, global_scope='$global_scope'");
-			nicemessage("Dodan novi autotest");
-			zamgerlog("dodan novi autotest ".mysql_insert_id()." (zadaca z$zadaca)", 2);
-			print "<a href=\"$linkPrefix\">Nazad</a>\n";
-			return 0;
-		}
-
-		print genform("POST");
-		?>
-		<b>Novi autotest:</b><br><br>
-		Kod testa:<br><textarea name="kod" rows="10" cols="50"></textarea><br>
-		Rezultat: <input type="text" name="rezultat" size="50" value=""><br><br>
-		Alt. rezultat: <input type="text" name="alt_rezultat" size="50" value=""><br>
-		(Ostaviti prazno ako ne želite da ponudite dvije varijante rezultata)<br><br>
-		Fuzzy matching rezultata: <input type="checkbox" name="fuzzy" value="1"><br><br>
-		Kod koji treba ubaciti u globalni opseg:<br><textarea name="global_scope" rows="10" cols="50"></textarea><br>
-		<input type="submit" value="Dodaj">
-		<input type="button" value="Nazad" onclick="javascript:history.go(-1);">
-		</form>
-		<?
-		return 0;
-	}
-	
-	if ($_POST['subakcija'] == "kopiraj_at" && check_csrf_token()) {
-		$stara_zadaca = intval($_REQUEST['stara_zadaca']);
-		$q190 = myquery("SELECT zadatak, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala FROM autotest WHERE zadaca=$stara_zadaca");
-		while ($r190 = mysql_fetch_row($q190)) {
-			$q195 = myquery("INSERT INTO autotest SET zadaca=$zadaca, zadatak=$r190[0], kod='".mysql_real_escape_string($r190[1])."', rezultat='".mysql_real_escape_string($r190[2])."', alt_rezultat='".mysql_real_escape_string($r190[3])."', fuzzy=$r190[4], global_scope='".mysql_real_escape_string($r190[5])."', pozicija_globala='$r190[6]'");
-		}
-		nicemessage("Iskopirani testovi sa stare zadaće.");
-		zamgerlog("iskopirani autotestovi sa zadace z$stara_zadaca na zadacu z$zadaca)", 2);
-		zamgerlog2("iskopirani autotestovi", $stara_zadaca, $zadaca);
-	}
-	
-	$q200 = myquery("SELECT naziv, zadataka FROM zadaca WHERE id=$zadaca AND predmet=$predmet AND akademska_godina=$ag");
-	if (mysql_num_rows($q200)<1) {
-		niceerror("Nepostojeća zadaća");
-		zamgerlog("spoofing zadace $zadaca", 3);
-		return 0;
-	}
-	
-	$naziv_zadace = mysql_result($q200,0,0);
-	$broj_zadataka = mysql_result($q200,0,1);
-
-	?>
-	<h2>Autotestovi, <?=$naziv_zadace?></h2>
-	<p><a href="?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$zadaca?>">Nazad na popis zadaća</a></p>
-	<?
-	
-	$q205 = myquery("SELECT distinct z.id, z.naziv, ag.naziv FROM zadaca as z, autotest as a, akademska_godina as ag WHERE z.predmet=$predmet AND z.akademska_godina<$ag AND z.akademska_godina=ag.id AND a.zadaca=z.id ORDER BY ag.id desc, z.id");
-	if (mysql_num_rows($q205) > 0) {
-		?>
-		<h3>Kopiraj testove sa ranijih godina</h3>
-		<?=genform("POST")?>
-		<input type="hidden" name="subakcija" value="kopiraj_at">
-		<select name="stara_zadaca">
-		<?
-	}
-	$found = 0;
-	while ($r205 = mysql_fetch_row($q205)) {
-		print "<option value=\"$r205[0]\"";
-		if ($r205[1] == $naziv_zadace && $found == 0) {
-			$found=1;
-			print " CHECKED";
-		}
-		print ">$r205[1] ($r205[2])</option>\n";
-	}
-	if (mysql_num_rows($q205) > 0) {
-		print "</select> <input type=\"submit\" value=\" Kreni \"></form>\n";
-	}
-
-	for ($zadatak=1; $zadatak<=$broj_zadataka; $zadatak++) {
-		print "<h3>Zadatak $zadatak</h3>\n";
-
-		print "<p>Prototipovi funkcija koje moraju postojati u zadatku:\n";
-
-		$q210 = myquery("SELECT id,specifikacija FROM autotest_replace WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='funkcija' AND zamijeni=''");
-		while ($r210 = mysql_fetch_row($q210)) {
-			print "<br>\n* $r210[1] (<a href=\"$linkPrefix&subakcija=promijeni_uslov&id=$r210[0]&zadatak=$zadatak\">promijeni</a>) (<a href=\"$linkPrefix&subakcija=obrisi_uslov&id=$r210[0]&zadatak=$zadatak\">obriši</a>)";
-		}
-		if (mysql_num_rows($q210)<1)
-			print "<br>\n* nema";
-		print "</p>\n<p><a href=\"$linkPrefix&subakcija=dodaj_uslov&id=$r210[0]&zadatak=$zadatak\">Dodaj zahtijevanu funkciju</a></p>\n";
-
-
-		?><p><b>Autotestovi:</b></p>
-		<table border="1" cellspacing="0" cellpadding="5">
-		<tr bgcolor="#CCCCCC"><td>R.br.</td><td>Kod</td><td>Rezultat</td><td>Alternativni rezultat</td><td>Fuzzy matching?</td><td>Naredbe u globalnom opsegu</td><td>Akcije</td></tr>
-		<?
-
-		$q220 = myquery("SELECT id, kod, rezultat, alt_rezultat, fuzzy, global_scope FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak");
-		if (mysql_num_rows($q220)<1) {
-			?>
-			<tr><td colspan="7">nije definisan nijedan autotest</td></tr>
-			<?
-		}
-		$rbr=1;
-		while ($r220 = mysql_fetch_row($q220)) {
-			$kod = htmlentities($r220[1]);
-			$altrez = $r220[3];
-			if ($altrez=="") $altrez="&nbsp;";
-			$global_kod = htmlentities($r220[5]);
-			if ($r220[4]==0) $fuzzy="NE"; else $fuzzy="DA";
-
-			?>
-			<tr>
-				<td><?=$rbr++?></td>
-				<td><pre><?=$kod?></pre></td>
-				<td><?=$r220[2]?></td>
-				<td><?=$altrez?></td>
-				<td><?=$fuzzy?></td>
-				<td><pre><?=$global_kod?></pre></td>
-				<td>(<a href="<?=$linkPrefix?>&subakcija=promijeni_at&id=<?=$r220[0]?>&zadatak=<?=$zadatak?>">promijeni</a>) (<a href="<?=$linkPrefix?>&subakcija=obrisi_at&id=<?=$r220[0]?>&zadatak=<?=$zadatak?>">obriši</a>)</td>
-			</tr>
-			<?
-		}
-		print "</table>\n";
-		print "</p>\n<p><a href=\"$linkPrefix&subakcija=dodaj_at&id=$r210[0]&zadatak=$zadatak\">Dodaj autotest</a></p>\n";
-	}
 	return;
 }
 

@@ -333,6 +333,10 @@ CREATE TABLE IF NOT EXISTS `autotest` (
   `fuzzy` tinyint(1) NOT NULL default '0',
   `global_scope` text collate utf8_slovenian_ci NOT NULL,
   `pozicija_globala` enum('prije_svega','prije_maina') collate utf8_slovenian_ci NOT NULL default 'prije_maina',
+  `stdin` text collate utf8_slovenian_ci NOT NULL,
+  `partial_match` tinyint(4) NOT NULL default '0',
+  `aktivan` tinyint(1) NOT NULL default '1',
+  `sakriven` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `zadaca` (`zadaca`),
   KEY `zadaca_2` (`zadaca`,`zadatak`)
@@ -370,6 +374,8 @@ CREATE TABLE IF NOT EXISTS `autotest_rezultat` (
   `status` enum('ok','wrong','error','no_func','exec_fail','too_long','crash','find_fail','oob','uninit','memleak','invalid_free','mismatched_free') collate utf8_slovenian_ci NOT NULL default 'error',
   `nalaz` text collate utf8_slovenian_ci NOT NULL,
   `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `trajanje` int(11) NOT NULL default '0',
+  `testni_sistem` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`autotest`,`student`),
   KEY `student` (`student`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -462,6 +468,20 @@ CREATE TABLE IF NOT EXISTS `bl_clanak` (
 --
 -- Dumping data for table `bl_clanak`
 --
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `buildservice_tracking`
+--
+
+CREATE TABLE IF NOT EXISTS `buildservice_tracking` (
+  `zadatak` int(11) NOT NULL,
+  `buildhost` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `vrijeme` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`zadatak`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 
 -- --------------------------------------------------------
@@ -1802,6 +1822,13 @@ CREATE TABLE IF NOT EXISTS `programskijezik` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `geshi` varchar(20) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `ekstenzija` varchar(10) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
+  `ace` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  `kompajler` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  `opcije_kompajlera` text collate utf8_slovenian_ci NOT NULL,
+  `opcije_kompajlera_debug` text collate utf8_slovenian_ci NOT NULL,
+  `debugger` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  `profiler` varchar(10) collate utf8_slovenian_ci NOT NULL,
+  `opcije_profilera` varchar(200) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -1809,17 +1836,17 @@ CREATE TABLE IF NOT EXISTS `programskijezik` (
 -- Dumping data for table `programskijezik`
 --
 
-INSERT INTO `programskijezik` (`id`, `naziv`, `geshi`, `ekstenzija`) VALUES
-(0, '--Nije odredjen--', '', ''),
-(1, 'C', 'C', '.c'),
-(2, 'C++', 'C++', '.cpp'),
-(3, 'Java', 'Java', '.java'),
-(4, 'Matlab .m', 'Matlab M', '.m'),
-(5, 'HTML', 'HTML', '.html'),
-(6, 'PHP', 'PHP', '.php'),
-(7, 'C++11', 'C++', '.cpp'),
-(8, 'JavaScript', 'JAVASCRIPT', '.js'),
-(9, 'Python', 'Python', '.py');
+INSERT INTO `programskijezik` (`id`, `naziv`, `geshi`, `ekstenzija`, `ace`, `kompajler`, `opcije_kompajlera`, `opcije_kompajlera_debug`, `debugger`, `profiler`, `opcije_profilera`) VALUES
+(0, '---Nije odre&#273;en---', '', '', '', '', '', '', '', '', ''),
+(1, 'C', 'C', '.c', 'c_cpp', 'gcc', '-O1 -Wall -Wuninitialized -Winit-self -Wno-unused-result -Wfloat-equal -Wno-sign-compare -Werror=implicit-function-declaration -Werror=vla -pedantic -lm -pass-exit-codes', '-ggdb -lm -pass-exit-codes', 'gdb', 'valgrind', '--leak-check=full'),
+(2, 'C++', 'C++', '.cpp', 'c_cpp', 'g++', '-O1 -Wall -Wuninitialized -Winit-self -Wfloat-equal -Wno-sign-compare -Werror=implicit-function-declaration -Werror=vla -pedantic -lm -pass-exit-codes', '-ggdb -lm -pass-exit-codes', 'gdb', 'valgrind', '--leak-check=full'),
+(3, 'Java', 'Java', '.java', 'java', 'javac', '-encoding cp1250', '', '', '', ''),
+(4, 'Matlab .m', 'Matlab M', '.m', '', '', '', '', '', '', ''),
+(5, 'HTML', 'HTML', '.html', 'html', '', '', '', '', '', ''),
+(6, 'PHP', 'PHP', '.php', 'php', '', '', '', '', '', ''),
+(7, 'C++11', 'C++', '.cpp', 'c_cpp', 'g++', '-std=c++11 -O1 -Wall -Wuninitialized -Winit-self -Wfloat-equal -Wno-sign-compare -Werror=implicit-function-declaration -Werror=vla -pedantic -lm -pass-exit-codes', '-std=c++11 -ggdb -lm -pass-exit-codes', 'gdb', 'valgrind', '--leak-check=full'),
+(8, 'JavaScript', 'JAVASCRIPT', '.js', '', '', '', '', '', '', ''),
+(9, 'Python', 'Python', '.py', 'python', 'python3', '', '', '', '', '');
 
 -- --------------------------------------------------------
 
