@@ -232,14 +232,14 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 			<?
 			// Prvi ciklus
 			for ($i=1; $i<=3; $i++) {
-				$kod = -10+$i;
+				$kod = -10-$i;
 				print "	lista.options[lista.length]=new Option(\"Svi studiji, Prvi ciklus, $i. godina\",\"$kod\"";
 				if ($opseg==8 && $primalac==$kod) print ",true";
 				print ");\n";
 			}
 			// Drugi ciklus
 			for ($i=1; $i<=2; $i++) {
-				$kod = -20+$i;
+				$kod = -20-$i;
 				print "	lista.options[lista.length]=new Option(\"Svi studiji, Drugi ciklus, $i. godina\",\"$kod\"";
 				if ($opseg==8 && $primalac==$kod) print ",true";
 				print ");\n";
@@ -399,12 +399,12 @@ if ($poruka>0) {
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
 	}
 	else if ($opseg==8) {
-		$studij = $prim_id / 10;
+		$studij = intval($prim_id / 10);
 		if ($studij == -1) {
-			$godina = $prim_id+10;
+			$godina = -($prim_id+10);
 			$primalac = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
 		} else if ($studij == -2) {
-			$godina = $prim_id+20;
+			$godina = -($prim_id+20);
 			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
 		} else {
 			$godina = $prim_id%10;
@@ -541,12 +541,12 @@ while ($r100 = mysql_fetch_row($q100)) {
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
 	}
 	else if ($opseg==8) {
-		$studij = $prim_id / 10;
+		$studij = intval($prim_id / 10);
 		if ($studij == -1) {
-			$godina = $prim_id+10;
+			$godina = -($prim_id+10);
 			$primalac = "Svi studenti na: I ciklus, $godina. godina";
 		} else if ($studij == -2) {
-			$godina = $prim_id+20;
+			$godina = -($prim_id+20);
 			$primalac = "Svi studenti na: II ciklus, $godina. godina";
 		} else {
 			$godina = $prim_id%10;

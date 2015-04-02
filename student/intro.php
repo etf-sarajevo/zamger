@@ -214,7 +214,7 @@ if (mysql_num_rows($q30)>0) {
 	$studij   = mysql_result($q30,0,0);
 	$semestar = mysql_result($q30,0,1);
 	$ciklus   = mysql_result($q30,0,2);
-	$godina_studija = ($semestar+1)/2;
+	$godina_studija = intval(($semestar+1)/2);
 }
 
 $q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
