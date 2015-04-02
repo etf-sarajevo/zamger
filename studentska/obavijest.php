@@ -73,7 +73,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	$poruka = intval($_REQUEST['poruka']);
 
 	// Pogrešan opseg
-	if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && ($opseg!=0 || !$user_siteadmin)) {
+	if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && $opseg!=8 && ($opseg!=0 || !$user_siteadmin)) {
 		niceerror("Nemate pravo slanja poruke sa tim opsegom");
 		zamgerlog("pokusaj slanja/izmjene poruke sa opsegom $opseg",3);
 		return;
@@ -188,7 +188,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		}
 
 		// Pogrešan opseg
-		if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && ($opseg!=0 || !$user_siteadmin)) {
+		if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && $opseg!=8 && ($opseg!=0 || !$user_siteadmin)) {
 			niceerror("Nemate pravo izmjene ove poruke");
 			zamgerlog("pokusaj izmjene poruke $poruka sa opsegom $opseg",3);
 			return;
@@ -398,6 +398,26 @@ if ($poruka>0) {
 		} else
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
 	}
+	else if ($opseg==8) {
+		$studij = $prim_id / 10;
+		if ($studij == -1) {
+			$godina = $prim_id+10;
+			$primalac = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
+		} else if ($studij == -2) {
+			$godina = $prim_id+20;
+			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
+		} else {
+			$godina = $prim_id%10;
+			$q30 = myquery("select naziv from studij where id=$studij");
+			if (mysql_num_rows($q30)<1) {
+				$primalac="Nepoznato!?";
+				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
+				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
+			} else {
+				$primalac = "Svi studenti na: ".mysql_result($q30,0,0).", $godina. godina";
+			}
+		}
+	}
 	else {
 		$primalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznat opseg $opseg",3);
@@ -519,6 +539,26 @@ while ($r100 = mysql_fetch_row($q100)) {
 			$primalac = "Nepoznata osoba!?";
 		} else
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
+	}
+	else if ($opseg==8) {
+		$studij = $prim_id / 10;
+		if ($studij == -1) {
+			$godina = $prim_id+10;
+			$primalac = "Svi studenti na: I ciklus, $godina. godina";
+		} else if ($studij == -2) {
+			$godina = $prim_id+20;
+			$primalac = "Svi studenti na: II ciklus, $godina. godina";
+		} else {
+			$godina = $prim_id%10;
+			$q30 = myquery("select s.kratkinaziv, ts.ciklus from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
+			if (mysql_num_rows($q30)<1) {
+				$primalac="Nepoznato!?";
+				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
+				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
+			} else {
+				$primalac = "Svi studenti na: ".mysql_result($q30,0,0).", $godina. godina ".mysql_result($q30,0,1)." ciklus";
+			}
+		}
 	}
 	else {
 		$primalac = "Nepoznato!?";
