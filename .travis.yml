@@ -34,4 +34,3 @@ after_script:
   - ls
   - cd /etc/
   - ls
-  - find -name "php.ini"
