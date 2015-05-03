@@ -11,4 +11,4 @@ modules:
         - AcceptanceHelper
     config:
         PhpBrowser:
-            url: 'default'
+            url: 'https://127.0.0.1/index.php'
