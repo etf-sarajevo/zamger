@@ -32,3 +32,4 @@ after_script:
   - ls
   - cd /etc/apache2/sites-available/
   - ls
+  - cat default
