@@ -9,4 +9,4 @@ before_script:
   - echo "before script"
   
 script:
-  - php codecept run --steps # self tests
+  - php codecept.phar run --steps # self tests
