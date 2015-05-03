@@ -1,7 +1,7 @@
-Listen 80
+
 <VirtualHost *:80>
   # [...]
-  ServerName www.zamger.com
+  
   DocumentRoot %TRAVIS_BUILD_DIR%
 
   <Directory "%TRAVIS_BUILD_DIR%">
