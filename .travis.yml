@@ -32,3 +32,5 @@ after_script:
   - ls
   - cd /etc/apache2/sites-available/
   - ls
+  - cd /etc/
+  - ls
