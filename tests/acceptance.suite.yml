@@ -11,4 +11,4 @@ modules:
         - AcceptanceHelper
     config:
         PhpBrowser:
-            url: 'https://www.zamger.ba/index.php'
+            url: 'http://localhost/index.php'
