@@ -3,6 +3,7 @@
   # [...]
   
   DocumentRoot %TRAVIS_BUILD_DIR%
+  ServerName www.zamger.ba
 
   <Directory "%TRAVIS_BUILD_DIR%">
     Options FollowSymLinks MultiViews ExecCGI
