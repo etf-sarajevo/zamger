@@ -20,7 +20,7 @@ install:
 before_script:
   - echo "before script"
   - phpenv config-add travis.php.ini
-  - cat `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"` | sed -e "s/short_open_tag = Off/short_open_tag = On/ig"  > `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
+  - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   
 script:
   - php codecept.phar run --steps # self tests
