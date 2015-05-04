@@ -20,7 +20,8 @@ install:
 before_script:
   - echo "before script"
   - phpenv config-add travis.php.ini
-  - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - sudo service apache2 restart
+  # echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   
 script:
   - php codecept.phar run --steps # self tests
