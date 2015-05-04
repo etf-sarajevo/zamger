@@ -37,3 +37,4 @@ after_script:
   - ls
   - cd /home/travis/.phpenv/versions/5.4/etc/conf.d.
   - ls
+  - cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
