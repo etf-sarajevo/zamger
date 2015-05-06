@@ -42,4 +42,6 @@ after_script:
   - cd /home/travis/.phpenv/versions/5.4/etc/conf.d.
   - ls
   - cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - sudo find php-fpm
+  - ls
   
