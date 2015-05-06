@@ -16,7 +16,8 @@ install:
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
-  - sudo service php5-fpm restart
+  - sudo cp $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/etc/php-fpm.conf.default $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/etc/php-fpm.conf
+  - $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/sbin/php-fpm
 
 before_script:
   - echo "before script"
@@ -44,3 +45,7 @@ after_script:
   - sudo find php-fpm
   - ls
   
+after_failure:
+  - echo "Failures detected. Outputing additional logs:"
+  - sudo cat /var/log/apache2/error.log
+  - sudo cat /var/log/mysql/error.log
