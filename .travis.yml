@@ -16,6 +16,7 @@ install:
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
+  - sudo service php-fpm restart
 
 before_script:
   - echo "before script"
