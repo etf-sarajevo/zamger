@@ -4,7 +4,7 @@ php:
   
 install:
   - echo "instalacije"
-  - wget http://selenium-release.storage.googleapis.com/2.42/selenium-server-standalone-2.42.2.jar  
+  # wget http://selenium-release.storage.googleapis.com/2.42/selenium-server-standalone-2.42.2.jar  
   - sudo apt-get update
   - sudo apt-get install apache2 libapache2-mod-fastcgi
   # enable php-fpm
@@ -16,8 +16,6 @@ install:
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
-  - sudo cp $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/etc/php-fpm.conf.default $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/etc/php-fpm.conf
-  - $HOME/.phpenv/versions/`php -r "print PHP_VERSION;"`/sbin/php-fpm
 
 before_script:
   - echo "before script"
@@ -25,6 +23,7 @@ before_script:
   - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - php --ini
   - sudo service apache2 restart
+  - service httpd restart
   
 script:
   - php codecept.phar run --steps # self tests
