@@ -18,9 +18,9 @@ install:
   - sudo service apache2 restart
   - cd ~
   - ls
-  - mkdir /home/zamger
-  - mkdir /home/zamger/tmp
-  - mkdir /home/zamger/zadace
+  - sudo mkdir /home/zamger
+  - sudo mkdir /home/zamger/tmp
+  - sudo mkdir /home/zamger/zadace
   
 
 before_script:
