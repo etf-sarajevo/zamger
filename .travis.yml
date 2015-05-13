@@ -18,12 +18,21 @@ install:
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
+  - cd ~
+  - ls
+  - mkdir /home/zamger
+  - mkdir /home/zamger/tmp
+  - mkdir /home/zamger/zadace
+  
 
 before_script:
   - echo "before script"
   - phpenv config-add travis.php.ini
-  - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  # echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - php --ini
+  - echo "# enable short open tags"
+  - cat `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"` | sed -e "s/short_open_tag = Off/short_open_tag = On/ig" > `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
+
   - sudo service apache2 restart
   
 script:
