@@ -18,3 +18,9 @@ before_script:
    
 script:
   - php codecept.phar run --steps # self tests
+  
+after_script:
+    - cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+    - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/pyrus.ini
+    - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+    - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
