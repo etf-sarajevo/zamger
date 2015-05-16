@@ -1,60 +1,19 @@
 language: php
 php:
-  - 5.5
-  
-install:
-  - echo "instalacije"
-  # wget http://selenium-release.storage.googleapis.com/2.42/selenium-server-standalone-2.42.2.jar  
-  - sudo apt-get update
-  - sudo apt-get install apache2 libapache2-mod-fastcgi
-  # enable php-fpm
-  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
-  - sudo a2enmod rewrite actions fastcgi alias
-  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  # configure apache virtual hosts
-  - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
-  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
-  - sudo service apache2 restart
-  
-  - sudo mkdir /home/zamger
-  - sudo mkdir /home/zamger/tmp
-  - sudo mkdir /home/zamger/zadace
-  
-  - sudo find /home -name ".htaccess"
+    - 5.5
 
 before_script:
-  - echo "before script"
-  #- phpenv config-add travis.php.ini
-  # echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - php --ini
-  - echo "# enable short open tags"
-  - cat `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"` | sed -e "s/short_open_tag = Off/short_open_tag = On/ig" > `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
-
-  - sudo service apache2 restart
-  
+   - sudo apt-get update
+   - sudo apt-get install apache2 libapache2-mod-fastcgi
+   # enable php-fpm
+   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+   - sudo a2enmod rewrite actions fastcgi alias
+   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+   # configure apache virtual hosts
+   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
+   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+   - sudo service apache2 restart
+   
 script:
   - php codecept.phar run --steps # self tests
-
-after_script:
-  - ls
-  - cd ..
-  - ls
-  - cd ..
-  - ls
-  - cd /etc/apache2/sites-available/
-  - ls
-  - cd /etc/
-  - ls
-  - cd /home/travis/.phpenv/versions/5.4/etc/conf.d.
-  - ls
-  - cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - sudo find php-fpm
-  - ls
-  
-after_failure:
-  - echo "Failures detected. Outputing additional logs:"
-  - sudo cat /var/log/apache2/error.log
-  - sudo cat /var/log/mysql/error.log
-
-
