@@ -21,7 +21,7 @@ install:
   - sudo mkdir /home/zamger/tmp
   - sudo mkdir /home/zamger/zadace
   
-  - sudo find / -name ".htaccess"
+  - sudo find /home -name ".htaccess"
 
 before_script:
   - echo "before script"
