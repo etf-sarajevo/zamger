@@ -26,4 +26,4 @@ after_script:
     - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
     - cat build/travis-ci-apache
-    - sudo find /home httpd.conf
+    # sudo find /home httpd.conf
