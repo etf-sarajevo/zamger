@@ -25,3 +25,4 @@ after_script:
     - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/pyrus.ini
     - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
     - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
+    - cat build/travis-ci-apache
