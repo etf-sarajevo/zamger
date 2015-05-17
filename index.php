@@ -1,4 +1,15 @@
-<?
+<?php
+	if (ini_get("short_open_tag") != 1) {
+		?>
+		<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+		<body>
+		<p><font color='red'><b>GREŠKA: Potrebno aktivirati opciju short_open_tag</b></font></p>
+		<p>Molimo vas da još jednom pročitate uputstva za instalaciju.</p>
+		</body></html>
+		<?php
+		exit;
+	}
+?><?
 
 
 // INDEX - master skripta za ZAMGER
