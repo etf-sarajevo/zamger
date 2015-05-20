@@ -1,6 +1,6 @@
 language: php
 php:
-    - 5.5
+    - 5.0
 
 before_script:
    - sudo apt-get update
@@ -13,6 +13,7 @@ before_script:
    # configure apache virtual hosts
    - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
    - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+   # short_open_tag
    - sed -i 's/short_open_tag = Off/short_open_tag = On/' ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
    - sed -i 's/asp_tags = Off/asp_tags = On/' ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
    - sudo service apache2 restart
