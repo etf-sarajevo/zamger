@@ -12,7 +12,7 @@ before_script:
   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  - phpenv config-add ./build/error_log.ini
+  #- phpenv config-add ./build/error_log.ini
   - sudo service apache2 restart
   - echo "127.0.0.1    $HOSTNAME" | sudo tee -a /etc/hosts
   - echo "127.0.0.1    $TESTHOST" | sudo tee -a /etc/hosts
