@@ -372,12 +372,12 @@ if ($poruka>0) {
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
 	}
 	else if ($opseg==8) {
-		$studij = $prim_id / 10;
+		$studij = intval($prim_id / 10);
 		if ($studij == -1) {
-			$godina = $prim_id+10;
+			$godina = -($prim_id+10);
 			$primalac = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
 		} else if ($studij == -2) {
-			$godina = $prim_id+20;
+			$godina = -($prim_id+20);
 			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
 		} else {
 			$godina = $prim_id%10;
