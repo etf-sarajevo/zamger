@@ -1,30 +1,33 @@
 language: php
 php:
-    - 5.0
-    - 5.1
-    - 5.2
-    - 5.3
-    - 5.4
     - 5.5
-    - 5.6
-    - nightly
 
 before_script:
-   - sudo apt-get update
-   - sudo apt-get install apache2 libapache2-mod-fastcgi
-   # enable php-fpm
-   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
-   - sudo a2enmod rewrite actions fastcgi alias
-   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-   # configure apache virtual hosts
-   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
-   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
-   # short_open_tag
-   - sed -i 's/short_open_tag = Off/short_open_tag = On/' ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-   - sed -i 's/asp_tags = Off/asp_tags = On/' ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-   - sudo service apache2 restart
-   - php --ini
+  #- export HOSTNAME=zentrack
+  #- export TESTHOST=cashtrack.test
+  - sudo apt-get update
+  - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+  - sudo a2enmod rewrite actions fastcgi alias
+  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+  - phpenv config-add ./build/error_log.ini
+  - sudo service apache2 restart
+  - echo "127.0.0.1    $HOSTNAME" | sudo tee -a /etc/hosts
+  - echo "127.0.0.1    $TESTHOST" | sudo tee -a /etc/hosts
+  - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
+  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+  - sudo service apache2 restart
+  #- mysql -e 'create database yourcashflowtest;'
+  #- mysql -u root -e  'show databases;'
+  #- mysql -u root yourcashflowtest < ./build/setup/schema.sql
+  #- mysql -u root yourcashflowtest < ./build/setup/category.sql
+  #- mysql -u root yourcashflowtest < ./build/setup/account.sql
+  #- cp -f build/global.php ./config/autoload/global.php
+  #- cp -f build/test.php ./config/autoload/test.php
+  #- cp -f build/local.php ./config/autoload/local.php
+  #- composer install
    
 script:
   - php codecept.phar run --steps # testovi
