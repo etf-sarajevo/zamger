@@ -3,22 +3,20 @@ php:
     - 5.5
 
 before_script:
-  #- export HOSTNAME=zentrack
-  #- export TESTHOST=cashtrack.test
   - sudo apt-get update
   - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo apt-get autoremove
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  #- phpenv config-add ./build/error_log.ini
   - sudo service apache2 restart
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
   #- mysql -e 'create database yourcashflowtest;'
-  #- mysql -u root -e  'show databases;'
+  - mysql -u root -e  'show databases;'
   #- mysql -u root yourcashflowtest < ./build/setup/schema.sql
   #- mysql -u root yourcashflowtest < ./build/setup/category.sql
   #- mysql -u root yourcashflowtest < ./build/setup/account.sql
@@ -26,19 +24,11 @@ before_script:
   #- cp -f build/test.php ./config/autoload/test.php
   #- cp -f build/local.php ./config/autoload/local.php
   #- composer install
+
+before_install:
+  - mysql -e "create database IF NOT EXISTS test;" -uroot
    
 script:
   - php codecept.phar run --steps --html  #testovi
   
 after_script:
-    - cat _output/report.html
-    # cat ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-    # cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/pyrus.ini
-    # cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
-    # cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
-    # cat build/travis-ci-apache
-    # cd /
-    # ls
-    # find /home apache
-    
-    # sudo find /home httpd.conf
