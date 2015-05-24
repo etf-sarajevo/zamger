@@ -18,8 +18,8 @@ before_script:
   #- mysql -e 'create database yourcashflowtest;'
   #- mysql -e "source ~/build/zamger/test/_data/dump.sql;" -uroot
   - mysql -u root -e  'show databases;'
-  - mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
-  - mysql FLUSH PRVILEGES;"
+  # mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
+  # mysql FLUSH PRVILEGES;"
   - 
   #- mysql -u root yourcashflowtest < ./build/setup/schema.sql
   #- mysql -u root yourcashflowtest < ./build/setup/category.sql
