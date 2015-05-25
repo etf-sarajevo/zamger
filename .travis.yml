@@ -30,6 +30,8 @@ before_script:
   #- composer install
 
 before_install:
+  - ls
+  - cat zamger-dump.sql
   - mysql -e "create database IF NOT EXISTS test;" -uroot
   - mysql -e "create database IF NOT EXISTS zamger DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;"
   # mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
