@@ -109,7 +109,7 @@ INSERT INTO `angazman_status` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_anketa` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `datum_otvaranja` datetime DEFAULT NULL,
   `datum_zatvaranja` datetime DEFAULT NULL,
   `naziv` char(255) COLLATE utf8_slovenian_ci NOT NULL,
@@ -132,8 +132,8 @@ CREATE TABLE IF NOT EXISTS `anketa_anketa` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `pitanje` int(10) unsigned NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pitanje` int(11) NOT NULL,
   `izbor` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `pitanje` (`pitanje`)
@@ -151,9 +151,9 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
-  `rezultat` int(10) unsigned NOT NULL,
-  `pitanje` int(10) unsigned NOT NULL,
-  `izbor_id` int(10) unsigned NOT NULL,
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
+  `izbor_id` int(11) NOT NULL,
   PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`),
   KEY `rezultat` (`rezultat`),
   KEY `pitanje` (`pitanje`)
@@ -171,8 +171,8 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
-  `rezultat` int(10) unsigned NOT NULL,
-  `pitanje` int(10) unsigned NOT NULL,
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
   `odgovor` text COLLATE utf8_slovenian_ci,
   PRIMARY KEY (`rezultat`,`pitanje`),
   KEY `pitanje` (`pitanje`)
@@ -190,9 +190,9 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_pitanje` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa` int(10) unsigned NOT NULL DEFAULT '0',
-  `tip_pitanja` int(10) unsigned NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anketa` int(11) NOT NULL DEFAULT '0',
+  `tip_pitanja` int(11) NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `anketa` (`anketa`),
@@ -232,14 +232,14 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa` int(10) unsigned NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anketa` int(11) NOT NULL,
   `zavrsena` enum('Y','N') COLLATE utf8_slovenian_ci DEFAULT 'N',
   `predmet` int(11) DEFAULT NULL,
   `unique_id` varchar(50) COLLATE utf8_slovenian_ci DEFAULT NULL,
   `akademska_godina` int(10) NOT NULL,
-  `studij` int(10) NOT NULL,
-  `semestar` int(10) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
   `student` int(11) default NULL,
   `labgrupa` int(11) NOT NULL,
   PRIMARY KEY (`id`),
@@ -278,7 +278,7 @@ CREATE TABLE IF NOT EXISTS `anketa_student_zavrsio` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `tip` char(32) COLLATE utf8_slovenian_ci NOT NULL,
   `postoji_izbor` enum('Y','N') COLLATE utf8_slovenian_ci NOT NULL,
   `tabela_odgovora` char(32) COLLATE utf8_slovenian_ci NOT NULL,
@@ -605,7 +605,7 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `ekstenzije` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=19 ;
@@ -1531,16 +1531,16 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `prezimemajke` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   `spol` enum('M','Z','') COLLATE utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
-  `datum_rodjenja` date NOT NULL,
-  `mjesto_rodjenja` int(11) NOT NULL,
-  `nacionalnost` int(11) NOT NULL,
-  `drzavljanstvo` int(11) NOT NULL,
+  `datum_rodjenja` date default NULL,
+  `mjesto_rodjenja` int(11) default NULL,
+  `nacionalnost` int(11) default NULL,
+  `drzavljanstvo` int(11) default NULL,
   `boracke_kategorije` tinyint(1) NOT NULL,
   `jmbg` varchar(14) COLLATE utf8_slovenian_ci NOT NULL,
   `adresa` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `adresa_mjesto` int(11) NOT NULL,
+  `adresa_mjesto` int(11) default NULL,
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
-  `kanton` int(11) NOT NULL,
+  `kanton` int(11) default NULL,
   `treba_brisati` tinyint(1) NOT NULL DEFAULT '0',
   `fk_akademsko_zvanje` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
   `fk_naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
@@ -1562,7 +1562,7 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 --
 
 INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
-(1, 'Site', 'Admin', '', '0000-00-00', 0, '', '', '', 0, '', 0, 0);
+(1, 'Site', 'Admin', '', NULL,NULL, NULL, '', '', NULL, '', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -2769,6 +2769,7 @@ INSERT INTO `sifrarnik_tip_publikacije` (`id`, `naziv`) VALUES
 CREATE TABLE IF NOT EXISTS `sifrarnik_uza_naucna_oblast` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `fk_naucna_oblast` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
