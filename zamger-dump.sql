@@ -102,7 +102,7 @@ INSERT INTO `angazman_status` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_anketa` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `datum_otvaranja` datetime DEFAULT NULL,
   `datum_zatvaranja` datetime DEFAULT NULL,
   `naziv` char(255) COLLATE utf8_slovenian_ci NOT NULL,
@@ -124,8 +124,8 @@ CREATE TABLE IF NOT EXISTS `anketa_anketa` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `pitanje` int(10) unsigned NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pitanje` int(11) NOT NULL,
   `izbor` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=26 ;
@@ -142,11 +142,13 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
-  `rezultat` int(10) unsigned NOT NULL,
-  `pitanje` int(10) unsigned NOT NULL,
-  `izbor_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
+  `izbor_id` int(11) NOT NULL,
+  PRIMARY KEY (`rezultat`,`pitanje`,`izbor_id`),
+  KEY `rezultat` (`rezultat`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 --
 -- Dumping data for table `anketa_odgovor_rank`
@@ -160,8 +162,8 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_rank` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
-  `rezultat` int(10) unsigned NOT NULL,
-  `pitanje` int(10) unsigned NOT NULL,
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
   `odgovor` text COLLATE utf8_slovenian_ci,
   PRIMARY KEY (`rezultat`,`pitanje`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -178,9 +180,9 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_pitanje` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa` int(10) unsigned NOT NULL DEFAULT '0',
-  `tip_pitanja` int(10) unsigned NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anketa` int(11) NOT NULL DEFAULT '0',
+  `tip_pitanja` int(11) NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=92 ;
@@ -216,15 +218,16 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `anketa` int(10) unsigned NOT NULL,
-  `vrijeme` timestamp NULL DEFAULT '0000-00-00 00:00:00',
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `anketa` int(11) NOT NULL,
   `zavrsena` enum('Y','N') COLLATE utf8_slovenian_ci DEFAULT 'N',
   `predmet` int(11) DEFAULT NULL,
   `unique_id` varchar(50) COLLATE utf8_slovenian_ci DEFAULT NULL,
   `akademska_godina` int(10) NOT NULL,
-  `studij` int(10) NOT NULL,
-  `semestar` int(10) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
+  `student` int(11) default NULL,
+  `labgrupa` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `unique_id` (`unique_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=27 ;
@@ -241,7 +244,7 @@ CREATE TABLE IF NOT EXISTS `anketa_rezultat` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `tip` char(32) COLLATE utf8_slovenian_ci NOT NULL,
   `postoji_izbor` enum('Y','N') COLLATE utf8_slovenian_ci NOT NULL,
   `tabela_odgovora` char(32) COLLATE utf8_slovenian_ci NOT NULL,
@@ -412,8 +415,8 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `ekstenzije` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `naziv` text COLLATE utf8_slovenian_ci NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=26 ;
 
@@ -1107,16 +1110,16 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `spol` enum('M','Z','') COLLATE utf8_slovenian_ci NOT NULL,
   `email` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `brindexa` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
-  `datum_rodjenja` date NOT NULL,
-  `mjesto_rodjenja` int(11) NOT NULL,
-  `nacionalnost` int(11) NOT NULL,
-  `drzavljanstvo` int(11) NOT NULL,
+  `datum_rodjenja` date default NULL,
+  `mjesto_rodjenja` int(11) default NULL,
+  `nacionalnost` int(11) default NULL,
+  `drzavljanstvo` int(11) default NULL,
   `boracke_kategorije` tinyint(1) NOT NULL,
   `jmbg` varchar(14) COLLATE utf8_slovenian_ci NOT NULL,
   `adresa` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `adresa_mjesto` int(11) NOT NULL,
+  `adresa_mjesto` int(11) default NULL,
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
-  `kanton` int(11) NOT NULL,
+  `kanton` int(11) default NULL,
   `treba_brisati` tinyint(1) NOT NULL DEFAULT '0',
   `strucni_stepen` int(11) NOT NULL,
   `naucni_stepen` int(11) NOT NULL,
@@ -1127,6 +1130,9 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 --
 -- Dumping data for table `osoba`
 --
+
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
+(1, 'Site', 'Admin', '', NULL,NULL, NULL, '', '', NULL, '', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -1958,6 +1964,649 @@ CREATE TABLE IF NOT EXISTS `student_zavrsni` (
 
 --
 -- Dumping data for table `student_zavrsni`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `studij`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_radno_mjesto` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `sifrarnik_radno_mjesto`
+--
+
+INSERT INTO `sifrarnik_radno_mjesto` (`id`, `naziv`) VALUES
+(1, 'Dekan'),
+(12, 'Prodekan za nastavu'),
+(14, 'Prodekan za nauku'),
+(16, 'Prodekan za finansije'),
+(18, 'Koordinator za međunarodnu saradnju'),
+(20, 'Sekretar postdiplomskog studija'),
+(22, 'Šef službe za nastavu'),
+(24, 'Voditelj odjela'),
+(26, 'Referent za nastavu'),
+(28, 'Referent za nabavku'),
+(30, 'Domar'),
+(32, 'Knjižničar'),
+(100, 'diplomirani inženjer'),
+(101, 'direktor'),
+(102, 'rektor'),
+(103, 'prorektor (redovni profesor)'),
+(104, 'prorektor (vanredni profesor)'),
+(105, 'generalni sekretar'),
+(106, 'rukovodilac službe'),
+(107, 'stručni saradnik za pravne poslove'),
+(108, 'viši samostalni referent za pravne poslove'),
+(109, 'stručni saradnik za nastavne planove i programe'),
+(110, 'stručni saradnik za poslove ECTS'),
+(111, 'stručni saradnik za sistem kvaliteta'),
+(112, 'stručni saradnik za poslove naučno-istraživačkog rada'),
+(113, 'stručni saradnik za naučno-istraživačke projekte'),
+(114, 'stručni saradnik za međunarodne ugovore i saradnju'),
+(115, 'stručni saradnik za odnose s javnošću'),
+(116, 'stručni saradnik za poslove izdavačke djelatnosti'),
+(117, 'stručni saradnik za finansije'),
+(118, 'stručni saradnik za poslove investicije'),
+(119, 'stručni saradnik za poslove održavanja'),
+(120, 'stručni saradnik za poslove nabavke'),
+(121, 'rukovodilac službe/šef kabineta'),
+(122, 'poslovni sekretar rektora (stručni saradnik)'),
+(123, 'Prevodilac (stručni saradnik)'),
+(124, 'Lektor (stručni saradnik)'),
+(125, 'stručni saradnik za poslove dizajna'),
+(126, 'prijem i oprema pošte i arhive'),
+(127, ' radnik-ekonom'),
+(128, 'vozač'),
+(129, 'kurir'),
+(130, 'kafe-kuharica'),
+(1000, 'asistent'),
+(1010, 'profesor'),
+(5000, 'računovođa'),
+(5001, 'tehnički sekretar'),
+(5002, 'referent'),
+(5003, 'administrator servisa'),
+(5004, 'sistem administrator'),
+(5005, 'rukovodilac odjela za opće poslove'),
+(5006, 'blagajnik'),
+(5500, 'tehničar'),
+(5510, 'laborant'),
+(6000, 'sekretar fakulteta'),
+(6010, 'šef studentske službe'),
+(6500, 'bibliotekar'),
+(7000, 'pomoćni radnik'),
+(7100, 'portir'),
+(10001, 'radnici bez zanimanja'),
+(10002, 'referent za pravne poslove'),
+(10003, 'spremačica');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_strucna_sprema`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_strucna_sprema` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `sifrarnik_strucna_sprema`
+--
+
+INSERT INTO `sifrarnik_strucna_sprema` (`id`, `naziv`) VALUES
+(2, 'NKV'),
+(3, 'PK'),
+(4, 'KV'),
+(5, 'VKV'),
+(6, 'SSS'),
+(7, 'VŠS'),
+(8, 'VSS'),
+(9, 'magistar nauka/umjetnosti'),
+(10, 'doktor nauka'),
+(11, 'bakalaureat/bachelor (Bolonja I ciklus)'),
+(12, 'magistar (Bolonja II ciklus)'),
+(13, 'doktor (Bolonja III ciklus)');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_tip_mentorstva`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_tip_mentorstva` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `sifrarnik_tip_mentorstva`
+--
+
+INSERT INTO `sifrarnik_tip_mentorstva` (`id`, `naziv`) VALUES
+(1, 'magistar nauka'),
+(2, 'doktor nauka'),
+(3, 'magistar (Bolonja II ciklus)'),
+(4, 'doktor (Bolonja III ciklus)');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_tip_publikacije`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_tip_publikacije` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `sifrarnik_tip_publikacije`
+--
+
+INSERT INTO `sifrarnik_tip_publikacije` (`id`, `naziv`) VALUES
+(1, 'udžbenik'),
+(2, 'monografija'),
+(3, 'knjiga'),
+(4, 'priručnik'),
+(5, 'naučni članak (ne-indeksirani časopis)'),
+(6, 'naučni članak (indeksirani časopis)'),
+(7, 'stručni članak'),
+(8, 'ostalo');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_uza_naucna_oblast`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_uza_naucna_oblast` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  `fk_naucna_oblast` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `sifrarnik_uza_naucna_oblast`
+--
+
+INSERT INTO `sifrarnik_uza_naucna_oblast` (`id`, `naziv`, `fk_naucna_oblast`) VALUES
+(1, 'Linearni sistemi automatskog upravljanja', 302),
+(2, 'Modeliranje i simulacija', 302),
+(3, 'Osnove sistema automatskog upravljanja', 302),
+(4, 'Praktikum automatike i informatike', 302),
+(5, 'Digitalni sistemi upravljanja', 302),
+(6, 'Praktikum Automatike', 302),
+(7, 'Nelinearni sistemi automatskog upravljanja', 302),
+(8, 'Optimalno upravljanje', 302),
+(9, 'Inteligentno upravljenje', 302),
+(10, 'Digitalni sistemi upravljanja', 302),
+(11, 'Teorija automatskog upravljanja', 302),
+(12, 'Automatsko upravljanje', 302),
+(13, 'Teorija optimalnih rješenja', 302),
+(14, 'Senzori i pretvarači', 304),
+(15, 'Aktuatori', 304),
+(16, 'Analiza signala i sistema', 304),
+(17, 'Distribuirani sistemi', 304),
+(18, 'Identifikacija dinamičkih sistema', 304),
+(19, 'Projektiranje sistema automatskog upravljanja', 304),
+(20, 'Senzori i mjerenja (AB)', 304),
+(21, 'Analiza signala i sistema', 304),
+(22, 'Projektovanje sistema automatskog upravljanja', 304),
+(23, 'Akvizicija i prenos podataka', 304),
+(24, 'Specijalna mjerenja', 304),
+(25, 'Mehatronika', 306),
+(26, 'Robotika 1', 306),
+(27, 'Mobilna robotika', 306),
+(28, 'Robotika i upravljanje proizvodnim sistemima', 306),
+(29, 'Strukture i režimi rada elektroenergetskih sistema', 308),
+(30, 'Zaštita i upravljanje elektroenergetskih sistemima', 308),
+(31, 'Sistemi zaštite i upravljanja elektroenergetskih sistemima', 308),
+(32, 'Strukture i režimi rada elektroenergetskih sistema', 308),
+(33, 'Principi sistemskog inženjeringa', 310),
+(34, 'Elektronički sistemi i sklopovi', 312),
+(35, 'Analogna elektornika', 312),
+(36, 'Elektornika', 312),
+(37, 'Osnove Optoelektornika', 312),
+(38, 'Praktikum elektrotehnike i elektronike', 312),
+(39, 'Praktikum eletronike', 312),
+(40, 'Energetska eletronika', 312),
+(41, 'Mikroelektroničke komponenete i modeliranje', 312),
+(42, 'Napredne eletroničke komponente i strukture', 312),
+(43, 'Osnovi elektronike', 312),
+(44, 'Elektronika (AE i TK)', 312),
+(45, 'Elektronika (EE)', 312),
+(46, 'Elektronika (RI)', 312),
+(47, 'Elektornski sklopovi', 312),
+(48, 'Energetska elektronika ', 312),
+(49, 'Elektronika (TK 2)', 314),
+(50, 'Digitalna elektronika', 314),
+(51, 'Digitalni integrirani krugovi', 314),
+(52, 'Projektovanje logičkih sistema', 314),
+(53, 'Projektovanje mikroprocesorskih sistema', 314),
+(54, 'Digitalna obrada signalan', 314),
+(55, 'Digitalni računari i organizacija softvera I', 314),
+(56, 'Digitalni računari i obrada softvera II', 314),
+(57, 'Praktikum mikroračunarskih baziranih sistema', 314),
+(58, 'Projektovanje sistema u čipu', 314),
+(59, 'Impulsna elektronika', 314),
+(60, 'Digitalna elektronika', 314),
+(61, 'Projektovanje digitalnih sistema', 314),
+(62, 'Digitalni računari i organizacija softvera', 314),
+(63, 'Digitalna obrada signala', 314),
+(64, 'Računarski sistemi u realnom vremenu', 314),
+(65, 'Biomedicinski signali i sistemi', 316),
+(66, 'Osnove elektroenergetskih sistema', 318),
+(67, 'ElektroenergetskI sistemi', 318),
+(68, 'Praktikum iz elektroenergetike 1', 318),
+(69, 'Održavanje električnih sistema', 318),
+(70, 'Praktikum iz elektroenergetike 2', 318),
+(71, 'Analiza elektroenergetskih sistema', 318),
+(72, 'Automatizirano mjerenje i upravljanje', 318),
+(73, 'Elektroenergetski sistemi II', 318),
+(74, 'Numeričko modeliranje', 318),
+(75, 'Kvaliteta električne energije', 318),
+(76, 'Metodologija inženjerskog projektiranja', 318),
+(77, 'Eksploatacija i upravljanje elektroenergetskim sistemima', 318),
+(78, 'Industrijski i distributivni elektroenergetski sistemi', 318),
+(79, 'Planiranje elektroenergetskih sistema', 318),
+(80, 'Elektroenergetske mreže i sistemi ', 318),
+(81, 'Računarske metode u elektroenergetici', 318),
+(82, 'Eksploatacija i upravljanje elektroenergetskim sistemima', 318),
+(83, 'Planiranje elektroenergetskih sistema', 318),
+(84, 'Pouzdanost električnih elemenata i sistema', 320),
+(85, 'Vjerovatnoća i statistika RI', 320),
+(86, 'Elektrotehnički materijali', 320),
+(87, 'Komponente i tehnologije', 320),
+(88, 'Tehnika visokog napona', 320),
+(89, 'Tehnologija visokonaponske izolacije', 320),
+(90, 'Prenaponi i koordinacija izolacije', 320),
+(91, 'Nove tehnologije u elektroenergetici', 320),
+(92, 'Monitoring i održavanje elektroenergetskih sistema', 320),
+(93, 'Tehnika visokog napona', 320),
+(94, 'Elektrotehnička tehnologija', 320),
+(95, 'Osnove mehatronike', 322),
+(96, 'Električne mašine', 322),
+(97, 'Električni sistemi u transportu', 322),
+(98, 'Energetska elektronika', 322),
+(99, 'Električna postrojenja', 322),
+(100, 'Elektromotorni pogoni', 322),
+(101, 'Kvaliteta električne energije', 322),
+(102, 'Elektromotorni pogoni i dinamika električnih mašina', 322),
+(103, 'Električne mašine II', 322),
+(104, 'Projektiranje i automatizacija elektroenergetskih postrojenja', 322),
+(105, 'Električni aparati 1', 322),
+(106, 'Električne mašine 1', 322),
+(107, 'Elektroenergetska postrojenja', 322),
+(108, 'Elektromotorni pogoni', 322),
+(109, 'Električni aparati 2', 322),
+(110, 'Električne mašine 2', 322),
+(111, 'Inženjerska ekonomika', 324),
+(112, 'Električne instalacije i mjere sigurnosti', 324),
+(113, 'Elektrotermička konverzija energije', 324),
+(114, 'Proizvodnja električne energije', 324),
+(115, 'Upravljanje potrošnjom električne energije', 324),
+(116, 'Distribuirana proizvodnje energije', 324),
+(117, 'Niskonaponski sistemi i upotreba električne energije', 324),
+(118, 'Elektroenergetski sistemi i okolina', 324),
+(119, 'Energetska ekonomika', 324),
+(120, 'Elektroenergetski izvori', 324),
+(121, 'Elektroenergetski sistem i okolina', 324),
+(122, 'Osnove elektrotehnike', 326),
+(123, 'Električni krugovi 1', 326),
+(124, 'Električni krugovi 2', 326),
+(125, 'Električna mjerenja', 326),
+(126, 'Inženjerska elektromagnetika', 326),
+(127, 'Osnove elektrotehnike', 326),
+(128, 'Električna mjerenja', 326),
+(129, 'Elektromagnetika', 326),
+(130, 'Teorija električnih kola', 326),
+(131, 'Teorija elektromagnetnih polja', 326),
+(132, 'Logički dizajn', 328),
+(133, 'Operativni sistemi', 328),
+(134, 'Računarske arhitekture', 328),
+(135, 'Administracija računarskih mreža', 328),
+(136, 'Osnove računarskih mreža', 328),
+(137, 'Paralelni računarski sistemi', 328),
+(138, 'Računarske mreže', 328),
+(139, 'Programska organizacija računara i operativni sistemi', 328),
+(140, 'Digitalni računari I', 328),
+(141, 'Digitalni računari TI', 328),
+(142, 'Digitalni računari T2', 328),
+(143, 'Računarske arhitekture', 328),
+(144, 'Računarske komunikacije i mreže računara', 328),
+(145, 'Specijalna poglavlja računarskih sistema', 328),
+(146, 'Internet ekonomija', 330),
+(147, 'Osnove baza podataka', 330),
+(148, 'Osnove informacionih sistema', 330),
+(149, 'Informacioni sistemi', 330),
+(150, 'Baze podataka', 330),
+(151, 'Praktikum-poslovni informacioni sistemi', 330),
+(152, 'Inovacije u projektovanju i menadžmentu informacionih sistema', 330),
+(153, 'Sistemi za podršku odlučivanju', 330),
+(154, 'Informacioni sistemi', 330),
+(155, 'Strukture i baze podataka', 330),
+(156, 'Projektovanje informacionih sistema', 330),
+(157, 'Specijalna poglavlja informacionih sistema', 330),
+(158, 'Osnove računarstva', 332),
+(159, 'Tehnike programiranja', 332),
+(160, 'Algoritmi i strukture podataka', 332),
+(161, 'Sistemsko programiranje', 332),
+(162, 'Automati i formalni jezici', 332),
+(163, 'Tehnologije sigurnosti', 332),
+(164, 'Osnovi računarstva', 332),
+(165, 'Algoritmi', 332),
+(166, 'Programiranje i programski jezici', 332),
+(167, 'Teorija sistema', 332),
+(168, 'Razvoj programskih rješenja', 334),
+(169, 'Objektno-orijentisana analiza i dizajn', 334),
+(170, 'Pouzdanost i kontrola kvaliteta softvera', 334),
+(171, 'Softver inžinjering', 334),
+(172, 'Web tehnologije', 334),
+(173, 'Multimedijalni sistemi', 334),
+(174, 'Praktikum-napredne web tehnologije', 334),
+(175, 'Napredni softver inžinjering', 334),
+(176, 'Računarski sistemi u realnom vremenu', 334),
+(177, 'Projektovanje sistemskog softvera', 334),
+(178, 'Računarska grafika', 336),
+(179, 'Vještačka inteligencija', 336),
+(180, 'Numerička grafika i animacija', 336),
+(181, 'Metode i primjena vještačke inteligencije', 336),
+(182, 'Data mining', 336),
+(183, 'Računarski algoritmi u bioinformatici', 336),
+(184, 'Računarska grafika i komunikacija čovjek', 336),
+(185, 'Vještačka inteligencija i ekspertni sistemi', 336),
+(186, 'Sistemi za podršku odlučivanju', 336),
+(187, 'Optimizacija resursa', 338),
+(188, 'Operaciona istraživanja', 338),
+(189, 'CAD-CAM inžinjering', 340),
+(190, 'Digitalno procesiranje signala', 340),
+(191, 'Inžinjering i tehnologija sistema upravljanja', 340),
+(192, 'Računarsko modeliranje i simulacija', 340),
+(193, 'Prepoznavanje oblika i obrada slike', 340),
+(194, 'Specijalna poglavlja sistema u realnom vremenu', 340),
+(195, 'Specijalna poglavlja softverskih sistema', 340),
+(196, 'Teorija informacija i izvorno kodiranje', 342),
+(197, 'Teorija signala', 342),
+(198, 'Statistička teorija signala', 342),
+(199, 'Kanalno kodiranje', 342),
+(200, 'Telekomunikacioni softver inženjering', 342),
+(201, 'Kriptografija i sigurnost sistema', 342),
+(202, 'Napredna poglavlja iz procesiranja signala', 342),
+(203, 'Poslovni modeli u telekomunikacijama', 342),
+(204, 'Statistička teorija telekomunikacija', 342),
+(205, 'Teorija korekcionih kodova', 342),
+(206, 'Teorija elektromagnetnih polja', 344),
+(207, 'Osnove optoelektronike', 344),
+(208, 'Antene i prostiranje talasa', 344),
+(209, 'Telekomunikacione tehnike I', 344),
+(210, 'Telekomunikacione tehnike II', 344),
+(211, 'Radiotehnika', 344),
+(212, 'Mikrovalni komunikacijski sistemi', 344),
+(213, 'Komutacioni sistemi', 344),
+(214, 'Tehnologije televizije', 344),
+(215, 'Simulacija procesa u telekomunikacijskom kanalu', 344),
+(216, 'Optički telekomunikacijski sistemi', 344),
+(217, 'Simulacija procesa u telekomunikacijskim mrežama', 344),
+(218, 'Kompresija slike i videa', 344),
+(219, 'Sistemski aspekti u telekomunikacijama', 344),
+(220, 'Napredna poglavlja u analizi IP saobraćaja', 344),
+(221, 'Optoelektronika', 344),
+(222, 'Osnove digitalnih telekomunikacija', 344),
+(223, 'Radiotehnika', 344),
+(224, 'Komutacioni sistemi', 344),
+(225, 'Antene i prostiranje talasa', 344),
+(226, 'Digitalni telekomunikacioni sistemi I', 344),
+(227, 'Digitalni telekomunikacioni sistemi II', 344),
+(228, 'Televizijska tehnika', 344),
+(229, 'Mikrotalasni i satelitski sistemi', 344),
+(230, 'Nove generacije mreža i usluga', 346),
+(231, 'Teorija prometa', 346),
+(232, 'Komunikacijski protokoli i mreže', 346),
+(233, 'Osnovi signalizacionih protokola', 346),
+(234, 'Algoritmi i metodi optimizacije', 346),
+(235, 'Organizacija i osnove upravljanja mrežom', 346),
+(236, 'Arhitekture paketskih čvorišta', 346),
+(237, 'Kvaliteta usluga u telekomunikacijskim mrežama', 346),
+(238, 'Mrežni multimedijalni servisi', 346),
+(239, 'Softverski dizajn protokola', 346),
+(240, 'Napredni telekomunikacijski protokoli i mreže nove generacije', 346),
+(241, 'Računarske komunikacije i mreže računara', 346),
+(242, 'Mobilne komunikacije', 348),
+(243, 'Tehnologije pristupnih bežičnih mreža', 348),
+(244, 'Upravljanje telekomunikacijskim mrežama', 348),
+(245, 'Sistemi i servisi mobilnih telekomunikacija', 348),
+(246, 'Mobilne radio komunikacije', 348);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sifrarnik_vozacki_kategorija`
+--
+
+CREATE TABLE IF NOT EXISTS `sifrarnik_vozacki_kategorija` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(255) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+
+--
+-- Dumping data for table `sifrarnik_vozacki_kategorija`
+--
+
+INSERT INTO `sifrarnik_vozacki_kategorija` (`id`, `naziv`) VALUES
+(1, 'A kategorija'),
+(2, 'A1 kategorija'),
+(3, 'A2 kategorija'),
+(4, 'B kategorija'),
+(5, 'B+E kategorija'),
+(6, 'C1 kategorija'),
+(7, 'C1+E kategorija'),
+(8, 'C kategorija'),
+(9, 'C+E kategorija'),
+(10, 'D kategorija'),
+(11, 'D+E kategorija'),
+(12, 'F kategorija'),
+(13, 'G kategorija');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `srednja_ocjene`
+--
+
+CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
+  `osoba` int(11) NOT NULL,
+  `razred` tinyint(4) NOT NULL,
+  `redni_broj` int(1) NOT NULL,
+  `ocjena` tinyint(5) NOT NULL,
+  `tipocjene` tinyint(5) NOT NULL,
+  PRIMARY KEY (`osoba`,`razred`,`redni_broj`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `srednja_ocjene`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `srednja_skola`
+--
+
+CREATE TABLE IF NOT EXISTS `srednja_skola` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `opcina` int(11) NOT NULL,
+  `domaca` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `srednja_skola`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stdin`
+--
+
+CREATE TABLE IF NOT EXISTS `stdin` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `zadaca` bigint(20) NOT NULL DEFAULT '0',
+  `redni_broj` int(11) NOT NULL DEFAULT '0',
+  `ulaz` text COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `stdin`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `studentski_modul`
+--
+
+CREATE TABLE IF NOT EXISTS `studentski_modul` (
+  `id` int(11) NOT NULL,
+  `modul` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `gui_naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `novi_prozor` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `studentski_modul`
+--
+
+INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUES
+(1, 'student/moodle', 'Materijali (Moodle)', 1),
+(2, 'student/zadaca', 'Slanje zadaće', 0),
+(3, 'izvjestaj/predmet', 'Dnevnik', 1),
+(4, 'student/projekti', 'Projekti', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `studentski_modul_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `studentski_modul_predmet` (
+  `predmet` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `studentski_modul` int(11) NOT NULL,
+  `aktivan` tinyint(1) NOT NULL,
+  PRIMARY KEY (`predmet`,`akademska_godina`,`studentski_modul`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `studentski_modul_predmet`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_ispit_termin`
+--
+
+CREATE TABLE IF NOT EXISTS `student_ispit_termin` (
+  `student` int(11) NOT NULL,
+  `ispit_termin` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`ispit_termin`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `student_ispit_termin`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_labgrupa`
+--
+
+CREATE TABLE IF NOT EXISTS `student_labgrupa` (
+  `student` int(11) NOT NULL DEFAULT '0',
+  `labgrupa` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`student`,`labgrupa`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `student_labgrupa`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `student_predmet` (
+  `student` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  PRIMARY KEY (`student`,`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `student_predmet`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_projekat`
+--
+
+CREATE TABLE IF NOT EXISTS `student_projekat` (
+  `student` int(11) NOT NULL,
+  `projekat` int(11) NOT NULL,
+  PRIMARY KEY (`student`,`projekat`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `student_projekat`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_studij`
+--
+
+CREATE TABLE IF NOT EXISTS `student_studij` (
+  `student` int(11) NOT NULL,
+  `studij` int(11) NOT NULL,
+  `semestar` int(3) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `nacin_studiranja` int(11) NOT NULL,
+  `ponovac` tinyint(4) NOT NULL DEFAULT '0',
+  `odluka` int(11) NOT NULL DEFAULT '0',
+  `plan_studija` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `student_studij`
 --
 
 -- --------------------------------------------------------

@@ -4,6 +4,12 @@ class pocetnaPage
 {
     // include url of current page
     public static $URL = '';
+    public static $username = 'input[name=login]';
+    public static $pass = 'input[name=pass]';
+    public static $button = 'input[type=submit]';
+    
+    public static $homeTextAdmin = 'Administracija sajta';
+    
 
     /**
      * Declare UI map for this page here. CSS or XPath allowed.

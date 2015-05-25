@@ -38,7 +38,15 @@ before_install:
   - cat tests/_data/dump.sql
   # cat zamger/tests/_data/dump.sql
    
+addons:
+  sauce_connect: true
+
 script:
   - php codecept.phar run --steps --html  #testovi
   
+env:
+  global: #sauce connect auth details
+    - secure: kc0Uu+ClHekIZeGh55aN96aan6HtXh4XmvwhM1vkaaZCYuEp6+hcG6El5vdRUB5GxbosV3xznOlc/rL0JdjYxASzoppg5z9QmEsq2oKvdDgn06R2jAmQvXQxfXgZFjTjr/vUCoERROOziWyR2xsOweOlTtZ2oGE8gkDIpHVEmKE=
+    - secure: CZSrP4WhQ48DtgkrN+NIt1ig4+pOGNvDgFSSl8ILT+VbUUQrbw6UswI9djTOiIF9OA4xuWLqUEKlqPSOOrRA3cOUUxWIFVyNDoygBvwWIPHICqrTiN4vDB3ZNj02VvwIOfNALeUTREV155sUdx0WC3c3FVjVsioktgOp1dMaTVM=  
+
 after_script:
