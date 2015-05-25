@@ -28,11 +28,11 @@ before_script:
   #- cp -f build/test.php ./config/autoload/test.php
   #- cp -f build/local.php ./config/autoload/local.php
   #- composer install
-  - mkdir /home/zamger
-  - mkdir /home/zamger/tmp
-  - mkdir /home/zamger/zadace
-  - mkdir /home/zamger/projekti
-  - mkdir /home/zamger/slike
+  - sudo mkdir /home/zamger
+  - sudo mkdir /home/zamger/tmp
+  - sudo mkdir /home/zamger/zadace
+  - sudo mkdir /home/zamger/projekti
+  - sudo mkdir /home/zamger/slike
   - ls 
 
 before_install:
