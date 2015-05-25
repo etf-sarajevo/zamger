@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: May 24, 2015 at 10:27 AM
+-- Generation Time: May 25, 2015 at 05:45 PM
 -- Server version: 5.6.17
 -- PHP Version: 5.5.12
 
@@ -20,6 +20,9 @@ USE `zamger`;
 
 --
 -- Table structure for table `akademska_godina`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 12:09 PM
 --
 
 DROP TABLE IF EXISTS `akademska_godina`;
@@ -47,6 +50,9 @@ INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
 --
 -- Table structure for table `akademska_godina_predmet`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `akademska_godina_predmet`;
 CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
@@ -65,6 +71,9 @@ TRUNCATE TABLE `akademska_godina_predmet`;
 
 --
 -- Table structure for table `angazman`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `angazman`;
@@ -85,6 +94,9 @@ TRUNCATE TABLE `angazman`;
 
 --
 -- Table structure for table `angazman_status`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `angazman_status`;
@@ -116,6 +128,9 @@ INSERT INTO `angazman_status` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `anketa_anketa`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `anketa_anketa`;
 CREATE TABLE IF NOT EXISTS `anketa_anketa` (
@@ -140,6 +155,9 @@ TRUNCATE TABLE `anketa_anketa`;
 --
 -- Table structure for table `anketa_izbori_pitanja`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `anketa_izbori_pitanja`;
 CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
@@ -158,6 +176,9 @@ TRUNCATE TABLE `anketa_izbori_pitanja`;
 
 --
 -- Table structure for table `anketa_odgovor_rank`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `anketa_odgovor_rank`;
@@ -178,6 +199,9 @@ TRUNCATE TABLE `anketa_odgovor_rank`;
 --
 -- Table structure for table `anketa_odgovor_text`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `anketa_odgovor_text`;
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_text` (
@@ -196,6 +220,9 @@ TRUNCATE TABLE `anketa_odgovor_text`;
 
 --
 -- Table structure for table `anketa_pitanje`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `anketa_pitanje`;
@@ -216,6 +243,10 @@ TRUNCATE TABLE `anketa_pitanje`;
 
 --
 -- Table structure for table `anketa_predmet`
+--
+-- Creation: May 23, 2015 at 08:14 PM
+-- Last update: May 23, 2015 at 08:14 PM
+-- Last check: May 23, 2015 at 08:14 PM
 --
 
 DROP TABLE IF EXISTS `anketa_predmet`;
@@ -238,6 +269,10 @@ TRUNCATE TABLE `anketa_predmet`;
 
 --
 -- Table structure for table `anketa_rezultat`
+--
+-- Creation: May 23, 2015 at 07:33 PM
+-- Last update: May 23, 2015 at 07:33 PM
+-- Last check: May 23, 2015 at 07:33 PM
 --
 
 DROP TABLE IF EXISTS `anketa_rezultat`;
@@ -266,6 +301,9 @@ TRUNCATE TABLE `anketa_rezultat`;
 --
 -- Table structure for table `anketa_student_zavrsio`
 --
+-- Creation: May 23, 2015 at 07:35 PM
+-- Last update: May 23, 2015 at 07:35 PM
+--
 
 DROP TABLE IF EXISTS `anketa_student_zavrsio`;
 CREATE TABLE IF NOT EXISTS `anketa_student_zavrsio` (
@@ -287,6 +325,9 @@ TRUNCATE TABLE `anketa_student_zavrsio`;
 
 --
 -- Table structure for table `anketa_tip_pitanja`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `anketa_tip_pitanja`;
@@ -315,6 +356,9 @@ INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora
 
 --
 -- Table structure for table `auth`
+--
+-- Creation: May 23, 2015 at 12:21 PM
+-- Last update: May 23, 2015 at 12:21 PM
 --
 
 DROP TABLE IF EXISTS `auth`;
@@ -346,6 +390,10 @@ INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`
 --
 -- Table structure for table `autotest`
 --
+-- Creation: May 23, 2015 at 06:06 PM
+-- Last update: May 23, 2015 at 06:06 PM
+-- Last check: May 23, 2015 at 06:06 PM
+--
 
 DROP TABLE IF EXISTS `autotest`;
 CREATE TABLE IF NOT EXISTS `autotest` (
@@ -372,6 +420,10 @@ TRUNCATE TABLE `autotest`;
 --
 -- Table structure for table `autotest_replace`
 --
+-- Creation: May 23, 2015 at 06:09 PM
+-- Last update: May 23, 2015 at 06:09 PM
+-- Last check: May 23, 2015 at 06:09 PM
+--
 
 DROP TABLE IF EXISTS `autotest_replace`;
 CREATE TABLE IF NOT EXISTS `autotest_replace` (
@@ -394,6 +446,10 @@ TRUNCATE TABLE `autotest_replace`;
 
 --
 -- Table structure for table `autotest_rezultat`
+--
+-- Creation: May 23, 2015 at 08:11 PM
+-- Last update: May 23, 2015 at 08:11 PM
+-- Last check: May 23, 2015 at 08:11 PM
 --
 
 DROP TABLE IF EXISTS `autotest_rezultat`;
@@ -418,6 +474,9 @@ TRUNCATE TABLE `autotest_rezultat`;
 --
 -- Table structure for table `bb_post`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `bb_post`;
 CREATE TABLE IF NOT EXISTS `bb_post` (
@@ -439,6 +498,9 @@ TRUNCATE TABLE `bb_post`;
 --
 -- Table structure for table `bb_post_text`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `bb_post_text`;
 CREATE TABLE IF NOT EXISTS `bb_post_text` (
@@ -456,6 +518,9 @@ TRUNCATE TABLE `bb_post_text`;
 
 --
 -- Table structure for table `bb_tema`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `bb_tema`;
@@ -480,6 +545,9 @@ TRUNCATE TABLE `bb_tema`;
 --
 -- Table structure for table `bl_clanak`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `bl_clanak`;
 CREATE TABLE IF NOT EXISTS `bl_clanak` (
@@ -502,6 +570,10 @@ TRUNCATE TABLE `bl_clanak`;
 
 --
 -- Table structure for table `cas`
+--
+-- Creation: May 23, 2015 at 12:30 PM
+-- Last update: May 23, 2015 at 12:30 PM
+-- Last check: May 23, 2015 at 12:30 PM
 --
 
 DROP TABLE IF EXISTS `cas`;
@@ -528,6 +600,9 @@ TRUNCATE TABLE `cas`;
 
 --
 -- Table structure for table `cron`
+--
+-- Creation: May 23, 2015 at 05:33 PM
+-- Last update: May 23, 2015 at 05:33 PM
 --
 
 DROP TABLE IF EXISTS `cron`;
@@ -556,6 +631,10 @@ TRUNCATE TABLE `cron`;
 --
 -- Table structure for table `cron_rezultat`
 --
+-- Creation: May 23, 2015 at 05:51 PM
+-- Last update: May 23, 2015 at 05:51 PM
+-- Last check: May 23, 2015 at 05:51 PM
+--
 
 DROP TABLE IF EXISTS `cron_rezultat`;
 CREATE TABLE IF NOT EXISTS `cron_rezultat` (
@@ -577,6 +656,9 @@ TRUNCATE TABLE `cron_rezultat`;
 
 --
 -- Table structure for table `drzava`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `drzava`;
@@ -611,6 +693,9 @@ INSERT INTO `drzava` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `ekstenzije`
+--
+-- Creation: May 23, 2015 at 12:35 PM
+-- Last update: May 23, 2015 at 12:39 PM
 --
 
 DROP TABLE IF EXISTS `ekstenzije`;
@@ -654,6 +739,10 @@ INSERT INTO `ekstenzije` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `email`
 --
+-- Creation: May 23, 2015 at 06:16 PM
+-- Last update: May 23, 2015 at 06:16 PM
+-- Last check: May 23, 2015 at 06:16 PM
+--
 
 DROP TABLE IF EXISTS `email`;
 CREATE TABLE IF NOT EXISTS `email` (
@@ -674,6 +763,9 @@ TRUNCATE TABLE `email`;
 
 --
 -- Table structure for table `hr_kompetencije`
+--
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
 --
 
 DROP TABLE IF EXISTS `hr_kompetencije`;
@@ -704,6 +796,9 @@ INSERT INTO `hr_kompetencije` (`id`, `fk_osoba`, `jezik`, `razumjevanje`, `govor
 
 --
 -- Table structure for table `hr_mentorstvo`
+--
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
 --
 
 DROP TABLE IF EXISTS `hr_mentorstvo`;
@@ -741,6 +836,9 @@ INSERT INTO `hr_mentorstvo` (`id`, `fk_osoba`, `ime_kandidata`, `naziv_teme`, `f
 --
 -- Table structure for table `hr_nagrade_priznanja`
 --
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
+--
 
 DROP TABLE IF EXISTS `hr_nagrade_priznanja`;
 CREATE TABLE IF NOT EXISTS `hr_nagrade_priznanja` (
@@ -770,6 +868,9 @@ INSERT INTO `hr_nagrade_priznanja` (`id`, `fk_osoba`, `datum`, `naziv`, `opis`) 
 
 --
 -- Table structure for table `hr_naucni_radovi`
+--
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
 --
 
 DROP TABLE IF EXISTS `hr_naucni_radovi`;
@@ -801,6 +902,9 @@ INSERT INTO `hr_naucni_radovi` (`id`, `fk_osoba`, `naziv_rada`, `naziv_casopisa`
 
 --
 -- Table structure for table `hr_publikacija`
+--
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
 --
 
 DROP TABLE IF EXISTS `hr_publikacija`;
@@ -839,6 +943,9 @@ INSERT INTO `hr_publikacija` (`id`, `datum`, `naziv`, `casopis`, `fk_tip_publika
 --
 -- Table structure for table `hr_radno_iskustvo`
 --
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
+--
 
 DROP TABLE IF EXISTS `hr_radno_iskustvo`;
 CREATE TABLE IF NOT EXISTS `hr_radno_iskustvo` (
@@ -868,6 +975,9 @@ TRUNCATE TABLE `hr_radno_iskustvo`;
 
 --
 -- Table structure for table `hr_usavrsavanje`
+--
+-- Creation: May 23, 2015 at 06:18 PM
+-- Last update: May 23, 2015 at 06:18 PM
 --
 
 DROP TABLE IF EXISTS `hr_usavrsavanje`;
@@ -906,6 +1016,9 @@ INSERT INTO `hr_usavrsavanje` (`id`, `fk_osoba`, `datum`, `naziv_usavrsavanja`, 
 --
 -- Table structure for table `institucija`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `institucija`;
 CREATE TABLE IF NOT EXISTS `institucija` (
@@ -937,6 +1050,9 @@ INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`) VALUES
 --
 -- Table structure for table `ispit`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `ispit`;
 CREATE TABLE IF NOT EXISTS `ispit` (
@@ -959,6 +1075,9 @@ TRUNCATE TABLE `ispit`;
 --
 -- Table structure for table `ispitocjene`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `ispitocjene`;
 CREATE TABLE IF NOT EXISTS `ispitocjene` (
@@ -977,6 +1096,9 @@ TRUNCATE TABLE `ispitocjene`;
 
 --
 -- Table structure for table `ispit_termin`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `ispit_termin`;
@@ -998,6 +1120,9 @@ TRUNCATE TABLE `ispit_termin`;
 
 --
 -- Table structure for table `izbor`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `izbor`;
@@ -1022,6 +1147,9 @@ TRUNCATE TABLE `izbor`;
 --
 -- Table structure for table `izborni_slot`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `izborni_slot`;
 CREATE TABLE IF NOT EXISTS `izborni_slot` (
@@ -1039,6 +1167,9 @@ TRUNCATE TABLE `izborni_slot`;
 
 --
 -- Table structure for table `kanton`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `kanton`;
@@ -1078,6 +1209,9 @@ INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 --
 -- Table structure for table `kolizija`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `kolizija`;
 CREATE TABLE IF NOT EXISTS `kolizija` (
@@ -1097,6 +1231,9 @@ TRUNCATE TABLE `kolizija`;
 
 --
 -- Table structure for table `komentar`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `komentar`;
@@ -1119,6 +1256,9 @@ TRUNCATE TABLE `komentar`;
 
 --
 -- Table structure for table `komponenta`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `komponenta`;
@@ -1157,6 +1297,9 @@ INSERT INTO `komponenta` (`id`, `naziv`, `gui_naziv`, `kratki_gui_naziv`, `tipko
 --
 -- Table structure for table `komponentebodovi`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `komponentebodovi`;
 CREATE TABLE IF NOT EXISTS `komponentebodovi` (
@@ -1176,6 +1319,10 @@ TRUNCATE TABLE `komponentebodovi`;
 
 --
 -- Table structure for table `konacna_ocjena`
+--
+-- Creation: May 23, 2015 at 05:24 PM
+-- Last update: May 23, 2015 at 05:24 PM
+-- Last check: May 23, 2015 at 05:24 PM
 --
 
 DROP TABLE IF EXISTS `konacna_ocjena`;
@@ -1203,6 +1350,10 @@ TRUNCATE TABLE `konacna_ocjena`;
 
 --
 -- Table structure for table `kviz`
+--
+-- Creation: May 23, 2015 at 05:27 PM
+-- Last update: May 23, 2015 at 05:27 PM
+-- Last check: May 23, 2015 at 05:27 PM
 --
 
 DROP TABLE IF EXISTS `kviz`;
@@ -1235,6 +1386,9 @@ TRUNCATE TABLE `kviz`;
 --
 -- Table structure for table `kviz_odgovor`
 --
+-- Creation: May 23, 2015 at 05:28 PM
+-- Last update: May 23, 2015 at 05:28 PM
+--
 
 DROP TABLE IF EXISTS `kviz_odgovor`;
 CREATE TABLE IF NOT EXISTS `kviz_odgovor` (
@@ -1255,6 +1409,10 @@ TRUNCATE TABLE `kviz_odgovor`;
 
 --
 -- Table structure for table `kviz_pitanje`
+--
+-- Creation: May 23, 2015 at 05:31 PM
+-- Last update: May 23, 2015 at 05:31 PM
+-- Last check: May 23, 2015 at 05:31 PM
 --
 
 DROP TABLE IF EXISTS `kviz_pitanje`;
@@ -1281,6 +1439,9 @@ TRUNCATE TABLE `kviz_pitanje`;
 --
 -- Table structure for table `kviz_student`
 --
+-- Creation: May 23, 2015 at 05:32 PM
+-- Last update: May 23, 2015 at 05:32 PM
+--
 
 DROP TABLE IF EXISTS `kviz_student`;
 CREATE TABLE IF NOT EXISTS `kviz_student` (
@@ -1301,6 +1462,10 @@ TRUNCATE TABLE `kviz_student`;
 
 --
 -- Table structure for table `labgrupa`
+--
+-- Creation: May 23, 2015 at 12:41 PM
+-- Last update: May 23, 2015 at 12:41 PM
+-- Last check: May 23, 2015 at 12:41 PM
 --
 
 DROP TABLE IF EXISTS `labgrupa`;
@@ -1324,6 +1489,10 @@ TRUNCATE TABLE `labgrupa`;
 
 --
 -- Table structure for table `log`
+--
+-- Creation: May 23, 2015 at 12:44 PM
+-- Last update: May 23, 2015 at 08:15 PM
+-- Last check: May 23, 2015 at 12:44 PM
 --
 
 DROP TABLE IF EXISTS `log`;
@@ -1398,6 +1567,9 @@ INSERT INTO `log` (`id`, `vrijeme`, `userid`, `dogadjaj`, `nivo`) VALUES
 --
 -- Table structure for table `mjesto`
 --
+-- Creation: May 23, 2015 at 12:49 PM
+-- Last update: May 23, 2015 at 12:49 PM
+--
 
 DROP TABLE IF EXISTS `mjesto`;
 CREATE TABLE IF NOT EXISTS `mjesto` (
@@ -1434,6 +1606,9 @@ INSERT INTO `mjesto` (`id`, `naziv`, `opcina`, `drzava`, `opcina_van_bih`) VALUE
 --
 -- Table structure for table `moodle_predmet_id`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `moodle_predmet_id`;
 CREATE TABLE IF NOT EXISTS `moodle_predmet_id` (
@@ -1451,6 +1626,9 @@ TRUNCATE TABLE `moodle_predmet_id`;
 
 --
 -- Table structure for table `moodle_predmet_rss`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `moodle_predmet_rss`;
@@ -1472,6 +1650,9 @@ TRUNCATE TABLE `moodle_predmet_rss`;
 
 --
 -- Table structure for table `nacin_studiranja`
+--
+-- Creation: May 23, 2015 at 12:54 PM
+-- Last update: May 23, 2015 at 12:57 PM
 --
 
 DROP TABLE IF EXISTS `nacin_studiranja`;
@@ -1503,6 +1684,9 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`, `moguc_upis`) VALUES
 --
 -- Table structure for table `nacionalnost`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `nacionalnost`;
 CREATE TABLE IF NOT EXISTS `nacionalnost` (
@@ -1533,6 +1717,10 @@ INSERT INTO `nacionalnost` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `nastavnik_predmet`
 --
+-- Creation: May 23, 2015 at 07:30 PM
+-- Last update: May 23, 2015 at 07:30 PM
+-- Last check: May 23, 2015 at 07:30 PM
+--
 
 DROP TABLE IF EXISTS `nastavnik_predmet`;
 CREATE TABLE IF NOT EXISTS `nastavnik_predmet` (
@@ -1555,6 +1743,9 @@ TRUNCATE TABLE `nastavnik_predmet`;
 --
 -- Table structure for table `odluka`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `odluka`;
 CREATE TABLE IF NOT EXISTS `odluka` (
@@ -1575,6 +1766,9 @@ TRUNCATE TABLE `odluka`;
 --
 -- Table structure for table `ogranicenje`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `ogranicenje`;
 CREATE TABLE IF NOT EXISTS `ogranicenje` (
@@ -1592,6 +1786,9 @@ TRUNCATE TABLE `ogranicenje`;
 
 --
 -- Table structure for table `opcina`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `opcina`;
@@ -1760,6 +1957,9 @@ INSERT INTO `opcina` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `osoba`
 --
+-- Creation: May 23, 2015 at 04:57 PM
+-- Last update: May 23, 2015 at 04:57 PM
+--
 
 DROP TABLE IF EXISTS `osoba`;
 CREATE TABLE IF NOT EXISTS `osoba` (
@@ -1814,6 +2014,9 @@ INSERT INTO `osoba` (`id`, `ime`, `prezime`, `imeoca`, `prezimeoca`, `imemajke`,
 --
 -- Table structure for table `plan_studija`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `plan_studija`;
 CREATE TABLE IF NOT EXISTS `plan_studija` (
@@ -1833,6 +2036,10 @@ TRUNCATE TABLE `plan_studija`;
 
 --
 -- Table structure for table `ponudakursa`
+--
+-- Creation: May 23, 2015 at 05:03 PM
+-- Last update: May 23, 2015 at 05:03 PM
+-- Last check: May 23, 2015 at 05:03 PM
 --
 
 DROP TABLE IF EXISTS `ponudakursa`;
@@ -1859,6 +2066,9 @@ TRUNCATE TABLE `ponudakursa`;
 --
 -- Table structure for table `poruka`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `poruka`;
 CREATE TABLE IF NOT EXISTS `poruka` (
@@ -1884,6 +2094,9 @@ TRUNCATE TABLE `poruka`;
 --
 -- Table structure for table `predmet`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `predmet`;
 CREATE TABLE IF NOT EXISTS `predmet` (
@@ -1906,6 +2119,9 @@ TRUNCATE TABLE `predmet`;
 
 --
 -- Table structure for table `predmet_projektni_parametri`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `predmet_projektni_parametri`;
@@ -1930,6 +2146,9 @@ TRUNCATE TABLE `predmet_projektni_parametri`;
 --
 -- Table structure for table `preference`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `preference`;
 CREATE TABLE IF NOT EXISTS `preference` (
@@ -1949,6 +2168,9 @@ TRUNCATE TABLE `preference`;
 --
 -- Table structure for table `prijemni_obrazac`
 --
+-- Creation: May 23, 2015 at 05:19 PM
+-- Last update: May 23, 2015 at 05:19 PM
+--
 
 DROP TABLE IF EXISTS `prijemni_obrazac`;
 CREATE TABLE IF NOT EXISTS `prijemni_obrazac` (
@@ -1967,6 +2189,9 @@ TRUNCATE TABLE `prijemni_obrazac`;
 
 --
 -- Table structure for table `prijemni_prijava`
+--
+-- Creation: May 23, 2015 at 06:55 PM
+-- Last update: May 23, 2015 at 06:55 PM
 --
 
 DROP TABLE IF EXISTS `prijemni_prijava`;
@@ -1994,6 +2219,9 @@ TRUNCATE TABLE `prijemni_prijava`;
 --
 -- Table structure for table `prijemni_termin`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `prijemni_termin`;
 CREATE TABLE IF NOT EXISTS `prijemni_termin` (
@@ -2014,6 +2242,9 @@ TRUNCATE TABLE `prijemni_termin`;
 --
 -- Table structure for table `prisustvo`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `prisustvo`;
 CREATE TABLE IF NOT EXISTS `prisustvo` (
@@ -2033,6 +2264,9 @@ TRUNCATE TABLE `prisustvo`;
 
 --
 -- Table structure for table `privilegije`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 05:08 PM
 --
 
 DROP TABLE IF EXISTS `privilegije`;
@@ -2060,6 +2294,9 @@ INSERT INTO `privilegije` (`osoba`, `privilegija`) VALUES
 
 --
 -- Table structure for table `programskijezik`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `programskijezik`;
@@ -2090,6 +2327,9 @@ INSERT INTO `programskijezik` (`id`, `naziv`, `geshi`, `ekstenzija`) VALUES
 --
 -- Table structure for table `projekat`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `projekat`;
 CREATE TABLE IF NOT EXISTS `projekat` (
@@ -2112,6 +2352,9 @@ TRUNCATE TABLE `projekat`;
 
 --
 -- Table structure for table `projekat_file`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `projekat_file`;
@@ -2136,6 +2379,9 @@ TRUNCATE TABLE `projekat_file`;
 --
 -- Table structure for table `projekat_file_diff`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `projekat_file_diff`;
 CREATE TABLE IF NOT EXISTS `projekat_file_diff` (
@@ -2153,6 +2399,9 @@ TRUNCATE TABLE `projekat_file_diff`;
 
 --
 -- Table structure for table `projekat_link`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `projekat_link`;
@@ -2177,6 +2426,9 @@ TRUNCATE TABLE `projekat_link`;
 --
 -- Table structure for table `projekat_rss`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `projekat_rss`;
 CREATE TABLE IF NOT EXISTS `projekat_rss` (
@@ -2200,6 +2452,9 @@ TRUNCATE TABLE `projekat_rss`;
 --
 -- Table structure for table `promjena_odsjeka`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `promjena_odsjeka`;
 CREATE TABLE IF NOT EXISTS `promjena_odsjeka` (
@@ -2220,6 +2475,9 @@ TRUNCATE TABLE `promjena_odsjeka`;
 
 --
 -- Table structure for table `promjena_podataka`
+--
+-- Creation: May 23, 2015 at 07:13 PM
+-- Last update: May 23, 2015 at 07:13 PM
 --
 
 DROP TABLE IF EXISTS `promjena_podataka`;
@@ -2266,6 +2524,9 @@ TRUNCATE TABLE `promjena_podataka`;
 --
 -- Table structure for table `prosliciklus_ocjene`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `prosliciklus_ocjene`;
 CREATE TABLE IF NOT EXISTS `prosliciklus_ocjene` (
@@ -2285,6 +2546,9 @@ TRUNCATE TABLE `prosliciklus_ocjene`;
 
 --
 -- Table structure for table `prosliciklus_uspjeh`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `prosliciklus_uspjeh`;
@@ -2308,6 +2572,9 @@ TRUNCATE TABLE `prosliciklus_uspjeh`;
 --
 -- Table structure for table `raspored`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `raspored`;
 CREATE TABLE IF NOT EXISTS `raspored` (
@@ -2328,6 +2595,9 @@ TRUNCATE TABLE `raspored`;
 --
 -- Table structure for table `raspored_sala`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `raspored_sala`;
 CREATE TABLE IF NOT EXISTS `raspored_sala` (
@@ -2347,6 +2617,9 @@ TRUNCATE TABLE `raspored_sala`;
 
 --
 -- Table structure for table `raspored_stavka`
+--
+-- Creation: May 23, 2015 at 05:53 PM
+-- Last update: May 23, 2015 at 05:53 PM
 --
 
 DROP TABLE IF EXISTS `raspored_stavka`;
@@ -2376,6 +2649,8 @@ TRUNCATE TABLE `raspored_stavka`;
 
 --
 -- Table structure for table `ras_sati`
+--
+-- Creation: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `ras_sati`;
@@ -2411,6 +2686,9 @@ INSERT INTO `ras_sati` (`idS`, `satS`) VALUES
 --
 -- Table structure for table `rss`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `rss`;
 CREATE TABLE IF NOT EXISTS `rss` (
@@ -2437,6 +2715,9 @@ INSERT INTO `rss` (`id`, `auth`, `access`) VALUES
 --
 -- Table structure for table `savjet_dana`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `savjet_dana`;
 CREATE TABLE IF NOT EXISTS `savjet_dana` (
@@ -2456,6 +2737,9 @@ TRUNCATE TABLE `savjet_dana`;
 --
 -- Table structure for table `septembar`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `septembar`;
 CREATE TABLE IF NOT EXISTS `septembar` (
@@ -2473,6 +2757,9 @@ TRUNCATE TABLE `septembar`;
 
 --
 -- Table structure for table `sifrarnik_akademsko_zvanje`
+--
+-- Creation: May 23, 2015 at 06:31 PM
+-- Last update: May 23, 2015 at 06:32 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_akademsko_zvanje`;
@@ -2509,6 +2796,9 @@ INSERT INTO `sifrarnik_akademsko_zvanje` (`id`, `naziv`, `izborni_perion`, `peri
 
 --
 -- Table structure for table `sifrarnik_banka`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_banka`;
@@ -2557,6 +2847,9 @@ INSERT INTO `sifrarnik_banka` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_fakulteti`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_fakulteti`;
@@ -2609,6 +2902,9 @@ INSERT INTO `sifrarnik_fakulteti` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_fascati`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_fascati`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_fascati` (
@@ -2639,6 +2935,9 @@ INSERT INTO `sifrarnik_fascati` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_fascati_podoblast`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_fascati_podoblast`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_fascati_podoblast` (
@@ -2657,6 +2956,9 @@ TRUNCATE TABLE `sifrarnik_fascati_podoblast`;
 
 --
 -- Table structure for table `sifrarnik_jezik`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_jezik`;
@@ -2700,6 +3002,9 @@ INSERT INTO `sifrarnik_jezik` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_nacin_stanovanja`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:41 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_nacin_stanovanja`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_nacin_stanovanja` (
@@ -2732,6 +3037,9 @@ INSERT INTO `sifrarnik_nacin_stanovanja` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_naucna_oblast`
+--
+-- Creation: May 23, 2015 at 06:42 PM
+-- Last update: May 23, 2015 at 06:42 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_naucna_oblast`;
@@ -2787,6 +3095,9 @@ INSERT INTO `sifrarnik_naucna_oblast` (`id`, `naziv`, `fk_maticna_institucija`) 
 --
 -- Table structure for table `sifrarnik_naucni_stepen`
 --
+-- Creation: May 23, 2015 at 07:23 PM
+-- Last update: May 23, 2015 at 07:23 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_naucni_stepen`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_naucni_stepen` (
@@ -2814,6 +3125,9 @@ INSERT INTO `sifrarnik_naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 
 --
 -- Table structure for table `sifrarnik_naucnonastavno_zvanje`
+--
+-- Creation: May 23, 2015 at 07:26 PM
+-- Last update: May 23, 2015 at 07:26 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_naucnonastavno_zvanje`;
@@ -2849,6 +3163,9 @@ INSERT INTO `sifrarnik_naucnonastavno_zvanje` (`id`, `naziv`, `titula`) VALUES
 --
 -- Table structure for table `sifrarnik_nivo_jezika`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_nivo_jezika`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_nivo_jezika` (
@@ -2878,6 +3195,9 @@ INSERT INTO `sifrarnik_nivo_jezika` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_oblik_zaposlenja`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_oblik_zaposlenja`;
@@ -2917,6 +3237,9 @@ INSERT INTO `sifrarnik_oblik_zaposlenja` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_radno_mjesto`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_radno_mjesto`;
@@ -3004,6 +3327,9 @@ INSERT INTO `sifrarnik_radno_mjesto` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_strucna_sprema`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_strucna_sprema`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_strucna_sprema` (
@@ -3040,6 +3366,9 @@ INSERT INTO `sifrarnik_strucna_sprema` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_tip_mentorstva`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_tip_mentorstva`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_tip_mentorstva` (
@@ -3067,6 +3396,9 @@ INSERT INTO `sifrarnik_tip_mentorstva` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_tip_publikacije`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_tip_publikacije`;
@@ -3099,6 +3431,9 @@ INSERT INTO `sifrarnik_tip_publikacije` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `sifrarnik_uza_naucna_oblast`
+--
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
 --
 
 DROP TABLE IF EXISTS `sifrarnik_uza_naucna_oblast`;
@@ -3371,6 +3706,9 @@ INSERT INTO `sifrarnik_uza_naucna_oblast` (`id`, `naziv`, `fk_naucna_oblast`) VA
 --
 -- Table structure for table `sifrarnik_vozacki_kategorija`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_vozacki_kategorija`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_vozacki_kategorija` (
@@ -3408,6 +3746,9 @@ INSERT INTO `sifrarnik_vozacki_kategorija` (`id`, `naziv`) VALUES
 --
 -- Table structure for table `sifrarnik_zvanje`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `sifrarnik_zvanje`;
 CREATE TABLE IF NOT EXISTS `sifrarnik_zvanje` (
@@ -3425,6 +3766,9 @@ TRUNCATE TABLE `sifrarnik_zvanje`;
 
 --
 -- Table structure for table `srednja_ocjene`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `srednja_ocjene`;
@@ -3447,6 +3791,9 @@ TRUNCATE TABLE `srednja_ocjene`;
 --
 -- Table structure for table `srednja_skola`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `srednja_skola`;
 CREATE TABLE IF NOT EXISTS `srednja_skola` (
@@ -3466,6 +3813,9 @@ TRUNCATE TABLE `srednja_skola`;
 
 --
 -- Table structure for table `stdin`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `stdin`;
@@ -3487,6 +3837,9 @@ TRUNCATE TABLE `stdin`;
 --
 -- Table structure for table `student_ispit_termin`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `student_ispit_termin`;
 CREATE TABLE IF NOT EXISTS `student_ispit_termin` (
@@ -3504,6 +3857,9 @@ TRUNCATE TABLE `student_ispit_termin`;
 --
 -- Table structure for table `student_labgrupa`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `student_labgrupa`;
 CREATE TABLE IF NOT EXISTS `student_labgrupa` (
@@ -3520,6 +3876,9 @@ TRUNCATE TABLE `student_labgrupa`;
 
 --
 -- Table structure for table `student_predmet`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `student_predmet`;
@@ -3539,6 +3898,9 @@ TRUNCATE TABLE `student_predmet`;
 --
 -- Table structure for table `student_projekat`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `student_projekat`;
 CREATE TABLE IF NOT EXISTS `student_projekat` (
@@ -3556,6 +3918,9 @@ TRUNCATE TABLE `student_projekat`;
 
 --
 -- Table structure for table `student_studij`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `student_studij`;
@@ -3580,6 +3945,9 @@ TRUNCATE TABLE `student_studij`;
 
 --
 -- Table structure for table `studij`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 05:15 PM
 --
 
 DROP TABLE IF EXISTS `studij`;
@@ -3615,6 +3983,9 @@ INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkin
 --
 -- Table structure for table `tipkomponente`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `tipkomponente`;
 CREATE TABLE IF NOT EXISTS `tipkomponente` (
@@ -3645,6 +4016,9 @@ INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
 --
 -- Table structure for table `tippredmeta`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `tippredmeta`;
 CREATE TABLE IF NOT EXISTS `tippredmeta` (
@@ -3669,6 +4043,9 @@ INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
 
 --
 -- Table structure for table `tippredmeta_komponenta`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 05:18 PM
 --
 
 DROP TABLE IF EXISTS `tippredmeta_komponenta`;
@@ -3699,6 +4076,9 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 --
 -- Table structure for table `tipstudija`
 --
+-- Creation: May 23, 2015 at 06:57 PM
+-- Last update: May 23, 2015 at 06:58 PM
+--
 
 DROP TABLE IF EXISTS `tipstudija`;
 CREATE TABLE IF NOT EXISTS `tipstudija` (
@@ -3728,6 +4108,9 @@ INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VAL
 --
 -- Table structure for table `ugovoroucenju`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `ugovoroucenju`;
 CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
@@ -3749,6 +4132,9 @@ TRUNCATE TABLE `ugovoroucenju`;
 --
 -- Table structure for table `ugovoroucenju_izborni`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `ugovoroucenju_izborni`;
 CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
@@ -3765,6 +4151,9 @@ TRUNCATE TABLE `ugovoroucenju_izborni`;
 
 --
 -- Table structure for table `upis_kriterij`
+--
+-- Creation: May 23, 2015 at 07:00 PM
+-- Last update: May 23, 2015 at 07:00 PM
 --
 
 DROP TABLE IF EXISTS `upis_kriterij`;
@@ -3791,6 +4180,9 @@ TRUNCATE TABLE `upis_kriterij`;
 --
 -- Table structure for table `uspjeh_u_srednjoj`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `uspjeh_u_srednjoj`;
 CREATE TABLE IF NOT EXISTS `uspjeh_u_srednjoj` (
@@ -3814,6 +4206,9 @@ TRUNCATE TABLE `uspjeh_u_srednjoj`;
 --
 -- Table structure for table `vozacka_dozvola`
 --
+-- Creation: May 23, 2015 at 06:20 PM
+-- Last update: May 23, 2015 at 06:20 PM
+--
 
 DROP TABLE IF EXISTS `vozacka_dozvola`;
 CREATE TABLE IF NOT EXISTS `vozacka_dozvola` (
@@ -3832,6 +4227,9 @@ TRUNCATE TABLE `vozacka_dozvola`;
 
 --
 -- Table structure for table `zadaca`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `zadaca`;
@@ -3863,6 +4261,9 @@ TRUNCATE TABLE `zadaca`;
 --
 -- Table structure for table `zadatak`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `zadatak`;
 CREATE TABLE IF NOT EXISTS `zadatak` (
@@ -3891,6 +4292,9 @@ TRUNCATE TABLE `zadatak`;
 --
 -- Table structure for table `zadatakdiff`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `zadatakdiff`;
 CREATE TABLE IF NOT EXISTS `zadatakdiff` (
@@ -3907,6 +4311,9 @@ TRUNCATE TABLE `zadatakdiff`;
 
 --
 -- Table structure for table `zavrsni`
+--
+-- Creation: May 23, 2015 at 12:05 PM
+-- Last update: May 23, 2015 at 12:05 PM
 --
 
 DROP TABLE IF EXISTS `zavrsni`;
@@ -3942,6 +4349,9 @@ TRUNCATE TABLE `zavrsni`;
 --
 -- Table structure for table `zavrsni_bb_post`
 --
+-- Creation: May 23, 2015 at 05:56 PM
+-- Last update: May 23, 2015 at 05:56 PM
+--
 
 DROP TABLE IF EXISTS `zavrsni_bb_post`;
 CREATE TABLE IF NOT EXISTS `zavrsni_bb_post` (
@@ -3963,6 +4373,9 @@ TRUNCATE TABLE `zavrsni_bb_post`;
 --
 -- Table structure for table `zavrsni_bb_post_text`
 --
+-- Creation: May 23, 2015 at 05:57 PM
+-- Last update: May 23, 2015 at 05:57 PM
+--
 
 DROP TABLE IF EXISTS `zavrsni_bb_post_text`;
 CREATE TABLE IF NOT EXISTS `zavrsni_bb_post_text` (
@@ -3980,6 +4393,9 @@ TRUNCATE TABLE `zavrsni_bb_post_text`;
 
 --
 -- Table structure for table `zavrsni_bb_tema`
+--
+-- Creation: May 23, 2015 at 06:00 PM
+-- Last update: May 23, 2015 at 06:00 PM
 --
 
 DROP TABLE IF EXISTS `zavrsni_bb_tema`;
@@ -4004,6 +4420,9 @@ TRUNCATE TABLE `zavrsni_bb_tema`;
 --
 -- Table structure for table `zavrsni_file`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `zavrsni_file`;
 CREATE TABLE IF NOT EXISTS `zavrsni_file` (
@@ -4027,6 +4446,9 @@ TRUNCATE TABLE `zavrsni_file`;
 --
 -- Table structure for table `zavrsni_file_diff`
 --
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
+--
 
 DROP TABLE IF EXISTS `zavrsni_file_diff`;
 CREATE TABLE IF NOT EXISTS `zavrsni_file_diff` (
@@ -4044,6 +4466,9 @@ TRUNCATE TABLE `zavrsni_file_diff`;
 
 --
 -- Table structure for table `zavrsni_rad_predmet`
+--
+-- Creation: May 23, 2015 at 10:33 AM
+-- Last update: May 23, 2015 at 10:33 AM
 --
 
 DROP TABLE IF EXISTS `zavrsni_rad_predmet`;
