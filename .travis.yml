@@ -33,13 +33,15 @@ before_script:
   - mkdir /home/zamger/zadace
   - mkdir /home/zamger/projekti
   - mkdir /home/zamger/slike
+  - ls 
 
 before_install:
   - ls
   - cat zamger-dump.sql
   - mysql -e "create database IF NOT EXISTS test;" -uroot
-  - mysql -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';FLUSH PRIVILEGES;"
   - mysql -e "create database IF NOT EXISTS zamger DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;"
+  - mysql -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';FLUSH PRIVILEGES;"
+  
   # mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
   # mysql -e "use zamger;source zamger-dump.sql;" -uroot
   - mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 <zamger-dump.sql
