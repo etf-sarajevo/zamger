@@ -34,6 +34,7 @@ before_script:
   - sudo mkdir /home/zamger/projekti
   - sudo mkdir /home/zamger/slike
   - ls 
+  - composer update
 
 before_install:
   - ls
@@ -53,7 +54,7 @@ addons:
   sauce_connect: true
 
 script:
-  - php codecept.phar run --steps --html  #testovi
+  - vendor/bin/codecept run --steps --html  #testovi
   
 env:
   global: #sauce connect auth details
