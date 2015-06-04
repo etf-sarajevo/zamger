@@ -214,6 +214,7 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
   `anketa` int(11) NOT NULL,
   `predmet` int(11) default NULL,
   `akademska_godina` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
   `aktivna` tinyint(1) NOT NULL,
   KEY `predmet` (`predmet`),
   KEY `anketa` (`anketa`),
