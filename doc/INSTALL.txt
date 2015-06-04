@@ -1,4 +1,4 @@
-ZAMGER v4.3
+ZAMGER v4.4
 
 Copyright (c) 2006-2012 Vedran Ljubovic i drugi
 Elektrotehnicki fakultet Sarajevo
@@ -48,6 +48,16 @@ upload_max_filesize, npr. 100 MB:
 - Generisanje izvještaja koristeći TCPDF nekada zahtijeva više od 30
 sekundi:
 	max_execution_time = 60
+	
+- Pocevsi od PHP verzije 5.5 mysql_* funkcije su proglasene za 
+prevazidjene (deprecated). U verziji 5 Zamgera nece se koristiti ove
+funkcije. Prepravka koda verzije 4.4 kojom bi se eliminisale 
+deprecated funkcije ne bi bila prakticna jer se iste koriste na 
+hiljadama mjesta u kodu. U medjuvremenu predlazemo da iskljucite prijavu 
+deprecated gresaka:
+	error_reporting  =  E_ALL & ~E_NOTICE & ~E_DEPRECATED
+
+
 
 
 Ukoliko vam vas web hosting ne dozvoljava da podesite neki od ovih 
