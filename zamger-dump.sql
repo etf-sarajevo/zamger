@@ -1644,6 +1644,9 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `tippredmeta` int(11) NOT NULL,
   `ects` float NOT NULL,
+  `sati_predavanja` int(11) NOT NULL DEFAULT '0',
+  `sati_vjezbi` int(11) NOT NULL DEFAULT '0',
+  `sati_tutorijala` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `institucija` (`institucija`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
