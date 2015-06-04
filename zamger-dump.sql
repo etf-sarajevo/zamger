@@ -292,7 +292,11 @@ CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
 
 INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora`) VALUES
 (1, 'Ocjena (skala 1..5)', 'Y', 'odgovor_rank'),
-(2, 'Komentar', 'N', 'odgovor_text');
+(2, 'Komentar', 'N', 'odgovor_text'),
+(3, 'Izbor (pojedinačni)', 'Y', 'odgovor_izbor'),
+(4, 'Izbor (višestruki)', 'Y', 'odgovor_izbor'),
+(5, 'Naslov', 'N', ''),
+(6, 'Podnaslov', 'N', '');
 
 -- --------------------------------------------------------
 
