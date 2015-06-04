@@ -137,6 +137,8 @@ function izvjestaj_anketa_sumarno(){
 	print "</table>\n";
 	return;
 
+	}
+
 
 	if ($_REQUEST['tip'] == "sveukupna") {
 
