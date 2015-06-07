@@ -44,8 +44,6 @@ before_install:
   - mysql -e "create database IF NOT EXISTS zamger DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;"
   - mysql -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';FLUSH PRIVILEGES;" -uroot
   
-  # mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
-  # mysql -e "use zamger;source zamger-dump.sql;" -uroot
   - mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 <zamger-dump.sql
   # cat ~/build/zamger/tests/_data/dump.sql
   - cat tests/_data/dump.sql
@@ -61,5 +59,6 @@ env:
   global:
     - secure: knJ4vH4be2RRq+u3V3QWZKw8yVzkP3WQT4RqRxL/z0qKMoB9hILzMv3r5tEOjANBEa+wfx6Oyw/I5gt2L33gF+XWyv1IE1VjbxMdYl8bSHSg+fyRP7go4ErbrXbWrlIddvt7Egx55GVp8ulveY49kzytq4YJ1UdCpOKe7rPyKtk=
     - secure: DUfZFO0FZzP2TUOOTijbKAIOTnzM6yWsGPv90CikBOHNNmEwhlvxjxG6T1EFr5AywrStIzKUym5GdSZPnvxcECFRXWsXG1RTt5rXTNPJbpsPg7Pdapeie1vS1ylPlYYhEGrwjhjeancA/raAey63Q2qnS1HhQmEbSo8wF9izC34=
+    - tunnelIdentifier: TRAVIS_JOB_NUMBER
 
 after_script:
