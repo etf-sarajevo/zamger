@@ -9,7 +9,7 @@ modules:
     enabled:
         - PhpBrowser
         - AcceptanceHelper
-        - WebDriver
+        #- WebDriver
     config:
         PhpBrowser:
             url: 'http://localhost/index.php'
