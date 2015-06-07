@@ -7,20 +7,20 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-        #- PhpBrowser
+        - PhpBrowser
         - AcceptanceHelper
-        - WebDriver
+        #- WebDriver
     config:
-        #PhpBrowser:
-            #url: 'http://localhost/index.php'
-      WebDriver:
-         url: 'http://localhost/index.php'
+        PhpBrowser:
+            url: 'http://localhost/index.php'
+      #WebDriver:
+         #url: 'http://localhost/index.php'
          #host: 
-         port: 80
-         browser: chrome
-         window_size: 1024x768
-         wait: 0
-         restart: false
-         capabilities:
-            unexpectedAlertBehaviour: 'accept'
-            platform: 'Windows 8.1'
+         #port: 80
+         #browser: chrome
+         #window_size: 1024x768
+         #wait: 0
+         #restart: false
+         #capabilities:
+            #unexpectedAlertBehaviour: 'accept'
+            #platform: 'Windows 8.1'
