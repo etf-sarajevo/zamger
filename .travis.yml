@@ -38,7 +38,7 @@ before_script:
   - sudo ps aux | grep apache
 
 before_install:
-  - export SELENIUM_HOST=$SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
+  #- export SELENIUM_HOST=$SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
   - ls
   - cat zamger-dump.sql
   - mysql -e "create database IF NOT EXISTS test;" -uroot
@@ -57,9 +57,10 @@ script:
   - vendor/bin/codecept run --steps --html  #testovi
   
 env:
-  global:
+  global:    
     - secure: knJ4vH4be2RRq+u3V3QWZKw8yVzkP3WQT4RqRxL/z0qKMoB9hILzMv3r5tEOjANBEa+wfx6Oyw/I5gt2L33gF+XWyv1IE1VjbxMdYl8bSHSg+fyRP7go4ErbrXbWrlIddvt7Egx55GVp8ulveY49kzytq4YJ1UdCpOKe7rPyKtk=
     - secure: DUfZFO0FZzP2TUOOTijbKAIOTnzM6yWsGPv90CikBOHNNmEwhlvxjxG6T1EFr5AywrStIzKUym5GdSZPnvxcECFRXWsXG1RTt5rXTNPJbpsPg7Pdapeie1vS1ylPlYYhEGrwjhjeancA/raAey63Q2qnS1HhQmEbSo8wF9izC34=
     - tunnelIdentifier: TRAVIS_JOB_NUMBER
+    - SELENIUM_HOST: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
 
 after_script:
