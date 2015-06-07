@@ -4,22 +4,23 @@ paths:
     log: tests/_output
     data: tests/_data
     helpers: tests/_support
-extensions:
-    enabled:
-      [Codeception\Extension\SaucelabsMetadata]
-    config:
-      Codeception\Extension\SaucelabsMetadata:
-          username: "humamilisic"
-          accesskey: "6864365e-a01d-4bf8-b46c-fa741830e7e7"
-          build: "Shows up in the Build column in the Saucelabs dashboard"
-          tags: "shows up,in the tags column,in the saucelabs dashboard"
+
 settings:
     bootstrap: _bootstrap.php
-    colors: false
+    colors: true
     memory_limit: 1024M
+    log: true
 modules:
     config:
         Db:
             dsn: 'mysql:host=localhost;dbname=zamger'
             user: 'root'
             password: ''
+#extensions:
+#    enabled:
+#        - Codeception\Extension\SauceExtension
+#    config:
+#        Codeception\Extension\SauceExtension:
+#        username: 'humamilisic'
+#        accesskey: '6864365e-a01d-4bf8-b46c-fa741830e7e7'
+#        build: 'Local Test'

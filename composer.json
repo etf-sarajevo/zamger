@@ -1,6 +1,5 @@
 {
 	"require":{
-		"codeception/codeception": "*",
-                "psychomieze/sauceextension": "dev-master"
+		"codeception/codeception": "*"
 	}
 }

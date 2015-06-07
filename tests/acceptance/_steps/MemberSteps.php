@@ -3,23 +3,31 @@ namespace AcceptanceTester;
 
 class MemberSteps extends \AcceptanceTester
 {
-    public function loginAsAdmin()
+    public function logout()
+    {
+        $I = $this;
+        $I->canSeeLink("Odjava");
+        $I->click("Odjava");
+        $I->canSeeInCurrentUrl("?sta=logout");
+    }
+    
+    public function loginKaoAdmin()
     {
         $I = $this;
         $I->wantTo('login kao administrator');
-        $I->amOnPage(\pocetnaPage::$URL);
+        $I->amOnPage(\loginPage::$URL);
         $I->see("bolognaware");
-        $I->fillField(\pocetnaPage::$username, 'admin');
-        $I->fillField(\pocetnaPage::$pass, 'admin');
-        $I->click(\pocetnaPage::$button);
-        $I->see(\pocetnaPage::$homeTextAdmin);
+        $I->fillField(\loginPage::$username, 'admin');
+        $I->fillField(\loginPage::$pass, 'admin');
+        $I->click(\loginPage::$button);
+        $I->see(\loginPage::$homeTextAdmin);
     }
     
-    public function  loginAsStudent()
+    public function  loginKaoStudent()
     {
         $I = $this;
         $I->wantTo('login kao student');
-        $I->amOnPage(\pocetnaPage::$URL);
+        $I->amOnPage(\loginPage::$URL);
         $I->see("bolognaware");
         //$I->fillField(\pocetnaPage::$username, 'admin');
         //$I->fillField(\pocetnaPage::$pass, 'admin');
@@ -28,9 +36,69 @@ class MemberSteps extends \AcceptanceTester
         //@todo login studenta
     }
     
-    public function loginAsStudentskaSluzba()
+    public function loginKaoStudentskaSluzba()
     {}
     
-    public function loginAsProfesor()
+    public function loginKaoProfesor()
     {}
+    
+    public function adminDodajOsobu($ime,$prezime)
+    {
+        $I=$this;
+        $I->wantTo("Dodati novu osobu");
+        $I->amOnPage("/");
+        $I->seeLink("Studentska služba");
+        $I->click("Studentska služba");
+        $I->seeLink("Osobe");
+        $I->click("Osobe");
+        $I->canSee("Studenti i nastavnici");
+        $I->seeElement("input[name=ime]");
+        $I->fillField("input[name=ime]", $ime);
+        $I->seeElement("input[name=prezime]");
+        $I->fillField("input[name=prezime]", $prezime);
+        $I->click("Dodaj");
+        $I->see("Novi korisnik je dodan.");
+        $I->canSeeLink($ime." ".$prezime);
+    }
+    public function adminDodajOsobuTipa($ime,$prezime,$tip)
+    {
+        $I = $this;
+        $I->adminDodajOsobu($ime,$prezime);
+        $I->canSeeLink($ime." ".$prezime);
+        $I->click($ime." ".$prezime);
+        $I->canSee($ime." ".$prezime);
+        $I->seeElement("input[name=".$tip."]");
+        $I->checkOption("input[name=".$tip."]");
+        $I->canSeeCheckboxIsChecked("input[name=".$tip."]");
+        $I->click("Promijeni"); 
+    }
+    public function adminDodajStudenta($ime,$prezime)
+    {
+        $I = $this;
+        $I->adminDodajOsobuTipa($ime,$prezime,"student");
+    }
+    
+    public function adminDodajNastavnika($ime,$prezime)
+    {
+        $I = $this;
+        $I->adminDodajOsobuTipa($ime,$prezime,"nastavnik");
+    }
+    
+    public function adminDodajPrijemniOsoba($ime,$prezime)
+    {
+        $I = $this;
+        $I->adminDodajOsobuTipa($ime,$prezime,"prijemni");
+    }
+    
+    public function adminDodajStudentskaOsoba($ime,$prezime)
+    {
+        $I = $this;
+        $I->adminDodajOsobuTipa($ime,$prezime,"studentska");
+    }
+    
+    public function adminDodajSiteadminOsoba($ime,$prezime)
+    {
+        $I = $this;
+        $I->adminDodajOsobuTipa($ime,$prezime,"siteadmin");
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 
-class administracijaNovaAkademskaGodinaPage
+class adminCronPage
 {
     // include url of current page
     public static $URL = '';

@@ -1,6 +1,6 @@
 <?php
 
-class administracijaSajtaPage
+class adminAlatiZaPrijemniPage
 {
     // include url of current page
     public static $URL = '';

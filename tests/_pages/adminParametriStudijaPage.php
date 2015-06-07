@@ -1,6 +1,6 @@
 <?php
 
-class administracijaParametriStudijaPage
+class adminParametriStudijaPage
 {
     // include url of current page
     public static $URL = '';

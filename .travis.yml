@@ -35,6 +35,7 @@ before_script:
   - sudo mkdir /home/zamger/slike
   - ls 
   - composer update
+  - sudo ps aux | grep apache
 
 before_install:
   - ls
@@ -57,8 +58,8 @@ script:
   - vendor/bin/codecept run --steps --html  #testovi
   
 env:
-  global: #sauce connect auth details
-   # secure: kc0Uu+ClHekIZeGh55aN96aan6HtXh4XmvwhM1vkaaZCYuEp6+hcG6El5vdRUB5GxbosV3xznOlc/rL0JdjYxASzoppg5z9QmEsq2oKvdDgn06R2jAmQvXQxfXgZFjTjr/vUCoERROOziWyR2xsOweOlTtZ2oGE8gkDIpHVEmKE=
-    #- secure: CZSrP4WhQ48DtgkrN+NIt1ig4+pOGNvDgFSSl8ILT+VbUUQrbw6UswI9djTOiIF9OA4xuWLqUEKlqPSOOrRA3cOUUxWIFVyNDoygBvwWIPHICqrTiN4vDB3ZNj02VvwIOfNALeUTREV155sUdx0WC3c3FVjVsioktgOp1dMaTVM=  
+  global:
+    - secure: t9KEMMWvhLtZXVkKZ1QpUbYqc2SMTRL8OauLhSzLxSYLacaqhl+XZyD68aLuqVTl0OGJ4xJXvqtWF1bSKXRUdpSWbVatEDqGNCWaFpPIgW2RIe8/jrfMjidmps8u5v3rLekGXJdqEjSu2Mk/J6Oqk9zg3dYA4pr4/drCrConJas=
+    - secure: DRtVYjZNdM9M6boaIlhS/U/yrVHvtgpzyDvCEQmiHTcx6OcoZnqSPFv+Zn/KZNyI4xlSaPtc9qtC0JfVBdK+dzeApZyO2IpzGXWFfzH0tpuwYVhYB8zwgBd0QJUMTya/nO05KKg5MfawXBVv3GHLZ/XutgFXwYnfT2HyOE6J7kE=
 
 after_script:

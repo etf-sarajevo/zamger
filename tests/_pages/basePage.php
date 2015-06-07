@@ -1,16 +1,11 @@
 <?php
 
-class pocetnaPage
+class basePage
 {
     // include url of current page
-    public static $URL = '';
-    public static $username = 'input[name=login]';
-    public static $pass = 'input[name=pass]';
-    public static $button = 'input[type=submit]';
-    
-    public static $homeTextAdmin = 'Administracija sajta';
-    
-
+    public static $URL = '';//@todo basepage url dodati
+    public static $uputstvaLink = '';
+    public static $prijaviteBugLink = '';
     /**
      * Declare UI map for this page here. CSS or XPath allowed.
      * public static $usernameField = '#username';

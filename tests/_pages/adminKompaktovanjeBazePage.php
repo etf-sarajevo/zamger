@@ -1,10 +1,9 @@
 <?php
 
-class administracijaPage
+class adminKompaktovanjeBazePage
 {
     // include url of current page
     public static $URL = '';
-    
 
     /**
      * Declare UI map for this page here. CSS or XPath allowed.

@@ -1,4 +1,4 @@
 <?php 
 $I = new AcceptanceTester\MemberSteps($scenario);
-$I->loginAsAdmin();
-?>
+$I->loginKaoAdmin();
+$I->logout();
