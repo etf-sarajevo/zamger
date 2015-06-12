@@ -9,14 +9,14 @@ namespace Codeception\Module;
 class AcceptanceHelper extends \Codeception\Module
 {
 
-    public function _initialize() {
-        $wd = $this->getModule('WebDriver');
-        $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),
-            'build'=>  getenv('buildName'),
-            'tags'=>  getenv('buildTags'));
-        $wd->_reconfigure(array('host'=>getenv('SELENIUM_HOST'),
-            'capabilities'=>$cap));
-        
-    }
+//    public function _initialize() {
+//        $wd = $this->getModule('WebDriver');
+//        $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),
+//            'build'=>  getenv('buildName'),
+//            'tags'=>  getenv('buildTags'));
+//        $wd->_reconfigure(array('host'=>getenv('SELENIUM_HOST'),
+//            'capabilities'=>$cap));
+//        
+//    }
     
 }

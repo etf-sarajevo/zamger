@@ -7,22 +7,22 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-#        - PhpBrowser
+        - PhpBrowser
         - AcceptanceHelper
-        - WebDriver
+#        - WebDriver
     config:
-        WebDriver:
+#        WebDriver:
+#            url: 'http://localhost/index.php'
+#            browser: chrome
+#            port: 80
+#            window_size: 1024x768
+#            wait: 10
+#            restart: no
+#            capabilities:
+#                unexpectedAlertBehaviour: 'accept'
+#                platform: 'Linux' 
+        PhpBrowser:
             url: 'http://localhost/index.php'
-            browser: chrome
-            port: 80
-            window_size: 1024x768
-            wait: 10
-            restart: no
-            capabilities:
-                unexpectedAlertBehaviour: 'accept'
-                platform: 'Linux' 
-#        PhpBrowser:
-#            url: 'http://localhost/zamger/'
 
 #env:
 #    sauce:
