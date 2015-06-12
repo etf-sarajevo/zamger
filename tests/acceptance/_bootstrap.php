@@ -19,14 +19,21 @@
 //    ]
 //];
 
-//WebDriver:
-//            url: 'http://localhost/index.php'
-//            host: '<%= ENV['SELENIUM_HOST'] %>'
-//            port: 80
-//            browser: chrome
-//            window_size: 1024x768
-//            wait: 10
-//            restart: false
-//            capabilities:
-//                unexpectedAlertBehaviour: 'accept'
-//                platform: 'Linux'
+//\Codeception\Configuration::
+
+//env:
+//    sauce:
+//        modules:
+//            enabled:
+//                - WebDriver
+//            config:
+//                WebDriver:
+//                    url: 'http://localhost/zamger/'
+//                    port: 80
+//                    browser: chrome
+//                    window_size: 1024x768
+//                    wait: 10
+//                    restart: false
+//                    capabilities:
+//                        unexpectedAlertBehaviour: 'accept'
+//                        platform: 'Linux'

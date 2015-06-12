@@ -45,11 +45,11 @@ class AcceptanceHelper extends \Codeception\Module
 
     // HOOK: before test
     public function _before(\Codeception\TestCase $test) {
-        $ime = $test->getName();
-        $wd = $this->getModule('WebDriver');
-        $cap= array('name'=>  $ime);
-        $wd->_reconfigure(array(
-            'capabilities'=>$cap));
+//        $ime = $test->getName();
+//        $wd = $this->getModule('WebDriver');
+//        $cap= array('name'=>  $ime);
+//        $wd->_reconfigure(array(
+//            'capabilities'=>$cap));
     }
 
     // HOOK: after test

@@ -63,7 +63,7 @@ env:
     - SELENIUM_HOST: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
     - sauceTunel: $TRAVIS_JOB_NUMBER
     - projekat: 'zamger'
-    - buildTags: 'test'
+    - buildTags: $projekat
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
 
 after_script:
