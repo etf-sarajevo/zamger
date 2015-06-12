@@ -3,7 +3,7 @@
 // STUDENTSKA/ANKETA - administracija ankete, studentska služba
 
 function studentska_anketa(){
-	global $userid,$user_siteadmin,$user_studentska;
+	global $userid, $user_siteadmin, $user_studentska, $conf_site_url;
 	global $_lv_; // Potrebno za genform() iz libvedran
 	
 	// Provjera privilegija
@@ -340,7 +340,7 @@ function studentska_anketa(){
 				<td valign="top" colspan="2" align="center">
 					<?=genform("POST")?>
 					<input type="hidden" name="akcija" value="podaci">
-					<input type="button" value=" Pregled " onclick="javascript:window.open('https://zamger.etf.unsa.ba/index.php?sta=public/anketa&akcija=preview&anketa=<?=$id_ankete?>');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="button" value=" Pregled " onclick="javascript:window.open('<?=$conf_site_url?>/index.php?sta=public/anketa&akcija=preview&anketa=<?=$id_ankete?>');">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<input type="Submit" value=" Izmijeni "></form>
 				</td>
 			</tr>

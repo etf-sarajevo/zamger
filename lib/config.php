@@ -1,7 +1,4 @@
-﻿<?php
-	if (ini_get("short_open_tag") != 1) exit;
-?>
-<?
+<?php if (ini_get("short_open_tag") != 1) exit; ?><?
 
 // LIB/CONFIG - default konfiguracija za zamger
 

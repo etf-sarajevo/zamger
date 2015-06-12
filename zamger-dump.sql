@@ -214,6 +214,7 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
   `anketa` int(11) NOT NULL,
   `predmet` int(11) default NULL,
   `akademska_godina` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
   `aktivna` tinyint(1) NOT NULL,
   KEY `predmet` (`predmet`),
   KEY `anketa` (`anketa`),
@@ -291,7 +292,11 @@ CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
 
 INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora`) VALUES
 (1, 'Ocjena (skala 1..5)', 'Y', 'odgovor_rank'),
-(2, 'Komentar', 'N', 'odgovor_text');
+(2, 'Komentar', 'N', 'odgovor_text'),
+(3, 'Izbor (pojedinačni)', 'Y', 'odgovor_izbor'),
+(4, 'Izbor (višestruki)', 'Y', 'odgovor_izbor'),
+(5, 'Naslov', 'N', ''),
+(6, 'Podnaslov', 'N', '');
 
 -- --------------------------------------------------------
 
@@ -1644,6 +1649,9 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `tippredmeta` int(11) NOT NULL,
   `ects` float NOT NULL,
+  `sati_predavanja` int(11) NOT NULL DEFAULT '0',
+  `sati_vjezbi` int(11) NOT NULL DEFAULT '0',
+  `sati_tutorijala` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `institucija` (`institucija`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
