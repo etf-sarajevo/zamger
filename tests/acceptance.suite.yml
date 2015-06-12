@@ -7,26 +7,49 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-        - PhpBrowser
+#        - PhpBrowser
         - AcceptanceHelper
+        - WebDriver
     config:
-        PhpBrowser:
-            url: 'http://localhost/zamger/'
+        WebDriver:
+            url: 'http://localhost/index.php'
+            browser: chrome
+            port: 80
+            window_size: 1024x768
+            wait: 10
+            restart: false
+            capabilities:
+                unexpectedAlertBehaviour: 'accept'
+                platform: 'Linux' 
+#        PhpBrowser:
+#            url: 'http://localhost/zamger/'
 
-env:
-    sauce:
-        modules:
-            enabled:
-                - WebDriver
-            config:
-                WebDriver:
-                    url: 'http://localhost/zamger/'
-                    port: 80
-                    browser: chrome
-                    window_size: 1024x768
-                    wait: 10
-                    restart: false
-                    capabilities:
-                        unexpectedAlertBehaviour: 'accept'
-                        platform: 'Linux'
-                
+#env:
+#    sauce:
+#        modules:
+#            enabled:
+#                - WebDriver
+#            config:
+#                WebDriver:
+#                    url: 'http://localhost/zamger/'
+#                    port: 80
+#                    browser: chrome
+#                    window_size: 1024x768
+#                    wait: 10
+#                    restart: false
+#                    capabilities:
+#                        unexpectedAlertBehaviour: 'accept'
+#                        platform: 'Linux'
+#        - AcceptanceHelper
+
+#    config:
+#        WebDriver:
+#            url: 'http://localhost/index.html'
+#            browser: chrome
+#            port: 80
+#            window_size: 1024x768
+#            wait: 10
+#            restart: false
+#            capabilities:
+#                unexpectedAlertBehaviour: 'accept'
+#                platform: 'Linux'                
