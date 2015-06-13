@@ -21,7 +21,8 @@ modules:
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
                 platform: 'Linux' 
-                webdriverRemoteQuietExceptions: 'false'
+                webdriverRemoteQuietExceptions: false
+                takesScreenshot: false
 #        PhpBrowser:
 #            url: 'http://localhost/index.php'
 
