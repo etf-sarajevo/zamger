@@ -17,7 +17,7 @@ modules:
             port: 80
             window_size: 1024x768
             wait: 10
-            restart: yes
+            restart: true
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
                 platform: 'Linux' 
