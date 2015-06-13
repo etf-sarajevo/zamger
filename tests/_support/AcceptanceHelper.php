@@ -10,7 +10,7 @@ class AcceptanceHelper extends \Codeception\Module
 {
 
     public function _initialize() {
-        $wd = $this->getModule('WebDriver');
+        $wd = $this->getModule('WebDriverEHelper');
         $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),
             'build'=>  getenv('buildName'),
             'tags'=>  getenv('buildTags'));
