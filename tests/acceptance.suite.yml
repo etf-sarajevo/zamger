@@ -7,24 +7,24 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-#        - PhpBrowser
+        - PhpBrowser
         - AcceptanceHelper
-        - WebDriver
+#        - WebDriver
     config:
-        WebDriver:
-            url: 'http://localhost/index.php'
-            browser: firefox
-            port: 80
-            window_size: 1024x768
-            wait: 10
-            restart: no
-            capabilities:
-                unexpectedAlertBehaviour: 'accept'
-                platform: 'Linux' 
-                webdriverRemoteQuietExceptions: false
-                takesScreenshot: false
-#        PhpBrowser:
+#        WebDriver:
 #            url: 'http://localhost/index.php'
+#            browser: firefox
+#            port: 80
+#            window_size: 1024x768
+#            wait: 10
+#            restart: no
+#            capabilities:
+#                unexpectedAlertBehaviour: 'accept'
+#                platform: 'Linux' 
+#                webdriverRemoteQuietExceptions: false
+#                takesScreenshot: false
+        PhpBrowser:
+            url: 'http://localhost/index.php'
 
 #env:
 #    sauce:

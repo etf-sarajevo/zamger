@@ -16,11 +16,3 @@ modules:
             dsn: 'mysql:host=localhost;dbname=zamger'
             user: 'root'
             password: ''
-#extensions:
-#    enabled:
-#        - Codeception\Extension\SauceExtension
-#    config:
-#        Codeception\Extension\SauceExtension:
-#        username: 'humamilisic'
-#        accesskey: '6864365e-a01d-4bf8-b46c-fa741830e7e7'
-#        build: 'Local Test'
