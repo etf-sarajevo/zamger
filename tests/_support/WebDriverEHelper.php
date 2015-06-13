@@ -18,14 +18,14 @@ class WebDriverEHelper extends \Codeception\Module\WebDriver
 //            $this->webDriver->manage()->deleteAllCookies();
 //        }
 //    }
-    public function _failed(\Codeception\TestCase $test, $fail)
-    {
-//        $filename = str_replace(['::', '\\', '/'],['.', '', ''], \Codeception\TestCase::getTestSignature($test)) . '.fail';
-//        $this->_saveScreenshot(codecept_output_dir().$filename.'.png');
-//        file_put_contents(codecept_output_dir().$filename.'.html', $this->webDriver->getPageSource());
-//        $this->debug("Screenshot and HTML snapshot were saved into '_output' dir");
-        $this->debug('_failed');
-    }
+//    public function _failed(\Codeception\TestCase $test, $fail)
+//    {
+////        $filename = str_replace(['::', '\\', '/'],['.', '', ''], \Codeception\TestCase::getTestSignature($test)) . '.fail';
+////        $this->_saveScreenshot(codecept_output_dir().$filename.'.png');
+////        file_put_contents(codecept_output_dir().$filename.'.html', $this->webDriver->getPageSource());
+////        $this->debug("Screenshot and HTML snapshot were saved into '_output' dir");
+//        $this->debug('_failed');
+//    }
     
 //    public function _saveScreenshot($filename)
 //    {
