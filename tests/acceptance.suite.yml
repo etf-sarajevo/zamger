@@ -14,10 +14,10 @@ modules:
         WebDriverEHelper:
             url: 'http://localhost/index.php'
             browser: firefox
-            port: 80
-            window_size: 1024x768
-            wait: 10
-            restart: true
+#            port: 80
+#            window_size: 1024x768
+#            wait: 10
+#            restart: true
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
                 platform: 'Linux' 
