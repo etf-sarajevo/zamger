@@ -13,7 +13,7 @@ modules:
     config:
         WebDriver:
             url: 'http://localhost/index.php'
-            browser: chrome
+            browser: firefox
             port: 80
             window_size: 1024x768
             wait: 10
@@ -21,6 +21,7 @@ modules:
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
                 platform: 'Linux' 
+                webdriverRemoteQuietExceptions: 'false'
 #        PhpBrowser:
 #            url: 'http://localhost/index.php'
 
