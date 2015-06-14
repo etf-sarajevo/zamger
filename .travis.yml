@@ -70,7 +70,7 @@ env:
     - projekat: 'zamger'
     - buildTags: $projekat
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
-
-matrix:
+  matrix:
     include:
         env: OS = linux
+        env: OS = windows
