@@ -11,24 +11,31 @@ class MemberSteps extends \AcceptanceTester
         $I->canSeeInCurrentUrl("?sta=logout");
     }
     
+    public function login($username,$password) {
+        $I = $this;
+        $I->wantTo('login');
+        $I->amOnPage(\loginPage::$URL);
+        $I->canSee(\loginPage::$text);
+        $I->fillField(\loginPage::$username, $username);
+        $I->fillField(\loginPage::$pass, $password);
+        $I->click(\loginPage::$button);
+        #$I->see(\loginPage::$homeTextAdmin);
+    }
+    
     public function loginKaoAdmin()
     {
         $I = $this;
         $I->wantTo('login kao administrator');
-        $I->amOnPage(\loginPage::$URL);
-        $I->see("bolognaware");
-        $I->fillField(\loginPage::$username, 'admin');
-        $I->fillField(\loginPage::$pass, 'admin');
-        $I->click(\loginPage::$button);
+        $I->login('admin', 'admin');
         $I->see(\loginPage::$homeTextAdmin);
     }
     
     public function  loginKaoStudent()
     {
-        $I = $this;
-        $I->wantTo('login kao student');
-        $I->amOnPage(\loginPage::$URL);
-        $I->see("bolognaware");
+//        $I = $this;
+//        $I->wantTo('login kao student');
+//        $I->amOnPage(\loginPage::$URL);
+//        $I->see("bolognaware");
         //$I->fillField(\pocetnaPage::$username, 'admin');
         //$I->fillField(\pocetnaPage::$pass, 'admin');
         //$I->click(\pocetnaPage::$button);

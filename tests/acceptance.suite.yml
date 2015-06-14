@@ -34,7 +34,7 @@ env:
                 - PhpBrowser
             config:
                 PhpBrowser:
-                    url: 'http://localhost/index.php'
+                    url: 'http://localhost/zamger/index.php'
     chrome:
         modules:
             enabled:

@@ -7,7 +7,7 @@ class loginPage
     public static $username = 'input[name=login]';
     public static $pass = 'input[name=pass]';
     public static $button = 'input[type=submit]';
-    
+    public static $text = 'Dobro došli na bolognaware Elektrotehničkog fakulteta Sarajevo';
     public static $homeTextAdmin = 'Administracija sajta';
     
 

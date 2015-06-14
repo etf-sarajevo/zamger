@@ -1,10 +1,6 @@
 language: php
 php:
     - 5.5
-#env:
-#    - OS : 'Linux'
-#    - OS : 'Windows 8'
-#    - OS : 'Windows XP'
 
 before_script:
   - sudo apt-get update
@@ -43,7 +39,6 @@ before_script:
   - sudo ps aux | grep apache
 
 before_install:
-  #- export SELENIUM_HOST=$SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
   - ls
   - cat zamger-dump.sql
   - mysql -e "create database IF NOT EXISTS test;" -uroot
@@ -72,6 +67,6 @@ env:
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
   matrix:
       - OS=linux BW=firefox
-      - OS=linux BW=chrome
+#      - OS=linux BW=chrome
 #      - OS='Windows 8' BW=IE
      
