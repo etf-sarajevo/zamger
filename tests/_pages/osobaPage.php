@@ -1,16 +1,18 @@
 <?php
 
-class basePage
+class osobaPage
 {
     // include url of current page
-    public static $URL = '';//@todo basepage url dodati
-    public static $uputstvaLinkText = 'Uputstva';
-    public static $prijaviteBugLinkText = 'Prijavite bug ';
+    public static $URL = '';
+    public static $ime = 'Ime: ';
+    public static $prezime = 'Prezime: ';
+    public static $brojIndexa = 'Broj indexa (za studente): ';
+    public static $JMBG = 'JMBG: ';
+    public static $adresa = 'Adresa: ';
+    public static $kanton = '';
     
-    public static $porukeLinkText ='Poruke';
-    public static $profilLinkText ='Profil';
-    public static $profilLinkText ='Odjava';
-//    public static $homeLink = '';
+    public static $izmjeniButton = 'input[type=submit,value= Izmijeni ]';
+//    public static $button = 'input[type=submit]';
     /**
      * Declare UI map for this page here. CSS or XPath allowed.
      * public static $usernameField = '#username';
