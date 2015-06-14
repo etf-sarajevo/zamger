@@ -15,12 +15,13 @@ modules:
             url: 'http://localhost/index.php'
             browser: firefox
 #            port: 80
-#            window_size: 1024x768
+            window_size: maximize
 #            wait: 10
 #            restart: true
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
                 platform: 'Linux' 
+                recordScreenshots: true
 #                webdriverRemoteQuietExceptions: false
 #                takesScreenshot: false
 #        PhpBrowser:
