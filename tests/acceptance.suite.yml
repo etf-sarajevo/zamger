@@ -25,16 +25,16 @@ modules:
 #                takesScreenshot: false
 #        PhpBrowser:
 #            url: 'http://localhost/index.php'
-#env:
-#    firefox:
-#        
-#    phpBrowser:
-#        modules:
-#            enabled:
-#                - PhpBrowser
-#            config:
-#                PhpBrowser:
-#                    url: 'http://localhost/index.php'
+env:
+    firefox:
+        
+    phpBrowser:
+        modules:
+            enabled:
+                - PhpBrowser
+            config:
+                PhpBrowser:
+                    url: 'http://localhost/index.php'
 #    chrome:
 #        modules:
 #            enabled:
