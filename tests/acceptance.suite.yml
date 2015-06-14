@@ -6,16 +6,14 @@
 
 class_name: AcceptanceTester
 modules:
-    modules:
-        enabled:
-            - PhpBrowser
-        config:
-            PhpBrowser:
-                url: 'http://localhost/index.php'
+    enabled:
+         - PhpBrowser
+    config:
+        PhpBrowser:
+            url: 'http://localhost/index.php'
 env:
     firefox:
         enabled:
-    #        - PhpBrowser
             - AcceptanceHelper
             - WebDriverEHelper
         config:
@@ -29,60 +27,4 @@ env:
                     unexpectedAlertBehaviour: 'accept'
                     platform: 'Linux' 
                     recordScreenshots: true
-    #                webdriverRemoteQuietExceptions: false
-    #                takesScreenshot: false
-    #        PhpBrowser:
-    #            url: 'http://localhost/index.php'
     phpBrowser:
-#        modules:
-#            enabled:
-#                - PhpBrowser
-#            config:
-#                PhpBrowser:
-#                    url: 'http://localhost/index.php'
-#    chrome:
-#        modules:
-#            enabled:
-#                - AcceptanceHelper
-#                - WebDriverEHelper
-#            config:
-#                WebDriverEHelper:
-#                    url: 'http://localhost/index.php'
-#                    browser: chrome
-#                    window_size: maximize
-#                    wait: 10
-#        #            restart: true
-#                    capabilities:
-#                        unexpectedAlertBehaviour: 'accept'
-#                        platform: 'Linux' 
-#                        recordScreenshots: true
-#                
-##env:
-##    sauce:
-##        modules:
-##            enabled:
-##                - WebDriver
-##            config:
-##                WebDriver:
-##                    url: 'http://localhost/zamger/'
-##                    port: 80
-##                    browser: chrome
-##                    window_size: 1024x768
-##                    wait: 10
-##                    restart: false
-##                    capabilities:
-##                        unexpectedAlertBehaviour: 'accept'
-##                        platform: 'Linux'
-##        - AcceptanceHelper
-#
-##    config:
-##        WebDriver:
-##            url: 'http://localhost/index.html'
-##            browser: chrome
-##            port: 80
-##            window_size: 1024x768
-##            wait: 10
-##            restart: false
-##            capabilities:
-##                unexpectedAlertBehaviour: 'accept'
-#                platform: 'Linux'                
