@@ -51,6 +51,23 @@ env:
                         unexpectedAlertBehaviour: 'accept'
                         platform: 'Linux' 
                         recordScreenshots: true
+    IE:
+        modules:
+            enabled:
+                - AcceptanceHelper
+                - WebDriverEHelper
+            config:
+                WebDriverEHelper:
+                    url: 'http://localhost/index.php'
+                    browser: internet explorer
+                    window_size: maximize
+                    wait: 10
+        #            restart: true
+                    capabilities:
+                        unexpectedAlertBehaviour: 'accept'
+                        platform: 'Linux' 
+                        recordScreenshots: true
+        
 #                
 ##env:
 ##    sauce:
