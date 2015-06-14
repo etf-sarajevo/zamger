@@ -72,6 +72,6 @@ env:
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
   matrix:
       - OS=linux BW=firefox
-      - OS=windows BW=firefox
-      - BW=phpBrowser
+      - OS=linux BW=chrome
+      - OS=windows BW=IE
      
