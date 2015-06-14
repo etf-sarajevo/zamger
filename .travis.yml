@@ -71,6 +71,5 @@ env:
     - buildTags: $projekat
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
   matrix:
-    include:
-        OS : linux,
-        OS : windows
+      - OS : linux
+      - OS : windows
