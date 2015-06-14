@@ -72,5 +72,5 @@ env:
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
   matrix:
     include:
-        env: OS = linux
+        env: OS = linux,
         env: OS = windows
