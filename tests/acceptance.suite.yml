@@ -14,9 +14,8 @@ modules:
         WebDriverEHelper:
             url: 'http://localhost/index.php'
             browser: firefox
-#            port: 80
             window_size: maximize
-#            wait: 10
+            wait: 10
 #            restart: true
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
@@ -26,7 +25,31 @@ modules:
 #                takesScreenshot: false
 #        PhpBrowser:
 #            url: 'http://localhost/index.php'
-
+env:
+    phpBrowser:
+        modules:
+            enabled:
+                - PhpBrowser
+            config:
+                PhpBrowser:
+                    url: 'http://localhost/index.php'
+    chrome:
+        modules:
+            enabled:
+                - AcceptanceHelper
+                - WebDriverEHelper
+            config:
+                WebDriverEHelper:
+                    url: 'http://localhost/index.php'
+                    browser: chrome
+                    window_size: maximize
+                    wait: 10
+        #            restart: true
+                    capabilities:
+                        unexpectedAlertBehaviour: 'accept'
+                        platform: 'Linux' 
+                        recordScreenshots: true
+                
 #env:
 #    sauce:
 #        modules:
