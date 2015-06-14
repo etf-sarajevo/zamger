@@ -35,22 +35,22 @@ env:
             config:
                 PhpBrowser:
                     url: 'http://localhost/index.php'
-#    chrome:
-#        modules:
-#            enabled:
-#                - AcceptanceHelper
-#                - WebDriverEHelper
-#            config:
-#                WebDriverEHelper:
-#                    url: 'http://localhost/index.php'
-#                    browser: chrome
-#                    window_size: maximize
-#                    wait: 10
-#        #            restart: true
-#                    capabilities:
-#                        unexpectedAlertBehaviour: 'accept'
-#                        platform: 'Linux' 
-#                        recordScreenshots: true
+    chrome:
+        modules:
+            enabled:
+                - AcceptanceHelper
+                - WebDriverEHelper
+            config:
+                WebDriverEHelper:
+                    url: 'http://localhost/index.php'
+                    browser: chrome
+                    window_size: maximize
+                    wait: 10
+        #            restart: true
+                    capabilities:
+                        unexpectedAlertBehaviour: 'accept'
+                        platform: 'Linux' 
+                        recordScreenshots: true
 #                
 ##env:
 ##    sauce:

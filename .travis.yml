@@ -73,5 +73,5 @@ env:
   matrix:
       - OS=linux BW=firefox
       - OS=linux BW=chrome
-      - OS=windows BW=IE
+#      - OS=windows BW=IE
      
