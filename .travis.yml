@@ -1,6 +1,10 @@
 language: php
 php:
     - 5.5
+env:
+    - OS = 'Linux'
+    - OS = 'Windows 8'
+    - OS = 'Windows XP'
 
 before_script:
   - sudo apt-get update
