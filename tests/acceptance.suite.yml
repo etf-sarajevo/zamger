@@ -20,7 +20,7 @@ modules:
 #            restart: true
             capabilities:
                 unexpectedAlertBehaviour: 'accept'
-#                platform: 'Linux' 
+                platform: 'Linux' 
 #                webdriverRemoteQuietExceptions: false
 #                takesScreenshot: false
 #        PhpBrowser:
