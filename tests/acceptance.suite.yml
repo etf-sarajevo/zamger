@@ -26,6 +26,8 @@ modules:
 #        PhpBrowser:
 #            url: 'http://localhost/index.php'
 env:
+    firefox:
+        
     phpBrowser:
         modules:
             enabled:
