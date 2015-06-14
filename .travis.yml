@@ -59,7 +59,7 @@ addons:
   sauce_connect: true
 
 script:
-  - php codecept.phar run aceptance --steps --html --debug --env phpBrowser --env chrome #testovi
+  - php codecept.phar run acceptance --steps --html --debug --env phpBrowser --env chrome #testovi
   
 env:
   global:    
