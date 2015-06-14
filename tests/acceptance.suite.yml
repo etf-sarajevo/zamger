@@ -5,29 +5,29 @@
 # If you need both WebDriver and PHPBrowser tests - create a separate suite.
 
 class_name: AcceptanceTester
-modules:
-    enabled:
-#        - PhpBrowser
-            - AcceptanceHelper
-            - WebDriverEHelper
-    config:
-        WebDriverEHelper:
-            url: 'http://localhost/index.php'
-            browser: firefox
-            window_size: maximize
-            wait: 10
-    #            restart: true
-            capabilities:
-                unexpectedAlertBehaviour: 'accept'
-                platform: 'Linux' 
-                recordScreenshots: true
-#                webdriverRemoteQuietExceptions: false
-#                takesScreenshot: false
-#        PhpBrowser:
-#            url: 'http://localhost/index.php'
+
 env:
     firefox:
-        
+        modules:
+            enabled:
+        #        - PhpBrowser
+                    - AcceptanceHelper
+                    - WebDriverEHelper
+            config:
+                WebDriverEHelper:
+                    url: 'http://localhost/index.php'
+                    browser: firefox
+                    window_size: maximize
+                    wait: 10
+            #            restart: true
+                    capabilities:
+                        unexpectedAlertBehaviour: 'accept'
+                        platform: 'Linux' 
+                        recordScreenshots: true
+        #                webdriverRemoteQuietExceptions: false
+        #                takesScreenshot: false
+        #        PhpBrowser:
+        #            url: 'http://localhost/index.php'
     phpBrowser:
         modules:
             enabled:
