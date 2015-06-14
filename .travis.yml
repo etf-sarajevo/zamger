@@ -1,10 +1,10 @@
 language: php
 php:
     - 5.5
-env:
-    - OS : 'Linux'
-    - OS : 'Windows 8'
-    - OS : 'Windows XP'
+#env:
+#    - OS : 'Linux'
+#    - OS : 'Windows 8'
+#    - OS : 'Windows XP'
 
 before_script:
   - sudo apt-get update
@@ -71,4 +71,6 @@ env:
     - buildTags: $projekat
     - buildName: $projekat:$TRAVIS_JOB_NUMBER
 
-after_script:
+matrix:
+    include:
+        env: OS = linux
