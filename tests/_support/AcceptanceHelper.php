@@ -13,9 +13,9 @@ class AcceptanceHelper extends \Codeception\Module
         $tags = array(
             getenv('buildTags'),
             'A',
-            getenv(TRAVIS_BRANCH),
-            getenv(TRAVIS_COMMIT),
-            getenv(TRAVIS_REPO_SLUG),
+            getenv('TRAVIS_BRANCH'),
+            getenv('TRAVIS_COMMIT'),
+            getenv('TRAVIS_REPO_SLUG'),
         );
         $wd = $this->getModule('WebDriverEHelper');
         $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),

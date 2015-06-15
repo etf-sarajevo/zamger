@@ -54,7 +54,7 @@ addons:
   sauce_connect: true
 
 script:
-  - php codecept.phar run acceptance --steps --html --debug --env $BW #testovi
+  - php codecept.phar run acceptance --steps --html --debug --env $BW SigninCept.php#testovi
   
 env:
   global:    
@@ -64,7 +64,7 @@ env:
     - sauceTunel: $TRAVIS_JOB_NUMBER
     - projekat: 'zamger'
     - buildTags: $projekat
-    - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT.$TRAVIS_JOB_NUMBER
+    - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT;$TRAVIS_JOB_NUMBER
   matrix:
       - OS=linux BW=firefox
 #      - OS=linux BW=chrome
