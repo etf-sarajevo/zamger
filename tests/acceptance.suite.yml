@@ -18,7 +18,7 @@ env:
                     url: 'http://localhost/index.php'
                     browser: firefox
                     window_size: maximize
-                    wait: 10
+                    wait: 3
             #            restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
@@ -45,7 +45,7 @@ env:
                     url: 'http://localhost/index.php'
                     browser: chrome
                     window_size: maximize
-                    wait: 10
+                    wait: 3
         #            restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
@@ -61,7 +61,7 @@ env:
                     url: 'http://localhost/index.php'
                     browser: internet explorer
                     window_size: maximize
-                    wait: 10
+                    wait: 3
         #            restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
