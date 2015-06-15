@@ -63,7 +63,7 @@ env:
     - SELENIUM_HOST: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
     - sauceTunel: $TRAVIS_JOB_NUMBER
     - projekat: 'zamger'
-    - buildTags: $projekat,'A',$TRAVIS_BRANCH,$TRAVIS_COMMIT,$TRAVIS_REPO_SLUG
+    - buildTags: $projekat
     - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT.$TRAVIS_JOB_NUMBER
   matrix:
       - OS=linux BW=firefox

@@ -10,11 +10,18 @@ class AcceptanceHelper extends \Codeception\Module
 {
 
     public function _initialize() {
+        $tags = array(
+            getenv('buildTags'),
+            'A',
+            getenv(TRAVIS_BRANCH),
+            getenv(TRAVIS_COMMIT),
+            getenv(TRAVIS_REPO_SLUG),
+        );
         $wd = $this->getModule('WebDriverEHelper');
         $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),
             'build'=>  getenv('buildName'),
             'platform'=>  getenv('OS'),
-            'tags'=>  getenv('buildTags'));
+            'tags'=>  $tags);
         $wd->_reconfigure(array('host'=>getenv('SELENIUM_HOST'),
             'capabilities'=>$cap));
         //"recordScreenshots": false
