@@ -76,6 +76,7 @@ class MemberSteps extends \AcceptanceTester
         $I->canSee($ime." ".$prezime);
         $I->seeElement("input[name=".$tip."]");
         $I->checkOption("input[name=".$tip."]");
+        $I->waitForElement("input[name=".$tip."]",30);
         $I->canSeeCheckboxIsChecked("input[name=".$tip."]");
         $I->click("Promijeni"); 
     }
@@ -83,6 +84,11 @@ class MemberSteps extends \AcceptanceTester
     {
         $I = $this;
         $I->adminDodajOsobuTipa($ime,$prezime,"student");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
+        
     }
     
     public function adminDodajNastavnika($ime,$prezime)
