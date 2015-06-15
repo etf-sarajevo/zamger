@@ -77,9 +77,9 @@ class MemberSteps extends \AcceptanceTester
         $I->seeElement("input[name=".$tip."]");
         $I->checkOption("input[name=".$tip."]");
         $I->waitForElement("input[name=".$tip."]",30);
-        $I->canSeeCheckboxIsChecked("input[name=".$tip."]");
-        $I->canSee("Data privilegija ");
+        $I->canSeeCheckboxIsChecked("input[name=".$tip."]");        
         $I->click("Promijeni"); 
+        $I->canSee("Data privilegija ");
     }
     public function adminDodajStudenta($ime,$prezime)
     {
