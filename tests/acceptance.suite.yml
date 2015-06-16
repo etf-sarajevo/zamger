@@ -5,15 +5,15 @@
 # If you need both WebDriver and PHPBrowser tests - create a separate suite.
 
 class_name: AcceptanceTester
-modules:
-    enabled:
-        - Db:
-    config:
-            Db:
-                dsn: 'mysql:host=localhost;dbname=zamger'
-                user: 'root'
-                password: ''
-    
+#modules:
+#    enabled:
+#        - Db:
+#    config:
+#            Db:
+#                dsn: 'mysql:host=localhost;dbname=zamger'
+#                user: 'root'
+#                password: ''
+#    
     
 env:
     firefox:
