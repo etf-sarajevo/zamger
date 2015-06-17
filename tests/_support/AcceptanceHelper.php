@@ -20,6 +20,8 @@ class AcceptanceHelper extends \Codeception\Module
         $cap= array('tunnel-identifier'=>  getenv('sauceTunel'),
             'build'=>  getenv('buildName'),
             'platform'=>  getenv('OS'),
+            'wait'=>  getenv('WEB_DRIVER_WAIT'),
+            'captureHtml'=>true,//captureHtml
             'tags'=>  $tags);
         $wd->_reconfigure(array('host'=>getenv('SELENIUM_HOST'),
             'capabilities'=>$cap));
