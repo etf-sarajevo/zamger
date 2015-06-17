@@ -17,6 +17,9 @@ modules:
                 dsn: 'mysql:host=localhost;dbname=zamger'
                 user: 'root'
                 password: ''
+                dump: 'zamger-dump.sql'
+                populate: false
+                cleanup: true
 #            PhpBrowser:
 #                url: 'http://localhost/zamger/index.php'
             WebDriverEHelper:
