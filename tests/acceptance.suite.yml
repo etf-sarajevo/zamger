@@ -36,7 +36,7 @@ env:
                     url: 'http://localhost/index.php'
                     browser: firefox
                     window_size: maximize
-                    wait: 1
+                    wait: 10
             #            restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'

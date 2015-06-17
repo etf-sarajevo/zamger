@@ -1,6 +1,7 @@
 language: php
 php:
     - 5.5
+#    - 5.6
 
 before_script:
   - sudo apt-get update
@@ -16,19 +17,8 @@ before_script:
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
   - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
   - sudo service apache2 restart
-  #- mysql -e 'create database yourcashflowtest;'
-  #- mysql -e "source ~/build/zamger/test/_data/dump.sql;" -uroot
   - mysql -u root -e  'show databases;'
-  # mysql -u root -e "GRANT ALL PRIVILEGES ON zamger.* to zamger@localhost identified by '1A2s3D4f';
-  # mysql FLUSH PRVILEGES;"
-  - 
-  #- mysql -u root yourcashflowtest < ./build/setup/schema.sql
-  #- mysql -u root yourcashflowtest < ./build/setup/category.sql
-  #- mysql -u root yourcashflowtest < ./build/setup/account.sql
-  #- cp -f build/global.php ./config/autoload/global.php
-  #- cp -f build/test.php ./config/autoload/test.php
-  #- cp -f build/local.php ./config/autoload/local.php
-  #- composer install
+  
   - sudo mkdir /home/zamger
   - sudo mkdir /home/zamger/tmp
   - sudo mkdir /home/zamger/zadace
@@ -70,3 +60,36 @@ env:
 #      - OS=linux BW=chrome
 #      - OS='Windows 8' BW=IE
      
+     
+notifications:
+    email:
+        recipients:
+            - huma.milisic@gmail.com
+        on_success: always
+        on_failure: always
+        
+branches:
+    only:
+        - master
+        
+#before_install:
+#    
+#install:
+#    
+#before_script:
+#    
+#script:
+#    
+#after_success:
+#
+#after_failure:
+#    
+#after_script:
+#    
+#before_deploy:
+#
+#deploy:
+#    
+#after_deploy:
+
+
