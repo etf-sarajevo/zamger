@@ -122,9 +122,7 @@ class MemberSteps extends \AcceptanceTester
         $I->am('Administrator');
         $I->wantTo('Dodati novi predmet kao administrator');
         $I->amOnPage('/');
-//        $I->debugOutput("Predmet: ".$predmet.", sifra: ".$sifra
-//                .", ects: ".$ects.", satiPredavanja: ".$satiPredavanja
-//                .", satiVjezbi".$satiVjezbi.", satiTutorijala".$satiTutorijala);
+//      
         $I->canSee("Studentska služba");
         $I->click("Studentska služba");
         $I->canSee("Predmeti");
@@ -133,12 +131,12 @@ class MemberSteps extends \AcceptanceTester
         $I->canSee("Za prikaz svih predmeta na akademskoj godini, ostavite polje za pretragu prazno.");
         $I->canSeeElement('input[name=naziv]');
         $I->fillField('input[name=naziv]', $predmet);
-        $I->canSee("input[@value=' Dodaj ']");
-        $I->click("input[@value=' Dodaj ']");
+//        $I->canSee("input[value=' Dodaj ']");
+        $I->click("input[value=' Dodaj ']");
         
         $I->canSeeLink('Editovanje predmeta "'.$predmet.'"');
         $I->click('Editovanje predmeta "'.$predmet.'"');
-        
+//        $linkTrenutni = $I->grab
         $I->canSee('Izmijeni');
         $I->click("input[type=\"submit\"]");
         
@@ -150,11 +148,11 @@ class MemberSteps extends \AcceptanceTester
         $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sati tutorijala'], $satiTutorijala);
         $I->click("input[type=\"submit\"]");
         $I->canSee("Podaci o predmetu izmijenjeni");
-        $I->canSee("Nazad");
         $I->click("Nazad");
+//        $I->amOnUrl($linkTrenutni);
     }
     private function _adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer){
-        $I->canSeeInCurrentUrl('akcija=dodaj_pk');///zamger/index.php?sta=studentska/predmeti&predmet=4&ag=1&akcija=dodaj_pk
+//        $I->canSeeInCurrentUrl('akcija=dodaj_pk');///zamger/index.php?sta=studentska/predmeti&predmet=4&ag=1&akcija=dodaj_pk
         $I->selectOption('name=_lv_column_studij', $smjer);
         $I->fillField('input[name=semestar]', $semestar);
         if($obavezan){
@@ -168,7 +166,6 @@ class MemberSteps extends \AcceptanceTester
     public function adminDodajPredmetIPonuduKursaSmjeru($predmet,$sifra,
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar,$smjer){
         $I = $this;
-        $I->amOnPage('/');
         $I->adminDodajPredmet($predmet,$sifra,$ects,$satiPredavanja,$satiVjezbi,$satiTutorijala);
         $I->click('Dodaj ponudu kursa');
         $I->_adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer);
@@ -178,7 +175,6 @@ class MemberSteps extends \AcceptanceTester
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
         
         $I=$this;
-        $I->amOnPage('/');
         $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
                 $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Računarstvo i informatika (BSc)');
     }
@@ -187,7 +183,6 @@ class MemberSteps extends \AcceptanceTester
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
         
         $I=$this;
-        $I->amOnPage('/');
         $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
                 $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Telekomunikacije (BSc)');
     }
@@ -196,7 +191,6 @@ class MemberSteps extends \AcceptanceTester
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
         
         $I=$this;
-        $I->amOnPage('/');
         $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
                 $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Automatika i elektronika (BSc)');
     }
@@ -205,7 +199,6 @@ class MemberSteps extends \AcceptanceTester
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
         
         $I=$this;
-        $I->amOnPage('/');
         $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
                 $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Elektroenergetika (BSc)');
     }
@@ -214,16 +207,17 @@ class MemberSteps extends \AcceptanceTester
             $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
         
         $I=$this;
-        $I->amOnPage('/');
         $I->adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, 
                 $satiVjezbi, $satiTutorijala);
+        $I->click('Dodaj ponudu kursa');
         $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Računarstvo i informatika (BSc)');
         $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Telekomunikacije (BSc)');
         $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Elektroenergetika (BSc)');
         $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Automatika i elektronika (BSc)');
     }
     
-    public function adminDodaj10PredmetaKursevaZaGodinu1() {
+    public function adminDodajPredmetaKursevaZaGodinuPrvu() {
+        
         $I->adminDodajPredmetIPonuduKursaSvimBsc
             ('Inžinjerska matematika 1', 'PG01', '6.5', 49, 
             0, 26, true, 1);
