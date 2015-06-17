@@ -44,7 +44,7 @@ addons:
   sauce_connect: true
 
 script:
-  - php codecept.phar run acceptance  --env $BW dummyCest.php --steps --debug #testovi --steps --html --debug
+  - php codecept.phar run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
   
 env:
   global:    
@@ -56,8 +56,8 @@ env:
     - buildTags: $projekat
     - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT-$TRAVIS_JOB_NUMBER
   matrix:
-      - OS=linux BW=firefox 
-#      - OS=linux BW=chrome
+#      - OS=linux BW=firefox 
+      - OS=linux BW=chrome
 #      - OS='Windows 8' BW=IE
      
      

@@ -119,7 +119,7 @@ class MemberSteps extends \AcceptanceTester
     public function adminDodajPredmet($predmet,$sifra,$ects,$satiPredavanja,$satiVjezbi,$satiTutorijala)
     {
         $I = $this;
-        $I->loginKaoAdmin();
+//        $I->loginKaoAdmin();
         $I->am('Administrator');
         $I->wantTo('Dodati novi predmet kao administrator');
 //        $I->debugOutput("Predmet: ".$predmet.", sifra: ".$sifra
@@ -127,14 +127,22 @@ class MemberSteps extends \AcceptanceTester
 //                .", satiVjezbi".$satiVjezbi.", satiTutorijala".$satiTutorijala);
         $I->canSee("Studentska služba");
         $I->click("Studentska služba");
+        $I->canSee("Predmeti");
         $I->click("Predmeti");
         
+        $I->canSee("Za prikaz svih predmeta na akademskoj godini, ostavite polje za pretragu prazno.");
+        $I->canSeeElement('input[name=naziv]');
         $I->fillField('input[name=naziv]', $predmet);
-        $I->click("input[type=\"submit\"]");
+        $I->canSee("input[@value=' Dodaj ']");
+        $I->click("input[@value=' Dodaj ']");
         
+        $I->canSeeLink('Editovanje predmeta "'.$predmet.'"');
         $I->click('Editovanje predmeta "'.$predmet.'"');
+        
+        $I->canSee('Izmijeni');
         $I->click("input[type=\"submit\"]");
         
+        $I->canSee('Izmjena podataka o predmetu');
         $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sifra'], $sifra);
         $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Ects'], $ects);
         $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sati predavanja'], $satiPredavanja);
