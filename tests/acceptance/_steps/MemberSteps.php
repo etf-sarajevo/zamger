@@ -130,7 +130,6 @@ class MemberSteps extends \AcceptanceTester
         $I->click("input[type=\"submit\"]");
         $I->canSee("Podaci o predmetu izmijenjeni");
         $I->click("Nazad");
-//        $I->amOnUrl($linkTrenutni);
     }
     
     private function fillNovaPonudaKursa($studij,$semestar,$obavezan) {
@@ -152,7 +151,6 @@ class MemberSteps extends \AcceptanceTester
         $I = $this;
         $I->canSee('Dodaj ponudu kursa');
         $I->click('Dodaj ponudu kursa');
-//        array_walk($var, fillNovaPonudaKursa($studij,$semestar,$obavezan));
         foreach ($var as $value) {
             $I->fillNovaPonudaKursa($value['studij'], 
                     $value['semestar'], $value['obavezan']);
@@ -167,22 +165,22 @@ class MemberSteps extends \AcceptanceTester
             $satiPredavanja, $satiVjezbi, $satiTutorijala);
         $var = array(
             array(
-                'studij'=>1,
+                'studij'=>  \predmetPage::$ponudaKursaStudij['RIBsc'],
                 'semestar'=>$semestar,
                 'obavezan'=>$obavezan
             ),
             array(
-                'studij'=>2,
+                'studij'=>  \predmetPage::$ponudaKursaStudij['EEBsc'],
                 'semestar'=>$semestar,
                 'obavezan'=>$obavezan
             ),
             array(
-                'studij'=>3,
+                'studij'=>  \predmetPage::$ponudaKursaStudij['TKBsc'],
                 'semestar'=>$semestar,
                 'obavezan'=>$obavezan
             ),
             array(
-                'studij'=>4,
+                'studij'=>  \predmetPage::$ponudaKursaStudij['AiEBsc'],
                 'semestar'=>$semestar,
                 'obavezan'=>$obavezan
             )

@@ -9,19 +9,19 @@ modules:
     enabled:
         - Db
 #        - AcceptanceHelper
-        - PhpBrowser   
-        - DummyHelper
-#        - WebDriver
+#        - PhpBrowser   
+#        - DummyHelper
+        - WebDriverEHelper
     config:
             Db:
                 dsn: 'mysql:host=localhost;dbname=zamger'
                 user: 'root'
                 password: ''
-            PhpBrowser:
-                url: 'http://localhost/zamger/index.php'
-#            WebDriver:
+#            PhpBrowser:
 #                url: 'http://localhost/zamger/index.php'
-#                browser: firefox;
+            WebDriverEHelper:
+                url: 'http://localhost/zamger/index.php'
+                browser: firefox;
     
     
 env:
