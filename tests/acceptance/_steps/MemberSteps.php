@@ -115,4 +115,98 @@ class MemberSteps extends \AcceptanceTester
         $I = $this;
         $I->adminDodajOsobuTipa($ime,$prezime,"siteadmin");
     }
+    
+    public function adminDodajPredmet($predmet,$sifra,$ects,$satiPredavanja,$satiVjezbi,$satiTutorijala)
+    {
+        $I = $this;
+        $I->loginKaoAdmin();
+        $I->am('Administrator');
+        $I->wantTo('Dodati novi predmet kao administrator');
+//        $I->debugOutput("Predmet: ".$predmet.", sifra: ".$sifra
+//                .", ects: ".$ects.", satiPredavanja: ".$satiPredavanja
+//                .", satiVjezbi".$satiVjezbi.", satiTutorijala".$satiTutorijala);
+        $I->canSee("Studentska služba");
+        $I->click("Studentska služba");
+        $I->click("Predmeti");
+        
+        $I->fillField('input[name=naziv]', $predmet);
+        $I->click("input[type=\"submit\"]");
+        
+        $I->click('Editovanje predmeta "'.$predmet.'"');
+        $I->click("input[type=\"submit\"]");
+        
+        $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sifra'], $sifra);
+        $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Ects'], $ects);
+        $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sati predavanja'], $satiPredavanja);
+        $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sati vjezbi'], $satiVjezbi);
+        $I->fillField(\predmetPage::$izmjenaPodatakaOPredmetu['Sati tutorijala'], $satiTutorijala);
+        $I->click("input[type=\"submit\"]");
+        $I->canSee("Podaci o predmetu izmijenjeni");
+        $I->canSee("Nazad");
+        $I->click("Nazad");
+    }
+    public function _adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer){
+        $I->canSeeInCurrentUrl('akcija=dodaj_pk');///zamger/index.php?sta=studentska/predmeti&predmet=4&ag=1&akcija=dodaj_pk
+        $I->selectOption('name=_lv_column_studij', $smjer);
+        $I->fillField('input[name=semestar]', $semestar);
+        if($obavezan){
+            $I->checkOption('input[name=obavezan]');
+        }
+        $I->click('input[type="submit"]');
+        $I->canSee("Ponuda kursa uspješno kreirana");
+        $I->click("Nazad");
+    }
+
+    public function adminDodajPredmetIPonuduKursaSmjeru($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar,$smjer){
+        $I = $this;
+        $I->adminDodajPredmet($predmet,$sifra,$ects,$satiPredavanja,$satiVjezbi,$satiTutorijala);
+        $I->click('Dodaj ponudu kursa');
+        $I->_adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer);
+    }
+    
+    public function adminDodajPredmetIPonuduKursaRIBsc($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
+        
+        $I=$this;
+        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
+                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Računarstvo i informatika (BSc)');
+    }
+    
+    public function adminDodajPredmetIPonuduKursaTKBsc($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
+        
+        $I=$this;
+        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
+                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Telekomunikacije (BSc)');
+    }
+    
+    public function adminDodajPredmetIPonuduKursaAiEBsc($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
+        
+        $I=$this;
+        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
+                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Automatika i elektronika (BSc)');
+    }
+    
+    public function adminDodajPredmetIPonuduKursaEEBsc($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
+        
+        $I=$this;
+        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
+                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Elektroenergetika (BSc)');
+    }
+    
+    public function adminDodajPredmetIPonuduKursaSvimBsc($predmet,$sifra,
+            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
+        
+        $I=$this;
+        $I->adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, 
+                $satiVjezbi, $satiTutorijala);
+        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Računarstvo i informatika (BSc)');
+        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Telekomunikacije (BSc)');
+        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Elektroenergetika (BSc)');
+        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Automatika i elektronika (BSc)');
+    }
+    
 }
