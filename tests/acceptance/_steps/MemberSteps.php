@@ -158,7 +158,7 @@ class MemberSteps extends \AcceptanceTester
     }
     
     public function adminDodajPredmetKursSvima($predmet,$sifra,$ects,
-            $satiPredavanja,$satiVjezbi,$satiTutorijala,$studij,
+            $satiPredavanja,$satiVjezbi,$satiTutorijala,
             $semestar,$obavezan){
         $I = $this;
         $I->adminDodajPredmet($predmet, $sifra, $ects, 
@@ -201,5 +201,36 @@ class MemberSteps extends \AcceptanceTester
         $I->click("Nazad");
     }
     
-  
+    public function adminDodajPrvuGodinuBsc(){
+        $I=$this;
+        $I->adminDodajPredmetKursSvima('Inžinjerska matematika 1', 'PG01', '6.5', 49, 0, 26, 1, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Inžinjerska matematika 2', 'PG06', '7.5', 52, 0, 28, 2, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Inženjerska fizika 1', 'PG03', '5', 39, 0, 21, 1, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Inženjerska fizika 2', 'PG08', '5', 39, 0, 21, 2, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Osnove elektrotehnike', 'PG02', '7.5', 48, 4, 28, 1, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Električni krugovi 1', 'PG07', '6.5', 45, 10, 20, 2, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Osnove računarstva', 'PG05', '6', 44, 26, 0, 1, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Tehnike programiranja', 'PG09', '6', 44, 26, 0, 2, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Linearna algebra i geometrija', 'PG04', '5', 39, 0, 21, 1, true);
+        $I->amOnPage('/');
+        
+        $I->adminDodajPredmetKursSvima('Elektronički elementi i sklopovi', 'PG10', '5', 39, 0, 21, 2, true);
+        $I->amOnPage('/');
+    }
 }
