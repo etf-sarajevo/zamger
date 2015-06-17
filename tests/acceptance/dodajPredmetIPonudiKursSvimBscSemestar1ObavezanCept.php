@@ -9,3 +9,4 @@ $I->canSee("Automatika i elektronika (BSc), 1. semestar");
 $I->canSee("Elektroenergetika (BSc), 1. semestar");
 $I->canSee("Telekomunikacije (BSc), 1. semestar");
 //        $I->cantSee('izborni');
+$I->logout();
