@@ -30,25 +30,6 @@ class MemberSteps extends \AcceptanceTester
         $I->see(\loginPage::$homeTextAdmin);
     }
     
-    public function  loginKaoStudent()
-    {
-//        $I = $this;
-//        $I->wantTo('login kao student');
-//        $I->amOnPage(\loginPage::$URL);
-//        $I->see("bolognaware");
-        //$I->fillField(\pocetnaPage::$username, 'admin');
-        //$I->fillField(\pocetnaPage::$pass, 'admin');
-        //$I->click(\pocetnaPage::$button);
-        //$I->see(\pocetnaPage::$homeTextStudent);
-        //@todo login studenta
-    }
-    
-    public function loginKaoStudentskaSluzba()
-    {}
-    
-    public function loginKaoProfesor()
-    {}
-    
     public function adminDodajOsobu($ime,$prezime)
     {
         $I=$this;
@@ -137,7 +118,7 @@ class MemberSteps extends \AcceptanceTester
         $I->canSeeLink('Editovanje predmeta "'.$predmet.'"');
         $I->click('Editovanje predmeta "'.$predmet.'"');
 //        $linkTrenutni = $I->grab
-        $I->canSee('Izmijeni');
+//        $I->canSee('Izmijeni');
         $I->click("input[type=\"submit\"]");
         
         $I->canSee('Izmjena podataka o predmetu');
@@ -151,107 +132,76 @@ class MemberSteps extends \AcceptanceTester
         $I->click("Nazad");
 //        $I->amOnUrl($linkTrenutni);
     }
-    private function _adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer){
-//        $I->canSeeInCurrentUrl('akcija=dodaj_pk');///zamger/index.php?sta=studentska/predmeti&predmet=4&ag=1&akcija=dodaj_pk
-        $I->selectOption('name=_lv_column_studij', $smjer);
+    
+    private function fillNovaPonudaKursa($studij,$semestar,$obavezan) {
+        $I = $this;
+        $I->canSee('Nova ponuda kursa za predmet');
+        $I->seeElement('select[name=_lv_column_studij]');
+        $I->selectOption('select[name=_lv_column_studij]', $studij);
         $I->fillField('input[name=semestar]', $semestar);
-        if($obavezan){
+        $I->seeElement('input[name=obavezan]');
+        if($obavezan)
+        {
             $I->checkOption('input[name=obavezan]');
         }
         $I->click('input[type="submit"]');
         $I->canSee("Ponuda kursa uspješno kreirana");
+    }
+    
+    private function fillNovaPonudaKursaArray(array $var){
+        $I = $this;
+        $I->canSee('Dodaj ponudu kursa');
+        $I->click('Dodaj ponudu kursa');
+//        array_walk($var, fillNovaPonudaKursa($studij,$semestar,$obavezan));
+        foreach ($var as $value) {
+            $I->fillNovaPonudaKursa($value['studij'], 
+                    $value['semestar'], $value['obavezan']);
+        }
+    }
+    
+    public function adminDodajPredmetKursSvima($predmet,$sifra,$ects,
+            $satiPredavanja,$satiVjezbi,$satiTutorijala,$studij,
+            $semestar,$obavezan){
+        $I = $this;
+        $I->adminDodajPredmet($predmet, $sifra, $ects, 
+            $satiPredavanja, $satiVjezbi, $satiTutorijala);
+        $var = array(
+            array(
+                'studij'=>1,
+                'semestar'=>$semestar,
+                'obavezan'=>$obavezan
+            ),
+            array(
+                'studij'=>2,
+                'semestar'=>$semestar,
+                'obavezan'=>$obavezan
+            ),
+            array(
+                'studij'=>3,
+                'semestar'=>$semestar,
+                'obavezan'=>$obavezan
+            ),
+            array(
+                'studij'=>4,
+                'semestar'=>$semestar,
+                'obavezan'=>$obavezan
+            )
+        );        
+        $I->fillNovaPonudaKursaArray($var);
+//        $I->click('Nazad');
+    }
+
+    public function adminDodajPredmetKurs($predmet,$sifra,$ects,
+            $satiPredavanja,$satiVjezbi,$satiTutorijala,$studij,
+            $semestar,$obavezan){
+        $I = $this;
+        $I->adminDodajPredmet($predmet, $sifra, $ects, 
+                $satiPredavanja, $satiVjezbi, $satiTutorijala);
+        $I->canSee('Dodaj ponudu kursa');
+        $I->click('Dodaj ponudu kursa');
+        $I->fillNovaPonudaKursa($I,$studij, $semestar, $obavezan);
         $I->click("Nazad");
     }
-
-    public function adminDodajPredmetIPonuduKursaSmjeru($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar,$smjer){
-        $I = $this;
-        $I->adminDodajPredmet($predmet,$sifra,$ects,$satiPredavanja,$satiVjezbi,$satiTutorijala);
-        $I->click('Dodaj ponudu kursa');
-        $I->_adminDodajPonuduKursaSmjeru($obavezan,$semestar,$smjer);
-    }
     
-    public function adminDodajPredmetIPonuduKursaRIBsc($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
-        
-        $I=$this;
-        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
-                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Računarstvo i informatika (BSc)');
-    }
-    
-    public function adminDodajPredmetIPonuduKursaTKBsc($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
-        
-        $I=$this;
-        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
-                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Telekomunikacije (BSc)');
-    }
-    
-    public function adminDodajPredmetIPonuduKursaAiEBsc($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
-        
-        $I=$this;
-        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
-                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Automatika i elektronika (BSc)');
-    }
-    
-    public function adminDodajPredmetIPonuduKursaEEBsc($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
-        
-        $I=$this;
-        $I->adminDodajPredmetIPonuduKursaSmjeru($predmet, $sifra, $ects, $satiPredavanja, 
-                $satiVjezbi, $satiTutorijala, $obavezan, $semestar, 'Elektroenergetika (BSc)');
-    }
-    
-    public function adminDodajPredmetIPonuduKursaSvimBsc($predmet,$sifra,
-            $ects,$satiPredavanja,$satiVjezbi,$satiTutorijala,$obavezan,$semestar){
-        
-        $I=$this;
-        $I->adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, 
-                $satiVjezbi, $satiTutorijala);
-        $I->click('Dodaj ponudu kursa');
-        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Računarstvo i informatika (BSc)');
-        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Telekomunikacije (BSc)');
-        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Elektroenergetika (BSc)');
-        $I->_adminDodajPonuduKursaSmjeru($obavezan, $semestar, 'Automatika i elektronika (BSc)');
-    }
-    
-    public function adminDodajPredmetaKursevaZaGodinuPrvu() {
-        
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Inžinjerska matematika 1', 'PG01', '6.5', 49, 
-            0, 26, true, 1);
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Inžinjerska matematika 2', 'PG06', '7.5', 52, 
-            0, 28, true, 2);
-
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Inženjerska fizika 1', 'PG03', '5.0', 39, 
-            0, 21, true, 1);
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Inženjerska fizika 2', 'PG08', '5.0', 39, 
-            0, 21, true, 2);
-
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Osnove elektrotehnike', 'PG02', '7.5', 48, 
-            4, 28, true, 1);
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Električni krugovi 1', 'PG07', '6.5', 45, 
-            10, 20, true, 2);
-
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Osnove računarstva', 'PG05', '6', 44, 
-            26, 0, true, 1);
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Tehnike programiranja', 'PG09', '6', 44, 
-            26, 0, true, 2);
-
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Linearna algebra i geometrija', 'PG04', '5', 39, 
-            0, 21, true, 1);
-        $I->adminDodajPredmetIPonuduKursaSvimBsc
-            ('Elektronički elementi i sklopovi', 'PG10', '5', 39, 
-            0, 21, true, 2);
-
-    }
+  
 }
