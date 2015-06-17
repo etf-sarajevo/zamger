@@ -8,7 +8,6 @@ namespace Codeception\Module;
 
 class AcceptanceHelper extends \Codeception\Module
 {
-
     public function _initialize() {
         $tags = array(
             getenv('buildTags'),

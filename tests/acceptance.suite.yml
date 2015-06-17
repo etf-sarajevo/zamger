@@ -5,15 +5,24 @@
 # If you need both WebDriver and PHPBrowser tests - create a separate suite.
 
 class_name: AcceptanceTester
-#modules:
-#    enabled:
-#        - Db:
-#    config:
-#            Db:
-#                dsn: 'mysql:host=localhost;dbname=zamger'
-#                user: 'root'
-#                password: ''
-#    
+modules:
+    enabled:
+        - Db
+#        - AcceptanceHelper
+        - PhpBrowser   
+        - DummyHelper
+#        - WebDriver
+    config:
+            Db:
+                dsn: 'mysql:host=localhost;dbname=zamger'
+                user: 'root'
+                password: ''
+            PhpBrowser:
+                url: 'http://localhost/zamger/index.php'
+#            WebDriver:
+#                url: 'http://localhost/zamger/index.php'
+#                browser: firefox;
+    
     
 env:
     firefox:
