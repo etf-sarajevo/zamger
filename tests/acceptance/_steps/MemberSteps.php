@@ -22,6 +22,22 @@ class MemberSteps extends \AcceptanceTester
         #$I->see(\loginPage::$homeTextAdmin);
     }
     
+    public function adminIskljuciPopUp() {
+        $I=$this;
+        $I->wantTo("pop up ");
+        $I->loginKaoAdmin();
+        $I->amOnPage('/');
+        $I->click('Studentska služba');
+        $I->click('Osobe');
+        $I->click('Prikaži sve osobe');
+        $I->click("//td/table/tbody/tr/td/table/tbody/tr/td[2]/a");
+        $I->click('input[type="Submit"]');
+        $I->click("Zamger opcije");
+        $I->uncheckOption('input[name="savjet_dana"]');
+        $I->click('input[type="submit"]');
+        $I->logout();
+    }
+    
     public function loginKaoAdmin()
     {
         $I = $this;

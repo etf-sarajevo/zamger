@@ -54,7 +54,7 @@ env:
     - sauceTunel: $TRAVIS_JOB_NUMBER
     - projekat: 'zamger'
     - buildTags: $projekat
-    - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT-$TRAVIS_JOB_NUMBER
+    - buildName: $TRAVIS_JOB_NUMBER-$TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT
   matrix:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
