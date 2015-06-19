@@ -21,6 +21,8 @@ class stavkaNastavnogPlanaPage
     
     public static $uspjesnoText = 'Uspješno ste kreirali stavku plana studija.';
     public static $uspjesnoUrlNazad = 'Nazad na kreiranje nove stavke plana';
+    
+    //komentar
 
 
 //    public static function predmetOpcije($predmet) {
