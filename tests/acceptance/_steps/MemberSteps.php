@@ -1,5 +1,7 @@
 <?php
 
+use Codeception\Util\Locator;
+
 namespace AcceptanceTester;
 
 class MemberSteps extends \AcceptanceTester {
@@ -240,4 +242,145 @@ class MemberSteps extends \AcceptanceTester {
         $I->amOnPage('/');
     }
 
+    public function adminDodajStavkuNastavnogPlana($predmet,$obavezan,$semestar,$smjer='TKBsc') {
+        $I = $this;
+        $I->selectOption(stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
+        $I->fillField(stavkaNastavnogPlanaPage::$semestar, $semestar);
+        $I->selectOption(stavkaNastavnogPlanaPage::$predmet, $predmet);
+        $I->checkOption(stavkaNastavnogPlanaPage::$jeObavezan);
+        $I->click(stavkaNastavnogPlanaPage::$potvrdi);
+        $I->canSee(stavkaNastavnogPlanaPage::$uspjesnoText);
+        $I->click(stavkaNastavnogPlanaPage::$uspjesnoUrlNazad);
+    }
+
+    public function adminDodajStvakeNastavnogPlanaPrvaGodina() {
+        $I = $this;
+        $I->adminDodajStavkuNastavnogPlana('1.Inžinjerska matematika 1', true, 1, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('2.Inžinjerska matematika 2', true, 2, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('3.Inženjerska fizika 1', true, 1, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('4.Inženjerska fizika 2', true, 2, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('5.Osnove elektrotehnike', true, 1, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('6.Električni krugovi 1', true, 2, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('7.Osnove računarstva', true, 1, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('8.Tehnike programiranja', true, 2, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('9.Linearna algebra i geometrija', true, 1, 'RIBsc');
+        $I->adminDodajStavkuNastavnogPlana('10.Elektronički elementi i sklopovi', true, 2, 'RIBsc');
+    }
+    
+    public function fixturePredmetiZaGodinuJedanBsc() {
+        $I = $this;
+        //$I->haveInDatabase('users', array('name' => 'miles', 'email' => 'miles@davis.com'));
+        
+        $I->haveInDatabase('predmet',array('id'=>'1', 'sifra'=>'PG01', 'naziv'=>'Inžinjerska matematika 1', 'institucija'=>'1', 
+            'kratki_naziv'=>'IM1', 'tippredmeta'=>'1', 'ects'=>'6.5', 'sati_predavanja'=>'49',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'26',));
+        $I->haveInDatabase('predmet',array('id'=>'2', 'sifra'=>'PG06', 'naziv'=>'Inžinjerska matematika 2', 'institucija'=>'1', 
+            'kratki_naziv'=>'IM2', 'tippredmeta'=>'1', 'ects'=>'7.5', 'sati_predavanja'=>'52',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'28',));
+        $I->haveInDatabase('predmet',array('id'=>'3', 'sifra'=>'PG03', 'naziv'=>'Inženjerska fizika 1', 'institucija'=>'1', 
+            'kratki_naziv'=>'IF1', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'4', 'sifra'=>'PG08', 'naziv'=>'Inženjerska fizika 2', 'institucija'=>'1', 
+            'kratki_naziv'=>'IF2', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'5', 'sifra'=>'PG02', 'naziv'=>'Osnove elektrotehnike', 'institucija'=>'1', 
+            'kratki_naziv'=>'OE', 'tippredmeta'=>'1', 'ects'=>'7.5', 'sati_predavanja'=>'48',
+            'sati_vjezbi'=>'4', 'sati_tutorijala'=>'28',));
+        $I->haveInDatabase('predmet',array('id'=>'6', 'sifra'=>'PG07', 'naziv'=>'Električni krugovi 1', 'institucija'=>'1', 
+            'kratki_naziv'=>'EK1', 'tippredmeta'=>'1', 'ects'=>'6.5', 'sati_predavanja'=>'45',
+            'sati_vjezbi'=>'10', 'sati_tutorijala'=>'20',));
+        $I->haveInDatabase('predmet',array('id'=>'7', 'sifra'=>'PG05', 'naziv'=>'Osnove računarstva', 'institucija'=>'1', 
+            'kratki_naziv'=>'OR', 'tippredmeta'=>'1', 'ects'=>'6', 'sati_predavanja'=>'44',
+            'sati_vjezbi'=>'26', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'8', 'sifra'=>'PG09', 'naziv'=>'Tehnike programiranja', 'institucija'=>'1', 
+            'kratki_naziv'=>'TP', 'tippredmeta'=>'1', 'ects'=>'6', 'sati_predavanja'=>'44',
+            'sati_vjezbi'=>'26', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'9', 'sifra'=>'PG04', 'naziv'=>'Linearna algebra i geometrija', 'institucija'=>'1', 
+            'kratki_naziv'=>'LAG', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'10', 'sifra'=>'PG10', 'naziv'=>'Elektronički elementi i sklopovi', 'institucija'=>'1', 
+            'kratki_naziv'=>'EES', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'39',
+            'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+
+    }
+    
+    public function fixturePredmetiZaRiBsc(){
+        $I = $this;
+        $I->haveInDatabase('predmet',array('id'=>'1', 'sifra'=>'PG01', 'naziv'=>'Inžinjerska matematika 1', 'institucija'=>'1', 
+        'kratki_naziv'=>'IM1', 'tippredmeta'=>'1', 'ects'=>'6.5', 'sati_predavanja'=>'49',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'26',));
+        $I->haveInDatabase('predmet',array('id'=>'2', 'sifra'=>'PG06', 'naziv'=>'Inžinjerska matematika 2', 'institucija'=>'1', 
+        'kratki_naziv'=>'IM2', 'tippredmeta'=>'1', 'ects'=>'7.5', 'sati_predavanja'=>'52',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'28',));
+        $I->haveInDatabase('predmet',array('id'=>'3', 'sifra'=>'PG03', 'naziv'=>'Inženjerska fizika 1', 'institucija'=>'1', 
+        'kratki_naziv'=>'IF1', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'4', 'sifra'=>'PG08', 'naziv'=>'Inženjerska fizika 2', 'institucija'=>'1', 
+        'kratki_naziv'=>'IF2', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'5', 'sifra'=>'PG02', 'naziv'=>'Osnove elektrotehnike', 'institucija'=>'1', 
+        'kratki_naziv'=>'OE', 'tippredmeta'=>'1', 'ects'=>'7.5', 'sati_predavanja'=>'48',
+        'sati_vjezbi'=>'4', 'sati_tutorijala'=>'28',));
+        $I->haveInDatabase('predmet',array('id'=>'6', 'sifra'=>'PG07', 'naziv'=>'Električni krugovi 1', 'institucija'=>'1', 
+        'kratki_naziv'=>'EK1', 'tippredmeta'=>'1', 'ects'=>'6.5', 'sati_predavanja'=>'45',
+        'sati_vjezbi'=>'10', 'sati_tutorijala'=>'20',));
+        $I->haveInDatabase('predmet',array('id'=>'7', 'sifra'=>'PG05', 'naziv'=>'Osnove računarstva', 'institucija'=>'1', 
+        'kratki_naziv'=>'OR', 'tippredmeta'=>'1', 'ects'=>'6', 'sati_predavanja'=>'44',
+        'sati_vjezbi'=>'26', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'8', 'sifra'=>'PG09', 'naziv'=>'Tehnike programiranja', 'institucija'=>'1', 
+        'kratki_naziv'=>'TP', 'tippredmeta'=>'1', 'ects'=>'6', 'sati_predavanja'=>'44',
+        'sati_vjezbi'=>'26', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'9', 'sifra'=>'PG04', 'naziv'=>'Linearna algebra i geometrija', 'institucija'=>'1', 
+        'kratki_naziv'=>'LAG', 'tippredmeta'=>'1', 'ects'=>'5', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'10', 'sifra'=>'PG10', 'naziv'=>'Elektronički elementi i sklopovi', 'institucija'=>'1', 
+        'kratki_naziv'=>'EES', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'11', 'sifra'=>'ETF RIO DM 2360', 'naziv'=>'Diskretna matematika', 'institucija'=>'1', 
+        'kratki_naziv'=>'DM', 'tippredmeta'=>'1', 'ects'=>'5.5', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
+        $I->haveInDatabase('predmet',array('id'=>'12', 'sifra'=>'ETF RIO OS 2360', 'naziv'=>'Operativni sistemi', 'institucija'=>'1', 
+        'kratki_naziv'=>'OS', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'28',
+        'sati_vjezbi'=>'22', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'13', 'sifra'=>'ETF RIO ASP 2360', 'naziv'=>'Algoritmi i strukture podataka', 'institucija'=>'1', 
+        'kratki_naziv'=>'ASP', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'38',
+        'sati_vjezbi'=>'22', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'14', 'sifra'=>'ETF RIO RPR 2360', 'naziv'=>'Razvoj programskih rješenja', 'institucija'=>'1', 
+        'kratki_naziv'=>'RPR', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'40',
+        'sati_vjezbi'=>'20', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'15', 'sifra'=>'ETF RIO LD 2360', 'naziv'=>'Logički dizajn', 'institucija'=>'1', 
+        'kratki_naziv'=>'LD', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'40',
+        'sati_vjezbi'=>'20', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'16', 'sifra'=>'ETF RII SP 2345', 'naziv'=>'Sistemsko programiranje', 'institucija'=>'1', 
+        'kratki_naziv'=>'SP', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'30',
+        'sati_vjezbi'=>'15', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'17', 'sifra'=>'ETF RII VS 2345', 'naziv'=>'Vjerovatnoća i statistika', 'institucija'=>'1', 
+        'kratki_naziv'=>'VIS', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'30',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'15',));
+        $I->haveInDatabase('predmet',array('id'=>'18', 'sifra'=>'ETF RIO RA 2460', 'naziv'=>'Računarske arhitekture', 'institucija'=>'1', 
+        'kratki_naziv'=>'RA', 'tippredmeta'=>'1', 'ects'=>'5.5', 'sati_predavanja'=>'40',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'15',));
+        $I->haveInDatabase('predmet',array('id'=>'19', 'sifra'=>'ETF RIO OOAD 2460', 'naziv'=>'Objektno orijentisana analiza i dizajn', 'institucija'=>'1', 
+        'kratki_naziv'=>'OOAD', 'tippredmeta'=>'1', 'ects'=>'5.5', 'sati_predavanja'=>'40',
+        'sati_vjezbi'=>'15', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'20', 'sifra'=>'ETF RIO OBP 2460', 'naziv'=>'Osnove baza podataka', 'institucija'=>'1', 
+        'kratki_naziv'=>'OBP', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'20',));
+        $I->haveInDatabase('predmet',array('id'=>'21', 'sifra'=>'ETF RIO OIS 2460', 'naziv'=>'Osnove informacionih sistema', 'institucija'=>'1', 
+        'kratki_naziv'=>'OIS', 'tippredmeta'=>'1', 'ects'=>'5.0', 'sati_predavanja'=>'39',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'20',));
+        $I->haveInDatabase('predmet',array('id'=>'22', 'sifra'=>'ETF RII IE 2445', 'naziv'=>'Internet ekonomija', 'institucija'=>'1', 
+        'kratki_naziv'=>'IE', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'30',
+        'sati_vjezbi'=>'15', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'23', 'sifra'=>'ETF RII CCI 2445', 'naziv'=>'CAD - CAM inženjering', 'institucija'=>'1', 
+        'kratki_naziv'=>'CCI', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'30',
+        'sati_vjezbi'=>'15', 'sati_tutorijala'=>'0',));
+        $I->haveInDatabase('predmet',array('id'=>'24', 'sifra'=>'ETF RII OT 2445', 'naziv'=>'Osnove telekomunikacija', 'institucija'=>'1', 
+        'kratki_naziv'=>'OT', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'30',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'15',));
+        $I->haveInDatabase('predmet',array('id'=>'25', 'sifra'=>'ETF RII PAI 2445', 'naziv'=>'Praktikum iz automatike i informatike', 'institucija'=>'1', 
+        'kratki_naziv'=>'PAI', 'tippredmeta'=>'1', 'ects'=>'4.5', 'sati_predavanja'=>'10',
+        'sati_vjezbi'=>'30', 'sati_tutorijala'=>'0',));
+
+    }
 }
