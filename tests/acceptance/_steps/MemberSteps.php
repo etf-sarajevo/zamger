@@ -2,6 +2,7 @@
 
 use Codeception\Util\Locator;
 
+
 namespace AcceptanceTester;
 
 class MemberSteps extends \AcceptanceTester {
@@ -244,13 +245,15 @@ class MemberSteps extends \AcceptanceTester {
 
     public function adminDodajStavkuNastavnogPlana($predmet,$obavezan,$semestar,$smjer='TKBsc') {
         $I = $this;
-        $I->selectOption(stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
-        $I->fillField(stavkaNastavnogPlanaPage::$semestar, $semestar);
-        $I->selectOption(stavkaNastavnogPlanaPage::$predmet, $predmet);
-        $I->checkOption(stavkaNastavnogPlanaPage::$jeObavezan);
-        $I->click(stavkaNastavnogPlanaPage::$potvrdi);
-        $I->canSee(stavkaNastavnogPlanaPage::$uspjesnoText);
-        $I->click(stavkaNastavnogPlanaPage::$uspjesnoUrlNazad);
+        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
+        $I->fillField(\stavkaNastavnogPlanaPage::$semestar, $semestar);
+        $I->selectOption(\stavkaNastavnogPlanaPage::$predmet, $predmet);
+        if($obavezan){
+            $I->checkOption(\stavkaNastavnogPlanaPage::$jeObavezan);            
+        }
+        $I->click(\stavkaNastavnogPlanaPage::$potvrdi);
+        $I->canSee(\stavkaNastavnogPlanaPage::$uspjesnoText);
+        $I->click(\stavkaNastavnogPlanaPage::$uspjesnoUrlNazad);
     }
 
     public function adminDodajStvakeNastavnogPlanaPrvaGodina() {
