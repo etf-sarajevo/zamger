@@ -7,24 +7,24 @@
 class_name: AcceptanceTester
 modules:
     enabled:
-        - Db
+#        - Db
 #        - AcceptanceHelper
-#        - PhpBrowser   
+        - PhpBrowser   
 #        - DummyHelper
-        - WebDriverEHelper
+#        - WebDriverEHelper
     config:
-            Db:
-                dsn: 'mysql:host=localhost;dbname=zamger'
-                user: 'root'
-                password: ''
-                dump: 'zamger-dump.sql'
-                populate: false
-                cleanup: true
-#            PhpBrowser:
-#                url: 'http://localhost/zamger/index.php'
-            WebDriverEHelper:
+#            Db:
+#                dsn: 'mysql:host=localhost;dbname=zamger'
+#                user: 'root'
+#                password: ''
+#                dump: 'zamger-dump.sql'
+#                populate: false
+#                cleanup: true
+            PhpBrowser:
                 url: 'http://localhost/zamger/index.php'
-                browser: firefox;
+#            WebDriverEHelper:
+#                url: 'http://localhost/zamger/index.php'
+#                browser: firefox;
     
     
 env:
