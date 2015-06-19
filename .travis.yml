@@ -56,9 +56,9 @@ env:
     - buildTags: $projekat
     - buildName: $TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT-$TRAVIS_JOB_NUMBER
   matrix:
-#      - OS=linux BW=firefox 
+      - OS=linux BW=firefox 
       - OS=linux BW=chrome
-#      - OS='Windows 8' BW=IE
+      - OS='Windows 8' BW=IE
      
      
 notifications:

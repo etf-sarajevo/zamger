@@ -132,7 +132,7 @@ class MemberSteps extends \AcceptanceTester
         $I->click("Nazad");
     }
     
-    private function fillNovaPonudaKursa($studij,$semestar,$obavezan) {
+    private function fillNovaPonudaKursa($studij,$semestar,$obavezan=false) {
         $I = $this;
         $I->canSee('Nova ponuda kursa za predmet');
         $I->seeElement('select[name=_lv_column_studij]');
@@ -190,7 +190,7 @@ class MemberSteps extends \AcceptanceTester
         $I->click('Dodaj ponudu kursa');
         foreach ($var as $value) {
             $I->fillNovaPonudaKursa($value['studij'], 
-                    $value['semestar'], $value['obavezan']);
+                    $value['semestar']);//, $value['obavezan']
         }
 //        $I->fillNovaPonudaKursaArray($var);
 //        $I->click('Nazad');
