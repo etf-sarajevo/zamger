@@ -245,7 +245,8 @@ class MemberSteps extends \AcceptanceTester {
 
     public function adminDodajStavkuNastavnogPlana($predmet,$obavezan,$semestar,$smjer='TKBsc') {
         $I = $this;
-        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
+        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, \stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
+//        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
         $I->fillField(\stavkaNastavnogPlanaPage::$semestar, $semestar);
         $I->selectOption(\stavkaNastavnogPlanaPage::$predmet, $predmet);
         if($obavezan){
