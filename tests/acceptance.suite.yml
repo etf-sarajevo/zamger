@@ -11,7 +11,7 @@ modules:
 #        - AcceptanceHelper
         - PhpBrowser   
 #        - DummyHelper
-#        - WebDriverEHelper
+        - WebDriverEHelper
     config:
 #            Db:
 #                dsn: 'mysql:host=localhost;dbname=zamger'
@@ -22,9 +22,9 @@ modules:
 #                cleanup: true
             PhpBrowser:
                 url: 'http://localhost/zamger/index.php'
-#            WebDriverEHelper:
-#                url: 'http://localhost/zamger/index.php'
-#                browser: firefox;
+            WebDriverEHelper:
+                url: 'http://localhost/zamger/index.php'
+                browser: firefox;
     
     
 env:

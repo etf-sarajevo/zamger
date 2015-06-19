@@ -139,6 +139,7 @@ class MemberSteps extends \AcceptanceTester
         $I->selectOption('select[name=_lv_column_studij]', $studij);
         $I->fillField('input[name=semestar]', $semestar);
         $I->seeElement('input[name=obavezan]');
+        
         if($obavezan)
         {
             $I->checkOption('input[name=obavezan]');
@@ -184,8 +185,14 @@ class MemberSteps extends \AcceptanceTester
                 'semestar'=>$semestar,
                 'obavezan'=>$obavezan
             )
-        );        
-        $I->fillNovaPonudaKursaArray($var);
+        );
+        $I->canSee('Dodaj ponudu kursa');
+        $I->click('Dodaj ponudu kursa');
+        foreach ($var as $value) {
+            $I->fillNovaPonudaKursa($value['studij'], 
+                    $value['semestar'], $value['obavezan']);
+        }
+//        $I->fillNovaPonudaKursaArray($var);
 //        $I->click('Nazad');
     }
 
