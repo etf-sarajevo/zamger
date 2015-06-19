@@ -37,6 +37,7 @@ env:
         #        - PhpBrowser
                     - AcceptanceHelper
                     - WebDriverEHelper
+                    - Db
             config:
                 WebDriverEHelper:
                     url: 'http://localhost/index.php'
@@ -64,6 +65,7 @@ env:
             enabled:
                 - AcceptanceHelper
                 - WebDriverEHelper
+                - Db
             config:
                 WebDriverEHelper:
                     url: 'http://localhost/index.php'
@@ -80,6 +82,7 @@ env:
             enabled:
                 - AcceptanceHelper
                 - WebDriverEHelper
+                - Db
             config:
                 WebDriverEHelper:
                     url: 'http://localhost/index.php'
