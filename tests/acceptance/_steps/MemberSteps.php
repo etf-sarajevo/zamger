@@ -408,7 +408,7 @@ class MemberSteps extends \AcceptanceTester {
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
         }
-        $I->reloadPage();
+        
         foreach ($predmeti as $val) {
             $ime = $val['id'].".".$val['predmet']['naziv'];
             $I->adminDodajStavkuNastavnogPlana($ime, $I->getFaker()->boolean(80), $semestar, $smjer);
@@ -416,12 +416,21 @@ class MemberSteps extends \AcceptanceTester {
         
     }
        
+    
+
     public function adminNapraviNastavniPlanRandomPredmeta() {
         //prva godina zajedno //na stranici za dodavanje stavke
         $I = $this;
+        $I->reloadPage();
         $predmetiPrva1 = $I->fixtureSemestarRandomPredmeta(); 
         $predmetiPrva2 = $I->fixtureSemestarRandomPredmeta();
         
+        $predmeti = null;
+        
+        for($i=0;$i<=(4*4);$i++){
+            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
+        }
+        $I->reloadPage();
         //prva godina
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'RIBsc', $predmetiPrva1);
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'TKBsc', $predmetiPrva1);
@@ -433,26 +442,26 @@ class MemberSteps extends \AcceptanceTester {
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'AiEBsc', $predmetiPrva2);
         
         //ri
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $I->fixtureSemestarRandomPredmeta());
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
         
         //tk
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'TKBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'TKBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'TKBsc', $I->fixtureSemestarRandomPredmeta());
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $predmeti[4]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'TKBsc', $predmeti[5]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'TKBsc', $predmeti[6]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'TKBsc', $predmeti[7]);
                 //ee
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'EEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'EEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'EEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'EEBsc', $I->fixtureSemestarRandomPredmeta());
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'EEBsc', $predmeti[8]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'EEBsc', $predmeti[9]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'EEBsc', $predmeti[10]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'EEBsc', $predmeti[11]);
         //Aie
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'AiEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'AiEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'AiEBsc', $I->fixtureSemestarRandomPredmeta());
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $I->fixtureSemestarRandomPredmeta());
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'AiEBsc', $predmeti[12]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'AiEBsc', $predmeti[13]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'AiEBsc', $predmeti[14]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $predmeti[15]);
         
     }
     
