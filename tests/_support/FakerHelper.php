@@ -8,6 +8,8 @@ namespace Codeception\Module;
 class FakerHelper extends \Codeception\Module
 {
     private $faker;
+    private $datumFormat = 'Y-m-d';
+    
     
     public function getFaker() {
         if(!$this->faker){
@@ -37,7 +39,7 @@ class FakerHelper extends \Codeception\Module
         //    'prezimemajke', 
             'spol'=>'Z', 
         //    'brindexa', 
-            'datum_rodjenja'=>  $this->getFaker()->dateTimeThisDecade,//null, 
+            'datum_rodjenja'=>  $this->getFaker()->dateTimeThisDecade->format($this->datumFormat),//null, 
             'mjesto_rodjenja'=>$this->getFaker()->numberBetween(1,7),//'numberBetween|1;17', //1-7
             'nacionalnost'=>$this->getFaker()->numberBetween(1,6),//'numberBetween|1;6', //1-6
             'drzavljanstvo'=>$this->getFaker()->numberBetween(1,25),//null, 1-25
