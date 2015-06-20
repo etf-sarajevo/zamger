@@ -406,13 +406,13 @@ class MemberSteps extends \AcceptanceTester {
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
         }
-        $tre = $predmeti[0];
-//        $tra = $tre['predmet'];
-//        foreach ($predmeti as $val) {
+//        $tre = $predmeti[0];
+////        $tra = $tre['predmet'];
+        foreach ($predmeti as $val) {
 //            $ime = $tre['id'].$tra['naziv'];
 //            
-            $I->adminDodajStavkuNastavnogPlana($tre['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
-//        }
+            $I->adminDodajStavkuNastavnogPlana($val['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
+        }
         
     }
 
