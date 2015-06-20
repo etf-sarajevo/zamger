@@ -29,7 +29,7 @@ class AcceptanceHelper extends \Codeception\Module
     
     public function _before(\Codeception\TestCase $test) {
         parent::_before($test);
-        exec("mysql -u root zamger < zamger-dump.sql");
+//        exec("mysql -u root zamger < zamger-dump.sql");
     }
     
 }
