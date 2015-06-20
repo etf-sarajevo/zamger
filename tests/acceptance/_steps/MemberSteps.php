@@ -395,12 +395,10 @@ class MemberSteps extends \AcceptanceTester {
         $random = $I->getSemestarPredmeta();
         $id = NULL;
         foreach ($random as $predmet) {
-            $id[] = $I->haveInDatabase('predmet', $predmet);
+            $id = $I->haveInDatabase('predmet', $predmet);
+            $predmet['naziv']=$id.$predmet['naziv'];
         }
-        return array(
-            'predmet'=>$random,
-            'id'=>$id,
-        );
+        return $random;
     }
     
     public function adminNapraviStavkuNastavniPlanRandomPredmeta($semestar = 1,$smjer = 'TKBsc',$predmeti = null){
@@ -413,7 +411,7 @@ class MemberSteps extends \AcceptanceTester {
 //        foreach ($predmeti as $val) {
             $ime = $tre['id'].$tra['naziv'];
 //            
-            $I->adminDodajStavkuNastavnogPlana($ime, $I->getFaker()->boolean(80), $semestar, $smjer);
+            $I->adminDodajStavkuNastavnogPlana($tre['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
 //        }
         
     }
