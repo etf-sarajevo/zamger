@@ -9,7 +9,12 @@ class FakerHelper extends \Codeception\Module
 {
     private $faker;
     private $datumFormat = 'Y-m-d';
+    private $spol = array('M','Z');
     
+    private function randomSpol() {
+        $k = array_rand($spol);
+        return $spol[$k];
+    }
     
     public function getFaker() {
         if(!$this->faker){
@@ -27,6 +32,12 @@ class FakerHelper extends \Codeception\Module
         return $this->faker;
     }
     
+    public function getUsernameAndPass() {
+        return array(
+            'login'=>  $this->getFaker()->userName,
+            'password'=>$this->getFaker()->password,
+        );
+    }
     
     public function getOsoba() {
         $osoba = array(
@@ -37,7 +48,7 @@ class FakerHelper extends \Codeception\Module
         //    'prezimeoca', 
         //    'imemajke', 
         //    'prezimemajke', 
-            'spol'=>'Z', 
+            'spol'=>  $this->randomSpol(), 
         //    'brindexa', 
             'datum_rodjenja'=>  $this->getFaker()->dateTimeThisDecade->format($this->datumFormat),//null, 
             'mjesto_rodjenja'=>$this->getFaker()->numberBetween(1,7),//'numberBetween|1;17', //1-7
@@ -53,7 +64,7 @@ class FakerHelper extends \Codeception\Module
             'fk_akademsko_zvanje'=>$this->getFaker()->numberBetween(1,8),//'numberBetween|1;8', //1-8
             'fk_naucni_stepen'=>6, //1,2 ili 6
             'slika' => $this->getFaker()->optional()->imageUrl(),//'optional:imageUrl|400;400', 
-        //    'djevojacko_prezime', 
+            'djevojacko_prezime'=>  $this->getFaker()->optional()->lastName, 
             'maternji_jezik'=>$this->getFaker()->numberBetween(1,18),//'numberBetween|1;18', //1-18
             'vozacka_dozvola'=>$this->getFaker()->numberBetween(1,13),//0, //1-13
             'nacin_stanovanja'=>$this->getFaker()->numberBetween(1,9),//'numberBetween|1;9',//1-9
