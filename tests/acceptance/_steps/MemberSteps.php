@@ -407,9 +407,9 @@ class MemberSteps extends \AcceptanceTester {
             $predmeti = $I->fixtureSemestarRandomPredmeta();
         }
         $tre = $predmeti[0];
-        $tra = $tre['predmet'];
+//        $tra = $tre['predmet'];
 //        foreach ($predmeti as $val) {
-            $ime = $tre['id'].$tra['naziv'];
+//            $ime = $tre['id'].$tra['naziv'];
 //            
             $I->adminDodajStavkuNastavnogPlana($tre['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
 //        }
