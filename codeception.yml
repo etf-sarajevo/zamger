@@ -11,9 +11,9 @@ settings:
     memory_limit: 1024M
     log: true
     
-extensions:
-    enabled:
-        [ adminGroup, studentGroup ]
+#extensions:
+#    enabled:
+#        [ adminGroup, studentGroup ]
     
 modules:
     config:
