@@ -428,7 +428,10 @@ class MemberSteps extends \AcceptanceTester {
         for($i=0;$i<=(4*4);$i++){
             $predmeti[] = $I->fixtureSemestarRandomPredmeta();
         }
-        $I->reloadPage();
+//        $I->reloadPage();
+        $I->amOnPage("/");
+        $I->click(\adminHomePage::$studentskaSluzbaLink);
+        $I->click(\studentskaSluzbaPage::$navKreirajPlanStudijaLink);
         //prva godina
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'RIBsc', $predmetiPrva1);
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'TKBsc', $predmetiPrva1);
