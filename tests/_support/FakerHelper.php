@@ -58,7 +58,7 @@ class FakerHelper extends \Codeception\Module
             'drzavljanstvo'=>$this->getFaker()->numberBetween(1,25),//null, 1-25
             'boracke_kategorije'=>'0', 
         //    'jmbg',
-            'adresa'=>$this->getFaker()->optional()->address, 
+            'adresa'=>$this->getFaker()->address, 
             'adresa_mjesto'=>$this->getFaker()->numberBetween(1,7),//null, //1-7
         //    'telefon', 
             'kanton'=>$this->getFaker()->numberBetween(1,13),//'numberBetween|1;13',
@@ -66,7 +66,7 @@ class FakerHelper extends \Codeception\Module
             'fk_akademsko_zvanje'=>$this->getFaker()->numberBetween(1,8),//'numberBetween|1;8', //1-8
             'fk_naucni_stepen'=>6, //1,2 ili 6
             'slika' => $this->getFaker()->imageUrl(),//'optional:imageUrl|400;400', 
-            'djevojacko_prezime'=>  $this->getFaker()->optional()->lastName, 
+            'djevojacko_prezime'=>  $this->getFaker()->lastName, 
             'maternji_jezik'=>$this->getFaker()->numberBetween(1,18),//'numberBetween|1;18', //1-18
             'vozacka_dozvola'=>$this->getFaker()->numberBetween(1,13),//0, //1-13
             'nacin_stanovanja'=>$this->getFaker()->numberBetween(1,9),//'numberBetween|1;9',//1-9

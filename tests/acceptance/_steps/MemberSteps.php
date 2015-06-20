@@ -455,4 +455,35 @@ class MemberSteps extends \AcceptanceTester {
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $I->fixtureSemestarRandomPredmeta());
         
     }
+    
+    private function createStudent() {
+        $I = $this;
+        $osoba = $I->getOsoba();
+        $osobaId = $I->haveInDatabase('osoba', $osoba);
+        $UserPass = $I->getUsernameAndPass();
+        $I->haveInDatabase('auth', array(
+            'id'=>$osobaId,
+            'login'=>$UserPass['login'],
+            'password'=>$UserPass['password'],
+            'aktivan'=>1,
+        ));
+//        $I->haveInDatabase('privilegije', array(
+//            'osoba'=>$osobaId,
+//            'privilegija'=>'student',
+//        ));
+        exec("mysql -u root zamger;insert into privilegije values (".$osobaId.",student);");
+        
+        $this->studentLogin = $UserPass['login'];
+        $this->studentPassword = $UserPass['password'];
+    }
+    
+    private $studentLogin;
+    private $studentPassword;
+    
+    public function loginKaoStudent() {
+        if(!$this->studentLogin||!$this->studentPassword){
+            $this->createStudent();
+        }
+        $this->login($this->studentLogin, $this->studentPassword);
+    }
 }

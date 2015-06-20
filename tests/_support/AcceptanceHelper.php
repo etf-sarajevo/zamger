@@ -27,4 +27,9 @@ class AcceptanceHelper extends \Codeception\Module
         //"recordScreenshots": false
     }
     
+    public function _before(\Codeception\TestCase $test) {
+        parent::_before($test);
+        exec("mysql -u root zamger < zamger-dump.sql");
+    }
+    
 }

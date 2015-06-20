@@ -1,4 +1,5 @@
 <?php 
+$scenario->group('admin');
 $I = new AcceptanceTester\MemberSteps($scenario);
 $I->am("Administrator");
 $I->loginKaoAdmin();

@@ -10,9 +10,9 @@ modules:
         - Db
         - FakerHelper
 #        - AcceptanceHelper
-#        - PhpBrowser   
+        - PhpBrowser   
 #        - DummyHelper
-        - WebDriverEHelper
+#        - WebDriverEHelper
 #        - FactoryHelper
 
     config:
@@ -23,14 +23,14 @@ modules:
 #                dump: 'zamger-dump.sql'
 #                populate: false
 #                cleanup: true
-#            PhpBrowser:
-#                url: 'http://localhost/zamger/index.php'
-            WebDriverEHelper:
+            PhpBrowser:
                 url: 'http://localhost/zamger/index.php'
-                browser: firefox
-                
-                window_size: maximize
-                wait: 0
+#            WebDriverEHelper:
+#                url: 'http://localhost/zamger/index.php'
+#                browser: firefox
+#                
+#                window_size: maximize
+#                wait: 0
     
     
 env:
