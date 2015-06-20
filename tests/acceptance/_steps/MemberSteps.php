@@ -84,10 +84,10 @@ class MemberSteps extends \AcceptanceTester {
     public function adminDodajStudenta($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "student");
-//        $I->fillField('[name=login]', $ime);
-//        $I->fillField('[name=password]', $ime);
-//        $I->checkOption('[name=aktivan]');
-//        $I->click("//input[@value=' Dodaj novi ']");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajNastavnika($ime, $prezime) {
@@ -425,9 +425,9 @@ class MemberSteps extends \AcceptanceTester {
         
         $predmeti = null;
         
-        for($i=0;$i<=(4*4);$i++){
-            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
-        }
+//        for($i=0;$i<=(4*4);$i++){
+//            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
+//        }
 //        $I->reloadPage();
         $I->amOnPage("/");
         $I->click(\adminHomePage::$studentskaSluzbaLink);
@@ -442,27 +442,27 @@ class MemberSteps extends \AcceptanceTester {
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'EEBsc', $predmetiPrva2);
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'AiEBsc', $predmetiPrva2);
         
-        //ri
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
-        
-        //tk
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $predmeti[4]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'TKBsc', $predmeti[5]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'TKBsc', $predmeti[6]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'TKBsc', $predmeti[7]);
-                //ee
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'EEBsc', $predmeti[8]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'EEBsc', $predmeti[9]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'EEBsc', $predmeti[10]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'EEBsc', $predmeti[11]);
-        //Aie
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'AiEBsc', $predmeti[12]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'AiEBsc', $predmeti[13]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'AiEBsc', $predmeti[14]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $predmeti[15]);
+//        //ri
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
+//        
+//        //tk
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $predmeti[4]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'TKBsc', $predmeti[5]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'TKBsc', $predmeti[6]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'TKBsc', $predmeti[7]);
+//                //ee
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'EEBsc', $predmeti[8]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'EEBsc', $predmeti[9]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'EEBsc', $predmeti[10]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'EEBsc', $predmeti[11]);
+//        //Aie
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'AiEBsc', $predmeti[12]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'AiEBsc', $predmeti[13]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'AiEBsc', $predmeti[14]);
+//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $predmeti[15]);
         
     }
     
@@ -492,8 +492,10 @@ class MemberSteps extends \AcceptanceTester {
     
     public function loginKaoStudent() {
         if(!$this->studentLogin||!$this->studentPassword){
-            $this->createStudent();
+            $this->loginKaoAdmin();
+            $this->adminDodajStudenta('student', 'student');
+            $this->logout();
         }
-        $this->login($this->studentLogin, $this->studentPassword);
+        $this->login('student', 'student');
     }
 }
