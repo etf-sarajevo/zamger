@@ -12,8 +12,8 @@ class FakerHelper extends \Codeception\Module
     private $spol = array('M','Z');
     
     private function randomSpol() {
-        $k = array_rand($spol);
-        return $spol[$k];
+        $k = array_rand($this->spol);
+        return $this->spol[$k];
     }
     
     public function getFaker() {
