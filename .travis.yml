@@ -47,9 +47,9 @@ script:
   - vendor/bin/codecept run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
   
 env:
-  global:    
-    - secure: knJ4vH4be2RRq+u3V3QWZKw8yVzkP3WQT4RqRxL/z0qKMoB9hILzMv3r5tEOjANBEa+wfx6Oyw/I5gt2L33gF+XWyv1IE1VjbxMdYl8bSHSg+fyRP7go4ErbrXbWrlIddvt7Egx55GVp8ulveY49kzytq4YJ1UdCpOKe7rPyKtk=
-    - secure: DUfZFO0FZzP2TUOOTijbKAIOTnzM6yWsGPv90CikBOHNNmEwhlvxjxG6T1EFr5AywrStIzKUym5GdSZPnvxcECFRXWsXG1RTt5rXTNPJbpsPg7Pdapeie1vS1ylPlYYhEGrwjhjeancA/raAey63Q2qnS1HhQmEbSo8wF9izC34=
+  global:
+    - secure: b9MCGuVXwObx0n8bg7urCYBmQGiYYTKxf+PGDdSR2ydF5uxjxikujrI8wKdG3VrkyvUL/3NOwfVCHLtJ2mYTIcCYK895Kiy+QQb6RjaOGc2C3e0td0RcgO4RSbskrtf7qVi5g9/jwU/2+MdwQZNM2028iQvd3QGcYyk8vc3NssA=
+    - secure: oskOJptPiXUw2VyeFSa7f3niYt25qOTi/uJBGWmjfyJDgnGUU2v183hb4aIXNDWJVj5+ylXnaLgrjP6y3nXSFxPDJn6U4umVlReXs39gDN8jdWVOJYgUoGEMCTh7ZIfx/LMfPs44+fXwOxYLugdkFRWqtt2Q+9GSq4cnbQo/vtU=
     - SELENIUM_HOST: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
     - sauceTunel: $TRAVIS_JOB_NUMBER
     - projekat: 'zamger'

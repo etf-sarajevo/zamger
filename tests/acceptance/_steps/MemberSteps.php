@@ -397,7 +397,6 @@ class MemberSteps extends \AcceptanceTester {
         foreach ($random as $predmet) {
             $id[] = $I->haveInDatabase('predmet', $predmet);
         }
-        $I->reloadPage();
         return array(
             'predmet'=>$random,
             'id'=>$id,
@@ -409,7 +408,8 @@ class MemberSteps extends \AcceptanceTester {
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
         }
-        foreach (predmeti as $val) {
+        $I->reloadPage();
+        foreach ($predmeti as $val) {
             $ime = $val['id'].".".$val['predmet']['naziv'];
             $I->adminDodajStavkuNastavnogPlana($ime, $I->getFaker()->boolean(80), $semestar, $smjer);
         }
