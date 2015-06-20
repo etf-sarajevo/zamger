@@ -415,8 +415,6 @@ class MemberSteps extends \AcceptanceTester {
         }
         
     }
-       
-    
 
     public function adminNapraviNastavniPlanRandomPredmeta() {
         //prva godina zajedno //na stranici za dodavanje stavke
