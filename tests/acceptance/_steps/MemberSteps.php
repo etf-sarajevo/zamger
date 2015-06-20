@@ -393,7 +393,7 @@ class MemberSteps extends \AcceptanceTester {
     public function fixtureSemestarRandomPredmeta() {
         $I = $this;
         $random = $I->getSemestarPredmeta();
-        $id = array();
+        $id = NULL;
         foreach ($random as $predmet) {
             $id[] = $I->haveInDatabase('predmet', $predmet);
         }
