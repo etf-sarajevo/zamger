@@ -28,7 +28,7 @@ modules:
             WebDriverEHelper:
                 url: 'http://localhost/zamger/index.php'
                 browser: firefox
-                host: humamilisic:f072125e-61a1-4cab-809e-eebe9148fb5d@ondemand.saucelabs.com
+                
                 window_size: maximize
                 wait: 0
     

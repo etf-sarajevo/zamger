@@ -10,6 +10,7 @@ class FakerHelper extends \Codeception\Module
     private $faker;
     private $datumFormat = 'Y-m-d';
     private $spol = array('M','Z');
+    private $odnosEctsPredavanja =12;
     
     private function randomSpol() {
         $k = array_rand($this->spol);
@@ -25,6 +26,7 @@ class FakerHelper extends \Codeception\Module
             $faker->addProvider(new \Faker\Provider\DateTime($faker));
             $faker->addProvider(new \Faker\Provider\Lorem($faker));
             $faker->addProvider(new \Faker\Provider\File($faker));
+            $faker->addProvider(new \Faker\Provider\Internet($faker));
             
             $this->faker = $faker;
         }
@@ -71,5 +73,77 @@ class FakerHelper extends \Codeception\Module
 
         );
         return $osoba;
+    }
+    
+    private function kratkiNaziv($naziv){
+        $words = explode(" ", $naziv);
+        $kratki = "";
+        foreach ($words as $w) {
+            $kratki.=$words[0];
+        }
+        return $kratki;
+    }
+    
+    public function getPredmet() {
+        /*$I->haveInDatabase('predmet',array('id'=>'1', 'sifra'=>'PG01', 'naziv'=>'Inžinjerska matematika 1', 
+         * 'institucija'=>'1', 
+        'kratki_naziv'=>'IM1', 'tippredmeta'=>'1', 'ects'=>'6.5', 'sati_predavanja'=>'49',
+        'sati_vjezbi'=>'0', 'sati_tutorijala'=>'26',));*/
+        $naziv = $this->getFaker()->sentence($faker->numberBetween(1, 3));
+        $kratki = $this->kratkiNaziv($naziv);
+        $ects = $this->getFaker()->numberBetween(4, 30);
+        $sati=  $this->odnosEctsPredavanja*$ects;
+        $sati_predavanja = $this->getFaker()->numberBetween(0,$sati);
+        $sati_vjezbi = $this->getFaker()->numberBetween(0,$sati-$sati_predavanja);
+        $sati_tutorijala = $sati - $sati_predavanja - $sati_vjezbi;
+        $predmet = array(
+            'sifra',
+            'naziv'=>  $naziv,
+            'institucija'=>'1',
+            'kratki_naziv'=> $kratki,
+            'tippredmeta'=>'1',
+            'ects'=> $ects ,
+            'sati_predavanja'=>  $sati_predavanja,
+            'sati_vjezbi'=>$sati_vjezbi,
+            'sati_tutorijala'=>$sati_tutorijala,
+        );
+        return $predmet;
+    }
+    
+    public function getSemestarPredmeta(){
+        $maxEcts = 30;
+        $faker = $this->getFaker();
+        $br = $faker->numerify('###');
+        $sifraSlova = strtoupper($faker->unique()->text(5));
+        $niz = array();
+//        $nizObavezno = array();
+        do{
+            $ects = $faker->numberBetween(0, $maxEcts);
+            $maxEcts-=$ects;
+//            $obavezan = $faker->boolean(80);
+            $ukupno = $this->odnosEctsPredavanja*$ects;
+            $predavanja = $faker->numberBetween(0, $ukupno);
+            $vjezbe = $faker->numberBetween(0, $ukupno-$predavanja);
+            $tut = $ukupno - $predavanja - $vjezbe;
+            $naziv = $faker->sentence($faker->numberBetween(1, 3)); //words($faker->numberBetween(1, 3), true);
+            $kratki = $this->kratkiNaziv($naziv);
+            $sifra = $sifraSlova." ".$kratki." ".$br;
+            
+            $predmet = array(
+                'sifra'=>$sifra,
+                'naziv'=>$naziv,
+                'institucija'=>'1',
+                'kratki_naziv'=> $kratki,
+                'tippredmeta'=>'1',
+                'ects'=> $ects ,
+                'sati_predavanja'=>  $predavanja,
+                'sati_vjezbi'=>$vjezbe,
+                'sati_tutorijala'=>$tut,
+            );
+            $niz[] = $predmet;
+//            $nizObavezno[] = $obavezan;
+        }while($maxEcts>0);
+        
+        return $niz;
     }
 }
