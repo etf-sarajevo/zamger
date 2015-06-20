@@ -1,7 +1,8 @@
 <?php
 
-use Codeception\Util\Locator;
+//use Codeception\Util\Locator;
 
+//use Codeception\Module\FakerHelper;
 
 namespace AcceptanceTester;
 
@@ -83,10 +84,10 @@ class MemberSteps extends \AcceptanceTester {
     public function adminDodajStudenta($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "student");
-        $I->fillField('[name=login]', $ime);
-        $I->fillField('[name=password]', $ime);
-        $I->checkOption('[name=aktivan]');
-        $I->click("//input[@value=' Dodaj novi ']");
+//        $I->fillField('[name=login]', $ime);
+//        $I->fillField('[name=password]', $ime);
+//        $I->checkOption('[name=aktivan]');
+//        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajNastavnika($ime, $prezime) {
@@ -115,10 +116,10 @@ class MemberSteps extends \AcceptanceTester {
         $I->wantTo('Dodati novi predmet kao administrator');
         $I->amOnPage('/');
 //      
-        $I->canSee("Studentska služba");
-        $I->click("Studentska služba");
-        $I->canSee("Predmeti");
-        $I->click("Predmeti");
+        $I->canSee(\adminHomePage::$studentskaSluzbaLink);
+        $I->click(\adminHomePage::$studentskaSluzbaLink);
+        $I->canSee(\studentskaSluzbaPage::$navPredmetiLink);
+        $I->click(\studentskaSluzbaPage::$navPredmetiLink);
 
         $I->canSee("Za prikaz svih predmeta na akademskoj godini, ostavite polje za pretragu prazno.");
         $I->canSeeElement('input[name=naziv]');
@@ -307,6 +308,40 @@ class MemberSteps extends \AcceptanceTester {
             'sati_vjezbi'=>'0', 'sati_tutorijala'=>'21',));
 
     }
+    
+//    public function fixtureRandomNOsoba($num=1) {
+//        $I = $this;
+//        $faker = $I->getFaker();
+//        $I->haveInDatabase('osoba',array(
+//            //            'id', 
+//                'ime'=>'firstName', 
+//                'prezime'=>'lastName', 
+//            //    'imeoca', 
+//            //    'prezimeoca', 
+//            //    'imemajke', 
+//            //    'prezimemajke', 
+//                'spol'=>'Z', 
+//            //    'brindexa', 
+//                'datum_rodjenja'=>null, 
+//                'mjesto_rodjenja'=>'numberBetween|1;17', //1-7
+//                'nacionalnost'=>'numberBetween|1;6', //1-6
+//                'drzavljanstvo'=>null, 
+//                'boracke_kategorije'=>'0', 
+//            //    'jmbg',
+//            //    'adresa', 
+//                'adresa_mjesto'=>null, 
+//            //    'telefon', 
+//                'kanton'=>'numberBetween|1;13',
+//                'treba_brisati'=>0, 
+//                'fk_akademsko_zvanje'=>'numberBetween|1;8', //1-8
+//                'fk_naucni_stepen'=>6, //1,2 ili 6
+//                'slika' => 'optional:imageUrl|400;400', 
+//            //    'djevojacko_prezime', 
+//                'maternji_jezik'=>'numberBetween|1;18', //1-18
+//                'vozacka_dozvola'=>0,
+//                'nacin_stanovanja'=>'numberBetween|1;9',//1-9
+//            )) ;
+//    }
     
     public function fixturePredmetiZaRiBsc(){
         $I = $this;
