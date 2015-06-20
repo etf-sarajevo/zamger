@@ -79,7 +79,7 @@ class FakerHelper extends \Codeception\Module
         $words = explode(" ", $naziv);
         $kratki = "";
         foreach ($words as $w) {
-            $kratki.=$words[0];
+            $kratki.=$w[0];
         }
         return $kratki;
     }
