@@ -408,11 +408,13 @@ class MemberSteps extends \AcceptanceTester {
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
         }
-        
-        foreach ($predmeti as $val) {
-            $ime = $val['id'].".".$val['predmet']['naziv'];
+        $tre = $predmeti[0];
+        $tra = $tre['predmet'];
+//        foreach ($predmeti as $val) {
+            $ime = $tre['id'].$tra['naziv'];
+//            
             $I->adminDodajStavkuNastavnogPlana($ime, $I->getFaker()->boolean(80), $semestar, $smjer);
-        }
+//        }
         
     }
 
@@ -423,7 +425,7 @@ class MemberSteps extends \AcceptanceTester {
         $predmetiPrva1 = $I->fixtureSemestarRandomPredmeta(); 
         $predmetiPrva2 = $I->fixtureSemestarRandomPredmeta();
         
-        $predmeti = null;
+//        $predmeti = null;
         
 //        for($i=0;$i<=(4*4);$i++){
 //            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
