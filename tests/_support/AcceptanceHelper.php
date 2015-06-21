@@ -40,8 +40,8 @@ class AcceptanceHelper extends \Codeception\Module
         $wd = $this->getModule('WebDriverEHelper');
 //        $sesijaIma = true;
         $wd->executeInSelenium(function(\WebDriver $webdriver) {
-           try{
-               $webdriver->findElement(WebDriverBy::xpath("//*[text()='Vaša sesija je istekla. Molimo prijavite se ponovo.']"));
+           try{                              
+               $webdriver->findElement(\WebDriverBy::xpath("//*[text()='Vaša sesija je istekla. Molimo prijavite se ponovo.']"));
                $debug = new \Codeception\Util\Debug("Before step ".$step->getName());
                $debug->debug('Istekla sesija');
                $this->_login($this->username, $this->pass, $webdriver);
