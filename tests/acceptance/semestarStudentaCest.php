@@ -48,8 +48,23 @@ class semestarStudentaCest
 //        $I->see("2015/2016");
         $I->click('input[type="submit"]');
         $I->click('input[type="submit"]');
-        $I->canSee("Podaci su ubačeni. ");
+        $I->canSee("Podaci su ubačeni.");
 //        $I->wantTo('dodati nastavnike na predmete');
+        
+        //
+        $I->click(adminHomePage::$studentskaSluzbaLink);
+        $I->click(studentskaSluzbaPage::$navPlanStudijaLink);
+        $I->click("Računarstvo i informatika (BSc) (2015/2016)");
+//        foreach ($this->predmetiSemestar1 as $predmet) {
+//            
+//        }
+    
+        $I->adminDodajNastavnika('nastavnik','nastavnik');
+        //angazuj na predmetu
+        $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
+        $I->click("//input[@value=' Dodaj ']");
+        //prava pristupa
+        $I->click("(//input[@value=' Dodaj '])[2]");
     }
 
     public function _after(AcceptanceTester $I){

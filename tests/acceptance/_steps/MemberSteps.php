@@ -414,11 +414,18 @@ class MemberSteps extends \AcceptanceTester {
         foreach ($random as $predmet) {
             $id = $I->haveInDatabase('predmet', $predmet);
             $predmet['naziv']=$id.$predmet['naziv'];
+            $I->haveInDatabase('ponudakursa', array(
+                'predmet'=>$id,
+                'studij'=>'1',
+                'semestar'=>'1',
+                'obavezan'=>'1',
+                'akademska_godina'=>'1',
+            ));
         }
         return $random;
     }
     
-    public function adminNapraviStavkuNastavniPlanRandomPredmeta($semestar = 1,$smjer = 'TKBsc',$predmeti = null){
+    public function adminNapraviStavkuNastavniPlanRandomPredmetaKursa($semestar = 1,$smjer = 'TKBsc',$predmeti = null){
         $I = $this;
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
@@ -428,12 +435,26 @@ class MemberSteps extends \AcceptanceTester {
 ////        $tra = $tre['predmet'];
         foreach ($predmeti as $val) {
 //            $ime = $tre['id'].$tra['naziv'];
-//            
-            $I->adminDodajStavkuNastavnogPlana($val['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
+            $obavezan = $I->getFaker()->boolean(80);
+            $I->adminDodajStavkuNastavnogPlana($val['naziv'],$obavezan , $semestar, $smjer);
+            $I->fixturePredmetUKurs($val['naziv'], $obavezan, $semestar);//zakucano na RI
         }
         return $predmeti;
     }
-
+    
+    private function fixturePredmetUKurs($naziv,$obavezan,$semestar,$smjer = 1) {
+        $I = $this;
+        $nazivNiz = explode(".", $naziv);
+        $id = $nazivNiz[0];
+        $I->haveInDatabase('ponudakursa', array(
+            'predmet'=>$id,
+            'studij'=>$smjer,
+            'semestar'=>$semestar,
+            'obavezan'=>$obavezan,
+            'akademska_godina'=>'1',
+        ));
+    }
+    
     public function adminNapraviNastavniPlanRandomPredmeta() {
         //prva godina zajedno //na stranici za dodavanje stavke
         $I = $this;
