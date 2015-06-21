@@ -419,16 +419,16 @@ class MemberSteps extends \AcceptanceTester {
     public function adminNapraviNastavniPlanRandomPredmeta() {
         //prva godina zajedno //na stranici za dodavanje stavke
         $I = $this;
-        $I->reloadPage();
+//        $I->reloadPage();
         $predmetiPrva1 = $I->fixtureSemestarRandomPredmeta(); 
         $predmetiPrva2 = $I->fixtureSemestarRandomPredmeta();
         
-//        $predmeti = null;
+        $predmeti = null;
         
-//        for($i=0;$i<=(4*4);$i++){
-//            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
-//        }
-//        $I->reloadPage();
+        for($i=0;$i<=(4*4);$i++){
+            $predmeti[] = $I->fixtureSemestarRandomPredmeta();
+        }
+        $I->reloadPage();
         $I->amOnPage("/");
         $I->click(\adminHomePage::$studentskaSluzbaLink);
         $I->click(\studentskaSluzbaPage::$navKreirajPlanStudijaLink);
@@ -443,10 +443,10 @@ class MemberSteps extends \AcceptanceTester {
         $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'AiEBsc', $predmetiPrva2);
         
 ////        //ri
-//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
-//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
-//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
-//        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
 ////        
 ////        //tk
 //        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $predmeti[4]);
