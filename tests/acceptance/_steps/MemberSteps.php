@@ -23,7 +23,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->fillField(\loginPage::$username, $username);
         $I->fillField(\loginPage::$pass, $password);
         $I->click(\loginPage::$button);
-        $I->registrujLogin($username,$password);
+//        $I->registrujLogin($username,$password);
         #$I->see(\loginPage::$homeTextAdmin);
     }
 
@@ -430,7 +430,7 @@ class MemberSteps extends \AcceptanceTester {
 //            
             $I->adminDodajStavkuNastavnogPlana($val['naziv'], $I->getFaker()->boolean(80), $semestar, $smjer);
         }
-        
+        return $predmeti;
     }
 
     public function adminNapraviNastavniPlanRandomPredmeta() {
@@ -494,10 +494,6 @@ class MemberSteps extends \AcceptanceTester {
             'password'=>$UserPass['password'],
             'aktivan'=>1,
         ));
-//        $I->haveInDatabase('privilegije', array(
-//            'osoba'=>$osobaId,
-//            'privilegija'=>'student',
-//        ));
         exec("mysql -u root zamger;insert into privilegije values (".$osobaId.",student);");
         
         $this->studentLogin = $UserPass['login'];
