@@ -1,6 +1,6 @@
 <?php 
 $I = new AcceptanceTester\MemberSteps($scenario);
-$I->wantTo('perform actions and see result');
+$I->wantTo('Nastavni plan random predmeta');
 //$I->fixturePredmetiZaGodinuJedanBsc();
 $I->loginKaoAdmin();
 $I->amOnPage('/');
