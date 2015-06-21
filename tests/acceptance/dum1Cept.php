@@ -1,6 +1,6 @@
 <?php 
 $I = new AcceptanceTester\MemberSteps($scenario);
-$I->wantTo('perform actions and see result');
+$I->wantTo('dodaj random oso');
 $I->loginKaoAdmin();
 $te = $I->getOsoba();
 $I->haveInDatabase('osoba', $te);
