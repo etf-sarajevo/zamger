@@ -21,6 +21,6 @@ modules:
             dsn: 'mysql:host=localhost;dbname=zamger'
             user: 'root'
             password: ''
-#            dump: zamger-dump.sql
-#            populate: true;
-#            cleanup: false;
+            dump: zamger-dump.sql
+            populate: true;
+            cleanup: true;

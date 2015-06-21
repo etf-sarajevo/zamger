@@ -40,7 +40,7 @@ class errorMessagesCest
     /**
      *  @actor AcceptanceTester\MemberSteps
      *  @group bugs
-     *  @depends nemaPhpErroraNaLoginPage
+     *  depends nemaPhpErroraNaLoginPage
      */
     public function nemaPhpErroraNaStudentHomePage(AcceptanceTester $I,$scenario) {        
         $I->am('student');
@@ -50,7 +50,29 @@ class errorMessagesCest
         $I->dontSeeElement('.xdebug-error');
     }
     
+    /**
+     *  @actor AcceptanceTester\MemberSteps
+     *  @group bugs
+     *  depends nemaPhpErroraNaLoginPage
+     */
+    public function nemaPhpErroraNaNastavnikHomePage(AcceptanceTester $I,$scenario) {        
+        $I->am('student');
+        $I->wantTo('Da vidim da nema php upozorenja na nastavnik home page');
+        $I->amOnPage('/');
+        $I->loginKaoNastavnik();
+        $I->dontSeeElement('.xdebug-error');
+    }    
     
-    
-
+    /**
+     *  @actor AcceptanceTester\MemberSteps
+     *  @group bugs
+     *  depends nemaPhpErroraNaLoginPage
+     */
+    public function nemaPhpErroraNaStudentksSluzbaHomePage(AcceptanceTester $I,$scenario) {        
+        $I->am('student');
+        $I->wantTo('Da vidim da nema php upozorenja na studentska sluzba home page');
+        $I->amOnPage('/');
+        $I->loginKaoStudentska();
+        $I->dontSeeElement('.xdebug-error');
+    }   
 }

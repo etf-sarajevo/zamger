@@ -93,21 +93,37 @@ class MemberSteps extends \AcceptanceTester {
     public function adminDodajNastavnika($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "nastavnik");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajPrijemniOsoba($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "prijemni");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajStudentskaOsoba($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "studentska");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajSiteadminOsoba($ime, $prezime) {
         $I = $this;
         $I->adminDodajOsobuTipa($ime, $prezime, "siteadmin");
+        $I->fillField('[name=login]', $ime);
+        $I->fillField('[name=password]', $ime);
+        $I->checkOption('[name=aktivan]');
+        $I->click("//input[@value=' Dodaj novi ']");
     }
 
     public function adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala) {
@@ -497,5 +513,29 @@ class MemberSteps extends \AcceptanceTester {
             $this->logout();
         }
         $this->login('student', 'student');
+    }
+    
+    private $nastavnikLogin;
+    private $nastavnikPassword;
+    
+    public function loginKaoNastavnik() {
+        if(!$this->nastavnikLogin||!$this->nastavnikPassword){
+            $this->loginKaoAdmin();
+            $this->adminDodajNastavnika('nastavnik', 'nastavnik');
+            $this->logout();
+        }
+        $this->login('nastavnik', 'nastavnik');
+    }
+    
+    private $studentskaLogin;
+    private $studentskaPassword;
+    
+    public function loginKaoStudentska() {
+        if(!$this->studentskaLogin||!$this->studentskaPassword){
+            $this->loginKaoAdmin();
+            $this->adminDodajStudentskaOsoba('studentska', 'studentska');
+            $this->logout();
+        }
+        $this->login('studentska', 'studentska');
     }
 }
