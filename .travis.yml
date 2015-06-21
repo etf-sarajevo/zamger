@@ -44,8 +44,8 @@ addons:
   sauce_connect: true
 
 script:
-#  - vendor/bin/codecept run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
-    - vendor/bin/codecept run --group student  --env $BW --steps
+  - vendor/bin/codecept run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
+#    - vendor/bin/codecept run --group student  --env $BW --steps
   
 env:
   global:
@@ -60,7 +60,7 @@ env:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
       - OS='Windows 8' BW=IE
-#      - OS='OS X 10.10' BW=safari  # ignorise grupu iz nekog razloga
+      - OS='OS X 10.10' BW=safari  # ignorise grupu iz nekog razloga
       #https://docs.saucelabs.com/reference/platforms-configurator/#/
      
      
