@@ -5,6 +5,8 @@ class semestarStudentaCest
 {
     private $predmetiSemestar1;
     private $predmetiSemestar2;
+    
+    private $predmetniAnsambl;
      /**
      *  @actor AcceptanceTester\MemberSteps
      *  group student
@@ -35,8 +37,19 @@ class semestarStudentaCest
         $I->click("(//input[@name='_lv_action_delete'])[2]");
         $I->fillField("input[name=_lv_column_zavrsni_semestar]", "2");
         $I->click('input[type="submit"]');
-        
-        
+        //nova akademska godina
+        $I->click('Akademska godina');
+        $I->fillField("(//input[@name='_lv_column_naziv'])[2]", "2015/2016");
+        $I->checkOption("(//input[@name='_lv_column_aktuelna'])[2]");
+        $I->click("(//input[@value=' Pošalji '])[2]");
+        $I->uncheckOption("input[name=_lv_column_aktuelna]");
+        $I->click('input[type="submit"]');
+        $I->click('Nova akademska godina');
+        $I->see("2015/2016");
+        $I->click('input[type="submit"]');
+        $I->click('input[type="submit"]');
+        $I->canSee("Podaci su ubačeni. ");
+//        $I->wantTo('dodati nastavnike na predmete');
     }
 
     public function _after(AcceptanceTester $I){
@@ -48,7 +61,6 @@ class semestarStudentaCest
      *  depends nemaPhpErroraNaLoginPage
      */
     public function login(AcceptanceTester $I){
-        $faker = $I->getFaker();
         $I->am('student');
         $I->wantTo('login na zamger');
         $I->lookForwardTo('vidim koje predmete imam');
