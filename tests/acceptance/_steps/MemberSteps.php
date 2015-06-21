@@ -472,36 +472,36 @@ class MemberSteps extends \AcceptanceTester {
         $I->click(\adminHomePage::$studentskaSluzbaLink);
         $I->click(\studentskaSluzbaPage::$navKreirajPlanStudijaLink);
         //prva godina
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'RIBsc', $predmetiPrva1);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'TKBsc', $predmetiPrva1);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'EEBsc', $predmetiPrva1);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1, 'AiEBsc', $predmetiPrva1);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'RIBsc', $predmetiPrva2);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'TKBsc', $predmetiPrva2);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'EEBsc', $predmetiPrva2);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2, 'AiEBsc', $predmetiPrva2);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(1, 'RIBsc', $predmetiPrva1);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(1, 'TKBsc', $predmetiPrva1);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(1, 'EEBsc', $predmetiPrva1);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(1, 'AiEBsc', $predmetiPrva1);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(2, 'RIBsc', $predmetiPrva2);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(2, 'TKBsc', $predmetiPrva2);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(2, 'EEBsc', $predmetiPrva2);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(2, 'AiEBsc', $predmetiPrva2);
         
 ////        //ri
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'RIBsc', $predmeti[0]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'RIBsc', $predmeti[1]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'RIBsc', $predmeti[2]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'RIBsc', $predmeti[3]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(3, 'RIBsc', $predmeti[0]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(4, 'RIBsc', $predmeti[1]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(5, 'RIBsc', $predmeti[2]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(6, 'RIBsc', $predmeti[3]);
 ////        
 ////        //tk
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'TKBsc', $predmeti[4]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'TKBsc', $predmeti[5]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'TKBsc', $predmeti[6]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'TKBsc', $predmeti[7]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(3, 'TKBsc', $predmeti[4]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(4, 'TKBsc', $predmeti[5]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(5, 'TKBsc', $predmeti[6]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(6, 'TKBsc', $predmeti[7]);
 ////                //ee
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'EEBsc', $predmeti[8]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'EEBsc', $predmeti[9]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'EEBsc', $predmeti[10]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'EEBsc', $predmeti[11]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(3, 'EEBsc', $predmeti[8]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(4, 'EEBsc', $predmeti[9]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(5, 'EEBsc', $predmeti[10]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(6, 'EEBsc', $predmeti[11]);
 ////        //Aie
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(3, 'AiEBsc', $predmeti[12]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(4, 'AiEBsc', $predmeti[13]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(5, 'AiEBsc', $predmeti[14]);
-        $I->adminNapraviStavkuNastavniPlanRandomPredmeta(6, 'AiEBsc', $predmeti[15]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(3, 'AiEBsc', $predmeti[12]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(4, 'AiEBsc', $predmeti[13]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(5, 'AiEBsc', $predmeti[14]);
+        $I->adminNapraviStavkuNastavniPlanRandomPredmetaKursa(6, 'AiEBsc', $predmeti[15]);
         
     }
     
