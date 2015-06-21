@@ -422,6 +422,7 @@ class MemberSteps extends \AcceptanceTester {
         $I = $this;
         if($predmeti == null){
             $predmeti = $I->fixtureSemestarRandomPredmeta();
+            $I->reloadPage();
         }
 //        $tre = $predmeti[0];
 ////        $tra = $tre['predmet'];
