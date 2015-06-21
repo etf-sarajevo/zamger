@@ -45,7 +45,7 @@ class semestarStudentaCest
         $I->uncheckOption("input[name=_lv_column_aktuelna]");
         $I->click('input[type="submit"]');
         $I->click('Nova akademska godina');
-        $I->see("2015/2016");
+//        $I->see("2015/2016");
         $I->click('input[type="submit"]');
         $I->click('input[type="submit"]');
         $I->canSee("Podaci su ubačeni. ");

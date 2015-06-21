@@ -60,6 +60,8 @@ env:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
       - OS='Windows 8' BW=IE
+      - OS='OS X 10.10' BW=safari
+      #https://docs.saucelabs.com/reference/platforms-configurator/#/
      
      
 notifications:
