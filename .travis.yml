@@ -44,7 +44,7 @@ addons:
   sauce_connect: true
 
 script:
-  - vendor/bin/codecept run acceptance  --env $BW --steps #testovi --steps --html --debug
+  - vendor/bin/codecept run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
   
 env:
   global:
@@ -58,7 +58,7 @@ env:
   matrix:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
-#      - OS='Windows 8' BW=IE
+      - OS='Windows 8' BW=IE
      
      
 notifications:

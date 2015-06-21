@@ -23,6 +23,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->fillField(\loginPage::$username, $username);
         $I->fillField(\loginPage::$pass, $password);
         $I->click(\loginPage::$button);
+        $I->registrujLogin($username,$password);
         #$I->see(\loginPage::$homeTextAdmin);
     }
 

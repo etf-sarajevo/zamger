@@ -74,5 +74,6 @@ class errorMessagesCest
         $I->amOnPage('/');
         $I->loginKaoStudentska();
         $I->dontSeeElement('.xdebug-error');
+        
     }   
 }

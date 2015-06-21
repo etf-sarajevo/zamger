@@ -32,4 +32,41 @@ class AcceptanceHelper extends \Codeception\Module
 //        exec("mysql -u root zamger < zamger-dump.sql");
     }
     
+    public function _beforeStep(\Codeception\Step $step) {
+        parent::_beforeStep($step);
+//        $step->getHumanizedAction();
+        
+//        $debug->debug('hvatanje isteka sesije');
+        $wd = $this->getModule('WebDriverEHelper');
+//        $sesijaIma = true;
+        $wd->executeInSelenium(function(\WebDriver $webdriver) {
+           try{
+               $webdriver->findElement(WebDriverBy::xpath("//*[text()='Vaša sesija je istekla. Molimo prijavite se ponovo.']"));
+               $debug = new \Codeception\Util\Debug("Before step ".$step->getName());
+               $debug->debug('Istekla sesija');
+               $this->_login($this->username, $this->pass, $webdriver);
+           }  
+           catch (\WebDriverException $e){
+               $sesijaIma = true;
+//               $this->gdje = $webdriver->gra
+           } 
+        });
+    }
+    
+    private $username;
+    private $pass;
+    private $gdje;
+    public function registrujLogin($username,$password) {
+        $this->username = $username;
+        $this->pass = $password;
+    }
+    
+    private function _login($username,$password,$webDriver) {
+        $webDriver->wantTo('login');
+        $webDriver->amOnPage(\loginPage::$URL);
+        $webDriver->canSee(\loginPage::$text);
+        $webDriver->fillField(\loginPage::$username, $username);
+        $webDriver->fillField(\loginPage::$pass, $password);
+        $webDriver->click(\loginPage::$button);
+    }
 }
