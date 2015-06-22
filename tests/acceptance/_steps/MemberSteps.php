@@ -415,6 +415,7 @@ class MemberSteps extends \AcceptanceTester {
         foreach ($random as $predmet) {
             $id = $I->haveInDatabase('predmet', $predmet);
             $predmet['naziv']=$id.$predmet['naziv'];
+            \Codeception\Util\Debug::debug($id." :".$predmet['naziv']);
             $I->haveInDatabase('ponudakursa', array(
                 'predmet'=>$id,
                 'studij'=>'1',
