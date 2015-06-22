@@ -43,7 +43,8 @@ class semestarStudentaCest
         $I->fillField("(//input[@name='_lv_column_naziv'])[2]", "2015/2016");
         $I->checkOption("(//input[@name='_lv_column_aktuelna'])[2]");
         $I->click("(//input[@value=' Pošalji '])[2]");
-        $I->uncheckOption("input[name=_lv_column_aktuelna]");
+//        $I->uncheckOption("input[name=_lv_column_aktuelna]"); obrisemo godinu
+        $I->click("inpit[name=_lv_action_delete]");
         $I->click('input[type="submit"]');
         $I->click('Nova akademska godina');
 //        $I->see("2015/2016");
