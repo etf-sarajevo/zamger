@@ -29,6 +29,9 @@ class FakerHelper extends \Codeception\Module
             $faker->addProvider(new \Faker\Provider\Internet($faker));
             $faker->addProvider(new \Faker\Provider\en_US\Person($faker));
             $faker->addProvider(new \Faker\Provider\sr_Latn_RS\Person($faker));
+            $faker->addProvider(new \Faker\Provider\de_DE\Person($faker));
+            $faker->addProvider(new \Faker\Provider\sr_Latn_RS\Address($faker));
+            $faker->addProvider(new \Faker\Provider\sr_Latn_RS\Payment($faker));
             $this->faker = $faker;
         }
         
@@ -44,8 +47,8 @@ class FakerHelper extends \Codeception\Module
     
     public function getImePrezime(){
         return array(
-            'ime'=>  $this->getFaker()->firstName.$this->faker->unique()->word,
-            'prezime'=>  $this->getFaker()->lastName.$this->faker->unique()->word,
+            'ime'=>  $this->getFaker()->firstName,//.$this->faker->unique()->word,
+            'prezime'=>  $this->getFaker()->lastName,//.$this->faker->unique()->word,
         );
     }
 

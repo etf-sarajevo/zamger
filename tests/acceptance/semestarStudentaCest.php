@@ -122,6 +122,7 @@ class semestarStudentaCest
             $I->canSee("proglašen za studenta");
             $I->canSee("broj indeksa postavljen na ".$i);
         }
+        $I->logout();
     }
 
     public function _after(AcceptanceTester $I){
