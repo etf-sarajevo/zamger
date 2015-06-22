@@ -91,8 +91,8 @@ class semestarStudentaCest
                 'nastavnik' => $nastavnik,
             );
             $this->predmetniAnsambl[] = $ansa;
-            $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
-            $I->selectOption("input[name=predmet]", $predmet['naziv']);
+            $I->selectOption("select[name=_lv_column_angazman_status]", "odgovorni nastavnik");
+            $I->selectOption("select[name=predmet]", $predmet['naziv']." (ETF)");
             $I->click("//input[@value=' Dodaj ']");
             //prava pristupa:
             $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']);

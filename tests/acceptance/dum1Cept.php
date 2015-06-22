@@ -11,3 +11,4 @@ $I->fillField(sveOsobePage::$imeNoveOsobe, $I->getFaker()->firstName);
 $I->fillField(sveOsobePage::$prezimeNoveOsobe, $I->getFaker()->lastName);
 $I->click(sveOsobePage::$dodajBtn);
 $I->logout();
+

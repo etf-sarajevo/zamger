@@ -48,7 +48,7 @@ env:
                     browser: firefox
                     window_size: maximize
 #                    wait: 10
-                    restart: true
+#                    restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
                         platform: 'Linux' 
@@ -77,7 +77,7 @@ env:
                     browser: chrome
                     window_size: maximize
 #                    wait: 3
-                    restart: true
+#                    restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
                         platform: 'Linux' 
@@ -95,7 +95,7 @@ env:
                     browser: internet explorer
                     window_size: maximize
 #                    wait: 3
-                    restart: true
+#                    restart: true
                     capabilities:
                         unexpectedAlertBehaviour: 'accept'
                         platform: 'Linux' 
