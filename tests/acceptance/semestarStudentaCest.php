@@ -129,7 +129,13 @@ class semestarStudentaCest
         $I->logout();
     }
 
+    /**
+     *  @actor AcceptanceTester\MemberSteps
+     *  group student
+     *  depends nemaPhpErroraNaLoginPage
+     */
     public function _after(AcceptanceTester $I){
+        $I->logout();
     }
 
     /**
