@@ -39,14 +39,15 @@ class semestarStudentaCest
         $I->fillField("input[name=_lv_column_zavrsni_semestar]", "2");
         $I->click('input[type="submit"]');
         //nova akademska godina
-        $I->click('Akademska godina');
-        $I->fillField("(//input[@name='_lv_column_naziv'])[2]", "2015/2016");
-        $I->checkOption("(//input[@name='_lv_column_aktuelna'])[2]");
-        $I->click("(//input[@value=' Pošalji '])[2]");
-//        $I->uncheckOption("input[name=_lv_column_aktuelna]"); obrisemo godinu
-        $I->click("inpit[name=_lv_action_delete]");
-        $I->click('input[type="submit"]');
+//        $I->click('Akademska godina');
+//        $I->fillField("(//input[@name='_lv_column_naziv'])[2]", "2015/2016");
+//        $I->checkOption("(//input[@name='_lv_column_aktuelna'])[2]");
+//        $I->click("(//input[@value=' Pošalji '])[2]");
+//        $I->uncheckOption("input[name=_lv_column_aktuelna]"); //obrisemo godinu
+//        $I->click("inpit[name=_lv_action_delete]");
+//        $I->click('input[type="submit"]');
         $I->click('Nova akademska godina');
+        $I->canSee("Ovaj modul kreira novu akademsku godinu u bazi, a zatim za datu godinu kreira sve predmete koji su predviđeni aktuelnim planovima svih kreiranih studija.");
 //        $I->see("2015/2016");
         $I->click('input[type="submit"]');
         $I->click('input[type="submit"]');
