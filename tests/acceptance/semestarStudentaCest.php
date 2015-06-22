@@ -72,8 +72,8 @@ class semestarStudentaCest
     
         foreach ($this->predmetiSemestar1 as $predmet) {
             $faker = $I->getFaker();
-            $usernamePassword = $faker->getUsernameAndPass();
-            $imePrezime = $faker->getImePrezime(); 
+            $usernamePassword = $I->getUsernameAndPass();
+            $imePrezime = $I->getImePrezime(); 
             $I->adminDodajNastavnika($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
             $nastavnik = array(
                 'login' => $usernamePassword['login'],
@@ -99,8 +99,8 @@ class semestarStudentaCest
         //10 studenata na svim predmetima
         for($i=1;$i<=10;$i++){
             $faker = $I->getFaker();
-            $usernamePassword = $faker->getUsernameAndPass();
-            $imePrezime = $faker->getImePrezime();
+            $usernamePassword = $I->getUsernameAndPass();
+            $imePrezime = $I->getImePrezime();
             $I->adminDodajStudenta($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
             $this->studenti[] = array(
                 'ime'=>$imePrezime['ime'],
@@ -114,7 +114,7 @@ class semestarStudentaCest
             $I->fillField("input[name=novi_brindexa]", $i);
             $I->click('input[type="submit"]');
         }
-        $I->adminDodajStudenta('student','student');
+//        $I->adminDodajStudenta('student','student');
     }
 
     public function _after(AcceptanceTester $I){
