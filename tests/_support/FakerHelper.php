@@ -36,7 +36,7 @@ class FakerHelper extends \Codeception\Module
     
     public function getUsernameAndPass() {
         return array(
-            'login'=>  $this->getFaker()->unique()->userName,
+            'login'=>  $this->getFaker()->unique()->userName.$this->faker->unique()->word,
             'password'=>$this->getFaker()->unique()->password,
         );
     }
@@ -44,7 +44,7 @@ class FakerHelper extends \Codeception\Module
     public function getImePrezime(){
         return array(
             'ime'=>  $this->getFaker()->firstName.$this->faker->unique()->word,
-            'prezime'=>  $this->getFaker()->unique(true)->lastName,
+            'prezime'=>  $this->getFaker()->lastName.$this->faker->unique()->word,
         );
     }
 

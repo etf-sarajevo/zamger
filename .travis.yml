@@ -59,12 +59,17 @@ env:
     - buildTags: $projekat
     - buildName: $TRAVIS_JOB_NUMBER-$TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT
   matrix:
+      # dostupne platforme https://docs.saucelabs.com/reference/platforms-configurator/#/ 
+      # dodati u acceptance.suite.yml postavke za novi browser
+
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
       - OS='Windows 8' BW=IE
       - OS='OS X 10.10' BW=safari  # 
-      # dostupne platforme https://docs.saucelabs.com/reference/platforms-configurator/#/ 
-      # dodati u acceptance.suite.yml postavke za novi browser
+  allow_failures:
+      - OS='OS X 10.10' BW=safari
+      - OS='Windows 8' BW=IE
+        
      
      
 notifications:
