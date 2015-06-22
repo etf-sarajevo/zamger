@@ -15,6 +15,7 @@ class semestarStudentaCest
     public function _before(AcceptanceTester $I){
 //        $faker = $I->getFaker();
         $I->am('administrator');
+        $I->adminIskljuciPopUp();
         $I->amOnPage('/');
         $I->loginKaoAdmin();
         
@@ -54,7 +55,7 @@ class semestarStudentaCest
         //
         $I->click(adminHomePage::$studentskaSluzbaLink);
         $I->click(studentskaSluzbaPage::$navPlanStudijaLink);
-        $I->click("Računarstvo i informatika (BSc) (2015/2016)");
+//        $I->click("Računarstvo i informatika (BSc) (2015/2016)");
 //        foreach ($this->predmetiSemestar1 as $predmet) {
 //            
 //        }
