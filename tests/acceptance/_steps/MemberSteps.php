@@ -29,18 +29,24 @@ class MemberSteps extends \AcceptanceTester {
 
     public function adminIskljuciPopUp() {
         $I = $this;
-        $I->wantTo("pop up ");
-        $I->loginKaoAdmin();
-        $I->amOnPage('/');
-        $I->click('Studentska služba');
-        $I->click('Osobe');
-        $I->click('Prikaži sve osobe');
-        $I->click("//td/table/tbody/tr/td/table/tbody/tr/td[2]/a");
-        $I->click('input[type="Submit"]');
-        $I->click("Zamger opcije");
-        $I->uncheckOption('input[name="savjet_dana"]');
-        $I->click('input[type="submit"]');
-        $I->logout();
+//        $I->wantTo("pop up ");
+//        $I->loginKaoAdmin();
+//        $I->amOnPage('/');
+//        $I->click('Studentska služba');
+//        $I->click('Osobe');
+//        $I->click('Prikaži sve osobe');
+//        $I->click("//td/table/tbody/tr/td/table/tbody/tr/td[2]/a");
+//        $I->click('input[type="Submit"]');
+//        $I->click("Zamger opcije");
+//        $I->uncheckOption('input[name="savjet_dana"]');
+//        $I->click('input[type="submit"]');
+//        $I->logout();
+//        INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
+        //(1, 'csv-separator', ';'),
+        //(1, 'savjet_dana', '1');
+//        $I->haveInDatabase('preference', array(
+//            ''
+//        ));
     }
 
     public function loginKaoAdmin() {

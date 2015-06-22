@@ -100,4 +100,22 @@ env:
                         unexpectedAlertBehaviour: 'accept'
                         platform: 'Linux' 
                         recordScreenshots: true
-   
+    safari:
+        modules:
+            enabled:
+                - AcceptanceHelper
+                - WebDriverEHelper
+                - Db
+                - FakerHelper
+            config:
+                WebDriverEHelper:
+                    url: 'http://localhost/index.php'
+                    browser: safari
+                    window_size: maximize
+#                    wait: 3
+#                    restart: true
+                    capabilities:
+                        unexpectedAlertBehaviour: 'accept'
+                        platform: 'Linux' 
+                        recordScreenshots: true
+        

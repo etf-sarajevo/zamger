@@ -1697,7 +1697,9 @@ CREATE TABLE IF NOT EXISTS `preference` (
 --
 -- Dumping data for table `preference`
 --
-
+INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
+(1, 'csv-separator', ';'),
+(1, 'savjet_dana', '1');
 
 -- --------------------------------------------------------
 

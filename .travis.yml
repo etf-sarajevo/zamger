@@ -44,8 +44,10 @@ addons:
   sauce_connect: true
 
 script:
-#  - vendor/bin/codecept run acceptance  --env $BW --steps --debug #testovi --steps --html --debug
-    - vendor/bin/codecept run --group student  --env $BW --steps --debug
+#  - vendor/bin/codecept run  --env $BW --steps --debug # svi testovi
+    - vendor/bin/codecept run --group student  --env $BW --steps --debug # grupa student
+#    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug #stari bugovi
+    
   
 env:
   global:
@@ -60,8 +62,9 @@ env:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
       - OS='Windows 8' BW=IE
-#      - OS='OS X 10.10' BW=chrome  # codeception se ne pokrene??
-      #https://docs.saucelabs.com/reference/platforms-configurator/#/
+      - OS='OS X 10.10' BW=safari  # 
+      # dostupne platforme https://docs.saucelabs.com/reference/platforms-configurator/#/ 
+      # dodati u acceptance.suite.yml postavke za novi browser
      
      
 notifications:
