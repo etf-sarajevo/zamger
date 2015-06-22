@@ -90,14 +90,14 @@ class semestarStudentaCest
             $I->selectOption("select[name=predmet]", $predmet['naziv']." (ETF)");
             $I->click("//input[@value=' Dodaj ']");
             //prava pristupa:
-            $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']);
+            $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']." (ETF)");
             $I->click("(//input[@value=' Dodaj '])[2]");
             Codeception\Util\Debug::debug(
                     "Debug: predmet: ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
         }
         
         //10 studenata na svim predmetima
-        for($i=1;$i<=2;$i++){
+        for($i=1;$i<=6;$i++){
             $faker = $I->getFaker();
             $usernamePassword = $I->getUsernameAndPass();
             $imePrezime = $I->getImePrezime();
