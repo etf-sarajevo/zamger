@@ -98,7 +98,7 @@ class semestarStudentaCest
             $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']);
             $I->click("(//input[@value=' Dodaj '])[2]");
             Codeception\Util\Debug::debug(
-                    "Debug: predmet - ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
+                    "Debug: predmet: ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
         }
         
         //10 studenata na svim predmetima
@@ -146,5 +146,10 @@ class semestarStudentaCest
 //                'login' => $usernamePassword['login'],
 //                'password'=>$usernamePassword['password'],
         $I->login($student['login'],$student['password']);
+        $I->canSee($student['ime']." ".$student['prezime']);
+        foreach ($this->predmetiSemestar1 as $predmet) {
+            $I->canSee($predmet['naziv']);
+            $I->click($predmet['naziv']);
+        }
     }
 }
