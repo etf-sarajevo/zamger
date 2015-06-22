@@ -60,7 +60,7 @@ env:
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
       - OS='Windows 8' BW=IE
-#      - OS='OS X 10.10' BW=safari  # codeception se ne pokrene??
+      - OS='OS X 10.10' BW=chrome  # codeception se ne pokrene??
       #https://docs.saucelabs.com/reference/platforms-configurator/#/
      
      

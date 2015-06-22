@@ -273,6 +273,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->click(\stavkaNastavnogPlanaPage::$potvrdi);
         $I->canSee(\stavkaNastavnogPlanaPage::$uspjesnoText);
         $I->click(\stavkaNastavnogPlanaPage::$uspjesnoUrlNazad);
+        $I->fixturePredmetUKurs($predmet, $obavezan, $semestar);//zakucano na RI
     }
 
     public function adminDodajStvakeNastavnogPlanaPrvaGodina() {
@@ -437,7 +438,7 @@ class MemberSteps extends \AcceptanceTester {
 //            $ime = $tre['id'].$tra['naziv'];
             $obavezan = $I->getFaker()->boolean(80);
             $I->adminDodajStavkuNastavnogPlana($val['naziv'],$obavezan , $semestar, $smjer);
-            $I->fixturePredmetUKurs($val['naziv'], $obavezan, $semestar);//zakucano na RI
+            
         }
         return $predmeti;
     }
