@@ -479,6 +479,14 @@ class MemberSteps extends \AcceptanceTester {
         ));
     }
     
+    public function adminNadjiPredmet($naziv){
+        $I=$this;
+        $I->amOnPage('?sta=studentska/predmeti');
+        $I->selectOption('select[name="ag"]', 'Sve akademske godine');
+        $I->click('input[type="Submit"]');
+        $I->click("//a[contains(text(),'Detalji')]");
+    }
+    
     public function adminNapraviNastavniPlanRandomPredmeta() {
         //prva godina zajedno //na stranici za dodavanje stavke
         $I = $this;

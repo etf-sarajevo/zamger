@@ -135,6 +135,7 @@ class FakerHelper extends \Codeception\Module
                 $br = $maxEcts;
             }
             $ects = $faker->numberBetween(1, $br);
+            $maxEcts-=$ects;
 //            if($maxEcts>$ects){
 //                $maxEcts-=$ects;
 //            }else {

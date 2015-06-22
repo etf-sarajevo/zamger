@@ -94,6 +94,10 @@ class semestarStudentaCest
             $I->click("(//input[@value=' Dodaj '])[2]");
             Codeception\Util\Debug::debug(
                     "Debug: predmet: ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
+            
+            $I->adminNadjiPredmet($predmet['naziv']);
+            $I->selectOption("name=nivo_pristupa", 'Nastavnik');
+            $I->click("//input[@value=' Postavi ']");
         }
         
         //10 studenata na svim predmetima
