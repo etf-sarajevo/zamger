@@ -447,6 +447,8 @@ class MemberSteps extends \AcceptanceTester {
         $I = $this;
         $nazivNiz = explode(".", $naziv);
         $id = $nazivNiz[0];
+        \Codeception\Util\Debug::debug('Debug: fixturePredmetUKurs');
+        \Codeception\Util\Debug::debug("Debug ".$naziv." ".$id);
         $I->haveInDatabase('ponudakursa', array(
             'predmet'=>$id,
             'studij'=>$smjer,
