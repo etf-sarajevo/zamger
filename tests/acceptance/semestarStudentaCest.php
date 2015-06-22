@@ -23,8 +23,8 @@ class semestarStudentaCest
         $I->amOnPage('/');
         $I->click(adminHomePage::$studentskaSluzbaLink);
         $I->click(studentskaSluzbaPage::$navKreirajPlanStudijaLink);
-        $this->predmetiSemestar1 = $I->adminNapraviStavkuNastavniPlanRandomPredmetaKurs(1,$smjer = 'RIBsc');
-        $this->predmetiSemestar2 = $I->adminNapraviStavkuNastavniPlanRandomPredmetaKurs(2,$smjer = 'RIBsc');
+        $this->predmetiSemestar1 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1,$smjer = 'RIBsc');
+        $this->predmetiSemestar2 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2,$smjer = 'RIBsc');
         
         //namjestanje parametara
         $I->wantTo('promjenitit parametre studija');
