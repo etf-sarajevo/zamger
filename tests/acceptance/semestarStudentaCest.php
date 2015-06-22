@@ -19,11 +19,6 @@ class semestarStudentaCest
 //        $I->adminIskljuciPopUp();
         $I->amOnPage('/');
         $I->loginKaoAdmin();
-        $I->executeInSelenium(function(\WebDriver $webdriver) {
-          $windows = $webdriver->getWindowHandles();
-          $webdriver->switchTo($windows[0]);
-          //ne radi
-        });
         //napraviti stavke nastavnog plana
         $I->wantTo('dodati predmeta za 2 semestra');
         $I->amOnPage('/');
@@ -62,7 +57,7 @@ class semestarStudentaCest
         //
         $I->click(adminHomePage::$studentskaSluzbaLink);
         $I->click(studentskaSluzbaPage::$navPlanStudijaLink);
-//        $I->click("Računarstvo i informatika (BSc) (2015/2016)");
+        $I->click("Računarstvo i informatika (BSc) (2014/2015)");
 //        foreach ($this->predmetiSemestar1 as $predmet) {
 //            
 //        }
@@ -102,7 +97,7 @@ class semestarStudentaCest
         }
         
         //10 studenata na svim predmetima
-        for($i=1;$i<=10;$i++){
+        for($i=1;$i<=2;$i++){
             $faker = $I->getFaker();
             $usernamePassword = $I->getUsernameAndPass();
             $imePrezime = $I->getImePrezime();
