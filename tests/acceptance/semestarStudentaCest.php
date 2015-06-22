@@ -97,7 +97,8 @@ class semestarStudentaCest
             //prava pristupa:
             $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']);
             $I->click("(//input[@value=' Dodaj '])[2]");
-                    
+            Codeception\Util\Debug::debug(
+                    "Debug: predmet - ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
         }
         
         //10 studenata na svim predmetima
@@ -111,6 +112,7 @@ class semestarStudentaCest
                 'prezime'=>$imePrezime['prezime'],
                 'login'=>$usernamePassword['login'],
                 'password'=>$usernamePassword['password'],
+                'index'=>$i,
             );
             $I->click('Upiši studenta na Prvu godinu studija, 1. semestar.');
             $I->click('input[name=novi_studij]');
@@ -121,6 +123,8 @@ class semestarStudentaCest
             $I->click('input[type="submit"]');
             $I->canSee("proglašen za studenta");
             $I->canSee("broj indeksa postavljen na ".$i);
+            Codeception\Util\Debug::debug(
+                    "Debug, student ime: ".$imePrezime['ime'].", prezime: ".$imePrezime['prezime'].", index: ".$i);
         }
         $I->logout();
     }
