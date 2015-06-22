@@ -117,8 +117,11 @@ class semestarStudentaCest
             $I->click('input[name=nacin_studiranja]');
             $I->fillField("input[name=novi_brindexa]", $i);
             $I->click('input[type="submit"]');
+            $I->fillField("(//input[@name='novi_brindexa'])[2]", $i);
+            $I->click('input[type="submit"]');
+            $I->canSee("proglašen za studenta");
+            $I->canSee("broj indeksa postavljen na ".$i);
         }
-//        $I->adminDodajStudenta('student','student');
     }
 
     public function _after(AcceptanceTester $I){
@@ -134,5 +137,9 @@ class semestarStudentaCest
         $I->wantTo('login na zamger');
         $I->lookForwardTo('vidim koje predmete imam');
         $I->wantToTest('da li _before radi');
+        $student = $this->studenti[0];
+//                'login' => $usernamePassword['login'],
+//                'password'=>$usernamePassword['password'],
+        $I->login($student['login'],$student['password']);
     }
 }
