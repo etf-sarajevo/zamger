@@ -446,10 +446,12 @@ class MemberSteps extends \AcceptanceTester {
     
     private function fixturePredmetUKurs($naziv,$obavezan,$semestar,$smjer = 1) {
         $I = $this;
-        $nazivNiz = explode(".", $naziv);
-        $id = $nazivNiz[0];
+        //$mail = $I->grabFromDatabase('users', 'email', array('name' => 'Davert'));
+        $id = $I->grabFromDatabase('predmet', 'id', array(
+            'naziv'=>$naziv,
+        ));
         \Codeception\Util\Debug::debug('Debug: fixturePredmetUKurs');
-        \Codeception\Util\Debug::debug("Debug ".$naziv." ".$id);
+        \Codeception\Util\Debug::debug("Debug, naziv: ".$naziv." ,id: ".$id);
         $I->haveInDatabase('ponudakursa', array(
             'predmet'=>$id,
             'studij'=>$smjer,
