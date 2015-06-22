@@ -43,7 +43,7 @@ class FakerHelper extends \Codeception\Module
     
     public function getImePrezime(){
         return array(
-            'ime'=>  $this->getFaker()->firstNameFemale.$this->faker->firstNameMale,
+            'ime'=>  $this->getFaker()->firstNameFemale.$this->faker->firstNameMale.$this->faker->word,
             'prezime'=>  $this->getFaker()->unique(true)->lastName,
         );
     }
