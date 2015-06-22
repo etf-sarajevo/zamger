@@ -7,6 +7,7 @@ class semestarStudentaCest
     private $predmetiSemestar2;
     
     private $predmetniAnsambl;
+    private $studenti;
      /**
      *  @actor AcceptanceTester\MemberSteps
      *  group student
@@ -94,6 +95,26 @@ class semestarStudentaCest
             $I->click("(//input[@value=' Dodaj '])[2]");
                     
         }
+        
+        //10 studenata na svim predmetima
+        for($i=1;$i<=10;$i++){
+            $faker = $I->getFaker();
+            $usernamePassword = $faker->getUsernameAndPass();
+            $imePrezime = $faker->getImePrezime();
+            $I->adminDodajStudenta($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
+            $this->studenti[] = array(
+                'ime'=>$imePrezime['ime'],
+                'prezime'=>$imePrezime['prezime'],
+                'login'=>$usernamePassword['login'],
+                'password'=>$usernamePassword['password'],
+            );
+            $I->click('Upiši studenta na Prvu godinu studija, 1. semestar.');
+            $I->click('input[name=novi_studij]');
+            $I->click('input[name=nacin_studiranja]');
+            $I->fillField("input[name=novi_brindexa]", $i);
+            $I->click('input[type="submit"]');
+        }
+        $I->adminDodajStudenta('student','student');
     }
 
     public function _after(AcceptanceTester $I){

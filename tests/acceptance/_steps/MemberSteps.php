@@ -82,11 +82,17 @@ class MemberSteps extends \AcceptanceTester {
         $I->canSee("Data privilegija ");
     }
 
-    public function adminDodajStudenta($ime, $prezime) {
+    public function adminDodajStudenta($ime, $prezime,$username = null,$password = null) {
         $I = $this;
+        if(is_null($username)){
+            $username = $ime;
+        }
+        if(is_null($password)){
+            $password = $ime;
+        }
         $I->adminDodajOsobuTipa($ime, $prezime, "student");
-        $I->fillField('[name=login]', $ime);
-        $I->fillField('[name=password]', $ime);
+        $I->fillField('[name=login]', $username);
+        $I->fillField('[name=password]', $password);
         $I->checkOption('[name=aktivan]');
         $I->click("//input[@value=' Dodaj novi ']");
     }
@@ -167,7 +173,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->click("Nazad");
     }
 
-    private function fillNovaPonudaKursa($studij, $semestar, $obavezan = false) {
+    private function fillNovaPonudaKursa($studij, $semestar, $obavezan = true) {
         $I = $this;
         $I->canSee('Nova ponuda kursa za predmet');
         $I->seeElement('select[name=_lv_column_studij]');
@@ -191,7 +197,7 @@ class MemberSteps extends \AcceptanceTester {
 //        }
 //    }
 
-    public function adminDodajPredmetKursSvima($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala, $semestar, $obavezan) {
+    public function adminDodajPredmetKursSvima($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala, $semestar, $obavezan = true) {
         $I = $this;
         $I->adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala);
         $var = array(
@@ -225,7 +231,7 @@ class MemberSteps extends \AcceptanceTester {
 //        $I->click('Nazad');
     }
 
-    public function adminDodajPredmetKurs($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala, $studij, $semestar, $obavezan) {
+    public function adminDodajPredmetKurs($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala, $studij, $semestar, $obavezan=true) {
         $I = $this;
         $I->adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala);
         $I->canSee('Dodaj ponudu kursa');
@@ -267,7 +273,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->amOnPage('/');
     }
 
-    public function adminDodajStavkuNastavnogPlana($predmet,$obavezan,$semestar,$smjer='TKBsc') {
+    public function adminDodajStavkuNastavnogPlana($predmet,$obavezan=true,$semestar=1,$smjer='TKBsc') {
         $I = $this;
         $I->selectOption(\stavkaNastavnogPlanaPage::$studij, \stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
 //        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
@@ -443,7 +449,7 @@ class MemberSteps extends \AcceptanceTester {
 ////        $tra = $tre['predmet'];
         foreach ($predmeti as $val) {
 //            $ime = $tre['id'].$tra['naziv'];
-            $obavezan = $I->getFaker()->boolean(80);
+            $obavezan = 1;//$I->getFaker()->boolean(80);
             $I->adminDodajStavkuNastavnogPlana($val['naziv'],$obavezan , $semestar, $smjer);
             
         }
