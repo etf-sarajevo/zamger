@@ -96,7 +96,7 @@ class semestarStudentaCest
                     "Debug: predmet: ".$predmet['naziv']." ,nastavnik ime:".$nastavnik['ime']." ,prezime: ".$nastavnik['prezime']);
             
             $I->adminNadjiPredmet($predmet['naziv']);
-            $I->selectOption("name=nivo_pristupa", 'Nastavnik');
+            $I->selectOption("select[name=nivo_pristupa]", 'Nastavnik');
             $I->click("//input[@value=' Postavi ']");
         }
         
