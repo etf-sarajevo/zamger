@@ -5,32 +5,32 @@
 # If you need both WebDriver and PHPBrowser tests - create a separate suite.
 
 class_name: AcceptanceTester
-modules:
-    enabled:
-        - Db
-        - FakerHelper
-#        - AcceptanceHelper
-        - PhpBrowser   
-#        - DummyHelper
-#        - WebDriverEHelper
-#        - FactoryHelper
-
-    config:
-#            Db:
-#                dsn: 'mysql:host=localhost;dbname=zamger'
-#                user: 'root'
-#                password: ''
-#                dump: 'zamger-dump.sql'
-#                populate: false
-#                cleanup: true
-            PhpBrowser:
-                url: 'http://localhost/zamger/index.php'
-#            WebDriverEHelper:
+#modules:
+#    enabled:
+#        - Db
+#        - FakerHelper
+##        - AcceptanceHelper
+#        - PhpBrowser   
+##        - DummyHelper
+##        - WebDriverEHelper
+##        - FactoryHelper
+#
+#    config:
+##            Db:
+##                dsn: 'mysql:host=localhost;dbname=zamger'
+##                user: 'root'
+##                password: ''
+##                dump: 'zamger-dump.sql'
+##                populate: false
+##                cleanup: true
+#            PhpBrowser:
 #                url: 'http://localhost/zamger/index.php'
-#                browser: firefox
-#                
-#                window_size: maximize
-#                wait: 0
+##            WebDriverEHelper:
+##                url: 'http://localhost/zamger/index.php'
+##                browser: firefox
+##                
+##                window_size: maximize
+##                wait: 0
     
     
 env:
