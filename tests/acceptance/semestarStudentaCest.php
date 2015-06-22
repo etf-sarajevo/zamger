@@ -62,12 +62,38 @@ class semestarStudentaCest
 //            
 //        }
     
-        $I->adminDodajNastavnika('nastavnik','nastavnik');
-        //angazuj na predmetu
-        $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
-        $I->click("//input[@value=' Dodaj ']");
-        //prava pristupa
-        $I->click("(//input[@value=' Dodaj '])[2]");
+//        $I->adminDodajNastavnika('nastavnik','nastavnik');
+//        //angazuj na predmetu
+//        $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
+//        $I->click("//input[@value=' Dodaj ']");
+//        //prava pristupa
+//        $I->click("(//input[@value=' Dodaj '])[2]");
+    
+        foreach ($this->predmetiSemestar1 as $predmet) {
+            $faker = $I->getFaker();
+            $usernamePassword = $faker->getUsernameAndPass();
+            $imePrezime = $faker->getImePrezime(); 
+            $I->adminDodajNastavnika($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
+            $nastavnik = array(
+                'login' => $usernamePassword['login'],
+                'password'=>$usernamePassword['password'],
+                'ime' => $imePrezime['ime'],
+                'prezime' => $imePrezime['prezime'],
+            );
+            
+            $ansa = array(
+                'naziv'=>$predmet['naziv'],
+                'nastavnik' => $nastavnik,
+            );
+            $this->predmetniAnsambl[] = $ansa;
+            $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
+            $I->selectOption("input[name=predmet]", $predmet['naziv']);
+            $I->click("//input[@value=' Dodaj ']");
+            //prava pristupa:
+            $I->selectOption("(//select[@name='predmet'])[2]", $predmet['naziv']);
+            $I->click("(//input[@value=' Dodaj '])[2]");
+                    
+        }
     }
 
     public function _after(AcceptanceTester $I){

@@ -91,11 +91,17 @@ class MemberSteps extends \AcceptanceTester {
         $I->click("//input[@value=' Dodaj novi ']");
     }
 
-    public function adminDodajNastavnika($ime, $prezime) {
+    public function adminDodajNastavnika($ime, $prezime,$username = null,$password = null) {
         $I = $this;
+        if(is_null($username)){
+            $username = $ime;
+        }
+        if(is_null($password)){
+            $password = $ime;
+        }
         $I->adminDodajOsobuTipa($ime, $prezime, "nastavnik");
-        $I->fillField('[name=login]', $ime);
-        $I->fillField('[name=password]', $ime);
+        $I->fillField('[name=login]', $username);
+        $I->fillField('[name=password]', $password);
         $I->checkOption('[name=aktivan]');
         $I->click("//input[@value=' Dodaj novi ']");
     }
