@@ -36,8 +36,8 @@ class FakerHelper extends \Codeception\Module
     
     public function getUsernameAndPass() {
         return array(
-            'login'=>  $this->getFaker()->userName,
-            'password'=>$this->getFaker()->password,
+            'login'=>  $this->getFaker()->unique()->userName,
+            'password'=>$this->getFaker()->unique()->password,
         );
     }
     

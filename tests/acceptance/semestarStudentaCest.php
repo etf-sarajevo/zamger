@@ -16,10 +16,14 @@ class semestarStudentaCest
     public function _before(AcceptanceTester $I){
 //        $faker = $I->getFaker();
         $I->am('administrator');
-        $I->adminIskljuciPopUp();
+//        $I->adminIskljuciPopUp();
         $I->amOnPage('/');
         $I->loginKaoAdmin();
-        
+        $I->executeInSelenium(function(\WebDriver $webdriver) {
+          $windows = $webdriver->getWindowHandles();
+          $webdriver->switchTo($windows[0]);
+          
+        });
         //napraviti stavke nastavnog plana
         $I->wantTo('dodati predmeta za 2 semestra');
         $I->amOnPage('/');
