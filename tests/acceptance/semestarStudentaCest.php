@@ -22,7 +22,7 @@ class semestarStudentaCest
         $I->executeInSelenium(function(\WebDriver $webdriver) {
           $windows = $webdriver->getWindowHandles();
           $webdriver->switchTo($windows[0]);
-          
+          //ne radi
         });
         //napraviti stavke nastavnog plana
         $I->wantTo('dodati predmeta za 2 semestra');
