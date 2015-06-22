@@ -151,6 +151,18 @@ class semestarStudentaCest
         foreach ($this->predmetiSemestar1 as $predmet) {
             $I->canSee($predmet['naziv']);
             $I->click($predmet['naziv']);
+            $ansa = $this->_dajPredmetniAnsambl($predmet['naziv']);
+            $nastavnik = $ansa['nastavnik'];
+            $I->canSee($nastavnik['ime']." ".$nastavnik['prezime']);
         }
+    }
+    
+    private function _dajPredmetniAnsambl($naziv) {
+        foreach ($this->predmetniAnsambl as $stavka) {
+            if($stavka['naziv']==$naziv){
+                return $stavka;
+            }                
+        }
+        return null;
     }
 }
