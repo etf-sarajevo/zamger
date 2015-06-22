@@ -130,12 +130,16 @@ class FakerHelper extends \Codeception\Module
         $niz = array();
 //        $nizObavezno = array();
         do{
-            $ects = $faker->numberBetween(4, $maxEcts);
-            if($maxEcts>$ects){
-                $maxEcts-=$ects;
-            }else {
-                $maxEcts = 0;
-            }            
+            $br = 10;
+            if($br>$maxEcts){
+                $br = $maxEcts;
+            }
+            $ects = $faker->numberBetween(1, $br);
+//            if($maxEcts>$ects){
+//                $maxEcts-=$ects;
+//            }else {
+//                $maxEcts = 0;
+//            }            
 //            $obavezan = $faker->boolean(80);
             $ukupno = $this->odnosEctsPredavanja*$ects;
             $predavanja = $faker->numberBetween(0, $ukupno);
