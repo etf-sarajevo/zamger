@@ -27,7 +27,8 @@ class FakerHelper extends \Codeception\Module
             $faker->addProvider(new \Faker\Provider\Lorem($faker));
             $faker->addProvider(new \Faker\Provider\File($faker));
             $faker->addProvider(new \Faker\Provider\Internet($faker));
-            
+            $faker->addProvider(new \Faker\Provider\en_US\Person($faker));
+            $faker->addProvider(new \Faker\Provider\sr_Latn_RS\Person($faker));
             $this->faker = $faker;
         }
         
