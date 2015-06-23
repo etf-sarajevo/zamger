@@ -13,6 +13,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->canSeeLink("Odjava");
         $I->click("Odjava");
         $I->canSeeInCurrentUrl("?sta=logout");
+        \Codeception\Util\Debug::debug("logout()");
     }
 
     public function login($username, $password) {
@@ -23,6 +24,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->fillField(\loginPage::$username, $username);
         $I->fillField(\loginPage::$pass, $password);
         $I->click(\loginPage::$button);
+        \Codeception\Util\Debug::debug("login, username: ".$username." ,password: ".$password);
 //        $I->registrujLogin($username,$password);
         #$I->see(\loginPage::$homeTextAdmin);
     }
@@ -72,6 +74,7 @@ class MemberSteps extends \AcceptanceTester {
         $I->click("Dodaj");
         $I->see("Novi korisnik je dodan.");
         $I->canSeeLink($ime . " " . $prezime);
+        
     }
 
     private function adminDodajOsobuTipa($ime, $prezime, $tip) {
@@ -86,6 +89,7 @@ class MemberSteps extends \AcceptanceTester {
 //        $I->canSeeCheckboxIsChecked("input[name=" . $tip . "]");
         $I->click("Promijeni");
         $I->canSee("Data privilegija ");
+        \Codeception\Util\Debug::debug("Admin dodaj osobu tipa, ime: ".$ime." ,prezime: ".$prezimw." ,tip: ".$tip);
     }
 
     public function adminDodajStudenta($ime, $prezime,$username = null,$password = null) {
