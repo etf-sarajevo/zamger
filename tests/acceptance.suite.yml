@@ -9,113 +9,14 @@ modules:
     enabled:
         - Db
         - FakerHelper
-#        - AcceptanceHelper
-        - PhpBrowser   
-#        - DummyHelper
-#        - WebDriverEHelper
-#        - FactoryHelper
+        - WebDriver
 
     config:
-#            Db:
-#                dsn: 'mysql:host=localhost;dbname=zamger'
-#                user: 'root'
-#                password: ''
-#                dump: 'zamger-dump.sql'
-#                populate: false
-#                cleanup: true
-            PhpBrowser:
+            WebDriver:
                 url: 'http://localhost/zamger/index.php'
-#            WebDriverEHelper:
-#                url: 'http://localhost/zamger/index.php'
-#                browser: firefox
-#                
-#                window_size: maximize
-#                wait: 0
+                browser: firefox
+                host: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
+                window_size: maximize
+                wait: 1
+                restart: true
     
-    
-env:
-    firefox:
-        modules:
-            enabled:
-        #        - PhpBrowser
-                    - AcceptanceHelper
-                    - WebDriverEHelper
-                    - Db
-                    - FakerHelper
-            config:
-                WebDriverEHelper:
-                    url: 'http://localhost/index.php'
-                    browser: firefox
-                    window_size: maximize
-#                    wait: 10
-#                    restart: true
-                    capabilities:
-                        unexpectedAlertBehaviour: 'accept'
-                        platform: 'Linux' 
-                        recordScreenshots: true
-        #                webdriverRemoteQuietExceptions: false
-        #                takesScreenshot: false
-        #        PhpBrowser:
-        #            url: 'http://localhost/index.php'
-    phpBrowser:
-        modules:
-            enabled:
-                - PhpBrowser
-            config:
-                PhpBrowser:
-                    url: 'http://localhost/zamger/index.php'
-    chrome:
-        modules:
-            enabled:
-                - AcceptanceHelper
-                - WebDriverEHelper
-                - Db
-                - FakerHelper
-            config:
-                WebDriverEHelper:
-                    url: 'http://localhost/index.php'
-                    browser: chrome
-                    window_size: maximize
-#                    wait: 3
-#                    restart: true
-                    capabilities:
-                        unexpectedAlertBehaviour: 'accept'
-                        platform: 'Linux' 
-                        recordScreenshots: true
-    IE:
-        modules:
-            enabled:
-                - AcceptanceHelper
-                - WebDriverEHelper
-                - Db
-                - FakerHelper
-            config:
-                WebDriverEHelper:
-                    url: 'http://localhost/index.php'
-                    browser: internet explorer
-                    window_size: maximize
-#                    wait: 3
-#                    restart: true
-                    capabilities:
-                        unexpectedAlertBehaviour: 'accept'
-                        platform: 'Linux' 
-                        recordScreenshots: true
-    safari:
-        modules:
-            enabled:
-                - AcceptanceHelper
-                - WebDriverEHelper
-                - Db
-                - FakerHelper
-            config:
-                WebDriverEHelper:
-                    url: 'http://localhost/index.php'
-                    browser: safari
-                    window_size: maximize
-#                    wait: 3
-#                    restart: true
-                    capabilities:
-                        unexpectedAlertBehaviour: 'accept'
-                        platform: 'Linux' 
-                        recordScreenshots: true
-        
