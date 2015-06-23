@@ -11,7 +11,8 @@ before_script:
   - sudo a2enmod rewrite actions fastcgi alias
   - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - echo 'display_errors = Off'>> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  
+#  - echo 'display_errors = Off'>> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
   - sudo service apache2 restart
   - sudo cp -f build/travis-ci-apache /etc/apache2/sites-available/default
