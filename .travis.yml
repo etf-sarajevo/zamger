@@ -5,7 +5,7 @@ php:
 
 before_script:
   - sudo apt-get update
-  - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo apt-get install apache2 libapache2-mod-fastcgi sendemail
   - sudo apt-get autoremove
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
@@ -45,8 +45,8 @@ addons:
 
 script:
 #  - vendor/bin/codecept run  --env $BW --steps --debug # svi testovi
-    - vendor/bin/codecept run --group student  --env $BW --steps --debug # grupa student
-#    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug #stari bugovi
+#    - vendor/bin/codecept run --group student  --env $BW --steps --debug # grupa student
+    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug #stari bugovi
     
   
 env:
@@ -95,8 +95,10 @@ branches:
 #
 #after_failure:
 #    
-#after_script:
-#    
+after_script:
+    - cat tests/_output/report.html
+#    - sendemail -t huma.milisic@gmail.com -m "Output" -a file1.jpg file2.zip
+    
 #before_deploy:
 #
 #deploy:
