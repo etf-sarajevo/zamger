@@ -97,7 +97,7 @@ branches:
 #    
 after_script:
     - cat tests/_output/report.html
-#    - sendemail -t huma.milisic@gmail.com -m "Output" -a file1.jpg file2.zip
+    - sendemail -t huma.milisic@gmail.com -m "Output" -a tests/_output/report.html
     
 #before_deploy:
 #
