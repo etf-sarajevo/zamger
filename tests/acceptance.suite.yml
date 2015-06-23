@@ -1,0 +1,22 @@
+# Codeception Test Suite Configuration
+
+# suite for acceptance tests.
+# perform tests in browser using the WebDriver or PhpBrowser.
+# If you need both WebDriver and PHPBrowser tests - create a separate suite.
+
+class_name: AcceptanceTester
+modules:
+    enabled:
+        - Db
+        - FakerHelper
+        - WebDriver
+
+    config:
+            WebDriver:
+                url: 'http://localhost/zamger/index.php'
+                browser: firefox
+                host: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
+                window_size: maximize
+                wait: 1
+                restart: true
+    
