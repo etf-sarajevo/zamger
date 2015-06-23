@@ -89,7 +89,7 @@ class MemberSteps extends \AcceptanceTester {
 //        $I->canSeeCheckboxIsChecked("input[name=" . $tip . "]");
         $I->click("Promijeni");
         $I->canSee("Data privilegija ");
-        \Codeception\Util\Debug::debug("Admin dodaj osobu tipa, ime: ".$ime." ,prezime: ".$prezimw." ,tip: ".$tip);
+        \Codeception\Util\Debug::debug("Admin dodaj osobu tipa, ime: ".$ime." ,prezime: ".$prezime." ,tip: ".$tip);
     }
 
     public function adminDodajStudenta($ime, $prezime,$username = null,$password = null) {
