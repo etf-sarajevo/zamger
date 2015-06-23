@@ -1,6 +1,6 @@
 <?php 
-$predmetiSemestar1 = null;
-$predmetiSemestar2n = null;
+//$predmetiSemestar1 = null;
+//$predmetiSemestar2n = null;
     
 $predmetniAnsambl = null;
 $studenti = null;
@@ -20,12 +20,12 @@ $I->am('administrator');
 $I->amOnPage('/');
 $I->loginKaoAdmin();
 //napraviti stavke nastavnog plana
-$I->wantTo('dodati predmeta za 2 semestra');
+//$I->wantTo('dodati predmeta za 2 semestra');
 $I->amOnPage('/');
 $I->click(adminHomePage::$studentskaSluzbaLink);
 $I->click(studentskaSluzbaPage::$navKreirajPlanStudijaLink);
-$predmetiSemestar1 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1,$smjer = 'RIBsc');
-$predmetiSemestar2 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2,$smjer = 'RIBsc');
+$predmetiSemestar1 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(1,'RIBsc');
+$predmetiSemestar2 = $I->adminNapraviStavkuNastavniPlanRandomPredmeta(2,'RIBsc');
 
 //namjestanje parametara
 $I->wantTo('promjenitit parametre studija');
@@ -50,22 +50,13 @@ $I->canSee("Podaci su ubačeni.");
 $I->click(adminHomePage::$studentskaSluzbaLink);
 $I->click(studentskaSluzbaPage::$navPlanStudijaLink);
 $I->click("Računarstvo i informatika (BSc) (2014/2015)");
-//        foreach ($this->predmetiSemestar1 as $predmet) {
-//            
-//        }
-
-//        $I->adminDodajNastavnika('nastavnik','nastavnik');
-//        //angazuj na predmetu
-//        $I->selectOption("input[name=_lv_column_angazman_status]", "odgovorni nastavnik");
-//        $I->click("//input[@value=' Dodaj ']");
-//        //prava pristupa
-//        $I->click("(//input[@value=' Dodaj '])[2]");
 
 foreach ($predmetiSemestar1 as $predmet) {
     $faker = $I->getFaker();
     $usernamePassword = $I->getUsernameAndPass();
     $imePrezime = $I->getImePrezime(); 
-    $I->adminDodajNastavnika($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
+    $I->adminDodajNastavnika($imePrezime['ime'],$imePrezime['prezime'],
+            $usernamePassword['login'],$usernamePassword['password']);
     $nastavnik = array(
         'login' => $usernamePassword['login'],
         'password'=>$usernamePassword['password'],
@@ -97,7 +88,8 @@ for($i=1;$i<=6;$i++){
     $faker = $I->getFaker();
     $usernamePassword = $I->getUsernameAndPass();
     $imePrezime = $I->getImePrezime();
-    $I->adminDodajStudenta($imePrezime['ime'],$imePrezime['prezime'],$usernamePassword['login'],$usernamePassword['password']);
+    $I->adminDodajStudenta($imePrezime['ime'],$imePrezime['prezime'],
+            $usernamePassword['login'],$usernamePassword['password']);
     $studenti[] = array(
         'ime'=>$imePrezime['ime'],
         'prezime'=>$imePrezime['prezime'],
