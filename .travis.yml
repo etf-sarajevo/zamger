@@ -46,7 +46,7 @@ addons:
 script:
 #  - vendor/bin/codecept run  --env $BW --steps --debug # svi testovi
 #    - vendor/bin/codecept run --group student  --env $BW --steps --debug # grupa student
-    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug #stari bugovi
+    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug --html #stari bugovi
     
   
 env:
