@@ -44,9 +44,9 @@ addons:
   sauce_connect: true
 
 script:
-#  - vendor/bin/codecept run  --env $BW --steps --debug --html  # svi testovi
+  - vendor/bin/codecept run  --env $BW --steps --debug --html  # svi testovi
 #    - vendor/bin/codecept run --group student  --env $BW --steps --debug --html # grupa student
-    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug --html #stari bugovi
+#    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug --html #stari bugovi
     
   
 env:
@@ -64,11 +64,11 @@ env:
 
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
-      - OS='Windows 8' BW=IE
-      - OS='OS X 10.10' BW=safari  # 
-  allow_failures:
-      - OS='OS X 10.10' BW=safari
-      - OS='Windows 8' BW=IE
+#      - OS='Windows 8' BW=IE
+#      - OS='OS X 10.10' BW=safari  # 
+#  allow_failures:
+#      - OS='OS X 10.10' BW=safari
+#      - OS='Windows 8' BW=IE
         
      
      
@@ -97,7 +97,7 @@ branches:
 #    
 after_script:
     - cat tests/_output/report.html
-    - sendemail -f zamger@travis.com -t huma.milisic@gmail.com -m "Output" -a tests/_output/report.html
+#    - sendemail -f zamger@travis.com -t huma.milisic@gmail.com -m "Output" -a tests/_output/report.html
     
 #before_deploy:
 #
