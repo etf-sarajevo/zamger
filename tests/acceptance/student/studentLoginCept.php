@@ -15,6 +15,7 @@ $studenti = null;
 //}
 
 $scenario->group('student');
+$I = new AcceptanceTester\MemberSteps($scenario);
 $I->am('administrator');
 //        $I->adminIskljuciPopUp();
 $I->amOnPage('/');

@@ -22,5 +22,5 @@ modules:
             user: 'root'
             password: ''
             dump: zamger-dump.sql
-            populate: false;
+            populate: true;
             cleanup: true;
