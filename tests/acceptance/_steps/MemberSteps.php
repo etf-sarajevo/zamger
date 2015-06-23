@@ -150,6 +150,9 @@ class MemberSteps extends \AcceptanceTester {
     }
 
     public function adminDodajPredmet($predmet, $sifra, $ects, $satiPredavanja, $satiVjezbi, $satiTutorijala) {
+        \Codeception\Util\Debug::debug("admin dodaj predmet, predmet:"
+                .$predmet." ,sifra: ".$sifra." ,sati predavanja:".$satiPredavanja." ,sati vjezbi:"
+                .$satiVjezbi." ,sati tutorijala: ".$satiTutorijala);
         $I = $this;
         $I->am('Administrator');
         $I->wantTo('Dodati novi predmet kao administrator');
@@ -284,6 +287,8 @@ class MemberSteps extends \AcceptanceTester {
     }
 
     public function adminDodajStavkuNastavnogPlana($predmet,$obavezan=true,$semestar=1,$smjer='TKBsc') {
+        \Codeception\Util\Debug::debug("admin dodaj stavku nastavnog plana: "
+                ."predmet: ".$predmet." ,obavezan: ".$obavezan." ,semestar:".$semestar." ,smjer: ".$smjer);
         $I = $this;
         $I->selectOption(\stavkaNastavnogPlanaPage::$studij, \stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
 //        $I->selectOption(\stavkaNastavnogPlanaPage::$studij, stavkaNastavnogPlanaPage::$studijOptions[$smjer]);
@@ -468,12 +473,11 @@ class MemberSteps extends \AcceptanceTester {
     
     private function fixturePredmetUKurs($naziv,$obavezan,$semestar,$smjer = 1) {
         $I = $this;
-        //$mail = $I->grabFromDatabase('users', 'email', array('name' => 'Davert'));
         $id = $I->grabFromDatabase('predmet', 'id', array(
             'naziv'=>$naziv,
         ));
-        \Codeception\Util\Debug::debug('Debug: fixturePredmetUKurs');
-        \Codeception\Util\Debug::debug("Debug, naziv: ".$naziv." ,id: ".$id);
+        \Codeception\Util\Debug::debug("fixturePredmetUKurs, naziv: ".$naziv." ,id: ".$id
+                ." ,obavezan: ".$obavezan." ,semestar: ".$semestar." ,smjer: ".$smjer);
         $I->haveInDatabase('ponudakursa', array(
             'predmet'=>$id,
             'studij'=>$smjer,
@@ -552,7 +556,7 @@ class MemberSteps extends \AcceptanceTester {
             'password'=>$UserPass['password'],
             'aktivan'=>1,
         ));
-        exec("mysql -u root zamger;insert into privilegije values (".$osobaId.",student);");
+//        exec("mysql -u root zamger;insert into privilegije values (".$osobaId.",student);");
         
         $this->studentLogin = $UserPass['login'];
         $this->studentPassword = $UserPass['password'];

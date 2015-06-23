@@ -120,11 +120,12 @@ $student = $studenti[0];
 //                'password'=>$usernamePassword['password'],
 $I->login($student['login'],$student['password']);
 $I->canSee($student['ime']." ".$student['prezime']);
-foreach ($predmetiSemestar1 as $predmet) {
-    $I->canSee($predmet['naziv']);
-    $I->click($predmet['naziv']);
-//    $ansa = $this->_dajPredmetniAnsambl($predmet['naziv']);
-//    $nastavnik = $ansa['nastavnik'];
-//    $I->canSee($nastavnik['ime']." ".$nastavnik['prezime']);
-}
+
+//foreach ($predmetiSemestar1 as $predmet) {
+//    $I->canSee($predmet['naziv']);
+//    $I->click($predmet['naziv']);
+////    $ansa = $this->_dajPredmetniAnsambl($predmet['naziv']);
+////    $nastavnik = $ansa['nastavnik'];
+////    $I->canSee($nastavnik['ime']." ".$nastavnik['prezime']);
+//}
 $I->logout();

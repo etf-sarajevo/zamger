@@ -46,13 +46,14 @@ addons:
   sauce_connect: true
 
 script:
-#  - vendor/bin/codecept run  --env $BW --steps --debug --html  # svi testovi
-    - vendor/bin/codecept run --group student  --env $BW --steps --debug --html # grupa student
+  - vendor/bin/codecept run  --env $BW --debug --html  # svi testovi
+#    - vendor/bin/codecept run --group student  --env $BW --steps --debug --html # grupa student
 #    - vendor/bin/codecept run --group bugs  --env $BW --steps --debug --html #stari bugovi
     
   
 env:
   global:
+      # generator za tunel https://docs.saucelabs.com/ci-integrations/travis-ci/
     - secure: b9MCGuVXwObx0n8bg7urCYBmQGiYYTKxf+PGDdSR2ydF5uxjxikujrI8wKdG3VrkyvUL/3NOwfVCHLtJ2mYTIcCYK895Kiy+QQb6RjaOGc2C3e0td0RcgO4RSbskrtf7qVi5g9/jwU/2+MdwQZNM2028iQvd3QGcYyk8vc3NssA=
     - secure: oskOJptPiXUw2VyeFSa7f3niYt25qOTi/uJBGWmjfyJDgnGUU2v183hb4aIXNDWJVj5+ylXnaLgrjP6y3nXSFxPDJn6U4umVlReXs39gDN8jdWVOJYgUoGEMCTh7ZIfx/LMfPs44+fXwOxYLugdkFRWqtt2Q+9GSq4cnbQo/vtU=
     - SELENIUM_HOST: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
@@ -62,12 +63,12 @@ env:
     - buildName: $TRAVIS_JOB_NUMBER-$TRAVIS_REPO_SLUG[$TRAVIS_BRANCH]:$TRAVIS_COMMIT
   matrix:
       # dostupne platforme https://docs.saucelabs.com/reference/platforms-configurator/#/ 
-      # dodati u acceptance.suite.yml postavke za novi browser
+      # dodati u acceptance.suite.dist.yml postavke za novi browser
 
       - OS=linux BW=firefox 
       - OS=linux BW=chrome
-#      - OS='Windows 8' BW=IE
-#      - OS='OS X 10.10' BW=safari  # 
+      - OS='Windows 8' BW=IE
+      - OS='OS X 10.10' BW=safari  # 
 #  allow_failures:
 #      - OS='OS X 10.10' BW=safari
 #      - OS='Windows 8' BW=IE
