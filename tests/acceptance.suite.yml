@@ -15,6 +15,7 @@ modules:
             WebDriver:
                 url: 'http://localhost/zamger/index.php'
                 browser: firefox
+                # staviti localne postavke
                 host: $SAUCE_USERNAME:$SAUCE_ACCESS_KEY@ondemand.saucelabs.com
                 window_size: maximize
                 wait: 1
