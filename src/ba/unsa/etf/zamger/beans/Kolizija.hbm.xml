@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Kolizija" table="kolizija" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.KolizijaId">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="akademskaGodina" type="int">
+                <column name="akademska_godina" />
+            </key-property>
+            <key-property name="semestar" type="int">
+                <column name="semestar" />
+            </key-property>
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="predmet" class="ba.unsa.etf.zamger.beans.Predmet" update="false" insert="false" fetch="select">
+            <column name="predmet" not-null="true" />
+        </many-to-one>
+        <many-to-one name="akademskaGodina" class="ba.unsa.etf.zamger.beans.AkademskaGodina" update="false" insert="false" fetch="select">
+            <column name="akademska_godina" not-null="true" />
+        </many-to-one>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" update="false" insert="false" fetch="select">
+            <column name="student" not-null="true" />
+        </many-to-one>
+    </class>
+</hibernate-mapping>

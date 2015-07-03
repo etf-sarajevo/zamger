@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:09:41 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.KonacnaOcjena" table="konacna_ocjena" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.KonacnaOcjenaId">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="odluka" class="ba.unsa.etf.zamger.beans.Odluka" fetch="select">
+            <column name="odluka" />
+        </many-to-one>
+        <many-to-one name="predmet" class="ba.unsa.etf.zamger.beans.Predmet" update="false" insert="false" fetch="select">
+            <column name="predmet" not-null="true" />
+        </many-to-one>
+        <many-to-one name="akademskaGodina" class="ba.unsa.etf.zamger.beans.AkademskaGodina" fetch="select">
+            <column name="akademska_godina" not-null="true" />
+        </many-to-one>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" update="false" insert="false" fetch="select">
+            <column name="student" not-null="true" />
+        </many-to-one>
+        <property name="ocjena" type="int">
+            <column name="ocjena" not-null="true" />
+        </property>
+        <property name="datum" type="timestamp">
+            <column name="datum" length="19" not-null="true" />
+        </property>
+        <property name="datumUIndeksu" type="date">
+            <column name="datum_u_indeksu" length="10" not-null="true" />
+        </property>
+        <property name="izvezena" type="boolean">
+            <column name="izvezena" not-null="true" />
+        </property>
+        <property name="datumProvjeren" type="boolean">
+            <column name="datum_provjeren" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

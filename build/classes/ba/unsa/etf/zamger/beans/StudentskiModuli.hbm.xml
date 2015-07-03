@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.StudentskiModuli" table="studentski_moduli" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.StudentskiModuliId">
+            <key-property name="id" type="int">
+                <column name="id" />
+            </key-property>
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+            <key-property name="akademskaGodina" type="int">
+                <column name="akademska_godina" />
+            </key-property>
+            <key-property name="guiNaziv" type="string">
+                <column name="gui_naziv" length="50" />
+            </key-property>
+            <key-property name="url" type="string">
+                <column name="url" />
+            </key-property>
+            <key-property name="aktivan" type="boolean">
+                <column name="aktivan" />
+            </key-property>
+            <key-property name="noviProzor" type="boolean">
+                <column name="novi_prozor" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.PredmetProjektniParametri" table="predmet_projektni_parametri" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.PredmetProjektniParametriId">
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+            <key-property name="akademskaGodina" type="int">
+                <column name="akademska_godina" />
+            </key-property>
+        </composite-id>
+        <property name="minTimova" type="byte">
+            <column name="min_timova" not-null="true" />
+        </property>
+        <property name="maxTimova" type="byte">
+            <column name="max_timova" not-null="true" />
+        </property>
+        <property name="minClanovaTima" type="byte">
+            <column name="min_clanova_tima" not-null="true" />
+        </property>
+        <property name="maxClanovaTima" type="byte">
+            <column name="max_clanova_tima" not-null="true" />
+        </property>
+        <property name="zakljucaniProjekti" type="byte">
+            <column name="zakljucani_projekti" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

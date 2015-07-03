@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.TemaZaZadacu2" table="tema_za_zadacu_2" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="naslov" type="string">
+            <column name="naslov" length="250" not-null="true" />
+        </property>
+        <property name="tekst" type="string">
+            <column name="tekst" length="65535" not-null="true" />
+        </property>
+        <property name="osoba" type="int">
+            <column name="osoba" not-null="true" />
+        </property>
+        <property name="grupa" type="boolean">
+            <column name="grupa" not-null="true" />
+        </property>
+        <property name="zadaca" type="int">
+            <column name="zadaca" not-null="true" />
+        </property>
+        <property name="sakrivena" type="byte">
+            <column name="sakrivena" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.RasporedStavka" table="raspored_stavka" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="raspored" type="int">
+            <column name="raspored" not-null="true" />
+        </property>
+        <property name="danUSedmici" type="boolean">
+            <column name="dan_u_sedmici" not-null="true">
+                <comment>1=pon, 2=uto...</comment>
+            </column>
+        </property>
+        <property name="predmet" type="int">
+            <column name="predmet" not-null="true" />
+        </property>
+        <property name="labgrupa" type="int">
+            <column name="labgrupa" not-null="true" />
+        </property>
+        <property name="vrijemePocetak" type="int">
+            <column name="vrijeme_pocetak" not-null="true">
+                <comment>0=08:00, 1=09:00, ...</comment>
+            </column>
+        </property>
+        <property name="vrijemeKraj" type="int">
+            <column name="vrijeme_kraj" not-null="true" />
+        </property>
+        <property name="sala" type="int">
+            <column name="sala" not-null="true" />
+        </property>
+        <property name="tip" type="string">
+            <column name="tip" length="1" not-null="true" />
+        </property>
+        <property name="dupla" type="int">
+            <column name="dupla" not-null="true" />
+        </property>
+        <property name="isjeckana" type="boolean">
+            <column name="isjeckana" not-null="true" />
+        </property>
+        <property name="finiPocetak" type="time">
+            <column name="fini_pocetak" length="8" not-null="true" />
+        </property>
+        <property name="finiKraj" type="time">
+            <column name="fini_kraj" length="8" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

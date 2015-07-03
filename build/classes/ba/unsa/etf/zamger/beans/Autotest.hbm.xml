@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Autotest" table="autotest" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="zadaca" class="ba.unsa.etf.zamger.beans.Zadaca" fetch="select">
+            <column name="zadaca" not-null="true" />
+        </many-to-one>
+        <property name="zadatak" type="int">
+            <column name="zadatak" not-null="true" />
+        </property>
+        <property name="kod" type="string">
+            <column name="kod" length="65535" not-null="true" />
+        </property>
+        <property name="rezultat" type="string">
+            <column name="rezultat" length="65535" not-null="true" />
+        </property>
+        <property name="altRezultat" type="string">
+            <column name="alt_rezultat" length="65535" not-null="true" />
+        </property>
+        <property name="fuzzy" type="boolean">
+            <column name="fuzzy" not-null="true" />
+        </property>
+        <property name="globalScope" type="string">
+            <column name="global_scope" length="65535" not-null="true" />
+        </property>
+        <property name="pozicijaGlobala" type="string">
+            <column name="pozicija_globala" length="12" not-null="true" />
+        </property>
+        <property name="stdin" type="string">
+            <column name="stdin" length="65535" not-null="true" />
+        </property>
+        <property name="partialMatch" type="byte">
+            <column name="partial_match" not-null="true" />
+        </property>
+        <property name="aktivan" type="boolean">
+            <column name="aktivan" not-null="true" />
+        </property>
+        <property name="sakriven" type="boolean">
+            <column name="sakriven" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

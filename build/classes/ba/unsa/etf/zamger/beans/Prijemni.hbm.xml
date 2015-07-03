@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Prijemni" table="prijemni" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="ime" type="string">
+            <column name="ime" length="30" not-null="true" />
+        </property>
+        <property name="prezime" type="string">
+            <column name="prezime" length="30" not-null="true" />
+        </property>
+        <property name="datumRodjenja" type="date">
+            <column name="datum_rodjenja" length="10" not-null="true" />
+        </property>
+        <property name="mjestoRodjenja" type="string">
+            <column name="mjesto_rodjenja" length="30" not-null="true" />
+        </property>
+        <property name="drzavljanstvo" type="string">
+            <column name="drzavljanstvo" length="30" not-null="true" />
+        </property>
+        <property name="zavrsenaSkola" type="string">
+            <column name="zavrsena_skola" length="50" not-null="true" />
+        </property>
+        <property name="jmbg" type="string">
+            <column name="jmbg" length="14" not-null="true" />
+        </property>
+        <property name="adresa" type="string">
+            <column name="adresa" length="50" not-null="true" />
+        </property>
+        <property name="telefon" type="string">
+            <column name="telefon" length="15" not-null="true" />
+        </property>
+        <property name="kanton" type="int">
+            <column name="kanton" not-null="true" />
+        </property>
+        <property name="redovni" type="boolean">
+            <column name="redovni" not-null="true" />
+        </property>
+        <property name="odsjekPrvi" type="string">
+            <column name="odsjek_prvi" length="3" not-null="true" />
+        </property>
+        <property name="odsjekDrugi" type="string">
+            <column name="odsjek_drugi" length="3" not-null="true" />
+        </property>
+        <property name="odsjekTreci" type="string">
+            <column name="odsjek_treci" length="3" not-null="true" />
+        </property>
+        <property name="odsjekCetvrti" type="string">
+            <column name="odsjek_cetvrti" length="3" not-null="true" />
+        </property>
+        <property name="opciUspjeh" type="double">
+            <column name="opci_uspjeh" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="kljucniPredmeti" type="double">
+            <column name="kljucni_predmeti" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="dodatniBodovi" type="double">
+            <column name="dodatni_bodovi" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="prijemniIspit" type="double">
+            <column name="prijemni_ispit" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="izasaoNaPrijemni" type="boolean">
+            <column name="izasao_na_prijemni" not-null="true" />
+        </property>
+        <property name="studentGeneracije" type="boolean">
+            <column name="student_generacije" not-null="true" />
+        </property>
+        <property name="prijemniIspitDva" type="double">
+            <column name="prijemni_ispit_dva" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="prijavioDrugi" type="boolean">
+            <column name="prijavio_drugi" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

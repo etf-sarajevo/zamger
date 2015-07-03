@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Ispitocjene" table="ispitocjene" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.IspitocjeneId">
+            <key-property name="ispit" type="int">
+                <column name="ispit" />
+            </key-property>
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="ispit" class="ba.unsa.etf.zamger.beans.Ispit" update="false" insert="false" fetch="select">
+            <column name="ispit" not-null="true" />
+        </many-to-one>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" update="false" insert="false" fetch="select">
+            <column name="student" not-null="true" />
+        </many-to-one>
+        <property name="ocjena" type="float">
+            <column name="ocjena" precision="12" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

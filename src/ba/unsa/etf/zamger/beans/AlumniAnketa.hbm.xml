@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AlumniAnketa" table="alumni_anketa" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="osoba" type="int">
+            <column name="osoba" not-null="true" />
+        </property>
+        <property name="firma" type="string">
+            <column name="firma" length="65535" not-null="true" />
+        </property>
+        <property name="radnoMjesto" type="string">
+            <column name="radno_mjesto" length="65535" not-null="true" />
+        </property>
+        <property name="telefon" type="string">
+            <column name="telefon" length="100" not-null="true" />
+        </property>
+        <property name="email" type="string">
+            <column name="email" not-null="true" />
+        </property>
+        <property name="web" type="string">
+            <column name="web" length="65535" not-null="true" />
+        </property>
+        <property name="zavrsetakStudija" type="date">
+            <column name="zavrsetak_studija" length="10" not-null="true" />
+        </property>
+        <property name="prvoZaposlenje" type="date">
+            <column name="prvo_zaposlenje" length="10" not-null="true" />
+        </property>
+        <property name="tipZaposlenja" type="int">
+            <column name="tip_zaposlenja" not-null="true" />
+        </property>
+        <property name="treciCiklus" type="string">
+            <column name="treci_ciklus" length="65535" not-null="true" />
+        </property>
+        <property name="primjedbeSugestije" type="string">
+            <column name="primjedbe_sugestije" length="65535" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

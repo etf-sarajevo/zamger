@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AnketaTipPitanja" table="anketa_tip_pitanja" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="tip" type="string">
+            <column name="tip" length="32" not-null="true" />
+        </property>
+        <property name="postojiIzbor" type="string">
+            <column name="postoji_izbor" length="2" not-null="true" />
+        </property>
+        <property name="tabelaOdgovora" type="string">
+            <column name="tabela_odgovora" length="32" not-null="true" />
+        </property>
+        <set name="anketaPitanjes" table="anketa_pitanje" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="tip_pitanja" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AnketaPitanje" />
+        </set>
+    </class>
+</hibernate-mapping>

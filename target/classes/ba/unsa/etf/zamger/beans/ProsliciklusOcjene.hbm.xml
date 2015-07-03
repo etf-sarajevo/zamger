@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.ProsliciklusOcjene" table="prosliciklus_ocjene" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.ProsliciklusOcjeneId">
+            <key-property name="osoba" type="int">
+                <column name="osoba" />
+            </key-property>
+            <key-property name="redniBroj" type="int">
+                <column name="redni_broj" />
+            </key-property>
+        </composite-id>
+        <property name="ocjena" type="byte">
+            <column name="ocjena" not-null="true" />
+        </property>
+        <property name="ects" type="float">
+            <column name="ects" precision="12" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

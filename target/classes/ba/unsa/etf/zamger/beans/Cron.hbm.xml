@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Cron" table="cron" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="path" type="string">
+            <column name="path" length="200" not-null="true" />
+        </property>
+        <property name="aktivan" type="boolean">
+            <column name="aktivan" not-null="true" />
+        </property>
+        <property name="godina" type="string">
+            <column name="godina" length="50" not-null="true" />
+        </property>
+        <property name="mjesec" type="string">
+            <column name="mjesec" length="50" not-null="true" />
+        </property>
+        <property name="dan" type="string">
+            <column name="dan" length="50" not-null="true" />
+        </property>
+        <property name="sat" type="string">
+            <column name="sat" length="50" not-null="true" />
+        </property>
+        <property name="minuta" type="string">
+            <column name="minuta" length="50" not-null="true" />
+        </property>
+        <property name="sekunda" type="string">
+            <column name="sekunda" length="50" not-null="true" />
+        </property>
+        <property name="zadnjeIzvrsenje" type="timestamp">
+            <column name="zadnje_izvrsenje" length="19" not-null="true" />
+        </property>
+        <property name="sljedeceIzvrsenje" type="timestamp">
+            <column name="sljedece_izvrsenje" length="19" not-null="true" />
+        </property>
+        <set name="cronRezultats" table="cron_rezultat" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="cron" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.CronRezultat" />
+        </set>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Komponentebodovi" table="komponentebodovi" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.KomponentebodoviId">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+            <key-property name="komponenta" type="int">
+                <column name="komponenta" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="ponudakursa" class="ba.unsa.etf.zamger.beans.Ponudakursa" update="false" insert="false" fetch="select">
+            <column name="predmet" not-null="true" />
+        </many-to-one>
+        <many-to-one name="komponenta" class="ba.unsa.etf.zamger.beans.Komponenta" update="false" insert="false" fetch="select">
+            <column name="komponenta" not-null="true" />
+        </many-to-one>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" update="false" insert="false" fetch="select">
+            <column name="student" not-null="true" />
+        </many-to-one>
+        <property name="bodovi" type="double">
+            <column name="bodovi" precision="22" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

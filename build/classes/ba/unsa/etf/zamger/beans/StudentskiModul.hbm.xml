@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.StudentskiModul" table="studentski_modul" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="modul" type="string">
+            <column name="modul" length="100" not-null="true" />
+        </property>
+        <property name="guiNaziv" type="string">
+            <column name="gui_naziv" length="50" not-null="true" />
+        </property>
+        <property name="noviProzor" type="boolean">
+            <column name="novi_prozor" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Zavrsni" table="zavrsni" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="naslov" type="string">
+            <column name="naslov" length="200" not-null="true" />
+        </property>
+        <property name="podnaslov" type="string">
+            <column name="podnaslov" length="200" not-null="true" />
+        </property>
+        <property name="predmet" type="int">
+            <column name="predmet" not-null="true" />
+        </property>
+        <property name="radNaPredmetu" type="int">
+            <column name="rad_na_predmetu" not-null="true" />
+        </property>
+        <property name="akademskaGodina" type="string">
+            <column name="akademska_godina" length="10" not-null="true" />
+        </property>
+        <property name="kratkiPregled" type="string">
+            <column name="kratki_pregled" length="65535" not-null="true" />
+        </property>
+        <property name="literatura" type="string">
+            <column name="literatura" length="65535" not-null="true" />
+        </property>
+        <property name="sazetak" type="string">
+            <column name="sazetak" length="65535" not-null="true" />
+        </property>
+        <property name="summary" type="string">
+            <column name="summary" length="65535" not-null="true" />
+        </property>
+        <property name="mentor" type="int">
+            <column name="mentor" not-null="true" />
+        </property>
+        <property name="student" type="int">
+            <column name="student" not-null="true" />
+        </property>
+        <property name="kandidatPotvrdjen" type="byte">
+            <column name="kandidat_potvrdjen" not-null="true" />
+        </property>
+        <property name="biljeska" type="string">
+            <column name="biljeska" length="65535" not-null="true" />
+        </property>
+        <property name="predsjednikKomisije" type="int">
+            <column name="predsjednik_komisije" not-null="true" />
+        </property>
+        <property name="clanKomisije" type="int">
+            <column name="clan_komisije" not-null="true" />
+        </property>
+        <property name="terminOdbrane" type="timestamp">
+            <column name="termin_odbrane" length="19" not-null="true" />
+        </property>
+        <property name="brojDiplome" type="string">
+            <column name="broj_diplome" length="100" not-null="true" />
+        </property>
+        <property name="temaOdobrena" type="byte">
+            <column name="tema_odobrena" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.UpisKriterij" table="upis_kriterij" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.UpisKriterijId">
+            <key-property name="prijemniTermin" type="int">
+                <column name="prijemni_termin" />
+            </key-property>
+            <key-property name="studij" type="int">
+                <column name="studij" />
+            </key-property>
+        </composite-id>
+        <property name="donjaGranica" type="float">
+            <column name="donja_granica" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="gornjaGranica" type="float">
+            <column name="gornja_granica" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="kandidatiStrani" type="int">
+            <column name="kandidati_strani" not-null="true" />
+        </property>
+        <property name="kandidatiSamiPlacaju" type="int">
+            <column name="kandidati_sami_placaju" not-null="true" />
+        </property>
+        <property name="kandidatiKantonPlaca" type="int">
+            <column name="kandidati_kanton_placa" not-null="true" />
+        </property>
+        <property name="kandidatiVanredni" type="int">
+            <column name="kandidati_vanredni" not-null="true" />
+        </property>
+        <property name="prijemniMax" type="int">
+            <column name="prijemni_max" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

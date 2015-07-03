@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.PrijemniTermin" table="prijemni_termin" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="akademskaGodina" type="int">
+            <column name="akademska_godina" not-null="true" />
+        </property>
+        <property name="datum" type="date">
+            <column name="datum" length="10" not-null="true" />
+        </property>
+        <property name="ciklusStudija" type="byte">
+            <column name="ciklus_studija" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

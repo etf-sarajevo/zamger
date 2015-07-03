@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.BlClanak" table="bl_clanak" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" fetch="select">
+            <column name="osoba" not-null="true" />
+        </many-to-one>
+        <many-to-one name="projekat" class="ba.unsa.etf.zamger.beans.Projekat" fetch="select">
+            <column name="projekat" not-null="true" />
+        </many-to-one>
+        <property name="naslov" type="string">
+            <column name="naslov" length="200" not-null="true" />
+        </property>
+        <property name="tekst" type="string">
+            <column name="tekst" length="65535" not-null="true" />
+        </property>
+        <property name="slika" type="string">
+            <column name="slika" length="100" not-null="true" />
+        </property>
+        <property name="vrijeme" type="timestamp">
+            <column name="vrijeme" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

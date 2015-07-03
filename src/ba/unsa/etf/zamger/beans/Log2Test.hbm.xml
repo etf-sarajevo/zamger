@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Log2Test" table="log2_test" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="vrijeme" type="timestamp">
+            <column name="vrijeme" length="19" not-null="true" />
+        </property>
+        <property name="userid" type="int">
+            <column name="userid" not-null="true" />
+        </property>
+        <property name="modul" type="int">
+            <column name="modul" not-null="true" />
+        </property>
+        <property name="dogadjaj" type="int">
+            <column name="dogadjaj" not-null="true" />
+        </property>
+        <property name="objekat1" type="int">
+            <column name="objekat1" not-null="true" />
+        </property>
+        <property name="objekat2" type="int">
+            <column name="objekat2" not-null="true" />
+        </property>
+        <property name="objekat3" type="int">
+            <column name="objekat3" not-null="true" />
+        </property>
+        <property name="ipaddress" type="string">
+            <column name="ipaddress" length="16" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

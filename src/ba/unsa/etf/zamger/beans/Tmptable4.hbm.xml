@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Tmptable4" table="tmptable4" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="ime" type="string">
+            <column name="ime" length="30" not-null="true" />
+        </property>
+        <property name="prezime" type="string">
+            <column name="prezime" length="30" not-null="true" />
+        </property>
+        <property name="imeoca" type="string">
+            <column name="imeoca" length="30" not-null="true" />
+        </property>
+        <property name="prezimeoca" type="string">
+            <column name="prezimeoca" length="30" not-null="true" />
+        </property>
+        <property name="imemajke" type="string">
+            <column name="imemajke" length="30" not-null="true" />
+        </property>
+        <property name="prezimemajke" type="string">
+            <column name="prezimemajke" length="30" not-null="true" />
+        </property>
+        <property name="spol" type="string">
+            <column name="spol" length="2" not-null="true" />
+        </property>
+        <property name="email" type="string">
+            <column name="email" length="100" not-null="true" />
+        </property>
+        <property name="brindexa" type="string">
+            <column name="brindexa" length="15" not-null="true" />
+        </property>
+        <property name="jmbg" type="string">
+            <column name="jmbg" length="14" not-null="true" />
+        </property>
+        <property name="adresa" type="string">
+            <column name="adresa" length="50" not-null="true" />
+        </property>
+        <property name="adresaMjesto" type="java.lang.Integer">
+            <column name="adresa_mjesto" />
+        </property>
+        <property name="telefon" type="string">
+            <column name="telefon" length="15" not-null="true" />
+        </property>
+        <property name="login" type="string">
+            <column name="login" length="50" not-null="true" />
+        </property>
+        <property name="privilegija" type="string">
+            <column name="privilegija" length="150" not-null="true" />
+        </property>
+        <property name="aliases" type="string">
+            <column name="aliases" length="150" not-null="true" />
+        </property>
+        <property name="emails" type="string">
+            <column name="emails" length="250" not-null="true" />
+        </property>
+        <property name="trenutnoStudira" type="boolean">
+            <column name="trenutno_studira" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

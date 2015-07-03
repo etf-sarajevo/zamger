@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.PromjenaPodataka" table="promjena_podataka" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="osoba" type="int">
+            <column name="osoba" not-null="true" />
+        </property>
+        <property name="ime" type="string">
+            <column name="ime" length="30" not-null="true" />
+        </property>
+        <property name="prezime" type="string">
+            <column name="prezime" length="30" not-null="true" />
+        </property>
+        <property name="imeoca" type="string">
+            <column name="imeoca" length="30" not-null="true" />
+        </property>
+        <property name="prezimeoca" type="string">
+            <column name="prezimeoca" length="30" not-null="true" />
+        </property>
+        <property name="imemajke" type="string">
+            <column name="imemajke" length="30" not-null="true" />
+        </property>
+        <property name="prezimemajke" type="string">
+            <column name="prezimemajke" length="30" not-null="true" />
+        </property>
+        <property name="spol" type="string">
+            <column name="spol" length="2" not-null="true" />
+        </property>
+        <property name="brindexa" type="string">
+            <column name="brindexa" length="10" not-null="true" />
+        </property>
+        <property name="datumRodjenja" type="date">
+            <column name="datum_rodjenja" length="10" not-null="true" />
+        </property>
+        <property name="mjestoRodjenja" type="int">
+            <column name="mjesto_rodjenja" not-null="true" />
+        </property>
+        <property name="nacionalnost" type="int">
+            <column name="nacionalnost" not-null="true" />
+        </property>
+        <property name="drzavljanstvo" type="int">
+            <column name="drzavljanstvo" not-null="true" />
+        </property>
+        <property name="borackeKategorije" type="boolean">
+            <column name="boracke_kategorije" not-null="true" />
+        </property>
+        <property name="jmbg" type="string">
+            <column name="jmbg" length="14" not-null="true" />
+        </property>
+        <property name="adresa" type="string">
+            <column name="adresa" length="50" not-null="true" />
+        </property>
+        <property name="adresaMjesto" type="int">
+            <column name="adresa_mjesto" not-null="true" />
+        </property>
+        <property name="telefon" type="string">
+            <column name="telefon" length="15" not-null="true" />
+        </property>
+        <property name="kanton" type="int">
+            <column name="kanton" not-null="true" />
+        </property>
+        <property name="slika" type="string">
+            <column name="slika" length="50" not-null="true" />
+        </property>
+        <property name="vrijemeZahtjeva" type="timestamp">
+            <column name="vrijeme_zahtjeva" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

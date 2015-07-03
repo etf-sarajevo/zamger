@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.PlanStudija" table="plan_studija" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.PlanStudijaId">
+            <key-property name="godinaVazenja" type="int">
+                <column name="godina_vazenja" />
+            </key-property>
+            <key-property name="studij" type="int">
+                <column name="studij" />
+            </key-property>
+            <key-property name="semestar" type="int">
+                <column name="semestar" />
+            </key-property>
+            <key-property name="predmet" type="int">
+                <column name="predmet" />
+            </key-property>
+            <key-property name="obavezan" type="boolean">
+                <column name="obavezan" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

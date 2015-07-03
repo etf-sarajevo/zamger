@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Priznavanje" table="priznavanje" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.PriznavanjeId">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="akademskaGodina" type="int">
+                <column name="akademska_godina" />
+            </key-property>
+            <key-property name="ciklus" type="int">
+                <column name="ciklus" />
+            </key-property>
+            <key-property name="nazivPredmeta" type="string">
+                <column name="naziv_predmeta" length="250" />
+            </key-property>
+            <key-property name="sifraPredmeta" type="string">
+                <column name="sifra_predmeta" length="30" />
+            </key-property>
+            <key-property name="ects" type="float">
+                <column name="ects" precision="12" scale="0" />
+            </key-property>
+            <key-property name="ocjena" type="int">
+                <column name="ocjena" />
+            </key-property>
+            <key-property name="odluka" type="int">
+                <column name="odluka" />
+            </key-property>
+            <key-property name="stranaInstitucija" type="string">
+                <column name="strana_institucija" length="250" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

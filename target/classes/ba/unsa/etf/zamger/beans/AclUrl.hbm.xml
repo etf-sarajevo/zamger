@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 30, 2015 7:27:23 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AclUrl" table="acl_url" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.AclUrlId">
+            <key-property name="osoba" type="int">
+                <column name="osoba" />
+            </key-property>
+            <key-property name="url" type="string">
+                <column name="url" length="200" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

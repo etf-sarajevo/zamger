@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Kviz" table="kviz" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="labgrupa" class="ba.unsa.etf.zamger.beans.Labgrupa" fetch="select">
+            <column name="labgrupa" />
+        </many-to-one>
+        <many-to-one name="predmet" class="ba.unsa.etf.zamger.beans.Predmet" fetch="select">
+            <column name="predmet" not-null="true" />
+        </many-to-one>
+        <many-to-one name="akademskaGodina" class="ba.unsa.etf.zamger.beans.AkademskaGodina" fetch="select">
+            <column name="akademska_godina" not-null="true" />
+        </many-to-one>
+        <property name="naziv" type="string">
+            <column name="naziv" length="50" not-null="true" />
+        </property>
+        <property name="vrijemePocetak" type="timestamp">
+            <column name="vrijeme_pocetak" length="19" not-null="true" />
+        </property>
+        <property name="vrijemeKraj" type="timestamp">
+            <column name="vrijeme_kraj" length="19" not-null="true" />
+        </property>
+        <property name="ipAdrese" type="string">
+            <column name="ip_adrese" length="65535" not-null="true" />
+        </property>
+        <property name="prolazBodova" type="float">
+            <column name="prolaz_bodova" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="brojPitanja" type="int">
+            <column name="broj_pitanja" not-null="true" />
+        </property>
+        <property name="trajanjeKviza" type="int">
+            <column name="trajanje_kviza" not-null="true">
+                <comment>u sekundama</comment>
+            </column>
+        </property>
+        <property name="aktivan" type="boolean">
+            <column name="aktivan" not-null="true" />
+        </property>
+        <set name="kvizPitanjes" table="kviz_pitanje" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="kviz" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.KvizPitanje" />
+        </set>
+    </class>
+</hibernate-mapping>

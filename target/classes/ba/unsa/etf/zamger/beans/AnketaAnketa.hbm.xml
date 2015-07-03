@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AnketaAnketa" table="anketa_anketa" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="predmet" class="ba.unsa.etf.zamger.beans.Predmet" fetch="select">
+            <column name="predmet" />
+        </many-to-one>
+        <many-to-one name="akademskaGodina" class="ba.unsa.etf.zamger.beans.AkademskaGodina" fetch="select">
+            <column name="akademska_godina" />
+        </many-to-one>
+        <property name="datumOtvaranja" type="timestamp">
+            <column name="datum_otvaranja" length="19" />
+        </property>
+        <property name="datumZatvaranja" type="timestamp">
+            <column name="datum_zatvaranja" length="19" />
+        </property>
+        <property name="naziv" type="string">
+            <column name="naziv" not-null="true" />
+        </property>
+        <property name="opis" type="string">
+            <column name="opis" length="65535" />
+        </property>
+        <property name="aktivna" type="java.lang.Boolean">
+            <column name="aktivna" />
+        </property>
+        <property name="editable" type="java.lang.Boolean">
+            <column name="editable" />
+        </property>
+        <set name="anketaPitanjes" table="anketa_pitanje" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="anketa" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AnketaPitanje" />
+        </set>
+        <set name="anketaPredmets" table="anketa_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="anketa" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AnketaPredmet" />
+        </set>
+    </class>
+</hibernate-mapping>

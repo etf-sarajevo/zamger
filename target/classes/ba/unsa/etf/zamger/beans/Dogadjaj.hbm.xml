@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Dogadjaj" table="dogadjaj" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="predmet" type="int">
+            <column name="predmet" not-null="true" />
+        </property>
+        <property name="akademskaGodina" type="int">
+            <column name="akademska_godina" not-null="true" />
+        </property>
+        <property name="datum" type="date">
+            <column name="datum" length="10" not-null="true" />
+        </property>
+        <property name="tipDogadjaja" type="int">
+            <column name="tip_dogadjaja" not-null="true" />
+        </property>
+        <property name="ispit" type="int">
+            <column name="ispit" not-null="true" />
+        </property>
+        <property name="vrijemeObjave" type="timestamp">
+            <column name="vrijeme_objave" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

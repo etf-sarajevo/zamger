@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Tmptable3" table="tmptable3" catalog="zamger">
+        <id name="zamgerid" type="int">
+            <column name="zamgerid" />
+            <generator class="assigned" />
+        </id>
+    </class>
+</hibernate-mapping>

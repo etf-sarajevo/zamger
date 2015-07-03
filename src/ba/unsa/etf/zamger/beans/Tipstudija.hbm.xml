@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Tipstudija" table="tipstudija" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.TipstudijaId">
+            <key-property name="id" type="int">
+                <column name="id" />
+            </key-property>
+            <key-property name="naziv" type="string">
+                <column name="naziv" length="50" />
+            </key-property>
+            <key-property name="ciklus" type="byte">
+                <column name="ciklus" />
+            </key-property>
+            <key-property name="trajanje" type="byte">
+                <column name="trajanje" />
+            </key-property>
+            <key-property name="mogucUpis" type="boolean">
+                <column name="moguc_upis" />
+            </key-property>
+            <key-property name="ects" type="int">
+                <column name="ects" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

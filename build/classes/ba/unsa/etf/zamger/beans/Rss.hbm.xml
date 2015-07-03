@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Rss" table="rss" catalog="zamger">
+        <id name="id" type="string">
+            <column name="id" length="15" />
+            <generator class="assigned" />
+        </id>
+        <property name="auth" type="int">
+            <column name="auth" not-null="true" />
+        </property>
+        <property name="access" type="timestamp">
+            <column name="access" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>
