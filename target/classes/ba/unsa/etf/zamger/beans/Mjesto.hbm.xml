@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Mjesto" table="mjesto" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <many-to-one name="drzava" class="ba.unsa.etf.zamger.beans.Drzava" fetch="select">
+            <column name="drzava" not-null="true" />
+        </many-to-one>
+        <property name="naziv" type="string">
+            <column name="naziv" length="40" not-null="true" />
+        </property>
+        <property name="opcina" type="int">
+            <column name="opcina" not-null="true" />
+        </property>
+        <property name="opcinaVanBih" type="string">
+            <column name="opcina_van_bih" length="40" not-null="true" />
+        </property>
+        <set name="osobasForMjestoRodjenja" table="osoba" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="mjesto_rodjenja" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Osoba" />
+        </set>
+        <set name="osobasForAdresaMjesto" table="osoba" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="adresa_mjesto" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Osoba" />
+        </set>
+    </class>
+</hibernate-mapping>

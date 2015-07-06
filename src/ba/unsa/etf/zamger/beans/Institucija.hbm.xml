@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Institucija" table="institucija" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="naziv" type="string">
+            <column name="naziv" length="100" not-null="true" />
+        </property>
+        <property name="roditelj" type="int">
+            <column name="roditelj" not-null="true" />
+        </property>
+        <property name="kratkiNaziv" type="string">
+            <column name="kratki_naziv" length="10" not-null="true" />
+        </property>
+        <property name="tipinstitucije" type="int">
+            <column name="tipinstitucije" not-null="true" />
+        </property>
+        <property name="dekan" type="int">
+            <column name="dekan" not-null="true" />
+        </property>
+        <property name="brojProtokola" type="string">
+            <column name="broj_protokola" length="100" not-null="true" />
+        </property>
+        <set name="predmets" table="predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="institucija" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Predmet" />
+        </set>
+        <set name="oblasts" table="oblast" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="institucija" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Oblast" />
+        </set>
+    </class>
+</hibernate-mapping>

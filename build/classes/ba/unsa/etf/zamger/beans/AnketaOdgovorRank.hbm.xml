@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AnketaOdgovorRank" table="anketa_odgovor_rank" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.AnketaOdgovorRankId">
+            <key-property name="rezultat" type="int">
+                <column name="rezultat" />
+            </key-property>
+            <key-property name="pitanje" type="int">
+                <column name="pitanje" />
+            </key-property>
+        </composite-id>
+        <many-to-one name="anketaPitanje" class="ba.unsa.etf.zamger.beans.AnketaPitanje" update="false" insert="false" fetch="select">
+            <column name="pitanje" not-null="true" />
+        </many-to-one>
+        <many-to-one name="anketaRezultat" class="ba.unsa.etf.zamger.beans.AnketaRezultat" update="false" insert="false" fetch="select">
+            <column name="rezultat" not-null="true" />
+        </many-to-one>
+        <property name="izborId" type="int">
+            <column name="izbor_id" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.ProjekatFile" table="projekat_file" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="filename" type="string">
+            <column name="filename" length="100" not-null="true" />
+        </property>
+        <property name="vrijeme" type="timestamp">
+            <column name="vrijeme" length="19" not-null="true" />
+        </property>
+        <property name="revizija" type="byte">
+            <column name="revizija" not-null="true" />
+        </property>
+        <property name="osoba" type="int">
+            <column name="osoba" not-null="true" />
+        </property>
+        <property name="projekat" type="int">
+            <column name="projekat" not-null="true" />
+        </property>
+        <property name="file" type="int">
+            <column name="file" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:09:41 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AkademskaGodina" table="akademska_godina" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned"></generator>
+        </id>
+        <property name="naziv" type="string">
+            <column name="naziv" length="20" not-null="true" />
+        </property>
+        <property name="aktuelna" type="boolean">
+            <column name="aktuelna" not-null="true" />
+        </property>
+        <property name="pocetakZimskogSemestra" type="date">
+            <column name="pocetak_zimskog_semestra" length="10" not-null="true" />
+        </property>
+        <property name="krajZimskogSemestra" type="date">
+            <column name="kraj_zimskog_semestra" length="10" not-null="true" />
+        </property>
+        <property name="pocetakLjetnjegSemestra" type="date">
+            <column name="pocetak_ljetnjeg_semestra" length="10" not-null="true" />
+        </property>
+        <property name="krajLjetnjegSemestra" type="date">
+            <column name="kraj_ljetnjeg_semestra" length="10" not-null="true" />
+        </property>
+        <set name="akademskaGodinaPredmets" table="akademska_godina_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AkademskaGodinaPredmet" />
+        </set>
+        <set name="ispits" table="ispit" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Ispit" />
+        </set>
+        <set name="angazmans" table="angazman" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Angazman" />
+        </set>
+        <set name="ponudakursas" table="ponudakursa" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Ponudakursa" />
+        </set>
+        <set name="konacnaOcjenas" table="konacna_ocjena" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.KonacnaOcjena" />
+        </set>
+        <set name="projekats" table="projekat" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Projekat" />
+        </set>
+        <set name="anketaAnketas" table="anketa_anketa" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AnketaAnketa" />
+        </set>
+        <set name="kolizijas" table="kolizija" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Kolizija" />
+        </set>
+        <set name="nastavnikPredmets" table="nastavnik_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.NastavnikPredmet" />
+        </set>
+        <set name="ggPredmets" table="gg_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.GgPredmet" />
+        </set>
+        <set name="kvizs" table="kviz" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Kviz" />
+        </set>
+        <set name="labgrupas" table="labgrupa" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Labgrupa" />
+        </set>
+        <set name="anketaPredmets" table="anketa_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="akademska_godina" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AnketaPredmet" />
+        </set>
+    </class>
+</hibernate-mapping>

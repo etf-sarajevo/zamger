@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.TippredmetaKomponenta" table="tippredmeta_komponenta" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.TippredmetaKomponentaId">
+            <key-property name="tippredmeta" type="int">
+                <column name="tippredmeta" />
+            </key-property>
+            <key-property name="komponenta" type="int">
+                <column name="komponenta" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

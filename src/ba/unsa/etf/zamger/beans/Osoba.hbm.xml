@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Osoba" table="osoba" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="mjestoByMjestoRodjenja" class="ba.unsa.etf.zamger.beans.Mjesto" fetch="select">
+            <column name="mjesto_rodjenja" />
+        </many-to-one>
+        <many-to-one name="strucniStepen" class="ba.unsa.etf.zamger.beans.StrucniStepen" fetch="select">
+            <column name="strucni_stepen" not-null="true" />
+        </many-to-one>
+        <many-to-one name="mjestoByAdresaMjesto" class="ba.unsa.etf.zamger.beans.Mjesto" fetch="select">
+            <column name="adresa_mjesto" />
+        </many-to-one>
+        <many-to-one name="naucniStepen" class="ba.unsa.etf.zamger.beans.NaucniStepen" fetch="select">
+            <column name="naucni_stepen" not-null="true" />
+        </many-to-one>
+        <property name="ime" type="string">
+            <column name="ime" length="30" not-null="true" />
+        </property>
+        <property name="prezime" type="string">
+            <column name="prezime" length="30" not-null="true" />
+        </property>
+        <property name="imeoca" type="string">
+            <column name="imeoca" length="30" not-null="true" />
+        </property>
+        <property name="prezimeoca" type="string">
+            <column name="prezimeoca" length="30" not-null="true" />
+        </property>
+        <property name="imemajke" type="string">
+            <column name="imemajke" length="30" not-null="true" />
+        </property>
+        <property name="prezimemajke" type="string">
+            <column name="prezimemajke" length="30" not-null="true" />
+        </property>
+        <property name="spol" type="string">
+            <column name="spol" length="2" not-null="true" />
+        </property>
+        <property name="email" type="string">
+            <column name="email" length="100" not-null="true" />
+        </property>
+        <property name="brindexa" type="string">
+            <column name="brindexa" length="15" not-null="true" />
+        </property>
+        <property name="datumRodjenja" type="date">
+            <column name="datum_rodjenja" length="10" />
+        </property>
+        <property name="nacionalnost" type="java.lang.Integer">
+            <column name="nacionalnost" />
+        </property>
+        <property name="drzavljanstvo" type="java.lang.Integer">
+            <column name="drzavljanstvo" />
+        </property>
+        <property name="borackeKategorije" type="boolean">
+            <column name="boracke_kategorije" not-null="true" />
+        </property>
+        <property name="jmbg" type="string">
+            <column name="jmbg" length="14" not-null="true" />
+        </property>
+        <property name="adresa" type="string">
+            <column name="adresa" length="50" not-null="true" />
+        </property>
+        <property name="telefon" type="string">
+            <column name="telefon" length="15" not-null="true" />
+        </property>
+        <property name="kanton" type="java.lang.Integer">
+            <column name="kanton" />
+        </property>
+        <property name="trebaBrisati" type="boolean">
+            <column name="treba_brisati" not-null="true" />
+        </property>
+        <property name="slika" type="string">
+            <column name="slika" length="50" not-null="true" />
+        </property>
+        <property name="dijeteSehidaPoginulogBorca" type="boolean">
+            <column name="dijete_sehida_poginulog_borca" not-null="true" />
+        </property>
+        <set name="auths" table="auth" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="id" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Auth" />
+        </set>
+        <set name="wsOauthRequests" table="ws_oauth_request" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.WsOauthRequest" />
+        </set>
+        <set name="odlukas" table="odluka" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Odluka" />
+        </set>
+        <set name="bbPosts" table="bb_post" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.BbPost" />
+        </set>
+        <set name="ispitocjenes" table="ispitocjene" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Ispitocjene" />
+        </set>
+        <set name="komentarsForStudent" table="komentar" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Komentar" />
+        </set>
+        <set name="komponentebodovis" table="komponentebodovi" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Komponentebodovi" />
+        </set>
+        <set name="cases" table="cas" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="nastavnik" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Cas" />
+        </set>
+        <set name="konacnaOcjenas" table="konacna_ocjena" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.KonacnaOcjena" />
+        </set>
+        <set name="komentarsForNastavnik" table="komentar" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="nastavnik" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Komentar" />
+        </set>
+        <set name="bbTemas" table="bb_tema" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.BbTema" />
+        </set>
+        <set name="kolizijas" table="kolizija" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Kolizija" />
+        </set>
+        <set name="angazmans" table="angazman" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Angazman" />
+        </set>
+        <set name="nastavnikPredmets" table="nastavnik_predmet" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="nastavnik" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.NastavnikPredmet" />
+        </set>
+        <set name="autotestRezultats" table="autotest_rezultat" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="student" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AutotestRezultat" />
+        </set>
+        <set name="wsSessions" table="ws_session" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.WsSession" />
+        </set>
+        <set name="blClanaks" table="bl_clanak" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.BlClanak" />
+        </set>
+        <set name="labgrupas" table="ogranicenje" inverse="false" lazy="true" fetch="select">
+            <key>
+                <column name="nastavnik" not-null="true" />
+            </key>
+            <many-to-many entity-name="ba.unsa.etf.zamger.beans.Labgrupa">
+                <column name="labgrupa" not-null="true" />
+            </many-to-many>
+        </set>
+        <set name="emails" table="email" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="osoba" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Email" />
+        </set>
+    </class>
+</hibernate-mapping>

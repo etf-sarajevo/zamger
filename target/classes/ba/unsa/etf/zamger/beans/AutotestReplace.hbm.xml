@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AutotestReplace" table="autotest_replace" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="zadaca" type="int">
+            <column name="zadaca" not-null="true" />
+        </property>
+        <property name="zadatak" type="int">
+            <column name="zadatak" not-null="true" />
+        </property>
+        <property name="tip" type="string">
+            <column name="tip" length="9" not-null="true" />
+        </property>
+        <property name="specifikacija" type="string">
+            <column name="specifikacija" length="100" not-null="true" />
+        </property>
+        <property name="zamijeni" type="string">
+            <column name="zamijeni" length="100" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

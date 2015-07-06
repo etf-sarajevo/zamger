@@ -19,6 +19,71 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Database: `zamger`
 --
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `acl`
+--
+
+CREATE TABLE IF NOT EXISTS `acl` (
+  `osoba` int(11) NOT NULL,
+  `acl_tip` varchar(30) NOT NULL,
+  `predikat1` int(11) NOT NULL,
+  `predikat2` int(11) NOT NULL,
+  `predikat3` int(11) NOT NULL,
+  KEY `osoba` (`osoba`,`acl_tip`),
+  KEY `acl_tip` (`acl_tip`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `acl_tip`
+--
+
+CREATE TABLE IF NOT EXISTS `acl_tip` (
+  `naziv` varchar(30) NOT NULL,
+  `br_predikata` tinyint(4) NOT NULL,
+  `predikat1` varchar(200) NOT NULL,
+  `predikat2` varchar(200) NOT NULL,
+  `predikat3` varchar(200) NOT NULL,
+  PRIMARY KEY (`naziv`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `acl_tip`
+--
+
+INSERT INTO `acl_tip` (`naziv`, `br_predikata`, `predikat1`, `predikat2`, `predikat3`) VALUES
+('nastavnik', 2, 'predmet', 'akademska_godina', ''),
+('saradnik', 2, 'predmet', 'akademska_godina', ''),
+('siteadmin', 0, '', '', ''),
+('student', 2, 'predmet', 'akademska_godina', ''),
+('studentska', 0, '', '', ''),
+('super_asistent', 2, 'predmet', 'akademska_godina', '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `acl_url`
+--
+
+CREATE TABLE IF NOT EXISTS `acl_url` (
+  `osoba` int(11) NOT NULL,
+  `url` varchar(200) NOT NULL,
+  KEY `osoba` (`osoba`,`url`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `acl_url`
+--
+
 -- --------------------------------------------------------
 
 --
@@ -3560,6 +3625,37 @@ CREATE TABLE IF NOT EXISTS `vozacka_dozvola` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ws_oauth_request`
+--
+
+CREATE TABLE IF NOT EXISTS `ws_oauth_request` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `code` varchar(200) NOT NULL,
+  `osoba` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `osoba` (`osoba`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=7 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ws_session`
+--
+
+CREATE TABLE IF NOT EXISTS `ws_session` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `osoba` int(11) DEFAULT NULL,
+  `token` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `token` (`token`),
+  KEY `osoba` (`osoba`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `zadaca`
 --
 
@@ -4058,3 +4154,7 @@ ALTER TABLE `predmet`
 ALTER TABLE `projekat`
   ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
   ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+ALTER TABLE `acl_url`
+  ADD CONSTRAINT `acl_url_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
+

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+                                         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+ <session-factory>
+  <property name="hibernate.connection.driver_class">org.gjt.mm.mysql.Driver</property>
+  <property name="hibernate.connection.password">password</property>
+  <property name="hibernate.connection.url">jdbc:mysql://localhost/zamger</property>
+  <property name="hibernate.connection.username">root</property>
+  <property name="hibernate.dialect">org.hibernate.dialect.MySQLInnoDBDialect</property>
+  <mapping resource="ba/unsa/etf/zamger/beans/Osoba.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Auth.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Mjesto.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/StrucniStepen.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Odluka.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/BbPost.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Ispitocjene.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Komentar.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Komponentebodovi.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Cas.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/KonacnaOcjena.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/BbTema.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Kolizija.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Angazman.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/NastavnikPredmet.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AutotestRezultat.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/BlClanak.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Email.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Labgrupa.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Kviz.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/KvizPitanje.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Predmet.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AkademskaGodinaPredmet.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Ispit.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Projekat.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Ponudakursa.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaAnketa.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/GgPredmet.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/IzborniSlot.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaPredmet.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/IspitTermin.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaPitanje.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaOdgovorRank.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaIzboriPitanja.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaOdgovorDopisani.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaOdgovorIzbori.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaOdgovorText.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AkademskaGodina.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AngazmanStatus.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaRezultat.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/AnketaTipPitanja.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Komponenta.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Tipkomponente.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Drzava.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/NaucniStepen.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Studij.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Institucija.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/Oblast.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/BbPostText.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/WsOauthRequest.hbm.xml"/>
+  <mapping resource="ba/unsa/etf/zamger/beans/WsSession.hbm.xml"/>
+ </session-factory>
+</hibernate-configuration>

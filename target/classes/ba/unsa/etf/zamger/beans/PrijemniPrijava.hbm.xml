@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.PrijemniPrijava" table="prijemni_prijava" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.PrijemniPrijavaId">
+            <key-property name="prijemniTermin" type="int">
+                <column name="prijemni_termin" />
+            </key-property>
+            <key-property name="osoba" type="int">
+                <column name="osoba" />
+            </key-property>
+        </composite-id>
+        <property name="brojDosjea" type="int">
+            <column name="broj_dosjea" not-null="true" />
+        </property>
+        <property name="nacinStudiranja" type="boolean">
+            <column name="nacin_studiranja" not-null="true" />
+        </property>
+        <property name="studijPrvi" type="int">
+            <column name="studij_prvi" not-null="true" />
+        </property>
+        <property name="studijDrugi" type="int">
+            <column name="studij_drugi" not-null="true" />
+        </property>
+        <property name="studijTreci" type="int">
+            <column name="studij_treci" not-null="true" />
+        </property>
+        <property name="studijCetvrti" type="int">
+            <column name="studij_cetvrti" not-null="true" />
+        </property>
+        <property name="izasao" type="boolean">
+            <column name="izasao" not-null="true" />
+        </property>
+        <property name="rezultat" type="double">
+            <column name="rezultat" precision="22" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

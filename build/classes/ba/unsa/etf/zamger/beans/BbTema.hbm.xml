@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.BbTema" table="bb_tema" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <many-to-one name="bbPostByPrviPost" class="ba.unsa.etf.zamger.beans.BbPost" fetch="select">
+            <column name="prvi_post" not-null="true" />
+        </many-to-one>
+        <many-to-one name="osoba" class="ba.unsa.etf.zamger.beans.Osoba" fetch="select">
+            <column name="osoba" not-null="true" />
+        </many-to-one>
+        <many-to-one name="bbPostByZadnjiPost" class="ba.unsa.etf.zamger.beans.BbPost" fetch="select">
+            <column name="zadnji_post" not-null="true" />
+        </many-to-one>
+        <many-to-one name="projekat" class="ba.unsa.etf.zamger.beans.Projekat" fetch="select">
+            <column name="projekat" not-null="true" />
+        </many-to-one>
+        <property name="vrijeme" type="timestamp">
+            <column name="vrijeme" length="19" not-null="true" />
+        </property>
+        <property name="pregleda" type="int">
+            <column name="pregleda" not-null="true" />
+        </property>
+        <set name="bbPosts" table="bb_post" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="tema" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.BbPost" />
+        </set>
+    </class>
+</hibernate-mapping>

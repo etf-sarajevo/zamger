@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Tmptable2" table="tmptable2" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.Tmptable2Id">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="studij" type="int">
+                <column name="studij" />
+            </key-property>
+            <key-property name="semestar" type="int">
+                <column name="semestar" />
+            </key-property>
+            <key-property name="akademskaGodina" type="int">
+                <column name="akademska_godina" />
+            </key-property>
+            <key-property name="nacinStudiranja" type="int">
+                <column name="nacin_studiranja" />
+            </key-property>
+            <key-property name="ponovac" type="byte">
+                <column name="ponovac" />
+            </key-property>
+            <key-property name="odluka" type="int">
+                <column name="odluka" />
+            </key-property>
+        </composite-id>
+    </class>
+</hibernate-mapping>

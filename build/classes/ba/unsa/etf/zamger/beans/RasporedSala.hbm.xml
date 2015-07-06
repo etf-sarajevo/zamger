@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.RasporedSala" table="raspored_sala" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="naziv" type="string">
+            <column name="naziv" length="50" not-null="true" />
+        </property>
+        <property name="kapacitet" type="java.lang.Integer">
+            <column name="kapacitet" />
+        </property>
+        <property name="tip" type="string">
+            <column name="tip" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

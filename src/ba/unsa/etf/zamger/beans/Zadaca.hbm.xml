@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Zadaca" table="zadaca" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="naziv" type="string">
+            <column name="naziv" length="50" not-null="true" />
+        </property>
+        <property name="predmet" type="int">
+            <column name="predmet" not-null="true" />
+        </property>
+        <property name="akademskaGodina" type="int">
+            <column name="akademska_godina" not-null="true" />
+        </property>
+        <property name="zadataka" type="byte">
+            <column name="zadataka" not-null="true" />
+        </property>
+        <property name="bodova" type="float">
+            <column name="bodova" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="rok" type="timestamp">
+            <column name="rok" length="19" not-null="true" />
+        </property>
+        <property name="aktivna" type="boolean">
+            <column name="aktivna" not-null="true" />
+        </property>
+        <property name="programskijezik" type="int">
+            <column name="programskijezik" not-null="true" />
+        </property>
+        <property name="automatskoTestiranje" type="boolean">
+            <column name="automatsko_testiranje" not-null="true" />
+        </property>
+        <property name="attachment" type="boolean">
+            <column name="attachment" not-null="true" />
+        </property>
+        <property name="dozvoljeneEkstenzije" type="string">
+            <column name="dozvoljene_ekstenzije" />
+        </property>
+        <property name="postavkaZadace" type="string">
+            <column name="postavka_zadace" />
+        </property>
+        <property name="komponenta" type="int">
+            <column name="komponenta" not-null="true" />
+        </property>
+        <property name="vrijemeobjave" type="timestamp">
+            <column name="vrijemeobjave" length="19" not-null="true" />
+        </property>
+        <set name="autotests" table="autotest" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="zadaca" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Autotest" />
+        </set>
+        <set name="autotestReplaces" table="autotest_replace" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="zadaca" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.AutotestReplace" />
+        </set>
+    </class>
+</hibernate-mapping>

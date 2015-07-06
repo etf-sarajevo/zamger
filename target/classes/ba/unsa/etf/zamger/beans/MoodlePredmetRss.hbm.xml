@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.MoodlePredmetRss" table="moodle_predmet_rss" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="vrstanovosti" type="int">
+            <column name="vrstanovosti" not-null="true" />
+        </property>
+        <property name="moodleId" type="int">
+            <column name="moodle_id" not-null="true" />
+        </property>
+        <property name="sadrzaj" type="string">
+            <column name="sadrzaj" length="65535" not-null="true" />
+        </property>
+        <property name="vrijemePromjene" type="long">
+            <column name="vrijeme_promjene" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

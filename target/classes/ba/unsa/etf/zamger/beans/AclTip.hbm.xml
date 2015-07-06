@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 30, 2015 7:27:23 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.AclTip" table="acl_tip" catalog="zamger">
+        <id name="naziv" type="string">
+            <column name="naziv" length="30" />
+            <generator class="assigned" />
+        </id>
+        <property name="brPredikata" type="byte">
+            <column name="br_predikata" not-null="true" />
+        </property>
+        <property name="predikat1" type="string">
+            <column name="predikat1" length="200" not-null="true" />
+        </property>
+        <property name="predikat2" type="string">
+            <column name="predikat2" length="200" not-null="true" />
+        </property>
+        <property name="predikat3" type="string">
+            <column name="predikat3" length="200" not-null="true" />
+        </property>
+        <set name="acls" table="acl" inverse="true" lazy="true" fetch="select">
+            <key>
+                <column name="acl_tip" length="30" not-null="true" />
+            </key>
+            <one-to-many class="ba.unsa.etf.zamger.beans.Acl" />
+        </set>
+    </class>
+</hibernate-mapping>

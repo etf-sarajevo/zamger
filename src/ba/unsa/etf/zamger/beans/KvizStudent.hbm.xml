@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:19:11 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.KvizStudent" table="kviz_student" catalog="zamger">
+        <composite-id name="id" class="ba.unsa.etf.zamger.beans.KvizStudentId">
+            <key-property name="student" type="int">
+                <column name="student" />
+            </key-property>
+            <key-property name="kviz" type="int">
+                <column name="kviz" />
+            </key-property>
+        </composite-id>
+        <property name="dovrsen" type="boolean">
+            <column name="dovrsen" not-null="true" />
+        </property>
+        <property name="bodova" type="float">
+            <column name="bodova" precision="12" scale="0" not-null="true" />
+        </property>
+        <property name="vrijemeAktivacije" type="timestamp">
+            <column name="vrijeme_aktivacije" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

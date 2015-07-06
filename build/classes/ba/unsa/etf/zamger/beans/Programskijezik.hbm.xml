@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 20, 2015 3:18:17 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.Programskijezik" table="programskijezik" catalog="zamger">
+        <id name="id" type="int">
+            <column name="id" />
+            <generator class="assigned" />
+        </id>
+        <property name="naziv" type="string">
+            <column name="naziv" length="50" not-null="true" />
+        </property>
+        <property name="geshi" type="string">
+            <column name="geshi" length="20" not-null="true" />
+        </property>
+        <property name="ekstenzija" type="string">
+            <column name="ekstenzija" length="10" not-null="true" />
+        </property>
+        <property name="ace" type="string">
+            <column name="ace" length="50" not-null="true" />
+        </property>
+        <property name="kompajler" type="string">
+            <column name="kompajler" length="10" not-null="true" />
+        </property>
+        <property name="opcijeKompajlera" type="string">
+            <column name="opcije_kompajlera" length="65535" not-null="true" />
+        </property>
+        <property name="opcijeKompajleraDebug" type="string">
+            <column name="opcije_kompajlera_debug" length="65535" not-null="true" />
+        </property>
+        <property name="debugger" type="string">
+            <column name="debugger" length="10" not-null="true" />
+        </property>
+        <property name="profiler" type="string">
+            <column name="profiler" length="10" not-null="true" />
+        </property>
+        <property name="opcijeProfilera" type="string">
+            <column name="opcije_profilera" length="200" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>

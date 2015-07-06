@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated May 26, 2015 12:09:41 PM by Hibernate Tools 3.4.0.CR1 -->
+<hibernate-mapping>
+    <class name="ba.unsa.etf.zamger.beans.IspitTermin" table="ispit_termin" catalog="zamger">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity"></generator>
+        </id>
+        <many-to-one name="ispit" class="ba.unsa.etf.zamger.beans.Ispit" fetch="select">
+            <column name="ispit" not-null="true" />
+        </many-to-one>
+        <property name="datumvrijeme" type="timestamp">
+            <column name="datumvrijeme" length="19" not-null="true" />
+        </property>
+        <property name="komponenta" type="int">
+            <column name="komponenta" not-null="true" />
+        </property>
+        <property name="maxstudenata" type="int">
+            <column name="maxstudenata" not-null="true" />
+        </property>
+        <property name="deadline" type="timestamp">
+            <column name="deadline" length="19" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>
