@@ -83,8 +83,6 @@ CREATE TABLE IF NOT EXISTS `acl_url` (
 --
 -- Constraints for table `acl_url`
 --
-ALTER TABLE `acl_url`
-  ADD CONSTRAINT `acl_url_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
 
 -- --------------------------------------------------------
 
@@ -4156,3 +4154,7 @@ ALTER TABLE `predmet`
 ALTER TABLE `projekat`
   ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
   ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+ALTER TABLE `acl_url`
+  ADD CONSTRAINT `acl_url_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
+
