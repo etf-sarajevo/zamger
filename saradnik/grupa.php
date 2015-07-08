@@ -55,7 +55,7 @@ $kreiranje = intval($_GET['kreiranje']);
 
 if ($labgrupa>0) {
 	// Određujemo predmet i ag za labgrupu
-	$q30 = myquery("select naziv, predmet, akademska_godina from labgrupa where id=$labgrupa");
+	$q30 = myquery("select naziv, predmet, akademska_godina, virtualna from labgrupa where id=$labgrupa");
 	if (mysql_num_rows($q30)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
@@ -64,6 +64,7 @@ if ($labgrupa>0) {
 	$naziv = mysql_result($q30,0,0);
 	$predmet = mysql_result($q30,0,1);
 	$ag = mysql_result($q30,0,2);
+	$virtualna = mysql_result($q30,0,3);
 
 } else {
 	// Ako nije definisana grupa, probacemo preko predmeta i ag uci u virtuelnu grupu
@@ -77,6 +78,7 @@ if ($labgrupa>0) {
 	}
 	$labgrupa = mysql_result($q35,0,0);
 	$naziv = mysql_result($q35,0,1);
+	$virtualna = 1;
 }
 
 
@@ -712,6 +714,12 @@ while ($r310 = mysql_fetch_row($q310)) {
 	$stud_brind = $r310[3];
 	$imeprezime[$stud_id] = "$stud_prezime&nbsp;$stud_ime";
 	$brind[$stud_id] = $stud_brind;
+	
+	// Dodajemo ime grupe pored imena studenta ako je grupa virtualna
+	if ($grupa_virtualna == 1) {
+		$q315 = myquery("select lg.naziv from labgrupa as lg, student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=lg.id and lg.virtualna=0 and lg.predmet=$predmet and lg.akademska_godina=$ag");
+		if (mysql_num_rows($q315)>0) $stud_ime .= " (".mysql_result($q315,0,0).")";
+	}
 }
 uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 $redni_broj=0;
