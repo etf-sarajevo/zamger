@@ -805,6 +805,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 // na koliziju, ali trenutno ne vidim kako to izvesti a da nekome ne postane invalidan odabir predmeta
 
 function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
+	global $userid;
 //	print "Provjeravam kapacitet $predmet za godinu $zagodinu<br>";
 	// Provjera kapaciteta
 	$q112 = myquery("SELECT kapacitet, kapacitet_ekstra FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$zagodinu");
@@ -813,11 +814,11 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 		$kapacitet_ekstra = mysql_result($q112,0,0);
 		
 		// Koliko je studenata izabralo predmet kao izborni?
-		$q113 = myquery("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$zagodinu AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet");
+		$q113 = myquery("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$zagodinu AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
 		$popunjeno = mysql_result($q113,0,0);
 		
 		// Koliko sluša na koliziju?
-		$q114 = myquery("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet");
+		$q114 = myquery("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet AND student!=$userid");
 		$popunjeno += mysql_result($q114,0,0);
 		
 		if ($kapacitet_ekstra > 0 && $popunjeno >= $kapacitet_ekstra)
