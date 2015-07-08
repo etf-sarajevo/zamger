@@ -53,7 +53,7 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Ovo bi se dalo optimizovati
 	global $conf_files_path;
 
-	// Odredjujem ponudukursa
+	// Odredjujem ponudukursa sto je potrebno za naredna dva upita
 	$q225 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	if (mysql_num_rows($q225) == 0) {
 		biguglyerror("Student nije upisan na odabrani predmet");
@@ -122,6 +122,10 @@ function ispis_studenta_sa_predmeta($student,$predmet,$ag) {
 // Parametar funkcije je ustvari ponudakursa
 
 function upis_studenta_na_predmet($student,$ponudakursa) {
+	// Da li je student već upisan na predmet?
+	$q5 = myquery("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$ponudakursa");
+	if (mysql_result($q5,0,0)>0) return;
+
 	// Zapis u tabeli student_predmet
 	$q10 = myquery("insert into student_predmet set student=$student, predmet=$ponudakursa");
 
