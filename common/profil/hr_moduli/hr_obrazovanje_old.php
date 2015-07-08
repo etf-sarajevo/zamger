@@ -1,9 +1,9 @@
 <?
 	// pokupi sifrarnike iz baze i zamotaj ih u <option> </option>
 	$strucnasprema=getSifrarnikData("sifrarnik_strucna_sprema");
-	$zvanja=getSifrarnikData("sifrarnik_akademsko_zvanje");
-	$naucnaoblast=getSifrarnikData("sifrarnik_naucna_oblast");
-	$uzaoblast = getSifrarnikData("sifrarnik_uza_naucna_oblast");
+	$zvanja=getSifrarnikData("zvanje");
+	$naucnaoblast=getSifrarnikData("oblast");
+	$uzaoblast = getSifrarnikData("podoblast");
 	$fascati = getSifrarnikData("sifrarnik_fascati");
 	$fascatipod = getSifrarnikData("sifrarnik_fascati_podoblast"); // napravio sam sifrarnik ali je na hr.unsa.ba prazan
 ?>

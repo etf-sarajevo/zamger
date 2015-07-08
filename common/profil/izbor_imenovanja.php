@@ -14,14 +14,14 @@
 		</tr>
 		<?
 
-		$q500 = myquery("select fk_naucnonastavno_zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), fk_naucna_oblast, fk_uza_naucna_oblast, dopunski, druga_institucija from izbor WHERE fk_osoba=$osoba order by datum_isteka, datum_izbora");
+		$q500 = myquery("select zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), oblast, podoblast, dopunski, druga_institucija from izbor WHERE osoba=$osoba order by datum_isteka, datum_izbora");
 		if (mysql_num_rows($q500) < 1) {
 			?>
 			<tr><td colspan="7">Nemamo nikakvih podataka o vašim izborima.</td></tr>
 			<?
 		}
 		while ($r500 = mysql_fetch_row($q500)) {
-			$q510 = myquery("select naziv from sifrarnik_naucnonastavno_zvanje where id=$r500[0]");
+			$q510 = myquery("select naziv from zvanje where id=$r500[0]");
 			$nzvanje = mysql_result($q510,0,0);
 
 			$datum_izbora = date("d. m. Y", $r500[1]);
@@ -34,7 +34,7 @@
 			if ($oblast<1)
 				$oblast = "<font color=\"red\">(nepoznato)</font>";
 			else {
-				$q520 = myquery("select naziv from sifrarnik_naucna_oblast where id=$oblast");
+				$q520 = myquery("select naziv from oblast where id=$oblast");
 				if (mysql_num_rows($q520)<1)
 					$oblast = "<font color=\"red\">GREŠKA</font>";
 				else
@@ -44,7 +44,7 @@
 			if ($uza_oblast<1)
 				$uza_oblast = "<font color=\"red\">(nepoznato)</font>";
 			else {
-				$q530 = myquery("select naziv from sifrarnik_uza_naucna_oblast where id=$uza_oblast");
+				$q530 = myquery("select naziv from podoblast where id=$uza_oblast");
 				if (mysql_num_rows($q530)<1)
 					$uza_oblast = "<font color=\"red\">GREŠKA</font>";
 				else
@@ -111,15 +111,15 @@
 	<tr><td colspan="2" bgcolor="#999999"><font color="#FFFFFF">DOSTIGNUTO AKADEMSKO ZVANJE I NAUČNI STEPEN:</font></td></tr>
 	<?
 
-	$q430 = myquery("select fk_akademsko_zvanje, fk_naucni_stepen from osoba where id=$osoba");
+	$q430 = myquery("select strucni_stepen, naucni_stepen from osoba where id=$osoba");
 	$akademsko_zvanje = "Nepoznato / Bez akademskog zvanja";
 	$naucni_stepen = "Nepoznato / Bez naučnog stepena";
 	if (mysql_result($q430,0,0)!=0) {
-		$q440 = myquery("select naziv from sifrarnik_akademsko_zvanje where id=".mysql_result($q430,0,0));
+		$q440 = myquery("select naziv from strucni_stepen where id=".mysql_result($q430,0,0));
 		$akademsko_zvanje = ucfirst(mysql_result($q440,0,0));
 	}
 	if (mysql_result($q430,0,1)!=0) {
-		$q450 = myquery("select naziv from sifrarnik_naucni_stepen where id=".mysql_result($q430,0,1));
+		$q450 = myquery("select naziv from naucni_stepen where id=".mysql_result($q430,0,1));
 		$naucni_stepen = ucfirst(mysql_result($q450,0,0));
 	}
 
@@ -137,7 +137,7 @@
 	<tr>
 	<?
 
-	$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.fk_naucna_oblast, i.fk_uza_naucna_oblast, i.dopunski, i.druga_institucija from izbor as i, sifrarnik_naucnonastavno_zvanje as z WHERE i.fk_osoba=$osoba and i.fk_naucnonastavno_zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+	$q400 = myquery("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.oblast, i.podoblast, i.dopunski, i.druga_institucija from izbor as i, zvanje as z WHERE i.osoba=$osoba and i.zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
 	if (mysql_num_rows($q400)==0) {
 		?>
 		<tr><td colspan="2">Nema podataka o izboru ili nikada niste bili izabrani u zvanje.</td></tr>
@@ -153,7 +153,7 @@
 		if ($oblast<1)
 			$oblast = "<font color=\"red\">(nepoznato)</font>";
 		else {
-			$q410 = myquery("select naziv from sifrarnik_naucna_oblast where id=$oblast");
+			$q410 = myquery("select naziv from oblast where id=$oblast");
 			if (mysql_num_rows($q410)<1)
 				$oblast = "<font color=\"red\">GREŠKA</font>";
 			else
@@ -163,7 +163,7 @@
 		if ($uza_oblast<1)
 			$uza_oblast = "<font color=\"red\">(nepoznato)</font>";
 		else {
-			$q420 = myquery("select naziv from sifrarnik_uza_naucna_oblast where id=$uza_oblast");
+			$q420 = myquery("select naziv from podoblast where id=$uza_oblast");
 			if (mysql_num_rows($q420)<1)
 				$uza_oblast = "<font color=\"red\">GREŠKA</font>";
 			else

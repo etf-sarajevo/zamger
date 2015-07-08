@@ -29,10 +29,10 @@ if (($_REQUEST['operacija'] == "dodavanje" || $_REQUEST['operacija'] == "izmjena
 		niceerror("Nisu unesena sva obavezna polja");
 	} else {
 		if ($_REQUEST['operacija'] == "dodavanje") {
-			$q10 = myquery("INSERT INTO hr_radno_iskustvo SET fk_osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta'");
+			$q10 = myquery("INSERT INTO hr_radno_iskustvo SET osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta'");
 			zamgerlog("dodano radno iskustvo", 2);
 		} else {
-			$q10 = myquery("UPDATE hr_radno_iskustvo SET fk_osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta' WHERE id=$id");
+			$q10 = myquery("UPDATE hr_radno_iskustvo SET osoba=$osoba, datum_pocetka=FROM_UNIXTIME($pocetak), datum_kraja=FROM_UNIXTIME($kraj), poslodavac='$poslodavac', adresa_poslodavca='$adresa_poslodavca', radno_mjesto='$radno_mjesto', radno_mjesto_en='$radno_mjesto_en', opis_radnog_mjesta='$opis_radnog_mjesta' WHERE id=$id");
 			zamgerlog("izmijenjeno radno iskustvo", 2);
 		}
 		// Default vrijednosti
@@ -45,7 +45,7 @@ if (($_REQUEST['operacija'] == "dodavanje" || $_REQUEST['operacija'] == "izmjena
 
 else if ($_REQUEST['operacija'] == "izmjena") {
 	$id = intval($_REQUEST['id']);
-	$q20 = myquery("SELECT UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where id=$id and fk_osoba=$osoba");
+	$q20 = myquery("SELECT UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where id=$id and osoba=$osoba");
 	if (mysql_num_rows($q20)>0) {
 		$r20 = mysql_fetch_assoc($q20);
 		$pocetak_dan = date("d", $r20['pocetak']);
@@ -68,7 +68,7 @@ else if ($_REQUEST['operacija'] == "izmjena") {
 
 else if ($_REQUEST['operacija'] == "brisanje") {
 	$id = intval($_REQUEST['id']);
-	$q20 = myquery("SELECT id from hr_radno_iskustvo where id=$id and fk_osoba=$osoba");
+	$q20 = myquery("SELECT id from hr_radno_iskustvo where id=$id and osoba=$osoba");
 	if (mysql_num_rows($q20)>0) {
 		$q30 = myquery("DELETE FROM hr_radno_iskustvo WHERE id=$id");
 	}
@@ -103,7 +103,7 @@ else {
 	<?
 	$starikraj = -1;
 	$greska = false;
-	$q420 = myquery("select id, UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where fk_osoba=$osoba order by datum_pocetka");
+	$q420 = myquery("select id, UNIX_TIMESTAMP(datum_pocetka) as pocetak, UNIX_TIMESTAMP(datum_kraja) as kraj, poslodavac, adresa_poslodavca, radno_mjesto, radno_mjesto_en, opis_radnog_mjesta from hr_radno_iskustvo where osoba=$osoba order by datum_pocetka");
 	while ($r420 = mysql_fetch_assoc($q420)) {
 		$pocetak = date("d. m. Y", $r420['pocetak']);
 		$kraj = date("d. m. Y", $r420['kraj']);

@@ -1,6 +1,6 @@
 <?
-	$vozacka=getSifrarnikData("sifrarnik_vozacki_kategorija",mysql_result($q400,0,22));
-	$maternji =getSifrarnikData("sifrarnik_jezik",mysql_result($q400,0,23)); 
+	$vozacka=getSifrarnikData("vozacki_kategorija",mysql_result($q400,0,22));
+	$maternji =getSifrarnikData("maternji_jezik",mysql_result($q400,0,23)); 
 ?>
 <div id="Korak1">
         <h2>Opšti podaci</h2>

@@ -13,8 +13,8 @@ $prezime = mysql_result($ime_prezime,0,1);
 echo "<h2>Detalji o normi korisnika $ime $prezime</h2><br>\n";
 
 //stari metod(ne valja) $fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba"), 0, 0));
-$fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba and CONCAT(year(datum_izbora),'/',year(datum_isteka)) = (SELECT naziv FROM akademska_godina WHERE aktuelna = 1)"), 0, 0));
-$fk_naucnonastavno_zvanje2 = intval(mysql_result(myquery("SELECT fk_naucnonastavno_zvanje FROM izbor WHERE fk_osoba = $osoba ORDER BY year(datum_isteka) DESC"), 0, 0));
+$fk_naucnonastavno_zvanje = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $osoba and CONCAT(year(datum_izbora),'/',year(datum_isteka)) = (SELECT naziv FROM akademska_godina WHERE aktuelna = 1)"), 0, 0));
+$fk_naucnonastavno_zvanje2 = intval(mysql_result(myquery("SELECT zvanje FROM izbor WHERE osoba = $osoba ORDER BY year(datum_isteka) DESC"), 0, 0));
 	if($fk_naucnonastavno_zvanje == 1 || $fk_naucnonastavno_zvanje == 2 || $fk_naucnonastavno_zvanje == 6){ //u slucaju redovnog profesora, vandrednog profesora ili profesora emeritusa
 		/*
 		stari nacin, ne koristi se vise

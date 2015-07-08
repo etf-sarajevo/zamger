@@ -100,9 +100,9 @@ if ($_POST['subakcija'] == "potvrda" && check_csrf_token()) {
 	$kanton = intval($_REQUEST['_lv_column_kanton']); if ($kanton==-1) $kanton=0;
 	if ($_REQUEST['borac']) $borac=1; else $borac=0;
 
-	$maternji_jezik = intval($_REQUEST['_lv_column_sifrarnik_jezik']);  if ($maternji_jezik==-1) $maternji_jezik=0;
-	$vozacka_dozvola = intval($_REQUEST['_lv_column_sifrarnik_vozacki_kategorija']); if ($vozacka_dozvola==-1) $vozacka_dozvola=0;
-	$nacin_stanovanja = intval($_REQUEST['_lv_column_sifrarnik_nacin_stanovanja']); if ($nacin_stanovanja==-1) $nacin_stanovanja=0;
+	$maternji_jezik = intval($_REQUEST['_lv_column_maternji_jezik']);  if ($maternji_jezik==-1) $maternji_jezik=0;
+	$vozacka_dozvola = intval($_REQUEST['_lv_column_vozacki_kategorija']); if ($vozacka_dozvola==-1) $vozacka_dozvola=0;
+	$nacin_stanovanja = intval($_REQUEST['_lv_column_nacin_stanovanja']); if ($nacin_stanovanja==-1) $nacin_stanovanja=0;
 
 	if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
 		$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
@@ -513,13 +513,13 @@ if ($user_nastavnik || $user_studentska) {
 		<input type="checkbox" name="borac" <?=$boracke?>> Dijete šehida / borca / pripadnik RVI
 	</td></tr>
 	<tr><td>
-		Maternji jezik:</td><td><?=db_dropdown("sifrarnik_jezik", mysql_result($q400,0,21), " ") ?>
+		Maternji jezik:</td><td><?=db_dropdown("maternji_jezik", mysql_result($q400,0,21), " ") ?>
 	</td></tr>
 	<tr><td>
-		Vozačka dozvola:</td><td><?=db_dropdown("sifrarnik_vozacki_kategorija", mysql_result($q400,0,22), " ") ?>
+		Vozačka dozvola:</td><td><?=db_dropdown("vozacki_kategorija", mysql_result($q400,0,22), " ") ?>
 	</td></tr>
 	<tr><td>
-		Način stanovanja:</td><td><?=db_dropdown("sifrarnik_nacin_stanovanja", mysql_result($q400,0,23), " ") ?>
+		Način stanovanja:</td><td><?=db_dropdown("nacin_stanovanja", mysql_result($q400,0,23), " ") ?>
 	</td></tr>
 
 

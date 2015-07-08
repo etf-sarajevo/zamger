@@ -1,8 +1,8 @@
 <?
 	// pokupi sifrarnike iz baze i zamotaj ih u <option> </option>
 	$strucnasprema=getSifrarnikData("sifrarnik_strucna_sprema");
-	$zvanja=getSifrarnikData("sifrarnik_akademsko_zvanje");
-	$naucni_stepen=getSifrarnikData("sifrarnik_naucni_stepen");
+	$zvanja=getSifrarnikData("zvanje");
+	$naucni_stepen=getSifrarnikData("naucni_stepen");
 ?>
 
 <h2>Obrazovanje</h2>
@@ -23,7 +23,7 @@
 	      
 	<?
 
-	$q420 = myquery("select * from hr_usavrsavanje where fk_osoba=$osoba");
+	$q420 = myquery("select * from hr_usavrsavanje where osoba=$osoba");
 	while ($r420 = mysql_fetch_assoc($q420)) {
 		$dat= explode(" ", $r420['datum']);
 		?>

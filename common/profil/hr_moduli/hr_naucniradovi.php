@@ -68,7 +68,7 @@
 	      </tr>
 	      
 	    <?
-			$q420 = myquery("select * from hr_naucni_radovi where fk_osoba=$userid");
+			$q420 = myquery("select * from hr_naucni_radovi where osoba=$userid");
 			while ($r420 = mysql_fetch_assoc($q420)) {
 				$dat= explode(" ", $r420['datum']);
 		?>

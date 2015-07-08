@@ -90,7 +90,7 @@ while ($r40 = mysql_fetch_row($q40)) {
 	} else {
 		$id_nastavnika = mysql_result($q33,0,0);
 		// Određujemo zvanje
-		$q34 = myquery("select count(*) from izbor where fk_osoba=$id_nastavnika");
+		$q34 = myquery("select count(*) from izbor where osoba=$id_nastavnika");
 		if (mysql_result($q34, 0, 0)<1) {
 			?><p><b>Napomena:</b> Predmetnom nastavniku je istekao izbor ili nisu popunjeni odgovarajući podaci. Bez podataka o izboru ne možemo ispravno popuniti titulu nastavnika. Polje za odgovornog nastavnika na prijavi neće biti popunjeno. Morate ga popuniti ručno.</p><?
 		}

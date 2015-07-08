@@ -73,7 +73,7 @@
 	      </tr>
 	      
 	    <?
-			$q420 = myquery("select *, t.naziv 'vrsta', p.naziv 'pnaziv' from hr_publikacija p , sifrarnik_tip_publikacije t where fk_tip_publikacije=t.id and fk_osoba=$userid");
+			$q420 = myquery("select *, t.naziv 'vrsta', p.naziv 'pnaziv' from hr_publikacija p , sifrarnik_tip_publikacije t where tip_publikacije=t.id and osoba=$userid");
 			while ($r420 = mysql_fetch_assoc($q420)) {
 			$dat= explode(" ", $r420['datum']);
 		?>

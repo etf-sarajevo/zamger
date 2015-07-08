@@ -49,6 +49,7 @@ if ($termin==0) {
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin.");
 		zamgerlog ("nepostojeci termin $termin", 3);
+		zamgerlog2 ("nepostojeci termin prijemnog ispita", $termin);
 		return;
 	}
 }
@@ -169,6 +170,7 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 	$q20 = myquery("insert into prijemni_termin set akademska_godina=$ag, datum='$godina-$mjesec-$dan', ciklus_studija=$ciklus");
 
 	zamgerlog("kreiran novi termin za prijemni ispit", 4); // 4 = audit
+	zamgerlog2("kreiran novi termin za prijemni ispit", mysql_insert_id());
 
 	?>
 	<p>Novi termin kreiran. <a href="?sta=studentska/prijemni">Kliknite ovdje za nastavak</a></p>
@@ -439,6 +441,7 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 			}
 
 			zamgerlog("brzo unesen kandidat $rime $rprezime za termin $termin", 2);
+			zamgerlog2("brzo unesen kandidat za prijemni", $termin, 0, 0, "$rime $rprezime");
 
 			?>
 			<table border="1" cellspacing="0" cellpadding="3"><tr><td>
@@ -619,6 +622,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 		$_REQUEST['prikazi'] = true; // prikazi upravo unesene podatke
 
 		zamgerlog("promijenjeni kriteriji za prijemni ispit termin $termin, studij $rstudij", 4);
+		zamgerlog2("promijenjeni kriteriji za prijemni ispit", $termin);
 	}
 
 	if ($_REQUEST['prikazi']) {
@@ -813,6 +817,7 @@ if ($_REQUEST["akcija"]=="obrisi") {
 
 		// Necemo brisati osobu i ostale podatke
 		zamgerlog("brisem osobu u$osoba sa prijemnog - termin $termin", 4);
+		zamgerlog2("brisem osobu sa prijemnog", $osoba, $termin);
 		nicemessage("Kandidat ispisan sa prijemnog ispita");
 	}
 	
@@ -1093,9 +1098,11 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	$rprijemni=floatval(str_replace(",",".",$_REQUEST['prijemni']));
 
 	if ($ciklus_studija==1) {
-		$rakademsko_zvanje=5; // 5 = bez akademskog zvanja
+		$rstrucni_stepen=5; // 5 = bez akademskog zvanja
 	} else if ($ciklus_studija==2) {
-		$rakademsko_zvanje=2; // 2 = bakalaureat elektrotehnike - ovo bi vjerovatno trebalo unositi
+		$rstrucni_stepen=2; // 2 = bakalaureat elektrotehnike - ovo bi vjerovatno trebalo unositi
+	} else if ($ciklus_studija==3) {
+		$rstrucni_stepen=1; // 2 = magistar elektrotehnike - ovo bi vjerovatno trebalo unositi
 	}
 
 	// Obrada datuma
@@ -1118,6 +1125,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
 			$q300 = myquery("select id from mjesto where naziv='$rmjestorod'");
 			zamgerlog("upisano novo mjesto rodjenja $rmjestorod", 2);
+			zamgerlog2("upisano novo mjesto rodjenja", intval(mysql_result($q300, 0, 0)), 0, 0, $rmjestorod);
 		} else {
 			$q300 = myquery("select id from mjesto where naziv like '$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
 			if (mysql_num_rows($q300)<1) {
@@ -1128,6 +1136,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 					$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
 				$q300 = myquery("select id from mjesto where naziv='$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
 				zamgerlog("promjena opcine/drzave za mjesto rodjenja $rmjestorod", 2);
+				zamgerlog2("promjena opcine/drzave za mjesto rodjenja", intval(mysql_result($q300,0,0)), 0, 0, $rmjestorod);
 			}
 		}
 		$rmjrid = mysql_result($q300,0,0);
@@ -1140,6 +1149,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 			$q303 = myquery("insert into nacionalnost set naziv='$rnacionalnost'");
 			$q302 = myquery("select id from nacionalnost where naziv='$rnacionalnost'");
 			zamgerlog("upisana nova nacionalnost $rnacionalnost", 2);
+			zamgerlog2("upisana nova nacionalnost", intval(mysql_result($q302,0,0)), 0, 0, $rnacionalnost);
 		}
 		$rnacid = mysql_result($q302,0,0);
 	}
@@ -1151,6 +1161,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 			$q303 = myquery("insert into mjesto set naziv='$radresamjesto'");
 			$q302 = myquery("select id from mjesto where naziv='$radresamjesto'");
 			zamgerlog("upisano novo mjesto (adresa) $radresamjesto", 2);
+			zamgerlog2("upisano novo mjesto (adresa)", intval(mysql_result($q302,0,0)), 0, 0, $radresamjesto);
 		}
 		$radmid = mysql_result($q302,0,0);
 	}
@@ -1164,12 +1175,14 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 			$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
 			$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 			zamgerlog("upisana nova srednja skola $rzavrskola", 2);
+			zamgerlog2("upisana nova srednja skola", intval(mysql_result($q304,0,0)), 0, 0, $rzavrskola);
 		} else {
 			$q304 = myquery("select id from srednja_skola where naziv like '$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 			if (mysql_num_rows($q304)<1) {
 				$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
 				$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 				zamgerlog("promjena opcine / statusa domacinstva za skolu $rzavrskola", 2);
+				zamgerlog2("promjena opcine / statusa domacinstva za skolu", intval(mysql_result($q304, 0, 0)), 0, 0, $rzavrskola);
 			}
 		}
 
@@ -1255,7 +1268,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		else
 			$rosoba=mysql_result($q310,0,0);
 
-		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, fk_akademsko_zvanje=$rakademsko_zvanje, fk_naucni_stepen=6"); // 6 = bez naučnog stepena
+		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=6"); // 6 = bez naucnog stepena
 
 		// Nova prijava prijemni
 		$q330 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
@@ -1282,7 +1295,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	else { // Editovanje postojeceg kandidata
 
 		// Updatujem osobu
-		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, fk_akademsko_zvanje=$rakademsko_zvanje, fk_naucni_stepen=6 where id=$rosoba"); // 6 = bez naučnog stepena
+		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0 where id=$rosoba");
 
 		// Updatujem prijavu prijemnog
 		$q360 = myquery("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
@@ -1321,6 +1334,12 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 	// Kraj transakcije
 	$q380 = myquery("unlock tables");
+
+	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
+		zamgerlog2("novi kandidat za prijemni", intval($rosoba), 0, 0, $rbrojdosjea);
+	} else { 
+		zamgerlog2("izmjena kandidata za prijemni", intval($rosoba), 0, 0, $rbrojdosjea);
+	}
 }
 
 
@@ -2639,6 +2658,7 @@ function testjmbg($jmbg) {
 		if ($slovo<'0' || $slovo>'9') return "Neki od znakova nisu cifre";
 		$cifre[$i] = $slovo-'0';
 	}
+	
 	// Datum
 	$dan    = $cifre[2]*10+$cifre[3];
 	$mjesec = $cifre[0]*10+$cifre[1];
@@ -2653,5 +2673,5 @@ function testjmbg($jmbg) {
 	if ($k!=$cifre[12]) return "Checksum ne valja ($cifre[12] a trebao bi biti $k)";
 	return "";
 }
-
+// 2902996178049
 ?>

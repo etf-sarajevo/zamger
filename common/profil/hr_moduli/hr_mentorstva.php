@@ -79,7 +79,7 @@
 	      </tr>
 	      
 	    <?
-			$q420 = myquery("select *, f.naziv 'fakultet', t.naziv 'vrsta' from hr_mentorstvo m , sifrarnik_fakulteti f, sifrarnik_tip_mentorstva t where fk_fakultet=f.id and t.id=fk_vrsta_mentora and fk_osoba=$userid");
+			$q420 = myquery("select *, f.naziv 'fakultet', t.naziv 'vrsta' from hr_mentorstvo m , sifrarnik_fakulteti f, sifrarnik_tip_mentorstva t where fakultet=f.id and t.id=vrsta_mentora and osoba=$userid");
 			while ($r420 = mysql_fetch_assoc($q420)) {
 				$dat= explode(" ", $r420['datum']);
 		?>

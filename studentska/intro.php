@@ -252,11 +252,11 @@ if ($_GET['akcija'] == "zahtjev") {
 	$starimaternji = mysql_result($q100,0,39); $novimaternji = mysql_result($q100,0,40);
 	if ($starimaternji != $novimaternji) {
 		if ($starimaternji != 0) {
-			$q110 = myquery("select naziv from sifrarnik_jezik where id=$starimaternji");
+			$q110 = myquery("select naziv from maternji_jezik where id=$starimaternji");
 			$starimaternji = mysql_result($q110,0,0);
 		}
 		if ($novimaternji != 0) {
-			$q112 = myquery("select naziv from sifrarnik_jezik where id=$novimaternji");
+			$q112 = myquery("select naziv from maternji_jezik where id=$novimaternji");
 			$novimaternji = mysql_result($q112,0,0);
 		}
 		promjena("maternji jezik", $starimaternji, $novimaternji);
@@ -265,11 +265,11 @@ if ($_GET['akcija'] == "zahtjev") {
 	$staravozacka = mysql_result($q100,0,41); $novavozacka = mysql_result($q100,0,42);
 	if ($staravozacka != $novavozacka) {
 		if ($staravozacka != 0) {
-			$q110 = myquery("select naziv from sifrarnik_vozacki_kategorija where id=$staravozacka");
+			$q110 = myquery("select naziv from vozacki_kategorija where id=$staravozacka");
 			$staravozacka = mysql_result($q110,0,0);
 		}
 		if ($novavozacka != 0) {
-			$q112 = myquery("select naziv from sifrarnik_vozacki_kategorija where id=$novavozacka");
+			$q112 = myquery("select naziv from vozacki_kategorija where id=$novavozacka");
 			$novavozacka = mysql_result($q112,0,0);
 		}
 		promjena("vozačka dozvola", $staravozacka, $novimaternji);
@@ -278,11 +278,11 @@ if ($_GET['akcija'] == "zahtjev") {
 	$starinacinst = mysql_result($q100,0,43); $novinacinst = mysql_result($q100,0,44);
 	if ($starinacinst != $novinacinst) {
 		if ($starinacinst != 0) {
-			$q110 = myquery("select naziv from sifrarnik_nacin_stanovanja where id=$starinacinst");
+			$q110 = myquery("select naziv from nacin_stanovanja where id=$starinacinst");
 			$starinacinst = mysql_result($q110,0,0);
 		}
 		if ($novinacinst != 0) {
-			$q112 = myquery("select naziv from sifrarnik_nacin_stanovanja where id=$novinacinst");
+			$q112 = myquery("select naziv from nacin_stanovanja where id=$novinacinst");
 			$novinacinst = mysql_result($q112,0,0);
 		}
 		promjena("način stanovanja", $starinacinst, $novinacinst);

@@ -1,6 +1,6 @@
 <?
 
-	$nacinstanovanja= getSifrarnikData("sifrarnik_nacin_stanovanja",mysql_result($q400,0,23));
+	$nacinstanovanja= getSifrarnikData("nacin_stanovanja",mysql_result($q400,0,23));
 
 ?>
      <div id="Korak2">

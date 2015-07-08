@@ -1,5 +1,5 @@
  <?
- 	$jezici=getSifrarnikData("sifrarnik_jezik");
+ 	$jezici=getSifrarnikData("maternji_jezik");
 	$nivo=getSifrarnikData("sifrarnik_nivo_jezika");
 ?>
   	<div id="Korak6">
@@ -73,7 +73,7 @@
 	      </tr>
 	      
 	    <?
-			$q420 = myquery("select * from hr_kompetencije k, sifrarnik_jezik m where m.id=jezik and fk_osoba=$userid");
+			$q420 = myquery("select * from hr_kompetencije k, maternji_jezik m where m.id=jezik and fk_osoba=$userid");
 			while ($r420 = mysql_fetch_assoc($q420)) {
 		?>
 		      <tr >
