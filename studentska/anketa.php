@@ -10,6 +10,7 @@ function studentska_anketa(){
 	
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
+		zamgerlog2("nije studentska"); // 3: error
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 	}
@@ -71,6 +72,7 @@ function studentska_anketa(){
 		$q500 = myquery("update anketa_anketa set aktivna=0 where id=$id");
 		$q510 = myquery("update anketa_predmet set aktivna=0 where anketa=$id");
 		zamgerlog("deaktivirana anketa $id", 4); // nivo 4 = audit
+		zamgerlog2("deaktivirana anketa", $id);
 	}
 	
 	// Aktivacija ankete
@@ -86,6 +88,7 @@ function studentska_anketa(){
 
 		print "<center><span style='color:#009900'>Anketa je postavljena kao aktivna!</span></center>";
 		zamgerlog("aktivirana anketa $id", 4);
+		zamgerlog2("aktivirana anketa", $id);
 	}
 	
 	// Promjena podataka o anketi
@@ -127,6 +130,7 @@ function studentska_anketa(){
 			
 			$q560 = myquery("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2', opis='$opis' where id=$anketa");
 			zamgerlog("promijenjeni podaci za anketu $anketa", 2);
+			zamgerlog2("promijenjeni podaci za anketu", $anketa);
 			
 			?>
 			<script language="JavaScript">
@@ -227,6 +231,7 @@ function studentska_anketa(){
 		$anketa = mysql_insert_id();
 		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
+		zamgerlog2("kreirana nova anketa", $anketa);
 		
 		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?
 		if ($prethodna_anketa != 0) {
@@ -254,12 +259,14 @@ function studentska_anketa(){
 				$q800 = myquery("delete from anketa_pitanje where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno obrisano! </span> </center>";
 				zamgerlog("obrisano pitanje na anketi $anketa", 2);
+				zamgerlog2("obrisano pitanje na anketi", $anketa);
 			} else {
 				$tekst_pitanja = $_REQUEST['tekst_pitanja'];
 				$tip_pitanja = $_REQUEST['tip_pitanja'];
 				$q810 = myquery("update anketa_pitanje set tip_pitanja=$tip_pitanja, tekst='$tekst_pitanja' where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno izmjenjeno! </span> </center>";
 				zamgerlog("izmijenjeno pitanje na anketi $anketa", 2);
+				zamgerlog2("izmijenjeno pitanje na anketi", $anketa);
 			}
 		}
 		
@@ -273,6 +280,7 @@ function studentska_anketa(){
 			$q800 = myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
 			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
 			zamgerlog("dodano pitanje na anketi $anketa", 2);
+			zamgerlog2("dodano pitanje na anketi", $anketa);
 		}
 		
 		// Osnovni podaci
