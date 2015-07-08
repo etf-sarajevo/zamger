@@ -23,6 +23,7 @@ function student_anketa() {
 	$q10 = myquery("select naziv from predmet where id=$predmet");
 	if (mysql_num_rows($q10)<1) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+		zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 		biguglyerror("Nepoznat predmet");
 		return;
 	}
@@ -30,6 +31,7 @@ function student_anketa() {
 	$q15 = myquery("select naziv from akademska_godina where id=$ag");
 	if (mysql_num_rows($q10)<1) {
 		zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+		zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 		biguglyerror("Nepoznata akademska godina");
 		return;
 	}
@@ -39,6 +41,7 @@ function student_anketa() {
 	$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	if (mysql_num_rows($q17)<1) {
 		zamgerlog("student ne slusa predmet pp$predmet", 3);
+		zamgerlog2("student ne slusa predmet", $predmet, $ag);
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
@@ -78,18 +81,20 @@ function student_anketa() {
 			VALUES ($id_rezultata, $anketa, 'N', $predmet, '$unique_hash_code',$ag,$studij,$semestar)");
 	
 	?>
-  	<center>
-       <p>Ovdje cete dobiti kod koji cete iskoristiti za ispunjavanje ankete za ovaj predmet: &nbsp;<br/>
-        <br/>
-        <table width="300" cellpadding="0" cellspacing="2" >
-            <tr height="30">
-                <td width="300">Vas kod za ovaj predmet je: <br /></td>
-            </tr>
-            <tr>
-                <td align="center" bgcolor="#CCFFCC"> <?=$unique_hash_code?></td>
-            </tr>
-        </table>    
-   </center>
+	<center>
+	<p>Ovdje ćete dobiti kod koji ćete iskoristiti za ispunjavanje ankete za ovaj predmet: &nbsp;<br/>
+	<br/>
+	<table width="300" cellpadding="0" cellspacing="2" >
+		<tr height="30">
+			<td width="300">Vaš kod za ovaj predmet je:<br /></td>
+		</tr>
+		<tr>
+		`	<td align="center" bgcolor="#CCFFCC"> <?=$unique_hash_code?></td>
+		</tr>
+	</table>
+	<p>Zapišite ovaj broj jer bez njega ne možete popunjavati anketu!</p>
+	</center>
 <?
 }
+
 ?>
