@@ -12,6 +12,7 @@ function student_popuni_kviz() {
 		if (mysql_num_rows($q5)<1) {
 			niceerror("Molimo ponovite kviz");
 			zamgerlog("poslao popunjen kviz $kviz a nema stavke u student_kviz", 3);
+			zamgerlog2("poslao popunjen kviz a nema stavke u student_kviz", $kviz);
 			return;
 		}
 		$vrijeme_kraja = "'".mysql_result($q5,0,0)."' + INTERVAL (trajanje_kviza+60) SECOND";
@@ -23,6 +24,7 @@ function student_popuni_kviz() {
 	if (mysql_num_rows($q10)<1) { // Postoji li kviz
 		niceerror("Kviz ne postoji");
 		zamgerlog("pristup nepostojecem kvizu $kviz", 3);
+		zamgerlog2("pristup nepostojecem kvizu", $kviz);
 		return;
 	}
 	
@@ -38,6 +40,7 @@ function student_popuni_kviz() {
 	if (mysql_num_rows($q20)<1) {
 		niceerror("Nemate pristup ovom kvizu");
 		zamgerlog("student nije na predmetu za kviz $kviz", 3);
+		zamgerlog2("student nije na predmetu", $kviz);
 		return;
 	}
 	$naziv_predmeta = mysql_result($q20,0,0);
@@ -46,6 +49,7 @@ function student_popuni_kviz() {
 	if (mysql_result($q10,0,3) != 1) {
 		niceerror("Kviz nije aktivan");
 		zamgerlog("kviz nije aktivan $kviz", 3);
+		zamgerlog2("kviz nije aktivan", $kviz);
 		return;
 	}
 	
@@ -53,6 +57,7 @@ function student_popuni_kviz() {
 	if (mysql_result($q10,0,4) != 1 || mysql_result($q10,0,5) != 1) {
 		niceerror("Vrijeme za ovaj kviz je isteklo ".mysql_result($q10,0,4));
 		zamgerlog("vrijeme isteklo za kviz $kviz", 3);
+		zamgerlog2("vrijeme isteklo",$kviz);
 		return;
 	}
 
@@ -63,6 +68,7 @@ function student_popuni_kviz() {
 		if (mysql_result($q30,0,0)==0) {
 			niceerror("Nemate pristup ovom kvizu");
 			zamgerlog("student nije u labgrupi $labgrupa za kviz $kviz", 3);
+			zamgerlog2("student nije u odgovarajucoj labgrupi", intval($labgrupa), intval($kviz));
 			return;
 		}
 	}
@@ -112,6 +118,7 @@ function student_popuni_kviz() {
 		if ($ispravna == false) {
 			niceerror("Nemate pristup ovom kvizu");
 			zamgerlog("losa ip adresa za kviz $kviz", 3);
+			zamgerlog2("losa ip adresa", $kviz);
 			return;
 		}
 	}
@@ -180,6 +187,7 @@ function student_popuni_kviz() {
 		
 		?><p><a href="#" onclick="window.close();">Zatvorite ovaj prozor</a></p><?
 		zamgerlog("uradio kviz $kviz", 2);
+		zamgerlog2("uradio kviz", $kviz);
 		return;		
 	}
 	
@@ -189,6 +197,7 @@ function student_popuni_kviz() {
 	if (mysql_result($q40,0,0)>0) {
 		niceerror("Već ste popunjavali ovaj kviz");
 		zamgerlog("vec popunjavan kviz $kviz", 3);
+		zamgerlog2("vec popunjavan kviz", $kviz);
 		return;
 	}
 	
@@ -239,7 +248,7 @@ function student_popuni_kviz() {
 		}
 		setTimeout("clp_clear();",1000);
 	}
-	
+
 	function provjeriVrijeme() {
 		var diff=new Date();
 		diff.setTime(Tkraj-(new Date()));
@@ -260,6 +269,7 @@ function student_popuni_kviz() {
 		vrijeme.innerHTML = diff.getMinutes()+":"+s;
 		setTimeout("provjeriVrijeme()", 1000);
 	}
+
 	</script>
 	</head>
 	<body onload="ucitavanje()">
