@@ -225,7 +225,7 @@ function studentska_anketa(){
 				
 		$q393 = myquery("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
 		$anketa = mysql_insert_id();
-		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=0, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
+		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		
 		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?
