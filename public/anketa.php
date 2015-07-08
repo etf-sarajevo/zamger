@@ -25,6 +25,7 @@ function public_anketa() {
 
 		if (!$ok) {
 			zamgerlog("preview ankete privilegije",3); // 3: error
+			zamgerlog2("preview ankete privilegije");
 			biguglyerror("Pristup nije dozvoljen.");
 			return;
 		}
@@ -54,6 +55,7 @@ function public_anketa() {
 	$q30 = myquery("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), opis from anketa_anketa where id=$id_ankete");
 	if (mysql_num_rows($q30)==0) {
 		biguglyerror("Ne postoji anketa sa tim IDom");
+		zamgerlog2("nepostojeci ID ankete");
 		return;
 	}
 	$naziv_ankete = mysql_result($q30,0,0);
@@ -97,6 +99,7 @@ function public_anketa() {
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
+			zamgerlog2("ilegalan CSRF token");
 			return;
 		}
 
@@ -112,10 +115,12 @@ function public_anketa() {
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
+			zamgerlog2("ilegalan hash code", intval($id_ankete), 0, 0, $hash_code);
 			return;
 		}
 		if (mysql_num_rows($q50)>1) {
 			// Hash nije unique!?
+			zamgerlog2("hash nije unique", $id_ankete, 0, 0, $hash_code);
 			return;
 		}
 	
@@ -129,6 +134,7 @@ function public_anketa() {
 		// Korisnik nije izabrao predmet, pa je najvjerovatnije pokušao ući na anketu bez logouta
 		if ($predmet==0 || $ag==0) {
 			biguglyerror("Niste napravili logout niti izabrali predmet!");
+			zamgerlog2("nije definisan predmet a korisnik je logiran");
 			return;
 		}
 		
@@ -136,6 +142,7 @@ function public_anketa() {
 		$q60 = myquery("select pk.studij, pk.semestar from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		if (mysql_num_rows($q60)<1) {
 			zamgerlog("student ne slusa predmet pp$predmet", 3);
+			zamgerlog2("student ne slusa predmet", $predmet, $ag);
 			biguglyerror("Niste upisani na ovaj predmet");
 			return;
 		}
@@ -143,13 +150,13 @@ function public_anketa() {
 		// Određujemo studij i semestar radi insertovanja u tabelu anketa_rezultat
 		$studij = mysql_result($q60,0,0);
 		$semestar = mysql_result($q60,0,1);
-	
-		$q70 = myquery("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 		
 		if ($semestar % 2 != $anketa_semestar) {
 			biguglyerror("Predmet nije u odgovarajućem semestru");
 			return;
 		}
+
+		$q70 = myquery("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 
 		// Kreiramo zapise u tabelama anketa_rezultat i anketa_student_zavrsio
 		if (mysql_num_rows($q70)==0) {
@@ -211,6 +218,7 @@ function public_anketa() {
 		</center>
 		<?
 		zamgerlog("anketa vec popunjena", 3);
+		zamgerlog2("anketa vec popunjena", $predmet, $ag);
 		return;
 	}
 
@@ -288,6 +296,7 @@ function public_anketa() {
 		}
 
 		zamgerlog("popunjena anketa za predmet pp$predmet", 2);
+		zamgerlog2("uspjesno popunjena anketa", $predmet, $ag);
 
 		?>
 		<center>
