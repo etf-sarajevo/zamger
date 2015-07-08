@@ -103,6 +103,7 @@ function studentska_raspored () {
 	// Provjera privilegija
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
+		zamgerlog2("nije studentska");
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 	}
@@ -296,7 +297,7 @@ function ispisPocetne() {
 		<div><a href = "#" onclick="daj_stablo(\'sg\'); document.getElementById(\'formP1\').reset();"><img id = "img-sg" src = "images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sg" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP1" id = "formP1" action = "studentska/print.php?act=PG" target = "_blank" method = "post">
-				Printanje grupa za predmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
+				Printanje grupa za pedmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
 				<input type = "hidden" name = "predmetNameH" id = "predmetNameH" />
 				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
 			</form>
@@ -308,7 +309,7 @@ function ispisPocetne() {
 		<div><a href = "#" onclick="daj_stablo(\'pp\'); document.getElementById(\'formP2\').reset();"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "pp" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP2" id = "formP2" action = "studentska/print.php?act=PP" target = "_blank" method = "post">
-				Printanje profesora za predmet: '.selectOption("osoba", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
+				Printanje profesora za pedmet: '.selectOption("osoba", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
 				<input type = "hidden" name = "imeNastavnika" id = "imeNastavnika" />
 				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
 			</form>
