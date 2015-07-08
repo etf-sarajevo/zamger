@@ -40,6 +40,7 @@ $nivo = intval($_GET['nivo']);
 if ($nivo<1) $nivo=2;
 if ($nivo>4) $nivo=4;
 
+$analyze = intval($_REQUEST['analyze']);
 
 
 // Pretraga / filtriranje
@@ -107,6 +108,20 @@ if ($pretraga) {
 
 	// Kraj, dodajemo and
 	if ($filterupita!="") $filterupita = " AND ($filterupita)";
+}
+
+else if ($analyze) {
+	$q105 = myquery("select UNIX_TIMESTAMP(vrijeme), userid FROM log2 WHERE id=$analyze");
+	$vrijeme = mysql_result($q105,0,0);
+	$nasaokorisnika = mysql_result($q105,0,1);
+	$filterupita = " AND userid=$nasaokorisnika";
+	$q106 = myquery("select id from log where vrijeme=FROM_UNIXTIME($vrijeme) limit 1");
+	$stardate = mysql_result($q106,0,0)+100;
+	if ($nasaokorisnika > 0) {
+		$q107 = myquery("SELECT ime, prezime FROM osoba WHERE id=$nasaokorisnika");
+		$pretraga = mysql_result($q107,0,0)." ".mysql_result($q107,0,1);
+	} else $pretraga = "";
+	$nivo=1;
 }
 
 
@@ -192,8 +207,8 @@ function get_ppredmet_link($id) {
 
 // Glavni upit i petlja
 
-
 $q10 = myquery ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and ((nivo>=$nivo $filterupita) or dogadjaj='login') order by id desc");
+//$q10 = myquery ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and (nivo>=$nivo $filterupita) order by id desc");
 $lastlogin = array();
 $eventshtml = array();
 $logins=0;
