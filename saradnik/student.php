@@ -476,20 +476,34 @@ while ($r40 = mysql_fetch_row($q40)) {
 	$min_bodova = $r40[2];
 	$max_izostanaka = $r40[3];
 
-	$odsustva = 0;
+	$odsustva = $casova = 0;
 	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
 	
 	while ($r60 = mysql_fetch_row($q60)) {
 		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente, $student);
+		$q71 = myquery("select count(*) from cas where labgrupa=$r60[0] and komponenta=$id_komponente");
+		$casova += mysql_result($q71,0,0);;
 	}
 	
-	if ($odsustva<=$max_izostanaka) {
-		?><p>Ukupno na prisustvo: <b><?=$max_bodova?></b> bodova.</p>
-		<?
+	if ($max_izostanaka == -1) {
+		if ($casova == 0) 
+			$bodovi = 10;
+		else
+			$bodovi = $min_bodova + round(($max_bodova - $min_bodova) * (($casova - $odsustva) / $casova), 2 ); 
+	} else if ($max_izostanaka == -2) { // Paraproporcionalni sistem TP
+		if ($odsustva <= 2)
+			$bodovi = $max_bodova;
+		else if ($odsustva <= 2 + ($max_bodova - $min_bodova)/2)
+			$bodovi = $max_bodova - ($odsustva-2)*2;
+		else
+			$bodovi = $min_bodova;
+	} else if ($odsustva<=$max_izostanaka) {
+		$bodovi = $max_bodova;
 	} else {
-		?><p>Ukupno na prisustvo: <b><?=$min_bodova?></b> bodova.</p>
-		<?
+		$bodovi = $min_bodova;
 	}
+	?><p>Ukupno na prisustvo: <b><?=$bodovi?></b> bodova.</p>
+	<?
 }
 
 
