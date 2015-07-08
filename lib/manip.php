@@ -500,6 +500,15 @@ function update_komponente($student,$predmet,$komponenta=0) {
 					$bodovi = $maxbodova;
 				else
 					$bodovi = $minbodova + round(($maxbodova - $minbodova) * (($casova-$odsustva) / $casova), 2 );
+			
+			} else if ($maxodsustva == -2) { // Paraproporcionalni sistem TP
+				if ($odsustva <= 2)
+					$bodovi = $maxbodova;
+				else if ($odsustva <= 2 + ($maxbodova-$minbodova)/2)
+					$bodovi = $maxbodova - ($odsustva-2)*2;
+				else
+					$bodovi = $minbodova;
+			
 			} else if ($odsustva > $maxodsustva)
 				$bodovi=$minbodova;
 			else
