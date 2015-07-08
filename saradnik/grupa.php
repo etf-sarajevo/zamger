@@ -59,6 +59,7 @@ if ($labgrupa>0) {
 	if (mysql_num_rows($q30)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
+		zamgerlog2("nepostojeca labgrupa", $labgrupa);
 		return;
 	}
 	$naziv = mysql_result($q30,0,0);
@@ -74,6 +75,7 @@ if ($labgrupa>0) {
 	if (mysql_num_rows($q35)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog("nepostojeca virtualna labgrupa za predmet pp$predmet ag$ag",3); // 3 = greska
+		zamgerlog2("nepostojeca virtualna labgrupa", $predmet, $ag);
 		return;
 	}
 	$labgrupa = mysql_result($q35,0,0);
@@ -89,6 +91,7 @@ if (!$user_siteadmin) {
 	if (mysql_num_rows($q40)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
+		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 		return;
 	}
 	$privilegija = mysql_result($q40,0,0);
@@ -102,6 +105,7 @@ if (!$user_siteadmin) {
 		if ($nasao == 0) {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			zamgerlog("ogranicenje na labgrupu g$labgrupa", 3); // 3 - greska
+			zamgerlog2("ima ogranicenje na labgrupu", $labgrupa);
 			return;
 		}
 	}
@@ -149,6 +153,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		if ($komponenta==0) {
 			niceerror("Nije definisana komponenta za prisustvo na ovom predmetu.");
 			zamgerlog("nije definisana komponenta za prisustvo na pp$predmet", 3);
+			zamgerlog2("nije definisana komponenta za prisustvo", $predmet, $ag);
 			return;
 		}
 
@@ -195,6 +200,7 @@ if ($_POST['akcija'] == 'dodajcas' && check_csrf_token()) {
 		}
 	
 		zamgerlog("registrovan cas c$cas_id",2); // nivo 2: edit
+		zamgerlog2("registrovan cas", $cas_id);
 	}
 }
 
@@ -223,6 +229,7 @@ if ($_POST['akcija'] == 'brisi_cas' && check_csrf_token()) {
 			update_komponente($student, $ponudekursa[$student], $komponenta);
 		
 		zamgerlog("obrisan cas $cas_id",2);
+		zamgerlog2("obrisan cas", $cas_id);
 	}
 }
 
@@ -571,7 +578,6 @@ while ($r205 = mysql_fetch_row($q205)) {
 	$zadace_zaglavlje = "";
 	$komponenta = $r205[0];
 	
-	// Razvrstavamo zadaće po komponentama
 	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by id");
 	while ($r210 = mysql_fetch_row($q210)) {
 		$zadace_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
