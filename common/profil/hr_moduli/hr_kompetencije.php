@@ -73,7 +73,7 @@
 	      </tr>
 	      
 	    <?
-			$q420 = myquery("select * from hr_kompetencije k, maternji_jezik m where m.id=jezik and fk_osoba=$userid");
+			$q420 = myquery("select * from hr_kompetencije k, maternji_jezik m where m.id=jezik and osoba=$userid");
 			while ($r420 = mysql_fetch_assoc($q420)) {
 		?>
 		      <tr >
