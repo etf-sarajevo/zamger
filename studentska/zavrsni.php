@@ -121,6 +121,7 @@ function studentska_zavrsni()  {
 		if ($order_by == "student") $order_by="o.prezime $dir, o.ime $dir";
 		if ($order_by == "mentor") $order_by="o2.prezime $dir, o2.ime $dir";
 		if ($order_by == "naslov") $order_by="z.naslov $dir";
+		if ($order_by == "termin") $order_by="z.termin_odbrane $dir";
 
 		$q900 = myquery("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen 
 		FROM zavrsni as z
@@ -149,7 +150,7 @@ function studentska_zavrsni()  {
 				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=student&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Student <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=student&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
 				<td>Predsjednik komisije</td>
 				<td>Član komisije</td>
-				<td>Termin odbrane</td>
+				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=termin&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Termin odbrane <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=termin&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
 				<td>Konačna ocjena</td>
 				<td>Akcije</td>
 			</tr>
