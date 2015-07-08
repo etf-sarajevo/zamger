@@ -302,13 +302,14 @@ else if ($akcija == "dodaj_pk") {
 	if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
 		$studij = intval($_REQUEST['_lv_column_studij']);
 		$semestar = intval($_REQUEST['semestar']);
-		if ($_REQUEST['obavezan']) $obavezan=1; else $obavezan=0;
+		if ($_REQUEST['obavezan']) $obavezan=true; else $obavezan=false;
 		kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0);
 		nicemessage("Ponuda kursa uspješno kreirana");
 	}
 	$q400 = myquery("select naziv from predmet where id=$predmet");
 	$q410 = myquery("select naziv from akademska_godina where id=$ag");
 	print "<h3>Nova ponuda kursa za predmet ".mysql_result($q400,0,0).",<br/> akademska godina ".mysql_result($q410,0,0)."</h3>";
+	unset($_REQUEST['obavezan']);
 	print genform("POST");
 	?>
 	<input type="hidden" name="subakcija" value="potvrda">
@@ -319,7 +320,6 @@ else if ($akcija == "dodaj_pk") {
 
 	<p><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
 	<?
-
 }
 
 
@@ -458,8 +458,16 @@ else if ($akcija == "edit") {
 
 	$q350 = myquery("select p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, agp.tippredmeta, p.ects, p.sati_predavanja, p.sati_vjezbi, p.sati_tutorijala from predmet as p, akademska_godina_predmet as agp where p.id=$predmet and agp.akademska_godina=$ag and p.id=agp.predmet");
 	if (!($r350 = mysql_fetch_row($q350))) {
-		zamgerlog("nepostojeci predmet $predmet",3);
-		niceerror("Nepostojeći predmet!");
+		$q351 = myquery("SELECT COUNT(*) FROM predmet WHERE id=$predmet");
+		if (mysql_result($q351,0,0) > 0) {
+			zamgerlog("nedostaje slog u tabeli akademska_godina_predmet $predmet $ag",3);
+			zamgerlog2("nedostaje slog u tabeli akademska_godina_predmet", $predmet, $ag);
+			niceerror("Nepostojeći predmet (nedostaje agp)!");
+		} else {
+			zamgerlog("nepostojeci predmet $predmet",3);
+			zamgerlog2("nepostojeci predmet", $predmet);
+			niceerror("Nepostojeći predmet!");
+		}
 		return;
 	}
 
@@ -509,7 +517,13 @@ else if ($akcija == "edit") {
 	?>
 	<input type="hidden" name="akcija" value="realedit">
 	<input type="submit" value=" Izmijeni "></form></p>
+	<?
+	
+	// Omogućujemo popravku ako ne postoji labgrupa "svi studenti"
+	$q356 = myquery("SELECT COUNT(*) FROM labgrupa WHERE predmet=$predmet AND akademska_godina=$ag AND virtualna=1");
+	if (mysql_result($q356,0,0) == 0) niceerror("Ne postoji virtualna labgrupa.");
 
+	?>
 	<hr>
 	<?
 
@@ -556,7 +570,8 @@ else if ($akcija == "edit") {
 	$q359 = myquery("select naziv, aktuelna from akademska_godina where id=$ag");
 	if (mysql_num_rows($q359)<1) {
 		zamgerlog("nepostojeca akademska godina $ag",3);
-		niceerror("Nepostojeći predmet!");
+		zamgerlog2("nepostojeca akademska godina", $ag);
+		niceerror("Nepostojeća akademska godina!");
 		return;
 	}
 	$agnaziv = mysql_result($q359,0,0);
