@@ -45,6 +45,7 @@ $ag = intval($_REQUEST['ag']);
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	biguglyerror("Nepoznat predmet");
 	return;
 }
@@ -52,6 +53,7 @@ if (mysql_num_rows($q10)<1) {
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Nepoznata akademska godina");
 	return;
 }
@@ -60,6 +62,7 @@ if (mysql_num_rows($q10)<1) {
 $q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_num_rows($q17)<1) {
 	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	zamgerlog2("student ne slusa predmet", $predmet, $ag);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
@@ -72,6 +75,7 @@ $ponudakursa = mysql_result($q17,0,0);
 $q10 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
 if (mysql_result($q10,0,0) == 0) {
 	zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
+	zamgerlog2("nijedna zadaca nije aktivna", $predmet);
 	niceerror("Nijedna zadaća nije aktivna");
 	return;
 }
@@ -86,6 +90,7 @@ if ($zadaca!=0) {
 	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_result($q20,0,0)==0) {
 		zamgerlog("student nije upisan na predmet (zadaca z$zadaca)",3);
+		zamgerlog2("student ne slusa predmet za zadacu", $zadaca);
 		biguglyerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
@@ -96,6 +101,7 @@ if ($ponudakursa != 0) {
 	$q25 = myquery("select count(*) from student_predmet where student=$userid and predmet=$ponudakursa");
 	if (mysql_result($q25,0,0)==0) {
 		zamgerlog("student nije upisan na predmet (predmet p$ponudakursa)",3);
+		zamgerlog2("student ne slusa ponudukursa", $ponudakursa);
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
@@ -104,6 +110,7 @@ if ($ponudakursa != 0) {
 		$q27 = myquery("select count(*) from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_result($q27,0,0)==0) {
 			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$ponudakursa, zadaca z$zadaca)",3);
+			zamgerlog2("zadaca i ponudakursa ne odgovaraju", $ponudakursa, $zadaca);
 			biguglyerror("Ova zadaća nije iz vašeg predmeta");
 			return;
 		}
@@ -579,6 +586,7 @@ function akcijaslanje() {
 	if ($rok <= time()) {
 		niceerror("Vrijeme za slanje zadaće je isteklo!");
 		zamgerlog("isteklo vrijeme za slanje zadaće z$zadaca",3); // nivo 3 - greska
+		zamgerlog2("isteklo vrijeme za slanje zadace",$zadaca); // nivo 3 - greska
 		print $povratak_html;
 		return; 
 	}
@@ -620,6 +628,7 @@ function akcijaslanje() {
 			niceerror("Pokušali ste poslati praznu zadaću!");
 			print "<p>Vjerovatno ste zaboravili kopirati kod u prozor za slanje.</p>";
 			zamgerlog("poslao praznu zadacu z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+			zamgerlog2("poslao praznu zadacu", $zadaca, $zadatak); // nivo 3 - greska
 			print $povratak_html;
 			return;
 		} else if ($zadaca>0 && $zadatak>0) {
@@ -634,6 +643,7 @@ function akcijaslanje() {
 			if (!$f) {
 				niceerror("Greška pri pisanju fajla za zadaću.");
 				zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+				zamgerlog2("greska pri pisanju zadace", $zadaca, $zadatak); // nivo 3 - greska
 				if ($postoji_prosla_verzija)
 					rename ("$lokacijazadaca$zadaca/difftemp", $filename);
 				print $povratak_html;
@@ -660,11 +670,13 @@ function akcijaslanje() {
 			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak",2); // nivo 2 - edit
+			zamgerlog2("poslana zadaca (textarea)", $zadaca, $zadatak); // nivo 2 - edit
 			print $povratak_html;
 			print $povratak_js;
 			return;
 		} else {
 			zamgerlog("greska pri slanju zadace (zadaca z$zadaca zadatak $zadatak filename $filename)",3);
+			zamgerlog2("greska pri slanju zadace (textarea)", $zadaca, $zadatak); // nivo 2 - edit
 			niceerror("Greška pri slanju zadaće. Kontaktirajte tutora.");
 			print $povratak_html;
 			return;
@@ -688,6 +700,7 @@ function akcijaslanje() {
 				print "<p>Na ovoj zadaći dozvoljeno je slati samo datoteke jednog od sljedećih tipova: <b>$zadaca_dozvoljene_ekstenzije</b>.<br>
 				Vi ste poslali datoteku tipa: <b>$ext</b>.</p>";
 				zamgerlog("pogresan tip datoteke (z$zadaca)", 3);
+				zamgerlog2("pogresan tip datoteke", $zadaca);
 				print $povratak_html;
 				return;
 			}
@@ -739,6 +752,7 @@ function akcijaslanje() {
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
 			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
+			zamgerlog2("poslana zadaca (attachment)", $zadaca, $zadatak);
 			print $povratak_html;
 			print $povratak_js;
 			return;
@@ -772,6 +786,7 @@ function akcijaslanje() {
 					$greska="Nepoznata greška u slanju datoteke. Kod: ".$_FILES['attachment']['error'];
 			} 
 			zamgerlog("greska kod attachmenta (z$zadaca): $greska",3);
+			zamgerlog2("greska pri slanju zadace (attachment)", $zadaca, $zadatak, 0, $greska);
 			niceerror("$greska");
 			print $povratak_html;
 			return;
