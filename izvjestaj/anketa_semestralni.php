@@ -210,9 +210,9 @@ function izvjestaj_anketa_semestralni() {
 		// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 		// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
 		if ($studij == -1)
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, p.sati_nastave from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 		else
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, p.sati_nastave from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
+			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 
 		while ($r50 = mysql_fetch_row($q50)) {
 			// Da li je ovaj predmet imao ijednu anketu?
