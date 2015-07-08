@@ -77,7 +77,6 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 
 	$ime = substr(my_escape($_POST['ime']), 0, 100);
 	if (!preg_match("/\w/", $ime)) {
-		zamgerlog("ime nije ispravno ($ime)",3);
 		niceerror("Ime nije ispravno");
 		return;
 	}
@@ -165,7 +164,7 @@ if ($akcija == "podaci") {
 		$prezime = my_escape($_REQUEST['prezime']);
 		$spol = $_REQUEST['spol']; if ($spol!="M" && $spol!="Z") $spol="";
 		$jmbg = my_escape($_REQUEST['jmbg']);
-		$nacionalnost = intval($_REQUEST['nacionalnost']);
+		$nacionalnost = intval($_REQUEST['nacionalnost']); if ($nacionalnost==0) $nacionalnost = "NULL";
 		$brindexa = my_escape($_REQUEST['brindexa']);
 
 		$djevojacko_prezime = my_escape($_REQUEST['djevojacko_prezime']);
@@ -177,12 +176,12 @@ if ($akcija == "podaci") {
 		$mjesto_rodjenja = my_escape($_REQUEST['mjesto_rodjenja']);
 		$opcina_rodjenja = intval($_REQUEST['opcina_rodjenja']);
 		$drzava_rodjenja = intval($_REQUEST['drzava_rodjenja']);
-		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']);
+		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']); if ($drzavljanstvo==0) $drzavljanstvo = "NULL";
 		if ($_REQUEST['boracke_kategorije'] == "on") $boracke_kategorije = 1; else $boracke_kategorije = 0;
 		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
-		$kanton = intval($_REQUEST['_lv_column_kanton']);
+		$kanton = intval($_REQUEST['_lv_column_kanton']); if ($kanton==-1) $kanton = "NULL";
 		$telefon = my_escape($_REQUEST['telefon']);
 		$email = my_escape($_REQUEST['email']);
 
@@ -203,7 +202,7 @@ if ($akcija == "podaci") {
 		}
 
 		// Mjesto rođenja
-		$mjrid=0;
+		$mjrid="NULL";
 		if ($mjesto_rodjenja != "") {
 			$q1 = myquery("select id from mjesto where naziv='$mjesto_rodjenja' and opcina=$opcina_rodjenja and drzava=$drzava_rodjenja");
 			if (mysql_num_rows($q1)<1) {
@@ -222,7 +221,7 @@ if ($akcija == "podaci") {
 		}
 	
 		// Mjesto adresa
-		$admid=0;
+		$admid="NULL";
 		if ($adresa_mjesto != "") {
 			$q3 = myquery("select id from mjesto where naziv='$adresa_mjesto'");
 			if (mysql_num_rows($q3)<1) {
@@ -958,13 +957,16 @@ else if ($akcija == "upis") {
 					// Odredjujemo ponudu kursa
 					$q740 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
 					if (mysql_num_rows($q740)<1) {
-						niceerror("Kurs '$pnaziv' nije ponuđen za studij $naziv_studija, $semestar. semestar, godina $naziv_ak_god");
-						zamgerlog("nije ponudjen predmet pp$predmet, studij s$studij, semestar $semestar, ag$godina", 3); // 3 - greska
+						$q701 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
+						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+						$pkid = mysql_result($q700,0,0);
+						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
 					} else {
-						?>
-						<input type="checkbox" name="izborni-<?=mysql_result($q740,0,0)?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
-						<?
+						$pkid = mysql_result($q740,0,0);
 					}
+					?>
+					<input type="checkbox" name="izborni-<?=$pkid?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
+					<?
 				}
 			}
 
@@ -987,7 +989,7 @@ else if ($akcija == "upis") {
 		
 				if ($ects_suma != 30) {
 					$ok_izvrsiti_upis=0;
-					niceerror("Izabrani izborni predmeti čine sumu $ects ECTS kredita, umjesto 30");
+					niceerror("Izabrani izborni predmeti čine sumu $ects_suma ECTS kredita, umjesto 30");
 				}
 			}
 		
@@ -1010,7 +1012,7 @@ else if ($akcija == "upis") {
 	}  // if ($stari_studij!=0 && $semestar<=$trajanje)
 
 	// Studentu nikada nije zadat broj indexa (npr. prvi put se upisuje)
-	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0) {
+	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0 && !isset($_REQUEST['novi_brindexa'])) {
 		if ($brindexa==0) $brindexa="";
 		?>
 		<p><b>Unesite broj indeksa za ovog studenta:</b><br/>
@@ -1077,7 +1079,7 @@ else if ($akcija == "upis") {
 
 
 		// Upisujemo studenta na novi studij
-		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=0, plan_studija=$plan_studija");
+		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
 
 		// Upisujemo na sve obavezne predmete na studiju
 		$q610 = myquery("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
@@ -1338,9 +1340,20 @@ else if ($akcija == "predmeti") {
 
 	// Aktuelna akademska godina
 
-	$q2010 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q2010,0,0);
-	$naziv_ag = mysql_result($q2010,0,1);
+	if ($_REQUEST['ag'] || $_REQUEST['_lv_column_akademska_godina']) {
+		$ak_god = intval($_REQUEST['ag']);
+		if ($_REQUEST['_lv_column_akademska_godina']) $ak_god = intval($_REQUEST['_lv_column_akademska_godina']);
+		$q2005 = myquery("select naziv from akademska_godina where id=$ak_god");
+		if (mysql_num_rows($q2005)<1) {
+			biguglyerror("Nepoznata akademska godina");
+			return;
+		}
+		$naziv_ag = mysql_result($q2005,0,0);
+	} else {
+		$q2010 = myquery("select id, naziv from akademska_godina where aktuelna=1");
+		$ak_god = mysql_result($q2010,0,0);
+		$naziv_ag = mysql_result($q2010,0,1);
+	}
 
 	$q2020 = myquery("select studij, semestar, plan_studija from student_studij where student=$osoba and akademska_godina=$ak_god order by semestar desc");
 	if (mysql_num_rows($q2020)>0) {
@@ -1363,13 +1376,18 @@ else if ($akcija == "predmeti") {
 		$q2030 = myquery("select studij, semestar, akademska_godina from student_studij where student=$osoba order by akademska_godina desc limit 1");
 		if (mysql_num_rows($q2030)>0) {
 			$studij = mysql_result($q2030,0,0);
+			$ag_studija = mysql_result($q2030,0,2);
 
 			$q2040 = myquery("select naziv from studij where id=$studij");
 			$naziv_studija = mysql_result($q2040,0,0);
 
-			$q2050 = myquery("select naziv from akademska_godina  where id=".mysql_result($q2030,0,2));
+			$q2050 = myquery("select naziv from akademska_godina  where id=$ag_studija");
 
-			print "<p>Student trenutno ($naziv_ag) nije upisan na fakultet! Posljednji put slušao $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			if ($ag_studija > $ak_god) {
+				print "<p>Student nije bio upisan u odabranoj akademskoj godini ($naziv_ag), ali je upisan na studij $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			} else {
+				print "<p>Student trenutno ($naziv_ag) nije upisan na fakultet! Posljednji put slušao $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
+			}
 		} else {
 			// Nikada nije bio student?
 			$studij=0;
@@ -1387,10 +1405,11 @@ else if ($akcija == "predmeti") {
 
 	?>
 	<?=genform("GET");?>
+	Akademska godina: <?=db_dropdown("akademska_godina", $ak_god);?><br>
 	<input type="radio" name="spisak" value="0" <?=$s0?>> Prikaži predmete sa izabranog studija i semestra<br/>
 	<input type="radio" name="spisak" value="1" <?=$s1?>> Prikaži predmete sa svih semestara<br/>
 	<input type="radio" name="spisak" value="2" <?=$s2?>> Prikaži predmete sa drugih studija<br/>
-	<input type="submit" value=" Kreni "></form>
+	<input type="submit" value=" Kreni "></form><br><br>
 	<?
 
 
@@ -1409,7 +1428,7 @@ else if ($akcija == "predmeti") {
 			// Zbog mogućih bugova, prvo gledamo da li je upisan...
 			$q2120 = myquery("select count(*) from student_predmet where student=$student and predmet=$ponudakursa");
 			if (mysql_result($q2120,0,0)>0) {
-				print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=ispisi&ponudakursa=$ponudakursa&spisak=$spisak\">ispiši</a></li>\n";
+				print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=ispisi&ponudakursa=$ponudakursa&spisak=$spisak&ag=$ag\">ispiši</a></li>\n";
 
 			} else {
 				// Da li je položen?
@@ -1418,7 +1437,7 @@ else if ($akcija == "predmeti") {
 					print " - položen</li>\n";
 
 				} else {
-					print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=upisi&ponudakursa=$ponudakursa&spisak=$spisak\">upiši</a></li>\n";
+					print " - <a href=\"?sta=studentska/osobe&akcija=predmeti&osoba=$student&subakcija=upisi&ponudakursa=$ponudakursa&spisak=$spisak&ag=$ag\">upiši</a></li>\n";
 				}
 			}
 		}
@@ -1549,7 +1568,6 @@ else if ($akcija == "izbori") {
 			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_podoblast=$podoblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
 			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
 			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-print "iuza $iuza_oblast";
 				$q3040 = myquery("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and oblast=$oblast and podoblast=$podoblast and dopunski=$dopunski and druga_institucija=$drugainst");
 				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
 				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
@@ -1659,7 +1677,6 @@ else if ($akcija == "edit") {
 
 		if ($login=="") {
 			niceerror("Ne možete postaviti prazan login");
-			zamgerlog("prazan login za u$osoba", 3);
 		}
 		else if ($stari_login=="") {
 			// Provjeravamo LDAP?
@@ -2118,13 +2135,16 @@ else if ($akcija == "edit") {
 		<?
 
 		// Trenutno upisan na semestar:
-		$q220 = myquery("select s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");
+		$q220 = myquery("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus 
+		FROM student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns 
+		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id 
+		ORDER BY ag.naziv DESC");
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
 
 		// Da li je ikada slusao nesto?
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=0;
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=0;
 	
 		while ($r220=mysql_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2133,6 +2153,7 @@ else if ($akcija == "edit") {
 				$studij_id=$r220[4];
 				$studij_trajanje=$r220[5];
 				$nacin_studiranja="kao $r220[6]";
+				$studij_ciklus=$r220[7];
 			}
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
@@ -2143,6 +2164,7 @@ else if ($akcija == "edit") {
 				$ikad_ak_god_naziv=$r220[3];
 				$ikad_studij_id=$r220[4];
 				$ikad_studij_trajanje=$r220[5];
+				$ikad_ciklus=$r220[7];
 			}
 		}
 
@@ -2200,6 +2222,7 @@ else if ($akcija == "edit") {
 					$id_ak_god = $ikad_ak_god;
 					$naziv_ak_god = $ikad_ak_god_naziv;
 					$semestar = $ikad_semestar;
+					if ($semestar % 2 != 0) $semestar++; // Da ga ne bi pokušavalo upisati u parni semestar
 				}
 				// Zelimo da se provjeri ECTS:
 				$studij = $ikad_studij;
