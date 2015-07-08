@@ -21,7 +21,6 @@ global $userid, $user_siteadmin, $conf_ldap_domain;
 require("lib/manip.php"); // radi ispisa studenta sa predmeta
 
 
-
 print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>'."\n";
 
 // Ulazni parametri
@@ -38,6 +37,7 @@ $q40 = myquery("select ime, prezime, brindexa, slika from osoba where id=$studen
 if (mysql_num_rows($q40)<1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("nepoznat student $student", 3);
+	zamgerlog2("nepoznat student", $student);
 	return;
 }
 $ime = mysql_result($q40,0,0);
@@ -75,11 +75,13 @@ if (substr($nazivpredmeta,0,12) == "Završni rad") {
 	}
 }
 
+
 // Akademska godina
 $q6 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q6)<1) {
 	biguglyerror("Nepoznata akademska godina");
 	zamgerlog("nepoznata ag $ag", 3);
+	zamgerlog2("nepoznata ag", $ag);
 	return;
 }
 $nazivag = mysql_result($q6,0,0);
@@ -90,6 +92,7 @@ $q7 = myquery("select pk.id, pk.semestar from student_predmet as sp, ponudakursa
 if (mysql_num_rows($q7)<1) {
 	biguglyerror("Student nije upisan na ovaj predmet");
 	zamgerlog("student u$student ne slusa predmet pp$predmet ag$ag", 3);
+	zamgerlog2("id studenta i predmeta ne odgovaraju", $student, $predmet, $ag);
 	return;
 }
 $ponudakursa = mysql_result($q7,0,0);
@@ -151,6 +154,7 @@ if (!$user_siteadmin) {
 	if (mysql_num_rows($q10)<1) {
 		biguglyerror("Nemate pravo pristupa ovom studentu");
 		zamgerlog ("nastavnik nije na predmetu (pp$predmet ag$ag)", 3);
+		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 		return;
 	}
 	$privilegija = mysql_result($q10,0,0);
@@ -165,6 +169,7 @@ if (!$user_siteadmin) {
 		if ($nasao == 0) {
 			biguglyerror("Student je u grupi za koju vam je ograničen pristup");
 			zamgerlog("ogranicenje na labgrupu g$labgrupa", 3);
+			zamgerlog2("ima ogranicenje na labgrupu", intval($labgrupa));
 			return;
 		}
 	}
@@ -178,6 +183,7 @@ if (!$user_siteadmin) {
 if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 	ispis_studenta_sa_predmeta($student,$predmet, $ag);
 	zamgerlog("student ispisan sa predmeta (student u$student predmet pp$predmet)",4); // nivo 4: audit
+	zamgerlog2("student ispisan sa predmeta", $student, $predmet, $ag);
 	nicemessage("Student ispisan sa predmeta.");
 	return;
 }
@@ -214,12 +220,16 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 		update_komponente($student,$ponudakursa,$r4[0]);
 
 	// Pametni logging
-	if ($staragrupa>0 && $novagrupa>0) 
+	if ($staragrupa>0 && $novagrupa>0) {
 		zamgerlog("student u$student prebacen iz grupe g$staragrupa u g$novagrupa", 2); // 2 = edit
-	else if ($staragrupa>0)
+		zamgerlog2("promijenjena grupa studenta", $student, $novagrupa, 0, $staragrupa);
+	} else if ($staragrupa>0) {
 		zamgerlog("student u$student ispisan iz grupe g$staragrupa", 2);
-	else
+		zamgerlog2("student ispisan sa grupe", $student, intval($staragrupa));
+	} else {
 		zamgerlog("student u$student upisan u grupu g$novagrupa", 2);
+		zamgerlog2("student upisan u grupu", $student, $novagrupa);
+	}
 
 	// Linkovi za dalje
 	print "<p>Gdje želite sada ići?:<br />\n";
@@ -237,6 +247,7 @@ if ($_GET['akcija'] == "ponisti_kviz") {
 	$kviz = intval($_REQUEST['kviz']);
 	$q2000 = myquery("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
 }
+
 
 
 
@@ -368,6 +379,7 @@ if ($user_siteadmin) {
 	<p><a href="index.php?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ispis">Ispiši studenta sa predmeta</a> * <a href="index.php?sta=studentska/osobe&akcija=edit&osoba=<?=$student?>">Detaljnije o studentu</a> * <a href="index.php?su=<?=$student?>">Prijavi se kao student</a></p>
 	<?
 }
+
 
 
 
@@ -554,6 +566,7 @@ if (mysql_num_rows($q200) > 0) {
 	</p>
 	<?
 }
+
 
 
 
