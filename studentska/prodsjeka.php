@@ -20,6 +20,7 @@ global $userid,$user_siteadmin,$user_studentska;
 
 if (!$user_studentska && !$user_siteadmin) {
 	zamgerlog("nije studentska",3); // 3: error
+	zamgerlog2("nije studentska"); // 3: error
 	biguglyerror("Pristup nije dozvoljen.");
 	return;
 }
@@ -56,6 +57,7 @@ if ($_REQUEST['akcija']=="obrisi") {
 	$id = intval($_REQUEST['id']);
 	$q5 = myquery("delete from promjena_odsjeka where id=$id");
 	zamgerlog("obrisan zahtjev za promjenu odsjeka sa IDom $id", 2); // 2 = edit
+	zamgerlog2("obrisan zahtjev za promjenu odsjeka", $id);
 }
 
 // Akcija: dodavanje zahtjeva
@@ -81,6 +83,7 @@ if ($_POST['akcija']=="dodaj" && check_csrf_token()) {
 			$q110 = myquery("insert into promjena_odsjeka set osoba=$osoba, iz_odsjeka=$iz_odsjeka, u_odsjek=$u_odsjek, akademska_godina=$ak_god");
 			$q115 = myquery("select id from promjena_odsjeka where osoba=$osoba and iz_odsjeka=$iz_odsjeka and u_odsjek=$u_odsjek and akademska_godina=$ak_god");
 			zamgerlog("dodan zahtjev za promjenu odsjeka za osobu u$osoba (iz $iz_odsjeka u $u_odsjek)", 2);
+			zamgerlog2("dodan zahtjev za promjenu odsjeka", intval($osoba), $iz_odsjeka, $u_odsjek);
 		}
 	}
 }
@@ -102,7 +105,7 @@ if ($_REQUEST['akcija']=="prihvati") {
 	$u_odsjek = mysql_result($q500,0,2);
 
 	// Da li trenutno studira
-	$q510 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god");
+	$q510 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god order by ss.semestar desc");
 	if (mysql_num_rows($q510)>0) {
 		$studij=mysql_result($q510,0,0);
 		$naziv_studija=mysql_result($q510,0,1);
@@ -140,7 +143,7 @@ if ($_REQUEST['akcija']=="prihvati") {
 	$naziv_ciljnog = mysql_result($q570,0,0);
 
 	print "<p>Provjerite da li student ima uslove za upis u viši semestar ili nema!!!</p>\n";
-	if ($zadnji_semestar%2==0) {
+	if ($zadnji_semestar%2==1) {
 		$manji=$zadnji_semestar-1;
 		$veci=$zadnji_semestar+1;
 		?>
