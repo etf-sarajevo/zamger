@@ -23,6 +23,7 @@ global $userid,$user_siteadmin,$user_studentska;
 
 if (!$user_studentska && !$user_siteadmin) {
 	zamgerlog("nije studentska",3); // 3: error
+	zamgerlog2("nije studentska"); // 3: error
 	biguglyerror("Pristup nije dozvoljen.");
 	return;
 }
@@ -327,7 +328,7 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<option value="-1">Prvi ciklus</option>
 	<option value="-2">Drugi ciklus</option>
 	<?
-		$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
+		$q505 = myquery("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
 		while ($r505 = mysql_fetch_row($q505)) {
 			print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 		}
@@ -338,7 +339,6 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<input type="submit" value=" Prikaži "></form>
 	<?
 }
-
 
 // SPISAK IZVJEŠTAJA
 
