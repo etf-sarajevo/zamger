@@ -23,6 +23,7 @@ $tip = $_REQUEST['tip'];
 $q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
 if (mysql_num_rows($q)<1) {
 	zamgerlog("ne postoji moodle ID za predmet pp$predmet, ag$ag", 3);
+	zamgerlog2("ne postoji moodle ID za predmet", $predmet, $ag);
 	niceerror("Pogrešan predmet/akademska_godina ili za ovaj predmet nije definisan moodle ID.");
 	return;
 }

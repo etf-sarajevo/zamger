@@ -1,5 +1,5 @@
 <?
-
+  
 function ob_file_callback($buffer)
 {
 	global $sadrzaj_bafera_za_pdf;
@@ -24,6 +24,7 @@ function izvjestaj_pdf_converter() {
 				$found=true;
 			} else {
 				zamgerlog ("pdf_converter pristup nedozvoljenom modulu $koji", 3);
+				zamgerlog2 ("pristup nedozvoljenom modulu", 0, 0, 0, $koji);
 				niceerror("Pristup nedozvoljenom modulu");
 				return;
 			}
@@ -32,6 +33,7 @@ function izvjestaj_pdf_converter() {
 	}
 	if ($found===false) {
 		zamgerlog ("pdf_converter nepostojeći modul $koji", 3);
+		zamgerlog2 ("nepostojeći modul", 0, 0, 0, $koji);
 		niceerror("Pristup nepostojećem modulu");
 		return;
 	}

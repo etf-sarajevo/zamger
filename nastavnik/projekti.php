@@ -16,6 +16,7 @@ function nastavnik_projekti() {
 		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
+			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo pristupa ovoj opciji");
 			return;
 		}
@@ -188,6 +189,7 @@ function nastavnik_projekti() {
 
 			nicemessage('Uspješno ste uredili parametre projekata.');
 			zamgerlog("izmijenio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
+			zamgerlog2("izmijenjeni parametri projekata na predmetu", $predmet, $ag);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -269,6 +271,7 @@ function nastavnik_projekti() {
 
 			nicemessage('Novi projekat uspješno dodan.');
 			zamgerlog("dodao novi projekat na predmetu pp$predmet", 2);
+			zamgerlog2("dodao projekat", mysql_insert_id(), $predmet, $ag);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -325,6 +328,7 @@ function nastavnik_projekti() {
 
 			nicemessage('Uspješno ste izmijenili projekat.');
 			zamgerlog("izmijenio projekat $id na predmetu pp$predmet", 2);
+			zamgerlog2("izmijenio projekat", $id);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -369,7 +373,8 @@ function nastavnik_projekti() {
 			$q250 = myquery("UPDATE projekat SET biljeska='$biljeska' WHERE id=$id");
 
 			nicemessage('Uspješno ste dodali bilješku.');
-			zamgerlog("dodao biljesku na projekat $id na predmetu pp$predmet", 2);		
+			zamgerlog("dodao biljesku na projekat $id na predmetu pp$predmet", 2);
+			zamgerlog2("dodao biljesku na projekat", $id);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return; 
 		}
@@ -441,6 +446,7 @@ function nastavnik_projekti() {
 
 			nicemessage('Uspješno ste obrisali projekat.');	
 			zamgerlog("izbrisan projekat $id na predmetu pp$predmet", 4);
+			zamgerlog2("izbrisan projekat", $id, $predmet, $ag);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -522,10 +528,13 @@ function nastavnik_projekti() {
 			$q480 = myquery("INSERT INTO student_projekat (student, projekat) VALUES ($student, $projekat)");
 
 			nicemessage('Student je uspješno prijavljen na projekat!');
-			if ($stari_projekat==0)
+			if ($stari_projekat==0) {
 				zamgerlog ("student u$student prijavljen na projekat $projekat (predmet pp$predmet", 2);
-			else
+				zamgerlog2 ("student prijavljen na projekat", $student, $projekat);
+			} else {
 				zamgerlog ("student u$student prebacen sa projekta $stari_projekat na $projekat (predmet pp$predmet", 2);
+				zamgerlog2 ("student prebacen na projekat", $student, $projekat, 0, $stari_projekat);
+			}
 
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 		}
@@ -622,6 +631,7 @@ function nastavnik_projekti() {
 					$q520 = myquery("DELETE FROM student_projekat WHERE student=$student AND projekat=$student_projekat");
 					print "Student $imeprezime uspješno odjavljen sa projekta $naziv_projekta";
 					zamgerlog("student u$student odjavljen sa projekta $projekat (pp$predmet)", 2);
+					zamgerlog2("student odjavljen sa projekta", $student, $projekat);
 					nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 				}
 			} else {

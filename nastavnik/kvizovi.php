@@ -19,6 +19,7 @@ $q5 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q5)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q5,0,0);
@@ -29,6 +30,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -57,11 +59,13 @@ if ($_REQUEST['akcija'] == "pitanja") {
 	if (mysql_num_rows($q200)<1) {
 		niceerror("Nepostojeći kviz $kviz");
 		zamgerlog("editovanje pitanja: nepostojeci kviz $kviz", 3);
+		zamgerlog2("nepostojeci kviz (editovanje pitanja)", $kviz);
 		return;
 	}
 	if ((mysql_result($q200,0,1) != $predmet) || (mysql_result($q200,0,2) != $ag)) {
 		niceerror("Kviz nije sa ovog predmeta");
 		zamgerlog("editovanje pitanja: kviz $kviz nije sa predmeta pp$predmet ag$ag", 3);
+		zamgerlog2("id kviza i predmeta se ne poklapaju (editovanje pitanja)", $predmet, $ag, $kviz);
 		return;
 	}
 	$naziv_kviza = mysql_result($q200, 0, 0);
@@ -80,6 +84,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$q315 = myquery("update kviz_odgovor set kviz_pitanje=$pitanje where kviz_pitanje=0");
 
 		nicemessage("Pitanje uspješno dodano");
+		zamgerlog2("dodano pitanje na kviz", $pitanje);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja&subakcija=izmijeni&pitanje=<?=$pitanje?>';
@@ -99,17 +104,20 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		if (mysql_num_rows($q320)==0) {
 			niceerror("Pitanje je obrisano!");
 			zamgerlog("potvrda editovanja pitanja: pitanje $pitanje ne postoji", 3);
+			zamgerlog2("pitanje na kvizu ne postoji (potvrda editovanja)", $pitanje);
 			return;
 		}
 		if (mysql_result($q320,0,0) != $kviz) {
 			niceerror("Pitanje nije sa ovog kviza");
 			zamgerlog("potvrda editovanja pitanja: pitanje $pitanje nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog2("id pitanja i kviza se ne poklapaju (potvrda editovanja)", $pitanje, $kviz);
 			return;
 		}
 
 		$q330 = myquery("update kviz_pitanje set tekst='$tekst', tip='$tip', bodova=$bodova, vidljivo=$vidljivo where id=$pitanje");
 
 		nicemessage("Pitanje uspješno izmijenjeno");
+		zamgerlog2("izmijenjeno pitanje na kvizu", $pitanje);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja&subakcija=izmijeni&pitanje=<?=$pitanje?>';
@@ -124,11 +132,13 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		if (mysql_num_rows($q320)==0) {
 			niceerror("Pitanje je već obrisano!");
 			zamgerlog("potvrda brisanja pitanja: pitanje $pitanje ne postoji", 3);
+			zamgerlog2("pitanje ne postoji (potvrda brisanja)", $pitanje);
 			return;
 		}
 		if (mysql_result($q320,0,0) != $kviz) {
 			niceerror("Pitanje nije sa ovog kviza");
 			zamgerlog("potvrda brisanja pitanja: pitanje $pitanje nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog2("id pitanja i kviza se ne poklapaju (potvrda brisanja)", $pitanje, $kviz);
 			return;
 		}
 		
@@ -136,6 +146,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$q336 = myquery("delete from kviz_pitanje where id=$pitanje");
 
 		nicemessage("Pitanje uspješno obrisano");
+		zamgerlog2("obrisano pitanje sa kviza", $kviz, $pitanje);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja';
@@ -154,6 +165,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 			if (mysql_num_rows($q320)==0 || mysql_result($q320,0,0) != $kviz) {
 				niceerror("Pitanje nije sa ovog kviza");
 				zamgerlog("dodavanje odgovora: pitanje $pitanje nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+				zamgerlog2("id pitanja i kviza se ne poklapaju (dodavanje odgovora)", $pitanje, $kviz);
 				return;
 			}
 		}
@@ -161,6 +173,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$q340 = myquery("insert into kviz_odgovor set kviz_pitanje=$pitanje, tekst='$tekst', tacan=$tacan");
 
 		nicemessage("Odgovor uspješno dodan");
+		zamgerlog2("dodan odgovor na pitanje", mysql_insert_id());
 		if ($pitanje>0) {
 			?>
 			<script language="JavaScript">
@@ -187,12 +200,14 @@ if ($_REQUEST['akcija'] == "pitanja") {
 			if (mysql_num_rows($q355)==0) {
 				niceerror("Odgovor je već obrisan!");
 				zamgerlog("brisanje odgovora: odgovor $odgovor ne postoji", 3);
+				zamgerlog2("odgovor ne postoji (brisanje odgovora)", $odgovor);
 				return;
 			} 
 		}
 		else if (mysql_result($q350,0,0) != $kviz) {
 			niceerror("Odgovor ne postoji ili pitanje nije sa ovog kviza");
 			zamgerlog("brisanje odgovora: odgovor $odgovor nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog2("id odgovora i kviza se ne poklapaju (brisanje odgovora)", $odgovor, $kviz);
 			return;
 		}
 
@@ -201,6 +216,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		nicemessage("Odgovor uspješno obrisan");
 		$dodaj = "";
 		if (mysql_num_rows($q350)!=0) { $dodaj = "&subakcija=izmijeni&pitanje=".mysql_result($q350,0,1); }
+		zamgerlog2("obrisan odgovor sa kviza", $odgovor, $kviz);
 		
 		?>
 		<script language="JavaScript">
@@ -216,6 +232,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		if (mysql_num_rows($q370)==0 || mysql_result($q370,0,0) != $kviz) {
 			niceerror("Odgovor ne postoji ili pitanje nije sa ovog kviza");
 			zamgerlog("toggle tacnost: odgovor $odgovor nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog2("id odgovora i kviza se ne poklapaju (toggle tacnosti)", $odgovor, $kviz);
 			return;
 		}
 
@@ -223,6 +240,7 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		$q380 = myquery("update kviz_odgovor set tacan=$tacan where id=$odgovor");
 
 		nicemessage("Odgovor proglašen za (ne)tačan");
+		zamgerlog2("odgovor proglasen za (ne)tacan", $odgovor, $tacan);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/kvizovi&predmet=<?=$predmet?>&ag=<?=$ag?>&kviz=<?=$kviz?>&akcija=pitanja&subakcija=izmijeni&pitanje=<?=mysql_result($q370,0,1)?>';
@@ -317,7 +335,6 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		<?
 	}
 
-
 	print "</table>\n<br><br>\n";
 	if (mysql_num_rows($q210)==0) {
 		print genform("POST");
@@ -345,11 +362,13 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		if (mysql_num_rows($q230)<1) {
 			niceerror("Nepostojeće pitanje $pitanje");
 			zamgerlog("editovanje pitanja: nepostojece pitanje $pitanje", 3);
+			zamgerlog2("nepostojece pitanje (editovanje pitanja)", $pitanje);
 			return;
 		}
 		if (mysql_result($q230,0,0) != $kviz) {
 			niceerror("Pitanje nije sa ovog kviza");
 			zamgerlog("editovanje pitanja: pitanje $pitanje nije sa kviza $kviz (pp$predmet ag$ag)", 3);
+			zamgerlog2("id pitanja i kviza se ne poklapaju (editovanje pitanja)", $pitanje, $kviz);
 			return;
 		}
 		$tip = mysql_result($q230,0,1);
@@ -617,11 +636,13 @@ if ($_REQUEST['_lv_action_delete']) {
 	if (mysql_num_rows($q200)<1) {
 		niceerror("Nepostojeći kviz $kviz");
 		zamgerlog("brisanje kviza: nepostojeci kviz $kviz", 3);
+		zamgerlog2("nepostojeci kviz (brisanje kviza)", $kviz);
 		return;
 	}
 	if ((mysql_result($q200,0,1) != $predmet) || (mysql_result($q200,0,2) != $ag)) {
 		niceerror("Kviz nije sa ovog predmeta");
 		zamgerlog("brisanje kviza: kviz $kviz nije sa predmeta pp$predmet ag$ag", 3);
+		zamgerlog2("id kviza i predmeta se ne poklapaju (brisanje kviza)", $predmet, $ag, $kviz);
 		return;
 	}
 	
@@ -633,6 +654,7 @@ if ($_REQUEST['_lv_action_delete']) {
 	$q420 = myquery("delete from kviz_pitanje where kviz=$kviz");
 	$q430 = myquery("delete from kviz_student where kviz=$kviz");
 	// db_form() će pobrisati stavku iz tabele kviz
+	zamgerlog2("obrisan kviz", $predmet, $ag, $kviz);
 }
 
 
@@ -645,6 +667,7 @@ if (($_REQUEST['_lv_action'] == "edit" || $_REQUEST['_lv_action'] == "add") && !
 		$id_kviza = intval($_REQUEST['_lv_column_id']);
 		// Dodajemo logging
 		zamgerlog("izmijenjen kviz $id_kviza (pp$predmet)", 2);
+		zamgerlog2("izmijenjen kviz", $id_kviza);
 	} else {
 		$labgrupa = intval($_REQUEST['_lv_column_labgrupa']);
 		$naziv = my_escape($_REQUEST['_lv_column_naziv']);
@@ -652,6 +675,7 @@ if (($_REQUEST['_lv_action'] == "edit" || $_REQUEST['_lv_action'] == "add") && !
 		$q100 = myquery("select id from kviz where predmet=$predmet and akademska_godina=$ag and naziv='$naziv' and labgrupa=$labgrupa and prolaz_bodova=$pb");
 		$id_kviza = mysql_result($q100,0,0);
 		zamgerlog("dodan novi kviz $id_kviza (pp$predmet)", 2);
+		zamgerlog2("dodan kviz", $id_kviza);
 	}
 
 	$ip_adrese = $_REQUEST['_lv_column_ip_adrese'];

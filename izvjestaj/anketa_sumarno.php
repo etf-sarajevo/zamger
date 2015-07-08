@@ -17,6 +17,7 @@ function izvjestaj_anketa_sumarno(){
 	if (mysql_num_rows($q10)<1) {
 		biguglyerror("Nepostojeća anketa!");
 		zamgerlog("Pristup nepostojećoj anketi $anketa",3);
+		zamgerlog2("pristup nepostojećoj anketi", $anketa);
 		return;
 	}
 
@@ -37,7 +38,7 @@ function izvjestaj_anketa_sumarno(){
 		return;
 	}
 	
-	
+
 	if (!isset($_REQUEST['tip']) || $_REQUEST['tip'] == "izlaznost") {
 		?>
 		<h2>Izlaznost na anketu <?=$naziv_ankete?> (godina <?=$naziv_ag?>)</h2>
@@ -61,9 +62,9 @@ function izvjestaj_anketa_sumarno(){
 	$q15 = myquery("SELECT pk.predmet, count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar GROUP BY pk.id");
 	while ($r15 = mysql_fetch_row($q15))
 		$broj_studenata[$r15[0]] += $r15[1];
-	
-	
-	
+
+
+
 	if (!isset($_REQUEST['tip']) || $_REQUEST['tip'] == "izlaznost") {
 	
 	// Glavna tabela
@@ -223,7 +224,8 @@ function izvjestaj_anketa_sumarno(){
 	print "</table>\n";
 	return;
 
-	}
+	} // if ($_REQUEST['tip'] == "sveukupna")
+
 
 	// naziv predmeta
 	$q10 = myquery("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag; ");
@@ -234,6 +236,7 @@ function izvjestaj_anketa_sumarno(){
 		$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q20)==0) {
 			zamgerlog("nastavnik/izvjestaj_anketa privilegije",3);
+			zamgerlog2("privilegije");
 			biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
 			return;
 		}

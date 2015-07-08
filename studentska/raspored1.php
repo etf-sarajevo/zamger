@@ -12,6 +12,7 @@ function studentska_raspored1(){
 	
 		if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
+		zamgerlog2("nije studentska");
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 		}
@@ -238,6 +239,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			$q0=myquery("insert into raspored_sala set id=$id_nove_sale, naziv='$ime_sale', kapacitet=$kapacitet, tip='$tip_sale'");
 			$uspjesno_unesena_sala=1;
 			zamgerlog("upisana nova sala $ime_sale", 2); // nivo 2 je izmjena podataka u bazi
+			zamgerlog2("upisana nova sala", $id_nove_sale, 0, 0, $ime_sale);
 		}
 	}
 
@@ -274,6 +276,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 			$q1=myquery("update raspored_sala set naziv='$ime_sale', kapacitet=$kapacitet, tip='$tip_sale' where id=$id_sale_za_edit");
 			$uspjesno_editovana_sala=1;
 			zamgerlog("editovana sala $stari_naziv_sale", 2); // nivo 2 je izmjena podataka u bazi
+			zamgerlog2("editovana sala", $id_sale_za_edit);
 		}
 	}
 	$greska_masovnog_unosa=0;
@@ -396,6 +399,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 				$q0=myquery("insert into raspored_sala set id=$id_nove_sale, naziv='$ime_sale', kapacitet=$kapacitet, tip='$tip_sale'");
 				$unesene_sale[]=$ime_sale;
 				zamgerlog("masovni unos sala: Unesena je sala $ime_sale", 2);
+				zamgerlog2("upisana nova sala (masovni unos)", $id_nove_sale, 0, 0, $ime_sale);
 			}
 			$uspjesan_masovni_unos_sala=1;
 		} 
@@ -411,6 +415,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 		$q2=myquery("delete from raspored_sala where id=$id_sale_za_brisanje");
 		$uspjesno_obrisana_sala=1;
 		zamgerlog("obrisana sala $naziv",4);
+		zamgerlog2("obrisana sala", $id_sale_za_brisanje);
 	}
 	
 	if(isset($_REQUEST['sala_za_edit'])) {?>
@@ -710,6 +715,7 @@ else{
 			$q0=myquery("insert into raspored set id='NULL', akademska_godina=$akademska_godina, studij=$studij, semestar=$semestar");
 			$uspjesno_unesen_raspored=1;
 			zamgerlog("unesen novi raspored", 2);
+			zamgerlog2("unesen novi raspored", $akademska_godina, $studij, $semestar);
 		}
 	}
 	
@@ -728,6 +734,7 @@ else{
 		$q4=myquery("delete from raspored_stavka where raspored=$id_rasporeda_za_brisanje");
 		$uspjesno_obrisan_raspored=1;
 		zamgerlog("obrisan raspored za akademsku $naziv_akademske_godine godinu, studij $naziv_studija, semestar $semestar",4); // nivo 4: audit
+		zamgerlog2("obrisan raspored", $id_rasporeda_za_brisanje);
 	}
 	
 	
@@ -747,6 +754,7 @@ else{
 				$q3=myquery("delete from raspored_stavka rs where raspored=$id_odr");
 			}	
 			zamgerlog("obrisani svi rasporedi u akademskoj $naziv_akademske_godine godini",4);
+			zamgerlog2("obrisani svi rasporedi u akademskoj godini", $odrediste);
 			$q4=myquery("select studij,semestar,id from raspored where akademska_godina=$izvor");
 			$broj_redova=mysql_num_rows($q4);
 			for($i=0;$i<$broj_redova;$i++){
@@ -784,6 +792,7 @@ else{
 						if($postoji_labgrupa==false){
 							$q73=myquery("insert into labgrupa set id='NULL',naziv='$novi_naziv',predmet=$predmet,akademska_godina=$odrediste,virtualna=$virtualna");
 							zamgerlog("uspjesno unesena labgrupa", 2);
+							zamgerlog2("kreirana labgrupa", mysql_insert_id(), $predmet, $odrediste, $novi_naziv);
 							$q74=myquery("select max(id) from labgrupa");
 						}
 						else{
@@ -808,7 +817,8 @@ else{
 					}	
 				}		
 			}
-			zamgerlog("uspjesno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.", 2);
+			zamgerlog("uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.", 2);
+			zamgerlog2("uspješno kopirani svi rasporedi", $izvor, $odrediste);
 			nicemessage("Uspješno kopirani svi rasporedi iz $naziv_izvora u $naziv_odredista akademsku godinu.");
 		}
 	}
@@ -946,6 +956,7 @@ else{
 						vrijeme_pocetak=$vrijeme_pocetak,vrijeme_kraj=$vrijeme_kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa");
 					$cas_uspjesno_dodan=1;
 					zamgerlog("unesen novi cas za akademsku $naziv_akademske_godine, studij $naziv_studija, semestar $semestar", 2);
+					zamgerlog2("dodana stavka u raspored", mysql_insert_id(), $raspored_za_edit);
 					if (count($konflikt['student'])>0 && $cas_sa_konfliktima==1) $cas_dodan_sa_konfliktima=1;
 					$q00=myquery("select max(id) from raspored_stavka");
 					$id_unesene_stavke=mysql_result($q00,0,0);
@@ -980,6 +991,7 @@ else{
 									$q3=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored_i, dan_u_sedmici=$dan, predmet=$predmet,
 										vrijeme_pocetak=$vrijeme_pocetak,vrijeme_kraj=$vrijeme_kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$id_unesene_stavke");
 									zamgerlog("unesen novi cas za akademsku $naziv_akademske_godine godinu", 2);
+									zamgerlog2("dodana stavka u raspored", mysql_insert_id(), $raspored_i);
 								}	
 							}	
 						}
@@ -1232,6 +1244,7 @@ else{
 				}
 				$uspjesan_masovni_unos_casova=1;
 				zamgerlog("Izvršen masovni unos časova", 2);
+				zamgerlog2("izvršen masovni unos časova u raspored");
 			} 
 		}
 		
@@ -1252,6 +1265,7 @@ else{
 			}
 			$uspjesno_obrisan_cas=1;
 			zamgerlog("obrisan cas",4); // nivo 4: audit
+			zamgerlog2("obrisana stavka iz rasporeda", $id_casa_za_brisanje);
 		}
 		print "<a href=\"?sta=studentska/raspored1\">vrati se na početnu</a>";
 		print "<h4>Editovanje rasporeda za akademsku $naziv_akademske_godine godinu, studij $naziv_studija, $semestar. semestar:</h4>";

@@ -20,6 +20,7 @@ $ag = intval($_REQUEST['ag']);
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 	biguglyerror("Nepoznat predmet");
 	return;
 }
@@ -27,6 +28,7 @@ if (mysql_num_rows($q10)<1) {
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Nepoznata akademska godina");
 	return;
 }
@@ -35,6 +37,7 @@ if (mysql_num_rows($q10)<1) {
 $q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 if (mysql_num_rows($q17)<1) {
 	zamgerlog("student ne slusa predmet pp$predmet", 3);
+	zamgerlog2("student ne slusa predmet", $predmet, $ag);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }

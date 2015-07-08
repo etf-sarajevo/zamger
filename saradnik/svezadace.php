@@ -21,6 +21,7 @@ $q30 = myquery("select naziv, predmet, akademska_godina from labgrupa where id=$
 if (mysql_num_rows($q30)<1) {
 	biguglyerror("Nemate pravo ulaska u ovu grupu!");
 	zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
+	zamgerlog2("nepostojeca labgrupa", $labgrupa);
 	return;
 }
 $naziv_grupe = mysql_result($q30,0,0);
@@ -35,6 +36,7 @@ if (!$user_siteadmin) {
 	if (mysql_num_rows($q40)<1) {
 		biguglyerror("Nemate pravo ulaska u ovu grupu!");
 		zamgerlog ("nastavnik nije na predmetu (labgrupa g$labgrupa)", 3);
+		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 		return;
 	}
 	$privilegija = mysql_result($q40,0,0);
@@ -48,6 +50,7 @@ if (!$user_siteadmin) {
 		if ($nasao == 0) {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			zamgerlog("ogranicenje na labgrupu g$labgrupa", 3); // 3 - greska
+			zamgerlog2("ima ogranicenje na labgrupu", $labgrupa);
 			return;
 		}
 	}
@@ -61,6 +64,7 @@ $q70 = myquery("select naziv from zadaca where id=$zadaca");
 if (mysql_num_rows($q70)<1) {
 	niceerror("Nepostojeća zadaća!");
 	zamgerlog("nepostojeca zadaca $zadaca", 3);
+	zamgerlog2("nepostojeca zadaca", $zadaca);
 	return;
 }
 $naziv_zadace = mysql_result($q70,0,0);
@@ -178,6 +182,7 @@ if ($fajlova==0) {
 	print "<p>Ova funkcionalnost služi kako bi se odjednom mogle preuzeti sve zadaće poslane kroz Zamger. No u izabranoj grupi nijedan student nije poslao zadaću kroz Zamger!</p>\n<p>Da li su zadaće poslane na neki drugi način?</p>";
 	deleteDirectory($tmpfolder);
 	zamgerlog("niko nije poslao zadacu (z$zadaca, pp$predmet, g$labgrupa)", 3);
+	zamgerlog2("niko nije poslao zadacu", $zadaca);
 	return;
 }
 
@@ -197,6 +202,7 @@ $k = readfile($naziv_zip_fajla,false);
 if ($k == false) {
 	print "Kreiranje arhive nije uspjelo! Kontaktirajte administratora";
 	zamgerlog("kreiranje arhive zadaca nije uspjelo (z$zadaca, pp$predmet, g$labgrupa)", 3);
+	zamgerlog2("kreiranje arhive zadaca nije uspjelo", $zadaca);
 }
 
 unlink($naziv_zip_fajla);

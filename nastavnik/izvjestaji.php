@@ -24,6 +24,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -36,6 +37,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 

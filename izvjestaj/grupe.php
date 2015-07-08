@@ -48,12 +48,14 @@ if ($tip=="") $tip="single";
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 	biguglyerror("Traženi predmet ne postoji");
 	return;
 }
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q15)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Tražena godina ne postoji");
 	return;
 }
@@ -70,6 +72,7 @@ if (mysql_num_rows($q15)<1) {
 $q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
 	zamgerlog("permisije (predmet pp$predmet)",3);
+	zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
 	return;
 }
@@ -84,7 +87,6 @@ $q30 = myquery("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, stude
 while ($r30 = mysql_fetch_row($q30)) {
 	$imeprezime[$r30[0]] = "$r30[1] $r30[2]";
 	$brindexa[$r30[0]] = $r30[3];
-	
 }
 uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 

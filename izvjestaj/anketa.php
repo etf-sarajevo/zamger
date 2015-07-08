@@ -36,6 +36,7 @@ function izvjestaj_anketa(){
 		
 		if (!$pristup_nastavnik && !$pristup_student) {
 			zamgerlog("nastavnik/izvjestaj_anketa privilegije",3);
+			zamgerlog2("privilegije");
 			biguglyerror("Nemate pravo pregledati ovaj izvještaj!");
 			return;
 		}
@@ -74,6 +75,7 @@ function izvjestaj_anketa(){
 		// Studenti ne mogu vidjeti komentare
 		if ($pristup_student) {
 			zamgerlog("nastavnik/izvjestaj_anketa student pristupa komentarima",3);
+			zamgerlog2("student pristupa komentarima");
 			biguglyerror("Studenti nemaju pravo pristupa komentarima");
 			return;
 		}

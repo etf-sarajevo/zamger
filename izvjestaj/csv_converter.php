@@ -29,6 +29,7 @@ function izvjestaj_csv_converter() {
 				$found=true;
 			} else {
 				zamgerlog ("csv_converter pristup nedozvoljenom modulu $koji", 3);
+				zamgerlog2 ("pristup nedozvoljenom modulu", 0, 0, 0, $koji);
 				niceerror("Pristup nedozvoljenom modulu");
 				return;
 			}
@@ -37,6 +38,7 @@ function izvjestaj_csv_converter() {
 	}
 	if ($found===false) {
 		zamgerlog ("csv_converter nepostojeći modul $koji", 3);
+		zamgerlog2 ("nepostojeci modul", 0, 0, 0, $koji);
 		niceerror("Pristup nepostojećem modulu");
 		return;
 	}

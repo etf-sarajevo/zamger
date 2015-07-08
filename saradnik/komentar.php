@@ -28,6 +28,7 @@ $labgrupa=intval($_REQUEST['labgrupa']);
 $q10 = myquery("select sl.labgrupa from student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=$labgrupa");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("student u$stud_id nije u labgrupi g$labgrupa",3);
+	zamgerlog2("id studenta i labgrupe ne odgovaraju", $stud_id, $labgrupa);
 	niceerror("Nemate pravo pristupa ovom studentu!");
 	return;
 }
@@ -37,6 +38,7 @@ if ($user_siteadmin) {
 	$q20 = myquery("select predmet, akademska_godina from labgrupa where id=$labgrupa");
 	if (mysql_num_rows($q20)<1) {
 		zamgerlog("nepoznata labgrupa (labgrupa $labgrupa predmet pp$predmet)",3);
+		zamgerlog2("nepoznata labgrupa", $labgrupa);
 		niceerror("Nepoznata grupa $labgrupa");
 		return;
 	}
@@ -44,6 +46,7 @@ if ($user_siteadmin) {
 	$q20 = myquery("select np.predmet, np.akademska_godina from labgrupa as l, nastavnik_predmet as np where l.id=$labgrupa and l.predmet=np.predmet and l.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
 	if (mysql_num_rows($q20)<1) {
 		zamgerlog("nastavnik nije na predmetu (labgrupa g$labgrupa)",3);
+		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 		niceerror("Nemate pravo pristupa ovom studentu!");
 		return;
 	}
@@ -61,6 +64,7 @@ if (mysql_num_rows($q30)>0) {
 	}
 	if ($nasao == 0) {
 		zamgerlog("ogranicenje (labgrupa g$labgrupa predmet pp$predmet)",3);
+		zamgerlog2("ima ogranicenje na labgrupu", $labgrupa);
 		niceerror("Nemate pravo pristupa ovom studentu!");
 		return;
 	}
@@ -71,6 +75,7 @@ if ($r40 = mysql_fetch_row($q40)) {
 	print "<h3>$r40[0] $r40[1] ($r40[2])</h3>\n";
 } else {
 	zamgerlog("nepostojeci student $stud_id",3);
+	zamgerlog2("nepostojeci student", $stud_id);
 	niceerror("Nemate pravo pristupa ovom studentu!");
 	return;
 }
@@ -91,12 +96,14 @@ if ($_POST['akcija'] == "dodaj" && check_csrf_token()) {
 	$q50 = myquery("insert into komentar set student=$stud_id, nastavnik=$userid, labgrupa=$labgrupa, predmet=$ponudakursa, datum='$datum', komentar='$komentar'");
 
 	zamgerlog("dodan komentar na studenta u$stud_id labgrupa g$labgrupa",2);
+	zamgerlog2("dodan komentar na studenta", $stud_id, $labgrupa);
 }
 if ($_GET['akcija'] == "obrisi") {
 	$id = intval($_GET['id']);
 	$q60 = myquery("delete from komentar where id=$id");
 
 	zamgerlog("obrisan komentar $id",2);
+	zamgerlog2("obrisan komentar", $id);
 }
 
 

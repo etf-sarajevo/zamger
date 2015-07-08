@@ -42,6 +42,7 @@ function common_cron() {
 		if (!$user_siteadmin) {
 			niceerror("Nemate dozvolu da ovo izvršite.");
 			zamgerlog("forsira cron a nije admin", 3);
+			zamgerlog2("forsira cron a nije admin");
 			return;
 		}
 		$upit = "id=$force";

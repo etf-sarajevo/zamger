@@ -37,6 +37,7 @@ if (!$user_studentska && !$user_siteadmin) {
 	if (mysql_num_rows($q2) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet, godina ag$ag",3); // 3 = error
+		zamgerlog2 ("nije saradnik na predmetu", $predmet, $ag); // 3 = error
 		return;
 	}
 }
@@ -49,6 +50,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog ("nepoznat predmet $predmet", 3);
+	zamgerlog2 ("nepoznat predmet", $predmet);
 	return;
 }
 
@@ -56,6 +58,7 @@ $q12 = myquery("select tippredmeta from akademska_godina_predmet where predmet=$
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog ("nepoznat predmet $predmet", 3);
+	zamgerlog2 ("nije definisan tip predmeta", $predmet, $ag);
 	return;
 }
 $tippredmeta = mysql_result($q12,0,0);
@@ -64,6 +67,7 @@ $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q15)<1) {
 	biguglyerror("Nepoznata akademska godina");
 	zamgerlog ("nepoznat akademska godina $ag", 3);
+	zamgerlog2 ("nepoznat akademska godina", $ag);
 	return;
 }
 ?>

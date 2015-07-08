@@ -21,6 +21,7 @@ function common_projektneStrane()
 		{
 			//user is not in this project in this predmet...hijack attempt?
 			zamgerlog("projektne strane: korisnik nije na projektu $projekat (pp$predmet, ag$ag)", 3);
+			zamgerlog2("nije na projektu", $projekat);
 			return;	
 		}
 		
@@ -33,6 +34,7 @@ function common_projektneStrane()
 	if ($params[zakljucani_projekti] == 0)
 	{
 		zamgerlog("projektne strane: jos nisu otvorene! (pp$predmet, ag$ag)", 3);
+		zamgerlog2("svi projekti su jos otkljucani", $predmet, $ag);
 		return;
 	}
 	
@@ -543,6 +545,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Novi link uspješno dodan.');
 							zamgerlog("dodao link na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("dodao link na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -608,6 +611,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili link.');
 							zamgerlog("uredio link na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("uredio link na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -645,6 +649,7 @@ function common_projektneStrane()
 								{
 									nicemessage('Uspješno ste obrisali link.');	
 									zamgerlog("obrisao link na projektu $projekat (pp$predmet)", 2);
+									zamgerlog2("obrisao link na projektu", $projekat);
 									$link = $linkPrefix;
 								}
 								else
@@ -870,6 +875,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Novi RSS feed uspješno dodan.');
 							zamgerlog("dodao novi rss feed na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("dodao rss feed na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -935,6 +941,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili RSS feed.');
 							zamgerlog("uredio rss feed na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("uredio rss feed na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -973,6 +980,7 @@ function common_projektneStrane()
 								{
 									nicemessage('Uspješno ste obrisali RSS feed.');	
 									zamgerlog("obrisao rss feed na projektu $projekat (pp$predmet)", 2);
+									zamgerlog2("obrisao rss feed na projektu", $projekat);
 									$link = $linkPrefix;
 								}
 								else
@@ -1117,6 +1125,7 @@ function common_projektneStrane()
 					if (empty($article))
 					{
 						zamgerlog("projektne strane: nepostojeci clanak sa IDom $id, projekat $projekat (pp$predmet, ag$ag)", 3);
+						zamgerlog2("nepostojeci clanak na projektu", $id, $projekat);
 						return;
 					}
 		?>
@@ -1219,6 +1228,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Novi članak uspješno dodan.');
 							zamgerlog("dodao novi clanak na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("dodao clanak na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -1309,6 +1319,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili članak.');
 							zamgerlog("uredio clanak na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("uredio clanak na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -1345,6 +1356,7 @@ function common_projektneStrane()
 								{
 									nicemessage('Uspješno ste obrisali članak.');	
 									zamgerlog("obrisao clanak na projektu $projekat (pp$predmet)", 2);
+									zamgerlog2("obrisao clanak na projektu", $projekat);
 									$link = $linkPrefix;
 								}
 								else
@@ -1586,6 +1598,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Novi fajl uspješno dodan.');
 							zamgerlog("dodao novi fajl na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("dodao fajl na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -1653,6 +1666,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili fajl.');
 							zamgerlog("uredio fajl na projektu $projekat (pp$predmet)", 2);
+							zamgerlog2("uredio fajl na projektu", $projekat);
 							$link = $linkPrefix;
 						}
 						else
@@ -1692,6 +1706,7 @@ function common_projektneStrane()
 								{
 									nicemessage('Uspješno ste obrisali fajl.');	
 									zamgerlog("obrisao fajl na projektu $projekat (pp$predmet)", 2);
+									zamgerlog2("obrisao fajl na projektu", $projekat);
 									$link = $linkPrefix;
 								}
 								else
@@ -1805,6 +1820,7 @@ function common_projektneStrane()
 					if (empty($thread))
 					{
 						zamgerlog("projektne strane: nepostojeci thread sa IDom $id, projekat $projekat (pp$predmet, ag$ag)", 3);
+						zamgerlog2("nepostojeci thread na projektu", $id, $projekat);
 						return;	
 					}	
 					incrementThreadViewCount($thread[id]);		
@@ -1891,6 +1907,7 @@ function common_projektneStrane()
 						if (empty($postInfo))
 						{
 							zamgerlog("projektne strane: odgovor na nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+							zamgerlog2("odgovor na nepostojeci post na projektu", $id, $projekat);
 							return;
 						}	
 					}
@@ -1942,11 +1959,13 @@ function common_projektneStrane()
 							{
 								nicemessage('Novi odgovor uspješno dodan.');
 								zamgerlog("dodao novi odgovor na diskusiju ID $threadID, projekat $projekat (pp$predmet)", 2);
+								zamgerlog2("dodao odgovor na diskusiju", $threadID, $projekat);
 							}
 							else
 							{
 								nicemessage('Nova tema uspješno dodana.');
 								zamgerlog("dodao novu temu na projektu $projekat (pp$predmet)", 2);
+								zamgerlog2("dodao temu na projektu", $projekat);
 							}
 								
 							if (!empty($_REQUEST[tid]))				
@@ -1971,12 +1990,14 @@ function common_projektneStrane()
 					if (isUserAuthorOfPost($id, $userid) == false)
 					{
 						zamgerlog("pokusava urediti post $id a nije autor, projekat $projekat (pp$predmet)", 3);
+						zamgerlog2("pokusava urediti post a nije autor", $id, $projekat);
 						return;
 					}
 					$threadID = intval($_REQUEST[tid]);
 					if ($threadID <=0)
 					{
 						zamgerlog("pokusava urediti nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+						zamgerlog2("pokusava urediti nepostojeci post", $id, $projekat);
 						return;
 					}
 					
@@ -1987,6 +2008,7 @@ function common_projektneStrane()
 						if (empty($entry))
 						{
 							zamgerlog("pokusava urediti nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+							zamgerlog2("pokusava urediti nepostojeci post", $id, $projekat);
 							return;
 						}
 ?>
@@ -2026,6 +2048,7 @@ function common_projektneStrane()
 						{
 							nicemessage('Uspješno ste uredili post.');
 							zamgerlog("uredio vlastiti BB post $id, projekat $projekat (pp$predmet)", 2);
+							zamgerlog2("uredio vlastiti post", $id, $projekat);
 							$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";
 						}
 						else
@@ -2048,12 +2071,14 @@ function common_projektneStrane()
 						if (isUserAuthorOfPost($id, $userid) == false)
 						{
 							zamgerlog("pokusava izbrisati post $id a nije autor, projekat $projekat (pp$predmet)", 3);
+							zamgerlog2("pokusava izbrisati post a nije autor", $id, $projekat);
 							return;
 						}
 						$threadID = intval($_REQUEST[tid]);
 						if ($threadID<=0)
 						{
 							zamgerlog("pokusava izbrisati nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+							zamgerlog2("pokusava izbrisati nepostojeci post", $id, $projekat);
 							return;
 						}
 						
@@ -2071,6 +2096,7 @@ function common_projektneStrane()
 								{
 									nicemessage('Uspješno ste obrisali post.');	
 									zamgerlog("obrisao post na projektu $projekat (pp$predmet)", 2);
+									zamgerlog2("obrisao post na projektu", $projekat);
 									if (getCountPostsInThread($threadID) > 0)
 										$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";	
 									else
@@ -2106,6 +2132,7 @@ function formProcess_links($option)
 	if (!check_csrf_token()) 
 	{
 		zamgerlog("csrf token nije dobar",3);
+		zamgerlog2("csrf token nije dobar");
 		return "Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji";
 	}
 	if (!in_array($option, array('add', 'edit') ) )
@@ -2120,6 +2147,7 @@ function formProcess_links($option)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci link $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci link", $id, $projekat);
 
 		return $errorText;
 	}
@@ -2228,6 +2256,7 @@ function formProcess_rss($option)
 	if (!check_csrf_token()) 
 	{
 		zamgerlog("csrf token nije dobar",3);
+		zamgerlog2("csrf token nije dobar");
 		return "Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji";
 	}
 	if (!in_array($option, array('add', 'edit') ) )
@@ -2242,6 +2271,7 @@ function formProcess_rss($option)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci rss feed $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci rss feed", $id, $projekat);
 		return $errorText;
 	}
 	
@@ -2350,6 +2380,7 @@ function formProcess_bl($option)
 	if (!check_csrf_token()) 
 	{
 		zamgerlog("csrf token nije dobar",3);
+		zamgerlog2("csrf token nije dobar");
 		return "Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji";
 	}
 	if (!in_array($option, array('add', 'edit') ) )
@@ -2364,6 +2395,7 @@ function formProcess_bl($option)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci clanak $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci clanak", $id, $projekat);
 		return $errorText;
 	}
 	
@@ -2623,6 +2655,7 @@ function formProcess_file($option)
 	if (!check_csrf_token()) 
 	{
 		zamgerlog("csrf token nije dobar",3);
+		zamgerlog2("csrf token nije dobar");
 		return "Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji";
 	}
 	
@@ -2640,6 +2673,7 @@ function formProcess_file($option)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci fajl $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci fajl", $id, $projekat);
 		return $errorText;
 	}
 	if ($option == 'edit' && isThisFileFirstRevision($id) == false)
@@ -2647,6 +2681,7 @@ function formProcess_file($option)
 		//cannot get access to revisions other than the first one	
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti staru reviziju fajla $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti staru reviziju fajla", $id, $projekat);
 		return $errorText;
 	}
 	
@@ -2879,6 +2914,7 @@ function formProcess_bb($option, $thread, $threadID)
 	if (!check_csrf_token()) 
 	{
 		zamgerlog("csrf token nije dobar",3);
+		zamgerlog2("csrf token nije dobar");
 		return "Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji";
 	}
 	if (!in_array($option, array('add', 'edit') ) )
@@ -2893,6 +2929,7 @@ function formProcess_bb($option, $thread, $threadID)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci post", $id, $projekat);
 		return $errorText;
 	}
 
@@ -2900,6 +2937,7 @@ function formProcess_bb($option, $thread, $threadID)
 	{
 		$errorText = 'Doslo je do greske prilikom spasavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("pokusao urediti nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
+		zamgerlog2("pokusao urediti nepostojeci post", $id, $projekat);
 		return $errorText;
 	}
 	

@@ -18,6 +18,7 @@ if ($_REQUEST['akcija'] == "ne_prikazuj" && $_REQUEST['ne_prikazuj'] && check_cs
 	$q20 = myquery("delete from preference where korisnik=$userid and preferenca='savjet_dana'");
 	$q30 = myquery("insert into preference set korisnik=$userid, preferenca='savjet_dana', vrijednost=0");
 	zamgerlog("iskljucio savjet dana", 2);
+	zamgerlog2("iskljucio savjet dana");
 
 	return;	
 }

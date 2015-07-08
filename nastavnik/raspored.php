@@ -31,6 +31,7 @@ function vrijemeZaIspis($vrijeme){
 	if (mysql_num_rows($q10)<1) {
 		biguglyerror("Nepoznat predmet");
 		zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+		zamgerlog2("nepoznat predmet", $predmet);
 		return;
 	}
 	$predmet_naziv = mysql_result($q10,0,0);
@@ -43,6 +44,7 @@ function vrijemeZaIspis($vrijeme){
 		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 			zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			return;
 		} 
@@ -54,7 +56,8 @@ function vrijemeZaIspis($vrijeme){
 		$q01=myquery("update raspored_stavka set labgrupa=$novagrupa where id=$id_stavke");
 		$q02=myquery("update raspored_stavka set labgrupa=$novagrupa where dupla=$id_stavke");
 		$uspjesno_promijenjena_grupa=1;		
-		zamgerlog("Promijenjena grupa na predmetu $predmet_naziv", 2);
+		zamgerlog("promijenjena grupa za stavku rasporeda na predmetu $predmet_naziv", 2);
+		zamgerlog2("promijenjena grupa za stavku rasporeda", $novagrupa, $id_stavke);
 	}
 	
 	if ($_POST['akcija'] == "sjeckanje termina" && check_csrf_token()) {
@@ -106,6 +109,7 @@ function vrijemeZaIspis($vrijeme){
 		}
 		$uspjesno_razdvojena_stavka=1;
 		zamgerlog("Isjeckana stavka rasporeda", 2);			 
+		zamgerlog2("isjeckana stavka rasporeda", $id_stavke);
 	}
 
 ?>
