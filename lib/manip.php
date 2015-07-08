@@ -708,15 +708,17 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 	$naziv_predmeta = mysql_result($q60,0,0);
 
 	// Da li već postoji slog u tabeli ponudakursa
-	$q61 = myquery("select count(*) from ponudakursa where predmet=$predmet and akademska_godina=$ag and studij=$studij and semestar=$semestar");
+	$q61 = myquery("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag and studij=$studij and semestar=$semestar");
 	if (mysql_result($q61,0,0)>0) {
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Već postoji slog u tabeli ponudakursa za $naziv_predmeta<br/>\n";
+		$pkid = mysql_result($q61,0,0);
 
 	} else {
 		if ($obavezan==1) $tekst = "obavezan"; else $tekst = "izborni";
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem predmet $naziv_predmeta ($tekst)<br/>\n";
 		else {
 			$q63 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, obavezan=$obavezan, akademska_godina=$ag");
+			$pkid = mysql_insert_id();
 
 			// Kreiranje labgrupe "svi studenti"
 			$q65 = myquery("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
@@ -780,6 +782,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 		}
 	}
 
+	return $pkid;
 }
 
 
