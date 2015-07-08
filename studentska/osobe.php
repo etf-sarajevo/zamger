@@ -1140,7 +1140,7 @@ else if ($akcija == "ispis") {
 	<?
 
 	// Gdje je trenutno upisan?
-	$q2520 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god");
+	$q2520 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god and ss.semestar=$semestar");
 	if (mysql_num_rows($q2520)<1) {
 		niceerror("Student nije upisan na fakultet u izabranoj akademskoj godini!");
 		zamgerlog("pokusao ispisati studenta u$osoba koji nije upisan u ag$ak_god", 3);
@@ -1158,26 +1158,28 @@ else if ($akcija == "ispis") {
 	}
 	$naziv_studija = mysql_result($q2520,0,1);
 
+	$zimski_ljetnji = $semestar%2;
+
 	?>
 	<h3>Studij: <?=$naziv_studija?>, <?=$semestar?>. semestar, <?=$naziv_ak_god?> godina</h3>
 	<?
 
 	// Ispis sa studija
 	if ($_REQUEST['potvrda']=="1") {
-		$q530 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god");
+		$q530 = myquery("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.semestar mod 2=$zimski_ljetnji");
 		while ($r530 = mysql_fetch_row($q530)) {
 			$predmet = $r530[0];
 			ispis_studenta_sa_predmeta($osoba, $predmet, $ak_god);
 			zamgerlog("ispisujem studenta u$osoba sa predmeta pp$predmet (ispis sa studija)",4); // 4 - audit
 		}
-		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god");
+		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god and semestar=$semestar");
 		nicemessage("Ispisujem studenta sa studija $naziv_studija i svih predmeta koje trenutno sluša.");
 		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god)", 4);
 	} else {
 		?>
 		<p>Student će biti ispisan sa sljedećih predmeta:<ul>
 		<?
-		$q520 = myquery("select p.naziv from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.predmet=p.id");
+		$q520 = myquery("select p.naziv from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$osoba and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.predmet=p.id and pk.semestar mod 2=$zimski_ljetnji");
 		while ($r520 = mysql_fetch_row($q520)) {
 			print "<li>$r520[0]</li>\n";
 		}
@@ -1381,7 +1383,7 @@ else if ($akcija == "predmeti") {
 			$q2040 = myquery("select naziv from studij where id=$studij");
 			$naziv_studija = mysql_result($q2040,0,0);
 
-			$q2050 = myquery("select naziv from akademska_godina  where id=$ag_studija");
+			$q2050 = myquery("select naziv from akademska_godina where id=$ag_studija");
 
 			if ($ag_studija > $ak_god) {
 				print "<p>Student nije bio upisan u odabranoj akademskoj godini ($naziv_ag), ali je upisan na studij $naziv_studija, ".mysql_result($q2030,0,0).". semestar, akademske ".mysql_result($q2050,0,0)." godine.</p>\n";
@@ -1550,7 +1552,7 @@ else if ($akcija == "izbori") {
 		$datumiz=mysql_result($q3010,$i-1,1);
 		$datumis=mysql_result($q3010,$i-1,2);
 		$oblast=mysql_result($q3010,$i-1,3);
-		$uza_oblast=mysql_result($q3010,$i-1,4);
+		$podoblast=mysql_result($q3010,$i-1,4);
 		$dopunski=mysql_result($q3010,$i-1,5);
 		$drugainst=mysql_result($q3010,$i-1,6);
 
@@ -1954,7 +1956,7 @@ else if ($akcija == "edit") {
 
 	if (mysql_result($q200,0,12)!=0) {
 		$q206 = myquery("select naziv from strucni_stepen where id=".mysql_result($q200,0,12));
-		$akademsko_zvanje = mysql_result($q206,0,0);
+		$strucni_stepen = mysql_result($q206,0,0);
 	}
 	if (mysql_result($q200,0,13)!=0) {
 		$q207 = myquery("select naziv from naucni_stepen where id=".mysql_result($q200,0,13));
@@ -1992,7 +1994,7 @@ else if ($akcija == "edit") {
 		Telefon: <b><?=mysql_result($q200,0,10)?></b><br/>
 		Kontakt e-mail: <b><?=$email_adrese?></b><br/>
 		<br/>
-		Akademsko zvanje: <b><?=$akademsko_zvanje?></b><br/>
+		Stručni stepen: <b><?=$strucni_stepen?></b><br/>
 		Naučni stepen: <b><?=$naucni_stepen?></b><br/>
 		<br/>
 		ID: <b><?=$osoba?></b><br/>
@@ -2663,7 +2665,8 @@ else if ($akcija == "edit") {
 //			$nova_ak_god = mysql_result($q630,0,0)+1;
 
 //			if ($godina_prijemnog==$nova_ak_god) {
-			if (!$korisnik_student && !$korisnik_nastavnik) {
+			// Moguće je da se asistent upisuje na 3. ciklus pa je $korisnik_nastavnik==true
+			if (!$korisnik_student) {
 				?>
 				<li><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$r600[3]?>&semestar=1&godina=<?=$godina_prijemnog?>">Upiši kandidata na <?
 				$q630 = myquery("select naziv from studij where id=$r600[3]");
