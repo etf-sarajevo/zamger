@@ -184,6 +184,7 @@ function student_ugovoroucenju() {
 		}
 
 		zamgerlog("student u$userid kreirao ugovor o ucenju (ID: $id1 i $id2)",2); // 2 - edit
+		zamgerlog2("kreirao ugovor o ucenju", intval($id1), intval($id2));
 		nicemessage("Kreirali ste Ugovor o učenju!");
 		?>
 		<p><a href="?sta=student/ugovoroucenjupdf">Kliknite ovdje da biste ga isprintali.</a></p>
