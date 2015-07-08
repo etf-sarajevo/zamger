@@ -6,6 +6,7 @@ function studentska_kreiranje_plana(){
 	
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
+		zamgerlog2("nije studentska"); // 3: error
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
 	}
@@ -150,6 +151,7 @@ function processInsertPlanForm(){
 	{
 		biguglyerror("Mrš odavle");
 		zamgerlog("1337 h4x0r detected",3);
+		zamgerlog2("csrf token ne odgovara");
 		return "ERROR";
 	}
 	
