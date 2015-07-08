@@ -809,6 +809,7 @@ if ($_REQUEST["akcija"]=="obrisi") {
 	$osoba = intval($_GET['osoba']);
 	if ($osoba>0) {
 		myquery("DELETE FROM prijemni_prijava WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
+		myquery("DELETE FROM prijemni_obrazac WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
 
 		// Necemo brisati osobu i ostale podatke
 		zamgerlog("brisem osobu u$osoba sa prijemnog - termin $termin", 4);
