@@ -53,6 +53,7 @@ require ("lib/manip.php"); // Radi upisa studenta na predmet
 // Provjera privilegija
 if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
 	zamgerlog("korisnik nije studentska (admin $admin)",3);
+	zamgerlog2("nije studentska");
 	biguglyerror("Pristup nije dozvoljen.");
 	return;
 }
@@ -101,17 +102,18 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 				if ($sn) $prezime = $sn;
 			} else {
 				zamgerlog("korisnik '$uid' nije pronadjen na LDAPu",3);
+				zamgerlog2("korisnik nije pronadjen na LDAPu", 0, 0, 0, $uid);
 				$uid = "";
 				niceerror("Korisnik nije pronadjen na LDAPu... dodajem novog!");
 			}
 		} else {
 			zamgerlog("ne mogu kontaktirati LDAP server",3);
+			zamgerlog2("ne mogu kontaktirati LDAP server");
 			niceerror("Ne mogu kontaktirati LDAP server... pravim se da ga nema :(");
 		}
 	}
 
 	if (!preg_match("/\w/", $prezime)) {
-		zamgerlog("prezime nije ispravno ($prezime)",3);
 		niceerror("Prezime nije ispravno");
 		return;
 	}
@@ -120,6 +122,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$q10 = myquery("select id, ime, prezime from osoba where ime like '$ime' and prezime like '$prezime'");
 	if ($r10 = mysql_fetch_row($q10)) {
 		zamgerlog("korisnik vec postoji u bazi ('$ime' '$prezime' - ID: $r10[0])",3);
+		zamgerlog2("korisnik vec postoji u bazi", $r10[0], 0, 0, "'$ime' '$prezime'");
 		niceerror("Korisnik već postoji u bazi:");
 		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r10[0]\">$r10[1] $r10[2]</a>";
 		return;
@@ -147,6 +150,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 
 		nicemessage("Novi korisnik je dodan.");
 		zamgerlog("dodan novi korisnik u$osoba (ID: $osoba)",4); // nivo 4: audit
+		zamgerlog2("dodan novi korisnik", $osoba);
 		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$osoba\">$ime $prezime</a>";
 		return;
 	}
@@ -234,6 +238,7 @@ if ($akcija == "podaci") {
 		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja, boracke_kategorije=$boracke_kategorije where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
+		zamgerlog2("promijenjeni licni podaci korisnika", $osoba);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit';
@@ -305,6 +310,7 @@ if ($akcija == "podaci") {
 			$q310 = myquery("update osoba set slika='$slikabaza' where id=$osoba");
 
 			zamgerlog("postavljena slika za korisnika u$osoba", 2);
+			zamgerlog2("postavljena slika za korisnika", $osoba);
 			?>
 			<script language="JavaScript">
 			location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit';
@@ -328,6 +334,7 @@ if ($akcija == "podaci") {
 		$q497 = myquery("update osoba set slika='' where id=$osoba");
 
 		zamgerlog("obrisana slika za korisnika u$osoba", 2);
+		zamgerlog2("obrisana slika za korisnika", $osoba);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit';
@@ -351,6 +358,7 @@ if ($akcija == "podaci") {
 		$q498 = myquery("delete from email where osoba=$osoba and id=$mailid");
 
 		zamgerlog("obrisana email adresa za u$osoba", 2);
+		zamgerlog2("email adresa obrisana", $osoba, $mailid, 0, $staraadresa);
 		nicemessage("Obrisana email adresa $staraadresa");
 	}
 
@@ -367,6 +375,7 @@ if ($akcija == "podaci") {
 		$q498 = myquery("update email set adresa='$adresa' where osoba=$osoba and id=$mailid");
 
 		zamgerlog("promijenjena email adresa za u$osoba", 2);
+		zamgerlog2("email adresa promijenjena", $osoba, $mailid, 0, "$staraadresa -> $adresa");
 		nicemessage("Promijenjena email adresa $staraadresa u $adresa");
 	}
 
@@ -375,6 +384,7 @@ if ($akcija == "podaci") {
 		$q498 = myquery("insert into email set adresa='$adresa', osoba=$osoba, sistemska=0");
 
 		zamgerlog("dodana email adresa za u$osoba", 2);
+		zamgerlog2("email adresa dodana", $osoba, intval(mysql_insert_id()), 0, "$adresa");
 		nicemessage("Dodana email adresa $adresa");
 	}
 
@@ -384,6 +394,7 @@ if ($akcija == "podaci") {
 	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja, boracke_kategorije from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
+		zamgerlog2("nepostojeca osoba", $osoba);
 		niceerror("Nepostojeća osoba!");
 		return;
 	}
@@ -896,6 +907,7 @@ else if ($akcija == "upis") {
 						$q701 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
 						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
 						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
+						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
 					} 
 					
 					if ($ok_izvrsiti_upis==0) print '<input type="hidden" name="izborni-'.mysql_result($q700,0,0).'" value="on">'."\n";
@@ -961,6 +973,7 @@ else if ($akcija == "upis") {
 						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
 						$pkid = mysql_result($q700,0,0);
 						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
+						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
 					} else {
 						$pkid = mysql_result($q740,0,0);
 					}
@@ -1037,6 +1050,7 @@ else if ($akcija == "upis") {
 				$q646 = myquery("insert into privilegije set osoba=$student, privilegija='student'");
 
 			// AUTH tabelu cemo srediti naknadno
+			zamgerlog2("proglasen za studenta", $student);
 			print "-- $prezime $ime proglašen za studenta<br/>\n";
 		}
 
@@ -1044,6 +1058,7 @@ else if ($akcija == "upis") {
 		$nbri = my_escape($_REQUEST['novi_brindexa']);
 		if ($nbri!="") {
 			$q650 = myquery("update osoba set brindexa='$nbri' where id=$student");
+			zamgerlog2("postavljen broj indeksa", $student, 0, 0, $nbri);
 			print "-- broj indeksa postavljen na $nbri<br/>\n";
 		}
 
@@ -1055,6 +1070,7 @@ else if ($akcija == "upis") {
 				// Upisujem dopisanu ocjenu
 				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$ag");
 				zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
+				zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
 				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>\n";
 			} else {
 				// Student prenio predmet
@@ -1073,6 +1089,7 @@ else if ($akcija == "upis") {
 				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
 
 				upis_studenta_na_predmet($student, mysql_result($q594,0,0));
+				zamgerlog2("student upisan na predmet (preneseni)", $student, intval(mysql_result($q594,0,0)));
 				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>\n";
 			}
 		}
@@ -1088,6 +1105,7 @@ else if ($akcija == "upis") {
 			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
 			if (mysql_result($q615,0,0)<1) {
 				upis_studenta_na_predmet($student, $r610[0]);
+				zamgerlog2("student upisan na predmet (obavezan)", $student, intval($r610[0]));
 			} else {
 				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>\n";
 			}
@@ -1099,6 +1117,7 @@ else if ($akcija == "upis") {
 			if ($value=="") continue;
 			$ponudakursa = intval(substr($key,8)); // drugi dio ključa je ponudakursa
 			upis_studenta_na_predmet($student, $ponudakursa);
+			zamgerlog2("student upisan na predmet (izborni)", $student, $ponudakursa);
 			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
 			print "-- Student upisan u izborni predmet ".mysql_result($q635,0,0)."<br/>";
 		}
@@ -1144,16 +1163,19 @@ else if ($akcija == "ispis") {
 	if (mysql_num_rows($q2520)<1) {
 		niceerror("Student nije upisan na fakultet u izabranoj akademskoj godini!");
 		zamgerlog("pokusao ispisati studenta u$osoba koji nije upisan u ag$ak_god", 3);
+		zamgerlog2("pokusao ispisati studenta koji nije upisan", $osoba, intval($ak_god));
 		return;
 	}
 	if (mysql_result($q2520,0,0)!=$studij) {
 		niceerror("Student nije upisan na izabrani studij u izabranoj akademskoj godini!");
 		zamgerlog("pokusao ispisati studenta u$osoba sa studija $studij koji ne slusa u ag$ak_god", 3);
+		zamgerlog2("pokusao ispisati studenta sa studija koji ne slusa", $osoba, intval($studij), intval($ak_god));
 		return;
 	}
 	if (mysql_result($q2520,0,2)!=$semestar) {
 		niceerror("Student nije upisan na izabrani semestar u izabranoj akademskoj godini!");
 		zamgerlog("pokusao ispisati studenta u$osoba sa semestra $semestar koji ne slusa u ag$ak_god", 3);
+		zamgerlog2("pokusao ispisati studenta sa semestra koji ne slusa", $osoba, intval($semestar), intval($ak_god));
 		return;
 	}
 	$naziv_studija = mysql_result($q2520,0,1);
@@ -1171,10 +1193,12 @@ else if ($akcija == "ispis") {
 			$predmet = $r530[0];
 			ispis_studenta_sa_predmeta($osoba, $predmet, $ak_god);
 			zamgerlog("ispisujem studenta u$osoba sa predmeta pp$predmet (ispis sa studija)",4); // 4 - audit
+			zamgerlog2("student ispisan sa predmeta (ispis sa studija)", $osoba, intval($predmet), intval($ak_god));
 		}
 		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god and semestar=$semestar");
 		nicemessage("Ispisujem studenta sa studija $naziv_studija i svih predmeta koje trenutno sluša.");
 		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god)", 4);
+		zamgerlog2("student ispisan sa studija", $osoba, intval($ak_god));
 	} else {
 		?>
 		<p>Student će biti ispisan sa sljedećih predmeta:<ul>
@@ -1252,8 +1276,10 @@ else if ($akcija == "kolizija") {
 		foreach ($ponudekursa as $predmet => $pk) {
 			upis_studenta_na_predmet($osoba, $pk);
 			$q440 = myquery("delete from kolizija where student=$osoba and akademska_godina=$nova_ak_god and predmet=$predmet");
+			zamgerlog2("student upisan na predmet (kolizija)", $osoba, intval($pk));
 		}
 		zamgerlog("prihvacen zahtjev za koliziju studenta u$osoba", 4); // 4 = audit
+		zamgerlog2("prihvacen zahtjev za koliziju", $osoba);
 		print "<p>Upis je potvrđen.</p>\n";
 	} else {
 		?>
@@ -1309,6 +1335,7 @@ else if ($akcija == "predmeti") {
 
 		nicemessage("Student upisan na predmet $naziv_predmeta");
 		zamgerlog("student u$osoba manuelno upisan na predmet p$ponudakursa", 4); // 4 - audit
+		zamgerlog2("student upisan na predmet (manuelno)", $osoba, $ponudakursa);
 	}
 
 	if ($_REQUEST['subakcija']=="ispisi") {
@@ -1336,6 +1363,7 @@ else if ($akcija == "predmeti") {
 
 		nicemessage("Student ispisan sa predmeta $naziv_predmeta");
 		zamgerlog("student u$osoba manuelno ispisan sa predmeta p$ponudakursa", 4); // 4 - audit
+		zamgerlog2("student ispisan sa predmeta (manuelno)", $osoba, intval($predmet), intval($ag));
 	}
 
 
@@ -1572,6 +1600,7 @@ else if ($akcija == "izbori") {
 			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
 				$q3040 = myquery("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and oblast=$oblast and podoblast=$podoblast and dopunski=$dopunski and druga_institucija=$drugainst");
 				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
+				zamgerlog2("azurirani podaci o izboru", $osoba);
 				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
 				$q3020 = myquery("select naziv from zvanje where id=$izvanje");
 				$nzvanje = mysql_result($q3020,0,0);
@@ -1688,6 +1717,7 @@ else if ($akcija == "edit") {
 				ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 				if (!ldap_bind($ds)) {
 					zamgerlog("Ne mogu se spojiti na LDAP server",3); // 3 - greska
+					zamgerlog2("ne mogu se spojiti na LDAP server");
 					niceerror("Ne mogu se spojiti na LDAP server - nastavljam dalje bez provjere");
 					break;
 				}
@@ -1695,6 +1725,7 @@ else if ($akcija == "edit") {
 				$sr = ldap_search($ds, "", "uid=$login_ldap", array() /* just dn */ );
 				if (!$sr) {
 					zamgerlog("ldap_search() nije uspio.",3);
+					zamgerlog2("ldap_search() nije uspio.");
 					niceerror("ldap_search() nije uspio - nastavljam dalje bez provjere");
 					break;
 				} 
@@ -1708,6 +1739,7 @@ else if ($akcija == "edit") {
 				$sr = ldap_search($ds, "", "mail=$login_ldap$conf_ldap_domain", array() );
 				if (!$sr) {
 					zamgerlog("ldap_search() 2 nije uspio.",3);
+					zamgerlog2("ldap_search() nije uspio.");
 					niceerror("ldap_search() nije uspio - nastavljam dalje bez provjere");
 					break;
 				} 
@@ -1716,6 +1748,7 @@ else if ($akcija == "edit") {
 					nicemessage("Email '$login$conf_ldap_domain' pronađen na LDAP serveru");
 				} else {
 					zamgerlog("login ne postoji na LDAPu ($login)",3);
+					zamgerlog2("login ne postoji na LDAPu", 0, 0, 0, $login);
 					niceerror("Predloženi login ($login) nije pronađen na LDAP serveru!");
 					print "<p>Nastaviću dalje sa dodavanjem logina, ali korisnik vjerovatno neće moći pristupiti Zamgeru.</p>";
 				}
@@ -1725,6 +1758,7 @@ else if ($akcija == "edit") {
 			$q120 = myquery("insert into auth set id=$osoba, login='$login', password='$password', aktivan=$aktivan");
 			nicemessage("Uspješno kreiran novi login za korisnika");
 			zamgerlog("dodan novi login '$login' za korisnika u$osoba", 4);
+			zamgerlog2("dodan novi login za korisnika", $osoba, 0, 0, $login);
 
 		} else {
 			// Izmjena starog logina
@@ -1732,16 +1766,19 @@ else if ($akcija == "edit") {
 			if (mysql_result($q123,0,0)<1) {
 				niceerror("Nije pronađen login... molimo pokušajte ponovo");
 				zamgerlog("nije pronadjen stari login '$stari_login' za korisnika u$osoba", 3);
+				zamgerlog2("nije pronadjen stari login za korisnika", $osoba);
 			} else {
 				if ($_REQUEST['brisanje']==" Obriši ") {
 					$q125 = myquery("delete from auth where id=$osoba and login='$stari_login'");
 					nicemessage("Uspješno obrisan login '$stari_login'");
 					zamgerlog("obrisan login '$stari_login' za korisnika u$osoba", 4);
+					zamgerlog2("obrisan login za korisnika", $osoba, 0, 0, $stari_login);
 
 				} else {
 					$q127 = myquery("update auth set login='$login', password='$password', aktivan=$aktivan where id=$osoba and login='$stari_login'");
 					nicemessage("Uspješno izmijenjen login '$login'");
 					zamgerlog("izmijenjen login '$stari_login' u '$login' za korisnika u$osoba", 4);
+					zamgerlog2("izmijenjen login za korisnika", $osoba, 0, 0, $login);
 				}
 			}
 		}
@@ -1762,9 +1799,11 @@ else if ($akcija == "edit") {
 			if ($aktivan!=0) {
 				$q105 = myquery("update auth set aktivan=0 where id=$osoba");
 				zamgerlog("ukinut login za korisnika u$osoba (ldap)",4);
+				zamgerlog2("ukinut login za korisnika (ldap)", $osoba );
 			} else {
 				$q105 = myquery("update auth set aktivan=1 where id=$osoba");
 				zamgerlog("aktiviran login za korisnika u$osoba (ldap)",4);
+				zamgerlog2("aktiviran login za korisnika (ldap)", $osoba );
 			}
 
 		} else if ($aktivan!=0) { // Nema zapisa u tabeli auth
@@ -1780,6 +1819,7 @@ else if ($akcija == "edit") {
 			ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 			if (!ldap_bind($ds)) {
 				zamgerlog("Ne mogu se spojiti na LDAP server",3); // 3 - greska
+				zamgerlog2("ne mogu se spojiti na LDAP server");
 				niceerror("Ne mogu se spojiti na LDAP server");
 				return;
 			}
@@ -1787,12 +1827,14 @@ else if ($akcija == "edit") {
 			$sr = ldap_search($ds, "", "uid=$suggest_login", array() /* just dn */ );
 			if (!$sr) {
 				zamgerlog("ldap_search() nije uspio.",3);
+				zamgerlog2("ldap_search() nije uspio.");
 				niceerror("ldap_search() nije uspio.");
 				return;
 			}
 			$results = ldap_get_entries($ds, $sr);
 			if ($results['count'] < 1) {
 				zamgerlog("login ne postoji na LDAPu ($suggest_login)",3);
+				zamgerlog2("login ne postoji na LDAPu", 0, 0, 0, $suggest_login);
 				niceerror("Predloženi login ($suggest_login) nije pronađen na LDAP serveru!");
 				print "<p>Da li ste uspravno unijeli broj indeksa, ime i prezime? Ako jeste, kontaktirajte administratora!</p>";
 	
@@ -1804,15 +1846,18 @@ else if ($akcija == "edit") {
 				if (mysql_num_rows($q110)==0) {
 					$q111 = myquery("insert into auth set id=$osoba, login='$suggest_login', aktivan=1");
 					zamgerlog("kreiran login za korisnika u$osoba (ldap - upis u tabelu)",4);
+					zamgerlog2("kreiran login za korisnika (ldap - upis u tabelu)", $osoba);
 				}
 				else {
 					if (mysql_result($q110,0,0) == "") {
 						$q112 = myquery("update auth set login='$suggest_login' where id=$osoba");
 						zamgerlog("kreiran login za korisnika u$osoba (ldap - postavljeno polje login)",4);
+						zamgerlog2("kreiran login za korisnika (ldap - postavljeno polje login)", $osoba );
 					}
 					if (mysql_result($q110,0,1)==0) {
 						$q113 = myquery("update auth set aktivan=1 where id=$osoba");
 						zamgerlog("kreiran login za korisnika u$osoba (ldap - aktivan=1)",4);
+						zamgerlog2("kreiran login za korisnika (ldap - aktivan=1)", $osoba);
 					}
 				}
 	
@@ -1822,10 +1867,12 @@ else if ($akcija == "edit") {
 				if (mysql_num_rows($q115) < 1) {
 					$q114 = myquery("insert into email set osoba=$osoba, adresa='$email_adresa', sistemska=1");
 					zamgerlog("dodana sistemska email adresa za u$osoba", 2);
+					zamgerlog2("sistemska email adresa dodana", $osoba, intval(mysql_insert_id()), 0, "$email_adresa");
 				}
 				else if (mysql_result($q115,0,0) == 0) {
 					$q114 = myquery("update email set sistemska=1 where email='$email_adresa' and osoba=$osoba");
 					zamgerlog("email adresa proglasena za sistemsku za u$osoba", 2);
+					zamgerlog2("email adresa proglasena za sistemsku", $osoba, 0, 0, "$email_adresa");
 				}
 			}
 		} // else if ($pristup!=0)
@@ -1844,6 +1891,7 @@ else if ($akcija == "edit") {
 			if (mysql_result($q130,0,0)<1) {
 				upis_studenta_na_predmet($osoba, $predmet);
 				zamgerlog("student u$osoba upisan na predmet p$predmet",4);
+				zamgerlog2("student upisan na predmet (manuelno 2)", $osoba, $predmet);
 				$q136 = myquery("select p.naziv from predmet as p, ponudakursa as pk where pk.id=$predmet and pk.predmet=p.id");
 				$naziv_predmeta = mysql_result($q136,0,0);
 				nicemessage("Student upisan na predmet $naziv_predmeta.");
@@ -1863,6 +1911,7 @@ else if ($akcija == "edit") {
 		$q130 = myquery("replace nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god, nivo_pristupa='asistent'");
 
 		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
+		zamgerlog2("nastavniku data prava na predmetu", $osoba, $predmet, intval($id_ak_god));
 		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
 		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
 	}
@@ -1881,6 +1930,7 @@ else if ($akcija == "edit") {
 		$q130 = myquery("replace angazman set osoba=$osoba, predmet=$predmet, akademska_godina=$angazman_ak_god, angazman_status=$status");
 
 		zamgerlog("nastavnik u$osoba angazovan na predmetu pp$predmet (status: $status, akademska godina: $id_ak_god)",4);
+		zamgerlog2("nastavnik angazovan na predmetu", $osoba, $predmet, intval($id_ak_god));
 		nicemessage("Nastavnik angažovan na predmetu $naziv_predmeta.");
 		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
 	}
@@ -1904,11 +1954,13 @@ else if ($akcija == "edit") {
 			if ($_POST[$privilegija]=="1" && $vrijednost==0) {
 				$q151 = myquery("insert into privilegije set osoba=$osoba, privilegija='$privilegija'");
 				zamgerlog("osobi u$osoba data privilegija $privilegija",4);
+				zamgerlog2("osobi data privilegija", $osoba, 0, 0, $privilegija);
 				nicemessage("Data privilegija $privilegija");
 			}
 			if ($_POST[$privilegija]!="1" && $vrijednost==1) {
 				$q151 = myquery("delete from privilegije where osoba=$osoba and privilegija='$privilegija'");
 				zamgerlog("osobi u$osoba oduzeta privilegija $privilegija",4);
+				zamgerlog2("osobi oduzeta privilegija", $osoba, $privilegija);
 				nicemessage("Oduzeta privilegija $privilegija");
 			}
 		}
@@ -1920,6 +1972,7 @@ else if ($akcija == "edit") {
 	$q200 = myquery("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
 	if (!($r200 = mysql_fetch_row($q200))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
+		zamgerlog2("nepostojeca osoba", $osoba);
 		niceerror("Nepostojeća osoba!");
 		return;
 	}
