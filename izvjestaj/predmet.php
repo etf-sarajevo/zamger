@@ -218,8 +218,8 @@ if ($skrati!=1) {
 		$brzadaca = 0;
 		$zadace_zaglavlje = "";
 
-		// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
-		$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by id");
+		// Razvrstavamo zadaće po komponentama
+		$q120 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r115[0] order by id");
 		while ($r120 = mysql_fetch_row($q120)) {
 			$zadace_zaglavlje .= "<td width=\"60\">$r120[1]</td>\n";
 			$zad_id_array[] = $r120[0];
@@ -327,9 +327,9 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			$prisustvo_zaglavlje = "";
 
 			if ($grupa_id!=0) 
-				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum,vrijeme");
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$grupa_id and komponenta=$r105[0] ORDER BY datum, vrijeme");
 			else if ($id_virtualne_grupe>0)
-				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum,vrijeme");
+				$q110 = myquery("SELECT id,datum,vrijeme FROM cas where labgrupa=$id_virtualne_grupe and komponenta=$r105[0] ORDER BY datum, vrijeme");
 			else continue; // ako nema virtualne grupe - preskacemo
 
 			while ($r110 = mysql_fetch_row($q110)) {

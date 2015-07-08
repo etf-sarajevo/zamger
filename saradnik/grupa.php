@@ -569,9 +569,10 @@ WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.
 while ($r205 = mysql_fetch_row($q205)) {
 	$brzadaca = 0;
 	$zadace_zaglavlje = "";
+	$komponenta = $r205[0];
 	
-	// U koju "komponentu zadaća" spadaju zadaće, nije nam toliko bitno
-	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by id");
+	// Razvrstavamo zadaće po komponentama
+	$q210 = myquery("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by id");
 	while ($r210 = mysql_fetch_row($q210)) {
 		$zadace_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
 		$zad_id_array[] = $r210[0];
