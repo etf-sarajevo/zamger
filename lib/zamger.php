@@ -763,6 +763,56 @@ function zamgerlog($event,$nivo) {
 }
 
 
+// Bilježenje poruke u log2 je nešto složenije
+function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob = "") {
+	global $userid, $sta;
+
+	$tekst = my_escape($tekst);
+	$blob = my_escape($blob);
+	if ($sta=="logout") $sta="";
+
+	// Parametri objekat* moraju biti tipa int, pratimo sve drugačije pozive kako bismo ih mogli popraviti
+	if ($objekat1 !== intval($objekat1) || $objekat2 !== intval($objekat2) || $objekat3 !== intval($objekat3)) {
+		$q5 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
+		// Dodajemo blob
+		$id = mysql_insert_id();
+		$tekst_bloba = "";
+		if ($objekat1 !== intval($objekat1)) $tekst_bloba .= "objekat1: $objekat1 ";
+		if ($objekat2 !== intval($objekat2)) $tekst_bloba .= "objekat2: $objekat2 ";
+		if ($objekat3 !== intval($objekat3)) $tekst_bloba .= "objekat3: $objekat3 ";
+
+		$q7 = myquery("INSERT INTO log2_blob SET log2=$id, tekst='$tekst_bloba'");
+		$objekat1 = intval($objekat1); $objekat2 = intval($objekat2); $objekat3 = intval($objekat3);
+	}
+	
+	// $userid izgleda nekada može biti i prazan string?
+	$q5 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+	if (mysql_affected_rows() == 0) {
+		// Nije ništa ubačeno, vjerovatno fale polja u tabelama
+		$q10 = myquery("SELECT COUNT(*) FROM log2_modul WHERE naziv='$sta'");
+		if (mysql_result($q10,0,0) == 0)
+			// U ovim slučajevima će se pozvati zamgerlog2 sa invalidnim modulom
+			if ($tekst == "login" || $tekst == "sesija istekla" || $tekst == "nepoznat korisnik")
+				$sta == "";
+			else
+				$q20 = myquery("INSERT INTO log2_modul SET naziv='$sta'");
+
+		$q30 = myquery("SELECT COUNT(*) FROM log2_dogadjaj WHERE opis='$tekst'");
+		if (mysql_result($q30,0,0) == 0)
+			// Neka admin manuelno u bazi definiše ako je događaj različitog nivoa od 2
+			$q40 = myquery("INSERT INTO log2_dogadjaj SET opis='$tekst', nivo=2"); 
+
+		$q50 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+		// Ako sada nije uspjelo ubacivanje, nije nas briga :)
+	}
+
+	if ($blob !== "") {
+		// Dodajemo blob
+		$id = mysql_insert_id();
+		$q60 = myquery("INSERT INTO log2_blob SET log2=$id, tekst='$blob'");
+	}
+}
+
 
 // Ova funkcija definiše pravila za kreiranje UIDa za LDAP.
 // Ispod je dato pravilo: prvo slovo imena + prvo slovo prezimena + broj indexa

@@ -48,9 +48,11 @@ function greska_u_modulima() {
 			$file = substr($file, strlen($file)-20);
 
 			zamgerlog("sintaksna greska u $sta, $line: '$msg'",2);
+			zamgerlog2("sintaksna greska", $line, 0, 0, $msg);
 		} else {
 			$file = $sta;
 			zamgerlog("sintaksna greska u $sta",2);
+			zamgerlog2("sintaksna greska");
 			$msg = "";
 		}
 
@@ -88,15 +90,21 @@ if ($_POST['loginforma'] == "1") {
 	
 	if (!preg_match("/[\w\d]/",$login)) {
 		$greska="Nepoznat korisnik";
+		zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 	} else {
 		$status = login($pass);
 		if ($status == 1) { 
 			$greska="Nepoznat korisnik";
+			zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 		} else if ($status == 2) {
 			$greska="Pogrešna šifra";
+			zamgerlog2("pogresna sifra", 0, 0, 0, $login);
 		} 
 	}
-	if ($greska=="") zamgerlog("login",1); // nivo 1 = posjeta stranici
+	if ($greska=="") {
+		zamgerlog("login",1); // nivo 1 = posjeta stranici
+		zamgerlog2("login");
+	}
 	
 	// Pozivamo cron
 	require("common/cron.php");
@@ -107,7 +115,10 @@ if ($_POST['loginforma'] == "1") {
 //	$userid=0;
 	if ($userid==0 && $sta!="" && $sta!="public/intro") {
 		$greska = "Vaša sesija je istekla. Molimo prijavite se ponovo.";
-//		$sta = ""; // -- Ne brisati sta! treba za provjeru public pristupa
+		$oldsta = $sta;
+		$sta = "";
+		zamgerlog2("sesija istekla", 0, 0, 0, $oldsta);
+		$sta = $oldsta; // -- Ne brisati sta! treba za provjeru public pristupa
 	}
 }
 
@@ -154,6 +165,7 @@ if ($userid>0) {
 	// Korisnik nije ništa!?
 	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 		$greska = "Vaše korisničko ime je ispravno, ali nemate nikakve privilegije na sistemu! Kontaktirajte administratora.";
+		zamgerlog2("korisnik nema nikakve privilegije");
 		$sta = "";
 	}
 }
@@ -172,6 +184,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 	if ($sta == "logout") {
 		logout();
 		zamgerlog("logout",1);
+		zamgerlog2("logout");
 		$userid=0;
 		$sta="public/intro";
 		$staf="public_intro";
@@ -194,7 +207,10 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 				if ($user_nastavnik) $permstr.="N";
 				if ($user_studentska) $permstr.="B";
 				if ($user_siteadmin) $permstr.="A";
-				if ($userid>0) zamgerlog("Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]",3); // nivo 3 = greska
+				if ($userid>0) {
+					zamgerlog("Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]",3); // nivo 3 = greska
+					zamgerlog2("korisnik pokusao pristupiti modulu za koji nema permisije");
+				}
 				$sta = ""; // prikaži default modul
 //print "Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]";
 			} else {
@@ -423,6 +439,12 @@ if ($greska != "") {
 if ($found != 1 && $sta != "") {
 	niceerror("Modul $sta još uvijek nije napravljen.");
 	zamgerlog("pristup nepostojecom modulu $sta",3);
+
+	// Ne želimo da zamgerlog2 funkcija doda u bazu modul sa invalidnim imenom
+	// između ostalog i zbog mogućeg SQL injectiona
+	$oldsta = $sta;
+	$sta = "";
+	zamgerlog2("nepostojeci modul", 0, 0, 0, $oldsta);
 }
 
 // Default moduli za uloge, u slučaju da modul nije pronađen
