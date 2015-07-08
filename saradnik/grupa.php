@@ -721,7 +721,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$rednibroj++;
 ?>
 <tr>
-	<td><?=$rednibroj?>.&nbsp;<a href="index.php?sta=saradnik/student&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>"><?=$stud_imepr?></a></td>
+	<td id="student_<?=$stud_id?>"><?=$rednibroj?>.&nbsp;<a href="index.php?sta=saradnik/student&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
 	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$labgrupa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
