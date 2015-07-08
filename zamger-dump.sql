@@ -4058,6 +4058,9 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `termin_odbrane` datetime NOT NULL,
   `konacna_ocjena` int(11) NOT NULL DEFAULT '5',
   `broj_diplome` varchar(100) collate utf8_slovenian_ci NOT NULL,
+  `tema_odobrena` tinyint(4) NOT NULL default '0',
+  `sala` varchar(20) collate utf8_slovenian_ci NOT NULL,
+  `odluka` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
