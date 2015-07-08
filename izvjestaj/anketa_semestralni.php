@@ -82,7 +82,6 @@ function izvjestaj_anketa_semestralni() {
 		}
 		
 		$id_ankete = mysql_result($q10,0,0);
-		if ($id_ankete==9) $id_ankete=2;
 		
 		$q40 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
 		$broj_rank_pitanja = mysql_result($q40,0,0);
@@ -103,11 +102,9 @@ function izvjestaj_anketa_semestralni() {
 
 		while ($r50 = mysql_fetch_row($q50)) {
 			// Da li je ovaj predmet imao ijednu anketu?
-			if ($studij==-1)
-				$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
-			else
-				$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
+			$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
 			if (mysql_result($q55,0,0)==0) continue;
+
 			$predmeti[$r50[0]]=$r50[1];
 			$obavezan[$r50[0]]=$r50[2];
 		}
@@ -148,10 +145,7 @@ function izvjestaj_anketa_semestralni() {
 				print "<td>$i</td>\n";
 			$sumpitanje=0;
 			foreach ($predmeti as $pid => $pnaziv) {
-				if ($studij==-1)
-					$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
-				else
-					$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
+				$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
 				
 				print "<td>".round(mysql_result($q6730,0,0),2)."</td>\n";
 				$sumpitanje += mysql_result($q6730,0,0);
@@ -197,7 +191,6 @@ function izvjestaj_anketa_semestralni() {
 		}
 		
 		$id_ankete = mysql_result($q10,0,0);
-		if ($id_ankete==9) $id_ankete=2;
 		
 		$q40 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
 		$broj_rank_pitanja = mysql_result($q40,0,0);
