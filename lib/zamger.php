@@ -861,7 +861,7 @@ function myquery($query) {
 
 // Vraca puni naziv osobe sa svim titulama
 function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zvanjem = true, $prezime_prvo = false) {
-	$q10 = myquery("select ime, prezime, fk_naucni_stepen, fk_akademsko_zvanje from osoba where id=$osoba");
+	$q10 = myquery("select ime, prezime, naucni_stepen, strucni_stepen from osoba where id=$osoba");
 	if (!($r10 = mysql_fetch_row($q10))) {
 		return "";
 	}
@@ -870,21 +870,23 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 	else
 		$ime = $r10[0]." ".$r10[1];
 
-	$q20 = myquery("select titula from sifrarnik_naucni_stepen where id=$r10[2]");
-	if ($r20 = mysql_fetch_row($q20))
-		if ($prezime_prvo)
-			$ime = $r10[1]." ".$r20[0]." ".$r10[0];
-		else
-			$ime = $r20[0]." ".$ime;
+	if ($r10[2]) {
+		$q20 = myquery("select titula from naucni_stepen where id=$r10[2]");
+		if ($r20 = mysql_fetch_row($q20))
+			if ($prezime_prvo)
+				$ime = $r10[1]." ".$r20[0]." ".$r10[0];
+			else
+				$ime = $r20[0]." ".$ime;
+	}
 	
 	if ($sa_akademskim_zvanjem) {
-		$q30 = myquery("select titula from sifrarnik_akademsko_zvanje where id=$r10[3]");
+		$q30 = myquery("select titula from strucni_stepen where id=$r10[3]");
 		if ($r30 = mysql_fetch_row($q30))
 			$ime = $ime.", ".$r30[0];
 	}
 	
 	if ($sa_naucnonastavnim_zvanjem) {
-		$q40 = myquery("select z.titula from izbor as i, sifrarnik_naucnonastavno_zvanje as z where i.fk_osoba=$osoba and i.fk_naucnonastavno_zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
+		$q40 = myquery("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
 		if ($r40 = mysql_fetch_row($q40))
 			$ime = $r40[0]." ".$ime;
 	}
