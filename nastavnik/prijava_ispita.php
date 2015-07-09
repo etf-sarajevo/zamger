@@ -29,6 +29,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -87,6 +88,7 @@ if ($termin) {
 	$q40 = myquery("SELECT count(*) FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.id=$ispit ");
 	if (mysql_result($q40,0,0)<1) {
 		zamgerlog("termin ne pripada ispitu",3);
+		zamgerlog2("id termina i ispita se ne poklapaju", $termin, $ispit);
 		biguglyerror("Ispitni termin ne pripada datom ispitu"); 
 		return;
 	}
@@ -126,6 +128,7 @@ if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " 
 	$q90 = myquery("DELETE FROM student_ispit_termin WHERE ispit_termin=$termin");
 	$q95 = myquery("DELETE FROM ispit_termin WHERE id=$termin");
 	zamgerlog("izbrisan ispitni termin $termin (pp$predmet, ag$ag)", 2);
+	zamgerlog2("izbrisan ispitni termin", $termin, $predmet, $ag);
 	nicemessage("Termin uspješno obrisan ");
 }
 
@@ -283,6 +286,7 @@ if ($_POST['akcija'] == 'izmijeni_potvrda' && check_csrf_token()) {
 		nicemessage("Uspješno izmijenjen termin.");
 		$q110=myquery("UPDATE ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , maxstudenata=$limit , deadline=FROM_UNIXTIME('$t2'), ispit=$ispit WHERE id=$termin");
 		zamgerlog("izmijenjen ispitni termin", 2);
+		zamgerlog2("izmijenjen ispitni termin", $termin);
 	}
 
 	// Radi ljepšeg ispisa, dodajemo nule
@@ -336,6 +340,7 @@ if ($_POST['akcija'] == 'dodaj_potvrda' && check_csrf_token()) {
 	else {
 		nicemessage("Uspješno kreiran novi termin.");
 		$q=myquery("INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1'), maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')");
+		zamgerlog2("kreiran novi ispitni termin", mysql_insert_id(), $predmet, $ag);
 		zamgerlog("kreiran novi ispitni termin pp$predmet, ag$ag", 2);
 	}
 
