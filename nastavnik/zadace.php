@@ -131,21 +131,30 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		return;
 	}
 
+	if ($ispis) {
+		?>Akcije koje će biti urađene:<br/><br/>
+		<?=genform("POST")?>
+		<input type="hidden" name="fakatradi" value="1">
+		<input type="hidden" name="_lv_column_zadaca" value="<?=$zadaca?>">
+		<table border="0" cellspacing="1" cellpadding="2">
+		<!-- FIXME: prebaciti stilove u CSS? -->
+		<thead>
+		<tr bgcolor="#999999">
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Bodovi / Komentar</font></td>
+		</tr>
+		</thead>
+		<tbody>
+		<?
+	}
+
 	$greska=mass_input($ispis); // Funkcija koja parsira podatke
 
 	if (count($mass_rezultat)==0) {
 		niceerror("Niste unijeli ništa.");
 		return;
 	}
-
-	if ($ispis) {
-		?>Akcije koje će biti urađene:<br/><br/>
-		<?=genform("POST")?>
-		<input type="hidden" name="fakatradi" value="1">
-		<input type="hidden" name="_lv_column_zadaca" value="<?=$zadaca?>">
-		<?
-	}
-
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
@@ -192,9 +201,21 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	}
 
 	if ($ispis) {
-		print '<input type="submit" name="nazad" value=" Nazad "> ';
-		if ($greska==0) print ' <input type="submit" value=" Potvrda">';
-		print "</form>";
+		if ($greska == 0) {
+			?>
+			</tbody></table>
+			<p>Potvrdite upis ispita i bodova ili se vratite na prethodni ekran.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "> <input type="submit" value=" Potvrda"></p>
+			</form>
+			<? 
+		} else {
+			?>
+			</tbody></table>
+			<p>U unesenim podacima ima grešaka. Da li ste izabrali ispravan format ("Prezime[TAB]Ime" vs. "Prezime Ime")? Vratite se nazad kako biste ovo popravili.</p>
+			<p><input type="submit" name="nazad" value=" Nazad "></p>
+			</form>
+			<? 
+		}
 		return;
 	} else {
 		zamgerlog("masovno upisane zadaće na predmet pp$predmet, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
@@ -680,13 +701,14 @@ if (mysql_result($q130,0,0)>0) {
 <?
 
 print genform("POST");
+if (strlen($_POST['nazad'])>1) $izabrana = $_POST['_lv_column_zadaca']; else $izabrana = -1;
 ?><input type="hidden" name="fakatradi" value="0">
 <input type="hidden" name="akcija" value="massinput">
 <input type="hidden" name="nazad" value="">
 <input type="hidden" name="brpodataka" value="1">
 <input type="hidden" name="duplikati" value="0">
 
-Izaberite zadaću: <?=db_dropdown("zadaca");?>
+Izaberite zadaću: <?=db_dropdown("zadaca", $izabrana);?>
 Izaberite zadatak: <select name="zadatak"><?
 $q112 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
 for ($i=1; $i<=mysql_result($q112,0,0); $i++) {
