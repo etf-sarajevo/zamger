@@ -31,6 +31,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -43,6 +44,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -205,6 +207,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			else
 				$q110 = myquery("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
+			zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
 		}
 	}
 
