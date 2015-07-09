@@ -33,6 +33,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greška
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -54,6 +55,7 @@ if (!$user_siteadmin) { // 3 = site admin
 	$q15 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q15)<1 || mysql_result($q15,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/tip privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -71,7 +73,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 	// Kreiramo novi tip predmeta i uzimamo njegov id
 	// Biramo naziv koji ne postoji već
-	$naziv_tipa = substr($predmet_naziv,0,49);
+	$naziv_tipa = substr($predmet_naziv,0,50);
 	$q65 = myquery("select count(*) from tippredmeta where naziv='$naziv_tipa'");
 	$broj=0;
 	while (mysql_result($q65,0,0)>0) {
@@ -82,6 +84,13 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	
 	$q70 = myquery("INSERT INTO tippredmeta set naziv='$naziv_tipa'");
 	$q80 = myquery("select id from tippredmeta where naziv='$naziv_tipa'");
+	if (mysql_num_rows($q80) != 1) { // Ovo se ne bi smjelo desiti!
+		niceerror("Naziv predmeta je predugačak. Kontaktirajte administratora");
+		zamgerlog("nije pronadjen tacno jedan tip predmeta", 3);
+		zamgerlog2("nije pronadjen tacno jedan tip predmeta", $predmet, $ag, 0, $naziv_tipa);
+
+		return;
+	}
 	$tip_predmeta = mysql_result($q80,0,0); // -- mora postojati tačno jedan
 
 	// Spašavamo naše novodefinisane komponente
@@ -214,6 +223,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 
 	zamgerlog("kreiran tip predmeta '$predmet_naziv"."$ag",4);
+	zamgerlog2("kreiran tip predmeta", $predmet, $ag, 0, $naziv_tipa);
 	nicemessage("Novi sistem bodovanja je potvrđen");
 	print "<a href=\"?sta=nastavnik/tip&predmet=$predmet&ag=$ag\">Nazad na početnu stranicu</a>";
 	return;
@@ -249,6 +259,7 @@ if ($akcija == "postojeci_tip_potvrda" && check_csrf_token()) {
 	}
 
 	zamgerlog("promijenjen tip predmeta pp".$predmet." u $tip_predmeta",4);
+	zamgerlog2("promijenjen tip predmeta", $predmet, $ag, 0, $tip_predmeta);
 	nicemessage("Odabran je sistem bodovanja na predmetu");
 	print "<a href=\"?sta=nastavnik/tip&predmet=$predmet&ag=$ag\">Nazad na početnu stranicu</a>";
 	return;

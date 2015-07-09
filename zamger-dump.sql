@@ -3720,7 +3720,7 @@ INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
 
 CREATE TABLE IF NOT EXISTS `tippredmeta` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
+  `naziv` varchar(60) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
 
