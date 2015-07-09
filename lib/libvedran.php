@@ -1204,4 +1204,15 @@ function clear_unicode($text)
 	return mb_convert_encoding($text, 'UTF-8', 'UTF-8'); 
 }
 
+// Reimplement mb_substr in case mb extension is not installed
+if (function_exists('mb_substr') === false) {
+	function mb_substr($string, $start, $len) {
+		do {
+			$result = substr($string, $start, $len);
+			$len++;
+		} while (ord(substr($result, strlen($result)-1, 1)) > 128);
+		return $result;
+	}
+}
+
 ?>
