@@ -256,10 +256,12 @@ function check_cookie() {
 	
 	if (!preg_match("/[a-zA-Z0-9]/",$login)) return;
 
-	$q1 = myquery("select id,admin from auth where login='$login'");
+	$q1 = myquery("select id, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login'");
 	if (mysql_num_rows($q1)>0) {
 		$userid = mysql_result($q1,0,0);
 		$admin = mysql_result($q1,0,1);
+		$posljednji_pristup = mysql_result($q1,0,2);
+		$q2 = myquery("update auth set posljednji_pristup=NOW() where id=$userid");
 	}
 }
 
