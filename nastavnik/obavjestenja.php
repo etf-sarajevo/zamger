@@ -28,6 +28,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -40,6 +41,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -101,6 +103,7 @@ if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
 
 	if (mysql_num_rows($q15)<1) {
 		zamgerlog("poruka $obavjestenje ne postoji",3);
+		zamgerlog2("nepostojeca poruka", $obavjestenje);
 		nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
 	} else {
 		// Provjeravamo prava za brisanje
@@ -108,12 +111,14 @@ if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
 		$opseg=mysql_result($q15,0,1);
 		if ($opseg==5 && $primalac!=$predmet) {
 			zamgerlog("poruka $obavjestenje nije za predmet pp$predmet nego pp$primalac",3);
+			zamgerlog2("primalac poruke ne odgovara predmetu", $obavjestenje, $predmet, $ag);
 			nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
 			return;
 		} else if ($opseg==6) {
 			$q17 = myquery("select predmet, akademska_godina from labgrupa where id=$primalac");
 			if (mysql_result($q17,0,0)!=$predmet || mysql_result($q17,0,1)!=$ag) {
 				zamgerlog("poruka $obavjestenje je za labgrupu $primalac koja nije sa pp$predmet",3);
+				zamgerlog2("primalac poruke ne odgovara labgrupi", $obavjestenje, $predmet, $ag);
 				nicemessage("Pogrešan ID poruke! Poruka nije obrisana");
 				return;
 			}
@@ -121,6 +126,7 @@ if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
 
 		$q20 = myquery("delete from poruka where id=$obavjestenje");
 		zamgerlog("obrisano obavjestenje (id $obavjestenje )",2);
+		zamgerlog2("obrisana poruka", $obavjestenje);
 	}
 }
 
@@ -137,19 +143,23 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 
 	if (strlen($naslov)<5) {
 		zamgerlog("tekst vijesti je prekratak ($naslov)",3);
+		zamgerlog2("tekst poruke je prekratak", 0, 0, 0, $naslov);
 		niceerror("Tekst vijesti je prekratak");
 	} else {
 		if ($io>0) {
 			$q6 = myquery("update poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst' where id=$io");
 			zamgerlog("izmjena obavjestenja (id $io)",2);
+			zamgerlog2("poruka izmijenjena", $io);
 		} else {
 			if ($primalac>0) {
 				$q6 = myquery("insert into poruka set tip=1, opseg=6, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
+				$io = mysql_insert_id();
 
 				// Upit za spisak studenata u grupi
 				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_labgrupa as sl where sl.labgrupa=$primalac and sl.student=o.id";
 			} else {
 				$q6 = myquery("insert into poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, vrijeme=NOW(), ref=0, naslov='$naslov', tekst='$tekst'");
+				$io = mysql_insert_id();
 
 				// Upit za spisak studenata na predmetu
 				$upit = "select o.id, o.ime, o.prezime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id";
@@ -226,6 +236,7 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 			} // if ($email==1)...
 
 			zamgerlog("novo obavjestenje (predmet pp$predmet)",2);
+			zamgerlog2("nova poruka poslana", $io);
 		}
 
 		$naslov=$tekst="";
@@ -252,6 +263,7 @@ while ($r10 = mysql_fetch_row($q10)) {
 	if ($obrisi == $r10[0]) {
 		$q20 = myquery("delete from poruka where id=$obrisi");
 		zamgerlog("obrisano obavjestenje (id $obrisi)",2);
+		zamgerlog2("obrisana poruka", $obrisi);
 		continue;
 	}
 	print "<li><b>(".date("d.m.Y",$r10[1]).")</b> ".$r10[2];
