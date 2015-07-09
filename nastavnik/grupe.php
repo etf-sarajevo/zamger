@@ -40,6 +40,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -52,6 +53,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -79,6 +81,7 @@ if ($_POST['akcija'] == "nova_grupa" && check_csrf_token()) {
 	$ime = my_escape($_POST['ime']);
 	$tip = my_escape($_POST['tip']);
 	$q2 = myquery("insert into labgrupa set naziv='$ime', predmet=$predmet, tip='$tip', akademska_godina=$ag, virtualna=0");
+	zamgerlog2("kreirana labgrupa", mysql_insert_id(), $predmet, $ag, $ime);
 	zamgerlog("dodana nova labgrupa '$ime' (predmet pp$predmet godina ag$ag)",4); // nivo 4: audit
 }
 
@@ -92,11 +95,13 @@ if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 	$q29 = myquery("select predmet, akademska_godina from labgrupa where id=$grupaid");
 	if (mysql_num_rows($q29)<1) {
 		zamgerlog("nepostojeca labgrupa $grupaid",3);
+		zamgerlog2("nepostojeca labgrupa (brisanje)", $grupaid);
 		niceerror("Pokušavate obrisati labgrupu koja ne postoji");
 		return;
 	}
 	if (mysql_result($q29,0,0) != $predmet || mysql_result($q29,0,1) != $ag) {
 		zamgerlog("labgrupa g$grupaid nije sa predmeta pp$predmet (ag$ag)",3);
+		zamgerlog2("predmet i labgrupa se ne poklapaju (brisanje)", $predmet, $ag, $grupaid);
 		niceerror("Predmet se ne poklapa");
 		return;
 	}
@@ -105,6 +110,7 @@ if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 	$q30 = myquery("select student from student_labgrupa where labgrupa=$grupaid");
 	while ($r30 = mysql_fetch_row($q30)) {
 		ispis_studenta_sa_labgrupe($r30[0],$grupaid);
+		zamgerlog2("student ispisan sa grupe (brisanje)", intval($r30[0]), $grupaid);
 	}
 
 	// Sada mozemo obrisati casove jer je funkcija ispis_studenta... obrisala prisustvo
@@ -113,6 +119,7 @@ if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 	// Konacno brišem grupu
 	$q40 = myquery("delete from labgrupa where id=$grupaid");
 	zamgerlog("obrisana labgrupa $grupaid (predmet pp$predmet)",4); // nivo 4: audit
+	zamgerlog2("obrisana labgrupa", intval($predmet), $ag, $grupaid);
 }
 
 
@@ -127,11 +134,13 @@ if ($_POST['akcija'] == "preimenuj_grupu" && check_csrf_token()) {
 	$q29 = myquery("select predmet, akademska_godina from labgrupa where id=$grupaid");
 	if (mysql_num_rows($q29)<1) {
 		zamgerlog("nepostojeca labgrupa $grupaid",3);
+		zamgerlog2("nepostojeca labgrupa (preimenovanje)", $grupaid);
 		niceerror("Pokušavate obrisati labgrupu koja ne postoji");
 		return;
 	}
 	if (mysql_result($q29,0,0) != $predmet || mysql_result($q29,0,1) != $ag) {
 		zamgerlog("labgrupa g$grupaid nije sa predmeta pp$predmet (ag$ag)",3);
+		zamgerlog2("predmet i labgrupa se ne poklapaju (preimenovanje)", $predmet, $ag, $grupaid);
 		niceerror("Predmet se ne poklapa");
 		return;
 	}
@@ -143,6 +152,7 @@ if ($_POST['akcija'] == "preimenuj_grupu" && check_csrf_token()) {
 	$_GET['grupaid']=$grupaid;
 
 	zamgerlog("preimenovana labgrupa $grupaid u '$ime' (predmet pp$predmet godina ag$ag)",2); // nivo 2: edit
+	zamgerlog2("preimenovana labgrupa", $grupaid, 0, 0, $ime);
 }
 
 
@@ -152,6 +162,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	$kopiraj = intval($_POST['kopiraj']);
 	if ($kopiraj == $predmet) {
 		zamgerlog("kopiranje sa istog predmeta pp$predmet",3);
+		zamgerlog2("kopiranje grupa sa istog predmeta", $predmet, $ag);
 		niceerror("Ne možete kopirati grupe sa istog predmeta.");
 		return;
 	}
@@ -160,6 +171,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 	$q60 = myquery("select id, naziv, tip from labgrupa where predmet=$kopiraj and akademska_godina=$ag and virtualna=0");
 	if (mysql_num_rows($q60) == 0) {
 		zamgerlog("kopiranje sa predmeta pp$kopiraj na kojem nema grupa",3);
+		zamgerlog2("kopiranje sa predmeta na kojem nema grupa", $kopiraj, $ag, $predmet);
 		niceerror("Na odabranom predmetu nije definisana nijedna grupa.");
 	}
 
@@ -173,6 +185,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 		if (mysql_num_rows($q70) == 0) {
 			$q80 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='$tipgrupe'");
 			$q70 = myquery("select id from labgrupa where predmet=$predmet and naziv='$imegrupe' and akademska_godina=$ag");
+			zamgerlog2("kreirana labgrupa (kopiranje)", intval(mysql_result($q70,0,0)), $predmet, $ag, $imegrupe);
 		}
 		$novagrupa = mysql_result($q70,0,0);
 
@@ -194,18 +207,21 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			$q130 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and sl.labgrupa!=$novagrupa and l.virtualna=0");
 			while ($r130 = mysql_fetch_row($q130)) {
 				ispis_studenta_sa_labgrupe($student,$r130[0]);
+				zamgerlog2("student ispisan sa grupe (kopiranje)", $student, $r130[0]);
 			}
 
 			// Upis u novu grupu
 			$q140 = myquery("select count(*) from student_labgrupa where student=$student and labgrupa=$novagrupa");
 			if (mysql_result($q140,0,0)<1) {
 				$q150 = myquery("insert into student_labgrupa set labgrupa=$novagrupa, student=$student");
+				zamgerlog2("student upisan u grupu (kopiranje)", intval($student), intval($novagrupa));
 				//print "Upisujem studenta $student u grupu $novagrupa<br/>";
 			}
 		}
 	}
 
 	zamgerlog("prekopirane labgrupe sa predmeta pp$kopiraj u pp$predmet",4);
+	zamgerlog2("prekopirane labgrupe", $kopiraj, $ag);
 }
 
 
@@ -275,6 +291,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		// spisak grupa u koje treba upisati studenta
 		foreach ($mass_rezultat['podatak1'][$student] as $imegrupe) {
 			$imegrupe = trim($imegrupe);
+			if ($imegrupe == "") continue;
 
 			// Da li grupa postoji u cache-u ?
 			if (array_key_exists($imegrupe,$idovi_grupa)) {
@@ -308,6 +325,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 					} else {
 						$q220 = myquery("insert into labgrupa set naziv='$imegrupe', predmet=$predmet, akademska_godina=$ag, tip='vjezbe+tutorijali', virtualna=0");
 						$labgrupa = mysql_insert_id();
+						zamgerlog2("kreirana labgrupa (masovni unos)", intval($labgrupa), 0, 0, $imegrupe);
 					}
 				} else {
 					$labgrupa = mysql_result($q210,0,0);
@@ -352,9 +370,11 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		} else {
 			foreach ($ispis_grupe as $gid => $gime) {
 				ispis_studenta_sa_labgrupe($student,$gid);
+				zamgerlog2("student ispisan sa grupe (masovni unos)", $student, $gid);
 			}
 			foreach ($upis_grupe as $gid => $gime) {
 				$q240 = myquery("insert into student_labgrupa set student=$student, labgrupa=$gid");
+				zamgerlog2("student upisan u grupu (masovni unos)", $student, $gid);
 			}
 		}
 	}
