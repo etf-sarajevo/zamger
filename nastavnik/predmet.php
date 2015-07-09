@@ -28,6 +28,7 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
@@ -40,6 +41,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -85,10 +87,13 @@ if ($_POST['akcija'] == "set_smodul" && check_csrf_token()) {
 	$smodul = intval($_POST['smodul']);
 	if ($_POST['aktivan']==0) $aktivan=1; else $aktivan=0;
 	$q15 = myquery("replace studentski_modul_predmet set predmet=$predmet, akademska_godina=$ag, studentski_modul=$smodul, aktivan=$aktivan");
-	if ($aktivan==1)
+	if ($aktivan==1) {
 		zamgerlog("aktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
-	else
+		zamgerlog2("aktiviran studentski modul", $predmet, $ag, $smodul);
+	} else {
 		zamgerlog("deaktiviran studentski modul $smodul (predmet pp$predmet)",2); // nivo 2: edit
+		zamgerlog2("deaktiviran studentski modul", $predmet, $ag, $smodul);
+	}
 }
 
 
@@ -129,6 +134,7 @@ if (mysql_num_rows($q20)<1)
 while ($r20 = mysql_fetch_row($q20)) {
 	$smodul = $r20[0];
 	$naziv = $r20[1];
+	if ($smodul == 6) continue; // Onemogućujemo isključenje ankete
 
 	$q30 = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag and studentski_modul=$smodul");
 	if (mysql_num_rows($q30)<1 || mysql_result($q30,0,0)==0) {
