@@ -576,6 +576,10 @@ function onemoguci_ekstenzije(chk) {
 
 // Forma za kreiranje zadaće
 
+unset($_REQUEST['aktivna']);
+unset($_REQUEST['attachment']);
+unset($_REQUEST['automatsko_testiranje']);
+
 print genform("POST", "kreiranje_zadace\" enctype=\"multipart/form-data\" onsubmit=\"return provjera();");
 
 ?>
