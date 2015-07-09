@@ -44,6 +44,7 @@ $q5 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q5)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q5,0,0);
@@ -55,6 +56,7 @@ if (!$user_siteadmin) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -73,7 +75,8 @@ while ($r13 = mysql_fetch_row($q13)) {
 // Da li predmet posjeduje komponente za zadaće?
 $q15 = myquery("select k.id, k.naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4");
 if (mysql_num_rows($q15)<1) {
-	zamgerlog("ne postoji komponenta za zadaće na predmetu pp$predmet ag$ag", 3);
+	zamgerlog("ne postoji komponenta za zadace na predmetu pp$predmet ag$ag", 3);
+	zamgerlog2("ne postoji komponenta za zadace", $predmet, $ag);
 	niceerror("U sistemu bodovanja za ovaj predmet nije definisana nijedna komponenta zadaće.");
 	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
 	return;
@@ -106,12 +109,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 	$q20 = myquery("select naziv,zadataka,bodova,komponenta,predmet,akademska_godina from zadaca where id=$zadaca");
 	if (mysql_num_rows($q20)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greška
+		zamgerlog2("nepostojeca zadaca", $zadaca);
 		niceerror("Morate najprije kreirati zadaću");
 		print "\n<p>Koristite formular &quot;Kreiranje zadaće&quot; koji se nalazi na prethodnoj stranici. Ukoliko ne vidite nijednu zadaću na spisku &quot;Postojeće zadaće&quot;, koristite dugme Refresh vašeg web preglednika.</p>\n";
 		return;
 	}
 	if (mysql_result($q20,0,1)<$zadatak) {
 		zamgerlog("zadaca $zadaca nema $zadatak zadataka",3);
+		zamgerlog2("zadaca nema toliko zadataka", $zadaca, $zadatak);
 		niceerror("Zadaća \"".mysql_result($q20,0,0)."\" nema $zadatak zadataka.");
 		return;
 	}
@@ -120,7 +125,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	// Provjera spoofanja zadaće
 	if ($predmet != mysql_result($q20,0,4) || $ag != mysql_result($q20,0,5)) {
-		zamgerlog("zadaca z$zadaca nije u predmetu pp$predme",3);
+		zamgerlog("zadaca z$zadaca nije u predmetu pp$predmet",3);
+		zamgerlog2("id zadace i predmeta se ne poklapaju", $zadaca, $predmet, $ag);
 		niceerror("Pogresan ID zadace!");
 		return;
 	}
@@ -175,6 +181,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 			$status_pregledana = 5; // status 5: pregledana
 			$q30 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$status_pregledana, bodova=$bodova, vrijeme=NOW(), filename='$filename', userid=$userid"); 
+			zamgerlog2("bodovanje zadace", $student, $zadaca, $zadatak, $bodova);
 
 			// Treba nam ponudakursa za update komponente
 			$q35 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
@@ -213,11 +220,13 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		if (mysql_num_rows($q86)<1) {
 			niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
 			zamgerlog("promjena nepostojece zadace $edit_zadaca", 3);
+			zamgerlog2("nepostojeca zadaca", $edit_zadaca);
 			return 0;
 		}
 		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
 			niceerror("Zadaća nije sa izabranog predmeta");
 			zamgerlog("promjena zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
+			zamgerlog2("id zadace i predmeta se ne poklapaju", $edit_zadaca, $predmet, $ag);
 			return 0;
 		}
 	}
@@ -231,6 +240,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		nicemessage ("Postavka zadaće obrisana");
 		print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&_lv_nav_id=$edit_zadaca\">Nazad</a>\n";
 		zamgerlog("obrisana postavka zadace z$edit_zadaca",2);
+		zamgerlog2("obrisana postavka zadace", $edit_zadaca);
 		return;
 	}
 
@@ -241,11 +251,13 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		if (mysql_num_rows($q86)<1) {
 			niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
 			zamgerlog("brisanje nepostojece zadace $edit_zadaca", 3);
+			zamgerlog2("nepostojeca zadaca", $edit_zadaca);
 			return 0;
 		}
 		if (mysql_result($q86,0,0)!=$predmet || mysql_result($q86,0,1)!=$ag) {
 			niceerror("Zadaća nije sa izabranog predmeta");
 			zamgerlog("brisanje zadace: zadaca $edit_zadaca nije sa predmeta pp$predmet", 3);
+			zamgerlog2("id zadace i predmeta se ne poklapaju", $edit_zadaca, $predmet, $ag);
 			return 0;
 		}
 	
@@ -260,6 +272,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q88 = myquery("delete from zadaca where id=$edit_zadaca");
 			
 			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
+			zamgerlog2("obrisana zadaca", $edit_zadaca);
 			nicemessage ("Zadaća uspješno obrisana");
 			?>
 			<script language="JavaScript">
@@ -361,9 +374,11 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		if ($edit_zadaca == 0) {
 			niceerror("Dodavanje zadaće nije uspjelo");
 			zamgerlog("dodavanje zadace nije uspjelo pp$predmet, naziv '$naziv'",3);
+			zamgerlog2("dodavanje zadace nije uspjelo", $predmet, $zadataka, $bodova, $naziv);
 		} else {
 			nicemessage("Kreirana nova zadaća '$naziv'");
 			zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
+			zamgerlog2("kreirana nova zadaca", $edit_zadaca);
 		}
 
 	// Izmjena postojece zadace
@@ -382,8 +397,10 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 					update_komponente($oldstudent,$predmet,$komponenta);
 				$oldstudent=$r96[1];
 			}
-			if ($oldstudent!=0) // log samo ako je bilo nesto
+			if ($oldstudent!=0) { // log samo ako je bilo nesto
 				zamgerlog("Smanjen broj zadataka u zadaci z$edit_zadaca", 4);
+				zamgerlog2("smanjen broj zadataka u zadaci", $edit_zadaca);
+			}
 				
 			// Brišemo i relevantne testove
 			$q84 = myquery("delete from autotest_replace where zadaca=$edit_zadaca and zadatak>$zadataka");
@@ -394,6 +411,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' $sql_add_postavka_file where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
+		zamgerlog2("azurirana zadaca", $edit_zadaca);
 	}
 }
 
@@ -449,6 +467,7 @@ if ($izabrana==0) {
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
 		niceerror("Zadaća ne pripada vašem predmetu");
 		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
+		zamgerlog2("id zadace i predmeta se ne poklapaju", $izabrana, $predmet, $ag);
 		return;
 	}
 
