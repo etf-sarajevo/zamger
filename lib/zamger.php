@@ -60,9 +60,9 @@ function spol($ime) {
 }
 
 
-// Vraća genitiv riječi (primitivno)
+// Vraća vokativ riječi (primitivno)
 
-function genitiv($rijec,$spol) {
+function vokativ($rijec,$spol) {
 	if ($spol=="Z") return $rijec;
 	$slovo = substr($rijec,strlen($rijec)-1);
 	if ($slovo == "a" || $slovo == "e" || $slovo == "i" || $slovo == "o" || $slovo == "u" || $slovo == "k")
@@ -73,6 +73,16 @@ function genitiv($rijec,$spol) {
 		return substr($rijec,0,strlen($rijec)-1)."že";
 	else
 		return $rijec."e";
+}
+
+// Vraća genitiv riječi (primitivno)
+
+function genitiv($rijec,$spol) {
+	$slovo = substr($rijec,strlen($rijec)-1);
+	if ($slovo == "a")
+		return substr($rijec,0,strlen($rijec)-1)."e";
+	else
+		return $rijec."a";
 }
 
 
@@ -856,6 +866,7 @@ function myquery($query) {
 	$error = str_replace("You have an error in your SQL syntax;", "", $error); 
 	$error = str_replace("check the manual that corresponds to your MySQL server version for the right syntax to use", "", $error);
 	zamgerlog("SQL greska ($file : $line): $error", 3);
+	zamgerlog2("SQL greska", 0, 0, 0, "$file:$line: $error");
 	exit;
 }
 

@@ -34,9 +34,9 @@ $q1 = myquery("select ime, spol from osoba where id=$userid");
 $ime = mysql_result($q1,0,0);
 $spol = mysql_result($q1,0,1);
 if ($spol == 'Z' || ($spol == '' && spol($ime)=="Z"))
-	print "<h1>Dobro došla, ".genitiv($ime,"Z")."</h1>";
+	print "<h1>Dobro došla, ".vokativ($ime,"Z")."</h1>";
 else
-	print "<h1>Dobro došao, ".genitiv($ime,"M")."</h1>";
+	print "<h1>Dobro došao, ".vokativ($ime,"M")."</h1>";
 
 
 // Sakrij module ako ih nema u registry-ju
