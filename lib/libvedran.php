@@ -236,7 +236,7 @@ function login($pass) {
 
 
 function check_cookie() {
-	global $userid,$admin,$login,$conf_system_auth;
+	global $userid,$admin,$login,$conf_system_auth,$posljednji_pristup;
 
 	$userid=0;
 	$admin=0;
@@ -268,6 +268,7 @@ function check_cookie() {
 function logout() {
 	global $conf_system_auth;
 	if ($conf_system_auth == "cas") {
+		require("lib/phpcas/CAS.php");
 		phpCAS::logout();
 	} else {
 		$_SESSION = array();
