@@ -23,6 +23,7 @@ $student = intval($_REQUEST['student']);
 if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 	biguglyerror("Nemate pravo pristupa ovom izvještaju");
 	zamgerlog("nije studentska, a pristupa tudjem izvjestaju ($student)", 3);
+	zamgerlog2("nije studentska, a pristupa tudjem izvjestaju", $student);
 	return;
 }
 
@@ -37,6 +38,7 @@ $q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
+	zamgerlog2("nepoznat id korisnika", $student); // 3 = greska
 	return;
 }
 /*if ($r100[3] != 1) {
@@ -55,7 +57,7 @@ Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 
 <?
 
-$imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
 
 
 // Ocjene po odluci:
@@ -96,7 +98,7 @@ while ($r125 = mysql_fetch_row($q125)) {
 		<p>Institucija <?=$stara_inst?>, akademska <?=mysql_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
 		<?
 	}
-	print "<li><b>$r125[0]</b> - ocjena: $r125[1] (".$imena_ocjena[$r125[1]-5].")</li>\n";
+	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[1]]."</li>\n";
 }
 print "</ul>";
 
@@ -117,7 +119,7 @@ $q110 = myquery("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, akademska_godina as ag
 WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student and pk.akademska_godina=ag.id order by ag.id, pk.semestar, p.naziv");
 while ($r110 = mysql_fetch_row($q110)) {
-	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$r110[1]." (".$imena_ocjena[$r110[1]-5].")</td></tr>\n";
+	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$imena_ocjena[$r110[1]]."</td></tr>\n";
 }
 print "</table>";
 

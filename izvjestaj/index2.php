@@ -24,6 +24,7 @@ $param_ciklus = intval($_REQUEST['ciklus']);
 if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 	biguglyerror("Nemate pravo pristupa ovom izvještaju");
 	zamgerlog("nije studentska, a pristupa tudjem izvjestaju ($student)", 3);
+	zamgerlog2("nije studentska, a pristupa tudjem izvjestaju", $student);
 	return;
 }
 
@@ -31,14 +32,15 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 // Deklaracije nizova
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
 $rimski_brojevi = array("", "I", "II", "III", "IV", "V", "VI");
-$imena_ocjena = array("", "", "", "", "", "pet", "šest", "sedam", "osam", "devet", "deset");
-$ects_ocjene = array("", "", "", "", "", "F", "E", "D", "C", "B", "A");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
+$ects_ocjene = array("", "", "", "", "", "F", "E", "D", "C", "B", "A", "IO");
 
 // Podaci o studentu
 $q100 = myquery("select ime, prezime, brindexa, jmbg, spol from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
+	zamgerlog2("nepoznat id korisnika", $student); // 3 = greska
 	return;
 }
 
@@ -56,6 +58,7 @@ ORDER BY ag.id desc, ss.semestar DESC LIMIT 1");
 if (!($r110 = mysql_fetch_row($q110))) {
 	niceerror("Nemamo podataka o studiju za studenta ".$r100[0]." ".$r100[1]);
 	zamgerlog("student u$student nikada nije studirao", 3);
+	zamgerlog2("korisnik nikada nije studirao", $student);
 	return;
 }
 
@@ -170,7 +173,7 @@ if (mysql_num_rows($q105)>0) {
 	<?
 }
 while ($r105 = mysql_fetch_row($q105)) {
-	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+	print "<li><b>$r105[1]</b> - ocjena: ".$imena_ocjena[$r105[0]]."<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
 	$sumauk += $r105[0];
 	$brojuk++;
 	$sumaects += $r105[4];
@@ -216,7 +219,7 @@ while ($r125 = mysql_fetch_row($q125)) {
 	<tr>
 		<td><?=$i++?></td><td><?=$r125[1]?></td><td><?=$r125[0]?></td>
 		<td><?=$r125[2]?></td>
-		<td><?=$r125[3]?> (<?=$imena_ocjena[$r125[3]]?>)</td>
+		<td><?=$imena_ocjena[$r125[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r125[3]]?></td>
 	</tr>
 	<?
@@ -289,7 +292,7 @@ while ($r130 = mysql_fetch_row($q130)) {
 		<td><?=$r130[0]?></td>
 		<td><?=$r130[1]?></td>
 		<td align="center"><?=nuliraj($r130[2])?></td>
-		<td align="center"><?=$r130[3]?> (<?=$imena_ocjena[$r130[3]]?>)</td>
+		<td align="center"><?=$imena_ocjena[$r130[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r130[3]]?></td>
 		<td align="center"><?=date("d. m. Y", $datum)?></td>
 	</tr>

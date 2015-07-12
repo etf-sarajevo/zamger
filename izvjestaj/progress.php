@@ -26,6 +26,7 @@ $razdvoji = intval($_REQUEST['razdvoji_ispite']); // da li prikazivati nepolože
 if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 	biguglyerror("Nemate pravo pristupa ovom izvještaju");
 	zamgerlog("nije studentska, a pristupa tudjem izvjestaju ($student)", 3);
+	zamgerlog2("nije studentska, a pristupa tudjem izvjestaju", $student);
 	return;
 }
 
@@ -41,6 +42,7 @@ $q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
+	zamgerlog2("nepoznat id korisnika", $student); // 3 = greska
 	return;
 }
 
@@ -54,7 +56,7 @@ Broj indeksa: <?=$r100[2]?><br><br><br>
 
 <?
 
-$imena_ocjena = array("Nije položio/la", "Šest","Sedam","Osam","Devet","Deset");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
 
 
 // Ocjene po odluci:
@@ -66,7 +68,7 @@ if (mysql_num_rows($q105)>0) {
 	<?
 }
 while ($r105 = mysql_fetch_row($q105)) {
-	print "<li><b>$r105[1]</b> - ocjena: $r105[0] (".$imena_ocjena[$r105[0]-5].")<br>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+	print "<li><b>$r105[1]</b> - ocjena: ".$imena_ocjena[$r105[0]]."<br>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
 }
 if (mysql_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
@@ -95,10 +97,9 @@ while ($r125 = mysql_fetch_row($q125)) {
 		<p>Institucija: &quot;<?=$stara_inst?>&quot;, akademska <?=mysql_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
 		<?
 	}
-	print "<li><b>$r125[0]</b> - ocjena: $r125[1] (".$imena_ocjena[$r125[1]-5].")</li>\n";
+	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[1]]."</li>\n";
 }
 print "</ul>";
-
 
 
 // Ocjene po akademskoj godini
@@ -138,7 +139,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 			// Od kojih komponenti se sastoji ispit?
 			$prisustvo = $zadace = $parc1 = $parc2 = $int = $zavrsni = $ukupno = "&nbsp;";
 			$kp1 = $kp2 = 0; // Čuvamo id-ove komponenti za 1 i 2 parcijalni, radi kasnijeg ispisa
-
+			
 			$q130 = myquery("select k.id, k.gui_naziv, k.tipkomponente, kb.bodovi from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, komponentebodovi as kb where agp.predmet=$r120[2] and agp.akademska_godina=$r110[0] and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and kb.komponenta=k.id and kb.student=$student and kb.predmet=$r120[0]");
 			while ($r130 = mysql_fetch_row($q130)) {
 				$bodovi = $r130[3];
@@ -217,7 +218,7 @@ while ($r110 = mysql_fetch_row($q110)) {
 			$q150 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r120[2] and akademska_godina=$r110[0]");
 			if ($r150 = mysql_fetch_row($q150))
 				if ($r150[0] > 5)
-					print "<td>$r150[0] (".$imena_ocjena[$r150[0]-5].")</td>";
+					print "<td>".$imena_ocjena[$r150[0]]."</td>";
 				else
 					print "<td>Nije ocijenjen</td>";
 			else

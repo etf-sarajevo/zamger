@@ -17,10 +17,17 @@ $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
 $predmet_naziv = mysql_result($q10,0,0);
 
+
+$kolokvij = false;
+$q12 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+if (mysql_num_rows($q12)>0 && mysql_result($q12,0,0) == 2000) 
+// FIXME: Ovo ne treba biti hardcodirani tip predmeta nego jedan od parametara za tip predmeta
+	$kolokvij = true;
 
 
 // Da li korisnik ima pravo ući u modul?
@@ -29,6 +36,7 @@ if (!$user_siteadmin && !$user_studentska) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
 	} 
@@ -70,6 +78,17 @@ if (!$user_siteadmin && !$user_studentska) {
 			origval[id]=vrijednost;
 		}
 	}
+	function ispunio_uslove(element) {
+		var id = element.id;
+		var vrijednost = element.checked;
+		if (vrijednost!=origval[id]) {
+			var oc_vrijednost;
+			if (vrijednost) oc_vrijednost=11;
+			else oc_vrijednost='/';
+			var value = parseInt(element.id.substr(6));
+			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+oc_vrijednost+"","document.getElementById('ocjena'+"+id+").focus()");
+		}
+	}
 	function enterhack(element,e) {
 		if(e.keyCode==13) {
 			element.blur();
@@ -88,7 +107,7 @@ if (!$user_siteadmin && !$user_studentska) {
 		<tr>
 			<td><b>R. br.</b></td><td width="300"><b>Prezime i ime</b></td>
 			<td><b>Broj indeksa</b></td>
-			<td><b>Ocjena</b></td>
+			<td><b><? if ($kolokvij) { ?>Ispunio/la obaveze<? } else { ?>Ocjena<? } ?></b></td>
 			<td><b>Datum</b></td>
 		</tr>
 	<?
@@ -121,6 +140,11 @@ if (!$user_siteadmin && !$user_studentska) {
 			$datum_provjeren = 1;
 		}
 
+		if ($kolokvij) { 
+			if ($ocjena == 11) { $ispunio_uslove = "CHECKED"; $ocjena = "true"; }
+			else { $ispunio_uslove = ""; $ocjena = "false"; }
+		}
+
 		?>
 		<SCRIPT language="JavaScript"> origval['ocjena<?=$id?>']="<?=$ocjena?>";</SCRIPT>
 		<SCRIPT language="JavaScript"> origval['datum<?=$id?>']="<?=$datum_u_indeksu?>";</SCRIPT>
@@ -128,7 +152,15 @@ if (!$user_siteadmin && !$user_studentska) {
 			<td><?=$rbr?></td>
 			<td><?=$r520[2]?> <?=$r520[1]?></td>
 			<td><?=$r520[3]?></td>
-			<td align="center"><input type="text" id="ocjena<?=$id?>" size="2" value="<?=$ocjena?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)"></td>
+			<td align="center">
+			<?
+			if ($kolokvij) {
+				?><input type="checkbox" id="ocjena<?=$id?>" onchange="ispunio_uslove(this)" <?=$ispunio_uslove?>><?
+			} else {
+				?><input type="text" id="ocjena<?=$id?>" size="2" value="<?=$ocjena?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)"><?
+			}
+			?>
+			</td>
 			<td align="center"><input type="text" id="datum<?=$id?>" size="8" value="<?=$datum_u_indeksu?>" style="border:1px black solid<?
 				if ($datum_provjeren != 1) print "; background-color: ffaaaa";
 			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)"></td>

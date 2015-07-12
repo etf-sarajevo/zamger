@@ -26,6 +26,7 @@ $q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
 if (!($r100 = mysql_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
+	zamgerlog2("nepoznat id korisnika", $student); // 3 = greska
 	return;
 }
 /*if ($r100[3] != 1) {
@@ -94,7 +95,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 				print "NIJE $polozi predmet $r30[1]<br />\n";
 			} else {
 				$ocjena = mysql_result($q40,0,0);
-				print "$ppolozi predmet $r30[1], ocjena $ocjena<br />\n";
+				if ($ocjena == 11) $ocjena = "ispunio/la obaveze"; else $ocjena = "ocjena $ocjena";
+				print "$ppolozi predmet $r30[1], $ocjena<br />\n";
 			}
 		}
 		if (mysql_num_rows($q30)>0) print "</ul></p>\n";
