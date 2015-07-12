@@ -45,9 +45,10 @@ $q15 = myquery("SELECT naziv FROM strucni_stepen WHERE id=".(3-$ciklus));
 $strucni_naziv = mysql_result($q15,0,0);
 
 
-$q20 = myquery("SELECT o.ime, o.imeoca, o.imemajke, o.prezime, UNIX_TIMESTAMP(ko.datum_u_indeksu), z.broj_diplome FROM osoba as o, konacna_ocjena as ko, predmet as p, student_studij as ss, studij as s, tipstudija as ts, zavrsni as z
-WHERE o.id=ko.student AND ko.predmet=p.id AND p.naziv LIKE 'Završni rad%' AND ko.akademska_godina=$ag AND ko.ocjena>5 AND o.id=ss.student AND ss.studij=s.id AND ss.akademska_godina=$ag AND ss.semestar mod 2=0 AND s.tipstudija=ts.id AND ts.ciklus=$ciklus AND z.student=o.id AND z.predmet=p.id AND z.akademska_godina=$ag
-ORDER BY o.prezime, o.ime");
+$q20 = myquery("SELECT o.ime, o.imeoca, o.imemajke, o.prezime, UNIX_TIMESTAMP(ko.datum_u_indeksu), z.broj_diplome 
+FROM osoba as o, konacna_ocjena as ko, predmet as p, student_studij as ss, studij as s, tipstudija as ts, zavrsni as z, akademska_godina_predmet as agp
+WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocjena>5 AND o.id=ss.student AND ss.studij=s.id AND ss.akademska_godina=$ag AND ss.semestar mod 2=0 AND s.tipstudija=ts.id AND ts.ciklus=$ciklus AND z.student=o.id AND z.predmet=p.id AND z.akademska_godina=$ag AND agp.akademska_godina=$ag AND agp.predmet=p.id AND agp.tippredmeta=1000
+ORDER BY o.prezime, o.ime"); // 1000 = tip predmeta "Završni rad"
 
 $rbr=0;
 while ($r20 = mysql_fetch_row($q20)) {

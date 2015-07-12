@@ -61,8 +61,9 @@ if (mysql_num_rows($q5)<1) {
 }
 $nazivpredmeta = mysql_result($q5,0,0);
 
-// TODO bolje riješiti
-if (substr($nazivpredmeta,0,12) == "Završni rad") {
+$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+$tippredmeta = mysql_result($q15,0,0);
+if ($tippredmeta == 1000) {
 	$q4 = myquery("SELECT id FROM zavrsni WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
 	if (mysql_num_rows($q4)>0) {
 		$zavrsni = mysql_result($q4,0,0);

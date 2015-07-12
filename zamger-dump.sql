@@ -3730,6 +3730,7 @@ CREATE TABLE IF NOT EXISTS `tippredmeta` (
 
 INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
 (1, 'ETF Bologna standard'),
+(1000, 'Završni rad'),
 (2000, 'Kolokvij');
 
 -- --------------------------------------------------------

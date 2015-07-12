@@ -385,8 +385,8 @@ function malimeni($fj) {
 	}
 	
 	if ($predmet>0) {
-		$q10 = myquery("select naziv from predmet where id=$predmet");
-		$predmet_naziv = mysql_result($q10,0,0);
+		$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+		$tippredmeta = mysql_result($q15,0,0);
 	}
 
 	?>
@@ -404,11 +404,12 @@ function malimeni($fj) {
 		<?
 
 	$k=0;
+	if ($predmet==0 || $tippredmeta != 1000) 
 	foreach ($registry as $r) {
 		if($r[5] != 0) continue; // nevidljiv
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
-			if ($r[0]=="nastavnik/zavrsni" && substr($predmet_naziv, 0, 12) != "Završni rad") continue;
+			if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 - završni rad
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
 			</tr></tr>
@@ -512,7 +513,10 @@ function studentski_meni($fj) {
 	$arhiva = intval($_REQUEST['sm_arhiva']);
 	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
-		$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by ag.id,pk.semestar mod 2 desc,p.naziv");
+		$q30 = myquery("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+		FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
+		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id AND ag.id=agp.akademska_godina AND p.id=agp.predmet
+		ORDER BY ag.id, pk.semestar MOD 2 DESC, p.naziv");
 
 	} else {
 		// Aktuelna akademska godina
@@ -537,7 +541,10 @@ function studentski_meni($fj) {
 				$sem_ispis = "Ljetnji semestar ";
 			$sem_ispis .= mysql_result($q10,0,1).":";
 
-			$q30 = myquery("select pk.id,p.naziv,pk.semestar,ag.naziv,p.id,ag.id from student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$ag and pk.semestar%2=$semestar and pk.akademska_godina=ag.id order by p.naziv");
+			$q30 = myquery("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+			FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
+			WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=$ag AND pk.semestar%2=$semestar AND pk.akademska_godina=ag.id AND agp.akademska_godina=$ag AND agp.predmet=p.id
+			ORDER BY p.naziv");
 		}
 	}
 
@@ -551,6 +558,7 @@ function studentski_meni($fj) {
 		$predmet = $r30[4];
 		$pag = $r30[5];
 		$zimskiljetnji = $r30[2]%2;
+		$tippredmeta = $r30[6];
 
 		// Zaglavlje sa imenom akademske godine i semestrom
 		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) {
@@ -565,7 +573,7 @@ function studentski_meni($fj) {
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
 		if (intval($_REQUEST['predmet'])==$predmet && intval($_REQUEST['ag'])==$pag) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
-			if (substr($predmet_naziv, 0, 12) == "Završni rad")
+			if ($tippredmeta == 1000)
 				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
 			else if ($_REQUEST['sta'] != "student/predmet")
 				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
@@ -602,7 +610,7 @@ function studentski_meni($fj) {
 
 			$ispis .= "</td></tr>\n";
 		} else {
-			if (substr($predmet_naziv, 0, 12) == "Završni rad")
+			if ($tippredmeta == 1000)
 				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 			else
 				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";

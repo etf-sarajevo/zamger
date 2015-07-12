@@ -47,6 +47,13 @@ if (!$user_siteadmin) {
 	} 
 }
 
+$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+$tippredmeta = mysql_result($q15,0,0);
+if ($tippredmeta == 1000) {
+	require("nastavnik/zavrsni.php");
+	nastavnik_zavrsni();
+	return;
+}
 
 
 ?>

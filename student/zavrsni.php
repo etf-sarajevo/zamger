@@ -15,8 +15,9 @@ function student_zavrsni()  {
 		biguglyerror("Niste upisani na ovaj predmet");
 		return;
 	}
-	$predmet_naziv = mysql_result($q900,0,1);
-	if (substr($predmet_naziv, 0, 12) != "Završni rad") {
+	$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+	$tippredmeta = mysql_result($q15,0,0);
+	if ($tippredmeta != 1000) {
 		zamgerlog("student/zavrsni a nije završni", 3);
 		biguglyerror("Modul za završne radove može se koristiti samo na predmetu 'Završni rad'");
 		return;
