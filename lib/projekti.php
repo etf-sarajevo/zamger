@@ -41,6 +41,7 @@ function applyForProject($userid, $project, $predmet, $ag)
 	{
 		$errorText = 'Zaključane su prijave na projekte. Prijave nisu dozvoljene.';
 		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je zaključan na predmetu p$predmet", 3);
+		zamgerlog2("projekat zakljucan (pokusao da se prijavi)", $project);
 		return $errorText;	
 	}
 	
@@ -65,6 +66,7 @@ function applyForProject($userid, $project, $predmet, $ag)
 	{
 		$errorText = 'Limit timova dostignut. Nije moguće kreirati projektni tim. Prijavite se na drugi projekat.';
 		zamgerlog("student u$userid pokusao da se prijavi na projekat $project na predmetu p$predmet iako je limit za broj timova dostignut.", 3);
+		zamgerlog2("dosegnut limit za broj projekata (pokusao da se prijavi)", $predmet, $ag);
 		return $errorText;	
 	}
 	
@@ -72,6 +74,7 @@ function applyForProject($userid, $project, $predmet, $ag)
 	{
 		$errorText = 'Projekat je popunjen. Nije moguće prijaviti se.';
 		zamgerlog("student u$userid pokusao da se prijavi na projekat $project koji je popunjen na predmetu p$predmet", 3);
+		zamgerlog2("projekat popunjen (pokusao da se prijavi)", $project);
 		return $errorText;	
 	}
 	
@@ -101,6 +104,7 @@ function getOutOfProject($userid, $predmet, $ag)
 	{
 		$errorText = 'Zaključane su liste timova za projekte. Odustajanja nisu dozvoljena.';
 		zamgerlog("student u$userid pokusao da se odjavi sa projekat predmetu p$predmet na kojem je zakljucano stanje timova i projekata", 3);		
+		zamgerlog2("projekti zakljucani (pokusao da se odjavi)", $predmet, $ag);		
 		return $errorText;	
 	}
 	
@@ -109,6 +113,7 @@ function getOutOfProject($userid, $predmet, $ag)
 	{
 		$errorText = 'Došlo je do greške prilikom spašavanja podataka. Molimo kontaktirajte administratora.';
 		zamgerlog("student u$userid pokusao da se odjavi sa projekta iako nije ni bio prijavljen ni na jedan projekat na predmetu p$predmet", 3);		
+		zamgerlog2("nije ni na jednom projektu (odjava)", $predmet, $ag);		
 		return $errorText;
 	}
 	
