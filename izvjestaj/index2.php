@@ -124,6 +124,11 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts 
 	WHERE ko.student=$student and ko.predmet=p.id and p.naziv like 'Završni rad%' and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id $upit_dodaj
 	ORDER BY ko.datum_u_indeksu desc");
+	if (mysql_num_rows($q89) == 0) {
+		niceerror("Greška! Ne može se generisati izvještaj.");
+		print "Student je završio studij jer trenutno nije upisan, ima sve potrebne ECTS kredite, ali nije unesena ocjena za Završni rad tako da se ne može odrediti datum diplomiranja. Nešto nije u redu sa podacima vezanim za ovog studenta (suma ECTS kredita ne bi trebala biti ispravna) STUDIJ: $studij_ects SUMA $suma_ects.";
+		return;
+	}
 	$datum_diplomiranja = date("d. m. Y.", mysql_result($q89,0,0));
 
 	if ($spol == "Z") {
