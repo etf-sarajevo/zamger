@@ -85,7 +85,9 @@ if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
 ?>
 <img src="images/content/ETF-memorandum.png">
 <p>&nbsp;</p>
-<p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99) i člana 147. (4) Zakona o visokom obrazovanju Kantona Sarajevo - prečišćeni tekst (Službene novine Kantona Sarajevo, broj 22/10) izdaje se</p>
+<p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99), člana 147. (4) Zakona o visokom 
+obrazovanju Kantona Sarajevo (Službene novine Kantona Sarajevo, broj 22/10, 15/13) i člana 198. stav (1) Statuta 
+Univerziteta u Sarajevu, Elektrotehnički fakultet u Sarajevu izdaje</p>
 
 <h2>Uvjerenje o prepisu ocjena</h2>
 <p>&nbsp;<br />
