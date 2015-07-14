@@ -59,8 +59,8 @@ function studentska_zavrsni()  {
 		
 		<p>Izaberite predmet:</p>
 		<ul><?
-
-		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, predmet as p, studij AS s, akademska_godina_predmet as agp WHERE pk.akademska_godina = $ag AND pk.predmet=p.id AND agp.predmet=p.id and agp.akademska_godina=$ag and agp.tippredmeta=1000 AND pk.studij=s.id ORDER BY p.naziv, s.naziv"); // 1000 = završni rad
+		// FIXME koristiti tippredmeta
+		$q100 = myquery("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv FROM ponudakursa as pk, predmet as p, studij AS s WHERE pk.akademska_godina = $ag AND pk.predmet=p.id AND SUBSTRING(p.naziv, 1, 12)='Završni rad' AND pk.studij=s.id ORDER BY p.naziv, s.naziv");
 		if (mysql_num_rows($q100) == 0) {
 			niceerror("Nije definisan niti jedan predmet pod imenom Završni rad.");
 		}
@@ -324,7 +324,7 @@ function studentska_zavrsni()  {
 
 					$q921 = myquery("SELECT COUNT(*) FROM nastavnik_predmet WHERE nastavnik=$mentor AND predmet=$predmet AND akademska_godina=$ag");
 					if (mysql_result($q921,0,0)==0) {
-						$q922 = myquery("INSERT INTO nastavnik_predmet SET nastavnik=$mentor, predmet=$predmet, akademska_godina=$ag, admin=0, nivo_pristupa='nastavnik'");
+						$q922 = myquery("INSERT INTO nastavnik_predmet SET nastavnik=$mentor, predmet=$predmet, akademska_godina=$ag, nivo_pristupa='nastavnik'");
 					}
 					$q922 = myquery("INSERT INTO ogranicenje SET nastavnik=$mentor, labgrupa=$id_labgrupe");
 				} else
