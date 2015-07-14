@@ -1186,6 +1186,7 @@ CREATE TABLE IF NOT EXISTS `kviz_student` (
 CREATE TABLE IF NOT EXISTS `labgrupa` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
+  `tip` enum('predavanja','vjezbe','tutorijali','vjezbe+tutorijali') collate utf8_slovenian_ci NOT NULL default 'vjezbe+tutorijali',
   `predmet` int(11) NOT NULL DEFAULT '0',
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
   `virtualna` tinyint(1) NOT NULL DEFAULT '0',
