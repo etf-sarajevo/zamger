@@ -17,20 +17,24 @@ function common_zavrsniStrane() {
 	$lokacijafajlova ="$conf_files_path/zavrsni/fajlovi/$zavrsni/";
 
 	// Osnovne informacije o radu
-	$q10 = myquery("SELECT naslov, mentor, student, sazetak, summary FROM zavrsni WHERE id=$zavrsni");
+	$q10 = myquery("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.sazetak, z.summary FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći rad");
 		zamgerlog("zavrsniStrane: nepostojeci rad $zavrsni", 3);
+		zamgerlog2("nepostojeci rad", $zavrsni);
 		return;
 	}
-	$naslov_rada = mysql_result($q10,0,0);
-	$mentor = tituliraj ( mysql_result($q10,0,1), $sa_akademskim_zvanjem=false, $sa_naucnonastavnim_zvanjem = false, $prezime_prvo = true ) ;
-	$sazetak = mysql_result($q10,0,3);
-	$summary = mysql_result($q10,0,4);
 
-	// Ime studenta ćemo prikazati samo profesoru pošto je zaboravan ;)
+	// Cache naučnog stepena
+	$q20 = myquery("select id, titula from naucni_stepen");
+	while ($r20 = mysql_fetch_row($q20))
+		$naucni_stepen[$r20[0]]=$r20[1];
+
+	$naslov_rada = mysql_result($q10,0,0);
+	$mentor = mysql_result($q10,0,2)." ".$naucni_stepen[mysql_result($q10,0,3)]." ".mysql_result($q10,0,1);
+	$id_studenta = mysql_result($q10,0,4);
 	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
-		$q30 = myquery("select ime,prezime,brindexa from osoba where id=".mysql_result($q10,0,2));
+		$q30 = myquery("select ime,prezime,brindexa from osoba where id=$id_studenta");
 		$student = "Student: ".mysql_result($q30,0,1)." ".mysql_result($q30,0,0)." (".mysql_result($q30,0,2).")";
 	}
 	
@@ -46,8 +50,11 @@ function common_zavrsniStrane() {
 	// Prikaz ako nije odabrana subakcija
 
 	if (!isset($subakcija)) {
-	
+
+		
 	// Da li je definisan sazetak?
+	$sazetak = mysql_result($q10,0,5);
+	$summary = mysql_result($q10,0,6);
 	if ($userid == $id_studenta) {
 		if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
 			?>
@@ -229,6 +236,7 @@ function common_zavrsniStrane() {
 	
 			if (!check_csrf_token()) {
 				zamgerlog("csrf token nije dobar",3);
+				zamgerlog2("csrf token nije dobar");
 				niceerror("Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji");
 				return;
 			}
@@ -267,6 +275,7 @@ function common_zavrsniStrane() {
 			if ($errorText != "") {
 				niceerror($errorText);
 				zamgerlog("greska prilikom slanja fajla na zavrsni $zavrsni", 3);
+				zamgerlog2("greska prilikom slanja fajla na zavrsni", $zavrsni);
 			} else {
 				$q500 = myquery("SELECT id FROM zavrsni_file ORDER BY id DESC LIMIT 1");
 				if (mysql_num_rows($q500)>0)
@@ -279,6 +288,7 @@ function common_zavrsniStrane() {
 
 				nicemessage("Fajl uspješno poslan");
 				zamgerlog("dodao novi fajl na temu zavrsnog rada $zavrsni (pp$predmet)", 2);
+				zamgerlog2("dodao fajl na zavrsni", $zavrsni);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 		} // if isset($_REQUEST['submit'])
@@ -327,6 +337,7 @@ function common_zavrsniStrane() {
 		if (mysql_num_rows($q600)<1 || $zavrsni != mysql_result($q600,0,0)) {
 			niceerror("Ilegalan završni rad");
 			zamgerlog ("spoofing fajla $id za zavrsni rad $zavrsni", 3);
+			zamgerlog2 ("id fajla nepostojeci ili ne odgovara zavrsnom", $id, $zavrsni);
 			return;
 		}
 
@@ -339,12 +350,14 @@ function common_zavrsniStrane() {
 			niceerror("Brisanje datoteke sa datotečnog sistema nije uspjelo.");
 			print "Kontaktirajte administratora da vam obriše ovu datoteku.";
 			zamgerlog("nije uspjelo brisanje fajla $id za zavrsni rad $zavrsni", 3);
+			zamgerlog2("nije uspjelo brisanje fajla za zavrsni", $id);
 			return;
 		}
 
 		$q610 = myquery("DELETE FROM zavrsni_file WHERE id=$id");
-		nicemessage("Brisane fajla uspjelo");
+		nicemessage("Brisanje fajla uspjelo");
 		zamgerlog("obrisan fajl $id za zavrsni rad $zavrsni", 2);
+		zamgerlog2("obrisan fajl za zavrsni rad", $id, $zavrsni);
 		nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 		return;
 	}
@@ -357,6 +370,7 @@ function common_zavrsniStrane() {
 		if (mysql_num_rows($q700)<1 || $zavrsni != mysql_result($q700,0,0)) {
 			niceerror("Nepostojeća tema.");
 			zamgerlog("spoofing forum teme $id_teme za zavrsni rad $zavrsni", 3);
+			zamgerlog2("nepostojeca forum tema ili ne odgovara zavrsnom", $id_teme, $zavrsni);
 			return;
 		}
 
@@ -421,6 +435,7 @@ function common_zavrsniStrane() {
 		if (isset($_REQUEST['submit'])) {
 			if (!check_csrf_token())  {
 				zamgerlog("csrf token nije dobar",3);
+				zamgerlog2("csrf token nije dobar");
 				niceerror("Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji");
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
@@ -459,6 +474,7 @@ function common_zavrsniStrane() {
 
 			nicemessage('Nova tema uspješno dodana.');
 			zamgerlog("dodao novu temu na zavrsni rad $zavrsni (pp$predmet)", 2);
+			zamgerlog2("dodao novu temu na zavrsni rad", $zavrsni);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -498,6 +514,7 @@ function common_zavrsniStrane() {
 		if (mysql_num_rows($q900)==0 || $zavrsni != mysql_result($q900,0,0)) {
 			niceerror("Nepostojeća tema.");
 			zamgerlog("spoofing forum teme $id_teme za zavrsni rad $zavrsni", 3);
+			zamgerlog2("nepostojeca forum tema ili ne odgovara zavrsnom (odgovor)", $id_teme, $zavrsni);
 			return;
 		}
 
@@ -505,6 +522,7 @@ function common_zavrsniStrane() {
 		if (isset($_REQUEST['submit'])) {
 			if (!check_csrf_token())  {
 				zamgerlog("csrf token nije dobar",3);
+				zamgerlog2("csrf token nije dobar");
 				niceerror("Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji");
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
@@ -534,6 +552,7 @@ function common_zavrsniStrane() {
 
 			nicemessage('Novi odgovor uspješno dodan.');
 			zamgerlog("dodao novi odgovor na diskusiju ID $id_teme, tema zavrsnog rada $zavrsni (pp$predmet)", 2);
+			zamgerlog2("dodao novi odgovor na diskusiju za zavrsni rad", $id_teme, $zavrsni);
 			nicemessage('<a href="'. $linkPrefix . "&subakcija=vidi_temu&tema=$id_teme" . '">Povratak.</a>');
 			return;
 		}
@@ -577,6 +596,7 @@ function common_zavrsniStrane() {
 		if (mysql_num_rows($q400)<1 || $userid != mysql_result($q400,0,0)) {
 			niceerror("Niste autor ove poruke.");
 			zamgerlog("spoofing forum poruke $id_posta,$id_teme prilikom editovanja za zavrsni rad $zavrsni", 3);
+			zamgerlog2("nepostojeca forum poruka ili ne odgovara temi ili zavrsnom", $id_posta, $id_teme, $zavrsni);
 			return;
 		}
 
@@ -584,6 +604,7 @@ function common_zavrsniStrane() {
 		if (isset($_REQUEST['submit'])) {
 			if (!check_csrf_token())  {
 				zamgerlog("csrf token nije dobar",3);
+				zamgerlog2("csrf token nije dobar");
 				niceerror("Poslani podaci nisu ispravni. Vratite se nazad, ponovo popunite formu i kliknite na dugme Pošalji");
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
@@ -606,6 +627,7 @@ function common_zavrsniStrane() {
 
 			nicemessage('Uspješno ste izmijenili poruku.');
 			zamgerlog("izmijenio vlastiti post $id_posta, tema zavrsnog rada $zavrsni (pp$predmet)", 2);
+			zamgerlog2("izmijenio vlastiti post za zavrsni rad", $id_posta, $zavrsni);
 			nicemessage('<a href="'. $linkPrefix . "&subakcija=vidi_temu&tema=$id_teme" . '">Povratak.</a>');
 			return;
 		}
@@ -649,6 +671,7 @@ function common_zavrsniStrane() {
 		if (mysql_num_rows($q300)<1 || $userid != mysql_result($q300,0,0)) {
 			niceerror("Niste autor ove poruke.");
 			zamgerlog("spoofing forum poruke $id_posta,$id_teme prilikom brisanja za zavrsni rad $zavrsni", 3);
+			zamgerlog2("nepostojeca forum poruka ili ne odgovara temi ili zavrsnom (brisanje)", $id_posta, $id_teme, $zavrsni);
 			return;
 		}
 
@@ -676,10 +699,12 @@ function common_zavrsniStrane() {
 
 				nicemessage('Uspješno ste obrisali kompletnu temu.');	
 				zamgerlog("obrisao temu na forumu zavrsnog rada $zavrsni (pp$predmet)", 2);
+				zamgerlog2("obrisao temu na forumu zavrsnog rada", $id_teme, $zavrsni);
 				nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			} else {
 				nicemessage('Uspješno ste obrisali poruku.');	
 				zamgerlog("obrisao poruku na forumu zavrsnog rada $zavrsni (pp$predmet)", 2);
+				zamgerlog2("obrisao poruku na forumu zavrsnog rada", $id_posta, $zavrsni);
 				nicemessage('<a href="'. $linkPrefix . "&subakcija=vidi_temu&tema=$id_teme" . '">Povratak.</a>');
 			}
 			return;
@@ -714,6 +739,7 @@ function common_zavrsniStrane() {
 			$q1000 = myquery("UPDATE zavrsni SET sazetak='$sazetak', summary='$summary' WHERE id=$zavrsni");
 			nicemessage("Sažetak ažuriran");
 			zamgerlog("azuriran sazetak zavrsnog rada $zavrsni", 2);
+			zamgerlog2("azuriran sazetak zavrsnog rada", $zavrsni);
 			?><a href="<?=$linkPrefix?>">Nazad</a><?
 			return;
 		}
