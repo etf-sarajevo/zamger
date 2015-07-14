@@ -56,12 +56,14 @@ case "prisustvo":
 	
 	if ($userid == 0) {
 		zamgerlog("AJAH prisustvo - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("prisustvo - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_nastavnik && !$user_siteadmin) {
 		zamgerlog("AJAH prisustvo - korisnik nije nastavnik",3); // nivo 3 - greska
+		zamgerlog2("prisustvo - korisnik nije nastavnik"); // nivo 3 - greska
 		print "niste nastavnik"; break; 
 	}
 
@@ -74,6 +76,7 @@ case "prisustvo":
 	$q10 = myquery("select c.labgrupa, l.predmet, l.akademska_godina from cas as c, labgrupa as l where c.id=$cas and c.labgrupa=l.id");
 	if (mysql_num_rows($q10)<1) {
 		zamgerlog("AJAH prisustvo - nepostojeci cas $cas",3);
+		zamgerlog2("prisustvo - nepostojeci cas", $cas);
 		print "nepostojeci cas"; break;
 	}
 	$labgrupa = mysql_result($q10,0,0);
@@ -86,6 +89,7 @@ case "prisustvo":
 		$q15 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 		if (mysql_num_rows($q15)<1) {
 			zamgerlog("AJAH prisustvo - korisnik nije nastavnik (cas c$cas)",3);
+			zamgerlog2("nije saradnik na predmetu (prisustvo)", $cas);
 			print "niste nastavnik A"; break;
 		}
 
@@ -99,6 +103,7 @@ case "prisustvo":
 			}
 			if ($nasao == 0) {
 				zamgerlog("AJAH prisustvo - korisnik ima ogranicenje za grupu (cas c$cas)",3);
+				zamgerlog2("prisustvo - ima ogranicenje za grupu", $cas);
 				print "imate ograničenje na ovu grupu"; break;
 			}
 		}
@@ -123,6 +128,7 @@ case "prisustvo":
 		}
 	} else {
 		zamgerlog("AJAH prisustvo - losa akcija, student: $student cas: $cas prisutan: $prisutan",3);
+		zamgerlog2("prisustvo - losa akcija", $student, $cas, $prisutan);
 		print "akcija je generalno loša"; 
 		break;
 	}
@@ -136,6 +142,7 @@ case "prisustvo":
 	while ($r4 = mysql_fetch_row($q4))
 		update_komponente($student,$ponudakursa,$r4[0]);
 	zamgerlog("AJAH prisustvo - student: u$student cas: c$cas prisutan: $prisutan",2); // nivo 2 - edit
+	zamgerlog2("prisustvo azurirano", $student, $cas, $prisutan); // nivo 2 - edit
 
 	print "OK";
 	break;
@@ -147,12 +154,14 @@ case "izmjena_ispita":
 
 	if ($userid == 0) {
 		zamgerlog("AJAH ispit - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("ispit - istekla sesija");
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 		zamgerlog("AJAH ispit - korisnik nije nastavnik",3); // nivo 3 - greska
+		zamgerlog2("ispit - korisnik nije nastavnik"); // nivo 3 - greska
 		print "niste nastavnik"; break; 
 	}
 
@@ -166,6 +175,7 @@ case "izmjena_ispita":
 	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna" && $ime!="kodatum") {
 		// ko = konacna ocjena
 		zamgerlog("AJAH ispit - ne valja id polja ($idpolja)",3);
+		zamgerlog2("ispit - ne valja id polja", $idpolja);
 		print "ne valja ID polja $idpolja"; break;
 	}
 
@@ -173,6 +183,7 @@ case "izmjena_ispita":
 		if (!preg_match("/\d/", $vrijednost)) {
 			if ($vrijednost != "/") {
 				zamgerlog("AJAH ispit - vrijednost $vrijednost nije ni broj ni /",3);
+				zamgerlog2("ispit - vrijednost nije ni broj ni /",0,0,0,$vrijednost);
 				print "Vrijednost $vrijednost nije ni broj ni /"; break;
 			}
 		} else {
@@ -190,6 +201,7 @@ case "izmjena_ispita":
 			$q40 = myquery("select np.nivo_pristupa,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
 		if (mysql_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
+			zamgerlog2("ispit - nepoznat ispit ili nije saradnik",$ispit);
 			print "nepoznat ispit $ispit ili niste saradnik na predmetu"; break;
 		}
 		if (mysql_result($q40,0,0) != "asistent") $padmin = 1;
@@ -211,6 +223,7 @@ case "izmjena_ispita":
 		$q40a = myquery("select maxbodova from komponenta where id=$komponenta and tipkomponente=5");
 		if (mysql_num_rows($q40a)!=1) {
 			zamgerlog("AJAH fiksna - nepoznata fiksna komponenta $komponenta",3);
+			zamgerlog2("fiksna - nepoznata fiksna komponenta", $komponenta);
 			print "nepoznata fiksna komponenta $komponenta"; break;
 		}
 		$max = mysql_result($q40a,0,0);
@@ -219,6 +232,7 @@ case "izmjena_ispita":
 			$q40b = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (mysql_num_rows($q40b)<1) {
 				zamgerlog("AJAH fiksna - nije na predmetu pp$predmet, ag$ag",3);
+				zamgerlog2("nije saradnik na predmetu (fiksna)", $predmet, $ag);
 				print "niste saradnik na predmetu"; break;
 			}
 		}
@@ -236,6 +250,7 @@ case "izmjena_ispita":
 			$q41 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (mysql_num_rows($q41)<1) {
 				zamgerlog("AJAH ispit/ko - niste saradnik (ispit pp$predmet, ag$ag)",3);
+				zamgerlog2("nije saradnik na predmetu (ispit/ko)", $predmet, $ag);
 				print "niste saradnik na predmetu $predmet";
 				break;
 			}
@@ -244,6 +259,7 @@ case "izmjena_ispita":
 	}
 	if ($padmin==0 && !$user_siteadmin && !$user_studentska) {
 		zamgerlog("AJAH ispit - pogresne privilegije (ispit i$ispit)",3);
+		zamgerlog2("ispit - pogresne privilegije", $ispit);
 		print "niste nastavnik na predmetu $predmet niti admin!"; break;
 	}
 
@@ -251,12 +267,14 @@ case "izmjena_ispita":
 	$q45 = myquery ("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet");
 	if (mysql_result($q45,0,0)<1) {
 		zamgerlog("AJAH ispit - student u$stud_id ne slusa predmet pp$predmet (ispit i$ispit)",3);
+		zamgerlog2("ispit - student ne slusa predmet", $stud_id, $ispit);
 		print "student $stud_id ne sluša predmet $predmet"; break;
 	}
 
 	// Maksimalan i minimalan broj bodova
 	if ($ime != "kodatum" && $vrijednost>$max) {
 		zamgerlog("AJAH ispit - vrijednost $vrijednost > max $max",3);
+		zamgerlog2("ispit - vrijednost > max", $stud_id, intval($ispit), 0, "$vrijednost > $max");
 		if ($ime=="ko")
 			print "stavili ste ocjenu veću od 10";
 		else
@@ -265,6 +283,7 @@ case "izmjena_ispita":
 	}
 	if ($ime=="ko" && $vrijednost<6 && $vrijednost!=="/") {
 		zamgerlog("AJAH ispit - konacna ocjena manja od 6 ($vrijednost)",3);
+		zamgerlog2("ispit - konacna ocjena manja od 6", 0,0,0, $vrijednost);
 		print "stavili ste ocjenu manju od 6";
 		break;
 	}
@@ -272,6 +291,7 @@ case "izmjena_ispita":
 	if ($ime=="kodatum") { // Parsiranje datuma
 		if (!preg_match("/(\d+).*?(\d+).*?(\d+)/", $vrijednost, $matches)) {
 			zamgerlog("AJAH ispit - datum konacne ocjene nije u trazenom formatu ($vrijednost)", 3);
+			zamgerlog2("ispit - datum konacne ocjene nije u trazenom formatu", 0,0,0, $vrijednost);
 			print "los format datuma";
 			break;
 		}
@@ -282,12 +302,14 @@ case "izmjena_ispita":
 			if ($godina<900) $godina+=2000; else $godina+=1000;
 		if (!checkdate($mjesec,$dan,$godina)) {
 			zamgerlog("AJAH ispit - datum konacne ocjene je nemoguc ($vrijednost)", 3);
+			zamgerlog2("ispit - datum konacne ocjene je nemoguc", 0,0,0, $vrijednost);
 			print "uneseni datum $dan. $mjesec. $godina je kalendarski nemoguc";
 			break;
 		}
 		$novidatum = mktime(0, 0, 0, $mjesec, $dan, $godina);
 		if ($novidatum === false) {
 			zamgerlog("AJAH ispit - datum konacne ocjene je neispravan ($vrijednost)", 3);
+			zamgerlog2("ispit - datum konacne ocjene je nemoguc", 0,0,0, $vrijednost);
 			print "uneseni datum $dan. $mjesec. $godina nije ispravan";
 			break;
 		}
@@ -300,14 +322,17 @@ case "izmjena_ispita":
 		if ($c==0 && $vrijednost!=="/") {
 			$q60 = myquery("insert into ispitocjene set ispit=$ispit, student=$stud_id, ocjena=$vrijednost");
 			zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
 		} else if ($c>0 && $vrijednost==="/") {
 			$staraocjena = mysql_result($q50,0,0);
 			$q60 = myquery("delete from ispitocjene where ispit=$ispit and student=$stud_id");
 			zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staraocjena); // nivo 4: audit
 		} else if ($c>0) {
 			$staraocjena = mysql_result($q50,0,0);
 			$q60 = myquery("update ispitocjene set ocjena=$vrijednost where ispit=$ispit and student=$stud_id");
 			zamgerlog("AJAH ispit - izmjena rezultata $staraocjena u $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("izmjenjen rezultat ispita", $stud_id, $ispit, 0, "$staraocjena -> $vrijednost"); // nivo 4: audit
 		}
 
 		update_komponente($stud_id,$ponudakursa,$komponenta);
@@ -320,7 +345,7 @@ case "izmjena_ispita":
 		$q63 = myquery("delete from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
 		if ($vrijednost != "/") $q66 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");
 		zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
-
+		zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
@@ -347,14 +372,17 @@ case "izmjena_ispita":
 
 			$q80 = myquery("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = mysql_result($q70,0,0);
 			$q80 = myquery("delete from konacna_ocjena where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
 		} else if ($c>0) {
 			$staraocjena = mysql_result($q70,0,0);
 			$q80 = myquery("update konacna_ocjena set ocjena=$vrijednost, datum=NOW() where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
 		}
 
 	} else if ($ime == "kodatum") {
@@ -370,6 +398,7 @@ case "izmjena_ispita":
 		if ($staridatum != $novidatum || $datum_provjeren == 0) {
 			$q87 = myquery("update konacna_ocjena set datum_u_indeksu=FROM_UNIXTIME($novidatum), datum_provjeren=1 where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH kodatum - promijenjen datum u indeksu (predmet pp$predmet, student u$stud_id)", 4);
+			zamgerlog2("promijenjen datum ocjene", $stud_id, $predmet, $ag, date("d.m.Y",$novidatum));
 		}
 	}
 
@@ -381,6 +410,7 @@ case "izmjena_ispita":
 case "pretraga":
 	if ($userid == 0) {
 		zamgerlog("AJAH pretraga - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("pretraga - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
@@ -417,12 +447,14 @@ case "prijemni_unos":
 
 	if ($userid == 0) {
 		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("prijemni - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		zamgerlog2("prijemni - korisnik nije studentska sluzba"); // nivo 3 - greska
 		print "niste studentska sluzba"; break; 
 	}
 
@@ -444,6 +476,7 @@ case "prijemni_unos":
 	print "OK";
 
 	zamgerlog("upisan rezultat na prijemnom za u$osoba, termin $termin ($vrijednost)",2);
+	zamgerlog2("upisan rezultat na prijemnom", $osoba, $termin, 0, $vrijednost);
 
 	break;
 
@@ -453,12 +486,14 @@ case "prijemni_ocjene":
 
 	if ($userid == 0) {
 		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("prijemni - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		zamgerlog2("prijemni - korisnik nije studentska sluzba"); // nivo 3 - greska
 		print "niste studentska sluzba"; break; 
 	}
 
@@ -499,12 +534,14 @@ case "prosli_ciklus_ocjena":
 
 	if ($userid == 0) {
 		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("prijemni - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		zamgerlog2("prijemni - korisnik nije studentska sluzba"); // nivo 3 - greska
 		print "niste studentska sluzba"; break; 
 	}
 
@@ -543,12 +580,14 @@ case "prosli_ciklus_ects": // 1500,5 / 157,5 = 9,52698413 / 6 = 1,58783069
 
 	if ($userid == 0) {
 		zamgerlog("AJAH prijemni - istekla sesija",3); // nivo 3 - greska
+		zamgerlog2("prijemni - istekla sesija"); // nivo 3 - greska
 		print "Vasa sesija je istekla. Pritisnite dugme Refresh da se ponovo prijavite.";
 		break;
 	}
 
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("AJAH prijemni - korisnik nije studentska sluzba ",3); // nivo 3 - greska
+		zamgerlog2("prijemni - korisnik nije studentska sluzba"); // nivo 3 - greska
 		print "niste studentska sluzba"; break; 
 	}
 

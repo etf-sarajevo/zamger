@@ -26,6 +26,7 @@ if ($tip == "zadaca") {
 	$q5 = myquery("select predmet, akademska_godina from zadaca where id=$zadaca");
 	if (mysql_num_rows($q5)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3);
+		zamgerlog2("nepostojeca zadaca", $zadaca);
 		niceerror("Nepostojeća zadaća");
 		return;
 	}
@@ -38,6 +39,7 @@ if ($tip == "zadaca") {
 			$student=$userid;
 		else {
 			zamgerlog("pokusao otvoriti attachment bez ID studenta, a sam nije student",3);
+			zamgerlog2("pokusao otvoriti attachment bez ID studenta, a sam nije student");
 			niceerror("Čiju zadaću pokušavate otvoriti?");
 			return;
 		}
@@ -45,6 +47,7 @@ if ($tip == "zadaca") {
 	} else { // student je odredjen kao parametar
 		if (!$user_nastavnik && !$user_siteadmin) {
 			zamgerlog("attachment: nije nastavnik (student u$student zadaca z$zadaca)",3);
+			zamgerlog2("nije nastavnik");
 			niceerror("Nemate pravo pregleda ove zadaće");
 			return;
 		}
@@ -53,6 +56,7 @@ if ($tip == "zadaca") {
 			$q10 = myquery("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
 			if (mysql_result($q10,0,0)<1) {
 				zamgerlog("attachment: nije nastavnik na predmetu (student u$student zadaca z$zadaca)",3);
+				zamgerlog2("nije nastavnik na predmetu za zadacu", $zadaca);
 				niceerror("Nemate pravo pregleda ove zadaće");
 				return;
 			}
@@ -68,6 +72,7 @@ if ($tip == "zadaca") {
 				}
 				if ($nasao == 0) {
 					zamgerlog("ogranicenje na predmet (student u$student predmet p$ponudakursa)",3);
+					zamgerlog2("ogranicenje na predmet za zadacu", $zadaca);
 					niceerror("Nemate pravo pregleda ove zadaće");
 					return;
 				}
@@ -81,6 +86,7 @@ if ($tip == "zadaca") {
 	$q30 = myquery("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 	if (mysql_result($q30,0,0)<1) {
 		zamgerlog("student nije upisan na predmet (student u$student zadaca z$zadaca)",3);
+		zamgerlog2("student ne slusa predmet za zadacu", $zadaca);
 		niceerror("Student nije upisan na predmet");
 		return;
 	}
@@ -93,6 +99,7 @@ if ($tip == "zadaca") {
 	$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
 	if (mysql_num_rows($q40) < 1) {
 		zamgerlog("ne postoji attachment (zadaca $zadaca zadatak $zadatak student $student)",3);
+		zamgerlog2("ne postoji attachment", intval($student), $zadaca, $zadatak);
 		niceerror("Ne postoji attachment");
 		return;
 	}
@@ -111,6 +118,7 @@ if ($tip == "postavka") {
 	$q100 = myquery("select predmet, akademska_godina, postavka_zadace from zadaca where id=$zadaca");
 	if (mysql_num_rows($q100)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3);
+		zamgerlog2("nepostojeca zadaca", $zadaca);
 		niceerror("Nepostojeća zadaća");
 		return;
 	}
@@ -122,6 +130,7 @@ if ($tip == "postavka") {
 	if ($postavka_zadace == "") {
 		niceerror("Postavka ne postoji");
 		zamgerlog("postavka ne postoji z$zadaca", 3);
+		zamgerlog2("postavka ne postoji", $zadaca);
 		return;
 	}
 
@@ -140,6 +149,7 @@ if ($tip == "postavka") {
 
 	if (!$ok) {
 		zamgerlog("nema pravo pristupa postavci zadace (z$zadaca)",3);
+		zamgerlog2("nema pravo pristupa postavci zadace", $zadaca);
 		niceerror("Nemate pravo pristupa ovoj postavci");
 		return;
 	}
@@ -159,6 +169,7 @@ if ($tip == "projekat") {
 	$q200 = myquery("select predmet, akademska_godina from projekat where id=$projekat");
 	if (mysql_num_rows($q200)<1) {
 		zamgerlog("nepostojeci projekat $projekat",3);
+		zamgerlog2("nepostojeci projekat", $projekat);
 		niceerror("Nepostojeći projekat");
 		return;
 	}
@@ -179,6 +190,7 @@ if ($tip == "projekat") {
 
 	if (!$ok) {
 		zamgerlog("nema pravo pristupa projektu $projekat",3);
+		zamgerlog2("nije na projektu", $projekat);
 		niceerror("Nemate pravo pristupa ovom projektu.");
 		return;
 	}
@@ -186,6 +198,7 @@ if ($tip == "projekat") {
 	$q230 = myquery("select osoba, revizija, filename from projekat_file where id=$id");
 	if (mysql_num_rows($q230)<1) {
 		zamgerlog("nepostojeci file $id na projektu $projekat", 3);
+		zamgerlog2("nepostojeci file na projektu", $projekat, $id);
 		niceerror("Nepoznat ID $id");
 		return;
 	}
@@ -207,6 +220,7 @@ if ($tip == "zavrsni") {
 	$q300 = myquery("select predmet, akademska_godina from zavrsni where id=$zavrsni");
 	if (mysql_num_rows($q300)<1) {
 		zamgerlog("nepostojeca tema zavrsnog rada $zavrsni",3);
+		zamgerlog2("nepostojeca tema zavrsnog rada", $zavrsni);
 		niceerror("Nepostojeća tema završnog rada.");
 		return;
 	}
@@ -227,6 +241,7 @@ if ($tip == "zavrsni") {
 
 	if (!$ok) {
 		zamgerlog("nema pravo pristupa zavrsnom radu $zavrsni",3);
+		zamgerlog2("nema pravo pristupa zavrsnom radu", $zavrsni);
 		niceerror("Nemate pravo pristupa ovom završnom radu.");
 		return;
 	}
@@ -234,6 +249,7 @@ if ($tip == "zavrsni") {
 	$q330 = myquery("select revizija, filename from zavrsni_file where id=$id");
 	if (mysql_num_rows($q330)<1) {
 		zamgerlog("nepostojeci file $id na zavrsnom radu $zavrsni", 3);
+		zamgerlog2("nepostojeci file na zavrsnom radu", $zavrsni, $id);
 		niceerror("Nepoznat ID $id");
 		return;
 	}
@@ -259,6 +275,10 @@ $k = readfile($filepath,false);
 if ($k == false) {
 	print "Otvaranje attachmenta nije uspjelo! Kontaktirajte administratora";
 	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadatak $zadatak student $stud_id)", 3);
+	if ($tip == "zadaca") zamgerlog2("citanje fajla za attachment nije uspjelo - zadaca", $zadaca, $zadatak);
+	if ($tip == "postavka") zamgerlog2("citanje fajla za attachment nije uspjelo - postavka", $zadaca);
+	if ($tip == "projekat") zamgerlog2("citanje fajla za attachment nije uspjelo - projekat", $projekat, $id);
+	if ($tip == "zavrsni") zamgerlog2("citanje fajla za attachment nije uspjelo - zavrsni", $zavrsni, $id);
 }
 exit;
 

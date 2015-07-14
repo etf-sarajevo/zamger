@@ -98,6 +98,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	$q310 = myquery("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, vrijeme=NOW(), ref=".intval($_REQUEST['ref']).", naslov='".my_escape($_REQUEST['naslov'])."', tekst='".my_escape($_REQUEST['tekst'])."'");
 	nicemessage("Poruka uspješno poslana");
 	zamgerlog("poslana poruka za u$prim_id",2);
+	zamgerlog2("poslana poruka", intval($prim_id));
 }
 
 if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
@@ -107,6 +108,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 		if (mysql_num_rows($q200) < 1) {
 			niceerror("Poruka ne postoji");
 			zamgerlog("pokusaj odgovora na nepostojecu poruku $poruka",3);
+			zamgerlog2("pokusaj odgovora na nepostojecu poruku", $poruka);
 			return;
 		}
 
@@ -118,6 +120,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 		if (mysql_num_rows($q210)<1) {
 			niceerror("Nepoznat pošiljalac");
 			zamgerlog("poruka $poruka ima nepoznatog posiljaoca $prim_id (prilikom odgovora na poruku)",3);
+			zamgerlog2("poruka ima nepoznatog posiljaoca (prilikom odgovora na poruku)", $poruka, $prim_id);
 			return;
 		} else
 			$primalac = mysql_result($q210,0,0)." (".mysql_result($q210,0,1)." ".mysql_result($q210,0,2).")";
@@ -280,6 +283,7 @@ if ($poruka>0) {
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Poruka ne postoji");
 		zamgerlog("pristup nepostojecoj poruci $poruka",3);
+		zamgerlog2("pristup nepostojecoj poruci", $poruka);
 		return;
 	}
 
@@ -291,6 +295,7 @@ if ($poruka>0) {
 	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij && $prim_id!=-$ciklus || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $_REQUEST['mode']!=="outbox" || $opseg==7 && $_REQUEST['mode']==="outbox" && $pos_id!=$userid || $opseg==8 && $prim_id != ($studij*10+$godina_studija) && $prim_id != (-$ciklus*10-$godina_studija)) {
 		niceerror("Nemate pravo pristupa ovoj poruci!");
 		zamgerlog("pokusao pristupiti poruci $poruka",3);
+		zamgerlog2("nema pravo pristupa poruci", $poruka);
 		return;
 	}
 	if ($opseg==5) {
@@ -299,6 +304,7 @@ if ($poruka>0) {
 		if (mysql_result($q110,0,0)<1) {
 			niceerror("Nemate pravo pristupa ovoj poruci!");
 			zamgerlog("pokusao pristupiti poruci $poruka",3);
+			zamgerlog2("nema pravo pristupa poruci", $poruka);
 			return;
 		}
 	}
@@ -308,6 +314,7 @@ if ($poruka>0) {
 		if (mysql_result($q115,0,0)<1) {
 			niceerror("Nemate pravo pristupa ovoj poruci!");
 			zamgerlog("pokusao pristupiti poruci $poruka",3);
+			zamgerlog2("nema pravo pristupa poruci", $poruka);
 			return;
 		}
 	}
@@ -317,6 +324,7 @@ if ($poruka>0) {
 	if (mysql_num_rows($q20)<1) {
 		$posiljalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id",3);
+		zamgerlog2("poruka ima nepoznatog posiljaoca", $poruka, $pos_id);
 	} else
 		$posiljalac = mysql_result($q20,0,0)." ".mysql_result($q20,0,1);
 
@@ -332,6 +340,7 @@ if ($poruka>0) {
 		if (mysql_num_rows($q30)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: studij)",3);
+			zamgerlog2("poruka ima nepoznatog primaoca (opseg: studij)", $poruka, $prim_id);
 		} else {
 			$primalac = "Svi studenti na: ".mysql_result($q30,0,0);
 		}
@@ -341,6 +350,7 @@ if ($poruka>0) {
 		if (mysql_num_rows($q40)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: akademska godina)",3);
+			zamgerlog2("poruka ima nepoznatog primaoca (opseg: akademska godina)", $poruka, $prim_id);
 		} else {
 			$primalac = "Svi studenti na akademskoj godini: ".mysql_result($q40,0,0);
 		}
@@ -350,6 +360,7 @@ if ($poruka>0) {
 		if (mysql_num_rows($q50)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: predmet)",3);
+			zamgerlog2("poruka ima nepoznatog primaoca (opseg: predmet)", $poruka, $prim_id);
 		} else {
 			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0);
 		}
@@ -359,6 +370,7 @@ if ($poruka>0) {
 		if (mysql_num_rows($q55)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: labgrupa)",3);
+			zamgerlog2("poruka ima nepoznatog primaoca (opseg: labgrupa)", $poruka, $prim_id);
 		} else {
 			$primalac = "Svi studenti u grupi ".mysql_result($q55,0,1)." (".mysql_result($q55,0,0).")";
 		}
@@ -368,6 +380,7 @@ if ($poruka>0) {
 		if (mysql_num_rows($q60)<1) {
 			$primalac = "Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
+			zamgerlog2("poruka ima nepoznatog primaoca (opseg: korisnik)", $poruka, $prim_id);
 		} else
 			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
 	}
@@ -394,6 +407,7 @@ if ($poruka>0) {
 	else {
 		$primalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznat opseg $opseg",3);
+		zamgerlog2("poruka ima nepoznat opseg", $poruka, $opseg);
 	}
 
 	// Fini datum
