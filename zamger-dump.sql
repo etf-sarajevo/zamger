@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pitanje` int(11) NOT NULL,
   `izbor` text COLLATE utf8_slovenian_ci NOT NULL,
+  `dopisani_odgovor` tinyint(4) NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `pitanje` (`pitanje`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -143,6 +144,41 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
 -- Dumping data for table `anketa_izbori_pitanja`
 --
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `anketa_odgovor_dopisani`
+--
+
+CREATE TABLE IF NOT EXISTS `anketa_odgovor_dopisani` (
+  `rezultat` int(11) unsigned NOT NULL,
+  `pitanje` int(11) unsigned NOT NULL,
+  `odgovor` text collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`rezultat`,`pitanje`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `anketa_odgovor_dopisani`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `anketa_odgovor_izbori`
+--
+
+CREATE TABLE IF NOT EXISTS `anketa_odgovor_izbori` (
+  `rezultat` int(11) unsigned NOT NULL,
+  `pitanje` int(11) unsigned NOT NULL,
+  `izbor_id` int(11) unsigned NOT NULL,
+  PRIMARY KEY  (`rezultat`,`pitanje`,`izbor_id`),
+  KEY `pitanje` (`pitanje`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `anketa_odgovor_izbori`
+--
 
 -- --------------------------------------------------------
 
@@ -3729,9 +3765,7 @@ CREATE TABLE IF NOT EXISTS `tippredmeta` (
 --
 
 INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
-(1, 'ETF Bologna standard'),
-(1000, 'Završni rad'),
-(2000, 'Kolokvij');
+(1, 'ETF Bologna standard');
 
 -- --------------------------------------------------------
 
@@ -4230,6 +4264,19 @@ ALTER TABLE `anketa_anketa`
 --
 ALTER TABLE `anketa_izbori_pitanja`
   ADD CONSTRAINT `anketa_izbori_pitanja_ibfk_1` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
+
+--
+-- Constraints for table `anketa_odgovor_dopisani`
+--
+ALTER TABLE `anketa_odgovor_dopisani`
+  ADD CONSTRAINT `anketa_odgovor_dopisani_ibfk_1` FOREIGN KEY (`rezultat`) REFERENCES `anketa_rezultat` (`id`),
+  ADD CONSTRAINT `anketa_odgovor_dopisani_ibfk_2` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
+
+--
+-- Constraints for table `anketa_odgovor_izbori`
+--
+ALTER TABLE `anketa_odgovor_izbori`
+  ADD CONSTRAINT `anketa_odgovor_izbori_ibfk_1` FOREIGN KEY (`pitanje`) REFERENCES `anketa_pitanje` (`id`);
 
 --
 -- Constraints for table `anketa_odgovor_rank`
