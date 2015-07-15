@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
   `id` int(11) NOT NULL,
   `naziv` varchar(20) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `aktuelna` tinyint(1) NOT NULL,
+  `pocetak_zimskog_semestra` date NOT NULL,
+  `kraj_zimskog_semestra` date NOT NULL,
+  `pocetak_ljetnjeg_semestra` date NOT NULL,
+  `kraj_ljetnjeg_semestra` date NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -37,7 +41,8 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 --
 
 INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
-(1, '2014/2015', 1);
+(1, '2014/2015', 1, '2014-10-06', '2015-01-16', '2015-02-23', '2015-06-05'),
+(2, '2015/2016', 0, '2015-10-05', '2016-01-17', '2016-02-22', '2016-06-06');
 
 -- --------------------------------------------------------
 
@@ -1863,7 +1868,6 @@ CREATE TABLE IF NOT EXISTS `odluka` (
 CREATE TABLE IF NOT EXISTS `ogranicenje` (
   `nastavnik` int(11) NOT NULL DEFAULT '0',
   `labgrupa` int(11) NOT NULL DEFAULT '0',
-  `zavrsnirad` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY  (`nastavnik`,`labgrupa`),
   KEY `labgrupa` (`labgrupa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -3458,6 +3462,7 @@ CREATE TABLE IF NOT EXISTS `srednja_skola` (
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `opcina` int(11) NOT NULL,
   `domaca` tinyint(1) NOT NULL DEFAULT '1',
+  `tipskole` enum('GIMNAZIJA','ELEKTROTEHNICKA','TEHNICKA','STRUCNA','MSS','ZANAT') collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
@@ -3766,7 +3771,9 @@ CREATE TABLE IF NOT EXISTS `tippredmeta` (
 --
 
 INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
-(1, 'ETF Bologna standard');
+(1, 'ETF Bologna standard'),
+(1000, 'Završni rad'),
+(2000, 'Kolokvij');
 
 -- --------------------------------------------------------
 
