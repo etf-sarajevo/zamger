@@ -66,13 +66,14 @@ while ($r10 = mysql_fetch_row($q10)) {
 	$agnaziv = $r10[1];
 
 	// Prijemni ispit
-	// FIXME - osmisliti drugacije tabelu za prijemni, dodati akademsku godinu, na koji odsjek se ustvari upisao itd.
-	if ($ag==4) {
-		$q15 = myquery("select odsjek_prvi, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, prijemni_ispit from prijemni where id=".($student-2000));
-		while ($r15 = mysql_fetch_row($q15)) {
-			$total = $r15[1]+$r15[2]+$r15[3]+$r15[4];
-			print "<p><b>$agnaziv</b>: $izasa na prijemni ispit (odsjek $r15[0]): $total bodova ($r15[4] prijemni ispit)</p>";
-		}
+	$q15 = myquery("SELECT s.naziv, uus.opci_uspjeh, uus.kljucni_predmeti, uus.dodatni_bodovi, pp.rezultat, UNIX_TIMESTAMP(pt.datum)
+	FROM prijemni_prijava as pp, uspjeh_u_srednjoj as uus, studij as s, prijemni_termin as pt 
+	WHERE pp.osoba=$student and uus.osoba=$student and pp.studij_prvi=s.id AND pp.prijemni_termin=pt.id AND pt.akademska_godina=$ag
+	ORDER BY pp.prijemni_termin");
+	while ($r15 = mysql_fetch_row($q15)) {
+		$total = $r15[1]+$r15[2]+$r15[3]+$r15[4];
+		$datum = date("d. m. Y.", $r15[5]);
+		print "<p><b>$agnaziv</b>: $izasa na prijemni ispit $datum (za $r15[0]): ukupno $total bodova ($r15[4] bodova na prijemnom ispitu)</p>";
 	}
 
 	// Upisi u studije
