@@ -2183,7 +2183,6 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
   `institucija` int(11) NOT NULL DEFAULT '0',
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
-  `tippredmeta` int(11) NOT NULL,
   `ects` float NOT NULL,
   `sati_predavanja` int(11) NOT NULL DEFAULT '0',
   `sati_vjezbi` int(11) NOT NULL DEFAULT '0',
