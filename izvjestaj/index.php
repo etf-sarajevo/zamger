@@ -117,7 +117,7 @@ print "</ul>";
 $i=1;
 $q110 = myquery("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar 
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, akademska_godina as ag
-WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student and pk.akademska_godina=ag.id order by ag.id, pk.semestar, p.naziv");
+WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student and pk.akademska_godina=ag.id and ko.ocjena>5 order by ag.id, pk.semestar, p.naziv");
 while ($r110 = mysql_fetch_row($q110)) {
 	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$imena_ocjena[$r110[1]]."</td></tr>\n";
 }
