@@ -21,7 +21,7 @@ function izvjestaj_anketa(){
 		// provjera da li je dati profesor zadužen na predmetu za koji želi pogledat izvještaj
 		if ($user_nastavnik) {
 			$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q20)>0) {
+			if (mysql_num_rows($q20)>0 && mysql_result($q20,0,0) != 'asistent') {
 				$pristup_nastavnik = true;
 			}
 		}
