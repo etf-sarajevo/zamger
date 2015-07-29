@@ -709,7 +709,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 
 	// Da li već postoji slog u tabeli ponudakursa
 	$q61 = myquery("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag and studij=$studij and semestar=$semestar");
-	if (mysql_result($q61,0,0)>0) {
+	if (mysql_num_rows($q61)>0) {
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Već postoji slog u tabeli ponudakursa za $naziv_predmeta<br/>\n";
 		$pkid = mysql_result($q61,0,0);
 
