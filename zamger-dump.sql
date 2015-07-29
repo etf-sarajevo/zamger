@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `akademska_godina` (
 -- Dumping data for table `akademska_godina`
 --
 
-INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`) VALUES
+INSERT INTO `akademska_godina` (`id`, `naziv`, `aktuelna`, `pocetak_zimskog_semestra`, `kraj_zimskog_semestra`, `pocetak_ljetnjeg_semestra`, `kraj_ljetnjeg_semestra`) VALUES
 (1, '2014/2015', 1, '2014-10-06', '2015-01-16', '2015-02-23', '2015-06-05'),
 (2, '2015/2016', 0, '2015-10-05', '2016-01-17', '2016-02-22', '2016-06-06');
 
