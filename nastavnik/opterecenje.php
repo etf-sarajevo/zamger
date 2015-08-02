@@ -1,10 +1,10 @@
 <?
+
 function nastavnik_opterecenje() {
     global $userid, $user_siteadmin;
     $predmet = my_escape($_REQUEST['predmet']);
     $ag = my_escape($_REQUEST['ag']);
 
-// Da li korisnik ima pravo ući u modul?
     if (!$user_siteadmin) {
         $q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
         if (mysql_num_rows($q10) < 1 || mysql_result($q10, 0, 0) == "asistent") {
@@ -26,8 +26,8 @@ function nastavnik_opterecenje() {
     <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css">
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.js"></script>
-    <div class="tabela_opterecenje" style="width: 60%">
-        <table id="table_opt">
+    <div style="width: 75%;">
+        <table id="table_opt" class="display">
             <thead>
                 <tr>
                     <th>Predmet</th>
@@ -41,18 +41,22 @@ function nastavnik_opterecenje() {
         </table>
     </div>
     <script type="text/javascript">
-    var table_data = <?= json_encode($json); ?>;
-    $(document).ready(function () {
-        $('#table_opt').DataTable({
-            data: table_data,
-            columns: [
-                {data: 'naziv'},
-                {data: 'sati_predavanja'},
-                {data: 'sati_tutorijala'},
-                {data: 'sati_vjezbi'}
-            ]
+        var table_data = <?= json_encode($json); ?>;
+        $(document).ready(function () {
+            $('#table_opt').DataTable({
+                data: table_data,
+                columns: [
+                    {data: 'naziv'},
+                    {data: 'sati_predavanja'},
+                    {data: 'sati_tutorijala'},
+                    {data: 'sati_vjezbi'}
+                ],
+                language: {
+                    url: "//cdn.datatables.net/plug-ins/1.10.7/i18n/Croatian.json"
+                }
+            });
         });
-    });
     </script>
+    <a href="<?= genuri() ?>&opt_svi=1">Prikaži za sve predmete</a>
     <?
 }
