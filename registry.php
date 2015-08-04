@@ -89,7 +89,8 @@ array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("nastavnik/unos_kolicine_pred", "Unos količine predavanja, laboratorijskih vježbi i tutorijala", "Unos količine", "A", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
 array("nastavnik/opterecenje", "Opterećenje", "Opterećenje", "N", "1", "0"),
-    array("public/intro", "Login", "Login", "P", "1", "0"),
+
+array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 array("public/ical", "Raspored u iCal formatu", "Raspored u iCal formatu", "PSNBA", "2", "0"),
 
