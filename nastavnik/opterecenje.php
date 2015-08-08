@@ -66,9 +66,9 @@ function nastavnik_opterecenje() {
     </script>
     <?
     if(isset($_REQUEST['opt_svi'])) {
-        $uri = str_replace('&amp;opt_svi=1', '', urldecode(genuri()));
+        $uri = str_replace('&amp;opt_svi=1', '', genuri());
         print '<a href="'.$uri.'">Prikaži samo za ovaj predmet</a>';
     }        
     else
-        print '<a href="'.urldecode(genuri()).'&opt_svi=1">Prikaži za sve predmete</a>';
+        print '<a href="'.genuri().'&opt_svi=1">Prikaži za sve predmete</a>';
 }

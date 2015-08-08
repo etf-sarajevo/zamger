@@ -340,6 +340,17 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<?
 }
 
+if($_REQUEST['akcija'] == "opterecenje") {
+    ?>
+        <h3>Opterećenje profesora po predmetima</h3>
+        <form action="index.php" method="GET" name="opterecenjeForm" onsubmit="return izvjestaj();">
+            <p>Izaberite godinu studija:</p>
+            <?=db_dropdown("akademska_godina")?><br/><br/>
+            <input type="hidden" name="sta" value="izvjestaj/opterecenje">
+            <input type="submit" value=" Prikaži ">
+        </form>
+    <?
+}
 // SPISAK IZVJEŠTAJA
 
 ?>
@@ -357,6 +368,7 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=svi_studenti">Spisak svih studenata abecedno</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
+<li><a href="?sta=studentska/izvjestaji&amp;akcija=opterecenje">Opterećenje profesora po predmetima</a></li>
 </ul></p>
 
 <hr/>

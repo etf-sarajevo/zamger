@@ -71,6 +71,7 @@ array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisn
 array("izvjestaj/zavrsni_spisak", "Spisak završenih studenata", "Spisak završenih studenata", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za završne", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
+array("izvjestaj/opterecenje", "Sedmično opterećenje profesora po predmetima", "Opterećenje", "BA", "0", "0"),
 
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
@@ -88,8 +89,8 @@ array("nastavnik/kvizovi", "Kvizovi (beta)", "Kvizovi (beta)", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("nastavnik/unos_kolicine_pred", "Unos količine predavanja, laboratorijskih vježbi i tutorijala", "Unos količine", "A", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
-array("nastavnik/opterecenje", "Opterećenje", "Opterećenje", "N", "1", "0"),
-
+array("nastavnik/opterecenje", "Predmetno opterećenje", "Opterećenje", "NB", "1", "0"),
+    
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 array("public/ical", "Raspored u iCal formatu", "Raspored u iCal formatu", "PSNBA", "2", "0"),
@@ -139,7 +140,7 @@ array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana 
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 //array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 
-
+    
 array()
 );
 ?>
