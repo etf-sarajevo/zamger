@@ -4,7 +4,7 @@ function izvjestaj_opterecenje() {
     global $user_siteadmin, $user_studentska;
     $ag = intval($_REQUEST['_lv_column_akademska_godina']);
     
-    if (!$user_siteadmin || !$user_studentska) {        
+    if (!$user_siteadmin && !$user_studentska) {        
         zamgerlog("izvjestaj/opterećenje privilegije", 3);
         biguglyerror("Nemate pravo pristupa ovoj opciji");
         return;        
