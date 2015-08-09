@@ -68,21 +68,24 @@ function nastavnik_opterecenje() {
                 },
                 footerCallback: function (row, data, start, end, display) {
                     var tabela = this.api();
-                    var intVal = function (i) {
-                        return typeof i === 'string' ?
-                                i.replace(/[\$,]/g, '') * 1 :
-                                typeof i === 'number' ?
-                                i : 0;
-                    };
-                    for (var i = 1; i < 4; i++) {
-                        var ukupno = tabela
-                                .column(i)
-                                .data()
-                                .reduce(function (a, b) {
-                                    return intVal(a) + intVal(b);
-                                });
-                        $(tabela.column(i).footer()).html(ukupno);
+                    if(tabela.column(0).data().length > 1) {
+                        var intVal = function (i) {
+                            return typeof i === 'string' ?
+                                    i.replace(/[\$,]/g, '') * 1 :
+                                    typeof i === 'number' ?
+                                    i : 0;
+                        };
+                        for (var i = 1; i < 4; i++) {
+                            var ukupno = tabela
+                                    .column(i)
+                                    .data()
+                                    .reduce(function (a, b) {
+                                        return intVal(a) + intVal(b);
+                                    });
+                            $(tabela.column(i).footer()).html(ukupno);
+                        }
                     }
+                    else $("tfoot").remove();
                 }
             });
         });
