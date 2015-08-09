@@ -1,17 +1,14 @@
 <?
 
 function izvjestaj_opterecenje() {
-    global $userid, $user_siteadmin, $user_studentska;
+    global $user_siteadmin, $user_studentska;
     $ag = intval($_REQUEST['_lv_column_akademska_godina']);
-
-//    if (!$user_siteadmin) {
-//        $q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-//        if (mysql_num_rows($q10) < 1 || mysql_result($q10, 0, 0) == "asistent") {
-//            zamgerlog("nastavnik/opterećenje privilegije (predmet pp$predmet)", 3);
-//            biguglyerror("Nemate pravo pristupa ovoj opciji");
-//            return;
-//        }
-//    }
+    
+    if (!$user_siteadmin || !$user_studentska) {        
+        zamgerlog("izvjestaj/opterećenje privilegije", 3);
+        biguglyerror("Nemate pravo pristupa ovoj opciji");
+        return;        
+    }
 
     $query = myquery("SELECT CONCAT(o.ime, ' ', o.prezime) AS profesor, p.naziv, p.sati_predavanja, p.sati_tutorijala, p.sati_vjezbi 
 FROM predmet p, nastavnik_predmet np, osoba o 

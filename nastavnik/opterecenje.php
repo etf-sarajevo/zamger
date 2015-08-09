@@ -1,17 +1,14 @@
 <?
 
 function nastavnik_opterecenje() {
-    global $userid, $user_siteadmin;
+    global $userid, $user_siteadmin, $user_nastavnik;
     $predmet = my_escape($_REQUEST['predmet']);
     $ag = my_escape($_REQUEST['ag']);
 
-    if (!$user_siteadmin) {
-        $q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-        if (mysql_num_rows($q10) < 1 || mysql_result($q10, 0, 0) == "asistent") {
-            zamgerlog("nastavnik/opterećenje privilegije (predmet pp$predmet)", 3);
-            biguglyerror("Nemate pravo pristupa ovoj opciji");
-            return;
-        }
+    if (!$user_siteadmin || !$user_nastavnik) {        
+        zamgerlog("nastavnik/opterećenje privilegije (predmet pp$predmet)", 3);
+        biguglyerror("Nemate pravo pristupa ovoj opciji");
+        return;        
     }
     
     if(!isset($_REQUEST['opt_svi'])) {
