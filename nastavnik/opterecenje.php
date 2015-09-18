@@ -2,8 +2,8 @@
 
 function nastavnik_opterecenje() {
     global $userid, $user_siteadmin, $user_nastavnik;
-    $predmet = my_escape($_REQUEST['predmet']);
-    $ag = my_escape($_REQUEST['ag']);
+    $predmet = intval($_REQUEST['predmet']);
+    $ag = intval($_REQUEST['ag']);
 
     if (!$user_siteadmin && !$user_nastavnik) {
         zamgerlog("nastavnik/opterećenje privilegije (predmet pp$predmet)", 3);
