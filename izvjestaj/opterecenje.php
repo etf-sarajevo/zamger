@@ -13,12 +13,15 @@ function izvjestaj_opterecenje() {
     $query = myquery("SELECT CONCAT(o.ime, ' ', o.prezime) AS profesor, p.naziv, p.sati_predavanja, p.sati_tutorijala, p.sati_vjezbi 
 FROM predmet p, nastavnik_predmet np, osoba o 
 WHERE p.id = np.predmet and np.akademska_godina = $ag and np.nastavnik = o.id;");
+    
+    $ag_naziv = mysql_fetch_assoc(myquery("select naziv from akademska_godina where id=$ag"));
     ?>
     <p>Univerzitet u Sarajevu<br/>
         Elektrotehnički fakultet Sarajevo</p>
     <p>Datum i vrijeme izvještaja: <?= date("d. m. Y. H:i"); ?></p>
 
     <h1>Izvještaj: Sedmično opterećenje profesora po predmetima</h1>
+    <h3>Akademska godina: <?=$ag_naziv['naziv'];?></h3>
 
     <table>
         <tr>
