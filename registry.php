@@ -71,6 +71,7 @@ array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisn
 array("izvjestaj/zavrsni_spisak", "Spisak završenih studenata", "Spisak završenih studenata", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za završne", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
+array("izvjestaj/opterecenje", "Sedmično opterećenje profesora po predmetima", "Opterećenje", "BA", "0", "0"),
 
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
@@ -88,8 +89,8 @@ array("nastavnik/kvizovi", "Kvizovi (beta)", "Kvizovi (beta)", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("nastavnik/unos_kolicine_pred", "Unos količine predavanja, laboratorijskih vježbi i tutorijala", "Unos količine", "A", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
-
-
+array("nastavnik/opterecenje", "Predmetno opterećenje", "Opterećenje", "NB", "1", "0"),
+    
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
 array("public/ical", "Raspored u iCal formatu", "Raspored u iCal formatu", "PSNBA", "2", "0"),
@@ -99,10 +100,10 @@ array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
 array("student/kolizijapdf", "Kolizija (PDF)", "Kolizija (PDF)", "S", "2", "0"),
-array("student/kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "1", "0"), 
+array("student/kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "1", "0"),
 array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
-array("student/popuni_kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "2", "0"), 
-array("student/potvrda", "Zahtjev za potvrdu", "Zahtjev za potvrdu", "S", "1", "0"), 
+array("student/popuni_kviz", "Kvizovi (beta)", "Kvizovi (beta)", "S", "2", "0"),
+array("student/potvrda", "Zahtjev za potvrdu", "Zahtjev za potvrdu", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
@@ -139,7 +140,7 @@ array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana 
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 //array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 
-
+    
 array()
 );
 ?>
