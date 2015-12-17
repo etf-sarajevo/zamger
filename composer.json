@@ -1,0 +1,6 @@
+{
+	"require":{
+		"codeception/codeception": "*",
+		"fzaninotto/faker": "^1.5"
+	}
+}

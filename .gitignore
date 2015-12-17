@@ -1,0 +1,8 @@
+/nbproject/private/
+/nbproject/
+tests/_output/*
+/sql/
+/vendor/
+/composer.lock
+tests/acceptance.suite.yml
+tests/acceptance.suite.yml
