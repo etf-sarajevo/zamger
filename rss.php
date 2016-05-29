@@ -50,20 +50,6 @@ if (mysql_num_rows($q5)<1) {
 $ime = mysql_result($q5,0,0); $prezime = mysql_result($q5,0,1);
 
 
-header("Content-type: application/rss+xml");
-
-?>
-<<?='?'?>xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-<channel>
-        <title>Zamger RSS</title>
-        <link><?=$conf_site_url?></link>
-        <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
-        <language>bs-ba</language>
-        <atom:link href="<?=$conf_site_url?>/rss.php?id=<?=$id?>" rel="self" type="application/rss+xml" />
-<?
-
-
 
 $vrijeme_poruke = array();
 $code_poruke = array();
@@ -361,6 +347,20 @@ if (!$conf_moodle_reuse_connection) {
 
 arsort($vrijeme_poruke);
 $count=0;
+
+header("Content-type: application/rss+xml");
+header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_shift(array_values($vrijeme_poruke))) . " GMT");
+
+?>
+<<?='?'?>xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+        <title>Zamger RSS</title>
+        <link><?=$conf_site_url?></link>
+        <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
+        <language>bs-ba</language>
+        <atom:link href="http://zamger.etf.unsa.ba/rss.php?id=<?=$id?>" rel="self" type="application/rss+xml" />
+<?
 
 
 foreach ($vrijeme_poruke as $id=>$vrijeme) {
