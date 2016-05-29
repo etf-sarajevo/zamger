@@ -14,13 +14,6 @@
 // v4.0.9.7 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
 
 
-function z_substr($string, $start, $len) {
-	do {
-		$result = substr($string, $start, $len);
-		$len++;
-	} while (ord(substr($result, strlen($result)-1, 1)) > 128);
-	return $result;
-}
 
 $broj_poruka = 10;
 
@@ -236,7 +229,7 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$naslov = str_replace("\n", " ", $naslov);
 	// RSS ne podržava &quot; entitet!?
 	$naslov = str_replace("&quot;", '"', $naslov);
-	if (strlen($naslov)>30) $naslov = z_substr($naslov,0,28)."...";
+	if (strlen($naslov)>30) $naslov = mb_substr($naslov,0,28)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
 	// Posiljalac
@@ -316,7 +309,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 				$naslov = str_replace("&nbsp;", " ", $naslov); // HTML entiteti u polju
 				$naslov = str_replace("&", "&#x26;", $naslov); // Kodiranje za ampersand
 				if (strlen($naslov)>30) 
-					$naslov = z_substr($naslov,0,28)."...";
+					$naslov = mb_substr($naslov,0,28)."...";
 
 				$vrijeme_poruke["mo".$r210[3]] = ($r210[4]>$r220[1])?$r210[4]:$r220[1];
 				$code_poruke["mo".$r210[3]] = "<item>
@@ -341,7 +334,7 @@ while ($r200 = mysql_fetch_row($q200)) {
 				$naslov = str_replace("&nbsp;", " ", $naslov); // HTML entiteti u polju
 				$naslov = str_replace("&", "&#x26;", $naslov); // Kodiranje za ampersand
 				if (strlen($naslov)>30) 
-					$naslov = z_substr($naslov,0,28)."...";
+					$naslov = mb_substr($naslov,0,28)."...";
 
 				$vrijeme_poruke["mr".$r210[3]] = ($r210[4]>$r230[1])?$r210[4]:$r230[1];
 				$code_poruke["mr".$r210[3]] = "<item>
