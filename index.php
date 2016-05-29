@@ -365,7 +365,7 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 			<a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
 			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
-			<a href="http://f.etf.unsa.ba/redmine/projects/zamger/issues/new" target="_new">
+			<a href="https://github.com/etf-sarajevo/zamger/issues" target="_new">
 			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
 			</td>
@@ -467,13 +467,13 @@ if ($found != 1) {
 // Promjena uloge korisnika
 if ($userid>0) {
 	if ($user_student && !strstr($sta,"student/"))
-		print "<a href=\"?sta=student/intro\">Studentska stranica</a><br/>\n";
+		print "<a href=\"?sta=student/intro\">Studentska stranica</a><br>\n";
 	if ($user_nastavnik && !strstr($sta,"saradnik/") && !strstr($sta,"nastavnik/"))
-		print "<a href=\"?sta=saradnik/intro\">Spisak predmeta i grupa</a><br/>\n";
+		print "<a href=\"?sta=saradnik/intro\">Spisak predmeta i grupa</a><br>\n";
 	if ($user_studentska && !strstr($sta,"studentska/"))
-		print "<a href=\"?sta=studentska/intro\">Studentska služba</a><br/>\n";
+		print "<a href=\"?sta=studentska/intro\">Studentska služba</a><br>\n";
 	if ($user_siteadmin && !strstr($sta,"admin/"))
-		print "<a href=\"?sta=admin/intro\">Site admin</a><br/>\n";
+		print "<a href=\"?sta=admin/intro\">Site admin</a><br>\n";
 	if ($user_studentska && !$user_siteadmin && !$user_nastavnik && !$user_student && strstr($sta,"studentska/"))
 		print "<p>&nbsp;</p>";
 }
@@ -509,7 +509,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2015 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2016 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
