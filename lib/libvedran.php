@@ -129,22 +129,7 @@ function ldap_escape($str){
 }
 
 // --- SESSION MGMT
-
-function login($pass) {
-	// RETURN VALUE:
-	//  0 - OK
-	//  1 - unknown user
-	//  2 - password doesn't match 
-	// VARIABLES:
-	//  $admin - user has admin privileges (from auth table)
-	//  $userid - whatever is used internally (aside from login)
-
-	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$posljednji_pristup;
-
-	$q1 = myquery("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
-	if (mysql_num_rows($q1)<=0)
-		return 1;
-
+// Helper function for login
 	function is_alias($results) {
 		foreach ($results as $k1=>$v1) {
 			if ($k1 === "objectclass") foreach ($v1 as $k2=>$v2) {
@@ -154,7 +139,27 @@ function login($pass) {
 		return false;
 	}
 
-	if ($conf_system_auth == "ldap") {
+function login($pass, $type = "") {
+	// RETURN VALUE:
+	//  0 - OK
+	//  1 - unknown user
+	//  2 - password doesn't match 
+	// VARIABLES:
+	//  $admin - user has admin privileges (from auth table)
+	//  $userid - whatever is used internally (aside from login)
+
+	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$posljednji_pristup;
+	if ($type === "") $type = $conf_system_auth;
+
+	$q1 = myquery("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
+	if (mysql_num_rows($q1)<=0)
+		return 1;
+	
+	if ($type == "cas") {
+		// Do nothing
+	}
+
+	if ($type == "ldap") {
 		$ds = ldap_connect($conf_ldap_server);
 		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 		if ($ds) {
@@ -201,12 +206,15 @@ function login($pass) {
 					while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
 				}
 
-				if (!$results || $i == $results['count']) return 1;
+				if (!$results || $i == $results['count']) // return 1;
+					// Ako nema na LDAPu probavamo tabelu
+					return login($pass, "table");
 				$dn = $results[$i]['dn'];
 				
 				if (!@ldap_bind($ds, $dn, $pass)) {
 					// ldap_bind generiše warning svaki put kad je pogrešna šifra :(
-					return 2;
+					//return 2;
+					return login($pass, "table");
 				}
 				// ldap_bind succeeded, user is authenticated
 			} else {
@@ -217,8 +225,9 @@ function login($pass) {
 			niceerror("Can't contact LDAP server.");
 			exit;
 		}
-	} else if ($conf_system_auth == "table") {
-		if ($pass != mysql_result($q1,0,1)) return 2;
+	} else if ($type == "table") {
+		$result = mysql_result($q1,0,1);
+		if ($pass != $result || $result === "") return 2;
 	}
 
 	$userid = mysql_result($q1,0,0);
@@ -410,7 +419,7 @@ function genuri() {
 	$result = $_SERVER['PHP_SELF']."?";
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
-		if ((substr($key,0,4) != "_lv_") && $key != "PHPSESSID" && $key != "pass")
+		if (substr($key,0,4) == "_lv_" || $key == "PHPSESSID" || $key == "pass") continue;
 		if (is_array($value)) {
 			foreach ($value as $val) 
 				$result .= urlencode($key).'[]='.urlencode($val).'&amp;';
@@ -1177,7 +1186,6 @@ function ends_with($string, $substring) {
 			return true;
 	return false;
 }
-
 
 
 function rmMinusR($path) 
