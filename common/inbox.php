@@ -51,14 +51,14 @@ $q20 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 $ag = mysql_result($q20,0,0);
 
 // Studij koji student trenutno sluša
-$studij=0;
+$studij = 0;
 if ($user_student) {
 	$q30 = myquery("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
 	if (mysql_num_rows($q30)>0) {
 		$studij   = mysql_result($q30,0,0);
 		$semestar = mysql_result($q30,0,1);
 		$ciklus   = mysql_result($q30,0,2);
-		$godina_studija = ($semestar+1)/2;
+		$godina_studija = intval(($semestar+1)/2);
 	}
 }
 
