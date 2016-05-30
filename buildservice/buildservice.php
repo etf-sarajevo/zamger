@@ -37,14 +37,13 @@ check_cookie();
 
 if ($userid!=0)
 	$priv = odredi_privilegije_korisnika();
-
-if ($userid==0) {
+  
+if ($userid == 0) {
 	$result['success'] = "false";
 	$result['code'] = "ERR001";
-	$result['message'] = "User session expired";
-}
-
-else if ($priv === false) {
+	$result["message"] = "Session expired";
+  
+} else if ($priv === false) {
 	$result['success'] = "false";
 	$result['code'] = "ERR002";
 	$result["message"] = "User has no privileges";
@@ -75,15 +74,16 @@ else if ($_REQUEST['action'] == "nextTask") {
 
 
 else if ($_REQUEST['action'] == "assignProgram") {
-	if (!$user_autotester && !$user_siteadmin) {
+	$task = intval($_REQUEST['task']);
+	$zadaca = intval($task/100);
+	$zadatak = $task % 100;
+	if (!$user_autotester && nastavnik_pravo_pristupa($zadaca) != "nastavnik" && nastavnik_pravo_pristupa($zadaca) != "super_asistent") {
 		$result['success'] = "false";
 		$result['code'] = "ERR004";
-		$result["message"] = "Only autotester has access to assignProgram";
+		$result["message"] = "You don't have permission to assignProgram";
 	} else {
-		$task = intval($_REQUEST['task']);
-		$zadaca = intval($task/100);
-		$zadatak = $task % 100;
 		$buildhost_id = my_escape($_REQUEST['buildhost']);
+		$q99 = myquery("LOCK TABLES buildservice_tracking WRITE, log READ, zadatak READ");
 		$zadatak = dajZadatak($zadaca, $zadatak);
 		if ($zadatak) {
 			$q100 = myquery("DELETE FROM buildservice_tracking WHERE zadatak=$zadatak");
@@ -91,6 +91,7 @@ else if ($_REQUEST['action'] == "assignProgram") {
 			$result['data']['id'] = $zadatak;
 		} else
 			$result['data']['id'] = "false";
+		$q111 = myquery("UNLOCK TABLES");
 	}
 }
 
@@ -109,10 +110,11 @@ else if ($_REQUEST['action'] == "getTaskData") {
 		if (mysql_num_rows($q) == 0) {
 			$result['success'] = "false";
 			$result['code'] = "ERR005";
-			$result["message"] = "Unknown task ID $id";
+			$result["message"] = "Unknown task ID $task";
 		}
 		
 		$r = mysql_fetch_row($q);
+		$result['data']['id'] = $task;
 		$result['data']['name'] = $r[1]." (".$r[2]."), ".$r[0];
 		if ($r[7] > 1) $result['data']['name'] .= ", zadatak $zadatak";
 		$result['data']['language'] = $r[3];
@@ -158,8 +160,13 @@ else if ($_REQUEST['action'] == "getTaskData") {
 			}
 		}
 		
-		$q2 = myquery("SELECT id, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND aktivan=1");
+		$q2 = myquery("SELECT id, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match, sakriven FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND aktivan=1");
 		while ($r2 = mysql_fetch_row($q2)) {
+			// Studentima ne prikazujemo sakrivene testove?
+			if ($r2[9]==1 && !$user_siteadmin && !$user_autotester && !nastavnik_pravo_pristupa($zadaca))
+//			if ($r2[9]==1)
+				continue;
+			
 			$test = array();
 			$test['id'] = $r2[0];
 			$test['require_symbols'] = $require_symbols;
@@ -267,6 +274,7 @@ else if ($_REQUEST['action'] == "getFile") {
 	} else {
 		if (substr($filename, strlen($filename)-4) !== ".zip") {
 			$tmp = "$conf_files_path/zadace/temporary$id.zip";
+			$filepath = escapeshellarg($filepath);
 			`zip -j $tmp $filepath`;
 			$filepath = $tmp;
 			$filename = "temporary.zip";
@@ -310,8 +318,25 @@ else if ($_REQUEST['action'] == "setCompileResult") {
 			$result["message"] = "Access denied";
 		} else {
 			$cr = json_decode($_REQUEST['result'], true);
-			if (array_key_exists("parsed_output", $cr))
-				$output = join ("\n", $cr['parsed_output'] );
+			
+			// Kreiranje poruke na osnovu parsiranog izlaza kompajlera
+			if (array_key_exists("parsed_output", $cr)) foreach($cr['parsed_output'] as $msg) {
+				$filename = $r[6];
+				
+				if ($msg['type'] == "error") 
+					$output .= "Greška: ";
+				else if ($msg['type'] == "warning") 
+					$output .= "Upozorenje: ";
+				else
+					$output .= $msg['type']." ";
+					
+				if (ends_with($msg['file'],$filename)) //($attach==1)
+					$output .= "U liniji ".$msg['line'];
+				else
+					$output .= "U datoteci ".$msg['file']." linija ".$msg['line'];
+				if (array_key_exists("col", $msg)) $output .= " kolona ".$msg['col'];
+				$output .= ":\n" . $msg['message']."\n\n";
+			}
 			else
 				$output = $cr['output'];
 			$output = my_escape($output);
@@ -432,8 +457,11 @@ else if ($_REQUEST['action'] == "setTestResult") {
 				$status="error"; 
 				$nalaz .= "Greška prilikom kompajliranja autotesta.\n";
 				if (array_key_exists('parsed_output', $tr['compile_result'])) 
+					foreach ($tr['compile_result']['parsed_output'] as $msg) {
+						$nalaz .= lociraj_gresku($msg['file'], $msg['line'], $test, $sources) . $msg['message'] . "\n\n";
+					}
 					// FIXME!
-					$nalaz .= join ("\n", $tr['compile_result']['parsed_output']) . "\n";
+					//$nalaz .= join ("\n", $tr['compile_result']['parsed_output']) . "\n";
 				if (strlen($tr['compile_result']['output']) > 0) 
 					$nalaz .= "\nIZLAZ KOMPAJLERA:\n".$tr['compile_result']['output'] . "\n\n";
 				break;
@@ -552,7 +580,7 @@ else if ($_REQUEST['action'] == "getProgList") {
 
 	} else {
 		$result['data'] = array();
-		$q30 = myquery("select distinct student from zadatak where zadaca=$zadaca and redni_broj=$zadatak AND status=1");
+		$q30 = myquery("select distinct student from zadatak where zadaca=$zadaca and redni_broj=$zadatak");
 		while ($r30 = mysql_fetch_row($q30)) {
 			$student = $r30[0];
 
@@ -619,7 +647,7 @@ function student_pravo_pristupa($zadaca) {
 
 function nastavnik_pravo_pristupa($zadaca) {
 	global $userid;
-
+	
 	// Da li korisnik ima pravo ući u grupu?
 	$q40 = myquery("select np.nivo_pristupa from nastavnik_predmet as np, zadaca as z where np.nastavnik=$userid and np.predmet=z.predmet and np.akademska_godina=z.akademska_godina and z.id=$zadaca");
 	if (mysql_num_rows($q40)<1) {
@@ -629,14 +657,17 @@ function nastavnik_pravo_pristupa($zadaca) {
 	return mysql_result($q40,0,0);
 }
 
+// Funkcija vraća false ako nije dozvoljen pristup jer korisnik $userid ima definisana ograničenja na neke grupe u kojima student nije
+// u suprotnom vraća true
+
 function nastavnik_ogranicenje($zadaca, $student) {
 	global $userid;
 
 	$q45 = myquery("select l.id from student_labgrupa as sl, labgrupa as l, zadaca as z where sl.student=$student and sl.labgrupa=l.id and l.predmet=z.predmet and l.akademska_godina=z.akademska_godina and l.virtualna=0 and z.id=$zadaca");
 	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, zadaca as z where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=z.predmet and l.akademska_godina=z.akademska_godina and l.virtualna=0 and z.id=$zadaca");
 	if (mysql_num_rows($q45)<1) {
-		if (mysql_num_rows($q50)<1) {
-			// imate ogranicenja a student nije u grupi
+		if (mysql_num_rows($q50)>0) {
+			// imate ogranicenja a student nije ni u jednoj (ne-virtualnoj) grupi
 			return false;
 		}
 		return true;
@@ -697,7 +728,7 @@ function dajZadatak($zadaca, $zadatak) {
 		//if ($zadnji_izmijenio== 3376) { print"Imamo nalaz autotesta<br>\n"; continue; } // FIXME ovo ne treba biti hardcodirano
 
 		// Preskačemo zadatke koje neko već radi
-		$q50 = myquery("SELECT UNIX_TIMESTAMP(vrijeme) FROM buildservice_tracking WHERE zadatak=$id");
+		$q50 = myquery("SELECT UNIX_TIMESTAMP(buildservice_tracking.vrijeme) FROM buildservice_tracking, zadatak WHERE buildservice_tracking.zadatak=zadatak.id AND zadatak.zadaca=$zadaca and zadatak.redni_broj=$zadatak and zadatak.student=$student ORDER BY buildservice_tracking.vrijeme DESC LIMIT 1");
 		if (mysql_num_rows($q50) > 0) {
 		//print "Vrijeme ".mysql_result($q50,0,0)." time ".time()." razlika ".(mysql_result($q50,0,0) - time())." timeout $conf_buildhost_timeout<br>\n";
 			if (time() - mysql_result($q50,0,0) < $conf_buildhost_timeout)
