@@ -67,6 +67,9 @@ if ($user_student) {
 //////////////////////
 
 if ($_POST['akcija']=='send' && check_csrf_token()) {
+	// Notifikacija za novo obavještenje
+	require("gcm/push_message.php");
+
 	// Ko je primalac
 	$primalac = intval($_REQUEST['primalac']);
 	$opseg = intval($_REQUEST['opseg']);
@@ -175,6 +178,20 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 		nicemessage("Obavijest uspješno poslana");
 		zamgerlog("poslana obavijest, opseg $opseg primalac $primalac",2);
 		zamgerlog2("poslana poruka", $id_poruke);
+
+
+		// Slanje notifikacije - nedovršeno! FIXME
+		$naslov = $_REQUEST['naslov']; // Uzimamo naslov bez escapinga za bazu
+		if ($opseg == 3) {
+			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
+
+		} else if ($opseg == 5) {
+			// Saljemo mail samo studentima na aktuelnoj akademskoj godini
+			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
+		}
+		$q7 = myquery($upit);
+		while ($r7 = mysql_fetch_row($q7))
+			push_message(array($r7[0]), "Obavjestenja", "Novo obavještenje: $naslov ...");
 	}
 }
 

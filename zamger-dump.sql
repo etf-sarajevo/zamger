@@ -1823,6 +1823,20 @@ INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `notifikacije_gcm`
+--
+
+CREATE TABLE IF NOT EXISTS `notifikacije_gcm` (
+  `id` int(11) NOT NULL auto_increment,
+  `auth` int(11) NOT NULL,
+  `reg_key` varchar(255) character set utf8 collate utf8_unicode_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `oblast`
 --
 

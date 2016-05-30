@@ -135,6 +135,9 @@ if ($_POST['akcija']=="obrisi_obavjestenje" && check_csrf_token()) {
 // Novo obavještenje / izmjena obavještenja
 
 if ($_POST['akcija']=='novo' && check_csrf_token()) {
+
+	require("gcm/push_message.php");
+	
 	$naslov = my_escape($_REQUEST['naslov']);
 	$tekst = my_escape($_REQUEST['tekst']);
 	$primalac = intval($_REQUEST['primalac']);
@@ -237,6 +240,11 @@ if ($_POST['akcija']=='novo' && check_csrf_token()) {
 
 			zamgerlog("novo obavjestenje (predmet pp$predmet)",2);
 			zamgerlog2("nova poruka poslana", $io);
+
+			$naslov = $_REQUEST['naslov'];
+			$q7 = myquery($upit);
+			while ($r7 = mysql_fetch_row($q7))
+				push_message(array($r7[0]), "Obavjestenja", "Novo obavještenje za $predmet_naziv: $naslov ...");
 		}
 
 		$naslov=$tekst="";
