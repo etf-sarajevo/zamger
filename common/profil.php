@@ -148,6 +148,62 @@ if ($akcija=="opcije") {
 	</table>
 	</form>
 	<?
+	
+	if ($user_nastavnik) {
+		?>
+		<hr>
+		<h2>Izvještaj o održanoj nastavi</h2>
+		
+		<h3>Za demonstratore:</h3>
+		
+		<FORM action="index.php" method="GET">
+		<input type="hidden" name="sta" value="izvjestaj/odrzana_nastava">
+		<input type="hidden" name="demonstratorski" value="true">
+		Akademska godina:
+		<?=db_dropdown("akademska_godina");?><br>
+		Predmet: 
+		<SELECT name="predmet">
+		<?
+		$q1010 = myquery("SELECT DISTINCT p.id, p.naziv FROM predmet p, nastavnik_predmet np WHERE np.nastavnik=$userid AND np.predmet=p.id");
+		while ($r1010 = mysql_fetch_row($q1010)) {
+			print "<OPTION VALUE=\"$r1010[0]\">$r1010[1]</OPTION>\n";
+		}
+		?>
+		</SELECT><br>
+		Semestar: <SELECT NAME="semestar"><OPTION VALUE="zimski">Zimski</OPTION><OPTION VALUE="ljetnji">Ljetnji</OPTION></SELECT>
+		<input type="submit" value=" Kreni ">
+		</form>
+		
+		<h3>Za nastavnike (mjesečni izvještaj o održanoj nastavi):</h3>
+		
+		<FORM action="index.php" method="GET">
+		<input type="hidden" name="sta" value="izvjestaj/odrzana_nastava">
+		Akademska godina:
+		<?=db_dropdown("akademska_godina");?><br>
+		Mjesec: <select name="mjesec">
+			<option value="1">Januar</option>
+			<option value="2">Februar</option>
+			<option value="3">Mart</option>
+			<option value="4">April</option>
+			<option value="5">Maj</option>
+			<option value="6">Juni</option>
+			<option value="7">Juli</option>
+			<option value="8">Avgust</option>
+			<option value="9">Septembar</option>
+			<option value="10">Oktobar</option>
+			<option value="11">Novembar</option>
+			<option value="12">Decembar</option>
+		</select><br>
+		Odsjek: <select name="odsjek">
+			<option value="3">Odsjek za automatiku i elektroniku</option>
+			<option value="4">Odsjek za elektroenergetiku</option>
+			<option value="2">Odsjek za računarstvo i informatiku</option>
+			<option value="5">Odsjek za telekomunikacije</option>
+		</select><br>
+		<input type="submit" value=" Kreni ">
+		</form>
+		<?
+	}
 
 	return;
 }
