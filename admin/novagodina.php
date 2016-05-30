@@ -42,11 +42,19 @@ if ($_POST['akcija'] == "novagodina") {
 		$bio=array();
 		for ($sem=1; $sem<=$r40[2]; $sem++) {
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Semestar $sem<br/>\n";
+
+			// Pronalazimo najnoviji NPP koji je stariji od važećeg u trenutku kada su studenti upisivali studij -- FIXME!
+			// Ova formula i dalje nije tačna, jedino pouzdano rješenje je da se u tabeli student_studij drži informacija
+			// po kojem NPPu dati student studira
 			$min_god_vazenja = $ag-intval(($sem-1)/2);
-			$q50 = myquery("select predmet, godina_vazenja, obavezan from plan_studija where studij=$studij and semestar=$sem and godina_vazenja<=$min_god_vazenja");
-			if (mysql_num_rows($q50)<1) {
+			$q45 = myquery("select ps.godina_vazenja, ag.naziv from plan_studija ps, akademska_godina ag where ps.studij=$studij and ps.semestar=$sem and ps.godina_vazenja<=$min_god_vazenja and ps.godina_vazenja=ag.id order by ps.godina_vazenja desc limit 1");
+			if (mysql_num_rows($q45)<1) {
 				if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;!! Nije pronađen plan studija mlađi od godine sa IDom $min_god_vazenja<br/>\n";
+				continue;
 			}
+			$god_vazenja = mysql_result($q45,0,0);
+			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".mysql_result($q45,0,1)."<br>\n";
+			$q50 = myquery("select predmet, godina_vazenja, obavezan from plan_studija where studij=$studij and semestar=$sem and godina_vazenja=$god_vazenja");
 			while ($r50 = mysql_fetch_row($q50)) {
 				if ($r50[2]==1) { // obavezan
 					kreiraj_ponudu_kursa ($r50[0], $studij, $sem, $ag, 1, $ispis);
