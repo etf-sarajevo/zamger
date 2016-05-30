@@ -914,4 +914,32 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 }
 
 
+// Funkcija za konverziju arapskih brojeva u rimske, bazirana na nečemu što sam našao na php.net
+function rimski_broj($arapski_broj = '') { 
+	if ($arapski_broj == '') { $arapski_broj = date("Y"); } // Po defaultu vraća trenutnu godinu
+	$arapski_broj          = intval($arapski_broj); 
+	$arapski_broj_text     = "$arapski_broj"; 
+	$arapski_broj_duzina   = strlen($arapski_broj_text); 
+
+	// Ne postoje rimski brojevi van opsega [1,4999]
+	if ($arapski_broj > 4999 || $arapski_broj < 1) { return false; } 
+
+	// Ne postoji rimska cifra za nulu
+	$rimske_cifre_jedinice = array('', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX');
+	$rimske_cifre_desetice = array('', 'X', 'XX', 'XXX', 'XL', 'L', 'LX', 'LXX', 'LXXX', 'XC');
+	$rimske_cifre_stotice  = array('', 'C', 'CC', 'CCC', 'CD', 'D', 'DC', 'DCC', 'DCC', 'CM');
+	$rimske_cifre_hiljade  = array('', 'M', 'MM', 'MMM', 'MMMM');
+	
+	while (strlen($arapski_broj_text) < 4) $arapski_broj_text = "0" . $arapski_broj_text;
+
+	$anu = intval(substr($arapski_broj_text, 3, 1)); 
+	$anx = intval(substr($arapski_broj_text, 2, 1)); 
+	$anc = intval(substr($arapski_broj_text, 1, 1)); 
+	$anm = intval(substr($arapski_broj_text, 0, 1)); 
+
+	$rimski_broj = $rimske_cifre_hiljade[$anm] . $rimske_cifre_stotice[$anc] . $rimske_cifre_desetice[$anx] . $rimske_cifre_jedinice[$anu]; 
+	return $rimski_broj; 
+} 
+
+
 ?>

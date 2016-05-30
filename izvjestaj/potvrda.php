@@ -10,7 +10,6 @@ function izvjestaj_potvrda() {
 global $userid, $user_studentska, $user_siteadmin;
 
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
-$rimski_brojevi = array("", "I", "II", "III", "IV", "V", "VI");
 
 
 // Ulazni parametar
@@ -155,7 +154,7 @@ if ($spol == "Z") {
 
 <p>&nbsp;</p>
 
-<p>Potvrđuje se da je <?=$r100[0]." ".$r100[1]?> <?=$upisana?> <?=$puta?>. put u akademskoj <?=$naziv_ak_god?> godini u <?=$rimski_brojevi[$semestar]?> (<?=$imena_semestara[$semestar]?>) semestar - <?=$imena_semestara[$ciklus]?> ciklus <?=$nacin_studiranja?> student, na studiju <?=$studij?>.</p>
+<p>Potvrđuje se da je <?=$r100[0]." ".$r100[1]?> <?=$upisana?> <?=$puta?>. put u akademskoj <?=$naziv_ak_god?> godini u <?=rimski_broj($semestar)?> (<?=$imena_semestara[$semestar]?>) semestar - <?=$imena_semestara[$ciklus]?> ciklus <?=$nacin_studiranja?> student, na studiju <?=$studij?>.</p>
 
 <p>Ova potvrda se izdaje u svrhu <b><?=$r120[0]?></b>, te se u druge svrhe ne može koristiti.</p>
 

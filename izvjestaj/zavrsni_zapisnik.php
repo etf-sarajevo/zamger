@@ -156,7 +156,6 @@ if ($r10['ciklus'] == 1) {
 	}
 
 	$ciklusi = array("", "prvog", "drugog", "trećeg");
-	$ciklusi_rimski = array("", "I", "II", "III");
 
 	// Podaci o odluci
 	$q50 = myquery("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=".$r10["odluka"]);
@@ -179,7 +178,7 @@ if ($r10['ciklus'] == 1) {
 	<p>U skladu sa članom 31. Pravila studiranja za drugi (II) ciklus studija na Univerzitetu u Sarajevu, sačinjava se</p>
 	<h2>Z A P I S N I K</h2>
 
-	<p>sa odbrane završnog rada <?=$r20["prezime"]?> <?=genitiv($r20["ime"])?> studenta  <?=$ciklusi[$r10['ciklus']]?> (<?=$ciklusi_rimski[$r10['ciklus']]?>) ciklusa studija na Elektrotehničkom fakultetu u Sarajevu na temu &quot;<?=$r10["naslov"]?>&quot;, održane dana <?=date("d. m. Y.", $r10["termin_odbrane"])?> godine u <?=date("h:i", $r10["termin_odbrane"])?> sati u sali <?=$r10["sala"]?>.</p>
+	<p>sa odbrane završnog rada <?=$r20["prezime"]?> <?=genitiv($r20["ime"])?> studenta  <?=$ciklusi[$r10['ciklus']]?> (<?=rimski_broj($r10['ciklus'])?>) ciklusa studija na Elektrotehničkom fakultetu u Sarajevu na temu &quot;<?=$r10["naslov"]?>&quot;, održane dana <?=date("d. m. Y.", $r10["termin_odbrane"])?> godine u <?=date("h:i", $r10["termin_odbrane"])?> sati u sali <?=$r10["sala"]?>.</p>
 
 	<p>Prisutni:<br>
 	Student <?=$r20["prezime"]?> <?=$r20["ime"]?>,<br>
