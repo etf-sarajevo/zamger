@@ -455,7 +455,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 
 	// Položili prijemni ali nisu stekli uvjete
-	$j = 1;
+	/*$j = 1;
 	$palo=0;
 	$drugiodsjek=0;
 	foreach ($kandidati as $id => $kandidat) {
@@ -482,7 +482,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 		<?
 		$j++;
 		unset($kandidati[$id]);
-	}
+	}*/
 
 	// Nisu se upisali
 	$k = 1;
