@@ -523,6 +523,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 	if ($studenti==0) {
 		// Ispisujemo samo sumarne podatke
 		while ($r30 = mysql_fetch_row($q30)) {
+			if ($ispit==4 && $izaslo[$r30[0]] == 0) continue;
 			$naziv = $r30[1];
 			if ($r30[2]==0) $naziv .= " *";
 			?><tr><td><?=$naziv?></td>
