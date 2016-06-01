@@ -313,6 +313,7 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<input type="checkbox" name="jmbg">JMBG<br />
 	<input type="checkbox" name="nacin_studiranja">Način studiranja (redovni, samofinansirajući...)<br />
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
+	<input type="checkbox" name="login">Mjesto boravka<br />
 	<input type="checkbox" name="login">Korisničko ime<br /><br />
 	<input type="checkbox" name="tabelarno">Prikaži u obliku tabele umjesto numerisane liste<br />
 	Akademska godina: <select name="ag">
