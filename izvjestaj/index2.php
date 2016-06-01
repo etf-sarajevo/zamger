@@ -31,7 +31,6 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 
 // Deklaracije nizova
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
-$rimski_brojevi = array("", "I", "II", "III", "IV", "V", "VI");
 $imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
 $ects_ocjene = array("", "", "", "", "", "F", "E", "D", "C", "B", "A", "IO");
 
@@ -150,11 +149,11 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 } else {
 	if ($spol == "Z") {
 		?>
-		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=$rimski_brojevi[$trenutno_semestar]?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položila sljedeće predmete:</p>
+		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položila sljedeće predmete:</p>
 		<?
 	} else {
 		?>
-		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=$rimski_brojevi[$trenutno_semestar]?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položio sljedeće predmete:</p>
+		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položio sljedeće predmete:</p>
 		<?
 	}
 }
