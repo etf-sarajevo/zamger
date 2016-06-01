@@ -31,11 +31,23 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	if ($_REQUEST['sort']=="abecedno") {
 		$orderby="ORDER BY o.prezime,o.ime";
+	} else if ($_REQUEST['sort']=="kodovi") {
+		$orderby="ORDER BY po.sifra";
 	} else {
 		$orderby="ORDER BY ukupno DESC";
 	}
 
 	if ($_REQUEST['sakrij_bodove']) $sakrij_bodove = true;
+
+	if ($_REQUEST['borci']) {
+		$borci = "AND o.boracke_kategorije=1";
+		$borci_naslov = " (samo boračke kategorije)";
+	} else {
+		$borci = "";
+		$borci_naslov = "";
+	}
+
+	if ($_REQUEST['kodovi']) { $kodovi = true; } else { $kodovi = false; }
 
 
 	// Naslov
@@ -50,6 +62,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
+		zamgerlog2("nepostojeci termin prijemnog", $termin);
 		return;
 	}
 	$ag = mysql_result($q10,0,0);
@@ -75,7 +88,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<h4>Univerzitet u Sarajevu<br />
 	Elektrotehnički fakultet Sarajevo</h4>
 
-	<h3>Spisak kandidata <?=$naslov1?> za <?=$naslov2?> <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
+	<h3>Spisak kandidata <?=$naslov1?> za <?=$naslov2?> <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu<?=$borci_naslov?></h3>
 	<? if ($studij!=0) { ?><h2 align="left">Studij: <?=$naziv_studija?></h2><? } ?>
 	<br /><?
 
@@ -83,9 +96,13 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Glavni upit
 
 	if ($ciklus==1)
-		$q = myquery("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba $uslov $orderby");
+		$q = myquery("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po
+		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 	else
-		$q = myquery("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba $uslov $orderby");
+		$q = myquery("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu, prijemni_obrazac as po
+		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 
 	
 	?>
@@ -93,6 +110,10 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<tr>
 	<td width="10"><b>R.br.</b></td>
 	<td><b>Prezime i ime</b></td><? 
+	if ($kodovi) { 
+		?><td width="100"><b>Kod</b></td>
+		<td width="100"><b>JMBG</b></td><? 
+	}
 	if (!$sakrij_bodove) { 
 		?>
 		<td width="100"><b>Opći uspjeh</b></td>
@@ -110,6 +131,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 		<tr>
 		<td align="center"><?=$brojac?></td>
 		<td><?=$kandidat[1]?> <?=$kandidat[0]?></td><? 
+		if ($kodovi) { ?><td><?=$kandidat[6]?></td><td><?=$kandidat[7]?></td><? }
 		if (!$sakrij_bodove) { 
 			?>
 			<td align="center"><? vprintf("%3.2f",$kandidat[2])?></td>
@@ -174,6 +196,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
+		zamgerlog2("nepostojeci termin prijemnog", $termin);
 		return;
 	}
 	$ag = mysql_result($q10,0,0);
