@@ -1752,7 +1752,9 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`, `moguc_upis`) VALUES
 (2, 'Paralelan', 0),
 (3, 'Redovan samofinansirajući', 1),
 (0, 'Nepoznat status', 0),
-(4, 'Vanredan', 1);
+(4, 'Vanredan', 1),
+(5, 'DL', 1),
+(6, 'Mobilnost', 0);
 
 -- --------------------------------------------------------
 

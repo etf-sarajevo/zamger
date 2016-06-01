@@ -43,7 +43,7 @@ $ects_studija = mysql_result($q10,0,2);
 </tr>
 <?
 
-$q20 = myquery("SELECT ss.student, ss.akademska_godina, ss.semestar, ss.studij FROM student_studij AS ss, studij AS s WHERE ss.studij=s.id AND s.tipstudija=$tipstudija ORDER BY ss.akademska_godina, ss.semestar");
+$q20 = myquery("SELECT ss.student, ss.akademska_godina, ss.semestar, ss.studij FROM student_studij AS ss, studij AS s WHERE ss.studij=s.id AND s.tipstudija=$tipstudija AND ss.nacin_studiranja!=6 ORDER BY ss.akademska_godina, ss.semestar"); // nacin studiranja 6 = mobilnost
 $student_pocetna_godina = $student_krajnja_godina = $student_krajnji_semestar = $student_studij = array();
 $maxgodina = 0;
 while ($r20 = mysql_fetch_row($q20)) {
