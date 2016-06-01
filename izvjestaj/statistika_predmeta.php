@@ -97,10 +97,6 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 // Ako nije održan nijedan ispit, ipak je dobro da vidimo neke stastistike
 //if ($odrzano_ispita>0) {
 
-	// Spisak ispita
-	$ispiti=array();
-	while ($r40 = mysql_fetch_row($q40)) array_push($ispiti,$r40[0]);
-
 	// Spisak komponenti
 	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=array();
 	$q50 = myquery("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente, k.uslov from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
