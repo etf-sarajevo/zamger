@@ -98,10 +98,12 @@ while ($r1 = mysql_fetch_row($q1)) {
 	$q2 = myquery("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and ko.ocjena>5 and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = mysql_fetch_row($q2)) {
-		$sumaects += $r2[1]; 
+		$sumaects += $r2[1];
 		if ($samo_tekuca_gs) 
 			if ($r2[2] < $godinastudija*2-1) continue;
 		$suma += $r2[0]; $broj++; 
+		$sumasemestar[$r2[2]][$r1[0]] += $r2[0];
+		$brojsemestar[$r2[2]][$r1[0]]++;
 	}
 
 	// preskacemo studente sa premalo polozenih predmeta
@@ -109,7 +111,6 @@ while ($r1 = mysql_fetch_row($q1)) {
 		$q3 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$r1[0] and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$r1[0] and ko.predmet=pk.predmet and ko.ocjena>5)=0");
 		if (mysql_result($q3,0,0)>$limit_predmet) continue;
 	} else if ($sumaects<$minsumaects) continue; 
-
 
 	$prosjek = $suma/$broj;
 	$prosjeci[$r1[0]]=$prosjek;
@@ -129,13 +130,30 @@ indexa</th><th>Način studiranja</th><th>Prosjek</th></tr>
 
 $k=1;
 
+$statistika=array();
+
 foreach ($prosjeci as $id=>$prosjek) {
+	$ocjena = intval(round($prosjek,0));
+	$statistika[$ocjena]++;
+	$statistika[0]++;
 	if ($prosjek<$limit_prosjek) break;
 	?> 
-	<tr><td><?=$k++?></td><td><?=$imeprezime[$id]?></td><td><?=$brindexa[$id]?></td><td><?=$nacinstudiranja[$id]?></td><td><?=round($prosjek,2)?></td></tr>
+	<tr><td><?=$k++?></td><td><?=$imeprezime[$id]?></td><td><?=$brindexa[$id]?></td><td><?=$nacinstudiranja[$id]?></td><td><?=round($prosjek,2) /*. " " . round($sumasemestar[1][$id]/$brojsemestar[1][$id],2) . " " . round($sumasemestar[2][$id]/$brojsemestar[2][$id],2) . " " . round($sumasemestar[3][$id]/$brojsemestar[3][$id],2) . " " . round($sumasemestar[4][$id]/$brojsemestar[4][$id],2) . " " . round($sumasemestar[5][$id]/$brojsemestar[5][$id],2) . " " . round($sumasemestar[6][$id]/$brojsemestar[6][$id],2)*/ ?></td></tr>
 	<?
 }
 
-?></table><?
+?></table>
+
+<p>Po ocjenama:</p>
+
+<table><tr><th>Ocjena</th><th>Studenata</th><th>Procenat</th></tr>
+<?
+
+for ($i=10; $i>5; $i--)
+	print "<tr><td>$i</td><td>".$statistika[$i]."</td><td>".
+	procenat($statistika[$i], $statistika[0])."</td></tr>";
+
+?></table>
+<?
 
 }
