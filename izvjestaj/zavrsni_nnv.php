@@ -55,7 +55,7 @@ $ciklus = mysql_result($q30,0,0);
 <p>&nbsp;
 <?
 
-$q100 = myquery("SELECT z.naslov, o.ime, o.prezime, z.predsjednik_komisije, z.mentor, z.clan_komisije FROM zavrsni as z, osoba as o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.student=o.id ORDER BY o.prezime, o.ime, z.naslov");
+$q100 = myquery("SELECT z.naslov, o.ime, o.prezime, z.predsjednik_komisije, z.mentor, z.clan_komisije, z.predmet, z.student FROM zavrsni as z, osoba as o WHERE z.predmet=$predmet AND z.akademska_godina=$ag AND z.student=o.id ORDER BY o.prezime, o.ime, z.naslov");
 
 while ($r100 = mysql_fetch_row($q100)) {
 	$naslov = $r100[0];
@@ -64,6 +64,13 @@ while ($r100 = mysql_fetch_row($q100)) {
 	$predsjednik = $r100[3];
 	$mentor_id = $r100[4];
 	$clan_komisije = $r100[5];
+	$predmet = $r100[6];
+	$id_studenta = $r100[7];
+
+	if (!isset($_REQUEST['svi'])) {
+		$q110 = myquery("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$id_studenta AND predmet=$predmet AND ocjena>5");
+		if (mysql_result($q110,0,0) == 0) continue;
+	}
 	
 	?>
 	<p><span class="float">Tema:</span> <?=$naslov?><br>
