@@ -22,7 +22,7 @@
 // TODO: prebaciti u lib/manip ?
 function pao_predmet($student, $predmet, $ak_god) {
 	// Da li je student ikada položio predmet
-	$q10 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+	$q10 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5 and akademska_godina<=$ak_god");
 	if (mysql_result($q10,0,0)>0) return 0;
 
 	// Da li student sluša predmet u datoj akademskoj godini?
