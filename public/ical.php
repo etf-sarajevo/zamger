@@ -55,7 +55,7 @@ function public_ical() {
 		if (strlen($sqlPredmet)>0) $sqlWhere = "(".$sqlPredmet.")";
 		else $sqlWhere="1=0"; // Nije angazovan nigdje, prikaži prazan raspored
 		
-		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, r.vrijeme_kreiranja
+		$sqlUpit = "SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, UNIX_TIMESTAMP(r.vrijeme_kreiranja)
 		FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p, raspored as r, akademska_godina as ag
 		WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND rs.raspored=r.id AND (r.privatno=0 OR r.privatno=$userid) AND r.akademska_godina=ag.id AND ag.aktuelna=1
 		ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
