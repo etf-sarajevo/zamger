@@ -70,6 +70,11 @@ if (!$user_siteadmin && !$user_studentska) {
 			if (id.substr(0,6) == "ocjena") {
 				var value = parseInt(element.id.substr(6));
 				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('ocjena'+"+id+").focus()");
+				if (origval[id] == "/") {
+					var datum_element = document.getElementById("datum"+value);
+					datum_element.value = "<?=date("d. m. Y")?>";
+					datum_element.focus();
+				}
 			} else if (id.substr(0,5) == "datum") {
 				var value = parseInt(element.id.substr(5));
 				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=kodatum-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('datum'+"+id+").focus()");
@@ -136,7 +141,7 @@ if (!$user_siteadmin && !$user_studentska) {
 //			$datum_u_indeksu = mysql_result($q530,0,1);
 		} else {
 			$ocjena = "/";
-			$datum_u_indeksu = date("d. m. Y.", time());
+			$datum_u_indeksu = "/";
 			$datum_provjeren = 1;
 		}
 
@@ -162,8 +167,11 @@ if (!$user_siteadmin && !$user_studentska) {
 			?>
 			</td>
 			<td align="center"><input type="text" id="datum<?=$id?>" size="8" value="<?=$datum_u_indeksu?>" style="border:1px black solid<?
-				if ($datum_provjeren != 1) print "; background-color: ffaaaa";
-			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)"></td>
+				if ($datum_provjeren != 1) print "; background-color: #ffaaaa";
+			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)">
+			</td><?
+				if ($datum_provjeren != 1) print "<td><font color=\"red\"><b>Datum nije provjeren</b></font></td>";
+			?>
 		</tr>
 		<?
 	}
