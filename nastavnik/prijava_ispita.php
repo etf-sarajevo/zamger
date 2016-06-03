@@ -7,7 +7,7 @@ function nastavnik_prijava_ispita() {
 
 require("lib/manip.php");
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$user_studentska;
 	
 //parametri	
 $predmet = intval($_REQUEST['predmet']);
@@ -25,7 +25,7 @@ function nuliraj($v) {
 
 // Da li korisnik ima pravo uci u modul?
 
-if (!$user_siteadmin) {
+if (!$user_siteadmin && !$user_studentska) {
 	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
