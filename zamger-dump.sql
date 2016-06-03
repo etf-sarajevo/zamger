@@ -4008,6 +4008,7 @@ CREATE TABLE IF NOT EXISTS `zadaca` (
   `postavka_zadace` varchar(255) COLLATE utf8_slovenian_ci DEFAULT NULL,
   `komponenta` int(11) NOT NULL,
   `vrijemeobjave` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `readonly` tinyint(4) NOT NULL default '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

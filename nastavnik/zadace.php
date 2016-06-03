@@ -342,6 +342,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	if ($_POST['attachment']) $attachment=1; else $attachment=0;
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
 	if ($_POST['automatsko_testiranje']) $automatsko_testiranje=1; else $automatsko_testiranje=0;
+	if ($_POST['readonly']) $readonly=1; else $readonly=0;
 
 	$postavka_file = $_FILES['postavka_zadace_file']['name'];
 	if ($postavka_file != "") {
@@ -390,7 +391,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
 		// $komponenta_za_zadace određena na početku fajla
-		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace $sql_add_postavka_file");
+		$q92 = myquery("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace, readonly=$readonly $sql_add_postavka_file");
 		$edit_zadaca = mysql_insert_id();
 		if ($edit_zadaca == 0) {
 			niceerror("Dodavanje zadaće nije uspjelo");
@@ -429,7 +430,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca and zadatak>$zadataka");
 		}
 
-		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected' $sql_add_postavka_file where id=$edit_zadaca");
+		$q94 = myquery("update zadaca set naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije='$dozvoljene_ekstenzije_selected', readonly=$readonly $sql_add_postavka_file where id=$edit_zadaca");
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 		zamgerlog2("azurirana zadaca", $edit_zadaca);
@@ -477,14 +478,14 @@ if ($izabrana==0) {
 	?><p><hr/></p>
 	<p><b>Kreiranje zadaće</b><br/>
 	<?
-	$znaziv=$zaktivna=$zattachment=$zjezik="";
+	$znaziv=$zaktivna=$zattachment=$zjezik=$zreadonly="";
 	$zzadataka=0; $zbodova=0;
 	$tmpvrijeme=time();
 } else {
 	?><p><hr/></p>
 	<p><b>Izmjena zadaće</b></p>
 	<?
-	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment, dozvoljene_ekstenzije, postavka_zadace, automatsko_testiranje from zadaca where id=$izabrana");
+	$q100 = myquery("select predmet, akademska_godina, naziv, zadataka, bodova, rok, aktivna, programskijezik, attachment, dozvoljene_ekstenzije, postavka_zadace, automatsko_testiranje, readonly from zadaca where id=$izabrana");
 	if ($predmet != mysql_result($q100,0,0) || $ag != mysql_result($q100,0,1)) {
 		niceerror("Zadaća ne pripada vašem predmetu");
 		zamgerlog("zadaca $izabrana ne pripada predmetu pp$predmet",3);
@@ -502,6 +503,7 @@ if ($izabrana==0) {
 	$dozvoljene_ekstenzije_selected = mysql_result($q100,0,9);
 	$postavka_zadace = mysql_result($q100,0,10);
 	$automatsko_testiranje = mysql_result($q100,0,11);
+	if (mysql_result($q100,0,12)==1) $zreadonly="CHECKED"; else $zreadonly="";
 }
 
 $zdan = date('d',$tmpvrijeme);
@@ -615,7 +617,10 @@ Rok za slanje: <?=datectrl($zdan,$zmjesec,$zgodina)?>
 &nbsp;&nbsp; <input type="text" name="sat" size="1" value="<?=$zsat?>"> <b>:</b> <input type="text" name="minuta" size="1" value="<?=$zminuta?>"> <b>:</b> <input type="text" name="sekunda" size="1" value="<?=$zsekunda?>"> <br><br>
 
 <input type="checkbox" name="aktivna" <?=$zaktivna?>> Aktivna
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+<input type="checkbox" name="readonly" <?=$zreadonly?>> Read-only
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+<input type="checkbox" value="1" id="attachment" onclick="onemoguci_ekstenzije(this.form.dozvoljene_eks)" name="attachment" <?=$zattachment?>> Slanje zadatka u formi attachmenta<br><br>
 
 <span id="dozvoljene_ekstenzije" style="display:none" title="Oznacite željene ekstenzije">
 Dozvoljene ekstenzije (Napomena: Ukoliko ne odaberete nijednu ekstenziju sve ekstenzije postaju dozvoljene): 

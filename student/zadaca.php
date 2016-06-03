@@ -152,13 +152,14 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
 
 
 // Ove vrijednosti će nam trebati kasnije
-$q60 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment,dozvoljene_ekstenzije from zadaca where id=$zadaca");
+$q60 = myquery("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment,dozvoljene_ekstenzije, readonly from zadaca where id=$zadaca");
 $naziv = mysql_result($q60,0,0);
 $brojzad = mysql_result($q60,0,1);
 $rok = mysql_result($q60,0,2);
 $jezik = mysql_result($q60,0,3);
 $attachment = mysql_result($q60,0,4);
 $zadaca_dozvoljene_ekstenzije = mysql_result($q60,0,5);
+$readonly_zadaca = mysql_result($q60,0,6);
 
 
 
@@ -415,6 +416,8 @@ if ($rok <= time()) {
 	$readonly = "";
 }
 
+if ($readonly_zadaca) $readonly = "DISABLED";
+
 
 
 
@@ -570,7 +573,7 @@ function akcijaslanje() {
 	}
 
 	// Podaci o zadaći
-	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije, automatsko_testiranje from zadaca where id=$zadaca");
+	$q210 = myquery("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije, automatsko_testiranje, readonly from zadaca where id=$zadaca");
 	$jezik = mysql_result($q210,0,0);
 	$rok = mysql_result($q210,0,1);
 	$attach = mysql_result($q210,0,2);
@@ -578,6 +581,10 @@ function akcijaslanje() {
 	$komponenta = mysql_result($q210,0,4);
 	$zadaca_dozvoljene_ekstenzije = mysql_result($q210,0,5);
 	$automatsko_testiranje = mysql_result($q210,0,6);
+	if (mysql_result($q210,0,7) == 1) {
+		niceerror("Slanje ove zadaće kroz Zamger nije moguće");
+		return;
+	}
 
 	// Ako je aktivno automatsko testiranje, postavi status na 1 (automatska kontrola), inace na 4 (ceka pregled)
 	if ($automatsko_testiranje==1) $prvi_status=1; else $prvi_status=4;
