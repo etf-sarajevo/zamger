@@ -96,6 +96,236 @@ $komponenta_za_zadace = mysql_result($q15,0,0);
 
 <?
 
+// Prijem podataka o prepisivanju
+
+if ($_POST['akcija'] == "prepisivanje" && check_csrf_token()) {
+	$doit = isset($_POST['fakatradi']);
+	$ulaz = $_POST['rezultati'];
+	
+	if (substr($ulaz,0,8) == "===c9===") {
+		foreach(explode ("\n", $ulaz) as $red) {
+			$red = trim($red);
+			if ($red == "===c9===") continue;
+			if (empty($red)) continue;
+			list($username,$zadaca,$zadatak,$stuff) = explode("||", $red);
+
+			$username = my_escape($username);
+			$zadaca=intval($zadaca);
+			$zadatak=intval($zadatak);
+
+			$comments = explode(",", $stuff);
+
+			$q10 = myquery("SELECT id FROM auth WHERE login='$username'");
+			if (mysql_num_rows($q10) < 1) {
+				print "--- Nepoznat username $username<br>";
+				continue;
+			}
+			$student = mysql_result($q10,0,0);
+			
+			$q5 = myquery("SELECT COUNT(*) FROM student_predmet sp, ponudakursa pk WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.akademska_godina=$ag");
+			if (mysql_result($q5,0,0) == 0) continue;
+			
+			$q20 = myquery("SELECT izvjestaj_skripte, komentar, filename, status FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$student ORDER BY id DESC LIMIT 1");
+			if (mysql_num_rows($q20) < 1) {
+				print "--- Username $username nije poslao zadaću $zadaca / $zadatak<br>\n";
+				continue;
+			}
+			$status = mysql_result($q20,0,3);
+			if ($status == 4) {
+				$status = 2;
+			} else {
+				print "--- Username $username status $status zadaća $zadaca / $zadatak<br>\n";
+			}
+			$izvjestaj_skripte = mysql_real_escape_string(mysql_result($q20,0,0));
+			$komentar = mysql_real_escape_string(mysql_result($q20,0,1));
+			if (preg_match("/testova \([\d\.]+ bodova/", $komentar)) $komentar="";
+			$filename = mysql_real_escape_string(mysql_result($q20,0,2));
+			if (in_array("ignore", $comments)) {
+				if ($doit) $q30 = myquery("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', status=5, komentar='c9 ignore', vrijeme=NOW()");
+				else print "$username: $zadatak, c9 ignore<br>";
+			} else if (in_array("nema", $comments)) {
+				if ($doit) $q30 = myquery("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', status=5, komentar='nema na c9', vrijeme=NOW()");
+				else print "$username: $zadatak, c9 NEMA!<br>";
+			} else {
+				foreach ($comments as $comment)
+					if (!empty($comment)) $komentar = $komentar . "\nc9 $comment";
+				if ($doit) $q30 = myquery("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', status=2, komentar='$komentar', vrijeme=NOW()");
+				else print "$username: $zadatak, $komentar<br>";
+			}
+		}
+		if (!$doit) {
+			print genform("POST");
+			?>
+			<input type="submit" name="fakatradi" value="Kreni">
+			</form>
+			<?
+		}
+		return;
+	}
+	
+	
+	function dajIme($zadatak, $predmet, $ag) {
+		$q20 = myquery("SELECT o.id, o.ime, o.prezime FROM osoba o, zadatak z WHERE z.id=$zadatak AND z.student=o.id");
+		$student = mysql_result($q20,0,0);
+		$imestudenta = mysql_result($q20,0,2) . " " . mysql_result($q20,0,1);
+		//print "Zadatak: $zadatak<br>\n";
+		$q30 = myquery("SELECT l.naziv FROM labgrupa l, student_labgrupa sl WHERE sl.student=$student AND sl.labgrupa=l.id AND l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0");
+		if (mysql_num_rows($q30) > 0) {
+			list($ime, $broj) = explode(" ", mysql_result($q30,0,0));
+			if ($ime == "Grupa" && $broj === intval($broj))
+				$grupa = "G$broj";
+			else if ($ime == "Ponovci" && $broj === intval($broj))
+				$grupa = "P$broj";
+			else if ($ime == "Grupa" || $ime == "Ponovci" || substr($broj,0,1) == "P")
+				$grupa = $broj;
+			else
+				$grupa = "$ime $broj";
+			$imestudenta .= " " .$grupa;
+		} else
+			$imestudenta .= " P"; // Ponovci bez grupe
+		return array($student, $imestudenta);
+	}
+	
+//	print "Ulaz: $ulaz<br>";
+	$prepisivanje = array();
+	$vremena = array();
+	$imena = array();
+	$procenti = array();
+	foreach(explode ("\n", $ulaz) as $red) {
+		$red = trim($red);
+		list($procenat, $lijevi, $kk, $desni) = explode(" ", $red);
+		$procenat = intval($procenat);
+		$lijevi = str_replace(array("(",")",".zip"), "", $lijevi);
+		$desni = str_replace(array("(",")",".zip"), "", $desni);
+		if (intval($lijevi) == 0 || intval($desni) == 0) {
+			print $procenat . " (";
+			if (intval($lijevi) > 0) {
+				list($student, $nekiime) = dajIme(intval($lijevi), $predmet, $ag);
+				print $nekiime;
+			}
+			else print $lijevi;
+			print ") <=> (";
+			if (intval($desni) > 0) {
+				list($student, $nekiime) = dajIme(intval($desni), $predmet, $ag);
+				print $nekiime;
+			}
+			else print $desni;
+			print ")<br>";
+			continue;
+		}
+		$procenti["$lijevi-$desni"] = $procenat;
+
+		$q10 = myquery("SELECT UNIX_TIMESTAMP(vrijeme),zadaca,redni_broj FROM zadatak WHERE id=$lijevi");
+		$lijevovrijeme = mysql_result($q10,0,0);
+		$zadaca = mysql_result($q10,0,1);
+		$zadatak = mysql_result($q10,0,2);
+		$q10 = myquery("SELECT UNIX_TIMESTAMP(vrijeme) FROM zadatak WHERE id=$desni");
+		$desnovrijeme = mysql_result($q10,0,0);
+		
+		if ($lijevovrijeme < $desnovrijeme) { $manji=$lijevi; $manjevrijeme=$lijevovrijeme; $veci=$desni; }
+		else { $manji=$desni; $manjevrijeme=$desnovrijeme; $veci=$lijevi; }
+		
+		if (array_key_exists($manji, $prepisivanje)) {
+			if (!in_array($veci, $prepisivanje[$manji]))
+				array_push($prepisivanje[$manji], $veci);
+				
+		} else if (array_key_exists($veci, $prepisivanje)) {
+			$prepisivanje[$manji] = $prepisivanje[$veci];
+			unset($prepisivanje[$veci]);
+			array_unshift($prepisivanje[$manji], $veci);
+			$vremena[$manji] = $manjevrijeme;
+
+		} else {
+			$dodano = false;
+			foreach($prepisivanje as $k => $v) {
+				foreach ($v as $broj) {
+					if ($broj == $manji) {
+						if (!in_array($veci, $prepisivanje[$k]))
+							array_push($prepisivanje[$k], $veci);
+						$dodano = true;
+						break;
+					}
+				}
+				if (!$dodano) {
+					$nasao = false;
+					foreach ($v as $broj) {
+						if ($broj == $veci) {
+							if ($vremena[$k] <= $manjevrijeme) {
+								if (!in_array($manji, $prepisivanje[$k]))
+									array_push($prepisivanje[$k], $manji);
+								$dodano = true;
+								break;
+							} else {
+								$prepisivanje[$manji] = $prepisivanje[$k];
+								unset($prepisivanje[$k]);
+								array_unshift($prepisivanje[$manji], $k);
+								$vremena[$manji] = $manjevrijeme;
+								$dodano = true;
+								break;
+							}
+						}
+					}
+				}
+				if ($dodano) break;
+			}
+			if (!$dodano) {
+				$prepisivanje[$manji] = array( $veci );
+				$vremena[$manji] = $manjevrijeme;
+			}
+		}
+	}
+	
+	foreach ($prepisivanje as $manji => $ostali) {
+		list($student, $imestudenta) = dajIme($manji, $predmet, $ag);
+		print "<a href=\"?sta=saradnik/zadaca&amp;student=$student&amp;zadaca=$zadaca&amp;zadatak=$zadatak\" target=\"_new\">$imestudenta</a> => {";
+		//print " => { ";
+		$prvi = true;
+		foreach($ostali as $veci) {
+			list($student, $nekiime) = dajIme($veci, $predmet, $ag); 
+			print "<a href=\"?sta=saradnik/zadaca&amp;student=$student&amp;zadaca=$zadaca&amp;zadatak=$zadatak\" target=\"_new\">$nekiime</a>";
+			if (array_key_exists("$manji-$veci", $procenti)) print " (".$procenti["$manji-$veci"]."%)";
+			if (array_key_exists("$veci-$manji", $procenti)) print " (".$procenti["$veci-$manji"]."%)";
+			print ", ";
+			if ($prvi) { $imeveci = $nekiime; $prvi = false; }
+//			else print "$veci, ";
+			if ($doit) {
+				$q40 = myquery("SELECT zadaca, redni_broj, student, izvjestaj_skripte, filename, status FROM zadatak WHERE id=$veci");
+				if (mysql_result($q40,0,5) == 4)
+					$q50 = myquery("INSERT INTO zadatak SET zadaca=".mysql_result($q40,0,0).", redni_broj=".mysql_result($q40,0,1).", student=".mysql_result($q40,0,2).", status=2, bodova=0, izvjestaj_skripte='".mysql_real_escape_string(mysql_result($q40,0,3))."', vrijeme=NOW(), komentar='".$imestudenta."', filename='".mysql_real_escape_string(mysql_result($q40,0,4))."', userid=0");
+				else
+					print "(preskačem), ";
+			}
+		}
+		if ($doit) {
+			$q40 = myquery("SELECT zadaca, redni_broj, student, izvjestaj_skripte, filename, status FROM zadatak WHERE id=$manji");
+			if (mysql_result($q40,0,5) == 4)
+				$q50 = myquery("INSERT INTO zadatak SET zadaca=".mysql_result($q40,0,0).", redni_broj=".mysql_result($q40,0,1).", student=".mysql_result($q40,0,2).", status=2, bodova=0, izvjestaj_skripte='".mysql_real_escape_string(mysql_result($q40,0,3))."', vrijeme=NOW(), komentar='".$imeveci."', filename='".mysql_real_escape_string(mysql_result($q40,0,4))."', userid=0");
+			else
+				print "(preskačem), ";
+		}
+		
+		print "}<br>";
+	}
+	if (!$doit) {
+		print genform("POST");
+		?>
+		<input type="submit" name="fakatradi" value="Kreni">
+		</form>
+		<?
+	}
+	return;
+}
+
+if ($_GET['akcija'] == "prepisivanje") {
+	print genform("POST");
+	?>
+<textarea name="rezultati" cols="50" rows="10"></textarea><br>
+<input type="submit" value=" Šalji ">
+</form>
+	<?
+	return 0;
+}
+
 # Masovni unos zadaća
 
 if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
