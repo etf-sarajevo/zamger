@@ -173,7 +173,9 @@ if ($_REQUEST["akcija"]=="studenti") {
 	<?
 
 	$brojac=1;
+	$bili = array();
 	while ($r200=mysql_fetch_row($q200)) {
+		array_push($bili, $r200[3]);
 		?>
 		<tr>
 			<td><?=$brojac?></td>
@@ -207,6 +209,7 @@ if ($_REQUEST["akcija"]=="studenti") {
 	<?
 	$q210 = myquery("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
 	while ($r210 = mysql_fetch_row($q210)) {
+		if (in_array($r210[0], $bili)) continue;
 		print "<option value=\"$r210[0]\">$r210[1] $r210[2]</option>\n";
 	}
 	?>
