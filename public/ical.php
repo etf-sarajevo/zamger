@@ -28,12 +28,11 @@ function public_ical() {
 	$q2 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 	if (mysql_num_rows($q2)>0) $user_nastavnik=true; else $user_nastavnik=false;
 
-	if ($user_nastavnik) {
-		// Upit za nastavnika
-		// Da li je aktuelan neparni ili parni semestar?
-		$qneparni = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
-		if (mysql_num_rows($qneparni)>0) $neparni_semestar=0; else $neparni_semestar=1;
+	// Da li je semestar parni ili neparni?
+	$q10 = myquery("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
+	$neparni = mysql_result($q10,0,0);
 
+	if ($user_nastavnik) {
 		// Spisak predmeta na kojima je nastavnik angažovan
 		$whereCounter = 0;
 		$predmet_bio = array();
@@ -42,7 +41,7 @@ function public_ical() {
 			array_push($predmet_bio, $sUD['predmet']);
 			$adId = $sUD['akademska_godina'];
 			$semId = $sUD['semestar'];
-			if ($semId%2 != $neparni_semestar) continue;
+			if ($semId%2 != $neparni) continue;
 			
 			if($whereCounter > 0)
 				$sqlPredmet .= " OR rs.predmet = ".$sUD['predmet'];
@@ -63,19 +62,9 @@ function public_ical() {
 
 	}
 	else {
-		// Koji je aktuelni semestar?
-		$q5 = myquery("select ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$userid and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
-		if (mysql_num_rows($q5)<1) {
-			// Student nije upisan na fakultet.
-			print "Nema rasporeda časova za korisnika<br/><br/></div>\n";
-			return;
-		}
-		$neparni_semestar = mysql_result($q5,0,0) % 2;
-
-		
 		$sqlUpit = "SELECT rs.id, p.naziv, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, UNIX_TIMESTAMP(r.vrijeme_kreiranja)
 		FROM raspored_stavka as rs, raspored as r, predmet as p, ponudakursa as pk, student_predmet as sp, student_labgrupa as sl, raspored_sala as rsala, akademska_godina as ag
-		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id and pk.semestar mod 2=$neparni_semestar and ag.aktuelna=1 AND p.id=rs.predmet AND rs.raspored=r.id AND r.aktivan=1 AND sl.student=$userid AND (rs.labgrupa=0 or rs.labgrupa=sl.labgrupa) AND rs.sala=rsala.id
+		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id and pk.semestar mod 2=$neparni and ag.aktuelna=1 AND p.id=rs.predmet AND rs.raspored=r.id AND r.aktivan=1 AND sl.student=$userid AND (rs.labgrupa=0 or rs.labgrupa=sl.labgrupa) AND rs.sala=rsala.id
 		GROUP BY rs.labgrupa, rs.dan_u_sedmici, rs.vrijeme_pocetak, p.naziv
 		ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC";
 
@@ -86,7 +75,7 @@ function public_ical() {
 	list($zimska_godina, $ljetnja_godina) = explode("/", mysql_result($q20,0,0));
 
 	header("Content-Type: text/calendar");
-	print "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ETF/Zamger//NONSGML v1.0//EN\r\n";
+	$output = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ETF/Zamger//NONSGML v1.0//EN\r\n";
 
 	// Selektuj podatke iz baze
 	$q10 = myquery($sqlUpit);
@@ -171,11 +160,12 @@ function public_ical() {
 		}
 		
 		// Ispis
-		print "BEGIN:VEVENT\r\nUID:$rsid"."Z$userid@zamger.etf.unsa.ba\r\nDTSTAMP:$vrijeme_kreiranja_rasporeda\r\nDTSTART:$godina$mjesec$dan"."T$ical_start\r\nDTEND:$godina$mjesec$dan"."T$ical_end\r\nSUMMARY:$summary\r\nLOCATION:$naziv_sale\r\nTRANSP:TRANSPARENT\r\nCLASS:PUBLIC\r\nCATEGORIES:APPOINTMENT,EDUCATION\r\nRRULE:FREQ=WEEKLY;COUNT=15\r\nEND:VEVENT\r\n";
+		$output .= "BEGIN:VEVENT\r\nUID:$rsid"."Z$userid@zamger.etf.unsa.ba\r\nDTSTAMP:$vrijeme_kreiranja_rasporeda\r\nDTSTART:$godina$mjesec$dan"."T$ical_start\r\nDTEND:$godina$mjesec$dan"."T$ical_end\r\nSUMMARY:$summary\r\nLOCATION:$naziv_sale\r\nTRANSP:TRANSPARENT\r\nCLASS:PUBLIC\r\nCATEGORIES:APPOINTMENT,EDUCATION\r\nRRULE:FREQ=WEEKLY;COUNT=15\r\nEND:VEVENT\r\n";
 
 	}
 
-	print "END:VCALENDAR\r\n";
+	$output .= "END:VCALENDAR\r\n";
+	print $output;
 }
 
 ?>
