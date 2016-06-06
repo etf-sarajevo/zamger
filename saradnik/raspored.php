@@ -15,6 +15,7 @@ function saradnik_raspored($tip) {
 
 	$dani_u_sedmici = array("", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota");
 
+	$dajsve = intval($_REQUEST['dajsve']);
 
 	?>
 	<h2> Podešavanje rasporeda</h2>
@@ -110,14 +111,17 @@ function saradnik_raspored($tip) {
 			$q220 = myquery("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
 			$id_rasporeda = mysql_insert_id();
 			zamgerlog("kreiran raspored $id_rasporeda", 2);
+			zamgerlog2("kreiran raspored", $id_rasporeda);
 		} else 
 			$id_rasporeda = mysql_result($q210,0,0);
 			
 		$q230 = myquery("insert into raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj'");
 
-		zamgerlog("dodana stavka ".mysql_insert_id()." u raspored $id_rasporeda", 2);
+		$id = mysql_insert_id();
+		zamgerlog("dodana stavka $id u raspored $id_rasporeda", 2);
+		zamgerlog2("dodana stavka u raspored", $id, intval($id_rasporeda));
 		nicemessage ("Dodavanje časa u raspored uspjelo!");
-		print "<a href=\"?sta=saradnik/raspored\">Nastavak</a>";
+		print "<a href=\"?sta=saradnik/raspored&dajsve=$dajsve\">Nastavak</a>";
 		return;
 	}
 
@@ -165,12 +169,14 @@ function saradnik_raspored($tip) {
 			$q220 = myquery("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
 			$id_rasporeda = mysql_insert_id();
 			zamgerlog("kreiran raspored $id_rasporeda", 2);
+			zamgerlog2("kreiran raspored", $id_rasporeda);
 		} else 
 			$id_rasporeda = mysql_result($q210,0,0);
 			
 		$q230 = myquery("update raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj' where id=$id_stavke");
 		
 		zamgerlog("ažurirana stavka $id_stavke u rasporedu $id_rasporeda", 2);
+		zamgerlog2("ažurirana stavka u rasporedu", $id_stavke, intval($id_rasporeda));
 		nicemessage ("Ažuriranje časa u rasporedu uspjelo!");
 		print "<a href=\"?sta=saradnik/raspored\">Nastavak</a>";
 		return;
@@ -178,17 +184,18 @@ function saradnik_raspored($tip) {
 
 	
 	// SPISAK PREDMETA NA KOJIMA JE ANGAŽOVAN NASTAVNIK
-	
-	$q10 = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
-	if (mysql_num_rows($q10)>0) $neparni=0; else $neparni=1;
+
+	// Da li je semestar parni ili neparni?
+	$q10 = myquery("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
+	$neparni = mysql_result($q10,0,0);
 
 	$whereCounter = 0;
 	$spisak_predmeta = "";
 	
-	if ($user_studentska && $_REQUEST['dajsve']==1) {
+	if ($user_studentska && $dajsve==1) {
 		$q20 = myquery("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM 
-ponudakursa as pk, akademska_godina as ag, predmet as p WHERE pk.akademska_godina = ag.id and 
-ag.aktuelna=1 and pk.predmet=p.id");
+		ponudakursa as pk, akademska_godina as ag, predmet as p WHERE pk.akademska_godina = ag.id and 
+		ag.aktuelna=1 and pk.predmet=p.id");
 	} else if ($user_nastavnik) {
 		$q20 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND np.predmet=p.id and pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 	} else {
@@ -363,7 +370,7 @@ ag.aktuelna=1 and pk.predmet=p.id");
 		if ($r30[4] == "P") $tip = "Predavanja"; else if ($r30[4] == "T") $tip = "Tutorijali"; else $tip = "Laboratorijske vježbe";
 		
 		?>
-		<li><?=$vrijeme_pocetak[$r30[5]]." - ".$vrijeme_kraj[$r30[6]] ?>, <b><?=$r30[1] ?></b> ( <a href="?sta=saradnik/raspored&akcija=izmjena&id=<?=$r30[0]?>">izmijeni</a> )<br />
+		<li><?=$vrijeme_pocetak[$r30[5]]." - ".$vrijeme_kraj[$r30[6]] ?>, <b><?=$r30[1] ?></b> ( <a href="?sta=saradnik/raspored&akcija=izmjena&id=<?=$r30[0]?>&dajsve=<?=$dajsve?>">izmijeni</a> )<br />
 		<? if ($r30[9] != "00:00:00") {
 			?>
 			Preciznije vrijeme: <?=substr($r30[9], 0, 5) ?> - <?=substr($r30[10], 0, 5) ?><br />
