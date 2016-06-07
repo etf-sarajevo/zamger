@@ -219,8 +219,16 @@ function studentska_zavrsni()  {
 		
 		<h3>Izvještaji</h3>
 		
-		<p>- <a href="?sta=izvjestaj/zavrsni_teme&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Prijedlog tema za završne radove po mentoru</a><br>
-		-  <a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Spisak tema sa kandidatima i komisijama</a>
+		
+		<ul>
+			<li><a href="?sta=izvjestaj/zavrsni_teme&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Prijedlog tema za završne radove po mentoru</a></li>
+			<li>Spisak tema sa kandidatima i komisijama
+				<ul>
+					<li><a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;svi=da">Svi uneseni kandidati</a></li>
+					<li><a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Samo oni koji su odbranili završni rad</a></li>
+				</ul>
+			</li>
+		</ul>
 		</p>
 		
 		<?
