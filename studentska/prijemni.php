@@ -2571,7 +2571,9 @@ else {
 	for ($i=26; $i<=50; $i++) {
 		?>
 		<tr><td align="right"><?=$i?>.</td>
+		<SCRIPT language="JavaScript"> origval[<?=$i*2-1?>]='<?=$ocjene[$i]?>'</SCRIPT>
 		<td align="center"><input type="text" id="prijemniocjene<?=$i*2-1?>" size="4" value="<?=$ocjene[$i]?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="return enterhack2(this,event,<?=($i*2)?>)"></td>
+		<SCRIPT language="JavaScript"> origval[<?=$i*2?>]='<?=$ects[$i]?>'</SCRIPT>
 		<td align="center"><input type="text" id="prijemniocjene<?=$i*2?>" size="4" value="<?=$ects[$i]?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="return enterhack2(this,event,<?=($i*2+1)?>)"></td>
 		</tr><?
 	}
