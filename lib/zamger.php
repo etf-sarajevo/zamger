@@ -626,10 +626,12 @@ function studentski_meni($fj) {
 			<? } else { ?>&nbsp;<? } ?><?=$ispis?>
 			
 			<br />
-			<? if ($arhiva==0) { ?>
-			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
-			<? } else { ?>
+			<? if ($arhiva == 1) { ?>
 			<a href="<?=genuri()?>&sm_arhiva=0">Sakrij arhivirane predmete</a>
+			<? } else if ($prikazi_arhivu) { ?>
+			<a href="?sta=student/intro">Sakrij arhivirane predmete</a>
+			<? } else { ?>
+			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
 			<? } ?>
 			<br /><br />
 			<img src="images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
