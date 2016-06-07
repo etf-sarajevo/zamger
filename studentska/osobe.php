@@ -1054,9 +1054,9 @@ else if ($akcija == "upis") {
 			$ocjena = intval($_REQUEST["pao-$predmet"]);
 			if ($ocjena>5) {
 				// Upisujem dopisanu ocjenu
-				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$ag");
+				$q590 = myquery("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$godina, datum=NOW()");
 				zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
-				zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
+				zamgerlog2("dodana ocjena", $student, $predmet, $godina, $ocjena);
 				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>\n";
 			} else {
 				// Student prenio predmet
