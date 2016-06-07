@@ -2503,8 +2503,8 @@ else {
 			ajah_start("index.php?c=N&sta=common/ajah&akcija=prosli_ciklus_ocjena&osoba="+osoba+"&nova="+vrijednost+"&rednibroj="+rednibroj,"document.getElementById('prijemniocjene'+"+id+").focus()");
 
 		} else { // ECTS
-			if (vrijednost != "/" && (!parseFloat(vrijednost) || parseFloat(vrijednost)<=0 || parseFloat(vrijednost)>20)) {
-				alert("Neispravan ECTS: "+vrijednost+" !\nECTS mora biti u opsegu 0-20 ili znak / za poništavanje "+id);
+			if (vrijednost != "/" && (!parseFloat(vrijednost) || parseFloat(vrijednost)<=0 || parseFloat(vrijednost)>30)) {
+				alert("Neispravan ECTS: "+vrijednost+" !\nECTS mora biti u opsegu 0-30 ili znak / za poništavanje "+id);
 				element.value = origval[id];
 				if (origval[id]=="/") element.value="";
 				element.focus();
