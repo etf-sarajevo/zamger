@@ -67,6 +67,7 @@ $q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prol
 if (mysql_num_rows($q10)<1) {
 	biguglyerror("Nepoznat ispit!");
 	zamgerlog ("nepoznat ispit $ispit",3);
+	zamgerlog2 ("nepoznat ispit", $ispit);
 	return;
 }
 
@@ -84,6 +85,7 @@ if (!$user_studentska && !$user_siteadmin) {
 	if (mysql_num_rows($q20) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet godina ag$ag",3); // 3 = error
+		zamgerlog2 ("nije saradnik na predmetu", intval($predmet), intval($ag)); // 3 = error
 		return;
 	}
 }
@@ -123,16 +125,20 @@ Prolaznost: <b><?=procenat($polozilo,$ukupno_izaslo)?></b></p>
 // Po broju bodova
 
 if ($maxbodova==20) { $rezolucija="0.5"; } else { $rezolucija="1"; }
-print "<p>Distribucija po broju bodova:<br/>(Svaki stupac predstavlja broj studenata sa određenim brojem bodova. Rezolucija je $rezolucija bodova)</p>";
+print "\n<p>Distribucija po broju bodova:<br/>(Svaki stupac predstavlja broj studenata sa određenim brojem bodova. Rezolucija je $rezolucija bodova)</p>\n\n";
+
+print "<SCRIPT>var studenataSaBodovima=[ ";
 
 // Odredjivanje max. broja studenata po koloni radi skaliranja grafa
 $max = 0;
 for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
 	$q300 = myquery("select COUNT( * ) FROM ispitocjene WHERE ispit=$ispit and ocjena>=$i and ocjena<".($i+$rezolucija));
 	$studenata = mysql_result($q300,0,0);
+	print "$studenata, ";
 	if ($studenata>$max) $max=$studenata;
 }
 if ($max>0) $koef = 80/$max; else $koef=80;
+print " ];</SCRIPT>\n\n";
 
 ?><table border="0" cellspacing="0" cellpadding="0"><tr><?
 for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {

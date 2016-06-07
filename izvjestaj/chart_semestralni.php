@@ -13,7 +13,7 @@ function izvjestaj_chart_semestralni() {
 	
 	$l=0;
 	$predmeti;
-	
+
 	// Ako je za studij odabrana Prva godina studija onda izbacujemo uslov
 	// studij iz sljedećeg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 
 	// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
@@ -29,9 +29,9 @@ function izvjestaj_chart_semestralni() {
 		else
 			$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' AND a.studij=$studij");
 		if (mysql_result($q6730,0,2)==0) continue; // preskačemo ankete bez rezultata
-		$data[$l]=mysql_result($q6730,0,0);
-		$predmeti[$predmet[1]] =$data[$l] ;
-		$stddev[$predmet[1]]=mysql_result($q6730,0,1);
+		$data[$l] = mysql_result($q6730,0,0);
+		$predmeti[$predmet[1]] = $data[$l];
+		$stddev[$predmet[1]] = mysql_result($q6730,0,1);
 		$l++;
 	}
 	
@@ -44,7 +44,7 @@ function izvjestaj_chart_semestralni() {
 
 
 function crtaj($data,$title,$stddev) {
-	
+		
 	$nval = sizeof($data); // broj vrijednosti
 	
 	$width = 600;
