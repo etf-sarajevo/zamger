@@ -1906,6 +1906,21 @@ INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjes
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `osoba_posebne_kategorije`
+--
+
+CREATE TABLE IF NOT EXISTS `osoba_posebne_kategorije` (
+  `osoba` int(11) NOT NULL,
+  `posebne_kategorije` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+--
+-- Dumping data for table `osoba_posebne_kategorije`
+--
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `plan_studija`
 --
 
@@ -1986,6 +2001,27 @@ CREATE TABLE IF NOT EXISTS `poruka` (
 -- Dumping data for table `poruka`
 --
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `posebne_kategorije`
+--
+
+CREATE TABLE IF NOT EXISTS `posebne_kategorije` (
+  `id` int(11) NOT NULL auto_increment,
+  `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=5 ;
+
+--
+-- Dumping data for table `posebne_kategorije`
+--
+
+INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
+(1, 'Porodica šehida i poginulih boraca'),
+(2, 'Porodica ratnih vojnih invalida'),
+(3, 'Porodica demobilisanih boraca'),
+(4, 'Porodica nosilaca ratnih priznanja');
 
 -- --------------------------------------------------------
 

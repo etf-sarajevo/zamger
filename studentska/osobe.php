@@ -180,7 +180,14 @@ if ($akcija == "podaci") {
 		$opcina_rodjenja = intval($_REQUEST['opcina_rodjenja']);
 		$drzava_rodjenja = intval($_REQUEST['drzava_rodjenja']);
 		$drzavljanstvo = intval($_REQUEST['drzavljanstvo']); if ($drzavljanstvo==0) $drzavljanstvo = "NULL";
-		if ($_REQUEST['boracke_kategorije'] == "on") $boracke_kategorije = 1; else $boracke_kategorije = 0;
+		
+		// Posebne kategorije
+		$q391 = myquery("SELECT id FROM posebne_kategorije");
+		while ($r391 = mysql_fetch_row($q391)) {
+			$q393 = myquery("DELETE FROM osoba_posebne_kategorije WHERE osoba=$osoba AND posebne_kategorije=$r391[0]");
+			if ($_REQUEST['posebne_kategorije_'.$r391[0]])
+				$q392 = myquery("INSERT INTO osoba_posebne_kategorije SET osoba=$osoba, posebne_kategorije=$r391[0]");
+		}
 		
 		$adresa = my_escape($_REQUEST['adresa']);
 		$adresa_mjesto = my_escape($_REQUEST['adresa_mjesto']);
@@ -230,7 +237,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, boracke_kategorije=$boracke_kategorije where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		zamgerlog2("promijenjeni licni podaci korisnika", $osoba);
@@ -460,6 +467,19 @@ if ($akcija == "podaci") {
 	while ($r260 = mysql_fetch_row($q260)) {
 		$email_adrese .= "<input type=\"text\" class=\"default\" name=\"email\" id=\"email$r260[0]\" value=\"$r260[1]\"> <input type=\"button\" class=\"default\" value=\"Izmijeni\" onclick=\"javascript:location.href='?sta=studentska/osobe&osoba=$osoba&akcija=podaci&subakcija=izmijenimail&mailid=$r260[0]&adresa='+document.getElementById('email$r260[0]').value;\"> <input type=\"button\" class=\"default\" value=\"Obriši\" onclick=\"javascript:location.href='?sta=studentska/osobe&osoba=$osoba&akcija=podaci&subakcija=obrisimail&mailid=$r260[0]';\"><br>\n";
 	}
+	
+	// Posebne kategorije
+	
+	$q262 = myquery("SELECT id, naziv FROM posebne_kategorije");
+	$posebne_ispis = "";
+	while ($r262 = mysql_fetch_row($q262)) {
+		$q264 = myquery("SELECT COUNT(*) FROM osoba_posebne_kategorije WHERE osoba=$osoba AND posebne_kategorije=$r262[0]");
+		if (mysql_result($q264,0,0) > 0)
+			$dodaj = "CHECKED";
+		else
+			$dodaj = "";
+		$posebne_ispis .= "<input type=\"checkbox\" name=\"posebne_kategorije_$r262[0]\" $dodaj>$r262[1]<br>";
+	}
 
 	?>
 
@@ -541,8 +561,8 @@ if ($akcija == "podaci") {
 		<td>Državljanstvo:</td>
 		<td><select name="drzavljanstvo" class="default"><?=$drzavljanstvor?></select></td>
 	</tr><tr>
-		<td>Boračke kategorije:</td>
-		<td><input type="checkbox" name="boracke_kategorije" <?=$boracke_kategorije?>></td>
+		<td>Posebne kategorije:</td>
+		<td><?=$posebne_ispis?></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Adresa:</td>
@@ -1095,6 +1115,7 @@ else if ($akcija == "upis") {
 
 		// Upisujemo studenta na novi studij
 		$q600 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
+		zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 
 		// Upisujemo na sve obavezne predmete na studiju
 		$q610 = myquery("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
@@ -1102,6 +1123,7 @@ else if ($akcija == "upis") {
 			// Da li ga je vec polozio
 			$q615 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
 			if (mysql_result($q615,0,0)<1) {
+				print "Obavezni predmet $r610[1]<br>";
 				upis_studenta_na_predmet($student, $r610[0]);
 				zamgerlog2("student upisan na predmet (obavezan)", $student, intval($r610[0]));
 			} else {
@@ -1114,6 +1136,7 @@ else if ($akcija == "upis") {
 			if (substr($key,0,8) != "izborni-") continue;
 			if ($value=="") continue;
 			$ponudakursa = intval(substr($key,8)); // drugi dio ključa je ponudakursa
+			print "Izborni predmet $ponudakursa<br>";
 			upis_studenta_na_predmet($student, $ponudakursa);
 			zamgerlog2("student upisan na predmet (izborni)", $student, $ponudakursa);
 			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
@@ -1197,7 +1220,7 @@ else if ($akcija == "ispis") {
 		}
 		$q550 = myquery("delete from student_studij where student=$osoba and akademska_godina=$ak_god and semestar=$semestar");
 		nicemessage("Ispisujem studenta sa studija $naziv_studija i svih predmeta koje trenutno sluša.");
-		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god)", 4);
+		zamgerlog("ispisujem studenta u$osoba sa studija $naziv_studija (ag$ak_god)", 4); // 4 - audit
 		zamgerlog2("student ispisan sa studija", $osoba, intval($ak_god));
 	} else {
 		?>
@@ -1589,6 +1612,7 @@ else if ($akcija == "izbori") {
 
 		$q3030 = myquery("insert into izbor set osoba=$osoba, zvanje=$zvanje, datum_izbora=FROM_UNIXTIME($datum_izbora), datum_isteka=$sqlisteka, oblast=$oblast, podoblast=$podoblast, dopunski=$dopunski, druga_institucija=$drugainst");
 		zamgerlog("dodani podaci o izboru za u$osoba", 2);
+		zamgerlog2("dodani podaci o izboru", $osoba);
 	}
 	if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
 		$izvanje = intval($_POST['_lv_column_zvanje']);
