@@ -171,7 +171,6 @@ if ($akcija == "podaci") {
 		$nacionalnost = intval($_REQUEST['nacionalnost']); if ($nacionalnost==0) $nacionalnost = "NULL";
 		$brindexa = my_escape($_REQUEST['brindexa']);
 
-		$djevojacko_prezime = my_escape($_REQUEST['djevojacko_prezime']);
 		$imeoca = my_escape($_REQUEST['imeoca']);
 		$prezimeoca = my_escape($_REQUEST['prezimeoca']);
 		$imemajke = my_escape($_REQUEST['imemajke']);
@@ -191,10 +190,6 @@ if ($akcija == "podaci") {
 
 		$strucni_stepen = intval($_REQUEST['_lv_column_strucni_stepen']); if ($strucni_stepen==-1) $strucni_stepen = "NULL";
 		$naucni_stepen = intval($_REQUEST['_lv_column_naucni_stepen']); if ($naucni_stepen==-1) $naucni_stepen = "NULL";
-
-		$maternji_jezik = intval($_REQUEST['_lv_column_maternji_jezik']);
-		$vozacka_dozvola = intval($_REQUEST['_lv_column_vozacki_kategorija']);
-		$nacin_stanovanja = intval($_REQUEST['_lv_column_nacin_stanovanja']);
 
 		// Sredjujem datum
 		if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
@@ -235,7 +230,7 @@ if ($akcija == "podaci") {
 			$admid = mysql_result($q3,0,0);
 		}
 
-		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, djevojacko_prezime='$djevojacko_prezime', maternji_jezik=$maternji_jezik, vozacka_dozvola=$vozacka_dozvola, nacin_stanovanja=$nacin_stanovanja, boracke_kategorije=$boracke_kategorije where id=$osoba");
+		$q395 = myquery("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen, boracke_kategorije=$boracke_kategorije where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		zamgerlog2("promijenjeni licni podaci korisnika", $osoba);
@@ -391,7 +386,7 @@ if ($akcija == "podaci") {
 
 	// Prikaz podataka
 
-	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika, djevojacko_prezime, maternji_jezik, vozacka_dozvola, nacin_stanovanja, boracke_kategorije from osoba where id=$osoba");
+	$q400 = myquery("select ime, prezime, imeoca, prezimeoca, imemajke, prezimemajke, spol, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, nacionalnost, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, boracke_kategorije, slika from osoba where id=$osoba");
 	if (!($r400 = mysql_fetch_row($q400))) {
 		zamgerlog("nepostojeca osoba u$osoba",3);
 		zamgerlog2("nepostojeca osoba", $osoba);
@@ -403,7 +398,7 @@ if ($akcija == "podaci") {
 	$muski=$zenski=$boracke_kategorije="";
 	if (mysql_result($q400,0,6)=="M") $muski=" CHECKED";
 	if (mysql_result($q400,0,6)=="Z") $zenski=" CHECKED";
-	if (mysql_result($q400,0,25) == 1) $boracke_kategorije = " CHECKED";
+	if (mysql_result($q400,0,20) == 1) $boracke_kategorije = " CHECKED";
 
 
 	// Spisak gradova
@@ -422,6 +417,7 @@ if ($akcija == "podaci") {
 		}
 		$gradovilist[] = $r410[1];
 	}
+
 
 	// Spisak država
 	
@@ -471,7 +467,7 @@ if ($akcija == "podaci") {
 	<h2><?=$ime?> <?=$prezime?> - izmjena ličnih podataka</h2>
 	<p>ID: <b><?=$osoba?></b></p>
 	<?
-	if (mysql_result($q400,0,20)=="") {
+	if (mysql_result($q400,0,21)=="") {
 		print genform("POST", "\"  enctype=\"multipart/form-data");
 		?>
 		<input type="hidden" name="subakcija" value="postavisliku">
@@ -515,9 +511,6 @@ if ($akcija == "podaci") {
 		<td>Broj indexa<br>(za studente):</td>
 		<td><input type="text" name="brindexa" value="<?=mysql_result($q400,0,8)?>" class="default"></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
-	</tr><tr>
-		<td>Djevojačko prezime:</td>
-		<td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,21)?>" class="default"></td>
 	</tr><tr>
 		<td>Ime oca:</td>
 		<td><input type="text" name="imeoca" value="<?=mysql_result($q400,0,2)?>" class="default"></td>
@@ -565,16 +558,6 @@ if ($akcija == "podaci") {
 		<td valign="top">Kontakt e-mail:</td>
 		<td><?=$email_adrese?>
 		<input type="text" name="emailnovi" id="emailnovi" class="default"> <input type="button" class="default" value="Dodaj" onclick="javascript:location.href='?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=podaci&subakcija=dodajmail&adresa='+document.getElementById('emailnovi').value;"></td>
-	</tr><tr><td colspan="2">&nbsp;</td>
-	</tr><tr>
-		<td>Maternji jezik:</td>
-		<td><?=db_dropdown("maternji_jezik",mysql_result($q400,0,22), " ") ?></td>
-	</tr><tr>
-		<td>Vozačka dozvola:</td>
-		<td><?=db_dropdown("vozacki_kategorija",mysql_result($q400,0,23), " ") ?></td>
-	</tr><tr>
-		<td>Način stanovanja:</td>
-		<td><?=db_dropdown("nacin_stanovanja",mysql_result($q400,0,24), " ") ?></td>
 	</tr><tr><td colspan="2">&nbsp;</td>
 	</tr><tr>
 		<td>Stručni stepen:</td>
@@ -1978,6 +1961,7 @@ else if ($akcija == "edit") {
 	}
 	$ime = mysql_result($q200,0,0);
 	$prezime = mysql_result($q200,0,1);
+	$jmbg = mysql_result($q200,0,6);
 	$slika = mysql_result($q200,0,14);
 
 	// Pripremam neke podatke za ispis
@@ -2035,7 +2019,7 @@ else if ($akcija == "edit") {
 		Ime: <b><?=$ime?></b><br/>
 		Prezime: <b><?=$prezime?></b><br/>
 		Broj indexa (za studente): <b><?=mysql_result($q200,0,3)?></b><br/>
-		JMBG: <b><?=mysql_result($q200,0,6)?></b><br/>
+		JMBG: <b><?=$jmbg?></b><br/>
 		<br/>
 		Datum rođenja: <b><?
 		if (mysql_result($q200,0,4)) print date("d. m. Y.", mysql_result($q200,0,4))?></b><br/>
