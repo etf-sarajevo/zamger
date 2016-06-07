@@ -24,7 +24,7 @@
 
 function saradnik_zadaca() {
 
-global $conf_files_path,$userid,$user_siteadmin;
+global $conf_files_path,$userid,$user_siteadmin,$conf_code_viewer;
 
 require("lib/autotest.php"); 
 require("lib/manip.php"); // radi update_komponente
@@ -60,7 +60,7 @@ if (!$user_siteadmin) {
 
 // Podaci o zadaci
 
-$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
+$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik, p.ace from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
 if (mysql_num_rows($q20)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
 	zamgerlog2("nepostojeca zadaca", $zadaca);
@@ -76,6 +76,7 @@ $komponenta = mysql_result($q20,0,5);
 $predmet = mysql_result($q20,0,6);
 $ag = mysql_result($q20,0,7);
 $id_jezika = mysql_result($q20,0,8);
+$ace_mode = mysql_result($q20,0,9);
 
 
 if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
@@ -327,19 +328,55 @@ if ($attach == 0) {
 
 		$no_lines = count(explode("\n", $src));
 	
-		// geshi - biblioteka za syntax highlighting
-		
-		include_once('lib/geshi/geshi.php');
-		$geshi = new GeSHi($src, $jezik);
+		// ACE code editor
+		if ($conf_code_viewer == "ace" && $id_jezika > 0) {
+			// Ako nije definisan programski jezik geshi je lakši
+			?>
+			<div id="editor"><?=htmlspecialchars($src)?></div>
+			<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+			<script>
+			var editor = ace.edit("editor");
+			//editor.setTheme("ace/theme/monokai");
+			editor.getSession().setMode("ace/mode/<?=$ace_mode?>");
 
-		?>
-		<center><table width="95%" style="border:1px solid silver;"><tr>
-		<!-- Brojevi linija -->
-		<td bgcolor="#CCCCCC" align="left"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
-		<td  bgcolor="#F3F3F3" align="left">
-		<?
-		print $geshi->parse_code();
-		?></td></tr></table></center><br/><?
+			// Stavljamo visinu ACE editora na dužinu koda
+			var newHeight =
+			editor.getSession().getScreenLength()
+			* editor.renderer.lineHeight
+			+ editor.renderer.scrollBar.getWidth() + 20; // 20 = jedan prazan red na kraju
+			/*$('#editor').height(newHeight.toString() + "px");
+			$('#editor-section').height(newHeight.toString() + "px");
+			editor.resize();*/
+			document.getElementById('editor').style.height = newHeight.toString() + "px";
+			document.getElementById('editor-section').style.height = newHeight.toString() + "px";
+			editor.resize();
+
+			// Not editable
+			editor.setOptions({
+			readOnly: true,
+			highlightActiveLine: false,
+			highlightGutterLine: false
+			})
+			editor.renderer.$cursorLayer.element.style.opacity=0
+			editor.textInput.getElement().tabIndex=-1
+			editor.commands.commmandKeyBinding={}
+			</script>
+			<?
+			
+		// geshi - biblioteka za syntax highlighting
+		} else {
+			include_once('lib/geshi/geshi.php');
+			$geshi = new GeSHi($src, $jezik);
+
+			?>
+			<center><table width="95%" style="border:1px solid silver;"><tr>
+			<!-- Brojevi linija -->
+			<td bgcolor="#CCCCCC" align="left"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
+			<td  bgcolor="#F3F3F3" align="left">
+			<?
+			print $geshi->parse_code();
+			?></td></tr></table></center><br/><?
+		}
 
 		if ($_REQUEST["akcija"] == "test_sa_kodom") return;
 
@@ -393,6 +430,7 @@ if ($attach == 0) {
 			Veličina: <b><?=$velicina?></b></p>
 			</td></tr></table></center><br/>
 			<?
+
 		} else {
 			?>
 			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
@@ -568,10 +606,6 @@ if (mysql_num_rows($q160)>1) {
 
 
 } // function saradnik_zadaca()
-
-
-
-
 
 
 ?>

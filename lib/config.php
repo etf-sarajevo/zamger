@@ -64,6 +64,10 @@ $conf_email = true;
 // Mailovi koje šalje zamger će imati ovu vrijednost u From: polju
 $conf_admin_email = "vljubovic@etf.unsa.ba";
 
+// Preglednik za sourcecode (moguće vrijednosti: ace, geshi)
+$conf_code_viewer = "ace";
+//$conf_code_viewer = "geshi";
+
 
 // ------ MOODLE INTEGRACIJA ---------
 
