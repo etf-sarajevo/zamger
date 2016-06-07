@@ -2357,6 +2357,9 @@ else if ($akcija == "edit") {
 				$naziv_nove_ak_god = mysql_result($q230,0,1);
 			}
 		}
+			?>
+			<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$id_ak_god?>">Upiši na <?=($semestar+1)?>. semestar</a>
+			<?
 
 
 
