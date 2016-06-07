@@ -889,6 +889,7 @@ else if ($akcija == "upis") {
 						if ($ok_izvrsiti_upis==0) print " - nije pronađena ponuda kursa!! Kreiram.\n";
 						$q701 = myquery("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
 						$q700 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+						$pkid = mysql_result($q700,0,0);
 						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
 						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
 					} 
@@ -1069,11 +1070,23 @@ else if ($akcija == "upis") {
 				// Stoga moramo provjeriti i to i preskočiti takve predmete
 				if (mysql_num_rows($q592)<1) continue;
 
-				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=".mysql_result($q592,0,0)." and semestar=".mysql_result($q592,0,1)." and akademska_godina=$godina");
+				print "Ponovo upisujem studenta u predmet $naziv_predmeta ($predmet) koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br>";
+				$studij_stara_pk = mysql_result($q592,0,0);
+				$semestar_stara_pk = mysql_result($q592,0,1);
 
-				upis_studenta_na_predmet($student, mysql_result($q594,0,0));
-				zamgerlog2("student upisan na predmet (preneseni)", $student, intval(mysql_result($q594,0,0)));
-				print "-- Upisan u predmet $naziv_predmeta koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br/>\n";
+				// Tražimo istu ponudu kursa u aktuelnoj godini
+				$q594 = myquery("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina");
+				if (mysql_num_rows($q594) > 0)
+					$nova_pk = mysql_result($q594,0,0);
+				else {
+					// Ponuda kursa ne postoji u aktuelnoj godini, kreiramo je
+					print "-- Kreiram ponudu kursa za predmet $predmet, studij $studij_stara_pk, semestar $semestar_stara_pk<br>";
+					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true);
+				}
+
+				upis_studenta_na_predmet($student, $nova_pk);
+				zamgerlog2("student upisan na predmet (preneseni)", $student, intval($nova_pk));
+				print "-- Upisan u predmet $predmet<br/>\n";
 			}
 		}
 
