@@ -1220,6 +1220,57 @@ else if ($akcija == "ispis") {
 }
 
 
+// Promjena načina studiranja
+
+else if ($akcija == "promijeni_nacin") {
+	$studij = intval($_REQUEST['studij']);
+	$semestar = intval($_REQUEST['semestar']);
+	$godina = intval($_REQUEST['godina']);
+
+	$q10 = myquery("SELECT ime, prezime, brindexa FROM osoba WHERE id=$osoba");
+	$ime = mysql_result($q10,0,0);
+	$prezime = mysql_result($q10,0,1);
+	$brindexa = mysql_result($q10,0,2);
+	
+	$q20 = myquery("SELECT nacin_studiranja FROM student_studij WHERE student=$osoba AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina");
+	if (mysql_num_rows($q20)<1) {
+		niceerror("Greška");
+		return;
+	}
+	$nacin = mysql_result($q20,0,0);
+
+	if ($_REQUEST['subakcija'] == "mijenjaj") {
+		$nacin = intval($_REQUEST['_lv_column_nacin_studiranja']);
+		$q50 = myquery("UPDATE student_studij SET nacin_studiranja=$nacin WHERE student=$osoba AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina");
+		nicemessage("Promijenjen način studiranja za studenta $ime $prezime");
+		print "<p><a href=\"?sta=studentska/osobe&amp;akcija=edit&amp;osoba=$osoba\">Nazad na podatke o studentu $ime $prezime</a></p>\n";
+		zamgerlog("promijenjen nacin studiranja za u$osoba na $nacin", 4);
+		zamgerlog2("promijenjen nacin studiranja", $osoba, $nacin);
+		return;
+	}
+
+	// Podaci za ispis na ekran	
+	$q30 = myquery("SELECT naziv FROM studij WHERE id=$studij");
+	$naziv_studija = mysql_result($q30,0,0);
+	$q40 = myquery("SELECT naziv FROM akademska_godina WHERE id=$godina");
+	$naziv_godine = mysql_result($q40,0,0);
+	
+	
+	?>
+	<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
+	
+	<h3><?=$ime?> <?=$prezime?> (<?=$brindexa?>)</h3>
+	
+	<p>Način studiranja na: <b><?=$naziv_studija?>, <?=$naziv_godine?>, <?=$semestar?>. semestar</b></p>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="mijenjaj">
+	<?=db_dropdown("nacin_studiranja",$nacin) ?><br>
+	<input type="submit" value=" Promijeni ">
+	</form>
+	<?
+}
+
+
 
 // Pregled predmeta za koliziju i potvrda
 
@@ -2298,7 +2349,7 @@ else if ($akcija == "edit") {
 
 		} else {
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put) <?=$nacin_studiranja?> (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>)</p>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put) <?=$nacin_studiranja?> (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>) (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&amp;akcija=promijeni_nacin&amp;studij=<?=$studij_id?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$id_ak_god?>">promijeni način studiranja</a>)</p>
 			<?
 			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
 			if (mysql_num_rows($q230)>0) {
