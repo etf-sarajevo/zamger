@@ -589,15 +589,19 @@ function studentski_meni($fj) {
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r40[0]</a><br/>\n";
 			}
 
-			// Da li ima aktivna anketa i da li je istekao rok?
+			// Da li postoji anketa za dati predmet ili sve predmete u trenutnom semestru?
 			if ($modul_anketa) {
-				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1");
-				if (mysql_num_rows($q42)!=0) { // da li uopce ima kreirana anketa ako ne , ne radi nista
-					$rok=mysql_result($q42,0,0);
-					if (time () < $rok) {
-						$q42b =  myquery("select id from anketa_anketa a where a.aktivna=1");
-						if(mysql_num_rows($q42b)>0)
-							$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
+				$q42 = myquery("select a.id, a.naziv, ap.aktivna from anketa_anketa as a, anketa_predmet as ap where ap.anketa=a.id and a.akademska_godina=$pag and (ap.predmet=$predmet or ap.predmet IS NULL) and ap.semestar=$zimskiljetnji");
+				if (mysql_num_rows($q42) == 1) { // Samo jedna anketa, dajemo link pod nazivom "Rezultati ankete"
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+					if ($_REQUEST['sta'] != "student/anketa")
+						$ispis .= "<a href=\"?sta=student/anketa&anketa=".mysql_result($q42,0,0)."&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
+					$ispis .= "Rezultati ankete";
+					if ($_REQUEST['sta'] != "student/anketa") $ispis .= "</a>";
+					$ispis .= "<br/>\n";
+				} else {
+					while ($r42 = mysql_fetch_row($q42)) {
+						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&anketa=$r42[0]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r42[1]</a><br/>\n";
 					}
 				}
 			}
