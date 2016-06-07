@@ -4119,7 +4119,6 @@ CREATE TABLE IF NOT EXISTS `zavrsni` (
   `predsjednik_komisije` INT(11) NOT NULL,
   `clan_komisije` INT(11) NOT NULL,
   `termin_odbrane` datetime NOT NULL,
-  `konacna_ocjena` int(11) NOT NULL DEFAULT '5',
   `broj_diplome` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `tema_odobrena` tinyint(4) NOT NULL default '0',
   `sala` varchar(20) collate utf8_slovenian_ci NOT NULL,
