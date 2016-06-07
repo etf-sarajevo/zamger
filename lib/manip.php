@@ -502,13 +502,15 @@ function update_komponente($student,$predmet,$komponenta=0) {
 					$bodovi = $minbodova + round(($maxbodova - $minbodova) * (($casova-$odsustva) / $casova), 2 );
 			
 			} else if ($maxodsustva == -2) { // Paraproporcionalni sistem TP
+			// TODO: svo prisustvo se može generalizovati na ovaj sistem, pa tako treba i uraditi
 				if ($odsustva <= 2)
 					$bodovi = $maxbodova;
 				else if ($odsustva <= 2 + ($maxbodova-$minbodova)/2)
 					$bodovi = $maxbodova - ($odsustva-2)*2;
 				else
 					$bodovi = $minbodova;
-			
+
+			// Uobičajeni princip
 			} else if ($odsustva > $maxodsustva)
 				$bodovi=$minbodova;
 			else
@@ -752,9 +754,8 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 			else $q110 = myquery("insert into moodle_predmet_id set akademska_godina=$ag, predmet=$predmet, moodle_id=$moodle_id");
 		}
 	} else {
-		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Nema podatka od prošle godine za moodle_predmet_id<br>\n";
+		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- E: Nema podatka od prošle godine za moodle_predmet_id<br>\n";
 	}
-
 
 	// Kopiram podatak od prošle godine za angažman
 	$q120 = myquery("select count(*) from angazman where predmet=$predmet and akademska_godina=$ag");
@@ -805,7 +806,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 // na koliziju, ali trenutno ne vidim kako to izvesti a da nekome ne postane invalidan odabir predmeta
 
 function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
-	global $userid;
+	global $userid; // TODO ovo treba biti parametar $student...
 //	print "Provjeravam kapacitet $predmet za godinu $zagodinu<br>";
 	// Provjera kapaciteta
 	$q112 = myquery("SELECT kapacitet, kapacitet_ekstra FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$zagodinu");
@@ -836,6 +837,39 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 			return 0;
 	}
 	return 1;
+}
+
+
+// Da li je student ostvario preduvjete za dati predmet?
+// Povratna vrijednost: niz IDova predmeta koji su preduvjet a nisu položeni
+
+function provjeri_preduvjete($predmet, $student, $studij, $najnoviji_plan) {
+	$rezultat = array();
+
+	$q100 = myquery("SELECT preduvjet FROM preduvjeti WHERE predmet=$predmet");
+	while ($r100 = mysql_fetch_row($q100)) {
+		$preduvjet = $r100[0];
+
+		// Da li je preduvjet po najnovijem planu na istoj ili višoj godini kao predmet?
+		$q110 = myquery("SELECT semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND studij=$studij AND predmet=$predmet AND obavezan=1");
+		if (mysql_num_rows($q110)==0) 
+			$q110 = myquery("SELECT ps.semestar FROM plan_studija ps, izborni_slot pis WHERE ps.godina_vazenja=$najnoviji_plan AND ps.studij=$studij AND ps.obavezan=0 AND ps.predmet=pis.id AND pis.predmet=$predmet");
+		if (mysql_num_rows($q110)==0) { niceerror("Predmet nije pronađen u planu i programu"); return; }
+		$godina_predmeta = (mysql_result($q110,0,0)+1)/2;
+
+		$q115 = myquery("SELECT semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND studij=$studij AND predmet=$preduvjet AND obavezan=1");
+		if (mysql_num_rows($q115)==0) 
+			$q115 = myquery("SELECT ps.semestar FROM plan_studija ps, izborni_slot pis WHERE ps.godina_vazenja=$najnoviji_plan AND ps.studij=$studij AND ps.obavezan=0 AND ps.predmet=pis.id AND pis.predmet=$preduvjet");
+		if (mysql_num_rows($q115)==0) { niceerror("Preduvjet nije pronađen u planu i programu"); return; }
+		$godina_preduvjeta = (mysql_result($q115,0,0)+1)/2;
+
+		if ($godina_preduvjeta >= $godina_predmeta) continue;
+
+		// Da li je položio?
+		$q120 = myquery("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$preduvjet AND ocjena>5");
+		if (mysql_result($q120,0,0) == 0) array_push($rezultat, $preduvjet);
+	}
+	return $rezultat;
 }
 
 ?>

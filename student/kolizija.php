@@ -6,11 +6,10 @@
 
 
 
-
 function student_kolizija() {
 
 	global $userid;
-
+	
 	require("lib/manip.php");
 
 	// Naslov
@@ -107,7 +106,7 @@ function student_kolizija() {
 				if ($r30[0]<$trenutni_semestar-1) $predmet_stari[$r30[1]]=1; // predmet sa nizih godina se ne moze prenijeti
 				else $predmet_stari[$r30[1]]=0;
 			}
-			
+
 		} else { // izborni predmet
 			$izborni[$r30[1]]++;
 			$q60 = myquery("select p.id, p.naziv, p.ects from izborni_slot as iz, predmet as p, ponudakursa as pk, student_predmet as sp where iz.id=$r30[1] and iz.predmet=p.id and p.id=pk.predmet and pk.akademska_godina=$proslagodina and pk.id=sp.predmet and sp.student=$userid");
@@ -252,7 +251,7 @@ function student_kolizija() {
 		$zze=$zle=0;
 		$predmeti1=$predmeti2=array();
 		foreach($_POST as $key => $value) {
-			if (substr($key,0,10)=="obavezni1-" || substr($key,0,10)=="izborni1--") {
+			if (substr($key,0,10)=="obavezni1-" || substr($key,0,10)=="iizborni1-") {
 				$predmet=intval(substr($key,10));
 				$q200 = myquery("select ects from predmet where id=$predmet");
 				if (mysql_num_rows($q200)<1) {
@@ -262,7 +261,7 @@ function student_kolizija() {
 				$zze+=mysql_result($q200,0,0);
 				array_push($predmeti1,$predmet);
 			}
-			if (substr($key,0,10)=="obavezni2-" || substr($key,0,10)=="izborni2--") {
+			if (substr($key,0,10)=="obavezni2-" || substr($key,0,10)=="iizborni2-") {
 				$predmet=intval(substr($key,10));
 				$q200 = myquery("select ects from predmet where id=$predmet");
 				if (mysql_num_rows($q200)<1) {
@@ -304,6 +303,7 @@ function student_kolizija() {
 			}
 		}
 		zamgerlog("student u$userid kreirao zahtjev za koliziju", 2); // 2 - edit
+		zamgerlog2("kreirao zahtjev za koliziju"); // 2 - edit
 		nicemessage("Kreirali ste zahtjev za koliziju.");
 		?>
 		<p>Studentska služba će vas upisati na odgovarajuće predmete prilikom upisa na godinu.</p>
@@ -594,6 +594,55 @@ function student_kolizija() {
 	<?
 
 
+
+	// Pomoćna PHP funkcija koja ispisuje jedan predmet
+	function dajpredmet($predmet, $studij, $najnoviji_plan, $izborni, $zimski) {
+		global $userid;
+
+		// Ako je vec položen predmet preskačemo
+		$q45 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$predmet");
+		if (mysql_result($q45,0,0)>0) return;
+
+		$q50 = myquery("select naziv, ects from predmet where id=$predmet");
+		$pnaziv = mysql_result($q50,0,0);
+		$pects = mysql_result($q50,0,1);
+
+		// Završni rad se ne može izabrati u koliziji
+		if ($pects == 12) return;
+
+		if ($izborni) {
+			$dodaj = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+			$cbid = "iizborni";
+		} else {
+			$dodaj = "";
+			$cbid = "obavezni";
+		}
+		if ($zimski) {
+			$jsid = "0";
+			$cbid .= "1"; 
+		} else { $jsid = "1"; $cbid .= "2"; } // bezveze :( popraviti
+		
+
+		// Provjera preduvjeta
+		$preduvjeti = provjeri_preduvjete($predmet, $userid, $studij, $najnoviji_plan);
+		if (!empty($preduvjeti)) {
+			?>
+			<?=$dodaj?><?=$pnaziv?> (<?=$pects?> ECTS) - ne možete izabrati ovaj predmet jer niste položili sljedeće predmete:
+			<?
+			foreach ($preduvjeti as $preduvjet) {
+				$q55 = myquery("SELECT naziv FROM predmet WHERE id=$preduvjet");
+				print mysql_result($q55,0,0).", ";
+			}
+			print "<br>\n";
+		} else {
+			?>
+			<?=$dodaj?><input type="checkbox" name="<?=$cbid?>-<?=$predmet?>" onchange="javascript:updateects(<?=$jsid?>, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br>
+			<?
+		}
+
+	}
+
+
 	// Ispis
 
 	?>
@@ -605,25 +654,13 @@ function student_kolizija() {
 	<p><span id="zimskicrveno"><b><?=($godina*2-1)?>. semestar (izabrano <span id="zimskiizbor">0</span> kredita, max. <?=(30-$zimskiects)?>):</b></span><br />
 	<?
 
+	// ZIMSKI SEMESTAR
 
 	$q40 = myquery("select predmet, obavezan from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and semestar=".($godina*2-1)." order by obavezan desc, predmet");
 	$is_bilo=array();
 	while ($r40 = mysql_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
-			// Ako je vec polozen predmet preskacemo
-			$q45 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r40[0]");
-			if (mysql_result($q45,0,0)>0) continue; // Ako je vec polozen predmet preskacemo
-
-			$q50 = myquery("select naziv, ects from predmet where id=$r40[0]");
-			$pnaziv = mysql_result($q50,0,0);
-			$pects = mysql_result($q50,0,1);
-
-			// Zavrsni rad se ne moze izabrati u koliziji
-			if ($pects == 12) continue;
-
-			?>
-			<input type="checkbox" name="obavezni1-<?=$r40[0]?>" onchange="javascript:updateects(0, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br />
-			<?
+			dajpredmet($r40[0], $studij, $najnoviji_plan, false, true);
 		} else { // izborni
 
 			if (count($is_bilo)==0) {
@@ -636,44 +673,23 @@ function student_kolizija() {
 
 			$q60 = myquery("select p.id, p.naziv, p.ects from predmet as p, izborni_slot as iz where iz.id=$r40[0] and iz.predmet=p.id");
 			while ($r60 = mysql_fetch_row($q60)) {
-				// Ako je vec polozen predmet preskacemo
-				$q65 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[0]");
-				if (mysql_result($q65,0,0)>0) continue; // Ako je vec polozen predmet preskacemo
-
-				$pnaziv=$r60[1];
-				$pects=$r60[2];
-				?>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-				<input type="checkbox" name="izborni1--<?=$r60[0]?>" onchange="javascript:updateects(0, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br />
-				<?
+				dajpredmet($r60[0], $studij, $najnoviji_plan, true, true);
 			}
 		}
 	}
 
 
+	// LJETNJI SEMESTAR
+
 	?>
 	<p><span id="ljetnjicrveno"><b><?=($godina*2)?>. semestar (izabrano <span id="ljetnjiizbor">0</span> kredita, max. <?=(30-$ljetnjiects)?>):</b></span><br />
 	<?
-
 
 	$q40 = myquery("select predmet, obavezan from plan_studija where godina_vazenja=$najnoviji_plan and studij=$studij and semestar=".($godina*2)." order by obavezan desc, predmet");
 	$is_bilo=array();
 	while ($r40 = mysql_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
-			// Ako je vec polozen predmet preskacemo
-			$q45 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r40[0]");
-			if (mysql_result($q45,0,0)>0) continue; // Ako je vec polozen predmet preskacemo
-
-			$q50 = myquery("select naziv, ects from predmet where id=$r40[0]");
-			$pnaziv = mysql_result($q50,0,0);
-			$pects = mysql_result($q50,0,1);
-
-			// Zavrsni rad se ne moze izabrati u koliziji
-			if ($pects == 12) continue;
-
-			?>
-			<input type="checkbox" name="obavezni2-<?=$r40[0]?>" onchange="javascript:updateects(1, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br />
-			<?
+			dajpredmet($r40[0], $studij, $najnoviji_plan, false, false);
 		} else { // izborni
 
 			if (count($is_bilo)==0) {
@@ -686,16 +702,7 @@ function student_kolizija() {
 
 			$q60 = myquery("select p.id, p.naziv, p.ects from predmet as p, izborni_slot as iz where iz.id=$r40[0] and iz.predmet=p.id");
 			while ($r60 = mysql_fetch_row($q60)) {
-				// Ako je vec polozen predmet preskacemo
-				$q65 = myquery("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[0]");
-				if (mysql_result($q65,0,0)>0) continue; // Ako je vec polozen predmet preskacemo
-
-				$pnaziv=$r60[1];
-				$pects=$r60[2];
-				?>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-				<input type="checkbox" name="izborni2--<?=$r60[0]?>" onchange="javascript:updateects(1, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br />
-				<?
+				dajpredmet($r60[0], $studij, $najnoviji_plan, true, false);
 			}
 		}
 	}

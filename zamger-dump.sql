@@ -2222,6 +2222,23 @@ CREATE TABLE IF NOT EXISTS `predmet_projektni_parametri` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `preduvjeti`
+--
+
+CREATE TABLE IF NOT EXISTS `preduvjeti` (
+  `predmet` int(11) NOT NULL,
+  `preduvjet` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+--
+-- Dumping data for table `preduvjeti`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `preference`
 --
 
