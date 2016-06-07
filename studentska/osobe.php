@@ -2105,9 +2105,8 @@ else if ($akcija == "edit") {
 		ID: <b><?=$osoba?></b><br/>
 		<br/>
 		</form>
-		<form action="index.php" method="GET">
-		<input type="hidden" name="sta" value="common/profil">
-		<input type="hidden" name="osoba" value="<?=$osoba?>">
+		<?=genform("GET")?>
+		<input type="hidden" name="akcija" value="podaci">
 		<input type="Submit" value=" Izmijeni "></form></td>
 	</tr></table>
 	<?
