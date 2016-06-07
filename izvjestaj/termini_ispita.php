@@ -7,6 +7,7 @@ function izvjestaj_termini_ispita() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
+
 ?>
 
 <p>Univerzitet u Sarajevu<br/>
@@ -28,6 +29,7 @@ else{
 	$ispit = mysql_result($q8,0,0);
 }
 
+
 $q9 = myquery("select komponenta from ispit where id=$ispit");
 if (mysql_num_rows($q9)<1) {
 	niceerror("Nepostojeći ispit.");
@@ -36,11 +38,7 @@ if (mysql_num_rows($q9)<1) {
 $komp = mysql_result($q9,0,0);
 // Upit za ispit
 
-if ($komp<=4) { // FIXME Oznake komponente <= 4 se koriste za regularne ispite
-	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-} else {
-	$q10 = myquery("select UNIX_TIMESTAMP(i.datum), d.naziv, i.predmet, i.akademska_godina from ispit as i, dogadjaj as d where i.id=$ispit and i.komponenta=d.id");	
-}
+$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 
 $predmet = mysql_result($q10,0,2);
 $ag = mysql_result($q10,0,3);
@@ -161,7 +159,7 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	$broj_ispita=0;
 	$ispit_zaglavlje="";
 	$oldkomponenta=0;
-	
+
 	$ispit_id_array = array();
 	
 	$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
@@ -169,8 +167,8 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	while ($r30 = mysql_fetch_row($q30)) {
 		$komponenta = $r30[2];
 		$imeispita = $r30[3];
-		$tipkomponente = $r30[4];
-		
+		$tipkomponente = $r30[4];	
+
 		$ispit_zaglavlje .= "<td align=\"center\">$imeispita<br/> ".date("d.m.",$r30[1])."</td>\n";
 		$broj_ispita++;
 	
@@ -223,6 +221,7 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 		$zaglavlje1 .= "<td rowspan=\"2\" align=\"center\">$knaziv</td>\n";
 	
 	
+	
 		?>
 	<table border="1" cellspacing="0" cellpadding="2">
 		<tr><td rowspan="2" align="center">R.br.</td>
@@ -258,7 +257,7 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 			<td><?=$stud_imepr?></td>
 			<td><?=$brindexa[$stud_id]?></td>
 			<?
-	
+
 		if ($treba_grupe) {
 			$q220 = myquery("SELECT l.naziv FROM labgrupa as l, student_labgrupa as sl WHERE l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0 AND l.id=sl.labgrupa AND sl.student=$stud_id");
 			if (mysql_num_rows($q220)==0) 
@@ -269,7 +268,7 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 			<td><?=$grupa?></td>
 			<?
 		}
-
+	
 		$ispis="";
 		$bodova=0; // Zbir bodova koje je student ostvario
 

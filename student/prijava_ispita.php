@@ -9,7 +9,7 @@ global $userid;
 
 
 ?>
-<h3>Prijava ispita/događaja</h3>
+<h3>Prijava ispita</h3>
 <?
 
 // Trebaće nam aktuelna godina
@@ -50,8 +50,9 @@ if ($_GET["akcija"]=="odjavi") {
 	
 	$predmet = mysql_result($q200,0,0);
 	$q210 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
-	nicemessage("Uspješno ste odjavljeni sa ispita/događaja.");
+	nicemessage("Uspješno ste odjavljeni sa ispita.");
 	zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
+	zamgerlog2("odjavljen sa termina", $termin);
 }
 
 
@@ -84,11 +85,12 @@ if ($_GET["akcija"]=="prijavi") {
 		// Da li je već prijavio termin na istom ispitu?
 		$q135 = myquery("select count(*) from student_ispit_termin as sit, ispit_termin as it where sit.student=$userid and sit.ispit_termin=it.id and it.ispit=$ispit");
 		if (mysql_result($q135,0,0)>0) {
-			niceerror("Već ste prijavljeni na neki termin za ovaj ispit/događaj.");
+			niceerror("Već ste prijavljeni na neki termin za ovaj ispit.");
 		} else {
 			$q140 = myquery("INSERT INTO student_ispit_termin (student,ispit_termin) VALUES ($userid, $termin)");
 			nicemessage("Uspješno ste prijavljeni na termin");
-			zamgerlog("prijavljen na termin za ispit/događaj (pp$predmet)", 2);
+			zamgerlog("prijavljen na termin za ispit (pp$predmet)", 2);
+			zamgerlog2("prijavljen na termin", $termin);
 		}
 	}
 }
@@ -99,18 +101,15 @@ if ($_GET["akcija"]=="prijavi") {
 
 // Spisak ispita koji se mogu prijaviti
 
-$q10=myquery("(SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata 
+$q10=myquery("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata 
 	FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk 
 	WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
-	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme) union (SELECT it.id, p.id, d.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), d.naziv, it.maxstudenata 
-	FROM ispit_termin as it, ispit as i, predmet as p, dogadjaj as d, osoba as o, student_predmet as sp, ponudakursa as pk 
-	WHERE it.ispit=i.id AND i.komponenta=d.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
-	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme);");
+	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
 
 
 ?>
 <br><br>
-<b>Ispiti/Događaji otvoreni za prijavu:</b>
+<b>Ispiti otvoreni za prijavu:</b>
 <br><br>
 <table border="0" cellspacing="1" cellpadding="5">
 <thead>
@@ -118,8 +117,8 @@ $q10=myquery("(SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumv
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Predmet</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Rok za prijavu</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita/događaja</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita/događaja</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
 </thead>
@@ -210,20 +209,17 @@ while ($r10=mysql_fetch_row($q10)) {
 ?>
 <br><br><br>
 
-<b>Prijavljeni ispiti/događaji:</b>
+<b>Prijavljeni ispiti:</b>
 
 <?
 
 
 //slijedeci dio koda sluzi za tabelarni prikaz prijavljenih predmeta
 
-$q60 = myquery("(SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
+$q60 = myquery("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
              WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id
-             ORDER BY it.datumvrijeme) union (SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), d.naziv, it.id, p.id
-             FROM ispit_termin as it, ispit as i, predmet as p, dogadjaj as d, student_ispit_termin as sit
-             WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=d.id AND sit.student=$userid AND sit.ispit_termin=it.id
-             ORDER BY it.datumvrijeme);");
+             ORDER BY it.datumvrijeme");
 
 ?>
 <br><br>
@@ -232,8 +228,8 @@ $q60 = myquery("(SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, i
 <tr bgcolor="#999999">
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">R.br.</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Predmet</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita/događaja</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita/događaja</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Vrijeme ispita</font></td>
+	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
 </tr>
 </thead>
@@ -271,7 +267,7 @@ while ($r60=mysql_fetch_row($q60)) {
 </table>
 <?
 
-if($brojac==1) print "<p>Niste prijavljeni niti na jedan ispit/događaj</p>";
+if($brojac==1) print "<p>Niste prijavljeni niti na jedan ispit</p>";
 
 
 
