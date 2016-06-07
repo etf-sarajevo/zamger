@@ -31,7 +31,7 @@ function student_zavrsni()  {
 	if ($akcija == 'prijava') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
 		
-		$q105 = myquery("SELECT student FROM zavrsni WHERE id=$zavrsni AND predmet=$predmet AND akademska_godina=$ag");
+		$q105 = myquery("SELECT student FROM zavrsni WHERE id=$zavrsni AND predmet=$predmet AND akademska_godina=$ag AND tema_odobrena=1");
 		if (mysql_num_rows($q105)<1) {
 			niceerror("Završni rad nije sa ovog predmeta");
 			zamgerlog("spoofing zavrsnog rada $zavrsni", 3);
@@ -69,7 +69,7 @@ function student_zavrsni()  {
 		}
 		if (mysql_result($q115,0,0)==0) {
 			nicemessage("Uspješno ste odjavljeni za završni rad.");
-			zamgerlog("niko nije prijavjlen na zavrsni $zavrsni", 3);
+			zamgerlog("niko nije prijavljen na zavrsni $zavrsni", 3);
 			return;
 		}
 		if (mysql_result($q115,0,0)!=$userid) {
@@ -95,7 +95,7 @@ function student_zavrsni()  {
 	
 	if ($akcija == 'detalji') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
-		$q130 = myquery("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE id=$zavrsni");
+		$q130 = myquery("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE id=$zavrsni AND tema_odobrena=1");
 		$naslov = mysql_result($q130,0,0);
 		$podnaslov = mysql_result($q130,0,1);
 		$kpregled = mysql_result($q130,0,2);
@@ -160,9 +160,9 @@ function student_zavrsni()  {
 		?>
 		<h2>Lista tema završnih radova</h2>
 		<?
-
+		
 		// Početne informacije
-		$q901 = myquery("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naslov");
+		$q901 = myquery("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag AND tema_odobrena=1 ORDER BY naslov");
 		$broj_tema = mysql_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
