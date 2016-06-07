@@ -99,6 +99,12 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	nicemessage("Poruka uspješno poslana");
 	zamgerlog("poslana poruka za u$prim_id",2);
 	zamgerlog2("poslana poruka", intval($prim_id));
+
+	// Slanje GCM poruke
+	require("gcm/push_message.php");
+	$q320 = myquery("select ime, prezime from osoba where id=$userid");
+	$r320 = mysql_fetch_row($q320);
+	push_message(array($prim_id), "Poruke", "Nova lična poruka od $r320[0] $r320[1]");
 }
 
 if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
@@ -440,27 +446,7 @@ if ($poruka>0) {
 		<table border="0" cellpadding="5"><tr><td>
 		<?
 		$tekst .= mysql_result($q10,0,5); // Dodajemo na eventualni naslov obavještenja
-		$i=0;
-		while (strpos($tekst,"http://",$i)!==false || strpos($tekst,"https://",$i)!==false) {
-			$j = strpos($tekst,"http://",$i);
-			if ($j==false) $j = strpos($tekst,"https://",$i);
-			$k = strpos($tekst," ",$j);
-			$k2 = strpos($tekst,"\n",$j);
-			if ($k2<$k && $k2!=0) $k=$k2;
-			if ($k==0) $k=$k2;
-			if ($k==0) { $k=strlen($tekst);}
-
-			do {
-				$k--;
-				$a = substr($tekst,$k,1);
-			} while ($a=="."||$a=="," || $a==")" || $a=="!" || $a=="?");
-			$k++;
-			if ($k-$j<9) { $i=$j+1; continue; }
-			$url = substr($tekst,$j,$k-$j);
-			$tekst = substr($tekst,0,$j). "<a href=\"$url\" target=\"_blank\">$url</a>". substr($tekst,$k);
-			$i = $j+strlen($url)+28;
-		}
-
+		$tekst =  linkuj_urlove($tekst);
 		$tekst =  str_replace("\n","<br/>\n",$tekst);
 
 		print $tekst;

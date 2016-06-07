@@ -865,4 +865,37 @@ function rimski_broj($arapski_broj = '') {
 } 
 
 
+// Funkcija koja zamjenjuje stringove koji liče na URL sa HTML kodom koji linkuje na njih
+function linkuj_urlove($tekst) {
+	$i=0;
+	while (strpos($tekst,"http://",$i)!==false || strpos($tekst,"https://",$i)!==false) {
+		$j = strpos($tekst,"http://",$i);
+		if ($j==false) $j = strpos($tekst,"https://",$i);
+		
+		// Prvi sljedeći razmak ili kraj stringa
+		$k = strpos($tekst," ",$j);
+		$k2 = strpos($tekst,"\n",$j);
+		if ($k2<$k && $k2!=0) $k=$k2;
+		if ($k==0) $k=$k2;
+		if ($k==0) { $k=strlen($tekst);}
+
+		// Interpunkcijski znakovi kojim se obično završava rečenica nisu dio URLa
+		do {
+			$k--;
+			$a = substr($tekst,$k,1);
+		} while ($a=="."||$a=="," || $a==")" || $a=="!" || $a=="?"); 
+		
+		// Stringove kraće od 9 znakova ne smatramo URLom
+		$k++;
+		if ($k-$j<9) { $i=$j+1; continue; }
+		
+		// Zamjenjujemo URL sa linkom na URL
+		$url = substr($tekst,$j,$k-$j);
+		$tekst = substr($tekst,0,$j). "<a href=\"$url\" target=\"_blank\">$url</a>". substr($tekst,$k);
+		$i = $j+strlen($url)+28;
+	}
+	return $tekst;
+}
+
+
 ?>
