@@ -1154,7 +1154,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		$rnacid = mysql_result($q302,0,0);
 	}
 
-	$radmid=0;
+	$radmid="NULL";
 	if ($radresamjesto != "") {
 		$q302 = myquery("select id from mjesto where naziv like '$radresamjesto'");
 		if (mysql_num_rows($q302)<1) {
