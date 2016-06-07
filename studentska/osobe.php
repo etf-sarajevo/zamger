@@ -48,6 +48,7 @@ global $registry; // šta je od modula aktivno
 global $_lv_; // Potrebno za genform() iz libvedran
 
 require ("lib/manip.php"); // Radi upisa studenta na predmet
+require ("lib/ws.php"); // Web service
 
 
 // Provjera privilegija
@@ -69,6 +70,11 @@ if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
 
 $akcija = $_REQUEST['akcija'];
 $osoba = intval($_REQUEST['osoba']);
+
+
+// URLovi web servisa za plaćanje - TODO prebaciti u config.php
+$url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
+$url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
 
 
 
@@ -481,6 +487,7 @@ if ($akcija == "podaci") {
 		$posebne_ispis .= "<input type=\"checkbox\" name=\"posebne_kategorije_$r262[0]\" $dodaj>$r262[1]<br>";
 	}
 
+
 	?>
 
 	<script type="text/javascript" src="js/mycombobox.js"></script>
@@ -610,10 +617,11 @@ else if ($akcija == "upis") {
 	// Neispravni parametri se ne bi trebali desiti, osim u slučaju hackovanja
 	// a i tada je "šteta" samo nekonzistentnost baze
 
-	$q500 = myquery("select ime, prezime, brindexa from osoba where id=$student");
+	$q500 = myquery("select ime, prezime, brindexa, jmbg from osoba where id=$student");
 	$ime = mysql_result($q500,0,0);
 	$prezime = mysql_result($q500,0,1);
 	$brindexa = mysql_result($q500,0,2);
+	$jmbg = mysql_result($q500,0,3);
 
 	$q505 = myquery("select naziv from akademska_godina where id=$godina");
 	$naziv_ak_god = mysql_result($q505,0,0);
@@ -737,7 +745,6 @@ else if ($akcija == "upis") {
 		unset($_REQUEST['semestar']);
 		print '<input type="hidden" name="semestar" value="1">'."\n";
 
-		$prijedlog_nacin_studiranja=$nacin_studiranja;
 		$nacin_studiranja=0; // Ponovo se mora izabrati način studiranja
 
 		$ok_izvrsiti_upis=0;
@@ -870,6 +877,92 @@ else if ($akcija == "upis") {
 	} // if ($semestar%2 ==1)
 
 
+	// Provjera plaćanja
+	if ($nacin_studiranja != 0 && isset($ciklus)) {
+		$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+		$saldo = 0;
+		if ($kartice === FALSE || count($kartice) == 0) {
+			?>
+			<p><font color="red">Nema podataka o uplatama</font></p>
+			<?
+		} else {
+			$uplate = array();
+			if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 1) 
+				array_push($uplate, 4);
+			else if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 3) 
+				array_push($uplate, 5);
+			else if ($ciklus == 1 && $ponovac == 1) {
+				array_push($uplate, 28);
+				foreach ($predmeti_pao as $id => $naziv)
+					array_push($uplate, 35);
+			}
+			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 1) {
+				array_push($uplate, 29);
+				if ($semestar==6) array_push($uplate, 32);
+			}
+			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 3) {
+				array_push($uplate, 30);
+				if ($semestar==6) array_push($uplate, 32);
+			}
+			else if ($ciklus == 2 && $ponovac == 1) {
+				array_push($uplate, 31);
+				foreach ($predmeti_pao as $id => $naziv)
+					array_push($uplate, 35);
+			}
+			else if ($ciklus == 3 && $ponovac == 0)
+				array_push($uplate, 23 + ($godina - 8) ); // 8 == 2012/2013 FIXME glupo organizovani kodovi uplata...
+			else if ($ciklus == 3 && $ponovac == 1) 
+				array_push($uplate, 36);
+			
+			// Šta treba uplatiti i koliko
+			$saldo = $potrebno = 0;
+			foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
+			foreach ($uplate as $uplata) {
+				$q123 = myquery("SELECT cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
+				$potrebno += mysql_result($q123,0,0);
+			}
+			if ($potrebno > $saldo) {
+				?>
+				<p><font color="red">Student nije uplatio dovoljno novca za upis:<br>
+				Potrebno je <?=$potrebno?> KM a ukupan iznos svih uplata je <?=$saldo?> KM.</font></p>
+				<?
+				$ok_izvrsiti_upis = 0;
+			} 
+			
+			// Tražimo detaljne greške i ujedno generišemo XML zaduženja
+			$greska = "";
+			$zaduzenje_xml = '<?xml version="1.0" encoding="UTF-8"?>';
+			foreach ($uplate as $uplata) {
+				$q124 = myquery("SELECT vrsta_zaduzenja_opis, cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
+				$opis = mysql_result($q124,0,0);
+				$cijena = mysql_result($q124,0,1);
+				$found = 0;
+				foreach($kartice as $kartica) {
+					if ($kartica['vrsta_zaduzenja'] == $opis) {
+						$found += $kartica['razduzenje'] - $kartica['zaduzenje'];
+					}
+				}
+				if ($found < $cijena)
+					$greska .= "Za vrstu zaduženja $opis potrebno je $cijena KM a student je uplatio $found KM.<br>";
+					
+				$datumxml = date("d/m/Y");
+				$iznosxml = number_format($cijena, 2, ",", "");
+				$zaduzenje_xml .= "\n<Zaduzenje>\n<JMBG>$jmbg</JMBG>\n<vrstaZaduzenjaId>$uplata</vrstaZaduzenjaId>\n<datum>$datumxml</datum>\n<iznos>$iznosxml</iznos>\n<aktivan>1</aktivan>\n<opis>$opis</opis>\n</Zaduzenje>";
+			}
+			if ($greska != "" && $potrebno <= $saldo) {
+				?>
+				<p><font color="red">Uplate nisu odgovarajućeg tipa.</font></p>
+				<?
+			}
+			if ($greska != "") {
+				?>
+				<p><font color="red"><?=$greska?></font></p>
+				<?
+				$ok_izvrsiti_upis = 0;
+			}
+		}
+
+	}
 
 
 	// IZBORNI PREDMETI
@@ -1142,6 +1235,11 @@ else if ($akcija == "upis") {
 			$q635 = myquery("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
 			print "-- Student upisan u izborni predmet ".mysql_result($q635,0,0)."<br/>";
 		}
+
+		// Unos zaduženja na studentovu karticu
+		xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje_xml), "POST");
+		zamgerlog2("upisano zaduzenje za upis", $student);
+		print "-- Evidentirano zaduženje u bazi uplata<br>\n";
 		
 		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
 		zamgerlog("Student u$student upisan na studij s$studij, semestar $semestar, godina ag$godina", 4); // 4 - audit
@@ -1746,6 +1844,47 @@ else if ($akcija == "izbori") {
 
 }
 
+
+// Analitička kartica studenta
+
+else if ($akcija == "kartica") {
+	?>
+	<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
+	<?
+
+	$q2000 = myquery("select ime, prezime, jmbg from osoba where id=$osoba");
+	if (mysql_num_rows($q2000)<1) {
+		niceerror("Nepoznata osoba $osoba");
+		return;
+	}
+	$ime = mysql_result($q2000,0,0);
+	$prezime = mysql_result($q2000,0,1);
+	$jmbg = mysql_result($q2000,0,2);
+
+	?>
+	<h2><?=$ime?> <?=$prezime?> - analitička kartica studenta</h2>
+	<?
+	
+	$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+	$saldo = 0;
+	if ($kartice === FALSE || count($kartice) == 0) niceerror("Nema podataka o uplatama");
+	else {
+		?>
+		<table><tr><th>R. br.</th><th>Datum</th><th>Vrsta zaduženja</th><th>Zaduženje</th><th>Razduženje</th></tr>
+		<?
+		$rbr=0;
+		foreach($kartice as $kartica) {
+			$rbr++;
+			?>
+			<tr><td><?=$rbr?></td><td><?=$kartica['datum']?></td><td><?=$kartica['vrsta_zaduzenja']?></td>
+			<td><?=number_format($kartica['zaduzenje'], 2, ",", "")?> KM</td>
+			<td><?=number_format($kartica['razduzenje'], 2, ",", "")?> KM</td>
+			</tr>
+			<?
+		}
+		print "</table>\n";
+	}
+}
 
 
 // Pregled informacija o osobi
@@ -2372,7 +2511,7 @@ else if ($akcija == "edit") {
 
 		} else {
 			?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put) <?=$nacin_studiranja?> (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$studij_id?>&semestar=<?=$semestar?>&godina=<?=$id_ak_god?>">ispiši sa studija</a>) (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&amp;akcija=promijeni_nacin&amp;studij=<?=$studij_id?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$id_ak_god?>">promijeni način studiranja</a>)</p>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>&quot;<?=$studij?>&quot;</b>, <?=$semestar?>. semestar (<?=$puta?>. put) <?=$nacin_studiranja?> (<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=ispis&amp;studij=<?=$studij_id?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$id_ak_god?>">ispiši sa studija</a>) (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&amp;akcija=promijeni_nacin&amp;studij=<?=$studij_id?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$id_ak_god?>">promijeni način studiranja</a>)</p>
 			<?
 			$q230 = myquery("select id, naziv from akademska_godina where id=$id_ak_god+1");
 			if (mysql_num_rows($q230)>0) {
@@ -2383,6 +2522,23 @@ else if ($akcija == "edit") {
 			?>
 			<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$id_ak_god?>">Upiši na <?=($semestar+1)?>. semestar</a>
 			<?
+
+
+
+		// Pristup web servisu za uplate
+		$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+		$saldo = 0;
+		if ($kartice === FALSE || count($kartice) == 0) {
+			?>
+			<p><font color="red">Nema podataka o uplatama</font></p>
+			<?
+		} else {
+			foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
+			if ($saldo>=0) $boja="green"; else $boja="red";
+			?>
+			<p><font color="<?=$boja?>">Student na računu ima: <?=number_format($saldo, 2, ",", "")?> KM</font> - <a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=kartica">Analitička kartica studenta</a></p>
+			<?
+		}
 
 
 
