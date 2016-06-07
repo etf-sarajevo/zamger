@@ -43,17 +43,19 @@ $zadatak=intval($_REQUEST['zadatak']);
 
 if (!$user_siteadmin) {
 	// Da li je nastavnik na predmetu?
-	$q10 = myquery("select count(*) from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and z.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
-	if (mysql_result($q10,0,0)<1) {
+	$q10 = myquery("select np.nivo_pristupa from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and z.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
+	if (mysql_num_rows($q10)<1) {
 		zamgerlog("privilegije (student u$stud_id zadaca z$zadaca)",3); // nivo 3: greska
+		zamgerlog2("nije nastavnik na predmetu za zadacu", $zadaca); // nivo 3: greska
 		niceerror("Nemate pravo izmjene ove zadaće");
 		return;
 	}
+	$nivo_pristupa = mysql_result($q10,0,0);
 
 	// Ogranicenja (tabela: ogranicenje) ne provjeravamo jer bi to bilo prekomplikovano,
 	// a pitanje je da li ima smisla
 
-}
+} else $nivo_pristupa = "nastavnik";
 
 
 // Podaci o zadaci
@@ -61,6 +63,7 @@ if (!$user_siteadmin) {
 $q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
 if (mysql_num_rows($q20)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
+	zamgerlog2("nepostojeca zadaca", $zadaca);
 	niceerror("Neispravna zadaća.");
 	exit;
 }
@@ -77,6 +80,7 @@ $id_jezika = mysql_result($q20,0,8);
 
 if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
 	zamgerlog("pokusao pristupiti nepostojecem zadatku $zadatak u zadaci z$zadaca",3);
+	zamgerlog2("zadaca nema toliko zadataka", $zadaca, $zadatak);
 	niceerror("Neispravan broj zadatka.");
 	exit;
 }
@@ -88,6 +92,7 @@ if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
 $q50 = myquery("select ime, prezime from osoba where id=$stud_id");
 if (mysql_num_rows($q50)<1) {
 	zamgerlog("nepostojeci student $stud_id",3);
+	zamgerlog2("nepostojeci student", $stud_id);
 	niceerror("Neispravan student.");
 	exit;
 }
@@ -126,7 +131,6 @@ if ($_GET['akcija'] == "diff") {
 
 if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 
-
 	// čuvamo poslane podatke u bazi (ako ih nema)
 	function izvrsi($stdin, $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst) {
 		global $conf_files_path;
@@ -139,10 +143,11 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 		if ($result) $result = file_put_contents("$conf_files_path/tmp/zamger-input.txt",$tstdin);
 		if (!$result) {
 			zamgerlog("nije uspjelo kreiranje datoteka",3);
+			zamgerlog2("nije uspjelo kreiranje datoteka");
 			niceerror("Ne mogu kreirati potrebne datoteke u direktoriju /tmp");
 			return;
 		}
-	
+
 		// kompajliranje - FIXME: nema podrške za jezike?
 		if ($jezik == "C++")
 			$kompajler = "g++";
@@ -177,7 +182,7 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 			$backtrace = substr($ispis,$greska+42);
 			$ispis = substr($ispis,0,$greska);
 		}
-		
+
 		?>
 		<center><table width="95%" style="border:1px solid silver;" bgcolor="#FFF3F3"><tr><td>
 		<pre><?=$ispis?></pre>
@@ -236,7 +241,7 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 
 	// Osiguravamo da se filename prenese u svaku sljedeću instancu zadatka
 	$filename = $izvjestaj_skripte = '';
-	$q90 = myquery("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id  order by id desc limit 1");
+	$q90 = myquery("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 	if (mysql_num_rows($q90) > 0) {
 		$filename = mysql_real_escape_string(mysql_result($q90,0,0));
 		$izvjestaj_skripte = mysql_real_escape_string(mysql_result($q90,0,1)); // Već je sanitiziran HTML
@@ -250,6 +255,7 @@ if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 	update_komponente($stud_id, mysql_result($q110,0,0), $komponenta);
 
 	zamgerlog("izmjena zadace (student u$stud_id zadaca z$zadaca zadatak $zadatak)",2);
+	zamgerlog2("bodovanje zadace", $stud_id, $zadaca, $zadatak);
 
 	// Nakon izmjene statusa, nastavljamo normalno sa prikazom zadatka
 }
@@ -265,9 +271,11 @@ if ($_REQUEST["akcija"] == "test_detalji") {
 		return;
 	}
 
-	autotest_detalji($test, $stud_id, /* $param_nastavnik = */ true); 
+	if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "zadace_admin")
+		autotest_detalji($test, $stud_id, /* $param_nastavnik = */ true); 
+	else
+		autotest_detalji($test, $stud_id, /* $param_nastavnik = */ false); 
 	return;
-
 }
 
 
@@ -279,7 +287,6 @@ if ($_REQUEST["akcija"] == "brisi_testove" && check_csrf_token()) {
 	<p><a href="?sta=saradnik/zadaca&amp;student=<?=$stud_id?>&amp;zadaca=<?=$zadaca?>&amp;zadatak=<?=$zadatak?>">Nazad</a></p>
 	<?
 	return;
-
 }
 
 
@@ -359,7 +366,7 @@ if ($attach == 0) {
 		
 			<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
 			<input type="submit" value=" Izvrši program "> <input type="submit" name="sve" value=" Izvrši sve primjere odjednom ">
-			</form></table></center><br/>&nbsp;<br/>
+			</form> </table></center><br/>&nbsp;<br/>
 			<?
 		}
 	}
@@ -412,7 +419,7 @@ if (mysql_num_rows($q140) > 0) {
 	$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
 
 	?>
-	
+
 	<table border="0">
 	<tr>
 		<td>Vrijeme slanja:</td>
@@ -421,7 +428,10 @@ if (mysql_num_rows($q140) > 0) {
 	<?
 
 	// Autotest nalaz
-	$nalaz_autotesta = autotest_tabela($stud_id, $zadaca, $zadatak, /*$nastavnik =*/ true);
+	if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "zadace_admin")
+		$nalaz_autotesta = autotest_tabela($stud_id, $zadaca, $zadatak, /*$nastavnik =*/ true);
+	else
+		$nalaz_autotesta = autotest_tabela($stud_id, $zadaca, $zadatak, /*$nastavnik =*/ false);	
 	if ($nalaz_autotesta != "") {
 		?>
 	<tr>
@@ -542,10 +552,13 @@ if (mysql_num_rows($q160)>1) {
 		$q170 = myquery("select count(zadatak) from zadatakdiff where zadatak=$r160[0]");
 		if (mysql_result($q170,0,0)>0)
 			print " (<a href=\"index.php?sta=saradnik/zadaca&akcija=diff&zadaca=$zadaca&zadatak=$zadatak&student=$stud_id&diff_id=$r160[0]\">diff</a>)";
-		print "</li>"; 
+		print "</li>\n\n"; 
 	}
 
-?></ul><?
+?>
+</ul>
+
+<?
 
 
 } 
