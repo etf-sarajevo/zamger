@@ -188,6 +188,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		if (mysql_num_rows($q200) < 1) {
 			niceerror("Poruka ne postoji");
 			zamgerlog("pokusaj izmjene na nepostojece poruke $poruka",3);
+			zamgerlog2("nepostojeca poruka", $poruka);
 			return;
 		}
 
@@ -195,6 +196,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		if ($opseg!=1 && $opseg!=2 && $opseg!=3 && $opseg!=5 && $opseg!=8 && ($opseg!=0 || !$user_siteadmin)) {
 			niceerror("Nemate pravo izmjene ove poruke");
 			zamgerlog("pokusaj izmjene poruke $poruka sa opsegom $opseg",3);
+			zamgerlog2("nema pravo izmjene poruke", $poruka);
 			return;
 		}
 		
