@@ -273,6 +273,7 @@ function nastavnik_zavrsni() {
 			$prof_predmeti .= "$r99[1] ($r99[2])</option>\n";
 		}
 		if ($na_predmetu != 0 && $pronadjen == false) {
+			// Ako je ranije već izabran predmet kojeg nema na spisku, dodaćemo ga na spisak
 			$q99a = myquery("SELECT p.naziv, i.kratki_naziv FROM predmet as p, institucija as i WHERE p.id=$na_predmetu and p.institucija=i.id");
 			$prof_predmeti .= "<option value=\"$na_predmetu\" selected>".mysql_result($q99a,0,0)." (".mysql_result($q99a,0,1).")</option>\n";
 		}
