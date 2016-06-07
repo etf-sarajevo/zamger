@@ -1020,6 +1020,8 @@ else if ($akcija == "upis") {
 
 
 	// ------ Izvrsenje upisa!
+	if ($user_siteadmin && intval($_REQUEST['forsiraj'])==1)
+		$ok_izvrsiti_upis = 1;
 
 	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
 
@@ -1123,6 +1125,8 @@ else if ($akcija == "upis") {
 		return;
 
 	} else {
+		if ($user_siteadmin)
+			print "<p><input type=\"checkbox\" name=\"forsiraj\" value=\"1\"> Forsiraj</p>\n";
 		?>
 		<p>&nbsp;</p>
 		<input type="submit" value=" Potvrda upisa ">
