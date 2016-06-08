@@ -2,14 +2,6 @@
 
 // IZVJESTAJ/GRANICNI - Izvjestaj o granicnim slucajevima
 
-// v3.9.1.0 (2008/09/09) + Novi izvjestaj: granicni
-// v3.9.1.1 (2008/09/23) + Dodajem polje akademska_godina; omogucen prikaz kada je aktuelni semestar neparni
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/09/14) + Izmjene u bazi su izazvale da predmeti nisu bili ispravno sortirani; predmeti su sada sortirani po studiju i semestru, a studenti po imenu
-
 
 
 // Funkcija koja provjerava da li je student položio ili pao predmet

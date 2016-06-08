@@ -2,6 +2,8 @@
 
 // IZVJESTAJ/CHART_SEMESTRALNI - stranica koja generiše grafove za semestralni izvještaj uz pomoć GD biblioteke
 
+
+
 function izvjestaj_chart_semestralni() {
 	
 	$pitanje = intval($_GET['pitanje']);

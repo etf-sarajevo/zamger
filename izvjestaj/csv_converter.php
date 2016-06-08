@@ -1,5 +1,9 @@
 <?
-  
+
+// IZVJESTAJ/CSV_CONVERTER - konvertuje bilo koji HTML izvještaj u CSV format
+
+
+
 function ob_file_callback($buffer) {
 	global $sadrzaj_bafera_za_csv;
 	$sadrzaj_bafera_za_csv=$buffer;

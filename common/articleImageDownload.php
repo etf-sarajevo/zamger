@@ -1,5 +1,8 @@
 <?php
+
 // COMMON/ARTICLEIMAGEDOWNLOAD - download slika vezanih za clanke na projektima
+
+
 function common_articleImageDownload()
 {
 	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;	

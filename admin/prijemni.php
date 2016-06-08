@@ -2,8 +2,6 @@
 
 // ADMIN/PRIJEMNI - pomocne akcije za prijemni
 
-// v3.9.1.0 (2008/07/03) + Novi modul admin/prijemni
-
 
 // TODO: prebaciti na tabelu osoba
 

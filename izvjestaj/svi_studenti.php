@@ -1,8 +1,10 @@
 <?
 
-// IZVJESTAJ/SVI_STUDENTI - spisak svih studenata
+// IZVJESTAJ/SVI_STUDENTI - spisak svih studenata po nekim kriterijima i sa određenim kolonama
 
-function izvjestaj_svi_studenti(){
+
+
+function izvjestaj_svi_studenti() {
 
 
 ?>

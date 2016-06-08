@@ -1,5 +1,8 @@
 <?
+
 // COMMON/ZAVRSNISTRANE - stranice zavrsnih radova
+
+
 
 function common_zavrsniStrane() {
 	//debug mod aktivan

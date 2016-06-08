@@ -2,10 +2,6 @@
 
 // SARADNIK/STUDENT - prikaz svih detalja o studentu na predmetu, sa mogucnoscu editovanja
 
-// v4.0.9.1 (2009/07/19) + Novi modul saradnik/student prema sugestiji doc. dr Dzenane Djonko
-// v4.0.9.2 (2009/09/03) + Dodajem AJAHe za unos ispita i konačne ocjene
-// v4.0.9.3 (2009/10/07) + Koristim gen_ldap_uid za email adresu (bilo gresaka); dodana promjena grupe; dodana fiksna komponenta; konacna ocjena na isti nacin kao ostalo; tacna informacija sta slusa i koji put
-// v4.0.9.4 (2009/10/21) + Popravljen bug gdje je student ispisivan iz grupe "Svi studenti"; nesto pametniji logging kod promjene grupe; dodao linkove na dosjee za ranije godine
 
 
 // TODO: dodati:

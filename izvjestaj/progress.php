@@ -2,12 +2,6 @@
 
 // IZVJESTAJ/PROGRESS - pregled svih kurseva koje je slusao student sa ostvarenim bodovima (eventualno sa razdvojenim ispitima)
 
-// v3.9.1.0 (2008/04/22) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php, prebaceno na komponente i student_predmet; razdvojen po godinama i semestrima
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/09/15) + Ocjene po odluci
-
 
 // TODO: spojiti sa izvjestaj/index???
 

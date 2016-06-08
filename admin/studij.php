@@ -2,8 +2,6 @@
 
 // ADMIN/STUDIJ - parametri studija
 
-// v3.9.1.0 (2008/06/13) + Novi modul, admin/studij
-
 
 
 function admin_studij() {

@@ -3,6 +3,7 @@
 // NASTAVNIK/UNOS_OCJENE - pojedinačni unos konačnih ocjena
 
 
+
 function nastavnik_unos_ocjene() {
 
 global $userid,$user_studentska,$user_siteadmin;

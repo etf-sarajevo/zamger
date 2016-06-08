@@ -2,8 +2,6 @@
 
 // STUDENT/UGOVOROUCENJU - generisanje ugovora o ucenju
 
-// v4.0.9.1 (2009/07/16) + Novi modul za ugovor o ucenju
-// v4.0.9.2 (2009/09/15) + Pocetak koristenja modula
 
 // TODO: Ovdje se neće moći koristiti tabela plan_studija jer treba omogućiti maskiranje nekih predmeta, kao i odstupanja od plana (grrr)
 

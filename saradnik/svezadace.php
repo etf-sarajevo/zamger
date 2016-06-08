@@ -2,7 +2,7 @@
 
 // SARADNIK/SVEZADACE - download svih zadaca u jednoj grupi
 
-// v4.0.9.1 (2009/10/24) + Novi modul saradnik/svezadace
+
 
 function saradnik_svezadace() {
 

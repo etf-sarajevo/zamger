@@ -2,25 +2,6 @@
 
 // NASTAVNIK/ISPITI - kreiranje i unos rezultata ispita
 
-// v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/02/28) + Koristim lib/manip
-// v3.9.1.2 (2008/04/09) + Dozvoljeno kreiranje praznog ispita; dodan update komponente u masovni unos
-// v3.9.1.3 (2008/04/25) + Popravljeno prosljedjivanje parametra $ispis funkciji mass_input
-// v3.9.1.4 (2008/05/16) + Ponovo ukljucen update komponente (bio iskomentiran zbog sporosti)
-// v3.9.1.5 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/04/14) + Zaboravio izbaciti polje naziv iz tabele ispit
-// v4.0.9.5 (2009/04/15) + Popravljena redirekcija nakon masovnog unosa i logging
-// v4.0.9.6 (2009/04/16) + Popravljen link na izvjestaj/ispit
-// v4.0.9.7 (2009/04/22) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
-// v4.0.9.8 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
-// v4.1.0.0 (2009/11/20) + Release
-// v4.1.0.1 (2009/11/23) + Popravljen tipfeler u provjeri da li ispit vec postoji prilikom kreiranja
-
-
 
   
 function ob_file_callback($buffer)

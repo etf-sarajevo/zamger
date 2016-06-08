@@ -2,8 +2,6 @@
 
 // STUDENT/KOLIZIJA - modul koji olaksava upis godine na koliziju
 
-// v4.0.9.1 (2009/07/16) + Novi modul za koliziju
-
 
 
 function student_kolizija() {

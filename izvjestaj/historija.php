@@ -2,10 +2,6 @@
 
 // IZVJESTAJ/HISTORIJA - historija jednog studenta
 
-// v4.0.9.1 (2009/03/19) + Pocetak rada na izvjestaju
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/05/17) + Popravljen bug sa prikazivanjem podataka koji ne pripadaju nijednoj akademskoj godini (odluka)
-
 
 
 function izvjestaj_historija() {

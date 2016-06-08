@@ -1,5 +1,7 @@
 <?
 
+// IZVJESTAJ/PRIJEMNI_BRZI_UNOS - štampanje obrasca sa kodom kandidata na prijemnom prilikom brzog unosa
+
 
 
 function izvjestaj_prijemni_brzi_unos() {

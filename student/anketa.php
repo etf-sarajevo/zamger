@@ -2,6 +2,8 @@
 
 // STUDENT/ANKETA - stranica za dobijanje anketnog koda / prikaz rezultata ankete
 
+
+
 function student_anketa() {
 
 	global $userid;

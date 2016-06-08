@@ -2,7 +2,8 @@
 
 // SARADNIK/RASPORED - podešavanje rasporeda za nastavnika
 
-		
+
+
 function saradnik_raspored($tip) {
 
 	global $userid, $user_nastavnik, $user_studentska;

@@ -1,5 +1,8 @@
 <?
+
 // STUDENT/ZAVRSNI - studenski modul za prijavu na teme zavrsnih radova i ulazak na stanicu zavrsnih
+
+
 
 function student_zavrsni()  {
 	//debug mod aktivan

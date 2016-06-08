@@ -2,15 +2,6 @@
 
 // COMMON/PROFIL + opcije korisnika
 
-// v3.9.1.0 (2008/05/09) + Novi modul common/profil
-// v3.9.1.1 (2008/08/28) + $conf_promjena_sifre, zahtjev za promjenu ostalih podataka
-// v3.9.1.2 (2008/10/03) + Poostren zahtjev na POST
-// v3.9.1.3 (2008/10/15) + Dodan format datuma
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/05) + Dodan logging; sakrij broj indexa korisnicima koji nisu studenti; prikazi informaciju ako je vec poslan zahtjev; ne radi nista ako korisnik nije napravio promjenu
-// v4.0.9.1 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
-// v4.0.9.2 (2009/06/23) + Nova combobox kontrola koja se sasvim dobro pokazala kod studentska/prijemni
-
 
 function common_profil() {
 

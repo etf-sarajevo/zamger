@@ -2,20 +2,6 @@
 
 // IZVJESTAJ/PREDMET - statistika predmeta, pregled prisustva itd.
 
-// v3.9.1.0 (2008/02/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
-// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.2 (2009/02/02) + Dodana podrska za studente koji nisu niti u jednoj grupi; ovo sada ukljucuje i jedan strahovito spor upit sa podupitom :(
-// v3.9.1.3 (2009/02/07) + Ubrzano generisanje izvjestaja (ukinut ranije spomenuti podupit)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/16) + Popravljen logging
-// v4.0.9.6 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
-// v4.0.9.7 (2009/05/02) + Ciscenje koda i optimizacija: izbaceni neki viska dijelovi, neke stvari izvucene iz petlje, upiti koji nisu potrebni za skraceni ispis stavljeni pod uslove; sada se skraceni izvjestaj prikazuje prakticno trenutno
-// v4.0.9.8 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
-// v4.0.9.9 (2009/05/20) + Polja predmet i akademska_godina izbacena iz tabele cas
 
 
 function izvjestaj_predmet() {

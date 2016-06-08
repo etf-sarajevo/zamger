@@ -2,13 +2,8 @@
 
 // COMMON/RASPORED - modul za ispis rasporeda
 
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet, dodano polje aktuelna u tabelu akademska_godina
-// v4.0.9.2 (2009/04/19) + Kompletan rewrite modula kako bih shvatio sta radi i stavio u funkciju
-// v4.0.9.3 (2009/09/13) + Dodana podrska za nastavu 08-21 i subotu; popravljen spacing (sugestije by Teo); daljnje unaprjedjenje citljivosti koda
 
-	
-		
+
 function common_raspored($tip) {
 
 	global $userid;

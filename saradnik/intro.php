@@ -2,14 +2,6 @@
 
 // SARADNIK/INTRO - spisak predmeta i grupa
 
-// v3.9.1.0 (2008/02/11) + Preimenovan bivsi admin_intro, dodan link na [Svi studenti]
-// v3.9.1.1 (2008/03/08) + Nova tabela auth
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/12) + Dodan prikaz obavjestenja nivoa 0 i 2 koje bi nastavnici trebali dobijati, ali ih nisu mogli vidjeti
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/23) + labgrupa preusmjerena sa tabele ponudakursa na tabelu predmet, spojene ponudekursa u prikazu za nastavnike, EDIT link preusmjeren na predmet
-// v4.0.9.3 (2009/05/05) + Ukidam "virtualnu grupu" 0
-// v4.0.9.4 (2009/05/17) + Prikazi site adminu predmete cak i u slucaju kada nijedan nastavnik nije angazovan na predmetu
 
 
 function saradnik_intro() {

@@ -1,6 +1,6 @@
 <?
 
-// IZVJESTAJ/PO_KANTONIMA
+// IZVJESTAJ/PO_KANTONIMA - spisak svih studenata po kantonima
 
 
 

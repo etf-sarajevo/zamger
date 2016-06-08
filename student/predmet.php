@@ -2,20 +2,6 @@
 
 // STUDENT/PREDMET - statusna stranica predmeta
 
-// v3.9.1.0 (2008/02/19) + Kopiran raniji stud_status, uz novi dizajn
-// v3.9.1.1 (2008/03/28) + Dodana ikona za slanje novog zadatka (zad_novi.png)
-// v3.9.1.2 (2008/04/09) + Dodan prikaz akademske godine uz ime predmeta; zadace bez imena; navigacija za zadace je prikazivala visak zadataka; otvori PDF u novom prozoru
-// v3.9.1.3 (2008/10/02) + Dodana provjera da li student slusa predmet
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.6 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.7 (2009/05/01) + Parametri su sada predmet i ag
-// v4.0.9.8 (2009/05/06) + Kod ispisa naziva grupe u kojoj je student, necemo uzimati u obzir virtualne grupe; ispis prisustva pojednostavljen ukidanjem labgrupe 0
-// v4.0.9.9 (2009/10/20) + Ne prikazuj link na student/pdf ako je zadaca tipa attachment
 
 
 function student_predmet() {

@@ -2,6 +2,8 @@
 
 // IZVJESTAJ/ANKETA_SUMARNO - sumarni izvještaj za anketu
 
+
+
 function izvjestaj_anketa_sumarno(){
 
 	?><p>Univerzitet u Sarajevu<br/>

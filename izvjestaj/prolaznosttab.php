@@ -2,8 +2,6 @@
 
 // IZVJESTAJ/PROLAZNOSTTAB - Tabelarni pregled prolaznosti
 
-// v3.9.1.0 (2009/01/27) + Novi izvjestaj
-
 
 
 function izvjestaj_prolaznosttab() {

@@ -2,6 +2,8 @@
 
 // IZVJESTAJ/ANKETA_SEMESTRALNI - stranica koja generiše izvjestaje: SEMESTRALNI i IZVJESTAJ PO SMJEROVIMA
 
+
+
 function izvjestaj_anketa_semestralni() {
 	
 	$ak_god = intval($_REQUEST['akademska_godina']);

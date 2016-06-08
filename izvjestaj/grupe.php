@@ -2,18 +2,6 @@
 
 // IZVJESTAJ/GRUPE - spisak studenata po grupama
 
-// v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_izvjestaj(), spojeni izvjestaji grupe i grupedouble
-// v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.3 (2008/09/17) + Sortiraj grupe po nazivu; dodana tablica za prisustvo; dodano polje tip; dodan page break (vidljiv prilikom stampanja) izmedju grupa
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
-// v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
-// v4.0.9.4 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
-// v4.0.9.5 (2009/10/01) + Kod izvjestaja "double", brojevi indexa unutar grupe nisu bili sortirani a imena jesu
-
 
 
 function izvjestaj_grupe() {

@@ -2,11 +2,6 @@
 
 // NASTAVNIK/IZVJESTAJI - izvjestaji za izabrani predmet
 
-// v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/09/18) + Konsolidovane sve vrste izvjestaj/grupe i izvjestaj/predmet
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/22) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
 
 
 function nastavnik_izvjestaji() {

@@ -3,23 +3,6 @@
 
 // SARADNIK/ZADACA - prozor za pregled zadace
 
-// v3.9.1.0 (2008/02/12) + Preimenovan bivsi admin_pregled, dodatna kontrola pristupa
-// v3.9.1.1 (2008/03/08) + Nova tabela auth, ukidamo labgrupe totalno
-// v3.9.1.2 (2008/03/22) + Prebaceno sve na $conf_files_path i drugi sitni bugovi
-// v3.9.1.3 (2008/03/26) + Popravljen javascript
-// v3.9.1.4 (2008/05/16) + Dodano polje userid u tabeli zadatak koje odredjuje ko je zadnji izmjenio podatak (da li ima potrebe prikazati?); dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
-// v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.6 (2008/10/03) + Izmjena statusa i izvrsenje zadace prebaceni na genform() (radi sigurnosnih aspekata istog) i POST metod (radi sukladnosti sa RFCom koji nalaze da se sve potencijalno destruktivne akcije rade kroz POST)
-// v3.9.1.7 (2008/10/19) + Popravljeno jos bugova izazvanih prelaskom na POST
-// v3.9.1.8 (2009/01/22) + Dozvoliti unos bodova iz zadace sa zarezom
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
-// v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
-// v4.0.9.5 (2009/05/25) + Upiti u prvom dijelu skripte su postali prekomplikovani, pa se potkrala greska da je odredjivana pogresna ponudakursa (ne ona koju student slusa nego neka random)
-// v4.0.9.6 (2009/08/11) + Dodajem osobu koja je napravila izmjenu u log na sugestiju prof. Nosovica
-
 
 
 function saradnik_zadaca() {

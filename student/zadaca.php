@@ -2,26 +2,6 @@
 
 // STUDENT/ZADACA - slanje zadace za studente
 
-// v3.9.1.0 (2008/02/21) + Kopiran raniji stud_zadaca
-// v3.9.1.1 (2008/03/21) + Popravljeni stari linkovi, $conf_files_path, typo u akcijaslanje(), popravljen logging
-// v3.9.1.2 (2008/03/26) + Staza za diff je bila loša
-// v3.9.1.3 (2008/03/28) + Navigacija v3.0 kopirana sa predmet.php, fixevi za widescreen
-// v3.9.1.4 (2008/04/10) + Navigacija je prikazivala visak zadataka; dodan update komponente nakon slanja
-// v3.9.1.5 (2008/04/27) + Zamijenjen obican zadatak i attachment u log zapisu
-// v3.9.1.6 (2008/05/16) + Dodan link za odgovor na komentar tutora; dodano polje $komponenta u poziv update_komponente() radi brzeg izvrsenja
-// v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.8 (2008/10/03) + Slanje zadace prebaceno na genform() radi sigurnosnih aspekata istog (kod slanja attachmenta ne moze?)
-// v3.9.1.9 (2008/10/22) + Popravljen bug u slanju zadace - genform() nije ubacivao hidden polje zadatak jer se ono ponekad izracunava kao "zadnji neuradjeni" i slicno
-// v3.9.1.9 (2008/10/27) + Isto i sa poljem zadaca
-// v3.9.1.10 (2008/11/10) + Popravljen status nove zadace sa 2 (prepisana) na 4 (potrebno pregledati)
-// v3.9.1.10 (2009/02/10) + Onemogucen spoofing predmeta i pogresna kombinacija predmet/zadaca; csrf zastita je sprjecavala slanje attachmenta
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/04/01) + Kod slanja zadace kao attachment status je bio postavljen na 1 (potrebna automatska kontrola) cak i ako nije odabran programski jezik
-// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; pobrisan neki iskomentirani kod
-// v4.0.9.2 (2009/04/05) + Zadatak tipa attachment nije prikazivan osim ako je status 1
-// v4.0.9.3 (2009/05/01) + Parametri su sada predmet i ag
-// v4.0.9.4 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa; Nemoj praviti direktorij ako nema potrebe za tim
-
 
 
 function student_zadaca() {

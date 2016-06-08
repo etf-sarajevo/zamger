@@ -1,5 +1,8 @@
 <?php
-// NASTAVNIK/ZAVRSNI 
+
+// NASTAVNIK/ZAVRSNI - nastavnički interfejs za definisanje tema završnih radova
+
+
 
 function nastavnik_zavrsni() {
 

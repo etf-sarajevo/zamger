@@ -2,14 +2,6 @@
 
 // SARADNIK/KOMENTAR - stavljanje komentara na rad studenata
 
-// v3.9.1.0 (2008/02/14) + Preimenovan bivsi admin_komentar
-// v3.9.1.1 (2008/02/28) + Dodana nulta labgrupa
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/07) + Popravljen logging
-// v4.0.9.3 (2009/04/29) + Preusmjeravam tabelu labgrupa i parametre sa tabele ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/05/06) + Ukinuto polje predmet u tabeli komentar kao i nulta labgrupa
 
 
 function saradnik_komentar() {

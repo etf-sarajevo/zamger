@@ -1,7 +1,8 @@
 <?
 
 // COMMON/RASPORED1 - modul za ispis rasporeda
-	
+
+
 function common_raspored1($tip) {
 
 	global $userid;

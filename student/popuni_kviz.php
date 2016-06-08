@@ -2,7 +2,10 @@
 
 // STUDENT/POPUNI_KVIZ - popunjavanje kviza
 
+
+
 function student_popuni_kviz() {
+
 	global $userid;
 	
 	$kviz = intval($_REQUEST['kviz']);

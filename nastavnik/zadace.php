@@ -2,21 +2,6 @@
 
 // NASTAVNIK/ZADACE - kreiranje zadaća i masovni unos
 
-// v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/04/03) + Koristim lib/manip
-// v3.9.1.2 (2008/05/09) + Forma za masovni unos koristila za hidden polje "akcija" vrijednost "masszadaca" umjesto "massinput", nije ispravno preuzeta vrijednost zadace iz db_dropdown (falilo _lv_column), dugme nazad nije bilo ispravno obradjeno
-// v3.9.1.3 (2008/05/12) + Kod masovnog unosa u upitu stajalo SET... redni_broj=$bodova :( Popravljen logging
-// v3.9.1.4 (2008/05/16) + Dodan update_komponente()
-// v3.9.1.5 (2008/08/18) + Informativnija greska kod pokusaja masovnog unosa zadaca ako ne postoji nijedna zadaca, promijenjen naslov "Unos zadace" u "Kreiranje zadace", dodana zastita od visestrukog slanja kod masovnog unosa
-// v3.9.1.6 (2009/01/23) + Ukinut db_form() radi niza bugova (metabug #48)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/12) + Nije se mogao zadati programski jezik (uvijek vracao na nedefinisan); dvostruka stavka "--Nije odredjen--"; poboljsan feedback nakon kreiranja / editovanja zadace
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; dodana provjera spoofinga zadace kod masovnog unosa
-// v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
-// v4.0.9.4 (2009/05/08) + Izdvajam brisanje zadace da se ne bi izvrsilo i azuriranje i sve ostalo
-// v4.0.9.5 (2009/09/13) + Dozvoljavam da naziv zadace bude jedno slovo
-// v4.0.9.6 (2009/10/26) + Popravljeno brisanje zadace, dodana zastita od visestrukog submitanja
 
 
 function nastavnik_zadace() {

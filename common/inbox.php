@@ -2,26 +2,6 @@
 
 // COMMON/INBOX + pregled poruka u sanducicu
 
-// v3.9.1.0 (2008/03/05) + Novi modul common/inbox
-// v3.9.1.1 (2008/03/06) + Ubacen opseg 6: labgrupa, a korisnik postaje opseg 7
-// v3.9.1.2 (2008/03/07) + Sredjena prava pristupa
-// v3.9.1.3 (2008/03/25) + Poljepšavanje
-// v3.9.1.4 (2008/03/30) + Popravljen onblur bug u ajahu
-// v3.9.1.5 (2008/04/11) + Popravljen naslov "bez naslova"
-// v3.9.1.6 (2008/04/30) + "bez naslova" i kod citanja poruke
-// v3.9.1.7 (2008/05/16) + Omoguceno zadavanje naslova, teksta i primaoca poruke u URLu prilikom slanja
-// v3.9.1.8 (2008/06/05) + Dodan outbox
-// v3.9.1.9 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.10 (2008/10/03) + Poostren uslov za slanje poruke samo putem POST
-// v3.9.1.11 (2008/10/22) + Popravljeno dodavanje viska Re:
-// v3.9.1.12 (2008/12/28) + Dodano parsiranje linkova u porukama
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
-// v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/06/20) + Greska kod citanja poruke u opsegu 6
-// v4.0.9.4 (2009/09/16) + Akademska godina je neispravno uzimana kao najnovija, umjesto kao aktuelna, sto je dovodilo do problema sa permisijama u opsegu 3
-// v4.0.9.5 (2009/10/21) + Kod prikaza obavjestenja stavi naslov OBAVJESTENJE a naslov dodaj na pocetak teksta
-
 
 function common_inbox() {
 

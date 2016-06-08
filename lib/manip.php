@@ -2,26 +2,6 @@
 
 // LIB/MANIP - manipulacije bazom podataka (ispis studenta sa predmeta i sl.)
 
-// v3.9.1.0 (2008/02/28) + Nova biblioteka, radi centralizovanja operacija koje vrse kompleksne manipulacije sa bazom
-// v3.9.1.1 (2008/04/10) + Typo u update_komponente, dio za zadace; ne racunamo prisustvo ni zadace ako nije registrovan nijedan cas / zadaca
-// v3.9.1.2 (2008/04/14) + Ponistavam zadnju izmjenu - ako nije odrzan nijedan cas treba dati max bodova za prisustvo 
-// v3.9.1.3 (2008/04/24) + mass_input(): (!$f) zamijenjeno sa ($f) (provjeriti sve module!); dodano trimovanje imena i prezimena i ljepse upozorenje kod gresaka; ako student nije na predmetu a nema bodova, to nije greska
-// v3.9.1.4 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
-// v3.9.1.5 (2008/08/28) + Tabela osoba umjesto auth; omoguceno koristenje masovnog unosa kada nije definisan predmet
-// v3.9.1.6 (2008/11/24) + mass_input(): zamijeni Unicode karakter "non-breakable space" razmakom
-// v3.9.1.7 (2009/01/20) + Priblizavam upite za brisanje i unos komponenti kod zadaca jer se desavalo da paralelni proces unese nesto drugo; eksperiment sa lock tables
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/04/23) + Prebacena tabela labgrupa sa ponudekursa na predmet; funkcije ispis_studenta_sa... sada primaju predmet a ne ponudukursa; ukinut zastarjeli logging u ispis_studenta_sa_predmeta; massinput sada moze primiti ponudukursa ili predmet+ag
-// v4.0.9.5 (2009/05/06) + Dodajem funkciju upis_studenta_na_predmet koja za sada samo upisuje studenta i u virtuelnu labgrupu
-// v4.0.9.6 (2009/05/08) + Popravljam update_komponente za prisustvo, tabela cas vise ne sadrzi predmet
-// v4.0.9.7 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
-// v4.0.9.8 (2009/05/17) + Ukidamo nultu labgrupu kod ispisa sa predmeta
-// v4.0.9.9 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
-// v4.0.9.10 (2009/09/16) + Prilikom upisa na predmet upisujem default bodove za prisustvo u tabelu komponentebodovi
-
 
 // NOTE:  Pretpostavka je da su podaci legalni i da je baza konzistentna
 

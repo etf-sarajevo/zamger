@@ -1,8 +1,7 @@
 <?
 
-// STUDENT/MOODLE - modul za redirekciju na moodle
+// STUDENT/MOODLE - modul za redirekciju na odgovarajuću moodle stranicu
 
-// v4.0.9.1 (2009/05/01) + Kreiran modul kako bi se ukinuo stari kljakavi sistem studentskih modula
 
 
 function student_moodle() {

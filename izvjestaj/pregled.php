@@ -2,10 +2,6 @@
 
 // IZVJESTAJ/PREGLED - Skraceni tabelarni pregled upisanih studenata
 
-// v3.9.1.0 (2009/01/27) + Novi izvjestaj
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/09/26) + Implementiram podrsku za cikluse studija (nova tabela tipstudija) i ujedno ukidam ETF-specifican kod; jasnija imena varijabli
-
 
 
 function izvjestaj_pregled() {

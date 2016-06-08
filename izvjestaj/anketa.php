@@ -2,6 +2,8 @@
 
 // IZVJESTAJ/ANKETA - stranica koja generise izvjestaje za predmete koje mogu pregledati profesori ili clanovi studentske sluzbe
 
+
+
 function izvjestaj_anketa(){
 
 	global $userid,$user_siteadmin,$user_studentska, $user_student, $user_nastavnik;

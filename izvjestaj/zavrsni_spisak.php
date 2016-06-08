@@ -3,6 +3,7 @@
 // IZVJESTAJ/ZAVRSNI_SPISAK - Spisak završenih studenata na ciklusu studija (za promociju)
 
 
+
 function izvjestaj_zavrsni_spisak() {
 
 ?>

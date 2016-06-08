@@ -2,12 +2,6 @@
 
 // ADMIN/KOMPAKT - kompaktovanje baze za predmete koji su zavrseni
 
-// v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_site
-// v3.9.1.1 (2009/02/07) + Dodano brisanje fajlova zadaca, ispravljen broj diffova
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/05/15) + Direktorij za zadace je sada predmet-ag umjesto ponudekursa
-
 
 
 function admin_kompakt() {

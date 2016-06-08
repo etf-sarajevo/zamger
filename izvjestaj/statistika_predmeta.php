@@ -2,10 +2,6 @@
 
 // IZVJESTAJ/STATISTIKA_PREDMETA - neke sumarne statistike za dati predmet
 
-// v4.0.9.1 (2009/04/22) + Novi izvjestaj napravljen na osnovu koda iz izvjestaj/ispit
-// v4.0.9.2 (2009/09/05) + Optimizovan izvjestaj koristeci komponente
-// v4.0.9.3 (2009/09/22) + Dodan broj ponovaca
-
 
 
 function izvjestaj_statistika_predmeta() {

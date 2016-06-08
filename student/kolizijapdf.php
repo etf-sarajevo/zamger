@@ -2,7 +2,7 @@
 
 // STUDENT/KOLIZIJAPDF - generisanje PDFa na osnovu zahtjeva za koliziju
 
-// Modul koristi biblioteku TCPDF
+// Modul koristi biblioteku TCPDF - LOL ovo je ustvari plain HTML koji se lijepo printa ;)
 
 
 

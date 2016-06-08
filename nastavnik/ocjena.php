@@ -2,15 +2,6 @@
 
 // NASTAVNIK/OCJENA - masovni unos konacnih ocjena
 
-// v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/02/28) + Koristim lib/manip
-// v3.9.1.2 (2008/05/20) + Podignut logging nivo sa 2 na 4
-// v3.9.1.3 (2008/08/27) + Dodana zastita od visestrukog slanja kod masovnog unosa
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
-// v4.0.9.4 (2009/09/13) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 function nastavnik_ocjena() {

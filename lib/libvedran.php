@@ -2,32 +2,6 @@
 
 # Biblioteka korisnih funkcija koje koristim u svojim skriptama
 # ---- Copyleft (c) Vedran Ljubović 
-# v0.0.2 (2006/09/30) + dodana funkcija nicesize()
-# v0.0.3 (2006/10/03) + bssort() za sortiranje bs jezika, nicemessage(), globalna varijabla $lv_debug
-# v0.0.4 (2006/12/13) + db_dropdown(), db_form(), genform(), genuri(), db_list(), db_submit() funkcije za brzu administraciju, datectrl() form kontrola za datum
-# v0.0.5 (2007/03/06) + db_grid(), uveden _lv_nav_ reqvar radi ispravljanja buga sa kombinacijom db_form+db_list, više unaprjeđenja u drugim db funkcijama
-# v0.0.6 (2007/03/12) + nova funkcija login(), ispravke u session mgmt, ukinute globalne varijable osim $_lv_, dodan htmlspecialchars u my_escape() radi Type 2 XSS napada
-# v0.0.7 (2007/03/30) + podrška za autonumber vs. nonautonumber
-# v0.0.8 (2007/04/27) + db_dropdown() ipak nije forma i ne treba se ponašati kao forma
-# v0.0.9 (2007/09/11) + dodana podrška za limit u db_grid() (dodati u druge db_* ?)
-# v0.0.10 (2007/09/25) + dodano prazno polje u db_dropdown() (npr. za opciju "Sve opcije")
-# v0.0.11 (2007/10/02) + dodana LDAP autentikacija, polje userid u tabeli log
-# v0.0.11.1 (2007/11/16) + dodana opcija $_lv_['brisanje']
-# v0.0.11.2 (2008/02/11) + prikazana prazna polja u db_list()
-# v0.0.12 (2008/02/11) + session_mgmt sada ne radi forwarding
-# v0.0.13 (2008/03/04) + dodana reimplementacija funkcije mysql_set_charset i opcija u dbconnect; genform je uvijek koristio metod POST
-# v0.0.13.1 (2008/03/21) + dodane default vrijednosti parametara, da smanjimo warning-e
-# v0.0.13.2 (2008/05/16) + sitne ispravke u prikazu i obradi hidden polja u db_form(), mada i dalje treba popraviti db_submit() tako da prepozna polja koja su skrivena i ne ukljucuje ih u upitu
-# v0.0.13.3 (2008/06/13) + dodan tip double
-# v0.0.13.4 (2008/09/26) + omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
-# v0.0.13.5 (2008/10/28) + ispravka u genform() - izbaci polje "pass" ako je metoda GET
-# v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
-# v0.0.14.1 (2009/01/22) + omogucen unos float vrijednosti sa zarezom u form generatorima
-# v0.0.14.2 (2009/03/24) + dodan escaping u genform
-# v0.0.14.3 (2009/11/07) + izbaceno polje "pass" i iz genuri()
-
-
-# + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
 
 
 

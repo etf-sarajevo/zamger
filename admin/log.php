@@ -2,26 +2,6 @@
 
 // ADMIN/LOG - pregled logova
 
-// v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_site
-// v3.9.1.1 (2008/03/04) + Dodani logging nivoi, pocetak novog formata logova
-// v3.9.1.2 (2008/03/08) + Nova auth tabela
-// v3.9.1.3 (2008/03/15-22) + Kod nivoa>1 nisu razdvajani logini, popravljen SU, novi format loga (stari će biti uklonjen uskoro)
-// v3.9.1.4 (2008/04/09) + Popravljen prikaz ispita
-// v3.9.1.5 (2008/04/28) + Naslov u <h3>
-// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.7 (2008/09/08) + JOIN izmedju log i osoba ne mora vratiti nista ako je userid 0
-// v3.9.1.8 (2008/10/31) + Dodana mogucnost pretrage; dodan tag za studij
-// v3.9.1.9 (2009/01/23) + Podignut default nivo radi brzeg otvaranja
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; obrisan legacy parser koji se koristio u ranim dev verzijama loga
-// v4.0.9.3 (2009/04/07) + Dodajem tag za lab grupu
-// v4.0.9.4 (2009/04/22) + Tag za predmet (za razliku od ponudekursa) - posto se dobar broj modula prebacuje na predmet, bice lakse logirati tako; prebacujem labgrupu sa ponudakursa na predmet
-// v4.0.9.5 (2009/05/05) + Vise ispravki kod pretrage, dodan prikaz masovnih unosa za studenta koji se pretrazuje; popravljen pogresan link na zadace, ispite, grupe
-// v4.0.9.6 (2009/05/18) + Popravljen link na grupu "svi studenti" (ne postoji vise grupa 0)
-// v4.0.9.7 (2009/05/20) + Ukinuta labgrupa 0 i polja predmet i ag iz tabele labgrupa
-// v4.0.9.8 (2009/10/07) + Omoguceno vise tagova istog tipa a razlicitog sadrzaja (npr. u123 poslao poruku u456)
-
 
 function admin_log() {
 

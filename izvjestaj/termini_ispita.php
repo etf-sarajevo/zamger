@@ -3,6 +3,7 @@
 // IZVJESTAJ/IZVJESTAJ_ISPIT - detaljan izvjestaj za ispit
 
 
+
 function izvjestaj_termini_ispita() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;

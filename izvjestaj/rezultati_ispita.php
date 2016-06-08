@@ -1,6 +1,8 @@
 <?
 
-// IZVJESTAJ/REZULTATI_ISPITA - rezultati jednog REZULTATI_ISPITA
+// IZVJESTAJ/REZULTATI_ISPITA - rezultati jednog ispita
+
+
 
 function izvjestaj_rezultati_ispita() {
 

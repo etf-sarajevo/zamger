@@ -1,6 +1,7 @@
 <?php
 
-//novi modul student/prijava_ispita
+// STUDENT/PRIJAVA_ISPITA - stranica pomoću koje se studenti prijavljuju za termine ispita
+
 
 
 function student_prijava_ispita() {

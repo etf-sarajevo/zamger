@@ -2,23 +2,6 @@
 
 // NASTAVNIK/GRUPE - administracija grupa
 
-// v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/02/28) + Koristimo lib/manip, student moze biti u vise grupa
-// v3.9.1.2 (2008/08/18) + Popravljen logging predmeta, popravljen ispis u mass_inputu, informativna poruka kada parsiranje ne vrati nista, dodana greska za brisanje nepostojece grupe, dodana zastita od visestrukog slanja kod masovnog unosa
-// v3.9.1.3 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.4 (2008/09/17) + Konacno azuriran kod za kopiranje grupa
-// v3.9.1.5 (2008/09/24) + Popravljen bug u massinput-u kada opcija Naziv grupe nije ukljucena
-// v3.9.1.6 (2008/10/03) + Iskomentarisan dio koda koji se vec odavno ne koristi
-// v3.9.1.7 (2008/10/07) + Malo doradjen logging
-// v3.9.1.8 (2008/12/23) + Dodana zastita od CSRF, brisanje grupe prebaceno na POST jer je destruktivna operacija (bug 51)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/02/25) + Popravljen ispis imena i prezimena studenta koji ne slusa predmet prilikom kopiranja grupa
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/23) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa; dodana provjera predmeta za akcije; kod brisanja grupe dodano brisanje registrovanih casova i prisustva
-// v4.0.9.3 (2009/05/06) + Dodajem polje virtualna u tabelu labgrupa - virtualne grupe trebaju biti nevidljive nastavniku
-// v4.0.9.4 (2009/09/30) + Link na izmjenu studenta nije ukljucivao parametar ag
-// v4.0.9.5 (2009/10/01) + Ukidam mogucnost upisa svih studenata u prvu grupu koja samo zbunjuje korisnika, a nema potrebe za njom (razlog za tu opciju je sto se tako ustvari nekada vrsio upis na predmet)
-// v4.0.9.6 (2009/10/01) + Redizajniran ispis kod masovnog unosa, sugerisao: Zajko
 
 
 // FIXME: moguce kreirati vise grupa sa istim imenom

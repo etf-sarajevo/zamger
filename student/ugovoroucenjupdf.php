@@ -2,9 +2,6 @@
 
 // STUDENT/UGOVOROUCENJUPDF - generisanje PDFa na osnovu ugovora o ucenju
 
-// v4.0.9.1 (2009/07/17) + Novi modul za ugovor o ucenju
-// v4.0.9.2 (2009/08/25) + Razdvajam fajlove po ciklusu studija
-
 // Modul koristi biblioteku TCPDF
 
 

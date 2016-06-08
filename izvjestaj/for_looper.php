@@ -1,5 +1,9 @@
 <?
 
+// IZVJESTAJ/FOR_LOOPER - spajanje više izvještaja po opsegu nekog parametra
+
+
+
 function izvjestaj_for_looper() {
 	global $sadrzaj_bafera_za_csv,$conf_files_path, $registry;
 	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;

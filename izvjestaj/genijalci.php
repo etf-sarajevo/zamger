@@ -2,9 +2,6 @@
 
 // IZVJESTAJ/GENIJALCI - Pregled studenata po prosjeku
 
-// v3.9.1.0 (2009/02/04) + Prepravljam jednu stariju standalone skriptu
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/08/26) + Omogucujem izbor studija -1 (Svi studiji), dodajem parametar "godina studija", reaktiviram broj indexa, ne prikazujem studente koji imaju nepolozene ispite
 
 
 function izvjestaj_genijalci() {

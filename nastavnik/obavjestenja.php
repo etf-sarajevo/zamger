@@ -2,15 +2,6 @@
 
 // NASTAVNIK/OBAVJESTENJA - slanje obavjestenja studentima
 
-// v3.9.1.0 (2008/02/22) + Novi modul: nastavnik/obavjestenja
-// v3.9.1.1 (2008/09/03) + Dodajem podrsku za email
-// v3.9.1.2 (2008/10/02) + Modul nije ispisivao stara obavjestenja ako na predmetu nisu definisane labgrupe; popravljen logging; prebacena forma na genform() radi sigurnosnih aspekata istog; onemoguceno koristenje GET za kreiranje obavjestenja
-// v3.9.1.3 (2008/12/01) + Slanje maila je sada opcionalno; ispravljeno vise bugova u slanju maila: salji mail svakom studentu zasebno (drugacije nije radilo :( ); vracanje naslova i teksta u ne-escapovan oblik prije slanja maila; ukinuta nasa slova u imenima; pobrisao svoju adresu iz koda
-// v3.9.1.4 (2008/12/23) + Brisanje obavjestenja prebaceno na POST radi zastite od CSRF (bug 53)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa; prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet; provjera spoofinga kod brisanja obavjestenja
-// v4.0.9.3 (2009/09/30) + Brisanje obavjestenja nije radilo zbog glupe greske u JavaScriptu i zbog toga sto provjera prava brisanja nije uzimala u obzir opseg labgrupa
 
 
 function nastavnik_obavjestenja() {

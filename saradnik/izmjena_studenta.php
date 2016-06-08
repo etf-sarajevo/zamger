@@ -2,25 +2,6 @@
 
 // SARADNIK/IZMJENA_STUDENTA - pregled i izmjena podataka o korisniku
 
-// v3.9.1.0 (2008/02/12) + Preimenovan bivsi admin_student_izmjena
-// v3.9.1.1 (2008/02/25) + Student upisan u 0,1,2... grupa
-// v3.9.1.2 (2008/03/08) + Nova tabela auth
-// v3.9.1.3 (2008/03/21) + Student ne mora biti ni u jednoj labgrupi, auth polja
-// v3.9.1.4 (2008/04/14) + Popravljen link za ispis studenta sa predmeta
-// v3.9.1.5 (2008/06/16) + Situacija kad student nije ni u jednoj grupi je sada malo jasnija, brisi prisustvo prilikom promjene grupe
-// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.7 (2008/09/17) + Omogucena promjena grupe ako student nije niti u jednoj grupi (bug 24)
-// v3.9.1.8 (2008/09/23) + Popravljen link na studentska/osobe
-// v3.9.1.9 (2008/10/03) + Akcija izmjena prebacena na genform() radi sigurnosnih aspekata istog
-// v3.9.1.10 (2008/10/05) + Broj indexa ne mora biti broj
-// v3.9.1.11 (2008/11/17) + Samo site admin moze ispisati studenta sa predmeta (privremeno rjesenje)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/23) + Parametar je sada ID predmeta umjesto ponudekursa; tabela labgrupa preusmjerena sa ponudekursa na predmet; provjere ispravnosti podataka pomjerene naprijed radi sigurnosti
-// v4.0.9.4 (2009/05/06) + Sakrij virtualne grupe kod promjene grupe
-// v4.0.9.5 (2009/05/15) + Kod promjene grupe student je bio ispisan iz virtualne grupe
-// v4.0.9.6 (2009/05/17) + Posto se izmjena_studenta moze pozvati u arhiviranim predmetima, ag mora biti parametar
 
 
 // TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena

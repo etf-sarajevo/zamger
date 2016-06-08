@@ -1,5 +1,8 @@
 <?php
+
 // COMMON/PROJEKTNESTRANE - projektna strana projekta
+
+
 function common_projektneStrane()
 {
 	//debug mod aktivan

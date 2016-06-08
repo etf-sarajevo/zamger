@@ -2,6 +2,7 @@
 
 // IZVJESTAJ/PO_SMJEROVIMA_LINIJSKI - stranica koja generiše grafove za izvještaj po smjerovima uz pomoć GD biblioteke
 
+
 function izvjestaj_chart_semestralni() {
 	
 	$id_ankete = intval($_GET['anketa']);

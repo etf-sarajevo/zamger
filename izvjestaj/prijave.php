@@ -3,6 +3,7 @@
 // IZVJESTAJ/PRIJAVE - generisanje PDFa sa prijavom
 
 
+
 function izvjestaj_prijave() {
 
 require_once('lib/tcpdf/tcpdf.php');

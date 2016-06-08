@@ -2,11 +2,6 @@
 
 // STUDENT/PROSJECI - skripta za racunanje prosjeka
 
-// v3.9.1.0 (2008/10/20) + Novi modul student/prosjeci
-// v3.9.1.1 (2009/02/07) + Dodan prikaz prosjeka po semestrima, na zahtjev studenata
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/10/21) + Rewrite modula tako da uzima u obzir plan studija i cikluse studija
 
 
 function student_prosjeci() {

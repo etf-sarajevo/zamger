@@ -2,38 +2,6 @@
 
 // SARADNIK/GRUPA - administracija jedne grupe na predmetu
 
-// v3.9.1.0 (2008/02/11) + Preimenovan bivsi admin_grupa
-// v3.9.1.1 (2008/03/08) + Nova tabela auth
-// v3.9.1.2 (2008/03/15) + Popravljen log nivo za brisanje casa
-// v3.9.1.3 (2008/05/16) + update_komponente_prisustvo() zamijenjen sa update_komponente()
-// v3.9.1.4 (2008/06/10) + Dodan ispis fiksnih komponenti + AJAH
-// v3.9.1.5 (2008/08/18) + Provjera da li postoji predmet
-// v3.9.1.6 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.7 (2008/09/08) + Forma za registrovanje casa nije prosljedjivala ID predmeta
-// v3.9.1.8 (2008/09/13) + Sprijeceno otvaranje coolboxa ako slanje nije uspjelo
-// v3.9.1.9 (2008/09/17) + Akcija dodaj_cas ce ubaciti 10 bodova u tabelu komponentebodovi ako prije toga nije bilo sloga u toj tabeli za datog studenta, predmet i komponentu
-// v3.9.1.10 (2008/10/03) + Akcija dodaj_cas prebacena na genform() radi sigurnosnih aspekata istog; onemoguceno dodavanje casa sa GET
-// v3.9.1.11 (2008/11/18) + Akcija brisi_cas nije prosljedjivala predmet_id, sto je dovodilo do greske "nepostojeci predmet" (ali je cas ipak bio obrisan)
-// v3.9.1.12 (2008/12/23) + Akcija brisi_cas prebacena na POST radi zastite od CSRF (bug 54); dodan refresh link
-// v3.9.1.13 (2008/01/21) + Dodan predmet na Refresh link
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.0.1 (2009/04/01) + Kod brisanja casa, ID nekada nije bio ispravno prosljedjivan (sto je za rezultat imalo da se cas nikako ne moze obrisati)
-// v4.0.9.2 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/14) + Zaboravio popraviti ID predmeta u pozivu AJAHa za konacnu ocjenu
-// v4.0.9.4 (2009/04/22) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet; saradnik/izmjena_studenta sada prima predmet umjesto ponudekursa; u slucaju grupe 0 prima se predmet i ag umjesto ponudekursa; preusmjeravam tabelu cas sa ponudekursa na predmet
-// v4.0.9.5 (2009/05/06) + Ukidam "virtualnu grupu" 0, predmet i akademska godina vise nisu neophodni parametri; dodano malo logginga
-// v4.0.9.6 (2009/05/15) + U Refresh linku predmet i ag više nisu potrebni
-// v4.0.9.7 (2009/05/17) + Dodana ag u link na izmjenu_studenta
-// v4.0.9.8 (2009/05/18) + AJAH komponente za fiksnu komponentu i konacnu ocjenu sada primaju predmet i ag
-// v4.0.9.9 (2009/09/03) + Stavljam ime studenta kao link na saradnik/student, da vidim hoce li iko primijetiti
-// v4.0.9.10 (2009/10/02) + Sprijecena promjena prisustva ako je slanje u toku
-// v4.0.9.11 (2009/10/07) + Omogucujem ulazak u grupu "svi studenti" preko predmeta i akademske godine
-// v4.0.9.12 (2009/10/14) + Ne prikazuj formu za kreiranje casa ako ne postoji nijedna klasicna komponenta za prisustvo
-// v4.0.9.13 (2009/10/24) + Novi modul "sve zadace"
 
 
 function saradnik_grupa() {

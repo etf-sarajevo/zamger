@@ -1,12 +1,6 @@
 <?
 
-// IZVJESTAJ/INDEX - spisak ocjena studenta
-
-// v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
-// v3.9.1.1 (2008/08/28) + Tabela osoba umjesto auth
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/09/15) + Ocjene po odluci
+// IZVJESTAJ/INDEX2 - spisak ocjena studenta u formatu prepisa ocjena
 
 
 

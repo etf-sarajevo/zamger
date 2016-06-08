@@ -3,10 +3,12 @@
 // LIB/AUTOTEST - Funkcije vezane za autotestove
 
 
+
 // autotest_detalji: Funkcija za prikaz detaljnih informacija o rezultatima testiranja zadatka
 //   $test    - ID testa (što definiše zadaću i zadatak, treba biti provjeren spoofing ovog IDa)
 //   $student - ID studenta
 //   $nastavnik - ako je true, moguć je pristup neaktivnim i sakrivenim testovima
+
 function autotest_detalji($test, $student, $nastavnik) {
 	// Glavni upit
 	$dodaj = "";

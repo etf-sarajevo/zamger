@@ -2,19 +2,6 @@
 
 // IZVJESTAJ/ISPIT - statistika pojedinacnog ispita
 
-// v3.9.1.0 (2008/04/11) + Izvjestaj izdvojen iz bivseg admin_izvjestaj.php
-// v3.9.1.1 (2008/08/28) + Dodana provjera da li postoji predmet
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/16) + Popravljen logging
-// v4.0.9.6 (2009/04/22) + Izbacujem predmet kao parametar (nepotrebno, predmet je sadrzan u ispitu), a ispit=svi prebacujem u drugi izvjestaj pod imenom statistika_predmeta
-// v4.0.9.7 (2009/04/27) + Parametar "predmet" je ustvari ponudakursa, pa treba dodati upit koji saznaje predmet i akademsku godinu za izvjestaj/statistika_predmeta
-// v4.0.9.8 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.9 (2009/05/05) + Ne prikazuj virtualne grupe posto je statistika za sve studente vec data
-
 
 // Provjeriti ispravnost dijela sa grupama
 

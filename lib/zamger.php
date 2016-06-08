@@ -2,28 +2,6 @@
 
 // LIB/ZAMGER - funkcije koje se koriste u ZAMGER kodu
 
-// v3.9.1.0 (2008/02/12) + Pocetak
-// v3.9.1.1 (2008/03/07) + Dodana sekcija "arhiva" u studentski_meni
-// v3.9.1.2 (2008/03/08) + userbox() prebacen na auth tabelu, nove slicice ;)
-// v3.9.1.3 (2008/03/21) + gen_ldap_uid()
-// v3.9.1.4 (2008/04/14) + Imena mjeseci malim
-// v3.9.1.5 (2008/05/06) + zamgerlog(): popravljen logging za dogadjaje kada korisnik nije logiran
-// v3.9.1.6 (2008/05/09) + studentski_meni(): arhivirani predmeti sortirani po godinama i semestrima, popravljen link za arhivu (cuva trenutno otvoreni modul)
-// v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
-// v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
-// v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni()); sprjeceno otvaranje coolboxa ako slanje nije uspjelo
-// v3.9.1.10 (2009/02/10) + Funkcija myquery prebacena ovdje radi logginga
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/29) + studentski_meni(): sortiranje po semestrima je dovodilo da se vise puta ponavlja zaglavlje za svaki preneseni predmet (sa drugog semestra); dodajem akademsku godinu u linkove za malimeni
-// v4.0.9.3 (2009/05/01) + studentski_meni(): Parametri modula student/predmet su sada predmet i ag; restruktuiran kod; nova struktura baze za studentske module
-// v4.0.9.4 (2009/07/23) + Dodajem linkove na dokumente - merge
-// v4.0.9.5 (2009/08/15) + Implementiram podrsku za parametar "nevidljiv" u registry-ju
-// v4.0.9.6 (2009/09/03) + Sprijeceno slanje podataka iz coolboxa ako je prethodno slanje u toku
-// v4.0.9.7 (2009/09/13) + Linkovi na koliziju i ugovor o ucenju; detalji dizajna studentskog menija (sugestije by Teo)
-// v4.0.9.8 (2009/10/02) + Ispravke u coolboxu pruzaju bolju podrsku za razne browsere
-// v4.0.9.9 (2009/10/07) + Ne insistiraj na kosoj crti kao znaku za brisanje u coolboxu
-
 
 
 // Funkcija koja pretvara naša slova iz velikih u mala

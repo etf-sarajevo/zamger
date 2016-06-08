@@ -5,35 +5,6 @@
 // VAZNO: za svaku akciju je potrebno implementirati striktnu kontrolu prava pristupa,
 // jer se to ne podrazumijeva
 
-// v3.9.1.0 (2008/02/12) + Preimenovano iz admin_ajah.php, dodan error handling
-// v3.9.1.1 (2008/03/15) + Popravljen bug u provjeri ogranicenja za prisustvo
-// v3.9.1.2 (2008/03/25) + Dodana pretraga imena za slanje poruke
-// v3.9.1.3 (2008/04/04) + Optimizovan ajah za prisustvo koristenjem update_komponenta_prisustvo() iz libmanip
-// v3.9.1.4 (2008/04/09) + Popravljeno koristenje varijable $user_siteadmin
-// v3.9.1.5 (2008/05/16) + Optimizovan update_komponente() tako da se moze zadati bilo koja komponenta, ukinuto update_komponente_prisustvo
-// v3.9.1.6 (2008/06/10) + Dodana podrska za fiksne komponente
-// v3.9.1.7 (2008/06/16) + Popravljena provjera za site_admin kod prisustva, postrozen uslov za brisanje/dodavanje ocjene na ispitu
-// v3.9.1.7 (2008/06/22) + Dodan unos bodova sa prijemnog
-// v3.9.1.7a (2008/07/01) + Dodan unos ocjena tokom srednje skole za prijemni
-// v3.9.1.8 (2008/08/28) + Tabela osoba umjesto auth u akciji "pretraga" (kod pisanja poruke)
-// v3.9.1.8a (2008/09/01) + Bio iskomentiran OK kod prisustva !?
-// v3.9.1.9 (2008/09/17) + Prisustvo nije radilo sa casovima u grupi "Svi studenti"; konacna ocjena: kod poredjenja integera 0 i stringa mora se koristiti !==; popravljena poruka za konacnu ocjenu vecu od $max
-// v3.9.1.10 (2008/10/14) + Popravljen upit u akciji "pretraga"
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/24) + Prebacena polja ects i tippredmeta iz tabele ponudakursa u tabelu predmet
-// v4.0.9.2 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet - FIXME: prekontrolisati upite, mozda je moguca optimizacija?
-// v4.0.9.3 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet - FIXME: isto
-// v4.0.9.4 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.5 (2009/04/20) + Typo u upitu za prava nastavnika u modulu izmjena_ispita; ekvivalentan upit za admine, i.predmet vise nije id ponudekursa nego predmeta
-// v4.0.9.6 (2009/04/24) + Greska uvedena u v4.0.9.4 (r372), ako $q70 ne vrati nista kako cemo onda znati metapredmet?
-// v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.8 (2009/05/05) + Prisustvo: Labgrupa 0 se ukida, kao i polja predmet i akademska godina iz tabele cas
-// v4.0.9.9 (2009/05/18) + Nemamo vise ponudukursa kod izmjene fiksnih bodova i konacne ocjene, pa cemo tu koristiti predmet i akademsku godinu
-// v4.0.9.10 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
-// v4.0.9.11 (2009/06/22) + Provjera prava pristupa kod fiksne komponente i konacne ocjene nije prebacena sa ponudekursa na predmet+ag
-// v4.0.9.12 (2009/07/15) + Dodajem kod za upis na drugi ciklus
-// v4.0.9.13 (2009/10/02) + Ljepsa poruka za sesiju koja je istekla; jos zastite za module studentske sluzbe
-
 
 // Prebaciti u lib/manip?
 

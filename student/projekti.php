@@ -2,8 +2,7 @@
 
 // STUDENT/PROJEKTI - studenski modul za prijavu na projekte i ulazak u projektnu stranu projekta
 
-// v4.0.9.0 (2009/07/08) - originalna verzija by Haris Agic
-// v4.0.9.1 (2009/10/04) - Dodana provjera da li su definisani predmetni parametri; dodana poruka ako nema definisanih timova; uljepsan kod, izbaceno viska provjera primljenih varijabli, importovan kod iz lib/projekti
+
 
 function student_projekti() {
 

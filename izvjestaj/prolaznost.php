@@ -2,20 +2,6 @@
 
 // IZVJESTAJ/PROLAZNOST - Pregled prolaznosti i ocjena po godini, odsjeku...
 
-// v3.9.1.0 (2008/04/21) + Kopiran admin_izvjestaj, dodana tabela student_predmet, komponente, izvjestaj "ukupan broj bodova" prebacen na komponente
-// v3.9.1.1 (2008/04/24) + Dodano bojenje po odsjeku
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
-// v3.9.1.4 (2008/09/24) + Popravljen bug 26 - netacan broj studenata koji su upisali predmet (kod izvjestaja konacna ocjena)
-// v3.9.1.5 (2008/10/24) + Popravljena ukupna statistika kod upita "Redovni + ponovci + preneseni"
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/05/18) + Integrisi ponude istog kursa npr. kod izvjestaja "Svi studiji", dodano polje "ponovac"
-// v4.0.9.5 (2009/08/29) + Popravljeno poravnanje footera tabele, popravljen broj studenata u koliziji
-// v4.0.9.6 (2009/10/03) + Dodan parametar "tip studija" za prikaz podataka za sve studije istog tipa; razjasnjene sumarne statistike; respektuj polje ponovac u tabeli student_studij
-
 
 
 function izvjestaj_prolaznost() {

@@ -14,17 +14,6 @@
 
 // INDEX - master skripta za ZAMGER
 
-// v3.9.1.0 (2008/02/09) + Pocetak rada
-// v3.9.1.1 (2008/03/08) + Ukinute uloge
-// v3.9.1.2 (2008/03/21) + Popravljen pristup public dijelovima bez prijave i logging
-// v3.9.1.3 (2008/04/17) + Popravljen XSS sa varijablom sta
-// v3.9.1.4 (2008/05/07) + Dodan logging za razne greske kod anonimnog pristupa, popravljen forwarding kada čovjeku istekne sesija
-// v3.9.1.5 (2008/08/27) + Koristimo horizontalni_meni() za studentska/*; koristimo tabelu privilegija umjesto auth
-// v3.9.1.6 (2008/10/02) + Popravljen logging
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/04/01) + Dodan link na RSS u header
-// v4.0.9.1.(2009/06/16) + Dodan link na dokumentaciju na sve stranice
-
 $uspjeh=0;
 
 

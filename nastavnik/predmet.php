@@ -2,15 +2,6 @@
 
 // NASTAVNIK/PREDMET - pocetna stranica za administraciju predmeta - izbor studentskih modula
 
-// v3.9.1.0 (2008/02/18) + Preimenovan bivsi admin_predmet
-// v3.9.1.1 (2008/04/09) + Usavrsen login
-// v3.9.1.2 (2008/12/23) + Akcija "set_smodul" prebacena na POST radi zastite od CSRF (bug 58)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/02/24) + Dodan prikaz nastavnika angazovanih na predmetu
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/23) + Nastavnicki moduli sada primaju predmet i akademsku godinu (ag) umjesto ponudekursa
-// v4.0.9.4 (2009/05/01) + Nove tabele za studentske module; popravljen bug sa redirekcijom
 
 
 function nastavnik_predmet() {

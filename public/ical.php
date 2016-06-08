@@ -5,6 +5,7 @@
 // Specifikacija: http://tools.ietf.org/html/rfc5545
 
 
+
 function public_ical() {
 
 	global $user_nastavnik;

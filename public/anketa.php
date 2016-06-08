@@ -2,6 +2,8 @@
 
 // PUBLIC/ANKETA - stranica za ispunjavanje ankete
 
+
+
 function public_anketa() {
 
 	global $userid,$user_siteadmin,$user_studentska,$user_nastavnik;

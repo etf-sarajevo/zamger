@@ -1,13 +1,8 @@
 <?
 
 // PUBLIC/INTRO - uvodna stranica za javni dio sajta
-// Editujte funkciju public_intro() da biste prikazali nešto drugo na početnoj stranici zamgera
 
-// v3.9.1.0 (2008/02/09) + Novi modul: public/intro, prikazuje stablo predmeta i login formu
-// v3.9.1.1 (2008/03/08) + Popravljena redirekcija
-// v3.9.1.2 (2008/11/21) + Dodajem link na dokumentaciju
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/05/02) + Posto botovi stalno napadaju izvjestaj/predmet, dodajem opciju "skrati" koja puno brze kreira izvjestaj
+// Editujte funkciju public_intro() da biste prikazali nešto drugo na početnoj stranici zamgera
 
 
 

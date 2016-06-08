@@ -1,6 +1,7 @@
 <?
 
-//novi modul nastavnik/prijava_ispita
+// NASTAVNIK/PRIJAVA_ISPITA - upravljanje terminima za prijavljivanje studenata na ispit
+
 
 
 function nastavnik_prijava_ispita() {

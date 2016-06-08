@@ -2,13 +2,6 @@
 
 // ADMIN/KONZISTENTNOST + vrsi provjeru konzistentnosti podataka u bazi i nudi mogucnost popravke
 
-// v3.9.1.0 (2008/04/28) + Novi modul admin/konzistentnost
-// v3.9.1.1 (2008/08/27) + Kod brisanja stvari dodano LIMIT 1 kako bi se mogli brisati dupli unosi
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.3 (2008/12/02) + studentska/osobe umjesto studentska/studenti; dozvoljeno prenijeti izborni predmet (ali treba provjeriti ECTS...)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-
 
 
 function admin_konzistentnost() {

@@ -1,6 +1,7 @@
 <?
 
-// IZVJESTAJ/ODRZANA_NASTAVA
+// IZVJESTAJ/ODRZANA_NASTAVA - izvještaj o održanoj nastavi nastavnika, asistenta ili demonstratora
+
 
 
 function izvjestaj_odrzana_nastava() {

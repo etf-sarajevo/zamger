@@ -1,5 +1,8 @@
 <?php
+
 // LIB/PROJEKTI - funkcije za module nastavnik/projekti, student/projekti, common/projektneStrane
+
+
 
 function fetchProjects($predmet, $ag)
 {

@@ -1,4 +1,5 @@
 <?
+
 // COMMON/CRON - periodicno izvrsavanje skripti
 
 

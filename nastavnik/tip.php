@@ -1,7 +1,7 @@
 <?
 
-
 // NASTAVNIK/TIP - modul koji ce omogućiti definisanja sistema bodovanja na predmetu
+
 
 
 function nastavnik_tip() {

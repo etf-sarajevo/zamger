@@ -2,25 +2,6 @@
 
 // STUDENT/INTRO - uvodna stranica za studente
 
-// v3.9.1.0 (2008/02/09) + Novi modul: student/intro, prikazuje informacije, obavjestenja i stablo predmeta
-// v3.9.1.1 (2008/03/05) + Tweaks & optimizacije; izbaceni komentari na zadace iz poruka iz dva razloga: prespori su, neki saradnici pisu irelevantne informacije u njih
-// v3.9.1.2 (2008/03/06) + Ubacen opseg 6: labgrupa, a korisnik postaje opseg 7
-// v3.9.1.3 (2008/03/21) + Popravljen link za slanje zadaće u Aktuelno
-// v3.9.1.4 (2008/03/26) + Fini datum u bloku Poruke
-// v3.9.1.5 (2008/04/10) + Dodani rezultati ispita i konacna ocjena u Aktuelno, ukinut mysql2time() kod rokova za zadace
-// v3.9.1.6 (2008/04/30) + Popravljen naslov poruke "bez naslova"; dodan link na RSS
-// v3.9.1.7 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.8 (2008/11/21) + Pod Aktuelno objavi samo rezultate ispita na koje je student izasao; prikazi bodove i cestitku ako je polozio/la; prikazi tekst Studentska sluzba za obavjestenja koje posalje studentska
-// v3.9.1.9 (2008/12/24) + Popravljen bug sa prikazom posiljaoca obavjestenja Administrator i Studentska sluzba
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.4 (2009/04/06) + Skracujem prikaz obavjestenja ako je "naslov" duzi od 200 znakova
-// v4.0.9.5 (2009/04/19) + Popravljen upit za obavjestenja o polozenim ispitima - posto je moguce da isti predmet ima vise ponudakursa, desavalo se da link na stranicu predmeta bude za pogresnu ponudukursa na koju student nije upisan
-// v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
-// v4.0.9.7 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-// v4.0.9.8 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
 
 
 function student_intro() {

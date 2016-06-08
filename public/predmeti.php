@@ -2,11 +2,6 @@
 
 // PUBLIC/PREDMETI - spisak predmeta u finom stablu
 
-// v3.9.1.0 (2008/02/09) + Novi modul: public/predmeti
-// v3.9.1.1 (2008/09/01) + Funkcija dajplus() izbacena u globalni opseg jer se u suprotnom funkcija public_predmet() nije mogla pozivati vise puta (sto je svakako nemoguce zbog CSS IDova ali eto...)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/30) + Modul izvjestaj/predmet sada umjesto ponudekursa prima predmet i ag
-
 
 
 function public_predmeti($modul) {

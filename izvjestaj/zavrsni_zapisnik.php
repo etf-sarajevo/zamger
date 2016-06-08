@@ -3,6 +3,7 @@
 // IZVJESTAJ/ZAVRSNI_ZAPISNIK - Zapisnik o odbrani završnog rada
 
 
+
 function izvjestaj_zavrsni_zapisnik() {
 
 ?>
