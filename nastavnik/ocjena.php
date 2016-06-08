@@ -220,6 +220,9 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 		return;
 	} else {
+		// Generisem statičku verziju izvještaja predmet
+		generisi_izvjestaj_predmet( $predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da") );
+
 		zamgerlog("masovno upisane ocjene na predmet pp$predmet",4);
 		
 		?>

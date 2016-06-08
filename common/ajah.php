@@ -308,6 +308,9 @@ case "izmjena_ispita":
 
 		update_komponente($stud_id,$ponudakursa,$komponenta);
 
+		// Generisem statičku verziju izvještaja predmet
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
+
 	} else if ($ime == "fiksna") {
 		// Odredjujemo ponudukursa zbog tabele komponentebodovi
 		$q62 = myquery("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
@@ -317,6 +320,9 @@ case "izmjena_ispita":
 		if ($vrijednost != "/") $q66 = myquery("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");
 		zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
 		zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
+
+		// Generisem statičku verziju izvještaja predmet
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
@@ -355,6 +361,9 @@ case "izmjena_ispita":
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
 		}
+
+		// Generisem statičku verziju izvještaja predmet
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
 
 	} else if ($ime == "kodatum") {
 		// AJAH "kodatum" je uvijek promjena

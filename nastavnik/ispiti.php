@@ -3,18 +3,10 @@
 // NASTAVNIK/ISPITI - kreiranje i unos rezultata ispita
 
 
-  
-function ob_file_callback($buffer)
-{
-	global $sadrzaj_bafera;
-	$sadrzaj_bafera=$buffer;
-}
-
 
 function nastavnik_ispiti() {
 
-global $userid,$user_siteadmin,$user_studentska,$conf_files_path;
-global $sadrzaj_bafera;
+global $userid,$user_siteadmin,$user_studentska;
 
 require("lib/manip.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
@@ -263,19 +255,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		return;
 	} else {
 		// Generisem statičku verziju izvještaja predmet
-		$_REQUEST['skrati'] = "da";
-		$_REQUEST['sakrij_imena'] = "da";
-
-		ob_start('ob_file_callback');
-		include("izvjestaj/predmet.php");//ovdje ga ukljucujem
-		eval("izvjestaj_predmet();");
-		ob_end_clean();
-		
-		if (!file_exists("$conf_files_path/izvjestaj_predmet")) {
-			mkdir ("$conf_files_path/izvjestaj_predmet",0777, true);
-		}
-		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY").".html";
-		file_put_contents($filename, $sadrzaj_bafera);
+		generisi_izvjestaj_predmet( $predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da") );
 
 		zamgerlog("masovni rezultati ispita za predmet pp$predmet",4);
 		?>

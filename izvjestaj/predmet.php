@@ -6,14 +6,30 @@
 
 function izvjestaj_predmet() {
 
-global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
-
-
+global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, $conf_files_path;
 
 // Parametri upita
 
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
+
+if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	$time = time();
+	$dan=0;
+	do {
+		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
+		$time -= 86400;
+		$dan++;
+		if ($dan == 3650) {
+			niceerror("Izvještaj ne postoji");
+			return;
+		}
+	} while (!file_exists($filename));
+
+	readfile($filename);
+	return;
+}
+
 
 // sumiraj kolone za zadace i prisustvo
 if ($_REQUEST['skrati']=="da") $skrati=1; else $skrati=0; 
@@ -31,20 +47,23 @@ $grupa = intval($_REQUEST['grupa']);
 $q10 = myquery("select naziv from predmet where id=$predmet");
 if (mysql_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+	zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 	biguglyerror("Traženi predmet ne postoji");
 	return;
 }
 $q15 = myquery("select naziv from akademska_godina where id=$ag");
 if (mysql_num_rows($q15)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
+	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Tražena godina ne postoji");
 	return;
 }
 
-
 ?>
+
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
+<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 
 <h1><?=mysql_result($q10,0,0)?></h1>
 <h3>Akademska <?=mysql_result($q15,0,0)?> godina - Izvještaj o predmetu</h3>
@@ -53,7 +72,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 // Koristimo ulogu iz /index.php da odredimo da li će se prikazati imena...
 $imenaopt=1;
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+if ((!$user_nastavnik && !$user_studentska && !$user_siteadmin) || $_REQUEST['sakrij_imena']=="da") {
 	$imenaopt=0;
 	print "<p><b>Napomena:</b> Radi zaštite privatnosti studenata, imena će biti prikazana samo ako ste prijavljeni kao nastavnik/saradnik.</p>\n";
 }
@@ -113,6 +132,7 @@ if ($sastavi_grupe==0) {
 $q25 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
 if (mysql_num_rows($q25)<1) {
 	zamgerlog("predmet pp$predmet ag$ag nema virtuelnu grupu!", 3);
+	zamgerlog2("predmet nema virtuelnu grupu", $predmet, $ag);
 	$id_virtualne_grupe = 0;
 } else {
 	$id_virtualne_grupe = mysql_result($q25,0,0);
