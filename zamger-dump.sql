@@ -2102,6 +2102,9 @@ CREATE TABLE IF NOT EXISTS `preference` (
 -- Dumping data for table `preference`
 --
 
+INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
+(0, 'verzija-baze', '1465378477');
+
 
 -- --------------------------------------------------------
 
