@@ -58,6 +58,18 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	print "<p><b>Napomena:</b> Radi zaštite privatnosti studenata, imena će biti prikazana samo ako ste prijavljeni kao nastavnik/saradnik.</p>\n";
 }
 
+// 26. 9. 2011: prikazujemo izvještaj samo ako je korisnik nastavnik na predmetu
+if ($user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	$q10 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and akademska_godina=$ag and predmet=$predmet");
+	if (mysql_result($q10,0,0) == 0) {
+		// Ako je i student, onda vidi izvještaj kao i svi studenti
+		if ($user_student) 
+			$imenaopt=0;
+		else
+			return;
+	}
+}
+
 
 
 // SPISAK SVIH STUDENATA NA PREDMETU
