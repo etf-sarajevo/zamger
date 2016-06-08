@@ -2,7 +2,10 @@
 
 // STUDENTSKA/ANKETA - administracija ankete, studentska služba
 
+
+
 function studentska_anketa(){
+
 	global $userid, $user_siteadmin, $user_studentska, $conf_site_url;
 	global $_lv_; // Potrebno za genform() iz libvedran
 	

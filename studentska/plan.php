@@ -2,7 +2,6 @@
 
 // STUDENTSKA/PLAN - Nastavni plan studija
 
-// v4.0.9.1 (2009/05/20) + Novi modul
 
 
 function studentska_plan() {

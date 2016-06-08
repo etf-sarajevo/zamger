@@ -2,8 +2,12 @@
 
 // STUDENTSKA/ZAVRSNI - modul za definisanje zavrsnih radova, parametara, komisije, termina odbrane i konacne ocjene
 
+
+
 function studentska_zavrsni()  {
+
 	require("lib/manip.php"); // radi ispisa studenata sa predmeta
+	
 	global $userid, $user_nastavnik, $user_studentska, $user_siteadmin;
 	global $conf_files_path;
 

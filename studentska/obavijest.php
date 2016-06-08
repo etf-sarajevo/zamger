@@ -2,13 +2,6 @@
 
 // STUDENTSKA/OBAVIJEST + slanje obavjestenja za studentsku sluzbu
 
-// v3.9.1.0 (2008/09/02) + Kopiran common/inbox u studentska/obavijest
-// v3.9.1.1 (2008/10/03) + Postrozen uslov za slanje na POST
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/10) + Omoguci administratoru da posalje poruku svim korisnicima Zamgera; bilo moguce izmijeniti sve poruke (ukljucujuci privatne) preko IDa poruke; pored toga, onemoguceno editovanje poruka za opsege koje normalno nije moguce slati (vidjecemo koliko ce to predstavljati problem); bilo moguce slanje poruke sa bilo kojim opsegom kroz spoofing URLa; uskladjivanje koda za slanje maila sa izmjenama u nastavnik/obavjestenje; onemogucen spamming (slanje maila svim studentima ili svim nastavnicima)
-// v4.0.9.1 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke)
-// v4.0.9.2 (2009/04/29) + Preusmjeravam tabelu labgrupa sa tabele ponudakursa na tabelu predmet
-
 
 
 function studentska_obavijest() {

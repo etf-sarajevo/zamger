@@ -2,16 +2,6 @@
 
 // STUDENTSKA/IZVJESTAJI - izvjestaji koji se ticu prolaznosti
 
-// v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
-// v3.9.1.1 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
-// v3.9.1.2 (2008/09/09) + Dodan izvjestaj "studenti kojima nedostaje..."
-// v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
-// v3.9.1.4 (2009/01/26) + Dodan overlay za prikaz izvjestaja
-// v3.9.1.5 (2009/02/07) + Dodan link za izvjestaj "genijalci"
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/05/20) + Apsolutni linkovi na slike promijenjeni u relativne
-// v4.0.9.2 (2009/08/28) + Razjasnjeni linkovi na rang-listu po prosjeku
-
 
 
 function studentska_izvjestaji() {

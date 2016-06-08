@@ -2,14 +2,6 @@
 
 // STUDENTSKA/INTRO - uvodna stranica za studentsku
 
-// v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
-// v3.9.1.1 (2008/03/26) + Nova auth tabela
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth; dodana potvrda izmjene licnih podataka
-// v3.9.1.3 (2008/10/03) + Destruktivni zahtjevi prebaceni na POST radi sukladnosti sa RFCom
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/05) + Slanje poruke studentu da je zahtjev prihvacen / odbijen i komentar
-// v4.0.0.2 (2009/04/20) + Broj indexa ne mora biti integer :(
-// v4.0.9.1 (2009/06/19) + Tabela osoba: ukinuto polje srednja_skola (to ce biti rijeseno na drugi nacin); polje mjesto_rodjenja prebaceno na sifrarnik; dodano polje adresa_mjesto kao FK na isti sifrarnik
 
 
 function studentska_intro() {

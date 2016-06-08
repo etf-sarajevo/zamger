@@ -2,16 +2,6 @@
 
 // STUDENTSKA/PRIJEMNI - modul za administraciju prijemnog ispita
 
-// v3.9.1.0 (2008/06/05) + Import koda by eldin.starcevic@hotmail.com
-// v3.9.1.1 (2008/06/09) + Dodan post-guard, ispravljen bug sa ispisom datuma u pregledu, dodana default vrijednost za opći uspjeh
-// v3.9.1.2 (2008/07/11) + Finalna verzija korištena za prijemni na ETFu
-// v3.9.1.3 (2008/08/28) + Uhakovan drugi termin za prijemni (popraviti), centriran i reorganizovan prikaz
-// v3.9.1.4 (2008/10/03) + Akcije unospotvrda i unoskriterij (subakcija spremi) prebacene na genform() radi sigurnosnih aspekata istog
-// v3.9.1.5 (2009/02/12) + Cleanup
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
-// v4.0.9.2 (2009/07/15) + Dodajem kod za upis na drugi ciklus
-// v4.0.9.3 (2009/09/02) + U akciji za unos kriterija za upis: popravljen upit kada ne postoji nista u bazi, prikaz odabranog studija, varijabla Spremi nije bila unsetovana
 
 
 function studentska_prijemni() {
