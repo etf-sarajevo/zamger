@@ -2293,7 +2293,9 @@ if ($vrstaunosa!="editovanje") {
 			$broj_ocjena_razred[$r[0]]++;
 		}
 	}
-	for ($i=1; $i<=4; $i++) $prosjek_razreda[$i] = round($prosjek_razreda[$i]/$broj_ocjena_razred[$i], 2);
+	for ($i=1; $i<=4; $i++) 
+		if ($broj_ocjena_razred[$i] > 0)
+			$prosjek_razreda[$i] = round($prosjek_razreda[$i]/$broj_ocjena_razred[$i], 2);
 
 	for ($i=1; $i<=20; $i++) {
 		?>
