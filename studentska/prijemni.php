@@ -2282,12 +2282,18 @@ if ($vrstaunosa!="editovanje") {
 
 	$q = myquery("SELECT razred, ocjena, tipocjene,redni_broj FROM srednja_ocjene WHERE osoba=$osoba");
 	$razred = array();
+	$prosjek_razreda = $broj_ocjena_razred = array(0, 0, 0, 0);
 	$kljucni = array();
 	while ($r = mysql_fetch_row($q)) {
 		if ($r[2]==0 && $r[3]==0) $razred[$r[0]][]= $r[1];
 		else if ($r[2]==0) $razred[$r[0]][$r[3]]= $r[1];
 		else $kljucni[$r[0]][$r[2]]=$r[1];
+		if ($r[2]==0) {
+			$prosjek_razreda[$r[0]] += $r[1];
+			$broj_ocjena_razred[$r[0]]++;
+		}
 	}
+	for ($i=1; $i<=4; $i++) $prosjek_razreda[$i] = round($prosjek_razreda[$i]/$broj_ocjena_razred[$i], 2);
 
 	for ($i=1; $i<=20; $i++) {
 		?>
@@ -2310,6 +2316,15 @@ if ($vrstaunosa!="editovanje") {
 		?></tr><?
 	}
 	?>
+		<tr><td colspan="5">&nbsp;<td></tr>
+		<tr><td>&nbsp;</td>
+		<?
+		for ($j=1; $j<=4; $j++) {
+			?>
+			<td align="center"><input type="text" id="prosjek<?=$j?>" size="4" value="<?=$prosjek_razreda[$j]?>" style="border:1px black solid" readonly></td>
+			<?
+		}
+		?></tr>
 	</table>
 
 	</td><td width="30">&nbsp;</td>
