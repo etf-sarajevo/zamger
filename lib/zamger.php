@@ -55,7 +55,8 @@ function vokativ($rijec,$spol) {
 
 // Vraća genitiv riječi (primitivno)
 
-function genitiv($rijec,$spol) {
+function genitiv($rijec,$spol='?') {
+	if ($spol == '?') $spol = spol($rijec); // Ovo se ustvari ne koristi? FIXME
 	$slovo = substr($rijec,strlen($rijec)-1);
 	if ($slovo == "a")
 		return substr($rijec,0,strlen($rijec)-1)."e";
@@ -891,6 +892,8 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	// Punimo parametre u superglobalni niz $_REQUEST kako bi se proslijedili izvještaju
 	foreach($params as $key => $value)
 		$_REQUEST[$key] = $value;
+	$_REQUEST['predmet'] = $predmet;
+	$_REQUEST['ag'] = $ag;
 	
 	ob_start('zamger_file_callback');
 	include("izvjestaj/predmet.php");
