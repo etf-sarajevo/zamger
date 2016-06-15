@@ -33,7 +33,7 @@ VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
   * (2675c07) U ćošku svakog izvještaja nalazi se prozor za printanje i generisanje PDFa
   * (c98565f) Novi izvještaj tražen od Ministarstva "pregled_nacin": skraćeni tabelarni pregled upisanih studenata po tipu i načinu studiranja
   * (5173a4d, b9dc66e) Novi izvještaj "Svi studenti" daje spisak svih trenutno upisanih studenata na fakultet sa određenim konfigurabilnim kolonama
-  * (cbd1c67) Novi podizvještaj za ankete, statistika odgovora samo za pitanje "Sveukupna ocjena predmeta"
+  * (cbd1c67, eb36d33) Novi podizvještaj za ankete, statistika odgovora samo za pitanje "Sveukupna ocjena predmeta"
   * (6a1a4f6) izvjestaj/genijalci: Nova opcija: prosjek samo za tekuću godinu studija
   * (908838a) izvjestaj/pregled: Dodajem 3. ciklus studija (doktorski)
   * (e4fe4e4) Akademsko priznavanje ocjena sa druge institucije (potrebno dodati GUI za unos)
@@ -133,6 +133,8 @@ ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
   * (afcc276) Podaci i za vanredne studente, dodan spisak studenata bez unesenog kantona radi lakše popravke
 - izvjestaj/predmet: 
   * (a3ac3f1) Popravljen ispis tabele kada ne postoji komponenta za zadaće
+  * (7d7a178) Osoba koja je u statusu nastavnika na jednom a studenta na drugom predmetu nije mogla vidjeti izvještaj za predmet na kojem je student
+  * (b9c4e08) Caching izvještaja, budući da je dosta zahtjevan a često se otvara (studenti gledaju rezultate ispita)
 - izvjestaj/prijave:
   * (42a2809, 86fddef, ef4f7dc) Novi podtip izvještaja: svi studenti sa upisanom ocjenom
 - izvjestaj/prijemni:
