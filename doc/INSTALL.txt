@@ -99,7 +99,11 @@ Bye
 
 4. Importujte standardnu Zamger schemu u mysql:
 
-# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 <zamger-dump.sql
+# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 < db/schema.sql
+
+Importujte demo podatke bez kojih sistem neće funkcionisati ispravno:
+
+# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 < db/seed.sql
 
 
 5. Ako zelite omoguciti upload fajlova, trebate kreirati neke foldere
