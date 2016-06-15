@@ -48,6 +48,17 @@ INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora
 
 
 --
+-- Dumping data for table `osoba`
+-- Potreban je barem jedan admin korisnik kako bi bilo moguće
+-- unijeti podatke i dodati ostale korisnike.
+-- Vidjeti i tabelu auth.
+--
+
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
+(1, 'Site', 'Admin', '', NULL,NULL, NULL, '', '', NULL, '', NULL, 0);
+
+
+--
 -- Dumping data for table `auth`
 -- Potreban je barem jedan admin korisnik kako bi bilo moguće
 -- unijeti podatke i dodati ostale korisnike.
@@ -161,6 +172,19 @@ INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 (11, 'Republika Srpska', 'RS'),
 (12, 'Distrikt Brčko', 'DB'),
 (13, 'Strani državljanin', 'SD');
+
+
+--
+-- Dumping data for table `tipkomponente`
+-- Šifrarnik
+--
+
+INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
+(1, 'Ispit', ''),
+(2, 'Integralni ispit', 'Ispiti koje zamjenjuje (razdvojeni sa +)'),
+(3, 'Zadace', ''),
+(4, 'Prisustvo', 'Minimalan broj izostanaka (0=linearno)'),
+(5, 'Fiksna', '');
 
 
 --
@@ -522,7 +546,6 @@ INSERT INTO `nacin_studiranja` (`id`, `naziv`, `moguc_upis`) VALUES
 (1, 'Redovan', 1),
 (2, 'Paralelan', 0),
 (3, 'Redovan samofinansirajući', 1),
-(0, 'Nepoznat status', 0),
 (4, 'Vanredan', 1),
 (5, 'DL', 1),
 (6, 'Mobilnost', 0);
@@ -702,17 +725,6 @@ INSERT INTO `opcina` (`id`, `naziv`) VALUES
 (141, 'Zvornik'),
 (142, 'Brčko'),
 (143, '(nije u BiH)');
-
-
---
--- Dumping data for table `osoba`
--- Potreban je barem jedan admin korisnik kako bi bilo moguće
--- unijeti podatke i dodati ostale korisnike.
--- Vidjeti i tabelu auth.
---
-
-INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
-(1, 'Site', 'Admin', '', NULL,NULL, NULL, '', '', NULL, '', NULL, 0);
 
 
 --
@@ -908,19 +920,6 @@ INSERT INTO `svrha_potvrde` (`id`, `naziv`) VALUES
 (101, 'aplikacije na drugi fakultet'),
 (102, 'hospitovanja u školi'),
 (103, 'ostvarivanja prava na jednokratnu novčanu pomoć');
-
-
---
--- Dumping data for table `tipkomponente`
--- Šifrarnik
---
-
-INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
-(1, 'Ispit', ''),
-(2, 'Integralni ispit', 'Ispiti koje zamjenjuje (razdvojeni sa +)'),
-(3, 'Zadace', ''),
-(4, 'Prisustvo', 'Minimalan broj izostanaka (0=linearno)'),
-(5, 'Fiksna', '');
 
 
 --
