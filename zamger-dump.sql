@@ -156,8 +156,8 @@ CREATE TABLE IF NOT EXISTS `anketa_izbori_pitanja` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_dopisani` (
-  `rezultat` int(11) unsigned NOT NULL,
-  `pitanje` int(11) unsigned NOT NULL,
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
   `odgovor` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`rezultat`,`pitanje`),
   KEY `pitanje` (`pitanje`)
@@ -174,9 +174,9 @@ CREATE TABLE IF NOT EXISTS `anketa_odgovor_dopisani` (
 --
 
 CREATE TABLE IF NOT EXISTS `anketa_odgovor_izbori` (
-  `rezultat` int(11) unsigned NOT NULL,
-  `pitanje` int(11) unsigned NOT NULL,
-  `izbor_id` int(11) unsigned NOT NULL,
+  `rezultat` int(11) NOT NULL,
+  `pitanje` int(11) NOT NULL,
+  `izbor_id` int(11) NOT NULL,
   PRIMARY KEY  (`rezultat`,`pitanje`,`izbor_id`),
   KEY `pitanje` (`pitanje`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
