@@ -1549,19 +1549,6 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ras_sati`
---
-
-CREATE TABLE IF NOT EXISTS `ras_sati` (
-  `idS` tinyint(1) NOT NULL AUTO_INCREMENT,
-  `satS` varchar(13) NOT NULL,
-  PRIMARY KEY (`idS`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=11 ;
-
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `rss`
 --
 

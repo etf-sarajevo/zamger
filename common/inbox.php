@@ -26,7 +26,7 @@ global $userid,$user_student, $user_nastavnik;
 
 // Podaci potrebni kasnije
 
-// Zadnja akademska godina
+// Aktuelna akademska godina
 $q20 = myquery("select id,naziv from akademska_godina where aktuelna=1");
 $ag = mysql_result($q20,0,0);
 
