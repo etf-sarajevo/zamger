@@ -967,3 +967,11 @@ INSERT INTO `zvanje` (`id`, `naziv`, `titula`) VALUES
 (7, 'predavač', 'pred.'),
 (8, 'viši lektor', 'v. lec.'),
 (9, 'lektor', 'lec.');
+
+
+--Boračke kategorije
+INSERT INTO `boracka_kategorija` (`id`, `naziv`) VALUES 
+(1, 'Porodica šehida i poginulih boraca'), 
+(2, 'Porodica ratnih vojnih invalida'), 
+(3, 'Porodica demobilisanih boraca'), 
+(4, 'Porodica nosilaca ratnih priznanja') 
