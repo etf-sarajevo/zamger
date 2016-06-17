@@ -483,7 +483,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	// Brisanje zadaće
 	if ($_POST['brisanje'] == " Obriši ") {
 		if ($edit_zadaca <= 0) return; // Ne bi se smjelo desiti
-		$q86 = myquery("select predmet, akademska_godina from zadaca where id=$edit_zadaca");
+		$q86 = myquery("select predmet, akademska_godina, komponenta from zadaca where id=$edit_zadaca");
 		if (mysql_num_rows($q86)<1) {
 			niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
 			zamgerlog("brisanje nepostojece zadace $edit_zadaca", 3);
@@ -496,12 +496,25 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			zamgerlog2("id zadace i predmeta se ne poklapaju", $edit_zadaca, $predmet, $ag);
 			return 0;
 		}
+		$komponenta = mysql_result($q86,0,2);
 	
 		if ($_POST['potvrdabrisanja']==" Briši ") {
 			// Brišemo srodne testove
 			$q84 = myquery("delete from autotest_replace where zadaca=$edit_zadaca");
 			$q85 = myquery("delete from autotest_rezultat where autotest in (select id from autotest where zadaca=$edit_zadaca)");
 			$q86 = myquery("delete from autotest where zadaca=$edit_zadaca");
+			
+			// Update komponente za sve studente koji imaju unesene bodove za zadaću
+			$q86a = myquery("select distinct zk.student, pk.id from zadatak as zk, student_predmet as sp, ponudakursa as pk where zk.zadaca=$edit_zadaca and zk.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+			$broj_studenata = mysql_num_rows($q86a);
+			$brojac=1;
+			while ($r86a = mysql_fetch_row($q86a)) {
+				$student = $r86a[0];
+				$ponudakursa = $r86a[1];
+				print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
+
+				update_komponente($student,$ponudakursa,$komponenta);
+			}
 			
 			// Brišemo zadaću
 			$q87 = myquery("delete from zadatak where zadaca=$edit_zadaca");
