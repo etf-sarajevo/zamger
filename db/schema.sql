@@ -2148,14 +2148,6 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
 COLLATE = utf8_slovenian_ci;
 
-CREATE TABLE IF NOT EXISTS `boracka_kategorija` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `naziv` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
- PRIMARY KEY (`id`) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_slovenian_ci;
-
 
 CREATE TABLE IF NOT EXISTS `kandidati_ocjene` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -2487,7 +2479,7 @@ ALTER TABLE `projekat`
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `zamger`.`kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `zamger`.`nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `zamger`.`drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `zamger`.`boracka_kategorija`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `zamger`.`posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_prebivalista`) REFERENCES `zamger`.`mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `zamger`.`studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
