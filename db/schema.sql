@@ -2111,6 +2111,72 @@ CREATE TABLE IF NOT EXISTS `zvanje` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
 
 
+CREATE TABLE IF NOT EXISTS `kandidati` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `ime` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `prezime` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `ime_oca` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `prezime_oca` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `ime_majke` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `prezime_majke` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `spol` ENUM('M','Z','') CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `datum_rodjenja` DATE NOT NULL,
+  `mjesto_rodjenja` INT NOT NULL,
+  `nacionalnost` INT NOT NULL,
+  `drzavljanstvo` INT NOT NULL,
+  `boracka_kategorija` INT NULL,
+  `boracka_kategorija_br_rjesenja` VARCHAR(128) NULL,
+  `boracka_kategorija_datum_rjesenja` DATE NULL,
+  `boracka_kategorija_organ_izdavanja` VARCHAR(256) NULL,
+  `jmbg` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `ulica_prebivalista` VARCHAR(100) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `mjesto_prebivalista` INT NULL,
+  `telefon` VARCHAR(15) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
+  `kanton` INT NULL,
+  `studijski_program` INT NOT NULL,
+  `naziv_skole` VARCHAR(128) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `strana_skola` TINYINT(1) DEFAULT 0,
+  `skolska_godina_zavrsetka` INT NOT NULL,
+  `opci_uspjeh` FLOAT NOT NULL,
+  `znacajni_predmeti` FLOAT NOT NULL,
+  `datum_kreiranja` DATETIME NOT NULL,
+  `email` VARCHAR(128) NULL,
+  `prijava_potvrdjena` TINYINT(1) DEFAULT 0,
+  `podaci_uvezeni` TINYINT(1) DEFAULT 0,
+  PRIMARY KEY (`id`) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_slovenian_ci;
+
+
+CREATE TABLE IF NOT EXISTS `kandidati_ocjene` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `kandidat_id` INT NOT NULL, 
+  `naziv_predmeta` VARCHAR(128) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `prvi_razred` TINYINT NOT NULL,
+  `drugi_razred` TINYINT NOT NULL,
+  `treci_razred` TINYINT NOT NULL,
+  `cetvrti_razred` TINYINT NOT NULL,
+  `kljucni_predmet` TINYINT DEFAULT 0,
+  PRIMARY KEY (`id`) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COLLATE = utf8_slovenian_ci;
+
+
+CREATE TABLE IF NOT EXISTS `kandidati_mjesto` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naziv` varchar(40) COLLATE utf8_slovenian_ci NOT NULL,
+  `opcina` int(11) NOT NULL,
+  `drzava` int(11) NOT NULL,
+  `opcina_van_bih` varchar(40) collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `opcina` (`opcina`),
+  KEY `drzava` (`drzava`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+
+
 -- --------------------------------------------------------
 -- --------------------------------------------------------
 -- --------------------------------------------------------
@@ -2409,3 +2475,12 @@ ALTER TABLE `predmet`
 ALTER TABLE `projekat`
   ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
   ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `zamger`.`kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `zamger`.`nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `zamger`.`drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `zamger`.`posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_prebivalista`) REFERENCES `zamger`.`mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `zamger`.`studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `zamger`.`kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
