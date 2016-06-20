@@ -2476,11 +2476,11 @@ ALTER TABLE `projekat`
   ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
   ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `zamger`.`kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `zamger`.`nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `zamger`.`drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `zamger`.`posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_prebivalista`) REFERENCES `zamger`.`mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `zamger`.`studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_prebivalista`) REFERENCES `mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
-ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `zamger`.`kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
