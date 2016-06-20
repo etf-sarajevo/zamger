@@ -2130,7 +2130,7 @@ CREATE TABLE IF NOT EXISTS `kandidati` (
   `boracka_kategorija_organ_izdavanja` VARCHAR(256) NULL,
   `jmbg` VARCHAR(64) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
   `ulica_prebivalista` VARCHAR(100) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
-  `mjesto_prebivalista` INT NULL,
+  `mjesto_prebivalista` VARCHAR(128) NULL,
   `telefon` VARCHAR(15) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NULL,
   `kanton` INT NULL,
   `studijski_program` INT NOT NULL,
@@ -2480,7 +2480,7 @@ ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `kandidat
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_prebivalista`) REFERENCES `mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
