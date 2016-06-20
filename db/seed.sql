@@ -733,10 +733,11 @@ INSERT INTO `opcina` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
-(1, 'Porodica šehida i poginulih boraca'),
-(2, 'Porodica ratnih vojnih invalida'),
-(3, 'Porodica demobilisanih boraca'),
-(4, 'Porodica nosilaca ratnih priznanja');
+(1, 'Djeca šehida i poginulih boraca'),
+(2, 'Djeca ratnih vojnih invalida'),
+(3, 'Djeca demobilisanih boraca'),
+(4, 'Djeca nosilaca ratnih priznanja'),
+(5, 'Djeca bez oba roditelja');
 
 
 --
