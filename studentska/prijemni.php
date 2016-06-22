@@ -1531,14 +1531,12 @@ if (intval($_REQUEST['ucitajjmbg'])>0) {
 			$k_mjesto_rod = mysql_result($q5024,0,0);
 		
 		// Tražimo mjesto prebivališta
-		/*$q5030 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mjesto_preb'");
+		$q5030 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mjesto_preb'");
 		if (mysql_num_rows($q5030)==0) {
 			$q5040 = myquery("INSERT INTO mjesto SET naziv='$k_mjesto_preb', opcina=0, drzava=1");
 			$k_adresa_mjesto = mysql_insert_id();
 		} else
-			$k_adresa_mjesto = mysql_result($q5030,0,0);*/
-		// FIXME sad odjednom nije ovako!!!!
-		$k_adresa_mjesto = intval($k_mjesto_preb);
+			$k_adresa_mjesto = mysql_result($q5030,0,0);
 
 		$q5100 = myquery("INSERT INTO osoba SET id=$osoba, ime='$k_ime', prezime='$k_prezime', imeoca='$k_ime_oca', prezimeoca='$k_prezime_oca', imemajke='$k_ime_majke', prezimemajke='$k_prezime_majke', spol='$k_spol', datum_rodjenja='$k_datum_rod', mjesto_rodjenja=$k_mjesto_rod, nacionalnost=$k_nacionalnost, drzavljanstvo=$k_drzavljanstvo, jmbg='$jmbg', adresa='$k_adresa', adresa_mjesto=$k_adresa_mjesto, telefon='$k_telefon', kanton='$k_kanton'");
 		if (!empty($k_email))
