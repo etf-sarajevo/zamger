@@ -76,39 +76,43 @@ if ($_REQUEST['akcija'] != "pregled") {
 <?=$datum?>:<br />
 <table bgcolor="" style="border:1px;border-style:solid;border-color:black">
 	<tr>
-		<td align="left"><a href="?sta=studentska/prijemni&akcija=unos&termin=<?=$termin?>">Unos kandidata</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&amp;akcija=unos&amp;termin=<?=$termin?>">Unos kandidata</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td align="left"><a href="?sta=studentska/prijemni&akcija=brzi_unos&termin=<?=$termin?>">Brzi unos</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&amp;akcija=brzi_unos&amp;termin=<?=$termin?>">Brzi unos</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td align="left"><a href="?sta=studentska/prijemni&akcija=pregled&termin=<?=$termin?>">Tabelarni pregled kandidata</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&amp;akcija=pregled&amp;termin=<?=$termin?>">Tabelarni pregled kandidata</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=prijemni&termin=<?=$termin?>">Unos bodova sa prijemnog ispita</a></td>
+		<td><a href="?sta=studentska/prijemni&amp;akcija=prijemni&amp;termin=<?=$termin?>">Unos bodova sa prijemnog ispita</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td align="left"><a href="?sta=studentska/prijemni&akcija=prijemni_sifre&termin=<?=$termin?>">Unos bodova po šiframa</a></td>
+		<td align="left"><a href="?sta=studentska/prijemni&amp;akcija=prijemni_sifre&amp;termin=<?=$termin?>">Unos bodova po šiframa</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=upis_kriterij&termin=<?=$termin?>">Kriteriji za upis</a></td>
+		<td><a href="?sta=studentska/prijemni&amp;akcija=upis_kriterij&amp;termin=<?=$termin?>">Kriteriji za upis</a></td>
 	</tr>
 	<tr>&nbsp;</tr>
 	<tr>
-		<td><a href="?sta=studentska/prijemni&akcija=spisak&termin=<?=$termin?>">Spisak kandidata</a></td>
+		<td><a href="?sta=studentska/prijemni&amp;akcija=vazni_datumi&amp;termin=<?=$termin?>">Važni datumi</a></td>
+	</tr>
+	<tr>&nbsp;</tr>
+	<tr>
+		<td><a href="?sta=studentska/prijemni&amp;akcija=spisak&amp;termin=<?=$termin?>">Spisak kandidata</a></td>
 	</tr>
         <tr>&nbsp;</tr> 	 
 	<tr>
-		<td><a href="?sta=izvjestaj/prijemni_top10posto&termin=<?=$termin?>">Najboljih 10% po školama</a></td>
+		<td><a href="?sta=izvjestaj/prijemni_top10posto&amp;termin=<?=$termin?>">Najboljih 10% po školama</a></td>
 	</tr>
         <tr>&nbsp;</tr> 	 
 	<tr> 	 
-		<td><a href="?sta=studentska/prijemni&akcija=rang_liste&termin=<?=$termin?>">Rang liste kandidata</a></td>
+		<td><a href="?sta=studentska/prijemni&amp;akcija=rang_liste&amp;termin=<?=$termin?>">Rang liste kandidata</a></td>
 	</tr> 	 
 </table>
 
@@ -697,6 +701,110 @@ function odzuti(nesto) {
 		<td width="70%" align="left">Broj kandidata (vanrednih):</td>
 		<td><input type="text" size="12" name="kandidati_van" style="background-color:#FFFF00" oninput="odzuti(this)" autocomplete="off" value="<?=$pkvan?>"></td>
 	</tr>
+	<tr>
+		<td>&nbsp;<td>
+	</tr>
+	<tr>
+		<td><input type="submit" name="spremi" value="Spremi"></td>
+	</tr>
+	
+	</table>
+	</form>
+	
+<?
+
+}
+
+
+
+// Važni datumi na obrascu za brzi unos
+
+if ($_REQUEST['akcija'] == "vazni_datumi") {
+
+	$nazivi_termina = array("Prijemni ispit", "Preliminarni rezultati", "Predaja prigovora (početak)", "Predaja prigovora (kraj)", "Razmatranje prigovora", "Konačni rezultati", "Upis kandidata (početak)", "Upis kandidata (kraj)" );
+	$vd = $boja = "";
+
+	
+	for ($i=0; $i<count($nazivi_termina); $i++) {
+		$vd[$i] = "01. 01. 1970. 01:00";
+		$boja[$i] = "#FFFF00";
+	}
+	
+	$q300 = myquery("SELECT id_datuma, UNIX_TIMESTAMP(datum) FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin");
+	while ($r300 = mysql_fetch_row($q300)) {
+		$id = $r300[0]-1;
+		$vd[$id] = date("d. m. Y. H:i", $r300[1]);
+		$boja[$id] = "#FFFFFF";
+	}
+	
+
+	if ($_POST['spremi'] && check_csrf_token()) {
+		// Najprije provjeravamo da li su svi datumi ok
+		$greska = false;
+		$nvd = $_REQUEST['vd'];
+		for ($i=0; $i<count($nazivi_termina); $i++) {
+			if ($nvd[$i] == "") $nvd[$i] = "01. 01. 1970. 01:00";
+			if (!preg_match("/(\d+).*?(\d+).*?(\d+).*?(\d+):(\d+)/", $nvd[$i], $matches)) {
+				niceerror("Neispravan datum " . $nazivi_termina[$i]);
+				$greska = true;
+				$boja[$i] = "#FF4444";
+				break;
+			}
+		}
+		
+		// Zatim ažuriramo bazu
+		for ($i=0; $i<count($nazivi_termina) && !$greska; $i++) {
+			if (preg_match("/(\d+).*?(\d+).*?(\d+).*?(\d+):(\d+)/", $nvd[$i], $matches)) {
+				$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3]; $sat=$matches[4]; $minuta=$matches[5];
+				$nvd_mysql = "$godina-$mjesec-$dan $sat:$minuta:00";
+			}
+			$id = $i+1;
+			if ($nvd[$i] == "01. 01. 1970. 01:00" && $vd[$i] !== "01. 01. 1970. 01:00")
+				$q310 = myquery("DELETE FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin AND id_datuma=$id");
+			else if ($nvd[$i] != "01. 01. 1970. 01:00" && $vd[$i] == "01. 01. 1970. 01:00")
+				$q310 = myquery("INSERT INTO prijemni_vazni_datumi SET prijemni_termin=$termin, id_datuma=$id, datum='$nvd_mysql'");
+			else if ($nvd[$i] != "01. 01. 1970. 01:00" && $vd[$i] != "01. 01. 1970. 01:00")
+				$q310 = myquery("UPDATE prijemni_vazni_datumi SET datum='$nvd_mysql' WHERE prijemni_termin=$termin AND id_datuma=$id");
+		}
+		
+		if (!$greska) {
+			nicemessage("Važni datumi uspješno ažurirani");
+			zamgerlog2("ažurirani važni datumi prijemnog ispita", $termin);
+		}
+		
+		// Ažuriramo datume i boje za prikaz
+		for ($i=0; $i<count($nazivi_termina); $i++) {
+			$vd[$i] = $nvd[$i];
+			if ($nvd[$i] == "01. 01. 1970. 01:00") $boja[$i]="#FFFF00";
+			else if ($boja[$i] == "#FFFF00") $boja[$i]="#FFFFFF";
+		}
+	}
+
+?>
+
+<SCRIPT language="JavaScript">
+function odzuti(nesto) {
+	nesto.style.backgroundColor = '#FFFFFF';
+}
+</SCRIPT>
+
+<h3>Važni datumi za upis</h3>
+<br/>
+
+<?=genform("POST")?>
+<table align="left" border="0" width="70%" bgcolor="">
+<?
+
+for ($i=0; $i<count($nazivi_termina); $i++) {
+	?>
+	<tr>
+		<td width="50%" align="left"><?=$nazivi_termina[$i]?>:</td>
+		<td><input type="text" size="20" name="vd[<?=$i?>]" style="background-color:<?=$boja[$i]?>" oninput="odzuti(this)" autocomplete="off" value="<?=$vd[$i]?>"></td>
+	</tr>
+	<?
+}
+
+?>
 	<tr>
 		<td>&nbsp;<td>
 	</tr>
@@ -1355,6 +1463,168 @@ if (!$vrstaunosa) {
 }
 
 
+// Prenos podataka iz vanjske aplikacije za prijemni ispit (tabela kandidati)
+// FIXME ovo je privremeno
+if (intval($_REQUEST['ucitajjmbg'])>0) {
+	$jmbg = my_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
+	unset($_REQUEST['ucitajjmbg']);
+	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0");
+	if (mysql_num_rows($q5000)<1) {
+		niceerror("Traženi JMBG nije pronađen ($jmbg).");
+		$vrstaunosa="novi";
+		$ejmbg=$jmbg;
+	} else if (mysql_num_rows($q5000)>1) {
+		niceerror("Postoji više kandidata sa istim JMBGom.");
+		while ($r5000 = mysql_fetch_row($q5000))
+			print "- ".mysql_result($q5000,0,1)." ".mysql_result($q5000,0,0)."<br>\n";
+		$vrstaunosa="novi";
+		$ejmbg=$jmbg;
+	} else {
+		$vrstaunosa = "editovanje";
+		
+		// Uzimamo propisno escapovane vrijednosti iz tabele
+		$k_ime = mysql_real_escape_string(mysql_result($q5000,0,0));
+		$k_prezime = mysql_real_escape_string(mysql_result($q5000,0,1));
+		$k_ime_oca = mysql_real_escape_string(mysql_result($q5000,0,2));
+		$k_prezime_oca = mysql_real_escape_string(mysql_result($q5000,0,3));
+		$k_ime_majke = mysql_real_escape_string(mysql_result($q5000,0,4));
+		$k_prezime_majke = mysql_real_escape_string(mysql_result($q5000,0,5));
+		$k_spol = mysql_result($q5000,0,6);
+		$k_datum_rod = mysql_result($q5000,0,7);
+		$k_kmjesto_rod = mysql_result($q5000,0,8);
+		$k_nacionalnost = mysql_result($q5000,0,9);
+		$k_drzavljanstvo = mysql_result($q5000,0,10);
+		$k_adresa = mysql_real_escape_string(mysql_result($q5000,0,11));
+		$k_mjesto_preb = mysql_real_escape_string(mysql_result($q5000,0,12));
+		$k_telefon = mysql_real_escape_string(mysql_result($q5000,0,13));
+		$k_kanton = mysql_result($q5000,0,14);
+		$k_studij = mysql_result($q5000,0,15);
+		$k_naziv_skole = my_escape(mysql_result($q5000,0,16));
+		$k_opcina_skole = mysql_result($q5000,0,23);
+		$k_strana_skola = mysql_result($q5000,0,17);
+		$k_skolska = mysql_result($q5000,0,18);
+		$k_opci_uspjeh = mysql_result($q5000,0,19) * 4; // Faktori za računanje bodova
+		$k_znacajni_predmeti = mysql_result($q5000,0,20) * 8;
+		$k_email = mysql_real_escape_string(mysql_result($q5000,0,21));
+		$kandidat_id = mysql_result($q5000,0,22);
+		
+		// Kreiramo nove zapise u potrebnim tabelama
+		$q5010 = myquery("select id from osoba order by id desc limit 1");
+		$osoba = mysql_result($q5010,0,0)+1;
+		$q5020 = myquery("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+		if (mysql_num_rows($q5020)>0)
+			$broj_dosjea = mysql_result($q5020,0,0)+1;
+		else
+			$broj_dosjea = 1;
+		
+		// Tražimo mjesto rođenja
+		$q5022 = myquery("SELECT naziv, opcina, drzava, opcina_van_bih FROM kandidati_mjesto WHERE id=$k_kmjesto_rod");
+		$k_mr_naziv = mysql_real_escape_string(mysql_result($q5022,0,0));
+		$k_mr_opcina = mysql_result($q5022,0,1);
+		$k_mr_drzava = mysql_result($q5022,0,2);
+		$k_mr_ovb = mysql_real_escape_string(mysql_result($q5022,0,3));
+		$q5024 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mr_naziv' AND opcina=$k_mr_opcina AND drzava=$k_mr_drzava");
+		if (mysql_num_rows($q5024) == 0) {
+			$q5026 = myquery("INSERT INTO mjesto SET naziv='$k_mr_naziv', opcina=$k_mr_opcina, drzava=$k_mr_drzava, opcina_van_bih='$k_mr_ovb'");
+			$k_mjesto_rod = mysql_insert_id();
+		} else 
+			$k_mjesto_rod = mysql_result($q5024,0,0);
+		
+		// Tražimo mjesto prebivališta
+		/*$q5030 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mjesto_preb'");
+		if (mysql_num_rows($q5030)==0) {
+			$q5040 = myquery("INSERT INTO mjesto SET naziv='$k_mjesto_preb', opcina=0, drzava=1");
+			$k_adresa_mjesto = mysql_insert_id();
+		} else
+			$k_adresa_mjesto = mysql_result($q5030,0,0);*/
+		// FIXME sad odjednom nije ovako!!!!
+		$k_adresa_mjesto = intval($k_mjesto_preb);
+
+		$q5100 = myquery("INSERT INTO osoba SET id=$osoba, ime='$k_ime', prezime='$k_prezime', imeoca='$k_ime_oca', prezimeoca='$k_prezime_oca', imemajke='$k_ime_majke', prezimemajke='$k_prezime_majke', spol='$k_spol', datum_rodjenja='$k_datum_rod', mjesto_rodjenja=$k_mjesto_rod, nacionalnost=$k_nacionalnost, drzavljanstvo=$k_drzavljanstvo, jmbg='$jmbg', adresa='$k_adresa', adresa_mjesto=$k_adresa_mjesto, telefon='$k_telefon', kanton='$k_kanton'");
+		if (!empty($k_email))
+			$q5110 = myquery("INSERT INTO email SET osoba=$osoba, adresa='$k_email', sistemska=0");
+		
+		$q5120 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, studij_prvi=$k_studij, izasao=0, rezultat=0");
+
+		// Određivanje šifre
+		do {
+			$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
+			$q5130 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+		} while (mysql_result($q5130,0,0)>0);
+		$q5140 = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
+
+		// Srednja škola
+		$q5150 = myquery("SELECT id FROM srednja_skola WHERE naziv='$k_naziv_skole' AND opcina=$k_opcina_skole");
+		if (mysql_num_rows($q5150)==0) {
+			if ($k_strana_skola==1) $k_domaca=0; else $k_domaca=1;
+			$q5160 = myquery("INSERT INTO srednja_skola SET naziv='$k_naziv_skole', opcina=$k_opcina_skole, domaca=$k_domaca");
+			$k_id_skole = mysql_insert_id();
+		} else {
+			$k_id_skole = mysql_result($q5150,0,0);
+		}
+		
+		$q5160 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba, srednja_skola=$k_id_skole, godina=$k_skolska, opci_uspjeh=$k_opci_uspjeh, kljucni_predmeti=$k_znacajni_predmeti, dodatni_bodovi=0, ucenik_generacije=0");
+		
+		$q5170 = myquery("SELECT naziv_predmeta, prvi_razred, drugi_razred, treci_razred, cetvrti_razred, kljucni_predmet FROM kandidati_ocjene WHERE kandidat_id=$kandidat_id");
+		$rbr1=$rbr2=$rbr3=$rbr4=1;
+		while ($r5170 = mysql_fetch_row($q5170)) {
+			if ($r5170[0] == "Maternji jezik") {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 1)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 1)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 1)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 1)");
+			} else if ($r5170[0] == "Matematika") {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 2)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 2)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 2)");
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 2)");
+			} else if ($r5170[0] == "Fizika") {
+				$razred=4;
+				if ($r5170[4] > 0) {
+					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[4], 3)");
+					$razred--;
+				}
+				if ($r5170[3] > 0) {
+					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[3], 3)");
+					$razred--;
+				}
+				if ($r5170[2] > 0 && $razred>2) {
+					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[2], 3)");
+					$razred--;
+				}
+				if ($r5170[1] > 0 && $razred>2) {
+					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[1], 3)");
+					$razred--;
+				}
+				while ($razred>2) {
+					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, 0, 3)");
+					$razred--;
+				}
+			}
+			if ($r5170[1] > 0) {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, $rbr1, $r5170[1], 0)");
+				$rbr1++;
+			}
+			if ($r5170[2] > 0) {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, $rbr2, $r5170[2], 0)");
+				$rbr2++;
+			}
+			if ($r5170[3] > 0) {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, $rbr3, $r5170[3], 0)");
+				$rbr3++;
+			}
+			if ($r5170[4] > 0) {
+				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, $rbr4, $r5170[4], 0)");
+				$rbr4++;
+			}
+		}
+		
+		zamgerlog2("kopiram kandidata iz aplikacije za upis", intval($osoba), 0, 0, $broj_dosjea);
+		$_REQUEST['izmjena'] = $osoba;
+	}
+}
+
+
 // Traženje postojeće osobe po JMBGu
 if (intval($_REQUEST['trazijmbg'])>0) {
 	$jmbg = my_escape($_REQUEST['trazijmbg']); // u biti ne znamo format JMBGa
@@ -1717,6 +1987,12 @@ function jmbg_trazi() {
 	document.location.replace('index.php?sta=studentska/prijemni&akcija=unos&trazijmbg='+jmbg+'&termin=<?=$termin?>');
 }
 
+// Prenos iz tabele kandidati
+function jmbg_ucitaj() {
+	var jmbg = document.getElementById('jmbg').value;
+	document.location.replace('index.php?sta=studentska/prijemni&akcija=unos&ucitajjmbg='+jmbg+'&termin=<?=$termin?>');
+}
+
 // Automatski izbor općine za školu
 function selectujOpcinuSkola(idOpcine, domaca) {
 	var selOpcine = document.getElementById('zavrsena_skola_opcina');
@@ -1920,7 +2196,7 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFF00" oninput="odzuti(this)" <? 
 		} 
-		?> autocomplete="off" onkeypress="return enterhack(event,'adresa')"><font color="#FF0000">*</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value=" Traži " onclick="javascript:jmbg_trazi();"></td>
+		?> autocomplete="off" onkeypress="return enterhack(event,'adresa')"><font color="#FF0000">*</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value=" Traži " onclick="javascript:jmbg_trazi();">&nbsp;<input type="button" value=" Učitaj " onclick="javascript:jmbg_ucitaj();"></td>
 	</tr>
 	<tr>
 		<td width="125" align="left">&nbsp;</td>
@@ -2293,9 +2569,16 @@ if ($vrstaunosa!="editovanje") {
 			$broj_ocjena_razred[$r[0]]++;
 		}
 	}
-	for ($i=1; $i<=4; $i++) 
+	for ($i=1; $i<=4; $i++) {
 		if ($broj_ocjena_razred[$i] > 0)
 			$prosjek_razreda[$i] = round($prosjek_razreda[$i]/$broj_ocjena_razred[$i], 2);
+		// Ostale petlje očekuju da niz ocjena počinje od jedinice!
+		if (array_key_exists("0", $razred[$i])) {
+			for ($x=count($razred[$i]); $x>0; $x--)
+				$razred[$i][$x] = $razred[$i][$x-1];
+			unset($razred[$i][0]);
+		}
+	}
 
 	for ($i=1; $i<=20; $i++) {
 		?>
