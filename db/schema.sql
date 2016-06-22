@@ -2150,6 +2150,7 @@ CREATE TABLE IF NOT EXISTS `kandidati` (
   `kanton` INT NULL,
   `studijski_program` INT NOT NULL,
   `naziv_skole` VARCHAR(128) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
+  `opcina_skole` INT NOT NULL,
   `strana_skola` TINYINT(1) DEFAULT 0,
   `skolska_godina_zavrsetka` INT NOT NULL,
   `opci_uspjeh` FLOAT NOT NULL,
@@ -2495,7 +2496,11 @@ ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `kandidat
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`opcina_skole`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`skolska_godina_zavrsetka`) REFERENCES `akademska_godina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
