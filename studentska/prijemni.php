@@ -1468,7 +1468,7 @@ if (!$vrstaunosa) {
 if (intval($_REQUEST['ucitajjmbg'])>0) {
 	$jmbg = my_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
 	unset($_REQUEST['ucitajjmbg']);
-	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0");
+	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0");
 	if (mysql_num_rows($q5000)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
@@ -1483,20 +1483,22 @@ if (intval($_REQUEST['ucitajjmbg'])>0) {
 		$vrstaunosa = "editovanje";
 		
 		// Uzimamo propisno escapovane vrijednosti iz tabele
-		$k_ime = mysql_real_escape_string(mysql_result($q5000,0,0));
-		$k_prezime = mysql_real_escape_string(mysql_result($q5000,0,1));
-		$k_ime_oca = mysql_real_escape_string(mysql_result($q5000,0,2));
-		$k_prezime_oca = mysql_real_escape_string(mysql_result($q5000,0,3));
-		$k_ime_majke = mysql_real_escape_string(mysql_result($q5000,0,4));
-		$k_prezime_majke = mysql_real_escape_string(mysql_result($q5000,0,5));
+		// Koristimo my_escape jer aplikacija u tabeli drži podatke bez escapovanja HTML tagova i entiteta,
+		// dok je u Zamgeru politika obrnuta
+		$k_ime = my_escape(mysql_result($q5000,0,0));
+		$k_prezime = my_escape(mysql_result($q5000,0,1));
+		$k_ime_oca = my_escape(mysql_result($q5000,0,2));
+		$k_prezime_oca = my_escape(mysql_result($q5000,0,3));
+		$k_ime_majke = my_escape(mysql_result($q5000,0,4));
+		$k_prezime_majke = my_escape(mysql_result($q5000,0,5));
 		$k_spol = mysql_result($q5000,0,6);
 		$k_datum_rod = mysql_result($q5000,0,7);
 		$k_kmjesto_rod = mysql_result($q5000,0,8);
 		$k_nacionalnost = mysql_result($q5000,0,9);
 		$k_drzavljanstvo = mysql_result($q5000,0,10);
-		$k_adresa = mysql_real_escape_string(mysql_result($q5000,0,11));
-		$k_mjesto_preb = mysql_real_escape_string(mysql_result($q5000,0,12));
-		$k_telefon = mysql_real_escape_string(mysql_result($q5000,0,13));
+		$k_adresa = my_escape(mysql_result($q5000,0,11));
+		$k_mjesto_preb = my_escape(mysql_result($q5000,0,12));
+		$k_telefon = my_escape(mysql_result($q5000,0,13));
 		$k_kanton = mysql_result($q5000,0,14);
 		$k_studij = mysql_result($q5000,0,15);
 		$k_naziv_skole = my_escape(mysql_result($q5000,0,16));
@@ -1505,8 +1507,13 @@ if (intval($_REQUEST['ucitajjmbg'])>0) {
 		$k_skolska = mysql_result($q5000,0,18);
 		$k_opci_uspjeh = mysql_result($q5000,0,19) * 4; // Faktori za računanje bodova
 		$k_znacajni_predmeti = mysql_result($q5000,0,20) * 8;
-		$k_email = mysql_real_escape_string(mysql_result($q5000,0,21));
+		$k_email = my_escape(mysql_result($q5000,0,21));
 		$kandidat_id = mysql_result($q5000,0,22);
+		
+		$k_bk = mysql_result($q5000,0,24);
+		$k_bk_br = my_escape(mysql_result($q5000,0,25));
+		$k_bk_dr = mysql_result($q5000,0,26);
+		$k_bk_oi = my_escape(mysql_result($q5000,0,27));
 		
 		// Kreiramo nove zapise u potrebnim tabelama
 		$q5010 = myquery("select id from osoba order by id desc limit 1");
@@ -1616,6 +1623,11 @@ if (intval($_REQUEST['ucitajjmbg'])>0) {
 				$rbr4++;
 			}
 		}
+		
+		if (intval($k_bk) > 0)
+			$q5190 = myquery("INSERT INTO osoba_posebne_kategorije SET osoba=$osoba, posebne_kategorije=$k_bk, br_rjesenja='$k_bk_br', datum_rjesenja='$k_bk_dr', organ_izdavanja='$k_bk_oi'");
+		
+		$q5200 = myquery("UPDATE kandidati SET podaci_uvezeni=1, osoba=$osoba WHERE id=$kandidat_id");
 		
 		zamgerlog2("kopiram kandidata iz aplikacije za upis", intval($osoba), 0, 0, $broj_dosjea);
 		$_REQUEST['izmjena'] = $osoba;

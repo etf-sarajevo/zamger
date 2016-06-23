@@ -2159,6 +2159,7 @@ CREATE TABLE IF NOT EXISTS `kandidati` (
   `email` VARCHAR(128) NULL,
   `prijava_potvrdjena` TINYINT(1) DEFAULT 0,
   `podaci_uvezeni` TINYINT(1) DEFAULT 0,
+  `osoba` INT NULL,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8
