@@ -1082,7 +1082,7 @@ CREATE TABLE IF NOT EXISTS `osoba` (
 
 CREATE TABLE IF NOT EXISTS `osoba_posebne_kategorije` (
   `osoba` int(11) NOT NULL,
-  `posebne_kategorije` int(11) NOT NULL
+  `posebne_kategorije` int(11) NOT NULL,
   `br_rjesenja` varchar(128) collate utf8_slovenian_ci NOT NULL,
   `datum_rjesenja` date NOT NULL,
   `organ_izdavanja` varchar(256) collate utf8_slovenian_ci NOT NULL
