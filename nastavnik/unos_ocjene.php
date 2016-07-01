@@ -3,7 +3,6 @@
 // NASTAVNIK/UNOS_OCJENE - pojedinačni unos konačnih ocjena
 
 
-
 function nastavnik_unos_ocjene() {
 
 global $userid,$user_studentska,$user_siteadmin;
@@ -70,7 +69,7 @@ if (!$user_siteadmin && !$user_studentska) {
 		if (vrijednost!=origval[id]) {
 			if (id.substr(0,6) == "ocjena") {
 				var value = parseInt(element.id.substr(6));
-				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('ocjena'+"+id+").focus()");
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('ocjena'+"+value+").focus()");
 				if (origval[id] == "/") {
 					var datum_element = document.getElementById("datum"+value);
 					datum_element.value = "<?=date("d. m. Y")?>";
@@ -78,7 +77,7 @@ if (!$user_siteadmin && !$user_studentska) {
 				}
 			} else if (id.substr(0,5) == "datum") {
 				var value = parseInt(element.id.substr(5));
-				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=kodatum-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('datum'+"+id+").focus()");
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=kodatum-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('datum'+"+value+").focus()","document.getElementById('provjera'+"+value+").style.visibility='hidden'");
 				element.style.backgroundColor="#FFFFFF";
 			}
 			origval[id]=vrijednost;
@@ -92,7 +91,7 @@ if (!$user_siteadmin && !$user_studentska) {
 			if (vrijednost) oc_vrijednost=11;
 			else oc_vrijednost='/';
 			var value = parseInt(element.id.substr(6));
-			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+oc_vrijednost+"","document.getElementById('ocjena'+"+id+").focus()");
+			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+oc_vrijednost+"","document.getElementById('ocjena'+"+value+").focus()");
 		}
 	}
 	function enterhack(element,e) {
@@ -171,7 +170,7 @@ if (!$user_siteadmin && !$user_studentska) {
 				if ($datum_provjeren != 1) print "; background-color: #ffaaaa";
 			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)">
 			</td><?
-				if ($datum_provjeren != 1) print "<td><font color=\"red\"><b>Datum nije provjeren</b></font></td>";
+				if ($datum_provjeren != 1) print "<td id=\"provjera$id\"><font color=\"red\"><b>Datum nije provjeren</b></font></td>";
 			?>
 		</tr>
 		<?
