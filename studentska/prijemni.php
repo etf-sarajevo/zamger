@@ -1465,10 +1465,10 @@ if (!$vrstaunosa) {
 
 // Prenos podataka iz vanjske aplikacije za prijemni ispit (tabela kandidati)
 // FIXME ovo je privremeno
-if (intval($_REQUEST['ucitajjmbg'])>0) {
+if (isset($_REQUEST['ucitajjmbg'])) {
 	$jmbg = my_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
 	unset($_REQUEST['ucitajjmbg']);
-	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0");
+	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1");
 	if (mysql_num_rows($q5000)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
@@ -1476,7 +1476,7 @@ if (intval($_REQUEST['ucitajjmbg'])>0) {
 	} else if (mysql_num_rows($q5000)>1) {
 		niceerror("Postoji više kandidata sa istim JMBGom.");
 		while ($r5000 = mysql_fetch_row($q5000))
-			print "- ".mysql_result($q5000,0,1)." ".mysql_result($q5000,0,0)."<br>\n";
+			print "- ".$r5000[1]." ".$r5000[2]."<br>\n";
 		$vrstaunosa="novi";
 		$ejmbg=$jmbg;
 	} else {
