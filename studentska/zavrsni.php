@@ -230,10 +230,10 @@ function studentska_zavrsni()  {
 				<ul>
 					<li><a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;svi=da">Svi uneseni kandidati</a></li>
 					<li><a href="?sta=izvjestaj/zavrsni_nnv&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Samo oni koji su odbranili završni rad</a></li>
+					<li><a href="?sta=izvjestaj/zavrsni_po_clanu_komisije&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Po članstvu u komisijama</a></li>
 				</ul>
 			</li>
 		</ul>
-		</p>
 		
 		<?
 	} // if (!isset($akcija) - lista završnih radova

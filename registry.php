@@ -72,6 +72,7 @@ array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisn
 array("izvjestaj/zavrsni_spisak", "Spisak završenih studenata", "Spisak završenih studenata", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za završne", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
+array("izvjestaj/zavrsni_po_clanu_komisije", "Spisak članstava u komisijama za završne radove", "Završni rad po članu komisije", "NBA", "0", "0"),
 
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
