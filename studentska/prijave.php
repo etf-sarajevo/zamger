@@ -61,9 +61,25 @@ $studenata_sa_ocjenom = $svih_studenata - $studenata_bez_ocjene;
 
 // Spisak termina za ispite
 $q40 = myquery("select it.id, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, count(*) from ispit as i, ispit_termin as it, student_ispit_termin as sit, komponenta as k where it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and sit.ispit_termin=it.id group by sit.ispit_termin order by it.datumvrijeme");
+$prosli_datum = $prosla_komponenta = ""; 
+$broj_na_datum = $studenata_na_datum = 0;
 while ($r40 = mysql_fetch_row($q40)) {
+	if (date("d.m.Y", $r40[1]) != $prosli_datum || $prosla_komponenta != $r40[2]) {
+		if ($broj_na_datum > 2) {
+			?>
+			<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?></li>
+			<?
+		}
+		$prosli_datum = date("d.m.Y", $r40[1]);
+		$broj_na_datum = 1;
+		$studenata_na_datum = $r40[3];
+		$prosla_komponenta = $r40[2];
+	} else {
+		$broj_na_datum++;
+		$studenata_na_datum += $r40[3];
+	}
 	?>
-	<li><a href="?sta=izvjestaj/prijave&ispit_termin=<?=$r40[0]?>"><?=date("d.m.Y. h:i", $r40[1]).", ".$r40[2]."</a> (".$r40[3]." studenata)"?></li>
+	<li><a href="?sta=izvjestaj/prijave&amp;ispit_termin=<?=$r40[0]?>"><?=date("d.m.Y. h:i", $r40[1]).", ".$r40[2]."</a> (".$r40[3]." studenata)"?></li>
 	<?
 }
 
