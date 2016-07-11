@@ -149,6 +149,7 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 		return;
 	}
 	$ag = intval($_REQUEST['_lv_column_akademska_godina']);
+	$predsjednik_komisije = intval($_REQUEST['predsjednik_komisije']);
 
 	if (preg_match("/(\d+).*?(\d+).*?(\d+)/",$_REQUEST['datum'],$matches)) {
 		$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
@@ -161,7 +162,7 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 		return;
 	}
 
-	$q20 = myquery("insert into prijemni_termin set akademska_godina=$ag, datum='$godina-$mjesec-$dan', ciklus_studija=$ciklus");
+	$q20 = myquery("insert into prijemni_termin set akademska_godina=$ag, datum='$godina-$mjesec-$dan', ciklus_studija=$ciklus, predsjednik_komisije=$predsjednik_komisije");
 
 	zamgerlog("kreiran novi termin za prijemni ispit", 4); // 4 = audit
 	zamgerlog2("kreiran novi termin za prijemni ispit", mysql_insert_id());
@@ -178,6 +179,11 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 if ($_REQUEST['akcija']=="novi_ispit") {
 
 	unset($_REQUEST['akcija']);
+	
+	$dekan = 0;
+	$q25 = myquery("SELECT dekan FROM institucija WHERE dekan>0 AND tipinstitucije=1");
+	if (mysql_num_rows($q25)>0)
+		$dekan = mysql_result($q25,0,0);
 
 	?><h2>Novi termin prijemnog ispita:</h2>
 
@@ -189,6 +195,14 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	Akademska godina:</td><td><?=db_dropdown("akademska_godina")?>
 	</td></tr><tr><td>
 	Datum održavanja ispita:</td><td><input type="text" name="datum" size="20">
+	</td></tr><tr><td>
+	Predsjednik komisije: </td><td><select name="predsjednik_komisije" class="default"><?
+	$q360 = myquery("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
+	while ($r360 = mysql_fetch_row($q360)) {
+		if ($r360[0] == $dekan) $dodaj = "SELECTED"; else $dodaj = "";
+		print "<option value=\"$r360[0]\" $dodaj>$r360[1] $r360[2]</option>\n";
+	}
+	?></select>
 	</td></tr><tr><td>&nbsp;</td><td>
 	<input type="submit" value="  Kreiraj  ">
 	</td></tr></table>
@@ -1468,7 +1482,7 @@ if (!$vrstaunosa) {
 if (isset($_REQUEST['ucitajjmbg'])) {
 	$jmbg = my_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
 	unset($_REQUEST['ucitajjmbg']);
-	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1");
+	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1"); // Uzimamo posljednjeg!
 	if (mysql_num_rows($q5000)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
@@ -1476,7 +1490,7 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 	} else if (mysql_num_rows($q5000)>1) {
 		niceerror("Postoji više kandidata sa istim JMBGom.");
 		while ($r5000 = mysql_fetch_row($q5000))
-			print "- ".$r5000[1]." ".$r5000[2]."<br>\n";
+			print "- ".$r5000[1]." ".$r5000[0]."<br>\n";
 		$vrstaunosa="novi";
 		$ejmbg=$jmbg;
 	} else {

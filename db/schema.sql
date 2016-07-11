@@ -1271,6 +1271,7 @@ CREATE TABLE IF NOT EXISTS `prijemni_termin` (
   `akademska_godina` int(11) NOT NULL,
   `datum` date NOT NULL,
   `ciklus_studija` tinyint(2) NOT NULL,
+  `predsjednik_komisije` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

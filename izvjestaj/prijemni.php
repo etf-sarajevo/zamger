@@ -54,7 +54,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 		$uslov .= "  AND pp.studij_prvi=$studij";
 	}
 
-	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum, pt.predsjednik_komisije from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
@@ -64,6 +64,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$ag = mysql_result($q10,0,0);
 	$datum = date("d. m. Y.", mysql_result($q10,0,1));
 	$ciklus = mysql_result($q10,0,2);
+	$predsjednik_komisije = mysql_result($q10,0,5);
 
 	$naslov3 = "";
 	if ($ciklus>1) {
@@ -188,7 +189,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$q10 = myquery("SELECT naziv FROM studij WHERE id=$studij");
 	$naziv_studija = mysql_result($q10,0,0);
 
-	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum, pt.predsjednik_komisije from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
 	if (mysql_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
@@ -198,6 +199,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	$ag = mysql_result($q10,0,0);
 	$datum = date("d. m. Y.", mysql_result($q10,0,1));
 	$ciklus = mysql_result($q10,0,2);
+	$predsjednik_komisije = mysql_result($q10,0,5);
 
 	$naslov3 = " u prvu godinu $ciklus. ciklusa studija";
 
@@ -565,7 +567,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<td align="center">Predsjednik komisije:<br>
 	<br>
 	<br>
-	Prof. dr Narcis Behlilović, dipl. ing. el.</td>
+	<?=tituliraj($predsjednik_komisije)?></td>
 	</tr></table>
 	<?
 
