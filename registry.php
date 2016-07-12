@@ -141,11 +141,13 @@ array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana 
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 //array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 
-array("ws/osoba", "Web servis osoba", "osoba", "SNBA", "2", "0"),
+array("ws/autotest", "Web servis autotest", "autotest", "SNBA", "2", "0"),
 array("ws/labgrupa", "Web servis labgrupa", "labgrupa", "NA", "2", "0"),
-array("ws/student_predmet", "Web servis student_predmet", "student_predmet", "SNBA", "2", "0"),
+array("ws/osoba", "Web servis osoba", "osoba", "SNBA", "2", "0"),
 array("ws/potvrda", "Web servis potvrda", "potvrda", "S", "2", "0"),
 array("ws/prijava_ispita", "Web servis prijava_ispita", "prijava_ispita", "S", "2", "0"),
+array("ws/student_predmet", "Web servis student_predmet", "student_predmet", "SNBA", "2", "0"),
+array("ws/zadaca", "Web servis zadaca", "zadaca", "SNBA", "2", "0"),
 
 array()
 );
