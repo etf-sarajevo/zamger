@@ -27,12 +27,6 @@ function ws_potvrda() {
 	}
 	
 	if ($_SERVER['REQUEST_METHOD'] == "POST") {
-		if (!$user_siteadmin && !$user_studentska && $korisnik != $userid) {
-			$rezultat = array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' );
-			echo json_encode($rezultat);
-			return;
-		}
-		
 		$tip_potvrde = intval($_REQUEST['tip_potvrde']);
 		$svrha_potvrde = intval($_REQUEST['svrha_potvrde']);
 		if ($tip_potvrde == 0 || $svrha_potvrde == 0) {
@@ -51,12 +45,6 @@ function ws_potvrda() {
 	
 	
 	if ($_SERVER['REQUEST_METHOD'] == "DELETE") {
-		if (!$user_siteadmin && !$user_studentska && $korisnik != $userid) {
-			$rezultat = array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' );
-			echo json_encode($rezultat);
-			return;
-		}
-		
 		$id = intval($_REQUEST['id']);
 		$q300 = myquery("SELECT COUNT(*) FROM zahtjev_za_potvrdu WHERE id=$id AND student=$userid");
 		if (mysql_num_rows($q300)<1) {
