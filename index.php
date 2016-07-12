@@ -212,6 +212,19 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 
 if ($naslov=="") $naslov = "ETF Bolognaware"; // default naslov
 
+
+// Neko specijalno procesiranje za web servise
+if ($found == 1 && (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/")) { // Gledamo i $oldsta zbog isteka sesije
+	header('Content-Type: application/json');
+	// Web servisi nisu public pa u slučaju greške tu završavamo
+	if ($greska !== "") {
+		print json_encode( array( 'success' => 'false', 'code' => 'ERR999', 'message' => $greska ) );
+		dbdisconnect();
+		exit;
+	}
+}
+
+
 // template==2 - ne prikazujemo ni header (npr. PDF ispis)
 if ($found==1 && $template==2 && $greska=="") {
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
