@@ -39,6 +39,7 @@ function ws_potvrda() {
 		zamgerlog("uputio novi zahtjev za potvrdu $id", 2);
 		zamgerlog2("uputio novi zahtjev za potvrdu", $id);
 		
+		$rezultat['message'] = "Zahtjev za potvrdu kreiran";
 		echo json_encode($rezultat);
 		return;
 	}
@@ -56,6 +57,7 @@ function ws_potvrda() {
 		zamgerlog("odustao od zahtjeva za potvrdu $id", 2);
 		zamgerlog2("odustao od zahtjeva za potvrdu", $id);
 		
+		$rezultat['message'] = "Zahtjev za potvrdu obrisan";
 		echo json_encode($rezultat);
 		return;
 	}

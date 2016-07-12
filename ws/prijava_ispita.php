@@ -24,6 +24,7 @@ function ws_prijava_ispita() {
 		$q20 = myquery("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
 		zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
 		
+		$rezultat['message'] = "Student odjavljen sa ispita";
 		echo json_encode($rezultat);
 		return;
 	}
@@ -63,6 +64,7 @@ function ws_prijava_ispita() {
 				$q70 = myquery("INSERT INTO student_ispit_termin (student,ispit_termin) VALUES ($userid, $termin)");
 				zamgerlog("prijavljen na termin za ispit/događaj (pp$predmet)", 2);
 				
+				$rezultat['message'] = "Student prijavljen na ispit";
 				echo json_encode($rezultat);
 			}
 		}
