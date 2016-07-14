@@ -17,33 +17,30 @@ function public_predmeti($modul) {
 	?>
 	<script language="JavaScript">
 	function ucitavaj(semestar, studij, ag) {
+		// Prosljeđujemo podatke iz PHPa u JS
+		var link = '<?=$link?>';
+		var linka = '<?=$linka?>';
+		
 		var rp=document.getElementById('sem-'+semestar+'-'+studij+'-'+ag);
 		if (rp.innerHTML != "prazan") return; // Vec je ucitan
 		rp.innerHTML = "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Molimo sačekajte...";
-		ajah_start("?sta=common/ajah&akcija=spisak_predmeta&ag="+ag+"&studij="+studij+"&semestar="+semestar, "", "napuni_rezultate("+semestar+","+studij+","+ag+")");
-	}
-	function napuni_rezultate(semestar,studij,ag) {
-		var rp=document.getElementById('sem-'+semestar+'-'+studij+'-'+ag);
-		var tekst = frames['zamger_ajah'].document.body.innerHTML;
-		rp.innerHTML="";
-		var oldpozicija=0, pozicija=0;
-		do {
-			// Uzimam jedan red
-			var pozicija = tekst.indexOf('|',oldpozicija);
-			var tmptekst = tekst.substr(oldpozicija,pozicija-oldpozicija);
-			if (tmptekst.length<2) { oldpozicija=pozicija+1; continue; }
-			if (tmptekst == "OK") break;
-			rp.innerHTML += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-			oldpozicija=pozicija+1;
 
-			// Razdvajam id predmeta od naziva predmeta
-			var pidpos = tmptekst.indexOf(' ');
-			var predmetid = tmptekst.substr(0,pidpos);
-			var predmetnaziv = tmptekst.substr(pidpos+1);
-			var linkp = '<?=$link?>';
-			linkp=linkp.replace("--PK--", predmetid+"&ag="+ag);
-			rp.innerHTML += linkp+predmetnaziv+"</a>";
-		} while (pozicija>=0);
+		ajax_start(
+			"ws/predmet", 
+			"GET",
+			{ "studij" : studij, "semestar" : semestar, "ag" : ag },
+			function(predmeti) { 
+				var rp=document.getElementById('sem-'+semestar+'-'+studij+'-'+ag);
+				rp.innerHTML="";
+				for (var id in predmeti) {
+					if (predmeti.hasOwnProperty(id)) {
+						rp.innerHTML += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+						linkp=link.replace("--PK--", id+"&ag="+predmeti[id]['akademska_godina']);
+						rp.innerHTML += linkp+predmeti[id]['naziv']+linka;
+					}
+				}
+			}
+		);
 	}
 	</script>
 
@@ -69,7 +66,7 @@ function public_predmeti($modul) {
 		print "</div>\n";
 	}
 
-	print ajah_box();
+	print ajax_box();
 }
 
 function dajplus($layerid,$layername) {
