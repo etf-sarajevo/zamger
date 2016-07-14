@@ -249,7 +249,7 @@ if ($naslov=="") $naslov = "ETF Bolognaware"; // default naslov
 
 // Neko specijalno procesiranje za web servise
 if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo i $oldsta zbog isteka sesije
-	if ($found == 0) {
+	if ($found == 0 && $greska == "") {
 		header("HTTP/1.0 404 Not Found");
 		$greska = "Nepoznat URL";
 	}

@@ -14,22 +14,30 @@ function ws_zadaca() {
 	else
 		$student = $userid;
 		
+	$predmet = $ag = 0;
 	if (isset($_REQUEST['zadaca']) || isset($_REQUEST['id'])) {
 		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
 		if (isset($_REQUEST['id'])) $zadaca = intval($_REQUEST['id']);
 		
-		$predmet = $ag = 0;
 		$q10 = myquery("SELECT predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
-		if (mysql_num_rows($q10) > 0) {
-			$predmet = mysql_result($q10,0,0);
-			$ag = mysql_result($q10,0,1);
+		if (mysql_num_rows($q10) < 1) {
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			return;
 		}
+		$predmet = mysql_result($q10,0,0);
+		$ag = mysql_result($q10,0,1);
 	}
 
 	// Podaci o programskom jeziku
 	if ($_REQUEST['akcija'] == "jezik") {
 		$id = intval($_REQUEST['id']);
 		$q10 = myquery("select * from programskijezik where id=$id");
+		if (mysql_num_rows($q10) < 1) {
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			return;
+		}
 		while ($dbrow = mysql_fetch_assoc($q10)) {
 			array_push($rezultat['data'], $dbrow);
 		}
@@ -260,6 +268,9 @@ function ws_zadaca() {
 			$ag = mysql_result($q10,0,0);
 		}
 		
+		if (isset($_REQUEST['predmet']))
+			$predmet = intval($_REQUEST['predmet']);
+		
 		// Nastavnik može vidjeti podatke studenata u svojim grupama
 		// Student može vidjeti svoje podatke
 		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
@@ -268,7 +279,11 @@ function ws_zadaca() {
 		} 
 		
 		$rezultat['data']['predmeti'] = array();
-		$q100 = myquery("select p.id, p.naziv, p.kratki_naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.predmet=p.id");
+		$upit = "SELECT p.id, p.naziv, p.kratki_naziv 
+		FROM student_predmet as sp, ponudakursa as pk, predmet as p 
+		WHERE sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.predmet=p.id";
+		if ($predmet > 0) $upit .= " AND p.id=$predmet";
+		$q100 = myquery($upit);
 		while ($r100 = mysql_fetch_row($q100)) {
 			$predmet = array();
 			$predmet['id'] = $r100[0];

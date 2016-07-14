@@ -18,15 +18,20 @@ function ws_labgrupa() {
 	if (isset($_REQUEST['id']) && $_REQUEST['id'] > 0) {
 		$grupa = intval($_REQUEST['id']);
 		
-		if ($user_nastavnik) {
-			$q20 = myquery("select np.nivo_pristupa from nastavnik_predmet np, labgrupa lg where np.nastavnik=$userid and np.predmet=lg.predmet and np.akademska_godina=lg.akademska_godina and lg.id=$grupa");
-			if (mysql_num_rows($q20)<1) {
-				print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
-				return;
-			}
+		$q20 = myquery("SELECT naziv, predmet, akademska_godina FROM labgrupa WHERE id=$grupa");
+		if (mysql_num_rows($q20) == 0) {
+			header("HTTP/1.0 404 Not Found");
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' ) );
+			return;
 		}
 		
-		$q20 = myquery("SELECT naziv FROM labgrupa WHERE id=$grupa");
+		$predmet = mysql_result($q20,0,1);
+		$ag = mysql_result($q20,0,2);
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, 0)) {
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
+			return;
+		}
+		
 		$rezultat['data']['naziv'] = mysql_result($q20,0,0);
 		
 		$q10 = myquery("SELECT o.ime, o.prezime, o.brindexa, a.login, o.id FROM osoba o, student_labgrupa as sl, auth a WHERE sl.labgrupa=$grupa AND sl.student=o.id AND o.id=a.id ORDER BY o.prezime, o.ime");
@@ -47,12 +52,9 @@ function ws_labgrupa() {
 			$ag = mysql_result($q10,0,0);
 		}
 		
-		if ($user_nastavnik) {
-			$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q20)<1) {
-				print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
-				return;
-			}
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, 0)) {
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
+			return;
 		}
 	
 		$q100 = myquery("SELECT lg.id, lg.naziv FROM labgrupa lg WHERE lg.predmet=$predmet AND lg.akademska_godina=$ag");

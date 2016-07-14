@@ -72,7 +72,8 @@ function ws_osoba() {
 	
 	$q10 = myquery("SELECT $upit FROM osoba WHERE id=$korisnik");
 	if (mysql_num_rows($q10) < 1) {
-		$rezultat = array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'Unknown user' );
+		header("HTTP/1.0 404 Not Found");
+		$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
 	} else {
 		$podaci['id'] = $korisnik;
 		$podaci['ime'] = mysql_result($q10,0,0);

@@ -49,7 +49,8 @@ function ws_potvrda() {
 		$id = intval($_REQUEST['id']);
 		$q300 = myquery("SELECT COUNT(*) FROM zahtjev_za_potvrdu WHERE id=$id AND student=$userid");
 		if (mysql_num_rows($q300)<1) {
-			$rezultat = array( 'success' => 'false', 'code' => 'ERR901', 'message' => 'Neispravan zahtjev' );
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
 			echo json_encode($rezultat);
 			return;
 		}

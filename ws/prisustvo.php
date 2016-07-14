@@ -27,7 +27,8 @@ function ws_prisustvo()
 		$cas = intval($_REQUEST['id']);
 		$q10 = myquery("SELECT l.id, l.predmet, l.akademska_godina, c.komponenta FROM labgrupa l, cas c WHERE c.id=$cas AND c.labgrupa=l.id");
 		if (mysql_num_rows($q10)<1) {
-			print json_encode( array( 'success' => 'false', 'code' => 'ERR913', 'message' => 'Nepostojeći čas' ) );
+			header("HTTP/1.0 404 Not Found");
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' ) );
 			return;
 		}
 		$labgrupa = mysql_result($q10,0,0);

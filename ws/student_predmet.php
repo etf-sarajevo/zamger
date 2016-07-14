@@ -43,7 +43,6 @@ function ws_student_predmet()
 			return;
 		}
 		
-		// Dajemo opšte informacije o uspjehu studenta na predmetu
 		$q1 = myquery("select naziv from predmet where id=$predmet");
 		$rezultat['data']['naziv_predmeta'] = mysql_result($q1,0,0);
 		
