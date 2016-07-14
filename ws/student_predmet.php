@@ -28,19 +28,7 @@ function ws_student_predmet()
 		// Provjeravamo prava pristupa
 		$ok = false;
 		if ($user_siteadmin || $user_studentska) $ok = true;
-		if ($user_nastavnik && !$ok) {
-			$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q20)>0) {
-				$ok = true;
-				// Postoji li ograničenje na tom predmetu
-				if (mysql_result($q20,0,0) == "asistent") {
-					$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-					if (mysql_num_rows($q30)>0) {
-						$ok = false; // Mrsko mi je dalje provjeravati
-					}
-				}
-			}
-		}
+		if ($user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
 		if ($user_student && $student == $userid) $ok = true;
 		
 		if (!$ok) {
@@ -49,96 +37,12 @@ function ws_student_predmet()
 		}
 		
 		// Da li student slusa predmet?
-		$q2 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		if (mysql_num_rows($q2)<1) {
+		$ponudakursa = daj_ponudu_kursa($student, $predmet, $ag);
+		if ($ponudakursa === false) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR003', 'message' => 'Student ne sluša predmet' ) );
 			return;
 		}
-		$ponudakursa = mysql_result($q2,0,0);
 		
-		// Ako je definisana akcija "prisustvo" dajemo detaljne informacije o prisustvo
-		if ($_REQUEST["akcija"] == "prisustvo") {
-			$q20 = myquery("SELECT k.id, k.maxbodova, k.prolaz, k.opcija 
-			FROM komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
-			WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
-			
-			while ($r20 = mysql_fetch_row($q20)) {
-				$id_komponente = $r20[0];
-				$max_bodova = $r20[1];
-				$min_bodova = $r20[2];
-				$max_izostanaka = $r20[3];
-				
-				$odsustva = $casova = 0;
-				$q30 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
-				
-				$grupe = array();
-				
-				while ($r30 = mysql_fetch_row($q30)) {
-					$grupa = array();
-					$grupa['id'] = $r30[0];
-					$grupa['naziv'] = $r30[1];
-					if (!preg_match("/\w/", $r30[1])) $grupa['naziv'] = "[Bez naziva]";
-					
-					$q40 = myquery("select id, UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$r30[0] and komponenta=$r20[0] order by datum, vrijeme");
-					if (mysql_num_rows($q40)<1) continue; // Preskace u kojima nema registrovanih časova
-					
-					$grupa_odsustva = 0;
-					$casovi = array();
-					while ($r40 = mysql_fetch_row($q40)) {
-						$vrijeme_casa = $r40[1];
-						if (preg_match("/^(\d\d)\:(\d\d)\:(\d\d)$/", $r40[2], $matches))
-							$vrijeme_casa += $matches[1]*3600 + $matches[2]*60 + $matches[3];
-							
-						$cas = array();
-						$cas['id'] = $r40[0];
-						$cas['vrijeme'] = $vrijeme_casa;
-						
-						$q15 = myquery("select prisutan from prisustvo where student=$student and cas=$r40[0]");
-						if (mysql_num_rows($q15)<1) 
-							$cas['status'] = "nepoznato";
-						else if (mysql_result($q15,0,0)==1) 
-							$cas['status'] = "prisutan";
-						else {
-							$cas['status'] = "odsutan";
-							$grupa_odsustva++;
-						}
-						$casovi[] = $cas;
-					}
-					
-					$grupa['casovi'] = $casovi;
-					$grupe[] = $grupa;
-					
-					$odsustva += $grupa_odsustva;
-					$casova += count($casovi);
-				}
-				
-				if ($max_izostanaka == -1) {
-					if ($casova == 0) 
-						$bodovi = 10;
-					else
-						$bodovi = $min_bodova + round(($max_bodova - $min_bodova) * (($casova - $odsustva) / $casova), 2 ); 
-				} 
-				else if ($max_izostanaka == -2) { // Paraproporcionalni sistem TP
-					if ($odsustva <= 2)
-						$bodovi = $max_bodova;
-					else if ($odsustva <= 2 + ($max_bodova - $min_bodova)/2)
-						$bodovi = $max_bodova - ($odsustva-2)*2;
-					else
-						$bodovi = $min_bodova;
-				} else if ($odsustva<=$max_izostanaka)
-					$bodovi = $max_bodova;
-				else
-					$bodovi = $min_bodova;
-					
-				$komponenta = array();
-				$komponenta['id'] = $r20[0];
-				$komponenta['grupe'] = $grupe;
-				$rezultat['data'][] = $komponenta;
-			}
-			echo json_encode($rezultat);
-			return;
-		}
-	
 		// Dajemo opšte informacije o uspjehu studenta na predmetu
 		$q1 = myquery("select naziv from predmet where id=$predmet");
 		$rezultat['data']['naziv_predmeta'] = mysql_result($q1,0,0);

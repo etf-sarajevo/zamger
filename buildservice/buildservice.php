@@ -77,7 +77,7 @@ else if ($_REQUEST['action'] == "assignProgram") {
 	$task = intval($_REQUEST['task']);
 	$zadaca = intval($task/100);
 	$zadatak = $task % 100;
-	if (!$user_autotester && nastavnik_pravo_pristupa($zadaca) != "nastavnik" && nastavnik_pravo_pristupa($zadaca) != "super_asistent") {
+	if (!$user_autotester && bs_nastavnik_pravo_pristupa($zadaca) != "nastavnik" && bs_nastavnik_pravo_pristupa($zadaca) != "super_asistent") {
 		$result['success'] = "false";
 		$result['code'] = "ERR004";
 		$result["message"] = "You don't have permission to assignProgram";
@@ -163,7 +163,7 @@ else if ($_REQUEST['action'] == "getTaskData") {
 		$q2 = myquery("SELECT id, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match, sakriven FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND aktivan=1");
 		while ($r2 = mysql_fetch_row($q2)) {
 			// Studentima ne prikazujemo sakrivene testove?
-			if ($r2[9]==1 && !$user_siteadmin && !$user_autotester && !nastavnik_pravo_pristupa($zadaca))
+			if ($r2[9]==1 && !$user_siteadmin && !$user_autotester && !bs_nastavnik_pravo_pristupa($zadaca))
 //			if ($r2[9]==1)
 				continue;
 			
@@ -310,9 +310,9 @@ else if ($_REQUEST['action'] == "setCompileResult") {
 		$zadaca = $r[0];
 		$student = $r[1];
 		
-		$privilegija = nastavnik_pravo_pristupa($zadaca);
+		$privilegija = bs_nastavnik_pravo_pristupa($zadaca);
 		
-		if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !nastavnik_ogranicenje($zadaca, $student))) {
+		if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !bs_nastavnik_ogranicenje($zadaca, $student))) {
 			$result['success'] = "false";
 			$result['code'] = "ERR003";
 			$result["message"] = "Access denied";
@@ -361,11 +361,11 @@ else if ($_REQUEST['action'] == "setProgramStatus") {
 		$zadatak = $r[1];
 		$student = $r[2];
 		
-		$privilegija = nastavnik_pravo_pristupa($zadaca);
+		$privilegija = bs_nastavnik_pravo_pristupa($zadaca);
 		zamgerlog("autotestiran student u$student z$zadaca zadatak $zadatak", 2);
 		zamgerlog2("autotestiran student", intval($student), intval($zadaca), intval($zadatak));
 		
-		if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !nastavnik_ogranicenje($zadaca, $student))) {
+		if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !bs_nastavnik_ogranicenje($zadaca, $student))) {
 			$result['success'] = "false";
 			$result['code'] = "ERR003";
 			$result["message"] = "Access denied";
@@ -400,9 +400,9 @@ else if ($_REQUEST['action'] == "setTestResult") {
 	$zadaca = $r[2];
 	$student = $r[0];
 		
-	$privilegija = nastavnik_pravo_pristupa($zadaca);
+	$privilegija = bs_nastavnik_pravo_pristupa($zadaca);
 	
-	if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !nastavnik_ogranicenje($zadaca, $student))) {
+	if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !bs_nastavnik_ogranicenje($zadaca, $student))) {
 		$result['success'] = "false";
 		$result['code'] = "ERR003";
 		$result["message"] = "Access denied";
@@ -637,7 +637,7 @@ function odredi_privilegije_korisnika() {
 	}
 }
 
-function student_pravo_pristupa($zadaca) {
+function bs_student_pravo_pristupa($zadaca) {
 	global $userid;
 
 	$q20 = myquery("SELECT COUNT(*) FROM student_predmet as sp, zadaca as z, ponudakursa as pk WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=z.predmet AND pk.akademska_godina=z.akademska_godina AND z.id=$zadaca");
@@ -645,7 +645,7 @@ function student_pravo_pristupa($zadaca) {
 	return false;
 }
 
-function nastavnik_pravo_pristupa($zadaca) {
+function bs_nastavnik_pravo_pristupa($zadaca) {
 	global $userid;
 	
 	// Da li korisnik ima pravo ući u grupu?
@@ -660,7 +660,7 @@ function nastavnik_pravo_pristupa($zadaca) {
 // Funkcija vraća false ako nije dozvoljen pristup jer korisnik $userid ima definisana ograničenja na neke grupe u kojima student nije
 // u suprotnom vraća true
 
-function nastavnik_ogranicenje($zadaca, $student) {
+function bs_nastavnik_ogranicenje($zadaca, $student) {
 	global $userid;
 
 	$q45 = myquery("select l.id from student_labgrupa as sl, labgrupa as l, zadaca as z where sl.student=$student and sl.labgrupa=l.id and l.predmet=z.predmet and l.akademska_godina=z.akademska_godina and l.virtualna=0 and z.id=$zadaca");
@@ -694,16 +694,16 @@ function pravo_pristupa($zadaca, $student=0) {
 	if ($userid == $student) return true;
 
 	// Student ima pravo pristupa podacima zadaće na predmetima koje sluša
-	if (student_pravo_pristupa($zadaca)) return true;
+	if (bs_student_pravo_pristupa($zadaca)) return true;
 
 	// Nastavnici i super-asistenti mogu pristupati svemu
 	// Asistent može pristupiti postavci zadaće
-	$privilegija = nastavnik_pravo_pristupa($zadaca);
+	$privilegija = bs_nastavnik_pravo_pristupa($zadaca);
 	if ($privilegija === false) return false;
 	if ($student==0 || $privilegija != "asistent") return true;
 	
 	// Za asistente provjeravamo ograničenja na labgrupe
-	return nastavnik_ogranicenje($zadaca, $student);
+	return bs_nastavnik_ogranicenje($zadaca, $student);
 }
 
 

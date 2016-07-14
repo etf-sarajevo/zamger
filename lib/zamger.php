@@ -908,4 +908,65 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 }
 
 
+// Da li nastavnik ima pravo pristupa podacima studenta na predmetu i akademskoj godini
+// Ako je $student=0, odnosi se na sve studente
+function nastavnik_pravo_pristupa($predmet, $ag, $student=0) {
+	global $userid;
+
+	$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (mysql_num_rows($q20)>0) {
+		$ok = true;
+		// Postoji li ograničenje na tom predmetu
+		if (mysql_result($q20,0,0) == "asistent") {
+			$labgrupe = student_labgrupe($student, $predmet, $ag);
+			$ok = nastavnik_ogranicenje($predmet, $ag, $student);
+		}
+	}
+	return $ok;
+}
+
+
+// Spisak labgrupa na predmetu i akademskoj godini kojih je student član
+// Ako je $ukljuci_virtualne=false, neće biti vraćene virtualne labgrupe
+function student_labgrupe($student, $predmet, $ag, $ukljuci_virtualne = true) {
+	global $userid;
+	
+	$rezultat = array();
+	$upit = "SELECT l.id FROM student_labgrupa as sl, labgrupa as l WHERE sl.labgrupa=l.id AND sl.student=$student AND l.predmet=$predmet AND l.akademska_godina=$ag";
+	if (!$ukljuci_virtualne) $upit .= " AND l.virtualna=0";
+	$q10 = myquery($upit);
+	while ($r10 = mysql_fetch_row($q10)) $rezultat[] = $r10[0];
+	return $rezultat;
+}
+
+
+// Da li nastavnik ima ograničenje na labgrupu u kojoj je student
+function nastavnik_ogranicenje($predmet, $ag, $student=0) {
+	global $userid;
+
+	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+	if (mysql_num_rows($q50) < 1) return true;
+	if ($student == 0) return false;
+	
+	$labgrupe = student_labgrupe($student, $predmet, $ag, false);
+	if (count($labgrupe) == 0) return false;
+	
+	while ($r50 = mysql_fetch_row($q50))
+		foreach($labgrupe as $lg)
+			if ($r50[0] == $lg) return true;
+	
+	return false;
+}
+
+
+// Provjerava da li student sluša predmet i vraća ponudu kursa
+function daj_ponudu_kursa($student, $predmet, $ag) {
+	$q2 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (mysql_num_rows($q2)<1)
+		return false;
+	
+	return mysql_result($q2,0,0);
+}
+
+
 ?>

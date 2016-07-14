@@ -38,8 +38,7 @@ function ws_prijava_ispita() {
 		FROM ispit_termin as it, ispit as i, ponudakursa as pk, student_predmet as sp 
 		WHERE it.id=$termin AND it.ispit=i.id AND i.predmet=pk.predmet AND pk.akademska_godina=i.akademska_godina and pk.id=sp.predmet AND sp.student=$userid");
 		if (mysql_num_rows($q30)<1) {
-			$rezultat = array( 'success' => 'false', 'code' => 'ERR903', 'message' => 'Niste upisani na predmet' );
-			echo json_encode($rezultat);
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR003', 'message' => 'Student ne sluša predmet' ) );
 			return;
 		}
 		$predmet = mysql_result($q30,0,0); // koristi se kod upisa u log

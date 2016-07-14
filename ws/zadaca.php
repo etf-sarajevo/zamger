@@ -13,6 +13,18 @@ function ws_zadaca() {
 		$student = intval($_REQUEST['student']);
 	else
 		$student = $userid;
+		
+	if (isset($_REQUEST['zadaca']) || isset($_REQUEST['id'])) {
+		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
+		if (isset($_REQUEST['id'])) $zadaca = intval($_REQUEST['id']);
+		
+		$predmet = $ag = 0;
+		$q10 = myquery("SELECT predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
+		if (mysql_num_rows($q10) > 0) {
+			$predmet = mysql_result($q10,0,0);
+			$ag = mysql_result($q10,0,1);
+		}
+	}
 
 	// Podaci o programskom jeziku
 	if ($_REQUEST['akcija'] == "jezik") {
@@ -26,7 +38,10 @@ function ws_zadaca() {
 	// Podaci o jednoj zadaći
 	else if ($_SERVER['REQUEST_METHOD'] == "GET" && isset($_GET['id'])) { // bilo = dajZadacu
 		$id = intval($_GET['id']);
-		if (!$user_siteadmin && !pravo_pristupa($id,0)) {
+		
+		// Student ima pravo pristupa postavci zadaća na predmetima koje sluša
+		// Nastavnik može pristupiti postavci zadaća za svoje predmete
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, 0) && !daj_ponudu_kursa($student, $predmet, $ag)) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
@@ -39,9 +54,10 @@ function ws_zadaca() {
 
 	// Vraća redni broj zadatka ako je dat filename
 	else if ($_REQUEST['akcija'] == "dajZadatakIzFajla") {
-		$zadaca = intval($_REQUEST['zadaca']);
 		$filename = my_escape($_REQUEST['filename']);
-		if (!$user_siteadmin && !pravo_pristupa($zadaca,$student)) {
+		
+		// Student može vidjeti svoje fajlove, nastavnik može vidjeti fajlove studenta
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
@@ -54,11 +70,10 @@ function ws_zadaca() {
 
 	// Postavlja status zadaće
 	else if ($_SERVER['REQUEST_METHOD'] == "POST" && $_REQUEST['akcija'] == "status") {
-		$zadaca = intval($_REQUEST['zadaca']);
 		$zadatak = intval($_REQUEST['zadatak']);
 		
 		// Student sam ne može mijenjati status svojih zadaća
-		if (!$user_siteadmin && !nastavnik_pravo_pristupa($zadaca)) {
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student)) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
@@ -89,9 +104,11 @@ function ws_zadaca() {
 	
 	// Slanje zadaće
 	else if ($_SERVER['REQUEST_METHOD'] == "POST") {
-		$zadaca = intval($_REQUEST['zadaca']);
 		$zadatak = intval($_REQUEST['zadatak']);
-		if (!$user_siteadmin && !pravo_pristupa($zadaca, $student)) {
+		
+		// Nastavnik ima pravo poslati zadaću u ime studenta (u logu će ostati zabilježeno ko je poslao)
+		// Student može poslati svoju zadaću
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} 
@@ -243,6 +260,13 @@ function ws_zadaca() {
 			$ag = mysql_result($q10,0,0);
 		}
 		
+		// Nastavnik može vidjeti podatke studenata u svojim grupama
+		// Student može vidjeti svoje podatke
+		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
+			return;
+		} 
+		
 		$rezultat['data']['predmeti'] = array();
 		$q100 = myquery("select p.id, p.naziv, p.kratki_naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.predmet=p.id");
 		while ($r100 = mysql_fetch_row($q100)) {
@@ -294,73 +318,6 @@ function ws_zadaca() {
 
 
 	print json_encode($rezultat);
-}
-
-// Da li korisnik $userid ima pravo pristupa zadaći $zadaca za studenta $student
-// Ako je $student==0 onda se podatak odnosi na sve studente (read-only pristup)
-function pravo_pristupa($zadaca, $student=0) {
-	global $userid;
-	
-	// Korisnik ima pravo pristupa svojim zadaćama
-	// Student ima pravo pristupa podacima zadaće na predmetima koje sluša
-	if (($student == $userid || $student == 0) && student_pravo_pristupa($zadaca)) return true;
-
-	// Nastavnici i super-asistenti mogu pristupati svemu
-	// Asistent može pristupiti postavci zadaće
-	$privilegija = nastavnik_pravo_pristupa($zadaca);
-	if ($privilegija === false) return false;
-	if ($student==0 || $privilegija != "asistent") return true;
-	
-	// Za asistente provjeravamo ograničenja na labgrupe
-	return nastavnik_ogranicenje($zadaca, $student);
-}
-
-
-function student_pravo_pristupa($zadaca) {
-	global $userid;
-
-	$q20 = myquery("SELECT COUNT(*) FROM student_predmet as sp, zadaca as z, ponudakursa as pk WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=z.predmet AND pk.akademska_godina=z.akademska_godina AND z.id=$zadaca");
-	if (mysql_result($q20,0,0) > 0) return true;
-	return false;
-}
-
-function nastavnik_pravo_pristupa($zadaca) {
-	global $userid;
-
-	// Da li korisnik ima pravo ući u grupu?
-	$q40 = myquery("select np.nivo_pristupa from nastavnik_predmet as np, zadaca as z where np.nastavnik=$userid and np.predmet=z.predmet and np.akademska_godina=z.akademska_godina and z.id=$zadaca");
-	if (mysql_num_rows($q40)<1) {
-		// Nastavnik nije angažovan na predmetu
-		return false;
-	}
-	return mysql_result($q40,0,0);
-}
-
-function nastavnik_ogranicenje($zadaca, $student) {
-	global $userid;
-
-	$q45 = myquery("select l.id from student_labgrupa as sl, labgrupa as l, zadaca as z where sl.student=$student and sl.labgrupa=l.id and l.predmet=z.predmet and l.akademska_godina=z.akademska_godina and l.virtualna=0 and z.id=$zadaca");
-	$q50 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, zadaca as z where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=z.predmet and l.akademska_godina=z.akademska_godina and l.virtualna=0 and z.id=$zadaca");
-	if (mysql_num_rows($q45)<1) {
-		if (mysql_num_rows($q50)>0) {
-			// imate ogranicenja a student nije u grupi
-			return false;
-		}
-		return true;
-	}
-	$labgrupa = mysql_result($q45,0,0);
-
-	if (mysql_num_rows($q50)>0) {
-		$nasao=0;
-		while ($r50 = mysql_fetch_row($q50)) {
-			if ($r50[0] == $labgrupa) { $nasao=1; break; }
-		}
-		if ($nasao == 0) {
-			// echo "FAIL|ogranicenje na labgrupu $labgrupa";
-			return false;
-		}
-	}
-	return true;
 }
 
 
