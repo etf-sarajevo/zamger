@@ -158,39 +158,32 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 		if (ib.value.length<3) return;
 		//alert("Trazim: "+ib.value);
 
-		// Nadji poziciju objekta
-		var curleft = curtop = 0;
-		var obj=ib;
-		if (obj.offsetParent) {
-			do {
-				curleft += obj.offsetLeft;
-				curtop += obj.offsetTop;
-			} while (obj = obj.offsetParent);
-		}
-
+		// Nadji poziciju objekta - stari kod je bio obsolete i nije radio na Firefoxu
+		var viewportOffset = ib.getBoundingClientRect();
+		console.log(viewportOffset);
 		pg.style.visibility = 'visible';
-		pg.style.left=curleft;
-		pg.style.top=curtop+ib.offsetHeight;
+		pg.style.left = "" + viewportOffset.left + "px";
+		pg.style.top= "" + (viewportOffset.top+ib.offsetHeight) + "px";
+		console.log(pg.style);
 
-		ajah_start("index.php?c=N&sta=common/ajah&akcija=pretraga&ime="+ib.value, "", "napuni_rezultate()");
-	}
-	function napuni_rezultate() {
-		var rp=document.getElementById('rezultati_pretrage');
-		var tekst = frames['zamger_ajah'].document.body.innerHTML;
-		var oldpozicija=0;
-		rp.innerHTML = "";
-		do {
-			var pozicija = tekst.indexOf('\n',oldpozicija);
-			var tmptekst = tekst.substr(oldpozicija,pozicija-oldpozicija);
-			if (tmptekst.length<2) { oldpozicija=pozicija+1; continue; }
-			if (tmptekst == "OK") break;
-			if (tmptekst == "Nema rezultata") {
-				rp.innerHTML = rp.innerHTML + "<font color=\"#AAAAAA\">(Nema rezultata)</font><br/>";
-			} else {
-				rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+tmptekst+"')\">"+tmptekst+"</a><br/>";
+		ajax_start(
+			"ws/osoba", 
+			"GET",
+			{ "akcija" : "pretraga", "ime" : ib.value },
+			function(osobe) { 
+				var rp=document.getElementById('rezultati_pretrage');
+				rp.innerHTML = "";
+				found = false;
+				for (var id in osobe) {
+					if (osobe.hasOwnProperty(id)) {
+						osoba_tekst = osobe[id].login + " (" + osobe[id].ime + " " + osobe[id].prezime + ")";
+						rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+osoba_tekst+"')\">"+osoba_tekst+"</a><br/>";
+						found = true;
+					}
+				}
+				if (!found) rp.innerHTML = "<font color=\"#AAAAAA\">(Nema rezultata)</font><br/>";
 			}
-			oldpozicija=pozicija+1;
-		} while (pozicija>=0);
+		);
 	}
 	function sakrij_pretragu() {
 		var pg=document.getElementById('pretgraga');
@@ -229,7 +222,7 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 	<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
 	</form>
 	<?
-	print ajah_box();
+	ajax_box();
 	return;
 }
 

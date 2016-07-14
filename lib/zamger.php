@@ -151,6 +151,72 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 }
 
 
+function ajax_box() {
+	?>
+	<script language="JavaScript">
+	function ajax_start(url, method, params, cb_success, cb_fail) {
+		cb_fail = cb_fail || ajax_log_error;
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (xhttp.readyState == 4 && xhttp.status == 200) {
+				try {
+					var object = JSON.parse(xhttp.responseText);
+					if (object['success'] === 'true')
+						cb_success(object['data']);
+					else
+						cb_fail(xhttp.responseText, xhttp.status, url);
+				} catch(e) {
+					cb_fail(xhttp.responseText, xhttp.status, url);
+				}
+			} else if (xhttp.readyState == 4) {
+				cb_fail(xhttp.responseText, xhttp.status, url);
+			}
+		};
+		
+		// Zamger URL
+		if (url.indexOf("://") == -1) {
+			params['sta'] = url;
+			url = "index.php";
+		}
+		
+		var encode_params = "";
+		for (var key in params) {
+			if (params.hasOwnProperty(key)) {
+				if (encode_params != "") encode_params += "&";
+				encode_params += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+			}
+		}
+		
+		if (method == "POST") {
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send(encode_params);
+		} else {
+			if (encode_params != "") url = url + "?" + encode_params;
+			xhttp.open(method, url, true);
+			xhttp.send();
+		}
+	}
+	// Default funkcija za neuspjeh, logira greške
+	function ajax_log_error(responseText, status, url) {
+		if (status != 200) {
+			console.log("Web servis "+url+" vratio status "+status);
+			return;
+		}
+		try {
+			var object = JSON.parse(responseText);
+			console.log("Neuspio upit na web servis "+url+": ["+object['code']+"] "+object['message']);
+		} catch(e) {
+			console.log("Web servis "+url+" nije vratio validan JSON: "+xhttp.responseText);
+			console.log(e);
+		}
+	}
+	</script>
+	<?php
+}
+
+
+
 // Reimplementacija file_put_contents, za staru verziju PHPa
 
 if (!function_exists('file_put_contents')) {
