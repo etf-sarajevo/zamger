@@ -67,6 +67,40 @@ $greska="";
 $sta = my_escape($_REQUEST['sta']);
 $posljednji_pristup = 0;
 
+
+// Web service router
+if (isset($_REQUEST['route']) && $_REQUEST['route'] != "auth") { 
+	$segments = explode('/', trim($_REQUEST['route'], '/'));
+	$sta = "ws/" . my_escape($segments[0]);
+	for ($i=1; $i<count($segments); $i++) {
+		if (is_numeric($segments[$i])) {
+			if (!isset($_REQUEST['id'])) {
+				$_REQUEST['id'] = $segments[$i];
+				$_GET['id'] = $segments[$i];
+				$_POST['id'] = $segments[$i];
+			} else if (!isset($_REQUEST['predmet'])) {
+				$_REQUEST['predmet'] = $segments[$i];
+				$_GET['predmet'] = $segments[$i];
+				$_POST['predmet'] = $segments[$i];
+			} else if (!isset($_REQUEST['ag'])) {
+				$_REQUEST['ag'] = $segments[$i];
+				$_GET['ag'] = $segments[$i];
+				$_POST['ag'] = $segments[$i];
+			}
+		} else {
+			if (!isset($_REQUEST['akcija'])) {
+				$_REQUEST['akcija'] = $segments[$i];
+				$_GET['akcija'] = $segments[$i];
+				$_POST['akcija'] = $segments[$i];
+			} else if (!isset($_REQUEST['subakcija'])) {
+				$_REQUEST['subakcija'] = $segments[$i];
+				$_GET['subakcija'] = $segments[$i];
+				$_POST['subakcija'] = $segments[$i];
+			}
+		}
+	}
+}
+
 // Ovaj kod smo ukinuli da bi se moglo sa login stranice redirektovati tamo gdje je korisnik već bio
 //if ($_REQUEST['greska']==1) {
 	// Da li ce se ovo ikada desiti?
@@ -214,12 +248,17 @@ if ($naslov=="") $naslov = "ETF Bolognaware"; // default naslov
 
 
 // Neko specijalno procesiranje za web servise
-if ($found == 1 && (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/")) { // Gledamo i $oldsta zbog isteka sesije
+if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo i $oldsta zbog isteka sesije
+	if ($found == 0) {
+		header("HTTP/1.0 404 Not Found");
+		$greska = "Nepoznat URL";
+	}
 	header('Content-Type: application/json');
 	// Web servisi nisu public pa u slučaju greške tu završavamo
 	if ($greska !== "") {
 		print json_encode( array( 'success' => 'false', 'code' => 'ERR999', 'message' => $greska ) );
 		dbdisconnect();
+		$uspjeh=2;
 		exit;
 	}
 }
