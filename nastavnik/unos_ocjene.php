@@ -73,7 +73,9 @@ if (!$user_siteadmin && !$user_studentska) {
 				if (origval[id] == "/") {
 					var datum_element = document.getElementById("datum"+value);
 					datum_element.value = "<?=date("d. m. Y")?>";
-					datum_element.focus();
+					datum_element.style.backgroundColor = '#FFAAAA';
+					document.getElementById('provjera'+value).style.visibility='visible';
+					//datum_element.focus();
 				}
 			} else if (id.substr(0,5) == "datum") {
 				var value = parseInt(element.id.substr(5));
@@ -142,7 +144,7 @@ if (!$user_siteadmin && !$user_studentska) {
 		} else {
 			$ocjena = "/";
 			$datum_u_indeksu = "/";
-			$datum_provjeren = 1;
+			$datum_provjeren = 2;
 		}
 
 		if ($kolokvij) { 
@@ -167,11 +169,12 @@ if (!$user_siteadmin && !$user_studentska) {
 			?>
 			</td>
 			<td align="center"><input type="text" id="datum<?=$id?>" size="8" value="<?=$datum_u_indeksu?>" style="border:1px black solid<?
-				if ($datum_provjeren != 1) print "; background-color: #ffaaaa";
+				if ($datum_provjeren == 0) print "; background-color: #ffaaaa";
 			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)">
-			</td><?
-				if ($datum_provjeren != 1) print "<td id=\"provjera$id\"><font color=\"red\"><b>Datum nije provjeren</b></font></td>";
-			?>
+			</td>
+			<td id="provjera<?=$id?>" <?
+				if ($datum_provjeren != 0) print "style=\"visibility:hidden\"";
+			?>><font color="red"><b>Datum nije provjeren</b></font></td>
 		</tr>
 		<?
 	}
