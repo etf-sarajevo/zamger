@@ -248,7 +248,7 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 
 	// Logging
 	zamgerlog("potpuno novi predmet pp$predmet, akademska godina ag$ak_god",4);
-	zamgerlog2("kreiran novi predmet", $predmet, $ak_god);
+	zamgerlog2("kreiran novi predmet", intval($predmet), intval($ak_god));
 
 	?>
 	<p>Kreiran novi predmet pod nazivom <?=$naziv?> sa uobičajenim parametrima. Koristite polja za izmjenu da ih podesite.</p>
