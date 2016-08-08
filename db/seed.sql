@@ -54,8 +54,8 @@ INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora
 -- Vidjeti i tabelu auth.
 --
 
-INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjesto_rodjenja`, `drzavljanstvo`, `jmbg`, `adresa`, `adresa_mjesto`, `telefon`, `kanton`, `treba_brisati`) VALUES
-(1, 'Site', 'Admin', '', NULL,NULL, NULL, '', '', NULL, '', NULL, 0);
+INSERT INTO `osoba` (`id`, `ime`, `prezime`, `jmbg`) VALUES
+(1, 'Site', 'Admin', '');
 
 
 --
@@ -67,8 +67,8 @@ INSERT INTO `osoba` (`id`, `ime`, `prezime`, `brindexa`, `datum_rodjenja`, `mjes
 -- promijenite password!
 --
 
-INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`, `posljednji_pristup`) VALUES
-(1, 'admin', 'admin', 0, '', 1, '0000-00-00 00:00:00');
+INSERT INTO `auth` (`id`, `login`, `password`, `admin`, `external_id`, `aktivan`) VALUES
+(1, 'admin', 'admin', 0, '', 1);
 
 
 --
@@ -746,7 +746,7 @@ INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
-(0, 'verzija-baze', '1470657016');
+(0, 'verzija-baze', '1470657358');
 
 
 --

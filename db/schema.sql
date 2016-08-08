@@ -270,7 +270,7 @@ CREATE TABLE IF NOT EXISTS `auth` (
   `admin` tinyint(1) NOT NULL DEFAULT '0',
   `external_id` varchar(50) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `aktivan` tinyint(1) NOT NULL DEFAULT '1',
-  `posljednji_pristup` datetime NOT NULL,
+  `posljednji_pristup` datetime NOT NULL default '1970-01-01 00:00:00',
   PRIMARY KEY (`id`,`login`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
