@@ -1065,7 +1065,7 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `strucni_stepen` int(11) NOT NULL DEFAULT '5', -- 5 = srednja strucna sprema
   `naucni_stepen` int(11) NOT NULL DEFAULT '6', -- 6 = bez naucnog stepena
   `slika` varchar(50) COLLATE utf8_slovenian_ci NOT NULL default '',
-  `nacin_stanovanja` INT defaul NULL,
+  `nacin_stanovanja` INT default NULL,
   PRIMARY KEY (`id`),
   KEY `mjesto_rodjenja` (`mjesto_rodjenja`),
   KEY `adresa_mjesto` (`adresa_mjesto`),
