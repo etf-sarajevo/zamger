@@ -63,10 +63,11 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	$nppolje="np.nivo_pristupa";
 
 	// Upit za spisak predmeta
-	$q10 = myquery("SELECT distinct p.id, $nppolje, p.naziv, i.kratki_naziv, pk.semestar, pk.studij
+	$q10 = myquery("SELECT p.id, $nppolje, p.naziv, i.kratki_naziv, MIN(pk.semestar) sem, MIN(pk.studij) stud
 	FROM predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk 
 	WHERE $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag 
-	ORDER BY pk.semestar, pk.studij, p.naziv");
+	GROUP BY p.id
+	ORDER BY sem, stud, p.naziv");
 
 	// Format - šest predmeta u jednom redu
 	$nr = mysql_num_rows($q10);
