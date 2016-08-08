@@ -54,8 +54,8 @@ INSERT INTO `anketa_tip_pitanja` (`id`, `tip`, `postoji_izbor`, `tabela_odgovora
 -- Vidjeti i tabelu auth.
 --
 
-INSERT INTO `osoba` (`id`, `ime`, `prezime`, `jmbg`) VALUES
-(1, 'Site', 'Admin', '');
+INSERT INTO `osoba` (`id`, `ime`, `prezime`) VALUES
+(1, 'Site', 'Admin');
 
 
 --
@@ -745,7 +745,7 @@ INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
-(0, 'verzija-baze', '1470679710');
+(0, 'verzija-baze', '1470680111');
 
 
 --

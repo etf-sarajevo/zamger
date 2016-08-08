@@ -1056,7 +1056,7 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   `nacionalnost` int(11) default NULL,
   `drzavljanstvo` int(11) default NULL,
   `boracke_kategorije` tinyint(1) NOT NULL default 0,
-  `jmbg` varchar(14) COLLATE utf8_slovenian_ci NOT NULL,
+  `jmbg` varchar(14) COLLATE utf8_slovenian_ci NOT NULL default '',
   `adresa` varchar(50) COLLATE utf8_slovenian_ci NOT NULL default '',
   `adresa_mjesto` int(11) default NULL,
   `telefon` varchar(15) COLLATE utf8_slovenian_ci NOT NULL default '',
