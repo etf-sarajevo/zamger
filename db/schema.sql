@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `angazman_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -255,7 +255,7 @@ CREATE TABLE IF NOT EXISTS `anketa_tip_pitanja` (
   `postoji_izbor` enum('Y','N') COLLATE utf8_slovenian_ci NOT NULL,
   `tabela_odgovora` char(32) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS `drzava` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=32 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -497,7 +497,7 @@ CREATE TABLE IF NOT EXISTS `ekstenzije` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=19 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -529,7 +529,7 @@ CREATE TABLE IF NOT EXISTS `institucija` (
   `dekan` int(11) NOT NULL,
   `broj_protokola` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=6 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -621,7 +621,7 @@ CREATE TABLE IF NOT EXISTS `kanton` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `kratki_naziv` varchar(5) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=14 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -676,7 +676,7 @@ CREATE TABLE IF NOT EXISTS `komponenta` (
   `uslov` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `tipkomponente` (`tipkomponente`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -806,7 +806,7 @@ CREATE TABLE IF NOT EXISTS `labgrupa` (
   PRIMARY KEY (`id`),
   KEY `predmet` (`predmet`),
   KEY `akademska_godina` (`akademska_godina`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -822,7 +822,7 @@ CREATE TABLE IF NOT EXISTS `log` (
   `nivo` tinyint(2) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `dogadjaj` (`dogadjaj`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -841,7 +841,7 @@ CREATE TABLE IF NOT EXISTS `log2` (
   `objekat3` int(11) NOT NULL,
   `ipaddress` varchar(16) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -867,7 +867,7 @@ CREATE TABLE IF NOT EXISTS `log2_dogadjaj` (
   `nivo` tinyint(2) NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `opis` (`opis`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=320 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -880,7 +880,7 @@ CREATE TABLE IF NOT EXISTS `log2_modul` (
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `naziv` (`naziv`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=148 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -897,7 +897,7 @@ CREATE TABLE IF NOT EXISTS `mjesto` (
   PRIMARY KEY (`id`),
   KEY `opcina` (`opcina`),
   KEY `drzava` (`drzava`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=79 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -938,7 +938,7 @@ CREATE TABLE IF NOT EXISTS `nacin_studiranja` (
   `naziv` varchar(30) collate utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -979,7 +979,7 @@ CREATE TABLE IF NOT EXISTS `naucni_stepen` (
   `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `titula` varchar(15) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -993,7 +993,7 @@ CREATE TABLE IF NOT EXISTS `oblast` (
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `institucija` (`institucija`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1033,7 +1033,7 @@ CREATE TABLE IF NOT EXISTS `opcina` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=145 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1113,7 +1113,7 @@ CREATE TABLE IF NOT EXISTS `podoblast` (
   `oblast` int(11) NOT NULL,
   `naziv` varchar(100) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1163,7 +1163,7 @@ CREATE TABLE IF NOT EXISTS `posebne_kategorije` (
   `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1183,7 +1183,7 @@ CREATE TABLE IF NOT EXISTS `predmet` (
   `sati_tutorijala` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `institucija` (`institucija`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1480,7 +1480,7 @@ CREATE TABLE IF NOT EXISTS `promjena_podataka` (
   `slika` VARCHAR(50) NOT NULL,
   `vrijeme_zahtjeva` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1586,7 +1586,7 @@ CREATE TABLE IF NOT EXISTS `savjet_dana` (
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
   `vrsta_korisnika` enum('nastavnik','student','studentska','siteadmin') COLLATE utf8_slovenian_ci NOT NULL DEFAULT 'nastavnik',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=21 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1628,7 +1628,7 @@ CREATE TABLE IF NOT EXISTS `srednja_skola` (
   `domaca` tinyint(1) NOT NULL DEFAULT '1',
   `tipskole` enum('GIMNAZIJA','ELEKTROTEHNICKA','TEHNICKA','STRUCNA','MSS','ZANAT') collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1804,7 +1804,7 @@ CREATE TABLE IF NOT EXISTS `tippredmeta` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(60) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 
@@ -1841,7 +1841,7 @@ CREATE TABLE IF NOT EXISTS `tip_potvrde` (
   `id` int(11) NOT NULL auto_increment,
   `naziv` varchar(100) collate utf8_slovenian_ci default NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1856,7 +1856,7 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
   `studij` int(11) NOT NULL,
   `semestar` int(5) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -1992,7 +1992,7 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
   `datum_zahtjeva` datetime default NULL,
   `status` int(11) default NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=10972 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -2124,7 +2124,7 @@ CREATE TABLE IF NOT EXISTS `zvanje` (
   `naziv` varchar(50) collate utf8_slovenian_ci NOT NULL,
   `titula` varchar(10) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 
 CREATE TABLE IF NOT EXISTS `kandidati` (
