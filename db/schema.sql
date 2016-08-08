@@ -841,7 +841,7 @@ CREATE TABLE IF NOT EXISTS `log2` (
   `objekat3` int(11) NOT NULL,
   `ipaddress` varchar(16) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=3036570 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -1746,7 +1746,7 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `akademska_godina` int(11) NOT NULL,
   `nacin_studiranja` int(11) NOT NULL,
   `ponovac` tinyint(4) NOT NULL DEFAULT '0',
-  `odluka` int(11) NOT NULL DEFAULT '0',
+  `odluka` int(11) default NULL,
   `plan_studija` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
