@@ -145,7 +145,6 @@ INSERT INTO `ekstenzije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `institucija` (`id`, `naziv`, `roditelj`, `kratki_naziv`, `tipinstitucije`, `dekan`, `broj_protokola`) VALUES
-(0, 'Nepoznato', 0, 'N', 0, 0, ''),
 (1, 'Elektrotehnički fakultet Sarajevo', 0, 'ETF', 1, 3010, '06-4-1-'),
 (2, 'Odsjek za računarstvo i informatiku', 1, 'RI', 0, 0, ''),
 (3, 'Odsjek za automatiku i elektroniku', 1, 'AE', 0, 0, ''),
