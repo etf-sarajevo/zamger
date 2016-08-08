@@ -1571,7 +1571,7 @@ CREATE TABLE IF NOT EXISTS `raspored_stavka` (
 CREATE TABLE IF NOT EXISTS `rss` (
   `id` varchar(15) COLLATE utf8_slovenian_ci NOT NULL,
   `auth` int(11) NOT NULL,
-  `access` datetime NOT NULL,
+  `access` datetime NOT NULL default '1970-01-01 00:00:00',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
