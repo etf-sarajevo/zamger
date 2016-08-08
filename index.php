@@ -421,7 +421,7 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 
 // Provjera maila
 if ($userid>0) {
-	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$posljednji_pristup");
+	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>" . intval($posljednji_pristup));
 	if (mysql_result($q30,0,0)>0) {
 		?>
 		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
