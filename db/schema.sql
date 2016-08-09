@@ -1173,11 +1173,11 @@ CREATE TABLE IF NOT EXISTS `posebne_kategorije` (
 
 CREATE TABLE IF NOT EXISTS `predmet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sifra` varchar(30) COLLATE utf8_slovenian_ci NOT NULL,
+  `sifra` varchar(30) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
-  `institucija` int(11) NOT NULL DEFAULT '0',
+  `institucija` int(11) DEFAULT NULL,
   `kratki_naziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
-  `ects` float NOT NULL,
+  `ects` float NOT NULL DEFAULT '0',
   `sati_predavanja` int(11) NOT NULL DEFAULT '0',
   `sati_vjezbi` int(11) NOT NULL DEFAULT '0',
   `sati_tutorijala` int(11) NOT NULL DEFAULT '0',
