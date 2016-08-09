@@ -100,8 +100,9 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	$BrojKomponenti = count($TabelaKomponenti);
 
 	$prvi_parcijalni_id = $drugi_parcijalni_id = 0;
+	$idovi_komponenti = array();
 
-	$potreban_update = false;
+	$potreban_update = false; // Da li je potrebno uopšte ažurirati bodove studentima?
 
 	for ($i=0; $i<$BrojKomponenti; $i++) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
@@ -189,11 +190,29 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		}
 
 		$q110 = myquery("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
+		$idovi_komponenti[] = $id_komponente;
 	}
 
 	// Od sada ovaj predmet je novokreiranog tipa
 	$q120 = myquery("UPDATE akademska_godina_predmet set tippredmeta=$tip_predmeta where akademska_godina=$ag and predmet=$predmet");
+	
+	// Moramo sada obrisati sve podatke koji nisu migrirani jer mogu praviti razne probleme
+	$q400 = myquery("select id, komponenta from ispit where predmet=$predmet and akademska_godina=$ag");
+	while ($r400 = mysql_fetch_row($q400)) {
+		$ispit = $r400[0];
+		if (!in_array($r400[1], $idovi_komponenti)) {
+			$q410 = myquery("delete from ispitocjene where ispit=$ispit");
+			$q420 = myquery("select id from ispit_termin where ispit=$ispit");
+			while ($r420 = mysql_fetch_row($q420)) {
+				$termin = $r420[0];
+				$q430 = myquery("delete from student_ispit_termin where ispit_termin=$termin");
+				$q440 = myquery("delete from ispit_termin where id=$termin");
+			}
 
+			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, $ispit);
+		}
+	}
+	// .. tako i za prisustvo i zadaće...
 
 	// Ako nijedan predmet više ne koristi stari tip predmeta, brišemo ga
 	$q130 = myquery("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
