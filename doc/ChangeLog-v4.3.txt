@@ -23,6 +23,7 @@ NOVE FUNKCIONALNOSTI:
   * Buildservice (https://github.com/etf-sarajevo/buildservice) - testiranje ispravnosti programskih zadaća u 9 programskih jezika
   * Plagidetect (...) - provjera prepisivanja
 Ova funkcionalnost na ETFu postoji već duže vrijeme ali se kod postepeno usavršava i čisti tako da je sada došlo vrijeme da bude zvanično objavljen.
+- Zahtjev za ovjerena uvjerenja i potvrde - studenti mogu upućivati zahtjeve, a studentska služba štampa i daje uvjerenja na potpis ovlaštenom licu
 
 
 VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
@@ -209,6 +210,8 @@ ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
 - student/anketa:
   * (5d28750) Ovo je sada modul za pristup rezultatima ankete, dok se kodovi eventualno preuzimaju uživo
   * (d049b0f) Podrška za više anketa u studentskom meniju, jasno razdvojen link za rezultate od linka za popunjavanje ankete
+- student/intro:
+  * (cd23ba1) Link na RSS više nije hardcodiran
 - student/kolizija:
   * (e9b7694) Ispravno tretiranje predmeta sa drugog odsjeka
   * (e9f4498) Popravljen naziv nepoloženog predmeta s drugog odsjeka, popravka kod 3 ili više izbornih predmeta od kojih je jedan položen, ponuđen link za printanje zahtjeva odmah nakon odabira predmeta

@@ -53,6 +53,7 @@ array("izvjestaj/odrzana_nastava", "Izvještaj o održanoj nastavi", "Održana n
 array("izvjestaj/pdf_converter", "Za generisanje PDF izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
 array("izvjestaj/po_kantonima", "Spisak studenata po kantonima", "Po kantonima", "BA", "0", "0"),
 array("izvjestaj/po_smjerovima_linijski", "Grafovi za izvještaj po smjerovima", "Grafovi", "BA", "2", "0"),
+array("izvjestaj/potvrda", "Potvrda o redovnom studiju", "Potvrda o redovnom studiju", "SBA", "0", "0"),
 array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"),
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 array("izvjestaj/pregled_nacin", "Pregled upisanih studenata po tipu i načinu studiranja", "Pregled upisanih studenata", "BA", "0", "0"),
