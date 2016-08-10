@@ -31,6 +31,15 @@ if (mysql_num_rows($q100) < 1) {
 	return;
 }
 $r100 = mysql_fetch_row($q100);
+if (intval($r100[5]) == 0) {
+	niceerror("Mjesto rođenja nije definisano za studenta ".$r100[0]." ".$r100[1]);
+	if ($user_studentska) {
+		?>
+		<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$student?>">Promijenite podatke studenta</a>
+		<?
+	}
+	return;
+}
 
 $q110 = myquery("SELECT m.naziv, o.naziv, d.naziv FROM mjesto as m, opcina as o, drzava as d WHERE m.id=$r100[5] AND m.opcina=o.id and m.drzava=d.id");
 $r110 = mysql_fetch_row($q110);
