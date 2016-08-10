@@ -20,7 +20,7 @@ if ($godina==0 || $studij==0) {
 <p>Planovi, po godinama usvajanja (početka važenja):<br/>
 <?
 
-$q10 = myquery("select distinct ag.id, ag.naziv, s.id, s.naziv from plan_studija as ps, akademska_godina as ag, studij as s where ps.godina_vazenja=ag.id and ps.studij=s.id order by ps.godina_vazenja, s.naziv");
+$q10 = myquery("select distinct ag.id, ag.naziv, s.id, s.naziv from plan_studija as ps, akademska_godina as ag, studij as s where ps.godina_vazenja=ag.id and ps.studij=s.id order by ag.id, s.naziv");
 while ($r10 = mysql_fetch_row($q10)) {
 	?>- <a href="?sta=studentska/plan&godina=<?=$r10[0]?>&studij=<?=$r10[2]?>"><?=$r10[3]?> (<?=$r10[1]?>)</a><br/><?
 }
