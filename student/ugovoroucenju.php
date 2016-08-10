@@ -22,13 +22,16 @@ function student_ugovoroucenju() {
 	$q1 = myquery("select id, naziv from akademska_godina where aktuelna=1");
 	$q2 = myquery("select id, naziv from akademska_godina where id>".mysql_result($q1,0,0)." order by id limit 1");
 	if (mysql_num_rows($q2)<1) {
-//		nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
-//		return;
 		// Pretpostavljamo da se upisuje u aktuelnu?
 		$zagodinu  = mysql_result($q1,0,0);
 		$zagodinunaziv  = mysql_result($q1,0,1);
 		$q3 = myquery("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
 		$proslagodina = mysql_result($q3,0,0);
+		if (mysql_num_rows($q3)<1) {
+			// U sistemu je registrovana samo jedna ak. god.
+			nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
+			return;
+		}
 	} else {
 		$proslagodina = mysql_result($q1,0,0);
 		$zagodinu = mysql_result($q2,0,0);
