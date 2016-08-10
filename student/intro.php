@@ -23,6 +23,7 @@ else
 // Sakrij module ako ih nema u registry-ju
 $modul_raspored=$modul_anketa=0;
 foreach ($registry as $r) {
+	if (count($r) == 0) continue;
 	if ($r[0]=="common/raspored1") $modul_raspored=1;
 	if ($r[0]=="student/anketa") $modul_anketa=1;
 }
@@ -150,8 +151,6 @@ foreach ($vrijeme_poruke as $id=>$vrijeme) {
 if ($count==0) {
 	print "Nema aktuelnih informacija.";
 }
-
-print $vijesti;
 
 
 
@@ -374,8 +373,10 @@ if (mysql_num_rows($q200)<1) {
 }
 
 
+global $conf_site_url;
+
 ?>
-<a href="http://zamger.etf.unsa.ba/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
+<a href="<?=$conf_site_url?>/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
 <a href="http://feedvalidator.org/check.cgi?url=http%3A//zamger.etf.unsa.ba/rss.php%3Fid%3D<?=$rssid?>"><img src="images/valid-rss-rogers.png" width="88" height="31" border="0" align="center"></a>
 
 <!--
