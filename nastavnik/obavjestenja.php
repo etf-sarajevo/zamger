@@ -244,7 +244,7 @@ $manjidatum = intval(mysql_result($q5,0,0))."-09-01";
 $vecidatum = intval(mysql_result($q5,0,0)+1)."-10-01";
 
 
-$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet and p.vrijeme>'$manjidatum' and p.vrijeme<'$vecidatum' or p.opseg=6 and p.primalac=l.id and l.predmet=$predmet and l.akademska_godina=$ag) order by vrijeme");
+$q10 = myquery("select distinct p.id, UNIX_TIMESTAMP(p.vrijeme), p.naslov, p.tekst, p.opseg, p.primalac, p.vrijeme from poruka as p, labgrupa as l where p.tip=1 and (p.opseg=5 and p.primalac=$predmet and p.vrijeme>'$manjidatum' and p.vrijeme<'$vecidatum' or p.opseg=6 and p.primalac=l.id and l.predmet=$predmet and l.akademska_godina=$ag) order by vrijeme");
 if (mysql_num_rows($q10)>0) {
 	print "<p>Do sada unesena obavještenja:</p>\n<ul>\n";
 } else {
