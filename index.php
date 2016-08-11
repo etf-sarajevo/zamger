@@ -154,6 +154,7 @@ if (int_param('loginforma') === 1) {
 
 if ($userid>0) {
 	$su = int_param('su');
+	if ($su==0 && isset($_SESSION['su'])) $su = $_SESSION['su'];
 	$unsu = int_param('unsu');
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
@@ -353,16 +354,16 @@ if ($found==1 && $template==0 && $greska=="") {
 
 // Savjet dana
 $onload_funkcija = "";
-if (int_param('loginforma') == "1" && $userid>0) {
+if (int_param('loginforma') == 1 && $userid>0) {
 	// Savjet dana
 	$nasao=0;
 	foreach ($registry as $r) {
 		if ($r[0]=="common/savjet_dana") { $nasao=1; break; }
 	}
 	if ($nasao==1) {
-		$pref = db_get("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
-		// Ako nema rezultata, pretpostavljamo 1
-		if ($pref === false || $pref != 0) {
+		$savjet_dana = db_get("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
+		// Ako nema rezultata, pretpostavljamo da je uključen savjet dana
+		if ($savjet_dana === false || $savjet_dana != 0) {
 			// Provjeravamo ima li savjeta za ovu vrstu korisnika?
 			$upit="";
 			if ($user_nastavnik) $upit .= "vrsta_korisnika='nastavnik' or ";
