@@ -7,9 +7,12 @@ Elektrotehnicki fakultet Sarajevo
 SPISAK IZMJENA U v4.3 U ODNOSU NA v4.2 (12.6.2012)
 ==================================================
 
+Posljednja izmjena: 11. 8. 2016.
+
 
 VEĆE IZMJENE U NAČINU RADA:
 - Prelazak sa MyISAM na InnoDB backend za bazu podataka omogućuje poboljšanje referencijalnog integriteta
+- Prelazak sa mysql_* funkcija na mysqli backend zbog toga što su one prve prevaziđene
 - Nova logging arhitektura rješava probleme sa performansama pri radu sa logovima, uključujući sporo otvaranje studentskog profila saradnik/student i pretragu loga po tipu događaja
 
 
