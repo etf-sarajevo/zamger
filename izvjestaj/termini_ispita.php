@@ -22,40 +22,40 @@ if(isset($_REQUEST['termin'])){
 }
 if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
 else{
-	$q8 = myquery("select ispit from ispit_termin where id=$termin_id_url");
-	if (mysql_num_rows($q8)<1) {
+	$q8 = db_query("select ispit from ispit_termin where id=$termin_id_url");
+	if (db_num_rows($q8)<1) {
 		niceerror("Nepostojeći termin.");
 		return;
 	}
-	$ispit = mysql_result($q8,0,0);
+	$ispit = db_result($q8,0,0);
 }
 
 
-$q9 = myquery("select komponenta from ispit where id=$ispit");
-if (mysql_num_rows($q9)<1) {
+$q9 = db_query("select komponenta from ispit where id=$ispit");
+if (db_num_rows($q9)<1) {
 	niceerror("Nepostojeći ispit.");
 	return;
 }
-$komp = mysql_result($q9,0,0);
+$komp = db_result($q9,0,0);
 // Upit za ispit
 
-$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
+$q10 = db_query("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
 
-$predmet = mysql_result($q10,0,2);
-$ag = mysql_result($q10,0,3);
-$finidatum = date("d. m. Y.", mysql_result($q10,0,0));
-$naziv = mysql_result($q10,0,1);
+$predmet = db_result($q10,0,2);
+$ag = db_result($q10,0,3);
+$finidatum = date("d. m. Y.", db_result($q10,0,0));
+$naziv = db_result($q10,0,1);
 
 
 // Dodatna provjera privilegija
 if (!$user_studentska && !$user_siteadmin) {
-	$q20 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q20) < 1) {
+	$q20 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q20) < 1) {
 		biguglyerror("Nemate permisije za pristup ovom izvještaju");
 		zamgerlog ("nije admin predmeta pp$predmet godina ag$ag",3); // 3 = error
 		return;
 	}
-	$privilegija = mysql_result($q20,0,0);
+	$privilegija = db_result($q20,0,0);
 }
 
 // Cool editing box
@@ -74,13 +74,13 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 }
 
 // Naziv predmeta, akademska godina
-$q21 = myquery("select naziv from predmet where id=$predmet");
-$q22 = myquery("select naziv from akademska_godina where id=$ag");
+$q21 = db_query("select naziv from predmet where id=$predmet");
+$q22 = db_query("select naziv from akademska_godina where id=$ag");
 
 ?>
 	<p>&nbsp;</p>
 	<h3><?=$naziv?>, <?=$finidatum?></h3>
-	<p><?=mysql_result($q21,0,0)?> <?=mysql_result($q22,0,0)?></p>
+	<p><?=db_result($q21,0,0)?> <?=db_result($q22,0,0)?></p>
 
 <?
 
@@ -88,7 +88,7 @@ print ajah_box();
 
 $imeprezime = $brindexa = array();
 
-$qtermini = myquery("SELECT it.id,UNIX_TIMESTAMP(it.datumvrijeme)
+$qtermini = db_query("SELECT it.id,UNIX_TIMESTAMP(it.datumvrijeme)
 				     FROM ispit_termin it
 					 INNER JOIN ispit i ON i.id = it.ispit
 					 WHERE i.id=$ispit
@@ -107,7 +107,7 @@ if(isset($_REQUEST['termin'])){
 		<p><a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>">Refresh</a></p>
 	<?
 	}
-while ($rtermini = mysql_fetch_row($qtermini)) {
+while ($rtermini = db_fetch_row($qtermini)) {
 	
 	$broj_termina ++;
 	$id_termina = $rtermini[0];
@@ -120,11 +120,11 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	$datum_termina= date("d. m. Y. ( H:i )",$rtermini[1]);
 	if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
 	else{
-		$q8 = myquery("select ispit from ispit_termin where id=$termin_id_url");
-		$ispit = mysql_result($q8,0,0);
+		$q8 = db_query("select ispit from ispit_termin where id=$termin_id_url");
+		$ispit = db_result($q8,0,0);
 	}
 	print "Termin $broj_termina : <h4 style=\"display:inline\"> $datum_termina</h4><br></br>";
-	$q10 = myquery("select o.id, o.prezime, o.ime, o.brindexa 
+	$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa 
 					from osoba as o, student_predmet as sp, ponudakursa as pk, student_ispit_termin sit, ispit_termin it, ispit i
 					where 
 						sp.predmet=pk.id 
@@ -137,22 +137,22 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 						and i.id=$ispit
 						and it.id = $id_termina
 						");
-	if (mysql_num_rows($q10)<1) {
+	if (db_num_rows($q10)<1) {
 		print "<p>------------------------------------------------------</p>";
 		print "<p>Nijedan student nije prijavljen na ovaj termin.</p>";
 		print "<p>------------------------------------------------------</p>";
 		continue;
 	}
 	
-	while ($r10 = mysql_fetch_row($q10)) {
+	while ($r10 = db_fetch_row($q10)) {
 		$imeprezime[$r10[0]] = "$r10[1] $r10[2]"; 
 		$brindexa[$r10[0]] = "$r10[3]";
 	}
 	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 	
 	// Ima li grupa na predmetu?
-	$q27 = myquery("SELECT count(*) FROM labgrupa WHERE predmet=$predmet AND akademska_godina=$ag AND virtualna=0");
-	if (mysql_result($q27,0,0)>0)
+	$q27 = db_query("SELECT count(*) FROM labgrupa WHERE predmet=$predmet AND akademska_godina=$ag AND virtualna=0");
+	if (db_result($q27,0,0)>0)
 		$treba_grupe = true;
 	else
 		$treba_grupe = false;
@@ -163,9 +163,9 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 
 	$ispit_id_array = array();
 	
-	$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
+	$q30 = db_query("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
 	$imaintegralni=0;
-	while ($r30 = mysql_fetch_row($q30)) {
+	while ($r30 = db_fetch_row($q30)) {
 		$komponenta = $r30[2];
 		$imeispita = $r30[3];
 		$tipkomponente = $r30[4];	
@@ -206,8 +206,8 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 	$ostale_komponente = array();
 	
 	// 1 = parcijalni ispit, 2 = integralni ispit
-	$q40 = myquery("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, akademska_godina_predmet as agp, tippredmeta_komponenta as tpk where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2 and agp.akademska_godina=$ag");
-	while ($r40 = mysql_fetch_row($q40)) {
+	$q40 = db_query("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, akademska_godina_predmet as agp, tippredmeta_komponenta as tpk where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2 and agp.akademska_godina=$ag");
+	while ($r40 = db_fetch_row($q40)) {
 		$mogucih_bodova += $r40[3];
 	
 		$ostale_komponente[$r40[0]]=$r40[1];
@@ -260,11 +260,11 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 			<?
 
 		if ($treba_grupe) {
-			$q220 = myquery("SELECT l.naziv FROM labgrupa as l, student_labgrupa as sl WHERE l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0 AND l.id=sl.labgrupa AND sl.student=$stud_id");
-			if (mysql_num_rows($q220)==0) 
+			$q220 = db_query("SELECT l.naziv FROM labgrupa as l, student_labgrupa as sl WHERE l.predmet=$predmet AND l.akademska_godina=$ag AND l.virtualna=0 AND l.id=sl.labgrupa AND sl.student=$stud_id");
+			if (db_num_rows($q220)==0) 
 				$grupa = "&nbsp;";
 			else
-				$grupa = mysql_result($q220,0,0);
+				$grupa = db_result($q220,0,0);
 			?>
 			<td><?=$grupa?></td>
 			<?
@@ -276,10 +276,10 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 		// OSTALE KOMPONENTE
 
 		foreach ($ostale_komponente as $kid => $knaziv) {
-			$q230 = myquery("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$kid");
+			$q230 = db_query("select kb.bodovi from komponentebodovi as kb, ponudakursa as pk where kb.student=$stud_id and kb.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and kb.komponenta=$kid");
 			$obodova=0; 
-			if (mysql_num_rows($q230)>0) {
-				$obodova = mysql_result($q230,0,0);
+			if (db_num_rows($q230)>0) {
+				$obodova = db_result($q230,0,0);
 			}
 			$ispis .= "<td>$obodova</td>";
 			$bodova += $obodova;
@@ -296,9 +296,9 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 		foreach ($ispit_id_array as $ispit) {
 			$k = $ispit_komponenta[$ispit];
 	
-			$q230 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
-			if (mysql_num_rows($q230)>0) {
-				$ocjena = mysql_result($q230,0,0);
+			$q230 = db_query("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
+			if (db_num_rows($q230)>0) {
+				$ocjena = db_result($q230,0,0);
 				$ispis .= "<td align=\"center\" id=\"ispit-$stud_id-$ispit\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
 				if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
 					$kmax[$k]=$ocjena;
@@ -355,9 +355,9 @@ while ($rtermini = mysql_fetch_row($qtermini)) {
 
 
 		// Konacna ocjena
-		$q508 = myquery("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q508)>0) {
-			print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".mysql_result($q508,0,0)."</td>\n";
+		$q508 = db_query("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
+		if (db_num_rows($q508)>0) {
+			print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".db_result($q508,0,0)."</td>\n";
 		} else {
 			print "<td id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 		}

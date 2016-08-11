@@ -10,14 +10,14 @@ function ws_potvrda() {
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	
 	if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "tipvrsta") {
-		$q10 = myquery("SELECT id, naziv FROM tip_potvrde");
+		$q10 = db_query("SELECT id, naziv FROM tip_potvrde");
 		$tip_array = array();
-		while($r10 = mysql_fetch_row($q10))
+		while($r10 = db_fetch_row($q10))
 			$tip_array[$r10[0]] = $r10[1];
 		
-		$q20 = myquery("SELECT id, naziv FROM svrha_potvrde");
+		$q20 = db_query("SELECT id, naziv FROM svrha_potvrde");
 		$svrha_array = array();
-		while($r20 = mysql_fetch_row($q20))
+		while($r20 = db_fetch_row($q20))
 			$svrha_array[$r20[0]] = $r20[1];
 		
 		$rezultat['data']['tipovi'] = $tip_array;
@@ -34,8 +34,8 @@ function ws_potvrda() {
 			echo json_encode($rezultat);
 			return;
 		}
-		$q0 = myquery("INSERT INTO zahtjev_za_potvrdu SET student=$userid, tip_potvrde=$tip_potvrde, svrha_potvrde=$svrha_potvrde, datum_zahtjeva=NOW(), status=1");
-		$id = intval(mysql_insert_id());
+		$q0 = db_query("INSERT INTO zahtjev_za_potvrdu SET student=$userid, tip_potvrde=$tip_potvrde, svrha_potvrde=$svrha_potvrde, datum_zahtjeva=NOW(), status=1");
+		$id = intval(db_insert_id());
 		zamgerlog("uputio novi zahtjev za potvrdu $id", 2);
 		zamgerlog2("uputio novi zahtjev za potvrdu", $id);
 		
@@ -47,14 +47,14 @@ function ws_potvrda() {
 	
 	if ($_SERVER['REQUEST_METHOD'] == "DELETE") {
 		$id = intval($_REQUEST['id']);
-		$q300 = myquery("SELECT COUNT(*) FROM zahtjev_za_potvrdu WHERE id=$id AND student=$userid");
-		if (mysql_num_rows($q300)<1) {
+		$q300 = db_query("SELECT COUNT(*) FROM zahtjev_za_potvrdu WHERE id=$id AND student=$userid");
+		if (db_num_rows($q300)<1) {
 			header("HTTP/1.0 404 Not Found");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
 			echo json_encode($rezultat);
 			return;
 		}
-		$q310 = myquery("DELETE FROM zahtjev_za_potvrdu WHERE id=$id");
+		$q310 = db_query("DELETE FROM zahtjev_za_potvrdu WHERE id=$id");
 		zamgerlog("odustao od zahtjeva za potvrdu $id", 2);
 		zamgerlog2("odustao od zahtjeva za potvrdu", $id);
 		
@@ -63,8 +63,8 @@ function ws_potvrda() {
 		return;
 	}
 
-	$q100 = myquery("SELECT zzp.id, tp.id, tp.naziv, zzp.svrha_potvrde, UNIX_TIMESTAMP(zzp.datum_zahtjeva), zzp.status FROM zahtjev_za_potvrdu as zzp, tip_potvrde as tp WHERE zzp.student=$userid and zzp.tip_potvrde=tp.id");
-	while ($r100 = mysql_fetch_row($q100)) {
+	$q100 = db_query("SELECT zzp.id, tp.id, tp.naziv, zzp.svrha_potvrde, UNIX_TIMESTAMP(zzp.datum_zahtjeva), zzp.status FROM zahtjev_za_potvrdu as zzp, tip_potvrde as tp WHERE zzp.student=$userid and zzp.tip_potvrde=tp.id");
+	while ($r100 = db_fetch_row($q100)) {
 		$zahtjev['id'] = $r100[0];
 		$zahtjev['tip_potvrde'] = $r100[1];
 		$zahtjev['svrha_potvrde'] = $r100[3];

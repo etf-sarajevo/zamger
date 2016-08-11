@@ -14,12 +14,12 @@
 // TODO: prebaciti u lib/manip ?
 function pao_predmet($student, $predmet, $ak_god) {
 	// Da li je student ikada položio predmet
-	$q10 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5 and akademska_godina<=$ak_god");
-	if (mysql_result($q10,0,0)>0) return 0;
+	$q10 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5 and akademska_godina<=$ak_god");
+	if (db_result($q10,0,0)>0) return 0;
 
 	// Da li student sluša predmet u datoj akademskoj godini?
-	$qa20 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ak_god");
-	if (mysql_result($qa20,0,0)==0) return 3;
+	$qa20 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ak_god");
+	if (db_result($qa20,0,0)==0) return 3;
 
 
 	// Statistika za parcijalne ispite
@@ -27,15 +27,15 @@ function pao_predmet($student, $predmet, $ak_god) {
 
 	// Koje sve vrste ispita postoje na predmetu?
 	// Integralni i usmeni nas ne interesuju
-	$q100 = myquery("select k.id, k.prolaz from tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, komponenta as k where agp.predmet=$predmet and agp.akademska_godina=$ak_god and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=1 and k.gui_naziv != 'Usmeni' and k.gui_naziv != 'Završni'"); 
-	$broj_vrsta_ispita = mysql_num_rows($q100);
-	while ($r100=mysql_fetch_row($q100)) {
+	$q100 = db_query("select k.id, k.prolaz from tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, komponenta as k where agp.predmet=$predmet and agp.akademska_godina=$ak_god and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=1 and k.gui_naziv != 'Usmeni' and k.gui_naziv != 'Završni'"); 
+	$broj_vrsta_ispita = db_num_rows($q100);
+	while ($r100=db_fetch_row($q100)) {
 		$prolaz = $r100[1];
 		if ($prolaz == 0) continue; // Preskačemo ispite bez prolaza
 
 		// Da li je student položio tu vrstu ispita?
-		$q110 = myquery("select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ak_god and i.komponenta=$r100[0] and i.id=io.ispit and io.student=$student and io.ocjena>=$prolaz");
-		if (mysql_result($q110,0,0)==0) { 
+		$q110 = db_query("select count(*) from ispit as i, ispitocjene as io where i.predmet=$predmet and i.akademska_godina=$ak_god and i.komponenta=$r100[0] and i.id=io.ispit and io.student=$student and io.ocjena>=$prolaz");
+		if (db_result($q110,0,0)==0) { 
 			$nepolozenih_ispita++;
 		}
 	}
@@ -73,8 +73,8 @@ function pao_predmet($student, $predmet, $ak_god) {
 function naziv_predmeta_cache($id_predmeta) {
 	static $nazivi_predmeta = array();
 	if ($nazivi_predmeta[$id_predmeta]) return $nazivi_predmeta[$id_predmeta];
-	$q10 = myquery("select naziv from predmet where id=$id_predmeta");
-	$nazivi_predmeta[$id_predmeta] = mysql_result($q10,0,0);
+	$q10 = db_query("select naziv from predmet where id=$id_predmeta");
+	$nazivi_predmeta[$id_predmeta] = db_result($q10,0,0);
 	return $nazivi_predmeta[$id_predmeta];
 }
 
@@ -101,12 +101,12 @@ if ($varijanta==1) {
 $ak_god = intval($_REQUEST['akademska_godina']);
 if ($ak_god==0) {
 	// Aktuelna godina
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q10 = myquery("select naziv from akademska_godina where id=$ak_god");
-	$ak_god_naziv = mysql_result($q10,0,0);
+	$q10 = db_query("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = db_result($q10,0,0);
 }
 
 // Daj spisak studenata, a ne sumarne statistike
@@ -139,8 +139,8 @@ $ispis_predmeta=array();
 <?
 
 if ($limit_studij > 0) {
-	$q15 = myquery("select naziv from studij where id=$limit_studij");
-	print "Studij: ".mysql_result($q15,0,0).",\n";
+	$q15 = db_query("select naziv from studij where id=$limit_studij");
+	print "Studij: ".db_result($q15,0,0).",\n";
 }
 if ($limit_studij < 0) {
 	print "Svi studiji ".(-$limit_studij).". ciklusa,\n";
@@ -157,18 +157,18 @@ print "</p>";
 
 // Spisak studenata po studiju
 
-$q20 = myquery("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+$q20 = db_query("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
 
-if (mysql_num_rows($q20)==0) 
+if (db_num_rows($q20)==0) 
 	// Nema nikog u parnom semestru, probavamo neparni
-	$q20 = myquery("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+	$q20 = db_query("select ss.student, s.naziv, ss.semestar, o.ime, o.prezime, o.brindexa, ss.studij, ss.plan_studija, ts.ciklus, ts.trajanje from student_studij as ss, studij as s, osoba as o, tipstudija as ts where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id and s.tipstudija=ts.id order by ss.studij, ss.semestar, o.prezime, o.ime");
 
 $studij_id=-1; $plan_studija=-1; $semestar=-1;
 $plan_studija = $plan_studija_obavezan = array();
 $ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
 $nazivi_predmeta=array();
 
-while ($r20 = mysql_fetch_row($q20)) {
+while ($r20 = db_fetch_row($q20)) {
 	// Provjeravam limite
 	if ($limit_studij != 0 && $limit_studij != $r20[6] && $limit_studij != - $r20[8]) continue;
 	if ($limit_godina != 0 && $limit_godina != ceil($r20[2]/2)) continue;
@@ -270,8 +270,8 @@ while ($r20 = mysql_fetch_row($q20)) {
 		for ($i=1; $i<10; $i++) // 10 - neće valjda biti više od 10 semestara? FIXME
 			$plan_studija[$i] = $plan_studija_obavezan[$i] = array();
 
-		$q30 = myquery("select semestar, predmet, obavezan from plan_studija where studij=$studij_id and godina_vazenja=$ss_plan_studija and semestar<=$semestar order by semestar");
-		while ($r30 = mysql_fetch_row($q30)) {
+		$q30 = db_query("select semestar, predmet, obavezan from plan_studija where studij=$studij_id and godina_vazenja=$ss_plan_studija and semestar<=$semestar order by semestar");
+		while ($r30 = db_fetch_row($q30)) {
 			$plan_studija[$r30[0]][] = $r30[1];
 			$plan_studija_obavezan[$r30[0]][] = $r30[2];
 		}
@@ -304,10 +304,10 @@ while ($r20 = mysql_fetch_row($q20)) {
 
 			// Izborni predmet
 			} else {
-				$q50 = myquery("select predmet from izborni_slot where id=$predmet");
+				$q50 = db_query("select predmet from izborni_slot where id=$predmet");
 				$ijedan=false;
 				$zapamti_parcijalni=$zapamti_izborni=0;
-				while ($r50 = mysql_fetch_row($q50)) {
+				while ($r50 = db_fetch_row($q50)) {
 					if ($r50[0]==$ne_gledaj_predmet) continue;
 					$pao_predmet = pao_predmet($student, $r50[0], $ak_god);
 					if ($pao_predmet==0) {
@@ -479,23 +479,23 @@ return 0;
 $ak_god = intval($_REQUEST['akademska_godina']);
 if ($ak_god==0) {
 	// Aktuelna godina
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q10 = myquery("select naziv from akademska_godina where id=$ak_god");
-	$ak_god_naziv = mysql_result($q10,0,0);
+	$q10 = db_query("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = db_result($q10,0,0);
 }
 
 
 // Ovo ispod je nidje veze:
 if ($_REQUEST['prosjek'] == 1) {
 	$prosjek=array();
-	$q10 = myquery("select student from student_studij where semestar=6 and akademska_godina=3");
-	while ($r10 = mysql_fetch_row($q10)) {
+	$q10 = db_query("select student from student_studij where semestar=6 and akademska_godina=3");
+	while ($r10 = db_fetch_row($q10)) {
 		$suma=$broj=0;
-		$q20 = myquery("select ocjena from konacna_ocjena where student=$r10[0]");
-		while ($r20 = mysql_fetch_row($q20)) {
+		$q20 = db_query("select ocjena from konacna_ocjena where student=$r10[0]");
+		while ($r20 = db_fetch_row($q20)) {
 			$suma += $r20[0];
 			$broj++;
 		}
@@ -507,8 +507,8 @@ if ($_REQUEST['prosjek'] == 1) {
 	<?
 	foreach ($prosjek as $student=>$p) {
 		if ($p<8.5) break;
-		$q40 = myquery("select prezime,ime from osoba where id=$student");
-		print "<tr><td>".mysql_result($q40,0,0)." ".mysql_result($q40,0,1)."</td><td>".round($p,2)."</td></tr>";
+		$q40 = db_query("select prezime,ime from osoba where id=$student");
+		print "<tr><td>".db_result($q40,0,0)." ".db_result($q40,0,1)."</td><td>".round($p,2)."</td></tr>";
 	}
 	return;
 }
@@ -558,15 +558,15 @@ $student_status = array();
 
 // Upit koji vraca sve studente upisane u aktuelnoj godini
 if ($sort_po_predmetu)
-	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa, s.id from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by o.prezime, o.ime, ss.studij, ss.semestar");
+	$q20 = db_query("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa, s.id from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by o.prezime, o.ime, ss.studij, ss.semestar");
 else
-	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+	$q20 = db_query("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime, o.brindexa from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=0 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
 
-if (mysql_num_rows($q20)==0) 
+if (db_num_rows($q20)==0) 
 	// Nema nikog u parnom semestru, probavamo neparni
-	$q20 = myquery("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
+	$q20 = db_query("select ss.student,s.naziv,ss.semestar,o.ime,o.prezime from student_studij as ss, studij as s, osoba as o where ss.akademska_godina=$ak_god and ss.studij=s.id and ss.semestar%2=1 and ss.student=o.id order by ss.studij, ss.semestar, o.prezime, o.ime");
 
-while($r20 = mysql_fetch_row($q20)) {
+while($r20 = db_fetch_row($q20)) {
 	$student = $r20[0];
 	$studij = $r20[1];
 	$semestar = $r20[2];
@@ -581,15 +581,15 @@ while($r20 = mysql_fetch_row($q20)) {
 
 
 	// Svi predmeti koje je ikada slusao
-	$q30 = myquery("select pk.predmet, p.ects, pk.semestar, p.naziv, pk.obavezan, pk.studij from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
+	$q30 = db_query("select pk.predmet, p.ects, pk.semestar, p.naziv, pk.obavezan, pk.studij from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.predmet=p.id order by pk.akademska_godina desc");
 	$predmeti_pao=array();
 	$ects_pao=array();
 	$ects_suma=0;
-	while ($r30 = mysql_fetch_row($q30)) {
+	while ($r30 = db_fetch_row($q30)) {
 		if ($r30[5]!=$studij_id) continue; // preskacemo predmete sa drugog studija
 		if ($r30[4]==0) continue; // preskacemo izborne predmete jer ovo ne moze raditi
-		$q40 = myquery("select count(*) from konacna_ocjena where student=$student and predmet=$r30[0]");
-		if (mysql_result($q40,0,0)<1 && !in_array($r30[0], $predmeti_pao)) {
+		$q40 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$r30[0]");
+		if (db_result($q40,0,0)<1 && !in_array($r30[0], $predmeti_pao)) {
 			$predmeti_pao[] = $r30[0];
 			$ects_pao[$r30[0]] = $r30[1];
 			// Predmeti sa ranijih godina imaju beskonacan ECTS
@@ -602,9 +602,9 @@ while($r20 = mysql_fetch_row($q20)) {
 
 	// Na kojoj godini/odsjeku je student
 	if ($statistika==1) {
-		$q45 = myquery("select ss.studij,ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$student and ss.akademska_godina=ag.id and ag.aktuelna=1 order by ss.semestar desc");
-		$student_studij[$student] = mysql_result($q45,0,0);
-		$student_semestar[$student] = mysql_result($q45,0,1);
+		$q45 = db_query("select ss.studij,ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$student and ss.akademska_godina=ag.id and ag.aktuelna=1 order by ss.semestar desc");
+		$student_studij[$student] = db_result($q45,0,0);
+		$student_semestar[$student] = db_result($q45,0,1);
 
 	}
 
@@ -660,11 +660,11 @@ while($r20 = mysql_fetch_row($q20)) {
 
 			// Provjeravamo da li zadovoljava uslove za parcijale
 			if ($parcijalnih==1 || $statistika==1) {
-				$q50 = myquery("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=10 and i.predmet=$predmet and (i.komponenta=1 or i.komponenta=2)");
-				if (mysql_result($q50,0,0)==0) {
+				$q50 = db_query("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=10 and i.predmet=$predmet and (i.komponenta=1 or i.komponenta=2)");
+				if (db_result($q50,0,0)==0) {
 					// Integralni?
-					$q60 = myquery("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=20 and i.predmet=$predmet and i.komponenta=3");
-					if (mysql_result($q60,0,0)==0) {
+					$q60 = db_query("select count(*) from ispitocjene as io, ispit as i where io.ispit=i.id and io.student=$student and io.ocjena>=20 and i.predmet=$predmet and i.komponenta=3");
+					if (db_result($q60,0,0)==0) {
 //$ispis_nemoze .= $predmeti_naziv[$predmet]." - NE<br/>\n";
 						// Ne moze proci, preskacemo ga
 						if ($parcijalnih==1) continue;
@@ -707,8 +707,8 @@ while($r20 = mysql_fetch_row($q20)) {
 
 if ($sort_po_predmetu==1) {
 
-	$q1000 = myquery("select p.id, p.naziv, s.kratkinaziv, pk.semestar, p.ects from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.akademska_godina=$ak_god and pk.studij=s.id order by s.id, pk.semestar, p.naziv");
-	while ($r1000 = mysql_fetch_row($q1000)) {
+	$q1000 = db_query("select p.id, p.naziv, s.kratkinaziv, pk.semestar, p.ects from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.akademska_godina=$ak_god and pk.studij=s.id order by s.id, pk.semestar, p.naziv");
+	while ($r1000 = db_fetch_row($q1000)) {
 		if ($r1000[4]==12) continue; // ignorišemo završni rad
 
 		$ispis = $total_ispis[$r1000[0]];
@@ -747,8 +747,8 @@ if ($statistika == 1) {
 	<td align="center"><b>V<br/>(I+IV)</b></td>
 	</tr>
 	<?
-	$q2000 = myquery("select id,naziv from studij order by id");
-	while ($r20 = mysql_fetch_row($q2000)) {
+	$q2000 = db_query("select id,naziv from studij order by id");
+	while ($r20 = db_fetch_row($q2000)) {
 		for ($i=1; $i<=10; $i++) {
 			$s="$r20[0] $i";
 			if ($studij_polozilo[$s]==0) continue;

@@ -18,25 +18,25 @@ function ws_labgrupa() {
 	if (isset($_REQUEST['id']) && $_REQUEST['id'] > 0) {
 		$grupa = intval($_REQUEST['id']);
 		
-		$q20 = myquery("SELECT naziv, predmet, akademska_godina FROM labgrupa WHERE id=$grupa");
-		if (mysql_num_rows($q20) == 0) {
+		$q20 = db_query("SELECT naziv, predmet, akademska_godina FROM labgrupa WHERE id=$grupa");
+		if (db_num_rows($q20) == 0) {
 			header("HTTP/1.0 404 Not Found");
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' ) );
 			return;
 		}
 		
-		$predmet = mysql_result($q20,0,1);
-		$ag = mysql_result($q20,0,2);
+		$predmet = db_result($q20,0,1);
+		$ag = db_result($q20,0,2);
 		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, 0)) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		}
 		
-		$rezultat['data']['naziv'] = mysql_result($q20,0,0);
+		$rezultat['data']['naziv'] = db_result($q20,0,0);
 		
-		$q10 = myquery("SELECT o.ime, o.prezime, o.brindexa, a.login, o.id FROM osoba o, student_labgrupa as sl, auth a WHERE sl.labgrupa=$grupa AND sl.student=o.id AND o.id=a.id ORDER BY o.prezime, o.ime");
+		$q10 = db_query("SELECT o.ime, o.prezime, o.brindexa, a.login, o.id FROM osoba o, student_labgrupa as sl, auth a WHERE sl.labgrupa=$grupa AND sl.student=o.id AND o.id=a.id ORDER BY o.prezime, o.ime");
 		$studenti = array();
-		while ($r10 = mysql_fetch_row($q10))
+		while ($r10 = db_fetch_row($q10))
 			$studenti[$r10[4]] = array( 'ime' => $r10[0], 'prezime' => $r10[1], 'brindexa' => $r10[2], 'login' => $r10[3] );
 		$rezultat['data']['studenti'] = $studenti;
 		
@@ -48,8 +48,8 @@ function ws_labgrupa() {
 		$predmet = intval($_REQUEST['predmet']);
 		$ag = intval($_REQUEST['ag']);
 		if ($ag == 0) { // ag nije zadana, uzimamo aktuelnu
-			$q10 = myquery("SELECT id FROM akademska_godina WHERE aktuelna=1");
-			$ag = mysql_result($q10,0,0);
+			$q10 = db_query("SELECT id FROM akademska_godina WHERE aktuelna=1");
+			$ag = db_result($q10,0,0);
 		}
 		
 		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, 0)) {
@@ -57,8 +57,8 @@ function ws_labgrupa() {
 			return;
 		}
 	
-		$q100 = myquery("SELECT lg.id, lg.naziv FROM labgrupa lg WHERE lg.predmet=$predmet AND lg.akademska_godina=$ag");
-		while ($r100 = mysql_fetch_row($q100))
+		$q100 = db_query("SELECT lg.id, lg.naziv FROM labgrupa lg WHERE lg.predmet=$predmet AND lg.akademska_godina=$ag");
+		while ($r100 = db_fetch_row($q100))
 			$rezultat['data'][$r100[0]] = $r100[1];
 		
 		print json_encode($rezultat); 

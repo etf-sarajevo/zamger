@@ -3,14 +3,15 @@
 
 // AUTH.PHP - web servis za autentikaciju korisnika bez HTMLa
 
+require("lib/config.php");
+require("lib/dblayer.php");
 require("lib/libvedran.php");
 require("lib/zamger.php");
-require("lib/config.php");
 
-dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
+db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 //$conf_system_auth = "table"; // prihvatamo autotestera
 
-$login = my_escape($_POST['login']);
+$login = db_escape($_POST['login']);
 $pass = $_POST['pass'];
 $result = array();
 
@@ -27,6 +28,6 @@ if ($status == 1 || $status == 2) {
 
 print json_encode($result);
 
-dbdisconnect();
+db_disconnect();
 
 ?>

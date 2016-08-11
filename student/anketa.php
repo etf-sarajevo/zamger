@@ -19,16 +19,16 @@ function student_anketa() {
 
 
 	// Podaci za zaglavlje
-	$q1 = myquery("select naziv from predmet where id=$predmet");
-	if (mysql_num_rows($q1)<1) {
+	$q1 = db_query("select naziv from predmet where id=$predmet");
+	if (db_num_rows($q1)<1) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 		zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 		biguglyerror("Nepoznat predmet");
 		return;
 	}
 
-	$q2 = myquery("select naziv from akademska_godina where id=$ag");
-	if (mysql_num_rows($q2)<1) {
+	$q2 = db_query("select naziv from akademska_godina where id=$ag");
+	if (db_num_rows($q2)<1) {
 		zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 		zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 		biguglyerror("Nepoznata akademska godina");
@@ -37,8 +37,8 @@ function student_anketa() {
 
 
 	// Da li student slusa predmet?
-	$q5 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (mysql_num_rows($q5)<1) {
+	$q5 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (db_num_rows($q5)<1) {
 		zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
 		zamgerlog2("student ne slusa predmet", $predmet, $ag);
 		biguglyerror("Niste upisani na ovaj predmet");
@@ -46,15 +46,15 @@ function student_anketa() {
 	}
 
 
-	$q10 = myquery("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), akademska_godina from anketa_anketa where id=$anketa");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), akademska_godina from anketa_anketa where id=$anketa");
+	if (db_num_rows($q10)<1) {
 		biguglyerror("Nepostojeća anketa");
 		zamgerlog("student/anketa nepostojeca anketa", 3);
 		zamgerlog2("nepostojeca anketa", $anketa);
 		return;
 	}
 	
-	if (mysql_result($q10,0,3) != $ag) {
+	if (db_result($q10,0,3) != $ag) {
 		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa pogresna ag", 3);
 		zamgerlog2("id ankete i godine ne odgovaraju", $anketa, $ag);
@@ -65,15 +65,15 @@ function student_anketa() {
 	// Naslov
 	
 	?>
-	<h2><?=mysql_result($q10,0,0)?></h2>
+	<h2><?=db_result($q10,0,0)?></h2>
 	<?
 	
-	if (mysql_result($q10,0,1) > time()) {
+	if (db_result($q10,0,1) > time()) {
 		nicemessage("Anketa još uvijek nije otvorena za popunjavanje.");
 		return;
 	}
 	
-	if (mysql_result($q10,0,2) > time()) {
+	if (db_result($q10,0,2) > time()) {
 		nicemessage("Anketa je otvorena za popunjavanje.");
 		?>
 		<p>Ne možete vidjeti rezultate ankete dok se popunjavanje ne završi.</p>
@@ -83,22 +83,22 @@ function student_anketa() {
 	}
 	
 	
-	$q20 = myquery("select predmet, aktivna from anketa_predmet where anketa=$anketa");
-	if (mysql_num_rows($q20)<1) {
+	$q20 = db_query("select predmet, aktivna from anketa_predmet where anketa=$anketa");
+	if (db_num_rows($q20)<1) {
 		biguglyerror("Greška");
 		zamgerlog("student/anketa ne postoji zapis u tabeli anketa_predmet", 3);
 		zamgerlog2("ne postoji zapis u tabeli anketa_predmet", $anketa);
 		return;
 	}
 	
-	if (mysql_result($q20,0,0) != $predmet && mysql_result($q20,0,0) != 0) {
+	if (db_result($q20,0,0) != $predmet && db_result($q20,0,0) != 0) {
 		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa pogresan predmet", 3);
 		zamgerlog2("id ankete i predmeta ne odgovaraju", $anketa, $predmet);
 		return;
 	}
 	
-	if (mysql_result($q20,0,1) != 0) {
+	if (db_result($q20,0,1) != 0) {
 		?>
 		<h2>Pristup rezultatima ankete nije moguć</h2>
 		<p><?=$pristup_student?> <?=$userid?> <?=$anketa?> Rezultatima ankete se može pristupiti tek nakon isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
@@ -107,7 +107,7 @@ function student_anketa() {
 	}
 	
 	?>
-	<a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&anketa=<?=$anketa?>&rank=da">Rezultati ankete za predmet <?=mysql_result($q1,0,0)?>, akademska <?=mysql_result($q2,0,0)?></a>
+	<a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&anketa=<?=$anketa?>&rank=da">Rezultati ankete za predmet <?=db_result($q1,0,0)?>, akademska <?=db_result($q2,0,0)?></a>
 	<?
 	
 	

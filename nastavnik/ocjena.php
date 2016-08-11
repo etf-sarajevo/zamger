@@ -18,22 +18,22 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 
 // Naziv predmeta
-$q10 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
 	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
-$predmet_naziv = mysql_result($q10,0,0);
+$predmet_naziv = db_result($q10,0,0);
 
 
 
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) {
-	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)!="nastavnik") {
+	$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q10)<1 || db_result($q10,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -136,9 +136,9 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		}
 
 		// Da li vec ima ocjena u bazi?
-		$q100 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$predmet");
-		if (mysql_num_rows($q100)>0) {
-			$oc2 = mysql_result($q100,0,0);
+		$q100 = db_query("select ocjena from konacna_ocjena where student=$student and predmet=$predmet");
+		if (db_num_rows($q100)>0) {
+			$oc2 = db_result($q100,0,0);
 			if ($oc2>5 && $ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
@@ -167,12 +167,12 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			
 		} else {
 			// Određivanje datuma za indeks
-			$q105 = myquery("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
+			$q105 = db_query("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
 			FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
 			WHERE sit.student=$student and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
 			ORDER BY i.datum DESC LIMIT 1");
-			if (mysql_num_rows($q105) > 0) {
-				$datum_u_indeksu = mysql_result($q105,0,0);
+			if (db_num_rows($q105) > 0) {
+				$datum_u_indeksu = db_result($q105,0,0);
 				if ($datum_u_indeksu > time())
 					$datum_provjeren = 0;
 				else
@@ -193,10 +193,10 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			<?
 			if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 		} else {
-			if (mysql_num_rows($q100)>0)
-				$q110 = myquery("UPDATE konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren WHERE student=$student AND predmet=$predmet");
+			if (db_num_rows($q100)>0)
+				$q110 = db_query("UPDATE konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren WHERE student=$student AND predmet=$predmet");
 			else
-				$q110 = myquery("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
+				$q110 = db_query("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 			zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
 		}
@@ -241,16 +241,16 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 $format = intval($_POST['format']);
 if (!$_POST['format']) {
-	$q110 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-	if (mysql_num_rows($q110)>0) $format = mysql_result($q110,0,0);
+	$q110 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
+	if (db_num_rows($q110)>0) $format = db_result($q110,0,0);
 	else //default vrijednost
 		$format=0;
 }
 
 $separator = intval($_POST['separator']);
 if (!$_POST['separator']) {
-	$q120 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-	if (mysql_num_rows($q120)>0) $separator = mysql_result($q120,0,0);
+	$q120 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
+	if (db_num_rows($q120)>0) $separator = db_result($q120,0,0);
 	else //default vrijednost
 		$separator=0;
 }

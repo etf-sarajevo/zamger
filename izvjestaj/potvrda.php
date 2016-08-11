@@ -25,12 +25,12 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 	return;
 }
 
-$q100 = myquery("SELECT ime, prezime, brindexa, jmbg, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, spol FROM osoba WHERE id=$student");
-if (mysql_num_rows($q100) < 1) {
+$q100 = db_query("SELECT ime, prezime, brindexa, jmbg, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, spol FROM osoba WHERE id=$student");
+if (db_num_rows($q100) < 1) {
 	biguglyerror("Nepoznat student");
 	return;
 }
-$r100 = mysql_fetch_row($q100);
+$r100 = db_fetch_row($q100);
 if (intval($r100[5]) == 0) {
 	niceerror("Mjesto rođenja nije definisano za studenta ".$r100[0]." ".$r100[1]);
 	if ($user_studentska) {
@@ -41,8 +41,8 @@ if (intval($r100[5]) == 0) {
 	return;
 }
 
-$q110 = myquery("SELECT m.naziv, o.naziv, d.naziv FROM mjesto as m, opcina as o, drzava as d WHERE m.id=$r100[5] AND m.opcina=o.id and m.drzava=d.id");
-$r110 = mysql_fetch_row($q110);
+$q110 = db_query("SELECT m.naziv, o.naziv, d.naziv FROM mjesto as m, opcina as o, drzava as d WHERE m.id=$r100[5] AND m.opcina=o.id and m.drzava=d.id");
+$r110 = db_fetch_row($q110);
 
 if ($r100[5] == 1) { // Sarajevo
 	$r110[0] = "Sarajevo";
@@ -50,20 +50,20 @@ if ($r100[5] == 1) { // Sarajevo
 	$r110[2] = "Bosna i Hercegovina";
 }
 
-$q120 = myquery("SELECT naziv FROM svrha_potvrde WHERE id=$svrha");
-if (mysql_num_rows($q120) < 1) {
+$q120 = db_query("SELECT naziv FROM svrha_potvrde WHERE id=$svrha");
+if (db_num_rows($q120) < 1) {
 	biguglyerror("Nepoznata svrha");
 	return;
 }
-$r120 = mysql_fetch_row($q120);
+$r120 = db_fetch_row($q120);
 
 // Treba nam ID aktuelne godine
-$q200 = myquery("SELECT id, naziv FROM akademska_godina WHERE aktuelna=1");
-$id_ak_god = mysql_result($q200, 0, 0);
-$naziv_ak_god = mysql_result($q200, 0, 1);
+$q200 = db_query("SELECT id, naziv FROM akademska_godina WHERE aktuelna=1");
+$id_ak_god = db_result($q200, 0, 0);
+$naziv_ak_god = db_result($q200, 0, 1);
 
 // Trenutno upisan na semestar:
-$q220 = myquery("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, s.institucija from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");
+$q220 = db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, s.institucija from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");
 $studij="0";
 $studij_id=$semestar=0;
 $puta=1;
@@ -71,7 +71,7 @@ $puta=1;
 // Da li je ikada slusao nesto?
 $ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$institucija=0;
 
-while ($r220=mysql_fetch_row($q220)) {
+while ($r220=db_fetch_row($q220)) {
 	if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
 		$studij = $r220[0];
 		$semestar = $r220[1];
@@ -101,8 +101,8 @@ if ($institucija == 0) {
 
 // Određivanje institucije
 do {
-	$q140 = myquery("select tipinstitucije, roditelj, dekan, broj_protokola from institucija where id=$institucija");
-	if (!($r140 = mysql_fetch_row($q140))) {
+	$q140 = db_query("select tipinstitucije, roditelj, dekan, broj_protokola from institucija where id=$institucija");
+	if (!($r140 = db_fetch_row($q140))) {
 		return;
 	}
 	if ($r140[0] == 1 && $r140[2] != 0) {
@@ -186,10 +186,10 @@ if ($spol == "Z") {
 if ($user_studentska) {
 	require("gcm/push_message.php");
 
-	$q200 = myquery("SELECT id, status FROM zahtjev_za_potvrdu WHERE student=$student AND svrha_potvrde=$svrha");
-	while ($r200 = mysql_fetch_row($q200)) {
+	$q200 = db_query("SELECT id, status FROM zahtjev_za_potvrdu WHERE student=$student AND svrha_potvrde=$svrha");
+	while ($r200 = db_fetch_row($q200)) {
 		if ($r200[1] == 1) {
-			$q210 = myquery("UPDATE zahtjev_za_potvrdu SET status=2 WHERE id=$r200[0]");
+			$q210 = db_query("UPDATE zahtjev_za_potvrdu SET status=2 WHERE id=$r200[0]");
 			
 			// Slanje GCM poruke
 			push_message(array($student), "Potvrde", "Vaša potvrda/uvjerenje je spremno");

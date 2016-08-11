@@ -28,16 +28,16 @@ global $userid,$conf_ldap_domain,$user_siteadmin,$conf_skr_naziv_institucije_gen
 // Podaci potrebni kasnije
 
 // Zadnja akademska godina
-$q20 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
-$ag = mysql_result($q20,0,0);
-$ag_naziv = mysql_result($q20,0,1);
+$q20 = db_query("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
+$ag = db_result($q20,0,0);
+$ag_naziv = db_result($q20,0,1);
 
 // Studij koji student trenutno sluša
 $studij=0;
 if ($user_student) {
-	$q30 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-	if (mysql_num_rows($q30)>0) {
-		$studij = mysql_result($q30,0,0);
+	$q30 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+	if (db_num_rows($q30)>0) {
+		$studij = db_result($q30,0,0);
 	}
 }
 
@@ -73,20 +73,20 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 		return;
 	}
 
-	$naslov = my_escape($_REQUEST['naslov']);
-	$tekst = my_escape($_REQUEST['tekst']);
+	$naslov = db_escape($_REQUEST['naslov']);
+	$tekst = db_escape($_REQUEST['tekst']);
 	if ($_REQUEST['email']) $email=1; else $email=0;
 
 	if ($poruka>0) {
 		// Editovanje poruke
-		$q310 = myquery("update poruka set tip=1, opseg=$opseg, primalac=$primalac, naslov='$naslov', tekst='$tekst' where id=$poruka");
+		$q310 = db_query("update poruka set tip=1, opseg=$opseg, primalac=$primalac, naslov='$naslov', tekst='$tekst' where id=$poruka");
 		nicemessage("Obavijest uspješno izmijenjena");
 		zamgerlog("izmijenjena obavijest $poruka",2);
 		zamgerlog2("izmijenjena poruka", $poruka);
 	} else {
 		// Nova obavijest
-		$q310 = myquery("insert into poruka set tip=1, opseg=$opseg, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), naslov='$naslov', tekst='$tekst'");
-		$id_poruke = mysql_insert_id();
+		$q310 = db_query("insert into poruka set tip=1, opseg=$opseg, primalac=$primalac, posiljalac=$userid, vrijeme=NOW(), naslov='$naslov', tekst='$tekst'");
+		$id_poruke = db_insert_id();
 
 		// Saljem mail...
 		if ($email && ($opseg==3 || $opseg==5)) { // nema spamanja!
@@ -97,14 +97,14 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 
 			if ($opseg == 3) {
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
-				$q320 = myquery("select naziv from studij where id=$primalac");
-				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q320,0,0);
+				$q320 = db_query("select naziv from studij where id=$primalac");
+				$subject = "OBAVJEŠTENJE: Svi studenti na ".db_result($q320,0,0);
 
 			} else if ($opseg == 5) {
 				// Saljemo mail samo studentima na aktuelnoj akademskoj godini
 				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
-				$q330 = myquery("select naziv from predmet where id=$primalac");
-				$subject = "OBAVJEŠTENJE: Svi studenti na ".mysql_result($q330,0,0);
+				$q330 = db_query("select naziv from predmet where id=$primalac");
+				$subject = "OBAVJEŠTENJE: Svi studenti na ".db_result($q330,0,0);
 			}
 
 			// Subject email poruke
@@ -126,33 +126,33 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
  			$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nStudentska služba $conf_skr_naziv_institucije_genitiv poslala vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
 
 			// Podaci za from polje
-			$q9 = myquery("select o.ime, o.prezime from osoba as o where o.id=$userid");
-			$from = mysql_result($q9,0,0)." ".mysql_result($q9,0,1);
+			$q9 = db_query("select o.ime, o.prezime from osoba as o where o.id=$userid");
+			$from = db_result($q9,0,0)." ".db_result($q9,0,1);
 			$from = str_replace($nasaslova, $beznasihslova, $from);
 
-			$q9a = myquery("SELECT adresa FROM email WHERE osoba=$userid ORDER BY sistemska DESC, id");
-			if (mysql_num_rows($q9a)<1) {
+			$q9a = db_query("SELECT adresa FROM email WHERE osoba=$userid ORDER BY sistemska DESC, id");
+			if (db_num_rows($q9a)<1) {
 				niceerror("Ne možemo poslati mail jer nemate definisanu adresu.");
 				print "Da bi se mail mogao poslati, mora biti definisana odlazna adresa (adresa pošiljaoca). Molimo vas da u vašem <a href=\"?sta=common/profil\">profilu</a> podesite vašu e-mail adresu.";
 				return 0;
 			}
-			$from .= " <".mysql_result($q9a,0,0).">";
+			$from .= " <".db_result($q9a,0,0).">";
 
 			$add_header = "From: $from\r\nContent-Type: text/plain; charset=utf-8\r\n";
 
 			$broj=0;
-			$q7 = myquery($upit);
+			$q7 = db_query($upit);
 
-			while ($r7 = mysql_fetch_row($q7)) {
+			while ($r7 = db_fetch_row($q7)) {
 				$student_id = $r7[0];
 				$student_ime_prezime = str_replace($nasaslova, $beznasihslova, "$r7[1] $r7[2]");
 
 				// Određujemo email adrese studenta
-				$q9b = myquery("SELECT adresa FROM email WHERE osoba=$student_id ORDER BY sistemska DESC, id");
+				$q9b = db_query("SELECT adresa FROM email WHERE osoba=$student_id ORDER BY sistemska DESC, id");
 				$mail_to = "";
 				$mail_cc = "";
 				// Prvu adresu stavljamo u To: a sve ostale u Cc: kako bi mail server otkrio eventualne aliase
-				while ($r9b = mysql_fetch_row($q9b)) {
+				while ($r9b = db_fetch_row($q9b)) {
 					if ($mail_to == "") $mail_to = $r9b[0];
 					$mail_cc .= "$student_ime_prezime <$r9b[0]>; ";
 				}
@@ -177,8 +177,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 	$opseg=0;
 	if ($_REQUEST['akcija']=='izmjena') {
 		$poruka = intval($_REQUEST['poruka']);
-		$q200 = myquery("select primalac, naslov, tekst, opseg from poruka where id=$poruka and tip=1");
-		if (mysql_num_rows($q200) < 1) {
+		$q200 = db_query("select primalac, naslov, tekst, opseg from poruka where id=$poruka and tip=1");
+		if (db_num_rows($q200) < 1) {
 			niceerror("Poruka ne postoji");
 			zamgerlog("pokusaj izmjene na nepostojece poruke $poruka",3);
 			zamgerlog2("nepostojeca poruka", $poruka);
@@ -194,10 +194,10 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 		}
 		
 		// Prepravka naslova i teksta
-		$primalac = mysql_result($q200,0,0);
-		$naslov = mysql_result($q200,0,1);
-		$tekst = mysql_result($q200,0,2);
-		$opseg = mysql_result($q200,0,3);
+		$primalac = db_result($q200,0,0);
+		$naslov = db_result($q200,0,1);
+		$tekst = db_result($q200,0,2);
+		$opseg = db_result($q200,0,3);
 	}
 		
 	?>
@@ -220,8 +220,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 			// Nista
 		} else if (opseg==3) {
 			<?
-			$q210 = myquery("select id,naziv from studij");
-			while ($r210 = mysql_fetch_row($q210)) {
+			$q210 = db_query("select id,naziv from studij");
+			while ($r210 = db_fetch_row($q210)) {
 				print "	lista.options[lista.length]=new Option(\"$r210[1]\",\"$r210[0]\"";
 				if ($opseg==3 && $primalac==$r210[0]) print ",true";
 				print ");\n";
@@ -244,8 +244,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 				print ");\n";
 			}
 			// Ostali
-			$q210 = myquery("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id");
-			while ($r210 = mysql_fetch_row($q210)) {
+			$q210 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id");
+			while ($r210 = db_fetch_row($q210)) {
 				$trajanje_godina = ($r210[2]+1) / 2;
 				for ($i=1; $i<=$trajanje_godina; $i++) {
 					$kod = $r210[0] * 10 + $i;
@@ -259,8 +259,8 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
 			// Godini!?
 		} else if (opseg==5) {
 			<?
-			$q220 = myquery("select p.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.studij=s.id and pk.akademska_godina=$ag order by pk.studij, pk.semestar, p.naziv");
-			while ($r220 = mysql_fetch_row($q220)) {
+			$q220 = db_query("select p.id, p.naziv, s.kratkinaziv from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.studij=s.id and pk.akademska_godina=$ag order by pk.studij, pk.semestar, p.naziv");
+			while ($r220 = db_fetch_row($q220)) {
 				print "	lista.options[lista.length]=new Option(\"$r220[1] ($r220[2])\",\"$r220[0]\"";
 				if ($opseg==5 && $primalac==$r220[0]) print ",true";
 				print ");\n";
@@ -327,8 +327,8 @@ $dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Peta
 $poruka = intval($_REQUEST['poruka']);
 if ($poruka>0) {
 	// Dobavljamo podatke o poruci
-	$q10 = myquery("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst from poruka where id=$poruka and tip=1");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst from poruka where id=$poruka and tip=1");
+	if (db_num_rows($q10)<1) {
 		niceerror("Poruka ne postoji");
 		zamgerlog("pristup nepostojecoj poruci $poruka",3);
 		zamgerlog2("nepostojeca poruka", $poruka);
@@ -336,17 +336,17 @@ if ($poruka>0) {
 	}
 
 	// Posiljalac
-	$opseg =  mysql_result($q10,0,0);
-	$prim_id = mysql_result($q10,0,1);
-	$pos_id = mysql_result($q10,0,2);
+	$opseg =  db_result($q10,0,0);
+	$prim_id = db_result($q10,0,1);
+	$pos_id = db_result($q10,0,2);
 
-	$q20 = myquery("select ime,prezime from osoba where id=$pos_id");
-	if (mysql_num_rows($q20)<1) {
+	$q20 = db_query("select ime,prezime from osoba where id=$pos_id");
+	if (db_num_rows($q20)<1) {
 		$posiljalac = "Nepoznato!?";
 		zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id",3);
 		zamgerlog2("poruka ima nepoznatog posiljaoca", $poruka);
 	} else
-		$posiljalac = mysql_result($q20,0,0)." ".mysql_result($q20,0,1);
+		$posiljalac = db_result($q20,0,0)." ".db_result($q20,0,1);
 
 	// Primalac
 	if ($opseg==0)
@@ -356,53 +356,53 @@ if ($poruka>0) {
 	else if ($opseg==2)
 		$primalac="Svi nastavnici i saradnici";
 	else if ($opseg==3) {
-		$q30 = myquery("select naziv from studij where id=$prim_id");
-		if (mysql_num_rows($q30)<1) {
+		$q30 = db_query("select naziv from studij where id=$prim_id");
+		if (db_num_rows($q30)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: studij)",3);
 			zamgerlog2("poruka ima nepoznatog primaoca (opseg: studij)", $poruka);
 		} else {
-			$primalac = "Svi studenti na: ".mysql_result($q30,0,0);
+			$primalac = "Svi studenti na: ".db_result($q30,0,0);
 		}
 	}
 	else if ($opseg==4) {
-		$q40 = myquery("select naziv from akademska_godina where id=$prim_id");
-		if (mysql_num_rows($q40)<1) {
+		$q40 = db_query("select naziv from akademska_godina where id=$prim_id");
+		if (db_num_rows($q40)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: akademska godina)",3);
 			zamgerlog2("poruka ima nepoznatog primaoca (opseg: akademska godina)", $poruka);
 		} else {
-			$primalac = "Svi studenti na akademskoj godini: ".mysql_result($q40,0,0);
+			$primalac = "Svi studenti na akademskoj godini: ".db_result($q40,0,0);
 		}
 	}
 	else if ($opseg==5) {
-		$q50 = myquery("select naziv from predmet where id=$prim_id");
-		if (mysql_num_rows($q50)<1) {
+		$q50 = db_query("select naziv from predmet where id=$prim_id");
+		if (db_num_rows($q50)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: predmet)",3);
 			zamgerlog2("poruka ima nepoznatog primaoca (opseg: predmet)", $poruka);
 		} else {
-			$primalac = "Svi studenti na predmetu: ".mysql_result($q50,0,0);
+			$primalac = "Svi studenti na predmetu: ".db_result($q50,0,0);
 		}
 	}
 	else if ($opseg==6) {
-		$q55 = myquery("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
-		if (mysql_num_rows($q55)<1) {
+		$q55 = db_query("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
+		if (db_num_rows($q55)<1) {
 			$primalac="Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: labgrupa)",3);
 			zamgerlog2("poruka ima nepoznatog primaoca (opseg: labgrupa)", $poruka);
 		} else {
-			$primalac = "Svi studenti u grupi ".mysql_result($q55,0,1)." (".mysql_result($q55,0,0).")";
+			$primalac = "Svi studenti u grupi ".db_result($q55,0,1)." (".db_result($q55,0,0).")";
 		}
 	}
 	else if ($opseg==7) {
-		$q60 = myquery("select ime,prezime from osoba where id=$prim_id");
-		if (mysql_num_rows($q60)<1) {
+		$q60 = db_query("select ime,prezime from osoba where id=$prim_id");
+		if (db_num_rows($q60)<1) {
 			$primalac = "Nepoznato!?";
 			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
 			zamgerlog2("poruka ima nepoznatog primaoca (opseg: korisnik)", $poruka);
 		} else
-			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
+			$primalac = db_result($q60,0,0)." ".db_result($q60,0,1);
 	}
 	else if ($opseg==8) {
 		$studij = intval($prim_id / 10);
@@ -414,13 +414,13 @@ if ($poruka>0) {
 			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
 		} else {
 			$godina = $prim_id%10;
-			$q30 = myquery("select naziv from studij where id=$studij");
-			if (mysql_num_rows($q30)<1) {
+			$q30 = db_query("select naziv from studij where id=$studij");
+			if (db_num_rows($q30)<1) {
 				$primalac="Nepoznato!?";
 				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
 				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
 			} else {
-				$primalac = "Svi studenti na: ".mysql_result($q30,0,0).", $godina. godina";
+				$primalac = "Svi studenti na: ".db_result($q30,0,0).", $godina. godina";
 			}
 		}
 	}
@@ -431,13 +431,13 @@ if ($poruka>0) {
 	}
 
 	// Fini datum
-	$vr = mysql_result($q10,0,3);
+	$vr = db_result($q10,0,3);
 	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i> - ";
 	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i> - ";
 	$vrijeme .= $dani[date("w",$vr)].date(", j. ",$vr).$mjeseci[date("n",$vr)].date(" Y. H:i",$vr);
 
 	// Naslov
-	$naslov = mysql_result($q10,0,4);
+	$naslov = db_result($q10,0,4);
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
 	?><h3>Prikaz obavijesti</h3>
@@ -461,7 +461,7 @@ if ($poruka>0) {
 		<br/>
 		<table border="0" cellpadding="5"><tr><td>
 		<?
-		print str_replace("\n","<br/>\n",mysql_result($q10,0,5));
+		print str_replace("\n","<br/>\n",db_result($q10,0,5));
 		?>
 		</td><tr></table>
 	</td></tr></table>
@@ -489,8 +489,8 @@ if ($poruka>0) {
 
 $vrijeme_poruke = array();
 
-$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac from poruka where tip=1 order by vrijeme desc");
-while ($r100 = mysql_fetch_row($q100)) {
+$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac from poruka where tip=1 order by vrijeme desc");
+while ($r100 = db_fetch_row($q100)) {
 	$id = $r100[0];
 	$opseg = $r100[2];
 	$prim_id = $r100[3];
@@ -509,43 +509,43 @@ while ($r100 = mysql_fetch_row($q100)) {
 	else if ($opseg==2)
 		$primalac="Svi nastavnici i saradnici";
 	else if ($opseg==3) {
-		$q30 = myquery("select naziv from studij where id=$prim_id");
-		if (mysql_num_rows($q30)<1) {
+		$q30 = db_query("select naziv from studij where id=$prim_id");
+		if (db_num_rows($q30)<1) {
 			$primalac="Nepoznat studij!?";
 		} else {
-			$primalac = "Svi studenti na:<br/> ".mysql_result($q30,0,0);
+			$primalac = "Svi studenti na:<br/> ".db_result($q30,0,0);
 		}
 	}
 	else if ($opseg==4) {
-		$q40 = myquery("select naziv from akademska_godina where id=$prim_id");
-		if (mysql_num_rows($q40)<1) {
+		$q40 = db_query("select naziv from akademska_godina where id=$prim_id");
+		if (db_num_rows($q40)<1) {
 			$primalac="Nepoznata akademska godina!?";
 		} else {
-			$primalac = "Svi studenti na akademskoj godini:<br/> ".mysql_result($q40,0,0);
+			$primalac = "Svi studenti na akademskoj godini:<br/> ".db_result($q40,0,0);
 		}
 	}
 	else if ($opseg==5) {
-		$q50 = myquery("select p.naziv,i.kratki_naziv from predmet as p, institucija as i where p.id=$prim_id and p.institucija=i.id");
-		if (mysql_num_rows($q50)<1) {
+		$q50 = db_query("select p.naziv,i.kratki_naziv from predmet as p, institucija as i where p.id=$prim_id and p.institucija=i.id");
+		if (db_num_rows($q50)<1) {
 			$primalac="Nepoznat predmet!?";
 		} else {
-			$primalac = "Svi studenti na predmetu:<br/> ".mysql_result($q50,0,0)." (".mysql_result($q50,0,1).")";
+			$primalac = "Svi studenti na predmetu:<br/> ".db_result($q50,0,0)." (".db_result($q50,0,1).")";
 		}
 	}
 	else if ($opseg==6) {
-		$q55 = myquery("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
-		if (mysql_num_rows($q55)<1) {
+		$q55 = db_query("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
+		if (db_num_rows($q55)<1) {
 			$primalac="Nepoznata labgrupa!?";
 		} else {
-			$primalac = "Svi studenti u grupi<br/> ".mysql_result($q55,0,1)." (".mysql_result($q55,0,0).")";
+			$primalac = "Svi studenti u grupi<br/> ".db_result($q55,0,1)." (".db_result($q55,0,0).")";
 		}
 	}
 	else if ($opseg==7) {
-		$q60 = myquery("select ime,prezime from osoba where id=$prim_id");
-		if (mysql_num_rows($q60)<1) {
+		$q60 = db_query("select ime,prezime from osoba where id=$prim_id");
+		if (db_num_rows($q60)<1) {
 			$primalac = "Nepoznata osoba!?";
 		} else
-			$primalac = mysql_result($q60,0,0)." ".mysql_result($q60,0,1);
+			$primalac = db_result($q60,0,0)." ".db_result($q60,0,1);
 	}
 	else if ($opseg==8) {
 		$studij = intval($prim_id / 10);
@@ -557,13 +557,13 @@ while ($r100 = mysql_fetch_row($q100)) {
 			$primalac = "Svi studenti na: II ciklus, $godina. godina";
 		} else {
 			$godina = $prim_id%10;
-			$q30 = myquery("select s.kratkinaziv, ts.ciklus from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
-			if (mysql_num_rows($q30)<1) {
+			$q30 = db_query("select s.kratkinaziv, ts.ciklus from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
+			if (db_num_rows($q30)<1) {
 				$primalac="Nepoznato!?";
 				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
 				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
 			} else {
-				$primalac = "Svi studenti na: ".mysql_result($q30,0,0).", $godina. godina ".mysql_result($q30,0,1)." ciklus";
+				$primalac = "Svi studenti na: ".db_result($q30,0,0).", $godina. godina ".db_result($q30,0,1)." ciklus";
 			}
 		}
 	}
@@ -572,11 +572,11 @@ while ($r100 = mysql_fetch_row($q100)) {
 	}
 
 	// Posiljalac
-	$q70 = myquery("select ime,prezime from osoba where id=$pos_id");
-	if (mysql_num_rows($q70)<1) {
+	$q70 = db_query("select ime,prezime from osoba where id=$pos_id");
+	if (db_num_rows($q70)<1) {
 		$posiljalac = "Nepoznata osoba!?";
 	} else
-		$posiljalac = mysql_result($q70,0,0)." ".mysql_result($q70,0,1);
+		$posiljalac = db_result($q70,0,0)." ".db_result($q70,0,1);
 	
 
 	// Fino vrijeme

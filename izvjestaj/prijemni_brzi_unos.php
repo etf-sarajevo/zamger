@@ -13,31 +13,31 @@ $termin = intval($_REQUEST['termin']);
 $osoba = intval($_REQUEST['osoba']);
 
 
-$q10 = myquery("select ime, prezime, imeoca, jmbg from osoba where id=$osoba");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select ime, prezime, imeoca, jmbg from osoba where id=$osoba");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepostojeća osoba");
 	zamgerlog("nepostojeca osoba $osoba", 3);
 	zamgerlog2("nepostojeca osoba", $osoba);
 	return;
 }
-$ime = mysql_result($q10,0,0);
-$prezime = mysql_result($q10,0,1);
-$imeoca = mysql_result($q10,0,2);
-$jmbg = mysql_result($q10,0,3);
+$ime = db_result($q10,0,0);
+$prezime = db_result($q10,0,1);
+$imeoca = db_result($q10,0,2);
+$jmbg = db_result($q10,0,3);
 
-$q20 = myquery("select sifra, jezik from prijemni_obrazac where osoba=$osoba and prijemni_termin=$termin");
-if (mysql_num_rows($q20)<1) {
+$q20 = db_query("select sifra, jezik from prijemni_obrazac where osoba=$osoba and prijemni_termin=$termin");
+if (db_num_rows($q20)<1) {
 	biguglyerror("Ne postoji obrazac za ovu osobu");
 	zamgerlog("za osobu u$osoba ne postoji obrazac na terminu $termin", 3);
 	zamgerlog2("ne postoji obrazac za osobu", $osoba, $termin);
 	return;
 }
-$sifra = mysql_result($q20,0,0);
-$jezik = mysql_result($q20,0,1);
+$sifra = db_result($q20,0,0);
+$jezik = db_result($q20,0,1);
 
-$q30 = myquery("SELECT ag.naziv, pt.ciklus_studija FROM prijemni_termin pt, akademska_godina ag WHERE pt.id=$termin AND pt.akademska_godina=ag.id");
-$naziv_ag = mysql_result($q30,0,0);
-$ciklus = mysql_result($q30,0,1);
+$q30 = db_query("SELECT ag.naziv, pt.ciklus_studija FROM prijemni_termin pt, akademska_godina ag WHERE pt.id=$termin AND pt.akademska_godina=ag.id");
+$naziv_ag = db_result($q30,0,0);
+$ciklus = db_result($q30,0,1);
 
 $datum = date("d. m. Y.");
 $vrijeme = date("h:i");
@@ -54,9 +54,9 @@ if ($jezik == "en") {
 	$tekst_ak_godina = "Akademska $naziv_ag. godina";
 }
 
-$q40 = myquery("SELECT id_datuma, UNIX_TIMESTAMP(datum) FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin ORDER BY id_datuma");
+$q40 = db_query("SELECT id_datuma, UNIX_TIMESTAMP(datum) FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin ORDER BY id_datuma");
 $vazni_datumi = array();
-while ($r40 = mysql_fetch_row($q40))
+while ($r40 = db_fetch_row($q40))
 	$vazni_datumi[$r40[0]] = $r40[1];
 
 // ----- Pravljenje PDF dokumenta

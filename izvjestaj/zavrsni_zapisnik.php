@@ -16,17 +16,17 @@ Elektrotehnički fakultet Sarajevo</p>
 
 $id_zavrsni = intval($_REQUEST['zavrsni']);
 
-$q10 = myquery("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka as odluka, s.institucija as institucija
+$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka as odluka, s.institucija as institucija
 from zavrsni as z, predmet as p, institucija as i, ponudakursa as pk, studij as s, tipstudija as ts
 where z.id=$id_zavrsni and z.predmet=p.id and p.institucija=i.id and ". // uslovi za detekciju ciklusa studija
 "pk.predmet=p.id and pk.akademska_godina=z.akademska_godina and pk.studij=s.id and s.tipstudija=ts.id");
 
-if (mysql_num_rows($q10) > 0) {
-	$r10 = mysql_fetch_assoc($q10);
+if (db_num_rows($q10) > 0) {
+	$r10 = db_fetch_assoc($q10);
 	
 }
 
-if (mysql_num_rows($q10)<1 || $r10["mentor_id"] == 0 || $r10["predsjednik_id"] == 0 || $r10["clan_id"] == 0 || $r10["termin_odbrane"] == 0) {
+if (db_num_rows($q10)<1 || $r10["mentor_id"] == 0 || $r10["predsjednik_id"] == 0 || $r10["clan_id"] == 0 || $r10["termin_odbrane"] == 0) {
 	niceerror("Zapisnik se ne može odštampati jer nisu unijeta sva obavezna polja");
 	?><p>Da biste mogli štampati zapisnik, morate popuniti sva polja koja se nalaze na zapisniku, a to su: naslov teme, kandidat, mentor i oba člana komisije i termin odbrane.</p>
 	<?
@@ -34,23 +34,23 @@ if (mysql_num_rows($q10)<1 || $r10["mentor_id"] == 0 || $r10["predsjednik_id"] =
 	return;
 }
 
-$q20 = myquery("select o.prezime as prezime, o.imeoca as imeoca, o.ime as ime, o.brindexa as brindexa, o.spol as spol, UNIX_TIMESTAMP(o.datum_rodjenja) as datum_rodjenja, o.telefon as telefon, o.mjesto_rodjenja as mjesto_rodjenja, o.adresa as adresa, o.adresa_mjesto as adresa_mjesto_id
+$q20 = db_query("select o.prezime as prezime, o.imeoca as imeoca, o.ime as ime, o.brindexa as brindexa, o.spol as spol, UNIX_TIMESTAMP(o.datum_rodjenja) as datum_rodjenja, o.telefon as telefon, o.mjesto_rodjenja as mjesto_rodjenja, o.adresa as adresa, o.adresa_mjesto as adresa_mjesto_id
 from osoba as o
 where o.id=".$r10["student_id"]);
-$r20 = mysql_fetch_assoc($q20);
+$r20 = db_fetch_assoc($q20);
 
 $mentor = tituliraj($r10["mentor_id"], true);
 $predsjednik = tituliraj($r10["predsjednik_id"], true);
 $clan = tituliraj($r10["clan_id"], true);
 
-$q25 = myquery("select naziv, opcina from mjesto where id=".$r20["mjesto_rodjenja"]);
-$r25 = mysql_fetch_assoc($q25);
+$q25 = db_query("select naziv, opcina from mjesto where id=".$r20["mjesto_rodjenja"]);
+$r25 = db_fetch_assoc($q25);
 
-$q27 = myquery("select naziv from opcina where id=".$r25["opcina"]);
-$r27 = mysql_fetch_assoc($q27);
+$q27 = db_query("select naziv from opcina where id=".$r25["opcina"]);
+$r27 = db_fetch_assoc($q27);
 
-$q30 = myquery("select naziv from mjesto where id=".intval($r20["adresa_mjesto_id"]));
-$r30 = mysql_fetch_assoc($q30);
+$q30 = db_query("select naziv from mjesto where id=".intval($r20["adresa_mjesto_id"]));
+$r30 = db_fetch_assoc($q30);
 
 $spol = $r20["spol"];
 if ($spol == "") $spol = spol($r20["ime"]);
@@ -62,8 +62,8 @@ if ($r10['ciklus'] == 1) {
 	// Određivanje dekana i broja protokola
 	$institucija = $r10['institucija'];
 	do {
-		$q140 = myquery("select tipinstitucije, roditelj, dekan, broj_protokola from institucija where id=$institucija");
-		if (!($r140 = mysql_fetch_row($q140))) {
+		$q140 = db_query("select tipinstitucije, roditelj, dekan, broj_protokola from institucija where id=$institucija");
+		if (!($r140 = db_fetch_row($q140))) {
 			break;
 		}
 		if ($r140[0] == 1 && $r140[2] != 0) {
@@ -83,8 +83,8 @@ if ($r10['ciklus'] == 1) {
 	}
 
 	// Potreban nam je predmet iz kojeg je rad 
-	$q35 = myquery("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
-	$rad_na_predmetu = mysql_result($q35,0,0);
+	$q35 = db_query("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
+	$rad_na_predmetu = db_result($q35,0,0);
 
 	?>
 	<p><?=$r10["odsjek"]?></p>
@@ -159,9 +159,9 @@ if ($r10['ciklus'] == 1) {
 	$ciklusi = array("", "prvog", "drugog", "trećeg");
 
 	// Podaci o odluci
-	$q50 = myquery("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=".$r10["odluka"]);
-	$datum_odluke = date("d.m.Y.", mysql_result($q50,0,0));
-	$broj_odluke = mysql_result($q50,0,1);
+	$q50 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=".$r10["odluka"]);
+	$datum_odluke = date("d.m.Y.", db_result($q50,0,0));
+	$broj_odluke = db_result($q50,0,1);
 
 
 	?>

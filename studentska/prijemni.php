@@ -26,17 +26,17 @@ if ($_REQUEST['akcija']=="") $_REQUEST['akcija']="unos";
 $termin=intval($_REQUEST['termin']);
 if ($termin==0) {
 	// Daj najskoriji ispit
-	$q10 = myquery("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum desc limit 1");
+	$q10 = db_query("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum desc limit 1");
 
-	if (mysql_num_rows($q10)<1) {
+	if (db_num_rows($q10)<1) {
 		$_REQUEST['akcija'] = "novi_ispit";
 		$termin=0;
 	} else {
-		$termin=mysql_result($q10,0,0);
+		$termin=db_result($q10,0,0);
 	}
 } else {
-	$q10 = myquery("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	if (db_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin.");
 		zamgerlog ("nepostojeci termin $termin", 3);
 		zamgerlog2 ("nepostojeci termin prijemnog ispita", $termin);
@@ -44,15 +44,15 @@ if ($termin==0) {
 	}
 }
 
-if (mysql_num_rows($q10)<1) {
+if (db_num_rows($q10)<1) {
 	// Ovo će se desiti samo ako nije kreiran niti jedan termin
 	$datum = "/";
 	$ciklus_studija=1;
 } else {
-	$datum = date("d. m. Y.",mysql_result($q10,0,2));
-	$ciklus_studija = mysql_result($q10,0,3);
+	$datum = date("d. m. Y.",db_result($q10,0,2));
+	$ciklus_studija = db_result($q10,0,3);
 	
-	$naziv = " za ".mysql_result($q10,0,1)." akademsku godinu (".mysql_result($q10,0,3)." ciklus studija), $datum";
+	$naziv = " za ".db_result($q10,0,1)." akademsku godinu (".db_result($q10,0,3)." ciklus studija), $datum";
 }
 
 
@@ -162,10 +162,10 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 		return;
 	}
 
-	$q20 = myquery("insert into prijemni_termin set akademska_godina=$ag, datum='$godina-$mjesec-$dan', ciklus_studija=$ciklus, predsjednik_komisije=$predsjednik_komisije");
+	$q20 = db_query("insert into prijemni_termin set akademska_godina=$ag, datum='$godina-$mjesec-$dan', ciklus_studija=$ciklus, predsjednik_komisije=$predsjednik_komisije");
 
 	zamgerlog("kreiran novi termin za prijemni ispit", 4); // 4 = audit
-	zamgerlog2("kreiran novi termin za prijemni ispit", mysql_insert_id());
+	zamgerlog2("kreiran novi termin za prijemni ispit", db_insert_id());
 
 	?>
 	<p>Novi termin kreiran. <a href="?sta=studentska/prijemni">Kliknite ovdje za nastavak</a></p>
@@ -181,9 +181,9 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	unset($_REQUEST['akcija']);
 	
 	$dekan = 0;
-	$q25 = myquery("SELECT dekan FROM institucija WHERE dekan>0 AND tipinstitucije=1");
-	if (mysql_num_rows($q25)>0)
-		$dekan = mysql_result($q25,0,0);
+	$q25 = db_query("SELECT dekan FROM institucija WHERE dekan>0 AND tipinstitucije=1");
+	if (db_num_rows($q25)>0)
+		$dekan = db_result($q25,0,0);
 
 	?><h2>Novi termin prijemnog ispita:</h2>
 
@@ -197,8 +197,8 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	Datum održavanja ispita:</td><td><input type="text" name="datum" size="20">
 	</td></tr><tr><td>
 	Predsjednik komisije: </td><td><select name="predsjednik_komisije" class="default"><?
-	$q360 = myquery("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
-	while ($r360 = mysql_fetch_row($q360)) {
+	$q360 = db_query("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
+	while ($r360 = db_fetch_row($q360)) {
 		if ($r360[0] == $dekan) $dodaj = "SELECTED"; else $dodaj = "";
 		print "<option value=\"$r360[0]\" $dodaj>$r360[1] $r360[2]</option>\n";
 	}
@@ -226,8 +226,8 @@ if ($_REQUEST['akcija'] == "arhiva_ispita") {
 	<ul>
 	<?
 
-	$q30 = myquery("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum");
-	while ($r30 = mysql_fetch_row($q30)) {
+	$q30 = db_query("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum");
+	while ($r30 = db_fetch_row($q30)) {
 		$datum = date("d. m. Y.", $r30[2]);
 		?>
 		<li><a href="?sta=studentska/prijemni&termin=<?=$r30[0]?>">(<?=$datum?>) Akademska <?=$r30[1]?> godina, <?=$r30[3]?>. ciklus studija</a></li>
@@ -257,9 +257,9 @@ if ($_REQUEST['akcija']=="promijeni_kod") {
 	$osoba = intval($_REQUEST['osoba']);
 	do {
 		$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
-		$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
-	} while (mysql_result($q3015,0,0)>0);
-	$q3040 = myquery("update prijemni_obrazac set sifra='$sifra' where prijemni_termin=$termin and osoba=$osoba");
+		$q3015 = db_query("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+	} while (db_result($q3015,0,0)>0);
+	$q3040 = db_query("update prijemni_obrazac set sifra='$sifra' where prijemni_termin=$termin and osoba=$osoba");
 	print "Kod promijenjen";
 	return;
 }
@@ -285,8 +285,8 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 	}
 	
 	$sifra_izasao=array();
-	$q6 = myquery("select sifra from prijemni_obrazac where prijemni_termin=$termin");
-	while ($r6 = mysql_fetch_row($q6)) 
+	$q6 = db_query("select sifra from prijemni_obrazac where prijemni_termin=$termin");
+	while ($r6 = db_fetch_row($q6)) 
 		$sifra_izasao[$r6[0]] = "nije";
 
 	foreach ($redovi as $red) {
@@ -295,24 +295,24 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 		// popravljamo nbsp Unicode karakter
 		$red = str_replace("¡", " ", $red);
 		$red = str_replace(" ", " ", $red);
-		$red = my_escape($red);
+		$red = db_escape($red);
 
 		$nred = explode($sepchar, $red, $kolona);
 		$sifra = $nred[0];
 		$bodovi = floatval(str_replace(",",".",$nred[1]));
 
 		// Da li korisnik postoji u bazi?
-		$q10 = myquery("select osoba from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
-		if (mysql_num_rows($q10)<1) {
+		$q10 = db_query("select osoba from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+		if (db_num_rows($q10)<1) {
 			if ($ispis)  {
 				print "<font color=\"red\">Nepoznata šifra $sifra</font><br>\n";
 			}
 			$greska=1;
 			continue;
 		} else {
-			$osoba = mysql_result($q10,0,0);
-			$q20 = myquery("select izasao from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
-			/*if (mysql_result($q20,0,0)==1) {
+			$osoba = db_result($q10,0,0);
+			$q20 = db_query("select izasao from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
+			/*if (db_result($q20,0,0)==1) {
 				if ($ispis)  {
 					print "<font color=\"red\">Kandidatu pod šifrom $sifra je već evidentiran izlazak na prijemni.</font><br>\n";
 				}
@@ -322,7 +322,7 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 			if ($ispis) {
 				print "-- Upisujem $bodovi bodova za kandidata pod šifrom $sifra<br>\n";
 			} else {
-				$q20 = myquery("update prijemni_prijava set izasao=1, rezultat=$bodovi where prijemni_termin=$termin and osoba=$osoba");
+				$q20 = db_query("update prijemni_prijava set izasao=1, rezultat=$bodovi where prijemni_termin=$termin and osoba=$osoba");
 			}
 			$sifra_izasao[$sifra] = "jeste";
 		}
@@ -379,11 +379,11 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 	$rjezik = 'bs';
 
 	if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
-		$rime = my_escape($_REQUEST['ime']);
-		$rprezime = my_escape($_REQUEST['prezime']);
-		$rimeroditelja = my_escape($_REQUEST['imeroditelja']);
-		$rjmbg = my_escape($_REQUEST['jmbg']);
-		$rjezik = my_escape($_REQUEST['jezik']);
+		$rime = db_escape($_REQUEST['ime']);
+		$rprezime = db_escape($_REQUEST['prezime']);
+		$rimeroditelja = db_escape($_REQUEST['imeroditelja']);
+		$rjmbg = db_escape($_REQUEST['jmbg']);
+		$rjezik = db_escape($_REQUEST['jezik']);
 
 		if (!preg_match("/\w/",$rime)) {
 			niceerror("Ime nije ispravno"); 
@@ -402,8 +402,8 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 			$greska=1; $greskajmbg=1; $bojajmbg = "#FF0000";
 		}
 
-		$q2995 = myquery("select count(*) from osoba where jmbg='$rjmbg'");
-		if (mysql_result($q2995,0,0)>0) {
+		$q2995 = db_query("select count(*) from osoba where jmbg='$rjmbg'");
+		if (db_result($q2995,0,0)>0) {
 			niceerror("Osoba sa ovim JMBGom već postoji u bazi");
 			
 			print "<p>Moguće je da sljedeće:<br />
@@ -414,38 +414,38 @@ if ($_REQUEST['akcija']=="brzi_unos") {
 		}
 
 		if ($greska==0) {
-			$q3000 = myquery("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
-			if (mysql_num_rows($q3000)>0)
-				$broj_dosjea = mysql_result($q3000,0,0)+1;
+			$q3000 = db_query("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+			if (db_num_rows($q3000)>0)
+				$broj_dosjea = db_result($q3000,0,0)+1;
 			else
 				$broj_dosjea = 1;
 
-			$q3010 = myquery("select id from osoba order by id desc limit 1");
-			$osoba = mysql_result($q3010,0,0)+1;
+			$q3010 = db_query("select id from osoba order by id desc limit 1");
+			$osoba = db_result($q3010,0,0)+1;
 			
 			// Određivanje šifre
 			do {
 				$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
-				$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
-			} while (mysql_result($q3015,0,0)>0);
+				$q3015 = db_query("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+			} while (db_result($q3015,0,0)>0);
 			
 			// Određivanje datuma rođenja iz JMBGa
 			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rmjbg,0,2), substr($rjmbg,4,3)+1000);
 
-			$q3020 = myquery("insert into osoba set id=$osoba, ime='$rime', prezime='$rprezime', imeoca='$rimeroditelja', jmbg='$rjmbg', datum_rodjenja=FROM_UNIXTIME($datumrod)");
-			$q3030 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
-			$q3040 = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='$rjezik'");
+			$q3020 = db_query("insert into osoba set id=$osoba, ime='$rime', prezime='$rprezime', imeoca='$rimeroditelja', jmbg='$rjmbg', datum_rodjenja=FROM_UNIXTIME($datumrod)");
+			$q3030 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
+			$q3040 = db_query("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='$rjezik'");
 
 			if ($ciklus_studija == 1) {
-				$q3050 = myquery("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
-				if (mysql_result($q3050,0,0) == 0)
+				$q3050 = db_query("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
+				if (db_result($q3050,0,0) == 0)
 					// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
-					$q3060 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
+					$q3060 = db_query("insert into uspjeh_u_srednjoj set osoba=$osoba");
 			} else {
-				$q3050 = myquery("select count(*) from prosliciklus_uspjeh where osoba=$osoba");
-				if (mysql_result($q3050,0,0) == 0)
+				$q3050 = db_query("select count(*) from prosliciklus_uspjeh where osoba=$osoba");
+				if (db_result($q3050,0,0) == 0)
 					// Kreiramo blank zapis u tabeli uspjeh u srednjoj kako bi kandidat bio prikazan u tabeli, a naknadno se može popuniti podacima
-					$q3060 = myquery("insert into prosliciklus_uspjeh set osoba=$osoba");
+					$q3060 = db_query("insert into prosliciklus_uspjeh set osoba=$osoba");
 			}
 
 			zamgerlog("brzo unesen kandidat $rime $rprezime za termin $termin", 2);
@@ -554,8 +554,8 @@ if ($_REQUEST['akcija']=="spisak") {
 	<h2>Spisak kandidata za prijemni ispit</h2>
 
 	<p>Studij: <select name="studij"><option value="0">Svi zajedno</option><?
-	$q1000 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
-	while ($r1000 = mysql_fetch_row($q1000)) {
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}
 	?></select></p>
@@ -585,8 +585,8 @@ if ($_REQUEST['akcija']=="rang_liste") {
 	<option value="konacni">Konačni rezultati</option></select></p>
 
 	<p>Studij: <select name="studij"><?
-	$q1000 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
-	while ($r1000 = mysql_fetch_row($q1000)) {
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}
 	?></select></p>
@@ -625,7 +625,7 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 		$rprijemnimax = floatval($_REQUEST['prijemni_max']);
 		$rstudij = intval($_REQUEST['rstudij']);
 
-		$qInsert = myquery("REPLACE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, kandidati_vanredni=$rkandidativan, prijemni_max=$rprijemnimax, studij=$rstudij, prijemni_termin=$termin");
+		$qInsert = db_query("REPLACE upis_kriterij SET donja_granica=$rdonja, gornja_granica=$rgornja, kandidati_strani=$rkandidatisd, kandidati_sami_placaju=$rkandidatisp, kandidati_kanton_placa=$rkandidatikp, kandidati_vanredni=$rkandidativan, prijemni_max=$rprijemnimax, studij=$rstudij, prijemni_termin=$termin");
 
 		$_REQUEST['prikazi'] = true; // prikazi upravo unesene podatke
 
@@ -635,25 +635,25 @@ if ($_REQUEST['akcija'] == "upis_kriterij") {
 
 	if ($_REQUEST['prikazi']) {
 		$rstudij = intval($_REQUEST['rstudij']);
-		$q120 = myquery("select donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max from upis_kriterij where studij=$rstudij and prijemni_termin=$termin");
-		if (mysql_num_rows($q120)<1) {
+		$q120 = db_query("select donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max from upis_kriterij where studij=$rstudij and prijemni_termin=$termin");
+		if (db_num_rows($q120)<1) {
 			$pdonja=$pgornja=$pksd=$pksp=$pkkp=$ppmax=0;
 		} else {
-			$pdonja=mysql_result($q120,0,0);
-			$pgornja=mysql_result($q120,0,1);
-			$pksd=mysql_result($q120,0,2);
-			$pksp=mysql_result($q120,0,3);
-			$pkkp=mysql_result($q120,0,4);
-			$pkvan=mysql_result($q120,0,5);
-			$ppmax=mysql_result($q120,0,6);
+			$pdonja=db_result($q120,0,0);
+			$pgornja=db_result($q120,0,1);
+			$pksd=db_result($q120,0,2);
+			$pksp=db_result($q120,0,3);
+			$pkkp=db_result($q120,0,4);
+			$pkvan=db_result($q120,0,5);
+			$ppmax=db_result($q120,0,6);
 		}
 	}
 
 
 	// Spisak dostupnih studija
-	$q130 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija");
+	$q130 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija");
 	$spisak_studija="";
-	while ($r130 = mysql_fetch_row($q130)) {
+	while ($r130 = db_fetch_row($q130)) {
 		$spisak_studija .= "<option value=\"$r130[0]\"";
 		if ($r130[0]==$rstudij) $spisak_studija .= " selected";
 		$spisak_studija .= ">$r130[1]</option>\n";
@@ -744,8 +744,8 @@ if ($_REQUEST['akcija'] == "vazni_datumi") {
 		$boja[$i] = "#FFFF00";
 	}
 	
-	$q300 = myquery("SELECT id_datuma, UNIX_TIMESTAMP(datum) FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin");
-	while ($r300 = mysql_fetch_row($q300)) {
+	$q300 = db_query("SELECT id_datuma, UNIX_TIMESTAMP(datum) FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin");
+	while ($r300 = db_fetch_row($q300)) {
 		$id = $r300[0]-1;
 		$vd[$id] = date("d. m. Y. H:i", $r300[1]);
 		$boja[$id] = "#FFFFFF";
@@ -774,11 +774,11 @@ if ($_REQUEST['akcija'] == "vazni_datumi") {
 			}
 			$id = $i+1;
 			if ($nvd[$i] == "01. 01. 1970. 01:00" && $vd[$i] !== "01. 01. 1970. 01:00")
-				$q310 = myquery("DELETE FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin AND id_datuma=$id");
+				$q310 = db_query("DELETE FROM prijemni_vazni_datumi WHERE prijemni_termin=$termin AND id_datuma=$id");
 			else if ($nvd[$i] != "01. 01. 1970. 01:00" && $vd[$i] == "01. 01. 1970. 01:00")
-				$q310 = myquery("INSERT INTO prijemni_vazni_datumi SET prijemni_termin=$termin, id_datuma=$id, datum='$nvd_mysql'");
+				$q310 = db_query("INSERT INTO prijemni_vazni_datumi SET prijemni_termin=$termin, id_datuma=$id, datum='$nvd_mysql'");
 			else if ($nvd[$i] != "01. 01. 1970. 01:00" && $vd[$i] != "01. 01. 1970. 01:00")
-				$q310 = myquery("UPDATE prijemni_vazni_datumi SET datum='$nvd_mysql' WHERE prijemni_termin=$termin AND id_datuma=$id");
+				$q310 = db_query("UPDATE prijemni_vazni_datumi SET datum='$nvd_mysql' WHERE prijemni_termin=$termin AND id_datuma=$id");
 		}
 		
 		if (!$greska) {
@@ -893,9 +893,9 @@ if ($_REQUEST['akcija']=="prijemni") {
 	if ($_REQUEST['sort'] == "prezime") $upit .= " ORDER BY o.prezime, o.ime";
 	else $upit .= " ORDER BY pp.broj_dosjea";
 
-	$q = myquery($upit);
+	$q = db_query($upit);
 	$id=0;
-	while ($r = mysql_fetch_row($q)) {
+	while ($r = db_fetch_row($q)) {
 		if ($id!=0)
 			print "$r[0])\"></tr>\n";
 		$id=$r[0];
@@ -924,8 +924,8 @@ if ($_REQUEST['akcija']=="prijemni") {
 if ($_REQUEST["akcija"]=="obrisi") {
 	$osoba = intval($_GET['osoba']);
 	if ($osoba>0) {
-		myquery("DELETE FROM prijemni_prijava WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
-		myquery("DELETE FROM prijemni_obrazac WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
+		db_query("DELETE FROM prijemni_prijava WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
+		db_query("DELETE FROM prijemni_obrazac WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
 
 		// Necemo brisati osobu i ostale podatke
 		zamgerlog("brisem osobu u$osoba sa prijemnog - termin $termin", 4);
@@ -961,54 +961,54 @@ if ($_REQUEST['akcija'] == "pregled") {
 	<?
 	
 	$imena_godina=array();
-	$q = myquery("select id, naziv from akademska_godina");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv from akademska_godina");
+	while ($r = db_fetch_row($q)) {
 		$imena_godina[$r[0]]=$r[1];
 	}
 
 	$imena_studija=array();
-	$q = myquery("select id,kratkinaziv from studij");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id,kratkinaziv from studij");
+	while ($r = db_fetch_row($q)) {
 		$imena_studija[$r[0]]=$r[1];
 	}
 
 	$imena_opcina=array();
-	$q = myquery("select id, naziv from opcina");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv from opcina");
+	while ($r = db_fetch_row($q)) {
 		$imena_opcina[$r[0]]=$r[1];
 	}
 
 	$imena_drzava=array();
-	$q = myquery("select id, naziv from drzava");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv from drzava");
+	while ($r = db_fetch_row($q)) {
 		$imena_drzava[$r[0]]=$r[1];
 	}
 
 	$imena_nacionalnosti=array();
-	$q = myquery("select id, naziv from nacionalnost");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv from nacionalnost");
+	while ($r = db_fetch_row($q)) {
 		$imena_nacionalnosti[$r[0]]=$r[1];
 	}
 
 	$imena_skola=$opcina_skola=$domaca_skola=array();
-	$q = myquery("select id, naziv, opcina, domaca from srednja_skola");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv, opcina, domaca from srednja_skola");
+	while ($r = db_fetch_row($q)) {
 		$imena_skola[$r[0]]=$r[1];
 		$opcina_skola[$r[0]]=$imena_opcina[$r[2]];
 		$domaca_skola[$r[0]]=$r[3];
 	}
 
 	$imena_mjesta=$opcine_mjesta=$drzave_mjesta=array();
-	$q = myquery("select id, naziv, opcina, drzava from mjesto");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv, opcina, drzava from mjesto");
+	while ($r = db_fetch_row($q)) {
 		$imena_mjesta[$r[0]]=$r[1];
 		$opcine_mjesta[$r[0]]=$imena_opcina[$r[2]];
 		$drzave_mjesta[$r[0]]=$imena_drzava[$r[3]];
 	}
 	
 	$imena_kantona=array();
-	$q = myquery("select id, naziv from kanton");
-	while ($r = mysql_fetch_row($q)) {
+	$q = db_query("select id, naziv from kanton");
+	while ($r = db_fetch_row($q)) {
 		$imena_kantona[$r[0]]=$r[1];
 	}
 
@@ -1025,7 +1025,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	if ($_REQUEST['sort'] == "bd") $sqlSelect .= "ORDER BY pp.broj_dosjea";
 	else $sqlSelect .= "ORDER BY o.prezime, o.ime";
 				
-	$q=myquery($sqlSelect);
+	$q=db_query($sqlSelect);
 	
 	
 	?>
@@ -1079,7 +1079,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 	
 	<?
 	$brojac = 1;
-	while ($kandidat=mysql_fetch_row($q)) {
+	while ($kandidat=db_fetch_row($q)) {
 		?>
 		
 		<tr>
@@ -1173,31 +1173,31 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 	$rosoba=intval($_REQUEST['osoba']);
 	$rbrojdosjea=intval($_REQUEST['broj_dosjea']);
-	$rime=my_escape(trim($_REQUEST['ime']));
-	$rprezime=my_escape(trim($_REQUEST['prezime']));
-	$rimeoca=my_escape(trim($_REQUEST['imeoca']));
-	$rprezimeoca=my_escape(trim($_REQUEST['prezimeoca']));
-	$rimemajke=my_escape(trim($_REQUEST['imemajke']));
-	$rprezimemajke=my_escape(trim($_REQUEST['prezimemajke']));
+	$rime=db_escape(trim($_REQUEST['ime']));
+	$rprezime=db_escape(trim($_REQUEST['prezime']));
+	$rimeoca=db_escape(trim($_REQUEST['imeoca']));
+	$rprezimeoca=db_escape(trim($_REQUEST['prezimeoca']));
+	$rimemajke=db_escape(trim($_REQUEST['imemajke']));
+	$rprezimemajke=db_escape(trim($_REQUEST['prezimemajke']));
 	$rspol=$_REQUEST['spol']; // Moze biti samo 'M', 'Z' ili ''
-	$rmjestorod=my_escape(trim($_REQUEST['mjesto_rodjenja']));
+	$rmjestorod=db_escape(trim($_REQUEST['mjesto_rodjenja']));
 	$ropcinarod=intval($_REQUEST['opcina_rodjenja']);
-	$ropcinavanbihrod=my_escape(trim($_REQUEST['opcina_rodjenja_van_bih']));
+	$ropcinavanbihrod=db_escape(trim($_REQUEST['opcina_rodjenja_van_bih']));
 	$rdrzavarod=intval($_REQUEST['drzava_rodjenja']);
-	$rnacionalnost=my_escape(trim($_REQUEST['nacionalnost']));
+	$rnacionalnost=db_escape(trim($_REQUEST['nacionalnost']));
 	$rdrzavljanstvo=intval($_REQUEST['drzavljanstvo']);
 	$rjmbg=$_REQUEST['jmbg']; // Bice bolje provjeren
 	$rborac=intval($_REQUEST['borac']);
 
-	$rzavrskola=my_escape(trim($_REQUEST['zavrsena_skola']));
+	$rzavrskola=db_escape(trim($_REQUEST['zavrsena_skola']));
 	$rskolaopcina=intval($_REQUEST['zavrsena_skola_opcina']);
 	$rskoladomaca=intval($_REQUEST['zavrsena_skola_domaca']);
 	$rskolagodina=intval($_REQUEST['zavrsena_skola_godina']);
 	if ($_REQUEST['ucenik_generacije']) $rgener=1; else $rgener=0;
 
-	$radresa=my_escape(trim($_REQUEST['adresa']));
-	$radresamjesto=my_escape(trim($_REQUEST['adresa_mjesto']));
-	$rtelefon=my_escape(trim($_REQUEST['telefon_roditelja']));
+	$radresa=db_escape(trim($_REQUEST['adresa']));
+	$radresamjesto=db_escape(trim($_REQUEST['adresa_mjesto']));
+	$rtelefon=db_escape(trim($_REQUEST['telefon_roditelja']));
 	$rkanton=intval($_REQUEST['kanton']);
 	$rnacinstudiranja = intval($_REQUEST['nacin_studiranja']);
 	$opi=intval($_REQUEST['studij_prvi_izbor']);
@@ -1229,76 +1229,76 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	// Pronalazak mjesta i srednje skole i dodavanje u bazu
 	$rmjrid=0;
 	if ($rmjestorod != "") {
-		$q300 = myquery("select id from mjesto where naziv like '$rmjestorod'");
-		if (mysql_num_rows($q300)<1) {
+		$q300 = db_query("select id from mjesto where naziv like '$rmjestorod'");
+		if (db_num_rows($q300)<1) {
 			if ($ropcinarod == 143)
-				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
+				$q301 = db_query("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
 			else
-				$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
-			$q300 = myquery("select id from mjesto where naziv='$rmjestorod'");
+				$q301 = db_query("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
+			$q300 = db_query("select id from mjesto where naziv='$rmjestorod'");
 			zamgerlog("upisano novo mjesto rodjenja $rmjestorod", 2);
-			zamgerlog2("upisano novo mjesto rodjenja", intval(mysql_result($q300, 0, 0)), 0, 0, $rmjestorod);
+			zamgerlog2("upisano novo mjesto rodjenja", intval(db_result($q300, 0, 0)), 0, 0, $rmjestorod);
 		} else {
-			$q300 = myquery("select id from mjesto where naziv like '$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
-			if (mysql_num_rows($q300)<1) {
+			$q300 = db_query("select id from mjesto where naziv like '$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
+			if (db_num_rows($q300)<1) {
 				// Napravicemo novo mjesto
 				if ($ropcinarod == 143)
-					$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
+					$q301 = db_query("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod, opcina_van_bih='$ropcinavanbihrod'");
 				else
-					$q301 = myquery("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
-				$q300 = myquery("select id from mjesto where naziv='$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
+					$q301 = db_query("insert into mjesto set naziv='$rmjestorod', opcina=$ropcinarod, drzava=$rdrzavarod");
+				$q300 = db_query("select id from mjesto where naziv='$rmjestorod' and opcina=$ropcinarod and drzava=$rdrzavarod");
 				zamgerlog("promjena opcine/drzave za mjesto rodjenja $rmjestorod", 2);
-				zamgerlog2("promjena opcine/drzave za mjesto rodjenja", intval(mysql_result($q300,0,0)), 0, 0, $rmjestorod);
+				zamgerlog2("promjena opcine/drzave za mjesto rodjenja", intval(db_result($q300,0,0)), 0, 0, $rmjestorod);
 			}
 		}
-		$rmjrid = mysql_result($q300,0,0);
+		$rmjrid = db_result($q300,0,0);
 	}
 
 	$rnacid=0;
 	if ($rnacionalnost != "") {
-		$q302 = myquery("select id from nacionalnost where naziv like '$rnacionalnost'");
-		if (mysql_num_rows($q302)<1) {
-			$q303 = myquery("insert into nacionalnost set naziv='$rnacionalnost'");
-			$q302 = myquery("select id from nacionalnost where naziv='$rnacionalnost'");
+		$q302 = db_query("select id from nacionalnost where naziv like '$rnacionalnost'");
+		if (db_num_rows($q302)<1) {
+			$q303 = db_query("insert into nacionalnost set naziv='$rnacionalnost'");
+			$q302 = db_query("select id from nacionalnost where naziv='$rnacionalnost'");
 			zamgerlog("upisana nova nacionalnost $rnacionalnost", 2);
-			zamgerlog2("upisana nova nacionalnost", intval(mysql_result($q302,0,0)), 0, 0, $rnacionalnost);
+			zamgerlog2("upisana nova nacionalnost", intval(db_result($q302,0,0)), 0, 0, $rnacionalnost);
 		}
-		$rnacid = mysql_result($q302,0,0);
+		$rnacid = db_result($q302,0,0);
 	}
 
 	$radmid="NULL";
 	if ($radresamjesto != "") {
-		$q302 = myquery("select id from mjesto where naziv like '$radresamjesto'");
-		if (mysql_num_rows($q302)<1) {
-			$q303 = myquery("insert into mjesto set naziv='$radresamjesto'");
-			$q302 = myquery("select id from mjesto where naziv='$radresamjesto'");
+		$q302 = db_query("select id from mjesto where naziv like '$radresamjesto'");
+		if (db_num_rows($q302)<1) {
+			$q303 = db_query("insert into mjesto set naziv='$radresamjesto'");
+			$q302 = db_query("select id from mjesto where naziv='$radresamjesto'");
 			zamgerlog("upisano novo mjesto (adresa) $radresamjesto", 2);
-			zamgerlog2("upisano novo mjesto (adresa)", intval(mysql_result($q302,0,0)), 0, 0, $radresamjesto);
+			zamgerlog2("upisano novo mjesto (adresa)", intval(db_result($q302,0,0)), 0, 0, $radresamjesto);
 		}
-		$radmid = mysql_result($q302,0,0);
+		$radmid = db_result($q302,0,0);
 	}
 
 	$rskolaid=0;
 	if ($rzavrskola != "") {
 //		$rzavrskola = str_replace("&quot;", "\\\"", $rzavrskola);
 		$rzavrskola = str_replace("\\\'", "\'", $rzavrskola);
-		$q304 = myquery("select id from srednja_skola where naziv like '$rzavrskola'");
-		if (mysql_num_rows($q304)<1) {
-			$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
-			$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
+		$q304 = db_query("select id from srednja_skola where naziv like '$rzavrskola'");
+		if (db_num_rows($q304)<1) {
+			$q305 = db_query("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
+			$q304 = db_query("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 			zamgerlog("upisana nova srednja skola $rzavrskola", 2);
-			zamgerlog2("upisana nova srednja skola", intval(mysql_result($q304,0,0)), 0, 0, $rzavrskola);
+			zamgerlog2("upisana nova srednja skola", intval(db_result($q304,0,0)), 0, 0, $rzavrskola);
 		} else {
-			$q304 = myquery("select id from srednja_skola where naziv like '$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
-			if (mysql_num_rows($q304)<1) {
-				$q305 = myquery("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
-				$q304 = myquery("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
+			$q304 = db_query("select id from srednja_skola where naziv like '$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
+			if (db_num_rows($q304)<1) {
+				$q305 = db_query("insert into srednja_skola set naziv='$rzavrskola', opcina=$rskolaopcina, domaca=$rskoladomaca");
+				$q304 = db_query("select id from srednja_skola where naziv='$rzavrskola' and opcina=$rskolaopcina and domaca=$rskoladomaca");
 				zamgerlog("promjena opcine / statusa domacinstva za skolu $rzavrskola", 2);
-				zamgerlog2("promjena opcine / statusa domacinstva za skolu", intval(mysql_result($q304, 0, 0)), 0, 0, $rzavrskola);
+				zamgerlog2("promjena opcine / statusa domacinstva za skolu", intval(db_result($q304, 0, 0)), 0, 0, $rzavrskola);
 			}
 		}
 
-		$rskolaid = mysql_result($q304,0,0);
+		$rskolaid = db_result($q304,0,0);
 	}
 
 
@@ -1351,15 +1351,15 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 
 	// Transakcija!
-	$q305 = myquery("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, log write, prosliciklus_uspjeh write");
+	$q305 = db_query("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, log write, prosliciklus_uspjeh write");
 
 	// Da li se broj dosjea ponavlja??
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
-		$q308 = myquery("select count(*) from prijemni_prijava where broj_dosjea=$rbrojdosjea and prijemni_termin=$termin");
+		$q308 = db_query("select count(*) from prijemni_prijava where broj_dosjea=$rbrojdosjea and prijemni_termin=$termin");
 	} else {
-		$q308 = myquery("select count(*) from prijemni_prijava where broj_dosjea=$rbrojdosjea and prijemni_termin=$termin and osoba!=$rosoba");
+		$q308 = db_query("select count(*) from prijemni_prijava where broj_dosjea=$rbrojdosjea and prijemni_termin=$termin and osoba!=$rosoba");
 	}
-	if (mysql_result($q308,0,0)>0) {
+	if (db_result($q308,0,0)>0) {
 		niceerror("Broj dosjea $rbrojdosjea je već unesen! Izaberite neki drugi redni broj.");
 		$greska=1;
 		$greskabrojdos=1;
@@ -1374,23 +1374,23 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		//$min_id=1;
 		$min_id = 2500; // radi lakseg grupisanja brojeva
 
-		$q310 = myquery("select id+1 from osoba where id>=$min_id order by id desc limit 1");
-		if (mysql_num_rows($q310)<1)
+		$q310 = db_query("select id+1 from osoba where id>=$min_id order by id desc limit 1");
+		if (db_num_rows($q310)<1)
 			$rosoba=$min_id;
 		else
-			$rosoba=mysql_result($q310,0,0);
+			$rosoba=db_result($q310,0,0);
 
-		$q320 = myquery("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=6"); // 6 = bez naucnog stepena
+		$q320 = db_query("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=6"); // 6 = bez naucnog stepena
 
 		// Nova prijava prijemni
-		$q330 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
+		$q330 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
 
 		// Novi uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
-			$q340 = myquery("insert into uspjeh_u_srednjoj set osoba=$rosoba, srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=0, kljucni_predmeti=0, dodatni_bodovi=0, ucenik_generacije=$rgener");
+			$q340 = db_query("insert into uspjeh_u_srednjoj set osoba=$rosoba, srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=0, kljucni_predmeti=0, dodatni_bodovi=0, ucenik_generacije=$rgener");
 		} else {
 			$broj_semestara = intval($_REQUEST['broj_semestara']);
-			$q340 = myquery("insert into prosliciklus_uspjeh set osoba=$rosoba, fakultet=0, akademska_godina=0, broj_semestara=$broj_semestara, opci_uspjeh=0, dodatni_bodovi=0");
+			$q340 = db_query("insert into prosliciklus_uspjeh set osoba=$rosoba, fakultet=0, akademska_godina=0, broj_semestara=$broj_semestara, opci_uspjeh=0, dodatni_bodovi=0");
 		}
 
 		zamgerlog("novi kandidat za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -1407,17 +1407,17 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	else { // Editovanje postojeceg kandidata
 
 		// Updatujem osobu
-		$q350 = myquery("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0 where id=$rosoba");
+		$q350 = db_query("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0 where id=$rosoba");
 
 		// Updatujem prijavu prijemnog
-		$q360 = myquery("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
+		$q360 = db_query("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
 
 		// Updatujem uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
-			$q370 = myquery("update uspjeh_u_srednjoj set srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, ucenik_generacije=$rgener where osoba=$rosoba");
+			$q370 = db_query("update uspjeh_u_srednjoj set srednja_skola=$rskolaid, godina=$rskolagodina, opci_uspjeh=$ropci, kljucni_predmeti=$rkljucni, dodatni_bodovi=$rdodatni, ucenik_generacije=$rgener where osoba=$rosoba");
 		} else {
 			$broj_semestara = intval($_REQUEST['broj_semestara']);
-			$q340 = myquery("update prosliciklus_uspjeh set broj_semestara=$broj_semestara, opci_uspjeh=$ropci, dodatni_bodovi=$rdodatni where osoba=$rosoba");
+			$q340 = db_query("update prosliciklus_uspjeh set broj_semestara=$broj_semestara, opci_uspjeh=$ropci, dodatni_bodovi=$rdodatni where osoba=$rosoba");
 		}
 
 		zamgerlog("izmjena kandidata za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -1445,7 +1445,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 	}
 
 	// Kraj transakcije
-	$q380 = myquery("unlock tables");
+	$q380 = db_query("unlock tables");
 
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
 		zamgerlog2("novi kandidat za prijemni", intval($rosoba), 0, 0, $rbrojdosjea);
@@ -1480,16 +1480,16 @@ if (!$vrstaunosa) {
 // Prenos podataka iz vanjske aplikacije za prijemni ispit (tabela kandidati)
 // FIXME ovo je privremeno
 if (isset($_REQUEST['ucitajjmbg'])) {
-	$jmbg = my_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
+	$jmbg = db_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
 	unset($_REQUEST['ucitajjmbg']);
-	$q5000 = myquery("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1"); // Uzimamo posljednjeg!
-	if (mysql_num_rows($q5000)<1) {
+	$q5000 = db_query("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1"); // Uzimamo posljednjeg!
+	if (db_num_rows($q5000)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
 		$ejmbg=$jmbg;
-	} else if (mysql_num_rows($q5000)>1) {
+	} else if (db_num_rows($q5000)>1) {
 		niceerror("Postoji više kandidata sa istim JMBGom.");
-		while ($r5000 = mysql_fetch_row($q5000))
+		while ($r5000 = db_fetch_row($q5000))
 			print "- ".$r5000[1]." ".$r5000[0]."<br>\n";
 		$vrstaunosa="novi";
 		$ejmbg=$jmbg;
@@ -1497,151 +1497,151 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 		$vrstaunosa = "editovanje";
 		
 		// Uzimamo propisno escapovane vrijednosti iz tabele
-		// Koristimo my_escape jer aplikacija u tabeli drži podatke bez escapovanja HTML tagova i entiteta,
+		// Koristimo db_escape jer aplikacija u tabeli drži podatke bez escapovanja HTML tagova i entiteta,
 		// dok je u Zamgeru politika obrnuta
-		$k_ime = my_escape(mysql_result($q5000,0,0));
-		$k_prezime = my_escape(mysql_result($q5000,0,1));
-		$k_ime_oca = my_escape(mysql_result($q5000,0,2));
-		$k_prezime_oca = my_escape(mysql_result($q5000,0,3));
-		$k_ime_majke = my_escape(mysql_result($q5000,0,4));
-		$k_prezime_majke = my_escape(mysql_result($q5000,0,5));
-		$k_spol = mysql_result($q5000,0,6);
-		$k_datum_rod = mysql_result($q5000,0,7);
-		$k_kmjesto_rod = mysql_result($q5000,0,8);
-		$k_nacionalnost = mysql_result($q5000,0,9);
-		$k_drzavljanstvo = mysql_result($q5000,0,10);
-		$k_adresa = my_escape(mysql_result($q5000,0,11));
-		$k_mjesto_preb = my_escape(mysql_result($q5000,0,12));
-		$k_telefon = my_escape(mysql_result($q5000,0,13));
-		$k_kanton = mysql_result($q5000,0,14);
-		$k_studij = mysql_result($q5000,0,15);
-		$k_naziv_skole = my_escape(mysql_result($q5000,0,16));
-		$k_opcina_skole = mysql_result($q5000,0,23);
-		$k_strana_skola = mysql_result($q5000,0,17);
-		$k_skolska = mysql_result($q5000,0,18);
-		$k_opci_uspjeh = mysql_result($q5000,0,19) * 4; // Faktori za računanje bodova
-		$k_znacajni_predmeti = mysql_result($q5000,0,20) * 8;
-		$k_email = my_escape(mysql_result($q5000,0,21));
-		$kandidat_id = mysql_result($q5000,0,22);
+		$k_ime = db_escape(db_result($q5000,0,0));
+		$k_prezime = db_escape(db_result($q5000,0,1));
+		$k_ime_oca = db_escape(db_result($q5000,0,2));
+		$k_prezime_oca = db_escape(db_result($q5000,0,3));
+		$k_ime_majke = db_escape(db_result($q5000,0,4));
+		$k_prezime_majke = db_escape(db_result($q5000,0,5));
+		$k_spol = db_result($q5000,0,6);
+		$k_datum_rod = db_result($q5000,0,7);
+		$k_kmjesto_rod = db_result($q5000,0,8);
+		$k_nacionalnost = db_result($q5000,0,9);
+		$k_drzavljanstvo = db_result($q5000,0,10);
+		$k_adresa = db_escape(db_result($q5000,0,11));
+		$k_mjesto_preb = db_escape(db_result($q5000,0,12));
+		$k_telefon = db_escape(db_result($q5000,0,13));
+		$k_kanton = db_result($q5000,0,14);
+		$k_studij = db_result($q5000,0,15);
+		$k_naziv_skole = db_escape(db_result($q5000,0,16));
+		$k_opcina_skole = db_result($q5000,0,23);
+		$k_strana_skola = db_result($q5000,0,17);
+		$k_skolska = db_result($q5000,0,18);
+		$k_opci_uspjeh = db_result($q5000,0,19) * 4; // Faktori za računanje bodova
+		$k_znacajni_predmeti = db_result($q5000,0,20) * 8;
+		$k_email = db_escape(db_result($q5000,0,21));
+		$kandidat_id = db_result($q5000,0,22);
 		
-		$k_bk = mysql_result($q5000,0,24);
-		$k_bk_br = my_escape(mysql_result($q5000,0,25));
-		$k_bk_dr = mysql_result($q5000,0,26);
-		$k_bk_oi = my_escape(mysql_result($q5000,0,27));
+		$k_bk = db_result($q5000,0,24);
+		$k_bk_br = db_escape(db_result($q5000,0,25));
+		$k_bk_dr = db_result($q5000,0,26);
+		$k_bk_oi = db_escape(db_result($q5000,0,27));
 		
 		// Kreiramo nove zapise u potrebnim tabelama
-		$q5010 = myquery("select id from osoba order by id desc limit 1");
-		$osoba = mysql_result($q5010,0,0)+1;
-		$q5020 = myquery("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
-		if (mysql_num_rows($q5020)>0)
-			$broj_dosjea = mysql_result($q5020,0,0)+1;
+		$q5010 = db_query("select id from osoba order by id desc limit 1");
+		$osoba = db_result($q5010,0,0)+1;
+		$q5020 = db_query("select broj_dosjea from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+		if (db_num_rows($q5020)>0)
+			$broj_dosjea = db_result($q5020,0,0)+1;
 		else
 			$broj_dosjea = 1;
 		
 		// Tražimo mjesto rođenja
-		$q5022 = myquery("SELECT naziv, opcina, drzava, opcina_van_bih FROM kandidati_mjesto WHERE id=$k_kmjesto_rod");
-		$k_mr_naziv = mysql_real_escape_string(mysql_result($q5022,0,0));
-		$k_mr_opcina = mysql_result($q5022,0,1);
-		$k_mr_drzava = mysql_result($q5022,0,2);
-		$k_mr_ovb = mysql_real_escape_string(mysql_result($q5022,0,3));
-		$q5024 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mr_naziv' AND opcina=$k_mr_opcina AND drzava=$k_mr_drzava");
-		if (mysql_num_rows($q5024) == 0) {
-			$q5026 = myquery("INSERT INTO mjesto SET naziv='$k_mr_naziv', opcina=$k_mr_opcina, drzava=$k_mr_drzava, opcina_van_bih='$k_mr_ovb'");
-			$k_mjesto_rod = mysql_insert_id();
+		$q5022 = db_query("SELECT naziv, opcina, drzava, opcina_van_bih FROM kandidati_mjesto WHERE id=$k_kmjesto_rod");
+		$k_mr_naziv = db_escape_string(db_result($q5022,0,0));
+		$k_mr_opcina = db_result($q5022,0,1);
+		$k_mr_drzava = db_result($q5022,0,2);
+		$k_mr_ovb = db_escape_string(db_result($q5022,0,3));
+		$q5024 = db_query("SELECT id FROM mjesto WHERE naziv='$k_mr_naziv' AND opcina=$k_mr_opcina AND drzava=$k_mr_drzava");
+		if (db_num_rows($q5024) == 0) {
+			$q5026 = db_query("INSERT INTO mjesto SET naziv='$k_mr_naziv', opcina=$k_mr_opcina, drzava=$k_mr_drzava, opcina_van_bih='$k_mr_ovb'");
+			$k_mjesto_rod = db_insert_id();
 		} else 
-			$k_mjesto_rod = mysql_result($q5024,0,0);
+			$k_mjesto_rod = db_result($q5024,0,0);
 		
 		// Tražimo mjesto prebivališta
-		$q5030 = myquery("SELECT id FROM mjesto WHERE naziv='$k_mjesto_preb'");
-		if (mysql_num_rows($q5030)==0) {
-			$q5040 = myquery("INSERT INTO mjesto SET naziv='$k_mjesto_preb', opcina=0, drzava=1");
-			$k_adresa_mjesto = mysql_insert_id();
+		$q5030 = db_query("SELECT id FROM mjesto WHERE naziv='$k_mjesto_preb'");
+		if (db_num_rows($q5030)==0) {
+			$q5040 = db_query("INSERT INTO mjesto SET naziv='$k_mjesto_preb', opcina=0, drzava=1");
+			$k_adresa_mjesto = db_insert_id();
 		} else
-			$k_adresa_mjesto = mysql_result($q5030,0,0);
+			$k_adresa_mjesto = db_result($q5030,0,0);
 
-		$q5100 = myquery("INSERT INTO osoba SET id=$osoba, ime='$k_ime', prezime='$k_prezime', imeoca='$k_ime_oca', prezimeoca='$k_prezime_oca', imemajke='$k_ime_majke', prezimemajke='$k_prezime_majke', spol='$k_spol', datum_rodjenja='$k_datum_rod', mjesto_rodjenja=$k_mjesto_rod, nacionalnost=$k_nacionalnost, drzavljanstvo=$k_drzavljanstvo, jmbg='$jmbg', adresa='$k_adresa', adresa_mjesto=$k_adresa_mjesto, telefon='$k_telefon', kanton='$k_kanton'");
+		$q5100 = db_query("INSERT INTO osoba SET id=$osoba, ime='$k_ime', prezime='$k_prezime', imeoca='$k_ime_oca', prezimeoca='$k_prezime_oca', imemajke='$k_ime_majke', prezimemajke='$k_prezime_majke', spol='$k_spol', datum_rodjenja='$k_datum_rod', mjesto_rodjenja=$k_mjesto_rod, nacionalnost=$k_nacionalnost, drzavljanstvo=$k_drzavljanstvo, jmbg='$jmbg', adresa='$k_adresa', adresa_mjesto=$k_adresa_mjesto, telefon='$k_telefon', kanton='$k_kanton'");
 		if (!empty($k_email))
-			$q5110 = myquery("INSERT INTO email SET osoba=$osoba, adresa='$k_email', sistemska=0");
+			$q5110 = db_query("INSERT INTO email SET osoba=$osoba, adresa='$k_email', sistemska=0");
 		
-		$q5120 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, studij_prvi=$k_studij, izasao=0, rezultat=0");
+		$q5120 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, studij_prvi=$k_studij, izasao=0, rezultat=0");
 
 		// Određivanje šifre
 		do {
 			$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
-			$q5130 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
-		} while (mysql_result($q5130,0,0)>0);
-		$q5140 = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
+			$q5130 = db_query("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+		} while (db_result($q5130,0,0)>0);
+		$q5140 = db_query("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
 
 		// Srednja škola
-		$q5150 = myquery("SELECT id FROM srednja_skola WHERE naziv='$k_naziv_skole' AND opcina=$k_opcina_skole");
-		if (mysql_num_rows($q5150)==0) {
+		$q5150 = db_query("SELECT id FROM srednja_skola WHERE naziv='$k_naziv_skole' AND opcina=$k_opcina_skole");
+		if (db_num_rows($q5150)==0) {
 			if ($k_strana_skola==1) $k_domaca=0; else $k_domaca=1;
-			$q5160 = myquery("INSERT INTO srednja_skola SET naziv='$k_naziv_skole', opcina=$k_opcina_skole, domaca=$k_domaca");
-			$k_id_skole = mysql_insert_id();
+			$q5160 = db_query("INSERT INTO srednja_skola SET naziv='$k_naziv_skole', opcina=$k_opcina_skole, domaca=$k_domaca");
+			$k_id_skole = db_insert_id();
 		} else {
-			$k_id_skole = mysql_result($q5150,0,0);
+			$k_id_skole = db_result($q5150,0,0);
 		}
 		
-		$q5160 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba, srednja_skola=$k_id_skole, godina=$k_skolska, opci_uspjeh=$k_opci_uspjeh, kljucni_predmeti=$k_znacajni_predmeti, dodatni_bodovi=0, ucenik_generacije=0");
+		$q5160 = db_query("insert into uspjeh_u_srednjoj set osoba=$osoba, srednja_skola=$k_id_skole, godina=$k_skolska, opci_uspjeh=$k_opci_uspjeh, kljucni_predmeti=$k_znacajni_predmeti, dodatni_bodovi=0, ucenik_generacije=0");
 		
-		$q5170 = myquery("SELECT naziv_predmeta, prvi_razred, drugi_razred, treci_razred, cetvrti_razred, kljucni_predmet FROM kandidati_ocjene WHERE kandidat_id=$kandidat_id");
+		$q5170 = db_query("SELECT naziv_predmeta, prvi_razred, drugi_razred, treci_razred, cetvrti_razred, kljucni_predmet FROM kandidati_ocjene WHERE kandidat_id=$kandidat_id");
 		$rbr1=$rbr2=$rbr3=$rbr4=1;
-		while ($r5170 = mysql_fetch_row($q5170)) {
+		while ($r5170 = db_fetch_row($q5170)) {
 			if ($r5170[0] == "Maternji jezik") {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 1)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 1)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 1)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 1)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 1)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 1)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 1)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 1)");
 			} else if ($r5170[0] == "Matematika") {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 2)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 2)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 2)");
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 2)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 1, 0, $r5170[1], 2)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 2, 0, $r5170[2], 2)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 3, 0, $r5170[3], 2)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 4, 0, $r5170[4], 2)");
 			} else if ($r5170[0] == "Fizika") {
 				$razred=4;
 				if ($r5170[4] > 0) {
-					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[4], 3)");
+					$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[4], 3)");
 					$razred--;
 				}
 				if ($r5170[3] > 0) {
-					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[3], 3)");
+					$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[3], 3)");
 					$razred--;
 				}
 				if ($r5170[2] > 0 && $razred>2) {
-					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[2], 3)");
+					$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[2], 3)");
 					$razred--;
 				}
 				if ($r5170[1] > 0 && $razred>2) {
-					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[1], 3)");
+					$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, $r5170[1], 3)");
 					$razred--;
 				}
 				while ($razred>2) {
-					$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, 0, 3)");
+					$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, $razred, 0, 0, 3)");
 					$razred--;
 				}
 			}
 			if ($r5170[1] > 0) {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 1, $rbr1, $r5170[1], 0)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 1, $rbr1, $r5170[1], 0)");
 				$rbr1++;
 			}
 			if ($r5170[2] > 0) {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 2, $rbr2, $r5170[2], 0)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 2, $rbr2, $r5170[2], 0)");
 				$rbr2++;
 			}
 			if ($r5170[3] > 0) {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 3, $rbr3, $r5170[3], 0)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 3, $rbr3, $r5170[3], 0)");
 				$rbr3++;
 			}
 			if ($r5170[4] > 0) {
-				$q5180 = myquery("INSERT INTO srednja_ocjene VALUES ($osoba, 4, $rbr4, $r5170[4], 0)");
+				$q5180 = db_query("INSERT INTO srednja_ocjene VALUES ($osoba, 4, $rbr4, $r5170[4], 0)");
 				$rbr4++;
 			}
 		}
 		
 		if (intval($k_bk) > 0)
-			$q5190 = myquery("INSERT INTO osoba_posebne_kategorije SET osoba=$osoba, posebne_kategorije=$k_bk, br_rjesenja='$k_bk_br', datum_rjesenja='$k_bk_dr', organ_izdavanja='$k_bk_oi'");
+			$q5190 = db_query("INSERT INTO osoba_posebne_kategorije SET osoba=$osoba, posebne_kategorije=$k_bk, br_rjesenja='$k_bk_br', datum_rjesenja='$k_bk_dr', organ_izdavanja='$k_bk_oi'");
 		
-		$q5200 = myquery("UPDATE kandidati SET podaci_uvezeni=1, osoba=$osoba WHERE id=$kandidat_id");
+		$q5200 = db_query("UPDATE kandidati SET podaci_uvezeni=1, osoba=$osoba WHERE id=$kandidat_id");
 		
 		zamgerlog2("kopiram kandidata iz aplikacije za upis", intval($osoba), 0, 0, $broj_dosjea);
 		$_REQUEST['izmjena'] = $osoba;
@@ -1651,52 +1651,52 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 
 // Traženje postojeće osobe po JMBGu
 if (intval($_REQUEST['trazijmbg'])>0) {
-	$jmbg = my_escape($_REQUEST['trazijmbg']); // u biti ne znamo format JMBGa
-	$q1 = myquery("select id from osoba where jmbg='$jmbg'");
-	if (mysql_num_rows($q1)<1) {
+	$jmbg = db_escape($_REQUEST['trazijmbg']); // u biti ne znamo format JMBGa
+	$q1 = db_query("select id from osoba where jmbg='$jmbg'");
+	if (db_num_rows($q1)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
 		$ejmbg=$jmbg;
 	} else {
-		$osoba = mysql_result($q1,0,0);
+		$osoba = db_result($q1,0,0);
 		$vrstaunosa="editovanje";
 		// Da li je osoba vec na prijemnom?
-		$q2 = myquery("select count(*) from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
-		if (mysql_result($q2,0,0)>0) {
+		$q2 = db_query("select count(*) from prijemni_prijava where prijemni_termin=$termin and osoba=$osoba");
+		if (db_result($q2,0,0)>0) {
 			nicemessage("Osoba sa JMBGom već prijavljena na prijemni");
 		} else {
 			// Broj dosjea postavljamo na prvi slobodan
-			$q3 = myquery("select broj_dosjea+1 from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
-			if (mysql_num_rows($q3)<1)
+			$q3 = db_query("select broj_dosjea+1 from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+			if (db_num_rows($q3)<1)
 				$nbrojdosjea=1;
 			else
-				$nbrojdosjea=mysql_result($q3,0,0);
+				$nbrojdosjea=db_result($q3,0,0);
 
 			// Kod upisa na više cikluse, pretpostavljamo da će upisati isti studij
 			// što određujemo na osnovu institucije
 			$sp=0;
 			if ($ciklus_studija>1) {
-				$q4 = myquery("select s.institucija from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
-				if (mysql_num_rows($q4)>0) { // Da li je ikada studirao išta ovdje?
-					$q5 = myquery("select s.id from studij as s, tipstudija as ts where s.institucija=".mysql_result($q4,0,0)." and s.tipstudija=ts.id and ts.ciklus<=$ciklus_studija");
-					$sp = mysql_result($q5,0,0);
+				$q4 = db_query("select s.institucija from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
+				if (db_num_rows($q4)>0) { // Da li je ikada studirao išta ovdje?
+					$q5 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=".db_result($q4,0,0)." and s.tipstudija=ts.id and ts.ciklus<=$ciklus_studija");
+					$sp = db_result($q5,0,0);
 				}
 
 				// Brišemo ranije podatke o uspjehu kako ne bismo stvorili konflikt sa podacima sa prošlog prijemnog (MSc -> PhD)
-				$q5a = myquery("delete from prosliciklus_ocjene where osoba=$osoba");
-				$q5b = myquery("delete from prosliciklus_uspjeh where osoba=$osoba");
+				$q5a = db_query("delete from prosliciklus_ocjene where osoba=$osoba");
+				$q5b = db_query("delete from prosliciklus_uspjeh where osoba=$osoba");
 			}
 
-			$q6 = myquery("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$nbrojdosjea, studij_prvi=$sp");
+			$q6 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$nbrojdosjea, studij_prvi=$sp");
 
 			// Treba li kreirati novi obrazac?
-			$q6a = myquery("select count(*) from prijemni_obrazac where prijemni_termin=$termin and osoba=$osoba");
-			if (mysql_result($q6a,0,0)==0) {
+			$q6a = db_query("select count(*) from prijemni_obrazac where prijemni_termin=$termin and osoba=$osoba");
+			if (db_result($q6a,0,0)==0) {
 				do {
 					$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
-					$q3015 = myquery("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
-				} while (mysql_result($q3015,0,0)>0);
-				$q6b = myquery("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
+					$q3015 = db_query("select count(*) from prijemni_obrazac where sifra='$sifra' and prijemni_termin=$termin");
+				} while (db_result($q3015,0,0)>0);
+				$q6b = db_query("insert into prijemni_obrazac set prijemni_termin=$termin, osoba=$osoba, sifra='$sifra', jezik='bs'");
 			}
 
 			nicemessage("Prijavljujem osobu na prijemni ispit");
@@ -1704,23 +1704,23 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 
 		// Da li je potrebno kreirati zapis u tabeli "uspjeh u srednjoj"? samo za prvi ciklus
 		if ($ciklus_studija==1) {
-			$q7 = myquery("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
-			if (mysql_result ($q7,0,0)<1) {
-				$q8 = myquery("insert into uspjeh_u_srednjoj set osoba=$osoba");
+			$q7 = db_query("select count(*) from uspjeh_u_srednjoj where osoba=$osoba");
+			if (db_result ($q7,0,0)<1) {
+				$q8 = db_query("insert into uspjeh_u_srednjoj set osoba=$osoba");
 				// Ostale stvari ce biti popunjene kroz formular
 			}
 
 		} else {
 			// Za više cikluse, popunićemo tabelu podacima o prethodnom ciklusu iz Zamgera
-			$q9 = myquery("select ko.ocjena, p.ects, pk.semestar from konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts where ko.student=$osoba and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.id=sp.predmet and sp.student=$osoba and pk.studij=s.id and s.tipstudija=ts.id and ts.ciklus=".($ciklus_studija-1));
+			$q9 = db_query("select ko.ocjena, p.ects, pk.semestar from konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts where ko.student=$osoba and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.id=sp.predmet and sp.student=$osoba and pk.studij=s.id and s.tipstudija=ts.id and ts.ciklus=".($ciklus_studija-1));
 			$bodovi=0; // Odmah izracunavamo i bodove
 			$rednibroj=1;
 			$maxsemestar=0;
 			$sumaects=0;
 			$sumaocjena=0;
 			$brojocjena=0;
-			while ($r9 = mysql_fetch_row($q9)) {
-				$q10 = myquery("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ocjena=$r9[0], ects=$r9[1]");
+			while ($r9 = db_fetch_row($q9)) {
+				$q10 = db_query("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ocjena=$r9[0], ects=$r9[1]");
 				$rednibroj++;
 				$bodovi += ($r9[0]*$r9[1]);
 				$sumaects += $r9[1];
@@ -1735,7 +1735,7 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			if ($brojocjena>0)
 				$bodovi = round(($sumaocjena / $brojocjena) * 100) / 10;
 			else $bodovi=0;
-			$q11 = myquery("insert into prosliciklus_uspjeh set osoba=$osoba, opci_uspjeh=$bodovi, broj_semestara=$maxsemestar");
+			$q11 = db_query("insert into prosliciklus_uspjeh set osoba=$osoba, opci_uspjeh=$bodovi, broj_semestara=$maxsemestar");
 		}
 	}
 }
@@ -1752,51 +1752,51 @@ $eskolazavrsena = 0; // godina završetka škole će biti prošla
 
 
 if ($osoba>0) {
-	$q = myquery("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
-	$eime = mysql_result($q,0,0);
-	$eprezime = mysql_result($q,0,1);
-	$eimeoca = mysql_result($q,0,2);
-	$eprezimeoca = mysql_result($q,0,3);
-	$eimemajke = mysql_result($q,0,4);
-	$eprezimemajke = mysql_result($q,0,5);
-	$espol = mysql_result($q,0,6);
+	$q = db_query("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
+	$eime = db_result($q,0,0);
+	$eprezime = db_result($q,0,1);
+	$eimeoca = db_result($q,0,2);
+	$eprezimeoca = db_result($q,0,3);
+	$eimemajke = db_result($q,0,4);
+	$eprezimemajke = db_result($q,0,5);
+	$espol = db_result($q,0,6);
 
-	$edatum = date("d. m. Y.",mysql_result($q,0,7));
-	$emjesto = mysql_result($q,0,8);
-	$edrzavljanstvo = mysql_result($q,0,9);
-	$enacionalnost = mysql_result($q,0,10);
-	$ejmbg = mysql_result($q,0,11);
-	$eborac = mysql_result($q,0,12);
+	$edatum = date("d. m. Y.",db_result($q,0,7));
+	$emjesto = db_result($q,0,8);
+	$edrzavljanstvo = db_result($q,0,9);
+	$enacionalnost = db_result($q,0,10);
+	$ejmbg = db_result($q,0,11);
+	$eborac = db_result($q,0,12);
 
-	$eadresa = mysql_result($q,0,13);
-	$eadresamjesto = mysql_result($q,0,14);
-	$etelefon = mysql_result($q,0,15);
-	$ekanton = mysql_result($q,0,16);
+	$eadresa = db_result($q,0,13);
+	$eadresamjesto = db_result($q,0,14);
+	$etelefon = db_result($q,0,15);
+	$ekanton = db_result($q,0,16);
 
-	$enacinstudiranja = mysql_result($q,0,17);
-	$eopi = mysql_result($q,0,18);
-	$eodi = mysql_result($q,0,19);
-	$eoti = mysql_result($q,0,20);
-	$eoci = mysql_result($q,0,21);
-	$eprijemni = mysql_result($q,0,22);
-	$ebrojdosjea = mysql_result($q,0,23);
-	$eizasao = mysql_result($q,0,24);
+	$enacinstudiranja = db_result($q,0,17);
+	$eopi = db_result($q,0,18);
+	$eodi = db_result($q,0,19);
+	$eoti = db_result($q,0,20);
+	$eoci = db_result($q,0,21);
+	$eprijemni = db_result($q,0,22);
+	$ebrojdosjea = db_result($q,0,23);
+	$eizasao = db_result($q,0,24);
 
 	if ($ciklus_studija==1) { // Uzimamo podatke za srednju skolu - samo ako se upisuje na prvi ciklus
-		$q300 = myquery("select srednja_skola, godina, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
-		$eskola = mysql_result($q300,0,0);
-		$eskolazavr = mysql_result($q300,0,1);
-		$eopci = mysql_result($q300,0,2);
-		$ekljucni = mysql_result($q300,0,3);
-		$edodatni = mysql_result($q300,0,4);
-		$egener = mysql_result($q300,0,5);
+		$q300 = db_query("select srednja_skola, godina, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
+		$eskola = db_result($q300,0,0);
+		$eskolazavr = db_result($q300,0,1);
+		$eopci = db_result($q300,0,2);
+		$ekljucni = db_result($q300,0,3);
+		$edodatni = db_result($q300,0,4);
+		$egener = db_result($q300,0,5);
 	} else { // podaci za prosli ciklus
-		$q310 = myquery("select fakultet, akademska_godina, opci_uspjeh, dodatni_bodovi, broj_semestara from prosliciklus_uspjeh where osoba=$osoba");
-		$efakultet = mysql_result($q310,0,0);
-		$eskolazavr = mysql_result($q300,0,1);
-		$eopci = mysql_result($q310,0,2);
-		$edodatni = mysql_result($q310,0,3);
-		$ebrojsem = mysql_result($q310,0,4);
+		$q310 = db_query("select fakultet, akademska_godina, opci_uspjeh, dodatni_bodovi, broj_semestara from prosliciklus_uspjeh where osoba=$osoba");
+		$efakultet = db_result($q310,0,0);
+		$eskolazavr = db_result($q300,0,1);
+		$eopci = db_result($q310,0,2);
+		$edodatni = db_result($q310,0,3);
+		$ebrojsem = db_result($q310,0,4);
 	}
 }
 
@@ -1805,21 +1805,21 @@ else if ($vrstaunosa=="novigreska") {
 
 } else { // Nova osoba
 	// Odredjujemo broj dosjea
-	$q220 = myquery("select broj_dosjea+1 from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
-	if (mysql_num_rows($q220)<1)
+	$q220 = db_query("select broj_dosjea+1 from prijemni_prijava where prijemni_termin=$termin order by broj_dosjea desc limit 1");
+	if (db_num_rows($q220)<1)
 		$ebrojdosjea=1;
 	else
-		$ebrojdosjea=mysql_result($q220,0,0);
+		$ebrojdosjea=db_result($q220,0,0);
 }
 
 
 // Spisak dostupnih studija ovisno o ciklusu studija
 
-$q230 = myquery("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija order by s.kratkinaziv");
+$q230 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija order by s.kratkinaziv");
 $studiji = array();
 $sstudimena="";
 $sstudbrojevi="";
-while ($r230 = mysql_fetch_row($q230)) {
+while ($r230 = db_fetch_row($q230)) {
 	$studiji[$r230[0]] = $r230[1];
 	if ($sstudimena != "") $sstudimena .= ",";
 	$sstudimena .= "'".$r230[1]."'";
@@ -1830,11 +1830,11 @@ while ($r230 = mysql_fetch_row($q230)) {
 
 // Spisak gradova za mjesto rodjenja i adresu
 
-$q240 = myquery("select id, naziv, opcina, drzava, opcina_van_bih from mjesto order by naziv");
+$q240 = db_query("select id, naziv, opcina, drzava, opcina_van_bih from mjesto order by naziv");
 $gradovir="<option></option>";
 $gradovia="<option></option>";
 $eopcinarodjenja = $edrzavarodjenja = 0;
-while ($r240 = mysql_fetch_row($q240)) {
+while ($r240 = db_fetch_row($q240)) {
 	$gradovir .= "<option"; $gradovia .= "<option";
  	if ($r240[0]==$emjesto) { 
 		$gradovir  .= " SELECTED"; 
@@ -1855,10 +1855,10 @@ while ($r240 = mysql_fetch_row($q240)) {
 
 // Spisak srednjih skola
 
-$q250 = myquery("select id, naziv, opcina, domaca from srednja_skola order by naziv");
+$q250 = db_query("select id, naziv, opcina, domaca from srednja_skola order by naziv");
 $srednjer="<option></option>";
 $eskolaopcina = $eskoladomaca = 0;
-while ($r250 = mysql_fetch_row($q250)) {
+while ($r250 = db_fetch_row($q250)) {
 	$srednjer .= "<option";
  	if ($r250[0]==$eskola) { 
 		$srednjer  .= " SELECTED"; 
@@ -1872,10 +1872,10 @@ while ($r250 = mysql_fetch_row($q250)) {
 
 // Spisak opština
 
-$q255 = myquery("select id, naziv from opcina order by naziv");
+$q255 = db_query("select id, naziv from opcina order by naziv");
 $opciner="<option></option>";
 $opcinerodjr="<option></option>";
-while ($r255 = mysql_fetch_row($q255)) {
+while ($r255 = db_fetch_row($q255)) {
 	$opciner .= "<option value=\"$r255[0]\" ";
  	if ($r255[0]==$eskolaopcina) { $opciner  .= " SELECTED"; }
 	$opciner .= ">$r255[1]</option>\n";
@@ -1887,9 +1887,9 @@ while ($r255 = mysql_fetch_row($q255)) {
 
 // Spisak nacionalnosti
 
-$q256 = myquery("select id, naziv from nacionalnost order by naziv");
+$q256 = db_query("select id, naziv from nacionalnost order by naziv");
 $nacionalnostr="<option></option>";
-while ($r256 = mysql_fetch_row($q256)) {
+while ($r256 = db_fetch_row($q256)) {
 	$nacionalnostr .= "<option";
 	if ($r256[0]==$enacionalnost) { $nacionalnostr  .= " SELECTED"; $nacionalnostrvalue = $r256[1]; }
 	$nacionalnostr .= ">$r256[1]</option>\n";
@@ -1898,10 +1898,10 @@ while ($r256 = mysql_fetch_row($q256)) {
 
 // Spisak država
 
-$q257 = myquery("select id, naziv from drzava order by naziv");
+$q257 = db_query("select id, naziv from drzava order by naziv");
 $drzaverodjr="<option></option>";
 $drzavljanstvor="<option></option>";
-while ($r257 = mysql_fetch_row($q257)) {
+while ($r257 = db_fetch_row($q257)) {
 	$drzaverodjr .= "<option value=\"$r257[0]\" ";
  	if ($r257[0]==$edrzavarodjenja) { $drzaverodjr  .= " SELECTED"; }
 	$drzaverodjr .= ">$r257[1]</option>\n";
@@ -1913,9 +1913,9 @@ while ($r257 = mysql_fetch_row($q257)) {
 
 // Spisak ak. godina
 
-$q258 = myquery("select id, naziv, aktuelna from akademska_godina order by naziv");
+$q258 = db_query("select id, naziv, aktuelna from akademska_godina order by naziv");
 $skolazavr="<option></option>";
-while ($r258 = mysql_fetch_row($q258)) {
+while ($r258 = db_fetch_row($q258)) {
 	$skolazavr .= "<option value=\"$r258[0]\" ";
 	if ($r258[0]==$eskolazavrsena) { $skolazavr  .= " SELECTED"; }
 	if ($r258[2]==1 && $eskolazavrsena==0) { $skolazavr  .= " SELECTED"; }
@@ -1925,9 +1925,9 @@ while ($r258 = mysql_fetch_row($q258)) {
 
 // Spisak kantona
 
-$q259 = myquery("select id, naziv from kanton order by naziv");
+$q259 = db_query("select id, naziv from kanton order by naziv");
 $kantonr="<option></option>";
-while ($r259 = mysql_fetch_row($q259)) {
+while ($r259 = db_fetch_row($q259)) {
 	$kantonr .= "<option value=\"$r259[0]\" ";
  	if ($r259[0]==$ekanton) { $kantonr  .= " SELECTED"; }
 	$kantonr .= ">$r259[1]</option>\n";
@@ -1936,9 +1936,9 @@ while ($r259 = mysql_fetch_row($q259)) {
 
 // Spisak načina studiranja
 
-$q259a = myquery("select id, naziv from nacin_studiranja where moguc_upis=1 order by id");
+$q259a = db_query("select id, naziv from nacin_studiranja where moguc_upis=1 order by id");
 $nacinstudiranjar=""; // Nema blank opcije
-while ($r259a = mysql_fetch_row($q259a)) {
+while ($r259a = db_fetch_row($q259a)) {
 	$nacinstudiranjar .= "<option value=\"$r259a[0]\" ";
  	if ($r259a[0]==$enacinstudiranja) { $nacinstudiranjar  .= " SELECTED"; }
 	$nacinstudiranjar .= ">$r259a[1]</option>\n";
@@ -2064,16 +2064,16 @@ unset($_REQUEST['trazijmbg']);
 // Navigacija na sljedeći i prethodni broj dosjea
 // Dostupna samo ako postoji broj
 
-$q260 = myquery("select osoba from prijemni_prijava where broj_dosjea<".intval($ebrojdosjea)." and prijemni_termin=$termin order by broj_dosjea desc limit 1");
-if (mysql_num_rows($q260)>0) {
-	$lijevodugme = '<input type="button" value="  <<  " onclick="javascript:document.location.replace(\'index.php?sta=studentska/prijemni&akcija=unos&izmjena='.mysql_result($q260,0,0).'&termin='.$termin.'\')"> ';
+$q260 = db_query("select osoba from prijemni_prijava where broj_dosjea<".intval($ebrojdosjea)." and prijemni_termin=$termin order by broj_dosjea desc limit 1");
+if (db_num_rows($q260)>0) {
+	$lijevodugme = '<input type="button" value="  <<  " onclick="javascript:document.location.replace(\'index.php?sta=studentska/prijemni&akcija=unos&izmjena='.db_result($q260,0,0).'&termin='.$termin.'\')"> ';
 } else {
 	$lijevodugme = '<input type="button" value="  <<  " disabled> ';
 }
 
-$q270 = myquery("select osoba from prijemni_prijava where broj_dosjea>".intval($ebrojdosjea)." and prijemni_termin=$termin order by broj_dosjea limit 1");
-if (mysql_num_rows($q270)>0) {
-	$desnodugme = '<input type="button" value="  >>  " onclick="javascript:document.location.replace(\'index.php?sta=studentska/prijemni&akcija=unos&izmjena='.mysql_result($q270,0,0).'&termin='.$termin.'\')"> ';
+$q270 = db_query("select osoba from prijemni_prijava where broj_dosjea>".intval($ebrojdosjea)." and prijemni_termin=$termin order by broj_dosjea limit 1");
+if (db_num_rows($q270)>0) {
+	$desnodugme = '<input type="button" value="  >>  " onclick="javascript:document.location.replace(\'index.php?sta=studentska/prijemni&akcija=unos&izmjena='.db_result($q270,0,0).'&termin='.$termin.'\')"> ';
 } else {
 	$desnodugme = '<input type="button" value="  >>  " disabled> ';
 }
@@ -2580,11 +2580,11 @@ if ($vrstaunosa!="editovanje") {
 		<tr><td>&nbsp;</td><td align="center"><b> I </b></td><td align="center"><b> II </b></td><td align="center"><b> III </b></td><td align="center"><b> IV </b></td></tr>
 	<?
 
-	$q = myquery("SELECT razred, ocjena, tipocjene,redni_broj FROM srednja_ocjene WHERE osoba=$osoba");
+	$q = db_query("SELECT razred, ocjena, tipocjene,redni_broj FROM srednja_ocjene WHERE osoba=$osoba");
 	$razred = array();
 	$prosjek_razreda = $broj_ocjena_razred = array(0, 0, 0, 0);
 	$kljucni = array();
-	while ($r = mysql_fetch_row($q)) {
+	while ($r = db_fetch_row($q)) {
 		if ($r[2]==0 && $r[3]==0) $razred[$r[0]][]= $r[1];
 		else if ($r[2]==0) $razred[$r[0]][$r[3]]= $r[1];
 		else $kljucni[$r[0]][$r[2]]=$r[1];
@@ -2852,9 +2852,9 @@ else {
 	<?
 
 
-	$q = myquery("SELECT ocjena, ects, redni_broj FROM prosliciklus_ocjene WHERE osoba=$osoba");
+	$q = db_query("SELECT ocjena, ects, redni_broj FROM prosliciklus_ocjene WHERE osoba=$osoba");
 	$ocjene = $ects = array();
-	while ($r = mysql_fetch_row($q)) {
+	while ($r = db_fetch_row($q)) {
 		if ($r[2]==0) {
 			$ocjene[] = $r[0];
 			$ects[] = $r[1];

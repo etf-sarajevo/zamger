@@ -29,40 +29,40 @@ $ag = intval($_REQUEST['ag']);
 // Provjera ulaznih podataka i podaci za naslov
 
 // Student
-$q40 = myquery("select ime, prezime, brindexa, slika from osoba where id=$student");
-if (mysql_num_rows($q40)<1) {
+$q40 = db_query("select ime, prezime, brindexa, slika from osoba where id=$student");
+if (db_num_rows($q40)<1) {
 	biguglyerror("Nepoznat student");
 	zamgerlog("nepoznat student $student", 3);
 	zamgerlog2("nepoznat student", $student);
 	return;
 }
-$ime = mysql_result($q40,0,0);
-$prezime = mysql_result($q40,0,1);
-$brindexa = mysql_result($q40,0,2);
-$slika = mysql_result($q40,0,3);
+$ime = db_result($q40,0,0);
+$prezime = db_result($q40,0,1);
+$brindexa = db_result($q40,0,2);
+$slika = db_result($q40,0,3);
 
 $mailprint = "";
-$q45 = myquery("SELECT adresa FROM email WHERE osoba=$student ORDER BY sistemska DESC, id");
-while ($r45 = mysql_fetch_row($q45)) {
+$q45 = db_query("SELECT adresa FROM email WHERE osoba=$student ORDER BY sistemska DESC, id");
+while ($r45 = db_fetch_row($q45)) {
 	if ($mailprint) $mailprint .= ", ";
 	$mailprint .= "<a href=\"mailto:$r45[0]\">$r45[0]</a>";
 }
 
 // Predmet
-$q5 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q5)<1) {
+$q5 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q5)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("nepoznat predmet $predmet", 3);
 	return;
 }
-$nazivpredmeta = mysql_result($q5,0,0);
+$nazivpredmeta = db_result($q5,0,0);
 
-$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-$tippredmeta = mysql_result($q15,0,0);
+$q15 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+$tippredmeta = db_result($q15,0,0);
 if ($tippredmeta == 1000) {
-	$q4 = myquery("SELECT id FROM zavrsni WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
-	if (mysql_num_rows($q4)>0) {
-		$zavrsni = mysql_result($q4,0,0);
+	$q4 = db_query("SELECT id FROM zavrsni WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+	if (db_num_rows($q4)>0) {
+		$zavrsni = db_result($q4,0,0);
 		?>
 		<script language="JavaScript">
 		location.href='?sta=nastavnik/zavrsni&akcija=zavrsni_stranica&zavrsni=<?=$zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>';
@@ -74,55 +74,55 @@ if ($tippredmeta == 1000) {
 
 
 // Akademska godina
-$q6 = myquery("select naziv from akademska_godina where id=$ag");
-if (mysql_num_rows($q6)<1) {
+$q6 = db_query("select naziv from akademska_godina where id=$ag");
+if (db_num_rows($q6)<1) {
 	biguglyerror("Nepoznata akademska godina");
 	zamgerlog("nepoznata ag $ag", 3);
 	zamgerlog2("nepoznata ag", $ag);
 	return;
 }
-$nazivag = mysql_result($q6,0,0);
+$nazivag = db_result($q6,0,0);
 
 
 // Da li student sluša predmet
-$q7 = myquery("select pk.id, pk.semestar from student_predmet as sp, ponudakursa as pk, studij as s where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=s.id");
-if (mysql_num_rows($q7)<1) {
+$q7 = db_query("select pk.id, pk.semestar from student_predmet as sp, ponudakursa as pk, studij as s where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=s.id");
+if (db_num_rows($q7)<1) {
 	biguglyerror("Student nije upisan na ovaj predmet");
 	zamgerlog("student u$student ne slusa predmet pp$predmet ag$ag", 3);
 	zamgerlog2("id studenta i predmeta ne odgovaraju", $student, $predmet, $ag);
 	return;
 }
-$ponudakursa = mysql_result($q7,0,0);
-$semestar = mysql_result($q7,0,1);
+$ponudakursa = db_result($q7,0,0);
+$semestar = db_result($q7,0,1);
 
 
 // Koji studij student sluša, koji put
-$q8 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = ".($semestar%2)." and ss.studij=s.id and ss.nacin_studiranja=ns.id");
-if (mysql_num_rows($q8)<1) {
-	$q8 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = 1 and ss.studij=s.id and ss.nacin_studiranja=ns.id");
+$q8 = db_query("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = ".($semestar%2)." and ss.studij=s.id and ss.nacin_studiranja=ns.id");
+if (db_num_rows($q8)<1) {
+	$q8 = db_query("select s.naziv, ss.semestar, ns.naziv, ss.ponovac from student_studij as ss, studij as s, nacin_studiranja as ns where ss.student=$student and ss.akademska_godina=$ag and ss.semestar mod 2 = 1 and ss.studij=s.id and ss.nacin_studiranja=ns.id");
 }
-if (mysql_num_rows($q8)<1) {
+if (db_num_rows($q8)<1) {
 	$nazivstudija = "Nije upisan na studij!";
 	$kolpren=$ponovac=$nacin_studiranja="";
 } else {
-	$nazivstudija = mysql_result($q8,0,0);
-	if (mysql_result($q8,0,1)<$semestar)
+	$nazivstudija = db_result($q8,0,0);
+	if (db_result($q8,0,1)<$semestar)
 		$kolpren = ", kolizija";
-	else if (mysql_result($q8,0,1)>$semestar)
+	else if (db_result($q8,0,1)>$semestar)
 		$kolpren = ", prenio predmet";
 	else
 		$kolpren = "";
-	$semestar = mysql_result($q8,0,1);
-	$nacin_studiranja = mysql_result($q8,0,2);
-	if (mysql_result($q8,0,3)==1) $ponovac=", ponovac"; else $ponovac = "";
+	$semestar = db_result($q8,0,1);
+	$nacin_studiranja = db_result($q8,0,2);
+	if (db_result($q8,0,3)==1) $ponovac=", ponovac"; else $ponovac = "";
 }
 
-$q9 = myquery("select ag.id, ag.naziv from student_predmet as sp, ponudakursa as pk, akademska_godina as ag where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina<$ag and pk.akademska_godina=ag.id order by ag.id");
-if (mysql_num_rows($q9)>0) {
-	$kojiput = "(".(mysql_num_rows($q9)+1).". put sluša predmet)";
+$q9 = db_query("select ag.id, ag.naziv from student_predmet as sp, ponudakursa as pk, akademska_godina as ag where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina<$ag and pk.akademska_godina=ag.id order by ag.id");
+if (db_num_rows($q9)>0) {
+	$kojiput = "(".(db_num_rows($q9)+1).". put sluša predmet)";
 	$dosjei = "&nbsp;&nbsp;&nbsp;&nbsp;Pogledajte dosje za: ";
 	$zarez=0;
-	while ($r9 = mysql_fetch_row($q9)) {
+	while ($r9 = db_fetch_row($q9)) {
 		if ($zarez==0) $zarez=1; else $dosjei.= ", ";
 		$dosjei .= "<a href=\"?sta=saradnik/student&student=$student&predmet=$predmet&ag=$r9[0]\">$r9[1]</a>";
 	}
@@ -134,10 +134,10 @@ if (mysql_num_rows($q9)>0) {
 
 
 // U kojoj je grupi student
-$q20 = myquery("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag order by l.virtualna");
-if (mysql_num_rows($q20)>0) {
-	$labgrupa = mysql_result($q20,0,0);
-	$lgnaziv = mysql_result($q20,0,1);
+$q20 = db_query("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag order by l.virtualna");
+if (db_num_rows($q20)>0) {
+	$labgrupa = db_result($q20,0,0);
+	$lgnaziv = db_result($q20,0,1);
 } else {
 	$labgrupa=0; // Nema labgrupa ili nije ni u jednoj
 }
@@ -146,21 +146,22 @@ if (mysql_num_rows($q20)>0) {
 
 // Provjera prava pristupa
 
+$privilegija = "";
 if (!$user_siteadmin) {
-	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q10)<1) {
 		biguglyerror("Nemate pravo pristupa ovom studentu");
 		zamgerlog ("nastavnik nije na predmetu (pp$predmet ag$ag)", 3);
 		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 		return;
 	}
-	$privilegija = mysql_result($q10,0,0);
+	$privilegija = db_result($q10,0,0);
 
 	// Provjera ogranicenja
-	$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l, student_labgrupa as sl where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-	if (mysql_num_rows($q30)>0) {
+	$q30 = db_query("select o.labgrupa from ogranicenje as o, labgrupa as l, student_labgrupa as sl where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+	if (db_num_rows($q30)>0) {
 		$nasao=0;
-		while ($r30 = mysql_fetch_row($q30)) {
+		while ($r30 = db_fetch_row($q30)) {
 			if ($r30[0] == $labgrupa) { $nasao=1; break; }
 		}
 		if ($nasao == 0) {
@@ -177,7 +178,7 @@ if (!$user_siteadmin) {
 // ----  AKCIJE
 
 // Akcija: ispis studenta sa predmeta
-if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
+if (param('akcija') == "ispis" && $user_siteadmin) {
 	ispis_studenta_sa_predmeta($student,$predmet, $ag);
 	zamgerlog("student ispisan sa predmeta (student u$student predmet pp$predmet)",4); // nivo 4: audit
 	zamgerlog2("student ispisan sa predmeta", $student, $predmet, $ag);
@@ -185,17 +186,17 @@ if ($_GET['akcija'] == "ispis" && $user_siteadmin) {
 	return;
 }
 
-if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
+if (param('akcija') == "promjena_grupe" && check_csrf_token()) {
 	$novagrupa = intval($_POST['grupa']);
 	$staragrupa=0;
 
 	// Da li je student u nekoj grupi i u kojoj?
 	//   (Ne smijemo se osloniti na vrijednost varijable $labgrupa jer 
 	//   to može biti virtualna grupa iz koje ga ne smijemo ispisati)
-	$q53 = myquery("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
-	if (mysql_num_rows($q53)>0) {
-		$staragrupa = mysql_result($q53,0,0);
-		$naziv_stare_grupe = mysql_result($q53,0,1);
+	$q53 = db_query("select l.id, l.naziv from student_labgrupa as sl, labgrupa as l where sl.student=$student and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+	if (db_num_rows($q53)>0) {
+		$staragrupa = db_result($q53,0,0);
+		$naziv_stare_grupe = db_result($q53,0,1);
 		if ($novagrupa==$staragrupa) {
 			nicemessage("Student se već nalazi u grupi $naziv_stare_grupe!");
 			print '<a href="?sta=saradnik/student&student='.$student.'&predmet='.$predmet.'&ag='.$ag.'">Nazad</a>'."\n";
@@ -206,14 +207,14 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 	}
 
 	if ($novagrupa>0) {
-		$q55 = myquery("insert into student_labgrupa set student=$student, labgrupa=$novagrupa");
-		$q57 = myquery("select naziv from labgrupa where id=$novagrupa");
-		nicemessage("Student upisan u grupu ".mysql_result($q57,0,0).". Kreirani su default podaci o prisustvu.");
+		$q55 = db_query("insert into student_labgrupa set student=$student, labgrupa=$novagrupa");
+		$q57 = db_query("select naziv from labgrupa where id=$novagrupa");
+		nicemessage("Student upisan u grupu ".db_result($q57,0,0).". Kreirani su default podaci o prisustvu.");
 	}
 	
 	// Potrebno je updatovati komponentu za prisustvo jer su podaci sada promijenjeni
-	$q4 = myquery("select k.id from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3");
-	while ($r4 = mysql_fetch_row($q4))
+	$q4 = db_query("select k.id from tippredmeta_komponenta as tpk,komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3");
+	while ($r4 = db_fetch_row($q4))
 		update_komponente($student,$ponudakursa,$r4[0]);
 
 	// Pametni logging
@@ -231,18 +232,18 @@ if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 	// Linkovi za dalje
 	print "<p>Gdje želite sada ići?:<br />\n";
 	if ($staragrupa>0)
-		print '- <a href="?sta=saradnik/grupa&id='.$staragrupa.'">Spisak studenata u grupi '.mysql_result($q53,0,1).'</a><br />'."\n";
+		print '- <a href="?sta=saradnik/grupa&id='.$staragrupa.'">Spisak studenata u grupi '.db_result($q53,0,1).'</a><br />'."\n";
 	else
 		print '- <a href="?sta=saradnik/grupa&predmet='.$predmet.'&ag='.$ag.'">Spisak svih studenata na predmetu</a><br />'."\n"; // Ovo je jedini slučaj kad $staragrupa može biti nula
 	if ($novagrupa>0)
-		print '- <a href="?sta=saradnik/grupa&id='.$novagrupa.'">Spisak studenata u grupi '.mysql_result($q57,0,0).'</a><br />'."\n";
+		print '- <a href="?sta=saradnik/grupa&id='.$novagrupa.'">Spisak studenata u grupi '.db_result($q57,0,0).'</a><br />'."\n";
 	print '- <a href="?sta=saradnik/student&student='.$student.'&predmet='.$predmet.'&ag='.$ag.'">Nazad na detalje studenta '.$ime.' '.$prezime.'</a>'."\n";
 	return;
 }
 
-if ($_GET['akcija'] == "ponisti_kviz") {
+if (param('akcija') == "ponisti_kviz") {
 	$kviz = intval($_REQUEST['kviz']);
-	$q2000 = myquery("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
+	$q2000 = db_query("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
 }
 
 
@@ -255,9 +256,9 @@ if ($slika != "") { print "<img src=\"?sta=common/slika&osoba=$student\" align=\
 
 // Određujemo username radi slanja poruke
 $poruka_link = "";
-$q59 = myquery("select login from auth where id=$student");
-if (mysql_num_rows($q59)>0)
-	$poruka_link = "<br><a href=\"?sta=common/inbox&akcija=compose&primalac=" . mysql_result($q59,0,0) . "\">Pošaljite Zamger poruku</a>";
+$q59 = db_query("select login from auth where id=$student");
+if (db_num_rows($q59)>0)
+	$poruka_link = "<br><a href=\"?sta=common/inbox&akcija=compose&primalac=" . db_result($q59,0,0) . "\">Pošaljite Zamger poruku</a>";
 
 
 // Naslov
@@ -279,15 +280,15 @@ else print "(nije ni u jednoj grupi)";
 
 // Promjena grupe
 
-$q60=myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
-if (mysql_num_rows($q60)>0) {
+$q60=db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
+if (db_num_rows($q60)>0) {
 	?>
 	<?=genform("POST");?>
 	<input type="hidden" name="akcija" value="promjena_grupe">
 	<p>Promijenite grupu: 
 	<select name="grupa" class="default"><option value="0"<?=$nijedna?>>-- Nije ni u jednoj grupi --</option>
 	<?
-	while ($r60 = mysql_fetch_row($q60)) {
+	while ($r60 = db_fetch_row($q60)) {
 		if ($r60[0]==$labgrupa) $value="SELECTED"; else $value="";
 		?>
 		<option value="<?=$r60[0]?>" <?=$value?>><?=$r60[1]?></option>
@@ -305,14 +306,14 @@ if (mysql_num_rows($q60)>0) {
 // PROGRESS BAR
 // Kod kopiran iz student/predmet - trebalo bi izdvojiti u lib
 
-$q30 = myquery("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+$q30 = db_query("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
 
 $bodova=$mogucih=0;
-while ($r30 = mysql_fetch_row($q30)) {
+while ($r30 = db_fetch_row($q30)) {
 	$bodova += $r30[0];
 	if ($r30[2] == 4) { // Tip komponente: zadaće
-		$q35 = myquery("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
-		$do_sada_zadace = round(mysql_result($q35,0,0), 2);
+		$q35 = db_query("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
+		$do_sada_zadace = round(db_result($q35,0,0), 2);
 		// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
 		if ($do_sada_zadace > $r30[1])
 			$mogucih += $r30[1];
@@ -433,18 +434,18 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	if (!preg_match("/\w/",$imegrupe)) $imegrupe = "[Bez naziva]";
 
 	$odsustva=0;
-	$q70 = myquery("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta");
-	if (mysql_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
+	$q70 = db_query("select id,UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$idgrupe and komponenta=$komponenta");
+	if (db_num_rows($q70)<1) return; // Ne ispisuj grupe u kojima nema registrovanih časova
 
 	$datumi = $vremena = $statusi = "";
-	while ($r70 = mysql_fetch_row($q70)) {
+	while ($r70 = db_fetch_row($q70)) {
 		$datumi .= "<td>".date("d.m",$r70[1])."</td>\n";
 		list($sati,$minute,$sekunde) = explode(":", $r70[2]);
 		$vremena .= "<td>$sati<sup>$minute</sup></td>\n";
-		$q80 = myquery("select prisutan from prisustvo where student=$student and cas=$r70[0]");
-		if (mysql_num_rows($q80)<1) {
+		$q80 = db_query("select prisutan from prisustvo where student=$student and cas=$r70[0]");
+		if (db_num_rows($q80)<1) {
 			$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$student."-".$r70[0]."\" onclick=\"javascript:prisustvo(".$student.",".$r70[0].")\"><div id=\"danetekst-".$student."-".$r70[0]."\"> / </div></td>\n";
-		} else if (mysql_result($q80,0,0)==1) {
+		} else if (db_result($q80,0,0)==1) {
 			$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$student."-".$r70[0]."\" onclick=\"javascript:prisustvo(".$student.",".$r70[0].")\"><div id=\"danetekst-".$student."-".$r70[0]."\">DA</div></td>\n";
 		} else {
 			$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$student."-".$r70[0]."\" onclick=\"javascript:prisustvo(".$student.",".$r70[0].")\"><div id=\"danetekst-".$student."-".$r70[0]."\">NE</div></td>\n";
@@ -476,22 +477,22 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	return $odsustva;
 }
 
-$q40 = myquery("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+$q40 = db_query("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
 where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
-while ($r40 = mysql_fetch_row($q40)) {
+while ($r40 = db_fetch_row($q40)) {
 	$id_komponente = $r40[0];
 	$max_bodova = $r40[1];
 	$min_bodova = $r40[2];
 	$max_izostanaka = $r40[3];
 
 	$odsustva = $casova = 0;
-	$q60 = myquery("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
+	$q60 = db_query("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
 	
-	while ($r60 = mysql_fetch_row($q60)) {
+	while ($r60 = db_fetch_row($q60)) {
 		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente, $student);
-		$q71 = myquery("select count(*) from cas where labgrupa=$r60[0] and komponenta=$id_komponente");
-		$casova += mysql_result($q71,0,0);;
+		$q71 = db_query("select count(*) from cas where labgrupa=$r60[0] and komponenta=$id_komponente");
+		$casova += db_result($q71,0,0);;
 	}
 	
 	if ($max_izostanaka == -1) {
@@ -519,8 +520,8 @@ while ($r40 = mysql_fetch_row($q40)) {
 
 // KVIZOVI
 
-$q200 = myquery("SELECT id, naziv, prolaz_bodova FROM kviz WHERE predmet=$predmet AND akademska_godina=$ag");
-if (mysql_num_rows($q200) > 0) {
+$q200 = db_query("SELECT id, naziv, prolaz_bodova FROM kviz WHERE predmet=$predmet AND akademska_godina=$ag");
+if (db_num_rows($q200) > 0) {
 	?>
 
 	<b>Kvizovi:</b><br/>
@@ -534,13 +535,13 @@ if (mysql_num_rows($q200) > 0) {
 	</thead>
 	<?
 
-	while ($r200 = mysql_fetch_row($q200)) {
-		$q210 = myquery("SELECT dovrsen, bodova FROM kviz_student WHERE student=$student AND kviz=$r200[0]");
+	while ($r200 = db_fetch_row($q200)) {
+		$q210 = db_query("SELECT dovrsen, bodova FROM kviz_student WHERE student=$student AND kviz=$r200[0]");
 		$tekst = "";
 
-		if (mysql_num_rows($q210) > 0) {
-			$bodova = mysql_result($q210,0,1);
-			if (mysql_result($q210,0,0) == 0) {
+		if (db_num_rows($q210) > 0) {
+			$bodova = db_result($q210,0,1);
+			if (db_result($q210,0,0) == 0) {
 				$tekst = "<img src=\"images/16x16/zad_cekaj.png\" width=\"8\" height=\"8\"> Nije završio/la";
 			} else if ($bodova < $r200[2]) {
 				$tekst = "<img src=\"images/16x16/brisanje.png\" width=\"8\" height=\"8\"> $bodova bodova";
@@ -589,12 +590,9 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$q20 = myquery("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
-if (mysql_num_rows($q20)>0) {
-	$broj_zadataka = mysql_result($q20,0,0);
-	for ($i=1;$i<=$broj_zadataka;$i++) {
-		?><td>Zadatak <?=$i?>.</td><?
-	}
+$max_broj_zadataka = db_get("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
+for ($i=1;$i<=$max_broj_zadataka;$i++) {
+	?><td>Zadatak <?=$i?>.</td><?
 }
 
 ?>
@@ -623,33 +621,33 @@ if (mysql_num_rows($q20)>0) {
 
 $bodova_sve_zadace=0;
 
-$q21 = myquery("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
-while ($r21 = mysql_fetch_row($q21)) {
+$q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+while ($r21 = db_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
-	$zzadataka = $r21[3];
+	$broj_zadataka = $r21[3];
 	?><tr>
 	<th><?=$r21[1]?></th>
 	<?
 	$bodova_zadaca = 0;
 
-	for ($zadatak=1;$zadatak<=$broj_zadataka;$zadatak++) {
+	for ($zadatak=1;$zadatak<=$max_broj_zadataka;$zadatak++) {
 		// Ako tekuća zadaća nema toliko zadataka, ispisujemo blank polje
-		if ($zadatak>$zzadataka) {
+		if ($zadatak>$broj_zadataka) {
 			?><td>&nbsp;</td><?
 			continue;
 		}
 
 		// Uzmi samo rjesenje sa zadnjim IDom
-		$q22 = myquery("select status,bodova,komentar from zadatak where student=$student and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
-		if (mysql_num_rows($q22)<1) {
+		$q22 = db_query("select status,bodova,komentar from zadatak where student=$student and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+		if (db_num_rows($q22)<1) {
 			?><td>&nbsp;</td><?
 		} else {
-			$status = mysql_result($q22,0,0);
-			$bodova_zadatak = mysql_result($q22,0,1);
+			$status = db_result($q22,0,0);
+			$bodova_zadatak = db_result($q22,0,1);
 			$bodova_zadaca += $bodova_zadatak;
 
-			if (strlen(mysql_result($q22,0,2))>2)
+			if (strlen(db_result($q22,0,2))>2)
 				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
@@ -671,7 +669,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 $bodova += $bodova_sve_zadace;
 
 ?>
-	<tr><td colspan="<?=$broj_zadataka+1?>" align="right">UKUPNO: </td>
+	<tr><td colspan="<?=$max_broj_zadataka+1?>" align="right">UKUPNO: </td>
 	<td><?=$bodova_sve_zadace?></td></tr>
 </tbody>
 </table>
@@ -706,8 +704,8 @@ function undo_coolbox() {
 // FIKSNE KOMPONENTE
 
 
-$q25 = myquery("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
-if (mysql_num_rows($q25)>0) {
+$q25 = db_query("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=5"); // 5 = fiksna komponenta
+if (db_num_rows($q25)>0) {
 ?>
 
 <!-- fiksne komponente -->
@@ -724,11 +722,11 @@ if (mysql_num_rows($q25)>0) {
 <?
 }
 
-while ($r25 = mysql_fetch_row($q25)) {
+while ($r25 = db_fetch_row($q25)) {
 	$komponenta = $r25[0];
-	$q27 = myquery("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
-	if (mysql_num_rows($q27)<1) $ocjenaedit="/";
-	else $ocjenaedit=mysql_result($q27,0,0);
+	$q27 = db_query("select bodovi from komponentebodovi where student=$student and predmet=$ponudakursa and komponenta=$komponenta");
+	if (db_num_rows($q27)<1) $ocjenaedit="/";
+	else $ocjenaedit=db_result($q27,0,0);
 	?>
 	<tr>
 		<td><?=$r25[1]?></td>
@@ -741,7 +739,7 @@ while ($r25 = mysql_fetch_row($q25)) {
 	</tr>
 	<?
 }
-if (mysql_num_rows($q25)>0) {
+if (db_num_rows($q25)>0) {
 ?>
 	</tbody>
 </table>
@@ -763,8 +761,8 @@ if (mysql_num_rows($q25)>0) {
 <?
 	
 
-$q30 = myquery("select i.id, UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.id, k.prolaz from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
-if (mysql_num_rows($q30) == 0) {
+$q30 = db_query("select i.id, UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.id, k.prolaz from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+if (db_num_rows($q30) == 0) {
 	print "<p>Nije bilo parcijalnih ispita.</p>";
 } else {
 ?>
@@ -782,15 +780,15 @@ if (mysql_num_rows($q30) == 0) {
 <?
 }
 
-while ($r30 = mysql_fetch_row($q30)) {
+while ($r30 = db_fetch_row($q30)) {
 	$ispit = $r30[0];
-	$q40 = myquery("select ocjena from ispitocjene where ispit=$ispit and student=$student");
-	if (mysql_num_rows($q40)<1) {
+	$q40 = db_query("select ocjena from ispitocjene where ispit=$ispit and student=$student");
+	if (db_num_rows($q40)<1) {
 		$ocjenaedit="/";
 		$ispitocjena="Nije izašao/la";
 	} else {
-		$ocjenaedit=mysql_result($q40,0,0);
-		$ispitocjena="<b>".mysql_result($q40,0,0)." bodova</b>";
+		$ocjenaedit=db_result($q40,0,0);
+		$ispitocjena="<b>".db_result($q40,0,0)." bodova</b>";
 	}
 /*	?>
 	<p><?=$r30[2]?> (<?=date("d. m. Y",$r30[1])?>): <?=$ispitocjena?>
@@ -830,7 +828,7 @@ while ($r30 = mysql_fetch_row($q30)) {
 	}*/
 }
 
-if (mysql_num_rows($q30) > 0) {
+if (db_num_rows($q30) > 0) {
 ?>
 </tbody></table>
 <p>Dvokliknite na bodove da promijenite podatak ili upišete novi. Za brisanje rezultata, pobrišite postojeći podatak i pritisnite Enter.</p>
@@ -843,13 +841,14 @@ if (mysql_num_rows($q30) > 0) {
 // KONAČNA OCJENA
 
 $vrijeme_konacne_ocjene=0;
-$q50 = myquery("select ocjena, UNIX_TIMESTAMP(datum), UNIX_TIMESTAMP(datum_u_indeksu) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
-if (mysql_num_rows($q50)>0) {
-	$konacnaocjena = mysql_result($q50,0,0);
-	$vrijeme_konacne_ocjene = mysql_result($q50,0,1);
-	$datum_u_indeksu = mysql_result($q50,0,2);
+$q50 = db_query("select ocjena, UNIX_TIMESTAMP(datum), UNIX_TIMESTAMP(datum_u_indeksu) from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag");
+if (db_num_rows($q50)>0) {
+	$konacnaocjena = db_result($q50,0,0);
+	$vrijeme_konacne_ocjene = db_result($q50,0,1);
+	$datum_u_indeksu = date("d. m. Y", db_result($q50,0,2));
 } else {
 	$konacnaocjena = "/";
+	$datum_u_indeksu = "";
 }
 
 ?>
@@ -868,7 +867,7 @@ if (mysql_num_rows($q50)>0) {
 if ($privilegija=="nastavnik" || $user_siteadmin) {
 	?>
 	<td id="ko-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$konacnaocjena?></td>
-	<td id="kodatum-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=date("d. m. Y", $datum_u_indeksu)?></td>
+	<td id="kodatum-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$datum_u_indeksu?></td>
 	<td><div id="kolog"></div></td>
 	<?
 } else {
@@ -897,24 +896,24 @@ if ($privilegija!="nastavnik" && $privilegija!="super_asistent" && !$user_sitead
 
 
 // Spisak ponuda kursa, za slucaj da nema rezultata
-$q90 = myquery("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag");
+$q90 = db_query("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag");
 $pkovi = array();
-while ($r90 = mysql_fetch_row($q90)) array_push($pkovi, $r90[0]);
+while ($r90 = db_fetch_row($q90)) array_push($pkovi, $r90[0]);
 
 
 // Log za ispite
 
-$q100 = myquery("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
+$q100 = db_query("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 
-while ($r100 = mysql_fetch_row($q100)) {
+while ($r100 = db_fetch_row($q100)) {
 	$vrijeme_ispita = $r100[1];
 
 	// Utvrdjujemo ocjenu da bismo lakse mogli rekonstruisati izmjene kroz log
-	$q105 = myquery("select ocjena from ispitocjene where ispit=$r100[0] and student=$student");
-	if (mysql_num_rows($q105)<1)
+	$q105 = db_query("select ocjena from ispitocjene where ispit=$r100[0] and student=$student");
+	if (db_num_rows($q105)<1)
 		$ispitocjena="/";
 	else
-		$ispitocjena=mysql_result($q105,0,0);
+		$ispitocjena=db_result($q105,0,0);
 
 
 	// Necemo traziti masovne unose ako student nije ni izlazio na ispit

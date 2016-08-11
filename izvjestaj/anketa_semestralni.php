@@ -13,8 +13,8 @@ function izvjestaj_anketa_semestralni() {
 	$dodaj="";
 	if ($semestar%2==0) $dodaj="DESC";
 
-	$q10 = myquery("select id from anketa_anketa where akademska_godina=$ak_god order by id $dodaj");
-	if (mysql_num_rows($q10)==0){ // da li postoji anketa uopce
+	$q10 = db_query("select id from anketa_anketa where akademska_godina=$ak_god order by id $dodaj");
+	if (db_num_rows($q10)==0){ // da li postoji anketa uopce
 		biguglyerror("Ne postoji anketa za datu akademsku godinu!");
 		return;
 	}
@@ -23,20 +23,20 @@ function izvjestaj_anketa_semestralni() {
 	// -----------------------------------------  SEMESTRALNI IZVJEŠTAJ ---------------------------------------
 	if ($_REQUEST['akcija']=="semestralni") {
 	
-		$q20 = myquery("select naziv from akademska_godina where id=$ak_god");
-		$naziv_ak_god = mysql_result($q20,0,0);
+		$q20 = db_query("select naziv from akademska_godina where id=$ak_god");
+		$naziv_ak_god = db_result($q20,0,0);
 		
 		if ($studij==-1) {
 			$naziv_studija = "Svi studiji";
 		} else {
-			$q30 = myquery("select naziv from studij where id=$studij");
-			$naziv_studija = mysql_result($q30,0,0);
+			$q30 = db_query("select naziv from studij where id=$studij");
+			$naziv_studija = db_result($q30,0,0);
 		}
 
-		$id_ankete = mysql_result($q10,0,0);
+		$id_ankete = db_result($q10,0,0);
 		
-		$q40 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
-		$broj_rank_pitanja = mysql_result($q40,0,0);
+		$q40 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
+		$broj_rank_pitanja = db_result($q40,0,0);
 	
 		?>
 		<center>
@@ -53,10 +53,10 @@ function izvjestaj_anketa_semestralni() {
 		<?
 
 		// Biramo pitanja za glavnu petlju
-		$q50=myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1");
+		$q50=db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1");
 		
 		$i=0;
-		while ($r50 = mysql_fetch_row($q50)) {
+		while ($r50 = db_fetch_row($q50)) {
 			$i++;
 			print "<tr><td align='center'>$i. $r50[1]</td><tr>";
 			print "<td><img src='?sta=izvjestaj/chart_semestralni&pitanje=$r50[0]&semestar=$semestar&studij=$studij'><hr/></td></tr>";
@@ -71,22 +71,22 @@ function izvjestaj_anketa_semestralni() {
 	// -----------------------------------------  SEMESTRALNI IZVJEŠTAJ TABELARNO ------------------------------------
 	else if ($_REQUEST['akcija']=="semestralni_tab") {
 	
-		$q20 = myquery("select naziv from akademska_godina where id=$ak_god");
-		$naziv_ak_god = mysql_result($q20,0,0);
+		$q20 = db_query("select naziv from akademska_godina where id=$ak_god");
+		$naziv_ak_god = db_result($q20,0,0);
 		
 		$tekst_pitanja = $_REQUEST['tekst_pitanja'];
 		
 		if ($studij==-1) {
 			$naziv_studija = "Svi studiji";
 		} else {
-			$q30 = myquery("select naziv from studij where id=$studij");
-			$naziv_studija = mysql_result($q30,0,0);
+			$q30 = db_query("select naziv from studij where id=$studij");
+			$naziv_studija = db_result($q30,0,0);
 		}
 		
-		$id_ankete = mysql_result($q10,0,0);
+		$id_ankete = db_result($q10,0,0);
 		
-		$q40 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
-		$broj_rank_pitanja = mysql_result($q40,0,0);
+		$q40 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
+		$broj_rank_pitanja = db_result($q40,0,0);
 		
 		// Spisak predmeta
 		$predmeti = array();
@@ -96,16 +96,16 @@ function izvjestaj_anketa_semestralni() {
 		// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 		// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
 		if ($studij == -1)
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, pk.obavezan from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+			$q50 = db_query("select distinct p.id, p.kratki_naziv, pk.obavezan from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 		else
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, pk.obavezan 
+			$q50 = db_query("select distinct p.id, p.kratki_naziv, pk.obavezan 
 			from ponudakursa pk, predmet as p, institucija as i, studij as s, studij as s2
 			where p.id=pk.predmet and pk.semestar=$semestar and s.id=$studij and s.institucija=p.institucija and pk.studij=s2.id and s2.tipstudija=s.tipstudija");
 
-		while ($r50 = mysql_fetch_row($q50)) {
+		while ($r50 = db_fetch_row($q50)) {
 			// Da li je ovaj predmet imao ijednu anketu?
-			$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
-			if (mysql_result($q55,0,0)==0) continue;
+			$q55 = db_query("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
+			if (db_result($q55,0,0)==0) continue;
 
 			$predmeti[$r50[0]]=$r50[1];
 			$obavezan[$r50[0]]=$r50[2];
@@ -130,11 +130,11 @@ function izvjestaj_anketa_semestralni() {
 			<tbody>
 		<?
 		// biramo pitanja za glavnu petlju
-		$q60 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1 order by p.id");
+		$q60 = db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa=$id_ankete and p.tip_pitanja=1 order by p.id");
 		
 		$i=0;
 		$maxpredmet=array();
-		while ($r60 = mysql_fetch_row($q60)) {
+		while ($r60 = db_fetch_row($q60)) {
 			$pitanje = $r60[0];
 			$i++;
 			if (strstr($r60[1], "ocjena predmeta"))
@@ -147,11 +147,11 @@ function izvjestaj_anketa_semestralni() {
 				print "<td>$i</td>\n";
 			$sumpitanje=0;
 			foreach ($predmeti as $pid => $pnaziv) {
-				$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
+				$q6730 = db_query("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
 				
-				print "<td>".round(mysql_result($q6730,0,0),2)."</td>\n";
-				$sumpitanje += mysql_result($q6730,0,0);
-				if (mysql_result($q6730,0,2) > $maxpredmet[$pid]) $maxpredmet[$pid]=mysql_result($q6730,0,2);
+				print "<td>".round(db_result($q6730,0,0),2)."</td>\n";
+				$sumpitanje += db_result($q6730,0,0);
+				if (db_result($q6730,0,2) > $maxpredmet[$pid]) $maxpredmet[$pid]=db_result($q6730,0,2);
 			}
 			if (count($predmeti)==0)
 				print "<td>0</td>\n</tr>\n";
@@ -182,20 +182,20 @@ function izvjestaj_anketa_semestralni() {
 	else if ($_REQUEST['akcija']=="ects_krediti") {
 		$pitanje = intval($_REQUEST['pitanje']);
 	
-		$q20 = myquery("select naziv from akademska_godina where id=$ak_god");
-		$naziv_ak_god = mysql_result($q20,0,0);
+		$q20 = db_query("select naziv from akademska_godina where id=$ak_god");
+		$naziv_ak_god = db_result($q20,0,0);
 		
 		if ($studij==-1) {
 			$naziv_studija = "Svi studiji";
 		} else {
-			$q30 = myquery("select naziv from studij where id=$studij");
-			$naziv_studija = mysql_result($q30,0,0);
+			$q30 = db_query("select naziv from studij where id=$studij");
+			$naziv_studija = db_result($q30,0,0);
 		}
 		
-		$id_ankete = mysql_result($q10,0,0);
+		$id_ankete = db_result($q10,0,0);
 		
-		$q40 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
-		$broj_rank_pitanja = mysql_result($q40,0,0);
+		$q40 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete and tip_pitanja=1");
+		$broj_rank_pitanja = db_result($q40,0,0);
 		
 		// Spisak predmeta
 		$predmeti = array();
@@ -205,17 +205,17 @@ function izvjestaj_anketa_semestralni() {
 		// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 		// nacin objedinjujemo razultate svih ponuda kursa za isti predmet
 		if ($studij == -1)
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+			$q50 = db_query("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 		else
-			$q50 = myquery("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
+			$q50 = db_query("select distinct p.id, p.kratki_naziv, p.ects, (p.sati_predavanja+p.sati_vjezbi+p.sati_tutorijala) from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 
-		while ($r50 = mysql_fetch_row($q50)) {
+		while ($r50 = db_fetch_row($q50)) {
 			// Da li je ovaj predmet imao ijednu anketu?
 			if ($studij==-1)
-				$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
+				$q55 = db_query("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y'");
 			else
-				$q55 = myquery("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y' and studij=$studij");
-			if (mysql_result($q55,0,0)==0) continue;
+				$q55 = db_query("select count(*) from anketa_rezultat where anketa=$id_ankete and predmet=$r50[0] and zavrsena='Y' and studij=$studij");
+			if (db_result($q55,0,0)==0) continue;
 			$predmeti[$r50[0]]=$r50[1];
 			$predmet_ects[$r50[0]]=$r50[2];
 			$predmet_sati[$r50[0]]=$r50[3];
@@ -254,11 +254,11 @@ function izvjestaj_anketa_semestralni() {
 			// Odredjujemo broj sati po anketi
 			$suma = $broj = 0;
 			if ($studij==-1)
-				$q0376 = myquery("select b.izbor_id from anketa_rezultat a, anketa_odgovor_rank b where a.id = b.rezultat and b.pitanje=$pitanje and a.predmet=$pid and zavrsena='Y'");
+				$q0376 = db_query("select b.izbor_id from anketa_rezultat a, anketa_odgovor_rank b where a.id = b.rezultat and b.pitanje=$pitanje and a.predmet=$pid and zavrsena='Y'");
 			else
-				$q0376 = myquery("select b.izbor_id from anketa_rezultat a, anketa_odgovor_rank b where a.id = b.rezultat and b.pitanje=$pitanje and a.predmet=$pid and zavrsena='Y' AND a.studij=$studij");
+				$q0376 = db_query("select b.izbor_id from anketa_rezultat a, anketa_odgovor_rank b where a.id = b.rezultat and b.pitanje=$pitanje and a.predmet=$pid and zavrsena='Y' AND a.studij=$studij");
 			
-			while ($r0376 = mysql_fetch_row($q0376)) {
+			while ($r0376 = db_fetch_row($q0376)) {
 				$suma += $r0376[0] * 2 - 1;
 				$broj++;
 			}
@@ -292,7 +292,7 @@ function izvjestaj_anketa_semestralni() {
 			</tr>
 			<?
 		}
-		/*while ($r60 = mysql_fetch_row($q60)) {
+		/*while ($r60 = db_fetch_row($q60)) {
 			$pitanje = $r60[0];
 			$i++;
 			if (strstr($r60[1], "ocjena predmeta"))
@@ -303,13 +303,13 @@ function izvjestaj_anketa_semestralni() {
 			$sumpitanje=0;
 			foreach ($predmeti as $pid => $pnaziv) {
 				if ($studij==-1)
-					$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
+					$q6730 = db_query("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y'");
 				else
-					$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y' AND a.studij=$studij");
+					$q6730 = db_query("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$pid AND zavrsena='Y' AND a.studij=$studij");
 				
-				print "<td>".round(mysql_result($q6730,0,0),2)."</td>\n";
-				$sumpitanje += mysql_result($q6730,0,0);
-				if (mysql_result($q6730,0,2) > $maxpredmet[$pid]) $maxpredmet[$pid]=mysql_result($q6730,0,2);
+				print "<td>".round(db_result($q6730,0,0),2)."</td>\n";
+				$sumpitanje += db_result($q6730,0,0);
+				if (db_result($q6730,0,2) > $maxpredmet[$pid]) $maxpredmet[$pid]=db_result($q6730,0,2);
 			}
 			print "<td>".round($sumpitanje/count($predmeti),2)."</td>\n</tr>\n";
 		}
@@ -331,12 +331,12 @@ function izvjestaj_anketa_semestralni() {
 		biguglyerror("Nije u funkciji... žalimo");
 		return;
 		
-		$q0111=myquery("select naziv from akademska_godina where id = $ak_god");
-		$naziv_ak_god = mysql_result($q0111,0,0);
+		$q0111=db_query("select naziv from akademska_godina where id = $ak_god");
+		$naziv_ak_god = db_result($q0111,0,0);
 		
 		//anketa za datu godinu:
-		$q011 = myquery("select id from anketa_anketa where akademska_godina= $ak_god");	
-		$anketa = mysql_result($q011,0,0);
+		$q011 = db_query("select id from anketa_anketa where akademska_godina= $ak_god");	
+		$anketa = db_result($q011,0,0);
 		
 		?>
 		<center>
@@ -368,14 +368,14 @@ function izvjestaj_anketa_semestralni() {
 
 	// -----------------------------------------  DISTRIBUCIJA OCJENA ---------------------------------------
 	else if ($_REQUEST['akcija']=="distribucija") {
-		$q0111=myquery("select naziv from akademska_godina where id = $ak_god");
-		$naziv_ak_god = mysql_result($q0111,0,0);
+		$q0111=db_query("select naziv from akademska_godina where id = $ak_god");
+		$naziv_ak_god = db_result($q0111,0,0);
 		
 		if ($studij==-1) {
 			$naziv_studija = "Svi studiji";
 		} else {
-			$q30 = myquery("select naziv from studij where id=$studij");
-			$naziv_studija = mysql_result($q30,0,0);
+			$q30 = db_query("select naziv from studij where id=$studij");
+			$naziv_studija = db_result($q30,0,0);
 		}
 
 
@@ -402,9 +402,9 @@ function izvjestaj_anketa_semestralni() {
 		
 		
 		// Kalkulacija prosjeka
-		$q100 = myquery("select ocjena, count(*) from konacna_ocjena where akademska_godina=$ak_god and ocjena>5 group by ocjena");
+		$q100 = db_query("select ocjena, count(*) from konacna_ocjena where akademska_godina=$ak_god and ocjena>5 group by ocjena");
 		$sumatotal=0;
-		while ($r100 = mysql_fetch_row($q100)) {
+		while ($r100 = db_fetch_row($q100)) {
 			$suma_ocjena[$r100[0]] = $r100[1];
 			$sumatotal += $r100[1];
 		}
@@ -427,17 +427,17 @@ function izvjestaj_anketa_semestralni() {
 		
 
 		if ($studij == -1)
-			$q110 = myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+			$q110 = db_query("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 		else
-			$q110 = myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
+			$q110 = db_query("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 
-		while ($r110 = mysql_fetch_row($q110)) {
-			$q120 = myquery("select ocjena, count(*) from konacna_ocjena where akademska_godina=$ak_god and ocjena>5 and predmet=$r110[0] group by ocjena");
-			if (mysql_num_rows($q120)==0) continue;
+		while ($r110 = db_fetch_row($q110)) {
+			$q120 = db_query("select ocjena, count(*) from konacna_ocjena where akademska_godina=$ak_god and ocjena>5 and predmet=$r110[0] group by ocjena");
+			if (db_num_rows($q120)==0) continue;
 			$suma_ocjena_pr = array();
 			$sumatotal_pr=0;
 			$odstupanje=0;
-			while ($r120 = mysql_fetch_row($q120)) {
+			while ($r120 = db_fetch_row($q120)) {
 				$suma_ocjena_pr[$r120[0]] = $r120[1];
 				$sumatotal_pr += $r120[1];
 			}

@@ -28,10 +28,10 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin && $osoba != $user
 
 
 if ($promjena==1)
-	$q = myquery("select slika from promjena_podataka where osoba=$osoba");
+	$q = db_query("select slika from promjena_podataka where osoba=$osoba");
 else
-	$q = myquery("select slika from osoba where id=$osoba");
-if (mysql_num_rows($q)<1) {
+	$q = db_query("select slika from osoba where id=$osoba");
+if (db_num_rows($q)<1) {
 	// Ova poruka se neće vidjeti iz <img> taga, ali neko može otvoriti sliku u posebnom prozoru/tabu
 	niceerror("Nepostojeća osoba $osoba");
 	zamgerlog("slika: nepostojeca osoba $osoba",3);
@@ -39,7 +39,7 @@ if (mysql_num_rows($q)<1) {
 	return;
 }
 
-$slika = mysql_result($q,0,0);
+$slika = db_result($q,0,0);
 if ($slika=="") {
 	niceerror("Osoba $osoba nema sliku");
 	zamgerlog("osoba u$osoba nema sliku",3);

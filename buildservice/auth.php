@@ -10,7 +10,7 @@ require("../lib/config.php");
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 //$conf_system_auth = "table";
 
-$login = my_escape($_POST['login']);
+$login = db_escape($_POST['login']);
 $pass = $_POST['pass'];
 $result = array();
 

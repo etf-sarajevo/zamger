@@ -23,19 +23,19 @@ if (!$user_studentska && !$user_siteadmin) {
 $ak_god = intval($_REQUEST['ak_god']);
 if ($ak_god==0) {
 	// Aktuelna
-	$q1 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q1,0,0);
-	$ak_god_naziv = mysql_result($q1,0,1);
+	$q1 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = db_result($q1,0,0);
+	$ak_god_naziv = db_result($q1,0,1);
 	
 	// Da li postoji godina iza aktuelne?
-	$q2 = myquery("select id, naziv from akademska_godina where id>$ak_god order by id limit 1");
-	if (mysql_num_rows($q2)>0) {
-		$ak_god=mysql_result($q2,0,0);
-		$ak_god_naziv = mysql_result($q2,0,1);
+	$q2 = db_query("select id, naziv from akademska_godina where id>$ak_god order by id limit 1");
+	if (db_num_rows($q2)>0) {
+		$ak_god=db_result($q2,0,0);
+		$ak_god_naziv = db_result($q2,0,1);
 	}
 } else {
-	$q3 = myquery("select naziv from akademska_godina where id=$ak_god");
-	$ak_god_naziv = mysql_result($q3,0,0);
+	$q3 = db_query("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = db_result($q3,0,0);
 }
 
 
@@ -48,33 +48,33 @@ if ($ak_god==0) {
 // Akcija: brisanje zahtjeva
 if ($_REQUEST['akcija']=="obrisi") {
 	$id = intval($_REQUEST['id']);
-	$q5 = myquery("delete from promjena_odsjeka where id=$id");
+	$q5 = db_query("delete from promjena_odsjeka where id=$id");
 	zamgerlog("obrisan zahtjev za promjenu odsjeka sa IDom $id", 2); // 2 = edit
 	zamgerlog2("obrisan zahtjev za promjenu odsjeka", $id);
 }
 
 // Akcija: dodavanje zahtjeva
 if ($_POST['akcija']=="dodaj" && check_csrf_token()) {
-	$prezime = trim(malaslova(my_escape($_REQUEST['prezime'])));
-	$ime = trim(malaslova(my_escape($_REQUEST['ime'])));
+	$prezime = trim(malaslova(db_escape($_REQUEST['prezime'])));
+	$ime = trim(malaslova(db_escape($_REQUEST['ime'])));
 
 	$iz_odsjeka=intval($_REQUEST['iz_odsjeka']);
 	$u_odsjek=intval($_REQUEST['u_odsjek']);
 
-	$q100 = myquery("select id from osoba where ime='$ime' and prezime='$prezime'");
+	$q100 = db_query("select id from osoba where ime='$ime' and prezime='$prezime'");
 
-	if (mysql_num_rows($q100)<1) {
+	if (db_num_rows($q100)<1) {
 		niceerror("Nepoznat student pod imenom: \"$ime $prezime\"");
 	} else if ($iz_odsjeka==0 || $u_odsjek==0) {
 		niceerror("Niste odabrali odsjek");
 	} else {
-		$osoba = mysql_result($q100,0,0);
-		$q105 = myquery("select count(*) from promjena_odsjeka where osoba=$osoba and akademska_godina=$ak_god");
-		if (mysql_result($q105,0,0)>0) {
+		$osoba = db_result($q100,0,0);
+		$q105 = db_query("select count(*) from promjena_odsjeka where osoba=$osoba and akademska_godina=$ak_god");
+		if (db_result($q105,0,0)>0) {
 			niceerror("Već postoji zahtjev za promjenu odsjeka za studenta \"$ime $prezime\"");
 		} else {
-			$q110 = myquery("insert into promjena_odsjeka set osoba=$osoba, iz_odsjeka=$iz_odsjeka, u_odsjek=$u_odsjek, akademska_godina=$ak_god");
-			$q115 = myquery("select id from promjena_odsjeka where osoba=$osoba and iz_odsjeka=$iz_odsjeka and u_odsjek=$u_odsjek and akademska_godina=$ak_god");
+			$q110 = db_query("insert into promjena_odsjeka set osoba=$osoba, iz_odsjeka=$iz_odsjeka, u_odsjek=$u_odsjek, akademska_godina=$ak_god");
+			$q115 = db_query("select id from promjena_odsjeka where osoba=$osoba and iz_odsjeka=$iz_odsjeka and u_odsjek=$u_odsjek and akademska_godina=$ak_god");
 			zamgerlog("dodan zahtjev za promjenu odsjeka za osobu u$osoba (iz $iz_odsjeka u $u_odsjek)", 2);
 			zamgerlog2("dodan zahtjev za promjenu odsjeka", intval($osoba), $iz_odsjeka, $u_odsjek);
 		}
@@ -88,21 +88,21 @@ if ($_REQUEST['akcija']=="prihvati") {
 	$id = intval($_REQUEST['id']);
 	$potvrda = intval($_REQUEST['potvrda']);
 
-	$q500 = myquery("select osoba, iz_odsjeka, u_odsjek from promjena_odsjeka where id=$id and akademska_godina=$ak_god");
-	if (mysql_num_rows($q500)<1) {
+	$q500 = db_query("select osoba, iz_odsjeka, u_odsjek from promjena_odsjeka where id=$id and akademska_godina=$ak_god");
+	if (db_num_rows($q500)<1) {
 		niceerror("Nepoznat zahtjev ID");
 		return;
 	}
-	$osoba = mysql_result($q500,0,0);
-	$iz_odsjeka = mysql_result($q500,0,1);
-	$u_odsjek = mysql_result($q500,0,2);
+	$osoba = db_result($q500,0,0);
+	$iz_odsjeka = db_result($q500,0,1);
+	$u_odsjek = db_result($q500,0,2);
 
 	// Da li trenutno studira
-	$q510 = myquery("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god order by ss.semestar desc");
-	if (mysql_num_rows($q510)>0) {
-		$studij=mysql_result($q510,0,0);
-		$naziv_studija=mysql_result($q510,0,1);
-		$semestar=mysql_result($q510,0,2);
+	$q510 = db_query("select s.id, s.naziv, ss.semestar from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$ak_god order by ss.semestar desc");
+	if (db_num_rows($q510)>0) {
+		$studij=db_result($q510,0,0);
+		$naziv_studija=db_result($q510,0,1);
+		$semestar=db_result($q510,0,2);
 
 		if ($studij==$u_odsjek) {
 			nicemessage("Student je već upisan na studij $naziv_studija");
@@ -122,18 +122,18 @@ if ($_REQUEST['akcija']=="prihvati") {
 	}
 
 	// Koji je zadnji semestar slušao?
-	$q560 = myquery("select ss.studij, ss.semestar, s.naziv from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc");
-	$studij = mysql_result($q560,0,0);
-	$zadnji_semestar = mysql_result($q560,0,1);
-	$naziv_studija = mysql_result($q560,0,2);
+	$q560 = db_query("select ss.studij, ss.semestar, s.naziv from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc");
+	$studij = db_result($q560,0,0);
+	$zadnji_semestar = db_result($q560,0,1);
+	$naziv_studija = db_result($q560,0,2);
 	if ($studij != $iz_odsjeka) {
 		niceerror("Student je prošle godine bio upisan na studij $naziv_studija, a ne na odabrani studij!");
 		print "Vaš zahtjev nije ispravan. Obrišite ga i napravite novi.";
 		return;
 	}
 
-	$q570 = myquery("select naziv from studij where id=$u_odsjek");
-	$naziv_ciljnog = mysql_result($q570,0,0);
+	$q570 = db_query("select naziv from studij where id=$u_odsjek");
+	$naziv_ciljnog = db_result($q570,0,0);
 
 	print "<p>Provjerite da li student ima uslove za upis u viši semestar ili nema!!!</p>\n";
 	if ($zadnji_semestar%2==1) {
@@ -155,14 +155,14 @@ if ($_REQUEST['akcija']=="prihvati") {
 
 // Akcija: kratki izvjestaj
 if ($_REQUEST['akcija']=="kratkiizvj") {
-	$q220 = myquery("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1");
-	while ($r220 = mysql_fetch_row($q220)) {
+	$q220 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1");
+	while ($r220 = db_fetch_row($q220)) {
 		$ime_odsjeka[$r220[0]] = $r220[1];
 	}
 
-	$q400 = myquery("select iz_odsjeka,u_odsjek from promjena_odsjeka where akademska_godina=$ak_god");
+	$q400 = db_query("select iz_odsjeka,u_odsjek from promjena_odsjeka where akademska_godina=$ak_god");
 	$total=0;
-	while ($r400 = mysql_fetch_row($q400)) {
+	while ($r400 = db_fetch_row($q400)) {
 		$iz[$r400[0]]++;
 		$u[$r400[1]]++;
 		$total++;
@@ -204,8 +204,8 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 	$zahtjevi=array();
 	global $brojpredmeta, $prosjek; // zbog usort() :(
 
-	$q200 = myquery("select po.osoba, po.iz_odsjeka, po.u_odsjek, o.ime, o.prezime from promjena_odsjeka as po, osoba as o where po.osoba=o.id and po.akademska_godina=$ak_god");
-	while ($r200 = mysql_fetch_row($q200)) {
+	$q200 = db_query("select po.osoba, po.iz_odsjeka, po.u_odsjek, o.ime, o.prezime from promjena_odsjeka as po, osoba as o where po.osoba=o.id and po.akademska_godina=$ak_god");
+	while ($r200 = db_fetch_row($q200)) {
 		$zahtjevi[] = $r200[0];
 		$imeiprezime[$r200[0]] = "$r200[3] $r200[4]";
 		$izodsjeka[$r200[0]] = $r200[1];
@@ -215,8 +215,8 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 		$uk_uodsjek[$r200[2]]++;
 
 		// Prosjek
-		$q210 = myquery("select ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$r200[0] and ko.predmet=pk.predmet and pk.semestar<3");
-		while ($r210 = mysql_fetch_row($q210)) {
+		$q210 = db_query("select ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$r200[0] and ko.predmet=pk.predmet and pk.semestar<3");
+		while ($r210 = db_fetch_row($q210)) {
 			$brojpredmeta[$r200[0]]++;
 			$prosjek[$r200[0]] += $r210[0];
 		}
@@ -321,8 +321,8 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 	}
 
 	// Ispis
-	$q220 = myquery("select id,kratkinaziv from studij where moguc_upis=1");
-	while ($r220 = mysql_fetch_row($q220)) {
+	$q220 = db_query("select id,kratkinaziv from studij where moguc_upis=1");
+	while ($r220 = db_fetch_row($q220)) {
 		$ime_odsjeka[$r220[0]] = $r220[1];
 	}
 
@@ -375,14 +375,14 @@ odsjeka</td><td>U odsjek</td><td>Broj pol.</td><td>Prosjek</td></tr>
 <ul>
 <?
 
-$q10 = myquery("select po.id, o.ime, o.prezime, s.naziv, po.u_odsjek, o.id from promjena_odsjeka as po, osoba as o, studij as s where po.osoba=o.id and po.iz_odsjeka=s.id and po.akademska_godina=$ak_god");
-if (mysql_num_rows($q10)<1) 
+$q10 = db_query("select po.id, o.ime, o.prezime, s.naziv, po.u_odsjek, o.id from promjena_odsjeka as po, osoba as o, studij as s where po.osoba=o.id and po.iz_odsjeka=s.id and po.akademska_godina=$ak_god");
+if (db_num_rows($q10)<1) 
 	print "<li>Nema zahtjeva</li\n";
 $total=0;
-while ($r10 = mysql_fetch_row($q10)) {
-	$q20 = myquery("select naziv from studij where id=$r10[4]");
+while ($r10 = db_fetch_row($q10)) {
+	$q20 = db_query("select naziv from studij where id=$r10[4]");
 	?>
-	<li><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$r10[5]?>"><?=$r10[1]?> <?=$r10[2]?></a> - sa "<?=$r10[3]?>" na "<?=mysql_result($q20,0,0)?>" (<a href="?sta=studentska/prodsjeka&akcija=obrisi&id=<?=$r10[0]?>&ak_god=<?=$ak_god?>">obriši zahtjev</a>) (<a href="?sta=studentska/prodsjeka&akcija=prihvati&id=<?=$r10[0]?>&ak_god=<?=$ak_god?>">prihvati zahtjev</a>)</li>
+	<li><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$r10[5]?>"><?=$r10[1]?> <?=$r10[2]?></a> - sa "<?=$r10[3]?>" na "<?=db_result($q20,0,0)?>" (<a href="?sta=studentska/prodsjeka&akcija=obrisi&id=<?=$r10[0]?>&ak_god=<?=$ak_god?>">obriši zahtjev</a>) (<a href="?sta=studentska/prodsjeka&akcija=prihvati&id=<?=$r10[0]?>&ak_god=<?=$ak_god?>">prihvati zahtjev</a>)</li>
 	<?
 	$total++;
 }
@@ -395,8 +395,8 @@ print "</ul><p>Ukupno: $total zahtjeva * <a href=\"?sta=studentska/prodsjeka&akc
 
 // Upit za spisak odsjeka
 $spisak_odsjeka = "<option></option>\n";
-$q30 = myquery("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // Promjena odsjeka ima smisla samo na prvom ciklusu
-while ($r30 = mysql_fetch_row($q30)) {
+$q30 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // Promjena odsjeka ima smisla samo na prvom ciklusu
+while ($r30 = db_fetch_row($q30)) {
 	$spisak_odsjeka .= "<option value=\"$r30[0]\">$r30[1]</option>\n";
 }
 
@@ -432,9 +432,9 @@ Na odsjek:
 Iznos maksimalne promjene broja studenata po odsjeku:<br/>
 <?
 
-$q40 = myquery("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // hardkodirano samo za prvi ciklus
+$q40 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // hardkodirano samo za prvi ciklus
 // zato što promjena studija na drugom ciklusu (koji traje 1-2 godine) baš i nema smisla
-while ($r40 = mysql_fetch_row($q40)) {
+while ($r40 = db_fetch_row($q40)) {
 	print "$r40[1]: <input type=\"text\" name=\"limit-$r40[0]\" value=\"0\" size=\"3\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ";
 }
 ?>

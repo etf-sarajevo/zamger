@@ -12,7 +12,7 @@ function admin_intro() {
 <?
 	require("public/predmeti.php");
 
-if ($_REQUEST['grupe']) {
+if (param('grupe')) {
 	public_predmeti("saradnik/grupa");
 	?><p><a href="?sta=admin/intro">Pogled "Administracija predmeta"</a></p><?
 } else {

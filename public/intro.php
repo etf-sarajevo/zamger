@@ -41,11 +41,12 @@ function login_forma() {
 		$uri = $_SERVER['REQUEST_URI'];
 	}
 
-	$anketa_aktivna=0;
+	$anketa_aktivna = false;
 	foreach ($registry as $r) {
+		if (count($r) == 0) continue;
 		if ($r[0]=="public/anketa" && $r[5]==0) {
-			$q01 = myquery("select id from anketa_anketa where aktivna = 1");
-			if (mysql_num_rows($q01)>0) $anketa_aktivna=1;
+			$br_aktivnih_anketa = db_query("select count(id) from anketa_anketa where aktivna = 1");
+			if ($br_aktivnih_anketa > 0) $anketa_aktivna = true;
 		}
 	}
 

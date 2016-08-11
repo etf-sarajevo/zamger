@@ -10,8 +10,8 @@ function izvjestaj_chart_semestralni() {
 	$semestar = intval($_GET['semestar']);
 	$studij = intval($_GET['studij']);
 	
-	$q10 = myquery("SELECT tekst FROM anketa_pitanje WHERE id=$pitanje");
-	$title = mysql_result($q10,0,0);
+	$q10 = db_query("SELECT tekst FROM anketa_pitanje WHERE id=$pitanje");
+	$title = db_result($q10,0,0);
 	
 	$l=0;
 	$predmeti;
@@ -21,19 +21,19 @@ function izvjestaj_chart_semestralni() {
 	// više studij PGS vec su studenti odmah razvrstani po smjerovima, na ovaj 
 	// način objedinjujemo razultate svih ponuda kursa za isti predmet
 	if ($studij == -1)
-		$result409=myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
+		$result409=db_query("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p, studij as s, tipstudija as ts where p.id=pk.predmet and pk.semestar=$semestar and pk.studij=s.id and s.tipstudija=2"); // tipstudija 2 = BSc... FIXME?
 	else
-		$result409=myquery("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
+		$result409=db_query("select distinct p.id, p.kratki_naziv from ponudakursa pk,predmet p where p.id=pk.predmet and pk.studij=$studij and pk.semestar=$semestar");
 	
-	while ($predmet = mysql_fetch_row($result409)) {
+	while ($predmet = db_fetch_row($result409)) {
 		if ($studij==-1)
-			$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
+			$q6730 = db_query("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y'");
 		else
-			$q6730 = myquery("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' AND a.studij=$studij");
-		if (mysql_result($q6730,0,2)==0) continue; // preskačemo ankete bez rezultata
-		$data[$l] = mysql_result($q6730,0,0);
+			$q6730 = db_query("SELECT avg( b.izbor_id ), STDDEV_POP(b.izbor_id), count(*) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje=$pitanje AND a.predmet=$predmet[0] AND zavrsena='Y' AND a.studij=$studij");
+		if (db_result($q6730,0,2)==0) continue; // preskačemo ankete bez rezultata
+		$data[$l] = db_result($q6730,0,0);
 		$predmeti[$predmet[1]] = $data[$l];
-		$stddev[$predmet[1]] = mysql_result($q6730,0,1);
+		$stddev[$predmet[1]] = db_result($q6730,0,1);
 		$l++;
 	}
 	

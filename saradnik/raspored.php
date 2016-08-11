@@ -57,8 +57,8 @@ function saradnik_raspored($tip) {
 			return;
 		}
 
-		$q200 = myquery("select id from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q200,0,0);
+		$q200 = db_query("select id from akademska_godina where aktuelna=1");
+		$ag = db_result($q200,0,0);
 
 		if ($labgrupa == 0) {
 		
@@ -66,8 +66,8 @@ function saradnik_raspored($tip) {
 			<b>Upravo u raspored dodajete čas sa sljedećim podacima:</b><br />
 			Dan u sedmici: <?=$dani_u_sedmici[$dan] ?><br />
 			Predmet: <?
-				$q300 = myquery("select naziv from predmet where id=$predmet");
-				print mysql_result($q300,0,0);
+				$q300 = db_query("select naziv from predmet where id=$predmet");
+				print db_result($q300,0,0);
 			?><br />
 			Tip časa: <?=$tip ?><br />
 			Trajanje časa: <?=$vrijeme_pocetak[$vvrijeme_pocetak] ?> - <?=$vrijeme_kraj[$vvrijeme_kraj] ?><br />
@@ -79,8 +79,8 @@ function saradnik_raspored($tip) {
 				}
 			?>
 			Sala: <?
-				$q310 = myquery("select naziv from raspored_sala where id=$sala");
-				print mysql_result($q310,0,0);
+				$q310 = db_query("select naziv from raspored_sala where id=$sala");
+				print db_result($q310,0,0);
 			?><br />
 			<?
 			if ($privatno == 0) print "Vidljivo studentima<br />"; else print "Nije vidljivo studentima<br />";
@@ -92,8 +92,8 @@ function saradnik_raspored($tip) {
 			Izaberite grupu: <select name="labgrupa">
 				<option value="-1">Zajednički za sve</option>
 				<?
-				$q199 = myquery("select id, naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
-				while ($r199 = mysql_fetch_row($q199)) {
+				$q199 = db_query("select id, naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
+				while ($r199 = db_fetch_row($q199)) {
 					print "<option value=\"$r199[0]\">$r199[1]</option>";
 				}
 				?>
@@ -107,18 +107,18 @@ function saradnik_raspored($tip) {
 
 		// Dodati studij, semestar
 		
-		$q210 = myquery("select id from raspored where akademska_godina=$ag and privatno=$privatno");
-		if (mysql_num_rows($q210) < 1) {
-			$q220 = myquery("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
-			$id_rasporeda = mysql_insert_id();
+		$q210 = db_query("select id from raspored where akademska_godina=$ag and privatno=$privatno");
+		if (db_num_rows($q210) < 1) {
+			$q220 = db_query("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
+			$id_rasporeda = db_insert_id();
 			zamgerlog("kreiran raspored $id_rasporeda", 2);
 			zamgerlog2("kreiran raspored", $id_rasporeda);
 		} else 
-			$id_rasporeda = mysql_result($q210,0,0);
+			$id_rasporeda = db_result($q210,0,0);
 			
-		$q230 = myquery("insert into raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj'");
+		$q230 = db_query("insert into raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj'");
 
-		$id = mysql_insert_id();
+		$id = db_insert_id();
 		zamgerlog("dodana stavka $id u raspored $id_rasporeda", 2);
 		zamgerlog2("dodana stavka u raspored", $id, intval($id_rasporeda));
 		nicemessage ("Dodavanje časa u raspored uspjelo!");
@@ -160,21 +160,21 @@ function saradnik_raspored($tip) {
 			return;
 		}
 
-		$q200 = myquery("select id from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q200,0,0);
+		$q200 = db_query("select id from akademska_godina where aktuelna=1");
+		$ag = db_result($q200,0,0);
 
 		// Dodati studij, semestar
 		
-		$q210 = myquery("select id from raspored where akademska_godina=$ag and privatno=$privatno");
-		if (mysql_num_rows($q210) < 1) {
-			$q220 = myquery("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
-			$id_rasporeda = mysql_insert_id();
+		$q210 = db_query("select id from raspored where akademska_godina=$ag and privatno=$privatno");
+		if (db_num_rows($q210) < 1) {
+			$q220 = db_query("insert into raspored set studij=0, semestar=0, akademska_godina=$ag, privatno=$privatno, aktivan=1");
+			$id_rasporeda = db_insert_id();
 			zamgerlog("kreiran raspored $id_rasporeda", 2);
 			zamgerlog2("kreiran raspored", $id_rasporeda);
 		} else 
-			$id_rasporeda = mysql_result($q210,0,0);
+			$id_rasporeda = db_result($q210,0,0);
 			
-		$q230 = myquery("update raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj' where id=$id_stavke");
+		$q230 = db_query("update raspored_stavka set raspored=$id_rasporeda, dan_u_sedmici=$dan, predmet=$predmet, labgrupa=$labgrupa, vrijeme_pocetak=$vvrijeme_pocetak, vrijeme_kraj=$vvrijeme_kraj, sala=$sala, tip='$tip', dupla=0, isjeckana=0, fini_pocetak='$fini_pocetak', fini_kraj='$fini_kraj' where id=$id_stavke");
 		
 		zamgerlog("ažurirana stavka $id_stavke u rasporedu $id_rasporeda", 2);
 		zamgerlog2("ažurirana stavka u rasporedu", $id_stavke, intval($id_rasporeda));
@@ -187,23 +187,23 @@ function saradnik_raspored($tip) {
 	// SPISAK PREDMETA NA KOJIMA JE ANGAŽOVAN NASTAVNIK
 
 	// Da li je semestar parni ili neparni?
-	$q10 = myquery("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
-	$neparni = mysql_result($q10,0,0);
+	$q10 = db_query("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
+	$neparni = db_result($q10,0,0);
 
 	$whereCounter = 0;
 	$spisak_predmeta = "";
 	
 	if ($user_studentska && $dajsve==1) {
-		$q20 = myquery("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM 
+		$q20 = db_query("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM 
 		ponudakursa as pk, akademska_godina as ag, predmet as p WHERE pk.akademska_godina = ag.id and 
 		ag.aktuelna=1 and pk.predmet=p.id");
 	} else if ($user_nastavnik) {
-		$q20 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND np.predmet=p.id and pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+		$q20 = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND np.predmet=p.id and pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 	} else {
-		$q20 = myquery("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM student_predmet as sp, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE sp.student = $userid AND pk.id = sp.predmet AND pk.akademska_godina = ag.id and ag.aktuelna=1 and pk.predmet=p.id");
+		$q20 = db_query("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM student_predmet as sp, ponudakursa as pk, akademska_godina as ag, predmet as p WHERE sp.student = $userid AND pk.id = sp.predmet AND pk.akademska_godina = ag.id and ag.aktuelna=1 and pk.predmet=p.id");
 	}
 	
-	while($r20 = mysql_fetch_row($q20)) {
+	while($r20 = db_fetch_row($q20)) {
 		$ag = $r20[1];
 		$semestar = $r20[2];
 		if ($semestar%2 != $neparni) continue;
@@ -227,23 +227,23 @@ function saradnik_raspored($tip) {
 	
 	if ($_REQUEST['akcija'] == "izmjena") {
 		$rid = intval($_REQUEST['id']);
-		$q400 = myquery("select rs.dan_u_sedmici, rs.predmet, rs.labgrupa, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.sala, rs.tip, rs.fini_pocetak, rs.fini_kraj, r.privatno from raspored_stavka as rs, raspored as r where rs.id=$rid and rs.raspored=r.id");
-		if (mysql_num_rows($q400)<1) {
+		$q400 = db_query("select rs.dan_u_sedmici, rs.predmet, rs.labgrupa, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.sala, rs.tip, rs.fini_pocetak, rs.fini_kraj, r.privatno from raspored_stavka as rs, raspored as r where rs.id=$rid and rs.raspored=r.id");
+		if (db_num_rows($q400)<1) {
 			niceerror("Nepoznata stavka u rasporedu");
 			return ;
 		}
 		
-		$mdan = mysql_result($q400,0,0);
-		$mpredmet = mysql_result($q400,0,1);
-		$mgrupa = mysql_result($q400,0,2);
-		$mpoc = mysql_result($q400,0,3);
-		$mkraj = mysql_result($q400,0,4);
-		$msala = mysql_result($q400,0,5);
-		$mtip = mysql_result($q400,0,6);
-		$mfinipoc = mysql_result($q400,0,7);
-		$mfinikraj = mysql_result($q400,0,8);
+		$mdan = db_result($q400,0,0);
+		$mpredmet = db_result($q400,0,1);
+		$mgrupa = db_result($q400,0,2);
+		$mpoc = db_result($q400,0,3);
+		$mkraj = db_result($q400,0,4);
+		$msala = db_result($q400,0,5);
+		$mtip = db_result($q400,0,6);
+		$mfinipoc = db_result($q400,0,7);
+		$mfinikraj = db_result($q400,0,8);
 		
-		if (mysql_result($q400,0,9) == 0) $javno=" checked"; else $javno = "";
+		if (db_result($q400,0,9) == 0) $javno=" checked"; else $javno = "";
 		
 		$spisak_predmeta = str_replace("option value=\"$mpredmet\"", "option value=\"$mpredmet\" selected", $spisak_predmeta);
 	
@@ -281,8 +281,8 @@ function saradnik_raspored($tip) {
 		Preciznije vrijeme početka: <input type="text" name="fini_pocetak" size="10" value="<?=$mfinipoc ?>" /><br />
 		Preciznije vrijeme završetka: <input type="text" name="fini_kraj" size="10" value="<?=$mfinikraj ?>" /><br /><br />
 		Sala: <select name="sala"><?
-			$q100 = myquery("select id,naziv, kapacitet, tip from raspored_sala order by naziv");
-			while ($r100 = mysql_fetch_row($q100)) {
+			$q100 = db_query("select id,naziv, kapacitet, tip from raspored_sala order by naziv");
+			while ($r100 = db_fetch_row($q100)) {
 				if ($r100[3] != "") $r100[3] = ", ".$r100[3];
 				if ($r100[0] == $msala) $sel=" selected"; else $sel = "";
 				print "<option value=\"$r100[0]\" $sel>$r100[1] ($r100[2] mjesta$r100[3])</option>\n";
@@ -292,11 +292,11 @@ function saradnik_raspored($tip) {
 			if ($mgrupa == 0) $sel = " selected"; else $sel = "";
 			print "<option value=\"0\" $sel>Zajednički za sve</option>\n";
 		
-			$q410 = myquery("select id from akademska_godina where aktuelna=1");
-			$ag = mysql_result($q410,0,0);
+			$q410 = db_query("select id from akademska_godina where aktuelna=1");
+			$ag = db_result($q410,0,0);
 
-			$q420 = myquery("select id, naziv from labgrupa where predmet=$mpredmet and akademska_godina=$ag order by naziv");
-			while ($r420 = mysql_fetch_row($q420)) {
+			$q420 = db_query("select id, naziv from labgrupa where predmet=$mpredmet and akademska_godina=$ag order by naziv");
+			while ($r420 = db_fetch_row($q420)) {
 				if ($r420[0] == $mgrupa) $sel=" selected"; else $sel = "";
 				print "<option value=\"$r420[0]\" $sel>$r420[1]</option>\n";
 			}
@@ -331,8 +331,8 @@ function saradnik_raspored($tip) {
 	Preciznije vrijeme početka: <input type="text" name="fini_pocetak" size="10" value="00:00:00" /><br />
 	Preciznije vrijeme završetka: <input type="text" name="fini_kraj" size="10" value="00:00:00" /><br /><br />
 	Sala: <select name="sala"><?
-		$q100 = myquery("select id,naziv, kapacitet, tip from raspored_sala order by naziv");
-		while ($r100 = mysql_fetch_row($q100)) {
+		$q100 = db_query("select id,naziv, kapacitet, tip from raspored_sala order by naziv");
+		while ($r100 = db_fetch_row($q100)) {
 			if ($r100[3] != "") $r100[3] = ", ".$r100[3];
 			print "<option value=\"$r100[0]\">$r100[1] ($r100[2] mjesta$r100[3])</option>\n";
 		}
@@ -356,16 +356,16 @@ function saradnik_raspored($tip) {
 	<?
 	
 	
-	$q30 = myquery("SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, r.privatno
+	$q30 = db_query("SELECT rs.id, p.naziv as naz, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj, r.privatno
 	FROM raspored_stavka as rs, raspored_sala as rsala, predmet as p, raspored as r, akademska_godina as ag
 	WHERE ".$sqlWhere." AND rsala.id=rs.sala AND p.id=rs.predmet AND rs.raspored=r.id and r.akademska_godina=ag.id and ag.aktuelna=1 and (r.privatno=0 or r.privatno=$userid)
 	ORDER BY rs.dan_u_sedmici ASC, rs.vrijeme_pocetak ASC, rs.id ASC");
-	if (mysql_num_rows($q30) == 0)
+	if (db_num_rows($q30) == 0)
 		print "<br />Nijedan čas nije definisan u vašem rasporedu.";
 
 	$old_dan = -1;	
 	
-	while ($r30 = mysql_fetch_row($q30)) {
+	while ($r30 = db_fetch_row($q30)) {
 		if ($r30[3] != $old_dan) { print "</ul><br />".$dani_u_sedmici[$r30[3]]."<ul>"; $old_dan = $r30[3]; }
 		
 		if ($r30[4] == "P") $tip = "Predavanja"; else if ($r30[4] == "T") $tip = "Tutorijali"; else $tip = "Laboratorijske vježbe";
@@ -380,9 +380,9 @@ function saradnik_raspored($tip) {
 		Sala: <?=$r30[8]?><br />
 		Tip časa: <?=$tip?><br />
 		<? if ($r30[7] != 0) {
-			$q40 = myquery("select naziv from labgrupa where id=".$r30[7]);
+			$q40 = db_query("select naziv from labgrupa where id=".$r30[7]);
 			?>
-			Grupa: <?=mysql_result($q40,0,0); ?><br />
+			Grupa: <?=db_result($q40,0,0); ?><br />
 			<?
 		} ?>
 		<? if ($r30[11] == 0) print "Javno"; else print "Privatno";

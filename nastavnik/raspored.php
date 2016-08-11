@@ -28,22 +28,22 @@ function vrijemeZaIspis($vrijeme){
 	$ag = intval($_REQUEST['ag']);
 	
 	// Naziv predmeta
-	$q10 = myquery("select naziv from predmet where id=$predmet");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select naziv from predmet where id=$predmet");
+	if (db_num_rows($q10)<1) {
 		biguglyerror("Nepoznat predmet");
 		zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
 		zamgerlog2("nepoznat predmet", $predmet);
 		return;
 	}
-	$predmet_naziv = mysql_result($q10,0,0);
+	$predmet_naziv = db_result($q10,0,0);
 	
 	
 	
 	// Da li korisnik ima pravo ući u modul?
 	
 	if (!$user_siteadmin) {
-		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
+		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (db_num_rows($q10)<1 || db_result($q10,0,0)=="asistent") {
 			zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
@@ -54,8 +54,8 @@ function vrijemeZaIspis($vrijeme){
 	if ($_POST['akcija'] == "promjena_grupe" && check_csrf_token()) {
 		$novagrupa = intval($_POST['grupa']);
 		$id_stavke=intval($_POST['stavka_rasporeda']);
-		$q01=myquery("update raspored_stavka set labgrupa=$novagrupa where id=$id_stavke");
-		$q02=myquery("update raspored_stavka set labgrupa=$novagrupa where dupla=$id_stavke");
+		$q01=db_query("update raspored_stavka set labgrupa=$novagrupa where id=$id_stavke");
+		$q02=db_query("update raspored_stavka set labgrupa=$novagrupa where dupla=$id_stavke");
 		$uspjesno_promijenjena_grupa=1;		
 		zamgerlog("promijenjena grupa za stavku rasporeda na predmetu $predmet_naziv", 2);
 		zamgerlog2("promijenjena grupa za stavku rasporeda", $novagrupa, $id_stavke);
@@ -64,47 +64,47 @@ function vrijemeZaIspis($vrijeme){
 	if ($_POST['akcija'] == "sjeckanje termina" && check_csrf_token()) {
 		$presjek = intval($_POST['presjek']);
 		$id_stavke=intval($_POST['stavka_rasp']);
-		$q0=myquery("select raspored,dan_u_sedmici,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa,dupla,isjeckana from raspored_stavka where id=$id_stavke");
-		$raspored=mysql_result($q0,0,0);
-		$dan_u_sedmici=mysql_result($q0,0,1);
-		$predmet=mysql_result($q0,0,2);
-		$pocetak=mysql_result($q0,0,3);
-		$kraj=mysql_result($q0,0,4);
-		$sala=mysql_result($q0,0,5);
-		$tip=mysql_result($q0,0,6);
-		$labgrupa=mysql_result($q0,0,7);
-		$dupla=mysql_result($q0,0,8);
-		$isjeckana=mysql_result($q0,0,9);
+		$q0=db_query("select raspored,dan_u_sedmici,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa,dupla,isjeckana from raspored_stavka where id=$id_stavke");
+		$raspored=db_result($q0,0,0);
+		$dan_u_sedmici=db_result($q0,0,1);
+		$predmet=db_result($q0,0,2);
+		$pocetak=db_result($q0,0,3);
+		$kraj=db_result($q0,0,4);
+		$sala=db_result($q0,0,5);
+		$tip=db_result($q0,0,6);
+		$labgrupa=db_result($q0,0,7);
+		$dupla=db_result($q0,0,8);
+		$isjeckana=db_result($q0,0,9);
 		// $isjeckana=0 znaci da stavka nije nikako isjeckana i prikazuje se u rasporedu
 		// $isjeckana=1 znači da je stavka izrezana i ne prikazuje se u rasporedu, a cuva sa u bazi radi vracanja na pocetne casove prije nego sto je nastavnik ista mijenjao
 		// $isjeckana=2 predstavlja dijelove od isjeckane stavke
-		$q1=myquery("update raspored_stavka set isjeckana=1 where id=$id_stavke");
-		$q2=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
+		$q1=db_query("update raspored_stavka set isjeckana=1 where id=$id_stavke");
+		$q2=db_query("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
 						vrijeme_pocetak=$pocetak,vrijeme_kraj=$presjek,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$dupla,isjeckana=2");
-		$q21=myquery("select max(id) from raspored_stavka");
-		$id_prve_stavke=mysql_result($q21,0,0);
-		$q3=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
+		$q21=db_query("select max(id) from raspored_stavka");
+		$id_prve_stavke=db_result($q21,0,0);
+		$q3=db_query("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
 						vrijeme_pocetak=$presjek,vrijeme_kraj=$kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$dupla,isjeckana=2");
-		$q31=myquery("select max(id) from raspored_stavka");
-		$id_druge_stavke=mysql_result($q31,0,0);
+		$q31=db_query("select max(id) from raspored_stavka");
+		$id_druge_stavke=db_result($q31,0,0);
 
-		$q0=myquery("select raspored,dan_u_sedmici,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa,dupla,isjeckana,id from raspored_stavka where dupla=$id_stavke");
-		for($i=0;$i<mysql_num_rows($q0);$i++){	
-			$raspored=mysql_result($q0,$i,0);
-			$dan_u_sedmici=mysql_result($q0,$i,1);
-			$predmet=mysql_result($q0,$i,2);
-			$pocetak=mysql_result($q0,$i,3);
-			$kraj=mysql_result($q0,$i,4);
-			$sala=mysql_result($q0,$i,5);
-			$tip=mysql_result($q0,$i,6);
-			$labgrupa=mysql_result($q0,$i,7);
-			$dupla=mysql_result($q0,$i,8);
-			$isjeckana=mysql_result($q0,$i,9);
-			$id_duple_stavke=mysql_result($q0,$i,10);
-			$q1=myquery("update raspored_stavka set isjeckana=1 where id=$id_duple_stavke");
-			$q2=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
+		$q0=db_query("select raspored,dan_u_sedmici,predmet,vrijeme_pocetak,vrijeme_kraj,sala,tip,labgrupa,dupla,isjeckana,id from raspored_stavka where dupla=$id_stavke");
+		for($i=0;$i<db_num_rows($q0);$i++){	
+			$raspored=db_result($q0,$i,0);
+			$dan_u_sedmici=db_result($q0,$i,1);
+			$predmet=db_result($q0,$i,2);
+			$pocetak=db_result($q0,$i,3);
+			$kraj=db_result($q0,$i,4);
+			$sala=db_result($q0,$i,5);
+			$tip=db_result($q0,$i,6);
+			$labgrupa=db_result($q0,$i,7);
+			$dupla=db_result($q0,$i,8);
+			$isjeckana=db_result($q0,$i,9);
+			$id_duple_stavke=db_result($q0,$i,10);
+			$q1=db_query("update raspored_stavka set isjeckana=1 where id=$id_duple_stavke");
+			$q2=db_query("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
 							vrijeme_pocetak=$pocetak,vrijeme_kraj=$presjek,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$id_prve_stavke,isjeckana=2");
-			$q3=myquery("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
+			$q3=db_query("insert into raspored_stavka set id='NULL', raspored=$raspored, dan_u_sedmici=$dan_u_sedmici, predmet=$predmet,
 							vrijeme_pocetak=$presjek,vrijeme_kraj=$kraj,sala=$sala,tip='$tip',labgrupa=$labgrupa,dupla=$id_druge_stavke,isjeckana=2");
 			
 		}
@@ -128,34 +128,34 @@ function vrijemeZaIspis($vrijeme){
 	    <th>Grupa</th>
  	</tr>
 	  	<?
-	    $q0=myquery("select rs.dan_u_sedmici,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.id from raspored_stavka rs,raspored r where rs.predmet=$predmet 
+	    $q0=db_query("select rs.dan_u_sedmici,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.id from raspored_stavka rs,raspored r where rs.predmet=$predmet 
 	    and rs.dupla=0 and rs.raspored=r.id and r.akademska_godina=$ag and (rs.tip='T' or rs.tip='L') and (rs.isjeckana=0 or rs.isjeckana=1)
 	    order by rs.dan_u_sedmici asc,rs.vrijeme_pocetak asc,rs.labgrupa asc");
-	    $qgrupe=myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
-	    for($i=0;$i<mysql_num_rows($q0);$i++){
-	    	$dan=mysql_result($q0,$i,0);
-	    	$pocetak=mysql_result($q0,$i,1);
-	    	$kraj=mysql_result($q0,$i,2);
-	    	$sala=mysql_result($q0,$i,3);
-	    	$tip=mysql_result($q0,$i,4);
-	    	$labgrupa=mysql_result($q0,$i,5);
-	    	$id_stavke=mysql_result($q0,$i,6);
+	    $qgrupe=db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
+	    for($i=0;$i<db_num_rows($q0);$i++){
+	    	$dan=db_result($q0,$i,0);
+	    	$pocetak=db_result($q0,$i,1);
+	    	$kraj=db_result($q0,$i,2);
+	    	$sala=db_result($q0,$i,3);
+	    	$tip=db_result($q0,$i,4);
+	    	$labgrupa=db_result($q0,$i,5);
+	    	$id_stavke=db_result($q0,$i,6);
 	    	if($dan==1) $dan_naziv="Ponedjeljak";
 	    	elseif($dan==2) $dan_naziv="Utorak";
 	    	elseif($dan==3) $dan_naziv="Srijeda";
 	    	elseif($dan==4) $dan_naziv="Četvrtak";
 	    	elseif($dan==5) $dan_naziv="Petak";
 	    	elseif($dan==6) $dan_naziv="Subota";
-	    	$q1=myquery("select naziv from raspored_sala where id=$sala");
-	  		$sala_naziv=mysql_result($q1,0,0);
+	    	$q1=db_query("select naziv from raspored_sala where id=$sala");
+	  		$sala_naziv=db_result($q1,0,0);
 			$vrijemeP=vrijemeZaIspis($pocetak);
 			$vrijemeK=vrijemeZaIspis($kraj);
 			if($tip=='P') $tip_naziv="Predavanje";
 	    	elseif($tip=='T') $tip_naziv="Tutorijal";
 	    	elseif($tip=='L') $tip_naziv="Laboratorija";
 	    	if($labgrupa!=-1){
-	    		$q2=myquery("select naziv from labgrupa where id=$labgrupa");
-	    		$labgrupa_naziv=mysql_result($q2,0,0);
+	    		$q2=db_query("select naziv from labgrupa where id=$labgrupa");
+	    		$labgrupa_naziv=db_result($q2,0,0);
 	    	}
 	    	else $labgrupa_naziv="prazno";
 	    ?>
@@ -191,33 +191,33 @@ function vrijemeZaIspis($vrijeme){
 	    <th>Razdvajanje časa na 2 termina</th>
  	</tr>
 	  	<?
-	    $q0=myquery("select rs.dan_u_sedmici,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.id from raspored_stavka rs,raspored r where rs.predmet=$predmet 
+	    $q0=db_query("select rs.dan_u_sedmici,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,rs.id from raspored_stavka rs,raspored r where rs.predmet=$predmet 
 	    and rs.dupla=0 and rs.raspored=r.id and r.akademska_godina=$ag and (rs.tip='T' or rs.tip='L') and (rs.isjeckana=0 or rs.isjeckana=2) order by rs.dan_u_sedmici asc,rs.vrijeme_pocetak asc,rs.labgrupa asc");
-	    $qgrupe=myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
-	    for($i=0;$i<mysql_num_rows($q0);$i++){
-	    	$dan=mysql_result($q0,$i,0);
-	    	$pocetak=mysql_result($q0,$i,1);
-	    	$kraj=mysql_result($q0,$i,2);
-	    	$sala=mysql_result($q0,$i,3);
-	    	$tip=mysql_result($q0,$i,4);
-	    	$labgrupa=mysql_result($q0,$i,5);
-	    	$id_stavke=mysql_result($q0,$i,6);
+	    $qgrupe=db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
+	    for($i=0;$i<db_num_rows($q0);$i++){
+	    	$dan=db_result($q0,$i,0);
+	    	$pocetak=db_result($q0,$i,1);
+	    	$kraj=db_result($q0,$i,2);
+	    	$sala=db_result($q0,$i,3);
+	    	$tip=db_result($q0,$i,4);
+	    	$labgrupa=db_result($q0,$i,5);
+	    	$id_stavke=db_result($q0,$i,6);
 	    	if($dan==1) $dan_naziv="Ponedjeljak";
 	    	elseif($dan==2) $dan_naziv="Utorak";
 	    	elseif($dan==3) $dan_naziv="Srijeda";
 	    	elseif($dan==4) $dan_naziv="Četvrtak";
 	    	elseif($dan==5) $dan_naziv="Petak";
 	    	elseif($dan==6) $dan_naziv="Subota";
-	    	$q1=myquery("select naziv from raspored_sala where id=$sala");
-	  		$sala_naziv=mysql_result($q1,0,0);
+	    	$q1=db_query("select naziv from raspored_sala where id=$sala");
+	  		$sala_naziv=db_result($q1,0,0);
 	  		$vrijemeP=vrijemeZaIspis($pocetak);
 			$vrijemeK=vrijemeZaIspis($kraj);
 			if($tip=='P') $tip_naziv="Predavanje";
 	    	elseif($tip=='T') $tip_naziv="Tutorijal";
 	    	elseif($tip=='L') $tip_naziv="Laboratorija";
 	    	if($labgrupa!=-1) {
-	    		$q2=myquery("select naziv from labgrupa where id=$labgrupa");
-	    		$labgrupa_naziv=mysql_result($q2,0,0);
+	    		$q2=db_query("select naziv from labgrupa where id=$labgrupa");
+	    		$labgrupa_naziv=db_result($q2,0,0);
 	    	}
 	    	else $labgrupa_naziv="prazno";
 	    ?>
@@ -235,9 +235,9 @@ function vrijemeZaIspis($vrijeme){
 		    <select name="grupa">
 		    	<option value="-1" <? if($labgrupa==-1) print " selected=\"selected\"";?>>--prazno--</option>
 		    	<?
-		    	for($j=0;$j<mysql_num_rows($qgrupe);$j++){
-		    		$id=mysql_result($qgrupe,$j,0);
-		    		$naziv=mysql_result($qgrupe,$j,1);
+		    	for($j=0;$j<db_num_rows($qgrupe);$j++){
+		    		$id=db_result($qgrupe,$j,0);
+		    		$naziv=db_result($qgrupe,$j,1);
 		    		print "<option value=\"$id\"";
 		    		if($id==$labgrupa) print " selected=\"selected\"";
 		    		print ">$naziv</option>";

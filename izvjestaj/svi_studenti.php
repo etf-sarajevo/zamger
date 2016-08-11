@@ -28,12 +28,12 @@ $mjesto_rodjenja = request('mjesto_rodjenja');
 $adresa_mjesto = request('adresa_mjesto');
 
 if ($ag==0) {
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ag = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ag = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q20 = myquery("select naziv from akademska_godina where id=$ag");
-	$ak_god_naziv = mysql_result($q20,0,0);
+	$q20 = db_query("select naziv from akademska_godina where id=$ag");
+	$ak_god_naziv = db_result($q20,0,0);
 }
 
 if ($studij == 0)
@@ -43,8 +43,8 @@ else if ($studij == -1)
 else if ($studij == -2)
 	$naziv_studija = "Drugi ciklus studija";
 else {
-	$q30 = myquery("SELECT naziv FROM studij WHERE id=$studij");
-	$naziv_studija = mysql_result($q30,0,0);
+	$q30 = db_query("SELECT naziv FROM studij WHERE id=$studij");
+	$naziv_studija = db_result($q30,0,0);
 }
 
 if ($godina>0)
@@ -92,7 +92,7 @@ if ($godina > 0)
 	$uslov_semestar = " and ss.semestar=".($godina*2-1);
 
 
-$q30 = myquery("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
+$q30 = db_query("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
 $rbr = 1; $oldid = 0;
 $niz = array();
 
@@ -109,7 +109,7 @@ if ($tabelarno) {
 	print "</tr>\n";
 }
 
-while ($osoba = mysql_fetch_array($q30)) {
+while ($osoba = db_fetch_assoc($q30)) {
 	if ($tabelarno) {
 		print "<tr><td>$rbr</td><td>".$osoba['prezime']."</td>";
 		if ($ime_oca) print "<td>".$osoba['imeoca']."</td>";

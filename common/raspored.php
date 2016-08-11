@@ -68,8 +68,8 @@ function common_raspored($tip) {
 
 	// Upit koji odredjuje za koje predmete se prikazuje raspored
 	if($tip=="student") {
-		/*$selUserData = myquery("SELECT a.labgrupa, b.studij, b.semestar, b.akademska_godina FROM student_labgrupa a, student_studij b WHERE a.student = '".$korisnik."' AND b.student = '".$korisnik."' ");
-		while($sUD = mysql_fetch_array($selUserData)) {
+		/*$selUserData = db_query("SELECT a.labgrupa, b.studij, b.semestar, b.akademska_godina FROM student_labgrupa a, student_studij b WHERE a.student = '".$korisnik."' AND b.student = '".$korisnik."' ");
+		while($sUD = db_fetch_assoc($selUserData)) {
 			$grupaId = $sUD['labgrupa'];
 			$studijId = $sUD['studij'];
 			$semId = $sUD['semestar'];
@@ -82,13 +82,13 @@ function common_raspored($tip) {
 		$sqlWhere = "godinaR = '".$adId."' AND smijerR = '".$studijId."' AND semestarR = '".$semId."' AND labgrupa = '0' ".$sqlRasG;*/
 
 		// Koji je aktuelni semestar?
-		$q5 = myquery("select ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$userid and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
-		if (mysql_num_rows($q5)<1) {
+		$q5 = db_query("select ss.semestar from student_studij as ss, akademska_godina as ag where ss.student=$userid and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
+		if (db_num_rows($q5)<1) {
 			// Student nije upisan na fakultet.
 			print "Nema rasporeda časova za korisnika<br/><br/></div>\n";
 			return;
 		}
-		$semestar_paran = mysql_result($q5,0,0) % 2;
+		$semestar_paran = db_result($q5,0,0) % 2;
 
 		
 		$sqlUpit = "SELECT rs.id, p.naziv, p.kratki_naziv, rs.dan_u_sedmici, rs.tip, rs.vrijeme_pocetak, rs.vrijeme_kraj, rs.labgrupa, rsala.naziv, rs.fini_pocetak, rs.fini_kraj
@@ -116,12 +116,12 @@ function common_raspored($tip) {
 		
 	} else { // tip = nastavnik
 		// Da li je aktuelan neparni ili parni semestar?
-		$qneparni = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
-		if (mysql_num_rows($qneparni)>0) $neparni=0; else $neparni=1;
+		$qneparni = db_query("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
+		if (db_num_rows($qneparni)>0) $neparni=0; else $neparni=1;
 
 		$whereCounter = 0;
-		$selUserData = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
-		while($sUD = mysql_fetch_array($selUserData)) {
+		$selUserData = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+		while($sUD = db_fetch_assoc($selUserData)) {
 			$adId = $sUD['akademska_godina'];
 			$semId = $sUD['semestar'];
 			if ($semId%2 != $neparni) continue;
@@ -145,8 +145,8 @@ function common_raspored($tip) {
 	}
 
 	// Selektuj podatke iz baze
-	$q10 = myquery($sqlUpit);
-	if(mysql_num_rows($q10) == 0)
+	$q10 = db_query($sqlUpit);
+	if(db_num_rows($q10) == 0)
 		print "Nema rasporeda časova za korisnika<br/><br/>";
 	else {
 		// Zaglavlje sa danima
@@ -190,7 +190,7 @@ function common_raspored($tip) {
 		print '<div class="kolona">'."\n"; // Pocetak kolone	
 		$lastDay = 1; // Promjena dana
 		$lastCas = 0; // Prazna polja
-		while ($row = mysql_fetch_row($q10)) {
+		while ($row = db_fetch_row($q10)) {
 			// polja
 			$rsid = $row[0];
 			$predmet_naziv = $row[1];
@@ -275,8 +275,8 @@ function common_raspored($tip) {
 
 			$ime_grupe = "";
 			if ($tip != "student" && $labgrupa != 0) {
-				$qmomoc = myquery("select naziv from labgrupa where id=$labgrupa");
-				$ime_grupe = "<br />".mysql_result($qmomoc,0,0);
+				$qmomoc = db_query("select naziv from labgrupa where id=$labgrupa");
+				$ime_grupe = "<br />".db_result($qmomoc,0,0);
 			}
 			
 			// Mouseover efekat
@@ -302,8 +302,8 @@ function common_raspored($tip) {
 
 	// RSS ID
 
-	$q200 = myquery("select id from rss where auth=$userid");
-	if (mysql_num_rows($q200)<1) {
+	$q200 = db_query("select id from rss where auth=$userid");
+	if (db_num_rows($q200)<1) {
 		srand(time());
 		// kreiramo novi ID
 		do {
@@ -315,11 +315,11 @@ function common_raspored($tip) {
 				else $sslovo=chr(ord('A')+$slovo-36);
 				$rssid .= $sslovo;
 			}
-			$q210 = myquery("select count(*) from rss where id='$rssid'");
-		} while (mysql_result($q210,0,0)>0);
-		$q220 = myquery("insert into rss set id='$rssid', auth=$userid");
+			$q210 = db_query("select count(*) from rss where id='$rssid'");
+		} while (db_result($q210,0,0)>0);
+		$q220 = db_query("insert into rss set id='$rssid', auth=$userid");
 	} else {
-		$rssid = mysql_result($q200,0,0);
+		$rssid = db_result($q200,0,0);
 	}
 	print "<a href=\"?sta=public/ical&id=$rssid\">iCal</a><br>\n";
 		

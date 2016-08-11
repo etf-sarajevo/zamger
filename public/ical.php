@@ -17,27 +17,27 @@ function public_ical() {
 				"6" => "1445", "7" => "1545", "8" => "1645", "9" => "1745", "10" => "1845", "11" => "1945", "12" => "2045");
 
 	// Pretvaramo rss id u userid
-	$id = my_escape($_REQUEST['id']);
-	$q1 = myquery("select auth from rss where id='$id'");
-	if (mysql_num_rows($q1)<1) {
+	$id = db_escape($_REQUEST['id']);
+	$q1 = db_query("select auth from rss where id='$id'");
+	if (db_num_rows($q1)<1) {
 		print "Greska! Nepoznat RSS ID $id";
 		return 0;
 	}
-	$userid = mysql_result($q1,0,0);
+	$userid = db_result($q1,0,0);
 
 	// Da li je korisnik nastavnik?
-	$q2 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
-	if (mysql_num_rows($q2)>0) $user_nastavnik=true; else $user_nastavnik=false;
+	$q2 = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+	if (db_num_rows($q2)>0) $user_nastavnik=true; else $user_nastavnik=false;
 
 	// Da li je semestar parni ili neparni?
-	$q10 = myquery("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
-	$neparni = mysql_result($q10,0,0);
+	$q10 = db_query("SELECT CURDATE()<pocetak_ljetnjeg_semestra FROM akademska_godina WHERE aktuelna=1");
+	$neparni = db_result($q10,0,0);
 
 	if ($user_nastavnik) {
 		// Spisak predmeta na kojima je nastavnik angažovan
 		$whereCounter = 0;
 		$predmet_bio = array();
-		while($sUD = mysql_fetch_array($q2)) {
+		while($sUD = db_fetch_assoc($q2)) {
 			if (in_array($sUD['predmet'], $predmet_bio)) continue;
 			array_push($predmet_bio, $sUD['predmet']);
 			$adId = $sUD['akademska_godina'];
@@ -72,15 +72,15 @@ function public_ical() {
 	}
 
 	// Treba nam i aktuelna akademska godina
-	$q20 = myquery("select naziv from akademska_godina where aktuelna=1");
-	list($zimska_godina, $ljetnja_godina) = explode("/", mysql_result($q20,0,0));
+	$q20 = db_query("select naziv from akademska_godina where aktuelna=1");
+	list($zimska_godina, $ljetnja_godina) = explode("/", db_result($q20,0,0));
 
 	header("Content-Type: text/calendar");
 	$output = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//ETF/Zamger//NONSGML v1.0//EN\r\n";
 
 	// Selektuj podatke iz baze
-	$q10 = myquery($sqlUpit);
-	while ($row = mysql_fetch_row($q10)) {
+	$q10 = db_query($sqlUpit);
+	while ($row = db_fetch_row($q10)) {
 		// polja
 		$rsid = $row[0];
 		$predmet_naziv = $row[1];
@@ -156,8 +156,8 @@ function public_ical() {
 			$summary .= " (Laboratorijska vježba)";
 		}
 		if ($user_nastavnik && $labgrupa != 0) {
-			$qmomoc = myquery("select naziv from labgrupa where id=$labgrupa");
-			$summary .= " ".mysql_result($qmomoc,0,0);
+			$qmomoc = db_query("select naziv from labgrupa where id=$labgrupa");
+			$summary .= " ".db_result($qmomoc,0,0);
 		}
 		
 		// Ispis

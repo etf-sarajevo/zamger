@@ -17,18 +17,18 @@ function ws_autotest() {
 	$autotest = $zadaca = 0;
 	if (isset($_REQUEST['autotest'])) {
 		$autotest = intval($_REQUEST['autotest']);
-		$q5 = myquery("SELECT zadaca FROM autotest WHERE id=$autotest");
-		if (mysql_num_rows($q5) > 0)
-			$_REQUEST['zadaca'] = mysql_result($q5,0,0); // Sada će se kaskadno izvršiti sljedeći blok
+		$q5 = db_query("SELECT zadaca FROM autotest WHERE id=$autotest");
+		if (db_num_rows($q5) > 0)
+			$_REQUEST['zadaca'] = db_result($q5,0,0); // Sada će se kaskadno izvršiti sljedeći blok
 	}
 	if (isset($_REQUEST['zadaca'])) {
 		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
 		
 		$predmet = $ag = 0;
-		$q10 = myquery("SELECT predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
-		if (mysql_num_rows($q10) > 0) {
-			$predmet = mysql_result($q10,0,0);
-			$ag = mysql_result($q10,0,1);
+		$q10 = db_query("SELECT predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
+		if (db_num_rows($q10) > 0) {
+			$predmet = db_result($q10,0,0);
+			$ag = db_result($q10,0,1);
 		}
 	}
 
@@ -42,8 +42,8 @@ function ws_autotest() {
 				return;
 			} else {
 				$zadatak = intval($_REQUEST['zadatak']);
-				$q10 = myquery("select zadaca, zadatak, tip, specifikacija, zamijeni from autotest_replace where zadaca=$zadaca and zadatak=$zadatak");
-				while ($dbrow = mysql_fetch_assoc($q10)) {
+				$q10 = db_query("select zadaca, zadatak, tip, specifikacija, zamijeni from autotest_replace where zadaca=$zadaca and zadatak=$zadatak");
+				while ($dbrow = db_fetch_assoc($q10)) {
 					array_push($rezultat['data'], $dbrow);
 				}
 			}
@@ -53,9 +53,9 @@ function ws_autotest() {
 	// Rezultat testiranja za dati autotest
 	else if ($_REQUEST['akcija'] == "rezultat") {
 		if ($_SERVER['REQUEST_METHOD'] == "POST") {
-			$status = my_escape($_REQUEST['status']);
-			$nalaz = my_escape($_REQUEST['nalaz']);
-			$izlaz_programa = my_escape($_REQUEST['izlaz_programa']);
+			$status = db_escape($_REQUEST['status']);
+			$nalaz = db_escape($_REQUEST['nalaz']);
+			$izlaz_programa = db_escape($_REQUEST['izlaz_programa']);
 			$trajanje = intval($_REQUEST['trajanje']);
 			
 			// Student ne može postavljati status autotestova za vlastitu zadaću
@@ -63,8 +63,8 @@ function ws_autotest() {
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 				return;
 			} else {
-				myquery("DELETE FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
-				myquery("INSERT INTO autotest_rezultat set autotest=$autotest, student=$student, status='$status', nalaz='$nalaz', izlaz_programa='$izlaz_programa', trajanje=$trajanje");
+				db_query("DELETE FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
+				db_query("INSERT INTO autotest_rezultat set autotest=$autotest, student=$student, status='$status', nalaz='$nalaz', izlaz_programa='$izlaz_programa', trajanje=$trajanje");
 				$rezultat['message'] = "Postavljen rezultat";
 			}
 		}
@@ -76,8 +76,8 @@ function ws_autotest() {
 				return;
 			} else {
 				//$rezultat['data']['upit'] = "SELECT autotest, student, status, nalaz, izlaz_programa, trajanje FROM autotest_rezultat WHERE autotest=$autotest AND student=$student";
-				$q100 = myquery("SELECT autotest, student, status, nalaz, izlaz_programa, trajanje FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
-				while ($dbrow = mysql_fetch_assoc($q100)) {
+				$q100 = db_query("SELECT autotest, student, status, nalaz, izlaz_programa, trajanje FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
+				while ($dbrow = db_fetch_assoc($q100)) {
 					array_push($rezultat['data'], $dbrow);
 				}
 			}
@@ -91,8 +91,8 @@ function ws_autotest() {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
-			$q10 = myquery("select id, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match from autotest where zadaca=$zadaca and zadatak=$zadatak");
-			while ($dbrow = mysql_fetch_assoc($q10)) {
+			$q10 = db_query("select id, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match from autotest where zadaca=$zadaca and zadatak=$zadatak");
+			while ($dbrow = db_fetch_assoc($q10)) {
 				array_push($rezultat['data'], $dbrow);
 			}
 		}

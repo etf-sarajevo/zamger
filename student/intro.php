@@ -11,9 +11,9 @@ global $userid, $registry;
 
 // Dobrodošlica
 
-$q1 = myquery("select ime, spol from osoba where id=$userid");
-$ime = mysql_result($q1,0,0);
-$spol = mysql_result($q1,0,1);
+$q1 = db_query("select ime, spol from osoba where id=$userid");
+$ime = db_result($q1,0,0);
+$spol = db_result($q1,0,1);
 if ($spol == 'Z' || ($spol == '' && spol($ime)=="Z"))
 	print "<h1>Dobro došla, ".vokativ($ime,"Z")."</h1>";
 else
@@ -52,11 +52,11 @@ $code_poruke = array();
 
 // Rokovi za slanje zadaća
 
-$q10 = myquery("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and z.rok>curdate() and sp.predmet=pk.id and sp.student=$userid and pk.predmet=p.id and z.aktivna=1 order by rok limit 5");
-while ($r10 = mysql_fetch_row($q10)) {
+$q10 = db_query("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and z.rok>curdate() and sp.predmet=pk.id and sp.student=$userid and pk.predmet=p.id and z.aktivna=1 order by rok limit 5");
+while ($r10 = db_fetch_row($q10)) {
 	// Da li je aktivan modul za zadaće?
-	$q12 = myquery("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
-	if (mysql_result($q12,0,0)==0) continue;
+	$q12 = db_query("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
+	if (db_result($q12,0,0)==0) continue;
 
 	$code_poruke["z".$r10[0]] = "<b>$r10[3]:</b> Rok za slanje <a href=\"?sta=student/zadaca&zadaca=$r10[0]&predmet=$r10[6]&ag=$r10[7]\">zadaće ".$r10[1]."</a> je ".date("d. m. Y. \u H:i",$r10[2]).".<br/><br/>\n";
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
@@ -65,26 +65,26 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = myquery("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), true, k.prolaz, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
-while ($r15 = mysql_fetch_row($q15)) {
+$q15 = db_query("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), true, k.prolaz, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
+while ($r15 = db_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskačemo starije od mjesec dana
 
 	// Da li je student položio predmet? Preskačemo ako jeste
-	$q15a = myquery("select count(*) from konacna_ocjena where predmet=$r15[8] and ocjena>=6 and student=$userid");
-	if (mysql_result($q15a,0,0)>0) continue;
+	$q15a = db_query("select count(*) from konacna_ocjena where predmet=$r15[8] and ocjena>=6 and student=$userid");
+	if (db_result($q15a,0,0)>0) continue;
 
 	// Da li je ovaj student izlazio na ispit?
-	$q16 = myquery("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
-	if (mysql_num_rows($q16)==0) { // Ne
+	$q16 = db_query("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
+	if (db_num_rows($q16)==0) { // Ne
 		// Ima li termina na koje se može prijaviti?
-		$q17 = myquery("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
-		if (mysql_result($q17,0,0)>0) {
+		$q17 = db_query("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
+		if (db_result($q17,0,0)>0) {
 			$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
 			$vrijeme_poruke["i".$r15[0]] = $r15[3];
 		}
 	}
 	else { // Student je dobio $bodova
-		$bodova = mysql_result($q16,0,0);
+		$bodova = db_result($q16,0,0);
 		if ($bodova>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
 		$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $bodova bodova.$cestitka<br /><br />\n";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
@@ -93,8 +93,8 @@ while ($r15 = mysql_fetch_row($q15)) {
 
 // Konačne ocjene
 
-$q17 = myquery("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id and ko.ocjena>5");
-while ($r17 = mysql_fetch_row($q17)) {
+$q17 = db_query("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id and ko.ocjena>5");
+while ($r17 = db_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 	$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[4]&ag=$r17[5]\">Dobili ste $r17[1]</a><br /><br />\n";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
@@ -103,14 +103,14 @@ while ($r17 = mysql_fetch_row($q17)) {
 // Anketa
 // Ima li ovo smisla? Ako natrpamo 5 poruka u obavjestenja, nece se nista drugo prikazati :(
 /*if ($modul_anketa) {
-	$q19a = myquery("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
-	$q19b = myquery("select UNIX_TIMESTAMP(datum_otvaranja) from anketa_anketa where aktivna = 1");
+	$q19a = db_query("select pk.id, p.naziv, p.id, pk.akademska_godina from student_predmet as sp, ponudakursa as pk, predmet as p where  sp.student=$userid and  sp.predmet=pk.id and pk.predmet=p.id");
+	$q19b = db_query("select UNIX_TIMESTAMP(datum_otvaranja) from anketa_anketa where aktivna = 1");
 
 	// provjeravamo da li postoji aktivna anketa
-	if (mysql_num_rows($q19b)!= 0) {
-		$q19b_vrijeme=mysql_result($q19b,0,0);
+	if (db_num_rows($q19b)!= 0) {
+		$q19b_vrijeme=db_result($q19b,0,0);
 		
-		while ($r19 = mysql_fetch_row($q19a)) {
+		while ($r19 = db_fetch_row($q19a)) {
 			if ($q19b_vrijeme < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 			$code_poruke["l".$r19[0]] = "<b>$r19[1]:</b><a href=\"?sta=student/anketa&predmet=$r19[2]\"> Molimo ispunite anketu. </a> <br/><br/>\n";
 			$vrijeme_poruke["l".$r19[0]] = $q19b_vrijeme;
@@ -120,16 +120,16 @@ while ($r17 = mysql_fetch_row($q17)) {
 
 
 // Kvizovi
-$q18 = myquery("select k.id, k.naziv, UNIX_TIMESTAMP(k.vrijeme_pocetak), k.labgrupa, k.predmet, k.akademska_godina, p.naziv from kviz as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=k.predmet and pk.predmet=p.id and pk.akademska_godina=k.akademska_godina and k.vrijeme_pocetak<NOW() and k.vrijeme_kraj>NOW() and k.aktivan=1");
-while ($r18 = mysql_fetch_row($q18)) {
+$q18 = db_query("select k.id, k.naziv, UNIX_TIMESTAMP(k.vrijeme_pocetak), k.labgrupa, k.predmet, k.akademska_godina, p.naziv from kviz as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=k.predmet and pk.predmet=p.id and pk.akademska_godina=k.akademska_godina and k.vrijeme_pocetak<NOW() and k.vrijeme_kraj>NOW() and k.aktivan=1");
+while ($r18 = db_fetch_row($q18)) {
 	$labgrupa = $r18[3];
 	$predmet = $r18[4];
 	$ag = $r18[5];
 
 	if ($labgrupa > 0) { // definisana je labgrupa
 		$nasao = false;
-		$q19 = myquery("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
-		while ($r19 = mysql_fetch_row($q19)) {
+		$q19 = db_query("select sl.labgrupa from student_labgrupa as sl, labgrupa as l where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+		while ($r19 = db_fetch_row($q19)) {
 			if ($r19[0] == $labgrupa) $nasao = true;
 		}
 		if (!$nasao) continue; // nije ta labgrupa
@@ -183,23 +183,23 @@ if ($count==0) {
 //    8 - svi studenti na godini studija (primalac - idstudija*10+godina_studija)
 
 // Zadnja akademska godina
-$q20 = myquery("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
-$ag = mysql_result($q20,0,0);
-$ag_naziv = mysql_result($q20,0,1);
+$q20 = db_query("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
+$ag = db_result($q20,0,0);
+$ag_naziv = db_result($q20,0,1);
 
 // Studij koji student trenutno sluša
 $studij=0;
-$q30 = myquery("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
-if (mysql_num_rows($q30)>0) {
-	$studij   = mysql_result($q30,0,0);
-	$semestar = mysql_result($q30,0,1);
-	$ciklus   = mysql_result($q30,0,2);
+$q30 = db_query("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
+if (db_num_rows($q30)>0) {
+	$studij   = db_result($q30,0,0);
+	$semestar = db_result($q30,0,1);
+	$ciklus   = db_result($q30,0,2);
 	$godina_studija = intval(($semestar+1)/2);
 }
 
-$q40 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
+$q40 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tekst, posiljalac from poruka where tip=1 order by vrijeme desc");
 $printed=0;
-while ($r40 = mysql_fetch_row($q40)) {
+while ($r40 = db_fetch_row($q40)) {
 	if (time() - $r40[1] > 60*60*24*365) continue;
 	$opseg = $r40[2];
 	$primalac = $r40[3];
@@ -211,23 +211,23 @@ while ($r40 = mysql_fetch_row($q40)) {
 		if ($r40[1]<mktime(0,0,0,9,1,intval($ag_naziv))) continue;
 
 		// odredjujemo naziv predmeta i da li ga student slusa
-		$q50 = myquery("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and pk.predmet=p.id");
-		if (mysql_num_rows($q50)<1) continue;
-		$posiljalac = mysql_result($q50,0,0);
+		$q50 = db_query("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and pk.predmet=p.id");
+		if (db_num_rows($q50)<1) continue;
+		$posiljalac = db_result($q50,0,0);
 	} else if ($opseg==6) {
 		// odredjujemo naziv predmeta za labgrupu i da li je student u grupi
-		$q55 = myquery("select p.naziv from student_labgrupa as sl, labgrupa as l, predmet as p where sl.student=$userid and sl.labgrupa=l.id and l.id=$primalac and l.predmet=p.id");
-		if (mysql_num_rows($q55)<1) continue;
-		$posiljalac = mysql_result($q55,0,0);
+		$q55 = db_query("select p.naziv from student_labgrupa as sl, labgrupa as l, predmet as p where sl.student=$userid and sl.labgrupa=l.id and l.id=$primalac and l.predmet=p.id");
+		if (db_num_rows($q55)<1) continue;
+		$posiljalac = db_result($q55,0,0);
 
 	} else {
 		// Obavještenja u drugim opsezima može slati samo site admin ili studentska služba
-		$q56 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='siteadmin'");
-		if (mysql_result($q56,0,0)>0) 
+		$q56 = db_query("select count(*) from privilegije where osoba=$posiljalac and privilegija='siteadmin'");
+		if (db_result($q56,0,0)>0) 
 			$posiljalac = "Administrator";
 		else {
-			$q57 = myquery("select count(*) from privilegije where osoba=$posiljalac and privilegija='studentska'");
-			if (mysql_result($q57,0,0)>0) 
+			$q57 = db_query("select count(*) from privilegije where osoba=$posiljalac and privilegija='studentska'");
+			if (db_result($q57,0,0)>0) 
 				$posiljalac = "Studentska služba";
 			else
 				$posiljalac = "Neko iz mase";
@@ -271,8 +271,8 @@ if ($printed==0)
 $vrijeme_poruke = array();
 $code_poruke = array();
 
-$q100 = myquery("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov from poruka where tip=2 order by vrijeme desc");
-while ($r100 = mysql_fetch_row($q100)) {
+$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov from poruka where tip=2 order by vrijeme desc");
+while ($r100 = db_fetch_row($q100)) {
 	$id = $r100[0];
 	$opseg = $r100[2];
 	$primalac = $r100[3];
@@ -280,13 +280,13 @@ while ($r100 = mysql_fetch_row($q100)) {
 		continue;
 	if ($opseg==5) {
 		// odredjujemo da li je student ikada slusao predmet (FIXME?)
-		$q110 = myquery("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac");
-		if (mysql_result($q110,0,0)<1) continue;
+		$q110 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac");
+		if (db_result($q110,0,0)<1) continue;
 	}
 	if ($opseg==6) {
 		// da li je student u labgrupi?
-		$q115 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$primalac");
-		if (mysql_result($q115,0,0)<1) continue;
+		$q115 = db_query("select count(*) from student_labgrupa where student=$userid and labgrupa=$primalac");
+		if (db_result($q115,0,0)<1) continue;
 	}
 	$vrijeme_poruke[$id]=$r100[1];
 
@@ -311,14 +311,14 @@ PRESPORO :(
 
 // Da pokusamo ubaciti komentare na zadaće u ovo....
 
-$q120 = myquery("select z.id,z.naziv,z.zadataka,z.predmet,p.kratki_naziv from zadaca as z,student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=z.predmet and sp.predmet=pk.id and pk.predmet=p.id");
-while ($r120 = mysql_fetch_row($q120)) {
+$q120 = db_query("select z.id,z.naziv,z.zadataka,z.predmet,p.kratki_naziv from zadaca as z,student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=z.predmet and sp.predmet=pk.id and pk.predmet=p.id");
+while ($r120 = db_fetch_row($q120)) {
 	for ($i=1; $i<=$r120[2]; $i++) {
-		$q130 = myquery("select id,UNIX_TIMESTAMP(vrijeme),komentar from zadatak where student=$userid and zadaca=$r120[0] and redni_broj=$i order by id desc limit 1");
-		if (mysql_num_rows($q130)<1 || strlen(mysql_result($q130,0,2))<1)
+		$q130 = db_query("select id,UNIX_TIMESTAMP(vrijeme),komentar from zadatak where student=$userid and zadaca=$r120[0] and redni_broj=$i order by id desc limit 1");
+		if (db_num_rows($q130)<1 || strlen(db_result($q130,0,2))<1)
 			continue;
-		$id = mysql_result($q130,0,0);
-		$vrijeme_poruke[$id]=mysql_result($q130,0,1);
+		$id = db_result($q130,0,0);
+		$vrijeme_poruke[$id]=db_result($q130,0,1);
 		$naslov = "Komentar na Zadatak $i, $r120[1] ($r120[4])";
 		if (strlen($naslov)>32) $naslov = substr($naslov,0,30)."...";
 		$code_poruke[$id]="<li><a href=\"?sta=student/zadaca&predmet=$r120[3]&zadaca=$r120[0]&zadatak=$i\">$naslov</a><br/>(".date("d.m h:i",$vrijeme_poruke[$id]).")</li>\n";
@@ -353,8 +353,8 @@ if ($count==0) {
 // RSS ID
 
 srand(time());
-$q200 = myquery("select id from rss where auth=$userid");
-if (mysql_num_rows($q200)<1) {
+$q200 = db_query("select id from rss where auth=$userid");
+if (db_num_rows($q200)<1) {
 	// kreiramo novi ID
 	do {
 		$rssid="";
@@ -365,11 +365,11 @@ if (mysql_num_rows($q200)<1) {
 			else $sslovo=chr(ord('A')+$slovo-36);
 			$rssid .= $sslovo;
 		}
-		$q210 = myquery("select count(*) from rss where id='$rssid'");
-	} while (mysql_result($q210,0,0)>0);
-	$q220 = myquery("insert into rss set id='$rssid', auth=$userid");
+		$q210 = db_query("select count(*) from rss where id='$rssid'");
+	} while (db_result($q210,0,0)>0);
+	$q220 = db_query("insert into rss set id='$rssid', auth=$userid");
 } else {
-	$rssid = mysql_result($q200,0,0);
+	$rssid = db_result($q200,0,0);
 }
 
 

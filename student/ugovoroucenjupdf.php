@@ -15,75 +15,75 @@ require_once('lib/tcpdf/tcpdf.php');
 // Prikupljam podatke iz baze
 
 // Za koju godinu se prijavljuje?
-$q1 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-$q2 = myquery("select id, naziv from akademska_godina where id>".mysql_result($q1,0,0)." order by id limit 1");
-if (mysql_num_rows($q2)<1) {
+$q1 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+$q2 = db_query("select id, naziv from akademska_godina where id>".db_result($q1,0,0)." order by id limit 1");
+if (db_num_rows($q2)<1) {
 //	nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
 //	return;
 	// Pretpostavljamo da se upisuje u aktuelnu?
-	$zagodinu  = mysql_result($q1,0,0);
-	$agnaziv  = mysql_result($q1,0,1);
-	$q3 = myquery("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
-	$proslagodina = mysql_result($q3,0,0);
+	$zagodinu  = db_result($q1,0,0);
+	$agnaziv  = db_result($q1,0,1);
+	$q3 = db_query("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
+	$proslagodina = db_result($q3,0,0);
 } else {
-	$proslagodina = mysql_result($q1,0,0);
-	$zagodinu = mysql_result($q2,0,0);
-	$agnaziv = mysql_result($q2,0,1);
+	$proslagodina = db_result($q1,0,0);
+	$zagodinu = db_result($q2,0,0);
+	$agnaziv = db_result($q2,0,1);
 }
 
 
 // Zapis u tabeli ugovoroucenju
-$q5 = myquery("select uu.id, s.id, s.naziv, s.naziv_en, uu.semestar, s.tipstudija from ugovoroucenju as uu, studij as s where uu.student=$userid and uu.akademska_godina=$zagodinu and uu.studij=s.id order by semestar desc limit 1");
-if (mysql_num_rows($q5)<1) {
+$q5 = db_query("select uu.id, s.id, s.naziv, s.naziv_en, uu.semestar, s.tipstudija from ugovoroucenju as uu, studij as s where uu.student=$userid and uu.akademska_godina=$zagodinu and uu.studij=s.id order by semestar desc limit 1");
+if (db_num_rows($q5)<1) {
 	niceerror("Nije kreiran ugovor o učenju za studenta.");
 	return;
 }
 
-$ugovorid = mysql_result($q5,0,0);
-$studij = mysql_result($q5,0,1);
-$studijbos = mysql_result($q5,0,2);
+$ugovorid = db_result($q5,0,0);
+$studij = db_result($q5,0,1);
+$studijbos = db_result($q5,0,2);
 $studijbos = substr($studijbos, 0, strpos($studijbos, "(")-1);
-$studijeng = mysql_result($q5,0,3);
-$sem2 = mysql_result($q5,0,4);
-$tipstudija = mysql_result($q5,0,5);
+$studijeng = db_result($q5,0,3);
+$sem2 = db_result($q5,0,4);
+$tipstudija = db_result($q5,0,5);
 
 $sem1 = $sem2-1;
 $godina = $sem2/2;
 
 
 // Ostali podaci o osobi
-$q10 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
-$imeprezime = mysql_result($q10,0,0)." ".mysql_result($q10,0,1);
-$brindexa = mysql_result($q10,0,2);
+$q10 = db_query("select ime, prezime, brindexa from osoba where id=$userid");
+$imeprezime = db_result($q10,0,0)." ".db_result($q10,0,1);
+$brindexa = db_result($q10,0,2);
 
 
 // Odabir plana studija
 $plan_studija = 0;
-$q5a = myquery("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
-if (mysql_num_rows($q5a)>0 && $studij ==  mysql_result($q5a,0,0))
-	$plan_studija = mysql_result($q5a,0,1);
+$q5a = db_query("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$zagodinu ORDER BY akademska_godina DESC LIMIT 1");
+if (db_num_rows($q5a)>0 && $studij ==  db_result($q5a,0,0))
+	$plan_studija = db_result($q5a,0,1);
 
 if ($plan_studija == 0) {
 	// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
 	// Uzimamo najnoviji plan za odabrani studij
-	$q6 = myquery("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-	if (mysql_num_rows($q6)<1) { 
+	$q6 = db_query("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+	if (db_num_rows($q6)<1) { 
 		niceerror("Nepostojeći studij");
 		return;
 	}
-	$plan_studija = mysql_result($q6,0,0);
+	$plan_studija = db_result($q6,0,0);
 }
 
 
 // Da li je ponovac (ikada slušao isti tip studija)?
-$q20 = myquery("select ss.semestar from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina<=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
-if (mysql_num_rows($q20)<1) { 
+$q20 = db_query("select ss.semestar from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina<=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
+if (db_num_rows($q20)<1) { 
 	/*niceerror("Ne možete popunjavati ugovor o učenju ako prvi put slušate prvu godinu studija.");
 	return;*/
 	// Zašto ne bismo dozvolili?
 	$ponovac = 0;
 } else {
-	if ($sem1>mysql_result($q20,0,0)) 
+	if ($sem1>db_result($q20,0,0)) 
 		$ponovac=0;
 	else
 		$ponovac=1;
@@ -91,18 +91,18 @@ if (mysql_num_rows($q20)<1) {
 
 // Odredjujemo da li ima prenesenih predmeta
 // TODO: ovo sada ne radi za izborne predmete
-$q20 = myquery("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
-if (mysql_num_rows($q20)>1) {
+$q20 = db_query("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+if (db_num_rows($q20)>1) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
 	return;
 }
-if (mysql_num_rows($q20)==1) {
+if (db_num_rows($q20)==1) {
 	$ima_preneseni=1;
-	$preneseni_sifra=mysql_result($q20,0,0);
-	$preneseni_naziv=mysql_result($q20,0,1);
-	$preneseni_ects=mysql_result($q20,0,2);
-	$preneseni_semestar=mysql_result($q20,0,3);
+	$preneseni_sifra=db_result($q20,0,0);
+	$preneseni_naziv=db_result($q20,0,1);
+	$preneseni_ects=db_result($q20,0,2);
+	$preneseni_semestar=db_result($q20,0,3);
 } else {
 	$ima_preneseni=0;
 }
@@ -202,14 +202,14 @@ $pdf->AddPage();
 	// Spisak obaveznih predmeta na neparnom semestru
 	// Ako je ponovac, ne prikazujemo predmete koje je polozio
 	if ($ponovac==1) 
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
 	// Ako nije, trebamo prikazati one koje je položio u koliziji
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
 
 	$ykoord = 95;
 	$ects = 0;
-	while ($r100 = mysql_fetch_row($q100)) {
+	while ($r100 = db_fetch_row($q100)) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $r100[0]);
 		$pdf->SetXY(50, $ykoord);
@@ -238,12 +238,12 @@ $pdf->AddPage();
 
 	// Spisak izbornih predmeta
 	if ($ponovac==1)
-		$q110 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
-		$q110 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1");
+		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1");
 
 	$ykoord = 123;
-	while ($r110 = mysql_fetch_row($q110)) {
+	while ($r110 = db_fetch_row($q110)) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $r110[0]);
 		$pdf->SetXY(50, $ykoord);
@@ -284,12 +284,12 @@ $pdf->AddPage();
 	
 	// Spisak obaveznih predmeta na parnom semestru
 	if ($ponovac==1)
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
-		$q100 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
 	$ykoord = 95;
 	$ects = 0;
-	while ($r100 = mysql_fetch_row($q100)) {
+	while ($r100 = db_fetch_row($q100)) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $r100[0]);
 		$pdf->SetXY(50, $ykoord);
@@ -318,11 +318,11 @@ $pdf->AddPage();
 
 	// Spisak izbornih predmeta
 	if ($ponovac==1)
-		$q110 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
-		$q110 = myquery("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2");
+		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2");
 	$ykoord = 123;
-	while ($r110 = mysql_fetch_row($q110)) {
+	while ($r110 = db_fetch_row($q110)) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $r110[0]);
 		$pdf->SetXY(50, $ykoord);

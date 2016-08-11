@@ -14,33 +14,33 @@ function admin_studij() {
 
 <?
 
-if ($_REQUEST['akcija']=="ag") {
+if (param('akcija')=="ag") {
 	print db_grid("akademska_godina");
 	print "<br /><hr><br />Dodaj:<br />".db_form("akademska_godina");
 
 }
 
-if ($_REQUEST['akcija']=="inst") {
+if (param('akcija')=="inst") {
 	print db_grid("institucija");
 	print "<br /><hr><br />Dodaj:<br />".db_form("institucija");
 }
 
-if ($_REQUEST['akcija']=="kanton") {
+if (param('akcija')=="kanton") {
 	print db_grid("kanton");
 	print "<br /><hr><br />Dodaj:<br />".db_form("kanton");
 }
 
-if ($_REQUEST['akcija']=="komponenta") {
+if (param('akcija')=="komponenta") {
 	print db_grid("komponenta");
 	print "<br /><hr><br />Dodaj:<br />".db_form("komponenta");
 }
 
-if ($_REQUEST['akcija']=="studij") {
+if (param('akcija')=="studij") {
 	print db_grid("studij");
 	print "<br /><hr><br />Dodaj:<br />".db_form("studij");
 }
 
-if ($_REQUEST['akcija']=="tippr") {
+if (param('akcija')=="tippr") {
 	//print db_grid("tippredmeta");
 	// Ovo trebamo manuelno dok se u libvedran ne doda podrška za many-to-many
 	// relacije
@@ -52,16 +52,16 @@ if ($_REQUEST['akcija']=="tippr") {
 	</tr>
 	<?
 
-	$q10 = myquery("select id,naziv from tippredmeta order by id");
+	$q10 = db_query("select id,naziv from tippredmeta order by id");
 	$bgcolor="";
-	while ($r10 = mysql_fetch_row($q10)) {
+	while ($r10 = db_fetch_row($q10)) {
 		?>
 		<tr <?=$bgcolor?>><input type="hidden" name="id" value="<?=$r10[0]?>">
 			<td><input type="text" name="naziv" value="<?=$r10[1]?>"></td>
 			<td><?
 		if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
-		$q20 = myquery("select k.id, k.naziv from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$r10[0]");
-		while ($r20 = mysql_fetch_row($q20))
+		$q20 = db_query("select k.id, k.naziv from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$r10[0]");
+		while ($r20 = db_fetch_row($q20))
 			print $r20[1]." (<a href=\"\">izbaci</a>)<br />";
 		?>(<a href="">dodaj</a>)</td>
 			<td><input type="submit" name="izmijeni" value=" Izmijeni ">&nbsp;

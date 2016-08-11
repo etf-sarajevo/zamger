@@ -23,8 +23,8 @@ function common_articleImageDownload()
 	
 	if ($user_nastavnik && !$user_siteadmin)
 	{
-		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)<1) {
+		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (db_num_rows($q10)<1 || db_result($q10,0,0)<1) {
 			zamgerlog("common/projektneStrane privilegije (predmet pp$predmet)",3);
 			zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");

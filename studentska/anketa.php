@@ -72,8 +72,8 @@ function studentska_anketa(){
 	
 	// Deaktivacija ankete
 	if ($_REQUEST['akcija']=="deaktivacija") {
-		$q500 = myquery("update anketa_anketa set aktivna=0 where id=$id");
-		$q510 = myquery("update anketa_predmet set aktivna=0 where anketa=$id");
+		$q500 = db_query("update anketa_anketa set aktivna=0 where id=$id");
+		$q510 = db_query("update anketa_predmet set aktivna=0 where anketa=$id");
 		zamgerlog("deaktivirana anketa $id", 4); // nivo 4 = audit
 		zamgerlog2("deaktivirana anketa", $id);
 	}
@@ -81,13 +81,13 @@ function studentska_anketa(){
 	// Aktivacija ankete
 	if ($_REQUEST['akcija']=="aktivacija") {
 		// Prvo sve ankete postavimo na neaktivne
-		$q520 = myquery("update anketa_anketa set aktivna=0");
-		$q530 = myquery("update anketa_predmet set aktivna=0 where anketa=$id");
+		$q520 = db_query("update anketa_anketa set aktivna=0");
+		$q530 = db_query("update anketa_predmet set aktivna=0 where anketa=$id");
 
 		// ...a zatim datu postavimo kao aktivnu jer u datom trenutku samo jedna anketa može biti aktivna.
 		// Automatski postavljamo i to da vise nije moguće editovati pitanja date ankete pošto je postala aktivna
-		$q540 = myquery("update anketa_anketa set aktivna=1, editable=0 where id=$id");
-		$q550 = myquery("update anketa_predmet set aktivna=1 where anketa=$id");
+		$q540 = db_query("update anketa_anketa set aktivna=1, editable=0 where id=$id");
+		$q550 = db_query("update anketa_predmet set aktivna=1 where anketa=$id");
 
 		print "<center><span style='color:#009900'>Anketa je postavljena kao aktivna!</span></center>";
 		zamgerlog("aktivirana anketa $id", 4);
@@ -97,8 +97,8 @@ function studentska_anketa(){
 	// Promjena podataka o anketi
 	if ($akcija =="podaci") {
 		if ($_POST['subakcija']=="potvrda" && check_csrf_token()) {
-			$naziv = my_escape($_REQUEST['naziv']);
-			$opis = my_escape($_REQUEST['opis']);
+			$naziv = db_escape($_REQUEST['naziv']);
+			$opis = db_escape($_REQUEST['opis']);
 			
 			$dan = intval($_POST['1day']);
 			$mjesec = intval($_POST['1month']);
@@ -131,7 +131,7 @@ function studentska_anketa(){
 			$mysqlvrijeme1 = time2mysql(mktime($sat,$minuta,$sekunda,$mjesec,$dan,$godina));
 			$mysqlvrijeme2 = time2mysql(mktime($sat2,$minuta2,$sekunda2,$mjesec2,$dan2,$godina2));
 			
-			$q560 = myquery("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2', opis='$opis' where id=$anketa");
+			$q560 = db_query("update anketa_anketa set naziv='$naziv', datum_otvaranja='$mysqlvrijeme1', datum_zatvaranja='$mysqlvrijeme2', opis='$opis' where id=$anketa");
 			zamgerlog("promijenjeni podaci za anketu $anketa", 2);
 			zamgerlog2("promijenjeni podaci za anketu", $anketa);
 			
@@ -144,10 +144,10 @@ function studentska_anketa(){
 		}
 		print "<a href='?sta=studentska/anketa&akcija=edit&anketa=$anketa'>Povratak nazad</a>";
 		
-		$q580 = myquery("select id,UNIX_TIMESTAMP(datum_otvaranja),UNIX_TIMESTAMP(datum_zatvaranja),naziv,opis from anketa_anketa where id=$id");
-		$datum_otvaranja = mysql_result($q580,0,1);
-		$datum_zatvaranja = mysql_result($q580,0,2);
-		$naziv = mysql_result($q580,0,3);
+		$q580 = db_query("select id,UNIX_TIMESTAMP(datum_otvaranja),UNIX_TIMESTAMP(datum_zatvaranja),naziv,opis from anketa_anketa where id=$id");
+		$datum_otvaranja = db_result($q580,0,1);
+		$datum_zatvaranja = db_result($q580,0,2);
+		$naziv = db_result($q580,0,3);
 	
 		?>
 		<center>
@@ -207,7 +207,7 @@ function studentska_anketa(){
 				Opis: &nbsp; 
 			</td>
 			<td valign="top">
-				<b><b><textarea name="opis" cols="50"  rows="15" class="default"><?=mysql_result($q580,0,4)?> </textarea></b><br/>
+				<b><b><textarea name="opis" cols="50"  rows="15" class="default"><?=db_result($q580,0,4)?> </textarea></b><br/>
 			</td>
 		</tr>
 		</table>
@@ -225,21 +225,21 @@ function studentska_anketa(){
 	else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 		// TODO dodati provjeru naziva
 		$ak_godina = intval($_POST['akademska_godina']);
-		$naziv = my_escape(substr($_POST['naziv'], 0, 100));
+		$naziv = db_escape(substr($_POST['naziv'], 0, 100));
 		$prethodna_anketa = intval($_POST['prethodna_anketa']);
 	
 		print "Nova anketa je kreirana. Molimo sačekajte.<br/><br/>";
 				
-		$q393 = myquery("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
-		$anketa = mysql_insert_id();
-		$r394 = myquery("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
+		$q393 = db_query("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
+		$anketa = db_insert_id();
+		$r394 = db_query("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		zamgerlog2("kreirana nova anketa", $anketa);
 		
 		// Da li ćemo prekopirati pitanja od prošlogodišnje ankete ?
 		if ($prethodna_anketa != 0) {
 			// Ubaci pitanja od izabrane ankete za ponavljanje
-			$q377=myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) select $anketa,tip_pitanja,tekst from anketa_pitanje where anketa=$prethodna_anketa");
+			$q377=db_query("insert into anketa_pitanje (anketa,tip_pitanja,tekst) select $anketa,tip_pitanja,tekst from anketa_pitanje where anketa=$prethodna_anketa");
 		}
 		?>
 		<script language="JavaScript">
@@ -259,14 +259,14 @@ function studentska_anketa(){
 		if($_POST['subakcija']=="edit_pitanje" && check_csrf_token()) {
 			$pitanje = intval($_REQUEST['column_id']);
 			if (isset($_REQUEST['obrisi'])) {
-				$q800 = myquery("delete from anketa_pitanje where id=$pitanje");
+				$q800 = db_query("delete from anketa_pitanje where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno obrisano! </span> </center>";
 				zamgerlog("obrisano pitanje na anketi $anketa", 2);
 				zamgerlog2("obrisano pitanje na anketi", $anketa);
 			} else {
 				$tekst_pitanja = $_REQUEST['tekst_pitanja'];
 				$tip_pitanja = $_REQUEST['tip_pitanja'];
-				$q810 = myquery("update anketa_pitanje set tip_pitanja=$tip_pitanja, tekst='$tekst_pitanja' where id=$pitanje");
+				$q810 = db_query("update anketa_pitanje set tip_pitanja=$tip_pitanja, tekst='$tekst_pitanja' where id=$pitanje");
 				print " <center> <span style='color:#009900'> Pitanje uspješno izmjenjeno! </span> </center>";
 				zamgerlog("izmijenjeno pitanje na anketi $anketa", 2);
 				zamgerlog2("izmijenjeno pitanje na anketi", $anketa);
@@ -275,12 +275,12 @@ function studentska_anketa(){
 		
 		// subakcija koja se izvrsava kada se dodaje novo pitanje
 		if($_POST['subakcija']=="novo_pitanje" && check_csrf_token()) {
-			$tekst_pitanja = my_escape($_REQUEST['tekst_novo_pitanje']);
+			$tekst_pitanja = db_escape($_REQUEST['tekst_novo_pitanje']);
 			$tip_pitanja = intval($_REQUEST['tip_novo_pitanja']);
 
-			$q891 = myquery("select id from anketa_pitanje ORDER BY id desc limit 1");
-			$id_pitanja = mysql_result($q891,0,0)+1;
-			$q800 = myquery("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
+			$q891 = db_query("select id from anketa_pitanje ORDER BY id desc limit 1");
+			$id_pitanja = db_result($q891,0,0)+1;
+			$q800 = db_query("insert into anketa_pitanje (anketa,tip_pitanja,tekst) values ($anketa,$tip_pitanja,'$tekst_pitanja')");
 			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
 			zamgerlog("dodano pitanje na anketi $anketa", 2);
 			zamgerlog2("dodano pitanje na anketi", $anketa);
@@ -289,27 +289,27 @@ function studentska_anketa(){
 		// Osnovni podaci
 		
 		$id_ankete = intval($_REQUEST['anketa']);
-		$q201 = myquery("select datum_otvaranja,datum_zatvaranja,naziv,opis,editable,akademska_godina from anketa_anketa where id=$id_ankete");
-		$datum_otvaranja = mysql_result($q201,0,0);
-		$datum_zatvaranja = mysql_result($q201,0,1);
-		$naziv = mysql_result($q201,0,2);
-		$opis = mysql_result($q201,0,3);
-		$editable = mysql_result($q201,0,4);
-		$ak_godina_ankete = mysql_result($q201,0,5);
+		$q201 = db_query("select datum_otvaranja,datum_zatvaranja,naziv,opis,editable,akademska_godina from anketa_anketa where id=$id_ankete");
+		$datum_otvaranja = db_result($q201,0,0);
+		$datum_zatvaranja = db_result($q201,0,1);
+		$naziv = db_result($q201,0,2);
+		$opis = db_result($q201,0,3);
+		$editable = db_result($q201,0,4);
+		$ak_godina_ankete = db_result($q201,0,5);
 		
 		// broj pitanja
-		$q203 = myquery("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
-		$broj_pitanja = mysql_result($q203,0,0);
+		$q203 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
+		$broj_pitanja = db_result($q203,0,0);
 		
 		//kupimo pitanja
-		$q202=myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
+		$q202=db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
 		
 		// id aktelne akademske godine
-		$q010 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-		$aktuelna_ak_god = mysql_result($q010,0,0);
+		$q010 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+		$aktuelna_ak_god = db_result($q010,0,0);
 		
-		$q125 = myquery("select naziv from akademska_godina where id=$ak_godina_ankete");
-		$naziv_ak_godina_ankete = mysql_result($q125,0,0);
+		$q125 = db_query("select naziv from akademska_godina where id=$ak_godina_ankete");
+		$naziv_ak_godina_ankete = db_result($q125,0,0);
 		
 		?>
 	
@@ -364,13 +364,13 @@ function studentska_anketa(){
 
 		// podaci o pitanjima koja pripadaju toj anketi
 		function dropdown_anketa($tip) {
-			$q283=myquery("SELECT id, tip from anketa_tip_pitanja");
+			$q283=db_query("SELECT id, tip from anketa_tip_pitanja");
 			if ($tip == 1)
 				$lista="<select id='tip_novo_pitanja' name='tip_novo_pitanja'>";
 			else
 				$lista="<select name='tip_pitanja'>";
 
-			while ($r283=mysql_fetch_row($q283)) {
+			while ($r283=db_fetch_row($q283)) {
 				$lista.="<option value='$r283[0]'"; 
 				if($r283[1]==$tip) 
 					$lista.=" selected"; 
@@ -392,7 +392,7 @@ function studentska_anketa(){
 		if($editable == 0){
 			print "</tr>";
 			$i=1;
-			while ($r202 = mysql_fetch_row($q202)) {
+			while ($r202 = db_fetch_row($q202)) {
 				?>
 			<tr>
 				<td colspan='2'><hr/></td>
@@ -407,7 +407,7 @@ function studentska_anketa(){
 		} else {
 			print "<td>  </td></tr>";
 			$i=1;
-			while ($r202 = mysql_fetch_row($q202)) {
+			while ($r202 = db_fetch_row($q202)) {
 				print genform("POST");
 				?>
 				<tr>
@@ -424,10 +424,10 @@ function studentska_anketa(){
 				<?
 				$i++;
 			}	
-			$q284 = myquery("SELECT id, tekst, tip_pitanja FROM anketa_pitanje");
+			$q284 = db_query("SELECT id, tekst, tip_pitanja FROM anketa_pitanje");
 			$lista_pitanja = "<select id = 'pitanja' name='pitanja' onChange=\"javascript:setVal();\">";
 			$Counter=0;
-/*			while ($r283=mysql_fetch_row($q284)) {					
+/*			while ($r283=db_fetch_row($q284)) {					
 				$lista_pitanja.="<option value='$r283[0]'>$r283[1]</option>"; 
 				$lista_pitanja.="<script>pitanje_array[$Counter]='$r283[1]'; tip_array[$Counter]=$r283[2]-1; </script>";
 				$Counter++;						
@@ -462,8 +462,8 @@ function studentska_anketa(){
 	//-------------------------------------------------------------------------------------------------------------------
 	else {
 
-		$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q10,0,0);
+		$q10 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+		$ag = db_result($q10,0,0);
 		?>
 		<center>
 	
@@ -476,12 +476,12 @@ function studentska_anketa(){
 				<?
 
 				// Gledamo da li je za ovu akademsku godinu kreirana ijedna anketa
-				$q199=myquery("select id,naziv,opis,aktivna from anketa_anketa where akademska_godina=$ag");
-				if (mysql_num_rows($q199)==0) {
+				$q199=db_query("select id,naziv,opis,aktivna from anketa_anketa where akademska_godina=$ag");
+				if (db_num_rows($q199)==0) {
 					print "Za ovu akademsku godinu nije kreirana nijedna anketa";
 				} else { 
 					?><table width="100%" border="0"><?
-					while ($anketa_row = mysql_fetch_row($q199)) {
+					while ($anketa_row = db_fetch_row($q199)) {
 						?>
 						<tr><td width='50%'><?=$anketa_row[1]?></td>
 						<td><?					
@@ -499,7 +499,7 @@ function studentska_anketa(){
 
 				// Forma za kreiranje ankete
 				// Spisak anketa od prošlih godina, radi ponavljanja pitanja
-				$q199b=myquery("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id order by a.akademska_godina desc");
+				$q199b=db_query("select a.id, a.naziv, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id order by a.akademska_godina desc");
 				?>
 
 				<hr>
@@ -513,7 +513,7 @@ function studentska_anketa(){
 				<select title="Ponovi pitanja od" name="prethodna_anketa" id="prethodna_anketa">
 					<option value='0'> Bez ponavljanja </option>
 					<? 
-					while ($r199b = mysql_fetch_row($q199b)){
+					while ($r199b = db_fetch_row($q199b)){
 						print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
 					}
 					?>
@@ -531,12 +531,12 @@ function studentska_anketa(){
 				</div>
 				<?
 
-				$q200=myquery("select a.id, a.datum_otvaranja, a.datum_zatvaranja, a.naziv, a.opis, a.aktivna, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
+				$q200=db_query("select a.id, a.datum_otvaranja, a.datum_zatvaranja, a.naziv, a.opis, a.aktivna, ak.naziv from anketa_anketa a, akademska_godina ak where a.akademska_godina = ak.id and akademska_godina!=$ag");
 				print '<table width="100%" border="0">';
-				if (mysql_num_rows($q200)==0) {
+				if (db_num_rows($q200)==0) {
 					?><tr><td>Prethodnih akademskih godina nije bila definisana nijedna anketa</td></tr><?
 				} else {
-					while ($r200 = mysql_fetch_row($q200)){
+					while ($r200 = db_fetch_row($q200)){
 						?>
 						<tr>
 							<td width="50%"><?=$r200[3]?> (<?=$r200[6]?>)</td>
@@ -566,8 +566,8 @@ function studentska_anketa(){
 							<td>
 							<select name="akademska_godina">
 				<?
-					$q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
-					while ($r295=mysql_fetch_row($q295)) {
+					$q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
+					while ($r295=db_fetch_row($q295)) {
 					?>
 					<option value="<?=$r295[0]?>"<? if($r295[0]==$ag) print " selected"; ?>><?=$r295[1]?></option>
 					<? } 
@@ -581,9 +581,9 @@ function studentska_anketa(){
 								<select name="studij" id="studij">
 								<option value="-1">--- Prva godina studija ---</option>
 				<?
-					$q295 = myquery("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 order by s.tipstudija, s.naziv");
+					$q295 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 order by s.tipstudija, s.naziv");
 					$maxsemestara=0;
-					while ($r295=mysql_fetch_row($q295)) {
+					while ($r295=db_fetch_row($q295)) {
 						?>
 						<option value="<?=$r295[0]?>"><?=$r295[1]?></option>
 						<?
@@ -628,8 +628,8 @@ function studentska_anketa(){
 							<td align="left">
 							<select name="akademska_godina">
 					<?
-						$q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
-						while ($r295=mysql_fetch_row($q295)) {
+						$q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
+						while ($r295=db_fetch_row($q295)) {
 						?>
 						<option value="<?=$r295[0]?>"<? if($r295[0]==$ag) print " selected"; ?>><?=$r295[1]?> &nbsp;&nbsp;&nbsp;&nbsp;</option>
 						<?
@@ -664,13 +664,13 @@ function studentska_anketa(){
 
 				<hr />
 				<?
-					$src = my_escape($_REQUEST["search"]);
+					$src = db_escape($_REQUEST["search"]);
 					$limit = 20;
 					$offset = intval($_REQUEST["offset"]);
 					$ak_god = intval($_REQUEST["akademska_godina"]);
 					if ($ak_god == 0) {
-						$q299 = myquery("select id from akademska_godina where aktuelna=1 order by naziv desc limit 1");
-						$ak_god = mysql_result($q299,0,0);
+						$q299 = db_query("select id from akademska_godina where aktuelna=1 order by naziv desc limit 1");
+						$ak_god = db_result($q299,0,0);
 					}
 					?>
 					<table width="100%" border="0">
@@ -683,8 +683,8 @@ function studentska_anketa(){
                                     <select name="akademska_godina">
                                         <option value="-1">Sve akademske godine</option>
                                     <?
-                                    $q295 = myquery("select id,naziv, aktuelna from akademska_godina order by naziv");
-                                    while ($r295=mysql_fetch_row($q295)) {
+                                    $q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
+                                    while ($r295=db_fetch_row($q295)) {
                                     	?>
                                         <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
                                    		<?
@@ -697,17 +697,17 @@ function studentska_anketa(){
 								<br/>
 					<?
 					if ($ak_god>0 && $src != "") {
-						$q300 = myquery("select count( distinct predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and 
+						$q300 = db_query("select count( distinct predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and 
 						p.naziv like '%$src%' and pk.predmet=p.id ");
 					} else if ($ak_god>0) {
-						$q300 = myquery("select count(distinct predmet) from ponudakursa where akademska_godina=$ak_god");
+						$q300 = db_query("select count(distinct predmet) from ponudakursa where akademska_godina=$ak_god");
 					} else if ($src != "") {
-						$q300 = myquery("select sum(br) from (select count(distinct predmet) as br from ponudakursa as pk, predmet as p where pk.predmet=p.id and p.naziv like 
+						$q300 = db_query("select sum(br) from (select count(distinct predmet) as br from ponudakursa as pk, predmet as p where pk.predmet=p.id and p.naziv like 
 						'%$src%' GROUP BY pk.akademska_godina) as tb1");
 					} else {
-						$q300 = myquery("select sum(br) from (select count(distinct predmet) as br from ponudakursa GROUP BY akademska_godina ) as tb1");
+						$q300 = db_query("select sum(br) from (select count(distinct predmet) as br from ponudakursa GROUP BY akademska_godina ) as tb1");
 					}
-					$rezultata = mysql_result($q300,0,0);
+					$rezultata = db_result($q300,0,0);
 				
 					if ($rezultata == 0)
 						print "Nema rezultata!";
@@ -727,19 +727,19 @@ function studentska_anketa(){
 						
 				
 						if ($ak_god>0 && $src != "") {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($ak_god>0) {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($src != "") {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else {
-							$q301 = myquery("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc,p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc,p.naziv limit $offset,$limit");
 						}
 										
 						print '<table width="100%" border="0">';
 						
 						$i=$offset+1;
-						while ($r301 = mysql_fetch_row($q301)) {
+						while ($r301 = db_fetch_row($q301)) {
 							if ($ak_god>0){
 								if ($r301[5] == 1 || $r301[5]==2)
 									print "<tr><td>$i. $r301[1] (PGS)</td>\n";

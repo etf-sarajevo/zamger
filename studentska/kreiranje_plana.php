@@ -114,32 +114,32 @@ function studentska_kreiranje_plana(){
 //Funckcija dohvaca sve akademske godine iz baze
 function fetch_ag() {
 	
-	$result = myquery("select id,naziv from akademska_godina");
+	$result = db_query("select id,naziv from akademska_godina");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;
 }
 
 function fetch_studiji() {
 	
-	$result = myquery("select id,naziv from studij");
+	$result = db_query("select id,naziv from studij");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;
 }
 
 function fetch_predmeti(){
-	$result = myquery("select id,naziv from predmet");
+	$result = db_query("select id,naziv from predmet");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;
 }
@@ -177,8 +177,8 @@ function processInsertPlanForm(){
 function createPlan ($godina_id, $studij_id, $semestar, $predmet_id, $obavezan){
 	
 	//TODO: dohvati studij->zavrsni_semestar, uporedi sa unesenim semestrom.
-	$res_std = myquery("select zavrsni_semestar from studij s where s.id=$studij_id");
-	$row = mysql_fetch_assoc($res_std);
+	$res_std = db_query("select zavrsni_semestar from studij s where s.id=$studij_id");
+	$row = db_fetch_assoc($res_std);
 	if($row['zavrsni_semestar'] < $semestar ){
 		$errorText = "Uneseni semestar je veci od ukupnog broja semestara izabranog studija!";
 		return $errorText;
@@ -187,7 +187,7 @@ function createPlan ($godina_id, $studij_id, $semestar, $predmet_id, $obavezan){
 	$query = sprintf("INSERT INTO plan_studija (godina_vazenja,studij,semestar,predmet,obavezan) VALUES ('%d', '%d', '%d', '%d', '%d')", 
 					$godina_id, $studij_id, $semestar, $predmet_id, $obavezan);
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	
 	if ($result == false)
 	{

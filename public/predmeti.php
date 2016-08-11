@@ -48,16 +48,16 @@ function public_predmeti($modul) {
 
 	// Skripta daj_stablo se sada nalazi u js/stablo.js, a ukljucena je u index.php
 
-	$q1 = myquery("select ag.id,ag.naziv from akademska_godina as ag where (select count(*) from ponudakursa as pk where pk.akademska_godina=ag.id)>0 order by ag.id");
+	$q1 = db_query("select ag.id,ag.naziv from akademska_godina as ag where (select count(*) from ponudakursa as pk where pk.akademska_godina=ag.id)>0 order by ag.id");
 
-	while ($r1 = mysql_fetch_row($q1)) {
+	while ($r1 = db_fetch_row($q1)) {
 		print "<br/>".dajplus("ag-$r1[0]","$r1[1] akademska godina");
-		$q2 = myquery("select s.id, s.naziv from studij as s where (select count(*) from ponudakursa as pk where pk.akademska_godina=$r1[0] and pk.studij=s.id)>0 order by s.id");
-		while ($r2 = mysql_fetch_row($q2)) {
+		$q2 = db_query("select s.id, s.naziv from studij as s where (select count(*) from ponudakursa as pk where pk.akademska_godina=$r1[0] and pk.studij=s.id)>0 order by s.id");
+		while ($r2 = db_fetch_row($q2)) {
 			print "<br/>&nbsp;&nbsp;&nbsp;&nbsp;";
 			print dajplus("studij-$r2[0]-$r1[0]",$r2[1]);
-			$q3 = myquery("select semestar from ponudakursa where studij=$r2[0] and akademska_godina=$r1[0] group by semestar order by semestar");
-			while ($r3 = mysql_fetch_row($q3)) {
+			$q3 = db_query("select semestar from ponudakursa where studij=$r2[0] and akademska_godina=$r1[0] group by semestar order by semestar");
+			while ($r3 = db_fetch_row($q3)) {
 				print "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 				print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-sem-$r3[0]-$r2[0]-$r1[0]\" onclick=\"daj_stablo('sem-$r3[0]-$r2[0]-$r1[0]'); ucitavaj('$r3[0]', '$r2[0]', '$r1[0]');\"> $r3[0]. semestar <div id=\"sem-$r3[0]-$r2[0]-$r1[0]\" style=\"display:none\">prazan</div>";
 			}

@@ -68,6 +68,10 @@ $conf_admin_email = "vljubovic@etf.unsa.ba";
 $conf_code_viewer = "ace";
 //$conf_code_viewer = "geshi";
 
+// Database backend
+$conf_dblayer = "mysqli";
+//$conf_dblayer = "mysql_";
+
 
 // ------ MOODLE INTEGRACIJA ---------
 

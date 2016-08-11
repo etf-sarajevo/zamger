@@ -57,10 +57,10 @@ $data_semestar[] = 'X';
 $data_studij = array();
 $data_zavrsni_semestar = array();
 $sql_studij = " SELECT id, naziv, zavrsni_semestar FROM `studij` ";
-$query_studij = myquery($sql_studij);
-if(mysql_num_rows($query_studij) > 0){
+$query_studij = db_query($sql_studij);
+if(db_num_rows($query_studij) > 0){
 
-	while($row = mysql_fetch_array($query_studij)){
+	while($row = db_fetch_assoc($query_studij)){
 		$data_studij[$row['id']] = $row['naziv'];
 		$data_zavrsni_semestar[$row['id']] = $row['zavrsni_semestar'];
 	}
@@ -74,11 +74,11 @@ if(mysql_num_rows($query_studij) > 0){
 
 $data_akademska_godina = array();
 $sql_akademska_godina = " SELECT id, naziv FROM `akademska_godina` ";
-$query_akademska_godina = myquery($sql_akademska_godina);
+$query_akademska_godina = db_query($sql_akademska_godina);
 
-if(mysql_num_rows($query_akademska_godina) > 0){
+if(db_num_rows($query_akademska_godina) > 0){
 
-	while($row = mysql_fetch_array($query_akademska_godina)){
+	while($row = db_fetch_assoc($query_akademska_godina)){
 		$data_akademska_godina[$row['id']] = $row['naziv'];
 	}
 
@@ -91,10 +91,10 @@ if(mysql_num_rows($query_akademska_godina) > 0){
 // Podaci o predmetima
 $data_predmet = array();
 $sql_predmet = " SELECT id, naziv FROM `predmet` ORDER BY naziv";
-$query_predmet = myquery($sql_predmet);
-if(mysql_num_rows($query_predmet) > 0){
+$query_predmet = db_query($sql_predmet);
+if(db_num_rows($query_predmet) > 0){
 
-	while($row = mysql_fetch_array($query_predmet)){
+	while($row = db_fetch_assoc($query_predmet)){
 		$data_predmet[$row['id']] = $row['naziv'];
 	}
 
@@ -275,9 +275,9 @@ if(!$studij){
 <?
 	$sql_pretraga_id="SELECT * FROM `plan_studija` WHERE `godina_vazenja` = '$akademska_godina' and `studij` = '$studij'";
 
-	$rez=myquery($sql_pretraga_id);
+	$rez=db_query($sql_pretraga_id);
 	
-	if(mysql_num_rows($rez) > 0){
+	if(db_num_rows($rez) > 0){
 			
 		//Izbacivanje greske u slučaju da vec plan postoji u bazi
 ?>		
@@ -361,11 +361,11 @@ if(!$studij){
 		
 		$obaveznih_broj = MAX_BROJ_PREDMETA_PO_SEMESTRU;
 
-		$test_broj_obaveznih = myquery("SELECT COUNT(*) FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='1' LIMIT 1");
+		$test_broj_obaveznih = db_query("SELECT COUNT(*) FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='1' LIMIT 1");
 
-		if($test_broj_obaveznih != false AND mysql_num_rows($test_broj_obaveznih) == 1){
+		if($test_broj_obaveznih != false AND db_num_rows($test_broj_obaveznih) == 1){
 			
-			$test_broj_obaveznih_red = mysql_fetch_row($test_broj_obaveznih);
+			$test_broj_obaveznih_red = db_fetch_row($test_broj_obaveznih);
 			
 			if($obaveznih_broj < $test_broj_obaveznih_red[0])
 			{
@@ -377,8 +377,8 @@ if(!$studij){
 		$semestar_i = $i+1;
 		$brojac_izborni = 0;
 		$snimljeni_izborni = array();
-		$staro_izborni = myquery("SELECT * FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='1'");
-		while($red = mysql_fetch_assoc($staro_izborni)){
+		$staro_izborni = db_query("SELECT * FROM plan_studija WHERE godina_vazenja='$akademska_godina' AND studij='$studij' AND semestar='$semestar_i' AND obavezan='1'");
+		while($red = db_fetch_assoc($staro_izborni)){
 			$snimljeni_izborni[$brojac_izborni] = $red['predmet'];
 			$brojac_izborni++;
 		}
@@ -429,8 +429,8 @@ if(!$studij){
 		
 		$brojac_izborni = 0;
 		$snimljeni_izborni = array();
-		$staro_izborni = myquery("SELECT * FROM plan_studija as p, izborni_slot as i WHERE p.godina_vazenja='$akademska_godina' AND p.studij='$studij' AND p.semestar='$semestar_i' AND p.obavezan='0' AND p.predmet=i.predmet");
-		while($red = mysql_fetch_assoc($staro_izborni)){
+		$staro_izborni = db_query("SELECT * FROM plan_studija as p, izborni_slot as i WHERE p.godina_vazenja='$akademska_godina' AND p.studij='$studij' AND p.semestar='$semestar_i' AND p.obavezan='0' AND p.predmet=i.predmet");
+		while($red = db_fetch_assoc($staro_izborni)){
 			$snimljeni_izborni[$brojac_izborni] = $red['predmet']; 
 			$it=$red['id']; 
 			$postoji=0;
@@ -440,8 +440,8 @@ if(!$studij){
 					
 				}
 				if($postoji==0){
-					$upit=myquery("SELECT * FROM izborni_slot WHERE id='$it'");
-					while($row=mysql_fetch_array($upit)){
+					$upit=db_query("SELECT * FROM izborni_slot WHERE id='$it'");
+					while($row=db_fetch_assoc($upit)){
 						$slot[$slot_id][0]=$it;
 						$slot[$slot_id][]=$row['predmet'];
 						
@@ -523,11 +523,11 @@ for($p=0;$p<MAX_BROJ_SLOTOVA_PO_SEMESTRU;$p++){
 	
 	$sql_brisi_stari_plan = " DELETE FROM plan_studija ";
 	$sql_brisi_stari_plan .= " WHERE studij = ".$studij;
-	$query = myquery($sql_brisi_stari_plan);
+	$query = db_query($sql_brisi_stari_plan);
 	$sql_pretraga_id="SELECT * FROM `plan_studija` WHERE `godina_vazenja` = '$akademska_godina' and `studij` = '$studij'";
 	
 
-	$rez=myquery($sql_pretraga_id);
+	$rez=db_query($sql_pretraga_id);
 	
 
 $slot=-1;
@@ -567,15 +567,15 @@ $brojac=0;
 			$sql_insert = " INSERT INTO plan_studija (godina_vazenja, studij, semestar, predmet, obavezan) VALUES ";
 			$sql_insert .= " ($akademska_godina, $studij, $semestar, $predmet, $obavezan) ";
 			
-			$query = myquery($sql_insert);
+			$query = db_query($sql_insert);
 			
 		
 					
 			if($obavezan==0){
 				$novi_id=0;
 			$izborni_slot_max_id="SELECT MAX(id) as id from `izborni_slot`";
-			$query = myquery($izborni_slot_max_id);
-			while($red = mysql_fetch_assoc($query)){
+			$query = db_query($izborni_slot_max_id);
+			while($red = db_fetch_assoc($query)){
 				if($sl!=$slot){
 						$novi_id=$red['id']+1;
 						$slot=$sl;
@@ -589,7 +589,7 @@ $brojac=0;
 		}
 		
 				$sql_insert_slot="INSERT INTO izborni_slot (id,predmet) VALUES ($novi_id,$predmet) ";
-				$query = myquery($sql_insert_slot);
+				$query = db_query($sql_insert_slot);
 		
 				
 
@@ -610,10 +610,10 @@ $brojac=0;
 	$sql_plan .= " ORDER BY studij ASC ";
 	$slot_id=0;
 	
-	$query_plan = myquery($sql_plan);
-	if(mysql_num_rows($query_plan) > 0){
+	$query_plan = db_query($sql_plan);
+	if(db_num_rows($query_plan) > 0){
 
-		while($row = mysql_fetch_array($query_plan)){
+		while($row = db_fetch_assoc($query_plan)){
 
 			$tmp_array = array();
 			$sem=$data_semestar[($row['semestar']-1)];
@@ -621,14 +621,14 @@ $brojac=0;
 			
 			$pr=$row['predmet'];
 			if($row['obavezan']==0){
-				$predmeti = myquery("SELECT id,predmet FROM izborni_slot WHERE predmet='$pr'");
-				while($predmet = @mysql_fetch_array($predmeti)){
+				$predmeti = db_query("SELECT id,predmet FROM izborni_slot WHERE predmet='$pr'");
+				while($predmet = @db_fetch_assoc($predmeti)){
 					$sl_id=$predmet['id'];
 					if($sl_id!=$slot_id){
 						$slot_id=$sl_id;
-						$predmet1=myquery("SELECT predmet FROM izborni_slot WHERE id='$sl_id'");
+						$predmet1=db_query("SELECT predmet FROM izborni_slot WHERE id='$sl_id'");
 						$tmp_niz = array();
-						while($predmet2 = @mysql_fetch_array($predmet1)){
+						while($predmet2 = @db_fetch_assoc($predmet1)){
 							$tmp_niz[] = $data_predmet[$predmet2['predmet']];
 						}
 						$tmp_array['semestar'] = $sem;

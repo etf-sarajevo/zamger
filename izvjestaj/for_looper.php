@@ -8,7 +8,7 @@ function izvjestaj_for_looper() {
 	global $sadrzaj_bafera_za_csv,$conf_files_path, $registry;
 	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 
-	$koji = my_escape($_REQUEST['koji_izvjestaj']);
+	$koji = db_escape($_REQUEST['koji_izvjestaj']);
 	$staf = str_replace("/","_",$koji);
 
 	$found=false;
@@ -47,7 +47,7 @@ function izvjestaj_for_looper() {
 	// Čitanje for_upit varijabli iz upita
 	foreach ($_REQUEST as $key => $value) {
 		if ($key == "for_studij") {
-			$q10 = myquery("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, akademska_godina 
+			$q10 = db_query("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, akademska_godina 
 as ag, predmet as p, studij as s WHERE pk.studij=".intval($value)." and 
 pk.akademska_godina=11 and
 (pk.semestar=3 or pk.semestar=1) and pk.predmet=p.id and pk.studij=s.id 
@@ -55,7 +55,7 @@ and
 p.institucija=s.institucija
 ORDER BY pk.semestar, p.naziv");
 			$range = "";
-			while ($r10 = mysql_fetch_row($q10)) {
+			while ($r10 = db_fetch_row($q10)) {
 				if ($range != "") $range .= ",";
 				$range .= $r10[0];
 			}			
@@ -70,9 +70,9 @@ ORDER BY pk.semestar, p.naziv");
 				$upit .= " AND ss.ponovac=".intval($_REQUEST["for_studij_student_ponovac"]);
 			if (array_key_exists("for_studij_student_semestar", $_REQUEST))
 				$upit .= " AND ss.semestar=".intval($_REQUEST["for_studij_student_semestar"]);
-			$q10 = myquery($upit);
+			$q10 = db_query($upit);
 			$range = "";
-			while ($r10 = mysql_fetch_row($q10)) {
+			while ($r10 = db_fetch_row($q10)) {
 				if ($range != "") $range .= ",";
 				$range .= $r10[0];
 			}			
@@ -80,12 +80,12 @@ ORDER BY pk.semestar, p.naziv");
 			$for_loop_vars["student"] = $range;
 		}
 		if ($key == "for_pgs") {
-			$q10 = myquery("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, predmet as p, studij as s WHERE pk.akademska_godina=11 and
+			$q10 = db_query("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, predmet as p, studij as s WHERE pk.akademska_godina=11 and
 pk.semestar=1 and pk.predmet=p.id and pk.studij=s.id 
 AND s.tipstudija=2
 ORDER BY pk.semestar, p.naziv");
 			$range = "";
-			while ($r10 = mysql_fetch_row($q10)) {
+			while ($r10 = db_fetch_row($q10)) {
 				if ($range != "") $range .= ",";
 				$range .= $r10[0];
 			}			
@@ -129,11 +129,11 @@ ORDER BY pk.semestar, p.naziv");
 	if ($_REQUEST['fltip'] == "spiskovi") {
 		$ag = intval($_REQUEST['ag']);
 		if ($_REQUEST['flpodtip'] == "ljeto")
-			$q10 = myquery("select DISTINCT pk.predmet, l.id from ponudakursa as pk, labgrupa as l where pk.semestar mod 2=0 and pk.akademska_godina=$ag and pk.predmet=l.predmet and l.akademska_godina=$ag and l.virtualna=1");
+			$q10 = db_query("select DISTINCT pk.predmet, l.id from ponudakursa as pk, labgrupa as l where pk.semestar mod 2=0 and pk.akademska_godina=$ag and pk.predmet=l.predmet and l.akademska_godina=$ag and l.virtualna=1");
 		else
-			$q10 = myquery("select DISTINCT pk.predmet, l.id from ponudakursa as pk, labgrupa as l where pk.semestar mod 2=1 and pk.akademska_godina=$ag and pk.predmet=l.predmet and l.akademska_godina=$ag and l.virtualna=1");
+			$q10 = db_query("select DISTINCT pk.predmet, l.id from ponudakursa as pk, labgrupa as l where pk.semestar mod 2=1 and pk.akademska_godina=$ag and pk.predmet=l.predmet and l.akademska_godina=$ag and l.virtualna=1");
 
-		while ($r10 = mysql_fetch_row($q10)) {
+		while ($r10 = db_fetch_row($q10)) {
 			$komb = array();
 			$komb[] = "predmet=$r10[0]";
 			$komb[] = "grupa=$r10[1]";

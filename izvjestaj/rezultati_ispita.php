@@ -22,8 +22,8 @@ if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 }
 
 if ($user_nastavnik && !$user_studentska && !$user_siteadmin) {
-	$q10 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and akademska_godina=$ag and predmet=$predmet");
-	if (mysql_result($q10,0,0) == 0) {
+	$q10 = db_query("select count(*) from nastavnik_predmet where nastavnik=$userid and akademska_godina=$ag and predmet=$predmet");
+	if (db_result($q10,0,0) == 0) {
 		biguglyerror("Nemate pravo pristupa ovom izvještaju");
 		return;
 	}
@@ -35,19 +35,19 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 
-$q10 = myquery("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prolaz, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prolaz, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznat ispit!");
 	zamgerlog ("nepoznat ispit $ispit",3);
 	zamgerlog2 ("nepoznat ispit", $ispit);
 	return;
 }
 
-$finidatum = date("d. m. Y.", mysql_result($q10,0,0));
-$naziv = mysql_result($q10,0,1);
-$maxbodova = mysql_result($q10,0,2);
-$prolaz = mysql_result($q10,0,3);
-if ($predmet != mysql_result($q10,0,4) || $ag != mysql_result($q10,0,5)) {
+$finidatum = date("d. m. Y.", db_result($q10,0,0));
+$naziv = db_result($q10,0,1);
+$maxbodova = db_result($q10,0,2);
+$prolaz = db_result($q10,0,3);
+if ($predmet != db_result($q10,0,4) || $ag != db_result($q10,0,5)) {
 	biguglyerror("Nepoznat ispit!");
 	zamgerlog ("spoofing id ispita $ispit",3);
 	zamgerlog2 ("spoofing id ispita", $ispit);
@@ -55,17 +55,17 @@ if ($predmet != mysql_result($q10,0,4) || $ag != mysql_result($q10,0,5)) {
 }
 
 // Naziv predmeta, akademska godina
-$q21 = myquery("select naziv from predmet where id=$predmet");
-$naziv_predmeta = mysql_result($q21,0,0);
+$q21 = db_query("select naziv from predmet where id=$predmet");
+$naziv_predmeta = db_result($q21,0,0);
 
-$q22 = myquery("select naziv from akademska_godina where id=$ag");
-$naziv_ag = mysql_result($q22,0,0);
+$q22 = db_query("select naziv from akademska_godina where id=$ag");
+$naziv_ag = db_result($q22,0,0);
 
 // Predmetni nastavnik
-$q25 = myquery("SELECT osoba FROM angazman WHERE predmet=$predmet AND akademska_godina=$ag AND angazman_status=1");
+$q25 = db_query("SELECT osoba FROM angazman WHERE predmet=$predmet AND akademska_godina=$ag AND angazman_status=1");
 $nastavnik = "";
-if (mysql_num_rows($q25) == 1)
-	$nastavnik = tituliraj(mysql_result($q25,0,0));
+if (db_num_rows($q25) == 1)
+	$nastavnik = tituliraj(db_result($q25,0,0));
 
 
 ?>
@@ -80,8 +80,8 @@ održanog <?=$finidatum?></center></h2>
 
 $imeprezime=array();
 $brindexa=array();
-$q30 = myquery("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-while ($r30 = mysql_fetch_row($q30)) {
+$q30 = db_query("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+while ($r30 = db_fetch_row($q30)) {
 	$imeprezime[$r30[0]] = "$r30[1] $r30[2]";
 	$brindexa[$r30[0]] = $r30[3];
 }
@@ -89,16 +89,16 @@ uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 
 // Rezultati ispita
 $rezultati = array();
-$q40 = myquery("SELECT student, ocjena FROM ispitocjene WHERE ispit=$ispit");
-while ($r40 = mysql_fetch_row($q40)) {
+$q40 = db_query("SELECT student, ocjena FROM ispitocjene WHERE ispit=$ispit");
+while ($r40 = db_fetch_row($q40)) {
 	$rezultati[$r40[0]] = $r40[1];
 }
 
 
 // Spisak grupa
-$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
+$q400 = db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
 $grupe = array();
-while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
+while ($r400 = db_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
 natsort($grupe);
 
@@ -129,8 +129,8 @@ if ($kolone == 2) {
 				<?
 
 		$idovi = array();
-		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
-		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+		$q405 = db_query("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = db_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
@@ -292,8 +292,8 @@ if ($kolone == 2) {
 		}
 
 		$idovi = array();
-		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
-		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+		$q405 = db_query("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = db_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {

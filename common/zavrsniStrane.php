@@ -20,8 +20,8 @@ function common_zavrsniStrane() {
 	$lokacijafajlova ="$conf_files_path/zavrsni/fajlovi/$zavrsni/";
 
 	// Osnovne informacije o radu
-	$q10 = myquery("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.sazetak, z.summary FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.sazetak, z.summary FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
+	if (db_num_rows($q10)<1) {
 		niceerror("Nepostojeći rad");
 		zamgerlog("zavrsniStrane: nepostojeci rad $zavrsni", 3);
 		zamgerlog2("nepostojeci rad", $zavrsni);
@@ -29,16 +29,16 @@ function common_zavrsniStrane() {
 	}
 
 	// Cache naučnog stepena
-	$q20 = myquery("select id, titula from naucni_stepen");
-	while ($r20 = mysql_fetch_row($q20))
+	$q20 = db_query("select id, titula from naucni_stepen");
+	while ($r20 = db_fetch_row($q20))
 		$naucni_stepen[$r20[0]]=$r20[1];
 
-	$naslov_rada = mysql_result($q10,0,0);
-	$mentor = mysql_result($q10,0,2)." ".$naucni_stepen[mysql_result($q10,0,3)]." ".mysql_result($q10,0,1);
-	$id_studenta = mysql_result($q10,0,4);
+	$naslov_rada = db_result($q10,0,0);
+	$mentor = db_result($q10,0,2)." ".$naucni_stepen[db_result($q10,0,3)]." ".db_result($q10,0,1);
+	$id_studenta = db_result($q10,0,4);
 	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
-		$q30 = myquery("select ime,prezime,brindexa from osoba where id=$id_studenta");
-		$student = "Student: ".mysql_result($q30,0,1)." ".mysql_result($q30,0,0)." (".mysql_result($q30,0,2).")";
+		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
+		$student = "Student: ".db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).")";
 	}
 	
 	// Naslov stranice
@@ -56,8 +56,8 @@ function common_zavrsniStrane() {
 
 		
 	// Da li je definisan sazetak?
-	$sazetak = mysql_result($q10,0,5);
-	$summary = mysql_result($q10,0,6);
+	$sazetak = db_result($q10,0,5);
+	$summary = db_result($q10,0,6);
 	if ($userid == $id_studenta) {
 		if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
 			?>
@@ -87,14 +87,14 @@ function common_zavrsniStrane() {
 		</tr>
 	<?
 
-	$q100 = myquery("SELECT id, osoba, filename, UNIX_TIMESTAMP(vrijeme), revizija FROM zavrsni_file WHERE zavrsni=$zavrsni ORDER BY vrijeme");
-	if (mysql_num_rows($q100) < 1) {
+	$q100 = db_query("SELECT id, osoba, filename, UNIX_TIMESTAMP(vrijeme), revizija FROM zavrsni_file WHERE zavrsni=$zavrsni ORDER BY vrijeme");
+	if (db_num_rows($q100) < 1) {
 		?>
 		<tr><td colspan="5">Nije poslan niti jedan fajl</td></tr>
 		<?
 	}
 	
-	while ($r100 = mysql_fetch_row($q100)) {
+	while ($r100 = db_fetch_row($q100)) {
 		$id_fajla = $r100[0];
 		$id_osobe = $r100[1];
 		$filename = $r100[2];
@@ -148,8 +148,8 @@ function common_zavrsniStrane() {
 	// izračun offseta
 	$offset = ($stranica - 1) * $tema_po_stranici;
 	
-	$q200 = myquery("SELECT t.id, t.pregleda, UNIX_TIMESTAMP(p.vrijeme), o.ime, o.prezime FROM zavrsni_bb_tema AS t, zavrsni_bb_post AS p, osoba AS o WHERE t.zavrsni=$zavrsni AND t.zadnji_post=p.id AND p.osoba=o.id ORDER BY p.vrijeme DESC LIMIT $offset, $tema_po_stranici");
-	$broj_tema = mysql_num_rows($q200);
+	$q200 = db_query("SELECT t.id, t.pregleda, UNIX_TIMESTAMP(p.vrijeme), o.ime, o.prezime FROM zavrsni_bb_tema AS t, zavrsni_bb_post AS p, osoba AS o WHERE t.zavrsni=$zavrsni AND t.zadnji_post=p.id AND p.osoba=o.id ORDER BY p.vrijeme DESC LIMIT $offset, $tema_po_stranici");
+	$broj_tema = db_num_rows($q200);
 
 	?>
 	<div id="threadList">
@@ -164,19 +164,19 @@ function common_zavrsniStrane() {
 	<?
 	$parni = true;
 
-	while ($r200 = mysql_fetch_row($q200)) {
+	while ($r200 = db_fetch_row($q200)) {
 		$parni = !$parni;
 
 		$id_teme = $r200[0];
 		$broj_pregleda = $r200[1];
 		$zadnji_odgovor = date('d.m.Y H:i:s', $r200[2]) . "<br />" . $r200[4] . ' ' . $r200[3];
 
-		$q210 = myquery("SELECT COUNT(*) FROM zavrsni_bb_post WHERE tema = $id_teme");
-		$broj_odgovora = mysql_result($q210,0,0);
+		$q210 = db_query("SELECT COUNT(*) FROM zavrsni_bb_post WHERE tema = $id_teme");
+		$broj_odgovora = db_result($q210,0,0);
 
-		$q220 = myquery("SELECT p.naslov, o.ime, o.prezime FROM zavrsni_bb_post AS p, osoba AS o WHERE p.tema=$id_teme AND p.osoba=o.id ORDER BY p.id LIMIT 1");
-		$naslov = mysql_result($q220,0,0);
-		$autor =  mysql_result($q220,0,2)." ". mysql_result($q220,0,1);
+		$q220 = db_query("SELECT p.naslov, o.ime, o.prezime FROM zavrsni_bb_post AS p, osoba AS o WHERE p.tema=$id_teme AND p.osoba=o.id ORDER BY p.id LIMIT 1");
+		$naslov = db_result($q220,0,0);
+		$autor =  db_result($q220,0,2)." ". db_result($q220,0,1);
 
 		?>
 		<div class="threadRow clearfix<? if  ($parni) echo ' pattern'?>">
@@ -280,14 +280,14 @@ function common_zavrsniStrane() {
 				zamgerlog("greska prilikom slanja fajla na zavrsni $zavrsni", 3);
 				zamgerlog2("greska prilikom slanja fajla na zavrsni", $zavrsni);
 			} else {
-				$q500 = myquery("SELECT id FROM zavrsni_file ORDER BY id DESC LIMIT 1");
-				if (mysql_num_rows($q500)>0)
-					$id = mysql_result($q500,0,0)+1;
+				$q500 = db_query("SELECT id FROM zavrsni_file ORDER BY id DESC LIMIT 1");
+				if (db_num_rows($q500)>0)
+					$id = db_result($q500,0,0)+1;
 				else
 					$id = 1;
 					
-				$filename = my_escape($uploadFile);
-				$q510 = myquery("INSERT INTO zavrsni_file SET id=$id, filename='$uploadFile', revizija=$revizija, osoba=$userid, zavrsni=$zavrsni, file=0");
+				$filename = db_escape($uploadFile);
+				$q510 = db_query("INSERT INTO zavrsni_file SET id=$id, filename='$uploadFile', revizija=$revizija, osoba=$userid, zavrsni=$zavrsni, file=0");
 
 				nicemessage("Fajl uspješno poslan");
 				zamgerlog("dodao novi fajl na temu zavrsnog rada $zavrsni (pp$predmet)", 2);
@@ -336,16 +336,16 @@ function common_zavrsniStrane() {
 	if ($subakcija == 'obrisi_fajl') {
 		// Pošto nismo implementirali podršku za editovanje (revizije) brišemo samo jednu reviziju
 
-		$q600 = myquery("SELECT zavrsni, filename, revizija FROM zavrsni_file WHERE id=$id");
-		if (mysql_num_rows($q600)<1 || $zavrsni != mysql_result($q600,0,0)) {
+		$q600 = db_query("SELECT zavrsni, filename, revizija FROM zavrsni_file WHERE id=$id");
+		if (db_num_rows($q600)<1 || $zavrsni != db_result($q600,0,0)) {
 			niceerror("Ilegalan završni rad");
 			zamgerlog ("spoofing fajla $id za zavrsni rad $zavrsni", 3);
 			zamgerlog2 ("id fajla nepostojeci ili ne odgovara zavrsnom", $id, $zavrsni);
 			return;
 		}
 
-		$filename = mysql_result($q600,0,1);
-		$revizija = mysql_result($q600,0,2);
+		$filename = db_result($q600,0,1);
+		$revizija = db_result($q600,0,2);
 
 		$lokacijarevizije = $lokacijafajlova . $filename . "/v$revizija";
 		$lokacijafajla = $lokacijarevizije . "/" . $filename;
@@ -357,7 +357,7 @@ function common_zavrsniStrane() {
 			return;
 		}
 
-		$q610 = myquery("DELETE FROM zavrsni_file WHERE id=$id");
+		$q610 = db_query("DELETE FROM zavrsni_file WHERE id=$id");
 		nicemessage("Brisanje fajla uspjelo");
 		zamgerlog("obrisan fajl $id za zavrsni rad $zavrsni", 2);
 		zamgerlog2("obrisan fajl za zavrsni rad", $id, $zavrsni);
@@ -369,8 +369,8 @@ function common_zavrsniStrane() {
 	// Subakcija čitanje teme na forumu
 	if ($subakcija == 'vidi_temu') {
 		$id_teme = intval($_REQUEST['tema']);
-		$q700 = myquery("SELECT zavrsni FROM zavrsni_bb_tema WHERE id=$id_teme");
-		if (mysql_num_rows($q700)<1 || $zavrsni != mysql_result($q700,0,0)) {
+		$q700 = db_query("SELECT zavrsni FROM zavrsni_bb_tema WHERE id=$id_teme");
+		if (db_num_rows($q700)<1 || $zavrsni != db_result($q700,0,0)) {
 			niceerror("Nepostojeća tema.");
 			zamgerlog("spoofing forum teme $id_teme za zavrsni rad $zavrsni", 3);
 			zamgerlog2("nepostojeca forum tema ili ne odgovara zavrsnom", $id_teme, $zavrsni);
@@ -382,14 +382,14 @@ function common_zavrsniStrane() {
 		<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
 		<?
 
-		$q710 = myquery("SELECT p.id, p.naslov, UNIX_TIMESTAMP(p.vrijeme), o.id, o.prezime, o.ime, pt.tekst FROM zavrsni_bb_post AS p, osoba AS o, zavrsni_bb_post_text AS pt WHERE p.tema=$id_teme AND p.osoba=o.id AND p.id=pt.post");
+		$q710 = db_query("SELECT p.id, p.naslov, UNIX_TIMESTAMP(p.vrijeme), o.id, o.prezime, o.ime, pt.tekst FROM zavrsni_bb_post AS p, osoba AS o, zavrsni_bb_post_text AS pt WHERE p.tema=$id_teme AND p.osoba=o.id AND p.id=pt.post");
 
 		?>
 		<h3>Prikaz teme</h3>
 		<p><a href="<?=$linkPrefix?>">Nazad na početnu stranicu</a></p>
 		<div id="fullThread">
 		<?
-		while ($r710 = mysql_fetch_row($q710)) {
+		while ($r710 = db_fetch_row($q710)) {
 			$id_posta = $r710[0];
 			$naslov = $r710[1];
 			$vrijeme = date("d.m.Y. H:i:s", $r710[2]);
@@ -425,7 +425,7 @@ function common_zavrsniStrane() {
 		} //foreach post
 
 		// Povecavamo view counter
-		$q720 = myquery("UPDATE zavrsni_bb_tema SET pregleda=pregleda+1 WHERE id=$id_teme");
+		$q720 = db_query("UPDATE zavrsni_bb_tema SET pregleda=pregleda+1 WHERE id=$id_teme");
 
 		?>
 		</div> <!-- fullthread -->
@@ -445,8 +445,8 @@ function common_zavrsniStrane() {
 			}
 
 			//get variables
-			$naslov = my_escape(trim($_REQUEST['naslov']));
-			$tekst = my_escape(trim($_REQUEST['tekst']));
+			$naslov = db_escape(trim($_REQUEST['naslov']));
+			$tekst = db_escape(trim($_REQUEST['tekst']));
 	
 			if (empty($naslov) || empty($tekst)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -454,26 +454,26 @@ function common_zavrsniStrane() {
 				return;
 			}
 
-			$q800 = myquery("SELECT id FROM zavrsni_bb_tema ORDER BY id DESC LIMIT 1");
-			if (mysql_num_rows($q800)>0)
-				$id_teme = mysql_result($q800,0,0) + 1;
+			$q800 = db_query("SELECT id FROM zavrsni_bb_tema ORDER BY id DESC LIMIT 1");
+			if (db_num_rows($q800)>0)
+				$id_teme = db_result($q800,0,0) + 1;
 			else
 				$id_teme = 1;
 
-			$q810 = myquery("INSERT INTO zavrsni_bb_tema SET id=$id_teme, osoba=$userid, zavrsni=$zavrsni");
+			$q810 = db_query("INSERT INTO zavrsni_bb_tema SET id=$id_teme, osoba=$userid, zavrsni=$zavrsni");
 
 
-			$q820 = myquery("SELECT id FROM zavrsni_bb_post ORDER BY id DESC LIMIT 1");
-			if (mysql_num_rows($q820)>0)
-				$id_posta = mysql_result($q820,0,0) + 1;
+			$q820 = db_query("SELECT id FROM zavrsni_bb_post ORDER BY id DESC LIMIT 1");
+			if (db_num_rows($q820)>0)
+				$id_posta = db_result($q820,0,0) + 1;
 			else
 				$id_posta = 1;
 
-			$q830 = myquery("INSERT INTO zavrsni_bb_post SET id=$id_posta, naslov='$naslov', osoba=$userid, tema=$id_teme");
+			$q830 = db_query("INSERT INTO zavrsni_bb_post SET id=$id_posta, naslov='$naslov', osoba=$userid, tema=$id_teme");
 
-			$q840 = myquery("INSERT INTO zavrsni_bb_post_text SET post=$id_posta, tekst='$tekst'");
+			$q840 = db_query("INSERT INTO zavrsni_bb_post_text SET post=$id_posta, tekst='$tekst'");
 
-			$q850 = myquery("UPDATE zavrsni_bb_tema SET prvi_post=$id_posta, zadnji_post=$id_posta WHERE id=$id_teme");
+			$q850 = db_query("UPDATE zavrsni_bb_tema SET prvi_post=$id_posta, zadnji_post=$id_posta WHERE id=$id_teme");
 
 			nicemessage('Nova tema uspješno dodana.');
 			zamgerlog("dodao novu temu na zavrsni rad $zavrsni (pp$predmet)", 2);
@@ -513,8 +513,8 @@ function common_zavrsniStrane() {
 		$id_teme = intval($_REQUEST['tema']);
 		$id_posta = intval($_REQUEST['post']);
 
-		$q900 = myquery("SELECT t.zavrsni, p.naslov FROM zavrsni_bb_post AS p, zavrsni_bb_tema AS t WHERE p.tema=$id_teme AND t.id=$id_teme ORDER BY p.id LIMIT 1");
-		if (mysql_num_rows($q900)==0 || $zavrsni != mysql_result($q900,0,0)) {
+		$q900 = db_query("SELECT t.zavrsni, p.naslov FROM zavrsni_bb_post AS p, zavrsni_bb_tema AS t WHERE p.tema=$id_teme AND t.id=$id_teme ORDER BY p.id LIMIT 1");
+		if (db_num_rows($q900)==0 || $zavrsni != db_result($q900,0,0)) {
 			niceerror("Nepostojeća tema.");
 			zamgerlog("spoofing forum teme $id_teme za zavrsni rad $zavrsni", 3);
 			zamgerlog2("nepostojeca forum tema ili ne odgovara zavrsnom (odgovor)", $id_teme, $zavrsni);
@@ -532,8 +532,8 @@ function common_zavrsniStrane() {
 			}
 
 			//get variables
-			$naslov = my_escape(trim($_REQUEST['naslov']));
-			$tekst = my_escape(trim($_REQUEST['tekst']));
+			$naslov = db_escape(trim($_REQUEST['naslov']));
+			$tekst = db_escape(trim($_REQUEST['tekst']));
 		
 			if (empty($naslov) || empty($tekst)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -541,17 +541,17 @@ function common_zavrsniStrane() {
 				return;
 			}
 
-			$q820 = myquery("SELECT id FROM zavrsni_bb_post ORDER BY id DESC LIMIT 1");
-			if (mysql_num_rows($q820)>0)
-				$id_posta = mysql_result($q820,0,0) + 1;
+			$q820 = db_query("SELECT id FROM zavrsni_bb_post ORDER BY id DESC LIMIT 1");
+			if (db_num_rows($q820)>0)
+				$id_posta = db_result($q820,0,0) + 1;
 			else
 				$id_posta = 1;
 
-			$q830 = myquery("INSERT INTO zavrsni_bb_post SET id=$id_posta, naslov='$naslov', osoba=$userid, tema=$id_teme");
+			$q830 = db_query("INSERT INTO zavrsni_bb_post SET id=$id_posta, naslov='$naslov', osoba=$userid, tema=$id_teme");
 
-			$q840 = myquery("INSERT INTO zavrsni_bb_post_text SET post=$id_posta, tekst='$tekst'");
+			$q840 = db_query("INSERT INTO zavrsni_bb_post_text SET post=$id_posta, tekst='$tekst'");
 
-			$q850 = myquery("UPDATE zavrsni_bb_tema SET zadnji_post=$id_posta WHERE id=$id_teme");
+			$q850 = db_query("UPDATE zavrsni_bb_tema SET zadnji_post=$id_posta WHERE id=$id_teme");
 
 			nicemessage('Novi odgovor uspješno dodan.');
 			zamgerlog("dodao novi odgovor na diskusiju ID $id_teme, tema zavrsnog rada $zavrsni (pp$predmet)", 2);
@@ -562,7 +562,7 @@ function common_zavrsniStrane() {
 
 
 		// Naslov poruke je "Re: $naslov"
-		$novi_naslov = "Re: ".mysql_result($q900,0,1);
+		$novi_naslov = "Re: ".db_result($q900,0,1);
 
 		?>	
 		<h3>Novi odgovor</h3>
@@ -595,8 +595,8 @@ function common_zavrsniStrane() {
 		$id_teme = intval($_REQUEST['tema']); // Samo se koristi za backlink
 		$id_posta = intval($_REQUEST['post']);
 
-		$q400 = myquery("SELECT p.osoba, p.naslov, pt.tekst FROM zavrsni_bb_post AS p, zavrsni_bb_post_text AS pt WHERE p.id=$id_posta AND pt.post=$id_posta AND p.tema=$id_teme"); // ujedno provjeravamo i temu
-		if (mysql_num_rows($q400)<1 || $userid != mysql_result($q400,0,0)) {
+		$q400 = db_query("SELECT p.osoba, p.naslov, pt.tekst FROM zavrsni_bb_post AS p, zavrsni_bb_post_text AS pt WHERE p.id=$id_posta AND pt.post=$id_posta AND p.tema=$id_teme"); // ujedno provjeravamo i temu
+		if (db_num_rows($q400)<1 || $userid != db_result($q400,0,0)) {
 			niceerror("Niste autor ove poruke.");
 			zamgerlog("spoofing forum poruke $id_posta,$id_teme prilikom editovanja za zavrsni rad $zavrsni", 3);
 			zamgerlog2("nepostojeca forum poruka ili ne odgovara temi ili zavrsnom", $id_posta, $id_teme, $zavrsni);
@@ -614,8 +614,8 @@ function common_zavrsniStrane() {
 			}
 
 			//get variables
-			$naslov = my_escape(trim($_REQUEST['naslov']));
-			$tekst = my_escape(trim($_REQUEST['tekst']));
+			$naslov = db_escape(trim($_REQUEST['naslov']));
+			$tekst = db_escape(trim($_REQUEST['tekst']));
 		
 			if (empty($naslov) || empty($tekst)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -624,9 +624,9 @@ function common_zavrsniStrane() {
 			}
 			
 
-			$q410 = myquery("UPDATE zavrsni_bb_post SET naslov='$naslov' WHERE id=$id_posta");
+			$q410 = db_query("UPDATE zavrsni_bb_post SET naslov='$naslov' WHERE id=$id_posta");
 	
-			$q420 = myquery("UPDATE zavrsni_bb_post_text SET tekst='$tekst' WHERE post=$id_posta");
+			$q420 = db_query("UPDATE zavrsni_bb_post_text SET tekst='$tekst' WHERE post=$id_posta");
 
 			nicemessage('Uspješno ste izmijenili poruku.');
 			zamgerlog("izmijenio vlastiti post $id_posta, tema zavrsnog rada $zavrsni (pp$predmet)", 2);
@@ -635,8 +635,8 @@ function common_zavrsniStrane() {
 			return;
 		}
 
-		$naslov = mysql_result($q400,0,1);
-		$tekst = mysql_result($q400,0,2);
+		$naslov = db_result($q400,0,1);
+		$tekst = db_result($q400,0,2);
 
 
 		?>	
@@ -670,8 +670,8 @@ function common_zavrsniStrane() {
 		$id_teme = intval($_REQUEST['tema']); // Samo se koristi za backlink
 		$id_posta = intval($_REQUEST['post']);
 
-		$q300 = myquery("SELECT osoba FROM zavrsni_bb_post WHERE id=$id_posta AND tema=$id_teme"); // ujedno provjeravamo i temu
-		if (mysql_num_rows($q300)<1 || $userid != mysql_result($q300,0,0)) {
+		$q300 = db_query("SELECT osoba FROM zavrsni_bb_post WHERE id=$id_posta AND tema=$id_teme"); // ujedno provjeravamo i temu
+		if (db_num_rows($q300)<1 || $userid != db_result($q300,0,0)) {
 			niceerror("Niste autor ove poruke.");
 			zamgerlog("spoofing forum poruke $id_posta,$id_teme prilikom brisanja za zavrsni rad $zavrsni", 3);
 			zamgerlog2("nepostojeca forum poruka ili ne odgovara temi ili zavrsnom (brisanje)", $id_posta, $id_teme, $zavrsni);
@@ -679,26 +679,26 @@ function common_zavrsniStrane() {
 		}
 
 		// Da li je ovo početna tema threada?
-		$q310 = myquery("SELECT COUNT(*) FROM zavrsni_bb_post WHERE tema=$id_teme AND id<$id_posta");
-		if (mysql_result($q310,0,0)<1)
+		$q310 = db_query("SELECT COUNT(*) FROM zavrsni_bb_post WHERE tema=$id_teme AND id<$id_posta");
+		if (db_result($q310,0,0)<1)
 			$pocetna = true;
 		else
 			$pocetna = false;
 
 		// Submit akcija
 		if (isset($_REQUEST['potvrda'])) {
-			$q320 = myquery("DELETE FROM zavrsni_bb_post WHERE id=$id_posta");
-			$q330 = myquery("DELETE FROM zavrsni_bb_post_text WHERE post=$id_posta");
+			$q320 = db_query("DELETE FROM zavrsni_bb_post WHERE id=$id_posta");
+			$q330 = db_query("DELETE FROM zavrsni_bb_post_text WHERE post=$id_posta");
 
 			// Ako je početna poruka, brišemo kompletnu temu
 			if ($pocetna) {
-				$q340 = myquery("SELECT id FROM zavrsni_bb_post WHERE tema=$id_teme");
-				while ($r340 = mysql_fetch_row($q340)) {
+				$q340 = db_query("SELECT id FROM zavrsni_bb_post WHERE tema=$id_teme");
+				while ($r340 = db_fetch_row($q340)) {
 					$drugi_id = $r340[0];
-					$q350 = myquery("DELETE FROM zavrsni_bb_post WHERE id=$drugi_id");
-					$q360 = myquery("DELETE FROM zavrsni_bb_post_text WHERE post=$drugi_id");
+					$q350 = db_query("DELETE FROM zavrsni_bb_post WHERE id=$drugi_id");
+					$q360 = db_query("DELETE FROM zavrsni_bb_post_text WHERE post=$drugi_id");
 				}
-				$q370 = myquery("DELETE FROM zavrsni_bb_tema WHERE id=$id_teme");
+				$q370 = db_query("DELETE FROM zavrsni_bb_tema WHERE id=$id_teme");
 
 				nicemessage('Uspješno ste obrisali kompletnu temu.');	
 				zamgerlog("obrisao temu na forumu zavrsnog rada $zavrsni (pp$predmet)", 2);
@@ -737,9 +737,9 @@ function common_zavrsniStrane() {
 	// Subakcija za sažetak / summary
 	if ($subakcija == 'sazetak') {
 		if ($_REQUEST['potvrda'] && check_csrf_token()) {
-			$sazetak = my_escape($_REQUEST['sazetak']);
-			$summary = my_escape($_REQUEST['summary']);
-			$q1000 = myquery("UPDATE zavrsni SET sazetak='$sazetak', summary='$summary' WHERE id=$zavrsni");
+			$sazetak = db_escape($_REQUEST['sazetak']);
+			$summary = db_escape($_REQUEST['summary']);
+			$q1000 = db_query("UPDATE zavrsni SET sazetak='$sazetak', summary='$summary' WHERE id=$zavrsni");
 			nicemessage("Sažetak ažuriran");
 			zamgerlog("azuriran sazetak zavrsnog rada $zavrsni", 2);
 			zamgerlog2("azuriran sazetak zavrsnog rada", $zavrsni);
@@ -747,8 +747,8 @@ function common_zavrsniStrane() {
 			return;
 		}
 	
-		$sazetak = mysql_result($q10,0,5);
-		$summary = mysql_result($q10,0,6);
+		$sazetak = db_result($q10,0,5);
+		$summary = db_result($q10,0,6);
 
 		?>
 		<?=genform("POST")?>

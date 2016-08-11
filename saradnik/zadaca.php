@@ -26,14 +26,14 @@ $zadatak=intval($_REQUEST['zadatak']);
 
 if (!$user_siteadmin) {
 	// Da li je nastavnik na predmetu?
-	$q10 = myquery("select np.nivo_pristupa from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and z.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select np.nivo_pristupa from nastavnik_predmet as np, zadaca as z where z.id=$zadaca and z.predmet=np.predmet and z.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
+	if (db_num_rows($q10)<1) {
 		zamgerlog("privilegije (student u$stud_id zadaca z$zadaca)",3); // nivo 3: greska
 		zamgerlog2("nije nastavnik na predmetu za zadacu", $zadaca); // nivo 3: greska
 		niceerror("Nemate pravo izmjene ove zadaće");
 		return;
 	}
-	$nivo_pristupa = mysql_result($q10,0,0);
+	$nivo_pristupa = db_result($q10,0,0);
 
 	// Ogranicenja (tabela: ogranicenje) ne provjeravamo jer bi to bilo prekomplikovano,
 	// a pitanje je da li ima smisla
@@ -43,26 +43,26 @@ if (!$user_siteadmin) {
 
 // Podaci o zadaci
 
-$q20 = myquery("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik, p.ace from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
-if (mysql_num_rows($q20)<1) {
+$q20 = db_query("select p.geshi, p.ekstenzija, z.attachment, z.naziv, z.zadataka, z.komponenta, z.predmet, z.akademska_godina, z.programskijezik, p.ace from zadaca as z, programskijezik as p where z.id=$zadaca and z.programskijezik=p.id");
+if (db_num_rows($q20)<1) {
 	zamgerlog("nepostojeca zadaca $zadaca",3);
 	zamgerlog2("nepostojeca zadaca", $zadaca);
 	niceerror("Neispravna zadaća.");
 	exit;
 }
 
-$jezik = mysql_result($q20,0,0);
-$ekst = mysql_result($q20,0,1);
-$attach = mysql_result($q20,0,2);
-$naziv_zadace = mysql_result($q20,0,3);
-$komponenta = mysql_result($q20,0,5);
-$predmet = mysql_result($q20,0,6);
-$ag = mysql_result($q20,0,7);
-$id_jezika = mysql_result($q20,0,8);
-$ace_mode = mysql_result($q20,0,9);
+$jezik = db_result($q20,0,0);
+$ekst = db_result($q20,0,1);
+$attach = db_result($q20,0,2);
+$naziv_zadace = db_result($q20,0,3);
+$komponenta = db_result($q20,0,5);
+$predmet = db_result($q20,0,6);
+$ag = db_result($q20,0,7);
+$id_jezika = db_result($q20,0,8);
+$ace_mode = db_result($q20,0,9);
 
 
-if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
+if (db_result($q20,0,4)<$zadatak || $zadatak<1) {
 	zamgerlog("pokusao pristupiti nepostojecem zadatku $zadatak u zadaci z$zadaca",3);
 	zamgerlog2("zadaca nema toliko zadataka", $zadaca, $zadatak);
 	niceerror("Neispravan broj zadatka.");
@@ -73,16 +73,16 @@ if (mysql_result($q20,0,4)<$zadatak || $zadatak<1) {
 
 // Podaci o studentu
 
-$q50 = myquery("select ime, prezime from osoba where id=$stud_id");
-if (mysql_num_rows($q50)<1) {
+$q50 = db_query("select ime, prezime from osoba where id=$stud_id");
+if (db_num_rows($q50)<1) {
 	zamgerlog("nepostojeci student $stud_id",3);
 	zamgerlog2("nepostojeci student", $stud_id);
 	niceerror("Neispravan student.");
 	exit;
 }
 
-$ime_studenta = mysql_result($q50,0,0);
-$prezime_studenta = mysql_result($q50,0,1);
+$ime_studenta = db_result($q50,0,0);
+$prezime_studenta = db_result($q50,0,1);
 
 $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$stud_id/";
 
@@ -98,8 +98,8 @@ $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$stud_id/";
 
 if ($_GET['akcija'] == "diff") {
 	$diff_id=intval($_GET['diff_id']);
-	$q60 = myquery("select diff from zadatakdiff where zadatak=$diff_id");
-	$diff = mysql_result($q60,0,0);
+	$q60 = db_query("select diff from zadatakdiff where zadatak=$diff_id");
+	$diff = db_result($q60,0,0);
 
 	// Ovo ispod nema potrebe jer je diff već escapovan prilikom 
 	// inserta u bazu (stud_zadaca.php)
@@ -193,17 +193,17 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 	<?
 
 	if ($_POST['sve']) {
-		$q70 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak");
-		while ($r70 = mysql_fetch_row($q70)) {
+		$q70 = db_query("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak");
+		while ($r70 = db_fetch_row($q70)) {
 			print "<h2>Ulaz: '$r70[0]'</h2>";
 			izvrsi($r70[0], $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst);
 		}
 	} else {
 		$stdin = $_POST['stdin'];
-		$mstdin = my_escape($stdin);
-		$q70 = myquery("select count(*) from stdin where ulaz='$mstdin' and zadaca=$zadaca and redni_broj=$zadatak");
-		if (mysql_result($q70,0,0)==0) 
-			$q80 = myquery("insert into stdin set ulaz='$mstdin', zadaca=$zadaca, redni_broj=$zadatak");
+		$mstdin = db_escape($stdin);
+		$q70 = db_query("select count(*) from stdin where ulaz='$mstdin' and zadaca=$zadaca and redni_broj=$zadatak");
+		if (db_result($q70,0,0)==0) 
+			$q80 = db_query("insert into stdin set ulaz='$mstdin', zadaca=$zadaca, redni_broj=$zadatak");
 		izvrsi($stdin, $jezik, $lokacijazadaca, $zadaca, $zadatak, $ekst);
 	}
 	
@@ -219,24 +219,24 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 
 if ($_POST['akcija'] == "slanje" && check_csrf_token()) {
 
-	$komentar = my_escape($_POST['komentar']);
+	$komentar = db_escape($_POST['komentar']);
 	$status = intval($_POST['status']);
 	$bodova = floatval(str_replace(",",".",$_POST['bodova']));
 
 	// Osiguravamo da se filename prenese u svaku sljedeću instancu zadatka
 	$filename = $izvjestaj_skripte = '';
-	$q90 = myquery("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
-	if (mysql_num_rows($q90) > 0) {
-		$filename = mysql_real_escape_string(mysql_result($q90,0,0));
-		$izvjestaj_skripte = mysql_real_escape_string(mysql_result($q90,0,1)); // Već je sanitiziran HTML
+	$q90 = db_query("select filename, izvjestaj_skripte from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
+	if (db_num_rows($q90) > 0) {
+		$filename = db_escape_string(db_result($q90,0,0));
+		$izvjestaj_skripte = db_escape_string(db_result($q90,0,1)); // Već je sanitiziran HTML
 	}
 
-	$q100 = myquery("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', izvjestaj_skripte='$izvjestaj_skripte', userid=$userid");
+	$q100 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$stud_id, status=$status, bodova=$bodova, vrijeme=now(), komentar='$komentar', filename='$filename', izvjestaj_skripte='$izvjestaj_skripte', userid=$userid");
 
 	// Odredjujemo ponudu kursa (za update komponente)
-	$q110 = myquery("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	$q110 = db_query("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 
-	update_komponente($stud_id, mysql_result($q110,0,0), $komponenta);
+	update_komponente($stud_id, db_result($q110,0,0), $komponenta);
 
 	zamgerlog("izmjena zadace (student u$stud_id zadaca z$zadaca zadatak $zadatak)",2);
 	zamgerlog2("bodovanje zadace", $stud_id, $zadaca, $zadatak);
@@ -249,8 +249,8 @@ if ($_REQUEST["akcija"] == "test_detalji") {
 	$test = intval($_REQUEST['test']);
 
 	// Provjera spoofinga testa
-	$q10 = myquery("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-	if (mysql_result($q10,0,0) == 0) {
+	$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
+	if (db_result($q10,0,0) == 0) {
 		niceerror("Odabrani test nije sa odabrane zadaće.");
 		return;
 	}
@@ -299,8 +299,8 @@ if ($attach == 0) {
 			$test = intval($_REQUEST['test']);
 
 			// Provjera spoofinga testa
-			$q10 = myquery("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-			if (mysql_result($q10,0,0) == 0) {
+			$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
+			if (db_result($q10,0,0) == 0) {
 				niceerror("Odabrani test nije sa odabrane zadaće.");
 				return;
 			}
@@ -375,10 +375,10 @@ if ($attach == 0) {
 			<?
 
 			// Zadnje korišteni stdin se čuva u bazi
-			$q120 = myquery("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
-			if (mysql_num_rows($q120)<1)
+			$q120 = db_query("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+			if (db_num_rows($q120)<1)
 				print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
-			while ($r120 = mysql_fetch_row($q120)) {
+			while ($r120 = db_fetch_row($q120)) {
 				print "<option value=\"$r120[0]\">$r120[0]</option>\n";
 			}
 			?>
@@ -395,13 +395,13 @@ if ($attach == 0) {
 } else {
 	// Attachment
 
-	$q130 = myquery("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
-	if (mysql_num_rows($q130) > 0) {
-		$filename = mysql_result($q130,0,0);
+	$q130 = db_query("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
+	if (db_num_rows($q130) > 0) {
+		$filename = db_result($q130,0,0);
 		$the_file = "$lokacijazadaca$zadaca/$filename";
 
 		if ($filename && file_exists($the_file)) {
-			$vrijeme = date("d. m. Y. h:i:s", mysql_result($q130,0,1));
+			$vrijeme = date("d. m. Y. h:i:s", db_result($q130,0,1));
 			$velicina = nicesize(filesize($the_file));
 			$icon = "images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "index.php?sta=common/attachment&student=$stud_id&zadaca=$zadaca&zadatak=$zadatak";
@@ -427,17 +427,17 @@ if ($attach == 0) {
 
 // Prikaz statusa sa log-om i izmjena
 
-$q140 = myquery("select status,bodova,izvjestaj_skripte,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
-if (mysql_num_rows($q140) > 0) {
-	$status = mysql_result($q140,0,0);
-	$bodova = mysql_result($q140,0,1);
-	$izvjestaj_skripte = str_replace("\n","<br/>",mysql_result($q140,0,2));
-	$komentar = mysql_result($q140,0,3);
+$q140 = db_query("select status,bodova,izvjestaj_skripte,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
+if (db_num_rows($q140) > 0) {
+	$status = db_result($q140,0,0);
+	$bodova = db_result($q140,0,1);
+	$izvjestaj_skripte = str_replace("\n","<br/>",db_result($q140,0,2));
+	$komentar = db_result($q140,0,3);
 	$komentar = str_replace("\"","&quot;",$komentar);
 
 	// Koristimo poseban upit da bismo odredili vrijeme slanja prve verzije
-	$q150 = myquery("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
-	$vrijeme_slanja = date("d. m. Y. H:i:s",mysql_result($q150,0,0));
+	$q150 = db_query("select UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id limit 1");
+	$vrijeme_slanja = date("d. m. Y. H:i:s",db_result($q150,0,0));
 
 	?>
 
@@ -548,19 +548,19 @@ for ($i=0;$i<$brstatusa;$i++)
 ##### HISTORIJA IZMJENA ######
 
 
-$q160 = myquery("select id,UNIX_TIMESTAMP(vrijeme),status,bodova,komentar,userid from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
-if (mysql_num_rows($q160)>1) {
+$q160 = db_query("select id,UNIX_TIMESTAMP(vrijeme),status,bodova,komentar,userid from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by vrijeme");
+if (db_num_rows($q160)>1) {
 
 ?>
 
 <p>Historija izmjena:</p>
 <ul><?
-	while ($r160 = mysql_fetch_row($q160)) {
+	while ($r160 = db_fetch_row($q160)) {
 		$imeprezime="";
 		if ($r160[5]>0) {
-			$q165 = myquery("select ime, prezime from osoba where id=$r160[5]");
-			if (mysql_num_rows($q165)>0) {
-				$imeprezime = mysql_result($q165,0,0)." ".mysql_result($q165,0,1);
+			$q165 = db_query("select ime, prezime from osoba where id=$r160[5]");
+			if (db_num_rows($q165)>0) {
+				$imeprezime = db_result($q165,0,0)." ".db_result($q165,0,1);
 			}
 		}
 
@@ -570,8 +570,8 @@ if (mysql_num_rows($q160)>1) {
 		print ":</b> ".$statusi_array[$r160[2]];
 		if ($r160[3]>0) print " (".$r160[3]." bodova)";
 		if (strlen($r160[4])>0) print " - &quot;".$r160[4]."&quot;";
-		$q170 = myquery("select count(zadatak) from zadatakdiff where zadatak=$r160[0]");
-		if (mysql_result($q170,0,0)>0)
+		$q170 = db_query("select count(zadatak) from zadatakdiff where zadatak=$r160[0]");
+		if (db_result($q170,0,0)>0)
 			print " (<a href=\"index.php?sta=saradnik/zadaca&akcija=diff&zadaca=$zadaca&zadatak=$zadatak&student=$stud_id&diff_id=$r160[0]\">diff</a>)";
 		print "</li>\n\n"; 
 	}

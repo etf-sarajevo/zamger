@@ -20,15 +20,15 @@ $nasa_slova = array("č"=>"c", "ć" => "c", "đ" => "d", "š" => "s", "ž" => "z
 
 // Odredjujemo filename
 if ($ispit_termin>0) {
-	$q5 = myquery("select p.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), i.akademska_godina from predmet as p, ispit as i, ispit_termin as it where it.id=$ispit_termin and it.ispit=i.id and i.predmet=p.id");
+	$q5 = db_query("select p.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), i.akademska_godina from predmet as p, ispit as i, ispit_termin as it where it.id=$ispit_termin and it.ispit=i.id and i.predmet=p.id");
 
-	$predmet = mysql_result($q5,0,0);
-	$ag = mysql_result($q5,0,3);
-	$filename = "prijave-".strtr(mysql_result($q5,0,1), $nasa_slova)."-".date("d-m-Y", mysql_result($q5,0,2)).".pdf";
+	$predmet = db_result($q5,0,0);
+	$ag = db_result($q5,0,3);
+	$filename = "prijave-".strtr(db_result($q5,0,1), $nasa_slova)."-".date("d-m-Y", db_result($q5,0,2)).".pdf";
 
 } else if ($predmet>0) {
-	$q5 = myquery("select naziv from predmet where id=$predmet");
-	$filename = "prijave-".strtr(mysql_result($q5,0,0), $nasa_slova).".pdf";
+	$q5 = db_query("select naziv from predmet where id=$predmet");
+	$filename = "prijave-".strtr(db_result($q5,0,0), $nasa_slova).".pdf";
 
 } else {
 	$filename = "prijave.pdf";
@@ -116,9 +116,9 @@ $pdf->setJPEGQuality(100);
 
 // Izvršenje upita
 
-$q10 = myquery($upit);
+$q10 = db_query($upit);
 
-while ($r10 = mysql_fetch_row($q10)) {
+while ($r10 = db_fetch_row($q10)) {
 	$student=$r10[0];
 	$imeprezime=$r10[1]." ".$r10[2];
 	$brind=$r10[3];
@@ -138,9 +138,9 @@ while ($r10 = mysql_fetch_row($q10)) {
 //	$datumDrPar=$r10[14];
 
 	// Ispis nastavnika
-	$q33 = myquery("select osoba from angazman where predmet=$predmet and akademska_godina=$ag and angazman_status=1");
-	if (mysql_num_rows($q33)==1) { // Ako imaju dva odgovorna nastavnika, ne znam kojeg da stavim
-		$id_nastavnika = mysql_result($q33,0,0);
+	$q33 = db_query("select osoba from angazman where predmet=$predmet and akademska_godina=$ag and angazman_status=1");
+	if (db_num_rows($q33)==1) { // Ako imaju dva odgovorna nastavnika, ne znam kojeg da stavim
+		$id_nastavnika = db_result($q33,0,0);
 		$nastavnik = tituliraj($id_nastavnika, $sa_akademskim_zvanjem=false);
 	} else {
 		$nastavnik="";
@@ -149,21 +149,21 @@ while ($r10 = mysql_fetch_row($q10)) {
 	// Da li ima uslov?
 	if ($_GET['tip']=="uslov") { 
 		// Dva parcijalna ispita
-		$q35 = myquery("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$student and io.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and k.tipkomponente=1 and io.ocjena>=k.prolaz");
-		$parcijalnih = mysql_result($q35,0,0);
+		$q35 = db_query("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$student and io.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and k.tipkomponente=1 and io.ocjena>=k.prolaz");
+		$parcijalnih = db_result($q35,0,0);
 		// Integralni ispiti
-		$q37 = myquery("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$student and io.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and k.tipkomponente=2 and io.ocjena>=k.prolaz");
-		$integralnih = mysql_result($q37,0,0);
+		$q37 = db_query("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$student and io.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and k.tipkomponente=2 and io.ocjena>=k.prolaz");
+		$integralnih = db_result($q37,0,0);
 		if ($integralnih==1 || $parcijalnih==2) // FIXME: ovo radi samo za ETF Bologna standard
 			kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $nastavnik);
 
 	} else {
 		// Da li je student polozio predmet?
-		$q40 = myquery("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$student and predmet=$predmet");
-		if (mysql_num_rows($q40)>0) {
-			$ocjena = mysql_result($q40,0,0);
-			$datum_provjeren = mysql_result($q40,0,2);
-			if ($datum_provjeren) $datumIspita=$datumPrijave=$datumPolaganja=$datumUsmenog=date("d. m. Y.", mysql_result($q40,0,1));
+		$q40 = db_query("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$student and predmet=$predmet");
+		if (db_num_rows($q40)>0) {
+			$ocjena = db_result($q40,0,0);
+			$datum_provjeren = db_result($q40,0,2);
+			if ($datum_provjeren) $datumIspita=$datumPrijave=$datumPolaganja=$datumUsmenog=date("d. m. Y.", db_result($q40,0,1));
 		} else $ocjena=0;
 
 		kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik);

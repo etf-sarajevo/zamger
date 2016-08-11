@@ -20,36 +20,36 @@ Elektrotehnički fakultet Sarajevo</p>
 $ak_god = intval($_REQUEST['akademska_godina']);
 if ($ak_god==0) {
 	// Aktuelna godina
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q10 = myquery("select naziv from akademska_godina where id=$ak_god");
-	$ak_god_naziv = mysql_result($q10,0,0);
+	$q10 = db_query("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = db_result($q10,0,0);
 }
 
 
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = $studiji_phd = array();
 $trajanje_bsc = $trajanje_msc = $trajanje_phd = 0;
-$q20 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
-while ($r20 = mysql_fetch_row($q20)) {
+$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
+while ($r20 = db_fetch_row($q20)) {
 	$studiji_bsc[$r20[0]]=$r20[1];
 	if ($r20[2]>$trajanje_bsc) $trajanje_bsc=$r20[2];
 	$institucije[$r20[0]]=$r20[3];
 }
 $trajanje_bsc /= 2; // broj godina umjesto broj semestara
 
-$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and s.moguc_upis=1 order by s.kratkinaziv");
-while ($r30 = mysql_fetch_row($q30)) {
+$q30 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and s.moguc_upis=1 order by s.kratkinaziv");
+while ($r30 = db_fetch_row($q30)) {
 	$studiji_msc[$r30[0]]=$r30[1];
 	if ($r30[2]>$trajanje_msc) $trajanje_msc=$r30[2];
 	$institucije[$r30[0]]=$r30[3];
 }
 $trajanje_msc /= 2; // broj godina umjesto broj semestara
 
-$q30 = myquery("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=3 and s.moguc_upis=1 order by s.kratkinaziv");
-while ($r30 = mysql_fetch_row($q30)) {
+$q30 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=3 and s.moguc_upis=1 order by s.kratkinaziv");
+while ($r30 = db_fetch_row($q30)) {
 	$studiji_phd[$r30[0]]=$r30[1];
 	if ($r30[2]>$trajanje_phd) $trajanje_phd=$r30[2];
 	$institucije[$r30[0]]=$r30[3];
@@ -116,22 +116,22 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 
 	$semestar = $godina_real*2-1;
 
-/*	$q20 = myquery("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar");
-	$ukupno = mysql_result($q20,0,0);
+/*	$q20 = db_query("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar");
+	$ukupno = db_result($q20,0,0);
 
-	$q30 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar and (select count(*) from student_studij as ss2 where ss.student=ss2.student and ss2.semestar=$semestar and ss2.akademska_godina<$ak_god)=0");
-	$redovnih = mysql_result($q30,0,0);
+	$q30 = db_query("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar and (select count(*) from student_studij as ss2 where ss.student=ss2.student and ss2.semestar=$semestar and ss2.akademska_godina<$ak_god)=0");
+	$redovnih = db_result($q30,0,0);
 	$ponovaca = $ukupno-$redovnih;*/
 	$ukupno_godina = $redovnih_godina = $ponovaca_godina = 0;
 
 	$ukupno_studij_godina = $redovnih_studij_godina = $ponovaca_studij_godina = array();
 	foreach ($studiji as $id=>$ime) {
-		$q40 = myquery("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar and studij=$id");
-		$ukupno_studij_godina[$id] = mysql_result($q40,0,0);
+		$q40 = db_query("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar and studij=$id");
+		$ukupno_studij_godina[$id] = db_result($q40,0,0);
 		$ukupno_godina += $ukupno_studij_godina[$id];
 
-		$q50 = myquery("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar and ss.studij=$id and ss.ponovac=0");
-		$redovnih_studij_godina[$id] = mysql_result($q50,0,0);
+		$q50 = db_query("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar and ss.studij=$id and ss.ponovac=0");
+		$redovnih_studij_godina[$id] = db_result($q50,0,0);
 		$ponovaca_studij_godina[$id] = $ukupno_studij_godina[$id]-$redovnih_studij_godina[$id];
 
 		$redovnih_godina += $redovnih_studij_godina[$id];

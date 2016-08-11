@@ -13,19 +13,19 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 
 // Naziv predmeta
-$q10 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
 	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
-$predmet_naziv = mysql_result($q10,0,0);
+$predmet_naziv = db_result($q10,0,0);
 
 
 $kolokvij = false;
-$q12 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-if (mysql_num_rows($q12)>0 && mysql_result($q12,0,0) == 2000) 
+$q12 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+if (db_num_rows($q12)>0 && db_result($q12,0,0) == 2000) 
 // FIXME: Ovo ne treba biti hardcodirani tip predmeta nego jedan od parametara za tip predmeta
 	$kolokvij = true;
 
@@ -33,8 +33,8 @@ if (mysql_num_rows($q12)>0 && mysql_result($q12,0,0) == 2000)
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin && !$user_studentska) {
-	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)!="nastavnik") {
+	$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q10)<1 || db_result($q10,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -121,10 +121,10 @@ if (!$user_siteadmin && !$user_studentska) {
 
 	$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime";
 
-	$q520 = myquery($upit);
+	$q520 = db_query($upit);
 	$id=0;
 	$rbr=0;
-	while ($r520 = mysql_fetch_row($q520)) {
+	while ($r520 = db_fetch_row($q520)) {
 		$rbr++;
 		if ($id!=0) {
 			?>
@@ -135,12 +135,12 @@ if (!$user_siteadmin && !$user_studentska) {
 //			print "$r520[0])\"></tr>\n";
 		$id=$r520[0];
 
-		$q530 = myquery("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$r520[0] and predmet=$predmet");
-		if(mysql_num_rows($q530)>0) {
-			$ocjena = mysql_result($q530,0,0);
-			$datum_u_indeksu = date("d. m. Y.", mysql_result($q530,0,1));
-			$datum_provjeren = mysql_result($q530,0,2);
-//			$datum_u_indeksu = mysql_result($q530,0,1);
+		$q530 = db_query("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$r520[0] and predmet=$predmet");
+		if(db_num_rows($q530)>0) {
+			$ocjena = db_result($q530,0,0);
+			$datum_u_indeksu = date("d. m. Y.", db_result($q530,0,1));
+			$datum_provjeren = db_result($q530,0,2);
+//			$datum_u_indeksu = db_result($q530,0,1);
 		} else {
 			$ocjena = "/";
 			$datum_u_indeksu = "/";

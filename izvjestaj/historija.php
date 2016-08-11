@@ -18,8 +18,8 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 // Podaci o studentu
-$q100 = myquery("select ime,prezime,brindexa from osoba where id=$student");
-if (!($r100 = mysql_fetch_row($q100))) {
+$q100 = db_query("select ime,prezime,brindexa from osoba where id=$student");
+if (!($r100 = db_fetch_row($q100))) {
 	biguglyerror("Student se ne nalazi u bazi podataka.");
 	zamgerlog("nepoznat ID $student",3); // 3 = greska
 	zamgerlog2("nepoznat id korisnika", $student); // 3 = greska
@@ -56,47 +56,47 @@ if (spol($r100[0])=="Z") {
 
 
 // Glavni upit su akademske godine
-$q10 = myquery("select id,naziv from akademska_godina order by id");
-while ($r10 = mysql_fetch_row($q10)) {
+$q10 = db_query("select id,naziv from akademska_godina order by id");
+while ($r10 = db_fetch_row($q10)) {
 	$ag = $r10[0];
 	$agnaziv = $r10[1];
 
 	// Prijemni ispit
-	$q15 = myquery("SELECT s.naziv, uus.opci_uspjeh, uus.kljucni_predmeti, uus.dodatni_bodovi, pp.rezultat, UNIX_TIMESTAMP(pt.datum)
+	$q15 = db_query("SELECT s.naziv, uus.opci_uspjeh, uus.kljucni_predmeti, uus.dodatni_bodovi, pp.rezultat, UNIX_TIMESTAMP(pt.datum)
 	FROM prijemni_prijava as pp, uspjeh_u_srednjoj as uus, studij as s, prijemni_termin as pt 
 	WHERE pp.osoba=$student and uus.osoba=$student and pp.studij_prvi=s.id AND pp.prijemni_termin=pt.id AND pt.akademska_godina=$ag
 	ORDER BY pp.prijemni_termin");
-	while ($r15 = mysql_fetch_row($q15)) {
+	while ($r15 = db_fetch_row($q15)) {
 		$total = $r15[1]+$r15[2]+$r15[3]+$r15[4];
 		$datum = date("d. m. Y.", $r15[5]);
 		print "<p><b>$agnaziv</b>: $izasa na prijemni ispit $datum (za $r15[0]): ukupno $total bodova ($r15[4] bodova na prijemnom ispitu)</p>";
 	}
 
 	// Upisi u studije
-	$q20 = myquery("select s.naziv, ss.semestar, ns.naziv, ss.ponovac, ss.odluka from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.akademska_godina,ss.semestar");
-	while ($r20 = mysql_fetch_row($q20)) {
+	$q20 = db_query("select s.naziv, ss.semestar, ns.naziv, ss.ponovac, ss.odluka from studij as s, student_studij as ss, nacin_studiranja as ns where s.id=ss.studij and ns.id=ss.nacin_studiranja and ss.student=$student and ss.akademska_godina=$ag order by ss.akademska_godina,ss.semestar");
+	while ($r20 = db_fetch_row($q20)) {
 		$semestar = $r20[1];
 		$parni = $semestar%2;
 		print "<p><b>$agnaziv</b>: $upisa studij \"$r20[0]\", $semestar. semestar, kao $r20[2] student";
 		if ($r20[3]>0) print " (ponovac)";
 		if ($r20[4]>0) {
-			$q25 = myquery("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$r20[4]");
-			print " na osnovu odluke ".mysql_result($q25,0,1)." od ".date("d. m. Y", mysql_result($q25,0,0));
+			$q25 = db_query("select UNIX_TIMESTAMP(datum), broj_protokola from odluka where id=$r20[4]");
+			print " na osnovu odluke ".db_result($q25,0,1)." od ".date("d. m. Y", db_result($q25,0,0));
 		}
 		print ".<br />\n";
-		$q30 = myquery("select p.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
-		if (mysql_num_rows($q30)>0) print "<ul>\n";
-		while ($r30 = mysql_fetch_row($q30)) {
-			$q40 = myquery("select ocjena from konacna_ocjena where student=$student and predmet=$r30[0] and akademska_godina=$ag");
-			if (mysql_num_rows($q40)<1) {
+		$q30 = db_query("select p.id, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.semestar mod 2 = $parni and pk.predmet=p.id order by p.naziv");
+		if (db_num_rows($q30)>0) print "<ul>\n";
+		while ($r30 = db_fetch_row($q30)) {
+			$q40 = db_query("select ocjena from konacna_ocjena where student=$student and predmet=$r30[0] and akademska_godina=$ag");
+			if (db_num_rows($q40)<1) {
 				print "NIJE $polozi predmet $r30[1]<br />\n";
 			} else {
-				$ocjena = mysql_result($q40,0,0);
+				$ocjena = db_result($q40,0,0);
 				if ($ocjena == 11) $ocjena = "ispunio/la obaveze"; else $ocjena = "ocjena $ocjena";
 				print "$ppolozi predmet $r30[1], $ocjena<br />\n";
 			}
 		}
-		if (mysql_num_rows($q30)>0) print "</ul></p>\n";
+		if (db_num_rows($q30)>0) print "</ul></p>\n";
 	}
 }
 
