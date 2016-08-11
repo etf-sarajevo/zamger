@@ -123,9 +123,11 @@ Najlaksi nacin da provjerite ime usera je da otkucate
 
 
 
-6. Editujte fajl zamger/lib/config.php. Fajl bi trebalo da bude 
-relativno ocigledan, samo pratite komentare. 
+6. Editujte fajl zamger/lib/config.php. Najprije iskopirajte 
+zamger/lib/config.php.default koji sadrzi default konfiguraciju. Fajl bi trebalo 
+da bude relativno ocigledan, samo pratite komentare. 
 
+# cp zamger/lib/config.php.default zamger/lib/config.php
 # nano zamger/lib/config.php
 
 Ostavite debug poruke aktivne do daljnjeg, kasnije ih mozete iskljuciti. 
