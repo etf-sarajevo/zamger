@@ -1044,11 +1044,5 @@ function int_param($name) {
 	return 0;
 }
 
-// Poredi parametar sa stringom
-function param_equals($name, $value) {
-	if (!isset($_REQUEST[$name])) return false;
-	return $_REQUEST[$name] === $value;
-}
-
 
 ?>
