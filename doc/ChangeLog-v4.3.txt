@@ -7,12 +7,12 @@ Elektrotehnicki fakultet Sarajevo
 SPISAK IZMJENA U v4.3 U ODNOSU NA v4.2 (12.6.2012)
 ==================================================
 
-Posljednja izmjena: 11. 8. 2016.
+Posljednja izmjena: 12. 8. 2016.
 
 
 VEĆE IZMJENE U NAČINU RADA:
 - Prelazak sa MyISAM na InnoDB backend za bazu podataka omogućuje poboljšanje referencijalnog integriteta
-- Prelazak sa mysql_* funkcija na mysqli backend zbog toga što su one prve prevaziđene
+- Prelazak sa mysql_* funkcija na mysqli backend zbog toga što su one prve prevaziđene (obsolete) u novijim verzijama PHPa
 - Nova logging arhitektura rješava probleme sa performansama pri radu sa logovima, uključujući sporo otvaranje studentskog profila saradnik/student i pretragu loga po tipu događaja
 
 
@@ -27,12 +27,14 @@ NOVE FUNKCIONALNOSTI:
   * Plagidetect (...) - provjera prepisivanja
 Ova funkcionalnost na ETFu postoji već duže vrijeme ali se kod postepeno usavršava i čisti tako da je sada došlo vrijeme da bude zvanično objavljen.
 - Zahtjev za ovjerena uvjerenja i potvrde - studenti mogu upućivati zahtjeve, a studentska služba štampa i daje uvjerenja na potpis ovlaštenom licu
+- Početna (beta) verzija RESTful web servisa
+  * Skriveni iframe koji je omogućavao kompatibilnost sa izuzetno starim preglednicima (aktuelnim u vrijeme Zamgera v1) prebačen je na AJAX pozive prema web servisima
 
 
 VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
 - Opšte:
   * [d31294c] Novi tip predmeta "Kolokvij" kod kojeg se umjesto uobičajenih ocjena 5-10 daje ocjena Ispunio obaveze (IO)
-  * Akademsko priznavanje, sticanje ocjena na drugoj instituciji
+  * Akademsko priznavanje, sticanje ocjena na drugoj instituciji (nedostaje GUI)
 - Izvještaji:
   * (2675c07) U ćošku svakog izvještaja nalazi se prozor za printanje i generisanje PDFa
   * (c98565f) Novi izvještaj tražen od Ministarstva "pregled_nacin": skraćeni tabelarni pregled upisanih studenata po tipu i načinu studiranja
@@ -50,7 +52,6 @@ VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
   * (0972a0e) Kopiranje svih pitanja i odgovora sa drugog kviza
   * (cd6f234) Kopiranje svih kvizova sa prošle akademske godine
   * (588f3be) Statistika rezultata kviza (histogram studenata po broju tačnih odgovora i broj tačnih odgovora za svako pitanje)
-  * (6031e70) Nekoliko sitnica u kodu
 - Studentski interfejs:
   * (5b95c36, bb93d20) Na stranici predmeta za studente dodane ranije nedostajuće informacije: koliko bodova nosi zadaća, ostvareni bodovi na fiksnim komponentama (seminarski, projekti...)
   * (f2a5f86) Popravljena navigacija kroz arhivirane predmete
@@ -62,6 +63,7 @@ VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
   * (e40adda) Tri nova izvještaja sa spiskovima studenata, po zahtjevu
   * [0a32314] Značajno proširenje funkcionalnosti kako bi nastavnici mogli definisati prijedloge tema i unositi mnoge korisne podatke
   * [29ea137] Označavanje predmeta kao predmet za Završni rad više nije vezano za ime predmeta nego je konfigurabilno
+  * (f8b33b8) Novi izvještaj "završni rad po članstvu u komisijama"
 - Odabir izbornih predmeta:
   * (2a5445a) Omogućujemo da se ograniči broj studenata koji biraju predmet kao izborni (nedostaje GUI za definisanje ograničenja)
   * (5f19381) Preduvjeti za odabir predmeta koji se za sada gledaju samo prilikom kolizije (nedostaje GUI za definisanje preduvjeta)
@@ -79,7 +81,7 @@ ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
   * Dijelovi registry-ja su sada sortirani abecedno jer je nekoliko izvještaja falilo zbog čega su bili nedostupni u v4.2: Procjena broja studenata, Termini ispita, nekoliko podizvještaja za anketu
   * [40891d0] libvedran: Long standing bug, rad sa PHP "nizovima" na formama
   * [7b59411] lib/manip: Dijeljenje s nulom kod proporcionalnog bodovanja prisustva (ako nije registrovan nijedan čas)
-  * [b43c3d8, c2e13fe] Više funkcionalnosti ankete je bilo nedostupno zbog sporog ažuriranja baze
+  * [b43c3d8, c2e13fe] Više funkcionalnosti ankete je bilo nedostupno u v4.2 zbog kašnjenja sa ažuriranjem baze
   * [a2bcb99] Novi sistem bodovanja prisustva koji uključuje konstantni i linearni dio (koristi se na Tehnikama programiranja)
   * [89672d1] Nije bila uključena uz Zamger potrebna biblioteka za CAS autentikaciju, CAS logout nije funkcionisao
   * (cdb9484) Znale su se pobrkati labele "Prikaži arhivirane predmete" i "Sakrij..." na studentskom meniju
@@ -145,6 +147,7 @@ ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
   * (5941c11) Spisak kandidata razdvojen po studijima, bodovi zaokruženi na dvije decimale, ispravljeno par sitnijih bugova u ispisu
   * (7603899) "Kandidati za koje će se tražiti saglasnost" ukinuto - ETF specifičnost
   * (77b4113) Nove opcije: samo kodovi, samo boračke kategorije
+  * (375250b) Predsjednik komisije u potpisu izvještaja bio hardcodiran
 - izvjestaj/prijemni_brzi_unos:
   * (ab9e06b) Ispravljena netačna poruka greške
   * (fa5ee3a) Većina polja se sada popunjava iz baze
@@ -175,12 +178,13 @@ ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
   * [39ad191] Dešavalo se da dva tipa predmeta imaju isti naziv (ako je naziv samog predmeta vrlo dugačak) što je pravilo razne probleme sa bodovanjem
 - nastavnik/unos_ocjene (via common/ajah):
   * (6a01d92) Ispiši grešku u slučaju unosa nevalidnog datuma za konačnu ocjenu
-  * (a602023) Napomena da datum nije provjeren, za nepoznat datum stavljamo crticu
+  * (a602023) Vizuelna indikacija da datum nije provjeren, za nepoznat datum stavljamo crticu
 - nastavnik/zadace:
   * (5e2a400, f3ab11e) Prilog sa postavkom zadaće je nestajao nakon editovanja zadaće
   * [5c145f7] Neke opcije zadaće je bilo nemoguće promijeniti
   * [3eed682] Više sitnih popravki u masovnom unosu zadaća
   * (52da638) Read-only zadaća se može slati samo kroz web servis
+  * (dd10808) Kod brisanja zadaće bodovi studenata nisu bili korektno ažurirani
 - nastavnik/zavrsni:
   * (c381596) Popravljam prikaz konačne ocjene u tabeli radova
 - public/anketa:
