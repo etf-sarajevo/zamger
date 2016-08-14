@@ -905,6 +905,7 @@ function db_list($table,$selected=0) {
 		$sql = "select $id,$name from $table";
 	else
 		$sql = "select $id,$name,$surname from $table";
+	$n = 0;
 	foreach ($_lv_ as $key => $value) {
 		if (substr($key,0,6) == "where:" && substr($key,6) != $id && substr($key,6) != $name) {
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
