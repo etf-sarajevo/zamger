@@ -14,8 +14,22 @@
 
 // INDEX - master skripta za ZAMGER
 
-$uspjeh=0;
 
+// Provjera da li postoji config.php
+if (!file_exists("lib/config.php")) {
+	?>
+	<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+	<body>
+	<p><font color='red'><b>GREŠKA: Ne postoji datoteka lib/config.php</b></font></p>
+	<p>Molimo vas da iskopirate lib/config.php.default u lib/config.php a zatim napravite potrebne izmjene.</p>
+	</body></html>
+	<?php
+	exit(0);
+}
+
+
+// Error handler koji ispisuje finu poruku o grešci
+$uspjeh=0;
 
 function greska_u_modulima() {
 	global $uspjeh, $sta;
@@ -53,6 +67,8 @@ function greska_u_modulima() {
 
 register_shutdown_function("greska_u_modulima");
 
+
+// Glavni kod
 
 require("lib/config.php");
 require("lib/dblayer.php");
