@@ -45,7 +45,7 @@ function login_forma() {
 	foreach ($registry as $r) {
 		if (count($r) == 0) continue;
 		if ($r[0]=="public/anketa" && $r[5]==0) {
-			$br_aktivnih_anketa = db_query("select count(id) from anketa_anketa where aktivna = 1");
+			$br_aktivnih_anketa = db_get("select count(id) from anketa_anketa where aktivna = 1");
 			if ($br_aktivnih_anketa > 0) $anketa_aktivna = true;
 		}
 	}
