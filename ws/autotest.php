@@ -14,7 +14,7 @@ function ws_autotest() {
 	else
 		$student = $userid;
 
-	$autotest = $zadaca = 0;
+	$autotest = $zadaca = $predmet = $ag = 0;
 	if (isset($_REQUEST['autotest'])) {
 		$autotest = intval($_REQUEST['autotest']);
 		$q5 = db_query("SELECT zadaca FROM autotest WHERE id=$autotest");
@@ -24,7 +24,6 @@ function ws_autotest() {
 	if (isset($_REQUEST['zadaca'])) {
 		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
 		
-		$predmet = $ag = 0;
 		$q10 = db_query("SELECT predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
 		if (db_num_rows($q10) > 0) {
 			$predmet = db_result($q10,0,0);
