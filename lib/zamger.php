@@ -1032,7 +1032,7 @@ function daj_ponudu_kursa($student, $predmet, $ag) {
 }
 
 
-// Vraća vrijednost request parametra ili nulu
+// Vraća vrijednost request parametra ili false
 function param($name) {
 	if (isset($_REQUEST[$name])) return $_REQUEST[$name];
 	return false;

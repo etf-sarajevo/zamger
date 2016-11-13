@@ -78,6 +78,7 @@ require("lib/zamger.php");
 //dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
+
 // Login forma i provjera sesije
 
 $greska = $oldsta = "";
@@ -290,7 +291,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	$uspjeh=2;
 	eval("$staf();");
 	db_disconnect();
-	exit;
+	exit(0);
 }
 
 
@@ -364,7 +365,7 @@ if ($found==1 && $template==0 && $greska=="") {
 	eval("$staf();");
 	print "</body></html>\n";
 	db_disconnect();
-	exit;
+	exit(0);
 }
 
 

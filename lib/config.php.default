@@ -112,5 +112,4 @@ $conf_cas_port = 443; // CAS uvijek koristi HTTPS
 $conf_cas_context = "cas"; // dio url-a iza hostname
 
 
-
 ?>
