@@ -135,7 +135,7 @@ function ws_zadaca() {
 		$zadataka = db_result($q210,0,9);
 		$aktivna = db_result($q210,0,10);
 		
-		if ($aktivna == 0 && !nastavnik_pravo_pristupa($zadaca)) {
+		if ($aktivna == 0 && !$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student)) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR912', 'message' => 'Zadaća nije aktivna' ) );
 			return;
 		}
@@ -146,7 +146,7 @@ function ws_zadaca() {
 		}
 
 		// Provjera roka
-		if ($rok <= time() && !nastavnik_pravo_pristupa($zadaca)) {
+		if ($rok <= time() && !$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student)) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR908', 'message' => 'Vrijeme za slanje zadaće je isteklo' ) );
 			return;
 		}
@@ -195,7 +195,7 @@ function ws_zadaca() {
 			$ext = ".".pathinfo($ime_fajla, PATHINFO_EXTENSION); // FIXME: postojeći kod očekuje da ekstenzije počinju tačkom...
 			$db_doz_eks = explode(',',$zadaca_dozvoljene_ekstenzije);
 			if ($zadaca_dozvoljene_ekstenzije != "" && !in_array($ext, $db_doz_eks)) {
-				print json_encode( array( 'success' => 'false', 'code' => 'ERR910', 'message' => 'Nedozvoljen tip datoteke' ) );
+				print json_encode( array( 'success' => 'false', 'code' => 'ERR910', 'message' => 'Nedozvoljen tip datoteke $ext' ) );
 				return;
 			}
 			
