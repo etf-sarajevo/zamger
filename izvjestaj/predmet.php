@@ -14,7 +14,24 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 
 if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	// Sprječavamo veliki broj uzastopnih otvaranja istog modula
+	zamgerlog2("pristup");
+	
+	$limit_vrijeme = 5*60; // 5 minuta
+	$limit_broj_posjeta = 5; // broj posjeta
 	$time = time();
+
+	$q10 = db_query("select UNIX_TIMESTAMP(vrijeme) FROM log2 WHERE userid=$userid AND modul=15 ORDER BY id DESC LIMIT $limit_broj_posjeta");
+	$count = 0;
+	while($r10 = db_fetch_row($q10)) {
+		if ($r10[0] > $time - $limit_vrijeme) $count++;
+	}
+	if ($count >= $limit_broj_posjeta) {
+		//niceerror("Odmori malo, opusti se, oguli jednu jabuku.");
+		print "<img src=\"images/oguljena_zelena_jabuka_kora.jpg\">";
+		return;
+	}
+
 	$dan=0;
 	do {
 		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
