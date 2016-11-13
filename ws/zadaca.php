@@ -5,7 +5,7 @@
 
 
 function ws_zadaca() {
-	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
+	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin, $conf_files_path;
 
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	
