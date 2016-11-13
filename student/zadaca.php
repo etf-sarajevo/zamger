@@ -333,6 +333,7 @@ while ($r21 = mysql_fetch_row($q21)) {
 <table width="600" border="0"><tr><td>
 <?
 
+$status_zadace = -1;
 $q110 = myquery("select izvjestaj_skripte, komentar, userid, status, bodova from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 if (mysql_num_rows($q110)>0) {
 	$poruka = mysql_result($q110,0,0);
@@ -402,7 +403,6 @@ if ($readonly_zadaca) $readonly = "DISABLED";
 
 
 
-
 //  FORMA ZA SLANJE
 
 
@@ -453,7 +453,7 @@ if ($attachment) {
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
-	<input type="file" name="attachment" size="50">
+	<input type="file" name="attachment" size="50" <?=$readonly?>>
 	</center>
 	<p>&nbsp;</p>
 	<?
