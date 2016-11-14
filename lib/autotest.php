@@ -516,7 +516,6 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 		return 0;
 	}
 	
-
 	if ($_POST['subakcija'] == "kopiraj_at" && check_csrf_token()) {
 		$stara_zadaca = intval($_REQUEST['stara_zadaca']);
 		$q190 = db_query("SELECT zadatak, kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala, stdin, partial_match FROM autotest WHERE zadaca=$stara_zadaca");
@@ -528,6 +527,41 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 		zamgerlog2("iskopirani autotestovi", $stara_zadaca, $zadaca);
 	}
 	
+	if ($_POST['subakcija'] == "import_at" && check_csrf_token()) {
+		$zadatak = intval($_REQUEST['zadatak']);
+		if (isset($_REQUEST['at_textarea']))
+			$autotest = json_decode($_REQUEST['at_textarea'], true);
+		else {
+			$at_file = $_FILES['autotest_file']['tmp_name'];
+			$autotest = json_decode(file_get_contents($at_file), true);
+		}
+		foreach($autotest['test_specifications'] as $test) {
+			if (count($test['expected'])>1) $alt_rezultat=$test['expected'][1]; else $alt_rezultat="";
+			if (!empty($test['global_top'])) {
+				$global = $test['global_top'];
+				$pozicija_globala = 'prije_svega';
+			} else if (!empty($test['global_above_main'])) {
+				$global = $test['global_above_main'];
+				$pozicija_globala = 'prije_maina';
+			} else {
+				$global = "";
+				$pozicija_globala = 'prije_svega';
+			}
+			if ($test['substring'] == 'true')
+				$partial = 1;
+			else
+				$partial = 0;
+			if ($test['regex'] == 'true')
+				$fuzzy = 2;
+			else if ($test['ignore_whitespace'] == 'true')
+				$fuzzy = 1;
+			else
+				$fuzzy = 0;
+			$q195 = db_query("INSERT INTO autotest SET zadaca=$zadaca, zadatak=$zadatak, kod='".db_escape_string($test['code'])."', rezultat='".db_escape_string($test['expected'][0])."', alt_rezultat='".db_escape_string($alt_rezultat)."', fuzzy=$fuzzy, global_scope='".db_escape_string($global)."', pozicija_globala='$pozicija_globala', stdin='".db_escape_string($test['running_params']['stdin'])."', partial_match=$partial");
+		}
+		nicemessage("Importovan .autotest fajl.");
+		zamgerlog2("importovan .autotest fajl", $zadaca, $zadatak);
+	}
 	
 	$q200 = db_query("SELECT naziv, zadataka, predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
 	if (db_num_rows($q200) < 1) {
@@ -567,9 +601,22 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 	}
 
 	for ($zadatak=1; $zadatak<=$broj_zadataka; $zadatak++) {
-		print "<h3>Zadatak $zadatak</h3>\n";
+		?>
+		<h3>Zadatak <?=$zadatak?></h3>
+		
+		<?=genform("POST", "\"  enctype=\"multipart/form-data")?>
+		<input type="hidden" name="subakcija" value="import_at">
+		<input type="hidden" name="zadatak" value="<?=$zadatak?>"><?
+		if (isset($_REQUEST['prikazi_import_textarea']))
+			print "<textarea name=\"at_textarea\" cols=\"60\" rows=\"20\"></textarea>";
+		else 
+			print "Import .autotest fajl: <input type=\"file\" name=\"autotest_file\">";
+		?> <input type="submit" value="Kreni">
+		</form>
 
-		print "<p>Prototipovi funkcija koje moraju postojati u zadatku:\n";
+		<p>Prototipovi funkcija koje moraju postojati u zadatku:
+		
+		<?
 
 		$q210 = db_query("SELECT id,specifikacija FROM autotest_replace WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='funkcija' AND zamijeni=''");
 		while ($r210 = db_fetch_row($q210)) {
