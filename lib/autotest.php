@@ -740,6 +740,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 		$status_ikona = "zad_preg";
 	}
 	else if ($status_zadace == 5) {
+		$bodova = db_result($q10,0,1);
 		$status_duzi_tekst = "<b>Zadaća pregledana: $bodova bodova</b>";
 		$status_ikona = "zad_ok";
 	}
