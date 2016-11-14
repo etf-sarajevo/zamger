@@ -14,6 +14,8 @@ function autotest_detalji($test, $student, $nastavnik) {
 	$dodaj = "";
 	if (!$nastavnik)
 		$dodaj = "AND a.aktivan=1 AND (a.sakriven=0 OR z.rok<NOW())";
+	else
+		$dodaj = "AND a.aktivan=1";
 	$q1000 = db_query("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status, ar.trajanje, a.stdin, a.partial_match, ar.testni_sistem, a.sakriven FROM autotest AS a, autotest_rezultat AS ar WHERE a.id=$test AND ar.autotest=$test AND ar.student=$student $dodaj");
 	if (db_num_rows($q1000)==0) {
 		print "Nije testirano.";
@@ -690,9 +692,8 @@ HTML;
 	
 	if (db_num_rows($q115)>0) {
 		$rezultat .= <<<HTML
+
 		</table>
-		</td>
-	</tr>
 HTML;
 	}
 
@@ -722,7 +723,7 @@ function autotest_brisi_rezultate($student, $zadaca, $zadatak) {
 function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 	$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
-	$q10 = db_query("select status from zadatak where student=$student and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
+	$q10 = db_query("select status, bodova from zadatak where student=$student and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 	$status_zadace = db_result($q10,0,0);
 	if ($status_zadace == 3) {
 		$bgcolor = "#fcc";
