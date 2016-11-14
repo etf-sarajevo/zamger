@@ -9,7 +9,7 @@ require("../lib/libvedran.php");
 require("../lib/zamger.php");
 require("../lib/manip.php"); // zbog update_komponente
 
-dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
+db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
 
@@ -256,7 +256,7 @@ else if ($_REQUEST['action'] == "getFile") {
 		$result['code'] = "ERR007";
 		$result["message"] = "Unknown program id $program";
 		print json_encode($result);
-		dbdisconnect();
+		db_disconnect();
 		exit;
 	}
 	$zadaca = $r[0];
@@ -434,7 +434,7 @@ else if ($_REQUEST['action'] == "setTestResult") {
 				$result['code'] = "ERR006";
 				$result["message"] = "Failed to unzip";
 				print json_encode($result);
-				dbdisconnect();
+				db_disconnect();
 				exit();
 			}
 
@@ -608,7 +608,7 @@ else {
 
 print json_encode($result);
 
-dbdisconnect();
+db_disconnect();
 
 
 function odredi_privilegije_korisnika() {
