@@ -352,6 +352,7 @@ function genform($method="POST", $name="") {
 	foreach ($_REQUEST as $key=>$value) {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
 		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
+		if ($key=="loginforma") continue; // Izbjegavamo logout
 		$key = htmlspecialchars($key);
 		if (substr($key,0,4) != "_lv_") {
 			if (is_array($value)) {
@@ -394,6 +395,7 @@ function genuri() {
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
 		if (substr($key,0,4) == "_lv_" || $key == "PHPSESSID" || $key == "pass") continue;
+		if ($key=="loginforma") continue; // Izbjegavamo logout
 		if (is_array($value)) {
 			foreach ($value as $val) 
 				$result .= urlencode($key).'[]='.urlencode($val).'&amp;';
