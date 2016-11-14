@@ -16,7 +16,7 @@ function autotest_detalji($test, $student, $nastavnik) {
 		$dodaj = "AND a.aktivan=1 AND (a.sakriven=0 OR z.rok<NOW())";
 	else
 		$dodaj = "AND a.aktivan=1";
-	$q1000 = db_query("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status, ar.trajanje, a.stdin, a.partial_match, ar.testni_sistem, a.sakriven FROM autotest AS a, autotest_rezultat AS ar WHERE a.id=$test AND ar.autotest=$test AND ar.student=$student $dodaj");
+	$q1000 = db_query("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status, ar.trajanje, a.stdin, a.partial_match, ar.testni_sistem, a.sakriven, a.zadaca, a.zadatak FROM autotest AS a, autotest_rezultat AS ar, zadaca as z WHERE a.id=$test AND ar.autotest=$test AND ar.student=$student AND a.zadaca=z.id $dodaj");
 	if (db_num_rows($q1000)==0) {
 		print "Nije testirano.";
 		return;
@@ -67,6 +67,12 @@ function autotest_detalji($test, $student, $nastavnik) {
 	$ulaz_boja  = "#fcc";
 	$izlaz_boja = "#cfc";
 	
+	// Određivanje rednog broja testa unutar zadaće
+	$id_zadace = $r1000[13];
+	$zadatak = $r1000[14];
+	$q1010 = db_query("SELECT COUNT(*) FROM autotest WHERE zadaca=$id_zadace AND zadatak=$zadatak AND id<$test AND aktivan=1");
+	$testbr = db_result($q1010,0,0) + 1;
+	
 	?>
 		<script src="js/jsdiff/diff.js"></script>
 		<script> var razlike=false;
@@ -106,7 +112,7 @@ function autotest_detalji($test, $student, $nastavnik) {
 			return false;
 		}
 		</script>
-		<h2>Detaljnije informacije o testu</h2>
+		<h2>Detaljnije informacije o testu - Test <?=$testbr?></h2>
 		<?
 	if (!empty($testni_sistem)) {
 		?>
