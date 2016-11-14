@@ -3,9 +3,10 @@
 
 // BUILDSERVICE.PHP - serverska strana skripte za buildservice
 
+require("../lib/config.php");
+require("../lib/dblayer.php");
 require("../lib/libvedran.php");
 require("../lib/zamger.php");
-require("../lib/config.php");
 require("../lib/manip.php"); // zbog update_komponente
 
 dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
