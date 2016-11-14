@@ -13,7 +13,7 @@ function autotest_detalji($test, $student, $nastavnik) {
 	// Glavni upit
 	$dodaj = "";
 	if (!$nastavnik)
-		$dodaj = "AND a.aktivan=1 AND a.sakriven=0";
+		$dodaj = "AND a.aktivan=1 AND (a.sakriven=0 OR z.rok<NOW())";
 	$q1000 = db_query("SELECT a.kod, a.global_scope, a.rezultat, a.alt_rezultat, a.fuzzy, ar.nalaz, ar.izlaz_programa, ar.status, ar.trajanje, a.stdin, a.partial_match, ar.testni_sistem, a.sakriven FROM autotest AS a, autotest_rezultat AS ar WHERE a.id=$test AND ar.autotest=$test AND ar.student=$student $dodaj");
 	if (db_num_rows($q1000)==0) {
 		print "Nije testirano.";
@@ -244,8 +244,8 @@ function autotest_sa_kodom($test, $student, $nastavnik) {
 	// Uzimamo odabrani test
 	$dodaj = "";
 	if (!$nastavnik)
-		$dodaj = "AND aktivan=1 AND sakriven=0";
-	$q110 = db_query("SELECT kod, rezultat, alt_rezultat, fuzzy, global_scope, pozicija_globala FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak AND id=$test $dodaj");
+		$dodaj = "AND a.aktivan=1 AND (a.sakriven=0 OR z.rok<NOW())";
+	$q110 = db_query("SELECT a.kod, a.rezultat, a.alt_rezultat, a.fuzzy, a.global_scope, a.pozicija_globala FROM autotest as a, zadaca as z WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=$test AND a.zadaca=z.id $dodaj");
 	$r110 = db_fetch_row($q110);
 
 	$testni_kod = "";
@@ -644,7 +644,7 @@ function autotest_tabela($student, $zadaca, $zadatak, $nastavnik) {
 
 	$rezultat = "";
 
-	$q115 = db_query("SELECT a.id, ar.status, UNIX_TIMESTAMP(ar.vrijeme), a.sakriven FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student");
+	$q115 = db_query("SELECT a.id, ar.status, UNIX_TIMESTAMP(ar.vrijeme), a.sakriven, UNIX_TIMESTAMP(z.rok) FROM autotest AS a, autotest_rezultat AS ar, zadaca as z WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student AND a.zadaca=z.id AND a.aktivan=1");
 	if (db_num_rows($q115)>0) {
 		$rezultat = <<<HTML
 		<table border="1" cellspacing="0" cellpadding="2">
@@ -666,7 +666,11 @@ HTML;
 
 		if ($status == "ok") $ikona = "zad_ok"; else $ikona = "brisanje";
 		if ($sakriven == 1) {
-			if (!$nastavnik) continue;
+			if (!$nastavnik) {
+				$rok_za_slanje = $r115[4];
+				if ($rok_za_slanje > time())
+					continue;
+			}
 			$boja = "style=\"color: #777\"";
 		}  else $boja = "";
 		$uri = genuri();
@@ -743,7 +747,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 	// Status testova
 	$dodaj = "";
 	if (!$nastavnik)
-		$dodaj = "AND a.aktivan=1 AND a.sakriven=0";
+		$dodaj = "AND a.aktivan=1";
 		
 	if ($status_zadace == 1 || $status_zadace == 4 || $status_zadace == 5) {
 		$q111 = db_query("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student $dodaj");
