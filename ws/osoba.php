@@ -41,6 +41,7 @@ function ws_osoba() {
 	if (isset($_REQUEST['id']))
 		$korisnik = intval($_REQUEST['id']);
 	else if (isset($_REQUEST['login'])) {
+		$param_login = db_escape($_REQUEST['login']);
 		$korisnik = -1;
 		$q5 = db_query("SELECT id FROM auth WHERE login='$param_login'");
 		if (db_num_rows($q5) > 0) 
