@@ -56,7 +56,7 @@ function db_fetch_assoc($res) { return mysqli_fetch_assoc($res); }
 function db_num_rows($res) { return mysqli_num_rows($res); }
 function db_insert_id() { global $__db_connection; return mysqli_insert_id($__db_connection); }
 function db_affected_rows() { global $__db_connection; return mysqli_affected_rows($__db_connection); }
-function db_escape_string() { global $__db_connection; return mysqli_real_escape_string($__db_connection); }
+function db_escape_string($s) { global $__db_connection; return mysqli_real_escape_string($__db_connection, $s); }
 function db_free_result($res) { return mysqli_free_result($res); }
 
 // Reimplementacija mysql_result sa mysqli (bez provjere ispravnosti parametara)

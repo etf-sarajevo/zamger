@@ -61,7 +61,7 @@ function db_num_rows($res) { return mysql_num_rows($res); }
 function db_result($res, $row, $col) { return mysql_result($res, $row, $col); }
 function db_insert_id() { return mysql_insert_id(); }
 function db_affected_rows() { return mysql_affected_rows(); }
-function db_escape_string() { return mysql_real_escape_string(); }
+function db_escape_string($s) { return mysql_real_escape_string($s); }
 function db_free_result($res) { return mysql_free_result($res); }
 
 
