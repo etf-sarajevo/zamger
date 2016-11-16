@@ -138,7 +138,7 @@ if ($tabela1>$tabela2) {
 function moodle_novosti($predmet, $ag) {
 	// Parametri potrebni za Moodle integraciju
 	global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
-	global $__lv_connection, $conf_use_mysql_utf8;
+	global $__db_connection, $conf_use_mysql_utf8;
 	global $userid;
 	
 	if (!$conf_moodle) return;
@@ -165,7 +165,7 @@ function moodle_novosti($predmet, $ag) {
 	$vrijeme_posljednjeg_logina = time();
 
 
-	$moodle_con = $__lv_connection;
+	$moodle_con = $__db_connection;
 	if (!$conf_moodle_reuse_connection) {
 		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
 		if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
@@ -181,15 +181,17 @@ function moodle_novosti($predmet, $ag) {
 		}
 	}
 
+	//print "select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id<br>\n";
 	$q61 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
 	
-	while ($r61 = db_fetch_assoc($q61)) {
+	while ($r61 = mysql_fetch_row($q61)) {
 		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
 		// Ako visible != 1 instanca je sakrivena i ne treba je prikazati u Zamgeru
 		if ($r61[0] == 9 && $r61[2] == 1) {
+			//print "select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc<br>\n";
 			$q62 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
-			while ($r62 = db_fetch_assoc($q62)) {
+			while ($r62 = mysql_fetch_row($q62)) {
 				$code_poruke["o".$r61[3]] = $r62[0];
 				$vrijeme_poruke_obavijest["o".$r61[3]] = ($r61[4]>$r62[1])?$r61[4]:$r62[1];
 			}
@@ -199,7 +201,7 @@ function moodle_novosti($predmet, $ag) {
 		if ($r61[0] == 13 && $r61[2] == 1) {
 			$q64 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
 			
-			while ($r64 = db_fetch_assoc($q64)) {
+			while ($r64 = mysql_fetch_row($q64)) {
 				$code_poruke["r".$r61[3]] = "<a href=\"$conf_moodle_url"."mod/resource/view.php?id=$r61[3]\">$r64[0]</a>";
 				$vrijeme_poruke_resurs["r".$r61[3]] = ($r61[4]>$r64[1])?$r61[4]:$r64[1];
 			}
