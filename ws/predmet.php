@@ -92,8 +92,9 @@ function ws_predmet() {
 		$semestar = intval($_REQUEST['semestar']);
 
 		$q10 = db_query("select p.id, p.naziv, pk.akademska_godina from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$ag and pk.studij=$studij and pk.semestar=$semestar order by p.naziv");
-		while ($r10 = db_fetch_assoc($q10)) {
-			array_push($rezultat['data'], $r10);
+		while ($r10 = db_fetch_row($q10)) {
+			$predmet = array("naziv" => $r10[1], "akademska_godina" => $r10[2]);
+			$rezultat['data'][$r10[0]] = $predmet;
 		}
 	}
 
