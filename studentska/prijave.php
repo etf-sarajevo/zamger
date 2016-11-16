@@ -65,7 +65,7 @@ $prosli_datum = $prosla_komponenta = "";
 $broj_na_datum = $studenata_na_datum = 0;
 while ($r40 = db_fetch_row($q40)) {
 	if (date("d.m.Y", $r40[1]) != $prosli_datum || $prosla_komponenta != $r40[2]) {
-		if ($broj_na_datum > 2) {
+		if ($broj_na_datum > 1) {
 			?>
 			<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?></li>
 			<?
@@ -80,6 +80,11 @@ while ($r40 = db_fetch_row($q40)) {
 	}
 	?>
 	<li><a href="?sta=izvjestaj/prijave&amp;ispit_termin=<?=$r40[0]?>"><?=date("d.m.Y. h:i", $r40[1]).", ".$r40[2]."</a> (".$r40[3]." studenata)"?></li>
+	<?
+}
+if ($broj_na_datum > 1) {
+	?>
+	<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?></li>
 	<?
 }
 
