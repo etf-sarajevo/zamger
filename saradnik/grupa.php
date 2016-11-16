@@ -373,56 +373,69 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 	</td></tr></table>
 	
 	<script language="JavaScript">
-	var oldState = 0;
-	var oldEvent;
+	var prisutan;
+	var oldState;
+	var boje = [ "", "#FFCCCC", "#CCFFCC", "#FFFFCC" ];
+	var tekstovi = [ "", "NE", "DA", "/" ];
+	
+	function azuriraj_polje(status, student, cas) {
+		var celija = document.getElementById("dane-"+student+"-"+cas);
+		var tekst = document.getElementById("danetekst-"+student+"-"+cas);
+		if (status == -1) {
+			celija.style.background = "#FFFFFF";
+			celija.style.backgroundImage = "url(images/Animated-Hourglass.gif)";
+			celija.style.backgroundRepeat = "no-repeat";
+			celija.style.backgroundPosition = "center";
+			tekst.innerHTML = "";
+		} else {
+			celija.style.backgroundImage = "";
+			celija.style.background = boje[status];
+			tekst.innerHTML = tekstovi[status];
+		}
+	}
 
 	// Funkcija koja se poziva klikom na polje u tabeli
-	function prisustvo(e,student,cas) {
-		if (zamger_ajah_sending) {
-			alert("Slanje u toku. Sačekajte malo.");
-			return false;
-		}
-		var prisutan = invert(e,student,cas);
-		ajah_start("index.php?c=N&sta=common/ajah&akcija=prisustvo&student="+student+"&cas="+cas+"&prisutan="+prisutan, "undo_prisustvo("+student+","+cas+","+prisutan+")");
-	}
-
-	// Funkcija koja se poziva u slučaju greške sa prisustvom
-	function undo_prisustvo(student,cas,prisutan) {
-		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
-		if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
-		alert(greska);
-		invert(oldEvent, student, cas);
-	}
-
-	// Switchuje DA i NE
-	function invert(e,student,cas) {
+	function prisustvo(e, student, cas) {
 		var val = document.getElementById("danetekst-"+student+"-"+cas).innerHTML;
+		azuriraj_polje(-1, student, cas);
+		for (i=1; i<=3; i++)
+			if (val == tekstovi[i]) oldState = i;
+		
+		prisutan = 1;
 		var evt = e || window.event;
-		oldEvent = e;
-
-		// Shift služi za pristup neutralnom stanju /
 		if (evt.shiftKey) {
-			if (oldState == 0) {
-				if (val == "DA") oldState = 1; else oldState = 2;
-				document.getElementById("dane-"+student+"-"+cas).style.background = "#FFFFCC";
-				document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "/";
-				return 3;
-			} else {
-				if (oldState==1) val="NE"; else val="DA"; // Invertujemo sa NE na DA i obrnuto
-				oldState=0;
+			prisutan = 3;
+		} else if (oldState == 2) {
+			prisutan = 1;
+		} else if (oldState == 1) {
+			prisutan = 2;
+		}
+		
+		ajax_start(
+			"ws/prisustvo",
+			"POST",
+			{ "student" : student, "cas" : cas, "prisutan" : prisutan },
+			function(foo) {
+				azuriraj_polje(prisutan, student, cas);
+			},
+			function(responseText, status, url) {
+				azuriraj_polje(oldState, student, cas);
+				var greska = "";
+				if (status != 200)
+					greska = "Došlo je do greške (status: "+status+"). Molimo kontaktirajte administratora";
+				else try {
+					var object = JSON.parse(responseText);
+					greska = object['message'];
+				} catch(e) {
+					greska = "Došlo je do greške (nevalidan odgovor). Molimo kontaktirajte administratora";
+					console.log("Web servis "+url+" nije vratio validan JSON: "+xhttp.responseText);
+					console.log(e);
+				}
+				alert(greska);
 			}
-		}
-
-		if (val == "DA") {
-			document.getElementById("dane-"+student+"-"+cas).style.background = "#FFCCCC";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "NE";
-			return 1;
-		} else {
-			document.getElementById("dane-"+student+"-"+cas).style.background="#CCFFCC";
-			document.getElementById("danetekst-"+student+"-"+cas).innerHTML = "DA";
-			return 2;
-		}
+		);
 	}
+	
 	function upozorenje(cas) {
 		if (confirm("Da li ste sigurni da želite obrisati čas?")) {
 			// _lv_casid osigurava da genform() neće dodati još jedno hidden polje
@@ -450,6 +463,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 // Ispis AJAH box-a neposredno iznad tablice grupe
 
 print ajah_box();
+ajax_box();
 
 
 
@@ -725,7 +739,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	foreach ($cas_id_array as $cid) {
 		// Postoji li kviz za ovaj čas?
 		$uspjeh_na_kvizu = "";
-		if (array_key_exists($cid, $cas_kviz) > 0) {
+		if (array_key_exists($cid, $cas_kviz)) {
 			$q317 = db_query("select dovrsen, bodova from kviz_student where student=$stud_id and kviz=".$cas_kviz[$cid]);
 			if (db_num_rows($q317)>0) {
 				if (db_result($q317,0,0)==1 && db_result($q317,0,1)>=$cas_kviz_prolaz[$cid])
