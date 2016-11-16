@@ -23,8 +23,9 @@ function ws_prisustvo()
 	
 	
 	// ID je id časa
-	if (isset($_REQUEST['id'])) {
-		$cas = intval($_REQUEST['id']);
+	if (isset($_REQUEST['id']) || isset($_REQUEST['cas'])) {
+		if (isset($_REQUEST['id'])) $cas = intval($_REQUEST['id']);
+		else $cas = intval($_REQUEST['cas']);
 		$q10 = db_query("SELECT l.id, l.predmet, l.akademska_godina, c.komponenta FROM labgrupa l, cas c WHERE c.id=$cas AND c.labgrupa=l.id");
 		if (db_num_rows($q10)<1) {
 			header("HTTP/1.0 404 Not Found");
