@@ -179,7 +179,7 @@ function saradnik_raspored($tip) {
 		zamgerlog("ažurirana stavka $id_stavke u rasporedu $id_rasporeda", 2);
 		zamgerlog2("ažurirana stavka u rasporedu", $id_stavke, intval($id_rasporeda));
 		nicemessage ("Ažuriranje časa u rasporedu uspjelo!");
-		print "<a href=\"?sta=saradnik/raspored\">Nastavak</a>";
+		print "<a href=\"?sta=saradnik/raspored&dajsve=$dajsve\">Nastavak</a>";
 		return;
 	}
 
