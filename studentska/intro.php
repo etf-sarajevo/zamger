@@ -293,7 +293,7 @@ if (param('akcija') == "obradi_potvrdu") {
 	$status = intval($_GET['status']);
 	$q210 = db_query("UPDATE zahtjev_za_potvrdu SET status=$status WHERE id=$id");
 	zamgerlog("obradjen zahtjev za potvrdu $id (status: $status)", 2);
-	zamgerlog2("obradjen zahtjev za potvrdu", $id, $status);;
+	zamgerlog2("obradjen zahtjev za potvrdu", $id, $status);
 
 	nicemessage("Zahtjev obrađen");
 
@@ -315,7 +315,7 @@ if (param('akcija') == "obrisi_potvrdu") {
 	$id = intval($_GET['id']);
 	$q210 = db_query("DELETE FROM zahtjev_za_potvrdu WHERE id=$id");
 	zamgerlog("obrisan zahtjev za potvrdu $id", 2);
-	zamgerlog2("obrisan zahtjev za potvrdu", $id, $status);;
+	zamgerlog2("obrisan zahtjev za potvrdu", $id);
 
 	nicemessage("Zahtjev obrisan");
 
