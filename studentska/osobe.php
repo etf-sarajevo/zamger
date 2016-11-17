@@ -1162,6 +1162,7 @@ else if ($akcija == "upis") {
 					// Ponuda kursa ne postoji u aktuelnoj godini, kreiramo je
 					print "-- Kreiram ponudu kursa za predmet $predmet, studij $studij_stara_pk, semestar $semestar_stara_pk<br>";
 					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true);
+					if ($nova_pk == false) $nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, false);
 				}
 
 				upis_studenta_na_predmet($student, $nova_pk);

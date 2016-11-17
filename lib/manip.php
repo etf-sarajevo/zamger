@@ -683,11 +683,14 @@ function uslov($student, $ag=0) {
 
 
 // Funkcija koja kreira jednu ponudu kursa i dodaje sve ostalo što treba
+// Ako je parametar $ispis == true, ne radi ništa (vraća id ponudekursa ako ista već postoji,
+// u suprotnom vraća false)
 function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis) {
 	// Naziv predmeta nam treba za poruke
 	if ($obavezan === true || $obavezan === 1) $obavezan=1; else $obavezan=0;
 	$q60 = db_query("select naziv from predmet where id=$predmet");
 	$naziv_predmeta = db_result($q60,0,0);
+	$pkid = false;
 
 	// Da li već postoji slog u tabeli ponudakursa
 	$q61 = db_query("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag and studij=$studij and semestar=$semestar");
