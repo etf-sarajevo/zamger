@@ -311,7 +311,7 @@ function add_string($s1, $s2, $s3) {
 $q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
 WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-ORDER BY l.id DESC LIMIT 1000");
+ORDER BY l.id DESC LIMIT 10000");
 $lastlogin = array();
 $eventshtml = array();
 $logins=0;
