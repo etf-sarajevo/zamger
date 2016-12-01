@@ -12,6 +12,7 @@ global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, 
 
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
+$time = time();
 
 if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	// Sprječavamo veliki broj uzastopnih otvaranja istog modula
@@ -19,7 +20,6 @@ if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	
 	$limit_vrijeme = 5*60; // 5 minuta
 	$limit_broj_posjeta = 5; // broj posjeta
-	$time = time();
 
 	$q10 = db_query("select UNIX_TIMESTAMP(vrijeme) FROM log2 WHERE userid=$userid AND modul=15 ORDER BY id DESC LIMIT $limit_broj_posjeta");
 	$count = 0;
@@ -31,7 +31,8 @@ if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 		print "<img src=\"images/oguljena_zelena_jabuka_kora.jpg\">";
 		return;
 	}
-
+}
+if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	$dan=0;
 	do {
 		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
@@ -46,7 +47,6 @@ if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	readfile($filename);
 	return;
 }
-
 
 // sumiraj kolone za zadace i prisustvo
 if ($_REQUEST['skrati']=="da") $skrati=1; else $skrati=0; 
