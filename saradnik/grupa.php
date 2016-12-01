@@ -89,7 +89,6 @@ while ($r52 = db_fetch_row($q52))
 	$tipovi_komponenti[$r52[0]] = $r52[1];
 
 
-
 // ------- AKCIJE
 
 // Dodavanje casa
@@ -218,11 +217,33 @@ $pime = db_result($q130,0,0); // Ne bi se smjelo desiti da je nepostojeci predme
 
 
 
-// Ima li ikoga u grupi?
+// -------- UPIT: SPISAK STUDENATA U GRUPI
 
-$q140 = db_query("select count(student) from student_labgrupa where labgrupa=$labgrupa");
+$q310 = db_query("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_labgrupa as sl where a.id=sl.student and sl.labgrupa=$labgrupa");
 
-if (db_result($q140,0,0)<1) {
+$imeprezime = array();
+$brind = array();
+while ($r310 = db_fetch_row($q310)) {
+	$stud_id = $r310[0];
+	$stud_ime = $r310[1];
+	$stud_prezime = $r310[2];
+	$stud_brind = $r310[3];
+	
+	// Dodajemo ime grupe pored imena studenta ako je grupa virtualna
+	if ($grupa_virtualna == 1) {
+		$q315 = db_query("select lg.naziv from labgrupa as lg, student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=lg.id and lg.virtualna=0 and lg.predmet=$predmet and lg.akademska_godina=$ag");
+		if (db_num_rows($q315)>0) $stud_ime .= " (".db_result($q315,0,0).")";
+	}
+	
+	$imeprezime[$stud_id] = "$stud_prezime&nbsp;$stud_ime";
+	$brind[$stud_id] = $stud_brind;
+}
+uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+
+
+// Ako nema nikoga u grupi, prekidamo rad odmah
+
+if (count($imeprezime) == 0) {
 	print "<p>Nijedan student nije u grupi</p>\n";
 	return;
 }
@@ -260,9 +281,74 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 
 
 
-// ------- SPISAK NEPREGLEDANIH ZADAĆA
+// ------- PODACI O ZADAĆAMA
 
 if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
+
+	// SPISAK ZADAĆA I PRIPREMA ZAGLAVLJA TABELE
+
+	$zad_id_array = array();
+	$zadace_zaglavlje1 = "";
+	$zadace_zaglavlje2 = "";
+	$q205 = db_query("SELECT k.id, k.gui_naziv FROM akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k
+	WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
+	while ($r205 = db_fetch_row($q205)) {
+		$brzadaca = 0;
+		$zad_komponenta_zaglavlje = "";
+		$komponenta = $r205[0];
+		
+		// Razvrstavamo zadaće po komponentama
+		$q210 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by id");
+		while ($r210 = db_fetch_row($q210)) {
+			$zad_komponenta_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
+			$zad_id_array[] = $r210[0];
+			$zad_brz_array[$r210[0]] = $r210[2];
+			$zad_nazivi[$r210[0]] = $r210[1];
+			$mogucih_bodova += $r210[3];
+			$brzadaca++;
+			$minw += 60;
+		}
+
+		if ($brzadaca>0) {
+			$zadace_zaglavlje1 .= "<td align=\"center\" colspan=\"$brzadaca\">$r205[1]</td>\n";
+			$zadace_zaglavlje2 .= $zad_komponenta_zaglavlje;
+		}
+	}
+
+	// CACHE REZULTATA ZADAĆA
+	
+	$zadace_statusi = array();
+	$zadace_bodovi = array();
+	foreach ($zad_id_array as $zadaca_id) {
+		for ($zadatak=1; $zadatak<=$zad_brz_array[$zadaca_id]; $zadatak++) {
+			foreach ($imeprezime as $stud_id => $stud_imepr) {
+				$rezultat = db_query_assoc("SELECT status, bodova FROM zadatak WHERE zadaca=$zadaca_id AND redni_broj=$zadatak AND student=$stud_id ORDER BY id DESC LIMIT 1");
+				if (!$rezultat) 
+					$zadace_statusi[$zadaca_id][$zadatak][$stud_id]=0;
+				else {
+					$zadace_bodovi[$zadaca_id][$zadatak][$stud_id] = $rezultat['bodova'];
+					$zadace_statusi[$zadaca_id][$zadatak][$stud_id] = $rezultat['status']+1;
+				}
+			}
+		}
+	}
+	/*$q300 = db_query("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
+	FROM zadatak as z,student_labgrupa as sl 
+	WHERE z.student=sl.student and sl.labgrupa=$labgrupa
+	ORDER BY z.id");
+	while ($r300 = db_fetch_row($q300)) {
+		// Slog sa najnovijim IDom se smatra mjerodavnim
+		// Ostali su u bazi radi historije
+		$zadace_bodovi[$r300[0]][$r300[1]][$r300[2]]=$r300[4];
+		$zadace_statusi[$r300[0]][$r300[1]][$r300[2]]=$r300[3]+1;
+		// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
+		// je vrijednost niza definisana ili ne.
+		// undef ne radi :(
+	}*/
+
+	
+	// SPISAK NEPREGLEDANIH ZADAĆA
+
 	// JavaScript za prikaz popup prozora sa zadaćom
 	//  * Kod IE naslov prozora ('zadaca') ne smije sadržavati razmak i
 	// ne smije biti prazan, a inače je nebitan
@@ -280,8 +366,19 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 	</script>
 	
 	<?
+	
+	
+	$print="";
+	foreach ($zadace_statusi as $zadaca_id => $data1) {
+		foreach ($data1 as $zadatak => $data2) {
+			foreach($data2 as $student => $status) {
+				if ($status==5)
+				$print .= '<li><a href="#" onclick="javascript:openzadaca(event, \''.$student.'\',\''.$zadaca.'\',\''.$zadatak.'\')">'.$imeprezime[$student]." - ".$zad_nazivi[$zadaca_id].", zadatak ".$zadatak."</a></li>";
+			}
+		}
+	}
 
-	$q150 = db_query(
+	/*$q150 = db_query(
 	"SELECT zk.zadaca, zk.redni_broj, zk.student, a.ime, a.prezime, zk.status, z.naziv
 	FROM zadatak as zk, osoba as a, student_labgrupa as sl, zadaca as z
 	WHERE zk.student=a.id AND zk.student=sl.student 
@@ -295,7 +392,7 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 		$mzadaca=$r150[0]; $mzadatak=$r150[1]; $mstudent=$r150[2];
 		if ($r150[5]!=4) continue;
 		$print .= '<li><a href="#" onclick="javascript:openzadaca(event, \''.$r150[2].'\',\''.$r150[0].'\',\''.$r150[1].'\')">'.$r150[3]." ".$r150[4]." - ".$r150[6].", zadatak ".$r150[1]."</a></li>";
-	}
+	}*/
 	if ($print != "") print "<h2>Nove zadaće za pregled:</h2>\n<ul>$print</ul>";
 }
 
@@ -549,33 +646,9 @@ while ($r195 = db_fetch_row($q195)) {
 }
 
 
-
-// Zaglavlje zadaće
-
-$zad_id_array = array();
-$q205 = db_query("SELECT k.id, k.gui_naziv FROM akademska_godina_predmet as agp, tippredmeta_komponenta as tpk, komponenta as k
-WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4 ORDER BY k.id");
-// Ako nema nijedne komponente zadaća, upit neće vratiti ništa
-while ($r205 = db_fetch_row($q205)) {
-	$brzadaca = 0;
-	$zadace_zaglavlje = "";
-	$komponenta = $r205[0];
-	
-	// Razvrstavamo zadaće po komponentama
-	$q210 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by id");
-	while ($r210 = db_fetch_row($q210)) {
-		$zadace_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
-		$zad_id_array[] = $r210[0];
-		$zad_brz_array[$r210[0]] = $r210[2];
-		$mogucih_bodova += $r210[3];
-		$brzadaca++;
-		$minw += 60;
-	}
-
-	if ($brzadaca>0) {
-		$zaglavlje1 .= "<td align=\"center\" colspan=\"$brzadaca\">$r205[1]</td>\n";
-		$zaglavlje2 .= $zadace_zaglavlje;
-	}
+if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
+	$zaglavlje1 .= $zadace_zaglavlje1;
+	$zaglavlje2 .= $zadace_zaglavlje2;
 }
 
 
@@ -628,7 +701,6 @@ if ($broj_ispita>0) {
 }
 
 
-
 // Zaglavlje konacna ocjena
 
 //$ispis_konacna=0;
@@ -666,55 +738,15 @@ $minw += 40; // bodovi prisustvo
 <?
 
 
-// CACHE REZULTATA ZADAĆA
-$zadace_statusi=array();
-$zadace_bodovi=array();
-$q300 = db_query("SELECT z.zadaca,z.redni_broj,z.student,z.status,z.bodova
-FROM zadatak as z,student_labgrupa as sl 
-WHERE z.student=sl.student and sl.labgrupa=$labgrupa
-ORDER BY z.id");
-while ($r300 = db_fetch_row($q300)) {
-	// Slog sa najnovijim IDom se smatra mjerodavnim
-	// Ostali su u bazi radi historije
-	$zadace_bodovi[$r300[0]][$r300[1]][$r300[2]]=$r300[4];
-	$zadace_statusi[$r300[0]][$r300[1]][$r300[2]]=$r300[3]+1;
-	// Dodajemo 1 na status kako bismo kasnije mogli znati da li 
-	// je vrijednost niza definisana ili ne.
-	// undef ne radi :(
-}
-
-
-
 // Ikone i statusi za zadaće
 $stat_icon = array("zad_bug", "zad_cekaj", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
 $stat_tekst = array("Bug u programu", "Automatsko testiranje u toku", "Zadaća prepisana", "Bug u programu", "Potrebno pregledati", "Zadaća OK");
 
 
 
-// Glavna petlja - studenti
+// Glavna petlja za ispis tabele studenata
 
-$q310 = db_query("select a.id,a.ime,a.prezime,a.brindexa from osoba as a,student_labgrupa as sl where a.id=sl.student and sl.labgrupa=$labgrupa");
-
-$imeprezime = array();
-$brind = array();
-while ($r310 = db_fetch_row($q310)) {
-	$stud_id = $r310[0];
-	$stud_ime = $r310[1];
-	$stud_prezime = $r310[2];
-	$stud_brind = $r310[3];
-	$imeprezime[$stud_id] = "$stud_prezime&nbsp;$stud_ime";
-	$brind[$stud_id] = $stud_brind;
-	
-	// Dodajemo ime grupe pored imena studenta ako je grupa virtualna
-	if ($grupa_virtualna == 1) {
-		$q315 = db_query("select lg.naziv from labgrupa as lg, student_labgrupa as sl where sl.student=$stud_id and sl.labgrupa=lg.id and lg.virtualna=0 and lg.predmet=$predmet and lg.akademska_godina=$ag");
-		if (db_num_rows($q315)>0) $stud_ime .= " (".db_result($q315,0,0).")";
-	}
-}
-uasort($imeprezime,"bssort"); // bssort - bosanski jezik
 $redni_broj=0;
-
-
 foreach ($imeprezime as $stud_id => $stud_imepr) {
 	$redni_broj++;
 ?>
