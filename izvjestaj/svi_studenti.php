@@ -82,7 +82,10 @@ else if ($studij < 0)
 if ($prvi_put) $uslovi .= " and ss.ponovac=0";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
-if ($adresa_mjesto) $uslovi .= " and o.adresa_mjesto=am.id and am.naziv='$adresa_mjesto'";
+if ($adresa_mjesto) {
+	$uslovi .= " and o.adresa_mjesto=am.id";
+	if ($adresa_mjesto != "on") $uslovi .= " and am.naziv='$adresa_mjesto'";
+}
 
 $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
