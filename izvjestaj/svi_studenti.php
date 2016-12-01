@@ -91,7 +91,6 @@ $uslov_semestar = " and ss.semestar mod 2 = 1"; // Bilo koji neparan semestar
 if ($godina > 0)
 	$uslov_semestar = " and ss.semestar=".($godina*2-1);
 
-
 $q30 = db_query("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
 $rbr = 1; $oldid = 0;
 $niz = array();
@@ -132,9 +131,9 @@ while ($osoba = db_fetch_assoc($q30)) {
 		print "$rbr. ".$osoba['prezime']." ";
 		if ($ime_oca) print "(".$osoba['imeoca'].") ";
 		print $osoba['ime']." ";
-		if ($jmbg) print " (".$osoba['jmbg'].")";
-		if ($nacin_studiranja) print " - ".$osoba['nacin'];
-		if ($login) print " - ".$osoba['login'];
+		if ($jmbg) print " (".$osoba['jmbg'].") ";
+		if ($nacin_studiranja) print " - ".$osoba['nacin']." ";
+		if ($login) print " - ".$osoba['login']." ";
 		if ($mjesto_rodjenja) print "(".$osoba['mjestorodj'].")";
 		if ($adresa_mjesto) print "(".$osoba['adresamjesto'].")";
 
