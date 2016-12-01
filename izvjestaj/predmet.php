@@ -13,7 +13,7 @@ global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, 
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	// Sprječavamo veliki broj uzastopnih otvaranja istog modula
 	zamgerlog2("pristup");
 	
