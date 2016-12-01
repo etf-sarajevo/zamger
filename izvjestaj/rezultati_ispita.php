@@ -166,7 +166,7 @@ if ($kolone == 2) {
 			?>
 		</td>
 		<td width="12%">&nbsp;</td></tr>
-	<table>
+	</table>
 	<div class="breakafter"></div>
 	<table width="100%" border="0">
 		<tr><td colspan="5">&nbsp;</td></tr>
@@ -191,7 +191,7 @@ if ($kolone == 2) {
 				<?
 
 		if (!empty($grupe)) {
-				?>
+?>
 				<tr><td colspan="<?=$colspan?>"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<?
 		}
@@ -215,17 +215,21 @@ if ($kolone == 2) {
 			}
 			$n++;
 			if ($n % 49 == 0) {
-				if ($parni==1) {
-					$parni=0;
-					?>
-				</td>
-				<td width="12%">&nbsp;</td></tr>
-				<tr><td colspan="5">&nbsp;</td></tr>
-				<?
-				} else $parni=1;
 				?>
 			</table>
 		</td>
+				<?
+				if ($parni==1) {
+					$parni=0;
+					?>
+		<td width="12%">&nbsp;</td></tr>
+	</table>
+	<div class="breakafter"></div>
+	<table width="100%" border="0">
+		<tr><td colspan="5">&nbsp;</td></tr>
+		<?
+				} else $parni=1;
+				?>
 		<td width="12%">&nbsp;</td>
 		<td width="31%" valign="top">
 			<table width="100%" border="1" cellspacing="0" cellpadding="2">
