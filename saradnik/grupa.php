@@ -369,11 +369,11 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 	
 	
 	$print="";
-	foreach ($zadace_statusi as $zadaca_id => $data1) {
+	foreach ($zadace_statusi as $zadaca => $data1) {
 		foreach ($data1 as $zadatak => $data2) {
 			foreach($data2 as $student => $status) {
 				if ($status==5)
-				$print .= '<li><a href="#" onclick="javascript:openzadaca(event, \''.$student.'\',\''.$zadaca.'\',\''.$zadatak.'\')">'.$imeprezime[$student]." - ".$zad_nazivi[$zadaca_id].", zadatak ".$zadatak."</a></li>";
+				$print .= '<li><a href="#" onclick="javascript:openzadaca(event, \''.$student.'\',\''.$zadaca.'\',\''.$zadatak.'\')">'.$imeprezime[$student]." - ".$zad_nazivi[$zadaca].", zadatak ".$zadatak."</a></li>";
 			}
 		}
 	}
