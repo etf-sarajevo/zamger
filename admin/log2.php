@@ -14,15 +14,24 @@ global $_lv_; // We use form generators
 
 
 
-$maxlogins = 20;
 $stardate = int_param('stardate');
 if ($stardate == 0) {
-	$q199 = db_query("select id from log order by id desc limit 1");
-	$stardate = db_result($q199,0,0)+1;
+	$stardate = db_get("select id from log2 order by id desc limit 1");
 }
 $nivo = int_param('nivo');
 if ($nivo<1) $nivo=2;
 if ($nivo>4) $nivo=4;
+
+
+// Broj rezultata po stranici (grupisanih po login eventu)
+$maxlogins = 20;
+
+
+// Za iole prihvatljive performanse upita na log bazu mora se imati limit,
+// ali kod pretrage postoji mogućnost da upit sa tim limitom ne vrati dovoljan broj rezultata.
+// Broj ispod je nekakav kompromis između ova dva problema
+$query_limit = 10000; 
+$query_max_limit = 1000000;
 
 
 
@@ -70,7 +79,8 @@ if ($pretraga) {
 	if ($rezultata>0) {
 		while ($r100 = db_fetch_row($q100)) {
 			if ($filterupita!="") $filterupita .= " OR ";
-			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+			//$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+			$filterupita .= "userid=$r100[0] OR objekat1=$r100[0]";
 			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
 		}
 	}
@@ -91,6 +101,7 @@ if ($pretraga) {
 
 	// Kraj, dodajemo and
 	if ($filterupita!="") $filterupita = " AND ($filterupita)";
+	//print "filterupita $filterupita";
 }
 
 
@@ -111,7 +122,7 @@ if ($pretraga) {
 
 <center>
 <form action="index.php" method="GET">
-<input type="hidden" name="sta" value="admin/log">
+<input type="hidden" name="sta" value="admin/log2">
 <input type="hidden" name="nivo" value="<?=$nivo?>">
 <input type="text" name="pretraga" size="40" value="<?=$pretraga?>">
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -311,14 +322,38 @@ function add_string($s1, $s2, $s3) {
 $q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
 WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-ORDER BY l.id DESC LIMIT 10000");
+ORDER BY l.id DESC LIMIT $query_limit");
 $lastlogin = array();
 $eventshtml = array();
-$logins=0;
-$prvidatum=$zadnjidatum=0;
-$stardate=1;
-while ($r10 = db_fetch_row($q10)) {
+$logins = 0;
+$prvidatum = $zadnjidatum = $last_id = 0;
+while ($logins < $maxlogins) {
+	$r10 = db_fetch_row($q10);
+	if (!$r10) {
+		// Potrošili smo sve slogove u upitu a nismo napunili $maxlogins stavki
+		// Ponavljamo upit sa novim stardate-om
+		if ($last_id > 0 && $stardate > $last_id+1) {
+			$stardate = $last_id+1;
+			// Da ubrzamo stvari, povećaćemo limit na upitu
+			$query_limit *= 2;
+			if ($query_limit > $query_max_limit || $stardate < 2) {
+				// Nema više smisla nastaviti, rezultata više nema
+				$stardate=1;
+				break;
+			}
+		} else {
+			// Prethodni upit nije vratio ama baš ništa, prekidamo
+			$stardate = 1;
+			break;
+		}
+		$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+		FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
+		WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
+		ORDER BY l.id DESC LIMIT $query_limit");
+		continue; // Povratak na početak petlje
+	}
 	
+	$last_id = $r10[0]; // $lastlogin koristimo da provjerimo da li je korisnik išta radio nakon logina
 	if ($prvidatum==0) $prvidatum = $r10[1];
 	$zadnjidatum = $r10[1];
 	$nicedate = " (".date("d.m.Y. H:i:s", $r10[1]).")";
@@ -329,12 +364,8 @@ while ($r10 = db_fetch_row($q10)) {
 
 	// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
 	if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $opis != "login")) { 
-		$lastlogin[$usr]=$r10[0];
+		$lastlogin[$usr] = $r10[0];
 		$logins++;
-		if ($logins > $maxlogins) {
-			$stardate=$r10[0]+1;
-			break; // izlaz iz while
-		}
 	}
 
 	if ($r10[6]==1) $nivoimg="log_info";
@@ -546,7 +577,8 @@ while ($r10 = db_fetch_row($q10)) {
 		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate." ".$analyze_link."\n".$eventshtml[$lastlogin[$usr]];
 	}
 }
-if ($stardate==1) $zadnjidatum=1; // Nije doslo do breaka...
+if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
+else $stardate = $last_id;
 
 /*
 // Insertujem masovni unos ocjena i rezultata ispita
