@@ -319,6 +319,7 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<option value="0">Svi studiji</option>
 	<option value="-1">Prvi ciklus</option>
 	<option value="-2">Drugi ciklus</option>
+	<option value="-3">Treći ciklus</option>
 	<?
 		$q505 = db_query("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
 		while ($r505 = db_fetch_row($q505)) {
