@@ -293,6 +293,7 @@ else if ($_REQUEST['action'] == "getFile") {
 		$k = readfile($filepath,false);
 
 		unlink("$conf_files_path/zadace/temporary$id.zip");
+		return;
 	}
 }
 
