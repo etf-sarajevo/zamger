@@ -805,7 +805,7 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 		$q114 = db_query("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet AND student!=$userid");
 		$popunjeno += db_result($q114,0,0);
 		
-		if ($kapacitet_ekstra > 0 && $popunjeno >= $kapacitet_ekstra)
+		if ($kapacitet_ekstra != 0 && $popunjeno >= $kapacitet_ekstra)
 			return 0;
 		
 		// Koliko studenata slusa predmet kao obavezan na svom studiju?
@@ -816,7 +816,7 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 		}
 //		print "popunjeno $popunjeno<br>";
 		
-		if ($kapacitet > 0 && $popunjeno >= $kapacitet) 
+		if ($kapacitet != 0 && $popunjeno >= $kapacitet) 
 			return 0;
 	}
 	return 1;
