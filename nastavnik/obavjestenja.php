@@ -11,8 +11,8 @@ global $userid,$user_siteadmin,$conf_ldap_domain;
 
 
 // Parametri
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
+$predmet = int_param('predmet');
+$ag = int_param('ag');
 
 // Naziv predmeta
 $q10 = db_query("select naziv from predmet where id=$predmet");
@@ -126,8 +126,8 @@ if (param('akcija')=="obrisi_obavjestenje" && check_csrf_token()) {
 // Novo obavještenje / izmjena obavještenja
 
 if (param('akcija')=='novo' && check_csrf_token()) {
-	$naslov = db_escape($_REQUEST['naslov']);
-	$tekst = db_escape($_REQUEST['tekst']);
+	$naslov = $_REQUEST['naslov'];
+	$tekst = $_REQUEST['tekst'];
 	$primalac = intval($_REQUEST['primalac']);
 	if ($_REQUEST['email']) $email=1; else $email=0;
 	$io = intval($_REQUEST['izmjena_obavjestenja']);
@@ -137,6 +137,8 @@ if (param('akcija')=='novo' && check_csrf_token()) {
 		zamgerlog2("tekst poruke je prekratak", 0, 0, 0, $naslov);
 		niceerror("Tekst vijesti je prekratak");
 	} else {
+		$naslov = db_escape($naslov);
+		$tekst = db_escape($tekst);
 		if ($io>0) {
 			$q6 = db_query("update poruka set tip=1, opseg=5, primalac=$predmet, posiljalac=$userid, ref=0, naslov='$naslov', tekst='$tekst' where id=$io");
 			zamgerlog("izmjena obavjestenja (id $io)",2);
