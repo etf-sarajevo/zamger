@@ -4,7 +4,7 @@
 
 
 
-function xml_request($url, $parameters, $method = "GET") 
+function xml_request($url, $parameters, $method = "GET", $parse = true) 
 {
 	global $conf_verbosity;
 	
@@ -65,6 +65,8 @@ function xml_request($url, $parameters, $method = "GET")
 		print "Message from server: " . $json_result["server_message"]."\n";
 	}*/
 	if (strlen($http_result) < 40) return FALSE; // Prazno
+	
+	if (!$parse) return $http_result;
 
 	$xmlparser = xml_parser_create("UTF-8");
 	$xml_result = array();
@@ -93,6 +95,7 @@ function parsiraj_kartice($xml_data) {
 	foreach ($xml_data as $node) {
 		if ($node['tag'] == "KARTICA") {
 			if ($node['type'] == "open") { 
+				if ($u_kartici) $result[] = $tekuca_kartica;
 				$u_kartici=true;
 				$tekuca_kartica = array();
 			}
