@@ -343,8 +343,11 @@ if ($found==1 && $template==0 && $greska=="") {
 		
 		$k="";
 		foreach ($_REQUEST as $kljuc => $vrijednost) {
+			// Sakrivamo sesiju
+			if (substr($kljuc,0,4) == "_lv_" || $kljuc == "PHPSESSID" || $kljuc == "pass") continue;
+			if ($kljuc == "loginforma") continue; // Izbjegavamo logout
 			if ($kljuc != "sta")
-				$k .= "$kljuc=$vrijednost&amp;";
+				$k .= urlencode($kljuc).'='.urlencode($vrijednost).'&amp;';
 		}
 		
 		if ($userid>0) {
