@@ -2,18 +2,6 @@
 
 // RSS - feed za studente
 
-// v3.9.1.0 (2008/04/30) + pocetak
-// v3.9.1.1 (2008/10/24) + Popravljen entity u linku za common/inbox
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela ispit preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.3 (2009/04/01) + Tabela zadaca preusmjerena sa ponudakursa na tabelu predmet; popravljen link na stranicu za konacnu ocjenu (greska unesena sa r372)
-// v4.0.9.4 (2009/04/06) + Dodano polje pubDate na sve kanale
-// v4.0.9.5 (2009/04/19) + Popravljen link na rezultate ispita
-// v4.0.9.6 (2009/04/29) + Prebacujem tabelu poruka (opseg 5) sa ponudekursa na predmet (neki studenti ce mozda dobiti dvije identicne poruke); jos uvijek koristena auth tabela za ime i prezime, sto spada u davnu historiju zamgera
-// v4.0.9.7 (2009/05/01) + Parametri modula student/predmet i student/zadaca su sada predmet i ag
-
-
 
 $broj_poruka = 10;
 
@@ -27,7 +15,7 @@ db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 // Parametri potrebni za Moodle integraciju
 global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
-global $__lv_connection, $conf_use_mysql_utf8;
+global $__db_connection, $conf_use_mysql_utf8;
 
 
 // Pretvaramo rss id u userid
@@ -257,7 +245,7 @@ $vrijeme_za_novosti = time()-(14*24*60*60);
 $vrijeme_posljednjeg_logina = time();
 
 
-$moodle_con = $__lv_connection;
+$moodle_con = $__db_connection;
 if (!$conf_moodle_reuse_connection) {
 	// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
 	if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
@@ -362,7 +350,7 @@ header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_shift(array_values($vr
         <link><?=$conf_site_url?></link>
         <description>Aktuelne informacije za studenta <?=$ime?> <?=$prezime?></description>
         <language>bs-ba</language>
-        <atom:link href="http://zamger.etf.unsa.ba/rss.php?id=<?=$id?>" rel="self" type="application/rss+xml" />
+        <atom:link href="<?=$conf_site_url?>/rss.php?id=<?=$id?>" rel="self" type="application/rss+xml" />
 <?
 
 
