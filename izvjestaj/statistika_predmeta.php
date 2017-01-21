@@ -268,9 +268,10 @@ if ($odrzano_ispita==0) {
 	$moguce_ocjene = array(6,7,8,9,10); 
 	$broj_ocjena = array(); 
 	$uk_broj=0;
-	foreach ($moguce_ocjene as $moguca_ocjena){
-		$q100 = db_query("select count(*) from konacna_ocjena where predmet=$predmet and akademska_godina=$ag and ocjena=$moguca_ocjena");
-		$br_ocjena = db_result($q100,0,0);
+	foreach ($moguce_ocjene as $moguca_ocjena) {
+		$br_ocjena = db_get("SELECT COUNT(*) FROM konacna_ocjena ko, student_predmet sp, ponudakursa pk 
+		WHERE ko.predmet=$predmet AND ko.akademska_godina=$ag AND ko.ocjena=$moguca_ocjena AND
+		ko.student=sp.student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.akademska_godina=$ag");
 		$broj_ocjena[$moguca_ocjena] = $br_ocjena;
 		$uk_broj += $br_ocjena;
 	}
