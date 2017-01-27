@@ -11,7 +11,6 @@ $registry = array(
 #      A - admin, B - studentska, N - saradnik, S - student, P - public
 # Sablon == 2 znaci da se ne prikazuje ni header
 
-array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
@@ -21,6 +20,7 @@ array("admin/log2", "Pregled logova", "Log", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
 array("admin/prijemni", "Alati za prijemni", "Prijemni", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
+array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),

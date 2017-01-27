@@ -33,8 +33,8 @@ function studentska_plan(){
 	<SELECT name="studij" id="studij" onchange="promijeniStudij()">
 	<OPTION value="0">--- Odaberite studij ---</OPTION>
 	<?
-	$q10 = myquery("SELECT id, naziv FROM studij WHERE moguc_upis=1 ORDER BY tipstudija, naziv");
-	while ($r10 = mysql_fetch_row($q10)) {
+	$q10 = db_query("SELECT id, naziv FROM studij WHERE moguc_upis=1 ORDER BY tipstudija, naziv");
+	while ($r10 = db_fetch_row($q10)) {
 		?>
 		<OPTION value="<?=$r10[0]?>" <? if ($r10[0]==$studij) print "SELECTED"; ?>><?=$r10[1]?></OPTION>
 		<?
@@ -56,8 +56,8 @@ function studentska_plan(){
 
 	if ($studij > 0 && $plan == 0) {
 		if ($akcija === "novi") {
-			$q15 = myquery("INSERT INTO plan_studija SET studij=$studij");
-			zamgerlog2("kreiran plan studija", mysql_insert_id());
+			$q15 = db_query("INSERT INTO plan_studija SET studij=$studij");
+			zamgerlog2("kreiran plan studija", db_insert_id());
 			?>
 			Kreiran je novi plan studija.
 			<script language="JavaScript">
@@ -71,8 +71,8 @@ function studentska_plan(){
 		?>
 		<h3>Planovi i programi studija <?=$studij_naziv?></h3>
 		<?
-		$q20 = myquery("SELECT id, godina_vazenja, usvojen FROM plan_studija WHERE studij=$studij");
-		if (mysql_num_rows($q20) > 0) {
+		$q20 = db_query("SELECT id, godina_vazenja, usvojen FROM plan_studija WHERE studij=$studij");
+		if (db_num_rows($q20) > 0) {
 			?>
 			<table><tr><th>Godina važenja</th><th>Status</th><th>Akcije</th></tr>
 			<?
@@ -82,22 +82,22 @@ function studentska_plan(){
 			<?
 		}
 
-		while ($r20 = mysql_fetch_row($q20)) {
+		while ($r20 = db_fetch_row($q20)) {
 			$id_plana = $r20[0];
 			?><tr>
 				<td>
 				<?
 			if ($r20[1] > 0) {
-				$q30 = myquery("SELECT naziv FROM akademska_godina WHERE id=".$r20[1]);
-				print mysql_result($q30,0,0);
+				$q30 = db_query("SELECT naziv FROM akademska_godina WHERE id=".$r20[1]);
+				print db_result($q30,0,0);
 			} else
 				print "u budućnosti";
 			?>
 				</td>
 				<td><? 
 				if ($r20[2]==1) {
-					$q40 = myquery("SELECT COUNT(*) FROM plan_studija WHERE studij=$studij AND id>$id_plana AND usvojen=1");
-					if (mysql_result($q40,0,0)==0) print "Važeći";
+					$q40 = db_query("SELECT COUNT(*) FROM plan_studija WHERE studij=$studij AND id>$id_plana AND usvojen=1");
+					if (db_result($q40,0,0)==0) print "Važeći";
 					else print "Raniji plan";
 					$akcija_brisanje = "";
 				} else {
@@ -109,7 +109,7 @@ function studentska_plan(){
 			</tr>
 			<?
 		}
-		if (mysql_num_rows($q20) > 0)  print "\n</table>\n";
+		if (db_num_rows($q20) > 0)  print "\n</table>\n";
 		
 		?>
 		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;akcija=novi">Kreiraj novi plan i program</a></p>
@@ -120,17 +120,17 @@ function studentska_plan(){
 	// Uređivanje plana ili detalji o planu
 	if ($studij == 0 || $plan == 0) return;
 
-	$q100 = myquery("SELECT godina_vazenja, usvojen FROM plan_studija WHERE studij=$studij AND id=$plan");
-	if (mysql_num_rows($q100) == 0) {
+	$q100 = db_query("SELECT godina_vazenja, usvojen FROM plan_studija WHERE studij=$studij AND id=$plan");
+	if (db_num_rows($q100) == 0) {
 		biguglyerror("Nepostojeći plan studija");
 		return;
 	}
-	$godina_vazenja = mysql_result($q100,0,0);
-	$usvojen = mysql_result($q100,0,1);
+	$godina_vazenja = db_result($q100,0,0);
+	$usvojen = db_result($q100,0,1);
 
 	// Brisanje plana studija
 	if ($akcija === "brisanje") {
-		$q15 = myquery("DELETE FROM plan_studija WHERE id=$plan");
+		$q15 = db_query("DELETE FROM plan_studija WHERE id=$plan");
 		zamgerlog2("obrisan plan studija", $plan);
 		?>
 		Obrisan je plan studija.
@@ -143,18 +143,18 @@ function studentska_plan(){
 
 	
 	if ($godina_vazenja) {
-		$q110 = myquery("SELECT naziv FROM akademska_godina WHERE id=$godina_vazenja");
-		$ispis_vazenja = mysql_result($q110,0,0);
+		$q110 = db_query("SELECT naziv FROM akademska_godina WHERE id=$godina_vazenja");
+		$ispis_vazenja = db_result($q110,0,0);
 	} else {
 		$ispis_vazenja = "";
 	}
 
 	if ($usvojen == 1) {
-		$q120 = myquery("SELECT godina_vazenja FROM plan_studija WHERE studij=$studij AND id>$plan AND usvojen=1 ORDER by id");
-		if (mysql_num_rows($q120)==0) $ispis_vazenja = "važeći ($ispis_vazenja)";
+		$q120 = db_query("SELECT godina_vazenja FROM plan_studija WHERE studij=$studij AND id>$plan AND usvojen=1 ORDER by id");
+		if (db_num_rows($q120)==0) $ispis_vazenja = "važeći ($ispis_vazenja)";
 		else {
-			$q110 = myquery("SELECT naziv FROM akademska_godina WHERE id=".mysql_result($q120,0,0));
-			$ispis_vazenja = "(".$ispis_vazenja." - ".mysql_result($q110,0,0).")";
+			$q110 = db_query("SELECT naziv FROM akademska_godina WHERE id=".db_result($q120,0,0));
+			$ispis_vazenja = "(".$ispis_vazenja." - ".db_result($q110,0,0).")";
 		}
 	} else {
 		if ($ispis_vazenja !== "") $ispis_vazenja = "prijedlog (".$ispis_vazenja.")";
@@ -175,33 +175,33 @@ function studentska_plan(){
 		// AKCIJE:
 
 		if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "izmjena_pasosa") {
-			$naziv = my_escape($_REQUEST['naziv']);
-			$naziv_en = my_escape($_REQUEST['naziv_en']);
-			$sifra = my_escape($_REQUEST['sifra']);
+			$naziv = db_escape($_REQUEST['naziv']);
+			$naziv_en = db_escape($_REQUEST['naziv_en']);
+			$sifra = db_escape($_REQUEST['sifra']);
 			$ects = _floatval($_REQUEST['ects']);
 
 			$sati_predavanja = intval($_REQUEST['sati_predavanja']);
 			$sati_vjezbi = intval($_REQUEST['sati_vjezbi']);
 			$sati_tutorijala = intval($_REQUEST['sati_tutorijala']);
 
-			$cilj_kursa = my_escape($_REQUEST['cilj_kursa']);
-			$cilj_kursa_en = my_escape($_REQUEST['cilj_kursa_en']);
-			$program = my_escape($_REQUEST['program']);
-			$program_en = my_escape($_REQUEST['program_en']);
-			$obavezna_literatura = my_escape($_REQUEST['obavezna_literatura']);
-			$dopunska_literatura = my_escape($_REQUEST['dopunska_literatura']);
+			$cilj_kursa = db_escape($_REQUEST['cilj_kursa']);
+			$cilj_kursa_en = db_escape($_REQUEST['cilj_kursa_en']);
+			$program = db_escape($_REQUEST['program']);
+			$program_en = db_escape($_REQUEST['program_en']);
+			$obavezna_literatura = db_escape($_REQUEST['obavezna_literatura']);
+			$dopunska_literatura = db_escape($_REQUEST['dopunska_literatura']);
 
-			$didakticke_metode = my_escape($_REQUEST['didakticke_metode']);
-			$didakticke_metode_en = my_escape($_REQUEST['didakticke_metode_en']);
-			$nacin_provjere_znanja = my_escape($_REQUEST['nacin_provjere_znanja']);
-			$nacin_provjere_znanja_en = my_escape($_REQUEST['nacin_provjere_znanja_en']);
-			$napomene = my_escape($_REQUEST['napomene']);
-			$napomene_en = my_escape($_REQUEST['napomene_en']);
+			$didakticke_metode = db_escape($_REQUEST['didakticke_metode']);
+			$didakticke_metode_en = db_escape($_REQUEST['didakticke_metode_en']);
+			$nacin_provjere_znanja = db_escape($_REQUEST['nacin_provjere_znanja']);
+			$nacin_provjere_znanja_en = db_escape($_REQUEST['nacin_provjere_znanja_en']);
+			$napomene = db_escape($_REQUEST['napomene']);
+			$napomene_en = db_escape($_REQUEST['napomene_en']);
 
-			$komentar_prijedloga = my_escape($_REQUEST['komentar_prijedloga']);
+			$komentar_prijedloga = db_escape($_REQUEST['komentar_prijedloga']);
 
-			$q2100 = myquery("INSERT INTO pasos_predmeta SET predmet=$predmet, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', cilj_kursa='$cilj_kursa', cilj_kursa_en='$cilj_kursa_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en', napomene='$napomene', napomene_en='$napomene_en'");
-			$id_pasosa = mysql_insert_id();
+			$q2100 = db_query("INSERT INTO pasos_predmeta SET predmet=$predmet, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', cilj_kursa='$cilj_kursa', cilj_kursa_en='$cilj_kursa_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en', napomene='$napomene', napomene_en='$napomene_en'");
+			$id_pasosa = db_insert_id();
 
 			nicemessage("Ažuriran pasoš predmeta");
 			zamgerlog2("azuriran pasos predmeta");
@@ -214,15 +214,15 @@ function studentska_plan(){
 
 		if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "potvrdi_pasos") {
 			if (isset($_REQUEST['fakat_potvrdi'])) {
-				$q2020 = myquery("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
-				if (mysql_num_rows($q2020) > 0) {
-					$id_aktuelne_verzije = mysql_result($q2020,0,0);
-					$q2200 = myquery("UPDATE plan_studija_predmet SET pasos_predmeta=$id_pasosa WHERE plan_studija=$plan AND pasos_predmeta=$id_aktuelne_verzije");
+				$q2020 = db_query("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+				if (db_num_rows($q2020) > 0) {
+					$id_aktuelne_verzije = db_result($q2020,0,0);
+					$q2200 = db_query("UPDATE plan_studija_predmet SET pasos_predmeta=$id_pasosa WHERE plan_studija=$plan AND pasos_predmeta=$id_aktuelne_verzije");
 				} else {
-					$q2210 = myquery("SELECT pp.id, pis.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
-					$id_aktuelne_verzije = mysql_result($q2210,0,0);
-					$id_izbornog_slota = mysql_result($q2210,0,0);
-					$q2220 = myquery("UPDATE plan_izborni_slot SET pasos_predmeta=$id_pasosa WHERE id=$id_izbornog_slota AND pasos_predmeta=$id_aktuelne_verzije");
+					$q2210 = db_query("SELECT pp.id, pis.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+					$id_aktuelne_verzije = db_result($q2210,0,0);
+					$id_izbornog_slota = db_result($q2210,0,0);
+					$q2220 = db_query("UPDATE plan_izborni_slot SET pasos_predmeta=$id_pasosa WHERE id=$id_izbornog_slota AND pasos_predmeta=$id_aktuelne_verzije");
 				}
 
 				nicemessage("Pasoš predmeta postavljen za aktuelni");
@@ -255,19 +255,19 @@ function studentska_plan(){
 		
 		// Podaci o pasošu za prikaz
 		
-		$q2000 = myquery("SELECT *, UNIX_TIMESTAMP(vrijeme_prijedloga) vrijeme FROM pasos_predmeta WHERE id=$id_pasosa");
-		$pasos = mysql_fetch_array($q2000);
+		$q2000 = db_query("SELECT *, UNIX_TIMESTAMP(vrijeme_prijedloga) vrijeme FROM pasos_predmeta WHERE id=$id_pasosa");
+		$pasos = db_fetch_array($q2000);
 		$vrijeme_prijedloga = date("d.m.Y. h:i", $pasos['vrijeme']);
 		
-		$q2010 = myquery("SELECT ime, prezime FROM osoba WHERE id=".$pasos['predlozio']);
-		$predlozio = mysql_result($q2010,0,1)." ".mysql_result($q2010,0,0);
+		$q2010 = db_query("SELECT ime, prezime FROM osoba WHERE id=".$pasos['predlozio']);
+		$predlozio = db_result($q2010,0,1)." ".db_result($q2010,0,0);
 		
 		// Koja je aktuelna verzija pasoša?
-		$q2020 = myquery("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
-		if (mysql_num_rows($q2020) == 0) {
-			$q2020 = myquery("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		$q2020 = db_query("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		if (db_num_rows($q2020) == 0) {
+			$q2020 = db_query("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		}
-		$id_aktuelne_verzije = mysql_result($q2020,0,0);
+		$id_aktuelne_verzije = db_result($q2020,0,0);
 		if ($id_aktuelne_verzije == $id_pasosa) $text_aktuelna = "- <b><i>aktuelna verzija</i></b>"; else $text_aktuelna = " - <a href=\"?sta=studentska/plan&amp;studij=$studij&amp;plan=$plan&amp;predmet=$predmet&amp;uporedi_pasos=$id_pasosa\">uporedi sa aktuelnom verzijom</a>";
 		
 		?>
@@ -335,11 +335,11 @@ function studentska_plan(){
 		$id_pasosa = intval($_REQUEST['uporedi_pasos']);
 
 		// Koja je aktuelna verzija pasoša?
-		$q2020 = myquery("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
-		if (mysql_num_rows($q2020) == 0) {
-			$q2020 = myquery("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		$q2020 = db_query("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		if (db_num_rows($q2020) == 0) {
+			$q2020 = db_query("SELECT pp.id FROM plan_studija_predmet psp, pasos_predmeta pp, plan_izborni_slot pis WHERE psp.plan_studija=$plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		}
-		$id_aktuelne_verzije = mysql_result($q2020,0,0);
+		$id_aktuelne_verzije = db_result($q2020,0,0);
 
 		if ($id_aktuelne_verzije == $id_pasosa) {
 			nicemessage("Ovo je aktuelna verzija pasoša.");
@@ -349,10 +349,10 @@ function studentska_plan(){
 			<?
 		}
 
-		$q2300 = myquery("SELECT * FROM pasos_predmeta WHERE id=$id_pasosa");
-		$odabrani_pasos = mysql_fetch_array($q2300);
-		$q2310 = myquery("SELECT * FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
-		$aktuelni_pasos = mysql_fetch_array($q2310);
+		$q2300 = db_query("SELECT * FROM pasos_predmeta WHERE id=$id_pasosa");
+		$odabrani_pasos = db_fetch_array($q2300);
+		$q2310 = db_query("SELECT * FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
+		$aktuelni_pasos = db_fetch_array($q2310);
 
 		?>
 		<table border="0"><tr><th>Polje</th><th>Odabrani pasoš</th><th>Aktuelna verzija</th></tr>
@@ -379,7 +379,7 @@ function studentska_plan(){
 
 
 	// Upit za sve predmete na studiju
-/*	$q130 = myquery("	(SELECT pp.predmet, pp.naziv, pp.sifra, pp.ects, psp.semestar sem, psp.obavezan obvz, NULL
+/*	$q130 = db_query("	(SELECT pp.predmet, pp.naziv, pp.sifra, pp.ects, psp.semestar sem, psp.obavezan obvz, NULL
 	FROM plan_studija_predmet as psp, pasos_predmeta as pp
 	WHERE psp.plan_studija=1 AND psp.obavezan=1 and psp.pasos_predmeta=pp.id)
         UNION ALL
@@ -394,17 +394,17 @@ function studentska_plan(){
 	<?
 
 	// Tabela predmeta
-	$q20 = myquery("SELECT ts.trajanje FROM tipstudija ts, studij s
+	$q20 = db_query("SELECT ts.trajanje FROM tipstudija ts, studij s
 	WHERE s.id=$studij AND s.tipstudija=ts.id");
-	$trajanje = mysql_result($q20,0,0);
+	$trajanje = db_result($q20,0,0);
 	$space = "&nbsp;&nbsp;";
 	for ($semestar=1; $semestar<=$trajanje; $semestar++) {
 		$semestar_ispis = "";
 		$total_ects_low = $total_ects_high = 0;
 
 		$parnepar = "#fff";
-		$q30 = myquery("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan and psp.semestar=$semestar and psp.obavezan=1 and psp.pasos_predmeta=pp.id order by pp.naziv");
-		while ($r30 = mysql_fetch_row($q30)) {
+		$q30 = db_query("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan and psp.semestar=$semestar and psp.obavezan=1 and psp.pasos_predmeta=pp.id order by pp.naziv");
+		while ($r30 = db_fetch_row($q30)) {
 			$semestar_ispis .= "<tr bgcolor=\"$parnepar\">\n";
 			if ($predmet == $r30[0])
 				$semestar_ispis .= "<td>$r30[1]</td>\n";
@@ -416,17 +416,17 @@ function studentska_plan(){
 			$total_ects_high += $r30[3];
 		}
 
-		$q40 = myquery("select plan_izborni_slot, count(plan_izborni_slot) from plan_studija_predmet where plan_studija=$plan and semestar=$semestar and obavezan=0 group by plan_izborni_slot order by plan_izborni_slot");
+		$q40 = db_query("select plan_izborni_slot, count(plan_izborni_slot) from plan_studija_predmet where plan_studija=$plan and semestar=$semestar and obavezan=0 group by plan_izborni_slot order by plan_izborni_slot");
 		$count=1;
-		while ($r40 = mysql_fetch_row($q40)) {
+		while ($r40 = db_fetch_row($q40)) {
 			$oldparnepar = $parnepar;
 			if ($parnepar == "#fff") $parnepar = "#eee"; else $parnepar="#fff";
 
 			// Kreiramo ispis za predmete u izbornom slotu ($is_ispis) i određujemo ECTS kredite za slot
 			$is_ects_low = 0; $is_ects_high = 0;
 			$is_ispis = "";
-			$q50 = myquery("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$r40[0] and pis.pasos_predmeta=pp.id order by pp.naziv");
-			while ($r50 = mysql_fetch_row($q50)) {
+			$q50 = db_query("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$r40[0] and pis.pasos_predmeta=pp.id order by pp.naziv");
+			while ($r50 = db_fetch_row($q50)) {
 				$is_ispis .= "<tr bgcolor=\"$parnepar\">\n";
 				if ($predmet == $r50[0])
 					$is_ispis .= "<td>$space$space$r50[1]</td>\n";
@@ -491,9 +491,9 @@ function studentska_plan(){
 		$pis = intval($_REQUEST['pis']);
 		$semestar = intval($_REQUEST['semestar']);
 		
-		$q40 = myquery("select plan_izborni_slot, count(plan_izborni_slot) from plan_studija_predmet where plan_studija=$plan and semestar=$semestar and obavezan=0 group by plan_izborni_slot order by plan_izborni_slot");
+		$q40 = db_query("select plan_izborni_slot, count(plan_izborni_slot) from plan_studija_predmet where plan_studija=$plan and semestar=$semestar and obavezan=0 group by plan_izborni_slot order by plan_izborni_slot");
 		$count=1;
-		while ($r40 = mysql_fetch_row($q40)) {
+		while ($r40 = db_fetch_row($q40)) {
 			$broj_slotova = $r40[1];
 			if ($r40[0] == $pis) break;
 			if ($broj_slotova>1) 
@@ -504,11 +504,11 @@ function studentska_plan(){
 		if (isset($_REQUEST['fakatradi']) && $_REQUEST['fakatradi'] == "1") {
 			$novi_broj_slotova = intval($_REQUEST['broj_slotova']);
 			while ($novi_broj_slotova > $broj_slotova) {
-				$q38 = myquery("INSERT INTO plan_studija_predmet SET plan_studija=$plan, plan_izborni_slot=$pis, semestar=$semestar, obavezan=0, potvrdjen=1");
+				$q38 = db_query("INSERT INTO plan_studija_predmet SET plan_studija=$plan, plan_izborni_slot=$pis, semestar=$semestar, obavezan=0, potvrdjen=1");
 				$broj_slotova++;
 			}
 			while ($novi_broj_slotova < $broj_slotova) {
-				$q39 = myquery("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND plan_izborni_slot=$pis AND semestar=$semestar AND obavezan=0 LIMIT 1");
+				$q39 = db_query("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND plan_izborni_slot=$pis AND semestar=$semestar AND obavezan=0 LIMIT 1");
 				$broj_slotova--;
 			}
 			?>
@@ -550,8 +550,8 @@ function studentska_plan(){
 		
 		$greska_naziv = ""; $greska_sifra = ""; $greska_ects = "";
 		if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "novi_predmet") {
-			$naziv = trim(my_escape($_REQUEST['naziv']));
-			$sifra = trim(my_escape($_REQUEST['sifra']));
+			$naziv = trim(db_escape($_REQUEST['naziv']));
+			$sifra = trim(db_escape($_REQUEST['sifra']));
 			$ects = _floatval($_REQUEST['ects']);
 			$semestar = intval($_REQUEST['semestar']);
 			$izborni_slot = 0;
@@ -576,14 +576,14 @@ function studentska_plan(){
 						$kratki_naziv .= strtoupper(substr($dio,0,1));
 						$dio_upita .= "OR naziv LIKE '%$dio%' ";
 					}
-					$q500 = myquery("SELECT id, naziv, sifra FROM predmet WHERE naziv LIKE '%$naziv%' OR sifra LIKE '%$sifra%'");
-					if (mysql_num_rows($q500) == 0)
-						$q500 = myquery("SELECT id, naziv, sifra FROM predmet WHERE kratki_naziv='$kratki_naziv' $dio_upita");
-					if (mysql_num_rows($q500) > 0) {
+					$q500 = db_query("SELECT id, naziv, sifra FROM predmet WHERE naziv LIKE '%$naziv%' OR sifra LIKE '%$sifra%'");
+					if (db_num_rows($q500) == 0)
+						$q500 = db_query("SELECT id, naziv, sifra FROM predmet WHERE kratki_naziv='$kratki_naziv' $dio_upita");
+					if (db_num_rows($q500) > 0) {
 						?>
 						<p><b>Pronađeni su sljedeći slični predmeti.</b> Da li želite da dodate postojeći predmet u plan i program ili da kreirate novi?<br>
 						<?
-						while ($r500 = mysql_fetch_row($q500)) {
+						while ($r500 = db_fetch_row($q500)) {
 							?>
 							<input type="radio" name="postojeci_predmet" value="<?=$r500[0]?>"> <?=$r500[1]?> (<?=$r500[2]?>) <br>
 							<?
@@ -599,15 +599,15 @@ function studentska_plan(){
 				// Ako nema izbornih slotova, uzimamo $izborni_slot=0 što znači kreiranje novog
 				if (isset($_REQUEST['izborni'])) {
 					if (!isset($_REQUEST['izborni_slot'])) {
-						$q400 = myquery("SELECT plan_izborni_slot, COUNT(*) FROM plan_studija_predmet WHERE plan_studija=$plan AND semestar=$semestar AND plan_izborni_slot IS NOT NULL GROUP BY plan_izborni_slot ORDER BY plan_izborni_slot");
-						if (mysql_num_rows($q400) > 0) {
+						$q400 = db_query("SELECT plan_izborni_slot, COUNT(*) FROM plan_studija_predmet WHERE plan_studija=$plan AND semestar=$semestar AND plan_izborni_slot IS NOT NULL GROUP BY plan_izborni_slot ORDER BY plan_izborni_slot");
+						if (db_num_rows($q400) > 0) {
 							?>
 							<h3>Dodavanje novog predmeta - odabir izbornog slota</h3>
 							<p>Da li želite dodati novi predmet u postojeći slot (skupinu izbornih predmeta) ili kreirati novu skupinu izbornih predmeta? Studenti moraju izabrati određeni broj predmeta iz svakog slota.</p>
 							<?=genform("POST");?>
 							<?
 							$broj_predmeta = 1;
-							while ($r400 = mysql_fetch_row($q400)) {
+							while ($r400 = db_fetch_row($q400)) {
 								?>
 								<input type="radio" name="izborni_slot" value="<?=$r400[0]?>">Izborni predmet <?=$broj_predmeta?>
 								<?
@@ -655,13 +655,13 @@ function studentska_plan(){
 					
 					// Uzećemo najnoviji pasoš za ovaj predmet
 					// Po mogućnosti usvojen
-					$q405 = myquery("SELECT id FROM pasos_predmeta WHERE predmet=$id_predmeta ORDER BY usvojen DESC, id DESC LIMIT 1");
-					$id_pasosa = mysql_result($q405,0,0);
+					$q405 = db_query("SELECT id FROM pasos_predmeta WHERE predmet=$id_predmeta ORDER BY usvojen DESC, id DESC LIMIT 1");
+					$id_pasosa = db_result($q405,0,0);
 
 				} else {
 					// Institucija potrebna za tabelu predmet
-					$q410 = myquery("SELECT institucija FROM studij WHERE id=$studij");
-					$institucija = mysql_result($q410,0,0);
+					$q410 = db_query("SELECT institucija FROM studij WHERE id=$studij");
+					$institucija = db_result($q410,0,0);
 					
 					// Određujemo kratki naziv
 					$dijelovi = explode(" ",$naziv);
@@ -669,12 +669,12 @@ function studentska_plan(){
 					foreach ($dijelovi as $dio)
 						$kratki_naziv .= strtoupper(substr($dio,0,1));
 
-					$q420 = myquery("INSERT INTO predmet SET sifra='$sifra', naziv='$naziv', institucija=$institucija, ects=$ects, kratki_naziv='$kratki_naziv'");
-					$id_predmeta = mysql_insert_id();
+					$q420 = db_query("INSERT INTO predmet SET sifra='$sifra', naziv='$naziv', institucija=$institucija, ects=$ects, kratki_naziv='$kratki_naziv'");
+					$id_predmeta = db_insert_id();
 					
 					// Kreiramo default pasoš predmeta
-					$q430 = myquery("INSERT INTO pasos_predmeta SET predmet=$id_predmeta, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='Kreiran novi predmet', sifra='$sifra', naziv='$naziv', ects=$ects");
-					$id_pasosa = mysql_insert_id();
+					$q430 = db_query("INSERT INTO pasos_predmeta SET predmet=$id_predmeta, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='Kreiran novi predmet', sifra='$sifra', naziv='$naziv', ects=$ects");
+					$id_pasosa = db_insert_id();
 					zamgerlog2("kreiran novi predmet", $id_predmeta);
 				}
 				
@@ -682,13 +682,13 @@ function studentska_plan(){
 				if (isset($_REQUEST['izborni'])) {
 					// Kreiramo novi izborni slot
 					if ($izborni_slot == 0) {
-						$q440 = myquery("SELECT MAX(id)+1 FROM plan_izborni_slot");
-						$izborni_slot = mysql_result($q440,0,0);
-						$q450 = myquery("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=NULL, plan_izborni_slot=$izborni_slot, semestar=$semestar, obavezan=0, potvrdjen=0");
+						$q440 = db_query("SELECT MAX(id)+1 FROM plan_izborni_slot");
+						$izborni_slot = db_result($q440,0,0);
+						$q450 = db_query("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=NULL, plan_izborni_slot=$izborni_slot, semestar=$semestar, obavezan=0, potvrdjen=0");
 					}
-					$q460 = myquery("INSERT INTO plan_izborni_slot SET id=$izborni_slot, pasos_predmeta=$id_pasosa");
+					$q460 = db_query("INSERT INTO plan_izborni_slot SET id=$izborni_slot, pasos_predmeta=$id_pasosa");
 				} else {
-					$q470 = myquery("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=$id_pasosa, plan_izborni_slot=NULL, semestar=$semestar, obavezan=1, potvrdjen=0");
+					$q470 = db_query("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=$id_pasosa, plan_izborni_slot=NULL, semestar=$semestar, obavezan=1, potvrdjen=0");
 				}
 				zamgerlog2("pasos predmeta ubacen u plan studija", $plan, intval($id_pasosa));
 				
@@ -736,7 +736,7 @@ function studentska_plan(){
 		if (isset($_REQUEST['prihvati_pasos'])) $prihvati_pasos = intval($_REQUEST['prihvati_pasos']);
 		
 		if ($dodaj_prava > 0) {
-			$q300 = myquery("INSERT INTO plan_studija_permisije SET plan_studija=$plan, predmet=$predmet, osoba=$dodaj_prava");
+			$q300 = db_query("INSERT INTO plan_studija_permisije SET plan_studija=$plan, predmet=$predmet, osoba=$dodaj_prava");
 			zamgerlog2("date permisije za izmjenu pasoša predmeta", $dodaj_prava, $predmet);
 			?>
 			Date su permisije.
@@ -748,7 +748,7 @@ function studentska_plan(){
 		}
 		
 		if ($oduzmi_prava > 0) {
-			$q300 = myquery("DELETE FROM plan_studija_permisije WHERE plan_studija=$plan AND predmet=$predmet AND osoba=$oduzmi_prava");
+			$q300 = db_query("DELETE FROM plan_studija_permisije WHERE plan_studija=$plan AND predmet=$predmet AND osoba=$oduzmi_prava");
 			zamgerlog2("oduzete permisije za izmjenu pasoša predmeta", $oduzmi_prava, $predmet);
 			?>
 			Oduzete su permisije.
@@ -760,27 +760,27 @@ function studentska_plan(){
 		}
 		
 		if ($prihvati_pasos > 0) {
-			$q400 = myquery("SELECT pp.id FROM pasos_predmeta pp, plan_studija_predmet psp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=$plan");
-			if (mysql_num_rows($q400)>0) {
-				$trenutni_pasos = mysql_result($q400,0,0);
-				$q410 = myquery("UPDATE plan_studija_predmet SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND plan_studija=$plan");
+			$q400 = db_query("SELECT pp.id FROM pasos_predmeta pp, plan_studija_predmet psp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=$plan");
+			if (db_num_rows($q400)>0) {
+				$trenutni_pasos = db_result($q400,0,0);
+				$q410 = db_query("UPDATE plan_studija_predmet SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND plan_studija=$plan");
 			} else {
-				$q420 = myquery("SELECT pp.id, pis.id FROM pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE pp.predmet=$predmet AND pp.id=pis.pasos_predmeta AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=$plan");
-				if (mysql_num_rows($q420) == 0) {
+				$q420 = db_query("SELECT pp.id, pis.id FROM pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE pp.predmet=$predmet AND pp.id=pis.pasos_predmeta AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=$plan");
+				if (db_num_rows($q420) == 0) {
 					niceerror("Nije pronađen važeći pasoš u odabranom NPPu.");
 					return;
 				}
-				$trenutni_pasos = mysql_result($q420,0,0);
-				$izborni_slot = mysql_result($q420,0,1);
-				$q430 = myquery("SELECT COUNT(*) FROM plan_studija_predmet WHERE plan_izborni_slot=$izborni_slot AND plan_studija!=$plan");
-				if (mysql_result($q430) == 0) {
-					$q440 = myquery("UPDATE plan_izborni_slot SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND id=$izborni_slot");
+				$trenutni_pasos = db_result($q420,0,0);
+				$izborni_slot = db_result($q420,0,1);
+				$q430 = db_query("SELECT COUNT(*) FROM plan_studija_predmet WHERE plan_izborni_slot=$izborni_slot AND plan_studija!=$plan");
+				if (db_result($q430) == 0) {
+					$q440 = db_query("UPDATE plan_izborni_slot SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND id=$izborni_slot");
 				} else {
-					$q450 = myquery("SELECT id FROM plan_izborni_slot ORDER BY id DESC LIMIT 1");
-					$novi_izborni_slot = mysql_result($q450,0,0) + 1;
-					$q460 = myquery("INSERT INTO plan_izborni_slot SELECT $novi_izborni_slot, pasos_predmeta FROM plan_izborni_slot WHERE id=$izborni_slot");
-					$q470 = myquery("UPDATE plan_izborni_slot SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND id=$novi_izborni_slot");
-					$q480 = myquery("UPDATE plan_studija_predmet SET plan_izborni_slot=$novi_izborni_slot WHERE plan_izborni_slot=$izborni_slot AND plan_studija=$plan");
+					$q450 = db_query("SELECT id FROM plan_izborni_slot ORDER BY id DESC LIMIT 1");
+					$novi_izborni_slot = db_result($q450,0,0) + 1;
+					$q460 = db_query("INSERT INTO plan_izborni_slot SELECT $novi_izborni_slot, pasos_predmeta FROM plan_izborni_slot WHERE id=$izborni_slot");
+					$q470 = db_query("UPDATE plan_izborni_slot SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND id=$novi_izborni_slot");
+					$q480 = db_query("UPDATE plan_studija_predmet SET plan_izborni_slot=$novi_izborni_slot WHERE plan_izborni_slot=$izborni_slot AND plan_studija=$plan");
 				}
 				
 			}
@@ -798,8 +798,8 @@ function studentska_plan(){
 		$id_aktuelne_verzije = 0;
 		$ima_na_drugim_npp = false;
 		$aktuelna_ima_na_drugim_npp = false;
-		$q200 = myquery("SELECT pp.id, pp.usvojen, o.ime, o.prezime, UNIX_TIMESTAMP(pp.vrijeme_prijedloga), pp.komentar_prijedloga FROM pasos_predmeta pp, osoba o WHERE pp.predmet=$predmet AND pp.predlozio=o.id ORDER BY pp.vrijeme_prijedloga");
-		while ($r200 = mysql_fetch_row($q200)) {
+		$q200 = db_query("SELECT pp.id, pp.usvojen, o.ime, o.prezime, UNIX_TIMESTAMP(pp.vrijeme_prijedloga), pp.komentar_prijedloga FROM pasos_predmeta pp, osoba o WHERE pp.predmet=$predmet AND pp.predlozio=o.id ORDER BY pp.vrijeme_prijedloga");
+		while ($r200 = db_fetch_row($q200)) {
 			$pp = $r200[0];
 			$predlozio = $r200[3]." ".$r200[2];
 			$vrijeme_prijedloga = date("d.m.Y. h:i", $r200[4]);
@@ -808,7 +808,7 @@ function studentska_plan(){
 			$verzije_pasosa .= "<li>".$komentar_prijedloga." (".$predlozio.", ".$vrijeme_prijedloga.")";
 			
 			// U kojim studijima se nalazi ovaj pasoš
-			$q210 = myquery("(SELECT ps.id, s.naziv naz, ag.naziv, ps.godina_vazenja gv
+			$q210 = db_query("(SELECT ps.id, s.naziv naz, ag.naziv, ps.godina_vazenja gv
 			FROM plan_studija_predmet psp, plan_studija ps, studij s, akademska_godina ag 
 			WHERE psp.pasos_predmeta=$pp AND psp.plan_studija=ps.id AND ps.studij=s.id AND ps.godina_vazenja=ag.id)
 			UNION
@@ -818,7 +818,7 @@ function studentska_plan(){
 			ORDER BY gv, naz");
 			
 			$planovi_studija = ""; $aktuelna = false; $ispis = false;
-			while ($r210 = mysql_fetch_row($q210)) {
+			while ($r210 = db_fetch_row($q210)) {
 				if ($r210[0] == $plan) $aktuelna=true; else $ispis=true;
 				$planovi_studija .= "<li>".$r210[1]." (".$r210[2].")</li>\n";
 			}
@@ -838,36 +838,36 @@ function studentska_plan(){
 		}
 		
 		// Osnovni podaci
-		$q240 = myquery("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
-		$podaci_o_predmetu = mysql_fetch_array($q240);
+		$q240 = db_query("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
+		$podaci_o_predmetu = db_fetch_array($q240);
 		
 		// Akcija: Brisanje predmeta iz NPP
 		if ($_REQUEST['akcija'] == "brisi_predmet") {
 			if ($_REQUEST['potvrda']) {
 				// Uklanjamo predmet iz NPPa - obavezan
-				$q1000 = myquery("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND pasos_predmeta=$id_aktuelne_verzije AND obavezan=1");
+				$q1000 = db_query("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND pasos_predmeta=$id_aktuelne_verzije AND obavezan=1");
 				// Uklanjamo predmet iz NPPa - izborni
-				$q1010 = myquery("SELECT pis.id FROM plan_izborni_slot pis, plan_studija_predmet psp WHERE psp.plan_studija=$plan and psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=$id_aktuelne_verzije");
-				while ($r1010 = mysql_fetch_row($q1010)) {
-					$q1020 = myquery("DELETE FROM plan_izborni_slot WHERE id=$r1010[0] and pasos_predmeta=$id_aktuelne_verzije");
+				$q1010 = db_query("SELECT pis.id FROM plan_izborni_slot pis, plan_studija_predmet psp WHERE psp.plan_studija=$plan and psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=$id_aktuelne_verzije");
+				while ($r1010 = db_fetch_row($q1010)) {
+					$q1020 = db_query("DELETE FROM plan_izborni_slot WHERE id=$r1010[0] and pasos_predmeta=$id_aktuelne_verzije");
 					// Da li je sada prazan izborni slot?
-					$q1022 = myquery("SELECT COUNT(*) FROM plan_izborni_slot WHERE id=$r1010[0]");
-					if (mysql_result($q1022,0,0) == 0)
-						$q1000 = myquery("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND plan_izborni_slot=$r1010[0] AND obavezan=0");
+					$q1022 = db_query("SELECT COUNT(*) FROM plan_izborni_slot WHERE id=$r1010[0]");
+					if (db_result($q1022,0,0) == 0)
+						$q1000 = db_query("DELETE FROM plan_studija_predmet WHERE plan_studija=$plan AND plan_izborni_slot=$r1010[0] AND obavezan=0");
 				}
 				zamgerlog2("predmet uklonjen iz npp-a", $predmet, $plan);
 					
 				// Ako je korisnik tražio, skroz brišemo predmet i sve njegove pasoše
 				// Ako su bilo kakvi podaci uneseni (ocjene, ponudekursa i sl) brisanje će pasti zbog referencijalnog integriteta kako i treba
 				if ($_REQUEST['skroz_brisi']) {
-					$q1030 = myquery("DELETE FROM predmet WHERE id=$predmet");
-					$q1040 = myquery("DELETE FROM pasos_predmeta WHERE predmet=$predmet");
+					$q1030 = db_query("DELETE FROM predmet WHERE id=$predmet");
+					$q1040 = db_query("DELETE FROM pasos_predmeta WHERE predmet=$predmet");
 					zamgerlog2("predmet obrisan", $predmet);
 				}
 
 				// Ako je korisnik tražio, brišemo aktuelnu verziju pasoša
 				if ($_REQUEST['brisi_pasos']) {
-					$q1040 = myquery("DELETE FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
+					$q1040 = db_query("DELETE FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
 					zamgerlog2("obrisana aktuelna verzija pasoša predmeta", $predmet);
 				}
 				?>
@@ -914,18 +914,18 @@ function studentska_plan(){
 		// Ko ima prava?
 		$prava_pristupa = "";
 		$vec_imaju_pravo = array();
-		$q220 = myquery("SELECT o.id, o.prezime, o.ime FROM plan_studija_permisije psp, osoba o WHERE psp.plan_studija=$plan AND psp.predmet=$predmet AND psp.osoba=o.id ORDER BY o.prezime, o.ime");
-		if (mysql_num_rows($q220) == 0)
+		$q220 = db_query("SELECT o.id, o.prezime, o.ime FROM plan_studija_permisije psp, osoba o WHERE psp.plan_studija=$plan AND psp.predmet=$predmet AND psp.osoba=o.id ORDER BY o.prezime, o.ime");
+		if (db_num_rows($q220) == 0)
 			$prava_pristupa = "<li>Niko</li>";
-		while ($r220 = mysql_fetch_row($q220)) {
+		while ($r220 = db_fetch_row($q220)) {
 			$prava_pristupa .= "<li>$r220[1] $r220[2] - <a href=\"?sta=studentska/plan&studij=$studij&plan=$plan&predmet=$predmet&oduzmi_prava=$r220[0]\">Oduzmi prava</a>";
 			array_push($vec_imaju_pravo, $r220[0]);
 		}
 		
 		// Ko sve može dobiti prava?
 		$dodaj_prava = "";
-		$q360 = myquery("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
-		while ($r360 = mysql_fetch_row($q360)) {
+		$q360 = db_query("select o.id, o.prezime, o.ime from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='nastavnik' order by o.prezime, o.ime");
+		while ($r360 = db_fetch_row($q360)) {
 			if (in_array($r360[0], $vec_imaju_pravo)) continue;
 			$dodaj_prava .= "<option value=\"$r360[0]\">$r360[1] $r360[2]</option>\n";
 		}
