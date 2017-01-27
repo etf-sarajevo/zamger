@@ -10,7 +10,7 @@ function admin_studij() {
 ?>
 <h2>Parametri studija</h2>
 
-<p><a href="?sta=admin/studij&akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&akcija=inst">Institucija</a> * <a href="?sta=admin/studij&akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&akcija=studij">Studij</a> * <a href="?sta=admin/studij&akcija=tippr">Tipovi predmeta</a></p>
+<p><a href="?sta=admin/studij&amp;akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&amp;akcija=inst">Institucija</a> * <a href="?sta=admin/studij&amp;akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&amp;akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&amp;akcija=naucni_stepen">Naučni stepen</a> * <a href="?sta=admin/studij&amp;akcija=strucni_stepen">Stručni stepen</a> * <a href="?sta=admin/studij&amp;akcija=studij">Studij</a> * <a href="?sta=admin/studij&amp;akcija=tippr">Tipovi predmeta</a></p>
 
 <?
 
@@ -33,6 +33,16 @@ if (param('akcija')=="kanton") {
 if (param('akcija')=="komponenta") {
 	print db_grid("komponenta");
 	print "<br /><hr><br />Dodaj:<br />".db_form("komponenta");
+}
+
+if (param('akcija')=="naucni_stepen") {
+	print db_grid("naucni_stepen");
+	print "<br /><hr><br />Dodaj:<br />".db_form("naucni_stepen");
+}
+
+if (param('akcija')=="strucni_stepen") {
+	print db_grid("strucni_stepen");
+	print "<br /><hr><br />Dodaj:<br />".db_form("strucni_stepen");
 }
 
 if (param('akcija')=="studij") {
