@@ -1171,7 +1171,7 @@ CREATE TABLE IF NOT EXISTS `plan_studija_predmet` (
   KEY `plan_studija` (`plan_studija`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
-- --------------------------------------------------------
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `podoblast`
@@ -2435,12 +2435,6 @@ ALTER TABLE `ispitocjene`
 --
 ALTER TABLE `ispit_termin`
   ADD CONSTRAINT `ispit_termin_ibfk_1` FOREIGN KEY (`ispit`) REFERENCES `ispit` (`id`);
-
---
--- Constraints for table `izborni_slot`
---
-ALTER TABLE `izborni_slot`
-  ADD CONSTRAINT `izborni_slot_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
 
 --
 -- Constraints for table `kolizija`
