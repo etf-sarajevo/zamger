@@ -178,35 +178,47 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 			return;
 		} else {
 			// Određujemo najnoviji plan studija
-			$q225 = db_query("select godina_vazenja from plan_studija where predmet=$predmet order by godina_vazenja desc limit 1");
-			if (db_num_rows($q225)>0) {
-				// Biramo ponude kursa iz najnovijeg plana studija
-				$q230 = db_query("select studij, semestar, obavezan from plan_studija where predmet=$predmet and godina_vazenja=".db_result($q225,0,0));
+			// FIXME ovo je naopako jer određujemo studij iz ID-a predmeta na kojem se nudi
+			$q225 = db_query("SELECT ps.studij, psp.semestar, psp.obavezan FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=ps.id ORDER BY ps.godina_vazenja DESC LIMIT 1");
+			if (db_num_rows($q255) > 0) {
+				$pstudij = db_result($q225,0,0);
+				$psemestar = db_result($q225,0,1);
+				$pobavezan = db_result($q225,0,2);
 			} else {
-				// Ne postoji plan studija
-				// Kopiramo ponude kursa iz prošle godine u ovu
-				$q230 = db_query("select studij, semestar, obavezan from ponudakursa where predmet=$predmet and akademska_godina=".($ak_god-1));
+				// Izborni predmet
+				$q230 = db_query("SELECT ps.studij, psp.semestar, psp.obavezan FROM plan_studija ps, plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE pp.predmet=$predmet AND pp.id=pis.pasos_predmeta AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=ps.id ORDER BY ps.godina_vazenja DESC LIMIT 1");
+				if (db_num_rows($q230) > 0) {
+					$pstudij = db_result($q230,0,0);
+					$psemestar = db_result($q230,0,1);
+					$pobavezan = db_result($q230,0,2);
+				} else {
+					// Nema ga nikako u planu studija! Uzimamo podatke iz ponude kursa
+					$q235 = db_query("select studij, semestar, obavezan from ponudakursa where predmet=$predmet and akademska_godina=".($ak_god-1));
+					if (db_num_rows($q235) > 0) {
+						$pstudij = db_result($q235,0,0);
+						$psemestar = db_result($q235,0,1);
+						$pobavezan = db_result($q235,0,2);
+					} else {
+						zamgerlog("predmet vec postoji, ali nije se drzao (pp$predmet)",3);
+						zamgerlog2("predmet vec postoji, ali nije se drzao", $predmet);
+						niceerror("Predmet već postoji, ali nije se držao ni ove ni prošle akademske godine.");
+						?><p>Takođe nije definisan ni plan studija. Iz ovih razloga ne možemo automatski kreirati ponude kursa. Koristite editovanje da biste ručno dodali ponude kursa.</p><br/><a href="?sta=studentska/predmeti&amp;akcija=edit&amp;predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
+						return;
+					}
+				}
 			}
-			if (db_num_rows($q230)<1) {
-				zamgerlog("predmet vec postoji, ali nije se drzao (pp$predmet)",3);
-				zamgerlog2("predmet vec postoji, ali nije se drzao", $predmet);
-				niceerror("Predmet već postoji, ali nije se držao ni ove ni prošle akademske godine.");
-				?><p>Takođe nije definisan ni plan studija. Iz ovih razloga ne možemo automatski kreirati ponude kursa. Koristite editovanje da biste ručno dodali ponude kursa.</p><br/><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
-				return;
-			}
-			while ($r230 = db_fetch_row($q230)) {
-				$q240 = db_query("insert into ponudakursa set predmet=$predmet, studij=$r230[0], semestar=$r230[1], obavezan=$r230[2], akademska_godina=$ak_god");
-				$pk = db_insert_id();
+			
+			$q240 = db_query("insert into ponudakursa set predmet=$predmet, studij=$pstudij, semestar=$psemestar, obavezan=$pobavezan, akademska_godina=$ak_god");
+			$pk = db_insert_id();
 
-				// Ispis i logging
-				$q231 = db_query("select naziv from studij where id=$r230[0]");
-				$ispis = "Kreiram ponudu kursa za predmet $naziv (studij ".db_result($q231,0,0).", semestar $r230[1]";
-				if ($r230[2]!=1) $ispis.=", izborni";
-				$ispis.=")";
-				nicemessage($ispis);
-				zamgerlog ("kreirana ponudakursa za pp$predmet");
-				zamgerlog2 ("kreirana ponudakursa", $pk);
-			}
+			// Ispis i logging
+			$q231 = db_query("select naziv from studij where id=$r230[0]");
+			$ispis = "Kreiram ponudu kursa za predmet $naziv (studij ".db_result($q231,0,0).", semestar $r230[1]";
+			if ($r230[2]!=1) $ispis.=", izborni";
+			$ispis.=")";
+			nicemessage($ispis);
+			zamgerlog ("kreirana ponudakursa za pp$predmet");
+			zamgerlog2 ("kreirana ponudakursa", $pk);
 
 			// Kreiram virtualnu labgrupu "Svi studenti"
 			$q250 = db_query("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");

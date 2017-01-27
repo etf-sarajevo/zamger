@@ -266,11 +266,24 @@ while ($r20 = db_fetch_row($q20)) {
 	// Ako se studij promijenio, uzimamo novi plan studija
 	if ($studij_id != $old_studij_id || $plan_studija != $old_plan_studija || $semestar != $old_semestar) {
 		$plan_studija = $plan_studija_obavezan = array();
+		
+		$q50 = db_query("select pasos_predmeta, semestar, obavezan, plan_izborni_slot from plan_studija_predmet where plan_studija=$ss_plan_studija and semestar=$sem");
+		while (db_fetch4($q50, $pasos_predmeta, $semestar, $obavezan, $plan_izborni_slot)) {
+			if (!array_key_exists($semestar, $plan_studija)) {
+				$plan_studija[$semestar] = array();
+				$plan_studija_obavezan[$semestar] = array();
+			}
+			if ($obavezan == 1) { // obavezan
+				$plan_studija[$semestar][] = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
+			} else { // izborni
+				// Sada samo stavljamo slot u spisak, a kasnije ćemo raščlaniti
+				$plan_studija[$semestar][] = $plan_izborni_slot;
+			}
+			$plan_studija_obavezan[$semestar][] = $obavezan;
+		}
 
-		for ($i=1; $i<10; $i++) // 10 - neće valjda biti više od 10 semestara? FIXME
-			$plan_studija[$i] = $plan_studija_obavezan[$i] = array();
 
-		$q30 = db_query("select semestar, predmet, obavezan from plan_studija where studij=$studij_id and godina_vazenja=$ss_plan_studija and semestar<=$semestar order by semestar");
+		$q30 = db_query("select semestar, predmet, obavezan from plan_studija_predmet where plan_studija=$ss_plan_studija and semestar<=$semestar order by semestar");
 		while ($r30 = db_fetch_row($q30)) {
 			$plan_studija[$r30[0]][] = $r30[1];
 			$plan_studija_obavezan[$r30[0]][] = $r30[2];
@@ -304,7 +317,7 @@ while ($r20 = db_fetch_row($q20)) {
 
 			// Izborni predmet
 			} else {
-				$q50 = db_query("select predmet from izborni_slot where id=$predmet");
+				$q50 = db_query("select pp.predmet from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$predmet and pis.pasos_predmeta=pp.id");
 				$ijedan=false;
 				$zapamti_parcijalni=$zapamti_izborni=0;
 				while ($r50 = db_fetch_row($q50)) {

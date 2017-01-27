@@ -600,19 +600,6 @@ CREATE TABLE IF NOT EXISTS `izbor` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `izborni_slot`
---
-
-CREATE TABLE IF NOT EXISTS `izborni_slot` (
-  `id` int(11) NOT NULL,
-  `predmet` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`predmet`),
-  KEY `predmet` (`predmet`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `kanton`
 --
 
@@ -1091,18 +1078,100 @@ CREATE TABLE IF NOT EXISTS `osoba_posebne_kategorije` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `pasos_predmeta`
+--
+
+CREATE TABLE IF NOT EXISTS `pasos_predmeta` (
+  `id` int(11) NOT NULL auto_increment,
+  `predmet` int(11) NOT NULL,
+  `usvojen` tinyint(4) NOT NULL,
+  `predlozio` int(11) NOT NULL,
+  `vrijeme_prijedloga` datetime NOT NULL,
+  `komentar_prijedloga` varchar(255) collate utf8_slovenian_ci NOT NULL,
+  `sifra` varchar(30) collate utf8_slovenian_ci NOT NULL,
+  `naziv` text collate utf8_slovenian_ci NOT NULL,
+  `naziv_en` text collate utf8_slovenian_ci NOT NULL,
+  `ects` float NOT NULL,
+  `sati_predavanja` int(11) NOT NULL,
+  `sati_vjezbi` int(11) NOT NULL,
+  `sati_tutorijala` int(11) NOT NULL,
+  `cilj_kursa` text collate utf8_slovenian_ci NOT NULL,
+  `cilj_kursa_en` text collate utf8_slovenian_ci NOT NULL,
+  `program` text collate utf8_slovenian_ci NOT NULL,
+  `program_en` text collate utf8_slovenian_ci NOT NULL,
+  `obavezna_literatura` text collate utf8_slovenian_ci NOT NULL,
+  `dopunska_literatura` text collate utf8_slovenian_ci NOT NULL,
+  `didakticke_metode` text collate utf8_slovenian_ci NOT NULL,
+  `didakticke_metode_en` text collate utf8_slovenian_ci NOT NULL,
+  `nacin_provjere_znanja` text collate utf8_slovenian_ci NOT NULL,
+  `nacin_provjere_znanja_en` text collate utf8_slovenian_ci NOT NULL,
+  `napomene` text collate utf8_slovenian_ci NOT NULL,
+  `napomene_en` text collate utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tip je MyISAM jer sa InnoDB se dobija Error 139' AUTO_INCREMENT=602 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plan_izborni_slot`
+--
+
+CREATE TABLE IF NOT EXISTS `plan_izborni_slot` (
+  `id` int(11) NOT NULL,
+  `pasos_predmeta` int(11) NOT NULL,
+  PRIMARY KEY  (`id`,`pasos_predmeta`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `plan_studija`
 --
 
 CREATE TABLE IF NOT EXISTS `plan_studija` (
-  `godina_vazenja` int(11) NOT NULL,
+  `id` int(11) NOT NULL auto_increment,
   `studij` int(11) NOT NULL,
-  `semestar` int(11) NOT NULL,
+  `godina_vazenja` int(11) default NULL,
+  `usvojen` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`id`),
+  KEY `studij` (`studij`),
+  KEY `godina_vazenja` (`godina_vazenja`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=23 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plan_studija_permisije`
+--
+
+CREATE TABLE IF NOT EXISTS `plan_studija_permisije` (
+  `plan_studija` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
-  `obavezan` tinyint(1) NOT NULL
+  `osoba` int(11) NOT NULL,
+  PRIMARY KEY  (`plan_studija`,`predmet`,`osoba`),
+  KEY `predmet` (`predmet`),
+  KEY `osoba` (`osoba`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `plan_studija_predmet`
+--
+
+CREATE TABLE IF NOT EXISTS `plan_studija_predmet` (
+  `plan_studija` int(11) NOT NULL,
+  `pasos_predmeta` int(11) default NULL,
+  `plan_izborni_slot` int(11) default NULL,
+  `semestar` tinyint(3) NOT NULL,
+  `obavezan` tinyint(1) NOT NULL,
+  `potvrdjen` tinyint(1) NOT NULL,
+  KEY `plan_studija` (`plan_studija`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+- --------------------------------------------------------
 
 --
 -- Table structure for table `podoblast`
@@ -2472,6 +2541,27 @@ ALTER TABLE `ogranicenje`
 ALTER TABLE `osoba`
   ADD CONSTRAINT `osoba_ibfk_3` FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `mjesto` (`id`),
   ADD CONSTRAINT `osoba_ibfk_4` FOREIGN KEY (`adresa_mjesto`) REFERENCES `mjesto` (`id`);
+
+--
+-- Constraints for table `plan_studija`
+--
+ALTER TABLE `plan_studija`
+  ADD CONSTRAINT `plan_studija_ibfk_1` FOREIGN KEY (`studij`) REFERENCES `studij` (`id`),
+  ADD CONSTRAINT `plan_studija_ibfk_2` FOREIGN KEY (`godina_vazenja`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `plan_studija_permisije`
+--
+ALTER TABLE `plan_studija_permisije`
+  ADD CONSTRAINT `plan_studija_permisije_ibfk_1` FOREIGN KEY (`plan_studija`) REFERENCES `plan_studija` (`id`),
+  ADD CONSTRAINT `plan_studija_permisije_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `plan_studija_permisije_ibfk_3` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `plan_studija_predmet`
+--
+ALTER TABLE `plan_studija_predmet`
+  ADD CONSTRAINT `plan_studija_predmet_ibfk_6` FOREIGN KEY (`plan_studija`) REFERENCES `plan_studija` (`id`);
 
 --
 -- Constraints for table `ponudakursa`

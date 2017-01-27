@@ -138,7 +138,6 @@ array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", 
 array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/zavrsni", "Završni rad", "Završni rad", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
-array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana studija", "B", "1", "0"),
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 //array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
 

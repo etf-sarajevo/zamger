@@ -640,7 +640,7 @@ else if ($akcija == "upis") {
 	// Ako je promijenjen studij, moramo odrediti i novi plan studija
 	if ($stari_studij != $studij) {
 		$ponovac=0;
-		$q515 = db_query("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+		$q515 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
 		if (db_num_rows($q515)>0) $plan_studija = db_result($q515,0,0);
 	}
 
@@ -749,12 +749,13 @@ else if ($akcija == "upis") {
 		$predmeti_pao=array();
 		$stari_predmet=array();
 
-		$q570 = db_query("select predmet, obavezan, semestar from plan_studija where godina_vazenja=$plan_studija and studij=$stari_studij and semestar<$semestar order by semestar");
+		$q570 = db_query("select pasos_predmeta, obavezan, semestar, plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar<$semestar order by semestar");
 		$slusao=array();
 		while ($r570 = db_fetch_row($q570)) {
 			$psemestar = $r570[2];
 			if ($r570[1]==1) { // obavezan
-				$predmet = $r570[0];
+				$q575 = db_query("SELECT predmet FROM pasos_predmeta WHERE id=$r570[0]");
+				$predmet = db_result($q575,0,0);
 
 				$q580 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
 				if (db_result($q580,0,0)<1) {
@@ -763,10 +764,10 @@ else if ($akcija == "upis") {
 					if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
 				}
 			} else { // izborni
-				$is = $r570[0];
+				$pis = $r570[3];
 				$slusao_id=0;
 				$polozio=0;
-				$q600 = db_query("select predmet from izborni_slot where id=$is");
+				$q600 = db_query("select pp.predmet from pasos_predmeta pp, plan_izborni_slot pis where pis.id=$pis and pis.pasos_predmeta=pp.id");
 				while ($r600 = db_fetch_row($q600)) {
 					$predmet=$r600[0];
 					if ($slusao[$predmet]!="") continue; // kada je isti predmet u dva slota
@@ -934,7 +935,7 @@ else if ($akcija == "upis") {
 
 	// novi studij - određujemo najnoviji plan studija za taj studij
 	if ($ns>0) { 
-		$q670 = db_query("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+		$q670 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
 		if (db_num_rows($q670)>0)
 			$plan_studija = db_result($q670,0,0);
 	}
@@ -986,10 +987,10 @@ else if ($akcija == "upis") {
 		// Ako postoji plan studija, problem je jednostavan
 		if ($plan_studija>0 && $uou==0) {
 			$bio_predmet=array();
-			$q710 = db_query("select predmet from plan_studija where godina_vazenja=$plan_studija and studij=$studij and semestar=$semestar and obavezan=0");
+			$q710 = db_query("select plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar=$semestar and obavezan=0");
 			while ($r710 = db_fetch_row($q710)) {
 				$izborni_slot = $r710[0];
-				$q720 = db_query("select p.id, p.naziv, p.ects from izborni_slot as iz, predmet as p where iz.id=$izborni_slot and iz.predmet=p.id");
+				$q720 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as iz, pasos_predmeta as pp where iz.id=$izborni_slot and iz.pasos_predmeta=pp.id");
 
 				// Prvi prolaz, za provjere
 				$nastavak=0;

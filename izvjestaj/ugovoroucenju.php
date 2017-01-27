@@ -200,14 +200,14 @@ if ($r210[0]==$debug_predmet) print $k++." redovno sigurno (trenutno sluša) $st
 		if ($novaag_aktuelna && db_num_rows($q200)==1) {
 			$pola_godine = true; // podaci za drugo pola su procjena
 			if ($novistudij != $studij) {
-				$q220 = db_query("select godina_vazenja from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
+				$q220 = db_query("select id from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
 				$ps = db_result($q220,0,0);
 			}
 			if ($ps==0)  continue; // Nema plana, preskačemo
 
 			// Obavezni predmeti sa sljedećeg semestra
 			$novisemestar++;
-			$q230 = db_query("select predmet from plan_studija where godina_vazenja=$ps and studij=$novistudij and semestar=$novisemestar and obavezan=1");
+			$q230 = db_query("select predmet from plan_studija_predmet where plan_studija=$novistudij and semestar=$novisemestar and obavezan=1");
 			while ($r230 = db_fetch_row($q230)) {
 				$predmet = $r230[0];
 				$q240 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
@@ -330,7 +330,7 @@ if ($student==$debug_student) print "ima ugovor $novistudij $novisemestar<br>";
 
 			} // else nešto se čudno dešava
 
-			$q23 = db_query("select godina_vazenja from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
+			$q23 = db_query("select id from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
 			$ps = db_result($q23,0,0);
 
 		} else if ($novisemestar <= $semestar) {
@@ -352,7 +352,7 @@ if ($student==$debug_student) print "nema ugovor $semestar<br>";
 			if (db_num_rows($q22)>0) {
 				$novistudij=db_result($q22,0,0);
 				$novisemestar=1;
-				$q23 = db_query("select godina_vazenja from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
+				$q23 = db_query("select id from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
 				if (db_num_rows($q23)>0) {
 					$ps = db_result($q23,0,0);
 //		print "Student: $student Novistudij: $novistudij Stariciklus: $s_ciklus PS4: $ps<br>";
@@ -383,7 +383,7 @@ if ($student==$debug_student) print "kolizija ".($imakoliziju?1:0)."<br>";
 	// Student koji preko kolizije mijenja studij
 	if ($imakoliziju && !$imaugovor) {
 		while ($r30 = db_fetch_row($q30)) {
-			$q31 = db_query("select studij, semestar from plan_studija where predmet=$r30[1] and obavezan=1 order by godina_vazenja desc limit 1");
+			$q31 = db_query("select studij, semestar from plan_studija_predmet where predmet=$r30[1] and obavezan=1 order by godina_vazenja desc limit 1");
 			if (db_num_rows($q31)>0) {
 				if ($novistudij != db_result($q31,0,0)) {
 					$novistudij= db_result($q31,0,0);
@@ -459,7 +459,7 @@ if ($student==$debug_student) { print "polozio septembar"; print_r($polozio_sept
 if ($student==$debug_student) print "Ima uslov<br>";
 		$fali_u_koliziji=0;
 
-		$q40 = db_query("select predmet from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=$novisemestar or semestar=".($novisemestar+1).") and obavezan=1");
+		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=$novisemestar or semestar=".($novisemestar+1).") and obavezan=1");
 		while ($r40 = db_fetch_row($q40)) {
 			if (in_array($r40[0], $pao_koliziono)) {
 				$slusa_ponovac_sigurno[$r40[0]]++;
@@ -535,7 +535,7 @@ if ($r50[0]==$debug_predmet) print "redovno sigurno (uou) $student<br>";
 /*if ($novistudij == 2 && $novisemestar == 3)
 	print dajstudenta($student)." nije odabrao izborne<br />";*/
 			// Odredjujemo koliko fali u koliziji
-			$q55 = db_query("select count(*) from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=$novisemestar or semestar=".($novisemestar+1).") and obavezan=0");
+			$q55 = db_query("select count(*) from plan_studija_predmet where plan_studija=$ps and (semestar=$novisemestar or semestar=".($novisemestar+1).") and obavezan=0");
 			$fali_u_koliziji += db_result($q55,0,0);
 			if ($nisu_izabrali == "da") {
 				$q251 = db_query("select prezime, ime, brindexa from osoba where id=$student");
@@ -563,7 +563,7 @@ if ($r50[0]==$debug_predmet) print "redovno sigurno (uou) $student<br>";
 if ($student==$debug_student) print "Ašćare ima uslov<br>";
 		$fali_u_koliziji=0;
 
-		$q40 = db_query("select predmet from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
 		while ($r40 = db_fetch_row($q40)) {
 			if (!in_array($r40[0], $polozio_koliziono)) {
 				$slusa_redovno_sigurno[$r40[0]]++;
@@ -627,7 +627,7 @@ if ($r50[0]==$debug_predmet) print "redovno sigurno (uou ašćare) $student<br>"
 /*if ($novistudij == 2 && $novisemestar == 3)
 	print dajstudenta($student)." nije odabrao izborne (sept)<br />";*/
 			// Odredjujemo koliko fali u koliziji
-			$q55 = db_query("select count(*) from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=0");
+			$q55 = db_query("select count(*) from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=0");
 			$fali_u_koliziji += db_result($q55,0,0);
 			if ($nisu_izabrali == "da") {
 				$q251 = db_query("select prezime, ime, brindexa from osoba where id=$student");
@@ -723,7 +723,7 @@ if ($predmet==$debug_predmet) print "kolizija (ima uslov) $student<br>";
 
 		// 3A. Ima šansi da upiše redovno
 		if (!$ugovor_ponovac && count($pao_septembar)<=1) {
-			$q40 = db_query("select predmet from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+			$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
 			while ($r40 = db_fetch_row($q40))
 				if (!in_array($r40[0], $ovaj_student_kolizija) && !in_array($r40[0], $polozio_koliziono)) {
 					$slusa_redovno_mozda[$r40[0]]++;
@@ -794,7 +794,7 @@ if ($predmet==$debug_predmet) print "kolizija možda $student<br>";
 	// 5. Nije tražio koliziju, ima šansi za uslov
 	if (!$ugovor_ponovac && count($pao_septembar)<=1 && count($zamger_predmeti_pao)-count($polozio_septembar) <= 3) {
 if ($student==$debug_student) print "Šanse za uslov bez kolizije<br>";
-		$q40 = db_query("select predmet from plan_studija where godina_vazenja=$ps and studij=$novistudij and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
 		while ($r40 = db_fetch_row($q40))
 			if (!in_array($r40[0], $polozio_koliziono)) {
 				$slusa_redovno_mozda[$r40[0]]++;
@@ -909,7 +909,7 @@ if ($fuzzy) {
 
 // Po studijima i semestrima
 
-$q100 = db_query("select ps.predmet, s.id, s.naziv, ps.semestar, ps.obavezan, ts.ciklus, s.institucija from plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and s.tipstudija=ts.id order by ts.ciklus, s.naziv, ps.semestar, ps.obavezan DESC"); // FIXME ukodirani planovi studija
+$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, ps.semestar, ps.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
 $oldstudij=$oldsemestar=$oldobavezan="";
 
 $predmeti_ispis=array();
@@ -930,13 +930,13 @@ while ($rblesavo = db_fetch_row($qblesavo)) {
 $institucija=1;
 
 while ($r100 = db_fetch_row($q100)) {
-	$studij=$r100[1];
-	$naziv_studija = $r100[2];
-	$semestar=$r100[3];
-	$obavezan=$r100[4];
-	$ciklus=$r100[5];
+	$studij=$r100[2];
+	$naziv_studija = $r100[3];
+	$semestar=$r100[4];
+	$obavezan=$r100[5];
+	$ciklus=$r100[6];
 	$oldinstitucija=$institucija;
-	$institucija=$r100[6];
+	$institucija=$r100[7];
 
 	if ($semestar!=$oldsemestar || $obavezan==1) {
 		$x=0;
@@ -1057,15 +1057,17 @@ $statstudij=$studij;
 	}
 
 	if ($obavezan==1) {
-		$q110 = db_query("select naziv, institucija from predmet where id=$r100[0]");
-		$predmeti_ispis[$r100[0]] = db_result($q110,0,0);
-		$predmeti_institucija[$r100[0]] = db_result($q110,0,1);
+		$q110 = db_query("select p.id, pp.naziv, p.institucija from predmet p, pasos_predmeta pp where pp.id=$r100[0] AND pp.predmet=p.id");
+		db_fetch3($q110, $predmet, $naziv_predmeta, $pinstitucija);
+		// FIXME ne koristiti instituciju ovdje!
+		$predmeti_ispis[$predmet] = $naziv_predmeta;
+		$predmeti_institucija[$predmet] = $pinstitucija;
 		$izborni_print=0;
 	} else {
-		$q120 = db_query("select p.id, p.naziv, p.institucija from izborni_slot as izs, predmet as p where izs.id=$r100[0] and izs.predmet=p.id");
-		while($r120 = db_fetch_row($q120)) {
-			$predmeti_ispis[$r120[0]]=$r120[1];
-			$predmeti_institucija[$r120[0]] = $r120[2];
+		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[0] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
+		while(db_fetch3($q120, $predmet, $naziv_predmeta, $pinstitucija)) {
+			$predmeti_ispis[$predmet] = $naziv_predmeta;
+			$predmeti_institucija[$predmet] = $pinstitucija;
 		}
 		$izborni_print=1;
 	}

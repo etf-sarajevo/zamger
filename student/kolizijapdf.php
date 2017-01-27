@@ -9,12 +9,24 @@
 function student_kolizijapdf() {
 
 global $userid;
+	
+	// Definicija kolizije
+	$limit_ects_zima = 20;
+	$limit_ects_ljeto = 20;
+	$uslov_ukupan_broj_nepolozenih = 0;
+	$uslov_ects_zima = 15;
+	$uslov_ects_ljeto = 15;
 
 require_once('lib/tcpdf/tcpdf.php');
 
 $semestar = intval($_REQUEST['semestar']);
-if ($semestar==1) $tekst_semestar = "zimskom";
-else $tekst_semestar = "ljetnjem";
+if ($semestar==1) {
+	$tekst_semestar = "zimskom";
+	$limit_ects = $limit_ects_zima;
+} else {
+	$tekst_semestar = "ljetnjem";
+	$limit_ects = $limit_ects_ljeto;
+}
 
 
 // Prikupljam podatke iz baze
@@ -39,7 +51,7 @@ if (db_num_rows($q2)<1) {
 
 // Koji je odsjek?
 
-$q4 = db_query("select s.id, s.naziv, i.naziv, ss.semestar from studij as s, student_studij as ss, institucija as i where ss.student=$userid and ss.studij=s.id and s.institucija=i.id and ss.akademska_godina=$proslagodina order by semestar desc limit 1");
+$q4 = db_query("select s.id, s.naziv, i.naziv, ss.semestar, ss.plan_studija from studij as s, student_studij as ss, institucija as i where ss.student=$userid and ss.studij=s.id and s.institucija=i.id and ss.akademska_godina=$proslagodina order by semestar desc limit 1");
 if (db_num_rows($q4)<1) {
 	// Očito da su aktuelna i prošla godina loše određene
 	$q4 = db_query("select s.id, s.naziv, i.naziv, ss.semestar, ss.akademska_godina from studij as s, student_studij as ss, institucija as i where ss.student=$userid and ss.studij=s.id and s.institucija=i.id order by akademska_godina desc, semestar desc limit 1");
@@ -61,6 +73,7 @@ $studij = db_result($q4,0,0);
 $studij_naziv = db_result($q4,0,1);
 $institucija_naziv = db_result($q4,0,2);
 $godina_studija = ceil(db_result($q4,0,3)/2);
+$plan_studija = db_result($q4,0,4);
 
 
 // Da li je student popunio ugovor za drugi odsjek?
@@ -74,7 +87,7 @@ if (db_num_rows($q7)>1 && $studij != db_result($q7,0,0)) {
 
 // Zapis u tabeli kolizija
 $predmeti_kolizija=$predmeti_ects=array();
-$q10 = db_query("select p.id, p.naziv, p.ects from kolizija as k, predmet as p where k.student=$userid and k.akademska_godina=$zagodinu and k.semestar=$semestar and k.predmet=p.id");
+$q10 = db_query("select distinct pp.id, pp.naziv, pp.ects from kolizija as k, pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis where k.student=$userid and k.akademska_godina=$zagodinu and k.semestar=$semestar and k.predmet=pp.predmet and psp.plan_studija=$plan_studija and (pp.id=psp.pasos_predmeta or (pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot))");
 if (db_num_rows($q10)<1) {
 	biguglyerror("Vi niste popunili Zahtjev za koliziju za $agnaziv godinu!");
 	print "Ako je ovo greska, kontaktirajte administratora.";
@@ -87,6 +100,7 @@ while ($r10 = db_fetch_row($q10)) {
 
 
 if ($semestar==1) $s2=1; else $s2=0;
+
 
 // Predmeti koje nije polozio
 $predmeti_prenos=array();
@@ -129,7 +143,7 @@ Elektrotehnički fakultet Sarajevo<br>
 
 <p>&nbsp;</p>
 
-<p>Ja, <?="$ime $prezime"?>, <?=$student?> studija <?=$studij_naziv?>, <?=$godina_studija?>. godina, broj indexa <?=$brindexa?>, <?=$tekst_mijenja?> molim Vas da mi u skladu sa Zakonom o visokom obrazovanju Kantona Sarajevo, u <?=$tekst_semestar?> semestru akademske <?=$agnaziv?> godine odobrite slušanje sljedećih predmeta sa <?=($godina_studija+1)?>. godine studija u koliziji:</p>
+<p>Ja, <?="$ime $prezime"?>, <?=$student?> studija <?=$studij_naziv?>, <?=$godina_studija?>. godina, broj indexa <?=$brindexa?>, <?=$tekst_mijenja?> molim Vas da mi u skladu sa Odlukom Nastavno-naučnog vijeća Elektrotehničkog fakulteta o koliziji, u <?=$tekst_semestar?> semestru akademske <?=$agnaziv?> godine odobrite slušanje sljedećih predmeta sa <?=($godina_studija+1)?>. godine studija u koliziji:</p>
 
 <ul>
 <?
@@ -149,7 +163,7 @@ foreach ($predmeti_prenos as $id=>$predmet)
 ?>
 </ul>
 
-te da se jedan predmet prenosi, nije prekoračen maksimalan broj od 30 ECTS kredita po semestru.</p>
+nije prekoračen maksimalan broj od <?=$limit_ects?> ECTS kredita po semestru.</p>
 
 <p>&nbsp;</p>
 
@@ -166,6 +180,9 @@ te da se jedan predmet prenosi, nije prekoračen maksimalan broj od 30 ECTS kred
 return;
 
 
+
+
+// Ovo je stari kod koji se trenutno ne koristi
 
 $q5 = db_query("select uu.id, s.id, s.naziv, s.naziv_en, uu.semestar, s.tipstudija from ugovoroucenju as uu, studij as s where uu.student=$userid and uu.akademska_godina=$zagodinu and uu.studij=s.id order by semestar desc limit 1");
 if (db_num_rows($q5)<1) {

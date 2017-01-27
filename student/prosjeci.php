@@ -94,7 +94,7 @@ $studij = intval($_REQUEST['studij']);
 $plan_studija = intval($_REQUEST['plan_studija']);
 
 if ($studij==0 || $plan_studija==0) {
-	$q10 = db_query("select distinct ss.studij, ss.plan_studija, s.naziv, ag.naziv from student_studij as ss, studij as s, akademska_godina as ag where ss.studij=s.id and ss.plan_studija=ag.id and ss.student=$userid order by ss.akademska_godina");
+	$q10 = db_query("select distinct ss.studij, ss.plan_studija, s.naziv, ag.naziv from student_studij as ss, studij as s, plan_studija as ps, akademska_godina as ag where ss.studij=s.id and ss.plan_studija=ps.id AND ps.godina_vazenja=ag.id and ss.student=$userid order by ss.akademska_godina");
 	if (db_num_rows($q10)==0) {
 		print "<p>Nikada niste bili upisani na $conf_naziv_institucije. Ne možemo odrediti prosjek.</p>\n";
 		return;
@@ -109,8 +109,8 @@ if ($studij==0 || $plan_studija==0) {
 		?>
 		<p>Za koji studij želite odrediti prosjeke:<br />
 		<?
-		while ($r10 = db_fetch_row($q10)) {
-			print "* <a href=\"?sta=student/prosjeci&studij=$r10[0]&plan_studija=$r10[1]\">$r10[2] (plan i program usvojen $r10[3])</a><br />\n";
+		while (db_fetch4($q10, $studij, $plan_studija, $naziv_studija, $akademska_godina)) {
+			print "* <a href=\"?sta=student/prosjeci&amp;studij=$studij&amp;plan_studija=$plan_studija\">$naziv_studija (plan i program usvojen $akademska_godina)</a><br />\n";
 		}
 		print "</p>\n";
 		return;
@@ -129,17 +129,14 @@ $q15 = db_query("select naziv from studij where id=$studij");
 
 // Prolazimo kroz plan studija
 
-$q20 = db_query("select predmet, semestar, obavezan from plan_studija where godina_vazenja=$plan_studija and studij=$studij order by semestar");
-while ($r20 = db_fetch_row($q20)) {
-	$semestar = $r20[1];
-	if ($r20[2]==1) { // Obavezan
-		$predmet=$r20[0];
-		$q30 = db_query("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet");
+$q20 = db_query("select pasos_predmeta, plan_izborni_slot, semestar, obavezan from plan_studija_predmet where plan_studija=$plan_studija order by semestar");
+while (db_fetch4($q20, $pasos_predmeta, $plan_izborni_slot, $semestar, $obavezan)) {
+	if ($obavezan == 1) { // Obavezan
+		$q30 = db_query("select ko.ocjena from konacna_ocjena ko, pasos_predmeta pp where ko.student=$userid and ko.predmet=pp.predmet AND pp.id=$pasos_predmeta");
 	} else { // Izborni
-		$izborni_slot=$r20[0];
-		$q30 = db_query("select ko.ocjena, ko.predmet from konacna_ocjena as ko, izborni_slot as iz where iz.id=$izborni_slot and iz.predmet=ko.predmet and ko.student=$userid ".$bio_izborni_sql[$izborni_slot]);
+		$q30 = db_query("select ko.ocjena, ko.predmet from konacna_ocjena as ko, pasos_predmeta pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id AND pp.predmet=ko.predmet and ko.student=$userid ".$bio_izborni_sql[$plan_izborni_slot]);
 		if (db_num_rows($q30)>0)
-			$bio_izborni_sql[$izborni_slot] .= "and ko.predmet!=".db_result($q30,0,1);
+			$bio_izborni_sql[$plan_izborni_slot] .= "and ko.predmet!=".db_result($q30,0,1);
 	}
 
 	if (db_num_rows($q30)>0) {

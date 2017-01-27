@@ -66,13 +66,17 @@ if (db_num_rows($q5a)>0 && $studij ==  db_result($q5a,0,0))
 if ($plan_studija == 0) {
 	// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
 	// Uzimamo najnoviji plan za odabrani studij
-	$q6 = db_query("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+	$q6 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
 	if (db_num_rows($q6)<1) { 
 		niceerror("Nepostojeći studij");
 		return;
 	}
 	$plan_studija = db_result($q6,0,0);
 }
+
+// Godina važenja plana studija (za predmete sa drugog odsjeka - FIXME)
+$q5n = db_query("SELECT godina_vazenja FROM plan_studija WHERE id=$plan_studija");
+$godina_vazenja = db_result($q5n,0,0);
 
 
 // Da li je ponovac (ikada slušao isti tip studija)?
@@ -91,7 +95,13 @@ if (db_num_rows($q20)<1) {
 
 // Odredjujemo da li ima prenesenih predmeta
 // TODO: ovo sada ne radi za izborne predmete
-$q20 = db_query("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+//$q20 = db_query("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+// FIXME: Verzija koja bi trebala raditi za novi NPP ali ne radi zbog pogrešnih IDova
+//$q20 = db_query("select pp.sifra, pp.naziv, pp.ects, psp.semestar from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and (psp.semestar=".($sem1-1)." or psp.semestar=".($sem1-2).") and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
+// Verzija preko ponudekursa
+//$q20 = db_query("select p.sifra, p.naziv, p.ects, pk.semestar from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij and (pk.semestar=".($sem1-1)." or pk.semestar=".($sem1-2).") and pk.obavezan=1 and pk.akademska_godina=$proslagodina and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pk.predmet)=0");
+// Uzimamo samo predmete koje je OVAJ STUDENT slušao prošle godine, a obavezni su!
+$q20 = db_query("select p.sifra, p.naziv, p.ects, pk.semestar from predmet as p, ponudakursa as pk, student_predmet as sp where pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id and (pk.semestar=".($sem1-1)." or pk.semestar=".($sem1-2).") and pk.obavezan=1 and pk.akademska_godina=$proslagodina and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pk.predmet)=0");
 if (db_num_rows($q20)>1) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
@@ -202,10 +212,10 @@ $pdf->AddPage();
 	// Spisak obaveznih predmeta na neparnom semestru
 	// Ako je ponovac, ne prikazujemo predmete koje je polozio
 	if ($ponovac==1) 
-		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 	else
 	// Ako nije, trebamo prikazati one koje je položio u koliziji
-		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = db_query("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 
 	$ykoord = 95;
 	$ects = 0;
@@ -237,10 +247,50 @@ $pdf->AddPage();
 	}
 
 	// Spisak izbornih predmeta
-	if ($ponovac==1)
-		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+	$q110 = db_query("SELECT uoui.predmet FROM ugovoroucenju_izborni uoui, ugovoroucenju uou WHERE uoui.ugovoroucenju=uou.id AND uou.student=$userid and uou.akademska_godina=$zagodinu AND uou.semestar=$sem1");
+	$ykoord = 123;
+	while ($r110 = db_fetch_row($q110)) {
+		$predmet = $r110[0];
+		
+		// U slučaju ponavljanja godine preskačemo predmete koje je student već položio (a koji su uneseni u UOU)
+		$q112 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=$predmet AND ocjena>5");
+		if (db_result($q112,0,0) > 0) continue;
+		
+		// Uzimamo pasoš koji je važeći u tekućem NPPu
+		$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+
+		// Izborni
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		
+		// Drugi studij sa istom godinom usvajanja
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija1 ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		
+		// Drugi studij sa istom godinom usvajanja - Izborni
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija1 ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+
+		if (db_num_rows($q114) == 0) 
+			// E ne znam... preskačemo
+			continue;
+			
+		$r114 = db_fetch_row($q114);
+		$pdf->SetXY(13, $ykoord);
+		$pdf->Cell(100, 0, $r114[0]);
+		$pdf->SetXY(50, $ykoord);
+		$pdf->Cell(100, 0, $r114[1]);
+		$e = "$r114[2]";
+		if (!strchr($e,".")) $e .= ".0";
+		$pdf->SetXY(170, $ykoord);
+		$pdf->Cell(100, 0, $e);
+		$ykoord+=4;
+		$ects += $r114[2];
+	}
+	/*if ($ponovac==1)
+		$q110 = db_query("select distinct pp.sifra, pp.naziv, pp.ects from pasos_predmeta as pp, ugovoroucenju_izborni as uoui, ugovoroucenju as uu, plan_studija_predmet psp, plan_izborni_slot pis where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=pp.predmet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=$plan_studija and uu.semestar=$sem1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 	else
-		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem1");
+		$q110 = db_query("select distinct pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, ugovoroucenju_izborni as uoui, ugovoroucenju as uu, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=pp.predmet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=ps.id AND ps.godina_vazenja=$godina_vazenja and uu.semestar=$sem1"); // FIXME
 
 	$ykoord = 123;
 	while ($r110 = db_fetch_row($q110)) {
@@ -254,7 +304,7 @@ $pdf->AddPage();
 		$pdf->Cell(100, 0, $e);
 		$ykoord+=4;
 		$ects += $r110[2];
-	}
+	}*/
 
 	// Suma ects
 	if (!strchr($ects,".")) $ects .= ".0";
@@ -284,9 +334,10 @@ $pdf->AddPage();
 	
 	// Spisak obaveznih predmeta na parnom semestru
 	if ($ponovac==1)
-		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 	else
-		$q100 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
+	// Ako nije, trebamo prikazati one koje je položio u koliziji
+		$q100 = db_query("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 	$ykoord = 95;
 	$ects = 0;
 	while ($r100 = db_fetch_row($q100)) {
@@ -317,10 +368,52 @@ $pdf->AddPage();
 	}
 
 	// Spisak izbornih predmeta
+	$q110 = db_query("SELECT uoui.predmet FROM ugovoroucenju_izborni uoui, ugovoroucenju uou WHERE uoui.ugovoroucenju=uou.id AND uou.student=$userid and uou.akademska_godina=$zagodinu AND uou.semestar=$sem2");
+	$ykoord = 123;
+	while ($r110 = db_fetch_row($q110)) {
+		$predmet = $r110[0];
+		
+		// U slučaju ponavljanja godine preskačemo predmete koje je student već položio (a koji su uneseni u UOU)
+		$q112 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=$predmet AND ocjena>5");
+		if (db_result($q112,0,0) > 0) continue;
+		
+		// Uzimamo pasoš koji je važeći u tekućem NPPu
+		$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+
+		// Izborni
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		
+		// Drugi studij sa istom godinom usvajanja
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		
+		// Drugi studij sa istom godinom usvajanja - Izborni
+		if (db_num_rows($q114) == 0) 
+			$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+
+		if (db_num_rows($q114) == 0) 
+			// E ne znam... preskačemo
+			continue;
+			
+		$r114 = db_fetch_row($q114);
+		$pdf->SetXY(13, $ykoord);
+		$pdf->Cell(100, 0, $r114[0]);
+		$pdf->SetXY(50, $ykoord);
+		$pdf->Cell(100, 0, $r114[1]);
+		$e = "$r114[2]";
+		if (!strchr($e,".")) $e .= ".0";
+		$pdf->SetXY(170, $ykoord);
+		$pdf->Cell(100, 0, $e);
+		$ykoord+=4;
+		$ects += $r114[2];
+	}
+
+	/*
 	if ($ponovac==1)
-		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q110 = db_query("select distinct pp.sifra, pp.naziv, pp.ects from pasos_predmeta as pp, ugovoroucenju_izborni as uoui, ugovoroucenju as uu, plan_studija_predmet psp, plan_izborni_slot pis where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=pp.predmet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=$plan_studija and uu.semestar=$sem2 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 	else
-		$q110 = db_query("select p.sifra, p.naziv, p.ects from predmet as p, ugovoroucenju_izborni as uoui, ugovoroucenju as uu where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=p.id and uu.semestar=$sem2");
+		$q110 = db_query("select distinct pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, ugovoroucenju_izborni as uoui, ugovoroucenju as uu, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps where uoui.ugovoroucenju=uu.id and uu.student=$userid and uu.akademska_godina=$zagodinu and uoui.predmet=pp.predmet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=ps.id AND ps.godina_vazenja=$godina_vazenja and uu.semestar=$sem2"); // FIXME
 	$ykoord = 123;
 	while ($r110 = db_fetch_row($q110)) {
 		$pdf->SetXY(13, $ykoord);
@@ -333,7 +426,7 @@ $pdf->AddPage();
 		$pdf->Cell(100, 0, $e);
 		$ykoord+=4;
 		$ects += $r110[2];
-	}
+	}*/
 
 	// Suma ects
 	if (!strchr($ects,".")) $ects .= ".0";

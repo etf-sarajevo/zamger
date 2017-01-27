@@ -904,7 +904,7 @@ function rimski_broj($arapski_broj = '') {
 
 	$rimski_broj = $rimske_cifre_hiljade[$anm] . $rimske_cifre_stotice[$anc] . $rimske_cifre_desetice[$anx] . $rimske_cifre_jedinice[$anu]; 
 	return $rimski_broj; 
-} 
+}
 
 
 // Funkcija koja zamjenjuje stringove koji liče na URL sa HTML kodom koji linkuje na njih

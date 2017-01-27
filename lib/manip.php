@@ -809,9 +809,9 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 			return 0;
 		
 		// Koliko studenata slusa predmet kao obavezan na svom studiju?
-		$q115 = db_query("SELECT studij, semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND predmet=$predmet AND obavezan=1");
-		if (db_num_rows($q115)>0) {
-			$q116 = db_query("SELECT COUNT(*) FROM ugovoroucenju WHERE akademska_godina=$zagodinu AND studij=".db_result($q115,0,0)." AND semestar=".db_result($q115,0,1));
+		$q115 = db_query("SELECT ps.studij, psp.semestar FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE ps.id=$najnoviji_plan AND psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.obavezan=1");
+		if (db_fetch2($q115, $studij, $semestar)) {
+			$q116 = db_query("SELECT COUNT(*) FROM ugovoroucenju WHERE akademska_godina=$zagodinu AND studij=$studij AND semestar=$semestar");
 			$popunjeno += db_result($q116,0,0);
 		}
 //		print "popunjeno $popunjeno<br>";
@@ -826,31 +826,29 @@ function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
 // Da li je student ostvario preduvjete za dati predmet?
 // Povratna vrijednost: niz IDova predmeta koji su preduvjet a nisu položeni
 
-function provjeri_preduvjete($predmet, $student, $studij, $najnoviji_plan) {
+function provjeri_preduvjete($predmet, $student, $najnoviji_plan) {
 	$rezultat = array();
 
 	$q100 = db_query("SELECT preduvjet FROM preduvjeti WHERE predmet=$predmet");
-	while ($r100 = db_fetch_row($q100)) {
-		$preduvjet = $r100[0];
-
+	while (db_fetch1($q100, $preduvjet)) {
 		// Da li je preduvjet po najnovijem planu na istoj ili višoj godini kao predmet?
-		$q110 = db_query("SELECT semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND studij=$studij AND predmet=$predmet AND obavezan=1");
-		if (db_num_rows($q110)==0) 
-			$q110 = db_query("SELECT ps.semestar FROM plan_studija ps, izborni_slot pis WHERE ps.godina_vazenja=$najnoviji_plan AND ps.studij=$studij AND ps.obavezan=0 AND ps.predmet=pis.id AND pis.predmet=$predmet");
-		if (db_num_rows($q110)==0) { niceerror("Predmet nije pronađen u planu i programu"); return; }
-		$godina_predmeta = (db_result($q110,0,0)+1)/2;
+		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.obavezan=1");
+		if ($semestar === false) 
+			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.predmet=$predmet");
+		if ($semestar === false) { niceerror("Predmet nije pronađen u planu i programu"); return; }
+		$godina_predmeta = ($semestar+1)/2;
 
-		$q115 = db_query("SELECT semestar FROM plan_studija WHERE godina_vazenja=$najnoviji_plan AND studij=$studij AND predmet=$preduvjet AND obavezan=1");
-		if (db_num_rows($q115)==0) 
-			$q115 = db_query("SELECT ps.semestar FROM plan_studija ps, izborni_slot pis WHERE ps.godina_vazenja=$najnoviji_plan AND ps.studij=$studij AND ps.obavezan=0 AND ps.predmet=pis.id AND pis.predmet=$preduvjet");
-		if (db_num_rows($q115)==0) { niceerror("Preduvjet nije pronađen u planu i programu"); return; }
-		$godina_preduvjeta = (db_result($q115,0,0)+1)/2;
+		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$preduvjet AND psp.obavezan=1");
+		if ($semestar === false) 
+			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.predmet=$preduvjet");
+		if ($semestar === false) { niceerror("Preduvjet nije pronađen u planu i programu"); return; }
+		$godina_preduvjeta = ($semestar+1)/2;
 
 		if ($godina_preduvjeta >= $godina_predmeta) continue;
 
 		// Da li je položio?
-		$q120 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$preduvjet AND ocjena>5");
-		if (db_result($q120,0,0) == 0) array_push($rezultat, $preduvjet);
+		$br_ocjena = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$preduvjet AND ocjena>5");
+		if ($br_ocjena == 0) array_push($rezultat, $preduvjet);
 	}
 	return $rezultat;
 }
