@@ -93,6 +93,17 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		print "Niste unijeli nijedan upotrebljiv podatak<br/><br/>\n";
 		$greska=1;
 	}
+	
+	
+	// Određivanje trenutno važećeg pasoša predmeta 
+	// FIXME pasoš predmeta treba biti dio ponudekursa - sada sam definitivno shvatio da je tako
+	$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps
+	WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
+	if ($pasos_predmeta === false) {
+		$pasos_predmeta = db_get("SELECT pis.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps, plan_izborni_slot pis
+		WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
+	}
+	if ($pasos_predmeta === false) $pasos_predmeta="NULL";
 
 
 	// Obrada rezultata
@@ -196,7 +207,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if (db_num_rows($q100)>0)
 				$q110 = db_query("UPDATE konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren WHERE student=$student AND predmet=$predmet");
 			else
-				$q110 = db_query("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
+				$q110 = db_query("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 			zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
 		}

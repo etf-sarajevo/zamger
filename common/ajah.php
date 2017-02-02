@@ -23,7 +23,7 @@ require("lib/manip.php");
 
 switch ($_REQUEST['akcija']) {
 
-case "prisustvo":
+case "prisustvo": // prebaceno na ws/prisustvo (POST metoda)
 	
 	if ($userid == 0) {
 		zamgerlog("AJAH prisustvo - istekla sesija",3); // nivo 3 - greska
@@ -326,6 +326,16 @@ case "izmjena_ispita":
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
+		
+		// Određivanje trenutno važećeg pasoša predmeta 
+		// FIXME pasoš predmeta treba biti dio ponudekursa - sada sam definitivno shvatio da je tako
+		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps
+		WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
+		if ($pasos_predmeta === false) {
+			$pasos_predmeta = db_get("SELECT pis.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps, plan_izborni_slot pis
+			WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
+		}
+		if ($pasos_predmeta === false) $pasos_predmeta="NULL";
 
 		// Ne koristimo REPLACE i slicno zbog logginga
 		$q70 = db_query("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
@@ -347,7 +357,7 @@ case "izmjena_ispita":
 				$datum_provjeren = 0;
 			}
 
-			$q80 = db_query("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren");
+			$q80 = db_query("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
 		} else if ($c>0 && $vrijednost=="/") {
@@ -387,7 +397,7 @@ case "izmjena_ispita":
 	break;
 
 
-case "pretraga":
+case "pretraga": // prebaceno na ws/osoba akcija=pretraga
 	if ($userid == 0) {
 		zamgerlog("AJAH pretraga - istekla sesija",3); // nivo 3 - greska
 		zamgerlog2("pretraga - istekla sesija"); // nivo 3 - greska
@@ -596,7 +606,7 @@ case "prosli_ciklus_ects": // 1500,5 / 157,5 = 9,52698413 / 6 = 1,58783069
 	break;
 
 
-case "spisak_predmeta":
+case "spisak_predmeta": // prebaceno na ws/predmet
 	$ag = intval($_REQUEST['ag']);
 	$studij = intval($_REQUEST['studij']);
 	$semestar = intval($_REQUEST['semestar']);
