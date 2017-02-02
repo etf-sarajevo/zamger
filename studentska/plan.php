@@ -256,7 +256,7 @@ function studentska_plan(){
 		// Podaci o pasošu za prikaz
 		
 		$q2000 = db_query("SELECT *, UNIX_TIMESTAMP(vrijeme_prijedloga) vrijeme FROM pasos_predmeta WHERE id=$id_pasosa");
-		$pasos = db_fetch_array($q2000);
+		$pasos = db_fetch_assoc($q2000);
 		$vrijeme_prijedloga = date("d.m.Y. h:i", $pasos['vrijeme']);
 		
 		$q2010 = db_query("SELECT ime, prezime FROM osoba WHERE id=".$pasos['predlozio']);
@@ -350,9 +350,9 @@ function studentska_plan(){
 		}
 
 		$q2300 = db_query("SELECT * FROM pasos_predmeta WHERE id=$id_pasosa");
-		$odabrani_pasos = db_fetch_array($q2300);
+		$odabrani_pasos = db_fetch_assoc($q2300);
 		$q2310 = db_query("SELECT * FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
-		$aktuelni_pasos = db_fetch_array($q2310);
+		$aktuelni_pasos = db_fetch_assoc($q2310);
 
 		?>
 		<table border="0"><tr><th>Polje</th><th>Odabrani pasoš</th><th>Aktuelna verzija</th></tr>
@@ -839,7 +839,7 @@ function studentska_plan(){
 		
 		// Osnovni podaci
 		$q240 = db_query("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$id_aktuelne_verzije");
-		$podaci_o_predmetu = db_fetch_array($q240);
+		$podaci_o_predmetu = db_fetch_assoc($q240);
 		
 		// Akcija: Brisanje predmeta iz NPP
 		if ($_REQUEST['akcija'] == "brisi_predmet") {
