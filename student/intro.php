@@ -271,7 +271,7 @@ if ($printed==0)
 $vrijeme_poruke = array();
 $code_poruke = array();
 
-$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov from poruka where tip=2 order by vrijeme desc");
+$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov from poruka where tip=2 order by vrijeme desc limit 1000");
 while ($r100 = db_fetch_row($q100)) {
 	$id = $r100[0];
 	$opseg = $r100[2];
