@@ -59,7 +59,6 @@ function greska_u_modulima() {
 			$msg = "";
 		}
 
-	
 		niceerror("U toku su radovi na modulu $sta");
 		print "<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href=\"javascript:location.reload(true)\">Refresh</a>.</p>";
 	}
@@ -75,7 +74,6 @@ require("lib/dblayer.php");
 require("lib/libvedran.php");
 require("lib/zamger.php");
 
-//dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
@@ -88,7 +86,7 @@ $posljednji_pristup = 0;
 
 // Web service router
 $route = param('route');
-if ($route !== false && $route != "auth") { 
+if ($route !== false && $route != "auth") {
 	$segments = explode('/', trim($route, '/'));
 	$sta = "ws/" . db_escape($segments[0]);
 	for ($i=1; $i<count($segments); $i++) {
@@ -129,25 +127,25 @@ if ($route !== false && $route != "auth") {
 if (int_param('loginforma') === 1) {
 	$login = db_escape($_POST['login']);
 	$pass = $_POST['pass'];
-	
+
 	if (!preg_match("/[\w\d]/",$login)) {
 		$greska="Nepoznat korisnik";
 		zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 	} else {
 		$status = login($pass);
-		if ($status == 1) { 
+		if ($status == 1) {
 			$greska="Nepoznat korisnik";
 			zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 		} else if ($status == 2) {
 			$greska="Pogrešna šifra";
 			zamgerlog2("pogresna sifra", 0, 0, 0, $login);
-		} 
+		}
 	}
 	if ($greska=="") {
 		zamgerlog("login",1); // nivo 1 = posjeta stranici
 		zamgerlog2("login");
 	}
-	
+
 	// Pozivamo cron
 	require("common/cron.php");
 	common_cron();
@@ -180,7 +178,7 @@ if ($userid>0) {
 		if ($privilegije > 0) {
 			$userid=$su;
 			$_SESSION['su']=$su;
-		} 
+		}
 	} else {
 		$_SESSION['su']="";
 	}
@@ -191,21 +189,21 @@ if ($userid>0) {
 
 // Određivanje privilegija korisnika
 
-$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=false;
+$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=false;
 if ($userid>0) {
 	$q10 = db_query("select privilegija from privilegije where osoba=$userid");
 	while (db_fetch1($q10, $privilegija)) {
-		if ($privilegija=="student") $user_student=true; 
+		if ($privilegija=="student") $user_student=true;
 		if ($privilegija=="nastavnik") $user_nastavnik=true;
 		if ($privilegija=="studentska") $user_studentska=true;
 		if ($privilegija=="siteadmin") $user_siteadmin=true;
-		//if ($privilegija=="prijemni")  -- ovi nemaju pristup zamgeru
+		if ($privilegija=="prijemni") $user_prijemni=true;
 		// ovdje dodati ostale vrste korisnika koje imaju pristup
 	}
 
 
 	// Korisnik nije ništa!?
-	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_prijemni) {
 		$greska = "Vaše korisničko ime je ispravno, ali nemate nikakve privilegije na sistemu! Kontaktirajte administratora.";
 		zamgerlog2("korisnik nema nikakve privilegije");
 		$sta = "";
@@ -237,7 +235,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 	foreach ($registry as $r) {
 		if (count($r) == 0) continue;
 		if ($r[0] == $sta) { //$r[5] == debug
-			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin)) {
+			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin) || (strstr($r[3],"R") && $user_prijemni)) {
 				$naslov=$r[1];
 				$template=$r[4];
 				$found=1;
@@ -249,6 +247,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 				if ($user_nastavnik) $permstr.="N";
 				if ($user_studentska) $permstr.="B";
 				if ($user_siteadmin) $permstr.="A";
+				if ($user_prijemni) $permstr.="R";
 				if ($userid>0) {
 					zamgerlog("Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]",3); // nivo 3 = greska
 					zamgerlog2("korisnik pokusao pristupiti modulu za koji nema permisije");
@@ -340,7 +339,7 @@ if ($found==1 && $template==0 && $greska=="") {
 	// Greske uvijek prikazujemo u template-u
 	print "<body bgcolor=\"#FFFFFF\">\n";
 	if (strstr($sta, "izvjestaj/")) {
-		
+
 		$k="";
 		foreach ($_REQUEST as $kljuc => $vrijednost) {
 			// Sakrivamo sesiju
@@ -349,7 +348,7 @@ if ($found==1 && $template==0 && $greska=="") {
 			if ($kljuc != "sta")
 				$k .= urlencode($kljuc).'='.urlencode($vrijednost).'&amp;';
 		}
-		
+
 		if ($userid>0) {
 			?>
 			<div id="konverteri" style="position:absolute;right:10px;top:10px;border:1px white solid;">
@@ -491,7 +490,7 @@ if ($userid>0) {
 // Standardne greske
 if ($greska != "") {
 	niceerror($greska);
-	if ($sta=="") 
+	if ($sta=="")
 		zamgerlog("index.php greska: $greska $login ".db_escape($_REQUEST['sta']),3);
 	else
 		zamgerlog("index.php greska: $greska $login $sta",3);
