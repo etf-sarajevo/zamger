@@ -330,8 +330,8 @@ if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'
 	if ($_REQUEST['potvrdapromjene'] == " Promijeni " && check_csrf_token()) {
 
 		$dan = int_param('day');
-		$mjesec = intval($_POST['month']);
-		$godina = intval($_POST['year']);
+		$mjesec = int_param('month');
+		$godina = int_param('year');
 		$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
 		if ($komponenta != $_POST['tipispita']) {

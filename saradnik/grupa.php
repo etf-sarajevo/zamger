@@ -814,7 +814,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	// ZADACE - ISPIS
 
-	foreach ($zad_id_array as $zid) {
+	if (!empty($zad_id_array)) foreach ($zad_id_array as $zid) {
 		$zadace_ispis .= "<td>\n";
 		// FIXME: subqueries
 		//$q15a = db_query ("select redni_broj from zadatak where zadaca=$zid and student=$stud_id order by redni_broj group by redni_broj");
