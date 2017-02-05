@@ -296,8 +296,8 @@ while ($r130 = db_fetch_row($q130)) {
 	?>
 	<tr>
 		<td><?=($i++)?>.</td>
-		<td><?=$r130[0]?></td>
-		<td><?=$r130[1]?></td>
+		<td><?=$sifra?></td>
+		<td><?=$naziv?></td>
 		<td align="center"><?=nuliraj($ects)?></td>
 		<td align="center"><?=$imena_ocjena[$r130[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r130[3]]?></td>
