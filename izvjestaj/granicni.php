@@ -11,7 +11,7 @@
 //    2 - studentu fali više od jednog parcijalnog ispita na predmetu u datoj akademskoj godini
 //    3 - student nije slušao predmet u datoj akademskoj godini niti ga je položio ranije
 // (ne bi se smjelo desiti, osim ako student uopšte nije na studiju?)
-// TODO: prebaciti u lib/manip ?
+// Ovu funkciju nećemo prebaciti u lib jer je ona toliko specifična za granične slučajeve da tamo ne pripada...
 function pao_predmet($student, $predmet, $ak_god) {
 	// Da li je student ikada položio predmet
 	$q10 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5 and akademska_godina<=$ak_god");
