@@ -72,6 +72,9 @@ $conf_code_viewer = "ace";
 $conf_dblayer = "mysqli";
 //$conf_dblayer = "mysql_";
 
+// Prikazati dnevnik na login stranici (javno)
+$conf_javni_dnevnik = true;
+
 
 // ------ MOODLE INTEGRACIJA ---------
 

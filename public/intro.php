@@ -7,20 +7,38 @@
 
 
 function public_intro() {
+	global $conf_javni_dnevnik;
+	if ($conf_javni_dnevnik)
+		public_intro_dnevnik();
+	else
+		public_intro_bez_dnevnika();
+}
 
+function public_intro_dnevnik() {
 	?>
 		<table width="100%" border="0" cellspacing="4" cellpadding="0">
-			<tr>
-			<!--td><img src="images/fnord.gif" width="10" height="1"></td>
-			</td--><td valign="top" width="300" align="left">
+			<tr><td valign="top" width="300" align="left">
 			<br/><br/><b>Dnevnik:</b><br/>
 			<?
 
 				require("public/predmeti.php");
 				public_predmeti("izvjestaj/predmet&skrati=da");
 			?>
-			</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
-			</td--><td valign="top">
+			</td><td valign="top">
+			<p>&nbsp;</p>
+			<?
+				login_forma();
+			?>
+			</td></tr>
+		</table>
+	<?
+}
+
+function public_intro_bez_dnevnika() {
+	?>
+		<table width="100%" border="0" cellspacing="4" cellpadding="0">
+			<tr>
+			<td valign="top">
 			<p>&nbsp;</p>
 			<?
 				login_forma();
@@ -41,12 +59,11 @@ function login_forma() {
 		$uri = $_SERVER['REQUEST_URI'];
 	}
 
-	$anketa_aktivna = false;
+	$anketa_aktivna=0;
 	foreach ($registry as $r) {
-		if (count($r) == 0) continue;
 		if ($r[0]=="public/anketa" && $r[5]==0) {
-			$br_aktivnih_anketa = db_get("select count(id) from anketa_anketa where aktivna = 1");
-			if ($br_aktivnih_anketa > 0) $anketa_aktivna = true;
+			$q01 = myquery("select id from anketa_anketa where aktivna = 1");
+			if (mysql_num_rows($q01)>0) $anketa_aktivna=1;
 		}
 	}
 
@@ -74,13 +91,26 @@ function login_forma() {
 		</tr></table>
 	</td></tr>
 	<tr><td align="center">
+	<?
+
+/*	if ($_REQUEST['strajkbreher'] == "da") {*/
+		?>
 		<!-- Login forma -->
 		<form action="<?=$uri?>" method="POST">
 		<input type="hidden" name="loginforma" value="1">
-		<table border="0"><tr><td>Korisničko ime (UID):</td><td><input type="text" name="login" size="15"></td></tr>
+		<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15" autofocus></td></tr>
 		<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
 		<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
 		</form>
+		<?
+/*	} else {
+		?>
+		<p style="font-size:80px; color:red; margin: 0px; font-weight: bold">Štrajk!</p>
+		<p><a href="http://www.sunsa.ba/">Više informacija</a></p>
+		<p><a href="?strajkbreher=da" style="font-size:8px">Osobe koje obavljaju zadatke koji nisu ograničeni štrajkom mogu kliknuti ovdje</a></p>
+		<?
+	}*/
+	?>
 	</td></tr></table></center>
 	<?
 }
