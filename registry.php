@@ -89,7 +89,6 @@ array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
 array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1", "0"),
 array("nastavnik/kvizovi", "Kvizovi (beta)", "Kvizovi (beta)", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
-array("nastavnik/unos_kolicine_pred", "Unos količine predavanja, laboratorijskih vježbi i tutorijala", "Unos količine", "A", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
 
 
