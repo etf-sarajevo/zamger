@@ -77,7 +77,7 @@ function mysql2time($v) {
 }
 
 // Escape stringova radi koristenja u mysql upitima - kopirao sa php.net
-function myescape($value) {
+function my_escape($value) {
 	// Convert special HTML chars to protect against XSS
 	// If chars are needed for something, escape manually
 	$value = htmlspecialchars($value);
