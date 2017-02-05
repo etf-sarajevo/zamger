@@ -117,7 +117,6 @@ $broj_polozenih_predmeta = db_result($q88,0,0);
 $suma_ects = db_result($q88,0,1);
 
 // Određujemo na osnovu sume ECTS kredita
-// FIXME Hack za ekvivalenciju
 if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	$q89 = db_query("SELECT UNIX_TIMESTAMP(ko.datum_u_indeksu) 
 	FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts, akademska_godina_predmet as agp
@@ -221,8 +220,11 @@ while ($r125 = db_fetch_row($q125)) {
 	$brojuk++;
 	$sumaects += $r125[2];
 }
-if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p><p><b>Ocjene ostvarene na matičnoj instituciji:</b></p>\n";
 
+
+// "Regularne" ocjene
+
+if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p><p><b>Ocjene ostvarene na matičnoj instituciji:</b></p>\n";
 
 ?>
 
@@ -249,13 +251,24 @@ $upisanagodina = round($r110[2]/2);
 
 $oldgodina = 0;
 $i=1;
-$q130 = db_query("SELECT p.sifra, p.naziv, p.ects, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), UNIX_TIMESTAMP(ko.datum), pk.semestar, ts.ciklus
+$q130 = db_query("SELECT p.sifra, p.naziv, p.ects, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), UNIX_TIMESTAMP(ko.datum), pk.semestar, ts.ciklus, ko.pasos_predmeta
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
 WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet 
 and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5 $upit_dodaj
 ORDER BY ts.ciklus, pk.semestar, p.naziv");
 while ($r130 = db_fetch_row($q130)) {
 	$godina = round($r130[6]/2);
+
+	if (intval($r130[8])>0) {
+		$q140 = db_query("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$r130[8]");
+		$sifra = db_result($q140,0,0);
+		$naziv = db_result($q140,0,1);
+		$ects = db_result($q140,0,2);
+	} else {
+		$sifra = $r130[0];
+		$naziv = $r130[1];
+		$ects = $r130[2];
+	}
 
 	if ($oldgodina != $godina) {
 		// Koliziju preskačemo
@@ -285,7 +298,7 @@ while ($r130 = db_fetch_row($q130)) {
 		<td><?=($i++)?>.</td>
 		<td><?=$r130[0]?></td>
 		<td><?=$r130[1]?></td>
-		<td align="center"><?=nuliraj($r130[2])?></td>
+		<td align="center"><?=nuliraj($ects)?></td>
 		<td align="center"><?=$imena_ocjena[$r130[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r130[3]]?></td>
 		<td align="center"><?=date("d. m. Y", $datum)?></td>
@@ -296,7 +309,7 @@ while ($r130 = db_fetch_row($q130)) {
 	$sumauk += $r130[3];
 	$brojgodine++;
 	$brojuk++;
-	$sumaects += $r130[2];
+	$sumaects += $ects;
 }
 
 if ($oldgodina != 0 && $brojgodine != 0) {
