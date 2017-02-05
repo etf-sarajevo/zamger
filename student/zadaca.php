@@ -218,7 +218,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 <!-- zadace -->
 <center>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace">
+<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
 	<thead>
 		<tr>
 <?

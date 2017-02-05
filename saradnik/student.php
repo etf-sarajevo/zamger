@@ -457,7 +457,7 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	?>
 
 	<b>Prisustvo (<?=$imegrupe?>):</b><br/>
-	<table cellspacing="0" cellpadding="2" border="0" id="prisustvo">
+	<table cellspacing="0" cellpadding="2" border="0" id="prisustvo" class="prisustvo">
 	<tr>
 		<th>Datum</th>
 	<?=$datumi?>
@@ -582,7 +582,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 <!-- zadace -->
 
 <b>Zadaće:</b><br/>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace">
+<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
 	<thead>
 		<tr>
 	<td>&nbsp;</td>
@@ -631,9 +631,9 @@ while ($r21 = db_fetch_row($q21)) {
 	<?
 	$bodova_zadaca = 0;
 
-	for ($zadatak=1;$zadatak<=$max_broj_zadataka;$zadatak++) {
+	for ($zadatak=1; $zadatak<=$max_broj_zadataka; $zadatak++) {
 		// Ako tekuća zadaća nema toliko zadataka, ispisujemo blank polje
-		if ($zadatak>$broj_zadataka) {
+		if ($zadatak > $broj_zadataka) {
 			?><td>&nbsp;</td><?
 			continue;
 		}
@@ -710,7 +710,7 @@ if (db_num_rows($q25)>0) {
 
 <!-- fiksne komponente -->
 
-<table cellspacing="0" cellpadding="2" border="0" id="zadace">
+<table cellspacing="0" cellpadding="2" border="0" id="fiksne" class="zadace">
 	<thead>
 	<tr>
 		<td><b>Komponenta ocjene</b></td>
@@ -766,7 +766,7 @@ if (db_num_rows($q30) == 0) {
 	print "<p>Nije bilo parcijalnih ispita.</p>";
 } else {
 ?>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace">
+<table cellspacing="0" cellpadding="2" border="0" id="ispiti" class="zadace">
 	<thead>
 	<tr>
 		<td><b>Tip ispita</b></td>
@@ -853,7 +853,7 @@ if (db_num_rows($q50)>0) {
 
 ?>
 <p>&nbsp;</p>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace">
+<table cellspacing="0" cellpadding="2" border="0" id="konacna_ocjena" class="zadace">
 <tr>
 	<td>&nbsp;</td>
 	<td>Ocjena:</td>
