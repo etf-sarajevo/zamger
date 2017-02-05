@@ -20,11 +20,10 @@ if (isset($_REQUEST['upisni'])) $upisni=true; else $upisni=false;
 
 // Za koju godinu se prijavljuje?
 $q1 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+// Da li postoji godina poslije aktuelne?
 $q2 = db_query("select id, naziv from akademska_godina where id>".db_result($q1,0,0)." order by id limit 1");
 if (db_num_rows($q2)<1) {
-//	nicemessage("U ovom trenutku nije aktiviran upis u sljedeću akademsku godinu.");
-//	return;
-	// Pretpostavljamo da se upisuje u aktuelnu?
+	// Ne postoji - pretpostavljamo da se upisuje u aktuelnu
 	$zagodinu  = db_result($q1,0,0);
 	$agnaziv  = db_result($q1,0,1);
 	$q3 = db_query("select id from akademska_godina where id<$zagodinu order by id desc limit 1");
@@ -37,13 +36,12 @@ if (db_num_rows($q2)<1) {
 
 
 // Ostali podaci o osobi
-$q10 = db_query("select ime, prezime, brindexa, jmbg, UNIX_TIMESTAMP(datum_rodjenja) ut_rodjenje, mjesto_rodjenja, drzavljanstvo, imeoca, imemajke, prezimeoca, prezimemajke, adresa, adresa_mjesto, telefon, kanton from osoba where id=$userid");
-if ($userid == 0 || db_num_rows($q10) == 0) {
+$osoba = db_query_assoc("select ime, prezime, brindexa, jmbg, UNIX_TIMESTAMP(datum_rodjenja) ut_rodjenje, mjesto_rodjenja, drzavljanstvo, imeoca, imemajke, prezimeoca, prezimemajke, adresa, adresa_mjesto, telefon, kanton, spol, nacionalnost from osoba where id=$userid");
+if ($userid == 0 || $osoba === false) {
 	niceerror("Nepoznat korisnik");
 	return;
 }
 
-$osoba = db_fetch_assoc($q10);
 $ime_prezime       = $osoba['ime']." ".$osoba['prezime'];
 $ime_prezime_oca   = $osoba['imeoca']." ".$osoba['prezimeoca'];
 $ime_prezime_majke = $osoba['imemajke']." ".$osoba['prezimemajke'];
@@ -104,11 +102,11 @@ if ($am) {
 	$adresa_mjesto_1 = "Nepoznata adresa prebivališta"; $adresa_mjesto_2 = "";
 }
 
-$q50 = db_query("SELECT studij, semestar, nacin_studiranja, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina=$zagodinu ORDER BY semestar");
-$q55 = db_query("SELECT naziv FROM akademska_godina WHERE id=$zagodinu");
+$q50 = db_query("SELECT studij, semestar, nacin_studiranja, plan_studija, ponovac FROM student_studij WHERE student=$userid AND akademska_godina=$zagodinu ORDER BY semestar");
+$akademska_godina = db_get("SELECT naziv FROM akademska_godina WHERE id=$zagodinu");
 if (db_num_rows($q50) == 0) {
-	$q50 = db_query("SELECT studij, semestar, nacin_studiranja FROM student_studij WHERE student=$userid AND akademska_godina=$proslagodina ORDER BY semestar");
-	$q55 = db_query("SELECT naziv FROM akademska_godina WHERE id=$proslagodina");
+	$q50 = db_query("SELECT studij, semestar, nacin_studiranja, plan_studija, ponovac FROM student_studij WHERE student=$userid AND akademska_godina=$proslagodina ORDER BY semestar");
+	$akademska_godina = db_get("SELECT naziv FROM akademska_godina WHERE id=$proslagodina");
 }
 if (db_num_rows($q50) == 0) {
 	niceerror("Student trenutno nije upisan na fakultet!");
@@ -127,15 +125,12 @@ $plan_studija = $ss['plan_studija'];
 if ($plan_studija == 0) {
 	// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
 	// Uzimamo najnoviji plan za odabrani studij
-	$q6 = db_query("select godina_vazenja from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-	if (db_num_rows($q6)<1) { 
+	$plan_studija = db_get("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
+	if ($plan_studija === false) { 
 		niceerror("Nepostojeći studij");
 		return;
 	}
-	$plan_studija = db_result($q6,0,0);
 }
-
-$akademska_godina = db_result($q55,0,0);
 
 $q60 = db_query("SELECT s.naziv, ts.ciklus, s.institucija FROM studij as s, tipstudija as ts WHERE s.id=$studij AND s.tipstudija=ts.id");
 $studij_podaci = db_fetch_assoc($q60);
@@ -334,12 +329,12 @@ $pdf->AddPage();
 //$plan_studija=1;
 //$studij=2;
 
-	// Spisak predmeta na sermestru
+	// Spisak predmeta na semestru
 	if ($ponovac==1) 
-		$q100 = db_query("select p.sifra, p.naziv, p.ects, p.id from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("SELECT p.sifra, p.naziv, p.ects, p.id from predmet as p, pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id AND pp.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
 	// Ako nije, trebamo prikazati one koje je položio u koliziji
-		$q100 = db_query("select p.sifra, p.naziv, p.ects, p.id from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem1 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = db_query("SELECT p.sifra, p.naziv, p.ects, p.id from predmet as p, pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id AND pp.predmet=p.id");
 	$ykoord = 110;
 	$ects = 0;
 	while ($r100 = db_fetch_row($q100)) {
@@ -459,12 +454,12 @@ $pdf->AddPage();
 //$plan_studija=1;
 //$studij=2;
 
-	// Spisak predmeta na sermestru
+	// Spisak predmeta na semestru
 	if ($ponovac==1) 
-		$q100 = db_query("select p.sifra, p.naziv, p.ects, p.id from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
+		$q100 = db_query("SELECT p.sifra, p.naziv, p.ects, p.id from predmet as p, pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id AND pp.predmet=p.idd and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
 	else
 	// Ako nije, trebamo prikazati one koje je položio u koliziji
-		$q100 = db_query("select p.sifra, p.naziv, p.ects, p.id from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and ps.semestar=$sem2 and ps.obavezan=1 and ps.predmet=p.id");
+		$q100 = db_query("SELECT p.sifra, p.naziv, p.ects, p.id from predmet as p, pasos_predmeta pp, plan_studija_predmet as psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id AND pp.predmet=p.id");
 	$ykoord = 110;
 	$ects = 0;
 	while ($r100 = db_fetch_row($q100)) {
