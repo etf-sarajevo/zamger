@@ -142,6 +142,7 @@ array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1"
 
 array("ws/autotest", "Web servis autotest", "autotest", "SNBA", "2", "0"),
 array("ws/labgrupa", "Web servis labgrupa", "labgrupa", "NA", "2", "0"),
+array("ws/log", "Web servis log", "log", "NA", "2", "0"),
 array("ws/osoba", "Web servis osoba", "osoba", "SNBA", "2", "0"),
 array("ws/potvrda", "Web servis potvrda", "potvrda", "S", "2", "0"),
 array("ws/predmet", "Web servis predmet", "predmet", "PSNBA", "2", "0"),

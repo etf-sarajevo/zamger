@@ -780,15 +780,15 @@ if (db_num_rows($q30) == 0) {
 <?
 }
 
+$rezultati_ispita = array();
 while ($r30 = db_fetch_row($q30)) {
 	$ispit = $r30[0];
-	$q40 = db_query("select ocjena from ispitocjene where ispit=$ispit and student=$student");
-	if (db_num_rows($q40)<1) {
-		$ocjenaedit="/";
-		$ispitocjena="Nije izašao/la";
+	$rezultati_ispita[$ispit] = db_get("select ocjena from ispitocjene where ispit=$ispit and student=$student");
+	if ($rezultati_ispita[$ispit]) {
+		$ispitocjena = "<b>" . $rezultati_ispita[$ispit] . " bodova</b>";
 	} else {
-		$ocjenaedit=db_result($q40,0,0);
-		$ispitocjena="<b>".db_result($q40,0,0)." bodova</b>";
+		$rezultati_ispita[$ispit] = "/";
+		$ispitocjena = "Nije izašao/la";
 	}
 /*	?>
 	<p><?=$r30[2]?> (<?=date("d. m. Y",$r30[1])?>): <?=$ispitocjena?>
@@ -798,14 +798,17 @@ while ($r30 = db_fetch_row($q30)) {
 		<td><?=$r30[2]?></td>
 		<td><?=date("d. m. Y",$r30[1])?></td>
 		<td><?
-		if ($ocjenaedit=="/") print "&nbsp;";
-		else if ($ocjenaedit>=$r30[4]) print "<img src=\"images/16x16/zad_ok.png\" width=\"16\" height=\"16\">"; 
-		else print "<img src=\"images/16x16/brisanje.png\" width=\"16\" height=\"16\">"; // najljepše slike
+		if ($rezultati_ispita[$ispit]=="/") 
+			print "&nbsp;";
+		else if ($rezultati_ispita[$ispit] >= $r30[4]) 
+			print "<img src=\"images/16x16/zad_ok.png\" width=\"16\" height=\"16\">"; 
+		else 
+			print "<img src=\"images/16x16/brisanje.png\" width=\"16\" height=\"16\">"; // najljepše slike
 		?></td>
-		<td id="ispit-<?=$student?>-<?=$ispit?>" ondblclick="coolboxopen(this)"><?=$ocjenaedit?></td>
+		<td id="ispit-<?=$student?>-<?=$ispit?>" ondblclick="coolboxopen(this)"><?=$rezultati_ispita[$ispit]?></td>
 		<td><? 
 		if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) { 
-			?><div id="ispitlog<?=$ispit?>"></div><?
+			?><div id="ispitlog<?=$ispit?>"><img src="images/busy-light-25x25.gif" width="16" height="16"></div><?
 		} else print "/";
 		?></td>
 	</tr>
@@ -868,7 +871,7 @@ if ($privilegija=="nastavnik" || $user_siteadmin) {
 	?>
 	<td id="ko-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$konacnaocjena?></td>
 	<td id="kodatum-<?=$student?>-<?=$predmet?>-<?=$ag?>" ondblclick="coolboxopen(this)"><?=$datum_u_indeksu?></td>
-	<td><div id="kolog"></div></td>
+	<td><div id="kolog"><img src="images/busy-light-25x25.gif" width="16" height="16"></div></td>
 	<?
 } else {
 	?>
@@ -886,47 +889,117 @@ print "</tr></table>\n";
 
 // Ne radimo ništa ako korisnik nema privilegije
 
-if ($privilegija!="nastavnik" && $privilegija!="super_asistent" && !$user_siteadmin) return;
+if ($privilegija != "nastavnik" && $privilegija != "super_asistent" && !$user_siteadmin) return;
 
 ?>
 
 
 <SCRIPT language="JavaScript">
+
+setTimeout(function() { ucitajLogove(<?=$student?>, <?=$predmet?>, <?=$ag?>); }, 100);
+var konacnaocjena = '<?=$konacnaocjena?>';
+var rezultati_ispita = {};
 <?
+foreach($rezultati_ispita as $ispit => $bodovi)
+	print "rezultati_ispita['".$ispit."'] = '$bodovi';\n";
+	
+?>
 
-
-// Spisak ponuda kursa, za slucaj da nema rezultata
-$q90 = db_query("select id from ponudakursa where predmet=$predmet and akademska_godina=$ag");
-$pkovi = array();
-while ($r90 = db_fetch_row($q90)) array_push($pkovi, $r90[0]);
-
-
-// Log za ispite
-
-$q100 = db_query("select i.id, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
-
-while ($r100 = db_fetch_row($q100)) {
-	$vrijeme_ispita = $r100[1];
-
-	// Utvrdjujemo ocjenu da bismo lakse mogli rekonstruisati izmjene kroz log
-	$q105 = db_query("select ocjena from ispitocjene where ispit=$r100[0] and student=$student");
-	if (db_num_rows($q105)<1)
-		$ispitocjena="/";
-	else
-		$ispitocjena=db_result($q105,0,0);
-
-
-	// Necemo traziti masovne unose ako student nije ni izlazio na ispit
-	if ($ispitocjena == "/") continue; 
+function ucitajLogove(student, predmet, ag) {
+	var xmlhttp = new XMLHttpRequest();
+	var url = "/index.php?sta=ws/log&tip_loga=student&student=" + student + "&predmet=" + predmet + "&ag=" + ag;
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			result = JSON.parse(xmlhttp.responseText);
+			if (result.success == "true") {
+				parsirajLogove(result.data);
+			} else {
+				console.log("Web servis za logove vratio success=false");
+				console.log(result);
+			}
+			return false;
+		}
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 500) {
+			console.log("Serverska greška kod pozivanja web servisa za logove.");
+			console.log("readyState "+xmlhttp.readyState+" status "+xmlhttp.status);
+		}
+	}
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+	
 }
 
+function parsirajLogove(log) {
+	document.getElementById('kolog').innerHTML = "";
+	for (var ispit in rezultati_ispita) {
+		if (rezultati_ispita.hasOwnProperty(ispit)) {
+			document.getElementById('ispitlog' + ispit).innerHTML = "";
+		}
+	}
+	for (i=0; i<log.length; i++) {
+		var stavka = log[i];
+		
+		if (stavka.opis_dogadjaja == "dodana ocjena") {
+			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
+			konacnaocjena = "/";
+			
+			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> dodana ocjena <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "obrisana ocjena") {
+			if (konacnaocjena != "/") 
+				stavka.ocjena += " ?"; 
+			else 
+				konacnaocjena=stavka.ocjena;
+			
+			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> obrisana ocjena (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "izmjena ocjene") {
+			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
+			konacnaocjena = stavka.stara_ocjena;
+			
+			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjena ocjena u <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene") {
+			document.getElementById('kolog').innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjena datum ocjene u <b>' + stavka.datum_ocjene + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "upisan rezultat ispita") {
+			if (stavka.bodovi != rezultati_ispita[stavka.ispit]) 
+				stavka.bodovi += " ?";
+			rezultati_ispita[stavka.ispit] = "/";
+			
+			document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> upisan rezultat <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "izbrisan rezultat ispita") {
+			if (rezultati_ispita[stavka.ispit] != "/") 
+				stavka.stari_bodovi += " ?";
+			else 
+				rezultati_ispita[stavka.ispit] = stavka.stari_bodovi;
+			
+			document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> izbrisan rezultat (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "izmjenjen rezultat ispita") {
+			if (stavka.bodovi != rezultati_ispita[stavka.ispit]) 
+				stavka.bodovi += " ?";
+			rezultati_ispita[stavka.ispit] = stavka.stari_bodovi;
+			
+			document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjen rezultat u <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
+			
+		} else if (stavka.opis_dogadjaja == "izmjena bodova za fiksnu komponentu") {
+			document.getElementById('fiksnalog' + stavka.komponenta).innerHTML = '<img src="images/16x16/log_edit.png" width="16" height="16" align="center"> promijenjeni bodovi u <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('fiksnalog' + stavka.komponenta).innerHTML;
+		}
+	}
+}
 
-
-
-?>
 </SCRIPT>
 <?
 
 
 
+
+
+
+
 }
+
+
+?>
