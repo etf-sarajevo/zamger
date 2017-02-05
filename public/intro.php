@@ -93,24 +93,14 @@ function login_forma() {
 	<tr><td align="center">
 	<?
 
-/*	if ($_REQUEST['strajkbreher'] == "da") {*/
-		?>
-		<!-- Login forma -->
-		<form action="<?=$uri?>" method="POST">
-		<input type="hidden" name="loginforma" value="1">
-		<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15" autofocus></td></tr>
-		<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
-		<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
-		</form>
-		<?
-/*	} else {
-		?>
-		<p style="font-size:80px; color:red; margin: 0px; font-weight: bold">Štrajk!</p>
-		<p><a href="http://www.sunsa.ba/">Više informacija</a></p>
-		<p><a href="?strajkbreher=da" style="font-size:8px">Osobe koje obavljaju zadatke koji nisu ograničeni štrajkom mogu kliknuti ovdje</a></p>
-		<?
-	}*/
 	?>
+	<!-- Login forma -->
+	<form action="<?=$uri?>" method="POST">
+	<input type="hidden" name="loginforma" value="1">
+	<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15" autofocus></td></tr>
+	<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
+	<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
+	</form>
 	</td></tr></table></center>
 	<?
 }
