@@ -854,31 +854,31 @@ else if ($akcija == "upis") {
 		} else {
 			$uplate = array();
 			if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 1) 
-				array_push($uplate, 4);
+				array_push($uplate, 1);  // Redovni upis I ciklus
 			else if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 3) 
-				array_push($uplate, 5);
+				array_push($uplate, 2); // Redovni upis I ciklus - participacija
 			else if ($ciklus == 1 && $ponovac == 1) {
-				array_push($uplate, 28);
+				array_push($uplate, 3); // Ponovni upis I ciklus
 				foreach ($predmeti_pao as $id => $naziv)
-					array_push($uplate, 35);
+					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
 			}
 			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 1) {
-				array_push($uplate, 29);
-				if ($semestar==6) array_push($uplate, 32);
+				array_push($uplate, 28); // Redovni upis II ciklus
+				if ($semestar==6) array_push($uplate, 31); // Prijava i odbrana završnog rada - II ciklus
 			}
 			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 3) {
-				array_push($uplate, 30);
-				if ($semestar==6) array_push($uplate, 32);
+				array_push($uplate, 29); // Redovni upis II ciklus - participacija
+				if ($semestar==6) array_push($uplate, 31); // Prijava i odbrana završnog rada - II ciklus
 			}
 			else if ($ciklus == 2 && $ponovac == 1) {
-				array_push($uplate, 31);
+				array_push($uplate, 30); // Ponovni upis II ciklus
 				foreach ($predmeti_pao as $id => $naziv)
-					array_push($uplate, 35);
+					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
 			}
 			else if ($ciklus == 3 && $ponovac == 0)
-				array_push($uplate, 23 + ($godina - 8) ); // 8 == 2012/2013 FIXME glupo organizovani kodovi uplata...
+				array_push($uplate, 45 + ($godina - 8) ); // 45 == 2012/2013 FIXME loše organizovani kodovi uplata...
 			else if ($ciklus == 3 && $ponovac == 1) 
-				array_push($uplate, 36);
+				array_push($uplate, 49); // Ponovni upis III ciklus
 			
 			// Šta treba uplatiti i koliko
 			$saldo = $potrebno = 0;
