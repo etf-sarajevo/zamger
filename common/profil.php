@@ -610,6 +610,12 @@ if ($akcija == "log") {
 		$stardate = db_result($q199,0,0)+1;
 	}
 
+	// Za iole prihvatljive performanse upita na log bazu mora se imati limit,
+	// ali kod pretrage postoji mogućnost da upit sa tim limitom ne vrati dovoljan broj rezultata.
+	// Broj ispod je nekakav kompromis između ova dva problema
+	$query_limit = 10000; 
+	$query_max_limit = 1000000;
+
 	?>
 	<div style="margin-left: 20px">
 	<?
@@ -618,14 +624,39 @@ if ($akcija == "log") {
 	$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 	FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
 	WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
-	ORDER BY l.id DESC");
+	ORDER BY l.id DESC LIMIT $query_limit");
 	$lastlogin = array();
 	$eventshtml = array();
 	$logins=0;
 	$prvidatum=$zadnjidatum=0;
 	$stardate=1;
 	while ($r10 = db_fetch_row($q10)) {
-	
+		$r10 = db_fetch_row($q10);
+		if (!$r10) {
+			// Potrošili smo sve slogove u upitu a nismo napunili $maxlogins stavki
+			// Ponavljamo upit sa novim stardate-om
+			if ($last_id > 0 && $stardate > $last_id+1) {
+				$stardate = $last_id+1;
+				// Da ubrzamo stvari, povećaćemo limit na upitu
+				$query_limit *= 2;
+				if ($query_limit > $query_max_limit || $stardate < 2) {
+					// Nema više smisla nastaviti, rezultata više nema
+					$stardate=1;
+					break;
+				}
+			} else {
+				// Prethodni upit nije vratio ama baš ništa, prekidamo
+				$stardate = 1;
+				break;
+			}
+			$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+			FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
+			WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
+			ORDER BY l.id DESC LIMIT $query_limit");
+			continue; // Povratak na početak petlje
+		}
+		
+		$last_id = $r10[0]; // $lastlogin koristimo da provjerimo da li je korisnik išta radio nakon logina
 		if ($prvidatum==0) $prvidatum = $r10[1];
 		$zadnjidatum = $r10[1];
 		$nicedate = " (".date("d.m.Y. H:i:s", $r10[1]).")";
@@ -758,7 +789,8 @@ if ($akcija == "log") {
 			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> ".$evt.$nicedate." ".$analyze_link."\n".$eventshtml[$lastlogin[$usr]];
 		}
 	}
-	if ($stardate==1) $zadnjidatum=1; // Nije doslo do breaka...
+	if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
+	else $stardate = $last_id;
 
 
 	// Dodajemo zaglavlja sa [+] poljem (prebaciti iznad)
