@@ -256,7 +256,6 @@ for ($i=1; $i<=$brzad; $i++) {
 	
 	if ($filename[$i]=="") continue;
 	if (!file_exists("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]")) {
-		zamgerlog("ne postoji fajl za zadacu z$zadaca zadatak $i student u$userid", 3);
 		continue;
 	}
 	$extrenut=strtolower(end(explode('.',$filename[$i])));
