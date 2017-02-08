@@ -892,19 +892,20 @@ else if ($akcija == "upis") {
 				<p><font color="red">Student nije uplatio dovoljno novca za upis:<br>
 				Potrebno je <?=$potrebno?> KM a ukupan iznos svih uplata je <?=$saldo?> KM.</font></p>
 				<?
-				$ok_izvrsiti_upis = 0;
+				//$ok_izvrsiti_upis = 0;
 			} 
 			
 			// Tražimo detaljne greške i ujedno generišemo XML zaduženja
 			$greska = "";
-			$zaduzenje_xml = '<?xml version="1.0" encoding="UTF-8"?>';
+			$zaduzenja_xml = array();
 			foreach ($uplate as $uplata) {
 				$q124 = db_query("SELECT vrsta_zaduzenja_opis, cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
 				$opis = db_result($q124,0,0);
 				$cijena = db_result($q124,0,1);
 				$found = 0;
 				foreach($kartice as $kartica) {
-					if ($kartica['vrsta_zaduzenja'] == $opis) {
+					$kzaduzenje = str_replace("–", "-", trim($kartica['vrsta_zaduzenja']));
+					if ($kzaduzenje == trim($opis)) {
 						$found += $kartica['razduzenje'] - $kartica['zaduzenje'];
 					}
 				}
@@ -913,7 +914,9 @@ else if ($akcija == "upis") {
 					
 				$datumxml = date("d/m/Y");
 				$iznosxml = number_format($cijena, 2, ",", "");
+				$zaduzenje_xml = '<?xml version="1.0" encoding="UTF-8"?>';
 				$zaduzenje_xml .= "\n<Zaduzenje>\n<JMBG>$jmbg</JMBG>\n<vrstaZaduzenjaId>$uplata</vrstaZaduzenjaId>\n<datum>$datumxml</datum>\n<iznos>$iznosxml</iznos>\n<aktivan>1</aktivan>\n<opis>$opis</opis>\n</Zaduzenje>";
+				$zaduzenja_xml[] = $zaduzenje_xml;
 			}
 			if ($greska != "" && $potrebno <= $saldo) {
 				?>
@@ -1204,7 +1207,9 @@ else if ($akcija == "upis") {
 		}
 
 		// Unos zaduženja na studentovu karticu
-		xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje_xml), "POST");
+		foreach($zaduzenja_xml as $zaduzenje) {
+			xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
+		}
 		zamgerlog2("upisano zaduzenje za upis", $student);
 		print "-- Evidentirano zaduženje u bazi uplata<br>\n";
 		
