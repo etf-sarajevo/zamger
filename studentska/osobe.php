@@ -1106,7 +1106,15 @@ else if ($akcija == "upis") {
 		$ok_izvrsiti_upis = 1;
 
 	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
-
+		// Izbjegavamo da student bude više puta upisan na isti studij
+		$parni = $semestar % 2;
+		$q591 = db_query("SELECT studij, semestar FROM student_studij WHERE student=$student AND akademska_godina=$godina AND semestar MOD 2=$parni");
+		if (db_num_rows($q591) > 0) {
+			$q591a = db_query("SELECT naziv FROM studij WHERE id=".db_result($q591,0,0));
+			niceerror("Student je već upisan u akademskoj godini $naziv_ak_god u semestar ".db_result($q591,0,1)." (studij ".db_result($q591a,0,0).")");
+			return;
+		}
+		
 		// Upis u prvi semestar - kandidat za prijemni postaje student!
 		if ($stari_studij==0) {
 			// Ukidamo privilegiju "prijemni" ako je student imao
