@@ -924,7 +924,7 @@ else if ($akcija == "upis") {
 				?>
 				<p><font color="red"><?=$greska?></font></p>
 				<?
-				$ok_izvrsiti_upis = 0;
+				//$ok_izvrsiti_upis = 0;
 			}
 		}
 
