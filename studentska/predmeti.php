@@ -177,7 +177,7 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 			?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
 			return;
 		} else {
-			// Određujemo najnoviji plan studija
+			// Određujemo najnoviji plan studija 
 			// FIXME ovo je naopako jer određujemo studij iz ID-a predmeta na kojem se nudi
 			$q225 = db_query("SELECT ps.studij, psp.semestar, psp.obavezan FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=ps.id ORDER BY ps.godina_vazenja DESC LIMIT 1");
 			if (db_num_rows($q255) > 0) {
@@ -223,7 +223,7 @@ else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 			// Kreiram virtualnu labgrupu "Svi studenti"
 			$q250 = db_query("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ak_god, virtualna=1");
 
-			?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
+			?><a href="?sta=studentska/predmeti&amp;akcija=edit&amp;predmet=<?=$predmet?>&amp;ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
 			return;
 		}
 	}
@@ -509,11 +509,11 @@ else if ($akcija == "edit") {
 
 	?>
 	<h3><?=$naziv?></h3>
-	<p>Šifra predmeta: <b><?=$sifra?></b><br />
+	<p><!--Šifra predmeta: <b><?=$sifra?></b><br /> -->
 	Skraćeni naziv predmeta: <b><?=$kratkinaziv?></b><br />
 	Institucija: <b><?=$institucija?></b><br />
 	Tip predmeta: <b><?=$tippredmeta?></b><br />
-	ECTS: <b><?=$ects?> bodova</b><br />
+	<!--ECTS: <b><?=$ects?> bodova</b><br /> -->
 	Sati predavanja: <b><?=$sati_predavanja?> </b><br />
 	Sati vježbi: <b><?=$sati_vjezbi?> </b><br />
 	Sati tutorijala: <b><?=$sati_tutorijala?> </b><br />
