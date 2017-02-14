@@ -247,13 +247,17 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	
 	// Petlja za ispis studenata
 	$redni_broj=0;
+	$zebra_bg = $zebra_siva = "#f0f0f0";
+	$zebra_bijela = "#ffffff";
 	foreach ($imeprezime as $stud_id => $stud_imepr) {
 		if (!in_array($stud_id, $idovi)) continue;
 		unset ($imeprezime[$stud_id]); // Vise se nece javljati
 
+		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;
+		
 		$redni_broj++;
 			?>
-		<tr>
+		<tr bgcolor="<?=$zebra_bg?>">
 			<td><?=$redni_broj?>.</td>
 			<td><?=$stud_imepr?></td>
 			<td><?=$brindexa[$stud_id]?></td>
