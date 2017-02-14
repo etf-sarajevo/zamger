@@ -58,7 +58,7 @@ print "<br/>\n";
 
 
 // Nastavni ansambl
-$q25 = db_query("select o.id, ast.naziv from angazman as a, angazman_status as ast, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id order by ast.id");
+$q25 = db_query("select o.id, ast.naziv from angazman as a, angazman_status as ast, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id order by ast.id, o.prezime, o.ime");
 while ($r25 = db_fetch_row($q25)) {
 	print "<b>".ucfirst($r25[1])."</b>: ".tituliraj($r25[0])."<br/>";
 }
