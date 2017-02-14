@@ -133,7 +133,7 @@ function student_kolizija() {
 			// Student nije slušao dovoljan broj ponuđenih izbornih predmeta
 			// Dešava se u slučaju da je izabran predmet sa drugog odsjeka
 			if (db_num_rows($q60) < $broj_izbornih[$plan_izborni_slot]) {
-				$q60 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as pis, pasos_predmeta as pp where pis.id=$r30[3] and pis.pasos_predmeta=pp.id");
+				$q60 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as pis, pasos_predmeta as pp where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
 				$naziv="Izborni predmet ("; // Kombinovani naziv svih predmeta
 				$polozio=0;
 				$min_ects = 100; // treba nam predmet sa najmanjim brojem ects kredita
