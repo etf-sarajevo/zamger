@@ -207,7 +207,7 @@ if ($r210[0]==$debug_predmet) print $k++." redovno sigurno (trenutno sluša) $st
 
 			// Obavezni predmeti sa sljedećeg semestra
 			$novisemestar++;
-			$q230 = db_query("select predmet from plan_studija_predmet where plan_studija=$novistudij and semestar=$novisemestar and obavezan=1");
+			$q230 = db_query("select pp.predmet from plan_studija_predmet psp, pasos_predmeta pp where psp.plan_studija=$novistudij and psp.semestar=$novisemestar and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 			while ($r230 = db_fetch_row($q230)) {
 				$predmet = $r230[0];
 				$q240 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
