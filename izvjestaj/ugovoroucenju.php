@@ -909,7 +909,7 @@ if ($fuzzy) {
 
 // Po studijima i semestrima
 
-$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, ps.semestar, ps.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
+$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
 $oldstudij=$oldsemestar=$oldobavezan="";
 
 $predmeti_ispis=array();
