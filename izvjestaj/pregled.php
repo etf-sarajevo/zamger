@@ -28,6 +28,8 @@ if ($ak_god==0) {
 	$ak_god_naziv = db_result($q10,0,0);
 }
 
+if (param('po_semestrima')) $po_semestrima=true; else $po_semestrima=false;
+
 
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = $studiji_phd = array();
@@ -97,24 +99,26 @@ foreach ($studiji_bsc as $id=>$ime) {
 // Centralna tabela
 $ukupno_studij = $redovnih_studij = $ponovaca_studij = array();
 $ukupno_total = $redovnih_total = $ponovaca_total = 0;
+$semestar = 1;
 
 for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 
 	if ($godina>$trajanje_bsc+$trajanje_msc) {
 		$studiji = $studiji_phd;
 		$godina_real = $godina-($trajanje_bsc+$trajanje_msc);
+		$semestar_real = $semestar-($trajanje_bsc+$trajanje_msc)*2;
 		$dodatak = "PhD";
 	} else if ($godina>$trajanje_bsc) {
 		$studiji = $studiji_msc;
 		$godina_real = $godina-$trajanje_bsc;
+		$semestar_real = $semestar-$trajanje_bsc*2;
 		$dodatak = "MSc";
 	} else {
 		$studiji = $studiji_bsc;
 		$godina_real = $godina;
+		$semestar_real = $semestar;
 		$dodatak = "BSc";
 	}
-
-	$semestar = $godina_real*2-1;
 
 /*	$q20 = db_query("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar");
 	$ukupno = db_result($q20,0,0);
@@ -126,11 +130,11 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 
 	$ukupno_studij_godina = $redovnih_studij_godina = $ponovaca_studij_godina = array();
 	foreach ($studiji as $id=>$ime) {
-		$q40 = db_query("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar and studij=$id");
+		$q40 = db_query("select count(*) from student_studij where akademska_godina=$ak_god and semestar=$semestar_real and studij=$id");
 		$ukupno_studij_godina[$id] = db_result($q40,0,0);
 		$ukupno_godina += $ukupno_studij_godina[$id];
 
-		$q50 = db_query("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar and ss.studij=$id and ss.ponovac=0");
+		$q50 = db_query("select count(*) from student_studij as ss where ss.akademska_godina=$ak_god and ss.semestar=$semestar_real and ss.studij=$id and ss.ponovac=0");
 		$redovnih_studij_godina[$id] = db_result($q50,0,0);
 		$ponovaca_studij_godina[$id] = $ukupno_studij_godina[$id]-$redovnih_studij_godina[$id];
 
@@ -149,14 +153,16 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 	$ukupno_total += $ukupno_godina;
 
 
-
+	if ($po_semestrima) $naslov = "$semestar_real. sem. $dodatak"; else $naslov = "$godina_real. g. $dodatak";
+	
+	
 	// Ispis
 ?>
 	<tr>
 		<? for ($i=0; $i<count($studiji)+3; $i++) print "<td></td>"; ?>
 	</tr>
 	<tr>
-		<td bgcolor="#EEEEEE" align="left" valign="center"><b><?=$godina_real?>. g. <?=$dodatak?></b></td>
+		<td bgcolor="#EEEEEE" align="left" valign="center"><b><?=$naslov?></b></td>
 		<td align="left" valign="center">redovan</td>
 		<td align="center" valign="center"><?=$redovnih_godina?></td>
 <? foreach ($studiji as $id=>$ime) { ?>
@@ -181,6 +187,9 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 	</tr>
 <?
 
+	$semestar++;
+	if ($po_semestrima && $semestar%2 == 0) { $godina--;}
+	else if (!$po_semestrima) $semestar++;
 
 }
 

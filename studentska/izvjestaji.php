@@ -253,6 +253,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 		}
 	?>
 	</select><br/><br/>
+	<input type="checkbox" name="po_semestrima"> Po semestrima<br><br>
 	<input type="submit" value=" Prikaži "></form>
 	<?
 }
