@@ -254,7 +254,7 @@ $pdf->AddPage();
 		
 		// U slučaju ponavljanja godine preskačemo predmete koje je student već položio (a koji su uneseni u UOU)
 		$q112 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=$predmet AND ocjena>5");
-		if (db_result($q112,0,0) > 0) continue;
+		if (db_result($q112,0,0) > 0 && $ponovac==1) continue;
 		
 		// Uzimamo pasoš koji je važeći u tekućem NPPu
 		$q114 = db_query("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
