@@ -79,6 +79,12 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	nicemessage("Poruka uspješno poslana");
 	zamgerlog("poslana poruka za u$prim_id",2);
 	zamgerlog2("poslana poruka", intval($prim_id));
+
+	// Slanje GCM poruke
+	require("gcm/push_message.php");
+	$q320 = myquery("select ime, prezime from osoba where id=$userid");
+	$r320 = mysql_fetch_row($q320);
+	push_message(array($prim_id), "Poruke", "Nova lična poruka od $r320[0] $r320[1]");
 }
 
 if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {

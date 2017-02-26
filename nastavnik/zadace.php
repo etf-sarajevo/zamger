@@ -8,6 +8,9 @@ function nastavnik_zadace() {
 
 global $userid,$user_siteadmin,$conf_files_path;
 
+
+require("gcm/push_message.php");
+
 require("lib/manip.php");
 require("lib/autotest.php");
 
@@ -401,6 +404,10 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			nicemessage("Kreirana nova zadaća '$naziv'");
 			zamgerlog("kreirana nova zadaca z$edit_zadaca", 2);
 			zamgerlog2("kreirana nova zadaca", $edit_zadaca);
+
+			$q93 = myquery("select sp.student from student_predmet as sp, ponudakursa as pk where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.id=sp.predmet");
+			while ($r93 = mysql_fetch_row($q93)) 
+				push_message(array($r93[0]), "Zadace", "Rok za slanje zadaće $naziv iz predmeta $predmet_naziv je $dan. $mjesec. $godina u $sat:$minuta:$sekunda");
 		}
 
 	// Izmjena postojece zadace

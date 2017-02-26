@@ -9,6 +9,7 @@ function nastavnik_ocjena() {
 global $userid,$user_siteadmin;
 
 require("lib/manip.php");
+require("gcm/push_message.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
 
 
@@ -210,6 +211,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				$q110 = db_query("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 			zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
+
+			push_message(array($student), "Rezultati", "Dobili ste ocjenu $ocjena iz predmeta $predmet_naziv");
 		}
 	}
 

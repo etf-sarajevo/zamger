@@ -9,6 +9,7 @@ function nastavnik_ispiti() {
 global $userid,$user_siteadmin,$user_studentska;
 
 require("lib/manip.php");
+require("gcm/push_message.php");
 global $mass_rezultat; // za masovni unos studenata u grupe
 
 
@@ -217,6 +218,9 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		} else {
 			db_query("insert into ispitocjene set ispit=$ispit, student=$student, ocjena=$bodova");
 			zamgerlog2("upisan rezultat ispita", $student, $ispit, 0, $bodova);
+
+			push_message(array($student), "Rezultati", "Dobili ste $bodova bodova na ispitu $fini_naziv_ispita iz predmeta $predmet_naziv održanom $finidatum");
+
 
 			// Update komponenti
 			update_komponente($student, $ponudakursa, $tipispita);

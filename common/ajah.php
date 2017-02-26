@@ -286,6 +286,8 @@ case "izmjena_ispita":
 		}
 	}
 
+	require("gcm/push_message.php");
+
 	// Ažuriranje podataka u bazi
 	if ($ime=="ispit") {
 		$q50 = db_query("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
@@ -294,16 +296,20 @@ case "izmjena_ispita":
 			$q60 = db_query("insert into ispitocjene set ispit=$ispit, student=$stud_id, ocjena=$vrijednost");
 			zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
+			push_message(array($stud_id), "Rezultati", "Dobili ste $vrijednost bodova na ispitu $fini_naziv_ispita iz predmeta $predmet_naziv održanom $finidatum");
+
 		} else if ($c>0 && $vrijednost==="/") {
 			$staraocjena = db_result($q50,0,0);
 			$q60 = db_query("delete from ispitocjene where ispit=$ispit and student=$stud_id");
 			zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staraocjena); // nivo 4: audit
+
 		} else if ($c>0) {
 			$staraocjena = db_result($q50,0,0);
 			$q60 = db_query("update ispitocjene set ocjena=$vrijednost where ispit=$ispit and student=$stud_id");
 			zamgerlog("AJAH ispit - izmjena rezultata $staraocjena u $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izmjenjen rezultat ispita", $stud_id, $ispit, 0, "$staraocjena -> $vrijednost"); // nivo 4: audit
+			push_message(array($stud_id), "Rezultati", "Dobili ste $vrijednost bodova na ispitu $fini_naziv_ispita iz predmeta $predmet_naziv održanom $finidatum");
 		}
 
 		update_komponente($stud_id,$ponudakursa,$komponenta);
@@ -323,6 +329,8 @@ case "izmjena_ispita":
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
+
+		push_message(array($stud_id), "Rezultati", "Dobili ste $vrijednost bodova za $fini_naziv_komponente iz predmeta $predmet_naziv");
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
@@ -360,6 +368,9 @@ case "izmjena_ispita":
 			$q80 = db_query("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
 			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
+
+			push_message(array($stud_id), "Rezultati", "Dobili ste ocjenu $vrijednost iz predmeta $predmet_naziv");
+			
 		} else if ($c>0 && $vrijednost=="/") {
 			$staraocjena = db_result($q70,0,0);
 			$q80 = db_query("delete from konacna_ocjena where predmet=$predmet and student=$stud_id");
@@ -370,6 +381,8 @@ case "izmjena_ispita":
 			$q80 = db_query("update konacna_ocjena set ocjena=$vrijednost, datum=NOW() where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
+
+			push_message(array($stud_id), "Rezultati", "Dobili ste ocjenu $vrijednost iz predmeta $predmet_naziv");
 		}
 
 		// Generisem statičku verziju izvještaja predmet
