@@ -499,7 +499,7 @@ Kliknite na zahtjev da biste ga prihvatili ili odbili.
 }
 
 
-// Zathjevi za dokumenta
+// Zahtjevi za dokumenta
 
 $q40 = db_query("SELECT count(*) FROM zahtjev_za_potvrdu WHERE status=1");
 $br_zahtjeva = db_result($q40, 0, 0);
