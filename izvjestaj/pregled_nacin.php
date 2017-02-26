@@ -42,6 +42,7 @@ $trajanje_bsc /= 2; // broj godina umjesto broj semestara
 
 $q30 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and ts.moguc_upis=1 order by s.kratkinaziv");
 while ($r30 = db_fetch_row($q30)) {
+	if (substr($r30[1],2,1) == "e") continue; // Preskačemo ekvivalenciju
 	$studiji_msc[$r30[0]]=$r30[1];
 	if ($r30[2]>$trajanje_msc) $trajanje_msc=$r30[2];
 	$institucije[$r30[0]]=$r30[3];
