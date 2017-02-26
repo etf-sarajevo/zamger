@@ -1049,7 +1049,8 @@ else if ($akcija == "upis") {
 				}
 			}
 
-		} else if ($uou==0) { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
+		} else if ($uou==0  && !strstr($naziv_studija, "ekvivalencija")) { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
+			// Ovo se ne smije raditi ako je ekvivalencija
 
 			// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
 			$q560 = db_query("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
