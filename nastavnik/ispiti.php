@@ -221,7 +221,6 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 			push_message(array($student), "Rezultati", "Dobili ste $bodova bodova na ispitu $fini_naziv_ispita iz predmeta $predmet_naziv održanom $finidatum");
 
-
 			// Update komponenti
 			update_komponente($student, $ponudakursa, $tipispita);
 		}
