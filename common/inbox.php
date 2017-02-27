@@ -82,8 +82,8 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 
 	// Slanje GCM poruke
 	require("gcm/push_message.php");
-	$q320 = myquery("select ime, prezime from osoba where id=$userid");
-	$r320 = mysql_fetch_row($q320);
+	$q320 = db_query("select ime, prezime from osoba where id=$userid");
+	$r320 = db_fetch_row($q320);
 	push_message(array($prim_id), "Poruke", "Nova lična poruka od $r320[0] $r320[1]");
 }
 
