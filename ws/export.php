@@ -68,7 +68,7 @@ function ws_export() {
 			
 			$isss_result = json_request($url, $isss_msg, "POST");
 			
-			if (!$isss_result || $isss_result['success'] == "false") {
+			if ($isss_result === FALSE || $isss_result['success'] === "false") {
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'ISSS servis vratio grešku', 'data' => $isss_result ) );
 				return; 
 			}
@@ -90,7 +90,7 @@ function ws_export() {
 					break;
 				}
 				if ($warning['code'] == 'student_not_enrolled') {
-					$odgovor['status'] = "student nije na predmetu";
+					$odgovor['status'] = "student nije upisan";
 					break;
 				}
 				if ($warning['code'] == 'course_not_offered') {
@@ -107,6 +107,11 @@ function ws_export() {
 				else $odgovor['status'] = "ocjena upisana";
 			}
 			$rezultat['data'] = $odgovor;
+		}
+		
+		
+		if ($tip == "upis_prva") {
+			
 		}
 		
 		

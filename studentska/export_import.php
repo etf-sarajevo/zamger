@@ -83,7 +83,7 @@ function servis_provjera_single(stavka, tip) {
 if (param('akcija') == "novi_studenti") {
 	?>
 	<h3>Novi studenti za upis na 1. godinu studija</h3>
-	<p class="dodajDugme"><button onclick="servis_provjera('novi');">Provjeri podatke</button></p>
+	<p class="dodajDugme"><button onclick="servis_provjera('upis_prva');">Provjeri podatke</button></p>
 	<table border="0">
 	<tr><th>Student</th><th>Studij</th><th>&nbsp;</th></tr>
 	<?
