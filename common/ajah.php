@@ -166,16 +166,24 @@ case "izmjena_ispita":
 	if ($ime == "ispit") {
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
+
 		if ($user_siteadmin)
-			$q40 = db_query("select 'nastavnik',pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
+			$q40 = db_query("select 'nastavnik',pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet, k.gui_naziv, p.naziv, i.datum, pk.akademska_godina
+			from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp, predmet as p
+			where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id and pk.predmet=p.id");
 		else
-			$q40 = db_query("select np.nivo_pristupa,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
+			$q40 = db_query("select np.nivo_pristupa,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet, k.gui_naziv, p.naziv, i.datum, pk.akademska_godina
+			from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp, predmet as p
+			where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id and pk.predmet=p.id");
+
 		if (db_num_rows($q40)<1) {
 			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
 			zamgerlog2("ispit - nepoznat ispit ili nije saradnik",$ispit);
 			print "nepoznat ispit $ispit ili niste saradnik na predmetu"; break;
 		}
+
 		if (db_result($q40,0,0) != "asistent") $padmin = 1;
+
 		$ponudakursa = db_result($q40,0,1);
 		$max = db_result($q40,0,2);
 		// Potrebno za update komponenti:
@@ -183,6 +191,10 @@ case "izmjena_ispita":
 		$tipkomponente = db_result($q40,0,4);
 		$kopcija = db_result($q40,0,5);
 		$predmet = db_result($q40,0,6);
+		$fini_naziv_ispita = db_result($q40,0,7);
+		$predmet_naziv = db_result($q40,0,8);
+		$finidatum = date("d. m. Y", db_result($q40,0,9));
+		$ag = db_result($q40,0,10);
 
 	} else if ($ime == "fiksna") {
 		$stud_id = intval($parametri[1]);
@@ -191,13 +203,17 @@ case "izmjena_ispita":
 		$ag = intval($parametri[4]);
 
 		// TODO: provjeriti da li komponenta postoji na predmetu
-		$q40a = db_query("select maxbodova from komponenta where id=$komponenta and tipkomponente=5");
+		$q40a = db_query("select k.maxbodova, k.gui_naziv, p.naziv
+		from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp, predmet as p
+		where k.id=$komponenta and k.tipkomponente=5 and k.id=tpk.komponenta and tpk.tippredmeta=agp.tippredmeta and agp.predmet=$predmet and agp.predmet=p.id and agp.akademska_godina=$ag");
 		if (db_num_rows($q40a)!=1) {
 			zamgerlog("AJAH fiksna - nepoznata fiksna komponenta $komponenta",3);
 			zamgerlog2("fiksna - nepoznata fiksna komponenta", $komponenta);
 			print "nepoznata fiksna komponenta $komponenta"; break;
 		}
 		$max = db_result($q40a,0,0);
+		$fini_naziv_komponente = db_result($q40a,0,1);
+		$predmet_naziv = db_result($q40a,0,2);
 
 		if (!$user_siteadmin) {
 			$q40b = db_query("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
