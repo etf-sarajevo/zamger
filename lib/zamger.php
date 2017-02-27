@@ -754,9 +754,14 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 	$blob = db_escape($blob);
 	if ($sta=="logout") $sta="";
 
+	if ($_SERVER['HTTP_X_FORWARDED_FOR'])
+		$ip_adresa = db_escape($_SERVER['HTTP_X_FORWARDED_FOR']); 
+	else
+		$ip_adresa = db_escape($_SERVER['REMOTE_ADDR']);
+
 	// Parametri objekat* moraju biti tipa int, pratimo sve drugačije pozive kako bismo ih mogli popraviti
 	if ($objekat1 !== intval($objekat1) || $objekat2 !== intval($objekat2) || $objekat3 !== intval($objekat3)) {
-		$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
+		$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '$ip_adresa' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
 		// Dodajemo blob
 		$id = db_insert_id(); // Zašto se dešava da $id bude nula???
 		$tekst_bloba = "";
@@ -769,7 +774,7 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 	}
 	
 	// $userid izgleda nekada može biti i prazan string?
-	$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+	$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '$ip_adresa' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
 	if (db_affected_rows() == 0) {
 		// Nije ništa ubačeno, vjerovatno fale polja u tabelama
 		$ubaceno = db_get("SELECT COUNT(*) FROM log2_modul WHERE naziv='$sta'");
@@ -785,7 +790,7 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 			// Neka admin manuelno u bazi definiše ako je događaj različitog nivoa od 2
 			$q40 = db_query("INSERT INTO log2_dogadjaj SET opis='$tekst', nivo=2"); 
 
-		$q50 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+		$q50 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '$ip_adresa' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
 		// Ako sada nije uspjelo ubacivanje, nije nas briga :)
 	}
 

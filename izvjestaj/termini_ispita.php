@@ -124,8 +124,8 @@ while ($rtermini = db_fetch_row($qtermini)) {
 		$ispit = db_result($q8,0,0);
 	}
 	print "Termin $broj_termina : <h4 style=\"display:inline\"> $datum_termina</h4><br></br>";
-	$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa 
-					from osoba as o, student_predmet as sp, ponudakursa as pk, student_ispit_termin sit, ispit_termin it, ispit i
+	$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa, a.login 
+					from osoba as o, student_predmet as sp, ponudakursa as pk, student_ispit_termin sit, ispit_termin it, ispit i, auth a
 					where 
 						sp.predmet=pk.id 
 						and sp.student=o.id
@@ -146,6 +146,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	
 	while ($r10 = db_fetch_row($q10)) {
 		$imeprezime[$r10[0]] = "$r10[1] $r10[2]"; 
+		if (param('logini')) $imeprezime[$r10[0]] .= " ($r10[4])";
 		$brindexa[$r10[0]] = "$r10[3]";
 	}
 	uasort($imeprezime,"bssort"); // bssort - bosanski jezik

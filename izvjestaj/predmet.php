@@ -14,6 +14,22 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 $time = time();
 
+if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	$dan=0;
+	do {
+		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
+		$time -= 86400;
+		$dan++;
+		if ($dan == 3650) {
+			niceerror("Izvještaj ne postoji");
+			return;
+		}
+	} while (!file_exists($filename));
+
+	readfile($filename);
+	return;
+}
+
 if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	// Sprječavamo veliki broj uzastopnih otvaranja istog modula
 	zamgerlog2("pristup");
@@ -31,21 +47,6 @@ if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 		print "<img src=\"images/oguljena_zelena_jabuka_kora.jpg\">";
 		return;
 	}
-}
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
-	$dan=0;
-	do {
-		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
-		$time -= 86400;
-		$dan++;
-		if ($dan == 3650) {
-			niceerror("Izvještaj ne postoji");
-			return;
-		}
-	} while (!file_exists($filename));
-
-	readfile($filename);
-	return;
 }
 
 // sumiraj kolone za zadace i prisustvo
