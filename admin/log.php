@@ -188,7 +188,7 @@ function get_ppredmet_link($id) {
 
 // Glavni upit i petlja
 
-$q10 = db_query ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and ((nivo>=$nivo $filterupita) or dogadjaj='login') order by id desc");
+$q10 = db_query ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and ((nivo>=$nivo $filterupita) or dogadjaj='login') order by id desc LIMIT 10000");
 //$q10 = db_query ("select id, UNIX_TIMESTAMP(vrijeme), userid, dogadjaj, nivo from log where id<$stardate and (nivo>=$nivo $filterupita) order by id desc");
 $lastlogin = array();
 $eventshtml = array();
