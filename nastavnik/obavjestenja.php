@@ -235,8 +235,8 @@ if (param('akcija')=='novo' && check_csrf_token()) {
 			zamgerlog2("nova poruka poslana", $io);
 
 			$naslov = $_REQUEST['naslov'];
-			$q7 = myquery($upit);
-			while ($r7 = mysql_fetch_row($q7))
+			$q7 = db_query($upit);
+			while ($r7 = db_fetch_row($q7))
 				push_message(array($r7[0]), "Obavjestenja", "Novo obavještenje za $predmet_naziv: $naslov ...");
 		}
 
