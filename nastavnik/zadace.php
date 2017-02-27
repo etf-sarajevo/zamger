@@ -441,6 +441,10 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 		nicemessage("Ažurirana zadaća '$naziv'");
 		zamgerlog("azurirana zadaca z$edit_zadaca", 2);
 		zamgerlog2("azurirana zadaca", $edit_zadaca);
+
+		$q95 = db_query("select sp.student from student_predmet as sp, ponudakursa as pk where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.id=sp.predmet");
+		while ($r95 = db_fetch_row($q95)) 
+			push_message(array($r95[0]), "Zadace", "Rok za slanje zadaće $naziv iz predmeta $predmet_naziv je $dan. $mjesec. $godina u $sat:$minuta:$sekunda");
 	}
 }
 
