@@ -18,25 +18,36 @@ global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $co
 global $__db_connection, $conf_use_mysql_utf8;
 
 
-// Pretvaramo rss id u userid
-$id = db_escape($_REQUEST['id']);
-$q1 = db_query("select auth from rss where id='$id'");
-if (db_num_rows($q1)<1) {
-	print "Greska! Nepoznat RSS ID $id";
-	return 0;
+if ($_REQUEST['id'] == "svi") {
+	$id = "svi";
+	$userid = 0;
+	$ime = "Svi"; $prezime = "Korisnici";
+	$q1_8 = db_query("SELECT id FROM akademska_godina WHERE aktuelna=1");
+	$ag = db_result($q1_8,0,0);
 }
-$userid = db_result($q1,0,0);
-// Update timestamp
-$q2 = db_query("update rss set access=NOW() where id='$id'");
+
+else {
+
+	// Pretvaramo rss id u userid
+	$id = db_escape($_REQUEST['id']);
+	$q1 = db_query("select auth from rss where id='$id'");
+	if (db_num_rows($q1)<1) {
+		print "Greska! Nepoznat RSS ID $id";
+		return 0;
+	}
+	$userid = db_result($q1,0,0);
+	// Update timestamp
+	$q2 = db_query("update rss set access=NOW() where id='$id'");
 
 
-// Ime studenta
-$q5 = db_query("select ime,prezime from osoba where id=$userid");
-if (db_num_rows($q5)<1) {
-	print "Greska! Nepoznat userid $userid";
-	return 0;
+	// Ime studenta
+	$q5 = db_query("select ime,prezime from osoba where id=$userid");
+	if (db_num_rows($q5)<1) {
+		print "Greska! Nepoznat userid $userid";
+		return 0;
+	}
+	$ime = db_result($q5,0,0); $prezime = db_result($q5,0,1);
 }
-$ime = db_result($q5,0,0); $prezime = db_result($q5,0,1);
 
 
 
@@ -54,7 +65,11 @@ print $code_poruke[1];*/
 
 // Rokovi za slanje zadaća
 
-$q10 = db_query("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
+if ($id == "svi")
+	$q10 = db_query("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and pk.akademska_godina=$ag and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
+else 
+	$q10 = db_query("select z.id, z.naziv, UNIX_TIMESTAMP(z.rok), p.naziv, pk.id, UNIX_TIMESTAMP(z.vrijemeobjave), p.id, pk.akademska_godina from zadaca as z, student_predmet as sp, ponudakursa as pk, predmet as p where z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina and sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and z.rok>curdate() and z.aktivna=1 order by rok desc limit $broj_poruka");
+
 while ($r10 = db_fetch_row($q10)) {
 	// Da li je aktivan modul za zadaće?
 	$q12 = db_query("select count(*) from studentski_modul as sm, studentski_modul_predmet as smp where sm.modul='student/zadaca' and sm.id=smp.studentski_modul and smp.predmet=$r10[6] and smp.akademska_godina=$r10[7]");
@@ -73,7 +88,10 @@ while ($r10 = db_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
-$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+if ($id == "svi")
+	$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p where i.akademska_godina=$ag and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+else 
+	$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
 while ($r15 = db_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 
@@ -112,6 +130,7 @@ while ($r15 = db_fetch_row($q15)) {
 
 // konacna ocjena
 
+if ($id != "svi") {
 $q17 = db_query("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id order by ko.datum desc limit $broj_poruka");
 while ($r17 = db_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
@@ -124,10 +143,11 @@ while ($r17 = db_fetch_row($q17)) {
 		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["k".$r17[0]])."</pubDate>
 	</item>\n";
 }
+}
 
 
 
-// pregledane zadace
+/*// pregledane zadace
 // (ok, ovo moze biti JAAAKO sporo ali dacemo sve od sebe da ne bude ;) )
 
 $q18 = db_query("select zk.id, zk.redni_broj, UNIX_TIMESTAMP(zk.vrijeme), p.naziv, z.naziv, pk.id, z.id, p.id, pk.akademska_godina from zadatak as zk, zadaca as z, ponudakursa as pk, predmet as p where zk.student=$userid and zk.status!=1 and zk.status!=4 and zk.zadaca=z.id and z.predmet=p.id and pk.predmet=p.id and pk.akademska_godina=z.akademska_godina order by zk.id desc limit $broj_poruka");
@@ -145,27 +165,82 @@ while ($r18 = db_fetch_row($q18)) {
 	</item>\n";
 	array_push($zadaca_bila,$r18[6]);
 }
-
+*/
 
 
 // PORUKE (izvadak iz inboxa)
 
 
-// Zadnja akademska godina
-$q20 = db_query("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
-$ag = db_result($q20,0,0);
-$ag_naziv = db_result($q20,0,1);
+if ($id == "svi") {
+	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka where opseg=3 or opseg=4 or opseg=5 order by vrijeme desc limit $broj_poruka");
+	while ($r100 = db_fetch_row($q100)) {
+		$id = $r100[0];
+		$opseg = $r100[2];
+		$primalac = $r100[3];
+		
+		// Poruka je ok
+		if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
+		$vrijeme_poruke[$id]=$r100[1];
 
-// Studij koji student trenutno sluša
-$studij=0;
-$q30 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-if (db_num_rows($q30)>0) {
-	$studij = db_result($q30,0,0);
-}
+		// Fino vrijeme
+		$vr = $vrijeme_poruke[$id];
+		$vrijeme="";
+	//	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
+	//	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
+	//	else 
+		$vrijeme .= date("d.m. ",$vr);
+		$vrijeme .= date("H:i",$vr);
+
+		$naslov = $r100[4];
+		// Ukidam nove redove u potpunosti
+		$naslov = str_replace("\n", " ", $naslov);
+		// RSS ne podržava &quot; entitet!?
+		$naslov = str_replace("&quot;", '"', $naslov);
+		if (strlen($naslov)>30) $naslov = mb_substr($naslov,0,28)."...";
+		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
+
+		// Posiljalac
+		if ($r100[6]==0) {
+			$posiljalac="Administrator";
+		} else {
+			$q120 = db_query("select ime,prezime from osoba where id=$r100[6]");
+			if (db_num_rows($q120)>0) {
+				$posiljalac=db_result($q120,0,0)." ".db_result($q120,0,1);
+			} else {
+				$posiljalac="Nepoznat";
+			}
+		}
+
+		if ($r100[5]==1)
+			$title="Obavijest";
+		else
+			$title="Poruka";
+
+		$code_poruke[$id]="<item>
+			<guid isPermaLink=\"false\">".$id."</guid>
+			<title>$title: $naslov ($vrijeme)</title>
+			<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
+			<description>Poslao: $posiljalac</description>
+			<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+		</item>\n";
+	}
+
+} else {
+	// Zadnja akademska godina
+	$q20 = db_query("select id,naziv from akademska_godina where aktuelna=1 order by id desc limit 1");
+	$ag = db_result($q20,0,0);
+	$ag_naziv = db_result($q20,0,1);
+
+	// Studij koji student trenutno sluša
+	$studij=0;
+	$q30 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+	if (db_num_rows($q30)>0) {
+		$studij = db_result($q30,0,0);
+	}
 
 
-$br = 0;
-$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc limit $broj_poruka");
+	$br = 0;
+	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc limit $broj_poruka");
 while ($r100 = db_fetch_row($q100)) {
 	$id = $r100[0];
 	$opseg = $r100[2];
@@ -232,7 +307,7 @@ while ($r100 = db_fetch_row($q100)) {
 		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
 	</item>\n";
 }
-
+}
 
 
 // Novosti sa Courseware-a
@@ -263,7 +338,12 @@ if (!$conf_moodle_reuse_connection) {
 
 
 // Potrebno je pronaci u tabeli moodle_predmet_id koji je id kursa koristen na Moodle stranici za odredjeni predmet sa Zamger-a..tacno jedan id kursa iz moodle baze odgovara jednom predmetu u zamger bazi
-$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
+
+if ($id == "svi")
+	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
+
+else 
+	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
 while ($r200 = db_fetch_row($q200)) {
 	$course_id = $r200[0];
 
@@ -330,8 +410,6 @@ if (!$conf_moodle_reuse_connection) {
 }
 }
 
-db_disconnect();
-
 
 // KRAJ I ISPIS
 // Sortiramo po vremenu
@@ -368,6 +446,8 @@ foreach ($vrijeme_poruke as $id=>$vrijeme) {
 	$count++;
 	if ($count==$broj_poruka) break; // prikazujemo samo prvih $broj_poruka poruka
 }
+
+
 
 
 ?>
