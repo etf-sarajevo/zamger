@@ -1185,11 +1185,10 @@ function rmMinusR($path)
 // Remove illegal and harmful unicode characters from output
 function clear_unicode($text) 
 {
-	// We can't use this due to bug in php: https://bugs.php.net/bug.php?id=48147
-	//if (function_exists('iconv'))
-	//	return iconv("UTF-8", "UTF-8//IGNORE", $text);
-	ini_set('mbstring.substitute_character', "none"); 
-	return mb_convert_encoding($text, 'UTF-8', 'UTF-8'); 
+	if (function_exists('iconv'))
+		return iconv("UTF-8", "UTF-8//IGNORE", $text);
+	//ini_set('mbstring.substitute_character', "none"); 
+	//return mb_convert_encoding($text, 'UTF-8', 'UTF-8'); 
 }
 
 // Reimplement mb_substr in case mb extension is not installed
