@@ -2,32 +2,6 @@
 
 # Biblioteka korisnih funkcija koje koristim u svojim skriptama
 # ---- Copyleft (c) Vedran Ljubović 
-# v0.0.2 (2006/09/30) + dodana funkcija nicesize()
-# v0.0.3 (2006/10/03) + bssort() za sortiranje bs jezika, nicemessage(), globalna varijabla $lv_debug
-# v0.0.4 (2006/12/13) + db_dropdown(), db_form(), genform(), genuri(), db_list(), db_submit() funkcije za brzu administraciju, datectrl() form kontrola za datum
-# v0.0.5 (2007/03/06) + db_grid(), uveden _lv_nav_ reqvar radi ispravljanja buga sa kombinacijom db_form+db_list, više unaprjeđenja u drugim db funkcijama
-# v0.0.6 (2007/03/12) + nova funkcija login(), ispravke u session mgmt, ukinute globalne varijable osim $_lv_, dodan htmlspecialchars u my_escape() radi Type 2 XSS napada
-# v0.0.7 (2007/03/30) + podrška za autonumber vs. nonautonumber
-# v0.0.8 (2007/04/27) + db_dropdown() ipak nije forma i ne treba se ponašati kao forma
-# v0.0.9 (2007/09/11) + dodana podrška za limit u db_grid() (dodati u druge db_* ?)
-# v0.0.10 (2007/09/25) + dodano prazno polje u db_dropdown() (npr. za opciju "Sve opcije")
-# v0.0.11 (2007/10/02) + dodana LDAP autentikacija, polje userid u tabeli log
-# v0.0.11.1 (2007/11/16) + dodana opcija $_lv_['brisanje']
-# v0.0.11.2 (2008/02/11) + prikazana prazna polja u db_list()
-# v0.0.12 (2008/02/11) + session_mgmt sada ne radi forwarding
-# v0.0.13 (2008/03/04) + dodana reimplementacija funkcije mysql_set_charset i opcija u dbconnect; genform je uvijek koristio metod POST
-# v0.0.13.1 (2008/03/21) + dodane default vrijednosti parametara, da smanjimo warning-e
-# v0.0.13.2 (2008/05/16) + sitne ispravke u prikazu i obradi hidden polja u db_form(), mada i dalje treba popraviti db_submit() tako da prepozna polja koja su skrivena i ne ukljucuje ih u upitu
-# v0.0.13.3 (2008/06/13) + dodan tip double
-# v0.0.13.4 (2008/09/26) + omogucen LDAP login sa e-mail aliasom (prethodno mora biti ubacen u auth tabelu)
-# v0.0.13.5 (2008/10/28) + ispravka u genform() - izbaci polje "pass" ako je metoda GET
-# v0.0.14 (2008/12/23) + dodana zastita od CSRF (Cross-Site Request Forgery); dodana opcija za ime forme u genform()
-# v0.0.14.1 (2009/01/22) + omogucen unos float vrijednosti sa zarezom u form generatorima
-# v0.0.14.2 (2009/03/24) + dodan escaping u genform
-# v0.0.14.3 (2009/11/07) + izbaceno polje "pass" i iz genuri()
-
-
-# + (ZADACHA-MGR) Jedinstvena auth tabela za admine (ovo će postati dio v0.0.4)
 
 
 
@@ -49,9 +23,9 @@ function dbconnect() {
 }
 
 function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
-	global $__lv_connection,$_lv_,$conf_use_mysql_utf8;
+	global $__db_connection,$_lv_,$conf_use_mysql_utf8;
 
-	if (!($__lv_connection = mysql_connect($dbhost, $dbuser, $dbpass))) {
+	if (!($__db_connection = mysql_connect($dbhost, $dbuser, $dbpass))) {
 		if ($_lv_["debug"]) biguglyerror(mysql_error());
 		exit;
 	}
@@ -65,12 +39,12 @@ function dbconnect2($dbhost,$dbuser,$dbpass,$dbdb) {
 }
 
 function dbdisconnect() {
-	global $__lv_connection;
+	global $__db_connection;
 	
-	mysql_close($__lv_connection);
+	mysql_close($__db_connection);
 }
 
-/*function myquery($query) {
+/*function db_query($query) {
 	global $_lv_;
 
 	if ($r = @mysql_query($query)) {
@@ -151,8 +125,8 @@ function login($pass, $type = "") {
 	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$posljednji_pristup;
 	if ($type === "") $type = $conf_system_auth;
 
-	$q1 = myquery("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
-	if (mysql_num_rows($q1)<=0)
+	$q1 = db_query("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
+	if (db_num_rows($q1)<=0)
 		return 1;
 	
 	if ($type == "cas") {
@@ -226,14 +200,14 @@ function login($pass, $type = "") {
 			exit;
 		}
 	} else if ($type == "table") {
-		$result = mysql_result($q1,0,1);
+		$result = db_result($q1,0,1);
 		if ($pass != $result || $result === "") return 2;
 	}
 
-	$userid = mysql_result($q1,0,0);
-	$admin = mysql_result($q1,0,2);
-	$posljednji_pristup = mysql_result($q1,0,3);
-	$q2 = myquery("update auth set posljednji_pristup=NOW() where id=$userid");
+	$userid = db_result($q1,0,0);
+	$admin = db_result($q1,0,2);
+	$posljednji_pristup = db_result($q1,0,3);
+	$q2 = db_query("update auth set posljednji_pristup=NOW() where id=$userid");
 
 	// All OK, start session
 	session_start();
@@ -260,17 +234,17 @@ function check_cookie() {
 		$login = phpCAS::getUser();
 	} else {
 		session_start();
-		$login = my_escape($_SESSION['login']);
+		if (isset($_SESSION['login'])) $login = db_escape($_SESSION['login']);
 	}
 	
 	if (!preg_match("/[a-zA-Z0-9]/",$login)) return;
 
-	$q1 = myquery("select id, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login'");
-	if (mysql_num_rows($q1)>0) {
-		$userid = mysql_result($q1,0,0);
-		$admin = mysql_result($q1,0,1);
-		$posljednji_pristup = mysql_result($q1,0,2);
-		$q2 = myquery("update auth set posljednji_pristup=NOW() where id=$userid");
+	$q1 = db_query("select id, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login'");
+	if (db_num_rows($q1)>0) {
+		$userid = db_result($q1,0,0);
+		$admin = db_result($q1,0,1);
+		$posljednji_pristup = db_result($q1,0,2);
+		$q2 = db_query("update auth set posljednji_pristup=NOW() where id=$userid");
 	}
 }
 
@@ -340,7 +314,7 @@ function logthis($event) {
 	return;*/
 
 	// Database logging
-	myquery("insert into log set dogadjaj='".my_escape($event)."', userid=$userid");
+	db_query("insert into log set dogadjaj='".db_escape($event)."', userid=$userid");
 }
 
 
@@ -378,6 +352,7 @@ function genform($method="POST", $name="") {
 	foreach ($_REQUEST as $key=>$value) {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
 		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
+		if ($key=="loginforma") continue; // Izbjegavamo logout
 		$key = htmlspecialchars($key);
 		if (substr($key,0,4) != "_lv_") {
 			if (is_array($value)) {
@@ -420,6 +395,7 @@ function genuri() {
 	foreach ($_REQUEST as $key=>$value) {
 		// Prevent revealing session
 		if (substr($key,0,4) == "_lv_" || $key == "PHPSESSID" || $key == "pass") continue;
+		if ($key=="loginforma") continue; // Izbjegavamo logout
 		if (is_array($value)) {
 			foreach ($value as $val) 
 				$result .= urlencode($key).'[]='.urlencode($val).'&amp;';
@@ -447,8 +423,8 @@ function __lv_parsetable($table) {
 	$__lv_cs=array();
 
 	// Execute show create to get table columns
-	$q200 = myquery("show create table $table");
-	$__lv_showcreate = mysql_result($q200,0,1);
+	$q200 = db_query("show create table $table");
+	$__lv_showcreate = db_result($q200,0,1);
 	foreach (explode("\n", $__lv_showcreate) as $line) {
 		if (strstr($line, "CONSTRAINT")) {
 			continue;
@@ -479,7 +455,7 @@ function db_submit() {
 
 	// Check if submitted data is ok (we only use POST)
 	$action = $_POST['_lv_action'];
-	$table = my_escape($_POST['_lv_table']);
+	$table = db_escape($_POST['_lv_table']);
 
 	if (!$table) return;
 	if ($action != "add" && $action != "edit" && $action != "delete") return;
@@ -532,7 +508,7 @@ function db_submit() {
 		else if ($type == "float" || $type=="double" || $type=="decimal")
 			$sql .= "$name=".floatval(str_replace(",",".",$data));
 		else
-			$sql .= "$name='".my_escape($data)."'";
+			$sql .= "$name='".db_escape($data)."'";
 	}
 
 
@@ -549,7 +525,7 @@ function db_submit() {
 		foreach ($_POST as $key => $value) {
 			if (substr($key,0,10) == "_lv_where_") {
 				if ($n>0) $sql .= "and ";
-				$sql .= my_escape(substr($key,10))."='".my_escape($value)."'";
+				$sql .= db_escape(substr($key,10))."='".db_escape($value)."'";
 				$n++;
 			}
 		}
@@ -562,7 +538,7 @@ function db_submit() {
 //print "submit SQL: $sql<br/>";
 
 	// Do the update
-	myquery($sql);
+	db_query($sql);
 }
 
 
@@ -654,7 +630,7 @@ function db_dropdown($table,$selected=0,$empty=0) {
 
 			// Add WHERE to SQL
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
-			$sql .= my_escape(substr($key,6))."='".my_escape($value)."'";
+			$sql .= db_escape(substr($key,6))."='".db_escape($value)."'";
 			$n++;
 		}
 	}
@@ -665,12 +641,12 @@ function db_dropdown($table,$selected=0,$empty=0) {
 	else
 		$sql .= " order by $surname,$name";
 
-	$q101 = myquery($sql);
+	$q101 = db_query($sql);
 
 	// Construct output
 	$result = '<select name="_lv_column_'.$table.'">'."\n";
 	$found=0;
-	while ($r101 = mysql_fetch_row($q101)) {
+	while ($r101 = db_fetch_row($q101)) {
 		$result .= '<option value="'.$r101[0].'"';
 		if ($r101[0]==$selected || $r101[1]=="$selected") {
 			$result .= ' SELECTED ';
@@ -710,8 +686,8 @@ function db_form($table) {
 	$result .= '<input type="hidden" name="_lv_table" value="'.$table.'">'."\n";
 
 	// List tables - used to find foreign keys
-	$q200 = myquery("show tables");
-	while ($r200 = mysql_fetch_row($q200)) 
+	$q200 = db_query("show tables");
+	while ($r200 = db_fetch_row($q200)) 
 		$tables[] = $r200[0];
 
 
@@ -726,21 +702,21 @@ function db_form($table) {
 //		if ((strlen($_lv_["where:$name"])>0) || ($_REQUEST["_lv_nav_$name"])) {
 		if (strlen($_lv_["where:$name"])>0) {
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
-			$sql .= "$name='".my_escape($_lv_["where:$name"])."'";
+			$sql .= "$name='".db_escape($_lv_["where:$name"])."'";
 			$n++;
 		}
 		// Also find stuff from list / navigation / previously submitted form
 		if ($_REQUEST["_lv_nav_$name"]) {
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
-			$sql .= "$name='".my_escape($_REQUEST["_lv_nav_$name"])."'";
+			$sql .= "$name='".db_escape($_REQUEST["_lv_nav_$name"])."'";
 			$n++; $nav=1;
 		}
 	}
 
 	if ($nav==1 || $_lv_["forceedit"]==1) {
 		$result .= '<input type="hidden" name="_lv_action" value="edit">'."\n";
-		$q202 = myquery($sql);
-		$r202 = mysql_fetch_assoc($q202);
+		$q202 = db_query($sql);
+		$r202 = db_fetch_assoc($q202);
 	} else {
 		$result .= '<input type="hidden" name="_lv_action" value="add">'."\n";
 	}
@@ -761,11 +737,11 @@ function db_form($table) {
 			if ($nav != 1 && $_lv_["forceedit"] != 1 && $__lv_cai[$name] != 1) {
 				// auto_increment fields (__lv_cai) should not be added at all... 
 				// for others, use the first unused value
-				$q203 = myquery("select $name from $table order by $name desc limit 1");
-				if (mysql_num_rows($q203)<1)
+				$q203 = db_query("select $name from $table order by $name desc limit 1");
+				if (db_num_rows($q203)<1)
 					$r202[$name] = 1;
 				else
-					$r202[$name] = mysql_result($q203,0,0)+1;
+					$r202[$name] = db_result($q203,0,0)+1;
 			}
 
 			$result .= '<input type="hidden" name="_lv_where_id" value="'.$r202[$name].'">'."\n";
@@ -931,23 +907,24 @@ function db_list($table,$selected=0) {
 		$sql = "select $id,$name from $table";
 	else
 		$sql = "select $id,$name,$surname from $table";
+	$n = 0;
 	foreach ($_lv_ as $key => $value) {
 		if (substr($key,0,6) == "where:" && substr($key,6) != $id && substr($key,6) != $name) {
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
-			$sql .= my_escape(substr($key,6))."='".my_escape($value)."'";
+			$sql .= db_escape(substr($key,6))."='".db_escape($value)."'";
 			$n++;
 		}
 	}
-	$q101 = myquery($sql);
+	$q101 = db_query($sql);
 
 	// Construct output
 	$result = '<ul>'."\n";
-	if (mysql_num_rows($q101)<1)
+	if (db_num_rows($q101)<1)
 		$result .= '<li>Nema</li>'."\n";
 
 	$uri = genuri();
 
-	while ($r101 = mysql_fetch_row($q101)) {
+	while ($r101 = db_fetch_row($q101)) {
 		$result .= '<li>';
 		$i = $r101[0];
 		$n = $r101[1];
@@ -992,8 +969,8 @@ function db_grid($table) {
 	$form_header .= '<input type="hidden" name="_lv_table" value="'.$table.'"> <input type="hidden" name="_lv_action" value="edit">'."\n";
 
 	// List tables - used to find foreign keys
-	$q200 = myquery("show tables");
-	while ($r200 = mysql_fetch_row($q200)) 
+	$q200 = db_query("show tables");
+	while ($r200 = db_fetch_row($q200)) 
 		$tables[] = $r200[0];
 
 
@@ -1005,7 +982,7 @@ function db_grid($table) {
 		// Get WHERE from $_lv_
 		if (strlen($_lv_["where:$name"])>0) {
 			if ($n>0) $sql .= " and "; else $sql .= " where ";
-			$sql .= "$name='".my_escape($_lv_["where:$name"])."'";
+			$sql .= "$name='".db_escape($_lv_["where:$name"])."'";
 			$n++;
 		}
 		// We are not interested in _lv_where... 
@@ -1045,9 +1022,9 @@ function db_grid($table) {
 	$result .= "</tr>\n";
 
 	// Table contents
-	$q202 = myquery($sql);
+	$q202 = db_query($sql);
 	$color = 0;
-	while ($r202 = mysql_fetch_assoc($q202)) {
+	while ($r202 = db_fetch_assoc($q202)) {
 		$result .= "$form_header\n";
 		if ($color==0) {
 			$result .= "<tr>\n";

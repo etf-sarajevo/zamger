@@ -1,7 +1,7 @@
 <?
 
-
 // NASTAVNIK/TIP - modul koji ce omogućiti definisanja sistema bodovanja na predmetu
+
 
 
 function nastavnik_tip() {
@@ -29,14 +29,14 @@ $akcija = $_REQUEST['akcija'];
 
 
 // Naziv predmeta
-$q10 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznat predmet");
 	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greška
 	zamgerlog2("nepoznat predmet", $predmet);
 	return;
 }
-$predmet_naziv = mysql_result($q10,0,0);
+$predmet_naziv = db_result($q10,0,0);
 
 ?>
 
@@ -52,8 +52,8 @@ $predmet_naziv = mysql_result($q10,0,0);
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) { // 3 = site admin
-	$q15 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q15)<1 || mysql_result($q15,0,0)!="nastavnik") {
+	$q15 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q15)<1 || db_result($q15,0,0)!="nastavnik") {
 		zamgerlog("nastavnik/tip privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -68,30 +68,30 @@ if (!$user_siteadmin) { // 3 = site admin
 if ($akcija == "potvrda" && check_csrf_token()) {
 
 	// Odredjujemo stari tip predmeta
-	$q20 = myquery("select t.id, t.naziv from akademska_godina_predmet as agp, tippredmeta as t where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=t.id");
-	$stari_tip_predmeta=mysql_result($q20,0,0);
+	$q20 = db_query("select t.id, t.naziv from akademska_godina_predmet as agp, tippredmeta as t where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=t.id");
+	$stari_tip_predmeta=db_result($q20,0,0);
 
 	// Kreiramo novi tip predmeta i uzimamo njegov id
 	// Biramo naziv koji ne postoji već
 	$naziv_tipa = substr($predmet_naziv,0,50);
-	$q65 = myquery("select count(*) from tippredmeta where naziv='$naziv_tipa'");
+	$q65 = db_query("select count(*) from tippredmeta where naziv='$naziv_tipa'");
 	$broj=0;
-	while (mysql_result($q65,0,0)>0) {
+	while (db_result($q65,0,0)>0) {
 		$broj++;
 		$naziv_tipa = "$predmet_naziv $broj";
-		$q65 = myquery("select count(*) from tippredmeta where naziv='$naziv_tipa'");
+		$q65 = db_query("select count(*) from tippredmeta where naziv='$naziv_tipa'");
 	}
 	
-	$q70 = myquery("INSERT INTO tippredmeta set naziv='$naziv_tipa'");
-	$q80 = myquery("select id from tippredmeta where naziv='$naziv_tipa'");
-	if (mysql_num_rows($q80) != 1) { // Ovo se ne bi smjelo desiti!
+	$q70 = db_query("INSERT INTO tippredmeta set naziv='$naziv_tipa'");
+	$q80 = db_query("select id from tippredmeta where naziv='$naziv_tipa'");
+	if (db_num_rows($q80) != 1) { // Ovo se ne bi smjelo desiti!
 		niceerror("Naziv predmeta je predugačak. Kontaktirajte administratora");
 		zamgerlog("nije pronadjen tacno jedan tip predmeta", 3);
 		zamgerlog2("nije pronadjen tacno jedan tip predmeta", $predmet, $ag, 0, $naziv_tipa);
 
 		return;
 	}
-	$tip_predmeta = mysql_result($q80,0,0); // -- mora postojati tačno jedan
+	$tip_predmeta = db_result($q80,0,0); // -- mora postojati tačno jedan
 
 	// Spašavamo naše novodefinisane komponente
 	// Podaci su sačuvani u cookie-jima i samim time im se ne može vjerovati!
@@ -100,18 +100,19 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	$BrojKomponenti = count($TabelaKomponenti);
 
 	$prvi_parcijalni_id = $drugi_parcijalni_id = 0;
+	$idovi_komponenti = array();
 
-	$potreban_update = false;
+	$potreban_update = false; // Da li je potrebno uopšte ažurirati bodove studentima?
 
 	for ($i=0; $i<$BrojKomponenti; $i++) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
 
 		$tipKomponente = intval($TabelaKomponenti[$i]['tip']);
-		$guiNaziv = substr(my_escape($TabelaKomponenti[$i]['naziv']), 0, 20); // Dužina naziva je 20 slova
-		$kratkiNaziv = substr(my_escape($TabelaKomponenti[$i]['kratkiNaziv']), 0, 20);
+		$guiNaziv = substr(db_escape($TabelaKomponenti[$i]['naziv']), 0, 20); // Dužina naziva je 20 slova
+		$kratkiNaziv = substr(db_escape($TabelaKomponenti[$i]['kratkiNaziv']), 0, 20);
 		$maxBodova = floatval($TabelaKomponenti[$i]['maxBodova']);
 		$prolazBodova = floatval($TabelaKomponenti[$i]['prolazBodova']);
-		$opcija = my_escape($TabelaKomponenti[$i]['opcija']);
+		$opcija = db_escape($TabelaKomponenti[$i]['opcija']);
 		if ($TabelaKomponenti[$i]['uslov'] == 1) $uslov=1; else $uslov=0;
 
 		// Kod drugog parcijalnog ispita, za polje opcija treba znati 
@@ -126,23 +127,23 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 		// Da li je predmet već imao ovakvu komponentu?
 		// Koristimo istu kako bi bili sačuvani bodovi ako je moguće
-		$q85 = myquery("select k.id from tippredmeta_komponenta as tpk, komponenta as k where tpk.tippredmeta=$stari_tip_predmeta and tpk.komponenta=k.id and k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
-		if (mysql_num_rows($q85)>0) {
-			$id_komponente = mysql_result($q85,0,0);
+		$q85 = db_query("select k.id from tippredmeta_komponenta as tpk, komponenta as k where tpk.tippredmeta=$stari_tip_predmeta and tpk.komponenta=k.id and k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
+		if (db_num_rows($q85)>0) {
+			$id_komponente = db_result($q85,0,0);
 		} else {
 			// Da li uopće postoji takva komponenta?
-			$q90 = myquery("select k.id from komponenta as k where k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
-			if (mysql_num_rows($q90)>0) {
-				$id_komponente = mysql_result($q90,0,0);
+			$q90 = db_query("select k.id from komponenta as k where k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
+			if (db_num_rows($q90)>0) {
+				$id_komponente = db_result($q90,0,0);
 			} else {
 				// Kreiramo novu komponentu
 				// Ovaj naziv komponente bi trebao biti unique
 				// osim ako korisnik da npr. ispitu ime "Zadaća" ili tako nešto :s
 				$naziv_komponente = $guiNaziv." (".$tip_predmeta.")";
-				$q95 = myquery("INSERT INTO komponenta set naziv='$naziv_komponente', gui_naziv='$guiNaziv', kratki_gui_naziv='$kratkiNaziv', tipkomponente=$tipKomponente, maxbodova=$maxBodova, prolaz=$prolazBodova, uslov=$uslov, opcija='$opcija'");
+				$q95 = db_query("INSERT INTO komponenta set naziv='$naziv_komponente', gui_naziv='$guiNaziv', kratki_gui_naziv='$kratkiNaziv', tipkomponente=$tipKomponente, maxbodova=$maxBodova, prolaz=$prolazBodova, uslov=$uslov, opcija='$opcija'");
 
-				$q100 = myquery("select id from komponenta where naziv='$naziv_komponente'");
-				$id_komponente = mysql_result($q100,0,0);
+				$q100 = db_query("select id from komponenta where naziv='$naziv_komponente'");
+				$id_komponente = db_result($q100,0,0);
 			}
 
 
@@ -150,31 +151,31 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 			// Posljedica će biti da su podaci izvan dozvoljenog opsega, što će korisnik morati popraviti ručno
 
 			if ($tipKomponente == 1 || $tipKomponente == 2) { // ispit
-				$q300 = myquery("select i.id, k.kratki_gui_naziv, k.tipkomponente from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
-				while ($r300 = mysql_fetch_row($q300)) {
+				$q300 = db_query("select i.id, k.kratki_gui_naziv, k.tipkomponente from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
+				while ($r300 = db_fetch_row($q300)) {
 					if ($r300[2]==2 && $tipKomponente==2) {
-						$q310 = myquery("update ispit set komponenta=$id_komponente where id=$r300[0]");
+						$q310 = db_query("update ispit set komponenta=$id_komponente where id=$r300[0]");
 						$potreban_update = true;
 					}
 					if ($r300[2]==1 && $tipKomponente==1 && $r300[1]==$kratkiNaziv) {
-						$q310 = myquery("update ispit set komponenta=$id_komponente where id=$r300[0]");
+						$q310 = db_query("update ispit set komponenta=$id_komponente where id=$r300[0]");
 						$potreban_update = true;
 					}
 				}
 			}
 
 			if ($tipKomponente == 3) { // prisustvo
-				$q320 = myquery("select c.id from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-				while ($r320 = mysql_fetch_row($q320)) {
-					$q330 = myquery("update cas set komponenta=$id_komponente where id=$r320[0]");
+				$q320 = db_query("select c.id from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				while ($r320 = db_fetch_row($q320)) {
+					$q330 = db_query("update cas set komponenta=$id_komponente where id=$r320[0]");
 					$potreban_update = true;
 				}
 			}
 
 			if ($tipKomponente == 4) { // zadace
-				$q320 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
-				if (mysql_num_rows($q320)>0) {
-					$q330 = myquery("update zadaca set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
+				$q320 = db_query("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
+				if (db_num_rows($q320)>0) {
+					$q330 = db_query("update zadaca set komponenta=$id_komponente where predmet=$predmet and akademska_godina=$ag");
 					$potreban_update = true;
 				}
 			}
@@ -188,35 +189,53 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 			else if ($drugi_parcijalni_id==0) $drugi_parcijalni_id = $id_komponente;
 		}
 
-		$q110 = myquery("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
+		$q110 = db_query("INSERT INTO tippredmeta_komponenta set tippredmeta=$tip_predmeta, komponenta=$id_komponente");
+		$idovi_komponenti[] = $id_komponente;
 	}
 
 	// Od sada ovaj predmet je novokreiranog tipa
-	$q120 = myquery("UPDATE akademska_godina_predmet set tippredmeta=$tip_predmeta where akademska_godina=$ag and predmet=$predmet");
+	$q120 = db_query("UPDATE akademska_godina_predmet set tippredmeta=$tip_predmeta where akademska_godina=$ag and predmet=$predmet");
+	
+	// Moramo sada obrisati sve podatke koji nisu migrirani jer mogu praviti razne probleme
+	$q400 = db_query("select id, komponenta from ispit where predmet=$predmet and akademska_godina=$ag");
+	while ($r400 = db_fetch_row($q400)) {
+		$ispit = $r400[0];
+		if (!in_array($r400[1], $idovi_komponenti)) {
+			$q410 = db_query("delete from ispitocjene where ispit=$ispit");
+			$q420 = db_query("select id from ispit_termin where ispit=$ispit");
+			while ($r420 = db_fetch_row($q420)) {
+				$termin = $r420[0];
+				$q430 = db_query("delete from student_ispit_termin where ispit_termin=$termin");
+				$q440 = db_query("delete from ispit_termin where id=$termin");
+			}
 
+			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, $ispit);
+		}
+	}
+	// .. tako i za prisustvo i zadaće...
 
 	// Ako nijedan predmet više ne koristi stari tip predmeta, brišemo ga
-	$q130 = myquery("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
-	if (mysql_result($q130,0,0)==0) {
-		$q140 = myquery("delete from tippredmeta where id=$stari_tip_predmeta");
+	$q130 = db_query("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
+	if (db_result($q130,0,0)==0) {
+		$q140 = db_query("delete from tippredmeta where id=$stari_tip_predmeta");
 
 		// Brišemo veze iz tabele tippredmeta_komponenta
-		$q150 = myquery("select komponenta from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta");
-		while ($r150 = mysql_fetch_row($q150)) {
-			$q160 = myquery("delete from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta and komponenta=$r150[0]");
+		$q150 = db_query("select komponenta from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta");
+		while ($r150 = db_fetch_row($q150)) {
+			$q160 = db_query("delete from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta and komponenta=$r150[0]");
 
 			// Ako nijedan tip predmeta više ne koristi ovu komponentu, brišemo i nju
-			$q170 = myquery("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
-			if (mysql_result($q170,0,0)==0) 
-				$q180 = myquery("delete from komponenta where id=$r150[0]");
+			$q170 = db_query("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
+			if (db_result($q170,0,0)==0) 
+				$q180 = db_query("delete from komponenta where id=$r150[0]");
 		}
 	}
 
 
 	// Updatujemo studentima bodove u tabeli komponentebodovi
 	if ($potreban_update) {
-		$q185 = myquery("select sp.student, sp.predmet from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		while ($r185 = mysql_fetch_row($q185)) {
+		$q185 = db_query("select sp.student, sp.predmet from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		while ($r185 = db_fetch_row($q185)) {
 			update_komponente($r185[0], $r185[1], 0);
 		}
 	}
@@ -235,26 +254,26 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 if ($akcija == "postojeci_tip_potvrda" && check_csrf_token()) {
 	// Odredjujemo stari tip predmeta
-	$q20 = myquery("select t.id, t.naziv from akademska_godina_predmet as agp, tippredmeta as t where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=t.id");
-	$stari_tip_predmeta=mysql_result($q20,0,0);
+	$q20 = db_query("select t.id, t.naziv from akademska_godina_predmet as agp, tippredmeta as t where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=t.id");
+	$stari_tip_predmeta=db_result($q20,0,0);
 
 	$tip_predmeta = intval($_POST['tip_predmeta']); // novi tip predmeta
-	$q190 = myquery("UPDATE akademska_godina_predmet SET tippredmeta=$tip_predmeta WHERE predmet=$predmet AND akademska_godina=$ag");
+	$q190 = db_query("UPDATE akademska_godina_predmet SET tippredmeta=$tip_predmeta WHERE predmet=$predmet AND akademska_godina=$ag");
 
 	// Ako nijedan predmet više ne koristi stari tip predmeta, brišemo ga
-	$q130 = myquery("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
-	if (mysql_result($q130,0,0)==0) {
-		$q140 = myquery("delete from tippredmeta where id=$stari_tip_predmeta");
+	$q130 = db_query("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");
+	if (db_result($q130,0,0)==0) {
+		$q140 = db_query("delete from tippredmeta where id=$stari_tip_predmeta");
 
 		// Brišemo veze iz tabele tippredmeta_komponenta
-		$q150 = myquery("select komponenta from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta");
-		while ($r150 = mysql_fetch_row($q150)) {
-			$q160 = myquery("delete from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta and komponenta=$r150[0]");
+		$q150 = db_query("select komponenta from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta");
+		while ($r150 = db_fetch_row($q150)) {
+			$q160 = db_query("delete from tippredmeta_komponenta where tippredmeta=$stari_tip_predmeta and komponenta=$r150[0]");
 
 			// Ako nijedan tip predmeta više ne koristi ovu komponentu, brišemo i nju
-			$q170 = myquery("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
-			if (mysql_result($q170,0,0)==0) 
-				$q180 = myquery("delete from komponenta where id=$r150[0]");
+			$q170 = db_query("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
+			if (db_result($q170,0,0)==0) 
+				$q180 = db_query("delete from komponenta where id=$r150[0]");
 		}
 	}
 
@@ -304,11 +323,11 @@ if ($_POST['izmjena'] == "da" && check_csrf_token()) {
 	for ($i=0;$i<$broj;$i++) {
 		// Preuzimamo podatke sa forme
 		$tipKomponente = intval($_POST['tipKomponente'.$i]);
-		$naziv = my_escape($_POST['nazivKomponente'.$i]);
-		$kratkiNaziv = my_escape($_POST['kratkiNaziv'.$i]);
+		$naziv = db_escape($_POST['nazivKomponente'.$i]);
+		$kratkiNaziv = db_escape($_POST['kratkiNaziv'.$i]);
 		$maxBodova = floatval(str_replace(",",".",$_POST['maxBodova'.$i]));
 		$prolazBodova = floatval(str_replace(",",".",$_POST['prolazBodova'.$i]));
-		$opcija = my_escape($_POST['opcija'.$i]);
+		$opcija = db_escape($_POST['opcija'.$i]);
 		if (isset($_POST['odabrana'.$i])) $odabrana=1; else $odabrana=0;
 		if (isset($_POST['uslov'.$i])) $zauslov=1; else $zauslov=0;
 
@@ -446,12 +465,12 @@ if ($akcija == "wizard") {
 		// Naziv NE može biti isti kao stari naziv pošto ne znamo da li još neki predmeti koriste isti tip
 		$novi_naziv = $predmet_naziv;
 
-		$q210 = myquery("select count(*) from tippredmeta where naziv='$novi_naziv'");
+		$q210 = db_query("select count(*) from tippredmeta where naziv='$novi_naziv'");
 		$broj=0;
-		while (mysql_result($q210,0,0)>0) {
+		while (db_result($q210,0,0)>0) {
 			$broj++;
 			$novi_naziv = "$predmet_naziv $broj";
-			$q210 = myquery("select count(*) from tippredmeta where naziv='$novi_naziv'");
+			$q210 = db_query("select count(*) from tippredmeta where naziv='$novi_naziv'");
 		}
 
 		?>
@@ -792,12 +811,12 @@ if ($akcija == "wizard") {
 	
 	else if ($korak == "pregled") {
 		// Posljednje upozorenje
-		$q220 = myquery("select count(*) from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-		$broj_casova = mysql_result($q220,0,0);
-		$q230 = myquery("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
-		$broj_zadaca = mysql_result($q230,0,0);
-		$q240 = myquery("select count(*) from ispit where predmet=$predmet and akademska_godina=$ag");
-		$broj_ispita = mysql_result($q240,0,0);
+		$q220 = db_query("select count(*) from cas as c, labgrupa as l where c.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+		$broj_casova = db_result($q220,0,0);
+		$q230 = db_query("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag");
+		$broj_zadaca = db_result($q230,0,0);
+		$q240 = db_query("select count(*) from ispit where predmet=$predmet and akademska_godina=$ag");
+		$broj_ispita = db_result($q240,0,0);
 
 		if ($broj_casova>0)
 			print "Na predmetu imate <b>$broj_casova</b> kreiranih časova sa prisustvom.<br>\n";
@@ -859,7 +878,7 @@ if ($akcija == "postojeci_tip") {
 	if (!$tip_predmeta) $tip_predmeta = 1;
 	$_SESSION['spasi']=$pregled;
 	
-	$q10 = myquery("select id,naziv from tippredmeta where id>0");
+	$q10 = db_query("select id,naziv from tippredmeta where id>0");
 	?>
 	<? print genform_hani("POST", "zaPregled"); ?>
 	<input type="hidden" name="akcija" value="postojeci_tip">
@@ -867,7 +886,7 @@ if ($akcija == "postojeci_tip") {
 	<font size=2 >Izaberite tip predmeta:</font>
 	<select name="tip_predmeta" onchange="submit()">
 	<?
-	while ($r10 = mysql_fetch_row($q10)) {
+	while ($r10 = db_fetch_row($q10)) {
 		if ($r10[0] == $tip_predmeta) $sel="selected"; else $sel="";
 		print "<option $sel value='$r10[0]'>$r10[1]</option>\n";
 	}
@@ -916,8 +935,8 @@ if ($akcija == "") {
 	<div style="margin-left: 150px">
 	<?
 
-	$q10 = myquery("select tippredmeta from akademska_godina_predmet where predmet=$predmet AND akademska_godina=$ag");
-	pregled_predmeta(mysql_result($q10,0,0));
+	$q10 = db_query("select tippredmeta from akademska_godina_predmet where predmet=$predmet AND akademska_godina=$ag");
+	pregled_predmeta(db_result($q10,0,0));
 	
 	unset($_SESSION['TabelaKomponenti']);
 	?>
@@ -941,15 +960,15 @@ function pregled_predmeta($tippredmeta) {
 	</tr>
 	<?
 
-	$q10 = myquery("select naziv from tippredmeta where id=$tippredmeta");
+	$q10 = db_query("select naziv from tippredmeta where id=$tippredmeta");
 	$bgcolor="";
 
 	?>
 	<tr <?=$bgcolor?>>
-		<td><input type="text" name="naziv" value="<?=mysql_result($q10,0,0)?>" readonly="readonly"></td>
+		<td><input type="text" name="naziv" value="<?=db_result($q10,0,0)?>" readonly="readonly"></td>
 		<?
-		$q20 = myquery("select k.id, k.gui_naziv, k.maxbodova, k.prolaz, k.uslov, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$tippredmeta");
-		while ($r20 = mysql_fetch_row($q20)){
+		$q20 = db_query("select k.id, k.gui_naziv, k.maxbodova, k.prolaz, k.uslov, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$tippredmeta");
+		while ($r20 = db_fetch_row($q20)){
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
 			?>
 			<td><?=$r20[1]?></td>
@@ -990,7 +1009,7 @@ function pregled_predmeta_bez_naziva() {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
 		?>
 		<tr <?=$bgcolor?>>
-			<td><?=my_escape($TabelaKomponenti[$i]['naziv'])?></td>
+			<td><?=db_escape($TabelaKomponenti[$i]['naziv'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['maxBodova'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['prolazBodova'])?></td>
 			<td><? 

@@ -1,8 +1,7 @@
 <?
 
-// STUDENT/MOODLE - modul za redirekciju na moodle
+// STUDENT/MOODLE - modul za redirekciju na odgovarajuću moodle stranicu
 
-// v4.0.9.1 (2009/05/01) + Kreiran modul kako bi se ukinuo stari kljakavi sistem studentskih modula
 
 
 function student_moodle() {
@@ -20,14 +19,14 @@ $ag = intval($_REQUEST['ag']);
 
 $tip = $_REQUEST['tip'];
 
-$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
-if (mysql_num_rows($q)<1) {
+$q = db_query("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
+if (db_num_rows($q)<1) {
 	zamgerlog("ne postoji moodle ID za predmet pp$predmet, ag$ag", 3);
 	zamgerlog2("ne postoji moodle ID za predmet", $predmet, $ag);
 	niceerror("Pogrešan predmet/akademska_godina ili za ovaj predmet nije definisan moodle ID.");
 	return;
 }
-$moodle_id = mysql_result($q,0,0);
+$moodle_id = db_result($q,0,0);
 
 if ($tip == "forum")
 	header("Location: $conf_moodle_url"."mod/forum/index.php?id=$moodle_id");

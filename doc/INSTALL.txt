@@ -1,11 +1,14 @@
 ZAMGER v4.3
 
-Copyright (c) 2006-2012 Vedran Ljubovic i drugi
+Copyright (c) 2006-2016 Vedran Ljubovic i drugi
 Elektrotehnicki fakultet Sarajevo
 
 
 UPUTA ZA INSTALACIJU
 ====================
+
+Posljednja izmjena: 11. 8. 2016.
+
 
 Za instalaciju je potrebno:
 - MySQL v4.0 ili noviji
@@ -48,14 +51,6 @@ upload_max_filesize, npr. 100 MB:
 - Generisanje izvještaja koristeći TCPDF nekada zahtijeva više od 30
 sekundi:
 	max_execution_time = 60
-	
-- Pocevsi od PHP verzije 5.5 mysql_* funkcije su proglasene za 
-prevazidjene (deprecated). U verziji 5 Zamgera nece se koristiti ove
-funkcije. Prepravka koda verzije 4.3 kojom bi se eliminisale 
-deprecated funkcije ne bi bila prakticna jer se iste koriste na 
-hiljadama mjesta u kodu. U medjuvremenu predlazemo da iskljucite prijavu 
-deprecated gresaka:
-	error_reporting  =  E_ALL & ~E_NOTICE & ~E_DEPRECATED
 
 
 
@@ -99,7 +94,11 @@ Bye
 
 4. Importujte standardnu Zamger schemu u mysql:
 
-# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 <zamger-dump.sql
+# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 < db/schema.sql
+
+Importujte demo podatke bez kojih sistem neće funkcionisati ispravno:
+
+# mysql zamger -u zamger -p1A2s3D4f --default_character_set utf8 < db/seed.sql
 
 
 5. Ako zelite omoguciti upload fajlova, trebate kreirati neke foldere
@@ -119,9 +118,11 @@ Najlaksi nacin da provjerite ime usera je da otkucate
 
 
 
-6. Editujte fajl zamger/lib/config.php. Fajl bi trebalo da bude 
-relativno ocigledan, samo pratite komentare. 
+6. Editujte fajl zamger/lib/config.php. Najprije iskopirajte 
+zamger/lib/config.php.default koji sadrzi default konfiguraciju. Fajl bi trebalo 
+da bude relativno ocigledan, samo pratite komentare. 
 
+# cp zamger/lib/config.php.default zamger/lib/config.php
 # nano zamger/lib/config.php
 
 Ostavite debug poruke aktivne do daljnjeg, kasnije ih mozete iskljuciti. 
@@ -139,7 +140,7 @@ Moodlom.
 7. Sada mozete pristupiti web interface-u sa korisnikom admin i sifrom 
 admin. Ove podatke morate odmah promijeniti!
 
-http://vasadomena.ba/zamger
+https://vasadomena.ba/zamger
 
 - Kliknite na link Studentska sluzba gore lijevo.
 - Kliknite na karticu Osobe
@@ -198,7 +199,7 @@ a) Preuzmite Moodle sa stranice http://download.moodle.org/. Mozete
 koristiti weekly verziju.
 
 b) Raspakujte ga u neki folder kojem se moze pristupiti preko web 
-servera (recimo da je to lokacija http://ime.servera.ba/moodle)
+servera (recimo da je to lokacija https://ime.servera.ba/moodle)
 
 c) U konfiguraciji php.ini o kojoj smo govorili u tacki 0 potrebno je
 da postavite memory_limit na neku grozno veliku vrijednost, u ovom
@@ -218,7 +219,7 @@ f) Kreirajte jedan direktorij kojem se ne moze pristupiti sa weba, a
 kojem moze pristupiti apache korisnik, slicno kao u tacki 5, npr.
 /home/moodle
 
-g) Web browserom pristupite Moodle lokaciji (http://ime.servera.ba/moodle)
+g) Web browserom pristupite Moodle lokaciji (https://ime.servera.ba/moodle)
 i pratite uputstva. Tu ce vam install skripta reci ako vam eventualno
 fale neki php moduli.
 
@@ -229,7 +230,7 @@ INTEGRACIJA".
 i) Vrijednost $conf_moodle stavite na true. 
 
 j) Vrijednost $conf_moodle_url postavite na url koji smo spominjali pod
-b), dakle http://ime.servera.ba/moodle/ (ne zaboravite kosu crtu na kraju 
+b), dakle https://ime.servera.ba/moodle/ (ne zaboravite kosu crtu na kraju 
 urla).
 
 k) Vrijednost $conf_moodle_db postavite na naziv baze koji ste postavili pod
@@ -254,3 +255,26 @@ snaci sami.
 
 Vise informacija o pojedinim skriptama, ukljucujuci i opis koja od njih cemu 
 sluzi, mozete naci u uputstvima za pojedinu skriptu.
+
+
+
+15. WEB SERVISI
+
+Nakon instalacije web servisi su dostupni na lokacijama tipa:
+
+https://vasadomena.ba/?sta=ws/osoba&akcija=pretraga&ime=admin
+
+Ovi servisi su RESTful što znači da se koriste GET, POST, PUT i DELETE metode
+i da se postavljaju odgovarajući response kodovi. Ako želite da koristite
+ljepše adrese poput sljedećih:
+
+https://vasadomena.ba/api/osoba/pretraga?ime=admin
+
+potrebno je da na vašem web serveru (npr. Apache) instalirate mod_rewrite 
+modul. Zatim trebate editovati konfiguraciju web servera ili da u korijenski folder
+Zamgera postavite .htaccess datoteku. Rewrite pravilo izgleda ovako:
+
+    RewriteEngine on
+    RewriteRule   /api/(.+)    /index.php?route=$1  [QSA,L]
+
+Apache web servera

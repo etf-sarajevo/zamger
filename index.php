@@ -7,26 +7,29 @@
 		<p>Molimo vas da još jednom pročitate uputstva za instalaciju.</p>
 		</body></html>
 		<?php
-		exit;
+		exit(0);
 	}
 ?><?
 
 
 // INDEX - master skripta za ZAMGER
 
-// v3.9.1.0 (2008/02/09) + Pocetak rada
-// v3.9.1.1 (2008/03/08) + Ukinute uloge
-// v3.9.1.2 (2008/03/21) + Popravljen pristup public dijelovima bez prijave i logging
-// v3.9.1.3 (2008/04/17) + Popravljen XSS sa varijablom sta
-// v3.9.1.4 (2008/05/07) + Dodan logging za razne greske kod anonimnog pristupa, popravljen forwarding kada čovjeku istekne sesija
-// v3.9.1.5 (2008/08/27) + Koristimo horizontalni_meni() za studentska/*; koristimo tabelu privilegija umjesto auth
-// v3.9.1.6 (2008/10/02) + Popravljen logging
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/04/01) + Dodan link na RSS u header
-// v4.0.9.1.(2009/06/16) + Dodan link na dokumentaciju na sve stranice
 
+// Provjera da li postoji config.php
+if (!file_exists("lib/config.php")) {
+	?>
+	<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+	<body>
+	<p><font color='red'><b>GREŠKA: Ne postoji datoteka lib/config.php</b></font></p>
+	<p>Molimo vas da iskopirate lib/config.php.default u lib/config.php a zatim napravite potrebne izmjene.</p>
+	</body></html>
+	<?php
+	exit(0);
+}
+
+
+// Error handler koji ispisuje finu poruku o grešci
 $uspjeh=0;
-
 
 function greska_u_modulima() {
 	global $uspjeh, $sta;
@@ -56,7 +59,6 @@ function greska_u_modulima() {
 			$msg = "";
 		}
 
-	
 		niceerror("U toku su radovi na modulu $sta");
 		print "<p>Molimo Vas da pokušate ponovo za par minuta koristeći dugme <a href=\"javascript:location.reload(true)\">Refresh</a>.</p>";
 	}
@@ -65,18 +67,56 @@ function greska_u_modulima() {
 register_shutdown_function("greska_u_modulima");
 
 
+// Glavni kod
+
+require("lib/config.php");
+require("lib/dblayer.php");
 require("lib/libvedran.php");
 require("lib/zamger.php");
-require("lib/config.php");
 
-dbconnect2($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
+db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
 // Login forma i provjera sesije
 
-$greska="";
-$sta = my_escape($_REQUEST['sta']);
+$greska = $oldsta = "";
+$sta = db_escape(param('sta'));
 $posljednji_pristup = 0;
+
+
+// Web service router
+$route = param('route');
+if ($route !== false && $route != "auth") {
+	$segments = explode('/', trim($route, '/'));
+	$sta = "ws/" . db_escape($segments[0]);
+	for ($i=1; $i<count($segments); $i++) {
+		if (is_numeric($segments[$i])) {
+			if (!isset($_REQUEST['id'])) {
+				$_REQUEST['id'] = $segments[$i];
+				$_GET['id'] = $segments[$i];
+				$_POST['id'] = $segments[$i];
+			} else if (!isset($_REQUEST['predmet'])) {
+				$_REQUEST['predmet'] = $segments[$i];
+				$_GET['predmet'] = $segments[$i];
+				$_POST['predmet'] = $segments[$i];
+			} else if (!isset($_REQUEST['ag'])) {
+				$_REQUEST['ag'] = $segments[$i];
+				$_GET['ag'] = $segments[$i];
+				$_POST['ag'] = $segments[$i];
+			}
+		} else {
+			if (!isset($_REQUEST['akcija'])) {
+				$_REQUEST['akcija'] = $segments[$i];
+				$_GET['akcija'] = $segments[$i];
+				$_POST['akcija'] = $segments[$i];
+			} else if (!isset($_REQUEST['subakcija'])) {
+				$_REQUEST['subakcija'] = $segments[$i];
+				$_GET['subakcija'] = $segments[$i];
+				$_POST['subakcija'] = $segments[$i];
+			}
+		}
+	}
+}
 
 // Ovaj kod smo ukinuli da bi se moglo sa login stranice redirektovati tamo gdje je korisnik već bio
 //if ($_REQUEST['greska']==1) {
@@ -84,28 +124,28 @@ $posljednji_pristup = 0;
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
-if ($_POST['loginforma'] == "1") {
-	$login = my_escape($_POST['login']);
+if (int_param('loginforma') === 1) {
+	$login = db_escape($_POST['login']);
 	$pass = $_POST['pass'];
-	
+
 	if (!preg_match("/[\w\d]/",$login)) {
 		$greska="Nepoznat korisnik";
 		zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 	} else {
 		$status = login($pass);
-		if ($status == 1) { 
+		if ($status == 1) {
 			$greska="Nepoznat korisnik";
 			zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 		} else if ($status == 2) {
 			$greska="Pogrešna šifra";
 			zamgerlog2("pogresna sifra", 0, 0, 0, $login);
-		} 
+		}
 	}
 	if ($greska=="") {
 		zamgerlog("login",1); // nivo 1 = posjeta stranici
 		zamgerlog2("login");
 	}
-	
+
 	// Pozivamo cron
 	require("common/cron.php");
 	common_cron();
@@ -128,17 +168,17 @@ if ($_POST['loginforma'] == "1") {
 // SU = switch user
 
 if ($userid>0) {
-	$su = intval($_REQUEST['su']);
-	if ($su==0) $su = intval($_SESSION['su']);
-	$unsu = intval($_REQUEST['unsu']);
+	$su = int_param('su');
+	if ($su==0 && isset($_SESSION['su'])) $su = $_SESSION['su'];
+	$unsu = int_param('unsu');
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
 		// Provjeravamo da li je korisnik admin
-		$q5 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
-		if (mysql_result($q5,0,0)>0) {
+		$privilegije = db_get("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
+		if ($privilegije > 0) {
 			$userid=$su;
 			$_SESSION['su']=$su;
-		} 
+		}
 	} else {
 		$_SESSION['su']="";
 	}
@@ -149,21 +189,21 @@ if ($userid>0) {
 
 // Određivanje privilegija korisnika
 
-$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=false;
+$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=false;
 if ($userid>0) {
-	$q10 = myquery("select privilegija from privilegije where osoba=$userid");
-	while ($r10=mysql_fetch_row($q10)) {
-		if ($r10[0]=="student") $user_student=true; 
-		if ($r10[0]=="nastavnik") $user_nastavnik=true;
-		if ($r10[0]=="studentska") $user_studentska=true;
-		if ($r10[0]=="siteadmin") $user_siteadmin=true;
-		//if ($r10[0]=="prijemni")  -- ovi nemaju pristup zamgeru
+	$q10 = db_query("select privilegija from privilegije where osoba=$userid");
+	while (db_fetch1($q10, $privilegija)) {
+		if ($privilegija=="student") $user_student=true;
+		if ($privilegija=="nastavnik") $user_nastavnik=true;
+		if ($privilegija=="studentska") $user_studentska=true;
+		if ($privilegija=="siteadmin") $user_siteadmin=true;
+		if ($privilegija=="prijemni") $user_prijemni=true;
 		// ovdje dodati ostale vrste korisnika koje imaju pristup
 	}
 
 
 	// Korisnik nije ništa!?
-	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_prijemni) {
 		$greska = "Vaše korisničko ime je ispravno, ali nemate nikakve privilegije na sistemu! Kontaktirajte administratora.";
 		zamgerlog2("korisnik nema nikakve privilegije");
 		$sta = "";
@@ -193,9 +233,9 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 
 	// Pretraga
 	foreach ($registry as $r) {
-
+		if (count($r) == 0) continue;
 		if ($r[0] == $sta) { //$r[5] == debug
-			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin)) {
+			if (strstr($r[3],"P") || (strstr($r[3],"S") && $user_student) || (strstr($r[3],"N") && $user_nastavnik) || (strstr($r[3],"B") && $user_studentska) || (strstr($r[3],"A") && $user_siteadmin) || (strstr($r[3],"R") && $user_prijemni)) {
 				$naslov=$r[1];
 				$template=$r[4];
 				$found=1;
@@ -207,6 +247,7 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 				if ($user_nastavnik) $permstr.="N";
 				if ($user_studentska) $permstr.="B";
 				if ($user_siteadmin) $permstr.="A";
+				if ($user_prijemni) $permstr.="R";
 				if ($userid>0) {
 					zamgerlog("Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]",3); // nivo 3 = greska
 					zamgerlog2("korisnik pokusao pristupiti modulu za koji nema permisije");
@@ -223,6 +264,24 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 
 if ($naslov=="") $naslov = "ETF Bolognaware"; // default naslov
 
+
+// Neko specijalno procesiranje za web servise
+if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo i $oldsta zbog isteka sesije
+	if ($found == 0 && $greska == "") {
+		header("HTTP/1.0 404 Not Found");
+		$greska = "Nepoznat URL";
+	}
+	header('Content-Type: application/json');
+	// Web servisi nisu public pa u slučaju greške tu završavamo
+	if ($greska !== "") {
+		print json_encode( array( 'success' => 'false', 'code' => 'ERR999', 'message' => $greska ) );
+		db_disconnect();
+		$uspjeh=2;
+		exit;
+	}
+}
+
+
 // template==2 - ne prikazujemo ni header (npr. PDF ispis)
 if ($found==1 && $template==2 && $greska=="") {
 	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
@@ -230,8 +289,8 @@ if ($found==1 && $template==2 && $greska=="") {
 	include ("$sta.php");
 	$uspjeh=2;
 	eval("$staf();");
-	dbdisconnect();
-	exit;
+	db_disconnect();
+	exit(0);
 }
 
 
@@ -241,8 +300,8 @@ if ($found==1 && $template==2 && $greska=="") {
 $rsslink = "";
 if ($userid>0) {
 	srand(time());
-	$q200 = myquery("select id from rss where auth=$userid");
-	if (mysql_num_rows($q200)<1) {
+	$rssid = db_get("select id from rss where auth=$userid");
+	if ($rssid === false) {
 		// kreiramo novi ID
 		do {
 			$rssid="";
@@ -253,11 +312,9 @@ if ($userid>0) {
 				else $sslovo=chr(ord('A')+$slovo-36);
 				$rssid .= $sslovo;
 			}
-			$q210 = myquery("select count(*) from rss where id='$rssid'");
-		} while (mysql_result($q210,0,0)>0);
-		$q220 = myquery("insert into rss set id='$rssid', auth=$userid");
-	} else {
-		$rssid = mysql_result($q200,0,0);
+			$postojeci = db_get("select count(*) from rss where id='$rssid'");
+		} while ($postojeci>0);
+		db_query("insert into rss set id='$rssid', auth=$userid");
 	}
 	$rsslink = "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"$conf_site_url/rss.php?id=$rssid\">";
 }
@@ -282,13 +339,16 @@ if ($found==1 && $template==0 && $greska=="") {
 	// Greske uvijek prikazujemo u template-u
 	print "<body bgcolor=\"#FFFFFF\">\n";
 	if (strstr($sta, "izvjestaj/")) {
-		
+
 		$k="";
 		foreach ($_REQUEST as $kljuc => $vrijednost) {
+			// Sakrivamo sesiju
+			if (substr($kljuc,0,4) == "_lv_" || $kljuc == "PHPSESSID" || $kljuc == "pass") continue;
+			if ($kljuc == "loginforma") continue; // Izbjegavamo logout
 			if ($kljuc != "sta")
-				$k .= "$kljuc=$vrijednost&amp;";
+				$k .= urlencode($kljuc).'='.urlencode($vrijednost).'&amp;';
 		}
-		
+
 		if ($userid>0) {
 			?>
 			<div id="konverteri" style="position:absolute;right:10px;top:10px;border:1px white solid;">
@@ -306,22 +366,23 @@ if ($found==1 && $template==0 && $greska=="") {
 	$uspjeh=2;
 	eval("$staf();");
 	print "</body></html>\n";
-	dbdisconnect();
-	exit;
+	db_disconnect();
+	exit(0);
 }
 
 
 // Savjet dana
-if ($_POST['loginforma'] == "1" && $userid>0) {
+$onload_funkcija = "";
+if (int_param('loginforma') == 1 && $userid>0) {
 	// Savjet dana
 	$nasao=0;
 	foreach ($registry as $r) {
 		if ($r[0]=="common/savjet_dana") { $nasao=1; break; }
 	}
 	if ($nasao==1) {
-		$q2 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
-		// Ako nema rezultata, pretpostavljamo 1
-		if (mysql_num_rows($q2)==0 || mysql_result($q2,0,0) != 0) {
+		$savjet_dana = db_get("select vrijednost from preference where korisnik=$userid and preferenca='savjet_dana'");
+		// Ako nema rezultata, pretpostavljamo da je uključen savjet dana
+		if ($savjet_dana === false || $savjet_dana != 0) {
 			// Provjeravamo ima li savjeta za ovu vrstu korisnika?
 			$upit="";
 			if ($user_nastavnik) $upit .= "vrsta_korisnika='nastavnik' or ";
@@ -329,8 +390,8 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 			if ($user_siteadmin) $upit .= "vrsta_korisnika='siteadmin' or ";
 			if ($user_studentska) $upit .= "vrsta_korisnika='studentska' or ";
 
-			$q3 = myquery("select count(*) from savjet_dana where $upit 0"); // 0 zbog zadnjeg or
-			if (mysql_result($q3,0,0)>0) {
+			$br_savjeta = db_get("select count(*) from savjet_dana where $upit 0"); // 0 zbog zadnjeg or
+			if ($br_savjeta > 0) {
 				?>
 				<script language="JavaScript">
 				function savjet_dana() {
@@ -380,8 +441,8 @@ if ($_POST['loginforma'] == "1" && $userid>0) {
 
 // Provjera maila
 if ($userid>0) {
-	$q30 = myquery("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$posljednji_pristup");
-	if (mysql_result($q30,0,0)>0) {
+	$br_novih_poruka = db_get("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$posljednji_pristup");
+	if ($br_novih_poruka > 0) {
 		?>
 		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
 		<script language="javascript">
@@ -429,8 +490,8 @@ if ($userid>0) {
 // Standardne greske
 if ($greska != "") {
 	niceerror($greska);
-	if ($sta=="") 
-		zamgerlog("index.php greska: $greska $login ".my_escape($_REQUEST['sta']),3);
+	if ($sta=="")
+		zamgerlog("index.php greska: $greska $login ".db_escape($_REQUEST['sta']),3);
 	else
 		zamgerlog("index.php greska: $greska $login $sta",3);
 }
@@ -509,10 +570,10 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2016 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2017 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
 <?
-	dbdisconnect();
+	db_disconnect();
 ?>

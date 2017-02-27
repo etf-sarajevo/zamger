@@ -2,14 +2,6 @@
 
 // SARADNIK/INTRO - spisak predmeta i grupa
 
-// v3.9.1.0 (2008/02/11) + Preimenovan bivsi admin_intro, dodan link na [Svi studenti]
-// v3.9.1.1 (2008/03/08) + Nova tabela auth
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/03/12) + Dodan prikaz obavjestenja nivoa 0 i 2 koje bi nastavnici trebali dobijati, ali ih nisu mogli vidjeti
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/23) + labgrupa preusmjerena sa tabele ponudakursa na tabelu predmet, spojene ponudekursa u prikazu za nastavnike, EDIT link preusmjeren na predmet
-// v4.0.9.3 (2009/05/05) + Ukidam "virtualnu grupu" 0
-// v4.0.9.4 (2009/05/17) + Prikazi site adminu predmete cak i u slucaju kada nijedan nastavnik nije angazovan na predmetu
 
 
 function saradnik_intro() {
@@ -20,22 +12,20 @@ global $userid,$user_siteadmin,$registry,$posljednji_pristup;
 
 // Dobrodošlica
 
-$q1 = myquery("select ime, spol from osoba where id=$userid");
-$ime = mysql_result($q1,0,0);
-$spol = mysql_result($q1,0,1);
-if ($spol == 'Z' || ($spol == '' && spol($ime)=="Z"))
-	print "<h1>Dobro došla, ".vokativ($ime,"Z")."</h1>";
+$rez = db_query_assoc("select ime, spol from osoba where id=$userid");
+if ($rez['spol'] == 'Z' || ($rez['spol'] == '' && spol($rez['ime'])=="Z"))
+	print "<h1>Dobro došla, ".vokativ($rez['ime'],"Z")."</h1>";
 else
-	print "<h1>Dobro došao, ".vokativ($ime,"M")."</h1>";
+	print "<h1>Dobro došao, ".vokativ($rez['ime'],"M")."</h1>";
 
 
 
 // Sakrij raspored ako ga nema u registry-ju
-$nasao=0;
+$nasao = false;
 foreach ($registry as $r) {
-	if ($r[0]=="common/raspored1") { $nasao=1; break; }
+	if ($r[0]=="common/raspored1") { $nasao = true; break; }
 }
-if ($nasao==1) {
+if ($nasao) {
 	require "common/raspored1.php";
 	common_raspored1("nastavnik");
 }
@@ -44,9 +34,9 @@ if ($nasao==1) {
 // Prikaz obavještenja za saradnike
 $prikaz_sekundi = 600; // Koliko dugo se prikazuje obavještenje
 $vrijeme = $posljednji_pristup - $prikaz_sekundi; // globalna
-$q30 = myquery("select id from poruka where tip=1 and (opseg=0 or opseg=2) and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 1");
-if (mysql_num_rows($q30)>0) {
-	?><p><a href="?sta=common/inbox&poruka=<?=mysql_result($q30,0,0)?>"><div style="color:red; text-decoration: underline">Imate novo sistemsko obavještenje. Kliknite ovdje.</div></a></p><?
+$broj_poruka = db_get("select count(id) from poruka where tip=1 and (opseg=0 or opseg=2) and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 1");
+if ($broj_poruka > 0) {
+	?><p><a href="?sta=common/inbox&poruka=<?=db_result($q30,0,0)?>"><div style="color:red; text-decoration: underline">Imate novo sistemsko obavještenje. Kliknite ovdje.</div></a></p><?
 }
 
 
@@ -55,38 +45,33 @@ if (mysql_num_rows($q30)>0) {
 ?><table border="0" cellspacing="5"><tr>
 <?
 
-if ($_REQUEST['sve']) 
-	$q1a = myquery("select id,naziv from akademska_godina order by naziv desc");
+if (int_param('sve') === 1)
+	$upit = "select id,naziv from akademska_godina order by naziv desc";
 else
-	$q1a = myquery("select id,naziv from akademska_godina where aktuelna=1 order by naziv desc limit 1");
-
-
-while ($r1a = mysql_fetch_row($q1a)) {
-	$ag = $r1a[0];
-	$ag_naziv = $r1a[1];
-
+	$upit = "select id,naziv from akademska_godina where aktuelna=1 order by naziv desc limit 1";
+$q = db_query($upit);
+while (db_fetch2($q, $ag, $ag_naziv)) {
 	// Prikaži sve predmete siteadminu
 	$uslov=""; $nppolje="nastavnik";
 	$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
 	$nppolje="np.nivo_pristupa";
 
 	// Upit za spisak predmeta
-	$q10 = myquery("select distinct p.id, $nppolje, p.naziv, i.kratki_naziv from predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk where $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag order by pk.semestar, pk.studij, p.naziv");
+	$q10 = db_query("SELECT p.id, $nppolje, p.naziv, i.kratki_naziv, MIN(pk.semestar) sem, MIN(pk.studij) stud
+	FROM predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk 
+	WHERE $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag 
+	GROUP BY p.id
+	ORDER BY sem, stud, p.naziv");
 
 	// Format - šest predmeta u jednom redu
-	$nr = mysql_num_rows($q10);
+	$nr = db_num_rows($q10);
 	if ($nr==0) continue; // sljedeća akademska godina
 
 	if ($nr>6) $nr=6;
 	print '<td colspan="'.($nr*2).'" align="center" bgcolor="#88BB99">Predmeti ('.$ag_naziv.')</td></tr><tr>';
 
 	$br=0;
-	while ($r10 = mysql_fetch_row($q10)) {
-		$predmet = $r10[0];
-		$privilegija = $r10[1];
-		$naziv_predmeta = $r10[2];
-		$studij = $r10[3];
-
+	while (db_fetch4($q10, $predmet, $privilegija, $naziv_predmeta, $studij)) {
 		// Spacer
 		if ($br>0) print '<td bgcolor="#666666" width="1"></td>'."\n";
 
@@ -94,10 +79,9 @@ while ($r1a = mysql_fetch_row($q1a)) {
 	
 		// Siteadmin moze vidjeti i tudje predmete, pa ih prikazujemo drugom bojom
 		$moj=1;
-		if ($user_siteadmin) {
-			$q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_result($q20,0,0)<1) $moj=0;
-		}
+		if ($user_siteadmin)
+			$moj = db_get("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+			
 		if ($moj==0)
 			print "<b><font color=\"#664444\">$naziv_predmeta ($studij)</font></b>\n";
 		else
@@ -109,26 +93,16 @@ while ($r1a = mysql_fetch_row($q1a)) {
 		}
 	
 		// Provjeri limit na prikazivanje labgrupa
-		$limit = array();
-		$q30 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-		if (mysql_num_rows($q30)>0) {
-			while ($r30 = mysql_fetch_row($q30))
-				array_push($limit, $r30[0]);
-		}
+		$limit = db_query_varray("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 	
 		// Lab grupe
 		print "<ul>\n";
-		$q4 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
-
-		$result = array();
-		while ($r4 = mysql_fetch_row($q4)) {
-			$result[$r4[0]]=$r4[1];
-		}
-		natsort($result);
-		foreach($result as $gid=>$gname) {
-			if (!preg_match("/\w/",$gname)) $gname="[Nema imena]";
-			if (count($limit)==0 || in_array($gid,$limit))
-				print "<li><a href=\"?sta=saradnik/grupa&id=$gid\">$gname</a></li>\n";
+		$labgrupe = db_query_vassoc("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
+		natsort($labgrupe);
+		foreach($labgrupe as $id_grupe => $ime_grupe) {
+			if (!preg_match("/\w/",$ime_grupe)) $ime_grupe="[Nema imena]";
+			if (count($limit)==0 || in_array($id_grupe, $limit))
+				print "<li><a href=\"?sta=saradnik/grupa&id=$id_grupe\">$ime_grupe</a></li>\n";
 		}
 		print "</ul>\n";
 	
@@ -148,7 +122,7 @@ while ($r1a = mysql_fetch_row($q1a)) {
 
 print '</tr></table>';
 
-if (!$_REQUEST['sve']) print '<a href="'.genuri().'&sve=1">Prikaži ranije akademske godine</a>';
+if (int_param('sve') !== 1) print '<a href="'.genuri().'&sve=1">Prikaži ranije akademske godine</a>';
 
 
 

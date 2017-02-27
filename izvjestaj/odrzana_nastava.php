@@ -1,6 +1,7 @@
 <?
 
-// IZVJESTAJ/ODRZANA_NASTAVA
+// IZVJESTAJ/ODRZANA_NASTAVA - izvještaj o održanoj nastavi nastavnika, asistenta ili demonstratora
+
 
 
 function izvjestaj_odrzana_nastava() {
@@ -23,22 +24,22 @@ if ($_REQUEST['demonstratorski']) {
 	$predmet = intval($_REQUEST['predmet']);
 	if ($_REQUEST['semestar'] == "ljetnji") $semestar_genitiv="ljetnjem"; else $semestar_genitiv="zimskom";
 	
-	$q10 = myquery("SELECT naziv FROM akademska_godina WHERE id=$ag");
-	$naziv_ag = mysql_result($q10,0,0);
-	$q20 = myquery("SELECT naziv FROM predmet WHERE id=$predmet");
-	$naziv_predmeta = mysql_result($q10,0,0);
+	$q10 = db_query("SELECT naziv FROM akademska_godina WHERE id=$ag");
+	$naziv_ag = db_result($q10,0,0);
+	$q20 = db_query("SELECT naziv FROM predmet WHERE id=$predmet");
+	$naziv_predmeta = db_result($q10,0,0);
 	
 	// Odgovorni nastavnik za predmet
-	$q30 = myquery("SELECT osoba FROM angazman WHERE predmet=$predmet AND akademska_godina=$ag AND angazman_status=1"); // 1 = odgovorni nastavnik
-	if (mysql_num_rows($q30)>0) {
-		$ime_nastavnika = tituliraj(mysql_result($q30,0,0));
+	$q30 = db_query("SELECT osoba FROM angazman WHERE predmet=$predmet AND akademska_godina=$ag AND angazman_status=1"); // 1 = odgovorni nastavnik
+	if (db_num_rows($q30)>0) {
+		$ime_nastavnika = tituliraj(db_result($q30,0,0));
 	} else {
 		$ime_nastavnika = "";
 	}
 	
 	// Ime osobe
-	$q40 = myquery("SELECT ime, prezime FROM osoba WHERE id=$userid");
-	$ime_demonstratora = mysql_result($q40,0,0)." ".mysql_result($q40,0,1);
+	$q40 = db_query("SELECT ime, prezime FROM osoba WHERE id=$userid");
+	$ime_demonstratora = db_result($q40,0,0)." ".db_result($q40,0,1);
 	
 	?>
 	<p>Univerzitet u Sarajevu<br>
@@ -69,13 +70,13 @@ if ($_REQUEST['demonstratorski']) {
 
 	<center><table><tr><th>R.br.</th><th>Datum<br>nastave</th><th>Broj<br>časova</th></tr>
 	<?
-	$q100 = myquery("SELECT c.id, UNIX_TIMESTAMP(c.datum), c.labgrupa from cas as c, labgrupa as l WHERE c.nastavnik=$userid AND c.labgrupa=l.id AND l.predmet=$predmet AND l.akademska_godina=$ag ORDER BY c.datum");
+	$q100 = db_query("SELECT c.id, UNIX_TIMESTAMP(c.datum), c.labgrupa from cas as c, labgrupa as l WHERE c.nastavnik=$userid AND c.labgrupa=l.id AND l.predmet=$predmet AND l.akademska_godina=$ag ORDER BY c.datum");
 	$rbr = 0;
-	while ($r100 = mysql_fetch_row($q100)) {
+	while ($r100 = db_fetch_row($q100)) {
 		$datum_casa = date("d. m. Y.", $r100[1]);
 
-		$q110 = myquery("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
-		$broj_studenata_casa = mysql_result($q110,0,0);
+		$q110 = db_query("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
+		$broj_studenata_casa = db_result($q110,0,0);
 		
 		$broj_sati = 2; // FIXME
 		$rbr++;
@@ -111,24 +112,24 @@ $odsjek = intval($_REQUEST['odsjek']);
 $nazivi_mjeseci = array("", "Januar", "Februar", "Mart", "April", "Maj", "Juni", "Juli", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar");
 $naziv_mjeseca = $nazivi_mjeseci[$mjesec];
 
-$q10 = myquery("SELECT naziv FROM akademska_godina WHERE id=$ag");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("SELECT naziv FROM akademska_godina WHERE id=$ag");
+if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznata akademska godina");
 	return;
 }
 
-$naziv_ag = mysql_result($q10, 0, 0);
+$naziv_ag = db_result($q10, 0, 0);
 if ($mjesec >= 9)
 	$naziv_godine = substr($naziv_ag, 0, 4);
 else
 	$naziv_godine = substr($naziv_ag, 5);
 	
-$q20 = myquery("SELECT naziv FROM institucija WHERE id=$odsjek");
-if (mysql_num_rows($q20)<1) {
+$q20 = db_query("SELECT naziv FROM institucija WHERE id=$odsjek");
+if (db_num_rows($q20)<1) {
 	biguglyerror("Nepoznata akademska godina");
 	return;
 } 
-$naziv_odsjeka = mysql_result($q20, 0, 0);
+$naziv_odsjeka = db_result($q20, 0, 0);
 
 $naziv_osobe = tituliraj($userid);
 
@@ -156,12 +157,12 @@ $kraj_datum = mktime(0,0,0, $sljedeci_mjesec, 1, $sljedeca_godina);
 $tabela_celija = $predmeti = $ukupno_sati_predmet = array();
 $ukupno_sati = 0;
 
-$q100 = myquery("SELECT c.id, UNIX_TIMESTAMP(c.datum), c.labgrupa, p.id, p.naziv from cas as c, labgrupa as l, predmet as p WHERE c.nastavnik=$userid AND c.datum>=FROM_UNIXTIME($poc_datum) AND c.datum<FROM_UNIXTIME($kraj_datum) AND c.labgrupa=l.id AND l.predmet=p.id");
-while ($r100 = mysql_fetch_row($q100)) {
+$q100 = db_query("SELECT c.id, UNIX_TIMESTAMP(c.datum), c.labgrupa, p.id, p.naziv from cas as c, labgrupa as l, predmet as p WHERE c.nastavnik=$userid AND c.datum>=FROM_UNIXTIME($poc_datum) AND c.datum<FROM_UNIXTIME($kraj_datum) AND c.labgrupa=l.id AND l.predmet=p.id");
+while ($r100 = db_fetch_row($q100)) {
 	$datum_casa = date("d. m. Y.", $r100[1]);
 
-	$q110 = myquery("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
-	$broj_studenata_casa = mysql_result($q110,0,0);
+	$q110 = db_query("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
+	$broj_studenata_casa = db_result($q110,0,0);
 	
 	$broj_sati = 2;
 	
@@ -234,8 +235,8 @@ print "</table>\n<p>&nbsp;</p>";
 
 $ispiti_celije = array();
 foreach($predmeti as $id_predmeta => $naziv_predmeta) {
-	$q200 = myquery("SELECT UNIX_TIMESTAMP(i.datum), k.gui_naziv FROM ispit as i, komponenta as k WHERE i.predmet=$id_predmeta AND i.datum>=FROM_UNIXTIME($poc_datum) AND i.datum<FROM_UNIXTIME($kraj_datum) AND i.komponenta=k.id");
-	while ($r200 = mysql_fetch_row($q200)) 
+	$q200 = db_query("SELECT UNIX_TIMESTAMP(i.datum), k.gui_naziv FROM ispit as i, komponenta as k WHERE i.predmet=$id_predmeta AND i.datum>=FROM_UNIXTIME($poc_datum) AND i.datum<FROM_UNIXTIME($kraj_datum) AND i.komponenta=k.id");
+	while ($r200 = db_fetch_row($q200)) 
 		array_push($ispiti_celije, "<td>".date("d. m. Y.", $r200[0])."</td><td>$naziv_predmeta</td><td>$r200[1]</td>\n");
 }
 

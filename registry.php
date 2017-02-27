@@ -11,7 +11,6 @@ $registry = array(
 #      A - admin, B - studentska, N - saradnik, S - student, P - public
 # Sablon == 2 znaci da se ne prikazuje ni header
 
-array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
@@ -21,6 +20,7 @@ array("admin/log2", "Pregled logova", "Log", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
 array("admin/prijemni", "Alati za prijemni", "Prijemni", "A", "1", "0"),
 array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
+array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),
@@ -53,6 +53,7 @@ array("izvjestaj/odrzana_nastava", "Izvještaj o održanoj nastavi", "Održana n
 array("izvjestaj/pdf_converter", "Za generisanje PDF izvjestaja", "Dnevnik", "PSNBA", "2", "0"),
 array("izvjestaj/po_kantonima", "Spisak studenata po kantonima", "Po kantonima", "BA", "0", "0"),
 array("izvjestaj/po_smjerovima_linijski", "Grafovi za izvještaj po smjerovima", "Grafovi", "BA", "2", "0"),
+array("izvjestaj/potvrda", "Potvrda o redovnom studiju", "Potvrda o redovnom studiju", "SBA", "0", "0"),
 array("izvjestaj/predmet", "Izvještaj o predmetu", "Dnevnik", "PSNBA", "0", "0"),
 array("izvjestaj/pregled", "Pregled upisanih studenata", "Pregled upisanih studenata", "BA", "0", "0"),
 array("izvjestaj/pregled_nacin", "Pregled upisanih studenata po tipu i načinu studiranja", "Pregled upisanih studenata", "BA", "0", "0"),
@@ -72,6 +73,7 @@ array("izvjestaj/zavrsni_zapisnik", "Zapisnik o odbrani završnog rada", "Zapisn
 array("izvjestaj/zavrsni_spisak", "Spisak završenih studenata", "Spisak završenih studenata", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za završne", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
+array("izvjestaj/zavrsni_po_clanu_komisije", "Spisak članstava u komisijama za završne radove", "Završni rad po članu komisije", "NBA", "0", "0"),
 
 
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
@@ -87,7 +89,6 @@ array("nastavnik/izvjestaji", "Izvještaji", "Izvještaji", "N", "1", "0"),
 array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1", "0"),
 array("nastavnik/kvizovi", "Kvizovi (beta)", "Kvizovi (beta)", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
-array("nastavnik/unos_kolicine_pred", "Unos količine predavanja, laboratorijskih vježbi i tutorijala", "Unos količine", "A", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
 
 
@@ -136,10 +137,23 @@ array("studentska/prodsjeka", "Promjena odsjeka", "Promjena odsjeka", "B", "1", 
 array("studentska/anketa", "Anketa", "Anketa", "B", "1", "0"),
 array("studentska/zavrsni", "Završni rad", "Završni rad", "B", "1", "0"),
 array("studentska/plan", "Nastavni plan studija", "Plan studija", "B", "1", "0"),
-array("studentska/kreiranje_plana", "Kreiranje plana studija", "Kreiranje plana studija", "B", "1", "0"),
 array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1", "1"),
 //array("studentska/raspored", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
+array("studentska/export_import", "Uvoz/izvoz", "Uvoz/izvoz", "B", "1", "0"),
 
+
+array("ws/autotest", "Web servis autotest", "autotest", "SNBA", "2", "0"),
+array("ws/export", "Web servis export", "export", "BA", "2", "0"),
+array("ws/labgrupa", "Web servis labgrupa", "labgrupa", "NA", "2", "0"),
+array("ws/log", "Web servis log", "log", "NA", "2", "0"),
+array("ws/nastavnik_predmet", "Web servis nastavnik_predmet", "labgrupa", "NA", "2", "0"),
+array("ws/osoba", "Web servis osoba", "osoba", "SNBA", "2", "0"),
+array("ws/potvrda", "Web servis potvrda", "potvrda", "S", "2", "0"),
+array("ws/predmet", "Web servis predmet", "predmet", "PSNBA", "2", "0"),
+array("ws/prijava_ispita", "Web servis prijava_ispita", "prijava_ispita", "S", "2", "0"),
+array("ws/prisustvo", "Web servis prisustvo", "prisustvo", "SNBA", "2", "0"),
+array("ws/student_predmet", "Web servis student_predmet", "student_predmet", "SNBA", "2", "0"),
+array("ws/zadaca", "Web servis zadaca", "zadaca", "SNBA", "2", "0"),
 
 array()
 );

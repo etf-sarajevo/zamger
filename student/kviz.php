@@ -2,6 +2,8 @@
 
 // STUDENT/KVIZ - spisak kvizova ponuđenih studentu
 
+
+
 function student_kviz() {
 
 global $userid;
@@ -17,16 +19,16 @@ if ($_REQUEST['akcija'] == "slanje") {
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 
-$q10 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 	zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 	biguglyerror("Nepoznat predmet");
 	return;
 }
 
-$q15 = myquery("select naziv from akademska_godina where id=$ag");
-if (mysql_num_rows($q10)<1) {
+$q15 = db_query("select naziv from akademska_godina where id=$ag");
+if (db_num_rows($q10)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Nepoznata akademska godina");
@@ -34,29 +36,29 @@ if (mysql_num_rows($q10)<1) {
 }
 
 // Da li student slusa predmet?
-$q17 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-if (mysql_num_rows($q17)<1) {
+$q17 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+if (db_num_rows($q17)<1) {
 	zamgerlog("student ne slusa predmet pp$predmet", 3);
 	zamgerlog2("student ne slusa predmet", $predmet, $ag);
 	biguglyerror("Niste upisani na ovaj predmet");
 	return;
 }
-$ponudakursa = mysql_result($q17,0,0);
+$ponudakursa = db_result($q17,0,0);
 
 
 print "<h2>Kvizovi</h2>\n";
 
 // Spisak grupa u kojima je student
 $upit_labgrupa = "";
-$q20 = myquery("select sl.labgrupa from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
-while ($r20 = mysql_fetch_row($q20)) {
+$q20 = db_query("select sl.labgrupa from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+while ($r20 = db_fetch_row($q20)) {
 	$upit_labgrupa .= "or labgrupa=$r20[0] ";
 }
 
 
 // Ima li aktivnih kvizova
-$q30 = myquery("select id, naziv, ip_adrese, prolaz_bodova from kviz where predmet=$predmet and akademska_godina=$ag and vrijeme_pocetak<=NOW() and vrijeme_kraj>=NOW() and aktivan=1 and (labgrupa=0 $upit_labgrupa)");
-if (mysql_num_rows($q30)<1) {
+$q30 = db_query("select id, naziv, ip_adrese, prolaz_bodova from kviz where predmet=$predmet and akademska_godina=$ag and vrijeme_pocetak<=NOW() and vrijeme_kraj>=NOW() and aktivan=1 and (labgrupa=0 $upit_labgrupa)");
+if (db_num_rows($q30)<1) {
 	print "Trenutno nema aktivnih kvizova za ovaj predmet.";
 	return;
 }
@@ -81,7 +83,7 @@ function otvoriKviz(k) {
 <p>Trenutno su aktivni kvizovi:</p>
 <ul>
 <?
-while ($r30 = mysql_fetch_row($q30)) {
+while ($r30 = db_fetch_row($q30)) {
 	// Da li je ip adresa u datom rasponu
 	if ($r30[2] != "") {
 		$moja_ip = getip();
@@ -131,13 +133,13 @@ while ($r30 = mysql_fetch_row($q30)) {
 	}
 
 	// Da li je student već popunjavao ovaj kviz
-	$q40 = myquery("select dovrsen, bodova from kviz_student where student=$userid and kviz=$r30[0]");
-	if (mysql_num_rows($q40)>0) {
+	$q40 = db_query("select dovrsen, bodova from kviz_student where student=$userid and kviz=$r30[0]");
+	if (db_num_rows($q40)>0) {
 		print "<li>$r30[1] - ";
-		if (mysql_result($q40,0,0)==0) {
+		if (db_result($q40,0,0)==0) {
 			print "nedovršen</li>\n";
 		} else {
-			$bodova = mysql_result($q40,0,1);
+			$bodova = db_result($q40,0,1);
 			print "završen, osvojili ste $bodova bodova.";
 			if ($bodova >= $r30[3]) // prolaz
 				print " Čestitamo!";

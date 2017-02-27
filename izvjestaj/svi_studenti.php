@@ -1,8 +1,10 @@
 <?
 
-// IZVJESTAJ/SVI_STUDENTI - spisak svih studenata
+// IZVJESTAJ/SVI_STUDENTI - spisak svih studenata po nekim kriterijima i sa određenim kolonama
 
-function izvjestaj_svi_studenti(){
+
+
+function izvjestaj_svi_studenti() {
 
 
 ?>
@@ -23,14 +25,15 @@ $godina = intval(request('godina'));
 $tabelarno = request('tabelarno');
 $prvi_put = request('prvi_put');
 $mjesto_rodjenja = request('mjesto_rodjenja');
+$adresa_mjesto = request('adresa_mjesto');
 
 if ($ag==0) {
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ag = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ag = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q20 = myquery("select naziv from akademska_godina where id=$ag");
-	$ak_god_naziv = mysql_result($q20,0,0);
+	$q20 = db_query("select naziv from akademska_godina where id=$ag");
+	$ak_god_naziv = db_result($q20,0,0);
 }
 
 if ($studij == 0)
@@ -40,8 +43,8 @@ else if ($studij == -1)
 else if ($studij == -2)
 	$naziv_studija = "Drugi ciklus studija";
 else {
-	$q30 = myquery("SELECT naziv FROM studij WHERE id=$studij");
-	$naziv_studija = mysql_result($q30,0,0);
+	$q30 = db_query("SELECT naziv FROM studij WHERE id=$studij");
+	$naziv_studija = db_result($q30,0,0);
 }
 
 if ($godina>0)
@@ -60,12 +63,14 @@ if ($jmbg) $kolone .= ", o.jmbg";
 if ($nacin_studiranja) $kolone .= ", ns.naziv as nacin";
 if ($login) $kolone .= ", a.login";
 if ($mjesto_rodjenja) $kolone .= ", m.naziv as mjestorodj";
+if ($adresa_mjesto) $kolone .= ", am.naziv as adresamjesto";
 
 $tabele = "";
 if ($nacin_studiranja) $tabele .= ", nacin_studiranja as ns";
 if ($studij < 0) $tabele .= ", studij as s, tipstudija as ts";
 if ($login) $tabele .= ", auth as a";
 if ($mjesto_rodjenja) $tabele .= ", mjesto as m";
+if ($adresa_mjesto) $tabele .= ", mjesto as am";
 
 $uslovi = "";
 if (!$vanredni) $uslovi .= " and ss.nacin_studiranja != 4";
@@ -77,6 +82,10 @@ else if ($studij < 0)
 if ($prvi_put) $uslovi .= " and ss.ponovac=0";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
+if ($adresa_mjesto) {
+	$uslovi .= " and o.adresa_mjesto=am.id";
+	if ($adresa_mjesto != "on") $uslovi .= " and am.naziv='$adresa_mjesto'";
+}
 
 $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
@@ -85,8 +94,7 @@ $uslov_semestar = " and ss.semestar mod 2 = 1"; // Bilo koji neparan semestar
 if ($godina > 0)
 	$uslov_semestar = " and ss.semestar=".($godina*2-1);
 
-
-$q30 = myquery("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
+$q30 = db_query("SELECT o.id, o.ime, o.prezime $kolone , o.kanton FROM osoba as o, student_studij as ss $tabele WHERE ss.student=o.id and ss.akademska_godina=$ag $uslov_semestar $uslovi order by $redoslijed o.prezime, o.ime");
 $rbr = 1; $oldid = 0;
 $niz = array();
 
@@ -98,11 +106,12 @@ if ($tabelarno) {
 	if ($nacin_studiranja) print "<th>Način studiranja</th>";
 	if ($login) print "<th>Login</th>";
 	if ($mjesto_rodjenja) print "<th>Mjesto rođenja</th>";
+	if ($adresa_mjesto) print "<th>Adresa mjesto</th>";
 	print "<th>&nbsp;</th>";
 	print "</tr>\n";
 }
 
-while ($osoba = mysql_fetch_array($q30)) {
+while ($osoba = db_fetch_assoc($q30)) {
 	if ($tabelarno) {
 		print "<tr><td>$rbr</td><td>".$osoba['prezime']."</td>";
 		if ($ime_oca) print "<td>".$osoba['imeoca']."</td>";
@@ -111,6 +120,7 @@ while ($osoba = mysql_fetch_array($q30)) {
 		if ($nacin_studiranja) print "<td>".$osoba['nacin']."</td>";
 		if ($login) print "<td>".$osoba['login']."</td>";
 		if ($mjesto_rodjenja) print "<td>".$osoba['mjestorodj']."</td>";
+		if ($adresa_mjesto) print "<td>".$osoba['adresamjesto']."</td>";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print "<td><font color=\"red\">- nepoznato ime oca!</font></td>";
@@ -124,10 +134,11 @@ while ($osoba = mysql_fetch_array($q30)) {
 		print "$rbr. ".$osoba['prezime']." ";
 		if ($ime_oca) print "(".$osoba['imeoca'].") ";
 		print $osoba['ime']." ";
-		if ($jmbg) print " (".$osoba['jmbg'].")";
-		if ($nacin_studiranja) print " - ".$osoba['nacin'];
-		if ($login) print " - ".$osoba['login'];
+		if ($jmbg) print " (".$osoba['jmbg'].") ";
+		if ($nacin_studiranja) print " - ".$osoba['nacin']." ";
+		if ($login) print " - ".$osoba['login']." ";
 		if ($mjesto_rodjenja) print "(".$osoba['mjestorodj'].")";
+		if ($adresa_mjesto) print "(".$osoba['adresamjesto'].")";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print " <font color=\"red\">- nepoznato ime oca!</font>";

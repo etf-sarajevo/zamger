@@ -11,37 +11,37 @@
 	h1{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:24px;}
 	.meni {font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:14px;font-weight:bold;}
 
-#prisustvo {
+.prisustvo {
 	border: 1px solid silver;
 	border-bottom: 2px solid silver;
 }
-#prisustvo td, #prisustvo th {
+.prisustvo td, .prisustvo th {
 	padding: 3px 10px;
 	border-right: 1px solid silver;
 }
-#prisustvo th {
+.prisustvo th {
 	font-size: 11px;
 }
-#prisustvo sup {
+.prisustvo sup {
 	color: gray;
 }
 
 
-#zadace {
+.zadace {
 	border: 1px solid silver;
 }
-#zadace td, #zadace th {
+.zadace td, .zadace th {
 	padding: 3px 10px;
 	border-bottom: 1px solid silver;
 	border-right: 1px solid silver;
 }
-#zadace tr:hover {
+.zadace tr:hover {
 	background: #f2f2f2;
 }
-#zadace th {
+.zadace th {
 	font-size: 11px;
 }
-#zadace sup {
+.zadace sup {
 	color: gray;
 }
 

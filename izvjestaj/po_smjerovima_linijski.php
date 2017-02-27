@@ -2,14 +2,15 @@
 
 // IZVJESTAJ/PO_SMJEROVIMA_LINIJSKI - stranica koja generiše grafove za izvještaj po smjerovima uz pomoć GD biblioteke
 
+
 function izvjestaj_chart_semestralni() {
 	
 	$id_ankete = intval($_GET['anketa']);
 	$semestar = intval($_GET['semestar']);
 	$semestarPGS = $semestar;
 	
-	$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-	$ag = mysql_result($q10,0,0);
+	$q10 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+	$ag = db_result($q10,0,0);
 	
 	if ($semestar != 3)
 		$semestar= $semestar%2;
@@ -17,32 +18,32 @@ function izvjestaj_chart_semestralni() {
 	$smjerovi;
 	
 	// Kupimo pitanja za datu anketu
-	$result2077 = myquery("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
+	$result2077 = db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");
 	$k=0;
 	$l=0;
 	
-	while ($pitanje = mysql_fetch_row($result2077)) {
+	while ($pitanje = db_fetch_row($result2077)) {
 		// Kupimo studije
-		$result409 = myquery("select id, kratkinaziv from studij where moguc_upis=1");
+		$result409 = db_query("select id, kratkinaziv from studij where moguc_upis=1");
 		
 		// za prvu godinu je poseban upit gdje ne postoji uslov za studije vec samo uslov na semestar
 		if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-			$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar in(1,2) AND zavrsena='Y'");
+			$q6730PGS = db_query("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar in(1,2) AND zavrsena='Y'");
 		else // ako nije onda biramo parne ili neparene semestre
-			$q6730PGS = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar=$semestarPGS AND zavrsena='Y'");
+			$q6730PGS = db_query("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] and a.semestar=$semestarPGS AND zavrsena='Y'");
 		
-		$prosjek[$l]=mysql_result($q6730PGS,0,0);
+		$prosjek[$l]=db_result($q6730PGS,0,0);
 		$smjerovi[1][$k] = $prosjek[$l];
 		$l++;
 		
 		// za ostale studije koristimo isti upit
-		while($studij = mysql_fetch_row($result409)){
+		while($studij = db_fetch_row($result409)){
 			//kupimo vrijednosti
 			if ($semestar==3)  // ako je izvjestaj za cijelu godinu
-				$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y' and a.semestar not in (1,2)");
+				$q6730 = db_query("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] AND zavrsena='Y' and a.semestar not in (1,2)");
 			else // ako nije onda biramo parne ili neparene semestre
-				$q6730 = myquery("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y' and a.semestar not in (1,2)");
-			$prosjek[$l]=mysql_result($q6730,0,0);
+				$q6730 = db_query("SELECT ifnull(sum( b.izbor_id ) / count( * ),0) FROM anketa_rezultat a, anketa_odgovor_rank b WHERE a.id = b.rezultat AND b.pitanje =$pitanje[0] AND a.studij =$studij[0] and a.semestar%2=$semestar AND zavrsena='Y' and a.semestar not in (1,2)");
+			$prosjek[$l]=db_result($q6730,0,0);
 			
 			$smjerovi[$studij[0]][$k] = $prosjek[$l];
 			

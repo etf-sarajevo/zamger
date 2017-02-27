@@ -2,11 +2,6 @@
 
 // STUDENT/PROSJECI - skripta za racunanje prosjeka
 
-// v3.9.1.0 (2008/10/20) + Novi modul student/prosjeci
-// v3.9.1.1 (2009/02/07) + Dodan prikaz prosjeka po semestrima, na zahtjev studenata
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/10/21) + Rewrite modula tako da uzima u obzir plan studija i cikluse studija
 
 
 function student_prosjeci() {
@@ -20,16 +15,16 @@ global $userid, $conf_naziv_institucije;
 
 
 // Ako se ne koriste planovi studija, dajemo prosjek svega što je student slušao
-//$q5 = myquery("select count(*) from plan_studija");
-//if (mysql_num_rows($q5)==0) {
+//$q5 = db_query("select count(*) from plan_studija");
+//if (db_num_rows($q5)==0) {
 if (true) {
 	// Ovo će dati neprecizne rezultate u slučaju da je student mijenjao studij u toku studiranja
 	// (objašnjenje u komentaru drugog dijela)
 
 	$maxgod=0;
-	$q10 = myquery("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id");
+	$q10 = db_query("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id");
 	$ciklusi=array();
-	while ($r10 = mysql_fetch_row($q10)) {
+	while ($r10 = db_fetch_row($q10)) {
 		$ciklus=$r10[0]; $semestar=$r10[1]; $ocjena=$r10[2];
 
 		if (!in_array($ciklus,$ciklusi)) $ciklusi[]=$ciklus;
@@ -99,23 +94,23 @@ $studij = intval($_REQUEST['studij']);
 $plan_studija = intval($_REQUEST['plan_studija']);
 
 if ($studij==0 || $plan_studija==0) {
-	$q10 = myquery("select distinct ss.studij, ss.plan_studija, s.naziv, ag.naziv from student_studij as ss, studij as s, akademska_godina as ag where ss.studij=s.id and ss.plan_studija=ag.id and ss.student=$userid order by ss.akademska_godina");
-	if (mysql_num_rows($q10)==0) {
+	$q10 = db_query("select distinct ss.studij, ss.plan_studija, s.naziv, ag.naziv from student_studij as ss, studij as s, plan_studija as ps, akademska_godina as ag where ss.studij=s.id and ss.plan_studija=ps.id AND ps.godina_vazenja=ag.id and ss.student=$userid order by ss.akademska_godina");
+	if (db_num_rows($q10)==0) {
 		print "<p>Nikada niste bili upisani na $conf_naziv_institucije. Ne možemo odrediti prosjek.</p>\n";
 		return;
 	}
 
-	if (mysql_num_rows($q10)==1) {
+	if (db_num_rows($q10)==1) {
 		// Ako je student slušao samo jedan studij, olakšavamo slučaj
-		$studij=mysql_result($q10,0,0);
-		$plan_studija=mysql_result($q10,0,1);
+		$studij=db_result($q10,0,0);
+		$plan_studija=db_result($q10,0,1);
 
 	} else {
 		?>
 		<p>Za koji studij želite odrediti prosjeke:<br />
 		<?
-		while ($r10 = mysql_fetch_row($q10)) {
-			print "* <a href=\"?sta=student/prosjeci&studij=$r10[0]&plan_studija=$r10[1]\">$r10[2] (plan i program usvojen $r10[3])</a><br />\n";
+		while (db_fetch4($q10, $studij, $plan_studija, $naziv_studija, $akademska_godina)) {
+			print "* <a href=\"?sta=student/prosjeci&amp;studij=$studij&amp;plan_studija=$plan_studija\">$naziv_studija (plan i program usvojen $akademska_godina)</a><br />\n";
 		}
 		print "</p>\n";
 		return;
@@ -126,29 +121,26 @@ if ($studij==0 || $plan_studija==0) {
 
 // Naslov
 
-$q15 = myquery("select naziv from studij where id=$studij");
+$q15 = db_query("select naziv from studij where id=$studij");
 ?>
-<h2><?=mysql_result($q15,0,0);?></h2>
+<h2><?=db_result($q15,0,0);?></h2>
 <?
 
 
 // Prolazimo kroz plan studija
 
-$q20 = myquery("select predmet, semestar, obavezan from plan_studija where godina_vazenja=$plan_studija and studij=$studij order by semestar");
-while ($r20 = mysql_fetch_row($q20)) {
-	$semestar = $r20[1];
-	if ($r20[2]==1) { // Obavezan
-		$predmet=$r20[0];
-		$q30 = myquery("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet");
+$q20 = db_query("select pasos_predmeta, plan_izborni_slot, semestar, obavezan from plan_studija_predmet where plan_studija=$plan_studija order by semestar");
+while (db_fetch4($q20, $pasos_predmeta, $plan_izborni_slot, $semestar, $obavezan)) {
+	if ($obavezan == 1) { // Obavezan
+		$q30 = db_query("select ko.ocjena from konacna_ocjena ko, pasos_predmeta pp where ko.student=$userid and ko.predmet=pp.predmet AND pp.id=$pasos_predmeta");
 	} else { // Izborni
-		$izborni_slot=$r20[0];
-		$q30 = myquery("select ko.ocjena, ko.predmet from konacna_ocjena as ko, izborni_slot as iz where iz.id=$izborni_slot and iz.predmet=ko.predmet and ko.student=$userid ".$bio_izborni_sql[$izborni_slot]);
-		if (mysql_num_rows($q30)>0)
-			$bio_izborni_sql[$izborni_slot] .= "and ko.predmet!=".mysql_result($q30,0,1);
+		$q30 = db_query("select ko.ocjena, ko.predmet from konacna_ocjena as ko, pasos_predmeta pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id AND pp.predmet=ko.predmet and ko.student=$userid ".$bio_izborni_sql[$plan_izborni_slot]);
+		if (db_num_rows($q30)>0)
+			$bio_izborni_sql[$plan_izborni_slot] .= "and ko.predmet!=".db_result($q30,0,1);
 	}
 
-	if (mysql_num_rows($q30)>0) {
-		$ocjena = mysql_result($q30,0,0);
+	if (db_num_rows($q30)>0) {
+		$ocjena = db_result($q30,0,0);
 		$suma_studij += $ocjena; $broj_studij++;
 		$suma_semestar[$semestar] += $ocjena; $broj_semestar[$semestar]++;
 	} else {

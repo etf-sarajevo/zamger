@@ -214,9 +214,9 @@ function selectOption($tablica, $elementi, $values, $name = false, $distinct = f
 		$ret1 .= '<select name = "'.$tablica.'" id = "'.$tablica.'" '.$values['ajax'].' '.$values['disable'].'><option value="'.$values['optionV'].'">'.$values['optionVv'].'</option>';
 	}
 	
-	$selectO = myquery("SELECT ".$selectS." FROM ".$tablica." ".$values['sql_uslov']." ");
-	while($sO = mysql_fetch_array($selectO)) {
-		$ret1 .= '<option value = "'.my_escape($sO[$elementi[0]], true).'" >'.my_escape($sO[$elementi[1]])." ".my_escape($sO[$elementi[2]]).'</option>';
+	$selectO = db_query("SELECT ".$selectS." FROM ".$tablica." ".$values['sql_uslov']." ");
+	while($sO = db_fetch_assoc($selectO)) {
+		$ret1 .= '<option value = "'.db_escape($sO[$elementi[0]], true).'" >'.db_escape($sO[$elementi[1]])." ".db_escape($sO[$elementi[2]]).'</option>';
 	}
 	
 	$ret1 .= '</select>';
@@ -259,8 +259,8 @@ function ispisPocetne() {
 			
 	';
 	//SQL ispis 
-	$selectSQLP1 = myquery("SELECT b.naziv AS 'n_predmet', c.naziv AS 'n_studij', a.semestar, d.naziv AS 'n_ag', a.obavezan FROM ponudakursa a, predmet b, studij c, akademska_godina d WHERE b.id = a.predmet AND c.id = a.studij AND d.id = a.akademska_godina ORDER BY a.studij ASC");
-	while($sP1 = mysql_fetch_array($selectSQLP1)) {
+	$selectSQLP1 = db_query("SELECT b.naziv AS 'n_predmet', c.naziv AS 'n_studij', a.semestar, d.naziv AS 'n_ag', a.obavezan FROM ponudakursa a, predmet b, studij c, akademska_godina d WHERE b.id = a.predmet AND c.id = a.studij AND d.id = a.akademska_godina ORDER BY a.studij ASC");
+	while($sP1 = db_fetch_assoc($selectSQLP1)) {
 		if($sP1['obavezan'] == 1)
 			$ob = "Obavezan";
 		else
@@ -327,22 +327,22 @@ function ispisPocetne() {
 ##################################################################################
 function napraviSale() {
 	if($_POST) {
-		$salaS = my_escape($_POST['salaS']);
-		$kapacitetS = my_escape($_POST['kapacitetS']);
-		$tipS = my_escape($_POST['tipSale']);
+		$salaS = db_escape($_POST['salaS']);
+		$kapacitetS = db_escape($_POST['kapacitetS']);
+		$tipS = db_escape($_POST['tipSale']);
 		
-		$salaModif = my_escape($_POST['modify']);
+		$salaModif = db_escape($_POST['modify']);
 		
 		//Ako je parametar != 0, uradi update baze, u suprotnom ubaci novi red u bazu
 		if($salaModif != 0) {
-			$updateDBS = myquery("UPDATE raspored_sala SET naziv = '".$salaS."', kapacitet = '".$kapacitetS."', tip = '".$tipS."' WHERE id = '".$salaModif."' ");
+			$updateDBS = db_query("UPDATE raspored_sala SET naziv = '".$salaS."', kapacitet = '".$kapacitetS."', tip = '".$tipS."' WHERE id = '".$salaModif."' ");
 			if($updateDBS) {
 				printInfo("Sala uspjesno modifikovana", true);
 			} else {
 				printInfo("Greska pri modifikaciji sale", true);
 			}
 		} else {
-			$insertIntoDBS = myquery("INSERT INTO raspored_sala (naziv, kapacitet, tip) VALUES ('".$salaS."', '".$kapacitetS."', '".$tipS."') ");
+			$insertIntoDBS = db_query("INSERT INTO raspored_sala (naziv, kapacitet, tip) VALUES ('".$salaS."', '".$kapacitetS."', '".$tipS."') ");
 			if($insertIntoDBS) {
 				printInfo("Sala uspjesno dodana", true);
 			} else {
@@ -393,12 +393,12 @@ function napraviSale() {
 		<?
 			
 		//Ispis sala za modifikaciju
-		$selectSaleDB = myquery("SELECT id, naziv, kapacitet, tip FROM raspored_sala ORDER BY id DESC ");
-		$ifExistSDB = mysql_num_rows($selectSaleDB);
+		$selectSaleDB = db_query("SELECT id, naziv, kapacitet, tip FROM raspored_sala ORDER BY id DESC ");
+		$ifExistSDB = db_num_rows($selectSaleDB);
 			
 		if($ifExistSDB >= 1) {
 			$nmbrCounter = 1;
-			while($pSDB = mysql_fetch_array($selectSaleDB)) {
+			while($pSDB = db_fetch_assoc($selectSaleDB)) {
 				$idSale = $pSDB['id'];
 				$imeSale = $pSDB['naziv'];
 				$tipSale = $pSDB['tip'];
@@ -424,7 +424,7 @@ function napraviSale() {
 	}
 		
 	if($_GET['do'] == "brisi") {
-		brisiSalu(my_escape($_GET['idS']));
+		brisiSalu(db_escape($_GET['idS']));
 	}
 			
 } //Kraj kreiranja sala
@@ -435,7 +435,7 @@ function napraviSale() {
 #
 ##################################################################################
 function brisiSalu($idSale) {
-	$deleteSDB = myquery("DELETE FROM raspored_sala WHERE id = '".$idSale."' ");
+	$deleteSDB = db_query("DELETE FROM raspored_sala WHERE id = '".$idSale."' ");
 	if($deleteSDB) {
 		//Osvjezi prozor da bi se izbrisala iz liste sala
 		?>
@@ -462,8 +462,8 @@ function brisiSalu($idSale) {
 
 //Samo vraca predmete
 function ispisiPredmeteBox($studij, $semestar, $akademska) {
-	$selectPredmeteDB = myquery("SELECT a.predmet, b.kratki_naziv FROM ponudakursa a, predmet b WHERE a.studij = '".my_escape($studij)."' AND a.semestar = '".my_escape($semestar)."' AND a.akademska_godina = '".$akademska."' AND b.id=a.predmet");
-		while($sPDB = mysql_fetch_array($selectPredmeteDB)) {
+	$selectPredmeteDB = db_query("SELECT a.predmet, b.kratki_naziv FROM ponudakursa a, predmet b WHERE a.studij = '".db_escape($studij)."' AND a.semestar = '".db_escape($semestar)."' AND a.akademska_godina = '".$akademska."' AND b.id=a.predmet");
+		while($sPDB = db_fetch_assoc($selectPredmeteDB)) {
 			$ispis .= '<option value = "'.$sPDB['predmet'].'">'.$sPDB['kratki_naziv'].'</option>';
 		}
 	
@@ -472,8 +472,8 @@ function ispisiPredmeteBox($studij, $semestar, $akademska) {
 
 				
 function predmetLista($grupa) {
-	$prS = myquery("SELECT b.id, b.kratki_naziv FROM labgrupa a, predmet b WHERE b.id = a.predmet AND a.id = '".$grupa."' ");
-	while($rW = mysql_fetch_array($prS)) {
+	$prS = db_query("SELECT b.id, b.kratki_naziv FROM labgrupa a, predmet b WHERE b.id = a.predmet AND a.id = '".$grupa."' ");
+	while($rW = db_fetch_assoc($prS)) {
 		$predmetLista .= '<option value = "'.$rW['id'].'">'.$rW['kratki_naziv'].'</option>';
 	}
 					
@@ -519,8 +519,8 @@ function napraviRaspored() {
 		$arr = $tmp;
 		
 		function ispis($arrP) {
-			//$insertRas = myquery("INSERT INTO ras_ras VALUES ('', '".$_POST['godina']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."')");
-			$selR = mysql_fetch_assoc(myquery("SELECT MAX(raspored) AS idas, smijerR, godinaR, semestarR FROM raspored_stavka GROUP BY raspored"));
+			//$insertRas = db_query("INSERT INTO ras_ras VALUES ('', '".$_POST['godina']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."')");
+			$selR = db_fetch_assoc(db_query("SELECT MAX(raspored) AS idas, smijerR, godinaR, semestarR FROM raspored_stavka GROUP BY raspored"));
 			$idN = $selR['idas'] + 1;
 			
 			if($_POST['studij'] == $selR['smijerR'] AND $_POST['akademska_godina'] == $selR['godinaR'] AND $_POST['godina'] == $selR['semestarR'])
@@ -533,7 +533,7 @@ function napraviRaspored() {
 					if($val['x'] == "")
 						$none;
 					else {
-						if(myquery("INSERT INTO raspored_stavka (raspored, dan_u_sedmici, predmet, vrijeme_pocetak, vrijeme_kraj, smijerR, godinaR, semestarR, sala, tip, labgrupa) VALUES ('".$idN."', '".$val['y']."', '".$val['predmet']."', '".$val['xp']."', '".$val['xe']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."', '".$_POST['godina']."', '".$val['sala']."', '".$val['tip']."', '".$val['grupa']."')"))
+						if(db_query("INSERT INTO raspored_stavka (raspored, dan_u_sedmici, predmet, vrijeme_pocetak, vrijeme_kraj, smijerR, godinaR, semestarR, sala, tip, labgrupa) VALUES ('".$idN."', '".$val['y']."', '".$val['predmet']."', '".$val['xp']."', '".$val['xe']."', '".$_POST['studij']."', '".$_POST['akademska_godina']."', '".$_POST['godina']."', '".$val['sala']."', '".$val['tip']."', '".$val['grupa']."')"))
 							$kreiran++;
 					}
 				}
@@ -644,8 +644,8 @@ function napraviRaspored() {
 			}
 			
 			<?
-			if ($lgS = myquery("SELECT lg.naziv, lg.id, pr.id AS predmetId, pr.kratki_naziv FROM ponudakursa pk, labgrupa lg, predmet pr WHERE lg.predmet = pk.id AND pk.studij = '".$_POST['studij']."' AND pk.semestar = '".$_POST['godina']."' AND pr.id = lg.predmet ORDER BY lg.naziv ASC")) {
-				while ($row = mysql_fetch_array($lgS)) {
+			if ($lgS = db_query("SELECT lg.naziv, lg.id, pr.id AS predmetId, pr.kratki_naziv FROM ponudakursa pk, labgrupa lg, predmet pr WHERE lg.predmet = pk.id AND pk.studij = '".$_POST['studij']."' AND pk.semestar = '".$_POST['godina']."' AND pr.id = lg.predmet ORDER BY lg.naziv ASC")) {
+				while ($row = db_fetch_assoc($lgS)) {
 					$labG[$row['predmetId']][] = array("id" => $row['id'], "naziv" => $row['naziv']);
 				}
 				echo "var labgrupe = ".$json->encode($labG).";";
@@ -808,11 +808,11 @@ function pogledajRasporede() {
 	<?
 	
 	$brojacRK = 1;
-	$sqlRasporediK = myquery("SELECT DISTINCT(a.raspored), pk.semestar, b.naziv AS nStudij, c.naziv AS nAkademska FROM raspored_stavka a, studij b, akademska_godina c, ponudakursa pk WHERE b.id = pk.studij AND c.id = pk.akademska_godina and pk.id=a.predmet ORDER BY a.id DESC");
-	if(mysql_num_rows($sqlRasporediK) < 1)
+	$sqlRasporediK = db_query("SELECT DISTINCT(a.raspored), pk.semestar, b.naziv AS nStudij, c.naziv AS nAkademska FROM raspored_stavka a, studij b, akademska_godina c, ponudakursa pk WHERE b.id = pk.studij AND c.id = pk.akademska_godina and pk.id=a.predmet ORDER BY a.id DESC");
+	if(db_num_rows($sqlRasporediK) < 1)
 		echo "Nema kreiranih rasporeda";
 	else {
-		while($sRK = mysql_fetch_array($sqlRasporediK)) {
+		while($sRK = db_fetch_assoc($sqlRasporediK)) {
 		
 			echo "<div style = 'line-height: 18px'>Raspored no.".$brojacRK." - <b>Odsjek:</b> <font color = '#000'>".$sRK['nStudij']."</font> | <b>Semestar:</b> <font color = '#000'>".$sRK['semestar']."</font> | <b>Akademska godina:</b> <font color = '#000'>".$sRK['nAkademska']."</font> | <a target = '_blank' href = 'studentska/print.php?act=rasporedFull&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/raspored.png' border = '0' alt = 'Printaj cijeli raspored' title = 'Printaj cijeli raspored'></a> | <a target = '_blank' href = 'studentska/print.php?act=sale&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/sale.png' border = '0' alt = 'Printaj sale' title = 'Printaj sale'></a> | <a href = '?sta=studentska/raspored&uradi=brisiRaspored&id=".$sRK['raspored']."'><img src = 'images/16x16/brisanje.png' border = '0' alt = 'Brisi raspored' title = 'Brisi raspored'></a></div>";
 		
@@ -830,7 +830,7 @@ function pogledajRasporede() {
 function brisiRaspored() {
 	$id = $_GET['id'];
 	
-	$sqlBrisi = myquery("DELETE FROM raspored_stavka WHERE raspored = '".$id."' ");
+	$sqlBrisi = db_query("DELETE FROM raspored_stavka WHERE raspored = '".$id."' ");
 	if($sqlBrisi)
 		echo "Raspored izbrisan.";
 	else

@@ -1,7 +1,8 @@
 <?
 
 // COMMON/RASPORED1 - modul za ispis rasporeda
-	
+
+
 function common_raspored1($tip) {
 
 	global $userid;
@@ -22,20 +23,20 @@ function common_raspored1($tip) {
 <?
 	if($tip=="student") {
 		// Aktuelna akademska godina
-		$q0 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q0,0,0);
+		$q0 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+		$ag = db_result($q0,0,0);
 		
 		// Studij koji student trenutno sluša
-		$q1 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-		if (mysql_num_rows($q1)<1) {
+		$q1 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+		if (db_num_rows($q1)<1) {
 			print "Nema rasporeda časova za korisnika<br/><br/></div>";
 			return;
 		} 
-		$semestar = mysql_result($q1,0,1);
+		$semestar = db_result($q1,0,1);
 		$semestar_neparan=$semestar%2;
-		$studij = mysql_result($q1,0,0);
-		$q0=myquery("select id from raspored where akademska_godina=$ag and studij=$studij and semestar=$semestar");
-		if(mysql_num_rows($q0)<1){
+		$studij = db_result($q1,0,0);
+		$q0=db_query("select id from raspored where akademska_godina=$ag and studij=$studij and semestar=$semestar");
+		if(db_num_rows($q0)<1){
 			print "Nema kreiranih rasporeda!</div>";
 			return;
 		}
@@ -43,7 +44,7 @@ function common_raspored1($tip) {
 		?>
 		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a>
 		<?
-		$id_rasporeda=mysql_result($q0,0,0);
+		$id_rasporeda=db_result($q0,0,0);
 ?>
 		<table class="raspored" border="1" cellspacing="0">
 			<tr>
@@ -79,7 +80,7 @@ function common_raspored1($tip) {
 			// petlja za 6 dana u sedmici
 			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r 
+				$q0=db_query("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r 
 				where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id and rs.predmet=p.id and rs.raspored=r.id  and r.akademska_godina=$ag 
 				and sp.student=$userid and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan and rs.dupla=0 
 				and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
@@ -89,9 +90,9 @@ function common_raspored1($tip) {
 				for($j=0;$j<53;$j++){
 					$broj_preklapanja[]=0;
 				}
-				for($j=0;$j<mysql_num_rows($q0);$j++){
-					$pocetak=mysql_result($q0,$j,0);
-					$kraj=mysql_result($q0,$j,1);
+				for($j=0;$j<db_num_rows($q0);$j++){
+					$pocetak=db_result($q0,$j,0);
+					$kraj=db_result($q0,$j,1);
 					for($k=$pocetak;$k<$kraj;$k++) $broj_preklapanja[$k]++;
 				}
 				$max_broj_preklapanja=max($broj_preklapanja);
@@ -113,7 +114,7 @@ function common_raspored1($tip) {
 				}
 				// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 				
-				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,sp.predmet 
+				$q1=db_query("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa,sp.predmet 
 					from raspored_stavka rs,student_predmet sp,ponudakursa pk,predmet p,raspored r where rs.dan_u_sedmici=$i and sp.predmet=pk.id and pk.predmet=p.id 
 					and rs.raspored=r.id and rs.predmet=p.id and sp.student=$userid and r.akademska_godina=$ag and pk.akademska_godina=$ag and pk.semestar mod 2=$semestar_neparan 
 					and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
@@ -124,15 +125,15 @@ function common_raspored1($tip) {
 				// gdje["id_stavke"][0]=5 znaci da je id prve stavke 5
 				// gdje["red_stavke"][0]=3 znaci da stavka 1 ide u 4. red
 				// [0] pretstavlja prvu stavku jer indeksi kreću od nule i druga kolona treba biti ista-- u ovom slucaju [0]
-				for($j=0;$j<mysql_num_rows($q1);$j++){
-					$id_stavke=mysql_result($q1,$j,0);
+				for($j=0;$j<db_num_rows($q1);$j++){
+					$id_stavke=db_result($q1,$j,0);
 					$gdje["id_stavke"][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
 					$gdje["red_stavke"][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
 				}
-				for($j=0;$j<mysql_num_rows($q1);$j++){
-					$id_stavke=mysql_result($q1,$j,0);
-					$pocetak=mysql_result($q1,$j,3);
-					$kraj=mysql_result($q1,$j,4);
+				for($j=0;$j<db_num_rows($q1);$j++){
+					$id_stavke=db_result($q1,$j,0);
+					$pocetak=db_result($q1,$j,3);
+					$kraj=db_result($q1,$j,4);
 					for($k=0;$k<$max_broj_preklapanja;$k++){
 						$zauzet_red=0;
 						while($pocetak!=$kraj){
@@ -146,7 +147,7 @@ function common_raspored1($tip) {
 							// ako nije zauzet termin u tom redu dodajemo termin u taj red i prekidamo petlju
 							$gdje["red_stavke"][$j]=$k; // $stavka $j ide u red $k
 							//sada proglasavamo termin zauzetim u tom redu $k+1
-							$pocetak=mysql_result($q1,$j,3);
+							$pocetak=db_result($q1,$j,3);
 							while($pocetak!=$kraj){
 								$zauzet[$k][$pocetak-1]=1;// termin $pocetak se zauzima u redu $k+1
 								$pocetak++;
@@ -162,22 +163,22 @@ function common_raspored1($tip) {
 					$zadnji_m=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
-						for($k=0;$k<mysql_num_rows($q1);$k++){
-							$id_stavke=mysql_result($q1,$k,0);
-							$predmet=mysql_result($q1,$k,2);
-							$q2=myquery("select kratki_naziv from predmet where id=$predmet");
-							$predmet_naziv=mysql_result($q2,0,0);
-							$pocetak=mysql_result($q1,$k,3);
-							$kraj=mysql_result($q1,$k,4);
-							$sala=mysql_result($q1,$k,5);
-							$q3=myquery("select naziv from raspored_sala where id=$sala");
-							$sala_naziv=mysql_result($q3,0,0);
-							$tip=mysql_result($q1,$k,6);
-							$labgrupa=mysql_result($q1,$k,7);
-							$studentov_predmet=mysql_result($q1,$k,8);
+						for($k=0;$k<db_num_rows($q1);$k++){
+							$id_stavke=db_result($q1,$k,0);
+							$predmet=db_result($q1,$k,2);
+							$q2=db_query("select kratki_naziv from predmet where id=$predmet");
+							$predmet_naziv=db_result($q2,0,0);
+							$pocetak=db_result($q1,$k,3);
+							$kraj=db_result($q1,$k,4);
+							$sala=db_result($q1,$k,5);
+							$q3=db_query("select naziv from raspored_sala where id=$sala");
+							$sala_naziv=db_result($q3,0,0);
+							$tip=db_result($q1,$k,6);
+							$labgrupa=db_result($q1,$k,7);
+							$studentov_predmet=db_result($q1,$k,8);
 							if($labgrupa!=0){
-								$q4=myquery("select naziv from labgrupa where id=$labgrupa");
-								$labgrupa_naziv=mysql_result($q4,0,0);
+								$q4=db_query("select naziv from labgrupa where id=$labgrupa");
+								$labgrupa_naziv=db_result($q4,0,0);
 							}
 							$interval=$kraj-$pocetak;
 							if($gdje["red_stavke"][$k]==$j && $pocetak==$m){
@@ -195,13 +196,13 @@ function common_raspored1($tip) {
 							elseif($vrijemeKrajMin==3) $vrijemeKrajM="30";
 							elseif($vrijemeKrajMin==0) $vrijemeKrajM="45";
 							$vrijemeK="$vrijemeKrajS:$vrijemeKrajM";
-							$q3=myquery("select obavezan from ponudakursa where id=$studentov_predmet");
-							if(mysql_num_rows($q3)>0) $obavezan=mysql_result($q3,0,0);
+							$q3=db_query("select obavezan from ponudakursa where id=$studentov_predmet");
+							if(db_num_rows($q3)>0) $obavezan=db_result($q3,0,0);
 							if($tip!='P' && $labgrupa_naziv!="(Svi studenti)"){
-								$q5=myquery("select l.naziv from student_labgrupa sl,labgrupa l where sl.labgrupa=l.id and sl.student=$userid and l.predmet=$predmet");
+								$q5=db_query("select l.naziv from student_labgrupa sl,labgrupa l where sl.labgrupa=l.id and sl.student=$userid and l.predmet=$predmet");
 								$brojac=0;
-								for($s=0;$s<mysql_num_rows($q5);$s++){
-									$naziv_studentove_labgrupe=mysql_result($q5,$s,0);
+								for($s=0;$s<db_num_rows($q5);$s++){
+									$naziv_studentove_labgrupe=db_result($q5,$s,0);
 									if($naziv_studentove_labgrupe=="(Svi studenti)") continue;
 									else { $brojac=1;break;}
 								}
@@ -258,11 +259,11 @@ function common_raspored1($tip) {
 	// ako tip nije student
 	else{
 		// Da li je aktuelan neparni ili parni semestar?
-		$q0 = myquery("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
-		if (mysql_result($q0,0,0)>0) $parni=1; else $parni=0;
+		$q0 = db_query("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
+		if (db_result($q0,0,0)>0) $parni=1; else $parni=0;
 		$brojac=0;
-		$q1 = myquery("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet np, ponudakursa pk, akademska_godina ag where np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
-		while($r1 = mysql_fetch_array($q1)) {
+		$q1 = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet np, ponudakursa pk, akademska_godina ag where np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+		while($r1 = db_fetch_assoc($q1)) {
 			$ak_god = $r1['akademska_godina'];
 			$semestar = $r1['semestar'];
 			if ($semestar%2 == $parni) continue;
@@ -315,7 +316,7 @@ function common_raspored1($tip) {
 			// petlja za 6 dana u sedmici
 			for($i=1;$i<=6;$i++){
 				print "<tr>";
-				$q0=myquery("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p,raspored r where ". $sqlWhere. " and rs.predmet=p.id 
+				$q0=db_query("select rs.vrijeme_pocetak,rs.vrijeme_kraj from raspored_stavka rs,predmet p,raspored r where ". $sqlWhere. " and rs.predmet=p.id 
 				and rs.raspored=r.id and r.akademska_godina=$ak_god and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1");
 				// sada je potrebno naći maksimalni broj preklapanja termina da bi znali koliki je rowspan potreban za dan $i
 				// poredimo svaki interval casa sa svakim
@@ -323,9 +324,9 @@ function common_raspored1($tip) {
 				for($j=0;$j<=52;$j++){
 					$broj_preklapanja[]=0;
 				}
-				for($j=0;$j<mysql_num_rows($q0);$j++){
-					$pocetak=mysql_result($q0,$j,0);
-					$kraj=mysql_result($q0,$j,1);
+				for($j=0;$j<db_num_rows($q0);$j++){
+					$pocetak=db_result($q0,$j,0);
+					$kraj=db_result($q0,$j,1);
 					for($k=$pocetak;$k<$kraj;$k++) $broj_preklapanja[$k]++;
 				}
 				$max_broj_preklapanja=max($broj_preklapanja);
@@ -347,7 +348,7 @@ function common_raspored1($tip) {
 				}
 				// zauzet[1][0]=1 znaci da je termin 1 zauzet u drugom redu  
 				
-				$q1=myquery("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa from raspored_stavka rs,
+				$q1=db_query("select rs.id,rs.raspored,rs.predmet,rs.vrijeme_pocetak,rs.vrijeme_kraj,rs.sala,rs.tip,rs.labgrupa from raspored_stavka rs,
 				predmet p,raspored r where " .$sqlWhere. " and rs.dan_u_sedmici=$i and rs.predmet=p.id and rs.raspored=r.id and r.akademska_godina=$ak_god 
 				and rs.dupla=0 and (rs.isjeckana=0 or rs.isjeckana=2) and rs.labgrupa != -1 order by rs.id");
 				$gdje=array();
@@ -357,15 +358,15 @@ function common_raspored1($tip) {
 				// gdje["id_stavke"][0]=5 znaci da je id prve stavke 5
 				// gdje["red_stavke"][0]=3 znaci da stavka 1 ide u 4. red
 				// [0] pretstavlja prvu stavku jer indeksi kreću od nule i druga kolona treba biti ista-- u ovom slucaju [0]
-				for($j=0;$j<mysql_num_rows($q1);$j++){
-					$id_stavke=mysql_result($q1,$j,0);
+				for($j=0;$j<db_num_rows($q1);$j++){
+					$id_stavke=db_result($q1,$j,0);
 					$gdje["id_stavke"][$j]=$id_stavke;// i ovo vise ne diramo jer znamo koji je id stavke na osnovu nepoznate $j
 					$gdje["red_stavke"][$j]=0; // postavljamo na nulu jer još ne znamo gdje ide određena stavka
 				}
-				for($j=0;$j<mysql_num_rows($q1);$j++){
-					$id_stavke=mysql_result($q1,$j,0);
-					$pocetak=mysql_result($q1,$j,3);
-					$kraj=mysql_result($q1,$j,4);
+				for($j=0;$j<db_num_rows($q1);$j++){
+					$id_stavke=db_result($q1,$j,0);
+					$pocetak=db_result($q1,$j,3);
+					$kraj=db_result($q1,$j,4);
 					for($k=0;$k<$max_broj_preklapanja;$k++){
 						$zauzet_red=0;
 						while($pocetak!=$kraj){
@@ -379,7 +380,7 @@ function common_raspored1($tip) {
 							// ako nije zauzet termin u tom redu dodajemo termin u taj red i prekidamo petlju
 							$gdje["red_stavke"][$j]=$k; // $stavka $j ide u red $k
 							//sada proglasavamo termin zauzetim u tom redu $k+1
-							$pocetak=mysql_result($q1,$j,3);
+							$pocetak=db_result($q1,$j,3);
 							while($pocetak!=$kraj){
 								$zauzet[$k][$pocetak-1]=1;// termin $pocetak se zauzima u redu $k+1
 								$pocetak++;
@@ -395,21 +396,21 @@ function common_raspored1($tip) {
 					$zadnji_m=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
-						for($k=0;$k<mysql_num_rows($q1);$k++){
-							$id_stavke=mysql_result($q1,$k,0);
-							$predmet=mysql_result($q1,$k,2);
-							$q2=myquery("select kratki_naziv from predmet where id=$predmet");
-							$predmet_naziv=mysql_result($q2,0,0);
-							$pocetak=mysql_result($q1,$k,3);
-							$kraj=mysql_result($q1,$k,4);
-							$sala=mysql_result($q1,$k,5);
-							$q3=myquery("select naziv from raspored_sala where id=$sala");
-							$sala_naziv=mysql_result($q3,0,0);
-							$tip=mysql_result($q1,$k,6);
-							$labgrupa=mysql_result($q1,$k,7);
+						for($k=0;$k<db_num_rows($q1);$k++){
+							$id_stavke=db_result($q1,$k,0);
+							$predmet=db_result($q1,$k,2);
+							$q2=db_query("select kratki_naziv from predmet where id=$predmet");
+							$predmet_naziv=db_result($q2,0,0);
+							$pocetak=db_result($q1,$k,3);
+							$kraj=db_result($q1,$k,4);
+							$sala=db_result($q1,$k,5);
+							$q3=db_query("select naziv from raspored_sala where id=$sala");
+							$sala_naziv=db_result($q3,0,0);
+							$tip=db_result($q1,$k,6);
+							$labgrupa=db_result($q1,$k,7);
 							if($labgrupa!=0){
-								$q4=myquery("select naziv from labgrupa where id=$labgrupa");
-								$labgrupa_naziv=mysql_result($q4,0,0);
+								$q4=db_query("select naziv from labgrupa where id=$labgrupa");
+								$labgrupa_naziv=db_result($q4,0,0);
 							}
 							$interval=$kraj-$pocetak;
 							if($gdje["red_stavke"][$k]==$j && $pocetak==$m){
@@ -427,14 +428,14 @@ function common_raspored1($tip) {
 							elseif($vrijemeKrajMin==3) $vrijemeKrajM="30";
 							elseif($vrijemeKrajMin==0) $vrijemeKrajM="45";
 							$vrijemeK="$vrijemeKrajS:$vrijemeKrajM";
-							$q3=myquery("select obavezan from ponudakursa where id=$predmet");
-							if(mysql_num_rows($q3)>0) $obavezan=mysql_result($q3,0,0);
+							$q3=db_query("select obavezan from ponudakursa where id=$predmet");
+							if(db_num_rows($q3)>0) $obavezan=db_result($q3,0,0);
 							/*
 							if($tip!='P' && $labgrupa_naziv!="(Svi studenti)"){
-								$q5=myquery("select l.naziv from student_labgrupa sl,labgrupa l where sl.labgrupa=l.id and sl.student=$userid and l.predmet=$predmet");
+								$q5=db_query("select l.naziv from student_labgrupa sl,labgrupa l where sl.labgrupa=l.id and sl.student=$userid and l.predmet=$predmet");
 								$brojac=0;
-								for($s=0;$s<mysql_num_rows($q5);$s++){
-									$naziv_studentove_labgrupe=mysql_result($q5,$s,0);
+								for($s=0;$s<db_num_rows($q5);$s++){
+									$naziv_studentove_labgrupe=db_result($q5,$s,0);
 									if($naziv_studentove_labgrupe=="(Svi studenti)") continue;
 									else { $brojac=1;break;}
 								}
@@ -443,12 +444,12 @@ function common_raspored1($tip) {
 								// ako je iskljucena opcija iznad studentu koji nije ni u jednoj grupi se prikazuju termini ostalih grupa
 							}
 							*/
-							$q4=myquery("select o.labgrupa,l.naziv from ogranicenje o, labgrupa l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet");
-							if(mysql_num_rows($q4)>0){
+							$q4=db_query("select o.labgrupa,l.naziv from ogranicenje o, labgrupa l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet");
+							if(db_num_rows($q4)>0){
 								$postoji_labgrupa=0;
-								for($s=0;$s<mysql_num_rows($q4);$s++){
-									$ogr_labgrupa=mysql_result($q4,$s,0);
-									$ogr_labgrupa_naziv=mysql_result($q4,$s,1);
+								for($s=0;$s<db_num_rows($q4);$s++){
+									$ogr_labgrupa=db_result($q4,$s,0);
+									$ogr_labgrupa_naziv=db_result($q4,$s,1);
 									if($ogr_labgrupa==$labgrupa){ $postoji_labgrupa=1;break; }
 									if($ogr_labgrupa_naziv=="(Svi studenti)" && $tip=='P') { $postoji_labgrupa=1;break; }
 								}

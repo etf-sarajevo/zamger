@@ -14,22 +14,30 @@ global $_lv_; // We use form generators
 
 
 
-
-$maxlogins = 20;
-$stardate = intval($_GET['stardate']);
+$stardate = int_param('stardate');
 if ($stardate == 0) {
-	$q199 = myquery("select id from log order by id desc limit 1");
-	$stardate = mysql_result($q199,0,0)+1;
+	$stardate = db_get("select id from log2 order by id desc limit 1");
 }
-$nivo = intval($_GET['nivo']);
+$nivo = int_param('nivo');
 if ($nivo<1) $nivo=2;
 if ($nivo>4) $nivo=4;
+
+
+// Broj rezultata po stranici (grupisanih po login eventu)
+$maxlogins = 20;
+
+
+// Za iole prihvatljive performanse upita na log bazu mora se imati limit,
+// ali kod pretrage postoji mogućnost da upit sa tim limitom ne vrati dovoljan broj rezultata.
+// Broj ispod je nekakav kompromis između ova dva problema
+$query_limit = 10000; 
+$query_max_limit = 1000000;
 
 
 
 // Pretraga / filtriranje
 
-$pretraga = $_REQUEST['pretraga'];
+$pretraga = param('pretraga');
 if ($pretraga) {
 	$src = preg_replace("/\s+/"," ",$pretraga);
 	$src=trim($src);
@@ -39,11 +47,11 @@ if ($pretraga) {
 
 	// Probavamo traziti ime i prezime istovremeno
 	if (count($dijelovi)==2) {
-		$q100 = myquery("select id from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
-		if (mysql_num_rows($q100)==0) {
-			$q100 = myquery("select id from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
+		$q100 = db_query("select id from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
+		if (db_num_rows($q100)==0) {
+			$q100 = db_query("select id from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
 		}
-		$rezultata = mysql_num_rows($q100);
+		$rezultata = db_num_rows($q100);
 	}
 
 	// Nismo nasli ime i prezime, pokusavamo bilo koji dio
@@ -53,8 +61,8 @@ if ($pretraga) {
 			$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
 			if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
 		}
-		$q100 = myquery("select id from osoba where ($query)");
-		$rezultata = mysql_num_rows($q100);
+		$q100 = db_query("select id from osoba where ($query)");
+		$rezultata = db_num_rows($q100);
 	}
 
 	// Nismo nasli nista, pokusavamo login
@@ -64,27 +72,28 @@ if ($pretraga) {
 			if ($query != "") $query .= "or ";
 			$query .= "a.login like '%$dio%' ";
 		}
-		$q100 = myquery("select o.id from osoba as o, auth as a where ($query) and a.id=o.id");
-		$rezultata = mysql_num_rows($q100);
+		$q100 = db_query("select o.id from osoba as o, auth as a where ($query) and a.id=o.id");
+		$rezultata = db_num_rows($q100);
 	}
 
 	if ($rezultata>0) {
-		while ($r100 = mysql_fetch_row($q100)) {
+		while ($r100 = db_fetch_row($q100)) {
 			if ($filterupita!="") $filterupita .= " OR ";
-			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+			//$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
+			$filterupita .= "userid=$r100[0] OR objekat1=$r100[0]";
 			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
 		}
 	}
 
 	// Probavamo predmete
 	if ($rezultata==0) {
-		$q101 = myquery("select id from predmet where naziv like '%$src%' or kratki_naziv='$src'");
-		if (mysql_num_rows($q101)>0) {
-			$pp=mysql_result($q101,0,0);
+		$q101 = db_query("select id from predmet where naziv like '%$src%' or kratki_naziv='$src'");
+		if (db_num_rows($q101)>0) {
+			$pp=db_result($q101,0,0);
 			if ($filterupita!="") $filterupita .= " OR ";
 			$filterupita .= "dogadjaj like '%pp$pp%'";
-			$q102 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$pp and pk.akademska_godina=ag.id and ag.aktuelna=1");
-			while ($r102 = mysql_fetch_row($q102)) {
+			$q102 = db_query("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$pp and pk.akademska_godina=ag.id and ag.aktuelna=1");
+			while ($r102 = db_fetch_row($q102)) {
 				$filterupita .= " OR dogadjaj like '%p$r102[0]%'";
 			}
 		}
@@ -92,6 +101,7 @@ if ($pretraga) {
 
 	// Kraj, dodajemo and
 	if ($filterupita!="") $filterupita = " AND ($filterupita)";
+	//print "filterupita $filterupita";
 }
 
 
@@ -112,7 +122,7 @@ if ($pretraga) {
 
 <center>
 <form action="index.php" method="GET">
-<input type="hidden" name="sta" value="admin/log">
+<input type="hidden" name="sta" value="admin/log2">
 <input type="hidden" name="nivo" value="<?=$nivo?>">
 <input type="text" name="pretraga" size="40" value="<?=$pretraga?>">
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -130,10 +140,10 @@ if ($pretraga) {
 function get_user_link($id) {
 	static $users = array();
 	if (!$users[$id]) {
-		$q20 = myquery("select ime, prezime from osoba where id=$id");
-		if (mysql_num_rows($q20)>0) {
+		$q20 = db_query("select ime, prezime from osoba where id=$id");
+		if (db_num_rows($q20)>0) {
 			$link="?sta=studentska/osobe&akcija=edit&osoba=$id";
-			$users[$id] = "<a href=\"$link\" target=\"_new\">".mysql_result($q20,0,0)." ".mysql_result($q20,0,1)."</a>";
+			$users[$id] = "<a href=\"$link\" target=\"_new\">".db_result($q20,0,0)." ".db_result($q20,0,1)."</a>";
 		} else return $id;
 	}
 	return $users[$id];
@@ -142,9 +152,9 @@ function get_user_link($id) {
 function get_pk_link($id) {
 	static $predmeti = array();
 	if (!$predmeti[$id]) {
-		$q30 = myquery("select p.id, p.naziv, pk.akademska_godina from ponudakursa as pk, predmet as p where pk.id=$id and pk.predmet=p.id");
-		if (mysql_num_rows($q30)>0) {
-			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=".mysql_result($q30,0,0)."&ag=".mysql_result($q30,0,2)."\" target=\"_new\">".mysql_result($q30,0,1)."</a>";
+		$q30 = db_query("select p.id, p.naziv, pk.akademska_godina from ponudakursa as pk, predmet as p where pk.id=$id and pk.predmet=p.id");
+		if (db_num_rows($q30)>0) {
+			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=".db_result($q30,0,0)."&ag=".db_result($q30,0,2)."\" target=\"_new\">".db_result($q30,0,1)."</a>";
 		} else return $id;
 	}
 	return $predmeti[$id];
@@ -153,15 +163,15 @@ function get_pk_link($id) {
 function get_predmet_link($id) {
 	static $aktuelna_ag = 0; // Aktuelna akademska godina
 	if ($aktuelna_ag==0) {
-		$q35 = myquery("select id from akademska_godina where aktuelna=1 order by id desc");
-		$aktuelna_ag = mysql_result($q35,0,0);
+		$q35 = db_query("select id from akademska_godina where aktuelna=1 order by id desc");
+		$aktuelna_ag = db_result($q35,0,0);
 	}
 
 	static $predmeti = array();
 	if (!$predmeti[$id]) {
-		$q40 = myquery("select naziv from predmet where id=$id");
-		if (mysql_num_rows($q40)>0) {
-			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$id&ag=$aktuelna_ag\" target=\"_new\">".mysql_result($q40,0,0)."</a>";
+		$q40 = db_query("select naziv from predmet where id=$id");
+		if (db_num_rows($q40)>0) {
+			$predmeti[$id] = "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$id&ag=$aktuelna_ag\" target=\"_new\">".db_result($q40,0,0)."</a>";
 		} else return $id;
 	}
 	return $predmeti[$id];
@@ -170,34 +180,34 @@ function get_predmet_link($id) {
 function get_predmet_ag_link($predmet, $ag) {
 	static $godine = array();
 	if (!$godine[$ag]) {
-		$q50 = myquery("select naziv from akademska_godina where id=$ag");
-		if (mysql_num_rows($q50)>0) {
-			$godine[$ag] = mysql_result($q50,0,0);
+		$q50 = db_query("select naziv from akademska_godina where id=$ag");
+		if (db_num_rows($q50)>0) {
+			$godine[$ag] = db_result($q50,0,0);
 		} else return "$predmet, $ag";
 	}
 
 	static $predmeti = array();
 	if (!$predmeti[$predmet]) {
-		$q40 = myquery("select naziv from predmet where id=$predmet");
-		if (mysql_num_rows($q40)>0) {
-			$predmeti[$predmet] = mysql_result($q40,0,0);
+		$q40 = db_query("select naziv from predmet where id=$predmet");
+		if (db_num_rows($q40)>0) {
+			$predmeti[$predmet] = db_result($q40,0,0);
 		} else return "$predmet, $ag";
 	}
 	return "<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&ag=$ag\" target=\"_new\">".$predmeti[$predmet]." ".$godine[$ag]."</a>";
 }
 
 function get_zadaca_link($id, $usr) {
-	$q50 = myquery("select z.naziv,z.predmet,z.akademska_godina, p.naziv from zadaca as z, predmet as p where z.id=$id and z.predmet=p.id");
-	if (mysql_num_rows($q50)>0) {
-		$naziv=mysql_result($q50,0,0);
+	$q50 = db_query("select z.naziv,z.predmet,z.akademska_godina, p.naziv from zadaca as z, predmet as p where z.id=$id and z.predmet=p.id");
+	if (db_num_rows($q50)>0) {
+		$naziv=db_result($q50,0,0);
 		if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
-		$predmet=mysql_result($q50,0,1);
-		$ag=mysql_result($q50,0,2);
-		$pnaziv=mysql_result($q50,0,3);
+		$predmet=db_result($q50,0,1);
+		$ag=db_result($q50,0,2);
+		$pnaziv=db_result($q50,0,3);
 		if (intval($usr)>0) {
-			$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag order by virtualna");
-			if (mysql_num_rows($q55)>0)
-				$link="?sta=saradnik/grupa&id=".mysql_result($q55,0,0);
+			$q55 = db_query("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag order by virtualna");
+			if (db_num_rows($q55)>0)
+				$link="?sta=saradnik/grupa&id=".db_result($q55,0,0);
 			else
 				$link="?sta=nastavnik/zadace&predmet=$predmet&ag=$ag";
 			return "<a href=\"$link\" target=\"_blank\">$naziv ($pnaziv)</a>";
@@ -207,10 +217,10 @@ function get_zadaca_link($id, $usr) {
 }
 
 function get_cas_link($id) {
-	$q70 = myquery("select l.id, p.naziv, l.naziv from cas as c, labgrupa as l, predmet as p where c.id=$id and c.labgrupa=l.id and l.predmet=p.id");
-	if (mysql_num_rows($q70)>0) {
-		$link = "?sta=saradnik/grupa&id=".mysql_result($q70,0,0);
-		$tekst = mysql_result($q70,0,2)." (".mysql_result($q70,0,1).")";
+	$q70 = db_query("select l.id, p.naziv, l.naziv from cas as c, labgrupa as l, predmet as p where c.id=$id and c.labgrupa=l.id and l.predmet=p.id");
+	if (db_num_rows($q70)>0) {
+		$link = "?sta=saradnik/grupa&id=".db_result($q70,0,0);
+		$tekst = db_result($q70,0,2)." (".db_result($q70,0,1).")";
 		return "<a href=\"$link\" target=\"_blank\">$tekst</a>";
 	}
 	return "$id";
@@ -219,10 +229,10 @@ function get_cas_link($id) {
 function get_ispit_link($id) {
 	static $ispiti = array();
 	if (!$ispiti[$id]) {
-		$q60 = myquery("select p.naziv, k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, predmet as p, komponenta as k where i.id=$id and i.predmet=p.id and i.komponenta=k.id");
-		if (mysql_num_rows($q60)>0) {
-			$link = "?sta=nastavnik/ispiti&predmet=".mysql_result($q60,0,2)."&ag=".mysql_result($q60,0,3);
-			$tekst = mysql_result($q60,0,1)." (".mysql_result($q60,0,0).")";
+		$q60 = db_query("select p.naziv, k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, predmet as p, komponenta as k where i.id=$id and i.predmet=p.id and i.komponenta=k.id");
+		if (db_num_rows($q60)>0) {
+			$link = "?sta=nastavnik/ispiti&predmet=".db_result($q60,0,2)."&ag=".db_result($q60,0,3);
+			$tekst = db_result($q60,0,1)." (".db_result($q60,0,0).")";
 			$ispiti[$id] = "<a href=\"$link\" target=\"_blank\">$tekst</a>";
 		}
 		else return "$id";
@@ -233,10 +243,10 @@ function get_ispit_link($id) {
 function get_termin($id) {
 	static $termini = array();
 	if (!$termini[$id]) {
-		$q60 = myquery("select p.naziv, k.gui_naziv, i.predmet, i.akademska_godina, UNIX_TIMESTAMP(it.datumvrijeme) from ispit as i, predmet as p, komponenta as k, ispit_termin as it where it.id=$id and it.ispit=i.id and i.predmet=p.id and i.komponenta=k.id");
-		if (mysql_num_rows($q60)>0) {
-			$link = "?sta=nastavnik/ispiti&predmet=".mysql_result($q60,0,2)."&ag=".mysql_result($q60,0,3);
-			$tekst = mysql_result($q60,0,1).", ".date("j.n. H:i",mysql_result($q60,0,4))." (".mysql_result($q60,0,0).")";
+		$q60 = db_query("select p.naziv, k.gui_naziv, i.predmet, i.akademska_godina, UNIX_TIMESTAMP(it.datumvrijeme) from ispit as i, predmet as p, komponenta as k, ispit_termin as it where it.id=$id and it.ispit=i.id and i.predmet=p.id and i.komponenta=k.id");
+		if (db_num_rows($q60)>0) {
+			$link = "?sta=nastavnik/ispiti&predmet=".db_result($q60,0,2)."&ag=".db_result($q60,0,3);
+			$tekst = db_result($q60,0,1).", ".date("j.n. H:i",db_result($q60,0,4))." (".db_result($q60,0,0).")";
 			$termini[$id] = "<a href=\"$link\" target=\"_blank\">$tekst</a>";
 		}
 		else return "$id";
@@ -247,10 +257,10 @@ function get_termin($id) {
 function get_grupa_link($id) {
 	static $grupe = array();
 	if (!$grupe[$id]) {
-		$q80 = myquery("select p.naziv, l.naziv from labgrupa as l, predmet as p where l.id=$id and l.predmet=p.id");
-		if (mysql_num_rows($q80)>0) {
+		$q80 = db_query("select p.naziv, l.naziv from labgrupa as l, predmet as p where l.id=$id and l.predmet=p.id");
+		if (db_num_rows($q80)>0) {
 			$link = "?sta=saradnik/grupa&id=$id";
-			$tekst = mysql_result($q80,0,1)." (".mysql_result($q80,0,0).")";
+			$tekst = db_result($q80,0,1)." (".db_result($q80,0,0).")";
 			$grupe[$id] = "<a href=\"$link\" target=\"_blank\">$tekst</a>";
 		}
 		else return "$id";
@@ -261,9 +271,9 @@ function get_grupa_link($id) {
 function get_komp_link($id) {
 	static $komponente = array();
 	if (!$komponente[$id]) {
-		$q70 = myquery("select gui_naziv from komponenta where id=$id");
-		if (mysql_num_rows($q70)>0) {
-			$komponente[$id] = mysql_result($q70,0,0);
+		$q70 = db_query("select gui_naziv from komponenta where id=$id");
+		if (db_num_rows($q70)>0) {
+			$komponente[$id] = db_result($q70,0,0);
 		}
 		else return "$id";
 	}
@@ -273,10 +283,10 @@ function get_komp_link($id) {
 function get_projekat_link($id) {
 	static $projekti = array();
 	if (!$projekti[$id]) {
-		$q90 = myquery("select p.naziv, p2.naziv, p2.id, p.akademska_godina from projekat as p, predmet as p2 where p.id=$id and p.predmet=p2.id");
-		if (mysql_num_rows($q90)>0) {
-			$link = "?sta=nastavnik/projekti&predmet=".mysql_result($q90,0,2)."&ag=".mysql_result($q90,0,3)."&akcija=projektna_stranica&projekat=$id";
-			$tekst = mysql_result($q90,0,0)." (".mysql_result($q90,0,1).")";
+		$q90 = db_query("select p.naziv, p2.naziv, p2.id, p.akademska_godina from projekat as p, predmet as p2 where p.id=$id and p.predmet=p2.id");
+		if (db_num_rows($q90)>0) {
+			$link = "?sta=nastavnik/projekti&predmet=".db_result($q90,0,2)."&ag=".db_result($q90,0,3)."&akcija=projektna_stranica&projekat=$id";
+			$tekst = db_result($q90,0,0)." (".db_result($q90,0,1).")";
 			$projekti[$id] = "<a href=\"$link\" target=\"_blank\">$tekst</a>";
 		}
 		else return "$id";
@@ -287,8 +297,8 @@ function get_projekat_link($id) {
 function get_studij($id) {
 	static $studiji = array();
 	if (!$studiji[$id]) {
-		$q100 = myquery("select naziv from studij where id=$id");
-		$studiji[$id] = mysql_result($q100,0,0);
+		$q100 = db_query("select naziv from studij where id=$id");
+		$studiji[$id] = db_result($q100,0,0);
 	}
 	return $studiji[$id];
 }
@@ -296,8 +306,8 @@ function get_studij($id) {
 function get_ag($id) {
 	static $ags = array();
 	if (!$ags[$id]) {
-		$q110 = myquery("select naziv from akademska_godina where id=$id");
-		$ags[$id] = mysql_result($q110,0,0);
+		$q110 = db_query("select naziv from akademska_godina where id=$id");
+		$ags[$id] = db_result($q110,0,0);
 	}
 	return $ags[$id];
 }
@@ -309,17 +319,41 @@ function add_string($s1, $s2, $s3) {
 
 // Glavni upit i petlja
 
-$q10 = myquery ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
 WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-ORDER BY l.id DESC");
+ORDER BY l.id DESC LIMIT $query_limit");
 $lastlogin = array();
 $eventshtml = array();
-$logins=0;
-$prvidatum=$zadnjidatum=0;
-$stardate=1;
-while ($r10 = mysql_fetch_row($q10)) {
+$logins = 0;
+$prvidatum = $zadnjidatum = $last_id = 0;
+while ($logins < $maxlogins) {
+	$r10 = db_fetch_row($q10);
+	if (!$r10) {
+		// Potrošili smo sve slogove u upitu a nismo napunili $maxlogins stavki
+		// Ponavljamo upit sa novim stardate-om
+		if ($last_id > 0 && $stardate > $last_id+1) {
+			$stardate = $last_id+1;
+			// Da ubrzamo stvari, povećaćemo limit na upitu
+			$query_limit *= 2;
+			if ($query_limit > $query_max_limit || $stardate < 2) {
+				// Nema više smisla nastaviti, rezultata više nema
+				$stardate=1;
+				break;
+			}
+		} else {
+			// Prethodni upit nije vratio ama baš ništa, prekidamo
+			$stardate = 1;
+			break;
+		}
+		$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+		FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
+		WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
+		ORDER BY l.id DESC LIMIT $query_limit");
+		continue; // Povratak na početak petlje
+	}
 	
+	$last_id = $r10[0]; // $lastlogin koristimo da provjerimo da li je korisnik išta radio nakon logina
 	if ($prvidatum==0) $prvidatum = $r10[1];
 	$zadnjidatum = $r10[1];
 	$nicedate = " (".date("d.m.Y. H:i:s", $r10[1]).")";
@@ -330,12 +364,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 
 	// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
 	if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $opis != "login")) { 
-		$lastlogin[$usr]=$r10[0];
+		$lastlogin[$usr] = $r10[0];
 		$logins++;
-		if ($logins > $maxlogins) {
-			$stardate=$r10[0]+1;
-			break; // izlaz iz while
-		}
 	}
 
 	if ($r10[6]==1) $nivoimg="log_info";
@@ -441,9 +471,9 @@ while ($r10 = mysql_fetch_row($q10)) {
 		if ($r10[9]>0) $objekti = add_string($objekti, ", ", $r10[9]);
 	}
 
-	$q20 = myquery("SELECT tekst FROM log2_blob WHERE log2=$r10[0]");
-	if (mysql_num_rows($q20)>0) 
-		$objekti = add_string($objekti, ", ", mysql_result($q20,0,0));
+	$q20 = db_query("SELECT tekst FROM log2_blob WHERE log2=$r10[0]");
+	if (db_num_rows($q20)>0) 
+		$objekti = add_string($objekti, ", ", db_result($q20,0,0));
 	if ($objekti !== "") $evt .= " ($objekti)";
 
 	$analyze_link = "<a href=\"?sta=admin/log&analyze=$r10[0]\">*</a>";
@@ -460,68 +490,68 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$evt = str_replace("p$m[1]",get_predmet_link($m[1]),$evt);
 	}
 	while (preg_match("/\Wg(\d+)/", $evt, $m)) { // labgrupa
-		$q39 = myquery("select naziv from labgrupa where id=$m[1]");
-		if (mysql_num_rows($q39)>0) {
-			$evt = str_replace("g$m[1]","<a href=\"?sta=saradnik/grupa&id=$m[1]\" target=\"_blank\">".mysql_result($q39,0,0)."</a>",$evt);
+		$q39 = db_query("select naziv from labgrupa where id=$m[1]");
+		if (db_num_rows($q39)>0) {
+			$evt = str_replace("g$m[1]","<a href=\"?sta=saradnik/grupa&id=$m[1]\" target=\"_blank\">".db_result($q39,0,0)."</a>",$evt);
 		} else {
 			$evt = str_replace("g$m[1]","$m[1]",$evt);
 		}
 	}
 	while (preg_match("/\Wc(\d+)/", $evt, $m)) { // cas
-		$q40 = myquery("select labgrupa from cas where id=$m[1]");
-		if (mysql_num_rows($q40)>0) {
-			$link="?sta=saradnik/grupa&id=".mysql_result($q40,0,0);
+		$q40 = db_query("select labgrupa from cas where id=$m[1]");
+		if (db_num_rows($q40)>0) {
+			$link="?sta=saradnik/grupa&id=".db_result($q40,0,0);
 			$evt = str_replace("c$m[1]","<a href=\"$link\" target=\"_blank\">$m[1]</a>",$evt);
 		} else {
 			$evt = str_replace("c$m[1]","$m[1]",$evt);
 		}
 	}
 	if (preg_match("/\Wz(\d+)/", $evt, $m)) { // zadaca
-		$q50 = myquery("select naziv,predmet,akademska_godina from zadaca where id=$m[1]");
-		if (mysql_num_rows($q50)>0) {
-			$naziv=mysql_result($q50,0,0);
+		$q50 = db_query("select naziv,predmet,akademska_godina from zadaca where id=$m[1]");
+		if (db_num_rows($q50)>0) {
+			$naziv=db_result($q50,0,0);
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
-			$predmet=mysql_result($q50,0,1);
-			$ag=mysql_result($q50,0,2);
+			$predmet=db_result($q50,0,1);
+			$ag=db_result($q50,0,2);
 			if (intval($usr)>0) {
-				$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-				if (mysql_num_rows($q55)<1 && $zadnjikorisnik>0) {
-					$q55 = myquery("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$zadnjikorisnik and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				$q55 = db_query("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$usr and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+				if (db_num_rows($q55)<1 && $zadnjikorisnik>0) {
+					$q55 = db_query("select l.id from student_labgrupa as sl, labgrupa as l where sl.student=$zadnjikorisnik and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 				}
-				if (mysql_num_rows($q55)<1) {
-					$q55 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+				if (db_num_rows($q55)<1) {
+					$q55 = db_query("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
 				}
-				$link="?sta=saradnik/grupa&id=".mysql_result($q55,0,0);
+				$link="?sta=saradnik/grupa&id=".db_result($q55,0,0);
 				$evt = str_replace("z$m[1]","<a href=\"$link\" target=\"_blank\">$naziv</a>",$evt);
 			}
 		}
 	}
 	while (preg_match("/\Wi(\d+)/", $evt, $m)) { // ispit
-		$q60 = myquery("select k.gui_naziv, i.predmet, p.naziv, i.akademska_godina from ispit as i, komponenta as k, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=p.id");
-		if (mysql_num_rows($q60)>0) {
-			$naziv=mysql_result($q60,0,0);
+		$q60 = db_query("select k.gui_naziv, i.predmet, p.naziv, i.akademska_godina from ispit as i, komponenta as k, predmet as p where i.id=$m[1] and i.komponenta=k.id and i.predmet=p.id");
+		if (db_num_rows($q60)>0) {
+			$naziv=db_result($q60,0,0);
 			if (!preg_match("/\w/",$naziv)) $naziv="[Bez imena]";
-			$predmet=mysql_result($q60,0,1);
-			$predmetnaziv=mysql_result($q60,0,2);
-			$ag=mysql_result($q60,0,3);
+			$predmet=db_result($q60,0,1);
+			$predmetnaziv=db_result($q60,0,2);
+			$ag=db_result($q60,0,3);
 			$evt = str_replace("i$m[1]","<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\" target=\"_blank\">$naziv ($predmetnaziv)</a>",$evt);
 		} else {
 			$evt = str_replace("i$m[1]","$m[1]",$evt);
 		}
 	}
 	while (preg_match("/\Wag(\d+)/", $evt, $m)) { // akademska godina
-		$q70 = myquery("select naziv from akademska_godina where id=$m[1]");
-		if (mysql_num_rows($q70)>0) {
-			$naziv=mysql_result($q70,0,0);
+		$q70 = db_query("select naziv from akademska_godina where id=$m[1]");
+		if (db_num_rows($q70)>0) {
+			$naziv=db_result($q70,0,0);
 			$evt = str_replace("ag$m[1]","$naziv",$evt);
 		} else {
 			$evt = str_replace("ag$m[1]","$m[1]",$evt);
 		}
 	}
 	while (preg_match("/\Ws(\d+)/", $evt, $m)) { // studij
-		$q80 = myquery("select naziv from studij where id=$m[1]");
-		if (mysql_num_rows($q80)>0) {
-			$naziv=mysql_result($q80,0,0);
+		$q80 = db_query("select naziv from studij where id=$m[1]");
+		if (db_num_rows($q80)>0) {
+			$naziv=db_result($q80,0,0);
 			$evt = str_replace("s$m[1]","$naziv",$evt);
 		} else {
 			$evt = str_replace("s$m[1]","$m[1]",$evt);
@@ -547,55 +577,56 @@ while ($r10 = mysql_fetch_row($q10)) {
 		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate." ".$analyze_link."\n".$eventshtml[$lastlogin[$usr]];
 	}
 }
-if ($stardate==1) $zadnjidatum=1; // Nije doslo do breaka...
+if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
+else $stardate = $last_id;
 
 /*
 // Insertujem masovni unos ocjena i rezultata ispita
 if ($rezultata==1) {
 	// Konacne ocjene
-	$q300 = myquery("select predmet, ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$nasaokorisnika AND datum>=FROM_UNIXTIME($zadnjidatum) AND datum<=FROM_UNIXTIME($prvidatum)");
-	while ($r300 = mysql_fetch_row($q300)) {
+	$q300 = db_query("select predmet, ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where student=$nasaokorisnika AND datum>=FROM_UNIXTIME($zadnjidatum) AND datum<=FROM_UNIXTIME($prvidatum)");
+	while ($r300 = db_fetch_row($q300)) {
 		$predmet=$r300[0];
 		$ocjena=$r300[1];
 		$datum=$r300[2];
 		$nicedate = " (".date("d.m.Y. H:i:s", $datum).")";
 
 		// Prvo cemo varijantu sa predmetom pa sa ponudom kursa
-		$q310 = myquery("select id from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
-		if (mysql_num_rows($q310)>0) {
-			$eventshtml[mysql_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		$q310 = db_query("select id from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
+		if (db_num_rows($q310)>0) {
+			$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 		} 
 
-		$q320 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
-		while ($r320 = mysql_fetch_row($q320)) {
-			$q310 = myquery("select id from log where dogadjaj='masovno upisane ocjene na predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
-			if (mysql_num_rows($q310)>0) {
-				$eventshtml[mysql_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		$q320 = db_query("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
+		while ($r320 = db_fetch_row($q320)) {
+			$q310 = db_query("select id from log where dogadjaj='masovno upisane ocjene na predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
+			if (db_num_rows($q310)>0) {
+				$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 			}
 		}
 	}
 
 
 	// Isto ovo za ispite
-	$q330 = myquery("select i.predmet, io.ocjena, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, ispitocjene as io where io.student=$nasaokorisnika AND io.ispit=i.id AND i.datum>=FROM_UNIXTIME($zadnjidatum) AND i.datum<=FROM_UNIXTIME($prvidatum)");
-	while ($r330 = mysql_fetch_row($q330)) {
+	$q330 = db_query("select i.predmet, io.ocjena, UNIX_TIMESTAMP(i.vrijemeobjave) from ispit as i, ispitocjene as io where io.student=$nasaokorisnika AND io.ispit=i.id AND i.datum>=FROM_UNIXTIME($zadnjidatum) AND i.datum<=FROM_UNIXTIME($prvidatum)");
+	while ($r330 = db_fetch_row($q330)) {
 		$predmet=$r330[0];
 		$ocjena=$r330[1];
 		$datum=$r330[2]; // Datum je zaokruzen :(
 
 		// Prvo cemo varijantu sa predmetom pa sa ponudom kursa
-		$q340 = myquery("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
-		if (mysql_num_rows($q340)>0) {
-			$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q340,0,1)).")";
-			$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		$q340 = db_query("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
+		if (db_num_rows($q340)>0) {
+			$nicedate = " (".date("d.m.Y. H:i:s", db_result($q340,0,1)).")";
+			$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 		}
 
-		$q320 = myquery("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
-		while ($r320 = mysql_fetch_row($q320)) {
-			$q340 = myquery("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
-			if (mysql_num_rows($q340)>0) {
-				$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q340,0,1)).")";
-				$eventshtml[mysql_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+		$q320 = db_query("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
+		while ($r320 = db_fetch_row($q320)) {
+			$q340 = db_query("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
+			if (db_num_rows($q340)>0) {
+				$nicedate = " (".date("d.m.Y. H:i:s", db_result($q340,0,1)).")";
+				$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 			}
 		}
 	}
@@ -611,27 +642,27 @@ foreach ($eventshtml as $logid => $event) {
 
 		// TODO: optimizovati upite!
 
-		$q201 = myquery("select userid, UNIX_TIMESTAMP(vrijeme) from log2 where id=".intval($logid));
-		$userid = intval(mysql_result($q201,0,0));
-		$nicedate = " (".date("d.m.Y. H:i:s", mysql_result($q201,0,1)).")";
+		$q201 = db_query("select userid, UNIX_TIMESTAMP(vrijeme) from log2 where id=".intval($logid));
+		$userid = intval(db_result($q201,0,0));
+		$nicedate = " (".date("d.m.Y. H:i:s", db_result($q201,0,1)).")";
 
 		if ($userid==0) {
 			$imeprezime = "ANONIMNI PRISTUPI";
 			$usrimg="zad_bug";
 
 		} else {
-			$q202 = myquery("select ime, prezime from osoba where id=$userid");
-			$imeprezime = mysql_result($q202,0,0)." ".mysql_result($q202,0,1);
+			$q202 = db_query("select ime, prezime from osoba where id=$userid");
+			$imeprezime = db_result($q202,0,0)." ".db_result($q202,0,1);
 
-			$q203 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='nastavnik'");
-			$q204 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='studentska'");
-			$q205 = myquery("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
+			$q203 = db_query("select count(*) from privilegije where osoba=$userid and privilegija='nastavnik'");
+			$q204 = db_query("select count(*) from privilegije where osoba=$userid and privilegija='studentska'");
+			$q205 = db_query("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
 
-			if (mysql_result($q205,0,0)>0) {
+			if (db_result($q205,0,0)>0) {
 				$usrimg="admin"; 
-			} else if (mysql_result($q204,0,0)>0) {
+			} else if (db_result($q204,0,0)>0) {
 				$usrimg="teta"; 
-			} else if (mysql_result($q203,0,0)>0) {
+			} else if (db_result($q203,0,0)>0) {
 				$usrimg="tutor"; 
 			} else {
 				$usrimg="user";

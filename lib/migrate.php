@@ -43,9 +43,9 @@ $q = mysql_query("insert into $newdb.auth select id,login,password,admin,externa
 
 print "student...<br/>\n\n";
 $q = mysql_query("select id,ime,prezime,email,brindexa from $olddb.student") or die(mysql_error());
-while ($r=mysql_fetch_row($q)) {
+while ($r=db_fetch_row($q)) {
 	$q2 = mysql_query("select count(*) from $newdb.auth where id=$r[0]") or die(mysql_error());
-	if (mysql_result($q2,0,0)>0) {
+	if (db_result($q2,0,0)>0) {
 		$q3 = mysql_query("update $newdb.auth set ime='$r[1]', prezime='$r[2]', email='$r[3]', brindexa='$r[4]', student=1 where id=$r[0]") or die(mysql_error());
 	} else {
 		$q4 = mysql_query("insert into $newdb.auth set id=$r[0], ime='$r[1]', prezime='$r[2]', email='$r[3]', brindexa='$r[4]'") or die(mysql_error());
@@ -54,12 +54,12 @@ while ($r=mysql_fetch_row($q)) {
 
 print "nastavnik...<br/>\n\n";
 $q = mysql_query("select id,ime,prezime,email,siteadmin from $olddb.nastavnik") or die(mysql_error());
-while ($r=mysql_fetch_row($q)) {
+while ($r=db_fetch_row($q)) {
 	if ($r[4]==2) { $studentska=1; $siteadmin=1; }
 	else if ($r[4]==1) { $studentska=1; $siteadmin=0; }
 	else { $studentska=0; $siteadmin=0; }
 	$q2 = mysql_query("select count(*) from $newdb.auth where id=$r[0]") or die(mysql_error());
-	if (mysql_result($q2,0,0)>0) {
+	if (db_result($q2,0,0)>0) {
 		$q3 = mysql_query("update $newdb.auth set ime='$r[1]', prezime='$r[2]', email='$r[3]', nastavnik=1, studentska=$studentska, siteadmin=$siteadmin where id=$r[0]") or die(mysql_error());
 	} else {
 		$q4 = mysql_query("insert into $newdb.auth set id=$r[0], ime='$r[1]', prezime='$r[2]', email='$r[3]', nastavnik=1, studentska=$studentska, siteadmin=$siteadmin") or die(mysql_error());
@@ -111,7 +111,7 @@ print "predmet...<br/>\n\n";
 $q = mysql_query("insert into $newdb.predmet select id,naziv,institucija,'' from $olddb.predmet") or die(mysql_error());
 // Generisemo kratke nazive
 $q1 = mysql_query("select id,naziv from $newdb.predmet") or die(mysql_error());
-while ($r1 = mysql_fetch_row($q1)) {
+while ($r1 = db_fetch_row($q1)) {
 	$skraceni="";
 	foreach(explode(" ",$r1[1]) as $naziv) {
 		$naziv = strtoupper($naziv);
@@ -184,15 +184,15 @@ print "<br/><br/><b>Komponente bodovi</b><br/><br/>\n\n";
 
 print "ispiti...<br/>\n\n";
 $q1 = mysql_query("select id from $newdb.ponudakursa order by id") or die(mysql_error());
-while ($r1 = mysql_fetch_row($q1)) {
+while ($r1 = db_fetch_row($q1)) {
 	$predmet=$r1[0];
 	$q2 = mysql_query("select distinct io.student from $newdb.ispitocjene as io, $newdb.ispit as i where i.id=io.ispit and i.predmet=$predmet order by io.student") or die(mysql_error());
-	while ($r2 = mysql_fetch_row($q2)) {
+	while ($r2 = db_fetch_row($q2)) {
 		$student=$r2[0];
 		$max=array();
 		$bilo=array();
 		$q3 = mysql_query("select io.ocjena, i.komponenta from $newdb.ispitocjene as io, $newdb.ispit as i where i.id=io.ispit and io.student=$student and i.predmet=$predmet") or die(mysql_error());
-		while ($r3 = mysql_fetch_row($q3)) {
+		while ($r3 = db_fetch_row($q3)) {
 			$ocjena=$r3[0]; $tip=$r3[1];
 			if (!in_array($tip,$bilo) || $ocjena>$max[$tip])
 				$max[$tip]=$ocjena;
@@ -214,13 +214,13 @@ while ($r1 = mysql_fetch_row($q1)) {
 
 print "prisustvo...<br/>\n\n";
 $q1 = mysql_query("select id from $newdb.ponudakursa order by id") or die(mysql_error());
-while ($r1 = mysql_fetch_row($q1)) {
+while ($r1 = db_fetch_row($q1)) {
 	$predmet=$r1[0];
 	$q2 = mysql_query("select student from $newdb.student_predmet where predmet=$predmet") or die(mysql_error());
-	while ($r2 = mysql_fetch_row($q2)) {
+	while ($r2 = db_fetch_row($q2)) {
 		$student=$r2[0];
 		$q3 = mysql_query("select count(*) from $newdb.prisustvo as p, $newdb.cas as c where p.student=$student and p.prisutan=0 and p.cas=c.id and c.predmet=$predmet") or die(mysql_error());
-		if (mysql_result($q3,0,0)>3)
+		if (db_result($q3,0,0)>3)
 			$q7=mysql_query("insert into $newdb.komponentebodovi set student=$student, predmet=$predmet, komponenta=5, bodovi=0") or die(mysql_error());
 		else
 			$q7=mysql_query("insert into $newdb.komponentebodovi set student=$student, predmet=$predmet, komponenta=5, bodovi=10") or die(mysql_error());
@@ -229,13 +229,13 @@ while ($r1 = mysql_fetch_row($q1)) {
 
 print "zadace...<br/>\n\n";
 $q1 = mysql_query("select id from $newdb.ponudakursa order by id") or die(mysql_error());
-while ($r1 = mysql_fetch_row($q1)) {
+while ($r1 = db_fetch_row($q1)) {
 	$predmet=$r1[0];
 	$studenti=array();
 	$zadace=array();
 	$brzad=array();
 	$q100 = mysql_query("select zk.student,zk.zadaca,zk.redni_broj,zk.bodova,zk.status from $newdb.zadatak as zk, $newdb.zadaca as z where zk.status=5 and zk.zadaca=z.id and z.predmet=$predmet order by zk.id desc") or die(mysql_error());
-	while ($r100 = mysql_fetch_row($q100)) {
+	while ($r100 = db_fetch_row($q100)) {
 		if (!in_array($r100[0],$studenti)) array_push($studenti,$r100[0]);
 		if (!in_array($r100[1],$zadace)) array_push($zadace,$r100[1]);
 		if ($r100[2]>$brzad[$r100[1]]) $brzad[$r100[1]]=$r100[2];
@@ -267,7 +267,7 @@ $areplace = array("č","ć","ž","š","đ",
 
 print "auth...<br/>\n\n";
 $q = mysql_query("select id,ime,prezime,login from $newdb.auth") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$ime = str_replace($asearch,$areplace,$r[1]);
 	$prezime = str_replace($asearch,$areplace,$r[2]);
 	if ($ime != $r[1] || $prezime != $r[2]) 
@@ -277,26 +277,26 @@ while ($r = mysql_fetch_row($q)) {
 
 print "institucija...<br/>\n\n";
 $q = mysql_query("select id,naziv from $newdb.institucija") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$naziv = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.institucija set naziv='$naziv' where id=$r[0]") or die(mysql_error());
 }
 print "komentar...<br/>\n\n";
 $q = mysql_query("select id,komentar from $newdb.komentar") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$komentar = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.komentar set komentar='$komentar' where id=$r[0]") or die(mysql_error());
 }
 print "labgrupa...<br/>\n\n";
 $q = mysql_query("select id,naziv from $newdb.labgrupa") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$naziv = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.labgrupa set naziv='$naziv' where id=$r[0]") or die(mysql_error());
 }
 
 print "predmet...<br/>\n\n";
 $q = mysql_query("select id,naziv from $newdb.predmet") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$naziv = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.predmet set naziv='$naziv' where id=$r[0]") or die(mysql_error());
 }
@@ -304,19 +304,19 @@ while ($r = mysql_fetch_row($q)) {
 
 print "studij...<br/>\n\n";
 $q = mysql_query("select id,naziv from $newdb.studij") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$naziv = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.studij set naziv='$naziv' where id=$r[0]") or die(mysql_error());
 }
 print "zadaca...<br/>\n\n";
 $q = mysql_query("select id,naziv from $newdb.zadaca") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$naziv = str_replace($asearch,$areplace,$r[1]);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.zadaca set naziv='$naziv' where id=$r[0]") or die(mysql_error());
 }
 print "zadatak...<br/>\n\n";
 $q = mysql_query("select id,komentar from $newdb.zadatak") or die(mysql_error());
-while ($r = mysql_fetch_row($q)) {
+while ($r = db_fetch_row($q)) {
 	$komentar = str_replace($asearch,$areplace,$r[1]);
 	$komentar = str_replace('\'','\\\'',$komentar);
 	if ($naziv != $r[1]) $q2=mysql_query("update $newdb.zadatak set komentar='$komentar' where id=$r[0]") or die(mysql_error());

@@ -2,8 +2,6 @@
 
 // IZVJESTAJ/PROLAZNOSTTAB - Tabelarni pregled prolaznosti
 
-// v3.9.1.0 (2009/01/27) + Novi izvjestaj
-
 
 
 function izvjestaj_prolaznosttab() {
@@ -61,8 +59,8 @@ $varijable = array();
 $rbr_ag=0;
 $boja="DDDDDD";
 
-$q10 = myquery("select id,naziv from akademska_godina order by id");
-while ($r10 = mysql_fetch_row($q10)) {
+$q10 = db_query("select id,naziv from akademska_godina order by id");
+while ($r10 = db_fetch_row($q10)) {
 	$ag = $r10[0];
 	if ($ag==0) continue; // nebitna godina
 	$rbr_ag++;
@@ -73,8 +71,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 	for ($ciklus=1; $ciklus<=2; $ciklus++) {
 		if ($ciklus==1) $maxsemestar=6; else $maxsemestar=4;
 		for ($semestar=1; $semestar<$maxsemestar; $semestar+=2) {
-			$q20 = myquery("select count(*) from student_studij as ss, studij as s, tipstudija as ts where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus $sa_ponovcima");
-			$broj = mysql_result($q20,0,0);
+			$q20 = db_query("select count(*) from student_studij as ss, studij as s, tipstudija as ts where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus $sa_ponovcima");
+			$broj = db_result($q20,0,0);
 
 			// Redni broj generacije
 			$gen_br = $rbr_ag - (($ciklus-1)*3+ceil($semestar/2)) + 1;
@@ -103,8 +101,8 @@ while ($r10 = mysql_fetch_row($q10)) {
 			$varijable[$ime]=$broj; // ovo cemo koristiti kasnije
 
 			if ($ime == $_REQUEST["imena"]) {
-				$q20 = myquery("select o.prezime, o.ime from student_studij as ss, studij as s, tipstudija as ts, osoba as o where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus and ss.student=o.id $sa_ponovcima");
-				while ($r20 = mysql_fetch_row($q20)) 
+				$q20 = db_query("select o.prezime, o.ime from student_studij as ss, studij as s, tipstudija as ts, osoba as o where ss.semestar=$semestar and ss.akademska_godina=$r10[0] and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus and ss.student=o.id $sa_ponovcima");
+				while ($r20 = db_fetch_row($q20)) 
 					print "$r20[0] $r20[1]<br>\n";
 			}
 

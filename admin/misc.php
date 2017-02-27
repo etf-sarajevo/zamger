@@ -72,7 +72,7 @@ if ($_REQUEST['akcija'] == "massjmbg" && strlen($_POST['nazad'])<1) {
 			print "Student '$ime $prezime' ispravan JMBG $jmbg<br/>\n";
 		
 		if ($ispis==0)
-			$q10 = myquery("update osoba set jmbg='$jmbg' where id=$student");
+			$q10 = db_query("update osoba set jmbg='$jmbg' where id=$student");
 	}
 
 	// Potvrda i Nazad

@@ -2,18 +2,6 @@
 
 // IZVJESTAJ/GRUPE - spisak studenata po grupama
 
-// v3.9.1.0 (2008/02/26) + Preimenovan bivsi admin_izvjestaj(), spojeni izvjestaji grupe i grupedouble
-// v3.9.1.1 (2008/06/16) + Dodan prikaz studenata koji nisu ni u jednoj grupi (upit je malo spor)
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.3 (2008/09/17) + Sortiraj grupe po nazivu; dodana tablica za prisustvo; dodano polje tip; dodan page break (vidljiv prilikom stampanja) izmedju grupa
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/02/25) + Popravljena sirina kolone za tabelu "Studenti koji nisu niti u jednoj grupi" kod jednokolonskog ispisa bez prisustva
-// v4.0.9.1 (2009/03/25) + nastavnik_predmet preusmjeren sa tabele ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/29) + Prebacujem tabelu labgrupa i parametre izvjestaja sa ponudekursa na predmet i ag
-// v4.0.9.3 (2009/05/02) + Optimizujem prikaz studenata koji nisu ni u jednoj grupi; strverscmp postoji u php-u a zove se natsort
-// v4.0.9.4 (2009/05/05) + Ne prikazuj virtualne grupe (postoji zaseban upit za sve studente)
-// v4.0.9.5 (2009/10/01) + Kod izvjestaja "double", brojevi indexa unutar grupe nisu bili sortirani a imena jesu
-
 
 
 function izvjestaj_grupe() {
@@ -45,15 +33,15 @@ if ($tip=="") $tip="single";
 
 // Naziv predmeta - ovo ujedno provjerava da li predmet postoji
 
-$q10 = myquery("select naziv from predmet where id=$predmet");
-if (mysql_num_rows($q10)<1) {
+$q10 = db_query("select naziv from predmet where id=$predmet");
+if (db_num_rows($q10)<1) {
 	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 	zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 	biguglyerror("Traženi predmet ne postoji");
 	return;
 }
-$q15 = myquery("select naziv from akademska_godina where id=$ag");
-if (mysql_num_rows($q15)<1) {
+$q15 = db_query("select naziv from akademska_godina where id=$ag");
+if (db_num_rows($q15)<1) {
 	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 	biguglyerror("Tražena godina ne postoji");
@@ -61,16 +49,16 @@ if (mysql_num_rows($q15)<1) {
 }
 
 ?>
-<h1><?=mysql_result($q10,0,0)?></h1>
-<h3>Akademska <?=mysql_result($q15,0,0)?> godina - Spisak grupa</h3>
+<h1><?=db_result($q10,0,0)?></h1>
+<h3>Akademska <?=db_result($q15,0,0)?> godina - Spisak grupa</h3>
 <?
 
 
 
 // Prava pristupa
 
-$q20 = myquery("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
+$q20 = db_query("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+if (db_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
 	zamgerlog("permisije (predmet pp$predmet)",3);
 	zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
 	biguglyerror("Nemate permisije za pristup ovom izvještaju");
@@ -83,8 +71,8 @@ if (mysql_result($q20,0,0)<1 && !$user_siteadmin && !$user_studentska) {
 
 $imeprezime=array();
 $brindexa=array();
-$q30 = myquery("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-while ($r30 = mysql_fetch_row($q30)) {
+$q30 = db_query("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+while ($r30 = db_fetch_row($q30)) {
 	$imeprezime[$r30[0]] = "$r30[1] $r30[2]";
 	$brindexa[$r30[0]] = $r30[3];
 }
@@ -99,9 +87,9 @@ if ($tip=="double") {
 
 	$parni=0;
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
+	$q400 = db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
 	$grupe = array();
-	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
+	while ($r400 = db_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
 	natsort($grupe);
 
@@ -118,8 +106,8 @@ if ($tip=="double") {
 				<tr><td width="80%"><?
 
 		$idovi = array();
-		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
-		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+		$q405 = db_query("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = db_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
@@ -213,9 +201,9 @@ else if ($tip=="single") {
 	<?*/
 	print "<center>\n";
 
-	$q400 = myquery("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
+	$q400 = db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag $sql_dodaj");
 	$grupe = array();
-	while ($r400 = mysql_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
+	while ($r400 = db_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
 	natsort($grupe);
 
@@ -232,8 +220,8 @@ else if ($tip=="single") {
 		print "</tr>\n";
 
 		$idovi = array();
-		$q405 = myquery("select student from student_labgrupa where labgrupa=$id");
-		while ($r405 = mysql_fetch_row($q405)) $idovi[]=$r405[0];
+		$q405 = db_query("select student from student_labgrupa where labgrupa=$id");
+		while ($r405 = db_fetch_row($q405)) $idovi[]=$r405[0];
 
 		$n=1;
 		foreach ($imeprezime as $stud_id => $stud_imepr) {
@@ -244,14 +232,14 @@ else if ($tip=="single") {
 
 			$komentar="";
 			if ($komentari>0) {
-				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id order by id");
+				$q402 = db_query("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id order by id");
 				$i=0;
-				while ($r402 = mysql_fetch_row($q402)) {
+				while ($r402 = db_fetch_row($q402)) {
 					if ($i>0) $komentar .= "<br/>\n";
 					$i=1;
 					$komentar .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
 				}
-				if (mysql_num_rows($q402)<1) $komentar = "&nbsp;";
+				if (db_num_rows($q402)<1) $komentar = "&nbsp;";
 			}
 
 			?>
@@ -281,8 +269,8 @@ else if ($tip=="single") {
 	}
 
 	if ($grupa==0 && count($imeprezime)>0) {
-		$q410 = myquery("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-		$id_grupe_svi_studenti = mysql_result($q410,0,0);
+		$q410 = db_query("select id from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+		$id_grupe_svi_studenti = db_result($q410,0,0);
 
 		?>
 			<table width="<?=$sirina_tabele?>" border="2" cellspacing="0">
@@ -301,14 +289,14 @@ else if ($tip=="single") {
 
 			$komentar="";
 			if ($komentari>0) {
-				$q402 = myquery("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id_grupe_svi_studenti order by id");
+				$q402 = db_query("select UNIX_TIMESTAMP(datum),komentar from komentar where student=$stud_id and labgrupa=$id_grupe_svi_studenti order by id");
 				$i=0;
-				while ($r402 = mysql_fetch_row($q402)) {
+				while ($r402 = db_fetch_row($q402)) {
 					if ($i>0) $komentar .= "<br/>\n";
 					$i=1;
 					$komentar .= "(".date("d. m. Y.",$r402[0]).") ".$r402[1];
 				}
-				if (mysql_num_rows($q402)<1) $komentar = "&nbsp;";
+				if (db_num_rows($q402)<1) $komentar = "&nbsp;";
 			}
 
 			?>

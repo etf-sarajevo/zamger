@@ -1,31 +1,44 @@
 <?
 
 // PUBLIC/INTRO - uvodna stranica za javni dio sajta
-// Editujte funkciju public_intro() da biste prikazali nešto drugo na početnoj stranici zamgera
 
-// v3.9.1.0 (2008/02/09) + Novi modul: public/intro, prikazuje stablo predmeta i login formu
-// v3.9.1.1 (2008/03/08) + Popravljena redirekcija
-// v3.9.1.2 (2008/11/21) + Dodajem link na dokumentaciju
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.0.1 (2009/05/02) + Posto botovi stalno napadaju izvjestaj/predmet, dodajem opciju "skrati" koja puno brze kreira izvjestaj
+// Editujte funkciju public_intro() da biste prikazali nešto drugo na početnoj stranici zamgera
 
 
 
 function public_intro() {
+	global $conf_javni_dnevnik;
+	if ($conf_javni_dnevnik)
+		public_intro_dnevnik();
+	else
+		public_intro_bez_dnevnika();
+}
 
+function public_intro_dnevnik() {
 	?>
 		<table width="100%" border="0" cellspacing="4" cellpadding="0">
-			<tr>
-			<!--td><img src="images/fnord.gif" width="10" height="1"></td>
-			</td--><td valign="top" width="300" align="left">
+			<tr><td valign="top" width="300" align="left">
 			<br/><br/><b>Dnevnik:</b><br/>
 			<?
 
 				require("public/predmeti.php");
 				public_predmeti("izvjestaj/predmet&skrati=da");
 			?>
-			</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
-			</td--><td valign="top">
+			</td><td valign="top">
+			<p>&nbsp;</p>
+			<?
+				login_forma();
+			?>
+			</td></tr>
+		</table>
+	<?
+}
+
+function public_intro_bez_dnevnika() {
+	?>
+		<table width="100%" border="0" cellspacing="4" cellpadding="0">
+			<tr>
+			<td valign="top">
 			<p>&nbsp;</p>
 			<?
 				login_forma();
@@ -46,11 +59,12 @@ function login_forma() {
 		$uri = $_SERVER['REQUEST_URI'];
 	}
 
-	$anketa_aktivna=0;
+	$anketa_aktivna = false;
 	foreach ($registry as $r) {
+		if (count($r) == 0) continue;
 		if ($r[0]=="public/anketa" && $r[5]==0) {
-			$q01 = myquery("select id from anketa_anketa where aktivna = 1");
-			if (mysql_num_rows($q01)>0) $anketa_aktivna=1;
+			$br_aktivnih_anketa = db_get("select count(id) from anketa_anketa where aktivna = 1");
+			if ($br_aktivnih_anketa > 0) $anketa_aktivna = true;
 		}
 	}
 
@@ -78,13 +92,16 @@ function login_forma() {
 		</tr></table>
 	</td></tr>
 	<tr><td align="center">
-		<!-- Login forma -->
-		<form action="<?=$uri?>" method="POST">
-		<input type="hidden" name="loginforma" value="1">
-		<table border="0"><tr><td>Korisničko ime (UID):</td><td><input type="text" name="login" size="15"></td></tr>
-		<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
-		<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
-		</form>
+	<?
+
+	?>
+	<!-- Login forma -->
+	<form action="<?=$uri?>" method="POST">
+	<input type="hidden" name="loginforma" value="1">
+	<table border="0"><tr><td>Korisničko ime:</td><td><input type="text" name="login" size="15" autofocus></td></tr>
+	<tr><td>Šifra:</td><td><input type="password" name="pass" size="15"></td></tr>
+	<tr><td colspan="2" align="center"><input type="submit" value="Kreni"></td></tr></table>
+	</form>
 	</td></tr></table></center>
 	<?
 }

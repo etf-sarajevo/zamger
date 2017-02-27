@@ -1,13 +1,14 @@
 <?
 
-//novi modul nastavnik/prijava_ispita
+// NASTAVNIK/PRIJAVA_ISPITA - upravljanje terminima za prijavljivanje studenata na ispit
+
 
 
 function nastavnik_prijava_ispita() {
 
 require("lib/manip.php");
 
-global $userid,$user_siteadmin;
+global $userid,$user_siteadmin,$user_studentska;
 	
 //parametri	
 $predmet = intval($_REQUEST['predmet']);
@@ -25,9 +26,9 @@ function nuliraj($v) {
 
 // Da li korisnik ima pravo uci u modul?
 
-if (!$user_siteadmin) {
-	$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
+if (!$user_siteadmin && !$user_studentska) {
+	$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q10)<1 || db_result($q10,0,0)=="asistent") {
 		zamgerlog("nastavnik/prijava_ispita privilegije (predmet pp$predmet, ag$ag)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -38,21 +39,22 @@ if (!$user_siteadmin) {
 
 // Provjera ispita
 
-$q20 = myquery("(select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id) union (select UNIX_TIMESTAMP(i.datum), d.id, d.naziv from ispit as i, dogadjaj as d where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=d.id);");
-if (mysql_num_rows($q20)<1) {
+$q20 = db_query("SELECT UNIX_TIMESTAMP(i.datum), k.gui_naziv FROM ispit as i, komponenta as k WHERE i.id=$ispit and i.komponenta=k.id");
+if (db_num_rows($q20)<1) {
 	niceerror("Nepostojeći ispit");
 	zamgerlog("nepostojeci ispit $ispit ili nije sa predmeta (pp$predmet, ag$ag)", 3);
 	return;
 }
 
 
+
 // Podaci za ispis
 
-$finidatum = date("d. m. Y", mysql_result($q20,0,0));
-$tipispita = mysql_result($q20,0,2);
+$finidatum = date("d. m. Y", db_result($q20,0,0));
+$tip_ispita = db_result($q20,0,1);
 
-$q30 = myquery("select naziv from predmet where id=$predmet");
-$predmet_naziv = mysql_result($q30,0,0);
+$q30 = db_query("select naziv from predmet where id=$predmet");
+$predmet_naziv = db_result($q30,0,0);
 
 
 
@@ -61,8 +63,9 @@ $predmet_naziv = mysql_result($q30,0,0);
 <br/>
 <h3><?=$predmet_naziv?> - Termini ispita</h3>
 
-<h4><?=$tipispita?>, <?=$finidatum?></h4>
-<a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>">Izvještaj</a> 
+<h4><?=$tip_ispita?>, <?=$finidatum?></h4>
+
+<a href="?sta=izvjestaj/termini_ispita&ispit=<?=$ispit;?>">Izvještaj o terminima</a> 
 
 <?
 
@@ -85,8 +88,8 @@ $dan=0; // Ovo će biti promijenjeno u slučaju izmjene
 
 // Provjera da li ispitni termin pripada ispitu
 if ($termin) {
-	$q40 = myquery("SELECT count(*) FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.id=$ispit ");
-	if (mysql_result($q40,0,0)<1) {
+	$q40 = db_query("SELECT count(*) FROM ispit_termin as it, ispit as i WHERE it.id=$termin AND it.ispit=i.id AND i.id=$ispit ");
+	if (db_result($q40,0,0)<1) {
 		zamgerlog("termin ne pripada ispitu",3);
 		zamgerlog2("id termina i ispita se ne poklapaju", $termin, $ispit);
 		biguglyerror("Ispitni termin ne pripada datom ispitu"); 
@@ -101,11 +104,11 @@ if ($termin) {
 // Akcija koja briše ispitni termin
 
 if ($_REQUEST['akcija']=="obrisi") {
-	$q70 = myquery("select count(*) from student_ispit_termin where ispit_termin=$termin");
-	$broj_studenata = mysql_result($q70,0,0);
+	$q70 = db_query("select count(*) from student_ispit_termin where ispit_termin=$termin");
+	$broj_studenata = db_result($q70,0,0);
 
-	$q80 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
-	$datumvrijeme = date("d. m. Y. h:i:s", mysql_result($q80,0,0));
+	$q80 = db_query("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
+	$datumvrijeme = date("d. m. Y. h:i:s", db_result($q80,0,0));
 
 	?>
 	<h4>Brisanje ispitnog termina <?=$datumvrijeme?></h4>
@@ -125,8 +128,8 @@ if ($_REQUEST['akcija']=="obrisi") {
 // Potvrda brisanja
 
 if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " && check_csrf_token()) {
-	$q90 = myquery("DELETE FROM student_ispit_termin WHERE ispit_termin=$termin");
-	$q95 = myquery("DELETE FROM ispit_termin WHERE id=$termin");
+	$q90 = db_query("DELETE FROM student_ispit_termin WHERE ispit_termin=$termin");
+	$q95 = db_query("DELETE FROM ispit_termin WHERE id=$termin");
 	zamgerlog("izbrisan ispitni termin $termin (pp$predmet, ag$ag)", 2);
 	zamgerlog2("izbrisan ispitni termin", $termin, $predmet, $ag);
 	nicemessage("Termin uspješno obrisan ");
@@ -140,21 +143,21 @@ if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " 
 if ($_REQUEST["akcija"]=="studenti") {
 	if ($_REQUEST['subakcija']=="dodaj_studenta" && check_csrf_token()) {
 		$student = intval($_REQUEST['student']);
-		$q215 = myquery("select count(*) from student_ispit_termin where student=$student and ispit_termin=$termin");
-		if (mysql_result($q215,0,0)>0)
+		$q215 = db_query("select count(*) from student_ispit_termin where student=$student and ispit_termin=$termin");
+		if (db_result($q215,0,0)>0)
 			nicemessage("Student je već prijavljen na ovaj termin!");
 		else
-			$q220 = myquery("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
+			$q220 = db_query("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
 	}
 	if ($_REQUEST['subakcija']=="izbaci_studenta" && check_csrf_token()) {
 		$student = intval($_REQUEST['student']);
-		$q225 = myquery("delete from student_ispit_termin where student=$student and ispit_termin=$termin");
+		$q225 = db_query("delete from student_ispit_termin where student=$student and ispit_termin=$termin");
 	}
 
-	$q200 = myquery("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
-	$datumvrijeme = date("d. m. Y. H:i:s", mysql_result($q200,0,0));
+	$q200 = db_query("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");
+	$datumvrijeme = date("d. m. Y. H:i:s", db_result($q200,0,0));
 
-	$q200=myquery("SELECT o.ime, o.prezime, o.brindexa, o.id FROM osoba as o, student_ispit_termin as si WHERE o.id=si.student AND si.ispit_termin=$termin order by o.prezime, o.ime");
+	$q200=db_query("SELECT o.ime, o.prezime, o.brindexa, o.id FROM osoba as o, student_ispit_termin as si WHERE o.id=si.student AND si.ispit_termin=$termin order by o.prezime, o.ime");
 
 
 	?>
@@ -173,7 +176,9 @@ if ($_REQUEST["akcija"]=="studenti") {
 	<?
 
 	$brojac=1;
-	while ($r200=mysql_fetch_row($q200)) {
+	$bili = array();
+	while ($r200=db_fetch_row($q200)) {
+		array_push($bili, $r200[3]);
 		?>
 		<tr>
 			<td><?=$brojac?></td>
@@ -205,8 +210,9 @@ if ($_REQUEST["akcija"]=="studenti") {
 	Dodajte studenta na termin:<br>
 	<select name="student">
 	<?
-	$q210 = myquery("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
-	while ($r210 = mysql_fetch_row($q210)) {
+	$q210 = db_query("select o.id, o.prezime, o.ime from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
+	while ($r210 = db_fetch_row($q210)) {
+		if (in_array($r210[0], $bili)) continue;
 		print "<option value=\"$r210[0]\">$r210[1] $r210[2]</option>\n";
 	}
 	?>
@@ -228,15 +234,15 @@ if ($_REQUEST["akcija"]=="izmijeni") {
 		return 0;
 	}
 
-	$q100 = myquery("SELECT UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline) , maxstudenata FROM ispit_termin WHERE id=$termin");
+	$q100 = db_query("SELECT UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline) , maxstudenata FROM ispit_termin WHERE id=$termin");
 
-	$t1 = mysql_result($q100,0,0);
+	$t1 = db_result($q100,0,0);
 	$dan = date('d',$t1); $mjesec = date('m',$t1); $godina = date('Y',$t1); $sat = date('H',$t1); $minuta = date('i',$t1); $sekunda = date('s',$t1);
 
-	$t2 = mysql_result($q100,0,1);
+	$t2 = db_result($q100,0,1);
 	$dan1 = date('d',$t2); $mjesec1 = date('m',$t2); $godina1 = date('Y',$t2); $sat1 = date('H',$t2); $minuta1 = date('i',$t2); $sekunda1 = date('s',$t2);
 
-	$limit = mysql_result($q100,0,2);
+	$limit = db_result($q100,0,2);
 }
 
 
@@ -284,7 +290,7 @@ if ($_POST['akcija'] == 'izmijeni_potvrda' && check_csrf_token()) {
 	}
 	else {
 		nicemessage("Uspješno izmijenjen termin.");
-		$q110=myquery("UPDATE ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , maxstudenata=$limit , deadline=FROM_UNIXTIME('$t2'), ispit=$ispit WHERE id=$termin");
+		$q110=db_query("UPDATE ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1') , maxstudenata=$limit , deadline=FROM_UNIXTIME('$t2'), ispit=$ispit WHERE id=$termin");
 		zamgerlog("izmijenjen ispitni termin", 2);
 		zamgerlog2("izmijenjen ispitni termin", $termin);
 	}
@@ -339,8 +345,8 @@ if ($_POST['akcija'] == 'dodaj_potvrda' && check_csrf_token()) {
 	}
 	else {
 		nicemessage("Uspješno kreiran novi termin.");
-		$q=myquery("INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1'), maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')");
-		zamgerlog2("kreiran novi ispitni termin", mysql_insert_id(), $predmet, $ag);
+		$q=db_query("INSERT INTO ispit_termin SET datumvrijeme=FROM_UNIXTIME('$t1'), maxstudenata=$limit , ispit=$ispit , deadline=FROM_UNIXTIME('$t2')");
+		zamgerlog2("kreiran novi ispitni termin", db_insert_id(), $predmet, $ag);
 		zamgerlog("kreiran novi ispitni termin pp$predmet, ag$ag", 2);
 	}
 
@@ -356,7 +362,7 @@ if ($_POST['akcija'] == 'dodaj_potvrda' && check_csrf_token()) {
 
 // Tabela objavljenih termina za predmet
 
-$q10=myquery("SELECT id, UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline), maxstudenata FROM ispit_termin WHERE ispit=$ispit order by datumvrijeme");
+$q10=db_query("SELECT id, UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline), maxstudenata FROM ispit_termin WHERE ispit=$ispit order by datumvrijeme");
 
 ?>
 <b>Objavljeni termini:</b>
@@ -378,14 +384,14 @@ $q10=myquery("SELECT id, UNIX_TIMESTAMP(datumvrijeme), UNIX_TIMESTAMP(deadline),
 $brojac=1;
 $uk_prijavljeno=0;
 
-while ($r10=mysql_fetch_row($q10)) {
+while ($r10=db_fetch_row($q10)) {
 	$id_termina = $r10[0];
 	$vrijeme_termina = date("d.m.Y. H:i",date($r10[1]));
 	$rok_prijave = date("d.m.Y. H:i",date($r10[2]));
 	$max_studenata = $r10[3];
 
-	$q20 = myquery("select count(*) from student_ispit_termin where ispit_termin=$id_termina");
-	$prijavljeno = mysql_result($q20,0,0);
+	$q20 = db_query("select count(*) from student_ispit_termin where ispit_termin=$id_termina");
+	$prijavljeno = db_result($q20,0,0);
 	$uk_prijavljeno += $prijavljeno;
 
 	?>

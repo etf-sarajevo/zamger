@@ -2,13 +2,6 @@
 
 // ADMIN/KONZISTENTNOST + vrsi provjeru konzistentnosti podataka u bazi i nudi mogucnost popravke
 
-// v3.9.1.0 (2008/04/28) + Novi modul admin/konzistentnost
-// v3.9.1.1 (2008/08/27) + Kod brisanja stvari dodano LIMIT 1 kako bi se mogli brisati dupli unosi
-// v3.9.1.2 (2008/08/28) + Tabela osoba umjesto auth
-// v3.9.1.3 (2008/12/02) + studentska/osobe umjesto studentska/studenti; dozvoljeno prenijeti izborni predmet (ali treba provjeriti ECTS...)
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/03/31) + Tabela konacna_ocjena preusmjerena sa ponudakursa na tabelu predmet
-
 
 
 function admin_konzistentnost() {
@@ -24,11 +17,11 @@ if ($_GET['akcija']=="upisi_studij") {
 	$semestar=intval($_GET['semestar']);
 
 	// Ubacujemo studij
-	$q520 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$ag");
+	$q520 = db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$ag");
 	if ($semestar%2==0) {
-		$q525 = myquery("select count(*) from student_studij where student=$student and studij=$studij and semestar=".($semestar-1)." and akademska_godina=$ag");
-		if (mysql_result($q525,0,0)<1)
-			$q530 = myquery("insert into student_studij set student=$student, studij=$studij, semestar=".($semestar-1).", akademska_godina=$ag");
+		$q525 = db_query("select count(*) from student_studij where student=$student and studij=$studij and semestar=".($semestar-1)." and akademska_godina=$ag");
+		if (db_result($q525,0,0)<1)
+			$q530 = db_query("insert into student_studij set student=$student, studij=$studij, semestar=".($semestar-1).", akademska_godina=$ag");
 	}
 	zamgerlog("admin/pk: student u$student upisan na studij $studij, semestar $semestar, ag ag$ag",4);
 	print "student $student upisan na studij $studij, semestar $semestar, ag $ag<br/>";
@@ -41,11 +34,11 @@ if ($_GET['akcija']=="ispisi_studij") {
 	$semestar=intval($_GET['semestar']);
 
 	// Ubacujemo studij
-	$q540 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=$semestar and akademska_godina=$ag limit 1");
+	$q540 = db_query("delete from student_studij where student=$student and studij=$studij and semestar=$semestar and akademska_godina=$ag limit 1");
 	if ($semestar%2==1) {
-		$q545 = myquery("select count(*) from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag");
-		if (mysql_result($q545,0,0)>0)
-			$q550 = myquery("delete from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag limit 1");
+		$q545 = db_query("select count(*) from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag");
+		if (db_result($q545,0,0)>0)
+			$q550 = db_query("delete from student_studij where student=$student and studij=$studij and semestar=".($semestar+1)." and akademska_godina=$ag limit 1");
 	}
 	zamgerlog("admin/pk: student u$student ispisan sa studija $studij, semestar $semestar, ag ag$ag",4);
 	print "student $student ispisan sa studija $studij, semestar $semestar, ag $ag<br/>";
@@ -58,11 +51,11 @@ if ($_GET['akcija']=="promijeni_studij") {
 	$semestar=intval($_GET['semestar']);
 
 	// Ubacujemo studij
-	$q560 = myquery("update student_studij set studij=$studij where student=$student and semestar=$semestar and akademska_godina=$ag");
+	$q560 = db_query("update student_studij set studij=$studij where student=$student and semestar=$semestar and akademska_godina=$ag");
 	if ($semestar%2==1) $s2 = $semestar+1; else $s2 = $semestar-1;
-	$q565 = myquery("select count(*) from student_studij where student=$student and semestar=$s2 and akademska_godina=$ag");
-	if (mysql_result($q565,0,0)>0)
-		$q570 = myquery("update student_studij set studij=$studij where student=$student and semestar=$s2 and akademska_godina=$ag");
+	$q565 = db_query("select count(*) from student_studij where student=$student and semestar=$s2 and akademska_godina=$ag");
+	if (db_result($q565,0,0)>0)
+		$q570 = db_query("update student_studij set studij=$studij where student=$student and semestar=$s2 and akademska_godina=$ag");
 	zamgerlog("admin/pk: student u$student prebacen na studij $studij, semestar $semestar, ag ag$ag",4);
 	print "student $student prebacen na studij $studij, semestar $semestar, ag $ag<br/>";
 }
@@ -73,12 +66,12 @@ if ($_GET['akcija']=="brisiocjenu") {
 	$ag=intval($_GET['ag']);
 
 	// Odredjujemo ponudukursa
-	$q500 = myquery("select count(*) from konacna_ocjena where predmet=$predmet and student=$student and akademska_godina=$ag");
-	if (mysql_result($q500,0,0)<1) {
+	$q500 = db_query("select count(*) from konacna_ocjena where predmet=$predmet and student=$student and akademska_godina=$ag");
+	if (db_result($q500,0,0)<1) {
 		niceerror("Nije pronađena ocjena koju treba brisati! student: $student predmet: $predmet akademska_godina: $ag");
 		zamgerlog("nije pronađena ocjena koju treba brisati! student: $student predmet: $predmet akademska_godina: $ag",3);
 	} else {
-		$q510 = myquery("delete from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag limit 1");
+		$q510 = db_query("delete from konacna_ocjena where student=$student and predmet=$predmet and akademska_godina=$ag limit 1");
 		zamgerlog("admin/pk: obrisana ocjena - student: u$student predmet: p$predmet akademska_godina: ag$ag",4);
 		print "obrisana ocjena - student: $student predmet: $predmet akademska_godina: $ag<br/>";
 	}
@@ -91,10 +84,10 @@ if ($_GET['akcija']=="upisi_predmet") {
 	$studij=intval($_GET['studij']);
 
 	// Odredjujemo ponudukursa
-	$q580 = myquery("select pk.id from ponudakursa as pk where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=$studij");
-	if (mysql_num_rows($q580)>0) {
-		$pk = mysql_result($q580,0,0);
-		$q590 = myquery("insert into student_predmet set student=$student, predmet=$pk");
+	$q580 = db_query("select pk.id from ponudakursa as pk where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.studij=$studij");
+	if (db_num_rows($q580)>0) {
+		$pk = db_result($q580,0,0);
+		$q590 = db_query("insert into student_predmet set student=$student, predmet=$pk");
 		zamgerlog("admin/pk: student u$student upisan na predmet p$pk",4);
 		print "student $student upisan na predmet $pk<br/>";
 	} else {
@@ -109,10 +102,10 @@ if ($_GET['akcija']=="ispisi_predmet") {
 	$ag=intval($_GET['ag']);
 
 	// Odredjujemo ponudukursa
-	$q600 = myquery("select pk.id from ponudakursa as pk, student_predmet as sp where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.id=sp.predmet and sp.student=$student");
-	if (mysql_num_rows($q600)>0) {
-		$pk = mysql_result($q600,0,0);
-		$q590 = myquery("delete from student_predmet where student=$student and predmet=$pk limit 1");
+	$q600 = db_query("select pk.id from ponudakursa as pk, student_predmet as sp where pk.predmet=$predmet and pk.akademska_godina=$ag and pk.id=sp.predmet and sp.student=$student");
+	if (db_num_rows($q600)>0) {
+		$pk = db_result($q600,0,0);
+		$q590 = db_query("delete from student_predmet where student=$student and predmet=$pk limit 1");
 		zamgerlog("admin/pk: student u$student ispisan sa predmeta p$pk",4);
 		print "student $student ispisan sa predmeta $pk<br/>";
 	} else {
@@ -132,28 +125,28 @@ if ($_GET['vrsta']=="studenti") {
 
 	// Cache imena predmeta
 	$ip=array();
-	$q5 = myquery("select id,naziv from predmet");
-	while ($r5 = mysql_fetch_row($q5)) {
+	$q5 = db_query("select id,naziv from predmet");
+	while ($r5 = db_fetch_row($q5)) {
 		$ip[$r5[0]]=$r5[1];
 	}
 	// Cache imena akademskih godina
 	$iag = array();
 	$maxag=0;
-	$q6 = myquery("select id,naziv from akademska_godina");
-	while ($r6 = mysql_fetch_row($q6)) {
+	$q6 = db_query("select id,naziv from akademska_godina");
+	while ($r6 = db_fetch_row($q6)) {
 		$iag[$r6[0]]=$r6[1];
 		if ($r6[0]>$maxag) $maxag=$r6[0];
 	}
 	// Cache imena studija
 	$istud = array();
-	$q7 = myquery("select id,naziv from studij");
-	while ($r7 = mysql_fetch_row($q7)) {
+	$q7 = db_query("select id,naziv from studij");
+	while ($r7 = db_fetch_row($q7)) {
 		$istud[$r7[0]]=$r7[1];
 	}
 
 
-	$q10 = myquery("select o.id,o.ime,o.prezime,o.brindexa from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='student' order by o.prezime,o.ime");
-	while ($r10 = mysql_fetch_row($q10)) {
+	$q10 = db_query("select o.id,o.ime,o.prezime,o.brindexa from osoba as o, privilegije as p where p.osoba=o.id and p.privilegija='student' order by o.prezime,o.ime");
+	while ($r10 = db_fetch_row($q10)) {
 		$stud_id = $r10[0];
 		$ime = $r10[1];
 		$prezime = $r10[2];
@@ -162,8 +155,8 @@ if ($_GET['vrsta']=="studenti") {
 		// Spisak studija
 		$studiji=array();
 		$ssemestar=array();
-		$q20 = myquery("select studij,semestar,akademska_godina from student_studij where student=$stud_id order by akademska_godina,semestar");
-		while ($r20 = mysql_fetch_row($q20)) {
+		$q20 = db_query("select studij,semestar,akademska_godina from student_studij where student=$stud_id order by akademska_godina,semestar");
+		while ($r20 = db_fetch_row($q20)) {
 			$studiji[$r20[2]]=$r20[0];
 			if ($r20[1]%2==0 && $ssemestar[$r20[2]]<1) {
 				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?> (<?=$brindexa?>)</a> upisan na semestar <?=$r20[1]?> a nije bio upisan na <?=($r20[1]-1)?> u <?=$iag[$r20[2]]?><br>
@@ -179,8 +172,8 @@ if ($_GET['vrsta']=="studenti") {
 		$pstudij = array();
 		$psemestar = array();
 		$pobavezan = array();
-		$q30 = myquery("select pk.predmet, pk.studij, pk.semestar, pk.akademska_godina, pk.obavezan from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id order by pk.akademska_godina");
-		while ($r30 = mysql_fetch_row($q30)) {
+		$q30 = db_query("select pk.predmet, pk.studij, pk.semestar, pk.akademska_godina, pk.obavezan from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id order by pk.akademska_godina");
+		while ($r30 = db_fetch_row($q30)) {
 			$predmeti[$r30[0]]=$r30[3];
 			$pstudij[$r30[0]]=$r30[1];
 			$psemestar[$r30[0]]=$r30[2];
@@ -190,8 +183,8 @@ if ($_GET['vrsta']=="studenti") {
 		// Kada je ocijenjen
 		$ocjene = array();
 		$oocjene = array();
-		$q40 = myquery("select pk.predmet, pk.akademska_godina, ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina order by pk.akademska_godina");
-		while ($r40 = mysql_fetch_row($q40)) {
+		$q40 = db_query("select pk.predmet, pk.akademska_godina, ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina order by pk.akademska_godina");
+		while ($r40 = db_fetch_row($q40)) {
 			if ($ocjene[$r40[0]]>0) {
 				?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?> (<?=$brindexa?>)</a> dvaput ocijenjen iz predmeta <?=$ip[$r40[0]]?>: jednom <?=$iag[$ocjene[$r40[0]]]?>, a drugi put <?=$iag[$r40[1]]?><br>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=brisiocjenu&student=<?=$stud_id?>&predmet=<?=$r40[0]?>&ag=<?=$ocjene[$r40[0]]?>">Obriši ocjenu <?=$oocjene[$r40[0]]?> iz <?=$iag[$ocjene[$r40[0]]]?></a><br/>
@@ -283,15 +276,15 @@ if ($_GET['vrsta']=="studenti") {
 		foreach ($studiji as $ag=>$studij) {
 			$s1 = $ssemestar[$ag];
 			if ($s1%2==0) $s2=$s1-1; else $s2=$s1+1;
-			$q50 = myquery("select id,predmet,semestar from ponudakursa where studij=$studij and akademska_godina=$ag and obavezan=1 and (semestar=$s1 or semestar=$s2)");
-			while ($r50 = mysql_fetch_row($q50)) {
+			$q50 = db_query("select id,predmet,semestar from ponudakursa where studij=$studij and akademska_godina=$ag and obavezan=1 and (semestar=$s1 or semestar=$s2)");
+			while ($r50 = db_fetch_row($q50)) {
 				$pk=$r50[0];
 				$predmet=$r50[1];
 				$semestar=$r50[2];
 				if ($ssemestar[$ag]<$semestar) continue;
 				if ($ocjene[$predmet]>0 && $ocjene[$predmet]<$ag) continue;
-				$q60 = myquery("select count(*) from student_predmet where predmet=$pk and student=$stud_id");
-				if (mysql_result($q60,0,0)<1) {
+				$q60 = db_query("select count(*) from student_predmet where predmet=$pk and student=$stud_id");
+				if (db_result($q60,0,0)<1) {
 					?><li>Student <a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$stud_id?>"><?=$prezime?> <?=$ime?> (<?=$brindexa?>)</a> <?=$iag[$ag]?> nije slušao predmet <?=$ip[$predmet]?> a bio upisan na <?=$istud[$studij]?><br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=upisi_predmet&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>&studij=<?=$studij?>">Upiši studenta na predmet <?=$ip[$predmet]?> u <?=$iag[$ag]?></a><br/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - <a href="?sta=admin/konzistentnost&vrsta=studenti&akcija=ispisi_studij&student=<?=$stud_id?>&studij=<?=$studij?>&ag=<?=$ag?>&semestar=<?=$semestar?>">Ispiši studenta sa studija '<?=$istud[$studij]?>', semestar <?=$semestar?>, godina <?=$iag[$ag]?></a>

@@ -2,28 +2,6 @@
 
 // LIB/ZAMGER - funkcije koje se koriste u ZAMGER kodu
 
-// v3.9.1.0 (2008/02/12) + Pocetak
-// v3.9.1.1 (2008/03/07) + Dodana sekcija "arhiva" u studentski_meni
-// v3.9.1.2 (2008/03/08) + userbox() prebacen na auth tabelu, nove slicice ;)
-// v3.9.1.3 (2008/03/21) + gen_ldap_uid()
-// v3.9.1.4 (2008/04/14) + Imena mjeseci malim
-// v3.9.1.5 (2008/05/06) + zamgerlog(): popravljen logging za dogadjaje kada korisnik nije logiran
-// v3.9.1.6 (2008/05/09) + studentski_meni(): arhivirani predmeti sortirani po godinama i semestrima, popravljen link za arhivu (cuva trenutno otvoreni modul)
-// v3.9.1.7 (2008/08/27) + novi meni: horizontalni_meni(), koristimo tabelu osoba u gen_ldap_uid() i user_box()
-// v3.9.1.8 (2008/09/03) + Dodano slovo 'a' u genitiv()
-// v3.9.1.9 (2008/09/13) + Polje aktuelna u tabeli akademska_godina (studentski_meni()); sprjeceno otvaranje coolboxa ako slanje nije uspjelo
-// v3.9.1.10 (2009/02/10) + Funkcija myquery prebacena ovdje radi logginga
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/04/02) + Tabela studentski_moduli preusmjerena sa ponudakursa na tabelu predmet
-// v4.0.9.2 (2009/04/29) + studentski_meni(): sortiranje po semestrima je dovodilo da se vise puta ponavlja zaglavlje za svaki preneseni predmet (sa drugog semestra); dodajem akademsku godinu u linkove za malimeni
-// v4.0.9.3 (2009/05/01) + studentski_meni(): Parametri modula student/predmet su sada predmet i ag; restruktuiran kod; nova struktura baze za studentske module
-// v4.0.9.4 (2009/07/23) + Dodajem linkove na dokumente - merge
-// v4.0.9.5 (2009/08/15) + Implementiram podrsku za parametar "nevidljiv" u registry-ju
-// v4.0.9.6 (2009/09/03) + Sprijeceno slanje podataka iz coolboxa ako je prethodno slanje u toku
-// v4.0.9.7 (2009/09/13) + Linkovi na koliziju i ugovor o ucenju; detalji dizajna studentskog menija (sugestije by Teo)
-// v4.0.9.8 (2009/10/02) + Ispravke u coolboxu pruzaju bolju podrsku za razne browsere
-// v4.0.9.9 (2009/10/07) + Ne insistiraj na kosoj crti kao znaku za brisanje u coolboxu
-
 
 
 // Funkcija koja pretvara naša slova iz velikih u mala
@@ -77,7 +55,8 @@ function vokativ($rijec,$spol) {
 
 // Vraća genitiv riječi (primitivno)
 
-function genitiv($rijec,$spol) {
+function genitiv($rijec,$spol='?') {
+	if ($spol == '?') $spol = spol($rijec); // Ovo se ustvari ne koristi? FIXME
 	$slovo = substr($rijec,strlen($rijec)-1);
 	if ($slovo == "a")
 		return substr($rijec,0,strlen($rijec)-1)."e";
@@ -91,7 +70,7 @@ function genitiv($rijec,$spol) {
 function user_box() {
 	global $user_nastavnik,$user_studentska,$user_siteadmin,$userid,$su;
 
-	$q1 = myquery("select ime,prezime from osoba where id=$userid");
+	$user = db_query_assoc("select ime,prezime from osoba where id=$userid");
 
 	if ($user_siteadmin) {
 		$slika="admin.png";
@@ -103,9 +82,6 @@ function user_box() {
 		$slika="user.png";
 	}
 	
-	$ime = mysql_result($q1,0,0);
-	$prezime = mysql_result($q1,0,1);
-
 	$unsu = "";
 	if ($su>0) {
 		$unsu = "<a href=\"?unsu=1\">UnSU</a> * ";
@@ -116,7 +92,7 @@ function user_box() {
 <div id="kocka" style="position:absolute;right:10px;top:55px">
 	<table style="border:1px;border-style:solid"><tr><td>
 	<img src="images/fnord.gif" width="200" height="1" alt="fnord"><br>
-	<img src="images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$ime?> <?=$prezime?><br>
+	<img src="images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$user['ime']?> <?=$user['prezime']?><br>
 	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
 	</td></tr></table>
 </div>
@@ -170,6 +146,72 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 
 <?
 }
+
+
+function ajax_box() {
+	?>
+	<script language="JavaScript">
+	function ajax_start(url, method, params, cb_success, cb_fail) {
+		cb_fail = cb_fail || ajax_log_error;
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (xhttp.readyState == 4 && xhttp.status == 200) {
+				try {
+					var object = JSON.parse(xhttp.responseText);
+					if (object['success'] === 'true')
+						cb_success(object['data']);
+					else
+						cb_fail(xhttp.responseText, xhttp.status, url);
+				} catch(e) {
+					cb_fail(xhttp.responseText, xhttp.status, url);
+				}
+			} else if (xhttp.readyState == 4) {
+				cb_fail(xhttp.responseText, xhttp.status, url);
+			}
+		};
+		
+		// Zamger URL
+		if (url.indexOf("://") == -1) {
+			params['sta'] = url;
+			url = "index.php";
+		}
+		
+		var encode_params = "";
+		for (var key in params) {
+			if (params.hasOwnProperty(key)) {
+				if (encode_params != "") encode_params += "&";
+				encode_params += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+			}
+		}
+		
+		if (method == "POST") {
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send(encode_params);
+		} else {
+			if (encode_params != "") url = url + "?" + encode_params;
+			xhttp.open(method, url, true);
+			xhttp.send();
+		}
+	}
+	// Default funkcija za neuspjeh, logira greške
+	function ajax_log_error(responseText, status, url) {
+		if (status != 200) {
+			console.log("Web servis "+url+" vratio status "+status);
+			return;
+		}
+		try {
+			var object = JSON.parse(responseText);
+			console.log("Neuspio upit na web servis "+url+": ["+object['code']+"] "+object['message']);
+		} catch(e) {
+			console.log("Web servis "+url+" nije vratio validan JSON: "+xhttp.responseText);
+			console.log(e);
+		}
+	}
+	</script>
+	<?php
+}
+
 
 
 // Reimplementacija file_put_contents, za staru verziju PHPa
@@ -378,15 +420,16 @@ function malimeni($fj) {
 
 	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
 
+	$predmet = 0; $dodaj = "";
 	if ($sekcija=="nastavnik/") {
-		$predmet=intval($_REQUEST['predmet']);
-		$ag=intval($_REQUEST['ag']);
+		$predmet = int_param('predmet');
+		$ag = int_param('ag');
 		$dodaj="&predmet=$predmet&ag=$ag";
 	}
 	
 	if ($predmet>0) {
-		$q15 = myquery("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-		$tippredmeta = mysql_result($q15,0,0);
+		$q15 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+		$tippredmeta = db_result($q15,0,0);
 	}
 
 	?>
@@ -406,7 +449,7 @@ function malimeni($fj) {
 	$k=0;
 	if ($predmet==0 || $tippredmeta != 1000) 
 	foreach ($registry as $r) {
-		if($r[5] != 0) continue; // nevidljiv
+		if(count($r) < 5 || $r[5] != 0) continue; // nevidljiv
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
 			if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 - završni rad
@@ -449,9 +492,10 @@ function horizontalni_meni($fj) {
 
 	$sekcija = substr($sta, 0,strlen($sta)-strlen(strstr($sta,"/"))+1);
 
+	$dodaj = "";
 	if ($sekcija=="nastavnik/") {
-		$predmet=intval($_REQUEST['predmet']);
-		$dodaj="&predmet=$predmet";
+		$predmet = int_param('predmet');
+		$dodaj = "&predmet=$predmet";
 	}
 
 	?>
@@ -467,7 +511,7 @@ function horizontalni_meni($fj) {
 
 	$k=0;
 	foreach ($registry as $r) {
-		if($r[5] != 0) continue;
+		if(count($r) < 5 || $r[5] != 0) continue;
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#cccccc";
 			?><td height="20" width="100" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#ffffff'" onmouseout="this.bgColor='<?=$bgcolor?>'">
@@ -494,14 +538,10 @@ function horizontalni_meni($fj) {
 function studentski_meni($fj) {
 	global $userid, $sta, $registry;
 
-	// Parametri potrebni za Moodle integraciju
-	global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
-	global $conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb;
-
 	// Koji od interesantnih registry modula su aktivni
 	$modul_uou=$modul_kolizija=$modul_prijava=$modul_prosjek=$modul_anketa=0;
 	foreach ($registry as $r) {
-		if($r[5] != 0) continue; // nevidljiv
+		if(count($r)<5 || $r[5] != 0) continue; // nevidljiv
 		if ($r[0]=="student/ugovoroucenju") $modul_uou=1;
 		if ($r[0]=="student/kolizija") $modul_kolizija=1;
 		if ($r[0]=="student/prijava_ispita") $modul_prijava=1;
@@ -509,29 +549,29 @@ function studentski_meni($fj) {
 		if ($r[0]=="student/anketa") $modul_anketa=1;
 	}
 
+	// Aktuelna akademska godina
+	$q10 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+	$ag = db_result($q10,0,0);
+
 	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
-	$arhiva = intval($_REQUEST['sm_arhiva']);
+	$arhiva = int_param('sm_arhiva');
 	if ($arhiva==1) {
 		$sem_ispis = "Arhivirani predmeti";
-		$q30 = myquery("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+		$q30 = db_query("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
 		FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
 		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id AND ag.id=agp.akademska_godina AND p.id=agp.predmet
 		ORDER BY ag.id, pk.semestar MOD 2 DESC, p.naziv");
 
 	} else {
-		// Aktuelna akademska godina
-		$q10 = myquery("select id,naziv from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q10,0,0);
-
 		// Studij koji student trenutno sluša
-		$q20 = myquery("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-		if (mysql_num_rows($q20)<1) {
+		$q20 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+		if (db_num_rows($q20)<1) {
 			$sem_ispis = "Niste upisani na studij!";
-			$q30 = myquery("SELECT * from student_studij where 1=0"); // dummy upit koji ne vraca ništa
+			$q30 = db_query("SELECT * from student_studij where 1=0"); // dummy upit koji ne vraca ništa
 			// Može li ovo bolje!?
 		} else {
-			$studij = mysql_result($q20,0,0);
-			$semestar = mysql_result($q20,0,1);
+			$studij = db_result($q20,0,0);
+			$semestar = db_result($q20,0,1);
 
 			// Određujemo da li je aktuelni semestar parni ili neparni
 			$semestar=$semestar%2;
@@ -539,9 +579,9 @@ function studentski_meni($fj) {
 				$sem_ispis = "Zimski semestar ";
 			else
 				$sem_ispis = "Ljetnji semestar ";
-			$sem_ispis .= mysql_result($q10,0,1).":";
+			$sem_ispis .= db_result($q10,0,1).":";
 
-			$q30 = myquery("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+			$q30 = db_query("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
 			FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
 			WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=$ag AND pk.semestar%2=$semestar AND pk.akademska_godina=ag.id AND agp.akademska_godina=$ag AND agp.predmet=p.id
 			ORDER BY p.naziv");
@@ -552,7 +592,7 @@ function studentski_meni($fj) {
 	$oldsem=$oldag=0; 
 
 	// Glavna petlja za generisanje ispisa
-	while ($r30 = mysql_fetch_row($q30)) {
+	while ($r30 = db_fetch_row($q30)) {
 		$ponudakursa = $r30[0];
 		$predmet_naziv = $r30[1];
 		$predmet = $r30[4];
@@ -571,7 +611,7 @@ function studentski_meni($fj) {
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
-		if (intval($_REQUEST['predmet'])==$predmet && intval($_REQUEST['ag'])==$pag) {
+		if (int_param('predmet')==$predmet && int_param('ag')==$pag) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
 			if ($tippredmeta == 1000)
 				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
@@ -583,27 +623,29 @@ function studentski_meni($fj) {
 			$ispis .= "<br/>\n";
 			
 			// Studentski moduli aktivirani za ovaj predmet
-			$q40 = myquery("select sm.gui_naziv, sm.modul, sm.novi_prozor from studentski_modul as sm, studentski_modul_predmet as smp where smp.predmet=$predmet and smp.akademska_godina=$pag and smp.aktivan=1 and smp.studentski_modul=sm.id order by sm.id");
-			while ($r40 = mysql_fetch_row($q40)) {
-			$tip_forum="";
-			if ($r40[0]=="Forum Komentari") $tip_forum="&tip=forum";
+			$q40 = db_query("select sm.gui_naziv, sm.modul, sm.novi_prozor from studentski_modul as sm, studentski_modul_predmet as smp where smp.predmet=$predmet and smp.akademska_godina=$pag and smp.aktivan=1 and smp.studentski_modul=sm.id order by sm.id");
+			while ($r40 = db_fetch_row($q40)) {
 				if ($r40[1]==$_REQUEST['sta'])
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;$r40[0]<br/>\n";
 				else if ($r40[2]==1)
-					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag$tip_forum\" target=\"_blank\">$r40[0]</a><br/>\n";
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag\" target=\"_blank\">$r40[0]</a><br/>\n";
 				else
 					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r40[0]</a><br/>\n";
 			}
 
-			// Da li ima aktivna anketa i da li je istekao rok?
+			// Da li postoji anketa za dati predmet ili sve predmete u trenutnom semestru?
 			if ($modul_anketa) {
-				$q42 = myquery("select UNIX_TIMESTAMP(datum_zatvaranja) from anketa_anketa where aktivna=1");
-				if (mysql_num_rows($q42)!=0) { // da li uopce ima kreirana anketa ako ne , ne radi nista
-					$rok=mysql_result($q42,0,0);
-					if (time () < $rok) {
-						$q42b =  myquery("select id from anketa_anketa a where a.aktivna=1");
-						if(mysql_num_rows($q42b)>0)
-							$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&predmet=$predmet\">Anketa</a><br/>\n";
+				$q42 = db_query("select a.id, a.naziv, ap.aktivna from anketa_anketa as a, anketa_predmet as ap where ap.anketa=a.id and a.akademska_godina=$pag and (ap.predmet=$predmet or ap.predmet IS NULL) and ap.semestar=$zimskiljetnji");
+				if (db_num_rows($q42) == 1) { // Samo jedna anketa, dajemo link pod nazivom "Rezultati ankete"
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;";
+					if ($_REQUEST['sta'] != "student/anketa")
+						$ispis .= "<a href=\"?sta=student/anketa&anketa=".db_result($q42,0,0)."&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
+					$ispis .= "Rezultati ankete";
+					if ($_REQUEST['sta'] != "student/anketa") $ispis .= "</a>";
+					$ispis .= "<br/>\n";
+				} else {
+					while ($r42 = db_fetch_row($q42)) {
+						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&anketa=$r42[0]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r42[1]</a><br/>\n";
 					}
 				}
 			}
@@ -628,10 +670,10 @@ function studentski_meni($fj) {
 			<? } else { ?>&nbsp;<? } ?><?=$ispis?>
 			
 			<br />
-			<? if ($arhiva==0) { ?>
-			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
-			<? } else { ?>
+			<? if ($arhiva == 1) { ?>
 			<a href="<?=genuri()?>&sm_arhiva=0">Sakrij arhivirane predmete</a>
+			<? } else { ?>
+			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
 			<? } ?>
 			<br /><br />
 			<img src="images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
@@ -656,83 +698,6 @@ function studentski_meni($fj) {
 			</div>
 			<br /><br />
 			<?
-
-
-	// Prikaz poruka sa Moodle foruma
-
-	if (isset($_REQUEST['predmet']) && isset($_REQUEST['ag']) && $conf_moodle) {
-		// Varijabla komentariforum postaje ID predmeta koji je izabran
-		$komentariforum = $_REQUEST['predmet'];
-		$predmet = intval($_REQUEST['predmet']);
-		$ag = intval($_REQUEST['ag']);
-
-		$qsm = myquery("select aktivan from studentski_modul_predmet where predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($qsm)>0) {
-		$aktivan_provjera = mysql_result($qsm,0,0);
- 
-			if ($aktivan_provjera==1) {
-				$q = myquery("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
-
-				// Uzimanje Moodle_ID ako je predmet povezan sa moodle
-				if (mysql_num_rows($q)>0) {
-					$moodle_id = mysql_result($q,0,0);
-
-					// Konekcija na bazu?
-					if (!$conf_moodle_reuse_connection) {
-						dbdisconnect();
-						dbconnect2($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass, $conf_moodle_db);
-					}
-
-					// Citanje komentara iz Moodle Baze
-					$query3 = "SELECT * FROM $conf_moodle_db.$conf_moodle_prefix"."forum_discussions WHERE course=$moodle_id order by timemodified desc LIMIT 0,4";
-					$rs3 = myquery($query3);
-					?>
-						<table border="0" cellspacing="2" cellpadding="1">
-							<tr>
-								<td colspan="2">
-									<br/><img src="images/16x16/komentar-plavi.png"> <b>Predmet komentari:</b><br/>
-								</td>
-							</tr> 
-							<tr>
-								<td>
-									<?
-									$provjerakomentara=0;
-									while ($numrows3=mysql_fetch_array($rs3))
-									{
-										$brojac=$brojac+1;
-										$idkom=$numrows3['id'];
-										$kurs=$numrows3['course'];
-										$vrijeme=$numrows3['timemodified'];
-										$naziv=$numrows3['name'];
-										$forum=$numrows3['forum'];
-										$query4 = "SELECT * FROM $conf_moodle_db.$conf_moodle_prefix"."forum WHERE id=$forum";
-										$rs4 = myquery($query4);
-										$numrows4=mysql_fetch_array($rs4);
-										$naziv_foruma=$numrows4['name'];
-										//Ako postoji komentar ispisi ga
-										if(!empty($naziv)){
-											$provjerakomentara++;									
-											print '<div style="padding:5px"><img src="images/16x16/komentar.png"/> <a target="_blank" href="'.$conf_moodle_url.'mod/forum/discuss.php?d='.$idkom.'">'.$naziv.'</a><br> ['.$naziv_foruma.']<br></div>';
-										}
-									}
-									if($provjerakomentara==0){
-										print '<div style="padding:5px"><center>NEMA KOMENTARA!</a></center><br></div>';}
-									?>
-								</td>
-							</tr> 
-						</table> 
-					<?
-
-					// Vraćamo Zamger konekciju
-					if (!$conf_moodle_reuse_connection) {
-						dbdisconnect();
-						dbconnect2($conf_dbhost, $conf_dbuser, $conf_dbpass, $conf_dbdb);
-					}
-				}
-			}
-		}
-	}
-
 
 	// Prikaz današnjeg datuma
 
@@ -777,7 +742,7 @@ function zamgerlog($event,$nivo) {
 
 	if (intval($userid)==0) $userid=0;
 
-	myquery("insert into log set dogadjaj='".my_escape($event)."', userid=$userid, nivo=$nivo");
+	db_query("insert into log set dogadjaj='".db_escape($event)."', userid=$userid, nivo=$nivo");
 }
 
 
@@ -785,49 +750,49 @@ function zamgerlog($event,$nivo) {
 function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob = "") {
 	global $userid, $sta;
 
-	$tekst = my_escape($tekst);
-	$blob = my_escape($blob);
+	$tekst = db_escape($tekst);
+	$blob = db_escape($blob);
 	if ($sta=="logout") $sta="";
 
 	// Parametri objekat* moraju biti tipa int, pratimo sve drugačije pozive kako bismo ih mogli popraviti
 	if ($objekat1 !== intval($objekat1) || $objekat2 !== intval($objekat2) || $objekat3 !== intval($objekat3)) {
-		$q5 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
+		$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
 		// Dodajemo blob
-		$id = mysql_insert_id();
+		$id = db_insert_id(); // Zašto se dešava da $id bude nula???
 		$tekst_bloba = "";
 		if ($objekat1 !== intval($objekat1)) $tekst_bloba .= "objekat1: $objekat1 ";
 		if ($objekat2 !== intval($objekat2)) $tekst_bloba .= "objekat2: $objekat2 ";
 		if ($objekat3 !== intval($objekat3)) $tekst_bloba .= "objekat3: $objekat3 ";
 
-		$q7 = myquery("INSERT INTO log2_blob SET log2=$id, tekst='$tekst_bloba'");
+		$q7 = db_query("INSERT INTO log2_blob SET log2=$id, tekst='$tekst_bloba'");
 		$objekat1 = intval($objekat1); $objekat2 = intval($objekat2); $objekat3 = intval($objekat3);
 	}
 	
 	// $userid izgleda nekada može biti i prazan string?
-	$q5 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
-	if (mysql_affected_rows() == 0) {
+	$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+	if (db_affected_rows() == 0) {
 		// Nije ništa ubačeno, vjerovatno fale polja u tabelama
-		$q10 = myquery("SELECT COUNT(*) FROM log2_modul WHERE naziv='$sta'");
-		if (mysql_result($q10,0,0) == 0)
+		$ubaceno = db_get("SELECT COUNT(*) FROM log2_modul WHERE naziv='$sta'");
+		if ($ubaceno == 0)
 			// U ovim slučajevima će se pozvati zamgerlog2 sa invalidnim modulom
 			if ($tekst == "login" || $tekst == "sesija istekla" || $tekst == "nepoznat korisnik")
 				$sta == "";
 			else
-				$q20 = myquery("INSERT INTO log2_modul SET naziv='$sta'");
+				$q20 = db_query("INSERT INTO log2_modul SET naziv='$sta'");
 
-		$q30 = myquery("SELECT COUNT(*) FROM log2_dogadjaj WHERE opis='$tekst'");
-		if (mysql_result($q30,0,0) == 0)
+		$ubaceno = db_get("SELECT COUNT(*) FROM log2_dogadjaj WHERE opis='$tekst'");
+		if ($ubaceno == 0)
 			// Neka admin manuelno u bazi definiše ako je događaj različitog nivoa od 2
-			$q40 = myquery("INSERT INTO log2_dogadjaj SET opis='$tekst', nivo=2"); 
+			$q40 = db_query("INSERT INTO log2_dogadjaj SET opis='$tekst', nivo=2"); 
 
-		$q50 = myquery("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".my_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
+		$q50 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, $objekat1, $objekat2, $objekat3, '".db_escape($_SERVER['REMOTE_ADDR'])."' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='$tekst'");
 		// Ako sada nije uspjelo ubacivanje, nije nas briga :)
 	}
 
 	if ($blob !== "") {
 		// Dodajemo blob
-		$id = mysql_insert_id();
-		$q60 = myquery("INSERT INTO log2_blob SET log2=$id, tekst='$blob'");
+		$id = db_insert_id();
+		$q60 = db_query("INSERT INTO log2_blob SET log2=$id, tekst='$blob'");
 	}
 }
 
@@ -836,10 +801,10 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 // Ispod je dato pravilo: prvo slovo imena + prvo slovo prezimena + broj indexa
 
 function gen_ldap_uid($userid) {
-	$q10 = myquery("select ime, prezime, brindexa from osoba where id=$userid");
-	$ime = mysql_result($q10,0,0);
-	$prezime = mysql_result($q10,0,1);
-	$brindexa = mysql_result($q10,0,2);
+	$q10 = db_query("select ime, prezime, brindexa from osoba where id=$userid");
+	$ime = db_result($q10,0,0);
+	$prezime = db_result($q10,0,1);
+	$brindexa = db_result($q10,0,2);
 
 	// Pretvorba naših slova Unicode -> ASCII (proširiti?)
 	$debosn = array( 'Č'=>'c', 'č'=>'c', 'Ć'=>'c', 'ć'=>'c', 'Đ'=>'d', 'đ'=>'d', 'Š'=>'s', 'š'=>'s', 'Ž'=>'z', 'ž'=>'z');
@@ -880,8 +845,8 @@ function myquery($query) {
 
 // Vraca puni naziv osobe sa svim titulama
 function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zvanjem = true, $prezime_prvo = false) {
-	$q10 = myquery("select ime, prezime, naucni_stepen, strucni_stepen from osoba where id=$osoba");
-	if (!($r10 = mysql_fetch_row($q10))) {
+	$q10 = db_query("select ime, prezime, naucni_stepen, strucni_stepen from osoba where id=$osoba");
+	if (!($r10 = db_fetch_row($q10))) {
 		return "";
 	}
 	if ($prezime_prvo)
@@ -890,8 +855,8 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 		$ime = $r10[0]." ".$r10[1];
 
 	if ($r10[2]) {
-		$q20 = myquery("select titula from naucni_stepen where id=$r10[2]");
-		if ($r20 = mysql_fetch_row($q20))
+		$q20 = db_query("select titula from naucni_stepen where id=$r10[2]");
+		if ($r20 = db_fetch_row($q20))
 			if ($prezime_prvo)
 				$ime = $r10[1]." ".$r20[0]." ".$r10[0];
 			else
@@ -899,14 +864,14 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 	}
 	
 	if ($sa_akademskim_zvanjem) {
-		$q30 = myquery("select titula from strucni_stepen where id=$r10[3]");
-		if ($r30 = mysql_fetch_row($q30))
+		$q30 = db_query("select titula from strucni_stepen where id=$r10[3]");
+		if ($r30 = db_fetch_row($q30))
 			$ime = $ime.", ".$r30[0];
 	}
 	
 	if ($sa_naucnonastavnim_zvanjem) {
-		$q40 = myquery("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
-		if ($r40 = mysql_fetch_row($q40))
+		$q40 = db_query("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
+		if ($r40 = db_fetch_row($q40))
 			$ime = $r40[0]." ".$ime;
 	}
 
@@ -939,7 +904,145 @@ function rimski_broj($arapski_broj = '') {
 
 	$rimski_broj = $rimske_cifre_hiljade[$anm] . $rimske_cifre_stotice[$anc] . $rimske_cifre_desetice[$anx] . $rimske_cifre_jedinice[$anu]; 
 	return $rimski_broj; 
-} 
+}
+
+
+// Funkcija koja zamjenjuje stringove koji liče na URL sa HTML kodom koji linkuje na njih
+function linkuj_urlove($tekst) {
+	$i=0;
+	while (strpos($tekst,"http://",$i)!==false || strpos($tekst,"https://",$i)!==false) {
+		$j = strpos($tekst,"http://",$i);
+		if ($j==false) $j = strpos($tekst,"https://",$i);
+		
+		// Prvi sljedeći razmak ili kraj stringa
+		$k = strpos($tekst," ",$j);
+		$k2 = strpos($tekst,"\n",$j);
+		if ($k2<$k && $k2!=0) $k=$k2;
+		if ($k==0) $k=$k2;
+		if ($k==0) { $k=strlen($tekst);}
+
+		// Interpunkcijski znakovi kojim se obično završava rečenica nisu dio URLa
+		do {
+			$k--;
+			$a = substr($tekst,$k,1);
+		} while ($a=="."||$a=="," || $a==")" || $a=="!" || $a=="?"); 
+		
+		// Stringove kraće od 9 znakova ne smatramo URLom
+		$k++;
+		if ($k-$j<9) { $i=$j+1; continue; }
+		
+		// Zamjenjujemo URL sa linkom na URL
+		$url = substr($tekst,$j,$k-$j);
+		$tekst = substr($tekst,0,$j). "<a href=\"$url\" target=\"_blank\">$url</a>". substr($tekst,$k);
+		$i = $j+strlen($url)+28;
+	}
+	return $tekst;
+}
+
+
+// Često korištena funkcija kada treba redirektovati izlaz u datoteku
+function zamger_file_callback($buffer) {
+	global $zamger_filecb_sadrzaj_buffera;
+	$zamger_filecb_sadrzaj_buffera = $buffer;
+}
+
+
+// Generiše cachiranu verziju izvještaja izvjestaj/predmet
+// Prije poziva treba u superglobalni niz $_REQUEST napuniti eventualne parametre izvještaja
+function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
+	global $zamger_filecb_sadrzaj_buffera, $conf_files_path;
+
+	// Punimo parametre u superglobalni niz $_REQUEST kako bi se proslijedili izvještaju
+	foreach($params as $key => $value)
+		$_REQUEST[$key] = $value;
+	$_REQUEST['predmet'] = $predmet;
+	$_REQUEST['ag'] = $ag;
+	
+	ob_start('zamger_file_callback');
+	include("izvjestaj/predmet.php");
+	eval("izvjestaj_predmet();");
+	ob_end_clean();
+	
+	if (!file_exists("$conf_files_path/izvjestaj_predmet")) {
+		mkdir ("$conf_files_path/izvjestaj_predmet",0777, true);
+	}
+	$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY").".html";
+	file_put_contents($filename, $zamger_filecb_sadrzaj_buffera);
+}
+
+
+// Da li nastavnik ima pravo pristupa podacima studenta na predmetu i akademskoj godini
+// Ako je $student=0, odnosi se na sve studente
+function nastavnik_pravo_pristupa($predmet, $ag, $student=0) {
+	global $userid;
+
+	$q20 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	if (db_num_rows($q20)>0) {
+		$ok = true;
+		// Postoji li ograničenje na tom predmetu
+		if (db_result($q20,0,0) == "asistent") {
+			$labgrupe = student_labgrupe($student, $predmet, $ag);
+			$ok = nastavnik_ogranicenje($predmet, $ag, $student);
+		}
+	}
+	return $ok;
+}
+
+
+// Spisak labgrupa na predmetu i akademskoj godini kojih je student član
+// Ako je $ukljuci_virtualne=false, neće biti vraćene virtualne labgrupe
+function student_labgrupe($student, $predmet, $ag, $ukljuci_virtualne = true) {
+	global $userid;
+	
+	$rezultat = array();
+	$upit = "SELECT l.id FROM student_labgrupa as sl, labgrupa as l WHERE sl.labgrupa=l.id AND sl.student=$student AND l.predmet=$predmet AND l.akademska_godina=$ag";
+	if (!$ukljuci_virtualne) $upit .= " AND l.virtualna=0";
+	$q10 = db_query($upit);
+	while ($r10 = db_fetch_row($q10)) $rezultat[] = $r10[0];
+	return $rezultat;
+}
+
+
+// Da li nastavnik ima ograničenje na labgrupu u kojoj je student
+function nastavnik_ogranicenje($predmet, $ag, $student=0) {
+	global $userid;
+
+	$q50 = db_query("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+	if (db_num_rows($q50) < 1) return true;
+	if ($student == 0) return false;
+	
+	$labgrupe = student_labgrupe($student, $predmet, $ag, false);
+	if (count($labgrupe) == 0) return false;
+	
+	while ($r50 = db_fetch_row($q50))
+		foreach($labgrupe as $lg)
+			if ($r50[0] == $lg) return true;
+	
+	return false;
+}
+
+
+// Provjerava da li student sluša predmet i vraća ponudu kursa
+function daj_ponudu_kursa($student, $predmet, $ag) {
+	$q2 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (db_num_rows($q2)<1)
+		return false;
+	
+	return db_result($q2,0,0);
+}
+
+
+// Vraća vrijednost request parametra ili false
+function param($name) {
+	if (isset($_REQUEST[$name])) return $_REQUEST[$name];
+	return false;
+}
+
+// Vraća integer vrijednost request parametra ili nulu
+function int_param($name) {
+	if (isset($_REQUEST[$name])) return intval($_REQUEST[$name]);
+	return 0;
+}
 
 
 ?>

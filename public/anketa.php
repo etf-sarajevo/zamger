@@ -2,6 +2,8 @@
 
 // PUBLIC/ANKETA - stranica za ispunjavanje ankete
 
+
+
 function public_anketa() {
 
 	global $userid,$user_siteadmin,$user_studentska,$user_nastavnik;
@@ -19,8 +21,8 @@ function public_anketa() {
 		if ($user_studentska || $user_siteadmin) $ok = true;
 
 		if ($predmet>0 && $ag>0 && $user_nastavnik) {
-			$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (mysql_num_rows($q10)>0 && mysql_result($q10,0,0)!="asistent") $ok = true;
+			$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+			if (db_num_rows($q10)>0 && db_result($q10,0,0)!="asistent") $ok = true;
 		}
 
 		if (!$ok) {
@@ -43,25 +45,25 @@ function public_anketa() {
 		else
 			$upit = "select aa.id from anketa_anketa as aa, akademska_godina as ag, anketa_predmet as ap where aa.id=ap.anketa and ap.aktivna=1 and aa.akademska_godina=ag.id and ag.aktuelna=1 order by aa.id desc";
 
-		$q20 = myquery($upit);
-		if (mysql_num_rows($q20)==0) {
+		$q20 = db_query($upit);
+		if (db_num_rows($q20)==0) {
 			biguglyerror("Anketa trenutno nije aktivna. A");
 			return;
 		}
-		$id_ankete = mysql_result($q20,0,0);
+		$id_ankete = db_result($q20,0,0);
 	}
 
 	// Metapodaci o anketi
-	$q30 = myquery("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), opis from anketa_anketa where id=$id_ankete");
-	if (mysql_num_rows($q30)==0) {
+	$q30 = db_query("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), opis from anketa_anketa where id=$id_ankete");
+	if (db_num_rows($q30)==0) {
 		biguglyerror("Ne postoji anketa sa tim IDom");
 		zamgerlog2("nepostojeci ID ankete");
 		return;
 	}
-	$naziv_ankete = mysql_result($q30,0,0);
-	$otvaranje = mysql_result($q30,0,1);
-	$zatvaranje = mysql_result($q30,0,2);
-	$opis_ankete = nl2br(mysql_result($q30,0,3));
+	$naziv_ankete = db_result($q30,0,0);
+	$otvaranje = db_result($q30,0,1);
+	$zatvaranje = db_result($q30,0,2);
+	$opis_ankete = nl2br(db_result($q30,0,3));
 	
 
 	// Da li je istekao rok?
@@ -75,10 +77,10 @@ function public_anketa() {
 
 	// Da li je anketa aktivna? 
 	// Ako je aktivna samo za određeni predmet, on mora biti zadat kao parametar
-	$q40 = myquery("select aktivna, semestar from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet IS NULL)");
-	$anketa_aktivna = mysql_result($q40,0,0);
-	$anketa_semestar = mysql_result($q40,0,1);
-	if ($_GET['akcija'] != "preview" && (mysql_num_rows($q40)<1 || $anketa_aktivna==0)) {
+	$q40 = db_query("select aktivna, semestar from anketa_predmet where anketa=$id_ankete and ((predmet=$predmet and akademska_godina=$ag) or predmet IS NULL)");
+	$anketa_aktivna = db_result($q40,0,0);
+	$anketa_semestar = db_result($q40,0,1);
+	if ($_GET['akcija'] != "preview" && (db_num_rows($q40)<1 || $anketa_aktivna==0)) {
 		biguglyerror("Anketa trenutno nije aktivna!");
 		return;
 	}
@@ -103,11 +105,11 @@ function public_anketa() {
 			return;
 		}
 
-		$hash_code = my_escape($_POST['hash_code']);
+		$hash_code = db_escape($_POST['hash_code']);
 
 		// Provjeravamo da li kod postoji i da li je već iskorišten (polje zavrsena)
-		$q50 = myquery("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code' and anketa=$id_ankete");
-		if (mysql_num_rows($q50)==0) {
+		$q50 = db_query("SELECT id, predmet, zavrsena FROM anketa_rezultat WHERE unique_id='$hash_code' and anketa=$id_ankete");
+		if (db_num_rows($q50)==0) {
 			// Dati hash ne postoji u bazi tj. student pokušava da izmisli hash :P
 			?>
 			<center>
@@ -118,15 +120,15 @@ function public_anketa() {
 			zamgerlog2("ilegalan hash code", intval($id_ankete), 0, 0, $hash_code);
 			return;
 		}
-		if (mysql_num_rows($q50)>1) {
+		if (db_num_rows($q50)>1) {
 			// Hash nije unique!?
 			zamgerlog2("hash nije unique", $id_ankete, 0, 0, $hash_code);
 			return;
 		}
 	
-		$id_rezultata = mysql_result($q50,0,0);
-		$predmet = mysql_result($q50,0,1);
-		$zavrsena = mysql_result($q50,0,2);
+		$id_rezultata = db_result($q50,0,0);
+		$predmet = db_result($q50,0,1);
+		$zavrsena = db_result($q50,0,2);
 
 
 	// Student je logiran, pa ćemo pokušati iskoristiti njegove kredencijale
@@ -139,8 +141,8 @@ function public_anketa() {
 		}
 		
 		// Da li student sluša predmet?
-		$q60 = myquery("select pk.studij, pk.semestar from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		if (mysql_num_rows($q60)<1) {
+		$q60 = db_query("select pk.studij, pk.semestar from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		if (db_num_rows($q60)<1) {
 			zamgerlog("student ne slusa predmet pp$predmet", 3);
 			zamgerlog2("student ne slusa predmet", $predmet, $ag);
 			biguglyerror("Niste upisani na ovaj predmet");
@@ -148,33 +150,33 @@ function public_anketa() {
 		}
 
 		// Određujemo studij i semestar radi insertovanja u tabelu anketa_rezultat
-		$studij = mysql_result($q60,0,0);
-		$semestar = mysql_result($q60,0,1);
+		$studij = db_result($q60,0,0);
+		$semestar = db_result($q60,0,1);
 		
 		if ($semestar % 2 != $anketa_semestar) {
 			biguglyerror("Predmet nije u odgovarajućem semestru");
 			return;
 		}
 
-		$q70 = myquery("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+		$q70 = db_query("SELECT zavrsena, anketa_rezultat FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 
 		// Kreiramo zapise u tabelama anketa_rezultat i anketa_student_zavrsio
-		if (mysql_num_rows($q70)==0) {
-			$q75 = myquery("SELECT lg.id FROM student_labgrupa as sl, labgrupa as lg WHERE sl.student=$userid AND sl.labgrupa=lg.id AND lg.predmet=$predmet AND lg.akademska_godina=$ag AND lg.virtualna=0");
-			if (mysql_num_rows($q75)==1) 
-				$labgrupa = mysql_result($q75,0,0);
+		if (db_num_rows($q70)==0) {
+			$q75 = db_query("SELECT lg.id FROM student_labgrupa as sl, labgrupa as lg WHERE sl.student=$userid AND sl.labgrupa=lg.id AND lg.predmet=$predmet AND lg.akademska_godina=$ag AND lg.virtualna=0");
+			if (db_num_rows($q75)==1) 
+				$labgrupa = db_result($q75,0,0);
 			else
 				$labgrupa = 0;
-			$q90 = myquery("INSERT INTO anketa_rezultat SET anketa=$id_ankete, zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=NULL, labgrupa=$labgrupa");
-			$id_rezultata = mysql_insert_id();
+			$q90 = db_query("INSERT INTO anketa_rezultat SET anketa=$id_ankete, zavrsena='N', predmet=$predmet, unique_id='', akademska_godina=$ag, studij=$studij, semestar=$semestar, student=NULL, labgrupa=$labgrupa");
+			$id_rezultata = db_insert_id();
 
-			$q80 = myquery("INSERT INTO anketa_student_zavrsio SET student=$userid, predmet=$predmet, akademska_godina=$ag, anketa=$id_ankete, zavrsena='N', anketa_rezultat=$id_rezultata");
-			$q70 = myquery("SELECT zavrsena FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+			$q80 = db_query("INSERT INTO anketa_student_zavrsio SET student=$userid, predmet=$predmet, akademska_godina=$ag, anketa=$id_ankete, zavrsena='N', anketa_rezultat=$id_rezultata");
+			$q70 = db_query("SELECT zavrsena FROM anketa_student_zavrsio WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 			$zavrsena = 'N';
 
 		} else {
-			$zavrsena     = mysql_result($q70,0,0);
-			$id_rezultata = mysql_result($q70,0,1);
+			$zavrsena     = db_result($q70,0,0);
+			$id_rezultata = db_result($q70,0,1);
 		}
 
 		if (!isset($_POST['akcija'])) $_POST['akcija'] = "prikazi"; // Možemo odmah prikazati anketu
@@ -227,45 +229,45 @@ function public_anketa() {
 	if ($_POST['akcija'] == "finish" && check_csrf_token()) {
 		
 		if ($_POST['odbija'] != "da") {
-			$q300 = myquery("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
-			while ($r300 = mysql_fetch_row($q300)) {
+			$q300 = db_query("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
+			while ($r300 = db_fetch_row($q300)) {
 				$pitanje = $r300[0];
 				$tip = $r300[1];
 				
 				if ($tip == 1) { // Rank pitanje
 					$izbor = intval($_POST['izbor'.$pitanje]);
 					if ($izbor > 0) { // Odgovor N/A ima vrijednost 0
-						$q310 = myquery("insert into anketa_odgovor_rank set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
+						$q310 = db_query("insert into anketa_odgovor_rank set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
 					}
 				}
 				
 				if ($tip == 2) { // Esejsko pitanje
-					$komentar = my_escape($_POST['komentar'.$pitanje]);
+					$komentar = db_escape($_POST['komentar'.$pitanje]);
 					if (preg_match("/\w/", $_POST['komentar'.$pitanje]))  // Ima li slova u komentaru?
-						$q320 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
+						$q320 = db_query("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
 				}
 				
 				if ($tip == 3) { // MCSA
 					$izbor = intval($_POST['izbor'.$pitanje]);
-					$q330 = myquery("select dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje and id=$izbor");
-					if (mysql_result($q330,0,0)==1) {
-						$dopisani_odgovor = my_escape($_POST["dopis$pitanje-$odgovor"]);
-						$q590 = myquery("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
+					$q330 = db_query("select dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje and id=$izbor");
+					if (db_result($q330,0,0)==1) {
+						$dopisani_odgovor = db_escape($_POST["dopis$pitanje-$odgovor"]);
+						$q590 = db_query("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
 					}
-					$q590 = myquery("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
+					$q590 = db_query("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$izbor");
 				}
 				
 				if ($tip == 4) { // MCMA
 					$izbor = intval($_POST['izbor'.$pitanje]);
-					$q340 = myquery("select id, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje");
-					while ($r340 = mysql_fetch_row($q340)) {
+					$q340 = db_query("select id, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje");
+					while ($r340 = db_fetch_row($q340)) {
 						$odgovor = $r340[0];
 						if ($_POST["izbor$pitanje-$odgovor"]) {
 							if ($r340[1] == 1) { // Odgovor je dopisani
-								$dopisani_odgovor = my_escape($_POST["dopis$pitanje-$odgovor"]);
-								$q590 = myquery("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
+								$dopisani_odgovor = db_escape($_POST["dopis$pitanje-$odgovor"]);
+								$q590 = db_query("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
 							}
-							$q590 = myquery("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$odgovor");
+							$q590 = db_query("insert into anketa_odgovor_izbori set rezultat=$id_rezultata, pitanje=$pitanje, izbor_id=$odgovor");
 						}
 					}
 				}
@@ -274,24 +276,24 @@ function public_anketa() {
 			}
 
 		} else { // odbija učestvovati u anketi
-			$q300 = myquery("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
-			while ($r300 = mysql_fetch_row($q300)) {
+			$q300 = db_query("select id, tip_pitanja from anketa_pitanje where anketa=$id_ankete order by id");
+			while ($r300 = db_fetch_row($q300)) {
 				$pitanje = $r300[0];
 				$tip = $r300[1];
 				if ($tip == 2) { // Esejsko pitanje
-					$komentar = my_escape($_POST['komentar'.$pitanje]);
+					$komentar = db_escape($_POST['komentar'.$pitanje]);
 					if (preg_match("/\w/", $_POST['komentar'.$pitanje]))  // Ima li slova u komentaru?
-						$q320 = myquery("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
+						$q320 = db_query("insert into anketa_odgovor_text set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$komentar'");
 				}
 			}
 		}
 		
 		// nakon uspjesnog ispunjenja ankete postaviti i polje zavrsena na true u tabeli razultati
-		$q600 = myquery("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
+		$q600 = db_query("update anketa_rezultat set zavrsena='Y' where id=$id_rezultata");
 		
 		// Za logirane studente moramo ažurirati i tabelu anketa_student_zavrsio
 		if ($userid>0) {
-			$q610 = myquery("UPDATE anketa_student_zavrsio SET zavrsena='Y', anketa_rezultat=0 WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
+			$q610 = db_query("UPDATE anketa_student_zavrsio SET zavrsena='Y', anketa_rezultat=0 WHERE student=$userid AND predmet=$predmet AND akademska_godina=$ag AND anketa=$id_ankete");
 			// Brišemo vezu na tabelu anketa_rezultat da se ne bi znalo ko je šta popunio :)
 		}
 
@@ -313,8 +315,8 @@ function public_anketa() {
 		if ($predmet==0) { // ovo se može desiti samo ako je preview!
 			$naziv_predmeta = "NAZIV PREDMETA";
 		} else {
-			$q190 = myquery("select naziv from predmet where id=$predmet");
-			$naziv_predmeta = mysql_result($q190,0,0);
+			$q190 = db_query("select naziv from predmet where id=$predmet");
+			$naziv_predmeta = db_result($q190,0,0);
 		}
 		
 		?>
@@ -347,9 +349,9 @@ function public_anketa() {
 
 
 
-			$q200 = myquery("select id, tip_pitanja, tekst from anketa_pitanje where anketa=$id_ankete order by id");
+			$q200 = db_query("select id, tip_pitanja, tekst from anketa_pitanje where anketa=$id_ankete order by id");
 			$boja = "#FFFFFF";
-			while ($r200 = mysql_fetch_row($q200)) {
+			while ($r200 = db_fetch_row($q200)) {
 				ubaci_pitanje($r200[0], $r200[1], $r200[2], $boja);
 				if ($boja == "#FFFFFF") $boja = "#CCCCFF"; else $boja = "#FFFFFF";
 				// Resetujemo boju poslije naslova
@@ -452,8 +454,8 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 				<?
 
 				// Spisak izbora
-				$q300 = myquery("select id, izbor, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$id");
-				while ($r300 = mysql_fetch_row($q300)) {
+				$q300 = db_query("select id, izbor, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$id");
+				while ($r300 = db_fetch_row($q300)) {
 					if ($r300[2]==1)
 						$dopis = " (dopisati): <input type=\"text\" size=\"30\" name=\"dopis$id-$r300[0]\">";
 					else $dopis="";

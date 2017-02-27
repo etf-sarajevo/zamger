@@ -2,16 +2,6 @@
 
 // STUDENTSKA/IZVJESTAJI - izvjestaji koji se ticu prolaznosti
 
-// v3.9.1.0 (2008/02/19) + Preimenovan bivsi admin_nihada
-// v3.9.1.1 (2008/09/08) + Polje aktuelna u tabeli akademska_godina
-// v3.9.1.2 (2008/09/09) + Dodan izvjestaj "studenti kojima nedostaje..."
-// v3.9.1.3 (2008/09/23) + Dodana opcija "Svi studiji" i sortiranje po broju indeksa
-// v3.9.1.4 (2009/01/26) + Dodan overlay za prikaz izvjestaja
-// v3.9.1.5 (2009/02/07) + Dodan link za izvjestaj "genijalci"
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/05/20) + Apsolutni linkovi na slike promijenjeni u relativne
-// v4.0.9.2 (2009/08/28) + Razjasnjeni linkovi na rang-listu po prosjeku
-
 
 
 function studentska_izvjestaji() {
@@ -89,8 +79,8 @@ if ($_REQUEST['akcija'] == "po_prosjeku") {
 	<table border="0">
 		<tr><td>Akademska godina:</td><td><select name="akademska_godina">
 		<?
-			$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
-			while ($r500 = mysql_fetch_row($q500)) {
+			$q500 = db_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+			while ($r500 = db_fetch_row($q500)) {
 				print "<option value=\"$r500[0]\"";
 				if ($r500[2]==1) print " selected";
 				print ">$r500[1]</option>\n";
@@ -102,8 +92,8 @@ if ($_REQUEST['akcija'] == "po_prosjeku") {
 			<option value="-2">Svi studiji (MSc)</option>
 			<option value="-3">Svi studiji (MSc bez BSca)</option>
 			<?
-				$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
-				while ($r505 = mysql_fetch_row($q505)) {
+				$q505 = db_query("select id, naziv from studij where moguc_upis=1 order by naziv");
+				while ($r505 = db_fetch_row($q505)) {
 					print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 				}
 		?></select></td></tr>
@@ -127,8 +117,8 @@ if ($_REQUEST['akcija'] == "po_nepolozenim") {
 	<table border="0">
 		<tr><td>Akademska godina:</td><td><select name="akademska_godina">
 		<?
-			$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
-			while ($r500 = mysql_fetch_row($q500)) {
+			$q500 = db_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+			while ($r500 = db_fetch_row($q500)) {
 				print "<option value=\"$r500[0]\"";
 				if ($r500[2]==1) print " selected";
 				print ">$r500[1]</option>\n";
@@ -143,8 +133,8 @@ if ($_REQUEST['akcija'] == "po_nepolozenim") {
 			<option value="-1">Svi studiji (BSc)</option>
 			<option value="-2">Svi studiji (MSc)</option>
 			<?
-				$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
-				while ($r505 = mysql_fetch_row($q505)) {
+				$q505 = db_query("select id, naziv from studij where moguc_upis=1 order by naziv");
+				while ($r505 = db_fetch_row($q505)) {
 					print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 				}
 		?></select>
@@ -198,8 +188,8 @@ if ($_REQUEST['akcija'] == "prolaznost") {
 		<input type="hidden" name="sta" value="izvjestaj/prolaznost">
 		Akademska godina: <select name="_lv_column_akademska_godina">
 		<?
-			$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
-			while ($r500 = mysql_fetch_row($q500)) {
+			$q500 = db_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+			while ($r500 = db_fetch_row($q500)) {
 				print "<option value=\"$r500[0]\"";
 				if ($r500[2]==1) print " selected";
 				print ">$r500[1]</option>\n";
@@ -207,8 +197,8 @@ if ($_REQUEST['akcija'] == "prolaznost") {
 		?>
 		</select><br/><br/>
 		Studij: <select name="_lv_column_studij"><option value="-1">Prva godina studija</option><?
-			$q505 = myquery("select id, naziv from studij where moguc_upis=1 order by naziv");
-			while ($r505 = mysql_fetch_row($q505)) {
+			$q505 = db_query("select id, naziv from studij where moguc_upis=1 order by naziv");
+			while ($r505 = db_fetch_row($q505)) {
 				print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 			}
 		?></select><br/><br/>
@@ -227,7 +217,8 @@ if ($_REQUEST['akcija'] == "prolaznost") {
 		<input type="radio" name="cista_gen" value="0" CHECKED> Svi studenti (uključujući ponovce i one koji su prenijeli predmete)<br/>
 		<input type="radio" name="cista_gen" value="1"> Svi koji slušaju godinu (uključujući ponovce, ali bez prenijetih predmeta)<br/>
 		<input type="radio" name="cista_gen" value="2"> Bez ponovaca<br/>
-		<input type="radio" name="cista_gen" value="3"> Čista generacija (studenti koji nemaju ponovljenih godina ni prenesenih predmeta)<br/><br/>
+		<input type="radio" name="cista_gen" value="3"> Čista generacija (studenti koji nemaju ponovljenih godina ni prenesenih predmeta)<br/>
+		<input type="radio" name="cista_gen" value="4"> Samo ponovci<br/><br/>
 
 		<input type="checkbox" name="studenti" value="1"> Prikaži podatke za svakog pojedinačnog studenta<br/>
 		NAPOMENA: Zbog kompleksnosti izvještaja, izračunavanje podataka za pojedinačne studente može trajati do par minuta.<br/><br/>
@@ -254,14 +245,15 @@ if ($_REQUEST['akcija'] == "pregled") {
 	</select><br><br>
 	Akademska godina: <select name="akademska_godina">
 	<?
-		$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
-		while ($r500 = mysql_fetch_row($q500)) {
+		$q500 = db_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+		while ($r500 = db_fetch_row($q500)) {
 			print "<option value=\"$r500[0]\"";
 			if ($r500[2]==1) print " selected";
 			print ">$r500[1]</option>\n";
 		}
 	?>
 	</select><br/><br/>
+	<input type="checkbox" name="po_semestrima"> Po semestrima<br><br>
 	<input type="submit" value=" Prikaži "></form>
 	<?
 }
@@ -280,8 +272,8 @@ if ($_REQUEST['akcija'] == "ugovoroucenju") {
 	<input type="hidden" name="sta" value="izvjestaj/ugovoroucenju">
 	Akademska godina: <select name="akademska_godina">
 	<?
-		$q500 = myquery("select id,naziv,aktuelna from akademska_godina order by naziv desc");
-		while ($r500 = mysql_fetch_row($q500)) {
+		$q500 = db_query("select id,naziv,aktuelna from akademska_godina order by naziv desc");
+		while ($r500 = db_fetch_row($q500)) {
 			print "<option value=\"$r500[0]\"";
 			if ($r500[2]==1) print " selected";
 			print ">$r500[1]</option>\n";
@@ -312,12 +304,13 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<input type="checkbox" name="jmbg">JMBG<br />
 	<input type="checkbox" name="nacin_studiranja">Način studiranja (redovni, samofinansirajući...)<br />
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
+	<input type="checkbox" name="adresa_mjesto">Mjesto boravka<br />
 	<input type="checkbox" name="login">Korisničko ime<br /><br />
 	<input type="checkbox" name="tabelarno">Prikaži u obliku tabele umjesto numerisane liste<br />
 	Akademska godina: <select name="ag">
 	<?
-		$q506 = myquery("select id, naziv, aktuelna from akademska_godina order by naziv");
-		while ($r506 = mysql_fetch_row($q506)) {
+		$q506 = db_query("select id, naziv, aktuelna from akademska_godina order by naziv");
+		while ($r506 = db_fetch_row($q506)) {
 			print "<option value=\"$r506[0]\"";
 			if ($r506[2] == 1) print " selected";
 			print ">$r506[1]</option>\n";
@@ -327,9 +320,10 @@ if ($_REQUEST['akcija'] == "svi_studenti") {
 	<option value="0">Svi studiji</option>
 	<option value="-1">Prvi ciklus</option>
 	<option value="-2">Drugi ciklus</option>
+	<option value="-3">Treći ciklus</option>
 	<?
-		$q505 = myquery("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
-		while ($r505 = mysql_fetch_row($q505)) {
+		$q505 = db_query("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
+		while ($r505 = db_fetch_row($q505)) {
 			print "<option value=\"$r505[0]\">$r505[1]</option>\n";
 		}
 	?></select><br />

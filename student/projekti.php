@@ -2,8 +2,7 @@
 
 // STUDENT/PROJEKTI - studenski modul za prijavu na projekte i ulazak u projektnu stranu projekta
 
-// v4.0.9.0 (2009/07/08) - originalna verzija by Haris Agic
-// v4.0.9.1 (2009/10/04) - Dodana provjera da li su definisani predmetni parametri; dodana poruka ako nema definisanih timova; uljepsan kod, izbaceno viska provjera primljenih varijabli, importovan kod iz lib/projekti
+
 
 function student_projekti() {
 
@@ -12,12 +11,12 @@ function student_projekti() {
 	//debug mod aktivan
 	global $userid, $user_student;
 
-	$predmet = intval($_REQUEST['predmet']);
-	$ag = intval($_REQUEST['ag']);	
+	$predmet = int_param('predmet');
+	$ag = int_param('ag');	
 	
 	// Da li student slusa predmet?
-	$q10 = myquery("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (db_num_rows($q10)<1) {
 		zamgerlog("student ne slusa predmet pp$predmet", 3);
 		zamgerlog2("student ne slusa predmet", $predmet, $ag);
 		biguglyerror("Niste upisani na ovaj predmet");
@@ -25,44 +24,44 @@ function student_projekti() {
 	}
 	
 	$linkprefix = "?sta=student/projekti&predmet=$predmet&ag=$ag";
-	$akcija = $_REQUEST['akcija'];
-	$id = intval($_REQUEST['id']);
+	$akcija = param('akcija');
+	$id = int_param('id');
 
 
 
 	// KORISNI UPITI
 
 	// Spisak svih projekata
-	$q20 = myquery("SELECT id, naziv, opis, vrijeme FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY vrijeme DESC");
+	$q20 = db_query("SELECT id, naziv, opis, vrijeme FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY vrijeme DESC");
 	$svi_projekti = array();
-	while ($r20 = mysql_fetch_assoc($q20))
+	while ($r20 = db_fetch_assoc($q20))
 		$svi_projekti[] = $r20;
 
 	// Broj članova po projektu
 	$broj_studenata = array();
-	$q30 = myquery("select p.id, count(sp.student) FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND p.predmet=$predmet AND p.akademska_godina=$ag GROUP BY sp.projekat");
-	while ($r30 = mysql_fetch_row($q30))
+	$q30 = db_query("select p.id, count(sp.student) FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND p.predmet=$predmet AND p.akademska_godina=$ag GROUP BY sp.projekat");
+	while ($r30 = db_fetch_row($q30))
 		$broj_studenata[$r30[0]]=$r30[1];
 
 	// Da li je student upisan u neki projekat?
 	$clan_projekta = 0;
-	$q40 = myquery("SELECT p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$userid AND p.predmet=$predmet AND p.akademska_godina=$ag LIMIT 1");
-	if (mysql_num_rows($q40)>0) 
-		$clan_projekta = mysql_result($q40,0,0);
+	$q40 = db_query("SELECT p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$userid AND p.predmet=$predmet AND p.akademska_godina=$ag LIMIT 1");
+	if (db_num_rows($q40)>0) 
+		$clan_projekta = db_result($q40,0,0);
 
 	// Parametri projekata na predmetu
-	$q50 = myquery("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
-	if (mysql_num_rows($q50)<1) {
+	$q50 = db_query("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
+	if (db_num_rows($q50)<1) {
 		niceerror("Predmetni nastavnik nije podesio parametre projekata.");
 		print "Prijavljivanje na projekte za sada nije moguće. Obratite se predmetnom nastavniku ili asistentu za dodatne informacije.";
 		return;
 	}
 
-	$min_timova = mysql_result($q50,0,0);
-	$max_timova = mysql_result($q50,0,1);
-	$min_clanova_tima = mysql_result($q50,0,2);
-	$max_clanova_tima = mysql_result($q50,0,3);
-	$zakljucani_projekti = mysql_result($q50,0,4);
+	$min_timova = db_result($q50,0,0);
+	$max_timova = db_result($q50,0,1);
+	$min_clanova_tima = db_result($q50,0,2);
+	$max_clanova_tima = db_result($q50,0,3);
+	$zakljucani_projekti = db_result($q50,0,4);
 
 
 	// Da li je dostignut limit broja timova?
@@ -123,13 +122,13 @@ function student_projekti() {
 
 		else {
 			// Upisujemo u novi projekat
-			$q110 = myquery("INSERT INTO student_projekat SET student=$userid, projekat=$projekat");
+			$q110 = db_query("INSERT INTO student_projekat SET student=$userid, projekat=$projekat");
 			nicemessage("Uspješno ste prijavljeni na projekat");
 			zamgerlog("student upisan na projekat $projekat (predmet pp$predmet)", 2);
 			zamgerlog2("prijavljen na projekat", $projekat);
 			// Ispisujemo studenta sa postojećih projekata
 			if ($clan_projekta>0) {
-				$q100 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
+				$q100 = db_query("DELETE FROM student_projekat WHERE student=$userid AND projekat=$clan_projekta");
 				nicemessage("Odjavljeni ste sa starog projekta");
 				zamgerlog("student ispisan sa projekta $projekat (predmet pp$predmet)", 2);
 				zamgerlog2("odjavljen sa starog projekta", $projekat);
@@ -169,7 +168,7 @@ function student_projekti() {
 		}
 
 		else {
-			$q120 = myquery("DELETE FROM student_projekat WHERE student=$userid AND projekat=$projekat");
+			$q120 = db_query("DELETE FROM student_projekat WHERE student=$userid AND projekat=$projekat");
 			nicemessage("Uspješno ste odjavljeni sa projekta");
 			zamgerlog("student ispisan sa projekta $projekat (predmet pp$predmet)", 2);
 			zamgerlog2("odjavljen sa projekta", $projekat);
@@ -292,18 +291,18 @@ function student_projekti() {
 				<td width="490" align="left" valign="top">
 					<?
 					// Spisak članova projekta
-					$q200 = myquery("select o.ime, o.prezime, o.brindexa from osoba as o, student_projekat as sp where sp.student=o.id and sp.projekat=".$projekat[id]." order by o.prezime, o.ime");
-					if (mysql_num_rows($q200)<1)
+					$q200 = db_query("select o.ime, o.prezime, o.brindexa from osoba as o, student_projekat as sp where sp.student=o.id and sp.projekat=".$projekat[id]." order by o.prezime, o.ime");
+					if (db_num_rows($q200)<1)
 						print 'Nema prijavljenih studenata.';
 					else
 						print "<ul>\n";
 					
-					while ($r200 = mysql_fetch_row($q200)) {
+					while ($r200 = db_fetch_row($q200)) {
 						?>
 						<li><?=$r200[1].' '.$r200[0].', '.$r200[2]?></li>
 						<?
 					}
-					if (mysql_num_rows($q200)>0) print "</ul>\n";
+					if (db_num_rows($q200)>0) print "</ul>\n";
 					?>
 				</td>
 			</tr>

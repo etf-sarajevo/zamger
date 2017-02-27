@@ -2,10 +2,6 @@
 
 // IZVJESTAJ/PRIJEMNI - rang liste kandidata sa prijemnog ispita
 
-// v3.9.1.0 (2008/07/04) + Kod prebacen iz studentska/prijemni da bi se rasteretio modul
-// v4.0.0.0 (2009/02/19) + Release
-// v4.0.9.1 (2009/06/19) + Restruktuiranje i ciscenje baze: uvedeni sifrarnici mjesto i srednja_skola, za unos se koristi combo box; tabela prijemni_termin omogucuje definisanje termina prijemnog ispita, sto omogucuje i prijemni ispit za drugi ciklus; pa su dodate i odgovarajuce akcije za kreiranje i izbor termina; licni podaci se sada unose direktno u tabelu osoba, dodaje se privilegija "prijemni" u tabelu privilegija; razdvojene tabele: uspjeh_u_srednjoj (koja se vezuje na osoba i srednja_skola) i prijemni_prijava (koja se vezuje na osoba i prijemni_termin); polja za studij su FK umjesto tekstualnog polja; dodano polje prijemni_termin u upis_kriterij; tabela prijemniocjene preimenovana u srednja_ocjene; ostalo: dodan logging; jmbg proglasen obaveznim; vezujem ocjene iz srednje skole za redni broj, posto se do sada redoslijed ocjena oslanjao na ponasanje baze; nova combobox kontrola
-// v4.0.9.2 (2009/09/04) + Popravljen bug, izvjestaj nije podrzavao 0 studenata u nekim kategorijama (npr. kategorija kanton finansira studij), nego je uvijek ubacivao jednog
 
 
 function izvjestaj_prijemni() {
@@ -31,30 +27,44 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	if ($_REQUEST['sort']=="abecedno") {
 		$orderby="ORDER BY o.prezime,o.ime";
+	} else if ($_REQUEST['sort']=="kodovi") {
+		$orderby="ORDER BY po.sifra";
 	} else {
 		$orderby="ORDER BY ukupno DESC";
 	}
 
 	if ($_REQUEST['sakrij_bodove']) $sakrij_bodove = true;
 
+	if ($_REQUEST['borci']) {
+		$borci = "AND o.boracke_kategorije=1";
+		$borci_naslov = " (samo boračke kategorije)";
+	} else {
+		$borci = "";
+		$borci_naslov = "";
+	}
+
+	if ($_REQUEST['kodovi']) { $kodovi = true; } else { $kodovi = false; }
+
 
 	// Naslov
 
 	if ($studij != 0) {
-		$q10 = myquery("SELECT naziv FROM studij WHERE id=$studij");
-		$naziv_studija = mysql_result($q10,0,0);
+		$q10 = db_query("SELECT naziv FROM studij WHERE id=$studij");
+		$naziv_studija = db_result($q10,0,0);
 		$uslov .= "  AND pp.studij_prvi=$studij";
 	}
 
-	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum, pt.predsjednik_komisije from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	if (db_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
+		zamgerlog2("nepostojeci termin prijemnog", $termin);
 		return;
 	}
-	$ag = mysql_result($q10,0,0);
-	$datum = date("d. m. Y.", mysql_result($q10,0,1));
-	$ciklus = mysql_result($q10,0,2);
+	$ag = db_result($q10,0,0);
+	$datum = date("d. m. Y.", db_result($q10,0,1));
+	$ciklus = db_result($q10,0,2);
+	$predsjednik_komisije = db_result($q10,0,5);
 
 	$naslov3 = "";
 	if ($ciklus>1) {
@@ -62,8 +72,8 @@ if ($_REQUEST['akcija']=="kandidati") {
 	}
 
 	// Koji po redu termin?
-	$q20 = myquery("select count(*)+1 from prijemni_termin where ciklus_studija=$ciklus and akademska_godina=".mysql_result($q10,0,3)." and datum='".mysql_result($q10,0,4)."' and id<$termin");
-	$rednibroj = mysql_result($q20,0,0);
+	$q20 = db_query("select count(*)+1 from prijemni_termin where ciklus_studija=$ciklus and akademska_godina=".db_result($q10,0,3)." and datum='".db_result($q10,0,4)."' and id<$termin");
+	$rednibroj = db_result($q20,0,0);
 	if ($rednibroj==1) { 
 		$naslov2 = "kvalifikacioni ispit"; 
 	} else { 
@@ -75,7 +85,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<h4>Univerzitet u Sarajevu<br />
 	Elektrotehnički fakultet Sarajevo</h4>
 
-	<h3>Spisak kandidata <?=$naslov1?> za <?=$naslov2?> <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu</h3>
+	<h3>Spisak kandidata <?=$naslov1?> za <?=$naslov2?> <?=$datum?> godine za upis kandidata<?=$naslov3?> u akademsku <?=$ag?> godinu<?=$borci_naslov?></h3>
 	<? if ($studij!=0) { ?><h2 align="left">Studij: <?=$naziv_studija?></h2><? } ?>
 	<br /><?
 
@@ -83,9 +93,13 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Glavni upit
 
 	if ($ciklus==1)
-		$q = myquery("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba $uslov $orderby");
+		$q = db_query("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po
+		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 	else
-		$q = myquery("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba $uslov $orderby");
+		$q = db_query("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu, prijemni_obrazac as po
+		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 
 	
 	?>
@@ -93,6 +107,10 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<tr>
 	<td width="10"><b>R.br.</b></td>
 	<td><b>Prezime i ime</b></td><? 
+	if ($kodovi) { 
+		?><td width="100"><b>Kod</b></td>
+		<td width="100"><b>JMBG</b></td><? 
+	}
 	if (!$sakrij_bodove) { 
 		?>
 		<td width="100"><b>Opći uspjeh</b></td>
@@ -104,12 +122,13 @@ if ($_REQUEST['akcija']=="kandidati") {
 	?></tr>
 	<?
 	$brojac = 1;
-	while ($kandidat=mysql_fetch_row($q))
+	while ($kandidat=db_fetch_row($q))
 	{
 		?>
 		<tr>
 		<td align="center"><?=$brojac?></td>
 		<td><?=$kandidat[1]?> <?=$kandidat[0]?></td><? 
+		if ($kodovi) { ?><td><?=$kandidat[6]?></td><td><?=$kandidat[7]?></td><? }
 		if (!$sakrij_bodove) { 
 			?>
 			<td align="center"><? vprintf("%3.2f",$kandidat[2])?></td>
@@ -167,24 +186,26 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	// Naslov
 
-	$q10 = myquery("SELECT naziv FROM studij WHERE id=$studij");
-	$naziv_studija = mysql_result($q10,0,0);
+	$q10 = db_query("SELECT naziv FROM studij WHERE id=$studij");
+	$naziv_studija = db_result($q10,0,0);
 
-	$q10 = myquery("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
-	if (mysql_num_rows($q10)<1) {
+	$q10 = db_query("select ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija, pt.akademska_godina, pt.datum, pt.predsjednik_komisije from prijemni_termin as pt, akademska_godina as ag where pt.id=$termin and pt.akademska_godina=ag.id");
+	if (db_num_rows($q10)<1) {
 		niceerror("Nepostojeći termin prijemnog ispita");
 		zamgerlog("nepostojeci termin prijemnog $termin", 3);
+		zamgerlog2("nepostojeci termin prijemnog", $termin);
 		return;
 	}
-	$ag = mysql_result($q10,0,0);
-	$datum = date("d. m. Y.", mysql_result($q10,0,1));
-	$ciklus = mysql_result($q10,0,2);
+	$ag = db_result($q10,0,0);
+	$datum = date("d. m. Y.", db_result($q10,0,1));
+	$ciklus = db_result($q10,0,2);
+	$predsjednik_komisije = db_result($q10,0,5);
 
 	$naslov3 = " u prvu godinu $ciklus. ciklusa studija";
 
 	// Koji po redu termin?
-	$q20 = myquery("select count(*)+1 from prijemni_termin where ciklus_studija=$ciklus and akademska_godina=".mysql_result($q10,0,3)." and datum='".mysql_result($q10,0,4)."' and id<$termin");
-	$rednibroj = mysql_result($q20,0,0);
+	$q20 = db_query("select count(*)+1 from prijemni_termin where ciklus_studija=$ciklus and akademska_godina=".db_result($q10,0,3)." and datum='".db_result($q10,0,4)."' and id<$termin");
+	$rednibroj = db_result($q20,0,0);
 	if ($rednibroj==1) { 
 		$naslov2 = "prijemnog ispita"; 
 	} else { 
@@ -202,9 +223,9 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<?
 
 	// Kriteriji za upis
-	$quk = myquery ("SELECT donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max
+	$quk = db_query ("SELECT donja_granica, gornja_granica, kandidati_strani, kandidati_sami_placaju, kandidati_kanton_placa, kandidati_vanredni, prijemni_max
 	FROM upis_kriterij WHERE studij=$studij AND prijemni_termin=$termin");
-	if (mysql_num_rows($quk) < 1) {
+	if (db_num_rows($quk) < 1) {
 		niceerror("Nisu definisani kriteriji za upis na studij");
 		print "<p>Ne možemo napraviti rang listu ako ne znamo koliko studenata se prima na studij. Idite na link \"Kriteriji za upis\" i podesite parametre.</p>";
 		print "<a href=\"javascript:history.go(-1);\">Nazad</a>";
@@ -213,34 +234,34 @@ if ($_REQUEST['akcija']=="kandidati") {
 		return;
 	}
 	
-	$bodovihard = floatval(mysql_result($quk, 0, 0));
-	$bodovisoft = floatval(mysql_result($quk, 0, 1));
-	$kandidatisd = intval(mysql_result($quk,0,2));
-	$kandidatisp = intval(mysql_result($quk,0,3));
-	$kandidatikp = intval(mysql_result($quk,0,4));
-	$kandidativan = intval(mysql_result($quk,0,5));
-	$prijemnimax = floatval(mysql_result($quk,0,6));
+	$bodovihard = floatval(db_result($quk, 0, 0));
+	$bodovisoft = floatval(db_result($quk, 0, 1));
+	$kandidatisd = intval(db_result($quk,0,2));
+	$kandidatisp = intval(db_result($quk,0,3));
+	$kandidatikp = intval(db_result($quk,0,4));
+	$kandidativan = intval(db_result($quk,0,5));
+	$prijemnimax = floatval(db_result($quk,0,6));
 
 	// Kantoni
-	$qkanton = myquery("select id, kratki_naziv from kanton");
+	$qkanton = db_query("select id, kratki_naziv from kanton");
 	$kantoni = array();
-	while ($rkanton = mysql_fetch_row($qkanton))
+	while ($rkanton = db_fetch_row($qkanton))
 		$kantoni[$rkanton[0]] = $rkanton[1];
 
 	// Spisak svih kandidata se učitava u niz
 	if ($ciklus==1)
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
 		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us
 		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
 		ORDER BY ukupno DESC");
 	else
-		$qispis = myquery ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
 		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu
 		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
 		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
-	while($rezultat = mysql_fetch_row($qispis)) {
+	while($rezultat = db_fetch_row($qispis)) {
 		$id = $rezultat[0];
 		$kandidati[$id] = array('prezime_ime'=>$rezultat[1], 'kanton'=>$kantoni[$rezultat[3]], 'opci_uspjeh'=>$rezultat[2], 'kanton_id'=>$rezultat[3], 'kljucni_predmeti'=>$rezultat[4], 'dodatni_bodovi'=>$rezultat[5], 'prijemni_ispit'=>$rezultat[6], 'ukupno'=>$rezultat[7], 'nacin_studiranja'=>$rezultat[8]);
 
@@ -455,7 +476,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 
 	// Položili prijemni ali nisu stekli uvjete
-	$j = 1;
+	/*$j = 1;
 	$palo=0;
 	$drugiodsjek=0;
 	foreach ($kandidati as $id => $kandidat) {
@@ -482,7 +503,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 		<?
 		$j++;
 		unset($kandidati[$id]);
-	}
+	}*/
 
 	// Nisu se upisali
 	$k = 1;
@@ -546,7 +567,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<td align="center">Predsjednik komisije:<br>
 	<br>
 	<br>
-	Prof. dr Narcis Behlilović, dipl. ing. el.</td>
+	<?=tituliraj($predsjednik_komisije)?></td>
 	</tr></table>
 	<?
 

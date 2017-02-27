@@ -1,4 +1,5 @@
 <?
+
 // COMMON/CRON - periodicno izvrsavanje skripti
 
 
@@ -37,7 +38,7 @@ function cron_find($localtime, $idx, $opseg) {
 function common_cron() {
 	global $conf_files_path, $user_siteadmin;
 	
-	$force = intval($_GET['force']);
+	$force = int_param('force');
 	if ($force>0) {
 		if (!$user_siteadmin) {
 			niceerror("Nemate dozvolu da ovo izvršite.");
@@ -49,14 +50,14 @@ function common_cron() {
 	} else
 		$upit = "aktivan=1 AND sljedece_izvrsenje<NOW()";
 
-	$q10 = myquery("SELECT id, path, UNIX_TIMESTAMP(zadnje_izvrsenje), godina, mjesec, dan, sat, minuta, sekunda FROM cron WHERE $upit");
+	$q10 = db_query("SELECT id, path, UNIX_TIMESTAMP(zadnje_izvrsenje), godina, mjesec, dan, sat, minuta, sekunda FROM cron WHERE $upit");
 	
-	if (mysql_num_rows($q10)==0 && $force>0) {
+	if (db_num_rows($q10)==0 && $force>0) {
 		niceerror("Nije pronađen zadatak koji odgovara upitu.");
 		return;
 	}
 	
-	while ($r10 = mysql_fetch_row($q10)) {
+	while ($r10 = db_fetch_row($q10)) {
 		// Određujemo sljedeće vrijeme izvršenja
 		$localtime = localtime();
 		$localtime = cron_find($localtime, 0, $r10[8]);
@@ -68,9 +69,9 @@ function common_cron() {
 		$nexttime = mktime($localtime[2], $localtime[1], $localtime[0], $localtime[4]+1, $localtime[3], $localtime[5]+1900);
 
 		// Ažuriramo bazu
-		$q20 = myquery("UPDATE cron SET zadnje_izvrsenje=NOW(), sljedece_izvrsenje=FROM_UNIXTIME($nexttime) WHERE id=$r10[0]");
-		$q30 = myquery("INSERT INTO cron_rezultat SET cron=$r10[0], izlaz='(Nije završeno)', return_value=0, vrijeme=NOW()");
-		$id = mysql_insert_id();
+		$q20 = db_query("UPDATE cron SET zadnje_izvrsenje=NOW(), sljedece_izvrsenje=FROM_UNIXTIME($nexttime) WHERE id=$r10[0]");
+		$q30 = db_query("INSERT INTO cron_rezultat SET cron=$r10[0], izlaz='(Nije završeno)', return_value=0, vrijeme=NOW()");
+		$id = db_insert_id();
 
 		// Pripremamo za izvršenje
 		$exec = str_replace("---LASTTIME---", $r10[2], $r10[1]);
@@ -82,8 +83,8 @@ function common_cron() {
 		$k = exec($exec, $blah, $return);
 		
 		// Stavljamo izlaz u bazu
-		$izlaz = my_escape(iconv("UTF-8","UTF-8//IGNORE", join("\n",$blah)));
-		$q40 = myquery("UPDATE cron_rezultat SET return_value=$return, izlaz='$izlaz' WHERE id=$id");
+		$izlaz = db_escape(iconv("UTF-8","UTF-8//IGNORE", join("\n",$blah)));
+		$q40 = db_query("UPDATE cron_rezultat SET return_value=$return, izlaz='$izlaz' WHERE id=$id");
 		
 		if ($force>0) {
 			nicemessage("Uspješno izvršena skripta.");

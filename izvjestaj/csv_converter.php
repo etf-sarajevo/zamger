@@ -1,5 +1,9 @@
 <?
-  
+
+// IZVJESTAJ/CSV_CONVERTER - konvertuje bilo koji HTML izvještaj u CSV format
+
+
+
 function ob_file_callback($buffer) {
 	global $sadrzaj_bafera_za_csv;
 	$sadrzaj_bafera_za_csv=$buffer;
@@ -13,13 +17,13 @@ function izvjestaj_csv_converter() {
 	// Određujemo separator iz korisničkih preferenci
 	$separator = ";";
 	if ($userid>0) {
-		$q10 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-separator'");
-		if (mysql_num_rows($q10)>0)
-			$separator = mysql_result($q10,0,0);
+		$q10 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='csv-separator'");
+		if (db_num_rows($q10)>0)
+			$separator = db_result($q10,0,0);
 	}
 
 	ob_start('ob_file_callback');
-	$koji = my_escape($_REQUEST['koji_izvjestaj']);
+	$koji = db_escape($_REQUEST['koji_izvjestaj']);
 	$staf = str_replace("/","_",$koji);
 
 	$found=false;
@@ -51,9 +55,9 @@ function izvjestaj_csv_converter() {
 	// Konverzija charseta
 	$encoding = "Windows-1250";
 	if ($userid>0) {
-		$q10 = myquery("select vrijednost from preference where korisnik=$userid and preferenca='csv-encoding'");
-		if (mysql_num_rows($q10)>0)
-			$encoding = mysql_result($q10,0,0);
+		$q10 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='csv-encoding'");
+		if (db_num_rows($q10)>0)
+			$encoding = db_result($q10,0,0);
 	}
 	if ($encoding != "UTF-8") $sadrzaj_bafera_za_csv = iconv("UTF-8", $encoding, $sadrzaj_bafera_za_csv);
 

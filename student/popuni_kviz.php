@@ -2,51 +2,54 @@
 
 // STUDENT/POPUNI_KVIZ - popunjavanje kviza
 
+
+
 function student_popuni_kviz() {
+
 	global $userid;
 	
 	$kviz = intval($_REQUEST['kviz']);
 	if ($_REQUEST['akcija']=="salji") {
 		// Ako je akcija salji, dodajemo vrijeme aktivacije
-		$q5 = myquery("select vrijeme_aktivacije from kviz_student where student=$userid and kviz=$kviz");
-		if (mysql_num_rows($q5)<1) {
+		$q5 = db_query("select vrijeme_aktivacije from kviz_student where student=$userid and kviz=$kviz");
+		if (db_num_rows($q5)<1) {
 			niceerror("Molimo ponovite kviz");
 			zamgerlog("poslao popunjen kviz $kviz a nema stavke u student_kviz", 3);
 			zamgerlog2("poslao popunjen kviz a nema stavke u student_kviz", $kviz);
 			return;
 		}
-		$vrijeme_kraja = "'".mysql_result($q5,0,0)."' + INTERVAL (trajanje_kviza+60) SECOND";
+		$vrijeme_kraja = "'".db_result($q5,0,0)."' + INTERVAL (trajanje_kviza+60) SECOND";
 		// Dodajemo 60 sekundi na trajanje, zbog evt. problema sa konekcijom
 	} else
 		$vrijeme_kraja = "vrijeme_kraj";
 
-	$q10 = myquery("select naziv, predmet, akademska_godina, aktivan, vrijeme_pocetak<NOW(), $vrijeme_kraja > NOW(), labgrupa, ip_adrese, broj_pitanja, trajanje_kviza, prolaz_bodova FROM kviz where id=$kviz");
-	if (mysql_num_rows($q10)<1) { // Postoji li kviz
+	$q10 = db_query("select naziv, predmet, akademska_godina, aktivan, vrijeme_pocetak<NOW(), $vrijeme_kraja > NOW(), labgrupa, ip_adrese, broj_pitanja, trajanje_kviza, prolaz_bodova FROM kviz where id=$kviz");
+	if (db_num_rows($q10)<1) { // Postoji li kviz
 		niceerror("Kviz ne postoji");
 		zamgerlog("pristup nepostojecem kvizu $kviz", 3);
 		zamgerlog2("pristup nepostojecem kvizu", $kviz);
 		return;
 	}
 	
-	$naziv_ankete = mysql_result($q10,0,0);
-	$predmet = mysql_result($q10,0,1);
-	$ag = mysql_result($q10,0,2);
-	$broj_pitanja = mysql_result($q10,0,8);
-	$trajanje_kviza = mysql_result($q10,0,9); // u sekundama
-	$prolaz_bodova = mysql_result($q10,0,10);
+	$naziv_ankete = db_result($q10,0,0);
+	$predmet = db_result($q10,0,1);
+	$ag = db_result($q10,0,2);
+	$broj_pitanja = db_result($q10,0,8);
+	$trajanje_kviza = db_result($q10,0,9); // u sekundama
+	$prolaz_bodova = db_result($q10,0,10);
 	
 	// Da li student sluša predmet? Ujedno i naziv predmeta
-	$q20 = myquery("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag");
-	if (mysql_num_rows($q20)<1) {
+	$q20 = db_query("select p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag");
+	if (db_num_rows($q20)<1) {
 		niceerror("Nemate pristup ovom kvizu");
 		zamgerlog("student nije na predmetu za kviz $kviz", 3);
 		zamgerlog2("student nije na predmetu", $kviz);
 		return;
 	}
-	$naziv_predmeta = mysql_result($q20,0,0);
+	$naziv_predmeta = db_result($q20,0,0);
 	
 	// Da li je aktivan kviz
-	if (mysql_result($q10,0,3) != 1) {
+	if (db_result($q10,0,3) != 1) {
 		niceerror("Kviz nije aktivan");
 		zamgerlog("kviz nije aktivan $kviz", 3);
 		zamgerlog2("kviz nije aktivan", $kviz);
@@ -54,18 +57,18 @@ function student_popuni_kviz() {
 	}
 	
 	// Da li je vrijeme za kviz
-	if (mysql_result($q10,0,4) != 1 || mysql_result($q10,0,5) != 1) {
-		niceerror("Vrijeme za ovaj kviz je isteklo ".mysql_result($q10,0,4));
+	if (db_result($q10,0,4) != 1 || db_result($q10,0,5) != 1) {
+		niceerror("Vrijeme za ovaj kviz je isteklo ".db_result($q10,0,4));
 		zamgerlog("vrijeme isteklo za kviz $kviz", 3);
 		zamgerlog2("vrijeme isteklo",$kviz);
 		return;
 	}
 
 	// Da li je u labgrupi?
-	$labgrupa=mysql_result($q10,0,6);
+	$labgrupa=db_result($q10,0,6);
 	if ($labgrupa>0) {
-		$q30 = myquery("select count(*) from student_labgrupa where student=$userid and labgrupa=$labgrupa");
-		if (mysql_result($q30,0,0)==0) {
+		$q30 = db_query("select count(*) from student_labgrupa where student=$userid and labgrupa=$labgrupa");
+		if (db_result($q30,0,0)==0) {
 			niceerror("Nemate pristup ovom kvizu");
 			zamgerlog("student nije u labgrupi $labgrupa za kviz $kviz", 3);
 			zamgerlog2("student nije u odgovarajucoj labgrupi", intval($labgrupa), intval($kviz));
@@ -74,11 +77,11 @@ function student_popuni_kviz() {
 	}
 	
 	// Provjera IP adrese
-	if (mysql_result($q10,0,7) != "") {
+	if (db_result($q10,0,7) != "") {
 		$moja_ip = getip();
 		$ispravna = false;
 
-		$blokovi = explode(",", mysql_result($q10,0,7));
+		$blokovi = explode(",", db_result($q10,0,7));
 		foreach ($blokovi as $blok) {
 			if (strstr($blok, "/")) { // adresa u CIDR formatu
 				// Npr. 192.168.0.1/24
@@ -133,8 +136,8 @@ function student_popuni_kviz() {
 			// MCSA - ako je dato više tačnih odgovora na pitanje, uvažavamo bilo koji
 			$id_pitanja = $_REQUEST["rbrpitanje$i"];
 			$tacan_odgovor = false;
-			$q200 = myquery("select kp.tekst, kp.bodova, ko.id from kviz_pitanje as kp, kviz_odgovor as ko where kp.id=$id_pitanja and ko.kviz_pitanje=kp.id and ko.tacan=1");
-			while ($r200 = mysql_fetch_row($q200)) {
+			$q200 = db_query("select kp.tekst, kp.bodova, ko.id from kviz_pitanje as kp, kviz_odgovor as ko where kp.id=$id_pitanja and ko.kviz_pitanje=kp.id and ko.tacan=1");
+			while ($r200 = db_fetch_row($q200)) {
 				$tekst_pitanja = $r200[0];
 				$bodova_pitanje = $r200[1];
 				if ($_REQUEST["odgovor"][$id_pitanja] == $r200[2]) $tacan_odgovor = true;
@@ -146,17 +149,17 @@ function student_popuni_kviz() {
 			if ($tacan_odgovor) {
 				$uk_bodova += $bodova_pitanje;
 				$ispis_rezultata .= '<img src="images/16x16/zad_ok.png" width="16" height="16">'."</td><td>$bodova_pitanje</td></tr>";
-				$q205 = myquery("UPDATE kviz_pitanje SET ukupno=ukupno+1, tacnih=tacnih+1 WHERE id=$id_pitanja");
+				$q205 = db_query("UPDATE kviz_pitanje SET ukupno=ukupno+1, tacnih=tacnih+1 WHERE id=$id_pitanja");
 			} else {
 				$ispis_rezultata .= '<img src="images/16x16/brisanje.png" width="16" height="16">'."</td><td>0</td></tr>";
-				$q208 = myquery("UPDATE kviz_pitanje SET ukupno=ukupno+1 WHERE id=$id_pitanja");
+				$q208 = db_query("UPDATE kviz_pitanje SET ukupno=ukupno+1 WHERE id=$id_pitanja");
 			}
 		}
 		/*
-		$q200 = myquery("select kp.id, kp.bodova, ko.id, ko.tacan, kp.tekst from kviz_pitanje as kp, kviz_odgovor as ko where ko.kviz_pitanje=kp.id and kp.kviz=$kviz");
+		$q200 = db_query("select kp.id, kp.bodova, ko.id, ko.tacan, kp.tekst from kviz_pitanje as kp, kviz_odgovor as ko where ko.kviz_pitanje=kp.id and kp.kviz=$kviz");
 		$ispis_rezultata = "";
 		$rbr=1;
-		while ($r200 = mysql_fetch_row($q200)) {
+		while ($r200 = db_fetch_row($q200)) {
 			$id_pitanja = $r200[0];
 			$id_odgovora = $r200[2];
 			if ($_REQUEST["odgovor"][$id_pitanja] == $id_odgovora && $r200[3]==1) 
@@ -173,7 +176,7 @@ function student_popuni_kviz() {
 				$ispis_rezultata .= '<img src="images/16x16/brisanje.png" width="16" height="16">'."</td><td>0</td></tr>";
 		}
 		*/
-		$q210 = myquery("update kviz_student set dovrsen=1, bodova=$uk_bodova where student=$userid and kviz=$kviz");
+		$q210 = db_query("update kviz_student set dovrsen=1, bodova=$uk_bodova where student=$userid and kviz=$kviz");
 		print "<center><h1>Kviz završen</h1></center>\n";
 		nicemessage("Osvojili ste $uk_bodova bodova.");
 		if ($uk_bodova>=$prolaz_bodova) nicemessage("Čestitamo");
@@ -193,8 +196,8 @@ function student_popuni_kviz() {
 	
 	
 	// Da li je već ranije popunjavao kviz?
-	$q40 = myquery("select count(*) from kviz_student where student=$userid and kviz=$kviz");
-	if (mysql_result($q40,0,0)>0) {
+	$q40 = db_query("select count(*) from kviz_student where student=$userid and kviz=$kviz");
+	if (db_result($q40,0,0)>0) {
 		niceerror("Već ste popunjavali ovaj kviz");
 		zamgerlog("vec popunjavan kviz $kviz", 3);
 		zamgerlog2("vec popunjavan kviz", $kviz);
@@ -202,7 +205,7 @@ function student_popuni_kviz() {
 	}
 	
 	// Ubacujemo da je započeo kviz
-	$q50 = myquery("insert into kviz_student set student=$userid, kviz=$kviz, dovrsen=0, bodova=0, vrijeme_aktivacije=NOW()");
+	$q50 = db_query("insert into kviz_student set student=$userid, kviz=$kviz, dovrsen=0, bodova=0, vrijeme_aktivacije=NOW()");
 	
 		
 	// Student može sudjelovati u kvizu pa šaljemo HTML
@@ -289,8 +292,8 @@ function student_popuni_kviz() {
 	<?
 		// ISPISI PITANJA
 		$i=0;
-		$q100 = myquery("select id, tip, tekst from kviz_pitanje where vidljivo=1 and kviz=$kviz order by RAND() limit 0,$broj_pitanja");
-		while ($r100 = mysql_fetch_array($q100)) {
+		$q100 = db_query("select id, tip, tekst from kviz_pitanje where vidljivo=1 and kviz=$kviz order by RAND() limit 0,$broj_pitanja");
+		while ($r100 = db_fetch_assoc($q100)) {
 			$i++;
 			$pitanje_id = $r100[0];
 			$pitanje = $r100[2];
@@ -304,8 +307,8 @@ function student_popuni_kviz() {
 					<table>
 					<?
 						// ISPISI ODGOVORE ZA PITANJE
-						$q110 = mysql_query("select id, tekst from kviz_odgovor where vidljiv=1 and kviz_pitanje=".$pitanje_id." order by RAND()");
-						while ($r110 = mysql_fetch_array($q110)) {
+						$q110 = db_query("select id, tekst from kviz_odgovor where vidljiv=1 and kviz_pitanje=".$pitanje_id." order by RAND()");
+						while ($r110 = db_fetch_assoc($q110)) {
 							$odgovor = $r110[1];
 							$odgovor_id = $r110[0];
 							// FIXME: moze mapipulirati id odgovora i pitanja kada salje...

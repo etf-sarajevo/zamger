@@ -23,15 +23,15 @@ if ($tip == "zadaca") {
 	$zadatak = intval($_REQUEST['zadatak']);
 	$student = intval($_REQUEST['student']);
 
-	$q5 = myquery("select predmet, akademska_godina from zadaca where id=$zadaca");
-	if (mysql_num_rows($q5)<1) {
+	$q5 = db_query("select predmet, akademska_godina from zadaca where id=$zadaca");
+	if (db_num_rows($q5)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3);
 		zamgerlog2("nepostojeca zadaca", $zadaca);
 		niceerror("Nepostojeća zadaća");
 		return;
 	}
-	$predmet = mysql_result($q5,0,0);
-	$ag = mysql_result($q5,0,1);
+	$predmet = db_result($q5,0,0);
+	$ag = db_result($q5,0,1);
 
 
 	if ($student==0) { // student otvara vlastitu zadaću
@@ -53,8 +53,8 @@ if ($tip == "zadaca") {
 		}
 		
 		if (!$user_siteadmin) {
-			$q10 = myquery("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-			if (mysql_result($q10,0,0)<1) {
+			$q10 = db_query("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+			if (db_result($q10,0,0)<1) {
 				zamgerlog("attachment: nije nastavnik na predmetu (student u$student zadaca z$zadaca)",3);
 				zamgerlog2("nije nastavnik na predmetu za zadacu", $zadaca);
 				niceerror("Nemate pravo pregleda ove zadaće");
@@ -62,13 +62,13 @@ if ($tip == "zadaca") {
 			}
 			
 			// Provjera ograničenja
-			$q20 = myquery("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-			if (mysql_num_rows($q20)>0) {
+			$q20 = db_query("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
+			if (db_num_rows($q20)>0) {
 				// Ako ograničenja postoje, dozvoljavamo korisniku da otvori zadaće samo studenata u labgrupama kojima inače može pristupiti
 				$nasao=0;
-				while ($r20 = mysql_fetch_row($q20)) {
-					$q25 = myquery("select count(*) from student_labgrupa where student=$student and labgrupa=$r20[0]");
-					if (mysql_result($q25,0,0)>0) { $nasao=1; break; }
+				while ($r20 = db_fetch_row($q20)) {
+					$q25 = db_query("select count(*) from student_labgrupa where student=$student and labgrupa=$r20[0]");
+					if (db_result($q25,0,0)>0) { $nasao=1; break; }
 				}
 				if ($nasao == 0) {
 					zamgerlog("ogranicenje na predmet (student u$student predmet p$ponudakursa)",3);
@@ -83,8 +83,8 @@ if ($tip == "zadaca") {
 
 	// Da li neko pokušava da spoofa zadaću?
 	
-	$q30 = myquery("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (mysql_result($q30,0,0)<1) {
+	$q30 = db_query("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (db_result($q30,0,0)<1) {
 		zamgerlog("student nije upisan na predmet (student u$student zadaca z$zadaca)",3);
 		zamgerlog2("student ne slusa predmet za zadacu", $zadaca);
 		niceerror("Student nije upisan na predmet");
@@ -96,15 +96,15 @@ if ($tip == "zadaca") {
 
 	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/";
 	
-	$q40 = myquery("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
-	if (mysql_num_rows($q40) < 1) {
+	$q40 = db_query("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
+	if (db_num_rows($q40) < 1) {
 		zamgerlog("ne postoji attachment (zadaca $zadaca zadatak $zadatak student $student)",3);
 		zamgerlog2("ne postoji attachment", intval($student), $zadaca, $zadatak);
 		niceerror("Ne postoji attachment");
 		return;
 	}
 	
-	$filename = mysql_result($q40,0,0);
+	$filename = db_result($q40,0,0);
 	$filepath = $lokacijazadaca.$filename;
 }
 
@@ -115,17 +115,17 @@ if ($tip == "zadaca") {
 if ($tip == "postavka") {
 	$zadaca=intval($_REQUEST['zadaca']);
 	
-	$q100 = myquery("select predmet, akademska_godina, postavka_zadace from zadaca where id=$zadaca");
-	if (mysql_num_rows($q100)<1) {
+	$q100 = db_query("select predmet, akademska_godina, postavka_zadace from zadaca where id=$zadaca");
+	if (db_num_rows($q100)<1) {
 		zamgerlog("nepostojeca zadaca $zadaca",3);
 		zamgerlog2("nepostojeca zadaca", $zadaca);
 		niceerror("Nepostojeća zadaća");
 		return;
 	}
 	
-	$predmet = mysql_result($q100,0,0);
-	$ag = mysql_result($q100,0,1);
-	$postavka_zadace = mysql_result($q100,0,2);
+	$predmet = db_result($q100,0,0);
+	$ag = db_result($q100,0,1);
+	$postavka_zadace = db_result($q100,0,2);
 
 	if ($postavka_zadace == "") {
 		niceerror("Postavka ne postoji");
@@ -139,12 +139,12 @@ if ($tip == "postavka") {
 
 	if ($user_siteadmin) $ok = true;
 	if ($user_nastavnik && !$ok) {
-		$q110 = myquery("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-		if (mysql_result($q110,0,0)>0) $ok = true;
+		$q110 = db_query("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+		if (db_result($q110,0,0)>0) $ok = true;
 	}
 	if ($user_student && !$ok) {
-		$q120 = myquery("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		if (mysql_result($q120,0,0)>0) $ok = true;
+		$q120 = db_query("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+		if (db_result($q120,0,0)>0) $ok = true;
 	}
 
 	if (!$ok) {
@@ -166,26 +166,26 @@ if ($tip == "projekat") {
 	$projekat = intval($_REQUEST['projekat']);
 	$id = intval($_REQUEST['id']); //file ID
 
-	$q200 = myquery("select predmet, akademska_godina from projekat where id=$projekat");
-	if (mysql_num_rows($q200)<1) {
+	$q200 = db_query("select predmet, akademska_godina from projekat where id=$projekat");
+	if (db_num_rows($q200)<1) {
 		zamgerlog("nepostojeci projekat $projekat",3);
 		zamgerlog2("nepostojeci projekat", $projekat);
 		niceerror("Nepostojeći projekat");
 		return;
 	}
-	$predmet = mysql_result($q200,0,0);
-	$ag = mysql_result($q200,0,1);
+	$predmet = db_result($q200,0,0);
+	$ag = db_result($q200,0,1);
 
 	$ok = false;
 
 	if ($user_siteadmin) $ok = true;
 	if ($user_nastavnik && !$ok) {
-		$q210 = myquery("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-		if (mysql_num_rows($q210)>0 && mysql_result($q210,0,0)!="asistent") $ok = true;
+		$q210 = db_query("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+		if (db_num_rows($q210)>0 && db_result($q210,0,0)!="asistent") $ok = true;
 	}
 	if ($user_student && !$ok) {
-		$q220 = myquery("SELECT count(*) FROM student_projekat WHERE student=$userid and projekat=$projekat");
-		if (mysql_result($q220,0,0)>0) $ok = true;
+		$q220 = db_query("SELECT count(*) FROM student_projekat WHERE student=$userid and projekat=$projekat");
+		if (db_result($q220,0,0)>0) $ok = true;
 	}
 
 	if (!$ok) {
@@ -195,17 +195,17 @@ if ($tip == "projekat") {
 		return;
 	}
 	
-	$q230 = myquery("select osoba, revizija, filename from projekat_file where id=$id");
-	if (mysql_num_rows($q230)<1) {
+	$q230 = db_query("select osoba, revizija, filename from projekat_file where id=$id");
+	if (db_num_rows($q230)<1) {
 		zamgerlog("nepostojeci file $id na projektu $projekat", 3);
 		zamgerlog2("nepostojeci file na projektu", $projekat, $id);
 		niceerror("Nepoznat ID $id");
 		return;
 	}
 	
-	$fileosoba = mysql_result($q230,0,0);
-	$revizija = mysql_result($q230,0,1);
-	$filename = mysql_result($q230,0,2);
+	$fileosoba = db_result($q230,0,0);
+	$revizija = db_result($q230,0,1);
+	$filename = db_result($q230,0,2);
 
 	$filepath = "$conf_files_path/projekti/fajlovi/$projekat/$fileosoba/$filename/v$revizija/$filename";
 }
@@ -217,26 +217,26 @@ if ($tip == "zavrsni") {
 	$zavrsni = intval($_REQUEST['zavrsni']);
 	$id = intval($_REQUEST['id']); //file ID
 
-	$q300 = myquery("select predmet, akademska_godina from zavrsni where id=$zavrsni");
-	if (mysql_num_rows($q300)<1) {
+	$q300 = db_query("select predmet, akademska_godina from zavrsni where id=$zavrsni");
+	if (db_num_rows($q300)<1) {
 		zamgerlog("nepostojeca tema zavrsnog rada $zavrsni",3);
 		zamgerlog2("nepostojeca tema zavrsnog rada", $zavrsni);
 		niceerror("Nepostojeća tema završnog rada.");
 		return;
 	}
-	$predmet = mysql_result($q300,0,0);
-	$ag = mysql_result($q300,0,1);
+	$predmet = db_result($q300,0,0);
+	$ag = db_result($q300,0,1);
 
 	$ok = false;
 
 	if ($user_siteadmin) $ok = true;
 	if ($user_nastavnik && !$ok) {
-		$q310 = myquery("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-		if (mysql_num_rows($q310)>0 && mysql_result($q310,0,0)!="asistent") $ok = true;
+		$q310 = db_query("select nivo_pristupa from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
+		if (db_num_rows($q310)>0 && db_result($q310,0,0)!="asistent") $ok = true;
 	}
 	if ($user_student && !$ok) {
-		$q320 = myquery("SELECT count(*) FROM zavrsni WHERE student=$userid and id=$zavrsni");
-		if (mysql_result($q320,0,0)>0) $ok = true;
+		$q320 = db_query("SELECT count(*) FROM zavrsni WHERE student=$userid and id=$zavrsni");
+		if (db_result($q320,0,0)>0) $ok = true;
 	}
 
 	if (!$ok) {
@@ -246,16 +246,16 @@ if ($tip == "zavrsni") {
 		return;
 	}
 	
-	$q330 = myquery("select revizija, filename from zavrsni_file where id=$id");
-	if (mysql_num_rows($q330)<1) {
+	$q330 = db_query("select revizija, filename from zavrsni_file where id=$id");
+	if (db_num_rows($q330)<1) {
 		zamgerlog("nepostojeci file $id na zavrsnom radu $zavrsni", 3);
 		zamgerlog2("nepostojeci file na zavrsnom radu", $zavrsni, $id);
 		niceerror("Nepoznat ID $id");
 		return;
 	}
 	
-	$revizija = mysql_result($q330,0,0);
-	$filename = mysql_result($q330,0,1);
+	$revizija = db_result($q330,0,0);
+	$filename = db_result($q330,0,1);
 
 	$filepath = "$conf_files_path/zavrsni/fajlovi/$zavrsni/$filename/v$revizija/$filename";
 }

@@ -1,6 +1,6 @@
 <?
 
-// IZVJESTAJ/PO_KANTONIMA
+// IZVJESTAJ/PO_KANTONIMA - spisak svih studenata po kantonima
 
 
 
@@ -20,18 +20,18 @@ Elektrotehnički fakultet Sarajevo</p>
 $ak_god = intval($_REQUEST['akademska_godina']);
 if ($ak_god==0) {
 	// Aktuelna godina
-	$q10 = myquery("select id, naziv from akademska_godina where aktuelna=1");
-	$ak_god = mysql_result($q10,0,0);
-	$ak_god_naziv = mysql_result($q10,0,1);
+	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
+	$ak_god = db_result($q10,0,0);
+	$ak_god_naziv = db_result($q10,0,1);
 } else {
-	$q10 = myquery("select naziv from akademska_godina where id=$ak_god");
-	$ak_god_naziv = mysql_result($q10,0,0);
+	$q10 = db_query("select naziv from akademska_godina where id=$ak_god");
+	$ak_god_naziv = db_result($q10,0,0);
 }
 
 
 $kanton=array();
-$q20 = myquery("select id, naziv from kanton order by id");
-while ($r20 = mysql_fetch_row($q20))
+$q20 = db_query("select id, naziv from kanton order by id");
+while ($r20 = db_fetch_row($q20))
 	$kanton[$r20[0]] = $r20[1];
 
 
@@ -102,8 +102,8 @@ foreach ($kanton as $id_kantona => $naziv_kantona) {
 					if ($id_kantona==1000) {
 						$broj = $summa_summarum[$ponovac][$nacin][$ciklus][$godina];
 					} else {
-						$q30 = myquery("select count(*) from student_studij as ss, studij as s, tipstudija as ts, osoba as o where ss.semestar=$semestar and ss.akademska_godina=$ak_god and ss.nacin_studiranja=$nacin and ss.ponovac=$ponovac and ss.student=o.id and o.kanton=$id_kantona and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus");
-						$broj = mysql_result($q30,0,0);
+						$q30 = db_query("select count(*) from student_studij as ss, studij as s, tipstudija as ts, osoba as o where ss.semestar=$semestar and ss.akademska_godina=$ak_god and ss.nacin_studiranja=$nacin and ss.ponovac=$ponovac and ss.student=o.id and o.kanton=$id_kantona and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=$ciklus");
+						$broj = db_result($q30,0,0);
 						$summa_summarum[$ponovac][$nacin][$ciklus][$godina] += $broj;
 					}
 
@@ -122,13 +122,13 @@ foreach ($kanton as $id_kantona => $naziv_kantona) {
 
 print "</table>";
 
-$q40 = myquery("select o.ime, o.prezime, o.id from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ak_god and ss.semestar mod 2 = 1 and (o.kanton=0 or o.kanton=-1) order by o.prezime, o.id");
-if (mysql_num_rows($q40)>0) {
+$q40 = db_query("select o.ime, o.prezime, o.id from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ak_god and ss.semestar mod 2 = 1 and (o.kanton=0 or o.kanton=-1) order by o.prezime, o.id");
+if (db_num_rows($q40)>0) {
 	?>
-	<p><font color="red"><?=mysql_num_rows($q40)?> studenata nema unesen validan kanton!</font></p>
+	<p><font color="red"><?=db_num_rows($q40)?> studenata nema unesen validan kanton!</font></p>
 	<p><a href="#" onclick="javascript:document.getElementById('nema_kanton').style.display='inline'; return false;">Prikaži</a></p>
 	<div id="nema_kanton" style="display:none"><?
-	while ($r40 = mysql_fetch_row($q40)) {
+	while ($r40 = db_fetch_row($q40)) {
 		print "<a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r40[2]\">$r40[1] $r40[0]</a><br>";
 	}
 	print "</div>\n";

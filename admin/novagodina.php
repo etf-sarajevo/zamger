@@ -1,8 +1,6 @@
 <?
 
-// ADMIN/NOVAGODINA - kreiranje nove akademske godine
-
-
+// ADMIN/NOVAGODINA - modul koji obavlja sve administrativne zadatke vezane uz početak nove akademske godine u sistemu
 
 
 
@@ -12,60 +10,52 @@ function admin_novagodina() {
 require("lib/manip.php");
 
 
-if ($_POST['akcija'] == "novagodina") {
-	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
+if (param('akcija') == "novagodina") {
+	if (param('fakatradi') != 1) $ispis=1; else $ispis=0;
 
-	$naziv = my_escape($_POST['godina']);
-	$q10 = myquery("select id from akademska_godina where naziv like '$naziv'");
-	if (mysql_num_rows($q10)<1) {
-		$q20 = myquery("select id from akademska_godina order by id desc limit 1");
-		$noviid = mysql_result($q20,0,0)+1;
-		$q30 = myquery("insert into akademska_godina set id=$noviid, naziv='$naziv', aktuelna=0");
-		$q10 = myquery("select id from akademska_godina where naziv like '$naziv'");
-		$ag = mysql_result($q10,0,0);
+	$naziv = db_escape(param('godina'));
+	$ag = db_get("select id from akademska_godina where naziv like '$naziv'");
+	if ($ag === false) {
+		$ag = db_get("select id+1 from akademska_godina order by id desc limit 1");
+		db_query("insert into akademska_godina set id=$ag, naziv='$naziv', aktuelna=0");
 		print "-- Kreirana nova akademska godina '$naziv' (ID: $ag). Koristite modul 'Parametri studija' da je proglasite za aktuelnu.<br/>\n";
 	} else {
-		$ag = mysql_result($q10,0,0);
 		print "-- Pronađena postojeća akademska godina (ID: $ag) - neće biti kreirana nova godina.<br/>\n";
 	}
 	
-	$q40 = myquery("select s.id, s.naziv, ts.trajanje, ts.moguc_upis from studij as s, tipstudija as ts where s.tipstudija=ts.id");
-	while ($r40 = mysql_fetch_row($q40)) {
-		$studij = $r40[0];
-		if ($ispis) print "-- Studij $r40[1]<br/>\n";
+	$q40 = db_query("select s.id, s.naziv, ts.trajanje, ts.moguc_upis from studij as s, tipstudija as ts where s.tipstudija=ts.id");
+	while (db_fetch4($q40, $studij, $naziv_studija, $trajanje, $moguc_upis)) {
+		if ($ispis) print "-- Studij $naziv_studija<br/>\n";
 
-		if ($r40[3]==0) {
+		if ($moguc_upis == 0) {
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;!! Nije moguć upis na ovaj studij.<br/>";
 			continue;
 		}
 
 		$bio=array();
-		for ($sem=1; $sem<=$r40[2]; $sem++) {
+		for ($sem=1; $sem<=$trajanje; $sem++) {
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Semestar $sem<br/>\n";
 
-			// Pronalazimo najnoviji NPP koji je stariji od važećeg u trenutku kada su studenti upisivali studij -- FIXME!
-			// Ova formula i dalje nije tačna, jedino pouzdano rješenje je da se u tabeli student_studij drži informacija
-			// po kojem NPPu dati student studira
-			$min_god_vazenja = $ag-intval(($sem-1)/2);
-			$q45 = myquery("select ps.godina_vazenja, ag.naziv from plan_studija ps, akademska_godina ag where ps.studij=$studij and ps.semestar=$sem and ps.godina_vazenja<=$min_god_vazenja and ps.godina_vazenja=ag.id order by ps.godina_vazenja desc limit 1");
-			if (mysql_num_rows($q45)<1) {
+			// Pronalazimo najnoviji NPP koji je stariji od važećeg u trenutku kada su studenti upisivali studij
+			// U slučaju da student studira po starijem programu, modul za upis studenta na studij će kreirati ponude kurseva
+			$min_god_vazenja = $ag - intval( ( $sem - 1 ) / 2 );
+			$plan_studija = db_query_assoc("select ps.id, ag.naziv godina from plan_studija ps, akademska_godina ag where ps.studij=$studij and ps.godina_vazenja<=$min_god_vazenja and ps.godina_vazenja=ag.id order by ps.godina_vazenja desc limit 1");
+			if ($plan_studija === false) {
 				if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;!! Nije pronađen plan studija mlađi od godine sa IDom $min_god_vazenja<br/>\n";
 				continue;
 			}
-			$god_vazenja = mysql_result($q45,0,0);
-			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".mysql_result($q45,0,1)."<br>\n";
-			$q50 = myquery("select predmet, godina_vazenja, obavezan from plan_studija where studij=$studij and semestar=$sem and godina_vazenja=$god_vazenja");
-			while ($r50 = mysql_fetch_row($q50)) {
-				if ($r50[2]==1) { // obavezan
-					kreiraj_ponudu_kursa ($r50[0], $studij, $sem, $ag, 1, $ispis);
-
+			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".$plan_studija['godina']."<br>\n";
+			$q50 = db_query("select pasos_predmeta, obavezan, plan_izborni_slot from plan_studija_predmet where plan_studija=".$plan_studija['id']." and semestar=$sem");
+			while (db_fetch3($q50, $pasos_predmeta, $obavezan, $plan_izborni_slot)) {
+				if ($obavezan == 1) { // obavezan
+					$predmet = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
+					kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, 1, $ispis);
 
 				} else { // izborni
-					$iz = $r50[0];
-					// $iz je slot, uzimamo sve predmete u tom slotu
-					$q70 = myquery("select p.id, p.naziv from predmet as p, izborni_slot as iz where iz.id=$iz and iz.predmet=p.id");
-					while ($r70 = mysql_fetch_row($q70)) {
-						$predmet = $r70[0];
+					// uzimamo sve predmete u slotu $plan_izborni_slot
+					$q70 = db_query("select pp.predmet from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
+					while (db_fetch1($q70, $predmet)) {
+						// Nećemo više puta kreirati isti predmet
 						if (in_array($predmet, $bio)) continue;
 						array_push($bio, $predmet);
 						kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, 0, $ispis);
@@ -90,7 +80,7 @@ if ($_POST['akcija'] == "novagodina") {
 	
 
 
-	$q = myquery("select naziv from akademska_godina order by id desc limit 1");
+	$q = db_query("select naziv from akademska_godina order by id desc limit 1");
 	
 	?>
 	<h2>Nova akademska godina</h2>
@@ -98,7 +88,7 @@ if ($_POST['akcija'] == "novagodina") {
 	<p>Klikom na dugme "Kreiraj" biće najprije ispisano šta će se sve uraditi, te ponuđeno dugme "Potvrda" nakon kojeg će akcije biti izvršene i baza izmijenjena.</p>
 	<p><?=genform("POST")?>
 	<input type="hidden" name="akcija" value="novagodina">
-	<input type="text" name="godina" size="20" value="<?=mysql_result($q,0,0)?>">
+	<input type="text" name="godina" size="20" value="<?=db_result($q,0,0)?>">
 	<input type="submit" value=" Kreiraj novu akademsku godinu ">
 	</form>
 	<hr>

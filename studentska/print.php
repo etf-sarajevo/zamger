@@ -50,7 +50,7 @@ function vrijemeIspis($vrijemePoc, $vrijemeKraj){
 function printRaspored($id, $tip) {	
 
 	// Selektuje podatke iz baze
-	if ($rasSel = myquery("SELECT id, id, naziv, kratki_naziv, dan_u_sedmici, smijerR, godinaR, tip, vrijeme_pocetak, vrijeme_kraj, labgrupa, sala FROM raspored_stavka LEFT JOIN predmet ON raspored_stavka.predmet = predmet.id WHERE raspored = '".$id."' ORDER BY dan_u_sedmici ASC, vrijeme_pocetak ASC, id ASC")){
+	if ($rasSel = db_query("SELECT id, id, naziv, kratki_naziv, dan_u_sedmici, smijerR, godinaR, tip, vrijeme_pocetak, vrijeme_kraj, labgrupa, sala FROM raspored_stavka LEFT JOIN predmet ON raspored_stavka.predmet = predmet.id WHERE raspored = '".$id."' ORDER BY dan_u_sedmici ASC, vrijeme_pocetak ASC, id ASC")){
 		
 		// Printa dane
 		echo '<div class="dan_header" style="width:50px">Dan/Sat</div>
@@ -84,7 +84,7 @@ function printRaspored($id, $tip) {
 		echo '<div class="kolona">'; // Pocetak kolone	
 		$lastDay = 1; // Promjena dana
 		$lastCas = 0; // Prazna polja
-		while ($row = mysql_fetch_array($rasSel)){
+		while ($row = db_fetch_assoc($rasSel)){
 			$cssFontSize = "";
 			$cssFontSize2 = "";
 			// Provjerava da li je presao na novi dan
@@ -103,10 +103,10 @@ function printRaspored($id, $tip) {
 			}
 									
 			/* Provjerava da li postoji jos neki cas paralelno */
-			if ($parSel = myquery("SELECT id, vrijeme_pocetak, vrijeme_kraj FROM raspored_stavka WHERE ((vrijeme_pocetak<='".$row['vrijeme_pocetak']."' AND vrijeme_kraj>='".$row['vrijeme_pocetak']."') OR (vrijeme_pocetak<='".$row['vrijeme_kraj']."' AND vrijeme_kraj>='".$row['vrijeme_kraj']."')OR (vrijeme_pocetak>='".$row['vrijeme_pocetak']."' AND vrijeme_kraj<='".$row['vrijeme_kraj']."')) AND godinaR = '".$row['godinaR']."' AND smijerR = '".$row['smijerR']."' AND dan_u_sedmici='".$row['dan_u_sedmici']."' AND id!='".$row['id']."' ORDER BY vrijeme_pocetak ASC")){
+			if ($parSel = db_query("SELECT id, vrijeme_pocetak, vrijeme_kraj FROM raspored_stavka WHERE ((vrijeme_pocetak<='".$row['vrijeme_pocetak']."' AND vrijeme_kraj>='".$row['vrijeme_pocetak']."') OR (vrijeme_pocetak<='".$row['vrijeme_kraj']."' AND vrijeme_kraj>='".$row['vrijeme_kraj']."')OR (vrijeme_pocetak>='".$row['vrijeme_pocetak']."' AND vrijeme_kraj<='".$row['vrijeme_kraj']."')) AND godinaR = '".$row['godinaR']."' AND smijerR = '".$row['smijerR']."' AND dan_u_sedmici='".$row['dan_u_sedmici']."' AND id!='".$row['id']."' ORDER BY vrijeme_pocetak ASC")){
 				$css = 'celija'; // Ovo ti je css za normalni siroki box i on je default
 				$cssMarLeft = 0; // Default je na lijevoj strani
-				if (mysql_num_rows($parSel)) { // Broji prethodni query, ako ima makar 1 red u rezultatu znaci da se nesto odvija paralelno
+				if (db_num_rows($parSel)) { // Broji prethodni query, ako ima makar 1 red u rezultatu znaci da se nesto odvija paralelno
 					$css .= '_pola'; // Ovo dodaje na css stil da bi bila manja celija
 					$cssFontSize = 'style = "font-size: 9px"';
 					$cssFontSize2 = "font-size: 9px;";
@@ -127,12 +127,12 @@ function printRaspored($id, $tip) {
 			}
 			
 			if($row['labgrupa'] != 0) {
-				$grupeSel = mysql_fetch_array(myquery("SELECT * FROM labgrupa WHERE id = '".$row['labgrupa']."' "));
+				$grupeSel = db_fetch_assoc(db_query("SELECT * FROM labgrupa WHERE id = '".$row['labgrupa']."' "));
 				$grupaP = " - ".$grupeSel['naziv'];
 			} else
 				$grupaP = "";
 				
-			$sala = mysql_fetch_array(myquery("SELECT naziv FROM raspored_sala WHERE id = '".$row['sala']."' "));
+			$sala = db_fetch_assoc(db_query("SELECT naziv FROM raspored_sala WHERE id = '".$row['sala']."' "));
 			
 			if($tip == "full")
 				echo '<div class="'.$css.'" style="'.$cssFontSize2.' height:'.(28+($row['vrijeme_kraj']-$row['vrijeme_pocetak'])*41).'px; margin-top:'.(($row['vrijeme_pocetak']-1)*41).'px; margin-left:'.$cssMarLeft.'px">
@@ -180,12 +180,12 @@ $nastavnik = $_POST['nastavnik'];
 			
 		';
 		//SQL ispis 
-		$selectSQLP1 = myquery("SELECT b.naziv AS 'n_predmet', d.naziv AS 'n_ag', a.obavezan FROM ponudakursa a, predmet b, studij c, akademska_godina d WHERE b.id = a.predmet AND c.id = a.studij AND d.id = a.akademska_godina AND a.studij = '".$odsjek."' AND a.semestar = '".$semestar."' ORDER BY a.studij ASC");
+		$selectSQLP1 = db_query("SELECT b.naziv AS 'n_predmet', d.naziv AS 'n_ag', a.obavezan FROM ponudakursa a, predmet b, studij c, akademska_godina d WHERE b.id = a.predmet AND c.id = a.studij AND d.id = a.akademska_godina AND a.studij = '".$odsjek."' AND a.semestar = '".$semestar."' ORDER BY a.studij ASC");
 	
-		if(mysql_num_rows($selectSQLP1) < 1)
+		if(db_num_rows($selectSQLP1) < 1)
 			echo "Nema elemenata u bazi";
 		else {
-			while($sP1 = mysql_fetch_array($selectSQLP1)) {
+			while($sP1 = db_fetch_assoc($selectSQLP1)) {
 				if($sP1['obavezan'] == 1)
 					$ob = "Obavezan";
 				else
@@ -206,11 +206,11 @@ $nastavnik = $_POST['nastavnik'];
 	} else if ($_GET['act'] == "PG") {
 		echo "<div style = 'font-size: 20px; padding-bottom: 20px;'>Spisak grupa za predmet: <b>".$imePredmeta."</b></div>";
 		
-		$selectSQLG = myquery("SELECT a.naziv, COUNT(b.student) AS countSt FROM labgrupa a LEFT JOIN student_labgrupa b ON b.labgrupa = a.id WHERE a.predmet = '".$predmet."' GROUP BY a.id");
-		if(mysql_num_rows($selectSQLG) < 1)
+		$selectSQLG = db_query("SELECT a.naziv, COUNT(b.student) AS countSt FROM labgrupa a LEFT JOIN student_labgrupa b ON b.labgrupa = a.id WHERE a.predmet = '".$predmet."' GROUP BY a.id");
+		if(db_num_rows($selectSQLG) < 1)
 			echo "Nema definisanih grupa za izabrani predmet";
 		else {
-			while($sSG = mysql_fetch_array($selectSQLG)) {
+			while($sSG = db_fetch_assoc($selectSQLG)) {
 				
 				echo "- <b>".$sSG['naziv']."</b> - <i>".$sSG['countSt']." studenata u grupi</i><br/>";
 			}
@@ -222,11 +222,11 @@ $nastavnik = $_POST['nastavnik'];
 	} else if ($_GET['act'] == "PP") {
 		echo "<div style = 'font-size: 20px; padding-bottom: 20px;'>Spisak predmeta nastavnika: <b>".$imeNastavnika."</b></div>";
 		
-		$selectSQLProf = myquery("SELECT b.naziv FROM nastavnik_predmet a, predmet b WHERE b.id = a.predmet AND a.nastavnik = '".$nastavnik."' ");
-		if(mysql_num_rows($selectSQLProf) < 1)
+		$selectSQLProf = db_query("SELECT b.naziv FROM nastavnik_predmet a, predmet b WHERE b.id = a.predmet AND a.nastavnik = '".$nastavnik."' ");
+		if(db_num_rows($selectSQLProf) < 1)
 			echo "Nastavnik nije aktivan ni najednom predmetu";
 		else {
-			while($sSG = mysql_fetch_array($selectSQLProf)) {
+			while($sSG = db_fetch_assoc($selectSQLProf)) {
 				
 				if($sSG['email'] == "" || $sSG['email'] == NULL)
 					$email = "-/-";

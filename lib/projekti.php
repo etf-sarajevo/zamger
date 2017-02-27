@@ -1,34 +1,37 @@
 <?php
+
 // LIB/PROJEKTI - funkcije za module nastavnik/projekti, student/projekti, common/projektneStrane
+
+
 
 function fetchProjects($predmet, $ag)
 {
-	$result = myquery("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' ORDER BY naziv");
+	$result = db_query("SELECT * FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag' ORDER BY naziv");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;	
 }
 function getProject($id)
 {
-	$result = myquery("SELECT * FROM projekat WHERE id='$id' LIMIT 1");
+	$result = db_query("SELECT * FROM projekat WHERE id='$id' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];	
 }
 
 function fetchProjectMembers($id)
 {
-	$result = myquery("SELECT * FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id' ORDER BY prezime ASC, ime ASC");
+	$result = db_query("SELECT * FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id' ORDER BY prezime ASC, ime ASC");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;	
 }
@@ -80,13 +83,13 @@ function applyForProject($userid, $project, $predmet, $ag)
 	
 	
 	//clear person from all projects on this predmet
-	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
+	$result = db_query("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
 	$query = sprintf("INSERT INTO student_projekat (student, projekat) VALUES ('%d', '%d')", 
 					$userid,
 					$project
 	);
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	
 	if ($result == false)
 	{
@@ -119,7 +122,7 @@ function getOutOfProject($userid, $predmet, $ag)
 	
 
 	//clear person from all projects on this predmet - actually only one project
-	$result = myquery("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
+	$result = db_query("DELETE FROM student_projekat WHERE student='$userid' AND projekat IN (SELECT id FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag')");
 	
 	if ($result == false)
 	{
@@ -132,15 +135,15 @@ function getOutOfProject($userid, $predmet, $ag)
 
 function generateIdFromTable($table)
 {
-	$result = myquery("select id from $table order by id desc limit 1");
+	$result = db_query("select id from $table order by id desc limit 1");
 	
-	if (mysql_num_rows($result) == 0)
+	if (db_num_rows($result) == 0)
 	{
 		$id = 0;
 	}
 	else
 	{	
-		$id = mysql_fetch_row($result);
+		$id = db_fetch_row($result);
 		$id = $id[0];
 	}
 		
@@ -150,11 +153,11 @@ function generateIdFromTable($table)
 
 function getPredmetParams($predmet, $ag)
 {
-	$result = myquery("SELECT * FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
+	$result = db_query("SELECT * FROM predmet_projektni_parametri WHERE predmet='$predmet' AND akademska_godina='$ag' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];	
 }
@@ -166,8 +169,8 @@ function areApplicationsLockedForPredmet($predmet, $ag)
 }
 function getCountProjectsForPredmet($predmet, $ag)
 {
-	$result = myquery("SELECT COUNT(id) FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag'");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM projekat WHERE predmet='$predmet' AND akademska_godina='$ag'");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -175,8 +178,8 @@ function getCountProjectsForPredmet($predmet, $ag)
 
 function getCountMembersForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id'");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM osoba o INNER JOIN student_projekat op ON o.id=op.student WHERE op.projekat='$id'");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -244,12 +247,12 @@ function isProjectFull($project, $predmet, $ag)
 
 function getActualProjectForUserInPredmet($userid, $predmet, $ag)
 {
-	$result = myquery("SELECT p.* FROM projekat p, student_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' AND p.akademska_godina='$ag' LIMIT 1");
+	$result = db_query("SELECT p.* FROM projekat p, student_projekat op WHERE p.id=op.projekat AND op.student='$userid' AND p.predmet='$predmet' AND p.akademska_godina='$ag' LIMIT 1");
 	
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];	
 }
@@ -302,53 +305,53 @@ START
 *********************/
 function fetchLinksForProject($id, $offset, $rowsPerPage)
 {
-	$result = myquery("SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC ");
+	$result = db_query("SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC ");
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;	
 }
 
 function isUserAuthorOfLink($link, $user)
 {
-	$result = myquery("SELECT id FROM projekat_link WHERE osoba='$user' AND id='$link' LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM projekat_link WHERE osoba='$user' AND id='$link' LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 
 function getAuthorOfLink($id)
 {
-	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT l.osoba FROM projekat_link l WHERE l.id='$id' LIMIT 1) LIMIT 1");
+	$result = db_query("SELECT o.* FROM osoba o WHERE o.id=(SELECT l.osoba FROM projekat_link l WHERE l.id='$id' LIMIT 1) LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 function getLink($id)
 {
-	$result = myquery("SELECT * FROM projekat_link WHERE id='$id' LIMIT 1");
+	$result = db_query("SELECT * FROM projekat_link WHERE id='$id' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function getCountLinksForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM projekat_link WHERE projekat='$id' LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM projekat_link WHERE projekat='$id' LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -357,34 +360,34 @@ function getCountLinksForProject($id)
 
 function fetchRSSForProject($id, $offset, $rowsPerPage)
 {
-	$result = myquery("SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC");
+	$result = db_query("SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC");
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;	
 }
 
 function isUserAuthorOfRSS($rss, $user)
 {
-	$result = myquery("SELECT id FROM projekat_rss WHERE osoba='$user' AND id='$rss' LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM projekat_rss WHERE osoba='$user' AND id='$rss' LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 function getAuthorOfRSS($id)
 {
-	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT r.osoba FROM projekat_rss r WHERE r.id='$id' LIMIT 1) LIMIT 1");
+	$result = db_query("SELECT o.* FROM osoba o WHERE o.id=(SELECT r.osoba FROM projekat_rss r WHERE r.id='$id' LIMIT 1) LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
@@ -392,19 +395,19 @@ function getAuthorOfRSS($id)
 
 function getRSS($id)
 {
-	$result = myquery("SELECT * FROM projekat_rss WHERE id='$id' LIMIT 1");
+	$result = db_query("SELECT * FROM projekat_rss WHERE id='$id' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function getCountRSSForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM projekat_rss WHERE projekat='$id' LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM projekat_rss WHERE projekat='$id' LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -418,38 +421,38 @@ function fetchArticlesForProject($id, $offset = 0, $rowsPerPage = 0)
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;	
 }
 
 function isUserAuthorOfArticle($article, $user)
 {
-	$result = myquery("SELECT id FROM bl_clanak WHERE osoba='$user' AND id='$article' LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM bl_clanak WHERE osoba='$user' AND id='$article' LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 
 function getArticle($id)
 {
-	$result = myquery("SELECT * FROM bl_clanak WHERE id='$id' LIMIT 1");
+	$result = db_query("SELECT * FROM bl_clanak WHERE id='$id' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function getCountArticlesForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM bl_clanak WHERE projekat='$id' LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM bl_clanak WHERE projekat='$id' LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -458,11 +461,11 @@ function getCountArticlesForProject($id)
 
 function getAuthorOfArticle($id)
 {
-	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT b.osoba FROM bl_clanak b WHERE b.id='$id' LIMIT 1) LIMIT 1");
+	$result = db_query("SELECT o.* FROM osoba o WHERE o.id=(SELECT b.osoba FROM bl_clanak b WHERE b.id='$id' LIMIT 1) LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
@@ -475,11 +478,11 @@ function fetchFilesForProjectAllRevisions($id, $offset = 0, $rowsPerPage = 0)
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	$files = array();
 
@@ -497,21 +500,21 @@ function fetchFilesForProjectLatestRevisions($id, $offset = 0, $rowsPerPage = 0)
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;
 }
 function getAuthorOfFile($id)
 {
-	$result = myquery("SELECT o.* FROM osoba o WHERE o.id=(SELECT f.osoba FROM projekat_file f WHERE f.id='$id' LIMIT 1) LIMIT 1");
+	$result = db_query("SELECT o.* FROM osoba o WHERE o.id=(SELECT f.osoba FROM projekat_file f WHERE f.id='$id' LIMIT 1) LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
@@ -519,49 +522,49 @@ function getAuthorOfFile($id)
 
 function isUserAuthorOfFile($file, $user)
 {
-	$result = myquery("SELECT id FROM projekat_file WHERE osoba='$user' AND id='$file' LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM projekat_file WHERE osoba='$user' AND id='$file' LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 
 function getFileFirstRevision($id)
 {
-	$result = myquery("SELECT * FROM projekat_file WHERE id='$id' AND revizija=1 LIMIT 1");
+	$result = db_query("SELECT * FROM projekat_file WHERE id='$id' AND revizija=1 LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function getFile($id)
 {
-	$result = myquery("SELECT * FROM projekat_file WHERE id='$id' LIMIT 1");
+	$result = db_query("SELECT * FROM projekat_file WHERE id='$id' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function isThisFileFirstRevision($id)
 {
-	$result = myquery("SELECT id FROM projekat_file WHERE id='$id' AND revizija=1 LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM projekat_file WHERE id='$id' AND revizija=1 LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 
 function getFileLastRevision($id)
 {
-	$result = myquery("SELECT * FROM projekat_file WHERE file='$id' ORDER BY revizija DESC LIMIT 1");
+	$result = db_query("SELECT * FROM projekat_file WHERE file='$id' ORDER BY revizija DESC LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	if (empty($list))
 	{
@@ -574,8 +577,8 @@ function getFileLastRevision($id)
 function fetchAllRevisionsForFile($id)
 {
 	$list = array();	
-	$result = myquery("SELECT * FROM projekat_file WHERE file='$id' ORDER BY revizija DESC");
-	while ($row = mysql_fetch_assoc($result))
+	$result = db_query("SELECT * FROM projekat_file WHERE file='$id' ORDER BY revizija DESC");
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;
 	
 	$list[] = getFileFirstRevision($id);
@@ -583,8 +586,8 @@ function fetchAllRevisionsForFile($id)
 }
 function getCountFilesForProjectWithoutRevisions($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM projekat_file WHERE projekat='$id' AND revizija=1 LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM projekat_file WHERE projekat='$id' AND revizija=1 LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -599,11 +602,11 @@ function fetchThreadsForProject($id, $offset = 0, $rowsPerPage = 0)
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
 	
-	$result = myquery($query);
+	$result = db_query($query);
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	foreach ($list as $key => $item)
 	{
@@ -614,8 +617,8 @@ function fetchThreadsForProject($id, $offset = 0, $rowsPerPage = 0)
 }
 function getExtendedInfoForThread($id, &$list)
 {
-	$result = myquery("SELECT p.naslov, t.prvi_post, t.zadnji_post FROM bb_post p, bb_tema t WHERE t.id='$id' AND p.tema='$id' AND p.id=t.prvi_post LIMIT 1");
-	$row = mysql_fetch_assoc($result);
+	$result = db_query("SELECT p.naslov, t.prvi_post, t.zadnji_post FROM bb_post p, bb_tema t WHERE t.id='$id' AND p.tema='$id' AND p.id=t.prvi_post LIMIT 1");
+	$row = db_fetch_assoc($result);
 	$list['naslov'] = $row[naslov];
 	
 	
@@ -625,10 +628,10 @@ function getExtendedInfoForThread($id, &$list)
 }
 function getThreadAndPosts($thread)
 {
-	$result = myquery("SELECT * FROM bb_tema WHERE id='$thread' LIMIT 1");
-	$row = mysql_fetch_assoc($result);
+	$result = db_query("SELECT * FROM bb_tema WHERE id='$thread' LIMIT 1");
+	$row = db_fetch_assoc($result);
 	
-	if ($row == false || mysql_num_rows($result) == 0)
+	if ($row == false || db_num_rows($result) == 0)
 		return array();
 	
 	$item = $row;
@@ -642,15 +645,15 @@ function getThreadAndPosts($thread)
 
 function getPostsInThread($id)
 {
-	$result = myquery("SELECT * FROM bb_post WHERE tema='$id' ORDER BY vrijeme ASC");
+	$result = db_query("SELECT * FROM bb_post WHERE tema='$id' ORDER BY vrijeme ASC");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;
 
 	foreach ($list as $key => $item)
 	{		
-		$result = myquery("SELECT tekst FROM bb_post_text WHERE post='$item[id]' LIMIT 1");
-		$row = mysql_fetch_assoc($result);
+		$result = db_query("SELECT tekst FROM bb_post_text WHERE post='$item[id]' LIMIT 1");
+		$row = db_fetch_assoc($result);
 		
 		$list[$key]['tekst'] = $row['tekst'];
 		$list[$key]['osoba'] = getOsobaInfoForPost($item[id]);		
@@ -662,8 +665,8 @@ function getPostsInThread($id)
 
 function getCountThreadsForProject($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM bb_tema WHERE projekat='$id' LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM bb_tema WHERE projekat='$id' LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -671,14 +674,14 @@ function getCountThreadsForProject($id)
 
 function incrementThreadViewCount($thread)
 {
-	$result = myquery("UPDATE bb_tema SET pregleda=pregleda+1 WHERE id='$thread' LIMIT 1");
+	$result = db_query("UPDATE bb_tema SET pregleda=pregleda+1 WHERE id='$thread' LIMIT 1");
 }
 
 
 function getCountPostsInThread($id)
 {
-	$result = myquery("SELECT COUNT(id) FROM bb_post WHERE tema='$id' LIMIT 1");
-	$row = mysql_fetch_row($result);
+	$result = db_query("SELECT COUNT(id) FROM bb_post WHERE tema='$id' LIMIT 1");
+	$row = db_fetch_row($result);
 	$row = $row[0];
 	
 	return $row;
@@ -696,11 +699,11 @@ function getCountRepliesToFirstPostInThread($id)
 
 function getPostInfoForThread($thread, $post)
 {
-	$result = myquery("SELECT * FROM bb_post WHERE tema='$thread' AND id='$post' LIMIT 1");
+	$result = db_query("SELECT * FROM bb_post WHERE tema='$thread' AND id='$post' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	$list[0][osoba] = getOsobaInfoForPost($post);
 	
@@ -710,40 +713,40 @@ function getPostInfoForThread($thread, $post)
 
 function getPost($id)
 {
-	$result = myquery("SELECT p.*, t.tekst FROM bb_post p, bb_post_text t WHERE p.id='$id' AND p.id=t.post LIMIT 1");
+	$result = db_query("SELECT p.*, t.tekst FROM bb_post p, bb_post_text t WHERE p.id='$id' AND p.id=t.post LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function getOsobaInfoForPost($post)
 {
-	$result = myquery("SELECT o.ime, o.prezime FROM osoba o, bb_post p WHERE p.osoba=o.id  AND p.id='$post' LIMIT 1");
+	$result = db_query("SELECT o.ime, o.prezime FROM osoba o, bb_post p WHERE p.osoba=o.id  AND p.id='$post' LIMIT 1");
 	$list = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list[0];
 }
 
 function isUserAuthorOfPost($post, $user)
 {
-	$result = myquery("SELECT id FROM bb_post WHERE osoba='$user' AND id='$post' LIMIT 1");
-	if (mysql_num_rows($result) > 0)
+	$result = db_query("SELECT id FROM bb_post WHERE osoba='$user' AND id='$post' LIMIT 1");
+	if (db_num_rows($result) > 0)
 		return true;
 	return false;
 }
 
 function fetchLatestPostsForProject($project, $limit)
 {
-	$result = myquery("SELECT p.*, pt.tekst FROM bb_post p, bb_post_text pt WHERE pt.post=p.id AND p.tema IN (SELECT t.id FROM bb_tema t WHERE t.projekat=$project) ORDER BY p.vrijeme DESC LIMIT 0, $limit ");
+	$result = db_query("SELECT p.*, pt.tekst FROM bb_post p, bb_post_text pt WHERE pt.post=p.id AND p.tema IN (SELECT t.id FROM bb_tema t WHERE t.projekat=$project) ORDER BY p.vrijeme DESC LIMIT 0, $limit ");
 	$list = array();
 	$i = 0;
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = db_fetch_assoc($result))
 	{
 		$list[$i] = $row;
 		$list[$i][osoba] = getOsobaInfoForPost($list[$i][id]);
@@ -752,7 +755,7 @@ function fetchLatestPostsForProject($project, $limit)
 	
 	
 	
-	mysql_free_result($result);
+	db_free_result($result);
 	
 	return $list;
 

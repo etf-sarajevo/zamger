@@ -1,5 +1,8 @@
 <?php
+
 // NASTAVNIK/PROJEKTI - nastavnicki modul za definisanje projekata, parametara
+
+
 
 function nastavnik_projekti() {
 
@@ -13,8 +16,8 @@ function nastavnik_projekti() {
 	// Da li korisnik ima pravo ući u modul?
 	if (!$user_siteadmin) 
 	{
-		$q10 = myquery("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (mysql_num_rows($q10)<1 || mysql_result($q10,0,0)=="asistent") {
+		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+		if (db_num_rows($q10)<1 || db_result($q10,0,0)=="asistent") {
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
 			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -32,16 +35,16 @@ function nastavnik_projekti() {
 	<?
 	
 	// Preuzimanje projektnih parametara
-	$q10 = myquery("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet=$predmet AND akademska_godina=$ag");
-	if (mysql_num_rows($q10)<1)
+	$q10 = db_query("SELECT min_timova, max_timova, min_clanova_tima, max_clanova_tima, zakljucani_projekti FROM predmet_projektni_parametri WHERE predmet=$predmet AND akademska_godina=$ag");
+	if (db_num_rows($q10)<1)
 		$nema_parametara = true;
 	else {
 		$nema_parametara = false;
-		$param_min_timova = mysql_result($q10,0,0);
-		$param_max_timova = mysql_result($q10,0,1);
-		$param_min_clanova_tima = mysql_result($q10,0,2);
-		$param_max_clanova_tima = mysql_result($q10,0,3);
-		$param_zakljucan = mysql_result($q10,0,4);
+		$param_min_timova = db_result($q10,0,0);
+		$param_max_timova = db_result($q10,0,1);
+		$param_min_clanova_tima = db_result($q10,0,2);
+		$param_max_clanova_tima = db_result($q10,0,3);
+		$param_zakljucan = db_result($q10,0,4);
 	}
 
 	// Glavni meni
@@ -65,8 +68,8 @@ function nastavnik_projekti() {
 		<?
 
 		// Početne informacije
-		$q100 = myquery("SELECT id, naziv, opis FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
-		$broj_projekata = mysql_num_rows($q100);
+		$q100 = db_query("SELECT id, naziv, opis FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
+		$broj_projekata = db_num_rows($q100);
 		if ($broj_projekata > 0) {
 			if ($param_zakljucan == 1) {
 				?>
@@ -78,8 +81,8 @@ function nastavnik_projekti() {
 				<?
 			}
 
-			$q460 = myquery("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
-			$broj_nepraznih = mysql_num_rows($q460);
+			$q460 = db_query("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+			$broj_nepraznih = db_num_rows($q460);
 
 			if ($broj_nepraznih < $param_min_timova) {
 				?>
@@ -93,7 +96,7 @@ function nastavnik_projekti() {
 			<?
 		}
 	
-		while ($r100 = mysql_fetch_row($q100)) {
+		while ($r100 = db_fetch_row($q100)) {
 			$id_projekta = $r100[0];
 			$naziv_projekta = $r100[1];
 	
@@ -114,8 +117,8 @@ function nastavnik_projekti() {
 				</ul> 
 				<?
 
-				$q110 = myquery("SELECT COUNT(id) FROM osoba as o, student_projekat as sp where o.id=sp.student and sp.projekat=$id_projekta");
-				$broj_clanova = mysql_result($q110,0,0);
+				$q110 = db_query("SELECT COUNT(id) FROM osoba as o, student_projekat as sp where o.id=sp.student and sp.projekat=$id_projekta");
+				$broj_clanova = db_result($q110,0,0);
 				if ($broj_clanova < $param_min_clanova_tima) {
 					?>
 					<span class="notice">Broj prijavljenih studenata (<?=$broj_clanova?>) je ispod minimuma koji ste definisali za ovaj predmet (<?=$param_min_clanova_tima?>).</span>	
@@ -136,12 +139,12 @@ function nastavnik_projekti() {
 					<?
 
 					// Spisak studenata
-					$q120 = myquery("SELECT o.id, o.prezime, o.ime, o.brindexa FROM osoba as o, student_projekat as sp WHERE sp.student=o.id and sp.projekat=$id_projekta ORDER BY o.prezime, o.ime");
-					if (mysql_num_rows($q120)<1)
+					$q120 = db_query("SELECT o.id, o.prezime, o.ime, o.brindexa FROM osoba as o, student_projekat as sp WHERE sp.student=o.id and sp.projekat=$id_projekta ORDER BY o.prezime, o.ime");
+					if (db_num_rows($q120)<1)
 						print 'Nema prijavljenih studenata.';
 					else {
 						print "<ul>\n";
-						while ($r120 = mysql_fetch_row($q120)) {
+						while ($r120 = db_fetch_row($q120)) {
 							print "<li>$r120[1] $r120[2] ($r120[3])";
 							if ($param_zakljucan==0) {
 								print ' - (<a href="'.$linkPrefix."&akcija=izbaci_studenta&student=$r120[0]&projekat=$id_projekta".'">izbaci</a>)';
@@ -185,7 +188,7 @@ function nastavnik_projekti() {
 				return;
 			}
 
-			$q200 = myquery("REPLACE predmet_projektni_parametri SET predmet=$predmet, akademska_godina=$ag, min_timova=$min_timova, max_timova=$max_timova, min_clanova_tima=$min_clanova_tima, max_clanova_tima=$max_clanova_tima, zakljucani_projekti=$zakljucani_projekti");
+			$q200 = db_query("REPLACE predmet_projektni_parametri SET predmet=$predmet, akademska_godina=$ag, min_timova=$min_timova, max_timova=$max_timova, min_clanova_tima=$min_clanova_tima, max_clanova_tima=$max_clanova_tima, zakljucani_projekti=$zakljucani_projekti");
 
 			nicemessage('Uspješno ste uredili parametre projekata.');
 			zamgerlog("izmijenio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
@@ -249,8 +252,8 @@ function nastavnik_projekti() {
 
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
 			// Poslana forma za dodavanje projekta
-			$naziv = my_escape(trim($_REQUEST['naziv']));
-			$opis  = my_escape(trim($_REQUEST['opis']));
+			$naziv = db_escape(trim($_REQUEST['naziv']));
+			$opis  = db_escape(trim($_REQUEST['opis']));
 	
 			$id = intval($_REQUEST['id']);
 	
@@ -261,17 +264,17 @@ function nastavnik_projekti() {
 			}
 
 			// Generišemo jedinstven ID
-			$qnesta = myquery("select id from projekat order by id desc limit 1");
-			if (mysql_num_rows($qnesta)<1)
+			$qnesta = db_query("select id from projekat order by id desc limit 1");
+			if (db_num_rows($qnesta)<1)
 				$id = 1;
 			else
-				$id = mysql_result($qnesta,0,0)+1;
+				$id = db_result($qnesta,0,0)+1;
 	
-			$q210 = myquery("INSERT INTO projekat (id, naziv, opis, predmet, akademska_godina) VALUES ($id, '$naziv', '$opis', '$predmet', '$ag')");
+			$q210 = db_query("INSERT INTO projekat (id, naziv, opis, predmet, akademska_godina) VALUES ($id, '$naziv', '$opis', '$predmet', '$ag')");
 
 			nicemessage('Novi projekat uspješno dodan.');
 			zamgerlog("dodao novi projekat na predmetu pp$predmet", 2);
-			zamgerlog2("dodao projekat", mysql_insert_id(), $predmet, $ag);
+			zamgerlog2("dodao projekat", db_insert_id(), $predmet, $ag);
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
 		}
@@ -307,8 +310,8 @@ function nastavnik_projekti() {
 
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
 			// Poslana forma za izmjenu projekta
-			$naziv = my_escape(trim($_REQUEST['naziv']));
-			$opis  = my_escape(trim($_REQUEST['opis']));
+			$naziv = db_escape(trim($_REQUEST['naziv']));
+			$opis  = db_escape(trim($_REQUEST['opis']));
 	
 			if (empty($naziv) || empty($opis)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -316,15 +319,15 @@ function nastavnik_projekti() {
 				return;
 			}
 
-			$q220 = myquery("select count(*) from projekat where id=$id");
-			if (mysql_result($q220,0,0)==0) {
+			$q220 = db_query("select count(*) from projekat where id=$id");
+			if (db_result($q220,0,0)==0) {
 				niceerror("Projekat sa IDom $id ne postoji.");
 				nicemessage('<a href="'.$linkPrefix.'">Povratak.</a>');
 				return;
 			}
 
 
-			$q230 = myquery("UPDATE projekat SET naziv='$naziv', opis='$opis' WHERE id='$id'");
+			$q230 = db_query("UPDATE projekat SET naziv='$naziv', opis='$opis' WHERE id='$id'");
 
 			nicemessage('Uspješno ste izmijenili projekat.');
 			zamgerlog("izmijenio projekat $id na predmetu pp$predmet", 2);
@@ -334,7 +337,7 @@ function nastavnik_projekti() {
 		}
 
 		// Prikaz forme
-		$q240 = myquery("SELECT naziv, opis FROM projekat WHERE id=$id");
+		$q240 = db_query("SELECT naziv, opis FROM projekat WHERE id=$id");
 
 		?>
 		<h1>Izmijeni projekat</h1>
@@ -345,11 +348,11 @@ function nastavnik_projekti() {
 			
 				<div class="row">
 					<span class="label">Naziv *</span>
-					<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?=mysql_result($q10,0,0)?>" /></span> 
+					<span class="formw"><input name="naziv" type="text" id="naziv" size="70" value="<?=db_result($q10,0,0)?>" /></span> 
 				</div>
 				<div class="row">
 					<span class="label">Opis *</span>
-					<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q10,0,1)?></textarea></span>
+					<span class="formw"><textarea name="opis" cols="60" rows="15" wrap="physical" id="opis"><?=db_result($q10,0,1)?></textarea></span>
 				</div> 
 				
 				<div class="row">	
@@ -369,8 +372,8 @@ function nastavnik_projekti() {
 
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
 			// Poslana forma za dodavanje bilješke
-			$biljeska = my_escape($_REQUEST['biljeska']);
-			$q250 = myquery("UPDATE projekat SET biljeska='$biljeska' WHERE id=$id");
+			$biljeska = db_escape($_REQUEST['biljeska']);
+			$q250 = db_query("UPDATE projekat SET biljeska='$biljeska' WHERE id=$id");
 
 			nicemessage('Uspješno ste dodali bilješku.');
 			zamgerlog("dodao biljesku na projekat $id na predmetu pp$predmet", 2);
@@ -380,7 +383,7 @@ function nastavnik_projekti() {
 		}
 
 		// Forma za izmjenu/dodavanje bilješke
-		$q260 = myquery("SELECT biljeska FROM projekat WHERE id=$id");
+		$q260 = db_query("SELECT biljeska FROM projekat WHERE id=$id");
 
 		?>
 		<h3>Dodaj bilješku za projekat</h3>	
@@ -388,7 +391,7 @@ function nastavnik_projekti() {
 		<input type="hidden" name="subakcija" value="potvrda">
 			<div class="row">
 				<span class="label">Bilješka:</span>
-				<span class="formw"><textarea name="biljeska" cols="60" rows="15" wrap="physical" id="opis"><?=mysql_result($q260,0,0)?></textarea></span>
+				<span class="formw"><textarea name="biljeska" cols="60" rows="15" wrap="physical" id="opis"><?=db_result($q260,0,0)?></textarea></span>
 			</div> 
 					
 			<div class="row">	
@@ -425,24 +428,24 @@ function nastavnik_projekti() {
 				//return;
 			}
 			
-			$q300 = myquery("DELETE FROM bl_clanak WHERE projekat=$id");
+			$q300 = db_query("DELETE FROM bl_clanak WHERE projekat=$id");
 
 			// Brisanje linkova
-			$q310 = myquery("DELETE FROM projekat_link WHERE projekat=$id");
+			$q310 = db_query("DELETE FROM projekat_link WHERE projekat=$id");
 	
 			// Brisanje RSSa
-			$q320 = myquery("DELETE FROM projekat_rss WHERE projekat=$id"); 
+			$q320 = db_query("DELETE FROM projekat_rss WHERE projekat=$id"); 
 
 			// Brisanje foruma
-			$q330 = myquery("DELETE FROM bb_post_text WHERE post IN (SELECT id FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id) )");
-			$q340 = myquery("DELETE FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id)");
+			$q330 = db_query("DELETE FROM bb_post_text WHERE post IN (SELECT id FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id) )");
+			$q340 = db_query("DELETE FROM bb_post WHERE tema IN (SELECT id FROM bb_tema WHERE projekat=$id)");
 			$q350 = sprintf("DELETE FROM bb_tema WHERE projekat=$id");
 
 			// Ispis studenata sa projekta
-			$q360 = myquery("DELETE FROM student_projekat WHERE projekat=$id");
+			$q360 = db_query("DELETE FROM student_projekat WHERE projekat=$id");
 			
 			// Brisanje samog projekta
-			$q370 = myquery("DELETE FROM projekat WHERE id=$id");
+			$q370 = db_query("DELETE FROM projekat WHERE id=$id");
 
 			nicemessage('Uspješno ste obrisali projekat.');	
 			zamgerlog("izbrisan projekat $id na predmetu pp$predmet", 4);
@@ -489,8 +492,8 @@ function nastavnik_projekti() {
 			}
 
 			// Da li je projekat popunjen?
-			$q430 = myquery("select count(*) from student_projekat where projekat=$projekat");
-			if (mysql_result($q430,0,0)>=$param_max_clanova_tima) {
+			$q430 = db_query("select count(*) from student_projekat where projekat=$projekat");
+			if (db_result($q430,0,0)>=$param_max_clanova_tima) {
 				// Ne bi se smjelo desiti
 				niceerror("Projekat je popunjen.");
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
@@ -499,20 +502,20 @@ function nastavnik_projekti() {
 
 			// Da li je student već na nekom projektu?
 			$stari_projekat=0;
-			$q440 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
-			while ($r440 = mysql_fetch_row($q440)) {
+			$q440 = db_query("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
+			while ($r440 = db_fetch_row($q440)) {
 				$stari_projekat = $r440[0];
 			}
 
 			// Da li je prekoračen maksimalan broj nepraznih projekata?
-			$q460 = myquery("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
-			$broj_nepraznih = mysql_num_rows($q460);
+			$q460 = db_query("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+			$broj_nepraznih = db_num_rows($q460);
 			if ($broj_nepraznih >= $param_max_timova) {
 				// No ako studenta ispisujemo iz projekta koji će postati prazan onda je sve ok
 				$prekoracenje = true;
 				if ($stari_projekat!=0) {
-					$q470 = myquery("select count(*) from student_projekat where projekat=$stari_projekat");
-					if (mysql_result($q470,0,0) == 1) $prekoracenje = false;
+					$q470 = db_query("select count(*) from student_projekat where projekat=$stari_projekat");
+					if (db_result($q470,0,0) == 1) $prekoracenje = false;
 				}
 
 				if ($prekoracenje) {
@@ -524,8 +527,8 @@ function nastavnik_projekti() {
 			}
 
 			// Potvrđujemo prijavu
-			$q450 = myquery("delete from student_projekat where student=$student and projekat=$stari_projekat");
-			$q480 = myquery("INSERT INTO student_projekat (student, projekat) VALUES ($student, $projekat)");
+			$q450 = db_query("delete from student_projekat where student=$student and projekat=$stari_projekat");
+			$q480 = db_query("INSERT INTO student_projekat (student, projekat) VALUES ($student, $projekat)");
 
 			nicemessage('Student je uspješno prijavljen na projekat!');
 			if ($stari_projekat==0) {
@@ -548,19 +551,19 @@ function nastavnik_projekti() {
 		</br>
 		<b>LISTA STUDENATA BEZ PROJEKTA:</b>
 		<?
-			$q400 = myquery("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
+			$q400 = db_query("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet as sp, osoba as o, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime");
 
-			if (mysql_num_rows($q400)==0) {
+			if (db_num_rows($q400)==0) {
 				nicemessage('Svim studentima je dodijeljen projekat!');
 			} else {
 				$cnt = 0;
 				
-				while ($r400 = mysql_fetch_row($q400)) {
+				while ($r400 = db_fetch_row($q400)) {
 					// Odmah kreiramo i opcije za selektovanje studenta
 					$opcije .= "<option value='$r400[0]'>$r400[2] $r400[1]</option>\n";
 
-					$q410 = myquery("select count(*) from student_projekat as sp, projekat as p where sp.student=$r400[0] and sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
-					if (mysql_result($q410,0,0)>0) continue;
+					$q410 = db_query("select count(*) from student_projekat as sp, projekat as p where sp.student=$r400[0] and sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag");
+					if (db_result($q410,0,0)>0) continue;
 					$cnt = $cnt+1;
 					print "</br>";
 					print "<span id=\"noProjectStudent\">$cnt. $r400[2] $r400[1]</span>";
@@ -576,9 +579,9 @@ function nastavnik_projekti() {
 			Student: <select name="student"><?=$opcije?></select><br/>
 			Projekat: <select name="projekat"><? 
 			$cnt2 = 0;
-			$q420 = myquery("SELECT id, naziv FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
+			$q420 = db_query("SELECT id, naziv FROM projekat WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naziv");
 			$rowcounter = 0;
-			while ($r420 = mysql_fetch_row($q420)) {
+			while ($r420 = db_fetch_row($q420)) {
 				$cnt2 = $cnt2 +1;
 				?>
 				<option value="<?=$r420[0]?>"><?=$r420[1]?></option>
@@ -607,28 +610,28 @@ function nastavnik_projekti() {
 			return;
 		}
 
-		$q500 = myquery("select naziv from projekat where id=$projekat");
-		if (mysql_num_rows($q500)<1) {
+		$q500 = db_query("select naziv from projekat where id=$projekat");
+		if (db_num_rows($q500)<1) {
 			niceerror("Nepostojeći projekat $projekat");
 			return;
 		}
-		$naziv_projekta = mysql_result($q500,0,0);
+		$naziv_projekta = db_result($q500,0,0);
 
-		$q505 = myquery("select ime, prezime from osoba where id=$student");
-		if (mysql_num_rows($q505)<1) {
+		$q505 = db_query("select ime, prezime from osoba where id=$student");
+		if (db_num_rows($q505)<1) {
 			niceerror("Nepostojeći student $student");
 			return;
 		}
-		$imeprezime = mysql_result($q505,0,0)." ".mysql_result($q505,0,1);
+		$imeprezime = db_result($q505,0,0)." ".db_result($q505,0,1);
 
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
-			$q510 = myquery("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
-			if (mysql_num_rows($q510) > 0) {
-				$student_projekat = mysql_result($q510,0,0);
+			$q510 = db_query("select p.id FROM projekat as p, student_projekat as sp WHERE p.id=sp.projekat AND sp.student=$student AND p.predmet=$predmet AND p.akademska_godina=$ag");
+			if (db_num_rows($q510) > 0) {
+				$student_projekat = db_result($q510,0,0);
 				if ($projekat != $student_projekat) {
 					niceerror("Student uopšte nije prijavljen na projekat $naziv_projekta.");
 				} else {
-					$q520 = myquery("DELETE FROM student_projekat WHERE student=$student AND projekat=$student_projekat");
+					$q520 = db_query("DELETE FROM student_projekat WHERE student=$student AND projekat=$student_projekat");
 					print "Student $imeprezime uspješno odjavljen sa projekta $naziv_projekta";
 					zamgerlog("student u$student odjavljen sa projekta $projekat (pp$predmet)", 2);
 					zamgerlog2("student odjavljen sa projekta", $student, $projekat);
