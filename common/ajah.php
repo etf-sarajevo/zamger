@@ -360,6 +360,17 @@ case "izmjena_ispita":
 			WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
 		}
 		if ($pasos_predmeta === false) $pasos_predmeta="NULL";
+		
+		/*// Pasoš predmeta za koji upisujemo ocjenu je onaj koji je u planu studija po kojem je student studirao date godine.
+		// Za slučaj da je student mijenjao plan studija na prelazu iz zimskog u ljetnji semestar, a po jednom planu je predmet 
+		// predviđen u zimskom a po drugom u ljetnjem semestru, uzimamo parnost semestra u kojem je ponudakursa koju je student
+		// upisao.
+		// Upit je dosta kompleksan ali nema drugog načina da se osiguramo od ovog slučaja.
+		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, student_studij ss, ponudakursa pk, student_predmet sp
+				WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ss.plan_studija AND ss.student=$stud_id AND 
+				ss.akademska_godina=$ag AND ss.semestar MOD 2=pk.semestar MOD 2 AND pk.id=sp.predmet AND pk.predmet=$predmet AND pk.akademska_godina=$ag
+				AND sp.student=$stud_id
+				ORDER BY psp.pasos_predmeta DESC LIMIT 1");*/
 
 		// Ne koristimo REPLACE i slicno zbog logginga
 		$q70 = db_query("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
