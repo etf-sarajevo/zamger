@@ -172,7 +172,6 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 		zamgerlog("poslana obavijest, opseg $opseg primalac $primalac",2);
 		zamgerlog2("poslana poruka", $id_poruke);
 
-
 		// Slanje notifikacije - nedovršeno! FIXME
 		$naslov = $_REQUEST['naslov']; // Uzimamo naslov bez escapinga za bazu
 		if ($opseg == 3) {
@@ -183,8 +182,8 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 			$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
 		}
 		if ($opseg == 3 || $opseg == 5) {
-			$q7 = myquery($upit);
-			while ($r7 = mysql_fetch_row($q7))
+			$q7 = db_query($upit);
+			while ($r7 = db_fetch_row($q7))
 				push_message(array($r7[0]), "Obavjestenja", "Novo obavještenje: $naslov ...");
 		}
 	}
