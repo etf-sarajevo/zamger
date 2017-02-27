@@ -166,6 +166,7 @@ case "izmjena_ispita":
 	if ($ime == "ispit") {
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
+		
 		if ($user_siteadmin)
 			$q40 = db_query("select 'nastavnik',pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
 		else
