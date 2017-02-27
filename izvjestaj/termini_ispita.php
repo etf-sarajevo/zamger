@@ -136,6 +136,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 						and pk.akademska_godina=$ag
 						and i.id=$ispit
 						and it.id = $id_termina
+						and a.id=o.id
 						");
 	if (db_num_rows($q10)<1) {
 		print "<p>------------------------------------------------------</p>";
