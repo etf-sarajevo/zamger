@@ -144,7 +144,7 @@ while ($r110 = db_fetch_row($q110)) {
 					} else if ($r130[1] == "II parcijalni" || $r130[1] == "II parc" || $r130[1] == "2 parcijalni" || $r130[1] == "2. parcijalni") {
 						$kp2 = $r130[0];
 						$parc2 += $bodovi;
-					} else if ($r130[1] == "Usmeni" || $r130[1] == "Završni")
+					} else if ($r130[1] == "Usmeni" || $r130[1] == "Završni" || $r130[1] == "Usmeni ispit" || $r130[1] == "Završni ispit")
 						$zavrsni += $bodovi;
 					else // Ako je nepoznat tip ispita, pribrajamo prvom parcijalnom
 						$parc1 += $bodovi;
