@@ -383,6 +383,10 @@ case "izmjena_ispita":
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
 		}
+		
+		// Izvoz unesene ocjene
+		if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$stud_id AND predmet=$predmet") == 0)
+			db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
@@ -401,6 +405,9 @@ case "izmjena_ispita":
 			$q87 = db_query("update konacna_ocjena set datum_u_indeksu=FROM_UNIXTIME($novidatum), datum_provjeren=1 where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH kodatum - promijenjen datum u indeksu (predmet pp$predmet, student u$stud_id)", 4);
 			zamgerlog2("promijenjen datum ocjene", $stud_id, $predmet, $ag, date("d.m.Y",$novidatum));
+			
+			if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$stud_id AND predmet=$predmet") == 0)
+				db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
 		}
 	}
 

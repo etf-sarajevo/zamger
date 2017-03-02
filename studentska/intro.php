@@ -39,7 +39,7 @@ if (param('akcija') === "Prihvati zahtjev" && check_csrf_token()) {
 	while ($r100 = db_fetch_row($q100)) {
 		// Sve parametre treba ponovo escape-ati
 		// Npr: korisnik je ukucao Meho'
-		// - prilikom inserta u tabelu promjena podataka ovo se pretvara u Meho\'
+		// - prilikom inserta u tabelu promjena_podataka ovo se pretvara u Meho\'
 		// - u tabeli se ustvari nalazi Meho'
 		// - vrijednost varijable $r100[1] je Meho'
 		$ime = db_escape_string($r100[1]);
@@ -83,6 +83,9 @@ if (param('akcija') === "Prihvati zahtjev" && check_csrf_token()) {
 	zamgerlog("prihvacen zahtjev za promjenu podataka korisnika u$osoba", 4);
 	zamgerlog2("prihvacen zahtjev za promjenu podataka", $osoba);
 	print "Zahtjev je prihvaćen";
+	
+	if (db_get("SELECT COUNT(*) FROM izvoz_promjena_podatka WHERE student=$osoba") == 0)
+		db_query("INSERT INTO izvoz_promjena_podataka VALUES($osoba)");
 
 	// Poruka korisniku
 	$tekst_poruke = "Na dan ".date("d. m. Y.", $vrijeme_zahtjeva).", u ".date("H:i:s", $vrijeme_zahtjeva)." poslali ste zahtjev za promjenu ličnih podataka. Vaš zahtjev je prihvaćen. Klikom na link Profil možete vidjeti vaše nove podatke.";
