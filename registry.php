@@ -37,7 +37,7 @@ array("common/savjet_dana", "Da li ste znali...", "Da li ste znali...", "SNBA", 
 array("common/slika", "Slika", "Slika", "SNBA", "2", "0"),
 
 
-array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
+array("izvjestaj/anketa", "Rezultati ankete", "Anketa", "SNBA", "0", "0"),
 array("izvjestaj/anketa_semestralni", "Rezultati ankete", "Anketa", "NBA", "0", "0"),
 array("izvjestaj/anketa_sumarno", "Sumarne statistike ankete", "Anketa sumarno", "BA", "0", "0"),
 array("izvjestaj/chart_semestralni", "Grafovi za semestralni izvještaj", "Grafovi", "BA", "2", "0"),
