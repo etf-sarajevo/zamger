@@ -1188,6 +1188,14 @@ else if ($akcija == "upis") {
 		// Upisujemo studenta na novi studij
 		$q600 = db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
 		zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
+		
+		if ($semestar==1 && $ponovac==0) {
+			if (db_get("SELECT COUNT(*) FROM izvoz_upis_prva WHERE student=$student AND akademska_godina=$godina") == 0)
+				db_query("INSERT INTO izvoz_upis_prva VALUES($student,$godina)");
+		} else {
+			if (db_get("SELECT COUNT(*) FROM izvoz_upis_semestar WHERE student=$student AND akademska_godina=$godina AND semestar=$semestar") == 0)
+				db_query("INSERT INTO izvoz_upis_semestar VALUES($student,$semestar,$godina)");
+		}
 
 		// Upisujemo na sve obavezne predmete na studiju
 		$q610 = db_query("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");

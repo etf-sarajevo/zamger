@@ -600,6 +600,57 @@ CREATE TABLE IF NOT EXISTS `izbor` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `izvoz_ocjena`
+--
+
+CREATE TABLE IF NOT EXISTS `izvoz_ocjena` (
+  `student` int(11) NOT NULL,
+  `predmet` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`predmet`),
+  KEY `predmet` (`predmet`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `izvoz_promjena_podataka`
+--
+
+CREATE TABLE IF NOT EXISTS `izvoz_promjena_podataka` (
+  `student` int(11) NOT NULL,
+  PRIMARY KEY  (`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `izvoz_upis_prva`
+--
+
+CREATE TABLE IF NOT EXISTS `izvoz_upis_prva` (
+  `student` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`akademska_godina`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `izvoz_upis_semestar`
+--
+
+CREATE TABLE IF NOT EXISTS `izvoz_upis_semestar` (
+  `student` int(11) NOT NULL,
+  `semestar` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  PRIMARY KEY  (`student`,`semestar`,`akademska_godina`),
+  KEY `akademska_godina` (`akademska_godina`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `kanton`
 --
 
@@ -2435,6 +2486,33 @@ ALTER TABLE `ispitocjene`
 --
 ALTER TABLE `ispit_termin`
   ADD CONSTRAINT `ispit_termin_ibfk_1` FOREIGN KEY (`ispit`) REFERENCES `ispit` (`id`);
+
+--
+-- Constraints for table `izvoz_ocjena`
+--
+ALTER TABLE `izvoz_ocjena`
+  ADD CONSTRAINT `izvoz_ocjena_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `izvoz_ocjena_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
+
+--
+-- Constraints for table `izvoz_promjena_podataka`
+--
+ALTER TABLE `izvoz_promjena_podataka`
+  ADD CONSTRAINT `izvoz_promjena_podataka_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`);
+
+--
+-- Constraints for table `izvoz_upis_prva`
+--
+ALTER TABLE `izvoz_upis_prva`
+  ADD CONSTRAINT `izvoz_upis_prva_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `izvoz_upis_prva_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `izvoz_upis_semestar`
+--
+ALTER TABLE `izvoz_upis_semestar`
+  ADD CONSTRAINT `izvoz_upis_semestar_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `izvoz_upis_semestar_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
 --
 -- Constraints for table `kolizija`
