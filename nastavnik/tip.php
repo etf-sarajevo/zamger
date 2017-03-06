@@ -878,7 +878,7 @@ if ($akcija == "postojeci_tip") {
 	if (!$tip_predmeta) $tip_predmeta = 1;
 	$_SESSION['spasi']=$pregled;
 	
-	$q10 = db_query("select id,naziv from tippredmeta where id>0");
+	$q10 = db_query("SELECT id,naziv FROM tippredmeta WHERE id>0 ORDER BY naziv");
 	?>
 	<? print genform_hani("POST", "zaPregled"); ?>
 	<input type="hidden" name="akcija" value="postojeci_tip">
