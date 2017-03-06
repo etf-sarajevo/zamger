@@ -98,28 +98,34 @@ if (!$user_siteadmin && !$user_studentska) {
 	}
 	function enterhack(element,e) {
 		if(e.keyCode==13) {
+			if (datum_provjeren[element.id] == 0) {
+				origval[element.id] = '||posalji||';
+			}
 			element.blur();
-//			document.getElementById('ocjena'+gdje).focus();
-//			document.getElementById('ocjena'+gdje).select();
 			document.getElementById(nextjump[element.id]).focus();
 			document.getElementById(nextjump[element.id]).select();
 		}
 	}
 	var origval=new Array();
 	var nextjump=new Array();
+	var datum_provjeren=new Array();
 	</SCRIPT>
 
 
 	<table border="1" bordercolordark="grey" cellspacing="0">
 		<tr>
-			<td><b>R. br.</b></td><td width="300"><b>Prezime i ime</b></td>
-			<td><b>Broj indeksa</b></td>
-			<td><b><? if ($kolokvij) { ?>Ispunio/la obaveze<? } else { ?>Ocjena<? } ?></b></td>
-			<td><b>Datum</b></td>
+			<th><b>R. br.</b></th><th width="300"><b>Prezime i ime</b></th>
+			<th><b>Broj indeksa</b></th>
+			<th><b><? if ($kolokvij) { ?>Ispunio/la obaveze<? } else { ?>Ocjena<? } ?></b></th>
+			<th><b>Datum</b></th>
+			<th><b>Status</b></th>
 		</tr>
 	<?
 
 	$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime";
+	
+	$zebra_bg = $zebra_siva = "#f0f0f0";
+	$zebra_bijela = "#ffffff";
 
 	$q520 = db_query($upit);
 	$id=0;
@@ -128,8 +134,10 @@ if (!$user_siteadmin && !$user_studentska) {
 		$rbr++;
 		if ($id!=0) {
 			?>
-			<SCRIPT language="JavaScript"> nextjump['ocjena<?=$id?>']="ocjena<?=$r520[0]?>";</SCRIPT>
-			<SCRIPT language="JavaScript"> nextjump['datum<?=$id?>']="datum<?=$r520[0]?>";</SCRIPT>
+			<SCRIPT language="JavaScript"> 
+				nextjump['ocjena<?=$id?>'] = "ocjena<?=$r520[0]?>";
+				nextjump['datum<?=$id?>']  = "datum<?=$r520[0]?>";
+			</SCRIPT>
 			<?
 		}
 //			print "$r520[0])\"></tr>\n";
@@ -152,10 +160,15 @@ if (!$user_siteadmin && !$user_studentska) {
 			else { $ispunio_uslove = ""; $ocjena = "false"; }
 		}
 
+		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;
+
 		?>
-		<SCRIPT language="JavaScript"> origval['ocjena<?=$id?>']="<?=$ocjena?>";</SCRIPT>
-		<SCRIPT language="JavaScript"> origval['datum<?=$id?>']="<?=$datum_u_indeksu?>";</SCRIPT>
-		<tr>
+		<SCRIPT language="JavaScript"> 
+			origval['ocjena<?=$id?>'] = "<?=$ocjena?>";
+			origval['datum<?=$id?>'] = "<?=$datum_u_indeksu?>";
+			datum_provjeren['datum<?=$id?>'] = <?=$datum_provjeren?>;
+		</SCRIPT>
+		<tr bgcolor="<?=$zebra_bg?>">
 			<td><?=$rbr?></td>
 			<td><?=$r520[2]?> <?=$r520[1]?></td>
 			<td><?=$r520[3]?></td>
@@ -172,7 +185,7 @@ if (!$user_siteadmin && !$user_studentska) {
 				if ($datum_provjeren == 0) print "; background-color: #ffaaaa";
 			?>" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)">
 			</td>
-			<td id="provjera<?=$id?>" <?
+			<td id="provjera<?=$id?> &nbsp; " <?
 				if ($datum_provjeren != 0) print "style=\"visibility:hidden\"";
 			?>><font color="red"><b>Datum nije provjeren</b></font></td>
 		</tr>
