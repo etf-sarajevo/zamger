@@ -321,35 +321,30 @@ function add_string($s1, $s2, $s3) {
 
 $q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-ORDER BY l.id DESC LIMIT $query_limit");
+WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and (ld.nivo>=$nivo or ld.opis='login') $filterupita AND l.id>".($stardate-$query_limit)."
+ORDER BY l.id DESC");
 $lastlogin = array();
 $eventshtml = array();
 $logins = 0;
-$prvidatum = $zadnjidatum = $last_id = 0;
+$prvidatum = $zadnjidatum = 0;
+$last_id = $stardate-$query_limit;
 while ($logins < $maxlogins) {
 	$r10 = db_fetch_row($q10);
 	if (!$r10) {
-		// Potrošili smo sve slogove u upitu a nismo napunili $maxlogins stavki
-		// Ponavljamo upit sa novim stardate-om
-		if ($last_id > 0 && $stardate > $last_id+1) {
-			$stardate = $last_id+1;
-			// Da ubrzamo stvari, povećaćemo limit na upitu
-			$query_limit *= 2;
-			if ($query_limit > $query_max_limit || $stardate < 2) {
-				// Nema više smisla nastaviti, rezultata više nema
-				$stardate=1;
-				break;
-			}
-		} else {
-			// Prethodni upit nije vratio ama baš ništa, prekidamo
-			$stardate = 1;
+		$stardate = $last_id+1;
+		$last_id = $stardate-$query_limit;
+		// Da ubrzamo stvari, povećaćemo limit na upitu
+		$query_limit *= 2;
+		if ($query_limit > $query_max_limit || $stardate < 2) {
+			// Nema više smisla nastaviti, rezultata više nema
+			//$stardate=1;
 			break;
 		}
+		
 		$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 		FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-		WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-		ORDER BY l.id DESC LIMIT $query_limit");
+		WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and (ld.nivo>=$nivo or ld.opis='login') $filterupita AND l.id>".($stardate-$query_limit)."
+		ORDER BY l.id DESC");
 		continue; // Povratak na početak petlje
 	}
 	
