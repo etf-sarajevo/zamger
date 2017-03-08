@@ -968,10 +968,10 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	eval("izvjestaj_predmet();");
 	ob_end_clean();
 	
-	if (!file_exists("$conf_files_path/izvjestaj_predmet")) {
-		mkdir ("$conf_files_path/izvjestaj_predmet",0777, true);
+	if (!file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag")) {
+		mkdir ("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag",0755, true);
 	}
-	$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY").".html";
+	$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY").".html";
 	file_put_contents($filename, $zamger_filecb_sadrzaj_buffera);
 }
 

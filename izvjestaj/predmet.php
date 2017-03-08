@@ -17,7 +17,7 @@ $time = time();
 if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	$dan=0;
 	do {
-		$filename = $conf_files_path."/izvjestaj_predmet/$predmet-$ag-".date("dmY", $time).".html";
+		$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY", $time).".html";
 		$time -= 86400;
 		$dan++;
 		if ($dan == 3650) {
