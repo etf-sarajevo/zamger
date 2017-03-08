@@ -84,7 +84,7 @@ if (param('akcija') === "Prihvati zahtjev" && check_csrf_token()) {
 	zamgerlog2("prihvacen zahtjev za promjenu podataka", $osoba);
 	print "Zahtjev je prihvaćen";
 	
-	if (db_get("SELECT COUNT(*) FROM izvoz_promjena_podatka WHERE student=$osoba") == 0)
+	if (db_get("SELECT COUNT(*) FROM izvoz_promjena_podataka WHERE student=$osoba") == 0)
 		db_query("INSERT INTO izvoz_promjena_podataka VALUES($osoba)");
 
 	// Poruka korisniku

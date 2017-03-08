@@ -146,12 +146,15 @@ if ($_REQUEST["akcija"]=="studenti") {
 		$q215 = db_query("select count(*) from student_ispit_termin where student=$student and ispit_termin=$termin");
 		if (db_result($q215,0,0)>0)
 			nicemessage("Student je već prijavljen na ovaj termin!");
-		else
+		else {
 			$q220 = db_query("insert into student_ispit_termin set student=$student, ispit_termin=$termin");
+			zamgerlog2("nastavnik dodao studenta na termin", $student, $termin);
+		}
 	}
 	if ($_REQUEST['subakcija']=="izbaci_studenta" && check_csrf_token()) {
 		$student = intval($_REQUEST['student']);
 		$q225 = db_query("delete from student_ispit_termin where student=$student and ispit_termin=$termin");
+		zamgerlog2("nastavnik uklonio studenta sa termina", $student, $termin);
 	}
 
 	$q200 = db_query("select UNIX_TIMESTAMP(datumvrijeme) from ispit_termin where id=$termin");

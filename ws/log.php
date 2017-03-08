@@ -45,107 +45,123 @@ function ws_log() {
 				$upit_txt .= "dogadjaj=$id";
 			}
 		}
-
-		// Upit nad logom
-		$limit_upita = 50;
-		$q100 = db_query("SELECT id, dogadjaj, UNIX_TIMESTAMP(vrijeme), userid, objekat2, objekat3, tekst FROM log2, log2_blob WHERE objekat1=$student AND ($upit_txt) AND log2.id=log2_blob.log2 ORDER BY id DESC LIMIT $limit_upita");
-		$count = 0;
-		while (db_fetch7($q100, $id_dogadjaja, $dogadjaj, $vrijeme, $id_korisnika, $objekat2, $objekat3, $blob)) {
-			$count++;
-			$fino_vrijeme = date("d.m.Y. H:i:s", $vrijeme);
-			
-			$q120 = db_query("select ime, prezime from osoba where id=$id_korisnika");
-			if (db_num_rows($q120)>0) {
-				$korisnik = db_result($q120,0,0)." ".db_result($q120,0,1);
-			} else {
-				$korisnik = "/nepoznat korisnik $id_korisnika/";
-			}
-			
-			$log_stavka = array( 
-				'id' => $id_dogadjaja, 
-				'dogadjaj' => $dogadjaj, 
-				'opis_dogadjaja' => $dogadjaji[$dogadjaj],
-				'vrijeme' => $fino_vrijeme,
-				'id_korisnika' => $id_korisnika,
-				'korisnik' => $korisnik
-			);
-			
-			if ($dogadjaji[$dogadjaj] == "dodana ocjena") {
-				if ($objekat2 != $predmet || $objekat3 != $ag) continue;
-				$log_stavka['ocjena'] = $blob;
-				
-			} else if ($dogadjaji[$dogadjaj] == "obrisana ocjena") {
-				if ($objekat2 != $predmet || $objekat3 != $ag) continue;
-				$log_stavka['stara_ocjena'] = $blob;
-				
-			} else if ($dogadjaji[$dogadjaj] == "izmjena ocjene") {
-				if ($objekat2 != $predmet || $objekat3 != $ag) continue;
-				
-				$stari_bodovi = $bodovi = false;
-				list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
-				if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi=false; }
-				$log_stavka['ocjena'] = $bodovi;
-				$log_stavka['stara_ocjena'] = $stari_bodovi;
-				
-			} else if ($dogadjaji[$dogadjaj] == "promijenjen datum ocjene") {
-				if ($objekat2 != $predmet || $objekat3 != $ag) continue;
-				$log_stavka['datum_ocjene'] = $blob;
-				
-			} else if ($dogadjaji[$dogadjaj] == "upisan rezultat ispita") {
-				$ispit = $objekat2;
-				if (!in_array($ispit, $ispiti)) continue;
-				
-				$log_stavka['bodovi'] = $blob;
-				$log_stavka['ispit'] = $ispit;
-				
-			} else if ($dogadjaji[$dogadjaj] == "izbrisan rezultat ispita") {
-				$ispit = $objekat2;
-				if (!in_array($ispit, $ispiti)) continue;
-				
-				$log_stavka['stari_bodovi'] = $blob;
-				$log_stavka['ispit'] = $ispit;
-				
-			} else if ($dogadjaji[$dogadjaj] == "izmjenjen rezultat ispita") {
-				$ispit = $objekat2;
-				if (!in_array($ispit, $ispiti)) continue;
-				
-				$stari_bodovi = $bodovi = false;
-				list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
-				if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi=false; }
-				$log_stavka['bodovi'] = $bodovi;
-				$log_stavka['stari_bodovi'] = $stari_bodovi;
-				$log_stavka['ispit'] = $ispit;
-				
-			} else if ($dogadjaji[$dogadjaj] == "izmjena bodova za fiksnu komponentu") {
-				if ($objekat2 != $ponudakursa) continue;
-				
-				$komponenta = $objekat3;
-				$stari_bodovi = $bodovi = false;
-				list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
-				if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi="/"; }
-				$log_stavka['bodovi'] = $bodovi;
-				$log_stavka['stari_bodovi'] = $stari_bodovi;
-				$log_stavka['komponenta'] = $komponenta;
-				
-
-			} else if ($dogadjaji[$dogadjaj] == "student upisan na predmet%") {
-				if ($objekat2 != $ponudakursa) continue;
-				// Nema smisla da dalje idemo
-				break;
-			}
-			
-			$rezultat['data'][] = $log_stavka;
-			
-			// Ako smo potrošili sve podatke a nismo došli do upisa studenta, ponavljamo upit
-			if ($count == $limit_upita) {
-				$q100 = db_query("SELECT id, dogadjaj, UNIX_TIMESTAMP(vrijeme), userid, objekat2, objekat3 FROM log2 WHERE id<$id_dogadjaja AND objekat1=$student AND ($upit_txt) ORDER BY id DESC LIMIT $limit_upita");
-				$count = 0;
-			}
-		}
 		
+		// Početni id
+		$pocetni_id = db_get("SELECT id FROM log2 ORDER BY id DESC LIMIT 1") + 1;
+		$limit_upita = 50000;
+		
+		// Vrijeme početka ak.god. prije kojeg nema smisla tražiti
+		$vrijeme_pocetka_godine = db_get("SELECT UNIX_TIMESTAMP(pocetak_zimskog_semestra) FROM akademska_godina WHERE id=$ag");
+
+		// Petlja za paging
+		$nasao_upis = false;
+		do {
+			$q100 = db_query("SELECT id, dogadjaj, UNIX_TIMESTAMP(vrijeme), userid, objekat2, objekat3, tekst FROM log2 LEFT JOIN log2_blob ON log2.id=log2_blob.log2 WHERE objekat1=$student AND ($upit_txt) AND id<$pocetni_id AND id>".($pocetni_id-$limit_upita)." ORDER BY id DESC");
+			
+			$nasao_stavku = false;
+			while (db_fetch7($q100, $id_dogadjaja, $dogadjaj, $vrijeme, $id_korisnika, $objekat2, $objekat3, $blob)) {
+				if ($vrijeme < $vrijeme_pocetka_godine) {
+					$nasao_upis = true;
+					break;
+				}
+			
+				$fino_vrijeme = date("d.m.Y. H:i:s", $vrijeme);
+				
+				$q120 = db_query("select ime, prezime from osoba where id=$id_korisnika");
+				if (db_num_rows($q120)>0) {
+					$korisnik = db_result($q120,0,0)." ".db_result($q120,0,1);
+				} else {
+					$korisnik = "/nepoznat korisnik $id_korisnika/";
+				}
+				
+				$log_stavka = array( 
+					'id' => $id_dogadjaja, 
+					'dogadjaj' => $dogadjaj, 
+					'opis_dogadjaja' => $dogadjaji[$dogadjaj],
+					'vrijeme' => $fino_vrijeme,
+					'id_korisnika' => $id_korisnika,
+					'korisnik' => $korisnik
+				);
+				
+				if ($dogadjaji[$dogadjaj] == "dodana ocjena") {
+					if ($objekat2 != $predmet || $objekat3 != $ag) continue;
+					$log_stavka['ocjena'] = $blob;
+					
+				} else if ($dogadjaji[$dogadjaj] == "obrisana ocjena") {
+					if ($objekat2 != $predmet || $objekat3 != $ag) continue;
+					$log_stavka['stara_ocjena'] = $blob;
+					
+				} else if ($dogadjaji[$dogadjaj] == "izmjena ocjene") {
+					if ($objekat2 != $predmet || $objekat3 != $ag) continue;
+					
+					$stari_bodovi = $bodovi = false;
+					list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
+					if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi=false; }
+					$log_stavka['ocjena'] = $bodovi;
+					$log_stavka['stara_ocjena'] = $stari_bodovi;
+					
+				} else if ($dogadjaji[$dogadjaj] == "promijenjen datum ocjene") {
+					if ($objekat2 != $predmet || $objekat3 != $ag) continue;
+					$log_stavka['datum_ocjene'] = $blob;
+					
+				} else if ($dogadjaji[$dogadjaj] == "upisan rezultat ispita") {
+					$ispit = $objekat2;
+					if (!in_array($ispit, $ispiti)) continue;
+					
+					$log_stavka['bodovi'] = $blob;
+					$log_stavka['ispit'] = $ispit;
+					
+				} else if ($dogadjaji[$dogadjaj] == "izbrisan rezultat ispita") {
+					$ispit = $objekat2;
+					if (!in_array($ispit, $ispiti)) continue;
+					
+					$log_stavka['stari_bodovi'] = $blob;
+					$log_stavka['ispit'] = $ispit;
+					
+				} else if ($dogadjaji[$dogadjaj] == "izmjenjen rezultat ispita") {
+					$ispit = $objekat2;
+					if (!in_array($ispit, $ispiti)) continue;
+					
+					$stari_bodovi = $bodovi = false;
+					list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
+					if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi=false; }
+					$log_stavka['bodovi'] = $bodovi;
+					$log_stavka['stari_bodovi'] = $stari_bodovi;
+					$log_stavka['ispit'] = $ispit;
+					
+				} else if ($dogadjaji[$dogadjaj] == "izmjena bodova za fiksnu komponentu") {
+					if ($objekat2 != $ponudakursa) continue;
+					
+					$komponenta = $objekat3;
+					$stari_bodovi = $bodovi = false;
+					list($stari_bodovi, $bodovi) = explode(" -&gt; ", $blob);
+					if (!$bodovi) { $bodovi=$stari_bodovi; $stari_bodovi="/"; }
+					$log_stavka['bodovi'] = $bodovi;
+					$log_stavka['stari_bodovi'] = $stari_bodovi;
+					$log_stavka['komponenta'] = $komponenta;
+					
+
+				} else if ($dogadjaji[$dogadjaj] == "student upisan na predmet%") {
+					if ($objekat2 != $ponudakursa) continue;
+					// Nema smisla da dalje idemo
+					$nasao_upis = true;
+					break;
+				}
+				
+				$rezultat['data'][] = $log_stavka;
+				$nasao_stavku = true;
+			}
+		
+			$pocetni_id = $pocetni_id - $limit_upita;
+			
+			// Ako prethodni upit nije vratio ništa, povećavamo stranicu
+			if (!$nasao_stavku) {
+				$limit_upita *= 2;
+			}
+		} while($pocetni_id > 1 && !$nasao_upis);
+
 		print json_encode($rezultat);
 	}
 }
-
 
 ?>

@@ -606,7 +606,7 @@ if ($akcija == "log") {
 	$maxlogins = 20;
 	$stardate = intval($_GET['stardate']);
 	if ($stardate == 0) {
-		$q199 = db_query("select id from log order by id desc limit 1");
+		$q199 = db_query("select id from log2 order by id desc limit 1");
 		$stardate = db_result($q199,0,0)+1;
 	}
 
@@ -623,36 +623,30 @@ if ($akcija == "log") {
 	// Upit za log
 	$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 	FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-	WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
-	ORDER BY l.id DESC LIMIT $query_limit");
+	WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
+	ORDER BY l.id DESC");
 	$lastlogin = array();
 	$eventshtml = array();
-	$logins=0;
-	$prvidatum=$zadnjidatum=0;
-	$stardate=1;
-	while ($r10 = db_fetch_row($q10)) {
+	$logins = 0;
+	$prvidatum = $zadnjidatum = 0;
+	$last_id = $stardate - $query_limit;
+	while ($logins < $maxlogins) {
 		$r10 = db_fetch_row($q10);
 		if (!$r10) {
-			// Potrošili smo sve slogove u upitu a nismo napunili $maxlogins stavki
-			// Ponavljamo upit sa novim stardate-om
-			if ($last_id > 0 && $stardate > $last_id+1) {
-				$stardate = $last_id+1;
-				// Da ubrzamo stvari, povećaćemo limit na upitu
-				$query_limit *= 2;
-				if ($query_limit > $query_max_limit || $stardate < 2) {
-					// Nema više smisla nastaviti, rezultata više nema
-					$stardate=1;
-					break;
-				}
-			} else {
-				// Prethodni upit nije vratio ama baš ništa, prekidamo
-				$stardate = 1;
+			$stardate = $last_id+1;
+			$last_id = $stardate-$query_limit;
+			// Da ubrzamo stvari, povećaćemo limit na upitu
+			$query_limit *= 2;
+			if ($query_limit > $query_max_limit || $stardate < 2) {
+				// Nema više smisla nastaviti, rezultata više nema
+				//$stardate=1;
 				break;
 			}
+			
 			$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
 			FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-			WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate and ((ld.nivo>=$nivo $filterupita) or ld.opis='login') 
-			ORDER BY l.id DESC LIMIT $query_limit");
+			WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
+			ORDER BY l.id DESC");
 			continue; // Povratak na početak petlje
 		}
 		
@@ -768,25 +762,23 @@ if ($akcija == "log") {
 			$objekti = add_string($objekti, ", ", db_result($q20,0,0));
 		if ($objekti !== "") $evt .= " ($objekti)";
 
-		$analyze_link = "<a href=\"?sta=admin/log&analyze=$r10[0]\">*</a>";
-
 
 		// Pošto idemo unazad, login predstavlja kraj zapisa za korisnika
 
 		if ($opis == "login") {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr) $nicedate $analyze_link\n".$eventshtml[$lastlogin[$usr]];
+				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 				$lastlogin[$usr]=0;
 			}
 		}
 		else if (strstr($evt," su=")) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> SU to ID: $usr $nicedate $analyze_link\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
 			$lastlogin[$usr]=0;
 		}
 
 
 		else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> ".$evt.$nicedate." ".$analyze_link."\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 		}
 	}
 	if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
@@ -839,7 +831,7 @@ if ($akcija == "log") {
 	}
 	?>
 	<p>&nbsp;</p>
-	<p><a href="<?=genuri()?>"&stardate=<?=$stardate?>">Sljedećih <?=$maxlogins?></a></p>
+	<p><a href="<?=genuri()?>&amp;stardate=<?=$stardate?>">Sljedećih <?=$maxlogins?></a></p>
 	</div>
 	<?
 

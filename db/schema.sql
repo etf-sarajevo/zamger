@@ -878,8 +878,9 @@ CREATE TABLE IF NOT EXISTS `log2` (
   `objekat2` int(11) NOT NULL,
   `objekat3` int(11) NOT NULL,
   `ipaddress` varchar(16) collate utf8_slovenian_ci NOT NULL,
-  PRIMARY KEY  (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
+  PRIMARY KEY  (`id`),
+  KEY `objekat1` (`objekat1`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
 
@@ -891,7 +892,7 @@ CREATE TABLE IF NOT EXISTS `log2_blob` (
   `log2` int(11) NOT NULL,
   `tekst` varchar(255) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`log2`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
 

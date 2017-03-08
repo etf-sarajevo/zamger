@@ -106,14 +106,19 @@ function upis_studenta_na_predmet($student,$ponudakursa) {
 	$q5 = db_query("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$ponudakursa");
 	if (db_result($q5,0,0)>0) return;
 
-	// Zapis u tabeli student_predmet
-	$q10 = db_query("insert into student_predmet set student=$student, predmet=$ponudakursa");
-
-	// Pronalazimo labgrupu "(Svi studenti)" i upisujemo studenta u nju
+	// Pronalazimo labgrupu "(Svi studenti)" i upisujemo studenta u nju (mora postojati)
 	$q20 = db_query("select l.id, pk.predmet, pk.akademska_godina from labgrupa as l, ponudakursa as pk where pk.id=$ponudakursa and pk.predmet=l.predmet and pk.akademska_godina=l.akademska_godina and l.virtualna=1");
+	if (db_num_rows($q20) == 0) {
+		niceerror("Ne postoji grupa (Svi studenti) za ovaj predmet");
+		zamgerlog2("nepostojeca virtualna labgrupa", 0, 0, 0, $ponudakursa); // FIXME negdje moramo imati predmet/ag ?
+		return;
+	}
 	$labgrupa = db_result($q20,0,0); // mora postojati
 	$predmet = db_result($q20,0,1); // treba nam za $q40
 	$ag = db_result($q20,0,2); // treba nam za $q40
+
+	// Zapis u tabeli student_predmet
+	$q10 = db_query("insert into student_predmet set student=$student, predmet=$ponudakursa");
 	
 	$q30 = db_query("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 
