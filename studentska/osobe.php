@@ -579,6 +579,8 @@ else if ($akcija == "upis") {
 	$semestar = intval($_REQUEST['semestar']);
 	$godina = intval($_REQUEST['godina']);
 
+	$zaduzenja_xml = array();
+
 	// Neispravni parametri se ne bi trebali desiti, osim u slučaju hackovanja
 	// a i tada je "šteta" samo nekonzistentnost baze
 
@@ -897,7 +899,6 @@ else if ($akcija == "upis") {
 			
 			// Tražimo detaljne greške i ujedno generišemo XML zaduženja
 			$greska = "";
-			$zaduzenja_xml = array();
 			foreach ($uplate as $uplata) {
 				$q124 = db_query("SELECT vrsta_zaduzenja_opis, cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
 				$opis = db_result($q124,0,0);
