@@ -326,7 +326,7 @@ function student_ugovoroucenju() {
 	<input type="hidden" name="sta" value="student/ugovoroucenju">
 	<input type="hidden" name="akcija" value="kreiraj_ugovor">
 
-	<p>Bjanko Ugovor o učenju: <a href="images/content/150dpi/domestic-contract-0.png">stranica 1</a>, <a href="images/content/150dpi/domestic-contract-1.png">stranica 2</a>!</p>
+	<p>Bjanko Ugovor o učenju: <a href="static/images/content/150dpi/domestic-contract-0.png">stranica 1</a>, <a href="static/images/content/150dpi/domestic-contract-1.png">stranica 2</a>!</p>
 
 	<p>Studij: <select name="studij" id="studij" onchange="javascript:refresh()"><option></option>
 	<?

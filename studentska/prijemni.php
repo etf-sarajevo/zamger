@@ -2051,7 +2051,7 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 }
 </SCRIPT>
 
-<script type="text/javascript" src="js/mycombobox.js"></script>
+<script type="text/javascript" src="static/js/mycombobox.js"></script>
 
 <?
 
@@ -2168,7 +2168,7 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFFFF"<? 
 		} 
-		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom">
+		?>><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_mjesto_rodjenja" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovir?></select>
@@ -2194,7 +2194,7 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFFFF"<? 
 		} 
-		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('nacionalnost')" id="comboBoxImg_nacionalnost" valign="bottom">
+		?>><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('nacionalnost')" id="comboBoxImg_nacionalnost" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_nacionalnost" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_nacionalnost" id="comboBoxMenu_nacionalnost" size="10" onClick="comboBoxOptionSelected('nacionalnost')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$nacionalnostr?></select>
@@ -2240,7 +2240,7 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFFFF"<? 
 		} 
-		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('zavrsena_skola')" id="comboBoxImg_zavrsena_skola" valign="bottom">
+		?>><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('zavrsena_skola')" id="comboBoxImg_zavrsena_skola" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_zavrsena_skola" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_zavrsena_skola" id="comboBoxMenu_zavrsena_skola" size="10" onClick="comboBoxOptionSelected('zavrsena_skola')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$srednjer?></select>
@@ -2287,7 +2287,7 @@ print genform("POST", "glavnaforma");?>
 		} else {
 			?> style="background-color:#FFFFFF"<? 
 		} 
-		?>><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom">
+		?>><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_adresa_mjesto" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovia?></select>

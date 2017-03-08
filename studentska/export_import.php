@@ -83,13 +83,13 @@ function show_hide_buttons() {
 function student_status(student, status, poruka) {
 	var celija = document.getElementById('status'+student);
 	if (status == "ok")
-		celija.innerHTML = '<img src="images/16x16/zad_ok.png" width="16" height="16"> ';
+		celija.innerHTML = '<img src="static/images/16x16/ok.png" width="16" height="16"> ';
 	if (status == "greska")
-		celija.innerHTML = '<img src="images/16x16/brisanje.png" width="16" height="16"> ';
+		celija.innerHTML = '<img src="static/images/16x16/not_ok.png" width="16" height="16"> ';
 	if (status == "nastaviti")
-		celija.innerHTML = '<img src="images/16x16/edit_yellow.png" width="16" height="16"> ';
+		celija.innerHTML = '<img src="static/images/16x16/edit_yellow.png" width="16" height="16"> ';
 	if (status == "bug")
-		celija.innerHTML = '<img src="images/16x16/zad_bug.png" width="16" height="16"> ';
+		celija.innerHTML = '<img src="static/images/16x16/bug.png" width="16" height="16"> ';
 	if (status == "ociscen")
 		celija.parentElement.style.display = "none";
 	celija.innerHTML = celija.innerHTML + poruka;

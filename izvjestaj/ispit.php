@@ -134,9 +134,9 @@ for ($i=0; $i<=$maxbodova; $i+=$rezolucija) {
 	?><td width="10">
 		<table width="10" border="0" cellspacing="0" cellpadding="0">
 			<tr><td>
-				<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=(100-$height)?>">
 			</td></tr><tr><td bgcolor="#FF0000">
-				<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=$height?>">
 			</td></tr>
 		</table>
 	</td><td>&nbsp;</td><?
@@ -181,9 +181,9 @@ foreach ($grupe as $id => $naziv) {
 		<table width="50" border="0" cellspacing="0" cellpadding="0">
 			<tr><td align="center"><?=$label?></td></tr>
 			<tr><td>
-				<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=(100-$height)?>">
 			</td></tr><tr><td bgcolor="#FF0000">
-				<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=$height?>">
 			</td></tr>
 			<tr><td align="center"><?=$naziv?></td></tr>
 		</table>
@@ -204,9 +204,9 @@ foreach ($grupe as $id => $naziv) {
 		<table width="50" border="0" cellspacing="0" cellpadding="0">
 			<tr><td align="center"><?=$label?></td></tr>
 			<tr><td>
-				<img src="images/fnord.gif" width="1" height="<?=(100-$height)?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=(100-$height)?>">
 			</td></tr><tr><td bgcolor="#FF0000">
-				<img src="images/fnord.gif" width="1" height="<?=$height?>">
+				<img src="static/images/fnord.gif" width="1" height="<?=$height?>">
 			</td></tr>
 			<tr><td align="center"><?=$naziv?></td></tr>
 		</table>

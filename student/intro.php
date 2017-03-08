@@ -43,7 +43,7 @@ if ($modul_raspored==1) {
 
 <table border="0" width="100%"><tr>
 	<td width="30%" valign="top" style="padding: 10px; padding-right:30px;">
-		<h2><img src="images/32x32/aktuelno.png" align="absmiddle"> <font color="#666699">AKTUELNO</font></h2>
+		<h2><img src="static/images/32x32/latest.png" align="absmiddle"> <font color="#666699">AKTUELNO</font></h2>
 <?
 
 $vrijeme_poruke = array();
@@ -266,7 +266,7 @@ if ($printed==0)
 ?></td>
 
 <td width="30%" valign="top" style="padding: 10px;">
-<h2><img src="images/32x32/poruke.png" align="absmiddle"> <font color="#666699">PORUKE</font></h2><?
+<h2><img src="static/images/32x32/messages.png" align="absmiddle"> <font color="#666699">PORUKE</font></h2><?
 
 $vrijeme_poruke = array();
 $code_poruke = array();
@@ -376,8 +376,8 @@ if (db_num_rows($q200)<1) {
 global $conf_site_url;
 
 ?>
-<a href="<?=$conf_site_url?>/rss.php?id=<?=$rssid?>"><img src="images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
-<a href="http://feedvalidator.org/check.cgi?url=http%3A//zamger.etf.unsa.ba/rss.php%3Fid%3D<?=$rssid?>"><img src="images/valid-rss-rogers.png" width="88" height="31" border="0" align="center"></a>
+<a href="<?=$conf_site_url?>/rss.php?id=<?=$rssid?>"><img src="static/images/32x32/rss.png" width="32" height="32" border="0" align="center"> <big>RSS Feed - automatsko obavještenje o novostima!</big></a>
+<a href="http://feedvalidator.org/check.cgi?url=http%3A//zamger.etf.unsa.ba/rss.php%3Fid%3D<?=$rssid?>"><img src="static/images/valid-rss-rogers.png" width="88" height="31" border="0" align="center"></a>
 
 <!--
 <table border="0" bgcolor="#DDDDDD" width="100%">

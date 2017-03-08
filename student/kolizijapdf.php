@@ -295,8 +295,8 @@ $pdf->SetPrintFooter(false);
 $pdf->AddPage();
 
 
-//	$pdf->Image("images/content/150dpi/ETF-Domestic-contract-PGS-ALL-0.png",210,297,0,0,'','','',true,150);
-	$pdf->Image("images/content/150dpi/domestic-contract$mscfile-0.png",0,0,210,0,'','','',true,150); 
+//	$pdf->Image("static/images/content/150dpi/ETF-Domestic-contract-PGS-ALL-0.png",210,297,0,0,'','','',true,150);
+	$pdf->Image("static/images/content/150dpi/domestic-contract$mscfile-0.png",0,0,210,0,'','','',true,150); 
 	$pdf->SetXY(175, 34);
 	$pdf->Cell(23, 0, $agnaziv, 0, 0, 'C');
 	$pdf->SetXY(175, 42);
@@ -316,7 +316,7 @@ $pdf->AddPage();
 
 	// PRVI SEMESTAR
 	$pdf->AddPage();
-	$pdf->Image("images/content/150dpi/domestic-contract$mscfile-1.png",0,0,210); 
+	$pdf->Image("static/images/content/150dpi/domestic-contract$mscfile-1.png",0,0,210); 
 
 	$pdf->SetXY(175, 34);
 	$pdf->Cell(23, 0, $agnaziv, 0, 0, 'C');
@@ -399,7 +399,7 @@ $pdf->AddPage();
 
 	// DRUGI SEMESTAR
 	$pdf->AddPage();
-	$pdf->Image("images/content/150dpi/domestic-contract$mscfile-2.png",0,0,210); 
+	$pdf->Image("static/images/content/150dpi/domestic-contract$mscfile-2.png",0,0,210); 
 
 	$pdf->SetXY(175, 34);
 	$pdf->Cell(23, 0, $agnaziv, 0, 0, 'C');

@@ -669,10 +669,10 @@ if ($akcija == "log") {
 			}
 		}
 
-		if ($r10[6]==1) $nivoimg="log_info";
-		else if ($r10[6]==2) $nivoimg="log_edit";
-		else if ($r10[6]==3) $nivoimg="log_error";
-		else if ($r10[6]==4) $nivoimg="log_audit";
+		if ($r10[6]==1) $nivoimg="info";
+		else if ($r10[6]==2) $nivoimg="edit_red";
+		else if ($r10[6]==3) $nivoimg="warning";
+		else if ($r10[6]==4) $nivoimg="audit";
 
 
 		$evt = "";
@@ -767,18 +767,18 @@ if ($akcija == "log") {
 
 		if ($opis == "login") {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
+				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 				$lastlogin[$usr]=0;
 			}
 		}
 		else if (strstr($evt," su=")) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
 			$lastlogin[$usr]=0;
 		}
 
 
 		else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 		}
 	}
 	if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
@@ -822,7 +822,7 @@ if ($akcija == "log") {
 	
 			$link = "?sta=studentska/osobe&amp;akcija=edit&amp;osoba=$userid";
 
-			print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-l$logid\" onclick=\"daj_stablo('l$logid')\" alt=\"plus\">
+			print "<img src=\"static/images/plus.png\" width=\"13\" height=\"13\" id=\"img-l$logid\" onclick=\"daj_stablo('l$logid')\" alt=\"plus\">
 	Pristup $nicedate
 	<div id=\"l$logid\" style=\"display:none\">\n";
 		}
@@ -1283,10 +1283,10 @@ if (db_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 			list.style.visibility = 'visible';
 			list.style.left=curleft;
 			list.style.top=curtop+ib.offsetHeight;
-			image.src = "images/cb_down.png";
+			image.src = "static/images/combobox_down.png";
 		} else {
 			list.style.visibility = 'hidden';
-			image.src = "images/cb_up.png";
+			image.src = "static/images/combobox_up.png";
 		}
 	}
 	function comboBoxHide(elname) {
@@ -1294,7 +1294,7 @@ if (db_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 		var listsel = document.getElementById("comboBoxMenu_"+elname);
 		if (list.style.visibility == 'visible' && listsel.focused==false) {
 			list.style.visibility = 'hidden';
-			image.src = "images/cb_up.png";
+			image.src = "static/images/combobox_up.png";
 		}
 	}
 	function comboBoxOptionSelected(elname) {
@@ -1367,7 +1367,7 @@ if (db_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 	</td></tr>
 	<tr><td>
 		Adresa (mjesto):</td><td>
-		<input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyPress="comboBoxEdit(event, 'adresa_mjesto')" autocomplete="off" onBlur="comboBoxHide('adresa_mjesto')"><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
+		<input type="text" name="adresa_mjesto" id="adresa_mjesto" value="<?=$adresarvalue?>" class="default" onKeyPress="comboBoxEdit(event, 'adresa_mjesto')" autocomplete="off" onBlur="comboBoxHide('adresa_mjesto')"><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('adresa_mjesto')" id="comboBoxImg_adresa_mjesto" valign="bottom"> <img src="static/images/combobox_down.png" style="visibility:hidden">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_adresa_mjesto" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_adresa_mjesto" id="comboBoxMenu_adresa_mjesto" size="10" onClick="comboBoxOptionSelected('adresa_mjesto')"><?=$gradovir?></select>
@@ -1425,7 +1425,7 @@ if (db_result($q400,0,18)==1) $boracke = "CHECKED"; else $boracke="";
 	</td></tr>
 	<tr><td>
 		Mjesto rođenja:</td><td>
-		<input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'mjesto_rodjenja')" autocomplete="off" onBlur="comboBoxHide('mjesto_rodjenja')"><img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
+		<input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyPress="return comboBoxEdit(event, 'mjesto_rodjenja')" autocomplete="off" onBlur="comboBoxHide('mjesto_rodjenja')"><img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('mjesto_rodjenja')" id="comboBoxImg_mjesto_rodjenja" valign="bottom"> <img src="static/images/combobox_down.png" style="visibility:hidden">
 		<!-- Rezultati pretrage primaoca -->
 		<div id="comboBoxDiv_mjesto_rodjenja" style="position:absolute;visibility:hidden">
 			<select name="comboBoxMenu_mjesto_rodjenja" id="comboBoxMenu_mjesto_rodjenja" size="10" onClick="comboBoxOptionSelected('mjesto_rodjenja')" onFocus="this.focused=true;" onBlur="this.focused=false;"><?=$gradovir?></select>

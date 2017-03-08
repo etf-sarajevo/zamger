@@ -209,7 +209,7 @@ print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 
 // Statusne ikone:
-$stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
+$stat_icon = array("bug", "view_icon", "copy", "bug", "view_icon", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
@@ -285,15 +285,15 @@ while ($r21 = db_fetch_row($q21)) {
 			$bgcolor = ' bgcolor="#DDDDFF"'; 
 		else 	$bgcolor = "";
 		if (db_num_rows($q22)<1) {
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="static/images/16x16/create_new.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
 			$status = db_result($q22,0,0);
 			$bodova_zadatak = db_result($q22,0,1);
 			if (strlen(db_result($q22,0,2))>2)
-				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
+				$imakomentar = "<img src=\"static/images/16x16/comment_yellow.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
+			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="static/images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
 	<?
 		}
 	}
@@ -421,7 +421,7 @@ if ($attachment) {
 				$vrijeme = db_result($q120,0,1);
 			$vrijeme = date("d. m. Y. H:i:s",$vrijeme);
 			$velicina = nicesize(filesize($the_file));
-			$icon = "images/mimetypes/" . getmimeicon($the_file);
+			$icon = "static/images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "index.php?sta=common/attachment&zadaca=$zadaca&zadatak=$zadatak";
 			?>
 			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>

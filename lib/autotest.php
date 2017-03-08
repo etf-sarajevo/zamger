@@ -74,7 +74,7 @@ function autotest_detalji($test, $student, $nastavnik) {
 	$testbr = db_result($q1010,0,0) + 1;
 	
 	?>
-		<script src="js/jsdiff/diff.js"></script>
+		<script src="static/js/jsdiff/diff.js"></script>
 		<script> var razlike=false;
 		function dajDiff(link) {
 			if (razlike) {
@@ -719,7 +719,7 @@ HTML;
 		$fino_vrijeme = date("d. m. y. H:i:s", $r115[2]);
 		$sakriven     = $r115[3];
 
-		if ($status == "ok") $ikona = "zad_ok"; else $ikona = "brisanje";
+		if ($status == "ok") $ikona = "ok"; else $ikona = "not_ok";
 		if ($sakriven == 1) {
 			if (!$nastavnik) {
 				$rok_za_slanje = $r115[4];
@@ -733,7 +733,7 @@ HTML;
 		$rezultat .= <<<HTML
 		<tr>
 			<td $boja>$rbr</td>
-			<td $boja><img src="images/16x16/$ikona.png" width="8" height="8"> $stat_autotest[$status]</td>
+			<td $boja><img src="static/images/16x16/$ikona.png" width="8" height="8"> $stat_autotest[$status]</td>
 			<td $boja>$fino_vrijeme</td>
 			<td>
 				<a href="$uri&amp;test=$r115[0]&amp;akcija=test_detalji">Detalji</a>
@@ -781,22 +781,22 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 	if ($status_zadace == 3) {
 		$bgcolor = "#fcc";
 		$status_duzi_tekst = "<b>Ne može se kompajlirati</b>";
-		$status_ikona = "zad_bug";
+		$status_ikona = "bug";
 	}
 	else if ($status_zadace == 2) {
 		$bgcolor = "#fcc";
 		$status_duzi_tekst = "<b>Zadaća prepisana</b>";
-		$status_ikona = "zad_copy";
+		$status_ikona = "copy";
 	}
 	else if ($status_zadace == 1 || $status_zadace == 4) {
 		$bgcolor = "#ffc";
 		$status_duzi_tekst = "<b>Pregled u toku</b>";
-		$status_ikona = "zad_preg";
+		$status_ikona = "view";
 	}
 	else if ($status_zadace == 5) {
 		$bodova = db_result($q10,0,1);
 		$status_duzi_tekst = "<b>Zadaća pregledana: $bodova bodova</b>";
-		$status_ikona = "zad_ok";
+		$status_ikona = "ok";
 	}
 
 	// Status testova
@@ -836,7 +836,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 	<table width="95%" style="border: 1px solid silver; background-color: <?=$bgcolor?>" cellpadding="5">
 	<tr><td align="center">
 		<p>Status zadaće:<br>
-		<img src="images/16x16/<?=$status_ikona?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status_zadace]?>" alt="<?=$stat_tekst[$status_zadace]?>"> <?=$status_duzi_tekst?></p>
+		<img src="static/images/16x16/<?=$status_ikona?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status_zadace]?>" alt="<?=$stat_tekst[$status_zadace]?>"> <?=$status_duzi_tekst?></p>
 	</td></tr>
 	</table>
 	<?

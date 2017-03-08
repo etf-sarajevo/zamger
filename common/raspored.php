@@ -27,7 +27,7 @@ function common_raspored($tip) {
 
 <!-- RASPORED -->
 
-<LINK href="css/raspored.css" rel="stylesheet" type="text/css">
+<LINK href="static/css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
 	//Tooltip
 	function prikaziTT(poruka, eVentER) {
@@ -58,7 +58,7 @@ function common_raspored($tip) {
 </div>
 
 <div>
-	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="daj_stablo('raspored')" style="color: #666699"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
+	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="daj_stablo('raspored')" style="color: #666699"><img id = "img-raspored" src = "static/images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
 	<hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px">
 </div>
 
@@ -164,7 +164,7 @@ function common_raspored($tip) {
 		print "<div style=\"float:left\">\n";
 		for ($i=8; $i<=20; $i++)
 			if (strstr($_SERVER['HTTP_USER_AGENT'], "MSIE"))
-			print "<div class=\"satnica\" valign=\"center\"><img src=\"images/fnord.gif\" width=\"1\" height=\"27\">$i:00</div>\n";
+			print "<div class=\"satnica\" valign=\"center\"><img src=\"static/images/fnord.gif\" width=\"1\" height=\"27\">$i:00</div>\n";
 			else
 			print "<div class=\"satnica\">$i:00</div>\n";
 		print "</div>\n";

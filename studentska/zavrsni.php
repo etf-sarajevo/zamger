@@ -38,11 +38,6 @@ function studentska_zavrsni()  {
 	$linkPrefix = "?sta=studentska/zavrsni&predmet=$predmet&ag=$ag";
 	$akcija = $_REQUEST['akcija'];
 	$id = intval($_REQUEST['id']);
-	
-/*	?>
-	<LINK href="css/zavrsni.css" rel="stylesheet" type="text/css">
-	<h2>Završni rad</h2>
-	<?*/
 
 	// Da li je odabran predmet
 	if ($predmet == 0) {
@@ -163,12 +158,12 @@ function studentska_zavrsni()  {
 		<table border="1" cellspacing="0" cellpadding="4">
 			<tr bgcolor="#CCCCCC">
 				<td>R.br.</td>
-				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=naslov&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Naslov <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=naslov&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
-				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=mentor&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Mentor <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=mentor&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
-				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=student&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Student <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=student&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
+				<td><a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=naslov&amp;dir=asc"><img src="static/images/up_red.png" width="10" height="10" border="0"></a> Naslov <a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=naslov&amp;dir=desc"><img src="static/images/down_red.png" width="10" height="10" border="0"></a></td>
+				<td><a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=mentor&amp;dir=asc"><img src="static/images/up_red.png" width="10" height="10" border="0"></a> Mentor <a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=mentor&amp;dir=desc"><img src="static/images/down_red.png" width="10" height="10" border="0"></a></td>
+				<td><a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=student&amp;dir=asc"><img src="static/images/up_red.png" width="10" height="10" border="0"></a> Student <a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=student&amp;dir=desc"><img src="static/images/down_red.png" width="10" height="10" border="0"></a></td>
 				<td>Predsjednik komisije</td>
 				<td>Član komisije</td>
-				<td><a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=termin&dir=asc"><img src="images/gore.png" width="10" height="10" border="0"></a> Termin odbrane <a href="?sta=studentska/zavrsni&predmet=<?=$predmet?>&ag=<?=$ag?>&order_by=termin&dir=desc"><img src="images/dole.png" width="10" height="10" border="0"></a></td>
+				<td><a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=termin&amp;dir=asc"><img src="static/images/up_red.png" width="10" height="10" border="0"></a> Termin odbrane <a href="?sta=studentska/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;order_by=termin&amp;dir=desc"><img src="static/images/down_red.png" width="10" height="10" border="0"></a></td>
 				<td>Konačna ocjena</td>
 				<td>Akcije</td>
 			</tr>

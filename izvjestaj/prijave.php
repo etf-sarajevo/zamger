@@ -191,7 +191,7 @@ function kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivP
 
 	$pdf->AddPage();
 	
-	$pdf->Image("images/content/150dpi/prijava-blanko.png",0,0,148,0,'','','',true,150);
+	$pdf->Image("static/images/content/150dpi/prijava-blanko.png",0,0,148,0,'','','',true,150);
 	
 	// broj indexa
 	$pdf->SetY(20);

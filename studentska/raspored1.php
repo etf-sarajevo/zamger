@@ -6,7 +6,7 @@
 
 function studentska_raspored1(){
 ?>
-<link href="css/raspored1.css" rel="stylesheet" type="text/css">
+<link href="static/css/raspored1.css" rel="stylesheet" type="text/css">
 <?
 	global $userid,$user_siteadmin,$user_studentska;
 	
@@ -26,11 +26,11 @@ function studentska_raspored1(){
 		var slika=document.getElementById('slika_za_mas_unos_sala');
 		if(x.style.display=="none"){
 			 x.style.display="inline";
-			 slika.src="images/minus.png";
+			 slika.src="static/images/minus.png";
 		}
 		else {
 			x.style.display="none";
-			slika.src="images/plus.png";
+			slika.src="static/images/plus.png";
 		}
 	}
 
@@ -57,11 +57,11 @@ function studentska_raspored1(){
 		var slika=document.getElementById('slika_konflikti');
 		if(x.style.display=="none"){
 			 x.style.display="inline";
-			 slika.src="images/minus.png";
+			 slika.src="static/images/minus.png";
 		}
 		else {
 			x.style.display="none";
-			slika.src="images/plus.png";
+			slika.src="static/images/plus.png";
 		}
 	}
 
@@ -623,7 +623,7 @@ if(isset($_REQUEST['edit_sala']) && $_REQUEST['edit_sala']==1){
 	if($greska_prazan_prostor_za_mas_unos_sala==1) print "<p class=\"crveno\">GREŠKA: Niste unijeli nikakve podatke u prostor za masovni unos.</p>";
 	?>
 	
-	<a href="#" onclick="daj_uputstvo()"><img id="slika_za_mas_unos_sala" src = "images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
+	<a href="#" onclick="daj_uputstvo()"><img id="slika_za_mas_unos_sala" src = "static/images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
 	
 	<div id="uputstvo_za_mas_unos_sala" style="display:none">
 		<p>Unesite ime sale, tip sale (amf,lab ili kab) i kapacitet odvojene zarezom</p>
@@ -1298,7 +1298,7 @@ else{
 				else $varijabla="konflikata";
 				print "<p class=\"crveno\">Postoji $broj_konflikata $varijabla pri preklapanju časova.</p>";
 				?>
-				<a href="#" onclick="prikazKonflikata()"><img id="slika_konflikti" src = "images/plus.png" border="0" align="left" />Prikaži konflikte</a>
+				<a href="#" onclick="prikazKonflikata()"><img id="slika_konflikti" src = "static/images/plus.png" border="0" align="left" />Prikaži konflikte</a>
 				<div id="prikaz_konflikata" style="display:none">
 					<?
 					print "<ul>";
@@ -1727,7 +1727,7 @@ else{
 			if($uspjesan_masovni_unos_casova==1) nicemessage("Uspješno unešeni časovi!");
 			?>
 			
-			<a href="#" onclick="daj_stablo('uputstvo_za_mas_unos_casova')"><img id="img-uputstvo_za_mas_unos_casova" src = "images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
+			<a href="#" onclick="daj_stablo('uputstvo_za_mas_unos_casova')"><img id="img-uputstvo_za_mas_unos_casova" src = "static/images/plus.png" border="0" align="left" />Uputstvo za masovni unos</a>
 			<div id="uputstvo_za_mas_unos_casova" style="display:none">
 				<p>Unesite sljedeće podatke odvojene zarezom (ili [tab]-om ):</p> 
 				<ul>
@@ -1940,7 +1940,7 @@ else{
 									if($broj_konflikata>0){
 										print "
 													<tr>
-														<td><a href=\"?sta=studentska/raspored1&raspored_za_edit=$raspored_za_edit&konflikt=$id_stavke\"><img src=\"images/16x16/log_error.png\" width=\"16\" height=\"16\" border=\"0\">$broj_konflikata</a></td>
+														<td><a href=\"?sta=studentska/raspored1&raspored_za_edit=$raspored_za_edit&konflikt=$id_stavke\"><img src=\"static/images/16x16/warning.png\" width=\"16\" height=\"16\" border=\"0\">$broj_konflikata</a></td>
 													</tr>";
 									}	
 									print "

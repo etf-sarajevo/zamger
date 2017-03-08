@@ -933,7 +933,7 @@ function studentska_plan(){
 		?>
 		<h2>Predmet: <b><?=$podaci_o_predmetu['naziv']?></b></h2>
 		<h2>Šifra: <b><?=$podaci_o_predmetu['sifra']?></b></h2>
-		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;plan=<?=$plan?>&amp;predmet=<?=$predmet?>&amp;pregled_pasosa=<?=$id_aktuelne_verzije?>"><img src="images/16x16/zad_preg.png" width="16" height="16" border="0" align="center"> Pasoš predmeta</a></p>
+		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;plan=<?=$plan?>&amp;predmet=<?=$predmet?>&amp;pregled_pasosa=<?=$id_aktuelne_verzije?>"><img src="static/images/16x16/view_icon.png" width="16" height="16" border="0" align="center"> Pasoš predmeta</a></p>
 		<p>Verzije pasoša predmeta:</p>
 		<ul><?=$verzije_pasosa?></ul>
 		
@@ -948,8 +948,8 @@ function studentska_plan(){
 		
 		<hr>
 		
-		<p><a href="<?=genuri()?>&amp;akcija=brisi_predmet"><img src="images/16x16/brisanje.png" width="16" height="16" border="0" align="center"> Ukloni predmet iz programa</a></p>
-		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;plan=<?=$plan?>"><img src="images/16x16/zad_ok.png" width="16" height="16" border="0" align="center"> Dodaj novi predmet</a></p>
+		<p><a href="<?=genuri()?>&amp;akcija=brisi_predmet"><img src="static/images/16x16/not_ok.png" width="16" height="16" border="0" align="center"> Ukloni predmet iz programa</a></p>
+		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;plan=<?=$plan?>"><img src="static/images/16x16/ok.png" width="16" height="16" border="0" align="center"> Dodaj novi predmet</a></p>
 		<?
 	}
 	
@@ -961,7 +961,7 @@ function studentska_plan(){
 
 function _print_greska($greska) {
 	if ($greska != "") {
-		?><img src="https://zamger.etf.unsa.ba/images/16x16/brisanje.png" width="16" height="16"> <font color="red"><?=$greska?></font><?
+		?><img src="static/images/16x16/not_ok.png" width="16" height="16"> <font color="red"><?=$greska?></font><?
 	}
 }
 

@@ -11,11 +11,11 @@ function common_raspored1($tip) {
 
 <!-- RASPORED -->
 
-<LINK href="css/raspored1.css" rel="stylesheet" type="text/css">
+<LINK href="static/css/raspored1.css" rel="stylesheet" type="text/css">
 
 
 <div>
-	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="daj_stablo('raspored')" style="color: #666699"><img id = "img-raspored" src = "images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
+	<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="daj_stablo('raspored')" style="color: #666699"><img id = "img-raspored" src = "static/images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj raspored časova</b></a></div>
 	<hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px">
 </div>
 
@@ -42,7 +42,7 @@ function common_raspored1($tip) {
 		}
 		else{ // ako postoji raspored za korisnika
 		?>
-		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a>
+		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="static/images/16x16/pdf.png" width="16" height="16" border="0"></a>
 		<?
 		$id_rasporeda=db_result($q0,0,0);
 ?>
@@ -281,7 +281,7 @@ function common_raspored1($tip) {
 			return;
 		}
 		?>
-		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a>
+		<a href="?sta=common/pdfraspored&tip=<?=$tip?>" target="_new"><img src="static/images/16x16/pdf.png" width="16" height="16" border="0"></a>
 		<table class="raspored" border="1" cellspacing="0">
 			<tr>
 				<th>

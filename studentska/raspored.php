@@ -1,4 +1,4 @@
-<LINK href="css/raspored.css" rel="stylesheet" type="text/css">
+<LINK href="static/css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
 			//Funkcija za potrvrdu brisanja
 			function izbrisi(poruka, url)  {
@@ -245,7 +245,7 @@ function ispisPocetne() {
 	
 	########################################
 	echo '
-		<div><a href = "#" onclick="daj_stablo(\'sp\'); document.getElementById(\'formP0\').reset();"><img id = "img-sp" src = "images/plus.png" border = "0" align = left hspace = 2/>Spiska predmeta po semestrima i odsjecima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'sp\'); document.getElementById(\'formP0\').reset();"><img id = "img-sp" src = "static/images/plus.png" border = "0" align = left hspace = 2/>Spiska predmeta po semestrima i odsjecima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sp" style = "display: none; padding-bottom: 15px; line-height: 18px;">
 			<div style = "height: 150px;">
 				<div style = "width: 35%; float: left;">Naziv predmeta</div>
@@ -287,31 +287,31 @@ function ispisPocetne() {
 				Printanje spiskova: <b>Studij:</b> '.selectOption("studij", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('studij', 'studijNameH')\"")).' &nbsp;&nbsp;
 				<input type = "hidden" name = "studijNameH" id = "studijNameH" />
 				<b>Semestar:</b> '.selectOption("ponudakursa", array("semestar", "semestar"), array("sql_uslov"=>"ORDER BY semestar ASC"), false, "DISTINCT(semestar)").'</font> 
-				&nbsp;&nbsp;<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
+				&nbsp;&nbsp;<button><img src = "static/images/16x16/print.png" border = "0"></button>
 			</form>
 		</div>
 	';
 	
 	#######################################
 	echo '
-		<div><a href = "#" onclick="daj_stablo(\'sg\'); document.getElementById(\'formP1\').reset();"><img id = "img-sg" src = "images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'sg\'); document.getElementById(\'formP1\').reset();"><img id = "img-sg" src = "static/images/plus.png" border = "0" align = left hspace = 2/>Spisak grupa studenata za svaki predmet</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "sg" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP1" id = "formP1" action = "studentska/print.php?act=PG" target = "_blank" method = "post">
 				Printanje grupa za pedmet: '.selectOption("predmet", array("id", "naziv"), array("ajax"=>"onChange = \"javascript:popuniPolje('predmet', 'predmetNameH')\"")).' &nbsp;&nbsp;
 				<input type = "hidden" name = "predmetNameH" id = "predmetNameH" />
-				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
+				<button><img src = "static/images/16x16/print.png" border = "0"></button>
 			</form>
 		</div>
 	';
 	
 	#######################################
 	echo '
-		<div><a href = "#" onclick="daj_stablo(\'pp\'); document.getElementById(\'formP2\').reset();"><img id = "img-pp" src = "images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
+		<div><a href = "#" onclick="daj_stablo(\'pp\'); document.getElementById(\'formP2\').reset();"><img id = "img-pp" src = "static/images/plus.png" border = "0" align = left hspace = 2/>Pregled angazmana nastavnika na pojedinim predmetima</a><hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px"></div>
 		<div id = "pp" style = "display: none; padding-bottom: 15px;">
 			<form name = "formP2" id = "formP2" action = "studentska/print.php?act=PP" target = "_blank" method = "post">
 				Printanje profesora za pedmet: '.selectOption("osoba", array("id", "ime", "prezime"), array("ajax"=>"onChange = \"javascript:popuniPolje('nastavnik', 'imeNastavnika')\"", "sql_uslov"=>"WHERE nastavnik = 1"), "nastavnik").' &nbsp;&nbsp;
 				<input type = "hidden" name = "imeNastavnika" id = "imeNastavnika" />
-				<button><img src = "images/16x16/Icon_Print.png" border = "0"></button>
+				<button><img src = "static/images/16x16/print.png" border = "0"></button>
 			</form>
 		</div>
 	';
@@ -411,8 +411,8 @@ function napraviSale() {
 					<div id = "sectionP2a"><?=$tipSale?></div>
 					<div id = "sectionP3"><?=$kapacSale?></div>
 					<div id = "sectionP4">
-						<a href = "javascript: void(0)" onClick="javascript:popuniSalaPolja('<?=$imeSale?>','<?=$kapacSale?>', '<?=$tipSale?>', '<?=$idSale?>', 'salaModify'); scroll(0,95)" ><img  src = "images/16x16/log_edit.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
-						<a href = "javascript: void(0)" onClick="javascript:izbrisi('Zelim izbrisati salu: <?=$imeSale?> ?', '?sta=studentska/raspored&uradi=sale&do=brisi&idS=<?=$idSale?>')"><img src = "images/16x16/brisanje.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
+						<a href = "javascript: void(0)" onClick="javascript:popuniSalaPolja('<?=$imeSale?>','<?=$kapacSale?>', '<?=$tipSale?>', '<?=$idSale?>', 'salaModify'); scroll(0,95)" ><img  src = "static/images/16x16/edit_red.png" alt = "Uredi salu" title = "Uredi salu" border = "0" /></a> |
+						<a href = "javascript: void(0)" onClick="javascript:izbrisi('Zelim izbrisati salu: <?=$imeSale?> ?', '?sta=studentska/raspored&uradi=sale&do=brisi&idS=<?=$idSale?>')"><img src = "static/images/16x16/not_ok.png" alt = "Brisi salu" title = "Brisi salu" border = "0" /></a>
 					</div>
 					<div class = "razmak"></div>
 				</div>
@@ -814,7 +814,7 @@ function pogledajRasporede() {
 	else {
 		while($sRK = db_fetch_assoc($sqlRasporediK)) {
 		
-			echo "<div style = 'line-height: 18px'>Raspored no.".$brojacRK." - <b>Odsjek:</b> <font color = '#000'>".$sRK['nStudij']."</font> | <b>Semestar:</b> <font color = '#000'>".$sRK['semestar']."</font> | <b>Akademska godina:</b> <font color = '#000'>".$sRK['nAkademska']."</font> | <a target = '_blank' href = 'studentska/print.php?act=rasporedFull&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/raspored.png' border = '0' alt = 'Printaj cijeli raspored' title = 'Printaj cijeli raspored'></a> | <a target = '_blank' href = 'studentska/print.php?act=sale&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'images/16x16/sale.png' border = '0' alt = 'Printaj sale' title = 'Printaj sale'></a> | <a href = '?sta=studentska/raspored&uradi=brisiRaspored&id=".$sRK['raspored']."'><img src = 'images/16x16/brisanje.png' border = '0' alt = 'Brisi raspored' title = 'Brisi raspored'></a></div>";
+			echo "<div style = 'line-height: 18px'>Raspored no.".$brojacRK." - <b>Odsjek:</b> <font color = '#000'>".$sRK['nStudij']."</font> | <b>Semestar:</b> <font color = '#000'>".$sRK['semestar']."</font> | <b>Akademska godina:</b> <font color = '#000'>".$sRK['nAkademska']."</font> | <a target = '_blank' href = 'studentska/print.php?act=rasporedFull&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'static/images/16x16/schedule.png' border = '0' alt = 'Printaj cijeli raspored' title = 'Printaj cijeli raspored'></a> | <a target = '_blank' href = 'studentska/print.php?act=sale&id=".$sRK['raspored']."&nazivS=".$sRK['nStudij']."'><img src = 'static/images/16x16/rooms.png' border = '0' alt = 'Printaj sale' title = 'Printaj sale'></a> | <a href = '?sta=studentska/raspored&uradi=brisiRaspored&id=".$sRK['raspored']."'><img src = 'static/images/16x16/not_ok.png' border = '0' alt = 'Brisi raspored' title = 'Brisi raspored'></a></div>";
 		
 			$brojacRK++;
 		}
