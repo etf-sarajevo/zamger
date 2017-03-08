@@ -21,12 +21,14 @@ function ws_export() {
 		$tip = param('tip');
 		$akcija = param('akcija');
 		
-		if ($tip == "ocjene") {
+		if ($tip == "ocjene" || $tip == "popravi_datum_isss") {
 			$url = $conf_export_isss_url . "dodajOcjenu.php";
 			
 			$id_studenta = int_param('student');
 			$id_predmeta = int_param('predmet');
 			
+			$odgovor = array();
+
 			// Određujemo podatke studenta
 			$student = db_query_assoc("SELECT ime, prezime, brindexa FROM osoba WHERE id=$id_studenta");
 			if (!$student) { 
@@ -35,15 +37,19 @@ function ws_export() {
 			}
 			
 			// Određujemo naziv predmeta
-			$podaci_ocjene = db_query_assoc("SELECT ko.ocjena, ag.naziv godina, pp.naziv predmet, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum
-				FROM pasos_predmeta pp, konacna_ocjena ko, akademska_godina ag 
-				WHERE ko.student=$id_studenta AND ko.predmet=$id_predmeta AND ko.pasos_predmeta=pp.id AND ko.akademska_godina=ag.id");
+			$podaci_ocjene = db_query_assoc("SELECT ko.ocjena, ag.naziv godina, pp.naziv predmet, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ss.studij studij
+				FROM pasos_predmeta pp, konacna_ocjena ko, akademska_godina ag, student_studij ss
+				WHERE ko.student=$id_studenta AND ko.predmet=$id_predmeta AND ko.pasos_predmeta=pp.id AND ko.akademska_godina=ag.id AND ss.student=$id_studenta AND ss.akademska_godina=ag.id
+				ORDER BY ss.semestar LIMIT 1");
 			if (!$podaci_ocjene) { 
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR004', 'message' => 'Nije evidentirana ocjena za predmet' ) );
 				return; 
 			}
 			
-			$datum_isss_format = date("Y-m-d", $podaci_ocjene['datum']);
+			$podaci_ocjene['datum'] = date("Y-m-d", $podaci_ocjene['datum']);
+			
+			// Koristimo broj 11 kao oznaku za ocjenu IO
+			if ($podaci_ocjene['ocjena'] == 11) $podaci_ocjene['ocjena'] = "IO";
 			
 			$isss_data = array ( 
 				"predmet" => $podaci_ocjene['predmet'], 
@@ -56,72 +62,180 @@ function ws_export() {
 						"prezime" => $student['prezime'],
 						"brindexa" => $student['brindexa'],
 						"ocjena" => $podaci_ocjene['ocjena'],
-						"datum" => $datum_isss_format
+						"datum" => $podaci_ocjene['datum']
 					)
 				)
 			);
-			if ($akcija == "provjera") $isss_data['test'] = "true";
 			
-			$isss_msg = array();
-			$isss_msg['data'] = json_encode($isss_data);
-			
-			//print_r($isss_data);
-			
-			$isss_result = json_request($url, $isss_msg, "POST");
-			
-			if ($isss_result === FALSE || $isss_result['success'] === "false") {
-				print json_encode( array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'ISSS servis vratio grešku', 'data' => $isss_result ) );
-				return; 
-			}
-			
-			// Ako upstream vrati warning ovo smatramo za uspješno izvršenu provjeru koja je pokazala da su podaci neispravni
-			$odgovor = array();
-			foreach($isss_result['warnings'] as $warning) {
-				if ($warning['code'] == 'unknown_student') {
-					$odgovor['tekst'] = 'Nepoznat student';
-					$odgovor['status'] = 'greska';
-					break;
+			if ($tip == "popravi_datum_isss") {
+				unset($isss_data['ocjene'][0]['ocjena']); // Ne želimo da slučajno promijenimo ocjenu
+				$isss_data['akcija'] = "promijeni";
+				
+				$isss_msg = array();
+				$isss_msg['data'] = json_encode($isss_data);
+				
+				//print_r($isss_data);
+				
+				$isss_result = json_request($url, $isss_msg, "POST");
+				
+				if ($isss_result === FALSE || $isss_result['success'] === "false") {
+					print json_encode( array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'ISSS servis vratio grešku', 'data' => $isss_result ) );
+					return; 
 				}
-				else if ($warning['code'] == 'grade_exists') {
-					if ($warning['mark'] == $podaci_ocjene['ocjena']) {
-						$odgovor['tekst'] = "Ocjena već unesena";
-						$odgovor['status'] = 'ok';
-					} else {
-						$odgovor['tekst'] = "Unesena je različita ocjena - ". $warning['mark'];
+				
+				foreach($isss_result['warnings'] as $warning) {
+					if ($warning['code'] == 'unknown_subject') {
+						$odgovor['tekst'] = 'Nepoznat predmet';
 						$odgovor['status'] = 'greska';
+						break;
 					}
-					break;
-				}
-				else if ($warning['code'] == 'student_not_enrolled') {
-					$odgovor['tekst'] = "Student nije upisan na studij/predmet";
-					$odgovor['status'] = 'greska';
-					break;
-				}
-				else if ($warning['code'] == 'course_not_offered') {
-					$odgovor['tekst'] = "Predmet nije u ponudi";
-					$odgovor['status'] = 'greska';
-					break;
-				}
-				else if ($warning['code'] == 'no_exam_open') {
-					$odgovor['tekst'] = "Nije otvoren ispit za predmet";
-					$odgovor['status'] = 'greska';
-					break;
-				} else {
-					$odgovor['tekst'] = 'Nepoznato upozorenje '.$warning['code'];
-					$odgovor['status'] = 'greska';
-					break;
+					else if ($warning['code'] == 'unknown_student') {
+						$odgovor['tekst'] = 'Nepoznat student';
+						$odgovor['status'] = 'greska';
+						break;
+					}
+					else {
+						$odgovor['tekst'] = 'Nepoznato upozorenje '.$warning['code'];
+						$odgovor['status'] = 'greska';
+						break;
+					}
 				}
 			}
+			
+			if ($akcija == "provjera") {
+				$isss_data['test'] = "true";
+			
+				// Najprije preuzimamo ocjenu iz ISSSa da vidimo da li već postoji - da li je netačna
+				$isss_data['akcija'] = "vrati";
+				
+				$isss_msg = array();
+				$isss_msg['data'] = json_encode($isss_data);
+				
+				//print_r($isss_data);
+				
+				$isss_result = json_request($url, $isss_msg, "POST");
+				
+				if ($isss_result === FALSE || $isss_result['success'] === "false") {
+					print json_encode( array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'ISSS servis vratio grešku', 'data' => $isss_result ) );
+					return; 
+				}
+				
+				foreach($isss_result['warnings'] as $warning) {
+					if ($warning['code'] == 'unknown_subject') {
+						$odgovor['tekst'] = 'Nepoznat predmet';
+						$odgovor['status'] = 'greska';
+						break;
+					}
+					else if ($warning['code'] == 'unknown_student') {
+						$odgovor['tekst'] = 'Nepoznat student';
+						$odgovor['status'] = 'greska';
+						break;
+					}
+					else {
+						$odgovor['tekst'] = 'Nepoznato upozorenje '.$warning['code'];
+						$odgovor['status'] = 'greska';
+						break;
+					}
+				}
+				
+				// Provjeravamo da li ocjena postoji i da li su podaci jednaki
+				// Necemo nastavljati u suprotnom jer bi nova ocjena mogla "pregaziti" staru
+				if (empty($odgovor)) {
+					if(!array_key_exists('data', $isss_result) || empty($isss_result['data'])) {
+						$odgovor['tekst'] = 'Servis nije vratio ocjenu';
+						$odgovor['status'] = 'greska';
+					} else {
+						$ocjena = $isss_result['data'][0];
+						// Ako ocjene nema servis može vratiti / ili NO
+						if ($ocjena['ocjena'] != "/" && $ocjena['ocjena'] != "NO") {
+							if ($podaci_ocjene['ocjena'] != $ocjena['ocjena']) {
+								$odgovor['tekst'] = "Unesena je različita ocjena - ". $ocjena['ocjena'];
+								$odgovor['status'] = 'greska';
+							}
+							else if ($podaci_ocjene['datum'] != $ocjena['datum']) {
+								$odgovor['tekst'] = "Unesen je različit datum - ". $ocjena['datum'] . " - ".$podaci_ocjene['datum'];
+								$odgovor['status'] = 'greska';
+							}
+							else {
+								$odgovor['tekst'] = "Ocjena već unesena";
+								$odgovor['status'] = 'ok';
+							}
+						}
+					}
+				}
+			}
+			
+			// Ocjena nije ranije unesena, možemo je unijeti
+			// (da bih smanjio indentaciju, pretpostavljam da je $odgovor prazan ako ocjena nije unesena)
+			if (empty($odgovor) && $tip != "popravi_datum_isss") {
+				$isss_data['akcija'] = "upisi";
+				
+				$isss_msg = array();
+				$isss_msg['data'] = json_encode($isss_data);
+				
+				//print_r($isss_data);
+				
+				$isss_result = json_request($url, $isss_msg, "POST");
+				
+				if ($isss_result === FALSE || $isss_result['success'] === "false") {
+					print json_encode( array( 'success' => 'false', 'code' => 'ERR005', 'message' => 'ISSS servis vratio grešku', 'data' => $isss_result ) );
+					return; 
+				}
+				
+				$odgovor = array();
+				foreach($isss_result['warnings'] as $warning) {
+					// Ovo je moralo već biti provjereno, ali zbog race conditiona provjeravamo i to
+					if ($warning['code'] == 'grade_exists') {
+						if ($warning['mark'] == $podaci_ocjene['ocjena']) {
+							$odgovor['tekst'] = "Ocjena već unesena";
+							$odgovor['status'] = 'ok';
+						} else {
+							$odgovor['tekst'] = "Unesena je različita ocjena - ". $warning['mark'];
+							$odgovor['status'] = 'greska';
+						}
+						break;
+					}
+					else if ($warning['code'] == 'student_not_enrolled') {
+						$odgovor['tekst'] = "Student nije upisan na studij";
+						$odgovor['status'] = 'greska';
+						break;
+					}
+					else if ($warning['code'] == 'course_not_offered') {
+						$odgovor['tekst'] = "Predmet nije u ponudi";
+						$odgovor['status'] = 'greska';
+						break;
+					}
+					else if ($warning['code'] == 'no_exam_open') {
+						$odgovor['tekst'] = "Nije otvoren ispit za predmet";
+						$odgovor['status'] = 'greska';
+						break;
+					} 
+					else {
+						$odgovor['tekst'] = 'Nepoznato upozorenje '.$warning['code'];
+						$odgovor['status'] = 'greska';
+						break;
+					}
+				}
+			}
+			
 			if (empty($odgovor)) {
 				if ($akcija == "provjera") {
 					$odgovor['tekst'] = "Moguće upisati ocjenu";
 					$odgovor['status'] = 'nastaviti';
+				} else if ($tip == "popravi_datum_isss") {
+					$odgovor['tekst'] = "Datum popravljen";
+					$odgovor['status'] = 'ok';
 				} else {
 					$odgovor['tekst'] = "Ocjena upisana";
 					$odgovor['status'] = 'ok';
 				}
 			}
 			$rezultat['data'] = $odgovor;
+		}
+		
+		
+		if ($tip == "popravi_datum_isss") {
+		
 		}
 		
 		
@@ -238,18 +352,26 @@ function ws_export() {
 		
 		if ($tip == "daj_razlike") {
 			$id_studenta = int_param('student');
+			
 			$podaci_studenta = daj_podatke_studenta($id_studenta);
-			if ($podaci_studenta === false) return;
+			if ($podaci_studenta === false) return; // Funkcija je već ispisala grešku
+			
 			$data = isss_daj_razlike($podaci_studenta);
 			if ($data === false) return;
-			$odgovor['tekst'] = "Moguće promijeniti podatke";
-			$odgovor['status'] = 'nastaviti';
-			$odgovor['isss_id_studenta'] = $data['isss_id_studenta'];
-			$odgovor['razlike'] = $data['razlike'];
+			
+			if (empty($data['razlike'])) {
+				$odgovor['tekst'] = "Student u ISSSu je identičan";
+				$odgovor['status'] = 'ok';
+			} else {
+				$odgovor['tekst'] = "Student u ISSSu se razlikuje";
+				$odgovor['status'] = 'nastaviti';
+				$odgovor['isss_id_studenta'] = $data['isss_id_studenta'];
+				$odgovor['razlike'] = $data['razlike'];
+			}
 			$rezultat['data'] = $odgovor;
 		}
 		
-		if ($tip == "popravi_isss") {
+		if ($tip == "popravi_studenta_isss") {
 			$url = $conf_export_isss_url . "promijeniStudenta.php";
 			
 			$id_studenta = int_param('student');
@@ -330,7 +452,6 @@ function ws_export() {
 			$odgovor['isss'] = $isss_result;
 			$rezultat['data'] = $odgovor;
 		}
-		
 		
 		if ($tip == "upis_vise") {
 			$url = $conf_export_isss_url . "upisiSemestar.php";
@@ -481,11 +602,18 @@ function ws_export() {
 			$odgovor = array("tekst" => "Očišćen", "status" => "ociscen");
 			$rezultat['data'] = $odgovor;
 		}
-		if ($tip == "ciscenje_ocjena") {
+		if ($tip == "ciscenje_ocjene") {
 			$id_studenta = int_param('student');
 			$id_predmeta = int_param('predmet');
 			
 			db_query("DELETE FROM izvoz_ocjena WHERE student=$id_studenta AND predmet=$id_predmeta");
+			$odgovor = array("tekst" => "Očišćen", "status" => "ociscen");
+			$rezultat['data'] = $odgovor;
+		}
+		if ($tip == "ciscenje_promjena_podataka") {
+			$id_studenta = int_param('student');
+			
+			db_query("DELETE FROM izvoz_promjena_podataka WHERE student=$id_studenta");
 			$odgovor = array("tekst" => "Očišćen", "status" => "ociscen");
 			$rezultat['data'] = $odgovor;
 		}
@@ -499,7 +627,7 @@ function ws_export() {
 
 // Pomoćna funkcija koja kreira asoc. niz sa podacima jednog studenta u ISSS formatu
 
-function daj_podatke_studenta($id_student) {
+function daj_podatke_studenta($id_studenta) {
 	// Upit sa podacima studenta stavljamo direktno u $isss_data
 	$podaci_studenta = db_query_assoc("SELECT ime, prezime, brindexa, jmbg, imeoca, prezimeoca, imemajke, prezimemajke, adresa, adresa_mjesto, telefon, spol, nacionalnost, UNIX_TIMESTAMP(datum_rodjenja) dr, mjesto_rodjenja, drzavljanstvo, kanton FROM osoba WHERE id=$id_studenta");
 	if (!$podaci_studenta) { 
@@ -620,6 +748,7 @@ function isss_daj_razlike($podaci_studenta) {
 		$isss_vrijednost = $isss_compare_result['data'][0][$ime];
 		if ($ime == "kanton" && $vrijednost == "Strani državljanin") continue;
 		if ($ime == "opcina" && $vrijednost == "(nije u BiH)") continue;
+		if ($ime == "opcina_rod" && $vrijednost == "(nije u BiH)") continue;
 		if ($ime == "srednja_skola") { 
 			$isss_vrijednost = ukini_viskove($isss_vrijednost);
 			// Ime srednje škole u ISSSu ograničeno na 100 karaktera
