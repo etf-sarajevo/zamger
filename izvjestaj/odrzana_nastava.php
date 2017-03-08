@@ -263,7 +263,7 @@ print "</tr></table>";
 	<?=tituliraj($userid)?></td>
 	<td align="center">Šef odsjeka:<br>
 	<br>
-	<br><img src="images/fnord.gif" height="1" width="200">
+	<br><img src="static/images/fnord.gif" height="1" width="200">
 	</td>
 	</tr></table>
 

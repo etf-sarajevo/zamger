@@ -2,7 +2,7 @@
   
 function common_pdfraspored() {
 ?>
-<LINK href="css/raspored1.css" rel="stylesheet" type="text/css">
+<LINK href="static/css/raspored1.css" rel="stylesheet" type="text/css">
 <?
 
 function ob_file_callback($buffer)
@@ -478,8 +478,8 @@ class MYPDF extends TCPDF {
 	public function Header() {
 	
 	$this->SetMargins(10,35,25,true);	
-	$this->Image("images/etf-100x100.png",10,8,20);
-	$this->Image("images/unsa.png",180,8,20);
+	$this->Image("static/images/etf-100x100.png",10,8,20);
+	$this->Image("static/images/unsa.png",180,8,20);
 	
         $this->SetFont("DejaVu Sans",'',10);
 	$this->SetY(15);

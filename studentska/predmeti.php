@@ -351,22 +351,22 @@ else if ($akcija == "edit") {
 			<tr><td bgcolor="#777777" align="center">
 				<font color="white"><b>IZVJEŠTAJI:</b></font>
 			</td></tr>
-			<tr><td align="center"><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Spisak grupa</a></td></tr>
-			<tr><td align="center"><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Puni izvještaj</a></td></tr><?
+			<tr><td align="center"><a href="?sta=izvjestaj/grupe&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
+			<img src="static/images/32x32/report.png" border="0"><br/>Spisak grupa</a></td></tr>
+			<tr><td align="center"><a href="?sta=izvjestaj/predmet&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;skrati=da">
+			<img src="static/images/32x32/report.png" border="0"><br/>Puni izvještaj</a></td></tr><?
 			$q359 = db_query("select i.id,UNIX_TIMESTAMP(i.datum), k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum,i.komponenta");
 			if (db_num_rows($q359)>0) {
-				?><tr><td align="center"><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Statistika predmeta</a></td></tr><?
+				?><tr><td align="center"><a href="?sta=izvjestaj/statistika_predmeta&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
+				<img src="static/images/32x32/report.png" border="0"><br/>Statistika predmeta</a></td></tr><?
 			}
 			?>
-			<tr><td align="center"><a href="?sta=studentska/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Štampanje prijava</a></td></tr>
-			<tr><td align="center"><a href="?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Ispiti i prijave</a></td></tr>
-			<tr><td align="center"><a href="?sta=nastavnik/unos_ocjene&predmet=<?=$predmet?>&ag=<?=$ag?>">
-			<img src="images/32x32/izvjestaj.png" border="0"><br/>Unos ocjena</a></td></tr>
+			<tr><td align="center"><a href="?sta=studentska/prijave&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
+			<img src="static/images/32x32/report.png" border="0"><br/>Štampanje prijava</a></td></tr>
+			<tr><td align="center"><a href="?sta=nastavnik/ispiti&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
+			<img src="static/images/32x32/report.png" border="0"><br/>Ispiti i prijave</a></td></tr>
+			<tr><td align="center"><a href="?sta=nastavnik/unos_ocjene&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
+			<img src="static/images/32x32/report.png" border="0"><br/>Unos ocjena</a></td></tr>
 
 
 			<tr><td align="left">Ispiti:<br/><?

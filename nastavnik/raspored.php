@@ -7,7 +7,7 @@
 function nastavnik_raspored() {
 
 ?>
-<link href="css/raspored1.css" rel="stylesheet" type="text/css">
+<link href="static/css/raspored1.css" rel="stylesheet" type="text/css">
 <?
 
 function vrijemeZaIspis($vrijeme){

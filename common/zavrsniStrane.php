@@ -137,7 +137,7 @@ function common_zavrsniStrane() {
 
 	// Stylesheet za forum se nažalost nalazi u projekti.css - izbaciti...
 	?>
-	<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+	<LINK href="static/css/projekti.css" rel="stylesheet" type="text/css">
 	<?
 
 	$tema_po_stranici = 20;
@@ -379,7 +379,7 @@ function common_zavrsniStrane() {
 
 		// Stylesheet za forum se nažalost nalazi u projekti.css - izbaciti...
 		?>
-		<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+		<LINK href="static/css/projekti.css" rel="stylesheet" type="text/css">
 		<?
 
 		$q710 = db_query("SELECT p.id, p.naslov, UNIX_TIMESTAMP(p.vrijeme), o.id, o.prezime, o.ime, pt.tekst FROM zavrsni_bb_post AS p, osoba AS o, zavrsni_bb_post_text AS pt WHERE p.tema=$id_teme AND p.osoba=o.id AND p.id=pt.post");

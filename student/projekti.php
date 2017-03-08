@@ -81,7 +81,7 @@ function student_projekti() {
 
 	// Stylesheet... čemu?
 	?>
-	<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+	<LINK href="static/css/projekti.css" rel="stylesheet" type="text/css">
 	<?
 
 

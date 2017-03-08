@@ -650,7 +650,7 @@ Postavka zadaće:
 if ($postavka_zadace == "") {
 	?><input type="file" name="postavka_zadace_file" size="45"><?
 } else {
-	?><a href="?sta=common/attachment&zadaca=<?=$izabrana?>&tip=postavka"><img src="images/16x16/preuzmi.png" width="16" height="16" border="0"> <?=$postavka_zadace?></a>
+	?><a href="?sta=common/attachment&amp;zadaca=<?=$izabrana?>&amp;tip=postavka"><img src="static/images/16x16/download.png" width="16" height="16" border="0"> <?=$postavka_zadace?></a>
 	<input type="submit" name="dugmeobrisi" value="Obriši">
 	<?
 }

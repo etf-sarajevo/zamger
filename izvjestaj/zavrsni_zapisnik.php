@@ -106,7 +106,7 @@ if ($r10['ciklus'] == 1) {
 	<table border="0">
 	<tr><td valign="bottom">Ocijenila je odbranu i rad sa ocjenom:</td>
 	<td>
-		<table border="1" cellspacing="0" cellpadding="0" width="200" height="50"><tr><td><img src="images/fnord.gif" width="200" height="50"></td></tr></table>
+		<table border="1" cellspacing="0" cellpadding="0" width="200" height="50"><tr><td><img src="static/images/fnord.gif" width="200" height="50"></td></tr></table>
 	</td></tr></table>
 
 	<p>POTPISI ČLANOVA KOMISIJE:</p>

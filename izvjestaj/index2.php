@@ -79,7 +79,7 @@ if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
 
 
 ?>
-<img src="images/content/ETF-memorandum.png">
+<img src="static/images/content/ETF-memorandum.png">
 <p>&nbsp;</p>
 <p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99), člana 140. (4) Zakona o visokom 
 obrazovanju - prečišćeni tekst (Službene novine Kantona Sarajevo, broj 42/13) i člana 198. stav (1) Statuta 

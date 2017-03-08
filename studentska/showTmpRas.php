@@ -1,7 +1,7 @@
 <?
 session_start();
 ?>
-<LINK href="../css/raspored.css" rel="stylesheet" type="text/css">
+<LINK href="../static/css/raspored.css" rel="stylesheet" type="text/css">
 <script language="JavaScript" type="text/javascript">
 			//Funkcija za potrvrdu brisanja
 			function izbrisi(poruka, url)  {

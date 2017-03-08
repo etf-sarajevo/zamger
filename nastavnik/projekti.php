@@ -30,7 +30,7 @@ function nastavnik_projekti() {
 	$id = intval($_REQUEST['id']);
 	
 	?>
-	<LINK href="css/projekti.css" rel="stylesheet" type="text/css">
+	<LINK href="static/css/projekti.css" rel="stylesheet" type="text/css">
 	<h2>Projekti</h2>
 	<?
 	

@@ -44,7 +44,7 @@ if ($userid != 0 && !$user_nastavnik && !$user_studentska && !$user_siteadmin) {
 	}
 	if ($count >= $limit_broj_posjeta) {
 		//niceerror("Odmori malo, opusti se, oguli jednu jabuku.");
-		print "<img src=\"images/oguljena_zelena_jabuka_kora.jpg\">";
+		print "<img src=\"static/images/oguljena_zelena_jabuka_kora.jpg\">";
 		return;
 	}
 }

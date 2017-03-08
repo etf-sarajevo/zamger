@@ -872,7 +872,7 @@ if ($fuzzy) {
 	</script>
 	<p>U akademskoj <?=$ag_naziv?> godini bilo je <?=$brstudenata?> studenata.<br>
 	Od toga <?=$brugovora?> je popunilo ugovor o učenju, a <?=$brkolizija?> je popunilo zahtjev za koliziju (<?=$broboje?> je popunilo oboje).<br>
-	<?=count($ima_uslov_nema_ugovor)?> studenata ima uslov, a nisu popunili Ugovor o učenju! <img src="images/plus.png" width="13" height="13" id="img-ag-1" onclick="daj()">.</p>
+	<?=count($ima_uslov_nema_ugovor)?> studenata ima uslov, a nisu popunili Ugovor o učenju! <img src="static/images/plus.png" width="13" height="13" id="img-ag-1" onclick="daj()">.</p>
 	<div id="ima_uslov_nema_ugovor" style="display:none">
 	<?
 	foreach ($ima_uslov_nema_ugovor as $student) {
@@ -909,7 +909,7 @@ if ($fuzzy) {
 
 // Po studijima i semestrima
 
-$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=10 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
+$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
 $oldstudij=$oldsemestar=$oldobavezan="";
 
 $predmeti_ispis=array();
@@ -1064,7 +1064,7 @@ $statstudij=$studij;
 		$predmeti_institucija[$predmet] = $pinstitucija;
 		$izborni_print=0;
 	} else {
-		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[1] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
+		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[0] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
 		while(db_fetch3($q120, $predmet, $naziv_predmeta, $pinstitucija)) {
 			$predmeti_ispis[$predmet] = $naziv_predmeta;
 			$predmeti_institucija[$predmet] = $pinstitucija;

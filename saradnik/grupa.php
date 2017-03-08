@@ -480,7 +480,7 @@ if (in_array(3, $tipovi_komponenti)) { // 3 = prisustvo
 		var tekst = document.getElementById("danetekst-"+student+"-"+cas);
 		if (status == -1) {
 			celija.style.background = "#FFFFFF";
-			celija.style.backgroundImage = "url(images/Animated-Hourglass.gif)";
+			celija.style.backgroundImage = "url(static/images/Animated-Hourglass.gif)";
 			celija.style.backgroundRepeat = "no-repeat";
 			celija.style.backgroundPosition = "center";
 			tekst.innerHTML = "";
@@ -592,7 +592,7 @@ while ($r195 = db_fetch_row($q195)) {
 		list ($cas_godina,$cas_mjesec,$cas_dan) = explode("-",$r200[1]);
 		list ($cas_sat,$cas_minuta,$cas_sekunda) = explode(":",$r200[2]);
 		$prisustvo_zaglavlje .= "<td align=\"center\">$cas_dan.$cas_mjesec<br/>$cas_sat:$cas_minuta";
-		$prisustvo_zaglavlje .= '<br/><a href="javascript:onclick=upozorenje('."'$cas_id'".');"><img src="images/16x16/brisanje.png" border="0"></a>';
+		$prisustvo_zaglavlje .= '<br/><a href="javascript:onclick=upozorenje('."'$cas_id'".');"><img src="static/images/16x16/not_ok.png" border="0"></a>';
 		$prisustvo_zaglavlje .= "</td>\n";
 		$cas_id_array[] = $cas_id;
 		$casova++;
@@ -739,7 +739,7 @@ $minw += 40; // bodovi prisustvo
 
 
 // Ikone i statusi za zadaće
-$stat_icon = array("zad_bug", "zad_cekaj", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
+$stat_icon = array("bug", "wait_icon", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Automatsko testiranje u toku", "Zadaća prepisana", "Bug u programu", "Potrebno pregledati", "Zadaća OK");
 
 
@@ -753,7 +753,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 <tr>
 	<td id="student_<?=$stud_id?>"><?=$redni_broj?>.&nbsp;<a href="index.php?sta=saradnik/student&student=<?=$stud_id?>&predmet=<?=$predmet?>&ag=<?=$ag?>"><?=$stud_imepr?></a></td>
 	<td><?=$brind[$stud_id]?></td>
-	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$labgrupa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="images/16x16/komentar-plavi.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
+	<td align="center"><a href="javascript:firefoxopen('index.php?sta=saradnik/komentar&student=<?=$stud_id?>&labgrupa=<?=$labgrupa?>','blah3','width=350,height=320,status=0,toolbar=0,resizable=1,location=0,menubar=0,scrollbars=1');"><img src="static/images/16x16/comment_blue.png" border="0" width="16" height="16" alt="Komentar na rad studenta" title="Komentar na rad studenta"></a></td>
 <?
 
 	$prisustvo_ispis=$zadace_ispis=$ispiti_ispis="";
@@ -775,9 +775,9 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			$q317 = db_query("select dovrsen, bodova from kviz_student where student=$stud_id and kviz=".$cas_kviz[$cid]);
 			if (db_num_rows($q317)>0) {
 				if (db_result($q317,0,0)==1 && db_result($q317,0,1)>=$cas_kviz_prolaz[$cid])
-					$uspjeh_na_kvizu='<img src="images/16x16/zad_ok.png" width="8" height="8">';
+					$uspjeh_na_kvizu='<img src="static/images/16x16/ok.png" width="8" height="8">';
 				else
-					$uspjeh_na_kvizu='<img src="images/16x16/brisanje.png" width="8" height="8">';
+					$uspjeh_na_kvizu='<img src="static/images/16x16/not_ok.png" width="8" height="8">';
 			}
 		}
 
@@ -823,7 +823,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 			$status = $zadace_statusi[$zid][$i][$stud_id];
 			if ($status == 0) { // Zadatak nije poslan
 				if ($kreiranje>0) {
-					$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"images/16x16/zad_novi.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\"></a>&nbsp;";
+					$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"static/images/16x16/create_new.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\"></a>&nbsp;";
 					//if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				}
 			} else {
@@ -831,7 +831,7 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 				$icon = $stat_icon[$status];
 				$title = $stat_tekst[$status];
 				$zb = $zadace_bodovi[$zid][$i][$stud_id];
-				$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"images/16x16/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\">&nbsp;".$zb."</a>";
+				$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$stud_id."', '".$zid."', '".$i."'); return false;\"><img src=\"static/images/16x16/".$icon.".png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$stud_id.",".$zid.",".$i."\" alt=\"".$stud_id.",".$zid.",".$i."\">&nbsp;".$zb."</a>";
 //				if ($i<$zad_brz_array[$zid]) $zadace_ispis .= "<br/>";
 				$bodova += $zb;
 			}

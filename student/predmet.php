@@ -100,12 +100,12 @@ else
 $tabela1=$procent*2;
 $tabela2=200-$tabela1;
 
-$ispis1 = "<img src=\"images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
-$ispis2 = "<img src=\"images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br/> $bodova bodova";
+$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
+$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br/> $bodova bodova";
 
 if ($tabela1>$tabela2) { 
-	$ispis1="<img src=\"images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br/> $bodova bodova";
-	$ispis2="<img src=\"images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
+	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br/> $bodova bodova";
+	$ispis2="<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
 }
 
 ?>
@@ -350,7 +350,7 @@ while ($r40 = db_fetch_row($q40)) {
 
 
 // Statusne ikone:
-$stat_icon = array("zad_bug", "zad_preg", "zad_copy", "zad_bug", "zad_preg", "zad_ok");
+$stat_icon = array("bug", "view_icon", "copy", "bug", "view_icon", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
@@ -407,7 +407,7 @@ if (db_result($q100,0,0)==0) {
 		<?
 		} else {
 		?>
-		<td><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova?> / <?=$max_bodova_zadaca[$zadaca]?></td>
+		<td><img src="static/images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova?> / <?=$max_bodova_zadaca[$zadaca]?></td>
 		<?
 		}
 		$uk_bodova+=$bodova;
@@ -496,17 +496,17 @@ while ($r21 = db_fetch_row($q21)) {
 		// Uzmi samo rjesenje sa zadnjim IDom
 		$q22 = db_query("select status,bodova,komentar from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
 		if (db_num_rows($q22)<1) {
-			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/zad_novi.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+			?><td><a href="?sta=student/zadaca&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zadaca=<?=$zadaca?>&amp;zadatak=<?=$zadatak?>"><img src="static/images/16x16/create_new.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
 		} else {
 			$slao_zadacu = true;
 			$status = db_result($q22,0,0);
 			$bodova_zadatak = db_result($q22,0,1);
 			$bodova_zadaca += $bodova_zadatak;
 			if (strlen(db_result($q22,0,2))>2)
-				$imakomentar = "<img src=\"images/16x16/komentar.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
+				$imakomentar = "<img src=\"static/images/16x16/comment_yellow.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
 			else
 				$imakomentar = "";
-			?><td><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$zadaca?>&zadatak=<?=$zadatak?>"><img src="images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
+			?><td><a href="?sta=student/zadaca&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zadaca=<?=$zadaca?>&amp;zadatak=<?=$zadatak?>"><img src="static/images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
 	<?
 		}
 	}
@@ -518,14 +518,14 @@ while ($r21 = db_fetch_row($q21)) {
 	// Link za download postavke zadaće
 	if ($ima_postavka) {
 		if ($postavka_zadace != "") {
-			?><a href="?sta=common/attachment&zadaca=<?=$zadaca?>&tip=postavka"><img src="images/16x16/preuzmi.png" width="16" height="16" border="0"></a><?
+			?><a href="?sta=common/attachment&amp;zadaca=<?=$zadaca?>&amp;tip=postavka"><img src="static/images/16x16/download.png" width="16" height="16" border="0"></a><?
 		} else { print "&nbsp;"; }
 		print "</td><td>\n";
 	}
 
 	// Download zadaće u PDF formatu - sada je moguć i za attachmente
 	if ($slao_zadacu) {
-		?><a href="?sta=student/zadacapdf&zadaca=<?=$zadaca?>" target="_new"><img src="images/16x16/pdf.png" width="16" height="16" border="0"></a><?
+		?><a href="?sta=student/zadacapdf&amp;zadaca=<?=$zadaca?>" target="_new"><img src="static/images/16x16/pdf.png" width="16" height="16" border="0"></a><?
 	} else { print "&nbsp;"; }
 	?>
 	</td></tr>

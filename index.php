@@ -326,8 +326,8 @@ if ($userid>0) {
 <head>
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link href="css/zamger.css" rel="stylesheet" type="text/css">
-	<link rel="stylesheet" href="css/print.css" type="text/css" media="print">
+	<link href="static/css/zamger.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="static/css/print.css" type="text/css" media="print">
 	<?=$rsslink?>
 </head>
 <?
@@ -352,9 +352,9 @@ if ($found==1 && $template==0 && $greska=="") {
 		if ($userid>0) {
 			?>
 			<div id="konverteri" style="position:absolute;right:10px;top:10px;border:1px white solid;">
-			<a href="" onclick="javascript:document.getElementById('konverteri').style.display='none'; window.print(); return false;" target="_new"><img src="images/32x32/print.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
-			<a href="?sta=izvjestaj/csv_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/excel.png" align="top" width="32" height="32" border="0" alt="Excel"></a>
-			<a href="?sta=izvjestaj/pdf_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="images/32x32/pdf.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
+			<a href="" onclick="javascript:document.getElementById('konverteri').style.display='none'; window.print(); return false;" target="_new"><img src="static/images/32x32/print.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
+			<a href="?sta=izvjestaj/csv_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="static/images/32x32/excel.png" align="top" width="32" height="32" border="0" alt="Excel"></a>
+			<a href="?sta=izvjestaj/pdf_converter&amp;koji_izvjestaj=<?=$sta?>&amp;<?=$k?>" target="_new"><img src="static/images/32x32/pdf.png" align="top" width="32" height="32" border="0" alt="PDF"></a>
 			<a href="#" onclick="javascript:document.getElementById('konverteri').style.display='none'; return false;" style="color:white;" onmouseover="javascript:document.getElementById('konverteri').style.border='1px gray solid'; this.style.color='gray';" onmouseout="javascript:document.getElementById('konverteri').style.border='1px white solid'; this.style.color='white';">X</a>
 			</div>
 			<?
@@ -412,22 +412,22 @@ if (int_param('loginforma') == 1 && $userid>0) {
 ?>
 <body style="margin:0px" bgcolor="#FFFFFF"<?=$onload_funkcija?>>
 
-<script type="text/javascript" src="js/stablo.js"></script> <!-- Cesto koristena skripta -->
+<script type="text/javascript" src="static/js/stablo.js"></script> <!-- Cesto koristena skripta -->
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
 	<tr bgcolor="#BBBBFF">
 		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->
 			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href="index.php"><img src="images/etf-50x50.png" width="50" height="50" border="0" alt="ETF"></a>
+			<a href="index.php"><img src="static/images/etf-50x50.png" width="50" height="50" border="0" alt="ETF"></a>
 			</td><td width="50%" align="right">
 			<font color="#FFFFFF" size="5">
 			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br>
 			<font color="#FFFFFF" size="1">
-			<a href="doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
-			<img src="images/16x16/dokumentacija.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;
+			<a href="static/doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
+			<img src="static/images/16x16/docs.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Uputstva">&nbsp;
 			Uputstva</a>&nbsp;&nbsp;&nbsp;
 			<a href="https://github.com/etf-sarajevo/zamger/issues" target="_new">
-			<img src="images/16x16/zad_bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;
+			<img src="static/images/16x16/bug.png" width="16" height="16" border="0" style="vertical-align:middle" alt="Prijavite bug">&nbsp;
 			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
 			</td>
 		<!--/tr></table></td-->
@@ -444,7 +444,7 @@ if ($userid>0) {
 	$br_novih_poruka = db_get("select count(*) from poruka where tip=2 and opseg=7 and primalac=$userid and UNIX_TIMESTAMP(vrijeme)>$posljednji_pristup");
 	if ($br_novih_poruka > 0) {
 		?>
-		<img src="images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
+		<img src="static/images/newmail.gif" id="newmail" width="450" height="188" style="position:absolute;visibility:hidden" onload="newmail_show();" alt="nova poruka">
 		<script language="javascript">
 		var mywidth,myheight;
 		if (window.innerWidth && window.innerHeight) {

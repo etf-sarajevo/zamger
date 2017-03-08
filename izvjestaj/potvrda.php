@@ -128,7 +128,7 @@ if ($spol == "Z") {
 }
 
 ?>
-<img src="images/content/ETF-memorandum.png">
+<img src="static/images/content/ETF-memorandum.png">
 <p>&nbsp;</p>
 <p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99) izdaje se:</p>
 

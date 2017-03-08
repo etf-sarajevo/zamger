@@ -113,10 +113,10 @@ else if ($analyze) {
 <p>Izaberite logging nivo:<br/>
 <?=genform("GET")?>
 <table width="100%"><tr>
-<td><input type="radio" name="nivo" value="1" onchange="document.forms[0].submit()" <? if ($nivo==1) print "CHECKED";?>><img src="images/16x16/log_info.png" width="16" height="16" align="center"> Posjete stranicama</td>
-<td><input type="radio" name="nivo" value="2" onchange="document.forms[0].submit()" <? if ($nivo==2) print "CHECKED";?>><img src="images/16x16/log_edit.png" width="16" height="16" align="center"> Izmjene</td>
-<td><input type="radio" name="nivo" value="3" onchange="document.forms[0].submit()" <? if ($nivo==3) print "CHECKED";?>><img src="images/16x16/log_error.png" width="16" height="16" align="center"> Greške</td>
-<td><input type="radio" name="nivo" value="4" onchange="document.forms[0].submit()" <? if ($nivo==4) print "CHECKED";?>><img src="images/16x16/log_audit.png" width="16" height="16" align="center"> Kritične izmjene</td>
+<td><input type="radio" name="nivo" value="1" onchange="document.forms[0].submit()" <? if ($nivo==1) print "CHECKED";?>><img src="static/images/16x16/info.png" width="16" height="16" align="center"> Posjete stranicama</td>
+<td><input type="radio" name="nivo" value="2" onchange="document.forms[0].submit()" <? if ($nivo==2) print "CHECKED";?>><img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> Izmjene</td>
+<td><input type="radio" name="nivo" value="3" onchange="document.forms[0].submit()" <? if ($nivo==3) print "CHECKED";?>><img src="static/images/16x16/warning.png" width="16" height="16" align="center"> Greške</td>
+<td><input type="radio" name="nivo" value="4" onchange="document.forms[0].submit()" <? if ($nivo==4) print "CHECKED";?>><img src="static/images/16x16/audit.png" width="16" height="16" align="center"> Kritične izmjene</td>
 </tr></table>
 </form>
 <br/><br/>
@@ -217,10 +217,10 @@ while ($r10 = db_fetch_row($q10)) {
 		}
 	}
 
-	if ($r10[4]==1) $nivoimg="log_info";
-	else if ($r10[4]==2) $nivoimg="log_edit";
-	else if ($r10[4]==3) $nivoimg="log_error";
-	else if ($r10[4]==4) $nivoimg="log_audit";
+	if ($r10[4]==1) $nivoimg="info";
+	else if ($r10[4]==2) $nivoimg="edit_red";
+	else if ($r10[4]==3) $nivoimg="warning";
+	else if ($r10[4]==4) $nivoimg="audit";
 
 
 	// Prepoznavanje određenih elemenata eventa - TAGOVA
@@ -319,18 +319,18 @@ while ($r10 = db_fetch_row($q10)) {
 
 	if ($evt == "login") {
 		if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 			$lastlogin[$usr]=0;
 		}
 	}
 	else if (strstr($evt," su=")) {
-		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
+		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
 		$lastlogin[$usr]=0;
 	}
 
 
 	else {
-		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
+		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 	}
 }
 if ($stardate==1) $zadnjidatum=1; // Nije doslo do breaka...
@@ -349,14 +349,14 @@ if ($rezultata==1) {
 		// Prvo cemo varijantu sa predmetom pa sa ponudom kursa
 		$q310 = db_query("select id from log where dogadjaj='masovno upisane ocjene na predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
 		if (db_num_rows($q310)>0) {
-			$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+			$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 		} 
 
 		$q320 = db_query("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
 		while ($r320 = db_fetch_row($q320)) {
 			$q310 = db_query("select id from log where dogadjaj='masovno upisane ocjene na predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
 			if (db_num_rows($q310)>0) {
-				$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+				$eventshtml[db_result($q310,0,0)] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovno upisane ocjene na predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 			}
 		}
 	}
@@ -373,7 +373,7 @@ if ($rezultata==1) {
 		$q340 = db_query("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet pp$predmet' and vrijeme=FROM_UNIXTIME($datum)");
 		if (db_num_rows($q340)>0) {
 			$nicedate = " (".date("d.m.Y. H:i:s", db_result($q340,0,1)).")";
-			$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+			$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 		}
 
 		$q320 = db_query("select pk.id from ponudakursa as pk, akademska_godina as ag where pk.predmet=$predmet and pk.akademska_godina=ag.id and ag.aktuelna=1");
@@ -381,7 +381,7 @@ if ($rezultata==1) {
 			$q340 = db_query("select id, vrijeme from log where dogadjaj='masovni rezultati ispita za predmet p$r320[0]' and vrijeme=FROM_UNIXTIME($datum)");
 			if (db_num_rows($q340)>0) {
 				$nicedate = " (".date("d.m.Y. H:i:s", db_result($q340,0,1)).")";
-				$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"images/16x16/log_audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
+				$eventshtml[db_result($q340,0,0)] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/audit.png\" width=\"16\" height=\"16\" align=\"center\"> masovni rezultati ispita za predmet ".get_ppredmet_link($predmet)." (".get_user_link($nasaokorisnika)." dobio: $ocjena)".$nicedate."\n";
 			}
 		}
 	}
@@ -426,8 +426,8 @@ foreach ($eventshtml as $logid => $event) {
 	
 		$link = "?sta=studentska/osobe&akcija=edit&osoba=$userid";
 
-		print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"daj_stablo('$logid')\">
-<img src=\"images/16x16/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
+		print "<img src=\"static/images/plus.png\" width=\"13\" height=\"13\" id=\"img-$logid\" onclick=\"daj_stablo('$logid')\">
+<img src=\"static/images/16x16/$usrimg.png\" width=\"16\" height=\"16\" align=\"center\">
 <a href=\"$link\">$imeprezime</a> $nicedate
 <div id=\"$logid\" style=\"display:none\">\n";
 	}

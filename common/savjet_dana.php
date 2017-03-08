@@ -34,7 +34,7 @@ $tekst = db_get("select tekst from savjet_dana where $upit 0 order by rand() lim
 ?>
 <h2>Da li ste znali...</h2>
 
-<img src="images/savjet_dana.gif" align="left" width="92" height="150" style="margin: 0px 20px">
+<img src="static/images/savjet_dana.gif" align="left" width="92" height="150" style="margin: 0px 20px">
 
 <?=$tekst?>
 

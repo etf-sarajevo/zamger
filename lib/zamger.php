@@ -91,8 +91,8 @@ function user_box() {
 
 <div id="kocka" style="position:absolute;right:10px;top:55px">
 	<table style="border:1px;border-style:solid"><tr><td>
-	<img src="images/fnord.gif" width="200" height="1" alt="fnord"><br>
-	<img src="images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$user['ime']?> <?=$user['prezime']?><br>
+	<img src="static/images/fnord.gif" width="200" height="1" alt="fnord"><br>
+	<img src="static/images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$user['ime']?> <?=$user['prezime']?><br>
 	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
 	</td></tr></table>
 </div>
@@ -397,7 +397,7 @@ function coolboxkey(e) {
 function mycombobox($name, $value, $valueslist) {
 	?>
 	<input type="text" name="<?=$name?>" id="<?=$name?>" value="<?=$value?>" class="default" onKeyDown="return comboBoxEdit(event, '<?=$name?>')" autocomplete="off" onBlur="comboBoxHide('<?=$name?>')">
-	<img src="images/cb_up.png" width="19" height="18" onClick="comboBoxShowHide('<?=$name?>')" id="comboBoxImg_<?=$name?>" valign="bottom"> <img src="images/cb_down.png" style="visibility:hidden">
+	<img src="static/images/combobox_up.png" width="19" height="18" onClick="comboBoxShowHide('<?=$name?>')" id="comboBoxImg_<?=$name?>" valign="bottom"> <img src="static/images/combobox_down.png" style="visibility:hidden">
 	<!-- Rezultati pretrage primaoca -->
 	<div id="comboBoxDiv_<?=$name?>" style="position:absolute;visibility:hidden">
 		<select name="comboBoxMenu_<?=$name?>" id="comboBoxMenu_<?=$name?>" size="10" onClick="comboBoxOptionSelected('<?=$name?>')" onFocus="this.focused=true;" onBlur="this.focused=false;"><option></option><?
@@ -439,7 +439,7 @@ function malimeni($fj) {
 	</style>
 	<table width="100%" border="0" cellspacing="4" cellpadding="0">
 		<tr><?
-//		<!--td><img src="images/fnord.gif" width="10" height="1"></td>
+//		<!--td><img src="static/images/fnord.gif" width="10" height="1"></td>
 //		</td-->
 		?><td valign="top" width="200" align="left">
 		<p>&nbsp;</p>
@@ -471,7 +471,7 @@ function malimeni($fj) {
 
 			?>
 			</table>
-		</td><!--td width="1" bgcolor="#000000"><img src="images/fnord.gif" width="1" height="1">
+		</td><!--td width="1" bgcolor="#000000"><img src="static/images/fnord.gif" width="1" height="1">
 		</td-->
 		<td width="50">&nbsp;</td>
 		<td valign="top">
@@ -603,16 +603,16 @@ function studentski_meni($fj) {
 		// Zaglavlje sa imenom akademske godine i semestrom
 		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) {
 			if ($r30[2]%2==1)
-				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
+				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
 			else
-				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Ljetnji semestar ";
+				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Ljetnji semestar ";
 			$ispis .= $r30[3].":</b><br/><br/></td></tr>\n";
 			$oldsem=$zimskiljetnji; $oldag=$r30[3];
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
 		if (int_param('predmet')==$predmet && int_param('ag')==$pag) {
-			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/dole.png" align="bottom" border="0"></td>'."\n<td>";
+			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/down_red.png" align="bottom" border="0"></td>'."\n<td>";
 			if ($tippredmeta == 1000)
 				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
 			else if ($_REQUEST['sta'] != "student/predmet")
@@ -653,9 +653,9 @@ function studentski_meni($fj) {
 			$ispis .= "</td></tr>\n";
 		} else {
 			if ($tippredmeta == 1000)
-				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 			else
-				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="images/lijevo.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 		}
 	}
 	$ispis .= "</table>\n";
@@ -664,7 +664,7 @@ function studentski_meni($fj) {
 ?>
 	<table width="100%" border="0" cellspacing="4" cellpadding="0">
 		<tr><td valign="top">
-			<img src="images/fnord.gif" width="197" height="1"><br/><br/>
+			<img src="static/images/fnord.gif" width="197" height="1"><br/><br/>
 			<? if ($sta != "student/intro") { ?>
 			<a href="?sta=student/intro">&lt;-- Nazad na početnu</a>
 			<? } else { ?>&nbsp;<? } ?><?=$ispis?>
@@ -676,7 +676,7 @@ function studentski_meni($fj) {
 			<a href="<?=genuri()?>&sm_arhiva=1">Prikaži arhivirane predmete</a>
 			<? } ?>
 			<br /><br />
-			<img src="images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
+			<img src="static/images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
 			<a href="#" onclick="daj_stablo('dokumenti'); return false;">Dokumenti</a><br />
 			<div id="dokumenti" style="display:none">
 				&nbsp;&nbsp;&nbsp; <a href="?sta=student/potvrda">Zahtjev za ovjereno uvjerenje</a> <i><font color="red">NOVO!</font></i><br />
@@ -709,8 +709,8 @@ function studentski_meni($fj) {
 
 	?>
 		</td>
-		<td width="1" bgcolor="#888888"><img src="images/fnord.gif" width="1" height="1"></td>
-		<td width="5" bgcolor="#FFFFFF"><img src="images/fnord.gif" width="5" height="1"></td>
+		<td width="1" bgcolor="#888888"><img src="static/images/fnord.gif" width="1" height="1"></td>
+		<td width="5" bgcolor="#FFFFFF"><img src="static/images/fnord.gif" width="5" height="1"></td>
 		<td width="100%" valign="top">
 		<? eval ($fj); ?>
 			</td></tr>

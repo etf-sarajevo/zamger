@@ -56,13 +56,13 @@ function izvjestaj() {
 }
 </script>
 
-<img src="images/blur.gif" width="1" height="1" border="0"> <!-- preloading -->
+<img src="static/images/blur.gif" width="1" height="1" border="0"> <!-- preloading -->
 
-<div id="prekrivac" name="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px; background-image:url('images/blur.gif'); background-repeat:repeat;">
+<div id="prekrivac" name="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px; background-image:url('static/images/blur.gif'); background-repeat:repeat;">
 </div>
 
 <div id="obavijest" name="obavijest" style="display:none; position: absolute; left: 0px; top: 55px">
-<table width="300" height="50" border="1" cellspacing="0" cellpadding="0"><tr><td align="center" valign="center" width="50"  bgcolor="#DDDDDD"><img src="images/Animated-Hourglass.gif" width="38" height="38"></td><td align="center" valign="center" bgcolor="#DDDDDD">U toku je kreiranje izvještaja<br>Molimo sačekajte</td></tr></table>
+<table width="300" height="50" border="1" cellspacing="0" cellpadding="0"><tr><td align="center" valign="center" width="50"  bgcolor="#DDDDDD"><img src="static/images/Animated-Hourglass.gif" width="38" height="38"></td><td align="center" valign="center" bgcolor="#DDDDDD">U toku je kreiranje izvještaja<br>Molimo sačekajte</td></tr></table>
 </div>
 
 <?

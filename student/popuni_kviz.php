@@ -148,10 +148,10 @@ function student_popuni_kviz() {
 			
 			if ($tacan_odgovor) {
 				$uk_bodova += $bodova_pitanje;
-				$ispis_rezultata .= '<img src="images/16x16/zad_ok.png" width="16" height="16">'."</td><td>$bodova_pitanje</td></tr>";
+				$ispis_rezultata .= '<img src="static/images/16x16/ok.png" width="16" height="16">'."</td><td>$bodova_pitanje</td></tr>";
 				$q205 = db_query("UPDATE kviz_pitanje SET ukupno=ukupno+1, tacnih=tacnih+1 WHERE id=$id_pitanja");
 			} else {
-				$ispis_rezultata .= '<img src="images/16x16/brisanje.png" width="16" height="16">'."</td><td>0</td></tr>";
+				$ispis_rezultata .= '<img src="static/images/16x16/not_ok.png" width="16" height="16">'."</td><td>0</td></tr>";
 				$q208 = db_query("UPDATE kviz_pitanje SET ukupno=ukupno+1 WHERE id=$id_pitanja");
 			}
 		}
@@ -171,9 +171,9 @@ function student_popuni_kviz() {
 			$ispis_rezultata .= "<tr><td>$rbr.</td><td>".substr($tekst,0,20)."...</td><td>";
 			$rbr++;
 			if ($_REQUEST["odgovor"][$id_pitanja] == $id_odgovora && $r200[3]==1) 
-				$ispis_rezultata .= '<img src="images/16x16/zad_ok.png" width="16" height="16">'."</td><td>$r200[1]</td></tr>";
+				$ispis_rezultata .= '<img src="static/images/16x16/ok.png" width="16" height="16">'."</td><td>$r200[1]</td></tr>";
 			else
-				$ispis_rezultata .= '<img src="images/16x16/brisanje.png" width="16" height="16">'."</td><td>0</td></tr>";
+				$ispis_rezultata .= '<img src="static/images/16x16/not_ok.png" width="16" height="16">'."</td><td>0</td></tr>";
 		}
 		*/
 		$q210 = db_query("update kviz_student set dovrsen=1, bodova=$uk_bodova where student=$userid and kviz=$kviz");

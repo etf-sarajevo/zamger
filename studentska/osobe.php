@@ -455,7 +455,7 @@ if ($akcija == "podaci") {
 
 	?>
 
-	<script type="text/javascript" src="js/mycombobox.js"></script>
+	<script type="text/javascript" src="static/js/mycombobox.js"></script>
 	<h2><?=$ime?> <?=$prezime?> - izmjena ličnih podataka</h2>
 	<p>ID: <b><?=$osoba?></b></p>
 	<?
@@ -2442,13 +2442,13 @@ else if ($akcija == "edit") {
 					<font color="white"><b>IZVJEŠTAJI:</b></font>
 				</td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/historija&student=<?=$osoba?>">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Historija</a></td></tr>
+				<img src="static/images/32x32/report.png" border="0"><br/>Historija</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/index2&student=<?=$osoba?>">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Prepis ocjena</a> <?=$prepisi_ocjena?></td></tr>
+				<img src="static/images/32x32/report.png" border="0"><br/>Prepis ocjena</a> <?=$prepisi_ocjena?></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=0">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Bodovi</a></td></tr>
+				<img src="static/images/32x32/report.png" border="0"><br/>Bodovi</a></td></tr>
 				<tr><td align="center"><a href="?sta=izvjestaj/progress&student=<?=$osoba?>&razdvoji_ispite=1">
-				<img src="images/32x32/izvjestaj.png" border="0"><br/>Bodovi + nepoloženi ispiti</a></td></tr>
+				<img src="static/images/32x32/report.png" border="0"><br/>Bodovi + nepoloženi ispiti</a></td></tr>
 			</table>
 		</div>
 		<?

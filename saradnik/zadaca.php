@@ -172,10 +172,10 @@ if ($_POST['akcija'] == "izvrsi" && check_csrf_token()) {
 		<pre><?=$ispis?></pre>
 		</td></tr></table></center><br/><?
 		if ($ok) {
-			?><p><img src="images/16x16/zad_ok.png" width="16" height="16"> 
+			?><p><img src="static/mages/16x16/ok.png" width="16" height="16"> 
 			Program se izvršio bez problema.</p><?
 		} else {
-			?><p><img src="images/16x16/zad_bug.png" width="16" height="16">
+			?><p><img src="static/images/16x16/bug.png" width="16" height="16">
 			Program se krahirao. Backtrace (obratiti pažnju na zadnje linije):</p>
 			<pre><?=$backtrace?></pre>
 			<?
@@ -316,7 +316,7 @@ if ($attach == 0) {
 			// Ako nije definisan programski jezik geshi je lakši
 			?>
 			<div id="editor"><?=htmlspecialchars($src)?></div>
-			<script src="js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+			<script src="static/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 			<script>
 			var editor = ace.edit("editor");
 			//editor.setTheme("ace/theme/monokai");
@@ -366,7 +366,7 @@ if ($attach == 0) {
 		// Formular za izvršavanje programa
 		if ($id_jezika > 0) {
 			?>
-			<script type="text/javascript" src="js/combo-box.js"></script>
+			<script type="text/javascript" src="static/js/combo-box.js"></script>
 			<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
 			Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
 			<?=genform("POST")?>
@@ -403,7 +403,7 @@ if ($attach == 0) {
 		if ($filename && file_exists($the_file)) {
 			$vrijeme = date("d. m. Y. h:i:s", db_result($q130,0,1));
 			$velicina = nicesize(filesize($the_file));
-			$icon = "images/mimetypes/" . getmimeicon($the_file);
+			$icon = "static/images/mimetypes/" . getmimeicon($the_file);
 			$dllink = "index.php?sta=common/attachment&student=$stud_id&zadaca=$zadaca&zadatak=$zadatak";
 			?>
 			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>

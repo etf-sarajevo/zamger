@@ -59,7 +59,7 @@ function public_predmeti($modul) {
 			$q3 = db_query("select semestar from ponudakursa where studij=$r2[0] and akademska_godina=$r1[0] group by semestar order by semestar");
 			while ($r3 = db_fetch_row($q3)) {
 				print "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-				print "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-sem-$r3[0]-$r2[0]-$r1[0]\" onclick=\"daj_stablo('sem-$r3[0]-$r2[0]-$r1[0]'); ucitavaj('$r3[0]', '$r2[0]', '$r1[0]');\"> $r3[0]. semestar <div id=\"sem-$r3[0]-$r2[0]-$r1[0]\" style=\"display:none\">prazan</div>";
+				print "<img src=\"static/images/plus.png\" width=\"13\" height=\"13\" id=\"img-sem-$r3[0]-$r2[0]-$r1[0]\" onclick=\"daj_stablo('sem-$r3[0]-$r2[0]-$r1[0]'); ucitavaj('$r3[0]', '$r2[0]', '$r1[0]');\"> $r3[0]. semestar <div id=\"sem-$r3[0]-$r2[0]-$r1[0]\" style=\"display:none\">prazan</div>";
 			}
 			print "</div>\n";
 		}
@@ -70,7 +70,7 @@ function public_predmeti($modul) {
 }
 
 function dajplus($layerid,$layername) {
-	return "<img src=\"images/plus.png\" width=\"13\" height=\"13\" id=\"img-$layerid\" onclick=\"daj_stablo('$layerid')\"> $layername <div id=\"$layerid\" style=\"display:none\">";
+	return "<img src=\"static/images/plus.png\" width=\"13\" height=\"13\" id=\"img-$layerid\" onclick=\"daj_stablo('$layerid')\"> $layername <div id=\"$layerid\" style=\"display:none\">";
 }
 
 ?>

@@ -53,9 +53,9 @@ else
 
 <p><h3><?=$predmet_naziv?> - Izvještaji</h3></p>
 
-<p><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>"><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="center"> 1. Sumarni izvještaj za predmet</a></p>
+<p><a href="?sta=izvjestaj/statistika_predmeta&predmet=<?=$predmet?>&ag=<?=$ag?>"><img src="static/images/32x32/report.png" border="0" width="32" height="32" align="center"> 1. Sumarni izvještaj za predmet</a></p>
 
-<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 2. Spisak studenata
+<p><img src="static/images/32x32/report.png" border="0" width="32" height="32" align="left"> 2. Spisak studenata
 <ul>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&grupa=<?=$virtualna?>">Bez grupa</a></li>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">Jedna kolona po grupama</a></li>
@@ -64,13 +64,13 @@ else
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></li></ul>
 </p>
 
-<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
+<p><img src="static/images/32x32/report.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
 <ul><li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>">Puni izvještaj</a></li>
 <li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da">Sa sumiranim kolonama za prisustvo i zadaće</a></li>
 <li><a href="?sta=izvjestaj/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&skrati=da&razdvoji_ispite=da">Sa razdvojenim popravnim ispitima </a></li></ul>
 </p>
 
-<p><img src="images/32x32/izvjestaj.png" border="0" width="32" height="32" align="left"> 4. Pregled anketa:
+<p><img src="static/images/32x32/report.png" border="0" width="32" height="32" align="left"> 4. Pregled anketa:
 <ul>
 	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&rank=da">Rank pitanja </a></li>
 	<li><a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&komentar=da">Komentari</a></li>
