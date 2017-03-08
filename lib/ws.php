@@ -151,7 +151,7 @@ function json_request($url, $parameters, $method = "GET")
 			echo "HTTP request failed for $url (POST)\n";
 			return FALSE;
 		}
-		$http_result = stream_get_contents($fp);
+		$http_result = @stream_get_contents($fp);
 		fclose($fp);
 	}
 	if ($http_result===FALSE) {
