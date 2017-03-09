@@ -2,8 +2,6 @@
 
 // REGISTRY - baza komponenti ZAMGERa
 
-// v3.9.1.0 (2008/02/14) - beta1
-
 
 $registry = array(
 # "path", "puni naziv", "UI naziv", "Uloga", "U sablonu", "Nevidljiv (debug)"
@@ -12,7 +10,7 @@ $registry = array(
 # Sablon == 2 znaci da se ne prikazuje ni header
 
 array("admin/intro", "Administracija predmeta", "Site admin", "A", "1", "0"),
-array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
+array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
 //array("admin/konzistentnost", "Provjera konzistentnosti", "Konzistentnost", "A", "1", "0"),
 array("admin/log", "Pregled logova", "Log", "A", "1", "0"),
 array("admin/log2", "Pregled logova", "Log", "A", "1", "0"),
@@ -20,7 +18,7 @@ array("admin/log2", "Pregled logova", "Log", "A", "1", "0"),
 //array("admin/misc", "Ostalo", "Ostalo", "A", "1", "0"),
 array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A", "1", "0"),
 array("admin/prijemni", "Alati za prijemni", "Prijemni", "A", "1", "0"),
-array("admin/studij", "Parametri studija", "Studij", "A", "1", "0"),
+array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
 array("admin/cron", "Cron", "Cron", "A", "1", "0"),
 
 
