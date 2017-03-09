@@ -67,7 +67,9 @@ na web serveru:
 
 # tar xzvf zamger_4.1.tar.gz
 
-Ukoliko koristite SVN, napravite checkout i zatim kopirajte stablo.
+Ukoliko koristite Git, napravite checkout i zatim kopirajte stablo:
+
+# git clone https://github.com/etf-sarajevo/zamger
 
 
 2. Kreirajte bazu u mysqlu:
