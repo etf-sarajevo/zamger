@@ -10,6 +10,9 @@
 --  - postojanje default podataka drastično olakšava rad sa
 -- vašim kodom.
 
+
+SET names 'utf8';
+
 --
 -- Dumping data for table `akademska_godina`
 -- U bazi mora postojati tačno jedna ak. g. označena kao "aktuelna"
