@@ -7,8 +7,10 @@
 
 // Opšte informacije o instituciji na kojoj se koristi Zamger
 $conf_naziv_institucije = "Elektrotehnički fakultet Sarajevo";
+$conf_naziv_institucije_genitiv = "Elektrotehničkog fakulteta Sarajevo";
 $conf_skr_naziv_institucije = "ETF";
 $conf_skr_naziv_institucije_genitiv = "ETFa";
+$conf_logo_institucije = "etf-50x50.png";
 
 // Pristupni podaci za bazu podataka
 $conf_dbhost = "localhost";

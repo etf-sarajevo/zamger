@@ -418,7 +418,7 @@ if (int_param('loginforma') == 1 && $userid>0) {
 	<tr bgcolor="#BBBBFF">
 		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->
 			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;
-			<a href="index.php"><img src="static/images/etf-50x50.png" width="50" height="50" border="0" alt="ETF"></a>
+			<a href="index.php"><img src="static/images/<?=$conf_logo_institucije?>" width="50" height="50" border="0" alt="<?=$conf_skr_naziv_institucije?>"></a>
 			</td><td width="50%" align="right">
 			<font color="#FFFFFF" size="5">
 			<b><a href="index.php"><font color="#FFFFFF"><?=$conf_appname?> <?=$conf_appversion?></font></a>&nbsp;</b></font><br>
