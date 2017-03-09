@@ -23,7 +23,7 @@ if (!file_exists("lib/config.php")) {
 	<p><font color='red'><b>GREŠKA: Ne postoji datoteka lib/config.php</b></font></p>
 	<p>Molimo vas da iskopirate lib/config.php.default u lib/config.php a zatim napravite potrebne izmjene.</p>
 	</body></html>
-	<?php
+	<?
 	exit(0);
 }
 
