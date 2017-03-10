@@ -643,7 +643,7 @@ foreach ($eventshtml as $logid => $event) {
 
 		if ($userid==0) {
 			$imeprezime = "ANONIMNI PRISTUPI";
-			$usrimg="zad_bug";
+			$usrimg="bug";
 
 		} else {
 			$q202 = db_query("select ime, prezime from osoba where id=$userid");

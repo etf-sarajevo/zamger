@@ -50,7 +50,7 @@ function public_intro_bez_dnevnika() {
 
 
 function login_forma() {
-	global $greska, $registry;
+	global $greska, $registry, $conf_naziv_institucije_genitiv;
 
 	// Redirekciju na isti URI vršimo samo ako je greška = istek sesije
 	$uri=$_SERVER['PHP_SELF'];
@@ -71,7 +71,7 @@ function login_forma() {
 	?>
 	<center><table border="0" cellpadding="5" bgcolor="#FFFFFF">
 	<tr><td align="center">
-		<big><b>Dobro došli na bolognaware Elektrotehničkog fakulteta Sarajevo</b></big>
+		<big><b>Dobro došli na bolognaware <?=$conf_naziv_institucije_genitiv?></b></big>
 	</td></tr>
 	<tr><td align="center">
 		<!-- Ikone za javne servise -->

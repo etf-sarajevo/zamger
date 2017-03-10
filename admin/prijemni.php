@@ -166,13 +166,6 @@ Do: <input type="text" size="3" name="do">
 </form>
 </ul>
 
-<hr>
-
-<?=genform("POST")?>
-<h3>Spisak imena sa šiframa</h3>
-
-<a href="?sta=admin/prijemni&akcija=spisak&termin=25">Spisak za 2012. 2 ciklus</a>
-</form>
 <?
 
 

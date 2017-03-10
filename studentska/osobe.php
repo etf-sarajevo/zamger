@@ -1905,7 +1905,7 @@ else if ($akcija == "edit") {
 	// Promjena korisničkog pristupa i pristupnih podataka
 	if (param('subakcija') == "auth" && check_csrf_token()) {
 		$login = db_escape(trim($_REQUEST['login']));
-		$login_ldap = ldap_escape(trim($_REQUEST['login']));
+		$login_ldap = zamger_ldap_escape(trim($_REQUEST['login']));
 		$stari_login = db_escape($_REQUEST['stari_login']);
 		$password = db_escape($_REQUEST['password']);
 		$aktivan = intval($_REQUEST['aktivan']);
