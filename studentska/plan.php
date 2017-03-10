@@ -127,15 +127,56 @@ function studentska_plan(){
 	}
 	$godina_vazenja = db_result($q100,0,0);
 	$usvojen = db_result($q100,0,1);
-
+	
+		
+	
+	// OSNOVNE AKCIJE NAD PLANOM
+	
 	// Brisanje plana studija
 	if ($akcija === "brisanje") {
 		$q15 = db_query("DELETE FROM plan_studija WHERE id=$plan");
+		zamgerlog("obrisan plan studija $plan", 4);
 		zamgerlog2("obrisan plan studija", $plan);
 		?>
 		Obrisan je plan studija.
 		<script language="JavaScript">
-		location.href='?sta=studentska/plan&studij=<?=$studij?>';
+		setTimeout(function() {
+			location.href='?sta=studentska/plan&studij=<?=$studij?>';
+		}, 500);
+		</script>
+		<?
+		return;
+	}
+
+	// Potvrda važenja plana studija
+	if ($akcija === "potvrda") {
+		$aktuelna_ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
+		
+		print genform("POST");
+		?>
+		<h3>Prihvaćanje predloženog plana i programa za studij &quot;<?=$studij_naziv?>&quot;</h3>
+		<input type="hidden" name="akcija" value="potvrda_submit">
+		Odaberite godinu početka važenja prihvaćenog plana: 
+		<?=db_dropdown("akademska_godina", $aktuelna_ag)?><br><br>
+		<input type="submit" value="  Potvrdi!  ">
+		</form>
+		<?
+		return;
+	}
+	
+	if ($akcija === "potvrda_submit") {
+		$godina_vazenja = int_param("_lv_column_akademska_godina");
+		
+		db_query("UPDATE plan_studija SET usvojen=1, godina_vazenja=$godina_vazenja WHERE id=$plan");
+		zamgerlog("plan studija proglasen za vazeci $plan ag$godina_vazenja", 4);
+		zamgerlog2("plan studija proglasen za vazeci", $plan);
+		
+		?>
+		Plan studija je proglašen za važeći.
+		<script language="JavaScript">
+		setTimeout(function() {
+			location.href='?sta=studentska/plan&studij=<?=$studij?>&plan=<?=$plan?>';
+		}, 500);
 		</script>
 		<?
 		return;
@@ -158,7 +199,7 @@ function studentska_plan(){
 		}
 	} else {
 		if ($ispis_vazenja !== "") $ispis_vazenja = "prijedlog (".$ispis_vazenja.")";
-		else $ispis_vazenja = "prijedlog";
+		else $ispis_vazenja = "prijedlog - <a href=\"".genuri()."&amp;akcija=potvrda\">prihvati prijedlog</a>";
 	}
 
 	?>
