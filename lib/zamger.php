@@ -723,7 +723,7 @@ function studentski_meni($fj) {
 // Logging
 
 function zamgerlog($event,$nivo) {
-	global $userid;
+	global $userid, $login, $conf_files_path;
 
 	// Brisemo gluposti iz eventa
 	if (($k=strpos($event,"sta="))>0) $event=substr($event,$k+4);
@@ -740,9 +740,28 @@ function zamgerlog($event,$nivo) {
 	$event=str_replace("You have an error in your SQL syntax;","",$event);
 	$event=str_replace("check the manual that corresponds to your MySQL server version for the right syntax to use","",$event);
 
-	if (intval($userid)==0) $userid=0;
+	// Username
+	$userid = intval($userid);
+	if ($userid == 0) 
+		$userdata = "(0)"; 
+	else
+		$userdata = "$login ($userid)";
+		
+	if ($_SERVER['HTTP_X_FORWARDED_FOR'])
+		$ip_adresa = db_escape($_SERVER['HTTP_X_FORWARDED_FOR']); 
+	else
+		$ip_adresa = db_escape($_SERVER['REMOTE_ADDR']);
+	
+	$nivostr_ar = array( "", "---", "CCC", "EEE", "AAA");
+	$logline = "[" . $nivostr_ar[$nivo]. "] $ip_adresa - $userdata - [".date("Y-m-d H:i:s")."] \"$event\"\n";
 
-	db_query("insert into log set dogadjaj='".db_escape($event)."', userid=$userid, nivo=$nivo");
+	$godina = date("Y");
+	$mjesec = date("m");
+	$path = $conf_files_path . "/log/$godina";
+	if (!file_exists($path)) mkdir($path);
+	$logfile = "$path/$godina-$mjesec.log";
+	
+	file_put_contents($logfile, $logline, FILE_APPEND);
 }
 
 
