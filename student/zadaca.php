@@ -209,7 +209,7 @@ print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 
 // Statusne ikone:
-$stat_icon = array("bug", "view_icon", "copy", "bug", "view_icon", "ok");
+$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 

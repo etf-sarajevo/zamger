@@ -350,7 +350,7 @@ while ($r40 = db_fetch_row($q40)) {
 
 
 // Statusne ikone:
-$stat_icon = array("bug", "view_icon", "copy", "bug", "view_icon", "ok");
+$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
