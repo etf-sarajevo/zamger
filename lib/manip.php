@@ -720,9 +720,11 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 	// Dodajem slog u akademska_godina_predmet
 	// Uzimamo tip predmeta od prethodne godine
 	$q80 = db_query("select akademska_godina, tippredmeta from akademska_godina_predmet where predmet=$predmet and akademska_godina<=$ag order by akademska_godina desc limit 1");
-	if (db_num_rows($q80)==0) 
-		$tippredmeta = 1; // 1 = ETF Bologna Standard - mora postojati
-	else if (db_result($q80,0,0) == $ag) { // Već postoji
+	if (db_num_rows($q80)==0) {
+		$tippredmeta = 1; // 1 = Bologna Standard - mora postojati
+		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem slog u akademska_godina_predmet<br>\n";
+		else $q90 = db_query("insert into akademska_godina_predmet set akademska_godina=$ag, predmet=$predmet, tippredmeta=$tippredmeta");
+	} else if (db_result($q80,0,0) == $ag) { // Već postoji
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Već postoji slog u akademska_godina_predmet<br>\n";
 	} else {
 		$tippredmeta = db_result($q80,0,1);
