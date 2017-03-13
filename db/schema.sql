@@ -1949,7 +1949,8 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `ciklus` tinyint(2) NOT NULL,
   `trajanje` tinyint(3) NOT NULL,
-  `moguc_upis` tinyint(1) NOT NULL
+  `moguc_upis` tinyint(1) NOT NULL,
+  `ects` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
