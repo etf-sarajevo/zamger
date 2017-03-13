@@ -371,29 +371,36 @@ while (db_fetch4($q40, $id_komponente, $max_bodova, $min_bodova, $parametar_komp
 $stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
+$slanje_zadaca_aktivno = db_get("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
+
+// Spisak komponenti zadaća
+$q95 = db_query("select k.id,k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+where agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4"); // 4 = zadaće
+
+while(db_fetch2($q95, $id_komponente, $naziv_komponente)) {
+
+$ima_aktivnih_zadaca = db_get("SELECT COUNT(*) FROM zadaca WHERE predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente AND aktivna=1");
+
 
 ?>
 
-
 <!-- zadace -->
 
-<b>Zadaće:</b><br/>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
+<b><?=$naziv_komponente?>:</b><br/>
+<table cellspacing="0" cellpadding="2" border="0" id="zadace<?=$id_komponente?>" class="zadace">
 	<thead>
 		<tr>
 <?
 
 
-$q100 = db_query("select count(*) from studentski_modul_predmet as smp, studentski_modul as sm where smp.predmet=$predmet and smp.akademska_godina=$ag and smp.aktivan=1 and smp.studentski_modul=sm.id and sm.modul='student/zadaca'");
-
 $total_max_bodova = 0;
 
 // Prikaz sa predmete kod kojih nije aktivno slanje zadaća
-if (db_result($q100,0,0)==0) {
+if ($slanje_zadaca_aktivno == 0 || $ima_aktivnih_zadaca == 0) {
 	// U pravilu ovdje ima samo jedan zadatak, pa ćemo sumirati
 	$idovi_zadaca = array();
 	$max_bodova_zadaca = array();
-	$q110 = db_query("select id, naziv, zadataka, bodova from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta, naziv");
+	$q110 = db_query("select id, naziv, zadataka, bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by naziv");
 	while ($r110 = db_fetch_row($q110)) {
 		$idovi_zadaca[] = $r110[0];
 		$brzad[$r110[0]] = $r110[2];
@@ -442,7 +449,7 @@ if (db_result($q100,0,0)==0) {
 
 
 // Prikaz sa aktivnim slanjem
-} else { // if (db_result($q100...
+} else { // if ($slanje_zadaca_aktivno...
 
 ?>
 	<td>&nbsp;</td>
@@ -450,7 +457,7 @@ if (db_result($q100,0,0)==0) {
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaći
 
-$q20 = db_query("select zadataka, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag");
+$q20 = db_query("select zadataka, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente");
 $ima_postavka = false;
 $broj_zadataka = 0;
 while ($r20 = db_fetch_row($q20)) {
@@ -491,7 +498,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 
 $bodova_sve_zadace=$total_max_bodova=0;
 
-$q21 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by id");
 while ($r21 = db_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$max_bodova_zadaca = $r21[2];
@@ -574,6 +581,8 @@ $mogucih += $total_max_bodova;
 
 } // else
 
+
+} // $q95 - petlja komponenti
 
 
 

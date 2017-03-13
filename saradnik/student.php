@@ -20,9 +20,9 @@ require("lib/manip.php"); // radi ispisa studenta sa predmeta
 print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>'."\n";
 
 // Ulazni parametri
-$student = intval($_REQUEST['student']);
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
+$student = int_param('student');
+$predmet = int_param('predmet');
+$ag = int_param('ag');
 
 
 
@@ -316,7 +316,6 @@ if (db_num_rows($q60)>0) {
 
 
 
-
 // PROGRESS BAR
 // Kod kopiran iz student/predmet - trebalo bi izdvojiti u lib
 
@@ -404,7 +403,7 @@ if ($tabela1 <= $tabela2) {
 
 if ($user_siteadmin) {
 	?>
-	<p><a href="index.php?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ispis">Ispiši studenta sa predmeta</a> * <a href="index.php?sta=studentska/osobe&akcija=edit&osoba=<?=$student?>">Detaljnije o studentu</a> * <a href="index.php?su=<?=$student?>">Prijavi se kao student</a></p>
+	<p><a href="index.php?sta=saradnik/student&amp;student=<?=$student?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;akcija=ispis">Ispiši studenta sa predmeta</a> * <a href="index.php?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$student?>">Detaljnije o studentu</a> * <a href="index.php?su=<?=$student?>">Prijavi se kao student</a></p>
 	<?
 }
 
@@ -608,13 +607,22 @@ $stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
+
+
+$q95 = db_query("select k.id,k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+where agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4"); // 4 = zadaće
+
+
+while(db_fetch2($q95, $id_komponente, $naziv_komponente)) {
+
+
 ?>
 
 
 <!-- zadace -->
 
-<b>Zadaće:</b><br/>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
+<b><?=$naziv_komponente?>:</b><br/>
+<table cellspacing="0" cellpadding="2" border="0" id="zadace<?=$id_komponente?>" class="zadace">
 	<thead>
 		<tr>
 	<td>&nbsp;</td>
@@ -622,7 +630,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$max_broj_zadataka = db_get("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
+$max_broj_zadataka = db_get("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by zadataka desc limit 1");
 for ($i=1;$i<=$max_broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
 }
@@ -653,7 +661,7 @@ for ($i=1;$i<=$max_broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by id");
 while ($r21 = db_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
@@ -713,6 +721,8 @@ $bodova += $bodova_sve_zadace;
 
 <?
 
+
+} // while(db_fetch2($q95...
 
 
 
