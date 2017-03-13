@@ -70,7 +70,7 @@ print "<br/>\n";
 // Sumiramo bodove po komponentama i računamo koliko je bilo moguće ostvariti
 $ukupno_bodova = $ukupno_mogucih = 0;
 
-$q30 = db_query("select k.id, k.tipkomponente, k.opcija, kb.bodovi, k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+$q30 = db_query("select k.id, k.tipkomponente, k.opcija, kb.bodovi, k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
 while(db_fetch5($q30, $id_komponente, $tip_komponente, $parametar_komponente, $komponenta_bodova, $komponenta_mogucih)) {
 	$ukupno_bodova += $komponenta_bodova;
 	
@@ -86,7 +86,7 @@ while(db_fetch5($q30, $id_komponente, $tip_komponente, $parametar_komponente, $k
 			$ukupno_mogucih += $do_sada_zadace;
 	
 	} else if ($tip_komponente == 3 && $parametar_komponente == -3) { // Prisustvo sa linearnim porastom
-		$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$student");
+		$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$userid");
 		$ukupno_mogucih += $casova * $komponenta_mogucih / 13;
 		
 	} else
