@@ -69,6 +69,7 @@ function ws_prisustvo()
 				daj_ponudu_kursa($student, $predmet, $ag), 
 				$komponenta
 			);
+			zamgerlog2("prisustvo azurirano", $student, $cas, $prisutan);
 			$rezultat['message'] = "Ažurirano prisustvo";
 		}
 		if ($_SERVER['REQUEST_METHOD'] == "GET") {
