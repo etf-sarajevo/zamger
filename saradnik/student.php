@@ -244,6 +244,19 @@ if (param('akcija') == "promjena_grupe" && check_csrf_token()) {
 if (param('akcija') == "ponisti_kviz") {
 	$kviz = intval($_REQUEST['kviz']);
 	$q2000 = db_query("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
+	zamgerlog("ponisten kviz u$student $kviz", 2);
+	zamgerlog2("ponisten kviz", $student, $kviz);
+
+	nicemessage("Poništen kviz");
+
+	?>
+	<script language="JavaScript">
+	setTimeout(function() { 
+		location.href='?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>'; 
+	}, 500);
+	</script>
+	<?
+	return;
 }
 
 
