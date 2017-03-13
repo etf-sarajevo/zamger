@@ -494,37 +494,39 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	return $odsustva;
 }
 
-$q40 = db_query("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+
+// Izračunavamo broj bodova za svaku komponentu prisustva
+$q40 = db_query("select k.id, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
 where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
-while ($r40 = db_fetch_row($q40)) {
-	$id_komponente = $r40[0];
-	$max_bodova = $r40[1];
-	$min_bodova = $r40[2];
-	$max_izostanaka = $r40[3];
-
+while (db_fetch4($q40, $id_komponente, $max_bodova, $min_bodova, $parametar_komponente)) {
 	$odsustva = $casova = 0;
-	$q60 = db_query("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
+	$labgrupe = db_query_vassoc("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
 	
-	while ($r60 = db_fetch_row($q60)) {
-		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente, $student);
-		$q71 = db_query("select count(*) from cas where labgrupa=$r60[0] and komponenta=$id_komponente");
-		$casova += db_result($q71,0,0);;
+	foreach($labgrupe as $id_grupe => $naziv_grupe) {
+		$odsustva += prisustvo_ispis($id_grupe, $naziv_grupe, $id_komponente, $student);
+		$casova += db_get("select count(*) from cas where labgrupa=$id_grupe and komponenta=$id_komponente");
 	}
 	
-	if ($max_izostanaka == -1) {
+	if ($parametar_komponente == -1) {
 		if ($casova == 0) 
 			$bodovi = 10;
 		else
 			$bodovi = $min_bodova + round(($max_bodova - $min_bodova) * (($casova - $odsustva) / $casova), 2 ); 
-	} else if ($max_izostanaka == -2) { // Paraproporcionalni sistem TP
+			
+	} else if ($parametar_komponente == -2) { // Paraproporcionalni sistem TP
 		if ($odsustva <= 2)
 			$bodovi = $max_bodova;
 		else if ($odsustva <= 2 + ($max_bodova - $min_bodova)/2)
 			$bodovi = $max_bodova - ($odsustva-2)*2;
 		else
 			$bodovi = $min_bodova;
-	} else if ($odsustva<=$max_izostanaka) {
+
+	} else if ($parametar_komponente == -3) { // Još jedan sistem TP
+		$bodovi = ($max_bodova / 13) * ($casova - $odsustva);
+	
+	// Pozitivan parametar komponente je najveći dozvoljeni broj izostanaka za cut-off model
+	} else if ($odsustva <= $parametar_komponente) {
 		$bodovi = $max_bodova;
 	} else {
 		$bodovi = $min_bodova;
