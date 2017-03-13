@@ -1881,7 +1881,6 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
 CREATE TABLE IF NOT EXISTS `studij` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
-  `zavrsni_semestar` int(11) NOT NULL DEFAULT '0',
   `institucija` int(11) NOT NULL DEFAULT '0',
   `kratkinaziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,

@@ -56,28 +56,31 @@ function student_kolizija() {
 
 	// Provjera ispravnosti podataka
 	if ($studij!=0) {
-		$q5 = db_query("select naziv, zavrsni_semestar from studij where id=$studij");
-		if (db_num_rows($q5)<1) {
+		$trajanje_studija = db_get("select ts.trajanje from studij s, tipstudija ts where s.id=$studij and s.tipstudija=ts.id");
+		if ($trajanje_studija === false) {
 			niceerror("Neispravan studij");
 			$studij=0;
 			unset($_POST['akcija']);
 		}
-		else if ($godina<1 || $godina>db_result($q5,0,1)/2) {
+		else if ($godina<1 || $godina>$trajanje_studija/2) {
 			$godina=1;
 		}
-		$naziv_studija=db_result($q5,0,0);
+		$naziv_studija = db_get("select naziv from studij where id=$studij");
 	} else {
 		unset($_POST['akcija']);
 	}
 
 
 	// Šta trenutno sluša student?
-	$q10 = db_query("select ss.studij, ss.semestar, s.zavrsni_semestar, s.institucija, s.tipstudija, s.naziv, ss.plan_studija from student_studij as ss, studij as s where ss.student=$userid and ss.akademska_godina=$proslagodina and ss.studij=s.id order by semestar desc limit 1");
+	$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.institucija, s.tipstudija, s.naziv, ss.plan_studija 
+		FROM student_studij ss, studij s, tipstudija ts 
+		WHERE ss.student=$userid AND ss.akademska_godina=$proslagodina AND ss.studij=s.id AND s.tipstudija=ts.id
+		ORDER BY semestar DESC LIMIT 1");
 	if (db_num_rows($q10)>0) {
 		$trenutni_studij=db_result($q10,0,0);
 		$trenutni_semestar=db_result($q10,0,1);
 		// Podaci koji nam trebaju radi prelaska sa BSc na MSc
-		$szavrsni_semestar=db_result($q10,0,2);
+		$strajanje=db_result($q10,0,2);
 		$sinstitucija=db_result($q10,0,3);
 		$stipstudija=db_result($q10,0,4);
 		$snazivstudija=db_result($q10,0,5);
@@ -347,7 +350,7 @@ function student_kolizija() {
 		$godina=intval(($trenutni_semestar+3)/2);
 
 		
-		if ($trenutni_semestar>=$szavrsni_semestar) {
+		if ($trenutni_semestar>=$strajanje) {
 			$q20 = db_query("select id, naziv from studij where moguc_upis=1 and institucija=$sinstitucija and tipstudija>$stipstudija"); // FIXME pretpostavka je da su tipovi studija poredani po ciklusima
 			if (db_num_rows($q20)>0) {
 				$studij = db_result($q20,0,0);

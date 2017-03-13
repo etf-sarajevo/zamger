@@ -45,13 +45,13 @@ function student_ugovoroucenju() {
 
 	// Provjera ispravnosti podataka
 	if ($studij!=0) {
-		$q5 = db_query("select zavrsni_semestar from studij where id=$studij");
-		if (db_num_rows($q5)<1) {
+		$trajanje_studija = db_get("select ts.trajanje from studij s, tipstudija ts where s.id=$studij and s.tipstudija=ts.id");
+		if ($trajanje_studija === false) {
 			niceerror("Neispravan studij");
 			$studij=0;
 			unset($_POST['akcija']);
 		}
-		else if ($godina<1 || $godina>db_result($q5,0,0)/2) {
+		else if ($godina<1 || $godina>$trajanje_studija/2) {
 			$godina=1;
 		}
 	} else {
@@ -211,7 +211,10 @@ function student_ugovoroucenju() {
 
 	// Studij nije odabran, biramo onaj koji student trenutno sluša
 	if ($studij==0) {
-		$q10 = db_query("select ss.studij, ss.semestar, s.zavrsni_semestar, s.institucija, s.tipstudija, ss.plan_studija, ss.akademska_godina from student_studij as ss, studij as s where ss.student=$userid and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
+		$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.institucija, s.tipstudija, ss.plan_studija, ss.akademska_godina 
+			FROM student_studij ss, studij s, tipstudija ts 
+			WHERE ss.student=$userid AND ss.studij=s.id AND s.tipstudija=ts.id
+			ORDER BY ss.akademska_godina DESC, ss.semestar DESC LIMIT 1");
 		if (db_num_rows($q10)>0) {
 			$studij = db_result($q10,0,0);
 			$trenutni_semestar = db_result($q10,0,1);
