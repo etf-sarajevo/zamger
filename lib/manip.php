@@ -495,6 +495,12 @@ function update_komponente($student,$predmet,$komponenta=0) {
 				else
 					$bodovi = $minbodova;
 
+			} else if ($maxodsustva == -3) { // Još jedan sistem TP
+				$q205 = db_query("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$predmet and c.komponenta=$k and c.id=p.cas and p.student=$student");
+				$casova = db_result($q205,0,0);
+				
+				$bodovi = ($maxbodova / 13) * ($casova - $odsustva);
+
 			// Uobičajeni princip
 			} else if ($odsustva > $maxodsustva)
 				$bodovi=$minbodova;

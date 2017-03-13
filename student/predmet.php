@@ -67,46 +67,63 @@ print "<br/>\n";
 
 // PROGRESS BAR
 
-$q30 = db_query("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+// Sumiramo bodove po komponentama i računamo koliko je bilo moguće ostvariti
+$ukupno_bodova = $ukupno_mogucih = 0;
 
-$bodova=$mogucih=0;
-while ($r30 = db_fetch_row($q30)) {
-	$bodova += $r30[0];
-	if ($r30[2] == 4) { // Tip komponente: zadaće
-		$q35 = db_query("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
-		$do_sada_zadace = round(db_result($q35,0,0), 2);
+$q30 = db_query("select k.id, k.tipkomponente, k.opcija, kb.bodovi, k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+while(db_fetch5($q30, $id_komponente, $tip_komponente, $parametar_komponente, $komponenta_bodova, $komponenta_mogucih)) {
+	$ukupno_bodova += $komponenta_bodova;
+	
+	// Za neke komponente imamo poseban kod koliko je bilo moguće ostvariti
+	if ($tip_komponente == 4) { // Tip komponente: zadaće
+		$do_sada_zadace = db_get("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente");
+		$do_sada_zadace = round($do_sada_zadace, 2);
+		
 		// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
-		if ($do_sada_zadace > $r30[1])
-			$mogucih += $r30[1];
+		if ($do_sada_zadace > $komponenta_mogucih)
+			$ukupno_mogucih += $komponenta_mogucih;
 		else
-			$mogucih += $do_sada_zadace;
+			$ukupno_mogucih += $do_sada_zadace;
+	
+	} else if ($tip_komponente == 3 && $parametar_komponente == -3) { // Prisustvo sa linearnim porastom
+		$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$student");
+		$ukupno_mogucih += $casova * $komponenta_mogucih / 13;
+		
 	} else
-		$mogucih += $r30[1];
+		$ukupno_mogucih += $komponenta_mogucih;
 }
-if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
+// Procenat nikada ne smije biti veći od 100%
+if ($ukupno_mogucih==0) 
+	$procenat = 0;
+else if ($ukupno_bodova > $ukupno_mogucih) 
+	$procenat = 100;
+else 
+	$procenat = intval(($ukupno_bodova/$ukupno_mogucih)*100);
 
 // boja označava napredak studenta
-if ($mogucih==0) $procent=0;
-else $procent = intval(($bodova/$mogucih)*100);
-if ($procent>=75) 
-	$color="#00FF00";
-else if ($procent>=50)
-	$color="#FFFF00";
+if ($procenat>=75) 
+	$boja = "#00FF00";
+else if ($procenat>=50)
+	$boja = "#FFFF00";
 else
-	$color="#FF0000";
+	$boja = "#FF0000";
 
+// Crtamo tabelu koristeći dvije preskalirane slike
+$ukupna_sirina = 200;
 
-$tabela1=$procent*2;
-$tabela2=200-$tabela1;
+$tabela1 = $procenat * 2;
+$tabela2 = $ukupna_sirina - $tabela1;
 
-$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
-$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br/> $bodova bodova";
-
-if ($tabela1>$tabela2) { 
-	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br/> $bodova bodova";
+// Tekst "X bodova" ćemo upisati u onu stranu tabele koja je manja
+if ($tabela1 <= $tabela2) {
+	$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
+	$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br> $ukupno_bodova bodova";
+} else {
+	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br> $ukupno_bodova bodova";
 	$ispis2="<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
 }
+
 
 ?>
 
@@ -116,20 +133,19 @@ if ($tabela1>$tabela2) {
 <center><table border="0"><tr><td align="left">
 <p>Osvojili ste....<br/>
 <table style="border:1px;border-style:solid" width="206" cellpadding="0" cellspacing="2"><tr>
-<td width="<?=$tabela1?>" bgcolor="<?=$color?>"><?=$ispis1?></td>
+<td width="<?=$tabela1?>" bgcolor="<?=$boja?>"><?=$ispis1?></td>
 <td width="<?=$tabela2?>" bgcolor="#FFFFFF"><?=$ispis2?></td></tr></table>
 
 <table width="208" border="0" cellspacing="0" cellpadding="0"><tr>
 <td width="68">0</td>
 <td align="center" width="68">50</td>
 <td align="right" width="69">100</td></tr></table>
-što je <?=$procent?>% od trenutno mogućih <?=round($mogucih,2) /* Rješavamo nepreciznost floata */ ?> bodova.</p>
+što je <?=$procenat?>% od trenutno mogućih <?=round($ukupno_mogucih,2) ?> bodova.</p>
 </td></tr></table></center>
 
 
 <!-- end progress bar -->
 <?
-
 
 
 
