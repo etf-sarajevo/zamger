@@ -747,6 +747,7 @@ CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
   `datum_u_indeksu` date NOT NULL,
   `odluka` int(11) default NULL,
   `datum_provjeren` tinyint(1) NOT NULL default '0',
+  `pasos_predmeta` int(11) default NULL,
   PRIMARY KEY (`student`,`predmet`),
   KEY `akademska_godina` (`akademska_godina`),
   KEY `odluka` (`odluka`),
