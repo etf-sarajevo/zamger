@@ -861,7 +861,9 @@ if (db_num_rows($q50)>0) {
 	<td>&nbsp;</td>
 	<td>Ocjena:</td>
 	<td>Datum u indeksu:</td>
+	<? if ($privilegija=="nastavnik" || $user_siteadmin) { ?>
 	<td>Dnevnik izmjena:</td>
+	<? } ?>
 </tr>
 <tr>
 	<td><b>Konačna ocjena:</b></td>
@@ -876,10 +878,13 @@ if ($privilegija=="nastavnik" || $user_siteadmin) {
 } else {
 	?>
 	<td><?=$konacnaocjena?></td>
+	<td><?=$datum_u_indeksu?></td>
 	<?
 }
 
-print "</tr></table>\n";
+?>
+</tr></table>
+<?
 
 
 
@@ -930,7 +935,7 @@ function ucitajLogove(student, predmet, ag) {
 }
 
 function parsirajLogove(log) {
-	document.getElementById('kolog').innerHTML = "";
+	if (document.getElementById('kolog')) document.getElementById('kolog').innerHTML = "";
 	for (var ispit in rezultati_ispita) {
 		if (rezultati_ispita.hasOwnProperty(ispit)) {
 			document.getElementById('ispitlog' + ispit).innerHTML = "";
@@ -939,13 +944,13 @@ function parsirajLogove(log) {
 	for (i=0; i<log.length; i++) {
 		var stavka = log[i];
 		
-		if (stavka.opis_dogadjaja == "dodana ocjena") {
+		if (stavka.opis_dogadjaja == "dodana ocjena" && document.getElementById('kolog')) {
 			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
 			konacnaocjena = "/";
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> dodana ocjena <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "obrisana ocjena") {
+		} else if (stavka.opis_dogadjaja == "obrisana ocjena" && document.getElementById('kolog')) {
 			if (konacnaocjena != "/") 
 				stavka.ocjena += " ?"; 
 			else 
@@ -953,13 +958,13 @@ function parsirajLogove(log) {
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> obrisana ocjena (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "izmjena ocjene") {
+		} else if (stavka.opis_dogadjaja == "izmjena ocjene" && document.getElementById('kolog')) {
 			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
 			konacnaocjena = stavka.stara_ocjena;
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjena ocjena u <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene") {
+		} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene" && document.getElementById('kolog')) {
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjena datum ocjene u <b>' + stavka.datum_ocjene + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
 		} else if (stavka.opis_dogadjaja == "upisan rezultat ispita") {
