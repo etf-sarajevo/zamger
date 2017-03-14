@@ -85,6 +85,8 @@ function ws_zadaca() {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
+			require("lib/manip.php"); // zbog update komponente
+			
 			$komentar = db_escape($_REQUEST['komentar']);
 			$izvjestaj_skripte = db_escape($_REQUEST['izvjestaj_skripte']);
 			$status = intval($_REQUEST['status']);
