@@ -286,14 +286,23 @@ function ws_zadaca() {
 		WHERE sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.predmet=p.id";
 		if ($predmet > 0) $upit .= " AND p.id=$predmet";
 		$q100 = db_query($upit);
-		while ($r100 = db_fetch_row($q100)) {
+		
+		// Nastavnik može vidjeti spisak zadaća za svoj predmet
+		if (db_num_rows($q100) == 0 && $predmet>0 && nastavnik_pravo_pristupa($predmet, $ag, 0)) {
+			$upit = "SELECT p.id, p.naziv, p.kratki_naziv 
+			FROM nastavnik_predmet as np, predmet as p
+			WHERE np.nastavnik=$userid and np.akademska_godina=$ag and np.predmet=p.id";
+			$q100 = db_query($upit);
+		}
+		
+		while (db_fetch3($q100, $id_predmeta, $naziv_predmeta, $kratki_naziv)) {
 			$predmet = array();
-			$predmet['id'] = $r100[0];
-			$predmet['naziv'] = $r100[1];
-			$predmet['kratki_naziv'] = $r100[2];
+			$predmet['id'] = $id_predmeta;
+			$predmet['naziv'] = $naziv_predmeta;
+			$predmet['kratki_naziv'] = $kratki_naziv;
 			$predmet['zadace'] = array();
 			
-			$q110 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace, UNIX_TIMESTAMP(rok), aktivna from zadaca where predmet=$r100[0] and akademska_godina=$ag order by komponenta,id");
+			$q110 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace, UNIX_TIMESTAMP(rok), aktivna from zadaca where predmet=$id_predmeta and akademska_godina=$ag order by komponenta,id");
 			while ($r110 = db_fetch_row($q110)) {
 				$zadaca = array();
 				$zadaca['id'] = $r110[0];
