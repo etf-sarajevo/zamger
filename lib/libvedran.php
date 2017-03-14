@@ -105,7 +105,7 @@ function zamger_ldap_escape($str){
 // --- SESSION MGMT
 // Helper function for login
 	function is_alias($results) {
-		foreach ($results as $k1=>$v1) {
+		if (is_array($results)) foreach ($results as $k1=>$v1) {
 			if ($k1 === "objectclass") foreach ($v1 as $k2=>$v2) {
 				if ($v2 === "zimbraAlias") return true;
 			}
