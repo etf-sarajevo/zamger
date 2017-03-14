@@ -91,7 +91,7 @@ function ws_prisustvo()
 		// Provjeravamo prava pristupa
 		$ok = false;
 		if ($user_siteadmin || $user_studentska) $ok = true;
-		if ($user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
+		if (!$ok && $user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
 		if ($user_student && $student == $userid) $ok = true; // Kasnije ćemo provjeriti da li student sluša predmet
 		
 		if (!$ok) {
