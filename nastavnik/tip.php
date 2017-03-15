@@ -208,8 +208,8 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 				$q430 = db_query("delete from student_ispit_termin where ispit_termin=$termin");
 				$q440 = db_query("delete from ispit_termin where id=$termin");
 			}
-
-			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, $ispit);
+			$q420 = db_query("delete from ispit where id=$ispit");
+			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, intval($ispit));
 		}
 	}
 	// .. tako i za prisustvo i zadaće...
