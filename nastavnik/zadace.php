@@ -63,7 +63,7 @@ if ($komponente_za_zadace === false || empty($komponente_za_zadace)) {
 	zamgerlog("ne postoji komponenta za zadace na predmetu pp$predmet ag$ag", 3);
 	zamgerlog2("ne postoji komponenta za zadace", $predmet, $ag);
 	niceerror("U sistemu bodovanja za ovaj predmet nije definisana nijedna komponenta zadaće.");
-	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
+	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip&amp;predmet=$predmet&amp;ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
 	return;
 }
 
