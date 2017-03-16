@@ -748,7 +748,7 @@ INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
-(0, 'verzija-baze', '1489411342');
+(0, 'verzija-baze', '1489655707');
 
 
 --

@@ -554,7 +554,7 @@ if ($_REQUEST['akcija']=="spisak") {
 	<h2>Spisak kandidata za prijemni ispit</h2>
 
 	<p>Studij: <select name="studij"><option value="0">Svi zajedno</option><?
-	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and s.moguc_upis=1 order by s.naziv");
 	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}
@@ -585,7 +585,7 @@ if ($_REQUEST['akcija']=="rang_liste") {
 	<option value="konacni">Konačni rezultati</option></select></p>
 
 	<p>Studij: <select name="studij"><?
-	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and ts.moguc_upis=1 and s.moguc_upis=1 order by s.naziv");
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and s.moguc_upis=1 order by s.naziv");
 	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}

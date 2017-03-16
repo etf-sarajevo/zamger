@@ -666,7 +666,7 @@ else if ($akcija == "upis") {
 		}
 
 		// Lista studija
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
@@ -693,12 +693,12 @@ else if ($akcija == "upis") {
 	if ($semestar>$trajanje && $stari_studij!=0) {
 		// Biramo sljedeći ciklus istog studija po tome što ga nudi ista institucija
 		$ciklus++;
-		$q545 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1");
+		$q545 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1");
 		if (db_num_rows($q545)>0) {
 			$izabrani_studij=db_result($q545,0,0);
 		}
 	
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
@@ -1656,7 +1656,7 @@ else if ($akcija == "predmeti") {
 
 	else if ($spisak==2) {
 		// Svi studiji
-		$q2070 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 order by ts.ciklus, s.naziv");
+		$q2070 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 order by ts.ciklus, s.naziv");
 		while ($r2070=db_fetch_row($q2070)) {
 			$stud=$r2070[0];
 			$stud_naziv=$r2070[1];

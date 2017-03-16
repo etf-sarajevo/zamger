@@ -155,7 +155,7 @@ if ($_REQUEST['akcija']=="prihvati") {
 
 // Akcija: kratki izvjestaj
 if ($_REQUEST['akcija']=="kratkiizvj") {
-	$q220 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1");
+	$q220 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 and ts.ciklus=1"); // FIXME zašto samo 1. ciklus?
 	while ($r220 = db_fetch_row($q220)) {
 		$ime_odsjeka[$r220[0]] = $r220[1];
 	}
@@ -395,7 +395,7 @@ print "</ul><p>Ukupno: $total zahtjeva * <a href=\"?sta=studentska/prodsjeka&akc
 
 // Upit za spisak odsjeka
 $spisak_odsjeka = "<option></option>\n";
-$q30 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // Promjena odsjeka ima smisla samo na prvom ciklusu
+$q30 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // Promjena odsjeka ima smisla samo na prvom ciklusu
 while ($r30 = db_fetch_row($q30)) {
 	$spisak_odsjeka .= "<option value=\"$r30[0]\">$r30[1]</option>\n";
 }
@@ -432,7 +432,7 @@ Na odsjek:
 Iznos maksimalne promjene broja studenata po odsjeku:<br/>
 <?
 
-$q40 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // hardkodirano samo za prvi ciklus
+$q40 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 and ts.ciklus=1 order by s.kratkinaziv"); // hardkodirano samo za prvi ciklus
 // zato što promjena studija na drugom ciklusu (koji traje 1-2 godine) baš i nema smisla
 while ($r40 = db_fetch_row($q40)) {
 	print "$r40[1]: <input type=\"text\" name=\"limit-$r40[0]\" value=\"0\" size=\"3\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ";
