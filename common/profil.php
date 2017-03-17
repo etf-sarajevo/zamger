@@ -9,6 +9,8 @@ global $userid, $conf_system_auth, $conf_files_path, $conf_promjena_sifre, $conf
 global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 
 
+require_once("lib/formgen.php"); // db_dropdown
+
 $akcija = $_REQUEST['akcija'];
 
 // Ispis menija

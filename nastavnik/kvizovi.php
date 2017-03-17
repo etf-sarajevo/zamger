@@ -9,6 +9,8 @@ function nastavnik_kvizovi() {
 global $userid,$user_siteadmin;
 global $_lv_;
 
+require_once("lib/formgen.php"); // db_dropdown, db_form, db_list
+require_once("lib/utility.php"); // procenat
 
 
 // Parametri

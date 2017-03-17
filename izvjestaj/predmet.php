@@ -8,6 +8,9 @@ function izvjestaj_predmet() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, $conf_files_path;
 
+require_once("lib/utility.php"); // procenat, bssort
+
+
 // Parametri upita
 
 $predmet = intval($_REQUEST['predmet']);

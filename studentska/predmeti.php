@@ -11,7 +11,9 @@ global $userid,$user_siteadmin,$user_studentska;
 global $_lv_; // Potrebno za genform() iz libvedran
 
 
-require("lib/manip.php"); // radi ispisa studenata sa predmeta
+require_once("lib/formgen.php"); // db_dropdown
+require_once("lib/predmet.php"); 
+require_once("lib/student_predmet.php"); 
 
 
 // Provjera privilegija

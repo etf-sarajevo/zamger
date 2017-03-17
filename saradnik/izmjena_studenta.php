@@ -15,7 +15,7 @@ return;
 global $userid,$user_siteadmin,$user_studentska;
 
 
-require("lib/manip.php"); // radi ispisa studenta sa predmeta
+require_once("lib/student_predmet.php"); // update_komponente
 
 
 ?>

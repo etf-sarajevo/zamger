@@ -7,7 +7,8 @@
 function admin_novagodina() {
 
 
-require("lib/manip.php");
+require_once("lib/predmet.php"); // kreiraj_ponudu_kursa
+require_once("lib/plan_studija.php");
 
 
 if (param('akcija') == "novagodina") {
@@ -45,22 +46,11 @@ if (param('akcija') == "novagodina") {
 				continue;
 			}
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".$plan_studija['godina']."<br>\n";
-			$q50 = db_query("select pasos_predmeta, obavezan, plan_izborni_slot from plan_studija_predmet where plan_studija=".$plan_studija['id']." and semestar=$sem");
-			while (db_fetch3($q50, $pasos_predmeta, $obavezan, $plan_izborni_slot)) {
-				if ($obavezan == 1) { // obavezan
-					$predmet = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
-					kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, 1, $ispis);
-
-				} else { // izborni
-					// uzimamo sve predmete u slotu $plan_izborni_slot
-					$q70 = db_query("select pp.predmet from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
-					while (db_fetch1($q70, $predmet)) {
-						// Nećemo više puta kreirati isti predmet
-						if (in_array($predmet, $bio)) continue;
-						array_push($bio, $predmet);
-						kreiraj_ponudu_kursa ($predmet, $studij, $sem, $ag, 0, $ispis);
-					}
-				}
+			
+			$predmeti = predmeti_na_planu($plan_studija['id']);
+			foreach ($predmeti as $predmet) {
+				if ($predmet['semestar'] != $sem) continue;
+				kreiraj_ponudu_kursa ($predmet['predmet'], $studij, $sem, $ag, $predmet['obavezan'], $ispis);
 			}
 		}
 	}

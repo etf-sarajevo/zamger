@@ -8,6 +8,8 @@ function student_intro() {
 
 global $userid, $registry;
 
+require_once("lib/utility.php"); // spol, vokativ
+
 
 // Dobrodošlica
 

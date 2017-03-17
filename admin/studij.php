@@ -7,6 +7,8 @@
 function admin_studij() {
 
 
+require_once("lib/formgen.php"); // db_form, db_grid
+
 ?>
 <h2>Parametri studija</h2>
 

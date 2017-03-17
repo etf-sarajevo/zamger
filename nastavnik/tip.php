@@ -8,7 +8,7 @@ function nastavnik_tip() {
 
 global $userid,$user_siteadmin;
 
-require("lib/manip.php"); // Zbog update_komponente
+require_once("lib/student_predmet.php"); // update_komponente
 
 
 // Parametri

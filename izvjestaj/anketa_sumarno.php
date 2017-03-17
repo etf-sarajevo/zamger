@@ -4,7 +4,9 @@
 
 
 
-function izvjestaj_anketa_sumarno(){
+function izvjestaj_anketa_sumarno() {
+
+	require_once("lib/utility.php"); // procenat
 
 	?><p>Univerzitet u Sarajevu<br/>
 	Elektrotehnički fakultet Sarajevo</p>

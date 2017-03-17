@@ -14,7 +14,7 @@ function common_ajah() {
 
 global $userid,$user_nastavnik,$user_siteadmin,$user_studentska;
 
-require("lib/manip.php");
+require_once("lib/student_predmet.php"); // update_komponente
 
 
 ?>

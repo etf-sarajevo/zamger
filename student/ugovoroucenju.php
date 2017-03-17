@@ -10,7 +10,7 @@ function student_ugovoroucenju() {
 
 	global $userid;
 	
-	require("lib/manip.php");
+	require("lib/student_studij.php");
 
 	// Naslov
 	?>

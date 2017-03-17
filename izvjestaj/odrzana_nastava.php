@@ -8,6 +8,8 @@ function izvjestaj_odrzana_nastava() {
 
 global $userid, $user_nastavnik;
 
+require_once("lib/utility.php"); // rimski_broj
+
 
 // Prava pristupa
 if (!$user_nastavnik) {

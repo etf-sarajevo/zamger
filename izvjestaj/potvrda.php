@@ -11,6 +11,8 @@ global $userid, $user_studentska, $user_siteadmin;
 
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
 
+require_once("lib/utility.php"); // spol, rimski_broj
+
 
 // Ulazni parametar
 $student = intval($_REQUEST['student']);

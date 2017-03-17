@@ -6,6 +6,8 @@
 
 function saradnik_komentar() {
 
+require_once("lib/formgen.php"); // datectrl
+
 global $userid, $user_siteadmin;
 
 ?>

@@ -9,6 +9,8 @@ function izvjestaj_semestralni_list() {
 global $userid;
 
 require_once('lib/tcpdf/tcpdf.php');
+require_once("lib/utility.php"); // ends_with
+
 
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
 $imena_semestara_dativ = array("", "prvom", "drugom", "trećem", "četvrtom", "petom", "šestom");

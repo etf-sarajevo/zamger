@@ -5,6 +5,8 @@
 
 
 function common_zavrsniStrane() {
+	require_once("lib/utility.php"); // nicesize
+
 	//debug mod aktivan
 	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
 	$predmet = intval($_REQUEST['predmet']);

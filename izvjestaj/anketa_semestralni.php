@@ -6,6 +6,8 @@
 
 function izvjestaj_anketa_semestralni() {
 	
+	require_once("lib/utility.php"); // procenat
+
 	$ak_god = intval($_REQUEST['akademska_godina']);
 	$studij = intval($_REQUEST['studij']);
 	$semestar = intval($_REQUEST['semestar']);

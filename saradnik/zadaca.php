@@ -9,8 +9,9 @@ function saradnik_zadaca() {
 
 global $conf_files_path,$userid,$user_siteadmin,$conf_code_viewer;
 
-require("lib/autotest.php"); 
-require("lib/manip.php"); // radi update_komponente
+require_once("lib/autotest.php"); 
+require_once("lib/student_predmet.php"); // update_komponente
+require_once("lib/utility.php"); // nicesize
 
 
 // --------------------

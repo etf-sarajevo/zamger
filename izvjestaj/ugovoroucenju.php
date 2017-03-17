@@ -15,7 +15,7 @@ function dajstudenta($stud) {
 
 global $userid,$user_studentska,$user_siteadmin;
 
-require("lib/manip.php");
+require("lib/student_studij.php");
 
 $debug_student = 0;
 $debug_predmet = 0;
@@ -281,7 +281,7 @@ if ($r260[0]==$debug_predmet) print $k++."redovno sigurno (non-fuzzy uou) $stude
 	// koristimo Ugovor o učenju i podatke o koliziji da procijenimo njegov status
 	global $zamger_predmeti_pao;
 	$zamger_predmeti_pao=array();
-	$uslov = uslov($student, $ag);
+	$uslov = ima_li_uslov($student, $ag);
 
 if ($student==$debug_student) { print "predmeti pao "; print_r ($zamger_predmeti_pao); if ($uslov) print " ima uslov<br>"; else print " nema uslov<br>"; }
 

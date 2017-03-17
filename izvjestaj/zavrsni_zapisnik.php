@@ -6,6 +6,9 @@
 
 function izvjestaj_zavrsni_zapisnik() {
 
+require_once("lib/utility.php"); // spol, rimski_broj
+
+
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>

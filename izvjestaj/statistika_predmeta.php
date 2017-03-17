@@ -8,6 +8,8 @@ function izvjestaj_statistika_predmeta() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
+require_once("lib/utility.php"); // procenat
+
 
 ?>
 <p>Univerzitet u Sarajevu<br/>

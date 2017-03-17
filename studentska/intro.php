@@ -8,6 +8,8 @@ function studentska_intro() {
 
 global $userid,$user_siteadmin,$user_studentska,$conf_files_path;
 
+require_once("lib/utility.php"); // spol, vokativ
+
 
 // Provjera privilegija
 

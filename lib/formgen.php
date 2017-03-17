@@ -1,14 +1,17 @@
 <?
 
-# Biblioteka korisnih funkcija koje koristim u svojim skriptama
-# ---- Copyleft (c) Vedran Ljubović 
+// LIB/FORMGEN - biblioteka za automatsko generisanje HTML formi na osnovu šeme baze
+
+// Ova biblioteka je nastala cca. 2000. godine kao libvedran i tada je bila 
+// prilično inovativna. Sada treba planirati njenu zamjenu nečim modernijim :)
 
 
 
+// Globalni niz $_lv_ može sadržavati razne konfiguracijske parametre 
+// Predefinišemo ga da izbjegnemo upozorenja
+if (!isset($_lv_)) $_lv_ = array();
 
-// ------------ FUNKCIJE
-
-if (!isset($_lv_)) $_lv_ = array(); // Prevent PHP warnings 
+require_once("lib/utility.php"); // time2mysql, mysql2time
 
 
 // Prikaz datuma za formular
@@ -32,73 +35,6 @@ function datectrl($d,$m,$g,$prefix="") {
 		$result .= '>'.$i.'</option>';
 	}
 	$result .= '</select>';
-	return $result;
-}
-
-
-// genform - pravi zaglavlje forme sa hidden poljima
-function genform($method="POST", $name="") {
-	global $login;
-
-	if ($method != "GET" && $method != "POST") $method="POST";
-	$result = '<form name="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
-	foreach ($_REQUEST as $key=>$value) {
-		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
-		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu
-		if ($key=="loginforma") continue; // Izbjegavamo logout
-		$key = htmlspecialchars($key);
-		if (substr($key,0,4) != "_lv_") {
-			if (is_array($value)) {
-				foreach ($value as $val) {
-					$val = htmlspecialchars($val);
-					$result .= '<input type="hidden" name="'.$key.'[]" value="'.$val.'">'."\n";
-				}
-			} else {
-				$value = htmlspecialchars($value);
-				$result .= '<input type="hidden" name="'.$key.'" value="'.$value.'">'."\n";
-			}
-		}
-	}
-
-	//   CSRF protection
-	//   The generated token is a SHA1 sum of session ID, time()/1000 and userid (in the
-	// highly unlikely case that two users get the same SID in a short timespan). The
-	// second function checks this token and the second token which uses time()/1000+1.
-	// This leaves a 1000-2000 second (cca. 16-33 minutes) window during which an 
-	// attacker could potentially discover a users SID and then craft an attack targeting
-	// that specific user.
-
-	$result .= '<input type="hidden" name="_lv_csrf_protection_token1" value="'.sha1(session_id().(intval(time()/1000)).$login).'"><input type="hidden" name="_lv_csrf_protection_token2" value="'.sha1(session_id().(intval(time()/1000)+1).$login).'">';
-
-	return $result;
-}
-
-
-// Funkcija koja provjerava da li je CSRF token (kojeg insertuje genform) validan
-function check_csrf_token() {
-	global $login;
-	$token = sha1(session_id().intval(time()/1000).$login);
-	if ($_POST['_lv_csrf_protection_token1']==$token || $_POST['_lv_csrf_protection_token2']==$token)
-		return true;
-	return false;
-}
-
-
-// genuri - pravi link na isti dokument sa ukodiranim varijablama
-function genuri() {
-	$result = $_SERVER['PHP_SELF']."?";
-	foreach ($_REQUEST as $key=>$value) {
-		// Prevent revealing session
-		if (substr($key,0,4) == "_lv_" || $key == "PHPSESSID" || $key == "pass") continue;
-		if ($key=="loginforma") continue; // Izbjegavamo logout
-		if (is_array($value)) {
-			foreach ($value as $val) 
-				$result .= urlencode($key).'[]='.urlencode($val).'&amp;';
-		} else
-			$result .= urlencode($key).'='.urlencode($value).'&amp;';
-	}
-	if (substr($result,strlen($result)-5) == "&amp;") 
-		$result = substr($result,0,strlen($result)-5); // drop last &
 	return $result;
 }
 

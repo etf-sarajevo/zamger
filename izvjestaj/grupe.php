@@ -8,6 +8,8 @@ function izvjestaj_grupe() {
 
 global $userid,$user_siteadmin,$user_studentska;
 
+require_once("lib/utility.php"); // bssort
+
 
 ?>
 <p>Univerzitet u Sarajevu<br/>

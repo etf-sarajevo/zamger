@@ -3,14 +3,14 @@
 
 // BUILDSERVICE.PHP - serverska strana skripte za buildservice
 
-require("../lib/config.php");
-require("../lib/dblayer.php");
-require("../lib/libvedran.php");
-require("../lib/zamger.php");
-require("../lib/manip.php"); // zbog update_komponente
+require_once("../lib/config.php");
+require_once("../lib/dblayer.php");
+require_once("../lib/zamger.php");
+require_once("../lib/student_predmet.php"); // update_komponente
+require_once("../lib/utility.php"); // ends_with, rm_minus_r
+
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
-
 
 
 // Čekamo 15 minuta na buildhost
@@ -752,7 +752,7 @@ function directoryCleanup($path)
 		unlink($path);
 		mkdir($path);
 	} else {
-		rmMinusR($path);
+		rm_minus_r($path);
 	}
 }
 

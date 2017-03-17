@@ -7,6 +7,8 @@
 function ws_autotest() {
 	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 
+	require_once("lib/permisije.php");
+
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	
 	if (isset($_REQUEST['student']))

@@ -14,7 +14,7 @@ function saradnik_student() {
 global $userid, $user_siteadmin, $conf_ldap_domain;
 
 
-require("lib/manip.php"); // radi ispisa studenta sa predmeta
+require("lib/student_predmet.php"); // upis_studenta*, ispis_studenta*, update_komponente
 
 
 print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>'."\n";
@@ -207,7 +207,7 @@ if (param('akcija') == "promjena_grupe" && check_csrf_token()) {
 	}
 
 	if ($novagrupa>0) {
-		$q55 = db_query("insert into student_labgrupa set student=$student, labgrupa=$novagrupa");
+		upis_studenta_na_labgrupu($student, $novagrupa);
 		$q57 = db_query("select naziv from labgrupa where id=$novagrupa");
 		nicemessage("Student upisan u grupu ".db_result($q57,0,0).". Kreirani su default podaci o prisustvu.");
 	}

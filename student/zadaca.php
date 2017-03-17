@@ -7,7 +7,9 @@ function student_zadaca() {
 
 global $userid,$conf_files_path;
 
-require ("lib/autotest.php");
+require_once("lib/autotest.php");
+require_once("lib/utility.php"); // linkuj_urlove, nicesize, ends_with, rm_minus_r, clear_unicode
+
 
 // Akcije
 if ($_REQUEST['akcija'] == "slanje") {
@@ -510,7 +512,7 @@ if ($attachment) {
 function akcijaslanje() {
 
 	global $userid,$conf_files_path;
-	require ("lib/manip.php"); // update komponente nakon slanja
+	require_once("lib/student_predmet.php"); // update_komponente nakon slanja
 
 	// Parametri
 	$predmet = intval($_REQUEST['predmet']);
@@ -709,7 +711,7 @@ function akcijaslanje() {
 						unlink($zippath);
 						mkdir($zippath);
 					} else {
-						rmMinusR($zippath);
+						rm_minus_r($zippath);
 					}
 					$oldpath = "$zippath/old";
 					$newpath = "$zippath/new";

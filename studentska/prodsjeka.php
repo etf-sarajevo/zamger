@@ -8,6 +8,8 @@ function studentska_prodsjeka() {
 
 global $userid,$user_siteadmin,$user_studentska;
 
+require_once("lib/utility.php"); // malaslova
+
 
 // Provjera privilegija
 

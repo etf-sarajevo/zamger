@@ -11,6 +11,7 @@ function izvjestaj_ispit() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
+require_once("lib/utility.php"); // procenat
 
 
 ?>

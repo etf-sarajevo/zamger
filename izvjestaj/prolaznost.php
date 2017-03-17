@@ -6,6 +6,8 @@
 
 function izvjestaj_prolaznost() {
 
+require_once("lib/utility.php"); // procenat, bssort
+
 
 ?>
 <p>Univerzitet u Sarajevu<br/>
