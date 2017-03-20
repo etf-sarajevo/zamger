@@ -23,6 +23,7 @@ function ws_zadaca() {
 		if (db_num_rows($q10) < 1) {
 			header("HTTP/1.0 404 Not Found");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
 			return;
 		}
 		$predmet = db_result($q10,0,0);
@@ -36,6 +37,7 @@ function ws_zadaca() {
 		if (db_num_rows($q10) < 1) {
 			header("HTTP/1.0 404 Not Found");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
 			return;
 		}
 		while ($dbrow = db_fetch_assoc($q10)) {
@@ -85,6 +87,15 @@ function ws_zadaca() {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
+			// Odredjujemo ponudu kursa (za update komponente)
+			$ponudakursa = db_get("select pk.id from student_predmet as sp, ponudakursa as pk, zadaca as z where sp.student=$student and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
+			if ($ponudakursa === false) {
+				header("HTTP/1.0 404 Not Found");
+				$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => "Student $student nije upisan na predmet kojem pripada zadaca $zadaca" );
+				print json_encode($rezultat);
+				return;
+			}
+			
 			require("lib/manip.php"); // zbog update komponente
 			
 			$komentar = db_escape($_REQUEST['komentar']);
@@ -102,10 +113,8 @@ function ws_zadaca() {
 			else
 				$q100 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$status, bodova=$bodova, vrijeme=FROM_UNIXTIME($vrijeme), komentar='$komentar', izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', userid=$userid");
 
-			// Odredjujemo ponudu kursa (za update komponente)
-			$q110 = db_query("select pk.id from student_predmet as sp, ponudakursa as pk, zadaca as z where sp.student=$student and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 
-			update_komponente($student, db_result($q110,0,0), $komponenta);
+			update_komponente($student, $ponudakursa, $komponenta);
 
 			zamgerlog("izmjena zadace (student u$student zadaca z$zadaca zadatak $zadatak)",2);
 			$rezultat['message'] = "Ažuriran status zadaće";
