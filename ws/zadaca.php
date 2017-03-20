@@ -305,7 +305,7 @@ function ws_zadaca() {
 		if (db_num_rows($q100) == 0 && $predmet>0 && nastavnik_pravo_pristupa($predmet, $ag, 0)) {
 			$upit = "SELECT p.id, p.naziv, p.kratki_naziv 
 			FROM nastavnik_predmet as np, predmet as p
-			WHERE np.nastavnik=$userid and np.akademska_godina=$ag and np.predmet=p.id";
+			WHERE np.nastavnik=$userid and np.akademska_godina=$ag and np.predmet=p.id and p.id=$predmet";
 			$q100 = db_query($upit);
 		}
 		
