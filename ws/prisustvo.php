@@ -40,7 +40,7 @@ function ws_prisustvo()
 		// Provjeravamo prava pristupa
 		$ok = false;
 		if ($user_siteadmin || $user_studentska) $ok = true;
-		if ($user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
+		if (!$ok && $user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
 		if ($user_student && $student == $userid) 
 			foreach(student_labgrupe($student, $predmet, $ag) as $lg)
 				if ($lg == $labgrupa) $ok = true;
