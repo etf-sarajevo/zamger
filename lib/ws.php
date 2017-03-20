@@ -70,9 +70,9 @@ function xml_request($url, $parameters, $method = "GET", $parse = true)
 
 	$xmlparser = xml_parser_create("UTF-8");
 	$xml_result = array();
-	xml_parser_set_option($parser, XML_OPTION_SKIP_WHITE, 1);
+	xml_parser_set_option($xmlparser, XML_OPTION_SKIP_WHITE, 1);
 	$success = xml_parse_into_struct($xmlparser, $http_result, $xml_result);
-	xml_parser_free($parser);
+	xml_parser_free($xmlparser);
 
 	if ($success === 0) return FALSE;
 	return $xml_result;
