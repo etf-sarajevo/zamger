@@ -745,10 +745,11 @@ else if ($akcija == "upis") {
 	// Uvodimo dva načina izbora predmeta - preko plana studija i preko odslušanih predmeta u prošloj godini
 	// U slučaju da nije definisan plan studija, bira se ovaj drugi način, ali on nije pouzdan zbog komplikacije
 	// oko izbornih predmeta i ECTSova
+	
+	$predmeti_pao=array();
 
 	if ($plan_studija>0) {
 		// Prema novom zakonu, uslov za upis je jedan predmet iz prethodne godine
-		$predmeti_pao=array();
 		$stari_predmet=array();
 
 		$q570 = db_query("select pasos_predmeta, obavezan, semestar, plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar<$semestar order by semestar");
@@ -805,7 +806,6 @@ else if ($akcija == "upis") {
 		// Nepouzdano zbog kolizija, izbornih predmeta itd.
 
 		$q640 = db_query("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
-		$predmeti_pao=array();
 		while ($r650 = db_fetch_row($q650)) {
 			$predmet = $r650[0];
 			$psemestar = $r650[2];
