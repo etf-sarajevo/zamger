@@ -745,7 +745,7 @@ function zamgerlog($event,$nivo) {
 	if ($userid == 0) 
 		$userdata = "(0)"; 
 	else
-		$userdata = "$login ($userid)";
+		$userdata = trim($login)." ($userid)";
 		
 	if ($_SERVER['HTTP_X_FORWARDED_FOR'])
 		$ip_adresa = db_escape($_SERVER['HTTP_X_FORWARDED_FOR']); 
@@ -753,6 +753,8 @@ function zamgerlog($event,$nivo) {
 		$ip_adresa = db_escape($_SERVER['REMOTE_ADDR']);
 	
 	$nivostr_ar = array( "", "---", "CCC", "EEE", "AAA");
+	$event = str_replace("\r", "", $event);
+	$event = str_replace("\n", "", $event);
 	$logline = "[" . $nivostr_ar[$nivo]. "] $ip_adresa - $userdata - [".date("Y-m-d H:i:s")."] \"$event\"\n";
 
 	$godina = date("Y");
