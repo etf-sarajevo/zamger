@@ -149,7 +149,7 @@ if (param('akcija') == 'dodajcas' && check_csrf_token()) {
 			$q90 = db_query("insert into prisustvo set student=$stud_id, cas=$cas_id, prisutan=$prisustvo");
 			
 			// Update radimo samo ako se registruje odsustvo ili ako je opcija=-1 (proporcionalni bodovi)
-			if ($prisustvo==0 || $opcija==-1)
+			if ($prisustvo==0 || $opcija==-1 || $opcija==-3)
 				update_komponente($stud_id,$ponudakursa,$komponenta);
 			else {
 				// Ako nema uopšte bodova za komponentu, ubacićemo broj bodova
