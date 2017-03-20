@@ -14,7 +14,7 @@ function ws_zadaca() {
 	else
 		$student = $userid;
 		
-	$predmet = $ag = 0;
+	$predmet = $ag = $zadaca = 0;
 	if (isset($_REQUEST['zadaca']) || isset($_REQUEST['id'])) {
 		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
 		if (isset($_REQUEST['id'])) $zadaca = intval($_REQUEST['id']);
@@ -130,10 +130,15 @@ function ws_zadaca() {
 		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
-		} 
+		}
 		
 		// Podaci o zadaći
 		$q210 = db_query("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije, automatsko_testiranje, predmet, akademska_godina, zadataka, aktivna from zadaca where id=$zadaca");
+		if (db_num_rows($q210) < 1) {
+			header("HTTP/1.0 404 Not Found");
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' ) );
+			return;
+		}
 		$jezik = db_result($q210,0,0);
 		$rok = db_result($q210,0,1);
 		$attach = db_result($q210,0,2);
