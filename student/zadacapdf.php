@@ -195,36 +195,30 @@ include_once('lib/geshi/geshi.php');
 //Funkcija koja kupi putanje za sve fajlove u direktoriju
 function OtvaranjeDirektorija($dirPutanja){
 	global $files;
-        if(!($handle=opendir($dirPutanja))){
-                die("Greska kod otvaranja dirketorija $dirPutanja");
-         }
-        
-        while( $file =readdir($handle) ) {
-		
-            if($file !="." && $file !=".."){
-                
-                if( is_dir($dirPutanja."/".$file)){
-                    $file.="/";
-                }
-                $fajlovi[]=$file;
-            }
-        }
-	
-        foreach($fajlovi as $file){
-		
-		if(substr($file,-1)=="/")
-		{
-			$dir =$dirPutanja."/".substr($file,0,-1);
-			OtvaranjeDirektorija($dir);
+	$fajlovi = array();	
+	if(!($handle=opendir($dirPutanja))){
+		die("Greska kod otvaranja dirketorija $dirPutanja");
+	}
+
+	while( $file =readdir($handle) ) {
+		if($file !="." && $file !="..") {
+			if (is_dir($dirPutanja."/".$file)) {
+				$file.="/";
+			}
+			$fajlovi[] = $file;
 		}
-		else
-		{
+	}
+
+	foreach($fajlovi as $file){
+		if(substr($file,-1)=="/") {
+			$dir = $dirPutanja."/".substr($file,0,-1);
+			OtvaranjeDirektorija($dir);
+		} else {
 			$files[]=$dirPutanja."/".$file;
 		}
-	    
-}
-
-return $files;
+	}
+	
+	return $files;
 }
 //Funkcija koja brise cijeli direktorij
 function delete_directory($dirname) {
