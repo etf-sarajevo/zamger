@@ -159,11 +159,12 @@ while ($r10 = db_fetch_row($q10)) {
 
 	} else {
 		// Da li je student polozio predmet?
-		$q40 = db_query("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$student and predmet=$predmet");
+		$q40 = db_query("select ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu), ko.datum_provjeren, pp.naziv from konacna_ocjena ko, pasos_predmeta pp where ko.student=$student and ko.predmet=$predmet and ko.pasos_predmeta=pp.id");
 		if (db_num_rows($q40)>0) {
 			$ocjena = db_result($q40,0,0);
 			$datum_provjeren = db_result($q40,0,2);
 			if ($datum_provjeren) $datumIspita=$datumPrijave=$datumPolaganja=$datumUsmenog=date("d. m. Y.", db_result($q40,0,1));
+			$nazivPr = db_result($q40,0,3);
 		} else $ocjena=0;
 
 		kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik);
