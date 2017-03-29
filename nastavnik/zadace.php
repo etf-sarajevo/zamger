@@ -66,6 +66,8 @@ if ($komponente_za_zadace === false || empty($komponente_za_zadace)) {
 	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip&amp;predmet=$predmet&amp;ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
 	return;
 }
+if (!isset($_REQUEST['komponenta'])) $_REQUEST['komponenta'] = array_keys($komponente_za_zadace)[0];
+
 
 ?>
 
