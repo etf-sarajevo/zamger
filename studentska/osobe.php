@@ -202,7 +202,7 @@ if ($akcija == "podaci") {
 		if ($adresa_mjesto != "") {
 			$q3 = db_query("select id from mjesto where naziv='$adresa_mjesto'");
 			if (db_num_rows($q3)<1) {
-				$q4 = db_query("insert into mjesto set naziv='$adresa_mjesto'");
+				$q4 = db_query("insert into mjesto set naziv='$adresa_mjesto', opcina=$opcina_rodjenja, drzava=1");
 				$q3 = db_query("select id from mjesto where naziv='$adresa_mjesto'");
 			}
 			$admid = db_result($q3,0,0);
