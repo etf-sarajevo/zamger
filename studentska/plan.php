@@ -466,7 +466,7 @@ function studentska_plan(){
 			// Kreiramo ispis za predmete u izbornom slotu ($is_ispis) i određujemo ECTS kredite za slot
 			$is_ects_low = 0; $is_ects_high = 0;
 			$is_ispis = "";
-			$q50 = db_query("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$r40[0] and pis.pasos_predmeta=pp.id order by pp.naziv");
+			$q50 = db_query("select pp.predmet, pp.naziv, pp.sifra, pp.ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=".$r40[0]." and pis.pasos_predmeta=pp.id order by pp.naziv");
 			while ($r50 = db_fetch_row($q50)) {
 				$is_ispis .= "<tr bgcolor=\"$parnepar\">\n";
 				if ($predmet == $r50[0])
@@ -725,6 +725,7 @@ function studentska_plan(){
 					if ($izborni_slot == 0) {
 						$q440 = db_query("SELECT MAX(id)+1 FROM plan_izborni_slot");
 						$izborni_slot = db_result($q440,0,0);
+						if (intval($izborni_slot) == 0) $izborni_slot=1;
 						$q450 = db_query("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=NULL, plan_izborni_slot=$izborni_slot, semestar=$semestar, obavezan=0, potvrdjen=0");
 					}
 					$q460 = db_query("INSERT INTO plan_izborni_slot SET id=$izborni_slot, pasos_predmeta=$id_pasosa");
