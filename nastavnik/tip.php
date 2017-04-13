@@ -208,7 +208,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 				$q440 = db_query("delete from ispit_termin where id=$termin");
 			}
 
-			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, $ispit);
+			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, intval($ispit));
 		}
 	}
 	// Prisustvo
@@ -217,7 +217,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		if (!in_array($komponenta, $idovi_komponenti)) {
 			$q460 = db_query("delete from prisustvo where cas=$cas");
 			$q470 = db_query("delete from cas where id=$cas");
-			zamgerlog2 ("obrisan cas zbog promjene sistema bodovanja", $predmet, $ag, $cas);
+			zamgerlog2 ("obrisan cas zbog promjene sistema bodovanja", $predmet, $ag, intval($cas));
 		}
 	}
 	// .. tako i za zadaće...
