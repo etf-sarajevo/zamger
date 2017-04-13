@@ -93,7 +93,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$q10 = db_query("select id, ime, prezime from osoba where ime like '$ime' and prezime like '$prezime'");
 	if ($r10 = db_fetch_row($q10)) {
 		zamgerlog("korisnik vec postoji u bazi ('$ime' '$prezime' - ID: $r10[0])",3);
-		zamgerlog2("korisnik vec postoji u bazi", $r10[0], 0, 0, "'$ime' '$prezime'");
+		zamgerlog2("korisnik vec postoji u bazi", intval($r10[0]), 0, 0, "'$ime' '$prezime'");
 		niceerror("Korisnik već postoji u bazi:");
 		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r10[0]\">$r10[1] $r10[2]</a>";
 		return;
