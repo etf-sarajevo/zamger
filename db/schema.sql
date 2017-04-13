@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
   `predmet` int(11) NOT NULL,
   `tippredmeta` int(11) NOT NULL,
   PRIMARY KEY (`akademska_godina`,`predmet`),
+  KEY `tippredmeta` (`tippredmeta`),
   KEY `predmet` (`predmet`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -2328,6 +2329,7 @@ CREATE TABLE IF NOT EXISTS `kandidati_mjesto` (
 -- Constraints for table `akademska_godina_predmet`
 --
 ALTER TABLE `akademska_godina_predmet`
+  ADD CONSTRAINT `akademska_godina_predmet_ibfk_11` FOREIGN KEY (`tippredmeta`) REFERENCES `tippredmeta` (`id`),
   ADD CONSTRAINT `akademska_godina_predmet_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
   ADD CONSTRAINT `akademska_godina_predmet_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
 
