@@ -78,6 +78,58 @@ function ws_zadaca() {
 		}
 	}
 
+	// Vraća redni broj zadatka ako je dat filename
+	else if ($_REQUEST['akcija'] == "dajZadatak") {
+		$zadatak = intval($_REQUEST['zadatak']);
+		
+		$q10 = db_query("SELECT status, bodova, izvjestaj_skripte, komentar, filename, vrijeme FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$student ORDER BY id DESC LIMIT 1");
+		if (db_num_rows($q10) < 1) {
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
+			return;
+		}
+		
+		$rezultat['data'] = db_fetch_assoc($q10);
+		$q20 = db_query("SELECT id FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak");
+		$testovi = array();
+		while(db_fetch1($q20, $autotest)) {
+			$q30 = db_query("SELECT izlaz_programa, status, nalaz, vrijeme, trajanje FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
+			$at_rez = db_fetch_assoc($q30);
+			$at_rez['id'] = $autotest;
+			$testovi[] = $at_rez;
+		}
+		if (!empty($testovi)) $rezultat['data']['autotest_rezultat'] = $testovi;
+		
+		// Studenti ne vide log
+		if ($user_siteadmin || nastavnik_pravo_pristupa($predmet, $ag, $student))
+			$rezultat['data']['log'] = db_query_table("SELECT id, status, bodova, izvjestaj_skripte, komentar, filename, vrijeme, userid FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$student ORDER BY id");
+	}
+
+	// Vraća redni broj zadatka ako je dat filename
+	else if ($_REQUEST['akcija'] == "dajFajl") {
+		$zadatak = intval($_REQUEST['zadatak']);
+		
+		$filename = db_get("SELECT filename FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$student ORDER BY id DESC LIMIT 1");
+		if ($filename === false) {
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
+			return;
+		}
+		$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$student/";
+		$the_file = "$lokacijazadaca$zadaca/$filename";
+
+		if (!file_exists($the_file)) {
+			header("HTTP/1.0 404 Not Found");
+			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
+			return;
+		}
+		readfile($the_file);
+		return;
+	}
+
 	// Postavlja status zadaće
 	else if ($_SERVER['REQUEST_METHOD'] == "POST" && $_REQUEST['akcija'] == "status") {
 		$zadatak = intval($_REQUEST['zadatak']);
