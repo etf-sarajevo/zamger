@@ -305,6 +305,11 @@ function studentska_zavrsni()  {
 					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 					return;
 				}
+				if ($student == 0) {
+					niceerror("Nije moguće unijeti datum i broj odluke dok ne unesete kandidata");
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
 				$broj_odluke = db_escape($_REQUEST['broj_odluke']);
 				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke) AND broj_protokola='$broj_odluke'");
 				if (db_num_rows($q009) > 0) {
