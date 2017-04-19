@@ -198,9 +198,8 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 	
 	// Moramo sada obrisati sve podatke koji nisu migrirani jer mogu praviti razne probleme
 	$q400 = db_query("select id, komponenta from ispit where predmet=$predmet and akademska_godina=$ag");
-	while ($r400 = db_fetch_row($q400)) {
-		$ispit = $r400[0];
-		if (!in_array($r400[1], $idovi_komponenti)) {
+	while (db_fetch2($q400, $ispit, $komponenta)) {
+		if (!in_array($komponenta, $idovi_komponenti)) {
 			$q410 = db_query("delete from ispitocjene where ispit=$ispit");
 			$q420 = db_query("select id from ispit_termin where ispit=$ispit");
 			while ($r420 = db_fetch_row($q420)) {
@@ -209,10 +208,19 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 				$q440 = db_query("delete from ispit_termin where id=$termin");
 			}
 
-			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, $ispit);
+			zamgerlog2 ("obrisan ispit zbog promjene sistema bodovanja", $predmet, $ag, intval($ispit));
 		}
 	}
-	// .. tako i za prisustvo i zadaće...
+	// Prisustvo
+	$q450 = db_query("select c.id, c.komponenta from cas c, labgrupa l where l.predmet=$predmet and l.akademska_godina=$ag and c.labgrupa=l.id");
+	while (db_fetch2($q450, $cas, $komponenta)) {
+		if (!in_array($komponenta, $idovi_komponenti)) {
+			$q460 = db_query("delete from prisustvo where cas=$cas");
+			$q470 = db_query("delete from cas where id=$cas");
+			zamgerlog2 ("obrisan cas zbog promjene sistema bodovanja", $predmet, $ag, intval($cas));
+		}
+	}
+	// .. tako i za zadaće...
 
 	// Ako nijedan predmet više ne koristi stari tip predmeta, brišemo ga
 	$q130 = db_query("select count(*) from akademska_godina_predmet where tippredmeta=$stari_tip_predmeta");

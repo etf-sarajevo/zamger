@@ -34,7 +34,7 @@ if (param('po_semestrima')) $po_semestrima=true; else $po_semestrima=false;
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = $studiji_phd = array();
 $trajanje_bsc = $trajanje_msc = $trajanje_phd = 0;
-$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r20 = db_fetch_row($q20)) {
 	$studiji_bsc[$r20[0]]=$r20[1];
 	if ($r20[2]>$trajanje_bsc) $trajanje_bsc=$r20[2];

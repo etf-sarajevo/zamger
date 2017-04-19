@@ -16,8 +16,20 @@ if ($_REQUEST['akcija'] == "slanje") {
 
 
 // Poslani parametri
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
+$predmet = int_param('predmet');
+$ag = int_param('ag');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	// Zbog automatskog reloadanja ovog prozora dok se popunjava kviz, dolazilo je do otvaranja
+	// dijaloga za "resubmit" što je znalo dovesti do prekida popunjavanja kviza
+	?>
+	<script language="JavaScript">
+	location.href='?sta=student/kviz&predmet=<?=$predmet?>&ag=<?=$ag?>';
+	</script>
+	<?
+	return 0;
+}
+
 
 $q10 = db_query("select naziv from predmet where id=$predmet");
 if (db_num_rows($q10)<1) {

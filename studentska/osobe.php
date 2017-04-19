@@ -93,7 +93,7 @@ if ($_POST['akcija'] == "novi" && check_csrf_token()) {
 	$q10 = db_query("select id, ime, prezime from osoba where ime like '$ime' and prezime like '$prezime'");
 	if ($r10 = db_fetch_row($q10)) {
 		zamgerlog("korisnik vec postoji u bazi ('$ime' '$prezime' - ID: $r10[0])",3);
-		zamgerlog2("korisnik vec postoji u bazi", $r10[0], 0, 0, "'$ime' '$prezime'");
+		zamgerlog2("korisnik vec postoji u bazi", intval($r10[0]), 0, 0, "'$ime' '$prezime'");
 		niceerror("Korisnik već postoji u bazi:");
 		print "<br><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r10[0]\">$r10[1] $r10[2]</a>";
 		return;
@@ -202,7 +202,7 @@ if ($akcija == "podaci") {
 		if ($adresa_mjesto != "") {
 			$q3 = db_query("select id from mjesto where naziv='$adresa_mjesto'");
 			if (db_num_rows($q3)<1) {
-				$q4 = db_query("insert into mjesto set naziv='$adresa_mjesto'");
+				$q4 = db_query("insert into mjesto set naziv='$adresa_mjesto', opcina=$opcina_rodjenja, drzava=1");
 				$q3 = db_query("select id from mjesto where naziv='$adresa_mjesto'");
 			}
 			$admid = db_result($q3,0,0);
@@ -666,7 +666,7 @@ else if ($akcija == "upis") {
 		}
 
 		// Lista studija
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
@@ -693,12 +693,12 @@ else if ($akcija == "upis") {
 	if ($semestar>$trajanje && $stari_studij!=0) {
 		// Biramo sljedeći ciklus istog studija po tome što ga nudi ista institucija
 		$ciklus++;
-		$q545 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1");
+		$q545 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1");
 		if (db_num_rows($q545)>0) {
 			$izabrani_studij=db_result($q545,0,0);
 		}
 	
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and ts.moguc_upis=1 order by s.naziv");
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
@@ -745,10 +745,11 @@ else if ($akcija == "upis") {
 	// Uvodimo dva načina izbora predmeta - preko plana studija i preko odslušanih predmeta u prošloj godini
 	// U slučaju da nije definisan plan studija, bira se ovaj drugi način, ali on nije pouzdan zbog komplikacije
 	// oko izbornih predmeta i ECTSova
+	
+	$predmeti_pao=array();
 
 	if ($plan_studija>0) {
 		// Prema novom zakonu, uslov za upis je jedan predmet iz prethodne godine
-		$predmeti_pao=array();
 		$stari_predmet=array();
 
 		$q570 = db_query("select pasos_predmeta, obavezan, semestar, plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar<$semestar order by semestar");
@@ -805,7 +806,6 @@ else if ($akcija == "upis") {
 		// Nepouzdano zbog kolizija, izbornih predmeta itd.
 
 		$q640 = db_query("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
-		$predmeti_pao=array();
 		while ($r650 = db_fetch_row($q650)) {
 			$predmet = $r650[0];
 			$psemestar = $r650[2];
@@ -1657,7 +1657,7 @@ else if ($akcija == "predmeti") {
 
 	else if ($spisak==2) {
 		// Svi studiji
-		$q2070 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.moguc_upis=1 order by ts.ciklus, s.naziv");
+		$q2070 = db_query("select s.id, s.naziv, ts.trajanje from studij as s, tipstudija as ts where s.tipstudija=ts.id and s.moguc_upis=1 order by ts.ciklus, s.naziv");
 		while ($r2070=db_fetch_row($q2070)) {
 			$stud=$r2070[0];
 			$stud_naziv=$r2070[1];

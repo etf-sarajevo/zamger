@@ -50,11 +50,11 @@ function greska_u_modulima() {
 			$msg = $err['message'];
 			$file = substr($file, strlen($file)-20);
 
-			zamgerlog("sintaksna greska u $sta, $line: '$msg'",2);
+			zamgerlog("sintaksna greska u $sta, $line: '$msg'", 3);
 			zamgerlog2("sintaksna greska", $line, 0, 0, $msg);
 		} else {
 			$file = $sta;
-			zamgerlog("sintaksna greska u $sta",2);
+			zamgerlog("sintaksna greska u $sta", 3);
 			zamgerlog2("sintaksna greska");
 			$msg = "";
 		}
@@ -130,14 +130,17 @@ if (int_param('loginforma') === 1) {
 
 	if (!preg_match("/[\w\d]/",$login)) {
 		$greska="Nepoznat korisnik";
+		zamgerlog("nepoznat korisnik $login", 3);
 		zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 	} else {
 		$status = login($pass);
 		if ($status == 1) {
 			$greska="Nepoznat korisnik";
+			zamgerlog("nepoznat korisnik $login", 3);
 			zamgerlog2("nepoznat korisnik", 0, 0, 0, $login);
 		} else if ($status == 2) {
 			$greska="Pogrešna šifra";
+			zamgerlog("pogresna sifra $login", 3);
 			zamgerlog2("pogresna sifra", 0, 0, 0, $login);
 		}
 	}
@@ -157,6 +160,7 @@ if (int_param('loginforma') === 1) {
 		$greska = "Vaša sesija je istekla. Molimo prijavite se ponovo.";
 		$oldsta = $sta;
 		$sta = "";
+		zamgerlog("sesija istekla $oldsta", 3);
 		zamgerlog2("sesija istekla", 0, 0, 0, $oldsta);
 		$sta = $oldsta; // -- Ne brisati sta! treba za provjeru public pristupa
 	}
@@ -205,6 +209,7 @@ if ($userid>0) {
 	// Korisnik nije ništa!?
 	if (!$user_student && !$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_prijemni) {
 		$greska = "Vaše korisničko ime je ispravno, ali nemate nikakve privilegije na sistemu! Kontaktirajte administratora.";
+		zamgerlog("korisnik nema nikakve privilegije $login", 3);
 		zamgerlog2("korisnik nema nikakve privilegije");
 		$sta = "";
 	}
@@ -490,10 +495,6 @@ if ($userid>0) {
 // Standardne greske
 if ($greska != "") {
 	niceerror($greska);
-	if ($sta=="")
-		zamgerlog("index.php greska: $greska $login ".db_escape($_REQUEST['sta']),3);
-	else
-		zamgerlog("index.php greska: $greska $login $sta",3);
 }
 
 // Poruka greške za modul
@@ -570,7 +571,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2017 <a href="doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2017 <a href="static/doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>

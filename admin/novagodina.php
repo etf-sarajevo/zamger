@@ -23,7 +23,7 @@ if (param('akcija') == "novagodina") {
 		print "-- Pronađena postojeća akademska godina (ID: $ag) - neće biti kreirana nova godina.<br/>\n";
 	}
 	
-	$q40 = db_query("select s.id, s.naziv, ts.trajanje, ts.moguc_upis from studij as s, tipstudija as ts where s.tipstudija=ts.id");
+	$q40 = db_query("select s.id, s.naziv, ts.trajanje, s.moguc_upis from studij as s, tipstudija as ts where s.tipstudija=ts.id");
 	while (db_fetch4($q40, $studij, $naziv_studija, $trajanje, $moguc_upis)) {
 		if ($ispis) print "-- Studij $naziv_studija<br/>\n";
 

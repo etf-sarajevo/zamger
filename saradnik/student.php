@@ -20,9 +20,9 @@ require("lib/manip.php"); // radi ispisa studenta sa predmeta
 print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>'."\n";
 
 // Ulazni parametri
-$student = intval($_REQUEST['student']);
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
+$student = int_param('student');
+$predmet = int_param('predmet');
+$ag = int_param('ag');
 
 
 
@@ -244,6 +244,19 @@ if (param('akcija') == "promjena_grupe" && check_csrf_token()) {
 if (param('akcija') == "ponisti_kviz") {
 	$kviz = intval($_REQUEST['kviz']);
 	$q2000 = db_query("DELETE FROM kviz_student WHERE student=$student AND kviz=$kviz");
+	zamgerlog("ponisten kviz u$student $kviz", 2);
+	zamgerlog2("ponisten kviz", $student, $kviz);
+
+	nicemessage("Poništen kviz");
+
+	?>
+	<script language="JavaScript">
+	setTimeout(function() { 
+		location.href='?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>'; 
+	}, 500);
+	</script>
+	<?
+	return;
 }
 
 
@@ -306,44 +319,60 @@ if (db_num_rows($q60)>0) {
 // PROGRESS BAR
 // Kod kopiran iz student/predmet - trebalo bi izdvojiti u lib
 
-$q30 = db_query("select kb.bodovi, k.maxbodova, k.tipkomponente, k.id from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+// Sumiramo bodove po komponentama i računamo koliko je bilo moguće ostvariti
+$ukupno_bodova = $ukupno_mogucih = 0;
 
-$bodova=$mogucih=0;
-while ($r30 = db_fetch_row($q30)) {
-	$bodova += $r30[0];
-	if ($r30[2] == 4) { // Tip komponente: zadaće
-		$q35 = db_query("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r30[3]");
-		$do_sada_zadace = round(db_result($q35,0,0), 2);
+$q30 = db_query("select k.id, k.tipkomponente, k.opcija, kb.bodovi, k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$student and kb.predmet=$ponudakursa and kb.komponenta=k.id");
+while(db_fetch5($q30, $id_komponente, $tip_komponente, $parametar_komponente, $komponenta_bodova, $komponenta_mogucih)) {
+	$ukupno_bodova += $komponenta_bodova;
+	
+	// Za neke komponente imamo poseban kod koliko je bilo moguće ostvariti
+	if ($tip_komponente == 4) { // Tip komponente: zadaće
+		$do_sada_zadace = db_get("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente");
+		$do_sada_zadace = round($do_sada_zadace, 2);
+		
 		// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
-		if ($do_sada_zadace > $r30[1])
-			$mogucih += $r30[1];
+		if ($do_sada_zadace > $komponenta_mogucih)
+			$ukupno_mogucih += $komponenta_mogucih;
 		else
-			$mogucih += $do_sada_zadace;
+			$ukupno_mogucih += $do_sada_zadace;
+	
+	} else if ($tip_komponente == 3 && $parametar_komponente == -3) { // Prisustvo sa linearnim porastom
+		$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$student");
+		$ukupno_mogucih += $casova * $komponenta_mogucih / 13;
+		
 	} else
-		$mogucih += $r30[1];
+		$ukupno_mogucih += $komponenta_mogucih;
 }
-if ($bodova>$mogucih) $bodova=$mogucih; //ne bi se trebalo desiti
 
+// Procenat nikada ne smije biti veći od 100%
+if ($ukupno_mogucih==0) 
+	$procenat = 0;
+else if ($ukupno_bodova > $ukupno_mogucih) 
+	$procenat = 100;
+else 
+	$procenat = intval(($ukupno_bodova/$ukupno_mogucih)*100);
 
 // boja označava napredak studenta
-if ($mogucih==0) $procent=0;
-else $procent = intval(($bodova/$mogucih)*100);
-if ($procent>=75) 
-	$color="#00FF00";
-else if ($procent>=50)
-	$color="#FFFF00";
+if ($procenat>=75) 
+	$boja = "#00FF00";
+else if ($procenat>=50)
+	$boja = "#FFFF00";
 else
-	$color="#FF0000";
+	$boja = "#FF0000";
 
+// Crtamo tabelu koristeći dvije preskalirane slike
+$ukupna_sirina = 200;
 
-$tabela1=$procent*2;
-$tabela2=200-$tabela1;
+$tabela1 = $procenat * 2;
+$tabela2 = $ukupna_sirina - $tabela1;
 
-$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
-$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br/> $bodova bodova";
-
-if ($tabela1>$tabela2) { 
-	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br/> $bodova bodova";
+// Tekst "X bodova" ćemo upisati u onu stranu tabele koja je manja
+if ($tabela1 <= $tabela2) {
+	$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
+	$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br> $ukupno_bodova bodova";
+} else {
+	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br> $ukupno_bodova bodova";
 	$ispis2="<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
 }
 
@@ -355,14 +384,14 @@ if ($tabela1>$tabela2) {
 <table border="0"><tr><td align="left">
 <p>
 <table style="border:1px;border-style:solid" width="206" cellpadding="0" cellspacing="2"><tr>
-<td width="<?=$tabela1?>" bgcolor="<?=$color?>"><?=$ispis1?></td>
+<td width="<?=$tabela1?>" bgcolor="<?=$boja?>"><?=$ispis1?></td>
 <td width="<?=$tabela2?>" bgcolor="#FFFFFF"><?=$ispis2?></td></tr></table>
 
 <table width="208" border="0" cellspacing="0" cellpadding="0"><tr>
 <td width="68">0</td>
 <td align="center" width="68">50</td>
 <td align="right" width="69">100</td></tr></table>
-što je <?=$procent?>% od trenutno mogućih <?=round($mogucih,2) /* Rješavamo nepreciznost floata */ ?> bodova.</p>
+što je <?=$procenat?>% od trenutno mogućih <?=round($ukupno_mogucih,2) ?> bodova.</p>
 </td></tr></table>
 
 
@@ -374,7 +403,7 @@ if ($tabela1>$tabela2) {
 
 if ($user_siteadmin) {
 	?>
-	<p><a href="index.php?sta=saradnik/student&student=<?=$student?>&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ispis">Ispiši studenta sa predmeta</a> * <a href="index.php?sta=studentska/osobe&akcija=edit&osoba=<?=$student?>">Detaljnije o studentu</a> * <a href="index.php?su=<?=$student?>">Prijavi se kao student</a></p>
+	<p><a href="index.php?sta=saradnik/student&amp;student=<?=$student?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;akcija=ispis">Ispiši studenta sa predmeta</a> * <a href="index.php?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$student?>">Detaljnije o studentu</a> * <a href="index.php?su=<?=$student?>">Prijavi se kao student</a></p>
 	<?
 }
 
@@ -477,37 +506,39 @@ function prisustvo_ispis($idgrupe,$imegrupe,$komponenta,$student) {
 	return $odsustva;
 }
 
-$q40 = db_query("select k.id,k.maxbodova,k.prolaz,k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+
+// Izračunavamo broj bodova za svaku komponentu prisustva
+$q40 = db_query("select k.id, k.maxbodova, k.prolaz, k.opcija from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
 where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
 
-while ($r40 = db_fetch_row($q40)) {
-	$id_komponente = $r40[0];
-	$max_bodova = $r40[1];
-	$min_bodova = $r40[2];
-	$max_izostanaka = $r40[3];
-
+while (db_fetch4($q40, $id_komponente, $max_bodova, $min_bodova, $parametar_komponente)) {
 	$odsustva = $casova = 0;
-	$q60 = db_query("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
+	$labgrupe = db_query_vassoc("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
 	
-	while ($r60 = db_fetch_row($q60)) {
-		$odsustva += prisustvo_ispis($r60[0],$r60[1],$id_komponente, $student);
-		$q71 = db_query("select count(*) from cas where labgrupa=$r60[0] and komponenta=$id_komponente");
-		$casova += db_result($q71,0,0);;
+	foreach($labgrupe as $id_grupe => $naziv_grupe) {
+		$odsustva += prisustvo_ispis($id_grupe, $naziv_grupe, $id_komponente, $student);
+		$casova += db_get("select count(*) from cas where labgrupa=$id_grupe and komponenta=$id_komponente");
 	}
 	
-	if ($max_izostanaka == -1) {
+	if ($parametar_komponente == -1) {
 		if ($casova == 0) 
 			$bodovi = 10;
 		else
 			$bodovi = $min_bodova + round(($max_bodova - $min_bodova) * (($casova - $odsustva) / $casova), 2 ); 
-	} else if ($max_izostanaka == -2) { // Paraproporcionalni sistem TP
+			
+	} else if ($parametar_komponente == -2) { // Paraproporcionalni sistem TP
 		if ($odsustva <= 2)
 			$bodovi = $max_bodova;
 		else if ($odsustva <= 2 + ($max_bodova - $min_bodova)/2)
 			$bodovi = $max_bodova - ($odsustva-2)*2;
 		else
 			$bodovi = $min_bodova;
-	} else if ($odsustva<=$max_izostanaka) {
+
+	} else if ($parametar_komponente == -3) { // Još jedan sistem TP
+		$bodovi = ($max_bodova / 13) * ($casova - $odsustva);
+	
+	// Pozitivan parametar komponente je najveći dozvoljeni broj izostanaka za cut-off model
+	} else if ($odsustva <= $parametar_komponente) {
 		$bodovi = $max_bodova;
 	} else {
 		$bodovi = $min_bodova;
@@ -576,13 +607,22 @@ $stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
+
+
+$q95 = db_query("select k.id,k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
+where agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4"); // 4 = zadaće
+
+
+while(db_fetch2($q95, $id_komponente, $naziv_komponente)) {
+
+
 ?>
 
 
 <!-- zadace -->
 
-<b>Zadaće:</b><br/>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
+<b><?=$naziv_komponente?>:</b><br/>
+<table cellspacing="0" cellpadding="2" border="0" id="zadace<?=$id_komponente?>" class="zadace">
 	<thead>
 		<tr>
 	<td>&nbsp;</td>
@@ -590,7 +630,7 @@ $stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bu
 
 // Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
 
-$max_broj_zadataka = db_get("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
+$max_broj_zadataka = db_get("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by zadataka desc limit 1");
 for ($i=1;$i<=$max_broj_zadataka;$i++) {
 	?><td>Zadatak <?=$i?>.</td><?
 }
@@ -621,7 +661,7 @@ for ($i=1;$i<=$max_broj_zadataka;$i++) {
 
 $bodova_sve_zadace=0;
 
-$q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta,id");
+$q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by id");
 while ($r21 = db_fetch_row($q21)) {
 	$zadaca = $r21[0];
 	$mogucih += $r21[2];
@@ -681,6 +721,8 @@ $bodova += $bodova_sve_zadace;
 
 <?
 
+
+} // while(db_fetch2($q95...
 
 
 
@@ -861,7 +903,9 @@ if (db_num_rows($q50)>0) {
 	<td>&nbsp;</td>
 	<td>Ocjena:</td>
 	<td>Datum u indeksu:</td>
+	<? if ($privilegija=="nastavnik" || $user_siteadmin) { ?>
 	<td>Dnevnik izmjena:</td>
+	<? } ?>
 </tr>
 <tr>
 	<td><b>Konačna ocjena:</b></td>
@@ -876,10 +920,13 @@ if ($privilegija=="nastavnik" || $user_siteadmin) {
 } else {
 	?>
 	<td><?=$konacnaocjena?></td>
+	<td><?=$datum_u_indeksu?></td>
 	<?
 }
 
-print "</tr></table>\n";
+?>
+</tr></table>
+<?
 
 
 
@@ -930,7 +977,7 @@ function ucitajLogove(student, predmet, ag) {
 }
 
 function parsirajLogove(log) {
-	document.getElementById('kolog').innerHTML = "";
+	if (document.getElementById('kolog')) document.getElementById('kolog').innerHTML = "";
 	for (var ispit in rezultati_ispita) {
 		if (rezultati_ispita.hasOwnProperty(ispit)) {
 			document.getElementById('ispitlog' + ispit).innerHTML = "";
@@ -939,13 +986,13 @@ function parsirajLogove(log) {
 	for (i=0; i<log.length; i++) {
 		var stavka = log[i];
 		
-		if (stavka.opis_dogadjaja == "dodana ocjena") {
+		if (stavka.opis_dogadjaja == "dodana ocjena" && document.getElementById('kolog')) {
 			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
 			konacnaocjena = "/";
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> dodana ocjena <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "obrisana ocjena") {
+		} else if (stavka.opis_dogadjaja == "obrisana ocjena" && document.getElementById('kolog')) {
 			if (konacnaocjena != "/") 
 				stavka.ocjena += " ?"; 
 			else 
@@ -953,13 +1000,13 @@ function parsirajLogove(log) {
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> obrisana ocjena (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "izmjena ocjene") {
+		} else if (stavka.opis_dogadjaja == "izmjena ocjene" && document.getElementById('kolog')) {
 			if (stavka.ocjena != konacnaocjena) stavka.ocjena += " ?";
 			konacnaocjena = stavka.stara_ocjena;
 			
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjena ocjena u <b>' + stavka.ocjena + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
-		} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene") {
+		} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene" && document.getElementById('kolog')) {
 			document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjena datum ocjene u <b>' + stavka.datum_ocjene + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 			
 		} else if (stavka.opis_dogadjaja == "upisan rezultat ispita") {

@@ -162,7 +162,7 @@ if ($count==0) {
 </td>
 
 <td width="30%" valign="top" style="padding: 10px; padding-right:30px;" bgcolor="#f2f2f2">
-				<h2><img src="images/32x32/info.png" align="absmiddle"> <font color="#666699">OBAVJEŠTENJA</font></h2>
+				<h2><img src="static/images/32x32/info.png" align="absmiddle"> <font color="#666699">OBAVJEŠTENJA</font></h2>
 <?
 
 // TODO: optimizacija

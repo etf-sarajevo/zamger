@@ -84,7 +84,7 @@ else if ($_REQUEST['action'] == "assignProgram") {
 		$result["message"] = "You don't have permission to assignProgram";
 	} else {
 		$buildhost_id = db_escape($_REQUEST['buildhost']);
-		$q99 = db_query("LOCK TABLES buildservice_tracking WRITE, log READ, zadatak READ");
+		$q99 = db_query("LOCK TABLES buildservice_tracking WRITE, zadatak READ");
 		$zadatak = dajZadatak($zadaca, $zadatak);
 		if ($zadatak) {
 			$q100 = db_query("DELETE FROM buildservice_tracking WHERE zadatak=$zadatak");

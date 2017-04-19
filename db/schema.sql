@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
   `predmet` int(11) NOT NULL,
   `tippredmeta` int(11) NOT NULL,
   PRIMARY KEY (`akademska_godina`,`predmet`),
+  KEY `tippredmeta` (`tippredmeta`),
   KEY `predmet` (`predmet`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -747,6 +748,7 @@ CREATE TABLE IF NOT EXISTS `konacna_ocjena` (
   `datum_u_indeksu` date NOT NULL,
   `odluka` int(11) default NULL,
   `datum_provjeren` tinyint(1) NOT NULL default '0',
+  `pasos_predmeta` int(11) default NULL,
   PRIMARY KEY (`student`,`predmet`),
   KEY `akademska_godina` (`akademska_godina`),
   KEY `odluka` (`odluka`),
@@ -1881,7 +1883,6 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
 CREATE TABLE IF NOT EXISTS `studij` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
-  `zavrsni_semestar` int(11) NOT NULL DEFAULT '0',
   `institucija` int(11) NOT NULL DEFAULT '0',
   `kratkinaziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,
@@ -1949,7 +1950,7 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `ciklus` tinyint(2) NOT NULL,
   `trajanje` tinyint(3) NOT NULL,
-  `moguc_upis` tinyint(1) NOT NULL
+  `ects` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
@@ -2328,6 +2329,7 @@ CREATE TABLE IF NOT EXISTS `kandidati_mjesto` (
 -- Constraints for table `akademska_godina_predmet`
 --
 ALTER TABLE `akademska_godina_predmet`
+  ADD CONSTRAINT `akademska_godina_predmet_ibfk_11` FOREIGN KEY (`tippredmeta`) REFERENCES `tippredmeta` (`id`),
   ADD CONSTRAINT `akademska_godina_predmet_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
   ADD CONSTRAINT `akademska_godina_predmet_ibfk_2` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`);
 

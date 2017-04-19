@@ -10,7 +10,7 @@ function admin_studij() {
 ?>
 <h2>Parametri studija</h2>
 
-<p><a href="?sta=admin/studij&amp;akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&amp;akcija=inst">Institucija</a> * <a href="?sta=admin/studij&amp;akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&amp;akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&amp;akcija=naucni_stepen">Naučni stepen</a> * <a href="?sta=admin/studij&amp;akcija=strucni_stepen">Stručni stepen</a> * <a href="?sta=admin/studij&amp;akcija=studij">Studij</a> * <a href="?sta=admin/studij&amp;akcija=tippr">Tipovi predmeta</a></p>
+<p><a href="?sta=admin/studij&amp;akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&amp;akcija=inst">Institucija</a> * <a href="?sta=admin/studij&amp;akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&amp;akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&amp;akcija=naucni_stepen">Naučni stepen</a> * <a href="?sta=admin/studij&amp;akcija=strucni_stepen">Stručni stepen</a> * <a href="?sta=admin/studij&amp;akcija=studij">Studij</a> * <a href="?sta=admin/studij&amp;akcija=tipstudija">Tip studija</a> * <a href="?sta=admin/studij&amp;akcija=tippr">Tipovi predmeta</a></p>
 
 <?
 
@@ -48,6 +48,11 @@ if (param('akcija')=="strucni_stepen") {
 if (param('akcija')=="studij") {
 	print db_grid("studij");
 	print "<br /><hr><br />Dodaj:<br />".db_form("studij");
+}
+
+if (param('akcija')=="tipstudija") {
+	print db_grid("tipstudija");
+	print "<br /><hr><br />Dodaj:<br />".db_form("tipstudija");
 }
 
 if (param('akcija')=="tippr") {

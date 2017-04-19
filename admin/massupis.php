@@ -131,7 +131,7 @@ if ($_POST['akcija']=="massupis" && strlen($_POST['nazad'])<1) {
 
 	// Da li student ostaje na istom studiju ili upisuje novi?
 	$upisano=0;
-	$q160 = myquery("select zavrsni_semestar, naziv from studij where id=$studij");
+	$q160 = myquery("select ts.trajanje, s.naziv from studij s, tipstudija ts where s.id=$studij and s.tipstudija=ts.id");
 	$nazivstudija = mysql_result($q160,0,1);
 	if (mysql_result($q160,0,0)>=$semestar-1) { // Izabrani semestar je manji od broja semestara
 

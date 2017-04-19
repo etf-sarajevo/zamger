@@ -293,7 +293,7 @@ function student_popuni_kviz() {
 		// ISPISI PITANJA
 		$i=0;
 		$q100 = db_query("select id, tip, tekst from kviz_pitanje where vidljivo=1 and kviz=$kviz order by RAND() limit 0,$broj_pitanja");
-		while ($r100 = db_fetch_assoc($q100)) {
+		while ($r100 = db_fetch_row($q100)) {
 			$i++;
 			$pitanje_id = $r100[0];
 			$pitanje = $r100[2];
@@ -308,7 +308,7 @@ function student_popuni_kviz() {
 					<?
 						// ISPISI ODGOVORE ZA PITANJE
 						$q110 = db_query("select id, tekst from kviz_odgovor where vidljiv=1 and kviz_pitanje=".$pitanje_id." order by RAND()");
-						while ($r110 = db_fetch_assoc($q110)) {
+						while ($r110 = db_fetch_row($q110)) {
 							$odgovor = $r110[1];
 							$odgovor_id = $r110[0];
 							// FIXME: moze mapipulirati id odgovora i pitanja kada salje...

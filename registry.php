@@ -63,6 +63,7 @@ array("izvjestaj/prijemni_top10posto", "Rang liste kandidata za upis", "Prijemni
 array("izvjestaj/progress", "Pregled ostvarenog rezultata na predmetima", "Bodovi", "SBA", "0", "0"),
 array("izvjestaj/prolaznost", "Prolaznost", "Prolaznost", "BA", "0", "0"),
 array("izvjestaj/prolaznosttab", "Prolaznost tabelarno", "Prolaznost tabelarno", "BA", "0", "0"),
+array("izvjestaj/rezultati_ispita", "Rezultati ispita", "Rezultati ispita", "NBA", "0", "0"),
 array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistika predmeta", "NBA", "0", "0"),
 array("izvjestaj/svi_studenti", "Spisak svih studenata", "Spisak svih studenata", "BA", "0", "0"),
 array("izvjestaj/termini_ispita", "Izvještaj za termine ispita", "Termin ispita", "NBA", "0", "0"),

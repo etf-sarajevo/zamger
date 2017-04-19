@@ -32,7 +32,7 @@ if ($ak_god==0) {
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = array();
 $trajanje_bsc = $trajanje_msc = 0;
-$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r20 = db_fetch_row($q20)) {
 	$studiji_bsc[$r20[0]]=$r20[1];
 	if ($r20[2]>$trajanje_bsc) $trajanje_bsc=$r20[2];
@@ -40,7 +40,7 @@ while ($r20 = db_fetch_row($q20)) {
 }
 $trajanje_bsc /= 2; // broj godina umjesto broj semestara
 
-$q30 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and ts.moguc_upis=1 order by s.kratkinaziv");
+$q30 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=2 and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r30 = db_fetch_row($q30)) {
 	if (substr($r30[1],2,1) == "e") continue; // Preskačemo ekvivalenciju
 	$studiji_msc[$r30[0]]=$r30[1];

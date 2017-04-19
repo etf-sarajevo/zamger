@@ -14,7 +14,7 @@ function ws_zadaca() {
 	else
 		$student = $userid;
 		
-	$predmet = $ag = 0;
+	$predmet = $ag = $zadaca = 0;
 	if (isset($_REQUEST['zadaca']) || isset($_REQUEST['id'])) {
 		if (isset($_REQUEST['zadaca'])) $zadaca = intval($_REQUEST['zadaca']);
 		if (isset($_REQUEST['id'])) $zadaca = intval($_REQUEST['id']);
@@ -23,6 +23,7 @@ function ws_zadaca() {
 		if (db_num_rows($q10) < 1) {
 			header("HTTP/1.0 404 Not Found");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
 			return;
 		}
 		$predmet = db_result($q10,0,0);
@@ -36,6 +37,7 @@ function ws_zadaca() {
 		if (db_num_rows($q10) < 1) {
 			header("HTTP/1.0 404 Not Found");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' );
+			print json_encode($rezultat);
 			return;
 		}
 		while ($dbrow = db_fetch_assoc($q10)) {
@@ -85,6 +87,17 @@ function ws_zadaca() {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
 		} else {
+			// Odredjujemo ponudu kursa (za update komponente)
+			$ponudakursa = db_get("select pk.id from student_predmet as sp, ponudakursa as pk, zadaca as z where sp.student=$student and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
+			if ($ponudakursa === false) {
+				header("HTTP/1.0 404 Not Found");
+				$rezultat = array( 'success' => 'false', 'code' => 'ERR404', 'message' => "Student $student nije upisan na predmet kojem pripada zadaca $zadaca" );
+				print json_encode($rezultat);
+				return;
+			}
+			
+			require("lib/manip.php"); // zbog update komponente
+			
 			$komentar = db_escape($_REQUEST['komentar']);
 			$izvjestaj_skripte = db_escape($_REQUEST['izvjestaj_skripte']);
 			$status = intval($_REQUEST['status']);
@@ -100,10 +113,8 @@ function ws_zadaca() {
 			else
 				$q100 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$status, bodova=$bodova, vrijeme=FROM_UNIXTIME($vrijeme), komentar='$komentar', izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', userid=$userid");
 
-			// Odredjujemo ponudu kursa (za update komponente)
-			$q110 = db_query("select pk.id from student_predmet as sp, ponudakursa as pk, zadaca as z where sp.student=$student and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
 
-			update_komponente($student, db_result($q110,0,0), $komponenta);
+			update_komponente($student, $ponudakursa, $komponenta);
 
 			zamgerlog("izmjena zadace (student u$student zadaca z$zadaca zadatak $zadatak)",2);
 			$rezultat['message'] = "Ažuriran status zadaće";
@@ -119,10 +130,15 @@ function ws_zadaca() {
 		if (!$user_siteadmin && !nastavnik_pravo_pristupa($predmet, $ag, $student) && $student != $userid) {
 			print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
 			return;
-		} 
+		}
 		
 		// Podaci o zadaći
 		$q210 = db_query("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije, automatsko_testiranje, predmet, akademska_godina, zadataka, aktivna from zadaca where id=$zadaca");
+		if (db_num_rows($q210) < 1) {
+			header("HTTP/1.0 404 Not Found");
+			print json_encode( array( 'success' => 'false', 'code' => 'ERR404', 'message' => 'Not found' ) );
+			return;
+		}
 		$jezik = db_result($q210,0,0);
 		$rok = db_result($q210,0,1);
 		$attach = db_result($q210,0,2);
@@ -284,14 +300,23 @@ function ws_zadaca() {
 		WHERE sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$ag and pk.predmet=p.id";
 		if ($predmet > 0) $upit .= " AND p.id=$predmet";
 		$q100 = db_query($upit);
-		while ($r100 = db_fetch_row($q100)) {
+		
+		// Nastavnik može vidjeti spisak zadaća za svoj predmet
+		if (db_num_rows($q100) == 0 && $predmet>0 && nastavnik_pravo_pristupa($predmet, $ag, 0)) {
+			$upit = "SELECT p.id, p.naziv, p.kratki_naziv 
+			FROM nastavnik_predmet as np, predmet as p
+			WHERE np.nastavnik=$userid and np.akademska_godina=$ag and np.predmet=p.id and p.id=$predmet";
+			$q100 = db_query($upit);
+		}
+		
+		while (db_fetch3($q100, $id_predmeta, $naziv_predmeta, $kratki_naziv)) {
 			$predmet = array();
-			$predmet['id'] = $r100[0];
-			$predmet['naziv'] = $r100[1];
-			$predmet['kratki_naziv'] = $r100[2];
+			$predmet['id'] = $id_predmeta;
+			$predmet['naziv'] = $naziv_predmeta;
+			$predmet['kratki_naziv'] = $kratki_naziv;
 			$predmet['zadace'] = array();
 			
-			$q110 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace, UNIX_TIMESTAMP(rok), aktivna from zadaca where predmet=$r100[0] and akademska_godina=$ag order by komponenta,id");
+			$q110 = db_query("select id, naziv, bodova, zadataka, programskijezik, attachment, postavka_zadace, UNIX_TIMESTAMP(rok), aktivna from zadaca where predmet=$id_predmeta and akademska_godina=$ag order by komponenta,id");
 			while ($r110 = db_fetch_row($q110)) {
 				$zadaca = array();
 				$zadaca['id'] = $r110[0];

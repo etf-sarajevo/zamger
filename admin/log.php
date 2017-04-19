@@ -221,9 +221,9 @@ do {
 		return;
 	}
 	
-	while ($s = fgets($pipes[1])) {
+	while ($s = trim(fgets($pipes[1]))) {
 		// Parsiramo log liniju
-		if (!preg_match("/^\[(.{3})\] ([\.\d]*?) - ([\w\.]*?)\s?\((\d+?)\) - \[([\d\. \:\-]+?)\] \"(.*?)\"$/", $s, $matches)) {
+		if (!preg_match("/^\[(.{3})\] ([\.\d]*?) - ([\w\.]*?)\s*\((\d+?)\) - \[([\d\. \:\-]+?)\] \"(.*?)\"$/", $s, $matches)) {
 			print "no matchez $s<br>\n";
 			continue;
 		}
@@ -237,6 +237,7 @@ do {
 		
 		$timestamp = strtotime($datum_vrijeme);
 		if ($timestamp > $stardate) continue;
+		$nicedate = " (".date("d.m.Y. H:i:s", $timestamp).")";
 		
 		//if (strlen($evt)>100) $evt = substr($evt,0,100); // but why?
 
@@ -245,7 +246,6 @@ do {
 			$lastlogin[$usr]=$timestamp;
 			$logins++;
 			if ($logins > $maxlogins) {
-				$stardate=$timestamp+1;
 				break; // izlaz iz while
 			}
 		}
@@ -354,6 +354,7 @@ do {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
 				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 				$user_log[$lastlogin[$usr]] = $usr;
+				$stardate=$timestamp;
 				$lastlogin[$usr]=0;
 			}
 		}

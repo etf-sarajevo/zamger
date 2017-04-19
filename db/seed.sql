@@ -184,7 +184,7 @@ INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
 (1, 'Ispit', ''),
 (2, 'Integralni ispit', 'Ispiti koje zamjenjuje (razdvojeni sa +)'),
-(3, 'Zadace', ''),
+(3, 'Zadaće', ''),
 (4, 'Prisustvo', 'Minimalan broj izostanaka (0=linearno)'),
 (5, 'Fiksna', '');
 
@@ -196,12 +196,12 @@ INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
 --
 
 INSERT INTO `komponenta` (`id`, `naziv`, `gui_naziv`, `kratki_gui_naziv`, `tipkomponente`, `maxbodova`, `prolaz`, `opcija`, `uslov`) VALUES
-(1, 'I parcijalni (ETF BSc)', 'I parcijalni', 'I parc', 1, 20, 10, '', 0),
-(2, 'II parcijalni (ETF BSc)', 'II parcijalni', 'II parc', 1, 20, 10, '', 0),
-(3, 'Integralni (ETF BSc)', 'Integralni', 'Int', 2, 40, 20, '1+2', 0),
-(4, 'Usmeni (ETF BSc)', 'Usmeni', 'Usmeni', 1, 40, 0, '', 0),
-(5, 'Prisustvo (ETF BSc)', 'Prisustvo', 'Prisustvo', 3, 10, 0, '3', 0),
-(6, 'Zadace (ETF BSc)', 'Zadace', 'Zadace', 4, 10, 0, '', 0);
+(1, 'I parcijalni', 'I parcijalni', 'I parc', 1, 20, 10, '', 0),
+(2, 'II parcijalni', 'II parcijalni', 'II parc', 1, 20, 10, '', 0),
+(3, 'Integralni', 'Integralni', 'Int', 2, 40, 20, '1+2', 0),
+(4, 'Usmeni', 'Usmeni', 'Usmeni', 1, 40, 0, '', 0),
+(5, 'Prisustvo', 'Prisustvo', 'Prisustvo', 3, 10, 0, '3', 0),
+(6, 'Zadaće', 'Zadaće', 'Zadaće', 4, 10, 0, '', 0);
 
 
 --
@@ -748,7 +748,7 @@ INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
-(0, 'verzija-baze', '1488882392');
+(0, 'verzija-baze', '1492100171');
 
 
 --
@@ -915,14 +915,14 @@ INSERT INTO `svrha_potvrde` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
-(1, 'ETF Bologna standard'),
+(1, 'Bologna standard'),
 (1000, 'Završni rad'),
 (2000, 'Kolokvij');
 
 
 --
 -- Dumping data for table `tippredmeta_komponenta`
--- Komponente koje čine tip predmeta 'ETF Bologna standard'
+-- Komponente koje čine tip predmeta 'Bologna standard'
 --
 
 INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES

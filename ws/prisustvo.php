@@ -40,7 +40,7 @@ function ws_prisustvo()
 		// Provjeravamo prava pristupa
 		$ok = false;
 		if ($user_siteadmin || $user_studentska) $ok = true;
-		if ($user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
+		if (!$ok && $user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
 		if ($user_student && $student == $userid) 
 			foreach(student_labgrupe($student, $predmet, $ag) as $lg)
 				if ($lg == $labgrupa) $ok = true;
@@ -69,6 +69,7 @@ function ws_prisustvo()
 				daj_ponudu_kursa($student, $predmet, $ag), 
 				$komponenta
 			);
+			zamgerlog2("prisustvo azurirano", $student, $cas, $prisutan);
 			$rezultat['message'] = "Ažurirano prisustvo";
 		}
 		if ($_SERVER['REQUEST_METHOD'] == "GET") {
@@ -90,7 +91,7 @@ function ws_prisustvo()
 		// Provjeravamo prava pristupa
 		$ok = false;
 		if ($user_siteadmin || $user_studentska) $ok = true;
-		if ($user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
+		if (!$ok && $user_nastavnik) $ok = nastavnik_pravo_pristupa($predmet, $ag, $student);
 		if ($user_student && $student == $userid) $ok = true; // Kasnije ćemo provjeriti da li student sluša predmet
 		
 		if (!$ok) {
@@ -103,83 +104,55 @@ function ws_prisustvo()
 			return;
 		}
 
-		$q20 = db_query("SELECT k.id, k.maxbodova, k.prolaz, k.opcija 
+		$komponente_rezultat = array();
+		$komponente = db_query_varray("SELECT k.id
 		FROM komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp
 		WHERE agp.predmet=$predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // 3 = prisustvo
-		
-		while ($r20 = db_fetch_row($q20)) {
-			$id_komponente = $r20[0];
-			$max_bodova = $r20[1];
-			$min_bodova = $r20[2];
-			$max_izostanaka = $r20[3];
+		foreach($komponente as $id_komponente) {
+			$grupe_rezultat = array();
 			
-			$odsustva = $casova = 0;
-			$q30 = db_query("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
-			
-			$grupe = array();
-			
-			while ($r30 = db_fetch_row($q30)) {
+			$grupe = db_query_vassoc("select l.id,l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.id=sl.labgrupa and sl.student=$student");
+			foreach($grupe as $id_grupe => $naziv_grupe) {
 				$grupa = array();
-				$grupa['id'] = $r30[0];
-				$grupa['naziv'] = $r30[1];
-				if (!preg_match("/\w/", $r30[1])) $grupa['naziv'] = "[Bez naziva]";
+				$grupa['id'] = $id_grupe;
+				$grupa['naziv'] = $naziv_grupe;
+				if (!preg_match("/\w/", $naziv_grupe)) $grupa['naziv'] = "[Bez naziva]";
 				
-				$q40 = db_query("select id, UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$r30[0] and komponenta=$r20[0] order by datum, vrijeme");
-				if (db_num_rows($q40)<1) continue; // Preskace u kojima nema registrovanih časova
+				$q40 = db_query("select id, UNIX_TIMESTAMP(datum), vrijeme from cas where labgrupa=$id_grupe and komponenta=$id_komponente order by datum, vrijeme");
+				if (db_num_rows($q40)<1) continue; // Preskače grupe u kojima nema registrovanih časova
 				
 				$grupa_odsustva = 0;
 				$casovi = array();
-				while ($r40 = db_fetch_row($q40)) {
-					$vrijeme_casa = $r40[1];
-					if (preg_match("/^(\d\d)\:(\d\d)\:(\d\d)$/", $r40[2], $matches))
-						$vrijeme_casa += $matches[1]*3600 + $matches[2]*60 + $matches[3];
+				while (db_fetch3($q40, $id_casa, $datum_casa, $vrijeme_casa)) {
+					$timestamp_casa = $datum_casa;
+					if (preg_match("/^(\d\d)\:(\d\d)\:(\d\d)$/", $vrijeme_casa, $matches))
+						$timestamp_casa += $matches[1]*3600 + $matches[2]*60 + $matches[3];
 						
 					$cas = array();
-					$cas['id'] = $r40[0];
-					$cas['vrijeme'] = $vrijeme_casa;
+					$cas['id'] = $id_casa;
+					$cas['vrijeme'] = $timestamp_casa;
 					
-					$q15 = db_query("select prisutan from prisustvo where student=$student and cas=$r40[0]");
-					if (db_num_rows($q15)<1) 
+					$prisutan = db_get("select prisutan from prisustvo where student=$student and cas=$id_casa");
+					if ($prisutan === false) 
 						$cas['status'] = "nepoznato";
-					else if (db_result($q15,0,0)==1) 
+					else if ($prisutan == 1) 
 						$cas['status'] = "prisutan";
 					else {
 						$cas['status'] = "odsutan";
-						$grupa_odsustva++;
 					}
 					$casovi[] = $cas;
 				}
 				
 				$grupa['casovi'] = $casovi;
-				$grupe[] = $grupa;
-				
-				$odsustva += $grupa_odsustva;
-				$casova += count($casovi);
+				$grupe_rezultat[] = $grupa;
 			}
-			
-			if ($max_izostanaka == -1) {
-				if ($casova == 0) 
-					$bodovi = 10;
-				else
-					$bodovi = $min_bodova + round(($max_bodova - $min_bodova) * (($casova - $odsustva) / $casova), 2 ); 
-			} 
-			else if ($max_izostanaka == -2) { // Paraproporcionalni sistem TP
-				if ($odsustva <= 2)
-					$bodovi = $max_bodova;
-				else if ($odsustva <= 2 + ($max_bodova - $min_bodova)/2)
-					$bodovi = $max_bodova - ($odsustva-2)*2;
-				else
-					$bodovi = $min_bodova;
-			} else if ($odsustva<=$max_izostanaka)
-				$bodovi = $max_bodova;
-			else
-				$bodovi = $min_bodova;
 				
 			$komponenta = array();
-			$komponenta['id'] = $r20[0];
-			$komponenta['grupe'] = $grupe;
-			$rezultat['data'][] = $komponenta;
+			$komponenta['id'] = $id_komponente;
+			$komponenta['grupe'] = $grupe_rezultat;
+			$komponente_rezultat[] = $komponenta;
 		}
+		$rezultat['data']['komponente'] = $komponente_rezultat;
 	}
 	
 	echo json_encode($rezultat);

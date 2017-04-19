@@ -61,20 +61,19 @@ while ($r13 = db_fetch_row($q13)) {
 }
 
 // Da li predmet posjeduje komponente za zadaće?
-$q15 = db_query("select k.id, k.naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4");
-if (db_num_rows($q15)<1) {
+$komponente_za_zadace = db_query_vassoc("select k.id, k.gui_naziv from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.akademska_godina=$ag and agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=4");
+if ($komponente_za_zadace === false || empty($komponente_za_zadace)) {
 	zamgerlog("ne postoji komponenta za zadace na predmetu pp$predmet ag$ag", 3);
 	zamgerlog2("ne postoji komponenta za zadace", $predmet, $ag);
 	niceerror("U sistemu bodovanja za ovaj predmet nije definisana nijedna komponenta zadaće.");
-	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
+	print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip&amp;predmet=$predmet&amp;ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
 	return;
 }
-if (db_num_rows($q15)>1) {
-	niceerror("U sistemu bodovanja za ovaj predmet je definisano više od jedne komponente za zadaće.");
-	print "<p>Ovaj modul trenutno podržava samo jednu komponentu zadaća. Ako imate potrebu za rad sa više od jedne komponente zadaća istovremeno, kontaktirajte administratora Zamgera. U suprotnom, provjerite <a href=\"?sta=nastavnik/tip?predmet=$predmet&ag=$ag\">sistem bodovanja</a> za ovaj predmet za slučaj da je ova situacija posljedica greške.</p>\n";
-	print "<p>Koristićemo komponentu označenu nazivom: <b>".db_result($q15,0,1)."</b></p>";
+if (!isset($_REQUEST['komponenta'])) {
+	$keys = array_keys($komponente_za_zadace);
+	$_REQUEST['komponenta'] = $keys[0];
 }
-$komponenta_za_zadace = db_result($q15,0,0);
+
 
 ?>
 
@@ -393,7 +392,9 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 
 	// Kreiranje nove
 	if ($edit_zadaca==0) {
-		// $komponenta_za_zadace određena na početku fajla
+		// Parametar "komponenta" bi trebao sadržavati odredišnu komponentu za ovu zadaću
+		$komponenta_za_zadace = int_param('komponenta');
+		
 		$q92 = db_query("insert into zadaca set predmet=$predmet, akademska_godina=$ag, naziv='$naziv', zadataka=$zadataka, bodova=$bodova, rok='$mysqlvrijeme', aktivna=$aktivna, attachment=$attachment, programskijezik=$programskijezik, automatsko_testiranje=$automatsko_testiranje, dozvoljene_ekstenzije = '$dozvoljene_ekstenzije_selected', komponenta=$komponenta_za_zadace, readonly=$readonly $sql_add_postavka_file");
 		$edit_zadaca = db_insert_id();
 		if ($edit_zadaca == 0) {
@@ -475,10 +476,17 @@ if ($_REQUEST['akcija'] == "autotestovi") {
 
 $_lv_["where:predmet"] = $predmet;
 $_lv_["where:akademska_godina"] = $ag;
-$_lv_["where:komponenta"] = $komponenta_za_zadace; // određena na početku fajla
 
-print "Postojeće zadaće:<br/>\n";
-print db_list("zadaca");
+
+foreach ($komponente_za_zadace as $id_komponente => $naziv_komponente) {
+	$_lv_["where:komponenta"] = $id_komponente; // određena na početku fajla
+	
+	// FIXME Hack kojim ćemo postići da link "Unesi novu" ispravno prosljeđuje komponentu
+	$_REQUEST['komponenta'] = $id_komponente;
+
+	print "<b>$naziv_komponente:</b><br/>\n";
+	print db_list("zadaca");
+}
 
 
 // Kreiranje nove zadace ili izmjena postojeće

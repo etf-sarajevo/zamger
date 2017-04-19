@@ -27,7 +27,7 @@ $sortiranje = intval($_REQUEST['sortiranje']); // 0 = po prezimenu, 1 = po broju
 $oboji = $_REQUEST['oboji']; // "tajna" opcija za bojenje studija
 $tipstudija = intval($_REQUEST['tipstudija']); // "tajna" opcija koja se koristi u kombinaciji sa $studij = -1 (svi studiji)
 
-if ($tipstudija==0) $tipstudija=2;
+if ($tipstudija==0) $tipstudija=2; // FIXME
 
 
 // Naslov
@@ -107,9 +107,11 @@ if ($studij>-1) { // Izbor studija
 			$studij_upit_ss2 .= " or ss2.studij=$r25[0]";
 		}
 	}
-	$studij_upit_pk .= ")";
-	$studij_upit_ss .= ")";
-	$studij_upit_ss2 .= ")";
+	if (db_num_rows($q25)>0) {
+		$studij_upit_pk .= ")";
+		$studij_upit_ss .= ")";
+		$studij_upit_ss2 .= ")";
+	}
 }
 
 
