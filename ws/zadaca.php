@@ -97,6 +97,8 @@ function ws_zadaca() {
 			$q30 = db_query("SELECT izlaz_programa, status, nalaz, vrijeme, trajanje FROM autotest_rezultat WHERE autotest=$autotest AND student=$student");
 			$at_rez = db_fetch_assoc($q30);
 			$at_rez['id'] = $autotest;
+			// Izlaz programa može sadržavati invalidne karaktere, ali je u pravilu ASCII
+			$at_rez['izlaz_programa'] = clear_unicode($at_rez['izlaz_programa']);
 			$testovi[] = $at_rez;
 		}
 		if (!empty($testovi)) $rezultat['data']['autotest_rezultat'] = $testovi;

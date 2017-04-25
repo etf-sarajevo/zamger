@@ -1185,6 +1185,9 @@ function rmMinusR($path)
 // Remove illegal and harmful unicode characters from output
 function clear_unicode($text) 
 {
+	// Character with ASCII code 01
+	//for ($i=0; $i<strlen($text); $i++)
+	//	if (ord($text[$i]) == 1) $text[$i]=" ";
 	// We can't use this due to bug in php: https://bugs.php.net/bug.php?id=48147
 	//if (function_exists('iconv'))
 	//	return iconv("UTF-8", "UTF-8//IGNORE", $text);
