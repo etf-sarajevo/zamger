@@ -78,9 +78,11 @@ $conf_dblayer = "mysqli";
 $conf_javni_dnevnik = true;
 
 // Izvozni format: izvoz na ISSS novi web servis (NewWS)
-$conf_export_format = "isss-newws";
+//$conf_export_format = "isss-newws";
+$conf_export_format = "";
 $conf_export_isss_url = "https://isss.ba/NewWS/";
 $conf_export_isss_id_fakulteta = 3;
+
 // Ko otvara termine za prijavu ispita u ISSSu?
 //   true = export operacija automatski kreira termine
 //   false = studentska služba ručno kreira termine
