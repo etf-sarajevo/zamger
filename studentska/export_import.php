@@ -127,6 +127,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst == 'Student u ISSSu se razlikuje') {
 						var poruka = {};
 						poruka.student = stavka.student;
+						poruka.akademska_godina = stavka.akademska_godina;
 						poruka.razlike = result.data.razlike;
 						poruka.isss_id_studenta = result.data.isss_id_studenta;
 						razlike_poruke.push(poruka);
@@ -136,6 +137,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst.substring(0,24) == 'Unesen je različit datum') {
 						var poruka = {};
 						poruka.student = stavka.student;
+						poruka.akademska_godina = stavka.akademska_godina;
 						poruka.predmet = stavka.predmet;
 						var datum_isss = result.data.tekst.substring(27,37);
 						var datum_zamger = result.data.tekst.substring(40);
@@ -217,8 +219,6 @@ function pozicioniraj_prozor() {
 
 	var screenwidth = document.documentElement.clientWidth || document.body.clientWidth || window.innerWidth;
 	var leftpos = rect.right+100;
-	console.log("leftpos "+leftpos+" width "+prozor.getBoundingClientRect().width+" screenw "+screenwidth);
-	console.log(prozor);
 	while (leftpos+prozor.getBoundingClientRect().width >= screenwidth) leftpos--;
 	
 	prozor.style.top = "" + toppos + "px";
@@ -261,6 +261,7 @@ function prikazi_razlike(code, tip) {
 	var b3 = document.getElementById('ocistiRazlike');
 	b1.disabled = false; b2.disabled = false; b3.disabled = false;
 
+	b1.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_zamger(code, tip); }
 	b2.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_isss(code, tip); }
 	b3.onclick = function() { 
 		b1.disabled = true; b2.disabled = true; b3.disabled = true;
@@ -317,6 +318,53 @@ function popravi_isss(code, tip) {
 		}
 		if (xmlhttp.readyState == 4) {
 			console.log("Serverska greška kod pozivanja web servisa za provjeru.");
+			console.log("readyState "+xmlhttp.readyState+" status "+xmlhttp.status);
+			student_status(obj.student, "bug", "Servis nedostupan");
+		}
+	}
+	xmlhttp.open("GET", url, true);
+	xmlhttp.send();
+}
+
+function popravi_zamger(code, tip) {
+	var xmlhttp = new XMLHttpRequest();
+	var obj = razlike_poruke[code];
+	
+	var url;
+	if (tip == 'datum') {
+		url = "?sta=common/ajah&akcija=izmjena_ispita&idpolja=kodatum-" + obj.student + "-" + obj.predmet + "-" + obj.akademska_godina;
+		datum = obj.razlike[0].isss.split("-");
+		url += "&vrijednost=" + datum[2] + "." + datum[1] + "." + datum[0];
+	} else {
+		url = ""; // Nije još implementirano
+		alert("Još uvijek nije implementirano");
+		/*url += "&tip=popravi_studenta_isss&student=" + obj.student + "&isss_id_studenta=" + obj.isss_id_studenta  + "&razlike=";
+		for (i=0; i<obj.razlike.length; i++)
+			url += obj.razlike[i].podatak + "%20";*/
+	}
+	console.log("Popravljam "+url);
+	xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			if (xmlhttp.responseText.indexOf("OK") >= 0) {
+				student_status(obj.student, "ok", "Datum popravljen");
+				
+				var stavka = {};
+				stavka.student = obj.student;
+				stavka.predmet = obj.predmet;
+				if (result.data.status == "nastaviti") za_slanje.push(stavka);
+				else if (result.data.status == "ok") za_ciscenje.push(stavka);
+				show_hide_buttons();
+			} else {
+				console.log("Web servis vratio " + xmlhttp.responseText);
+				console.log(result);
+				student_status(obj.student, "bug", "Promjena podataka nije uspjela");
+			}
+			var prozor=document.getElementById('displayWindow');
+			prozor.style.visibility="hidden";
+			return false;
+		}
+		if (xmlhttp.readyState == 4) {
+			console.log("Serverska greška kod pozivanja common/ajah.");
 			console.log("readyState "+xmlhttp.readyState+" status "+xmlhttp.status);
 			student_status(obj.student, "bug", "Servis nedostupan");
 		}
@@ -486,7 +534,7 @@ if (param('akcija') == "ocjene_predmet") {
 		$ispis_ocjena = $r10['ocjena'] . " (" . date("d. m. Y.", $r10['datum']) . ")";
 		if ($r10['datum_provjeren'] != 1) $ispis_ocjena .= " (?)";
 		$id_celije = "status" . $r10['id_studenta'];
-		$javascript_niz .= "{ student: " . $r10['id_studenta'] . ", predmet: " . $r10['predmet'] . ", ocjena: " . $r10['ocjena'] . ", datum: " . $r10['datum'] . "},\n";
+		$javascript_niz .= "{ student: " . $r10['id_studenta'] . ", predmet: " . $r10['predmet'] . ", ocjena: " . $r10['ocjena'] . ", datum: " . $r10['datum'] . ", akademska_godina: " . $r10['id_godine'] . "},\n";
 		
 		?>
 		<tr>
