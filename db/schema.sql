@@ -2123,29 +2123,40 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
 --
 
 CREATE TABLE IF NOT EXISTS `zavrsni` (
-  `id` int(11) NOT NULL,
-  `naslov` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
-  `podnaslov` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
-  `predmet` int(11) COLLATE utf8_slovenian_ci NOT NULL,
-  `rad_na_predmetu` int(11) COLLATE utf8_slovenian_ci NOT NULL,
-  `akademska_godina` varchar(10) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '0',
-  `kratki_pregled` text COLLATE utf8_slovenian_ci NOT NULL,
-  `literatura` text COLLATE utf8_slovenian_ci NOT NULL,
-  `sazetak` text COLLATE utf8_slovenian_ci NOT NULL,
-  `summary` text COLLATE utf8_slovenian_ci NOT NULL,
-  `mentor` INT(11) NOT NULL,
-  `student` INT(11) NOT NULL,
+  `id` int(11) NOT NULL auto_increment,
+  `naslov` varchar(200) collate utf8_slovenian_ci NOT NULL,
+  `podnaslov` varchar(200) collate utf8_slovenian_ci NOT NULL,
+  `predmet` int(11) NOT NULL,
+  `rad_na_predmetu` int(11) default NULL,
+  `akademska_godina` varchar(10) collate utf8_slovenian_ci NOT NULL default '0',
+  `kratki_pregled` text collate utf8_slovenian_ci NOT NULL,
+  `literatura` text collate utf8_slovenian_ci NOT NULL,
+  `sazetak` text collate utf8_slovenian_ci NOT NULL,
+  `summary` text collate utf8_slovenian_ci NOT NULL,
+  `mentor` int(11) NOT NULL,
+  `drugi_mentor` int(11) default NULL,
+  `student` int(11) default NULL,
   `kandidat_potvrdjen` tinyint(4) NOT NULL,
-  `biljeska` text COLLATE utf8_slovenian_ci NOT NULL,
-  `predsjednik_komisije` INT(11) NOT NULL,
-  `clan_komisije` INT(11) NOT NULL,
+  `biljeska` text collate utf8_slovenian_ci NOT NULL,
+  `predsjednik_komisije` int(11) default NULL,
+  `clan_komisije` int(11) default NULL,
+  `clan_komisije2` int(11) default NULL,
   `termin_odbrane` datetime NOT NULL,
   `broj_diplome` varchar(100) collate utf8_slovenian_ci NOT NULL,
   `tema_odobrena` tinyint(4) NOT NULL default '0',
   `sala` varchar(20) collate utf8_slovenian_ci NOT NULL,
   `odluka` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+  PRIMARY KEY  (`id`),
+  KEY `predmet` (`predmet`),
+  KEY `rad_na_predmetu` (`rad_na_predmetu`),
+  KEY `student` (`student`),
+  KEY `mentor` (`mentor`),
+  KEY `drugi_mentor` (`drugi_mentor`),
+  KEY `predsjednik_komisije` (`predsjednik_komisije`),
+  KEY `clan_komisije` (`clan_komisije`),
+  KEY `clan_komisije2` (`clan_komisije2`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci AUTO_INCREMENT=2235 ;
+
 
 -- --------------------------------------------------------
 
@@ -2671,3 +2682,16 @@ ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandi
 
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+
+--
+-- Constraints for table `zavrsni`
+--
+ALTER TABLE `zavrsni`
+  ADD CONSTRAINT `zavrsni_ibfk_25` FOREIGN KEY (`clan_komisije2`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_18` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_19` FOREIGN KEY (`rad_na_predmetu`) REFERENCES `predmet` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_20` FOREIGN KEY (`mentor`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_21` FOREIGN KEY (`drugi_mentor`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_22` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_23` FOREIGN KEY (`predsjednik_komisije`) REFERENCES `osoba` (`id`),
+  ADD CONSTRAINT `zavrsni_ibfk_24` FOREIGN KEY (`clan_komisije`) REFERENCES `osoba` (`id`);
