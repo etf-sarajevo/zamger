@@ -117,7 +117,6 @@ $broj_polozenih_predmeta = db_result($q88,0,0);
 $suma_ects = db_result($q88,0,1);
 
 // Određujemo na osnovu sume ECTS kredita
-//print "DEBUG: $suma_ects $studij_ects $trenutno_semestar $studij_trajanje $broj_polozenih_predmeta<br>\n";
 if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	$q89 = db_query("SELECT UNIX_TIMESTAMP(ko.datum_u_indeksu) 
 	FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts, akademska_godina_predmet as agp
