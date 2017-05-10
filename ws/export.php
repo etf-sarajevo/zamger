@@ -505,7 +505,7 @@ function ws_export() {
 			
 			$podaci_upis = array();
 			$podaci_upis['ime'] = $podaci_studenta['ime'];
-			$podaci_upis['prezime'] = str_replace(" - ", " ", $podaci_studenta['prezime']);
+			$podaci_upis['prezime'] = $podaci_studenta['prezime'];
 			$podaci_upis['brindexa'] = $podaci_studenta['brindexa'];
 			$podaci_upis['semestar'] = $semestar;
 			$podaci_upis['ponovac'] = $podaci_studija['ponovac'];
