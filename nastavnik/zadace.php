@@ -475,7 +475,6 @@ foreach ($komponente_za_zadace as $id_komponente => $naziv_komponente) {
 
 	print "<b>$naziv_komponente:</b><br/>\n";
 	print db_list("zadaca");
-	print "</p>";
 }
 
 
