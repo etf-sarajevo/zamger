@@ -954,7 +954,7 @@ foreach($rezultati_ispita as $ispit => $bodovi)
 
 function ucitajLogove(student, predmet, ag) {
 	var xmlhttp = new XMLHttpRequest();
-	var url = "/index.php?sta=ws/log&tip_loga=student&student=" + student + "&predmet=" + predmet + "&ag=" + ag;
+	var url = "index.php?sta=ws/log&tip_loga=student&student=" + student + "&predmet=" + predmet + "&ag=" + ag;
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			result = JSON.parse(xmlhttp.responseText);
