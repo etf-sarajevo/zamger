@@ -871,6 +871,7 @@ function myquery($query) {
 
 // Vraca puni naziv osobe sa svim titulama
 function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zvanjem = true, $prezime_prvo = false) {
+	if (intval($osoba) == 0) return "";
 	$q10 = db_query("select ime, prezime, naucni_stepen, strucni_stepen from osoba where id=$osoba");
 	if (!($r10 = db_fetch_row($q10))) {
 		return "";
