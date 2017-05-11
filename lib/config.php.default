@@ -77,6 +77,18 @@ $conf_dblayer = "mysqli";
 // Prikazati dnevnik na login stranici (javno)
 $conf_javni_dnevnik = true;
 
+// Izvozni format: izvoz na ISSS novi web servis (NewWS)
+//$conf_export_format = "isss-newws";
+$conf_export_format = "";
+$conf_export_isss_url = "https://isss.ba/NewWS/";
+$conf_export_isss_id_fakulteta = 3;
+
+// Ko otvara termine za prijavu ispita u ISSSu?
+//   true = export operacija automatski kreira termine
+//   false = studentska služba ručno kreira termine
+$conf_export_isss_kreiraj_ispite = false;
+
+
 
 // ------ MOODLE INTEGRACIJA ---------
 

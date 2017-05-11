@@ -16,7 +16,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 $id_zavrsni = intval($_REQUEST['zavrsni']);
 
-$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka as odluka, s.institucija as institucija
+$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.drugi_mentor as mentor2_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, z.clan_komisije2 as clan2_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka as odluka, s.institucija as institucija
 from zavrsni as z, predmet as p, institucija as i, ponudakursa as pk, studij as s, tipstudija as ts
 where z.id=$id_zavrsni and z.predmet=p.id and p.institucija=i.id and ". // uslovi za detekciju ciklusa studija
 "pk.predmet=p.id and pk.akademska_godina=z.akademska_godina and pk.studij=s.id and s.tipstudija=ts.id");
@@ -40,8 +40,10 @@ where o.id=".$r10["student_id"]);
 $r20 = db_fetch_assoc($q20);
 
 $mentor = tituliraj($r10["mentor_id"], true);
+$mentor2 = tituliraj($r10["mentor2_id"], true);
 $predsjednik = tituliraj($r10["predsjednik_id"], true);
 $clan = tituliraj($r10["clan_id"], true);
+$clan2 = tituliraj($r10["clan2_id"], true);
 
 $q25 = db_query("select naziv, opcina from mjesto where id=".$r20["mjesto_rodjenja"]);
 $r25 = db_fetch_assoc($q25);
@@ -86,6 +88,8 @@ if ($r10['ciklus'] == 1) {
 	$q35 = db_query("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
 	$rad_na_predmetu = db_result($q35,0,0);
 
+	$rbr_komisija=1;
+	
 	?>
 	<p><?=$r10["odsjek"]?></p>
 	<h2>Zapisnik o odbrani završnog rada</h2>
@@ -99,9 +103,16 @@ if ($r10['ciklus'] == 1) {
 
 	<p>KOMISIJA U SASTAVU</p>
 
-	<p>&nbsp;&nbsp;&nbsp;1. <?=$predsjednik?> - Predsjednik<br>
-	&nbsp;&nbsp;&nbsp;2. <?=$mentor?> - Mentor<br>
-	&nbsp;&nbsp;&nbsp;3. <?=$clan?> - Član</p>
+	<p>&nbsp;&nbsp;&nbsp;<?=$rbr_komisija++?>. <?=$predsjednik?> - Predsjednik<br>
+	&nbsp;&nbsp;&nbsp;<?=$rbr_komisija++?>. <?=$mentor?> - Mentor<br>
+	<? if ($mentor2) { ?>
+	&nbsp;&nbsp;&nbsp;<?=$rbr_komisija++?>. <?=$mentor2?> - Mentor<br>
+	<? } ?>
+	&nbsp;&nbsp;&nbsp;<?=$rbr_komisija++?>. <?=$clan?> - Član<br>
+	<? if ($clan2) { ?>
+	&nbsp;&nbsp;&nbsp;<?=$rbr_komisija++?>. <?=$clan2?> - Član<br>
+	<? } ?>
+	</p>
 
 	<table border="0">
 	<tr><td valign="bottom">Ocijenila je odbranu i rad sa ocjenom:</td>

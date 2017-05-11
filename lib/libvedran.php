@@ -945,7 +945,7 @@ function db_list($table,$selected=0) {
 		$new_link = "Unesi novu";
 	else
 		$new_link = $_lv_["new_link"];
-	$result .= '<p><a href="'.$uri.'">'.$new_link.'</a>';
+	$result .= '<p><a href="'.$uri.'">'.$new_link.'</a></p>';
 	return $result;
 }
 
@@ -1185,6 +1185,8 @@ function rmMinusR($path)
 // Remove illegal and harmful unicode characters from output
 function clear_unicode($text) 
 {
+	for ($i=0; $i<strlen($text); $i++)
+		if (ord($text[$i]) == 1) $text[$i]=" ";
 	if (function_exists('iconv'))
 		return iconv("UTF-8", "UTF-8//IGNORE", $text);
 	//ini_set('mbstring.substitute_character', "none"); 

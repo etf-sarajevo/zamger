@@ -109,10 +109,10 @@ if ($spol == "") $spol = spol($r100[0]);
 
 
 // Da li je student završio/la studij?
-$q88 = db_query("SELECT COUNT(*), SUM(p.ects) 
-FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts
-WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet 
-and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>5 $upit_dodaj");
+$q88 = db_query("SELECT COUNT(*), SUM(pp.ects) 
+FROM konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts, pasos_predmeta pp
+WHERE ko.student=$student AND ko.ocjena>5 AND ko.pasos_predmeta=pp.id AND ko.predmet=pk.predmet AND ko.akademska_godina=pk.akademska_godina 
+AND pk.id=sp.predmet AND sp.student=$student AND pk.studij=s.id AND s.tipstudija=ts.id $upit_dodaj");
 $broj_polozenih_predmeta = db_result($q88,0,0);
 $suma_ects = db_result($q88,0,1);
 

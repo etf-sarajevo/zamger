@@ -8,7 +8,7 @@ function ws_export() {
 	require("lib/ws.php");
 
 	global $userid, $user_siteadmin, $user_studentska;
-	global $conf_export_format, $conf_export_isss_url, $conf_export_isss_id_fakulteta;
+	global $conf_export_format, $conf_export_isss_url, $conf_export_isss_id_fakulteta, $conf_export_isss_kreiraj_ispite;
 
 	if (!$user_siteadmin && !$user_studentska) {
 		print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
@@ -55,7 +55,7 @@ function ws_export() {
 				"predmet" => $podaci_ocjene['predmet'], 
 				"id_fakulteta" => $conf_export_isss_id_fakulteta, 
 				"akademska_godina" => $podaci_ocjene['godina'],
-				"kreiraj_ispite" => true,
+				"kreiraj_ispite" => $conf_export_isss_kreiraj_ispite,
 				"ocjene" => array(
 					array( 
 						"ime" => $student['ime'],
@@ -505,7 +505,7 @@ function ws_export() {
 			
 			$podaci_upis = array();
 			$podaci_upis['ime'] = $podaci_studenta['ime'];
-			$podaci_upis['prezime'] = str_replace(" - ", " ", $podaci_studenta['prezime']);
+			$podaci_upis['prezime'] = $podaci_studenta['prezime'];
 			$podaci_upis['brindexa'] = $podaci_studenta['brindexa'];
 			$podaci_upis['semestar'] = $semestar;
 			$podaci_upis['ponovac'] = $podaci_studija['ponovac'];
