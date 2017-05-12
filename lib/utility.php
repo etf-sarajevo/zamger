@@ -207,8 +207,13 @@ function rm_minus_r($path) {
 function clear_unicode($text) {
 	// Zbog buga u libc-u koji se propagira na PHP: 
 	//	https://bugs.php.net/bug.php?id=48147
-	// dvije linije ispod trebaju ostati iskomentarisane na verzijama PHPa v5.0-v7.0!
+	// linije ispod trebaju ostati iskomentarisane na verzijama PHPa v5.0-v7.0!
 	// U suprotnom kod ispod će raditi bolje
+	
+	// iconv iz nekog razloga preskače karakter sa ASCII kodom 01
+	//for ($i=0; $i<strlen($text); $i++)
+	//	if (ord($text[$i]) == 1) $text[$i]=" ";
+	
 	//if (function_exists('iconv'))
 	//	return iconv("UTF-8", "UTF-8//IGNORE", $text);
 	if (!function_exists('mb_convert_encoding')) return $text; // nemamo mb, ne možemo ništa

@@ -37,7 +37,7 @@ function login($pass, $type = "") {
 				$i=0;
 
 				// Probavamo UID
-				$login = ldap_escape($login);
+				$login = zamger_ldap_escape($login);
 				$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
 				if (!$sr) {
 					niceerror("ldap_search() failed.");
@@ -166,7 +166,7 @@ function logout() {
 // ----------------------------
 
 // LDAP ne trpi određene karaktere u loginu
-function ldap_escape($str){
+function zamger_ldap_escape($str){
 	$metaChars = array('\\', '(', ')', '#', '*');
 	$quotedMetaChars = array();
 	foreach ($metaChars as $key => $value) $quotedMetaChars[$key] = '\\'.dechex(ord($value));

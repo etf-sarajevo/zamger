@@ -575,7 +575,7 @@ function db_list($table,$selected=0) {
 		$new_link = "Unesi novu";
 	else
 		$new_link = $_lv_["new_link"];
-	$result .= '<p><a href="'.$uri.'">'.$new_link.'</a>';
+	$result .= '<p><a href="'.$uri.'">'.$new_link.'</a></p>';
 	return $result;
 }
 
