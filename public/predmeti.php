@@ -5,6 +5,8 @@
 
 
 function public_predmeti($modul) {
+	require_once("lib/zamgerui.php"); // zbog ajax_box
+
 	// $modul - gdje vodi link, ostaviti prazno ako ne zelite link,
 	// ako modul trazi dodatne parametre - navedite ih npr.
 	// "saradnik/grupa&id=0"

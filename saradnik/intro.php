@@ -8,6 +8,7 @@ function saradnik_intro() {
 
 global $userid,$user_siteadmin,$registry,$posljednji_pristup;
 
+require_once("lib/utility.php"); // spol, vokativ
 
 
 // Dobrodošlica

@@ -10,10 +10,12 @@ global $userid,$user_siteadmin,$user_studentska;
 global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$conf_files_path;
 global $registry; // šta je od modula aktivno
 
-global $_lv_; // Potrebno za genform() iz libvedran
+global $_lv_; // Potrebno za genform()
 
-require ("lib/manip.php"); // Radi upisa studenta na predmet
-require ("lib/ws.php"); // Web service
+require_once("lib/student_predmet.php");
+require_once("lib/student_studij.php"); // Koristi li se?
+require_once("lib/ws.php"); // Web service za parsiranje XMLa
+require_once("lib/formgen.php"); // datectrl, db_dropdown
 
 
 // Provjera privilegija

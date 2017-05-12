@@ -6,6 +6,8 @@
 
 function izvjestaj_historija() {
 
+require_once("lib/utility.php"); // spol
+
 
 // Ulazni parametar
 $student = intval($_REQUEST['student']);

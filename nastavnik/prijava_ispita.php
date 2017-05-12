@@ -6,7 +6,9 @@
 
 function nastavnik_prijava_ispita() {
 
-require("lib/manip.php");
+require_once("lib/formgen.php"); // datectrl
+require_once("lib/utility.php"); // nuliraj_broj
+
 
 global $userid,$user_siteadmin,$user_studentska;
 	
@@ -16,12 +18,6 @@ $ag = intval($_REQUEST['ag']);
 $ispit = intval($_REQUEST['ispit']);
 $termin = intval($_REQUEST['termin']);
 
-
-
-// Funkcija dodaje nulu na početak stringa
-function nuliraj($v) {
-	if ($v<10) $v='0'.$v; return $v;
-}
 
 
 // Da li korisnik ima pravo uci u modul?
@@ -299,8 +295,8 @@ if ($_POST['akcija'] == 'izmijeni_potvrda' && check_csrf_token()) {
 	}
 
 	// Radi ljepšeg ispisa, dodajemo nule
-	$dan=nuliraj($dan); $mjesec=nuliraj($mjesec); $sat=nuliraj($sat); $minuta=nuliraj($minuta); $sekunda=nuliraj($sekunda);
-	$dan1=nuliraj($dan1); $mjesec1=nuliraj($mjesec1); $sat1=nuliraj($sat1); $minuta1=nuliraj($minuta1); $sekunda1=nuliraj($sekunda1);
+	$dan=nuliraj_broj($dan); $mjesec=nuliraj_broj($mjesec); $sat=nuliraj_broj($sat); $minuta=nuliraj_broj($minuta); $sekunda=nuliraj_broj($sekunda);
+	$dan1=nuliraj_broj($dan1); $mjesec1=nuliraj_broj($mjesec1); $sat1=nuliraj_broj($sat1); $minuta1=nuliraj_broj($minuta1); $sekunda1=nuliraj_broj($sekunda1);
 }
 
 
@@ -354,8 +350,8 @@ if ($_POST['akcija'] == 'dodaj_potvrda' && check_csrf_token()) {
 	}
 
 	// Radi ljepšeg ispisa, dodajemo nule
-	$dan=nuliraj($dan); $mjesec=nuliraj($mjesec); $sat=nuliraj($sat); $minuta=nuliraj($minuta); $sekunda=nuliraj($sekunda);
-	$dan1=nuliraj($dan1); $mjesec1=nuliraj($mjesec1); $sat1=nuliraj($sat1); $minuta1=nuliraj($minuta1); $sekunda1=nuliraj($sekunda1);
+	$dan=nuliraj_broj($dan); $mjesec=nuliraj_broj($mjesec); $sat=nuliraj_broj($sat); $minuta=nuliraj_broj($minuta); $sekunda=nuliraj_broj($sekunda);
+	$dan1=nuliraj_broj($dan1); $mjesec1=nuliraj_broj($mjesec1); $sat1=nuliraj_broj($sat1); $minuta1=nuliraj_broj($minuta1); $sekunda1=nuliraj_broj($sekunda1);
 }
 
 

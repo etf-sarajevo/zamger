@@ -17,6 +17,12 @@ Za instalaciju je potrebno:
 PHP v5.2 ili noviji
 - Web server - testirano samo sa Apache web serverom
 
+Opcionalno:
+- Preporučujemo operativni sistem Linux
+- Za funkcionalnost prepoznavanja tipa datoteke i prikaza odgovarajuće ikone
+potrebno instalirati komandu "file"
+- Ekstenzija "mb" za rad sa Unicode stringovima (Zamger će raditi i bez nje)
+
 
 0. Konfiguracija PHPa
 
@@ -279,4 +285,3 @@ Zamgera postavite .htaccess datoteku. Rewrite pravilo izgleda ovako:
     RewriteEngine on
     RewriteRule   /api/(.+)    /index.php?route=$1  [QSA,L]
 
-Apache web servera

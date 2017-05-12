@@ -11,7 +11,7 @@ function nastavnik_grupe() {
 
 global $userid,$user_siteadmin;
 
-require("lib/manip.php");
+require("lib/student_predmet.php"); // ispis_studenta_sa_labgrupe
 global $mass_rezultat; // za masovni unos studenata u grupe
 
 // Parametri
@@ -196,7 +196,7 @@ if ($_POST['akcija'] == "kopiraj_grupe" && check_csrf_token()) {
 			// Upis u novu grupu
 			$q140 = db_query("select count(*) from student_labgrupa where student=$student and labgrupa=$novagrupa");
 			if (db_result($q140,0,0)<1) {
-				$q150 = db_query("insert into student_labgrupa set labgrupa=$novagrupa, student=$student");
+				upis_studenta_na_labgrupu($student, $novagrupa);
 				zamgerlog2("student upisan u grupu (kopiranje)", intval($student), intval($novagrupa));
 				//print "Upisujem studenta $student u grupu $novagrupa<br/>";
 			}

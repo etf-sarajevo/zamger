@@ -7,6 +7,9 @@ function common_inbox() {
 
 global $userid,$user_student, $user_nastavnik;
 
+require_once("lib/utility.php"); // linkuj_urlove
+
+
 // LEGENDA tabele poruke
 // Tip:
 //    1 - obavjestenja

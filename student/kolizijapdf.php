@@ -18,6 +18,7 @@ global $userid;
 	$uslov_ects_ljeto = 15;
 
 require_once('lib/tcpdf/tcpdf.php');
+require_once("lib/utility.php"); // spol
 
 $semestar = intval($_REQUEST['semestar']);
 if ($semestar==1) {

@@ -4,10 +4,12 @@
 
 
 
-function izvjestaj_anketa(){
+function izvjestaj_anketa() {
 
 	global $userid,$user_siteadmin,$user_studentska, $user_student, $user_nastavnik;
 	global $conf_skr_naziv_institucije_genitiv;
+
+	require_once("lib/utility.php"); // procenat
 
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);

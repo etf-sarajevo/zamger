@@ -9,6 +9,8 @@ function studentska_izvjestaji() {
 global $userid,$user_siteadmin,$user_studentska;
 
 
+require_once("lib/formgen.php"); // db_dropdown
+
 // Provjera privilegija
 
 if (!$user_studentska && !$user_siteadmin) {

@@ -6,6 +6,8 @@
 
 function izvjestaj_uspjesnost() {
 
+require_once("lib/utility.php"); // procenat
+
 
 ?>
 <p>Univerzitet u Sarajevu<br/>

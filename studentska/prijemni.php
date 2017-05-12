@@ -9,6 +9,10 @@ function studentska_prijemni() {
 global $_lv_;
 
 
+require_once("lib/formgen.php"); // db_dropdown
+require_once("lib/utility.php"); // testjmbg
+
+
 // Default akcija je unos novog studenta
 if ($_REQUEST['akcija']=="") $_REQUEST['akcija']="unos";
 
@@ -2964,30 +2968,4 @@ function provjeri_sve_bodovi() {
 } // function studentska_prijemni
 
 
-
-// Funkcija za testiranje ispravnosti JMBG
-
-function testjmbg($jmbg) {
-	if (strlen($jmbg)!=13) return "JMBG nema tačno 13 cifara";
-	for ($i=0; $i<13; $i++) {
-		$slovo = substr($jmbg,$i,1);
-		if ($slovo<'0' || $slovo>'9') return "Neki od znakova nisu cifre";
-		$cifre[$i] = $slovo-'0';
-	}
-	
-	// Datum
-	$dan    = $cifre[2]*10+$cifre[3];
-	$mjesec = $cifre[0]*10+$cifre[1];
-	$godina = $cifre[4]*100+$cifre[5]*10+$cifre[6];
-	if ($cifre[4] > 5) $godina += 1000; else $godina += 2000;
-	if (!checkdate($dan,$mjesec,$godina))
-		return "Datum rođenja je kalendarski nemoguć: $dan $mjesec $godina";
-	
-	// Checksum
-	$k = 11 - (( 7*($cifre[0]+$cifre[6]) + 6*($cifre[1]+$cifre[7]) + 5*($cifre[2]+$cifre[8]) + 4*($cifre[3]+$cifre[9]) + 3*($cifre[4]+$cifre[10]) + 2*($cifre[5]+$cifre[11]) ) % 11);
-	if ($k==11) $k=0;
-	if ($k!=$cifre[12]) return "Checksum ne valja ($cifre[12] a trebao bi biti $k)";
-	return "";
-}
-// 2902996178049
 ?>

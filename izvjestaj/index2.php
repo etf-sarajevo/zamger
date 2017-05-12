@@ -9,6 +9,9 @@ function izvjestaj_index2() {
 
 global $userid, $user_studentska, $user_siteadmin;
 
+require_once("lib/utility.php"); // spol, rimski_broj, nuliraj_broj
+
+
 // Ulazni parametri
 $student      = intval($_REQUEST['student']);
 $param_ciklus = intval($_REQUEST['ciklus']);
@@ -239,14 +242,6 @@ if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p><p><b>Ocjene ostvarene na 
 </tr>
 <?
 
-function nuliraj($broj) {
-	if ($broj == round($broj))
-		$broj .= ",0";
-	else
-		$broj = str_replace(".", ",", $broj);
-	return $broj;
-}
-
 $upisanagodina = round($r110[2]/2);
 
 $oldgodina = 0;
@@ -277,7 +272,7 @@ while ($r130 = db_fetch_row($q130)) {
 		if ($oldgodina != 0 && $brojgodine != 0) {
 			?>
 			<tr bgcolor="#DDDDDD">
-			<td colspan="7"><b>Prosjek godine: <?=nuliraj(round($sumagodine/$brojgodine, 2))?></b></td>
+			<td colspan="7"><b>Prosjek godine: <?=nuliraj_broj(round($sumagodine/$brojgodine, 2))?></b></td>
 			</tr>
 			<?
 			$sumagodine = $brojgodine = 0;
@@ -298,7 +293,7 @@ while ($r130 = db_fetch_row($q130)) {
 		<td><?=($i++)?>.</td>
 		<td><?=$sifra?></td>
 		<td><?=$naziv?></td>
-		<td align="center"><?=nuliraj($ects)?></td>
+		<td align="center"><?=nuliraj_broj($ects)?></td>
 		<td align="center"><?=$imena_ocjena[$r130[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r130[3]]?></td>
 		<td align="center"><?=date("d. m. Y", $datum)?></td>
@@ -315,7 +310,7 @@ while ($r130 = db_fetch_row($q130)) {
 if ($oldgodina != 0 && $brojgodine != 0) {
 	?>
 	<tr bgcolor="#DDDDDD">
-	<td colspan="7"><b>Prosjek godine: <?=nuliraj(round($sumagodine/$brojgodine, 2))?></b></td>
+	<td colspan="7"><b>Prosjek godine: <?=nuliraj_broj(round($sumagodine/$brojgodine, 2))?></b></td>
 	</tr>
 	<?
 }
@@ -334,11 +329,11 @@ if ($brojuk == 0) $prosjek = 0; else $prosjek = $sumauk/$brojuk;
 </tr>
 <tr>
 	<td>Prosječna ocjena položenih predmeta:</td>
-	<td><b><?=nuliraj(round($prosjek, 2))?></b></td>
+	<td><b><?=nuliraj_broj(round($prosjek, 2))?></b></td>
 </tr>
 <tr>
 	<td>Ukupan broj ECTS bodova:</td>
-	<td><b><?=nuliraj($sumaects)?></b></td>
+	<td><b><?=nuliraj_broj($sumaects)?></b></td>
 </tr>
 </table>
 

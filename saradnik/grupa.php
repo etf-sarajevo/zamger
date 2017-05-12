@@ -8,8 +8,8 @@ function saradnik_grupa() {
 
 global $userid,$user_siteadmin;
 
-require ("lib/manip.php");
-
+require_once("lib/student_predmet.php"); // update_komponente
+require_once("lib/utility.php"); // procenat, bssort
 
 
 print '<p><a href="index.php?sta=saradnik/intro">Spisak predmeta i grupa</a></p>'."\n";
