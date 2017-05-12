@@ -113,7 +113,7 @@ function ispis_studenta_sa_predmeta($student, $predmet, $ag) {
 
 // Upis studenta na labgrupu
 function upis_studenta_na_labgrupu($student, $labgrupa) {
-	$q = db_query("insert into student_labgrupa set student=$student, labgrupa=$labgrupa")
+	$q = db_query("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 }
 
 
