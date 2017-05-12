@@ -29,7 +29,7 @@ function zamgerlog($event,$nivo) {
 	else
 		$userdata = trim($login)." ($userid)";
 		
-	if ($_SERVER['HTTP_X_FORWARDED_FOR'])
+	if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
 		$ip_adresa = db_escape($_SERVER['HTTP_X_FORWARDED_FOR']); 
 	else
 		$ip_adresa = db_escape($_SERVER['REMOTE_ADDR']);
@@ -42,7 +42,7 @@ function zamgerlog($event,$nivo) {
 	$godina = date("Y");
 	$mjesec = date("m");
 	$path = $conf_files_path . "/log/$godina";
-	if (!file_exists($path)) mkdir($path);
+	if (!file_exists($path)) mkdir($path, 0777, true);
 	$logfile = "$path/$godina-$mjesec.log";
 	
 	file_put_contents($logfile, $logline, FILE_APPEND);
@@ -57,7 +57,7 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 	$blob = db_escape($blob);
 	if ($sta=="logout") $sta="";
 
-	if ($_SERVER['HTTP_X_FORWARDED_FOR'])
+	if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
 		$ip_adresa = db_escape($_SERVER['HTTP_X_FORWARDED_FOR']); 
 	else
 		$ip_adresa = db_escape($_SERVER['REMOTE_ADDR']);
