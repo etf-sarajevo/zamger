@@ -74,6 +74,7 @@ require_once("lib/dblayer.php");
 require_once("lib/zamger.php");
 require_once("lib/session.php");
 require_once("lib/utility.php");
+require_once("lib/zamgerui.php"); // niceerror, user_box itd.
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
