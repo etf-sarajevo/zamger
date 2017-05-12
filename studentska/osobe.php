@@ -47,7 +47,7 @@ $url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje"
 
 // Dodavanje novog korisnika u bazu
 
-if ($_POST['akcija'] == "novi" && check_csrf_token()) {
+if ($akcija == "novi" && check_csrf_token()) {
 
 	$ime = substr(db_escape($_POST['ime']), 0, 100);
 	if (!preg_match("/\w/", $ime)) {
@@ -606,14 +606,14 @@ else if ($akcija == "upis") {
 
 
 	// Ako je subakcija, potvrdjujemo da se moze izvrsiti upis
-	$ok_izvrsiti_upis=0;
+	$ok_izvrsiti_upis = $ns = 0;
 
-	if ($_POST['subakcija']=="upis_potvrda" && check_csrf_token()) {
+	if (param('subakcija') == "upis_potvrda" && check_csrf_token()) {
 
 		$ok_izvrsiti_upis=1;
 
 		// Potvrdjujemo promjenu studija napravljenu tokom rada
-		$ns = intval($_REQUEST['novi_studij']);
+		$ns = int_param('novi_studij');
 		if ($ns>0) {
 			$studij=$ns;
 			$_REQUEST['novi_studij'] = 0;
@@ -637,8 +637,8 @@ else if ($akcija == "upis") {
 		if (db_result($q510,0,3)>=$semestar) $ponovac=1;
 		else if ($semestar%2==0) $ponovac=db_result($q510,0,4);
 	}
-	if (intval($_REQUEST['nacin_studiranja'])>0) {
-		$nacin_studiranja=intval($_REQUEST['nacin_studiranja']);
+	if (param('nacin_studiranja')) {
+		$nacin_studiranja = int_param('nacin_studiranja');
 	}
 
 	// Ako je promijenjen studij, moramo odrediti i novi plan studija
@@ -688,7 +688,7 @@ else if ($akcija == "upis") {
 		$naziv_studija=db_result($q540,0,1);
 		$ciklus=db_result($q540,0,2);
 		$institucija=db_result($q540,0,3);
-	} else $ok_izvrsiti_upis=0; // nepoznat studij
+	} else $ok_izvrsiti_upis=$trajanje=0; // nepoznat studij
 
 	// Pošto se akcija "edit" ne bavi određivanjem sljedećeg ciklusa, ona će proslijediti 
 	// prevelik broj semestra
@@ -1105,7 +1105,7 @@ else if ($akcija == "upis") {
 
 
 	// ------ Izvrsenje upisa!
-	if ($user_siteadmin && intval($_REQUEST['forsiraj'])==1)
+	if ($user_siteadmin && param('forsiraj'))
 		$ok_izvrsiti_upis = 1;
 
 	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
@@ -1682,7 +1682,7 @@ else if ($akcija == "predmeti") {
 // Izbori za nastavnike
 
 else if ($akcija == "izbori") {
-	if ($_POST['subakcija'] == "novi" && check_csrf_token()) {
+	if (param('subakcija') == "novi" && check_csrf_token()) {
 		$zvanje = intval($_POST['_lv_column_zvanje']);
 		$datum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
 		$datum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
@@ -1703,7 +1703,7 @@ else if ($akcija == "izbori") {
 		zamgerlog("dodani podaci o izboru za u$osoba", 2);
 		zamgerlog2("dodani podaci o izboru", $osoba);
 	}
-	if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
+	if (param('subakcija') == "izmjena" && check_csrf_token()) {
 		$izvanje = intval($_POST['_lv_column_zvanje']);
 		$idatum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
 		$idatum_isteka = mktime(0,0,0, intval($_POST['istekmonth']), intval($_POST['istekday']), intval($_POST['istekyear']));
@@ -1723,7 +1723,7 @@ else if ($akcija == "izbori") {
 		// Bice azurirano prilikom ispisa...
 	}
 
-	$broj_izbora = intval($_REQUEST['broj_izbora']);
+	$broj_izbora = int_param('broj_izbora');
 	$q3000 = db_query("select ime, prezime from osoba where id=$osoba");
 	$imeprezime = db_result($q3000,0,0)." ".db_result($q3000,0,1);
 
@@ -1733,7 +1733,7 @@ else if ($akcija == "izbori") {
 	<p>&nbsp;</p>
 	<?
 
-	$t_zvanje=$t_datumiz=$t_datumis=$t_oblast=$t_podoblast=$t_dopunski=0;
+	$t_zvanje=$t_datumiz=$t_datumis=$t_oblast=$t_podoblast=$t_dopunski=$t_neodredjeno=$t_drugainst=0;
 	$ispis="";
 
 	$q3010 = db_query("select zvanje, UNIX_TIMESTAMP(datum_izbora), UNIX_TIMESTAMP(datum_isteka), oblast, podoblast, dopunski, druga_institucija from izbor WHERE osoba=$osoba order by datum_isteka, datum_izbora");
@@ -2142,7 +2142,7 @@ else if ($akcija == "edit") {
 
 
 	// Promjena uloga korisnika
-	if ($_POST['subakcija'] == "uloga" && check_csrf_token()) {
+	if (param('subakcija') == "uloga" && check_csrf_token()) {
 		if (!$user_siteadmin) { niceerror("Nemate pravo na promjenu uloga!"); return; }
 
 		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=0;
@@ -2404,7 +2404,7 @@ else if ($akcija == "edit") {
 		$puta=1;
 
 		// Da li je ikada slusao nesto?
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=0;
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=$studij_ciklus=0;
 	
 		while ($r220=db_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2553,6 +2553,7 @@ else if ($akcija == "edit") {
 
 
 		// Da li je vec upisan?
+		$novi_studij_id = 0;
 		$q235 = db_query("select s.naziv, ss.semestar, s.id from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god order by ss.semestar desc");
 		if (db_num_rows($q235)>0) {
 			$novi_studij=db_result($q235,0,0);

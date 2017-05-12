@@ -85,8 +85,8 @@ function db_submit() {
 	$__lv_submitted=1;
 
 	// Check if submitted data is ok (we only use POST)
-	$action = $_POST['_lv_action'];
-	$table = db_escape($_POST['_lv_table']);
+	$action = param('_lv_action');
+	$table = db_escape(param('_lv_table'));
 
 	if (!$table) return;
 	if ($action != "add" && $action != "edit" && $action != "delete") return;
