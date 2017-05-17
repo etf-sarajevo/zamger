@@ -8,6 +8,9 @@ function izvjestaj_rezultati_ispita() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
+require_once("lib/utility.php"); // bssort
+
+
 $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 $ispit = intval($_REQUEST['ispit']);

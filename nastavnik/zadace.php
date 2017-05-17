@@ -8,11 +8,14 @@ function nastavnik_zadace() {
 
 global $userid,$user_siteadmin,$conf_files_path;
 
+require_once("gcm/push_message.php");
 
-require("gcm/push_message.php");
+require_once("lib/autotest.php");
+require_once("lib/zamgerui.php"); // mass_input
+require_once("lib/formgen.php"); // datectrl, db_form, db_dropdown, db_list
+require_once("lib/student_predmet.php"); // update_komponente
+require_once("lib/utility.php"); // procenat, time2mysql, mysql2time
 
-require("lib/manip.php");
-require("lib/autotest.php");
 
 global $mass_rezultat; // za masovni unos studenata u grupe
 global $_lv_; // radi autogenerisanih formi

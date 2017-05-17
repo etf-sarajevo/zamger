@@ -8,6 +8,8 @@ function izvjestaj_termini_ispita() {
 
 global $userid,$user_nastavnik,$user_studentska,$user_siteadmin;
 
+require_once("lib/utility.php"); // procenat, bssort
+
 
 ?>
 

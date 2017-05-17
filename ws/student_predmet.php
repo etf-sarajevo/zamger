@@ -4,9 +4,10 @@
 
 
 
-function ws_student_predmet()
-{	
+function ws_student_predmet() {
 	global $userid, $user_nastavnik, $user_student, $user_siteadmin, $user_studentska;
+
+	require_once("lib/permisije.php");
 	
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	

@@ -22,7 +22,7 @@ $conf_dbdb = "zamger";
 $conf_site_url = "http://localhost/zamger";
 
 // Lokacija na disku gdje je Zamger instaliran
-$conf_script_path = "/var/www/html/svn";
+$conf_script_path = "/var/www/html/zamger";
 
 // Lokacija gdje Zamger drži privremene datoteke
 // PAZITE da web server korisnik (npr. apache, nobody i slični) ima pravo pisanja

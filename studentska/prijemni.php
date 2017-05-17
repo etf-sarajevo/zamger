@@ -9,8 +9,13 @@ function studentska_prijemni() {
 global $_lv_;
 
 
+require_once("lib/formgen.php"); // db_dropdown
+require_once("lib/utility.php"); // testjmbg
+
+
 // Default akcija je unos novog studenta
-if ($_REQUEST['akcija']=="") $_REQUEST['akcija']="unos";
+$akcija = param('akcija');
+if (!$akcija) $akcija = "unos";
 
 
 ?>
@@ -23,13 +28,13 @@ if ($_REQUEST['akcija']=="") $_REQUEST['akcija']="unos";
 
 // ODREDJIVANJE TERMINA I NASLOVA
 
-$termin=intval($_REQUEST['termin']);
+$termin = int_param('termin');
 if ($termin==0) {
 	// Daj najskoriji ispit
 	$q10 = db_query("select pt.id, ag.naziv, UNIX_TIMESTAMP(pt.datum), pt.ciklus_studija from prijemni_termin as pt, akademska_godina as ag where pt.akademska_godina=ag.id order by pt.datum desc limit 1");
 
 	if (db_num_rows($q10)<1) {
-		$_REQUEST['akcija'] = "novi_ispit";
+		$akcija = "novi_ispit";
 		$termin=0;
 	} else {
 		$termin=db_result($q10,0,0);
@@ -62,7 +67,7 @@ if (db_num_rows($q10)<1) {
 
 // (ne prikazuje se ako je akcija "pregled")
 
-if ($_REQUEST['akcija'] != "pregled") {
+if ($akcija != "pregled") {
 
 ?>
 <tr><td valign="top" width="220">
@@ -124,7 +129,7 @@ if ($_REQUEST['akcija'] != "pregled") {
 
 <?
 
-} // if ($_REQUEST['akcija'] != "pregled" )
+} // if ($akcija != "pregled" )
 
 
 
@@ -142,7 +147,7 @@ if ($_REQUEST['akcija'] != "pregled") {
 
 // NOVI PRIJEMNI ISPIT
 
-if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
+if ($akcija == "novi_ispit_potvrda" && check_csrf_token()) {
 	$ciklus = intval($_REQUEST['ciklus']);
 	if ($ciklus!=1 && $ciklus !=2 && $ciklus !=3) {
 		biguglyerror("Neispravan ciklus studija");
@@ -176,7 +181,7 @@ if ($_POST['akcija']=="novi_ispit_potvrda" && check_csrf_token()) {
 	return; // Necemo da se ispise naziv
 }
 
-if ($_REQUEST['akcija']=="novi_ispit") {
+if ($akcija == "novi_ispit") {
 
 	unset($_REQUEST['akcija']);
 	
@@ -220,7 +225,7 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 
 // ARHIVA PRIJEMNIH ISPITA
 
-if ($_REQUEST['akcija'] == "arhiva_ispita") {
+if ($akcija == "arhiva_ispita") {
 	?>
 	<p>Do sada održani prijemni ispiti (po datumu ispita):</p>
 	<ul>
@@ -253,7 +258,7 @@ if ($_REQUEST['akcija'] == "arhiva_ispita") {
 
 // BRZI UNOS SA AUTOMATSKOM OBRADOM
 
-if ($_REQUEST['akcija']=="promijeni_kod") {
+if ($akcija == "promijeni_kod") {
 	$osoba = intval($_REQUEST['osoba']);
 	do {
 		$sifra = chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . chr(ord('A')+rand(0,7)) . rand(1,8) . rand(1,8);
@@ -266,7 +271,7 @@ if ($_REQUEST['akcija']=="promijeni_kod") {
 
 
 
-if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
+if ($akcija == "prijemni_sifre_submit" && check_csrf_token()) {
 	if ($_POST['fakatradi'] != 1) $ispis=1; else $ispis=0;
 	$redovi = explode("\n",$_POST['massinput']);
 
@@ -346,7 +351,7 @@ if ($_REQUEST['akcija']=="prijemni_sifre_submit" && check_csrf_token()) {
 
 }
 
-if ($_REQUEST['akcija']=="prijemni_sifre") {
+if ($akcija == "prijemni_sifre") {
 
 ?>
 
@@ -374,7 +379,7 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 }
 
 
-if ($_REQUEST['akcija']=="brzi_unos") {
+if ($akcija == "brzi_unos") {
 	$bojaime = $bojaimerod = $bojaprezime = $bojajmbg = "#FFFF00";
 	$rjezik = 'bs';
 
@@ -545,7 +550,7 @@ function provjeri_sve() {
 // GENERATORI IZVJEŠTAJA
 
 
-if ($_REQUEST['akcija']=="spisak") {
+if ($akcija == "spisak") {
 	?>
 	<form action="index.php" method="GET">
 	<input type="hidden" name="sta" value="izvjestaj/prijemni">
@@ -573,7 +578,7 @@ if ($_REQUEST['akcija']=="spisak") {
 }
 
 
-if ($_REQUEST['akcija']=="rang_liste") {
+if ($akcija == "rang_liste") {
 	?>
 	<form action="index.php" method="GET">
 	<input type="hidden" name="sta" value="izvjestaj/prijemni">
@@ -613,7 +618,7 @@ if ($_REQUEST['akcija']=="rang_liste") {
 
 // UNOS KRITERIJA ZA UPIS
 
-if ($_REQUEST['akcija'] == "upis_kriterij") {
+if ($akcija == "upis_kriterij") {
 
 	if ($_POST['spremi'] && check_csrf_token()) {
 		$rdonja = intval($_REQUEST['donja_granica']);
@@ -733,7 +738,7 @@ function odzuti(nesto) {
 
 // Važni datumi na obrascu za brzi unos
 
-if ($_REQUEST['akcija'] == "vazni_datumi") {
+if ($akcija == "vazni_datumi") {
 
 	$nazivi_termina = array("Prijemni ispit", "Preliminarni rezultati", "Predaja prigovora (početak)", "Predaja prigovora (kraj)", "Razmatranje prigovora", "Konačni rezultati", "Upis kandidata (početak)", "Upis kandidata (kraj)" );
 	$vd = $boja = "";
@@ -838,7 +843,7 @@ for ($i=0; $i<count($nazivi_termina); $i++) {
 
 // TABELARNI UNOS BODOVA SA PRIJEMNOG ISPITA
 
-if ($_REQUEST['akcija']=="prijemni") {
+if ($akcija == "prijemni") {
 
 	?>
 	<h3>Unos bodova sa prijemnog ispita</h3>
@@ -921,7 +926,7 @@ if ($_REQUEST['akcija']=="prijemni") {
 
 // BRISANJE KANDIDATA (poziva se sa vise mjesta)
 
-if ($_REQUEST["akcija"]=="obrisi") {
+if ($akcija == "obrisi") {
 	$osoba = intval($_GET['osoba']);
 	if ($osoba>0) {
 		db_query("DELETE FROM prijemni_prijava WHERE osoba=$osoba AND prijemni_termin=$termin LIMIT 1");
@@ -933,14 +938,14 @@ if ($_REQUEST["akcija"]=="obrisi") {
 		nicemessage("Kandidat ispisan sa prijemnog ispita");
 	}
 	
-	$_REQUEST['akcija']="pregled";
+	$akcija="pregled";
 }
 
 
 
 // SPISAK KANDIDATA - TABELA
 
-if ($_REQUEST['akcija'] == "pregled") {
+if ($akcija == "pregled") {
 	
 	if ($ciklus_studija==1) $sirina="4000"; else $sirina="3000";
 
@@ -1169,7 +1174,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 // - sljedeci - prelazak na unos sljedeceg kandidata
 
 
-if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
+if ($akcija == 'unospotvrda' && check_csrf_token()) {
 
 	$rosoba=intval($_REQUEST['osoba']);
 	$rbrojdosjea=intval($_REQUEST['broj_dosjea']);
@@ -1396,7 +1401,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 		zamgerlog("novi kandidat za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
 
 		// Nastavljamo sa unosom ocjena:
-		$_REQUEST['akcija']="unos";
+		$akcija="unos";
 		$vrstaunosa="editovanje";
 		$osoba=$rosoba;
 
@@ -1422,7 +1427,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 		zamgerlog("izmjena kandidata za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
 
-		$_REQUEST['akcija']="unos";
+		$akcija="unos";
 
 		// Ako je prethodni unos bio posljedica greske...
 		if ($_REQUEST['vrstaunosa']=="novigreska") {
@@ -1459,7 +1464,7 @@ if ($_POST['akcija'] == 'unospotvrda' && check_csrf_token()) {
 
 // AKCIJA=UNOS NOVOG STUDENTA
 
-if ($_REQUEST['akcija']=="unos") {
+if ($akcija == "unos") {
 
 // Polje vrstaunosa moze biti:
 // - novi - kreiraju se novi zapisi u tabelama
@@ -2964,30 +2969,4 @@ function provjeri_sve_bodovi() {
 } // function studentska_prijemni
 
 
-
-// Funkcija za testiranje ispravnosti JMBG
-
-function testjmbg($jmbg) {
-	if (strlen($jmbg)!=13) return "JMBG nema tačno 13 cifara";
-	for ($i=0; $i<13; $i++) {
-		$slovo = substr($jmbg,$i,1);
-		if ($slovo<'0' || $slovo>'9') return "Neki od znakova nisu cifre";
-		$cifre[$i] = $slovo-'0';
-	}
-	
-	// Datum
-	$dan    = $cifre[2]*10+$cifre[3];
-	$mjesec = $cifre[0]*10+$cifre[1];
-	$godina = $cifre[4]*100+$cifre[5]*10+$cifre[6];
-	if ($cifre[4] > 5) $godina += 1000; else $godina += 2000;
-	if (!checkdate($dan,$mjesec,$godina))
-		return "Datum rođenja je kalendarski nemoguć: $dan $mjesec $godina";
-	
-	// Checksum
-	$k = 11 - (( 7*($cifre[0]+$cifre[6]) + 6*($cifre[1]+$cifre[7]) + 5*($cifre[2]+$cifre[8]) + 4*($cifre[3]+$cifre[9]) + 3*($cifre[4]+$cifre[10]) + 2*($cifre[5]+$cifre[11]) ) % 11);
-	if ($k==11) $k=0;
-	if ($k!=$cifre[12]) return "Checksum ne valja ($cifre[12] a trebao bi biti $k)";
-	return "";
-}
-// 2902996178049
 ?>

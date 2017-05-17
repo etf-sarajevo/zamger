@@ -4,9 +4,11 @@
 
 
 
-function ws_prisustvo()
-{	
+function ws_prisustvo() {
 	global $userid, $user_nastavnik, $user_student, $user_siteadmin, $user_studentska;
+
+	require_once("lib/permisije.php");
+	require_once("lib/student_predmet.php"); // update_komponente
 	
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	

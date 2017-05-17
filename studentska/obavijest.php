@@ -32,15 +32,6 @@ $q20 = db_query("select id,naziv from akademska_godina where aktuelna=1 order by
 $ag = db_result($q20,0,0);
 $ag_naziv = db_result($q20,0,1);
 
-// Studij koji student trenutno sluša
-$studij=0;
-if ($user_student) {
-	$q30 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
-	if (db_num_rows($q30)>0) {
-		$studij = db_result($q30,0,0);
-	}
-}
-
 
 
 // Pravimo neki okvir za sajt
@@ -59,7 +50,7 @@ if ($user_student) {
 // Slanje poruke
 //////////////////////
 
-if ($_POST['akcija']=='send' && check_csrf_token()) {
+if (param('akcija')=='send' && check_csrf_token()) {
 	// Notifikacija za novo obavještenje
 	require("gcm/push_message.php");
 
@@ -191,7 +182,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 
 
 
-if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='izmjena') {
+if (param('akcija')=='compose' || param('akcija')=='izmjena') {
 	$opseg=0;
 	if ($_REQUEST['akcija']=='izmjena') {
 		$poruka = intval($_REQUEST['poruka']);
@@ -342,7 +333,7 @@ $mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli"
 
 $dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota");
 
-$poruka = intval($_REQUEST['poruka']);
+$poruka = int_param('poruka');
 if ($poruka>0) {
 	// Dobavljamo podatke o poruci
 	$q10 = db_query("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst from poruka where id=$poruka and tip=1");

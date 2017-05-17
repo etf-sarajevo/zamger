@@ -69,10 +69,12 @@ register_shutdown_function("greska_u_modulima");
 
 // Glavni kod
 
-require("lib/config.php");
-require("lib/dblayer.php");
-require("lib/libvedran.php");
-require("lib/zamger.php");
+require_once("lib/config.php");
+require_once("lib/dblayer.php");
+require_once("lib/zamger.php");
+require_once("lib/session.php");
+require_once("lib/utility.php");
+require_once("lib/zamgerui.php"); // niceerror, user_box itd.
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 

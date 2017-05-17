@@ -3,8 +3,9 @@
 // COMMON/PROJEKTNESTRANE - projektna strana projekta
 
 
-function common_projektneStrane()
-{
+function common_projektneStrane() {
+	require_once("lib/utility.php"); // nicesize
+
 	//debug mod aktivan
 	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
 	$predmet 	= intval($_REQUEST['predmet']);

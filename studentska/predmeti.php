@@ -11,7 +11,9 @@ global $userid,$user_siteadmin,$user_studentska;
 global $_lv_; // Potrebno za genform() iz libvedran
 
 
-require("lib/manip.php"); // radi ispisa studenata sa predmeta
+require_once("lib/formgen.php"); // db_dropdown
+require_once("lib/predmet.php"); 
+require_once("lib/student_predmet.php"); 
 
 
 // Provjera privilegija
@@ -31,7 +33,7 @@ if (!$user_studentska && !$user_siteadmin) {
 
 <?
 
-$akcija = $_REQUEST['akcija'];
+$akcija = param('akcija');
 
 
 // AKCIJA: Ogranicenje nastavnika na odredjene grupe
@@ -141,7 +143,7 @@ if ($akcija == "ogranicenja") {
 
 // AKCIJA: Kreiranje novog predmeta
 
-else if ($_POST['akcija'] == "novi" && check_csrf_token()) {
+else if ($akcija == "novi" && check_csrf_token()) {
 	// Naziv predmeta
 	$naziv = substr(db_escape($_POST['naziv']), 0, 100);
 	if (!preg_match("/\w/", $naziv)) {
@@ -723,10 +725,10 @@ else if ($akcija == "edit") {
 // Glavni ekran - pretraga
 
 else {
-	$src = db_escape($_REQUEST["search"]);
+	$src = db_escape(param('search'));
 	$limit = 20;
-	$offset = intval($_REQUEST["offset"]);
-	$ak_god = intval($_REQUEST["ag"]);
+	$offset = int_param("offset");
+	$ak_god = int_param("ag");
 	if ($ak_god == 0) {
 		$q299 = db_query("select id from akademska_godina where aktuelna=1 order by naziv desc limit 1");
 		$ak_god = db_result($q299,0,0);
@@ -751,11 +753,11 @@ else {
 		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
 		<br/>
 	<?
-	if ($ak_god>=0 && $src != "") {
+	if ($ak_god>=0 && param('search')) {
 		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and pk.predmet=p.id");
 	} else if ($ak_god>=0) {
 		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk where pk.akademska_godina=$ak_god");
-	} else if ($src != "") {
+	} else if (param('search')) {
 		$q300 = db_query("select count(*) from predmet as p where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%')");
 	} else {
 		$q300 = db_query("select count(*) from predmet as p");

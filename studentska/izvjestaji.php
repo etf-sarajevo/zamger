@@ -9,6 +9,8 @@ function studentska_izvjestaji() {
 global $userid,$user_siteadmin,$user_studentska;
 
 
+require_once("lib/formgen.php"); // db_dropdown
+
 // Provjera privilegija
 
 if (!$user_studentska && !$user_siteadmin) {
@@ -70,7 +72,7 @@ function izvjestaj() {
 
 // Razne forme za pojedinačne izvještaje
 
-if ($_REQUEST['akcija'] == "po_prosjeku") {
+if (param('akcija') == "po_prosjeku") {
 	?>
 	<h3>Spiskovi studenata po prosječnoj ocjeni</h3>
 
@@ -107,7 +109,7 @@ if ($_REQUEST['akcija'] == "po_prosjeku") {
 	<?
 }
 
-if ($_REQUEST['akcija'] == "po_nepolozenim") {
+if (param('akcija') == "po_nepolozenim") {
 	?>
 	<h3>Spiskovi studenata po broju nepoloženih predmeta (GRANIČNI SLUČAJEVI)</h3>
 
@@ -159,7 +161,7 @@ if ($_REQUEST['akcija'] == "po_nepolozenim") {
 }
 
 
-if ($_REQUEST['akcija'] == "prolaznost") {
+if (param('akcija') == "prolaznost") {
 
 	?>
 	<p><h3>Prolaznost studenata na predmetima</h3></p>
@@ -233,7 +235,7 @@ if ($_REQUEST['akcija'] == "prolaznost") {
 }
 
 
-if ($_REQUEST['akcija'] == "pregled") {
+if (param('akcija') == "pregled") {
 
 	?>
 	<p><h3>Pregled broja upisanih studenata u aktuelnoj akademskoj godini</h3></p>
@@ -259,7 +261,7 @@ if ($_REQUEST['akcija'] == "pregled") {
 }
 
 
-if ($_REQUEST['akcija'] == "ugovoroucenju") {
+if (param('akcija') == "ugovoroucenju") {
 
 	?>
 	<p><h3>Detaljan broj studenata po predmetu u aktuelnoj akademskoj godini</h3></p>
@@ -284,7 +286,7 @@ if ($_REQUEST['akcija'] == "ugovoroucenju") {
 	<?
 }
 
-if ($_REQUEST['akcija'] == "uspjesnost") {
+if (param('akcija') == "uspjesnost") {
 	?>
 	<h3>Uspješnost studenata i prosječno trajanje studija</h3>
 	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">
@@ -295,7 +297,7 @@ if ($_REQUEST['akcija'] == "uspjesnost") {
 	<?
 }
 
-if ($_REQUEST['akcija'] == "svi_studenti") {
+if (param('akcija') == "svi_studenti") {
 	?>
 	<h3>Spisak svih studenata abecedno</h3>
 	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">

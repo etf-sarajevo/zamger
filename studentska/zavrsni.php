@@ -182,7 +182,7 @@ function studentska_zavrsni()  {
 			$mentor = tituliraj($r900[3], false);
 			if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
 
-			$student_id = $r900[4];
+			$student_id = intval($r900[4]);
 			$q910 = db_query("select prezime, ime from osoba where id=$student_id");
 			if ($student_id == 0 || db_num_rows($q910)<0) $student = "<font color=\"gray\">niko nije izabrao temu</font>";
 			else {

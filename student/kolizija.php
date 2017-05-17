@@ -8,7 +8,7 @@ function student_kolizija() {
 
 	global $userid;
 	
-	require("lib/manip.php");
+	require("lib/student_studij.php");
 	
 	// Definicija kolizije
 	$limit_ects_zima = 20;

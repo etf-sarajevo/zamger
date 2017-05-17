@@ -6,7 +6,12 @@
 
 function ws_zadaca() {
 	global $userid, $user_student, $user_nastavnik, $user_studentska, $user_siteadmin, $conf_files_path;
-
+	
+	require_once("lib/permisije.php");
+	require_once("lib/student_predmet.php"); // update_komponente
+	require_once("lib/utility.php"); // ends_with, rm_minus_r, clear_unicode
+	
+	
 	$rezultat = array( 'success' => 'true', 'data' => array() );
 	
 	if (isset($_REQUEST['student']))
@@ -286,7 +291,7 @@ function ws_zadaca() {
 						unlink($zippath);
 						mkdir($zippath);
 					} else {
-						rmMinusR($zippath);
+						rm_minus_r($zippath);
 					}
 					$oldpath = "$zippath/old";
 					$newpath = "$zippath/new";

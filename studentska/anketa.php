@@ -6,6 +6,9 @@
 
 function studentska_anketa(){
 
+	require_once("lib/formgen.php"); // datectrl
+	require_once("lib/utility.php"); // time2mysql
+
 	global $userid, $user_siteadmin, $user_studentska, $conf_site_url;
 	global $_lv_; // Potrebno za genform() iz libvedran
 	
