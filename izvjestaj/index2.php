@@ -272,7 +272,7 @@ while ($r130 = db_fetch_row($q130)) {
 		if ($oldgodina != 0 && $brojgodine != 0) {
 			?>
 			<tr bgcolor="#DDDDDD">
-			<td colspan="7"><b>Prosjek godine: <?=nuliraj_broj(round($sumagodine/$brojgodine, 2))?></b></td>
+			<td colspan="7"><b>Prosjek godine: <?=sprintf("%.1f", round($sumagodine/$brojgodine, 2))?></b></td>
 			</tr>
 			<?
 			$sumagodine = $brojgodine = 0;
@@ -293,7 +293,7 @@ while ($r130 = db_fetch_row($q130)) {
 		<td><?=($i++)?>.</td>
 		<td><?=$sifra?></td>
 		<td><?=$naziv?></td>
-		<td align="center"><?=nuliraj_broj($ects)?></td>
+		<td align="center"><?=str_replace(".", ",", sprintf("%.1f", $ects))?></td>
 		<td align="center"><?=$imena_ocjena[$r130[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r130[3]]?></td>
 		<td align="center"><?=date("d. m. Y", $datum)?></td>
@@ -310,7 +310,7 @@ while ($r130 = db_fetch_row($q130)) {
 if ($oldgodina != 0 && $brojgodine != 0) {
 	?>
 	<tr bgcolor="#DDDDDD">
-	<td colspan="7"><b>Prosjek godine: <?=nuliraj_broj(round($sumagodine/$brojgodine, 2))?></b></td>
+	<td colspan="7"><b>Prosjek godine: <?=sprintf("%.1f", round($sumagodine/$brojgodine, 2))?></b></td>
 	</tr>
 	<?
 }
