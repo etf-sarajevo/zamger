@@ -178,6 +178,7 @@ function nastavnik_zavrsni() {
 		$naslov = db_escape_string(db_result($q300,0,0));
 		$podnaslov = db_escape_string(db_result($q300,0,1));
 		$rad_na_predmetu = intval(db_result($q300,0,2));
+		if ($rad_na_predmetu == 0) $rad_na_predmetu = "NULL";
 		$kratki_pregled = db_escape_string(db_result($q300,0,3));
 		$literatura = db_escape_string(db_result($q300,0,4));
 		$sazetak = db_escape_string(db_result($q300,0,5));
