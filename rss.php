@@ -8,8 +8,8 @@ $broj_poruka = 10;
 
 require("lib/config.php");
 require("lib/dblayer.php");
-require("lib/libvedran.php");
 require("lib/zamger.php");
+require("lib/legacy.php");
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 

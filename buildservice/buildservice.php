@@ -8,6 +8,7 @@ require_once("../lib/dblayer.php");
 require_once("../lib/zamger.php");
 require_once("../lib/student_predmet.php"); // update_komponente
 require_once("../lib/utility.php"); // ends_with, rm_minus_r
+require_once("../lib/session.php"); // check_cookie
 
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
