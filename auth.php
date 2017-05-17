@@ -3,10 +3,10 @@
 
 // AUTH.PHP - web servis za autentikaciju korisnika bez HTMLa
 
-require("lib/config.php");
-require("lib/dblayer.php");
-require("lib/libvedran.php");
-require("lib/zamger.php");
+require_once("lib/config.php");
+require_once("lib/dblayer.php");
+require_once("lib/zamger.php");
+require_once("lib/session.php"); // check_cookie
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 //$conf_system_auth = "table"; // prihvatamo autotestera
