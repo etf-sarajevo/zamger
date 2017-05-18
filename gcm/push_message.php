@@ -75,7 +75,7 @@ function gcm_send($deviceRegistrationId, $msgType, $msgTitle) {
 function push_message($auth_ids, $type, $title) {
 	$ids = join(',',$auth_ids); 
 	
-	$q0 = myquery("SELECT reg_key FROM notifikacije_gcm WHERE auth IN ($ids)");
+	$q0 = db_query("SELECT reg_key FROM notifikacije_gcm WHERE auth IN ($ids)");
 
 	for($i=0;$i<mysql_num_rows($q0);$i++) {
 		$reg_key = mysql_result($q0,$i,0);
