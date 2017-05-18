@@ -8,15 +8,10 @@ function nastavnik_ispiti() {
 
 global $userid,$user_siteadmin,$user_studentska;
 
-<<<<<<< HEAD
-require("lib/manip.php");
-require("gcm/push_message.php");
-global $mass_rezultat; // za masovni unos studenata u grupe
-=======
+require_once("gcm/push_message.php");
 require_once("lib/formgen.php"); // datectrl, genform
 require_once("lib/zamgerui.php"); // za masovni unos studenata u grupe (mass_input)
 require_once("lib/student_predmet.php"); // update_komponente
->>>>>>> origin/master
 
 global $mass_rezultat; 
 
