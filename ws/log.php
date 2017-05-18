@@ -7,6 +7,8 @@
 function ws_log() {
 	global $userid, $user_siteadmin, $user_studentska;
 
+	require_once("lib/student_predmet.php");
+	
 	// Podaci za pasoš studenta
 	if (param("tip_loga") == "student") {
 		$student = int_param('student');
