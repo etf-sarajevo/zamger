@@ -404,4 +404,3 @@ function update_komponente($student,$predmet,$komponenta=0) {
 
 
 ?>
-
