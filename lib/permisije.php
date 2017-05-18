@@ -43,6 +43,3 @@ function nastavnik_ogranicenje($predmet, $ag, $student=0) {
 
 
 ?>
-
-
-

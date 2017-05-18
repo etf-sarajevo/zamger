@@ -7,6 +7,8 @@
 function ws_labgrupa() {
 	global $userid, $user_nastavnik, $user_siteadmin;
 
+	require_once("lib/permisije.php");
+
 	// Listanje grupa i studenata u grupama mogu raditi osobe u statusu nastavnika na predmetu
 	if (!$user_siteadmin && !$user_nastavnik) {
 		print json_encode( array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' ) );
