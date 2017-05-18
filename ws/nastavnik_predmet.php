@@ -17,7 +17,7 @@ function ws_nastavnik_predmet()
 	}
 
 	$q100 = db_query("SELECT p.id, p.naziv, p.kratki_naziv FROM predmet p, nastavnik_predmet np WHERE np.nastavnik=$userid AND np.akademska_godina=$ag AND np.predmet=p.id");
-// 	if (db_num_rows($q100)<1) {
+	if (db_num_rows($q100)<1) {
 		print json_encode( array( 'success' => 'false', 'code' => 'ERR004', 'message' => 'Niste nastavnik niti na jednom predmetu' ) );
 		return;
 	}
