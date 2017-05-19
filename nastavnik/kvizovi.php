@@ -11,6 +11,7 @@ global $_lv_;
 
 require_once("lib/formgen.php"); // db_dropdown, db_form, db_list
 require_once("lib/utility.php"); // procenat
+require_once("lib/legacy.php"); // mb_substr
 
 
 // Parametri
