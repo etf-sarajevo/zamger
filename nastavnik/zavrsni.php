@@ -9,6 +9,8 @@ function nastavnik_zavrsni() {
 	global $userid, $user_nastavnik, $user_siteadmin;
 	global $conf_files_path;
 
+	require_once("lib/legacy.php"); // mb_substr
+
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 	

@@ -479,6 +479,7 @@ if ($_REQUEST['akcija'] == "autotestovi") {
 
 $_lv_["where:predmet"] = $predmet;
 $_lv_["where:akademska_godina"] = $ag;
+$izabrana_komponenta = int_param('komponenta');
 
 
 foreach ($komponente_za_zadace as $id_komponente => $naziv_komponente) {
@@ -490,6 +491,9 @@ foreach ($komponente_za_zadace as $id_komponente => $naziv_komponente) {
 	print "<b>$naziv_komponente:</b><br/>\n";
 	print db_list("zadaca");
 }
+
+if ($izabrana_komponenta!=0) 
+	$_REQUEST['komponenta'] = $izabrana_komponenta; // Potrebno nam je radi genform za kreiranje zadaće
 
 
 // Kreiranje nove zadace ili izmjena postojeće
