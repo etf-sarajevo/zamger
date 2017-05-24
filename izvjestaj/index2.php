@@ -13,8 +13,8 @@ require_once("lib/utility.php"); // spol, rimski_broj, nuliraj_broj
 
 
 // Ulazni parametri
-$student      = intval($_REQUEST['student']);
-$param_ciklus = intval($_REQUEST['ciklus']);
+$student      = int_param('student');
+$param_ciklus = int_param('ciklus');
 
 
 // Prava pristupa
@@ -44,7 +44,7 @@ $ime_prezime = "$r100[0] $r100[1]";
 $brindexa    = $r100[2];
 $jmbg        = $r100[3];
 
-
+$upit_dodaj = "";
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
 
 $q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects 
@@ -161,22 +161,46 @@ $sumagodine = $brojgodine = $sumauk = $brojuk = $sumaects = 0;
 
 
 
+
 // Ocjene po odluci:
 
-$q105 = db_query("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, p.ects from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
+$q105 = db_query("select ko.ocjena, pp.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, pp.ects, pp.sifra from konacna_ocjena as ko, odluka as o, pasos_predmeta as pp where ko.odluka=o.id and ko.pasos_predmeta=pp.id and ko.student=$student");
 if (db_num_rows($q105)>0) {
 	?>
-	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br/><ul>
+	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b></p>
+	<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
+		<td width="20"><b>R.br.</b></td>
+		<td width="60"><b>Šifra</b></td>
+		<td width="280"><b>Naziv predmeta</b></td>
+		<td width="30"><b>ECTS bodovi</b></td>
+		<td width="60"><b>Konačna ocjena</b></td>
+		<td width="40"><b>ECTS ocjena</b></td>
+	</tr>
 	<?
 }
+$i = 1; $stara_odluka = 0;
 while ($r105 = db_fetch_row($q105)) {
-	print "<li><b>$r105[1]</b> - ocjena: ".$imena_ocjena[$r105[0]]."<br/>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+	if ($r105[3] != $stara_odluka) {
+		$stara_odluka = $r105[3];
+		?>
+		<tr bgcolor="#CCCCCC">
+			<td colspan="6"><b>Odluka br. <?=$r105[3]?> od <?=date("d. m. Y.", $r105[2])?>:</b></td>
+		</tr>
+		<?
+	}
+	?>
+	<tr>
+		<td><?=$i++?></td><td><?=$r105[5]?></td><td><?=$r105[1]?></td>
+		<td align="center"><?=str_replace(".", ",", sprintf("%.1f", $r105[4]))?></td>
+		<td align="center"><?=$imena_ocjena[$r105[0]]?></td>
+		<td align="center"><?=$ects_ocjene[$r105[0]]?></td>
+	</tr>
+	<?
 	$sumauk += $r105[0];
 	$brojuk++;
 	$sumaects += $r105[4];
 }
-if (db_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
-
+if (db_num_rows($q105)>0) print "</table></p><p>&nbsp;</p>\n";
 
 
 // Ocjene priznavanje
@@ -215,8 +239,8 @@ while ($r125 = db_fetch_row($q125)) {
 	?>
 	<tr>
 		<td><?=$i++?></td><td><?=$r125[1]?></td><td><?=$r125[0]?></td>
-		<td><?=$r125[2]?></td>
-		<td><?=$imena_ocjena[$r125[3]]?></td>
+		<td align="center"><?=str_replace(".", ",", sprintf("%.1f", $r125[2]))?></td>
+		<td align="center"><?=$imena_ocjena[$r125[3]]?></td>
 		<td align="center"><?=$ects_ocjene[$r125[3]]?></td>
 	</tr>
 	<?
@@ -224,11 +248,12 @@ while ($r125 = db_fetch_row($q125)) {
 	$brojuk++;
 	$sumaects += $r125[2];
 }
+if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p>\n";
 
 
 // "Regularne" ocjene
 
-if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p><p><b>Ocjene ostvarene na matičnoj instituciji:</b></p>\n";
+if (db_num_rows($q105)>0 || db_num_rows($q125)>0) print "<p><b>Ocjene ostvarene na matičnoj instituciji:</b></p>\n";
 
 ?>
 
