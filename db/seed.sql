@@ -827,8 +827,8 @@ odsutne. Vjerovatno ćete se pitati šta ako se student ponovo vrati u polaznu g
 --
 
 INSERT INTO `strucni_stepen` (`id`, `naziv`, `titula`) VALUES
-(1, 'Magistar elektrotehnike - Diplomirani inženjer elektrotehnike', 'M.E.'),
-(2, 'Bakalaureat elektrotehnike - Inženjer elektrotehnike', 'B.E.'),
+(1, 'Magistar diplomirani inžinjer elektrotehnike', 'Mr. dipl. ing.'),
+(2, 'Bakalaureat/Bachelor inžinjer elektrotehnike', 'BA ing.'),
 (3, 'Diplomirani inženjer elektrotehnike', 'dipl.ing.el.'),
 (4, 'Diplomirani matematičar', 'dipl.mat.'),
 (5, 'Srednja stručna sprema', ''),
