@@ -17,7 +17,7 @@ function predmeti_na_planu($plan_studija)
 		} else { // izborni
 			// uzimamo sve predmete u slotu $plan_izborni_slot
 			$q20 = db_query("select pp.predmet, pp.naziv, pp.ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
-			while ($predmet = db_fetch_assoc($q20))) {
+			while ($predmet = db_fetch_assoc($q20)) {
 				// Nećemo više puta kreirati isti predmet
 				if (in_array($predmet, $rezultat)) continue;
 				$rezultat[] = $predmet;
