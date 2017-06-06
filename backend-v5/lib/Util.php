@@ -1,21 +1,13 @@
 <?php
 
-// Modul: core
+// Modul: lib
 // Klasa: Util
 // Opis: kolekcija korisnih funkcija
 
 
-class Util {
-	// Version of substr that avoids breaking string within Unicode sequence, which
-	// results in invalid characters (and breaks some RSS readers)
-	public static function substr_utf8($string, $start, $len) {
-		do {
-			$result = substr($string, $start, $len);
-			$len++;
-		} while (ord(substr($result, strlen($result)-1, 1)) > 128);
-		return $result;
-	}
+require_once(Config::$backend_path."lib/UnresolvedClass.php");
 
+class Util {
 	// Function that adds "..." (a.k.a. ellipse) if string is longer than $len
 	// characters, taking care not to add it in the middle of word
 	public static function ellipsize($string, $len, $maxWordLength = 20) {
@@ -80,43 +72,53 @@ class Util {
 	}
 
 	public static function getip() {
-		if (Util::validip($_SERVER["HTTP_CLIENT_IP"])) {
+		if (isset($_SERVER["HTTP_CLIENT_IP"]) && Util::validip($_SERVER["HTTP_CLIENT_IP"])) {
 			return $_SERVER["HTTP_CLIENT_IP"];
 		}
-		foreach (explode(",",$_SERVER["HTTP_X_FORWARDED_FOR"]) as $ip) {
+		if (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) foreach (explode(",",$_SERVER["HTTP_X_FORWARDED_FOR"]) as $ip) {
 			if (Util::validip(trim($ip))) {
 				return $ip;
 			}
 		}
-		if (Util::validip($_SERVER["HTTP_X_FORWARDED"])) {
+		if (isset($_SERVER["HTTP_X_FORWARDED"]) && Util::validip($_SERVER["HTTP_X_FORWARDED"])) {
 			return $_SERVER["HTTP_X_FORWARDED"];
-		} elseif (Util::validip($_SERVER["HTTP_FORWARDED_FOR"])) {
+		} elseif (isset($_SERVER["HTTP_FORWARDED_FOR"]) && Util::validip($_SERVER["HTTP_FORWARDED_FOR"])) {
 			return $_SERVER["HTTP_FORWARDED_FOR"];
-		} elseif (Util::validip($_SERVER["HTTP_FORWARDED"])) {
+		} elseif (isset($_SERVER["HTTP_FORWARDED"]) && Util::validip($_SERVER["HTTP_FORWARDED"])) {
 			return $_SERVER["HTTP_FORWARDED"];
-		} elseif (Util::validip($_SERVER["HTTP_X_FORWARDED"])) {
+		} elseif (isset($_SERVER["HTTP_X_FORWARDED"]) && Util::validip($_SERVER["HTTP_X_FORWARDED"])) {
 			return $_SERVER["HTTP_X_FORWARDED"];
 		} else {
 			return $_SERVER["REMOTE_ADDR"];
 		}
 	}
 
-	// Escape stringova radi koristenja u mysql upitima - kopirao sa php.net
-	function my_escape($value) {
-		// Convert special HTML chars to protect against XSS
-		// If chars are needed for something, escape manually
-		$value = htmlspecialchars($value);
+
+
+	// Vraća vrijednost request parametra ili false
+	public static function param($name) {
+		if (isset($_REQUEST[$name])) return $_REQUEST[$name];
+		return false;
+	}
+
+	// Vraća integer vrijednost request parametra ili nulu
+	public static function int_param($name) {
+		if (isset($_REQUEST[$name])) return intval($_REQUEST[$name]);
+		return 0;
+	}
 	
-		// If magic quotes is on, stuff would be double-escaped here
-		if (get_magic_quotes_gpc()) {
-			$value = stripslashes($value);
-		}
-	
-		// Quote if not a number or a numeric string
-		if (!is_numeric($value)) {
-			$value = mysql_real_escape_string($value); // Detecting quotes later is a pain
-		}
-		return $value;
+	// Convert assoc. array into class with given name, replace unresolvedClasses with UnresolvedClass
+	public static function array_to_class($array, $className, $unresolvedClasses = array()) {
+		$code = "\$obj = new $className;\n";
+		foreach($array as $key => $value) 
+			$code .= "\$obj->$key = ".var_export($value,true).";\n";
+		$code .= "return \$obj;";
+		$obj = eval($code);
+		
+		foreach($unresolvedClasses as $className)
+			UnresolvedClass::makeForParent($obj, $className);
+		
+		return $obj;
 	}
 }
 

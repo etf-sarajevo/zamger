@@ -8,40 +8,57 @@
 // normalizovano.
 
 
-require_once(Config::$backend_path."core/DB.php");
+require_once(Config::$backend_path."core/AcademicYear.php");
+require_once(Config::$backend_path."core/CourseOffering.php");
+require_once(Config::$backend_path."core/CourseUnit.php");
 require_once(Config::$backend_path."core/Scoring.php");
+require_once(Config::$backend_path."core/Person.php");
+require_once(Config::$backend_path."core/Portfolio.php");
 
 class CourseUnitYear {
-	public $courseUnitId, $academicYearId, $scoringId;
-	public $scoring;
+	public $CourseUnit, $AcademicYear, $Scoring;
 
 	public static function fromCourseAndYear($courseUnitId, $academicYearId) {
-		$q1 = DB::query("select agp.tippredmeta, tp.naziv from akademska_godina_predmet as agp, tippredmeta as tp where agp.akademska_godina=$academicYearId and agp.predmet=$courseUnitId and agp.tippredmeta=tp.id");
-		if (mysql_num_rows($q1) < 1) {
-			throw new Exception("predmet se nije izvodio u datoj godini");
-		}
+		$cuy = DB::query_assoc("SELECT agp.predmet CourseUnit, agp.akademska_godina AcademicYear, agp.tippredmeta Scoring FROM akademska_godina_predmet as agp, tippredmeta as tp where agp.akademska_godina=$academicYearId and agp.predmet=$courseUnitId and agp.tippredmeta=tp.id");
+		if (!$cuy) throw new Exception("Unknown course unit / year", "404");
 		
-		$cuy = new CourseUnitYear;
-		$cuy->courseUnitId = $courseUnitId;
-		$cuy->academicYearId = $academicYearId;
-		$cuy->scoringId = mysql_result($q1,0,0);
-
-		$cuy->scoring = new Scoring;
-		$cuy->scoring->id = $cuy->scoringId;
-		$cuy->scoring->name = mysql_result($q1,0,1);
+		$cuy = Util::array_to_class($cuy, "CourseUnitYear", array("CourseUnit", "AcademicYear", "Scoring"));
+		$cuy->courseOfferings = CourseOffering::fromCourseAndYear($courseUnitId, $academicYearId);
+		$cuy->staff = $cuy->getTeachingStaff();
 		
 		return $cuy;
 	}
 
-	// Nivo pristupa nastavnika na predmet
-	// TODO ova funkcija bi trebala u budućnosti biti zamijenjena ACLovima
+	// Teachers access level on course
 	public function teacherAccessLevel($teacher) {
-		$q1 = DB::query("select nivo_pristupa from nastavnik_predmet where nastavnik=$teacher and predmet=".$this->courseUnitId." and akademska_godina=".$this->academicYearId);
-		if (mysql_num_rows($q1) < 1) {
-			return "nema";
-		}
-		return mysql_result($q1,0,0);
+		return DB::get("select nivo_pristupa from nastavnik_predmet where nastavnik=$teacher and predmet=".$this->CourseUnit." and akademska_godina=".$this->AcademicYear);
 	}
+	
+	// Get teaching staff for course unit / year
+	public function getTeachingStaff() {
+		if (is_object($this->CourseUnit)) $cu = $this->CourseUnit->id; else $cu = $this->CourseUnit;	
+		if (is_object($this->AcademicYear)) $ay = $this->AcademicYear->id; else $ay = $this->AcademicYear;
+		
+		$staff = DB::query_table("SELECT a.osoba Person, ans.id status_id, ans.naziv status FROM angazman a, angazman_status ans WHERE a.predmet=$cu AND a.akademska_godina=$ay AND a.angazman_status=ans.id ORDER BY ans.id");
+		foreach($staff as &$member) {
+			$member['Person'] = Person::fromId($member['Person']);
+			$member['Person']->getTitles();
+		}
+		return $staff;
+	}
+
+	// List of courses that given person has access privileges for
+	public static function forTeacher($teacherId, $academicYearId = 0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+		$cuys = DB::query_table("SELECT p.id CourseUnit, np.akademska_godina AcademicYear FROM predmet p, nastavnik_predmet np WHERE np.nastavnik=$teacherId AND np.akademska_godina=$academicYearId AND np.predmet=p.id ORDER BY p.naziv");
+		foreach($cuys as &$cuy) {
+			$cuy = Util::array_to_class($cuy, "CourseUnitYear", array("AcademicYear", "Scoring"));
+			$cuy->CourseUnit = CourseUnit::fromId($cuy->CourseUnit);
+		}
+		return $cuys;
+	}
+	
 }
 
 ?>

@@ -5,49 +5,37 @@
 // Opis: osoba
 
 
-require_once(Config::$backend_path."core/DB.php");
-
 class Person {
 	public $id, $name, $surname, $studentIdNr, $login;
 	public $titlesPre, $titlesPost; // prefix and postfix titles
-	// Da li ovo uopšte treba biti u Person, u sis/ExtendedPerson ili negdje pod hrm ?
+	public $ExtendedPerson; // reference to ExtendedPerson class
+	
+	const MAX_QUERY_RESULTS = 10;
 
 	public static function fromId($id) {
-		$q1 = DB::query("select o.ime, o.prezime, o.brindexa, a.login from osoba as o, auth as a where o.id=$id and a.id=$id");
-		if (mysql_num_rows($q1) < 1) {
-			throw new Exception("nepoznata osoba");
-		}
-		
-		$p = new Person;
-		$p->id = $id;
-		$p->name = mysql_result($q1,0,0);
-		$p->surname = mysql_result($q1,0,1);
-		$p->studentIdNr = mysql_result($q1,0,2);
-		$p->login = mysql_result($q1,0,3);
-		// TODO dodati ostalo što neće ići u ExtendedPerson - odlučiti
-		
-		return $p;
+		$person = DB::query_assoc("select o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, o.id ExtendedPerson from osoba as o, auth as a where o.id=$id");
+		if (!$person) throw new Exception("Unknown person", "404");
+		$person = Util::array_to_class($person, "Person", array("ExtendedPerson"));
+		// User might not have a login
+		$person->login = DB::get("SELECT login FROM auth WHERE id=$id");
+		// Convert person Id info UnresolvedClass object
+		return $person;
 	}
 
 	public static function fromLogin($login) {
-		$q1 = DB::query("select o.id, o.ime, o.prezime, o.brindexa from osoba as o, auth as a where o.id=a.id and a.login='$login'");
-		if (mysql_num_rows($q1) < 1) {
-			throw new Exception("nepoznata osoba");
-		}
-		
-		$p = new Person;
-		$p->id = mysql_result($q1,0,0);
-		$p->name = mysql_result($q1,0,1);
-		$p->surname = mysql_result($q1,0,2);
-		$p->studentIdNr = mysql_result($q1,0,3);
-		$p->login = $login;
-		// TODO dodati ostalo što neće ići u ExtendedPerson - odlučiti
-		
-		return $p;
+		$login = DB::escape($login);
+		$person = DB::query_assoc("select o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, a.login login, o.id ExtendedPerson from osoba as o, auth as a where o.id=a.id and a.login='$login'");
+		if (!$person) throw new Exception("Unknown person", "404");
+		return Util::array_to_class($person, "Person", array("ExtendedPerson"));
 	}
 
 	public static function search($query) {
-		if (!preg_match("/\w/",$query)) { return array(); }
+		// FIXME users without login can't be found
+		$r = array();
+		$r['query'] = $query;
+		$r['results'] = array();
+	
+		if (!preg_match("/\w/",$query)) { return $r; }
 
 		$query = str_replace("(","",$query);
 		$query = str_replace(")","",$query);
@@ -55,23 +43,29 @@ class Person {
 		$sql = "";
 
 		foreach($parts as $part) {
+			$part = DB::escape($part);
 			if ($sql != "") $sql .= " and ";
 			$sql .= "(o.ime like '%$part%' or o.prezime like '%$part%' or a.login like '%$part%' or o.brindexa like '%$part%')";
 		}
-
-		$q10 = myquery("select o.id, o.ime, o.prezime, o.brindexa, a.login from auth as a, osoba as o where a.id=o.id and $sql order by o.prezime, o.ime");
-		$persons = array();
-		while ($r10 = mysql_fetch_row($q10)) {
-			$p = new Person;
-			$p->id = $r10[0];
-			$p->name = $r10[1];
-			$p->surname = $r10[2];
-			$p->studentIdNr = $r10[3];
-			$p->login = $r10[4];
-			array_push($persons, $p);
+		
+		$persons = DB::query_table("SELECT o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, a.login login, o.id ExtendedPerson from auth as a, osoba as o WHERE a.id=o.id AND $sql ORDER BY o.prezime, o.ime LIMIT " . Person::MAX_QUERY_RESULTS);
+		foreach($persons as &$person) {
+			$person = Util::array_to_class($person, "Person", array("ExtendedPerson"));
 		}
-
-		return $persons;
+		$r['results'] = $persons;
+		return $r;
+	}
+	
+	// Tituliraj
+	function getTitles() {
+		$qtitles = DB::query_assoc("select naucni_stepen, strucni_stepen from osoba where id=" . $this->id);
+		if ($qtitles['naucni_stepen'])
+			$this->titlesPre = DB::get("select titula from naucni_stepen where id=" . $qtitles['naucni_stepen']);
+		if ($qtitles['strucni_stepen'])
+			$this->titlesPost = DB::get("select titula from strucni_stepen where id=" . $qtitles['strucni_stepen']);
+	
+		$zvanje = DB::get("select z.titula from izbor as i, zvanje as z where i.osoba=" . $this->id . " and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
+		if ($zvanje) $this->titlesPre = $zvanje . " " . $this->titlesPre;
 	}
 }
 

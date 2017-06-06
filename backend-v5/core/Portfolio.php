@@ -5,76 +5,59 @@
 // Opis: sadrži sve podatke o uspjehu studenta na ponudi kursa - bodovi i konačna ocjena
 
 
-require_once(Config::$backend_path."core/DB.php");
-require_once(Config::$backend_path."core/Logging.php");
+require_once(Config::$backend_path."core/AcademicYear.php");
 require_once(Config::$backend_path."core/CourseOffering.php");
 require_once(Config::$backend_path."core/ScoringElement.php");
 
 class Portfolio {
-	public $studentId, $courseOfferingId, $courseUnitId, $academicYearId;
-	public $courseUnit, $courseOffering;
+	public $Person, $CourseOffering;
+	public $scoringElements;
 	public $grade, $gradeDate; /* although these are public, please use getGrade() to update */
 	
-	// Da li je $student upisan na $courseOffering
+	// This method doesn't check if student is enrolled! FIXME?
 	public static function fromCourseOffering($studentId, $courseOfferingId) {
-		$q45 = DB::query ("select count(*) from student_predmet where student=$studentId and predmet=$courseOfferingId");
-		if (mysql_result($q45,0,0)<1) {
-			throw new Exception("student u$studentId ne slusa predmet $courseOfferingId");
-		}
-		$p = new Portfolio;
-		$p->studentId = $studentId;
-		$p->courseOfferingId = $courseOfferingId;
-		
-		// To be determined later, if needed:
-		$p->courseUnitId = 0;
-		$p->academicYearId = 0;
-
-		$p->courseUnit = 0;
-		$p->courseOffering = 0;
-		$p->grade = 0;
-		$p->gradeDate = 0;
+		$p = array("Person" => $studentId, "CourseOffering" => $courseOfferingId, "scoringElements" => false);
+		$p = Util::array_to_class($p, "Portfolio", array("Person", "CourseOffering"));
 		return $p;
 	}
 
-	// Studenta postavljamo manuelno a $courseOffering se dobije iz $course
-	// Ujedno provjerava da li je student upisan na predmet
-	public static function fromCourseUnit($studentId, $courseUnitId, $academicYearId) {
-		$q45 = DB::query ("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$studentId and sp.predmet=pk.id and pk.predmet=$courseUnitId and pk.akademska_godina=$academicYearId");
-		if (mysql_num_rows($q45)<1) {
-			throw new Exception("student $studentId ne slusa predmet $courseUnitId ($academicYearId)");
-		}
+	// Get CourseOffering from CourseUnit (and Year), also check if student is enrolled
+	public static function fromCourseUnit($studentId, $courseUnitId, $academicYearId = 0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+		
+		// Get CO and also check if student is enrolled
 		$p = new Portfolio;
-		$p->studentId = $studentId;
-		$p->courseOfferingId = mysql_result($q45,0,0);
-		$p->courseUnitId = $courseUnitId;
-		$p->academicYearId = $academicYearId;
-
-		// To be determined later, if needed:
-		$p->grade = 0;
-		$p->gradeDate = 0;
-		$p->courseUnit = 0;
+		$p->CourseOffering = CourseOffering::forStudent($studentId, $courseUnitId, $academicYearId);
+		if (!$p->CourseOffering) 
+			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "700");
+		$p->Person = new UnresolvedClass("Person", $studentId, $p->Person);
+		$p->scoringElements = false;
 		return $p;
 	}
 
 	public function getGrade() {
-		if ($this->grade == 0) { // 0 means unknown, we need to check database
-			if ($this->courseUnitId==0) {
-				// Set course from courseOffering
-				$co = CourseOffering::fromId($this->courseOfferingId);
-				$this->courseUnitId = $co->courseUnitId;
-				$this->academicYearId = $co->academicYearId;
-			}
-
-			$this->grade = -1; // -1 means not graded
-			$q10 = DB::query("select ocjena, UNIX_TIMESTAMP(datum) from konacna_ocjena where predmet=".$this->courseUnitId." and student=".$this->studentId);
-			if (mysql_num_rows($q10) > 0) {
-				$this->grade = mysql_result($q10, 0, 0);
-				$this->gradeDate = mysql_result($q10, 0, 1);
+		if (!$this->grade) { // undefined, load from database
+			if (get_class($this->CourseOffering) == "UnresolvedClass")
+				$this->CourseOffering->resolve();
+			$q10 = DB::query_assoc("select ocjena, UNIX_TIMESTAMP(datum) date from konacna_ocjena where predmet=" . $this->CourseOffering->CourseUnit->id . " and student=" . $this->Person->id);
+			if ($q10) {
+				$this->grade = $q10['ocjena'];
+				$this->gradeDate = $q10['date'];
 			}
 		}
 		
 		return $this->grade;
 	}
+	
+	// Use this method to get scoring elements for lasy loading
+	public function getScore() {
+		if (!$this->scoringElements)
+			$this->scoringElements = ScoringElement::forStudent($this->Person->id, $this->CourseOffering->id);
+		return $this->scoringElements;
+	}
+	
+	// NOT FIXED BELOW THIS LINE
 
 	public function setGrade($grade) {
 		// FIXME ocjene trebaju biti A-F a ne 6-10
@@ -125,12 +108,6 @@ class Portfolio {
 		}
 		
 		$this->grade = -1; // -1 means no grade
-	}
-	
-	public function getScore($scoringElementId) {
-		$q10 = DB::query("select bodovi from komponentebodovi where student=".$this->studentId." and predmet=".$this->courseOfferingId." and komponenta=$scoringElementId");
-		if (mysql_num_rows($q10)<1) return 0; // Entries in this table are created as needed
-		return mysql_result($q10,0,0);
 	}
 	
 	public function setScore($scoringElementId, $score) {
@@ -205,31 +182,12 @@ LIMIT $limit");
 	// List of portfolios for courses currently attended by student, ordered alphabetically
 	// "Currently" is defined as in current academic year, latest semester
 	public static function getCurrentForStudent($studentId) {
-		$q10 = DB::query("select pk.semestar, pk.id, p.id, ag.id, p.naziv, p.kratki_naziv from student_predmet as sp, ponudakursa as pk, akademska_godina as ag, predmet as p where sp.student=$studentId and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id and ag.aktuelna=1 order by pk.semestar desc, p.naziv");
-		$portfolios = array();
-		$semester = 0;
-		while ($r10 = mysql_fetch_row($q10)) {
-			if ($semester > 0 && $semester != $r10[0]) break; // semester changed, but we will use only last one
-			$semester = $r10[0];
-
-			$p = new Portfolio;
-			$p->studentId = $studentId;
-			$p->grade = 0;
-			$p->gradeDate = 0;
-			$p->courseOfferingId = $r10[1];
-			$p->courseUnitId = $r10[2];
-			$p->academicYearId = $r10[3];
-			// TODO dodati ostalo
-			
-			$p->courseUnit = new CourseUnit;
-			$p->courseUnit->id = $r10[2];
-			$p->courseUnit->name = $r10[4];
-			$p->courseUnit->shortName = $r10[5];
-			// TODO dodati ostalo
-			
-			array_push($portfolios, $p);
+		// This could be further optimized...
+		$pfs = DB::query_varray("select pk.id from student_predmet as sp, ponudakursa as pk, akademska_godina as ag, predmet as p where sp.student=$studentId and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ag.id and ag.aktuelna=1 order by pk.semestar desc, p.naziv");
+		foreach($pfs as &$pf) {
+			$pf = Portfolio::fromCourseOffering($studentId, $pf);
 		}
-		return $portfolios;
+		return $pfs;
 	}
 	
 	// List of all portfolios for courses ever attended by student, ordered by academic year, semester, then alphabetically
