@@ -30,11 +30,7 @@ class Person {
 	}
 
 	public static function search($query) {
-		// FIXME users without login can't be found
-		$r = array();
-		$r['query'] = $query;
-		$r['results'] = array();
-	
+		// FIXME users without login can't be found	
 		if (!preg_match("/\w/",$query)) { return $r; }
 
 		$query = str_replace("(","",$query);
@@ -52,8 +48,7 @@ class Person {
 		foreach($persons as &$person) {
 			$person = Util::array_to_class($person, "Person", array("ExtendedPerson"));
 		}
-		$r['results'] = $persons;
-		return $r;
+		return $persons;
 	}
 	
 	// Tituliraj

@@ -164,6 +164,39 @@ foreach ($wiring as $wire) {
 		if (isset($_REQUEST['resolve'])) $resolve += $_REQUEST['resolve'];
 		foreach ($resolve as $className)
 			UnresolvedClass::resolveAll($result, $className);
+
+		// Convert array into object representation for JSON
+		// (most tools can't handle API that returns array)
+		if (is_array($result)) {
+			$result_array = $result;
+			$result = array();
+			$result['results'] = $result_array;
+
+			// Also do paging
+			if (isset($_REQUEST['pageSize'])) {
+				$size = abs(Util::int_param('pageSize'));
+				$page = abs(Util::int_param('page'));
+				if (count($result['results']) > $size) {
+					$results['totalResults'] = count($result['results']);
+					$results['page'] = $page;
+
+					$start_pos = $size*($page-1);
+					$end_pos = $size*$page;
+
+					array_splice($result['results'], $end_pos);
+					if ($page > 1) array_splice($result['results'], 0, $start_pos);
+
+					// Add HATEOAS links for prev/next page
+					$link = $wire['path'];
+					if (strpos($link, "?")) $link .= "&"; else $link .= "?";
+					$link .= "pageSize=$size&page=";
+					if ($end_pos < count($result_array))
+						$wire['hateoas_links']['next'] = array("href" => $link . ($page+1));
+					if ($page > 1)
+						$wire['hateoas_links']['previous'] = array("href" => $link . ($page-1));
+				}
+			}
+		}
 		
 	} catch(Exception $e) {
 		if ($e->getCode() == "404")
@@ -177,7 +210,7 @@ foreach ($wiring as $wire) {
 			$result['db_error'] = DB::$error;
 	}
 	
-	// Decorate with HATEOAS
+	// Decorate with HATEOAS HAL (http://stateless.co/hal_specification.html)
 	if (array_key_exists("hateoas_links", $wire)) {
 		// Assumption: $result contains 'id'
 		foreach($wire['hateoas_links'] as $name => &$link) {

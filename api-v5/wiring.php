@@ -8,7 +8,6 @@ $wiring = array(
 	array(
 		"path" => "person", 
 		"description" => "Current user", 
-		"hateoas" => "currentUser",
 		"method" => "GET", 
 		"code" => "\$p = Person::fromId(Session::\$userid); \$p->getTitles(); return \$p;", 
 		"acl" => "loggedIn()",
@@ -22,7 +21,6 @@ $wiring = array(
 	array(
 		"path" => "person/{id}", 
 		"description" => "Find user by id", 
-		"hateoas" => "personById",
 		"method" => "GET", 
 		"code" => "\$p = Person::fromId(\$id); \$p->getTitles(); return \$p;", 
 		"acl" => "loggedIn()",
@@ -36,7 +34,6 @@ $wiring = array(
 	array(
 		"path" => "person/byLogin", 
 		"description" => "Find user by login", 
-		"hateoas" => "personByLogin",
 		"method" => "GET", 
 		"params" => array( "login" => "string" ),
 		"code" => "\$p = Person::fromLogin(\$login); \$p->getTitles(); return \$p;", 
@@ -125,7 +122,7 @@ $wiring = array(
 		"path" => "course/teacher", 
 		"description" => "List of courses for teacher", 
 		"method" => "GET", 
-		"code" => "\$result['teacher']=Session::\$userid; \$result['courses'] = CourseUnitYear::forTeacher(Session::\$userid); return \$result;", 
+		"code" => "return CourseUnitYear::forTeacher(Session::\$userid);", 
 		"acl" => "privilege('nastavnik')",
 		"autoresolve" => array("AcademicYear", "Institution", "Scoring"),
 		"hateoas_links" => array(
@@ -140,7 +137,7 @@ $wiring = array(
 		"path" => "course/teacher/{teacher}", 
 		"description" => "List of courses for teacher", 
 		"method" => "GET", 
-		"code" => "\$result['teacher']=\$teacher; \$result['courses'] = CourseUnitYear::forTeacher(\$teacher); return \$result;", 
+		"code" => "return CourseUnitYear::forTeacher(\$teacher);", 
 		"acl" => "self(\$teacher) || privilege('studentska')",
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
