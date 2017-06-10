@@ -72,16 +72,16 @@ if ($route == "auth") {
 	$pass = $_POST['pass'];
 	$result = array();
 
-	$status = Session::login($status, $pass);
+	$status = Session::login($login, $pass);
 	if ($status == 1 || $status == 2) { 
 		$result['success'] = "false";
-		$result['code'] = $status;
+		//$result['code'] = $status;
 		$result['message'] = "Unknown user or wrong password";
 	} else {
 		$result['success'] = "true";
-		$result['code'] = $status;
-		$result['sid'] = session_id();
-		$result['userid'] = $userid;
+		//$result['code'] = $status;
+		$result['sid'] = Session::$id;
+		$result['userid'] = Session::$userid;
 	}
 
 	print json_encode($result);

@@ -13,6 +13,7 @@ require_once(Config::$backend_path."lib/DB.php");
 class Session {
 	public static $userid; // Pozitivan integer unique ID korisnika
 	public static $username;
+	public static $id;
 	public static $admin; // Boolean
 	public static $lastAccess; // Vrijeme posljednjeg pristupa
 	public static $privileges; // Niz sa stringovima privilegija
@@ -45,7 +46,7 @@ class Session {
 					$i=0;
 
 					// Probavamo UID
-					$login = zamger_ldap_escape($login);
+					$login = Session::ldap_escape($login);
 					$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
 					if (!$sr) {
 						niceerror("ldap_search() failed.");
@@ -56,7 +57,7 @@ class Session {
 					// To se dešava rijetko ali se dešava i nije mi jasno zašto
 
 					// Ovaj upit ce vratiti i aliase, koje moramo profiltrirati
-					while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
+					while ($results && Session::is_alias($results[$i]) && $i<$results['count']) $i++;
 
 					// Probavamo email adresu
 					if (!$results || $i == $results['count']) {
@@ -68,7 +69,7 @@ class Session {
 						$results = ldap_get_entries($ds, $sr);
 
 						$i=0;
-						while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
+						while ($results && Session::is_alias($results[$i]) && $i<$results['count']) $i++;
 					}
 
 					// Probavamo email adresu + domena
@@ -81,7 +82,7 @@ class Session {
 						$results = ldap_get_entries($ds, $sr);
 
 						$i=0;
-						while ($results && is_alias($results[$i]) && $i<$results['count']) $i++;
+						while ($results && Session::is_alias($results[$i]) && $i<$results['count']) $i++;
 					}
 
 					if (!$results || $i == $results['count']) // return 1;
@@ -119,6 +120,8 @@ class Session {
 		//session_regenerate_id(); // prevent session fixation
 		$_SESSION['login']=$login;
 		session_write_close();
+		Session::$id = session_id();
+		return 0;
 	}
 
 
@@ -136,8 +139,10 @@ class Session {
 			phpCAS::forceAuthentication();
 			$login = phpCAS::getUser();
 		} else {
+			if (isset($_REQUEST['SESSION_ID'])) session_id($_REQUEST['SESSION_ID']);
 			session_start();
 			if (isset($_SESSION['login'])) $login = DB::escape($_SESSION['login']); else return;
+			Session::$id = session_id();
 		}
 		
 		if (!preg_match("/[a-zA-Z0-9]/",$login)) return;
@@ -180,7 +185,7 @@ class Session {
 	// ----------------------------
 
 	// LDAP ne trpi određene karaktere u loginu
-	public static function zamger_ldap_escape($str){
+	public static function ldap_escape($str){
 		$metaChars = array('\\', '(', ')', '#', '*');
 		$quotedMetaChars = array();
 		foreach ($metaChars as $key => $value) $quotedMetaChars[$key] = '\\'.dechex(ord($value));
@@ -191,7 +196,7 @@ class Session {
 
 	// Provjera da li je korisničko ime alias
 	// FIXME samo za zimbru
-	public static function is_alias($results) {
+	private static function is_alias($results) {
 		if (is_array($results))	foreach ($results as $k1=>$v1) {
 			if ($k1 === "objectclass") foreach ($v1 as $k2=>$v2) {
 				if ($v2 === "zimbraAlias") return true;
