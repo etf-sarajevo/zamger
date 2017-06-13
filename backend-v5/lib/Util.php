@@ -59,10 +59,10 @@ class Util {
 				array('255.255.255.0','255.255.255.255')
 			);
 		
-			$num_ip = ip2float($ip);
+			$num_ip = Util::ip2float($ip);
 			foreach ($reserved_ips as $r) {
-				$min = ip2float($r[0]); 
-				$max = ip2float($r[1]);
+				$min = Util::ip2float($r[0]); 
+				$max = Util::ip2float($r[1]);
 				if (($num_ip >= $min) && ($num_ip <= $max)) return false;
 			}
 			return true;
@@ -70,6 +70,13 @@ class Util {
 			return false;
 		}
 	}
+
+	// Hack za činjenicu da je long tip u PHPu signed
+	// Preuzeto sa: http://pgregg.com/blog/2009/04/php-algorithms-determining-if-an-ip-is-within-a-specific-range.html
+	private static function ip2float($ip) {
+		return (float)sprintf("%u",ip2long($ip));
+	}
+
 
 	public static function getip() {
 		if (isset($_SERVER["HTTP_CLIENT_IP"]) && Util::validip($_SERVER["HTTP_CLIENT_IP"])) {
