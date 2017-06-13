@@ -124,7 +124,7 @@ $wiring = array(
 		"method" => "GET", 
 		"code" => "return CourseUnitYear::forTeacher(Session::\$userid);", 
 		"acl" => "privilege('nastavnik')",
-		"autoresolve" => array("AcademicYear", "Institution", "Scoring"),
+		"autoresolve" => array("AcademicYear", "Institution"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
@@ -164,7 +164,7 @@ $wiring = array(
 	),
 	
 	array(
-		"path" => "course/student/{course}", 
+		"path" => "course/{course}/student", 
 		"description" => "Details of specific course for student", 
 		"method" => "GET", 
 		"params" => array( "student" => "int", "year" => "int" ),
