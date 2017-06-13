@@ -51,7 +51,7 @@ class CourseUnitYear {
 	public static function forTeacher($teacherId, $academicYearId = 0) {
 		if ($academicYearId == 0)
 			$academicYearId = AcademicYear::getCurrent()->id;
-		$cuys = DB::query_table("SELECT p.id CourseUnit, np.akademska_godina AcademicYear FROM predmet p, nastavnik_predmet np WHERE np.nastavnik=$teacherId AND np.akademska_godina=$academicYearId AND np.predmet=p.id ORDER BY p.naziv");
+		$cuys = DB::query_table("SELECT p.id CourseUnit, np.akademska_godina AcademicYear, agp.tippredmeta Scoring FROM predmet p, nastavnik_predmet np, akademska_godina_predmet agp WHERE np.nastavnik=$teacherId AND np.akademska_godina=$academicYearId AND np.predmet=p.id and agp.akademska_godina=$academicYearId and agp.predmet=np.predmet ORDER BY p.naziv");
 		foreach($cuys as &$cuy) {
 			$cuy = Util::array_to_class($cuy, "CourseUnitYear", array("AcademicYear", "Scoring"));
 			$cuy->CourseUnit = CourseUnit::fromId($cuy->CourseUnit);
