@@ -87,6 +87,7 @@ $wiring = array(
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
 	),
+
 	
 	array(
 		"path" => "course/{id}", 
@@ -170,7 +171,7 @@ $wiring = array(
 		"params" => array( "student" => "int", "year" => "int" ),
 		"code" => "if (\$student == 0) \$student=Session::\$userid; \$p = Portfolio::fromCourseUnit(\$student, \$course, \$year); \$p->getScore(); \$p->getGrade(); return \$p;", 
 		"acl" => "privilege('student') && \$student==0 || self(\$student) || privilege('studentska') || teacherLevel(\$course, \$year)",
-		"autoresolve" => array("AcademicYear", "CourseUnit", "Programme"),
+		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
@@ -178,6 +179,88 @@ $wiring = array(
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
 	),
+	
+	
+	
+	// GROUP
+	
+	array(
+		"path" => "group", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/{id}", 
+		"description" => "Get group with id", 
+		"method" => "GET", 
+		"code" => "return Group::fromId(\$id);", 
+		"acl" => "teacherLevelGroup(\$id) || privilege('siteadmin')",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/course/{course}", 
+		"description" => "Get list of groups with students on course", 
+		"method" => "GET", 
+		"params" => array( "year" => "int", "includeVirtual" => "bool", "getMembers" => "bool" ),
+		"code" => "return Group::forCourseAndYear(\$course, \$year, \$includeVirtual);", 
+		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/course/{course}/allStudents", 
+		"description" => "Get all students on course (virtual group)", 
+		"method" => "GET", 
+		"params" => array( "year" => "int" ),
+		"code" => "return Group::virtualForCourse(\$course, \$year);", 
+		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')", // FIXME use teacherLevelGroup and id of virtual group
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/course/{course}/student", 
+		"description" => "Get the list of groups that a student belongs to for given course", 
+		"method" => "GET", 
+		"params" => array( "student" => "int", "year" => "int" ),
+		"code" => "if (\$student == 0) \$student=Session::\$userid; return Group::fromStudentAndCourse(\$student, \$course, \$year);",
+		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+		)
+	),
+	
 );
 
 $ws_aliases = array(

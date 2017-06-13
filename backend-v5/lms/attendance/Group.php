@@ -5,62 +5,90 @@
 // Opis: nastavna grupa
 
 
-require_once(Config::$backend_path."core/DB.php");
+require_once(Config::$backend_path."core/Portfolio.php");
 
 class Group {
 	public $id;
-	public $name, $courseUnitId, $academicYearId, $virtual;
+	public $name, $type, $CourseUnit, $AcademicYear, $virtual;
 	
 	public static function fromId($id) {
-		$q10 = DB::query("select naziv, predmet, akademska_godina, virtualna from labgrupa where id=$id");
-		if (mysql_num_rows($q10)<1) {
-			throw new Exception("nepostojeca labgrupa");
-		}
+		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE id=$id");
 		
-		$g = new Group;
-		$g->id = $id;
-		$g->name = mysql_result($q10,0,0);
-		$g->courseUnitId = mysql_result($q10,0,1);
-		$g->academicYearId = mysql_result($q10,0,2);
-		if ( mysql_result($q10,0,3) == 1) $g->virtual=true; else $g->virtual=false;
-
-		return $g;
+		if (!$grp) throw new Exception("Unknown group", "404");
+		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
+		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		$grp->members = $grp->getMembers();
+		return $grp;
 	}
 
-	// Get groups that student is a member of for given course unit
-	public static function fromStudentAndCourse($student, $courseUnitId, $academicYearId) {
-		$q10 = DB::query("select l.id, l.naziv, l.virtualna from student_labgrupa as sl, labgrupa as l where l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$student");
-		$groups = array();
-		while ($r10 = mysql_fetch_row($q10)) {
-			$g = new Group;
-			$g->id = $r10[0];
-			$g->name = $r10[1];
-			$g->courseUnitId = $courseUnitId;
-			$g->academicYearId = $academicYearId;
-			if ($r10[2] == 1) $g->virtual=true; else $g->virtual=false;
-			array_push($groups, $g);
+	// Populate members attribute with a list of members
+	public function getMembers() {
+		$members = DB::query_varray("SELECT student FROM student_labgrupa WHERE labgrupa=".$this->id);
+		foreach($members as &$member) {
+			// Using fromCourseUnit to get CourseOffering so we could get grade&score
+			$obj = Portfolio::fromCourseUnit($member, $this->CourseUnit->id, $this->AcademicYear->id);
+			$obj->getGrade();
+			$obj->getScore();
+			$member = $obj;
 		}
-		return $groups;
+		return $members;
 	}
 	
 	// Test if student is a member of group
 	public function isMember($student) {
-		$q10 = DB::query("select count(*) from student_labgrupa where student=$student and labgrupa=".$this->id);
-		if (mysql_result($q10,0,0) == 0) return false;
+		if (isset($this->members)) {
+			foreach($this->members as $member)
+				if ($student == $member->Person->id) return true;
+			return false;
+		}
+		$member = DB::get("SELECT count(*) FROM student_labgrupa WHERE student=$student AND labgrupa=".$this->id);
+		if ($member == 0) return false;
 		return true;
 	}
 
-	// Test if teacher is granted access only to specific groups and this one is not among them (in that case return value is false)
-	public function isTeacher($teacher) {
-		$q20 = DB::query("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$teacher and o.labgrupa=l.id and l.predmet=".$this->courseUnitId." and l.akademska_godina=".$this->academicYearId);
-		if (mysql_num_rows($q20) == 0) return true;
-
-		// Avoid second query
-		$result = false;
-		while ($r20 = mysql_fetch_row($q20)) {
-			if ($r20[0] == $this->id) { $result = 1; break; }
+	// Get groups that student is a member of for given course unit
+	public static function fromStudentAndCourse($student, $courseUnitId, $academicYearId=0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+		$groups = DB::query_table("SELECT l.id id, l.naziv name, l.tip type, l.predmet CourseUnit, l.akademska_godina AcademicYear, l.virtualna virtual FROM student_labgrupa as sl, labgrupa as l WHERE l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$student");
+		foreach($groups as &$grp) {
+			$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
+			if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
 		}
-		return $result;
+		return $groups;
+	}
+
+	// Get the virtual group for course and year
+	public static function virtualForCourse($courseUnitId, $academicYearId=0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+
+		// Assumption: there is only one virtual group on course
+		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId AND virtualna=1");
+		
+		if (!$grp) throw new Exception("No virtual group at course $courseUnitId, year $academicYearId", "404");
+		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
+		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		$grp->members = $grp->getMembers();
+		return $grp;
+	}
+
+	// All groups on course and year, 
+	// third parameter decides whether the virtual group "all students" will be included
+	public static function forCourseAndYear($courseUnitId, $academicYearId=0, $includeVirtual=false, $getMembers=false) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+		
+		$query_add = "";
+		if (!$includeVirtual) $query_add = " AND virtualna=0";
+		
+		$groups = DB::query_table("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId $query_add");
+		foreach($groups as &$grp) {
+			$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
+			if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+			if ($getMembers) $grp->members = $grp->getMembers();
+		}
+		return $groups;
 	}
 }
 

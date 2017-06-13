@@ -31,7 +31,10 @@ class CourseUnitYear {
 
 	// Teachers access level on course
 	public function teacherAccessLevel($teacher) {
-		return DB::get("select nivo_pristupa from nastavnik_predmet where nastavnik=$teacher and predmet=".$this->CourseUnit." and akademska_godina=".$this->AcademicYear);
+		// ay==0 -> current year
+		if ($this->AcademicYear->id == 0)
+			return DB::get("SELECT np.nivo_pristupa FROM nastavnik_predmet np, akademska_godina ag WHERE np.nastavnik=$teacher AND np.predmet=".$this->CourseUnit->id." AND np.akademska_godina=ag.id AND ag.aktuelna=1");
+		return DB::get("select nivo_pristupa from nastavnik_predmet where nastavnik=$teacher and predmet=".$this->CourseUnit->id." and akademska_godina=".$this->AcademicYear->id);
 	}
 	
 	// Get teaching staff for course unit / year

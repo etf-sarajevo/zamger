@@ -25,6 +25,8 @@ require_once(Config::$backend_path."core/ProgrammeType.php");
 
 require_once(Config::$backend_path."sis/ExtendedPerson.php");
 
+require_once(Config::$backend_path."lms/attendance/Group.php");
+
 
 require_once("wiring.php");
 
@@ -146,6 +148,12 @@ foreach ($wiring as $wire) {
 		if ($type == "object")
 			// Force JSON format... ?
 			$$name = json_decode(file_get_contents('php://input'));
+		if ($type == "bool") {
+			$value = Util::param($name);
+			if ($value === "true" || $value === true || $value === "1")
+				$$name = true;
+			else $$name = false;
+		}
 	}
 	
 	// Check privileges - may depend on params
