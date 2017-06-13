@@ -127,6 +127,18 @@ class Util {
 		
 		return $obj;
 	}
+
+	// Convert all numeric strings into numbers, and all boolean strings into booleans
+	public static function fix_data_types(&$var) {
+		if (is_object($var) || is_array($var)) {
+			foreach($var as $key => &$value)
+				Util::fix_data_types($value);
+		} else {
+			if (is_numeric($var)) $var=floatval($var);
+			if ($var === "true") $var=true;
+			if ($var === "false") $var=false;
+		}
+	}
 }
 
 ?>

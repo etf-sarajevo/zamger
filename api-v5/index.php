@@ -169,6 +169,11 @@ foreach ($wiring as $wire) {
 		foreach ($resolve as $className)
 			UnresolvedClass::resolveAll($result, $className);
 
+		// PHP MySQL driver returns all numbers as strings, which is no problem in PHP
+		// but in other langs it may be easier if numbers are not quoted
+		Util::fix_data_types($result);
+
+
 		// Convert array into object representation for JSON
 		// (most tools can't handle API that returns array)
 		if (is_array($result)) {
