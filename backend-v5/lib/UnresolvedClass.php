@@ -28,7 +28,7 @@ class UnresolvedClass {
 	// Recursively resolve all unresolved classes in $object of type $className
 	// (if $className is empty, then resolve all classes)
 	public static function resolveAll($object, $className = "") {
-		foreach($object as $key=>$value) {
+		foreach($object as $key=>&$value) {
 			if (is_object($value) && get_class($value) == "UnresolvedClass") {
 				if ($className == "" || $value->className == $className)
 					$value->resolve();
