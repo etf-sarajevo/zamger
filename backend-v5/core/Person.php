@@ -14,7 +14,7 @@ class Person {
 
 	public static function fromId($id) {
 		$person = DB::query_assoc("select o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, o.id ExtendedPerson from osoba as o, auth as a where o.id=$id");
-		if (!$person) throw new Exception("Unknown person", "404");
+		if (!$person) throw new Exception("Unknown person $id", "404");
 		$person = Util::array_to_class($person, "Person", array("ExtendedPerson"));
 		// User might not have a login
 		$person->login = DB::get("SELECT login FROM auth WHERE id=$id");
@@ -25,7 +25,7 @@ class Person {
 	public static function fromLogin($login) {
 		$login = DB::escape($login);
 		$person = DB::query_assoc("select o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, a.login login, o.id ExtendedPerson from osoba as o, auth as a where o.id=a.id and a.login='$login'");
-		if (!$person) throw new Exception("Unknown person", "404");
+		if (!$person) throw new Exception("Unknown person with login $login", "404");
 		return Util::array_to_class($person, "Person", array("ExtendedPerson"));
 	}
 

@@ -11,7 +11,7 @@ require_once(Config::$backend_path."core/ScoringElement.php");
 
 class Portfolio {
 	public $Person, $CourseOffering;
-	public $scoringElements;
+	public $score;
 	public $grade, $gradeDate; /* although these are public, please use getGrade() to update */
 	
 	// This method doesn't check if student is enrolled! FIXME?
@@ -32,7 +32,7 @@ class Portfolio {
 		if (!$p->CourseOffering) 
 			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "700");
 		$p->Person = new UnresolvedClass("Person", $studentId, $p->Person);
-		$p->scoringElements = false;
+		$p->score = false;
 		return $p;
 	}
 
@@ -52,9 +52,9 @@ class Portfolio {
 	
 	// Use this method to get scoring elements for lasy loading
 	public function getScore() {
-		if (!$this->scoringElements)
-			$this->scoringElements = ScoringElement::forStudent($this->Person->id, $this->CourseOffering->id);
-		return $this->scoringElements;
+		if (!$this->score)
+			$this->score = ScoringElement::forStudent($this->Person->id, $this->CourseOffering->id);
+		return $this->score;
 	}
 	
 	// NOT FIXED BELOW THIS LINE

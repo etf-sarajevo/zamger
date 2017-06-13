@@ -9,7 +9,7 @@ require_once(Config::$backend_path."core/CourseOffering.php");
 
 class ScoringElement {
 	public $id;
-	public $name, $guiName, $abbrev, $ScoringType, $max, $pass, $option, $mandatory, $points;
+	public $name, $guiName, $abbrev, $ScoringType, $max, $pass, $option, $mandatory;
 	
 	public static function fromId($id) {
 		$se = DB::query_assoc("SELECT id, naziv name, gui_naziv guiName, kratki_gui_naziv abbrev, tipkomponente ScoringType, maxbodova max, prolaz pass, opcija _option, uslov mandatory FROM komponenta WHERE id=$id");
@@ -22,7 +22,7 @@ class ScoringElement {
 
 	// Get list of scoring elements for Scoring of given type (see ScoringElementType), if type is 0 get all
 	// If student is provided, get also score for student
-	public function fromScoring($scoringId, $seType = 0) {
+	public static function fromScoring($scoringId, $seType = 0) {
 		$sql = "";
 		if ($seType != 0) $sql = " and k.tipkomponente=".intval($seType);
 
@@ -37,7 +37,19 @@ class ScoringElement {
 
 	// Get list of scoring elements along with awarded points for student and course
 	// Returns false if student is not enrolled
-	public function forStudent($studentId, $courseOfferingId) {
+	public static function forStudent($studentId, $courseOfferingId) {
+		$score = DB::query_table("SELECT komponenta, bodovi FROM komponentebodovi WHERE student=$studentId AND predmet=$courseOfferingId");
+		$result = array();
+		foreach($score as $item) {
+			$obj_item = new stdClass;
+			$obj_item->ScoringElement = $item['komponenta'];
+			UnresolvedClass::makeForParent($obj_item, "ScoringElement");
+			$obj_item->score = $item['bodovi'];
+			$result[] = $obj_item;
+		}
+		return $result;
+		
+		/*
 		// This method can be more efficient
 		$scoringId = DB::get("SELECT agp.tippredmeta FROM akademska_godina_predmet agp, ponudakursa pk WHERE agp.akademska_godina=pk.akademska_godina AND agp.predmet=pk.predmet AND pk.id=$courseOfferingId");
 		$ses = ScoringElement::fromScoring($scoringId);
@@ -45,7 +57,7 @@ class ScoringElement {
 		foreach ($ses as &$se)
 			$se->points = DB::get("SELECT bodovi FROM komponentebodovi WHERE student=$studentId AND predmet=$courseOfferingId AND komponenta=" . $se->id);
 		
-		return $ses;
+		return $ses;*/
 	}
 }
 
