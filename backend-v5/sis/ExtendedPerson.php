@@ -17,7 +17,7 @@ class ExtendedPerson {
 		$experson = DB::query_assoc("select o.id id, o.imeoca fathersName, o.prezimeoca fathersSurname, o.imemajke mothersName, o.prezimemajke mothersSurname, o.spol sex, 
 		o.datum_rodjenja dateOfBirth, o.mjesto_rodjenja placeOfBirth, o.nacionalnost ethnicity, o.drzavljanstvo nationality, o.jmbg jmbg, o.adresa addressStreetNo, o.adresa_mjesto addressPlace, o.telefon phone
 		FROM osoba as o where o.id=$id");
-		if (!$experson) throw new Exception("Unknown person", "404");
+		if (!$experson) throw new Exception("Unknown person $id", "404");
 		
 		// Fix sex
 		if ($experson['sex'] == "Z") $experson['sex'] = "F";
