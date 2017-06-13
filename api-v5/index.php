@@ -21,6 +21,7 @@ require_once(Config::$backend_path."core/CourseUnitYear.php");
 require_once(Config::$backend_path."core/Institution.php");
 require_once(Config::$backend_path."core/Person.php");
 require_once(Config::$backend_path."core/Programme.php");
+require_once(Config::$backend_path."core/ProgrammeType.php");
 
 require_once(Config::$backend_path."sis/ExtendedPerson.php");
 
@@ -125,10 +126,13 @@ foreach ($wiring as $wire) {
 	//print "matching $path to $route\n";
 	if (!preg_match("/^$path$/", $route, $matches) || $_SERVER['REQUEST_METHOD'] != $wire['method']) continue;
 	
-	// Insert remaining path components into code
+	// Insert remaining path components into global scope
 	$code = $wire['code'];
-	for ($i=1; $i<count($matches); $i++)
-		$code = "\$" . $variables[$i-1] . " = " . intval($matches[$i]) . ";\n" . $code;
+	for ($i=1; $i<count($matches); $i++) {
+		$varname = $variables[$i-1];
+		$varvalue = intval($matches[$i]);
+		$$varname = $varvalue;
+	}
 		
 	// Inject request params into global scope
 	if (array_key_exists('params', $wire))
@@ -231,7 +235,8 @@ if (empty($result)) {
 	$result = array( 'success' => 'false', 'code' => '404', 'message' => 'Invalid path' );
 }
 
-echo json_encode($result, Config::$json_options);
+//echo json_encode($result, Config::$json_options);
+echo json_encode($result);
 DB::disconnect();
 return;
 
