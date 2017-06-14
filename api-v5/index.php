@@ -173,7 +173,7 @@ foreach ($wiring as $wire) {
 		// Resolve subclasses if required
 		$resolve = array();
 		if (array_key_exists('autoresolve', $wire)) $resolve = $wire['autoresolve'];
-		if (isset($_REQUEST['resolve'])) $resolve += $_REQUEST['resolve'];
+		if (isset($_REQUEST['resolve'])) $resolve = array_merge($resolve, $_REQUEST['resolve']);
 		foreach ($resolve as $className)
 			UnresolvedClass::resolveAll($result, $className);
 
