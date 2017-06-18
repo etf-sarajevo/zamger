@@ -11,6 +11,13 @@
 require_once(Config::$backend_path."lib/DB.php");
 require_once(Config::$backend_path."lib/Util.php");
 
+abstract class LogLevel {
+	const Access = 1;
+	const Edit = 2;
+	const Error = 3;
+	const Audit = 4;
+}
+
 class Logging {
 	
 	public static function log($event,$level) {

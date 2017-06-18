@@ -11,24 +11,39 @@ class Group {
 	public $id;
 	public $name, $type, $CourseUnit, $AcademicYear, $virtual;
 	
-	public static function fromId($id) {
+	public static function fromId($id, $details=false) {
 		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE id=$id");
 		
-		if (!$grp) throw new Exception("Unknown group", "404");
+		if (!$grp) throw new Exception("Unknown group $id", "404");
 		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
 		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
-		$grp->members = $grp->getMembers();
+		$grp->members = $grp->getMembers($details);
 		return $grp;
 	}
 
 	// Populate members attribute with a list of members
-	public function getMembers() {
+	public function getMembers($details = false) {
 		$members = DB::query_varray("SELECT student FROM student_labgrupa WHERE labgrupa=".$this->id);
 		foreach($members as &$member) {
 			// Using fromCourseUnit to get CourseOffering so we could get grade&score
 			$obj = Portfolio::fromCourseUnit($member, $this->CourseUnit->id, $this->AcademicYear->id);
 			$obj->getGrade();
-			$obj->getScore();
+			$obj->getScore($details);
+			
+			// Unresolve CourseOffering because it's redundant here
+			$obj->CourseOffering = new UnresolvedClass("CourseOffering", $obj->CourseOffering->id, $obj->CourseOffering);
+			
+			// Remove redundant data from score
+			foreach ($obj->score as &$score) {
+				unset($score->student);
+				unset($score->CourseOffering);
+				if ($details)
+					$score->ScoringElement = new UnresolvedClass("ScoringElement", $score->ScoringElement->id, $score->ScoringElement);
+				if ($details)
+					foreach($score->details as &$detail)
+						unset($detail->student);
+			}
+			
 			$member = $obj;
 		}
 		return $members;

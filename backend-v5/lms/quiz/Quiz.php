@@ -5,86 +5,54 @@
 // Opis: kvizovi
 
 
-require_once(Config::$backend_path."core/DB.php");
 require_once(Config::$backend_path."core/CourseUnit.php");
+require_once(Config::$backend_path."lms/quiz/QuizQuestion.php");
 
 class Quiz {
 	public $id;
-	public $name, $courseUnitId, $academicYearId, $groupId, $scoringElementId, $timeBegin, $timeEnd, $active, $ipAddressRanges, $passPoints, $nrQuestions, $duration;
+	public $name, $CourseUnit, $AcademicYear, $Group, $timeBegin, $timeEnd, $active, $ipAddressRanges, $passPoints, $nrQuestions, $duration;
 	// $zclassId -- dodati link na čas umjesto kako je sada, link sa časa na kviz
-	public $courseUnit;
 	
 	public static function fromId($id) {
-		$q10 = DB::query("select naziv, predmet, akademska_godina, labgrupa, UNIX_TIMESTAMP(vrijeme_pocetak), UNIX_TIMESTAMP(vrijeme_kraj), aktivan, ip_adrese, prolaz_bodova, broj_pitanja, trajanje_kviza from kviz where id=$id");
-		if (mysql_num_rows($q10)<1) {
-			throw new Exception("nepoznat kviz");
-		}
-		$q = new Quiz;
-		$q->id = $id;
-		$q->name = mysql_result($q10,0,0);
-		$q->courseUnitId = mysql_result($q10,0,1);
-		$q->academicYearId = mysql_result($q10,0,2);
-		$q->groupId = mysql_result($q10,0,3);
-		$q->timeBegin = mysql_result($q10,0,4);
-		$q->timeEnd = mysql_result($q10,0,5);
-		if (mysql_result($q10,0,6) == 1) $q->active = true; else $q->active = false;
-		$q->ipAddressRanges = mysql_result($q10,0,7);
-		$q->passPoints = mysql_result($q10,0,8);
-		$q->nrQuestions = mysql_result($q10,0,9);
-		$q->duration = mysql_result($q10,0,10);
+		$quiz = DB::query_assoc("SELECT id, naziv name, predmet CourseUnit, akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz WHERE id=$id");
+		if (!$quiz) throw new Exception("Unknown quiz $id", "404");
 		
-		$q->courseUnit = 0;
+		$quiz['Group'] = $quiz['_Group']; unset($quiz['_Group']); // SQL reserved word
+		$quiz = Util::array_to_class($quiz, "Quiz", array("CourseUnit", "AcademicYear", "Group"));
+		if ($quiz->active == 1) $quiz->active=true; else $quiz->active=false; // FIXME use boolean in database
+		$quiz->questions = QuizQuestion::forQuiz($id);
+		return $quiz;
+	}
+	
+	// Return quiz in "quiz mode"
+	public static function fromIdQuiz($id) {
+		$quiz = DB::query_assoc("SELECT id, naziv name, predmet CourseUnit, akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz WHERE id=$id");
+		if (!$quiz) throw new Exception("Unknown quiz $id", "404");
 		
-		return $q;
+		$quiz['Group'] = $quiz['_Group']; unset($quiz['_Group']); // SQL reserved word
+		$quiz = Util::array_to_class($quiz, "Quiz", array("CourseUnit", "AcademicYear", "Group"));
+		if ($quiz->active == 1) $quiz->active=true; else $quiz->active=false; // FIXME use boolean in database
+		$quiz->questions = QuizQuestion::forQuizQuiz($id, $quiz->nrQuestions, true);
+		return $quiz;
 	}
 	
 	// Gets no more than $limit quizzes, ordered by deadline descending
 	// Only list active quizzes in groups that student is in
 	// Limit 0 means no limit
-	public static function getLatestForStudent($student, $limit = 0) {
+	public static function getLatestForStudent($studentId, $limit = 0) {
 		if ($limit > 0) $sql_limit = "LIMIT $limit"; else $sql_limit = "";
-		$q10 = DB::query("
-SELECT k.id, k.naziv, k.predmet, k.akademska_godina, k.labgrupa, UNIX_TIMESTAMP(k.vrijeme_pocetak), UNIX_TIMESTAMP(k.vrijeme_kraj), k.ip_adrese, k.prolaz_bodova, k.broj_pitanja, k.trajanje_kviza, p.naziv FROM kviz as k, student_predmet as sp, ponudakursa as pk, predmet as p 
-WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=k.predmet AND pk.predmet=p.id AND pk.akademska_godina=k.akademska_godina AND k.vrijeme_pocetak<NOW() AND k.vrijeme_kraj>NOW() AND k.aktivan=1
-ORDER BY k.vrijeme_pocetak DESC
-$sql_limit");
-		$quizes = array();
-		while ($r10 = mysql_fetch_row($q10)) {
-			// Skip if student has passing grade (optimize?)
-			$q15a = DB::query("select count(*) from konacna_ocjena where student=$student and predmet=$r10[2] and ocjena>=6");
-			if (mysql_result($q15a,0,0)>0) continue;
-			// Skip if group defined and student not a member
-			if ($r10[4] != 0) {
-				// If defined, we can assume that module lms/attendance is installed
-				require_once(Config::$backend_path."lms/attendance/Group.php");
-				$g = new Group;
-				$g->id = $r10[4];
-				if (!$g->isMember($student)) continue; // Not a member
-			}
-
-			$q = new Quiz;
-			$q->id = $r10[0];
-			$q->name = $r10[1];
-			$q->courseUnitId = $r10[2];
-			$q->academicYearId = $r10[3];
-			$q->groupId = $r10[4];
-			$q->timeBegin = $r10[5];
-			$q->timeEnd = $r10[6];
-			$q->active = true;
-			$q->ipAddressRanges = $r10[7];
-			$q->passPoints = $r10[8];
-			$q->nrQuestions = $r10[9];
-			$q->duration = $r10[10];
-			
-			$q->courseUnit = new CourseUnit;
-			$q->courseUnit->id = $r10[2];
-			$q->courseUnit->name = $r10[11];
-			// TODO dodati ostalo
-		
-			array_push($quizes, $q);
+		$quizzes = DB::query_table("SELECT k.id id, k.naziv name, k.predmet CourseUnit, k.akademska_godina AcademicYear, k.labgrupa _Group, UNIX_TIMESTAMP(k.vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(k.vrijeme_kraj) timeEnd, k.aktivan active, k.ip_adrese ipAddressRanges, k.prolaz_bodova passPoints, k.broj_pitanja nrQuestions, k.trajanje_kviza duration FROM kviz as k, student_predmet as sp, ponudakursa as pk, predmet as p 
+		WHERE sp.student=$studentId AND sp.predmet=pk.id AND pk.predmet=k.predmet AND pk.predmet=p.id AND pk.akademska_godina=k.akademska_godina AND k.vrijeme_pocetak<NOW() AND k.vrijeme_kraj>NOW() AND k.aktivan=1
+		AND (SELECT COUNT(*) FROM konacna_ocjena ko WHERE ko.student=$studentId and ko.predmet=p.id and ko.ocjena>=6)=0
+		ORDER BY k.vrijeme_pocetak DESC
+		$sql_limit");
+		foreach ($quizzes as &$quiz) {
+			$quiz['Group'] = $quiz['_Group']; unset($quiz['_Group']); // SQL reserved word
+			$quiz = Util::array_to_class($quiz, "Quiz", array("CourseUnit", "AcademicYear", "Group"));
+			if ($quiz->active == 1) $quiz->active=true; else $quiz->active=false; // FIXME use boolean in database
 		}
 		
-		return $quizes;
+		return $quizzes;
 	}
 	
 	public static function isIpInRange($ipAddress, $ipRanges) {
@@ -125,6 +93,22 @@ $sql_limit");
 			}
 		}
 		return false;
+	}
+
+	
+	// List of homeworks published for course
+	public static function fromCourse($courseUnitId, $academicYearId=0) {
+		if ($academicYearId == 0)
+			$quizzes = DB::query_table("SELECT kviz.id id, kviz.naziv name, predmet CourseUnit, kviz.akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz, akademska_godina ag WHERE predmet=$courseUnitId and akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY kviz.naziv");
+		else
+			$quizzes = DB::query_table("SELECT id, naziv name, predmet CourseUnit, akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz WHERE predmet=$courseUnitId and akademska_godina=$academicYearId ORDER BY naziv");
+		foreach ($quizzes as &$quiz) {
+			$quiz['Group'] = $quiz['_Group']; unset($quiz['_Group']); // SQL reserved word
+			$quiz = Util::array_to_class($quiz, "Quiz", array("CourseUnit", "AcademicYear", "Group"));
+			if ($quiz->active == 1) $quiz->active=true; else $quiz->active=false; // FIXME use boolean in database
+			$quiz->questions = QuizQuestion::forQuiz($quiz->id);
+		}
+		return $quizzes;
 	}
 }
 

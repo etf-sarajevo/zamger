@@ -62,4 +62,8 @@ class CourseOffering {
 		return $co;
 	}
 
+	// Get course options from CourseOffering id
+	public static function getCourseOptions($courseOfferingId) {
+		return DB::query_varray("SELECT tpo.opcija FROM tippredmeta_opcije tpo, akademska_godina_predmet agp, ponudakursa pk WHERE pk.id=$courseOfferingId AND pk.predmet=agp.predmet AND pk.akademska_godina=agp.akademska_godina AND agp.tippredmeta=tpo.tippredmeta");
+	}
 }

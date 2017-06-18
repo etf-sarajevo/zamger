@@ -31,16 +31,18 @@ class AccessControl {
 	
 	public static function teacherLevel($course, $year) {
 		// Avoid unneccessary queryies
-		$cuy = new CourseUnitYear;
-		$cuy->CourseUnit = new UnresolvedClass("CourseUnit", $course, $cuy->CourseUnit);
-		$cuy->AcademicYear = new UnresolvedClass("AcademicYear", $year, $cuy->AcademicYear);
+		$cuy = CourseUnitYear::fromCourseAndYearQuick($course, $year);
 		return $cuy->teacherAccessLevel(Session::$userid);
 	}
 	
 	// Teacher access level for given group
 	public static function teacherLevelGroup($group) {
 		// Can't avoid a query :(
-		$grp = Group::fromId($group);
+		try {
+			$grp = Group::fromId($group);
+		} catch(Exception $e) {
+			return false; // Unknown group
+		}
 		$lvl = AccessControl::teacherLevel($grp->CourseUnit->id, $grp->AcademicYear->id);
 		if ($lvl == "asistent") {
 			// If the result of query below is empty, all groups are allowed

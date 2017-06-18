@@ -5,43 +5,35 @@
 // Opis: odgovor na pitanje na kvizu
 
 
-require_once(Config::$backend_path."core/DB.php");
-
 class QuizAnswer {
 	public $id;
-	public $questionId, $text, $correct, $visible;
+	public $QuizQuestion, $text, $correct, $visible;
 	
 	public static function fromId($id) {
-		$q10 = DB::query("select kviz_pitanje, tekst, tacan, vidljiv from kviz_odgovor where id=$id");
-		if (mysql_num_rows($q10)<1) {
-			throw new Exception("no such answer");
-		}
-		$qa = new QuizAnswer;
-		$qa->id = $id;
-		$qa->questionId = mysql_result($q10,0,0);
-		$qa->text = mysql_result($q10,0,1);
-		if (mysql_result($q10,0,2) == 1) $qa->correct = true; else $qa->correct = false;
-		if (mysql_result($q10,0,3) == 1) $qa->visible = true; else $qa->visible = false;
+		$qa = DB::query_assoc("SELECT id, kviz_pitanje QuizQuestion, tekst text, tacan correct, vidljiv visible FROM kviz_odgovor WHERE id=$id");
+		if (!$qa) throw new Exception("Unknown quiz answer $id", "404");
 		
+		$qa = Util::array_to_class($qa, "QuizAnswer", array("QuizQuestion"));
+		if ($qa->correct == 1) $qa->correct=true; else $qa->correct=false; // FIXME use boolean in database
+		if ($qa->visible == 1) $qa->visible=true; else $qa->visible=false; // FIXME use boolean in database
 		return $qa;
 	}
 	
-	public static function getAllForQuestion($questionId, $randomize = false) {
-		if ($randomize) $randsql = "ORDER BY RAND()"; else $randsql = "";
-
-		$q10 = DB::query("select id, tekst, tacan, vidljiv from kviz_odgovor where kviz_pitanje=$questionId $randsql");
-		$answers = array();
-		while ($r10 = mysql_fetch_row($q10)) {
-			$qa = new QuizAnswer;
-			$qa->id = $r10[0];
-			$qa->questionId = $questionId;
-			$qa->text = $r10[1];
-			if ($r10[2] == 1) $qa->correct = true; else $qa->correct = false;
-			if ($r10[3] == 1) $qa->visible = true; else $qa->visible = false;
-		
-			array_push($answers, $qa);
+	// Get answers to question
+	public static function forQuestion($questionId) {
+		$answers = DB::query_varray("SELECT id FROM kviz_odgovor WHERE kviz_pitanje=$questionId");
+		foreach ($answers as &$qa)
+			$qa = new UnresolvedClass("QuizAnswer", $qa, $qa);
+		return $answers;
+	}
+	
+	// Get answers to question in quiz mode (only visible, resolved, don't show which one is correct)
+	public static function forQuestionQuiz($questionId) {
+		$answers = DB::query_table("SELECT id, kviz_pitanje QuizQuestion, tekst text, vidljiv visible FROM kviz_odgovor WHERE kviz_pitanje=$questionId AND vidljiv=1 ORDER BY RAND()");
+		foreach ($answers as &$qa) {
+			$qa = Util::array_to_class($qa, "QuizAnswer", array("QuizQuestion"));
+			if ($qa->visible == 1) $qa->visible=true; else $qa->visible=false; // FIXME use boolean in database
 		}
-		
 		return $answers;
 	}
 }

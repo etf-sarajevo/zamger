@@ -8,11 +8,12 @@
 
 class UnresolvedClass {
 	public $className, $id;
-	private $ref;
+	private $ref, $cache;
 	
 	public function __construct($className, $id, &$ref) {
 		$this->className=$className; $this->id=$id; $this->ref = &$ref;
 		$this->ref = $this;
+		$this->cache = array();
 	}
 	
 	// Shortcut constructor
@@ -21,8 +22,13 @@ class UnresolvedClass {
 	}
 	
 	public function resolve() {
-		if (is_numeric($this->id))
+		if ($this->id === 0 || $this->id === null) return; // Don't resolve if id is null since this is a placeholder
+		if (array_key_exists($this->className, $this->cache) && array_key_exists($this->id, $this->cache[$this->className]))
+			$this->ref = $this->cache[$this->className][$this->id];
+		if (is_numeric($this->id)) {
 			$this->ref = eval("return " . $this->className . "::fromId(" . $this->id . ");");
+			$this->cache[$this->className][$this->id] = $this->ref;
+		}
 	}
 	
 	// Recursively resolve all unresolved classes in $object of type $className

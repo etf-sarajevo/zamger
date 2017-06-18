@@ -25,7 +25,17 @@ require_once(Config::$backend_path."core/ProgrammeType.php");
 
 require_once(Config::$backend_path."sis/ExtendedPerson.php");
 
+require_once(Config::$backend_path."lms/attendance/Attendance.php");
 require_once(Config::$backend_path."lms/attendance/Group.php");
+require_once(Config::$backend_path."lms/attendance/ZClass.php");
+
+require_once(Config::$backend_path."lms/exam/Exam.php");
+require_once(Config::$backend_path."lms/exam/ExamResult.php");
+
+require_once(Config::$backend_path."lms/homework/Homework.php");
+
+require_once(Config::$backend_path."lms/quiz/Quiz.php");
+require_once(Config::$backend_path."lms/quiz/QuizResult.php");
 
 
 require_once("wiring.php");
@@ -124,7 +134,7 @@ foreach ($wiring as $wire) {
 	}
 	
 	// Does route match given?
-	$path = str_replace("/", "\/", $path);
+	$path = str_replace("/", "\/", $path) . "\/?";
 	//print "matching $path to $route\n";
 	if (!preg_match("/^$path$/", $route, $matches) || $_SERVER['REQUEST_METHOD'] != $wire['method']) continue;
 	
@@ -156,10 +166,18 @@ foreach ($wiring as $wire) {
 		}
 	}
 	
+	// TODO: First eval code, then check privileges (this will avoid some double queries)
+	
 	// Check privileges - may depend on params
 	if (strstr($wire['acl'], "||")) 
 		$wire['acl'] = preg_replace("/\|\|\s?/", "|| AccessControl::", $wire['acl']);
-	if (!eval("return AccessControl::" . $wire['acl'] . ";")) {
+	try {
+		$ok = eval("return AccessControl::" . $wire['acl'] . ";");
+	} catch(Exception $e) {
+		// Nonexistant item, eval($code) will throw exception
+		$ok = true;
+	}
+	if (!$ok) {
 		header("HTTP/1.0 403 Forbidden");
 		$result = array( 'success' => 'false', 'code' => '403', 'message' => 'Permission denied' );
 		break;

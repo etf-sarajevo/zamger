@@ -5,188 +5,196 @@
 // Opis: drži rezultat jednog studenta na ispitu
 
 
-require_once(Config::$backend_path."core/DB.php");
-require_once(Config::$backend_path."core/Logging.php");
-require_once(Config::$backend_path."core/Portfolio.php");
-require_once(Config::$backend_path."core/ScoringElement.php");
-require_once(Config::$backend_path."core/CourseUnit.php");
-
 require_once(Config::$backend_path."lms/exam/Exam.php");
+require_once(Config::$backend_path."core/CourseOffering.php");
+require_once(Config::$backend_path."core/StudentScore.php");
 
 class ExamResult {
-	public $studentId, $examId, $result, $exists;
-	public $exam;
+	// Value "false" for result means that student didn't attend the exam
+	public $student, $Exam, $result;
 	
 	public static function fromStudentAndExam($studentId, $examId) {
 		$er = new ExamResult;
-		$er->studentId = $studentId;
-		$er->examId = $examId;
-		
-		$er->exam = Exam::fromId($examId);
-
-		$q10 = myquery("select ocjena from ispitocjene where ispit=$examId and student=$studentId");
-		if (mysql_num_rows($q10)<1) {
-			// Allow to set a new result
-			$er->exists = false;
-		} else {
-			$er->exists = true;
-			$er->result = mysql_result($q10,0,0);
-		}
-		
+		$er->student = new UnresolvedClass("Person", $studentId, $er->student);
+		$er->Exam = new UnresolvedClass("Exam", $examId, $er->Exam);
+		$er->result = DB::get("SELECT ocjena FROM ispitocjene WHERE ispit=$examId AND student=$studentId");
 		return $er;
 	}
 
 
 	public function setExamResult($result) {
-		$course = $this->exam->courseUnitId;
-		$ay = $this->exam->academicYearId;
-		$sei = $this->exam->scoringElementId;
-		
-		$p = Portfolio::fromCourseUnit($this->studentId, $course, $ay);
-		
-		$se = ScoringElement::fromId($sei);
-		$max = $se->max;
-		
-		// Maksimalan i minimalan broj bodova
-		if ($result>$max) {
-			Logging::log("AJAH ispit - vrijednost $result > max $max",3);
-			throw new Exception("maksimalan broj bodova je $max, a unijeli ste $result");
+		// Test if result is allowed
+		if (get_class($this->Exam) == "UnresolvedClass")
+			$this->Exam->resolve();
+		if (get_class($this->Exam->ScoringElement) == "UnresolvedClass")
+			$this->Exam->ScoringElement->resolve();
+			
+		$max = $this->Exam->ScoringElement->max;
+		if ($result > $max) {
+			Logging::log("AJAH ispit - vrijednost $result > max $max", LogLevel::Error);
+			Logging::log2("ispit - vrijednost > max", $this->student->id, $this->Exam->id, 0, "$result > $max");
+			throw new Exception("Exam result too big ($result > $max)", "703");
 		}
-
-		if ($this->exists) {
-			$q60 = DB::query("update ispitocjene set ocjena=$result where ispit=".$this->examId." and student=".$this->studentId);
-			Logging::log("AJAH ispit - izmjena rezultata ".$this->result." u $result (ispit i".$this->examId.", student u".$this->studentId.")",4); // nivo 4: audit
+	
+		if ($this->result === false) {
+			DB::query("INSERT INTO ispitocjene SET ocjena=$result, ispit=" . $this->Exam->id . ", student=" . $this->student->id);
+			Logging::log("AJAH ispit - upisan novi rezultat $result (ispit i".$this->Exam->id.", student u".$this->student->id.")", LogLevel::Audit);
+			Logging::log2("upisan rezultat ispita", $this->student->id, $this->Exam->id, 0, $result);
 		} else {
-			$q60 = DB::query("insert into ispitocjene set ispit=".$this->examId.", student=".$this->studentId.", ocjena=$result");
-			Logging::log("AJAH ispit - upisan novi rezultat $result (ispit i".$this->examId.", student u".$this->studentId.")",4); // nivo 4: audit
-			$this->exists = true;
+			DB::query("UPDATE ispitocjene SET ocjena=$result WHERE ispit=" . $this->Exam->id . " AND student=" . $this->student->id);
+			Logging::log("AJAH ispit - izmjena rezultata ".$this->result." u $result (ispit i".$this->Exam->id.", student u".$this->student->id.")", LogLevel::Audit);
+			Logging::log2("izmjenjen rezultat ispita", $this->student->id, $this->Exam->id, 0, $this->result . " -> $result");
 		}
 		
 		$this->result = $result;
 
 		// Check integral exam
-		$this->updateScoring();
+		$this->updateScore();
 	}
 
 	public function deleteExamResult() {
-		$course = $this->exam->courseUnitId;
-		$ay = $this->exam->academicYearId;
-		$sei = $this->exam>scoringElementId;
-		
-		$p = Portfolio::fromCourseUnit($this->studentId, $course, $ay);
-		
-		$se = new ScoringElement($sei);
-		$max = $se->max;
-
-		if ($this->exists) {
-			$q60 = DB::query("delete from ispitocjene where ispit=".$this->examId." and student=".$this->studentId);
-			Logging::log("AJAH ispit - izbrisan rezultat ".$this->result." (ispit i".$this->examId.", student u".$this->studentId.")",4); // nivo 4: audit
-			$this->exists = false;
+		if ($this->result !== false) {
+			DB::query("DELETE FROM ispitocjene WHERE ispit=" . $this->Exam->id . " AND student=" . $this->student->id);
+			Logging::log("AJAH ispit - izbrisan rezultat " . $this->result . "(ispit i".$this->Exam->id.", student u".$this->student->id.")", LogLevel::Audit);
+			Logging::log2("izbrisan rezultat ispita", $this->student->id, $this->Exam->id, 0, $this->result);
 		}
+		
+		$this->result = false;
 		
 		// Check integral exam
-		$this->updateScoring();
+		$this->updateScore();
 	}
 
-	public function updateScoring() {
-		$course = $this->exam->courseUnitId;
-		$ay = $this->exam->academicYearId;
-		$sei = $this->exam->scoringElementId;
-
-		$p = Portfolio::fromCourseUnit($this->studentId, $course, $ay);
-
-		// Find integral exam scoring element
-		$q30 = DB::query("select k.id, k.opcija, k.prolaz from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where tpk.komponenta=k.id and tpk.tippredmeta=agp.tippredmeta and agp.predmet=$course and agp.akademska_godina=$ay and k.tipkomponente=2 and k.opcija like '%$sei%'");
-		if (mysql_num_rows($q30)<1) return; // No integral exam scoring element on this course
-
-		$intk = mysql_result($q30,0,0);
-		$intdijelovi = mysql_result($q30,0,1);
-		$intprolaz = mysql_result($q30,0,2);
-
-		// Koliko bodova je na integralnom?
-		$q40 = DB::query("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$course and i.akademska_godina=$ay and i.komponenta=$intk and i.id=io.ispit and io.student=".$this->studentId." order by io.ocjena desc limit 1");
-		if (mysql_num_rows($q40)<1) return; // No exams registered or this student didn't take one
-		$intbodovi = mysql_result($q40,0,0);
-
-		// Koliko bodova je osvojio na ostalim ispitima koji čine jedan 
-		// integralni (npr. 1+2 znači da se integralni sastoji od 
-		// parcijalnih ispita sa IDovima 1 i 2)
-		$dijelovi = explode("+",$intdijelovi);
-		$suma = 0;
-		$polozio=1; // Da li je polozio sve parcijalne ispite?
-		$diobodovi = array();
-		foreach ($dijelovi as $dio) {
-			$q45 = DB::query("select prolaz from komponenta where id=$dio");
-			$dioprolaz = mysql_result($q45,0,0);
-
-			$q50 = DB::query("select io.ocjena from ispit as i, ispitocjene as io where i.predmet=$course and i.akademska_godina=$ay and i.komponenta=$dio and i.id=io.ispit and io.student=".$this->studentId." order by io.ocjena desc limit 1");
-			if (mysql_num_rows($q50)>0) {
-				$diobodovi[$dio] = mysql_result($q50,0,0);
-				if ($diobodovi[$dio]<$dioprolaz) $polozio=0;
-				$suma += $diobodovi[$dio];
-			} else $polozio=0;
-		}
-
-		// Integralni se uzima u obzir ako je osvojeno više bodova nego
-		// suma svih parcijalnih, ili ako je položio integralni a pao
-		// bilo koji od parcijalnih
-		if ($suma<$intbodovi || ($polozio==0 && $intbodovi>$intprolaz)) {
-			foreach ($dijelovi as $dio) {
-				// Ovo ce ujedno obrisati upravo ubacenu komponentu
-				// ali to vrijedi pojednostavljenja koda
-				$p->deleteScore($dio);
-			}
-			$p->setScore($intk, $intbodovi);
-		} else {
-			foreach ($dijelovi as $dio) {
-				// Ovo ce ujedno obrisati upravo ubacenu komponentu
-				// ali to vrijedi pojednostavljenja koda
-				$p->setScore($dio, $diobodovi[$dio]);
-			}
-			$p->deleteScore($intk);
-		}
+	// Update score data related to exams
+	public function updateScore() {
+		// Resolve exam so we could get CourseUnit and AcademicYear
+		if (get_class($this->Exam) == "UnresolvedClass")
+			$this->Exam->resolve();
+		if (get_class($this->Exam->ScoringElement) == "UnresolvedClass")
+			$this->Exam->ScoringElement->resolve();
+		
+		// Get CoureOffering for student
+		$co = CourseOffering::forStudent($this->student->id, $this->Exam->CourseUnit->id, $this->Exam->AcademicYear->id);
+		Exam::updateAllScores($this->student->id, $co->id, $this->ZClass->ScoringElement);
 	}
 	
-	// List of latest results on exams attended by student (e.g. we only return results that exist)
-	public static function getLatestForStudent($student, $limit) {
-		$q15 = DB::query("
-SELECT io.ocjena, 
-i.id, i.predmet, i.akademska_godina, UNIX_TIMESTAMP(i.datum), UNIX_TIMESTAMP(i.vrijemeobjave), i.komponenta,
-k.gui_naziv, k.prolaz, 
-p.naziv
-FROM ispitocjene as io, ispit as i, komponenta as k, predmet as p
-WHERE io.student=$student AND io.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND i.vrijemeobjave > SUBDATE(NOW(), INTERVAL 1 MONTH)
-ORDER BY i.vrijemeobjave DESC
-LIMIT $limit"); // 
-		$examresults = array();
-		while ($r15 = mysql_fetch_row($q15)) {
-			// Skip if student has passing grade (optimize?)
-			$q15a = DB::query("select count(*) from konacna_ocjena where student=$student and predmet=$r15[2] and ocjena>=6");
-			if (mysql_result($q15a,0,0)>0) continue;
+	// Calculate score that a student would have for exams
+	public static function calculateScore($studentId, $courseOfferingId, $scoringElementId) {
+		// If course option AnnullExams is set, every time student retakes an exam the previous score is annulled
+		// (last one is used)
+		// Otherwise, the best score is used
+		$options = CourseOffering::getCourseOptions($courseOfferingId);
+		if (in_array("PonistavanjeIspita", $options))
+			return DB::get("SELECT io.ocjena FROM ispitocjene io, ispit i, ponudakursa pk WHERE pk.id=$courseOfferingId AND i.predmet=pk.predmet AND i.akademska_godina=pk.akademska_godina AND i.komponenta=$scoringElementId AND io.ispit=i.id AND io.student=$studentId ORDER BY i.datum DESC LIMIT 1");
+		return DB::get("SELECT MAX(io.ocjena) FROM ispitocjene io, ispit i, ponudakursa pk WHERE pk.id=$courseOfferingId AND i.predmet=pk.predmet AND i.akademska_godina=pk.akademska_godina AND i.komponenta=$scoringElementId AND io.ispit=i.id AND io.student=$studentId");
+	}
+	
+	// Calculate score that a student would have for exams
+	public static function updateAllScores($studentId, $courseOfferingId, $ScoringElement) {
+	
+		// If this is partial exam, find integrals
+		if ($ScoringElement->ScoringType->id == 1) {
+			$se = $ScoringElement->id;
+			$integral = DB::get("SELECT k.id FROM komponenta k, tippredmeta_komponenta tpk, akademska_godina_predmet agp, ponudakursa pk WHERE pk.id=$courseOfferingId AND agp.predmet=pk.predmet AND agp.akademska_godina=pk.akademska_godina AND agp.tippredmeta=tpk.tippredmeta AND tpk.komponenta=k.id AND k.tipkomponente=2 AND (k.opcija='$se' OR k.opcija LIKE '%$se+%' OR k.opcija LIKE '%+$se')");
+			if ($integral) {
+				// Recurse this function for integral exam
+				$ScoringElement->id = $integral;
+				$ScoringElement->ScoringType->id = 2;
+				return updateScore($studentId, $courseOfferingId, $ScoringElement);
+			}
+			
+			// No integrals, just calculate score and update
+			$score = calculateScore($studentId, $courseOfferingId, $ScoringElement->id);
+			$ss = StudentScore::fromStudentSEandCO($studentId, $ScoringElement->id, $courseOfferingId);
+			if ($score === false)
+				$ss->deleteScore();
+			else
+				$ss->setScore($score);
+			return $score;
+		}
 
+		// This is an integral exam
+		$score = calculateScore($studentId, $courseOfferingId, $ScoringElement->id);
+		
+		// Is integral exam passed?
+		$passed = ($score >= $ScoringElement->pass);
+		
+		// Find partials for this integral exam
+		$partials = explode("+", $ScoringElement->option);
+		$partial_scores = array();
+		$all_partials_passed = true;
+		foreach($partials as $partial) {
+			$partial_scores[$partial] = calculateScore($studentId, $courseOfferingId, $partial);
+			
+			// Is this partial exam passed?
+			if ($all_partials_passed) {
+				$se = ScoringElement::fromId($partial);
+				if ($partial_scores[$partial] < $se->pass) $all_partials_passed = false;
+			}
+		}
+		
+		// Use integral score and delete partial scores if integral score is greater then sum of partials,
+		// or if integral is passed and some of partials are failed
+		if ($score > array_sum($partial_scores) || ($passed && !$all_partials_passed) ) {
+			$ss = StudentScore::fromStudentSEandCO($studentId, $ScoringElement->id, $courseOfferingId);
+			$ss->setScore($score);
+			foreach($partials as $partial) {
+				$ss = StudentScore::fromStudentSEandCO($studentId, $partial, $courseOfferingId);
+				$ss->deleteScore();
+			}
+			
+		// Otherwise use partial scores and delete integral score
+		} else {
+			$ss = StudentScore::fromStudentSEandCO($studentId, $ScoringElement->id, $courseOfferingId);
+			if ($score > 0 || count($partials) > 0 || $score == false) $ss->deleteScore();
+			foreach($partials as $partial) {
+				$ss = StudentScore::fromStudentSEandCO($studentId, $partial, $courseOfferingId);
+				$ss->setScore($partial_scores[$partial]);
+			}
+		}
+		return $score;
+	}
+	
+	// List of exam results for student on course
+	public static function forStudentOnCourse($studentId, $courseOfferingId, $scoringElementId) {
+		$query = DB::query_table("SELECT i.id id, io.ocjena result
+			FROM ispitocjene as io, ispit as i, ponudakursa as pk
+			WHERE io.student=$studentId AND io.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=pk.akademska_godina
+			AND pk.id=$courseOfferingId AND i.komponenta=$scoringElementId
+			ORDER BY i.vrijemeobjave");
+		$examresults = array();
+		foreach ($query as $item) {
 			$er = new ExamResult;
-			$er->studentId = $student;
-			$er->examId = $r15[1];
-			$er->result = $r15[0];
-			$er->exists = true;
-			
-			$er->exam = new Exam;
-			$er->exam->id = $r15[1];
-			$er->exam->courseUnitId = $r15[2];
-			$er->exam->academicYearId = $r15[3];
-			$er->exam->date = $r15[4];
-			$er->exam->publishedDateTime = $r15[5];
-			$er->exam->scoringElementId = $r15[6];
-			
-			$er->exam->scoringElement = new ScoringElement;
-			$er->exam->scoringElement->guiName = $r15[7];
-			$er->exam->scoringElement->pass = $r15[8];
-			// TODO dodati ostalo
-			
-			$er->exam->courseUnit = new CourseUnit;
-			$er->exam->courseUnit->name = $r15[9];
-			// TODO dodati ostalo		
-			
+			$er->student = new UnresolvedClass("Person", $studentId, $er->student);
+			$er->Exam = new UnresolvedClass("Exam", $item['id'], $er->Exam);
+			$er->result = $item['result'];
+
+			array_push($examresults, $er);
+		}
+		return $examresults;
+	}
+
+	
+	// List of latest results on exams attended by student newer than one month 
+	// Skip exams that student didn't attend to and exams on courses where passing grade is already entered
+	public static function getLatestForStudent($studentId, $limit) {
+		$interval = "1 MONTH"; // MySQL interval
+	
+		$query = DB::query_table("SELECT io.ocjena result, i.id id, i.predmet CourseUnit, i.akademska_godina AcademicYear, UNIX_TIMESTAMP(i.datum) date, UNIX_TIMESTAMP(i.vrijemeobjave) publishedDateTime, i.komponenta ScoringElement
+			FROM ispitocjene as io, ispit as i, predmet as p
+			WHERE io.student=$studentId AND io.ispit=i.id AND i.predmet=p.id AND i.vrijemeobjave > SUBDATE(NOW(), INTERVAL $interval)
+			AND (SELECT COUNT(*) FROM konacna_ocjena ko WHERE ko.student=$studentId and ko.predmet=i.predmet and ko.ocjena>=6)=0
+			ORDER BY i.vrijemeobjave DESC
+			LIMIT $limit");
+		
+		$examresults = array();
+		foreach($query as $item) {
+			$er = new ExamResult;
+			$er->student = new UnresolvedClass("Person", $studentId, $er->student);
+			$er->result = $item['result'];
+			unset($item['result']);
+			$er->Exam = Util::array_to_class($item, "Exam", array("CourseUnit", "AcademicYear", "ScoringElement"));
+
 			array_push($examresults, $er);
 		}
 		return $examresults;

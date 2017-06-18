@@ -34,31 +34,6 @@ class ScoringElement {
 		}
 		return $ses;
 	}
-
-	// Get list of scoring elements along with awarded points for student and course
-	// Returns false if student is not enrolled
-	public static function forStudent($studentId, $courseOfferingId) {
-		$score = DB::query_table("SELECT komponenta, bodovi FROM komponentebodovi WHERE student=$studentId AND predmet=$courseOfferingId");
-		$result = array();
-		foreach($score as $item) {
-			$obj_item = new stdClass;
-			$obj_item->ScoringElement = $item['komponenta'];
-			UnresolvedClass::makeForParent($obj_item, "ScoringElement");
-			$obj_item->score = $item['bodovi'];
-			$result[] = $obj_item;
-		}
-		return $result;
-		
-		/*
-		// This method can be more efficient
-		$scoringId = DB::get("SELECT agp.tippredmeta FROM akademska_godina_predmet agp, ponudakursa pk WHERE agp.akademska_godina=pk.akademska_godina AND agp.predmet=pk.predmet AND pk.id=$courseOfferingId");
-		$ses = ScoringElement::fromScoring($scoringId);
-		
-		foreach ($ses as &$se)
-			$se->points = DB::get("SELECT bodovi FROM komponentebodovi WHERE student=$studentId AND predmet=$courseOfferingId AND komponenta=" . $se->id);
-		
-		return $ses;*/
-	}
 }
 
 ?>

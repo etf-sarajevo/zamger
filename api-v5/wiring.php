@@ -202,7 +202,8 @@ $wiring = array(
 		"path" => "group/{id}", 
 		"description" => "Get group with id", 
 		"method" => "GET", 
-		"code" => "return Group::fromId(\$id);", 
+		"params" => array( "details" => "bool" ),
+		"code" => "return Group::fromId(\$id, \$details);", 
 		"acl" => "teacherLevelGroup(\$id) || privilege('siteadmin')",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
@@ -251,7 +252,7 @@ $wiring = array(
 		"method" => "GET", 
 		"params" => array( "student" => "int", "year" => "int" ),
 		"code" => "if (\$student == 0) \$student=Session::\$userid; return Group::fromStudentAndCourse(\$student, \$course, \$year);",
-		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year)",
+		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year) || privilege('siteadmin')",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
@@ -261,6 +262,355 @@ $wiring = array(
 		)
 	),
 	
+	
+	
+	// CLASS/ATTENDANCE
+	
+	array(
+		"path" => "class", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/{id}", 
+		"description" => "Get class information", 
+		"method" => "GET", 
+		"code" => "return ZClass::fromId(\$id);", 
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/group/{group}", 
+		"description" => "List of classes in group", 
+		"method" => "GET", 
+		"code" => "return ZClass::fromGroup(\$group);", 
+		"acl" => "teacherLevelGroup(\$group) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/{id}/student/{student}", 
+		"description" => "Get information on attendance of student", 
+		"method" => "GET", 
+		"code" => "\$att = Attendance::fromStudentAndClass(\$student, \$id); \$att->getPresence(); return \$att;", 
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/{id}/student/{student}", 
+		"description" => "Update attendance of student", 
+		"method" => "POST", 
+		"params" => array( "att" => "object" ),
+		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/{id}/student/{student}", 
+		"description" => "Set attendance of student", 
+		"method" => "PUT", 
+		"params" => array( "att" => "object" ),
+		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	
+	
+	// EXAM
+	
+	array(
+		"path" => "exam", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/{id}", 
+		"description" => "Information about exam", 
+		"method" => "GET", 
+		"code" => "return Exam::fromId(\$id);", 
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/course/{course}", 
+		"description" => "Information about exam", 
+		"method" => "GET", 
+		"code" => "return Exam::fromCourseAndYear(\$course);", 
+		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/course/{course}/{year}", 
+		"description" => "Information about exam", 
+		"method" => "GET", 
+		"code" => "return Exam::fromCourseAndYear(\$course, \$year);", 
+		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/{id}/student/{student}", 
+		"description" => "Information about exam result achieved by student", 
+		"method" => "GET", 
+		"code" => "return ExamResult::fromStudentAndExam(\$student, \$id);", 
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/latest", 
+		"description" => "Latest exam results for student", 
+		"method" => "GET", 
+		"code" => "return ExamResult::getLatestForStudent(Session::\$userid, 10);", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	
+	
+	// HOMEWORK
+	
+	array(
+		"path" => "homework", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/{id}", 
+		"description" => "Information about homework", 
+		"method" => "GET", 
+		"code" => "return Homework::fromId(\$id);", 
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/course/{course}", 
+		"description" => "List of homeworks on course", 
+		"method" => "GET", 
+		"code" => "return Homework::fromCourse(\$course);", 
+		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/course/{course}/{year}", 
+		"description" => "List of homeworks on course", 
+		"method" => "GET", 
+		"code" => "return Homework::fromCourse(\$course, \$year);", 
+		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/student", 
+		"description" => "Status of submitted homework for student (with assignment number)", 
+		"method" => "GET", 
+		"code" => "return Assignment::fromId(\$userid, \$id, \$asgn);", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/student/{student}", 
+		"description" => "Status of submitted homework for student (with assignment number)", 
+		"method" => "GET", 
+		"code" => "return Assignment::fromId(\$student, \$id, \$asgn);", 
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+		)
+	),
+	
+	
+	
+	// HOMEWORK
+	
+	array(
+		"path" => "quiz", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}", 
+		"description" => "Information about quiz", 
+		"method" => "GET", 
+		"code" => "return Quiz::fromId(\$id);", 
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}/take", 
+		"description" => "Get quiz questions with offered answers", 
+		"method" => "GET", 
+		"code" => "return Quiz::fromIdQuiz(\$id);", 
+		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}/student", 
+		"description" => "Quiz results for student", 
+		"method" => "GET", 
+		"code" => "return QuizResult::fromStudentAndQuiz(Session::\$userid, \$id);", 
+		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}/student/{student}", 
+		"description" => "Quiz results for student", 
+		"method" => "GET", 
+		"code" => "return QuizResult::fromStudentAndQuiz(\$student, \$id);", 
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/course/{course}", 
+		"description" => "List of quizzes for course", 
+		"method" => "GET", 
+		"code" => "return Quiz::fromCourse(\$course);", 
+		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/course/{course}/{year}", 
+		"description" => "List of quizzes for course", 
+		"method" => "GET", 
+		"code" => "return Quiz::fromCourse(\$course, \$year);", 
+		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
 );
 
 $ws_aliases = array(

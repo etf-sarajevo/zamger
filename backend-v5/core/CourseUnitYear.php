@@ -29,6 +29,13 @@ class CourseUnitYear {
 		return $cuy;
 	}
 
+	public static function fromCourseAndYearQuick($courseUnitId, $academicYearId) {
+		$cuy = new CourseUnitYear;
+		$cuy->CourseUnit = new UnresolvedClass("CourseUnit", $courseUnitId, $cuy->CourseUnit);
+		$cuy->AcademicYear = new UnresolvedClass("AcademicYear", $academicYearId, $cuy->AcademicYear);		
+		return $cuy;
+	}
+
 	// Teachers access level on course
 	public function teacherAccessLevel($teacher) {
 		// ay==0 -> current year

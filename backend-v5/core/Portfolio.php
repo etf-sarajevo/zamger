@@ -8,6 +8,7 @@
 require_once(Config::$backend_path."core/AcademicYear.php");
 require_once(Config::$backend_path."core/CourseOffering.php");
 require_once(Config::$backend_path."core/ScoringElement.php");
+require_once(Config::$backend_path."core/StudentScore.php");
 
 class Portfolio {
 	public $Person, $CourseOffering;
@@ -16,7 +17,7 @@ class Portfolio {
 	
 	// This method doesn't check if student is enrolled! FIXME?
 	public static function fromCourseOffering($studentId, $courseOfferingId) {
-		$p = array("Person" => $studentId, "CourseOffering" => $courseOfferingId, "scoringElements" => false);
+		$p = array("Person" => $studentId, "CourseOffering" => $courseOfferingId);
 		$p = Util::array_to_class($p, "Portfolio", array("Person", "CourseOffering"));
 		return $p;
 	}
@@ -51,9 +52,13 @@ class Portfolio {
 	}
 	
 	// Use this method to get scoring elements for lasy loading
-	public function getScore() {
-		if (!$this->score)
-			$this->score = ScoringElement::forStudent($this->Person->id, $this->CourseOffering->id);
+	public function getScore($details = false) {
+		if (!$this->score) {
+			$this->score = StudentScore::fromStudentAndCO($this->Person->id, $this->CourseOffering->id);
+			if ($details)
+				foreach($this->score as &$score)
+					$score->getDetails();
+		}
 		return $this->score;
 	}
 	
@@ -111,28 +116,23 @@ class Portfolio {
 	}
 	
 	public function setScore($scoringElementId, $score) {
-		$se = ScoringElement::fromId($scoringElementId);
-		
-		// Maksimalan broj bodova
-		if ($score > $se->max) {
-			zamgerlog("AJAH ispit - vrijednost $score > max ".$se->max,3);
-			return "maksimalan broj bodova je ".$se->max.", a unijeli ste $score";
-		}
-		
-		$q90 = myquery("lock tables komponentebodovi write");
-		$q10 = DB::query("delete from komponentebodovi where student=".$this->studentId." and predmet=".$this->courseOfferingId." and komponenta=$scoringElementId");
-		$q20 = DB::query("insert into komponentebodovi set student=".$this->studentId.", predmet=".$this->courseOfferingId.", komponenta=$scoringElementId, bodovi=$score");
-		$q93 = myquery("unlock tables");
+		if (!$this->score) $this->getScore();
+		foreach($this->score as &$score)
+			if ($score->ScoringElement->id == $scoringElementId)
+				$score->setScore($score);
+				
 		Logging::log("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $scoringElementId (predmet pp".$this->courseOfferingId.", student u".$this->studentId.")",4);
 	}
 	
 	public function deleteScore($scoringElementId) {
-		$q10 = DB::query("delete from komponentebodovi where student=".$this->studentId." and predmet=".$this->courseOfferingId." and komponenta=$scoringElementId");
+		if (!$this->score) $this->getScore();
+		foreach($this->score as &$score)
+			if ($score->ScoringElement->id == $scoringElementId)
+				$score->deleteScore();
 	}
 
 	public function getTotalScore() {
-		$q10 = DB::query("select SUM(bodovi) from komponentebodovi where student=".$this->studentId." and predmet=".$this->courseOfferingId);
-		return mysql_result($q10,0,0);
+		return DB::get("SELECT SUM(bodovi) FROM komponentebodovi WHERE student=" . $this->Person->id . " and predmet=" . $this->CourseOffering->id);
 	}
 
 	// Maximum total score that student could've made on this course so far
