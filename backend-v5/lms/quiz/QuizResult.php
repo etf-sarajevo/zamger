@@ -10,7 +10,7 @@ class QuizResult {
 	
 	public static function fromStudentAndQuiz($studentId, $quizId) {
 		$qr = DB::query_assoc("SELECT student, kviz Quiz, dovrsen finished, bodova score, UNIX_TIMESTAMP(vrijeme_aktivacije) timeActivated FROM kviz_student WHERE student=$studentId AND kviz=$quizId");
-		if (!$qr) throw new Exception("Unknown quiz result for student $studentId and quiz $quizId", "404");
+		if (!$qr) throw new Exception("Student $studentId never took quiz $quizId", "404");
 		
 		$qr = Util::array_to_class($qr, "QuizResult", array("Quiz"));
 		$qr->student = new UnresolvedClass("Person", $qr->student, $qr->student);

@@ -9,10 +9,10 @@ require_once(Config::$backend_path."lms/quiz/QuizAnswer.php");
 
 class QuizQuestion {
 	public $id;
-	public $Quiz, $type, $text, $score, $visible;
+	public $Quiz, $type, $text, $score, $visible, $totalTakes, $correctTakes;
 	
 	public static function fromId($id) {
-		$qq = DB::query_assoc("SELECT id, kviz Quiz, tip type, tekst text, bodova score, vidljivo visible FROM kviz_pitanje WHERE id=$id");
+		$qq = DB::query_assoc("SELECT id, kviz Quiz, tip type, tekst text, bodova score, vidljivo visible, ukupno totalTakes, tacnih correctTakes FROM kviz_pitanje WHERE id=$id");
 		if (!$qq) throw new Exception("Unknown quiz question $id", "404");
 		
 		$qq = Util::array_to_class($qq, "QuizQuestion", array("Quiz"));
@@ -21,6 +21,7 @@ class QuizQuestion {
 		return $qq;
 	}
 	
+	// All questions in quiz as unresolved
 	public static function forQuiz($quizId) {
 		$questions = DB::query_varray("SELECT id FROM kviz_pitanje WHERE kviz=$quizId");
 		foreach ($questions as &$q) 
@@ -28,7 +29,10 @@ class QuizQuestion {
 		return $questions;
 	}
 	
-	public static function forQuizQuiz($quizId, $limit = 0, $randomize = false) {
+	// Get a list of questions for quiz taking
+	// Only visible questions and visible answers will be returned, both will be randomized
+	// Also, QuizAnswer::correct field will be removed
+	public static function takeQuiz($quizId, $limit = 0, $randomize = false) {
 		if ($limit > 0) $limitsql = "LIMIT $limit"; else $limitsql = "";
 		if ($randomize) $randsql = "ORDER BY RAND()"; else $randsql = "";
 		

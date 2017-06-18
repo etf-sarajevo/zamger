@@ -28,8 +28,10 @@ class QuizAnswer {
 	}
 	
 	// Get answers to question in quiz mode (only visible, resolved, don't show which one is correct)
-	public static function forQuestionQuiz($questionId) {
-		$answers = DB::query_table("SELECT id, kviz_pitanje QuizQuestion, tekst text, vidljiv visible FROM kviz_odgovor WHERE kviz_pitanje=$questionId AND vidljiv=1 ORDER BY RAND()");
+	public static function forQuestionQuiz($questionId, $randomize = false) {
+		if ($randomize) $randsql = "ORDER BY RAND()"; else $randsql = "";
+		
+		$answers = DB::query_table("SELECT id, kviz_pitanje QuizQuestion, tekst text, vidljiv visible FROM kviz_odgovor WHERE kviz_pitanje=$questionId AND vidljiv=1 $randsql");
 		foreach ($answers as &$qa) {
 			$qa = Util::array_to_class($qa, "QuizAnswer", array("QuizQuestion"));
 			if ($qa->visible == 1) $qa->visible=true; else $qa->visible=false; // FIXME use boolean in database

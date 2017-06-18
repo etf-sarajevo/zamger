@@ -524,6 +524,7 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -538,6 +539,7 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -546,12 +548,13 @@ $wiring = array(
 		"path" => "quiz/{id}/take", 
 		"description" => "Get quiz questions with offered answers", 
 		"method" => "GET", 
-		"code" => "return Quiz::fromIdQuiz(\$id);", 
+		"code" => "return Quiz::take(SEssion::\$userid, \$id);", 
 		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -566,6 +569,7 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -580,6 +584,22 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}/student/{student}", 
+		"description" => "Delete result (reset quiz) for student", 
+		"method" => "DELETE", 
+		"code" => "\$qr = QuizResult::fromStudentAndQuiz(\$student, \$id); \$qr->delete();", 
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -594,6 +614,7 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
@@ -608,6 +629,7 @@ $wiring = array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
 			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),

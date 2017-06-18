@@ -7,10 +7,11 @@
 
 require_once(Config::$backend_path."core/CourseUnit.php");
 require_once(Config::$backend_path."lms/quiz/QuizQuestion.php");
+require_once(Config::$backend_path."lms/quiz/QuizResult.php");
 
 class Quiz {
 	public $id;
-	public $name, $CourseUnit, $AcademicYear, $Group, $timeBegin, $timeEnd, $active, $ipAddressRanges, $passPoints, $nrQuestions, $duration;
+	public $name, $CourseUnit, $AcademicYear, $Group, $timeBegin, $timeEnd, $active, $ipAddressRanges, $passPoints, $nrQuestions, $duration; /* in seconds */
 	// $zclassId -- dodati link na čas umjesto kako je sada, link sa časa na kviz
 	
 	public static function fromId($id) {
@@ -24,15 +25,23 @@ class Quiz {
 		return $quiz;
 	}
 	
-	// Return quiz in "quiz mode"
-	public static function fromIdQuiz($id) {
+	// Allow student to take quiz
+	public static function take($studentId, $id) {
+		try {
+			// If student never took this quiz, below will throw an exception
+			$qr = QuizResult::fromStudentAndQuiz($studentId, $id);
+			throw new Exception("Quiz already taken", "703");
+		} catch(Exception $e) {
+			// Proceed to taking quiz
+		}
+		
 		$quiz = DB::query_assoc("SELECT id, naziv name, predmet CourseUnit, akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz WHERE id=$id");
 		if (!$quiz) throw new Exception("Unknown quiz $id", "404");
 		
 		$quiz['Group'] = $quiz['_Group']; unset($quiz['_Group']); // SQL reserved word
 		$quiz = Util::array_to_class($quiz, "Quiz", array("CourseUnit", "AcademicYear", "Group"));
 		if ($quiz->active == 1) $quiz->active=true; else $quiz->active=false; // FIXME use boolean in database
-		$quiz->questions = QuizQuestion::forQuizQuiz($id, $quiz->nrQuestions, true);
+		$quiz->questions = QuizQuestion::takeQuiz($id, $quiz->nrQuestions, true);
 		return $quiz;
 	}
 	
