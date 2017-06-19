@@ -204,7 +204,7 @@ $wiring = array(
 		"method" => "GET", 
 		"params" => array( "details" => "bool" ),
 		"code" => "return Group::fromId(\$id, \$details);", 
-		"acl" => "teacherLevelGroup(\$id) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(\$id)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
@@ -220,7 +220,7 @@ $wiring = array(
 		"method" => "GET", 
 		"params" => array( "year" => "int", "includeVirtual" => "bool", "getMembers" => "bool" ),
 		"code" => "return Group::forCourseAndYear(\$course, \$year, \$includeVirtual);", 
-		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, \$year)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
@@ -236,7 +236,7 @@ $wiring = array(
 		"method" => "GET", 
 		"params" => array( "year" => "int" ),
 		"code" => "return Group::virtualForCourse(\$course, \$year);", 
-		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')", // FIXME use teacherLevelGroup and id of virtual group
+		"acl" => "teacherLevel(\$course, \$year)", // FIXME use teacherLevelGroup and id of virtual group
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
@@ -252,7 +252,7 @@ $wiring = array(
 		"method" => "GET", 
 		"params" => array( "student" => "int", "year" => "int" ),
 		"code" => "if (\$student == 0) \$student=Session::\$userid; return Group::fromStudentAndCourse(\$student, \$course, \$year);",
-		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
@@ -284,7 +284,7 @@ $wiring = array(
 		"description" => "Get class information", 
 		"method" => "GET", 
 		"code" => "return ZClass::fromId(\$id);", 
-		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
@@ -297,7 +297,7 @@ $wiring = array(
 		"description" => "List of classes in group", 
 		"method" => "GET", 
 		"code" => "return ZClass::fromGroup(\$group);", 
-		"acl" => "teacherLevelGroup(\$group) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(\$group)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
@@ -310,7 +310,7 @@ $wiring = array(
 		"description" => "Get information on attendance of student", 
 		"method" => "GET", 
 		"code" => "\$att = Attendance::fromStudentAndClass(\$student, \$id); \$att->getPresence(); return \$att;", 
-		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
@@ -324,7 +324,7 @@ $wiring = array(
 		"method" => "POST", 
 		"params" => array( "att" => "object" ),
 		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
-		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
@@ -338,7 +338,7 @@ $wiring = array(
 		"method" => "PUT", 
 		"params" => array( "att" => "object" ),
 		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
-		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id) || privilege('siteadmin')",
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
@@ -369,7 +369,7 @@ $wiring = array(
 		"description" => "Information about exam", 
 		"method" => "GET", 
 		"code" => "return Exam::fromId(\$id);", 
-		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),
 			"allExamsForCourse" => array("href" => "exam/course/{course}"),
@@ -383,7 +383,7 @@ $wiring = array(
 		"description" => "Information about exam", 
 		"method" => "GET", 
 		"code" => "return Exam::fromCourseAndYear(\$course);", 
-		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, 0)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),
 			"allExamsForCourse" => array("href" => "exam/course/{course}"),
@@ -397,7 +397,7 @@ $wiring = array(
 		"description" => "Information about exam", 
 		"method" => "GET", 
 		"code" => "return Exam::fromCourseAndYear(\$course, \$year);", 
-		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, \$year)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),
 			"allExamsForCourse" => array("href" => "exam/course/{course}"),
@@ -411,7 +411,7 @@ $wiring = array(
 		"description" => "Information about exam result achieved by student", 
 		"method" => "GET", 
 		"code" => "return ExamResult::fromStudentAndExam(\$student, \$id);", 
-		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),
 			"allExamsForCourse" => array("href" => "exam/course/{course}"),
@@ -455,7 +455,7 @@ $wiring = array(
 		"description" => "Information about homework", 
 		"method" => "GET", 
 		"code" => "return Homework::fromId(\$id);", 
-		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
@@ -467,7 +467,7 @@ $wiring = array(
 		"description" => "List of homeworks on course", 
 		"method" => "GET", 
 		"code" => "return Homework::fromCourse(\$course);", 
-		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, 0)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
@@ -479,7 +479,7 @@ $wiring = array(
 		"description" => "List of homeworks on course", 
 		"method" => "GET", 
 		"code" => "return Homework::fromCourse(\$course, \$year);", 
-		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, \$year)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
@@ -490,7 +490,7 @@ $wiring = array(
 		"path" => "homework/{id}/{asgn}/student", 
 		"description" => "Status of submitted homework for student (with assignment number)", 
 		"method" => "GET", 
-		"code" => "return Assignment::fromId(\$userid, \$id, \$asgn);", 
+		"code" => "return Assignment::fromId(Session::\$userid, \$id, \$asgn);", 
 		"acl" => "loggedIn()",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
@@ -503,7 +503,7 @@ $wiring = array(
 		"description" => "Status of submitted homework for student (with assignment number)", 
 		"method" => "GET", 
 		"code" => "return Assignment::fromId(\$student, \$id, \$asgn);", 
-		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
@@ -534,7 +534,7 @@ $wiring = array(
 		"description" => "Information about quiz", 
 		"method" => "GET", 
 		"code" => "return Quiz::fromId(\$id);", 
-		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -548,8 +548,24 @@ $wiring = array(
 		"path" => "quiz/{id}/take", 
 		"description" => "Get quiz questions with offered answers", 
 		"method" => "GET", 
-		"code" => "return Quiz::take(SEssion::\$userid, \$id);", 
-		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"code" => "return Quiz::take(Session::\$userid, \$id);", 
+		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id)",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizSubmit" => array("href" => "quiz/{id}/submit"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/{id}/submit", 
+		"description" => "When student takes a quiz and completes all answers, they submit the Quiz object here", 
+		"method" => "POST", 
+		"params" => array( "quiz" => "object" ),
+		"code" => "return \$quiz->submit(Session::\$userid);", 
+		"acl" => "isStudent(\$quiz->CourseUnit->id, \$quiz->AcademicYear->id)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -564,7 +580,7 @@ $wiring = array(
 		"description" => "Quiz results for student", 
 		"method" => "GET", 
 		"code" => "return QuizResult::fromStudentAndQuiz(Session::\$userid, \$id);", 
-		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "isStudent(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -579,7 +595,7 @@ $wiring = array(
 		"description" => "Quiz results for student", 
 		"method" => "GET", 
 		"code" => "return QuizResult::fromStudentAndQuiz(\$student, \$id);", 
-		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -594,7 +610,7 @@ $wiring = array(
 		"description" => "Delete result (reset quiz) for student", 
 		"method" => "DELETE", 
 		"code" => "\$qr = QuizResult::fromStudentAndQuiz(\$student, \$id); \$qr->delete();", 
-		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id) || privilege('siteadmin')",
+		"acl" => "teacherLevel(Quiz::fromId(\$id)->CourseUnit->id, Quiz::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -609,7 +625,7 @@ $wiring = array(
 		"description" => "List of quizzes for course", 
 		"method" => "GET", 
 		"code" => "return Quiz::fromCourse(\$course);", 
-		"acl" => "teacherLevel(\$course, 0) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, 0)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),
@@ -624,7 +640,7 @@ $wiring = array(
 		"description" => "List of quizzes for course", 
 		"method" => "GET", 
 		"code" => "return Quiz::fromCourse(\$course, \$year);", 
-		"acl" => "teacherLevel(\$course, \$year) || privilege('siteadmin')",
+		"acl" => "teacherLevel(\$course, \$year)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
 			"quizTake" => array("href" => "quiz/{id}/take"),

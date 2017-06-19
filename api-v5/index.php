@@ -169,13 +169,17 @@ foreach ($wiring as $wire) {
 	// TODO: First eval code, then check privileges (this will avoid some double queries)
 	
 	// Check privileges - may depend on params
-	if (strstr($wire['acl'], "||")) 
-		$wire['acl'] = preg_replace("/\|\|\s?/", "|| AccessControl::", $wire['acl']);
-	try {
-		$ok = eval("return AccessControl::" . $wire['acl'] . ";");
-	} catch(Exception $e) {
-		// Nonexistant item, eval($code) will throw exception
-		$ok = true;
+	if (AccessControl::privilege('siteadmin'))
+		$ok = true; // Siteadmin has access to everything
+	else {
+		if (strstr($wire['acl'], "||")) 
+			$wire['acl'] = preg_replace("/\|\|\s?/", "|| AccessControl::", $wire['acl']);
+		try {
+			$ok = eval("return AccessControl::" . $wire['acl'] . ";");
+		} catch(Exception $e) {
+			// Nonexistant item, eval($code) will throw exception
+			$ok = true;
+		}
 	}
 	if (!$ok) {
 		header("HTTP/1.0 403 Forbidden");
