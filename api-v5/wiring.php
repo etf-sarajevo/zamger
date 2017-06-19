@@ -82,7 +82,7 @@ $wiring = array(
 		"acl" => "all()",
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -98,7 +98,7 @@ $wiring = array(
 		"autoresolve" => array("CourseUnit", "AcademicYear", "Institution", "Scoring", "Programme", "ProgrammeType"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -113,7 +113,21 @@ $wiring = array(
 		"autoresolve" => array("CourseUnit", "AcademicYear", "Institution", "Scoring", "Programme"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
+			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher')
+		)
+	),
+	
+	array(
+		"path" => "course/programme/{programme}/{semester}", 
+		"description" => "List of courses on programme and semester", 
+		"method" => "GET", 
+		"code" => "return CourseOffering::getCoursesOffered(AcademicYear::getCurrent()->id, \$programme, \$semester);", 
+		"acl" => "all()",
+		"hateoas_links" => array(
+			"course" => array("href" => "course/{course}/{year}"),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -128,7 +142,7 @@ $wiring = array(
 		"autoresolve" => array("AcademicYear", "Institution"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -142,7 +156,7 @@ $wiring = array(
 		"acl" => "self(\$teacher) || privilege('studentska')",
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -158,7 +172,7 @@ $wiring = array(
 		"autoresolve" => array("CourseOffering", "AcademicYear", "CourseUnit", "Programme"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)
@@ -174,7 +188,7 @@ $wiring = array(
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/?programme={programme}&semester={semester}'),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
 			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
 			'coursesForTeacher' => array('href' => 'course/teacher')
 		)

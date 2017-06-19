@@ -42,7 +42,7 @@ class CourseOffering {
 		if ($programmeId > 0) $sql .= " and pk.studij=$programmeId";
 		if ($semestar > 0) $sql .= " and pk.semestar=$semestar";
 
-		$course_offers = DB::query_table("SELECT pk.id id, pk.predmet CourseUnit, pk.akademska_godina AcademicYear, pk.studij Programme, pk.semestar semester, pk.obavezan mandatory from predmet as p, ponudakursa as pk where pk.predmet=p.id $sql order by p.naziv");
+		$course_offers = DB::query_table("SELECT pk.id id, pk.predmet CourseUnit, pk.akademska_godina AcademicYear, pk.studij Programme, pk.semestar semester, pk.obavezan mandatory FROM predmet as p, ponudakursa as pk WHERE pk.predmet=p.id $sql order by p.naziv");
 		foreach($course_offers as &$co) {
 			$co = Util::array_to_class($co, "CourseOffering", array("CourseUnit", "AcademicYear", "Programme"));
 			if ($co->mandatory == 1) $co->mandatory=true; else $co->mandatory=false; // FIXME use boolean in database
