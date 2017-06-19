@@ -447,6 +447,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
 		)
 	),
 	
@@ -459,6 +460,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
 		)
 	),
 	
@@ -471,6 +473,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
 		)
 	),
 	
@@ -483,18 +486,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
-		)
-	),
-	
-	array(
-		"path" => "homework/{id}/{asgn}/student", 
-		"description" => "Status of submitted homework for student (with assignment number)", 
-		"method" => "GET", 
-		"code" => "return Assignment::fromId(Session::\$userid, \$id, \$asgn);", 
-		"acl" => "loggedIn()",
-		"hateoas_links" => array(
-			"homework" => array("href" => "homework/{id}"),
-			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
 		)
 	),
 	
@@ -502,11 +494,41 @@ $wiring = array(
 		"path" => "homework/{id}/{asgn}/student/{student}", 
 		"description" => "Status of submitted homework for student (with assignment number)", 
 		"method" => "GET", 
-		"code" => "return Assignment::fromId(\$student, \$id, \$asgn);", 
+		"code" => "return Assignment::fromStudentHomeworkNumber(\$student, \$id, \$asgn);", 
+		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
+			"homeworkFile" => array("href" => "homework/{id}/{asgn}/student/{student}/file"),
+		)
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/student/{student}", 
+		"description" => "Submit homework (for students)", 
+		"method" => "POST", 
+		"params" => array( "homework" => "file" ),
+		"code" => "\$asgn = Assignment::fromStudentHomeworkNumber(\$student, \$id, \$asgn); \$asgn->submit(\$homework, Session::\$userid); return \$asgn;", 
+		"acl" => "isStudent(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id) && AccessControl::self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // Teacher can submit homework on behalf of student
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/student/{student}", 
+		"description" => "Change homework status (for teachers)", 
+		"method" => "PUT", 
+		"params" => array( "assign" => "object" ),
+		"code" => "\$assign->author->id = Session::\$userid; \$assign->add(); return \$assign;", 
 		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
 			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
 		)
 	),
 	

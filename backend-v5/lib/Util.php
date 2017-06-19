@@ -26,23 +26,32 @@ class Util {
 		return substr($string,0,$pos)."...";
 	}
 
-	// Returns string with nice printout of file size in kibibytes
-	public static function nicesize($size) {
-		if ($size>1024*1024*1024) {
-			return intval($size/(1024*1024*1024/10))/10 . " GB";
-		} else if ($size>1024*1024*10) {
-			return intval($size/(1024*1024)) . " MB";
-		} else if ($size>1024*1024) {
-			return intval($size/(1024*1024/10))/10 . " MB";
-		} else if ($size>1024*10) {
-			return intval($size/1024) . " kB";
-		} else if ($size>1024) {
-			return intval($size / (1024/10))/10 . " kB";
-		} else {
-			return $size . " B";
-		}
+
+	// Shortcut function: whether string ends with another string
+	// Example: if (ends_with($filename, ".txt")) echo "Text file";
+	public static function ends_with($string, $substring) {
+		if (strlen($string) >= strlen($substring))
+			if (substr($string, strlen($string)-strlen($substring)) === $substring)
+				return true;
+		return false;
 	}
 	
+	// Recursively delete directory with all subdirectories and files
+	public static function rm_minus_r($path) {
+		if ($handle = opendir($path)) {
+			while ($file = readdir($handle)) {
+				if ($file == "." || $file == "..") continue;
+				$filepath = "$path/$file";
+				if (is_dir($filepath)) {
+					Util::rm_minus_r($filepath);
+					rmdir($filepath);
+				} else {
+					unlink($filepath);
+				}
+			}
+		}
+		closedir($handle);
+	}
 
 	// Funkcija za dobivanje IP adrese korisnika iza proxy-ja
 	// Preuzeto sa: http://www.teachmejoomla.net/code/php/remote-ip-detection-with-php.html
@@ -138,6 +147,24 @@ class Util {
 			if ($var === "true") $var=true;
 			if ($var === "false") $var=false;
 		}
+	}
+
+	// Function removes all illegal and potentially suspect Unicode chars from input
+	public static function clear_unicode($text) {
+		// Zbog buga u libc-u koji se propagira na PHP: 
+		//	https://bugs.php.net/bug.php?id=48147
+		// linije ispod trebaju ostati iskomentarisane na verzijama PHPa v5.0-v7.0!
+		// U suprotnom kod ispod će raditi bolje
+		
+		// iconv iz nekog razloga preskače karakter sa ASCII kodom 01
+		//for ($i=0; $i<strlen($text); $i++)
+		//	if (ord($text[$i]) == 1) $text[$i]=" ";
+		
+		//if (function_exists('iconv'))
+		//	return iconv("UTF-8", "UTF-8//IGNORE", $text);
+		if (!function_exists('mb_convert_encoding')) return $text; // nemamo mb, ne možemo ništa
+		ini_set('mbstring.substitute_character', "none"); 
+		return mb_convert_encoding($text, 'UTF-8', 'UTF-8'); 
 	}
 }
 

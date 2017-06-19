@@ -5,6 +5,7 @@
 // Opis: jedan zadatak u sklopu zadaće
 
 
+require_once(Config::$backend_path."lib/File.php");
 require_once(Config::$backend_path."lms/homework/Homework.php");
 require_once(Config::$backend_path."core/CourseOffering.php");
 require_once(Config::$backend_path."core/StudentScore.php");
@@ -22,6 +23,8 @@ class Assignment {
 
 	public $id;
 	public $Homework, $assignNo, $student, $status, $score, $time, $comment, $compileReport /* ovo treba spojiti sa comment */, $filename, $author;
+
+	const MODULE = "zadace"; // Name of filesystem module (dir) where homeworks are kept
 	
 	public static function fromId($id) {
 		$asgn = DB::query_assoc("SELECT id, zadaca Homework, redni_broj assignNo, student, status, bodova score, UNIX_TIMESTAMP(vrijeme) time, komentar comment, izvjestaj_skripte compileReport, filename, userid author FROM zadatak WHERE id=$id");
@@ -45,9 +48,68 @@ class Assignment {
 		$asgn->author = new UnresolvedClass("Person", $asgn->author, $asgn->author);
 		return $asgn;
 	}
+	
+	// Method for submitting homework intended for students
+	public function submit($fileArray, $authorId) {
+		if (get_class($this->Homework) == "UnresolvedClass")
+			$this->Homework->resolve();
+		
+		// Check if it is ok to submit this homework
+		if (!$this->Homework->active) {
+			// Teachers are allowed to submit expired homeworks!
+			if (!AccessControl::teacherLevelStudent($this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id, $this->student->id))
+				throw new Exception("Homework " . $this->Homework->id . " isn't active", "403");
+		}
+		
+		if ($this->assignNo < 1 || $this->assignNo > $this->Homework->nrAssignments)
+			throw new Exception("Invalid assignment number", "500");
+
+		// Check deadling
+		if ($this->Homework->deadline <= time()) {
+			// Teachers are allowed to submit expired homeworks!
+			if (!AccessControl::teacherLevelStudent($this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id, $this->student->id))
+				throw new Exception("Time for submitting this homework is over", "403");
+		}
+		
+		// First status
+		if ($this->Homework->automatedTesting) 
+			$this->status = AssignmentStatus::WaitsForTesting;
+		else
+			$this->status = AssignmentStatus::NewHomework;
+		
+		// Plagiarized hw can't be resubmitted
+		$old_asgn = Assignment::fromStudentHomeworkNumber($this->student->id, $this->Homework->id, $this->assignNo);
+		if ($old_asgn->status == AssignmentStatus::Plagiarized)
+			throw new Exception("Not allowed to resubmit plagiarized homework", "403");
+		
+		$this->author = new UnresolvedClass("Person", $authorId, $asgn->author);
+		
+		// Construct file
+		$cuy = CourseUnitYear::fromCourseAndYearQuick($this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id);
+		$file = new File( File::cleanUpFilename($fileArray['name']), 
+				$cuy, $this->student, Assignment::MODULE);
+		
+		$this->filename = $file->filename;
+		
+		// Test extension
+		$allowed = explode(',', $this->Homework->allowedExtensions);
+		$ext = $file->extension();
+		if ($this->Homework->allowedExtensions != "" && !in_array($ext, $allowed))
+			throw new Exception("Extension not allowed $ext", "403");
+
+		// Add to database
+		$this->add();
+		
+		// Diff files
+		if ($old_asgn->filename) {
+			$old_file = new File($old_asgn->filename, $cuy, $this->student, Assignment::MODULE);
+			$this->diff($old_file);
+		}
+	}
 
 	// Puts data from attributes into database
-	public function addAssignment() {
+	public function add() {
+		// Table "zadatak" is a logging table which means that we only INSERT and never UPDATE
 		DB::query("INSERT INTO zadatak SET zadaca=".$this->Homework->id.", redni_broj=".$this->assignNo.", student=".$this->student->id.", status=".$this->status.", bodova=".$this->score.", vrijeme=NOW(), komentar='".$this->comment."', izvjestaj_skripte='".$this->compileReport."', filename='".$this->filename."', userid=".$this->author->id);
 		
 		// Since this is a logging table, we will now find out ID and timestamp
@@ -58,6 +120,49 @@ class Assignment {
 		
 		Logging::log("izmjena zadace (student u" . $this->student->id . " zadaca z" . $this->Homework->id . " zadatak " . $this->assignNo . ")", LogLevel::Edit);
 		Logging::log2("izmjena zadace", $this->student->id, $this->Homework->id, $this->assignNo);
+	}
+	
+	// Create a diff between current file and an older file given as param
+	public function diff($file) {
+		if (!file_exists($file->fullPath())) return;
+		$old_filename = $file->fullPath();
+		$new_filename = $this->fullPath();
+		$basepath = $this->basePath();
+		
+		// Support diffing for ZIP archives (TODO other archive types)
+		if (Util::ends_with($file->filename, ".zip") && Util::ends_with($this->filename, ".zip")) {
+		
+			// Prepare tmp dir
+			$zippath = "/tmp/difftemp";
+			if (!file_exists($zippath)) {
+				mkdir($zippath, 0777, true);
+			} else if (!is_dir($zippath)) {
+				unlink($zippath);
+				mkdir($zippath);
+			} else {
+				Util::rm_minus_r($zippath);
+			}
+			
+			$oldpath = "$zippath/old";
+			$newpath = "$zippath/new";
+			mkdir ($oldpath);
+			mkdir ($newpath);
+			
+			`unzip -j "$old_filename" -d $oldpath`;
+			`unzip -j "$new_filename" -d $newpath`;
+			$diff = `/usr/bin/diff -ur $oldpath $newpath`;
+			$diff = Util::clear_unicode(DB::escape($diff));
+		} else {
+			if (file_exists("$basepath/difftemp")) 
+				unlink ("$basepath/difftemp");
+			rename ($old_filename, "$basepath/difftemp"); 
+			$diff = `/usr/bin/diff -u $basepath/difftemp $new_filename`;
+			$diff = DB::escape($diff);
+			unlink ("$basepath/difftemp");
+		}
+		
+		if (strlen($diff)>1)
+			$q270 = DB::query("INSERT INTO zadatakdiff SET zadatak=" . $this->id . ", diff='$diff'");
 	}
 	
 	// Update score data related to homeworks

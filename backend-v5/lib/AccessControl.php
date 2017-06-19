@@ -54,6 +54,20 @@ class AccessControl {
 		return $lvl;
 	}
 	
+	// Does teacher have access to group where student is in
+	public static function teacherLevelStudent($course, $year, $student) {
+		$lvl = AccessControl::teacherLevel($course, $year);
+		if ($lvl != "asistent") return $lvl;
+		
+		$allowed_groups = DB::query_varray("SELECT o.labgrupa FROM ogranicenje as o, labgrupa as l WHERE o.nastavnik=" . Session::$userid." AND o.labgrupa=l.id AND l.predmet=" . $grp->CourseUnit->id . " AND l.akademska_godina=" . $grp->AcademicYear->id);
+		if (empty($allowed_groups)) return $lvl;
+		
+		$student_groups = Group::fromStudentAndCourse($student, $course, $year);
+		foreach ($student_groups as $grp)
+			if (!$grp->virtual && in_array($grp->id, $allowed_groups)) return $lvl;
+		return "";
+	}
+	
 	public static function isStudent($course, $year) {
 		if (CourseOffering::forStudent(Session::$userid, $course, $year))
 			return true;
