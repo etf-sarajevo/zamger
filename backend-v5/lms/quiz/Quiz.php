@@ -13,8 +13,6 @@ class Quiz {
 	public $id;
 	public $name, $CourseUnit, $AcademicYear, $Group, $timeBegin, $timeEnd, $active, $ipAddressRanges, $passPoints, $nrQuestions, $duration; /* in seconds */
 	// $zclassId -- dodati link na čas umjesto kako je sada, link sa časa na kviz
-
-	const $tokenLength = 20; // Lenght of quiz token
 	
 	public static function fromId($id) {
 		$quiz = DB::query_assoc("SELECT id, naziv name, predmet CourseUnit, akademska_godina AcademicYear, labgrupa _Group, UNIX_TIMESTAMP(vrijeme_pocetak) timeBegin, UNIX_TIMESTAMP(vrijeme_kraj) timeEnd, aktivan active, ip_adrese ipAddressRanges, prolaz_bodova passPoints, broj_pitanja nrQuestions, trajanje_kviza duration FROM kviz WHERE id=$id");

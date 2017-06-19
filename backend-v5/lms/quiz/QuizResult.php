@@ -7,6 +7,8 @@
 
 class QuizResult {
 	public $student, $Quiz, $finished, $score, $timeActivated, $token;
+
+	const TOKEN_LENGTH = 20; // Lenght of quiz token string
 	
 	public static function fromStudentAndQuiz($studentId, $quizId) {
 		$qr = DB::query_assoc("SELECT student, kviz Quiz, dovrsen finished, bodova score, UNIX_TIMESTAMP(vrijeme_aktivacije) timeActivated, token FROM kviz_student WHERE student=$studentId AND kviz=$quizId");
@@ -30,7 +32,7 @@ class QuizResult {
 		do {
 			$characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 			$token = "";
-			for ($i=0; $i<Quiz::$tokenLength; $i++) 
+			for ($i=0; $i<QuizResult::TOKEN_LENGTH; $i++) 
 				$token .= $characters[rand(0,strlen($characters))];
 			$token_exists = DB::query("SELECT COUNT(*) FROM kviz_student WHERE token='$token'");
 		} while ($token_exists > 0);
