@@ -164,7 +164,19 @@ foreach ($wiring as $wire) {
 				$$name = true;
 			else $$name = false;
 		}
+		if ($type == "file") {
+			// Caller must use Content-Type: multipart/form-data
+			$$name = $_FILES[$name];
+			if (!$_FILES[$name]['tmp_name'] || !file_exists($_FILES[$name]['tmp_name']) || $_FILES[$name]['error']!==UPLOAD_ERR_OK) {
+				header("HTTP/1.0 500 Internal Server Error");
+				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'File upload failed' ) );
+				break;
+			}
+		}
 	}
+	
+	if (isset($result)) break; // File upload failed
+	
 	
 	// TODO: First eval code, then check privileges (this will avoid some double queries)
 	
