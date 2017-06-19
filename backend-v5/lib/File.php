@@ -6,12 +6,13 @@
 
 
 class File {
-	public $filename, $CourseUnitYear, $owner, $module;
+	public $filename, $CourseUnitYear, $owner, $objectId, $module;
 	
-	public function __construct($filename, $CourseUnitYear, $owner, $module) {
+	public function __construct($filename, $CourseUnitYear, $owner, $objectId, $module) {
 		$this->filename = $filename;
 		$this->CourseUnitYear = $CourseUnitYear;
 		$this->owner = $owner;
+		$this->objectId = $objectId;
 		$this->module = $module;
 	}
 	
@@ -45,7 +46,7 @@ class File {
 	// Get directory where file resides
 	public function basePath() {
 		$dir  = Config::$backend_file_path . "/" . $this->module . "/" . $this->CourseUnitYear->CourseUnit->id;
-		$dir .= "-" . $this->CourseUnitYear->AcademicYear->id . "/" . $this->owner;
+		$dir .= "-" . $this->CourseUnitYear->AcademicYear->id . "/" . $this->owner->id . "/" . $this->objectId;
 		if (!file_exists($dir))
 			mkdir ($dir, 0777, true);
 		return $dir;

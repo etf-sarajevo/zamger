@@ -84,12 +84,9 @@ class Assignment {
 		
 		$this->author = new UnresolvedClass("Person", $authorId, $asgn->author);
 		
-		// Construct file
-		$cuy = CourseUnitYear::fromCourseAndYearQuick($this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id);
-		$file = new File( File::cleanUpFilename($fileArray['name']), 
-				$cuy, $this->student, Assignment::MODULE);
-		
-		$this->filename = $file->filename;
+		// Construct file object
+		$this->filename = File::cleanUpFilename($fileArray['name']);
+		$file = $this->getFile();
 		
 		// Test extension
 		$allowed = explode(',', $this->Homework->allowedExtensions);
@@ -102,7 +99,7 @@ class Assignment {
 		
 		// Diff files
 		if ($old_asgn->filename) {
-			$old_file = new File($old_asgn->filename, $cuy, $this->student, Assignment::MODULE);
+			$old_file = $old_asgn->getFile();
 			$this->diff($old_file);
 		}
 	}
@@ -183,6 +180,14 @@ class Assignment {
 		
 		// Update score
 		$ss->setScore($score);
+	}
+	
+	// Returns File object for Assignment
+	public function getFile() {
+		if (get_class($this->Homework) == "UnresolvedClass")
+			$this->Homework->resolve();
+		$cuy = CourseUnitYear::fromCourseAndYearQuick($this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id);
+		return new File($this->filename, $cuy, $this->student, $this->Homework->id, Assignment::MODULE);
 	}
 	
 	// List of assignments for student on course

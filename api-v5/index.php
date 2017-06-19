@@ -275,6 +275,8 @@ foreach ($wiring as $wire) {
 		else
 			$result['_links'] = $wire['hateoas_links'];
 	}
+	
+	break;
 }
 
 // Path not found
@@ -283,8 +285,10 @@ if (empty($result)) {
 	$result = array( 'success' => 'false', 'code' => '404', 'message' => 'Invalid path' );
 }
 
-//echo json_encode($result, Config::$json_options);
-echo json_encode($result);
+if (!array_key_exists('encoding', $wire))
+	echo json_encode($result, Config::$json_options);
+else
+	echo $result; // Currently the only option is to skip encoding completely
 DB::disconnect();
 return;
 

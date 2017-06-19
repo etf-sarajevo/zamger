@@ -532,6 +532,15 @@ $wiring = array(
 		)
 	),
 	
+	array(
+		"path" => "homework/{id}/{asgn}/student/{student}/file", 
+		"description" => "Get homework file for given assignment", 
+		"method" => "GET",
+		"encoding" => "none", // Skip JSON encoding result
+		"code" => "\$asgn = Assignment::fromStudentHomeworkNumber(\$student, \$id, \$asgn); \$file = \$asgn->getFile(); return file_get_contents(\$file->fullPath());", 
+		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
+	),
+	
 	
 	
 	// HOMEWORK
