@@ -32,6 +32,7 @@ require_once(Config::$backend_path."lms/attendance/ZClass.php");
 require_once(Config::$backend_path."lms/exam/Exam.php");
 require_once(Config::$backend_path."lms/exam/ExamResult.php");
 
+require_once(Config::$backend_path."lms/homework/Assignment.php");
 require_once(Config::$backend_path."lms/homework/Homework.php");
 
 require_once(Config::$backend_path."lms/quiz/Quiz.php");
@@ -169,13 +170,13 @@ foreach ($wiring as $wire) {
 			$$name = $_FILES[$name];
 			if (!$_FILES[$name]['tmp_name'] || !file_exists($_FILES[$name]['tmp_name']) || $_FILES[$name]['error']!==UPLOAD_ERR_OK) {
 				header("HTTP/1.0 500 Internal Server Error");
-				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'File upload failed' ) );
+				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'File upload failed' );
 				break;
 			}
 		}
 	}
 	
-	if (isset($result)) break; // File upload failed
+	if (!empty($result)) break; // File upload failed
 	
 	
 	// TODO: First eval code, then check privileges (this will avoid some double queries)
