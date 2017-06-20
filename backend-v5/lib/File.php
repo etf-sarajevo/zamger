@@ -43,6 +43,23 @@ class File {
 		}
 	}
 	
+	// Recursively delete directory with all subdirectories and files
+	public static function rm_minus_r($path) {
+		if ($handle = opendir($path)) {
+			while ($file = readdir($handle)) {
+				if ($file == "." || $file == "..") continue;
+				$filepath = "$path/$file";
+				if (is_dir($filepath)) {
+					File::rm_minus_r($filepath);
+					rmdir($filepath);
+				} else {
+					unlink($filepath);
+				}
+			}
+		}
+		closedir($handle);
+	}
+	
 	// Get directory where file resides
 	public function basePath() {
 		$dir  = Config::$backend_file_path . "/" . $this->module . "/" . $this->CourseUnitYear->CourseUnit->id;

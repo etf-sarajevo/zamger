@@ -168,7 +168,12 @@ foreach ($wiring as $wire) {
 			else $$name = false;
 		}
 		if ($type == "file") {
-			// Caller must use Content-Type: multipart/form-data
+			// This is required for PHP file upload support to work
+			if (strpos($_SERVER["CONTENT_TYPE"], "multipart/form-data") !== 0) {
+				header("HTTP/1.0 500 Internal Server Error");
+				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'Wrong content-type (must be multipart/form-data)' );
+				break;
+			}
 			$$name = $_FILES[$name];
 			if (!$_FILES[$name]['tmp_name'] || !file_exists($_FILES[$name]['tmp_name']) || $_FILES[$name]['error']!==UPLOAD_ERR_OK) {
 				header("HTTP/1.0 500 Internal Server Error");

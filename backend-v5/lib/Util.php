@@ -35,23 +35,6 @@ class Util {
 				return true;
 		return false;
 	}
-	
-	// Recursively delete directory with all subdirectories and files
-	public static function rm_minus_r($path) {
-		if ($handle = opendir($path)) {
-			while ($file = readdir($handle)) {
-				if ($file == "." || $file == "..") continue;
-				$filepath = "$path/$file";
-				if (is_dir($filepath)) {
-					Util::rm_minus_r($filepath);
-					rmdir($filepath);
-				} else {
-					unlink($filepath);
-				}
-			}
-		}
-		closedir($handle);
-	}
 
 	// Funkcija za dobivanje IP adrese korisnika iza proxy-ja
 	// Preuzeto sa: http://www.teachmejoomla.net/code/php/remote-ip-detection-with-php.html

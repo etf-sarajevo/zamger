@@ -5,6 +5,8 @@
 // Opis: jedna zadaća
 
 
+require_once(Config::$backend_path."lms/homework/ProgrammingLanguage.php");
+
 class Homework {
 	public $id;
 	public $name, $CourseUnit, $AcademicYear, $nrAssignments, $ScoringElement, $deadline, $active, $ProgrammingLanguage, $automatedTesting, $attachment, $allowedExtensions, $publishedDateTime, $text /* postavka */;
@@ -86,7 +88,7 @@ class Homework {
 	
 	// List of homeworks published for course
 	public static function fromCourseOffering($courseOfferingId) {
-		$homeworks = DB::query_table("SELECT z.id id, z.naziv name, z.predmet CourseUnit, z.akademska_godina AcademicYear, z.zadataka nrAssignments, z.komponenta ScoringElement, UNIX_TIMESTAMP(z.rok) deadline, z.aktivna active, z.programskijezik ProgrammingLanguage, a.automatsko_testiranje automatedTesting, z.attachment, z.dozvoljene_ekstenzije allowedExtensions, UNIX_TIMESTAMP(z.vrijemeobjave) publishedTime, z.postavka_zadace text FROM zadaca z, ponudakursa pk WHERE z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina AND pk.id=$courseOfferingId ORDER BY komponenta, naziv");
+		$homeworks = DB::query_table("SELECT z.id id, z.naziv name, z.predmet CourseUnit, z.akademska_godina AcademicYear, z.zadataka nrAssignments, z.komponenta ScoringElement, UNIX_TIMESTAMP(z.rok) deadline, z.aktivna active, z.programskijezik ProgrammingLanguage, z.automatsko_testiranje automatedTesting, z.attachment, z.dozvoljene_ekstenzije allowedExtensions, UNIX_TIMESTAMP(z.vrijemeobjave) publishedTime, z.postavka_zadace text FROM zadaca z, ponudakursa pk WHERE z.predmet=pk.predmet and z.akademska_godina=pk.akademska_godina AND pk.id=$courseOfferingId ORDER BY komponenta, naziv");
 		foreach ($homeworks as &$hw) {
 			$hw = Util::array_to_class($hw, "Homework", array("CourseUnit", "AcademicYear", "ScoringElement", "ProgrammingLanguage"));
 			if ($hw->active == 1) $hw->active=true; else $hw->active=false; // FIXME use boolean in database

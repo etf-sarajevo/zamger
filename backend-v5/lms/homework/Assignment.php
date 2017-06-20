@@ -86,6 +86,12 @@ class Assignment {
 		
 		// Construct file object
 		$this->filename = File::cleanUpFilename($fileArray['name']);
+		// COMPATIBILITY: Force name to be in certain format
+		if (!$this->Homework->attachment) {
+			if (get_class($this->Homework->ProgrammingLanguage) == "UnresolvedClass")
+				$this->Homework->ProgrammingLanguage->resolve();
+			$this->filename = $this->assignNo . $this->Homework->ProgrammingLanguage->extension;
+		}
 		$file = $this->getFile();
 		
 		// Test extension
@@ -99,9 +105,19 @@ class Assignment {
 		
 		// Diff files
 		if ($old_asgn->filename) {
-			$old_file = $old_asgn->getFile();
-			$this->diff($old_file);
+			$diff = Assignment::diff($old_asgn->getFile()->fullPath(), $fileArray['tmp_name']);
+
+			if (strlen($diff)>1) {
+				$diff = Util::clear_unicode(DB::escape($diff));
+				DB::query("INSERT INTO zadatakdiff SET zadatak=" . $this->id . ", diff='$diff'");
+			}
 		}
+		
+		// Finally move file into place
+		$destination = $file->fullPath(); // This will also create directory
+		if (file_exists($destination)) unlink ($destination);
+		rename($fileArray['tmp_name'], $destination);
+		//chmod($destination, 0640);
 	}
 
 	// Puts data from attributes into database
@@ -119,47 +135,35 @@ class Assignment {
 		Logging::log2("izmjena zadace", $this->student->id, $this->Homework->id, $this->assignNo);
 	}
 	
-	// Create a diff between current file and an older file given as param
-	public function diff($file) {
-		if (!file_exists($file->fullPath())) return;
-		$old_filename = $file->fullPath();
-		$new_filename = $this->fullPath();
-		$basepath = $this->basePath();
+	// Create a diff between two files (full paths are params)
+	public static function diff($oldFile, $newFile) {
+		if (!file_exists($oldFile) || !file_exists($newFile)) return;
+		
+		// Prepare tmp location
+		$diff_path = "/tmp/difftemp";
+		if (file_exists($diff_path)) {
+			if (is_dir($diff_path))
+				File::rm_minus_r($diff_path);
+			else
+				unlink($diff_path);
+		}
 		
 		// Support diffing for ZIP archives (TODO other archive types)
-		if (Util::ends_with($file->filename, ".zip") && Util::ends_with($this->filename, ".zip")) {
-		
-			// Prepare tmp dir
-			$zippath = "/tmp/difftemp";
-			if (!file_exists($zippath)) {
-				mkdir($zippath, 0777, true);
-			} else if (!is_dir($zippath)) {
-				unlink($zippath);
-				mkdir($zippath);
-			} else {
-				Util::rm_minus_r($zippath);
-			}
+		if (Util::ends_with($oldFile, ".zip") && Util::ends_with($file, ".zip")) {
+			mkdir($diff_path, 0777, true);
 			
-			$oldpath = "$zippath/old";
-			$newpath = "$zippath/new";
+			$oldpath = "$diff_path/old";
+			$newpath = "$diff_path/new";
 			mkdir ($oldpath);
 			mkdir ($newpath);
 			
-			`unzip -j "$old_filename" -d $oldpath`;
-			`unzip -j "$new_filename" -d $newpath`;
+			`unzip -j "$oldFile" -d $oldpath`;
+			`unzip -j "$newFile" -d $newpath`;
 			$diff = `/usr/bin/diff -ur $oldpath $newpath`;
-			$diff = Util::clear_unicode(DB::escape($diff));
 		} else {
-			if (file_exists("$basepath/difftemp")) 
-				unlink ("$basepath/difftemp");
-			rename ($old_filename, "$basepath/difftemp"); 
-			$diff = `/usr/bin/diff -u $basepath/difftemp $new_filename`;
-			$diff = DB::escape($diff);
-			unlink ("$basepath/difftemp");
+			$diff = `/usr/bin/diff -u $oldFile $newFile 2>&1`;
 		}
-		
-		if (strlen($diff)>1)
-			$q270 = DB::query("INSERT INTO zadatakdiff SET zadatak=" . $this->id . ", diff='$diff'");
+		return $diff;
 	}
 	
 	// Update score data related to homeworks
