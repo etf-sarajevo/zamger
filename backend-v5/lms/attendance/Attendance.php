@@ -14,6 +14,8 @@ class Attendance {
 
 	// This is a standard constructor
 	public static function fromStudentAndClass($studentId, $classId) {
+		// At this point we don't verify if student is member of group
+		// This will be done at setPresence
 		$att = new Attendance;
 		$att->student = new UnresolvedClass("Person", $studentId, $att->student);
 		$att->ZClass = new UnresolvedClass("ZClass", $classId, $att->ZClass);
@@ -30,26 +32,19 @@ class Attendance {
 	
 	// Set presence to given value (as with getPresence)
 	public function setPresence ($present) {
-		if ($present !== 1 && $present !== 0 && $present !== -1)
+		if ($present !== 1 && $present !== 0)
 			throw new Exception("Invalid presence value $present", "701");
 		
 		// Is student in class?
 		if (get_class($this->ZClass) == "UnresolvedClass")
 			$this->ZClass->resolve();
-		if (get_class($this->ZClass->Group) == "UnresolvedClass")
-			$this->ZClass->Group->resolve();
+		// Avoid getting list of members
+		$this->ZClass->Group = Group::fromId($this->ZClass->Group->id, false, false);
 		
-		$found = false;
-		foreach($this->ZClass->Group->members as $member_pf) {
-			if ($member_pf->Person->id == $this->student->id) {
-				$found = true;
-				break;
-			}
-		}
-		if (!$found)
+		if (!$this->ZClass->Group->isMember($this->student->id))
 			throw new Exception("Student " . $this->student->id . " not in group for class", "404");
 		
-		$has_presence = getPresence();
+		$has_presence = $this->getPresence();
 		if ($has_presence === false)
 			DB::query("INSERT INTO prisustvo SET prisutan=$present, student=".$this->student->id.", cas=".$this->ZClass->id);
 		else
@@ -59,6 +54,26 @@ class Attendance {
 		$this->updateScore();
 		
 		Logging::log("prisustvo - student: u$student cas: c$cas prisutan: $prisutan", LogLevel::Edit);
+		Logging::log2("prisustvo azurirano", $this->student->id, $this->ZClass->id, $present);
+	}
+	
+	// Delete presence status
+	public function deletePresence() {
+		// Is student in class?
+		if (get_class($this->ZClass) == "UnresolvedClass")
+			$this->ZClass->resolve();
+		// Avoid getting list of members
+		$this->ZClass->Group = Group::fromId($this->ZClass->Group->id, false, false);
+		
+		if (!$this->ZClass->Group->isMember($this->student->id))
+			throw new Exception("Student " . $this->student->id . " not in group for class", "404");
+		
+		DB::query("DELETE FROM prisustvo WHERE student=".$this->student->id." AND cas=".$this->ZClass->id);
+		$this->presence = false;
+
+		$this->updateScore();
+		
+		Logging::log("prisustvo - student: u$student cas: c$cas prisutan: -1", LogLevel::Edit);
 		Logging::log2("prisustvo azurirano", $this->student->id, $this->ZClass->id, $present);
 	}
 	

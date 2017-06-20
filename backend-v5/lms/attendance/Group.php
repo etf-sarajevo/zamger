@@ -11,13 +11,13 @@ class Group {
 	public $id;
 	public $name, $type, $CourseUnit, $AcademicYear, $virtual;
 	
-	public static function fromId($id, $details=false) {
+	public static function fromId($id, $details=false, $members=true) {
 		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE id=$id");
 		
 		if (!$grp) throw new Exception("Unknown group $id", "404");
 		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
 		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
-		$grp->members = $grp->getMembers($details);
+		if ($members) $grp->members = $grp->getMembers($details);
 		return $grp;
 	}
 
@@ -49,14 +49,14 @@ class Group {
 		return $members;
 	}
 	
-	// Test if student is a member of group
-	public function isMember($student) {
+	// Test if student with given id is a member of group
+	public function isMember($studentId) {
 		if (isset($this->members)) {
 			foreach($this->members as $member)
-				if ($student == $member->Person->id) return true;
+				if ($studentId == $member->Person->id) return true;
 			return false;
 		}
-		$member = DB::get("SELECT count(*) FROM student_labgrupa WHERE student=$student AND labgrupa=".$this->id);
+		$member = DB::get("SELECT count(*) FROM student_labgrupa WHERE student=$studentId AND labgrupa=".$this->id);
 		if ($member == 0) return false;
 		return true;
 	}

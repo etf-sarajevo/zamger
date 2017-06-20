@@ -52,7 +52,7 @@ class Person {
 	}
 	
 	// Tituliraj
-	function getTitles() {
+	public function getTitles() {
 		$qtitles = DB::query_assoc("select naucni_stepen, strucni_stepen from osoba where id=" . $this->id);
 		if ($qtitles['naucni_stepen'])
 			$this->titlesPre = DB::get("select titula from naucni_stepen where id=" . $qtitles['naucni_stepen']);

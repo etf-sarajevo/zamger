@@ -14,6 +14,8 @@ class ExamResult {
 	public $student, $Exam, $result;
 	
 	public static function fromStudentAndExam($studentId, $examId) {
+		// In this function we will not verify if student is enrolled for performance reasons
+		// This check will be done in setExamResult
 		$er = new ExamResult;
 		$er->student = new UnresolvedClass("Person", $studentId, $er->student);
 		$er->Exam = new UnresolvedClass("Exam", $examId, $er->Exam);
@@ -21,13 +23,17 @@ class ExamResult {
 		return $er;
 	}
 
-
+	// Call this function to change result
 	public function setExamResult($result) {
 		// Test if result is allowed
 		if (get_class($this->Exam) == "UnresolvedClass")
 			$this->Exam->resolve();
 		if (get_class($this->Exam->ScoringElement) == "UnresolvedClass")
 			$this->Exam->ScoringElement->resolve();
+			
+		// Test if student attends the course
+		$co = CourseOffering::forStudent($this->student->id, $this->Exam->CourseUnit->id, $this->Exam->AcademicYear->id);
+		if (!$co) throw new Exception("Student " . $this->student->id . " not enrolled in course " . $this->Exam->CourseUnit->id, "404");
 			
 		$max = $this->Exam->ScoringElement->max;
 		if ($result > $max) {
@@ -75,6 +81,7 @@ class ExamResult {
 		
 		// Get CoureOffering for student
 		$co = CourseOffering::forStudent($this->student->id, $this->Exam->CourseUnit->id, $this->Exam->AcademicYear->id);
+		if (!$co) throw new Exception("Student " . $this->student->id . " not enrolled in course " . $this->Exam->CourseUnit->id, "404");
 		Exam::updateAllScores($this->student->id, $co->id, $this->ZClass->ScoringElement);
 	}
 	
