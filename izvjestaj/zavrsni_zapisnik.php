@@ -246,7 +246,7 @@ if ($r10['ciklus'] == 1) {
 
 	<p>Kandidat <?=$r20["prezime"]?> <?=$r20["ime"]?> s uspjehom je <? if ($spol == "Z") print"odbranila"; else print "odbranio"; ?> završni rad na drugom (II) ciklusu studija na Elektrotehničkom fakultetu u Sarajevu i shodno Pravilniku o korištenju akademskih titula i sticanju naučnih i stručnih zvanja na visokoškolskim ustanovama u Kantonu Sarajevo (&quot;Službene novine&quot; br. 34/08) <? if ($spol == "Z") print"stekla"; else print "stekao"; ?> je pravo na akademsku titulu i zvanje</p>
 
-	<h2>Magistar elektrotehnike – diplomirani inženjer elektrotehnike<br>
+	<h2>Magistar diplomirani inženjer elektrotehnike<br>
 	<?=$r10["odsjek"]?></h2>
 
 	<p>Komisija za ocjenu i odbranu završnog rada ocjenjuju rad i odbranu rada jedinstvenom ocjenom _______.</p>
