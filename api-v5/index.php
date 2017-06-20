@@ -156,9 +156,11 @@ foreach ($wiring as $wire) {
 			$$name = floatval(Util::param($name));
 		if ($type == "string")
 			$$name = Util::param($name);
-		if ($type == "object")
-			// Force JSON format... ?
+		if ($type == "object") {
 			$$name = json_decode(file_get_contents('php://input'));
+			if (array_key_exists('classes', $wire) && array_key_exists($name, $wire['classes']))
+				$$name = Util::castFromJson($$name, $wire['classes'][$name]);
+		}
 		if ($type == "bool") {
 			$value = Util::param($name);
 			if ($value === "true" || $value === true || $value === "1")

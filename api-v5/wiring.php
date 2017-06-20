@@ -3,6 +3,24 @@
 // List of services with wiring code
 
 $wiring = array(
+	array(
+		"path" => "/", 
+		"description" => "Top level endpoint", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"person" => array("href" => "person"),
+			"course" => array("href" => "course"),
+			"group" => array("href" => "group"),
+			"class" => array("href" => "class"),
+			"exam" => array("href" => "exam"),
+			"homework" => array("href" => "homework"),
+			"quiz" => array("href" => "quiz"),
+		) // TODO: define identity links for classes
+	),
+
+
 	// PERSON
 	
 	array(
@@ -63,7 +81,7 @@ $wiring = array(
 	
 	array(
 		"path" => "extendedPerson/{id}", 
-		"description" => "Find user by id", 
+		"description" => "Extended details on person (student)", 
 		"method" => "GET", 
 		"code" => "\$p = ExtendedPerson::fromId(\$id); return \$p;", 
 		"autoresolve" => array(),
@@ -83,8 +101,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 
@@ -99,8 +117,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 	
@@ -114,8 +132,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 	
@@ -128,23 +146,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
-		)
-	),
-	
-	array(
-		"path" => "course/teacher", 
-		"description" => "List of courses for teacher", 
-		"method" => "GET", 
-		"code" => "return CourseUnitYear::forTeacher(Session::\$userid);", 
-		"acl" => "privilege('nastavnik')",
-		"autoresolve" => array("AcademicYear", "Institution"),
-		"hateoas_links" => array(
-			"course" => array("href" => "course/{course}/{year}"),
-			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 
@@ -157,40 +160,39 @@ $wiring = array(
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 	
 	array(
-		"path" => "course/student", 
+		"path" => "course/student/{student}", 
 		"description" => "List current courses for student", 
 		"method" => "GET", 
-		"params" => array( "student" => "int", "year" => "int" ),
-		"code" => "if (\$student == 0) \$student=Session::\$userid; return Portfolio::getCurrentForStudent(\$student);", 
-		"acl" => "privilege('student') && \$student==0 || self(\$student) || privilege('studentska')",
+		"code" => "return Portfolio::getCurrentForStudent(\$student);", 
+		"acl" => "self(\$student) || privilege('studentska')",
 		"autoresolve" => array("CourseOffering", "AcademicYear", "CourseUnit", "Programme"),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 	
 	array(
-		"path" => "course/{course}/student", 
+		"path" => "course/{course}/student/{student}", 
 		"description" => "Details of specific course for student", 
 		"method" => "GET", 
-		"params" => array( "student" => "int", "year" => "int" ),
-		"code" => "if (\$student == 0) \$student=Session::\$userid; \$p = Portfolio::fromCourseUnit(\$student, \$course, \$year); \$p->getScore(); \$p->getGrade(); return \$p;", 
-		"acl" => "privilege('student') && \$student==0 || self(\$student) || privilege('studentska') || teacherLevel(\$course, \$year)",
+		"params" => array( "year" => "int" ),
+		"code" => "\$p = Portfolio::fromCourseUnit(\$student, \$course, \$year); \$p->getScore(); \$p->getGrade(); return \$p;", 
+		"acl" => "self(\$student) || privilege('studentska') || teacherLevel(\$course, \$year)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"course" => array("href" => "course/{course}/{year}"),
 			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
-			'coursesForStudent' => array('href' => 'course/student/?student={student}'),
-			'coursesForTeacher' => array('href' => 'course/teacher')
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
 	
@@ -208,7 +210,7 @@ $wiring = array(
 			"group" => array("href" => "group/{id}"),
 			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
 			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
-			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
 		)
 	),
 	
@@ -224,13 +226,13 @@ $wiring = array(
 			"group" => array("href" => "group/{id}"),
 			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
 			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
-			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
 		)
 	),
 	
 	array(
 		"path" => "group/course/{course}", 
-		"description" => "Get list of groups with students on course", 
+		"description" => "Get list of student groups on course", 
 		"method" => "GET", 
 		"params" => array( "year" => "int", "includeVirtual" => "bool", "getMembers" => "bool" ),
 		"code" => "return Group::forCourseAndYear(\$course, \$year, \$includeVirtual);", 
@@ -240,7 +242,7 @@ $wiring = array(
 			"group" => array("href" => "group/{id}"),
 			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
 			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
-			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
 		)
 	),
 	
@@ -256,23 +258,23 @@ $wiring = array(
 			"group" => array("href" => "group/{id}"),
 			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
 			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
-			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
 		)
 	),
 	
 	array(
-		"path" => "group/course/{course}/student", 
+		"path" => "group/course/{course}/student/{student}", 
 		"description" => "Get the list of groups that a student belongs to for given course", 
 		"method" => "GET", 
-		"params" => array( "student" => "int", "year" => "int" ),
+		"params" => array( "year" => "int" ),
 		"code" => "if (\$student == 0) \$student=Session::\$userid; return Group::fromStudentAndCourse(\$student, \$course, \$year);",
-		"acl" => "privilege('student') && \$student==0 || self(\$student) || teacherLevel(\$course, \$year)",
+		"acl" => "self(\$student) || teacherLevel(\$course, \$year)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
 			"group" => array("href" => "group/{id}"),
 			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
 			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
-			"forStudent" => array("href" => "group/course/{course}/student/?student={student}&year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
 		)
 	),
 	
@@ -308,7 +310,7 @@ $wiring = array(
 	
 	array(
 		"path" => "class/group/{group}", 
-		"description" => "List of classes in group", 
+		"description" => "List of classes registered for group", 
 		"method" => "GET", 
 		"code" => "return ZClass::fromGroup(\$group);", 
 		"acl" => "teacherLevelGroup(\$group)",
@@ -337,7 +339,8 @@ $wiring = array(
 		"description" => "Update attendance of student", 
 		"method" => "POST", 
 		"params" => array( "att" => "object" ),
-		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
+		"classes" => array( "att" => "Attendance" ),
+		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->presence); return \$att;", 
 		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
@@ -351,7 +354,21 @@ $wiring = array(
 		"description" => "Set attendance of student", 
 		"method" => "PUT", 
 		"params" => array( "att" => "object" ),
-		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->present);", 
+		"classes" => array( "att" => "Attendance" ),
+		"code" => "\$att->student->id = \$student; \$att->ZClass->id = \$id; \$att->setPresence(\$att->presence); return \$att;", 
+		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/{id}/student/{student}", 
+		"description" => "Delete attendance of student (set it to neutral value)", 
+		"method" => "DELETE", 
+		"code" => "\$att = Attendance::fromStudentAndClass(\$student, \$id); \$att->deletePresence(); return \$att;", 
 		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
@@ -394,7 +411,7 @@ $wiring = array(
 	
 	array(
 		"path" => "exam/course/{course}", 
-		"description" => "Information about exam", 
+		"description" => "List of exams on course", 
 		"method" => "GET", 
 		"code" => "return Exam::fromCourseAndYear(\$course);", 
 		"acl" => "teacherLevel(\$course, 0)",
@@ -435,11 +452,56 @@ $wiring = array(
 	),
 	
 	array(
-		"path" => "exam/latest", 
+		"path" => "exam/{id}/student/{student}", 
+		"description" => "Update exam result for student", 
+		"method" => "PUT", 
+		"params" => array( "examresult" => "object" ),
+		"code" => "\$er = ExamResult::fromStudentAndExam(\$student, \$id); \$er->setExamResult(\$examresult->result); return \$er;", 
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/{id}/student/{student}", 
+		"description" => "Add new exam result for student", 
+		"method" => "POST", 
+		"params" => array( "examresult" => "object" ),
+		"code" => "\$er = ExamResult::fromStudentAndExam(\$student, \$id); \$er->setExamResult(\$examresult->result); return \$er;", 
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/{id}/student/{student}", 
+		"description" => "Delete exam result for student", 
+		"method" => "DELETE", 
+		"params" => array( "examresult" => "object" ),
+		"code" => "\$er = ExamResult::fromStudentAndExam(\$student, \$id); \$er->deleteExamResult(); return \$er;", 
+		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
+		"hateoas_links" => array(
+			"exam" => array("href" => "exam/{id}"),
+			"allExamsForCourse" => array("href" => "exam/course/{course}"),
+			"examResult" => array("href" => "exam/{id}/student/{student}"),
+			"latestExamResults" => array("href" => "exam/latest"),
+		)
+	),
+	
+	array(
+		"path" => "exam/latest/{student}", 
 		"description" => "Latest exam results for student", 
 		"method" => "GET", 
 		"code" => "return ExamResult::getLatestForStudent(Session::\$userid, 10);", 
-		"acl" => "loggedIn()",
+		"acl" => "self(\$student)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),
 			"allExamsForCourse" => array("href" => "exam/course/{course}"),
@@ -537,6 +599,7 @@ $wiring = array(
 		"description" => "Change homework status (for teachers)", 
 		"method" => "PUT", 
 		"params" => array( "assign" => "object" ),
+		"classes" => array( "assign" => "Assignment" ),
 		"code" => "\$assign->author->id = Session::\$userid; \$assign->add(); return \$assign;", 
 		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
@@ -609,6 +672,7 @@ $wiring = array(
 		"description" => "When student takes a quiz and completes all answers, they submit the Quiz object here", 
 		"method" => "POST", 
 		"params" => array( "quiz" => "object" ),
+		"classes" => array( "quiz" => "Quiz" ),
 		"code" => "return \$quiz->submit(Session::\$userid);", 
 		"acl" => "isStudent(\$quiz->CourseUnit->id, \$quiz->AcademicYear->id)",
 		"hateoas_links" => array(

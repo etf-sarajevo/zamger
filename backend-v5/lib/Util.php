@@ -136,6 +136,19 @@ class Util {
 		
 		return $obj;
 	}
+	
+	// When object is received from JSON it's always stdClass
+	// This function will convert it into a proper Zamger object
+	public static function castFromJson($object, $className) {
+		$result = new $className();
+		foreach($object as $key => $value) {
+			if (is_object($value) && isset($value->className))
+				$result->{$key} = new UnresolvedClass($value->className, $value->id, $result->{$key});
+			else
+				$result->{$key} = $value;
+		}
+		return $result;
+	}
 
 	// Convert all numeric strings into numbers, and all boolean strings into booleans
 	public static function fix_data_types(&$var) {
