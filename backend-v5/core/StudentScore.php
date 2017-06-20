@@ -44,14 +44,8 @@ class StudentScore {
 	public function getScore() {
 		if ($this->score !== null) return $this->score;
 		
-		// CourseOffering not set because fromStudentSE_COandAY was used
-		if ($ss->CourseOffering->id == null)
-			$ss->CourseOffering = CourseOffering::forStudent($this->student->id, 
-						$ss->CourseOffering->CourseUnit->id,
-						$ss->CourseOffering->AcademicYear->id);
-		
 		// Get score
-		$this->score = DB::get("SELECT bodovi FROM komponentebodovi WHERE student=" . $this->student->id . " AND predmet=" . $ss->CourseOffering->id . " AND
+		$this->score = DB::get("SELECT bodovi FROM komponentebodovi WHERE student=" . $this->student->id . " AND predmet=" . $this->CourseOffering->id . " AND
 			komponenta=" . $this->ScoringElement->id);
 		return $this->score;
 	}
@@ -67,12 +61,12 @@ class StudentScore {
 			throw new Exception("Score $score greater then allowed " . $this->ScoringElement->max, "702");
 		}
 
-		
+		$oldScore = $this->getScore();
 		DB::query("LOCK TABLES komponentebodovi WRITE");
-		if ($this->getScore() === false)
-			DB::query("INSERT INTO komponentebodovi SET student=" . $this->student->id . ", predmet=" . $ss->CourseOffering->id . ", 			komponenta=" . $this->ScoringElement->id . ", bodovi=$score");
+		if ($oldScore === false)
+			DB::query("INSERT INTO komponentebodovi SET student=" . $this->student->id . ", predmet=" . $this->CourseOffering->id . ", komponenta=" . $this->ScoringElement->id . ", bodovi=$score");
 		else 
-			DB::query("UPDATE komponentebodovi SET bodovi=$score WHERE student=" . $this->student->id . " AND predmet=" . $ss->CourseOffering->id . " AND
+			DB::query("UPDATE komponentebodovi SET bodovi=$score WHERE student=" . $this->student->id . " AND predmet=" . $this->CourseOffering->id . " AND
 			komponenta=" . $this->ScoringElement->id);
 		DB::query("UNLOCK TABLES");
 		$this->score = $score;
