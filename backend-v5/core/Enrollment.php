@@ -5,66 +5,37 @@
 // Opis: podaci o statusu studenta na nekom studiju
 
 
-require_once(Config::$backend_path."core/DB.php");
+require_once(Config::$backend_path."core/EnrollmentType.php");
 require_once(Config::$backend_path."core/Programme.php");
 
-
 class Enrollment {
-	public $student, $programmeId, $semester, $academicYearId, $type /* provjeriti terminologiju */, $repeat, $curriculumId, $documentId;
-	
-	public $programme;
+	public $student, $Programme, $semester, $AcademicYear, $EnrollmentType /* provjeriti terminologiju */, $repeat, $Curriculum, $Decision;
 	
 	// The programme that given student is enrolled in in current academic year
 	// If both even and odd semester exist for current year, even (bigger) semester will be returned
-	public static function getCurrentForStudent($student) {
-		$q10 = DB::query("select ss.studij, ss.semestar, ss.akademska_godina, ss.nacin_studiranja, ss.ponovac, ss.plan_studija, ss.odluka from student_studij as ss, akademska_godina as ag where ss.student=$student and ss.akademska_godina=ag.id and ag.aktuelna=1 order by semestar desc limit 1");
-		if (mysql_num_rows($q10)<1) {
-			throw new Exception("student isn't currently enrolled");
-		}
-
-		$e = new Enrollment;
-		$e->student = $student;
-		$e->programmeId = mysql_result($q10,0,0);
-		$e->semester = mysql_result($q10,0,1);
-		$e->academicYearId = mysql_result($q10,0,2);
-		$e->type = mysql_result($q10,0,3);
-		if (mysql_result($q10,0,4)==1) $e->repeat=true; else $e->repeat=false;
-		$e->curriculumId = mysql_result($q10,0,5);
-		$e->documentId = mysql_result($q10,0,6);
-		// TODO dodati ostalo, posebno reference na druge klase
-
-		// To be initialized as neccessary
-		$e->programme = 0;
-
-		return $e;
+	// If student is not enrolled in current year, returns false
+	public static function getCurrentForStudent($studentId) {
+		$enr = DB::query_assoc("SELECT ss.student student, ss.studij Programme, ss.semestar semester, ss.akademska_godina AcademicYear, ss.nacin_studiranja EnrollmentType, ss.ponovac _repeat, ss.plan_studija Curriculum, ss.odluka Decision FROM student_studij as ss, akademska_godina as ag WHERE ss.student=$studentId AND ss.akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY semestar DESC LIMIT 1");
+		if (!$enr) return false;
+		
+		$enr['repeat'] = $enr['repeat']; unset($enr['repeat']); // reserved word in SQL
+		$enr = Util::array_to_class($enr, "Enrollment", array("Programme", "AcademicYear", "EnrollmentType", "Curriculum", "Decision"));
+		$enr->student = new UnresolvedClass("Person", $studentId, $enr->student);
+		if ($enr->repeat == 1) $enr->repeat=true; else $enr->repeat=false; // FIXME use boolean in database
+		return $enr;
 	}
 	
 	// History of all enrollments of given student, sorted by academic year and semester
-	public static function getAllForStudent($student) {
-		$q10 = DB::query("select studij, semestar, akademska_godina, nacin_studiranja, ponovac, plan_studija, odluka from student_studij where student=$student order by akademska_godina, semestar");
-		if (mysql_num_rows($q10)<1) {
-			throw new Exception("student was never enrolled");
+	public static function getAllForStudent($studentId) {
+		$enrolls = DB::query_table("select student, studij Programme, semestar semester, akademska_godina AcademicYear, nacin_studiranja EnrollmentType, ponovac _repeat, plan_studija Curriculum, odluka Decision from student_studij where student=$studentId order by akademska_godina, semestar");
+
+		foreach($enrolls as &$enr) {
+			$enr['repeat'] = $enr['repeat']; unset($enr['repeat']); // reserved word in SQL
+			$enr = Util::array_to_class($enr, "Enrollment", array("Programme", "AcademicYear", "EnrollmentType", "Curriculum", "Decision"));
+			$enr->student = new UnresolvedClass("Person", $studentId, $enr->student);
+			if ($enr->repeat == 1) $enr->repeat=true; else $enr->repeat=false; // FIXME use boolean in database
+			return $enr;
 		}
-
-		$enrolls = array();
-		while ($r10 = mysql_fetch_row($q10)) {
-			$e = new Enrollment;
-			$e->student = $student;
-			$e->programmeId = $r10[0];
-			$e->semester = $r10[1];
-			$e->academicYearId = $r10[2];
-			$e->type = $r10[3];
-			if ($r10[4]==1) $e->repeat=true; else $e->repeat=false;
-			$e->curriculumId = $r10[5];
-			$e->documentId = $r10[6];
-			// TODO dodati ostalo, posebno reference na druge klase
-
-			// To be initialized as neccessary
-			$e->programme = 0;
-
-			array_push($enrolls, $e);
-		}
-
 		return $enrolls;
 	}
 }

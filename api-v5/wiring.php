@@ -947,6 +947,46 @@ $wiring = array(
 			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
 		)
 	),
+	
+	
+	
+	// ENROLLMENT
+	
+	array(
+		"path" => "enrollment", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"currentEnrollment" => array("href" => "enrollment/current/{student}"),
+			"allEnrollments" => array("href" => "enrollment/all/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "enrollment/current/{student}", 
+		"description" => "Information about programme/semester that student is currently enrolled in", 
+		"method" => "GET", 
+		"code" => "return Enrollment::getCurrentForStudent(\$student);", 
+		"acl" => "self(\$student) || privilege('studentska')",
+		"hateoas_links" => array(
+			"currentEnrollment" => array("href" => "enrollment/current/{student}"),
+			"allEnrollments" => array("href" => "enrollment/all/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "enrollment/all/{student}", 
+		"description" => "Information about programme/semester that student is currently enrolled in", 
+		"method" => "GET", 
+		"code" => "return Enrollment::getAllForStudent(\$student);", 
+		"acl" => "self(\$student) || privilege('studentska')",
+		"hateoas_links" => array(
+			"currentEnrollment" => array("href" => "enrollment/current/{student}"),
+			"allEnrollments" => array("href" => "enrollment/all/{student}"),
+		)
+	),
 );
 
 $ws_aliases = array(

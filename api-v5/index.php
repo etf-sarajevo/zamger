@@ -18,6 +18,7 @@ require_once(Config::$backend_path."lib/Util.php");
 require_once(Config::$backend_path."core/AcademicYear.php");
 require_once(Config::$backend_path."core/CourseUnit.php");
 require_once(Config::$backend_path."core/CourseUnitYear.php");
+require_once(Config::$backend_path."core/Enrollment.php");
 require_once(Config::$backend_path."core/Institution.php");
 require_once(Config::$backend_path."core/Person.php");
 require_once(Config::$backend_path."core/Programme.php");
