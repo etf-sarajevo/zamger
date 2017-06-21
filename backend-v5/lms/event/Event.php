@@ -9,15 +9,17 @@
 
 class Event {
 	public $id;
-	public $dateTime, $maxStudents, $deadline, $CourseUnit, $AcademicYear;
+	public $dateTime, $maxStudents, $deadline, $CourseUnit, $AcademicYear, $details;
 	// $zclassId -- dodati link na čas umjesto kako je sada, link sa časa na kviz
 	
 	public static function fromId($id) {
-		$evt = DB::query_assoc("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear FROM ispit_termin it, ispit i WHERE it.id=$id AND it.ispit=i.id");
+		$evt = DB::query_assoc("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear, i.id Exam FROM ispit_termin it, ispit i WHERE it.id=$id AND it.ispit=i.id");
 		if (!$evt) throw new Exception("Unknown event $evt", "404");
 		
 		$evt = Util::array_to_class($evt, "Event", array("CourseUnit", "AcademicYear"));
 		$evt->students = $evt->getStudents();
+		$evt->details = new UnresolvedClass("Exam", $evt->Exam, $evt->details); // FIXME
+		unset($evt->Exam);
 		return $evt;
 	}
 	
@@ -71,11 +73,13 @@ class Event {
 	
 	// List upcoming events (with deadline in future) that given student can register for, in current academic year 
 	public static function upcomingForStudent($studentId) {
-		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear FROM ispit_termin it, ispit i, student_predmet sp, ponudakursa pk, akademska_godina ag WHERE it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=ag.id AND sp.predmet=pk.id AND sp.student=$studentId AND pk.akademska_godina=ag.id AND ag.aktuelna=1 AND it.deadline>NOW() ORDER BY dateTime");
+		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear, i.id Exam FROM ispit_termin it, ispit i, student_predmet sp, ponudakursa pk, akademska_godina ag WHERE it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=ag.id AND sp.predmet=pk.id AND sp.student=$studentId AND pk.akademska_godina=ag.id AND ag.aktuelna=1 AND it.deadline>NOW() ORDER BY dateTime");
 		foreach($evts as &$evt) {
 			$evt = Util::array_to_class($evt, "Event", array("CourseUnit", "AcademicYear"));
 			// Return number of students so that student can know if there is room left
 			$evt->registered = count($evt->getStudents());
+			$evt->details = new UnresolvedClass("Exam", $evt->Exam, $evt->details); // FIXME
+			unset($evt->Exam);
 		}
 		return $evts;
 	}
@@ -83,11 +87,13 @@ class Event {
 	// List events for which student is already registered, in current academic year 
 	// This will also return a number of events from the past, which can be filtered in UI if neccessary
 	public static function registeredForStudent($studentId) {
-		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear FROM ispit_termin it, ispit i, student_ispit_termin sit, akademska_godina ag WHERE it.ispit=i.id AND it.id=sit.ispit_termin AND sit.student=$studentId AND i.akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY dateTime");
+		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear, i.id Exam FROM ispit_termin it, ispit i, student_ispit_termin sit, akademska_godina ag WHERE it.ispit=i.id AND it.id=sit.ispit_termin AND sit.student=$studentId AND i.akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY dateTime");
 		foreach($evts as &$evt) {
 			$evt = Util::array_to_class($evt, "Event", array("CourseUnit", "AcademicYear"));
 			// Return number of students so that student can know if there is room left
 			$evt->registered = count($evt->getStudents());
+			$evt->details = new UnresolvedClass("Exam", $evt->Exam, $evt->details); // FIXME
+			unset($evt->Exam);
 		}
 		return $evts;
 	}
