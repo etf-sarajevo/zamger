@@ -80,6 +80,7 @@ class DB {
 	public static function affected_rows() { return mysqli_affected_rows(DB::$the_connection); }
 	public static function escape_string($s) { return mysqli_real_escape_string(DB::$the_connection, $s); }
 	public static function free_result($res) { return mysqli_free_result($res); }
+	public static function affected_rows($res) { return mysqli_affected_rows($res); }
 
 	// Reimplementacija mysql_result sa mysqli (bez provjere ispravnosti parametara)
 	public static function result($res, $row, $col) { 

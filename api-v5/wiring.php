@@ -758,6 +758,58 @@ $wiring = array(
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
 		)
 	),
+	
+	
+	
+	// EVENT
+	
+	array(
+		"path" => "event", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "event/{id}", 
+		"description" => "Information about event", 
+		"method" => "GET", 
+		"code" => "return Event::fromId(\$id);", 
+		"acl" => "teacherLevel(Event::fromId(\$id)->CourseUnit->id, Event::fromId(\$id)->AcademicYear->id) || isStudent(Event::fromId(\$id)->CourseUnit->id, Event::fromId(\$id)->AcademicYear->id)",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "event/{id}/register/{student}", 
+		"description" => "Register for event", 
+		"method" => "POST", 
+		"code" => "\$evt = Event::fromId(\$id); if (\$student == Session::\$userid) \$evt->register(\$student); else /* teacher */ \$evt->register(\$student, true, false); return \$evt;", 
+		"acl" => "teacherLevel(Event::fromId(\$id)->CourseUnit->id, Event::fromId(\$id)->AcademicYear->id) || self(\$student)",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "event/{id}/register/{student}", 
+		"description" => "Unregister from event", 
+		"method" => "DELETE", 
+		"code" => "\$evt = Event::fromId(\$id); \$evt->unregister(\$student); return \$evt;", 
+		"acl" => "teacherLevel(Event::fromId(\$id)->CourseUnit->id, Event::fromId(\$id)->AcademicYear->id) || self(\$student)",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+		)
+	),
 );
 
 $ws_aliases = array(
