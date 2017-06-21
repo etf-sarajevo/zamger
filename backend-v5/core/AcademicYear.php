@@ -21,7 +21,7 @@ class AcademicYear {
 	public static function getCurrent() {
 		// ASSUMPTION: There should always be exactly one academic year marked current!
 		$ay = DB::query_assoc("select id id, naziv name, aktuelna isCurrent from akademska_godina where aktuelna=1");
-		if (!$ay) throw new Exception("No academic year is current", "404");
+		if (!$ay) throw new Exception("No academic year is current", "500");
 		$ay = Util::array_to_class($ay, "AcademicYear");
 		$ay->isCurrent=true; // FIXME use boolean in database
 		return $ay;

@@ -16,7 +16,7 @@ class DB {
 
 	public static function connect() {
 		if (!(DB::$the_connection = mysqli_connect(Config::$dbhost, Config::$dbuser, Config::$dbpass, Config::$dbdb))) {
-			throw new Exception("Database connection error", "801");
+			throw new Exception("Database connection error", "581");
 		}
 		DB::$the_connection = DB::$the_connection;
 		if (Config::$use_mysql_utf8) {
@@ -46,7 +46,7 @@ class DB {
 		$line = intval($backtrace[0]['line']);
 		Logging::log("SQL greska ($file : $line): $the_error", 3);
 		Logging::log2("SQL greska", 0, 0, 0, "$file:$line: $the_error");
-		throw new Exception("Error in SQL query", "800");
+		throw new Exception("Error in SQL query", "580");
 	}
 
 

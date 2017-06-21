@@ -34,6 +34,8 @@ class Certificate {
 	
 	// Set certificate request status
 	public function setStatus($status) {
+		if ($status < 1 || $status > 2)
+			throw new Exception("Invalid certificate request status $status", "400");
 		DB::query("UPDATE zahtjev_za_potvrdu SET status=$status WHERE id=" . $this->id);
 		return (DB::affected_rows() > 0);
 	}
@@ -54,10 +56,10 @@ class Certificate {
 		// TODO refactor into CertificatePurpose & CertificateType classes
 		$purposeValid = DB::get("SELECT COUNT(*) FROM svrha_potvrde WHERE id=$purposeId");
 		if ($purposeValid == 0)
-			throw new Exception("Invalid certificate purpose $purposeId", "500");
+			throw new Exception("Invalid certificate purpose $purposeId", "400");
 		$typeValid = DB::get("SELECT COUNT(*) FROM tip_potvrde WHERE id=$typeId");
 		if ($typeValid == 0)
-			throw new Exception("Invalid certificate type $typeId", "500");
+			throw new Exception("Invalid certificate type $typeId", "400");
 	
 		DB::query("INSERT INTO zahtjev_za_potvrdu SET student=$studentId, tip_potvrde=$typeId, svrha_potvrde=$purposeId, datum_zahtjeva=NOW(), status=" . CertificateStatus::NewRequest);
 		return Certificate::fromId(DB::insert_id()); // Optimize

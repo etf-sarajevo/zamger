@@ -31,7 +31,7 @@ class Portfolio {
 		$p = new Portfolio;
 		$p->CourseOffering = CourseOffering::forStudent($studentId, $courseUnitId, $academicYearId);
 		if (!$p->CourseOffering) 
-			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "700");
+			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "404");
 		$p->Person = new UnresolvedClass("Person", $studentId, $p->Person);
 		$p->score = false;
 		return $p;

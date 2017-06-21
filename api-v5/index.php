@@ -196,8 +196,8 @@ foreach ($wiring as $wire) {
 		}
 	}
 	if (!$ok) {
-		header("HTTP/1.0 403 Forbidden");
-		$result = array( 'success' => 'false', 'code' => '403', 'message' => 'Permission denied' );
+		header("HTTP/1.0 401 Unauthorized");
+		$result = array( 'success' => 'false', 'code' => '401', 'message' => 'Permission denied' );
 		break;
 	}
 	
@@ -256,10 +256,14 @@ foreach ($wiring as $wire) {
 			header("HTTP/1.0 404 Not Found");
 		if ($e->getCode() == "403")
 			header("HTTP/1.0 403 Forbidden");
+		if ($e->getCode() == "400")
+			header("HTTP/1.0 400 Bad Request");
+		if ($e->getCode() == "500")
+			header("HTTP/1.0 500 Internal Server Error");
 		$result = array( 'success' => 'false', 'code' => $e->getCode(), 'message' => $e->getMessage() );
 		
 		// Add some more database debugging
-		if ($e->getCode() == "800" && Config::$database_debug)
+		if ($e->getCode() == "580" && Config::$database_debug)
 			$result['db_error'] = DB::$error;
 	}
 	
@@ -285,6 +289,13 @@ if (empty($result)) {
 	header("HTTP/1.0 404 Not Found");
 	$result = array( 'success' => 'false', 'code' => '404', 'message' => 'Invalid path' );
 }
+
+// Status code for PUT/POST/DELETE
+if ($wire['method'] == "DELETE")
+	header("HTTP/1.0 204 Ok");
+else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
+	header("HTTP/1.0 201 Ok");
+
 
 if (!array_key_exists('encoding', $wire))
 	echo json_encode($result, Config::$json_options);
