@@ -988,6 +988,33 @@ $wiring = array(
 			"allEnrollments" => array("href" => "enrollment/all/{student}"),
 		)
 	),
+	
+	
+	
+	// CURRICULUM
+	
+	array(
+		"path" => "curriculum", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"curriculum" => array("href" => "curriculum/{id}"),
+		)
+	),
+	
+	array(
+		"path" => "curriculum/{id}", 
+		"description" => "Information about curriculum with list of courses", 
+		"method" => "GET", 
+		"params" => array( "get_courses" => "bool" ),
+		"code" => "\$cur = Curriculum::fromId(\$id); if (\$get_courses) \$cur->courses = CurriculumCourse::forCurriculum(\$id); return \$cur;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"curriculum" => array("href" => "curriculum/{id}"),
+		)
+	),
 );
 
 $ws_aliases = array(

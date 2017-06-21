@@ -40,8 +40,8 @@ require_once(Config::$backend_path."lms/quiz/Quiz.php");
 require_once(Config::$backend_path."lms/quiz/QuizResult.php");
 
 require_once(Config::$backend_path."sis/ExtendedPerson.php");
-
 require_once(Config::$backend_path."sis/certificate/Certificate.php");
+require_once(Config::$backend_path."sis/curriculum/Curriculum.php");
 
 
 require_once("wiring.php");
