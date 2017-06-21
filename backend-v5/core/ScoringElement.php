@@ -6,6 +6,7 @@
 
 
 require_once(Config::$backend_path."core/CourseOffering.php");
+require_once(Config::$backend_path."core/ScoringType.php");
 
 class ScoringElement {
 	public $id;
