@@ -25,8 +25,8 @@ class Event {
 	public function getStudents() {
 		$students = DB::query_varray("SELECT student FROM student_ispit_termin WHERE ispit_termin=" . $this->id);
 		foreach($students as &$student)
-			$student = UnresolvedClass("Person", $student, $student);
-		return $students
+			$student = new UnresolvedClass("Person", $student, $student);
+		return $students;
 	}
 	
 	// Register student for event
@@ -54,7 +54,7 @@ class Event {
 		// Ensure reference is correctly inserted into array
 		$count = count($this->students);
 		$this->students[$count] = 0;
-		$this->students[$count] = UnresolvedClass("Person", $studentId, $this->students[$count]);
+		$this->students[$count] = new UnresolvedClass("Person", $studentId, $this->students[$count]);
 		return true;
 	}
 	
@@ -64,9 +64,10 @@ class Event {
 		// We don't test anything
 		// Unregistering from event that one can't register back for should be handled in UI
 		DB::query("DELETE FROM student_ispit_termin WHERE student=$studentId AND ispit_termin=" . $this->id);
-		foreach($this->students as &$student)
-			if ($student->id == $studentId) unset($student);
+		for($i=0; $i<count($this->students); $i++)
+			if ($this->students[$i]->id == $studentId) unset($this->students[$i]);
 		return (DB::affected_rows() > 0);
 	}
+}
 
 ?>

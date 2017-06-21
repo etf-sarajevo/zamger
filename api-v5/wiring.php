@@ -17,6 +17,7 @@ $wiring = array(
 			"exam" => array("href" => "exam"),
 			"homework" => array("href" => "homework"),
 			"quiz" => array("href" => "quiz"),
+			"event" => array("href" => "event"),
 		) // TODO: define identity links for classes
 	),
 

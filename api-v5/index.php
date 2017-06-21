@@ -29,6 +29,8 @@ require_once(Config::$backend_path."lms/attendance/Attendance.php");
 require_once(Config::$backend_path."lms/attendance/Group.php");
 require_once(Config::$backend_path."lms/attendance/ZClass.php");
 
+require_once(Config::$backend_path."lms/event/Event.php");
+
 require_once(Config::$backend_path."lms/exam/Exam.php");
 require_once(Config::$backend_path."lms/exam/ExamResult.php");
 
