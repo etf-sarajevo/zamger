@@ -401,7 +401,8 @@ $wiring = array(
 		"path" => "exam/{id}", 
 		"description" => "Information about exam", 
 		"method" => "GET", 
-		"code" => "return Exam::fromId(\$id);", 
+		"params" => array( "with_results" => "bool" ),
+		"code" => "\$exam = Exam::fromId(\$id); if (\$with_results) \$exam->results = ExamResult::fromExam(\$id); return \$exam;", 
 		"acl" => "teacherLevel(Exam::fromId(\$id)->CourseUnit->id, Exam::fromId(\$id)->AcademicYear->id)",
 		"hateoas_links" => array(
 			"exam" => array("href" => "exam/{id}"),

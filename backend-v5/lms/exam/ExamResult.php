@@ -22,6 +22,20 @@ class ExamResult {
 		$er->result = DB::get("SELECT ocjena FROM ispitocjene WHERE ispit=$examId AND student=$studentId");
 		return $er;
 	}
+	
+	// Get all results on exam
+	public static function fromExam($examId) {
+		$ers = DB::query_table("SELECT student, ispit Exam, ocjena result FROM ispitocjene WHERE ispit=$examId");
+		
+		foreach($ers as &$item) {
+			$er = new ExamResult;
+			$er->student = new UnresolvedClass("Person", $item['student'], $er->student);
+			$er->Exam = new UnresolvedClass("Exam", $examId, $er->Exam);
+			$er->result = $item['result'];
+			$item = $er;
+		}
+		return $ers;
+	}
 
 	// Call this function to change result
 	public function setExamResult($result) {

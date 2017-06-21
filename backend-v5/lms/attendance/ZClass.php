@@ -18,6 +18,7 @@ class ZClass {
 		// TODO combine date and time into a single timestamp db field as in the rest of db
 		$zclass = DB::query_assoc("SELECT c.id id, UNIX_TIMESTAMP(c.datum+c.vrijeme) datetime, c.nastavnik teacher, c.labgrupa _Group, c.komponenta ScoringElement FROM cas as c WHERE c.id=$id");
 		if (!$zclass) throw new Exception("Unknown class $id", "404");
+		
 		$zclass['Group'] = $zclass['_Group']; unset($zclass['_Group']); // reserved word in SQL
 		$zclass = Util::array_to_class($zclass, "ZClass", array("Group", "ScoringElement"));
 		
