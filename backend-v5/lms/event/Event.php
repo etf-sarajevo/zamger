@@ -68,6 +68,30 @@ class Event {
 			if ($this->students[$i]->id == $studentId) unset($this->students[$i]);
 		return (DB::affected_rows() > 0);
 	}
+	
+	// List upcoming events (with deadline in future) that given student can register for, in current academic year 
+	public static function upcomingForStudent($studentId) {
+		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear FROM ispit_termin it, ispit i, student_predmet sp, ponudakursa pk, akademska_godina ag WHERE it.ispit=i.id AND i.predmet=pk.predmet AND i.akademska_godina=ag.id AND sp.predmet=pk.id AND sp.student=$studentId AND pk.akademska_godina=ag.id AND ag.aktuelna=1 AND it.deadline>NOW() ORDER BY dateTime");
+		foreach($evts as &$evt) {
+			$evt = Util::array_to_class($evt, "Event", array("CourseUnit", "AcademicYear"));
+			// Return number of students so that student can know if there is room left
+			$evt->registered = count($evt->getStudents());
+		}
+		return $evts;
+	}
+	
+	// List events for which student is already registered, in current academic year 
+	// This will also return a number of events from the past, which can be filtered in UI if neccessary
+	public static function registeredForStudent($studentId) {
+		$evts = DB::query_table("SELECT it.id id, it.datumvrijeme dateTime, it.maxstudenata maxStudents, it.deadline deadline, i.predmet CourseUnit, i.akademska_godina AcademicYear FROM ispit_termin it, ispit i, student_ispit_termin sit, akademska_godina ag WHERE it.ispit=i.id AND it.id=sit.ispit_termin AND sit.student=$studentId AND i.akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY dateTime");
+		foreach($evts as &$evt) {
+			$evt = Util::array_to_class($evt, "Event", array("CourseUnit", "AcademicYear"));
+			// Return number of students so that student can know if there is room left
+			$evt->registered = count($evt->getStudents());
+		}
+		return $evts;
+	}
+
 }
 
 ?>

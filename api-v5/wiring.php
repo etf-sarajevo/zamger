@@ -774,6 +774,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"event" => array("href" => "event/{id}"),
 			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
 		)
 	),
 	
@@ -786,6 +788,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"event" => array("href" => "event/{id}"),
 			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
 		)
 	),
 	
@@ -798,6 +802,8 @@ $wiring = array(
 		"hateoas_links" => array(
 			"event" => array("href" => "event/{id}"),
 			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
 		)
 	),
 	
@@ -810,6 +816,36 @@ $wiring = array(
 		"hateoas_links" => array(
 			"event" => array("href" => "event/{id}"),
 			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "event/upcoming/{student}", 
+		"description" => "List upcoming events for student", 
+		"method" => "GET", 
+		"code" => "return Event::upcomingForStudent(\$student);", 
+		"acl" => "self(\$student)",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "event/registered/{student}", 
+		"description" => "List events that student is already registered for", 
+		"method" => "GET", 
+		"code" => "return Event::registeredForStudent(\$student);", 
+		"acl" => "self(\$student)",
+		"hateoas_links" => array(
+			"event" => array("href" => "event/{id}"),
+			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+			"eventsUpcoming" => array("href" => "event/upcoming/{student}"),
+			"eventsRegistered" => array("href" => "event/registered/{student}"),
 		)
 	),
 	
