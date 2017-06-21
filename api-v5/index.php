@@ -23,8 +23,6 @@ require_once(Config::$backend_path."core/Person.php");
 require_once(Config::$backend_path."core/Programme.php");
 require_once(Config::$backend_path."core/ProgrammeType.php");
 
-require_once(Config::$backend_path."sis/ExtendedPerson.php");
-
 require_once(Config::$backend_path."lms/attendance/Attendance.php");
 require_once(Config::$backend_path."lms/attendance/Group.php");
 require_once(Config::$backend_path."lms/attendance/ZClass.php");
@@ -39,6 +37,10 @@ require_once(Config::$backend_path."lms/homework/Homework.php");
 
 require_once(Config::$backend_path."lms/quiz/Quiz.php");
 require_once(Config::$backend_path."lms/quiz/QuizResult.php");
+
+require_once(Config::$backend_path."sis/ExtendedPerson.php");
+
+require_once(Config::$backend_path."sis/certificate/Certificate.php");
 
 
 require_once("wiring.php");
@@ -70,16 +72,6 @@ if (!$route) {
 
 // Initialize database
 DB::connect();
-
-
-// Handle JSON encoded requests
-if (isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"] == "application/json") {
-	$_REQUEST = json_decode(file_get_contents('php://input'),true);
-	if ($_SERVER['REQUEST_METHOD'] == "GET")
-		$_GET = json_decode(file_get_contents('php://input'),true);
-	else if ($_SERVER['REQUEST_METHOD'] == "POST")
-		$_POST = json_decode(file_get_contents('php://input'),true);
-}
 
 
 // Web service for authentication

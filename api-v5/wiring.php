@@ -18,6 +18,7 @@ $wiring = array(
 			"homework" => array("href" => "homework"),
 			"quiz" => array("href" => "quiz"),
 			"event" => array("href" => "event"),
+			"certificate" => array("href" => "certificate"),
 		) // TODO: define identity links for classes
 	),
 
@@ -86,7 +87,7 @@ $wiring = array(
 		"method" => "GET", 
 		"code" => "\$p = ExtendedPerson::fromId(\$id); return \$p;", 
 		"autoresolve" => array(),
-		"acl" => "self(\$id) || privilege('studentska') || privilege('siteadmin')"
+		"acl" => "self(\$id) || privilege('studentska')"
 	),
 	
 	
@@ -809,6 +810,105 @@ $wiring = array(
 		"hateoas_links" => array(
 			"event" => array("href" => "event/{id}"),
 			"eventRegister" => array("href" => "event/{id}/register/{student}"),
+		)
+	),
+	
+	
+	
+	// CERTIFICATE
+	
+	array(
+		"path" => "certificate", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+	
+	array(
+		"path" => "certificate/{id}", 
+		"description" => "Information about particular certificate request", 
+		"method" => "GET", 
+		"code" => "return Certificate::fromId(\$id);", 
+		"acl" => "self(Certificate::fromId(\$id)->student->id) || privilege('studentska')",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+	
+	array(
+		"path" => "certificate/{id}", 
+		"description" => "Update certificate status", 
+		"method" => "PUT", 
+		"params" => array( "certificate" => "object" ),
+		"classes" => array( "certificate" => "Certificate" ),
+		"code" => "\$result = new stdClass; \$result->success = \$certificate->setStatus(\$certificate->status); return \$result;", 
+		"acl" => "privilege('studentska')",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+	
+	array(
+		"path" => "certificate/{id}", 
+		"description" => "Cancel certificate request", 
+		"method" => "DELETE", 
+		"code" => "return Certificate::fromId(\$id)->cancel();", 
+		"acl" => "self(Certificate::fromId(\$id)->student->id) || privilege('studentska')",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+	
+	array(
+		"path" => "certificate/student/{student}", 
+		"description" => "List of certificate requests for student", 
+		"method" => "GET", 
+		"code" => "return Certificate::forStudent(\$student);", 
+		"acl" => "self(\$student)",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+	
+	array(
+		"path" => "certificate/student/{student}", 
+		"description" => "Request new certificate", 
+		"method" => "POST", 
+		"params" => array( "certificate" => "object" ),
+		"classes" => array( "certificate" => "Certificate" ),
+		"code" => "return Certificate::request(\$student, intval(\$certificate->CertificatePurpose), intval(\$certificate->CertificateType));", 
+		"acl" => "self(\$student)",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
+		)
+	),
+
+	array(
+		"path" => "certificate/purposesTypes", 
+		"description" => "Codebook for certificate purposes and types", 
+		"method" => "GET", 
+		"code" => "return Certificate::purposesTypes();", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"certificate" => array("href" => "certificate/{id}"),
+			"certificatesForStudent" => array("href" => "certificate/student/{student}"),
+			"certificatePurposesTypes" => array("href" => "certificate/purposesTypes"),
 		)
 	),
 );
