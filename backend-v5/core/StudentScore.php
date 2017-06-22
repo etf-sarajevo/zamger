@@ -74,7 +74,9 @@ class StudentScore {
 		
 		if ($score > $this->ScoringElement->max) {
 			Logging::log("AJAH ispit - vrijednost $score > max ".$se->max,3);
-			throw new Exception("Score $score greater then allowed " . $this->ScoringElement->max, "702");
+			// At this point we can't know if this error is cause by user or our code
+			// so we throw error code 400
+			throw new Exception("Score $score greater then allowed " . $this->ScoringElement->max, "400");
 		}
 
 		$oldScore = $this->getScore();

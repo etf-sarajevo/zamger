@@ -31,7 +31,7 @@ class Portfolio {
 		$p = new Portfolio;
 		$p->CourseOffering = CourseOffering::forStudent($studentId, $courseUnitId, $academicYearId);
 		if (!$p->CourseOffering) 
-			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "404");
+			throw new Exception("Student $studentId not enrolled to course $courseUnitId, year $academicYearId", "700");
 		$p->Person = new UnresolvedClass("Person", $studentId, $p->Person);
 		$p->score = false;
 		return $p;
@@ -60,6 +60,27 @@ class Portfolio {
 					$score->getDetails();
 		}
 		return $this->score;
+	}
+	
+	// These methods don't test id ScoringElement is available for course
+	public function setScore($scoringElementId, $score) {
+		$se = ScoringElement::fromStudentSEandCO($this->Person->id, $scoringElementId, $this->CourseOffering->id);
+		return $se->setScore($score);
+	}
+	
+	// These methods don't test id ScoringElement is available for course
+	public function deleteScore($scoringElementId) {
+		$se = ScoringElement::fromStudentSEandCO($this->Person->id, $scoringElementId, $this->CourseOffering->id);
+		$se->deleteScore($score);
+	}
+
+	public function getTotalScore() {
+		if (!$this->score)
+			$this->score = StudentScore::fromStudentAndCO($this->Person->id, $this->CourseOffering->id);
+		$sum = 0;
+		foreach($this->score as $ss)
+			$sum += $ss->getScore();
+		return $sum;
 	}
 	
 	// NOT FIXED BELOW THIS LINE
@@ -113,26 +134,6 @@ class Portfolio {
 		}
 		
 		$this->grade = -1; // -1 means no grade
-	}
-	
-	public function setScore($scoringElementId, $score) {
-		if (!$this->score) $this->getScore();
-		foreach($this->score as &$score)
-			if ($score->ScoringElement->id == $scoringElementId)
-				$score->setScore($score);
-				
-		Logging::log("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $scoringElementId (predmet pp".$this->courseOfferingId.", student u".$this->studentId.")",4);
-	}
-	
-	public function deleteScore($scoringElementId) {
-		if (!$this->score) $this->getScore();
-		foreach($this->score as &$score)
-			if ($score->ScoringElement->id == $scoringElementId)
-				$score->deleteScore();
-	}
-
-	public function getTotalScore() {
-		return DB::get("SELECT SUM(bodovi) FROM komponentebodovi WHERE student=" . $this->Person->id . " and predmet=" . $this->CourseOffering->id);
 	}
 
 	// Maximum total score that student could've made on this course so far
