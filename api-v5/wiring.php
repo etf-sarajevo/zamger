@@ -233,6 +233,66 @@ $wiring = array(
 	),
 	
 	array(
+		"path" => "group/{id}/student/{student}", 
+		"description" => "Check if student is enrolled in group", 
+		"method" => "GET", 
+		"code" => "\$grp = Group::fromId(\$id, \$details); return \$grp->isMember(\$student);", 
+		"acl" => "teacherLevelGroup(\$id)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/{id}/student/{student}", 
+		"description" => "Enroll student in group (removing from other groups)", 
+		"method" => "PUT", 
+		"code" => "\$grp = Group::fromId(\$id, \$details); return \$grp->addMember(\$student, true);", 
+		"acl" => "teacherLevelGroup(\$id)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/{id}/student/{student}", 
+		"description" => "Enroll student in group (not removing from other groups)", 
+		"method" => "POST", 
+		"code" => "\$grp = Group::fromId(\$id, \$details); return \$grp->addMember(\$student, false);", 
+		"acl" => "teacherLevelGroup(\$id)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
+		)
+	),
+	
+	array(
+		"path" => "group/{id}/student/{student}", 
+		"description" => "Disenroll student from group", 
+		"method" => "DELETE", 
+		"code" => "\$grp = Group::fromId(\$id, \$details); return \$grp->removeMember(\$student);", 
+		"acl" => "teacherLevelGroup(\$id)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"group" => array("href" => "group/{id}"),
+			"allGroups" => array("href" => "group/course/{course}/?year={year}"),
+			"allStudents" => array("href" => "group/course/{course}/allStudents/?year={year}"),
+			"forStudent" => array("href" => "group/course/{course}/student/{student}/?year={year}"),
+		)
+	),
+	
+	array(
 		"path" => "group/course/{course}", 
 		"description" => "Get list of student groups on course", 
 		"method" => "GET", 

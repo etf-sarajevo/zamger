@@ -60,12 +60,51 @@ class Group {
 		if ($member == 0) return false;
 		return true;
 	}
+	
+	// Add new student to group
+	// If onlyOne parameter is true, student can be enrolled in only one non-virtual group per course and will be removed from others
+	public function addMember($studentId, $onlyOne = true) {
+		if ($this->isMember($studentId)) 
+			throw new Exception("Student $studentId already a member of group " . $this->id, "403");
+			
+		if ($onlyOne) {
+			$groups = fromStudentAndCourse($studentId, $this->CourseUnit->id, $this->AcademicYear->id);
+			foreach($groups as $group)
+				if (!$group->virtual) $group->removeMember($studentId);
+		}
+		
+		DB::query("INSERT INTO student_labgrupa SET student=$student, labgrupa=" . $this->id);
+		Logging::log("student u$student upisan u grupu g" . $this->id, 2);
+		Logging::log2("student upisan u grupu", $studentId, $this->id);
+		return true;
+	}
+	
+	// Remove member from group
+	public function removeMember($studentId) {
+		if (!$this->isMember($studentId)) 
+			throw new Exception("Student $studentId not a member of group " . $this->id, "403");
+		
+		$casovi = DB::query_varray("SELECT id FROM cas WHERE labgrupa=$labgrupa");
+		foreach($casovi as $cas)
+			DB::query("DELETE FROM prisustvo WHERE student=$student AND cas=$r10[0]");
+			
+		// Komentari
+		DB::query("DELETE FROM komentar WHERE student=$student AND labgrupa=$labgrupa");
+
+		// Ispis iz labgrupe
+		if ($labgrupa>0) $q30 = db_query("delete from student_labgrupa where student=$student and labgrupa=$labgrupa");
+		DB::query("DELETE FROM student_labgrupa WHERE student=$student AND labgrupa=" . $this->id);
+		
+		Logging::log("student u$studentId ispisan iz grupe g" . $this->id, 2);
+		Logging::log2("student ispisan sa grupe", $studentId, $this->id);
+		return true;
+	}
 
 	// Get groups that student is a member of for given course unit
-	public static function fromStudentAndCourse($student, $courseUnitId, $academicYearId=0) {
+	public static function fromStudentAndCourse($studentId, $courseUnitId, $academicYearId=0) {
 		if ($academicYearId == 0)
 			$academicYearId = AcademicYear::getCurrent()->id;
-		$groups = DB::query_table("SELECT l.id id, l.naziv name, l.tip type, l.predmet CourseUnit, l.akademska_godina AcademicYear, l.virtualna virtual FROM student_labgrupa as sl, labgrupa as l WHERE l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$student");
+		$groups = DB::query_table("SELECT l.id id, l.naziv name, l.tip type, l.predmet CourseUnit, l.akademska_godina AcademicYear, l.virtualna virtual FROM student_labgrupa as sl, labgrupa as l WHERE l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$studentId");
 		foreach($groups as &$grp) {
 			$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
 			if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
