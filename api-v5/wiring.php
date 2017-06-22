@@ -637,6 +637,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -652,6 +653,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -667,6 +669,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -684,6 +687,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -699,6 +703,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -714,6 +719,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -729,6 +735,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -744,6 +751,7 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
@@ -759,6 +767,23 @@ $wiring = array(
 			"quizResults" => array("href" => "quiz/{id}/student"),
 			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
 			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "quiz/latest/{student}", 
+		"description" => "Currently open quizzes for student", 
+		"method" => "GET", 
+		"code" => "return QuizResult::getLatestForStudent(\$student);", 
+		"acl" => "self(\$student)",
+		"hateoas_links" => array(
+			"quiz" => array("href" => "quiz/{id}"),
+			"quizTake" => array("href" => "quiz/{id}/take"),
+			"quizResults" => array("href" => "quiz/{id}/student"),
+			"quizResultsStudent" => array("href" => "quiz/{id}/student/{student}"),
+			"allQuizzesForCourse" => array("href" => "quiz/course/{course}/{year}"),
+			"latestQuizzesForStudent" => array("href" => "quiz/latest/{student}"),
 		)
 	),
 	
