@@ -342,6 +342,87 @@ $wiring = array(
 	
 	
 	
+	// COMMENT
+	
+	array(
+		"path" => "comment", 
+		"description" => "List of hateoas links", 
+		"method" => "GET", 
+		"code" => "return new stdClass;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "comment/{id}", 
+		"description" => "Get comment with specific ID", 
+		"method" => "GET", 
+		"code" => "return Comment::fromId(\$id);", 
+		"acl" => "teacherLevelGroup(Comment::fromId(\$id)->Group->id)",
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "comment/{id}", 
+		"description" => "Delete comment", 
+		"method" => "DELETE", 
+		"code" => "\$com = Comment::fromId(\$id); \$com->delete();", 
+		"acl" => "teacherLevelGroup(Comment::fromId(\$id)->Group->id)",
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "comment/{id}", 
+		"description" => "Update comment", 
+		"method" => "PUT", 
+		"params" => array( "comment" => "object" ),
+		"classes" => array( "comment" => "Comment" ),
+		"code" => "\$comment->teacher->id = Session::\$userid; \$comment->validate(); \$comment->update();", 
+		"acl" => "teacherLevelGroup(Comment::fromId(\$id)->Group->id)",
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "comment/group/{group}/student/{student}", 
+		"description" => "Get all comments on student activity in group", 
+		"method" => "GET", 
+		"code" => "return Comment::forStudentInGroup(\$student, \$group);", 
+		"acl" => "teacherLevelGroup(\$group)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "comment/group/{group}/student/{student}", 
+		"description" => "Add new comment on student activity in group", 
+		"method" => "POST", 
+		"params" => array( "comment" => "object" ),
+		"classes" => array( "comment" => "Comment" ),
+		"code" => "\$comment->teacher->id = Session::\$userid; \$comment->validate(); \$comment->add()", 
+		"acl" => "teacherLevelGroup(\$group)",
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"comment" => array("href" => "comment/{id}"),
+			"allCommentsForStudent" => array("href" => "comment/group/{group}/student/{student}"),
+		)
+	),
+	
+	
 	// CLASS/ATTENDANCE
 	
 	array(
@@ -835,7 +916,7 @@ $wiring = array(
 		"path" => "quiz/latest/{student}", 
 		"description" => "Currently open quizzes for student", 
 		"method" => "GET", 
-		"code" => "return QuizResult::getLatestForStudent(\$student);", 
+		"code" => "return Quiz::getLatestForStudent(\$student);", 
 		"acl" => "self(\$student)",
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),

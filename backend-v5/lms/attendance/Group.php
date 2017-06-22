@@ -6,6 +6,8 @@
 
 
 require_once(Config::$backend_path."core/Portfolio.php");
+require_once(Config::$backend_path."core/StudentScore.php");
+require_once(Config::$backend_path."lms/attendance/ZClass.php");
 
 class Group {
 	public $id;
@@ -74,6 +76,10 @@ class Group {
 		}
 		
 		DB::query("INSERT INTO student_labgrupa SET student=$student, labgrupa=" . $this->id);
+		
+		// Changing group membership requires updating score for all components of type 3 (Presence)
+		StudentScore::updateAllOfType($studentId, $this->id, 3);
+		
 		Logging::log("student u$student upisan u grupu g" . $this->id, 2);
 		Logging::log2("student upisan u grupu", $studentId, $this->id);
 		return true;
@@ -84,16 +90,15 @@ class Group {
 		if (!$this->isMember($studentId)) 
 			throw new Exception("Student $studentId not a member of group " . $this->id, "403");
 		
-		$casovi = DB::query_varray("SELECT id FROM cas WHERE labgrupa=$labgrupa");
-		foreach($casovi as $cas)
-			DB::query("DELETE FROM prisustvo WHERE student=$student AND cas=$r10[0]");
-			
-		// Komentari
-		DB::query("DELETE FROM komentar WHERE student=$student AND labgrupa=$labgrupa");
+		// Clear information related to student membership in group
+		ZClass::deleteAllPresenceForStudentAndGroup($studentId, $this->id);
+		Comment::deleteAllforStudentInGroup($studentId, $this->id);
 
-		// Ispis iz labgrupe
-		if ($labgrupa>0) $q30 = db_query("delete from student_labgrupa where student=$student and labgrupa=$labgrupa");
+		// Disenroll
 		DB::query("DELETE FROM student_labgrupa WHERE student=$student AND labgrupa=" . $this->id);
+		
+		// Changing group membership requires updating score for all components of type 3 (Presence)
+		StudentScore::updateAllOfType($studentId, $this->id, 3);
 		
 		Logging::log("student u$studentId ispisan iz grupe g" . $this->id, 2);
 		Logging::log2("student ispisan sa grupe", $studentId, $this->id);
