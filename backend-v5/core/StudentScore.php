@@ -40,6 +40,22 @@ class StudentScore {
 		return $scores;
 	}
 	
+	// Update score for all scoring elements of given type on given course for given student
+	public static function updateAllOfType($studentId, $courseOfferingId, $seType) {
+		$scores = DB::query_table("SELECT kb.student student, kb.komponenta ScoringElement, kb.predmet CourseOffering, kb.bodovi score, k.tipkomponente ScoringType FROM komponentebodovi kb, komponenta k WHERE kb.student=$studentId AND kb.predmet=$courseOfferingId AND kb.komponenta=k.id AND k.tipkomponente=$seType");
+		foreach($scores as &$ss) {
+			$ss = Util::array_to_class($ss, "StudentScore", array("CourseOffering"));
+			$seid = $ss->ScoringElement;
+			$ss->ScoringElement = new ScoringElement;
+			$ss->ScoringElement->id = $seid;
+			$ss->ScoringElement->ScoringType = new UnresolvedClass("ScoringType", $ss->ScoringType, $ss->ScoringElement->ScoringType);
+			$ss->student = new UnresolvedClass("Person", $ss->student, $ss->student);
+			$ss->details = null;
+			
+			$ss->updateScore();
+		}
+	}
+	
 	// Populate the score field
 	public function getScore() {
 		if ($this->score !== null) return $this->score;
