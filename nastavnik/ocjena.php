@@ -210,8 +210,8 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				$q110 = db_query("INSERT INTO konacna_ocjena SET student=$student, predmet=$predmet, akademska_godina=$ag, ocjena=$ocjena, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
 		
 			// Izvoz unesene ocjene
-			if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$stud_id AND predmet=$predmet") == 0)
-				db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
+			if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$student AND predmet=$predmet") == 0)
+				db_query("INSERT INTO izvoz_ocjena VALUES($student,$predmet)");
 			
 			zamgerlog("masovno dodana ocjena $ocjena (predmet pp$predmet, student u$student)", 4);
 			zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
