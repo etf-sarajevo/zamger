@@ -367,7 +367,7 @@ if ($found==1 && $template==0 && $greska=="") {
 			<?
 		}
 	}
-	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	if ($userid>0 && $sta != "public/anketa") zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 	$uspjeh=1;
 	include ("$sta.php");
 	$uspjeh=2;
@@ -546,7 +546,7 @@ if ($userid>0) {
 // Polje sa imenom i linkovima na inbox, profil i odjavu
 if ($userid>0) {
 	user_box();
-	zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	if ($sta != "public/anketa") zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 }
 
 // Prikaz modula uglavljenog u template
