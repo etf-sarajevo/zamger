@@ -331,10 +331,10 @@ case "izmjena_ispita":
 		// Određivanje trenutno važećeg pasoša predmeta 
 		// FIXME pasoš predmeta treba biti dio ponudekursa - sada sam definitivno shvatio da je tako
 		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps
-		WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
+		WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<=$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
 		if ($pasos_predmeta === false) {
 			$pasos_predmeta = db_get("SELECT pis.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps, plan_izborni_slot pis
-			WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
+			WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<=$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
 		}
 		if ($pasos_predmeta === false) $pasos_predmeta="NULL";
 		
