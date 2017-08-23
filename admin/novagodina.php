@@ -47,9 +47,8 @@ if (param('akcija') == "novagodina") {
 			}
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".$plan_studija['godina']."<br>\n";
 			
-			$predmeti = predmeti_na_planu($plan_studija['id']);
+			$predmeti = predmeti_na_planu($plan_studija['id'], $sem);
 			foreach ($predmeti as $predmet) {
-				if ($predmet['semestar'] != $sem) continue;
 				kreiraj_ponudu_kursa ($predmet['predmet'], $studij, $sem, $ag, $predmet['obavezan'], $ispis);
 			}
 		}

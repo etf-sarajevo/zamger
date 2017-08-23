@@ -9,7 +9,7 @@
 // u suprotnom vraća false)
 function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis) {
 	// Naziv predmeta nam treba za poruke
-	if ($obavezan === true || $obavezan === 1) $obavezan=1; else $obavezan=0;
+	if ($obavezan === true || $obavezan === 1 || $obavezan === "1") $obavezan=1; else $obavezan=0;
 	$q60 = db_query("select naziv from predmet where id=$predmet");
 	$naziv_predmeta = db_result($q60,0,0);
 	$pkid = false;
