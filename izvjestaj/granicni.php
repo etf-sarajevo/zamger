@@ -267,19 +267,19 @@ while ($r20 = db_fetch_row($q20)) {
 	if ($studij_id != $old_studij_id || $plan_studija != $old_plan_studija || $semestar != $old_semestar) {
 		$plan_studija = $plan_studija_obavezan = array();
 		
-		$q50 = db_query("select pasos_predmeta, semestar, obavezan, plan_izborni_slot from plan_studija_predmet where plan_studija=$ss_plan_studija and semestar=$semestar");
-		while (db_fetch4($q50, $pasos_predmeta, $semestar, $obavezan, $plan_izborni_slot)) {
-			if (!array_key_exists($semestar, $plan_studija)) {
-				$plan_studija[$semestar] = array();
-				$plan_studija_obavezan[$semestar] = array();
+		$q50 = db_query("select pasos_predmeta, semestar, obavezan, plan_izborni_slot from plan_studija_predmet where plan_studija=$ss_plan_studija and semestar<=$semestar");
+		while (db_fetch4($q50, $pasos_predmeta, $semestar_predmet, $obavezan, $plan_izborni_slot)) {
+			if (!array_key_exists($semestar_predmet, $plan_studija)) {
+				$plan_studija[$semestar_predmet] = array();
+				$plan_studija_obavezan[$semestar_predmet] = array();
 			}
 			if ($obavezan == 1) { // obavezan
-				$plan_studija[$semestar][] = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
+				$plan_studija[$semestar_predmet][] = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
 			} else { // izborni
 				// Sada samo stavljamo slot u spisak, a kasnije ćemo raščlaniti
-				$plan_studija[$semestar][] = $plan_izborni_slot;
+				$plan_studija[$semestar_predmet][] = $plan_izborni_slot;
 			}
-			$plan_studija_obavezan[$semestar][] = $obavezan;
+			$plan_studija_obavezan[$semestar_predmet][] = $obavezan;
 		}
 	}
 
