@@ -296,7 +296,7 @@ while ($r20 = db_fetch_row($q20)) {
 			// Obavezan predmet
 			if ($plan_studija_obavezan[$pssem][$redni_broj]==1) {
 				$pao_predmet = pao_predmet($student, $predmet, $ak_god);
-				if ($pao_predmet==1) {
+				if ($pao_predmet == 1) {
 					$parcijalnih++;
 					$parcijalni_predmet[] = naziv_predmeta_cache($predmet);
 				} else if ($pao_predmet!=0) {
@@ -442,10 +442,17 @@ if ($prikaz=="po_studiju") {
 			<tr><td>Jedan čitav predmet</td><td><?=$koliko_nepolozenih[1][0]?> studenata</td></tr>
 			<tr><td>Jedan predmet i jedan parcijalni ili završni ispit</td><td><?=$koliko_nepolozenih[1][1]?> studenata</td></tr>
 			<?
-		} else if ($koliko_nepolozenih[$i][0]>0) {
+		} else if ($i==2) {
 			?>
-			<tr><td><?=$i?>. predmeta</td><td><?=$koliko_nepolozenih[$i][0]?> studenata</td></tr>
+			<tr><td>Dva predmeta</td><td><?=$koliko_nepolozenih[2][0]?> studenata</td></tr>
 			<?
+		} else {
+			$ukupno_i = $koliko_nepolozenih[$i][0] + $koliko_nepolozenih[$i-1][1] + $koliko_nepolozenih[$i-2][2];
+			if ($ukupno_i > 0) {
+				?>
+				<tr><td><?=$i?>. predmeta</td><td><?=$ukupno_i?> studenata</td></tr>
+				<?
+			}
 		}
 	}
 
