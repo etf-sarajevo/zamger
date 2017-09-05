@@ -6,6 +6,143 @@
 
 function izvjestaj_ugovoroucenju() {
 
+global $conf_uslov_predmeta;
+$conf_uslov_predmeta = 2;
+$conf_uslov_kolizija = 5;
+
+
+// Funkcija koja provjerava da li je student dao uslov za upis na sljedecu godinu studija, odnosno koliko predmeta nije položeno
+// Vraća boolean vrijednost
+// Globalni niz $zamger_predmeti_pao sadrži id-eve predmeta koji nisu položeni
+function ima_li_uslov2($student, $ag=0) {
+	$ima_uslov=false;
+
+	// Odredjujemo studij i semestar
+	if ($ag==0) {
+		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
+		if (db_num_rows($q10)<1) 
+			return true; // Nikad nije bio student, ima uslov za prvu godinu ;)
+	} else {
+		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ss.akademska_godina=$ag order by ss.semestar desc limit 1");
+		if (db_num_rows($q10)<1) 
+			return false; // Nije bio student u datoj akademskoj godini
+	}
+
+	$studij = db_result($q10,0,0);
+	$semestar = db_result($q10,0,1);
+	if ($semestar%2==1) $semestar++; // zaokružujemo na parni semestar
+	$studij_trajanje = db_result($q10,0,2);
+	$plan_studija = db_result($q10,0,3);
+	
+	if ($plan_studija > 0)
+		$ima_uslov = ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija);
+	else
+		$ima_uslov = ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajanje);
+	
+	return $ima_uslov;
+}
+
+
+function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija) {
+	global $zamger_predmeti_pao, $conf_uslov_predmeta;
+	
+	$nize_godine = $obavezni_pao = $izborni_pao = 0;
+	
+	$q20 = db_query("SELECT pasos_predmeta, plan_izborni_slot, semestar, obavezan FROM plan_studija_predmet WHERE plan_studija=$plan_studija AND semestar<=$semestar");
+	while (db_fetch4($q20, $pasos_predmeta, $pis, $predmet_semestar, $obavezan)) {
+		if ($obavezan == 1) {
+			$predmet = db_get("SELECT predmet FROM pasos_predmeta WHERE id=$pasos_predmeta");
+			$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND ocjena>5");
+			if ($polozio == 0) {
+				array_push($zamger_predmeti_pao, $predmet);
+
+				// Predmet se ne može prenijeti preko dvije godine
+				if ($predmet_semestar<$semestar-1) $nize_godine++;
+
+				// Ako je obavezan, situacija je jasna
+				$obavezni_pao++;
+			}
+		} else {
+			$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena ko, pasos_predmeta pp, plan_izborni_slot pis WHERE ko.student=$student AND ko.predmet=pp.predmet AND pp.id=pis.pasos_predmeta AND pis.id=$pis AND ocjena>5");
+			if ($polozio == 0) {
+				$konkretan_predmet = db_get("SELECT pk.predmet FROM ponudakursa pk, student_predmet sp, plan_izborni_slot pis, pasos_predmeta pp WHERE pk.id=sp.predmet AND sp.student=$student AND pk.predmet=pp.predmet AND pp.id=pis.pasos_predmeta AND pis.id=$pis");
+				if ($konkretan_predmet) array_push($zamger_predmeti_pao, $konkretan_predmet);
+
+				// Predmet se ne može prenijeti preko dvije godine
+				if ($predmet_semestar<$semestar-1) $nize_godine++;
+
+				// Ako je obavezan, situacija je jasna
+				$izborni_pao++;
+			}
+		}
+	}
+	
+	if ($nize_godine>0) return false;
+	if ($obavezni_pao + $izborni_pao > $conf_uslov_predmeta) return false;
+	return true;
+}
+
+
+function ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajanje) {
+	global $zamger_predmeti_pao, $conf_uslov_predmeta;
+
+	// Od predmeta koje je slušao, koliko je pao?
+	$q20 = db_query("select distinct pk.predmet, p.ects, pk.semestar, pk.obavezan from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.studij=$studij and pk.predmet=p.id order by pk.semestar");
+	$obavezni_pao_ects=$obavezni_pao=$nize_godine=$ects_polozio=0;
+	$zamger_predmeti_pao=array();
+	while ($r20 = db_fetch_row($q20)) {
+		$predmet = $r20[0];
+
+		$ects = $r20[1];
+		$predmet_semestar = $r20[2];
+		$obavezan = $r20[3];
+
+		$q30 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+		if (db_result($q30,0,0)<1) {
+			array_push($zamger_predmeti_pao, $predmet);
+
+			// Predmet se ne može prenijeti preko dvije godine
+			if ($predmet_semestar<$semestar-1) $nize_godine++;
+
+			// Ako je obavezan, situacija je jasna
+			if ($obavezan) { 
+				$obavezni_pao_ects+=$ects;
+				$obavezni_pao++;
+
+			// Za izborne možemo odrediti uslov samo preko ECTSa
+			// pošto je tokom godina student mogao pokušavati razne izborne
+			// predmete
+			}
+		} else
+			$ects_polozio += $ects;
+	}
+
+	// USLOV ZA UPIS
+	// Prema aktuelnom zakonu može se prenijeti tačno $conf_uslov_predmeta predmeta, bez obzira na ECTS
+	// No, na sljedeći ciklus studija se ne može prenijeti ništa
+	$ects_ukupno = $semestar*30;
+
+	// 1. Završni semestar, mora očistiti sve
+	if ($semestar==$studij_trajanje && $obavezni_pao==0 && $ects_polozio>=$ects_ukupno) {
+		// Jedan semestar nosi 30 ECTSova
+		$ima_uslov=true;
+
+	// 2. Nije završni semestar, nedostaje jedan ili nijedan predmet (ali samo sa zadnje odslušane godine studija)
+	} else if ($semestar<$studij_trajanje && $obavezni_pao<=$conf_uslov_predmeta && $nize_godine==0) {
+
+		// 2A. Položeni svi obavezni predmeti. 
+		// Da li nedostaje više od jednog izbornog? Izborni slotovi nose 4-6 ECTS
+		$izborni_ects_pao_max = ($conf_uslov_predmeta-$obavezni_pao) * 7; // maksimalno 7 kredita po predmetu
+		
+		if ($ects_polozio + $obavezni_pao_ects + $izborni_ects_pao_max >= $ects_ukupno) {
+			$ima_uslov=true;
+		}
+
+	}
+
+	return $ima_uslov;
+}
+
 
 function dajstudenta($stud) {
 	$q = db_query("select prezime, ime from osoba where id=$stud");
@@ -281,9 +418,9 @@ if ($r260[0]==$debug_predmet) print $k++."redovno sigurno (non-fuzzy uou) $stude
 	// koristimo Ugovor o učenju i podatke o koliziji da procijenimo njegov status
 	global $zamger_predmeti_pao;
 	$zamger_predmeti_pao=array();
-	$uslov = ima_li_uslov($student, $ag);
+	$uslov = ima_li_uslov2($student, $ag);
 
-if ($student==$debug_student) { print "predmeti pao "; print_r ($zamger_predmeti_pao); if ($uslov) print " ima uslov<br>"; else print " nema uslov<br>"; }
+if ($student==$debug_student) { print "predmeti pao "; print_r ($zamger_predmeti_pao); if ($uslov) print " ima uslov<br>"; else print " nema uslov $uslov<br>"; }
 
 	// Ima li ugovor o ucenju?
 	$izborni_ugovor = array();
@@ -383,7 +520,7 @@ if ($student==$debug_student) print "kolizija ".($imakoliziju?1:0)."<br>";
 	// Student koji preko kolizije mijenja studij
 	if ($imakoliziju && !$imaugovor) {
 		while ($r30 = db_fetch_row($q30)) {
-			$q31 = db_query("select studij, semestar from plan_studija_predmet where predmet=$r30[1] and obavezan=1 order by godina_vazenja desc limit 1");
+			$q31 = db_query("SELECT ps.studij, psp.semestar FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE pp.predmet=$r30[1] AND psp.pasos_predmeta=pp.id AND psp.obavezan=1 AND psp.plan_studija=ps.id ORDER BY ps.godina_vazenja DESC, ps.id DESC LIMIT 1"); // Sumnjivo?
 			if (db_num_rows($q31)>0) {
 				if ($novistudij != db_result($q31,0,0)) {
 					$novistudij= db_result($q31,0,0);
@@ -459,7 +596,7 @@ if ($student==$debug_student) { print "polozio septembar"; print_r($polozio_sept
 if ($student==$debug_student) print "Ima uslov<br>";
 		$fali_u_koliziji=0;
 
-		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=$novisemestar or semestar=".($novisemestar+1).") and obavezan=1");
+		$q40 = db_query("SELECT pp.predmet FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$ps and (psp.semestar=$novisemestar or psp.semestar=".($novisemestar+1).") and psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
 		while ($r40 = db_fetch_row($q40)) {
 			if (in_array($r40[0], $pao_koliziono)) {
 				$slusa_ponovac_sigurno[$r40[0]]++;
@@ -559,11 +696,11 @@ if ($r50[0]==$debug_predmet) print "redovno sigurno (uou) $student<br>";
 
 
 	// 2. Ašćare dao uslov u septembru samo ocjene još nisu upisane
-	if (count($polozio_septembar)>0 && count($zamger_predmeti_pao)-count($polozio_septembar)<=1) {
+	if (count($polozio_septembar)>0 && count($zamger_predmeti_pao)-count($polozio_septembar) <= $conf_uslov_predmeta) {
 if ($student==$debug_student) print "Ašćare ima uslov<br>";
 		$fali_u_koliziji=0;
 
-		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+		$q40 = db_query("SELECT pp.predmet FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$ps and (psp.semestar=$novisemestar or psp.semestar=".($novisemestar+1).") and psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
 		while ($r40 = db_fetch_row($q40)) {
 			if (!in_array($r40[0], $polozio_koliziono)) {
 				$slusa_redovno_sigurno[$r40[0]]++;
@@ -688,7 +825,7 @@ if ($predmet==$debug_predmet) print "ponovac možda $student<br>";
 
 	// 3. Ima uslove za koliziju, popunio zahtjev
 if ($student==$debug_student) print "uslov 1 ".(count($zamger_predmeti_pao)-count($polozio_septembar))." uslov2 ".($imakoliziju?1:0)." uslov3 ".($ostvario_septembar?1:0)."<br>";
-	if (count($zamger_predmeti_pao)-count($polozio_septembar) <= 3 && $imakoliziju && $ostvario_septembar) {
+	if (count($zamger_predmeti_pao)-count($polozio_septembar) <= $conf_uslov_kolizija && $imakoliziju && $ostvario_septembar) {
 if ($student==$debug_student) print "Kolizija<br>";
 		// Predmeti koje sluša koliziono
 		$ovaj_student_kolizija=array();
@@ -722,8 +859,8 @@ if ($predmet==$debug_predmet) print "kolizija (ima uslov) $student<br>";
 		}
 
 		// 3A. Ima šansi da upiše redovno
-		if (!$ugovor_ponovac && count($pao_septembar)<=1) {
-			$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+		if (!$ugovor_ponovac && count($pao_septembar) <= $conf_uslov_predmeta) {
+			$q40 = db_query("SELECT pp.predmet FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$ps and (psp.semestar=$novisemestar or psp.semestar=".($novisemestar+1).") and psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
 			while ($r40 = db_fetch_row($q40))
 				if (!in_array($r40[0], $ovaj_student_kolizija) && !in_array($r40[0], $polozio_koliziono)) {
 					$slusa_redovno_mozda[$r40[0]]++;
@@ -767,7 +904,7 @@ if ($r50[0]==$debug_predmet) print "redovno možda (uou) $student<br>";
 	// 4. Nema uslove za koliziju ali smatra da će imati (i ima šansi)
 	// Ako nije ostvario septembar, tj. pao je predmet koji je rekao da će položiti, mora ponovo popuniti koliziju
 	// Uz svo dužno poštovanje, smatramo da studenti sa više od 5 nepoloženih predmeta nemaju šansi za koliziju
-	if ($imakoliziju && $ostvario_septembar && count($zamger_predmeti_pao)-count($polozio_septembar)<=5 && count($pao_septembar)<=3) {
+	if ($imakoliziju && $ostvario_septembar && count($zamger_predmeti_pao)-count($polozio_septembar) <= $conf_uslov_predmeta+2 && count($pao_septembar) <= $conf_uslov_kolizija) {
 if ($student==$debug_student) print "Možda kolizija<br>";
 		// Predmeti koje sluša koliziono
 		while ($r30 = db_fetch_row($q30)) {
@@ -792,9 +929,9 @@ if ($predmet==$debug_predmet) print "kolizija možda $student<br>";
 	}
 
 	// 5. Nije tražio koliziju, ima šansi za uslov
-	if (!$ugovor_ponovac && count($pao_septembar)<=1 && count($zamger_predmeti_pao)-count($polozio_septembar) <= 3) {
+	if (!$ugovor_ponovac && count($pao_septembar) <= $conf_uslov_predmeta && count($zamger_predmeti_pao)-count($polozio_septembar) <= $conf_uslov_kolizija) {
 if ($student==$debug_student) print "Šanse za uslov bez kolizije<br>";
-		$q40 = db_query("select predmet from plan_studija_predmet where plan_studija=$ps and (semestar=".($novisemestar+1)." or semestar=$novisemestar) and obavezan=1");
+		$q40 = db_query("SELECT pp.predmet FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$ps and (psp.semestar=$novisemestar or psp.semestar=".($novisemestar+1).") and psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
 		while ($r40 = db_fetch_row($q40))
 			if (!in_array($r40[0], $polozio_koliziono)) {
 				$slusa_redovno_mozda[$r40[0]]++;
@@ -909,7 +1046,7 @@ if ($fuzzy) {
 
 // Po studijima i semestrima
 
-$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=1 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
+$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=10 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
 $oldstudij=$oldsemestar=$oldobavezan="";
 
 $predmeti_ispis=array();
@@ -1064,7 +1201,7 @@ $statstudij=$studij;
 		$predmeti_institucija[$predmet] = $pinstitucija;
 		$izborni_print=0;
 	} else {
-		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[0] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
+		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[1] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
 		while(db_fetch3($q120, $predmet, $naziv_predmeta, $pinstitucija)) {
 			$predmeti_ispis[$predmet] = $naziv_predmeta;
 			$predmeti_institucija[$predmet] = $pinstitucija;
