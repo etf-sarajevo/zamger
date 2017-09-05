@@ -1,6 +1,6 @@
 Zamger v4.2
 
-Copyright (c) 2006-2012 Vedran Ljubovic i drugi
+Copyright (c) 2006-2017 Vedran Ljubovic i drugi
 Elektrotehnicki fakultet Sarajevo
 	
 	
@@ -8,7 +8,7 @@ Elektrotehnicki fakultet Sarajevo
 CREDITS.txt - popis autora i kontributora
 =========================================
 
-11. 7. 2012.
+5. 9. 2017.
 
 Veliku većinu koda (oko 95%) Zamgera od nule je razvio Vedran Ljubović. 
 Pored njega, na projektu su učestvovali i sljedeći autori:
@@ -43,6 +43,7 @@ u HTMLu
 - Ermin Dedović - rad na verziji 5
 - Emir Cogo - Facebook modul
 - Adnan Hajdarević - favicon
+- Enil Pajić - testiranje i usavršavanje novog v5 APIja
 - svi studenti na predmetu Pouzdanost i kontrola kvalitete softvera u 
 godinama 2008/2009 i 2009/2010 koji su testirali Zamger u sklopu zadatka
 "Black box testiranje", na čemu posebno zahvaljujem njihovoj asistentici 
