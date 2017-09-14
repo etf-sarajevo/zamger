@@ -19,16 +19,7 @@ function studentska_zavrsni()  {
 	if ($dir != "desc" && $dir != "asc") $dir="";
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin 
-	&& $userid != 69 /* Vensada (RI) */ 
-	/*&& $userid != 44*/ /* Senad H. (AE) */ 
-	&& $userid != 2892 /* Adnan Osmanović (AE) */ 
-	&& $userid != 56 /* Jasmin Velagić (AE) */ 
-	/*&& $userid != 1136*/ /* Enio (TK) */
-	&& $userid != 1672 /* Almir Marić (TK) */
-	/*&& $userid != 455*/ /* Adnan Mujezinović */
-	&& $userid != 455 /* Adnan Mujezinović */
-	&& $userid != 45 /* Senad Smaka */) {
+	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
 		zamgerlog2("nije studentska");
 		biguglyerror("Pristup nije dozvoljen.");
