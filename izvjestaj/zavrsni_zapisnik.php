@@ -177,6 +177,7 @@ if ($r10['ciklus'] == 1) {
 	$datum_odluke = date("d.m.Y.", db_result($q50,0,0));
 	$broj_odluke = db_result($q50,0,1);
 
+	$rbr_komisija=1;
 
 	?>
 	<style>
@@ -198,9 +199,17 @@ if ($r10['ciklus'] == 1) {
 	<p>Prisutni:<br>
 	Student <?=$r20["prezime"]?> <?=$r20["ime"]?>,<br>
 	Komisija imenovana Odlukom NNV-a Fakulteta broj: <?=$broj_odluke?> od <?=$datum_odluke?> godine u sastavu:<br>
-	1. Predsjednik <?=$predsjednik?>,<br>
-	2. Mentor, <?=$mentor?>, i<br>
-	3. Član, <?=$clan?> </p>
+	<?=$rbr_komisija++?>. Predsjednik <?=$predsjednik?>,<br>
+	<?=$rbr_komisija++?>. Mentor, <?=$mentor?>,<br>
+	<? if ($mentor2) { ?>
+	<?=$rbr_komisija++?>. Mentor, <?=$mentor2?>,<br>
+	<? } ?>
+	<?=$rbr_komisija++?>. Član, <?=$clan?>
+	<? if ($clan2) { ?>
+	,<br>
+	<?=$rbr_komisija++?>. Član, <?=$clan2?>
+	<? } ?>
+	</p>
 
 	<!--p>Ostali prisutni: publika.</p-->
 
@@ -221,6 +230,18 @@ if ($r10['ciklus'] == 1) {
 
 	<p>&nbsp;</p>
 
+	<? if ($mentor2) { ?>
+	<p>Mentor/Član - <?=$mentor2?>,
+
+	<p>Pitanja 1.</p>
+
+	<p>2.</p>
+
+	<p>3.</p>
+
+	<p>&nbsp;</p>
+	<? } ?>
+
 	<p>Član - <?=$clan?>, </p>
 
 	<p>Pitanja 1.</p>
@@ -228,6 +249,17 @@ if ($r10['ciklus'] == 1) {
 	<p>2.</p>
 
 	<p>&nbsp;</p>
+	
+	<? if ($clan2) { ?>
+	,<br>
+	<p>Član - <?=$clan2?>, </p>
+
+	<p>Pitanja 1.</p>
+
+	<p>2.</p>
+
+	<p>&nbsp;</p>
+	<? } ?>
 
 	<p>Predsjednik - <?=$predsjednik?>,</p>
 
@@ -253,12 +285,24 @@ if ($r10['ciklus'] == 1) {
 
 	<table border="0" width="100%"><tr><td>&nbsp;</td><td>
 <p>KOMISIJA:</p>
-									
-<p>1. ______________________ , predsjednik</p>
-	
-<p>2. ______________________ , mentor/član</p>
 
-<p>3. ______________________ , član</p>
+<? $rbr_komisija=1; ?>
+
+<p><?=$rbr_komisija++?>. ______________________ , predsjednik</p>
+	
+<p><?=$rbr_komisija++?>. ______________________ , mentor/član</p>
+
+<? if ($mentor2) { ?>
+<p><?=$rbr_komisija++?>. ______________________ , mentor/član</p>
+<? } ?>
+
+<p><?=$rbr_komisija++?>. ______________________ , član</p>
+
+<? if ($clan2) { ?>
+<p><?=$rbr_komisija++?>. ______________________ , član</p>
+<? } ?>
+
+
 </td></tr></table>
 
 <?
