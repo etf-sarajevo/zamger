@@ -41,6 +41,11 @@ $conf_appversion = "4.3";
 
 $conf_system_auth = "table";
 
+// Uslov za upis u narednu godinu (iz zakona)
+$conf_uslov_predmeta = 2;
+$conf_uslov_ects_kredita = 12;
+$conf_uslov_kolizija = 5;
+
 // Pristupni podaci za LDAP
 // Zamger će koristiti anonimni pristup
 $conf_ldap_server = "localhost";
