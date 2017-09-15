@@ -3,62 +3,204 @@
 // LIB/STUDENT_STUDIJ - funkcije vezane za studij (upis na studij, ispis, uslov itd.)
 
 
+require_once("lib/plan_studija.php");
+
 // Funkcija koja provjerava da li je student dao uslov za upis na sljedecu godinu studija, odnosno koliko predmeta nije položeno
-// Vraća boolean vrijednost
+// - Parametar $ag omogućuje da se uslov posmatra u nekom trenutku iz prošlosti. Vrijednost je godina u kojoj je student bio upisan,
+// provjerava se da li je student imao uslov po završetku te godine
+// - Funkcija vraća boolean vrijednost
 // Globalni niz $zamger_predmeti_pao sadrži id-eve predmeta koji nisu položeni
 function ima_li_uslov($student, $ag=0) {
-	global $zamger_predmeti_pao;
 	$ima_uslov=false;
 
 	// Odredjujemo studij i semestar
 	if ($ag==0) {
-		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
+		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
 		if (db_num_rows($q10)<1) 
 			return true; // Nikad nije bio student, ima uslov za prvu godinu ;)
 	} else {
-		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ss.akademska_godina=$ag order by ss.semestar desc limit 1");
+		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ss.akademska_godina=$ag order by ss.semestar desc limit 1");
 		if (db_num_rows($q10)<1) 
 			return false; // Nije bio student u datoj akademskoj godini
 	}
 
-	$studij = db_result($q10,0,0);
-	$semestar = db_result($q10,0,1);
+	db_fetch4($q10, $studij, $semestar, $studij_trajanje, $plan_studija);
 	if ($semestar%2==1) $semestar++; // zaokružujemo na parni semestar
-	$studij_trajanje = db_result($q10,0,2);
+	
+	// Ako je definisan plan studija, koristimo ga
+	if ($plan_studija > 0)
+		$ima_uslov = ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija);
+	
+	// U suprotnom, uslov se određuje na osnovu predmeta koje je student ranije slušao
+	// Uz pokušaj da se predvidi i mogućnost promjene izbornog predmeta
+	else
+		$ima_uslov = ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajanje);
+	
+	return $ima_uslov;
+}
 
+
+// Određivanje uslova na osnovu plana studija
+function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija) {
+	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta, $conf_uslov_ects_kredita;
+	global $cache_planova_studija;
+	
+	$zamger_predmeti_pao = $pis_bio = $nepoznat_izborni = array();
+	$nize_godine = $obavezni_pao = $zamger_pao_ects = $izborni_pao = 0;
+	$nepoznat_predmet_id = -1;
+	
+	// Svi predmeti koje je student slušao - zatrebaće nam kasnije
+	if (!isset($cache_planova_studija)) $cache_planova_studija = array();
+	if (!array_key_exists($plan_studija, $cache_planova_studija)) 
+		$cache_planova_studija[$plan_studija] = predmeti_na_planu($plan_studija);
+	
+	// Svi predmeti koje je student položio
+	$student_polozio = db_query_vassoc("SELECT pk.predmet, ko.ocjena
+	FROM student_predmet sp, ponudakursa pk
+	LEFT JOIN konacna_ocjena ko ON ko.predmet=pk.predmet AND ko.student=$student
+	WHERE sp.student=$student AND sp.predmet=pk.id");
+	
+	// Predmeti koje je student slušao s drugih odsjeka
+	$drugi_odsjek = array();
+	foreach($student_polozio as $predmet => $ocjena) {
+		$pronasao = false;
+		foreach($cache_planova_studija[$plan_studija] as $slog) {
+			if ($slog['obavezan'] == 1 && $slog['predmet']['id'] == $predmet) {
+				$pronasao = true;
+				break;
+			}
+			if ($slog['obavezan'] == 0) {
+				foreach($slog['predmet'] as $slog_predmet) {
+					if ($slog_predmet['id'] == $predmet) {
+						$pronasao = true;
+						break;
+					}
+				}
+				if ($pronasao) break;
+			}
+		}
+		if (!$pronasao) {
+			$drugi_odsjek[$predmet] = db_query_assoc("SELECT pk.semestar semestar, pp.ects ects, pp.naziv naziv
+				FROM student_predmet sp, ponudakursa pk, pasos_predmeta pp 
+				WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.predmet=pp.predmet");
+		}
+	}
+	
+	// Sada prolazimo kroz plan studija i provjeravamo šta je položeno
+	foreach($cache_planova_studija[$plan_studija] as $slog) {
+		if ($slog['semestar'] > $semestar) continue;
+		if ($slog['obavezan'] == 1) {
+			$predmet = $slog['predmet']['id'];
+			$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
+			
+			if (!$polozio) {
+				$zamger_predmeti_pao[$predmet] = $slog['predmet']['naziv'];
+
+				// Predmet se ne može prenijeti preko dvije godine
+				if ($slog['semestar'] < $semestar-1) $nize_godine++;
+
+				// Ako je obavezan, situacija je jasna
+				$obavezni_pao++;
+				$zamger_pao_ects += $slog['predmet']['ects'];
+			}
+		} else {
+			// Kod izbornih predmeta moramo računati da se isti slot može ponavljati N puta, 
+			// što znači da student mora položiti N predmeta iz tog slota
+			$polozio_izbornih = 0;
+			$izborni_predmeti_pao = array();
+			foreach($slog['predmet'] as $slog_predmet) {
+				$predmet = $slog_predmet['id'];
+				$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
+				if ($polozio)
+					$polozio_izbornih++;
+				else if (array_key_exists($predmet, $student_polozio))
+					$izborni_predmeti_pao[] = $slog_predmet;
+			}
+			
+			// Nije položio dovoljno predmeta iz ovog slota
+			if ($polozio_izbornih < $slog['ponavljanja']) {
+				foreach($izborni_predmeti_pao as $slog_predmet) {
+					$zamger_predmeti_pao[$predmet] = $slog_predmet['naziv'];
+					$zamger_pao_ects += $slog_predmet['ects'];
+					if ($slog['semestar'] < $semestar-1) $nize_godine++;
+					
+					$polozio_izbornih++;
+					if ($polozio_izbornih == $slog['ponavljanja']) break;
+				}
+			}
+			
+			// Još uvijek nije dovoljno... tražimo predmete sa drugog odsjeka
+			if ($polozio_izbornih < $slog['ponavljanja']) {
+				foreach ($drugi_odsjek as $predmet => $podaci) {
+					if ($podaci['semestar'] == $slog['semestar']) {
+						$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
+						if (!$polozio) {
+							$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
+							$zamger_pao_ects += $podaci['ects'];
+							if ($slog['semestar'] < $semestar-1) $nize_godine++;
+						}
+						
+						$polozio_izbornih++;
+						if ($polozio_izbornih == $slog['ponavljanja']) break;
+					}
+				}
+			}
+			
+			if ($polozio_izbornih < $slog['ponavljanja']) {
+				// Koristimo negativan ID za oznaku nepoznatog predmeta
+				$zamger_predmeti_pao[$nepoznat_predmet_id--] = "(Nepoznat izborni predmet)";
+			}
+		}
+	}
+	
+	
+	// Predmet se ne može prenositi sa prve na treću godinu
+	if ($nize_godine>0) return false;
+	
+	// Ako je završni semestar ne može se ništa prenijeti
+	if ($semestar == $studij_trajanje && ($obavezni_pao > 0 || $izborni_pao > 0 || $zamger_pao_ects > 0)) return false;
+	
+	// Student ima uslov ako je pao <= $conf_uslov_predmeta ili ako svi nepoloženi 
+	// krediti zajedno nose <= $conf_uslov_ects_kredita
+	if ($obavezni_pao + $izborni_pao > $conf_uslov_predmeta && $zamger_pao_ects > $conf_uslov_ects_kredita) return false;
+	return true;
+}
+
+
+// Određivanje uslova na osnovu predmeta koje je student slušao
+function ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajanje) {
+	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta;
+
+	$zamger_predmeti_pao = array();
+	$obavezni_pao_ects = $obavezni_pao = $nize_godine = $ects_polozio = 0;
+	
 	// Od predmeta koje je slušao, koliko je pao?
-	$q20 = db_query("select distinct pk.predmet, p.ects, pk.semestar, pk.obavezan from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.studij=$studij and pk.predmet=p.id order by pk.semestar");
-	$obavezni_pao_ects=$obavezni_pao=$nize_godine=$ects_polozio=0;
-	$zamger_predmeti_pao=array();
-	while ($r20 = db_fetch_row($q20)) {
-		$predmet = $r20[0];
-
-		$ects = $r20[1];
-		$predmet_semestar = $r20[2];
-		$obavezan = $r20[3];
-
-		$q30 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-		if (db_result($q30,0,0)<1) {
-			array_push($zamger_predmeti_pao, $predmet);
+	$q20 = db_query("select distinct pk.predmet, p.ects, pk.semestar, pk.obavezan, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<=$semestar and pk.studij=$studij and pk.predmet=p.id order by pk.semestar");
+	while (db_fetch5($q20, $predmet, $ects, $predmet_semestar, $obavezan, $naziv)) {
+		$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+		if ($polozio) {
+			$ects_polozio += $ects;
+		} else {
+			$zamger_predmeti_pao[$predmet] = $naziv;
 
 			// Predmet se ne može prenijeti preko dvije godine
-			if ($predmet_semestar<$semestar-1) $nize_godine++;
+			if ($predmet_semestar < $semestar-1) $nize_godine++;
 
 			// Ako je obavezan, situacija je jasna
 			if ($obavezan) { 
-				$obavezni_pao_ects+=$ects;
+				$obavezni_pao_ects += $ects;
+				$zamger_pao_ects += $ects;
 				$obavezni_pao++;
 
 			// Za izborne možemo odrediti uslov samo preko ECTSa
 			// pošto je tokom godina student mogao pokušavati razne izborne
 			// predmete
 			}
-		} else
-			$ects_polozio += $ects;
+		}
 	}
 
 	// USLOV ZA UPIS
-	// Prema aktuelnom zakonu može se prenijeti tačno jedan predmet, bez obzira na ECTS
+	// Prema aktuelnom zakonu može se prenijeti tačno $conf_uslov_predmeta predmeta, bez obzira na ECTS
 	// No, na sljedeći ciklus studija se ne može prenijeti ništa
 	$ects_ukupno = $semestar*30;
 
@@ -68,15 +210,13 @@ function ima_li_uslov($student, $ag=0) {
 		$ima_uslov=true;
 
 	// 2. Nije završni semestar, nedostaje jedan ili nijedan predmet (ali samo sa zadnje odslušane godine studija)
-	} else if ($semestar<$studij_trajanje && $obavezni_pao<=1 && $nize_godine==0) {
+	} else if ($semestar<$studij_trajanje && $obavezni_pao<=$conf_uslov_predmeta && $nize_godine==0) {
 
 		// 2A. Položeni svi obavezni predmeti. 
 		// Da li nedostaje više od jednog izbornog? Izborni slotovi nose 4-6 ECTS
-		if ($obavezni_pao==0 && $ects_polozio>$ects_ukupno-8) {
-			$ima_uslov=true;
-
-		// 2B. Nedostaje jedan obavezan predmet. Izbornih treba biti nula
-		} else if ($obavezni_pao==1 && $ects_polozio+$obavezni_pao_ects>=$ects_ukupno) {
+		$izborni_ects_pao_max = ($conf_uslov_predmeta-$obavezni_pao) * 7; // maksimalno 7 kredita po predmetu
+		
+		if ($ects_polozio + $obavezni_pao_ects + $izborni_ects_pao_max >= $ects_ukupno) {
 			$ima_uslov=true;
 		}
 

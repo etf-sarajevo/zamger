@@ -13,7 +13,7 @@ global $registry; // šta je od modula aktivno
 global $_lv_; // Potrebno za genform()
 
 require_once("lib/student_predmet.php");
-require_once("lib/student_studij.php"); // Koristi li se?
+require_once("lib/student_studij.php"); // Za ima_li_uslov
 require_once("lib/ws.php"); // Web service za parsiranje XMLa
 require_once("lib/formgen.php"); // datectrl, db_dropdown
 
@@ -580,133 +580,121 @@ else if ($akcija == "upis") {
 	$studij = intval($_REQUEST['studij']);
 	$semestar = intval($_REQUEST['semestar']);
 	$godina = intval($_REQUEST['godina']);
-
-	$zaduzenja_xml = array();
+	
+	$dry_run = false;
+	if ($user_siteadmin) $dry_run = intval($_REQUEST['dry_run']);
+	
+	$nacin_studiranja = false;
+	if (param('nacin_studiranja')) $nacin_studiranja = int_param('nacin_studiranja');
 
 	// Neispravni parametri se ne bi trebali desiti, osim u slučaju hackovanja
 	// a i tada je "šteta" samo nekonzistentnost baze
 
 	$q500 = db_query("select ime, prezime, brindexa, jmbg from osoba where id=$student");
-	$ime = db_result($q500,0,0);
-	$prezime = db_result($q500,0,1);
-	$brindexa = db_result($q500,0,2);
-	$jmbg = db_result($q500,0,3);
-
-	$q505 = db_query("select naziv from akademska_godina where id=$godina");
-	$naziv_ak_god = db_result($q505,0,0);
-
+	db_fetch4($q500, $ime, $prezime, $brindexa, $jmbg);
 
 	?>
-	<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$student?>">Nazad na podatke o osobi</a><br/><br/>
+	<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$student?>">Nazad na podatke o osobi</a><br/><br/>
 	<h2><?=$ime?> <?=$prezime?> - upis</h2><?
 	print genform("POST");
 	?>
 	<input type="hidden" name="subakcija" value="upis_potvrda">
 	<?
-
-
+	
+	$ok_izvrsiti_upis = $ns = false;
+	
 	// Ako je subakcija, potvrdjujemo da se moze izvrsiti upis
-	$ok_izvrsiti_upis = $ns = 0;
-
 	if (param('subakcija') == "upis_potvrda" && check_csrf_token()) {
+		$ok_izvrsiti_upis = true;
 
-		$ok_izvrsiti_upis=1;
-
-		// Potvrdjujemo promjenu studija napravljenu tokom rada
+		// Potvrdjujemo da je korisnik odabrao promjenu studija
 		$ns = int_param('novi_studij');
 		if ($ns>0) {
-			$studij=$ns;
-			$_REQUEST['novi_studij'] = 0;
+			$studij = $ns;
+			$_REQUEST['novi_studij'] = 0; // zbog pozivanja genform
 			?>
-	<input type="hidden" name="studij" value="<?=$studij?>">
-	<input type="hidden" name="novi_studij" value="0">
+			<input type="hidden" name="studij" value="<?=$studij?>">
+			<input type="hidden" name="novi_studij" value="0">
 			<?
-			$ok_izvrsiti_upis=0; // Tražimo novu potvrdu jer od izbora studija ovisi previše stvari
+			$ok_izvrsiti_upis = false; // Tražimo novu potvrdu jer od izbora studija ovisi previše stvari
 			// npr. ugovor o učenju
-		}
+		} else 
+			$ns = false;
 	}
+	
 
-
+	$zaduzenja_xml = array();
+	
 	// Šta je student slušao i kako?
 	$q510 = db_query("select studij, nacin_studiranja, plan_studija, semestar, ponovac from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
-	$stari_studij=$nacin_studiranja=$plan_studija=$ponovac=$stari_nacin_studiranja=0;
-	if (db_num_rows($q510)>0) {
-		$stari_studij=db_result($q510,0,0);
-		$stari_nacin_studiranja=db_result($q510,0,1);
-		$plan_studija=db_result($q510,0,2);
-		if (db_result($q510,0,3)>=$semestar) $ponovac=1;
-		else if ($semestar%2==0) $ponovac=db_result($q510,0,4);
-	}
-	if (param('nacin_studiranja')) {
-		$nacin_studiranja = int_param('nacin_studiranja');
+	$stari_studij = $plan_studija = $ponovac = $stari_nacin_studiranja = false;
+	if (db_num_rows($q510) > 0) {
+		db_fetch5($q510, $stari_studij, $stari_nacin_studiranja, $plan_studija, $stari_semestar, $tmp_ponovac);
+		if ($stari_semestar >= $semestar) 
+			$ponovac = true;
+		else if ($semestar%2 == 0) 
+			$ponovac = ($tmp_ponovac == 1);
 	}
 
 	// Ako je promijenjen studij, moramo odrediti i novi plan studija
 	if ($stari_studij != $studij) {
-		$ponovac=0;
-		$q515 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-		if (db_num_rows($q515)>0) $plan_studija = db_result($q515,0,0);
+		$ponovac = false;
+		$plan_studija = db_get("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
 	}
 
 
 	// Novi student
-	$mijenja_studij=0;
-	if ($stari_studij==0 && $ns==0 && $ok_izvrsiti_upis==0) {
-		// Šta je odabrao na prijemnom? (pretpostavljamo da godine idu hronološkim redom)
-		$izabrani_studij=$studij;
+	$mijenja_studij = $ciklus = false;
+	if ($stari_studij == false && $ns == false && $ok_izvrsiti_upis == false) {
+		// Šta je odabrao na prijemnom? 
+		// (pretpostavljamo da godine u tabeli akademska_godina idu hronološkim redom)
+		$izabrani_studij = $studij;
 		$q520 = db_query("select pp.studij_prvi, pt.ciklus_studija from prijemni_prijava as pp, prijemni_termin as pt where pp.osoba=$student and pp.prijemni_termin=pt.id and pt.akademska_godina=$godina order by pt.datum desc limit 1");
-		if (db_num_rows($q520)>0) {
-			$izabrani_studij=db_result($q520,0,0);
-			$ciklus = db_result($q520,0,1);
-		} else {
+		if (!db_fetch2($q520, $izabrani_studij, $ciklus)) {
 			// Iz parametra studij ćemo probati odrediti ciklus
-			$q530 = db_query("select ts.ciklus from tipstudija as ts, studij as s where s.id=$studij and s.tipstudija=ts.id");
-			if (db_num_rows($q530)>0)
-				$ciklus = db_result($q530,0,0);
-			else
-				$ciklus=1; // nemamo pojma = prvi ciklus
+			$ciklus = db_get("select ts.ciklus from tipstudija as ts, studij as s where s.id=$studij and s.tipstudija=ts.id");
+			if ($ciklus === false)
+				$ciklus = 1; // nemamo pojma = prvi ciklus
 		}
 
 		// Lista studija
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
-		while ($r550 = db_fetch_row($q550)) {
-			if ($r550[0]==$izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="novi_studij" value="'.$r550[0].'"'.$dodaj.'>'.$r550[1]."<br/>\n";
+		
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
+		while (db_fetch2($q550, $q_id_studija, $q_naziv_studija)) {
+			if ($q_id_studija == $izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="novi_studij" value="'.$q_id_studija.'"'.$dodaj.'>'.$q_naziv_studija."<br/>\n";
 		}
 		print "</p>\n\n";
-		$mijenja_studij=1;
+		$mijenja_studij = true;
 	}
 
 
-	// Izbor studija kod zavrsetka prethodnog
+	// Izbor studija kod završetka prethodnog ciklusa
 	$q540 = db_query("select ts.trajanje, s.naziv, ts.ciklus, s.institucija from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
-	if (db_num_rows($q540)>0) {
-		$trajanje=db_result($q540,0,0);
-		$naziv_studija=db_result($q540,0,1);
-		$ciklus=db_result($q540,0,2);
-		$institucija=db_result($q540,0,3);
-	} else $ok_izvrsiti_upis=$trajanje=0; // nepoznat studij
+	if (!db_fetch4($q540, $studij_trajanje, $naziv_studija, $ciklus, $institucija)) {
+		// Student je trenutno upisan na nepoznat studij, pa ne možemo odrediti sljedeći ciklus
+		$ok_izvrsiti_upis = false;
+		$studij_trajanje = 0; // Forsiramo manuelni izbor
+	}
 
 	// Pošto se akcija "edit" ne bavi određivanjem sljedećeg ciklusa, ona će proslijediti 
 	// prevelik broj semestra
-	if ($semestar>$trajanje && $stari_studij!=0) {
+	if ($semestar > $studij_trajanje && $stari_studij !== false) {
 		// Biramo sljedeći ciklus istog studija po tome što ga nudi ista institucija
 		$ciklus++;
-		$q545 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1");
-		if (db_num_rows($q545)>0) {
-			$izabrani_studij=db_result($q545,0,0);
-		}
+		$izabrani_studij = db_get("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1");
 	
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
 		?>
 		<p><b>Izaberite studij koji će student upisati:</b><br/>
 		<?
-		while ($r550 = db_fetch_row($q550)) {
-			if ($r550[0]==$izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="novi_studij" value="'.$r550[0].'"'.$dodaj.'>'.$r550[1]."<br/>\n";
+		
+		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
+		while (db_fetch2($q550, $q_id_studija, $q_naziv_studija)) {
+			if ($q_id_studija == $izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="novi_studij" value="'.$q_id_studija.'"'.$dodaj.'>'.$q_naziv_studija."<br/>\n";
 		}
 		print "</p>\n\n";
 
@@ -714,141 +702,67 @@ else if ($akcija == "upis") {
 		unset($_REQUEST['semestar']);
 		print '<input type="hidden" name="semestar" value="1">'."\n";
 
-		$nacin_studiranja=0; // Ponovo se mora izabrati način studiranja
-
-		$ok_izvrsiti_upis=0;
-		$mijenja_studij=1;
-	} else if ($stari_studij!=0) {
+		$nacin_studiranja = false; // Ponovo se mora izabrati način studiranja
+		$ok_izvrsiti_upis = false;
+		$mijenja_studij = true;
+	} else if ($stari_studij !== false) {
 		?>
 		<p>Upis na studij <?=$naziv_studija?>, <?=$semestar?>. semestar:</p>
 		<?
 	}
 
 
-
 	// Izbor načina studiranja
-	if ($nacin_studiranja==0) {
+	if ($nacin_studiranja === false) {
 		?>
 		<p><b>Izaberite način studiranja studenta:</b><br/>
 		<?
 		$q560 = db_query("select id, naziv from nacin_studiranja where moguc_upis=1");
-		while ($r560 = db_fetch_row($q560)) {
-			if ($r560[0]==$stari_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="nacin_studiranja" value="'.$r560[0].'"'.$dodaj.'>'.$r560[1]."<br/>\n";
+		while (db_fetch2($q560, $q_id_nacina, $q_naziv_nacina)) {
+			if ($q_id_nacina == $stari_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
+			print '<input type="radio" name="nacin_studiranja" value="'.$q_id_nacina.'"'.$dodaj.'>'.$q_naziv_nacina."<br/>\n";
 		}
-		$ok_izvrsiti_upis=0;
+		print "</p>\n\n";
+		
+		$ok_izvrsiti_upis = false;
 	}
 
 
 
 	// Da li ima nepoložene predmete sa ranijih semestara?
-	if ($semestar>1 && $semestar%2==1 && $stari_studij!=0) {
+	if ($semestar > 1 && $semestar%2 == 1 && $stari_studij !== false) {
+		// Pozivamo "ima_li_uslov" da dobijemo spisak nepoloženih predmeta
+		global $zamger_predmeti_pao;
+		ima_li_uslov($student);
 
-	// Uvodimo dva načina izbora predmeta - preko plana studija i preko odslušanih predmeta u prošloj godini
-	// U slučaju da nije definisan plan studija, bira se ovaj drugi način, ali on nije pouzdan zbog komplikacije
-	// oko izbornih predmeta i ECTSova
-	
-	$predmeti_pao=array();
-
-	if ($plan_studija>0) {
-		// Prema novom zakonu, uslov za upis je jedan predmet iz prethodne godine
-		$stari_predmet=array();
-
-		$q570 = db_query("select pasos_predmeta, obavezan, semestar, plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar<$semestar order by semestar");
-		$slusao=array();
-		while ($r570 = db_fetch_row($q570)) {
-			$psemestar = $r570[2];
-			if ($r570[1]==1) { // obavezan
-				$q575 = db_query("SELECT predmet FROM pasos_predmeta WHERE id=$r570[0]");
-				$predmet = db_result($q575,0,0);
-
-				$q580 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-				if (db_result($q580,0,0)<1) {
-					$q590 = db_query("select ects, naziv from predmet where id=$predmet");
-					$predmeti_pao[$predmet]=db_result($q590,0,1);
-					if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
+		// U prvom prolazu nudimo da se ručno unesu ocjene za preostale neocijenjene predmete
+		if (count($zamger_predmeti_pao) > 0 && $ok_izvrsiti_upis === false) {
+			?>
+			<p><b>Predmeti iz kojih je student ostao neocijenjen - upišite eventualne ocjene u polja lijevo:</b></p>
+			<table border="0">
+			<?
+			foreach ($zamger_predmeti_pao as $id => $naziv) {
+				if ($id < 0) {
+					// Ovo je jedini pametan razlog da se pojavi id nula
+					?>
+					<tr><td colspan="2">Student nije slušao nijedan od ponuđenih izbornih predmeta koje je po planu studija trebao slušati.<br/> Pošto ima dovoljan broj ostvarenih ECTS kredita pretpostavićemo da je sve u redu.</td></tr>
+					<?
+					continue;
 				}
-			} else { // izborni
-				$pis = $r570[3];
-				$slusao_id=0;
-				$polozio=0;
-				$q600 = db_query("select pp.predmet from pasos_predmeta pp, plan_izborni_slot pis where pis.id=$pis and pis.pasos_predmeta=pp.id");
-				while ($r600 = db_fetch_row($q600)) {
-					$predmet=$r600[0];
-					if ($slusao[$predmet]!="") continue; // kada je isti predmet u dva slota
-
-					// Koji je od ovih slušao?
-					$q610 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet");
-					if (db_result($q610,0,0)>0) {
-						$slusao_id=$predmet;
-						$q620 = db_query("select ects, naziv from predmet where id=$predmet");
-						$slusao[$predmet]=db_result($q620,0,1);
-					}
-
-					// Da li je polozio?
-					$q630 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-					if (db_result($q630,0,0)>0) {
-						$polozio=1; break;
-					}
-				}
-				if ($polozio==0) { // nije položio nijedan od mogućih predmeta u slotu
-					if ($slusao_id>0) $predmeti_pao[$slusao_id]=$slusao[$slusao_id];
-					else {
-						// Ubacićemo nešto u niz $predmeti_pao da se zna da nema uslov
-						// ali u biti ne znamo šta
-						$predmeti_pao[0]="X";
-					}
-					if ($psemestar<$semestar-2) $stari_predmet[$slusao_id]=1;
-				}
-			}
-		}
-
-	} else { // if ($plan_studija>0)
-		// Nemamo plana studija, pokušavamo odrediti šta je student slušao ranijih godina
-		// Nepouzdano zbog kolizija, izbornih predmeta itd.
-
-		$q640 = db_query("select pk.predmet, p.ects, pk.semestar, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$student and sp.predmet=pk.id and pk.semestar<$semestar and pk.predmet=p.id");
-		while ($r650 = db_fetch_row($q650)) {
-			$predmet = $r650[0];
-			$psemestar = $r650[2];
-			$pnaziv = $r650[3];
-			$q660 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-			if (db_result($q660,0,0)<1 && !$predmeti_pao[$predmet]) { 
-				$predmeti_pao[$predmet]=$pnaziv;
-				if ($psemestar<$semestar-2) $stari_predmet[$predmet]=1;
-			}
-		}
-	}
-
-	// Tabela za unos ocjena na predmetima koje je pao:
-	if (count($predmeti_pao)>0 && $ok_izvrsiti_upis==0) {
-		?>
-		<p><b>Predmeti iz kojih je student ostao neocijenjen - upišite eventualne ocjene u polja lijevo:</b></p>
-		<table border="0">
-		<?
-		foreach ($predmeti_pao as $id => $naziv) {
-			if ($id==0) {
-				// Ovo je jedini pametan razlog da se pojavi id nula
 				?>
-				<tr><td colspan="2">Student nije slušao nijedan od ponuđenih izbornih predmeta koje je po planu studija trebao slušati.<br/> Pošto ima dovoljan broj ostvarenih ECTS kredita pretpostavićemo da je sve u redu.</td></tr>
+				<tr><td><input type="text" size="3" name="pao-<?=$id?>"></td>
+				<td><?=$naziv?></td></tr>
 				<?
-				continue;
 			}
 			?>
-			<tr><td><input type="text" size="3" name="pao-<?=$id?>"></td>
-			<td><?=$naziv?></td></tr>
+			</table>
 			<?
 		}
-		?>
-		</table>
-		<?
 	}
-
-	} // if ($semestar%2 ==1)
 
 
 	// Provjera plaćanja
-	if ($nacin_studiranja != 0 && isset($ciklus)) {
+	if ($nacin_studiranja !== false && $ciklus !== false) {
 		$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 		$saldo = 0;
 		if ($kartice === FALSE || count($kartice) == 0) {
@@ -866,6 +780,7 @@ else if ($akcija == "upis") {
 				foreach ($predmeti_pao as $id => $naziv)
 					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
 			}
+
 			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 1) {
 				array_push($uplate, 28); // Redovni upis II ciklus
 				if ($semestar==6) array_push($uplate, 31); // Prijava i odbrana završnog rada - II ciklus
@@ -940,161 +855,145 @@ else if ($akcija == "upis") {
 	// IZBORNI PREDMETI
 
 	// novi studij - određujemo najnoviji plan studija za taj studij
-	if ($ns>0) { 
-		$q670 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-		if (db_num_rows($q670)>0)
-			$plan_studija = db_result($q670,0,0);
+	if ($ns !== false) { 
+		$plan_studija = db_get("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
 	}
 
 	// Nema potrebe gledati dalje ako treba tek izabrati studij
-	$uou=0;
-	if ($mijenja_studij==0) {
+	$uou = false;
+	if (!$mijenja_studij) {
 		// Da li je popunjen ugovor o učenju?
-		$q680 = db_query("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
 		$uoupk = array();
-		if (db_num_rows($q680)>0) {
-			$uou=db_result($q680,0,0);
-			if ($ok_izvrsiti_upis==0) print "<p>Popunjen Ugovor o učenju (ID: $uou).\n";
+		$uou = db_get("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
+		if ($uou) {
+			if (!$ok_izvrsiti_upis) print "<p>Popunjen Ugovor o učenju (ID: $uou).\n";
 			$q690 = db_query("select p.id, p.naziv from ugovoroucenju_izborni as uoui, predmet as p where uoui.ugovoroucenju=$uou and uoui.predmet=p.id");
-			if (db_num_rows($q690)>0 && $ok_izvrsiti_upis==0) print " Izabrani predmeti u semestru:";
-			while ($r690 = db_fetch_row($q690)) {
-				$predmet = $r690[0];
-
-				if ($ok_izvrsiti_upis==0) print "<br/>* $r690[1]\n";
+			if (db_num_rows($q690)>0 && $ok_izvrsiti_upis == false) print " Izabrani predmeti u semestru:";
+			while (db_fetch2($q690, $predmet, $naziv_predmeta)) {
+				if (!$ok_izvrsiti_upis) print "<br/>* $naziv_predmeta\n";
 
 				// Da li je već položio predmet
-				$q695 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-				if (db_result($q695,0,0)>0) {
-					if ($ok_izvrsiti_upis==0) print " - već položen! Preskačem";
+				$polozio_predmet = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
+				if ($polozio_predmet) {
+					if (!$ok_izvrsiti_upis) print " - već položen! Preskačem";
 				} else {
 	
 					// Tražimo ponudukursa
-					$q700 = db_query("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-					if (db_num_rows($q700)<1) {
-						if ($ok_izvrsiti_upis==0) print " - nije pronađena ponuda kursa!! Kreiram.\n";
-						$q701 = db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
-						$q700 = db_query("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-						$pkid = db_result($q700,0,0);
+					$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+					if (!$ponudakursa) {
+						db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
+						$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
 						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
 						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
 					} 
 					
-					if ($ok_izvrsiti_upis==0) print '<input type="hidden" name="izborni-'.db_result($q700,0,0).'" value="on">'."\n";
+					if (!$ok_izvrsiti_upis) print '<input type="hidden" name="izborni-'.$ponudakursa.'" value="on">'."\n";
 				}
 			}
-			if ($ok_izvrsiti_upis==0) print "</p>\n";
-		} else {
-			if ($ok_izvrsiti_upis==0) print "<p><b>Nije popunjen Ugovor o učenju!</b> Izaberite izborne predmete ručno.</p>\n";
+			if (!$ok_izvrsiti_upis) print "</p>\n";
 		}
 
 
 		// Nalazim izborne predmete 
 
 		// Ako postoji plan studija, problem je jednostavan
-		if ($plan_studija>0 && $uou==0) {
-			$bio_predmet=array();
-			$q710 = db_query("select plan_izborni_slot from plan_studija_predmet where plan_studija=$plan_studija and semestar=$semestar and obavezan=0");
-			while ($r710 = db_fetch_row($q710)) {
-				$izborni_slot = $r710[0];
-				$q720 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as iz, pasos_predmeta as pp where iz.id=$izborni_slot and iz.pasos_predmeta=pp.id");
-
-				// Prvi prolaz, za provjere
-				$nastavak=0;
-				$ispis_predmet=array();
-				$ispis_predmet_ects = array();
-				while ($r720 = db_fetch_row($q720)) {
-					$predmet=$r720[0];
-					if (in_array($predmet, $bio_predmet)) continue;
-					array_push($bio_predmet, $predmet);
-
-					// Da li je izabran na formi?
+		if ($plan_studija>0 && !$uou) {
+			$plan_studija_opis = predmeti_na_planu($plan_studija, $semestar);
+			$poruka_ispisana = false;
+			
+			foreach($plan_studija_opis as $slog) {
+				if ($slog['obavezan'] == 1) continue;
+				
+				// Koliko je predmeta iz izbornog slota je položeno?
+				$polozenih = 0;
+				foreach($slog['predmet'] as $predmet_slog) {
+					$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=" . $predmet_slog['id'] . " AND ocjena>5");
+					if ($polozio) $polozenih++;
+				}
+				
+				// Da li su izborni predmeti ranije selektovani na formi?
+				if ($polozenih < $slog['ponavljanja']) {
 					foreach($_REQUEST as $key=>$value) {
 						if (substr($key,0,8) != "izborni-") continue;
 						if ($value=="") continue;
 						$ponudakursa = intval(substr($key,8));
-						$q566 = db_query("select predmet from ponudakursa where id=$ponudakursa");
-						if ($predmet==db_result($q566,0,0)) { $nastavak=1; break; }
+						$predmet = db_get("select predmet from ponudakursa where id=$ponudakursa");
+						foreach($slog['predmet'] as $predmet_slog)
+							if ($predmet == $predmet_slog['id'])
+								$polozenih++;
 					}
-
-
-					// Da li je položen?
-					$q730 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
-					if (db_result($q730,0,0)>0) {
-						$nastavak=1; break;
-					}
-
-					$ispis_predmet[$predmet]=$r720[1];
-					$ispis_predmet_ects[$predmet]=$r720[2];
 				}
-				if ($nastavak==1) continue;
-
-				if ($ok_izvrsiti_upis==1 && count($ispis_predmet)>0) {
-					print "<p><b>Morate izabrati jedan od ovih predmeta.</b> Ako to znači da ste sada izabrali viška predmeta, koristite dugme za povratak nazad.</p>\n";
-					$ok_izvrsiti_upis=0;
-				}
-
-				// Drugi prolaz
-				foreach ($ispis_predmet as $predmet => $pnaziv) {
-					// Odredjujemo ponudu kursa
-					$q740 = db_query("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-					if (db_num_rows($q740)<1) {
-						$q701 = db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
-						$q700 = db_query("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-						$pkid = db_result($q700,0,0);
-						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
-						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
-					} else {
-						$pkid = db_result($q740,0,0);
+				
+				// I dalje nema dovoljno...
+				if ($polozenih < $slog['ponavljanja']) {
+					// Poruku da se moraju odabrati izborni predmeti ispisujemo samo ako je to slučaj
+					if (!$poruka_ispisana) {
+						print "<p><b>Nije popunjen Ugovor o učenju!</b>\n";
+						if ($ok_izvrsiti_upis) 
+							print "</p><p><b>Morate izabrati " . $slog['ponavljanja'] . " od ovih predmeta.</b> Ako to znači da ste sada izabrali viška predmeta, koristite dugme za povratak nazad.</p>\n";
+						else
+							print "Izaberite izborne predmete ručno.</p>\n";
+						$poruka_ispisana = true;
 					}
-					?>
-					<input type="checkbox" name="izborni-<?=$pkid?>"> <?=$pnaziv?> (<?=$ispis_predmet_ects[$predmet]?> ECTS)<br/>
-					<?
+					
+					foreach($slog['predmet'] as $predmet_slog) {
+						$predmet = $predmet_slog['id'];
+						// Odredjujemo ponudu kursa
+						$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+						if (!$ponudakursa) {
+							db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
+							$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
+							zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
+							zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($ponudakursa));
+						}
+						?>
+						<input type="checkbox" name="izborni-<?=$ponudakursa?>"> <?=$predmet_slog['naziv']?> (<?=$predmet_slog['ects']?> ECTS)<br/>
+						<?
+					}
 				}
 			}
-
-		} else if ($uou==0) { // Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
-
+		
+		// Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
+		} else if (!$uou) {
+			
 			// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
 			$q560 = db_query("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
-			if (db_num_rows($q560)>0 && $ok_izvrsiti_upis==1) {
-				$q565 = db_query("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-				$ects_suma = db_result($q565,0,0);
+			if (db_num_rows($q560)>0 && $ok_izvrsiti_upis) {
+				$ects_suma = db_get("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
 		
 				// Upisujemo na izborne predmete koji su odabrani
 				foreach($_REQUEST as $key=>$value) {
 					if (substr($key,0,8) != "izborni-") continue;
 					if ($value=="") continue;
 					$predmet = intval(substr($key,8));
-					$q566 = db_query("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
-					$ects_suma += db_result($q566,0,0);
+					$ects_suma += db_get("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
 				}
 		
 				if ($ects_suma != 30) {
-					$ok_izvrsiti_upis=0;
+					$ok_izvrsiti_upis = false;
 					niceerror("Izabrani izborni predmeti čine sumu $ects_suma ECTS kredita, umjesto 30");
 				}
 			}
 		
-			if (db_num_rows($q560)>0 && $ok_izvrsiti_upis==0) {
+			if (db_num_rows($q560)>0 && !$ok_izvrsiti_upis) {
 				?>
 				<p><b>Izaberite izborne predmete:</b><br/>
 				<?
-				while ($r560 = db_fetch_row($q560)) {
-					$q570 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$r560[0]");
-					if (db_result($q570,0,0)<1) {
+				while (db_fetch4($q560, $predmet, $naziv_predmeta, $ponudakursa, $ects)) {
+					$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+					if (!$polozio) {
 						// Nije polozio/la - koristimo pk
 						?>
-						<input type="checkbox" name="izborni-<?=$r560[2]?>"> <?=$r560[1]?> (<?=$r560[3]?> ECTS)<br/>
+						<input type="checkbox" name="izborni-<?=$ponudakursa?>"> <?=$naziv_predmeta?> (<?=$ects?> ECTS)<br/>
 						<?
 					}
 				}
 			}
-
 		}
-	}  // if ($stari_studij!=0 && $semestar<=$trajanje)
+	}
 
 	// Studentu nikada nije zadat broj indexa (npr. prvi put se upisuje)
-	if (($brindexa==0 || $brindexa=="" || $mijenja_studij==1) && $ok_izvrsiti_upis==0 && !isset($_REQUEST['novi_brindexa'])) {
+	if (($brindexa==0 || $brindexa=="" || $mijenja_studij) && !$ok_izvrsiti_upis && !isset($_REQUEST['novi_brindexa'])) {
 		if ($brindexa==0) $brindexa="";
 		?>
 		<p><b>Unesite broj indeksa za ovog studenta:</b><br/>
@@ -1106,27 +1005,28 @@ else if ($akcija == "upis") {
 
 	// ------ Izvrsenje upisa!
 	if ($user_siteadmin && param('forsiraj'))
-		$ok_izvrsiti_upis = 1;
+		$ok_izvrsiti_upis = true;
 
-	if ($ok_izvrsiti_upis==1 && check_csrf_token()) {
+	if ($ok_izvrsiti_upis && check_csrf_token()) {
 		// Izbjegavamo da student bude više puta upisan na isti studij
 		$parni = $semestar % 2;
-		$q591 = db_query("SELECT studij, semestar FROM student_studij WHERE student=$student AND akademska_godina=$godina AND semestar MOD 2=$parni");
-		if (db_num_rows($q591) > 0) {
-			$q591a = db_query("SELECT naziv FROM studij WHERE id=".db_result($q591,0,0));
-			niceerror("Student je već upisan u akademskoj godini $naziv_ak_god u semestar ".db_result($q591,0,1)." (studij ".db_result($q591a,0,0).")");
+		$q591 = db_query("SELECT s.naziv, ss.semestar FROM student_studij ss, studij s WHERE ss.student=$student AND ss.akademska_godina=$godina AND ss.semestar MOD 2=$parni AND ss.studij=s.id");
+		if (db_fetch2($q591, $vec_studij_naziv, $vec_semestar)) {
+			$naziv_ak_god = db_get("select naziv from akademska_godina where id=$godina");
+			
+			niceerror("Student je već upisan u akademskoj godini $naziv_ak_god u semestar $vec_semestar (studij $vec_studij_naziv)");
 			return;
 		}
 		
 		// Upis u prvi semestar - kandidat za prijemni postaje student!
-		if ($stari_studij==0) {
+		if (!$stari_studij) {
 			// Ukidamo privilegiju "prijemni" ako je student imao
-			$q640 = db_query("delete from privilegije where osoba=$student and privilegija='prijemni'");
+			db_query("delete from privilegije where osoba=$student and privilegija='prijemni'");
 
 			// Dodajemo privilegiju "student" samo ako je student nije već imao
-			$q643 = db_query("select count(*) from privilegije where osoba=$student and privilegija='student'");
-			if (db_result($q643,0,0)<1)
-				$q646 = db_query("insert into privilegije set osoba=$student, privilegija='student'");
+			$ima_privilegiju = db_get("select count(*) from privilegije where osoba=$student and privilegija='student'");
+			if (!$ima_privilegiju)
+				db_query("insert into privilegije set osoba=$student, privilegija='student'");
 
 			// AUTH tabelu cemo srediti naknadno
 			zamgerlog2("proglasen za studenta", $student);
@@ -1136,24 +1036,27 @@ else if ($akcija == "upis") {
 		// Novi broj indexa
 		$nbri = db_escape($_REQUEST['novi_brindexa']);
 		if ($nbri!="") {
-			$q650 = db_query("update osoba set brindexa='$nbri' where id=$student");
+			db_query("update osoba set brindexa='$nbri' where id=$student");
 			zamgerlog2("postavljen broj indeksa", $student, 0, 0, $nbri);
 			print "-- broj indeksa postavljen na $nbri<br/>\n";
 		}
 
 		// Upisujemo ocjene za predmete koje su dopisane
-		if (count($predmeti_pao) > 0)
-		foreach ($predmeti_pao as $predmet=>$naziv_predmeta) {
+		if (count($zamger_predmeti_pao) > 0)
+		foreach ($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 			$ocjena = intval($_REQUEST["pao-$predmet"]);
 			if ($ocjena>5) {
 				// Upisujem dopisanu ocjenu
-				$q590 = db_query("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$godina, datum=NOW()");
-				zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
-				zamgerlog2("dodana ocjena", $student, $predmet, $godina, $ocjena);
+				if (!$dry_run) {
+					db_query("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$godina, datum=NOW()");
+					zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
+					zamgerlog2("dodana ocjena", $student, $predmet, $godina, $ocjena);
+				}
 				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>\n";
 			} else {
 				// Student prenio predmet
-				if ($predmet==0) continue; // nije slušao nijedan od mogućih izbornih predmeta
+				if ($predmet < 0) continue; // nije slušao nijedan od mogućih izbornih predmeta
+				
 				// Provjera broja ECTS kredita je obavljena na početnoj strani (akcija "edit")
 				// pa ćemo pretpostaviti sve najbolje :)
 
@@ -1166,14 +1069,11 @@ else if ($akcija == "upis") {
 				if (db_num_rows($q592)<1) continue;
 
 				print "Ponovo upisujem studenta u predmet $naziv_predmeta ($predmet) koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br>";
-				$studij_stara_pk = db_result($q592,0,0);
-				$semestar_stara_pk = db_result($q592,0,1);
+				db_fetch2($q592, $studij_stara_pk, $semestar_stara_pk);
 
 				// Tražimo istu ponudu kursa u aktuelnoj godini
-				$q594 = db_query("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina");
-				if (db_num_rows($q594) > 0)
-					$nova_pk = db_result($q594,0,0);
-				else {
+				$nova_pk = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina");
+				if (!$nova_pk) {
 					// Ponuda kursa ne postoji u aktuelnoj godini, kreiramo je
 					print "-- Kreiram ponudu kursa za predmet $predmet, studij $studij_stara_pk, semestar $semestar_stara_pk<br>";
 					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true);
@@ -1188,28 +1088,33 @@ else if ($akcija == "upis") {
 
 
 		// Upisujemo studenta na novi studij
-		$q600 = db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
-		zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
+		if (!$dry_run) {
+			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
+			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
+		}
 		
-		if ($semestar==1 && $ponovac==0) {
-			if (db_get("SELECT COUNT(*) FROM izvoz_upis_prva WHERE student=$student AND akademska_godina=$godina") == 0)
-				db_query("INSERT INTO izvoz_upis_prva VALUES($student,$godina)");
-		} else {
-			if (db_get("SELECT COUNT(*) FROM izvoz_upis_semestar WHERE student=$student AND akademska_godina=$godina AND semestar=$semestar") == 0)
-				db_query("INSERT INTO izvoz_upis_semestar VALUES($student,$semestar,$godina)");
+		// Zapis u tabele za izvoz podataka
+		if (!$dry_run) {
+			if ($semestar==1 && !$ponovac) {
+				if (db_get("SELECT COUNT(*) FROM izvoz_upis_prva WHERE student=$student AND akademska_godina=$godina") == 0)
+					db_query("INSERT INTO izvoz_upis_prva VALUES($student,$godina)");
+			} else {
+				if (db_get("SELECT COUNT(*) FROM izvoz_upis_semestar WHERE student=$student AND akademska_godina=$godina AND semestar=$semestar") == 0)
+					db_query("INSERT INTO izvoz_upis_semestar VALUES($student,$semestar,$godina)");
+			}
 		}
 
 		// Upisujemo na sve obavezne predmete na studiju
 		$q610 = db_query("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-		while ($r610 = db_fetch_row($q610)) {
+		while (db_fetch3($q610, $ponudakursa, $predmet, $naziv_predmeta)) {
 			// Da li ga je vec polozio
-			$q615 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$r610[1]");
-			if (db_result($q615,0,0)<1) {
-				print "Obavezni predmet $r610[1]<br>";
-				upis_studenta_na_predmet($student, $r610[0]);
-				zamgerlog2("student upisan na predmet (obavezan)", $student, intval($r610[0]));
+			$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+			if (!$polozio) {
+				print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
+				upis_studenta_na_predmet($student, $ponudakursa);
+				zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
 			} else {
-				print "-- Student NIJE upisan u $r610[2] jer ga je već položio<br/>\n";
+				print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
 			}
 		}
 
@@ -1219,21 +1124,26 @@ else if ($akcija == "upis") {
 			if ($value=="") continue;
 			$ponudakursa = intval(substr($key,8)); // drugi dio ključa je ponudakursa
 			print "Izborni predmet $ponudakursa<br>";
-			upis_studenta_na_predmet($student, $ponudakursa);
-			zamgerlog2("student upisan na predmet (izborni)", $student, $ponudakursa);
-			$q635 = db_query("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
-			print "-- Student upisan u izborni predmet ".db_result($q635,0,0)."<br/>";
+			
+			if (!$dry_run) {
+				upis_studenta_na_predmet($student, $ponudakursa);
+				zamgerlog2("student upisan na predmet (izborni)", $student, $ponudakursa);
+			}
+			$naziv_predmeta = db_get("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
+			print "-- Student upisan u izborni predmet $naziv_predmeta<br/>";
 		}
 
 		// Unos zaduženja na studentovu karticu
-		foreach($zaduzenja_xml as $zaduzenje) {
-			xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
+		if (!$dry_run) {
+			foreach($zaduzenja_xml as $zaduzenje) {
+				xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
+			}
+			zamgerlog2("upisano zaduzenje za upis", $student);
 		}
-		zamgerlog2("upisano zaduzenje za upis", $student);
 		print "-- Evidentirano zaduženje u bazi uplata<br>\n";
 		
 		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
-		zamgerlog("Student u$student upisan na studij s$studij, semestar $semestar, godina ag$godina", 4); // 4 - audit
+		if (!$dry_run) zamgerlog("Student u$student upisan na studij s$studij, semestar $semestar, godina ag$godina", 4); // 4 - audit
 		return;
 
 	} else {
@@ -2608,68 +2518,23 @@ else if ($akcija == "edit") {
 
 
 			// Pokusacemo odrediti uslov na osnovu polozenih predmeta...
-
-			// Od predmeta koje je slušao, koliko je pao?
-			$q250 = db_query("select distinct pk.predmet, p.ects, pk.semestar, pk.obavezan, p.naziv from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$osoba and sp.predmet=pk.id and pk.semestar<=$semestar and pk.studij=$studij_id and pk.predmet=p.id order by pk.semestar");
-			$ects_pao=$predmeti_pao=$izborni_pao=$nize_godine=$ects_polozio=0;
-			while ($r250 = db_fetch_row($q250)) {
-				$q260 = db_query("select count(*) from konacna_ocjena where student=$osoba and predmet=$r250[0]");
-				if (db_result($q260,0,0)<1) {
-					// Predmet se ne može prenijeti preko dvije godine
-					if ($r250[2]<$semestar-1) $nize_godine++;
-					if ($r250[3]==1) { // Obavezni predmeti se ne smiju pasti!
-						$ects_pao+=$r250[1];
-						$predmeti_pao++;
-					} else {
-						$izborni_pao++; // Za izborne cemo uporediti sumu ECTSova kasnije
-					}
-				} else
-					$ects_polozio += $r250[1];
-			}
-
-			// USLOV ZA UPIS
-			// Prema aktuelnom zakonu može se prenijeti tačno jedan predmet, bez obzira na ECTS
-			// No za sljedeći ciklus studija se ne može prenijeti ništa
-			if ($semestar==$studij_trajanje && $predmeti_pao==0 && ($ects_pao+$ects_polozio)%60==0) {
-				// Ako je student pao izborni predmet pa polozio drugi umjesto njega, vazice
-				// ($ects_pao+$ects_polozio)%60==0
-				// Zato sto ects_pao = obavezni predmeti tako da ostaju samo izborni predmeti
-				$ima_uslov=1;
-
-			} else if ($semestar<$studij_trajanje && $predmeti_pao<=1) {
-				// Provjeravamo broj nepolozenih izbornih predmeta i razliku ects-ova
-				if ($predmeti_pao==0 && ((60-($ects_pao+$ects_polozio)%60)<7 || ($ects_pao+$ects_polozio)%60==0) && $nize_godine==0) { // nema izbornog predmeta sa 7 ili više kredita
-					$ima_uslov=1;
-
-				} else if ($predmeti_pao==1 && ($ects_pao+$ects_polozio)%60==0 && $nize_godine==0) {
-					$ima_uslov=1;
-
-				} else if ($nize_godine>0) {
-					$niza_godina = ($semestar-2)/2;
-					$objasnjenje="nije položen predmet sa $niza_godina. godine";
-
-				} else {
-					if ($predmeti_pao==1) $objasnjenje="nepoložen jedan obavezan i jedan ili više izborni predmet";
-					else $objasnjenje="nepoloženo dva ili više izbornih predmeta";
-					$objasnjenje .= ", nedostaje ".(60-$ects_polozio%60)." ECTS kredita";
-				}
-
-			} else {
-				$objasnjenje=($predmeti_pao+$izborni_pao)." nepoloženih predmeta, nedostaje ".(60-$ects_polozio%60)." ECTS kredita";
-			}
-
-
-			// Konačan ispis
+			global $zamger_predmeti_pao, $zamger_pao_ects;
+			$ima_uslov = ima_li_uslov($osoba);
+			
 			if ($ima_uslov) {
 				?>
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao/la uslove za upis na <?=$sta?></p>
-				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
+				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
 				<?
 			} else {
 				?>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za <?=$sta?><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<?=$objasnjenje?>)</p>
-				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar-1)?>&godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($puta+1)?>. put).</a></p>
-				<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za <?=$sta?><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?
+				
+				print "(".count($zamger_predmeti_pao)." nepoloženih predmeta, $zamger_pao_ects ECTS kredita)";
+				
+				?></p>
+				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar-1)?>&amp;godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($puta+1)?>. put).</a></p>
+				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
 				<?
 			}
 		}
