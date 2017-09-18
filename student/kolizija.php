@@ -6,7 +6,7 @@
 
 function student_kolizija() {
 
-	global $userid;
+	global $userid, $conf_uslov_predmeta;
 	
 	require("lib/student_studij.php");
 	
@@ -202,7 +202,7 @@ function student_kolizija() {
 		<?
 		return;
 
-	} else if (count($predmet_naziv) <= 1) {
+	} else if (count($predmet_naziv) <= $conf_uslov_predmeta) {
 		$da_stari_je=0;
 		foreach ($predmet_stari as $stari) { if ($stari) $da_stari_je=1; }
 		if ($da_stari_je==0) {
