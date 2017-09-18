@@ -141,7 +141,7 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 }
 
 // Dodajemo predmete koje je student prenio sa prošle godine
-foreach($zamger_predmeti_pao as $predmet) {
+foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 	// Uzimamo pasoš koji je važeći u tekućem NPPu
 	$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
