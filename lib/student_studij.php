@@ -27,14 +27,8 @@ function ima_li_uslov($student, $ag=0) {
 	db_fetch4($q10, $studij, $semestar, $studij_trajanje, $plan_studija);
 	if ($semestar%2==1) $semestar++; // zaokružujemo na parni semestar
 	
-	// Sljedeći studenti RI imaju uslov iako nisu položili predmete iz NPP
-	$ri_preskocili = array(3967, 4418, 4031, 3825, 4349, 3864);
-	if (in_array($student, $ri_preskocili)) return true;
-	
-	$ri_predmeti = array(3752);
-	
 	// Ako je definisan plan studija, koristimo ga
-	if ($plan_studija > 0 && !in_array($student, $ri_predmeti))
+	if ($plan_studija > 0)
 		$ima_uslov = ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija);
 	
 	// U suprotnom, uslov se određuje na osnovu predmeta koje je student ranije slušao
@@ -98,22 +92,6 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		if ($slog['obavezan'] == 1) {
 			$predmet = $slog['predmet']['id'];
 			$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
-			if (!$polozio) {
-				// Hack za RI stare predmete
-				// 2092 - IM1, 12 - IM1  -- merge!
-				if ($predmet == 2092) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=12 AND ocjena>5");
-				if ($predmet == 12) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=2092 AND ocjena>5");
-				// 2093 - OE, 20 - OE  -- merge!
-				if ($predmet == 2093) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=20 AND ocjena>5");
-				// 2096 - MLTI priznajemo kao 71 - EK1
-				if ($predmet == 2096) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=71 AND ocjena>5");
-				// 2097 - VIS priznajemo kao 129 - EES
-				if ($predmet == 2097) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=129 AND ocjena>5");
-				// 2098 - OS, 11 - OS -- merge!
-				if ($predmet == 2098) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=11 AND ocjena>5");
-				// Umjesto 2098 OS može i 128 - IF2
-				if ($predmet == 2098 && $polozio==0) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=128 AND ocjena>5");
-			}
 			
 			if (!$polozio) {
 				$zamger_predmeti_pao[$predmet] = $slog['predmet']['naziv'];
