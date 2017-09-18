@@ -43,5 +43,3 @@ function predmeti_na_planu($plan_studija, $semestar=0)
 }
 
 ?>
-
-

@@ -27,8 +27,14 @@ function ima_li_uslov($student, $ag=0) {
 	db_fetch4($q10, $studij, $semestar, $studij_trajanje, $plan_studija);
 	if ($semestar%2==1) $semestar++; // zaokružujemo na parni semestar
 	
+	// Sljedeći studenti RI imaju uslov iako nisu položili predmete iz NPP
+	$ri_preskocili = array(3967, 4418, 4031, 3825, 4349, 3864);
+	if (in_array($student, $ri_preskocili)) return true;
+	
+	$ri_predmeti = array(3752);
+	
 	// Ako je definisan plan studija, koristimo ga
-	if ($plan_studija > 0)
+	if ($plan_studija > 0 && !in_array($student, $ri_predmeti))
 		$ima_uslov = ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija);
 	
 	// U suprotnom, uslov se određuje na osnovu predmeta koje je student ranije slušao
@@ -92,6 +98,22 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		if ($slog['obavezan'] == 1) {
 			$predmet = $slog['predmet']['id'];
 			$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
+			if (!$polozio) {
+				// Hack za RI stare predmete
+				// 2092 - IM1, 12 - IM1  -- merge!
+				if ($predmet == 2092) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=12 AND ocjena>5");
+				if ($predmet == 12) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=2092 AND ocjena>5");
+				// 2093 - OE, 20 - OE  -- merge!
+				if ($predmet == 2093) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=20 AND ocjena>5");
+				// 2096 - MLTI priznajemo kao 71 - EK1
+				if ($predmet == 2096) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=71 AND ocjena>5");
+				// 2097 - VIS priznajemo kao 129 - EES
+				if ($predmet == 2097) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=129 AND ocjena>5");
+				// 2098 - OS, 11 - OS -- merge!
+				if ($predmet == 2098) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=11 AND ocjena>5");
+				// Umjesto 2098 OS može i 128 - IF2
+				if ($predmet == 2098 && $polozio==0) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=128 AND ocjena>5");
+			}
 			
 			if (!$polozio) {
 				$zamger_predmeti_pao[$predmet] = $slog['predmet']['naziv'];
@@ -231,51 +253,130 @@ function ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajan
 
 // Tabela ugovoroucenju_kapacitet sadrzi polja:
 //  - kapacitet (ukupan dozvoljeni broj studenata) 
-//  - kapacitet_ekstra (dozvoljeni broj preko onih kojima je predmet obavezan)
-//   TODO: kapacitet_drugi_odsjek (maksimalan broj studenata sa drugog odsjeka)
+//  - kapacitet_izborni (dozvoljeni broj preko onih kojima je predmet obavezan)
+//  - kapacitet_kolizija (dozvoljeni broj studenata koji mogu uzeti predmet na koliziju)
+//  - kapacitet_drugi_odsjek (dozvoljeni broj studenata sa drugog odsjeka koji mogu uzeti predmet kao izborni)
+//  - drugi_odsjek_zabrane (studiji kojima je zabranjeno da biraju ovaj predmet kao izborni sa drugog odsjeka)
+//
+// Za sva polja vrijednost 0 znači da niko ne može izabrati, a -1 da nema ograničenja
 
 // Parametri:
+//  - $student - ID studenta
 //  - $predmet - ID predmeta koji student zeli izabrati
-//  - $zagodinu - ID akademske godine
-//  - $najnoviji_plan - ID NPP za koji gledamo da li je predmet obavezan 
+//  - $ag - ID akademske godine
+//  - $studij - ID studija na koji je student upisan / želi upisati
 //    (to se da zakljuciti iz parametra $zagodinu, ali bi potencijalno usporilo upite?)
+//  - $kolizija - student želi uzeti predmet na koliziju
+//  - $debug - ako je true, ispisuje se razlog
 
 // Povratna vrijednost: 0 - nema vise mjesta, 1 - ima jos mjesta
 
 // TODO: studenti sa maticnog odsjeka koji biraju predmet kao izborni trebaju imati prednost u odnosu 
-// na koliziju, ali trenutno ne vidim kako to izvesti a da nekome ne postane invalidan odabir predmeta
+// na koliziju i drugi odsjek, ali trenutno ne vidim kako to izvesti a da nekome ne postane invalidan odabir predmeta
 
-function provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) {
-	global $userid; // TODO ovo treba biti parametar $student...
-//	print "Provjeravam kapacitet $predmet za godinu $zagodinu<br>";
+function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false, $debug = false) {
 	// Provjera kapaciteta
-	$q112 = db_query("SELECT kapacitet, kapacitet_ekstra FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$zagodinu");
-	if (db_num_rows($q112)>0) {
-		$kapacitet = db_result($q112,0,0);
-		$kapacitet_ekstra = db_result($q112,0,0);
+	$q100 = db_query("SELECT kapacitet, kapacitet_izborni, kapacitet_kolizija, kapacitet_drugi_odsjek, drugi_odsjek_zabrane FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$ag");
+	if (db_fetch5($q100, $kapacitet, $kapacitet_izborni, $kapacitet_kolizija, $kapacitet_drugi_odsjek, $drugi_odsjek_zabrane)) {
+		// Predmet ne ide
+		if ($kapacitet == 0) {
+			if ($debug) print "Predmet ne ide.<br>\n";
+			return 0;
+		}
+		if ($kolizija && $kapacitet_kolizija == 0) {
+			if ($debug) print "Predmet ne ide u koliziji.<br>\n";
+			return 0;
+		}
+	
+		$broj_obavezni = $broj_izborni_maticno = $broj_kolizija = $broj_drugi_odsjek = 0;
+	
+		// Za koji studij je predmet obavezan (ako ijedan?)
+		$maticni_studij = db_get("SELECT ps.studij FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet ORDER BY ps.godina_vazenja DESC LIMIT 1");
+		if (!$maticni_studij) {
+			// Na kojem studiju je izborni?
+			$maticni_studij = db_get("SELECT ps.studij FROM plan_studija ps, plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet ORDER BY ps.godina_vazenja DESC LIMIT 1");
+			
+			// Ima li kapaciteta kao izborni
+			if ($kapacitet_izborni == 0) {
+				if ($debug) print "Predmet ne ide kao izborni.<br>\n";
+				return 0;
+			}
+		} else
+			// Broj studenata koji slušaju predmet na matičnom odsjeku kao obavezni
+			$broj_obavezni = db_get("SELECT COUNT(*) FROM ugovoroucenju WHERE studij=$maticni_studij AND akademska_godina=$ag AND student!=$student");
 		
-		// Koliko je studenata izabralo predmet kao izborni?
-		$q113 = db_query("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$zagodinu AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
-		$popunjeno = db_result($q113,0,0);
+		
+		// Da li je zabranjeno za druge odsjeke?
+		if ($maticni_studij != $studij) {
+			if ($kapacitet_drugi_odsjek == 0)  {
+				if ($debug) print "Predmet ne ide za druge studije.<br>\n";
+				return 0;
+			}
+			// Da li je na spisku zabrana
+			$zabrane = explode(",", $drugi_odsjek_zabrane);
+			if (in_array($studij, $zabrane)) {
+				if ($debug) print "Studij $studij je na spisku zabrana.<br>\n";
+				return 0;
+			}
+		}
+		
+		// Povremeno provjeravamo da li je kapacitet već prekoračen da uštedimo upite
+		if ($kapacitet != -1 && $broj_obavezni >= $kapacitet) {
+			if ($debug) print "Popunjen opšti kapacitet.<br>\n";
+			return 0;
+		}
+		
+		// Koliko je studenata izabralo predmet kao izborni na matičnom odsjeku?
+		$broj_izborni_maticno = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij=$maticni_studij AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
+		
+		// Povremeno provjeravamo da li je kapacitet već prekoračen da uštedimo upite
+		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno >= $kapacitet) {
+			if ($debug) print "Popunjen opšti kapacitet.<br>\n";
+			return 0;
+		}
+		if ($kapacitet_izborni != -1 && $broj_izborni_maticno >= $kapacitet_izborni) {
+			if ($debug) print "Popunjen izborni kapacitet.<br>\n";
+			return 0;
+		}
+		
 		
 		// Koliko sluša na koliziju?
-		$q114 = db_query("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet AND student!=$userid");
-		$popunjeno += db_result($q114,0,0);
+		$broj_kolizija = db_get("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet AND student!=$userid");
 		
-		if ($kapacitet_ekstra != 0 && $popunjeno >= $kapacitet_ekstra)
+		// Povremeno provjeravamo da li je kapacitet već prekoračen da uštedimo upite
+		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno+$broj_kolizija >= $kapacitet) {
+			if ($debug) print "Popunjen opšti kapacitet.<br>\n";
 			return 0;
-		
-		// Koliko studenata slusa predmet kao obavezan na svom studiju?
-		$q115 = db_query("SELECT ps.studij, psp.semestar FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE ps.id=$najnoviji_plan AND psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.obavezan=1");
-		if (db_fetch2($q115, $studij, $semestar)) {
-			$q116 = db_query("SELECT COUNT(*) FROM ugovoroucenju WHERE akademska_godina=$zagodinu AND studij=$studij AND semestar=$semestar");
-			$popunjeno += db_result($q116,0,0);
 		}
-//		print "popunjeno $popunjeno<br>";
-		
-		if ($kapacitet != 0 && $popunjeno >= $kapacitet) 
+		if ($kapacitet_izborni != -1 && $broj_izborni_maticno+$broj_kolizija >= $kapacitet_izborni) {
+			if ($debug) print "Popunjen izborni kapacitet.<br>\n";
 			return 0;
+		}
+		if ($kolizija && $kapacitet_kolizija != -1 && $broj_kolizija >= $kapacitet_kolizija) {
+			if ($debug) print "Popunjen kapacitet za koliziju.<br>\n";
+			return 0;
+		}
+		
+		
+		
+		// Koliko je studenata izabralo predmet kao izborni na tuđem odsjeku?
+		$broj_drugi_odsjek = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij!=$maticni_studij AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
+		
+		// Konačna provjera
+		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno+$broj_kolizija+$broj_drugi_odsjek >= $kapacitet) {
+			if ($debug) print "Popunjen opšti kapacitet.<br>\n";
+			return 0;
+		}
+		if ($kapacitet_izborni != -1 && $broj_izborni_maticno+$broj_kolizija+$broj_drugi_odsjek >= $kapacitet_izborni) {
+			if ($debug) print "Popunjen izborni kapacitet.<br>\n";
+			return 0;
+		}
+		if ($kapacitet_drugi_odsjek != -1 && $broj_drugi_odsjek >= $kapacitet) {
+			if ($debug) print "Popunjen kapacitet za drugi odsjek.<br>\n";
+			return 0;
+		}
 	}
+	// Ako nema sloga u bazi znači da ništa nije ograničeno
 	return 1;
 }
 
