@@ -187,8 +187,11 @@ function nastavnik_zavrsni() {
 		$summary = db_escape_string(db_result($q300,0,6));
 		$biljeska = db_escape_string(db_result($q300,0,7));
 		$predsjednik = intval(db_result($q300,0,8));
+		if ($predsjednik == 0) $predsjednik="NULL";
 		$clan_komisije = intval(db_result($q300,0,9));
+		if ($clan_komisije == 0) $clan_komisije="NULL";
 		$student = intval(db_result($q300,0,10));
+		if ($student == 0) $student="NULL";
 		if ($student > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
 		$q310 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', rad_na_predmetu=$rad_na_predmetu, kratki_pregled='$kratki_pregled', literatura='$literatura', sazetak='$sazetak', summary='$summary', biljeska='$biljeska', predsjednik_komisije=$predsjednik, clan_komisije=$clan_komisije, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, predmet=$predmet, akademska_godina=$ag, mentor=$userid");
 		
@@ -211,6 +214,7 @@ function nastavnik_zavrsni() {
 			$literatura = db_escape(trim($_REQUEST['literatura']));
 
 			$kandidat = intval($_REQUEST['kandidat']);
+			if ($kandidat == 0) $kandidat="NULL";
 			if ($kandidat > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
 	
 			if (empty($naslov)) {
