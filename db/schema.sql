@@ -2000,8 +2000,11 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
 CREATE TABLE IF NOT EXISTS `ugovoroucenju_kapacitet` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
-  `kapacitet` int(11) NOT NULL default '0',
-  `kapacitet_ekstra` int(11) NOT NULL default '0'
+  `kapacitet` int(11) NOT NULL default '-1' COMMENT '0 = predmet ne ide, -1 = nema ogranicenja',
+  `kapacitet_izborni` int(11) NOT NULL default '-1' COMMENT '0 = niko ne moze izabrati, -1 = nema ogranicenja',
+  `kapacitet_kolizija` int(11) NOT NULL default '-1' COMMENT '0 - predmet ne ide u koliziji',
+  `kapacitet_drugi_odsjek` int(11) NOT NULL default '-1' COMMENT '0 - predmet ne mogu birati sa drugog odsjeka',
+  `drugi_odsjek_zabrane` varchar(50) collate utf8_slovenian_ci NOT NULL COMMENT 'ako je prazno mogu svi, u suprotnom spisak odsjeka za koje je zabranjen'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
