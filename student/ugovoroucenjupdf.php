@@ -88,32 +88,8 @@ if (db_num_rows($q20)<1) {
 		$ponovac=1;
 }
 
-// Odredjujemo da li ima prenesenih predmeta
-/*// TODO: ovo sada ne radi za izborne predmete
-//$q20 = db_query("select p.sifra, p.naziv, p.ects, ps.semestar from predmet as p, plan_studija as ps where ps.godina_vazenja=$plan_studija and ps.studij=$studij and (ps.semestar=".($sem1-1)." or ps.semestar=".($sem1-2).") and ps.obavezan=1 and ps.predmet=p.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id)=0");
-// FIXME: Verzija koja bi trebala raditi za novi NPP ali ne radi zbog pogrešnih IDova
-//$q20 = db_query("select pp.sifra, pp.naziv, pp.ects, psp.semestar from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and (psp.semestar=".($sem1-1)." or psp.semestar=".($sem1-2).") and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
-// Verzija preko ponudekursa
-//$q20 = db_query("select p.sifra, p.naziv, p.ects, pk.semestar from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.studij=$studij and (pk.semestar=".($sem1-1)." or pk.semestar=".($sem1-2).") and pk.obavezan=1 and pk.akademska_godina=$proslagodina and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pk.predmet)=0");
-// Uzimamo samo predmete koje je OVAJ STUDENT slušao prošle godine, a obavezni su!
-$q20 = db_query("select p.sifra, p.naziv, p.ects, pk.semestar from predmet as p, ponudakursa as pk, student_predmet as sp where pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id and (pk.semestar=".($sem1-1)." or pk.semestar=".($sem1-2).") and pk.obavezan=1 and pk.akademska_godina=$proslagodina and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pk.predmet)=0");
-if (db_num_rows($q20)>1) {
-	niceerror("Nemate uslove za upis $godina. godine studija");
-	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
-	return;
-}
-if (db_num_rows($q20)==1) {
-	$ima_preneseni=1;
-	$preneseni_sifra=db_result($q20,0,0);
-	$preneseni_naziv=db_result($q20,0,1);
-	$preneseni_ects=db_result($q20,0,2);
-	$preneseni_semestar=db_result($q20,0,3);
-} else {
-	$ima_preneseni=0;
-}*/
-
 global $zamger_predmeti_pao;
-if (!ima_li_uslov($userid)) {
+if ($ponovac == 0 && !ima_li_uslov($userid)) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
 	return;
