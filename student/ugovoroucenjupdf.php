@@ -98,10 +98,12 @@ if ($ponovac == 0 && !ima_li_uslov($userid)) {
 // Kreiramo spiskove predmeta za prikaz na stranicama
 $neparni_obavezni = $neparni_izborni = $parni_obavezni = $parni_izborni = array();
 if ($ponovac==1) {
+	// Ako je ponovac, prikazujemo samo predmete koje nije položio
 	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
 } else {
-// Ako nije, trebamo prikazati one koje je položio u koliziji
+	// Ako nije, *trebamo* prikazati one koje je položio u koliziji (jer ih prošle godine nije imao na Ugovoru)
+	// TODO: Uprava se nije izjasnila da li je ovo ispravno ili nije
 	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 }
@@ -120,11 +122,12 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 		// Uzimamo pasoš koji je važeći u tekućem NPPu
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		
-		// Drugi studij sa istom godinom usvajanja
+		// Nema ga - možda je izborni sa drugog odsjeka?
+		// Uzimamo drugi studij sa istom godinom usvajanja
 		if (!$podaci) 
 			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		
-		// Drugi studij sa istom godinom usvajanja - Izborni
+		// Nije među obaveznim - možda je izborni na drugom odsjeku?
 		if (!$podaci) 
 			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 
@@ -142,7 +145,8 @@ foreach($zamger_predmeti_pao as $predmet) {
 	// Uzimamo pasoš koji je važeći u tekućem NPPu
 	$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
-	// Drugi studij sa istom godinom usvajanja
+	// Nema ga - možda je izborni sa drugog odsjeka?
+	// Uzimamo drugi studij sa istom godinom usvajanja
 	if (!$podaci) 
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
@@ -154,11 +158,11 @@ foreach($zamger_predmeti_pao as $predmet) {
 		continue;
 	}
 	
-	// Izborni
+	// Sada gledamo izborne predmete
 	if (!$podaci) 
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
-	// Drugi studij sa istom godinom usvajanja - Izborni
+	// Drugi studij sa istom godinom usvajanja
 	if (!$podaci) 
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
