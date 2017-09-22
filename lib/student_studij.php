@@ -243,7 +243,6 @@ function ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajan
 //  - $predmet - ID predmeta koji student zeli izabrati
 //  - $ag - ID akademske godine
 //  - $studij - ID studija na koji je student upisan / želi upisati
-//    (to se da zakljuciti iz parametra $zagodinu, ali bi potencijalno usporilo upite?)
 //  - $kolizija - student želi uzeti predmet na koliziju
 //  - $debug - ako je true, ispisuje se razlog
 
@@ -305,7 +304,7 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 		}
 		
 		// Koliko je studenata izabralo predmet kao izborni na matičnom odsjeku?
-		$broj_izborni_maticno = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij=$maticni_studij AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
+		$broj_izborni_maticno = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij=$maticni_studij AND uou.student!=$student AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
 		
 		// Povremeno provjeravamo da li je kapacitet već prekoračen da uštedimo upite
 		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno >= $kapacitet) {
@@ -319,7 +318,7 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 		
 		
 		// Koliko sluša na koliziju?
-		$broj_kolizija = db_get("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$zagodinu AND predmet=$predmet AND student!=$userid");
+		$broj_kolizija = db_get("SELECT COUNT(*) FROM kolizija WHERE akademska_godina=$ag AND predmet=$predmet AND student!=$student");
 		
 		// Povremeno provjeravamo da li je kapacitet već prekoračen da uštedimo upite
 		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno+$broj_kolizija >= $kapacitet) {
@@ -338,7 +337,7 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 		
 		
 		// Koliko je studenata izabralo predmet kao izborni na tuđem odsjeku?
-		$broj_drugi_odsjek = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij!=$maticni_studij AND uou.student!=$userid AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
+		$broj_drugi_odsjek = db_get("SELECT COUNT(*) FROM ugovoroucenju as uou, ugovoroucenju_izborni as uoi WHERE uou.akademska_godina=$ag AND uou.studij!=$maticni_studij AND uou.student!=$student AND uoi.ugovoroucenju=uou.id AND uoi.predmet=$predmet AND (SELECT COUNT(*) FROM konacna_ocjena AS ko WHERE ko.predmet=$predmet AND ko.ocjena>5 AND ko.student=uou.student)=0");
 		
 		// Konačna provjera
 		if ($kapacitet != -1 && $broj_obavezni+$broj_izborni_maticno+$broj_kolizija+$broj_drugi_odsjek >= $kapacitet) {
