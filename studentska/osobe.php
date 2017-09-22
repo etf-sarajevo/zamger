@@ -865,10 +865,16 @@ else if ($akcija == "upis") {
 		// Da li je popunjen ugovor o učenju?
 		$uoupk = array();
 		$uou = db_get("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
+		
 		if ($uou) {
+			// Ugovor o učenju je jedini način kako student može odabrati predmete sa drugog odsjeka/fakulteta
+			// jer se tu uopšte ne gleda plan studija
 			if (!$ok_izvrsiti_upis) print "<p>Popunjen Ugovor o učenju (ID: $uou).\n";
+			
 			$q690 = db_query("select p.id, p.naziv from ugovoroucenju_izborni as uoui, predmet as p where uoui.ugovoroucenju=$uou and uoui.predmet=p.id");
-			if (db_num_rows($q690)>0 && $ok_izvrsiti_upis == false) print " Izabrani predmeti u semestru:";
+			
+			if (db_num_rows($q690)>0 && !$ok_izvrsiti_upis) print " Izabrani predmeti u semestru:";
+			
 			while (db_fetch2($q690, $predmet, $naziv_predmeta)) {
 				if (!$ok_izvrsiti_upis) print "<br/>* $naziv_predmeta\n";
 
@@ -2421,10 +2427,12 @@ else if ($akcija == "edit") {
 				$naziv_nove_ak_god = db_result($q230,0,1);
 			}
 		}
+		
+		if ($nova_ak_god==0) { // Upis u tekućoj godini (ako nije kreirana nova)
 			?>
 			<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$id_ak_god?>">Upiši na <?=($semestar+1)?>. semestar</a>
 			<?
-
+		}
 
 
 		// Pristup web servisu za uplate
@@ -2503,7 +2511,7 @@ else if ($akcija == "edit") {
 			// S neparnog na parni ide automatski
 			?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao uslove za upis na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar</p>
-			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$nova_ak_god?>">Upiši studenta na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar.</a></p>
+			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$studij_id?>&semestar=<?=($semestar+1)?>&godina=<?=$id_ak_god?>">Upiši studenta na &quot;<?=$studij?>&quot;, <?=($semestar+1)?> semestar.</a></p>
 			<?
 
 		} else {
