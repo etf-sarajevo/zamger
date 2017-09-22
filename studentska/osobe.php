@@ -2544,15 +2544,12 @@ else if ($akcija == "edit") {
 
 			// Ugovor o učenju
 			if ($modul_uou==1) {
-				$q270 = db_query("select s.naziv, u.semestar from ugovoroucenju as u, studij as s where u.student=$osoba and u.akademska_godina=$nova_ak_god and u.studij=s.id order by u.semestar");
-				if (db_num_rows($q270)>0) {
-					$nazivstudijauu=$semestaruu="";
-					while ($r270 = db_fetch_row($q270)) {
-						$nazivstudijauu=$r270[0];
-						$semestaruu.=$r270[1].". ";
-					}
+				$q270 = db_query("select s.naziv, u.semestar, u.kod from ugovoroucenju as u, studij as s where u.student=$osoba and u.akademska_godina=$nova_ak_god and u.studij=s.id order by u.semestar");
+				if (db_fetch3($q270, $naziv_studija_ugovor, $semestar_ugovor, $kod_ugovora)) {
+					// Uvijek se popunjava za neparni i parni semestar!
+					$semestar_ugovor .= ". i " . ($semestar_ugovor+1) . ".";
 					?>
-					<p>Student je popunio/la <b>Ugovor o učenju</b> za <?=$nazivstudijauu?>, <?=$semestaruu?>semestar</p>
+					<p>Student je popunio/la <b>Ugovor o učenju</b> za <?=$naziv_studija_ugovor?>, <?=$semestar_ugovor?> semestar:<br>Kod: <b><?=$kod_ugovora?></b></p>
 					<?
 				} else {
 					?>

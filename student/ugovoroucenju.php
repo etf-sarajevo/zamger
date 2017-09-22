@@ -201,9 +201,17 @@ function student_ugovoroucenju() {
 			$q145 = db_query("delete from ugovoroucenju where id=$r140[0]");
 			$q145 = db_query("delete from ugovoroucenju_izborni where ugovoroucenju=$r140[0]");
 		}
+		
+		// Generišemo novi kod
+		do {
+			$kod = "";
+			for ($i=0; $i<10; $i++)
+				$kod .= chr(ord("0") + rand(0,9));
+			$ima_li = db_get("SELECT COUNT(*) FROM ugovoroucenju WHERE kod='$kod'");
+		} while($ima_li > 0);
 
 		// Ubacujemo novi ugovor u bazu
-		$q150 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=".($godina_studija*2-1));
+		$q150 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2-1) . ", kod='$kod'");
 		// Uzimamo ID ugovora
 		$id1 = db_get("select id from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina and studij=$studij and semestar=".($godina_studija*2-1));
 		foreach ($izabrani_predmeti_neparni as $predmet) {
@@ -211,8 +219,8 @@ function student_ugovoroucenju() {
 		}
 
 		// Isto za parni semestar
-		$q180 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=".($godina_studija*2));
-		$id2 = db_get("select id from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina and studij=$studij and semestar=".($godina_studija*2));
+		$q180 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2) . ", kod='$kod'");
+		$id2 = db_get("select id from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina and studij=$studij and semestar=".($godina_studija*2) );
 		foreach ($izabrani_predmeti_parni as $predmet) {
 			$q200 = db_query("insert into ugovoroucenju_izborni set ugovoroucenju=$id2, predmet=$predmet");
 		}

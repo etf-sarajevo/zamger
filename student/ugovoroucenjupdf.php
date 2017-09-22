@@ -34,8 +34,8 @@ if (db_num_rows($q2)<1) {
 
 
 // Zapis u tabeli ugovoroucenju
-$q5 = db_query("select uu.id, s.id, s.naziv, s.naziv_en, uu.semestar, s.tipstudija from ugovoroucenju as uu, studij as s where uu.student=$userid and uu.akademska_godina=$zagodinu and uu.studij=s.id order by semestar desc limit 1");
-if (!db_fetch6($q5, $ugovorid, $studij, $studijbos, $studijeng, $sem2, $tipstudija)) {
+$q5 = db_query("select uu.id, s.id, s.naziv, s.naziv_en, uu.semestar, s.tipstudija, uu.kod from ugovoroucenju as uu, studij as s where uu.student=$userid and uu.akademska_godina=$zagodinu and uu.studij=s.id order by semestar desc limit 1");
+if (!db_fetch7($q5, $ugovorid, $studij, $studijbos, $studijeng, $sem2, $tipstudija, $kod_ugovora)) {
 	niceerror("Nije kreiran ugovor o učenju za studenta.");
 	return;
 }
@@ -307,7 +307,11 @@ $pdf->AddPage();
 	$pdf->SetXY(170, 135);
 	$pdf->Cell(100, 0, $ects);
 
+	// Kod
+	$pdf->SetXY(90, 265);
+	$pdf->Cell(100, 0, "Ugovor br. $kod_ugovora");
 
+	
 	// DRUGI SEMESTAR
 	$pdf->AddPage();
 	$pdf->Image("static/images/content/150dpi/domestic-contract$mscfile-2.png",0,0,210); 
@@ -363,6 +367,10 @@ $pdf->AddPage();
 	if (!strchr($ects,".")) $ects .= ".0";
 	$pdf->SetXY(170, 135);
 	$pdf->Cell(100, 0, $ects);
+
+	// Kod
+	$pdf->SetXY(90, 265);
+	$pdf->Cell(100, 0, "Ugovor br. $kod_ugovora");
 
 // ---------------------------------------------------------
 
