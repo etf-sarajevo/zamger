@@ -303,7 +303,7 @@ function student_kolizija() {
 		
 		// Provjera kapaciteta
 		foreach(array_merge($predmeti1, $predmeti2) as $predmet) {
-			if (provjeri_kapacitet($predmet, $zagodinu, $najnoviji_plan) == 0) {
+			if (provjeri_kapacitet($userid, $predmet, $zagodinu, $trenutni_studij, true) == 0) {
 	 			$q117 = db_query("SELECT naziv FROM predmet WHERE id=$predmet");
 				niceerror("Predmet ".db_result($q117,0,0)." se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
 				zamgerlog2("popunjen kapacitet za predmet", $predmet);
@@ -630,7 +630,7 @@ function student_kolizija() {
 
 
 	// Pomoćna PHP funkcija koja ispisuje jedan predmet
-	function dajpredmet($pasos_predmeta, $studij, $najnoviji_plan, $izborni, $zimski) {
+	function dajpredmet($pasos_predmeta, $studij, $najnoviji_plan, $zagodinu, $izborni, $zimski) {
 		global $userid;
 
 		$q50 = db_query("select naziv, ects, predmet from pasos_predmeta where id=$pasos_predmeta");
@@ -638,6 +638,10 @@ function student_kolizija() {
 		$pnaziv = db_result($q50,0,0);
 		$pects = db_result($q50,0,1);
 		$predmet = db_result($q50,0,2);
+		
+		// Ako se ne nudi u koliziji, preskačemo
+		$kap = db_query_assoc("SELECT kapacitet, kapacitet_izborni, kapacitet_kolizija FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$zagodinu");
+		if ($kap && ($kap['kapacitet'] == 0 || $kap['kapacitet_izborni'] == 0 || $kap['kapacitet_kolizija'] == 0)) return;
 
 		// Ako je vec položen predmet preskačemo
 		$q45 = db_query("select count(*) from konacna_ocjena where student=$userid and predmet=$predmet");
@@ -712,7 +716,7 @@ function student_kolizija() {
 	$is_bilo=array();
 	while ($r40 = db_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
-			dajpredmet($r40[0], $studij, $najnoviji_plan, false, true);
+			dajpredmet($r40[0], $studij, $najnoviji_plan, $zagodinu, false, true);
 		} else { // izborni
 
 			if (count($is_bilo)==0) {
@@ -725,7 +729,7 @@ function student_kolizija() {
 
 			$q60 = db_query("select pasos_predmeta from plan_izborni_slot where id=$r40[2]");
 			while ($r60 = db_fetch_row($q60)) {
-				dajpredmet($r60[0], $studij, $najnoviji_plan, true, true);
+				dajpredmet($r60[0], $studij, $najnoviji_plan, $zagodinu, true, true);
 			}
 		}
 	}
@@ -752,7 +756,7 @@ function student_kolizija() {
 	$is_bilo=array();
 	while ($r40 = db_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
-			dajpredmet($r40[0], $studij, $najnoviji_plan, false, false);
+			dajpredmet($r40[0], $studij, $najnoviji_plan, $zagodinu, false, false);
 		} else { // izborni
 
 			if (count($is_bilo)==0) {
@@ -765,7 +769,7 @@ function student_kolizija() {
 
 			$q60 = db_query("select pasos_predmeta from plan_izborni_slot where id=$r40[2]");
 			while ($r60 = db_fetch_row($q60)) {
-				dajpredmet($r60[0], $studij, $najnoviji_plan, true, false);
+				dajpredmet($r60[0], $studij, $najnoviji_plan, $zagodinu, true, false);
 			}
 		}
 	}
