@@ -369,14 +369,14 @@ function provjeri_preduvjete($predmet, $student, $najnoviji_plan) {
 		// Da li je preduvjet po najnovijem planu na istoj ili višoj godini kao predmet?
 		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.obavezan=1");
 		if ($semestar === false) 
-			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.predmet=$predmet");
+			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		if ($semestar === false) { niceerror("Predmet nije pronađen u planu i programu"); return; }
 		$godina_predmeta = ($semestar+1)/2;
 
 		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$preduvjet AND psp.obavezan=1");
 		if ($semestar === false) 
-			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.predmet=$preduvjet");
-		if ($semestar === false) { niceerror("Preduvjet nije pronađen u planu i programu"); return; }
+			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$preduvjet");
+		if ($semestar === false) { niceerror("Preduvjet $preduvjet za predmet $predmet nije pronađen u planu i programu"); return; }
 		$godina_preduvjeta = ($semestar+1)/2;
 
 		if ($godina_preduvjeta >= $godina_predmeta) continue;
