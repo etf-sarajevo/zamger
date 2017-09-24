@@ -664,21 +664,23 @@ function student_kolizija() {
 		
 
 		// Provjera preduvjeta -- za sada disabled
-		/*$preduvjeti = provjeri_preduvjete($predmet, $userid, $najnoviji_plan);
+		$preduvjeti = provjeri_preduvjete($predmet, $userid, $najnoviji_plan);
 		if (!empty($preduvjeti)) {
 			?>
 			<?=$dodaj?><?=$pnaziv?> (<?=$pects?> ECTS) - ne možete izabrati ovaj predmet jer niste položili sljedeće predmete:
 			<?
 			foreach ($preduvjeti as $preduvjet) {
-				$q55 = db_query("SELECT pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis where pp.predmet=$preduvjet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=$najnoviji_plan");
-				print db_result($q55,0,0).", ";
+				$naziv_preduvjeta = db_get("SELECT pp.naziv FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$preduvjet AND psp.obavezan=1");
+				if (!$naziv_preduvjeta)
+					$naziv_preduvjeta = db_get("SELECT pp.naziv from pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis where pp.predmet=$preduvjet and pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot and psp.plan_studija=$najnoviji_plan");
+				print $naziv_preduvjeta.", ";
 			}
 			print "<br>\n";
-		} else {*/
+		} else {
 			?>
 			<?=$dodaj?><input type="checkbox" name="<?=$cbid?>-<?=$predmet?>" onchange="javascript:updateects(<?=$jsid?>, <?=$pects?>, this)"> <?=$pnaziv?> (<?=$pects?> ECTS)<br>
 			<?
-		//}
+		}
 
 	}
 
