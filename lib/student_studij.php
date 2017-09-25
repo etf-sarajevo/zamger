@@ -120,7 +120,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			// Nije položio dovoljno predmeta iz ovog slota
 			if ($polozio_izbornih < $slog['ponavljanja']) {
 				foreach($izborni_predmeti_pao as $slog_predmet) {
-					$zamger_predmeti_pao[$predmet] = $slog_predmet['naziv'];
+					$zamger_predmeti_pao[$slog_predmet['id']] = $slog_predmet['naziv'];
 					$zamger_pao_ects += $slog_predmet['ects'];
 					if ($slog['semestar'] < $semestar-1) $nize_godine++;
 					
