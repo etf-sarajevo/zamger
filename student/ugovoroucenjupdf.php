@@ -89,7 +89,8 @@ if (db_num_rows($q20)<1) {
 }
 
 global $zamger_predmeti_pao;
-if ($ponovac == 0 && !ima_li_uslov($userid)) {
+$uslov = ima_li_uslov($userid);
+if ($ponovac == 0 && !$uslov) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
 	return;
@@ -97,12 +98,8 @@ if ($ponovac == 0 && !ima_li_uslov($userid)) {
 
 // Kreiramo spiskove predmeta za prikaz na stranicama
 $neparni_obavezni = $neparni_izborni = $parni_obavezni = $parni_izborni = array();
-if ($ponovac==1) {
-	// Ako je ponovac, prikazujemo samo predmete koje nije položio
-	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
-	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet)=0");
-} else {
-	// Ako nije, *trebamo* prikazati one koje je položio u koliziji (jer ih prošle godine nije imao na Ugovoru)
+if ($ponovac==0) {
+	// Ako student nije ponovac, *trebamo* prikazati predmete koje je položio u koliziji (jer ih prošle godine nije imao na Ugovoru)
 	// TODO: Uprava se nije izjasnila da li je ovo ispravno ili nije
 	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
@@ -113,6 +110,13 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 	$izborni = array();
 	$q110 = db_query("SELECT uoui.predmet FROM ugovoroucenju_izborni uoui, ugovoroucenju uou WHERE uoui.ugovoroucenju=uou.id AND uou.student=$userid and uou.akademska_godina=$zagodinu AND uou.semestar=$sem");
 	while(db_fetch1($q110, $predmet)) {
+		// Ako predmet već postoji u nizu zamger_predmeti_pao, preskačemo ga
+		$nasao = false;
+		foreach($zamger_predmeti_pao as $zpp => $naziv_predmeta) {
+			if ($zpp == $predmet) { $nasao=true; break; }
+		}
+		if ($nasao) continue;
+		
 		// Preskačemo predmete koje je student već položio
 		if ($ponovac == 1) {
 			$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=$predmet AND ocjena>5");
