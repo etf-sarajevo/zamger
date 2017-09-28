@@ -214,8 +214,11 @@ function nastavnik_zavrsni() {
 			$literatura = db_escape(trim($_REQUEST['literatura']));
 
 			$kandidat = intval($_REQUEST['kandidat']);
-			if ($kandidat == 0) $kandidat="NULL";
+			if ($kandidat == 0) $kandidat = "NULL";
 			if ($kandidat > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
+			
+			$na_predmetu = intval($_REQUEST['na_predmetu']);
+			if ($na_predmetu == 0) $na_predmetu = "NULL";
 	
 			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -224,12 +227,12 @@ function nastavnik_zavrsni() {
 			}
 
 			if ($id > 0) {
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio temu zavrsnog rada", $id);
 			} else {
-				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, tema_odobrena=0");
+				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, tema_odobrena=0");
 				$id = db_insert_id();
 				nicemessage('Uspješno kreirana nova tema završnog rada.');
 				zamgerlog("kreirana tema zavrsnog rada $id na predmetu pp$predmet", 2);
