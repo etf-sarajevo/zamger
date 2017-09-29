@@ -55,10 +55,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		$cache_planova_studija[$plan_studija] = predmeti_na_planu($plan_studija);
 	
 	// Svi predmeti koje je student položio
-	$student_polozio = db_query_vassoc("SELECT pk.predmet, ko.ocjena
-	FROM student_predmet sp, ponudakursa pk
-	LEFT JOIN konacna_ocjena ko ON ko.predmet=pk.predmet AND ko.student=$student
-	WHERE sp.student=$student AND sp.predmet=pk.id");
+	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student");
 	
 	// Predmeti koje je student slušao s drugih odsjeka
 	$drugi_odsjek = array();
