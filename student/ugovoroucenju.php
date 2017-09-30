@@ -75,7 +75,7 @@ function student_ugovoroucenju() {
 		$q5a = db_query("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$akademska_godina ORDER BY akademska_godina DESC LIMIT 1");
 		if (!db_fetch2($q5a, $stari_studij, $plan_studija) || $studij != $stari_studij) {
 			// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
-			// Uzimamo najnoviji plan za odabrani studij
+ 			// Uzimamo najnoviji plan za odabrani studij
 			$plan_studija = db_get("SELECT id FROM plan_studija WHERE studij=$studij ORDER BY godina_vazenja DESC LIMIT 1");
 			if (!$plan_studija) { 
 				niceerror("Nije definisan plan i program za studij $studij");
@@ -123,7 +123,7 @@ function student_ugovoroucenju() {
 						}
 					}
 					
-					if (provjeri_kapacitet($izabran_predmet, $akademska_godina, $plan_studija) == 0) {
+					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij) == 0) {
 						niceerror("Predmet $predmet_naziv se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
 						zamgerlog2("popunjen kapacitet za predmet", $izabran_predmet);
 						return;
@@ -166,7 +166,7 @@ function student_ugovoroucenju() {
 							}
 						}
 						
-						if (provjeri_kapacitet($izabran_predmet, $akademska_godina, $plan_studija) == 0) {
+						if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij) == 0) {
 							niceerror("Predmet $predmet_naziv se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
 							zamgerlog2("popunjen kapacitet za predmet", $izabran_predmet);
 							return;
