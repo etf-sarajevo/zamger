@@ -55,7 +55,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		$cache_planova_studija[$plan_studija] = predmeti_na_planu($plan_studija);
 	
 	// Svi predmeti koje je student položio
-	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student");
+	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student AND ko.ocjena>5");
 	// TODO: Ovdje bi moglo doći do problema na drugom ciklusu gdje bi se predmeti položeni sa prvog ciklusa mogli posmatrati kao predmeti sa drugog odsjeka, obzirom na prethodni commit
 	
 	// Predmeti koje je student slušao s drugih odsjeka
