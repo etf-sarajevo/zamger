@@ -280,6 +280,10 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 	// Provjera kapaciteta
 	$q100 = db_query("SELECT kapacitet, kapacitet_izborni, kapacitet_kolizija, kapacitet_drugi_odsjek, drugi_odsjek_zabrane FROM ugovoroucenju_kapacitet WHERE predmet=$predmet AND akademska_godina=$ag");
 	if (db_fetch5($q100, $kapacitet, $kapacitet_izborni, $kapacitet_kolizija, $kapacitet_drugi_odsjek, $drugi_odsjek_zabrane)) {
+		// Ako je student već položio predmet ne provjeravamo kapacitet
+		$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND ocjena>5");
+		if ($polozio) return 1;
+		
 		// Predmet ne ide
 		if ($kapacitet == 0) {
 			if ($debug) print "Predmet ne ide.<br>\n";
