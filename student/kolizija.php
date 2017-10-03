@@ -665,6 +665,9 @@ function student_kolizija() {
 
 		// Provjera preduvjeta -- za sada disabled
 		$preduvjeti = provjeri_preduvjete($predmet, $userid, $najnoviji_plan);
+		for ($i=0; $i<count($preduvjeti); $i++) {
+			if (isset($_POST["polaze-" . $preduvjeti[$i]])) array_splice($preduvjeti, $i, 1);
+		}
 		if (!empty($preduvjeti)) {
 			?>
 			<?=$dodaj?><?=$pnaziv?> (<?=$pects?> ECTS) - ne možete izabrati ovaj predmet jer niste položili sljedeće predmete:
