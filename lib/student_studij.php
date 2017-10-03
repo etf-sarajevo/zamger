@@ -46,7 +46,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	global $cache_planova_studija;
 	
 	$zamger_predmeti_pao = $pis_bio = $nepoznat_izborni = array();
-	$nize_godine = $obavezni_pao = $zamger_pao_ects = $izborni_pao = 0;
+	$nize_godine = $obaveznih_pao = $zamger_pao_ects = $izbornih_pao = 0;
 	$nepoznat_predmet_id = -1;
 	
 	// Svi predmeti koje je student slušao - zatrebaće nam kasnije
@@ -63,7 +63,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	foreach($student_slusao as $predmet)
 		if (!array_key_exists($predmet, $student_polozio)) $student_pao[] = $predmet;
 	
-	// Predmeti koje je student slušao s drugih odsjeka
+	// Predmeti koje je student položio s drugih odsjeka
 	$drugi_odsjek = array();
 	foreach($student_polozio as $predmet => $ocjena) {
 		$pronasao = false;
@@ -103,26 +103,27 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				if ($slog['semestar'] < $semestar-1) $nize_godine++;
 
 				// Ako je obavezan, situacija je jasna
-				$obavezni_pao++;
+				$obaveznih_pao++;
 				$zamger_pao_ects += $slog['predmet']['ects'];
 			}
 		} else {
 			// Kod izbornih predmeta moramo računati da se isti slot može ponavljati N puta, 
 			// što znači da student mora položiti N predmeta iz tog slota
-			$polozio_izbornih = 0;
-			$izborni_predmeti_pao = array();
+			$polozio_izbornih_slot = $pao_izbornih_slot = 0;
+			$izborni_predmeti_pao = array(); // IDovi izbornih predmeta koje je student nekada slušao a nije položio
+
 			foreach($slog['predmet'] as $slog_predmet) {
 				$predmet = $slog_predmet['id'];
 				$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
 				if ($polozio)
-					$polozio_izbornih++;
+					$polozio_izbornih_slot++;
 				else if (in_array($predmet, $student_pao))
 					$izborni_predmeti_pao[] = $slog_predmet;
 			}
 			
 			// Nije položio dovoljno predmeta iz ovog slota
-			// Tražimo predmete sa drugog odsjeka
-			if ($polozio_izbornih < $slog['ponavljanja']) {
+			if ($polozio_izbornih_slot < $slog['ponavljanja']) {
+				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
 					if ($podaci['semestar'] == $slog['semestar']) {
 						$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
@@ -140,30 +141,31 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 										
 										unset($slog_izborni);
 										
-										$polozio_izbornih++;
-										if ($polozio_izbornih == $slog['ponavljanja']) break;
+										$pao_izbornih_slot++;
+										if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
 									}
 								}
 								// Napunili smo potreban broj predmeta sa matičnog odsjeka
-								if ($polozio_izbornih == $slog['ponavljanja']) break;
+								if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
 							}
 							
 							// Student nije slušao predmet sa matičnog odsjeka ili je ovaj noviji
 							$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
 							$zamger_pao_ects += $podaci['ects'];
+							$pao_izbornih_slot++;
 							if ($slog['semestar'] < $semestar-1) $nize_godine++;
-						}
+						} else
+							$polozio_izbornih_slot++;
 						
 						unset($drugi_odsjek[$predmet]);
 						
-						$polozio_izbornih++;
-						if ($polozio_izbornih == $slog['ponavljanja']) break;
+						if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
 					}
 				}
 			}
 			
 			// Popunićemo ostatak spiska izbornim predmetima iz NPP za koje je evidentirano da je slušao a nije položio
-			if ($polozio_izbornih < $slog['ponavljanja']) {
+			if ($polozio_izbornih_slot + $pao_izbornih_slot < $slog['ponavljanja']) {
 				foreach($izborni_predmeti_pao as &$slog_predmet) {
 					$zamger_predmeti_pao[$slog_predmet['id']] = $slog_predmet['naziv'];
 					$zamger_pao_ects += $slog_predmet['ects'];
@@ -171,15 +173,18 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 					
 					unset($slog_predmet);
 					
-					$polozio_izbornih++;
-					if ($polozio_izbornih == $slog['ponavljanja']) break;
+					$pao_izbornih_slot++;
+					if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
 				}
 			}
 			
-			if ($polozio_izbornih < $slog['ponavljanja']) {
+			// Za preostali broj ponavljanja nemamo pojma pa ćemo ih dodati u petlji
+			while ($polozio_izbornih_slot + $pao_izbornih_slot < $slog['ponavljanja']) {
 				// Koristimo negativan ID za oznaku nepoznatog predmeta
 				$zamger_predmeti_pao[$nepoznat_predmet_id--] = "(Nepoznat izborni predmet)";
+				$pao_izbornih_slot++;
 			}
+			$izbornih_pao += $pao_izbornih_slot;
 		}
 	}
 	
@@ -188,11 +193,11 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	if ($nize_godine>0) return false;
 	
 	// Ako je završni semestar ne može se ništa prenijeti
-	if ($semestar == $studij_trajanje && ($obavezni_pao > 0 || $izborni_pao > 0 || $zamger_pao_ects > 0)) return false;
+	if ($semestar == $studij_trajanje && ($obaveznih_pao > 0 || $izbornih_pao > 0 || $zamger_pao_ects > 0)) return false;
 	
 	// Student ima uslov ako je pao <= $conf_uslov_predmeta ili ako svi nepoloženi 
 	// krediti zajedno nose <= $conf_uslov_ects_kredita
-	if ($obavezni_pao + $izborni_pao > $conf_uslov_predmeta && $zamger_pao_ects > $conf_uslov_ects_kredita) return false;
+	if ($obaveznih_pao + $izbornih_pao > $conf_uslov_predmeta && $zamger_pao_ects > $conf_uslov_ects_kredita) return false;
 	return true;
 }
 
