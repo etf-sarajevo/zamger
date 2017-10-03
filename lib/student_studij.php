@@ -58,6 +58,11 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student AND ko.ocjena>5");
 	// TODO: Ovdje bi moglo doći do problema na drugom ciklusu gdje bi se predmeti položeni sa prvog ciklusa mogli posmatrati kao predmeti sa drugog odsjeka, obzirom na prethodni commit
 	
+	$student_slusao = db_query_varray("SELECT DISTINCT pk.predmet FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id");
+	$student_pao = array();
+	foreach($student_slusao as $predmet)
+		if (!array_key_exists($predmet, $student_polozio)) $student_pao[] = $predmet;
+	
 	// Predmeti koje je student slušao s drugih odsjeka
 	$drugi_odsjek = array();
 	foreach($student_polozio as $predmet => $ocjena) {
@@ -111,7 +116,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
 				if ($polozio)
 					$polozio_izbornih++;
-				else if (array_key_exists($predmet, $student_polozio))
+				else if (in_array($predmet, $student_pao))
 					$izborni_predmeti_pao[] = $slog_predmet;
 			}
 			
