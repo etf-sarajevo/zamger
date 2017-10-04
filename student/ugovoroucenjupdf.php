@@ -292,7 +292,7 @@ $pdf->AddPage();
 	}
 
 	// Spisak izbornih predmeta
-	$ykoord = 123;
+	$ykoord = 127;
 	foreach($neparni_izborni as $predmet) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $predmet['sifra']);
@@ -308,7 +308,7 @@ $pdf->AddPage();
 
 	// Suma ects
 	if (!strchr($ects,".")) $ects .= ".0";
-	$pdf->SetXY(170, 135);
+	$pdf->SetXY(170, 139);
 	$pdf->Cell(100, 0, $ects);
 
 	// Kod
@@ -353,7 +353,7 @@ $pdf->AddPage();
 	}
 
 	// Spisak izbornih predmeta
-	$ykoord = 123;
+	$ykoord = 127;
 	foreach($parni_izborni as $predmet) {
 		$pdf->SetXY(13, $ykoord);
 		$pdf->Cell(100, 0, $predmet['sifra']);
@@ -369,7 +369,7 @@ $pdf->AddPage();
 
 	// Suma ects
 	if (!strchr($ects,".")) $ects .= ".0";
-	$pdf->SetXY(170, 135);
+	$pdf->SetXY(170, 139);
 	$pdf->Cell(100, 0, $ects);
 
 	// Kod
