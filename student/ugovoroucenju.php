@@ -418,9 +418,13 @@ function student_ugovoroucenju() {
 					// Kapacitet
 					$q110 = db_query("SELECT kapacitet, kapacitet_izborni, kapacitet_drugi_odsjek, drugi_odsjek_zabrane FROM ugovoroucenju_kapacitet WHERE predmet=" . $predmet['id'] . " AND akademska_godina=$akademska_godina");
 					if (db_fetch4($q110, $kapacitet, $kapacitet_izborni, $kapacitet_drugi_odsjek, $drugi_odsjek_zabrane)) {
-						if ($kapacitet == 0 || $kapacitet_izborni == 0 || $kapacitet_drugi_odsjek == 0) continue;
-						$zabrane = explode(",", $drugi_odsjek_zabrane);
-						if (in_array($studij, $zabrane)) continue;
+						// Ako je student već položio predmet ipak treba imati mogućnost da ga izabere
+						$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=" . $predmet['id'] . " AND ocjena>5");
+						if (!$polozio) {
+							if ($kapacitet == 0 || $kapacitet_izborni == 0 || $kapacitet_drugi_odsjek == 0) continue;
+							$zabrane = explode(",", $drugi_odsjek_zabrane);
+							if (in_array($studij, $zabrane)) continue;
+						}
 					}
 					
 					// Da li postoji u matičnom planu
