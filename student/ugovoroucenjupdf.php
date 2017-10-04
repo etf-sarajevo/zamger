@@ -164,11 +164,11 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 	
 	// Sada gledamo izborne predmete
 	if (!$podaci) 
-		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
 	// Drugi studij sa istom godinom usvajanja
 	if (!$podaci) 
-		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
 	if ($podaci) {
 		if ($podaci['semestar'] % 2 == 0)
