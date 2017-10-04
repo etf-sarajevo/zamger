@@ -110,13 +110,6 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 	$izborni = array();
 	$q110 = db_query("SELECT uoui.predmet FROM ugovoroucenju_izborni uoui, ugovoroucenju uou WHERE uoui.ugovoroucenju=uou.id AND uou.student=$userid and uou.akademska_godina=$zagodinu AND uou.semestar=$sem");
 	while(db_fetch1($q110, $predmet)) {
-		// Ako predmet već postoji u nizu zamger_predmeti_pao, preskačemo ga
-		$nasao = false;
-		foreach($zamger_predmeti_pao as $zpp => $naziv_predmeta) {
-			if ($zpp == $predmet) { $nasao=true; break; }
-		}
-		if ($nasao) continue;
-		
 		// Preskačemo predmete koje je student već položio
 		if ($ponovac == 1) {
 			$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=$predmet AND ocjena>5");
@@ -171,6 +164,8 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
 	if ($podaci) {
+		// Preskačemo izborne predmete iz trenutnog semestra jer su oni već dodati kroz Ugovor ili se student predomislio
+		if ($podaci['semestar'] == $sem1 || $podaci['semestar'] == $sem2) continue;
 		if ($podaci['semestar'] % 2 == 0)
 			$parni_izborni[] = $podaci;
 		else
