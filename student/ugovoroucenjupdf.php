@@ -89,7 +89,7 @@ if (db_num_rows($q20)<1) {
 }
 
 global $zamger_predmeti_pao;
-$uslov = ima_li_uslov($userid);
+$uslov = ima_li_uslov($userid, $proslagodina);
 if ($ponovac == 0 && !$uslov) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
