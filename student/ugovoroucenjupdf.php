@@ -142,11 +142,6 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 	// Uzimamo pasoš koji je važeći u tekućem NPPu
 	$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
-	// Nema ga - možda je izborni sa drugog odsjeka?
-	// Uzimamo drugi studij sa istom godinom usvajanja
-	if (!$podaci) 
-		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
-	
 	if ($podaci) {
 		if ($podaci['semestar'] % 2 == 0)
 			$parni_obavezni[] = $podaci;
@@ -154,6 +149,11 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 			$neparni_obavezni[] = $podaci;
 		continue;
 	}
+	
+	// Nema ga - možda je izborni sa drugog odsjeka?
+	// Uzimamo drugi studij sa istom godinom usvajanja
+	if (!$podaci) 
+		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
 	// Sada gledamo izborne predmete
 	if (!$podaci) 
