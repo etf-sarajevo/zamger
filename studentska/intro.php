@@ -371,11 +371,11 @@ if (param('akcija') == "potvrda") {
 	<p><b>Neobrađeni zahtjevi</b></p>
 	<table border="1" cellspacing="0" cellpadding="2">
 		<tr>
-			<th>R.br.</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link1?>">Prezime i ime studenta</a></th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link2?>">Broj indeksa</a></th><th>Tip zahtjeva</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link3?>">Datum</a></th><th>Opcije</th>
+			<th>R.br.</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link1?>">Prezime i ime studenta</a></th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link2?>">Broj indeksa</a></th><th>Tip zahtjeva</th><th><a href="?sta=studentska/intro&akcija=potvrda&sort=<?=$link3?>">Datum</a></th><th>Plaćanje</th><th>Opcije</th>
 		</tr>
 	<?
 
-	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
 	$rbr = 1;
 	while ($r200 = db_fetch_row($q200)) {
 		$ag = $r200[9];
@@ -385,7 +385,10 @@ if (param('akcija') == "potvrda") {
 		else
 			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
 
-		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td><td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
+		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td>";
+		
+		if ($r200[10] == 1) print "<td>&nbsp;</td>"; else print "<td><img src=\"static/images/32x32/markica.jpg\" width=\"30\" height=\"30\"></td>";	
+		print "<td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
 
 		// Dodatne kontrole
 		$error = 0;

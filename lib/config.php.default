@@ -46,6 +46,16 @@ $conf_uslov_predmeta = 2;
 $conf_uslov_ects_kredita = 12;
 $conf_uslov_kolizija = 5;
 
+
+// Broj statusnih uvjerenja i prepisa ocjena koje studenti mogu dobiti besplatno
+// Ako je nula, neće se prikazivati nikakve informacije o plaćanju, informišite studente
+// na neki drugi način (ili je sve besplatno)
+$conf_broj_besplatnih_potvrda = 5;
+
+// Cijena svakog narednog uvjerenja (u KM)
+$conf_cijena_potvrde = 2;
+
+
 // Pristupni podaci za LDAP
 // Zamger će koristiti anonimni pristup
 $conf_ldap_server = "localhost";

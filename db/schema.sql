@@ -2117,9 +2117,11 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
   `datum_zahtjeva` datetime default NULL,
   `status` int(11) default NULL,
   `akademska_godina` int(11) NOT NULL,
+  `besplatna` tinyint(4) NOT NULL default '1',
   PRIMARY KEY  (`id`),
   KEY `akademska_godina` (`akademska_godina`),
-  KEY `tip_potvrde` (`tip_potvrde`)
+  KEY `tip_potvrde` (`tip_potvrde`),
+  KEY `svrha_potvrde` (`svrha_potvrde`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
@@ -2693,8 +2695,9 @@ ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`i
 -- Constraints for table `zahtjev_za_potvrdu`
 --
 ALTER TABLE `zahtjev_za_potvrdu`
-  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_3` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
-  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_2` FOREIGN KEY (`tip_potvrde`) REFERENCES `tip_potvrde` (`id`);
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_4` FOREIGN KEY (`tip_potvrde`) REFERENCES `tip_potvrde` (`id`),
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_5` FOREIGN KEY (`svrha_potvrde`) REFERENCES `svrha_potvrde` (`id`),
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_6` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
 --
 -- Constraints for table `zavrsni`
