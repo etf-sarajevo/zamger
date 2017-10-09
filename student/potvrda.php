@@ -7,6 +7,8 @@
 function student_potvrda() {
 
 	global $userid;
+	
+	$aktuelna_godina = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
 
 
 	$akcija = param('akcija');
@@ -26,7 +28,7 @@ function student_potvrda() {
 	if ($akcija == "novi") {
 		$tip_potvrde = intval($_REQUEST['tip_potvrde']);
 		$svrha_potvrde = intval($_REQUEST['svrha_potvrde']);
-		$q320 = db_query("INSERT INTO zahtjev_za_potvrdu SET student=$userid, tip_potvrde=$tip_potvrde, svrha_potvrde=$svrha_potvrde, datum_zahtjeva=NOW(), status=1");
+		$q320 = db_query("INSERT INTO zahtjev_za_potvrdu SET student=$userid, tip_potvrde=$tip_potvrde, svrha_potvrde=$svrha_potvrde, datum_zahtjeva=NOW(), status=1, akademska_godina=$aktuelna_godina");
 
 		$id = intval(db_insert_id());
 		nicemessage("Zahtjev prihvaćen i čeka na obradu");
@@ -48,7 +50,7 @@ function student_potvrda() {
 	<p>Vaši aktuelni zahtjevi:</p>
 	<?
 
-	$q100 = db_query("SELECT zzp.id, tp.id, tp.naziv, zzp.svrha_potvrde, UNIX_TIMESTAMP(zzp.datum_zahtjeva), zzp.status FROM zahtjev_za_potvrdu as zzp, tip_potvrde as tp WHERE zzp.student=$userid and zzp.tip_potvrde=tp.id");
+	$q100 = db_query("SELECT zzp.id, tp.id, tp.naziv, zzp.svrha_potvrde, UNIX_TIMESTAMP(zzp.datum_zahtjeva), zzp.status FROM zahtjev_za_potvrdu as zzp, tip_potvrde as tp WHERE zzp.student=$userid and zzp.tip_potvrde=tp.id AND zzp.akademska_godina=$aktuelna_godina");
 	if (db_num_rows($q100) == 0)
 		print "<p>Nema otvorenih zahtjeva</p>\n";
 	else

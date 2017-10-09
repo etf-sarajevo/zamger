@@ -17,6 +17,9 @@ require_once("lib/utility.php"); // spol, rimski_broj
 // Ulazni parametar
 $student = intval($_REQUEST['student']);
 $svrha = intval($_REQUEST['svrha']);
+$id_ak_god = intval($_REQUEST['ag']);
+if ($id_ak_god == 0) 
+	$id_ak_god = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
 
 
 // Prava pristupa
@@ -60,9 +63,7 @@ if (db_num_rows($q120) < 1) {
 $r120 = db_fetch_row($q120);
 
 // Treba nam ID aktuelne godine
-$q200 = db_query("SELECT id, naziv FROM akademska_godina WHERE aktuelna=1");
-$id_ak_god = db_result($q200, 0, 0);
-$naziv_ak_god = db_result($q200, 0, 1);
+$naziv_ak_god = db_get("SELECT naziv FROM akademska_godina WHERE id=$id_ak_god");
 
 // Trenutno upisan na semestar:
 $q220 = db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, s.institucija from student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns where ss.student=$student and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id order by ag.naziv desc");

@@ -375,11 +375,13 @@ if (param('akcija') == "potvrda") {
 		</tr>
 	<?
 
-	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
 	$rbr = 1;
 	while ($r200 = db_fetch_row($q200)) {
+		$ag = $r200[9];
+		
 		if ($r200[3] == 1)
-			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&svrha=$r200[7]";
+			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&amp;svrha=$r200[7]&amp;ag=$ag";
 		else
 			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
 
@@ -387,7 +389,7 @@ if (param('akcija') == "potvrda") {
 
 		// Dodatne kontrole
 		$error = 0;
-		$q210 = db_query("SELECT count(*) FROM student_studij AS ss, akademska_godina AS ag WHERE ss.student=$r200[6] AND ss.akademska_godina=ag.id AND ag.aktuelna=1");
+		$q210 = db_query("SELECT count(*) FROM student_studij AS ss WHERE ss.student=$r200[6] AND ss.akademska_godina=$ag");
 		if (db_result($q210,0,0) == 0) {
 			print " - <font color=\"red\">trenutno nije upisan na studij!</font>"; $error=1;
 		}

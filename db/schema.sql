@@ -1977,7 +1977,6 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
   `akademska_godina` int(11) NOT NULL,
   `studij` int(11) NOT NULL,
   `semestar` int(5) NOT NULL,
-  `kod` varchar(20) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
@@ -2117,7 +2116,10 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
   `svrha_potvrde` int(11) default NULL,
   `datum_zahtjeva` datetime default NULL,
   `status` int(11) default NULL,
-  PRIMARY KEY  (`id`)
+  `akademska_godina` int(11) NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `tip_potvrde` (`tip_potvrde`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
@@ -2686,6 +2688,13 @@ ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandi
 
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+
+--
+-- Constraints for table `zahtjev_za_potvrdu`
+--
+ALTER TABLE `zahtjev_za_potvrdu`
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_3` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`),
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_2` FOREIGN KEY (`tip_potvrde`) REFERENCES `tip_potvrde` (`id`);
 
 --
 -- Constraints for table `zavrsni`
