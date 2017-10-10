@@ -56,16 +56,18 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	
 	// Svi predmeti koje je student položio
 	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student AND ko.ocjena>5");
-	// TODO: Ovdje bi moglo doći do problema na drugom ciklusu gdje bi se predmeti položeni sa prvog ciklusa mogli posmatrati kao predmeti sa drugog odsjeka, obzirom na prethodni commit
 	
 	$student_slusao = db_query_varray("SELECT DISTINCT pk.predmet FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id");
 	$student_pao = array();
 	foreach($student_slusao as $predmet)
 		if (!array_key_exists($predmet, $student_polozio)) $student_pao[] = $predmet;
 	
+	// Pokušavam filtrirati predmete sa ranijih ciklusa studija
+	$godina_upisa = db_get("SELECT ss.akademska_godina FROM student_studij ss WHERE ss.student=$student AND ss.studij=$studij ORDER BY ss.akademska_godina LIMIT 1");
+	
 	// Predmeti koje je student položio s drugih odsjeka
 	$drugi_odsjek = array();
-	foreach($student_polozio as $predmet => $ocjena) {
+	foreach($student_slusao as $predmet) {
 		$pronasao = false;
 		foreach($cache_planova_studija[$plan_studija] as $slog) {
 			if ($slog['obavezan'] == 1 && $slog['predmet']['id'] == $predmet) {
@@ -85,7 +87,8 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		if (!$pronasao) {
 			$drugi_odsjek[$predmet] = db_query_assoc("SELECT pk.semestar semestar, pp.ects ects, pp.naziv naziv
 				FROM student_predmet sp, ponudakursa pk, pasos_predmeta pp 
-				WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.predmet=pp.predmet");
+				WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.predmet=pp.predmet AND pk.akademska_godina>=$godina_upisa");
+			if ($drugi_odsjek[$predmet] === false) unset($drugi_odsjek[$predmet]);
 		}
 	}
 	
