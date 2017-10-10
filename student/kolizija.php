@@ -135,7 +135,8 @@ function student_kolizija() {
 
 			// Student nije slušao dovoljan broj ponuđenih izbornih predmeta
 			// Dešava se u slučaju da je izabran predmet sa drugog odsjeka
-			if (db_num_rows($q60) < $broj_izbornih[$plan_izborni_slot]) {
+			$broj_sa_maticnog = db_num_rows($q60);
+			if ($broj_sa_maticnog < $broj_izbornih[$plan_izborni_slot]) {
 				$q60 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as pis, pasos_predmeta as pp where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
 				$naziv="Izborni predmet ("; // Kombinovani naziv svih predmeta
 				$polozio=0;
@@ -150,7 +151,7 @@ function student_kolizija() {
 					if ($ima_ocjenu > 0) $polozio++;
 				}
 	
-				if ($polozio < $izborni[$plan_izborni_slot]) { // nije polozio dovoljno izbornih predmeta
+				if ($polozio < $broj_izbornih[$plan_izborni_slot]) { // nije polozio dovoljno izbornih predmeta
 					// Spisak izbornih
 					$validni_izborni = db_query_varray("select pp.predmet from plan_izborni_slot as pis, plan_studija_predmet as psp, pasos_predmeta as pp where psp.plan_studija=$najnoviji_plan and psp.semestar<=$trenutni_semestar and psp.obavezan=0 and psp.plan_izborni_slot=pis.id and psp.pasos_predmeta=pp.id");
 
@@ -163,7 +164,7 @@ function student_kolizija() {
 							$pronadjen = true;
 
 							// Da li ga je položio?
-							$ima_ocjenu = db_get("select count(*) from konacna_ocjena where student=$userid and predmet=$r72[0] and ocjena>5");
+							$ima_ocjenu = db_get("select count(*) from konacna_ocjena where student=$userid and predmet=$id and ocjena>5");
 							if ($ima_ocjenu == 0) {
 								$predmet_naziv[$id] = $naziv;
 								$predmet_ects[$id] = $ects;
