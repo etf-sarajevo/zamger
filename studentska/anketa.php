@@ -287,6 +287,15 @@ function studentska_anketa(){
 			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
 			zamgerlog("dodano pitanje na anketi $anketa", 2);
 			zamgerlog2("dodano pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 2000);
+			</script>
+			<? 
+			return;
 		}
 		
 		// Osnovni podaci
@@ -443,7 +452,7 @@ function studentska_anketa(){
 			<tr><td colspan='3'>Odaberite postojeće pitanje za izmjenu: </td> </tr>
 			<tr><td colspan='3'><?=$lista_pitanja?></td> </tr>
 			<tr><td colspan='3'>Novo pitanje: </td> </tr>
-			<form name='' action="<?=genuri()?>&akcija=edit&anketa=<?=$anketa?>" method='POST'>
+			<?=genform("POST")?>
 			<input type='hidden' name='subakcija' value='novo_pitanje'>
 			<tr >
 				<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='100' /> </td> <td> Tip: <?=dropdown_anketa(1)?></td>
