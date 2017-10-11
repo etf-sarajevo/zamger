@@ -460,7 +460,7 @@ function ubaci_pitanje($id, $tip, $tekst, $bgcolor) {
 						$dopis = " (dopisati): <input type=\"text\" size=\"30\" name=\"dopis$id-$r300[0]\">";
 					else $dopis="";
 	
-					if ($pitanje['tip_pitanja']==3) { // radio button
+					if ($tip==3) { // radio button
 						print "<input type='radio' name='izbor$id' value='$r300[0]'> $r300[1]$dopis<br>\n";
 					} else {
 						print "<input type='checkbox' name='izbor$id-$r300[0]'> $r300[1]$dopis<br>\n";
