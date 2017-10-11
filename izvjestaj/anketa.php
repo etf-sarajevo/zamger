@@ -176,6 +176,7 @@ function izvjestaj_anketa() {
 		// kupimo pitanja
 		$q130 = db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$anketa and p.tip_pitanja=1 order by p.id");
 
+		if (db_num_rows($q130) > 0) {
 		?>
 		
 		<table width="800px">
@@ -190,6 +191,7 @@ function izvjestaj_anketa() {
 				 <td>&nbsp;</td><td bgcolor="#FF0000" width='350px'>&nbsp;MAX </td>
 			</tr>
 		<?
+		}
 
 		$i=0;
 		while ($r130 = db_fetch_row($q130)) {
@@ -232,19 +234,31 @@ function izvjestaj_anketa() {
 			<tr> 
 				<td colspan="2"> <hr/>  </td>
 			</tr>
-			<tr > 
-				 <td  > </td> <td bgcolor="#FF0000" width='350px'> &nbsp;MAX </td>
-			</tr>
 		<?
 		$i=0;
 		while ($r200 = db_fetch_row($q200)) {
 			$id_pitanja=$r200[0];
 			$tekst=$r200[1];
 			$ispis_odgovori = "";
+			
+			$q205 = db_query("SELECT COUNT(oi.rezultat) FROM anketa_odgovor_izbori oi WHERE oi.pitanje=$id_pitanja GROUP BY oi.izbor_id");
+			$max_odgovora = 0;
+			while(db_fetch1($q205, $broj))
+				if ($broj > $max_odgovora) $max_odgovora = $broj;
 
 			$q210 = db_query("select ip.id, ip.izbor, ip.dopisani_odgovor, count(oi.rezultat) from anketa_izbori_pitanja as ip, anketa_odgovor_izbori as oi where ip.pitanje=$id_pitanja and oi.pitanje=$id_pitanja and oi.izbor_id=ip.id group by ip.id");
 			while ($r210 = db_fetch_row($q210)) {
-				$ispis_odgovori .= $r210[1]." - ".$r210[3]." (".(round($r210[3]/$broj_anketa, 4)*100)."%)<br>\n";
+	
+				$procenat = round($r210[3]/$broj_anketa, 4)*100;
+				$procenat_sirina = round($r210[3]/$max_odgovora, 4)*100;
+				$ispis_odgovori .= "<table border='0' width='350px'>
+				<tr> 
+					<td height='30' width='$procenat_sirina%' bgcolor=\"#CCCCFF\"> &nbsp;</td>
+					<td width='" . (100-$procenat_sirina) . "%'>&nbsp;</td>
+				</tr></table>";
+				$ispis_odgovori .= $r210[1]." - ".$r210[3]." ($procenat%)<br>\n";
+				
+				
 				if ($r210[2]==1) {
 					$q220 = db_query("select odgovor from anketa_odgovor_dopisani where pitanje=$id_pitanja");
 					if (db_num_rows($q220)==0) continue;
