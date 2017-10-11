@@ -298,6 +298,51 @@ function studentska_anketa(){
 			return;
 		}
 		
+		// dodavanje odgovora na pitanja tipa "višestruki izbor"
+		if($_POST['subakcija']=="dodaj_odgovor" && check_csrf_token()) {
+			$id_pitanja = int_param('id_pitanja');
+			$tekst_odgovora = db_escape(param('tekst_odgovora'));
+			
+			$test = db_get("SELECT tip_pitanja FROM anketa_pitanje WHERE id=$id_pitanja");
+			if ($test != 3 && $test != 4) {
+				niceerror("Neispravan id pitanja");
+				return;
+			}
+			
+			db_query("INSERT INTO anketa_izbori_pitanja SET pitanje=$id_pitanja, izbor='$tekst_odgovora', dopisani_odgovor=0");
+			print " <center> <span style='color:#009900'> Uspješno dodan odgovor na pitanje! </span> </center>";
+			zamgerlog("dodan odgovor na pitanje na anketi $anketa", 2);
+			zamgerlog2("dodan odgovor na pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
+		}
+		
+		// dodavanje odgovora na pitanja tipa "višestruki izbor"
+		if($_POST['subakcija']=="obrisi_odgovor" && check_csrf_token()) {
+			$id_odgovora = int_param('id_odgovora');
+						
+			db_query("DELETE FROM anketa_izbori_pitanja WHERE id=$id_odgovora");
+			print " <center> <span style='color:#009900'> Uspješno obrisan odgovor na pitanje! </span> </center>";
+			zamgerlog("obrisan odgovor na pitanje na anketi $anketa", 2);
+			zamgerlog2("obrisan odgovor na pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
+		}
+		
 		// Osnovni podaci
 		
 		$id_ankete = intval($_REQUEST['anketa']);
@@ -314,7 +359,7 @@ function studentska_anketa(){
 		$broj_pitanja = db_result($q203,0,0);
 		
 		//kupimo pitanja
-		$q202=db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
+		$q202=db_query("SELECT p.id, p.tekst,t.tip, t.id FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
 		
 		// id aktelne akademske godine
 		$q010 = db_query("select id,naziv from akademska_godina where aktuelna=1");
@@ -404,14 +449,14 @@ function studentska_anketa(){
 		if($editable == 0){
 			print "</tr>";
 			$i=1;
-			while ($r202 = db_fetch_row($q202)) {
+			while (db_fetch3($q202, $id_pitanja, $tekst, $tip)) {
 				?>
 			<tr>
 				<td colspan='2'><hr/></td>
 			</tr>
 			<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""; ?>>
-				<td><?=$i?>. <?=$r202[1]?></td>
-				<td width='150'><?=$r202[2]?></td>
+				<td><?=$i?>. <?=$tekst?></td>
+				<td width='150'><?=$tip?></td>
 			</tr>
 				<?
 				$i++;
@@ -419,7 +464,7 @@ function studentska_anketa(){
 		} else {
 			print "<td>  </td></tr>";
 			$i=1;
-			while ($r202 = db_fetch_row($q202)) {
+			while (db_fetch4($q202, $id_pitanja, $tekst, $tip, $id_tipa)) {
 				print genform("POST");
 				?>
 				<tr>
@@ -427,15 +472,48 @@ function studentska_anketa(){
 				</tr>
 				<input type='hidden' name='subakcija' value='edit_pitanje'>
 				<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""?>>
-				<input type='hidden' name='column_id' value='<?=$r202[0]?>'>
-					<td><input name ='tekst_pitanja' size='100' value='<?=$r202[1]?>'/> </td> 
-					<td><?=dropdown_anketa($r202[2])?></td>
+				<input type='hidden' name='column_id' value='<?=$id_pitanja?>'>
+					<td><input name ='tekst_pitanja' size='100' value='<?=$tekst?>'/> </td> 
+					<td><?=dropdown_anketa($tip)?></td>
 					<td><input type='submit' value='Pošalji '><input type='submit' name='obrisi'  value=' Obriši '></td>
 				</tr>
 				</form>
 				<?
+				
+				// Ponuđeni odgovori na pitanja	
+				if ($id_tipa == 3 || $id_tipa == 4) {
+					?>
+					<tr><td colspan="3">Ponuđeni odgovori na pitanje:<ul>
+					<?
+					$odgovori = db_query_vassoc("SELECT id, izbor FROM anketa_izbori_pitanja WHERE pitanje=$id_pitanja");
+					foreach($odgovori as $id => $tekst) {
+						?>
+						<?=genform("POST")?>
+						<input type='hidden' name='subakcija' value='obrisi_odgovor'>
+						<input type='hidden' name='id_odgovora' value='<?=$id?>'>
+						<li><?=$tekst?> - <input type="submit" value=" Obriši ">
+						</li>
+						</form>
+						<?
+					}
+					?>
+					</ul>
+					</td></tr>
+					
+					<?=genform("POST")?>
+					<input type='hidden' name='subakcija' value='dodaj_odgovor'>
+					<input type='hidden' name='id_pitanja' value='<?=$id_pitanja?>'>
+					<tr>
+						<td><input type="text" name="tekst_odgovora" size="100" value=""></td>
+						<td colspan="2"><input type="submit" value=" Dodaj odgovor "></td>
+					</tr>
+					</form>
+					<?
+				}
+				
 				$i++;
-			}	
+			}
+			
 			$q284 = db_query("SELECT id, tekst, tip_pitanja FROM anketa_pitanje");
 			$lista_pitanja = "<select id = 'pitanja' name='pitanja' onChange=\"javascript:setVal();\">";
 			$Counter=0;
