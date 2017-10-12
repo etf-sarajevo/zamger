@@ -179,16 +179,16 @@ while ($r18 = db_fetch_row($q18)) {
 if ($id == "svi") {
 	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka where opseg=3 or opseg=4 or opseg=5 order by vrijeme desc limit $broj_poruka");
 	while ($r100 = db_fetch_row($q100)) {
-		$id = $r100[0];
+		$id_poruke = $r100[0];
 		$opseg = $r100[2];
 		$primalac = $r100[3];
 		
 		// Poruka je ok
 		if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
-		$vrijeme_poruke[$id]=$r100[1];
+		$vrijeme_poruke[$id_poruke]=$r100[1];
 
 		// Fino vrijeme
-		$vr = $vrijeme_poruke[$id];
+		$vr = $vrijeme_poruke[$id_poruke];
 		$vrijeme="";
 	//	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
 	//	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
@@ -221,12 +221,12 @@ if ($id == "svi") {
 		else
 			$title="Poruka";
 
-		$code_poruke[$id]="<item>
-			<guid isPermaLink=\"false\">".$id."</guid>
+		$code_poruke[$id_poruke]="<item>
+			<guid isPermaLink=\"false\">".$id_poruke."</guid>
 			<title>$title: $naslov ($vrijeme)</title>
-			<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
+			<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id_poruke</link>
 			<description>Poslao: $posiljalac</description>
-			<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+			<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id_poruke])."</pubDate>
 		</item>\n";
 	}
 
@@ -247,7 +247,7 @@ if ($id == "svi") {
 	$br = 0;
 	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc limit $broj_poruka");
 while ($r100 = db_fetch_row($q100)) {
-	$id = $r100[0];
+	$id_poruke = $r100[0];
 	$opseg = $r100[2];
 	$primalac = $r100[3];
 	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
@@ -268,10 +268,10 @@ while ($r100 = db_fetch_row($q100)) {
 
 	// Poruka je ok
 	if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
-	$vrijeme_poruke[$id]=$r100[1];
+	$vrijeme_poruke[$id_poruke]=$r100[1];
 
 	// Fino vrijeme
-	$vr = $vrijeme_poruke[$id];
+	$vr = $vrijeme_poruke[$id_poruke];
 	$vrijeme="";
 //	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
 //	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
@@ -304,12 +304,12 @@ while ($r100 = db_fetch_row($q100)) {
 	else
 		$title="Poruka";
 
-	$code_poruke[$id]="<item>
-		<guid isPermaLink=\"false\">".$id."</guid>
+	$code_poruke[$id_poruke]="<item>
+		<guid isPermaLink=\"false\">".$id_poruke."</guid>
 		<title>$title: $naslov ($vrijeme)</title>
-		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
+		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id_poruke</link>
 		<description>Poslao: $posiljalac</description>
-		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id_poruke])."</pubDate>
 	</item>\n";
 }
 }
@@ -437,7 +437,7 @@ header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_shift(array_values($vr
 <?
 
 
-foreach ($vrijeme_poruke as $id=>$vrijeme) {
+foreach ($vrijeme_poruke as $id_poruke=>$vrijeme) {
 	if ($count==0) {
 		// Polje pubDate u zaglavlju sadrži vrijeme zadnje izmjene tj. najnovije poruke
 
@@ -447,7 +447,7 @@ foreach ($vrijeme_poruke as $id=>$vrijeme) {
 		print "        <pubDate>".date("D, j M Y H:i:s O", $vrijeme)."</pubDate>\n";
 	}
 
-	print $code_poruke[$id];
+	print $code_poruke[$id_poruke];
 	$count++;
 	if ($count==$broj_poruka) break; // prikazujemo samo prvih $broj_poruka poruka
 }
