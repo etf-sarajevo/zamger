@@ -348,7 +348,7 @@ if ($id == "svi")
 	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
 
 else 
-	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
+	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag and (select count(*) from konacna_ocjena ko where ko.student=$userid and ko.predmet=p.id and ko.ocjena>5)=0");
 while ($r200 = db_fetch_row($q200)) {
 	$course_id = $r200[0];
 
