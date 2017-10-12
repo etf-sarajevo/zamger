@@ -100,8 +100,11 @@ while ($r15 = db_fetch_row($q15)) {
 	if (db_result($q15a,0,0)>0) continue;
 
 	// Ima li kakvih rezultata?
-	$q16 = db_query("select count(*) from ispitocjene where ispit=$r15[0]");
-	if (db_result($q16,0,0)==0) {
+	if ($id == "svi")
+		$q16 = db_query("select ocjena from ispitocjene where ispit=$r15[0]");
+	else
+		$q16 = db_query("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
+	if (db_num_rows($q16)==0) {
 		$q17 = db_query("select count(*) from ispit_termin where ispit=$r15[0]");
 		if (db_result($q17,0,0)>0) {
 			$vrijeme_poruke["i".$r15[0]] = $r15[3];
@@ -117,11 +120,12 @@ while ($r15 = db_fetch_row($q15)) {
 	else {
 		if ($id == "svi") $modul = "izvjestaj/predmet"; else $modul = "student/predmet";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+		if ($id == "svi") $dodaj_bodove = ""; else $dodaj_bodove = "Dobili ste ".mysql_result($q16,0,0)." bodova! ";
 		$code_poruke["i".$r15[0]] = "<item>
 		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=$modul&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
-		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+		<description><![CDATA[$dodaj_bodove Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
 		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["i".$r15[0]])."</pubDate>
 	</item>\n";
 	}
