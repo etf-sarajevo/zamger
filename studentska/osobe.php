@@ -16,6 +16,7 @@ require_once("lib/student_predmet.php");
 require_once("lib/student_studij.php"); // Za ima_li_uslov
 require_once("lib/ws.php"); // Web service za parsiranje XMLa
 require_once("lib/formgen.php"); // datectrl, db_dropdown
+require_once("lib/predmet.php"); // kreiraj_ponudu_kursa
 
 
 // Provjera privilegija
