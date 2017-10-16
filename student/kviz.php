@@ -62,7 +62,7 @@ print "<h2>Kvizovi</h2>\n";
 
 // Spisak grupa u kojima je student
 $upit_labgrupa = "";
-$q20 = db_query("select sl.labgrupa from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0");
+$q20 = db_query("select sl.labgrupa from labgrupa as l, student_labgrupa as sl where sl.student=$userid and sl.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
 while ($r20 = db_fetch_row($q20)) {
 	$upit_labgrupa .= "or labgrupa=$r20[0] ";
 }
