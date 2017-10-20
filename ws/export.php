@@ -50,6 +50,7 @@ function ws_export() {
 			
 			// Koristimo broj 11 kao oznaku za ocjenu IO
 			if ($podaci_ocjene['ocjena'] == 11) $podaci_ocjene['ocjena'] = "IO";
+			if ($podaci_ocjene['predmet'] == "Završni rad (Master)") $podaci_ocjene['predmet'] = "Završni rad";
 			
 			$isss_data = array ( 
 				"predmet" => $podaci_ocjene['predmet'], 
@@ -312,22 +313,23 @@ function ws_export() {
 						$odgovor['tekst'] = 'Student u ISSSu se razlikuje';
 						$odgovor['status'] = 'greska';
 						$odgovor['isss_id_studenta'] = $data['isss_id_studenta'];
+						$odgovor['godina'] = $id_godine;
 						$odgovor['razlike'] = $data['razlike'];
 					}
 					break;
 				}
 				else if ($warning['code'] == 'unknown_state') {
-					$odgovor['tekst'] = 'Nepoznata država';
+					$odgovor['tekst'] = 'Nepoznata država '.$warning['state'];
 					$odgovor['status'] = 'greska';
 					break;
 				}
 				else if ($warning['code'] == 'unknown_region') {
-					$odgovor['tekst'] = 'Nepoznat kanton';
+					$odgovor['tekst'] = 'Nepoznat kanton '.$warning['region']." ".$warning['state'];
 					$odgovor['status'] = 'greska';
 					break;
 				}
 				else if ($warning['code'] == 'unknown_municipality') {
-					$odgovor['tekst'] = 'Nepoznata općina';
+					$odgovor['tekst'] = 'Nepoznata općina '.$warning['municipality']." ".$warning['region']." ".$warning['state'];
 					$odgovor['status'] = 'greska';
 					break;
 				} else {
@@ -647,6 +649,7 @@ function daj_podatke_studenta($id_studenta) {
 			$podaci_studenta['opcina'] = "Centar"; // Ako je mjesto Sarajevo i općina nije navedena
 		$podaci_studenta['opcina'] = zamger2isss("opcina_popravke", $podaci_studenta['opcina']);
 		$podaci_studenta['drzava'] = db_get("SELECT naziv FROM drzava WHERE id=".$adresa_mjesto['drzava']);
+		if ($podaci_studenta['drzava'] == "Kosovo") $podaci_studenta['drzava'] = "Srbija";
 	} else {
 		// Ako nije setovano mjesto, uzećemo da je to Sarajevo-Centar
 		$podaci_studenta['mjesto'] = "Sarajevo";
@@ -789,6 +792,7 @@ $isss_sifrarnik_opcina_popravke = array(
 	"Prozor / Prozor-Rama" => "Prozor-Rama",
 	"Doboj - Istok" => "Doboj Istok",
 	"Doboj - Jug" => "Doboj Jug",
+	"Bosanski Šamac / Šamac" => "Šamac",
 	"Gornji Vakuf" => "Gornji Vakuf-Uskoplje"
 );
 
@@ -802,6 +806,7 @@ $isss_sifrarnik_kanton_popravke = array(
 	"RS" => "Republika Srpska",
 	"Hercegovačko Neretvanski kanton" => "Hercegovačko-Neretvanski kanton",
 	"Zapadno Hercegovački kanton" => "Zapadno-Hercegovački kanton",
+	"Hercegbosanski kanton" => "Livanjski kanton",
 	"Srednjebosanski kanton" => "Srednjobosanski kanton"
 );
 
