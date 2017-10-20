@@ -97,6 +97,10 @@ function student_status(student, status, poruka) {
 
 // Provjera/slanje jedne stavke
 function servis_single(stavka, tip, provjera) {
+	console.log("stavka ");
+	console.log(stavka);
+	console.log (" tip "+tip+" provjera "+provjera);
+
 	var xmlhttp = new XMLHttpRequest();
 	var url = export_url + "?tip=" + tip;
 	if (provjera) url = url + "&akcija=provjera";
@@ -106,6 +110,9 @@ function servis_single(stavka, tip, provjera) {
 		
 	else if (tip == "upis_vise" || tip == "ciscenje_upis_vise") 
 		url += "&student=" + stavka.student + "&studij=" + stavka.studij + "&godina=" + stavka.godina + "&semestar=" + stavka.semestar;
+		
+	else if (tip == "ciscenje_upis_prva") 
+		url += "&student=" + stavka.student + "&godina=" + stavka.akademska_godina;
 		
 	else if (tip == "promjena_podataka") {
 		if (provjera) url = export_url + "?tip=daj_razlike&student=" + stavka.student
@@ -127,7 +134,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst == 'Student u ISSSu se razlikuje') {
 						var poruka = {};
 						poruka.student = stavka.student;
-						poruka.akademska_godina = stavka.akademska_godina;
+						poruka.akademska_godina = stavka.godina;
 						poruka.razlike = result.data.razlike;
 						poruka.isss_id_studenta = result.data.isss_id_studenta;
 						razlike_poruke.push(poruka);
@@ -137,7 +144,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst.substring(0,24) == 'Unesen je različit datum') {
 						var poruka = {};
 						poruka.student = stavka.student;
-						poruka.akademska_godina = stavka.akademska_godina;
+						poruka.akademska_godina = stavka.godina;
 						poruka.predmet = stavka.predmet;
 						var datum_isss = result.data.tekst.substring(27,37);
 						var datum_zamger = result.data.tekst.substring(40);
@@ -258,16 +265,18 @@ function prikazi_razlike(code, tip) {
 	
 	var b1 = document.getElementById('popraviZamger');
 	var b2 = document.getElementById('popraviIsss');
-	var b3 = document.getElementById('ocistiRazlike');
+	var b3 = document.getElementById('ocistiStudenta');
 	b1.disabled = false; b2.disabled = false; b3.disabled = false;
 
 	b1.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_zamger(code, tip); }
 	b2.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_isss(code, tip); }
 	b3.onclick = function() { 
+		console.log(obj.student);
 		b1.disabled = true; b2.disabled = true; b3.disabled = true;
 		var za_ciscenje_tmp = za_ciscenje.slice();
 		za_ciscenje = [];
-		za_ciscenje.push(obj.student);
+		za_ciscenje.push(obj);
+		console.log(za_ciscenje);
 		servis_ciscenje('upis_prva');
 		za_ciscenje = za_ciscenje_tmp.slice();
 	};
@@ -422,7 +431,7 @@ if (param('akcija') == "novi_studenti") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
 		</div>
@@ -598,7 +607,7 @@ if (param('akcija') == "ocjene_predmet") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
 		</div>
@@ -650,7 +659,7 @@ if (param('akcija') == "promjena_podataka") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
 		</div>
