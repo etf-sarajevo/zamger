@@ -8,6 +8,7 @@ function izvjestaj_genijalci() {
 
 require_once("lib/utility.php"); // procenat
 
+
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
@@ -101,7 +102,9 @@ while ($r1 = db_fetch_row($q1)) {
 	$brindexa[$id_studenta]=$r1[3];
 	$nacinstudiranja[$id_studenta]=$r1[4];
 	
-	$q2 = db_query("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and ko.ocjena>5 and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
+	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, pk.semestar, pp.naziv FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts, pasos_predmeta pp
+	WHERE ko.student=$r1[0] AND ko.predmet=p.id AND ko.ocjena>5 AND sp.student=$r1[0] AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ko.akademska_godina AND ko.akademska_godina<=$ak_god AND pk.studij=st.id AND st.tipstudija=ts.id $whereprosliciklus AND ko.pasos_predmeta=pp.id
+	order by pk.semestar");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = db_fetch_row($q2)) {
 		$sumaects += $r2[1];
