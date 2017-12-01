@@ -688,7 +688,7 @@ $wiring = array(
 		"path" => "homework/course/{course}", 
 		"description" => "List of homeworks on course", 
 		"method" => "GET", 
-		"code" => "return Homework::fromCourse(\$course);", 
+		"code" => "return Homework::fromCourse(\$course, AcademicYear::getCurrent()->id);", 
 		"acl" => "teacherLevel(\$course, 0)",
 		"hateoas_links" => array(
 			"homework" => array("href" => "homework/{id}"),
