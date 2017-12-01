@@ -77,8 +77,14 @@ DB::connect();
 
 // Web service for authentication
 if ($route == "auth") { 
-	$login = DB::escape($_POST['login']);
-	$pass = $_POST['pass'];
+	if (isset($_POST['login'])) {
+		$login = DB::escape($_POST['login']);
+		$pass = $_POST['pass'];
+	} else {
+		$obj = json_decode(file_get_contents('php://input'), true);
+		$login = $obj['login'];
+		$pass = $obj['pass'];
+	}
 	$result = array();
 
 	$status = Session::login($login, $pass);
@@ -299,7 +305,8 @@ else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
 
 
 if (!array_key_exists('encoding', $wire))
-	echo json_encode($result, Config::$json_options);
+//	echo json_encode($result, Config::$json_options);
+	echo json_encode($result);
 else
 	echo $result; // Currently the only option is to skip encoding completely
 DB::disconnect();
