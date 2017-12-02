@@ -762,6 +762,16 @@ $wiring = array(
 		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
 	),
 	
+	array(
+		"path" => "homework/{id}/{asgn}/getAll", 
+		"description" => "Get homework files of all students for given assignment", 
+		"method" => "GET",
+		"params" => array( "filenames" => "string" ),
+		"encoding" => "none", // Skip JSON encoding result
+		"code" => "header('Content-Type: application/zip'); \$zip = Assignment::getAllAssignments(\$id, \$asgn, \$filenames); return file_get_contents(\$zip->fullPath());", 
+		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
+	),
+	
 	
 	
 	// HOMEWORK

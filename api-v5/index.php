@@ -305,8 +305,8 @@ else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
 
 
 if (!array_key_exists('encoding', $wire))
-//	echo json_encode($result, Config::$json_options);
-	echo json_encode($result);
+	echo json_encode($result, Config::$json_options);
+//	echo json_encode($result);
 else
 	echo $result; // Currently the only option is to skip encoding completely
 DB::disconnect();

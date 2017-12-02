@@ -5,10 +5,10 @@
 // Opis: jedan zadatak u sklopu zadaće
 
 
+require_once(Config::$backend_path."core/CourseOffering.php");
 require_once(Config::$backend_path."lib/File.php");
 require_once(Config::$backend_path."lms/homework/Homework.php");
-require_once(Config::$backend_path."core/CourseOffering.php");
-require_once(Config::$backend_path."core/StudentScore.php");
+require_once(Config::$backend_path."lms/attendance/Group.php");
 
 abstract class AssignmentStatus {
 	const NotSent = 0;
@@ -47,6 +47,40 @@ class Assignment {
 		$asgn->student = new UnresolvedClass("Person", $asgn->student, $asgn->student);
 		$asgn->author = new UnresolvedClass("Person", $asgn->author, $asgn->author);
 		return $asgn;
+	}
+	
+	// Construct a ZIP file with all assignments
+	public static function getAllAssignments($homeworkId, $assignmentNumber, $filenamesOption) {
+		$hw = Homework::fromId($homeworkId);
+		$hw->ProgrammingLanguage->resolve();
+		$ext = $hw->ProgrammingLanguage->extension;
+		$allStudents = Group::virtualForCourse($hw->CourseUnit->id, $hw->AcademicYear->id);
+		
+		$files = $filenames = array();
+		foreach($allStudents->members as $member) {
+			$asgn = Assignment::fromStudentHomeworkNumber($member->student->id, $homeworkId, $assignmentNumber);
+			$asgn->Homework = $hw; // Avoid resolving homework
+			$files[] = $asgn->getFile();
+			
+			if ($filenamesOption == "fullname") {
+				$member->student->resolve();
+				$filenames[] = File::cleanUpFilename( $member->student->surname . "_" .$member->student->name . "_" . $member->student->studentIdNr . $ext);
+			}
+			else if ($filenamesOption == "login") {
+				$member->student->resolve();
+				$filenames[] = File::cleanUpFilename( $member->student->login . $ext);
+			}
+			else if ($filenamesOption == "person_id") {
+				$filenames[] = $member->student->id . $ext;
+			}
+			else {
+				$filenames[] = $asgn->id . $ext;
+			}
+		}
+		
+		$zip = File::temporary(".zip");
+		$zip->addToZip($files, $filenames);
+		return $zip;
 	}
 	
 	// Method for submitting homework intended for students
@@ -172,7 +206,7 @@ class Assignment {
 		if (get_class($this->Homework) == "UnresolvedClass")
 			$this->Homework->resolve();
 		
-		// Get CoureOffering for student
+		// Get CourseOffering for student
 		$co = CourseOffering::forStudent($this->student->id, $this->Homework->CourseUnit->id, $this->Homework->AcademicYear->id);
 		
 		// Construct StudentScore object
