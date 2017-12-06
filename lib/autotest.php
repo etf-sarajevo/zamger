@@ -563,6 +563,54 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 		zamgerlog2("importovan .autotest fajl", $zadaca, $zadatak);
 	}
 	
+	if ($_POST['subakcija'] == "boduj" && check_csrf_token()) {
+		global $userid; // korisnik koji vrši ocjenjivanje
+	
+		$zadatak = intval($_REQUEST['zadatak']);
+		$zadatak_bodova = floatval(str_replace(",", ".", $_REQUEST['zadatak_bodova']));
+		
+		$testovi = db_query_varray("SELECT id FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak");
+		$broj_testova = count($testovi);
+		if ($broj_testova < 1) {
+			niceerror("Nije definisan nijedan test za ovaj zadatak.");
+			return 0;
+		}
+		
+		$q10 = db_query("SELECT predmet, akademska_godina, komponenta FROM zadaca WHERE id=$zadaca");
+		db_fetch3($q10, $predmet, $akademska_godina, $komponenta);
+		
+		$polazni_status = 4; // 4 - potrebno pregledati
+		$ciljni_status = 5; // 5 - pregledana
+		
+		// Pripremamo id-ove testova za SQL upit
+		$testovi = "(" . join(",", $testovi) . ")";
+		
+		$q20 = db_query("SELECT DISTINCT student FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak");
+		while (db_fetch1($q20, $student)) {
+			// Filename, izlaz skripte, status
+			$q40 = db_query("SELECT izvjestaj_skripte, filename, status FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$student ORDER BY id DESC LIMIT 1");
+			if (db_result($q40,0,2) != $polazni_status) continue;
+			$izvjestaj_skripte = db_escape_string(db_result($q40,0,0));
+			$filename          = db_escape_string(db_result($q40,0,1));
+			
+			$broj_uspjesnih = db_get("SELECT COUNT(*) FROM autotest_rezultat WHERE student=$student AND autotest in $testovi AND status='ok'");
+			$student_bodova = round($zadatak_bodova * ($broj_uspjesnih / $broj_testova), 2);
+			$poruka = "$broj_uspjesnih/$broj_testova testova ($student_bodova bodova)";
+
+			db_query("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$ciljni_status, bodova=$student_bodova, izvjestaj_skripte='$izvjestaj_skripte', vrijeme=NOW(), komentar='$poruka', filename='$filename', userid=$userid");
+
+			// Odredjujemo ponudu kursa (za update komponente) - koja može biti različita za svakog studenta
+			$ponudakursa = db_get("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$akademska_godina");
+
+			update_komponente($student, $ponudakursa, $komponenta);
+			
+			$ime_prezime = db_get("SELECT CONCAT(ime, CONCAT(' ', prezime)) FROM osoba WHERE id=$student");
+			print "$ime_prezime - $poruka<br>";
+		}
+		nicemessage("Automatsko bodovanje završeno.");
+		return 0;
+	}
+	
 	$q200 = db_query("SELECT naziv, zadataka, predmet, akademska_godina FROM zadaca WHERE id=$zadaca");
 	if (db_num_rows($q200) < 1) {
 		niceerror("Nepoznata zadaća.");
@@ -603,6 +651,16 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 	for ($zadatak=1; $zadatak<=$broj_zadataka; $zadatak++) {
 		?>
 		<h3>Zadatak <?=$zadatak?></h3>
+		
+		<?=genform("POST", "\"  enctype=\"multipart/form-data")?>
+		<input type="hidden" name="subakcija" value="boduj">
+		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+		<b>Ocijeni svima zadaće na osnovu rezultata testova:</b><br>
+		Maksimalan broj bodova: <input type="text" size="2" name="zadatak_bodova">
+		<input type="submit" value="Kreni">
+		</form>
+		
+		<br>
 		
 		<?=genform("POST", "\"  enctype=\"multipart/form-data")?>
 		<input type="hidden" name="subakcija" value="import_at">
