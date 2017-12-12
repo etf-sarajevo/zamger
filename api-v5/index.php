@@ -56,6 +56,14 @@ foreach (Config::$api_allowed_uris as $uri) {
 if ($add_vary)
 	header("Vary: Origin");
 
+header("Access-Control-Allow-Credentials: true");
+
+// CORS pre-flight response is needed because we send application/json content-typeheader
+if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
+	header("Access-Control-Allow-Headers: Content-Type");
+	return;
+}
+
 
 // Web service router
 $route = Util::param('route');
