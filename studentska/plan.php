@@ -924,7 +924,7 @@ function studentska_plan(){
 			?><h2>Uklanjanje predmeta iz programa: <?=$podaci_o_predmetu['naziv']?></h2>
 			<?
 			
-			if ($ima_na_drugim_studijima == false) {
+			if ($ima_na_drugim_npp == false) {
 				print genform("POST");
 				?>
 				<input type="hidden" name="potvrda" value="da">
@@ -949,6 +949,13 @@ function studentska_plan(){
 				<?
 				return;
 			}
+			
+			print genform("POST");
+			?>
+			<input type="submit" name="potvrda" value=" Potvrda ">
+			</form>
+			<?
+			return;
 		}
 		
 		// PRIKAZ INFORMACIJA O PREDMETU
