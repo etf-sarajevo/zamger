@@ -8,6 +8,7 @@ function studentska_anketa(){
 
 	require_once("lib/formgen.php"); // datectrl
 	require_once("lib/utility.php"); // time2mysql
+	require_once("lib/legacy.php"); // mb_substr
 
 	global $userid, $user_siteadmin, $user_studentska, $conf_site_url;
 	global $_lv_; // Potrebno za genform() iz libvedran
@@ -331,11 +332,39 @@ function studentska_anketa(){
 		// dodavanje odgovora na pitanja tipa "višestruki izbor"
 		if($_POST['subakcija']=="obrisi_odgovor" && check_csrf_token()) {
 			$id_odgovora = int_param('id_odgovora');
-						
+			
 			db_query("DELETE FROM anketa_izbori_pitanja WHERE id=$id_odgovora");
 			print " <center> <span style='color:#009900'> Uspješno obrisan odgovor na pitanje! </span> </center>";
 			zamgerlog("obrisan odgovor na pitanje na anketi $anketa", 2);
 			zamgerlog2("obrisan odgovor na pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
+		}
+		
+		// dodavanje predmeta na spisak predmeta
+		if($_POST['subakcija']=="dodaj_predmet" && check_csrf_token()) {
+			$predmet = int_param('predmet');
+			$id_ankete = intval($_REQUEST['anketa']);
+			
+			$ag_ankete = db_get("SELECT akademska_godina FROM anketa_anketa WHERE id=$id_ankete");
+			
+			// Da li je jedini predmet null?
+			$trenutni = db_get("SELECT predmet FROM anketa_predmet WHERE anketa=$id_ankete AND akademska_godina=$ag_ankete");
+			if ($trenutni === null && $trenutni !== false)
+				db_query("UPDATE anketa_predmet SET predmet=$predmet WHERE anketa=$id_ankete");
+			else
+				db_query("INSERT INTO anketa_predmet SET anketa=$id_ankete, predmet=$predmet, akademska_godina=$ag_ankete, semestar=0, aktivna=1");
+			
+			print " <center> <span style='color:#009900'> Uspješno dodan predmet za anketu! </span> </center>";
+			zamgerlog("dodan predmet za anketu $anketa", 2);
+			zamgerlog2("dodan predmet za anketu", $anketa);
 			
 			?>
 			<script language="JavaScript">
@@ -359,18 +388,35 @@ function studentska_anketa(){
 		$ak_godina_ankete = db_result($q201,0,5);
 		
 		// broj pitanja
-		$q203 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
-		$broj_pitanja = db_result($q203,0,0);
+		$broj_pitanja = db_get("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
 		
 		//kupimo pitanja
 		$q202=db_query("SELECT p.id, p.tekst,t.tip, t.id FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
 		
 		// id aktelne akademske godine
-		$q010 = db_query("select id,naziv from akademska_godina where aktuelna=1");
-		$aktuelna_ak_god = db_result($q010,0,0);
+		$aktuelna_ak_god = db_get("select id,naziv from akademska_godina where aktuelna=1");;
 		
-		$q125 = db_query("select naziv from akademska_godina where id=$ak_godina_ankete");
-		$naziv_ak_godina_ankete = db_result($q125,0,0);
+		$naziv_ak_godina_ankete = db_get("select naziv from akademska_godina where id=$ak_godina_ankete");
+		
+		// Spisak svih predmeta na fakultetu trenutno
+		$svi_predmeti = db_query_vassoc("SELECT DISTINCT p.id, p.naziv FROM predmet p, ponudakursa pk WHERE pk.akademska_godina=$aktuelna_ak_god AND pk.predmet=p.id ORDER BY p.naziv");
+		
+		$predmeti_html = "";
+		$q203 = db_query("SELECT predmet, semestar FROM anketa_predmet WHERE anketa=$id_ankete");
+		while(db_fetch2($q203, $predmet, $semestar)) {
+			if ($predmet === null)
+				$predmeti_html = "SVI";
+			else {
+				$predmeti_html .= $svi_predmeti[$predmet];
+				unset($svi_predmeti[$predmet]);
+			}
+		}
+		
+		$lista_predmeta = "";
+		foreach($svi_predmeti as $id => $naziv_predmeta) {
+			if (strlen($naziv_predmeta) > 35) $naziv_predmeta = mb_substr($naziv_predmeta, 0, 30) . "...";
+			$lista_predmeta .= "<option value=\"$id\">$naziv_predmeta</option>\n";
+		}
 		
 		?>
 	
@@ -400,6 +446,29 @@ function studentska_anketa(){
 			<tr>
 				<td valign="top" align="right">	 Opis: &nbsp; 	</td>
 				<td valign="top"> <b><?=$opis?></b><br/></td>
+			</tr> 
+			<tr>
+				<td valign="top" align="right">&nbsp;<br />	 Predmeti: &nbsp; 	</td>
+				<td valign="top"> &nbsp;<br /> <b><?=$predmeti_html?></b><br/>
+					<?
+					if ($predmet != null) {
+					?>
+					<?=genform("POST")?>
+					<input type="hidden" name="subakcija" value="dodaj_predmet">
+					<select name="predmet"><?=$lista_predmeta?></select>
+					<input type="submit" value="Dodaj predmet">
+					</form>
+					<?
+					}
+					?>
+				</td>
+			</tr>
+			<tr>
+				<td valign="top" align="right">	 Semestar: &nbsp; 	</td>
+				<td valign="top"> <select name="semestar">
+					<option value="1" <?=$semestar_neparni?>>Neparni</option><br/>
+					<option value="0" <?=$semestar_parni?>>Parni</option><br/>
+				</select></td>
 			</tr> 
 			<tr>
 				<td valign="top" align="right">&nbsp;</td>
