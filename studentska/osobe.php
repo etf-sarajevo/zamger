@@ -2373,6 +2373,13 @@ else if ($akcija == "edit") {
 		</div>
 		<?
 
+		// Aktivni moduli
+		$modul_uou=$modul_kolizija=0;
+		foreach ($registry as $r) {
+			if (count($r) == 0) continue;
+			if ($r[0]=="student/ugovoroucenju") $modul_uou=1;
+			if ($r[0]=="student/kolizija") $modul_kolizija=1;
+		}
 
 		// Trenutno slusa studij 
 
@@ -2433,6 +2440,22 @@ else if ($akcija == "edit") {
 			?>
 			<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$id_ak_god?>">Upiši na <?=($semestar+1)?>. semestar</a>
 			<?
+			
+			// Ispisujemo podatke o ugovoru o učenju
+			if ($modul_uou==1) {
+				$q270 = db_query("select s.naziv, u.semestar, u.kod from ugovoroucenju as u, studij as s where u.student=$osoba and u.akademska_godina=$id_ak_god and u.studij=s.id order by u.semestar");
+				if (db_fetch3($q270, $naziv_studija_ugovor, $semestar_ugovor, $kod_ugovora)) {
+					// Uvijek se popunjava za neparni i parni semestar!
+					$semestar_ugovor .= ". i " . ($semestar_ugovor+1) . ".";
+					?>
+					<p>Student je popunio/la <b>Ugovor o učenju</b> za <?=$naziv_studija_ugovor?>, <?=$semestar_ugovor?> semestar:<br>Kod: <b><?=$kod_ugovora?></b></p>
+					<?
+				} else {
+					?>
+					<p>Student NIJE popunio/la <b>Ugovor o učenju</b> za sljedeću akademsku godinu.</p>
+					<?
+				}
+			}
 		}
 
 
@@ -2454,14 +2477,6 @@ else if ($akcija == "edit") {
 
 
 		// UPIS U SLJEDEĆU AK. GODINU
-
-		// Aktivni moduli
-		$modul_uou=$modul_kolizija=0;
-		foreach ($registry as $r) {
-			if (count($r) == 0) continue;
-			if ($r[0]=="student/ugovoroucenju") $modul_uou=1;
-			if ($r[0]=="student/kolizija") $modul_kolizija=1;
-		}
 
 
 		if ($nova_ak_god!=0) { // Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
