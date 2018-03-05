@@ -95,6 +95,14 @@ $posljednji_pristup = 0;
 // Web service router
 $route = param('route');
 if ($route !== false && $route != "auth") {
+	// Handle JSON encoded requests
+	if ($_SERVER["CONTENT_TYPE"] == "application/json") {
+		$_REQUEST = json_decode(file_get_contents('php://input'),true);
+		if ($_SERVER['REQUEST_METHOD'] == "GET")
+			$_GET = json_decode(file_get_contents('php://input'),true);
+		else if ($_SERVER['REQUEST_METHOD'] == "POST")
+			$_POST = json_decode(file_get_contents('php://input'),true);
+	}
 	$segments = explode('/', trim($route, '/'));
 	$sta = "ws/" . db_escape($segments[0]);
 	for ($i=1; $i<count($segments); $i++) {
