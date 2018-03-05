@@ -206,6 +206,16 @@ function int_param($name) {
 	return 0;
 }
 
+// Vraća da li je trenutni semestar zimski ili ljetnji
+// Povratna vrijednost: 1 - neparni (zimski) semestar, 0 - parni (ljetnji) semestar, -1 ništa od navedenog
+function trenutni_semestar() {
+	$zimski = db_get("SELECT COUNT(*) FROM akademska_godina WHERE aktuelna=1 AND pocetak_zimskog_semestra<=DATE(NOW()) AND kraj_zimskog_semestra>=DATE(NOW())");
+	if ($zimski == 1) return 1;
+	$ljetnji = db_get("SELECT COUNT(*) FROM akademska_godina WHERE aktuelna=1 AND pocetak_ljetnjeg_semestra<=DATE(NOW()) AND kraj_ljetnjeg_semestra>=DATE(NOW())");
+	if ($ljetnji == 1) return 0;
+	return -1;
+}
+
 
 
 // ----------------------------
