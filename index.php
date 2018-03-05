@@ -14,6 +14,12 @@
 
 // INDEX - master skripta za ZAMGER
 
+if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
+	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR']; 
+else
+	$ip_adresa = $_SERVER['REMOTE_ADDR'];
+if (in_array($ip_adresa, $conf_banned_ips)) { print "Pristup Zamgeru onemogućen zbog zloupotrebe. Kontaktirajte administratora."; exit(0); }
+
 
 // Provjera da li postoji config.php
 if (!file_exists("lib/config.php")) {

@@ -72,7 +72,6 @@ $conf_use_mysql_utf8 = true;
 
 // Da li ispisivati debugging poruke?
 $conf_debug = true;
-$_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
@@ -91,6 +90,10 @@ $conf_dblayer = "mysqli";
 
 // Prikazati dnevnik na login stranici (javno)
 $conf_javni_dnevnik = true;
+
+// IP adrese banovane od pristupa Zamgeru
+// $conf_banned_ips = array("5.43.71.81");
+$conf_banned_ips = array();
 
 // Izvozni format: izvoz na ISSS novi web servis (NewWS)
 //$conf_export_format = "isss-newws";
