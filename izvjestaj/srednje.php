@@ -124,7 +124,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 <?
 
-$q10 = myquery("SELECT so.osoba, AVG(so.ocjena), ss.id, ss.naziv, pp.prijemni_termin, pp.rezultat FROM srednja_ocjene AS so, uspjeh_u_srednjoj as uus, srednja_skola AS ss, prijemni_prijava AS pp WHERE so.tipocjene=2 AND so.osoba!=0 AND so.osoba=uus.osoba AND uus.srednja_skola=ss.id AND so.osoba=pp.osoba AND pp.izasao=1 GROUP BY so.osoba");
+$q10 = db_query("SELECT so.osoba, AVG(so.ocjena), ss.id, ss.naziv, pp.prijemni_termin, pp.rezultat FROM srednja_ocjene AS so, uspjeh_u_srednjoj as uus, srednja_skola AS ss, prijemni_prijava AS pp WHERE so.tipocjene=2 AND so.osoba!=0 AND so.osoba=uus.osoba AND uus.srednja_skola=ss.id AND so.osoba=pp.osoba AND pp.izasao=1 AND pp.prijemni_termin=39 GROUP BY so.osoba");
 
 $suma = $broj = array();
 for ($i=1; $i<23; $i++)
@@ -162,6 +162,7 @@ foreach ($suma as $pt => $suma_oc) {
 	}
 
 	foreach ($ocjene_termin_skola[$pt] as $skola => $ocjene_skola) {
+		if (count($ocjene_skola) < 5) continue;
 		$k=0;
 		for ($i=0; $i<count($ocjene_skola); $i++)
 			$k += ($rezultati_termin_skola[$pt][$skola][$i] - ($ocjene_skola[$i]*$regresija2[$pt]["m"]+$regresija2[$pt]["b"])) / 40;
