@@ -125,6 +125,11 @@ else
 
 // Dodatak upitu za studente
 $upit_studenti="";
+if ($cista_gen==0) {
+	// Student trenutno upisan na dati studij/semestar
+	$upit_studenti = "$studij_upit_ss and ss.akademska_godina=$akgod and ss.semestar MOD 2 = 1";
+}
+
 if ($cista_gen>=1) {
 	// Student trenutno upisan na dati studij/semestar
 	$upit_studenti = "$studij_upit_ss and ss.$sem_stud_upit and ss.akademska_godina=$akgod";
@@ -244,7 +249,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 		// Redovni studenti + ponovci + preneseni studenti
 		// (svi upisani na predmete sa studija/semestra)
 
-		$q40 = db_query("select distinct sp.student from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
+		$q40 = db_query("select distinct sp.student from student_predmet as sp, ponudakursa as pk, student_studij ss where sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and ss.student=sp.student and $semestar_upit $upit_studenti");
 		$uk_studenata=db_num_rows($q40);
 
 		// Statisticki podaci o generaciji
@@ -260,8 +265,13 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 		// Posto su neki ponovci polozili sve iz ovog semestra, sljedeci upit vraca samo prenesene predmete
 		// i kolizije kako bi ukupna statistika bila tacna, cak iako se suma ne poklapa
 		if ($period==0) {
-			$prenesenoupit = "ss.semestar>$semestar"; // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
-			$kolizijaupit = "ss.semestar<$semestar";
+			if ($semestar%2==0) {
+				$prenesenoupit = "ss.semestar>$semestar"; // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
+				$kolizijaupit = "ss.semestar<" . ($semestar-1);
+			} else {
+				$prenesenoupit = "ss.semestar>" . ($semestar+1); // Pretpostavljamo da student ne može biti istovremeno upisan na drugi studij
+				$kolizijaupit = "ss.semestar<$semestar";
+			}
 		} else {
 			$prenesenoupit = "ss.semestar>".($godina*2); 
 			$kolizijaupit = "ss.semestar<".($godina*2-1); 
@@ -445,6 +455,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 				$q110 = db_query("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka IS NULL"); // Eliminisemo ocjene po odluci
 			else
 				$q110 = db_query("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka IS NULL");
+			
 			$broj_polozenih=0;
 			while ($r110 = db_fetch_row($q110)) {
 				if ($r110[1] >= 6 ) {
