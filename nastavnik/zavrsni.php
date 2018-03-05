@@ -328,9 +328,9 @@ function nastavnik_zavrsni() {
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  
 			<label for="kratki_pregled"><span>Kratki pregled:</span>
-			<textarea name="kratki_pregled" cols="60" rows="10" wrap="physical" id="kratki_pregled"><?=$kratki_pregled?></textarea></label> 
+			<textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></label> 
 			<label for="literatura"><span>Preporučena literatura:</span>
-			<textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=$literatura?></textarea></label>
+			<textarea name="literatura" cols="60" rows="15" id="literatura"><?=$literatura?></textarea></label>
 			<label><span>&nbsp;</span> <input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></label>
 		</form>
 		
@@ -364,7 +364,7 @@ function nastavnik_zavrsni() {
 		<input type="hidden" name="subakcija" value="potvrda">
 			<div class="row">
 				<span class="label">Bilješka:</span>
-				<span class="formw"><textarea name="biljeska" cols="60" rows="15" wrap="physical" id="opis"><?=db_result($q260,0,0)?></textarea></span>
+				<span class="formw"><textarea name="biljeska" cols="60" rows="15" id="opis"><?=db_result($q260,0,0)?></textarea></span>
 			</div> 
 					
 			<div class="row">	

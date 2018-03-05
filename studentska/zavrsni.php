@@ -613,11 +613,11 @@ function studentska_zavrsni()  {
 				</div>
 				<div class="row">
 					<span class="label">Kratki pregled</span>
-					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" wrap="physical" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
+					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
 				</div>
 				<div class="row">
 					<span class="label">Preporučena literatura</span>
-					<span class="formw"><textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=$literatura?></textarea></span> 
+					<span class="formw"><textarea name="literatura" cols="60" rows="15" id="literatura"><?=$literatura?></textarea></span> 
 				</div>
 				<div class="row">	
 					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></span>
