@@ -19,9 +19,9 @@ function ima_li_uslov($student, $ag=0) {
 		if (db_num_rows($q10)<1) 
 			return true; // Nikad nije bio student, ima uslov za prvu godinu ;)
 	} else {
-		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ss.akademska_godina=$ag order by ss.semestar desc limit 1");
-		if (db_num_rows($q10)<1) 
-			return false; // Nije bio student u datoj akademskoj godini
+		$q10 = db_query("select ss.studij, ss.semestar, ts.trajanje, ss.plan_studija from student_studij as ss, studij as s, tipstudija as ts where ss.student=$student and ss.studij=s.id and s.tipstudija=ts.id and ss.akademska_godina<=$ag order by ss.akademska_godina desc, ss.semestar desc limit 1");
+		if (db_num_rows($q10)<1)
+			return false; // Nije bio student u datoj akademskoj godini niti ijednoj prije nje
 	}
 
 	db_fetch4($q10, $studij, $semestar, $studij_trajanje, $plan_studija);
