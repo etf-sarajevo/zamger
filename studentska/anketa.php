@@ -230,12 +230,16 @@ function studentska_anketa(){
 		$ak_godina = intval($_POST['akademska_godina']);
 		$naziv = db_escape(substr($_POST['naziv'], 0, 100));
 		$prethodna_anketa = intval($_POST['prethodna_anketa']);
+		
+		// Određivanje aktuelnog semestra
+		// Ne koristimo trenutni_semestar() iz lib/zamger jer se anketa u pravilu kreira između dva semestra za prethodni semestar
+		$semestar = 1 - db_get("SELECT COUNT(*) FROM akademska_godina WHERE aktuelna=1 AND pocetak_ljetnjeg_semestra>CURRENT_DATE()");
 	
 		print "Nova anketa je kreirana. Molimo sačekajte.<br/><br/>";
 				
 		$q393 = db_query("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
 		$anketa = db_insert_id();
-		$r394 = db_query("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
+		$r394 = db_query("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0, semestar=$semestar"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		zamgerlog2("kreirana nova anketa", $anketa);
 		
