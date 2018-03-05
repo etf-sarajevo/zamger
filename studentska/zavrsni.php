@@ -127,7 +127,7 @@ function studentska_zavrsni()  {
 		if ($order_by == "naslov") $order_by="z.naslov $dir";
 		if ($order_by == "termin") $order_by="z.termin_odbrane $dir";
 
-		$q900 = db_query("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen 
+		$q900 = db_query("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen, z.drugi_mentor
 		FROM zavrsni as z
 		LEFT JOIN osoba as o ON z.student=o.id 
 		LEFT JOIN osoba as o2 ON z.mentor=o2.id 
@@ -172,6 +172,10 @@ function studentska_zavrsni()  {
 			
 			$mentor = tituliraj($r900[3], false);
 			if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
+			
+			if ($r900[9]) {
+				$mentor .= "<br>" . tituliraj($r900[9], false);
+			}
 
 			$student_id = intval($r900[4]);
 			$q910 = db_query("select prezime, ime from osoba where id=$student_id");
