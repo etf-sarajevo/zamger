@@ -126,40 +126,55 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			
 			// Nije položio dovoljno predmeta iz ovog slota
 			if ($polozio_izbornih_slot < $slog['ponavljanja']) {
-				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
+				// Tražimo da li je položio predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
 					if ($podaci['semestar'] == $slog['semestar']) {
 						$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
-						if (!$polozio) {
-							// Da li je student slušao i nešto sa matičnog odsjeka?
-							if (count($izborni_predmeti_pao) > 0) {
-								// Koji je posljednji slušao, predmet sa matičnog ili sa drugog odsjeka?
-								$ag_drugi_odsjek = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet");
-								foreach($izborni_predmeti_pao as &$slog_izborni) {
-									$ag_izborni = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=" . $slog_izborni['id']);
-									if ($ag_izborni > $ag_drugi_odsjek) {
-										// Sa matičnog je noviji pa ćemo koristiti njega
-										$zamger_predmeti_pao[$slog_izborni['id']] = $slog_izborni['naziv'];
-										$zamger_pao_ects += $slog_izborni['ects'];
-										
-										unset($slog_izborni);
-										
-										$pao_izbornih_slot++;
-										if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
-									}
-								}
-								// Napunili smo potreban broj predmeta sa matičnog odsjeka
-								if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
-							}
-							
-							// Student nije slušao predmet sa matičnog odsjeka ili je ovaj noviji
-							$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
-							$zamger_pao_ects += $podaci['ects'];
-							$pao_izbornih_slot++;
-							if ($slog['semestar'] < $semestar-1) $nize_godine++;
-						} else
+						if ($polozio) {
+							if ($student == $uslov_debug) print "Položio drugi odsjek " .$podaci['naziv']. "<br>";
 							$polozio_izbornih_slot++;
+							unset($drugi_odsjek[$predmet]);
+							if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
+						}
+					}
+				}
+			}
+			
+			// Predmeti sa drugog odsjeka koje je pao
+			if ($polozio_izbornih_slot < $slog['ponavljanja']) {			
+				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
+				foreach ($drugi_odsjek as $predmet => $podaci) {
+					if ($podaci['semestar'] == $slog['semestar']) {
+						// U prethodnoj petlji smo unset-ovali sve predmete koje je položio
+						// Tako da je sigurno pao ovaj predmet
 						
+						// Da li je student slušao i nešto sa matičnog odsjeka?
+						if (count($izborni_predmeti_pao) > 0) {
+							// Koji je posljednji slušao, predmet sa matičnog ili sa drugog odsjeka?
+							$ag_drugi_odsjek = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet");
+							foreach($izborni_predmeti_pao as &$slog_izborni) {
+								$ag_izborni = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=" . $slog_izborni['id']);
+								if ($ag_izborni > $ag_drugi_odsjek) {
+									// Sa matičnog je noviji pa ćemo koristiti njega
+									$zamger_predmeti_pao[$slog_izborni['id']] = $slog_izborni['naziv'];
+									$zamger_pao_ects += $slog_izborni['ects'];
+									
+									unset($slog_izborni);
+									
+									$pao_izbornih_slot++;
+									if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
+								}
+							}
+							// Napunili smo potreban broj predmeta sa matičnog odsjeka
+							if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
+						}
+						
+						// Student nije slušao predmet sa matičnog odsjeka ili je ovaj noviji
+						$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
+						$zamger_pao_ects += $podaci['ects'];
+						$pao_izbornih_slot++;
+						if ($slog['semestar'] < $semestar-1) $nize_godine++;
+					
 						unset($drugi_odsjek[$predmet]);
 						
 						if ($polozio_izbornih_slot + $pao_izbornih_slot == $slog['ponavljanja']) break;
