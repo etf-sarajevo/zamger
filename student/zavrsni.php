@@ -81,7 +81,7 @@ function student_zavrsni()  {
 			return;
 		}
 		
-		$q120 = db_query("UPDATE zavrsni SET student=0 WHERE id=$zavrsni");
+		$q120 = db_query("UPDATE zavrsni SET student=NULL WHERE id=$zavrsni");
 		nicemessage("Uspješno ste odjavljeni sa teme završnog rada");
 		zamgerlog("student ispisan sa zavrsnog rada $zavrsni", 2);
 		
