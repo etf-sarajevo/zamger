@@ -48,8 +48,14 @@ function common_zavrsniStrane() {
 	?>
 	<h2><?=$naslov_rada?></h2>
 	<p>Mentor: <?=$mentor?><br>
-	<?=$student?></p>
 	<?
+	
+	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
+		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
+		print "<p>Student: ".db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).")</p>";
+	} else {
+		print "<p><a href=\"?sta=student/zavrsni&amp;predmet=$predmet&amp;ag=$ag&amp;zavrsni=$zavrsni&amp;akcija=detalji\">Pregledaj postavku teme</a></p>\n";
+	}
 	
 
 	// Prikaz ako nije odabrana subakcija
