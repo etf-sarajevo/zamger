@@ -201,7 +201,7 @@ if ($r210[0]==$debug_predmet) print $k++." redovno sigurno (trenutno sluša) $st
 
 		// Ako nije upisan u parni semestar, uzmimamo još ugovor o učenju i 
 		// plan studija, pošto je u prenesene predmete i kolizije već upisan
-		if ($novaag_aktuelna && db_num_rows($q200)==1) {
+		if (db_num_rows($q200)==1) {
 			$pola_godine = true; // podaci za drugo pola su procjena
 			if ($novistudij != $studij) {
 				$q220 = db_query("select id from plan_studija where studij=$novistudij order by godina_vazenja desc limit 1");
@@ -211,7 +211,7 @@ if ($r210[0]==$debug_predmet) print $k++." redovno sigurno (trenutno sluša) $st
 
 			// Obavezni predmeti sa sljedećeg semestra
 			$novisemestar++;
-			$q230 = db_query("select pp.predmet from plan_studija_predmet psp, pasos_predmeta pp where psp.plan_studija=$novistudij and psp.semestar=$novisemestar and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
+			$q230 = db_query("select pp.predmet from plan_studija_predmet psp, pasos_predmeta pp where psp.plan_studija=$ps and psp.semestar=$novisemestar and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
 			while ($r230 = db_fetch_row($q230)) {
 				$predmet = $r230[0];
 				$q240 = db_query("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
