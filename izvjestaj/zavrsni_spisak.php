@@ -42,17 +42,25 @@ $ag_naziv = db_result($q10,0,0);
 <?
 
 
-$q15 = db_query("SELECT naziv FROM strucni_stepen WHERE id=".(3-$ciklus));
-$strucni_naziv = db_result($q15,0,0);
+$strucni_stepeni = array(
+	2 => "Bakalaureat/Bachelor inžinjer računarstva i informatike", 
+	3 => "Bakalaureat/Bachelor inžinjer automatike i elektronike",
+	4 => "Bakalaureat/Bachelor inžinjer elektroenergetike",
+	5 => "Bakalaureat/Bachelor inžinjer telekomunikacija",
+	7 => "Magistar diplomirani inžinjer računarstva i informatike", 
+	8 => "Magistar diplomirani inžinjer automatike i elektronike",
+	9 => "Magistar diplomirani inžinjer elektroenergetike",
+	10 => "Magistar diplomirani inžinjer telekomunikacija"
+);
 
 
-$q20 = db_query("SELECT o.ime, o.imeoca, o.imemajke, o.prezime, UNIX_TIMESTAMP(ko.datum_u_indeksu), z.broj_diplome 
+$q20 = db_query("SELECT o.ime, o.imeoca, o.imemajke, o.prezime, UNIX_TIMESTAMP(ko.datum_u_indeksu), z.broj_diplome, s.id
 FROM osoba as o, konacna_ocjena as ko, predmet as p, student_studij as ss, studij as s, tipstudija as ts, zavrsni as z, akademska_godina_predmet as agp
 WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocjena>5 AND o.id=ss.student AND ss.studij=s.id AND ss.akademska_godina=$ag AND ss.semestar mod 2=0 AND s.tipstudija=ts.id AND ts.ciklus=$ciklus AND z.student=o.id AND z.predmet=p.id AND z.akademska_godina=$ag AND agp.akademska_godina=$ag AND agp.predmet=p.id AND agp.tippredmeta=1000
 ORDER BY o.prezime, o.ime"); // 1000 = tip predmeta "Završni rad"
 
 $rbr=0;
-while (db_fetch7($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplome)) {
+while (db_fetch7($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplome, $id_studija)) {
 	$ime_roditelja = $ime_oca;
 	if ($ime_roditelja=="" || $ime_roditelja=="nepoznato" || $ime_roditelja=="Nepoznato")
 		$ime_roditelja = $ime_majke;
@@ -60,6 +68,7 @@ while (db_fetch7($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplo
 	$datum = date("d. m. Y", $datum);
 	$rbr++;
 	if ($broj_diplome == "") $broj_diplome = "&nbsp;";
+	$strucni_naziv = $strucni_stepeni[$id_studija];
 
 	?>
 	<tr><td><?=$rbr?>.</td><td><?=$puno_ime?></td><td><?=$datum?></td><td><?=$strucni_naziv?></td><td><?=$broj_diplome?></td></tr>
