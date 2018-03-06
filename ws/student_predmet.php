@@ -86,7 +86,7 @@ function ws_student_predmet() {
 	$temp = array();
 	while($r100 = db_fetch_row($q100))
 		array_push($temp, array("id" => $r100[0], "naziv" => $r100[1], "kratki_naziv" => $r100[2]));
-	$rezultat['data']['predmeti'] = $temp;
+	$rezultat['data'] = $temp;
 	
 	echo json_encode($rezultat);
 }

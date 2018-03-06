@@ -3,6 +3,8 @@
 // RSS - feed za studente
 
 
+header("Access-Control-Allow-Origin: *");
+
 $broj_poruka = 10;
 
 

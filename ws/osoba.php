@@ -11,27 +11,33 @@ function ws_osoba() {
 	
 	if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "pretraga") {
 		// Svi prijavljeni korisnici mogu vršiti pretragu
+		$max_redova = 10; // Maksimalan broj rezultata
 		
-		$ime = db_escape($_REQUEST['ime']);
-		if (!preg_match("/\w/",$ime)) { 
+		$upit = db_escape($_REQUEST['upit']);
+		if (!preg_match("/\w/",$upit)) { 
 			print json_encode($rezultat); 
 			return; 
 		}
-		$ime = str_replace("(","",$ime);
-		$ime = str_replace(")","",$ime);
-		$imena = explode(" ",$ime);
-		$upit = "";
-		foreach($imena as $dio) {
-			if ($upit != "") $upit .= " and ";
-			$upit .= "(o.ime like '%$dio%' or o.prezime like '%$dio%' or a.login like '%$dio%' or o.brindexa like '%$dio%')";
+		$upit = str_replace("(","",$upit);
+		$upit = str_replace(")","",$upit);
+		$dijelovi_upita = explode(" ",$upit);
+		$sql_upit = "";
+		foreach($dijelovi_upita as $dio) {
+			$dio = db_escape($dio);
+			if ($sql_upit != "") $sql_upit .= " and ";
+			$sql_upit .= "(o.ime like '%$dio%' or o.prezime like '%$dio%' or a.login like '%$dio%' or o.brindexa like '%$dio%')";
 		}
-		$q10 = db_query("select o.ime, o.prezime, o.brindexa, a.login, o.id from auth as a, osoba as o where a.id=o.id and $upit order by o.prezime, o.ime");
+		$q10 = db_query("select o.ime, o.prezime, o.brindexa, a.login, o.id from auth as a, osoba as o where a.id=o.id and $sql_upit order by o.prezime, o.ime");
 		$redova=0;
 		while ($r10 = db_fetch_row($q10)) {
 			if (strlen($r10[3])<2) continue; // ?? Preskačemo sistemske korisnike koji nemaju login?
-			$rezultat['data'][$r10[4]] = array( 'ime' => $r10[0], 'prezime' => $r10[1], 'brindexa' => $r10[2], 'login' => $r10[3] );
+			$logini = array();
+			$q200 = db_query("SELECT login FROM auth WHERE id=$r10[4]");
+				while($r200 = db_fetch_row($q200))
+					$logini[] = $r200[0];
+			$rezultat['data'][] = array( 'id' => $r10[4], 'ime' => $r10[0], 'prezime' => $r10[1], 'brindexa' => $r10[2], 'logini' => $logini );
 			$redova++;
-			if ($redova>10) break;
+			if ($redova > $max_redova) break;
 		}
 		
 		print json_encode($rezultat); 
@@ -52,6 +58,7 @@ function ws_osoba() {
 		
 	if (isset($_REQUEST['akcija']) && $_REQUEST['akcija'] == "detalji") {
 		if (!$user_siteadmin && !$user_studentska && $korisnik != $userid) {
+			header("HTTP/1.0 403 Forbidden");
 			$rezultat = array( 'success' => 'false', 'code' => 'ERR002', 'message' => 'Permission denied' );
 			echo json_encode($rezultat);
 			return;
@@ -89,13 +96,13 @@ function ws_osoba() {
 			$podaci['datum_rodjenja'] = db_result($q10,0,8);
 			
 			$q20 = db_query("SELECT m.naziv, o.naziv, d.naziv, m.opcina_van_bih FROM mjesto m, opcina o, drzava d WHERE m.opcina=o.id AND m.drzava=d.id AND m.id=".db_result($q10,0,9));
-			$podaci['mjesto'] = array();
-			$podaci['mjesto']['naziv'] = db_result($q20,0,0);
-			$podaci['mjesto']['drzava'] = db_result($q20,0,2);
-			if ($podaci['mjesto']['drzava'] == "Bosna i Hercegovina")
-				$podaci['mjesto']['opcina'] = db_result($q20,0,1);
+			$podaci['mjesto_rodjenja'] = array();
+			$podaci['mjesto_rodjenja']['naziv'] = db_result($q20,0,0);
+			$podaci['mjesto_rodjenja']['drzava'] = db_result($q20,0,2);
+			if ($podaci['mjesto_rodjenja']['drzava'] == "Bosna i Hercegovina")
+				$podaci['mjesto_rodjenja']['opcina'] = db_result($q20,0,1);
 			else
-				$podaci['mjesto']['opcina'] = db_result($q20,0,3);
+				$podaci['mjesto_rodjenja']['opcina'] = db_result($q20,0,3);
 			
 			$q30 = db_query("SELECT naziv FROM nacionalnost WHERE id=".db_result($q10,0,10));
 			$podaci['nacionalnost'] = db_result($q30,0,0);
@@ -103,19 +110,20 @@ function ws_osoba() {
 			$q40 = db_query("SELECT naziv FROM drzava WHERE id=".db_result($q10,0,11));
 			$podaci['drzavljanstvo'] = db_result($q40,0,0);
 			
-			$podaci['datum_rodjenja'] = db_result($q10,0,12);
+			$podaci['jmbg'] = db_result($q10,0,12);
 			
 			$podaci['adresa'] = array();
 			$podaci['adresa']['ulica_i_broj'] = db_result($q10,0,13);
 			$q50 = db_query("SELECT m.naziv, o.naziv, d.naziv, m.opcina_van_bih FROM mjesto m, opcina o, drzava d WHERE m.opcina=o.id AND m.drzava=d.id AND m.id=".db_result($q10,0,14));
-			$podaci['adresa']['mjesto'] = db_result($q50,0,0);
-			$podaci['adresa']['drzava'] = db_result($q50,0,2);
-			if ($podaci['adresa']['drzava'] == "Bosna i Hercegovina")
-				$podaci['adresa']['opcina'] = db_result($q50,0,1);
+			$podaci['adresa_mjesto'] = array();
+			$podaci['adresa_mjesto']['naziv'] = db_result($q50,0,0);
+			$podaci['adresa_mjesto']['drzava'] = db_result($q50,0,2);
+			if ($podaci['adresa_mjesto']['drzava'] == "Bosna i Hercegovina")
+				$podaci['adresa_mjesto']['opcina'] = db_result($q50,0,1);
 			else
-				$podaci['adresa']['opcina'] = db_result($q50,0,3);
+				$podaci['adresa_mjesto']['opcina'] = db_result($q50,0,3);
 			$q60 = db_query("SELECT naziv FROM kanton WHERE id=".db_result($q10,0,16));
-			$podaci['adresa']['kanton'] = db_result($q60,0,0);
+			$podaci['adresa_mjesto']['kanton'] = db_result($q60,0,0);
 			
 			$podaci['telefon'] = db_result($q10,0,15);
 			

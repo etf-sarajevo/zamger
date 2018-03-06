@@ -8,6 +8,7 @@ function ws_log() {
 	global $userid, $user_siteadmin, $user_studentska;
 
 	require_once("lib/student_predmet.php");
+	require_once("lib/permisije.php"); // Za nastavnik_pravo_pristupa
 	
 	// Podaci za pasoš studenta
 	if (param("tip_loga") == "student") {
