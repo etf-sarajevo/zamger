@@ -2092,8 +2092,10 @@ else{
 					$studij=db_result($q1,$i,1);
 					$akademska_godina=db_result($q1,$i,2);
 					$semestar=db_result($q1,$i,3);;
-					$q2=db_query("select naziv from studij where id=$studij");
-					$naziv_studija=db_result($q2,0,0);
+					if ($studij > 0) {
+						$q2=db_query("select naziv from studij where id=$studij");
+						$naziv_studija=db_result($q2,0,0);
+					} else $naziv_studija = "(Svi studiji)";
 					$q3=db_query("select naziv from akademska_godina where id=$akademska_godina");
 					$naziv_akademske_godine=db_result($q3,0,0);
 					print "<tr>";
