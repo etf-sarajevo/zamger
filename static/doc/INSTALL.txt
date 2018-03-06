@@ -12,9 +12,7 @@ Posljednja izmjena: 11. 8. 2016.
 
 Za instalaciju je potrebno:
 - MySQL v4.0 ili noviji
-- PHP v5.0 ili noviji
-  * Za logging sintaksnih gresaka (korisno prilikom razvoja) potreban je 
-PHP v5.2 ili noviji
+- PHP v5.3 ili noviji
 - Web server - testirano samo sa Apache web serverom
 
 Opcionalno:
