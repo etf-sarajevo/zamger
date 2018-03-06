@@ -105,7 +105,7 @@ if ($semestar==1) $s2=1; else $s2=0;
 
 // Predmeti koje nije polozio
 $predmeti_prenos=array();
-$q20 = db_query("select p.id, p.naziv, p.ects from student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=$proslagodina and pk.semestar MOD 2=$s2 and pk.semestar<$godina_studija*2+1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=p.id and ko.ocjena != 5)=0");
+$q20 = db_query("select distinct pp.id, pp.naziv, pp.ects from student_predmet as sp, ponudakursa as pk, pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis where sp.student=$userid and sp.predmet=pk.id and pk.predmet=pp.predmet and psp.plan_studija=$plan_studija and (pp.id=psp.pasos_predmeta or (pp.id=pis.pasos_predmeta and pis.id=psp.plan_izborni_slot)) and pk.akademska_godina=$proslagodina and pk.semestar MOD 2=$s2 and pk.semestar<$godina_studija*2+1 and (select count(*) from konacna_ocjena as ko where ko.student=$userid and ko.predmet=pp.predmet and ko.ocjena != 5)=0");
 while ($r20 = db_fetch_row($q20)) {
 	if (array_key_exists($r20[0], $predmeti_kolizija)) continue;
 	$predmeti_prenos[$r20[0]]=$r20[1];

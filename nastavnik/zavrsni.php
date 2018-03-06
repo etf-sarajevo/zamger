@@ -187,8 +187,11 @@ function nastavnik_zavrsni() {
 		$summary = db_escape_string(db_result($q300,0,6));
 		$biljeska = db_escape_string(db_result($q300,0,7));
 		$predsjednik = intval(db_result($q300,0,8));
+		if ($predsjednik == 0) $predsjednik="NULL";
 		$clan_komisije = intval(db_result($q300,0,9));
+		if ($clan_komisije == 0) $clan_komisije="NULL";
 		$student = intval(db_result($q300,0,10));
+		if ($student == 0) $student="NULL";
 		if ($student > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
 		$q310 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', rad_na_predmetu=$rad_na_predmetu, kratki_pregled='$kratki_pregled', literatura='$literatura', sazetak='$sazetak', summary='$summary', biljeska='$biljeska', predsjednik_komisije=$predsjednik, clan_komisije=$clan_komisije, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, predmet=$predmet, akademska_godina=$ag, mentor=$userid");
 		
@@ -211,7 +214,11 @@ function nastavnik_zavrsni() {
 			$literatura = db_escape(trim($_REQUEST['literatura']));
 
 			$kandidat = intval($_REQUEST['kandidat']);
+			if ($kandidat == 0) $kandidat = "NULL";
 			if ($kandidat > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
+			
+			$na_predmetu = intval($_REQUEST['na_predmetu']);
+			if ($na_predmetu == 0) $na_predmetu = "NULL";
 	
 			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -220,12 +227,12 @@ function nastavnik_zavrsni() {
 			}
 
 			if ($id > 0) {
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio temu zavrsnog rada", $id);
 			} else {
-				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, tema_odobrena=0");
+				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, tema_odobrena=0");
 				$id = db_insert_id();
 				nicemessage('Uspješno kreirana nova tema završnog rada.');
 				zamgerlog("kreirana tema zavrsnog rada $id na predmetu pp$predmet", 2);
@@ -321,9 +328,9 @@ function nastavnik_zavrsni() {
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  
 			<label for="kratki_pregled"><span>Kratki pregled:</span>
-			<textarea name="kratki_pregled" cols="60" rows="10" wrap="physical" id="kratki_pregled"><?=$kratki_pregled?></textarea></label> 
+			<textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></label> 
 			<label for="literatura"><span>Preporučena literatura:</span>
-			<textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=$literatura?></textarea></label>
+			<textarea name="literatura" cols="60" rows="15" id="literatura"><?=$literatura?></textarea></label>
 			<label><span>&nbsp;</span> <input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></label>
 		</form>
 		
@@ -357,7 +364,7 @@ function nastavnik_zavrsni() {
 		<input type="hidden" name="subakcija" value="potvrda">
 			<div class="row">
 				<span class="label">Bilješka:</span>
-				<span class="formw"><textarea name="biljeska" cols="60" rows="15" wrap="physical" id="opis"><?=db_result($q260,0,0)?></textarea></span>
+				<span class="formw"><textarea name="biljeska" cols="60" rows="15" id="opis"><?=db_result($q260,0,0)?></textarea></span>
 			</div> 
 					
 			<div class="row">	

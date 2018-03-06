@@ -19,16 +19,7 @@ function studentska_zavrsni()  {
 	if ($dir != "desc" && $dir != "asc") $dir="";
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin 
-	&& $userid != 69 /* Vensada (RI) */ 
-	/*&& $userid != 44*/ /* Senad H. (AE) */ 
-	&& $userid != 2892 /* Adnan Osmanović (AE) */ 
-	&& $userid != 56 /* Jasmin Velagić (AE) */ 
-	/*&& $userid != 1136*/ /* Enio (TK) */
-	&& $userid != 1672 /* Almir Marić (TK) */
-	/*&& $userid != 455*/ /* Adnan Mujezinović */
-	&& $userid != 455 /* Adnan Mujezinović */
-	&& $userid != 45 /* Senad Smaka */) {
+	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
 		zamgerlog2("nije studentska");
 		biguglyerror("Pristup nije dozvoljen.");
@@ -136,7 +127,7 @@ function studentska_zavrsni()  {
 		if ($order_by == "naslov") $order_by="z.naslov $dir";
 		if ($order_by == "termin") $order_by="z.termin_odbrane $dir";
 
-		$q900 = db_query("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen 
+		$q900 = db_query("SELECT z.id, z.naslov, z.kratki_pregled, z.mentor, z.student, z.predsjednik_komisije, z.clan_komisije, UNIX_TIMESTAMP(z.termin_odbrane), z.kandidat_potvrdjen, z.drugi_mentor
 		FROM zavrsni as z
 		LEFT JOIN osoba as o ON z.student=o.id 
 		LEFT JOIN osoba as o2 ON z.mentor=o2.id 
@@ -181,6 +172,10 @@ function studentska_zavrsni()  {
 			
 			$mentor = tituliraj($r900[3], false);
 			if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
+			
+			if ($r900[9]) {
+				$mentor .= "<br>" . tituliraj($r900[9], false);
+			}
 
 			$student_id = intval($r900[4]);
 			$q910 = db_query("select prezime, ime from osoba where id=$student_id");
@@ -622,11 +617,11 @@ function studentska_zavrsni()  {
 				</div>
 				<div class="row">
 					<span class="label">Kratki pregled</span>
-					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" wrap="physical" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
+					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
 				</div>
 				<div class="row">
 					<span class="label">Preporučena literatura</span>
-					<span class="formw"><textarea name="literatura" cols="60" rows="15" wrap="physical" id="literatura"><?=$literatura?></textarea></span> 
+					<span class="formw"><textarea name="literatura" cols="60" rows="15" id="literatura"><?=$literatura?></textarea></span> 
 				</div>
 				<div class="row">	
 					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></span>

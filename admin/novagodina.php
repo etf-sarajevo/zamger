@@ -47,10 +47,12 @@ if (param('akcija') == "novagodina") {
 			}
 			if ($ispis) print "&nbsp;&nbsp;&nbsp;-- Plan i program ".$plan_studija['godina']."<br>\n";
 			
-			$predmeti = predmeti_na_planu($plan_studija['id']);
-			foreach ($predmeti as $predmet) {
-				if ($predmet['semestar'] != $sem) continue;
-				kreiraj_ponudu_kursa ($predmet['predmet'], $studij, $sem, $ag, $predmet['obavezan'], $ispis);
+			$plan = predmeti_na_planu($plan_studija['id'], $sem);
+			foreach ($plan as $slog) {
+				if ($slog['obavezan'])
+					kreiraj_ponudu_kursa ($slog['predmet']['id'], $studij, $sem, $ag, true, $ispis);
+				else foreach($slog['predmet'] as $slog_predmet)
+					kreiraj_ponudu_kursa ($slog_predmet['id'], $studij, $sem, $ag, false, $ispis);
 			}
 		}
 	}

@@ -97,6 +97,10 @@ function student_status(student, status, poruka) {
 
 // Provjera/slanje jedne stavke
 function servis_single(stavka, tip, provjera) {
+	console.log("stavka ");
+	console.log(stavka);
+	console.log (" tip "+tip+" provjera "+provjera);
+
 	var xmlhttp = new XMLHttpRequest();
 	var url = export_url + "?tip=" + tip;
 	if (provjera) url = url + "&akcija=provjera";
@@ -106,6 +110,9 @@ function servis_single(stavka, tip, provjera) {
 		
 	else if (tip == "upis_vise" || tip == "ciscenje_upis_vise") 
 		url += "&student=" + stavka.student + "&studij=" + stavka.studij + "&godina=" + stavka.godina + "&semestar=" + stavka.semestar;
+		
+	else if (tip == "ciscenje_upis_prva") 
+		url += "&student=" + stavka.student + "&godina=" + stavka.akademska_godina;
 		
 	else if (tip == "promjena_podataka") {
 		if (provjera) url = export_url + "?tip=daj_razlike&student=" + stavka.student
@@ -127,7 +134,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst == 'Student u ISSSu se razlikuje') {
 						var poruka = {};
 						poruka.student = stavka.student;
-						poruka.akademska_godina = stavka.akademska_godina;
+						poruka.akademska_godina = stavka.godina;
 						poruka.razlike = result.data.razlike;
 						poruka.isss_id_studenta = result.data.isss_id_studenta;
 						razlike_poruke.push(poruka);
@@ -137,7 +144,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst.substring(0,24) == 'Unesen je različit datum') {
 						var poruka = {};
 						poruka.student = stavka.student;
-						poruka.akademska_godina = stavka.akademska_godina;
+						poruka.akademska_godina = stavka.godina;
 						poruka.predmet = stavka.predmet;
 						var datum_isss = result.data.tekst.substring(27,37);
 						var datum_zamger = result.data.tekst.substring(40);
@@ -210,6 +217,10 @@ function pozicioniraj_prozor() {
 	var prozor=document.getElementById('displayWindow');
 	var rect = tabela.getBoundingClientRect();
 	prozor.style.visibility="visible";
+	// Popravka datuma se koristi samo u funkciji potvrdi_datum
+	document.getElementById('innerElement').style.display = "block";
+	var pd = document.getElementById('popravkaDatuma');
+	if (pd) pd.style.display = "none";
 	
 	var toppos = rect.top;
 	if (window && window.pageYOffset)
@@ -258,16 +269,18 @@ function prikazi_razlike(code, tip) {
 	
 	var b1 = document.getElementById('popraviZamger');
 	var b2 = document.getElementById('popraviIsss');
-	var b3 = document.getElementById('ocistiRazlike');
+	var b3 = document.getElementById('ocistiStudenta');
 	b1.disabled = false; b2.disabled = false; b3.disabled = false;
 
 	b1.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_zamger(code, tip); }
 	b2.onclick = function() { b1.disabled = true; b2.disabled = true; b3.disabled = true; popravi_isss(code, tip); }
 	b3.onclick = function() { 
+		console.log(obj.student);
 		b1.disabled = true; b2.disabled = true; b3.disabled = true;
 		var za_ciscenje_tmp = za_ciscenje.slice();
 		za_ciscenje = [];
-		za_ciscenje.push(obj.student);
+		za_ciscenje.push(obj);
+		console.log(za_ciscenje);
 		servis_ciscenje('upis_prva');
 		za_ciscenje = za_ciscenje_tmp.slice();
 	};
@@ -275,6 +288,49 @@ function prikazi_razlike(code, tip) {
 	var prozor=document.getElementById('displayWindow');
 	var unutrasnji=document.getElementById('innerElement');
 	prozor.style.height = (unutrasnji.offsetHeight + 30) + "px";
+}
+
+function potvrdi_datum(idStudenta) {
+	pozicioniraj_prozor();
+	document.getElementById('popravkaDatuma').style.display = "block";
+	document.getElementById('innerElement').style.display = "none";
+	
+	var potvrda_poruka;
+	for(var i=0; i<popravke_datuma.length; i++) {
+		if (popravke_datuma[i].student == idStudenta)
+			potvrda_poruka = popravke_datuma[i];
+	}
+	document.getElementById('datumZaPopravku').value = potvrda_poruka.datum;
+	
+	var b1 = document.getElementById('popraviZamgerDatum');
+	b1.disabled = false;
+	b1.onclick = function() {
+		var xmlhttp = new XMLHttpRequest();
+		var url = "?sta=common/ajah&akcija=izmjena_ispita&idpolja=kodatum-" + potvrda_poruka.student + "-" + potvrda_poruka.predmet + "-" + potvrda_poruka.akademska_godina;
+		url += "&vrijednost=" + document.getElementById('datumZaPopravku').value;
+		
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				if (xmlhttp.responseText.indexOf("OK") >= 0) {
+					student_status(idStudenta, "ok", "Datum popravljen");
+				} else {
+					console.log("Web servis vratio " + xmlhttp.responseText);
+					console.log(result);
+					student_status(idStudenta, "bug", "Promjena podataka nije uspjela");
+				}
+				var prozor=document.getElementById('displayWindow');
+				prozor.style.visibility="hidden";
+				b1.disabled = true;
+			}
+			else if (xmlhttp.readyState == 4) {
+				console.log("Serverska greška kod pozivanja common/ajah.");
+				console.log("readyState "+xmlhttp.readyState+" status "+xmlhttp.status);
+				student_status(idStudenta, "bug", "Servis nedostupan");
+			}
+		}
+		xmlhttp.open("GET", url, true);
+		xmlhttp.send();
+	}
 }
 
 function popravi_isss(code, tip) {
@@ -422,7 +478,7 @@ if (param('akcija') == "novi_studenti") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
 		</div>
@@ -519,7 +575,7 @@ if (param('akcija') == "ocjene_predmet") {
 	<tr><th>Student</th><th>Predmet</th><th>Ocjena</th><th>&nbsp;</th></tr>
 	<?
 	
-	$javascript_niz = "";
+	$javascript_niz = $js_popravke_datuma = "";
 	$dodaj_upit = "";
 	if ($neprovjerene == 0) $dodaj_upit = "AND ko.datum_provjeren=1";
 	$q10 = db_query("SELECT o.id id_studenta, o.ime, o.prezime, o.brindexa, ko.predmet, pp.naziv naziv_predmeta, 
@@ -568,13 +624,14 @@ if (param('akcija') == "ocjene_predmet") {
 			$ispis_predmet = $r10['naziv_predmeta'] . " (" . $r10['naziv_godine'] . ")";
 			$ispis_ocjena = $r10['ocjena'] . " (" . date("d. m. Y.", $r10['datum']) . ")";
 			$id_celije = "status" . $r10['id_studenta'];
+			$js_popravke_datuma .= "{ student: " . $r10['id_studenta'] . ", predmet: " . $r10['predmet'] . ", ocjena: " . $r10['ocjena'] . ", datum: '" . date("d. m. Y.", $r10['datum']) . "', akademska_godina: " . $r10['id_godine'] . "},\n";
 		
 			?>
 			<tr>
 				<td><?=$ispis_ime?></td>
 				<td><?=$ispis_predmet?></td>
 				<td><?=$ispis_ocjena?></td>
-				<td id="<?=$id_celije?>"><a href='#' onclick="potvrdi_datum('<?=$id_celije?>'); return false;">Popravi datum</a></td>
+				<td id="<?=$id_celije?>"><a href='#' onclick="potvrdi_datum('<?=$r10['id_studenta']?>'); return false;">Popravi datum</a></td>
 			</tr>
 			<?
 		}
@@ -587,6 +644,7 @@ if (param('akcija') == "ocjene_predmet") {
 	?>
 	<script>
 	var za_provjeru = [ <?=$javascript_niz?> ];
+	var popravke_datuma = [ <?=$js_popravke_datuma?> ];
 	</script>
 	
 	<div id="displayWindow" style="position:absolute; visibility:hidden; border:1px solid #333; background-color: #f8f8f8; width: 600px; height: 200px;">
@@ -598,9 +656,17 @@ if (param('akcija') == "ocjene_predmet") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
+		</div>
+		
+		<div id="popravkaDatuma" style="margin: 10px">
+			<h2 style="align:center">Datum ocjene</h2> 
+			<input id="datumZaPopravku" type="text" size="10">
+			<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamgerDatum">Popravi u Zamgeru</button> 
+				<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
+			</p>
 		</div>
 	</div>
 	
@@ -650,10 +716,12 @@ if (param('akcija') == "promjena_podataka") {
 		</table>
 		<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="popraviZamger">Popravi u Zamgeru</button> 
 			<button id="popraviIsss">Popravi u drugom sistemu</button> 
-			<button id="ocistiRazlike">Očisti studenta</button>
+			<button id="ocistiStudenta">Očisti studenta</button>
 			<button onclick="document.getElementById('displayWindow').style.visibility = 'hidden';">Zatvori</button>
 		</p>
 		</div>
+	</div>
+
 	</div>
 	<script>
 	var za_provjeru = [ <?=$javascript_niz?> ];

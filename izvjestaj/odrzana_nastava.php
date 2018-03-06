@@ -26,10 +26,8 @@ if ($_REQUEST['demonstratorski']) {
 	$predmet = intval($_REQUEST['predmet']);
 	if ($_REQUEST['semestar'] == "ljetnji") $semestar_genitiv="ljetnjem"; else $semestar_genitiv="zimskom";
 	
-	$q10 = db_query("SELECT naziv FROM akademska_godina WHERE id=$ag");
-	$naziv_ag = db_result($q10,0,0);
-	$q20 = db_query("SELECT naziv FROM predmet WHERE id=$predmet");
-	$naziv_predmeta = db_result($q10,0,0);
+	$naziv_ag = db_get("SELECT naziv FROM akademska_godina WHERE id=$ag");
+	$naziv_predmeta = db_get("SELECT naziv FROM predmet WHERE id=$predmet");
 	
 	// Odgovorni nastavnik za predmet
 	$q30 = db_query("SELECT osoba FROM angazman WHERE predmet=$predmet AND akademska_godina=$ag AND angazman_status=1"); // 1 = odgovorni nastavnik
@@ -49,13 +47,11 @@ if ($_REQUEST['demonstratorski']) {
 	Br:<br>
 	Sarajevo, <?=date("d. m. Y.");?></p>
 	
-	<p>Predmet: <b><?=$naziv_predmeta?></b></p>
+	<p>Predmet: <b><?=$naziv_predmeta?></b><br>
+	Predmetni nastavnik: <b><?=$ime_nastavnika?></b><br>
+	Demonstrator: <b><?=$ime_demonstratora?></b></p>
 	
-	<p>Nastavnik: <b><?=$ime_nastavnika?></b></p>
-	
-	<p>Demonstrator: <b><?=$ime_demonstratora?></b></p>
-	
-	<h2><center>Izvještaj o nastavi u <?=$semestar_genitiv?> semestru <?=$naziv_ag?> god.<br>realiziranoj uz pomoć studenta-demonstratora</center></h2>
+	<h2><center>Izvještaj o održanoj nastavi u <?=$semestar_genitiv?> semestru <?=$naziv_ag?> god.</center></h2>
 	
 	<STYLE>
 	table {
@@ -70,33 +66,52 @@ if ($_REQUEST['demonstratorski']) {
 	}
 	</STYLE>
 
-	<center><table><tr><th>R.br.</th><th>Datum<br>nastave</th><th>Broj<br>časova</th></tr>
+	<center><table>
+	<thead>
+	<tr>
+		<th rowspan="2" align="center">R.br.</th>
+		<th rowspan="2" align="center">Datum<br>nastave</th>
+		<th colspan="2" align="center">Nastavnici</th>
+		<th colspan="2" align="center">Asistenti i demonstratori</th>
+	</tr>
+	<tr>
+		<th>Broj sati<br>predavanja</th>
+		<th>Broj<br>studenata</th>
+		<th>Broj sati<br>tutorijala</th>
+		<th>Broj sati<br>lab. vježbi</th>
+	</tr>
+	</thead>
 	<?
 	$q100 = db_query("SELECT c.id, UNIX_TIMESTAMP(c.datum), c.labgrupa from cas as c, labgrupa as l WHERE c.nastavnik=$userid AND c.labgrupa=l.id AND l.predmet=$predmet AND l.akademska_godina=$ag ORDER BY c.datum");
-	$rbr = 0;
+	$rbr = 0; $ukupno = 0;
 	while ($r100 = db_fetch_row($q100)) {
 		$datum_casa = date("d. m. Y.", $r100[1]);
 
-		$q110 = db_query("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
-		$broj_studenata_casa = db_result($q110,0,0);
+		//$q110 = db_query("SELECT COUNT(*) FROM prisustvo WHERE cas=$r100[0] AND prisutan=1");
+		//$broj_studenata_casa = db_result($q110,0,0);
 		
 		$broj_sati = 2; // FIXME
 		$rbr++;
 		
-		print "<tr><td>$rbr</td><td>$datum_casa</td><td>$broj_sati</td></tr>\n";
+		print "<tr><td>$rbr</td><td>$datum_casa</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>$broj_sati</td></tr>\n";
+		$ukupno += 2;
 	}
 	
 	?>
+	<tr><td></td><td><b>UKUPNO:</b></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td><b><?=$ukupno?></b></td></tr>
 	</table></center>
 	
 	<p>&nbsp;</p>
-	<p>NASTAVNIK (potpis): ______________________________________</p>
+	<p>NASTAVNIK/SARADNIK/DEMONSTRATOR (potpis): ______________________________________</p>
 	
 	<p>&nbsp;</p>
 	<p>ŠEF ODSJEKA (potpis): ______________________________________</p>
 	
 	<p>&nbsp;</p>
 	<p>PRODEKAN ZA NASTAVU (potpis): ______________________________________</p>
+	
+	<p>&nbsp;</p>
+	<p>PREDMETNI NASTAVNIK (potpis): ______________________________________</p>
 	
 	<?
 	

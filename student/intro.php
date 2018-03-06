@@ -87,7 +87,7 @@ while ($r15 = db_fetch_row($q15)) {
 	}
 	else { // Student je dobio $bodova
 		$bodova = db_result($q16,0,0);
-		if ($bodova>=$r15[7]) $cestitka=" Čestitamo!"; else $cestitka="";
+		if ($bodova >= $r15[7] && $r15[7] > 0) $cestitka=" Čestitamo!"; else $cestitka="";
 		$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni rezultati ispita: <a href=\"?sta=student/predmet&predmet=$r15[8]&ag=$r15[9]\">$r15[2] (".date("d. m. Y",$r15[5]).")</a>. Dobili ste $bodova bodova.$cestitka<br /><br />\n";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
 	}

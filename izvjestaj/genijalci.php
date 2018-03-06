@@ -8,6 +8,7 @@ function izvjestaj_genijalci() {
 
 require_once("lib/utility.php"); // procenat
 
+
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
@@ -101,15 +102,17 @@ while ($r1 = db_fetch_row($q1)) {
 	$brindexa[$id_studenta]=$r1[3];
 	$nacinstudiranja[$id_studenta]=$r1[4];
 	
-	$q2 = db_query("select distinct ko.ocjena, p.ects, pk.semestar, p.naziv from konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as st, tipstudija as ts where ko.student=$r1[0] and ko.predmet=p.id and ko.ocjena>5 and sp.student=$r1[0] and sp.predmet=pk.id and pk.predmet=p.id and pk.akademska_godina=ko.akademska_godina and ko.akademska_godina<=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by pk.semestar");
+	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, ss.semestar, pp.naziv 
+	FROM konacna_ocjena as ko,  student_studij ss, studij as st, tipstudija as ts, pasos_predmeta pp
+	WHERE ko.student=$id_studenta AND ss.student=$id_studenta AND ko.ocjena>5 AND ko.akademska_godina<=$ak_god AND ko.pasos_predmeta=pp.id AND ss.akademska_godina=ko.akademska_godina AND ss.semestar MOD 2 = 1 AND ss.studij=st.id AND st.tipstudija=ts.id $whereprosliciklus");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = db_fetch_row($q2)) {
 		$sumaects += $r2[1];
 		if ($samo_tekuca_gs) 
 			if ($r2[2] < $godinastudija*2-1) continue;
 		$suma += $r2[0]; $broj++; 
-		$sumasemestar[$r2[2]][$r1[0]] += $r2[0];
-		$brojsemestar[$r2[2]][$r1[0]]++;
+		$sumasemestar[$r2[2]][$id_studenta] += $r2[0];
+		$brojsemestar[$r2[2]][$id_studenta]++;
 	}
 	
 	// Dodajemo ocjene sa priznavanja
@@ -121,8 +124,8 @@ while ($r1 = db_fetch_row($q1)) {
 		if ($samo_tekuca_gs) 
 			if ($r4[2] < $godinastudija*2-1) continue;
 		$suma += $r4[0]; $broj++; 
-		$sumasemestar[$r4[2]][$r1[0]] += $r4[0];
-		$brojsemestar[$r4[2]][$r1[0]]++;
+		$sumasemestar[$r4[2]][$id_studenta] += $r4[0];
+		$brojsemestar[$r4[2]][$id_studenta]++;
 	}
 
 	// preskacemo studente sa premalo polozenih predmeta

@@ -667,6 +667,7 @@ if ($_REQUEST['_lv_action_delete']) {
 if (($_REQUEST['_lv_action'] == "edit" || $_REQUEST['_lv_action'] == "add") && !$_REQUEST['_lv_action_delete']) {
 	$ip_adresa_losa = false;
 
+	// Add/edit akcije su implementirane u db_form
 	if ($_REQUEST['_lv_action'] == "edit") {
 		$id_kviza = intval($_REQUEST['_lv_column_id']);
 		// Dodajemo logging
@@ -682,39 +683,41 @@ if (($_REQUEST['_lv_action'] == "edit" || $_REQUEST['_lv_action'] == "add") && !
 		zamgerlog2("dodan kviz", $id_kviza);
 	}
 
-	$ip_adrese = $_REQUEST['_lv_column_ip_adrese'];
+	$ip_adrese = trim($_REQUEST['_lv_column_ip_adrese']);
 
-	foreach (explode(",", $ip_adrese) as $blok) {
-		if (strstr($blok, "/")) { // blok adresa u CIDR formatu
-			list ($baza, $maska) = explode("/", $blok);
-			if ($baza != long2ip(ip2long($baza))) { $ip_adresa_losa = true; break; }
-			if ($maska != intval($maska)) { $ip_adresa_losa = true; break; }
-			if ($maska<1 || $maska>32) { $ip_adresa_losa = true; break; }
+	if (!empty($ip_adrese)) {
+		foreach (explode(",", $ip_adrese) as $blok) {
+			if (strstr($blok, "/")) { // blok adresa u CIDR formatu
+				list ($baza, $maska) = explode("/", $blok);
+				if ($baza != long2ip(ip2long($baza))) { $ip_adresa_losa = true; break; }
+				if ($maska != intval($maska)) { $ip_adresa_losa = true; break; }
+				if ($maska<1 || $maska>32) { $ip_adresa_losa = true; break; }
+			}
+			else if (strstr($blok, "-")) { // raspon adresa sa crticom
+				list ($pocetak, $kraj) = explode("-", $blok);
+				if ($pocetak != long2ip(ip2long($pocetak))) { $ip_adresa_losa = true; break; }
+				if ($kraj != long2ip(ip2long($kraj))) { $ip_adresa_losa = true; break; }
+			}
+			else { // pojedinačna adresa
+				if ($blok != long2ip(ip2long($blok))) { $ip_adresa_losa = true; break; }
+			}
 		}
-		else if (strstr($blok, "-")) { // raspon adresa sa crticom
-			list ($pocetak, $kraj) = explode("-", $blok);
-			if ($pocetak != long2ip(ip2long($pocetak))) { $ip_adresa_losa = true; break; }
-			if ($kraj != long2ip(ip2long($kraj))) { $ip_adresa_losa = true; break; }
-		}
-		else { // pojedinačna adresa
-			if ($blok != long2ip(ip2long($blok))) { $ip_adresa_losa = true; break; }
-		}
-	}
 
-	// Vraćamo se na editovanje lošeg kviza
-	if ($ip_adresa_losa) {
-		$_REQUEST['_lv_nav_id'] = $id_kviza;
-		$_GET['_lv_nav_id'] = $id_kviza;
-		$_POST['_lv_nav_id'] = $id_kviza;
+		// Vraćamo se na editovanje lošeg kviza
+		if ($ip_adresa_losa) {
+			$_REQUEST['_lv_nav_id'] = $id_kviza;
+			$_GET['_lv_nav_id'] = $id_kviza;
+			$_POST['_lv_nav_id'] = $id_kviza;
 
-		niceerror("Neispravan format IP adrese");
-		?>
-		<p>Raspon IP adresa treba biti u jednom od formata:<br>
-		- CIDR format (npr. 123.45.67.89/24)<br>
-		- raspon početak-kraj sa crticom (npr. 123.45.67.89-123.45.67.98)<br>
-		- pojedinačna adresa<br>
-		Takođe možete navesti više raspona ili pojedinačnih adresa razdvojenih zarezom.</p>
-		<?
+			niceerror("Neispravan format IP adrese");
+			?>
+			<p>Raspon IP adresa treba biti u jednom od formata:<br>
+			- CIDR format (npr. 123.45.67.89/24)<br>
+			- raspon početak-kraj sa crticom (npr. 123.45.67.89-123.45.67.98)<br>
+			- pojedinačna adresa<br>
+			Takođe možete navesti više raspona ili pojedinačnih adresa razdvojenih zarezom.</p>
+			<?
+		}
 	}
 }
 

@@ -100,8 +100,11 @@ while ($r15 = db_fetch_row($q15)) {
 	if (db_result($q15a,0,0)>0) continue;
 
 	// Ima li kakvih rezultata?
-	$q16 = db_query("select count(*) from ispitocjene where ispit=$r15[0]");
-	if (db_result($q16,0,0)==0) {
+	if ($id == "svi")
+		$q16 = db_query("select ocjena from ispitocjene where ispit=$r15[0]");
+	else
+		$q16 = db_query("select ocjena from ispitocjene where ispit=$r15[0] and student=$userid");
+	if (db_num_rows($q16)==0) {
 		$q17 = db_query("select count(*) from ispit_termin where ispit=$r15[0]");
 		if (db_result($q17,0,0)>0) {
 			$vrijeme_poruke["i".$r15[0]] = $r15[3];
@@ -115,12 +118,14 @@ while ($r15 = db_fetch_row($q15)) {
 		}
 	}
 	else {
+		if ($id == "svi") $modul = "izvjestaj/predmet"; else $modul = "student/predmet";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
+		if ($id == "svi") $dodaj_bodove = ""; else $dodaj_bodove = "Dobili ste ".mysql_result($q16,0,0)." bodova! ";
 		$code_poruke["i".$r15[0]] = "<item>
 		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
-		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
-		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
+		<link>$conf_site_url/index.php?sta=$modul&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
+		<description><![CDATA[$dodaj_bodove Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
 		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["i".$r15[0]])."</pubDate>
 	</item>\n";
 	}
@@ -174,16 +179,16 @@ while ($r18 = db_fetch_row($q18)) {
 if ($id == "svi") {
 	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka where opseg=3 or opseg=4 or opseg=5 order by vrijeme desc limit $broj_poruka");
 	while ($r100 = db_fetch_row($q100)) {
-		$id = $r100[0];
+		$id_poruke = $r100[0];
 		$opseg = $r100[2];
 		$primalac = $r100[3];
 		
 		// Poruka je ok
 		if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
-		$vrijeme_poruke[$id]=$r100[1];
+		$vrijeme_poruke[$id_poruke]=$r100[1];
 
 		// Fino vrijeme
-		$vr = $vrijeme_poruke[$id];
+		$vr = $vrijeme_poruke[$id_poruke];
 		$vrijeme="";
 	//	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
 	//	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
@@ -216,12 +221,12 @@ if ($id == "svi") {
 		else
 			$title="Poruka";
 
-		$code_poruke[$id]="<item>
-			<guid isPermaLink=\"false\">".$id."</guid>
+		$code_poruke[$id_poruke]="<item>
+			<guid isPermaLink=\"false\">".$id_poruke."</guid>
 			<title>$title: $naslov ($vrijeme)</title>
-			<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
+			<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id_poruke</link>
 			<description>Poslao: $posiljalac</description>
-			<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+			<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id_poruke])."</pubDate>
 		</item>\n";
 	}
 
@@ -242,7 +247,7 @@ if ($id == "svi") {
 	$br = 0;
 	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka order by vrijeme desc limit $broj_poruka");
 while ($r100 = db_fetch_row($q100)) {
-	$id = $r100[0];
+	$id_poruke = $r100[0];
 	$opseg = $r100[2];
 	$primalac = $r100[3];
 	if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
@@ -263,10 +268,10 @@ while ($r100 = db_fetch_row($q100)) {
 
 	// Poruka je ok
 	if (++$br > $broj_poruka) break; // Nema smisla da gledamo dalje
-	$vrijeme_poruke[$id]=$r100[1];
+	$vrijeme_poruke[$id_poruke]=$r100[1];
 
 	// Fino vrijeme
-	$vr = $vrijeme_poruke[$id];
+	$vr = $vrijeme_poruke[$id_poruke];
 	$vrijeme="";
 //	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "danas ";
 //	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "juče ";
@@ -299,12 +304,12 @@ while ($r100 = db_fetch_row($q100)) {
 	else
 		$title="Poruka";
 
-	$code_poruke[$id]="<item>
-		<guid isPermaLink=\"false\">".$id."</guid>
+	$code_poruke[$id_poruke]="<item>
+		<guid isPermaLink=\"false\">".$id_poruke."</guid>
 		<title>$title: $naslov ($vrijeme)</title>
-		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id</link>
+		<link>$conf_site_url/index.php?sta=common%2Finbox&amp;poruka=$id_poruke</link>
 		<description>Poslao: $posiljalac</description>
-		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id])."</pubDate>
+		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke[$id_poruke])."</pubDate>
 	</item>\n";
 }
 }
@@ -343,7 +348,7 @@ if ($id == "svi")
 	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
 
 else 
-	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag");
+	$q200 = db_query("select mpi.moodle_id, p.kratki_naziv, p.naziv from student_predmet as sp, ponudakursa as pk, predmet as p, moodle_predmet_id as mpi where sp.student=$userid and sp.predmet=pk.id and pk.predmet=p.id and pk.predmet=mpi.predmet and pk.akademska_godina=$ag and mpi.akademska_godina=$ag and (select count(*) from konacna_ocjena ko where ko.student=$userid and ko.predmet=p.id and ko.ocjena>5)=0");
 while ($r200 = db_fetch_row($q200)) {
 	$course_id = $r200[0];
 
@@ -432,7 +437,7 @@ header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_shift(array_values($vr
 <?
 
 
-foreach ($vrijeme_poruke as $id=>$vrijeme) {
+foreach ($vrijeme_poruke as $id_poruke=>$vrijeme) {
 	if ($count==0) {
 		// Polje pubDate u zaglavlju sadrži vrijeme zadnje izmjene tj. najnovije poruke
 
@@ -442,7 +447,7 @@ foreach ($vrijeme_poruke as $id=>$vrijeme) {
 		print "        <pubDate>".date("D, j M Y H:i:s O", $vrijeme)."</pubDate>\n";
 	}
 
-	print $code_poruke[$id];
+	print $code_poruke[$id_poruke];
 	$count++;
 	if ($count==$broj_poruka) break; // prikazujemo samo prvih $broj_poruka poruka
 }

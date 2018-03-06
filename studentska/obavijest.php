@@ -8,6 +8,8 @@ function studentska_obavijest() {
 
 global $userid,$conf_ldap_domain,$user_siteadmin,$conf_skr_naziv_institucije_genitiv;
 
+require_once("lib/legacy.php"); // zbog mb_substr
+
 // LEGENDA tabele poruke
 // Tip:
 //    1 - obavjestenja
@@ -507,7 +509,7 @@ while ($r100 = db_fetch_row($q100)) {
 
 	$vrijeme_poruke[$id]=$r100[1];
 	$naslov = $r100[4];
-	if (strlen($naslov)>60) $naslov = substr($naslov,0,55)."...";
+	if (strlen($naslov)>60) $naslov = mb_substr($naslov,0,55)."...";
 	if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
 
 	// Primalac

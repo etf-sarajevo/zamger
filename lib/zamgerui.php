@@ -564,17 +564,11 @@ function studentski_meni($fj) {
 			// Da li postoji anketa za dati predmet ili sve predmete u trenutnom semestru?
 			if ($modul_anketa) {
 				$q42 = db_query("select a.id, a.naziv, ap.aktivna from anketa_anketa as a, anketa_predmet as ap where ap.anketa=a.id and a.akademska_godina=$pag and (ap.predmet=$predmet or ap.predmet IS NULL) and ap.semestar=$zimskiljetnji");
-				if (db_num_rows($q42) == 1) { // Samo jedna anketa, dajemo link pod nazivom "Rezultati ankete"
-					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;";
-					if ($_REQUEST['sta'] != "student/anketa")
-						$ispis .= "<a href=\"?sta=student/anketa&anketa=".db_result($q42,0,0)."&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
-					$ispis .= "Rezultati ankete";
-					if ($_REQUEST['sta'] != "student/anketa") $ispis .= "</a>";
-					$ispis .= "<br/>\n";
-				} else {
-					while ($r42 = db_fetch_row($q42)) {
+				while ($r42 = db_fetch_row($q42)) {
+					if ($_REQUEST['sta'] == "student/anketa" && $_REQUEST['anketa'] == $r42[0])
+						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;$r42[1]<br/>\n";
+					else
 						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&anketa=$r42[0]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r42[1]</a><br/>\n";
-					}
 				}
 			}
 

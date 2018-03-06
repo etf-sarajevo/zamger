@@ -69,7 +69,7 @@ while ($r100 = db_fetch_row($q100)) {
 	$id_studenta = $r100[7];
 
 	if (!isset($_REQUEST['svi'])) {
-		$q110 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$id_studenta AND predmet=$predmet AND ocjena>5");
+		$q110 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$id_studenta AND predmet=$predmet AND akademska_godina=$ag AND ocjena>5");
 		if (db_result($q110,0,0) == 0) continue;
 	}
 	

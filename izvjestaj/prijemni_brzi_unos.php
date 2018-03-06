@@ -100,10 +100,10 @@ $pdf->AddPage();
 
 //	$pdf->Image("static/images/content/150dpi/ETF-Domestic-contract-PGS-ALL-0.png",210,297,0,0,'','','',true,150);
 if ($jezik=="en") {
-	$pdf->Image("static/images/content/150dpi/obrazac_sa_sifrom_kandidata_en_2015.png",0,0,210,0,'','','',true,150); 
+	$pdf->Image("static/images/content/150dpi/obrazac_sa_sifrom_en.png",0,0,210,0,'','','',true,150); 
 	$en_offset = 7;
 } else {
-	$pdf->Image("static/images/content/150dpi/obrazac_sa_sifrom_kandidata_2015.png",0,0,210,0,'','','',true,150); 
+	$pdf->Image("static/images/content/150dpi/obrazac_sa_sifrom.png",0,0,210,0,'','','',true,150); 
 	$en_offset = 0;
 }
 	

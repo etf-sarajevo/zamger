@@ -14,6 +14,12 @@
 
 // INDEX - master skripta za ZAMGER
 
+if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
+	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR']; 
+else
+	$ip_adresa = $_SERVER['REMOTE_ADDR'];
+if (in_array($ip_adresa, $conf_banned_ips)) { print "Pristup Zamgeru onemogućen zbog zloupotrebe. Kontaktirajte administratora."; exit(0); }
+
 
 // Provjera da li postoji config.php
 if (!file_exists("lib/config.php")) {
@@ -89,6 +95,14 @@ $posljednji_pristup = 0;
 // Web service router
 $route = param('route');
 if ($route !== false && $route != "auth") {
+	// Handle JSON encoded requests
+	if ($_SERVER["CONTENT_TYPE"] == "application/json") {
+		$_REQUEST = json_decode(file_get_contents('php://input'),true);
+		if ($_SERVER['REQUEST_METHOD'] == "GET")
+			$_GET = json_decode(file_get_contents('php://input'),true);
+		else if ($_SERVER['REQUEST_METHOD'] == "POST")
+			$_POST = json_decode(file_get_contents('php://input'),true);
+	}
 	$segments = explode('/', trim($route, '/'));
 	$sta = "ws/" . db_escape($segments[0]);
 	for ($i=1; $i<count($segments); $i++) {
@@ -367,7 +381,7 @@ if ($found==1 && $template==0 && $greska=="") {
 			<?
 		}
 	}
-	if ($userid>0) zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	if ($userid>0 && $sta != "public/anketa") zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 	$uspjeh=1;
 	include ("$sta.php");
 	$uspjeh=2;
@@ -546,7 +560,7 @@ if ($userid>0) {
 // Polje sa imenom i linkovima na inbox, profil i odjavu
 if ($userid>0) {
 	user_box();
-	zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
+	if ($sta != "public/anketa") zamgerlog(urldecode(genuri()),1); // nivo 1 = posjet stranici
 }
 
 // Prikaz modula uglavljenog u template

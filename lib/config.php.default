@@ -41,6 +41,21 @@ $conf_appversion = "4.3";
 
 $conf_system_auth = "table";
 
+// Uslov za upis u narednu godinu (iz zakona)
+$conf_uslov_predmeta = 2;
+$conf_uslov_ects_kredita = 12;
+$conf_uslov_kolizija = 5;
+
+
+// Broj statusnih uvjerenja i prepisa ocjena koje studenti mogu dobiti besplatno
+// Ako je nula, neće se prikazivati nikakve informacije o plaćanju, informišite studente
+// na neki drugi način (ili je sve besplatno)
+$conf_broj_besplatnih_potvrda = 5;
+
+// Cijena svakog narednog uvjerenja (u KM)
+$conf_cijena_potvrde = 2;
+
+
 // Pristupni podaci za LDAP
 // Zamger će koristiti anonimni pristup
 $conf_ldap_server = "localhost";
@@ -57,7 +72,6 @@ $conf_use_mysql_utf8 = true;
 
 // Da li ispisivati debugging poruke?
 $conf_debug = true;
-$_lv_["debug"] = true; // libvedran
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
@@ -76,6 +90,10 @@ $conf_dblayer = "mysqli";
 
 // Prikazati dnevnik na login stranici (javno)
 $conf_javni_dnevnik = true;
+
+// IP adrese banovane od pristupa Zamgeru
+// $conf_banned_ips = array("5.43.71.81");
+$conf_banned_ips = array();
 
 // Izvozni format: izvoz na ISSS novi web servis (NewWS)
 //$conf_export_format = "isss-newws";

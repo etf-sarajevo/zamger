@@ -64,7 +64,7 @@ function student_zavrsni()  {
 	if ($akcija == 'odjava') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
 		
-		$q115 = db_query("SELECT student FROM zavrsni WHERE id=$zavrsni AND predmet=$predmet AND akademska_godina=$ag");
+		$q115 = db_query("SELECT student, kandidat_potvrdjen FROM zavrsni WHERE id=$zavrsni AND predmet=$predmet AND akademska_godina=$ag");
 		if (db_num_rows($q115)<1) {
 			niceerror("Završni rad nije sa ovog predmeta");
 			zamgerlog("spoofing zavrsnog rada (odjava) $zavrsni", 3);
@@ -76,12 +76,16 @@ function student_zavrsni()  {
 			return;
 		}
 		if (db_result($q115,0,0)!=$userid) {
-			nicemerror("Niste prijavljeni za ovaj rad");
+			niceerror("Niste prijavljeni za ovaj rad");
 			zamgerlog("neko drugi prijavljen za $zavrsni", 3);
 			return;
 		}
+		if (db_result($q115,0,1) == 1) {
+			niceerror("Ne možete se odjaviti sa potvrđenog rada");
+			return;
+		}
 		
-		$q120 = db_query("UPDATE zavrsni SET student=0 WHERE id=$zavrsni");
+		$q120 = db_query("UPDATE zavrsni SET student=NULL WHERE id=$zavrsni");
 		nicemessage("Uspješno ste odjavljeni sa teme završnog rada");
 		zamgerlog("student ispisan sa zavrsnog rada $zavrsni", 2);
 		
@@ -98,15 +102,16 @@ function student_zavrsni()  {
 	
 	if ($akcija == 'detalji') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
-		$q130 = db_query("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE id=$zavrsni AND tema_odobrena=1");
+		$q130 = db_query("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student, kandidat_potvrdjen FROM zavrsni WHERE id=$zavrsni AND tema_odobrena=1");
 		$naslov = db_result($q130,0,0);
 		$podnaslov = db_result($q130,0,1);
-		$kpregled = db_result($q130,0,2);
-		$literatura = db_result($q130,0,3);
+		$kpregled = str_replace("\n", "<br>", linkuj_urlove(db_result($q130,0,2)));
+		$literatura = str_replace("\n", "<br>", linkuj_urlove(db_result($q130,0,3)));
 		$id_mentor = db_result($q130,0,4);
 		$id_predkom = db_result($q130,0,5);
 		$id_clankom = db_result($q130,0,6);
 		$student = db_result($q130,0,7);
+		$potvrdjen = db_result($q130,0,8);
 
 		?>
 		<h2>Završni rad</h2>
@@ -125,15 +130,21 @@ function student_zavrsni()  {
 		if ($student==$userid) {
 			?>
 			<p><b>Akcije:</b><br>
-			<a href="<?=$linkprefix?>&zavrsni=<?=$zavrsni?>&akcija=odjava">Odjavi se sa ove teme</a><br>
-			<a href="<?=$linkprefix?>&zavrsni=<?=$zavrsni?>&akcija=zavrsni_stranica">Stranica završnog rada</a>
+			<?
+			if ($potvrdjen == 0) {
+				?>
+				<a href="<?=$linkprefix?>&amp;zavrsni=<?=$zavrsni?>&amp;akcija=odjava">Odjavi se sa ove teme</a><br>
+				<?
+			}
+			?>
+			<a href="<?=$linkprefix?>&amp;zavrsni=<?=$zavrsni?>&amp;akcija=zavrsni_stranica">Stranica završnog rada</a>
 			</p>
 			<?
 
 		} else if ($student==0) {
 			?>
 			<p><b>Akcije:</b><br>
-			<a href="<?=$linkprefix?>&zavrsni=<?=$zavrsni?>&akcija=prijava">Prijavi se na ovu temu</a>
+			<a href="<?=$linkprefix?>&amp;zavrsni=<?=$zavrsni?>&amp;akcija=prijava">Prijavi se na ovu temu</a>
 			</p>
 			<?
 		} else {

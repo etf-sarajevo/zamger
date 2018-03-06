@@ -136,19 +136,22 @@ if ($_REQUEST['akcija']=="prihvati") {
 
 	$q570 = db_query("select naziv from studij where id=$u_odsjek");
 	$naziv_ciljnog = db_result($q570,0,0);
+	$manji=$zadnji_semestar-1;
+	$veci=$zadnji_semestar+1;
 
 	print "<p>Provjerite da li student ima uslove za upis u viši semestar ili nema!!!</p>\n";
-	if ($zadnji_semestar%2==1) {
-		$manji=$zadnji_semestar-1;
-		$veci=$zadnji_semestar+1;
+	if ($zadnji_semestar%2==1 && $manji>1) {
+		// Ako se nalazimo na prelazu iz zimskog u ljetnji, ponudićemo da ga vratimo u nižu godinu
+		// (Mada se to nikada nije desilo)
 		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$u_odsjek?>&semestar=<?=$manji?>&godina=<?=$ak_god?>">Ponovo upiši studenta na <?=$naziv_ciljnog?>, <?=$manji?>. semestar.</a></p>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$u_odsjek?>&semestar=<?=$veci?>&godina=<?=$ak_god?>">Upiši studenta na <?=$naziv_ciljnog?>, <?=$veci?>. semestar.</a></p>
+		<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$u_odsjek?>&amp;semestar=<?=$manji?>&amp;godina=<?=$ak_god?>">Ponovo upiši studenta na <?=$naziv_ciljnog?>, <?=$manji?>. semestar.</a></p>
+		<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$u_odsjek?>&amp;semestar=<?=$veci?>&amp;godina=<?=$ak_god?>">Upiši studenta na <?=$naziv_ciljnog?>, <?=$veci?>. semestar.</a></p>
 		<?
 	}
 	else {
+		// Uvijek upisujemo studenta u veći semestar, jer ako je već upisan u isti onda će uhvatiti uslov u liniji 104
 		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=upis&studij=<?=$u_odsjek?>&semestar=<?=$zadnji_semestar?>&godina=<?=$ak_god?>">Ponovo upiši studenta na <?=$naziv_ciljnog?>, <?=$zadnji_semestar?>. semestar.</a></p>
+		<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&studij=<?=$u_odsjek?>&amp;semestar=<?=$veci?>&amp;godina=<?=$ak_god?>">Ponovo upiši studenta na <?=$naziv_ciljnog?>, <?=$veci?>. semestar.</a></p>
 		<?
 	}
 	return;

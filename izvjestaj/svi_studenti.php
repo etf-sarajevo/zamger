@@ -26,6 +26,7 @@ $tabelarno = request('tabelarno');
 $prvi_put = request('prvi_put');
 $mjesto_rodjenja = request('mjesto_rodjenja');
 $adresa_mjesto = request('adresa_mjesto');
+$drzavljanstvo = request('drzavljanstvo');
 
 if ($ag==0) {
 	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
@@ -64,6 +65,7 @@ if ($nacin_studiranja) $kolone .= ", ns.naziv as nacin";
 if ($login) $kolone .= ", a.login";
 if ($mjesto_rodjenja) $kolone .= ", m.naziv as mjestorodj";
 if ($adresa_mjesto) $kolone .= ", am.naziv as adresamjesto";
+if ($drzavljanstvo) $kolone .= ", d.naziv as drzavljanstvo";
 
 $tabele = "";
 if ($nacin_studiranja) $tabele .= ", nacin_studiranja as ns";
@@ -71,6 +73,7 @@ if ($studij < 0) $tabele .= ", studij as s, tipstudija as ts";
 if ($login) $tabele .= ", auth as a";
 if ($mjesto_rodjenja) $tabele .= ", mjesto as m";
 if ($adresa_mjesto) $tabele .= ", mjesto as am";
+if ($drzavljanstvo) $tabele .= ", drzava as d";
 
 $uslovi = "";
 if (!$vanredni) $uslovi .= " and ss.nacin_studiranja != 4";
@@ -86,6 +89,7 @@ if ($adresa_mjesto) {
 	$uslovi .= " and o.adresa_mjesto=am.id";
 	if ($adresa_mjesto != "on") $uslovi .= " and am.naziv='$adresa_mjesto'";
 }
+if ($drzavljanstvo) $uslovi .= " and o.drzavljanstvo=d.id";
 
 $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
@@ -107,6 +111,7 @@ if ($tabelarno) {
 	if ($login) print "<th>Login</th>";
 	if ($mjesto_rodjenja) print "<th>Mjesto rođenja</th>";
 	if ($adresa_mjesto) print "<th>Adresa mjesto</th>";
+	if ($drzavljanstvo) print "<th>Državljanstvo</th>";
 	print "<th>&nbsp;</th>";
 	print "</tr>\n";
 }
@@ -121,6 +126,7 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($login) print "<td>".$osoba['login']."</td>";
 		if ($mjesto_rodjenja) print "<td>".$osoba['mjestorodj']."</td>";
 		if ($adresa_mjesto) print "<td>".$osoba['adresamjesto']."</td>";
+		if ($drzavljanstvo) print "<td>".$osoba['drzavljanstvo']."</td>";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print "<td><font color=\"red\">- nepoznato ime oca!</font></td>";
@@ -139,6 +145,7 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($login) print " - ".$osoba['login']." ";
 		if ($mjesto_rodjenja) print "(".$osoba['mjestorodj'].")";
 		if ($adresa_mjesto) print "(".$osoba['adresamjesto'].")";
+		if ($drzavljanstvo) print "(".$osoba['drzavljanstvo'].")";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print " <font color=\"red\">- nepoznato ime oca!</font>";

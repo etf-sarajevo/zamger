@@ -74,6 +74,30 @@ if (true) {
 			$i++;
 		}
 	}
+
+	
+
+?>
+<p>&nbsp;</p>
+<p><b>Tumačenje prikazanih brojeva:</b>
+<ul>
+<li>Prosjek godine <i>nije jednak</i> srednjoj vrijednosti prosjeka semestara, jer broj predmeta po semestrima ne mora biti isti.
+	<ul>
+		<li>Primjer: U prvom semestru ste imali pet predmeta i iz svih pet ste dobili ocjenu 10. Prosjek 1. semestra je 10.0</li>
+		<li>U drugom semestru ste imali šest predmeta i iz svih šest ste dobili ocjenu 6. Prosjek 2. semestra je 6.0</li>
+		<li>No prosjek godine <i>nije</i> 8.0 nego je nešto manji. Prosjek godine se računa kao prosjek svih predmeta na godini, kojih ima jedanaest, pa je to (5*10 + 6*6) / 11 = 86 / 11 = 7,82.</li>
+	</ul>
+</li>
+<li>Prosjek ciklusa <i>nije jednak</i> srednjoj vrijednosti svih godina jer su u prosjek ciklusa uračunate i godine koje nisu završene tj. godine koje ponavljate.
+	<ul>
+		<li>Primjer: Na prvoj godini ste imali deset predmeta i sve predmete ste položili sa ocjenom 10. Prosjek godine je 10.0.</li>
+		<li>Na drugoj godini ste imali također deset predmeta ali položili ste samo dva sa ocjenom 6. Prosjek druge godine neće biti prikazan jer godina nije završena.</li>
+		<li>Prosjek ciklusa se računa kao prosjek svih položenih predmeta, a to je (10*10 + 2*6) / 12 = 112 / 12 = 9,33.</li>
+	</ul>
+</ul>
+<?
+
+	
 	return;
 }
 
@@ -180,7 +204,6 @@ while ($broj_semestar[$i]>0) {
 
 	$i++;
 }
-
 
 
 

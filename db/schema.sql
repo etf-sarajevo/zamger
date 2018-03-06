@@ -2000,8 +2000,11 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju_izborni` (
 CREATE TABLE IF NOT EXISTS `ugovoroucenju_kapacitet` (
   `predmet` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
-  `kapacitet` int(11) NOT NULL default '0',
-  `kapacitet_ekstra` int(11) NOT NULL default '0'
+  `kapacitet` int(11) NOT NULL default '-1' COMMENT '0 = predmet ne ide, -1 = nema ogranicenja',
+  `kapacitet_izborni` int(11) NOT NULL default '-1' COMMENT '0 = niko ne moze izabrati, -1 = nema ogranicenja',
+  `kapacitet_kolizija` int(11) NOT NULL default '-1' COMMENT '0 - predmet ne ide u koliziji',
+  `kapacitet_drugi_odsjek` int(11) NOT NULL default '-1' COMMENT '0 - predmet ne mogu birati sa drugog odsjeka',
+  `drugi_odsjek_zabrane` varchar(50) collate utf8_slovenian_ci NOT NULL COMMENT 'ako je prazno mogu svi, u suprotnom spisak odsjeka za koje je zabranjen'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
@@ -2113,7 +2116,12 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
   `svrha_potvrde` int(11) default NULL,
   `datum_zahtjeva` datetime default NULL,
   `status` int(11) default NULL,
-  PRIMARY KEY  (`id`)
+  `akademska_godina` int(11) NOT NULL,
+  `besplatna` tinyint(4) NOT NULL default '1',
+  PRIMARY KEY  (`id`),
+  KEY `akademska_godina` (`akademska_godina`),
+  KEY `tip_potvrde` (`tip_potvrde`),
+  KEY `svrha_potvrde` (`svrha_potvrde`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
 -- --------------------------------------------------------
@@ -2682,6 +2690,14 @@ ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandi
 
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+
+--
+-- Constraints for table `zahtjev_za_potvrdu`
+--
+ALTER TABLE `zahtjev_za_potvrdu`
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_4` FOREIGN KEY (`tip_potvrde`) REFERENCES `tip_potvrde` (`id`),
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_5` FOREIGN KEY (`svrha_potvrde`) REFERENCES `svrha_potvrde` (`id`),
+  ADD CONSTRAINT `zahtjev_za_potvrdu_ibfk_6` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
 --
 -- Constraints for table `zavrsni`

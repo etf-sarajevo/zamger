@@ -8,6 +8,7 @@ function studentska_anketa(){
 
 	require_once("lib/formgen.php"); // datectrl
 	require_once("lib/utility.php"); // time2mysql
+	require_once("lib/legacy.php"); // mb_substr
 
 	global $userid, $user_siteadmin, $user_studentska, $conf_site_url;
 	global $_lv_; // Potrebno za genform() iz libvedran
@@ -230,12 +231,16 @@ function studentska_anketa(){
 		$ak_godina = intval($_POST['akademska_godina']);
 		$naziv = db_escape(substr($_POST['naziv'], 0, 100));
 		$prethodna_anketa = intval($_POST['prethodna_anketa']);
+		
+		// Određivanje aktuelnog semestra
+		// Ne koristimo trenutni_semestar() iz lib/zamger jer se anketa u pravilu kreira između dva semestra za prethodni semestar
+		$semestar = 1 - db_get("SELECT COUNT(*) FROM akademska_godina WHERE aktuelna=1 AND pocetak_ljetnjeg_semestra>CURRENT_DATE()");
 	
 		print "Nova anketa je kreirana. Molimo sačekajte.<br/><br/>";
 				
 		$q393 = db_query("insert into anketa_anketa set naziv='$naziv', datum_otvaranja=NOW(), datum_zatvaranja=NOW(), opis='', aktivna=0, editable=1, akademska_godina=$ak_godina");
 		$anketa = db_insert_id();
-		$r394 = db_query("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0"); // FIXME Ovim je kreirana anketa za sve predmete... 
+		$r394 = db_query("insert into anketa_predmet set anketa=$anketa, predmet=NULL, akademska_godina=$ak_godina, aktivna=0, semestar=$semestar"); // FIXME Ovim je kreirana anketa za sve predmete... 
 		zamgerlog("kreirana nova anketa '$naziv' sa id-om $anketa", 4);
 		zamgerlog2("kreirana nova anketa", $anketa);
 		
@@ -287,6 +292,88 @@ function studentska_anketa(){
 			print " <center> <span style='color:#009900'> Pitanje uspješno dodano! </span> </center>";
 			zamgerlog("dodano pitanje na anketi $anketa", 2);
 			zamgerlog2("dodano pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 2000);
+			</script>
+			<? 
+			return;
+		}
+		
+		// dodavanje odgovora na pitanja tipa "višestruki izbor"
+		if($_POST['subakcija']=="dodaj_odgovor" && check_csrf_token()) {
+			$id_pitanja = int_param('id_pitanja');
+			$tekst_odgovora = db_escape(param('tekst_odgovora'));
+			
+			$test = db_get("SELECT tip_pitanja FROM anketa_pitanje WHERE id=$id_pitanja");
+			if ($test != 3 && $test != 4) {
+				niceerror("Neispravan id pitanja");
+				return;
+			}
+			
+			db_query("INSERT INTO anketa_izbori_pitanja SET pitanje=$id_pitanja, izbor='$tekst_odgovora', dopisani_odgovor=0");
+			print " <center> <span style='color:#009900'> Uspješno dodan odgovor na pitanje! </span> </center>";
+			zamgerlog("dodan odgovor na pitanje na anketi $anketa", 2);
+			zamgerlog2("dodan odgovor na pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
+		}
+		
+		// dodavanje odgovora na pitanja tipa "višestruki izbor"
+		if($_POST['subakcija']=="obrisi_odgovor" && check_csrf_token()) {
+			$id_odgovora = int_param('id_odgovora');
+			
+			db_query("DELETE FROM anketa_izbori_pitanja WHERE id=$id_odgovora");
+			print " <center> <span style='color:#009900'> Uspješno obrisan odgovor na pitanje! </span> </center>";
+			zamgerlog("obrisan odgovor na pitanje na anketi $anketa", 2);
+			zamgerlog2("obrisan odgovor na pitanje na anketi", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
+		}
+		
+		// dodavanje predmeta na spisak predmeta
+		if($_POST['subakcija']=="dodaj_predmet" && check_csrf_token()) {
+			$predmet = int_param('predmet');
+			$id_ankete = intval($_REQUEST['anketa']);
+			
+			$ag_ankete = db_get("SELECT akademska_godina FROM anketa_anketa WHERE id=$id_ankete");
+			
+			// Da li je jedini predmet null?
+			$trenutni = db_get("SELECT predmet FROM anketa_predmet WHERE anketa=$id_ankete AND akademska_godina=$ag_ankete");
+			if ($trenutni === null && $trenutni !== false)
+				db_query("UPDATE anketa_predmet SET predmet=$predmet WHERE anketa=$id_ankete");
+			else
+				db_query("INSERT INTO anketa_predmet SET anketa=$id_ankete, predmet=$predmet, akademska_godina=$ag_ankete, semestar=0, aktivna=1");
+			
+			print " <center> <span style='color:#009900'> Uspješno dodan predmet za anketu! </span> </center>";
+			zamgerlog("dodan predmet za anketu $anketa", 2);
+			zamgerlog2("dodan predmet za anketu", $anketa);
+			
+			?>
+			<script language="JavaScript">
+			setTimeout(function() {
+				location.href='?sta=studentska/anketa&anketa=<?=$anketa?>&akcija=edit';
+			}, 500);
+			</script>
+			<? 
+			return;
 		}
 		
 		// Osnovni podaci
@@ -301,18 +388,35 @@ function studentska_anketa(){
 		$ak_godina_ankete = db_result($q201,0,5);
 		
 		// broj pitanja
-		$q203 = db_query("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
-		$broj_pitanja = db_result($q203,0,0);
+		$broj_pitanja = db_get("SELECT count(*) FROM anketa_pitanje WHERE anketa=$id_ankete");
 		
 		//kupimo pitanja
-		$q202=db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
+		$q202=db_query("SELECT p.id, p.tekst,t.tip, t.id FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa = $id_ankete order by p.id");
 		
 		// id aktelne akademske godine
-		$q010 = db_query("select id,naziv from akademska_godina where aktuelna=1");
-		$aktuelna_ak_god = db_result($q010,0,0);
+		$aktuelna_ak_god = db_get("select id,naziv from akademska_godina where aktuelna=1");;
 		
-		$q125 = db_query("select naziv from akademska_godina where id=$ak_godina_ankete");
-		$naziv_ak_godina_ankete = db_result($q125,0,0);
+		$naziv_ak_godina_ankete = db_get("select naziv from akademska_godina where id=$ak_godina_ankete");
+		
+		// Spisak svih predmeta na fakultetu trenutno
+		$svi_predmeti = db_query_vassoc("SELECT DISTINCT p.id, p.naziv FROM predmet p, ponudakursa pk WHERE pk.akademska_godina=$aktuelna_ak_god AND pk.predmet=p.id ORDER BY p.naziv");
+		
+		$predmeti_html = "";
+		$q203 = db_query("SELECT predmet, semestar FROM anketa_predmet WHERE anketa=$id_ankete");
+		while(db_fetch2($q203, $predmet, $semestar)) {
+			if ($predmet === null)
+				$predmeti_html = "SVI";
+			else {
+				$predmeti_html .= $svi_predmeti[$predmet];
+				unset($svi_predmeti[$predmet]);
+			}
+		}
+		
+		$lista_predmeta = "";
+		foreach($svi_predmeti as $id => $naziv_predmeta) {
+			if (strlen($naziv_predmeta) > 35) $naziv_predmeta = mb_substr($naziv_predmeta, 0, 30) . "...";
+			$lista_predmeta .= "<option value=\"$id\">$naziv_predmeta</option>\n";
+		}
 		
 		?>
 	
@@ -342,6 +446,29 @@ function studentska_anketa(){
 			<tr>
 				<td valign="top" align="right">	 Opis: &nbsp; 	</td>
 				<td valign="top"> <b><?=$opis?></b><br/></td>
+			</tr> 
+			<tr>
+				<td valign="top" align="right">&nbsp;<br />	 Predmeti: &nbsp; 	</td>
+				<td valign="top"> &nbsp;<br /> <b><?=$predmeti_html?></b><br/>
+					<?
+					if ($predmet != null) {
+					?>
+					<?=genform("POST")?>
+					<input type="hidden" name="subakcija" value="dodaj_predmet">
+					<select name="predmet"><?=$lista_predmeta?></select>
+					<input type="submit" value="Dodaj predmet">
+					</form>
+					<?
+					}
+					?>
+				</td>
+			</tr>
+			<tr>
+				<td valign="top" align="right">	 Semestar: &nbsp; 	</td>
+				<td valign="top"> <select name="semestar">
+					<option value="1" <?=$semestar_neparni?>>Neparni</option><br/>
+					<option value="0" <?=$semestar_parni?>>Parni</option><br/>
+				</select></td>
 			</tr> 
 			<tr>
 				<td valign="top" align="right">&nbsp;</td>
@@ -395,14 +522,14 @@ function studentska_anketa(){
 		if($editable == 0){
 			print "</tr>";
 			$i=1;
-			while ($r202 = db_fetch_row($q202)) {
+			while (db_fetch3($q202, $id_pitanja, $tekst, $tip)) {
 				?>
 			<tr>
 				<td colspan='2'><hr/></td>
 			</tr>
 			<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""; ?>>
-				<td><?=$i?>. <?=$r202[1]?></td>
-				<td width='150'><?=$r202[2]?></td>
+				<td><?=$i?>. <?=$tekst?></td>
+				<td width='150'><?=$tip?></td>
 			</tr>
 				<?
 				$i++;
@@ -410,7 +537,7 @@ function studentska_anketa(){
 		} else {
 			print "<td>  </td></tr>";
 			$i=1;
-			while ($r202 = db_fetch_row($q202)) {
+			while (db_fetch4($q202, $id_pitanja, $tekst, $tip, $id_tipa)) {
 				print genform("POST");
 				?>
 				<tr>
@@ -418,15 +545,48 @@ function studentska_anketa(){
 				</tr>
 				<input type='hidden' name='subakcija' value='edit_pitanje'>
 				<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""?>>
-				<input type='hidden' name='column_id' value='<?=$r202[0]?>'>
-					<td><input name ='tekst_pitanja' size='100' value='<?=$r202[1]?>'/> </td> 
-					<td><?=dropdown_anketa($r202[2])?></td>
+				<input type='hidden' name='column_id' value='<?=$id_pitanja?>'>
+					<td><input name ='tekst_pitanja' size='100' value='<?=$tekst?>'/> </td> 
+					<td><?=dropdown_anketa($tip)?></td>
 					<td><input type='submit' value='Pošalji '><input type='submit' name='obrisi'  value=' Obriši '></td>
 				</tr>
 				</form>
 				<?
+				
+				// Ponuđeni odgovori na pitanja	
+				if ($id_tipa == 3 || $id_tipa == 4) {
+					?>
+					<tr><td colspan="3">Ponuđeni odgovori na pitanje:<ul>
+					<?
+					$odgovori = db_query_vassoc("SELECT id, izbor FROM anketa_izbori_pitanja WHERE pitanje=$id_pitanja");
+					foreach($odgovori as $id => $tekst) {
+						?>
+						<?=genform("POST")?>
+						<input type='hidden' name='subakcija' value='obrisi_odgovor'>
+						<input type='hidden' name='id_odgovora' value='<?=$id?>'>
+						<li><?=$tekst?> - <input type="submit" value=" Obriši ">
+						</li>
+						</form>
+						<?
+					}
+					?>
+					</ul>
+					</td></tr>
+					
+					<?=genform("POST")?>
+					<input type='hidden' name='subakcija' value='dodaj_odgovor'>
+					<input type='hidden' name='id_pitanja' value='<?=$id_pitanja?>'>
+					<tr>
+						<td><input type="text" name="tekst_odgovora" size="100" value=""></td>
+						<td colspan="2"><input type="submit" value=" Dodaj odgovor "></td>
+					</tr>
+					</form>
+					<?
+				}
+				
 				$i++;
-			}	
+			}
+			
 			$q284 = db_query("SELECT id, tekst, tip_pitanja FROM anketa_pitanje");
 			$lista_pitanja = "<select id = 'pitanja' name='pitanja' onChange=\"javascript:setVal();\">";
 			$Counter=0;
@@ -443,7 +603,7 @@ function studentska_anketa(){
 			<tr><td colspan='3'>Odaberite postojeće pitanje za izmjenu: </td> </tr>
 			<tr><td colspan='3'><?=$lista_pitanja?></td> </tr>
 			<tr><td colspan='3'>Novo pitanje: </td> </tr>
-			<form name='' action="<?=genuri()?>&akcija=edit&anketa=<?=$anketa?>" method='POST'>
+			<?=genform("POST")?>
 			<input type='hidden' name='subakcija' value='novo_pitanje'>
 			<tr >
 				<td>Tekst: <input name='tekst_novo_pitanje' id = 'tekst_novo_pitanje' size='100' /> </td> <td> Tip: <?=dropdown_anketa(1)?></td>

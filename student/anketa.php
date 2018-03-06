@@ -19,16 +19,16 @@ function student_anketa() {
 
 
 	// Podaci za zaglavlje
-	$q1 = db_query("select naziv from predmet where id=$predmet");
-	if (db_num_rows($q1)<1) {
+	$naziv_predmeta = db_get("select naziv from predmet where id=$predmet");
+	if ($naziv_predmeta === false) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 		zamgerlog2("nepoznat predmet", $predmet); // nivo 3: greska
 		biguglyerror("Nepoznat predmet");
 		return;
 	}
 
-	$q2 = db_query("select naziv from akademska_godina where id=$ag");
-	if (db_num_rows($q2)<1) {
+	$naziv_ag = db_get("select naziv from akademska_godina where id=$ag");
+	if ($naziv_ag === false) {
 		zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
 		zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
 		biguglyerror("Nepoznata akademska godina");
@@ -37,8 +37,8 @@ function student_anketa() {
 
 
 	// Da li student slusa predmet?
-	$q5 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (db_num_rows($q5)<1) {
+	$slusa_li = db_get("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	if (!$slusa_li) {
 		zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
 		zamgerlog2("student ne slusa predmet", $predmet, $ag);
 		biguglyerror("Niste upisani na ovaj predmet");
@@ -46,15 +46,15 @@ function student_anketa() {
 	}
 
 
-	$q10 = db_query("select naziv, UNIX_TIMESTAMP(datum_otvaranja), UNIX_TIMESTAMP(datum_zatvaranja), akademska_godina from anketa_anketa where id=$anketa");
-	if (db_num_rows($q10)<1) {
+	$podaci_ankete = db_query_assoc("select naziv, UNIX_TIMESTAMP(datum_otvaranja) do, UNIX_TIMESTAMP(datum_zatvaranja) dz, akademska_godina from anketa_anketa where id=$anketa");
+	if ($podaci_ankete === false) {
 		biguglyerror("Nepostojeća anketa");
 		zamgerlog("student/anketa nepostojeca anketa", 3);
 		zamgerlog2("nepostojeca anketa", $anketa);
 		return;
 	}
 	
-	if (db_result($q10,0,3) != $ag) {
+	if ($podaci_ankete['akademska_godina'] != $ag) {
 		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa pogresna ag", 3);
 		zamgerlog2("id ankete i godine ne odgovaraju", $anketa, $ag);
@@ -65,17 +65,18 @@ function student_anketa() {
 	// Naslov
 	
 	?>
-	<h2><?=db_result($q10,0,0)?></h2>
+	<h2><?=$podaci_ankete['naziv']?></h2>
 	<?
 	
-	if (db_result($q10,0,1) > time()) {
+	if ($podaci_ankete['do'] > time()) {
 		nicemessage("Anketa još uvijek nije otvorena za popunjavanje.");
 		return;
 	}
 	
-	if (db_result($q10,0,2) > time()) {
+	if ($podaci_ankete['dz'] > time()) {
 		nicemessage("Anketa je otvorena za popunjavanje.");
 		?>
+		<p><a href="?sta=public/anketa&amp;anketa=<?=$anketa?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>"><b>Kliknite ovdje za popunjavanje ankete</b></a></p>
 		<p>Ne možete vidjeti rezultate ankete dok se popunjavanje ne završi.</p>
 		<!--p>Za ovu anketu je predviđeno anonimno popunjavanje. Molimo da se odjavite da biste popunili anketu koristeći kod koji ste dobili.</p-->
 		<?
@@ -83,22 +84,22 @@ function student_anketa() {
 	}
 	
 	
-	$q20 = db_query("select predmet, aktivna from anketa_predmet where anketa=$anketa");
-	if (db_num_rows($q20)<1) {
-		biguglyerror("Greška");
+	$podaci2 = db_query("select predmet, aktivna from anketa_predmet where anketa=$anketa AND akademska_godina=$ag");
+	if ($podaci2 === false) {
+		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa ne postoji zapis u tabeli anketa_predmet", 3);
 		zamgerlog2("ne postoji zapis u tabeli anketa_predmet", $anketa);
 		return;
 	}
 	
-	if (db_result($q20,0,0) != $predmet && db_result($q20,0,0) != 0) {
+	if ($podaci2['predmet'] != $predmet && $podaci2['predmet'] != null) {
 		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa pogresan predmet", 3);
 		zamgerlog2("id ankete i predmeta ne odgovaraju", $anketa, $predmet);
 		return;
 	}
 	
-	if (db_result($q20,0,1) != 0) {
+	if ($podaci2['aktivna'] != 0) {
 		?>
 		<h2>Pristup rezultatima ankete nije moguć</h2>
 		<p><?=$pristup_student?> <?=$userid?> <?=$anketa?> Rezultatima ankete se može pristupiti tek nakon isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
@@ -107,7 +108,7 @@ function student_anketa() {
 	}
 	
 	?>
-	<a href="?sta=izvjestaj/anketa&predmet=<?=$predmet?>&ag=<?=$ag?>&anketa=<?=$anketa?>&rank=da">Rezultati ankete za predmet <?=db_result($q1,0,0)?>, akademska <?=db_result($q2,0,0)?></a>
+	<a href="?sta=izvjestaj/anketa&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;anketa=<?=$anketa?>&amp;rank=da">Rezultati ankete za predmet <?=$naziv_predmeta?>, akademska <?=$naziv_ag?></a>
 	<?
 	
 	

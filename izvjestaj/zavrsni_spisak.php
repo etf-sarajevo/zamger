@@ -52,18 +52,17 @@ WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocj
 ORDER BY o.prezime, o.ime"); // 1000 = tip predmeta "Završni rad"
 
 $rbr=0;
-while ($r20 = db_fetch_row($q20)) {
-	$ime_roditelja = $r20[1];
-	if ($r20[1]=="" || $r20[1]=="nepoznato" || $r20[1]=="Nepoznato")
-		$ime_roditelja=$r20[2];
-	$ime = "$r20[3] ($ime_roditelja) $r20[0]";
-	$datum = date("d. m. Y", $r20[4]);
+while (db_fetch7($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplome)) {
+	$ime_roditelja = $ime_oca;
+	if ($ime_roditelja=="" || $ime_roditelja=="nepoznato" || $ime_roditelja=="Nepoznato")
+		$ime_roditelja = $ime_majke;
+	$puno_ime = "$prezime ($ime_roditelja) $ime";
+	$datum = date("d. m. Y", $datum);
 	$rbr++;
-	$broj_diplome = $r20[5];
 	if ($broj_diplome == "") $broj_diplome = "&nbsp;";
 
 	?>
-	<tr><td><?=$rbr?>.</td><td><?=$ime?></td><td><?=$datum?></td><td><?=$strucni_naziv?></td><td><?=$broj_diplome?></td></tr>
+	<tr><td><?=$rbr?>.</td><td><?=$puno_ime?></td><td><?=$datum?></td><td><?=$strucni_naziv?></td><td><?=$broj_diplome?></td></tr>
 	<?
 }
 
