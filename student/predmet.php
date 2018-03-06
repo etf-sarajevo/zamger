@@ -59,8 +59,9 @@ print "<br/>\n";
 
 // Nastavni ansambl
 $q25 = db_query("select o.id, ast.naziv from angazman as a, angazman_status as ast, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id order by ast.id, o.prezime, o.ime");
-while ($r25 = db_fetch_row($q25)) {
-	print "<b>".ucfirst($r25[1])."</b>: ".tituliraj($r25[0])."<br/>";
+while (db_fetch2($q25, $id_osobe, $angazman_status)) {
+	$email = db_get("SELECT adresa FROM email WHERE osoba=$id_osobe ORDER BY sistemska DESC LIMIT 1");
+	print "<b>".ucfirst($angazman_status)."</b>: <a href=\"mailto:$email\">".tituliraj($id_osobe)."</a><br/>";
 }
 print "<br/>\n";
 
