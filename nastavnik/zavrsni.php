@@ -374,5 +374,20 @@ function nastavnik_zavrsni() {
 		<?
 	} //akcija == dodaj biljesku
 
+	elseif ($akcija == 'potvrdi_kandidata') {
+		$q1000 = db_query("SELECT student FROM zavrsni WHERE mentor=$userid and id=$id AND predmet=$predmet AND akademska_godina=$ag");
+		if (db_num_rows($q1000)<1 || db_result($q1000,0,0)==0) {
+			niceerror("Nije definisan kandidat za ovaj rad");
+			zamgerlog("spoofing zavrsnog rada $id kod potvrde kandidata", 3);
+			zamgerlog2("id zavrsnog rada i predmeta se ne poklapaju", $id, $predmet, $ag);
+			return;
+		} else {
+			$q1010 = db_query("UPDATE zavrsni SET kandidat_potvrdjen=1 WHERE id=$id");
+			?>
+			<script>window.location = '<?=$linkPrefix?>';</script>
+			<?
+		}
+	} //akcija == potvrdi_kandidata
+
 } // function
 ?>
