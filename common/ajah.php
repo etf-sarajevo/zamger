@@ -310,7 +310,7 @@ case "izmjena_ispita":
 		update_komponente($stud_id,$ponudakursa,$komponenta);
 
 		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "fiksna") {
 		// Odredjujemo ponudukursa zbog tabele komponentebodovi
@@ -323,7 +323,7 @@ case "izmjena_ispita":
 		zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
 
 		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
@@ -360,13 +360,16 @@ case "izmjena_ispita":
 			ORDER BY i.datum DESC LIMIT 1");
 			if (db_num_rows($q105) > 0) {
 				$datum_u_indeksu = db_result($q105,0,0);
-				if ($datum_u_indeksu > time())
+				$sada = time();
+				if ($datum_u_indeksu > $sada) {
 					$datum_provjeren = 0;
-				else
+					zamgerlog("datum nije provjeren jer je u buducnosti $datum_u_indeksu > $sada", 3);
+				} else
 					$datum_provjeren = 1;
 			} else {
 				$datum_u_indeksu = time();
 				$datum_provjeren = 0;
+				zamgerlog("datum nije provjeren jer nema termina, student $stud_id predmet $predmet ag $ag", 3);
 			}
 
 			$q80 = db_query("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
@@ -379,7 +382,7 @@ case "izmjena_ispita":
 			zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
 		} else if ($c>0) {
 			$staraocjena = db_result($q70,0,0);
-			$q80 = db_query("update konacna_ocjena set ocjena=$vrijednost, datum=NOW() where predmet=$predmet and student=$stud_id");
+			$q80 = db_query("update konacna_ocjena set ocjena=$vrijednost, datum=NOW(), pasos_predmeta=$pasos_predmeta where predmet=$predmet and student=$stud_id");
 			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
 		}
@@ -389,7 +392,7 @@ case "izmjena_ispita":
 			db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
 
 		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da') );
+		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "kodatum") {
 		// AJAH "kodatum" je uvijek promjena
