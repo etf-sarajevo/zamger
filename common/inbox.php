@@ -172,17 +172,15 @@ if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
 		ajax_start(
 			"ws/osoba", 
 			"GET",
-			{ "akcija" : "pretraga", "ime" : ib.value },
+			{ "akcija" : "pretraga", "upit" : ib.value },
 			function(osobe) { 
 				var rp=document.getElementById('rezultati_pretrage');
 				rp.innerHTML = "";
 				found = false;
-				for (var id in osobe) {
-					if (osobe.hasOwnProperty(id)) {
-						osoba_tekst = osobe[id].login + " (" + osobe[id].ime + " " + osobe[id].prezime + ")";
-						rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+osoba_tekst+"')\">"+osoba_tekst+"</a><br/>";
-						found = true;
-					}
+				for (i=0; i<osobe.length; i++) {
+					osoba_tekst = osobe[i].logini[0] + " (" + osobe[i].ime + " " + osobe[i].prezime + ")";
+					rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+osoba_tekst+"')\">"+osoba_tekst+"</a><br/>";
+					found = true;
 				}
 				if (!found) rp.innerHTML = "<font color=\"#AAAAAA\">(Nema rezultata)</font><br/>";
 			}
