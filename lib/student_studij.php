@@ -5,6 +5,11 @@
 
 require_once("lib/plan_studija.php");
 
+global $uslov_debug;
+//$uslov_debug = 4766;
+$uslov_debug = false;
+
+
 // Funkcija koja provjerava da li je student dao uslov za upis na sljedecu godinu studija, odnosno koliko predmeta nije položeno
 // - Parametar $ag omogućuje da se uslov posmatra u nekom trenutku iz prošlosti. Vrijednost je godina u kojoj je student bio upisan,
 // provjerava se da li je student imao uslov po završetku te godine
@@ -27,14 +32,29 @@ function ima_li_uslov($student, $ag=0) {
 	db_fetch4($q10, $studij, $semestar, $studij_trajanje, $plan_studija);
 	if ($semestar%2==1) $semestar++; // zaokružujemo na parni semestar
 	
+	// Sljedeći studenti RI imaju uslov iako nisu položili predmete iz NPP
+	$ri_preskocili = array(3967, 4418, 4031, 3825, 4349, 3864);
+	if (in_array($student, $ri_preskocili)) return true;
+	
+	$ri_predmeti = array(3752);
+	$ri_zanemari = array(3749 => array(22), 553 => array(41,22), 4351 => array(41), 4387 => array(2102), 4950 => array(9), 3591 => array(6), 3037 => array(41, 6), 3576 => array(22, 41), 4024 => array(41,6), 3969 => array(20));
+	
 	// Ako je definisan plan studija, koristimo ga
-	if ($plan_studija > 0)
+	if ($plan_studija > 0 && !in_array($student, $ri_predmeti))
 		$ima_uslov = ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija);
 	
 	// U suprotnom, uslov se određuje na osnovu predmeta koje je student ranije slušao
 	// Uz pokušaj da se predvidi i mogućnost promjene izbornog predmeta
 	else
 		$ima_uslov = ima_li_uslov_predmeti($student, $ag, $studij, $semestar, $studij_trajanje);
+		
+	if (array_key_exists($student, $ri_zanemari)) {
+		global $zamger_predmeti_pao, $conf_uslov_predmeta;
+		foreach($ri_zanemari[$student] as $predmet)
+			unset($zamger_predmeti_pao[$predmet]);
+		if (!$ima_uslov && count($zamger_predmeti_pao) <= $conf_uslov_predmeta)
+			$ima_uslov = true;
+	}
 	
 	return $ima_uslov;
 }
@@ -42,8 +62,10 @@ function ima_li_uslov($student, $ag=0) {
 
 // Određivanje uslova na osnovu plana studija
 function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija) {
-	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta, $conf_uslov_ects_kredita;
+	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta, $conf_uslov_ects_kredita, $uslov_debug;
 	global $cache_planova_studija;
+	
+	if ($student == $uslov_debug) print "ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija)<br>\n";
 	
 	$zamger_predmeti_pao = $pis_bio = $nepoznat_izborni = array();
 	$nize_godine = $obaveznih_pao = $zamger_pao_ects = $izbornih_pao = 0;
@@ -67,9 +89,12 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	
 	// Predmeti koje je student položio s drugih odsjeka
 	$drugi_odsjek = array();
+	
 	foreach($student_slusao as $predmet) {
 		$pronasao = false;
 		foreach($cache_planova_studija[$plan_studija] as $slog) {
+			// Hack za RPR koji je po novom NPP AE u programu na 5. semestru, a po starom je bio izborni sa drugog odsjeka u 3. semestru
+			if ($studij == 3 && $plan_studija == 13 && $predmet == 9 && $ag - (($semestar+1)/2) < 12) continue;
 			if ($slog['obavezan'] == 1 && $slog['predmet']['id'] == $predmet) {
 				$pronasao = true;
 				break;
@@ -89,6 +114,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				FROM student_predmet sp, ponudakursa pk, pasos_predmeta pp 
 				WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.predmet=pp.predmet AND pk.akademska_godina>=$godina_upisa");
 			if ($drugi_odsjek[$predmet] === false) unset($drugi_odsjek[$predmet]);
+			else if ($student == $uslov_debug) print "Predmet sa drugog odsjeka $predmet<br>\n";
 		}
 	}
 	
@@ -98,6 +124,32 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 		if ($slog['obavezan'] == 1) {
 			$predmet = $slog['predmet']['id'];
 			$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
+			if (!$polozio) {
+				// Hack za RI stare predmete
+				// 2092 - IM1, 12 - IM1  -- merge!
+				if ($predmet == 2092) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=12 AND ocjena>5");
+				if ($predmet == 12) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=2092 AND ocjena>5");
+				// 2093 - OE, 20 - OE  -- merge!
+				if ($predmet == 2093) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=20 AND ocjena>5");
+				// 2096 - MLTI priznajemo kao 71 - EK1
+				if ($predmet == 2096) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=71 AND ocjena>5");
+				// 2097 - VIS priznajemo kao 129 - EES
+				if ($predmet == 2097) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=129 AND ocjena>5");
+				// 2097 - VIS priznajemo kao 129 - IF2
+				if ($predmet == 2097 && $polozio==0) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=128 AND ocjena>5");
+				// Hack za Elezovića: 2097 - VIS možemo priznati i EK1 jer nosi više kredita
+				if ($predmet == 2097 && $polozio==0) {
+					$polozio_ek1 = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=71 AND ocjena>5");
+					$polozio_mlti = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=2096 AND ocjena>5");
+					if ($polozio_ek1 && $polozio_mlti) $polozio=1;
+				}
+				// 2098 - OS, 11 - OS -- merge!
+				if ($predmet == 2098) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=11 AND ocjena>5");
+				// Umjesto 2098 OS može i 128 - IF2
+				if ($predmet == 2098 && $polozio==0) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=128 AND ocjena>5");
+				// AE predmet 61 - SIP priznajemo kao 2114 - Senzori i mjerenja
+				if ($predmet == 2114) $polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=61 AND ocjena>5");
+			}
 			
 			if (!$polozio) {
 				$zamger_predmeti_pao[$predmet] = $slog['predmet']['naziv'];
@@ -108,6 +160,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				// Ako je obavezan, situacija je jasna
 				$obaveznih_pao++;
 				$zamger_pao_ects += $slog['predmet']['ects'];
+				if ($student == $uslov_debug) print "Pao obavezan $predmet<br>\n";
 			}
 		} else {
 			// Kod izbornih predmeta moramo računati da se isti slot može ponavljati N puta, 
@@ -120,9 +173,14 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
 				if ($polozio)
 					$polozio_izbornih_slot++;
-				else if (in_array($predmet, $student_pao))
+				else if (in_array($predmet, $student_pao)) {
 					$izborni_predmeti_pao[] = $slog_predmet;
+					if ($student == $uslov_debug) print "Pao izborni $predmet<br>\n";
+				}
 			}
+			
+			if ($student == $uslov_debug) print "Slot: ".$slog['plan_izborni_slot']." polozio $polozio_izbornih_slot<br>";
+
 			
 			// Nije položio dovoljno predmeta iz ovog slota
 			if ($polozio_izbornih_slot < $slog['ponavljanja']) {
@@ -144,6 +202,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			if ($polozio_izbornih_slot < $slog['ponavljanja']) {			
 				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
+					if ($student == $uslov_debug) print "slogsem ".$slog['semestar']." podacisem ".$podaci['semestar']." id ".$predmet." naziv ".$podaci['naziv']."<br>\n";
 					if ($podaci['semestar'] == $slog['semestar']) {
 						// U prethodnoj petlji smo unset-ovali sve predmete koje je položio
 						// Tako da je sigurno pao ovaj predmet
@@ -156,6 +215,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 								$ag_izborni = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=" . $slog_izborni['id']);
 								if ($ag_izborni > $ag_drugi_odsjek) {
 									// Sa matičnog je noviji pa ćemo koristiti njega
+									if ($student == $uslov_debug)  print "Pao matični odsjek noviji " .$slog_izborni['naziv']. "<br>";
 									$zamger_predmeti_pao[$slog_izborni['id']] = $slog_izborni['naziv'];
 									$zamger_pao_ects += $slog_izborni['ects'];
 									
@@ -170,6 +230,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 						}
 						
 						// Student nije slušao predmet sa matičnog odsjeka ili je ovaj noviji
+						if ($student == $uslov_debug)  print "Pao drugi odsjek " .$podaci['naziv']. "<br>";
 						$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
 						$zamger_pao_ects += $podaci['ects'];
 						$pao_izbornih_slot++;
@@ -188,6 +249,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 					$zamger_predmeti_pao[$slog_predmet['id']] = $slog_predmet['naziv'];
 					$zamger_pao_ects += $slog_predmet['ects'];
 					if ($slog['semestar'] < $semestar-1) $nize_godine++;
+					if ($student == $uslov_debug) print "Pao matični odsjek " .$slog_predmet['naziv']. "<br>";
 					
 					unset($slog_predmet);
 					
@@ -199,9 +261,11 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			// Za preostali broj ponavljanja nemamo pojma pa ćemo ih dodati u petlji
 			while ($polozio_izbornih_slot + $pao_izbornih_slot < $slog['ponavljanja']) {
 				// Koristimo negativan ID za oznaku nepoznatog predmeta
+				if ($student == $uslov_debug) print "Položio izbornih u slotu $polozio_izbornih_slot pao $pao_izbornih_slot, što je manje od ".$slog['ponavljanja']."<br>\n";
 				$zamger_predmeti_pao[$nepoznat_predmet_id--] = "(Nepoznat izborni predmet)";
 				$pao_izbornih_slot++;
 			}
+			
 			$izbornih_pao += $pao_izbornih_slot;
 		}
 	}
@@ -440,6 +504,8 @@ function provjeri_preduvjete($predmet, $student, $najnoviji_plan) {
 
 		// Da li je položio?
 		$br_ocjena = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$preduvjet AND ocjena>5");
+		// Hack za IDove predmeta na RI:
+		if ($br_ocjena == 0 && $preduvjet == 12) $br_ocjena = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=2092 AND ocjena>5");
 		if ($br_ocjena == 0) array_push($rezultat, $preduvjet);
 	}
 	return $rezultat;

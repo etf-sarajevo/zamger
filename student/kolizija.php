@@ -109,7 +109,35 @@ function student_kolizija() {
 			db_fetch3($q40, $id, $naziv, $ects);
 			
 			$ima_ocjenu = db_get("select count(*) from konacna_ocjena where student=$userid and predmet=$id and ocjena>5");
+			// Spisak izuzetaka za RI
 			if ($ima_ocjenu < 1) {
+				// Hack za RI stare predmete
+				// 2092 - IM1, 12 - IM1  -- merge!
+				if ($id == 2092) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=12 AND ocjena>5");
+				if ($id == 12) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=2092 AND ocjena>5");
+				// 2093 - OE, 20 - OE  -- merge!
+				if ($id == 2093) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=20 AND ocjena>5");
+				// 2096 - MLTI priznajemo kao 71 - EK1
+				if ($id == 2096) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=71 AND ocjena>5");
+				// 2097 - VIS priznajemo kao 129 - EES
+				if ($id == 2097) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=129 AND ocjena>5");
+				// 2097 - VIS priznajemo kao 129 - IF2
+				if ($id == 2097 && $ima_ocjenu==0) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=128 AND ocjena>5");
+				// Hack za Elezovića: 2097 - VIS možemo priznati i EK1 jer nosi više kredita
+				if ($id == 2097 && $ima_ocjenu==0) {
+					$polozio_ek1 = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=71 AND ocjena>5");
+					$polozio_mlti = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=2096 AND ocjena>5");
+					if ($polozio_ek1 && $polozio_mlti) $ima_ocjenu=1;
+				}
+				// 2098 - OS, 11 - OS -- merge!
+				if ($id == 2098) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=11 AND ocjena>5");
+				// Umjesto 2098 OS može i 128 - IF2
+				if ($id == 2098 && $ima_ocjenu==0) $ima_ocjenu = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=128 AND ocjena>5");
+			}
+			
+			if ($ima_ocjenu < 1) {
+				// Izuzetak za Ammara Saloševića
+				if ($userid == 3037 && ($id == 41 || $id == 6)) continue;
 				$predmet_naziv[$id] = $naziv;
 				$predmet_ects[$id] = $ects;
 				$predmet_semestar[$id] = $semestar;
@@ -118,6 +146,8 @@ function student_kolizija() {
 			}
 
 		} else { // izborni predmet
+			// Izuzetak za Ammara Saloševića
+			if ($userid == 3037 && $plan_izborni_slot == 65) continue;
 			$broj_izbornih[$plan_izborni_slot]++;
 			$q60 = db_query("select pp.predmet, pp.naziv, pp.ects from plan_izborni_slot as pis, pasos_predmeta as pp, ponudakursa as pk, student_predmet as sp where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id and pp.predmet=pk.predmet and pk.akademska_godina=$proslagodina and pk.id=sp.predmet and sp.student=$userid");
 
@@ -150,7 +180,7 @@ function student_kolizija() {
 					$ima_ocjenu = db_get("select count(*) from konacna_ocjena where student=$userid and predmet=$id and ocjena>5");
 					if ($ima_ocjenu > 0) $polozio++;
 				}
-	
+				
 				if ($polozio < $broj_izbornih[$plan_izborni_slot]) { // nije polozio dovoljno izbornih predmeta
 					// Spisak izbornih
 					$validni_izborni = db_query_varray("select pp.predmet from plan_izborni_slot as pis, plan_studija_predmet as psp, pasos_predmeta as pp where psp.plan_studija=$najnoviji_plan and psp.semestar<=$trenutni_semestar and psp.obavezan=0 and psp.plan_izborni_slot=pis.id and psp.pasos_predmeta=pp.id");

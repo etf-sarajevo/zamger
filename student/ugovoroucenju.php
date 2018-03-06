@@ -123,7 +123,7 @@ function student_ugovoroucenju() {
 						}
 					}
 					
-					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij) == 0) {
+					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij, false, true) == 0) {
 						niceerror("Predmet $predmet_naziv se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
 						zamgerlog2("popunjen kapacitet za predmet", $izabran_predmet);
 						return;
@@ -463,6 +463,7 @@ function student_ugovoroucenju() {
 			$polozeni = array();
 			foreach($slog['predmet'] as $slog_predmet) {
 				$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=" . $slog_predmet['id'] . " AND ocjena>5");
+				if ($studij == 3 && $semestar == 5 && $slog_predmet['id'] == 9) $polozio=false; // Hack za predmet RPR na AE i promjenu NPP
 				if ($polozio) $polozeni[] = $slog_predmet['id'];
 			}
 			

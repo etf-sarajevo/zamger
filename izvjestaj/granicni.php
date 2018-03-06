@@ -296,6 +296,7 @@ while ($r20 = db_fetch_row($q20)) {
 			// Obavezan predmet
 			if ($plan_studija_obavezan[$pssem][$redni_broj]==1) {
 				$pao_predmet = pao_predmet($student, $predmet, $ak_god);
+				if ($pao_predmet == 3 && $predmet == 12) $pao_predmet = pao_predmet($student, 2092, $ak_god);  // Hack za stari id predmeta: 2092 - IM1, 12 - IM1
 				if ($pao_predmet == 1) {
 					$parcijalnih++;
 					$parcijalni_predmet[] = naziv_predmeta_cache($predmet);
