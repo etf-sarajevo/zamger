@@ -121,7 +121,7 @@ if ($studij>-1) { // Izbor studija
 if ($studij==-1) 
 	$q30 = db_query("select distinct p.id, p.naziv, 1 from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 else
-	$q30 = db_query("select p.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
+	$q30 = db_query("select distinct p.id, p.naziv, pk.obavezan from predmet as p, ponudakursa as pk where pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit order by pk.obavezan desc, p.naziv");
 
 // Dodatak upitu za studente
 $upit_studenti="";
@@ -452,9 +452,9 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 		// Konacna ocjena
 		} else if ($ispit==4) {
 			if ($studij==-1) 
-				$q110 = db_query("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka IS NULL"); // Eliminisemo ocjene po odluci
+				$q110 = db_query("select distinct pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk, student_predmet as sp where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and sp.student=$stud_id and sp.predmet=pk.id and ko.odluka IS NULL"); // Eliminisemo ocjene po odluci
 			else
-				$q110 = db_query("select pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka IS NULL");
+				$q110 = db_query("select distinct pk.predmet,ko.ocjena from konacna_ocjena as ko, ponudakursa as pk where ko.student=$stud_id and ko.predmet=pk.predmet and ko.akademska_godina=$akgod $studij_upit_pk and pk.akademska_godina=$akgod and $semestar_upit and ko.odluka IS NULL");
 			
 			$broj_polozenih=0;
 			while ($r110 = db_fetch_row($q110)) {
