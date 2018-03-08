@@ -249,7 +249,7 @@ function db_dropdown($table,$selected=0,$empty=0) {
 		$sql = "select $id,$name,$surname from $table";
 	// Construct where
 	$n=0;
-	foreach ($_lv_ as $key => $value) {
+	if (is_array($_lv_)) foreach ($_lv_ as $key => $value) {
 		if (substr($key,0,6) == "where:" && substr($key,6) != $id) {
 			// Check if mentioned column exists
 			// (This is possible e.g. if db_dropdown is called from db_form)
