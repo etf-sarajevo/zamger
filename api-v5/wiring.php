@@ -23,6 +23,44 @@ $wiring = array(
 	),
 
 
+	// INBOX
+	
+	array(
+		"path" => "inbox", 
+		"description" => "Recent messages", 
+		"method" => "GET",
+		"params" => array( "messages" => "int", "start" => "int" ),
+		"code" => "if (\$messages == 0) \$messages=5; \$msgs = Message::latest(\$messages, \$start); return \$msgs;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"message" => array("href" => "inbox/{id}"),
+			"unread" => array("href" => "inbox/unread"),
+		) // TODO: define identity links for classes
+	),
+	array(
+		"path" => "inbox/{id}", 
+		"description" => "Get message", 
+		"method" => "GET", 
+		"code" => "\$msg = Message::fromId(\$id); return \$msg;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"inbox" => array("href" => "inbox"),
+			"unread" => array("href" => "inbox/unread"),
+		) // TODO: define identity links for classes
+	),
+	array(
+		"path" => "inbox/unread", 
+		"description" => "Unread messages", 
+		"method" => "GET", 
+		"code" => "\$msgs = Message::unread(); return \$msgs;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"inbox" => array("href" => "inbox"),
+			"message" => array("href" => "inbox/{id}"),
+		) // TODO: define identity links for classes
+	),
+
+
 	// PERSON
 	
 	array(
