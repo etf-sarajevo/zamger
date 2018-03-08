@@ -133,6 +133,12 @@ function student_projekti() {
 				zamgerlog("student ispisan sa projekta $projekat (predmet pp$predmet)", 2);
 				zamgerlog2("odjavljen sa starog projekta", $projekat);
 			}
+			?>
+			<script language="JavaScript">
+			location.href='?sta=student/projekti&predmet=<?=$predmet?>&ag=<?=$ag?>';
+			</script>
+			<?
+			return;
 		}
 
 		print '<a href="'.$linkprefix.'">Povratak.</a>';
