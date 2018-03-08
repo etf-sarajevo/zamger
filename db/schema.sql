@@ -1273,6 +1273,7 @@ CREATE TABLE IF NOT EXISTS `poruka` (
   `ref` int(11) NOT NULL DEFAULT '0',
   `naslov` text COLLATE utf8_slovenian_ci NOT NULL,
   `tekst` text COLLATE utf8_slovenian_ci NOT NULL,
+  `procitana` tinyint(1) NOT NULL default '1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

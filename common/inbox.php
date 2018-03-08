@@ -78,7 +78,7 @@ if ($_POST['akcija']=='send' && check_csrf_token()) {
 	$prim_id = db_result($q300,0,0);
 
 	// Samo slanje licnih poruka je dozvoljeno...
-	$q310 = db_query("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, vrijeme=NOW(), ref=".intval($_REQUEST['ref']).", naslov='".db_escape($_REQUEST['naslov'])."', tekst='".db_escape($_REQUEST['tekst'])."'");
+	$q310 = db_query("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, vrijeme=NOW(), ref=".intval($_REQUEST['ref']).", naslov='".db_escape($_REQUEST['naslov'])."', tekst='".db_escape($_REQUEST['tekst'])."', procitana=0");
 	nicemessage("Poruka uspješno poslana");
 	zamgerlog("poslana poruka za u$prim_id",2);
 	zamgerlog2("poslana poruka", intval($prim_id));
@@ -253,7 +253,7 @@ $dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Peta
 $poruka = intval($_REQUEST['poruka']);
 if ($poruka>0) {
 	// Dobavljamo podatke o poruci
-	$q10 = db_query("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst, tip from poruka where id=$poruka");
+	$q10 = db_query("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst, tip, procitana from poruka where id=$poruka");
 	if (db_num_rows($q10)<1) {
 		niceerror("Poruka ne postoji");
 		zamgerlog("pristup nepostojecoj poruci $poruka",3);
@@ -424,6 +424,10 @@ if ($poruka>0) {
 	<br/><br/>
 	<a href="?sta=common/inbox&akcija=odgovor&poruka=<?=$poruka?>">Odgovorite na poruku</a>
 	<br/><hr><br/><?
+	
+	if ($opseg == 7 && db_result($q10,0,7) == 0) {
+		db_query("UPDATE poruka SET procitana=1 WHERE id=$poruka");
+	}
 }
 
 
@@ -520,7 +524,7 @@ if ($_REQUEST['mode']=="outbox") {
 	
 	$vrijeme_poruke = array();
 	
-	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac from poruka where tip=2 order by vrijeme desc");
+	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac, procitana from poruka where tip=2 order by vrijeme desc");
 	while ($r100 = db_fetch_row($q100)) {
 		$id = $r100[0];
 		$opseg = $r100[2];
@@ -561,8 +565,9 @@ if ($_REQUEST['mode']=="outbox") {
 	
 		//$count++;
 		$count++;
+		if ($r100[6] == 0) { $b = "<b>"; $bb = "</b>"; } else { $b = $bb = ""; }
 		if ($count>($stranica-1)*$velstranice && $count<=$stranica*$velstranice)
-			$ispis .= "<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$vrijeme</td><td>$posiljalac</td><td><a href=\"?sta=common/inbox&poruka=$id&stranica=$stranica\">$naslov</a></td></tr>\n";
+			$ispis .= "<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$b$vrijeme$bb</td><td>$b$posiljalac$bb</td><td><a href=\"?sta=common/inbox&poruka=$id&stranica=$stranica\">$b$naslov$bb</a></td></tr>\n";
 	}
 
 	if ($count==0) {
