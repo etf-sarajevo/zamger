@@ -38,6 +38,31 @@ $wiring = array(
 		) // TODO: define identity links for classes
 	),
 	array(
+		"path" => "inbox/outbox", 
+		"description" => "Sent messages", 
+		"method" => "GET",
+		"params" => array( "messages" => "int", "start" => "int" ),
+		"code" => "if (\$messages == 0) \$messages=5; \$msgs = Message::outbox(\$messages, \$start); return \$msgs;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"message" => array("href" => "inbox/{id}"),
+			"count" => array("href" => "inbox/count"),
+			"unread" => array("href" => "inbox/unread"),
+		) // TODO: define identity links for classes
+	),
+	array(
+		"path" => "inbox/count", 
+		"description" => "Total personal messages", 
+		"method" => "GET",
+		"code" => "return Message::count();", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"inbox" => array("href" => "inbox"),
+			"message" => array("href" => "inbox/{id}"),
+			"unread" => array("href" => "inbox/unread"),
+		) // TODO: define identity links for classes
+	),
+	array(
 		"path" => "inbox/{id}", 
 		"description" => "Get message", 
 		"method" => "GET", 

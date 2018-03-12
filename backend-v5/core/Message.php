@@ -24,6 +24,8 @@ class Message {
 		$msg = Util::array_to_class($msg, "Message");
 		if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 		$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
+		if ($msg->range == 7)
+			$msg->receiver = new UnresolvedClass("Person", $msg->receiver, $msg->receiver);
 		
 		// Does this user have access rights to this message?
 		if ($msg->range == 1 && !in_array("student", Session::$privileges))
@@ -79,19 +81,41 @@ class Message {
 		
 		return $msg;
 	}
+	
+	public static function count() {
+		$result['count'] = DB::get("SELECT COUNT(*) FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7");
+		return $result;
+	}
 
 	// Inbox of latest messages for user
 	public static function latest($count = 0, $start = 0) {
 		$sql = "";
 		if ($count > 0) {
-			$sql = "LIMIT $count";
-			if ($start > 0) $sql .= ",$start";
+			if ($start > 0) $sql .= "LIMIT $start,$count";
+			else $sql = "LIMIT $count";
 		}
 		$msgs = DB::query_table("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
 		foreach ($msgs as &$msg) {
 			$msg = Util::array_to_class($msg, "Message");
 			if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 			$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
+		}
+		return $msgs;
+	}
+
+	// Inbox of latest messages for user
+	public static function outbox($count = 0, $start = 0) {
+		$sql = "";
+		if ($count > 0) {
+			if ($start > 0) $sql .= "LIMIT $start,$count";
+			else $sql = "LIMIT $count";
+		}
+		$msgs = DB::query_table("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE posiljalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
+		foreach ($msgs as &$msg) {
+			$msg = Util::array_to_class($msg, "Message");
+			if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
+			$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
+			$msg->receiver = new UnresolvedClass("Person", $msg->receiver, $msg->receiver);
 		}
 		return $msgs;
 	}
