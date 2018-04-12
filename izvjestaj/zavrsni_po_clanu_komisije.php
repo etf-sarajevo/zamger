@@ -52,6 +52,7 @@ while ($r100 = db_fetch_row($q100)) {
 	$naslov = $r100[0];
 	$osoba_id = $r100[4];
 	$id_studenta = $r100[5];
+	if (!$id_studenta) continue;
 	
 	$q110 = db_query("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$id_studenta AND predmet=$predmet AND ocjena>5");
 	if (db_result($q110,0,0) == 0) continue;
