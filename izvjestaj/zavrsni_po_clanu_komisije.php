@@ -72,6 +72,8 @@ while ($r100 = db_fetch_row($q100)) {
 		<br>
 		<?=$rbr++?>. <?=$naslov?>
 		<?
+		if ($osoba_id == $r100[1])
+			print " - mentor";
 	}
 }
 
