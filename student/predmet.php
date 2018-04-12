@@ -632,14 +632,16 @@ while ($r400 = db_fetch_row($q400)) {
 
 // KONAČNA OCJENA
 
-$q50 = db_query("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
-if (db_num_rows($q50)>0) {
+$ocjena = db_get("select ocjena from konacna_ocjena where student=$userid and predmet=$predmet and akademska_godina=$ag");
+if ($ocjena > 5) {
+	if ($ocjena == 11) $ocjena = "Ispunio/la obaveze";
+	if ($ocjena == 12) $ocjena = "Uspješno odbranio/la";
 	?>
 	<center>
 		<table width="100px" style="border-width: 3px; border-style: solid; border-color: silver">
 			<tr><td align="center">
 				KONAČNA OCJENA<br/>
-				<font size="6"><b><?=db_result($q50,0,0)?></b></font>
+				<font size="6"><b><?=$ocjena?></b></font>
 			</td></tr>
 		</table>
 	</center>
