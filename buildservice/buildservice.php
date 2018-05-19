@@ -58,13 +58,19 @@ else if ($_REQUEST['action'] == "nextTask") {
 		$result['code'] = "ERR004";
 		$result["message"] = "Only autotester has access to nextTask";
 	} else {
-		$task = false;
+		$task = $previousTask = false;
 		$q = db_query("SELECT id, zadataka FROM zadaca WHERE automatsko_testiranje=1 ORDER BY id");
 		while ($r = db_fetch_row($q)) {
 			for ($i=1; $i<=$r[1]; $i++)
 				if (dajZadatak($r[0], $i)) {
-					$task = $r[0] * 100 + $i;
-					break;
+					$tmpTask = $r[0] * 100 + $i;
+					if (!isset($_REQUEST['previousTask']) || $_REQUEST['previousTask'] == $previousTask) {
+						$task = $tmpTask;
+						break;
+					} else if ($task == false) {
+						$task = $tmpTask;
+					}
+					$previousTask = $tmpTask;
 				}
 		}
 		if ($task == false)
