@@ -36,6 +36,7 @@ require_once(Config::$backend_path."lms/exam/ExamResult.php");
 
 require_once(Config::$backend_path."lms/homework/Assignment.php");
 require_once(Config::$backend_path."lms/homework/Homework.php");
+require_once(Config::$backend_path."lms/homework/AutotestFile.php");
 
 require_once(Config::$backend_path."lms/quiz/Quiz.php");
 require_once(Config::$backend_path."lms/quiz/QuizResult.php");

@@ -831,8 +831,26 @@ $wiring = array(
 		"method" => "GET",
 		"params" => array( "filenames" => "string" ),
 		"encoding" => "none", // Skip JSON encoding result
-		"code" => "header('Content-Type: application/zip'); \$zip = Assignment::getAllAssignments(\$id, \$asgn, \$filenames); return file_get_contents(\$zip->fullPath());", 
-		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
+		"code" => "header('Content-Type: application/zip'); \$zip = Assignment::getAllAssignments(\$id, \$asgn, \$filenames); readfile(\$zip->fullPath()); return '';", 
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/autotest", 
+		"description" => "Get .autotest file for assignment", 
+		"method" => "GET",
+		"code" => "return AutotestFile::fromHomeworkNumber(\$id, \$asgn);", 
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
+	),
+	
+	array(
+		"path" => "homework/{id}/{asgn}/autotest", 
+		"description" => "Update .autotest file for assignment", 
+		"method" => "PUT",
+		"params" => array( "assign" => "object" ),
+		"classes" => array( "assign" => "AutotestFile" ),
+		"code" => "\$assign->update();", 
+		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 	),
 	
 	
