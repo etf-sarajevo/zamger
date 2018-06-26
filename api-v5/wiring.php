@@ -847,9 +847,9 @@ $wiring = array(
 		"path" => "homework/{id}/{asgn}/autotest", 
 		"description" => "Update .autotest file for assignment", 
 		"method" => "PUT",
-		"params" => array( "assign" => "object" ),
-		"classes" => array( "assign" => "AutotestFile" ),
-		"code" => "\$assign->update();", 
+		"params" => array( "autotest" => "object" ),
+		"classes" => array( "autotest" => "AutotestFile" ),
+		"code" => "\$autotest->update(\$id, \$asgn); return \$autotest;", 
 		"acl" => "teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)",
 	),
 	

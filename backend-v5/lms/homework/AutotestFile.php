@@ -127,21 +127,24 @@ class AutotestFile {
 		return $af;
 	}
 	
-	public function update() {
-		$homeworkId = intval($this->id / 100);
-		$assignmentNumber = $this->id % 100;
-		
+	public function update($homeworkId, $assignmentNumber) {
 		$hw = Homework::fromId($homeworkId);
 		if ($assignmentNumber < 1 || $assignmentNumber > $hw->nrAssignments)
 			throw new Exception("Unknown assignment number $assignmentNumber", "404");
 		if (!$hw->automatedTesting)
 			throw new Exception("Homework $homeworkId isn't specified for testing", "403");
 		
+		$this->id = $homeworkId * 100 + $assignmentNumber;
+		
 		DB::query("DELETE FROM autotest WHERE zadaca=$homeworkId AND zadatak=$assignmentNumber");
 		
 		// FIXME require_symbols, replace_symbols
 		
+		$this->test_specifications = (array) $this->test_specifications;
 		foreach($this->test_specifications as $test) {
+			$test = (array) $test;
+			$test['expected'] = (array) $test['expected'];
+			$test['running_params'] = (array) $test['running_params'];
 			if (count($test['expected'])>1) $alt_rezultat=$test['expected'][1]; else $alt_rezultat="";
 			if (!empty($test['global_top'])) {
 				$global = $test['global_top'];
