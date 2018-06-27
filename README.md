@@ -1,0 +1,40 @@
+# Zamger
+Zamger https://zamger.etf.unsa.ba
+
+# Kako se trenutno koristi API
+
+Potrebno je prvo da se autenticiraš na web servis, što se radi preko endpointa:
+
+https://zamger.etf.unsa.ba/api_v5/auth
+
+Obrati pažnju da je kompletan API usklađen sa REST+JSON. Drugim riječima, svi poslani podaci (pa i username i password) moraju biti JSON kodirani i rezultati su uvijek JSON kodirani. Kada se autenticiraš, dobiješ ID sesije koji se u svakom sljedećem pristupu mora proslijediti kao parametar url-a SESSION_ID.
+
+Primjer kako se koristi autentikacija imaš ovdje:
+https://zamger.etf.unsa.ba/wslogin.php
+U pitanju je čisti JavaScript tako da predlažem da proanaliziraš kod.
+
+Specifikacija svih ostalih endpointa se može vidjeti iz fajla:
+https://github.com/etf-sarajevo/zamger/blob/rezamger/api-v5/wiring.php
+
+Konkretno spisak predmeta za nastavnika se dobija sa /course/teacher/{id}
+Recimo, pošto je moj userid na Zamgeru 1 ja se prvo logiram preko stranice wslogin.php. Dobio sam neki SID, recimo 12345. Sada pristupam URLu:
+
+https://zamger.etf.unsa.ba/api_v5/course/teacher/1?SESSION_ID=12345
+
+Ovo je JSON kod koji odgovara nizu objekata tipa CourseUnitYear. Objekat tipa CourseUnitYear se sastoji od elemenata tipa: CourseUnit, AcademicYear i Scoring. To možeš vidjeti ovdje:
+
+https://github.com/etf-sarajevo/zamger/blob/rezamger/backend-v5/core/CourseUnitYear.php
+
+Neki od ovih objekata su nerezolvirani, što možeš vidjeti po tome što JSON sadrži atribut className npr:
+
+"AcademicYear":{"className":"AcademicYear","id":13}
+
+Da bi se rezolvirali svi objekti tipa AcademicYear, samo u URL dodaš parmetar resolve[]=AcademicYear, ovako:
+
+https://zamger.etf.unsa.ba/api_v5/course/teacher/1?SESSION_ID=12345&resolve[]=AcademicYear
+
+Sada vidiš da su prikazani detaljniji podaci o akademskoj godini. resolve parametri se samo dodaju, recimo ovako možemo rezolvirati sada i Institution:
+
+https://zamger.etf.unsa.ba/api_v5/course/teacher/1?SESSION_ID=12345&resolve[]=AcademicYear&resolve[]=Institution
+
+Naravno ovo nije dovoljno da se dobiju baš svi podaci o kursevima, pa predlažem da pogledaš u wiring.php kojim još servisima trebaš pristupiti da saznaš nešto što ti je potrebno za rad.
