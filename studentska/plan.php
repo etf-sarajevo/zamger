@@ -241,7 +241,7 @@ function studentska_plan(){
 
 			$komentar_prijedloga = db_escape($_REQUEST['komentar_prijedloga']);
 
-			$q2100 = db_query("INSERT INTO pasos_predmeta SET predmet=$predmet, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', cilj_kursa='$cilj_kursa', cilj_kursa_en='$cilj_kursa_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en', napomene='$napomene', napomene_en='$napomene_en'");
+			$q2100 = db_query("INSERT INTO pasos_predmeta SET predmet=$predmet, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', cilj_kursa='$cilj_kursa', cilj_kursa_en='$cilj_kursa_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en', napomene='$napomene', napomene_en='$napomene_en'");
 			$id_pasosa = db_insert_id();
 
 			nicemessage("Ažuriran pasoš predmeta");
@@ -317,7 +317,7 @@ function studentska_plan(){
 		<p>Verzija pasoša: <?=$pasos['komentar_prijedloga']?> (<?=$predlozio?>, <?=$vrijeme_prijedloga?>) <?=$text_aktuelna?></p>
 		
 		<?
-		if ($id_aktuelne_verzije != $id_pasosa || $pasos['usvojen'] == 0) {
+		if ($id_aktuelne_verzije != $id_pasosa) {
 			?>
 			<?=genform("POST");?>
 			<input type="hidden" name="akcija" value="potvrdi_pasos">
@@ -696,8 +696,24 @@ function studentska_plan(){
 					
 					// Uzećemo najnoviji pasoš za ovaj predmet
 					// Po mogućnosti usvojen
-					$q405 = db_query("SELECT id FROM pasos_predmeta WHERE predmet=$id_predmeta ORDER BY usvojen DESC, id DESC LIMIT 1");
-					$id_pasosa = db_result($q405,0,0);
+					$q405 = db_query("SELECT id FROM pasos_predmeta WHERE predmet=$id_predmeta ORDER BY id DESC");
+					$id_pasosa = 0;
+					while (db_fetch1($q405, $pp)) {
+						if ($id_pasosa == 0) $id_pasosa = $pp;
+						$usvojen = db_get("SELECT COUNT(*) FROM plan_studija_predmet WHERE pasos_predmeta=$pp");
+						if ($usvojen == 0)
+							$usvojen = db_get("SELECT COUNT(*) FROM plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=$pp");
+						if ($usvojen) { 
+							$id_pasosa = $pp;
+							break;
+						}
+					}
+					
+					if ($id_pasosa == 0) {
+						// Ne bi se trebalo desiti
+						niceerror("Za predmet sa IDom $id_predmeta nije kreiran niti jedan pasoš predmeta");
+						return;
+					}
 
 				} else {
 					// Institucija potrebna za tabelu predmet
@@ -714,7 +730,7 @@ function studentska_plan(){
 					$id_predmeta = db_insert_id();
 					
 					// Kreiramo default pasoš predmeta
-					$q430 = db_query("INSERT INTO pasos_predmeta SET predmet=$id_predmeta, usvojen=0, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='Kreiran novi predmet', sifra='$sifra', naziv='$naziv', ects=$ects");
+					$q430 = db_query("INSERT INTO pasos_predmeta SET predmet=$id_predmeta, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='Kreiran novi predmet', sifra='$sifra', naziv='$naziv', ects=$ects");
 					$id_pasosa = db_insert_id();
 					zamgerlog2("kreiran novi predmet", $id_predmeta);
 				}
@@ -840,12 +856,10 @@ function studentska_plan(){
 		$id_aktuelne_verzije = 0;
 		$ima_na_drugim_npp = false;
 		$aktuelna_ima_na_drugim_npp = false;
-		$q200 = db_query("SELECT pp.id, pp.usvojen, o.ime, o.prezime, UNIX_TIMESTAMP(pp.vrijeme_prijedloga), pp.komentar_prijedloga FROM pasos_predmeta pp, osoba o WHERE pp.predmet=$predmet AND pp.predlozio=o.id ORDER BY pp.vrijeme_prijedloga");
-		while ($r200 = db_fetch_row($q200)) {
-			$pp = $r200[0];
-			$predlozio = $r200[3]." ".$r200[2];
-			$vrijeme_prijedloga = date("d.m.Y. h:i", $r200[4]);
-			$komentar_prijedloga = $r200[5];
+		$q200 = db_query("SELECT pp.id, o.ime, o.prezime, UNIX_TIMESTAMP(pp.vrijeme_prijedloga), pp.komentar_prijedloga FROM pasos_predmeta pp, osoba o WHERE pp.predmet=$predmet AND pp.predlozio=o.id ORDER BY pp.vrijeme_prijedloga");
+		while (db_fetch5($q200, $pp, $prezime, $ime, $vrijeme_prijedloga, $komentar_prijedloga)) {
+			$predlozio = "$prezime $ime";
+			$vrijeme_prijedloga = date("d.m.Y. h:i", $vrijeme_prijedloga);
 			
 			$verzije_pasosa .= "<li>".$komentar_prijedloga." (".$predlozio.", ".$vrijeme_prijedloga.")";
 			
