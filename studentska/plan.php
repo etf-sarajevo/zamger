@@ -850,19 +850,24 @@ function studentska_plan(){
 			$verzije_pasosa .= "<li>".$komentar_prijedloga." (".$predlozio.", ".$vrijeme_prijedloga.")";
 			
 			// U kojim studijima se nalazi ovaj pasoš
-			$q210 = db_query("(SELECT ps.id, s.naziv naz, ag.naziv, ps.godina_vazenja gv
-			FROM plan_studija_predmet psp, plan_studija ps, studij s, akademska_godina ag 
-			WHERE psp.pasos_predmeta=$pp AND psp.plan_studija=ps.id AND ps.studij=s.id AND ps.godina_vazenja=ag.id)
+			$q210 = db_query("(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv
+			FROM plan_studija_predmet psp, plan_studija ps, studij s 
+			WHERE psp.pasos_predmeta=$pp AND psp.plan_studija=ps.id AND ps.studij=s.id)
 			UNION
-			(SELECT ps.id, s.naziv naz, ag.naziv, ps.godina_vazenja gv
-			FROM plan_studija_predmet psp, plan_studija ps, studij s, akademska_godina ag, plan_izborni_slot pis
-			WHERE pis.pasos_predmeta=$pp AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=ps.id AND ps.studij=s.id AND ps.godina_vazenja=ag.id)
+			(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv
+			FROM plan_studija_predmet psp, plan_studija ps, studij s, plan_izborni_slot pis
+			WHERE pis.pasos_predmeta=$pp AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=ps.id AND ps.studij=s.id)
 			ORDER BY gv, naz");
 			
 			$planovi_studija = ""; $aktuelna = false; $ispis = false;
 			while ($r210 = db_fetch_row($q210)) {
-				if ($r210[0] == $plan) $aktuelna=true; else $ispis=true;
-				$planovi_studija .= "<li>".$r210[1]." (".$r210[2].")</li>\n";
+				if ($r210[0] == $plan) 
+					$aktuelna=true; 
+				else if ($r210[2]) {
+					$ispis=true;
+					$naziv_ag = db_get("SELECT naziv FROM akademska_godina WHERE id=".$r210[2]);
+					$planovi_studija .= "<li>".$r210[1]." ($naziv_ag)</li>\n";
+				}
 			}
 			if ($aktuelna) { 
 				$verzije_pasosa .= " - <b><i>aktuelna verzija</i></b> - <a href=\"?sta=studentska/plan&studij=$studij&plan=$plan&predmet=$predmet&pregled_pasosa=$pp\">izmijeni</a>"; 
