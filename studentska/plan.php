@@ -1,6 +1,8 @@
 <?php
 
 function studentska_plan(){
+	require("lib/formgen.php"); // Zbog db_dropdown
+
 	global $userid,$user_siteadmin,$user_studentska;
 
 	// Provjera privilegija
