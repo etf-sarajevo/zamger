@@ -614,20 +614,21 @@ function studentska_plan(){
 					$dijelovi = explode(" ",$naziv);
 					$kratki_naziv = ""; $dio_upita = "";
 					foreach ($dijelovi as $dio) {
+						if (strlen($dio) < 4) continue;
 						$kratki_naziv .= strtoupper(substr($dio,0,1));
 						$dio_upita .= "OR naziv LIKE '%$dio%' ";
 					}
-					$q500 = db_query("SELECT id, naziv, sifra FROM predmet WHERE naziv LIKE '%$naziv%' OR sifra LIKE '%$sifra%'");
-					if (db_num_rows($q500) == 0)
-						$q500 = db_query("SELECT id, naziv, sifra FROM predmet WHERE kratki_naziv='$kratki_naziv' $dio_upita");
+					$q500 = db_query("SELECT id, naziv, sifra FROM predmet WHERE kratki_naziv='$kratki_naziv' OR naziv LIKE '%$naziv%' OR sifra LIKE '%$sifra%'");
 					if (db_num_rows($q500) > 0) {
 						?>
 						<p><b>Pronađeni su sljedeći slični predmeti.</b> Da li želite da dodate postojeći predmet u plan i program ili da kreirate novi?<br>
 						<?
+						$count = 0;
 						while ($r500 = db_fetch_row($q500)) {
 							?>
 							<input type="radio" name="postojeci_predmet" value="<?=$r500[0]?>"> <?=$r500[1]?> (<?=$r500[2]?>) <br>
 							<?
+							if (++$count > 10) break;
 						}
 						?>
 						<input type="radio" name="postojeci_predmet" value="0"> Kreiranje novog predmeta</p>
