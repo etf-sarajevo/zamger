@@ -57,7 +57,9 @@ function izvjestaj_anketa() {
 		// ...nije, uzimamo zadnju anketu na predmetu za koju postoje rezultati
 		$q40 = db_query("select aa.id, aa.aktivna from anketa_anketa as aa where aa.akademska_godina=$ag and (select count(*) from anketa_rezultat as ar where ar.anketa=aa.id and ar.predmet=$predmet)>0 order by id desc");
 		if (db_num_rows($q40)<1)
-			$q40 = db_query("select id, aktivna from anketa_anketa where akademska_godina=$ag");
+			// Ne postoje rezultati, što znači da niko nije popunjavao anketu za ovaj predmet
+			// Tražimo da li je kreirana anketa za sve predmete ili za ovaj predmet 
+			$q40 = db_query("select aa.id, aa.aktivna from anketa_anketa aa, anketa_predmet ap where aa.akademska_godina=$ag and aa.id=ap.anketa AND (ap.predmet IS NULL OR ap.predmet=$predmet) AND ap.akademska_godina=$ag");
 	}
 
 	if (db_num_rows($q40)==0){
