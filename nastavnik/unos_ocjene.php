@@ -24,8 +24,8 @@ $predmet_naziv = db_result($q10,0,0);
 
 
 $kolokvij = false;
-$q12 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-if (db_num_rows($q12)>0 && db_result($q12,0,0) == 2000) 
+$tippredmeta = db_get("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+if ($tippredmeta == 2000) 
 // FIXME: Ovo ne treba biti hardcodirani tip predmeta nego jedan od parametara za tip predmeta
 	$kolokvij = true;
 
@@ -85,15 +85,21 @@ if (!$user_siteadmin && !$user_studentska) {
 			origval[id]=vrijednost;
 		}
 	}
-	function ispunio_uslove(element) {
+	function ispunio_uslove(element, ocjena) {
 		var id = element.id;
 		var vrijednost = element.checked;
 		if (vrijednost!=origval[id]) {
 			var oc_vrijednost;
-			if (vrijednost) oc_vrijednost=11;
-			else oc_vrijednost='/';
+			if (!vrijednost) ocjena='/';
 			var value = parseInt(element.id.substr(6));
-			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+oc_vrijednost+"","document.getElementById('ocjena'+"+value+").focus()");
+			ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"","document.getElementById('ocjena'+"+value+").focus()");
+			// Update datuma
+			if (vrijednost) {
+				var datum_element = document.getElementById("datum"+value);
+				datum_element.value = "<?=date("d. m. Y")?>";
+				datum_element.style.backgroundColor = '#FFAAAA';
+				document.getElementById('provjera'+value).style.visibility='visible';
+			}
 		}
 	}
 	function enterhack(element,e) {
@@ -116,7 +122,12 @@ if (!$user_siteadmin && !$user_studentska) {
 		<tr>
 			<th><b>R. br.</b></th><th width="300"><b>Prezime i ime</b></th>
 			<th><b>Broj indeksa</b></th>
-			<th><b><? if ($kolokvij) { ?>Ispunio/la obaveze<? } else { ?>Ocjena<? } ?></b></th>
+			<th><b><? 
+			if ($kolokvij) { 
+				?>Ispunio/la obaveze<? 
+			} else { 
+				?>Ocjena<? 
+			} ?></b></th>
 			<th><b>Datum</b></th>
 			<th><b>Status</b></th>
 		</tr>
@@ -158,6 +169,7 @@ if (!$user_siteadmin && !$user_studentska) {
 		if ($kolokvij) { 
 			if ($ocjena == 11) { $ispunio_uslove = "CHECKED"; $ocjena = "true"; }
 			else { $ispunio_uslove = ""; $ocjena = "false"; }
+			$ocjena_value = 11; // Ciljana vrijednost polja ocjena FIXME
 		}
 
 		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;
@@ -175,7 +187,7 @@ if (!$user_siteadmin && !$user_studentska) {
 			<td align="center">
 			<?
 			if ($kolokvij) {
-				?><input type="checkbox" id="ocjena<?=$id?>" onchange="ispunio_uslove(this)" <?=$ispunio_uslove?>><?
+				?><input type="checkbox" id="ocjena<?=$id?>" onchange="ispunio_uslove(this,<?=$ocjena_value?>)" <?=$ispunio_uslove?>><?
 			} else {
 				?><input type="text" id="ocjena<?=$id?>" size="2" value="<?=$ocjena?>" style="border:1px black solid" onblur="izgubio_focus(this)" onfocus="dobio_focus(this)" onkeydown="enterhack(this,event)"><?
 			}
