@@ -61,8 +61,8 @@ function studentska_zavrsni()  {
 		
 		$q100 = db_query("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.naziv, s.kratkinaziv, s.naziv
 		FROM ponudakursa as pk, predmet as p, studij AS s, akademska_godina_predmet as agp 
-		WHERE pk.akademska_godina = $ag AND pk.predmet=p.id AND agp.predmet=p.id and agp.akademska_godina=$ag and agp.tippredmeta=1000 AND pk.studij=s.id 
-		ORDER BY p.naziv, s.naziv"); // 1000 = završni rad
+		WHERE pk.akademska_godina = $ag AND pk.predmet=p.id AND agp.predmet=p.id and agp.akademska_godina=$ag and (agp.tippredmeta=1000 OR agp.tippredmeta=1001) AND pk.studij=s.id 
+		ORDER BY p.naziv, s.naziv"); // 1000 ili 1001 = završni rad
 		if (db_num_rows($q100) == 0) {
 			niceerror("Nije definisan niti jedan predmet sa tipom predmeta Završni rad.");
 		}

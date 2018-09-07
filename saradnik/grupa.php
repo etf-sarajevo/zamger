@@ -269,7 +269,7 @@ function firefoxopen(p1,p2,p3) {
 
 // Cool editing box
 if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) {
-	if ($tippredmeta == 2000) {
+	if ($tippredmeta == 2000 || $tippredmeta == 1001) {
 		?>
 		<SCRIPT language="JavaScript">
 		function ispunio_uslove(element, ocjena) {
@@ -932,9 +932,14 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 	// KONACNA OCJENA - ISPIS
 
 	$ocjena = db_get("SELECT ocjena FROM konacna_ocjena WHERE student=$stud_id AND predmet=$predmet AND akademska_godina=$ag");
-	if ($tippredmeta == 2000) {
-		$ocjena_value = 11;
-		$ocjena_text = "ispunio/la uslove";
+	if ($tippredmeta == 1001 || $tippredmeta == 2000) {
+		if ($tippredmeta == 2000) {
+			$ocjena_value = 11;
+			$ocjena_text = "ispunio/la uslove";
+		} else {
+			$ocjena_value = 12;
+			$ocjena_text = "uspješno odbranio";
+		}
 		if ($ocjena) $ispunio_uslove = "CHECKED"; else $ispunio_uslove = "";
 		if ($privilegija != "super-asistent")
 			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\"><input type=\"checkbox\" id=\"ocjena$stud_id\" onchange=\"ispunio_uslove(this,$ocjena_value)\" $ispunio_uslove></td>";

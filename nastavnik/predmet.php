@@ -41,7 +41,7 @@ if (!$user_siteadmin) {
 
 $q15 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
 $tippredmeta = db_result($q15,0,0);
-if ($tippredmeta == 1000) {
+if ($tippredmeta == 1000 || $tippredmeta == 1001) {
 	require("nastavnik/zavrsni.php");
 	nastavnik_zavrsni();
 	return;

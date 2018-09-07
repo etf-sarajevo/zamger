@@ -377,12 +377,12 @@ function malimeni($fj) {
 		<?
 
 	$k=0;
-	if ($predmet==0 || $tippredmeta != 1000) 
+	if ($predmet==0 || ($tippredmeta != 1000 && $tippredmeta != 1001)) 
 	foreach ($registry as $r) {
 		if(count($r) < 5 || $r[5] != 0) continue; // nevidljiv
 		if (strstr($r[0],$sekcija)) { 
 			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
-			if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 - završni rad
+			if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 ili 1001 - završni rad
 			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
 				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
 			</tr></tr>
@@ -541,7 +541,7 @@ function studentski_meni($fj) {
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
 		if (int_param('predmet')==$predmet && int_param('ag')==$pag) {
 			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/down_red.png" align="bottom" border="0"></td>'."\n<td>";
-			if ($tippredmeta == 1000)
+			if ($tippredmeta == 1000 || $tippredmeta == 1001)
 				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
 			else if ($_REQUEST['sta'] != "student/predmet")
 				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
@@ -574,7 +574,7 @@ function studentski_meni($fj) {
 
 			$ispis .= "</td></tr>\n";
 		} else {
-			if ($tippredmeta == 1000)
+			if ($tippredmeta == 1000 || $tippredmeta == 1001)
 				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 			else
 				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";

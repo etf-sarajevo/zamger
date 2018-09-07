@@ -25,7 +25,7 @@ $predmet_naziv = db_result($q10,0,0);
 
 $kolokvij = false;
 $tippredmeta = db_get("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-if ($tippredmeta == 2000) 
+if ($tippredmeta == 2000 || $tippredmeta == 1001) 
 // FIXME: Ovo ne treba biti hardcodirani tip predmeta nego jedan od parametara za tip predmeta
 	$kolokvij = true;
 
@@ -123,7 +123,9 @@ if (!$user_siteadmin && !$user_studentska) {
 			<th><b>R. br.</b></th><th width="300"><b>Prezime i ime</b></th>
 			<th><b>Broj indeksa</b></th>
 			<th><b><? 
-			if ($kolokvij) { 
+			if ($kolokvij && $tippredmeta == 1001) { 
+				?>Uspješno odbranio/la<? 
+			} else if ($kolokvij) { 
 				?>Ispunio/la obaveze<? 
 			} else { 
 				?>Ocjena<? 
@@ -167,9 +169,9 @@ if (!$user_siteadmin && !$user_studentska) {
 		}
 
 		if ($kolokvij) { 
-			if ($ocjena == 11) { $ispunio_uslove = "CHECKED"; $ocjena = "true"; }
+			if ($ocjena == 11 || $ocjena == 12) { $ispunio_uslove = "CHECKED"; $ocjena = "true"; }
 			else { $ispunio_uslove = ""; $ocjena = "false"; }
-			$ocjena_value = 11; // Ciljana vrijednost polja ocjena FIXME
+			if ($tippredmeta == 1001) $ocjena_value = 12; else $ocjena_value = 11; // Ciljana vrijednost polja ocjena FIXME
 		}
 
 		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;

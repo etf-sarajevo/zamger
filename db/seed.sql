@@ -917,6 +917,7 @@ INSERT INTO `svrha_potvrde` (`id`, `naziv`) VALUES
 INSERT INTO `tippredmeta` (`id`, `naziv`) VALUES
 (1, 'Bologna standard'),
 (1000, 'Završni rad'),
+(1001, 'Završni rad bez ocjena'),
 (2000, 'Kolokvij');
 
 
