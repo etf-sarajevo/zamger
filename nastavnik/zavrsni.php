@@ -108,8 +108,11 @@ function nastavnik_zavrsni() {
 				$konacna_ocjena = "<font color=\"gray\">(nije ocijenjen)</font>";
 				if ($student_id>0) {
 					$q903 = db_query("SELECT ocjena FROM konacna_ocjena WHERE student=$student_id AND predmet=$predmet AND akademska_godina=$ag");
-					if (db_num_rows($q903)>0 && db_result($q903,0,0)>5)
+					if (db_num_rows($q903)>0 && db_result($q903,0,0)>5) {
 						$konacna_ocjena = db_result($q903,0,0);
+						if ($konacna_ocjena == 12)
+							$konacna_ocjena = "Uspješno odbranio";
+					}
 				}
 
 				?>
