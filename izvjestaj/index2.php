@@ -28,7 +28,7 @@ if (!$user_studentska && !$user_siteadmin && $userid!=$student) {
 
 // Deklaracije nizova
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
-$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze", "uspješno odbranio");
 $ects_ocjene = array("", "", "", "", "", "F", "E", "D", "C", "B", "A", "IO");
 
 // Podaci o studentu
