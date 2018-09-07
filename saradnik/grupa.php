@@ -81,6 +81,10 @@ if (!$user_siteadmin) {
 }
 
 
+// Tip predmeta
+$tippredmeta = db_get("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
+
+
 // Spisak komponenti koje su zastupljene na predmetu
 
 $tipovi_komponenti=array();
@@ -265,18 +269,38 @@ function firefoxopen(p1,p2,p3) {
 
 // Cool editing box
 if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) {
-	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
-	?>
-	<script language="JavaScript">
-	function undo_coolbox() {
-		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
-		if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
-		alert(greska);
-		zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
-		zamger_coolbox_origcaller=false;
+	if ($tippredmeta == 2000) {
+		?>
+		<SCRIPT language="JavaScript">
+		function ispunio_uslove(element, ocjena) {
+			var id = element.id;
+			var vrijednost = element.checked;
+			if (vrijednost!=origval[id]) {
+				var oc_vrijednost;
+				if (!vrijednost) ocjena='/';
+				var value = parseInt(element.id.substr(6));
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"","document.getElementById('"+id+"').focus()");
+			}
+		}
+		var origval=new Array();
+		</SCRIPT>
+		<?
+
 	}
-	</script>
-	<?
+	else {
+		cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
+		?>
+		<script language="JavaScript">
+		function undo_coolbox() {
+			var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+			if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
+			alert(greska);
+			zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
+			zamger_coolbox_origcaller=false;
+		}
+		</script>
+		<?
+	}
 }
 
 
@@ -907,16 +931,26 @@ foreach ($imeprezime as $stud_id => $stud_imepr) {
 
 	// KONACNA OCJENA - ISPIS
 
-	$q350 = db_query("select ocjena from konacna_ocjena where student=$stud_id and predmet=$predmet and akademska_godina=$ag");
-	if ($privilegija == "super_asistent") {
-		if (db_num_rows($q350)>0) {
-			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">".db_result($q350,0,0)."</td>\n";
+	$ocjena = db_get("SELECT ocjena FROM konacna_ocjena WHERE student=$stud_id AND predmet=$predmet AND akademska_godina=$ag");
+	if ($tippredmeta == 2000) {
+		$ocjena_value = 11;
+		$ocjena_text = "ispunio/la uslove";
+		if ($ocjena) $ispunio_uslove = "CHECKED"; else $ispunio_uslove = "";
+		if ($privilegija != "super-asistent")
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\"><input type=\"checkbox\" id=\"ocjena$stud_id\" onchange=\"ispunio_uslove(this,$ocjena_value)\" $ispunio_uslove></td>";
+		else
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">$ocjena_text</td>";
+		$ko_ispis .= "\n<SCRIPT>origval['ko-$stud_id-$predmet-$ag'] = \"$ocjena\";</SCRIPT>\n";
+	}
+	else if ($privilegija == "super-asistent") {
+		if ($ocjena) {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">$ocjena</td>\n";
 		} else {
 			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\">/</td>\n";
 		}
 	} else {
-		if (db_num_rows($q350)>0) {
-			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">".db_result($q350,0,0)."</td>\n";
+		if ($ocjena) {
+			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">$ocjena</td>\n";
 		} else {
 			$ko_ispis = "<td align=\"center\" id=\"ko-$stud_id-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 		}
