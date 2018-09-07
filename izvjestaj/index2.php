@@ -206,8 +206,10 @@ while ($r105 = db_fetch_row($q105)) {
 		<td align="center"><?=$ects_ocjene[$r105[0]]?></td>
 	</tr>
 	<?
-	$sumauk += $r105[0];
-	$brojuk++;
+	if ($r105[0] > 5 && $r105[0] < 11) {
+		$sumauk += $r105[0];
+		$brojuk++;
+	}
 	$sumaects += $r105[4];
 }
 if (db_num_rows($q105)>0) print "</table></p><p>&nbsp;</p>\n";
@@ -254,8 +256,10 @@ while ($r125 = db_fetch_row($q125)) {
 		<td align="center"><?=$ects_ocjene[$r125[3]]?></td>
 	</tr>
 	<?
-	$sumauk += $r125[3];
-	$brojuk++;
+	if ($r125[3] > 5 && $r125[3] < 11) {
+		$sumauk += $r125[3];
+		$brojuk++;
+	}
 	$sumaects += $r125[2];
 }
 if (db_num_rows($q125)>0) print "</table><p>&nbsp;</p>\n";
@@ -336,10 +340,12 @@ while ($r130 = db_fetch_row($q130)) {
 	</tr>
 	<?
 
-	$sumagodine += $r130[3];
-	$sumauk += $r130[3];
-	$brojgodine++;
-	$brojuk++;
+	if ($r130[3] > 5 && $r130[3] < 11) {
+		$sumagodine += $r130[3];
+		$sumauk += $r130[3];
+		$brojgodine++;
+		$brojuk++;
+	}
 	$sumaects += $ects;
 }
 
