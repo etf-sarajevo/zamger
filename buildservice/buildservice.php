@@ -165,6 +165,7 @@ else if ($_REQUEST['action'] == "getTaskData") {
 				$replace['type'] = $r3[0];
 				$replace['match'] = $r3[1];
 				$replace['replace'] = $r3[2];
+				array_push($replace_symbols, $replace);
 			}
 		}
 		
