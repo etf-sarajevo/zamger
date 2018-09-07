@@ -313,22 +313,27 @@ if (param('akcija') == "svi_studenti") {
 	Akademska godina: <select name="ag">
 	<?
 		$q506 = db_query("select id, naziv, aktuelna from akademska_godina order by naziv");
-		while ($r506 = db_fetch_row($q506)) {
-			print "<option value=\"$r506[0]\"";
-			if ($r506[2] == 1) print " selected";
-			print ">$r506[1]</option>\n";
+		while (db_fetch3($q506, $id_godine, $naziv_godine, $godina_aktuelna)) {
+			print "<option value=\"$id_godine\"";
+			if ($godina_aktuelna == 1) print " selected";
+			print ">$naziv_godine</option>\n";
 		}
 	?></select><br />
-	Studij: <select name="studij">
+	Tip studija: <select name="tipstudija">
 	<option value="0">Svi studiji</option>
-	<option value="-1">Prvi ciklus</option>
-	<option value="-2">Drugi ciklus</option>
-	<option value="-3">Treći ciklus</option>
 	<?
-		$q505 = db_query("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
-		while ($r505 = db_fetch_row($q505)) {
-			print "<option value=\"$r505[0]\">$r505[1]</option>\n";
-		}
+		$tipovi_studija = db_query_vassoc("select id, naziv from tipstudija WHERE moguc_upis=1 order by id");
+		foreach($tipovi_studija as $id_tipa => $naziv_tipa)
+			print "<option value=\"$id_tipa\">$naziv_tipa</option>\n";
+	
+	?></select><br />
+	<font color="red"><b>ILI</b></font><br />
+	Studij: <select name="studij">
+	<option value="0">/</option>
+	<?
+		$studiji = db_query_vassoc("select id, naziv from studij order by naziv"); //TODO neke virtualne studije izostaviti?
+		foreach($studiji as $id_studija => $naziv_studija)
+			print "<option value=\"$id_studija\">$naziv_studija</option>\n";
 	?></select><br />
 	Godina studija: <select name="godina"><option value="0">Sve godine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><br />
 	<input type="checkbox" name="prvi_put">Prvi put (bez ponovaca)<br />

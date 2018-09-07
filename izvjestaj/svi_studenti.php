@@ -20,6 +20,7 @@ $vanredni = request('vanredni');
 $nacin_studiranja = request('nacin_studiranja');
 $login = request('login');
 $ag = intval(request('ag'));
+$tipstudija = intval(request('tipstudija'));
 $studij = intval(request('studij'));
 $godina = intval(request('godina'));
 $tabelarno = request('tabelarno');
@@ -30,22 +31,18 @@ $drzavljanstvo = request('drzavljanstvo');
 
 if ($ag==0) {
 	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
-	$ag = db_result($q10,0,0);
-	$ak_god_naziv = db_result($q10,0,1);
+	db_fetch2($q10, $ag, $ak_god_naziv);
 } else {
-	$q20 = db_query("select naziv from akademska_godina where id=$ag");
-	$ak_god_naziv = db_result($q20,0,0);
+	$ak_god_naziv = db_get("select naziv from akademska_godina where id=$ag");
 }
 
-if ($studij == 0)
-	$naziv_studija = "Svi studiji";
-else if ($studij == -1)
-	$naziv_studija = "Prvi ciklus studija";
-else if ($studij == -2)
-	$naziv_studija = "Drugi ciklus studija";
-else {
-	$q30 = db_query("SELECT naziv FROM studij WHERE id=$studij");
-	$naziv_studija = db_result($q30,0,0);
+if ($studij == 0) {
+	if ($tipstudija == 0)
+		$naziv_studija = "Svi studiji";
+	else
+		$naziv_studija = db_get("SELECT naziv FROM tipstudija WHERE id=$tipstudija");
+} else {
+	$naziv_studija = db_get("SELECT naziv FROM studij WHERE id=$studij");
 }
 
 if ($godina>0)
@@ -69,7 +66,7 @@ if ($drzavljanstvo) $kolone .= ", d.naziv as drzavljanstvo";
 
 $tabele = "";
 if ($nacin_studiranja) $tabele .= ", nacin_studiranja as ns";
-if ($studij < 0) $tabele .= ", studij as s, tipstudija as ts";
+if ($studij == 0 && $tipstudija > 0) $tabele .= ", studij as s";
 if ($login) $tabele .= ", auth as a";
 if ($mjesto_rodjenja) $tabele .= ", mjesto as m";
 if ($adresa_mjesto) $tabele .= ", mjesto as am";
@@ -80,8 +77,8 @@ if (!$vanredni) $uslovi .= " and ss.nacin_studiranja != 4";
 if ($nacin_studiranja) $uslovi .= " and ss.nacin_studiranja=ns.id";
 if ($studij > 0) 
 	$uslovi .= " and ss.studij=$studij";
-else if ($studij < 0) 
-	$uslovi .= " and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=".(-$studij);
+else if ($studij == 0 && $tipstudija > 0) 
+	$uslovi .= " and ss.studij=s.id and s.tipstudija=$tipstudija";
 if ($prvi_put) $uslovi .= " and ss.ponovac=0";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
