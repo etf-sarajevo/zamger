@@ -40,7 +40,11 @@ $upit = "SELECT o.id, o.ime, o.prezime, o.brindexa, pk.semestar, s.naziv, p.nazi
 
 
 // Stampaj sve studente na terminu
-if ($ispit_termin>0) {
+if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
+	// Uzimamo datum termina
+	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0 order by o.prezime, o.ime";
+
+} else if ($ispit_termin>0) {
 	// Uzimamo datum termina
 	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by o.prezime, o.ime";
 

@@ -79,7 +79,7 @@ while ($r40 = db_fetch_row($q40)) {
 		$studenata_na_datum += $r40[3];
 	}
 	?>
-	<li><a href="?sta=izvjestaj/prijave&amp;ispit_termin=<?=$r40[0]?>"><?=date("d.m.Y. h:i", $r40[1]).", ".$r40[2]."</a> (".$r40[3]." studenata)"?></li>
+	<li><a href="?sta=izvjestaj/prijave&amp;ispit_termin=<?=$r40[0]?>"><?=date("d.m.Y. h:i", $r40[1]).", ".$r40[2]."</a> (".$r40[3]." studenata)"?> - samo studenti <a href="?sta=izvjestaj/prijave&amp;ispit_termin=<?=$r40[0]?>&amp;tip=sa_ocjenom">sa ocjenom</a></li>
 	<?
 }
 if ($broj_na_datum > 1) {
@@ -91,10 +91,10 @@ if ($broj_na_datum > 1) {
 ?>
 	<br/></ul>
 </li>
-<li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=uslov">Sve studente koji imaju uslove za usmeni (<?=$studenata_uslov?> studenata)</a><br/>&nbsp;</li>
-<li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=bez_ocjene">Sve studente koji nemaju upisanu ocjenu (<?=$studenata_bez_ocjene?> studenata)</a><br/>&nbsp;</li>
-<li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=sa_ocjenom">Sve studente koji imaju upisanu ocjenu (<?=$studenata_sa_ocjenom?> studenata)</a><br/>&nbsp;</li>
-<li><a href="?sta=izvjestaj/prijave&predmet=<?=$predmet?>&ag=<?=$ag?>&tip=sve">Sve studente (<?=$svih_studenata?> studenata)</a><br/>&nbsp;</li>
+<li><a href="?sta=izvjestaj/prijave&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=uslov">Sve studente koji imaju uslove za usmeni (<?=$studenata_uslov?> studenata)</a><br/>&nbsp;</li>
+<li><a href="?sta=izvjestaj/prijave&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=bez_ocjene">Sve studente koji nemaju upisanu ocjenu (<?=$studenata_bez_ocjene?> studenata)</a><br/>&nbsp;</li>
+<li><a href="?sta=izvjestaj/prijave&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=sa_ocjenom">Sve studente koji imaju upisanu ocjenu (<?=$studenata_sa_ocjenom?> studenata)</a><br/>&nbsp;</li>
+<li><a href="?sta=izvjestaj/prijave&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=sve">Sve studente (<?=$svih_studenata?> studenata)</a><br/>&nbsp;</li>
 <li>Pojedinačnog studenta:<br/>
 <form action="index.php" method="GET">
 <input type="hidden" name="sta" value="izvjestaj/prijave">
