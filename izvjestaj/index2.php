@@ -47,7 +47,7 @@ $jmbg        = $r100[3];
 $upit_dodaj = "";
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
 
-$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects 
+$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv 
 FROM student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts 
 WHERE ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj
 ORDER BY ag.id desc, ss.semestar DESC LIMIT 1");
@@ -66,6 +66,7 @@ $ponovac           = $r110[4];
 $studij_ciklus     = $r110[6];
 $studij_trajanje   = $r110[8];
 $studij_ects       = $r110[9];
+$tip_studija       = $r110[10];
 
 if ($ponovac == 1) {
 	$q120 = db_query("select count(*) from student_studij where student=$student and studij=$r110[5] and semestar=$r110[2]");
@@ -131,25 +132,35 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 		return;
 	}
 	$datum_diplomiranja = date("d. m. Y.", db_result($q89,0,0));
+	if ($studij_ciklus != 0)
+		$tekst_ciklus = "$studij_ciklus. ciklus studija";
+	else
+		$tekst_ciklus = "$tip_studija";
+
 
 	if ($spol == "Z") {
 		?>
-		<p>Studentica <?=$ime_prezime?> je završila <?=$studij_ciklus?>. ciklus studija dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" , pri čemu je položila sljedeće predmete:</p>
+		<p>Studentica <?=$ime_prezime?> je završila <?=$tekst_ciklus?> dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" , pri čemu je položila sljedeće predmete:</p>
 		<?
 	} else {
 		?>
-		<p>Student <?=$ime_prezime?> je završio <?=$studij_ciklus?>. ciklus studija dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>", pri čemu je položio sljedeće predmete:</p>
+		<p>Student <?=$ime_prezime?> je završio <?=$tekst_ciklus?> dana <?=$datum_diplomiranja?> kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>", pri čemu je položio sljedeće predmete:</p>
 		<?
 	}
 
 } else {
+	if ($studij_ciklus != 0)
+		$tekst_ciklus = " ($studij_ciklus. ciklus)";
+	else
+		$tekst_ciklus = " ($tip_studija)";
+
 	if ($spol == "Z") {
 		?>
-		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položila sljedeće predmete:</p>
+		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položila sljedeće predmete:</p>
 		<?
 	} else {
 		?>
-		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>" (<?=$studij_ciklus?>. ciklus), pri čemu je položio sljedeće predmete:</p>
+		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položio sljedeće predmete:</p>
 		<?
 	}
 }
