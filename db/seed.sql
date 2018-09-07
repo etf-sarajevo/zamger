@@ -748,7 +748,7 @@ INSERT INTO `posebne_kategorije` (`id`, `naziv`) VALUES
 --
 
 INSERT INTO `preference` (`korisnik`, `preferenca`, `vrijednost`) VALUES
-(0, 'verzija-baze', '1520495319');
+(0, 'verzija-baze', '1536314785');
 
 
 --
@@ -942,7 +942,9 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VALUES
 (1, 'Bakalaureat', 1, 6, 1),
 (2, 'Master', 2, 4, 1),
-(3, 'Doktorski studij', 3, 6, 1);
+(3, 'Doktorski studij', 3, 6, 1),
+(4, 'Stručni studij', 0, 4, 1, 120),
+(5, 'Jednogodišnji master', 2, 2, 1, 60);
 
 
 --
