@@ -2061,8 +2061,6 @@ else if ($akcija == "edit") {
 
 	// Promjena uloga korisnika
 	if (param('subakcija') == "uloga" && check_csrf_token()) {
-		if (!$user_siteadmin) { niceerror("Nemate pravo na promjenu uloga!"); return; }
-
 		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=0;
 		$q150 = db_query("select privilegija from privilegije where osoba=$osoba");
 		while($r150 = db_fetch_row($q150)) {
@@ -2074,6 +2072,8 @@ else if ($akcija == "edit") {
 		}
 
 		foreach ($korisnik as $privilegija => $vrijednost) {
+			if ($user_studentska && !$user_siteadmin && $privilegija !== 'nastavnik') continue;
+		
 			if ($_POST[$privilegija]=="1" && $vrijednost==0) {
 				$q151 = db_query("insert into privilegije set osoba=$osoba, privilegija='$privilegija'");
 				zamgerlog("osobi u$osoba data privilegija $privilegija",4);
@@ -2298,6 +2298,14 @@ else if ($akcija == "edit") {
 		<input type="checkbox" name="prijemni" value="1" <?if($korisnik_prijemni==1) print "CHECKED";?>> prijemni&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="studentska" value="1" <?if($korisnik_studentska==1) print "CHECKED";?>> studentska&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/>
+		<input type="submit" value=" Promijeni ">
+		</form>
+		<?
+	} else if($korisnik_student==1 && $korisnik_nastavnik!=1) {
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="uloga">
+		<input type="checkbox" name="nastavnik" value="1"> Proglasi korisnika za nastavnika&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="submit" value=" Promijeni ">
 		</form>
 		<?
