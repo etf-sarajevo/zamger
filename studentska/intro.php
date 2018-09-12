@@ -395,6 +395,11 @@ if (param('akcija') == "potvrda") {
 		$q210 = db_query("SELECT count(*) FROM student_studij AS ss WHERE ss.student=$r200[6] AND ss.akademska_godina=$ag");
 		if (db_result($q210,0,0) == 0) {
 			print " - <font color=\"red\">trenutno nije upisan na studij!</font>"; $error=1;
+		} else {
+			$zavrsni = db_get("SELECT COUNT(*) FROM konacna_ocjena ko, akademska_godina_predmet agp WHERE ko.student=$r200[6] AND ko.akademska_godina=$ag AND ko.ocjena>5 AND ko.predmet=agp.predmet AND agp.akademska_godina=$ag AND (agp.tippredmeta=1000 OR agp.tippredmeta=1001)");
+			if ($zavrsni > 0 && $r200[3] == 1) {
+				print " - <font color=\"red\">student odbranio završni rad</font>"; $error=1;
+			}
 		}
 		
 		$q220 = db_query("SELECT mjesto_rodjenja, datum_rodjenja, jmbg FROM osoba WHERE id=$r200[6]");
