@@ -2765,7 +2765,7 @@ else {
 
 		// Po konkursu iz 2010. godine, za rangiranje se koristi samo prosjek
 		var suma=0, broj=0;
-		for (i=1; i<=50; i++) {
+		for (i=1; i<=60; i++) {
 			var idoc=2*i-1;
 			var idec=2*i;
 			var ocjena = document.getElementById('prijemniocjene'+idoc).value;
@@ -2869,7 +2869,7 @@ else {
 		}
 	}
 
-	for ($i=1; $i<=25; $i++) {
+	for ($i=1; $i<=30; $i++) {
 		?>
 		<tr><td align="right"><?=$i?>.</td>
 		<SCRIPT language="JavaScript"> origval[<?=$i*2-1?>]='<?=$ocjene[$i]?>'</SCRIPT>
@@ -2887,7 +2887,7 @@ else {
 	<table border="0" cellspacing="0" cellpadding="1">
 		<tr><td>Predmet&nbsp;</td><td align="center"><b>Ocjena</b></td><td align="center"><b>ECTS</b></td></td></tr>
 	<?
-	for ($i=26; $i<=50; $i++) {
+	for ($i=31; $i<=60; $i++) {
 		?>
 		<tr><td align="right"><?=$i?>.</td>
 		<SCRIPT language="JavaScript"> origval[<?=$i*2-1?>]='<?=$ocjene[$i]?>'</SCRIPT>
