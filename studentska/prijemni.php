@@ -6,8 +6,6 @@
 
 function studentska_prijemni() {
 
-global $_lv_;
-
 
 require_once("lib/formgen.php"); // db_dropdown
 require_once("lib/utility.php"); // testjmbg
@@ -608,6 +606,8 @@ if ($akcija == "rang_liste") {
 	<option value="vanredni">Vanredni</option>
 	<option>Svi zajedno</option>
 	</select></p>
+	
+	<p><input type="checkbox" name="anonimno"> Anonimno (pod šiframa)</p>
 
 	<input type="submit" value=" Kreni ">
 	</form>
@@ -1356,7 +1356,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 
 
 	// Transakcija!
-	$q305 = db_query("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, log write, prosliciklus_uspjeh write");
+	$q305 = db_query("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, prosliciklus_uspjeh write");
 
 	// Da li se broj dosjea ponavlja??
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
