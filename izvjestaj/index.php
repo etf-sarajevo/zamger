@@ -51,7 +51,7 @@ Broj indeksa: <?=$r100[2]?><br/><br/><br/>
 
 <?
 
-$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze", "uspješno odbranio");
 
 
 // Ocjene po odluci:
@@ -92,7 +92,7 @@ while ($r125 = db_fetch_row($q125)) {
 		<p>Institucija <?=$stara_inst?>, akademska <?=db_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
 		<?
 	}
-	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[1]]."</li>\n";
+	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[2]]."</li>\n";
 }
 print "</ul>";
 
