@@ -1725,6 +1725,7 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			$sumaocjena=0;
 			$brojocjena=0;
 			while ($r9 = db_fetch_row($q9)) {
+				if ($r9[0] < 6 || $r9[0] > 10) continue;
 				$q10 = db_query("insert into prosliciklus_ocjene set osoba=$osoba, redni_broj=$rednibroj, ocjena=$r9[0], ects=$r9[1]");
 				$rednibroj++;
 				$bodovi += ($r9[0]*$r9[1]);
