@@ -133,7 +133,7 @@ if ($spol == "Z") {
 ?>
 <img src="static/images/content/ETF-memorandum.png">
 <p>&nbsp;</p>
-<p>Na osnovu člana 169. Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99) izdaje se:</p>
+<p>Na osnovu člana 169. stav (2) Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99), člana 140. Zakona o visokom obrazovanju (Službene novine Kantona Sarajevo, broj 33/17) i člana 198. Statuta Univerziteta u Sarajevu, izdaje se:</p>
 
 <center><h2>P O T V R D A</h2></center>
 <p>&nbsp;<br />
