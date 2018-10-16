@@ -108,6 +108,7 @@ while ($r1 = db_fetch_row($q1)) {
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = db_fetch_row($q2)) {
 		$sumaects += $r2[1];
+		if ($r2[0] > 10 || $r2[0] < 5) continue;
 		if ($samo_tekuca_gs) 
 			if ($r2[2] < $godinastudija*2-1) continue;
 		$suma += $r2[0]; $broj++; 
@@ -121,6 +122,7 @@ while ($r1 = db_fetch_row($q1)) {
 	WHERE pr.student=$id_studenta AND ss.student=$id_studenta AND ss.akademska_godina=pr.akademska_godina AND ss.semestar MOD 2 = 1 AND ss.studij=st.id and st.tipstudija=ts.id $whereprosliciklus order by ss.semestar");
 	while ($r4 = db_fetch_row($q4)) {
 		$sumaects += $r4[1];
+		if ($r4[0] > 10 || $r4[0] < 5) continue;
 		if ($samo_tekuca_gs) 
 			if ($r4[2] < $godinastudija*2-1) continue;
 		$suma += $r4[0]; $broj++; 
