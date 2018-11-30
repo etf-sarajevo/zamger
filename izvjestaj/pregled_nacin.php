@@ -54,8 +54,11 @@ $trajanje_msc /= 2; // broj godina umjesto broj semestara
 
 // Da li su isti studiji za bsc i msc?
 $istisu=1;
-foreach ($studiji_bsc as $naziv) {
-	if (!in_array($naziv, $studiji_msc)) $istisu=0;
+foreach ($studiji_bsc as $id => $naziv) {
+	if (!in_array($naziv, $studiji_msc)) unset($studiji_bsc[$id]);
+}
+foreach ($studiji_msc as $id => $naziv) {
+	if (!in_array($naziv, $studiji_bsc)) unset($studiji_msc[$id]);
 }
 // TODO napisati kod
 if ($istisu==0) {
