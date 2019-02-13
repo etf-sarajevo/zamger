@@ -48,12 +48,20 @@ https://github.com/etf-sarajevo/zamger/blob/master/static/doc/INSTALL.txt
 Kada ste sve ovo završili i uvjerili se da Zamger v4 radi (jako bitno!) pređite na sljedeće korake:
 
 * Recimo da je vaš web root /var/www - napravite git clone u folder zamger-v5 i prebacite se na branch:
+
   cd /var/www
+  
   mkdir zamger-v5
+  
   git clone https://github.com/etf-sarajevo/zamger.git zamger-v5
+  
   cd zamger-v5
+  
   git checkout rezamger
+  
 * U folderu api-v5 kopirajte Config.php.default u Config.php i editujte slično kao konfiguracija za zamger-v4 (koristi se ista baza podataka)
 * Da biste imali fine API URLove u Apache konfiguraciju virtualnog hosta dodajte sljedeće linije:
+
     RewriteEngine on
+    
     RewriteRule   /api/(.+)    /var/www/zamger-v5/api-v5/index.php?route=$1  [QSA,L]
