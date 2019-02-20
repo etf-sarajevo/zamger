@@ -578,7 +578,7 @@ else if ($_REQUEST['action'] == "getTaskList") {
 }
 
 
-else if ($_REQUEST['action'] == "getProgList") {
+else if ($_REQUEST['action'] == "getProgList" || $_REQUEST['action'] == "listPrograms") {
 	$task = intval($_REQUEST['task']);
 	$zadaca = intval($task/100);
 	$zadatak = $task % 100;
