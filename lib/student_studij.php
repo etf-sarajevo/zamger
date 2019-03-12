@@ -42,8 +42,10 @@ function ima_li_uslov($student, $ag=0) {
 
 // Određivanje uslova na osnovu plana studija
 function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija) {
-	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta, $conf_uslov_ects_kredita;
+	global $zamger_predmeti_pao, $zamger_pao_ects, $conf_uslov_predmeta, $conf_uslov_ects_kredita, $uslov_debug;
 	global $cache_planova_studija;
+	
+	if ($student == $uslov_debug) print "ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, $plan_studija)<br>\n";
 	
 	$zamger_predmeti_pao = $pis_bio = $nepoznat_izborni = array();
 	$nize_godine = $obaveznih_pao = $zamger_pao_ects = $izbornih_pao = 0;
@@ -89,6 +91,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				FROM student_predmet sp, ponudakursa pk, pasos_predmeta pp 
 				WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.predmet=pp.predmet AND pk.akademska_godina>=$godina_upisa");
 			if ($drugi_odsjek[$predmet] === false) unset($drugi_odsjek[$predmet]);
+			else if ($student == $uslov_debug) print "Predmet sa drugog odsjeka $predmet<br>\n";
 		}
 	}
 	
@@ -108,6 +111,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				// Ako je obavezan, situacija je jasna
 				$obaveznih_pao++;
 				$zamger_pao_ects += $slog['predmet']['ects'];
+				if ($student == $uslov_debug) print "Pao obavezan $predmet<br>\n";
 			}
 		} else {
 			// Kod izbornih predmeta moramo računati da se isti slot može ponavljati N puta, 
@@ -123,6 +127,8 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 				else if (in_array($predmet, $student_pao))
 					$izborni_predmeti_pao[] = $slog_predmet;
 			}
+			
+			if ($student == $uslov_debug) print "Slot: ".$slog['plan_izborni_slot']." polozio $polozio_izbornih_slot<br>";
 			
 			// Nije položio dovoljno predmeta iz ovog slota
 			if ($polozio_izbornih_slot < $slog['ponavljanja']) {
@@ -144,6 +150,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			if ($polozio_izbornih_slot < $slog['ponavljanja']) {			
 				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
+					if ($student == $uslov_debug) print "slogsem ".$slog['semestar']." podacisem ".$podaci['semestar']." id ".$predmet." naziv ".$podaci['naziv']."<br>\n";
 					if ($podaci['semestar'] == $slog['semestar']) {
 						// U prethodnoj petlji smo unset-ovali sve predmete koje je položio
 						// Tako da je sigurno pao ovaj predmet
@@ -170,6 +177,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 						}
 						
 						// Student nije slušao predmet sa matičnog odsjeka ili je ovaj noviji
+						if ($student == $uslov_debug)  print "Pao drugi odsjek " .$podaci['naziv']. "<br>";
 						$zamger_predmeti_pao[$predmet] = $podaci['naziv'];
 						$zamger_pao_ects += $podaci['ects'];
 						$pao_izbornih_slot++;
@@ -188,6 +196,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 					$zamger_predmeti_pao[$slog_predmet['id']] = $slog_predmet['naziv'];
 					$zamger_pao_ects += $slog_predmet['ects'];
 					if ($slog['semestar'] < $semestar-1) $nize_godine++;
+					if ($student == $uslov_debug) print "Pao matični odsjek " .$slog_predmet['naziv']. "<br>";
 					
 					unset($slog_predmet);
 					
@@ -199,6 +208,7 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			// Za preostali broj ponavljanja nemamo pojma pa ćemo ih dodati u petlji
 			while ($polozio_izbornih_slot + $pao_izbornih_slot < $slog['ponavljanja']) {
 				// Koristimo negativan ID za oznaku nepoznatog predmeta
+				if ($student == $uslov_debug) print "Položio izbornih u slotu $polozio_izbornih_slot pao $pao_izbornih_slot, što je manje od ".$slog['ponavljanja']."<br>\n";
 				$zamger_predmeti_pao[$nepoznat_predmet_id--] = "(Nepoznat izborni predmet)";
 				$pao_izbornih_slot++;
 			}
