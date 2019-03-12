@@ -788,7 +788,8 @@ $isss_sifrarnik_opcina_popravke = array(
 	"Doboj - Istok" => "Doboj Istok",
 	"Doboj - Jug" => "Doboj Jug",
 	"Bosanski Šamac / Šamac" => "Šamac",
-	"Gornji Vakuf" => "Gornji Vakuf-Uskoplje"
+	"Gornji Vakuf" => "Gornji Vakuf-Uskoplje",
+	"Foča" => "Foča-Ustikolina"
 );
 
 $isss_sifrarnik_nacin_studiranja = array( 1 => 1, 3 => 4, 6 => 3 );
