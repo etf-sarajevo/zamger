@@ -118,20 +118,25 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			// što znači da student mora položiti N predmeta iz tog slota
 			$polozio_izbornih_slot = $pao_izbornih_slot = 0;
 			$izborni_predmeti_pao = array(); // IDovi izbornih predmeta koje je student nekada slušao a nije položio
+			$izborni_predmeti_pao_ova_godina = array(); // Izborni predmeti koje je pao u ovoj godini
 
 			foreach($slog['predmet'] as $slog_predmet) {
 				$predmet = $slog_predmet['id'];
 				$polozio = (array_key_exists($predmet, $student_polozio) && $student_polozio[$predmet]);
 				if ($polozio)
 					$polozio_izbornih_slot++;
-				else if (in_array($predmet, $student_pao))
+				else if (in_array($predmet, $student_pao)) {
 					$izborni_predmeti_pao[] = $slog_predmet;
+					if ($student == $uslov_debug) print "Pao izborni $predmet<br>\n";
+					$ag_izborni = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet order by pk.akademska_godina DESC LIMIT 1");
+					if ($ag_izborni == $ag) $izborni_predmeti_pao_ova_godina[] = $slog_predmet;
+				}
 			}
 			
 			if ($student == $uslov_debug) print "Slot: ".$slog['plan_izborni_slot']." polozio $polozio_izbornih_slot<br>";
 			
 			// Nije položio dovoljno predmeta iz ovog slota
-			if ($polozio_izbornih_slot < $slog['ponavljanja']) {
+			if ($polozio_izbornih_slot + count($izborni_predmeti_pao_ova_godina) < $slog['ponavljanja']) {
 				// Tražimo da li je položio predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
 					if ($podaci['semestar'] == $slog['semestar']) {
