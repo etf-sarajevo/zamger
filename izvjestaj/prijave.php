@@ -83,7 +83,6 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 	}
 	$mysql_datum = $matches[3] . "-" . $matches[2] . "-" . $matches[1];
 	
-	// Uzecemo danasnji datum
 	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) FROM osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag 
 	WHERE sit.ispit_termin=it.id and sit.student=o.id and DATE(it.datumvrijeme)='$mysql_datum' and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and pk.akademska_godina=$ag and p.id=$predmet
 	ORDER BY o.prezime, o.ime";
@@ -130,25 +129,26 @@ while ($r10 = db_fetch_row($q10)) {
 	$odsjek=$r10[5];
 	$nazivPr=$r10[6];
 	$skolskaGod=$r10[7];
-//	$NastavnikSl=$r10[9];
 	$datumIspita=date("d. m. Y.", $r10[8]);
-//	$NastavnikPr=$r10[8];
-//	$datumPrijave=$r10[12]; 
 	$datumPrijave=$datumIspita;
-//	$datumPolaganja=$r10[10];
 	$datumPolaganja=$datumIspita;
-//	$datumUsmenog=$r10[13];
 	$datumUsmenog=$datumIspita;
-//	$datumDrPar=$r10[14];
+	$nastavnik = "";
 
 	// Ispis nastavnika
 	$q33 = db_query("select osoba from angazman where predmet=$predmet and akademska_godina=$ag and angazman_status=1");
-	if (db_num_rows($q33)==1) { // Ako imaju dva odgovorna nastavnika, ne znam kojeg da stavim
+	if (db_num_rows($q33)==2) { // Ako imaju dva odgovorna nastavnika, stavljamo oba
+		while (db_fetch1($q33, $id_nastavnika)) {
+			if ($nastavnik != "") $nastavnik .= " / ";
+			$nastavnik .= tituliraj($id_nastavnika, $sa_akademskim_zvanjem=false);
+		}
+		$nastavnikFont = 10;
+	} else if (db_num_rows($q33)==1) { 
 		$id_nastavnika = db_result($q33,0,0);
 		$nastavnik = tituliraj($id_nastavnika, $sa_akademskim_zvanjem=false);
-	} else {
-		$nastavnik="";
+		$nastavnikFont = 12;
 	}
+	// Ako imaju više od dva, ne mogu stati u polje, $nastavnik ostaje prazno
 
 	// Da li ima uslov?
 	if ($_GET['tip']=="uslov") { 
@@ -159,7 +159,7 @@ while ($r10 = db_fetch_row($q10)) {
 		$q37 = db_query("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$student and io.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and k.tipkomponente=2 and io.ocjena>=k.prolaz");
 		$integralnih = db_result($q37,0,0);
 		if ($integralnih==1 || $parcijalnih==2) // FIXME: ovo radi samo za ETF Bologna standard
-			kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $nastavnik);
+			kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $nastavnik, $nastavnikFont);
 
 	} else {
 		// Da li je student polozio predmet?
@@ -171,7 +171,7 @@ while ($r10 = db_fetch_row($q10)) {
 			$nazivPr = db_result($q40,0,3);
 		} else $ocjena=0;
 
-		kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik);
+		kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik, $nastavnikFont);
 //		print "$pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita ($r10[8]), $ocjena, $nastavnik<br>\n";
 	}
 }
@@ -182,7 +182,7 @@ $pdf->Output($filename, 'I');
 
 
 
-function kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik) {
+function kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivPr, $skolskaGod, $datumIspita, $ocjena, $nastavnik, $nastavnikFont) {
 	$datumPrijave=$datumIspita;
 	$datumPolaganja=$datumIspita;
 	$datumUsmenog=$datumIspita;
@@ -262,7 +262,7 @@ function kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivP
 	// nastavnik kod kojeg se slusa predmet
 	$pdf->SetY(80);
 	$pdf->SetX(59);
-	$pdf->SetFont('freesans','',12);
+	$pdf->SetFont('freesans','',$nastavnikFont);
 	$pdf->Cell(80,-136,$NastavnikSl, 0, 0, 'C');
 	
 	// datum ispita
@@ -274,7 +274,7 @@ function kreirajPrijavu($pdf, $imeprezime, $brind, $godStudija, $odsjek, $nazivP
 	// nastavnik kod kojeg se polaze predmet
 	$pdf->SetY(91);
 	$pdf->SetX(47);
-	$pdf->SetFont('freesans','',12);
+	$pdf->SetFont('freesans','',$nastavnikFont);
 	$pdf->Cell(92,-136,$NastavnikPr, 0, 0, 'C');
 	
 	// datum prijave ispita
