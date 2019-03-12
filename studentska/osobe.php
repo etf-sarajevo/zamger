@@ -2083,7 +2083,7 @@ else if ($akcija == "edit") {
 			if ($_POST[$privilegija]!="1" && $vrijednost==1) {
 				$q151 = db_query("delete from privilegije where osoba=$osoba and privilegija='$privilegija'");
 				zamgerlog("osobi u$osoba oduzeta privilegija $privilegija",4);
-				zamgerlog2("osobi oduzeta privilegija", $osoba, $privilegija);
+				zamgerlog2("osobi oduzeta privilegija", $osoba, 0, 0, $privilegija);
 				nicemessage("Oduzeta privilegija $privilegija");
 			}
 		}
