@@ -240,13 +240,8 @@ $brojac=1;
 
 while ($r60=db_fetch_row($q60)) {
 
-	// Ako je ispit u prošlosti, provjeravamo da li ima još termina da bi se student mogao odjaviti sa prošlog termina
-	if ($r60[1] < time()) {
-		$q70=db_query("SELECT count(*)
-		FROM ispit_termin as it, ispit as i
-		WHERE it.ispit=i.id AND i.predmet=$r60[4] AND i.akademska_godina=$ag AND it.deadline>=NOW()");
-		if (db_result($q70,0,0)==0) continue;
-	}
+	// Ako je ispit u prošlosti, nije dozvoljeno odjavljivanje
+	if ($r60[1] < time()) continue;
 	
 	// Takođe ne dozvoljavamo da se student odjavi sa ispita za koje ima ocjenu jer bi to moglo pobrkati izvoz ocjena
 	$q80 = db_query("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[4] and ocjena>=6");
@@ -258,7 +253,7 @@ while ($r60=db_fetch_row($q60)) {
 		<td><?=$r60[0]?></td>
 		<td align="center"><?=date("d.m.Y. H:i",date($r60[1]));?></td>
 		<td align="center"><?=$r60[2];?></td>
-		<td align="center"><a href="?sta=student/prijava_ispita&akcija=odjavi&termin=<?=$r60[3];?> ">Odjavi</a></td>
+		<td align="center"><a href="?sta=student/prijava_ispita&amp;akcija=odjavi&amp;termin=<?=$r60[3];?> ">Odjavi</a></td>
 	</tr>
 	<?
 	$brojac++;
