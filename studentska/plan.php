@@ -858,7 +858,7 @@ function studentska_plan(){
 		$verzije_pasosa = "";
 		$id_aktuelne_verzije = 0;
 		$ima_na_drugim_npp = false;
-		$aktuelna_ima_na_drugim_npp = false;
+		$aktuelna_ima_na_drugim_npp = $aktuelna_ima_na_ovom_npp = false;
 		$q200 = db_query("SELECT pp.id, o.ime, o.prezime, UNIX_TIMESTAMP(pp.vrijeme_prijedloga), pp.komentar_prijedloga FROM pasos_predmeta pp, osoba o WHERE pp.predmet=$predmet AND pp.predlozio=o.id ORDER BY pp.vrijeme_prijedloga");
 		while (db_fetch5($q200, $pp, $prezime, $ime, $vrijeme_prijedloga, $komentar_prijedloga)) {
 			$predlozio = "$prezime $ime";
@@ -867,20 +867,22 @@ function studentska_plan(){
 			$verzije_pasosa .= "<li>".$komentar_prijedloga." (".$predlozio.", ".$vrijeme_prijedloga.")";
 			
 			// U kojim studijima se nalazi ovaj pasoš
-			$q210 = db_query("(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv
+			$q210 = db_query("(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv, psp.semestar
 			FROM plan_studija_predmet psp, plan_studija ps, studij s 
 			WHERE psp.pasos_predmeta=$pp AND psp.plan_studija=ps.id AND ps.studij=s.id)
 			UNION
-			(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv
+			(SELECT ps.id, s.naziv naz, ps.godina_vazenja gv, psp.semestar
 			FROM plan_studija_predmet psp, plan_studija ps, studij s, plan_izborni_slot pis
 			WHERE pis.pasos_predmeta=$pp AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=ps.id AND ps.studij=s.id)
 			ORDER BY gv, naz");
 			
 			$planovi_studija = ""; $aktuelna = false; $ispis = false;
 			while ($r210 = db_fetch_row($q210)) {
-				if ($r210[0] == $plan) 
+				if ($r210[0] == $plan) {
 					$aktuelna=true; 
-				else if ($r210[2]) {
+					$semestar = $r210[3];
+					$aktuelna_ima_na_ovom_npp = true;
+				} else if ($r210[2]) {
 					$ispis=true;
 					$naziv_ag = db_get("SELECT naziv FROM akademska_godina WHERE id=".$r210[2]);
 					$planovi_studija .= "<li>".$r210[1]." ($naziv_ag)</li>\n";
@@ -980,6 +982,83 @@ function studentska_plan(){
 			return;
 		}
 		
+		// Akcija: Promjena semestra i statusa obavezan/izborni
+		if ($_REQUEST['akcija'] == "promjena_lokacije") {
+			$novi_semestar = intval($_REQUEST['semestar']);
+			$novi_izborni_slot = intval($_REQUEST['izborni_slot']);
+			
+			// Staro stanje: Da li je obavezan ili izborni, trenutni semestar
+			$izborni = false;
+			$q300 = db_query("SELECT psp.semestar, pp.id FROM plan_studija_predmet psp, pasos_predmeta pp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=$plan");
+			if (db_num_rows($q300) > 0) {
+				db_fetch2($q300, $stari_semestar, $pasos_predmeta);
+			} else {
+				$izborni = true;
+				$q310 = db_get("SELECT psp.semestar, pis.id, pp.id
+				FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp 
+				WHERE pp.predmet=$predmet AND pp.id=pis.pasos_predmeta AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=$plan");
+				db_fetch3($q310, $stari_semestar, $stari_izborni_slot, $pasos_predmeta);
+			}
+			
+			// Generišemo tekstualni opis akcije
+			if ($izborni == false && $novi_izborni_slot == 0)
+				$opis = "iz $stari_semestar. semestra u $novi_semestar. semestar";
+			else if ($izborni == false) {
+				if ($stari_semestar != $novi_semestar)
+					$opis = "obavezan predmet ($stari_semestar. semestar) u izborni predmet ($novi_semestar. semestar)";
+				else 
+					$opis = "obavezan predmet u izborni predmet";
+				$opis .= " (izborni slot $novi_izborni_slot)";
+			} else if ($novi_izborni_slot == 0) {
+				if ($stari_semestar != $novi_semestar)
+					$opis = "izborni predmet ($stari_semestar. semestar) u obavezan predmet ($novi_semestar. semestar)";
+				else 
+					$opis = "izborni predmet u obavezan predmet";
+			} else {
+				$opis = "izborni slot $stari_izborni_slot u izborni slot $novi_izborni_slot";
+			}
+			
+			
+			if ($_REQUEST['potvrda']) {
+				// Predmet ostaje obavezan, promjena semestra - najjednostavniji slučaj
+				if ($izborni == false && $novi_izborni_slot == 0) {
+					db_query("UPDATE plan_studija_predmet SET semestar=$novi_semestar WHERE pasos_predmeta=$pasos_predmeta AND plan_studija=$plan AND semestar=$stari_semestar");
+				}
+				else {
+					// Brišemo stari slog
+					if ($izborni)
+						db_query("DELETE FROM plan_izborni_slot WHERE id=$stari_izborni_slot AND pasos_predmeta=$pasos_predmeta");
+					else
+						db_query("DELETE FROM plan_studija_predmet WHERE pasos_predmeta=$pasos_predmeta AND plan_studija=$plan AND semestar=$stari_semestar");
+					
+					// Ubacujemo novi slog
+					if ($novi_izborni_slot == 0)
+						db_query("INSERT INTO plan_studija_predmet SET plan_studija=$plan, pasos_predmeta=$pasos_predmeta, plan_izborni_slot=NULL, semestar=$novi_semestar, obavezan=1, potvrdjen=1");
+					else
+						db_query("INSERT INTO plan_izborni_slot SET id=$novi_izborni_slot, pasos_predmeta=$pasos_predmeta");
+				}
+				
+				?>
+				Predmet premješten <b><?=$opis?></b>.
+				<script language="JavaScript">
+				location.href='?sta=studentska/plan&studij=<?=$studij?>&plan=<?=$plan?>';
+				</script>
+				<?
+				return;
+			} else {
+				?>
+				<h2>Promjena lokacije predmeta</h2>
+				Potvrdite da želite da napravite sljedeću promjenu statusa predmeta <b><?=$podaci_o_predmetu['naziv']?></b>:<br><br> <?=$opis?>.
+				<?
+				print genform("POST");
+				?>
+				<input type="submit" name="potvrda" value=" Potvrda ">
+				</form>
+				<?
+				return;
+			}
+		}
+		
 		// PRIKAZ INFORMACIJA O PREDMETU
 		
 		// Ko ima prava?
@@ -1001,12 +1080,44 @@ function studentska_plan(){
 			$dodaj_prava .= "<option value=\"$r360[0]\">$r360[1] $r360[2]</option>\n";
 		}
 		
+		// Vrijednosti select-a
+		if ($aktuelna_ima_na_ovom_npp) {
+			$semestri_select = "";
+			for ($i=1; $i<=$trajanje; $i++) {
+				if ($i == $semestar) $sel = "selected"; else $sel="";
+				$semestri_select .= "<option value='$i' $sel>$i</option>\n";
+			}
+			$izborni_slot_select = "<option value='0'>Obavezan</option>\n";
+			$q40 = db_query("select plan_izborni_slot, count(plan_izborni_slot) from plan_studija_predmet where plan_studija=$plan and semestar=$semestar and obavezan=0 group by plan_izborni_slot order by plan_izborni_slot");
+			$count = 1;
+			while ($r40 = db_fetch_row($q40)) {
+				$izborni_slot_select .= "<option value='$r40[0]'>Izborni predmet ";
+				$broj_slotova = $r40[1];
+				for ($i=1; $i<=$broj_slotova; $i++) {
+					if ($i > 1) $izborni_slot_select .= " i ";
+					$izborni_slot_select .= $count++;
+				}
+				$izborni_slot_select .= "</option>\n";
+			}
+		}
+	
 		?>
 		<h2>Predmet: <b><?=$podaci_o_predmetu['naziv']?></b></h2>
 		<h2>Šifra: <b><?=$podaci_o_predmetu['sifra']?></b></h2>
 		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;plan=<?=$plan?>&amp;predmet=<?=$predmet?>&amp;pregled_pasosa=<?=$id_aktuelne_verzije?>"><img src="static/images/16x16/view.png" width="16" height="16" border="0" align="center"> Pasoš predmeta</a></p>
 		<p>Verzije pasoša predmeta:</p>
 		<ul><?=$verzije_pasosa?></ul>
+		
+		<? if ($aktuelna_ima_na_ovom_npp) { ?>
+		<hr>
+		
+		<p>Promjena lokacije predmeta u programu:</p>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="promjena_lokacije">
+		Semestar: <select name="semestar"><?=$semestri_select?></select>&nbsp;&nbsp;&nbsp;&nbsp; Obavezan ili izborni: <select name="izborni_slot"><?=$izborni_slot_select?></select><br>
+		<input type="submit" value="Promijeni"></form>
+		
+		<? } ?>
 		
 		<hr>
 		
