@@ -15,6 +15,7 @@ require_once("lib/utility.php"); // spol, rimski_broj, nuliraj_broj
 // Ulazni parametri
 $student      = int_param('student');
 $param_ciklus = int_param('ciklus');
+$param_studij = int_param('studij');
 
 
 // Prava pristupa
@@ -46,6 +47,7 @@ $jmbg        = $r100[3];
 
 $upit_dodaj = "";
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
+if ($param_studij != 0) $upit_dodaj = " AND s.id=$param_studij";
 
 $q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv 
 FROM student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts 
@@ -153,14 +155,17 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 		$tekst_ciklus = " ($studij_ciklus. ciklus)";
 	else
 		$tekst_ciklus = " ($tip_studija)";
+	
+	$ponovac_dodaj = "";
+	if ($ponovac) $ponovac_dodaj = " (ponovac)";
 
 	if ($spol == "Z") {
 		?>
-		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položila sljedeće predmete:</p>
+		<p>Studentica <?=$ime_prezime?> je upisana u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student<?=$ponovac_dodaj?>, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položila sljedeće predmete:</p>
 		<?
 	} else {
 		?>
-		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položio sljedeće predmete:</p>
+		<p>Student <?=$ime_prezime?> je upisan u akademskoj <?=$naziv_ag?>. godini u <?=rimski_broj($trenutno_semestar)?> (<?=$imena_semestara[$trenutno_semestar]?>) semestar <?=$koji_put?>. put kao <?=$nacin_studiranja?> student<?=$ponovac_dodaj?>, studij "<?=$naziv_studija?>"<?=$tekst_ciklus?>, pri čemu je položio sljedeće predmete:</p>
 		<?
 	}
 }
