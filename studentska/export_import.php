@@ -599,8 +599,10 @@ if (param('akcija') == "ocjene_predmet") {
 	$javascript_niz = $js_popravke_datuma = "";
 	$dodaj_upit = "";
 	if ($neprovjerene == 0) $dodaj_upit = "AND ko.datum_provjeren=1";
+	$kolizija = "";
 	$q10 = db_query("SELECT o.id id_studenta, o.ime, o.prezime, o.brindexa, ko.predmet, pp.naziv naziv_predmeta, 
-				ag.id id_godine, ag.naziv naziv_godine, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ko.datum_provjeren
+				ag.id id_godine, ag.naziv naziv_godine, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ko.datum_provjeren,
+				pp.id id_pasosa
 			FROM izvoz_ocjena io, osoba o, konacna_ocjena ko, pasos_predmeta pp, akademska_godina ag
 			WHERE io.student=ko.student AND io.predmet=ko.predmet AND io.student=o.id AND
 				ko.akademska_godina=ag.id AND ko.pasos_predmeta=pp.id AND pp.id=$id_pasosa $dodaj_upit
@@ -612,6 +614,27 @@ if (param('akcija') == "ocjene_predmet") {
 		if ($r10['datum_provjeren'] != 1) $ispis_ocjena .= " (?)";
 		$id_celije = "status" . $r10['id_studenta'];
 		$javascript_niz .= "{ student: " . $r10['id_studenta'] . ", predmet: " . $r10['predmet'] . ", ocjena: " . $r10['ocjena'] . ", datum: " . $r10['datum'] . ", akademska_godina: " . $r10['id_godine'] . "},\n";
+		
+		$trenutni_studij = db_query_assoc("SELECT ss.semestar, ss.plan_studija FROM student_studij ss, akademska_godina ag WHERE ss.student=" . $r10['id_studenta'] . " AND ss.akademska_godina=ag.id AND ag.aktuelna=1 ORDER BY ss.semestar DESC LIMIT 1");
+		if (!$trenutni_studij) {
+			// Ako trenutno nije upisan, uzimamo ono gdje je posljednji put bio upisan
+			$trenutni_studij = db_query_assoc("SELECT ss.semestar, ss.plan_studija FROM student_studij ss, akademska_godina ag WHERE ss.student=" . $r10['id_studenta'] . " AND ss.akademska_godina=ag.id ORDER BY ss.semestar DESC LIMIT 1");
+		}
+		
+		// Da li je kolizija?
+		$predmet_plan_semestar = db_get("SELECT semestar FROM plan_studija_predmet WHERE plan_studija=" . $trenutni_studij['plan_studija'] . " AND pasos_predmeta=" . $r10['id_pasosa']);
+		if (!$predmet_plan_semestar)
+			$predmet_plan_semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=" . $trenutni_studij['plan_studija'] . " AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=" . $r10['id_pasosa']);
+		if ($predmet_plan_semestar % 2 == 0) $predmet_plan_semestar--;
+		if ($predmet_plan_semestar > $trenutni_studij['semestar']) {
+			$kolizija .= "<tr>
+			<td>$ispis_ime</td>
+			<td>$ispis_predmet</td>
+			<td>$ispis_ocjena</td>
+			<td id=\"$id_celije\">&nbsp;</td>
+			</tr>";
+			continue;
+		}
 		
 		?>
 		<tr>
@@ -626,6 +649,18 @@ if (param('akcija') == "ocjene_predmet") {
 	?>
 	</table>
 	<?
+	
+	if ($kolizija != "") {
+		?>
+		<h3>Ocjene u koliziji</h3>
+		<p>Student još uvijek nije upisan (u Zamgeru) u odgovarajući semestar.
+		<table border="0">
+		<tr><th>Student</th><th>Predmet</th><th>Ocjena</th><th>&nbsp;</th></tr>
+		<?=$kolizija?>
+		</table>
+		<?
+	}
+	
 	if ($neprovjerene == 0) {
 		$q20 = db_query("SELECT o.id id_studenta, o.ime, o.prezime, o.brindexa, ko.predmet, pp.naziv naziv_predmeta, 
 				ag.id id_godine, ag.naziv naziv_godine, ko.ocjena, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ko.datum_provjeren
