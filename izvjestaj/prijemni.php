@@ -183,6 +183,12 @@ if ($_REQUEST['akcija']=="kandidati") {
 		$vrsta_rang_liste = "Konačna";
 	}
 
+	if (isset($_REQUEST['anonimno'])) {
+		$kolona_ime = "Šifra kandidata";
+	} else {
+		$kolona_ime = "Prezime i ime";
+	}
+
 
 	// Naslov
 
@@ -250,14 +256,14 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	// Spisak svih kandidata se učitava u niz
 	if ($ciklus==1)
-		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
-		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us
-		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra
+		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po
+		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND po.osoba=us.osoba AND po.prijemni_termin=$termin $upit_dodaj
 		ORDER BY ukupno DESC");
 	else
-		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja
-		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu
-		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij $upit_dodaj
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra
+		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu, prijemni_obrazac as po
+		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND po.osoba=pcu.osoba AND po.prijemni_termin=$termin $upit_dodaj
 		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
@@ -270,6 +276,8 @@ if ($_REQUEST['akcija']=="kandidati") {
 			$kandidati[$id]['opci_uspjeh'] = round($kandidati[$id]['opci_uspjeh'], 2);
 			$kandidati[$id]['ukupno'] = round($kandidati[$id]['ukupno'], 2);
 		}
+		
+		if (isset($_REQUEST['anonimno'])) $kandidati[$id]['prezime_ime'] = $rezultat[9];
 	}
 
 	// Zaglavlje tabele
@@ -277,7 +285,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<table align="center" border="1" cellspacing="0" cellpadding="1" bordercolor="#000000">
 		<tr>
 			<td align="center" width="5%"><b>R.br.</b></td>
-			<td align="left"><b>Prezime i ime</b></td>
+			<td align="left"><b><?=$kolona_ime?></b></td>
 			<td align="center" width="6%"><b>Kanton</b></td>
 			<td align="center" width="10%"><b>Opći uspjeh</b></td>
 			<? if ($ciklus==1) { ?><td align="center" width="10%"><b>Ključni predmeti</b></td><? } ?>
