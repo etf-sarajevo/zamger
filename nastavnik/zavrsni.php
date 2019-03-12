@@ -143,7 +143,11 @@ function nastavnik_zavrsni() {
 		
 		<?
 		
-		$q910 = db_query("SELECT z.id, z.naslov, o.ime, o.prezime FROM zavrsni as z, osoba as o WHERE z.predmet=$predmet AND z.akademska_godina=".($ag-1)." AND z.mentor=$userid AND z.student=o.id ORDER BY o.prezime, o.ime");
+		$q910 = db_query("SELECT z.id, z.naslov, o.ime, o.prezime 
+		FROM zavrsni as z 
+		LEFT JOIN osoba as o ON z.student=o.id 
+		WHERE z.predmet=$predmet AND z.akademska_godina=".($ag-1)." AND z.mentor=$userid
+		ORDER BY o.prezime, o.ime, z.naslov");
 		if (db_num_rows($q910) > 0) {
 			?>
 			<p><b>Ponavljanje teme od prošle godine:</b></p>
@@ -155,7 +159,7 @@ function nastavnik_zavrsni() {
 				$naslov = $r910[1];
 				if (strlen($naslov)>50) $naslov = mb_substr($naslov, 0, 40) . "...";
 				?>
-				<option value="<?=$r910[0]?>">(<?=$r910[2]?> <?=$r910[3]?>) <?=$naslov?></option>
+				<option value="<?=$r910[0]?>">(<?=$r910[3]?> <?=$r910[2]?>) <?=$naslov?></option>
 				<?
 			}
 			?>
