@@ -48,9 +48,14 @@ function ws_export() {
 			
 			$podaci_ocjene['datum'] = date("Y-m-d", $podaci_ocjene['datum']);
 			
-			// Koristimo broj 11 kao oznaku za ocjenu IO
+			// Koristimo broj 11 kao oznaku za ocjenu IO (ispunio obaveze)
 			if ($podaci_ocjene['ocjena'] == 11) $podaci_ocjene['ocjena'] = "IO";
 			if ($podaci_ocjene['predmet'] == "Završni rad (Master)") $podaci_ocjene['predmet'] = "Završni rad";
+			
+			$brindexa = $student['brindexa'];
+			// Pretvaramo bachelor u master - debug!
+			//if (strpos($brindexa, "/"))
+			//	$brindexa = substr($brindexa, strpos($brindexa, "/")+1);
 			
 			$isss_data = array ( 
 				"predmet" => $podaci_ocjene['predmet'], 
@@ -61,7 +66,7 @@ function ws_export() {
 					array( 
 						"ime" => $student['ime'],
 						"prezime" => $student['prezime'],
-						"brindexa" => $student['brindexa'],
+						"brindexa" => $brindexa,
 						"ocjena" => $podaci_ocjene['ocjena'],
 						"datum" => $podaci_ocjene['datum']
 					)
@@ -74,8 +79,6 @@ function ws_export() {
 				
 				$isss_msg = array();
 				$isss_msg['data'] = json_encode($isss_data);
-				
-				//print_r($isss_data);
 				
 				$isss_result = json_request($url, $isss_msg, "POST");
 				
@@ -111,8 +114,6 @@ function ws_export() {
 				
 				$isss_msg = array();
 				$isss_msg['data'] = json_encode($isss_data);
-				
-				//print_r($isss_data);
 				
 				$isss_result = json_request($url, $isss_msg, "POST");
 				
@@ -174,8 +175,6 @@ function ws_export() {
 				$isss_msg = array();
 				$isss_msg['data'] = json_encode($isss_data);
 				
-				//print_r($isss_data);
-				
 				$isss_result = json_request($url, $isss_msg, "POST");
 				
 				if ($isss_result === FALSE || $isss_result['success'] === "false") {
@@ -209,6 +208,7 @@ function ws_export() {
 					else if ($warning['code'] == 'no_exam_open') {
 						$odgovor['tekst'] = "Nije otvoren ispit za predmet";
 						$odgovor['status'] = 'greska';
+						$odgovor['warning'] = $warning;
 						break;
 					} 
 					else {
@@ -248,8 +248,8 @@ function ws_export() {
 			$id_godine = int_param('godina');
 			
 			// Naziv studija i akademske godine
-			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin 
-				FROM student_studij ss, studij s, akademska_godina ag, nacin_studiranja ns 
+			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin
+				FROM student_studij ss, studij s, akademska_godina ag, nacin_studiranja ns
 				WHERE ss.student=$id_studenta AND ss.studij=s.id AND s.id=$id_studija and ss.akademska_godina=ag.id AND ag.id=$id_godine");
 			if (!$podaci_studija) { 
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR006', 'message' => 'Student nije upisan u toj godini', 'student' => $id_studenta ) );
@@ -290,8 +290,6 @@ function ws_export() {
 			
 			$isss_msg = array();
 			$isss_msg['data'] = json_encode($isss_data);
-			
-			//print_r($isss_data);
 			
 			$isss_result = json_request($url, $isss_msg, "POST");
 			
@@ -405,8 +403,6 @@ function ws_export() {
 			$isss_msg = array();
 			$isss_msg['data'] = json_encode($isss_data);
 			
-			//print_r($isss_msg);
-			
 			$isss_result = json_request($url, $isss_msg, "POST");
 			
 			if ($isss_result === FALSE || $isss_result['success'] === "false") {
@@ -492,6 +488,7 @@ function ws_export() {
 				"id_fakulteta" => $conf_export_isss_id_fakulteta, 
 				"akademska_godina" => $podaci_studija['godina'],
 				"studij" => $isss_id_studija,
+				"replace" => "false", // Ovdje staviti true ako se popravlja pogrešan upis
 				"upisi" => array()
 			);
 			if ($akcija == "provjera") $isss_data['test'] = "true";
@@ -519,8 +516,6 @@ function ws_export() {
 			
 			$isss_msg = array();
 			$isss_msg['data'] = json_encode($isss_data);
-			
-			//print_r($isss_data);
 			
 			$isss_result = json_request($url, $isss_msg, "POST");
 			
@@ -752,7 +747,7 @@ function isss_daj_razlike($podaci_studenta) {
 		if ($ime == "kanton" && $vrijednost == "Strani državljanin") continue;
 		if ($ime == "opcina" && $vrijednost == "(nije u BiH)") continue;
 		if ($ime == "opcina_rod" && $vrijednost == "(nije u BiH)") continue;
-		if ($ime == "srednja_skola") { 
+		if ($ime == "srednja_skola") {
 			$isss_vrijednost = ukini_viskove($isss_vrijednost);
 			// Ime srednje škole u ISSSu ograničeno na 100 karaktera
 			$vrijednost = substr($vrijednost, 0, 100);
