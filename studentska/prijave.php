@@ -67,7 +67,7 @@ while ($r40 = db_fetch_row($q40)) {
 	if (date("d.m.Y", $r40[1]) != $prosli_datum || $prosla_komponenta != $r40[2]) {
 		if ($broj_na_datum > 1) {
 			?>
-			<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?></li>
+			<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?> - samo studenti <a href="?sta=izvjestaj/prijave&amp;tip=na_datum_sa_ocjenom&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">sa ocjenom</a></li>
 			<?
 		}
 		$prosli_datum = date("d.m.Y", $r40[1]);
@@ -84,7 +84,7 @@ while ($r40 = db_fetch_row($q40)) {
 }
 if ($broj_na_datum > 1) {
 	?>
-	<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?></li>
+	<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?> - samo studenti <a href="?sta=izvjestaj/prijave&amp;tip=na_datum_sa_ocjenom&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">sa ocjenom</a></li>
 	<?
 }
 

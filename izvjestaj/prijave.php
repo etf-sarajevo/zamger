@@ -74,7 +74,7 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id order by o.prezime, o.ime";
 
 // Sve studente na terminima koji padaju u određeni datum
-} else if ($_GET['tip'] == "na_datum") {
+} else if ($_GET['tip'] == "na_datum" || $_GET['tip'] == "na_datum_sa_ocjenom") {
 	// Provjera da li je datum ispravan i konverzija u mysql format
 	$matches = array();
 	if (!preg_match("/^(\d+)\.(\d+)\.(\d+)$/", $_GET['datum'], $matches)) {
@@ -83,8 +83,11 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 	}
 	$mysql_datum = $matches[3] . "-" . $matches[2] . "-" . $matches[1];
 	
+	$dodaj_ocjena = "";
+	if ($_GET['tip'] == "na_datum_sa_ocjenom") $dodaj_ocjena = "and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0";
+	
 	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) FROM osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag 
-	WHERE sit.ispit_termin=it.id and sit.student=o.id and DATE(it.datumvrijeme)='$mysql_datum' and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and pk.akademska_godina=$ag and p.id=$predmet
+	WHERE sit.ispit_termin=it.id and sit.student=o.id and DATE(it.datumvrijeme)='$mysql_datum' and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and pk.akademska_godina=$ag and p.id=$predmet $dodaj_ocjena
 	ORDER BY o.prezime, o.ime";
 
 // Ovo se može desiti ako se klikne na prikaz pojedinačnog studenta, a nijedan student nije izabran
