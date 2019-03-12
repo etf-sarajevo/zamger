@@ -59,11 +59,13 @@ $ag_naziv = db_result($q5,0,1);
 
 
 
+if (!isset($_REQUEST['csv'])) {
 ?>
 <p>Univerzitet u Sarajevu<br/>
 Elektrotehnički fakultet Sarajevo</p>
 <p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
+}
 
 
 // Podvrsta izvještaja: IMENA
@@ -874,6 +876,7 @@ if ($imena>0) return;
 
 // Disclaimer
 
+if (!isset($_REQUEST['csv'])) {
 if ($fuzzy) {
 	?>
 	<h2>Procjena broja studenata po predmetu za <?=$novaag_naziv?></h2>
@@ -924,7 +927,7 @@ if ($fuzzy) {
 	<h2>Broj studenata po predmetu za <?=$novaag_naziv?></h2>
 	<?
 }
-
+}
 
 
 
@@ -992,12 +995,16 @@ while ($r100 = db_fetch_row($q100)) {
 					$dodajpon .= " (".$naziv_studijaa[$i]." ".$slusa_odsjek_ponovac[$predmet][$i].")";
 			}
 	
-			print "<tr><td>$rbr</td><td><a href=\"?sta=izvjestaj/ugovoroucenju&imena=$predmet\">$naziv_predmeta</a></td><td>$redovno $dodaj</td><td>$kolizija</td><td bgcolor=\"#CCCCCC\">$uk1</td><td>$ponovac $dodajpon</td><td>$prenio</td><td bgcolor=\"#CCCCCC\">$uk2</td>\n</tr>\n";
+			if (isset($_REQUEST['csv']))
+				print "$naziv_predmeta,$redovno,$kolizija,$uk1,$ponovac,$prenio,$uk2\n";
+			else
+				print "<tr><td>$rbr</td><td><a href=\"?sta=izvjestaj/ugovoroucenju&imena=$predmet\">$naziv_predmeta</a></td><td>$redovno $dodaj</td><td>$kolizija</td><td bgcolor=\"#CCCCCC\">$uk1</td><td>$ponovac $dodajpon</td><td>$prenio</td><td bgcolor=\"#CCCCCC\">$uk2</td>\n</tr>\n";
 			$rbr++;
 		}
 		$predmeti_ispis=array();
 	}
 
+	if (!isset($_REQUEST['csv'])) {
 	if ($studij!=$oldstudij) {
 		if ($oldstudij!="") {
 			if ($izborni_print==1) {
@@ -1078,6 +1085,10 @@ $statstudij=$studij;
 		<table border="1" cellspacing="0" cellpadding="2">
 		<tr><td>R.br.</td><td>Predmet</td><td>1.<br>Redovno</td><td>2.<br>Kolizija</td><td bgcolor="#CCCCCC">3.<br>(1+2)</td><td>4.<br>Ponovaca</td><td>5.<br>Prenesenih</td><td bgcolor="#CCCCCC">6.<br>UKUPNO (3+4+5)</td></tr>
 		<?
+	}
+	}
+	
+	if ($semestar != $oldsemestar) {
 		$oldstudij=$studij;
 		$oldsemestar=$semestar;
 		$rbr=1;
@@ -1101,6 +1112,7 @@ $statstudij=$studij;
 }
 
 
+if (!isset($_REQUEST['csv'])) {
 // Ispis zadnjih redova...
 $x=0;
 foreach ($predmeti_ispis as $predmet => $naziv_predmeta) {
@@ -1131,7 +1143,7 @@ if ($fuzzy || ($pola_godine && $semestar%2==0)) {
 	print "<td colspan=\"6\" align=\"left\">$nijeod</td>\n</tr>\n";
 }
 print "</table></p>\n\n";
-
+}
 
 
 }
