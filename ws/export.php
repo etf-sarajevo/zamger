@@ -248,9 +248,9 @@ function ws_export() {
 			$id_godine = int_param('godina');
 			
 			// Naziv studija i akademske godine
-			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin
-				FROM student_studij ss, studij s, akademska_godina ag, nacin_studiranja ns
-				WHERE ss.student=$id_studenta AND ss.studij=s.id AND s.id=$id_studija and ss.akademska_godina=ag.id AND ag.id=$id_godine");
+			$podaci_studija = db_query_assoc("SELECT s.id id_studija, ag.naziv godina, ss.nacin_studiranja nacin, ts.ciklus
+				FROM student_studij ss, studij s, akademska_godina ag, nacin_studiranja ns, tipstudija ts
+				WHERE ss.student=$id_studenta AND ss.studij=s.id AND s.id=$id_studija and ss.akademska_godina=ag.id AND ag.id=$id_godine AND s.tipstudija=ts.id");
 			if (!$podaci_studija) { 
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR006', 'message' => 'Student nije upisan u toj godini', 'student' => $id_studenta ) );
 				return; 
@@ -284,6 +284,8 @@ function ws_export() {
 				print json_encode($rezultat);
 				return;
 			}
+			
+			$podaci_studenta['ciklus'] = $podaci_studija['ciklus'];
 			
 			// Pripremamo podatke za web servis
 			$isss_data['upisi'][] = $podaci_studenta;
