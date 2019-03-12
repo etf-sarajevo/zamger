@@ -308,7 +308,8 @@ if (param('akcija') == "svi_studenti") {
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
 	<input type="checkbox" name="adresa_mjesto">Mjesto boravka<br />
 	<input type="checkbox" name="drzavljanstvo">Državljanstvo<br />
-	<input type="checkbox" name="login">Korisničko ime<br /><br />
+	<input type="checkbox" name="login">Korisničko ime<br />
+	<input type="checkbox" name="brindexa">Broj indeksa<br /><br />
 	<input type="checkbox" name="tabelarno">Prikaži u obliku tabele umjesto numerisane liste<br />
 	Akademska godina: <select name="ag">
 	<?
