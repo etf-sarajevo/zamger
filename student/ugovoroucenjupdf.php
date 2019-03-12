@@ -40,8 +40,6 @@ if (!db_fetch7($q5, $ugovorid, $studij, $studijbos, $studijeng, $sem2, $tipstudi
 	return;
 }
 
-$studijbos = substr($studijbos, 0, strpos($studijbos, "(")-1);
-
 $sem1 = $sem2-1;
 $godina = $sem2/2;
 
@@ -88,8 +86,9 @@ if (db_num_rows($q20)<1) {
 		$ponovac=1;
 }
 
-global $zamger_predmeti_pao;
+global $zamger_predmeti_pao, $zamger_pao_ects;
 $uslov = ima_li_uslov($userid, $proslagodina);
+	
 if ($ponovac == 0 && !$uslov) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
@@ -187,7 +186,6 @@ if ($tipstudija==3) {
 
 // Ako čovjek upisuje prvu godinu mastera, broj indexa je netačan!
 if ($godina==1 && $tipstudija==3) $brindexa="";
-
 
 
 // ----- Pravljenje PDF dokumenta
