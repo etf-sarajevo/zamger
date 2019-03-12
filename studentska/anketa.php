@@ -422,7 +422,7 @@ function studentska_anketa(){
 			if ($predmet === null)
 				$predmeti_html = "SVI";
 			else {
-				$predmeti_html .= $svi_predmeti[$predmet];
+				$predmeti_html .= $svi_predmeti[$predmet] . "<br>\n";
 				unset($svi_predmeti[$predmet]);
 			}
 		}
@@ -465,17 +465,11 @@ function studentska_anketa(){
 			<tr>
 				<td valign="top" align="right">&nbsp;<br />	 Predmeti: &nbsp; 	</td>
 				<td valign="top"> &nbsp;<br /> <b><?=$predmeti_html?></b><br/>
-					<?
-					if ($predmet != null) {
-					?>
 					<?=genform("POST")?>
 					<input type="hidden" name="subakcija" value="dodaj_predmet">
 					<select name="predmet"><?=$lista_predmeta?></select>
 					<input type="submit" value="Dodaj predmet">
 					</form>
-					<?
-					}
-					?>
 				</td>
 			</tr>
 			<tr>
