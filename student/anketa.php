@@ -77,9 +77,11 @@ function student_anketa() {
 		nicemessage("Anketa je otvorena za popunjavanje.");
 		?>
 		<p><a href="?sta=public/anketa&amp;anketa=<?=$anketa?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>"><b>Kliknite ovdje za popunjavanje ankete</b></a></p>
+		<p>Vrijeme za popunjavanje ankete ističe: <b><?=date("d. m. Y. H:i:s", $podaci_ankete['dz'])?></b></p>
 		<p>Ne možete vidjeti rezultate ankete dok se popunjavanje ne završi.</p>
 		<!--p>Za ovu anketu je predviđeno anonimno popunjavanje. Molimo da se odjavite da biste popunili anketu koristeći kod koji ste dobili.</p-->
 		<?
+
 		return;
 	}
 	
