@@ -243,18 +243,36 @@ function prikazi_razlike(code, tip) {
 	pozicioniraj_prozor();
 	var obj = razlike_poruke[code];
 	var tbl = document.getElementById('tabelaRazlika');
+	var sifrarnik_nacionalnost = [ "", "Bošnjak/Bošnjakinja", "Srbin/Srpkinja", "Hrvat/Hrvatica", "Rom/Romkinja", "Ostalo", "Nepoznato / Nije se izjasnio/la", "", "", "Bosanac/Bosanka", "BiH", "Musliman/Muslimanka" ];
+	var sifrarnik_nacin = [ "", "Redovan", "", "", "Vanredan", "", "Redovan samofinansirajući" ];
 	
 	for (var x=tbl.rows.length-1; x>0; x--) { // Red 0 je zaglavlje
 		tbl.deleteRow(x);
 	}
 	
 	for (i=0; i<obj.razlike.length; i++) {
+		if (obj.razlike[i].podatak == "nacionalnost") {
+			obj.razlike[i].zamger = sifrarnik_nacionalnost[obj.razlike[i].zamger];
+			obj.razlike[i].isss = sifrarnik_nacionalnost[obj.razlike[i].isss];
+		}
+		if (obj.razlike[i].podatak == "nacin_studiranja") {
+			obj.razlike[i].zamger = sifrarnik_nacin[obj.razlike[i].zamger];
+			obj.razlike[i].isss = sifrarnik_nacin[obj.razlike[i].isss];
+		}
+		if (obj.razlike[i].podatak == "domaca_skola") {
+			if (obj.razlike[i].zamger == "1") obj.razlike[i].zamger = "DA"; else obj.razlike[i].zamger = "NE";
+			if (obj.razlike[i].isss == "1") obj.razlike[i].isss = "DA"; else obj.razlike[i].isss = "NE";
+		}
+		if (obj.razlike[i].podatak == "srednja_skola") {
+			if (obj.razlike[i].zamger == "false") obj.razlike[i].zamger = "nepoznato";
+		}
+
 		var row = tbl.insertRow(tbl.rows.length);
-		var cell, div, txt;
+		var cell, div, txt, txtnaziv;
 		cell = row.insertCell(0);
 		div = document.createElement('div');
-		txt = document.createTextNode(obj.razlike[i].podatak);
-		div.appendChild(txt);
+		txtnaziv = document.createTextNode(obj.razlike[i].podatak);
+		div.appendChild(txtnaziv);
 		cell.appendChild(div);
 		
 		cell = row.insertCell(1);
