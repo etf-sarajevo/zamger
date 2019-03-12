@@ -359,6 +359,7 @@ if (param('akcija') == "svi_studenti") {
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=svi_studenti">Spisak svih studenata abecedno</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
+<li><a href="?sta=izvjestaj/studenata_po_predmetu" onclick="return izvjestaj();">Broj studenata po predmetu</a></li>
 </ul></p>
 
 <hr/>
