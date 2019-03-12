@@ -48,8 +48,9 @@ function ws_export() {
 			
 			$podaci_ocjene['datum'] = date("Y-m-d", $podaci_ocjene['datum']);
 			
-			// Koristimo broj 11 kao oznaku za ocjenu IO (ispunio obaveze)
+			// Koristimo broj 11 kao oznaku za ocjenu IO (ispunio obaveze), 12 za UO (uspješno odbranjen)
 			if ($podaci_ocjene['ocjena'] == 11) $podaci_ocjene['ocjena'] = "IO";
+			if ($podaci_ocjene['ocjena'] == 12) $podaci_ocjene['ocjena'] = "UO";
 			if ($podaci_ocjene['predmet'] == "Završni rad (Master)") $podaci_ocjene['predmet'] = "Završni rad";
 			
 			$brindexa = $student['brindexa'];
