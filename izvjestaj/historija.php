@@ -94,7 +94,7 @@ while ($r10 = db_fetch_row($q10)) {
 				print "NIJE $polozi predmet $r30[1]<br />\n";
 			} else {
 				$ocjena = db_result($q40,0,0);
-				if ($ocjena == 11) $ocjena = "ispunio/la obaveze"; else $ocjena = "ocjena $ocjena";
+				if ($ocjena == 11) $ocjena = "ispunio/la obaveze"; else if ($ocjena == 12) $ocjena = "uspješno odbranio"; else $ocjena = "ocjena $ocjena";
 				print "$ppolozi predmet $r30[1], $ocjena<br />\n";
 			}
 		}
