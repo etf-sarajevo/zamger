@@ -37,6 +37,8 @@ class Assignment {
 	}
 	
 	public static function fromStudentHomeworkNumber($studentId, $homeworkId, $assignmentNumber) {
+		$hw = Homework::fromId($homeworkId); // Test if homework exists
+	
 		$asgn = DB::query_assoc("SELECT id, zadaca Homework, redni_broj assignNo, student, status, bodova score, UNIX_TIMESTAMP(vrijeme) time, komentar comment, izvjestaj_skripte compileReport, filename, userid author FROM zadatak WHERE student=$studentId and zadaca=$homeworkId AND redni_broj=$assignmentNumber ORDER BY id DESC LIMIT 1"); // since this is a logging table, we need latest ID
 		if (!$asgn)
 			// Student never sent homework
