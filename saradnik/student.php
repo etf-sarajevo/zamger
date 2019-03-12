@@ -59,7 +59,7 @@ $nazivpredmeta = db_result($q5,0,0);
 
 $q15 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
 $tippredmeta = db_result($q15,0,0);
-if ($tippredmeta == 1000) {
+if ($tippredmeta == 1000 || $tippredmeta == 1001) {
 	$q4 = db_query("SELECT id FROM zavrsni WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
 	if (db_num_rows($q4)>0) {
 		$zavrsni = db_result($q4,0,0);
