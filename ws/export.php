@@ -37,13 +37,24 @@ function ws_export() {
 			}
 			
 			// Određujemo naziv predmeta
-			$podaci_ocjene = db_query_assoc("SELECT ko.ocjena, ag.naziv godina, pp.naziv predmet, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ss.studij studij
+			$podaci_ocjene = db_query_assoc("SELECT ko.ocjena, ag.naziv godina, pp.naziv predmet, UNIX_TIMESTAMP(ko.datum_u_indeksu) datum, ss.studij studij, ss.plan_studija, pp.id id_pasosa, ss.semestar
 				FROM pasos_predmeta pp, konacna_ocjena ko, akademska_godina ag, student_studij ss
 				WHERE ko.student=$id_studenta AND ko.predmet=$id_predmeta AND ko.pasos_predmeta=pp.id AND ko.akademska_godina=ag.id AND ss.student=$id_studenta AND ss.akademska_godina=ag.id
 				ORDER BY ss.semestar LIMIT 1");
 			if (!$podaci_ocjene) { 
 				print json_encode( array( 'success' => 'false', 'code' => 'ERR004', 'message' => 'Nije evidentirana ocjena za predmet' ) );
 				return; 
+			}
+			
+			// Provjeravamo da li je predmet položen na koliziju?
+			$kolizija = false;
+			$predmet_plan_semestar = db_get("SELECT semestar FROM plan_studija_predmet WHERE plan_studija=" . $podaci_ocjene['plan_studija'] . " AND pasos_predmeta=" . $podaci_ocjene['id_pasosa']);
+			if (!$predmet_plan_semestar)
+				$predmet_plan_semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=" . $podaci_ocjene['plan_studija'] . " AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=" . $podaci_ocjene['id_pasosa']);
+			if ($predmet_plan_semestar && $predmet_plan_semestar > $podaci_ocjene['semestar']) {
+				$kolizija = true;
+				// Koristimo aktulenu akademsku godinu (hack?)
+				$podaci_ocjene['godina'] = db_get("SELECT naziv FROM akademska_godina WHERE aktuelna=1");
 			}
 			
 			$podaci_ocjene['datum'] = date("Y-m-d", $podaci_ocjene['datum']);
