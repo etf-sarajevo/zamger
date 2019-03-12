@@ -65,6 +65,20 @@ function genitiv($rijec, $spol='?') {
 		return $rijec."a";
 }
 
+// Vraća dativ riječi (primitivno)
+function dativ($rijec, $spol='?') {
+	if ($spol == '?') $spol = spol($rijec);
+	$slovo = substr($rijec,strlen($rijec)-1);
+	if ($slovo == "a")
+		return substr($rijec,0,strlen($rijec)-1)."i";
+	else if ($spol == "Z")
+		return $rijec;
+	else if ($slovo == "o")
+		return substr($rijec,0,strlen($rijec)-1)."i";
+	else
+		return $rijec."u";
+}
+
 
 // Određuje mimetype fajla koristeći komandu "file"
 function mimetype($file) {
