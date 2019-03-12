@@ -565,10 +565,7 @@ function studentska_zavrsni()  {
 					<span class="label">Rad je u okviru predmeta</span>
 					<span class="formw"><select name="rad_na_predmetu">
 						<option value="0">(nije definisan)</option><?
-						if ($id_studenta>0)
-							$q953 = db_query("select p.id, p.naziv from predmet as p, ponudakursa as pk, student_predmet as sp where sp.student=$id_studenta and sp.predmet=pk.id and pk.predmet=p.id and p.id!=$predmet order by p.naziv");
-						else
-							$q953 = db_query("select p.id, p.naziv from predmet as p, predmet as p2 where p2.id=$predmet and p2.institucija=p.institucija and p2.id!=p.id order by naziv");
+						$q953 = db_query("select p.id, p.naziv from predmet as p where p.id!=$predmet order by naziv");
 						while ($r953 = db_fetch_row($q953)) {
 							if ($r953[0] == $rad_na_predmetu) $opcija = " SELECTED";
 							else $opcija = "";
