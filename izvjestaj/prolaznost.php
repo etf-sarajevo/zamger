@@ -344,12 +344,16 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 
 	// Cache ispita za I i II parcijalni ispit
 	// Gledamo samo redovni rok a.k.a. prvi ispit datog tipa
-	$cache_ispiti = $cache_predmeti = array();
+	$cache_ispiti = $cache_predmeti = $cache_prolaz = array();
 	if ($ispit==1 || $ispit==2) {
-		$q90 = db_query("select i.id, p.id from ispit as i, ponudakursa as pk, predmet as p where i.predmet=p.id and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=$ispit group by i.predmet,i.komponenta");
+		if ($ispit == 1) $naziv = "I parcijalni"; else $naziv = "II parcijalni";
+		$q90 = db_query("SELECT i.id, p.id, k.maxbodova, k.prolaz FROM ispit as i, ponudakursa as pk, predmet as p, komponenta as k WHERE i.predmet=p.id and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit and i.komponenta=k.id AND k.gui_naziv='$naziv' group by i.predmet,i.komponenta");
 		while ($r90 = db_fetch_row($q90)) {
 			array_push($cache_ispiti,$r90[0]);
 			array_push($cache_predmeti,$r90[1]);
+			$prolaz = $r90[3];
+			if ($prolaz == 0) $prolaz = $r90[2]/2;
+			$cache_prolaz[$r90[0]] = $prolaz;
 		}
 	}
 
@@ -404,7 +408,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 				if (db_num_rows($q100)>0) {
 					$ocjena = db_result($q100,0,0);
 					$izaslo[$id_predmeta]++;
-					if ($ocjena>=10) {
+					if ($ocjena >= $cache_prolaz[$id_ispita]) {
 						$polozilo[$id_predmeta]++;
 						$broj_polozenih++;
 					}
