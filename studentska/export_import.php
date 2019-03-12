@@ -153,6 +153,9 @@ function servis_single(stavka, tip, provjera) {
 						result.data.tekst = "<a href='#' onclick=\"prikazi_razlike('"+(razlike_poruke.length-1)+"', 'datum'); return false;\">" +
 							result.data.tekst + "</a>";
 					}
+					if (result.data.tekst == 'Nije otvoren ispit za predmet' || result.data.tekst == 'Nepoznat predmet') {
+						result.data.tekst += " (<a href='#' onclick=\"var stavka="+JSON.stringify(stavka).replace(/"/g, "'")+"; servis_single(stavka, 'ciscenje_ocjene', false); return false;\">očisti</a>)";
+					}
 					var student = stavka.student;
 					if (tip == "upis_vise" || tip == "ciscenje_upis_vise") student = student + "-" + stavka.semestar;
 					student_status(student, result.data.status, result.data.tekst);
