@@ -2502,7 +2502,14 @@ else if ($akcija == "edit") {
 			$novi_studij=db_result($q235,0,0);
 			$novi_semestar=db_result($q235,0,1);
 			$novi_studij_id=db_result($q235,0,2);
-			if ($novi_semestar<=$semestar && $novi_studij==$studij) $nputa=$puta+1; else $nputa=1;
+			if ($novi_semestar<=$semestar && $novi_studij==$studij) 
+				$nputa=$puta+1; 
+			else if ($studij == 0)
+				// Ako student nije upisan nigdje, $puta će biti nula
+				$nputa = db_get("SELECT COUNT(*) FROM student_studij WHERE student=$osoba AND studij=$novi_studij_id AND semestar=$novi_semestar");
+			else
+				// Student upisuje viši semestar od tekućeg ili drugi studij
+				$nputa=1;
 			?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je upisan na studij: <b><?=$novi_studij?></b>, <?=$novi_semestar?>. semestar (<?=$nputa?>. put). (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$novi_studij_id?>&semestar=<?=$novi_semestar?>&godina=<?=$nova_ak_god?>">ispiši sa studija</a>)</p><?
 
