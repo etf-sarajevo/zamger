@@ -1113,16 +1113,43 @@ else if ($akcija == "upis") {
 		}
 
 		// Upisujemo na sve obavezne predmete na studiju
-		$q610 = db_query("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-		while (db_fetch3($q610, $ponudakursa, $predmet, $naziv_predmeta)) {
-			// Da li ga je vec polozio
-			$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
-			if (!$polozio) {
-				print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
-				upis_studenta_na_predmet($student, $ponudakursa);
-				zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
-			} else {
-				print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
+		// Ako postoji plan studija, problem je jednostavan
+		$obavezni = array();
+		if ($plan_studija>0) {
+			$q605 = db_query("SELECT pp.predmet, pp.naziv FROM pasos_predmeta pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.semestar=$semestar AND psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
+			while (db_fetch2($q605, $predmet, $naziv_predmeta)) {
+				// Da li ga je vec polozio
+				$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+				if (!$polozio) {
+					print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
+					$ponudakursa = db_get("SELECT id FROM ponudakursa WHERE predmet=$predmet AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina AND obavezan=1");
+					if (!$ponudakursa) {
+						// Jednom pozivam da ispiše šta će uraditi, drugi put da uradi
+						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, true);
+						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, false);
+					}
+						
+					upis_studenta_na_predmet($student, $ponudakursa);
+					zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
+				} else {
+					print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
+				}
+				
+			}
+			
+		} else {
+			// Nije definisan plan studija, deduciramo obavezne predmete iz onoga što se drži tekuće godine
+			$q610 = db_query("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
+			while (db_fetch3($q610, $ponudakursa, $predmet, $naziv_predmeta)) {
+				// Da li ga je vec polozio
+				$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
+				if (!$polozio) {
+					print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
+					upis_studenta_na_predmet($student, $ponudakursa);
+					zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
+				} else {
+					print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
+				}
 			}
 		}
 
