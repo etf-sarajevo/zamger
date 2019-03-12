@@ -231,6 +231,21 @@ function studentska_anketa(){
 		$ak_godina = intval($_POST['akademska_godina']);
 		$naziv = db_escape(substr($_POST['naziv'], 0, 100));
 		$prethodna_anketa = intval($_POST['prethodna_anketa']);
+		$sigurno = intval($_POST['sigurno']);
+		
+		if ($sigurno == 0) {
+			print "<center>\n";
+			nicemessage("Kreiranje nove ankete");
+			?>
+			<p>Da li ste sigurni da želite kreirati novu anketu pod imenom <b><?=$naziv?></b>?</p>
+			<?=genform("POST");?>
+			<input type="hidden" name="sigurno" value="1">
+			<input type="submit" value=" Da "> <input type="button" onclick="location.href='?sta=studentska/anketa';" value=" Ne, vrati me nazad ">
+			</form>
+			</center>
+			<?
+			return;
+		}
 		
 		// Određivanje aktuelnog semestra
 		// Ne koristimo trenutni_semestar() iz lib/zamger jer se anketa u pravilu kreira između dva semestra za prethodni semestar
