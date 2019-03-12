@@ -61,6 +61,27 @@ while(db_fetch2($qispiti, $ispit, $predmet)) {
 
 $imena_predmeta_cache = array();
 
+if (int_param('po_predmetu')) {
+	$aktuelna_ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
+	$ispis_varijanta = array();
+	foreach($studenti as $predmet => $sp) {
+		$qp = db_query("SELECT s.naziv, pk.semestar, p.naziv FROM predmet p, ponudakursa pk, studij s WHERE p.id=$predmet AND p.id=pk.predmet AND pk.akademska_godina=$aktuelna_ag AND pk.studij=s.id LIMIT 1");
+		$qpredmet = db_fetch_row($qp);
+		$ispis_varijanta[$qpredmet[1]][$qpredmet[0]][] = $qpredmet[2] . " - ".count($sp);
+	}
+	ksort($ispis_varijanta);
+	
+	foreach($ispis_varijanta as $semestar => $ispis) {
+		foreach ($ispis as $studij => $ispis2) {
+			print "<p><b>$semestar. semestar, $studij</b><br>";
+			foreach($ispis2 as $ispis3) {
+				print "- $ispis3<br>\n";
+			}
+		}
+	}
+	exit(0);
+}
+
 foreach($duple_prijave as $student => $predmeti) {
 	$sd = db_query_assoc("SELECT ime, prezime, brindexa FROM osoba WHERE id=$student");
 	?>
