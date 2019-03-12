@@ -58,20 +58,21 @@ else if ($_REQUEST['action'] == "nextTask") {
 		$result['code'] = "ERR004";
 		$result["message"] = "Only autotester has access to nextTask";
 	} else {
-		$task = $previousTask = false;
-		$q = db_query("SELECT id, zadataka FROM zadaca WHERE automatsko_testiranje=1 ORDER BY id");
+		$task = $tmpTask = false;
+		$lookForPrevious = isset($_REQUEST['previousTask']);
+		$q = db_query("SELECT id, zadataka FROM zadaca WHERE automatsko_testiranje=1 ORDER BY id DESC");
 		while ($r = db_fetch_row($q)) {
-			for ($i=1; $i<=$r[1]; $i++)
-				if (dajZadatak($r[0], $i)) {
-					$tmpTask = $r[0] * 100 + $i;
-					if (!isset($_REQUEST['previousTask']) || $_REQUEST['previousTask'] == $previousTask) {
-						$task = $tmpTask;
-						break;
-					} else if ($task == false) {
-						$task = $tmpTask;
-					}
-					$previousTask = $tmpTask;
+			for ($i=1; $i<=$r[1]; $i++) {
+				$tmpTask = $r[0] * 100 + $i;
+				if ($lookForPrevious) {
+					if ($tmpTask == $_REQUEST['previousTask'])
+						$lookForPrevious = false;
+				} else if (dajZadatak($r[0], $i)) {
+					$task = $tmpTask;
+					break;
 				}
+			}
+			if ($task != false) break;
 		}
 		if ($task == false)
 			$result['data']['id'] = "false";
@@ -148,7 +149,6 @@ else if ($_REQUEST['action'] == "getTaskData") {
 			$result['data']['debug']   = "true";
 			$result['data']['profile'] = "true";
 		}
-		if ($zadaca == 2890) $result['data']['profile'] = "false";
 
 		// Tests
 		$result['data']['test_specifications'] = array();
@@ -284,7 +284,12 @@ else if ($_REQUEST['action'] == "getFile") {
 		if (substr($filename, strlen($filename)-4) !== ".zip") {
 			$tmp = "$conf_files_path/zadace/temporary$id.zip";
 			$filepath = escapeshellarg($filepath);
-			`zip -j $tmp $filepath`;
+			if ($zadaca == 4455 && $filename=="3.c")
+				`zip -j $tmp $filepath $conf_files_path/tmp/oblici.dat`;
+			else if ($zadaca == 4455 && $filename=="4.c")
+				`zip -j $tmp $filepath $conf_files_path/tmp/artikli.bin`;
+			else
+				`zip -j $tmp $filepath`;
 			$filepath = $tmp;
 			$filename = "temporary.zip";
 		}
@@ -740,7 +745,6 @@ function dajZadatak($zadaca, $zadatak) {
 		// Preskačemo zadatke koje neko već radi
 		$q50 = db_query("SELECT UNIX_TIMESTAMP(buildservice_tracking.vrijeme) FROM buildservice_tracking, zadatak WHERE buildservice_tracking.zadatak=zadatak.id AND zadatak.zadaca=$zadaca and zadatak.redni_broj=$zadatak and zadatak.student=$student ORDER BY buildservice_tracking.vrijeme DESC LIMIT 1");
 		if (db_num_rows($q50) > 0) {
-		//print "Vrijeme ".db_result($q50,0,0)." time ".time()." razlika ".(db_result($q50,0,0) - time())." timeout $conf_buildhost_timeout<br>\n";
 			if (time() - db_result($q50,0,0) < $conf_buildhost_timeout)
 				continue;
 		}
