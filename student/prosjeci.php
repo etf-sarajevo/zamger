@@ -22,7 +22,7 @@ if (true) {
 	// (objašnjenje u komentaru drugog dijela)
 
 	$maxgod=0;
-	$q10 = db_query("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id");
+	$q10 = db_query("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id AND ko.ocjena>5 AND ko.ocjena<11");
 	$ciklusi=array();
 	while ($r10 = db_fetch_row($q10)) {
 		$ciklus=$r10[0]; $semestar=$r10[1]; $ocjena=$r10[2];
@@ -156,9 +156,9 @@ $q15 = db_query("select naziv from studij where id=$studij");
 $q20 = db_query("select pasos_predmeta, plan_izborni_slot, semestar, obavezan from plan_studija_predmet where plan_studija=$plan_studija order by semestar");
 while (db_fetch4($q20, $pasos_predmeta, $plan_izborni_slot, $semestar, $obavezan)) {
 	if ($obavezan == 1) { // Obavezan
-		$q30 = db_query("select ko.ocjena from konacna_ocjena ko, pasos_predmeta pp where ko.student=$userid and ko.predmet=pp.predmet AND pp.id=$pasos_predmeta");
+		$q30 = db_query("select ko.ocjena from konacna_ocjena ko, pasos_predmeta pp where ko.student=$userid and ko.predmet=pp.predmet AND pp.id=$pasos_predmeta AND ko.ocjena>5 AND ko.ocjena<11");
 	} else { // Izborni
-		$q30 = db_query("select ko.ocjena, ko.predmet from konacna_ocjena as ko, pasos_predmeta pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id AND pp.predmet=ko.predmet and ko.student=$userid ".$bio_izborni_sql[$plan_izborni_slot]);
+		$q30 = db_query("select ko.ocjena, ko.predmet from konacna_ocjena as ko, pasos_predmeta pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id AND pp.predmet=ko.predmet AND ko.student=$userid   AND ko.ocjena>5 AND ko.ocjena<11 ".$bio_izborni_sql[$plan_izborni_slot]);
 		if (db_num_rows($q30)>0)
 			$bio_izborni_sql[$plan_izborni_slot] .= "and ko.predmet!=".db_result($q30,0,1);
 	}
