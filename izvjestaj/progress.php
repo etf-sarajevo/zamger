@@ -50,7 +50,7 @@ Broj indeksa: <?=$r100[2]?><br><br><br>
 
 <?
 
-$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze");
+$imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "8 (osam)", "9 (devet)", "10 (deset)", "ispunio/la obaveze", "uspješno odbranio");
 
 
 // Ocjene po odluci:
