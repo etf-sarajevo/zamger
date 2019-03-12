@@ -673,6 +673,8 @@ function daj_podatke_studenta($id_studenta) {
 		if ($podaci_studenta['opcina_rod'] === false && $mjesto_rodjenja['naziv'] == "Sarajevo") 
 			$podaci_studenta['opcina_rod'] = "Centar"; // Ako je mjesto Sarajevo i općina nije navedena
 		$podaci_studenta['opcina_rod'] = zamger2isss("opcina_popravke", $podaci_studenta['opcina_rod']);
+		if ($podaci_studenta['opcina_rod'] === "Sarajevo - Centar") // Općina rođenja "Sarajevo - Centar" treba biti "Centar" :(
+			$podaci_studenta['opcina_rod'] = "Centar";
 		$podaci_studenta['drzava_rod'] = db_get("SELECT naziv FROM drzava WHERE id=".$mjesto_rodjenja['drzava']);
 	} else {
 		// Ako nije setovano mjesto, uzećemo da je to Sarajevo-Centar
