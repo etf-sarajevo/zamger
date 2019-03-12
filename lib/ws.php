@@ -116,7 +116,7 @@ function parsiraj_kartice($xml_data) {
 	return $result;
 }
 
-function json_request($url, $parameters, $method = "GET") 
+function json_request($url, $parameters, $method = "GET", $debug = false) 
 {
 	global $conf_verbosity;
 	
@@ -148,33 +148,33 @@ function json_request($url, $parameters, $method = "GET")
 		$ctx = stream_context_create($params);
 		$fp = fopen($url, 'rb', false, $ctx);
 		if (!$fp) {
-			echo "HTTP request failed for $url (POST)\n";
+			if ($debug) print "HTTP request failed for $url (POST)\n";
 			return FALSE;
 		}
 		$http_result = @stream_get_contents($fp);
 		fclose($fp);
 	}
 	if ($http_result===FALSE) {
-		print "HTTP request failed for $url?$query ($method)\n";
+		if ($debug) print "HTTP request failed for $url?$query ($method)\n";
 		return FALSE;
 	}
 	$http_code = explode(" ", $http_response_header[0]);
 	$http_code = $http_code[1];
 	if ( !in_array($http_code, $allowed_http_codes) ) {
-		print "HTTP request returned code $http_code for $url?$query ($method)\n";
+		if ($debug) print "HTTP request returned code $http_code for $url?$query ($method)\n";
 		return FALSE;
 	}
 		
 	$json_result = json_decode($http_result, true); // Retrieve json as associative array
 	if ($json_result===NULL) {
-		print "Failed to decode result as JSON\n$http_result\n";
+		if ($debug) print "Failed to decode result as JSON\n$http_result\n";
 		// Why does this happen!?
 		if ($conf_verbosity>0) { print_r($http_result); print_r($parameters); }
 		return FALSE;
 	} 
 
 	else if (array_key_exists("server_message", $json_result)) {
-		print "Message from server: " . $json_result["server_message"]."\n";
+		if ($debug) print "Message from server: " . $json_result["server_message"]."\n";
 	}
 
 	return $json_result;
