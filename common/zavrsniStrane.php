@@ -38,10 +38,6 @@ function common_zavrsniStrane() {
 	$naslov_rada = db_result($q10,0,0);
 	$mentor = db_result($q10,0,2)." ".$naucni_stepen[db_result($q10,0,3)]." ".db_result($q10,0,1);
 	$id_studenta = db_result($q10,0,4);
-	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
-		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
-		$student = "Student: ".db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).")";
-	}
 	
 	// Naslov stranice
 
@@ -56,7 +52,6 @@ function common_zavrsniStrane() {
 	} else {
 		print "<p><a href=\"?sta=student/zavrsni&amp;predmet=$predmet&amp;ag=$ag&amp;zavrsni=$zavrsni&amp;akcija=detalji\">Pregledaj postavku teme</a></p>\n";
 	}
-	
 
 	// Prikaz ako nije odabrana subakcija
 
@@ -69,6 +64,7 @@ function common_zavrsniStrane() {
 	if ($userid == $id_studenta) {
 		if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
 			?>
+			<p>&nbsp;</p>
 			<p><b><font color="red">Nije definisan sažetak teme</font></b></p>
 			<p>Molimo vas da prije slanja finalne verzije rada definišete sažetak.</p>
 			<?
@@ -234,6 +230,25 @@ function common_zavrsniStrane() {
 	<?
 
 
+	// Konačna ocjena
+
+	$ocjena = db_get("select ocjena from konacna_ocjena where student=$id_studenta and predmet=$predmet and akademska_godina=$ag");
+	if ($ocjena > 5) {
+		if ($ocjena == 11) $ocjena = "Ispunio/la obaveze";
+		if ($ocjena == 12) $ocjena = "Uspješno odbranio/la";
+		?>
+		<center>
+			<table width="100px" style="border-width: 3px; border-style: solid; border-color: silver">
+				<tr><td align="center">
+					KONAČNA OCJENA<br/>
+					<font size="6"><b><?=$ocjena?></b></font>
+				</td></tr>
+			</table>
+		</center>
+		<?
+	}
+
+	
 
 	} // if (!isset($subakcija))
 	
