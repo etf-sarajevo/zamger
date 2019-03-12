@@ -141,8 +141,9 @@ function student_ugovoroucenju() {
 						if (substr($ime,0,strlen($komad)) != $komad) continue;
 						
 						// izborni predmet sa drugog odsjeka
-						if (substr($ime, strlen($komad)) == "odsjek") {
-							$izabran_predmet = intval($_REQUEST["odsjek-$pis"]);
+						if (substr($ime, strlen($komad), 6) == "odsjek") {
+							$num = intval(substr($ime, strlen($komad)+6));
+							$izabran_predmet = intval($_REQUEST["odsjek-$pis-$num"]);
 							// Izborni predmet sa drugog odsjeka
 							$q120 = db_query("select pp.ects, pp.naziv from pasos_predmeta pp where pp.predmet=$izabran_predmet order by pp.id desc limit 1");
 							if (!db_fetch2($q120, $ects, $predmet_naziv)) {
