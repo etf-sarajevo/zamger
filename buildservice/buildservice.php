@@ -31,6 +31,7 @@ $conf_extensions = array(
 	"C++"  => array( ".cpp", ".h", ".cxx", ".hxx" ),
 	"C++11"  => array( ".cpp", ".h", ".cxx", ".hxx" ),
 	"Java" => array( ".java" ),
+	"Matlab .m" => array( ".m" ),
 );
 
 
@@ -140,6 +141,7 @@ else if ($_REQUEST['action'] == "getTaskData") {
 
 		// Šta sve treba raditi sa zadaćom
 		$result['data']['compile'] = "true";
+		if ($r[3] == "Matlab .m") $result['data']['compile'] = "false";
 		$result['data']['run']     = "false";
 		$result['data']['test']    = "true";
 		if ($r[3] == "Python") {
@@ -149,6 +151,7 @@ else if ($_REQUEST['action'] == "getTaskData") {
 			$result['data']['debug']   = "true";
 			$result['data']['profile'] = "true";
 		}
+		if ($r[3] == "Matlab .m") $result['data']['profile'] = "false";
 
 		// Tests
 		$result['data']['test_specifications'] = array();
@@ -738,9 +741,6 @@ function dajZadatak($zadaca, $zadatak) {
 
 		// Preskačemo zadaće za koje status nije 1 (u međuvremenu asistent napravio izmjene)
 		if ($status != 1) continue;
-
-		// Preskačemo nalaze autotesta
-		//if ($zadnji_izmijenio== 3376) { print"Imamo nalaz autotesta<br>\n"; continue; } // FIXME ovo ne treba biti hardcodirano
 
 		// Preskačemo zadatke koje neko već radi
 		$q50 = db_query("SELECT UNIX_TIMESTAMP(buildservice_tracking.vrijeme) FROM buildservice_tracking, zadatak WHERE buildservice_tracking.zadatak=zadatak.id AND zadatak.zadaca=$zadaca and zadatak.redni_broj=$zadatak and zadatak.student=$student ORDER BY buildservice_tracking.vrijeme DESC LIMIT 1");
