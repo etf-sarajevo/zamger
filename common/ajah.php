@@ -217,7 +217,7 @@ case "izmjena_ispita":
 		$predmet=intval($parametri[2]);
 		$ag = intval($parametri[3]);
 
-		$max=11;
+		$max = 12;
 		if (!$user_siteadmin && !$user_studentska) {
 			$q41 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
 			if (db_num_rows($q41)<1) {
