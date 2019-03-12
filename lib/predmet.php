@@ -26,11 +26,18 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 		else {
 			$q63 = db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, obavezan=$obavezan, akademska_godina=$ag");
 			$pkid = db_insert_id();
-
+		}
+	}
+		
+	$q65 = db_query("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
+	if (db_result($q65,0,0)==0) {
+		if ($ispis)
+			print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Kreiram virtuelnu lab grupu<br/>\n";
+		else {
 			// Kreiranje labgrupe "svi studenti"
-			$q65 = db_query("select count(*) from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=1");
-			if (db_result($q65,0,0)==0)
-				$q67 = db_query("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ag, virtualna=1");
+			$q67 = db_query("insert into labgrupa set naziv='(Svi studenti)', predmet=$predmet, akademska_godina=$ag, virtualna=1");
+			$vlg = db_insert_id();
+			$q68 = db_query("INSERT INTO student_labgrupa SELECT student, $vlg FROM student_predmet WHERE predmet=$pkid");
 		}
 	}
 
