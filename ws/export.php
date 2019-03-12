@@ -743,11 +743,14 @@ function isss_daj_razlike($podaci_studenta) {
 	
 	$razlike = array();
 	foreach($podaci_studenta as $ime => $vrijednost) {
+		if ($ime == "ciklus") continue; // Nije implementirano
 		$isss_vrijednost = $isss_compare_result['data'][0][$ime];
 		if ($ime == "kanton" && $vrijednost == "Strani državljanin") continue;
 		if ($ime == "opcina" && $vrijednost == "(nije u BiH)") continue;
 		if ($ime == "opcina_rod" && $vrijednost == "(nije u BiH)") continue;
-		if ($ime == "srednja_skola") {
+		if ($ime == "srednja_skola") { 
+			if ($isss_vrijednost == "nepoznato" && $vrijednost == "") continue;
+		
 			$isss_vrijednost = ukini_viskove($isss_vrijednost);
 			// Ime srednje škole u ISSSu ograničeno na 100 karaktera
 			$vrijednost = substr($vrijednost, 0, 100);
