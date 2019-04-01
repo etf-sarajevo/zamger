@@ -258,7 +258,7 @@ if ($skrati!=1) {
 		$zadace_zaglavlje = "";
 
 		// Razvrstavamo zadaće po komponentama
-		$q120 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r115[0] order by id");
+		$q120 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$r115[0] order by rok");
 		while ($r120 = db_fetch_row($q120)) {
 			$zadace_zaglavlje .= "<td width=\"60\">$r120[1]</td>\n";
 			$zad_id_array[] = $r120[0];

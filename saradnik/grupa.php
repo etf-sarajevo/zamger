@@ -322,7 +322,7 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 		$komponenta = $r205[0];
 		
 		// Razvrstavamo zadaće po komponentama
-		$q210 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by id");
+		$q210 = db_query("select id,naziv,zadataka,bodova from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$komponenta order by rok");
 		while ($r210 = db_fetch_row($q210)) {
 			$zad_komponenta_zaglavlje .= "<td width=\"60\" align=\"center\">$r210[1]<br /><a href=\"?sta=saradnik/svezadace&grupa=$labgrupa&zadaca=$r210[0]\">Download</a></td>\n";
 			$zad_id_array[] = $r210[0];
