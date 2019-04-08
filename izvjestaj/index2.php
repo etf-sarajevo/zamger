@@ -122,6 +122,18 @@ AND pk.id=sp.predmet AND sp.student=$student AND pk.studij=s.id AND s.tipstudija
 $broj_polozenih_predmeta = db_result($q88,0,0);
 $suma_ects = db_result($q88,0,1);
 
+$q89 = db_query("SELECT COUNT(*), SUM(pp.ects) 
+FROM konacna_ocjena as ko, pasos_predmeta pp
+WHERE ko.student=$student AND ko.ocjena>5 AND ko.pasos_predmeta=pp.id AND ko.odluka IS NOT NULL");
+$broj_polozenih_predmeta += db_result($q89,0,0);
+$suma_ects += db_result($q89,0,1);
+
+if ($param_ciklus != 0) $dod_priznavanje = " and ciklus=$param_ciklus"; else $dod_priznavanje = "";
+$q89a = db_query("SELECT COUNT(*), SUM(ects) FROM priznavanje WHERE student=$student $dod_priznavanje");
+$broj_polozenih_predmeta += db_result($q89a,0,0);
+$suma_ects += db_result($q89a,0,1);
+
+
 // Određujemo na osnovu sume ECTS kredita
 if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	$q89 = db_query("SELECT UNIX_TIMESTAMP(ko.datum_u_indeksu) 
