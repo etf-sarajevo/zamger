@@ -338,6 +338,7 @@ if (param('akcija') == "svi_studenti") {
 	?></select><br />
 	Godina studija: <select name="godina"><option value="0">Sve godine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><br />
 	<input type="checkbox" name="prvi_put">Prvi put (bez ponovaca)<br />
+	<input type="checkbox" name="boracke">Samo studenti koji pripadaju posebnim kategorijama<br />
 	
 	<input type="submit" value=" Prikaži "></form>
 	<?

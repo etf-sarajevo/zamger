@@ -14,21 +14,22 @@ Elektrotehnički fakultet Sarajevo</p>
 <p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 
-$ime_oca = request('ime_oca');
-$jmbg = request('jmbg');
-$vanredni = request('vanredni');
-$nacin_studiranja = request('nacin_studiranja');
-$login = request('login');
-$brindexa = request('brindexa');
-$ag = intval(request('ag'));
-$tipstudija = intval(request('tipstudija'));
-$studij = intval(request('studij'));
-$godina = intval(request('godina'));
-$tabelarno = request('tabelarno');
-$prvi_put = request('prvi_put');
-$mjesto_rodjenja = request('mjesto_rodjenja');
-$adresa_mjesto = request('adresa_mjesto');
-$drzavljanstvo = request('drzavljanstvo');
+$ime_oca = param('ime_oca');
+$jmbg = param('jmbg');
+$vanredni = param('vanredni');
+$nacin_studiranja = param('nacin_studiranja');
+$login = param('login');
+$brindexa = param('brindexa');
+$ag = int_param('ag');
+$tipstudija = int_param('tipstudija');
+$studij = int_param('studij');
+$godina = int_param('godina');
+$tabelarno = param('tabelarno');
+$prvi_put = param('prvi_put');
+$mjesto_rodjenja = param('mjesto_rodjenja');
+$adresa_mjesto = param('adresa_mjesto');
+$drzavljanstvo = param('drzavljanstvo');
+$boracke = int_param('boracke');
 
 if ($ag==0) {
 	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
@@ -73,6 +74,7 @@ if ($login) $tabele .= ", auth as a";
 if ($mjesto_rodjenja) $tabele .= ", mjesto as m";
 if ($adresa_mjesto) $tabele .= ", mjesto as am";
 if ($drzavljanstvo) $tabele .= ", drzava as d";
+if ($boracke) $tabele .= ", osoba_posebne_kategorije opk";
 
 $uslovi = "";
 if (!$vanredni) $uslovi .= " and ss.nacin_studiranja != 4";
@@ -89,6 +91,7 @@ if ($adresa_mjesto) {
 	if ($adresa_mjesto != "on") $uslovi .= " and am.naziv='$adresa_mjesto'";
 }
 if ($drzavljanstvo) $uslovi .= " and o.drzavljanstvo=d.id";
+if ($boracke) $uslovi .= " and o.id=opk.osoba";
 
 $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
@@ -163,9 +166,4 @@ print "</p>";
 
 }
 
-function request($var) {
-	if (isset($_REQUEST[$var]))
-		return $_REQUEST[$var];
-	return false;
-}
 ?>

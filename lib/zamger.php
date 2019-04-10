@@ -202,7 +202,9 @@ function param($name) {
 
 // Vraća integer vrijednost request parametra ili nulu
 function int_param($name) {
-	if (isset($_REQUEST[$name])) return intval($_REQUEST[$name]);
+	if (isset($_REQUEST[$name])) 
+		if ($_REQUEST[$name] === "on") return 1;
+		else return intval($_REQUEST[$name]);
 	return 0;
 }
 
