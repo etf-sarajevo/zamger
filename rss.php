@@ -122,7 +122,7 @@ while ($r15 = db_fetch_row($q15)) {
 	else {
 		if ($id == "svi") $modul = "izvjestaj/predmet"; else $modul = "student/predmet";
 		$vrijeme_poruke["i".$r15[0]] = $r15[3];
-		if ($id == "svi") $dodaj_bodove = ""; else $dodaj_bodove = "Dobili ste ".mysql_result($q16,0,0)." bodova! ";
+		if ($id == "svi") $dodaj_bodove = ""; else $dodaj_bodove = "Dobili ste ".db_result($q16,0,0)." bodova! ";
 		$code_poruke["i".$r15[0]] = "<item>
 		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
 		<title>Objavljeni rezultati ispita $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
