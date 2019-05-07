@@ -653,7 +653,7 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 	<p><?=$backLink?></p>
 	<?
 	
-	$q205 = db_query("SELECT distinct z.id, z.naziv, ag.naziv FROM zadaca as z, autotest as a, akademska_godina as ag WHERE z.predmet=$predmet AND z.akademska_godina<$ag AND z.akademska_godina=ag.id AND a.zadaca=z.id ORDER BY ag.id desc, z.id");
+	$q205 = db_query("SELECT distinct z.id, z.naziv, ag.naziv, ag.id FROM zadaca as z, autotest as a, akademska_godina as ag WHERE z.predmet=$predmet AND z.akademska_godina<$ag AND z.akademska_godina=ag.id AND a.zadaca=z.id ORDER BY ag.id desc, z.id");
 	if (db_num_rows($q205) > 0) {
 		?>
 		<h3>Kopiraj testove sa ranijih godina</h3>
