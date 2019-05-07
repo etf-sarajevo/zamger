@@ -130,6 +130,16 @@ while ($r110 = db_fetch_row($q110)) {
 			print "<tr><td>".($rbr++)."</td><td>".$r120[1]."</td><td>".$r110[1]."</td>";
 			$ukupno=0;
 
+			// Isključujemo error reporting
+			
+			// PHP 7 smatra da je sljedeći kod Warning: A non-numeric value encountered
+			//    $ukupno = "&nbsp;";
+			//    $bodova = 0;
+			//    $ukupno += $bodova; // $ukupno postaje 0
+			// Ja *znam* da će string biti izgubljen, to je efekat koji želim ovdje
+			// Želim da polje tabele bude prazno (&nbsp;) ako nema slogova u bazi, a 0 samo ako je zbir zaista nula
+			$oldlevel = error_reporting(E_ALL & ~E_WARNING);
+			
 			// Od kojih komponenti se sastoji ispit?
 			$prisustvo = $zadace = $parc1 = $parc2 = $int = $zavrsni = $ukupno = "&nbsp;";
 			$kp1 = $kp2 = 0; // Čuvamo id-ove komponenti za 1 i 2 parcijalni, radi kasnijeg ispisa
@@ -175,6 +185,8 @@ while ($r110 = db_fetch_row($q110)) {
 				$ukupno += $bodovi;
 			}
 
+			error_reporting($oldlevel);
+			
 			print "<td>$prisustvo</td><td>$zadace</td>";
 			if ($razdvoji==0) {
 				print "<td>$parc1</td><td>$parc2</td><td>$int</td>";
