@@ -86,7 +86,7 @@ function student_anketa() {
 	}
 	
 	
-	$podaci2 = db_query("select predmet, aktivna from anketa_predmet where anketa=$anketa AND akademska_godina=$ag");
+	$podaci2 = db_query_assoc("select predmet, aktivna from anketa_predmet where anketa=$anketa AND akademska_godina=$ag");
 	if ($podaci2 === false) {
 		biguglyerror("U datoj akademskoj godini nije bila raspisana anketa za ovaj predmet");
 		zamgerlog("student/anketa ne postoji zapis u tabeli anketa_predmet", 3);
