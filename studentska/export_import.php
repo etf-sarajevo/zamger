@@ -156,6 +156,7 @@ function servis_single(stavka, tip, provjera) {
 					if (result.data.tekst == 'Nije otvoren ispit za predmet' || result.data.tekst == 'Nepoznat predmet') {
 						result.data.tekst += " (<a href='#' onclick=\"var stavka="+JSON.stringify(stavka).replace(/"/g, "'")+"; servis_single(stavka, 'ciscenje_ocjene', false); return false;\">očisti</a>)";
 					}
+					
 					var student = stavka.student;
 					if (tip == "upis_vise" || tip == "ciscenje_upis_vise") student = student + "-" + stavka.semestar;
 					student_status(student, result.data.status, result.data.tekst);
@@ -571,7 +572,7 @@ if (param('akcija') == "ocjene") {
 	
 	$q20 = db_query("SELECT pp.id, pp.naziv FROM izvoz_ocjena io, konacna_ocjena ko, pasos_predmeta pp
 			WHERE io.student=ko.student AND io.predmet=ko.predmet AND ko.pasos_predmeta=pp.id
-			GROUP BY ko.predmet ORDER BY pp.naziv");
+			GROUP BY pp.id, ko.predmet ORDER BY pp.naziv");
 	while(db_fetch2($q20, $id_pasosa, $naziv_predmeta)) {
 		?>
 		<li><a href="?sta=studentska/export_import&amp;akcija=ocjene_predmet&amp;id_pasosa=<?=$id_pasosa?>">
@@ -696,7 +697,8 @@ if (param('akcija') == "ocjene_predmet") {
 			</table>
 			<?
 		}
-	} 
+	}
+	
 	?>
 	<script>
 	var za_provjeru = [ <?=$javascript_niz?> ];
