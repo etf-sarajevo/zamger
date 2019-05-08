@@ -879,7 +879,7 @@ CREATE TABLE IF NOT EXISTS `log2` (
   `objekat1` int(11) NOT NULL,
   `objekat2` int(11) NOT NULL,
   `objekat3` int(11) NOT NULL,
-  `ipaddress` varchar(16) collate utf8_slovenian_ci NOT NULL,
+  `ipaddress` varchar(40) collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `objekat1` (`objekat1`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
