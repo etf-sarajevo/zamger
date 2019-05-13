@@ -651,6 +651,7 @@ function akcijaslanje() {
 				$diff = `/usr/bin/diff -u $lokacijazadaca$zadaca/difftemp $filename`;
 				$diff = db_escape($diff);
 				if (strlen($diff)>1) {
+					if (strlen($diff) > 65535) $diff = substr($diff, 0, 65534);
 					$q250 = db_query("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
 				}
 				unlink ("$lokacijazadaca$zadaca/difftemp");
@@ -735,6 +736,7 @@ function akcijaslanje() {
 			$id_zadatka = db_insert_id();
 
 			if (strlen($diff)>1) {
+				if (strlen($diff) > 65535) $diff = substr($diff, 0, 65534);
 				$q270 = db_query("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
 			}
 
