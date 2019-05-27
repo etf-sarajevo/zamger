@@ -136,8 +136,9 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 			$q120 = db_query("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student_id order by id desc limit 1");
 			if (db_num_rows($q120)<1) continue; // Nije poslao zadaću...
 			$oldfile = "$lokacijazadaca$student_id/$zadaca/".db_result($q120,0,0);
-			if (!file_exists($oldfile)) { // Konfliktna situacija na serveru?
-				//print "<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* Nisam uspio pronaći fajl '".db_result($q120,0,0)."' na serveru (student $student_id, zadatak $zadatak). Molimo prijavite ovo administratoru.</p>\n";
+			if (!file_exists($oldfile) || is_dir($oldfile)) { 
+				// Datoteka je pobrisana iz storage ili je zapis u koloni filename prazan
+				// Nastavnik može kontaktirati administratora ako mu nedostaje neki fajl
 				continue;
 			}
 			$fajlova++;

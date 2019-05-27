@@ -731,9 +731,10 @@ else if ($akcija == "upis") {
 
 
 	// Da li ima nepoložene predmete sa ranijih semestara?
+	global $zamger_predmeti_pao;
+	$zamger_predmeti_pao = array();
 	if ($semestar > 1 && $semestar%2 == 1 && $stari_studij !== false) {
 		// Pozivamo "ima_li_uslov" da dobijemo spisak nepoloženih predmeta
-		global $zamger_predmeti_pao;
 		ima_li_uslov($student);
 
 		// U prvom prolazu nudimo da se ručno unesu ocjene za preostale neocijenjene predmete

@@ -299,6 +299,7 @@ if ($_POST['izmjena'] == "da" && check_csrf_token()) {
 	// Izmjena se vrši na nivou stranice
 	// Stranica u principu odgovara svim komponentama određenog tipa (osim završnog ispita)
 	$tmpTabelaKomponenti = $_SESSION['TabelaKomponenti'];
+	if (!is_array($tmpTabelaKomponenti)) $tmpTabelaKomponenti = array();
 	$BrojKomponenti = count($tmpTabelaKomponenti);
 	$TabelaKomponenti = array();
 
@@ -448,6 +449,7 @@ if ($akcija == "wizard") {
 	// Čitamo do sada definisane podatke iz sesije
 
 	$tmpTabelaKomponenti = $_SESSION['TabelaKomponenti'];
+	if (!is_array($tmpTabelaKomponenti)) $tmpTabelaKomponenti = array();
 	$BrojKomponenti = count($tmpTabelaKomponenti);
 	$TabelaKomponenti = array();
 
@@ -1004,6 +1006,7 @@ function pregled_predmeta($tippredmeta) {
 function pregled_predmeta_bez_naziva() {
 
 	$TabelaKomponenti = $_SESSION['TabelaKomponenti'];
+	if (!is_array($TabelaKomponenti)) $TabelaKomponenti = array();
 	
 	?>
 	<table border="0">
