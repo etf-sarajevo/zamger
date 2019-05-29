@@ -303,6 +303,7 @@ if (param('akcija') == "svi_studenti") {
 	<form action="index.php" method="GET" name="studijForm" onsubmit="return izvjestaj();">
 	<input type="hidden" name="sta" value="izvjestaj/svi_studenti">
 	<p><input type="checkbox" name="ime_oca">Ime oca<br />
+	<input type="checkbox" name="spol">Spol<br />
 	<input type="checkbox" name="jmbg">JMBG<br />
 	<input type="checkbox" name="nacin_studiranja">Način studiranja (redovni, samofinansirajući...)<br />
 	<input type="checkbox" name="vanredni">Uključi i vanredne studente<br />
@@ -361,7 +362,7 @@ if (param('akcija') == "svi_studenti") {
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=po_prosjeku">Spisak studenata po prosječnoj ocjeni</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=svi_studenti">Spisak svih studenata abecedno</a></li>
 <li><a href="?sta=studentska/izvjestaji&amp;akcija=uspjesnost">Uspješnost studenata i prosječno trajanje studija</a></li>
-<li><a href="?sta=izvjestaj/studenata_po_predmetu" onclick="return izvjestaj();">Broj studenata po predmetu</a></li>
+<li><a href="?sta=izvjestaj/studenata_po_predmetu&amp;maticna=da" onclick="return izvjestaj();">Broj studenata po predmetu</a></li>
 </ul></p>
 
 <hr/>

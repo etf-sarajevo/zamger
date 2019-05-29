@@ -15,6 +15,7 @@ Elektrotehnički fakultet Sarajevo</p>
 <?
 
 $ime_oca = param('ime_oca');
+$spol = param('spol');
 $jmbg = param('jmbg');
 $vanredni = param('vanredni');
 $nacin_studiranja = param('nacin_studiranja');
@@ -59,6 +60,7 @@ if ($godina>0)
 
 $kolone = "";
 if ($ime_oca) $kolone .= ", o.imeoca";
+if ($spol) $kolone .= ", o.spol";
 if ($jmbg) $kolone .= ", o.jmbg";
 if ($nacin_studiranja) $kolone .= ", ns.naziv as nacin";
 if ($login) $kolone .= ", a.login";
@@ -91,7 +93,7 @@ if ($adresa_mjesto) {
 	if ($adresa_mjesto != "on") $uslovi .= " and am.naziv='$adresa_mjesto'";
 }
 if ($drzavljanstvo) $uslovi .= " and o.drzavljanstvo=d.id";
-if ($boracke) $uslovi .= " and o.id=opk.osoba";
+if ($boracke) $uslovi .= " and o.id=opk.osoba AND opk.posebne_kategorije != 3"; // studenti ne ostvaruju nikakva prava po osnovu pripadnosti kategoriji 3 "djeca demobilisanih boraca"
 
 $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
@@ -108,6 +110,7 @@ if ($tabelarno) {
 	print "<table border=\"1\" cellspacing=\"0\" cellpadding=\"3\" style=\"border: 1px; border-collapse: collapse\"><tr><th>R. br.</th><th>Prezime</th>";
 	if ($ime_oca) print "<th>Ime roditelja</th>";
 	print "<th>Ime</th>";
+	if ($spol) print "<th>Spol</th>";
 	if ($jmbg) print "<th>JMBG</th>";
 	if ($nacin_studiranja) print "<th>Način studiranja</th>";
 	if ($login) print "<th>Login</th>";
@@ -125,6 +128,10 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($ime_oca) print "<td>".$osoba['imeoca']."</td>";
 		print "<td>".$osoba['ime']."</td>";
 		if ($brindexa) print "<td>".$osoba['brindexa']."</td>";
+		if ($spol) { 
+			if ($osoba['spol'] == "Z") $osoba['spol'] = "Ž"; 
+			print "<td>".$osoba['spol']."</td>";
+		}
 		if ($jmbg) print "<td>".$osoba['jmbg']."</td>";
 		if ($nacin_studiranja) print "<td>".$osoba['nacin']."</td>";
 		if ($login) print "<td>".$osoba['login']."</td>";
@@ -145,6 +152,10 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($ime_oca) print "(".$osoba['imeoca'].") ";
 		print $osoba['ime']." ";
 		if ($brindexa) print " (".$osoba['brindexa'].") ";
+		if ($spol) { 
+			if ($osoba['spol'] == "Z") $osoba['spol'] = "Ž"; 
+			print " (".$osoba['spol'].") ";
+		}
 		if ($jmbg) print " (".$osoba['jmbg'].") ";
 		if ($nacin_studiranja) print " - ".$osoba['nacin']." ";
 		if ($login) print " - ".$osoba['login']." ";
