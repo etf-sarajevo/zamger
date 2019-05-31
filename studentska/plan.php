@@ -833,8 +833,8 @@ function studentska_plan(){
 				}
 				$trenutni_pasos = db_result($q420,0,0);
 				$izborni_slot = db_result($q420,0,1);
-				$q430 = db_query("SELECT COUNT(*) FROM plan_studija_predmet WHERE plan_izborni_slot=$izborni_slot AND plan_studija!=$plan");
-				if (db_result($q430) == 0) {
+				$ima_li_na_drugim_programima = db_get("SELECT COUNT(*) FROM plan_studija_predmet WHERE plan_izborni_slot=$izborni_slot AND plan_studija!=$plan");
+				if ($ima_li_na_drugim_programima == 0) {
 					$q440 = db_query("UPDATE plan_izborni_slot SET pasos_predmeta=$prihvati_pasos WHERE pasos_predmeta=$trenutni_pasos AND id=$izborni_slot");
 				} else {
 					$q450 = db_query("SELECT id FROM plan_izborni_slot ORDER BY id DESC LIMIT 1");
