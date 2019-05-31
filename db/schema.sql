@@ -1138,7 +1138,7 @@ CREATE TABLE IF NOT EXISTS `osoba_posebne_kategorije` (
 CREATE TABLE IF NOT EXISTS `pasos_predmeta` (
   `id` int(11) NOT NULL auto_increment,
   `predmet` int(11) NOT NULL,
-  `usvojen` tinyint(4) NOT NULL,
+  `usvojen` tinyint(4) NOT NULL DEFAULT 0,
   `predlozio` int(11) NOT NULL,
   `vrijeme_prijedloga` datetime NOT NULL,
   `komentar_prijedloga` varchar(255) collate utf8_slovenian_ci NOT NULL,
