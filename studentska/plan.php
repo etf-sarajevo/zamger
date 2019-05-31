@@ -994,7 +994,7 @@ function studentska_plan(){
 				db_fetch2($q300, $stari_semestar, $pasos_predmeta);
 			} else {
 				$izborni = true;
-				$q310 = db_get("SELECT psp.semestar, pis.id, pp.id
+				$q310 = db_query("SELECT psp.semestar, pis.id, pp.id
 				FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp 
 				WHERE pp.predmet=$predmet AND pp.id=pis.pasos_predmeta AND pis.id=psp.plan_izborni_slot AND psp.plan_studija=$plan");
 				db_fetch3($q310, $stari_semestar, $stari_izborni_slot, $pasos_predmeta);
