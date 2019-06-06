@@ -1018,11 +1018,11 @@ if ($akcija == "pregled") {
 	}
 
 	if ($ciklus_studija==1) {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.broj_dosjea
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
 		FROM osoba as o, uspjeh_u_srednjoj as us, prijemni_prijava as pp, nacin_studiranja as ns
 		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and pp.nacin_studiranja=ns.id ";
 	} else {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti,  pp.broj_dosjea
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
 		FROM osoba as o, prosliciklus_uspjeh as pcu, prijemni_prijava as pp, nacin_studiranja as ns
 		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id and pp.nacin_studiranja=ns.id ";
 	} 
@@ -1072,12 +1072,13 @@ if ($akcija == "pregled") {
 	<td width="90"><b>Dodatni bod.</b></td><? } ?>
 	<td width="70"><b>Tip studija</b></td>
 	<? if ($ciklus_studija==1) { ?>
-	<td width="80"><b>Odsjek prvi</b></td>
-	<td width="80"><b>Odsjek drugi</b></td>
-	<td width="80"><b>Odsjek treći</b></td>
-	<td width="80"><b>Odsjek četvrti</b></td>
+	<td width="80"><b>Studij prvi</b></td>
+	<td width="80"><b>Studij drugi</b></td>
+	<td width="80"><b>Studij treći</b></td>
+	<td width="80"><b>Studij četvrti</b></td>
+	<td width="80"><b>Studij peti</b></td>
 	<? } else { ?>
-	<td width="80"><b>Odsjek</b></td><? } ?>
+	<td width="80"><b>Studij</b></td><? } ?>
 	<td width="10"><b>R.br.</b></td>
 	<td align="center"><b>Opcije</b></td>
 	</tr>
@@ -1090,8 +1091,8 @@ if ($akcija == "pregled") {
 		<tr>
 		<td align="center"><?=$kandidat[24];?></td>
 		<td align="center">
-		<a href="?sta=studentska/prijemni&akcija=obrisi&osoba=<?=$kandidat[0]?>&termin=<?=$termin?>">Obriši&nbsp;&nbsp;</a>
-		<a href="?sta=studentska/prijemni&akcija=unos&izmjena=<?=$kandidat[0]?>&termin=<?=$termin?>">Izmijeni</a>
+		<a href="?sta=studentska/prijemni&amp;akcija=obrisi&amp;osoba=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Obriši&nbsp;&nbsp;</a>
+		<a href="?sta=studentska/prijemni&amp;akcija=unos&amp;izmjena=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Izmijeni</a>
 		</td>
 
 		<td><?=$kandidat[2];?></td>
@@ -1122,15 +1123,19 @@ if ($akcija == "pregled") {
 		<td align="center"><?=$kandidat[21];?></td>
 		<td align="center"><?=$kandidat[22];?></td>
 		<td align="center"><?=$kandidat[23];?></td>
-		<td align="center"><?=$kandidat[26];?></td><? } else { ?>
+		<td align="center"><?=$kandidat[26];?></td><? 
+		} else { ?>
 		<td align="center"><?=$kandidat[21];?></td>
-		<td align="center"><?=$kandidat[22];?></td><? } ?>
+		<td align="center"><?=$kandidat[22];?></td><? 
+		} ?>
 		<td align="center"><?=$kandidat[25];?></td>
 		<td align="center"><?=$imena_studija[$kandidat[28]];?></td>
 		<? if ($ciklus_studija==1) { ?>
 		<td align="center"><?=$imena_studija[$kandidat[29]];?></td>
 		<td align="center"><?=$imena_studija[$kandidat[30]];?></td>
-		<td align="center"><?=$imena_studija[$kandidat[31]];?></td><? } ?>
+		<td align="center"><?=$imena_studija[$kandidat[31]];?></td>
+		<td align="center"><?=$imena_studija[$kandidat[32]];?></td>
+		<? } ?>
 		<td align="center"><?=$kandidat[24];?></td>
 		
 		<td align="center">
@@ -1209,6 +1214,8 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 	$odi=intval($_REQUEST['studij_drugi_izbor']);
 	$oti=intval($_REQUEST['studij_treci_izbor']);
 	$oci=intval($_REQUEST['studij_cetvrti_izbor']);
+	$opti=intval($_REQUEST['studij_peti_izbor']);
+	$rprioiritet=intval($_REQUEST['studij_prioritet']);
 	$ropci=floatval(str_replace(",",".",$_REQUEST['opci_uspjeh']));
 	$rkljucni=floatval(str_replace(",",".",$_REQUEST['kljucni_predmeti']));
 	$rdodatni=floatval(str_replace(",",".",$_REQUEST['dodatni_bodovi']));
@@ -1388,7 +1395,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		$q320 = db_query("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=6"); // 6 = bez naucnog stepena
 
 		// Nova prijava prijemni
-		$q330 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, izasao=0, rezultat=0");
+		$q330 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$rosoba, broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, studij_peti=$opti, studij_prioritet=$rprioiritet, izasao=0, rezultat=0");
 
 		// Novi uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
@@ -1415,7 +1422,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		$q350 = db_query("update osoba set ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0 where id=$rosoba");
 
 		// Updatujem prijavu prijemnog
-		$q360 = db_query("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
+		$q360 = db_query("update prijemni_prijava set broj_dosjea=$rbrojdosjea, nacin_studiranja=$rnacinstudiranja, studij_prvi=$opi, studij_drugi=$odi, studij_treci=$oti, studij_cetvrti=$oci, studij_peti=$opti, studij_prioritet=$rprioiritet, rezultat=$rprijemni where osoba=$rosoba and prijemni_termin=$termin");
 
 		// Updatujem uspjeh u srednjoj -- samo za prvi ciklus
 		if ($ciklus_studija==1) {
@@ -1487,7 +1494,7 @@ if (!$vrstaunosa) {
 if (isset($_REQUEST['ucitajjmbg'])) {
 	$jmbg = db_escape($_REQUEST['ucitajjmbg']); // u biti ne znamo format JMBGa
 	unset($_REQUEST['ucitajjmbg']);
-	$q5000 = db_query("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1"); // Uzimamo posljednjeg!
+	$q5000 = db_query("SELECT ime, prezime, ime_oca, prezime_oca, ime_majke, prezime_majke, spol, datum_rodjenja, mjesto_rodjenja, nacionalnost, drzavljanstvo, ulica_prebivalista, mjesto_prebivalista, telefon, kanton, studijski_program, naziv_skole, strana_skola, skolska_godina_zavrsetka, opci_uspjeh, znacajni_predmeti, email, id, opcina_skole, boracka_kategorija, boracka_kategorija_br_rjesenja, boracka_kategorija_datum_rjesenja, boracka_kategorija_organ_izdavanja, studijski_program2, studijski_program3, studijski_program4, studijski_program5, program_prioritet FROM kandidati WHERE jmbg='$jmbg' AND prijava_potvrdjena=1 AND podaci_uvezeni=0 ORDER BY id DESC LIMIT 1"); // Uzimamo posljednjeg!
 	if (db_num_rows($q5000)<1) {
 		niceerror("Traženi JMBG nije pronađen ($jmbg).");
 		$vrstaunosa="novi";
@@ -1520,6 +1527,11 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 		$k_telefon = db_escape(db_result($q5000,0,13));
 		$k_kanton = db_result($q5000,0,14);
 		$k_studij = db_result($q5000,0,15);
+		$k_studij2 = db_result($q5000,0,28);
+		$k_studij3 = db_result($q5000,0,29);
+		$k_studij4 = db_result($q5000,0,30);
+		$k_studij5 = db_result($q5000,0,31);
+		$k_studij_prioritet = db_result($q5000,0,32);
 		$k_naziv_skole = db_escape(db_result($q5000,0,16));
 		$k_opcina_skole = db_result($q5000,0,23);
 		$k_strana_skola = db_result($q5000,0,17);
@@ -1568,7 +1580,7 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 		if (!empty($k_email))
 			$q5110 = db_query("INSERT INTO email SET osoba=$osoba, adresa='$k_email', sistemska=0");
 		
-		$q5120 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, studij_prvi=$k_studij, izasao=0, rezultat=0");
+		$q5120 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, studij_prvi=$k_studij, studij_drugi=$k_studij2, studij_treci=$k_studij3, studij_cetvrti=$k_studij4, studij_peti=$k_studij5, studij_prioritet=$k_studij_prioritet, izasao=0, rezultat=0");
 
 		// Određivanje šifre
 		do {
@@ -1758,7 +1770,7 @@ $eskolazavrsena = 0; // godina završetka škole će biti prošla
 
 
 if ($osoba>0) {
-	$q = db_query("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.rezultat, pp.broj_dosjea, pp.izasao from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
+	$q = db_query("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.rezultat, pp.broj_dosjea, pp.izasao, pp.studij_prioritet from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
 	$eime = db_result($q,0,0);
 	$eprezime = db_result($q,0,1);
 	$eimeoca = db_result($q,0,2);
@@ -1784,9 +1796,11 @@ if ($osoba>0) {
 	$eodi = db_result($q,0,19);
 	$eoti = db_result($q,0,20);
 	$eoci = db_result($q,0,21);
-	$eprijemni = db_result($q,0,22);
-	$ebrojdosjea = db_result($q,0,23);
-	$eizasao = db_result($q,0,24);
+	$eopti = db_result($q,0,22);
+	$eprijemni = db_result($q,0,23);
+	$ebrojdosjea = db_result($q,0,24);
+	$eizasao = db_result($q,0,25);
+	$eprioritet = db_result($q,0,26);
 
 	if ($ciklus_studija==1) { // Uzimamo podatke za srednju skolu - samo ako se upisuje na prvi ciklus
 		$q300 = db_query("select srednja_skola, godina, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
@@ -1969,10 +1983,11 @@ function update_izbore() {
 	var drugi = document.getElementById('studij_drugi_izbor');
 	var treci = document.getElementById('studij_treci_izbor');
 	var cetvrti = document.getElementById('studij_cetvrti_izbor');
+	var peti = document.getElementById('studij_peti_izbor');
 	var drugval = drugi.value;
 	while (drugi.length>1)
 		drugi.options[1]=null;
-	for (i=0; i<4; i++) {
+	for (i=0; i<5; i++) {
 		if (studijibrojevi[i] != prvi.value) { 
 			drugi.options[drugi.length]=new Option(studijiimena[i],studijibrojevi[i]);
 			if (drugval==studijibrojevi[i]) drugi.selectedIndex=drugi.length-1;
@@ -1981,7 +1996,7 @@ function update_izbore() {
 	var trecval = treci.value;
 	while (treci.length>1)
 		treci.options[1]=null;
-	for (i=0; i<4; i++) {
+	for (i=0; i<5; i++) {
 		if (studijibrojevi[i] != prvi.value && studijibrojevi[i] != drugi.value) { 
 			treci.options[treci.length]=new Option(studijiimena[i],studijibrojevi[i]);
 			if (trecval==studijibrojevi[i]) treci.selectedIndex=treci.length-1;
@@ -1990,10 +2005,19 @@ function update_izbore() {
 	var cetval = cetvrti.value;
 	while (cetvrti.length>1)
 		cetvrti.options[1]=null;
-	for (i=0; i<4; i++) {
+	for (i=0; i<5; i++) {
 		if (studijibrojevi[i] != prvi.value && studijibrojevi[i] != drugi.value && studijibrojevi[i] != treci.value) { 
 			cetvrti.options[cetvrti.length]=new Option(studijiimena[i],studijibrojevi[i]);
 			if (cetval==studijibrojevi[i]) cetvrti.selectedIndex=cetvrti.length-1;
+		}
+	}
+	var petval = peti.value;
+	while (peti.length>1)
+		peti.options[1]=null;
+	for (i=0; i<5; i++) {
+		if (studijibrojevi[i] != prvi.value && studijibrojevi[i] != drugi.value && studijibrojevi[i] != treci.value && studijibrojevi[i] != cetvrti.value) { 
+			peti.options[peti.length]=new Option(studijiimena[i],studijibrojevi[i]);
+			if (petval==studijibrojevi[i]) peti.selectedIndex=peti.length-1;
 		}
 	}
 }
@@ -2062,8 +2086,9 @@ function selectujOpcinuRodjenja(idOpcine, idDrzave) {
 <?
 
 // Nećemo da se ove varijable pojavljuju u genform
-unset($_REQUEST['osoba']); unset($_REQUEST['vrstaunosa']); unset($_REQUEST['broj_dosjea']); unset($_REQUEST['ime']); unset($_REQUEST['prezime']); unset($_REQUEST['imeoca']); unset($_REQUEST['prezimeoca']); unset($_REQUEST['imemajke']); unset($_REQUEST['prezimemajke']); unset($_REQUEST['spol']); unset($_REQUEST['datum_rodjenja']); unset($_REQUEST['mjesto_rodjenja']); unset($_REQUEST['opcina_rodjenja']); unset($_REQUEST['drzava_rodjenja']); unset($_REQUEST['nacionalnost']); unset($_REQUEST['drzavljanstvo']); unset($_REQUEST['jmbg']); unset($_REQUEST['borac']); unset($_REQUEST['zavrsena_skola']); unset($_REQUEST['zavrsena_skola_opcina']); unset($_REQUEST['zavrsena_skola_godina']); unset($_REQUEST['zavrsena_skola_domaca']); unset($_REQUEST['adresa']); unset($_REQUEST['adresa_mjesto']); unset($_REQUEST['telefon_roditelja']); unset($_REQUEST['tip_studija']); unset($_REQUEST['ucenik_generacije']); unset($_REQUEST['studij_prvi_izbor']); unset($_REQUEST['studij_drugi_izbor']); unset($_REQUEST['studij_treci_izbor']); 
-unset($_REQUEST['studij_cetvrti_izbor']); unset($_REQUEST['prijemni']); unset($_REQUEST['opci_uspjeh']); unset($_REQUEST['kljucni_predmeti']); unset($_REQUEST['dodatni_bodovi']);
+unset($_REQUEST['osoba']); unset($_REQUEST['vrstaunosa']); unset($_REQUEST['broj_dosjea']); unset($_REQUEST['ime']); unset($_REQUEST['prezime']); unset($_REQUEST['imeoca']); unset($_REQUEST['prezimeoca']); unset($_REQUEST['imemajke']); unset($_REQUEST['prezimemajke']); unset($_REQUEST['spol']); unset($_REQUEST['datum_rodjenja']); unset($_REQUEST['mjesto_rodjenja']); unset($_REQUEST['opcina_rodjenja']); unset($_REQUEST['drzava_rodjenja']); unset($_REQUEST['nacionalnost']); unset($_REQUEST['drzavljanstvo']); unset($_REQUEST['jmbg']); unset($_REQUEST['borac']); unset($_REQUEST['zavrsena_skola']); unset($_REQUEST['zavrsena_skola_opcina']); unset($_REQUEST['zavrsena_skola_godina']); unset($_REQUEST['zavrsena_skola_domaca']); unset($_REQUEST['adresa']); unset($_REQUEST['adresa_mjesto']); unset($_REQUEST['telefon_roditelja']); unset($_REQUEST['tip_studija']); unset($_REQUEST['ucenik_generacije']); 
+unset($_REQUEST['studij_prvi_izbor']); unset($_REQUEST['studij_drugi_izbor']); unset($_REQUEST['studij_treci_izbor']); unset($_REQUEST['studij_cetvrti_izbor']); unset($_REQUEST['studij_peti_izbor']); 
+unset($_REQUEST['prijemni']); unset($_REQUEST['opci_uspjeh']); unset($_REQUEST['kljucni_predmeti']); unset($_REQUEST['dodatni_bodovi']);
 unset($_REQUEST['trazijmbg']);
 
 
@@ -2327,7 +2352,7 @@ print genform("POST", "glavnaforma");?>
 		<td width="125" align="left">Studij:</td>
 		<td>
 		<table width="100%" border="0" align="center">
-			<tr><td>Prvi izbor</td><td>Drugi izbor</td><td>Treći izbor</td><td>Četvrti izbor</td></tr>
+			<tr><td>Prvi izbor</td><td>Drugi izbor</td><td>Treći izbor</td><td>Četvrti izbor</td><td>Peti izbor</td></tr>
 			<tr>
 				<td><select name="studij_prvi_izbor" id="studij_prvi_izbor" onchange="update_izbore()" <? if (!$eopi) { ?> style="background-color:#FFFF00"<? } ?>><option></option><? 
 				foreach($studiji as $id => $naziv) {
@@ -2353,7 +2378,18 @@ print genform("POST", "glavnaforma");?>
 					if ($id==$eoci) print " selected";
 					print ">$naziv</option>";
 				}?></select></td>
+				<td><select name="studij_peti_izbor" id="studij_peti_izbor" onchange="update_izbore()"><option></option><? 
+				foreach($studiji as $id => $naziv) {
+					print "<option value=\"$id\"";
+					if ($id==$eopti) print " selected";
+					print ">$naziv</option>";
+				}?></select></td>
 			</tr>
+			<tr><td colspan="5">
+				Način odabira studija:<br>
+				<input type="radio" name="prioritet" value="1" <? if ($eprioritet==1) print "CHECKED" ?>> Prioritet je studiranje na željenom studiju<br>
+				<input type="radio" name="prioritet" value="2" <? if ($eprioritet==2) print "CHECKED" ?>> Prioritet je studiranje o trošku budžeta KS<br>
+			</td></tr>
 		</table>
 		</td>
 	</tr>
