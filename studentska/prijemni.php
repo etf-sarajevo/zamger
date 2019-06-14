@@ -741,7 +741,7 @@ function odzuti(nesto) {
 if ($akcija == "vazni_datumi") {
 
 	$nazivi_termina = array("Prijemni ispit", "Preliminarni rezultati", "Predaja prigovora (početak)", "Predaja prigovora (kraj)", "Razmatranje prigovora", "Konačni rezultati", "Upis kandidata (početak)", "Upis kandidata (kraj)" );
-	$vd = $boja = "";
+	$vd = $boja = array();
 
 	
 	for ($i=0; $i<count($nazivi_termina); $i++) {
