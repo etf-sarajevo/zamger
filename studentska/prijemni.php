@@ -1527,10 +1527,10 @@ if (isset($_REQUEST['ucitajjmbg'])) {
 		$k_telefon = db_escape(db_result($q5000,0,13));
 		$k_kanton = db_result($q5000,0,14);
 		$k_studij = db_result($q5000,0,15);
-		$k_studij2 = db_result($q5000,0,28);
-		$k_studij3 = db_result($q5000,0,29);
-		$k_studij4 = db_result($q5000,0,30);
-		$k_studij5 = db_result($q5000,0,31);
+		$k_studij2 = intval(db_result($q5000,0,28));
+		$k_studij3 = intval(db_result($q5000,0,29));
+		$k_studij4 = intval(db_result($q5000,0,30));
+		$k_studij5 = intval(db_result($q5000,0,31));
 		$k_studij_prioritet = db_result($q5000,0,32);
 		$k_naziv_skole = db_escape(db_result($q5000,0,16));
 		$k_opcina_skole = db_result($q5000,0,23);
@@ -2387,8 +2387,8 @@ print genform("POST", "glavnaforma");?>
 			</tr>
 			<tr><td colspan="5">
 				Način odabira studija:<br>
-				<input type="radio" name="prioritet" value="1" <? if ($eprioritet==1) print "CHECKED" ?>> Prioritet je studiranje na željenom studiju<br>
-				<input type="radio" name="prioritet" value="2" <? if ($eprioritet==2) print "CHECKED" ?>> Prioritet je studiranje o trošku budžeta KS<br>
+				<input type="radio" name="studij_prioritet" value="1" <? if ($eprioritet==1) print "CHECKED" ?>> Prioritet je studiranje na željenom studiju<br>
+				<input type="radio" name="studij_prioritet" value="2" <? if ($eprioritet==2) print "CHECKED" ?>> Prioritet je studiranje o trošku budžeta KS<br>
 			</td></tr>
 		</table>
 		</td>
