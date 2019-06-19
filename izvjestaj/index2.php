@@ -140,8 +140,13 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts, akademska_godina_predmet as agp
 	WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and agp.predmet=p.id and agp.akademska_godina=pk.akademska_godina and (agp.tippredmeta=1000 or agp.tippredmeta=1001) $upit_dodaj
 	ORDER BY ko.datum_u_indeksu desc"); // 1000 ili 1001 = tip predmeta "Završni rad"
+	if (db_num_rows($q89) == 0 && $param_ciklus == 3) // Treći ciklus
+		$q89 = db_query("SELECT UNIX_TIMESTAMP(ko.datum_u_indeksu) 
+		FROM konacna_ocjena as ko, predmet as p, ponudakursa as pk, student_predmet as sp, studij as s, tipstudija as ts, akademska_godina_predmet as agp
+		WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and agp.predmet=p.id and agp.akademska_godina=pk.akademska_godina and p.naziv like 'Odbrana%' $upit_dodaj
+		ORDER BY ko.datum_u_indeksu desc");
 	if (db_num_rows($q89) == 0) {
-		niceerror("Greška! Ne može se generisati izvještaj.");
+		niceerror("Ne može se generisati izvještaj.");
 		print "Student je završio studij jer trenutno nije upisan, ima sve potrebne ECTS kredite, ali nije unesena ocjena za Završni rad tako da se ne može odrediti datum diplomiranja. Nešto nije u redu sa podacima vezanim za ovog studenta (suma ECTS kredita ne bi trebala biti ispravna) STUDIJ: $studij_ects SUMA $suma_ects.";
 		return;
 	}
