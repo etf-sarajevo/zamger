@@ -21,13 +21,15 @@ $warn_about_wrong_pk = false;
 $ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
 
 
-$q100 = db_query("SELECT DISTINCT pk.id, ss.studij, pk.predmet, pk.studij FROM ponudakursa pk, student_predmet sp, student_studij ss WHERE sp.predmet=pk.id AND pk.akademska_godina=$ag AND sp.student=ss.student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = pk.semestar MOD 2");
-$pkovi = $predmeti = array();
+$q100 = db_query("SELECT DISTINCT pk.id, ss.studij, pk.predmet, pk.studij, pk.semestar FROM ponudakursa pk, student_predmet sp, student_studij ss WHERE sp.predmet=pk.id AND pk.akademska_godina=$ag AND sp.student=ss.student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = pk.semestar MOD 2");
+$pkovi = $predmeti = $semestri = array();
 $planovi_studija = array();
-while(db_fetch4($q100, $pk, $studij, $predmet, $pkstudij)) {
+while(db_fetch5($q100, $pk, $studij, $predmet, $pkstudij, $pksemestar)) {
 	$pkovi[$studij][] = $pk;
 	$predmeti[$studij][] = $predmet;
 	$planovi_studija[$studij] = array();
+	$semestri["$studij-$predmet"] = $pksemestar;
+	
 	if ($warn_about_wrong_pk && $pkstudij != $studij) {
 		print "Warnung pk $pk predmet $predmet studij $studij pkstudij $pkstudij<br>";
 		$studenti = db_query_table("SELECT o.id, o.ime, o.prezime FROM osoba o, student_predmet sp, student_studij ss WHERE o.id=sp.student AND sp.predmet=$pk and sp.student=ss.student AND ss.studij=$studij AND ss.akademska_godina=$ag");
@@ -56,7 +58,7 @@ foreach($predmeti as $studij => $predmetstudij) {
 			print "</p><p>Studenti na studiju: <b>" . db_get("SELECT naziv FROM studij WHERE id=$studij") . "</b> su slušali sljedeće predmete:<br><br>";
 			$printed = true;
 		}
-		if (!$found) print db_get("SELECT naziv FROM predmet WHERE id=$predmet") . "<br>\n";
+		if (!$found) print db_get("SELECT naziv FROM predmet WHERE id=$predmet") . " (".$semestri["$studij-$predmet"].". semestar)<br>\n";
 	}
 }
 
