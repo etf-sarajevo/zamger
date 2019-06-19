@@ -150,7 +150,7 @@ function student_kolizija() {
 					$ima_ocjenu = db_get("select count(*) from konacna_ocjena where student=$userid and predmet=$id and ocjena>5");
 					if ($ima_ocjenu > 0) $polozio++;
 				}
-	
+				
 				if ($polozio < $broj_izbornih[$plan_izborni_slot]) { // nije polozio dovoljno izbornih predmeta
 					// Spisak izbornih
 					$validni_izborni = db_query_varray("select pp.predmet from plan_izborni_slot as pis, plan_studija_predmet as psp, pasos_predmeta as pp where psp.plan_studija=$najnoviji_plan and psp.semestar<=$trenutni_semestar and psp.obavezan=0 and psp.plan_izborni_slot=pis.id and psp.pasos_predmeta=pp.id");
@@ -158,8 +158,9 @@ function student_kolizija() {
 					// Određujemo predmet sa drugog odsjeka koji je slušao 
 					// koristeći tabelu ponudakursa da saznamo sve predmete koji su se izvodili u tom semestru
 					$pronadjen = false;
-					$q72 = db_query("select pk.predmet, p.naziv, p.ects from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.akademska_godina=$proslagodina and pk.semestar=$semestar and pk.obavezan=0 and pk.predmet=p.id");
+					$q72 = db_query("select pk.predmet, p.naziv, p.ects from ponudakursa as pk, student_predmet as sp, predmet as p where sp.student=$userid and sp.predmet=pk.id and pk.akademska_godina<=$proslagodina and pk.semestar=$semestar and pk.obavezan=0 and pk.predmet=p.id order by pk.akademska_godina desc");
 					while (db_fetch3($q72, $id, $naziv, $ects)) {
+						// Ako je student prvo slušao predmet sa matičnog odsjeka, pa sa tuđeg, prekinućemo petlju kod prvog takvog predmeta koji je položio
 						if (!in_array($id, $validni_izborni)) {
 							$pronadjen = true;
 
@@ -172,6 +173,7 @@ function student_kolizija() {
 								if ($semestar < $trenutni_semestar-1) $predmet_stari[$id]=1;
 								else $predmet_stari[$id]=0;
 							}
+							else break; 
 						}
 					}
 
