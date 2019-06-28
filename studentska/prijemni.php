@@ -1363,7 +1363,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 
 
 	// Transakcija!
-	$q305 = db_query("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, prosliciklus_uspjeh write");
+	$q305 = db_query("lock tables osoba write, prijemni_prijava write, uspjeh_u_srednjoj write, prosliciklus_uspjeh write, osoba_posebne_kategorije write");
 
 	// Da li se broj dosjea ponavlja??
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
@@ -1408,7 +1408,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		foreach($_REQUEST as $key => $value) {
 			if (starts_with($key, "posebne_kategorije_")) {
 				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
-				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($osoba, $kategorija)");
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($rosoba, $kategorija)");
 			}
 		}
 
@@ -1439,11 +1439,11 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 			$q340 = db_query("update prosliciklus_uspjeh set broj_semestara=$broj_semestara, opci_uspjeh=$ropci, dodatni_bodovi=$rdodatni where osoba=$rosoba");
 		}
 		
-		$q343 = db_query("DELETE FROM osoba_posebne_kategorije WHERE osoba=$osoba");
+		$q343 = db_query("DELETE FROM osoba_posebne_kategorije WHERE osoba=$rosoba");
 		foreach($_REQUEST as $key => $value) {
 			if (starts_with($key, "posebne_kategorije_")) {
 				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
-				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($osoba, $kategorija)");
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($rosoba, $kategorija)");
 			}
 		}
 
