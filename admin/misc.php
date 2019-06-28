@@ -739,7 +739,7 @@ if ($_POST['akcija']=="anketa_tokeni") {
 
 <?
 
-if ($_POST['akcija']=="update_komponenti") {
+if ($_POST['akcija']=="update_komponenti" && intval($_POST['stage']) == 2) {
 
 	$pk = intval($_REQUEST['pk']);
 	$komponenta = intval($_REQUEST['komponenta']);
@@ -794,24 +794,57 @@ if ($_POST['akcija']=="update_komponenti") {
 		</form>
 		<?
 	}
+	
+} else if ($_POST['akcija']=="update_komponenti") {
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
+	
+	$q110 = db_query("SELECT pk.id, s.naziv, pk.semestar FROM ponudakursa pk, studij s WHERE pk.predmet=$predmet AND pk.akademska_godina=$ag AND pk.studij=s.id");
+	$q120 = db_query("SELECT k.id, k.gui_naziv FROM komponenta k, tippredmeta_komponenta tpk, akademska_godina_predmet agp WHERE agp.predmet=$predmet AND agp.akademska_godina=$ag AND agp.tippredmeta=tpk.tippredmeta AND tpk.komponenta=k.id");
+	
+	if (db_num_rows($q110)==0 || db_num_rows($q120)==0) {
+		niceerror("Predmet se nije izvodio u toj godini");
+	} else {
+		
+		?>
+		<p><?=genform("POST")?>
+		<input type="hidden" name="akcija" value="update_komponenti">
+		<input type="hidden" name="stage" value="2">
+		Ponudakursa: <select name="pk"><?
+		while (db_fetch3($q110, $pk, $studij, $semestar)
+			print "<option value='$pk'>$studij, $semestar. semestar</option>\n";
+		?></select><br>
+		Komponenta: <select name="komponenta"><?
+		while (db_fetch3($q120, $komponenta, $naziv_komponente)
+			print "<option value='$komponenta'>$naziv_komponente</option>\n";
+		?></select><br>
+		<input type="submit" value=" Update komponenti ">
+		</form>
+		<?
+	}
+	
 
 } else {
 	
+	$q130 = db_query("SELECT id, naziv FROM predmet ORDER BY naziv");
+	$q140 = db_query("SELECT id, naziv, aktuelna FROM akademska_godina ORDER BY id");
 	
 	?>
 	<p><?=genform("POST")?>
 	<input type="hidden" name="akcija" value="update_komponenti">
-	Ponudakursa: <input type="text" name="pk" value=""><br>
-	Komponenta: <input type="text" name="komponenta" value=""><br>
-	<input type="submit" value=" Update komponenti ">
+	Predmet: <select name="predmet"><?
+	while (db_fetch3($q130, $predmet, $naziv_predmeta)
+		print "<option value='$predmet'>$naziv_predmeta</option>\n";
+	?></select><br>
+	Akademska godina: <select name="ag"><?
+	while (db_fetch3($q140, $ag, $naziv_ag, $aktuelna)
+		print "<option value='$ag'" . ($aktuelna ? " SELECTED" : "") . ">$naziv_ag</option>\n";
+	?></select><br>
+	<input type="submit" value=" Izbor komponente ">
 	</form>
 	<?
 
 }
-
-
-
-
 
 
 
