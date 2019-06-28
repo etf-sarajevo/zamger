@@ -1404,6 +1404,13 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 			$broj_semestara = intval($_REQUEST['broj_semestara']);
 			$q340 = db_query("insert into prosliciklus_uspjeh set osoba=$rosoba, fakultet=0, akademska_godina=0, broj_semestara=$broj_semestara, opci_uspjeh=0, dodatni_bodovi=0");
 		}
+		
+		foreach($_REQUEST as $key => $value) {
+			if (starts_with($key, "posebne_kategorije_")) {
+				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($osoba, $kategorija)");
+			}
+		}
 
 		zamgerlog("novi kandidat za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
 
@@ -1430,6 +1437,14 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		} else {
 			$broj_semestara = intval($_REQUEST['broj_semestara']);
 			$q340 = db_query("update prosliciklus_uspjeh set broj_semestara=$broj_semestara, opci_uspjeh=$ropci, dodatni_bodovi=$rdodatni where osoba=$rosoba");
+		}
+		
+		$q343 = db_query("DELETE FROM osoba_posebne_kategorije WHERE osoba=$osoba");
+		foreach($_REQUEST as $key => $value) {
+			if (starts_with($key, "posebne_kategorije_")) {
+				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($osoba, $kategorija)");
+			}
 		}
 
 		zamgerlog("izmjena kandidata za prijemni u$rosoba broj dosjea $rbrojdosjea", 2);
@@ -1770,7 +1785,7 @@ $eskolazavrsena = 0; // godina završetka škole će biti prošla
 
 
 if ($osoba>0) {
-	$q = db_query("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.boracke_kategorije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.rezultat, pp.broj_dosjea, pp.izasao, pp.studij_prioritet from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
+	$q = db_query("select o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.drzavljanstvo, o.nacionalnost, o.jmbg, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pp.nacin_studiranja, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.rezultat, pp.broj_dosjea, pp.izasao, pp.studij_prioritet from osoba as o, prijemni_prijava as pp where o.id=$osoba and o.id=pp.osoba and pp.prijemni_termin=$termin");
 	$eime = db_result($q,0,0);
 	$eprezime = db_result($q,0,1);
 	$eimeoca = db_result($q,0,2);
@@ -1784,23 +1799,22 @@ if ($osoba>0) {
 	$edrzavljanstvo = db_result($q,0,9);
 	$enacionalnost = db_result($q,0,10);
 	$ejmbg = db_result($q,0,11);
-	$eborac = db_result($q,0,12);
 
-	$eadresa = db_result($q,0,13);
-	$eadresamjesto = db_result($q,0,14);
-	$etelefon = db_result($q,0,15);
-	$ekanton = db_result($q,0,16);
+	$eadresa = db_result($q,0,12);
+	$eadresamjesto = db_result($q,0,13);
+	$etelefon = db_result($q,0,14);
+	$ekanton = db_result($q,0,15);
 
-	$enacinstudiranja = db_result($q,0,17);
-	$eopi = db_result($q,0,18);
-	$eodi = db_result($q,0,19);
-	$eoti = db_result($q,0,20);
-	$eoci = db_result($q,0,21);
-	$eopti = db_result($q,0,22);
-	$eprijemni = db_result($q,0,23);
-	$ebrojdosjea = db_result($q,0,24);
-	$eizasao = db_result($q,0,25);
-	$eprioritet = db_result($q,0,26);
+	$enacinstudiranja = db_result($q,0,16);
+	$eopi = db_result($q,0,17);
+	$eodi = db_result($q,0,18);
+	$eoti = db_result($q,0,19);
+	$eoci = db_result($q,0,20);
+	$eopti = db_result($q,0,21);
+	$eprijemni = db_result($q,0,22);
+	$ebrojdosjea = db_result($q,0,23);
+	$eizasao = db_result($q,0,24);
+	$eprioritet = db_result($q,0,25);
 
 	if ($ciklus_studija==1) { // Uzimamo podatke za srednju skolu - samo ako se upisuje na prvi ciklus
 		$q300 = db_query("select srednja_skola, godina, opci_uspjeh, kljucni_predmeti, dodatni_bodovi, ucenik_generacije from uspjeh_u_srednjoj where osoba=$osoba");
@@ -1964,6 +1978,20 @@ while ($r259a = db_fetch_row($q259a)) {
 	$nacinstudiranjar .= ">$r259a[1]</option>\n";
 }
 
+
+// Spisak posebnih kategorija
+
+$q262 = db_query("SELECT id, naziv FROM posebne_kategorije");
+$posebne_ispis = "";
+while ($r262 = db_fetch_row($q262)) {
+	$dodaj = "";
+	if ($osoba > 0) {
+		$q264 = db_query("SELECT COUNT(*) FROM osoba_posebne_kategorije WHERE osoba=$osoba AND posebne_kategorije=$r262[0]");
+		if (db_result($q264,0,0) > 0)
+			$dodaj = "CHECKED";
+	}
+	$posebne_ispis .= "<input type=\"checkbox\" name=\"posebne_kategorije_$r262[0]\" $dodaj>$r262[1]<br>";
+}
 
 // Tabela za unos podataka - design
 ?>
@@ -2254,8 +2282,8 @@ print genform("POST", "glavnaforma");?>
 		?> autocomplete="off" onkeypress="return enterhack(event,'adresa')"><font color="#FF0000">*</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" value=" Traži " onclick="javascript:jmbg_trazi();">&nbsp;<input type="button" value=" Učitaj " onclick="javascript:jmbg_ucitaj();"></td>
 	</tr>
 	<tr>
-		<td width="125" align="left">&nbsp;</td>
-		<td><input type="checkbox" name="borac"  <? if ($eborac) { ?> checked="checked" <? } ?> value="1"> Dijete šehida / borca / pripadnik RVI</td>
+		<td width="125" align="left">Posebne kategorije:</td>
+		<td><?=$posebne_ispis?></td>
 	</tr>
 	<tr><td colspan="2"><br>PODACI O ZAVRŠENOM PRETHODNOM OBRAZOVANJU:</td></tr>
 

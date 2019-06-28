@@ -191,10 +191,13 @@ function bssort($a, $b) {
 // Shortcut funkcija: da li se string završava nekim drugim stringom
 // Primjer: if (ends_with($filename, ".txt")) echo "Tekst";
 function ends_with($string, $substring) {
-	if (strlen($string) >= strlen($substring))
-		if (substr($string, strlen($string)-strlen($substring)) === $substring)
-			return true;
-	return false;
+	if (strlen($string) < strlen($substring)) return false;
+	return (substr($string, strlen($string)-strlen($substring)) === $substring);
+}
+
+function starts_with($string, $substring) {
+	if (strlen($string) < strlen($substring)) return false;
+	return (substr($string, 0, strlen($substring)) === $substring);
 }
 
 
