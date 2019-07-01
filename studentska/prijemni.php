@@ -1408,7 +1408,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		foreach($_REQUEST as $key => $value) {
 			if (starts_with($key, "posebne_kategorije_")) {
 				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
-				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($rosoba, $kategorija)");
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije set osoba=$rosoba, posebne_kategorije=$kategorija");
 			}
 		}
 
@@ -1443,7 +1443,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 		foreach($_REQUEST as $key => $value) {
 			if (starts_with($key, "posebne_kategorije_")) {
 				$kategorija = intval(substr($key, strlen("posebne_kategorije_")));
-				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije VALUES($rosoba, $kategorija)");
+				if ($value) $q345 = db_query("INSERT INTO osoba_posebne_kategorije set osoba=$rosoba, posebne_kategorije=$kategorija");
 			}
 		}
 
