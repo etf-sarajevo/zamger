@@ -1095,7 +1095,7 @@ if ($akcija == "pregled") {
 		<tr>
 		<td align="center"><?=$kandidat[24];?></td>
 		<td align="center">
-		<a href="?sta=studentska/prijemni&amp;akcija=obrisi&amp;osoba=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Obriši&nbsp;&nbsp;</a>
+		<a href="?sta=studentska/prijemni&amp;akcija=obrisi&amp;osoba=<?=$kandidat[0]?>&amp;termin=<?=$termin?>" onclick="return confirm('Da li ste sigurni da želite obrisati kandidata <?=$kandidat[2]." ".$kandidat[1]?>?');">Obriši</a>&nbsp;&nbsp;
 		<a href="?sta=studentska/prijemni&amp;akcija=unos&amp;izmjena=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Izmijeni</a>
 		</td>
 
