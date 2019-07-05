@@ -317,7 +317,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				<td align="center"><b><? vprintf("%3.2f",$kandidat['ukupno'])?></b></td>
 			</tr>
 			<?php
 			unset($kandidati[$id]);
@@ -347,7 +347,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				<td align="center"><b><? vprintf("%3.2f",$kandidat['ukupno'])?></b></td>
 			</tr>
 			<?
 			unset($kandidati[$id]);
@@ -376,7 +376,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				<td align="center"><b><? vprintf("%3.2f",$kandidat['ukupno'])?></b></td>
 				<td><font color="red">*</font></td>
 			</tr>
 			<?
@@ -409,7 +409,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				<td align="center"><b><? vprintf("%3.2f",$kandidat['ukupno'])?></b></td>
 				<td><font color="red">**</font></td>
 			</tr>
 			<?php
@@ -473,7 +473,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 					<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 					<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 					<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-					<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+					<td align="center"><b><? vprintf("%3.2f",$kandidat['ukupno'])?></b></td>
 				</tr>
 				<?
 				unset($kandidati[$id]);
@@ -535,7 +535,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 				<? if ($ciklus==1) { ?><td align="center"><?=$kandidat['kljucni_predmeti']?></td><? } ?>
 				<td align="center"><?=$kandidat['dodatni_bodovi']?></td>
 				<td align="center"><?=$kandidat['prijemni_ispit']?></td>
-				<td align="center"><b><?=$kandidat['ukupno']?></b></td>
+				<td align="center"><b><? vprintf("%.2f",$kandidat['ukupno'])?></b></td>
 			</tr>
 		<?
 		$k++;
