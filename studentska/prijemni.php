@@ -550,6 +550,7 @@ function provjeri_sve() {
 
 if ($akcija == "spisak") {
 	?>
+	?>
 	<form action="index.php" method="GET">
 	<input type="hidden" name="sta" value="izvjestaj/prijemni">
 	<input type="hidden" name="akcija" value="kandidati">
@@ -569,6 +570,15 @@ if ($akcija == "spisak") {
 	</select></p>
 	<p>Sortirano po: <select name="sort"><option value="abecedno">imenu i prezimenu</option>
 	<option>ukupnom broju bodova</option>
+	</select></p>
+	
+	<p>Posebne kategorije: <select name="borci"><option value="0">Svi kandidati</option>
+	<option value="-1">Sve posebne kategorije zajedno</option>
+	<?
+	$q1010 = db_query("SELECT id, naziv FROM posebne_kategorije");
+	while (db_fetch2($q1010, $pk, $naziv_pk))
+		print "<option value=\"$pk\">$naziv_pk</option>\n";
+	?>
 	</select></p>
 	<input type="submit" value=" Kreni ">
 	</form>
