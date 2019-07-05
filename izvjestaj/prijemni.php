@@ -30,7 +30,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 	} else if ($_REQUEST['sort']=="kodovi") {
 		$orderby="ORDER BY po.sifra";
 	} else {
-		$orderby="ORDER BY ukupno DESC";
+		$orderby="ORDER BY ukupno DESC,o.prezime";
 	}
 
 	if ($_REQUEST['sakrij_bodove']) $sakrij_bodove = true;
@@ -52,6 +52,14 @@ if ($_REQUEST['akcija']=="kandidati") {
 	}
 
 	if ($_REQUEST['kodovi']) { $kodovi = true; } else { $kodovi = false; }
+	
+	if ($_REQUEST['daj_studije'])
+		$studiji = db_query_vassoc("SELECT id, kratkinaziv FROM studij");
+	
+	if ($_REQUEST['ukljuci_prijemni'])
+		$iprijemni = "+pp.rezultat";
+	else
+		$iprijemni = "";
 
 
 	// Naslov
@@ -101,11 +109,11 @@ if ($_REQUEST['akcija']=="kandidati") {
 	// Glavni upit
 
 	if ($ciklus==1)
-		$q = db_query("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		$q = db_query("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi$iprijemni AS ukupno, po.sifra, o.jmbg, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti
 		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po $borci_where
 		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 	else
-		$q = db_query("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
+		$q = db_query("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, 0, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi$iprijemni AS ukupno, po.sifra, o.jmbg
 		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu, prijemni_obrazac as po
 		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=pcu.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 
@@ -114,18 +122,28 @@ if ($_REQUEST['akcija']=="kandidati") {
 	<table width="" align="center" border="1" cellpadding="1" cellspacing="0" bordercolor="#000000">
 	<tr>
 	<td width="10"><b>R.br.</b></td>
-	<td><b>Prezime i ime</b></td><? 
-	if ($kodovi) { 
-		?><td width="100"><b>Kod</b></td>
-		<td width="100"><b>JMBG</b></td><? 
+	<? if (isset($_REQUEST['anonimno'])) { 
+		?><td><b>Šifra kandidata</b></td><? 
+	} else {
+		?><td><b>Prezime i ime</b></td><? 
+		if ($kodovi) { 
+			?><td width="100"><b>Šifra kandidata</b></td>
+			<td width="100"><b>JMBG</b></td><? 
+		}
 	}
 	if (!$sakrij_bodove) { 
 		?>
 		<td width="100"><b>Opći uspjeh</b></td>
 		<? if ($ciklus==1) { ?><td width="110"><b>Ključni predmeti</b></td><? } ?>
 		<td width="105"><b>Dodatni bodovi</b></td>
+		<? if ($_REQUEST['ukljuci_prijemni']) { ?><td width="110"><b>Prijemni ispit</b></td><? } ?>
 		<td width="105"><b>Ukupno bodova</b></td>
 		<? 
+	}
+	if ($_REQUEST['daj_studije']) {
+		?>
+		<td width="105" colspan="5"><b>Odabir studija</b></td>
+		<?
 	}
 	?></tr>
 	<?
@@ -135,15 +153,29 @@ if ($_REQUEST['akcija']=="kandidati") {
 		?>
 		<tr>
 		<td align="center"><?=$brojac?></td>
-		<td><?=$kandidat[1]?> <?=$kandidat[0]?></td><? 
-		if ($kodovi) { ?><td><?=$kandidat[6]?></td><td><?=$kandidat[7]?></td><? }
+		<? if (isset($_REQUEST['anonimno'])) { 
+			?><td><?=$kandidat[7]?></td><? 
+		} else {
+			?><td><?=$kandidat[1]?> <?=$kandidat[0]?></td><? 
+			if ($kodovi) { ?><td><?=$kandidat[7]?></td><td><?=$kandidat[8]?></td><? }
+		}
 		if (!$sakrij_bodove) { 
 			?>
 			<td align="center"><? vprintf("%3.2f",$kandidat[2])?></td>
-			<td align="center"><? vprintf("%3.2f",$kandidat[3])?></td>
+			<? if ($ciklus==1) { ?><td align="center"><? vprintf("%3.2f",$kandidat[3])?></td><? } ?>
 			<td align="center"><? vprintf("%3.2f",$kandidat[4])?></td>
-			<? if ($ciklus==1) { ?><td align="center"><? vprintf("%3.2f",$kandidat[5])?></td><? }
-		} 
+			<? if ($_REQUEST['ukljuci_prijemni']) { ?><td align="center"><? vprintf("%3.2f",$kandidat[5])?></td><? } ?>
+			<td align="center"><? vprintf("%3.2f",$kandidat[6])?></td><?
+		}
+		if ($_REQUEST['daj_studije']) {
+			?>
+			<td align="center"><b><?=$studiji[$kandidat[9]]?></b></td>
+			<td align="center"><b><?=$studiji[$kandidat[10]]?></b></td>
+			<td align="center"><b><?=$studiji[$kandidat[11]]?></b></td>
+			<td align="center"><b><?=$studiji[$kandidat[12]]?></b></td>
+			<td align="center"><b><?=$studiji[$kandidat[13]]?></b></td>
+			<?
+		}
 		?></tr>
 		<?
 		$brojac++;
