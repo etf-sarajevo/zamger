@@ -13,7 +13,7 @@ function izvjestaj_prijemni() {
 if ($_REQUEST['akcija']=="kandidati") {
 
 	$studij = intval($_REQUEST['studij']);
-	$termin=intval($_REQUEST['termin']);
+	$termin = intval($_REQUEST['termin']);
 
 	$uslov="";
 	if ($_REQUEST['iz']=='bih') {
@@ -35,10 +35,18 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	if ($_REQUEST['sakrij_bodove']) $sakrij_bodove = true;
 
-	if ($_REQUEST['borci']) {
-		$borci = "AND o.boracke_kategorije=1";
-		$borci_naslov = " (samo boračke kategorije)";
+	$borci_param = intval($_REQUEST['borci']);
+	if ($borci_param != 0) {
+		$borci_where = ", osoba_posebne_kategorije opk";
+		$borci = "AND o.id=opk.osoba";
+		if ($borci_param> 0) {
+			$borci .= " AND opk.posebne_kategorije=$borci_param";
+			$borci_naslov = " (" . db_get("SELECT naziv FROM posebne_kategorije WHERE id=$borci_param") . ")";
+		} else {
+			$borci_naslov = " (sve posebne kategorije)";
+		}
 	} else {
+		$borci_where = "";
 		$borci = "";
 		$borci_naslov = "";
 	}
@@ -94,7 +102,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	if ($ciklus==1)
 		$q = db_query("SELECT o.ime, o.prezime, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
-		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po
+		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po $borci_where
 		WHERE pp.prijemni_termin=$termin AND pp.osoba=o.id AND o.id=us.osoba AND po.prijemni_termin=$termin AND po.osoba=pp.osoba $uslov $borci $orderby");
 	else
 		$q = db_query("SELECT o.ime, o.prezime, pcu.opci_uspjeh, pcu.dodatni_bodovi, pcu.opci_uspjeh+pcu.dodatni_bodovi AS ukupno, po.sifra, o.jmbg
