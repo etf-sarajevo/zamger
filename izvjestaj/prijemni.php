@@ -264,14 +264,18 @@ if ($_REQUEST['akcija']=="kandidati") {
 
 	// Spisak svih kandidata se učitava u niz
 	if ($ciklus==1)
-		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra
-		FROM prijemni_prijava as pp, osoba as o, uspjeh_u_srednjoj as us, prijemni_obrazac as po
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', us.opci_uspjeh, o.kanton, us.kljucni_predmeti, us.dodatni_bodovi, pp.rezultat, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra, COUNT(opk.posebne_kategorije)
+		FROM prijemni_prijava as pp, uspjeh_u_srednjoj as us, prijemni_obrazac as po, osoba as o
+		LEFT JOIN osoba_posebne_kategorije opk ON o.id=opk.osoba
 		WHERE pp.osoba=o.id AND pp.osoba=us.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND po.osoba=us.osoba AND po.prijemni_termin=$termin $upit_dodaj
+		GROUP BY o.id 
 		ORDER BY ukupno DESC");
 	else
-		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra
-		FROM prijemni_prijava as pp, osoba as o, prosliciklus_uspjeh as pcu, prijemni_obrazac as po
+		$qispis = db_query ("SELECT pp.broj_dosjea, CONCAT(o.prezime, ' ', o.ime) 'Prezime i ime', pcu.opci_uspjeh, o.kanton, 0, pcu.dodatni_bodovi, pp.rezultat, pcu.opci_uspjeh+pcu.dodatni_bodovi+pp.rezultat ukupno, pp.nacin_studiranja, po.sifra, COUNT(opk.posebne_kategorije)
+		FROM prijemni_prijava as pp, prosliciklus_uspjeh as pcu, prijemni_obrazac as po, osoba as o
+		LEFT JOIN osoba_posebne_kategorije opk ON o.id=opk.osoba
 		WHERE pp.osoba=o.id AND pp.osoba=pcu.osoba AND pp.prijemni_termin=$termin AND pp.studij_prvi=$studij AND po.osoba=pcu.osoba AND po.prijemni_termin=$termin $upit_dodaj
+		GROUP BY o.id 
 		ORDER BY ukupno DESC");
 	
 	$kandidati = array();
@@ -286,6 +290,7 @@ if ($_REQUEST['akcija']=="kandidati") {
 		}
 		
 		if (isset($_REQUEST['anonimno'])) $kandidati[$id]['prezime_ime'] = $rezultat[9];
+		if (isset($_REQUEST['oznaci_posebne']) && $rezultat[10] > 0) $kandidati[$id]['prezime_ime'] .= " *";
 	}
 
 	// Zaglavlje tabele

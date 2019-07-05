@@ -618,6 +618,8 @@ if ($akcija == "rang_liste") {
 	</select></p>
 	
 	<p><input type="checkbox" name="anonimno"> Anonimno (pod šiframa)</p>
+	
+	<p><input type="checkbox" name="oznaci_posebne"> Označi posebne kategorije zvjezdicom</p>
 
 	<input type="submit" value=" Kreni ">
 	</form>
