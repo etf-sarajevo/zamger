@@ -1092,6 +1092,7 @@ else if ($akcija == "upis") {
 		// Upisujemo studenta na novi studij
 		if (!$dry_run) {
 			if (!$ponovac) $ponovac=0;
+			if (!$plan_studija) $plan_studija=0;
 			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
 			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 		}
