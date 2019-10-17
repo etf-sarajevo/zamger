@@ -1979,6 +1979,7 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
   `akademska_godina` int(11) NOT NULL,
   `studij` int(11) NOT NULL,
   `semestar` int(5) NOT NULL,
+  `kod` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
