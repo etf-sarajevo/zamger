@@ -40,12 +40,6 @@ $akcija = param('akcija');
 $osoba = int_param('osoba');
 
 
-// URLovi web servisa za plaćanje - TODO prebaciti u config.php
-$url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
-$url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
-
-
-
 // Dodavanje novog korisnika u bazu
 
 if ($akcija == "novi" && check_csrf_token()) {
@@ -764,8 +758,8 @@ else if ($akcija == "upis") {
 
 
 	// Provjera plaćanja
-	if ($nacin_studiranja !== false && $ciklus !== false) {
-		$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+	if ($conf_url_daj_karticu != "" && $nacin_studiranja !== false && $ciklus !== false) {
+		$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 		$saldo = 0;
 		if ($kartice === FALSE || count($kartice) == 0) {
 			?>
@@ -1802,7 +1796,7 @@ else if ($akcija == "kartica") {
 	<h2><?=$ime?> <?=$prezime?> - analitička kartica studenta</h2>
 	<?
 	
-	$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+	$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 	$saldo = 0;
 	if ($kartice === FALSE || count($kartice) == 0) niceerror("Nema podataka o uplatama");
 	else {
@@ -2496,20 +2490,21 @@ else if ($akcija == "edit") {
 
 
 		// Pristup web servisu za uplate
-		$kartice = parsiraj_kartice(xml_request($url_daj_karticu, array("jmbg" => $jmbg), "POST"));
-		$saldo = 0;
-		if ($kartice === FALSE || count($kartice) == 0) {
-			?>
-			<p><font color="red">Nema podataka o uplatama</font></p>
-			<?
-		} else {
-			foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
-			if ($saldo>=0) $boja="green"; else $boja="red";
-			?>
-			<p><font color="<?=$boja?>">Student na računu ima: <?=number_format($saldo, 2, ",", "")?> KM</font> - <a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=kartica">Analitička kartica studenta</a></p>
-			<?
+		if ($conf_url_daj_karticu != "") {
+			$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+			$saldo = 0;
+			if ($kartice === FALSE || count($kartice) == 0) {
+				?>
+				<p><font color="red">Nema podataka o uplatama</font></p>
+				<?
+			} else {
+				foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
+				if ($saldo>=0) $boja="green"; else $boja="red";
+				?>
+				<p><font color="<?=$boja?>">Student na računu ima: <?=number_format($saldo, 2, ",", "")?> KM</font> - <a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=kartica">Analitička kartica studenta</a></p>
+				<?
+			}
 		}
-
 
 
 		// UPIS U SLJEDEĆU AK. GODINU
