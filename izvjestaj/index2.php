@@ -146,9 +146,12 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 		WHERE ko.student=$student and ko.predmet=p.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.id=sp.predmet and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and agp.predmet=p.id and agp.akademska_godina=pk.akademska_godina and p.naziv like 'Odbrana%' $upit_dodaj
 		ORDER BY ko.datum_u_indeksu desc");
 	if (db_num_rows($q89) == 0) {
-		niceerror("Ne može se generisati izvještaj.");
-		print "Student je završio studij jer trenutno nije upisan, ima sve potrebne ECTS kredite, ali nije unesena ocjena za Završni rad tako da se ne može odrediti datum diplomiranja. Nešto nije u redu sa podacima vezanim za ovog studenta (suma ECTS kredita ne bi trebala biti ispravna) STUDIJ: $studij_ects SUMA $suma_ects.";
-		return;
+		if (!isset($_REQUEST['neispravan'])) {
+			niceerror("Ne može se generisati izvještaj.");
+			print "Student je završio studij jer trenutno nije upisan, ima sve potrebne ECTS kredite, ali nije unesena ocjena za Završni rad tako da se ne može odrediti datum diplomiranja. Nešto nije u redu sa podacima vezanim za ovog studenta (suma ECTS kredita ne bi trebala biti ispravna) STUDIJ: $studij_ects SUMA $suma_ects.";
+			print "<br><br><a href=\"?sta=izvjestaj/index2&student=$student&ciklus=$param_ciklus&neispravan=da\">Prikaži prepis ocjena sa neispravnim datumom diplomiranja</a><br>\n";
+			return;
+		}
 	}
 	$datum_diplomiranja = date("d. m. Y.", db_result($q89,0,0));
 	if ($studij_ciklus != 0)
