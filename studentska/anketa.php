@@ -367,6 +367,7 @@ function studentska_anketa(){
 		if($_POST['subakcija']=="dodaj_predmet" && check_csrf_token()) {
 			$predmet = int_param('predmet');
 			$id_ankete = intval($_REQUEST['anketa']);
+			$semestar = int_param('semestar');
 			
 			$ag_ankete = db_get("SELECT akademska_godina FROM anketa_anketa WHERE id=$id_ankete");
 			
@@ -375,7 +376,7 @@ function studentska_anketa(){
 			if ($trenutni === null && $trenutni !== false)
 				db_query("UPDATE anketa_predmet SET predmet=$predmet WHERE anketa=$id_ankete");
 			else
-				db_query("INSERT INTO anketa_predmet SET anketa=$id_ankete, predmet=$predmet, akademska_godina=$ag_ankete, semestar=0, aktivna=1");
+				db_query("INSERT INTO anketa_predmet SET anketa=$id_ankete, predmet=$predmet, akademska_godina=$ag_ankete, semestar=$semestar, aktivna=1");
 			
 			print " <center> <span style='color:#009900'> Uspješno dodan predmet za anketu! </span> </center>";
 			zamgerlog("dodan predmet za anketu $anketa", 2);
@@ -462,14 +463,13 @@ function studentska_anketa(){
 				<td valign="top" align="right">	 Opis: &nbsp; 	</td>
 				<td valign="top"> <b><?=$opis?></b><br/></td>
 			</tr> 
+			<?=genform("POST")?>
 			<tr>
 				<td valign="top" align="right">&nbsp;<br />	 Predmeti: &nbsp; 	</td>
 				<td valign="top"> &nbsp;<br /> <b><?=$predmeti_html?></b><br/>
-					<?=genform("POST")?>
 					<input type="hidden" name="subakcija" value="dodaj_predmet">
 					<select name="predmet"><?=$lista_predmeta?></select>
 					<input type="submit" value="Dodaj predmet">
-					</form>
 				</td>
 			</tr>
 			<tr>
@@ -479,6 +479,7 @@ function studentska_anketa(){
 					<option value="0" <?=$semestar_parni?>>Parni</option><br/>
 				</select></td>
 			</tr> 
+			</form>
 			<tr>
 				<td valign="top" align="right">&nbsp;</td>
 				<td valign="top">&nbsp;<br /> <a href="?sta=izvjestaj/anketa_sumarno&amp;anketa=<?=$id_ankete?>">Sumarni izvještaj za anketu</a><br/>
