@@ -88,7 +88,7 @@ if (db_num_rows($q20)<1) {
 
 global $zamger_predmeti_pao, $zamger_pao_ects;
 $uslov = ima_li_uslov($userid, $proslagodina);
-	
+
 if ($ponovac == 0 && !$uslov) {
 	niceerror("Nemate uslove za upis $godina. godine studija");
 	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
@@ -100,8 +100,19 @@ $neparni_obavezni = $neparni_izborni = $parni_obavezni = $parni_izborni = array(
 if ($ponovac==0) {
 	// Ako student nije ponovac, *trebamo* prikazati predmete koje je položio u koliziji (jer ih prošle godine nije imao na Ugovoru)
 	// TODO: Uprava se nije izjasnila da li je ovo ispravno ili nije
-	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
-	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
+	$neparni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects, pp.predmet from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem1 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
+	$parni_obavezni = db_query_table("select pp.sifra, pp.naziv, pp.ects , pp.predmet from pasos_predmeta pp, plan_studija_predmet psp where psp.plan_studija=$plan_studija and psp.semestar=$sem2 and psp.obavezan=1 and psp.pasos_predmeta=pp.id");
+	
+	// Brišemo predmete koji su priznati po odluci (npr. kod prelaska sa drugog studija, fakulteta itd.)
+	$q105 = db_query("SELECT predmet FROM konacna_ocjena WHERE ocjena>5 AND akademska_godina=$zagodinu AND student=$userid AND odluka IS NOT NULL");
+	while(db_fetch1($q105, $predmet)) {
+		foreach ($neparni_obavezni as $key => $podaci)
+			if ($podaci['predmet'] == $predmet)
+				unset($neparni_obavezni[$key]);
+		foreach ($parni_obavezni as $key => $podaci)
+			if ($podaci['predmet'] == $predmet)
+				unset($parni_obavezni[$key]);
+	}
 }
 
 // Spisak izbornih predmeta
@@ -116,16 +127,16 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 		}
 	
 		// Uzimamo pasoš koji je važeći u tekućem NPPu
-		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, pp.predmet FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		
 		// Nema ga - možda je izborni sa drugog odsjeka?
 		// Uzimamo drugi studij sa istom godinom usvajanja
 		if (!$podaci) 
-			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, pp.predmet FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		
 		// Nije među obaveznim - možda je izborni na drugom odsjeku?
 		if (!$podaci) 
-			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, pp.predmet FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 
 		if (!$podaci) 
 			// E ne znam... preskačemo
@@ -136,8 +147,19 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 	if ($sem == $sem1) $neparni_izborni = $izborni; else $parni_izborni = $izborni;
 }
 
+$svi = array_merge($neparni_obavezni, $neparni_izborni, $parni_obavezni, $parni_izborni);
+
 // Dodajemo predmete koje je student prenio sa prošle godine
 foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
+	// Preskačemo predmete koji su već pronađeni
+	// Npr. Razvoj programskih rješenja je na AE u 5. semestru, a u pasošu je treći semestar
+	// Npr. kod Tehnika programiranja se promijenio pasoš pa nije prepoznat prilikom prelaska na Razvoj softvera
+	$found = false;
+	foreach ($svi as $podaci)
+		if ($podaci['predmet'] == $predmet) 
+			$found = true;
+	if ($found) continue;
+	
 	// Uzimamo pasoš koji je važeći u tekućem NPPu
 	$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
@@ -156,6 +178,7 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 	
 	// Sada gledamo izborne predmete
 	if (!$podaci) 
+
 		$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, psp.semestar FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$plan_studija AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 	
 	// Drugi studij sa istom godinom usvajanja
@@ -175,7 +198,6 @@ foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 		// E ne znam... preskačemo
 }
 
-
 // Privremeni hack za master
 if ($tipstudija==3) {
 	$mscfile="-msc";
@@ -187,6 +209,7 @@ if ($tipstudija==3) {
 // Ako čovjek upisuje prvu godinu mastera, broj indexa je netačan!
 if ($godina==1 && $tipstudija==3) $brindexa="";
 
+//$imeprezime = $brindexa = "";
 
 // ----- Pravljenje PDF dokumenta
 
