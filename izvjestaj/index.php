@@ -92,7 +92,7 @@ while ($r125 = db_fetch_row($q125)) {
 		<p>Institucija <?=$stara_inst?>, akademska <?=db_result($q127,0,0)?>. godina<?=$odluka_ispis?>:</p><ul>
 		<?
 	}
-	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[2]]."</li>\n";
+	print "<li><b>$r125[0]</b> - ocjena: ".$imena_ocjena[$r125[3]]."</li>\n";
 }
 print "</ul>";
 
