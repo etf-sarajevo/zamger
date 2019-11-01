@@ -856,11 +856,11 @@ INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUE
 -- studij u sistemu (vidjeti i tabelu `institucija`)
 --
 
-INSERT INTO `studij` (`id`, `naziv`, `zavrsni_semestar`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
-(1, 'Računarstvo i informatika (BSc)', 6, 2, 'RI', 1, 1, 1),
-(2, 'Automatika i elektronika (BSc)', 6, 3, 'AE', 1, 1, 1),
-(3, 'Elektroenergetika (BSc)', 6, 4, 'EE', 1, 1, 1),
-(4, 'Telekomunikacije (BSc)', 6, 5, 'TK', 1, 1, 1);
+INSERT INTO `studij` (`id`, `naziv`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
+(1, 'Računarstvo i informatika (BSc)', 2, 'RI', 1, 1, 1),
+(2, 'Automatika i elektronika (BSc)', 3, 'AE', 1, 1, 1),
+(3, 'Elektroenergetika (BSc)', 4, 'EE', 1, 1, 1),
+(4, 'Telekomunikacije (BSc)', 5, 'TK', 1, 1, 1);
 
 
 --
@@ -940,12 +940,12 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 -- Šifrarnik
 --
 
-INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `moguc_upis`) VALUES
-(1, 'Bakalaureat', 1, 6, 1),
-(2, 'Master', 2, 4, 1),
-(3, 'Doktorski studij', 3, 6, 1),
-(4, 'Stručni studij', 0, 4, 1, 120),
-(5, 'Jednogodišnji master', 2, 2, 1, 60);
+INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_upis`) VALUES
+(1, 'Bakalaureat', 1, 6, 180, 1),
+(2, 'Master', 2, 4, 120, 1),
+(3, 'Doktorski studij', 3, 6, 180, 1),
+(4, 'Stručni studij', 0, 4, 120, 1),
+(5, 'Jednogodišnji master', 2, 2, 60, 1);
 
 
 --

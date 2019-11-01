@@ -1951,7 +1951,8 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `naziv` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
   `ciklus` tinyint(2) NOT NULL,
   `trajanje` tinyint(3) NOT NULL,
-  `ects` int(11) NOT NULL
+  `ects` int(11) NOT NULL,
+  `moguc_upis` int(11) NOT NULL default 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
@@ -1978,6 +1979,7 @@ CREATE TABLE IF NOT EXISTS `ugovoroucenju` (
   `akademska_godina` int(11) NOT NULL,
   `studij` int(11) NOT NULL,
   `semestar` int(5) NOT NULL,
+  `kod` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci ;
 
