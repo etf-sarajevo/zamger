@@ -1,0 +1,10 @@
+.priznavanje {
+    position: relative;
+    margin:auto;
+    padding: 10px;
+}
+
+.priznavanje label{
+    display: inline-block;
+    width: 160px;
+}
