@@ -550,6 +550,7 @@ function provjeri_sve() {
 
 if ($akcija == "spisak") {
 	?>
+	?>
 	<form action="index.php" method="GET">
 	<input type="hidden" name="sta" value="izvjestaj/prijemni">
 	<input type="hidden" name="akcija" value="kandidati">
@@ -569,6 +570,15 @@ if ($akcija == "spisak") {
 	</select></p>
 	<p>Sortirano po: <select name="sort"><option value="abecedno">imenu i prezimenu</option>
 	<option>ukupnom broju bodova</option>
+	</select></p>
+	
+	<p>Posebne kategorije: <select name="borci"><option value="0">Svi kandidati</option>
+	<option value="-1">Sve posebne kategorije zajedno</option>
+	<?
+	$q1010 = db_query("SELECT id, naziv FROM posebne_kategorije");
+	while (db_fetch2($q1010, $pk, $naziv_pk))
+		print "<option value=\"$pk\">$naziv_pk</option>\n";
+	?>
 	</select></p>
 	<input type="submit" value=" Kreni ">
 	</form>
@@ -608,6 +618,8 @@ if ($akcija == "rang_liste") {
 	</select></p>
 	
 	<p><input type="checkbox" name="anonimno"> Anonimno (pod šiframa)</p>
+	
+	<p><input type="checkbox" name="oznaci_posebne"> Označi posebne kategorije zvjezdicom</p>
 
 	<input type="submit" value=" Kreni ">
 	</form>
@@ -1018,13 +1030,17 @@ if ($akcija == "pregled") {
 	}
 
 	if ($ciklus_studija==1) {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
-		FROM osoba as o, uspjeh_u_srednjoj as us, prijemni_prijava as pp, nacin_studiranja as ns
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and pp.nacin_studiranja=ns.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, COUNT(opk.posebne_kategorije), o.jmbg, us.srednja_skola, us.godina, us.ucenik_generacije, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, us.opci_uspjeh, us.kljucni_predmeti, us.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
+		FROM uspjeh_u_srednjoj as us, prijemni_prijava as pp, nacin_studiranja as ns, osoba as o
+		LEFT JOIN osoba_posebne_kategorije opk ON o.id=opk.osoba
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and us.osoba=o.id and pp.nacin_studiranja=ns.id
+		GROUP BY o.id ";
 	} else {
-		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, o.boracke_kategorije, o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
-		FROM osoba as o, prosliciklus_uspjeh as pcu, prijemni_prijava as pp, nacin_studiranja as ns
-		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id and pp.nacin_studiranja=ns.id ";
+		$sqlSelect="SELECT o.id, o.ime, o.prezime, o.imeoca, o.prezimeoca, o.imemajke, o.prezimemajke, o.spol, UNIX_TIMESTAMP(o.datum_rodjenja), o.mjesto_rodjenja, o.nacionalnost, o.drzavljanstvo, COUNT(opk.posebne_kategorije), o.jmbg, 0, 0, 0, o.adresa, o.adresa_mjesto, o.telefon, o.kanton, pcu.opci_uspjeh, 0, pcu.dodatni_bodovi, pp.broj_dosjea, ns.naziv, pp.rezultat, pp.izasao, pp.studij_prvi, pp.studij_drugi, pp.studij_treci, pp.studij_cetvrti, pp.studij_peti, pp.broj_dosjea
+		FROM prosliciklus_uspjeh as pcu, prijemni_prijava as pp, nacin_studiranja as ns, osoba as o
+		LEFT JOIN osoba_posebne_kategorije opk ON o.id=opk.osoba
+		WHERE pp.osoba=o.id and pp.prijemni_termin=$termin and pcu.osoba=o.id and pp.nacin_studiranja=ns.id 
+		GROUP BY o.id ";
 	} 
 
 	if ($_REQUEST['sort'] == "bd") $sqlSelect .= "ORDER BY pp.broj_dosjea";
@@ -1091,7 +1107,7 @@ if ($akcija == "pregled") {
 		<tr>
 		<td align="center"><?=$kandidat[24];?></td>
 		<td align="center">
-		<a href="?sta=studentska/prijemni&amp;akcija=obrisi&amp;osoba=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Obriši&nbsp;&nbsp;</a>
+		<a href="?sta=studentska/prijemni&amp;akcija=obrisi&amp;osoba=<?=$kandidat[0]?>&amp;termin=<?=$termin?>" onclick="return confirm('Da li ste sigurni da želite obrisati kandidata <?=$kandidat[2]." ".$kandidat[1]?>?');">Obriši</a>&nbsp;&nbsp;
 		<a href="?sta=studentska/prijemni&amp;akcija=unos&amp;izmjena=<?=$kandidat[0]?>&amp;termin=<?=$termin?>">Izmijeni</a>
 		</td>
 
@@ -1108,7 +1124,7 @@ if ($akcija == "pregled") {
 		<td><?=$drzave_mjesta[$kandidat[9]];?></td>
 		<td><?=$imena_nacionalnosti[$kandidat[10]];?></td>
 		<td><?=$imena_drzava[$kandidat[11]];?></td>
-		<td><? if ($kandidat[12]==1) print "DA"; else print "&nbsp;";?></td>
+		<td><? if ($kandidat[12] > 0) print "DA"; else print "&nbsp;";?></td>
 		<td><?=$kandidat[13];?></td>
 		<? if ($ciklus_studija==1) { ?>
 		<td><?=$imena_skola[$kandidat[14]];?></td>

@@ -596,6 +596,7 @@ $mogucih_bodova = 0; // koliko bodova su studenti mogli osvojiti, radi procenta
 $zaglavlje1 = "";
 $zaglavlje2 = "";
 $prisustvo_id_array = array();
+$cas_kviz = $cas_kviz_prolaz = array();
 
 
 // Zaglavlje prisustvo
@@ -608,7 +609,6 @@ while ($r195 = db_fetch_row($q195)) {
 	$prisustvo_zaglavlje = "";
 	$prisustvo_id_array[] = $r195[0];
 	$cas_id_array = array();
-	$cas_kviz = $cas_kviz_prolaz = array();
 
 	$q200 = db_query("SELECT id,datum,vrijeme,kviz FROM cas where labgrupa=$labgrupa and komponenta=$r195[0] ORDER BY datum, vrijeme");
 	while ($r200 = db_fetch_row($q200)) {
@@ -633,7 +633,9 @@ while ($r195 = db_fetch_row($q195)) {
 			// Ako sam nekom drugom casu ranije dao ovaj id, moram ga obrisati
 			foreach ($cas_id_array as $cid) {
 				if ($cid == $cas_id) continue;
-				if ($cas_kviz[$cid] == $r200[3]) $cas_kviz[$cid]=0;
+				if ($cas_kviz[$cid] == $r200[3]) { 
+					$cas_kviz[$cid]=0;
+				}
 			}
 			
 		} else {

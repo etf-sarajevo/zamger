@@ -17,7 +17,7 @@ $predmet = intval($_REQUEST['predmet']);
 $ag = intval($_REQUEST['ag']);
 $time = time();
 
-if (!$user_nastavnik && !$user_studentska && !$user_siteadmin) {
+if (!$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_sefodsjeka) {
 	$dan=0;
 	do {
 		$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY", $time).".html";

@@ -72,7 +72,7 @@ function student_kolizija() {
 
 
 	// Šta trenutno sluša student?
-	$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.institucija, s.tipstudija, s.naziv, ss.plan_studija 
+	$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.naziv, ss.plan_studija 
 		FROM student_studij ss, studij s, tipstudija ts 
 		WHERE ss.student=$userid AND ss.akademska_godina=$proslagodina AND ss.studij=s.id AND s.tipstudija=ts.id
 		ORDER BY semestar DESC LIMIT 1");
@@ -81,10 +81,15 @@ function student_kolizija() {
 		$trenutni_semestar=db_result($q10,0,1);
 		// Podaci koji nam trebaju radi prelaska sa BSc na MSc
 		$strajanje=db_result($q10,0,2);
-		$sinstitucija=db_result($q10,0,3);
-		$stipstudija=db_result($q10,0,4);
-		$snazivstudija=db_result($q10,0,5);
-		$najnoviji_plan=db_result($q10,0,6);
+		$snazivstudija=db_result($q10,0,3);
+		$najnoviji_plan=db_result($q10,0,4);
+		
+		if ($trenutni_semestar >= $strajanje) {
+			?>
+			<p>Vi ste na završnoj godini studija. Nije moguće iskoristiti koliziju za sljedeći ciklus studija.</p>
+			<?
+			return;
+		}
 	} else {
 		niceerror("Niste nikada bili naš student!");
 		return; // dozvoliti testiranje nestudentima bi bilo prilično komplikovano, obzirom na dio "provjera uslova za koliziju"
@@ -351,30 +356,7 @@ function student_kolizija() {
 		// Odredjujemo ciljni studij
 		$studij=$trenutni_studij;
 		$godina=intval(($trenutni_semestar+3)/2);
-
 		
-		if ($trenutni_semestar>=$strajanje) {
-			$q20 = db_query("select id, naziv from studij where moguc_upis=1 and institucija=$sinstitucija and tipstudija>$stipstudija"); // FIXME pretpostavka je da su tipovi studija poredani po ciklusima
-			if (db_num_rows($q20)>0) {
-				$studij = db_result($q20,0,0);
-				$snazivstudija = db_result($q20,0,1);
-				$godina=1;
-			} else {
-				// Nema gdje dalje... postavljamo sve na nulu
-				$studij=0;
-				$godina=1;
-			}
-		}
-
-		// Određujemo najnoviji plan, ali ovaj put za ciljni studij
-		// FIXME: prebaciti gore unutar if(mys...($q2)>0) {    ???
-		$q6 = db_query("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-		if (db_num_rows($q6)<1) { 
-			niceerror("Nepostojeći studij");
-			return;
-		}
-		$najnoviji_plan = db_result($q6,0,0);
-
 		?>
 		<form action="index.php" method="POST" name="mojaforma">
 		<input type="hidden" name="sta" value="student/kolizija">
