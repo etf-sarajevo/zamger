@@ -145,7 +145,7 @@ if ($akcija != "pregled") {
 
 // NOVI PRIJEMNI ISPIT
 
-if ($akcija == "novi_ispit_potvrda" && check_csrf_token()) {
+if (param('akcija') == "novi_ispit_potvrda" && check_csrf_token()) {
 	$ciklus = intval($_REQUEST['ciklus']);
 	if ($ciklus!=1 && $ciklus !=2 && $ciklus !=3) {
 		biguglyerror("Neispravan ciklus studija");
