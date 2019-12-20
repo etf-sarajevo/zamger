@@ -350,7 +350,6 @@ if ($userid>0) {
 <head>
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<link rel="stylesheet" href="static/css/priznavanje.css" type="text/css">
 	<link href="static/css/zamger.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="static/css/print.css" type="text/css" media="print">
 	<?=$rsslink?>

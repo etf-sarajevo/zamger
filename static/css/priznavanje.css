@@ -8,3 +8,17 @@
     display: inline-block;
     width: 160px;
 }
+
+.priznavanje tr{
+    height:40px;
+}
+
+.priznavanje td{
+    height: 36px;
+    padding: 3px;
+}
+
+.priznavanje td input{
+    height: 100%;
+    width: 100%;
+}
