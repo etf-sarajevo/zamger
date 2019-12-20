@@ -16,10 +16,10 @@ function studentska_priznavanje(){
             <input name="student" id="student" list="studenti" autocomplete='off'>
             <datalist id="studenti">
                 <?php
-                    $q777 = db_query("select id, ime, prezime, brindexa, naucni_stepen from osoba where naucni_stepen=6 order by prezime,ime");
-                    while ($r777=db_fetch_row($q777)) {
+                    $q777 = db_query("select ime, prezime, brindexa, naucni_stepen from osoba where naucni_stepen=6 order by prezime,ime");
+                    while (db_fetch3($q777,$ime,$prezime,$brindexa)) {
                         ?>
-                                    <option  value="<?=$r777[1]." ".$r777[2] ." (".$r777[3] . ")"?>"></option>
+                                    <option  value="<?=$prezime." ".$ime ." (".$brindexa . ")"?>"></option>
                         <?
                                 }
                 ?>      
@@ -35,11 +35,11 @@ function studentska_priznavanje(){
             <?
                 $q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
                 while ($r295=db_fetch_row($q295)) {
-            ?>
+                    ?>
             <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
             <?
                 }
-            ?>
+                ?>
             </select>
         </td>
     </tr>
@@ -55,8 +55,12 @@ function studentska_priznavanje(){
             </select>
         </td>
     </tr>
+    <tr>
+        <td><label for='strana_institucija'>Strana institucija: </label></td>
+        <td><input type='text' name='strana_institucija'/></td>
+    </tr>
+    
     <tr>    <td colspan="2">    <hr>    </td></tr>
-
     <tr >
         <td ><label for='naziv_predmeta1'>Naziv predmeta: </label></td>
         <td><input type='text' name='naziv_predmeta1'/></td>
@@ -82,14 +86,10 @@ function studentska_priznavanje(){
         <td><input type='text' name='broj_protokola1'/></td>
     </tr>
 
-    <tr>
-        <td><label for='strana_institucija1'>Strana institucija: </label></td>
-        <td><input type='text' name='strana_institucija1'/></td>
-    </tr>
          
     <tr >
         <td><label for='datum1'>Datum: </label></td>
-        <td><input type='date' value="<?= date('Y-m-j')?>" name='datum1' style='width:168px'/></td>
+        <td><input type='date' value="<?= date('Y-m-j')?>" name='datum1' /></td>
     </tr>
     <tr id="anchor" ><td><input type="hidden" id="kolicina" name="kolicina" value='1'></td></tr>
     <tr>
@@ -133,15 +133,10 @@ function studentska_priznavanje(){
             <td><label for='broj_protokola${kolicina}'>Broj protokola: </label></td>
         <td><input type='text' name='broj_protokola${kolicina}'/></td>`;
 
-        let strana_institucija = document.createElement('tr');
-        strana_institucija.innerHTML = `
-            <td><label for='strana_institucija${kolicina}'>Strana institucija: </label></td>
-            <td><input type='text' name='strana_institucija${kolicina}'/></td>`;
-
         let datum = document.createElement('tr');
         datum.innerHTML = `
             <td><label for='datum${kolicina}'>Datum: </label></td>
-            <td><input type='date' value="<?= date('Y-m-j')?>" name='datum${kolicina}' style='width:168px'/></td>`;
+            <td><input type='date' value="<?= date('Y-m-j')?>" name='datum${kolicina}' /></td>`;
         
         let horizontal = document.createElement('tr');
         horizontal.innerHTML = '<td colspan="2"><hr></td>';
@@ -152,7 +147,6 @@ function studentska_priznavanje(){
         anchor.parentNode.insertBefore(ects,anchor);
         anchor.parentNode.insertBefore(ocjena,anchor);
         anchor.parentNode.insertBefore(broj_protokola,anchor);
-        anchor.parentNode.insertBefore(strana_institucija,anchor);
         anchor.parentNode.insertBefore(datum,anchor);
         return false;
     }
@@ -167,6 +161,7 @@ function studentska_priznavanje(){
         $student = db_escape($_POST["student"]);
         $akademska_godina = db_escape($_POST["ag"]);
         $ciklus = db_escape($_POST["ciklus"]);
+        $strana_institucija = db_escape($_POST["strana_institucija"]);
         // treba nam broj unesenih predmeta
         // za svaki cemo posebno query slat
         $broj_predmeta = db_escape($_POST["kolicina"]);
@@ -178,9 +173,10 @@ function studentska_priznavanje(){
             niceerror("Nije izabran student!");
             return;
         }
-
+        
         $query = db_query("select id from osoba where brindexa=\"$index\"");
         $student_id = db_fetch_row($query)[0];
+        $odluka_id = db_insert_id('odluka', 'id');
 
         for ($i=1; $i <= $broj_predmeta; $i++) { 
             $naziv_predmeta = db_escape($_POST["naziv_predmeta".$i]);
@@ -188,7 +184,6 @@ function studentska_priznavanje(){
             $ects = db_escape($_POST["ects".$i]);
             $ocjena = db_escape($_POST["ocjena".$i]);
             $broj_protokola = db_escape($_POST["broj_protokola".$i]);
-            $strana_institucija = db_escape($_POST["strana_institucija".$i]);
             $datum = db_escape($_POST["datum".$i]);
     
             // Form validation
@@ -228,18 +223,16 @@ function studentska_priznavanje(){
             }
     
             $make_odluka = db_query("insert into odluka set 
-            datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
+                datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
     
-            $odluka_id = db_insert_id('odluka', 'id');
-            
             $priznavanje = db_query("insert into priznavanje set 
-            student=$student_id, 
-            akademska_godina=$akademska_godina,
-            ciklus=$ciklus, 
-            naziv_predmeta='$naziv_predmeta', 
-            sifra_predmeta='$sifra_predmeta', 
-            ects=$ects, ocjena=$ocjena, odluka=$odluka_id, 
-            strana_institucija='$strana_institucija'");
+                student=$student_id, 
+                akademska_godina=$akademska_godina,
+                ciklus=$ciklus, 
+                naziv_predmeta='$naziv_predmeta', 
+                sifra_predmeta='$sifra_predmeta', 
+                ects=$ects, ocjena=$ocjena, odluka=$odluka_id, 
+                strana_institucija='$strana_institucija'");
         }
     }
 ?>
