@@ -55,7 +55,7 @@ function studentska_priznavanje(){
             </select>
         </td>
     </tr>
-    <tr>    <td>    <hr>    </td><td><hr>   </td></tr>
+    <tr>    <td colspan="2">    <hr>    </td></tr>
 
     <tr >
         <td ><label for='naziv_predmeta1'>Naziv predmeta: </label></td>
@@ -144,7 +144,7 @@ function studentska_priznavanje(){
             <td><input type='date' value="<?= date('Y-m-j')?>" name='datum${kolicina}' style='width:168px'/></td>`;
         
         let horizontal = document.createElement('tr');
-        horizontal.innerHTML = '<td><hr></td><td><hr></td>';
+        horizontal.innerHTML = '<td colspan="2"><hr></td>';
         let anchor = document.getElementById('anchor');
         anchor.parentNode.insertBefore(horizontal,anchor);
         anchor.parentNode.insertBefore(naziv_predmeta,anchor);
