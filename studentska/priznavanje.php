@@ -73,7 +73,7 @@ function studentska_priznavanje(){
 
     <tr >
         <td><label for='ects1'>ECTS: </label></td>
-        <td><input type='number' min='0' name='ects1'/></td>
+        <td><input type='number' min='0' step='0.5' name='ects1'/></td>
     </tr>
 
     <tr >
@@ -120,7 +120,7 @@ function studentska_priznavanje(){
         let ects = document.createElement('tr');
         ects.innerHTML = `
             <td><label for='ects${kolicina}'>ECTS: </label></td>
-            <td><input type='number' min='0' name='ects${kolicina}'/></td>`;
+            <td><input type='number' min='0' step='0.5' name='ects${kolicina}'/></td>`;
 
         let ocjena = document.createElement('tr');
         ocjena.innerHTML = `
