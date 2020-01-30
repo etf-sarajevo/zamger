@@ -18,7 +18,7 @@
 //    $userid - interni ID korisnika (prirodan broj)
 
 function login($pass, $type = "") {
-	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$posljednji_pristup;
+	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$conf_ldap_dn,$posljednji_pristup;
 	if ($type === "") $type = $conf_system_auth;
 
 	$q1 = db_query("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
@@ -38,7 +38,7 @@ function login($pass, $type = "") {
 
 				// Probavamo UID
 				$login = zamger_ldap_escape($login);
-				$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
+				$sr = ldap_search($ds, $conf_ldap_dn, "uid=$login", array() /* just dn */ );
 				if (!$sr) {
 					niceerror("ldap_search() failed.");
 					exit;
@@ -52,7 +52,7 @@ function login($pass, $type = "") {
 
 				// Probavamo email adresu
 				if (!$results || $i == $results['count']) {
-					$sr = ldap_search($ds, "", "mail=$login", array() );
+					$sr = ldap_search($ds, $conf_ldap_dn, "mail=$login", array() );
 					if (!$sr) {
 						niceerror("ldap_search() 1 failed.");
 						exit;
@@ -65,7 +65,7 @@ function login($pass, $type = "") {
 
 				// Probavamo email adresu + domena
 				if (!$results || $i == $results['count']) {
-					$sr = ldap_search($ds, "", "mail=$login$conf_ldap_domain", array() );
+					$sr = ldap_search($ds, $conf_ldap_dn, "mail=$login$conf_ldap_domain", array() );
 					if (!$sr) {
 						niceerror("ldap_search() 2 failed.");
 						exit;
@@ -129,6 +129,8 @@ function check_cookie() {
 		phpCAS::forceAuthentication();
 		$login = phpCAS::getUser();
 	} else {
+		if (isset($_REQUEST['PHPSESSID'])) session_id($_REQUEST['PHPSESSID']);
+
 		session_start();
 		if (isset($_SESSION['login'])) $login = db_escape($_SESSION['login']);
 	}

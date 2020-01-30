@@ -62,6 +62,7 @@ $conf_ldap_server = "localhost";
 // string koji se dodaje na uid da bi se dobila email adresa
 // Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
 $conf_ldap_domain = "@moja.domena.ba"; 
+$conf_ldap_dn="cn=users,cn=accounts,dc=moja,dc=domena,dc=ba";
 
 // Pošto se ne može šifra promijeniti kroz Zamger kada se koristi LDAP,
 // ovdje postavite URL za promjenu šifre
