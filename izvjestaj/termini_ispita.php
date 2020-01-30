@@ -149,7 +149,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	
 	while ($r10 = db_fetch_row($q10)) {
 		$imeprezime[$r10[0]] = "$r10[1] $r10[2]"; 
-		if (param('logini')) $imeprezime[$r10[0]] .= " ($r10[4])";
+		if (param('logini')) $logini[$r10[0]] = $r10[4];
 		$brindexa[$r10[0]] = "$r10[3]";
 	}
 	uasort($imeprezime,"bssort"); // bssort - bosanski jezik
@@ -258,6 +258,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 		unset ($imeprezime[$stud_id]); // Vise se nece javljati
 
 		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;
+		if (param('logini')) $stud_imepr = $logini[$stud_id];
 		
 		$redni_broj++;
 			?>
