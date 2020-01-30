@@ -26,7 +26,7 @@ $tipstudija = int_param('tipstudija');
 $studij = int_param('studij');
 $godina = int_param('godina');
 $tabelarno = param('tabelarno');
-$prvi_put = param('prvi_put');
+$ponovci = int_param('ponovci');
 $mjesto_rodjenja = param('mjesto_rodjenja');
 $adresa_mjesto = param('adresa_mjesto');
 $drzavljanstvo = param('drzavljanstvo');
@@ -85,7 +85,8 @@ if ($studij > 0)
 	$uslovi .= " and ss.studij=$studij";
 else if ($studij == 0 && $tipstudija > 0) 
 	$uslovi .= " and ss.studij=s.id and s.tipstudija=$tipstudija";
-if ($prvi_put) $uslovi .= " and ss.ponovac=0";
+if ($ponovci == 1) $uslovi .= " and ss.ponovac=0";
+if ($ponovci == 2) $uslovi .= " and ss.ponovac=1";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
 if ($adresa_mjesto) {
