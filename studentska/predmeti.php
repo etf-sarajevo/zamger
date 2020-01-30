@@ -465,7 +465,7 @@ else if ($akcija == "edit") {
 
 	// Osnovni podaci o predmetu
 
-	$q350 = db_query("SELECT p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, agp.tippredmeta, p.ects, p.sati_predavanja, p.sati_vjezbi, p.sati_tutorijala 
+	$q350 = db_query("SELECT p.id, p.sifra, p.naziv, p.kratki_naziv, p.institucija, agp.tippredmeta, p.ects, p.sati_predavanja, p.sati_vjezbi, p.sati_tutorijala, agp.pasos_predmeta 
 	FROM predmet as p, akademska_godina_predmet as agp 
 	WHERE p.id=$predmet AND agp.akademska_godina=$ag AND p.id=agp.predmet");
 	if (!($r350 = db_fetch_row($q350))) {
@@ -492,6 +492,13 @@ else if ($akcija == "edit") {
 	$sati_predavanja=floatval($r350[7]); // if ($sati_predavanja==0) { $sati_predavanja="<font color=\"red\">(?)</font>"; $greska=1; }
 	$sati_vjezbi=floatval($r350[8]); // if ($sati_vjezbi==0) { $sati_vjezbi="<font color=\"red\">(?)</font>"; $greska=1; }
 	$sati_tutorijala=floatval($r350[9]); // if ($sati_tutorijala==0) { $sati_tutorijala="<font color=\"red\">(?)</font>"; $greska=1; }*/
+	
+	// Naziv iz pasoša predmeta - TODO: najprije ćemo napraviti upit za sve ponude kurseva, pa kada u tabeli ponudakursa bude polje pasos_predmeta, tu ćemo skontati koji naziv se koristio, a ako su se koristila dva prikazaćemo oba?
+	if ($r350[10]) {
+		$q350a = db_query("SELECT naziv, sifra, ects, sati_predavanja, sati_vjezbi, sati_tutorijala FROM pasos_predmeta WHERE id=".$r350[10]);
+		db_fetch6($q350a, $naziv, $sifra, $ects, $sati_predavanja, $sati_vjezbi, $sati_tutorijala);
+	}
+	
 
 	// Institucija
 	$q352 = db_query("select naziv from institucija where id=$r350[4]");
@@ -754,7 +761,9 @@ else {
 		<br/>
 	<?
 	if ($ak_god>=0 && param('search')) {
-		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and pk.predmet=p.id");
+		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p, akademska_godina_predmet as agp
+		LEFT JOIN pasos_predmeta as pp ON pp.id=agp.pasos_predmeta
+		where pk.akademska_godina=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%' or pp.naziv like '%$src%') and pk.predmet=p.id and agp.akademska_godina=$ak_god and agp.predmet=p.id");
 	} else if ($ak_god>=0) {
 		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk where pk.akademska_godina=$ak_god");
 	} else if (param('search')) {
@@ -782,19 +791,29 @@ else {
 		print "<br/>";
 
 		if ($ak_god>=0 && $src != "") {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = db_query("SELECT DISTINCT p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv, agp.pasos_predmeta, pp.naziv
+			FROM predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i, akademska_godina_predmet as agp 
+			LEFT JOIN pasos_predmeta as pp ON pp.id=agp.pasos_predmeta
+			WHERE pk.akademska_godina=ag.id and ag.id=$ak_god and (p.naziv like '%$src%' or p.kratki_naziv like '%$src%' or pp.naziv like '%$src%') and pk.predmet=p.id and p.institucija=i.id and agp.akademska_godina=ag.id and agp.predmet=p.id 
+			ORDER BY ag.naziv desc, COALESCE (pp.naziv, p.naziv) LIMIT $offset,$limit");
 		} else if ($ak_god>=0) {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+			$q301 = db_query("SELECT DISTINCT p.id, p.naziv, i.kratki_naziv, ag.id, ag.naziv, agp.pasos_predmeta, pp.naziv
+			FROM predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i, akademska_godina_predmet as agp 
+			LEFT JOIN pasos_predmeta as pp ON pp.id=agp.pasos_predmeta
+			WHERE pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id and agp.akademska_godina=ag.id and agp.predmet=p.id 
+			ORDER BY ag.naziv desc, COALESCE (pp.naziv, p.naziv) LIMIT $offset,$limit");
 		} else if ($src != "") {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i, '' where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
 		} else {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i where p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i, '' where p.institucija=i.id order by p.naziv limit $offset,$limit");
 		}
 
 		print '<table width="100%" border="0">';
 		$i=$offset+1;
 		while ($r301 = db_fetch_row($q301)) {
-			print "<tr><td>$i. $r301[1] ($r301[2])</td>\n";
+			$naziv = $r301[1];
+			if ($r301[6]) $naziv = $r301[6];
+			print "<tr><td>$i. $naziv ($r301[2])</td>\n";
 			print "<td><a href=\"".genuri()."&akcija=edit&predmet=$r301[0]&ag=$r301[3]\">Detalji</a></td>\n";
 			if ($user_siteadmin) print "<td><a href=\"?sta=nastavnik/predmet&predmet=$r301[0]&ag=$r301[3]\">Uređivanje predmeta</a></td></tr>";
 			$i++;

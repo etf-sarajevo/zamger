@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `akademska_godina_predmet` (
   `akademska_godina` int(11) NOT NULL,
   `predmet` int(11) NOT NULL,
   `tippredmeta` int(11) NOT NULL,
+  `pasos_predmeta` int(11) NULL,
   PRIMARY KEY (`akademska_godina`,`predmet`),
   KEY `tippredmeta` (`tippredmeta`),
   KEY `predmet` (`predmet`)
