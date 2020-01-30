@@ -611,6 +611,8 @@ if ($akcija == "log") {
 		$q199 = db_query("select id from log2 order by id desc limit 1");
 		$stardate = db_result($q199,0,0)+1;
 	}
+	$nivo = int_param('nivo');
+	if ($nivo == 0) $nivo = 2;
 
 	// Za iole prihvatljive performanse upita na log bazu mora se imati limit,
 	// ali kod pretrage postoji mogućnost da upit sa tim limitom ne vrati dovoljan broj rezultata.
@@ -623,9 +625,9 @@ if ($akcija == "log") {
 	<?
 
 	// Upit za log
-	$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+	$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3, l.ipaddress 
 	FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-	WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
+	WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=$nivo or ld.opis='login') 
 	ORDER BY l.id DESC");
 	$lastlogin = array();
 	$eventshtml = array();
@@ -645,9 +647,9 @@ if ($akcija == "log") {
 				break;
 			}
 			
-			$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3 
+			$q10 = db_query ("SELECT l.id, UNIX_TIMESTAMP(l.vrijeme), l.userid, lm.naziv, l.dogadjaj, ld.opis, ld.nivo, l.objekat1, l.objekat2, l.objekat3, l.ipaddress 
 			FROM log2 AS l, log2_dogadjaj AS ld, log2_modul AS lm 
-			WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=2 or ld.opis='login') 
+			WHERE l.modul=lm.id AND l.dogadjaj=ld.id AND l.id<$stardate AND l.id>".($stardate-$query_limit)." AND l.userid=$userid and (ld.nivo>=$nivo or ld.opis='login') 
 			ORDER BY l.id DESC");
 			continue; // Povratak na početak petlje
 		}
@@ -660,6 +662,7 @@ if ($akcija == "log") {
 		$modul = $r10[3];
 		$evt_id = $r10[4];
 		$opis = $r10[5]; // string koji opisuje dogadjaj
+		$ip_adresa = $r10[10];
 
 		// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
 		if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $opis != "login")) { 
@@ -769,7 +772,7 @@ if ($akcija == "log") {
 
 		if ($opis == "login") {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
+				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\" alt=\"$nivoimg\"> login (ID: $usr, adresa: $ip_adresa) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 				$lastlogin[$usr]=0;
 			}
 		}
