@@ -536,6 +536,7 @@ $wiring = array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
 			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -549,6 +550,7 @@ $wiring = array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
 			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -562,6 +564,7 @@ $wiring = array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
 			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -574,7 +577,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
-			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -589,7 +592,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
-			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -604,7 +607,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
-			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -614,6 +617,20 @@ $wiring = array(
 		"method" => "DELETE", 
 		"code" => "\$att = Attendance::fromStudentAndClass(\$student, \$id); \$att->deletePresence(); return \$att;", 
 		"acl" => "teacherLevelGroup(ZClass::fromId(\$id)->Group->id)",
+		"hateoas_links" => array(
+			"class" => array("href" => "class/{id}"),
+			"allClassesInGroup" => array("href" => "class/group/{group}"),
+			"attendance" => array("href" => "class/{id}/student/{student}"),
+		)
+	),
+	
+	array(
+		"path" => "class/course/{course}/student/{student}",  // FIXME: Returns too much data when resolve[]=Group !
+		"description" => "Get all attendance data for student on course", 
+		"method" => "GET", 
+		"params" => array( "year" => "int", "scoringElement" => "int" ),
+		"code" => "return Attendance::forStudentOnCourseUnit(\$student, \$course, \$year, \$scoringElement);", 
+		"acl" => "self(\$student) || privilege('studentska') || teacherLevel(\$course, \$year)", // TODO: remove studentska?
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),

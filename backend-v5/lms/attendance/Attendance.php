@@ -164,6 +164,16 @@ class Attendance {
 		$results[] = $obj;
 		return $results;
 	}
+	
+	// List of attendance data for student on course unit
+	public static function forStudentOnCourseUnit($studentId, $courseUnitId, $academicYearId=0, $scoringElementId=0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+		
+		$co = CourseOffering::forStudent($studentId, $courseUnitId, $academicYearId);
+		if (!$co) throw new Exception("Student $studentId not enrolled in course $courseUnitId, year $academicYearId", "404");
+		return Attendance::forStudentOnCourse($studentId, $co->id, $scoringElementId);
+	}
 }
 
 ?>
