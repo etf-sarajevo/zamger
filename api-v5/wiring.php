@@ -27,14 +27,31 @@ $wiring = array(
 	
 	array(
 		"path" => "inbox", 
-		"description" => "Recent messages", 
+		"description" => "Recent personal messages", 
 		"method" => "GET",
 		"params" => array( "messages" => "int", "start" => "int" ),
 		"code" => "if (\$messages == 0) \$messages=5; \$msgs = Message::latest(\$messages, \$start); return \$msgs;", 
 		"acl" => "loggedIn()",
 		"hateoas_links" => array(
 			"message" => array("href" => "inbox/{id}"),
+			"count" => array("href" => "inbox/count"),
 			"unread" => array("href" => "inbox/unread"),
+			"outbox" => array("href" => "inbox/outbox"),
+		) // TODO: define identity links for classes
+	),
+	array(
+		"path" => "inbox", 
+		"description" => "Send personal message", 
+		"method" => "POST",
+		"params" => array( "message" => "object" ),
+		"classes" => array( "message" => "Message" ),
+		"code" => "\$message->validate(); \$message->send(); return \$message;", 
+		"acl" => "loggedIn()",
+		"hateoas_links" => array(
+			"message" => array("href" => "inbox/{id}"),
+			"count" => array("href" => "inbox/count"),
+			"unread" => array("href" => "inbox/unread"),
+			"outbox" => array("href" => "inbox/outbox"),
 		) // TODO: define identity links for classes
 	),
 	array(
@@ -45,6 +62,7 @@ $wiring = array(
 		"code" => "if (\$messages == 0) \$messages=5; \$msgs = Message::outbox(\$messages, \$start); return \$msgs;", 
 		"acl" => "loggedIn()",
 		"hateoas_links" => array(
+			"inbox" => array("href" => "inbox"),
 			"message" => array("href" => "inbox/{id}"),
 			"count" => array("href" => "inbox/count"),
 			"unread" => array("href" => "inbox/unread"),
@@ -60,6 +78,7 @@ $wiring = array(
 			"inbox" => array("href" => "inbox"),
 			"message" => array("href" => "inbox/{id}"),
 			"unread" => array("href" => "inbox/unread"),
+			"outbox" => array("href" => "inbox/outbox"),
 		) // TODO: define identity links for classes
 	),
 	array(
@@ -70,7 +89,9 @@ $wiring = array(
 		"acl" => "loggedIn()",
 		"hateoas_links" => array(
 			"inbox" => array("href" => "inbox"),
+			"count" => array("href" => "inbox/count"),
 			"unread" => array("href" => "inbox/unread"),
+			"outbox" => array("href" => "inbox/outbox"),
 		) // TODO: define identity links for classes
 	),
 	array(
@@ -81,7 +102,9 @@ $wiring = array(
 		"acl" => "loggedIn()",
 		"hateoas_links" => array(
 			"inbox" => array("href" => "inbox"),
+			"count" => array("href" => "inbox/count"),
 			"message" => array("href" => "inbox/{id}"),
+			"outbox" => array("href" => "inbox/outbox"),
 		) // TODO: define identity links for classes
 	),
 
