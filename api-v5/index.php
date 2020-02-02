@@ -168,7 +168,15 @@ foreach ($wiring as $wire) {
 		if ($type == "string")
 			$$name = Util::param($name);
 		if ($type == "object") {
-			$$name = json_decode(file_get_contents('php://input'));
+			$json_data = json_decode(file_get_contents('php://input'));
+			if ($json_data === null) {
+				header("HTTP/1.0 500 Internal Server Error");
+				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'Malformed JSON' );
+				break;
+			}
+			$$name = $json_data;
+			if ($json_data->{$name})
+				$$name = $json_data->{$name};
 			if (array_key_exists('classes', $wire) && array_key_exists($name, $wire['classes']))
 				$$name = Util::castFromJson($$name, $wire['classes'][$name]);
 		}
