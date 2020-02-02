@@ -107,8 +107,8 @@ $wiring = array(
 			"outbox" => array("href" => "inbox/outbox"),
 		) // TODO: define identity links for classes
 	),
-
-
+	
+	
 	// PERSON
 	
 	array(
@@ -514,7 +514,7 @@ $wiring = array(
 		"method" => "POST", 
 		"params" => array( "comment" => "object" ),
 		"classes" => array( "comment" => "Comment" ),
-		"code" => "\$comment->teacher->id = Session::\$userid; \$comment->validate(); \$comment->add()", 
+		"code" => "\$comment->teacher->id = Session::\$userid; \$comment->validate(); \$comment->add();", 
 		"acl" => "teacherLevelGroup(\$group)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(
@@ -620,7 +620,7 @@ $wiring = array(
 		"hateoas_links" => array(
 			"class" => array("href" => "class/{id}"),
 			"allClassesInGroup" => array("href" => "class/group/{group}"),
-			"attendance" => array("href" => "class/{id}/student/{student}"),
+			"attendanceOnCourse" => array("href" => "class/course/{course}/student/{student}"),
 		)
 	),
 	
@@ -891,8 +891,8 @@ $wiring = array(
 		"description" => "Get homework file for given assignment", 
 		"method" => "GET",
 		"encoding" => "none", // Skip JSON encoding result
-		"code" => "\$asgn = Assignment::fromStudentHomeworkNumber(\$student, \$id, \$asgn); \$file = \$asgn->getFile(); return file_get_contents(\$file->fullPath());", 
-		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, there will be no assignment
+		"code" => "\$asgn = Assignment::fromStudentHomeworkNumber(\$student, \$id, \$asgn); \$file = \$asgn->getFile(); readfile(\$file->fullPath()); return '';", 
+		"acl" => "self(\$student) || teacherLevel(Homework::fromId(\$id)->CourseUnit->id, Homework::fromId(\$id)->AcademicYear->id)", // if student is not on course, they will get 404 since there is no assignment
 	),
 	
 	array(
@@ -925,7 +925,7 @@ $wiring = array(
 	
 	
 	
-	// HOMEWORK
+	// QUIZ
 	
 	array(
 		"path" => "quiz", 
