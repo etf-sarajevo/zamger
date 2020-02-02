@@ -308,11 +308,12 @@ if (empty($result)) {
 }
 
 // Status code for PUT/POST/DELETE
-if ($wire['method'] == "DELETE")
-	header("HTTP/1.0 204 Ok");
-else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
-	header("HTTP/1.0 201 Ok");
-
+if (!array_key_exists('success', $result) || $result['success'] !== "false") {
+	if ($wire['method'] == "DELETE")
+		header("HTTP/1.0 204 Ok");
+	else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
+		header("HTTP/1.0 201 Ok");
+}
 
 if (!array_key_exists('encoding', $wire))
 	echo json_encode($result, Config::$json_options);
