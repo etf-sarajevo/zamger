@@ -224,15 +224,17 @@ foreach ($wiring as $wire) {
 		$result = eval($code);
 		
 		// Resolve subclasses if required
-		$resolve = array();
-		if (array_key_exists('autoresolve', $wire)) $resolve = $wire['autoresolve'];
-		if (isset($_REQUEST['resolve'])) $resolve = array_merge($resolve, $_REQUEST['resolve']);
-		foreach ($resolve as $className)
-			UnresolvedClass::resolveAll($result, $className);
+		if ($wire['encoding'] !== 'none') { // Encoding 'none' is used for methods that return binary data
+			$resolve = array();
+			if (array_key_exists('autoresolve', $wire)) $resolve = $wire['autoresolve'];
+			if (isset($_REQUEST['resolve'])) $resolve = array_merge($resolve, $_REQUEST['resolve']);
+			foreach ($resolve as $className)
+				UnresolvedClass::resolveAll($result, $className);
 
-		// PHP MySQL driver returns all numbers as strings, which is no problem in PHP
-		// but in other langs it may be easier if numbers are not quoted
-		Util::fix_data_types($result);
+			// PHP MySQL driver returns all numbers as strings, which is no problem in PHP
+			// but in other langs it may be easier if numbers are not quoted
+			Util::fix_data_types($result);
+		}
 
 
 		// Convert array into object representation for JSON
