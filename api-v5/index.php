@@ -62,7 +62,8 @@ header("Access-Control-Allow-Credentials: true");
 
 // CORS pre-flight response is needed because we send application/json content-typeheader
 if ($_SERVER['REQUEST_METHOD'] == "OPTIONS") {
-	header("Access-Control-Allow-Headers: Content-Type");
+	header("Access-Control-Allow-Headers: Content-Type,Set-Cookie,Accept");
+	header("Access-Control-Allow-Methods: GET,HEAD,OPTIONS,POST,PUT");
 	return;
 }
 
