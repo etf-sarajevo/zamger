@@ -37,6 +37,13 @@ class Portfolio {
 		return $p;
 	}
 
+	// Variant of fromCourseUnit where $person is resolved in advance
+	public static function fromCourseUnitPerson($person, $courseUnitId, $academicYearId = 0) {
+		$p = Portfolio::fromCourseUnit($person->id, $courseUnitId, $academicYearId);
+		$p->Person = $person;
+		return $p;
+	}
+
 	public function getGrade() {
 		if (!$this->grade) { // undefined, load from database
 			if (get_class($this->CourseOffering) == "UnresolvedClass")

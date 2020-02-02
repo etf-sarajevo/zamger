@@ -321,8 +321,8 @@ $wiring = array(
 		"path" => "group/{id}", 
 		"description" => "Get group with id", 
 		"method" => "GET", 
-		"params" => array( "details" => "bool" ),
-		"code" => "return Group::fromId(\$id, \$details);", 
+		"params" => array( "details" => "bool", "names" => "bool" ),
+		"code" => "return Group::fromId(\$id, \$details, true, \$names);", 
 		"acl" => "teacherLevelGroup(\$id)",
 		"autoresolve" => array(),
 		"hateoas_links" => array(

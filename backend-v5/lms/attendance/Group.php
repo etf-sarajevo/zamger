@@ -13,22 +13,30 @@ class Group {
 	public $id;
 	public $name, $type, $CourseUnit, $AcademicYear, $virtual;
 	
-	public static function fromId($id, $details=false, $members=true) {
-		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE id=$id");
+	public static function fromId($id, $details=false, $members=true, $names=false) {
+		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virt FROM labgrupa WHERE id=$id");
 		
 		if (!$grp) throw new Exception("Unknown group $id", "404");
 		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
-		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
-		if ($members) $grp->members = $grp->getMembers($details);
+		if ($grp->virt == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		if ($members) $grp->members = $grp->getMembers($details, $names);
 		return $grp;
 	}
 
 	// Populate members attribute with a list of members
 	public function getMembers($details = false) {
-		$members = DB::query_varray("SELECT student FROM student_labgrupa WHERE labgrupa=".$this->id);
+	public function getMembers($details = false, $names = false) {
+		if ($names)
+			$members = DB::query_table("SELECT o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, o.id ExtendedPerson, o.spol sex, a.login FROM student_labgrupa sl, osoba as o LEFT JOIN auth a ON o.id=a.id WHERE sl.student=o.id AND sl.labgrupa=".$this->id);
+		else
+			$members = DB::query_varray("SELECT student FROM student_labgrupa WHERE labgrupa=".$this->id);
 		foreach($members as &$member) {
 			// Using fromCourseUnit to get CourseOffering so we could get grade&score
-			$obj = Portfolio::fromCourseUnit($member, $this->CourseUnit->id, $this->AcademicYear->id);
+			if ($names) {
+				$person = Util::array_to_class($member, "Person", array("ExtendedPerson"));
+				$obj = Portfolio::fromCourseUnitPerson($person, $this->CourseUnit->id, $this->AcademicYear->id);
+			} else
+				$obj = Portfolio::fromCourseUnit($member, $this->CourseUnit->id, $this->AcademicYear->id);
 			$obj->getGrade();
 			$obj->getScore($details);
 			
