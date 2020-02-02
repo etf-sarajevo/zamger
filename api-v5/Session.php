@@ -47,7 +47,7 @@ class Session {
 
 					// Probavamo UID
 					$login = Session::ldap_escape($login);
-					$sr = ldap_search($ds, "", "uid=$login", array() /* just dn */ );
+					$sr = ldap_search($ds, Config::$ldap_dn, "uid=$login", array() /* just dn */ );
 					if (!$sr) {
 						niceerror("ldap_search() failed.");
 						exit;

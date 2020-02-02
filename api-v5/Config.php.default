@@ -48,6 +48,7 @@ class Config {
 	// string koji se dodaje na uid da bi se dobila email adresa
 	// Vidjeti funkciju gen_ldap_uid() u klasi Session
 	public static $ldap_domain = "";
+	public static $ldap_dn = "";
 
 	
 	// ---------- CAS podrška
