@@ -252,6 +252,20 @@ $wiring = array(
 			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
 		)
 	),
+
+	array(
+		"path" => "course/teacher/{teacher}/{year}", 
+		"description" => "List of courses for teacher", 
+		"method" => "GET", 
+		"code" => "return CourseUnitYear::forTeacher(\$teacher, \$year);", 
+		"acl" => "self(\$teacher) || privilege('studentska')",
+		"hateoas_links" => array(
+			"course" => array("href" => "course/{course}/{year}"),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
+		)
+	),
 	
 	array(
 		"path" => "course/student/{student}", 
