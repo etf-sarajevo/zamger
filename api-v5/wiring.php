@@ -255,7 +255,7 @@ $wiring = array(
 
 	array(
 		"path" => "course/teacher/{teacher}/{year}", 
-		"description" => "List of courses for teacher", 
+		"description" => "List of courses for teacher in academic year", 
 		"method" => "GET", 
 		"code" => "return CourseUnitYear::forTeacher(\$teacher, \$year);", 
 		"acl" => "self(\$teacher) || privilege('studentska')",
@@ -271,7 +271,8 @@ $wiring = array(
 		"path" => "course/student/{student}", 
 		"description" => "List current courses for student", 
 		"method" => "GET", 
-		"code" => "return Portfolio::getCurrentForStudent(\$student);", 
+		"params" => array( "all" => "bool" ),
+		"code" => "if (\$all) return Portfolio::getAllForStudent(\$student, true, true); return Portfolio::getCurrentForStudent(\$student, true, true);", 
 		"acl" => "self(\$student) || privilege('studentska')",
 		"autoresolve" => array("CourseOffering", "AcademicYear", "CourseUnit", "Programme"),
 		"hateoas_links" => array(
