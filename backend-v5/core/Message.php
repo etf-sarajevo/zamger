@@ -19,9 +19,10 @@ class Message {
 	public $type, $range, $receiver, $sender, $time, $ref, $subject, $text, $unread;
 	
 	public static function fromId($id) {
-		$msg = DB::query_assoc("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE id=$id");
+		$msg = DB::query_assoc("SELECT id id, tip type, opseg _range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE id=$id");
 		if (!$msg) throw new Exception("Unknown message", "404");
 		$msg = Util::array_to_class($msg, "Message");
+		$msg->range = $msg->_range;
 		if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 		$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
 		if ($msg->range == 7)
@@ -37,7 +38,7 @@ class Message {
 			if ($msg->receiver != $cur_ay->id)
 				throw new Exception("Permission denied", "403");
 		}
-		if ($msg->range == 7 && $msg->receiver != Session::$userid && $msg->sender->id != Session::$userid)
+		if ($msg->range == 7 && $msg->receiver->id != Session::$userid && $msg->sender->id != Session::$userid)
 			throw new Exception("Permission denied", "403");
 		
 		if ($msg->range == 3 || $msg->range == 8) {
@@ -94,9 +95,10 @@ class Message {
 			if ($start > 0) $sql .= "LIMIT $start,$count";
 			else $sql = "LIMIT $count";
 		}
-		$msgs = DB::query_table("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
+		$msgs = DB::query_table("SELECT id id, tip type, opseg _range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
 		foreach ($msgs as &$msg) {
 			$msg = Util::array_to_class($msg, "Message");
+			$msg->range = $msg->_range;
 			if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 			$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
 		}
@@ -110,9 +112,10 @@ class Message {
 			if ($start > 0) $sql .= "LIMIT $start,$count";
 			else $sql = "LIMIT $count";
 		}
-		$msgs = DB::query_table("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE posiljalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
+		$msgs = DB::query_table("SELECT id id, tip type, opseg _range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE posiljalac=".Session::$userid." AND tip=2 and opseg=7 ORDER BY id DESC $sql");
 		foreach ($msgs as &$msg) {
 			$msg = Util::array_to_class($msg, "Message");
+			$msg->range = $msg->_range;
 			if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 			$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
 			$msg->receiver = new UnresolvedClass("Person", $msg->receiver, $msg->receiver);
@@ -122,15 +125,43 @@ class Message {
 	
 	// Inbox of unread messages for user
 	public static function unread() {
-		$msgs = DB::query_table("SELECT id id, tip type, opseg range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7 AND procitana=0");
+		$msgs = DB::query_table("SELECT id id, tip type, opseg _range, primalac receiver, posiljalac sender, vrijeme time, ref, naslov subject, tekst text, procitana unread FROM poruka WHERE primalac=".Session::$userid." AND tip=2 and opseg=7 AND procitana=0");
 		foreach ($msgs as &$msg) {
 			$msg = Util::array_to_class($msg, "Message");
+			$msg->range = $msg->_range;
 			if ($msg->unread == 1) $msg->unread=false; else $msg->unread=true;  // inverted logic...
 			$msg->sender = new UnresolvedClass("Person", $msg->sender, $msg->sender);
 		}
 		return $msgs;
 	}
 
+	// Test if personal message can be sent
+	// TODO Currently only regular PM is allowed, not announcements etc
+	public function validate() {
+		if ($this->sender->id !== Session::$userid)
+			throw new Exception("Permission denied (sender ".json_encode($this->sender).")", "403");
+		$exists = DB::get("SELECT COUNT(*) FROM osoba WHERE id=".$this->receiver->id);
+		if (!$exists)
+			throw new Exception("Unknown recipient", "404");
+		$this->type = 2;
+		$this->range = 7;
+		$this->ref = intval($this->ref);
+		$this->unread = true;
+		if ($this->ref > 0) {
+			$exists = DB::get("SELECT COUNT(*) FROM poruka WHERE id=".$this->ref);
+			if (!$exists)
+				throw new Exception("Unknown reference", "404");
+		}
+	}
+	
+	public function send() {
+		DB::query("INSERT INTO poruka set tip=2, opseg=7, primalac=".$this->receiver->id.", posiljalac=".$this->sender->id.", vrijeme=NOW(), ref=".$this->ref.", naslov='".DB::escape2($this->subject)."', tekst='".DB::escape2($this->text)."', procitana=0");
+		$this->time = time();
+		$this->id = DB::insert_id();
+		
+		Logging::log("poslana poruka za u" . $this->receiver->id);
+		Logging::log2("poslana poruka", $this->receiver->id);
+	}
 }
 
 ?>
