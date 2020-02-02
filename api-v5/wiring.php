@@ -413,8 +413,8 @@ $wiring = array(
 		"path" => "group/course/{course}/allStudents", 
 		"description" => "Get all students on course (virtual group)", 
 		"method" => "GET", 
-		"params" => array( "year" => "int" ),
-		"code" => "return Group::virtualForCourse(\$course, \$year);", 
+		"params" => array( "year" => "int", "details" => "bool", "names" => "bool" ),
+		"code" => "return Group::virtualForCourse(\$course, \$year, \$details, \$names);", 
 		"acl" => "teacherLevel(\$course, \$year)", // FIXME use teacherLevelGroup and id of virtual group
 		"autoresolve" => array(),
 		"hateoas_links" => array(
