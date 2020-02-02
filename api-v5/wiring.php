@@ -829,6 +829,21 @@ $wiring = array(
 	),
 	
 	array(
+		"path" => "homework/course/{course}/student/{student}", 
+		"description" => "Status of all homeworks on course for student", 
+		"method" => "GET", 
+		"params" => array( "year" => "int", "scoringElement" => "int" ),
+		"code" => "return Assignment::forStudentOnCourseUnit(\$student, \$course, \$year, \$scoringElement);", 
+		"acl" => "self(\$student) || privilege('studentska') || teacherLevel(\$course, \$year)", // TODO: remove studentska?
+		"autoresolve" => array(),
+		"hateoas_links" => array(
+			"homework" => array("href" => "homework/{id}"),
+			"allHomeworksForCourse" => array("href" => "homework/course/{course}/{year}"),
+			"homeworkAssignment" => array("href" => "homework/{id}/{asgn}/student/{student}"),
+		)
+	),
+	
+	array(
 		"path" => "homework/{id}/{asgn}/student/{student}", 
 		"description" => "Status of submitted homework for student (with assignment number)", 
 		"method" => "GET", 
