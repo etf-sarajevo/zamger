@@ -56,7 +56,7 @@ class CourseUnitYear {
 		}
 		return $staff;
 	}
-
+	
 	// List of courses that given person has access privileges for
 	public static function forTeacher($teacherId, $academicYearId = 0) {
 		if ($academicYearId == 0)
@@ -69,6 +69,28 @@ class CourseUnitYear {
 		return $cuys;
 	}
 	
+	// Enroll student into course offering
+	public function enrollStudent($studentId) {
+		$enr = Enrollment::getCurrentForStudent($studentId);
+		if (!$enr)
+			throw new Exception("Student not currently enrolled in programme", "500");
+		$cos = CourseOffering::fromCourseAndYear($this->CourseUnit->id, $this->AcademicYear->id);
+		foreach($cos as $co)
+			if ($co->Programme->id == $enr->Programme->id && $co->semester == $enr->semester)
+				return $co->enrollStudent($studentId);
+				
+		// No CourseOffering - create a new CourseOffering for this student
+		$co = [ 
+			"CourseUnit" => $this->CourseUnit->id, 
+			"AcademicYear" => $this->AcademicYear->id, 
+			"Programme" => $enr->Programme->id,
+			"semester" => $enr->semester,
+			"mandatory" => false // Not mandatory, if it wasn't created by now
+		];
+		$co = Util::array_to_class($co, "CourseOffering", array("CourseUnit", "AcademicYear", "Programme"));
+		$co = $co->create();
+		$co->enrollStudent($studentId);
+	}
 }
 
 ?>

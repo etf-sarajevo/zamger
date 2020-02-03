@@ -278,6 +278,24 @@ $wiring = array(
 	),
 	
 	array(
+		"path" => "course/{id}/{year}/enroll/{student}", 
+		"description" => "Enroll student into course", 
+		"method" => "POST", 
+		"code" => function($p) { 
+			$cuy = CourseUnitYear::fromCourseAndYear($p['id'], $p['year']);
+			$porfolio = $cuy->enrollStudent($p['student']);
+			return $portfolio;
+		},
+		"acl" => function($p) { return AccessControl::privilege('studentska'); },
+		"hateoas_links" => array(
+			"course" => array("href" => "course/{course}/{year}"),
+			'coursesOnProgramme' => array('href' => 'course/programme/{programme}/{semester}'),
+			'coursesForStudent' => array('href' => 'course/student/{student}'),
+			'coursesForTeacher' => array('href' => 'course/teacher/{teacher}')
+		)
+	),
+	
+	array(
 		"path" => "course/programme/{programme}/{semester}", 
 		"description" => "List of courses on programme and semester", 
 		"method" => "GET", 
