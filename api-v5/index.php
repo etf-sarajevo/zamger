@@ -82,6 +82,7 @@ if (!$route) {
 }
 
 
+
 // Initialize database
 DB::connect();
 
@@ -116,7 +117,6 @@ if ($route == "auth") {
 	return;
 }
 
-
 Session::verify();
 Session::getCoarsePrivileges();
 // After this, Session attributes are filled
@@ -134,6 +134,7 @@ if (Session::$userid > 0 && empty(Session::$privileges)) {
 // Detect path and execute corresponding code
 
 $result = array(); // This will contain the output data
+$params = array();
 
 foreach ($wiring as $wire) {
 	$path = $wire['path'];
@@ -152,75 +153,80 @@ foreach ($wiring as $wire) {
 	if (!preg_match("/^$path$/", $route, $matches) || $_SERVER['REQUEST_METHOD'] != $wire['method']) continue;
 	
 	// Insert remaining path components into global scope
-	$code = $wire['code'];
 	for ($i=1; $i<count($matches); $i++) {
 		$varname = $variables[$i-1];
 		$varvalue = intval($matches[$i]);
-		$$varname = $varvalue;
+		$params[$varname] = $varvalue;
 	}
 		
 	// Inject request params into global scope
 	if (array_key_exists('params', $wire))
-	foreach($wire['params'] as $name => $type) {
-		if ($type == "int")
-			$$name = Util::int_param($name);
-		if ($type == "float")
-			$$name = floatval(Util::param($name));
-		if ($type == "string")
-			$$name = Util::param($name);
-		if ($type == "object") {
+	foreach($wire['params'] as $name => $data) {
+		if (!array_key_exists('type', $data) || $data['type'] == "string")
+			$params[$name] = Util::param($name);
+			
+		else if ($data['type'] == "int") {
+			if (isset($_REQUEST[$name])) 
+				$params[$name] = intval($_REQUEST[$name]);
+			else if (array_key_exists('default', $data))
+				$params[$name] = $data['default'];
+			else
+				$params[$name] = 0;
+		}
+				
+		else if ($data['type'] == "float")
+			$params[$name] = floatval(Util::param($name));
+			
+		else if ($data['type'] == "object") {
 			$json_data = json_decode(file_get_contents('php://input'));
 			if ($json_data === null) {
 				header("HTTP/1.0 500 Internal Server Error");
 				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'Malformed JSON' );
 				break;
 			}
-			$$name = $json_data;
+			$params[$name] = $json_data;
 			if ($json_data->{$name})
-				$$name = $json_data->{$name};
-			if (array_key_exists('classes', $wire) && array_key_exists($name, $wire['classes']))
-				$$name = Util::castFromJson($$name, $wire['classes'][$name]);
+				$params[$name] = $json_data->{$name};
+			if (array_key_exists('class', $data))
+				$params[$name] = Util::castFromJson($$name, $data['class']);
 		}
-		if ($type == "bool") {
+		
+		else if ($data['type'] == "bool") {
 			$value = Util::param($name);
 			if ($value === "true" || $value === true || $value === "1")
-				$$name = true;
-			else $$name = false;
+				$params[$name] = true;
+			else if ($value == "" && array_key_exists('default', $data) && $data['default'] == "true")
+				$params[$name] = true;
+			else $params[$name] = false;
 		}
-		if ($type == "file") {
+		
+		else if ($data['type'] == "file") {
 			// This is required for PHP file upload support to work
 			if (strpos($_SERVER["CONTENT_TYPE"], "multipart/form-data") !== 0) {
 				header("HTTP/1.0 500 Internal Server Error");
 				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'Wrong content-type (must be multipart/form-data)' );
 				break;
 			}
-			$$name = $_FILES[$name];
+			$params[$name] = $_FILES[$name];
 			if (!$_FILES[$name]['tmp_name'] || !file_exists($_FILES[$name]['tmp_name']) || $_FILES[$name]['error']!==UPLOAD_ERR_OK) {
 				header("HTTP/1.0 500 Internal Server Error");
 				$result = array( 'success' => 'false', 'code' => '500', 'message' => 'File upload failed' );
 				break;
 			}
 		}
+		// TODO: type: enum
 	}
 	
 	if (!empty($result)) break; // File upload failed
 	
 	
-	// TODO: First eval code, then check privileges (this will avoid some double queries)
+	// TODO: First eval code, then check privileges (this will avoid some double queries) ?
 	
 	// Check privileges - may depend on params
 	if (AccessControl::privilege('siteadmin'))
 		$ok = true; // Siteadmin has access to everything
-	else {
-		if (strstr($wire['acl'], "||")) 
-			$wire['acl'] = preg_replace("/\|\|\s?/", "|| AccessControl::", $wire['acl']);
-		try {
-			$ok = eval("return AccessControl::" . $wire['acl'] . ";");
-		} catch(Exception $e) {
-			// Nonexistant item, eval($code) will throw exception
-			$ok = true;
-		}
-	}
+	else
+		$ok = $wire['acl']($params);
 	if (!$ok) {
 		header("HTTP/1.0 401 Unauthorized");
 		$result = array( 'success' => 'false', 'code' => '401', 'message' => 'Permission denied' );
@@ -230,7 +236,7 @@ foreach ($wiring as $wire) {
 	//print "code is: $code\n";
 	
 	try {
-		$result = eval($code);
+		$result = $wire['code']($params);
 		
 		// Resolve subclasses if required
 		if ($wire['encoding'] !== 'none') { // Encoding 'none' is used for methods that return binary data
@@ -325,6 +331,7 @@ if (!array_key_exists('success', $result) || $result['success'] !== "false") {
 	else if ($wire['method'] == "POST" || $wire['method'] == "PUT")
 		header("HTTP/1.0 201 Ok");
 }
+
 
 if (!array_key_exists('encoding', $wire))
 	echo json_encode($result, Config::$json_options);
