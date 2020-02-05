@@ -72,7 +72,7 @@ class Session {
 
 					// Probavamo email adresu + domena
 					if (!$results || $i == $results['count']) {
-						$sr = ldap_search($ds, Config::$ldap_dn, "mail=$login$conf_ldap_domain", array() );
+						$sr = ldap_search($ds, Config::$ldap_dn, "mail=$login" . Config::$ldap_domain, array() );
 						if (!$sr)
 							throw new Exception("ldap_search() failed.");
 							
