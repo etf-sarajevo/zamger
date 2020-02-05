@@ -48,10 +48,9 @@ class Session {
 					// Probavamo UID
 					$login = Session::ldap_escape($login);
 					$sr = ldap_search($ds, Config::$ldap_dn, "uid=$login", array() /* just dn */ );
-					if (!$sr) {
-						niceerror("ldap_search() failed.");
-						exit;
-					}
+					if (!$sr)
+						throw new Exception("ldap_search() failed.");
+						
 					$results = ldap_get_entries($ds, $sr);
 					// Ako ldap_get_entries vrati false, pretpostavićemo da nema rezultata
 					// To se dešava rijetko ali se dešava i nije mi jasno zašto
@@ -61,11 +60,10 @@ class Session {
 
 					// Probavamo email adresu
 					if (!$results || $i == $results['count']) {
-						$sr = ldap_search($ds, "", "mail=$login", array() );
-						if (!$sr) {
-							niceerror("ldap_search() 1 failed.");
-							exit;
-						}
+						$sr = ldap_search($ds, Config::$ldap_dn, "mail=$login", array() );
+						if (!$sr)
+							throw new Exception("ldap_search() failed.");
+							
 						$results = ldap_get_entries($ds, $sr);
 
 						$i=0;
@@ -74,11 +72,10 @@ class Session {
 
 					// Probavamo email adresu + domena
 					if (!$results || $i == $results['count']) {
-						$sr = ldap_search($ds, "", "mail=$login$conf_ldap_domain", array() );
-						if (!$sr) {
-							niceerror("ldap_search() 2 failed.");
-							exit;
-						}
+						$sr = ldap_search($ds, Config::$ldap_dn, "mail=$login$conf_ldap_domain", array() );
+						if (!$sr)
+							throw new Exception("ldap_search() failed.");
+							
 						$results = ldap_get_entries($ds, $sr);
 
 						$i=0;
@@ -87,23 +84,19 @@ class Session {
 
 					if (!$results || $i == $results['count']) // return 1;
 						// Ako nema na LDAPu probavamo tabelu
-						return login($pass, "table");
+						return Session::login($pass, "table");
 					$dn = $results[$i]['dn'];
 					
 					if (!@ldap_bind($ds, $dn, $pass)) {
 						// ldap_bind generiše warning svaki put kad je pogrešna šifra :(
 						//return 2;
-						return login($pass, "table");
+						return Session::login($pass, "table");
 					}
 					// ldap_bind succeeded, user is authenticated
-				} else {
-					niceerror("LDAP anonymous bind failed.");
-					exit;
-				}
-			} else {
-				niceerror("Can't contact LDAP server.");
-				exit;
-			}
+				} else
+					throw new Exception("LDAP bind failed.");
+			} else
+				throw new Exception("Can't contact LDAP server.");
 		} else if ($type == "table") {
 			$result = DB::result($q1,0,1);
 			if ($pass != $result || $result === "") return 2;
@@ -140,6 +133,7 @@ class Session {
 			$login = phpCAS::getUser();
 		} else {
 			if (isset($_REQUEST['SESSION_ID'])) session_id($_REQUEST['SESSION_ID']);
+			ini_set('session.use_cookies', 0);
 			session_start();
 			if (isset($_SESSION['login'])) $login = DB::escape($_SESSION['login']); else return;
 			Session::$id = session_id();

@@ -99,7 +99,15 @@ if ($route == "auth") {
 	}
 	$result = array();
 
-	$status = Session::login($login, $pass);
+	try {
+		$status = Session::login($login, $pass);
+	} catch(Exception $e) {
+		header("HTTP/1.0 500 Internal Server Error");
+		$result = array( 'success' => 'false', 'code' => '500', 'message' => $e->getMessage() );
+		echo json_encode($result);
+		return;
+	}
+
 	if ($status == 1 || $status == 2) { 
 		$result['success'] = "false";
 		//$result['code'] = $status;
