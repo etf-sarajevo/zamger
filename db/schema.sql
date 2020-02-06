@@ -585,6 +585,19 @@ CREATE TABLE IF NOT EXISTS `ispit_termin` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ispitni_rokovi`
+--
+
+CREATE TABLE `ispitni_rokovi` (
+  `id` int(11) NOT NULL,
+  `akademska_godina` int(11) NOT NULL,
+  `datum_pocetka` date NOT NULL,
+  `datum_zavrsetka` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `izbor`
 --
 
@@ -2512,6 +2525,12 @@ ALTER TABLE `ispitocjene`
 --
 ALTER TABLE `ispit_termin`
   ADD CONSTRAINT `ispit_termin_ibfk_1` FOREIGN KEY (`ispit`) REFERENCES `ispit` (`id`);
+
+  --
+-- Constraints for table `ispitni_rokovi`
+--
+ALTER TABLE `ispitni_rokovi`
+  ADD CONSTRAINT `ispitni_rokovi_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
 --
 -- Constraints for table `izvoz_ocjena`
