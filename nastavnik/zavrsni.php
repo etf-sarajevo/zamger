@@ -226,6 +226,9 @@ function nastavnik_zavrsni() {
 			
 			$na_predmetu = intval($_REQUEST['na_predmetu']);
 			if ($na_predmetu == 0) $na_predmetu = "NULL";
+			
+			$id_predkom = intval($_REQUEST['predkom']);
+			$id_clankom = intval($_REQUEST['clankom']);
 	
 			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -234,12 +237,12 @@ function nastavnik_zavrsni() {
 			}
 
 			if ($id > 0) {
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, predsjednik_komisije=$id_predkom, clan_komisije=$id_clankom WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio temu zavrsnog rada", $id);
 			} else {
-				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, tema_odobrena=0");
+				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, tema_odobrena=0, predsjednik_komisije=$id_predkom, clan_komisije=$id_clankom");
 				$id = db_insert_id();
 				nicemessage('Uspješno kreirana nova tema završnog rada.');
 				zamgerlog("kreirana tema zavrsnog rada $id na predmetu pp$predmet", 2);
@@ -309,7 +312,16 @@ function nastavnik_zavrsni() {
 			
 			$studenti_ispis .= "<option value=\"$r100[0]\" $opcija>$r100[2] $r100[1] ($r100[3])</option>\n";
 		}
-
+		
+		// Spisak potencijalnih članova komisije
+		$profesori = $naucni_stepen = array();
+		$q99 = db_query("select id, titula from naucni_stepen");
+		while ($r99 = db_fetch_row($q99))
+			$naucni_stepen[$r99[0]]=$r99[1];
+			
+		$q952 = db_query("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
+		while ($r952 = db_fetch_row($q952))
+			$profesori[$r952[0]] = $r952[2] . " " . $naucni_stepen[$r952[3]] . " " . $r952[1];
 
 		?>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
@@ -334,6 +346,22 @@ function nastavnik_zavrsni() {
 			<label for="podnaslov"><span>Podnaslov:</span> <input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$podnaslov?>"></label>  
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  
+			<label for="predkom"><span>Predsjednik komisije:</span> <select name="predkom"><?php 
+				foreach($profesori as $idprof => $imeprof) {
+					if ($idprof == $userid || $idprof == $id_clankom) continue;
+					print "<option value=\"$idprof\"";
+					if ($idprof == $id_predkom) print " SELECTED";
+					print ">$imeprof</option>\n";
+				}
+			?></select></label>  
+			<label for="clankom"><span>Član komisije:</span> <select name="clankom"><?php 
+				foreach($profesori as $idprof => $imeprof) {
+					if ($idprof == $userid || $idprof == $id_predkom) continue;
+					print "<option value=\"$idprof\"";
+					if ($idprof == $id_clankom) print " SELECTED";
+					print ">$imeprof</option>\n";
+				}
+			?></select></label>  
 			<label for="kratki_pregled"><span>Kratki pregled:</span>
 			<textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></label> 
 			<label for="literatura"><span>Preporučena literatura:</span>
@@ -395,6 +423,5 @@ function nastavnik_zavrsni() {
 			<?
 		}
 	} //akcija == potvrdi_kandidata
-
 } // function
 ?>
