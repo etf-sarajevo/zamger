@@ -804,7 +804,7 @@ $isss_sifrarnik_studij = array(
 	19 => array( 0 => 787 ), // AE ekvivalencija
 	20 => array( 0 => 788 ), // EE ekvivalencija
 	21 => array( 0 => 790 ), // TK ekvivalencija
-	22 => array( 0 => 1963, 15 => 2000) // RS
+	22 => array( 0 => 1963, 15 => 2001) // RS
 );
 
 $isss_sifrarnik_studij_stari = array( 130 => 2, 80 => 3, 125 => 4, 132 => 5, 789 => 7, 787 => 8, 788 => 9, 790 => 10, 1426 => 14, 1424 => 15, 1425 => 16, 1427 => 17,  100789 => 18, 100787 => 19, 100788 => 20, 100790 => 21, 1963 => 22);
