@@ -1,0 +1,289 @@
+ZAMGER v4.3
+
+Copyright (c) 2006-2016 Vedran Ljubović i drugi
+Elektrotehnicki fakultet Sarajevo
+	
+	
+SPISAK IZMJENA U v4.3 U ODNOSU NA v4.2 (12.6.2012)
+==================================================
+
+Posljednja izmjena: 12. 8. 2016.
+
+
+VEĆE IZMJENE U NAČINU RADA:
+- Prelazak sa MyISAM na InnoDB backend za bazu podataka omogućuje poboljšanje referencijalnog integriteta
+- Prelazak sa mysql_* funkcija na mysqli backend zbog toga što su one prve prevaziđene (obsolete) u novijim verzijama PHPa
+- Nova logging arhitektura rješava probleme sa performansama pri radu sa logovima, uključujući sporo otvaranje studentskog profila saradnik/student i pretragu loga po tipu događaja
+
+
+NOVE FUNKCIONALNOSTI:
+- Sistem za upravljanje ljudskim resursima:
+  ... (biće još redizajniran)
+- Izračunavanje normi nastavnog osoblja
+  ... (biće još redizajnirano)
+  * Za svaku nastavnu grupu definiše se "tip grupe" (grupa za predavanja, za vježbe itd.) radi lakšeg uvrštavanja u normu
+- Automatska evaluacija i testiranje zadaća koristeći eksterne alate:
+  * Buildservice (https://github.com/etf-sarajevo/buildservice) - testiranje ispravnosti programskih zadaća u 9 programskih jezika
+  * Plagidetect (...) - provjera prepisivanja
+Ova funkcionalnost na ETFu postoji već duže vrijeme ali se kod postepeno usavršava i čisti tako da je sada došlo vrijeme da bude zvanično objavljen.
+- Zahtjev za ovjerena uvjerenja i potvrde - studenti mogu upućivati zahtjeve, a studentska služba štampa i daje uvjerenja na potpis ovlaštenom licu
+- Početna (beta) verzija RESTful web servisa
+  * Skriveni iframe koji je omogućavao kompatibilnost sa izuzetno starim preglednicima (aktuelnim u vrijeme Zamgera v1) prebačen je na AJAX pozive prema web servisima
+
+
+VEĆA UNAPRJEĐENJA I ISPRAVKE U FUNKCIONALNOSTIMA:
+- Opšte:
+  * [d31294c] Novi tip predmeta "Kolokvij" kod kojeg se umjesto uobičajenih ocjena 5-10 daje ocjena Ispunio obaveze (IO)
+  * Akademsko priznavanje, sticanje ocjena na drugoj instituciji (nedostaje GUI)
+- Izvještaji:
+  * (2675c07) U ćošku svakog izvještaja nalazi se prozor za printanje i generisanje PDFa
+  * (c98565f) Novi izvještaj tražen od Ministarstva "pregled_nacin": skraćeni tabelarni pregled upisanih studenata po tipu i načinu studiranja
+  * (5173a4d, b9dc66e) Novi izvještaj "Svi studenti" daje spisak svih trenutno upisanih studenata na fakultet sa određenim konfigurabilnim kolonama
+  * (cbd1c67, eb36d33) Novi podizvještaj za ankete, statistika odgovora samo za pitanje "Sveukupna ocjena predmeta"
+  * (6a1a4f6) izvjestaj/genijalci: Nova opcija: prosjek samo za tekuću godinu studija
+  * (908838a) izvjestaj/pregled: Dodajem 3. ciklus studija (doktorski)
+  * (e4fe4e4) Akademsko priznavanje ocjena sa druge institucije (potrebno dodati GUI za unos)
+  * (f6c0334, 56d170a) Novi izvještaj "Prepis ocjena" (umjesto ranijeg "index") usklađen sa standardnim univerzitetskim formatom prepisa sa mnogim dodatnim opcijama
+  * (d82a33d) Novi pod-izvještaj Prolaznost / Samo ponovci
+  * (ad5b189) Novi izvještaj "Održana nastava"
+  * (93ea906) Novi izvještaj: anonimni rezultati ispita (prema zahtjevu inspekcije)
+- Kvizovi:
+  * (c9c1dc7) Nastavnik sada može vidjeti uspjeh pojedinačnog studenta na kvizovima sa mogućnošću poništavanja kako bi student mogao ponovo raditi kviz
+  * (0972a0e) Kopiranje svih pitanja i odgovora sa drugog kviza
+  * (cd6f234) Kopiranje svih kvizova sa prošle akademske godine
+  * (588f3be) Statistika rezultata kviza (histogram studenata po broju tačnih odgovora i broj tačnih odgovora za svako pitanje)
+- Studentski interfejs:
+  * (5b95c36, bb93d20) Na stranici predmeta za studente dodane ranije nedostajuće informacije: koliko bodova nosi zadaća, ostvareni bodovi na fiksnim komponentama (seminarski, projekti...)
+  * (f2a5f86) Popravljena navigacija kroz arhivirane predmete
+  * (f172413) Dodan display sa statusom zadaće budući da studenti često nisu vidjeli da im zadaća ima greške ili je prepisana  
+    -> (4.2)
+  * prikaz vremena slanja zadaće, roka za slanje
+- Završni radovi:
+  * (0ebff0c) Dodan izvještaj "zapisnik", dodano polje "rad u okviru predmeta", omogućeno sortiranje kolona, sitne popravke
+  * (e40adda) Tri nova izvještaja sa spiskovima studenata, po zahtjevu
+  * [0a32314] Značajno proširenje funkcionalnosti kako bi nastavnici mogli definisati prijedloge tema i unositi mnoge korisne podatke
+  * [29ea137] Označavanje predmeta kao predmet za Završni rad više nije vezano za ime predmeta nego je konfigurabilno
+  * (f8b33b8) Novi izvještaj "završni rad po članstvu u komisijama"
+- Odabir izbornih predmeta:
+  * (2a5445a) Omogućujemo da se ograniči broj studenata koji biraju predmet kao izborni (nedostaje GUI za definisanje ograničenja)
+  * (5f19381) Preduvjeti za odabir predmeta koji se za sada gledaju samo prilikom kolizije (nedostaje GUI za definisanje preduvjeta)
+- Administratorski panel:
+  * (d0d0cf8) Modul "Pomoćni alati za prijemni ispit" iznova napisan (između ostalog nije se mogao izabrati termin prijemnog ispita)
+  * (f714d82) U modulu "Parametri studija" omogućeno direktno editovanje komponenti koje se boduju i tipova predmeta u bazi podataka tako da se ne mora ići kroz čarobnjak za promjenu sistema bodovanja na predmetu
+
+
+  
+ISPRAVKE BUGOVA I SITNA POBOLJŠANJA:
+- Razni moduli, zajednički kod i biblioteke: 
+  * Popravka validnosti generisanog HTML koda, uključujući: obavezan alt atribut na slikama, znak & u linkovima treba biti zamijenjen sa &amp; (nije potpuno dovršeno)
+  * Na svim izvještajima dodan datum i vrijeme generisanja izvještaja
+  * (328858f) Popravljam genitiv imena na g i h.
+  * Dijelovi registry-ja su sada sortirani abecedno jer je nekoliko izvještaja falilo zbog čega su bili nedostupni u v4.2: Procjena broja studenata, Termini ispita, nekoliko podizvještaja za anketu
+  * [40891d0] libvedran: Long standing bug, rad sa PHP "nizovima" na formama
+  * [7b59411] lib/manip: Dijeljenje s nulom kod proporcionalnog bodovanja prisustva (ako nije registrovan nijedan čas)
+  * [b43c3d8, c2e13fe] Više funkcionalnosti ankete je bilo nedostupno u v4.2 zbog kašnjenja sa ažuriranjem baze
+  * [a2bcb99] Novi sistem bodovanja prisustva koji uključuje konstantni i linearni dio (koristi se na Tehnikama programiranja)
+  * [89672d1] Nije bila uključena uz Zamger potrebna biblioteka za CAS autentikaciju, CAS logout nije funkcionisao
+  * (cdb9484) Znale su se pobrkati labele "Prikaži arhivirane predmete" i "Sakrij..." na studentskom meniju
+- index.php:
+  * (32406a3) U header je dodan korektan link na RSS za trenutno logiranog usera
+  * (3beb0fa) Čuvamo vrijeme posljednjeg pristupa u bazi jer je to brže od pretrage loga
+  * (47e92d3) Meni za studentsku službu je bio preblizu vrhu
+- rss.php:
+  * (d9f35e6) Popravljen je nevalidan RSS za informacije sa Moodla koje sadrže HTML kod
+  * (002f9c9) Last-Modified pomaže da neki readeri prepoznaju da ima nešto novo
+- admin/novagodina:
+  * (f8c468a) Kod kreiranja nove akademske godine svi predmeti su bili pogrešno markirani kao izborni
+  * (e63fa18) Popravke za slučaj prelaska na novi NPP
+- common/attachment: 
+  * (2e8d699, d6a04c5) Kod downloada, ako je poznata veličina fajla browser može prikazati ljepši progres
+- common/inbox:
+  * (f3d54ac) Prilikom odgovaranja na poruke u outboxu poruka se ponovo salje originalnom primaocu
+  * (c182fbf) 100ms je premali timeout za prikaz prozora za pretragu primaoca
+- common/raspored, public/ical:
+  * (8d5b1e6) Raspored nije pokazivao potpuno tačne podatke za studente u slučaju korištenja "finog početka/kraja časa"
+  * (52ffa62) Studentima je prikazivan raspored za sve a.g. a ne samo za aktuelnu
+  * (42feeb6) Uvijek se prikazivao kalendar za ljetnji semestar umjesto zimski zbog lošeg određivanja početka ljetnjeg semestra
+- common/zavrsniStrane:
+  * [c732c52] Ne nudimo definisanje sažetka profesoru
+- izvjestaj/anketa:
+  * (c2589e8) Sortiran na isti način kao anketni listić (bez toga je bilo zbunjujuće). Broj komentara po stranici konfigurabilan
+  * [38f5c02] Onemogućujemo osobama sa privilegijom 'asistent' da spoofingom url-a dođu do izvještaja
+- izvjestaj/anketa_semestralni:
+  * (9b5ae87) (tab) Sortiran na isti nacin kao anketni listic (bez toga je bilo zbunjujuce). Opcija da se osim rednih brojeva pitanja prikazuje i puni tekst pitanja
+  * (df1cb26) (tab) Izborni predmeti sa drugih odsjeka su sada prikazani samo na svom matičnom odsjeku
+  * [26f72cb] (ects_krediti) Popravljen SQL error
+- izvjestaj/anketa_sumarno:
+  * (27b582a) Izvještaj o izlaznosti na anketu je bio netačan, osim toga znatno dorađen, ubrzan, uljepšan
+- izvjestaj/genijalci:
+  * (ed1d9df) Ocjena 5 pogrešno smatrana za prolaznu
+- izvjestaj/granicni:
+  * (1ac035c) Završni ispit se sada može zvati i 'Završni'; ispite za koje je 0 bodova prolaz ne uzimamo u obzir za granične slučajeve
+  * [0435155] Izvještaj nije korektno detektovao tip predmeta
+  * (29e4f66) Statistički podaci su bili netačni za godine prije aktuelne
+- izvjestaj/grupe:
+  * (d56752a) Prikaži komentare za studente koji nisu ni u jednoj grupi
+  * (c61459b) Popravka sortiranja brojeva indexa za dvokolonski ispis (iz 4.10.2009 !!!) nije bila aplicirana na spisak studenata bez grupe
+- izvjestaj/historija:
+  * [a37891c] Nije ažuriran za izmjene baze za prijemni ispit iz 2009. godine (c8a4e5c)
+- izvjestaj/index:
+  * [d786fd0] Ne prikazuj predmete sa ocjenom 5
+- izvjestaj/index2:
+  * (e8103f2) Ako je student završio studij tekst u zaglavlju treba glasiti "završio/la" a ne "upisao/la"
+  * (ba454be) Ocjene po odluci nisu bile uključene u sumu ECTS kredita
+  * (1ac79ff) SQL error na dnu izvjestaj/index2 (nedostajuća polja u bazi)
+  * (6b35310) Dodajemo standardni prefiks za broj protokola radi bržeg printanja uvjerenja
+  * [6635ed4] Popravljen warning - dijeljenje s nulom kod računanja prosjeka
+  * [5b94ef2] Dodato upozorenje ukoliko neki od podataka o studentu nisu korektno popunjeni (nedostaju ocjene, datum odbrane završnog rada...)
+- izvjestaj/po_kantonima:
+  * (afcc276) Podaci i za vanredne studente, dodan spisak studenata bez unesenog kantona radi lakše popravke
+- izvjestaj/predmet: 
+  * (a3ac3f1) Popravljen ispis tabele kada ne postoji komponenta za zadaće
+  * (7d7a178) Osoba koja je u statusu nastavnika na jednom a studenta na drugom predmetu nije mogla vidjeti izvještaj za predmet na kojem je student
+  * (b9c4e08) Caching izvještaja, budući da je dosta zahtjevan a često se otvara (studenti gledaju rezultate ispita)
+- izvjestaj/prijave:
+  * (42a2809, 86fddef, ef4f7dc) Novi podtip izvještaja: svi studenti sa upisanom ocjenom
+- izvjestaj/prijemni:
+  * (5941c11) Spisak kandidata razdvojen po studijima, bodovi zaokruženi na dvije decimale, ispravljeno par sitnijih bugova u ispisu
+  * (7603899) "Kandidati za koje će se tražiti saglasnost" ukinuto - ETF specifičnost
+  * (77b4113) Nove opcije: samo kodovi, samo boračke kategorije
+  * (375250b) Predsjednik komisije u potpisu izvještaja bio hardcodiran
+- izvjestaj/prijemni_brzi_unos:
+  * (ab9e06b) Ispravljena netačna poruka greške
+  * (fa5ee3a) Većina polja se sada popunjava iz baze
+- izvjestaj/prolaznost:
+  * (9a928f7) Kod izvještaja "Konačna ocjena" preskačemo predmete koje niko nije upisao
+- izvjestaj/prolaznosttab:
+  * (6417c05) Popravljene vrijednosti koje su bile hardcodirane za određenu akademsku godinu
+- izvjestaj/svi_studenti:
+  * (3785489) Nova opcija "Mjesto boravka"
+- izvjestaj/termini_ispita:
+  * (c9993c0) Spajanje rezultata ispita po tipu nikada nema smisla kod izvještaja o terminima
+  * (2bcfbad) Dodata kolona sa imenom nastavne grupe, optimizacija upita
+- izvjestaj/uspjesnost:
+  * (63da4d0) Broj ECTS kredita po studiju bio hardcodiran
+- nastavnik/grupe:
+  * (4f2789b) Bug sa kopiranjem grupa sa drugog predmeta
+  * (aa5c737) Ako je student već upisan u željenu grupu to ne treba prikazati bojom za grešku (kod masovnog unosa)
+- nastavnik/ispiti:
+  * (534982e) Sprječavam greške ako korisnik koristi back dugme (postguard)
+- nastavnik/kvizovi:
+  * (709fba7) Netačne log poruke
+- nastavnik/ocjena:
+  * (83a2630) Dodana mogućnost da se datum u indeksu unese kao treća kolona u masovnom unosu
+  * (9be8cd0) Nije bilo moguće promijeniti ocjenu 5 koristeći masovni unos
+- nastavnik/prijava_ispita:
+  * (ac2aac7) Studentska služba treba imati pristup za definisanje termina ispita
+- nastavnik/tip:
+  * [39ad191] Dešavalo se da dva tipa predmeta imaju isti naziv (ako je naziv samog predmeta vrlo dugačak) što je pravilo razne probleme sa bodovanjem
+- nastavnik/unos_ocjene (via common/ajah):
+  * (6a01d92) Ispiši grešku u slučaju unosa nevalidnog datuma za konačnu ocjenu
+  * (a602023) Vizuelna indikacija da datum nije provjeren, za nepoznat datum stavljamo crticu
+- nastavnik/zadace:
+  * (5e2a400, f3ab11e) Prilog sa postavkom zadaće je nestajao nakon editovanja zadaće
+  * [5c145f7] Neke opcije zadaće je bilo nemoguće promijeniti
+  * [3eed682] Više sitnih popravki u masovnom unosu zadaća
+  * (52da638) Read-only zadaća se može slati samo kroz web servis
+  * (dd10808) Kod brisanja zadaće bodovi studenata nisu bili korektno ažurirani
+- nastavnik/zavrsni:
+  * (c381596) Popravljam prikaz konačne ocjene u tabeli radova
+- public/anketa:
+  * (01bdd77) Nekoliko bugova vezanih za logirane korisnike i osigurana anonimnost
+  * (4567395) Na zahtjev studenata, zbog zaštite anonimnosti izbačeno polje "vrijeme" iz tabele anketa_rezultat
+  * (10116df) Onemogući popunjavanje ankete za predmet iz pogrešnog semestra i (e1d77b4) akademske godine
+  * (fd3cd06) Dodajemo informaciju o labgrupi studenta što omogućuje statistiku po grupama (posebno za pitanja u vezi vježbi)
+  * (4112827) Bolja poruka greške ako nije zadan parametar predmet
+  * (e1d77b4) Bilo je u nekim situacijama moguće manipulacijom URLa pristupiti anketi za raniju ak. godinu
+- public/ical:
+  * (878a160) Vrijeme kreiranja rasporeda za nastavnike je bilo netačno zbog čega se kalendar nije ažurirao
+- saradnik/grupa:
+  * (c91c535) Popravljen escaping polja "vrijeme" kod kreiranja novog časa što je povremeno uzrokovalo netačno vrijeme časa
+  * (8310f8f) Shift-click na zadaću otvara zadaću u zasebnom prozoru (informacije o zadaći u alt atributu ikone)
+  * (0a38d31) Sortiramo nepregledane zadaće po broju zadatka i prezimenu studenta umjesto po IDu studenta
+  * (90d50c9) Upozorenje prije brisanja časa
+  * [c164e04] Zadaće su razvrstane po komponentama ako je u sistemu bodovanja predmeta definisano više komponenti zadaća
+- saradnik/raspored:
+  * (6eb50e1) Kompletan modul je bio hardcodiran na akademsku godinu 7 zbog nekih problema sa upitima koji su sada riješeni
+  * (23398f1) Uvijek se prikazivao kalendar za ljetnji semestar umjesto zimski
+- saradnik/student:
+  * (d5bc95b) Na predmetu "Završni rad" klik na studenta vodi na stranicu završnog rada
+  * (8ddecd1) Dodajemo progress bar iz student/predmet
+- saradnik/zadaca:
+  * (382bffc) Escaping naziva datoteke prilikom izmjene statusa
+  * (7b5148d) body tag je nepotreban jer modul ima parametar sablon=0 (van template-a ali sa HTML headerom)
+  * (5ccb4da) Nova opcija za izvršenje svih testnih primjera odjednom
+  * (f8aff83) Ime studenta je link koji otvara profil studenta u glavnom prozoru
+  * (1036c3e) Uvodimo ACE editor za pregledanje koda
+- student/anketa:
+  * (5d28750) Ovo je sada modul za pristup rezultatima ankete, dok se kodovi eventualno preuzimaju uživo
+  * (d049b0f) Podrška za više anketa u studentskom meniju, jasno razdvojen link za rezultate od linka za popunjavanje ankete
+- student/intro:
+  * (cd23ba1) Link na RSS više nije hardcodiran
+- student/kolizija:
+  * (e9b7694) Ispravno tretiranje predmeta sa drugog odsjeka
+  * (e9f4498) Popravljen naziv nepoloženog predmeta s drugog odsjeka, popravka kod 3 ili više izbornih predmeta od kojih je jedan položen, ponuđen link za printanje zahtjeva odmah nakon odabira predmeta
+  * (e09dff1) Neke dodatne kontrole ispravnosti unesenih podataka
+- student/prijavaispita:
+  * (1940c57) Poredaj prijavljene ispite po datumu
+  * (1b2f633) Preglednija tabela ispita za prijavu na kojoj se može vidjeti da li je termin popunjen, vide se drugi termini istog ispita, ne sakrivamo ni ispite koje je student već položio (mozda želi da poništi)
+- student/popunikviz:
+  * (d554103) Spriječi PrintScreen, u slučaju izlaska van prozora submituj formu umjesto zatvaranja prozora (neki browseri pitaju da li zatvoriti prozor pa korisnik može odgovoriti No)
+- student/predmet:
+  * (6f01eec) Propisno sortiraj časove po datumu *i* vremenu
+  * (2f60344) Kod računanja procenta stavljamo gornju granicu za broj bodova za zadaće na onu definisanu tipom predmeta umjesto na zbir svih zadaća, jer profesori mogu otvoriti viška zadaća koje nisu obavezne za sviju (npr. zadaće za dodatne bodove, prenos bodova od prošle godine i slično)
+  * [7c2ea7c] Progress bar nije uzimao u obzir proporcionalno bodovanje prisustva
+- student/ugovoroucenju:
+  * (bd074b7) Studenti koji mijenjaju odsjek nisu mogli isprintati Ugovor o učenju za novi odsjek; (e072614) isto za koliziju
+  * (960b6bf) Izostavljen broj indeksa (koji više neće biti isti) kada se printa Ugovor za prvu godinu narednog ciklusa
+  * (88ec438, c1fc61a) Automatski je prebacivao studente na najnoviji plan studija; student treba studirati po istom planu po kojem je upisao ako se ne prebaci
+- student/zadaca:
+  * (76714bb) Zabrana slanja prepisanih zadaća nije radila
+  * (f172413) Dodan postguard za slanje zadaće, preglednije i jasnije poruke grešaka
+  * (b548735) Omogućeno praćenje izmjena (diff) kod zadaća u formi attachmenta
+- student/zavrsni:
+  * (da6cd62) Ne prikazujemo temu studentu dok nije odobrena
+- studentska/anketa:
+  * (1310bf5, 6f2ef61) Prilikom kreiranja nove ankete za sve predmete nije bilo ispravno setovano polje predmet u bazi
+  * (0b1823f) Hardcodiran url za preview
+- studentska/intro:
+  * (a7108e4) Kod promjene mjesta rođenja, ako je isti naziv mjesta u drugoj općini nije se vidjelo šta se mijenja
+  * [ed625db] Ukinut warning zbog brisanja nepostojeće slike
+- studentska/izvjestaji:
+  * (3bc580a) Busy kursor za prikaz izvještaja nije bio korektno centriran
+- studenstka/obavijest:
+  * [108da3b] Novi tip obavještenja: Svi studenti na godini studija
+- studentska/osobe: 
+  * (51d18d4) Kod svakog upisa studenta na semestar studija bira se način studiranja jer se isti može mijenjati (ranije se birao samo prilikom prvog upisa i prenosio automatski na sve semestre)
+  * (693ddb0) Automatski kreiram ponudu kursa prilikom upisa studenta na studij ako ne postoji i ako je predviđena planom studija
+  * (e0f7392) Nije bila korektno ispisana suma ECTS kredita u poruci greške kada je ta suma nedovoljna za upis
+  * (cb1d1ec) Upis studenta na studij je trazio da se dvaput unese broj indexa (ako nije bio ranije definisan)
+  * (367d291) Manuelni upis na predmete: Dodata opcija "akademska godina" kako bi se izmjene mogle praviti i u ranijim a.g.
+  * (2a449f3) Ako je student u prošloj akademskoj godini bio upisan samo u neparni semestar a ne u parni, nudio se upis direktno u parni semestar tekuće akademske godine
+  * (78c461b) Bilo je nemoguće upisati korisnika kao studenta ako je korisnik trenutno nastavnik (Npr. asistent se prijavljuje za upis na 3. ciklus studija)
+  * (18aede2) Nije bila automatski kreirana ponuda kursa za prenesene predmete
+  * (a0ab374) Omogućujemo adminu da "forsira" upis ako student nema uslove
+  * (76e0539) Pogrešno su bile evidentirane ocjene koje su dopisane prilikom upisa na semestar
+  * (677d80a) Nova funkcionalnost: promjena načina studiranja
+  * (1f36333) Omogućujemo studentskoj upis na parne semestre
+  * (4d32f7d) Nova tabela za posebne kategorije studenata umjesto dosadašnjeg polja "boračke kategorije" koje je imalo više bugova
+- studentska/plan:
+  * (d1738a2) Dodajem informaciju o šifri i broju kredita
+- studentska/predmeti:
+  * (d9a4f83) Omogućujemo pretraživanje i po kratkom nazivu
+  * [f253f34, eb44a80] U nekim slučajevima je bilo nemoguće proglasiti predmet za obavezan
+- studentska/prijemni:
+  * (2081154, 0444398) U konkursu za 2. ciklus 2012. precizirano da se prosjek zaokružen na 2 decimale množi sa 10 (max. 100 bodova) da bi se sabrao sa 40 bodova sa prethodnog ciklusa
+  * (f25cc71) Unos kriterija za upis, dugme Prikazi je zaboravljalo max. br. bodova
+  * (8d86870) Povećavam broj polja za ocjene sa prethodnog ciklusa na 50
+  * (94b2858) Brzi unos na 2. ciklusu je kreirao kandidate koji se ne vide u tabelarnom pregledu
+  * (7daf853) Popravljena greška sa viškom redova u tabeli ocjena sa prethodnog ciklusa
+  * (9622935) Detekcija ranijeg studija na istoj instituciji nije radila
+  * (97a18b1) Odvojene rang liste za studente prijavljene na samofinansirajući studij
+  * (60f1328, 074680c) Masovni unos rezultata prijemnog ispita pod šifrom nije radio zbog više grešaka
+  * (37df07f) Greška u funkciji za validaciju JMBGa (čudno da nije ranije otkrivena!?)
+  * (ef16324) Dodana mogućnost da se za općine van BiH unese naziv općine kao tekstualno polje
+  * (8884457) Maksimalan broj ECTS kredita po predmetu sa prošlog ciklusa je 30
+  * (9cc25fd) Kod unosa ocjena sa prethodnog ciklusa studija, stara vrijednost nije bila zapamćena
+- studentska/prodsjeka:
+  * [7d52d42] Popravka za studente koji nisu bili upisani u ljetnji semestar
+  * [611185a] Dodjela permisija nastavnicima nije radila zbog pozivanja na nepostojeću kolonu u bazi

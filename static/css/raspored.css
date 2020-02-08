@@ -1,0 +1,225 @@
+/* body pozicioniranje */
+
+#container {
+	width: auto;
+	margin-left: auto;
+	margin-right: auto;
+	font-family:"Trebuchet MS", Arial, sans-serif;
+	font-size: 12px;
+	text-align: left;
+	padding: 10px;
+	overflow:hidden;
+}
+#pre_header  {
+	height: 28px;
+	font-family: "Trebuchet MS", Arial, sans-serif;
+	font-size: 14px;
+	color:#000000;
+}
+.dan_header {
+	padding: 4px 0px 0px 1px;
+	margin: 0px 1px 1px 0px; 
+	float:left; 
+	width: 129.2px; 
+	height:20px; 
+	background:#ADB4F6;
+}
+.satnica {
+	padding: 10px 0px 0px 2px;
+	margin: 0px 1px 1px 0px; 
+	width: 50px; 
+	height: 30px; 
+	background: #D3D6F1;
+}
+
+.kolona {
+	float:left;
+	width:130px;
+	margin-right: 1px;
+	height: 368px;
+}
+
+.celija {
+	padding: 1px;
+	width: 125px;
+	height: 28px;
+	background: #F5E2BC;
+	margin: 0px 1px 9px 1px;
+	border: 1px solid #FF9900;
+	text-align: left;
+	position:absolute;	
+}
+.celija_pola {
+	padding: 1px;
+	width: 60px;
+	height: 28px;
+	background: #F5E2BC;
+	margin: 0px 1px 9px 1px;
+	border: 1px solid #FF9900;
+	text-align: left;
+	position: absolute;
+}
+.prazna_celija {
+	padding: 1px;
+	width: 125px;
+	height: 28px;	
+	margin: 0px 1px 9px 1px;
+	border: 1px solid #FFFFFF;
+}
+
+.naslov {
+	background: #ECC471;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: bold;
+	text-align: left;
+}
+/* razmak izmedju divova - da fino legne */
+.razmak {
+	font-size: 1px;
+	clear: both;
+}
+/* ADMINISTRACIJA */
+#adminRas { /* okvir administracije*/
+	border: 1px solid #E4E4E4;
+	padding: 10px;
+	background-color: #F7F7F7;
+	font:16px "Lucida Grande","Tahoma", Verdana, sans-serif bold;
+	font-weight:bold;
+	color: #FF0000;
+}
+#navigacija {
+	padding: 0px;
+	margin: 2px;
+}
+#sadrzajA {
+	border: 1px solid #E4E4E4;
+	padding: 10px;
+	background-color: #FFFFFF;
+	font:11px "Lucida Grande","Tahoma", Verdana, sans-serif;
+	color:#999;
+	font-weight: normal;
+}
+ul#menu {
+	margin:0px;
+	padding:0px;
+	list-style-type:none;
+}
+ul#menu li {
+	margin:0px;
+	padding:0px;
+	display: inline;
+}
+ul#menu li a {
+	border: 1px solid #E4E4E4;
+	border-bottom: 0px;
+	padding:5px 10px 4px 10px;
+	color:#999;
+	font:11px "Lucida Grande","Tahoma", Verdana, sans-serif;
+	text-decoration:none;
+
+}
+ul#menu li a:hover {
+	color:#fff;
+	background-color:#666;
+}
+ul#menu li a#selected {
+	color:#000;
+	background-color:#FFF;
+	border-bottom: 0px;
+}
+.velikiNaslov {
+	font:14px "Lucida Grande","Tahoma", Verdana, sans-serif;
+	color: #666666;
+	font-weight: bold;
+}
+input, select {
+	border: 1px solid #ccc;
+	margin-top: 2px;
+	font-size: 10px;
+}
+
+.formLS {
+	width: 250px;
+	height: 20px;
+	float: left;
+	line-height: 17px;
+	margin: 1px;
+	padding: 2px;
+	background-color: #F7F7F7;
+}
+.formRS {
+	height: 20px;
+	float: left;
+	line-height: 17px;
+	margin: 1px;
+	padding: 2px;
+	background-color: #F7F7F7;
+}
+
+.hrStyle {
+	border-top: 0px #fff hidden;
+	border-bottom: 1px #ccc solid;
+}
+
+.sectionP0 {
+	padding: 2px;
+	border-bottom: 1px dotted #EFEFEF;
+	background-color: #F9F9F9;
+	width: 99.5%;
+}
+#sectionP1 {
+	width: 5%;
+	float: left;
+}
+#sectionP2 {
+	width: 25%;
+	float: left;
+}
+#sectionP2a {
+	width: 20%;
+	float: left;
+}
+#sectionP3 {
+	width: 20%;
+	float: left;
+}
+#sectionP4 {
+	width: 25%;
+	float: left;
+	text-align: right;
+}
+.cRDanBox {
+	width: 18.8%;
+	padding: 2px;
+	float: left;
+	border: 1px #EEE866 solid;
+	background: #FBFAD0;
+	margin-right: 2px;
+}
+.cRDanContBoxPredmet {
+	padding: 2px;
+	border: 1px solid #EEEFB6;
+	background-color: #FDFCE8;
+}
+#wizardBox {
+	width: 100%;
+	border-left: 1px solid #ccc;
+	border-right: 0px;
+	height: 8px;
+	margin-bottom: 20px;
+}
+.wizardBoxInner {
+	width: 33%;
+	border: 1px solid #ccc;
+	border-left: 0px;
+	background: #ececec;
+	height: 8px;
+	float: left;
+}
+.wizardEl1 {
+	width: 33%;
+	text-align: center;
+	font-size: 10px;
+	float: left;
+}

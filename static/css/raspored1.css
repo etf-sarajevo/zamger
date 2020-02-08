@@ -1,0 +1,54 @@
+p.crveno{
+	color: red;
+}
+
+.plavo_bold{
+	font-weight:bold;
+	color: blue;
+}
+
+table.sale th{
+	font-size:11px; 
+}
+table.sale {
+	text-align: center;
+}
+
+table.nastavnik_raspored th{
+	font-size:11px; 
+}
+table.nastavnik_raspored {
+	text-align: center;
+}
+
+table.raspored th{
+	font-weight:normal;
+	font-size:11px;
+	text-align: center;
+}
+
+table.raspored td{
+	text-align: center;
+}
+
+table.raspored th p.bold{
+	font-weight:bold;
+}
+
+table.raspored th p.mala_slova{
+	font-size:9px;
+}
+
+table.raspored td p.plavo{
+	font-size: 13px;
+	font-weight: bold;
+	color: blue;
+}
+
+table.raspored td p.mala_slova{
+	font-size:9px;
+}
+
+table.cas td p.bold{
+	font-weight:bold;
+}

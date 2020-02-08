@@ -1,0 +1,63 @@
+Zamger v4.2
+
+Copyright (c) 2006-2017 Vedran Ljubovic i drugi
+Elektrotehnicki fakultet Sarajevo
+	
+	
+
+CREDITS.txt - popis autora i kontributora
+=========================================
+
+5. 9. 2017.
+
+Veliku većinu koda (oko 95%) Zamgera od nule je razvio Vedran Ljubović. 
+Pored njega, na projektu su učestvovali i sljedeći autori:
+
+- Kenan Hodžić - modul za raspored (v1)
+- Admir Halilović - modul za raspored (v2)
+- Eldin Starčević - modul za prijemni ispit
+- Nermin Softić - modul za ankete
+- Haris Agić, Merisa Huseinović - modul za upravljanje projektima
+- Admir Herić - modul za prijavu ispita (studentski dio)
+- Hani Zahirović - podešavanje sistema bodovanja na predmetu
+- Denijal Ćatović - analiza nivoa pristupa Zamgeru
+- Arnes Durmo, Fadila Žilić, Safet Okić - integracija Zamger-Moodle
+- Jasmin Krčalo - konverteri izvještaja u CSV i PDF, ispravke u modulu
+za zadaće
+- Maja Kozar - modul za završne radove
+- Elma Lagumdžija, Merisa Huseinović - modul za kreiranje plana studija 
+i razne ispravke na istom
+- Edin Mujalo - nekoliko vrsta izvještaja
+- Mersiha Mostić - modul za obavještavanje profesora putem maila
+- Aida Hasagić, Dženita Hadrović - modul za štampanje prijava (koji 
+nažalost nije bio iskoristiv)
+- Fatima Krupalija - modul za notifikacije (koji nažalost nije bio 
+iskoristiv)
+- Enes Ljevaković - generalizacija prijave ispita na prijavu događaja
+(koja nažalost nije bila iskoristiva)
+- Sedin Sabljica - modifikacija praćenja prisustva (koja nažalost nije
+bila iskoristiva)
+- Teo Eterović, Armin Beširović - redizajn studentskog dijela i ispravke 
+u HTMLu
+- Amer Zec, Ermin Dedović - razne ispravke u kodu
+- Ermin Dedović - rad na verziji 5
+- Emir Cogo - Facebook modul
+- Adnan Hajdarević - favicon
+- Enil Pajić - testiranje i usavršavanje novog v5 APIja
+- svi studenti na predmetu Pouzdanost i kontrola kvalitete softvera u 
+godinama 2008/2009 i 2009/2010 koji su testirali Zamger u sklopu zadatka
+"Black box testiranje", na čemu posebno zahvaljujem njihovoj asistentici 
+Dušanki Bošković
+- svi studenti (ako ih ima) koji su na predmetu Tehnologije sigurnosti
+prihvatili izazov da pronađu propust u Zamgeru, na čemu posebno zahvaljujem
+njihovom profesoru Saši Mrdoviću.
+
+Pored navedenih osoba, sugestijama i prijavama bugova su pomogli još i: 
+Alvin Abdagić, Amila Akagić, Emran Bajrami, Dušanka Bošković, Selvedin 
+Dokara, Alvin Huseinović, Samim Konjicija, Saša Mrdović, Enil Pajić, Elma 
+Pezo, Tarik Poplata, Samir Ribić, Adisa Sinanović, Nedim Skenderović, Harun 
+Šiljak, Arnad Voljevica, Bakir Zaćiragić, Ernedin Zajko.
+
+Zahvaljujem svima koji su učestvovali na projektu! Njihov doprinos će 
+ostati zabilježen i zapamćen. Hvala!!!
+

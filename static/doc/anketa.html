@@ -1,0 +1,158 @@
+<html>
+	<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Anketa</title>
+	<link href="../css/zamger.css" rel="stylesheet" type="text/css">
+</head>
+<body style="margin:0px" bgcolor="#ffffff">
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	<tbody><tr bgcolor="#BBBBFF">
+		<!--td><table width="100%" border="0" cellspacing="0" cellpadding="0"><tr-->
+			<td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="index.php"><img src="../images/etf-50x50.png" width="50" height="50" 
+border="0" alt="ETF"></a>
+			</td><td width="50%" align="right">
+			<font color="#FFFFFF" size="5">
+			<b><a href="index.php"><font color="#FFFFFF">ZAMGER 4.3 
+beta</font></a>&nbsp;</b></font><br>
+			<font color="#FFFFFF" size="1">
+			<a href="../doc/zamger-uputstva-42-nastavnik.pdf" target="_new">
+			<img src="../images/16x16/dokumentacija.png" width="16" height="16" border="0" 
+style="vertical-align:middle" alt="Uputstva">&nbsp;
+			Uputstva</a>&nbsp;&nbsp;&nbsp;
+			<a href="http://f.etf.unsa.ba/redmine/projects/zamger/issues/new" target="_new">
+			<img src="../images/16x16/zad_bug.png" width="16" height="16" border="0" 
+style="vertical-align:middle" alt="Prijavite bug">&nbsp;
+			Prijavite bug</a>&nbsp;&nbsp;&nbsp;</font>
+			</td>
+		<!--/tr></table></td-->
+	</tr>
+</tbody></table>
+
+<div style="margin:4px; font-size: 13px">
+<h1>Anketa @ Zamger</h1>
+
+<!--p><i>Update: Na zahtjev pojedinih kolega, iz tabele anketa_rezultat izbačena je kolona sa vremenom popunjavanja. <a href="https://f.etf.unsa.ba/redmine/projects/zamger/repository/revisions/1546">Detalji.</a></i></p-->
+
+<h2>Kako popuniti anketu?</h2>
+
+<img src="anketa_slike/anketa_link.png" align="right" border="1">
+<ul><li>Prijavite se na Zamger sa vašim korisničkim imenom i šifrom</li>
+<li>S lijeve strane kliknite na naziv predmeta</li>
+<li>Pojaviće se meni opcija Anketa - kliknite na nju</li>
+<li>Na svako pitanje odgovorite ocjenom u rasponu od 1 (nimalo se ne slažem, negativna ocjena) do 5 (potpuno se slažem, pozitivna ocjena).</li>
+<li>Dopišite vlastiti komentar u polje "Komentar"</li>
+<li>Ne zaboravite kliknuti na dugme Pošalji na dnu stranice, u suprotnom anketa nije evidentirana.</li></ul>
+
+<h2>O anonimnosti ankete</h2>
+
+<p>Anketa je potpuno anonimna. Kada korisnik pošalje svoj anketni listić on se slaže u bazu anketnih listića odnosno u tabelu koja se zove "anketa_rezultat", ali u toj tabeli polje "student" je prazno. Znači to što je student logiran samo služi da se provjeri da li student ima pravo popuniti anketu za neki predmet i da li je već ranije popunjavao, ostali podaci se ne čuvaju.</p>
+
+<table border="0">
+<tr><td>
+<img src="anketa_slike/anketa_baza1_v2.png" border="1">
+<br><i>Screenshot iz glavne baze podataka Zamgera, program <a 
+href="http://www.phpmyadmin.net">phpMyAdmin</a>. Tu se može vidjeti da se u koloni "student" nalazi 
+isključivo vrijednost NULL.</i>
+</td></tr></table>
+
+<p>Zainteresirani mogu baciti pogled na izvorni kod Zamgera koji se nalazi na repozitoriju <a href="https://github.com/etf-sarajevo/zamger">https://github.com/etf-sarajevo/zamger</a> konkretno interesantan link je ovaj:</p>
+
+<p><a href="https://github.com/etf-sarajevo/zamger/commit/01bdd77a6bcc18992b2cac4eb0e0a47824623f37#diff-3410affd66971c4ed54ddd4b950af934">https://github.com/etf-sarajevo/zamger/commit/01bdd77a6bcc18992b2cac4eb0e0a47824623f37#diff-3410affd66971c4ed54ddd4b950af934</a></p>
+
+<p>U pitanju je izmjena koja je napravljena prije puštanja ankete kako bi bili popravljeni neki bugovi i osigurana anonimnost studenata. Relevantan kod se nalazi u linijama 150 gdje se u tabeli anketa_rezultat pod poljem student postavlja vrijednost NULL i 276 gdje se nakon popunjavanja ankete briše polje anketa_rezultat u tabeli anketa_student_zavrsio. Tabela anketa_student_zavrsio služi kako bi se spriječilo da student dvaput popunjava anketu za isti predmet. U sljedećoj promjeni je izbačen timestamp iz baze:</p>
+
+<p><a href="https://github.com/etf-sarajevo/zamger/commit/45673950655fc75befbe54d66a31bcf66b0207c9#diff-3410affd66971c4ed54ddd4b950af934">https://github.com/etf-sarajevo/zamger/commit/45673950655fc75befbe54d66a31bcf66b0207c9#diff-3410affd66971c4ed54ddd4b950af934</a></p>
+
+<p>Studenti koji ne vjeruju da su ove slike vjerodostojne mogu slobodno doći u prostorije 
+službi u toku njihovog radnog vremena i uvjeriti se uživo.</p>
+
+<table border="0">
+<tr><td>
+<img src="anketa_slike/anketa_baza2.png" border="1">
+<br><i>Kod koji vrši ubacivanje podatka u tabele "anketa_rezultat" i "anketa_student_zavrsio". Dio 
+podvučen crvenom bojom pokazuje da se u tabelu anketa_rezultat pod student stavlja vrijednost NULL. 
+Tabela anketa_student_zavrsio služi kako bi se spriječilo da isti student dvaput popunjava anketu za 
+neki predmet.</i>
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>
+<img src="anketa_slike/anketa_baza3.png" border="1">
+<br><i>Ovaj dio koda se izvršava kada student pošalje popunjenu anketu. Sada se u tabeli 
+"anketa_student_zavrsio" briše relacija prema tabeli anketa_rezultat kako se ne bi znalo koji student je 
+popunjavao koji anketni listić.
+</i>
+</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>
+<img src="anketa_slike/anketa_baza5.png" border="1">
+<br><i>U sljedećoj reviziji je izbačen timestamp iz baze.
+</i>
+</td></tr>
+
+</table>
+
+<h2>Da li postoji bolji način da se garantuje anonimnost?</h2>
+
+<p>Mnogi studenti predlažu da se anketni kodovi podijele putem maila ili da se student 
+logira kroz Zamger, preuzme kod, napravi logout i zatim popuni anketu.</p>
+
+<p>Nijedan od tih načina nije ništa "anonimniji" od postojećeg. Sistem koji dijeli kodove na osnovu 
+logina ili email adrese može bilježiti kojem studentu je dat koji kod i kasnije na osnovu koda znati ko 
+je šta popunio. Kod popunjavanja ankete na računarima u labu, može se evidentirati sa 
+koje IP adrese je popunjena anketa, IP adresa se može povezati sa računarom, a dežurni 
+asistent može evidentirati ko je sjedio za kojim računarom.</p>
+
+<p>Jedini apsolutno garantovano anoniman pristup je podijela kodova uživo, metodom izvlačenja 
+papirića, što je 
+korišteno u akademskoj 2011/2012. godini. Rezultat je bio katastrofalno loš odziv na anketu. 
+Predstavnici studenata su iznijeli da su se studenti nemarno odnosili prema kodovima, gubili ih ili 
+bacali. Takav sistem je morao biti 
+promijenjen. Smatramo da postojeći sistem daje zadovoljavajući nivo 
+anonimnosti, a studenti koji imaju dvojbi mogu se uvijek obratiti da ostvare uvid u bazu podataka. S 
+druge strane, iz dosadašnjeg rezultata vidimo puno bolji odziv nego 2011/2012. godine.</p>
+
+<h2>Ima li "fajde" od ove ankete?</h2>
+
+<img src="anketa_slike/anketa_baza4.png" border="1" align="right">
+<p>Anketiranje je dio šireg sistema upravljanja kvalitetom nastavnog procesa. Ovakav mehanizam postoji 
+na većini univerziteta u BiH i svijetu, a dio je i zahtijeva vezanih za akreditaciju. Anketiranje 
+provodi Odbor za upravljanje kvalitetom ETFa čiji su članovi i predstavnici studenata koje imenuje 
+zvanično udruženje studenata ETFa - Steleks. Upoznajte se sa svojim predstavnicima i pitajte ih šta 
+oni rade da bi ankete imale efekta!</p>
+
+<p>Budući da na Univerzitetu u Sarajevu još uvijek ne postoje jasni propisi i procedure za upravljanje 
+kvalitetom, dosadašnja provedba ankete je bila prije svega u cilju pripreme i obuke svih učesnika 
+(nastavnika, studenata...) Ipak, fakultet je donio i određene odluke o tome kako postupiti po 
+rezultatima ankete. O tome više možete pročitati ovdje:<br>
+<a 
+href="http://www.etf.unsa.ba/index.php?id=157&tx_ttnews[tt_news]=1048&tx_ttnews[backPid]=1&cHash=9782cd8551">http://www.etf.unsa.ba/index.php?id=157&tx_ttnews[tt_news]=1048&tx_ttnews[backPid]=1&cHash=9782cd8551</a></p>
+
+<p>Na mnogim univerzitetima studenti su obavezni da popune anketu, odnosno ne mogu dobiti potpis dok ne 
+popune anketni listić. Mislimo da takav stav nije dobar, student ima demokratsko pravo i da odbije 
+popuniti anketu. 
+Ali to pravo treba ostvariti tako što se listić "poništi", odnosno student se treba prijaviti i izabrati 
+opciju &quot;Odbijam da učestvujem u anketi&quot;. Ni ovdje neće biti evidentirano KO je odbio 
+učestvovati, nego samo KOLIKO je ukupno studenata odbilo učestvovati. Pozivamo vas da 
+pored klikanja na ovu opciju popunite 
+i polje za komentar da bismo znali zašto niste htjeli dati vaše mišljenje i možda to popravimo ako je 
+moguće.</p>
+
+<p>Ipak, anketa koju popunjavate prije svega treba da pomogne profesorima koji žele da rade kvalitetnije 
+(a to je velika većina). Zato vas molimo da budete iskreni i detaljni u vašem mišljenju!</p>
+
+<h2>NOVO: Da li pitanje o utrošenom vremenu utiče na prosječnu ocjenu predmeta?</h2>
+
+<p>Prilikom analize ankete uopšte se ne gleda prosjek odgovora na sva pitanja. Takva statistika bi bila
+beskorisna jer svako pitanje ima svoje značenje. Ukupnu ocjenu predmeta možete dati odgovorom na pitanje
+&quot;Sveukupna ocjena predmeta&quot;. </p>
+
+<p>&nbsp;</p>
+
+<p><i>Osoblje službi Fakulteta i informacionog sistema</i></p>
+
+</div>
+
+</body>
+</html>

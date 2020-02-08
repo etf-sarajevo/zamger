@@ -1,0 +1,48 @@
+	body{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	.default{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	td{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;}
+	th{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:black;font-weight: bold; background-color: #CCCCCC; text-align: left;}
+	a{color:#333399;text-decoration:none;}
+	a:hover{color:red;text-decoration:underline;}
+	.grupa {color:#666666;font-weight:bold;font-size:11px}
+	.msg {color:#FF0000}
+	h3{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:16px;}
+	h2{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:20px;}
+	h1{font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:24px;}
+	.meni {font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:14px;font-weight:bold;}
+
+.prisustvo {
+	border: 1px solid silver;
+	border-bottom: 2px solid silver;
+}
+.prisustvo td, .prisustvo th {
+	padding: 3px 10px;
+	border-right: 1px solid silver;
+}
+.prisustvo th {
+	font-size: 11px;
+}
+.prisustvo sup {
+	color: gray;
+}
+
+
+.zadace {
+	border: 1px solid silver;
+}
+.zadace td, .zadace th {
+	padding: 3px 10px;
+	border-bottom: 1px solid silver;
+	border-right: 1px solid silver;
+}
+.zadace tr:hover {
+	background: #f2f2f2;
+}
+.zadace th {
+	font-size: 11px;
+}
+.zadace sup {
+	color: gray;
+}
+
+div.breakafter {page-break-after:always;}
