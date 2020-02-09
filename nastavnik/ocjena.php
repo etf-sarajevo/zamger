@@ -52,19 +52,6 @@ if (!$user_siteadmin) {
 
 <?
 
-// Da li je prošao ispitni rok?
-$ima_li_rokova = db_get("SELECT COUNT(*) FROM ispitni_rokovi WHERE akademska_godina=$ag");
-if ($ima_li_rokova) {
-	$jel_u_toku_rok = db_get("SELECT id FROM ispitni_rokovi WHERE akademska_godina=$ag AND datum_pocetka<=CURDATE() AND datum_zavrsetka>=CURDATE()");
-	if (!$jel_u_toku_rok) {
-		niceerror("Nije u toku ispitni rok");
-		?>
-		<p>Unos konačne ocjene je moguć samo dok traju ispitni rokovi. Ako imate potrebu da evidentirate ocjenu izvan ovog perioda, molimo Vas da kontaktirate studentsku službu fakulteta.</p>
-		<?
-		return;
-	}
-}
-
 
 # Masovni unos konačnih ocjena
 

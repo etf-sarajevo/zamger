@@ -149,37 +149,6 @@ function studentska_plan(){
 		<?
 		return;
 	}
-	
-	if ($akcija == "kopiranje") {
-		// Pronalazimo prethodni važeći plan studija
-		$stari_plan = db_get("SELECT id FROM plan_studija WHERE studij=$studij ORDER BY godina_vazenja DESC LIMIT 1");
-		if (!$stari_plan)
-			$stari_plan = db_get("SELECT id FROM plan_studija WHERE studij=$studij AND id!=$plan ORDER BY id DESC LIMIT 1");
-		
-		$stara_godina = db_get("SELECT ag.naziv FROM akademska_godina ag, plan_studija ps WHERE ag.id=ps.godina_vazenja AND ps.id=$stari_plan");
-		if ($stara_godina)
-			print "<p>Kopiram plan studija <b>$stara_godina</b> (ID: $stari_plan)...</p>";
-		else
-			print "<p>Kopiram plan studija <b>predložen</b> (ID: $stari_plan)...</p>";
-			
-		
-		$q10 = db_query("INSERT INTO plan_studija_predmet SELECT $plan, pasos_predmeta, plan_izborni_slot, semestar, obavezan, potvrdjen FROM plan_studija_predmet WHERE plan_studija=$stari_plan AND obavezan=1");
-		$novi_slot = db_get("SELECT MAX(id) FROM plan_izborni_slot");
-		$q20 = db_query("SELECT DISTINCT pis.id, pis.pasos_predmeta FROM plan_izborni_slot pis, plan_studija_predmet psp WHERE pis.id=psp.plan_izborni_slot AND psp.plan_studija=$stari_plan AND obavezan=0 ORDER BY pis.id, pis.pasos_predmeta");
-		$stari_slot = 0;
-		while (db_fetch2($q20, $pis, $pasos_predmeta)) {
-			if ($pis != $stari_slot) {
-				$stari_slot = $pis;
-				$novi_slot++;
-				$q30 = db_query("INSERT INTO plan_studija_predmet SELECT $plan, NULL, $novi_slot, semestar, obavezan, potvrdjen FROM plan_studija_predmet WHERE plan_studija=$stari_plan AND plan_izborni_slot=$stari_slot");
-			}
-			$q40 = db_query("INSERT INTO plan_izborni_slot VALUES($novi_slot, $pasos_predmeta)");
-		}
-		
-		nicemessage("Plan je kopiran");
-		
-		return;
-	}
 
 	// Potvrda važenja plana studija
 	if ($akcija === "potvrda") {

@@ -26,12 +26,11 @@ $tipstudija = int_param('tipstudija');
 $studij = int_param('studij');
 $godina = int_param('godina');
 $tabelarno = param('tabelarno');
-$ponovci = int_param('ponovci');
+$prvi_put = param('prvi_put');
 $mjesto_rodjenja = param('mjesto_rodjenja');
 $adresa_mjesto = param('adresa_mjesto');
 $drzavljanstvo = param('drzavljanstvo');
 $boracke = int_param('boracke');
-$zaduzenje = int_param('zaduzenje');
 
 if ($ag==0) {
 	$q10 = db_query("select id, naziv from akademska_godina where aktuelna=1");
@@ -69,7 +68,6 @@ if ($brindexa) $kolone .= ", o.brindexa";
 if ($mjesto_rodjenja) $kolone .= ", m.naziv as mjestorodj";
 if ($adresa_mjesto) $kolone .= ", am.naziv as adresamjesto";
 if ($drzavljanstvo) $kolone .= ", d.naziv as drzavljanstvo";
-if ($zaduzenje) $kolone .= ", ss.zaduzenje";
 
 $tabele = "";
 if ($nacin_studiranja) $tabele .= ", nacin_studiranja as ns";
@@ -87,8 +85,7 @@ if ($studij > 0)
 	$uslovi .= " and ss.studij=$studij";
 else if ($studij == 0 && $tipstudija > 0) 
 	$uslovi .= " and ss.studij=s.id and s.tipstudija=$tipstudija";
-if ($ponovci == 1) $uslovi .= " and ss.ponovac=0";
-if ($ponovci == 2) $uslovi .= " and ss.ponovac=1";
+if ($prvi_put) $uslovi .= " and ss.ponovac=0";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
 if ($adresa_mjesto) {
@@ -141,7 +138,6 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($mjesto_rodjenja) print "<td>".$osoba['mjestorodj']."</td>";
 		if ($adresa_mjesto) print "<td>".$osoba['adresamjesto']."</td>";
 		if ($drzavljanstvo) print "<td>".$osoba['drzavljanstvo']."</td>";
-		if ($zaduzenje) print "<td>".$osoba['zaduzenje']."</td>";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print "<td><font color=\"red\">- nepoznato ime oca!</font></td>";
@@ -166,7 +162,6 @@ while ($osoba = db_fetch_assoc($q30)) {
 		if ($mjesto_rodjenja) print "(".$osoba['mjestorodj'].")";
 		if ($adresa_mjesto) print "(".$osoba['adresamjesto'].")";
 		if ($drzavljanstvo) print "(".$osoba['drzavljanstvo'].")";
-		if ($zaduzenje && $osoba['zaduzenje'] > 0) print " - dug: ".$osoba['zaduzenje']." KM";
 
 		// Greške
 		if ($ime_oca && $osoba['imeoca'] == "") print " <font color=\"red\">- nepoznato ime oca!</font>";

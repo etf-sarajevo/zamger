@@ -9,13 +9,6 @@ function izvjestaj_duple_prijave() {
 
 global $userid, $user_studentska, $user_siteadmin;
 
-?>
-
-<p>Univerzitet u Sarajevu<br/>
-Elektrotehnički fakultet Sarajevo</p>
-<p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
-<?
-
 
 // Ulazni parametri
 $dan     = int_param('dan');
@@ -46,7 +39,7 @@ while(db_fetch2($qispiti, $ispit, $predmet)) {
 	while(db_fetch1($qtermin, $termin)) {
 		$qstudent = db_query("SELECT student FROM student_ispit_termin WHERE ispit_termin=$termin");
 		while(db_fetch1($qstudent, $student)) {
-			if (!in_array($student, $studenti[$predmet]))
+			if (!in_array($student, $studenti[$predmet])) 
 				$studenti[$predmet][] = $student;
 			
 			foreach(array_keys($studenti) as $predmet2) {
@@ -55,10 +48,7 @@ while(db_fetch2($qispiti, $ispit, $predmet)) {
 					// Postoji dupla prijava
 					if (!array_key_exists($student, $duple_prijave))
 						$duple_prijave[$student] = array( $predmet2 );
-					else if (!in_array($predmet2, $duple_prijave[$student]))
-						$duple_prijave[$student][] = $predmet2;
-					if (!in_array($predmet, $duple_prijave[$student]))
-						$duple_prijave[$student][] = $predmet;
+					$duple_prijave[$student][] = $predmet;
 				}
 			}
 		}
@@ -72,7 +62,6 @@ while(db_fetch2($qispiti, $ispit, $predmet)) {
 $imena_predmeta_cache = array();
 
 if (int_param('po_predmetu')) {
-	print "<h3>Broj prijavljenih studenata po predmetu</h3>\n";
 	$aktuelna_ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
 	$ispis_varijanta = array();
 	foreach($studenti as $predmet => $sp) {
@@ -92,8 +81,6 @@ if (int_param('po_predmetu')) {
 	}
 	exit(0);
 }
-
-print "<h3>Dvostruke prijave</h3>\n";
 
 foreach($duple_prijave as $student => $predmeti) {
 	$sd = db_query_assoc("SELECT ime, prezime, brindexa FROM osoba WHERE id=$student");

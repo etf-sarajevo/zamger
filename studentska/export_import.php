@@ -111,12 +111,8 @@ function servis_single(stavka, tip, provjera) {
 	else if (tip == "upis_vise" || tip == "ciscenje_upis_vise") 
 		url += "&student=" + stavka.student + "&studij=" + stavka.studij + "&godina=" + stavka.godina + "&semestar=" + stavka.semestar;
 		
-	else if (tip == "ciscenje_upis_prva") {
-		url += "&student=" + stavka.student + "&godina=";
-		if (stavka.hasOwnProperty('godina')) url += stavka.godina;
-		else if (stavka.hasOwnProperty('akademska_godina')) url += stavka.akademska_godina;
-		else url += "undefined";
-	}
+	else if (tip == "ciscenje_upis_prva") 
+		url += "&student=" + stavka.student + "&godina=" + stavka.akademska_godina;
 		
 	else if (tip == "promjena_podataka") {
 		if (provjera) url = export_url + "?tip=daj_razlike&student=" + stavka.student

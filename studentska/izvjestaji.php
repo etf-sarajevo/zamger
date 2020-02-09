@@ -310,8 +310,7 @@ if (param('akcija') == "svi_studenti") {
 	<input type="checkbox" name="adresa_mjesto">Mjesto boravka<br />
 	<input type="checkbox" name="drzavljanstvo">Državljanstvo<br />
 	<input type="checkbox" name="login">Korisničko ime<br />
-	<input type="checkbox" name="brindexa">Broj indeksa<br />
-	<input type="checkbox" name="zaduzenje">Zaduženje<br /><br />
+	<input type="checkbox" name="brindexa">Broj indeksa<br /><br />
 	<input type="checkbox" name="tabelarno">Prikaži u obliku tabele umjesto numerisane liste<br />
 	Akademska godina: <select name="ag">
 	<?
@@ -339,7 +338,7 @@ if (param('akcija') == "svi_studenti") {
 			print "<option value=\"$id_studija\">$naziv_studija</option>\n";
 	?></select><br />
 	Godina studija: <select name="godina"><option value="0">Sve godine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><br />
-	Ponovci: <select name="ponovci"><option value="0">Redovni+ponovci</option><option value="1">Samo redovni</option><option value="2">Samo ponovci</option></select><br />
+	<input type="checkbox" name="prvi_put">Prvi put (bez ponovaca)<br />
 	<input type="checkbox" name="boracke">Samo studenti koji pripadaju posebnim kategorijama<br />
 	
 	<input type="submit" value=" Prikaži "></form>

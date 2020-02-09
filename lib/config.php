@@ -61,7 +61,7 @@ $conf_cijena_potvrde = 2;
 $conf_ldap_server = "localhost";
 // string koji se dodaje na uid da bi se dobila email adresa
 // Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
-$conf_ldap_domain = "@moja.domena.ba"; 
+$conf_ldap_domain = "@moja.domena.ba";
 
 // Pošto se ne može šifra promijeniti kroz Zamger kada se koristi LDAP,
 // ovdje postavite URL za promjenu šifre
@@ -74,7 +74,7 @@ $conf_use_mysql_utf8 = true;
 $conf_debug = true;
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
-// U suprotnom, postavite vrijednost na false 
+// U suprotnom, postavite vrijednost na false
 $conf_email = true;
 
 // Mailovi koje šalje zamger će imati ovu vrijednost u From: polju

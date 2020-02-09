@@ -63,7 +63,6 @@ $finidatum = date("d. m. Y.", db_result($q10,0,0));
 $naziv = db_result($q10,0,1);
 $maxbodova = db_result($q10,0,2);
 $prolaz = db_result($q10,0,3);
-if ($prolaz == 0) $prolaz = $maxbodova / 2;
 $predmet = db_result($q10,0,4);
 $ag = db_result($q10,0,5);
 
@@ -103,21 +102,10 @@ $polozilo = db_result($q210,0,0);
 $q220 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 $slusa_predmet = db_result($q220,0,0);
 
-$q230 = db_query("select AVG(ocjena) from ispitocjene where ispit=$ispit");
-$prosjecan_broj_bodova = db_result($q230,0,0);
-
-$pola = $ukupno_izaslo / 2;
-if ($ukupno_izaslo % 2 == 1) $pola = floor($pola);
-$q240 = db_query("select ocjena from ispitocjene where ispit=$ispit ORDER BY ocjena DESC LIMIT $pola");
-$rows = db_num_rows($q240);
-$medijan = db_result($q240, $rows-1, 0);
-
-
 ?>
 <p>Ukupno izašlo studenata: <b><?=$ukupno_izaslo?></b><br/>
 Položilo: <b><?=$polozilo?></b><br/>
-Prolaznost: <b><?=procenat($polozilo,$ukupno_izaslo)?></b><br/>
-Prosječan broj bodova: <b><?=round($prosjecan_broj_bodova, 2)?></b> (medijan: <b><?=$medijan?></b>)</p>
+Prolaznost: <b><?=procenat($polozilo,$ukupno_izaslo)?></b></p>
 
 <p>Od studenata koji slušaju predmet, nije izašlo: <b><?=($slusa_predmet-$ukupno_izaslo)?></b></p><?
 

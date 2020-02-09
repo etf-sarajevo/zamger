@@ -370,7 +370,7 @@ if ($_POST['izmjena'] == "da" && check_csrf_token()) {
 		}
 
 		// Neki od parametara za komponentu je ostao nedefinisan
-		if ($odabrana==1 && ($naziv=="")) {
+		if ($odabrana==1 && ($maxBodova==0 || $naziv=="")) {
 			niceerror("Potrebno je definisati sve parametre kako biste dodali komponentu!");
 			$sveOk=false;
 			break;

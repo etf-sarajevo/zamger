@@ -27,8 +27,6 @@ if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
 	return;
 }
 
-
-
 ?>
 
 <center>
@@ -602,6 +600,8 @@ else if ($akcija == "upis") {
 	if (param('subakcija') == "upis_potvrda" && check_csrf_token()) {
 		$ok_izvrsiti_upis = true;
 
+
+
 		// Potvrdjujemo da je korisnik odabrao promjenu studija
 		$ns = int_param('novi_studij');
 		if ($ns>0) {
@@ -1093,7 +1093,32 @@ else if ($akcija == "upis") {
 		if (!$dry_run) {
 			if (!$ponovac) $ponovac=0;
 			if (!$plan_studija) $plan_studija=0;
-			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija");
+			$apsolvent = 0;
+
+			// Postavljanje uslova da li je student apsolvent ili nije !
+            // Prvi od uslova je da li se student upisuje u 5-6 ili 9-10 semestar
+            if($semestar == 5 or $semestar == 6 or $semestar == 9 or $semestar == 10){
+                // Sad ćemo provjeriti da li je student ponovac / odnosno da li se treba upisati kao ponovac
+                if($ponovac){
+                    // Sad ćemo provjeriti da li je ponovac prvi put ili je više puta (Za ostale uslove treba provjeriti)
+                    $val = db_get("SELECT COUNT(*) FROM student_studij WHERE student = $student AND studij = $studij AND semestar = $semestar AND ponovac = 1");
+                    if(!$val){
+                        // Ako nikad nije bio ponovac, a sad treba biti, onda ćemo ga staviti kao apsolventa
+                        $apsolvent = 1;
+                        $ponovac = 0;
+                    }
+
+                    // Sada provjeravamo da li je student ikad bio apsolvent, ako jeste onda je ponovac!
+                    $val = db_get("SELECT COUNT(*) FROM student_studij WHERE student = $student AND studij = $studij AND semestar = $semestar AND status = 1");
+                    if($val){
+                        $apsolvent = 0;
+                        $ponovac = 1;
+                    }
+                }
+            }
+
+
+			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status=$apsolvent");
 			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 		}
 		
@@ -2313,6 +2338,14 @@ else if ($akcija == "edit") {
 
 	if ($user_siteadmin) {
 		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'] );
+
+        // Vrijednost šifarnika
+        $sifarnici = db_query("select * from sifarnici order by id");
+        $aktuelnaGodina = db_fetch_row(db_query("select * from akademska_godina where aktuelna = 1"))[0];
+        $status = db_fetch_row(db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, ss.status, sif.name
+		FROM student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns, sifarnici as sif
+		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id and ss.status=sif.value and sif.type='status_studenta'
+		ORDER BY ag.naziv DESC"));
 		?>
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="uloga">
@@ -2323,6 +2356,11 @@ else if ($akcija == "edit") {
 		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/>
 		<input type="submit" value=" Promijeni ">
 		</form>
+
+
+        <p>
+            Status studenta : <?= $status[9]; ?>
+        </p>
 		<?
 	} else if($korisnik_student==1 && $korisnik_nastavnik!=1) {
 		?>

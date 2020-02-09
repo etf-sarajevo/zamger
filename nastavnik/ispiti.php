@@ -456,14 +456,16 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 	$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
 
 
+
 	$tipispita = intval($_POST['tipispita']);
+	$apsolventski_rok = intval($_POST['apsolventski_rok']);
 
 	// Da li je ispit vec registrovan?
 	$ispit = db_get("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
 	if ($ispit !== false) {
 		nicemessage("Ispit već postoji.");
 	} else {
-		db_query("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
+		db_query("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita, apsolventski_rok=$apsolventski_rok");
 		$ispit = db_insert_id();
 		nicemessage("Ispit uspješno kreiran.");
 		zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
@@ -499,7 +501,7 @@ if ($_REQUEST['akcija']=="rezultati_ispita") {
 
 // Tabela unesenih ispita
 
-$q500 = db_query("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, k.gui_naziv");
+$q500 = db_query("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv, i.apsolventski_rok from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, k.gui_naziv");
 
 ?>
 <br>
@@ -508,7 +510,8 @@ $q500 = db_query("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as 
 <tr bgcolor="#999999">
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Tip ispita</font></td>
 	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Datum ispita</font></td>
-	<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
+    <td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Opcije</font></td>
+    <td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;font-weight:bold;color:white;">Apsolventski rok</font></td>
 </tr>
 </thead>
 <tbody>
@@ -519,7 +522,7 @@ $brojac=1;
 if (db_num_rows($q500)<1)
 	print "Nije unesen nijedan ispit.";
 
-while (db_fetch3($q500, $id, $vrijeme, $naziv)) {
+while (db_fetch4($q500, $id, $vrijeme, $naziv, $apsolventski_rok)) {
 	?>
 	<tr>
 		<td align="left"><?=$naziv?></td>
@@ -537,6 +540,7 @@ while (db_fetch3($q500, $id, $vrijeme, $naziv)) {
 			*
 			<a href="?sta=nastavnik/ispiti&amp;akcija=rezultati_ispita&amp;ispit=<?=$id;?>&amp;predmet=<?=$predmet ?>&amp;ag=<?=$ag ?>">Rezultati ispita</a>
 		</td>
+        <td style="text-align:center;"><?= ($apsolventski_rok) ? 'DA' : 'NE' ?></td>
 	</tr>
 	<?
 
@@ -575,7 +579,14 @@ Datum: <?
 $day=intval($_POST['day']); $month=intval($_POST['month']); $year=intval($_POST['year']); 
 if ($day>0) print datectrl($day,$month,$year);
 else print datectrl(date('d'),date('m'),date('Y'));
-?><br/><br/>
+?>
+
+    Apsolventski rok:
+    <select name="apsolventski_rok" id="">
+        <option value="0">Ne</option>
+        <option value="1">Da</option>
+    </select>
+<br/><br/>
 
 <input type="submit" value="  Dodaj  ">
 <br/><br/><br/>

@@ -55,16 +55,14 @@ function student_ugovoroucenju() {
 
 	// Provjera ispravnosti podataka
 	if ($studij != 0) {
-		$q100 = db_query("SELECT ts.trajanje, ts.ciklus FROM studij s, tipstudija ts WHERE s.id=$studij AND s.tipstudija=ts.id");
-		if (db_num_rows($q100) == 0) {
+		$trajanje_studija = db_get("SELECT ts.trajanje FROM studij s, tipstudija ts WHERE s.id=$studij AND s.tipstudija=ts.id");
+		if ($trajanje_studija === false) {
 			niceerror("Neispravan studij");
 			$studij = 0;
 			unset($_POST['akcija']);
-		} else {
-			db_fetch2($q100, $trajanje_studija, $ciklus);
-			if ($godina_studija < 1 || $godina_studija > $trajanje_studija/2) {
-				$godina_studija = 1;
-			}
+		}
+		else if ($godina_studija < 1 || $godina_studija > $trajanje_studija/2) {
+			$godina_studija = 1;
 		}
 	} else {
 		unset($_POST['akcija']);
@@ -74,9 +72,9 @@ function student_ugovoroucenju() {
 	// Odabir plana studija
 	$plan_studija = $novi_studij = 0;
 	if ($studij > 0) {
-		$q5a = db_query("SELECT studij, plan_studija, semestar FROM student_studij WHERE student=$userid AND akademska_godina<=$akademska_godina ORDER BY akademska_godina DESC LIMIT 1");
-		if (!db_fetch3($q5a, $stari_studij, $plan_studija, $semestar) || $studij != $stari_studij || $semestar >= $godina_studija*2) {
-			// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan ili je ponovac
+		$q5a = db_query("SELECT studij, plan_studija FROM student_studij WHERE student=$userid AND akademska_godina<=$akademska_godina ORDER BY akademska_godina DESC LIMIT 1");
+		if (!db_fetch2($q5a, $stari_studij, $plan_studija) || $studij != $stari_studij) {
+			// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan
  			// Uzimamo najnoviji plan za odabrani studij
 			$plan_studija = db_get("SELECT id FROM plan_studija WHERE studij=$studij ORDER BY godina_vazenja DESC LIMIT 1");
 			if (!$plan_studija) { 
@@ -125,7 +123,7 @@ function student_ugovoroucenju() {
 						}
 					}
 					
-					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij, false, true) == 0) {
+					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij) == 0) {
 						niceerror("Predmet $predmet_naziv se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
 						zamgerlog2("popunjen kapacitet za predmet", $izabran_predmet);
 						return;
@@ -250,11 +248,11 @@ function student_ugovoroucenju() {
 
 	// Studij nije odabran, biramo onaj koji student trenutno sluša
 	if ($studij==0) {
-		$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.institucija, ts.ciklus, ss.plan_studija, ss.akademska_godina 
+		$q10 = db_query("SELECT ss.studij, ss.semestar, ts.trajanje, s.institucija, s.tipstudija, ss.plan_studija, ss.akademska_godina 
 			FROM student_studij ss, studij s, tipstudija ts 
 			WHERE ss.student=$userid AND ss.studij=s.id AND s.tipstudija=ts.id
 			ORDER BY ss.akademska_godina DESC, ss.semestar DESC LIMIT 1");
-		if (db_fetch7($q10, $studij, $trenutni_semestar, $trajanje, $institucija, $ciklus, $plan_studija, $trenutni_studij_ag)) {
+		if (db_fetch7($q10, $studij, $trenutni_semestar, $trajanje, $institucija, $tipstudija, $plan_studija, $trenutni_studij_ag)) {
 			//print "studij $studij trenutni_semestar $trenutni_semestar plan_studija $plan_studija<br>";
 			
 			// Određujemo godinu studija u koju se student vjerovatno želi upisati
@@ -264,8 +262,8 @@ function student_ugovoroucenju() {
 				$godina_studija = intval(($trenutni_semestar+1)/2 + 1);
 			
 			if ($trenutni_semestar >= $trajanje) {
-				$q20 = db_query("SELECT s.id, ts.ciklus FROM studij s, tipstudija ts WHERE s.moguc_upis=1 AND s.institucija=$institucija AND s.tipstudija=ts.id AND ts.ciklus=$ciklus+1");
-				if (db_fetch2($q20, $studij, $ciklus)) {
+				$studij = db_get("select id from studij where moguc_upis=1 and institucija=$institucija and tipstudija>$tipstudija"); // FIXME pretpostavka je da su tipovi studija poredani po ciklusima
+				if ($studij) {
 					$godina_studija = 1;
 					$plan_studija = 0; // Uzećemo najnoviji plan za odabrani studij
 
@@ -411,18 +409,9 @@ function student_ugovoroucenju() {
 		// Generišemo spisak predmeta sa drugog odsjeka za dati semestar
 		$izborni_drugi_odsjek = array();
 		if (!in_array($studij, $nema_drugi_odsjek_studij) && !in_array($studij_godina, $nema_drugi_odsjek_studij_godina)) {
-			// Spisak drugih studija istog ciklusa
-			$q100 = db_query("SELECT s.id, s.kratkinaziv FROM studij s, tipstudija ts WHERE s.tipstudija=ts.id AND ts.ciklus=$ciklus AND s.id!=$studij");
-			while (db_fetch2($q100, $m_studij, $kratki_naziv_studija)) {
-				// Najnoviji plan studija za taj studij
-				$m_plan = db_get("SELECT id FROM plan_studija WHERE studij=$m_studij ORDER BY godina_vazenja DESC LIMIT 1");
-				if (!$m_plan) {
-					//print "Ne postoji plan studija za studij $m_studij?<br>\n";
-					continue;
-				}
-			/*// Spisak planova studija sa drugih odsjeka
-			$q100 = db_query("SELECT ps.id, s.kratkinaziv FROM plan_studija ps, studij as s WHERE ps.godina_vazenja=$godina_vazenja AND ps.studij!=$studij AND s.tipstudija=$tipstudija AND ps.studij=s.id");
-			while(db_fetch2($q100, $m_plan, $kratki_naziv_studija)) {*/
+			// Spisak planova studija sa drugih odsjeka
+			$q100 = db_query("SELECT ps.id, s.kratkinaziv FROM plan_studija ps, studij as s WHERE ps.godina_vazenja=$godina_vazenja AND ps.studij!=$studij AND ps.studij=s.id");
+			while(db_fetch2($q100, $m_plan, $kratki_naziv_studija)) {
 				// Obavezni predmeti
 				$obavezni_predmeti = db_query_table("SELECT pp.predmet id, pp.naziv FROM pasos_predmeta pp, plan_studija_predmet psp WHERE psp.plan_studija=$m_plan AND psp.pasos_predmeta=pp.id AND psp.semestar=$semestar");
 				$izborni_predmeti = db_query_table("SELECT pp.predmet id, pp.naziv FROM pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis WHERE psp.plan_studija=$m_plan AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND psp.semestar=$semestar");
@@ -512,9 +501,7 @@ function student_ugovoroucenju() {
 				}
 				
 				?>
-				<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" <? 
-				if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
-				?> <?=$disabled?>>Predmet sa drugog odsjeka</input><br>
+				<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" <?=$disabled?>>Predmet sa drugog odsjeka</input><br>
 				<select name="odsjek-<?=$pis?>">
 				<?
 				foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
@@ -550,19 +537,13 @@ function student_ugovoroucenju() {
 					}
 				}
 				
-				$broj = 1;
-				for ($i=0; $i<$broj; $i++) {
-					?>
-					<input type="checkbox" name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" <? 
-					if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
-					?><?=$disabled?>>Predmet sa drugog odsjeka</input><br>
-					<select name="odsjek-<?=$pis?>-<?=$i?>">
-					<?
-					foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
-						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
-					print "</select>\n";
-					if ($i < $broj - 1) print "<br>\n";
-				}
+				?>
+				<input type="checkbox" name="iz<?=$pis?>-odsjek" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" <?=$disabled?>>Predmet sa drugog odsjeka</input><br>
+				<select name="odsjek-<?=$pis?>">
+				<?
+				foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
+					print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+				print "</select>\n";
 				print "</p>\n";
 			}
 		}

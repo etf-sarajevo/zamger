@@ -64,10 +64,9 @@ while ($r10 = db_fetch_row($q10)) {
 	$vrijeme_poruke["z".$r10[0]] = $r10[5];
 }
 
-
 // Objavljeni rezultati ispita
 
-$q15 = db_query("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), true, k.prolaz, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
+$q15 = db_query("select i.id, pk.id, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), true, k.prolaz, p.id, pk.akademska_godina, i.apsolventski_rok from ispit as i, komponenta as k, ponudakursa as pk, predmet as p, student_predmet as sp where i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.predmet=p.id and sp.student=$userid and sp.predmet=pk.id");
 while ($r15 = db_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskačemo starije od mjesec dana
 
@@ -81,8 +80,20 @@ while ($r15 = db_fetch_row($q15)) {
 		// Ima li termina na koje se može prijaviti?
 		$q17 = db_query("select count(*) from ispit_termin where ispit=$r15[0] and datumvrijeme>=NOW()");
 		if (db_result($q17,0,0)>0) {
-			$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
-			$vrijeme_poruke["i".$r15[0]] = $r15[3];
+            // Provjeravamo da li je student apsolvent i da li je ispit naznačen kao ispit za apsolventa
+            $s_s = (int)db_fetch_row(db_query("select status from student_studij where student = $userid"))[0];
+            // Student je apsolvent ako je $s_s = true (1) // ispit je za apsolvente ako je $r15[10] = true
+            $ispisi = true; $apsolventski = '';
+
+            if($r15[10]){ // apsolventski rok
+                if(!$s_s) $ispisi = false;
+                $apsolventski = ' (Apsolventski rok) ';
+            }
+
+            if($ispisi){
+                $code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2].$apsolventski. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
+                $vrijeme_poruke["i".$r15[0]] = $r15[3];
+            }
 		}
 	}
 	else { // Student je dobio $bodova

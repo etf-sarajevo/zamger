@@ -102,11 +102,10 @@ if ($_GET["akcija"]=="prijavi") {
 
 // Spisak ispita koji se mogu prijaviti
 
-$q10=db_query("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata 
+$q10=db_query("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), UNIX_TIMESTAMP(it.deadline), k.gui_naziv, it.maxstudenata , i.apsolventski_rok
 	FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, osoba as o, student_predmet as sp, ponudakursa as pk 
 	WHERE it.ispit=i.id AND i.komponenta=k.id AND i.predmet=p.id AND pk.predmet=p.id and pk.akademska_godina=i.akademska_godina 
 	AND o.id=$userid AND o.id=sp.student AND sp.predmet=pk.id AND it.datumvrijeme>=NOW() ORDER BY it.datumvrijeme");
-
 
 ?>
 <br><br>
@@ -128,6 +127,8 @@ $q10=db_query("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumv
 <?
 
 $brojac=1;
+// Provjeri da li je student apsolvent
+$s_s = (int)db_fetch_row(db_query("select status from student_studij where student = $userid"))[0];
 
 while ($r10=db_fetch_row($q10)) {
 	$id_termina = $r10[0];
@@ -140,6 +141,8 @@ while ($r10=db_fetch_row($q10)) {
 	$rok_za_prijavu = date("d.m.Y. H:i",date($r10[6]));
 	$tip_ispita = $r10[7];
 	$max_studenata =$r10[8];
+	$apsolventski_rok = $r10[9];
+
 
 	// Da li je student već položio ovu vrstu ispita?
 //	$q20 = db_query("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$userid and io.ispit=i.id and i.predmet=$id_predmeta and i.akademska_godina=$ag and i.komponenta=k.id and k.id=$id_komponente and io.ocjena>=k.prolaz");
@@ -167,6 +170,12 @@ while ($r10=db_fetch_row($q10)) {
 			$greska_long .= "Prijavljeni ste za drugi termin ovog ispita. ";
 		}
 	}
+
+
+    if($apsolventski_rok and !$s_s){ // apsolventski rok
+        $greska .= "AP";
+        $greska_long .= "Apsolventski rok. ";
+    }
 
 	// Da li je istekao rok za prijavu?
 	$color = "";
@@ -203,7 +212,9 @@ while ($r10=db_fetch_row($q10)) {
 	?><p><b>LEGENDA GREŠAKA:</b><br>
 	<b>P</b> - termin je popunjen (ako nema ove oznake, postoji još slobodnih mjesta na ovom terminu)<br>
 	<b>O</b> - već ste prijavljeni za ovaj termin<br>
-	<b>D</b> - prijavljeni ste za drugi termin istog ispita; potrebno je da se odjavite sa tog termina da biste se mogli prijaviti za ovaj termin</p>
+	<b>D</b> - prijavljeni ste za drugi termin istog ispita; potrebno je da se odjavite sa tog termina da biste se mogli prijaviti za ovaj termin <br>
+    <b>AP</b> - apsolventski rok
+    </p>
 	<?
 }
 

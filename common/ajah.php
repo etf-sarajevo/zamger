@@ -217,18 +217,6 @@ case "izmjena_ispita":
 		$predmet=intval($parametri[2]);
 		$ag = intval($parametri[3]);
 
-		// Da li je prošao ispitni rok?
-		$ima_li_rokova = db_get("SELECT COUNT(*) FROM ispitni_rokovi WHERE akademska_godina=$ag");
-		if ($ima_li_rokova && !$user_studentska && !$user_siteadmin) {
-			$jel_u_toku_rok = db_get("SELECT id FROM ispitni_rokovi WHERE akademska_godina=$ag AND datum_pocetka<=CURDATE() AND datum_zavrsetka>=CURDATE()");
-			if (!$jel_u_toku_rok) {
-				zamgerlog("AJAH ispit/ko - nije u toku ispitni rok (ispit pp$predmet, ag$ag)",3);
-				zamgerlog2("nije u toku ispitni rok (ispit/ko)", $predmet, $ag);
-				print "Trenutno nije u toku ispitni rok. Ne možete unositi ocjene.";
-				break;
-			}
-		}
-
 		$max = 12;
 		if (!$user_siteadmin && !$user_studentska) {
 			$q41 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");

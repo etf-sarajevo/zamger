@@ -68,7 +68,7 @@ function ws_export() {
 			// Pretvaramo bachelor u master - debug!
 			//if (strpos($brindexa, "/"))
 			//	$brindexa = substr($brindexa, strpos($brindexa, "/")+1);
-// 			
+			
 			$isss_data = array ( 
 				"predmet" => $podaci_ocjene['predmet'], 
 				"id_fakulteta" => $conf_export_isss_id_fakulteta, 
@@ -282,7 +282,11 @@ function ws_export() {
 			$podaci_studenta['nacin_studiranja'] = zamger2isss('nacin_studiranja', $podaci_studija['nacin']);
 			
 			// Studij
-			$podaci_studenta['studij'] = zamger_studij2isss($podaci_studija['id_studija'], $id_godine);
+			$podaci_studenta['studij'] = 0;
+			if ($id_godine<10)
+				$podaci_studenta['studij'] = zamger2isss("studij_stari", $podaci_studija['id_studija']);
+			else
+				$podaci_studenta['studij'] = zamger2isss("studij_novi", $podaci_studija['id_studija']);
 			
 			if ($podaci_studenta['studij'] == 0) {
 				$odgovor['tekst'] = 'Studij nije podržan za upis na ISSS';
@@ -337,7 +341,7 @@ function ws_export() {
 					break;
 				}
 				else if ($warning['code'] == 'unknown_municipality') {
-					$odgovor['tekst'] = 'Nepoznata općina "'.$warning['municipality']."\" ".$warning['region']." ".$warning['state'];
+					$odgovor['tekst'] = 'Nepoznata općina '.$warning['municipality']." ".$warning['region']." ".$warning['state'];
 					$odgovor['status'] = 'greska';
 					break;
 				} else {
@@ -479,7 +483,11 @@ function ws_export() {
 			}
 			
 			// Studij
-			$isss_id_studija = zamger_studij2isss($podaci_studija['id_studija'], $id_godine);
+			$isss_id_studija = 0;
+			if ($id_godine<10)
+				$isss_id_studija = zamger2isss("studij_stari", $podaci_studija['id_studija']);
+			else
+				$isss_id_studija = zamger2isss("studij_novi", $podaci_studija['id_studija']);
 			
 			if ($isss_id_studija == 0) {
 				$odgovor['tekst'] = 'Studij nije podržan za upis na ISSS';
@@ -583,7 +591,6 @@ function ws_export() {
 				}
 			}
 			$odgovor['isss'] = $isss_result;
-			$odgovor['isss_data'] = $isss_data;
 			$rezultat['data'] = $odgovor;
 			
 		}
@@ -720,6 +727,9 @@ function daj_podatke_studenta($id_studenta) {
 	// Kanton NE određujemo iz adresa-mjesto nego iz polja kanton (zbog razlike prebivalište/boravište)
 	$kanton = db_get("SELECT naziv FROM kanton WHERE id=".$podaci_studenta['kanton']);
 	if ($kanton) $podaci_studenta['kanton'] = zamger2isss('kanton_popravke', $kanton); else $podaci_studenta['kanton'] = "";
+
+	// Način studiranja iz šifrarnika
+	$podaci_studenta['nacin_studiranja'] = zamger2isss('nacin_studiranja', $podaci_studija['nacin']);
 	
 	return $podaci_studenta;
 }
@@ -784,29 +794,6 @@ $isss_sifrarnik_nacionalnost_ostalo = 5;
 
 $isss_sifrarnik_spol = array( 1 => "M", 0 => "Z" );
 
-// Ključ = Zamger studij, vrijednost = array(
-//		ključ = godina od koje važi, vrijednost = ISSS studij )
-//		(ovaj array mora biti sortiran po ključu)
-$isss_sifrarnik_studij = array(
-	 2 => array( 0 => 130, 10 => 1757, 15 => 2000 ), // RI BSc
-	 3 => array( 0 => 80, 10 => 1755 ), // AE BSc
-	 4 => array( 0 => 125, 10 => 1756 ), // EE BSc
-	 5 => array( 0 => 132, 10 => 1758 ), // TK BSc
-	 7 => array( 0 => 789, 15 => 2003 ), // RI MSc
-	 8 => array( 0 => 787, 15 => 2002 ), // AE MSc
-	 9 => array( 0 => 788 ), // EE MSc
-	10 => array( 0 => 790, 15 => 2004), // TK MSc
-	14 => array( 0 => 1426 ), // RI PhD
-	15 => array( 0 => 1424 ), // AE PhD
-	16 => array( 0 => 1425 ), // EE PhD
-	17 => array( 0 => 1427 ), // TK PhD
-	18 => array( 0 => 789 ), // RI ekvivalencija
-	19 => array( 0 => 787 ), // AE ekvivalencija
-	20 => array( 0 => 788 ), // EE ekvivalencija
-	21 => array( 0 => 790 ), // TK ekvivalencija
-	22 => array( 0 => 1963, 15 => 2001) // RS
-);
-
 $isss_sifrarnik_studij_stari = array( 130 => 2, 80 => 3, 125 => 4, 132 => 5, 789 => 7, 787 => 8, 788 => 9, 790 => 10, 1426 => 14, 1424 => 15, 1425 => 16, 1427 => 17,  100789 => 18, 100787 => 19, 100788 => 20, 100790 => 21, 1963 => 22);
 $isss_sifrarnik_studij_novi  = array( 1757 => 2, 1755 => 3, 1756 => 4, 1758 => 5, 789 => 7, 787 => 8, 788 => 9, 790 => 10, 1426 => 14, 1424 => 15, 1425 => 16, 1427 => 17,  100789 => 18, 100787 => 19, 100788 => 20, 100790 => 21, 1963 => 22);
 
@@ -846,15 +833,6 @@ function isss2zamger($polje, $vrijednost) {
 	if ($polje == "opcina_popravke") return $vrijednost; // Nema popravke
 	if ($polje == "kanton_popravke") return $vrijednost; // Nema popravke
 	return false;
-}
-
-function zamger_studij2isss($vrijednost, $godina) {
-	global $isss_sifrarnik_studij;
-	if (!array_key_exists($vrijednost, $isss_sifrarnik_studij)) return 0;
-	$found = 0;
-	foreach($isss_sifrarnik_studij[$vrijednost] as $vgodina => $isss)
-		if ($vgodina <= $godina) $found = $isss;
-	return $found;
 }
 
 function zamger2isss($polje, $vrijednost) {
