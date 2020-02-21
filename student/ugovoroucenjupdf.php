@@ -75,24 +75,21 @@ $godina_vazenja = db_result($q5n,0,0);
 // Da li je ponovac (ikada slušao isti tip studija)?
 $q20 = db_query("select ss.semestar from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina<=$proslagodina and ss.studij=s.id and s.tipstudija=$tipstudija order by semestar desc limit 1");
 if (db_num_rows($q20)<1) { 
-	/*niceerror("Ne možete popunjavati ugovor o učenju ako prvi put slušate prvu godinu studija.");
-	return;*/
-	// Zašto ne bismo dozvolili?
 	$ponovac = 0;
 } else {
 	if ($sem1>db_result($q20,0,0)) 
 		$ponovac=0;
 	else
 		$ponovac=1;
-}
 
-global $zamger_predmeti_pao, $zamger_pao_ects;
-$uslov = ima_li_uslov($userid, $proslagodina);
+	global $zamger_predmeti_pao, $zamger_pao_ects;
+	$uslov = ima_li_uslov($userid, $proslagodina);
 
-if ($ponovac == 0 && !$uslov) {
-	niceerror("Nemate uslove za upis $godina. godine studija");
-	print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
-	return;
+	if ($ponovac == 0 && !$uslov) {
+		niceerror("Nemate uslove za upis $godina. godine studija");
+		print "Sačekajte da prikupite uslov ili popunite Ugovor za prethodnu godinu studija.";
+		return;
+	}
 }
 
 // Kreiramo spiskove predmeta za prikaz na stranicama
