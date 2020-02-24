@@ -546,6 +546,7 @@ CREATE TABLE IF NOT EXISTS `ispit` (
   `datum` date NOT NULL DEFAULT '0000-00-00',
   `komponenta` int(2) NOT NULL DEFAULT '0',
   `vrijemeobjave` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `apsolventski_rok` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `predmet` (`predmet`),
   KEY `akademska_godina` (`akademska_godina`),
@@ -1771,6 +1772,18 @@ CREATE TABLE IF NOT EXISTS `srednja_skola` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `status_studenta`
+--
+
+CREATE TABLE `status_studenta` (
+  `id` int(11) NOT NULL,
+  `naziv` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `stdin`
 --
 
@@ -1886,6 +1899,7 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `ponovac` tinyint(4) NOT NULL DEFAULT '0',
   `odluka` int(11) default NULL,
   `plan_studija` int(11) NOT NULL DEFAULT '0',
+  `status_studenta` int(11) NOT NULL DEFAULT '0'
   PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

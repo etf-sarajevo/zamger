@@ -127,6 +127,9 @@ $q10=db_query("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumv
 
 <?
 
+// Da li je student apsolvent?
+$apsolvent = db_get("SELECT status_studenta FROM student_studij ss, akademska_godina ag WHERE student=$userid AND ss.akademska_godina=ag.id AND ag.aktuelna=1");
+
 $brojac=1;
 
 while ($r10=db_fetch_row($q10)) {
@@ -139,7 +142,11 @@ while ($r10=db_fetch_row($q10)) {
 	$vrijeme_ispita = date("d.m.Y. H:i",date($r10[5]));
 	$rok_za_prijavu = date("d.m.Y. H:i",date($r10[6]));
 	$tip_ispita = $r10[7];
+	if ($r10[9] == 1) $tip_ispita .= " - apsolventski rok";
 	$max_studenata =$r10[8];
+	
+	// Ne prikazujemo apsolventske rokove za studente koji nisu apsolventi
+	if ($apsolvent != 1 && $r10[9] == 1) continue;
 
 	// Da li je student već položio ovu vrstu ispita?
 //	$q20 = db_query("select count(*) from ispitocjene as io, ispit as i, komponenta as k where io.student=$userid and io.ispit=i.id and i.predmet=$id_predmeta and i.akademska_godina=$ag and i.komponenta=k.id and k.id=$id_komponente and io.ocjena>=k.prolaz");

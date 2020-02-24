@@ -48,7 +48,7 @@ if (!$user_siteadmin && !$user_studentska) {
 
 $ispit = int_param('ispit');
 if ($ispit>0) {
-	$q30 = db_query("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv, k.maxbodova from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
+	$q30 = db_query("select UNIX_TIMESTAMP(i.datum), k.id, k.gui_naziv, k.maxbodova, i.apsolventski_rok from ispit as i, komponenta as k where i.id=$ispit and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id");
 	if (db_num_rows($q30)<1) {
 		niceerror("Nepostojeći ispit");
 		print "Moguće je da ste ga već obrisali? Ako ste koristili dugme Back vašeg browsera da biste došli na ovu stranicu, predlažemo da kliknete na link Ispiti sa lijeve strane kako biste dobili ažurnu informaciju.";
@@ -457,13 +457,14 @@ if ($_REQUEST['akcija']=="novi_ispit") {
 
 
 	$tipispita = intval($_POST['tipispita']);
+	$apsolventski_rok = intval($_POST['apsolventski_rok']);
 
 	// Da li je ispit vec registrovan?
 	$ispit = db_get("select id from ispit where predmet=$predmet and datum=FROM_UNIXTIME('$mdat') and komponenta=$tipispita and akademska_godina=$ag");
 	if ($ispit !== false) {
 		nicemessage("Ispit već postoji.");
 	} else {
-		db_query("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita");
+		db_query("insert into ispit set predmet=$predmet, akademska_godina=$ag, datum=FROM_UNIXTIME('$mdat'), komponenta=$tipispita, apsolventski_rok=$apsolventski_rok");
 		$ispit = db_insert_id();
 		nicemessage("Ispit uspješno kreiran.");
 		zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
@@ -499,7 +500,7 @@ if ($_REQUEST['akcija']=="rezultati_ispita") {
 
 // Tabela unesenih ispita
 
-$q500 = db_query("select i.id,UNIX_TIMESTAMP(i.datum),k.gui_naziv from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, k.gui_naziv");
+$q500 = db_query("select i.id, UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.apsolventski_rok from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, k.gui_naziv");
 
 ?>
 <br>
@@ -519,10 +520,10 @@ $brojac=1;
 if (db_num_rows($q500)<1)
 	print "Nije unesen nijedan ispit.";
 
-while (db_fetch3($q500, $id, $vrijeme, $naziv)) {
+while (db_fetch4($q500, $id, $vrijeme, $naziv, $apsolventski_rok)) {
 	?>
 	<tr>
-		<td align="left"><?=$naziv?></td>
+		<td align="left"><?=$naziv?> <? if ($apsolventski_rok == 1) print " - apsolventski rok"; ?></td>
 		<td align="left"><?=date("d.m.Y.",date($vrijeme));?></td>
 		<td align="left">
 			<a href="?sta=nastavnik/ispiti&amp;akcija=masovni_unos&ispit=<?=$id;?>&amp;predmet=<?=$predmet ?>&amp;ag=<?=$ag ?>">Masovni unos rezultata</a>
@@ -575,7 +576,13 @@ Datum: <?
 $day=intval($_POST['day']); $month=intval($_POST['month']); $year=intval($_POST['year']); 
 if ($day>0) print datectrl($day,$month,$year);
 else print datectrl(date('d'),date('m'),date('Y'));
-?><br/><br/>
+?>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Apsolventski rok:
+<select name="apsolventski_rok" id="">
+    <option value="0">Ne</option>
+    <option value="1">Da</option>
+</select><br/><br/>
 
 <input type="submit" value="  Dodaj  ">
 <br/><br/><br/>

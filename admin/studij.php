@@ -12,7 +12,7 @@ require_once("lib/formgen.php"); // db_form, db_grid
 ?>
 <h2>Parametri studija</h2>
 
-<p><a href="?sta=admin/studij&amp;akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&amp;akcija=inst">Institucija</a> * <a href="?sta=admin/studij&amp;akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&amp;akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&amp;akcija=naucni_stepen">Naučni stepen</a> * <a href="?sta=admin/studij&amp;akcija=strucni_stepen">Stručni stepen</a> * <a href="?sta=admin/studij&amp;akcija=studij">Studij</a> * <a href="?sta=admin/studij&amp;akcija=tipstudija">Tip studija</a> * <a href="?sta=admin/studij&amp;akcija=tippr">Tipovi predmeta</a></p>
+<p><a href="?sta=admin/studij&amp;akcija=ag">Akademska godina</a> * <a href="?sta=admin/studij&amp;akcija=inst">Institucija</a> * <a href="?sta=admin/studij&amp;akcija=kanton">Kanton</a> * <a href="?sta=admin/studij&amp;akcija=komponenta">Komponenta ocjene</a> * <a href="?sta=admin/studij&amp;akcija=naucni_stepen">Naučni stepen</a> * <a href="?sta=admin/studij&amp;akcija=strucni_stepen">Stručni stepen</a> * <a href="?sta=admin/studij&amp;akcija=studij">Studij</a> * <a href="?sta=admin/studij&amp;akcija=tipstudija">Tip studija</a> * <a href="?sta=admin/studij&amp;akcija=tippr">Tipovi predmeta</a> * <a href="?sta=admin/studij&amp;akcija=status_studenta">Status studenta</a></p>
 
 <?
 
@@ -57,9 +57,14 @@ if (param('akcija')=="tipstudija") {
 	print "<br /><hr><br />Dodaj:<br />".db_form("tipstudija");
 }
 
+if (param('akcija')=="status_studenta") {
+	print db_grid("status_studenta");
+	print "<br /><hr><br />Dodaj:<br />".db_form("status_studenta");
+}
+
 if (param('akcija')=="tippr") {
 	//print db_grid("tippredmeta");
-	// Ovo trebamo manuelno dok se u libvedran ne doda podrška za many-to-many
+	// Ovo trebamo manuelno dok se u lib/formgen.php ne doda podrška za many-to-many
 	// relacije
 
 	// FIXME!! Ne radi!!

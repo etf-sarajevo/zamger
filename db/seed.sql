@@ -821,6 +821,16 @@ odsutne. Vjerovatno ćete se pitati šta ako se student ponovo vrati u polaznu g
 
 
 --
+-- Dumping data for table `status_studenta`
+--
+
+INSERT INTO `status_studenta` (`id`, `naziv`) VALUES
+(0, 'Student'),
+(1, 'Apsolvent'),
+(2, 'Ispisan'),
+(3, 'Status studenta miruje');
+
+--
 -- Dumping data for table `strucni_stepen`
 -- Šifrarnik - postoje još mnogi stručni stepeni koje nismo naveli, 
 -- ovaj šifrarnik treba stalno dopunjavati
