@@ -139,7 +139,7 @@ class Message {
 	// TODO Currently only regular PM is allowed, not announcements etc
 	public function validate() {
 		if ($this->sender->id !== Session::$userid)
-			throw new Exception("Permission denied (sender ".json_encode($this->sender).")", "403");
+			throw new Exception("Permission denied (sender ".json_encode($this->sender->id).")", "403");
 		$exists = DB::get("SELECT COUNT(*) FROM osoba WHERE id=".$this->receiver->id);
 		if (!$exists)
 			throw new Exception("Unknown recipient", "404");
@@ -159,7 +159,7 @@ class Message {
 		$this->time = time();
 		$this->id = DB::insert_id();
 		
-		Logging::log("poslana poruka za u" . $this->receiver->id);
+		Logging::log("poslana poruka za u" . $this->receiver->id, 2);
 		Logging::log2("poslana poruka", $this->receiver->id);
 	}
 }
