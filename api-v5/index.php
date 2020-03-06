@@ -1,4 +1,4 @@
-<?
+<?php
 
 // ROUTE.PHP - router za REST web servis
 
@@ -84,7 +84,14 @@ if (!$route) {
 
 
 // Initialize database
-DB::connect();
+try {
+	DB::connect();
+}catch (Exception $e) {
+	header("HTTP/1.0 500 Internal Server Error");
+	$result = array( 'success' => 'false', 'code' => $e->getCode(), 'message' => $e->getMessage() );
+	echo json_encode($result);
+	return;
+}
 
 
 // Web service for authentication
@@ -196,7 +203,7 @@ foreach ($wiring as $wire) {
 			if ($json_data->{$name})
 				$params[$name] = $json_data->{$name};
 			if (array_key_exists('class', $data))
-				$params[$name] = Util::castFromJson($$name, $data['class']);
+				$params[$name] = Util::castFromJson($params[$name], $data['class']);
 		}
 		
 		else if ($data['type'] == "bool") {
