@@ -479,7 +479,8 @@ function ws_export() {
 			}
 			
 			// Studij
-			$isss_id_studija = zamger_studij2isss($podaci_studija['id_studija'], $id_godine);
+			$godina_studija = round($semestar / 2);
+			$isss_id_studija = zamger_studij2isss($podaci_studija['id_studija'], $id_godine - $godina_studija + 1);
 			
 			if ($isss_id_studija == 0) {
 				$odgovor['tekst'] = 'Studij nije podržan za upis na ISSS';
@@ -807,8 +808,6 @@ $isss_sifrarnik_studij = array(
 	22 => array( 0 => 1963, 15 => 2001) // RS
 );
 
-$isss_sifrarnik_studij_stari = array( 130 => 2, 80 => 3, 125 => 4, 132 => 5, 789 => 7, 787 => 8, 788 => 9, 790 => 10, 1426 => 14, 1424 => 15, 1425 => 16, 1427 => 17,  100789 => 18, 100787 => 19, 100788 => 20, 100790 => 21, 1963 => 22);
-$isss_sifrarnik_studij_novi  = array( 1757 => 2, 1755 => 3, 1756 => 4, 1758 => 5, 789 => 7, 787 => 8, 788 => 9, 790 => 10, 1426 => 14, 1424 => 15, 1425 => 16, 1427 => 17,  100789 => 18, 100787 => 19, 100788 => 20, 100790 => 21, 1963 => 22);
 
 $isss_sifrarnik_opcina_popravke = array( 
 	"Sarajevo - Centar" => "Centar", 
