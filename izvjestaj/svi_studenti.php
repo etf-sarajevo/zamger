@@ -89,6 +89,7 @@ else if ($studij == 0 && $tipstudija > 0)
 	$uslovi .= " and ss.studij=s.id and s.tipstudija=$tipstudija";
 if ($ponovci == 1) $uslovi .= " and ss.ponovac=0";
 if ($ponovci == 2) $uslovi .= " and ss.ponovac=1";
+if ($ponovci == 3) $uslovi .= " and ss.status_studenta=1";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
 if ($adresa_mjesto) {
@@ -102,6 +103,7 @@ $redoslijed = "";
 if ($nacin_studiranja) $redoslijed .= "ss.nacin_studiranja, ";
 
 $uslov_semestar = " and ss.semestar mod 2 = 1"; // Bilo koji neparan semestar
+if ($ponovci == 3) $uslov_semestar = " and ss.semestar mod 2 = 0"; // HACK u 2019/2020 godini apsolventi su samo u parni semestar upisani
 if ($godina > 0)
 	$uslov_semestar = " and ss.semestar=".($godina*2-1);
 

@@ -339,7 +339,7 @@ if (param('akcija') == "svi_studenti") {
 			print "<option value=\"$id_studija\">$naziv_studija</option>\n";
 	?></select><br />
 	Godina studija: <select name="godina"><option value="0">Sve godine</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select><br />
-	Ponovci: <select name="ponovci"><option value="0">Redovni+ponovci</option><option value="1">Samo redovni</option><option value="2">Samo ponovci</option></select><br />
+	Ponovci: <select name="ponovci"><option value="0">Redovni+ponovci</option><option value="1">Samo redovni</option><option value="2">Samo ponovci</option><option value="3">Apsolventi</option></select><br />
 	<input type="checkbox" name="boracke">Samo studenti koji pripadaju posebnim kategorijama<br />
 	
 	<input type="submit" value=" Prikaži "></form>
