@@ -19,6 +19,8 @@ if ($rez['spol'] == 'Z' || ($rez['spol'] == '' && spol($rez['ime'])=="Z"))
 else
 	print "<h1>Dobro došao, ".vokativ($rez['ime'],"M")."</h1>";
 
+	
+print "<p>Poštovani nastavnici, ako smatrate da je neko neovlašteno pristupao vašem Zamger nalogu, možete pogledati historiju pristupa u Vašem profilu ili koristeći sljedeći direktni link:<br><a href=\"https://zamger.etf.unsa.ba/index.php?sta=common/profil&akcija=log&nivo=1\">Historija pristupa</a></p>";
 
 
 // Sakrij raspored ako ga nema u registry-ju
@@ -58,9 +60,9 @@ while (db_fetch2($q, $ag, $ag_naziv)) {
 	$nppolje="np.nivo_pristupa";
 
 	// Upit za spisak predmeta
-	$q10 = db_query("SELECT p.id, $nppolje, p.naziv, i.kratki_naziv, MIN(pk.semestar) sem, MIN(pk.studij) stud
-	FROM predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk 
-	WHERE $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag 
+	$q10 = db_query("SELECT p.id, $nppolje, p.naziv, i.kratki_naziv, MIN(pk.semestar) sem, MIN(pk.studij) stud, agp.pasos_predmeta
+	FROM predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk, akademska_godina_predmet agp
+	WHERE $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag AND agp.predmet=p.id AND agp.akademska_godina=$ag
 	GROUP BY p.id
 	ORDER BY sem, stud, p.naziv");
 
@@ -72,11 +74,14 @@ while (db_fetch2($q, $ag, $ag_naziv)) {
 	print '<td colspan="'.($nr*2).'" align="center" bgcolor="#88BB99">Predmeti ('.$ag_naziv.')</td></tr><tr>';
 
 	$br=0;
-	while (db_fetch4($q10, $predmet, $privilegija, $naziv_predmeta, $studij)) {
+	while (db_fetch7($q10, $predmet, $privilegija, $naziv_predmeta, $studij, $semestar, $minstud, $pasos_predmeta)) {
 		// Spacer
 		if ($br>0) print '<td bgcolor="#666666" width="1"></td>'."\n";
 
 		print '<td valign="top">'."\n";
+		
+		if ($pasos_predmeta)
+			$naziv_predmeta = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos_predmeta");
 	
 		// Siteadmin moze vidjeti i tudje predmete, pa ih prikazujemo drugom bojom
 		$moj=1;
