@@ -6,7 +6,7 @@ function studentska_plan(){
 	global $userid,$user_siteadmin,$user_studentska;
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin) {
+	if (!$user_studentska && !$user_siteadmin {
 		zamgerlog("nije studentska",3); // 3: error
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
@@ -129,7 +129,6 @@ function studentska_plan(){
 	}
 	$godina_vazenja = db_result($q100,0,0);
 	$usvojen = db_result($q100,0,1);
-	
 		
 	
 	// OSNOVNE AKCIJE NAD PLANOM
@@ -258,8 +257,10 @@ function studentska_plan(){
 			$sati_vjezbi = intval($_REQUEST['sati_vjezbi']);
 			$sati_tutorijala = intval($_REQUEST['sati_tutorijala']);
 
-			$cilj_kursa = db_escape($_REQUEST['cilj_kursa']);
-			$cilj_kursa_en = db_escape($_REQUEST['cilj_kursa_en']);
+			//$cilj_kursa = db_escape($_REQUEST['cilj_kursa']);
+			//$cilj_kursa_en = db_escape($_REQUEST['cilj_kursa_en']);
+			$ishodi = db_escape($_REQUEST['ishodi']);
+			$ishodi_en = db_escape($_REQUEST['ishodi_en']);
 			$program = db_escape($_REQUEST['program']);
 			$program_en = db_escape($_REQUEST['program_en']);
 			$obavezna_literatura = db_escape($_REQUEST['obavezna_literatura']);
@@ -269,12 +270,12 @@ function studentska_plan(){
 			$didakticke_metode_en = db_escape($_REQUEST['didakticke_metode_en']);
 			$nacin_provjere_znanja = db_escape($_REQUEST['nacin_provjere_znanja']);
 			$nacin_provjere_znanja_en = db_escape($_REQUEST['nacin_provjere_znanja_en']);
-			$napomene = db_escape($_REQUEST['napomene']);
-			$napomene_en = db_escape($_REQUEST['napomene_en']);
+			//$napomene = db_escape($_REQUEST['napomene']);
+			//$napomene_en = db_escape($_REQUEST['napomene_en']);
 
 			$komentar_prijedloga = db_escape($_REQUEST['komentar_prijedloga']);
 
-			$q2100 = db_query("INSERT INTO pasos_predmeta SET predmet=$predmet, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', cilj_kursa='$cilj_kursa', cilj_kursa_en='$cilj_kursa_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en', napomene='$napomene', napomene_en='$napomene_en'");
+			$q2100 = db_query("INSERT INTO pasos_predmeta SET predmet=$predmet, predlozio=$userid, vrijeme_prijedloga=NOW(), komentar_prijedloga='$komentar_prijedloga', sifra='$sifra', naziv='$naziv', naziv_en='$naziv_en', ects='$ects', sati_predavanja='$sati_predavanja', sati_vjezbi='$sati_vjezbi', sati_tutorijala='$sati_tutorijala', ishodi='$ishodi', ishodi_en='$ishodi_en', program='$program', program_en='$program_en', obavezna_literatura='$obavezna_literatura', dopunska_literatura='$dopunska_literatura', didakticke_metode='$didakticke_metode', didakticke_metode_en='$didakticke_metode_en', nacin_provjere_znanja='$nacin_provjere_znanja', nacin_provjere_znanja_en='$nacin_provjere_znanja_en'");
 			$id_pasosa = db_insert_id();
 
 			nicemessage("Ažuriran pasoš predmeta");
@@ -367,32 +368,34 @@ function studentska_plan(){
 		<input type="hidden" name="akcija" value="izmjena_pasosa">
 		<?
 		
-		_daj_textbox("Naziv predmeta", "naziv", $pasos, $greska, 40);
-		_daj_textbox("Naziv predmeta (en)", "naziv_en", $pasos, $greska, 40);
-		_daj_textbox("Šifra predmeta", "sifra", $pasos, $greska);
+		_daj_textbox("Naziv modula", "naziv", $pasos, $greska, 40);
+		_daj_textbox("Naziv modula (en)", "naziv_en", $pasos, $greska, 40);
+		_daj_textbox("Šifra modula", "sifra", $pasos, $greska);
 		_daj_textbox("Broj ECTS kredita", "ects", $pasos, $greska);
 		print "<p>&nbsp;</p>\n";
 		
 		_daj_textbox("Broj sati predavanja", "sati_predavanja", $pasos, $greska);
-		_daj_textbox("Broj sati vježbi", "sati_vjezbi", $pasos, $greska);
+		_daj_textbox("Broj sati lab. vježbi", "sati_vjezbi", $pasos, $greska);
 		_daj_textbox("Broj sati tutorijala", "sati_tutorijala", $pasos, $greska);
-		print "<p><b>Ukupno:</b> ".($pasos['sati_predavanja']+$pasos['sati_vjezbi']+$pasos['sati_tutorijala'])." sati</p>\n";
+		print "<p><b class='mylabel'>Ukupno:</b> ".($pasos['sati_predavanja']+$pasos['sati_vjezbi']+$pasos['sati_tutorijala'])." sati</p>\n";
 		print "<p>&nbsp;</p>\n";
 
-		_daj_textarea("Cilj kursa", "cilj_kursa", $pasos, $greska);
-		_daj_textarea("Cilj kursa (en)", "cilj_kursa_en", $pasos, $greska);
-		_daj_textarea("Program predmeta", "program", $pasos, $greska);
-		_daj_textarea("Program predmeta (en)", "program_en", $pasos, $greska);
+		//_daj_textarea("Cilj kursa", "cilj_kursa", $pasos, $greska);
+		//_daj_textarea("Cilj kursa (en)", "cilj_kursa_en", $pasos, $greska);
+		_daj_textarea("Ishodi modula", "ishodi", $pasos, $greska);
+		_daj_textarea("Ishodi modula (en)", "ishodi_en", $pasos, $greska);
+		_daj_textarea("Sadržaj modula", "program", $pasos, $greska);
+		_daj_textarea("Sadržaj modula (en)", "program_en", $pasos, $greska);
 		print "<p>&nbsp;</p>\n";
 
-		_daj_textarea("Obavezna literatura", "obavezna_literatura", $pasos, $greska);
+		_daj_textarea("Preporučena literatura", "obavezna_literatura", $pasos, $greska);
 		_daj_textarea("Dopunska literatura", "dopunska_literatura", $pasos, $greska);
 		_daj_textarea("Didaktičke metode", "didakticke_metode", $pasos, $greska);
 		_daj_textarea("Didaktičke metode (en)", "didakticke_metode_en", $pasos, $greska);
-		_daj_textarea("Načini provjere znanja", "nacin_provjere_znanja", $pasos, $greska);
-		_daj_textarea("Načini provjere znanja (en)", "nacin_provjere_znanja_en", $pasos, $greska);
-		_daj_textarea("Napomene", "napomene", $pasos, $greska);
-		_daj_textarea("Napomene (en)", "napomene_en", $pasos, $greska);
+		_daj_textarea("Provjera znanja", "nacin_provjere_znanja", $pasos, $greska);
+		_daj_textarea("Provjera znanja (en)", "nacin_provjere_znanja_en", $pasos, $greska);
+		//_daj_textarea("Napomene", "napomene", $pasos, $greska);
+		//_daj_textarea("Napomene (en)", "napomene_en", $pasos, $greska);
 		print "<p>&nbsp;</p>\n";
 		
 		?>

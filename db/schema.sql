@@ -1176,6 +1176,8 @@ CREATE TABLE IF NOT EXISTS `pasos_predmeta` (
   `nacin_provjere_znanja_en` text collate utf8_slovenian_ci NOT NULL,
   `napomene` text collate utf8_slovenian_ci NOT NULL,
   `napomene_en` text collate utf8_slovenian_ci NOT NULL,
+  `ishodi` text collate utf8_slovenian_ci NOT NULL,
+  `ishodi_en` text collate utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci COMMENT='Tip je MyISAM jer sa InnoDB se dobija Error 139' AUTO_INCREMENT=602 ;
 
@@ -2727,6 +2729,11 @@ ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandi
 
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+
+--
+-- Constraints for table `projekat`
+--
+ALTER TABLE `studij` ADD FOREIGN KEY (`tipstudija`) REFERENCES `tipstudija`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `zahtjev_za_potvrdu`
