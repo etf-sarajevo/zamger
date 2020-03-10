@@ -1899,7 +1899,7 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `ponovac` tinyint(4) NOT NULL DEFAULT '0',
   `odluka` int(11) default NULL,
   `plan_studija` int(11) NOT NULL DEFAULT '0',
-  `status_studenta` int(11) NOT NULL DEFAULT '0'
+  `status_studenta` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
