@@ -783,7 +783,7 @@ CREATE TABLE IF NOT EXISTS `kviz` (
   `akademska_godina` int(11) NOT NULL,
   `vrijeme_pocetak` datetime NOT NULL,
   `vrijeme_kraj` datetime NOT NULL,
-  `labgrupa` int(11) NOT NULL,
+  `labgrupa` int(11) NULL,
   `ip_adrese` text collate utf8_slovenian_ci NOT NULL,
   `prolaz_bodova` float NOT NULL,
   `broj_pitanja` int(11) NOT NULL,
