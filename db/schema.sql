@@ -1061,7 +1061,7 @@ CREATE TABLE IF NOT EXISTS `odluka` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `datum` date NOT NULL,
   `broj_protokola` varchar(50) COLLATE utf8_slovenian_ci NOT NULL,
-  `student` int(11) NOT NULL,
+  `student` int(11) NULL,
   PRIMARY KEY (`id`),
   KEY `student` (`student`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
