@@ -1396,6 +1396,8 @@ CREATE TABLE IF NOT EXISTS `prijemni_prijava` (
   `studij_drugi` int(11) NOT NULL,
   `studij_treci` int(11) NOT NULL,
   `studij_cetvrti` int(11) NOT NULL,
+  `studij_peti` int(11) NOT NULL,
+  `studij_prioritet` int(11) NOT NULL,
   `izasao` tinyint(1) NOT NULL,
   `rezultat` double NOT NULL,
   PRIMARY KEY (`prijemni_termin`,`osoba`)
