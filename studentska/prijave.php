@@ -13,6 +13,11 @@ $ag = intval($_REQUEST['ag']);
 $q10 = db_query("select naziv from predmet where id=$predmet");
 $naziv_predmeta = db_result($q10,0,0);
 
+// FIXME: popraviti možda?
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos)
+	$naziv_predmeta = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+
 $q20 = db_query("select naziv from akademska_godina where id=$ag");
 $naziv_ag = db_result($q20,0,0);
 
