@@ -565,7 +565,7 @@ if ($_REQUEST['akcija'] === "prosla_godina" && strlen($_POST['nazad'])<1) {
 	$q499 = db_query("SELECT naziv FROM akademska_godina WHERE id=$old_ag");
 	if (db_num_rows($q499) == 0) {
 		niceerror("Nije pronađena prošla akademska godina.");
-		zamgerlog("nije pronadjena akademska godina $old_ag");
+		zamgerlog("nije pronadjena akademska godina $old_ag", 3);
 		zamgerlog2("nije pronadjena akademska godina", $old_ag);
 		$greska = true;
 	}
@@ -574,7 +574,7 @@ if ($_REQUEST['akcija'] === "prosla_godina" && strlen($_POST['nazad'])<1) {
 		$q500 = db_query("SELECT naziv FROM kviz WHERE predmet=$predmet AND akademska_godina=$old_ag");
 		if (db_num_rows($q500) == 0) {
 			niceerror("Prošle godine nije bio definisan nijedan kviz");
-			zamgerlog("prosle godine nije bio definisan nijedan kviz $predmet $old_ag");
+			zamgerlog("prosle godine nije bio definisan nijedan kviz $predmet $old_ag", 3);
 			zamgerlog2("prosle godine nije bio definisan nijedan kviz", $predmet, $old_ag);
 			$greska = true;
 		}

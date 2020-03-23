@@ -116,11 +116,26 @@ if ($_REQUEST['akcija']=="prihvati") {
 			return;
 		}
 
-		// Ispis sa studija
 		?>
-		<p>Najprije morate ispisati studenta sa studija <?=$naziv_studija?>. <a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$iz_odsjeka?>&semestar=<?=$semestar?>&godina=<?=$ak_god?>">Kliknite ovdje da ispišete studenta sa studija,</a> a zatim se vratite na stranicu &quot;Promjena odsjeka&quot; kako biste ga/je upisali na novi studij.</p>
+		<p><b>Student je upisan na <?=$semestar?>. semestar <?=$naziv_studija?></b></p>
 		<?
-		return;
+		$naziv_ciljnog = db_get("select naziv from studij where id=$u_odsjek");
+
+		// Ispis sa studija
+		if ($semestar % 2 == 0) {
+			?>
+			<p>Najprije morate ispisati studenta sa studija <?=$naziv_studija?> (<?=$semestar?>. semestar).</p>
+			<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=ispis&amp;studij=<?=$iz_odsjeka?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$ak_god?>">Kliknite ovdje da ispišete studenta sa studija <?=$naziv_studija?> (<?=$semestar?>. semestar),</a> a zatim se vratite na stranicu &quot;Promjena odsjeka&quot; kako biste ga/je upisali na studij <?=$naziv_ciljnog?> (<?=$semestar?>. semestar).</p>
+			<?
+			return;
+		} else {
+			?>
+			<p>Da li je ovo upis u neparni ili u parni semestar? Odaberite akciju:</p>
+			<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$u_odsjek?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$ak_god?>">Upiši studenta u <?=($semestar+1)?>. semestar <?=$naziv_ciljnog?></a></p>
+			<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=ispis&amp;studij=<?=$iz_odsjeka?>&amp;semestar=<?=$semestar?>&amp;godina=<?=$ak_god?>">Ispiši studenta iz <?=($semestar)?>. semestar <?=$naziv_studija?></a> - tek nakon ispisivanja možete upisati studenta na <?=$semestar?>. semestar <?=$naziv_ciljnog?></p>
+			<?
+			return;
+		}
 	}
 
 	// Koji je zadnji semestar slušao?

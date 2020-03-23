@@ -228,7 +228,9 @@ function nastavnik_zavrsni() {
 			if ($na_predmetu == 0) $na_predmetu = "NULL";
 			
 			$id_predkom = intval($_REQUEST['predkom']);
+			if ($id_predkom == 0) $id_predkom = "null";
 			$id_clankom = intval($_REQUEST['clankom']);
+			if ($id_clankom == 0) $id_clankom = "null";
 	
 			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -314,7 +316,7 @@ function nastavnik_zavrsni() {
 		}
 		
 		// Spisak potencijalnih članova komisije
-		$profesori = $naucni_stepen = array();
+		$profesori = $asistenti = $naucni_stepen = array();
 		$q99 = db_query("select id, titula from naucni_stepen");
 		while ($r99 = db_fetch_row($q99))
 			$naucni_stepen[$r99[0]]=$r99[1];
@@ -322,6 +324,9 @@ function nastavnik_zavrsni() {
 		$q952 = db_query("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
 		while ($r952 = db_fetch_row($q952))
 			$profesori[$r952[0]] = $r952[2] . " " . $naucni_stepen[$r952[3]] . " " . $r952[1];
+		$q953 = db_query("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=2 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
+		while ($r953 = db_fetch_row($q953))
+			$asistenti[$r953[0]] = $r953[2] . " " . $naucni_stepen[$r953[3]] . " " . $r953[1];
 
 		?>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
@@ -346,16 +351,22 @@ function nastavnik_zavrsni() {
 			<label for="podnaslov"><span>Podnaslov:</span> <input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$podnaslov?>"></label>  
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  
-			<label for="predkom"><span>Predsjednik komisije:</span> <select name="predkom"><?php 
+			<label for="predkom"><span>Predsjednik komisije:</span> <select name="predkom"><option value=0>(nije definisan)</option><?php 
 				foreach($profesori as $idprof => $imeprof) {
 					if ($idprof == $userid || $idprof == $id_clankom) continue;
 					print "<option value=\"$idprof\"";
 					if ($idprof == $id_predkom) print " SELECTED";
-					print ">$imeprof</option>\n";
+					print ">$imeprof $id_predkom</option>\n";
 				}
 			?></select></label>  
-			<label for="clankom"><span>Član komisije:</span> <select name="clankom"><?php 
+			<label for="clankom"><span>Član komisije:</span> <select name="clankom"><option value=0>(nije definisan)</option><?php 
 				foreach($profesori as $idprof => $imeprof) {
+					if ($idprof == $userid || $idprof == $id_predkom) continue;
+					print "<option value=\"$idprof\"";
+					if ($idprof == $id_clankom) print " SELECTED";
+					print ">$imeprof</option>\n";
+				}
+				foreach($asistenti as $idprof => $imeprof) {
 					if ($idprof == $userid || $idprof == $id_predkom) continue;
 					print "<option value=\"$idprof\"";
 					if ($idprof == $id_clankom) print " SELECTED";
