@@ -61,8 +61,8 @@ else
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>">Jedna kolona po grupama</a></li>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&double=1">Dvije kolone (za lakše printanje)</a></li>
 <li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&komentari=1">Sa komentarima na rad</a></li>
-<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></li></ul>
-<li><a href="?sta=izvjestaj/dodatne_informacije&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Dodatne informacije o studentima</a></li></ul>
+<li><a href="?sta=izvjestaj/grupe&predmet=<?=$predmet?>&ag=<?=$ag?>&prisustvo=1&komentari=1">Sa poljima za prisustvo</a></li>
+<li><a href="?sta=izvjestaj/dodatni_podaci&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Dodatni podaci o studentima</a></li></ul>
 </p>
 
 <p><img src="static/images/32x32/report.png" border="0" width="32" height="32" align="left"> 3. Pregled grupa, prisustva, bodova:
