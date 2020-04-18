@@ -861,6 +861,19 @@ INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUE
 
 
 --
+-- Dumping data for table `tipstudija`
+-- Šifrarnik
+--
+
+INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_upis`) VALUES
+(1, 'Bakalaureat', 1, 6, 180, 1),
+(2, 'Master', 2, 4, 120, 1),
+(3, 'Doktorski studij', 3, 6, 180, 1),
+(4, 'Stručni studij', 0, 4, 120, 1),
+(5, 'Jednogodišnji master', 2, 2, 60, 1);
+
+
+--
 -- Dumping data for table `studij`
 -- Na nekoliko mjesta se pretpostavlja da postoji barem jedan
 -- studij u sistemu (vidjeti i tabelu `institucija`)
@@ -943,19 +956,6 @@ INSERT INTO `tippredmeta_komponenta` (`tippredmeta`, `komponenta`) VALUES
 (1, 4),
 (1, 5),
 (1, 6);
-
-
---
--- Dumping data for table `tipstudija`
--- Šifrarnik
---
-
-INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_upis`) VALUES
-(1, 'Bakalaureat', 1, 6, 180, 1),
-(2, 'Master', 2, 4, 120, 1),
-(3, 'Doktorski studij', 3, 6, 180, 1),
-(4, 'Stručni studij', 0, 4, 120, 1),
-(5, 'Jednogodišnji master', 2, 2, 60, 1);
 
 
 --

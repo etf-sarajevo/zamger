@@ -1984,7 +1984,8 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `ciklus` tinyint(2) NOT NULL,
   `trajanje` tinyint(3) NOT NULL,
   `ects` int(11) NOT NULL,
-  `moguc_upis` int(11) NOT NULL default 1
+  `moguc_upis` int(11) NOT NULL default 1,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
