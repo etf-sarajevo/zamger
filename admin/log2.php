@@ -17,6 +17,7 @@ global $_lv_; // We use form generators
 $stardate = int_param('stardate');
 if ($stardate == 0) {
 	$stardate = db_get("select id from log2 order by id desc limit 1");
+	if (!$stardate) $stardate = 0;
 }
 $nivo = int_param('nivo');
 if ($nivo<1) $nivo=2;
