@@ -1,0 +1,52 @@
+# Zamger docker image baziran na phpstorm images
+
+# Napomena: Morate u config.php staviti podatke za pristup bazi:
+# - $conf_dbhost - hostname ili internet IP adresa vašeg računara
+# - $conf_dbuser = "zamger",
+# - $conf_dbpass - onaj koji ste stavili ispod (po defaultu "zamgerdocker")
+# Zamger konfiguracija trenutno ne nudi mogućnost postavljanja custom porta, to bi trebalo vjerovatno dodati
+
+# Pristupate Zamgeru na adresi http://localhost:8081
+# Prilikom prvog pokretanja servis može biti nedostupan 2-3 minute dok se kreira default baza
+
+version: '2'
+services:
+  debug:
+    image: phpstorm/php-71-apache-xdebug
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/data:/home/zamger
+    environment:
+      #For Windows and macOS, replace the line below with `host.docker.internal`, which will automatically resolve to the internal address of the host Docker is running on.
+      #For Linux, replace the line below with your hostname, which you can obtain by executing `hostname` in Terminal.
+      XDEBUG_CONFIG: remote_host=host.docker.internal
+
+      #For macOS, if you use a local Homebrew php-fpm installation, port `9000` (which is the default debugging port) may become occupied. PhpStorm will remain silent on starting listening for incoming connections. If this is the case, in the Settings | Languages & Frameworks | PHP | Debug, set the Debug port to 9001, and use the following configuration line instead.
+
+      #XDEBUG_CONFIG: remote_host=host.docker.internal, remote_port=9001
+
+  sftp:
+    image: phpstorm/sftp-server
+    ports:
+      - "2022:22"
+    volumes:
+      #   Uncomment for Windows
+      #     - C:/temp:/home/jetbrains/upload
+      #   Uncomment for macOS/Linux
+      - /tmp:/home/jetbrains/upload
+    command: jetbrains:jetbrains:1001
+  mysql:
+    image: phpstorm/mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/dbdata:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+      - ./docker/my.cnf.d:/etc/my.cnf.d
+    environment:
+      MYSQL_DATABASE: zamger
+      MYSQL_ROOT_PASSWORD: zamgerdocker
+      MYSQL_USER: zamger
+      MYSQL_PASSWORD: zamgerdocker
