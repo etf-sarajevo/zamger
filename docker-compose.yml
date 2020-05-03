@@ -10,10 +10,11 @@ services:
     image: tutum/lamp
     ports:
       - 8081:80
+      - 3306:3306
     volumes:
       - ./:/var/www/html
       - ./docker/data:/home/zamger
       - ./docker/dbdata:/var/lib/mysql
       - ./db:/docker-entrypoint-initdb.d
     command:
-      /bin/sh -c "/bin/sh /app/docker/tutum-configure.sh"
+      /bin/sh -c "tr -d '\r' </app/docker/tutum-configure.sh > tmp2.sh; /bin/sh tmp2.sh"
