@@ -19,6 +19,7 @@ class Group {
 		if (!$grp) throw new Exception("Unknown group $id", "404");
 		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
 		if ($grp->virt == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		unset($grp->virt);
 		if ($members) $grp->members = $grp->getMembers($details, $names);
 		return $grp;
 	}
@@ -117,10 +118,11 @@ class Group {
 	public static function fromStudentAndCourse($studentId, $courseUnitId, $academicYearId=0) {
 		if ($academicYearId == 0)
 			$academicYearId = AcademicYear::getCurrent()->id;
-		$groups = DB::query_table("SELECT l.id id, l.naziv name, l.tip type, l.predmet CourseUnit, l.akademska_godina AcademicYear, l.virtualna virtual FROM student_labgrupa as sl, labgrupa as l WHERE l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$studentId");
+		$groups = DB::query_table("SELECT l.id id, l.naziv name, l.tip type, l.predmet CourseUnit, l.akademska_godina AcademicYear, l.virtualna virt FROM student_labgrupa as sl, labgrupa as l WHERE l.predmet=$courseUnitId and l.akademska_godina=$academicYearId and l.id=sl.labgrupa and sl.student=$studentId");
 		foreach($groups as &$grp) {
 			$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
-			if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+			if ($grp->virt == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+			unset($grp->virt);
 		}
 		return $groups;
 	}
@@ -131,11 +133,12 @@ class Group {
 			$academicYearId = AcademicYear::getCurrent()->id;
 
 		// Assumption: there is only one virtual group on course
-		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId AND virtualna=1");
+		$grp = DB::query_assoc("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virt FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId AND virtualna=1");
 		
 		if (!$grp) throw new Exception("No virtual group at course $courseUnitId, year $academicYearId", "404");
 		$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
-		if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		if ($grp->virt == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+		unset($grp->virt);
 		$grp->members = $grp->getMembers();
 		return $grp;
 	}
@@ -149,10 +152,11 @@ class Group {
 		$query_add = "";
 		if (!$includeVirtual) $query_add = " AND virtualna=0";
 		
-		$groups = DB::query_table("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virtual FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId $query_add");
+		$groups = DB::query_table("SELECT id, naziv name, tip type, predmet CourseUnit, akademska_godina AcademicYear, virtualna virt FROM labgrupa WHERE predmet=$courseUnitId AND akademska_godina=$academicYearId $query_add");
 		foreach($groups as &$grp) {
 			$grp = Util::array_to_class($grp, "Group", array("CourseUnit", "AcademicYear"));
-			if ($grp->virtual == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+			if ($grp->virt == 1) $grp->virtual=true; else $grp->virtual=false; // FIXME use boolean in database
+			unset($grp->virt);
 			if ($getMembers) $grp->members = $grp->getMembers();
 		}
 		return $groups;
