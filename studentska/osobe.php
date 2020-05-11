@@ -1102,7 +1102,7 @@ else if ($akcija == "upis") {
 				if ($broj_ponavljanja == 0) $student_status = 1;
 			}
 			
-			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, student_status=$student_status");
+			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$student_status");
 			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 		}
 		
