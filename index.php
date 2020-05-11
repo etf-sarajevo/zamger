@@ -11,7 +11,7 @@
 	}
 ?><?
 
-
+error_reporting(0);
 // INDEX - master skripta za ZAMGER
 
 
