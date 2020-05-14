@@ -5,12 +5,20 @@
 function nastavnik_dodavanje_asistenata(){
     global $userid, $user_siteadmin;
 
-    // TODO - Ako je asistent ili superasistent, ne prikazuj ovu opciju nikako ili redirektaj
-
     $osobe = db_query("select id, ime, prezime from osoba");
-    // Daj aktuelnu akademsku godinu
     $akademska_godina = intval($_GET['ag']);
     $predmet = intval($_GET['predmet']);
+
+    // ** Ukoliko asistent ili superasistent pokušaju pristupiti ovoj opciji ** //
+    if (!$user_siteadmin) {
+        $q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$akademska_godina");
+        if (db_num_rows($q10)<1 || db_result($q10,0,0)!="nastavnik") {
+            zamgerlog("nastavnik/dodavanje_asistenata privilegije (predmet pp$predmet)",3);
+            zamgerlog2("nije nastavnik na predmetu", $predmet, $akademska_godina);
+            biguglyerror("Nemate pravo pristupa ovoj opciji");
+            return;
+        }
+    }
 
     if(!$akademska_godina or !$predmet){
         // Ovdje možemo throw-ati error neki ili ukinuti u potpunosti stranicu - Stavit ću samo die u ovom slučaju
