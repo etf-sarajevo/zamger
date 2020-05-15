@@ -83,8 +83,8 @@ array("izvjestaj/zavrsni_teme", "Spisak tema za završne radove", "Teme za zavr�
 array("izvjestaj/zavrsni_nnv", "Spisak tema sa kandidatima i komisijama", "Teme za završne", "NBA", "0", "0"),
 array("izvjestaj/zavrsni_po_clanu_komisije", "Spisak članstava u komisijama za završne radove", "Završni rad po članu komisije", "NBA", "0", "0"),
 
-array("nastavnik/dodavanje_asistenata", "Dodajte demonstratora", "Dodajte demonstratora", "N", "1", "0"),
 array("nastavnik/predmet", "Opcije predmeta", "Opcije predmeta", "N", "1", "0"),
+array("nastavnik/dodavanje_asistenata", "Dodavanje saradnika na predmet", "Saradnici", "N", "1", "0"),
 array("nastavnik/obavjestenja", "Obavještenja za studente", "Obavještenja", "N", "1", "0"),
 array("nastavnik/raspored", "Raspored", "Raspored", "N", "1", "0"),
 array("nastavnik/grupe", "Grupe za predavanja i vježbe", "Grupe", "N", "1", "0"),
