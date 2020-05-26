@@ -142,7 +142,7 @@ function check_cookie() {
 			'authServerUrl'             => $conf_keycloak_url,
 			'realm'                     => $conf_keycloak_realm,
 			'clientId'                  => $conf_keycloak_client_id,
-			'clientSecret'              => $conf_keycloak_client_secret
+			'clientSecret'              => $conf_keycloak_client_secret,
 			'redirectUri'               => $conf_site_url . '/index.php',
 			'encryptionAlgorithm'       => null,
 			'encryptionKey'             => null,
@@ -155,7 +155,7 @@ function check_cookie() {
 		if (isset($_SESSION['login']) && file_exists($token_file)) {
 			$login = db_escape($_SESSION['login']);
 			
-            // Provjeravamo da li je sesija još uvijek validna
+			// Provjeravamo da li je sesija još uvijek validna
 			$token = unserialize(file_get_contents($token_file));
 			if ($token->hasExpired()) {
 				// Token je istekao, preuzimamo novi sa servera i zapisujemo ga u fajl
