@@ -667,6 +667,20 @@ CREATE TABLE IF NOT EXISTS `izvoz_upis_semestar` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `jasper_token`
+--
+
+CREATE TABLE `jasper_token` (
+  `token` int(11) NOT NULL,
+  `report` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `param1` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  `param2` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+  PRIMARY KEY  (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `kanton`
 --
 
