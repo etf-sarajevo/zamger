@@ -149,20 +149,31 @@ function check_cookie() {
 			'encryptionKeyPath'         => null
 		]);
 
-		$token_file = $conf_files_path . "/keycloak_token/$login";
 		$logout_url = $conf_keycloak_url . "/realms/$conf_keycloak_realm/protocol/openid-connect/logout?redirect_uri=" . urlencode($conf_site_url . '/index.php');
 		
-		if (isset($_SESSION['login']) && file_exists($token_file)) {
+		if (isset($_SESSION['login'])) {
 			$login = db_escape($_SESSION['login']);
-			
+			$token_file = $conf_files_path . "/keycloak_token/$login";
+
 			// Provjeravamo da li je sesija još uvijek validna
-			$token = unserialize(file_get_contents($token_file));
-			if ($token->hasExpired()) {
-				// Token je istekao, preuzimamo novi sa servera i zapisujemo ga u fajl
-				$newAccessToken = $provider->getAccessToken('refresh_token', [
-					'refresh_token' => $token->getRefreshToken()
-				]);
-				file_put_contents($token_file, serialize($token));
+			if (file_exists($token_file)) {
+				$token = unserialize(file_get_contents($token_file));
+				if ($token->hasExpired()) {
+					// Token je istekao, preuzimamo novi sa servera i zapisujemo ga u fajl
+					try {
+						$newAccessToken = $provider->getAccessToken('refresh_token', [
+							'refresh_token' => $token->getRefreshToken()
+						]);
+					} catch (Exception $e) {
+						// Sesija je istekla
+						// Redirektujemo na logout url kako bi se korisnik opet prijavio
+						$_SESSION = array();
+						session_destroy();
+						header('Location: '.$logout_url);
+						exit(0);
+					}
+					file_put_contents($token_file, serialize($newAccessToken));
+				}
 			}
 		}
 
@@ -199,6 +210,7 @@ function check_cookie() {
 				// Od KeyCloak servera dobijamo login
 				$user = $provider->getResourceOwner($token);
 				$login = $user->toArray()['preferred_username'];
+				$token_file = $conf_files_path . "/keycloak_token/$login";
 
 				// Zapisujemo token
 				if (!file_exists($conf_files_path . "/keycloak_token"))
