@@ -6,7 +6,7 @@
 
 function nastavnik_obavjestenja() {
 
-global $userid,$user_siteadmin,$conf_ldap_domain;
+global $userid,$user_siteadmin;
 
 
 

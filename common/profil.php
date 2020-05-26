@@ -1136,7 +1136,7 @@ if ($_POST['subakcija']=="obrisisliku" && check_csrf_token()) {
 
 
 
-if ($conf_system_auth == "ldap") {
+if ($conf_system_auth !== "table") {
 ?>
 <h3><font color="red">NAPOMENA:</font> Pristupnu šifru možete promijeniti isključivo koristeći <?=$conf_promjena_sifre?></h3>
 <?

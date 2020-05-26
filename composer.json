@@ -13,6 +13,6 @@
     }
   ],
   "require": {
-    
+    "stevenmaguire/oauth2-keycloak": "^2.1"
   }
 }

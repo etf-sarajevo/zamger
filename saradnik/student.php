@@ -11,7 +11,7 @@
 
 function saradnik_student() {
 
-global $userid, $user_siteadmin, $conf_ldap_domain;
+global $userid, $user_siteadmin;
 
 
 require("lib/student_predmet.php"); // upis_studenta*, ispis_studenta*, update_komponente

@@ -36,10 +36,16 @@ $conf_appversion = "4.3";
 
 // Gdje su smještene šifre korisnika?
 // "table" - u tabeli auth zamgerove baze podataka
-// "ldap" - na LDAP serveru; ako izaberete ovu opciju, promjena šifre je onemogućena
-// "cas" - koristi se CAS single-sign on (SSO) servis
-
+// "ldap" - na LDAP serveru (postaviti $conf_ldap na true)
+// "cas" - koristi se CAS single sign-on (SSO) servis
+// "keycloak" - koristi se KeyCloak single sign-on (SSO) servis (postaviti $conf_keycloak na true)
 $conf_system_auth = "table";
+
+
+// Ako $conf_system_auth nije postavljeno na "table", ugrađeni ekran za promjenu lozinke ne radi (TODO?)
+// Ovdje postavite URL na kojem se može promijeniti lozinka, što ovisi o konfiguraciji vašeg sistema
+$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
+
 
 // Uslov za upis u narednu godinu (iz zakona)
 $conf_uslov_predmeta = 2;
@@ -54,25 +60,6 @@ $conf_broj_besplatnih_potvrda = 5;
 
 // Cijena svakog narednog uvjerenja (u KM)
 $conf_cijena_potvrde = 2;
-
-
-// Pristupni podaci za LDAP
-// Zamger će koristiti anonimni pristup
-$conf_ldap_server = "localhost";
-// string koji se dodaje na uid da bi se dobila email adresa
-// Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
-$conf_ldap_domain = "@moja.domena.ba"; 
-$conf_ldap_dn="cn=users,cn=accounts,dc=moja,dc=domena,dc=ba";
-
-
-// JaspersoftReports server
-$conf_jasper = false;
-// Bazni URL na koji se nadovezuje /flow.html?....
-$conf_jasper_url = "https://jasper.moja.domena.ba";
-
-// Pošto se ne može šifra promijeniti kroz Zamger kada se koristi LDAP,
-// ovdje postavite URL za promjenu šifre
-$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
 
 // Ako je MySQL verzija < 5.0 postavite ovo na false
 $conf_use_mysql_utf8 = true;
@@ -102,27 +89,73 @@ $conf_javni_dnevnik = true;
 // $conf_banned_ips = array("5.43.71.81");
 $conf_banned_ips = array();
 
-// Izvozni format: izvoz na ISSS novi web servis (NewWS)
-//$conf_export_format = "isss-newws";
-$conf_export_format = "";
-$conf_export_isss_url = "https://isss.ba/NewWS/";
-$conf_export_isss_id_fakulteta = 3;
-
-// Ko otvara termine za prijavu ispita u ISSSu?
-//   true = export operacija automatski kreira termine
-//   false = studentska služba ručno kreira termine
-$conf_export_isss_kreiraj_ispite = false;
 
 
-// URLovi web servisa za plaćanje
-// $conf_url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
-// $conf_url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
-$conf_url_daj_karticu = "";
-$conf_url_upisi_zaduzenje = "";
+// =====================================
+// LDAP podrška
+// =====================================
+
+$conf_ldap = false;
+
+// Domensko ime LDAP servera
+$conf_ldap_server = "localhost";
+
+// DN za pretragu (možete probati ostaviti prazan string)
+$conf_ldap_dn="cn=users,cn=accounts,dc=moja,dc=domena,dc=ba";
+
+// string koji se dodaje na uid da bi se dobila email adresa
+// Vidjeti funkciju gen_ldap_uid() u lib/zamger.php!!!
+$conf_ldap_domain = "@moja.domena.ba"; 
+
+// Ako je postavljeno na true, moguća je pretraga LDAP servera prilikom dodavanja novog korisnika
+// Pod ime se unosi UID
+$conf_ldap_search = false;
 
 
 
-// ------ MOODLE INTEGRACIJA ---------
+// =====================================
+// KeyCloak single sign-on server
+// =====================================
+
+$conf_keycloak = false;
+
+// URL KeyCloak servera
+$conf_keycloak_url = "https://keycloak.moja.domena.ba/auth";
+
+// KeyCloak realm (vidjeti KC dokumentaciju)
+$conf_keycloak_realm = "myrealm";
+
+// KeyCloak Client ID (vidjeti KC dokumentaciju)
+$conf_keycloak_client_id = "zamger";
+
+// KeyCloak Client secret (po defaultu prazan string, vidjeti KC dokumentaciju)
+$conf_keycloak_client_secret = "";
+
+
+
+// =====================================
+// JasperReports server
+// =====================================
+
+$conf_jasper = false;
+
+// Bazni URL na koji se nadovezuje /flow.html?....
+$conf_jasper_url = "https://jasper.moja.domena.ba";
+
+
+
+// =====================================
+// CAS single sign-on server
+// =====================================
+
+$conf_cas_server = ""; // hostname CAS servera, ne možete koristiti localhost (mora biti FQDN)
+$conf_cas_port = 443; // CAS uvijek koristi HTTPS
+$conf_cas_context = "cas"; // dio url-a iza hostname
+
+
+// =====================================
+// Moodle integracija
+// =====================================
 
 
 // Postavite parametar ispod na true ako želite integraciju sa Moodle serverom
@@ -154,11 +187,35 @@ $conf_moodle_dbuser = "zamgerdemo";
 $conf_moodle_dbpass = "zamgerdemo";
 
 
-// ---------- CAS podrška
+// =====================================
+// ISSS integracija (NewWS web servis)
+// =====================================
 
-$conf_cas_server = ""; // hostname CAS servera, ne možete koristiti localhost (mora biti FQDN)
-$conf_cas_port = 443; // CAS uvijek koristi HTTPS
-$conf_cas_context = "cas"; // dio url-a iza hostname
+// Izvozni format: izvoz na ISSS novi web servis (NewWS)
+//$conf_export_format = "isss-newws";
+$conf_export_format = "";
+$conf_export_isss_url = "https://isss.ba/NewWS/";
+$conf_export_isss_id_fakulteta = 3;
+
+// Ko otvara termine za prijavu ispita u ISSSu?
+//   true = export operacija automatski kreira termine
+//   false = studentska služba ručno kreira termine
+$conf_export_isss_kreiraj_ispite = false;
+
+
+// =====================================
+// Knjigovodstveni web servis 
+// (integracija sa eksternom aplikacijom za knjigovodstvo)
+// =====================================
+
+$conf_knjigovodstveni_servis = false;
+
+// URLovi web servisa za plaćanje
+// $conf_url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
+// $conf_url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
+$conf_url_daj_karticu = "";
+$conf_url_upisi_zaduzenje = "";
+
 
 
 ?>

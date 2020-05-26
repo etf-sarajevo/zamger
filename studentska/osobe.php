@@ -6,8 +6,9 @@
 
 function studentska_osobe() {
 
-global $userid,$user_siteadmin,$user_studentska;
-global $conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$conf_files_path;
+global $userid, $user_siteadmin, $user_studentska;
+global $conf_files_path, $conf_system_auth, $conf_ldap, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
+global $conf_knjigovodstveni_servis;
 global $registry; // šta je od modula aktivno
 
 global $_lv_; // Potrebno za genform()
@@ -53,12 +54,13 @@ if ($akcija == "novi" && check_csrf_token()) {
 	$prezime = substr(db_escape($_POST['prezime']), 0, 100);
 
 	// Probamo tretirati ime kao LDAP UID
-	if ($conf_system_auth == "ldap") {
+	if ($conf_ldap_search) {
+		// TODO: smanjiti duplikaciju koda za LDAP!
 		$uid = $ime;
 		$ds = ldap_connect($conf_ldap_server);
 		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 		if ($ds && ldap_bind($ds)) {
-			$sr = ldap_search($ds, "", "uid=$uid", array("givenname","sn") );
+			$sr = ldap_search($ds, $conf_ldap_dn, "uid=$uid", array("givenname","sn") );
 			$results = ldap_get_entries($ds, $sr);
 			if ($results['count'] > 0) {
 				$gn = $results[0]['givenname'];
@@ -103,7 +105,7 @@ if ($akcija == "novi" && check_csrf_token()) {
 		$q40 = db_query("insert into osoba set id=$osoba, ime='$ime', prezime='$prezime', naucni_stepen=6, strucni_stepen=5");
 		// 6 = bez naučnog stepena, 5 = srednja stručna sprema
 
-		if ($conf_system_auth == "ldap" && $uid != "") {
+		if ($conf_ldap_search && $uid != "") {
 			// Ako je LDAP onda imamo email adresu
 			$email = $uid.$conf_ldap_domain;
 			$q33 = db_query("INSERT INTO email SET osoba=$osoba, adresa='$email', sistemska=1");
@@ -758,7 +760,8 @@ else if ($akcija == "upis") {
 
 
 	// Provjera plaćanja
-	if ($conf_url_daj_karticu != "" && $nacin_studiranja !== false && $ciklus !== false) {
+	if ($conf_knjigovodstveni_servis && $nacin_studiranja !== false && $ciklus !== false) {
+		global $conf_url_daj_karticu;
 		$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 		$saldo = 0;
 		if ($kartice === FALSE || count($kartice) == 0) {
@@ -1806,6 +1809,7 @@ else if ($akcija == "kartica") {
 	<h2><?=$ime?> <?=$prezime?> - analitička kartica studenta</h2>
 	<?
 	
+	global $conf_url_daj_karticu;
 	$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 	$saldo = 0;
 	if ($kartice === FALSE || count($kartice) == 0) niceerror("Nema podataka o uplatama");
@@ -1866,7 +1870,7 @@ else if ($akcija == "edit") {
 		}
 		else if ($stari_login=="") {
 			// Provjeravamo LDAP?
-			if ($conf_system_auth=="ldap") do { // Simuliramo GOTO...
+			if ($conf_ldap_search) do { // Simuliramo GOTO...
 				// Tražimo ovaj login na LDAPu...
 				$ds = ldap_connect($conf_ldap_server);
 				ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -1877,7 +1881,7 @@ else if ($akcija == "edit") {
 					break;
 				}
 
-				$sr = ldap_search($ds, "", "uid=$login_ldap", array() /* just dn */ );
+				$sr = ldap_search($ds, $conf_ldap_dn, "uid=$login_ldap", array() /* just dn */ );
 				if (!$sr) {
 					zamgerlog("ldap_search() nije uspio.",3);
 					zamgerlog2("ldap_search() nije uspio.");
@@ -1942,8 +1946,7 @@ else if ($akcija == "edit") {
 	} // if ($_REQUEST['subakcija'] == "auth")
 
 
-	// Pojednostavljena promjena podataka za studentsku službu u slučaju korištenja 
-	// eksterne baze korisnika
+	// Pojednostavljena promjena podataka za studentsku službu u slučaju korištenja LDAPa
 	if (param('subakcija') == "auth_ldap" && check_csrf_token()) {
 		$aktivan = intval($_REQUEST['aktivan']);
 
@@ -1962,6 +1965,8 @@ else if ($akcija == "edit") {
 			}
 
 		} else if ($aktivan!=0) { // Nema zapisa u tabeli auth
+			// TODO: smanjiti duplikaciju koda za LDAP!
+			
 			// Ako je izabrano isključenje pristupa, ne radimo nista
 			// (ne bi se smjelo desiti)
 			// U suprotnom kreiramo login
@@ -1979,7 +1984,7 @@ else if ($akcija == "edit") {
 				return;
 			}
 	
-			$sr = ldap_search($ds, "", "uid=$suggest_login", array() /* just dn */ );
+			$sr = ldap_search($ds, $conf_ldap_dn, "uid=$suggest_login", array() /* just dn */ );
 			if (!$sr) {
 				zamgerlog("ldap_search() nije uspio.",3);
 				zamgerlog2("ldap_search() nije uspio.");
@@ -2218,8 +2223,15 @@ else if ($akcija == "edit") {
 
 	// Login&password
 
-
+	// Promjena lozinke na ovom mjestu je moguća samo ako je autentikacija "table"
+	// Site admin će vidjeti detaljnije informacije
 	if ($conf_system_auth == "table" || $user_siteadmin) {
+		// Kapitalizovan naziv autentikacijskog modula
+		$auth_name = $conf_system_auth;
+		if ($conf_system_auth == "ldap") $auth_name = "LDAP";
+		if ($conf_system_auth == "cas") $auth_name = "CAS";
+		if ($conf_system_auth == "keycloak") $auth_name = "KeyCloak";
+		
 		print "<p>Korisnički pristup:\n";
 		$q201 = db_query("select aktivan from auth where id=$osoba and aktivan=1");
 		if (db_num_rows($q201)<1) print "<font color=\"red\">NEMA</font>";
@@ -2244,7 +2256,11 @@ else if ($akcija == "edit") {
 			<input type="hidden" name="stari_login" value="<?=$login?>">
 			<tr>
 				<td><input type="text" size="10" name="login" value="<?=$login?>"></td>
-				<td valign="center"><? if ($conf_system_auth=="ldap") print "<b>LDAP</b>"; else { ?><input type="password" size="10" name="password" value="<?=$password?>"><? } ?></td>
+				<td valign="center"><? if ($conf_system_auth=="table") { 
+					?><input type="password" size="10" name="password" value="<?=$password?>"><? 
+				} else {
+					?><b><?=$auth_name?></b><?
+				}?></td>
 				<td><input type="checkbox" size="10" name="aktivan" value="1" <? if ($pristup==1) print "CHECKED"; ?>></td>
 				<td><input type="Submit" value=" Izmijeni "> <input type="Submit" name="brisanje" value=" Obriši "></td>
 			</tr></form>
@@ -2257,13 +2273,18 @@ else if ($akcija == "edit") {
 		<input type="hidden" name="stari_login" value="">
 		<tr>
 			<td><input type="text" size="10" name="login" value=""></td>
-			<td><? if ($conf_system_auth=="ldap") print "<b>LDAP</b>"; else { ?><input type="password" size="10" name="password" value=""><? } ?></td>
+			<td><? if ($conf_system_auth=="table") { 
+					?><input type="password" size="10" name="password" value=""><? 
+				} else {
+					?><b><?=$auth_name?></b><?
+				}?></td>
 			<td><input type="checkbox" size="10" name="aktivan" value="1"></td>
 			<td><input type="Submit" value=" Dodaj novi "></td>
 		</tr></form></table>
 		<?
 	}
 
+	// U slučaju LDAPa studentskoj službi dajemo mogućnost da (de)aktivira pristup korisniku
 	else if ($conf_system_auth == "ldap") {
 		$q201 = db_query("select aktivan from auth where id=$osoba and aktivan=1");
 		if (db_num_rows($q201)>0) $pristup=1; else $pristup=0;
@@ -2502,7 +2523,8 @@ else if ($akcija == "edit") {
 
 
 		// Pristup web servisu za uplate
-		if ($conf_url_daj_karticu != "") {
+		if ($conf_knjigovodstveni_servis) {
+			global $conf_url_daj_karticu;
 			$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
 			$saldo = 0;
 			if ($kartice === FALSE || count($kartice) == 0) {
