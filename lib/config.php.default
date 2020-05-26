@@ -64,6 +64,12 @@ $conf_ldap_server = "localhost";
 $conf_ldap_domain = "@moja.domena.ba"; 
 $conf_ldap_dn="cn=users,cn=accounts,dc=moja,dc=domena,dc=ba";
 
+
+// JaspersoftReports server
+$conf_jasper = false;
+// Bazni URL na koji se nadovezuje /flow.html?....
+$conf_jasper_url = "https://jasper.moja.domena.ba";
+
 // Pošto se ne može šifra promijeniti kroz Zamger kada se koristi LDAP,
 // ovdje postavite URL za promjenu šifre
 $conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";

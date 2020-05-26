@@ -9,7 +9,7 @@ function studentska_zavrsni()  {
 	require("lib/manip.php"); // radi ispisa studenata sa predmeta
 	
 	global $userid, $user_nastavnik, $user_studentska, $user_siteadmin;
-	global $conf_files_path;
+	global $conf_files_path, $conf_jasper, $conf_jasper_url;
 
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
@@ -203,6 +203,8 @@ function studentska_zavrsni()  {
 				else if ($ocjena > 5)
 					$konacna_ocjena = $ocjena . " (" . $ocjene[$ocjena-6] . ")";
 			}
+			
+			$url = "?sta=studentska/zavrsni&amp;id=$id_zavrsni&amp;predmet=$predmet&amp;ag=$ag";
 
 			?>
 			<tr>
@@ -214,10 +216,15 @@ function studentska_zavrsni()  {
 				<td><?=$clan_komisije?></td>
 				<td><?=$termin_odbrane?></td>
 				<td><?=$konacna_ocjena?></td>
-				<td><a href="?sta=studentska/zavrsni&akcija=izmjena_zavrsni&id=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">izmijeni</a> *
-				<a href="?sta=studentska/zavrsni&akcija=obrisi_zavrsni&id=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">obriši</a> *
-				<a href="?sta=studentska/zavrsni&akcija=zavrsni_stranica&zavrsni=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">stranica</a> *
-				<a href="?sta=izvjestaj/zavrsni_zapisnik&zavrsni=<?=$id_zavrsni?>&predmet=<?=$predmet?>&ag=<?=$ag?>">zapisnik</a>
+				<td><a href="<?=$url?>&amp;akcija=izmjena_zavrsni">izmijeni</a> *
+				<a href="<?=$url?>&amp;akcija=obrisi_zavrsni">obriši</a> *
+				<a href="<?=$url?>&amp;akcija=zavrsni_stranica&amp;zavrsni=<?=$id_zavrsni?>">stranica</a><?
+				if ($student_id > 0) {
+					?> *
+					<a href="<?=$url?>&amp;akcija=izvjestaji&amp;id=<?=$id_zavrsni?>">izvještaji</a>
+					<?
+				}
+				?>
 				</td>
 			</tr>
 			<?
@@ -253,7 +260,7 @@ function studentska_zavrsni()  {
 
 			$naslov = db_escape(trim($_REQUEST['naslov']));
 			$podnaslov = db_escape(trim($_REQUEST['podnaslov']));
-			$kratki_pregled  = db_escape(trim($_REQUEST['kratki_pregled']));
+			$kratki_pregled  = db_escape_string(trim($_REQUEST['kratki_pregled']));
 			$mentor = intval($_REQUEST['mentor']);
 			$drugi_mentor = intval($_REQUEST['drugi_mentor']);
 			if ($drugi_mentor==0) $drugi_mentor="NULL";
@@ -267,7 +274,7 @@ function studentska_zavrsni()  {
 			if ($student==0) { $kandidat_potvrdjen=0; $student="NULL"; } else $kandidat_potvrdjen=1;
 			$rad_na_predmetu = intval($_REQUEST['rad_na_predmetu']);
 			if ($rad_na_predmetu==0) $rad_na_predmetu="NULL";
-			$literatura = db_escape(trim($_REQUEST['literatura']));
+			$literatura = db_escape_string(trim($_REQUEST['literatura']));
 			$broj_diplome = db_escape($_REQUEST['broj_diplome']);
 			$sala = db_escape($_REQUEST['sala']);
 			
@@ -298,35 +305,66 @@ function studentska_zavrsni()  {
 			}
 
 			// Kontrola datuma odluke
-			if ($_REQUEST['datum_odluke'] != "") {
-				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke'], $matches)) {
+			if ($_REQUEST['datum_odluke_komisija'] != "") {
+				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke_komisija'], $matches)) {
 					$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
 					if (!checkdate($mjesec,$dan,$godina)) {
 						niceerror("Datum za odluku o imenovanju komisije je kalendarski nemoguć ($dan. $mjesec. $godina)");
 						nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 						return;
 					}
-					$datum_odluke = mktime(0, 0, 0, $mjesec, $dan, $godina);
+					$datum_odluke_komisija = mktime(0, 0, 0, $mjesec, $dan, $godina);
 				} else {
 					niceerror("Datum za odluku o imenovanju komisije nije u ispravnom formatu.");
 					print "Potrebno je koristiti format: DD. MM. GGGG.<br>";
 					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 					return;
 				}
-				if ($_REQUEST['broj_odluke'] == "") {
-					niceerror("Unijeli ste datum odluke a niste unijeli broj odluke!");
+				if ($_REQUEST['broj_odluke_komisija'] == "") {
+					niceerror("Unijeli ste datum odluke o imenovanju komisije a niste unijeli broj odluke!");
 					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 					return;
 				}
-				$broj_odluke = db_escape($_REQUEST['broj_odluke']);
-				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke) AND broj_protokola='$broj_odluke'");
+				$broj_odluke_komisija = db_escape($_REQUEST['broj_odluke_komisija']);
+				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke_komisija) AND broj_protokola='$broj_odluke_komisija'");
 				if (db_num_rows($q009) > 0) {
-					$odluka = db_result($q009, 0, 0);
+					$odluka_komisija = db_result($q009, 0, 0);
 				} else {
-					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke), broj_protokola='$broj_odluke', student=$student");
-					$odluka = db_insert_id();
+					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_komisija), broj_protokola='$broj_odluke_komisija', student=$student");
+					$odluka_komisija = db_insert_id();
 				}
-			} else $odluka = 0;
+			} else $odluka_komisija = 0;
+
+			// Kontrola datuma odluke
+			if ($_REQUEST['datum_odluke_tema'] != "") {
+				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke_tema'], $matches)) {
+					$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
+					if (!checkdate($mjesec,$dan,$godina)) {
+						niceerror("Datum za odluku o imenovanju komisije je kalendarski nemoguć ($dan. $mjesec. $godina)");
+						nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+						return;
+					}
+					$datum_odluke_tema = mktime(0, 0, 0, $mjesec, $dan, $godina);
+				} else {
+					niceerror("Datum za odluku o imenovanju komisije nije u ispravnom formatu.");
+					print "Potrebno je koristiti format: DD. MM. GGGG.<br>";
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				if ($_REQUEST['broj_odluke_tema'] == "") {
+					niceerror("Unijeli ste datum odluke o imenovanju komisije a niste unijeli broj odluke!");
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				$broj_odluke_tema = db_escape($_REQUEST['broj_odluke_tema']);
+				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke_tema) AND broj_protokola='$broj_odluke_tema'");
+				if (db_num_rows($q009) > 0) {
+					$odluka_tema = db_result($q009, 0, 0);
+				} else {
+					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_tema), broj_protokola='$broj_odluke_tema', student=$student");
+					$odluka_tema = db_insert_id();
+				}
+			} else $odluka_tema = 0;
 	
 			if (empty($naslov)) {
 				niceerror('Unesite sva obavezna polja.');
@@ -367,7 +405,7 @@ function studentska_zavrsni()  {
 
 	
 			if ($id > 0) { // Izmjena teme
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, drugi_mentor=$drugi_mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, clan_komisije2=$clan_komisije2, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu, broj_diplome='$broj_diplome', sala='$sala', odluka=$odluka WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', mentor=$mentor, drugi_mentor=$drugi_mentor, predsjednik_komisije=$predsjednik_komisije, clan_komisije=$clan_komisije, clan_komisije2=$clan_komisije2, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, termin_odbrane=FROM_UNIXTIME($termin_odbrane), rad_na_predmetu=$rad_na_predmetu, broj_diplome='$broj_diplome', sala='$sala', odluka_komisija=$odluka_komisija, odluka_tema=$odluka_tema WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 				nicemessage('Tema završnog rada je uspješno izmijenjena.');
 				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio temu zavrsnog rada", $id);
@@ -381,7 +419,7 @@ function studentska_zavrsni()  {
 				else
 					$id = db_result($znesta,0,0)+1;
 
-				$q906 = db_query("INSERT INTO zavrsni (id, naslov, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, drugi_mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, clan_komisije2, termin_odbrane, rad_na_predmetu, broj_diplome, sala, odluka) VALUES ($id, '$naslov', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $drugi_mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, $clan_komisije2, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu, '$broj_diplome', '$sala', $odluka)");
+				$q906 = db_query("INSERT INTO zavrsni (id, naslov, podnaslov, predmet, akademska_godina, kratki_pregled, literatura, mentor, drugi_mentor, student, kandidat_potvrdjen, predsjednik_komisije, clan_komisije, clan_komisije2, termin_odbrane, rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema) VALUES ($id, '$naslov', '$podnaslov', $predmet, $ag,  '$kratki_pregled', '$literatura', $mentor, $drugi_mentor, $student, $kandidat_potvrdjen, $predsjednik_komisije, $clan_komisije, $clan_komisije2, FROM_UNIXTIME($termin_odbrane), $rad_na_predmetu, '$broj_diplome', '$sala', $odluka_komisija, $odluka_tema)");
 
 				nicemessage('Nova tema završnog rada je uspješno dodana.');
 				zamgerlog("dodana nova tema zavrsnog rada $id na predmetu pp$predmet", 2);
@@ -399,7 +437,7 @@ function studentska_zavrsni()  {
 		// Ako je definisan ID, onda je u pitanju izmjena
 		if ($id>0) {
 			$tekst = "Izmjena teme završnog rada";
-			$q98 = db_query("SELECT student, mentor, drugi_mentor, predsjednik_komisije, clan_komisije, clan_komisije2, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu, broj_diplome, sala, odluka FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
+			$q98 = db_query("SELECT student, mentor, drugi_mentor, predsjednik_komisije, clan_komisije, clan_komisije2, naslov, podnaslov, kratki_pregled, literatura, UNIX_TIMESTAMP(termin_odbrane), rad_na_predmetu, broj_diplome, sala, odluka_komisija, odluka_tema FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
 			if (db_num_rows($q98)<1) {
 				niceerror("Nepostojeći završni rad");
 				zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
@@ -421,13 +459,21 @@ function studentska_zavrsni()  {
 			$rad_na_predmetu = db_result($q98, 0, 11);
 			$broj_diplome = db_result($q98, 0, 12);
 			$sala = db_result($q98, 0, 13);
-			$odluka = db_result($q98, 0, 14);
-			if ($odluka > 0) {
-				$q99 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=$odluka");
-				$datum_odluke = date("d.m.Y.", db_result($q99,0,0));
-				$broj_odluke = db_result($q99,0,1);
+			$odluka_komisija = db_result($q98, 0, 14);
+			if ($odluka_komisija > 0) {
+				$q99 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=$odluka_komisija");
+				$datum_odluke_komisija = date("d.m.Y.", db_result($q99,0,0));
+				$broj_odluke_komisija = db_result($q99,0,1);
 			} else {
-				$broj_odluke = $datum_odluke = "";
+				$broj_odluke_komisija = $datum_odluke_komisija = "";
+			}
+			$odluka_tema = db_result($q98, 0, 15);
+			if ($odluka_tema > 0) {
+				$q99 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=$odluka_tema");
+				$datum_odluke_tema = date("d.m.Y.", db_result($q99,0,0));
+				$broj_odluke_tema = db_result($q99,0,1);
+			} else {
+				$broj_odluke_tema = $datum_odluke_tema = "";
 			}
 
 		} else {
@@ -447,6 +493,9 @@ function studentska_zavrsni()  {
 		}
 
 		?>	
+		<style>
+		span.label { display: inline-block; width: 200px; height: 20px; }
+		</style>
 		<h2><?=$tekst?></h2>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
 		<?=genform("POST", "addForm");?>
@@ -554,11 +603,19 @@ function studentska_zavrsni()  {
 					</span> 
 				</div>
 				<div class="row">
+					<span class="label">Tema odobrena odlukom broj </span>
+					<span class="formw">
+						<input name="broj_odluke_tema" type="text" id="broj_odluke_tema" size="20" value="<?=$broj_odluke_tema?>">
+						datum Vijeća
+						<input name="datum_odluke_tema" type="text" id="datum_odluke_tema" size="20" value="<?=$datum_odluke_tema?>">
+					</span> 
+				</div>
+				<div class="row">
 					<span class="label">Komisija imenovana odlukom broj </span>
 					<span class="formw">
-						<input name="broj_odluke" type="text" id="broj_odluke" size="20" value="<?=$broj_odluke?>">
+						<input name="broj_odluke_komisija" type="text" id="broj_odluke_komisija" size="20" value="<?=$broj_odluke_komisija?>">
 						od datuma
-						<input name="datum_odluke" type="text" id="datum_odluke" size="20" value="<?=$datum_odluke?>">
+						<input name="datum_odluke_komisija" type="text" id="datum_odluke_komisija" size="20" value="<?=$datum_odluke_komisija?>">
 					</span> 
 				</div>
 				<div class="row">
@@ -616,11 +673,11 @@ function studentska_zavrsni()  {
 				</div>
 				<div class="row">
 					<span class="label">Kratki pregled</span>
-					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=$kratki_pregled?></textarea></span> 
+					<span class="formw"><textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=htmlentities($kratki_pregled)?></textarea></span> 
 				</div>
 				<div class="row">
 					<span class="label">Preporučena literatura</span>
-					<span class="formw"><textarea name="literatura" cols="60" rows="15" id="literatura"><?=$literatura?></textarea></span> 
+					<span class="formw"><textarea name="literatura" cols="60" rows="15" id="literatura"><?=htmlentities($literatura)?></textarea></span> 
 				</div>
 				<div class="row">	
 					<span class="formw" style="margin-left:150px;"><input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></span>
@@ -692,7 +749,100 @@ function studentska_zavrsni()  {
 		require_once ('common/zavrsniStrane.php');
 		common_zavrsniStrane();
 	} //akcija == zavrsni_stranica
+
+	elseif ($akcija == 'izvjestaji') {
+		$q2000 = db_query("SELECT naslov, student, mentor, clan_komisije, odluka_tema, odluka_komisija FROM zavrsni WHERE id=$id");
+		db_fetch6($q2000, $naslov, $student, $mentor, $clan_komisije, $odluka_tema, $odluka_komisija);
+		if ($student) {
+			$kandidat = db_get("SELECT CONCAT(ime, ' ', prezime) FROM osoba WHERE id=$student");
+		} else {
+			$kandidat = "(nije definisan - izvještaji neće raditi)";
+		}
+		
+		$ocjena = db_get("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+		
+		$ciklus = db_get("SELECT ts.ciklus FROM tipstudija ts, studij s, student_studij ss WHERE ss.student=$student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = 1 AND ss.studij=s.id AND s.tipstudija=ts.id");
+		
+		$url = "id=$id&amp;zavrsni=$id&amp;predmet=$predmet&amp;ag=$ag";
+		
+		?>
+		<h1><?=$naslov?></h1>
+		<p>Kandidat: <b><?=$kandidat?></b></p>
+		<h2>Izvještaji</h2>
+		<ul>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=1&amp;<?=$url?>" target="_blank">Obrazac ZR1: Prijava teme završnog rada</a></li>
+			<? if ($mentor && $clan_komisije) { ?>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=2&amp;<?=$url?>" target="_blank">Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			?></font></li>
+			<? }?>
+			<? if ($odluka_tema) { ?>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=3&amp;<?=$url?>" target="_blank">Obrazac ZR3: Zahtjev za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR3: Zahtjev za ocjenu i odbranu završnog rada - <font color="red">nije unesen broj i datum odluke o odobrenju teme</font></li>
+			<? }?>
+			<? if ($ciklus == 1 || !$conf_jasper) { ?>
+			<li><a href="?sta=izvjestaj/zavrsni_zapisnik&amp;<?=$url?>">Zapisnik sa odbrane završnog rada</a></li>
+			<? } ?>
+			<? if ($mentor) { ?>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=4&amp;<?=$url?>" target="_blank">Obrazac ZR4: Saglasnost mentora</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR4: Saglasnost mentora - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			?></font></li>
+			<? }?>
+			<? if ($mentor && $clan_komisije && $odluka_komisija) { ?>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=5&amp;<?=$url?>" target="_blank">Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			if (!$odluka_komisija) print "nije unesen broj i datum odluke o imenovanju komisije";
+			?></font></li>
+			<? }?>
+			<? if ($ciklus == 2 && $mentor && $clan_komisije && $odluka_komisija) { ?>
+			<li><a href="?sta=studentska/zavrsni&amp;akcija=izvjestaj_jasper&amp;tip=6&amp;<?=$url?>" target="_blank">Obrazac ZR6: Zapisnik sa odbrane završnog rada</a></li>
+			<? } else if ($ciklus == 2) { 
+			?>
+			<li>Obrazac ZR6: Zapisnik sa odbrane završnog rada - <font color="red"><? 
+			//if (!$ocjena) print "nije unesena ocjena, ";
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			if (!$odluka_komisija) print "nije unesen broj i datum odluke o imenovanju komisije, ";
+			?></font></li>
+			<? } ?>
+		</ul>
+		<?
+	} //akcija == zavrsni_stranica
 	
+	elseif ($akcija == 'izvjestaj_jasper') {
+		if (!$conf_jasper) {
+			niceerror("Jasper server nije aktivan");
+			print "Odabrani izvještaj je dostupan samo putem JasperReports servera. Kontaktirajte vašeg administratora.";
+			return;
+		}
+		$token = rand(100000, 999999);
+		
+		$dbname = "Obrazac ZR" . param('tip');
+		$reportUnit = "%2Freports%2FObrazac_ZR" . param('tip');
+		$uriParams = "&id_zavrsnog=$id&token=$token";
+		$param2 = "''";
+		
+		db_query("DELETE FROM jasper_token WHERE NOW()-vrijeme>1500");
+		db_query("INSERT INTO jasper_token SET token=$token, report='$dbname', vrijeme=NOW(), param1=$id, param2=$param2");
+		
+		?>
+		<script>window.location = '<?=$conf_jasper_url?>/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Freports&reportUnit=<?=$reportUnit?>&standAlone=true<?=$uriParams?>&decorate=no';</script>
+		<?
+		
+	}
 } // function
 
 ?>

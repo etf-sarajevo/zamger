@@ -8,7 +8,7 @@ function common_zavrsniStrane() {
 	require_once("lib/utility.php"); // nicesize
 
 	//debug mod aktivan
-	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
+	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin, $conf_jasper, $conf_jasper_url;
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 	$zavrsni = intval($_REQUEST['zavrsni']);
@@ -22,7 +22,7 @@ function common_zavrsniStrane() {
 	$lokacijafajlova ="$conf_files_path/zavrsni/fajlovi/$zavrsni/";
 
 	// Osnovne informacije o radu
-	$q10 = db_query("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.sazetak, z.summary FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
+	$q10 = db_query("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.kratki_pregled, z.literatura, z.clan_komisije, z.odluka_komisija, z.odluka_tema FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
 	if (db_num_rows($q10)<1) {
 		niceerror("Nepostojeći rad");
 		zamgerlog("zavrsniStrane: nepostojeci rad $zavrsni", 3);
@@ -59,27 +59,105 @@ function common_zavrsniStrane() {
 
 		
 	// Da li je definisan sazetak?
-	$sazetak = db_result($q10,0,5);
-	$summary = db_result($q10,0,6);
-	if ($userid == $id_studenta) {
-		if (!preg_match("/\w/", $sazetak) || !preg_match("/\w/", $summary)) {
+	$kratki_pregled = db_result($q10,0,5);
+	$literatura = db_result($q10,0,6);
+/*	if ($userid == $id_studenta) {
+		if (!preg_match("/\w/", $kratki_pregled) || !preg_match("/\w/", $literatura)) {
 			?>
 			<p>&nbsp;</p>
-			<p><b><font color="red">Nije definisan sažetak teme</font></b></p>
-			<p>Molimo vas da prije slanja finalne verzije rada definišete sažetak.</p>
+			<p><b><font color="red">Nije definisan kratki pregled teme i literatura</font></b></p>
+			<p>Molimo vas da kontaktirate .</p>
 			<?
 		}
 
 		?>
 		<p><a href="<?=$linkPrefix?>&subakcija=sazetak">Kliknite ovdje da definišete sažetak</a></p>
 		<?
-	}
+	}*/
+	
+	
+	// Izvještaji
+	?>
+	<center><table border="0"><tr><td>
+	<p><b>Izvještaji</b></p>
+	
+	<?
+	$clan_komisije = db_result($q10,0,7);
+	$odluka_komisija = db_result($q10,0,8);
+	$odluka_tema = db_result($q10,0,9);
+		
+	//	$ocjena = db_get("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+		
+		$ciklus = db_get("SELECT ts.ciklus FROM tipstudija ts, studij s, student_studij ss WHERE ss.student=$id_studenta AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = 1 AND ss.studij=s.id AND s.tipstudija=ts.id");
+		
+		
+		if (!$mentor || !$clan_komisije || !$odluka_komisija || !$odluka_tema)
+			niceerror("Molimo da kontaktirate vašeg mentora kako bi unio u Zamger podatke koji nedostaju");
+		
+		?>
+		<ul>
+			<? if (preg_match("/\w/", $kratki_pregled) && preg_match("/\w/", $literatura)) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=1" target="_blank">Obrazac ZR1: Prijava teme završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR1: Prijava teme završnog rada - <font color="red">nije unesen kratki pregled teme i preporučena literatura</font></li>
+			<? }?>
+			<? if ($mentor && $clan_komisije) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=2" target="_blank">Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			?></font></li>
+			<? }?>
+			<? if ($odluka_tema) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=3" target="_blank">Obrazac ZR3: Zahtjev za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR3: Zahtjev za ocjenu i odbranu završnog rada - <font color="red">nije unesen broj i datum odluke o odobrenju teme</font></li>
+			<? }?>
+			<? if ($ciklus == 1 || !$conf_jasper) { ?>
+			<li><a href="?sta=izvjestaj/zavrsni_zapisnik&amp;<?=$url?>">Zapisnik sa odbrane završnog rada</a></li>
+			<? } ?>
+			<? if ($mentor) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=4" target="_blank">Obrazac ZR4: Saglasnost mentora</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR4: Saglasnost mentora - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			?></font></li>
+			<? }?>
+			<? if ($mentor && $clan_komisije && $odluka_komisija) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=5" target="_blank">Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada</a></li>
+			<? } else { 
+			?>
+			<li>Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			if (!$odluka_komisija) print "nije unesen broj i datum odluke o imenovanju komisije";
+			?></font></li>
+			<? }?>
+			<? if ($ciklus == 2 && $mentor && $clan_komisije && $odluka_tema) { ?>
+			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=6" target="_blank">Obrazac ZR6: Zapisnik sa odbrane završnog rada</a></li>
+			<? } else if ($ciklus == 2) { 
+			?>
+			<li>Obrazac ZR6: Zapisnik sa odbrane završnog rada - <font color="red"><? 
+			//if (!$ocjena) print "nije unesena ocjena, ";
+			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
+			if (!$odluka_tema) print "nije unesen broj odluke o odobrenju teme, ";
+			?></font></li>
+			<? } ?>
+		</ul>
+		<?
 	
 
 	// Spisak fajlova
 
 	?>
-	<center><table border="0"><tr><td>
+	<hr>
+	
 	<p><b>Poslani fajlovi</b></p>
 	<table border="1" cellspacing="0" cellpadding="4">
 		<tr bgcolor="#CCCCCC">
@@ -106,6 +184,7 @@ function common_zavrsniStrane() {
 		$revizija = $r100[4];
 		
 		$filepath = $lokacijafajlova . $filename . "/v" . $revizija . "/" . $filename;
+		if (!file_exists($filepath)) continue;
 		$filesize = nicesize(filesize($filepath));
 		
 		?>
@@ -254,6 +333,30 @@ function common_zavrsniStrane() {
 	
 	
 	// SUBAKCIJE
+
+	// Akcija za prikaz izvještaja na JasperServeru
+	
+	if ($subakcija == 'izvjestaj_jasper') {
+		if (!$conf_jasper) {
+			niceerror("Jasper server nije aktivan");
+			print "Odabrani izvještaj je dostupan samo putem JasperReports servera. Kontaktirajte vašeg administratora.";
+			return;
+		}
+		$token = rand(100000, 999999);
+		
+		$dbname = "Obrazac ZR" . param('tip');
+		$reportUnit = "%2Freports%2FObrazac_ZR" . param('tip');
+		$uriParams = "&id_zavrsnog=$zavrsni&token=$token";
+		$param2 = "''";
+		
+		db_query("DELETE FROM jasper_token WHERE NOW()-vrijeme>1500");
+		db_query("INSERT INTO jasper_token SET token=$token, report='$dbname', vrijeme=NOW(), param1=$zavrsni, param2=$param2");
+		
+		?>
+		<script>window.location = '<?=$conf_jasper_url?>/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Freports&reportUnit=<?=$reportUnit?>&standAlone=true<?=$uriParams?>&decorate=no&output=pdf';</script>
+		<?
+		
+	}
 
 	// Akcija dodavanje fajla
 

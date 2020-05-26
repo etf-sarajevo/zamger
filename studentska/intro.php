@@ -6,7 +6,7 @@
 
 function studentska_intro() {
 
-global $userid,$user_siteadmin,$user_studentska,$conf_files_path;
+global $userid,$user_siteadmin,$user_studentska,$conf_files_path,$conf_jasper,$conf_jasper_url;
 
 require_once("lib/utility.php"); // spol, vokativ
 
@@ -327,6 +327,49 @@ if (param('akcija') == "obrisi_potvrdu") {
 	$_GET['akcija'] = "potvrda";
 }
 
+if (param('akcija') == "potvrda_jasper") {
+	$id = intval($_GET['id']);
+	$param2 = "''";
+	$token = rand(100000, 999999);
+	
+	$reportUnit = "%2Freports%2FPotvrda";
+	
+	// Utvrđujemo koji put ponavlja
+	$q220 = db_query("SELECT ss.status_studenta, ss.semestar, ts.ciklus FROM student_studij ss, zahtjev_za_potvrdu zzp, studij s, tipstudija ts WHERE zzp.id=$id AND zzp.student=ss.student AND zzp.akademska_godina=ss.akademska_godina AND ss.studij=s.id AND s.tipstudija=ts.id ORDER BY ss.semestar DESC LIMIT 1");
+	if (db_num_rows($q220) == 0) {
+		$naziv_ag = db_get("SELECT ag.naziv FROM akademska_godina ag, zahtjev_za_potvrdu zzp WHERE zzp.id=$id AND zzp.akademska_godina=ag.id");
+		niceerror("Student nije upisan na studij u akademskoj $naziv_ag godini");
+		?>
+		<p>Student je popunio zahtjev za akademsku <b><?=$naziv_ag?></b>, ali ne postoji evidencija da je bio upisan na studij u toj godini.</p>
+		<p>Ako je ovo greška, <a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=db_get("SELECT student FROM zahtjev_za_potvrdu where id=$id");?>">kliknite ovdje da otvorite profil studenta</a>.</p>
+		<p><a href="?sta=studentska/intro&amp;akcija=potvrda">Nazad na spisak zahtjeva za potvrdu</a></p>
+		<?
+		return;
+	}
+	db_fetch3($q220, $status_studenta, $semestar, $ciklus);
+	if ($status_studenta == 1)
+		$put = 1; // Ako je apsolvent, sigurno je prvi put
+	else
+		$put = db_get("SELECT COUNT(*)+1 FROM student_studij ss, zahtjev_za_potvrdu zzp, studij s, tipstudija ts WHERE zzp.id=$id AND zzp.student=ss.student AND zzp.akademska_godina>ss.akademska_godina AND ss.semestar=$semestar AND ss.status_studenta!=1 AND ss.studij=s.id AND s.tipstudija=ts.id AND ts.ciklus=$ciklus");
+	
+	$uriParams = "&zahtjev=$id&token=$token&put=$put";
+	
+	db_query("DELETE FROM jasper_token WHERE NOW()-vrijeme>1500");
+	db_query("INSERT INTO jasper_token SET token=$token, report='Potvrda', vrijeme=NOW(), param1=$id, param2=$param2");
+	
+	?>
+	<script>window.location = '<?=$conf_jasper_url?>/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Freports&reportUnit=<?=$reportUnit?>&standAlone=true<?=$uriParams?>&decorate=no&output=pdf';</script>
+	<?
+	
+	// Označi zahtjev kao obrađen
+	$q200 = db_query("SELECT id, status FROM zahtjev_za_potvrdu WHERE student=$student AND svrha_potvrde=$svrha");
+	while ($r200 = db_fetch_row($q200)) {
+		if ($r200[1] == 1)
+			$q210 = db_query("UPDATE zahtjev_za_potvrdu SET status=2 WHERE id=$r200[0]");
+	}
+	return;
+}
+
 
 if (param('akcija') == "potvrda") {
 
@@ -380,15 +423,17 @@ if (param('akcija') == "potvrda") {
 	while ($r200 = db_fetch_row($q200)) {
 		$ag = $r200[9];
 		
-		if ($r200[3] == 1)
-			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&amp;svrha=$r200[7]&amp;ag=$ag";
+		if ($r200[3] == 1 && $conf_jasper)
+			$link_printanje = "?sta=studentska/intro&amp;akcija=potvrda_jasper&amp;id=$r200[0]";
+		else if ($r200[3] == 1)
+			$link_printanje = "?sta=izvjestaj/potvrda&amp;student=$r200[6]&amp;svrha=$r200[7]&amp;ag=$ag";
 		else
-			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
+			$link_printanje = "?sta=izvjestaj/index2&amp;student=$r200[6]";
 
 		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td>";
 		
 		if ($r200[10] == 1) print "<td>&nbsp;</td>"; else print "<td><img src=\"static/images/32x32/markica.jpg\" width=\"30\" height=\"30\"></td>";	
-		print "<td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
+		print "<td><a href=\"$link_printanje\" target=\"_blank\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
 
 		// Dodatne kontrole
 		$error = 0;
@@ -442,15 +487,19 @@ if (param('akcija') == "potvrda") {
 	if (param('subakcija') == "arhiva") $arhiva = "";
 	else $arhiva = "AND zzp.datum_zahtjeva > DATE_SUB(NOW(), INTERVAL 1 MONTH)";
 
-	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=2 $arhiva $order_by");
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=2 $arhiva $order_by");
 	$rbr = 1;
 	while ($r200 = db_fetch_row($q200)) {
-		if ($r200[3] == 1)
-			$link_printanje = "?sta=izvjestaj/potvrda&student=$r200[6]&svrha=$r200[7]";
+		$ag = $r200[9];
+		
+		if ($r200[3] == 1 && $conf_jasper)
+			$link_printanje = "?sta=studentska/intro&amp;akcija=potvrda_jasper&amp;id=$r200[0]";
+		else if ($r200[3] == 1)
+			$link_printanje = "?sta=izvjestaj/potvrda&amp;student=$r200[6]&amp;svrha=$r200[7]&amp;ag=$ag";
 		else
-			$link_printanje = "?sta=izvjestaj/index2&student=$r200[6]";
+			$link_printanje = "?sta=izvjestaj/index2&amp;student=$r200[6]";
 
-		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td><td><a href=\"$link_printanje\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=1\">postavi kao neobrađen</a> * <a href=\"?sta=studentska/intro&akcija=obrisi_potvrdu&id=$r200[0]\">obriši</a></td></tr>\n";
+		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td><td><a href=\"$link_printanje\" target=\"_blank\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=1\">postavi kao neobrađen</a> * <a href=\"?sta=studentska/intro&akcija=obrisi_potvrdu&id=$r200[0]\">obriši</a></td></tr>\n";
 		$rbr++;
 	}
 
