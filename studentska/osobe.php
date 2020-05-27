@@ -721,7 +721,12 @@ else if ($akcija == "upis") {
 			if ($q_id_nacina == $stari_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
 			print '<input type="radio" name="nacin_studiranja" value="'.$q_id_nacina.'"'.$dodaj.'>'.$q_naziv_nacina."<br/>\n";
 		}
-		print "</p>\n\n";
+
+		$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$osoba");
+		?>
+		</p>
+		<p>Zaduženje: <input type="text" name="zaduzenje" value="<?=$zaduzenje?>" size="10"> KM</p>
+		<?
 		
 		$ok_izvrsiti_upis = false;
 	}
@@ -1110,6 +1115,16 @@ else if ($akcija == "upis") {
 			if (param('apsolvent')) $status_studenta = 1;
 
 			db_query("INSERT INTO student_studij SET student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$status_studenta");
+
+			if (isset($_REQUEST['zaduzenje'])) $zaduzenje = floatval($_REQUEST['zaduzenje']); else $zaduzenje=0;
+			$staro_zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$student");
+			if ($zaduzenje == 0 && $staro_zaduzenje != 0)
+				db_query("DELETE FROM student_zaduzenje WHERE student=$student");
+			else if ($staro_zaduzenje === false && $zaduzenje != 0)
+				db_query("INSERT INTO student_zaduzenje SET student=$student, zaduzenje=$zaduzenje");
+			else
+				db_query("UPDATE student_zaduzenje SET zaduzenje=$zaduzenje WHERE student=$student");
+
 			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 		}
 		
@@ -1837,6 +1852,39 @@ else if ($akcija == "kartica") {
 }
 
 
+// Ažuriranje dugovanja studenta
+
+else if ($akcija == "izmijeni_zaduzenje") {
+	$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$osoba");
+	if (param('subakcija') == "potvrda" && check_csrf_token()) {
+		$novo_zaduzenje = floatval($_REQUEST['zaduzenje']);
+		if ($novo_zaduzenje == 0 && $zaduzenje != 0)
+			db_query("DELETE FROM student_zaduzenje WHERE student=$osoba");
+		else if ($zaduzenje === false && $novo_zaduzenje != 0)
+			db_query("INSERT INTO student_zaduzenje SET student=$osoba, zaduzenje=$novo_zaduzenje");
+		else
+			db_query("UPDATE student_zaduzenje SET zaduzenje=$novo_zaduzenje WHERE student=$osoba");
+
+		nicemessage("Ažurirano zaduženje za studenta " . db_get("SELECT CONCAT(ime, ' ', prezime) FROM osoba WHERE id=$osoba"));
+		?>
+		<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$osoba?>">Nazad na podatke o studentu</a>
+		<?
+		return;
+	}
+
+	?>
+	<h2><?=db_get("SELECT CONCAT(ime, ' ', prezime) FROM osoba WHERE id=$osoba")?></h2>
+	<?=genform("POST")?>
+	<input type="hidden" name="subakcija" value="potvrda">
+	Zaduženje: <input type="text" name="zaduzenje" value="<?=$zaduzenje?>">
+	<input type="submit" value="Izmijeni">
+	</form>
+	<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$osoba?>">Nazad</a>
+	<?
+	return;
+}
+
+
 // Pregled informacija o osobi
 
 else if ($akcija == "edit") {
@@ -2503,7 +2551,13 @@ else if ($akcija == "edit") {
 				$naziv_nove_ak_god = db_result($q230,0,1);
 			}
 		}
-		
+
+		$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$osoba");
+		if ($zaduzenje > 0) {
+			print "<p style=\"color: red\">Evidentirano je zaduženje: <b>" . sprintf("%.2f", $zaduzenje) . " KM</b> - ";
+		}
+		print "<a href=\"?sta=studentska/osobe&osoba=$osoba&akcija=izmijeni_zaduzenje\">Izmijeni zaduženje</a></p>\n";
+
 		if ($nova_ak_god==0) { // Upis u tekućoj godini (ako nije kreirana nova)
 			?>
 			<a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$id_ak_god?>">Upiši na <?=($semestar+1)?>. semestar</a>

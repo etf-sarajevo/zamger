@@ -1924,6 +1924,18 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `student_zaduzenje`
+--
+
+CREATE TABLE `student_zaduzenje` (
+  `student` int(11) NOT NULL,
+  `zaduzenje` float NOT NULL,
+  PRIMARY KEY (`student`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `studij`
 --
 
