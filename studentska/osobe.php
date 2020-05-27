@@ -22,7 +22,7 @@ require_once("lib/predmet.php"); // kreiraj_ponudu_kursa
 
 // Provjera privilegija
 if (!$user_siteadmin && !$user_studentska) { // 2 = studentska, 3 = admin
-	zamgerlog("korisnik nije studentska (admin $admin)",3);
+	zamgerlog("korisnik nije studentska",3);
 	zamgerlog2("nije studentska");
 	biguglyerror("Pristup nije dozvoljen.");
 	return;
@@ -175,6 +175,7 @@ if ($akcija == "podaci") {
 				if ($godina<50) $godina+=2000; else $godina+=1900;
 			if ($godina<1000)
 				if ($godina<900) $godina+=2000; else $godina+=1000;
+            $datum_rodjenja="$godina-$mjesec-$dan";
 		}
 
 		// Mjesto rođenja
@@ -300,7 +301,7 @@ if ($akcija == "podaci") {
 	if ($_POST['subakcija']=="obrisisliku" && check_csrf_token()) {
 		// Brisemo evt. postojecu sliku
 		$q496 = db_query("select slika from osoba where id=$osoba");
-		if (db_result($q498,0,0)!="")
+		if (db_result($q496,0,0)!="")
 			unlink ("$conf_files_path/slike/".db_result($q496,0,0));
 
 		$q497 = db_query("update osoba set slika='' where id=$osoba");
@@ -776,7 +777,7 @@ else if ($akcija == "upis") {
 				array_push($uplate, 2); // Redovni upis I ciklus - participacija
 			else if ($ciklus == 1 && $ponovac == 1) {
 				array_push($uplate, 3); // Ponovni upis I ciklus
-				foreach ($predmeti_pao as $id => $naziv)
+				foreach ($zamger_predmeti_pao as $id => $naziv)
 					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
 			}
 
@@ -790,7 +791,7 @@ else if ($akcija == "upis") {
 			}
 			else if ($ciklus == 2 && $ponovac == 1) {
 				array_push($uplate, 30); // Ponovni upis II ciklus
-				foreach ($predmeti_pao as $id => $naziv)
+				foreach ($zamger_predmeti_pao as $id => $naziv)
 					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
 			}
 			else if ($ciklus == 3 && $ponovac == 0)
@@ -888,8 +889,8 @@ else if ($akcija == "upis") {
 					if (!$ponudakursa) {
 						db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
 						$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
-						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($pkid));
+						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$godina zbog studenta u$student", 2);
+						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($ponudakursa));
 					} 
 					
 					if (!$ok_izvrsiti_upis) print '<input type="hidden" name="izborni-'.$ponudakursa.'" value="on">'."\n";
@@ -948,7 +949,7 @@ else if ($akcija == "upis") {
 						if (!$ponudakursa) {
 							db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
 							$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-							zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$ag zbog studenta u$student", 2);
+							zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$godina zbog studenta u$student", 2);
 							zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($ponudakursa));
 						}
 						?>
@@ -1066,15 +1067,15 @@ else if ($akcija == "upis") {
 				// pa ćemo pretpostaviti sve najbolje :)
 
 				// Moramo upisati studenta u istu ponudu kursa koju je ranije slušao
-				$q592 = db_query("select pk.studij,pk.semestar from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
+				$q592 = db_query("select pk.studij,pk.semestar,pk.obavezan from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
 
-				// Polje predmeti pao sadrži predmete koje je student trebao slušati prema NPP u prošloj godini a nije ih položio
+				// Polje $zamger_predmeti_pao sadrži predmete koje je student trebao slušati prema NPP u prošloj godini a nije ih položio
 				// No ako se student direktno upisuje na višu godinu (doktorski studij!?), moguće da je tu predmet koji nikada nije slušao
 				// Stoga moramo provjeriti i to i preskočiti takve predmete
 				if (db_num_rows($q592)<1) continue;
 
 				print "Ponovo upisujem studenta u predmet $naziv_predmeta ($predmet) koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br>";
-				db_fetch2($q592, $studij_stara_pk, $semestar_stara_pk);
+				db_fetch3($q592, $studij_stara_pk, $semestar_stara_pk, $obavezan);
 
 				// Tražimo istu ponudu kursa u aktuelnoj godini
 				$nova_pk = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina");
@@ -1177,9 +1178,10 @@ else if ($akcija == "upis") {
 		}
 
 		// Unos zaduženja na studentovu karticu
-		if (!$dry_run) {
+		if (!$dry_run && $conf_knjigovodstveni_servis) {
+		    global $conf_url_upisi_zaduzenje;
 			foreach($zaduzenja_xml as $zaduzenje) {
-				xml_request($url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
+				xml_request($conf_url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
 			}
 			zamgerlog2("upisano zaduzenje za upis", $student);
 		}
@@ -2070,7 +2072,7 @@ else if ($akcija == "edit") {
 
 		$q130 = db_query("replace nastavnik_predmet set nastavnik=$osoba, predmet=$predmet, akademska_godina=$id_ak_god, nivo_pristupa='asistent'");
 
-		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: $admin_predmeta, akademska godina: $id_ak_god)",4);
+		zamgerlog("nastavniku u$osoba data prava na predmetu pp$predmet (admin: asistent, akademska godina: $id_ak_god)",4);
 		zamgerlog2("nastavniku data prava na predmetu", $osoba, $predmet, intval($id_ak_god));
 		nicemessage("Nastavniku su dodijeljena prava na predmetu $naziv_predmeta.");
 		print "<p>Kliknite na naziv predmeta na spisku ispod kako biste detaljnije podesili privilegije.</p>";
@@ -2963,7 +2965,7 @@ else {
 		<?=genform("GET")?>
 		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
 		<input type="text" size="50" name="search" value="<? if ($src!="sve") print $src?>"> <input type="Submit" value=" Pretraži "></form>
-		<a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a><br/><br/>
+            <a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a></p>
 	<?
 	if ($src) {
 		$rezultata=0;
