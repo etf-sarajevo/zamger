@@ -5,3 +5,5 @@
 /vendor/*
 /docker/data/*
 /docker/dbdata/*
+/composer.lock
+/composer.phar
