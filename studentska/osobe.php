@@ -726,7 +726,15 @@ else if ($akcija == "upis") {
 		$ok_izvrsiti_upis = false;
 	}
 
-
+	// Da li je apsolvent?
+	if ($ponovac && ($semestar == $studij_trajanje || $semestar == $studij_trajanje - 1) && !$ok_izvrsiti_upis && !param('apsolvent')) {
+		$apsolvent = "";
+		$broj_ponavljanja = db_get("SELECT COUNT(*) FROM student_studij WHERE student=$student AND studij=$studij AND semestar=$semestar AND ponovac=1");
+		if ($broj_ponavljanja == 0) $apsolvent = "CHECKED";
+		?>
+		<p><input type="checkbox" name="apsolvent" <?=$apsolvent?>> Apsolvent</p>
+		<?
+	}
 
 	// Da li ima nepoložene predmete sa ranijih semestara?
 	global $zamger_predmeti_pao;
@@ -1097,17 +1105,11 @@ else if ($akcija == "upis") {
 		// Upisujemo studenta na novi studij
 		if (!$dry_run) {
 			if (!$ponovac) $ponovac=0;
-			if (!$plan_studija) $plan_studija=0;
-			
-			// Da li je apsolvent?
-			$student_status = 0;
-			if ($ponovac && ($semestar == $studij_trajanje || $semestar == $studij_trajanje - 1)) {
-				// Da li je ponovac prvi put ili više puta
-				$broj_ponavljanja = db_get("SELECT COUNT(*) FROM student_studij WHERE student=$student AND studij=$studij AND semestar=$semestar AND ponovac=1");
-				if ($broj_ponavljanja == 0) $student_status = 1;
-			}
-			
-			db_query("insert into student_studij set student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$student_status");
+
+			$status_studenta = 0;
+			if (param('apsolvent')) $status_studenta = 1;
+
+			db_query("INSERT INTO student_studij SET student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$status_studenta");
 			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
 		}
 		
@@ -2379,15 +2381,15 @@ else if ($akcija == "edit") {
 		// Trenutno upisan na semestar:
 		$q220 = db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, status.naziv
 		FROM student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns, status_studenta status
-		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id AND ss.status_studenta=status.id 
+		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id AND ss.status_studenta=status.id
 		ORDER BY ag.naziv DESC");
 		$studij="0";
 		$studij_id=$semestar=0;
 		$puta=1;
 		$status_studenta = "";
 
-		// Da li je ikada slusao nesto?
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=$studij_ciklus=0;
+		// Da li je ikada slušao nešto?
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=$studij_ciklus=-1;
 	
 		while ($r220=db_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2397,7 +2399,7 @@ else if ($akcija == "edit") {
 				$studij_trajanje=$r220[5];
 				$nacin_studiranja="kao $r220[6]";
 				$studij_ciklus=$r220[7];
-				if ($r220[9] != "Student") $status_studenta = " - " .$r220[9];
+				if ($r220[8] != "Student") $status_studenta = " - " .$r220[8];
 			}
 			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
 				$puta++;
@@ -2545,7 +2547,6 @@ else if ($akcija == "edit") {
 
 
 		// UPIS U SLJEDEĆU AK. GODINU
-
 
 		if ($nova_ak_god!=0) { // Ne prikazuj podatke o upisu dok se ne kreira nova ak. godina
 
