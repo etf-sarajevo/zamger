@@ -13,6 +13,7 @@
     }
   ],
   "require": {
+    "ext-ldap": "*",
     "stevenmaguire/oauth2-keycloak": "^2.1"
   }
 }
