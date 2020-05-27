@@ -19,7 +19,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 $id_zavrsni = intval($_REQUEST['zavrsni']);
 
-$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.drugi_mentor as mentor2_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, z.clan_komisije2 as clan2_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka as odluka, s.institucija as institucija
+$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.drugi_mentor as mentor2_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, z.clan_komisije2 as clan2_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka_komisija as odluka, s.institucija as institucija
 from zavrsni as z, predmet as p, institucija as i, ponudakursa as pk, studij as s, tipstudija as ts
 where z.id=$id_zavrsni and z.predmet=p.id and p.institucija=i.id and ". // uslovi za detekciju ciklusa studija
 "pk.predmet=p.id and pk.akademska_godina=z.akademska_godina and pk.studij=s.id and s.tipstudija=ts.id");
