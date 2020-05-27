@@ -43,8 +43,8 @@ $ag_naziv = db_result($q10,0,0);
 
 
 $q20 = db_query("SELECT o.ime, o.imeoca, o.imemajke, o.prezime, UNIX_TIMESTAMP(ko.datum_u_indeksu), z.broj_diplome, stepen.naziv
-FROM osoba as o, konacna_ocjena as ko, predmet as p, student_studij as ss, studij as s, tipstudija as ts, zavrsni as z, akademska_godina_predmet as agp, strucni_stepen as stepen
-WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocjena>5 AND o.id=ss.student AND ss.studij=s.id AND ss.akademska_godina=$ag AND ss.semestar mod 2=0 AND s.tipstudija=ts.id AND ts.ciklus=$ciklus AND z.student=o.id AND z.predmet=p.id AND z.akademska_godina=$ag AND agp.akademska_godina=$ag AND agp.predmet=p.id AND  (agp.tippredmeta=1000 or agp.tippredmeta=1001) AND s.strucni_stepen=stepen.id
+FROM osoba as o, konacna_ocjena as ko, predmet as p, student_studij as ss, studij as s, tipstudija as ts, zavrsni as z, akademska_godina_predmet as agp, strucni_stepen stepen
+WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocjena>5 AND o.id=ss.student AND ss.studij=s.id AND ss.akademska_godina=$ag AND ss.semestar mod 2=1 AND s.tipstudija=ts.id AND ts.ciklus=$ciklus AND z.student=o.id AND z.predmet=p.id AND z.akademska_godina=$ag AND agp.akademska_godina=$ag AND agp.predmet=p.id AND (agp.tippredmeta=1000 or agp.tippredmeta=1001) AND s.strucni_stepen=stepen.id
 ORDER BY o.prezime, o.ime"); // 1000 = tip predmeta "Završni rad"
 
 $rbr=0;
