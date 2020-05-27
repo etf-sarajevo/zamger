@@ -1935,6 +1935,7 @@ CREATE TABLE IF NOT EXISTS `studij` (
   `moguc_upis` tinyint(1) NOT NULL,
   `tipstudija` int(11) NOT NULL,
   `preduslov` int(11) NOT NULL,
+  `strucni_stepen` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
@@ -2752,6 +2753,7 @@ ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`i
 -- Constraints for table `projekat`
 --
 ALTER TABLE `studij` ADD FOREIGN KEY (`tipstudija`) REFERENCES `tipstudija`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `studij` ADD FOREIGN KEY (`strucni_stepen`) REFERENCES `strucni_stepen`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `zahtjev_za_potvrdu`

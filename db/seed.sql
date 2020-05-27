@@ -845,7 +845,15 @@ INSERT INTO `strucni_stepen` (`id`, `naziv`, `titula`) VALUES
 (6, 'Diplomirani inženjer mašinstva', 'dipl.ing.'),
 (7, 'Diplomirani inženjer građevinarstva', 'dipl.ing.'),
 (8, 'Diplomirani ekonomista', 'dipl.ecc.'),
-(9, 'Diplomirani fizičar', 'dipl.fiz.');
+(9, 'Diplomirani fizičar', 'dipl.fiz.'),
+(10, 'Bakalaureat/Bachelor inžinjer računarstva i informatike', 'BA ing.'),
+(11, 'Bakalaureat/Bachelor inžinjer automatike i elektronike', 'BA ing.'),
+(12, 'Bakalaureat/Bachelor inžinjer elektroenergetike', 'BA ing.'),
+(13, 'Bakalaureat/Bachelor inžinjer telekomunikacija', 'BA ing.'),
+(14, 'Magistar diplomirani inžinjer računarstva i informatike', 'Mr. dipl. ing.'),
+(15, 'Magistar diplomirani inžinjer automatike i elektronike', 'Mr. dipl. ing.'),
+(16, 'Magistar diplomirani inžinjer elektroenergetike', 'Mr. dipl. ing.'),
+(17, 'Magistar diplomirani inžinjer telekomunikacija', 'Mr. dipl. ing.');
 
 
 --
