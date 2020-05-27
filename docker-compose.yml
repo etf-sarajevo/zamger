@@ -24,6 +24,8 @@ services:
       XDEBUG_CONFIG: remote_host=localhost
   mysql:
     image: phpstorm/mysql
+    ports:
+      - "3306:3306"
     volumes:
       - ./docker/dbdata:/var/lib/mysql
       - ./db:/docker-entrypoint-initdb.d
