@@ -17,7 +17,7 @@ function nastavnik_projekti() {
 	if (!$user_siteadmin) 
 	{
 		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (db_num_rows($q10)<1 || db_result($q10,0,0)=="asistent") {
+		if (db_num_rows($q10)<1) {
 			zamgerlog("nastavnik/projekti privilegije (predmet pp$predmet)",3);
 			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo pristupa ovoj opciji");
@@ -655,40 +655,5 @@ function nastavnik_projekti() {
 	}
 
 } // function
-
-
-/*function rmdir_recursive($dirname)
-{
-    // Sanity check
-    if (!file_exists($dirname)) 
-	{
-        return false;
-    }
-
-    // Simple delete for a file
-    if (is_file($dirname) || is_link($dirname))
-	{
-        return unlink($dirname);
-    }
-
-    // Loop through the folder
-    $dir = dir($dirname);
-    while (false !== $entry = $dir->read()) 
-	{
-        // Skip pointers
-        if ($entry == '.' || $entry == '..') 
-		{
-            continue;
-        }
-
-        // Recurse
-        rmdir_recursive($dirname . DIRECTORY_SEPARATOR . $entry);
-    }
-
-    // Clean up
-    $dir->close();
-    return rmdir($dirname);
-}*/
-
 
 ?>

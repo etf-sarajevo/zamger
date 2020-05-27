@@ -290,11 +290,21 @@ else print "(nije ni u jednoj grupi)";
 <?
 
 
+// Projekat
+
+$projekat = db_get("select distinct p.id from student_projekat as sp, projekat as p where sp.projekat=p.id and p.predmet=$predmet and p.akademska_godina=$ag and sp.student=$student");
+if ($projekat) {
+	?>
+	<h2><a href="?sta=nastavnik/projekti&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=projektna_stranica&projekat=<?=$projekat?>">Projekat</a></h2>
+	<?
+}
+
 
 // Promjena grupe
 
 $q60=db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0 order by naziv");
 if (db_num_rows($q60)>0) {
+	if ($labgrupa == 0) $nijedna = " SELECTED"; else $nijedna = "";
 	?>
 	<?=genform("POST");?>
 	<input type="hidden" name="akcija" value="promjena_grupe">
@@ -309,7 +319,7 @@ if (db_num_rows($q60)>0) {
 	}
 	?>
 	</select>
-	<input type="submit" value=" Promijeni grupu " class="default">
+	<input type="submit" value=" Promijeni grupu " class="default"></p>
 	</form>
 	<?
 }
@@ -659,7 +669,7 @@ for ($i=1;$i<=$max_broj_zadataka;$i++) {
 2. MySQL <4.1 ne podrzava subqueries */
 
 
-$bodova_sve_zadace=0;
+$bodova_sve_zadace=$mogucih=0;
 
 $q21 = db_query("select id,naziv,bodova,zadataka from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente order by id");
 while ($r21 = db_fetch_row($q21)) {

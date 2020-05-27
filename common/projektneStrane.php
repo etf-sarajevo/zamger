@@ -17,15 +17,18 @@ function common_projektneStrane() {
 	$section 	= $_REQUEST['section'];
 	$subaction  = $_REQUEST['subaction'];
 	$id			= intval($_REQUEST['id']);  //editing links, rss....
+	
+	$nastavnik = (db_get("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag") > 0);
 
-	if ($user_student && !$user_siteadmin) //ordinary student
+	if (!$nastavnik && !$user_siteadmin) //ordinary student
 	{
 		$actualProject = getActualProjectForUserInPredmet($userid, $predmet, $ag);
-		if ($actualProject[id] != $projekat)
+		if ($actualProject['id'] != $projekat)
 		{
 			//user is not in this project in this predmet...hijack attempt?
 			zamgerlog("projektne strane: korisnik nije na projektu $projekat (pp$predmet, ag$ag)", 3);
 			zamgerlog2("nije na projektu", $projekat);
+			niceerror("Niste uključeni u odabrani projekat");
 			return;	
 		}
 		
@@ -33,22 +36,25 @@ function common_projektneStrane() {
 	
 	$params = getPredmetParams($predmet, $ag);
 	$project = getProject($projekat);	
-	$members = fetchProjectMembers($project[id]);
+	$members = fetchProjectMembers($project['id']);
 	
-	if ($params[zakljucani_projekti] == 0)
+	if ($params['zakljucani_projekti'] == 0)
 	{
 		zamgerlog("projektne strane: jos nisu otvorene! (pp$predmet, ag$ag)", 3);
 		zamgerlog2("svi projekti su jos otkljucani", $predmet, $ag);
+		niceerror("Projektne strane još nisu otvorene. Kontaktirajte predmetnog nastavnika");
 		return;
 	}
 	
 
-	if ($user_student && !$user_siteadmin)
+	if (!$nastavnik && !$user_siteadmin)
 		$linkPrefix = "?sta=student/projekti&akcija=projektnastranica&projekat=$projekat&predmet=$predmet&ag=$ag";
-	elseif ($user_nastavnik)
+	elseif ($nastavnik)
 		$linkPrefix = "?sta=nastavnik/projekti&akcija=projektna_stranica&projekat=$projekat&predmet=$predmet&ag=$ag";
-	else
+	else {
+		niceerror("Nemate pravo pristupa projektnoj stranici");
 		return;
+	}
 
 	?>  
      <h2><?=filtered_output_string($project[naziv]) ?></h2>
@@ -3022,7 +3028,7 @@ function insertThread($data)
 	//generate unique id value
 	$thread_id = generateIdFromTable('bb_tema');
 	
-	$query = sprintf("INSERT INTO bb_tema (id, osoba, projekat) VALUES('%d', '%d', '%d')", 
+	$query = sprintf("INSERT INTO bb_tema (id, prvi_post, zadnji_post, osoba, projekat) VALUES('%d', NULL, NULL, '%d', '%d')", 
 											$thread_id,
 											intval($data['osoba']), 
 											intval($data['projekat'])											
@@ -3115,59 +3121,34 @@ function updatePost($data, $id)
 
 function deletePost($id)
 {	
-	$query = sprintf("DELETE FROM bb_post WHERE id='%d' LIMIT 1", 
-					intval($id)
-					);
+	$id = intval($id);
+	$tema_prvi = db_get("SELECT id FROM bb_tema WHERE prvi_post='$id' LIMIT 1");
+	$tema_zadnji = db_get("SELECT id FROM bb_tema WHERE zadnji_post='$id' LIMIT 1");
 	
-	$result = db_query($query);
-	
-	if (db_affected_rows() == 0)
-		return false;
-		
-	$query = sprintf("DELETE FROM bb_post_text WHERE post='%d' LIMIT 1", 
-					intval($id)
-					);
-	
-	$result = db_query($query);
-	
-	if (db_affected_rows() == 0)
-		return false;
-	
-	//if first post, delete thread
-	
-	$result = db_query("SELECT prvi_post, id FROM bb_tema WHERE prvi_post='$id' LIMIT 1");
-	
-	if (db_num_rows($result) > 0)
-	{
-		//delete evetyhing
-		$row = db_fetch_assoc($result);
-		$thread = $row[id];
-		
-		$result = db_query("DELETE FROM bb_tema WHERE id='$thread' LIMIT 1");
-		if ($result == false || db_affected_rows() == 0)
-			return false;
-			
-		return true;
+	if ($tema_prvi==$tema_zadnji) {
+		// Privremeno postavljamo prvi i zadnji post na NULL da bi se mogli obrisati
+		db_query("UPDATE bb_tema SET prvi_post=NULL, zadnji_post=NULL WHERE id=$tema_prvi");
+	} else {
+		if ($tema_prvi) {
+			// Pronalazimo novi prvi post
+			$novi_prvi = db_get("SELECT id FROM bb_post WHERE tema=$tema_prvi ORDER BY vrijeme LIMIT 1");
+			db_query("UPDATE bb_tema SET zadnji_post=$novi_prvi WHERE id=$tema_prvi");
+		}
+		if ($tema_zadnji) {
+			// Pronalazimo novi zadnji post
+			$novi_zadnji = db_get("SELECT id FROM bb_post WHERE tema=$tema_zadnji ORDER BY vrijeme DESC LIMIT 1");
+			db_query("UPDATE bb_tema SET zadnji_post=$novi_zadnji WHERE id=$tema_zadnji");
+		}
 	}
 	
-	$result = db_query("SELECT zadnji_post, id FROM bb_tema WHERE zadnji_post='$id' LIMIT 1");
-	if (db_num_rows($result) > 0)
-	{
-		//assign this value to the new last post
-		$row = db_fetch_assoc($result);
-		$thread = $row[id];
-		
-		$result = db_query("SELECT id FROM bb_post WHERE tema='$thread' ORDER BY vrijeme DESC LIMIT 1");
-		$row = db_fetch_assoc($result);
-		$post = $row[id];
-		
-		$result = db_query("UPDATE bb_tema SET zadnji_post='$post' WHERE id='$thread' LIMIT 1");
-		if ($result == false || db_affected_rows() == 0)
-			return false;
-		
-		return true;		
-	}	
-
+	db_query("DELETE FROM bb_post_text WHERE post=$id LIMIT 1");
+	db_query("DELETE FROM bb_post WHERE id=$id LIMIT 1");
+	
+	// Ako je ovo jedini post u temi, brišemo cijelu temu 
+	if ($tema_prvi==$tema_zadnji) {
+		$result = db_query("DELETE FROM bb_tema WHERE id='$tema_prvi' LIMIT 1");
+	}
+	
 	return true;
 }
 
