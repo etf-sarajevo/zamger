@@ -1582,11 +1582,15 @@ else if ($akcija == "predmeti") {
 	// Ispis svih predmeta na studiju semestru je funkcija, pošto pozivanje unutar petlje ovisi o nivou spiska
 
 	function dajpredmete($studij, $semestar, $student, $ag, $spisak) {
-		$q2100 = db_query("select pk.id, p.id, p.naziv, pk.obavezan from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$ag and pk.predmet=p.id order by p.naziv");
+		$q2100 = db_query("SELECT pk.id, p.id, p.naziv, pk.obavezan, pp.naziv 
+			FROM ponudakursa as pk, predmet AS p 
+			WHERE pk.studij=$studij AND pk.semestar=$semestar AND pk.akademska_godina=$ag AND pk.predmet=p.id 
+			ORDER BY p.naziv");
 		while ($r2100 = db_fetch_row($q2100)) {
 			$ponudakursa = $r2100[0];
 			$predmet = $r2100[1];
 			$predmet_naziv = $r2100[2];
+			if ($r2100[4]) $predmet_naziv = $r2100[4];
 			print "<li>$predmet_naziv";
 			if ($r2100[3]!=1) print " (izborni)";
 
