@@ -52,7 +52,7 @@ WHERE o.id=ko.student AND ko.predmet=p.id AND ko.akademska_godina=$ag AND ko.ocj
 ORDER BY o.prezime, o.ime"); // 1000 = tip predmeta "Završni rad"
 
 $rbr=0;
-while (db_fetch7($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplome)) {
+while (db_fetch6($q20, $ime, $ime_oca, $ime_majke, $prezime, $datum, $broj_diplome)) {
 	$ime_roditelja = $ime_oca;
 	if ($ime_roditelja=="" || $ime_roditelja=="nepoznato" || $ime_roditelja=="Nepoznato")
 		$ime_roditelja = $ime_majke;

@@ -2033,7 +2033,7 @@ else if ($akcija == "edit") {
 					zamgerlog2("sistemska email adresa dodana", $osoba, intval(db_insert_id()), 0, "$email_adresa");
 				}
 				else if (db_result($q115,0,0) == 0) {
-					$q114 = db_query("update email set sistemska=1 where email='$email_adresa' and osoba=$osoba");
+					$q114 = db_query("update email set sistemska=1 where adresa='$email_adresa' and osoba=$osoba");
 					zamgerlog("email adresa proglasena za sistemsku za u$osoba", 2);
 					zamgerlog2("email adresa proglasena za sistemsku", $osoba, 0, 0, "$email_adresa");
 				}
@@ -2821,7 +2821,7 @@ else if ($akcija == "edit") {
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="angazuj">
 		<select name="predmet" class="default"><?
-		$q190 = db_query("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id order by p.naziv");
+		$q190 = db_query("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id,p.naziv order by p.naziv");
 		while ($r190 = db_fetch_row($q190)) {
 			print "<option value=\"$r190[0]\">$r190[1] ($r190[2])</a>\n";
 		}
@@ -2858,7 +2858,7 @@ else if ($akcija == "edit") {
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="daj_prava">
 		<select name="predmet" class="default"><?
-		$q190 = db_query("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id order by p.naziv");
+		$q190 = db_query("select p.id, p.naziv, i.kratki_naziv from predmet as p, ponudakursa as pk, institucija as i where pk.predmet=p.id and pk.akademska_godina=$id_ak_god and p.institucija=i.id group by p.id, p.naziv order by p.naziv");
 		while ($r190 = db_fetch_row($q190)) {
 			print "<option value=\"$r190[0]\">$r190[1] ($r190[2])</a>\n";
 		}
