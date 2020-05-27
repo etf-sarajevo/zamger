@@ -1,20 +1,73 @@
-# Zamger docker image baziran na tutum/lamp
+# Zamger docker image baziran na phpstorm images
 
-# Pristupate Zamgeru na adresi http://localhost:8081
-# Prilikom prvog pokretanja servis može biti nedostupan 2-3 minute dok se kreira default baza
-# v6.0
+# Zamgeru pristupate na adresi: http://localhost:8081
+
+# Napomene:
+#  - Zamger konfiguracija koja radi sa ovim docker-compose.yml se nalazi u /lib/config.php.docker
+#  - Kod prvog pokretanja sačekajte par minuta da se kreira defaultna baza podataka
+#  - Ako radite na linuxu, morate manuelno dati permisije za fajl docker/data:
+#       chmod 777 docker/data
+#    u suprotnom ćete dobijati permission denied poruke
 
 version: '2'
 services:
-  zamger:
-    image: tutum/lamp
+  web:
+    image: phpstorm/php-71-apache-xdebug
     ports:
-      - 8081:80
-      - 3306:3306
+      - "8081:80"
     volumes:
       - ./:/var/www/html
       - ./docker/data:/home/zamger
+    environment:
+      #For Windows and macOS, replace the line below with `host.docker.internal`, which will automatically resolve to the internal address of the host Docker is running on.
+      #For Linux, replace the line below with your hostname, which you can obtain by executing `hostname` in Terminal.
+      XDEBUG_CONFIG: remote_host=localhost
+  mysql:
+    image: phpstorm/mysql
+    volumes:
       - ./docker/dbdata:/var/lib/mysql
       - ./db:/docker-entrypoint-initdb.d
-    command:
-      /bin/sh -c "tr -d '\r' </app/docker/tutum-configure.sh > tmp2.sh; /bin/sh tmp2.sh"
+      - ./docker/my.cnf.d:/etc/my.cnf.d
+    environment:
+      MYSQL_DATABASE: zamger
+      MYSQL_ROOT_PASSWORD: zamgerdocker
+      MYSQL_USER: zamger
+      MYSQL_PASSWORD: zamgerdocker
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Upute za keycloak: Da biste aktivirali KC podršku trebate:
+  #  - u config.php postaviti $conf_system_auth="keycloak", $conf_keycloak=true
+  #  - obratite pažnju da se KC malo duže startuje
+  #  - logirajte se na KC kao admin/admin, kreirajte realm "myrealm", dodajte klijenta "zamger", kreirajte neke users
+  #  - u rootu zamgera izvršite composer install da bi se kreirao vendor folder
+  #  - aktuelna verzija oauth2/keycloak biblioteke ima bug u podršci za keycloak v10+
+  #      https://github.com/stevenmaguire/oauth2-keycloak/issues/25
+  #    ovo ćete morati ručno pachovati u vendor folderu
+  #  - pošto keycloak mora biti dostupan na istoj adresi i iz web browsera i iz PHP koda, u hosts file dodajte
+  #      127.0.0.1  keycloak
+  #    alternativa bi bila docker host network a nisam siguran da bi to bilo dobro
+#  keycloak:
+#    image: quay.io/keycloak/keycloak
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      DB_VENDOR: h2
+#      KEYCLOAK_USER: admin
+#      KEYCLOAK_PASSWORD: admin
+
+  # Bitnami JasperReports server - https://hub.docker.com/r/bitnami/jasperreports/
+  # Instalacija izvještaja na JasperReports server se mora obaviti ručno, ne postoji automatizovani deployment.
+  # Izvještaji se moraju nalaziti u folderu Reports. Ne postavljati $conf_jasper na true dok se to ne osigura.
+  # Obratite pažnju da je ovaj docker image poprilično "težak". Pokretanje kontejnera će napuniti zamger bazu
+  # podataka Jasper tabelama koji počinju prefiksom JI... pošto je peglancija konfigurisati mysql kontejner
+  # sa dvije baze (kome nije mrsko može i to napraviti).
+#  jasper:
+#    image: bitnami/jasperreports
+#    ports:
+#      - "8082:8080"
+#    environment:
+#      JASPERREPORTS_DATABASE_NAME: zamger
+#      JASPERREPORTS_DATABASE_USER: zamger
+#      JASPERREPORTS_DATABASE_PASSWORD: zamgerdocker
+#      MARIADB_HOST: mysql
+

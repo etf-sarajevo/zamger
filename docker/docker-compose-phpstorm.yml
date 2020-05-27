@@ -7,9 +7,7 @@
 # Zamger konfiguracija trenutno ne nudi mogućnost postavljanja custom porta, to bi trebalo vjerovatno dodati
 
 # Pristupate Zamgeru na adresi http://localhost:8081
-# Prilikom prvog pokretanja servis može biti nedostupan 2-3 minute dok se kreira default baza
-
-version: '2'
+# Prilikom prvog pokretanja servis može biti nedostupan 2-3 minute dok se kreira default bazaersion: '2'
 services:
   debug:
     image: phpstorm/php-71-apache-xdebug

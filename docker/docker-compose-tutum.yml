@@ -1,0 +1,20 @@
+# Zamger docker image baziran na tutum/lamp
+
+# Pristupate Zamgeru na adresi http://localhost:8081
+# Prilikom prvog pokretanja servis može biti nedostupan 2-3 minute dok se kreira default baza
+# v6.0
+
+version: '2'
+services:
+  zamger:
+    image: tutum/lamp
+    ports:
+      - 8081:80
+      - 3306:3306
+    volumes:
+      - ./:/var/www/html
+      - ./docker/data:/home/zamger
+      - ./docker/dbdata:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+    command:
+      /bin/sh -c "tr -d '\r' </app/docker/tutum-configure.sh > tmp2.sh; /bin/sh tmp2.sh"
