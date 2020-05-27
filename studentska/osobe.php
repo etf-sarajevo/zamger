@@ -169,13 +169,14 @@ if ($akcija == "podaci") {
 		$naucni_stepen = intval($_REQUEST['_lv_column_naucni_stepen']); if ($naucni_stepen==-1) $naucni_stepen = "NULL";
 
 		// Sredjujem datum
+		$datum_rodjenja = "NULL";
 		if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_rodjenja'], $matches)) {
 			$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
 			if ($godina<100)
 				if ($godina<50) $godina+=2000; else $godina+=1900;
 			if ($godina<1000)
 				if ($godina<900) $godina+=2000; else $godina+=1000;
-            $datum_rodjenja="$godina-$mjesec-$dan";
+			$datum_rodjenja="'$godina-$mjesec-$dan'";
 		}
 
 		// Mjesto rođenja
@@ -208,7 +209,7 @@ if ($akcija == "podaci") {
 			$admid = db_result($q3,0,0);
 		}
 
-		$q395 = db_query("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton='$kanton', strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
+		$q395 = db_query("update osoba set ime='$ime', prezime='$prezime', imeoca='$imeoca', prezimeoca='$prezimeoca', imemajke='$imemajke', prezimemajke='$prezimemajke', spol='$spol', brindexa='$brindexa', datum_rodjenja=$datum_rodjenja, mjesto_rodjenja=$mjrid, nacionalnost=$nacionalnost, drzavljanstvo=$drzavljanstvo, jmbg='$jmbg', adresa='$adresa', adresa_mjesto=$admid, telefon='$telefon', kanton=$kanton, strucni_stepen=$strucni_stepen, naucni_stepen=$naucni_stepen where id=$osoba");
 
 		zamgerlog("promijenjeni licni podaci korisnika u$osoba",4); // nivo 4 - audit
 		zamgerlog2("promijenjeni licni podaci korisnika", $osoba);
