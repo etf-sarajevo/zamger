@@ -1242,7 +1242,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 	} else if ($ciklus_studija==2) {
 		$rstrucni_stepen=2; // 2 = bakalaureat elektrotehnike - ovo bi vjerovatno trebalo unositi
 	} else if ($ciklus_studija==3) {
-		$rstrucni_stepen=1; // 2 = magistar elektrotehnike - ovo bi vjerovatno trebalo unositi
+		$rstrucni_stepen=1; // 1 = magistar elektrotehnike - ovo bi vjerovatno trebalo unositi
 	}
 
 	// Obrada datuma
@@ -1399,8 +1399,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
 
 		// Nova osoba
-		//$min_id=1;
-		$min_id = 2500; // radi lakseg grupisanja brojeva
+		$min_id=1;
 
 		$q310 = db_query("select id+1 from osoba where id>=$min_id order by id desc limit 1");
 		if (db_num_rows($q310)<1)

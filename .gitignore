@@ -1,1 +1,7 @@
 /lib/config.php
+/.idea/deployment.xml
+/.idea/sshConfigs.xml
+/.idea/webServers.xml
+/vendor/*
+/docker/data/*
+/docker/dbdata/*

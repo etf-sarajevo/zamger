@@ -1180,7 +1180,7 @@ else if ($akcija == "upis") {
 
 		// Unos zaduženja na studentovu karticu
 		if (!$dry_run && $conf_knjigovodstveni_servis) {
-		    global $conf_url_upisi_zaduzenje;
+			global $conf_url_upisi_zaduzenje;
 			foreach($zaduzenja_xml as $zaduzenje) {
 				xml_request($conf_url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
 			}
@@ -1898,7 +1898,7 @@ else if ($akcija == "edit") {
 				}
 
 				// Pokušavamo mail alias
-				$sr = ldap_search($ds, "", "mail=$login_ldap$conf_ldap_domain", array() );
+				$sr = ldap_search($ds, $conf_ldap_dn, "mail=$login_ldap$conf_ldap_domain", array() );
 				if (!$sr) {
 					zamgerlog("ldap_search() 2 nije uspio.",3);
 					zamgerlog2("ldap_search() nije uspio.");
@@ -2966,7 +2966,7 @@ else {
 		<?=genform("GET")?>
 		<input type="hidden" name="offset" value="0"> <?/*resetujem offset*/?>
 		<input type="text" size="50" name="search" value="<? if ($src!="sve") print $src?>"> <input type="Submit" value=" Pretraži "></form>
-            <a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a></p>
+		<a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a></p>
 	<?
 	if ($src) {
 		$rezultata=0;
@@ -3057,7 +3057,7 @@ else {
 		<input type="hidden" name="akcija" value="novi">
 		<b>Unesite novu osobu:</b><br/>
 		<table border="0" cellspacing="0" cellpadding="0" width="100%">
-		<tr><td>Ime<? if ($conf_system_auth == "ldap") print " ili login"?>:</td><td>Prezime:</td><td>&nbsp;</td></tr>
+		<tr><td>Ime<? if ($conf_ldap_search) print " ili login"?>:</td><td>Prezime:</td><td>&nbsp;</td></tr>
 		<tr>
 			<td><input type="text" name="ime" size="15"></td>
 			<td><input type="text" name="prezime" size="15"></td>
