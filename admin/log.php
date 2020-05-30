@@ -5,10 +5,9 @@
 
 function admin_log() {
 
-global $userid, $conf_files_path;
+global $userid, $conf_files_path, $prva_godina_zamgera;
 
-global $_lv_; // We use form generators
-
+$prva_godina_zamgera = 2008; // Moramo nekako ograničiti petlje koje traže najstariju godinu
 
 $maxlogins = 20;
 $stardate = int_param('stardate');
@@ -63,10 +62,10 @@ if ($pretraga) {
 		$rezultata = db_num_rows($q100);
 	}
 
+	$filterupita = "";
 	if ($rezultata>0) {
 		while ($r100 = db_fetch_row($q100)) {
-			$grepovi[] = " ($r100[0]) - ";
-			$grepovi[] = "u$r100[0]\d";
+			$grepovi[] = " ($r100[0]) - \|u$r100[0][^0-9]";
 			if ($filterupita!="") $filterupita .= " OR ";
 			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
 			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
@@ -349,31 +348,30 @@ do {
 
 
 		// Pošto idemo unazad, login predstavlja kraj zapisa za korisnika
+		$logid = "$usr.".$lastlogin[$usr];
 
 		if ($evt == "login") {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-				$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
-				$user_log[$lastlogin[$usr]] = $usr;
+				$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
 				$stardate=$timestamp;
 				$lastlogin[$usr]=0;
 			}
 		}
 		else if (strstr($evt," su=")) {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
-			$user_log[$lastlogin[$usr]] = $usr;
+			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
 			$lastlogin[$usr]=0;
 		}
 
 
 		else {
-			$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
-			$user_log[$lastlogin[$usr]] = $usr;
+			if (!array_key_exists($logid, $eventshtml)) $stardate=$timestamp;
+			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
 		}
 	}
 	
 	$mjesec--;
 	if ($mjesec==0) { $mjesec=12; $godina--; }
-
+	if ($godina<$prva_godina_zamgera) break;
 } while($logins <= $maxlogins);
 
 
@@ -383,9 +381,8 @@ foreach ($eventshtml as $logid => $event) {
 	if (substr($event,0,4)!="<img") {
 		// Login počinje sa <br/>
 
-		// logid je sada vrijeme
-		$nicedate = " (".date("d.m.Y. H:i:s", $logid).")";
-		$userid = $user_log[$logid];
+		list($userid, $timestamp) = explode(".", $logid);
+		$nicedate = " (".date("d.m.Y. H:i:s", $timestamp).")";
 
 		if ($userid==0) {
 			$imeprezime = "ANONIMNI PRISTUPI";
@@ -431,14 +428,19 @@ print "<p>&nbsp;</p><p><a href=\"".genuri()."&stardate=$stardate\">Sljedećih $m
 // Ako ne postoji logfile za dati stardate, ova funkcija će probati naći najnoviji logfile
 // koji je stariji od datog, ili vratiti nulu ako takav ne postoji
 function daj_najnoviji_stardate($stardate) {
-	global $conf_files_path;
+	global $conf_files_path, $prva_godina_zamgera;
 
 	$godina = date("Y", $stardate);
 	$mjesec = date("m", $stardate);
+	$logfile = "";
 	do {
 		$mjesec--;
-		if ($mjesec == 0) { $mjesec=12; $godina--; }
-		$logfile = $conf_files_path . "/log/$godina/$gmj.log";
+		if ($mjesec == 0) {
+			$mjesec=12;
+			$godina--;
+			if ($godina < $prva_godina_zamgera) break;
+		}
+		$logfile = $conf_files_path . "/log/$godina/" . sprintf("%d-%02d.log", $godina, $mjesec);
 	} while(!file_exists($logfile));
 	
 	// Uzimamo prvu sekundu sljedećeg mjeseca, pa smanjujemo za 1
