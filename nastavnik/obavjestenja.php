@@ -257,12 +257,6 @@ if (db_num_rows($q10)>0) {
 }
 $labgrupa = 0;
 while ($r10 = db_fetch_row($q10)) {
-	if ($obrisi == $r10[0]) {
-		$q20 = db_query("delete from poruka where id=$obrisi");
-		zamgerlog("obrisano obavjestenje (id $obrisi)",2);
-		zamgerlog2("obrisana poruka", $obrisi);
-		continue;
-	}
 	print "<li><b>(".date("d.m.Y",$r10[1]).")</b> ".$r10[2];
 	$tekst_poruke = str_replace("\n", "<br/>", $r10[3]);
 	if (strlen($tekst_poruke)>0) {

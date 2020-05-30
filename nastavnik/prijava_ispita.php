@@ -467,7 +467,7 @@ if ($dan==0) {
 	<input type="submit" value="<? 
 	if ($_REQUEST["akcija"]=="izmijeni" || $_REQUEST["akcija"]=="studenti") print 'Izmijeni'; else print 'Dodaj';
 	?>"  class="default"><br/><br/>
-	<a href="?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>">&lt;&lt;&lt; Nazad</a><br/>
+		<a href="?sta=nastavnik/ispiti&predmet=<?=$predmet?>&ag=<?=$ag?>">&lt;&lt;&lt; Nazad</a></p>
 </form>
 
 <?

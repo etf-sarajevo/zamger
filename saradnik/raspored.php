@@ -191,7 +191,7 @@ function saradnik_raspored($tip) {
 	$neparni = db_result($q10,0,0);
 
 	$whereCounter = 0;
-	$spisak_predmeta = "";
+	$spisak_predmeta = $sqlPredmet = "";
 	
 	if ($user_studentska && $dajsve==1) {
 		$q20 = db_query("SELECT pk.predmet, pk.akademska_godina, pk.semestar, p.id, p.naziv FROM 

@@ -77,7 +77,8 @@ function nastavnik_zavrsni() {
 				</tr>
 			<?
 
-	
+			$rbr = 0;
+			$nema = "<font color=\"gray\">(nije definisan)</font>";
 			while ($r900 = db_fetch_row($q900)) {
 				$rbr++;
 				$id_zavrsni = $r900[0];
@@ -97,13 +98,13 @@ function nastavnik_zavrsni() {
 					$student .= "<br>(<a href=\"$linkPrefix&akcija=potvrdi_kandidata&id=$id_zavrsni\">potvrdi kandidata</a>)";
 
 				$predsjednik_komisije = tituliraj($r900[5], false);
-				if ($predsjednik_komisije=="") $predsjednik_komisije = "<font color=\"gray\">(nije definisan)</font>";
+				if ($predsjednik_komisije=="") $predsjednik_komisije = $nema;
 
 				$clan_komisije = tituliraj($r900[6], false);
-				if ($clan_komisije=="") $clan_komisije = "<font color=\"gray\">(nije definisan)</font>";
+				if ($clan_komisije=="") $clan_komisije = $nema;
 
 				$termin_odbrane = date("d.m.Y h:i",$r900[7]);
-				if ($r900[7] == 0) $termin_odbrane = "<font color=\"gray\">(nije definisan)</font>";
+				if ($r900[7] == 0) $termin_odbrane = $nema;
 
 				$konacna_ocjena = "<font color=\"gray\">(nije ocijenjen)</font>";
 				if ($student_id>0) {
@@ -258,7 +259,7 @@ function nastavnik_zavrsni() {
 				if (db_num_rows($q009) > 0) {
 					$odluka_komisija = db_result($q009, 0, 0);
 				} else {
-					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_komisija), broj_protokola='$broj_odluke_komisija', student=$student");
+					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_komisija), broj_protokola='$broj_odluke_komisija', student=$kandidat");
 					$odluka_komisija = db_insert_id();
 				}
 			} else $odluka_komisija = 0;
@@ -289,7 +290,7 @@ function nastavnik_zavrsni() {
 				if (db_num_rows($q009) > 0) {
 					$odluka_tema = db_result($q009, 0, 0);
 				} else {
-					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_tema), broj_protokola='$broj_odluke_tema', student=$student");
+					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_tema), broj_protokola='$broj_odluke_tema', student=$kandidat");
 					$odluka_tema = db_insert_id();
 				}
 			} else $odluka_tema = 0;
@@ -387,6 +388,7 @@ function nastavnik_zavrsni() {
 		$q100 = db_query("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet AS sp, ponudakursa AS pk, osoba AS o WHERE pk.predmet=$predmet AND pk.akademska_godina=$ag AND pk.id=sp.predmet AND sp.student=o.id ORDER BY o.prezime, o.ime");
 		$rowcounter5 = 0;
 		$studenti_ispis = "<option value=0>(nije definisan)</option>\n";
+		$cnt5 = 0;
 		while ($r100 = db_fetch_row($q100)) {
 			$cnt5 = $cnt5 + 1;
 			if ($r100[0] == $id_studenta) $opcija = " SELECTED";

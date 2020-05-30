@@ -285,7 +285,7 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			while ($r86a = db_fetch_row($q86a)) {
 				$student = $r86a[0];
 				$ponudakursa = $r86a[1];
-				print "Ažuriram bodove za studenta $brojac od $brojstudenata<br />\n\n";
+				print "Ažuriram bodove za studenta $brojac od $broj_studenata<br />\n\n";
 
 				update_komponente($student,$ponudakursa,$komponenta);
 			}
@@ -346,9 +346,12 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 	$programskijezik = intval($_POST['_lv_column_programskijezik']);
 	if ($_POST['automatsko_testiranje']) $automatsko_testiranje=1; else $automatsko_testiranje=0;
 	if ($_POST['readonly']) $readonly=1; else $readonly=0;
-
-	$postavka_file = $_FILES['postavka_zadace_file']['name'];
+	
+	$postavka_file = strip_tags(basename($_FILES['postavka_zadace_file']['name']));
 	if ($postavka_file != "") {
+		// Ukidam HTML znakove radi potencijalnog XSSa
+		$postavka_file = str_replace("&", "", $postavka_file);
+		$postavka_file = str_replace("\"", "", $postavka_file);
 		if (!file_exists("$conf_files_path/zadace/$predmet-$ag/postavke")) {
 			mkdir("$conf_files_path/zadace/$predmet-$ag/postavke", 0755, true);
 		}

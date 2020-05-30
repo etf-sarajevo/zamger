@@ -305,12 +305,13 @@ START
 *********************/
 function fetchLinksForProject($id, $offset, $rowsPerPage)
 {
-	$result = db_query("SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC ");
+	$query = "SELECT * FROM projekat_link WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC ";
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
-		$query .="LIMIT $offset, $rowsPerPage";
-
+		$query .= "LIMIT $offset, $rowsPerPage";
+	$result = db_query($query);
+	
 	$list = array();
 	while ($row = db_fetch_assoc($result))
 		$list[] = $row;	
@@ -360,11 +361,12 @@ function getCountLinksForProject($id)
 
 function fetchRSSForProject($id, $offset, $rowsPerPage)
 {
-	$result = db_query("SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC");
+	$query = "SELECT * FROM projekat_rss WHERE projekat='$id' ORDER BY vrijeme DESC, naziv ASC";
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
 		$query .="LIMIT $offset, $rowsPerPage";
+	$result = db_query($query);
 
 	$list = array();
 	while ($row = db_fetch_assoc($result))
