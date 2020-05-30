@@ -31,7 +31,7 @@ if (db_num_rows($q10)<1) {
 if ($user_siteadmin) {
 	$q20 = db_query("select predmet, akademska_godina from labgrupa where id=$labgrupa");
 	if (db_num_rows($q20)<1) {
-		zamgerlog("nepoznata labgrupa (labgrupa $labgrupa predmet pp$predmet)",3);
+		zamgerlog("nepoznata labgrupa (labgrupa $labgrupa)",3);
 		zamgerlog2("nepoznata labgrupa", $labgrupa);
 		niceerror("Nepoznata grupa $labgrupa");
 		return;
@@ -39,8 +39,9 @@ if ($user_siteadmin) {
 } else {
 	$q20 = db_query("select np.predmet, np.akademska_godina from labgrupa as l, nastavnik_predmet as np where l.id=$labgrupa and l.predmet=np.predmet and l.akademska_godina=np.akademska_godina and np.nastavnik=$userid");
 	if (db_num_rows($q20)<1) {
+		$q20 = db_query("select predmet, akademska_godina from labgrupa where id=$labgrupa");
 		zamgerlog("nastavnik nije na predmetu (labgrupa g$labgrupa)",3);
-		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
+		zamgerlog2("nije saradnik na predmetu", db_result($q20,0,0), db_result($q20,0,1));
 		niceerror("Nemate pravo pristupa ovom studentu!");
 		return;
 	}
@@ -87,7 +88,7 @@ if (param('akcija') == "dodaj" && check_csrf_token()) {
 	list ($h,$m,$s) = explode(":", $_POST['vrijeme']);
 	$datum = date("Y-m-d H:i:s", mktime($h,$m,$s, $_POST['month'], $_POST['day'], $_POST['year']));
 	$komentar = db_escape($_POST['komentar']);
-	$q50 = db_query("insert into komentar set student=$stud_id, nastavnik=$userid, labgrupa=$labgrupa, predmet=$ponudakursa, datum='$datum', komentar='$komentar'");
+	$q50 = db_query("insert into komentar set student=$stud_id, nastavnik=$userid, labgrupa=$labgrupa, datum='$datum', komentar='$komentar'");
 
 	zamgerlog("dodan komentar na studenta u$stud_id labgrupa g$labgrupa",2);
 	zamgerlog2("dodan komentar na studenta", $stud_id, $labgrupa);
@@ -126,6 +127,7 @@ Trenutni datum i vrijeme:<br/>
 <textarea cols="35" rows="5" name="komentar"></textarea><br/>
 <input type="submit" value=" Pošalji " class="default"></form>
 </p>
+</body>
 <?
 
 

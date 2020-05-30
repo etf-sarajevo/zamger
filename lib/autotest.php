@@ -260,6 +260,8 @@ function autotest_sa_kodom($test, $student, $nastavnik) {
 	$test = $r110[0];
 	$global="\n".$r110[4]."\n";
 	$pozicija_globala=$r110[5];
+	
+	$rbr = 1234; // Trebalo bi uzeti redni broj testa iz baze, ali ovo nije uopšte bitno toliko
 
 	// Sadržaj maina
 	if ($programski_jezik == "C") {
@@ -672,7 +674,9 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 		print ">$r205[1] ($r205[2])</option>\n";
 	}
 	if (db_num_rows($q205) > 0) {
-		print "</select> <input type=\"submit\" value=\" Kreni \"></form>\n";
+		?>
+		</select> <input type="submit" value=" Kreni "></form>
+		<?
 	}
 
 	for ($zadatak=1; $zadatak<=$broj_zadataka; $zadatak++) {

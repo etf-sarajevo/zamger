@@ -4,7 +4,7 @@
 
 
 
-// TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena
+// TODO: Posto se prakticno sve akcije ovdje sada rade kroz studentsku sluzbu (osim promjene grupe), ovaj modul ce biti zamijenjen jednim readonly prozorom, a promjena grupe ce biti usavrsena - obrisati!!!
 
 
 function saradnik_izmjena_studenta() {
@@ -281,8 +281,8 @@ function _izmijeni_profil($student,$predmet) {
 	if ($vec_upisan_u_grupu==0) {
 		$q240 = db_query("insert into student_labgrupa set student=$student, labgrupa=$grupa");
 
-		// Update komponente za prisustvo
-		$q250 = db_query("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, akademska_godina_predmet as agp where pk.id=$predmet and pk.predmet=agp.predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
+		// Update komponente za prisustvo - ne znamo ni akademsku godinu
+		//$q250 = db_query("select tpk.komponenta from tippredmeta_komponenta as tpk, ponudakursa as pk, komponenta as k, akademska_godina_predmet as agp where pk.id=$predmet and pk.predmet=agp.predmet and agp.akademska_godina=$ag and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente=3"); // tipkomponente 3 = prisustvo
 		// Ovo za sada ne radi jer update_komponente trazi ponudukursa sto mi ovdje ne mozemo znati
 /*		while ($r250 = db_fetch_row($q250))
 			update_komponente($student, $predmet, $r250[0]);*/

@@ -6,7 +6,7 @@
 
 function student_anketa() {
 
-	global $userid;
+	global $userid, $conf_skr_naziv_institucije_genitiv;
 	
 	// Kod koji je naveden ispod omogućuje studentu da pristupi rezultatima ankete
 	// Ranije je tu bila i mogućnost za preuzimanje "koda" za popunjavanje ankete od koje se odustalo
@@ -104,7 +104,7 @@ function student_anketa() {
 	if ($podaci2['aktivna'] != 0) {
 		?>
 		<h2>Pristup rezultatima ankete nije moguć</h2>
-		<p><?=$pristup_student?> <?=$userid?> <?=$anketa?> Rezultatima ankete se može pristupiti tek nakon isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
+		<p>Rezultatima ankete se može pristupiti tek nakon isteka određenog roka. Za dodatne informacije predlažemo da kontaktirate službe <?=$conf_skr_naziv_institucije_genitiv?></p>
 		<?
 		return;
 	}

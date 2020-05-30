@@ -7,7 +7,6 @@
 function public_anketa() {
 
 	global $userid,$user_siteadmin,$user_studentska,$user_nastavnik;
-	global $_lv_; 
 
 
 	// Predmet i a.g. mogu biti opcionalno parametri
@@ -249,8 +248,9 @@ function public_anketa() {
 				
 				if ($tip == 3) { // MCSA
 					$izbor = intval($_POST['izbor'.$pitanje]);
-					$q330 = db_query("select dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje and id=$izbor");
-					if (db_result($q330,0,0)==1) {
+					$q330 = db_query("select id, dopisani_odgovor from anketa_izbori_pitanja where pitanje=$pitanje and id=$izbor");
+					if (db_result($q330,0,1)==1) {
+						$odgovor = db_result($q330,0,0);
 						$dopisani_odgovor = db_escape($_POST["dopis$pitanje-$odgovor"]);
 						$q590 = db_query("insert into anketa_odgovor_dopisani set rezultat=$id_rezultata, pitanje=$pitanje, odgovor='$dopisani_odgovor'");
 					}

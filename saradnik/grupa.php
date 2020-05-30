@@ -328,9 +328,7 @@ if (in_array(4, $tipovi_komponenti)) { // 4 = zadaće
 			$zad_id_array[] = $r210[0];
 			$zad_brz_array[$r210[0]] = $r210[2];
 			$zad_nazivi[$r210[0]] = $r210[1];
-			$mogucih_bodova += $r210[3];
 			$brzadaca++;
-			$minw += 60;
 		}
 
 		if ($brzadaca>0) {

@@ -51,13 +51,11 @@ function nastavnik_dodavanje_asistenata(){
 
 				// Provjeravamo da li ima pravo pristupa na predmetu i ako ima, koje je to pravo
 				$nivo_pristupa = db_get("select * from nastavnik_predmet where nastavnik = $osoba and akademska_godina = $akademska_godina and predmet = ".$predmet);
-				$angazman = db_get("select * from angazman as an inner join angazman_status as ang on an.angazman_status = ang.id where an.akademska_godina = $akademska_godina and an.osoba = $osoba and an.predmet = ".$predmet);
 
 				if(!$nivo_pristupa){
 					db_query("INSERT INTO nastavnik_predmet SET nastavnik = $osoba, akademska_godina = $akademska_godina, nivo_pristupa = '$nivo_prist', predmet = ".$predmet);
 				}else{
 					db_query("UPDATE nastavnik_predmet SET nivo_pristupa = '$nivo_prist' where nastavnik = $osoba");
-					//db_query("UPDATE nastavnik_predmet SET nivo_pristupa = 12 where nastavnik = $osoba and akademska_godina = $akademska_godina and predmet = ".$_GET['predmet']);
 				}
 			}else if($nivo_prist == 'obrisi'){
 				db_query("delete from nastavnik_predmet where nastavnik=$osoba and akademska_godina = $akademska_godina and predmet = ".$predmet);

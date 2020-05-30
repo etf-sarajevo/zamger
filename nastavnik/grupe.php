@@ -453,7 +453,7 @@ while ($r100 = db_fetch_row($q100)) {
 		print "<ul>\n";
 		$q102 = db_query("select osoba.id,osoba.prezime,osoba.ime from student_labgrupa,osoba where student_labgrupa.student=osoba.id and student_labgrupa.labgrupa=$grupa order by osoba.prezime,osoba.ime");
 		while ($r102 = db_fetch_row($q102)) {
-			?><li><a href="#" onclick="javascript:window.open('?sta=saradnik/izmjena_studenta&student=<?=$r102[0]?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah6','width=320,height=320');"><? print $r102[1]." ".$r102[2]."</a></li>\n";
+			?><li><a href="#" onclick="javascript:window.open('?sta=saradnik/izmjena_studenta&student=<?=$r102[0]?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah6','width=320,height=320');"><?=$r102[1]." ".$r102[2]?></a></li><?
 		}
 		print "</ul>";
 		$zapamti_grupu = $naziv;
@@ -471,10 +471,10 @@ if ($_GET['akcija']=="studenti_grupa") {
 	<input type="hidden" name="grupaid" value="<?=$gg?>">
 	Promijenite naziv grupe: <input type="text" name="ime" size="20" value="<?=$zapamti_grupu?>">
 	Promijenite tip grupe: <select name="tip">
-	<option value="predavanja" <?=$tip_selektovan['predavanja']?>>Grupa za predavanja</a>
-	<option value="vjezbe" <?=$tip_selektovan['vjezbe']?>>Grupa za vježbe</a>
-	<option value="tutorijali" <?=$tip_selektovan['tutorijali']?>>Grupa za tutorijale</a>
-	<option value="vjezbe+tutorijali" <?=$tip_selektovan['vjezbe+tutorijali']?>>Grupa za vježbe i tutorijale</a>
+	<option value="predavanja" <?=$tip_selektovan['predavanja']?>>Grupa za predavanja</option>
+	<option value="vjezbe" <?=$tip_selektovan['vjezbe']?>>Grupa za vježbe</option>
+	<option value="tutorijali" <?=$tip_selektovan['tutorijali']?>>Grupa za tutorijale</option>
+	<option value="vjezbe+tutorijali" <?=$tip_selektovan['vjezbe+tutorijali']?>>Grupa za vježbe i tutorijale</option>
 	</select>
 	<input type="submit" value="Izmijeni"></form></p>
 	<?
@@ -490,10 +490,10 @@ if ($_GET['akcija']=="studenti_grupa") {
 <input type="hidden" name="akcija" value="nova_grupa">
 Dodaj grupu: <input type="text" name="ime" size="20">
 Tip grupe:<select name="tip">
-	<option value="predavanja">Grupa za predavanja</a>
-	<option value="vjezbe">Grupa za vježbe</a>
-	<option value="tutorijali">Grupa za tutorijale</a>
-	<option value="vjezbe+tutorijali" SELECTED>Grupa za vježbe i tutorijale</a>
+	<option value="predavanja">Grupa za predavanja</option>
+	<option value="vjezbe">Grupa za vježbe</option>
+	<option value="tutorijali">Grupa za tutorijale</option>
+	<option value="vjezbe+tutorijali" SELECTED>Grupa za vježbe i tutorijale</option>
 </select>
 <input type="submit" value="Dodaj"></form></p>
 <?

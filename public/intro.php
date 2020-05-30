@@ -70,9 +70,12 @@ function login_forma() {
 
 	?>
 	<center><table border="0" cellpadding="5" bgcolor="#FFFFFF">
+
+
 	<tr><td align="center">
 		<big><b>Dobro došli na bolognaware <?=$conf_naziv_institucije_genitiv?></b></big>
 	</td></tr>
+
 	<tr><td align="center">
 		<!-- Ikone za javne servise -->
 		<table  border="0" cellpadding="10" bgcolor="#FFFFFF"><tr>

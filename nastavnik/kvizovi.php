@@ -339,7 +339,10 @@ if ($_REQUEST['akcija'] == "pitanja") {
 		<?
 	}
 
-	print "</table>\n<br><br>\n";
+	?>
+	</table>
+	<br><br>
+	<?
 	if (db_num_rows($q210)==0) {
 		print genform("POST");
 		?>

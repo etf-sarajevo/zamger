@@ -365,9 +365,10 @@ function db_form($table) {
 
 		// ID and fields given in WHERE are always hidden 
 		if ($name=="id") {
-			if ($nav != 1 && $_lv_["forceedit"] != 1 && $__lv_cai[$name] != 1) {
+			if ($nav != 1 && $_lv_["forceedit"] != 1 /*&& $__lv_cai[$name] != 1*/) {
 				// auto_increment fields (__lv_cai) should not be added at all... 
 				// for others, use the first unused value
+				// TODO nikad nisam implementirao __lv_cai
 				$q203 = db_query("select $name from $table order by $name desc limit 1");
 				if (db_num_rows($q203)<1)
 					$r202[$name] = 1;
@@ -634,7 +635,7 @@ function db_grid($table) {
 	}
 
 	// Display table header
-	$result .= '<table border="0" cellspacing="0" cellpadding="3">'."\n";
+	$result = '<table border="0" cellspacing="0" cellpadding="3">'."\n";
 	$result .= '<tr bgcolor="#bbbbbb">'."\n";
 	for ($i=0; $i<count($__lv_cn); $i++) {
 		$name = $__lv_cn[$i];
