@@ -36,17 +36,17 @@ if ($ispit_termin>0) {
 
 
 
-$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa, pk.semestar, s.naziv, p.naziv, ag.naziv, "; // slijedi datum
+$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa, pk.semestar, s.naziv, p.naziv, ag.naziv, pp.naziv, "; // slijedi datum
 
 
 // Stampaj sve studente na terminu
 if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 	// Uzimamo datum termina
-	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0 order by o.prezime, o.ime";
+	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and agp.akademska_godina=ag.id and agp.predmet=$predmet and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0 order by o.prezime, o.ime";
 
 } else if ($ispit_termin>0) {
 	// Uzimamo datum termina
-	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id order by o.prezime, o.ime";
+	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) from osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where sit.ispit_termin=it.id and sit.student=o.id and it.id=$ispit_termin and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and agp.akademska_godina=ag.id and agp.predmet=$predmet order by o.prezime, o.ime";
 
 } else if ($predmet<=0 || $ag<=0) {
 	biguglyerror("Neispravni parametri");
@@ -56,22 +56,22 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 // Stampaj jednog studenta
 } else if ($student>0) {
 	// Uzecemo danasnji datum
-	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=$student and sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id";
+	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where o.id=$student and sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and agp.akademska_godina=ag.id and agp.predmet=$predmet";
 
 // Sve studente koji nemaju ocjenu
 } else if ($_GET['tip'] == "bez_ocjene" || $_GET['tip'] == "uslov") { // Naknadno provjeravamo da li ima uslov
 	// Uzecemo danasnji datum
-	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet)=0 order by o.prezime, o.ime";
+	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and agp.akademska_godina=ag.id and agp.predmet=$predmet and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet)=0 order by o.prezime, o.ime";
 
 // Sve studente koji imaju ocjenu
 } else if ($_GET['tip'] == "sa_ocjenom") {
 	// Uzecemo danasnji datum
-	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0 order by o.prezime, o.ime";
+	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and agp.akademska_godina=ag.id and agp.predmet=$predmet and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0 order by o.prezime, o.ime";
 
 // Sve studente na predmetu
 } else if ($_GET['tip'] == "sve") {
 	// Uzecemo danasnji datum
-	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id order by o.prezime, o.ime";
+	$upit .= "UNIX_TIMESTAMP(NOW()) from osoba as o, ponudakursa as pk, studij as s, predmet as p, akademska_godina as ag, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id where o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and p.id=$predmet and ag.id=$ag and pk.studij=s.id and agp.akademska_godina=ag.id and agp.predmet=$predmet order by o.prezime, o.ime";
 
 // Sve studente na terminima koji padaju u određeni datum
 } else if ($_GET['tip'] == "na_datum" || $_GET['tip'] == "na_datum_sa_ocjenom") {
@@ -86,8 +86,8 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 	$dodaj_ocjena = "";
 	if ($_GET['tip'] == "na_datum_sa_ocjenom") $dodaj_ocjena = "and (select count(*) from konacna_ocjena as ko where ko.student=o.id and ko.predmet=$predmet and ko.ocjena>5)>0";
 	
-	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) FROM osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag 
-	WHERE sit.ispit_termin=it.id and sit.student=o.id and DATE(it.datumvrijeme)='$mysql_datum' and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and pk.akademska_godina=$ag and p.id=$predmet $dodaj_ocjena
+	$upit .= "UNIX_TIMESTAMP(it.datumvrijeme) FROM osoba as o, ispit_termin as it, student_ispit_termin as sit, student_predmet as sp, ponudakursa as pk, ispit as i, studij as s, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id 
+	WHERE sit.ispit_termin=it.id and sit.student=o.id and DATE(it.datumvrijeme)='$mysql_datum' and o.id=sp.student and sp.predmet=pk.id and it.ispit=i.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and pk.studij=s.id and pk.predmet=p.id and pk.akademska_godina=ag.id and pk.akademska_godina=$ag and p.id=$predmet $dodaj_ocjena and agp.akademska_godina=ag.id and agp.predmet=$predmet
 	ORDER BY o.prezime, o.ime";
 
 // Ovo se može desiti ako se klikne na prikaz pojedinačnog studenta, a nijedan student nije izabran
@@ -107,7 +107,7 @@ $pdf->SetTitle('Printanje prijava');
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 $pdf->SetMargins(0,0,0);
 $pdf->SetAutoPageBreak(false);
-$pdf->setLanguageArray($l); 
+//$pdf->setLanguageArray($l);
 $pdf->SetFont('freesans', 'B', 9);
 $pdf->SetHeaderData("",0,"","");
 $pdf->SetPrintHeader(false);
@@ -131,8 +131,9 @@ while ($r10 = db_fetch_row($q10)) {
 	$godStudija=intval(($r10[4]+1)/2);
 	$odsjek=$r10[5];
 	$nazivPr=$r10[6];
+	if ($r10[8]) $nazivPr=$r10[8];
 	$skolskaGod=$r10[7];
-	$datumIspita=date("d. m. Y.", $r10[8]);
+	$datumIspita=date("d. m. Y.", $r10[9]);
 	$datumPrijave=$datumIspita;
 	$datumPolaganja=$datumIspita;
 	$datumUsmenog=$datumIspita;
