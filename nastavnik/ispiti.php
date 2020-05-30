@@ -335,7 +335,18 @@ if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'
 		$mjesec = int_param('month');
 		$godina = int_param('year');
 		$mdat = mktime(0,0,0,$mjesec,$dan,$godina);
-
+		
+		$nap = int_param('apsolventski_rok');
+		if ($nap != db_result($q30,0,4)) {
+			if ($nap) {
+				zamgerlog("ispit $ispit proglasen za apsolventski", 4);
+				print "<p>Označavam ispit kao apsolventski rok</p>";
+			} else {
+				zamgerlog("ispit $ispit proglasen za ne-apsolventski", 4);
+				print "<p>Označavam da ispit nije apsolventski rok</p>";
+			}
+			$q315 = db_query("UPDATE ispit SET apsolventski_rok=$nap WHERE id=$ispit");
+		}
 		if ($komponenta != $_POST['tipispita']) {
 			zamgerlog ("promijenjen tip ispita $ispit (pp$predmet, ag$ag)", 4); // 4 - audit
 			zamgerlog2 ("promijenjen tip ispita", $ispit);
@@ -372,12 +383,17 @@ if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'
 		$mjesec = date("m", db_result($q30,0,0));
 		$godina = date("Y", db_result($q30,0,0));
 		$tipispita = db_result($q30,0,2);
+		$apsolventski_rok = db_result($q30,0,4);
 
 		print genform("POST");
 		?>
 		<h2>Zatražili ste promjenu podataka ispita &quot;<?=$tipispita?>&quot; održanog <?=$finidatum?></h2>
 		<p>Na odabranom ispitu su registrovani rezultati za <b><?=$brojstudenata?> studenata</b>.<br><br>
 		<p>Datum ispita: <?=datectrl($dan, $mjesec, $godina)?></p>
+		<p>Apsolventski rok: <select name="apsolventski_rok" id=""> 
+			<option value="0">Ne</option>
+			<option value="1" <? if ($apsolventski_rok) print "SELECTED"; ?>>Da</option>
+		</select></p>
 		<p>Tip ispita: <select name="tipispita" class="default"><?
 		$q340 = db_query("select k.id, k.gui_naziv from tippredmeta_komponenta as tpk, komponenta as k, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and (k.tipkomponente=1 or k.tipkomponente=2) order by k.id");
 		while (db_fetch2($q340, $id, $naziv)) {
@@ -387,6 +403,7 @@ if ($_REQUEST['akcija']=="promjena" && $ispit > 0 && $_REQUEST['potvrdapromjene'
 		}
 		?></select><br />
 		<font color="red">Promjenom tipa ispita mijenjate bodovanje za sve studente! Ova operacija može potrajati malo duže.</font></p>
+		
 		<input type="submit" name="potvrdapromjene" value=" Promijeni ">
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <input type="submit" name="potvrdapromjene" value=" Nazad ">
 		<?
