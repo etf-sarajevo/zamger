@@ -115,7 +115,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		$opcija = db_escape($TabelaKomponenti[$i]['opcija']);
 		if ($TabelaKomponenti[$i]['uslov'] == 1) $uslov=1; else $uslov=0;
 
-		// Kod drugog parcijalnog ispita, za polje opcija treba znati 
+		// Kod integralnog ispita, za polje opcija treba znati 
 		// tačno koji ID su dobile komponente za prvi i drugi parcijalni
 		if ($tipKomponente == 2) {
 			$opcija="$prvi_parcijalni_id+$drugi_parcijalni_id"; 
@@ -131,6 +131,7 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 		if (db_num_rows($q85)>0) {
 			$id_komponente = db_result($q85,0,0);
 		} else {
+		
 			// Da li uopće postoji takva komponenta?
 			$q90 = db_query("select k.id from komponenta as k where k.gui_naziv='$guiNaziv' and k.kratki_gui_naziv='$kratkiNaziv' and k.tipkomponente=$tipKomponente and k.maxbodova=$maxBodova and k.prolaz=$prolazBodova and k.uslov=$uslov and k.opcija='$opcija'");
 			if (db_num_rows($q90)>0) {
@@ -241,11 +242,19 @@ if ($akcija == "potvrda" && check_csrf_token()) {
 
 
 	// Updatujemo studentima bodove u tabeli komponentebodovi
-	if ($potreban_update) {
+	/*if ($potreban_update) {
 		$q185 = db_query("select sp.student, sp.predmet from student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		while ($r185 = db_fetch_row($q185)) {
 			update_komponente($r185[0], $r185[1], 0);
 		}
+	}*/
+	// Nema optimizacije, pošto profesori mijenjaju komponente kad im je ćejf, mora se sve regenerisati
+	$q185 = db_query("SELECT id FROM ponudakursa WHERE predmet=$predmet AND akademska_godina=$ag");
+	while(db_fetch1($q185, $ponudakursa)) {
+		db_query("DELETE FROM komponentebodovi WHERE predmet=$ponudakursa");
+		$q186 = db_query("SELECT student FROM student_predmet WHERE predmet=$ponudakursa");
+		while(db_fetch1($q186, $student))
+			update_komponente($student, $ponudakursa, 0);
 	}
 
 
@@ -759,7 +768,7 @@ if ($akcija == "wizard") {
 		<tr>
 			<td>
 				</br>
-				<p>Da bi se bodovi za prisustvo skalirali sa brojem izostanaka, pod Dozvoljen broj izostanaka unesite -1.<p>
+				<p>Da bi se bodovi za prisustvo skalirali sa brojem izostanaka, pod Dozvoljen broj izostanaka unesite -1.</p>
 				</br></br>
 				<? 
 				// Samo site admin može dodavati komponente prisustva
@@ -886,7 +895,6 @@ if ($akcija == "wizard") {
 if ($akcija == "postojeci_tip") {
 	$tip_predmeta = intval($_POST['tip_predmeta']);
 	if (!$tip_predmeta) $tip_predmeta = 1;
-	$_SESSION['spasi']=$pregled;
 	
 	$q10 = db_query("SELECT id,naziv FROM tippredmeta WHERE id>0 ORDER BY naziv");
 	?>
@@ -940,8 +948,8 @@ if ($akcija == "") {
 	<a href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=wizard&korak=naziv'>->Definišite vlastiti sistem bodovanja</a><br>
 	</br></br></br>
 	
-	Trenutno definisane komponente na predmetu:
-	</br></br>
+	Trenutno definisane komponente na predmetu:</p>
+	</br>
 	<div style="margin-left: 150px">
 	<?
 
@@ -978,6 +986,7 @@ function pregled_predmeta($tippredmeta) {
 		<td><input type="text" name="naziv" value="<?=db_result($q10,0,0)?>" readonly="readonly"></td>
 		<?
 		$q20 = db_query("select k.id, k.gui_naziv, k.maxbodova, k.prolaz, k.uslov, k.tipkomponente from komponenta as k, tippredmeta_komponenta as tpk where k.id=tpk.komponenta and tpk.tippredmeta=$tippredmeta");
+		$suma = $suma_p = 0;
 		while ($r20 = db_fetch_row($q20)){
 			if ($bgcolor=="") $bgcolor="bgcolor=\"#efefef\""; else $bgcolor="";
 			?>
@@ -1019,7 +1028,7 @@ function pregled_predmeta_bez_naziva() {
 	for ($i=0; $i<count($TabelaKomponenti); $i++) {
 		if ($TabelaKomponenti[$i]['odabrana'] != 1) continue;
 		?>
-		<tr <?=$bgcolor?>>
+		<tr>
 			<td><?=db_escape($TabelaKomponenti[$i]['naziv'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['maxBodova'])?></td>
 			<td><?=floatval($TabelaKomponenti[$i]['prolazBodova'])?></td>
