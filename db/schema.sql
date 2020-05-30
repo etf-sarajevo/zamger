@@ -1679,6 +1679,9 @@ CREATE TABLE IF NOT EXISTS `raspored` (
   `studij` int(11) NOT NULL,
   `akademska_godina` int(11) NOT NULL,
   `semestar` int(11) NOT NULL,
+  `privatno` int(11) NOT NULL,
+  `aktivan` tinyint(4) NOT NULL DEFAULT '1',
+  `vrijeme_kreiranja` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
