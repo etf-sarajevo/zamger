@@ -1,6 +1,6 @@
 <?
 
-// IZVJESTAJ/IZVJESTAJ_ISPIT - detaljan izvjestaj za ispit
+// IZVJESTAJ/TERMINI_ISPITA - spiskovi studenata za termine ispita sa bodovima i ostalim podacima
 
 
 

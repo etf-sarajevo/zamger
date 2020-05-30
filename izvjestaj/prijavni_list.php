@@ -72,7 +72,7 @@ if ($mr) {
 		if (!empty($mr['ovb'])) $mjesto_rodjenja_1 .= $mr['ovb'] . ",";
 		else $mjesto_rodjenja_1 .= "(nije u BiH),";
 		$mjesto_rodjenja_2 = $mr['drzava'];
-		$mjesto_rodjenja_sv = $am['drzava'];
+		$mjesto_rodjenja_sv = $mr['drzava'];
 	}
 } else {
 	$mjesto_rodjenja_1 = "Nepoznato mjesto rođenja"; $mjesto_rodjenja_2 = "";
@@ -233,7 +233,7 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 $pdf->setJPEGQuality(100); 
 
 //set some language-dependent strings
-$pdf->setLanguageArray($l); 
+//$pdf->setLanguageArray($l);
 
 // ---------------------------------------------------------
 

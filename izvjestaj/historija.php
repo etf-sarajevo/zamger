@@ -36,9 +36,9 @@ if (!($r100 = db_fetch_row($q100))) {
 
 ?>
 <p>&nbsp;</br>
-Student:</br>
+Student:</p>
 <h1><?=$r100[0]." ".$r100[1]?></h1>
-Broj indeksa: <?=$r100[2]?><br/></p>
+<p>Broj indeksa: <?=$r100[2]?><br/></p>
 
 <h2>Historija studenta</h2>
 <?

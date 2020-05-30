@@ -94,6 +94,7 @@ if ($tip=="double") {
 	while ($r400 = db_fetch_row($q400)) $grupe[$r400[0]] = $r400[1];
 
 	natsort($grupe);
+	$imena = $brojevi_indexa = "";
 
 	foreach ($grupe as $id => $naziv) {
 		if ($parni == 0) 

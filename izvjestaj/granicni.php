@@ -165,7 +165,8 @@ if (db_num_rows($q20)==0)
 
 $studij_id=-1; $plan_studija=-1; $semestar=-1;
 $plan_studija = $plan_studija_obavezan = array();
-$ukupno=0; $koliko_nepolozenih=array(); $max_nepolozenih=0;
+$ukupno=0; $koliko_nepolozenih = $ispis_nepolozenih = array();
+$max_nepolozenih = $max_parcijalnih = $oldstudij = 0;
 $nazivi_predmeta=array();
 
 while ($r20 = db_fetch_row($q20)) {
@@ -175,6 +176,7 @@ while ($r20 = db_fetch_row($q20)) {
 
 	$old_studij_id = $studij_id;
 	$studij_id = $r20[6];
+	$studij = $r20[1];
 	$old_plan_studija = $plan_studija;
 	$ss_plan_studija = $r20[7];
 	$old_semestar = $semestar;
@@ -568,6 +570,8 @@ $predmeti_naziv=array();
 
 $student_studij = array();
 $student_status = array();
+$counter = array();
+$oldstudij = $oldsemestar = 0;
 
 // Upit koji vraca sve studente upisane u aktuelnoj godini
 if ($sort_po_predmetu)
@@ -722,7 +726,7 @@ if ($sort_po_predmetu==1) {
 
 	$q1000 = db_query("select p.id, p.naziv, s.kratkinaziv, pk.semestar, p.ects from ponudakursa as pk, predmet as p, studij as s where pk.predmet=p.id and pk.akademska_godina=$ak_god and pk.studij=s.id order by s.id, pk.semestar, p.naziv");
 	while ($r1000 = db_fetch_row($q1000)) {
-		if ($r1000[4]==12) continue; // ignorišemo završni rad
+		if ($r1000[4]==12) continue; // ignorišemo završni rad FIXME
 
 		$ispis = $total_ispis[$r1000[0]];
 		if ($ispis=="") continue; // predmeti bez graničnih slučajeva
@@ -741,6 +745,7 @@ if ($sort_po_predmetu==1) {
 // Statistika
 
 if ($statistika == 1) {
+	$studij_polozilo = $studij_parcijalni = $studij_citavpredmet = array();
 	foreach ($student_studij as $student=>$studij) {
 		$semestar = $student_semestar[$student];
 		//if ($studij==2 && $semestar==4) print "$student $studij $semestar ".$student_status[$student]."<br/>";

@@ -12,6 +12,7 @@ global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin;
 $tip = $_REQUEST['tip'];
 if ($tip == "") $tip = "zadaca"; // privremeno
 
+$student = $userid; // Inicijalizacija je potrebna zbog logginga
 
 // PROVJERA PRIVILEGIJA I ODREĐIVANJE LOKACIJE FAJLA NA SERVERU
 
@@ -71,7 +72,7 @@ if ($tip == "zadaca") {
 					if (db_result($q25,0,0)>0) { $nasao=1; break; }
 				}
 				if ($nasao == 0) {
-					zamgerlog("ogranicenje na predmet (student u$student predmet p$ponudakursa)",3);
+					zamgerlog("ogranicenje na predmet (student u$student predmet pp$predmet ag$ag)",3);
 					zamgerlog2("ogranicenje na predmet za zadacu", $zadaca);
 					niceerror("Nemate pravo pregleda ove zadaće");
 					return;
@@ -274,7 +275,7 @@ header("Cache-Control: private");
 $k = readfile($filepath,false);
 if ($k == false) {
 	print "Otvaranje attachmenta nije uspjelo! Kontaktirajte administratora";
-	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadatak $zadatak student $stud_id)", 3);
+	zamgerlog("citanje fajla za attachment nije uspjelo (z$zadaca zadatak $zadatak student $student)", 3);
 	if ($tip == "zadaca") zamgerlog2("citanje fajla za attachment nije uspjelo - zadaca", $zadaca, $zadatak);
 	if ($tip == "postavka") zamgerlog2("citanje fajla za attachment nije uspjelo - postavka", $zadaca);
 	if ($tip == "projekat") zamgerlog2("citanje fajla za attachment nije uspjelo - projekat", $projekat, $id);

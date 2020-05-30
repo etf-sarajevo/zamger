@@ -243,6 +243,9 @@ if ($kolone == 2) {
 				<tr><td colspan="<?=$colspan?>"><b>Nisu ni u jednoj grupi</b></td></tr>
 				<?
 				}
+			?>
+			</table>
+			<?
 			}
 		}
 		?>

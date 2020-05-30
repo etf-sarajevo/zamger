@@ -5,6 +5,7 @@
 
 
 function izvjestaj_anketa_sumarno() {
+	global $user_siteadmin, $user_studentska, $conf_skr_naziv_institucije_genitiv, $userid;
 
 	require_once("lib/utility.php"); // procenat
 
@@ -79,6 +80,7 @@ function izvjestaj_anketa_sumarno() {
 	
 	$predmet_bio = array();
 	$stari_studij = $stari_semestar = 0;
+	$suma_bs = $suma_neuradjenih = $suma_ponistenih = $suma_uradjenih = 0;
 	$q20 = db_query("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
 		FROM predmet as p, ponudakursa as pk, studij as s
 		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
@@ -137,9 +139,17 @@ function izvjestaj_anketa_sumarno() {
 		$suma_uradjenih += $uradjenih;
 	}
 
-	print "<tr><td colspan='5'><b>UKUPNO:</b></td></tr>\n";
-	print "<tr><td>&nbsp;</td><td>$suma_bs</td><td>$suma_neuradjenih (".procenat($suma_neuradjenih, $suma_bs).")</td><td>$suma_ponistenih (".procenat($suma_ponistenih, $suma_bs).")</td><td>$suma_uradjenih (".procenat($suma_uradjenih, $suma_bs).")</td></tr>\n";
-	print "</table>\n";
+	?>
+	<tr><td colspan='5'><b>UKUPNO:</b></td></tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><?=$suma_bs?></td>
+		<td><?="$suma_neuradjenih (".procenat($suma_neuradjenih, $suma_bs).")"?></td>
+		<td><?="$suma_ponistenih (".procenat($suma_ponistenih, $suma_bs).")"?></td>
+		<td><?="$suma_uradjenih (".procenat($suma_uradjenih, $suma_bs).")"?></td>
+	</tr>
+	</table>
+	<?
 	return;
 
 	}
@@ -167,6 +177,7 @@ function izvjestaj_anketa_sumarno() {
 
 	$predmet_bio = array();
 	$stari_studij = $stari_semestar = 0;
+	$suma_suma_ocjena = $suma_uradjenih = $suma_bs = $br_predmeta = 0;
 	$q20 = db_query("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
 		FROM predmet as p, ponudakursa as pk, studij as s
 		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
@@ -223,15 +234,22 @@ function izvjestaj_anketa_sumarno() {
 		$br_predmeta ++;
 	}
 
-	print "<tr><td colspan='3'><b>UKUPNO:</b></td></tr>\n";
-	print "<tr><td>&nbsp;</td><td>".round($suma_suma_ocjena/$br_predmeta, 2)."</td><td>$suma_uradjenih (".procenat($suma_uradjenih, $suma_bs).")</td></tr>\n";
-	print "</table>\n";
+	?>
+	<tr><td colspan='3'><b>UKUPNO:</b></td></tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td><?=round($suma_suma_ocjena/$br_predmeta, 2)?></td>
+		<td><?=$suma_uradjenih . " (".procenat($suma_uradjenih, $suma_bs).")"?></td>
+	</tr>
+	</table>
+	<?
 	return;
 
 	} // if ($_REQUEST['tip'] == "sveukupna")
 
 
 	// naziv predmeta
+	$predmet = $anketa_predmet;
 	$q10 = db_query("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag; ");
 	$naziv_predmeta = db_result($q10,0,0);
 
@@ -404,6 +422,9 @@ function izvjestaj_anketa_sumarno() {
 		}
 		$prosjek = array_sum($prosjek)/count($prosjek);
 
+		?>
+		</table>
+		<?
 
 		
 		// PITANJA TIPA IZBOR

@@ -96,7 +96,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 //if ($odrzano_ispita>0) {
 
 	// Spisak komponenti
-	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=array();
+	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=$knemabodova=array();
 	$q50 = db_query("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente, k.uslov from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
 	while ($r50 = db_fetch_row($q50)) {
 		$knazivi[$r50[0]]=$r50[1]; // k.gui_naziv

@@ -7,8 +7,6 @@ function admin_log2() {
 
 global $userid;
 
-global $_lv_; // We use form generators
-
 
 // LOG v2.0
 
@@ -80,9 +78,7 @@ if ($pretraga) {
 	if ($rezultata>0) {
 		while ($r100 = db_fetch_row($q100)) {
 			if ($filterupita!="") $filterupita .= " OR ";
-			//$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
 			$filterupita .= "userid=$r100[0] OR objekat1=$r100[0]";
-			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
 		}
 	}
 
@@ -351,11 +347,9 @@ while ($logins < $maxlogins) {
 	
 	$last_id = $r10[0]; // $lastlogin koristimo da provjerimo da li je korisnik išta radio nakon logina
 	if ($prvidatum==0) $prvidatum = $r10[1];
-	$zadnjidatum = $r10[1];
 	$nicedate = " (".date("d.m.Y. H:i:s", $r10[1]).")";
 	$usr = $r10[2]; // ID korisnika
 	$modul = $r10[3];
-	$evt_id = $r10[4];
 	$opis = $r10[5]; // string koji opisuje dogadjaj
 
 	// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
@@ -573,8 +567,8 @@ while ($logins < $maxlogins) {
 		$eventshtml[$lastlogin[$usr]] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate." ".$analyze_link."\n".$eventshtml[$lastlogin[$usr]];
 	}
 }
-if ($stardate==1) $zadnjidatum=1; // Došlo je do breaka...
-else $stardate = $last_id;
+if ($stardate!=1)  // Nije došlo do breaka...
+	$stardate = $last_id;
 
 /*
 // Insertujem masovni unos ocjena i rezultata ispita

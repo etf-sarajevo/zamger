@@ -164,6 +164,7 @@ Od: <input type="text" size="3" name="od">
 Do: <input type="text" size="3" name="do">
 <input type="submit" value=" Kreni! ">
 </form>
+</li>
 </ul>
 
 <?

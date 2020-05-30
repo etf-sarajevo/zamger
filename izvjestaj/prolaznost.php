@@ -166,6 +166,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 	$suma_bodova = array();
 	global $brindexa;
 	$brindexa = array();
+	$izaslo = $polozilo = $ispita_polozenih = array();
 
 	// Zaglavlja tabela, ovisno o tome da li su navedeni pojedinacni studenti ili ne
 	if ($studenti==1) {
@@ -657,7 +658,7 @@ else if ($studenti==1 && $ispit==3) {
 	while ($r30 = db_fetch_row($q30)) {
 		$kursevi[$r30[0]] = $r30[1];
 
-		$q601 = db_query("select s.id, s.ime, s.prezime, s.brindexa from student as s, student_labgrupa as sl, labgrupa as l where sl.student=s.id and sl.labgrupa=l.id and l.predmet=$r30[0]");
+		$q601 = db_query("select s.id, s.ime, s.prezime, s.brindexa from osoba as s, student_labgrupa as sl, labgrupa as l where sl.student=s.id and sl.labgrupa=l.id and l.predmet=$r30[0]");
 		while ($r601 = db_fetch_row($q601)) {
 			$imeprezime[$r601[0]] = "$r601[2] $r601[1]";
 			$brind[$r601[0]] = $r601[3];
@@ -737,7 +738,6 @@ else if ($studenti==1 && $ispit==3) {
 			$q603 = db_query("select count(*) from prisustvo as p,cas as c, labgrupa as l where p.student=$stud_id and p.cas=c.id and c.labgrupa=l.id and l.predmet=$kurs_id and p.prisutan=0");
 			if (db_result($q603,0,0)<=3) {
 				print "<td>10</td>\n";
-				$ukupno += 10;
 			} else
 				print "<td>0</td>\n";
 

@@ -210,7 +210,7 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 $pdf->setJPEGQuality(100); 
 
 //set some language-dependent strings
-$pdf->setLanguageArray($l); 
+//$pdf->setLanguageArray($l);
 
 // ---------------------------------------------------------
 

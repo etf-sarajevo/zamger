@@ -6,7 +6,7 @@
 
 function izvjestaj_predmet() {
 
-global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, $conf_files_path;
+global $userid,$user_nastavnik,$user_studentska,$user_siteadmin, $user_student, $user_sefodsjeka, $conf_files_path;
 
 require_once("lib/utility.php"); // procenat, bssort
 
@@ -139,7 +139,7 @@ if ($sastavi_grupe==0) {
 	if ($grupa>0) {
 		// Samo odabrana grupa
 		$q20 = db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and id=$grupa");
-		$spisak_grupa[db_result($q40,0,0)] = db_result($q40,0,1);
+		$spisak_grupa[db_result($q20,0,0)] = db_result($q20,0,1);
 	} else {
 		// Spisak grupa moramo sortirati
 		$q20 = db_query("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag and virtualna=0");
@@ -265,7 +265,6 @@ if ($skrati!=1) {
 			$zad_brz_array[$r120[0]] = $r120[2];
 			$zad_mogucih[$r120[0]] = $r120[3];
 			$brzadaca++;
-			$minw += 60;
 		}
 		
 		if ($brzadaca>0) {
@@ -379,7 +378,6 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 				$prisustvo_zaglavlje .= "</td>\n";
 				$cas_id_array[] = $cas_id;
 				$casova++;
-				$minw += 40;
 			}
 			$prisustvo_casovi[$r105[0]] = $cas_id_array;
 		//	$prisustvo_maxbodova[$r195[0]] = $r195[2];
@@ -388,7 +386,6 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 		
 			if ($prisustvo_zaglavlje == "") { 
 				$prisustvo_zaglavlje = "<td>&nbsp;</td>"; 
-				$minw += 40; 
 				$casova=1;
 			}
 	

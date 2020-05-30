@@ -160,7 +160,7 @@ function common_raspored1($tip) {
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
-					$zadnji_m=0;
+					$zadnji_m=$viska_cas=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<db_num_rows($q1);$k++){
@@ -262,6 +262,7 @@ function common_raspored1($tip) {
 		$q0 = db_query("select count(*) from student_studij as ss, akademska_godina as ag where ss.akademska_godina=ag.id and ag.aktuelna=1 and ss.semestar mod 2=0");
 		if (db_result($q0,0,0)>0) $parni=1; else $parni=0;
 		$brojac=0;
+		$sqlPredmet="";
 		$q1 = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet np, ponudakursa pk, akademska_godina ag where np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 		while($r1 = db_fetch_assoc($q1)) {
 			$ak_god = $r1['akademska_godina'];
@@ -393,7 +394,7 @@ function common_raspored1($tip) {
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
-					$zadnji_m=0;
+					$zadnji_m=$viska_cas=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<db_num_rows($q1);$k++){

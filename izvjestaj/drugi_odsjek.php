@@ -14,7 +14,7 @@ $warn_about_wrong_pk = false;
 	<p>Univerzitet u Sarajevu<br>
 	Elektrotehnički fakultet Sarajevo</p>
 <h2>Predmeti sa drugih odsjeka</h2>
-<h3>koje su studenti slušali u akademskoj <?=db_get("SELECT naziv FROM akademska_godina WHERE aktuelna=1")?> godini</h2>
+<h3>koje su studenti slušali u akademskoj <?=db_get("SELECT naziv FROM akademska_godina WHERE aktuelna=1")?> godini</h3>
 <p>Datum i vrijeme izvještaja: <?=date("d. m. Y. H:i");?></p>
 <?
 

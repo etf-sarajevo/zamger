@@ -89,6 +89,7 @@ $limit_predmet = intval($_REQUEST['limit_predmet']);
 
 if ($_REQUEST['samo_tekuca_gs'] == "da") $samo_tekuca_gs = true; else $samo_tekuca_gs = false;
 
+$sumasemestar = $brojsemestar = array();
 
 $q1 = db_query("SELECT a.id, a.prezime, a.ime, a.brindexa, ns.naziv, ss.studij 
 FROM osoba a, student_studij as ss, nacin_studiranja as ns 
@@ -129,7 +130,7 @@ while ($r1 = db_fetch_row($q1)) {
 		$sumasemestar[$r4[2]][$id_studenta] += $r4[0];
 		$brojsemestar[$r4[2]][$id_studenta]++;
 	}
-
+	
 	// preskacemo studente sa premalo polozenih predmeta
 	if ($limit_predmet>0) {
 		$q3 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$id_studenta and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$id_studenta and ko.predmet=pk.predmet and ko.ocjena>5)=0");

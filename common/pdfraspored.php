@@ -143,7 +143,7 @@ if($tip=="student") {
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
-					$zadnji_m=0;
+					$zadnji_m=$viska_cas=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<db_num_rows($q1);$k++){
@@ -248,6 +248,7 @@ if($tip=="student") {
 		if (db_result($q0,0,0)>0) $parni=1; else $parni=0;
 		$brojac=0;
 		$q1 = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet np, ponudakursa pk, akademska_godina ag where np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
+		$sqlPredmet = "";
 		while($r1 = db_fetch_assoc($q1)) {
 			$ak_god = $r1['akademska_godina'];
 			$semestar = $r1['semestar'];
@@ -372,7 +373,7 @@ if($tip=="student") {
 				for($j=0;$j<$max_broj_preklapanja;$j++){
 					if($j>0) print "</tr><tr>";
 					$zadnji=1;
-					$zadnji_m=0;
+					$zadnji_m=$viska_cas=0;
 					for($m=1;$m<=52;$m++){
 						if($viska_cas==1) { $viska_cas=0; $m=$zadnji_m-1; continue; }
 						for($k=0;$k<db_num_rows($q1);$k++){

@@ -342,6 +342,8 @@ case "izmjena_ispita":
 		
 		// Određivanje trenutno važećeg pasoša predmeta 
 		// FIXME pasoš predmeta treba biti dio ponudekursa - sada sam definitivno shvatio da je tako
+		// npr. ako postoji drugi plan studija sa novijim pasošem, a u važećem se koristi stari, biće povučen taj pasoš
+		// Akšamović Jasmin prenio predmet NSAU, kriptografija isto
 		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps
 		WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<=$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
 		if ($pasos_predmeta === false) {

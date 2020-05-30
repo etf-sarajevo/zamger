@@ -426,6 +426,7 @@ if ($akcija=="izbori") {
 	?>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><td>&nbsp;</td><td><a href="?sta=common/profil&akcija=izbori&subakcija=arhiva_angazman">Historijski pregled angažmana u nastavi</a></td></tr>
+	</table>
 	<?
 
 	return;
@@ -665,7 +666,7 @@ if ($akcija == "log") {
 		$ip_adresa = $r10[10];
 
 		// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
-		if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $opis != "login")) { 
+		if ($lastlogin[$usr]==0 && ($nivo==1 || $opis != "login")) {
 			$lastlogin[$usr]=$r10[0];
 			$logins++;
 			if ($logins > $maxlogins) {

@@ -16,9 +16,9 @@ global $userid, $conf_files_path;
 
 if (param('akcija') == "kompaktuj") {
 	$ponudakursa = intval($_POST['predmet']);
-	$q10 = db_query("select p.naziv, ag.naziv, p.id, ag.id from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.akademska_godina=ag.id and pk.id=$predmet and pk.predmet=p.id");
+	$q10 = db_query("select p.naziv, ag.naziv, p.id, ag.id from ponudakursa as pk, predmet as p, akademska_godina as ag where pk.akademska_godina=ag.id and pk.id=$ponudakursa and pk.predmet=p.id");
 	if (!($r10 = db_fetch_row($q10))) {
-		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+		zamgerlog("nepoznata ponudakursa $ponudakursa",3); // nivo 3: greska
 		niceerror("Predmet nije pronađen u bazi");
 		return;
 	}
@@ -109,7 +109,7 @@ if (param('akcija') == "kompaktuj") {
 	}
 ?>
 </select>
-<input type="submit" value=" Kompaktuj "></form>
+	<input type="submit" value=" Kompaktuj "></form></p>
 <?
 
 

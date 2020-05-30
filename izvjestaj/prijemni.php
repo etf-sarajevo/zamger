@@ -464,9 +464,9 @@ if ($_REQUEST['akcija']=="kandidati") {
 		}
 	}
 	
-/*	// Studenti upadaju na mjesta za strane drzavljane
+	// Studenti upadaju na mjesta za strane drzavljane
 	$mjestazasd=0;
-	if($k <= $kandidatisd) {
+/*	if($k <= $kandidatisd) {
 		foreach($kandidati as $id => $kandidat) {
 			if($kandidat['prijemni_ispit'] >= $bodovihard && $kandidat['kanton_id'] != 13 && ($kandidat['nacin_studiranja'] == 1 || $kandidat['nacin_studiranja'] == 3)) {
 				if ($j == 1 && $k == 1) {

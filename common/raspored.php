@@ -119,6 +119,7 @@ function common_raspored($tip) {
 		$neparni = trenutni_semestar();
 
 		$whereCounter = 0;
+		$sqlPredmet = "";
 		$selUserData = db_query("SELECT np.predmet, pk.akademska_godina, pk.semestar FROM nastavnik_predmet as np, ponudakursa as pk, akademska_godina as ag WHERE np.nastavnik = $userid AND pk.predmet = np.predmet AND pk.akademska_godina = ag.id and np.akademska_godina=ag.id and ag.aktuelna=1");
 		while($sUD = db_fetch_assoc($selUserData)) {
 			$adId = $sUD['akademska_godina'];

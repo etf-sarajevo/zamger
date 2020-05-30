@@ -40,8 +40,8 @@ if ($novaag==0) {
 	$q3 = db_query("select 0, naziv, aktuelna from akademska_godina where id=$novaag");
 	if (db_num_rows($q3)<1) {
 		niceerror("Nepoznata akademska godina");
-		zamgerlog("nepoznata godina $ag", 3);
-		zamgerlog2("nepoznata godina", $ag);
+		zamgerlog("nepoznata godina $novaag", 3);
+		zamgerlog2("nepoznata godina", $novaag);
 		return;
 	}
 }

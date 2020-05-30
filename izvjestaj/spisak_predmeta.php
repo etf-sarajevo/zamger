@@ -27,7 +27,7 @@ Elektrotehnički fakultet Sarajevo</p>
 	<? 
 }
 
-$q10 = db_query("SELECT COUNT(sp.student), p.id, p.naziv, p.sifra, agp.pasos_predmeta FROM predmet p, ponudakursa pk, student_predmet sp, akademska_godina_predmet agp WHERE sp.predmet=pk.id AND pk.akademska_godina=$ag AND pk.predmet=p.id AND agp.predmet=p.id AND agp.akademska_godina=$ag GROUP BY p.id ORDER BY p.naziv"); 
+$q10 = db_query("SELECT COUNT(sp.student), p.id, p.naziv, p.sifra, agp.pasos_predmeta FROM predmet p, ponudakursa pk, student_predmet sp, akademska_godina_predmet agp WHERE sp.predmet=pk.id AND pk.akademska_godina=$ag AND pk.predmet=p.id AND agp.predmet=p.id AND agp.akademska_godina=$ag GROUP BY p.id, p.naziv ORDER BY p.naziv");
 while (db_fetch5($q10, $broj_studenata, $predmet_id, $naziv, $sifra, $pasos)) {
 	if ($pasos) {
 		$q20 = db_query("SELECT naziv, sifra FROM pasos_predmeta WHERE id=$pasos");

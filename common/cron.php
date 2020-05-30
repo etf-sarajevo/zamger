@@ -22,6 +22,7 @@ function cron_fill_array($niz, $opseg) {
 	
 // Nadji prvu sljedecu vrijednost u opsegu
 function cron_find($localtime, $idx, $opseg) {
+	$dozvoljene = array();
 	if ($opseg == "*") return $localtime;
 	$dozvoljene = cron_fill_array($dozvoljene, $opseg);
 	$stara = $localtime[$idx];

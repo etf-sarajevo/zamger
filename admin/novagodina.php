@@ -82,7 +82,7 @@ if (param('akcija') == "novagodina") {
 	<input type="hidden" name="akcija" value="novagodina">
 	<input type="text" name="godina" size="20" value="<?=db_result($q,0,0)?>">
 	<input type="submit" value=" Kreiraj novu akademsku godinu ">
-	</form>
+	</form></p>
 	<hr>
 	<?
 }

@@ -15,7 +15,7 @@ function izvjestaj_chart_semestralni() {
 	if ($semestar != 3)
 		$semestar= $semestar%2;
 	
-	$smjerovi;
+	$smjerovi = array();
 	
 	// Kupimo pitanja za datu anketu
 	$result2077 = db_query("SELECT p.id, p.tekst,t.tip FROM anketa_pitanje p,anketa_tip_pitanja t WHERE p.tip_pitanja = t.id and p.anketa =$id_ankete and p.tip_pitanja=1");

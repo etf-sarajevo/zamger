@@ -6,20 +6,20 @@ function izvjestaj_nastavnici() {
 	// Parametar: akademska godina (koristiti aktuelnu ako nije data)
 	$ag = $_REQUEST['ag'];
 	if ($ag==0) {
-		$q5 = myquery("select id from akademska_godina where aktuelna=1");
-		$ag = mysql_result($q5,0,0);
+		$q5 = db_query("select id from akademska_godina where aktuelna=1");
+		$ag = db_result($q5,0,0);
 	}
 	
 	$angazman = $predmeti = array();
 
 	// Određivanje kojem studiju pripadaju predmeti
 	$predmeti_studij = array();
-	$q7 = myquery("select predmet, studij, id from ponudakursa where akademska_godina=$ag");
-	while ($r7 = mysql_fetch_row($q7)) {
+	$q7 = db_query("select predmet, studij, id from ponudakursa where akademska_godina=$ag");
+	while ($r7 = db_fetch_row($q7)) {
 		$predmet = $r7[0];
 		$studij = $r7[1];
-		$q9 = myquery("select count(*) from student_predmet where predmet=$r7[2]");
-		if (mysql_result($q9,0,0)<1) continue;
+		$q9 = db_query("select count(*) from student_predmet where predmet=$r7[2]");
+		if (db_result($q9,0,0)<1) continue;
 		if (empty($predmeti_studij[$studij])) $predmeti_studij[$studij]=array();
 		array_push($predmeti_studij[$studij], $predmet);
 		//$predmeti_studij[$predmet]=$studij;
@@ -29,26 +29,26 @@ function izvjestaj_nastavnici() {
 	$bilo = array();
 
 	// Spisak angazmana
-	$q10 = myquery("select o.id, o.prezime, o.ime, a.predmet from angazman as a, osoba as o where a.akademska_godina=$ag and a.osoba=o.id order by o.prezime, o.ime");
-	while ($r10 = mysql_fetch_row($q10)) {
+	$q10 = db_query("select o.id, o.prezime, o.ime, a.predmet from angazman as a, osoba as o where a.akademska_godina=$ag and a.osoba=o.id order by o.prezime, o.ime");
+	while ($r10 = db_fetch_row($q10)) {
 		$osoba = $r10[0];
 		
 		// Da li je radni odnos osobe stalni ili dopunski?
-		$q20 = myquery("select dopunski, zvanje from izbor where osoba=$osoba order by datum_izbora desc");
-		if (mysql_num_rows($q20)<1) {
+		$q20 = db_query("select dopunski, zvanje from izbor where osoba=$osoba order by datum_izbora desc");
+		if (db_num_rows($q20)<1) {
 			$dopunski = 2;
 			$radni_odnos = "nepoznato";
 			$idzvanja = 7;
 			$zvanje = "nepoznato";
 		} else {
-			$dopunski = mysql_result($q20,0,0);
+			$dopunski = db_result($q20,0,0);
 			if ($dopunski==0) $radni_odnos = "stalni"; else $radni_odnos="dopunski";
-			$idzvanja = mysql_result($q20,0,1);
-			$q30 = myquery("select naziv from zvanje where id=$idzvanja");
-			if (mysql_num_rows($q30)<1) {
+			$idzvanja = db_result($q20,0,1);
+			$q30 = db_query("select naziv from zvanje where id=$idzvanja");
+			if (db_num_rows($q30)<1) {
 				$zvanje = "nepoznato";
 			} else {
-				$zvanje = mysql_result($q30,0,0);
+				$zvanje = db_result($q30,0,0);
 			}
 		}
 		//print "osoba $osoba predmet $r10[3] zvanje $zvanje radni odnos $radni_odnos<br>\n";
@@ -68,8 +68,8 @@ function izvjestaj_nastavnici() {
 	
 	// Ispis
 	foreach ($angazmani as $studij => $angazmani_studij) {
-		$q40 = myquery("select naziv from studij where id=$studij");
-		$naziv_studija = mysql_result($q40,0,0);
+		$q40 = db_query("select naziv from studij where id=$studij");
+		$naziv_studija = db_result($q40,0,0);
 		print "<h3>$naziv_studija</h3>\n";
 
 		for ($i=0; $i<=2; $i++) {

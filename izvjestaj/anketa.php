@@ -218,6 +218,10 @@ function izvjestaj_anketa() {
 		// Prosječan broj bodova na svim pitanjima
 		if (count($prosjek) == 0) $prosjek = 0;
 		else $prosjek = array_sum($prosjek)/count($prosjek);
+		
+		?>
+		</table>
+		<?
 
 		
 		// PITANJA TIPA IZBOR

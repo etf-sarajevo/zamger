@@ -139,7 +139,7 @@ $suma = $broj = array();
 for ($i=1; $i<23; $i++)
 	$suma[$i] = $broj[$i] = array();
 
-while ($r10 = mysql_fetch_row($q10)) {
+while ($r10 = db_fetch_row($q10)) {
 	if ($r10[2] == 472) $r10[2] = 36;
 	if ($r10[2] == 148) $r10[2] = 149;
 	if ($r10[2] == 477) $r10[2] = 149;

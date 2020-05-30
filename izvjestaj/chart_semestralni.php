@@ -14,7 +14,7 @@ function izvjestaj_chart_semestralni() {
 	$title = db_result($q10,0,0);
 	
 	$l=0;
-	$predmeti;
+	$predmeti = array();
 
 	// Ako je za studij odabrana Prva godina studija onda izbacujemo uslov
 	// studij iz sljedećeg upita jer nakon zadnjih izmjena u Zamgeru ne postoji 

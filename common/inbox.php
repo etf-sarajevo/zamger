@@ -497,7 +497,7 @@ if ($_REQUEST['mode']=="outbox") {
 	print "</tbody></table>";
 
 	?>
-	</td></tr></table></center>
+	</td></tr></tbody></table></center>
 	<?
 
 
@@ -591,10 +591,9 @@ if ($_REQUEST['mode']=="outbox") {
 	print "</tbody></table>";
 
 	?>
-	</td></tr></table></center>
+	</td></tr></tbody></table></center>
 	<?
 }
-
 
 
 }

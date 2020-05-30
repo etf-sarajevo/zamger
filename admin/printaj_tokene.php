@@ -20,7 +20,7 @@ $html = param('html'); // izlaz u vidu HTMLa (ako nije setovano, PDF)
 
 
 // Provjera parametara
-if ($predmet != 0 && ($studij != 0 || $semestar != 0 || $semestar_parni != 0)) {
+if ($predmet_id != 0 && ($studij != 0 || $semestar != 0 || $semestar_parni != 0)) {
 	niceerror("Ne možete istovremeno zadati ID predmeta i neki od ostalih parametara");
 	return;
 }
@@ -71,7 +71,7 @@ if ($predmet_id == 0) {
 			$q70 = db_query("select pp.predmet from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$plan_izborni_slot and pis.pasos_predmeta=pp.id");
 			while (db_fetch1($q70, $predmet)) {
 				// Nećemo više puta dodati kreirati isti predmet
-				if (array_key_exists($predmet, $predmeti) continue;
+				if (array_key_exists($predmet, $predmeti)) continue;
 				$predmeti[$predmet] = "";
 			}
 		}
@@ -88,7 +88,7 @@ foreach($predmeti as $predmet => $naziv) {
 	$predmet_tokeni[$predmet] = db_get_varray("SELECT unique_id FROM anketa_rezultat WHERE anketa=$anketa AND predmet=$predmet AND akademska_godina=$ag");
 	if (count($predmet_tokeni[$predmet]) > $maxtokena) $maxtokena = count($predmet_tokeni[$predmet]);
 
-	$broj_studenata[$r30[0]] = db_get("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
+	$broj_studenata[$predmet] = db_get("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 }
 
 
@@ -125,10 +125,10 @@ $pdf->SetAutoPageBreak(false);
 //set image scale factor
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO); 
 //$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO*2.083333); 
-$pdf->setJPEGQuality(100); 
+$pdf->setJPEGQuality(100);
 
 //set some language-dependent strings
-$pdf->setLanguageArray($l); 
+//$pdf->setLanguageArray($l);
 
 // ---------------------------------------------------------
 

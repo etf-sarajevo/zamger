@@ -93,7 +93,9 @@ function common_zavrsniStrane() {
 		
 		if (!$mentor || !$clan_komisije || !$odluka_komisija || !$odluka_tema)
 			niceerror("Molimo da kontaktirate vašeg mentora kako bi unio u Zamger podatke koji nedostaju");
-		
+	
+	$url = "id=$id&amp;zavrsni=$id&amp;predmet=$predmet&amp;ag=$ag";
+	
 		?>
 		<ul>
 			<? if (preg_match("/\w/", $kratki_pregled) && preg_match("/\w/", $literatura)) { ?>
@@ -525,7 +527,7 @@ function common_zavrsniStrane() {
 
 			?>
 			<div class="post"><a name="p<?=$id_posta ?>">
-			<div id="post_<?=$post[id]?>_header" class="header clearfix" onClick="toggleShowPost('post_<?=$id_posta ?>')">
+			<div id="post_<?=$id_posta?>_header" class="header clearfix" onClick="toggleShowPost('post_<?=$id_posta ?>')">
 			<div class="buttons">
 				<a href="<?=$linkPrefix . "&subakcija=nova_poruka&tema=$id_teme&post=$id_posta"?>" title="Odgovori na ovaj post">Odgovori</a>
 				<?
@@ -887,7 +889,7 @@ function common_zavrsniStrane() {
 		&nbsp;<br>
 		<input type="submit" value=" Pošalji izmjene ">
 		<input type="button" value=" Nazad " onclick="javascript:history.go(-1);">
-		</form>
+		</form></p>
 		<?
 	}
 }

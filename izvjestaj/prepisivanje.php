@@ -66,10 +66,12 @@ $gt_output = "";
 			$q10 = db_query("SELECT status, komentar FROM zadatak WHERE zadaca=" . $zadaca['id'] . " AND redni_broj=$i AND student=$student ORDER BY id DESC LIMIT 1");
 			db_fetch2($q10, $status, $komentar);
 //print "status $status komentar $komentar<br>\n";
-if ($make_gt) {
-	//$gt_output .= db_get("SELECT login FROM auth WHERE id=$student") . " ($status) $komentar<br>\n";
-	$gt_output .= db_get("SELECT login FROM auth WHERE id=$student") . " $komentar<br>\n";
-}
+			if ($make_gt) {
+				//$gt_output .= db_get("SELECT login FROM auth WHERE id=$student") . " ($status) $komentar<br>\n";
+				$gt_output .= db_get("SELECT login FROM auth WHERE id=$student") . " $komentar";
+				if (intval($status) != 2) $gt_output .= " - ODBR!";
+				$gt_output .= "<br>\n";
+			}
 			if (intval($status) != 2) { $odbranilo++; }
 			else if (strstr($komentar, "100%") || ($predmet==2 && $ag>8)) $stoposto++;
 		}

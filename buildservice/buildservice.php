@@ -144,7 +144,7 @@ else if ($_REQUEST['action'] == "getTaskData") {
 		if ($r[3] == "Matlab .m") $result['data']['compile'] = "false";
 		$result['data']['run']     = "false";
 		$result['data']['test']    = "true";
-		if ($r[3] == "Python") {
+		if ($r[3] == "Python" || $r[3] == "Java") {
 			$result['data']['debug']   = "false";
 			$result['data']['profile'] = "false";
 		} else {
@@ -221,7 +221,14 @@ else if ($_REQUEST['action'] == "getTaskData") {
 				$test['substring'] = "true";
 			else
 				$test['substring'] = "false";
-				
+			
+			// FIXME
+			if ($r[3] == "Java") {
+				$test['running_params']['main_class'] = "Zadaca1";
+				$test['running_params']['package'] = "ba.unsa.etf.rs";
+				$test['running_params']['use_pipes'] = "true";
+			}
+			
 			array_push($result['data']['test_specifications'], $test);
 		}
 	}
