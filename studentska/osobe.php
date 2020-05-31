@@ -1113,6 +1113,7 @@ else if ($akcija == "upis") {
 
 			$status_studenta = 0;
 			if (param('apsolvent')) $status_studenta = 1;
+			if ($plan_studija == false) $plan_studija = "NULL";
 
 			db_query("INSERT INTO student_studij SET student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$status_studenta");
 
