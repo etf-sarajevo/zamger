@@ -6,7 +6,7 @@ function studentska_plan(){
 	global $userid,$user_siteadmin,$user_studentska;
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin {
+	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
 		biguglyerror("Pristup nije dozvoljen.");
 		return;
@@ -111,7 +111,9 @@ function studentska_plan(){
 			</tr>
 			<?
 		}
-		if (db_num_rows($q20) > 0)  print "\n</table>\n";
+		if (db_num_rows($q20) > 0) {
+			?></table><?
+		}
 		
 		?>
 		<p><a href="?sta=studentska/plan&amp;studij=<?=$studij?>&amp;akcija=novi">Kreiraj novi plan i program</a></p>

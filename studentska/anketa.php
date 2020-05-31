@@ -417,7 +417,7 @@ function studentska_anketa(){
 		// Spisak svih predmeta na fakultetu trenutno
 		$svi_predmeti = db_query_vassoc("SELECT DISTINCT p.id, p.naziv FROM predmet p, ponudakursa pk WHERE pk.akademska_godina=$aktuelna_ak_god AND pk.predmet=p.id ORDER BY p.naziv");
 		
-		$predmeti_html = "";
+		$predmeti_html = $semestar_neparni = $semestar_parni = "";
 		$q203 = db_query("SELECT predmet, semestar FROM anketa_predmet WHERE anketa=$id_ankete");
 		while(db_fetch2($q203, $predmet, $semestar)) {
 			if ($predmet === null)
@@ -425,6 +425,10 @@ function studentska_anketa(){
 			else {
 				$predmeti_html .= $svi_predmeti[$predmet] . "<br>\n";
 				unset($svi_predmeti[$predmet]);
+				if ($semestar % 2 == 1)
+					$semestar_neparni = "SELECTED";
+				else
+					$semestar_parni = "SELECTED";
 			}
 		}
 		
@@ -622,8 +626,8 @@ function studentska_anketa(){
 			</form>
 			<?
 		}
-		print "</table>";
 		?>
+		</table>
 	</center>
 	<?
 	} 
@@ -690,7 +694,7 @@ function studentska_anketa(){
 						print "<option value='$r199b[0]'> $r199b[1] ($r199b[2])</option>";
 					}
 					?>
-				</select>
+				</select></p>
 				</form>
 				<?
 
@@ -867,7 +871,7 @@ function studentska_anketa(){
                                     <input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> 
                                     <input type="Submit" value=" Pretrazi ">
                                 </form>
-								<br/>
+								</p>
 					<?
 					if ($ak_god>0 && $src != "") {
 						$q300 = db_query("select count( distinct predmet) from ponudakursa as pk, predmet as p where pk.akademska_godina=$ak_god and 
@@ -900,13 +904,13 @@ function studentska_anketa(){
 						
 				
 						if ($ak_god>0 && $src != "") {
-							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id, ag.naziv, p.naziv order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($ak_god>0) {
-							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id, ag.naziv, p.naziv order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else if ($src != "") {
-							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc, p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and p.naziv like '%$src%' and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id, ag.naziv, p.naziv order by ag.naziv desc, p.naziv limit $offset,$limit");
 						} else {
-							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id order by ag.naziv desc,p.naziv limit $offset,$limit");
+							$q301 = db_query("select p.id, p.naziv, ag.naziv, i.kratki_naziv, ag.id from predmet as p, ponudakursa as pk, akademska_godina as ag, institucija as i where pk.akademska_godina=ag.id and pk.predmet=p.id and p.institucija=i.id GROUP BY p.id, ag.id, ag.naziv, p.naziv order by ag.naziv desc,p.naziv limit $offset,$limit");
 						}
 										
 						print '<table width="100%" border="0">';

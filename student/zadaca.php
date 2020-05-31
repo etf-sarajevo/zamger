@@ -212,7 +212,7 @@ print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
 
 // Statusne ikone:
 $stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 
 ?>
@@ -263,7 +263,7 @@ for ($i=1;$i<=$broj_zadataka;$i++) {
 2. MySQL <4.1 ne podrzava subqueries */
 
 
-$bodova_sve_zadace=0;
+$bodova_sve_zadace = $m_mogucih = 0;
 
 $q21 = db_query("select id, naziv, bodova, zadataka, UNIX_TIMESTAMP(rok) from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta, id");
 while ($r21 = db_fetch_row($q21)) {
@@ -452,7 +452,6 @@ if ($attachment) {
 	<input type="hidden" name="ag" value="<?=$ag?>">
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
-	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
 	<input type="file" name="attachment" size="50" <?=$readonly?>>
 	</center>
 	<p>&nbsp;</p>
@@ -465,17 +464,14 @@ if ($attachment) {
 	$ekst = db_result($q130,0,0);
 
 	if ($status_zadace == 2) {
-		?><p>Zadaća je prepisana i ne može se ponovo poslati</p><?
+		?><p>Zadaća se ne može ponovo poslati jer je predviđena odbrana</p><?
 	} else if ($rok > time()) {
  		?><p>Kopirajte vaš zadatak u tekstualno polje ispod:</p>
 		</td></tr></table>
 
 		<?
 	}
-
-
-	// Moze li se izbaciti labgrupa ispod?
-
+	
 	?>
 	
 		</td></tr></table>
@@ -484,7 +480,6 @@ if ($attachment) {
 	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 	<input type="hidden" name="akcija" value="slanje">
-	<input type="hidden" name="labgrupa" value="<?=$labgrupa?>">
 	
 	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
 	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
@@ -583,7 +578,7 @@ function akcijaslanje() {
 	// Prepisane zadaće se ne mogu ponovo slati
 	$q240 = db_query("select status from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
 	if (db_num_rows($q240) > 0 && db_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
-		niceerror("Zadaća je prepisana i ne može se ponovo poslati.");
+		niceerror("Zadaća se ne može ponovo poslati jer je predviđena odbrana.");
 		print $povratak_html;
 		return; 
 	}

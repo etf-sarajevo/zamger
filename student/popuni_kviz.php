@@ -132,6 +132,7 @@ function student_popuni_kviz() {
 	if ($_REQUEST['akcija'] == "salji" && check_csrf_token()) {
 		$uk_bodova = 0;
 		$rbr=1;
+		$ispis_rezultata = "";
 		for ($i=1; $i<=$broj_pitanja; $i++) {
 			// MCSA - ako je dato više tačnih odgovora na pitanje, uvažavamo bilo koji
 			$id_pitanja = $_REQUEST["rbrpitanje$i"];

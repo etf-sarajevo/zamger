@@ -335,7 +335,7 @@ if (param('akcija') == "potvrda_jasper") {
 	$reportUnit = "%2Freports%2FPotvrda";
 	
 	// Utvrđujemo koji put ponavlja
-	$q220 = db_query("SELECT ss.status_studenta, ss.semestar, ts.ciklus FROM student_studij ss, zahtjev_za_potvrdu zzp, studij s, tipstudija ts WHERE zzp.id=$id AND zzp.student=ss.student AND zzp.akademska_godina=ss.akademska_godina AND ss.studij=s.id AND s.tipstudija=ts.id ORDER BY ss.semestar DESC LIMIT 1");
+	$q220 = db_query("SELECT ss.status_studenta, ss.semestar, ts.ciklus, zzp.student, zzp.svrha_potvrde FROM student_studij ss, zahtjev_za_potvrdu zzp, studij s, tipstudija ts WHERE zzp.id=$id AND zzp.student=ss.student AND zzp.akademska_godina=ss.akademska_godina AND ss.studij=s.id AND s.tipstudija=ts.id ORDER BY ss.semestar DESC LIMIT 1");
 	if (db_num_rows($q220) == 0) {
 		$naziv_ag = db_get("SELECT ag.naziv FROM akademska_godina ag, zahtjev_za_potvrdu zzp WHERE zzp.id=$id AND zzp.akademska_godina=ag.id");
 		niceerror("Student nije upisan na studij u akademskoj $naziv_ag godini");
@@ -346,7 +346,7 @@ if (param('akcija') == "potvrda_jasper") {
 		<?
 		return;
 	}
-	db_fetch3($q220, $status_studenta, $semestar, $ciklus);
+	db_fetch5($q220, $status_studenta, $semestar, $ciklus, $student, $svrha);
 	if ($status_studenta == 1)
 		$put = 1; // Ako je apsolvent, sigurno je prvi put
 	else
@@ -503,7 +503,9 @@ if (param('akcija') == "potvrda") {
 		$rbr++;
 	}
 
-	print "</table>\n";
+	?>
+	</table>
+	<?
 	return;
 }
 

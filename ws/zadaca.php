@@ -172,7 +172,7 @@ function ws_zadaca() {
 			else
 				$q100 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$status, bodova=$bodova, vrijeme=FROM_UNIXTIME($vrijeme), komentar='$komentar', izvjestaj_skripte='$izvjestaj_skripte', filename='$filename', userid=$userid");
 
-
+			$komponenta = db_get("SELECT komponenta FROM zadaca WHERE id=$zadaca");
 			update_komponente($student, $ponudakursa, $komponenta);
 
 			zamgerlog("izmjena zadace (student u$student zadaca z$zadaca zadatak $zadatak)",2);

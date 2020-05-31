@@ -257,7 +257,10 @@ function moodle_novosti($predmet, $ag) {
 			$count++;
 			if ($count==5) break; // prikazujemo 5 poruka
 		}
-		print "</ul>\n<br>\n";
+		?>
+		</ul>
+		<br>
+		<?
 	}
 
 } // function moodle_novosti()
@@ -562,9 +565,9 @@ while ($r21 = db_fetch_row($q21)) {
 
 
 // Ukupno bodova za studenta
- 
-$bodova += $bodova_sve_zadace;
-$mogucih += $total_max_bodova;
+
+//$bodova += $bodova_sve_zadace;
+//$mogucih += $total_max_bodova;
 
 ?>
 	<tr><td colspan="<?=$broj_zadataka+1?>" align="right">UKUPNO: </td>

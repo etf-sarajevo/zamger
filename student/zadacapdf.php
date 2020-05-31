@@ -252,11 +252,10 @@ for ($i=1; $i<=$brzad; $i++) {
 	if (!file_exists("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]")) {
 		continue;
 	}
-	$extrenut=strtolower(end(explode('.',$filename[$i])));
+	$ekstenzija = pathinfo($filename, PATHINFO_EXTENSION);
 
-//Extract zip fajlovaa
-
-	if($extrenut=="zip") {
+	// Extract zip fajlova
+	if ($ekstenzija == "zip") {
 		if (!file_exists("$lokacijazadaca$userid")){
 			mkdir ("$lokacijazadaca$userid",0777);
 			mkdir ("$lokacijazadaca$userid/$i",0777);
@@ -269,16 +268,16 @@ for ($i=1; $i<=$brzad; $i++) {
 		$dir="$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$userid";
 		$files=OtvaranjeDirektorija("$dir/$i");
 		
-//------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------
 
-	        $txt = "";
-		foreach($files as $putanjaFajla)
+		$txt = "";
+		foreach ($files as $putanjaFajla)
 		{
 			$naslov='<html><p><font size="14" color="black">'.basename($putanjaFajla).'</font></p></html>';
 			$txt="";
 			$txt =$txt.file_get_contents($putanjaFajla);
-			$extrenut=strtolower(end(explode('.',$putanjaFajla)));
-			$geshi =& new GeSHi($txt,$extrenut);
+			$ekstenzija = pathinfo($putanjaFajla, PATHINFO_EXTENSION);
+			$geshi =& new GeSHi($txt, $ekstenzija);
 			$txt = $geshi->parse_code();
 		
 			if ($txt != false) {
@@ -298,13 +297,13 @@ for ($i=1; $i<=$brzad; $i++) {
 		
 			}
 		}
-		}
-	else if($extrenut=="cpp" || $extrenut=="c") {
+	}
+	else if ($ekstenzija=="cpp" || $ekstenzija=="c") {
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
-		$extrenut=strtolower(end(explode('.',$filename[$i])));
+		$ekstenzija = pathinfo($filename[$i], PATHINFO_EXTENSION);
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
 		
-		$geshi =& new GeSHi($txt,$extrenut);
+		$geshi =& new GeSHi($txt, $ekstenzija);
 		$txt = $geshi->parse_code();
 		$txt = str_replace("\t","        ",$txt);
 			

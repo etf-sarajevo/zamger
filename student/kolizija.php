@@ -258,6 +258,7 @@ function student_kolizija() {
 	// Akcija za unos podataka o koliziji u bazu
 	if ($_POST['akcija']=="korak2" && $studij>0 && $godina>0) {
 		// Provjeravamo da li je odabran ispravan broj ECTSova po semestru
+		$zimskiects = $ljetnjiects = 0;
 		foreach ($predmet_ects as $id => $ects) {
 			if ($id==$_POST['prenosi'] || $_POST["polaze-$id"]) continue;
 			if ($predmet_semestar[$id]%2==1) $zimskiects += $ects;
@@ -301,11 +302,11 @@ function student_kolizija() {
 			return;
 		}
 		if ($uslov_ects_zima>0 && $polozeno_ects_zima<$uslov_ects_zima && $zze>0) {
-			niceerror("Nemate pravo na koliziju u zimskom semestru jer imate $polozen_ects_zima kredita što je manje od $uslov_ects_zima");
+			niceerror("Nemate pravo na koliziju u zimskom semestru jer imate $polozeno_ects_zima kredita što je manje od $uslov_ects_zima");
 			return;
 		}
 		if ($uslov_ects_ljeto>0 && $polozeno_ects_ljeto<$uslov_ects_ljeto && $zle>0) {
-			niceerror("Nemate pravo na koliziju u ljetnjem semestru jer imate $polozen_ects_ljeto kredita što je manje od $uslov_ects_ljeto");
+			niceerror("Nemate pravo na koliziju u ljetnjem semestru jer imate $polozeno_ects_ljeto kredita što je manje od $uslov_ects_ljeto");
 			return;
 		}
 		
@@ -526,13 +527,14 @@ function student_kolizija() {
 	}
 
 	// Računamo broj ECTSova u zimskom i ljetnjem periodu
+	$zimskiects = $ljetnjiects = 0;
 	foreach ($predmet_ects as $id => $ects) {
 		if ($id==$_POST['prenosi'] || $_POST["polaze-$id"]) continue;
 		if ($predmet_semestar[$id]%2==1) $zimskiects += $ects;
 		else $ljetnjiects += $ects;
 	}
-	$polozeno_ects_zima = 30-$zimskiects;
-	$polozeno_ects_ljeto = 30-$ljetnjiects;
+	$polozeno_ects_zima = 30 - $zimskiects;
+	$polozeno_ects_ljeto = 30 - $ljetnjiects;
 	
 	if ($uslov_ects_zima>0 && $polozeno_ects_zima<$uslov_ects_zima && $uslov_ects_ljeto>0 && $polozeno_ects_ljeto<$uslov_ects_ljeto) {
 		?><p>Trenutno ne ispunjavate uslov za koliziju.</p>

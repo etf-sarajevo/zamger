@@ -61,7 +61,8 @@ if($_GET['id'] != NULL) {
 		//Izbrisi nulti box (blank)
 		if($x == 0 AND $y == 0)
 			return false;
-			
+		
+		$stylePlusCont = $ispisB = "";
 		foreach ($_SESSION['tmpRas'] AS $val) {
 			if ($val['x'] == $x AND $val['y'] == $y) {
 				

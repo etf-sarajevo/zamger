@@ -23,7 +23,7 @@ if (true) {
 
 	$maxgod=0;
 	$q10 = db_query("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id AND ko.ocjena>5 AND ko.ocjena<11");
-	$ciklusi=array();
+	$ciklusi = $suma_ciklus = $broj_ciklus = $suma_ciklus_semestar = $broj_ciklus_semestar = array();
 	while ($r10 = db_fetch_row($q10)) {
 		$ciklus=$r10[0]; $semestar=$r10[1]; $ocjena=$r10[2];
 
@@ -152,7 +152,8 @@ $q15 = db_query("select naziv from studij where id=$studij");
 
 
 // Prolazimo kroz plan studija
-
+$suma_studij = $broj_studij = 0;
+$bio_izborni_sql = $suma_semestar = $broj_semestar = array();
 $q20 = db_query("select pasos_predmeta, plan_izborni_slot, semestar, obavezan from plan_studija_predmet where plan_studija=$plan_studija order by semestar");
 while (db_fetch4($q20, $pasos_predmeta, $plan_izborni_slot, $semestar, $obavezan)) {
 	if ($obavezan == 1) { // Obavezan

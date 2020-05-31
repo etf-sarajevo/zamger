@@ -28,15 +28,15 @@ function studentska_priznavanje(){
 		// za svaki cemo posebno query slat
 		$broj_predmeta = db_escape($_POST["kolicina"]);
 
-		$index=end(explode(" ", $student));
-		$index=str_replace("(","",$index);
-		$index=str_replace(")","",$index);
+		$index = substr(strrchr(" ", $student), $student);
+		$index = str_replace("(","",$index);
+		$index = str_replace(")","",$index);
 		if(!$index){
 			niceerror("Nije izabran student!");
 			return;
 		}
 
-		$query = db_query("select id from osoba where brindexa=\"$index\"");
+		$query = db_query("select id from osoba where brindexa='$index'");
 		$student_id = db_fetch_row($query)[0];
 		
 		$make_odluka = db_query("insert into odluka set datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
@@ -92,94 +92,94 @@ function studentska_priznavanje(){
 <input type="hidden" name="akcija" value="dodaj">
 <style type="text/css"> @import url("static/css/priznavanje.css"); </style>
 <table width="60%" border="0" style="max-width:300px" class='priznavanje'>
-    <tr >
-        <td >
-            <label for="student">Student: </label>
-        </td>
-        <td>
-            <input name="student" id="student" list="studenti" autocomplete='off'>
-            <datalist id="studenti">
-                <?php
-                    $q777 = db_query("select ime, prezime, brindexa, naucni_stepen from osoba where naucni_stepen=6 order by prezime,ime");
-                    while (db_fetch3($q777,$ime,$prezime,$brindexa)) {
-                        ?>
-                                    <option  value="<?=$prezime." ".$ime ." (".$brindexa . ")"?>"></option>
-                        <?
-                                }
-                ?>      
-            </datalist>  
-        </td>
-    </tr>
-    <tr >
-    <td><label for="ag">Akademska godina: </label>
-                            </td>
-        <td >
-            <select name="ag">
-            <option value="-1">Sve akademske godine</option>
-            <?
-                $q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
-                while ($r295=db_fetch_row($q295)) {
-                    ?>
-            <option value="<?=$r295[0]?>"<? if($r295[0]==$ak_god) print " selected"; ?>><?=$r295[1]?></option>
-            <?
-                }
-                ?>
-            </select>
-        </td>
-    </tr>
-    <tr >
-        <td>
-            <label for="ciklus">Ciklus studija: </label>
-        </td>
-        <td >
-            <select name="ciklus">
-                <option value="1">Prvi</option>
-                <option value="2">Drugi</option>
-                <option value="3">Treći</option>
-            </select>
-        </td>
-    </tr>
-    <tr>
-        <td><label for='strana_institucija'>Strana institucija: </label></td>
-        <td><input type='text' name='strana_institucija'/></td>
-    </tr>
-
-    <tr>
-        <td><label for='broj_protokola'>Broj protokola: </label></td>
-        <td><input type='text' name='broj_protokola1'/></td>
-    </tr>
-
-
-    <tr >
-        <td><label for='datum'>Datum: </label></td>
-        <td><input type='date' value="<?= date('Y-m-j')?>" name='datum1' /></td>
-    </tr>
-
-    <tr>    <td colspan="2">    <hr>    </td></tr>
-    <tr >
-        <td ><label for='naziv_predmeta1'>Naziv predmeta: </label></td>
-        <td><input type='text' name='naziv_predmeta1'/></td>
-    </tr>
-
-    <tr >
-        <td><label for='sifra_predmeta1'>Šifra predmeta: </label></td>
-        <td><input type='text' name='sifra_predmeta1'/></td>
-    </tr>
-
-    <tr >
-        <td><label for='ects1'>ECTS: </label></td>
-        <td><input type='number' min='0' step='0.5' name='ects1'/></td>
-    </tr>
-
-    <tr >
-        <td><label for='ocjena1'>Ocjena: </label></td>
-        <td><input type='number' min='6' max='10' name='ocjena1'/></td>
-    </tr>
-    <tr id="anchor" ><td><input type="hidden" id="kolicina" name="kolicina" value='1'></td></tr>
-    <tr>
-        <td><input value="Dodaj predmet" type="button" onclick="dodaj_predmet()"></td>
-        <td style="padding: 10px 0;text-align:right"><input style="margin-left:auto" type='submit' value="Potvrdi"/></td>
-    </tr>
+	<tr >
+		<td >
+			<label for="student">Student: </label>
+		</td>
+		<td>
+			<input name="student" id="student" list="studenti" autocomplete='off'>
+			<datalist id="studenti">
+				<?php
+					$q777 = db_query("select ime, prezime, brindexa, naucni_stepen from osoba where naucni_stepen=6 order by prezime,ime");
+					while (db_fetch3($q777,$ime,$prezime,$brindexa)) {
+						?>
+									<option  value="<?=$prezime." ".$ime ." (".$brindexa . ")"?>"></option>
+						<?
+								}
+				?>
+			</datalist>
+		</td>
+	</tr>
+	<tr >
+	<td><label for="ag">Akademska godina: </label>
+							</td>
+		<td >
+			<select name="ag">
+			<option value="-1">Sve akademske godine</option>
+			<?
+			$q295 = db_query("select id,naziv, aktuelna from akademska_godina order by naziv");
+			while (db_fetch3($q295, $id_godine, $naziv_godine, $aktuelna)) {
+				?>
+				<option value="<?=$id_godine?>"<? if($aktuelna) print " selected"; ?>><?=$naziv_godine?></option>
+				<?
+			}
+			?>
+			</select>
+		</td>
+	</tr>
+	<tr >
+		<td>
+			<label for="ciklus">Ciklus studija: </label>
+		</td>
+		<td >
+			<select name="ciklus">
+				<option value="1">Prvi</option>
+				<option value="2">Drugi</option>
+				<option value="3">Treći</option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td><label for='strana_institucija'>Strana institucija: </label></td>
+		<td><input type='text' name='strana_institucija'/></td>
+	</tr>
+	
+	<tr>
+		<td><label for='broj_protokola'>Broj protokola: </label></td>
+		<td><input type='text' name='broj_protokola1'/></td>
+	</tr>
+	
+	
+	<tr >
+		<td><label for='datum'>Datum: </label></td>
+		<td><input type='date' value="<?= date('Y-m-j')?>" name='datum1' /></td>
+	</tr>
+	
+	<tr>    <td colspan="2">    <hr>    </td></tr>
+	<tr >
+		<td ><label for='naziv_predmeta1'>Naziv predmeta: </label></td>
+		<td><input type='text' name='naziv_predmeta1'/></td>
+	</tr>
+	
+	<tr >
+		<td><label for='sifra_predmeta1'>Šifra predmeta: </label></td>
+		<td><input type='text' name='sifra_predmeta1'/></td>
+	</tr>
+	
+	<tr >
+		<td><label for='ects1'>ECTS: </label></td>
+		<td><input type='number' min='0' step='0.5' name='ects1'/></td>
+	</tr>
+	
+	<tr >
+		<td><label for='ocjena1'>Ocjena: </label></td>
+		<td><input type='number' min='6' max='10' name='ocjena1'/></td>
+	</tr>
+	<tr id="anchor" ><td><input type="hidden" id="kolicina" name="kolicina" value='1'></td></tr>
+	<tr>
+		<td><input value="Dodaj predmet" type="button" onclick="dodaj_predmet()"></td>
+		<td style="padding: 10px 0;text-align:right"><input style="margin-left:auto" type='submit' value="Potvrdi"/></td>
+	</tr>
 </td></tr>
 </table>
 </form> 

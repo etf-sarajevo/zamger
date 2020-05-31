@@ -63,7 +63,7 @@ if ($akcija == "ogranicenja") {
 	$naziv_predmeta = db_result($q371,0,0);
 
 	?><ul><p>
-	<b>Ograničenja za nastavnika <?=$ime." ".$prezime?> na predmetu <?=$naziv_predmeta?></b></p><?
+		<b>Ograničenja za nastavnika <?=$ime." ".$prezime?> na predmetu <?=$naziv_predmeta?></b></p></ul><?
 
 	// Subakcija
 	if ($_POST['subakcija']=="izmjena" && check_csrf_token()) {
@@ -136,7 +136,8 @@ if ($akcija == "ogranicenja") {
 		?><input type="checkbox" name="lg<?=$r373[0]?>" <?=$dodaj?>> <?=$r373[1]?><br/><?
 	}
 	?><br/><input type="submit" value=" Izmijeni "> &nbsp; <input type="button" value=" Označi sve " onclick="javascript:checkall(true);"> &nbsp; <input type="button" value=" Poništi sve " onclick="javascript:checkall(false);">
-	&nbsp; <input type="button" value=" Nazad " onclick="location.href='?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>';"></form><?
+	&nbsp; <input type="button" value=" Nazad " onclick="location.href='?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>';">
+	</p></form><?
 	
 }
 
@@ -174,7 +175,7 @@ else if ($akcija == "novi" && check_csrf_token()) {
 		$q220 = db_query("select count(*) from ponudakursa where predmet=$predmet and akademska_godina=$ak_god");
 		if (db_result($q220,0,0)>0) {
 			zamgerlog("predmet vec postoji u ovoj ak.god (pp$predmet)",3);
-			zamgerlog2("predmet vec postoji u ovoj ak.god", $predmet, $ag, 0, $naziv);
+			zamgerlog2("predmet vec postoji u ovoj ak.god", $predmet, $ak_god, 0, $naziv);
 			niceerror("Predmet već postoji");
 			?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ak_god?>">Editovanje predmeta &quot;<?=$naziv?>&quot;</a><?
 			return;
@@ -182,7 +183,7 @@ else if ($akcija == "novi" && check_csrf_token()) {
 			// Određujemo najnoviji plan studija 
 			// FIXME ovo je naopako jer određujemo studij iz ID-a predmeta na kojem se nudi
 			$q225 = db_query("SELECT ps.studij, psp.semestar, psp.obavezan FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE pp.predmet=$predmet AND pp.id=psp.pasos_predmeta AND psp.plan_studija=ps.id ORDER BY ps.godina_vazenja DESC LIMIT 1");
-			if (db_num_rows($q255) > 0) {
+			if (db_num_rows($q225) > 0) {
 				$pstudij = db_result($q225,0,0);
 				$psemestar = db_result($q225,0,1);
 				$pobavezan = db_result($q225,0,2);
@@ -214,10 +215,10 @@ else if ($akcija == "novi" && check_csrf_token()) {
 			$pk = db_insert_id();
 
 			// Ispis i logging
-			$q231 = db_query("select naziv from studij where id=$r230[0]");
-			$ispis = "Kreiram ponudu kursa za predmet $naziv (studij ".db_result($q231,0,0).", semestar $r230[1]";
-			if ($r230[2]!=1) $ispis.=", izborni";
-			$ispis.=")";
+			$naziv_studija = db_get("select naziv from studij where id=$pstudij");
+			$ispis = "Kreiram ponudu kursa za predmet $naziv (studij $naziv_studija, semestar $psemestar";
+			if ($pobavezan != 1) $ispis .= ", izborni";
+			$ispis .= ")";
 			nicemessage($ispis);
 			zamgerlog ("kreirana ponudakursa za pp$predmet");
 			zamgerlog2 ("kreirana ponudakursa", $pk);
@@ -440,7 +441,7 @@ else if ($akcija == "edit") {
 		$q364 = db_query("select sp.student, pk.predmet, pk.akademska_godina, o.ime, o.prezime, p.naziv from student_predmet as sp, ponudakursa as pk, osoba as o, predmet as p where pk.id=$ponudakursa and sp.predmet=pk.id and sp.student=o.id and pk.predmet=p.id");
 		while ($r364 = db_fetch_row($q364)) {
 			$predmet=$r364[1]; $ag=$r364[2]; // za kasnije...
-			nicemessage ("Ispisujem studenta $r364[3] $r364[4] sa predmeta $r365");
+			nicemessage ("Ispisujem studenta $r364[3] $r364[4] sa predmeta $r364[5]");
 			// Ova funkcija briše ispite, zadaće, prisustvo i konačnu ocjenu te ispisuje studenta iz labgrupe
 			ispis_studenta_sa_predmeta($r364[0], $r364[1], $r364[2]);
 		}
@@ -532,8 +533,9 @@ else if ($akcija == "edit") {
 	if ($greska==1) print "<font color=\"red\">Imate grešaka u definiciji predmeta. Kliknite na dugme <b>Izmijeni</b>.</font>\n";
 
 	unset($_REQUEST['akcija']);
-	print "\n\n<p>\n".genform("GET");
 	?>
+	<p>
+	<?=genform("GET");?>
 	<input type="hidden" name="akcija" value="realedit">
 	<input type="submit" value=" Izmijeni "></form></p>
 	<?
@@ -556,11 +558,19 @@ else if ($akcija == "edit") {
 
 	$q355 = db_query("select o.id, angs.naziv from angazman as a, osoba as o, angazman_status as angs where a.predmet=$predmet and a.akademska_godina=$ag and a.osoba=o.id and a.angazman_status=angs.id order by angs.id, o.prezime");
 	if (db_num_rows($q355)<1) print "<li>Niko nije angažovan na ovom predmetu</li>\n";
-	while ($r355 = db_fetch_row($q355)) {
-		print "<li><a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r355[0]\">".tituliraj($r355[0], false, false, true)."</a> - $r355[1] (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=$predmet&ag=$ag&subakcija=deangazuj&osoba=$r355[0]\">deangažuj</a>)</li>\n";
+	while (db_fetch2($q355, $id_nastavnika, $angazman)) {
+		?>
+		<li>
+			<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$id_nastavnika?>">
+				<?=tituliraj($id_nastavnika, false, false, true)?>
+			</a> - <?=$angazman?> (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>&subakcija=deangazuj&osoba=<?=$angazman?>">deangažuj</a>)
+		</li>
+		<?
 	}
-	print "</ul>\n";
-
+	
+	?>
+	</ul>
+	<?
 
 
 	// Ponude kursa
@@ -626,7 +636,7 @@ else if ($akcija == "edit") {
 	while ($r370 = db_fetch_row($q370)) {
 		?><a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$r370[0]?>"><?=$r370[1]?></a> <?
 	}
-	if (db_num_rows($q370)>0) print "</p>\n";
+	if (db_num_rows($q370)>0) { ?></p><? }
 
 
 
@@ -706,7 +716,9 @@ else if ($akcija == "edit") {
 		<?
 	}
 	if (db_num_rows($q351) > 0) {
-		print "</table>\n";
+		?>
+		</table>
+		<?
 	}
 
 
@@ -758,7 +770,7 @@ else {
 		}
 		?></select><br/>
 		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
-		<br/>
+		</p>>
 	<?
 	if ($ak_god>=0 && param('search')) {
 		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p, akademska_godina_predmet as agp
@@ -803,22 +815,40 @@ else {
 			WHERE pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id and agp.akademska_godina=ag.id and agp.predmet=p.id 
 			ORDER BY ag.naziv desc, COALESCE (pp.naziv, p.naziv) LIMIT $offset,$limit");
 		} else if ($src != "") {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i, '' where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i, '' where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
 		} else {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv, 1 from predmet as p, institucija as i, '' where p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i, '' where p.institucija=i.id order by p.naziv limit $offset,$limit");
 		}
 
-		print '<table width="100%" border="0">';
+		?>
+		<table width="100%" border="0"><?
 		$i=$offset+1;
 		while ($r301 = db_fetch_row($q301)) {
+			$id_predmeta = $r301[0];
 			$naziv = $r301[1];
 			if ($r301[6]) $naziv = $r301[6];
-			print "<tr><td>$i. $naziv ($r301[2])</td>\n";
-			print "<td><a href=\"".genuri()."&akcija=edit&predmet=$r301[0]&ag=$r301[3]\">Detalji</a></td>\n";
-			if ($user_siteadmin) print "<td><a href=\"?sta=nastavnik/predmet&predmet=$r301[0]&ag=$r301[3]\">Uređivanje predmeta</a></td></tr>";
+			$kratki_naziv = $r301[2];
+			$predmet_ag = 1;
+			if ($r301[3]) $predmet_ag = $r301[3];
+			
+			?>
+			<tr>
+				<td><?=$i?>. <?=$naziv?> (<?=$kratki_naziv?>)</td>
+				<td><a href="<?=genuri()?>&amp;akcija=edit&amp;predmet=<?=$id_predmeta?>&amp;ag=<?=$predmet_ag?>">Detalji</a></td>
+				<?
+			if ($user_siteadmin) {
+				?>
+				<td><a href="?sta=nastavnik/predmet&amp;predmet=<?=$id_predmeta?>&amp;ag=<?=$predmet_ag?>">Uređivanje predmeta</a></td>
+				<?
+			}
+			?>
+			</tr>
+			<?
 			$i++;
 		}
-		print "</table>";
+		?>
+		</table>
+		<?
 	}
 	?>
 		<br/>
@@ -827,6 +857,7 @@ else {
 		<b>Novi predmet:</b><br/>
 		<input type="text" name="naziv" size="50"> <input type="submit" value=" Dodaj ">
 		</form>
+		</td></tr>
 	</table>
 	<?
 

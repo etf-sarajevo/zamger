@@ -576,7 +576,7 @@ if (param('akcija') == "ocjene") {
 	
 	$q20 = db_query("SELECT pp.id, pp.naziv FROM izvoz_ocjena io, konacna_ocjena ko, pasos_predmeta pp
 			WHERE io.student=ko.student AND io.predmet=ko.predmet AND ko.pasos_predmeta=pp.id
-			GROUP BY pp.id, ko.predmet ORDER BY pp.naziv");
+			GROUP BY pp.id, ko.predmet, pp.naziv ORDER BY pp.naziv");
 	while(db_fetch2($q20, $id_pasosa, $naziv_predmeta)) {
 		?>
 		<li><a href="?sta=studentska/export_import&amp;akcija=ocjene_predmet&amp;id_pasosa=<?=$id_pasosa?>">

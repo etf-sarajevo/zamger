@@ -15,6 +15,7 @@
   "require": {
     "ext-ldap": "*",
     "stevenmaguire/oauth2-keycloak": "^2.1",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "ext-json": "*"
   }
 }

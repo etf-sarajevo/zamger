@@ -519,8 +519,9 @@ function student_ugovoroucenju() {
 				<?
 				foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
 					print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
-				print "</select>\n";
-				print "</p>\n";
+				?></select>
+				</p>
+				<?
 			} else {
 				
 				print "<p>\n";

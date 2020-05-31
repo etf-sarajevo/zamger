@@ -15,6 +15,7 @@ $login = db_escape($_POST['login']);
 $pass = $_POST['pass'];
 $result = array();
 
+global $userid;
 $status = login($pass);
 if ($status == 1 || $status == 2) { 
 	$result['success'] = "false";

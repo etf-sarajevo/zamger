@@ -231,6 +231,7 @@ if (param('akcija') == "prolaznost") {
 		
 		<input type="submit" value=" Prikaži "></form>
 
+	</td></tr></table>
 	<?
 }
 

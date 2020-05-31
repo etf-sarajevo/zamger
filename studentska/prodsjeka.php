@@ -182,6 +182,7 @@ if ($_REQUEST['akcija']=="kratkiizvj") {
 
 	$q400 = db_query("select iz_odsjeka,u_odsjek from promjena_odsjeka where akademska_godina=$ak_god");
 	$total=0;
+	$iz = $u = array();
 	while ($r400 = db_fetch_row($q400)) {
 		$iz[$r400[0]]++;
 		$u[$r400[1]]++;
@@ -221,7 +222,7 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 
 
 	// Zahtjeve sortiramo po broju polozenih predmeta i prosjecnoj ocjeni
-	$zahtjevi=array();
+	$zahtjevi = $uk_izodsjeka = $uk_uodsjek = array();
 	global $brojpredmeta, $prosjek; // zbog usort() :(
 
 	$q200 = db_query("select po.osoba, po.iz_odsjeka, po.u_odsjek, o.ime, o.prezime from promjena_odsjeka as po, osoba as o where po.osoba=o.id and po.akademska_godina=$ak_god");
@@ -325,7 +326,7 @@ if ($_REQUEST['akcija']=="izvjestaj") {
 
 			// Da li u limit ulazi kontra-zamjena?
 			if ($izodsjeka[$osoba2]==$uodsjek[$osoba]) {
-				if ($limit[$uodsjek[$osoba2]]>0 && $limit[$izodsjeka[$osoba1]]<0) {
+				if ($limit[$uodsjek[$osoba2]]>0 && $limit[$izodsjeka[$osoba]]<0) {
 					$odbijen[$osoba]=0;
 					$odbijen[$osoba2]=0;
 					$limit[$izodsjeka[$osoba]]++;
@@ -371,12 +372,21 @@ odsjeka</td><td>U odsjek</td><td>Broj pol.</td><td>Prosjek</td></tr>
 	$rbr=1;
 	foreach ($zahtjevi as $osoba) {
 		if ($odbijen[$osoba]==0) continue;
-		print "<tr> 
-<td>".$rbr++."</td> <td>".$imeiprezime[$osoba]."</td> 
-<td>".$ime_odsjeka[$izodsjeka[$osoba]]."</td> <td>".$ime_odsjeka[$uodsjek[$osoba]]."</td> <td>".$brojpredmeta[$osoba]."</td> <td>".round($prosjek[$osoba],2)."</td></tr>\n";
+		?>
+		<tr>
+			<td><?=$rbr++?></td>
+			<td><?=$imeiprezime[$osoba]?></td>
+			<td><?=$ime_odsjeka[$izodsjeka[$osoba]]?></td>
+			<td><?=$ime_odsjeka[$uodsjek[$osoba]]?></td>
+			<td><?=$brojpredmeta[$osoba]?></td>
+			<td><?=round($prosjek[$osoba],2)?></td>
+		</tr>
+		<?
 	}
 
-	print "</table>\n";
+	?>
+	</table>
+	<?
 
 /*	foreach ($delta as $odsjek=>$broj) {
 		print "Delta ".$ime_odsjeka[$odsjek]." je $broj<br/>";
@@ -396,8 +406,9 @@ odsjeka</td><td>U odsjek</td><td>Broj pol.</td><td>Prosjek</td></tr>
 <?
 
 $q10 = db_query("select po.id, o.ime, o.prezime, s.naziv, po.u_odsjek, o.id from promjena_odsjeka as po, osoba as o, studij as s where po.osoba=o.id and po.iz_odsjeka=s.id and po.akademska_godina=$ak_god");
-if (db_num_rows($q10)<1) 
-	print "<li>Nema zahtjeva</li\n";
+if (db_num_rows($q10)<1) {
+	?><li>Nema zahtjeva</li><?
+}
 $total=0;
 while ($r10 = db_fetch_row($q10)) {
 	$q20 = db_query("select naziv from studij where id=$r10[4]");
@@ -407,7 +418,10 @@ while ($r10 = db_fetch_row($q10)) {
 	$total++;
 }
 
-print "</ul><p>Ukupno: $total zahtjeva * <a href=\"?sta=studentska/prodsjeka&akcija=kratkiizvj\">Statistički pregled</a></p>\n\n";
+?>
+</ul>
+		<p>Ukupno: <?=$total?> * <a href="?sta=studentska/prodsjeka&akcija=kratkiizvj">Statistički pregled</a></p>
+<?
 
 
 

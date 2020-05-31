@@ -65,7 +65,7 @@ $studenata_sa_ocjenom = $svih_studenata - $studenata_bez_ocjene;
 <?
 
 // Spisak termina za ispite
-$q40 = db_query("select it.id, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, count(*) from ispit as i, ispit_termin as it, student_ispit_termin as sit, komponenta as k where it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and sit.ispit_termin=it.id group by sit.ispit_termin order by it.datumvrijeme");
+$q40 = db_query("select it.id, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, count(*) from ispit as i, ispit_termin as it, student_ispit_termin as sit, komponenta as k where it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id and sit.ispit_termin=it.id group by sit.ispit_termin, it.datumvrijeme order by it.datumvrijeme");
 $prosli_datum = $prosla_komponenta = ""; 
 $broj_na_datum = $studenata_na_datum = 0;
 while ($r40 = db_fetch_row($q40)) {

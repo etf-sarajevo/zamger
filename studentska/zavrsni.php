@@ -69,7 +69,9 @@ function studentska_zavrsni()  {
 		while ($r100 = db_fetch_row($q100)) {
 			?><li><a href="?sta=studentska/zavrsni&predmet=<?=$r100[0]?>&ag=<?=$r100[1]?>"><?=$r100[2]?> (<?=$r100[3]?>)</a></li><?
 		}
-		print "</ul>";
+		?>
+		</ul>
+		<?
 
 		// Izvještaj "spisak završenih studenata"
 		?>

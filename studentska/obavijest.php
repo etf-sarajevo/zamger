@@ -89,13 +89,13 @@ if (param('akcija')=='send' && check_csrf_token()) {
 			$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
 
 			if ($opseg == 3) {
-				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
+				$upit = "select a.login, o.ime, o.prezime from osoba as o, auth as a, student_studij as ss, akademska_godina as ag where ss.student=o.id and ss.student=a.id and ss.studij=$primalac and ss.akademska_godina=ag.id and ag.aktuelna=1";
 				$q320 = db_query("select naziv from studij where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".db_result($q320,0,0);
 
 			} else if ($opseg == 5) {
 				// Saljemo mail samo studentima na aktuelnoj akademskoj godini
-				$upit = "select o.email, a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
+				$upit = "select a.login, o.ime, o.prezime from osoba as o, auth as a, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$primalac and pk.akademska_godina=$ag and sp.student=o.id and sp.student=a.id";
 				$q330 = db_query("select naziv from predmet where id=$primalac");
 				$subject = "OBAVJEŠTENJE: Svi studenti na ".db_result($q330,0,0);
 			}
@@ -597,13 +597,12 @@ if ($count==0) {
 	print "<li>Nemate nijednu poruku.</li>\n";
 }
 
-print "</tbody></table>";
-
 ?>
-</td></tr></table></center>
+	</tbody>
+</table> <!-- Tabela poruka -->
+
+</td></tr></table></center> <!-- Glavna tabela -->
 <?
-
-
 
 
 }

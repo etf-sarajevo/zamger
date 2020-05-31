@@ -172,6 +172,7 @@ if (int_param('loginforma') === 1) {
 	common_cron();
 
 } else {
+	global $userid;
 	check_cookie();
 //	$userid=0;
 	if ($userid==0 && $sta!="" && $sta!="public/intro") {
@@ -233,8 +234,6 @@ if ($userid>0) {
 		$sta = "";
 	}
 }
-
-
 
 
 // Pronalazenje trazenog modula u registryju
