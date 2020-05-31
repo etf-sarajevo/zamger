@@ -873,12 +873,12 @@ INSERT INTO `studentski_modul` (`id`, `modul`, `gui_naziv`, `novi_prozor`) VALUE
 -- Šifrarnik
 --
 
-INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_upis`) VALUES
-(1, 'Bakalaureat', 1, 6, 180, 1),
-(2, 'Master', 2, 4, 120, 1),
-(3, 'Doktorski studij', 3, 6, 180, 1),
-(4, 'Stručni studij', 0, 4, 120, 1),
-(5, 'Jednogodišnji master', 2, 2, 60, 1);
+INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_upis`, `preduslov_ects`) VALUES
+(1, 'Bakalaureat', 1, 6, 180, 1, 0),
+(2, 'Master', 2, 4, 120, 1, 180),
+(3, 'Doktorski studij', 3, 6, 180, 1, 300),
+(4, 'Stručni studij', 0, 4, 120, 1, 0),
+(5, 'Jednogodišnji master', 2, 2, 60, 1, 240);
 
 
 --
@@ -887,11 +887,11 @@ INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_up
 -- studij u sistemu (vidjeti i tabelu `institucija`)
 --
 
-INSERT INTO `studij` (`id`, `naziv`, `naziv_en`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
-(1, 'Računarstvo i informatika (BSc)', 'Computer Science and Informatics', 2, 'RI', 1, 1, 1),
-(2, 'Automatika i elektronika (BSc)', 'Automatic Control and Electronics', 3, 'AE', 1, 1, 1),
-(3, 'Elektroenergetika (BSc)', 'Electric Power Engineering', 4, 'EE', 1, 1, 1),
-(4, 'Telekomunikacije (BSc)', 'Telecommunication', 5, 'TK', 1, 1, 1);
+INSERT INTO `studij` (`id`, `naziv`, `naziv_en`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`) VALUES
+(1, 'Računarstvo i informatika (BSc)', 'Computer Science and Informatics', 2, 'RI', 1, 1),
+(2, 'Automatika i elektronika (BSc)', 'Automatic Control and Electronics', 3, 'AE', 1, 1),
+(3, 'Elektroenergetika (BSc)', 'Electric Power Engineering', 4, 'EE', 1, 1),
+(4, 'Telekomunikacije (BSc)', 'Telecommunication', 5, 'TK', 1, 1);
 
 
 --

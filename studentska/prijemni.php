@@ -65,6 +65,11 @@ if (db_num_rows($q10)<1) {
 	
 	$naziv = " za ".db_result($q10,0,1)." akademsku godinu (".db_result($q10,0,3)." ciklus studija), $datum";
 }
+$ocekivani_ects = 0;
+if ($ciklus_studija == 2) $ocekivani_ects = 180;
+if ($ciklus_studija == 3) $ocekivani_ects = 300;
+if ($ciklus_studija == 4) $ocekivani_ects = 240;
+if ($ciklus_studija == 5) $ocekivani_ects = 120;
 
 
 
@@ -195,13 +200,26 @@ if ($akcija == "novi_ispit") {
 	$q25 = db_query("SELECT dekan FROM institucija WHERE dekan>0 AND tipinstitucije=1");
 	if (db_num_rows($q25)>0)
 		$dekan = db_result($q25,0,0);
+	
+	// Polje "ciklus" označava broj ECTS kredita koje kandidati trebaju imati kao preduslov:
+	//   1 - 0 kredita (kandidati za 1. ciklus i stručni studij)
+	//   2 - 180 kredita (kandidati za 2. ciklus)
+	//   3 - 300 kredita (kandidati za 3. ciklus)
+	//   4 - 240 kredita (kandidati za jednogodišnji master / specijalistički studij)
+	//   5 - 120 kredita (kandidati za studij prohodnosti sa stručnog studija na 1. ciklus)
+	// TODO: u nekom trenutku treba omogućiti da se izabere spisak studija na koje se odnosi termin
 
 	?><h2>Novi termin prijemnog ispita:</h2>
 
 	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="novi_ispit_potvrda">
 	<table border="0"><tr><td>
-	Ciklus studija:</td><td><select name="ciklus"><option value="1">Prvi</option><option value="2">Drugi</option><option value="3">Treći</option></select>
+	Ciklus studija:</td><td><select name="ciklus">
+		<option value="1">Prvi (preduslov 0 ECTS kredita)</option>
+		<option value="2">Drugi (preduslov 180 ECTS kredita)</option>
+		<option value="3">Treći (preduslov 300 ECTS kredita)</option>
+		<option value="4">Specijalistički studij (preduslov 240 ECTS kredita)</option>
+	</select>
 	</td></tr><tr><td>
 	Akademska godina:</td><td><?=db_dropdown("akademska_godina")?>
 	</td></tr><tr><td>
@@ -565,7 +583,9 @@ if ($akcija == "spisak") {
 	<h2>Spisak kandidata za prijemni ispit</h2>
 
 	<p>Studij: <select name="studij"><option value="0">Svi zajedno</option><?
-	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and s.moguc_upis=1 order by s.naziv");
+	
+	// Polje "ciklus studija" označava broj ECTS kredita koje su kandidati stekli
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.preduslov_ects=$ocekivani_ects and s.moguc_upis=1 order by s.naziv");
 	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}
@@ -606,7 +626,7 @@ if ($akcija == "rang_liste") {
 	<option value="konacni">Konačni rezultati</option></select></p>
 
 	<p>Studij: <select name="studij"><?
-	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus_studija and s.moguc_upis=1 order by s.naziv");
+	$q1000 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.preduslov_ects=$ocekivani_ects and s.moguc_upis=1 order by s.naziv");
 	while ($r1000 = db_fetch_row($q1000)) {
 		print "<option value=\"$r1000[0]\">$r1000[1]</option>\n";
 	}
@@ -676,7 +696,7 @@ if ($akcija == "upis_kriterij") {
 
 
 	// Spisak dostupnih studija
-	$q130 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija");
+	$q130 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.preduslov_ects=$ocekivani_ects");
 	$spisak_studija="";
 	while ($r130 = db_fetch_row($q130)) {
 		$spisak_studija .= "<option value=\"$r130[0]\"";
@@ -1727,9 +1747,11 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 			// što određujemo na osnovu institucije
 			$sp=0;
 			if ($ciklus_studija>1) {
+				// Da li je ikada studirao išta ovdje?
 				$q4 = db_query("select s.institucija from studij as s, student_studij as ss where ss.student=$osoba and ss.studij=s.id order by ss.akademska_godina desc, ss.semestar desc limit 1");
-				if (db_num_rows($q4)>0) { // Da li je ikada studirao išta ovdje?
-					$q5 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=".db_result($q4,0,0)." and s.tipstudija=ts.id and ts.ciklus<=$ciklus_studija");
+				if (db_num_rows($q4)>0) {
+					// Jeste, uzimamo studij odgovarajućeg tipa sa iste institucije
+					$q5 = db_query("select s.id from studij as s, tipstudija as ts where s.institucija=".db_result($q4,0,0)." and s.tipstudija=ts.id and ts.preduslov_ects=$ocekivani_ects");
 					$sp = db_result($q5,0,0);
 				}
 
@@ -1763,7 +1785,8 @@ if (intval($_REQUEST['trazijmbg'])>0) {
 
 		} else {
 			// Za više cikluse, popunićemo tabelu podacima o prethodnom ciklusu iz Zamgera
-			$q9 = db_query("select ko.ocjena, p.ects, pk.semestar from konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts where ko.student=$osoba and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.id=sp.predmet and sp.student=$osoba and pk.studij=s.id and s.tipstudija=ts.id and ts.ciklus=".($ciklus_studija-1));
+			// FIXME: Ovaj upit nije baš dobar jer gleda fiksno studij koji nosi toliko kredita, a student može imati više
+			$q9 = db_query("select ko.ocjena, p.ects, pk.semestar from konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, studij as s, tipstudija as ts where ko.student=$osoba and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and pk.predmet=p.id and pk.id=sp.predmet and sp.student=$osoba and pk.studij=s.id and s.tipstudija=ts.id and ts.ects+ts.preduslov_ects=$ocekivani_ects");
 			$bodovi=0; // Odmah izracunavamo i bodove
 			$rednibroj=1;
 			$maxsemestar=0;
@@ -1868,7 +1891,7 @@ else if ($vrstaunosa=="novigreska") {
 
 // Spisak dostupnih studija ovisno o ciklusu studija
 
-$q230 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.ciklus=$ciklus_studija order by s.kratkinaziv");
+$q230 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.moguc_upis=1 and s.tipstudija=ts.id and ts.preduslov_ects=$ocekivani_ects order by s.kratkinaziv");
 $studiji = array();
 $sstudimena="";
 $sstudbrojevi="";

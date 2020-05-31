@@ -1950,7 +1950,6 @@ CREATE TABLE IF NOT EXISTS `studij` (
   `kratkinaziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,
   `tipstudija` int(11) NOT NULL,
-  `preduslov` int(11) NOT NULL,
   `strucni_stepen` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
@@ -2016,6 +2015,7 @@ CREATE TABLE IF NOT EXISTS `tipstudija` (
   `trajanje` tinyint(3) NOT NULL,
   `ects` int(11) NOT NULL,
   `moguc_upis` int(11) NOT NULL default 1,
+  `preduslov_ects` int default 0 COMMENT 'Koliko ECTS kredita je potrebno imati da bi se upisao ovaj tip studija',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
