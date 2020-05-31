@@ -365,7 +365,7 @@ function fetchRSSForProject($id, $offset, $rowsPerPage)
 	if ($offset == 0 && $rowsPerPage == 0)
 	{}
 	else
-		$query .="LIMIT $offset, $rowsPerPage";
+		$query .=" LIMIT $offset, $rowsPerPage";
 	$result = db_query($query);
 
 	$list = array();
