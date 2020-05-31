@@ -277,7 +277,7 @@ for ($i=1; $i<=$brzad; $i++) {
 			$txt="";
 			$txt =$txt.file_get_contents($putanjaFajla);
 			$ekstenzija = pathinfo($putanjaFajla, PATHINFO_EXTENSION);
-			$geshi =& new GeSHi($txt, $ekstenzija);
+			$geshi = new GeSHi($txt, $ekstenzija);
 			$txt = $geshi->parse_code();
 		
 			if ($txt != false) {
@@ -303,7 +303,7 @@ for ($i=1; $i<=$brzad; $i++) {
 		$ekstenzija = pathinfo($filename[$i], PATHINFO_EXTENSION);
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
 		
-		$geshi =& new GeSHi($txt, $ekstenzija);
+		$geshi = new GeSHi($txt, $ekstenzija);
 		$txt = $geshi->parse_code();
 		$txt = str_replace("\t","        ",$txt);
 			
