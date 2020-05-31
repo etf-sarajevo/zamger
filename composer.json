@@ -13,9 +13,10 @@
     }
   ],
   "require": {
-    "ext-ldap": "*",
     "stevenmaguire/oauth2-keycloak": "^2.1",
-    "ext-gd": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "geshi/geshi": "^1.0.9.1",
+    "pclzip/pclzip": "^2.8.2",
+    "tecnickcom/tcpdf" : "^6.3.5"
   }
 }

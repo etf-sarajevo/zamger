@@ -10,7 +10,7 @@ global $userid,$conf_files_path,$files,$i;
 $files=array();
 $i=0;
 
-
+require("vendor/autoload.php"); // Koristimo: TCPDF, Pclzip, Geshi
 
 
 # Poslani parametar:
@@ -89,7 +89,6 @@ for ($zadatak=1;$zadatak<=$brzad;$zadatak++) {
 	}
 }
 
-require_once('lib/tcpdf/tcpdf.php');
 
 // Extend the TCPDF class to create custom Header and Footer
 class MYPDF extends TCPDF {
@@ -190,8 +189,6 @@ $pdf->Ln();
 $pdf->SetX(-80);
 $pdf->Cell(60,10,'','B',0,'C');
 
-include_once('lib/geshi/geshi.php');
-
 //Funkcija koja kupi putanje za sve fajlove u direktoriju
 function OtvaranjeDirektorija($dirPutanja){
 	global $files;
@@ -242,7 +239,6 @@ function delete_directory($dirname) {
 }
 
 // Zadaci
-include('lib/pclzip/pclzip.lib.php');
 
 // Fajlovi tipa cpp,c se mogu slati i u formi attachmenta i vrsi se bojenje sintakse
 
@@ -252,7 +248,7 @@ for ($i=1; $i<=$brzad; $i++) {
 	if (!file_exists("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]")) {
 		continue;
 	}
-	$ekstenzija = pathinfo($filename, PATHINFO_EXTENSION);
+	$ekstenzija = pathinfo($filename[$i], PATHINFO_EXTENSION);
 
 	// Extract zip fajlova
 	if ($ekstenzija == "zip") {
@@ -300,9 +296,9 @@ for ($i=1; $i<=$brzad; $i++) {
 	}
 	else if ($ekstenzija=="cpp" || $ekstenzija=="c") {
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
-		$ekstenzija = pathinfo($filename[$i], PATHINFO_EXTENSION);
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
 		
+		if ($ekstenzija == "cpp") $ekstenzija = "C";
 		$geshi = new GeSHi($txt, $ekstenzija);
 		$txt = $geshi->parse_code();
 		$txt = str_replace("\t","        ",$txt);
@@ -321,7 +317,7 @@ for ($i=1; $i<=$brzad; $i++) {
 			
 	}
 	else {
-		niceerror("Ovaj tip datoteke nije podržan");
+		niceerror("Ovaj tip datoteke nije podržan ($ekstenzija)");
 		return;
 	}
 	$files=null;
