@@ -815,9 +815,9 @@ else {
 			WHERE pk.akademska_godina=ag.id and ag.id=$ak_god and pk.predmet=p.id and p.institucija=i.id and agp.akademska_godina=ag.id and agp.predmet=p.id 
 			ORDER BY ag.naziv desc, COALESCE (pp.naziv, p.naziv) LIMIT $offset,$limit");
 		} else if ($src != "") {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i, '' where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i where (p.naziv like '%$src%' or p.kratki_naziv like '%$src%') and p.institucija=i.id order by p.naziv limit $offset,$limit");
 		} else {
-			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i, '' where p.institucija=i.id order by p.naziv limit $offset,$limit");
+			$q301 = db_query("select distinct p.id, p.naziv, i.kratki_naziv from predmet as p, institucija as i where p.institucija=i.id order by p.naziv limit $offset,$limit");
 		}
 
 		?>
