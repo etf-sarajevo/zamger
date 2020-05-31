@@ -145,7 +145,7 @@ if ($akcija != "pregled") {
 
 // NOVI PRIJEMNI ISPIT
 
-if (param('akcija') == "novi_ispit_potvrda" && check_csrf_token()) {
+if ($akcija == "novi_ispit_potvrda" && check_csrf_token()) {
 	$ciklus = intval($_REQUEST['ciklus']);
 	if ($ciklus!=1 && $ciklus !=2 && $ciklus !=3) {
 		biguglyerror("Neispravan ciklus studija");
@@ -433,7 +433,7 @@ if ($akcija == "brzi_unos") {
 			} while (db_result($q3015,0,0)>0);
 			
 			// Određivanje datuma rođenja iz JMBGa
-			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rmjbg,0,2), substr($rjmbg,4,3)+1000);
+			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rjmbg,0,2), substr($rjmbg,4,3)+1000);
 
 			$q3020 = db_query("insert into osoba set id=$osoba, ime='$rime', prezime='$rprezime', imeoca='$rimeroditelja', jmbg='$rjmbg', datum_rodjenja=FROM_UNIXTIME($datumrod)");
 			$q3030 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
@@ -550,7 +550,6 @@ function provjeri_sve() {
 
 if ($akcija == "spisak") {
 	?>
-	?>
 	<form action="index.php" method="GET">
 	<input type="hidden" name="sta" value="izvjestaj/prijemni">
 	<input type="hidden" name="akcija" value="kandidati">
@@ -569,6 +568,7 @@ if ($akcija == "spisak") {
 	<option>Svi zajedno</option>
 	</select></p>
 	<p>Sortirano po: <select name="sort"><option value="abecedno">imenu i prezimenu</option>
+	<option value="kodovi">šifri kandidata</option>
 	<option>ukupnom broju bodova</option>
 	</select></p>
 	
@@ -1338,7 +1338,7 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 	}
 	if (!preg_match("/\w/",$rprezime)) {
 		niceerror("Prezime nije ispravno"); 
-		$greska=1; $greskaprezme=1;
+		$greska=1; $greskaprezime=1;
 	}
 	if ($rspol != 'M' && $rspol != 'Z' && $rspol != '') {
 		niceerror("Spol nije ispravan"); 
@@ -2234,7 +2234,7 @@ print genform("POST", "glavnaforma");?>
 	</tr>
 	<tr>
 		<td width="125" align="left">Mjesto rođenja:</td>
-		<td><input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'mjesto_rodjenja'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" onInput="this.style.backgroundColor = '#FFFFFF';" onBlur="comboBoxHide('<?=$name?>')" <?
+		<td><input type="text" name="mjesto_rodjenja" id="mjesto_rodjenja" value="<?=$mjestorvalue?>" class="default" onKeyDown="return comboBoxEdit(event, 'mjesto_rodjenja'); this.style.backgroundColor = '#FFFFFF';" autocomplete="off" size="17" onInput="this.style.backgroundColor = '#FFFFFF';" onBlur="comboBoxHide('mjesto_rodjenja')" <?
 		if ($greskamjestorod) {
 			?> style="background-color:#FF0000" onChange="this.style.backgroundColor = '#FFFFFF'"<?
 		} else if ($emjesto==0) {
