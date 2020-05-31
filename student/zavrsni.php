@@ -102,7 +102,7 @@ function student_zavrsni()  {
 	
 	if ($akcija == 'detalji') {
 		$zavrsni = intval($_REQUEST['zavrsni']);
-		$q130 = db_query("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student, kandidat_potvrdjen FROM zavrsni WHERE id=$zavrsni AND tema_odobrena=1");
+		$q130 = db_query("select naslov, podnaslov, kratki_pregled, literatura, mentor, predsjednik_komisije, clan_komisije, student, kandidat_potvrdjen FROM zavrsni WHERE id=$zavrsni");
 		$naslov = db_result($q130,0,0);
 		$podnaslov = db_result($q130,0,1);
 		$kpregled = str_replace("\n", "<br>", linkuj_urlove(db_result($q130,0,2)));
