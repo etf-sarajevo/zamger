@@ -8,7 +8,7 @@ function studentska_zavrsni()  {
 
 	require("lib/manip.php"); // radi ispisa studenata sa predmeta
 	
-	global $userid, $user_nastavnik, $user_studentska, $user_siteadmin;
+	global $userid, $user_nastavnik, $user_studentska, $user_siteadmin, $user_sefodsjeka;
 	global $conf_files_path, $conf_jasper, $conf_jasper_url;
 
 	$predmet = intval($_REQUEST['predmet']);
@@ -19,7 +19,7 @@ function studentska_zavrsni()  {
 	if ($dir != "desc" && $dir != "asc") $dir="";
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin) {
+	if (!$user_studentska && !$user_siteadmin && !$user_sefodsjeka) {
 		zamgerlog("nije studentska",3); // 3: error
 		zamgerlog2("nije studentska");
 		biguglyerror("Pristup nije dozvoljen.");

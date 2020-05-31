@@ -212,7 +212,7 @@ if ($userid>0) {
 
 // Određivanje privilegija korisnika
 
-$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=$user_sefodsjeka=false;
+$user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=$user_sefodsjeka=$user_uprava=false;
 if ($userid>0) {
 	$q10 = db_query("select privilegija from privilegije where osoba=$userid");
 	while (db_fetch1($q10, $privilegija)) {
@@ -222,7 +222,8 @@ if ($userid>0) {
 		if ($privilegija=="siteadmin") $user_siteadmin=true;
 		if ($privilegija=="prijemni") $user_prijemni=true;
 		if ($privilegija=="sefodsjeka") $user_sefodsjeka=true;
-		// ovdje dodati ostale vrste korisnika koje imaju pristup
+		if ($privilegija=="uprava") $user_uprava=true;
+		// broj privilegija je malo eskalirao
 	}
 
 

@@ -3,10 +3,10 @@
 function studentska_plan(){
 	require("lib/formgen.php"); // Zbog db_dropdown
 
-	global $userid,$user_siteadmin,$user_studentska;
+	global $userid, $user_siteadmin, $user_studentska, $user_uprava;
 
 	// Provjera privilegija
-	if (!$user_studentska && !$user_siteadmin) {
+	if (!$user_studentska && !$user_siteadmin && !$user_uprava) {
 		zamgerlog("nije studentska",3); // 3: error
 		biguglyerror("Pristup nije dozvoljen.");
 		return;

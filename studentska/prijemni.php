@@ -10,10 +10,18 @@ function studentska_prijemni() {
 require_once("lib/formgen.php"); // db_dropdown
 require_once("lib/utility.php"); // testjmbg
 
+global $userid, $user_nastavnik, $user_studentska, $user_siteadmin, $user_uprava;
 
 // Default akcija je unos novog studenta
 $akcija = param('akcija');
 if (!$akcija) $akcija = "unos";
+
+if (!$user_studentska && !$user_siteadmin && !$user_uprava) {
+	zamgerlog("nije studentska",3); // 3: error
+	zamgerlog2("nije studentska");
+	biguglyerror("Pristup nije dozvoljen.");
+	return;
+}
 
 
 ?>
@@ -1399,13 +1407,9 @@ if ($akcija == 'unospotvrda' && check_csrf_token()) {
 	if ($_REQUEST['vrstaunosa']=="novi" || $rosoba==0) {
 
 		// Nova osoba
-		$min_id=1;
-
-		$q310 = db_query("select id+1 from osoba where id>=$min_id order by id desc limit 1");
-		if (db_num_rows($q310)<1)
-			$rosoba=$min_id;
-		else
-			$rosoba=db_result($q310,0,0);
+		$rosoba = db_get("select MAX(id)+1 from osoba where id>=1");
+		if (intval($rosoba) == 0) // Može se desiti ako nema slogova u bazi
+			$rosoba=1;
 
 		$q320 = db_query("insert into osoba set id=$rosoba, ime='$rime', prezime='$rprezime', imeoca='$rimeoca', prezimeoca='$rprezimeoca', imemajke='$rimemajke', prezimemajke='$rprezimemajke', spol='$rspol', brindexa='', datum_rodjenja='$godina-$mjesec-$dan', mjesto_rodjenja=$rmjrid, drzavljanstvo=$rdrzavljanstvo, nacionalnost=$rnacid, boracke_kategorije=$rborac, jmbg='$rjmbg', adresa='$radresa', adresa_mjesto=$radmid, telefon='$rtelefon', kanton=$rkanton, treba_brisati=0, strucni_stepen=$rstrucni_stepen, naucni_stepen=6"); // 6 = bez naucnog stepena
 
