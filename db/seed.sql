@@ -887,11 +887,11 @@ INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_up
 -- studij u sistemu (vidjeti i tabelu `institucija`)
 --
 
-INSERT INTO `studij` (`id`, `naziv`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
-(1, 'Računarstvo i informatika (BSc)', 2, 'RI', 1, 1, 1),
-(2, 'Automatika i elektronika (BSc)', 3, 'AE', 1, 1, 1),
-(3, 'Elektroenergetika (BSc)', 4, 'EE', 1, 1, 1),
-(4, 'Telekomunikacije (BSc)', 5, 'TK', 1, 1, 1);
+INSERT INTO `studij` (`id`, `naziv`, `naziv_en`, `institucija`, `kratkinaziv`, `moguc_upis`, `tipstudija`, `preduslov`) VALUES
+(1, 'Računarstvo i informatika (BSc)', 'Computer Science and Informatics', 2, 'RI', 1, 1, 1),
+(2, 'Automatika i elektronika (BSc)', 'Automatic Control and Electronics', 3, 'AE', 1, 1, 1),
+(3, 'Elektroenergetika (BSc)', 'Electric Power Engineering', 4, 'EE', 1, 1, 1),
+(4, 'Telekomunikacije (BSc)', 'Telecommunication', 5, 'TK', 1, 1, 1);
 
 
 --

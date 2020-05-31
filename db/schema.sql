@@ -1945,6 +1945,7 @@ CREATE TABLE `student_zaduzenje` (
 CREATE TABLE IF NOT EXISTS `studij` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL DEFAULT '',
+  `naziv_en` varchar(100) NOT NULL DEFAULT '',
   `institucija` int(11) NOT NULL DEFAULT '0',
   `kratkinaziv` varchar(10) COLLATE utf8_slovenian_ci NOT NULL,
   `moguc_upis` tinyint(1) NOT NULL,
