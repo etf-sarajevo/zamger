@@ -21,6 +21,14 @@ if ($spol == 'Z' || ($spol == '' && spol($ime)=="Z"))
 else
 	print "<h1>Dobro došao, ".vokativ($ime,"M")."</h1>";
 
+// Zaduženje
+$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$userid");
+if ($zaduzenje > 0) {
+	?>
+	<p>Prema trenutnoj evidenciji dugujete <b style="color: red"><?=sprintf("%.2f", $zaduzenje)?> KM</b> za školarinu.<br>
+		Ako ovo nije tačno, molimo da se javite studentskoj službi.</p>
+	<?
+}
 
 // Sakrij module ako ih nema u registry-ju
 $modul_raspored=$modul_anketa=0;
