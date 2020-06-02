@@ -1584,8 +1584,9 @@ else if ($akcija == "predmeti") {
 
 	function dajpredmete($studij, $semestar, $student, $ag, $spisak) {
 		$q2100 = db_query("SELECT pk.id, p.id, p.naziv, pk.obavezan, pp.naziv 
-			FROM ponudakursa as pk, predmet AS p 
-			WHERE pk.studij=$studij AND pk.semestar=$semestar AND pk.akademska_godina=$ag AND pk.predmet=p.id 
+			FROM ponudakursa AS pk, predmet AS p, akademska_godina_predmet agp
+			LEFT JOIN pasos_predmeta as pp ON pp.id=agp.pasos_predmeta
+			WHERE pk.studij=$studij AND pk.semestar=$semestar AND pk.akademska_godina=$ag AND pk.predmet=p.id AND agp.predmet=p.id AND agp.akademska_godina=$ag
 			ORDER BY p.naziv");
 		while ($r2100 = db_fetch_row($q2100)) {
 			$ponudakursa = $r2100[0];
