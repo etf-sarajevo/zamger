@@ -468,7 +468,10 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 					$broj_polozenih++;
 				}
 				if ($studenti==1) {
-					$ispitocjena[$stud_id][$r110[0]] = $r110[1];
+					$ocjena = $r110[1];
+					if ($ocjena == 11) $ocjena = "IO";
+					if ($ocjena == 12) $ocjena = "UO";
+					$ispitocjena[$stud_id][$r110[0]] = $ocjena;
 					$suma_bodova[$stud_id] += $r110[1];
 				}
 			}
@@ -483,7 +486,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 				$q120 = db_query("select pk.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.akademska_godina=$akgod $studij_upit_pk and $semestar_upit");
 			while ($r120 = db_fetch_row($q120)) {
 				$izaslo[$r120[0]]++;
-				if ($studenti==1 && $ispitocjena[$stud_id][$r120[0]]<6) {
+				if ($studenti==1 && !array_key_exists($r120[0], $ispitocjena[$stud_id])) {
 					// Ako student sluša predmet, a nije ga položio, stavljamo minus
 					$ispitocjena[$stud_id][$r120[0]]="-";
 				}
@@ -593,7 +596,7 @@ if ($ispit == 1 || $ispit == 2 || $ispit==3 || $ispit == 4 || $ispit == 5) {
 				print "<td>".$student_studij_naziv[$stud_id]."</td>\n";
 			}
 			foreach ($kursevi as $kurs_id => $kurs) {
-				if ($ispitocjena[$stud_id][$kurs_id]===NULL) $ispitocjena[$stud_id][$kurs_id]="/";
+				if (!array_key_exists($kurs_id, $ispitocjena[$stud_id])) $ispitocjena[$stud_id][$kurs_id]="/";
 				print "<td>".$ispitocjena[$stud_id][$kurs_id]."</td>\n";
 			}
 			print "<td>".$polozio[$stud_id]."</td></tr>\n";
