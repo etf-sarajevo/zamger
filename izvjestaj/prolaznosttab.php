@@ -138,8 +138,20 @@ while ($r10 = db_fetch_row($q10)) {
 		<td bgcolor="#DDDDDD" align="center" valign="center"><b><?=$brojnik?>/<?=$nazivnik?> x 100%<br><?=$vrijednost?>%</b></td>
 		<?
 	}
-	?>
-		<td align="center" valign="center"><b>-</b></td>
+	if ($ag<6) {
+		?>
+			<td align="center" valign="center"><b>-</b></td>
+		<?
+	} else {
+		// Broj studenata koji su odbranili završni rad na drugom ciklusu u datoj akademskoj godini
+		$broj = db_get("SELECT COUNT(*) FROM konacna_ocjena ko, akademska_godina_predmet agp, student_studij ss, studij s, tipstudija ts WHERE ko.akademska_godina=$ag AND agp.akademska_godina=$ag AND ko.predmet=agp.predmet AND (agp.tippredmeta=1000 OR agp.tippredmeta=1001) AND ss.student=ko.student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = 0 AND ss.studij=s.id AND s.tipstudija=ts.id AND ts.ciklus=2");
+		$gen_br = $ag - 5;
+		$vrijednost = round($broj/$varijable["e$gen_br"] * 100, 2);
+		?>
+		<td bgcolor="#E2E2E2" align="center" valign="center"><b><?=$broj?></b><br><?=$vrijednost?>%</td>
+		<?
+	}
+		?>
 	</tr><?
 }
 
