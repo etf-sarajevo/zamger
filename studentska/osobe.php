@@ -2443,7 +2443,8 @@ else if ($akcija == "edit") {
 		$status_studenta = "";
 
 		// Da li je ikada slušao nešto?
-		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$ikad_ciklus=$studij_ciklus=-1;
+		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$studij_ciklus=-1;
+		$ikad_ciklusi = array();
 	
 		while ($r220=db_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2464,14 +2465,18 @@ else if ($akcija == "edit") {
 				$ikad_ak_god_naziv=$r220[3];
 				$ikad_studij_id=$r220[4];
 				$ikad_studij_trajanje=$r220[5];
-				$ikad_ciklus=$r220[7];
 			}
+			if (!in_array($r220[7], $ikad_ciklusi)) $ikad_ciklusi[] = $r220[7];
 		}
 
 		$prepisi_ocjena = "";
-		if ($ikad_ciklus>1 || $studij_ciklus>1) {
-			for ($i=1; $i <= max($ikad_ciklus,$studij_ciklus); $i++)
-				$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo $i. ciklus</a>";
+		if (count($ikad_ciklusi) > 1) {
+			$ikad_ciklusi = array_reverse($ikad_ciklusi);
+			foreach ($ikad_ciklusi as $i)
+				if ($i == 0)
+					$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo stručni studij</a>";
+				else
+					$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo $i. ciklus</a>";
 		}
 
 

@@ -877,7 +877,7 @@ INSERT INTO `tipstudija` (`id`, `naziv`, `ciklus`, `trajanje`, `ects`, `moguc_up
 (1, 'Bakalaureat', 1, 6, 180, 1, 0),
 (2, 'Master', 2, 4, 120, 1, 180),
 (3, 'Doktorski studij', 3, 6, 180, 1, 300),
-(4, 'Stručni studij', 0, 4, 120, 1, 0),
+(4, 'Stručni studij', 99, 4, 120, 1, 0),
 (5, 'Jednogodišnji master', 2, 2, 60, 1, 240);
 
 

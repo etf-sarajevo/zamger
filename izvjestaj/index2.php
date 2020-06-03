@@ -154,7 +154,7 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 		}
 	}
 	$datum_diplomiranja = date("d. m. Y.", db_result($q89,0,0));
-	if ($studij_ciklus != 0)
+	if ($studij_ciklus != 0 && $studij_ciklus != 99)
 		$tekst_ciklus = "$studij_ciklus. ciklus studija";
 	else
 		$tekst_ciklus = "$tip_studija";
@@ -171,7 +171,7 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 	}
 
 } else {
-	if ($studij_ciklus != 0)
+	if ($studij_ciklus != 0 && $studij_ciklus != 99)
 		$tekst_ciklus = " ($studij_ciklus. ciklus)";
 	else
 		$tekst_ciklus = " ($tip_studija)";

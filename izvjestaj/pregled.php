@@ -34,7 +34,9 @@ if (param('po_semestrima')) $po_semestrima=true; else $po_semestrima=false;
 // Kreiranje niza studija za bsc i msc
 $studiji_bsc = $studiji_msc = $studiji_phd = $studij_trajanje = $studiji_svi = array();
 $trajanje_bsc = $trajanje_msc = $trajanje_phd = 0;
-$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and s.moguc_upis=1 order by s.kratkinaziv");
+
+// Upit za prvi ciklus - tu ćemo spojiti i stručni studij
+$q20 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and (ts.ciklus=1 or ts.ciklus=99) and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r20 = db_fetch_row($q20)) {
 	$studiji_bsc[$r20[1]] = $r20[0];
 	$studij_trajanje[$r20[0]] = $r20[2];
@@ -68,21 +70,6 @@ $trajanje_phd /= 2; // broj godina umjesto broj semestara
 
 $studiji_svi = array_unique($studiji_svi);
 sort($studiji_svi);
-
-/*
-// Da li su isti studiji za bsc i msc?
-$istisu=1;
-foreach ($studiji_bsc as $id => $naziv) {
-	if (!in_array($naziv, $studiji_msc)) unset($studiji_bsc[$id]);
-}
-foreach ($studiji_msc as $id => $naziv) {
-	if (!in_array($naziv, $studiji_bsc)) unset($studiji_msc[$id]);
-}
-// TODO napisati kod
-if ($istisu==0) {
-	niceerror("Ovaj izvještaj za sada podržava samo isti set studija na svim ciklusima.");
-	return;
-}*/
 
 
 ?>
