@@ -20,6 +20,7 @@
 function login($pass, $type = "") {
 	global $userid,$admin,$login,$conf_system_auth,$conf_ldap_server,$conf_ldap_domain,$conf_ldap_dn,$posljednji_pristup;
 	if ($type === "") $type = $conf_system_auth;
+	if ($type == "keycloak") $type = "ldap";
 
 	$q1 = db_query("select id, password, admin, UNIX_TIMESTAMP(posljednji_pristup) from auth where login='$login' and aktivan=1");
 	if (db_num_rows($q1)<=0)
@@ -133,8 +134,11 @@ function check_cookie() {
 
 	// Single sign-on redirekcija na Keycloak
 	else if ($conf_system_auth == "keycloak") {
-		require 'vendor/autoload.php';
-		global $conf_site_url, $conf_files_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
+		if (isset($_REQUEST['PHPSESSID'])) session_id($_REQUEST['PHPSESSID']);
+		session_start();
+		
+		global $conf_site_url, $conf_files_path, $conf_script_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
+		require "$conf_script_path/vendor/autoload.php";
 
 		session_start();
 
@@ -175,6 +179,11 @@ function check_cookie() {
 					file_put_contents($token_file, serialize($newAccessToken));
 				}
 			}
+		}
+
+		// Prikaz greške sa keycloak servera
+		else if (isset($_GET['error']) && isset($_GET['state']) && $_GET['state'] == $_SESSION['ouath2state']) {
+			niceerror("KeyCloak greška: " . $_GET['error'] . ": " . $_GET['error_description']);
 		}
 
 		// Prvi pristup Zamgeru, redirektujemo na login stranicu
