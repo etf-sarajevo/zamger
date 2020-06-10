@@ -7,7 +7,7 @@
 function izvjestaj_prijemni_brzi_unos() {
 
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 
 $termin = intval($_REQUEST['termin']);
 $osoba = intval($_REQUEST['osoba']);
