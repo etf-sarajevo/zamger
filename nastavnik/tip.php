@@ -289,8 +289,10 @@ if ($akcija == "postojeci_tip_potvrda" && check_csrf_token()) {
 
 			// Ako nijedan tip predmeta više ne koristi ovu komponentu, brišemo i nju
 			$q170 = db_query("select count(*) from tippredmeta_komponenta where komponenta=$r150[0]");
-			if (db_result($q170,0,0)==0) 
+			if (db_result($q170,0,0)==0) {
+				db_query("DELETE FROM komponentebodovi WHERE komponenta=$r150[0]");
 				$q180 = db_query("delete from komponenta where id=$r150[0]");
+			}
 		}
 	}
 
