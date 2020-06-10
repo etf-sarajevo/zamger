@@ -84,7 +84,6 @@ function izvjestaj_anketa_sumarno() {
 	$q20 = db_query("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
 		FROM predmet as p, ponudakursa as pk, studij as s
 		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
-		and s.id<=10 ". /* Izbjegavamo ekvivalenciju */ "
 		ORDER BY s.tipstudija, s.naziv, pk.semestar, p.naziv");
 	while ($r20 = db_fetch_row($q20)) {
 		// Svrstavamo predmete pod njihov odsjek
@@ -181,7 +180,6 @@ function izvjestaj_anketa_sumarno() {
 	$q20 = db_query("SELECT p.id, p.naziv, pk.studij, pk.semestar, s.naziv, p.institucija, s.institucija
 		FROM predmet as p, ponudakursa as pk, studij as s
 		WHERE pk.akademska_godina=$ag and pk.semestar mod 2=$semestar and pk.predmet=p.id and pk.studij=s.id
-		and s.id<=10 ". /* Izbjegavamo ekvivalenciju */ "
 		ORDER BY s.tipstudija, s.naziv, pk.semestar, p.naziv");
 	while ($r20 = db_fetch_row($q20)) {
 		// Svrstavamo predmete pod njihov odsjek
