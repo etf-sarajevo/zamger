@@ -142,9 +142,19 @@ function check_cookie() {
 
 		session_start();
 		
-		$uri = $_SERVER['PHP_SELF'];
-		if (!(strstr($_SERVER['REQUEST_URI'], "logout"))) {
-			$uri = $_SERVER['REQUEST_URI'];
+		$uri = $conf_site_url;
+		$forbidden_keys = [ "state", "session_state", "code" ];
+		foreach ($_GET as $key => $value) {
+			if (!in_array($key, $forbidden_keys)) {
+				if ($uri == $conf_site_url)
+					$uri .= "?" . urlencode($key) . "=" . urlencode($value);
+				else
+					$uri .= "&" . urlencode($key) . "=" . urlencode($value);
+			}
+			if ($key == "sta" && $value == "logout") {
+				$url = $conf_site_url;
+				break;
+			}
 		}
 		
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
