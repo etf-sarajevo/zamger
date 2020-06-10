@@ -349,7 +349,7 @@ if ($attach == 0) {
 			
 		// geshi - biblioteka za syntax highlighting
 		} else {
-			include_once('lib/geshi/geshi.php');
+			require("vendor/autoload.php");
 			$geshi = new GeSHi($src, $jezik);
 
 			?>
@@ -387,7 +387,8 @@ if ($attach == 0) {
 		
 			<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
 			<input type="submit" value=" Izvrši program "> <input type="submit" name="sve" value=" Izvrši sve primjere odjednom ">
-			</form> </table></center><br/>&nbsp;<br/>
+			</form>
+			</td></tr></table></center><br/>&nbsp;<br/>
 			<?
 		}
 	}
@@ -465,6 +466,9 @@ if (db_num_rows($q140) > 0) {
 		</form></p>
 		<?
 		print $nalaz_autotesta;
+		?>
+		</td></tr>
+		<?
 	}
 
 	if ($id_jezika > 0) {
@@ -476,8 +480,11 @@ if (db_num_rows($q140) > 0) {
 		<?
 	}
 
-	if ($status == 1 && !$user_siteadmin) // nema mijenjanja ako je status 1 = ceka se automatska provjera
-		print "Izmjena zadaće nije moguća jer se čeka automatsko testiranje";
+	if ($status == 1 && !$user_siteadmin) { // nema mijenjanja ako je status 1 = ceka se automatska provjera
+		?>
+		<tr><td colspan="2">Izmjena zadaće nije moguća jer se čeka automatsko testiranje</td></tr>
+		<?
+	}
 	else
 		print genform("POST");
 
@@ -491,7 +498,6 @@ if (db_num_rows($q140) > 0) {
 	?>
 	<input type="hidden" name="akcija" value="slanje">
 
-	<table border="0">
 	<tr>
 		<td>&nbsp;</td>
 		<td><b>Unos bodova za zadaću koja nije poslana:</b></td>

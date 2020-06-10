@@ -6,7 +6,7 @@
 
 function izvjestaj_prijave() {
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 
 global $userid,$conf_files_path;
 

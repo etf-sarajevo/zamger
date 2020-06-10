@@ -10,7 +10,7 @@ function student_ugovoroucenjupdf() {
 
 global $userid;
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 require_once('lib/student_studij.php'); // zbog ima_li_uslov
 
 // Prikupljam podatke iz baze

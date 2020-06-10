@@ -45,8 +45,8 @@ function izvjestaj_pdf_converter() {
 	include("$koji.php");//ovdje ga ukljucujem
 	eval("$staf();");
 	ob_end_clean();
-
-	require_once('lib/tcpdf/tcpdf.php');
+	
+	require("vendor/autoload.php"); // Koristimo TCPDF
 
 	class MYPDF extends TCPDF {
 

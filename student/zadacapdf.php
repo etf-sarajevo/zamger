@@ -298,7 +298,7 @@ for ($i=1; $i<=$brzad; $i++) {
 		$txt = file_get_contents("$conf_files_path/zadace/$predmet-$ag/$userid/$zadaca/$filename[$i]");
 		$naslov='<html><p><font size="14" color="black">'.$filename[$i].'</font></p></html>';
 		
-		if ($ekstenzija == "cpp") $ekstenzija = "C";
+		if ($ekstenzija == "cpp") $ekstenzija = "c++";
 		$geshi = new GeSHi($txt, $ekstenzija);
 		$txt = $geshi->parse_code();
 		$txt = str_replace("\t","        ",$txt);

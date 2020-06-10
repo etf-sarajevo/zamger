@@ -471,7 +471,7 @@ if($tip=="student") {
 	}
 ob_end_clean();
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 
 class MYPDF extends TCPDF {
 

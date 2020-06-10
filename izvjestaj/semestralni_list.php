@@ -8,7 +8,7 @@ function izvjestaj_semestralni_list() {
 
 global $userid;
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 require_once("lib/utility.php"); // ends_with
 
 

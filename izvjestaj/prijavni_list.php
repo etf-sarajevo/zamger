@@ -8,7 +8,7 @@ function izvjestaj_prijavni_list() {
 
 global $userid;
 
-require_once('lib/tcpdf/tcpdf.php');
+require("vendor/autoload.php"); // Koristimo TCPDF
 
 $imena_semestara = array("", "prvi", "drugi", "treći", "četvrti", "peti", "šesti");
 $imena_semestara_dativ = array("", "prvom", "drugom", "trećem", "četvrtom", "petom", "šestom");
