@@ -442,6 +442,23 @@ CREATE TABLE IF NOT EXISTS `cas` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `cjenovnik`
+--
+
+CREATE TABLE `cjenovnik` (
+    `grupa_zaduzenja` int(11) NOT NULL,
+    `grupa_zaduzenja_opis` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+    `vrsta_zaduzenja` int(11) NOT NULL,
+    `vrsta_zaduzenja_opis` varchar(400) COLLATE utf8_slovenian_ci NOT NULL,
+    `poziv_na_broj` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
+    `konto` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
+    `naziv_konta` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
+    `cijena` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `cron`
 --
 
