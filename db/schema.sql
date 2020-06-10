@@ -200,6 +200,7 @@ CREATE TABLE IF NOT EXISTS `anketa_predmet` (
   `akademska_godina` int(11) NOT NULL,
   `semestar` int(11) NOT NULL,
   `aktivna` tinyint(1) NOT NULL,
+  UNIQUE KEY `anketa_2` (`anketa`,`predmet`,`akademska_godina`),
   KEY `predmet` (`predmet`),
   KEY `anketa` (`anketa`),
   KEY `akademska_godina` (`akademska_godina`)
