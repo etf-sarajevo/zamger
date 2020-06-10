@@ -8,6 +8,8 @@ function saradnik_svezadace() {
 
 global $userid, $user_siteadmin, $tmpfolder, $conf_files_path;
 
+require("vendor/autoload.php"); // Koristimo Pclzip
+
 // Parametri
 $labgrupa = intval($_REQUEST['grupa']);
 $zadaca = intval($_REQUEST['zadaca']);
@@ -154,28 +156,12 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 			}
 
 		}
+		if ($brzadataka > 1) $student_string .= "_Z$zadatak";
 		$newfile=$zadatakfolder.$student_string.$ekst;
 
 		copy($oldfile, $newfile);
 	}
 }
-
-
-//Delete folder function 
-function deleteDirectory($dir) { 
-    if (!file_exists($dir)) return true; 
-    if (!is_dir($dir) || is_link($dir)) return unlink($dir); 
-        foreach (scandir($dir) as $item) { 
-            if ($item == '.' || $item == '..') continue; 
-            if (!deleteDirectory($dir . "/" . $item)) { 
-                chmod($dir . "/" . $item, 0777); 
-                if (!deleteDirectory($dir . "/" . $item)) return false; 
-            }; 
-        } 
-        return rmdir($dir); 
-    } 
-
-
 
 
 if ($fajlova==0) {
@@ -189,9 +175,16 @@ if ($fajlova==0) {
 
 
 // Zipujemo folder
-exec("cd $tmpfolder; zip -r $naziv_zip_fajla *"); // ZIP čuva kompletan put ako se ne nalazi u istom direktoriju
+$archive = new PclZip($naziv_zip_fajla);
+$v_list = $archive->create("$tmpfolder", PCLZIP_OPT_REMOVE_ALL_PATH);
+//exec("cd $tmpfolder; zip -r $naziv_zip_fajla *"); // ZIP čuva kompletan put ako se ne nalazi u istom direktoriju
+rm_minus_r($tmpfolder);
+if ($v_list == 0) {
+	niceerror("Kreiranje arhive nije uspjelo. Kontaktirajte administratora");
+	print "Detalji: ".$archive->errorInfo(true);
+	return;
+}
 
-deleteDirectory($tmpfolder);
 
 
 $type = `file -bi '$naziv_zip_fajla'`;
