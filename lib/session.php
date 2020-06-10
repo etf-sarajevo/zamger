@@ -116,7 +116,7 @@ function login($pass, $type = "") {
 
 // Provjera da li trenutni korisnik ima važeću sesiju
 function check_cookie() {
-	global $userid,$admin,$login,$conf_system_auth,$posljednji_pristup;
+	global $userid,$admin,$login,$conf_system_auth,$posljednji_pristup,$sta;
 
 	$userid=0;
 	$admin=0;
@@ -141,13 +141,15 @@ function check_cookie() {
 		require "$conf_script_path/vendor/autoload.php";
 
 		session_start();
+		
+		$uri = $conf_site_url . '/index.php?sta=' . $sta;
 
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
 			'authServerUrl'             => $conf_keycloak_url,
 			'realm'                     => $conf_keycloak_realm,
 			'clientId'                  => $conf_keycloak_client_id,
 			'clientSecret'              => $conf_keycloak_client_secret,
-			'redirectUri'               => $conf_site_url . '/index.php',
+			'redirectUri'               => $uri,
 			'encryptionAlgorithm'       => null,
 			'encryptionKey'             => null,
 			'encryptionKeyPath'         => null
