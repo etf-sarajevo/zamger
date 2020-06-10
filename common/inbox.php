@@ -494,9 +494,8 @@ if ($_REQUEST['mode']=="outbox") {
 		print "<li>Nemate nijednu poruku.</li>\n";
 	}
 	
-	print "</tbody></table>";
-
 	?>
+		</tbody></table>
 	</td></tr></tbody></table></center>
 	<?
 

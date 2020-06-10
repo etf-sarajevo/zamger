@@ -11,14 +11,33 @@ Preostali problemi u Zamgeru koji će biti riješeni u sljedećoj verziji (v5 st
 2. Finiji sistem prava pristupa (ACL)
 
 3. GCM push - treba riješiti pomoću novog konzumenta message busa. Kod je trenutno u branchu koji je vrlo zastario.
+    - common/ajah
+    - common/inbox
+    - nastavnik/obavjestenja
+    - nastavnik/zadace
     - studentska/intro
     - studentska/obavijest
 
 4. Ekvivalencija - ukinuti od akademske 2020/2021. godine (trenutno koliko znam ima jedan student). Kod je trenutno u branchu koji je vrlo zastario.
+    - izvjestaj/index2
+    - izvjestaj/pregled_nacin?
     - studentska/osobe
 
 5. Datum isteka izbora je stavljan '0000-00-00' da označi beskonačno, što ne radi sa novim MySQLom pa se to jedno po jedno popravlja na '1970-01-01' ali bi trebalo stavljati NULL ili nešto slično
     - lib/zamger funkcija tituliraj
 
 6. TCPDF biblioteka se smatra za obsolete i nekad zna biti vrlo spora, ne bi je trebalo koristiti, treba preći na fpdf ili tc-lib-pdf
+    - common/pdfraspored.php
+    - izvjestaj/pdf_converter.php
+    - izvjestaj/prijave.php
+    - izvjestaj/prijavni_list.php
+    - izvjestaj/prijemni_brzi_unos.php
+    - izvjestaj/semestralni_list.php
+    - student/kolizijapdf.php
+    - student/ugovoroucenjupdf.php
     - student/zadacapdf
+
+7. Izuyzeci zbog promjene NPP RI
+    - lib/student_studij
+    - student/kolizija
+    - student/ugovoroucenju

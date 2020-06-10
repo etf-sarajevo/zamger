@@ -3,16 +3,19 @@
 # Zamgeru pristupate na adresi: http://localhost:8081
 
 # Napomene:
-#  - Zamger konfiguracija koja radi sa ovim docker-compose.yml se nalazi u /lib/config.php.docker
+#  - Zamger konfiguracija koja radi sa ovim docker-compose.yml se nalazi u /lib/config.docker.php
 #  - Kod prvog pokretanja sačekajte par minuta da se kreira defaultna baza podataka
 #  - Ako radite na linuxu, morate manuelno dati permisije za fajl docker/data:
 #       chmod 777 docker/data
 #    u suprotnom ćete dobijati permission denied poruke
+#  - Budući da sada postoji dependency na biblioteke iz composera, morate najprije izvršiti
+#    "composer update" i "composer install" unutar dockera. Desni click na composer.json
 
 version: '2'
 services:
   web:
-    image: phpstorm/php-71-apache-xdebug
+    build:
+      context: docker/web-image
     ports:
       - "8081:80"
     volumes:

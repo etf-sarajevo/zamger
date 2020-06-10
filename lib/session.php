@@ -116,14 +116,15 @@ function login($pass, $type = "") {
 
 // Provjera da li trenutni korisnik ima važeću sesiju
 function check_cookie() {
-	global $userid,$admin,$login,$conf_system_auth,$posljednji_pristup;
+	global $userid,$admin,$login,$conf_system_auth,$posljednji_pristup,$conf_script_path;
+	
+	require "$conf_script_path/vendor/autoload.php"; // phpcas, keycloak
 
 	$userid=0;
 	$admin=0;
 
 	if ($conf_system_auth == "cas") {
 		global $conf_cas_server, $conf_cas_port, $conf_cas_context;
-		require("lib/phpcas/CAS.php");
 		phpCAS::setDebug();
 		phpCAS::client(CAS_VERSION_2_0, $conf_cas_server, $conf_cas_port, $conf_cas_context);
 		phpCAS::setNoCasServerValidation();
@@ -137,8 +138,7 @@ function check_cookie() {
 		if (isset($_REQUEST['PHPSESSID'])) session_id($_REQUEST['PHPSESSID']);
 		session_start();
 		
-		global $conf_site_url, $conf_files_path, $conf_script_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
-		require "$conf_script_path/vendor/autoload.php";
+		global $conf_site_url, $conf_files_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
 
 		session_start();
 		
@@ -281,9 +281,9 @@ function check_cookie() {
 
 // Prekid sesije (logout)
 function logout() {
-	global $conf_system_auth;
+	global $conf_system_auth, $conf_script_path;
 	if ($conf_system_auth == "cas") {
-		require("lib/phpcas/CAS.php");
+		require "$conf_script_path/vendor/autoload.php"; // phpcas
 		phpCAS::logout();
 	} else {
 		$_SESSION = array();
