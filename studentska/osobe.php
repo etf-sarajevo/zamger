@@ -488,9 +488,9 @@ if ($akcija == "podaci") {
 	<table border="0" width="600"><tr>
 		<td>Ime:</td>
 		<td><input type="text" name="ime" value="<?=$ime?>" class="default"></td>
-	</tr><tr>
+	</tr><td>
 		<td>Prezime:</td>
-		<td><input type="text" name="prezime" value="<?=$prezime?>" class="default"></tr>
+		<td><input type="text" name="prezime" value="<?=$prezime?>" class="default"></td>
 	</tr><tr>
 		<td>Spol:</td>
 		<td><input type="radio" name="spol" value="M" <?=$muski?>> Muški &nbsp; <input type="radio" name="spol" value="Z" <?=$zenski?>> Ženski</td>
@@ -507,9 +507,9 @@ if ($akcija == "podaci") {
 	</tr><tr>
 		<td>Ime oca:</td>
 		<td><input type="text" name="imeoca" value="<?=db_result($q400,0,2)?>" class="default"></td>
-	</tr><tr>
+	</tr><td>
 		<td>Prezime oca:</td>
-		<td><input type="text" name="prezimeoca" value="<?=db_result($q400,0,3)?>" class="default"></tr>
+		<td><input type="text" name="prezimeoca" value="<?=db_result($q400,0,3)?>" class="default"></td>
 	</tr><tr>
 		<td>Ime majke:</td>
 		<td><input type="text" name="imemajke" value="<?=db_result($q400,0,4)?>" class="default"></td>
@@ -1853,7 +1853,9 @@ else if ($akcija == "kartica") {
 			</tr>
 			<?
 		}
-		print "</table>\n";
+		?>
+		</table>
+		<?
 	}
 }
 
@@ -2249,7 +2251,11 @@ else if ($akcija == "edit") {
 
 	<h2><?=$ime?> <?=$prezime?></h2>
 	<?
-	if ($slika!="") { print "<img src=\"?sta=common/slika&osoba=$osoba\"><br/>\n"; }
+	if ($slika!="") {
+		?>
+		<img src="?sta=common/slika&osoba=<?=$osoba?>"><br/>
+		<?
+	}
 	?>
 	<table border="0" width="600"><tr><td valign="top">
 		Ime: <b><?=$ime?></b><br/>
