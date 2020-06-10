@@ -2473,7 +2473,7 @@ else if ($akcija == "edit") {
 		if (count($ikad_ciklusi) > 1) {
 			$ikad_ciklusi = array_reverse($ikad_ciklusi);
 			foreach ($ikad_ciklusi as $i)
-				if ($i == 0)
+				if ($i == 99)
 					$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo stručni studij</a>";
 				else
 					$prepisi_ocjena .= "<br><a href=\"?sta=izvjestaj/index2&student=$osoba&ciklus=$i\">Samo $i. ciklus</a>";
