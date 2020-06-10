@@ -28,7 +28,7 @@ function studentska_priznavanje(){
 		// za svaki cemo posebno query slat
 		$broj_predmeta = db_escape($_POST["kolicina"]);
 
-		$index = substr(strrchr(" ", $student), $student);
+		$index = trim(strrchr($student, " "));
 		$index = str_replace("(","",$index);
 		$index = str_replace(")","",$index);
 		if(!$index){
@@ -36,8 +36,7 @@ function studentska_priznavanje(){
 			return;
 		}
 
-		$query = db_query("select id from osoba where brindexa='$index'");
-		$student_id = db_fetch_row($query)[0];
+		$student_id = db_get("select id from osoba where brindexa='$index'");
 		
 		$make_odluka = db_query("insert into odluka set datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
 		$odluka_id = db_insert_id('odluka', 'id');
@@ -56,7 +55,7 @@ function studentska_priznavanje(){
 		}
 
 		if(!$sifra_predmeta){
-			niceerror("Morate unijeti sifru premdeta!");
+			niceerror("Morate unijeti sifru predmeta!");
 			return;
 		}
 
@@ -146,13 +145,13 @@ function studentska_priznavanje(){
 	
 	<tr>
 		<td><label for='broj_protokola'>Broj protokola: </label></td>
-		<td><input type='text' name='broj_protokola1'/></td>
+		<td><input type='text' name='broj_protokola'/></td>
 	</tr>
 	
 	
 	<tr >
 		<td><label for='datum'>Datum: </label></td>
-		<td><input type='date' value="<?= date('Y-m-j')?>" name='datum1' /></td>
+		<td><input type='date' value="<?= date('Y-m-j')?>" name='datum' /></td>
 	</tr>
 	
 	<tr>    <td colspan="2">    <hr>    </td></tr>
