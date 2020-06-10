@@ -770,7 +770,7 @@ else {
 		}
 		?></select><br/>
 		<input type="text" size="50" name="search" value="<? if ($src!="") print $src?>"> <input type="Submit" value=" Pretraži "></form>
-		</p>>
+		</p>
 	<?
 	if ($ak_god>=0 && param('search')) {
 		$q300 = db_query("select count(distinct pk.predmet) from ponudakursa as pk, predmet as p, akademska_godina_predmet as agp

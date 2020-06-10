@@ -453,7 +453,7 @@ INSERT INTO `log2_dogadjaj` (`id`, `opis`, `nivo`) VALUES
 (251, 'nepostojeca anketa', 2),
 (252, 'ispit - vrijednost nije ni broj ni /', 2),
 (253, 'dodan kviz', 2),
-(254, 'nepostojeca virtualna labgrupa', 2),
+(254, 'nepostojeca virtualna labgrupa', 3),
 (255, 'dodano pitanje na kviz', 2),
 (256, 'dodan odgovor na pitanje', 2),
 (257, 'izmijenjeno pitanje na kvizu', 2),

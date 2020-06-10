@@ -208,6 +208,7 @@ function rm_minus_r($path) {
 			if ($file == "." || $file == "..") continue;
 			$filepath = "$path/$file";
 			if (is_dir($filepath)) {
+				chmod($filepath, 0777);
 				rm_minus_r($filepath);
 				rmdir($filepath);
 			} else {

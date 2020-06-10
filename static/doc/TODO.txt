@@ -1,0 +1,24 @@
+TODO.TXT
+========
+
+Preostali problemi u Zamgeru koji će biti riješeni u sljedećoj verziji (v5 stablo)
+ * označava preostale razlike sa produkcijom
+
+
+1. Kod sistema bodovanja za prisustvo -3 (bodovi se skupljaju sa svakim časom), potrebno je definisati ukupan broj časova, trenutno taj podatak ne postoji u bazi i nema se gdje staviti nego je hardcodirano. To će biti riješeno u v5 sa "aktivnostima".
+    - saradnik/student: linija 548 *
+
+2. Finiji sistem prava pristupa (ACL)
+
+3. GCM push - treba riješiti pomoću novog konzumenta message busa. Kod je trenutno u branchu koji je vrlo zastario.
+    - studentska/intro
+    - studentska/obavijest
+
+4. Ekvivalencija - ukinuti od akademske 2020/2021. godine (trenutno koliko znam ima jedan student). Kod je trenutno u branchu koji je vrlo zastario.
+    - studentska/osobe
+
+5. Datum isteka izbora je stavljan '0000-00-00' da označi beskonačno, što ne radi sa novim MySQLom pa se to jedno po jedno popravlja na '1970-01-01' ali bi trebalo stavljati NULL ili nešto slično
+    - lib/zamger funkcija tituliraj
+
+6. TCPDF biblioteka se smatra za obsolete i nekad zna biti vrlo spora, ne bi je trebalo koristiti, treba preći na fpdf ili tc-lib-pdf
+    - student/zadacapdf
