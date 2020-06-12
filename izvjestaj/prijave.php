@@ -100,7 +100,7 @@ if ($ispit_termin>0 && $_GET['tip'] == "sa_ocjenom") {
 
 
 // PDF inicijalizacija
-$pdf = new TCPDF('P', 'mm', 'a5', true, 'UTF-8', false);
+$pdf = new TCPDF('P', 'mm', 'A5', true, 'UTF-8', false);
 
 $pdf->SetCreator("Zamger");
 $pdf->SetTitle('Printanje prijava');
