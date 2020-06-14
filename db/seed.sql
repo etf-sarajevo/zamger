@@ -579,6 +579,17 @@ INSERT INTO `naucni_stepen` (`id`, `naziv`, `titula`) VALUES
 
 
 --
+-- Dumping data for table `oblast`
+--
+
+INSERT INTO `oblast` (`id`, `institucija`, `naziv`) VALUES
+(1, 3, 'Automatika i elektronika'),
+(2, 4, 'Elektroenergetika'),
+(3, 2, 'Računarstvo i informatika'),
+(4, 5, 'Telekomunikacije');
+
+
+--
 -- Dumping data for table `opcina`
 -- Šifrarnik
 --

@@ -1670,7 +1670,9 @@ else if ($akcija == "izbori") {
 		if ($datum_isteka == mktime(0,0,0,1,1,1990)) $datum_isteka=0;
 
 		$oblast = intval($_POST['_lv_column_oblast']);
+		if ($oblast == -1) $oblast="NULL";
 		$podoblast = intval($_POST['_lv_column_podoblast']);
+		if ($podoblast == -1) $podoblast="NULL";
 		if ($_POST['dopunski']) $dopunski=1; else $dopunski=0;
 		if ($_POST['druga_institucija']) $drugainst=1; else $drugainst=0;
 		if ($_POST['neodredjeno'])
@@ -1691,7 +1693,9 @@ else if ($akcija == "izbori") {
 		if ($idatum_isteka == mktime(0,0,0,1,1,1990)) $idatum_isteka=0;
 
 		$ioblast = intval($_POST['_lv_column_oblast']);
+		if ($ioblast == -1) $ioblast="NULL";
 		$ipodoblast = intval($_POST['_lv_column_podoblast']);
+		if ($ipodoblast == -1) $ipodoblast="NULL";
 		if ($_POST['dopunski']) $idopunski=1; else $idopunski=0;
 		if ($_POST['druga_institucija']) $idrugainst=1; else $idrugainst=0;
 		if ($_POST['neodredjeno']) 
@@ -1756,6 +1760,8 @@ else if ($akcija == "izbori") {
 					$ndatumis = "neodređeno";
 			}
 			$ispis .= "<br/>* $nzvanje ($ndatumiz - $ndatumis)\n";
+			if ($t_oblast == "NULL") $t_oblast = -1;
+			if ($t_podoblast == "NULL") $t_podoblast = -1;
 		} else {
 			$ispis .= "<br/>* <a href=\"?sta=studentska/osobe&osoba=$osoba&akcija=izbori&broj_izbora=$i\">$nzvanje ($ndatumiz - $ndatumis)</a>\n";
 		}

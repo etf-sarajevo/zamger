@@ -625,10 +625,14 @@ CREATE TABLE IF NOT EXISTS `izbor` (
   `zvanje` int(11) NOT NULL,
   `datum_izbora` date NOT NULL,
   `datum_isteka` date NOT NULL,
-  `oblast` int(11) NOT NULL,
-  `podoblast` int(11) NOT NULL,
+  `oblast` int(11) default NULL,
+  `podoblast` int(11) default NULL,
   `dopunski` tinyint(1) NOT NULL,
-  `druga_institucija` tinyint(1) NOT NULL
+  `druga_institucija` tinyint(1) NOT NULL,
+  UNIQUE KEY `izbor` (`osoba`,`zvanje`,`datum_izbora`),
+  KEY `osoba` (`osoba`),
+  KEY `podoblast` (`podoblast`) USING BTREE,
+  KEY `oblast` (`oblast`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
@@ -2605,6 +2609,14 @@ ALTER TABLE `ispit_termin`
 --
 ALTER TABLE `ispitni_rokovi`
   ADD CONSTRAINT `ispitni_rokovi_ibfk_1` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `izbor`
+--
+ALTER TABLE `izbor`
+    ADD CONSTRAINT `izbor_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`),
+    ADD CONSTRAINT `izbor_ibfk_2` FOREIGN KEY (`oblast`) REFERENCES `oblast` (`id`),
+    ADD CONSTRAINT `izbor_ibfk_3` FOREIGN KEY (`podoblast`) REFERENCES `podoblast` (`id`);
 
 --
 -- Constraints for table `izvoz_ocjena`
