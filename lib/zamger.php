@@ -155,7 +155,7 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 	}
 	
 	if ($sa_naucnonastavnim_zvanjem) {
-		$q40 = db_query("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='1970-01-01')");
+		$q40 = db_query("select z.titula from izbor as i, zvanje as z where i.osoba=$osoba and i.zvanje=z.id and i.datum_isteka>=NOW()");
 		if ($r40 = db_fetch_row($q40))
 			$ime = $r40[0]." ".$ime;
 	}

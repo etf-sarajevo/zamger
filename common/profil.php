@@ -237,7 +237,7 @@ if ($akcija=="izbori") {
 			if ($r500[1] == 0)
 				$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
 			$datum_isteka = date("d. m. Y", $r500[2]);
-			if ($r500[2] == 0)
+			if ($r500[2] == 0) // UNIX_TIMESTAMP će vratiti 0 za '2999-01-01'
 				$datum_isteka = "Neodređeno";
 			$oblast = $r500[3];
 			if ($oblast<1)
@@ -331,7 +331,7 @@ if ($akcija=="izbori") {
 		if (db_result($q400,0,1)==0)
 			$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
 		$datum_isteka = date("d. m. Y", db_result($q400,0,2));
-		if (db_result($q400,0,2)==0)
+		if (db_result($q400,0,2)==0) // UNIX_TIMESTAMP će vratiti 0 za '2999-01-01'
 			$datum_isteka = "Neodređeno";
 		$oblast = db_result($q400,0,3);
 		if ($oblast<1)

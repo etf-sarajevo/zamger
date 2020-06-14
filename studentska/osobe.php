@@ -1734,14 +1734,14 @@ else if ($akcija == "izbori") {
 		if ($datumiz==0)
 			$ndatumiz = "nepoznato";
 		$ndatumis = date("d. m. Y", $datumis);
-		if ($datumis==0)
+		if ($datumis==0) // UNIX_TIMESTAMP će vratiti 0 za '2999-01-01'
 			$ndatumis = "neodređeno";
 
 		if ($i==$broj_izbora) {
 			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_podoblast=$podoblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
 			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
 			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-				$q3040 = db_query("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and oblast=$oblast and podoblast=$podoblast and dopunski=$dopunski and druga_institucija=$drugainst");
+				$q3040 = db_query("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and dopunski=$dopunski and druga_institucija=$drugainst");
 				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
 				zamgerlog2("azurirani podaci o izboru", $osoba);
 				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
