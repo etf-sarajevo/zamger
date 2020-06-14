@@ -67,7 +67,7 @@ function student_projekti() {
 	// Da li je dostignut limit broja timova?
 	$brtimova=0;
 	foreach ($svi_projekti as $projekat) {
-		if ($broj_studenata[$projekat[id]]>0) $brtimova++;
+		if ($broj_studenata[$projekat['id']]>0) $brtimova++;
 	}
 	$limit_timova=false;
 	if ($brtimova>=$max_timova) {
@@ -93,7 +93,7 @@ function student_projekti() {
 		// Da li je projekat sa ovog predmeta?
 		$nasao=false;
 		foreach ($svi_projekti as $proj) {
-			if ($proj[id]==$projekat) { $nasao=true; break; }
+			if ($proj['id']==$projekat) { $nasao=true; break; }
 		}
 
 		if ($nasao==false) {
@@ -152,7 +152,7 @@ function student_projekti() {
 		// Da li je projekat sa ovog predmeta?
 		$nasao=false;
 		foreach ($svi_projekti as $proj) {
-			if ($proj[id]==$projekat) { $nasao=true; break; }
+			if ($proj['id']==$projekat) { $nasao=true; break; }
 		}
 
 		if ($nasao==false) {
@@ -228,7 +228,7 @@ function student_projekti() {
 	$projekti_za_ispis = array();
 	if ($zakljucani_projekti==1 && $clan_projekta>0) {
 		foreach ($svi_projekti as $projekat) {
-			if ($projekat[id]==$clan_projekta)
+			if ($projekat['id']==$clan_projekta)
 				$projekti_za_ispis[] = $projekat;
 		}
 	} else 
@@ -251,35 +251,35 @@ function student_projekti() {
 		<?
 
 		if ($zakljucani_projekti == 0) {
-			if ($projekat[id]==$clan_projekta) {
+			if ($projekat['id']==$clan_projekta) {
 				?>
-				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=odjava"?>">Odustani od prijave na ovom projektu</a></li>	
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat['id']."&akcija=odjava"?>">Odustani od prijave na ovom projektu</a></li>
 				<?
 
-			} else if ($broj_studenata[$projekat[id]]>=$max_clanova_tima) {
+			} else if ($broj_studenata[$projekat['id']]>=$max_clanova_tima) {
 				?>
 				<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
 				<?
 
-			} else if ($broj_studenata[$projekat[id]]==0 && $limit_timova) {
+			} else if ($broj_studenata[$projekat['id']]==0 && $limit_timova) {
 				?>
 				<div style="color:red; margin-top: 10px;">Limit za broj timova dostignut. Ne možete kreirati novi tim. Prijavite se na projekte u kojima ima mjesta.</div>	
 				<?
 
 			} else if ($clan_projekta==0) {
 				?>
-				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=prijava"?>">Prijavi se na ovaj projekat</a></li>
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat['id']."&akcija=prijava"?>">Prijavi se na ovaj projekat</a></li>
 				<?
 
 			} else {
 				?>	
-				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=prijava"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>   	
+				<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat['id']."&akcija=prijava"?>">Prijavi se na ovaj projekat / Promijeni članstvo</a></li>
 				<?
 			}
 
 		} else { // Projekti su zaključani
 			?>
-			<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat[id]."&akcija=projektnastranica"?>">Projektna stranica</a></li>
+			<li class="last"><a href="<?=$linkprefix."&projekat=".$projekat['id']."&akcija=projektnastranica"?>">Projektna stranica</a></li>
 			<?
 		}
 
@@ -297,7 +297,7 @@ function student_projekti() {
 				<td width="490" align="left" valign="top">
 					<?
 					// Spisak članova projekta
-					$q200 = db_query("select o.ime, o.prezime, o.brindexa from osoba as o, student_projekat as sp where sp.student=o.id and sp.projekat=".$projekat[id]." order by o.prezime, o.ime");
+					$q200 = db_query("select o.ime, o.prezime, o.brindexa from osoba as o, student_projekat as sp where sp.student=o.id and sp.projekat=".$projekat['id']." order by o.prezime, o.ime");
 					if (db_num_rows($q200)<1)
 						print 'Nema prijavljenih studenata.';
 					else
