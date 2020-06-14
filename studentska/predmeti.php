@@ -563,7 +563,7 @@ else if ($akcija == "edit") {
 		<li>
 			<a href="?sta=studentska/osobe&akcija=edit&osoba=<?=$id_nastavnika?>">
 				<?=tituliraj($id_nastavnika, false, false, true)?>
-			</a> - <?=$angazman?> (<a href=\"?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>&subakcija=deangazuj&osoba=<?=$angazman?>">deangažuj</a>)
+			</a> - <?=$angazman?> (<a href="?sta=studentska/predmeti&akcija=edit&predmet=<?=$predmet?>&ag=<?=$ag?>&subakcija=deangazuj&osoba=<?=$id_nastavnika?>">deangažuj</a>)
 		</li>
 		<?
 	}
