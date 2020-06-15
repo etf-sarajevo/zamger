@@ -176,7 +176,7 @@ function student_zavrsni()  {
 		<?
 		
 		// Početne informacije
-		$q901 = db_query("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag AND tema_odobrena=1 ORDER BY naslov");
+		$q901 = db_query("SELECT id, naslov, mentor, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=$ag ORDER BY naslov");
 		$broj_tema = db_num_rows($q901);
 		if ($broj_tema == 0) {
 			?>
