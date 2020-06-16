@@ -25,7 +25,7 @@ DIV.supljina-velika {
 /*Stil za polja tabele*/
 
 DIV.link {
-	font:Georgia, "Times New Roman", Times, serif;
+	font-face:Georgia, "Times New Roman", Times, serif;
 	text-align:left;
 	font-weight:bold;
 	font-size: 20px;
@@ -41,7 +41,7 @@ P.tekst {
 }
 
 P.tekst-sjena {
-  font:Verdana, Geneva, sans-serif;
+  font-face:Verdana, Geneva, sans-serif;
   font-size:13px;
   font-weight:400;
   color:#999;

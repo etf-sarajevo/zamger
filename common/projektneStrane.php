@@ -722,6 +722,7 @@ function common_projektneStrane() {
 	<?php
 					} //if user is author of this item
 	?>
+<link href="static/css/rss_sablon_stil.css" rel="stylesheet" type="text/css" />
 <table class="rss" border="0" cellspacing="0" cellpadding="2">
   <tr>
     <th width="200" align="left" valign="top" scope="row">URL</th>
@@ -771,35 +772,37 @@ function common_projektneStrane() {
 				}	
 			}	
  						
- 			$cachetime = 5*60; //5 minuta TODO:Pri deployment-u povecati na sat-dva.
+ 			$cachetime = 30*60; //30 minuta
  			//Serviraj is kesha ako je mladji od $cachetime 
 			if(file_exists($cachefile) && (time() - filemtime($cachefile) < $cachetime ))
 			{
-				include($cachefile);
-				print "RSS ucitan iz kesha!";
+				$rss = file_get_contents($cachefile);
+				//print "RSS ucitan iz kesha!";
 				
 			}
-			else{//Ucitaj RSS ponovo	
- 						
-				$XMLfilename = $url;
-			
-				//Pocni dump buffera
-				ob_start();
-			
-				include("lib/rss2html.php");//HTML parsiran sadrzaj RSS-a
-			
-				//Otvori kesh fajl za pisanje
-				$fp = fopen($cachefile, 'w');
-			
-				//Sacuvaj sadrzaj izlaznog buffer-a u fajl
-				fwrite($fp, ob_get_contents());
-			
-				//zatvori fajl
-				fclose($fp);
-			
-				//Posalji izlaz na browser
-				ob_end_flush();	
-				print "RSS osvjezen - feed ponovo ucitan!";
+			else{
+				$rss = file_get_contents($url);
+ 				file_put_contents($cachefile, $rss);
+			}
+   
+			$xmlDoc = simplexml_load_string($rss);
+			$i = 0;
+			foreach($xmlDoc->channel->item as $item) {
+				$dateTime = date("d. m. Y. H:i", strtotime($item->pubDate));
+				?>
+				<div class="red-tabele">
+					<div class="link"><a href="<?=$item->link?>"><?=$item->title?></a></div>
+					<div class="linija"></div>
+					<div class="datum"><p class="tekst-sjena" style="vertical-align:top"><a href="<?=$item->link?>"><img class="slika" src="static/images/arrow.png"></a><?=$dateTime?></p></div>
+					<div>
+						<p class ="tekst"><?=$item->description?></p>
+					</div>
+					&nbsp;
+					<div class="supljina-velika"></div>
+				</div>
+				<?php
+				// Max 10 vijesti
+				if (++$i >= 10) break;
 			}
 			
  	?>
@@ -1170,8 +1173,8 @@ function common_projektneStrane() {
 					{
 		?>
 			<div class="imgCont">
-            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]"?>" />
+            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$article['id']."&u=".$article['osoba']."&i=".$article['slika'] ?>" target="_blank">
+            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$article['id']."&u=".$article['osoba']."&i=".$article['slika'] ?>" />
                 </a>     
             </div>
 	  <?php
@@ -1287,7 +1290,8 @@ function common_projektneStrane() {
 			  ?>
 				   <div class="row">
 						<span class="label">Trenutna slika</span>
-						<span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$entry[osoba]&i=$entry[slika]"?>" />
+						<span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$entry['id']."&u=".$entry['osoba']."&i=".$entry['slika'] ?>" />
+					
 						</span>
 				   </div> 
 				   
@@ -2053,7 +2057,7 @@ function common_projektneStrane() {
 					}
 					else
 					{
-						$errorText = formProcess_bb('edit', $thread, $threadID);
+						$errorText = formProcess_bb('edit', true, $threadID);
 						if($errorText == '')
 						{
 							nicemessage('Uspješno ste uredili post.');
@@ -2152,6 +2156,8 @@ function formProcess_links($option)
 	}
 	
 	$id = intval($_REQUEST['id']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2167,8 +2173,6 @@ function formProcess_links($option)
 	$url 	= $_REQUEST['url'];
 	$opis 	= $_REQUEST['opis'];
 	
-	$projekat = intval($_REQUEST['projekat']);
-	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 	
 	
@@ -2276,6 +2280,8 @@ function formProcess_rss($option)
 	}
 	
 	$id = intval($_REQUEST['id']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2290,8 +2296,6 @@ function formProcess_rss($option)
 	$url 	= $_REQUEST['url'];
 	$opis 	= $_REQUEST['opis'];
 	
-	$projekat = intval($_REQUEST['projekat']);
-	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 	
 	
@@ -2361,7 +2365,7 @@ function insertRSS($data)
 
 function updateRSS($data, $id)
 {
-	$query = sprintf("UPDATE projekat_RSS SET naziv='%s', url='%s', opis='%s' WHERE id='%d' LIMIT 1", 
+	$query = sprintf("UPDATE projekat_rss SET naziv='%s', url='%s', opis='%s' WHERE id='%d' LIMIT 1",
 											db_escape($data['naziv']), 
 											db_escape($data['url']), 
 											db_escape($data['opis']),
@@ -2400,6 +2404,8 @@ function formProcess_bl($option)
 	}
 	
 	$id = intval($_REQUEST['id']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2414,8 +2420,6 @@ function formProcess_bl($option)
 	$tekst 		= $_REQUEST['tekst'];
 	$slika 		= $_FILES['image'];
 	
-	$projekat = intval($_REQUEST['projekat']);
-	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	
@@ -2678,6 +2682,8 @@ function formProcess_file($option)
 	}
 	
 	$id = intval($_REQUEST['id']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2716,8 +2722,6 @@ function formProcess_file($option)
 		$file = '';	
 	}
 
-	$projekat = intval($_REQUEST['projekat']);
-	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	
@@ -2934,6 +2938,8 @@ function formProcess_bb($option, $thread, $threadID)
 	}
 	
 	$id = intval($_REQUEST['id']);
+	$projekat = intval($_REQUEST['projekat']);
+	$predmet = intval($_REQUEST['predmet']);
 	
 	if ($option == 'edit' && $id <=0)
 	{
@@ -2956,8 +2962,6 @@ function formProcess_bb($option, $thread, $threadID)
 	$naslov 	= $_REQUEST['naslov'];
 	$tekst 		= $_REQUEST['tekst'];
 	
-	$projekat = intval($_REQUEST['projekat']);
-	$predmet = intval($_REQUEST['predmet']);
 	global $userid;
 
 	

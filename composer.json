@@ -17,6 +17,7 @@
     "ext-json": "*",
     "ext-gd": "*",
     "ext-ldap": "*",
+    "ext-xml": "*",
     "geshi/geshi": "^1.0.9.1",
     "pclzip/pclzip": "^2.8.2",
     "tecnickcom/tcpdf" : "^6.3.5",
