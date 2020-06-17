@@ -1684,6 +1684,7 @@ else if ($akcija == "izbori") {
 		zamgerlog("dodani podaci o izboru za u$osoba", 2);
 		zamgerlog2("dodani podaci o izboru", $osoba);
 	}
+	
 	if (param('subakcija') == "izmjena" && check_csrf_token()) {
 		$izvanje = intval($_POST['_lv_column_zvanje']);
 		$idatum_izbora = mktime(0,0,0, intval($_POST['izbormonth']), intval($_POST['izborday']), intval($_POST['izboryear']));
@@ -1744,10 +1745,21 @@ else if ($akcija == "izbori") {
 		if ($i==$broj_izbora) {
 			$t_zvanje=$zvanje; $t_datumiz=$datumiz; $t_datumis=$datumis; $t_oblast=$oblast; $t_podoblast=$podoblast; $t_dopunski=$dopunski; $t_drugainst=$drugainst;
 			if ($datumis==0) $t_neodredjeno=1; else $t_neodredjeno=0;
-			if ($_POST['subakcija'] == "izmjena" && check_csrf_token()) {
-				$q3040 = db_query("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and dopunski=$dopunski and druga_institucija=$drugainst");
-				zamgerlog("azurirani podaci o izboru za u$osoba", 2);
-				zamgerlog2("azurirani podaci o izboru", $osoba);
+			if (param('subakcija') == "izmjena" && check_csrf_token()) {
+				if (param('brisanje')) {
+					$q3035 = db_query("DELETE FROM izbor WHERE osoba=$osoba and zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and dopunski=$dopunski and druga_institucija=$drugainst");
+					zamgerlog("obrisani podaci o izboru za u$osoba", 2);
+					zamgerlog2("obrisani podaci o izboru", $osoba);
+					nicemessage("Obrisani podaci o izboru");
+					?>
+					<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=izbori">Nazad</a></p>
+					<?php
+					return;
+				} else {
+					$q3040 = db_query("update izbor set zvanje=$izvanje, datum_izbora=FROM_UNIXTIME($idatum_izbora), datum_isteka=$isqlisteka, oblast=$ioblast, podoblast=$ipodoblast, dopunski=$idopunski, druga_institucija=$idrugainst WHERE osoba=$osoba and zvanje=$zvanje and UNIX_TIMESTAMP(datum_izbora)=$datumiz and UNIX_TIMESTAMP(datum_isteka)=$datumis and dopunski=$dopunski and druga_institucija=$drugainst");
+					zamgerlog("azurirani podaci o izboru za u$osoba", 2);
+					zamgerlog2("azurirani podaci o izboru", $osoba);
+				}
 				$t_zvanje=$izvanje; $t_datumiz=$idatum_izbora; $t_datumis=$idatum_isteka; $t_oblast=$ioblast; $t_podoblast=$ipodoblast; $t_dopunski=$idopunski; $t_drugainst=$idrugainst;
 				$q3020 = db_query("select naziv from zvanje where id=$izvanje");
 				$nzvanje = db_result($q3020,0,0);
@@ -1809,7 +1821,7 @@ else if ($akcija == "izbori") {
 		<td colspan="2"><input type="checkbox" name="druga_institucija" <? if ($t_drugainst==1) print "CHECKED"; ?>> Biran/a na drugoj VŠO</td>
 	</tr>
 	</table>
-	<input type="submit" value=" Pošalji ">
+	<input type="submit" value=" Pošalji "> <input type="submit" name="brisanje" value=" Obriši ">
 	</form>
 	<?
 	if ($broj_izbora>0) {
