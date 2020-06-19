@@ -65,7 +65,7 @@ if ($pretraga) {
 	$filterupita = "";
 	if ($rezultata>0) {
 		while ($r100 = db_fetch_row($q100)) {
-			$grepovi[] = " ($r100[0]) - \|u$r100[0][^0-9]";
+			$grepovi[] = " \\($r100[0]\\)\\\\\\|u$r100[0][^0-9]";
 			if ($filterupita!="") $filterupita .= " OR ";
 			$filterupita .= "userid=$r100[0] OR dogadjaj like '%u$r100[0]%'";
 			if ($rezultata==1) $nasaokorisnika = $r100[0]; // najčešće nađemo tačno jednog...
@@ -90,8 +90,8 @@ else if ($analyze) {
 	$q105 = db_query("select UNIX_TIMESTAMP(vrijeme), userid FROM log2 WHERE id=$analyze");
 	$stardate = db_result($q105,0,0) + 100;
 	$koristnik = db_result($q105,0,1);
-	$grepovi[] = " ($koristnik) - ";
-	$nivo=1;
+	$grepovi[] = " \\($koristnik\\)";
+	$param_nivo=1;
 }
 
 // Grepovi za nivo
@@ -241,7 +241,7 @@ do {
 		//if (strlen($evt)>100) $evt = substr($evt,0,100); // but why?
 
 		// ne prikazuj login ako je to jedina stavka, ako je nivo veci od 1 ili ako nema pretrage
-		if ($lastlogin[$usr]==0 && (($nivo==1 && $pretraga=="") || $evt != "login")) { 
+		if ($lastlogin[$usr]==0 && (($param_nivo==1 && $pretraga=="") || $evt != "login")) {
 			$lastlogin[$usr]=$timestamp;
 			$logins++;
 			if ($logins > $maxlogins) {
@@ -352,20 +352,20 @@ do {
 
 		if ($evt == "login") {
 			if ($lastlogin[$usr] && $lastlogin[$usr]!=0) {
-				$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$lastlogin[$usr]];
+				$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> login (ID: $usr) $nicedate\n".$eventshtml[$logid];
 				$stardate=$timestamp;
 				$lastlogin[$usr]=0;
 			}
 		}
 		else if (strstr($evt," su=")) {
-			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> SU to ID: $usr $nicedate\n".$eventshtml[$logid];
 			$lastlogin[$usr]=0;
 		}
 
 
 		else {
 			if (!array_key_exists($logid, $eventshtml)) $stardate=$timestamp;
-			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$lastlogin[$usr]];
+			$eventshtml[$logid] = "<br/><img src=\"static/images/fnord.gif\" width=\"37\" height=\"1\"> <img src=\"static/images/16x16/$nivoimg.png\" width=\"16\" height=\"16\" align=\"center\"> ".$evt.$nicedate."\n".$eventshtml[$logid];
 		}
 	}
 	
