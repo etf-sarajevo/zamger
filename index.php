@@ -179,8 +179,6 @@ if (int_param('loginforma') === 1) {
 		$greska = "Vaša sesija je istekla. Molimo prijavite se ponovo.";
 		$oldsta = $sta;
 		$sta = "";
-		zamgerlog("sesija istekla $oldsta", 3);
-		zamgerlog2("sesija istekla", 0, 0, 0, $oldsta);
 		$sta = $oldsta; // -- Ne brisati sta! treba za provjeru public pristupa
 	}
 }
@@ -279,6 +277,11 @@ if ($sta!="") { // Ne kontrolisemo gresku, zbog public pristupa
 				$sta = ""; // prikaži default modul
 //print "Korisnik $userid (tip $permstr) pokusao pristupiti $sta sto zahtijeva $r[3]";
 			} else {
+				if ($greska == "Vaša sesija je istekla. Molimo prijavite se ponovo.") {
+					zamgerlog("sesija istekla $oldsta", 3);
+					zamgerlog2("sesija istekla");
+				}
+				
 				$sta=""; // kako se ne bi prikazivale ostale greske, navigacija itd.
 			}
 			break;
@@ -303,6 +306,24 @@ if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo 
 		$uspjeh=2;
 		exit;
 	}
+}
+
+// Prikaz specijalnih login ekrana u slučaju greške
+// Ovo radimo nakon servisa, jer za servise nećemo da prikazujemo login ekran!
+if (($greska !== "" || ($sta == "" && $userid == 0)) && $conf_login_screen != "internal") {
+	if ($conf_login_screen == "cas")
+		cas_login_screen();
+	if ($conf_login_screen == "keycloak")
+		keycloak_login_screen();
+	exit;
+}
+
+// Ako se korisnik uspješno prijavio, možda je sada vrijeme da izvršimo redirekciju na nešto drugo?
+if (isset($_SESSION['come_back_to'])) {
+	$url = $_SESSION['come_back_to'];
+	unset($_SESSION['come_back_to']);
+	header("Location: " . $url);
+	exit;
 }
 
 

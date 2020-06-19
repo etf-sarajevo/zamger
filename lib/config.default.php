@@ -34,18 +34,6 @@ $conf_files_path = "/home/zamger";
 $conf_appname = "ZAMGER";
 $conf_appversion = "4.3";
 
-// Gdje su smještene šifre korisnika?
-// "table" - u tabeli auth zamgerove baze podataka
-// "ldap" - na LDAP serveru (postaviti $conf_ldap na true)
-// "cas" - koristi se CAS single sign-on (SSO) servis
-// "keycloak" - koristi se KeyCloak single sign-on (SSO) servis (postaviti $conf_keycloak na true)
-$conf_system_auth = "table";
-
-
-// Ako $conf_system_auth nije postavljeno na "table", ugrađeni ekran za promjenu lozinke ne radi (TODO?)
-// Ovdje postavite URL na kojem se može promijeniti lozinka, što ovisi o konfiguraciji vašeg sistema
-$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
-
 
 // Uslov za upis u narednu godinu (iz zakona)
 $conf_uslov_predmeta = 2;
@@ -88,6 +76,32 @@ $conf_javni_dnevnik = true;
 // IP adrese banovane od pristupa Zamgeru
 // $conf_banned_ips = array("5.43.71.81");
 $conf_banned_ips = array();
+
+
+// =====================================
+// AUTENTIKACIJSKI PODSISTEM ZAMGERA
+// =====================================
+
+// Gdje su smještene lozinke korisnika?
+// "table" - u tabeli 'auth' zamgerove baze podataka
+// "ldap" - na LDAP serveru (postaviti $conf_ldap na true)
+// Ako koristite login ekran nekog SSO servisa, teoretski ne morate držati lozinke nigdje, ali to nije
+// podržano u trenutnoj verziji Zamgera
+$conf_passwords = "table";
+
+// Ako je $conf_passwords postavljeno na "table", lozinka se mijenja kroz profil, u suprotnom promjena
+// lozinke nije moguća kroz Zamger
+// Ovdje postavite URL na kojem se može promijeniti lozinka
+$conf_promjena_sifre = "<a href=\"promjena-sifre.php\" target=\"_blank\">promjena šifre</a>";
+
+// Korišteni login ekran
+// Interni login ekran Zamgera je uvijek moguće koristiti putem URLa ?sta=public/intro
+// ali prijava putem ovog ekrana neće aktivirati SSO sesiju nego običnu internu Zamger sesiju
+// Ova opcija određuje gdje će korisnik biti redirektovan u slučaju nevalidne sesije ili otvaranja home stranice
+// "internal" - interni Zamger login ekran
+// "cas" - CAS server (postaviti $conf_cas na true)
+// "keycloak" - KeyCloak server (postaviti $conf_keycloak na true)
+$conf_login_screen = "internal";
 
 
 
@@ -147,6 +161,8 @@ $conf_jasper_url = "https://jasper.moja.domena.ba";
 // =====================================
 // CAS single sign-on server
 // =====================================
+
+$conf_cas = false;
 
 $conf_cas_server = ""; // hostname CAS servera, ne možete koristiti localhost (mora biti FQDN)
 $conf_cas_port = 443; // CAS uvijek koristi HTTPS

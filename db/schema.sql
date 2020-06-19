@@ -376,8 +376,8 @@ CREATE TABLE IF NOT EXISTS `bb_post_text` (
 CREATE TABLE IF NOT EXISTS `bb_tema` (
   `id` int(11) NOT NULL,
   `vrijeme` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `prvi_post` int(11) NOT NULL DEFAULT '0',
-  `zadnji_post` int(11) NOT NULL DEFAULT '0',
+  `prvi_post` int(11) DEFAULT NULL,
+  `zadnji_post` int(11) DEFAULT NULL,
   `pregleda` int(11) unsigned NOT NULL DEFAULT '0',
   `osoba` int(11) NOT NULL,
   `projekat` int(11) NOT NULL,
