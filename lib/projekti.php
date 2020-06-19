@@ -54,7 +54,7 @@ function applyForProject($userid, $project, $predmet, $ag)
 	if (!empty($actualProjectForUser))
 	{
 		//user already in a project on this predmet
-		$nMembers = getCountMembersForProject($actualProjectForUser[id]);
+		$nMembers = getCountMembersForProject($actualProjectForUser['id']);
 		//after I leave actual team, I will be able to create a new project team because this one will be empty...
 		if ($nMembers -1 == 0)
 		{
@@ -191,7 +191,7 @@ function getCountEmptyProjectsForPredmet($predmet, $ag)
 	$projects = fetchProjects($predmet, $ag);
 	foreach ($projects as $project)
 	{	
-		$nMembers = getCountMembersForProject($project[id]);
+		$nMembers = getCountMembersForProject($project['id']);
 		if ($nMembers == 0)
 			$count++;	
 	}
@@ -204,7 +204,7 @@ function getCountNONEmptyProjectsForPredmet($predmet, $ag)
 	$projects = fetchProjects($predmet, $ag);
 	foreach ($projects as $project)
 	{	
-		$nMembers = getCountMembersForProject($project[id]);
+		$nMembers = getCountMembersForProject($project['id']);
 		if ($nMembers > 0)
 			$count++;	
 	}
@@ -490,7 +490,7 @@ function fetchFilesForProjectAllRevisions($id, $offset = 0, $rowsPerPage = 0)
 
 	foreach ($list as $item)
 	{
-		$files[] = fetchAllRevisionsForFile($item[id]);	
+		$files[] = fetchAllRevisionsForFile($item['id']);	
 	}
 	return $files;	
 }
@@ -612,7 +612,7 @@ function fetchThreadsForProject($id, $offset = 0, $rowsPerPage = 0)
 	
 	foreach ($list as $key => $item)
 	{
-		getExtendedInfoForThread($item[id], $list[$key]);
+		getExtendedInfoForThread($item['id'], $list[$key]);
 	}
 	
 	return $list;	
@@ -621,7 +621,7 @@ function getExtendedInfoForThread($id, &$list)
 {
 	$result = db_query("SELECT p.naslov, t.prvi_post, t.zadnji_post FROM bb_post p, bb_tema t WHERE t.id='$id' AND p.tema='$id' AND p.id=t.prvi_post LIMIT 1");
 	$row = db_fetch_assoc($result);
-	$list['naslov'] = $row[naslov];
+	$list['naslov'] = $row['naslov'];
 	
 	
 	$list['broj_odgovora'] = getCountRepliesToFirstPostInThread($id);
@@ -654,11 +654,11 @@ function getPostsInThread($id)
 
 	foreach ($list as $key => $item)
 	{		
-		$result = db_query("SELECT tekst FROM bb_post_text WHERE post='$item[id]' LIMIT 1");
+		$result = db_query("SELECT tekst FROM bb_post_text WHERE post='" . $item['id'] . "' LIMIT 1");
 		$row = db_fetch_assoc($result);
 		
 		$list[$key]['tekst'] = $row['tekst'];
-		$list[$key]['osoba'] = getOsobaInfoForPost($item[id]);		
+		$list[$key]['osoba'] = getOsobaInfoForPost($item['id']);		
 	}
 	
 	return $list;
@@ -707,7 +707,7 @@ function getPostInfoForThread($thread, $post)
 		$list[] = $row;	
 	db_free_result($result);
 	
-	$list[0][osoba] = getOsobaInfoForPost($post);
+	$list[0]['osoba'] = getOsobaInfoForPost($post);
 	
 	return $list[0];
 	
@@ -751,7 +751,7 @@ function fetchLatestPostsForProject($project, $limit)
 	while ($row = db_fetch_assoc($result))
 	{
 		$list[$i] = $row;
-		$list[$i][osoba] = getOsobaInfoForPost($list[$i][id]);
+		$list[$i]['osoba'] = getOsobaInfoForPost($list[$i]['id']);
 		$i++;
 	}
 	

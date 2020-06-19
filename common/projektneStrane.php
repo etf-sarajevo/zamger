@@ -7,7 +7,7 @@ function common_projektneStrane() {
 	require_once("lib/utility.php"); // nicesize
 
 	//debug mod aktivan
-	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin;
+	global $userid, $conf_files_path, $user_siteadmin;
 	$predmet 	= intval($_REQUEST['predmet']);
 	$ag 		= intval($_REQUEST['ag']);
 	$projekat 	= intval($_REQUEST['projekat']);
@@ -57,7 +57,7 @@ function common_projektneStrane() {
 	}
 
 	?>  
-     <h2><?=filtered_output_string($project[naziv]) ?></h2>
+     <h2><?=filtered_output_string($project['naziv']) ?></h2>
      <div class="links">
             <ul class="clearfix">
             	<li><a href="<?php echo $linkPrefix?>">Početna strana</a></li>
@@ -84,26 +84,26 @@ function common_projektneStrane() {
                         <a class="blockTitle" href="<?=$linkPrefix . "&section=bb" ?>" title="Grupa za diskusiju">Najnoviji postovi</a>
                         <div class="items">
                         <?php
-                            $latestPosts = fetchLatestPostsForProject($project[id], 4);
+                            $latestPosts = fetchLatestPostsForProject($project['id'], 4);
                             foreach ($latestPosts as $post)
                             {
                             
                         ?>
                             <div class="item">
-                                <span class="date"><?=date('d.m H:i  ', mysql2time($post[vrijeme])) ?></span>
-                                <a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=$post[tema]#p$post[id]" ?>" title="<?=$post['naslov']?>" target="_blank"><?php
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($post['vrijeme'])) ?></span>
+                                <a href="<?=$linkPrefix . "&section=bb&subaction=view&tid=" . $post['tema'] . "#p" . $post['id'] ?>" title="<?=$post['naslov']?>" target="_blank"><?php
                                 
                                     $maxLen = 100;	
-                                    $len = strlen($post[naslov]);
+                                    $len = strlen($post['naslov']);
                                     
                                     echo filtered_output_string(substr($post['naslov'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
                                         echo '...';
                                  ?></a>
-                                <span class="author"> - <?=filtered_output_string($post[osoba][prezime] . ' ' . $post[osoba][ime]) ?></span>
+                                <span class="author"> - <?=filtered_output_string($post['osoba']['prezime'] . ' ' . $post['osoba']['ime']) ?></span>
                                 <div class="desc"><?php
                                     $maxLen = 200;	
-                                    $len = strlen($post[tekst]);
+                                    $len = strlen($post['tekst']);
                                     
                                     echo filtered_output_string(substr($post['tekst'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
@@ -131,26 +131,26 @@ function common_projektneStrane() {
                         <a class="blockTitle" href="<?=$linkPrefix . "&section=bl" ?>" title="Članci">Najnoviji članci</a>
                         <div class="items">
                         <?php
-                            $latestArticles = fetchArticlesForProject($project[id], 0, 4);
+                            $latestArticles = fetchArticlesForProject($project['id'], 0, 4);
                             foreach ($latestArticles as $article)
                             {
-                                $author = getAuthorOfArticle($article[id]);	
+                                $author = getAuthorOfArticle($article['id']);	
                         ?>
                             <div class="item">
-                                <span class="date"><?=date('d.m H:i  ', mysql2time($article[vrijeme])) ?></span>
-                                <a href="<?=$linkPrefix . "&section=bl&subaction=view&id=$article[id]" ?>" title="<?=$article['naslov']?>" target="_blank"><?php
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($article['vrijeme'])) ?></span>
+                                <a href="<?=$linkPrefix . "&section=bl&subaction=view&id=" . $article['id'] ?>" title="<?=$article['naslov']?>" target="_blank"><?php
                                 
                                     $maxLen = 100;	
-                                    $len = strlen($article[naslov]);
+                                    $len = strlen($article['naslov']);
                                     
                                     echo filtered_output_string(substr($article['naslov'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
                                         echo '...';
                                  ?></a>
-                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                                <span class="author"> - <?=filtered_output_string($author['prezime'] . ' ' . $author['ime']) ?></span>
                                 <div class="desc"><?php
                                     $maxLen = 200;	
-                                    $len = strlen($article[tekst]);
+                                    $len = strlen($article['tekst']);
                                     
                                     echo filtered_output_string(substr($article['tekst'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
@@ -180,11 +180,11 @@ function common_projektneStrane() {
         <?php
             //get latest entries
             
-            $links = fetchLinksForProject($project[id], 0, 4);;
+            $links = fetchLinksForProject($project['id'], 0, 4);;
             
             foreach ($links as $link)
             {
-                            $url = $link[url];
+                            $url = $link['url'];
                             $scheme = parse_url($url);
                             $scheme  = $scheme['scheme'];
                         
@@ -192,7 +192,7 @@ function common_projektneStrane() {
                                 $url = 'http://' . $url;
                                 
                             $maxLen = 150;	
-                            $len = strlen($link[naziv]);
+                            $len = strlen($link['naziv']);
                             
                             
                             if ($len>$maxLen) 
@@ -200,26 +200,26 @@ function common_projektneStrane() {
     
                         
                         
-                            $author = getAuthorOfLink($link[id]);					
+                            $author = getAuthorOfLink($link['id']);					
         ?>
                             <div class="item">
                                 <a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?php
                                 
                                     $maxLen = 35;	
-                                    $len = strlen($link[naziv]);
+                                    $len = strlen($link['naziv']);
                                     
                                     echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
                                         echo '...';
                                  ?></a>
-                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                                <span class="author"> - <?=filtered_output_string($author['prezime'] . ' ' . $author['ime']) ?></span>
         <?php
-                            if ($link[opis] != '')
+                            if ($link['opis'] != '')
                             {
         ?>                   
                                 <div class="desc"><?php
                                     $maxLen = 200;	
-                                    $len = strlen($link[opis]);
+                                    $len = strlen($link['opis']);
                                     
                                     echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
@@ -250,11 +250,11 @@ function common_projektneStrane() {
         <?php
             //get latest entries
             
-            $links = fetchRSSForProject($project[id], 0, 4);;
+            $links = fetchRSSForProject($project['id'], 0, 4);;
             
             foreach ($links as $link)
             {
-                            $url = $link[url];
+                            $url = $link['url'];
                             $scheme = parse_url($url);
                             $scheme  = $scheme['scheme'];
                         
@@ -262,7 +262,7 @@ function common_projektneStrane() {
                                 $url = 'http://' . $url;
                                 
                             $maxLen = 150;	
-                            $len = strlen($link[naziv]);
+                            $len = strlen($link['naziv']);
                             
                             
                             if ($len>$maxLen) 
@@ -270,26 +270,26 @@ function common_projektneStrane() {
     
                         
                         
-                            $author = getAuthorOfRSS($link[id]);					
+                            $author = getAuthorOfRSS($link['id']);					
         ?>
                             <div class="item">
                                 <a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?php
                                 
                                     $maxLen = 35;	
-                                    $len = strlen($link[naziv]);
+                                    $len = strlen($link['naziv']);
                                     
                                     echo filtered_output_string(substr($link['naziv'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
                                         echo '...';
                                  ?></a>
-                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                                <span class="author"> - <?=filtered_output_string($author['prezime'] . ' ' . $author['ime']) ?></span>
         <?php
-                            if ($link[opis] != '')
+                            if ($link['opis'] != '')
                             {
         ?>                   
                                 <div class="desc"><?php
                                     $maxLen = 200;	
-                                    $len = strlen($link[opis]);
+                                    $len = strlen($link['opis']);
                                     
                                     echo filtered_output_string(substr($link['opis'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
@@ -320,25 +320,25 @@ function common_projektneStrane() {
         <?php
             //get latest entries
             
-            $files = fetchFilesForProjectLatestRevisions($project[id], 0, 4);;
+            $files = fetchFilesForProjectLatestRevisions($project['id'], 0, 4);;
             
             foreach ($files as $file)
             {
 			
-                            $author = getAuthorOfFile($file[id]);					
+                            $author = getAuthorOfFile($file['id']);					
         ?>
                             <div class="item">
-                                <span class="date"><?=date('d.m H:i  ', mysql2time($file[vrijeme])) ?></span>
-                                <a href="<?="index.php?sta=common/attachment&tip=projekat&projekat=$projekat&id=$file[id]" ?>" title="<?=$file['filename']?>" ><?php
+                                <span class="date"><?=date('d.m H:i  ', mysql2time($file['vrijeme'])) ?></span>
+                                <a href="<?="index.php?sta=common/attachment&tip=projekat&projekat=$projekat&id=".$file['id'] ?>" title="<?=$file['filename']?>" ><?php
                                 
                                     $maxLen = 100;	
-                                    $len = strlen($file[filename]);
+                                    $len = strlen($file['filename']);
                                     
                                     echo filtered_output_string(substr($file['filename'], 0, $maxLen-1));
                                     if ($len>$maxLen) 
                                         echo '...';
                                  ?></a>
-                                <span class="author"> - <?=filtered_output_string($author[prezime] . ' ' . $author[ime]) ?></span>
+                                <span class="author"> - <?=filtered_output_string($author['prezime'] . ' ' . $author['ime']) ?></span>
                                
                             </div><!--item-->	
         <?php
@@ -385,7 +385,7 @@ function common_projektneStrane() {
 				foreach ($members as $member)
 				{
 		?>
-        	<li><?=filtered_output_string($member[prezime] . ' ' . $member[ime] . ', ' . $member[brindexa]); ?></li>
+        	<li><?=filtered_output_string($member['prezime'] . ' ' . $member['ime'] . ', ' . $member['brindexa']); ?></li>
 		<?php		
 				}
 		?>
@@ -433,16 +433,16 @@ function common_projektneStrane() {
 				$offset = ($pageNum - 1) * $rowsPerPage;
 				
 				//display links for this project, with links to edit and delete
-				$links = fetchLinksForProject($project[id], $offset, $rowsPerPage);
+				$links = fetchLinksForProject($project['id'], $offset, $rowsPerPage);
 				foreach ($links as $link)
 				{
-					if (isUserAuthorOfLink($link[id], $userid))
+					if (isUserAuthorOfLink($link['id'], $userid))
 					{
 	?>
 <div class="links" id="link">
     <ul class="clearfix">
-        <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=$link[id]"?>">Uredi</a></li>
-        <li><a href="<?php echo $linkPrefix . "&subaction=del&id=$link[id]"?>">Briši</a></li>
+        <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $link['id'] ?>">Uredi</a></li>
+        <li><a href="<?php echo $linkPrefix . "&subaction=del&id=" . $link['id'] ?>">Briši</a></li>
     </ul>   
 </div>	
 	<?php
@@ -462,7 +462,7 @@ function common_projektneStrane() {
 							$url = 'http://' . $url;
 						
 						
-	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
+	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link['naziv']); ?></a>   
     </td>
   </tr>
  <?php
@@ -479,7 +479,7 @@ function common_projektneStrane() {
 </table>
     <?php
 				} //foreach link
-				$numrows = getCountLinksForProject($project[id]);
+				$numrows = getCountLinksForProject($project['id']);
 							
 				$maxPage = ceil($numrows/$rowsPerPage);
 				$self = $linkPrefix;
@@ -707,16 +707,16 @@ function common_projektneStrane() {
 				$offset = ($pageNum - 1) * $rowsPerPage;
 				
 				//display links for this project, with links to edit and delete
-				$feeds = fetchRSSForProject($project[id], $offset, $rowsPerPage);
+				$feeds = fetchRSSForProject($project['id'], $offset, $rowsPerPage);
 				foreach ($feeds as $link)
 				{
-					if (isUserAuthorOfRSS($link[id], $userid))
+					if (isUserAuthorOfRSS($link['id'], $userid))
 					{
 	?>
 <div class="links clearfix" id="rss">
     <ul>
-        <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=$link[id]"?>">Uredi</a></li>
-        <li><a href="<?php echo $linkPrefix . "&subaction=del&id=$link[id]"?>">Briši</a></li>
+        <li><a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $link['id'] ?>">Uredi</a></li>
+        <li><a href="<?php echo $linkPrefix . "&subaction=del&id=" . $link['id'] ?>">Briši</a></li>
     </ul>   
 </div>	
 	<?php
@@ -728,7 +728,7 @@ function common_projektneStrane() {
     <th width="200" align="left" valign="top" scope="row">URL</th>
     <td width="490" align="left" valign="top">
     <?php
-						$url = $link[url];
+						$url = $link['url'];
 						$scheme = parse_url($url);
 						$scheme  = $scheme['scheme'];
 					
@@ -736,7 +736,7 @@ function common_projektneStrane() {
 							$url = 'http://' . $url;
 						
 						
-	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link[naziv]); ?></a>   
+	?><a href="<?=$url ?>" title="<?=$link['naziv']?>" target="_blank"><?=filtered_output_string($link['naziv']); ?></a>   
     </td>
   </tr>
  <?php
@@ -812,7 +812,7 @@ function common_projektneStrane() {
 </table>
     <?php
 				} //foreach link
-				$numrows = getCountRSSForProject($project[id]);
+				$numrows = getCountRSSForProject($project['id']);
 							
 				$maxPage = ceil($numrows/$rowsPerPage);
 				$self = $linkPrefix;
@@ -1040,44 +1040,44 @@ function common_projektneStrane() {
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
 				
-				$articles = fetchArticlesForProject($project[id], $offset, $rowsPerPage);
+				$articles = fetchArticlesForProject($project['id'], $offset, $rowsPerPage);
 				foreach($articles as $article)
 				{
 	?>
     
    <div class="article_summary clearfix">
    	<?php
-		if (!empty($article[slika]))
+		if (!empty($article['slika']))
 		{
 	?>
     	<div class="imgCont">
-        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]" ?>" target="_blank">
-    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=$article[id]&u=$article[osoba]&i=$article[slika]"?>" />
+        	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=" . $article['id'] . "&u=" . $article['osoba'] . "&i=" . $article['slika'] ?>" target="_blank">
+    			<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=" . $article['id'] . "&u=" . $article['osoba'] . "&i=" . $article['slika'] ?>" />
         	</a>
         </div>
 	<?php
 		}
 	?>
-    	<div class="contentCont" <?php if (empty($article[slika])) echo 'style="margin-left: 0;"' ?>>
+    	<div class="contentCont" <?php if (empty($article['slika'])) echo 'style="margin-left: 0;"' ?>>
             <h1>
-                <a href="<?=$linkPrefix . "&subaction=view&id=$article[id]" ?>" 
+                <a href="<?=$linkPrefix . "&subaction=view&id=" . $article['id'] ?>" 
                 title="<?=$article['naslov'] ?>"><?=filtered_output_string($article['naslov']) ?>
                 </a>
             </h1>
             <div class="details">
         <?php
-			$author = getAuthorOfArticle($article[id]);
+			$author = getAuthorOfArticle($article['id']);
 		?>
-                Autor: <?=filtered_output_string($author[ime] . ' ' . $author[prezime]) ?><br />
-                Datum: <?=date('d.m.Y', strtotime($article[vrijeme])) ?>
+                Autor: <?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?><br />
+                Datum: <?=date('d.m.Y', strtotime($article['vrijeme'])) ?>
             </div><!--details-->
    <?php
-   		if (isUserAuthorOfArticle($article[id], $userid) == true)
+   		if (isUserAuthorOfArticle($article['id'], $userid) == true)
 		{
 	?>	
             <div class="buttons">
-                <a href="<?= $linkPrefix . "&subaction=edit&id=$article[id]" ?>" title="Uredi ovaj članak">Uredi</a> | 
-                <a href="<?= $linkPrefix . "&subaction=del&id=$article[id]" ?>" title="Briši ovaj članak">Briši</a>
+                <a href="<?= $linkPrefix . "&subaction=edit&id=" . $article['id'] ?>" title="Uredi ovaj članak">Uredi</a> | 
+                <a href="<?= $linkPrefix . "&subaction=del&id=" . $article['id'] ?>" title="Briši ovaj članak">Briši</a>
             </div><!--buttons-->	
 	<?php	
 		}
@@ -1085,9 +1085,9 @@ function common_projektneStrane() {
 
 <div class="text">
                                 <?php
-                                $len = strlen($article[tekst]);
+                                $len = strlen($article['tekst']);
                         
-                                if (!empty($article[slika]))
+                                if (!empty($article['slika']))
                                     $maxLen = 400;	
                                 else
                                     $maxLen = 800;	
@@ -1101,7 +1101,7 @@ function common_projektneStrane() {
     
     <?php
 				} //foreach article	
-				$numrows = getCountArticlesForProject($project[id]);
+				$numrows = getCountArticlesForProject($project['id']);
 							
 				$maxPage = ceil($numrows/$rowsPerPage);
 				$self = $linkPrefix;
@@ -1146,35 +1146,35 @@ function common_projektneStrane() {
 	   <div class="article_full clearfix">
 			<div class="contentCont clearfix">
 				<h1>
-					<a href="<?=$linkPrefix . "?subaction=view&id=$article[id]" ?>" 
+					<a href="<?=$linkPrefix . "?subaction=view&id=" . $article['id'] ?>" 
 					title="<?=$article['naslov'] ?>"><?=filtered_output_string($article['naslov']) ?>
 					</a>
 				</h1>
 				<div class="details">
 			<?php
-				$author = getAuthorOfArticle($article[id]);
+				$author = getAuthorOfArticle($article['id']);
 			?>
-					Autor: <?=filtered_output_string($author[ime] . ' ' . $author[prezime]) ?><br />
-					Datum: <?=date('d.m.Y', strtotime($article[vrijeme])) ?>
+					Autor: <?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?><br />
+					Datum: <?=date('d.m.Y', strtotime($article['vrijeme'])) ?>
 				</div><!--details-->
 	   <?php
-					if (isUserAuthorOfArticle($article[id], $userid) == true)
+					if (isUserAuthorOfArticle($article['id'], $userid) == true)
 					{
 		?>	
 				<div class="buttons">
-					<a href="<?= $linkPrefix . "&subaction=edit&id=$article[id]" ?>" title="Uredi ovaj članak">Uredi</a> | 
-					<a href="<?= $linkPrefix . "&subaction=del&id=$article[id]" ?>" title="Briši ovaj članak">Briši</a>
+					<a href="<?= $linkPrefix . "&subaction=edit&id=" . $article['id'] ?>" title="Uredi ovaj članak">Uredi</a> | 
+					<a href="<?= $linkPrefix . "&subaction=del&id=" . $article['id'] ?>" title="Briši ovaj članak">Briši</a>
 				</div><!--buttons-->	
 		<?php	
 					}
 	   ?>
 		<?php
-					if (!empty($article[slika]))
+					if (!empty($article['slika']))
 					{
 		?>
 			<div class="imgCont">
-            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$article['id']."&u=".$article['osoba']."&i=".$article['slika'] ?>" target="_blank">
-            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$article['id']."&u=".$article['osoba']."&i=".$article['slika'] ?>" />
+            	<a href="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=" . $article['id'] . "&u=" . $article['osoba'] . "&i=" . $article['slika'] ?>" target="_blank">
+            		<img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=" . $article['id'] . "&u=" . $article['osoba'] . "&i=" . $article['slika'] ?>" />
                 </a>     
             </div>
 	  <?php
@@ -1290,8 +1290,7 @@ function common_projektneStrane() {
 			  ?>
 				   <div class="row">
 						<span class="label">Trenutna slika</span>
-						<span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=".$entry['id']."&u=".$entry['osoba']."&i=".$entry['slika'] ?>" />
-					
+						<span class="formw"><img src="<?="index.php?sta=common/articleImageDownload&projekat=$projekat&predmet=$predmet&ag=$ag&a=" . $entry['id'] . "&u=" . $entry['osoba'] . "&i=" . $entry['slika'] ?>" />
 						</span>
 				   </div> 
 				   
@@ -1418,7 +1417,7 @@ function common_projektneStrane() {
 				$offset = ($pageNum - 1) * $rowsPerPage;			
 				
 				//display files for this project, with links to edit and delete
-				$files = fetchFilesForProjectAllRevisions($project[id], $offset, $rowsPerPage);
+				$files = fetchFilesForProjectAllRevisions($project['id'], $offset, $rowsPerPage);
 	?>
 <table class="files_table" border="0" cellspacing="0" cellpadding="0">
   <tr>
@@ -1434,17 +1433,17 @@ function common_projektneStrane() {
 				{
 					$lastRevisionId = 0;
 					$firstRevisionId = count($file) > 0 ? count($file) - 1 : 0;
-					$author = getAuthorOfFile($file[$lastRevisionId][id]);
+					$author = getAuthorOfFile($file[$lastRevisionId]['id']);
 	?>				
     <tr>
-    	<td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($file[$lastRevisionId][vrijeme]))?></td><!--vrijeme-->
+    	<td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($file[$lastRevisionId]['vrijeme']))?></td><!--vrijeme-->
     	<td class="author"><?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?></td><!--author-->
         <td class="revision">v<?=$file[$lastRevisionId][revizija] ?></td><!--revizija-->
         <td class="filename"><?php 
 					if (count($file) > 1)
 					{
 	?>
-		<a href="#" onclick="toggleFileRevisions('file_<?=$file[$lastRevisionId][id] ?>_revisions')"><?=filtered_output_string($file[$lastRevisionId][filename]) ?></a>		
+		<a href="#" onclick="toggleFileRevisions('file_<?=$file[$lastRevisionId]['id'] ?>_revisions')"><?=filtered_output_string($file[$lastRevisionId][filename]) ?></a>		
    	<?php
     				}
 					else
@@ -1456,16 +1455,16 @@ function common_projektneStrane() {
 					
     ?>        </td><!--filename-->
         <td class="filesize"><?php
-        	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $file[$lastRevisionId][osoba] . "/" . 
+        	$lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $file[$lastRevisionId]['osoba'] . "/" . 
 			$file[$lastRevisionId][filename] . '/v' . $file[$lastRevisionId][revizija] . '/';
 			$filepath = $lokacijafajlova . $file[$lastRevisionId][filename];
 			$filesize = filesize($filepath);
 			echo nicesize($filesize);
 			?>        </td><!--filesize-->
         <td class="options">
-			<a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $file[$lastRevisionId][id] ?>">Snimi</a>        
+			<a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $file[$lastRevisionId]['id'] ?>">Snimi</a>        
 	<?php
-					if (isUserAuthorOfFile($file[$lastRevisionId][id], $userid))
+					if (isUserAuthorOfFile($file[$lastRevisionId]['id'], $userid))
 					{
 	?>
            <a href="<?php echo $linkPrefix . "&subaction=edit&id=" . $file[$firstRevisionId]['id'] ?>">Uredi</a>
@@ -1482,15 +1481,15 @@ function common_projektneStrane() {
 						for ($i = 1; $i < count($file); $i++)
 						{	
 							$revision = $file[$i];
-							$author = getAuthorOfFile($revision[id]);
+							$author = getAuthorOfFile($revision['id']);
 	?>
-            <tr class="file_<?=$file[$lastRevisionId][id] ?>_revisions" style="display: none;" id="file_revisions">
-                <td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($revision[vrijeme]))?></td><!--vrijeme-->
+            <tr class="file_<?=$file[$lastRevisionId]['id'] ?>_revisions" style="display: none;" id="file_revisions">
+                <td class="creation_date"><?=date('d.m.Y H:i:s', mysql2time($revision['vrijeme']))?></td><!--vrijeme-->
                 <td class="author"><?=filtered_output_string($author['ime'] . ' ' . $author['prezime']) ?></td><!--author-->
                 <td class="revision">v<?=$revision[revizija] ?></td><!--revizija-->
                 <td class="filename"><?=filtered_output_string($revision[filename]) ?></td><!--filename-->
                 <td class="filesize"><?php
-                    $lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $revision[osoba] . "/" . 
+                    $lokacijafajlova ="$conf_files_path/projekti/fajlovi/$projekat/" . $revision['osoba'] . "/" . 
                     $revision[filename] . '/v' . $revision[revizija] . '/';
                     $filepath = $lokacijafajlova . $revision[filename];
                     $filesize = filesize($filepath);
@@ -1498,7 +1497,7 @@ function common_projektneStrane() {
                     ?>
                 </td><!--filesize-->
                 <td class="options">
-                    <a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $revision[id] ?>">Snimi</a>        
+                    <a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $revision['id'] ?>">Snimi</a>        
                 </td><!--options-->
             </tr><!--file_revision-->	
     <?php					
@@ -1511,7 +1510,7 @@ function common_projektneStrane() {
     </table>
 <!--files_table-->
 <?php
-				$numrows = getCountFilesForProjectWithoutRevisions($project[id]);
+				$numrows = getCountFilesForProjectWithoutRevisions($project['id']);
 							
 				$maxPage = ceil($numrows/$rowsPerPage);
 				$self = $linkPrefix;
@@ -1650,7 +1649,7 @@ function common_projektneStrane() {
 						<b>Limit za upload je 20MB.</b> <br />							
 					   <div class="row">
 							<span class="label">Trenutni fajl</span>
-							<span class="formw"><a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $lastRevisionEntry[id]?>" >
+							<span class="formw"><a href="<?='index.php?sta=common/attachment' . "&tip=projekat&projekat=$projekat&id=" . $lastRevisionEntry['id']?>" >
 								<?=filtered_output_string($lastRevisionEntry[filename]) ?>
 							</a>
 							</span>
@@ -1766,8 +1765,8 @@ function common_projektneStrane() {
 				// counting the offset
 				$offset = ($pageNum - 1) * $rowsPerPage;
 				
-				$threads = fetchThreadsForProject($project[id], $offset, $rowsPerPage);
-				$numrows = getCountThreadsForProject($project[id]);
+				$threads = fetchThreadsForProject($project['id'], $offset, $rowsPerPage);
+				$numrows = getCountThreadsForProject($project['id']);
 
 	?>
 <div id="threadList">
@@ -1785,12 +1784,12 @@ function common_projektneStrane() {
 	?>
 	<div class="threadRow clearfix<?php if  ($key % 2) echo ' pattern'?>">
         <div class="threadInfo">
-        	<div class="views"><?=intval($thread[pregleda]) ?></div><!--views-->
-        	<div class="lastReply"><?=date('d.m.Y H:i:s', mysql2time($thread[zadnji_post][vrijeme])) ?><br /><?=filtered_output_string($thread[zadnji_post][osoba][prezime] . ' ' . $thread[zadnji_post][osoba][ime]) ?></div><!--lastReply-->
-            <div class="replies"><?=intval($thread[broj_odgovora]) ?></div><!--replies-->
+        	<div class="views"><?=intval($thread['pregleda']) ?></div><!--views-->
+        	<div class="lastReply"><?=date('d.m.Y H:i:s', mysql2time($thread['zadnji_post']['vrijeme'])) ?><br /><?=filtered_output_string($thread['zadnji_post']['osoba']['prezime'] . ' ' . $thread['zadnji_post']['osoba']['ime']) ?></div><!--lastReply-->
+            <div class="replies"><?=intval($thread['broj_odgovora']) ?></div><!--replies-->
         </div><!--threadInfo-->
-    	<div class="title"><a href="<?=$linkPrefix . "&subaction=view&tid=$thread[id]" ?>" title="<?php echo $thread['naslov'] ?>"><?=filtered_output_string($thread[naslov]) ?></a></div><!--title-->
-        <div class="author"><?=filtered_output_string($thread[prvi_post][osoba][prezime] . ' ' . $thread[prvi_post][osoba][ime]) ?></div><!--author-->		
+    	<div class="title"><a href="<?=$linkPrefix . "&subaction=view&tid=" . $thread['id'] ?>" title="<?php echo $thread['naslov'] ?>"><?=filtered_output_string($thread['naslov']) ?></a></div><!--title-->
+        <div class="author"><?=filtered_output_string($thread['prvi_post']['osoba']['prezime'] . ' ' . $thread['prvi_post']['osoba']['ime']) ?></div><!--author-->		
     </div><!--threadRow caption-->
     <?php
 				} //foreach thread
@@ -1829,7 +1828,7 @@ function common_projektneStrane() {
 			{
 				if ($subaction == 'view')
 				{
-					$tid = intval($_REQUEST[tid]);
+					$tid = intval($_REQUEST['tid']);
 					$thread = getThreadAndPosts($tid);
 					if (empty($thread))
 					{
@@ -1837,36 +1836,36 @@ function common_projektneStrane() {
 						zamgerlog2("nepostojeci thread na projektu", $id, $projekat);
 						return;	
 					}	
-					incrementThreadViewCount($thread[id]);		
+					incrementThreadViewCount($thread['id']);		
 					
 	?>
     <div id="fullThread">
     <?php
-					foreach ($thread[posts] as $post)
+					foreach ($thread['posts'] as $post)
 					{
 	?>				
-		<div class="post"><a name="p<?=$post[id] ?>">
-        	<div id="post_<?=$post[id]?>_header" class="header clearfix" onclick="toggleShowPost('post_<?=$post[id] ?>')">
+		<div class="post"><a name="p<?=$post['id'] ?>">
+        	<div id="post_<?=$post['id']?>_header" class="header clearfix" onclick="toggleShowPost('post_<?=$post['id'] ?>')">
                 <div class="buttons">
-                	<a href="<?=$linkPrefix . "&subaction=add&tid=$post[tema]&id=$post[id]"?>" title="Odgovori na ovaj post">Odgovori</a>
+                	<a href="<?=$linkPrefix . "&subaction=add&tid=$post[tema]&id=" . $post['id'] ?>" title="Odgovori na ovaj post">Odgovori</a>
     <?php
-		if (isUserAuthorOfPost($post[id], $userid) == true)
+		if (isUserAuthorOfPost($post['id'], $userid) == true)
 		{
 	?>
-    				| <a href="<?=$linkPrefix . "&subaction=edit&tid=$post[tema]&id=$post[id]"?>" title="Uredi vlastiti post">Uredi</a>
-    				| <a href="<?=$linkPrefix . "&subaction=del&tid=$post[tema]&id=$post[id]"?>" title="Obriši vlastiti post">Obriši</a>		
+    				| <a href="<?=$linkPrefix . "&subaction=edit&tid=$post[tema]&id=" . $post['id'] ?>" title="Uredi vlastiti post">Uredi</a>
+    				| <a href="<?=$linkPrefix . "&subaction=del&tid=$post[tema]&id=" . $post['id'] ?>" title="Obriši vlastiti post">Obriši</a>		
     <?php
 		}
 	
 	?>
                 </div>
                 <div class="maininfo">
-                	<div class="date"><?=date('d.m.Y H:i:s', mysql2time($post[vrijeme])) ?></div>
-                    <div class="author"><?=filtered_output_string($post[osoba][prezime] . ' ' . $post[osoba][ime]) ?></div> - 
-                    <div class="title"><?=filtered_output_string($post[naslov]) ?></div>
+                	<div class="date"><?=date('d.m.Y H:i:s', mysql2time($post['vrijeme'])) ?></div>
+                    <div class="author"><?=filtered_output_string($post['osoba']['prezime'] . ' ' . $post['osoba']['ime']) ?></div> - 
+                    <div class="title"><?=filtered_output_string($post['naslov']) ?></div>
                 </div>
             </div><!--header-->
-            <div class="text" id="post_<?=$post[id] ?>_text"><?=filtered_output_string($post[tekst]) ?></div><!--text-->
+            <div class="text" id="post_<?=$post['id'] ?>_text"><?=filtered_output_string($post['tekst']) ?></div><!--text-->
 
         </div><!--post-->				
 					
@@ -1982,8 +1981,8 @@ function common_projektneStrane() {
 								zamgerlog2("dodao temu na projektu", $projekat);
 							}
 								
-							if (!empty($_REQUEST[tid]))				
-								$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";	
+							if (!empty($_REQUEST['tid']))				
+								$link = $linkPrefix . "&subaction=view&tid=" . $_REQUEST['tid'];	
 							else
 								$link = $linkPrefix;
 						}
@@ -2007,7 +2006,7 @@ function common_projektneStrane() {
 						zamgerlog2("pokusava urediti post a nije autor", $id, $projekat);
 						return;
 					}
-					$threadID = intval($_REQUEST[tid]);
+					$threadID = intval($_REQUEST['tid']);
 					if ($threadID <=0)
 					{
 						zamgerlog("pokusava urediti nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
@@ -2063,7 +2062,7 @@ function common_projektneStrane() {
 							nicemessage('Uspješno ste uredili post.');
 							zamgerlog("uredio vlastiti BB post $id, projekat $projekat (pp$predmet)", 2);
 							zamgerlog2("uredio vlastiti post", $id, $projekat);
-							$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";
+							$link = $linkPrefix . "&subaction=view&tid=" . $_REQUEST['tid'];
 						}
 						else
 						{	
@@ -2088,7 +2087,7 @@ function common_projektneStrane() {
 							zamgerlog2("pokusava izbrisati post a nije autor", $id, $projekat);
 							return;
 						}
-						$threadID = intval($_REQUEST[tid]);
+						$threadID = intval($_REQUEST['tid']);
 						if ($threadID<=0)
 						{
 							zamgerlog("pokusava izbrisati nepostojeci post $id, projekat $projekat (pp$predmet)", 3);
@@ -2112,7 +2111,7 @@ function common_projektneStrane() {
 									zamgerlog("obrisao post na projektu $projekat (pp$predmet)", 2);
 									zamgerlog2("obrisao post na projektu", $projekat);
 									if (getCountPostsInThread($threadID) > 0)
-										$link = $linkPrefix . "&subaction=view&tid=$_REQUEST[tid]";	
+										$link = $linkPrefix . "&subaction=view&tid=" . $_REQUEST['tid'];
 									else
 										$link = $linkPrefix;
 								}
@@ -2653,7 +2652,7 @@ function deleteArticle($id)
 	if (db_affected_rows() == 0)
 		return false;
 	
-	if ($entry[slika] != '')
+	if ($entry['slika'] != '')
 	{
 		$lokacijaclanaka ="$conf_files_path/projekti/clanci/" . $entry['projekat'] . '/' . $entry['osoba'] . '/';
 		if (!unlink($lokacijaclanaka . $entry['slika']))
@@ -2713,7 +2712,7 @@ function formProcess_file($option)
 	
 	if ($option == 'edit')
 	{
-		$revizija = $lastRevisionEntry[revizija] + 1;
+		$revizija = $lastRevisionEntry['revizija'] + 1;
 		$file = $entry['id'];
 	}
 	else
@@ -2896,7 +2895,7 @@ function deleteFile($id)
 	foreach ($list as $item)
 	{
 		$query = sprintf("DELETE FROM projekat_file WHERE id='%d' LIMIT 1", 
-					intval($item[id])
+					intval($item['id'])
 					);
 	
 		$result = db_query($query);
@@ -2911,7 +2910,7 @@ function deleteFile($id)
 			return false;
 			
 		//remove any diffs for this file
-		db_query("DELETE FROM projekat_file_diff WHERE file='" . $item[id] . "' LIMIT 1");
+		db_query("DELETE FROM projekat_file_diff WHERE file='" . $item['id'] . "' LIMIT 1");
 	}
 	
 	$lokacijafajlova = "$conf_files_path/projekti/fajlovi/" . $list[0]['projekat'] . '/' . $list[0]['osoba'] . '/' . $list[0]['filename'];
@@ -3150,7 +3149,7 @@ function deletePost($id)
 	
 	// Ako je ovo jedini post u temi, brišemo cijelu temu 
 	if ($tema_prvi==$tema_zadnji) {
-		$result = db_query("DELETE FROM bb_tema WHERE id='$tema_prvi' LIMIT 1");
+		db_query("DELETE FROM bb_tema WHERE id='$tema_prvi' LIMIT 1");
 	}
 	
 	return true;
