@@ -279,10 +279,6 @@ function check_cookie() {
 				
 				file_put_contents($token_file, serialize($token));
 				$_SESSION['login'] = $login;
-				
-				// Nećemo nigdje drugo znati da je ovo login event
-				zamgerlog("login",1); // nivo 1 = posjeta stranici
-				zamgerlog2("login");
 			} catch (Exception $e) {
 				if ($e->getMessage() == "invalid_grant: Code not valid") {
 					// Autorizacijski kod je invalidan, vjerovatno jer je sesija istekla
@@ -313,6 +309,12 @@ function check_cookie() {
 		$admin = db_result($q1,0,1);
 		$posljednji_pristup = db_result($q1,0,2);
 		$q2 = db_query("update auth set posljednji_pristup=NOW() where id=$userid");
+		
+		if ($conf_keycloak && isset($_GET['code'])) {
+			// Nećemo nigdje drugo znati da je ovo login event
+			zamgerlog("login",1); // nivo 1 = posjeta stranici
+			zamgerlog2("login");
+		}
 	}
 }
 
