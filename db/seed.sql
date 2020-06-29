@@ -184,8 +184,8 @@ INSERT INTO `kanton` (`id`, `naziv`, `kratki_naziv`) VALUES
 INSERT INTO `tipkomponente` (`id`, `naziv`, `opis_opcija`) VALUES
 (1, 'Ispit', ''),
 (2, 'Integralni ispit', 'Ispiti koje zamjenjuje (razdvojeni sa +)'),
-(3, 'Zadaće', ''),
-(4, 'Prisustvo', 'Minimalan broj izostanaka (0=linearno)'),
+(3, 'Prisustvo', 'Minimalan broj izostanaka (0=linearno)'),
+(4, 'Zadaće', ''),
 (5, 'Fiksna', '');
 
 
