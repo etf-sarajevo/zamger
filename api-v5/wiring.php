@@ -283,7 +283,7 @@ $wiring = array(
 		"method" => "POST", 
 		"code" => function($p) { 
 			$cuy = CourseUnitYear::fromCourseAndYear($p['id'], $p['year']);
-			$porfolio = $cuy->enrollStudent($p['student']);
+			$portfolio = $cuy->enrollStudent($p['student']);
 			return $portfolio;
 		},
 		"acl" => function($p) { return AccessControl::privilege('studentska'); },
@@ -1380,7 +1380,7 @@ $wiring = array(
 			return $p['quiz']->submit(Session::$userid);
 		},
 		"acl" => function($p) { 
-			return AccessControl::isStudent($quiz->CourseUnit->id, $quiz->AcademicYear->id);
+			return AccessControl::isStudent($p['quiz']->CourseUnit->id, $p['quiz']->AcademicYear->id);
 		},
 		"hateoas_links" => array(
 			"quiz" => array("href" => "quiz/{id}"),
