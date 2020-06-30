@@ -25,7 +25,6 @@ class Group {
 	}
 
 	// Populate members attribute with a list of members
-	public function getMembers($details = false) {
 	public function getMembers($details = false, $names = false) {
 		if ($names)
 			$members = DB::query_table("SELECT o.id id, o.ime name, o.prezime surname, o.brindexa studentIdNr, o.id ExtendedPerson, o.spol sex, a.login FROM student_labgrupa sl, osoba as o LEFT JOIN auth a ON o.id=a.id WHERE sl.student=o.id AND sl.labgrupa=".$this->id);
@@ -84,12 +83,12 @@ class Group {
 				if (!$group->virtual) $group->removeMember($studentId);
 		}
 		
-		DB::query("INSERT INTO student_labgrupa SET student=$student, labgrupa=" . $this->id);
+		DB::query("INSERT INTO student_labgrupa SET student=$studentId, labgrupa=" . $this->id);
 		
 		// Changing group membership requires updating score for all components of type 3 (Presence)
 		StudentScore::updateAllOfType($studentId, $this->id, 3);
 		
-		Logging::log("student u$student upisan u grupu g" . $this->id, 2);
+		Logging::log("student u$studentId upisan u grupu g" . $this->id, 2);
 		Logging::log2("student upisan u grupu", $studentId, $this->id);
 		return true;
 	}
@@ -104,7 +103,7 @@ class Group {
 		Comment::deleteAllforStudentInGroup($studentId, $this->id);
 
 		// Disenroll
-		DB::query("DELETE FROM student_labgrupa WHERE student=$student AND labgrupa=" . $this->id);
+		DB::query("DELETE FROM student_labgrupa WHERE student=$studentId AND labgrupa=" . $this->id);
 		
 		// Changing group membership requires updating score for all components of type 3 (Presence)
 		StudentScore::updateAllOfType($studentId, $this->id, 3);
