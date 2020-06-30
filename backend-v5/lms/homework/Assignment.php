@@ -118,7 +118,7 @@ class Assignment {
 		if ($old_asgn->status == AssignmentStatus::Plagiarized)
 			throw new Exception("Not allowed to resubmit plagiarized homework", "403");
 		
-		$this->author = new UnresolvedClass("Person", $authorId, $asgn->author);
+		$this->author = new UnresolvedClass("Person", $authorId, $old_asgn->author);
 		
 		// Construct file object
 		$this->filename = File::cleanUpFilename($fileArray['name']);
@@ -185,7 +185,7 @@ class Assignment {
 		}
 		
 		// Support diffing for ZIP archives (TODO other archive types)
-		if (Util::ends_with($oldFile, ".zip") && Util::ends_with($file, ".zip")) {
+		if (Util::ends_with($oldFile, ".zip") && Util::ends_with($newFile, ".zip")) {
 			mkdir($diff_path, 0777, true);
 			
 			$oldpath = "$diff_path/old";
@@ -235,11 +235,22 @@ class Assignment {
 		$homeworks = Homework::fromCourseOffering($courseOfferingId);
 		$result = array();
 		foreach($homeworks as $hw) {
-			if ($hw->ScoringElement->id != $scoringElementId) continue;
+			if ($scoringElementId != 0 && $hw->ScoringElement->id != $scoringElementId) continue;
 			for ($i=1; $i<$hw->nrAssignments; $i++)
 				$result[] = Assignment::fromStudentHomeworkNumber($studentId, $hw->id, $i);
 		}
 		return $result;
+	}
+
+	// List of assignments for student on course unit
+	public static function forStudentOnCourseUnit($studentId, $courseUnitId, $academicYearId=0, $scoringElementId=0) {
+		if ($academicYearId == 0)
+			$academicYearId = AcademicYear::getCurrent()->id;
+
+		$co = CourseOffering::forStudent($studentId, $courseUnitId, $academicYearId);
+		if (!$co) throw new Exception("Student $studentId not enrolled in course $courseUnitId, year $academicYearId", "404");
+
+		return Assignment::forStudentOnCourse($studentId, $co->id, $scoringElementId);
 	}
 
 	// Calculate score that a student would have for homeworks
