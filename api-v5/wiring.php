@@ -159,7 +159,11 @@ $wiring = array(
 			$person->getTitles(); 
 			return $person;
 		},
-		"acl" => function($p) { return AccessControl::loggedIn(); },
+		"acl" => function($p) {
+			if (isset($_REQUEST['resolve']) && in_array("ExtendedPerson", $_REQUEST['resolve']))
+				return AccessControl::self($p['id']) || AccessControl::privilege('studentska');
+			return AccessControl::loggedIn();
+		},
 		"hateoas_links" => array(
 			"self" => array("href" => "person/[id]"),
 			"currentUser" => array("href" => "person"),
@@ -179,7 +183,11 @@ $wiring = array(
 			$person->getTitles(); 
 			return $person;
 		},
-		"acl" => function($p) { return AccessControl::loggedIn(); },
+		"acl" => function($p) {
+			if (isset($_REQUEST['resolve']) && in_array("ExtendedPerson", $_REQUEST['resolve']))
+				return AccessControl::privilege('studentska');
+			return AccessControl::loggedIn();
+		},
 		"hateoas_links" => array(
 			"self" => array("href" => "person/[id]"),
 			"currentUser" => array("href" => "person"),
@@ -199,7 +207,11 @@ $wiring = array(
 			return Person::search($p['query']); 
 		},
 		"autoresolve" => array(),
-		"acl" => function($p) { return AccessControl::loggedIn(); },
+		"acl" => function($p) {
+			if (isset($_REQUEST['resolve']) && in_array("ExtendedPerson", $_REQUEST['resolve']))
+				return AccessControl::privilege('studentska');
+			return AccessControl::loggedIn();
+		},
 		"hateoas_links" => array(
 			"currentUser" => array("href" => "person"),
 			"personByLogin" => array("href" => "person/byLogin?login={login}"),
