@@ -31,7 +31,7 @@ class Person {
 
 	public static function search($query) {
 		// FIXME users without login can't be found	
-		if (!preg_match("/\w/",$query)) { return $r; }
+		if (!preg_match("/\w/",$query)) { return []; }
 
 		$query = str_replace("(","",$query);
 		$query = str_replace(")","",$query);
@@ -59,7 +59,7 @@ class Person {
 		if ($qtitles['strucni_stepen'])
 			$this->titlesPost = DB::get("select titula from strucni_stepen where id=" . $qtitles['strucni_stepen']);
 	
-		$zvanje = DB::get("select z.titula from izbor as i, zvanje as z where i.osoba=" . $this->id . " and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='0000-00-00')");
+		$zvanje = DB::get("select z.titula from izbor as i, zvanje as z where i.osoba=" . $this->id . " and i.zvanje=z.id and (i.datum_isteka>=NOW() or i.datum_isteka='2999-01-01')");
 		if ($zvanje) $this->titlesPre = $zvanje . " " . $this->titlesPre;
 	}
 }
