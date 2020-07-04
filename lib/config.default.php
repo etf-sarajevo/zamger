@@ -87,9 +87,10 @@ $conf_banned_ips = array();
 // Gdje su smještene lozinke korisnika?
 // "table" - u tabeli 'auth' zamgerove baze podataka
 // "ldap" - na LDAP serveru (postaviti $conf_ldap na true)
+// "backend" - autentikacija na web backend
 // Ako koristite login ekran nekog SSO servisa, teoretski ne morate držati lozinke nigdje, ali to nije
 // podržano u trenutnoj verziji Zamgera
-$conf_passwords = "table";
+$conf_passwords = "backend";
 
 // Ako je $conf_passwords postavljeno na "table", lozinka se mijenja kroz profil, u suprotnom promjena
 // lozinke nije moguća kroz Zamger

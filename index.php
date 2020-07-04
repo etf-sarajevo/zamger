@@ -142,6 +142,7 @@ if ($route !== false && $route != "auth") {
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
+$privilegije = [];
 if (int_param('loginforma') === 1) {
 	$login = db_escape($_POST['login']);
 	$pass = $_POST['pass'];
@@ -194,9 +195,7 @@ if ($userid>0) {
 	$unsu = int_param('unsu');
 	if ($unsu==1 && $su!=0) $su=0;
 	if ($su>0) {
-		// Provjeravamo da li je korisnik admin
-		$privilegije = db_get("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
-		if ($privilegije > 0) {
+		if (in_array("siteadmin", $privilegije)) {
 			$userid=$su;
 			$_SESSION['su']=$su;
 		}
@@ -212,8 +211,7 @@ if ($userid>0) {
 
 $user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=$user_sefodsjeka=$user_uprava=false;
 if ($userid>0) {
-	$q10 = db_query("select privilegija from privilegije where osoba=$userid");
-	while (db_fetch1($q10, $privilegija)) {
+	foreach($privilegije as $privilegija) {
 		if ($privilegija=="student") $user_student=true;
 		if ($privilegija=="nastavnik") $user_nastavnik=true;
 		if ($privilegija=="studentska") $user_studentska=true;

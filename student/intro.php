@@ -6,13 +6,12 @@
 
 function student_intro() {
 
-	global $userid, $registry;
+	global $userid, $registry, $person;
 
 	require_once("lib/utility.php"); // spol, vokativ
 	require_once("lib/ws.php"); // spol, vokativ
 
 	// Dobrodošlica
-	$person = api_call("person", ["resolve[]" => "ExtendedPerson"]);
 	if ($person['ExtendedPerson']['sex'] == 'F' || ($person['ExtendedPerson']['sex'] == '' && spol($person['name'])=="Z"))
 		print "<h1>Dobro došla, ".vokativ($person['name'],"Z")."</h1>";
 	else

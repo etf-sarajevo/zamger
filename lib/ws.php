@@ -145,6 +145,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 				"verify_peer_name"=>false,
 			),
 		);
+		print_r($params);
 		$ctx = stream_context_create($params);
 		$fp = fopen($url, 'rb', false, $ctx);
 		if (!$fp) {
@@ -181,42 +182,44 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 }
 
 function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
-	global $conf_apiv5_url;
+	global $conf_backend_url;
 	
 	$http_request_params = array('http' => array(
 		'method' => $method,
 		'ssl' => array(
 			"verify_peer"=>false,
 			"verify_peer_name"=>false,
-		)
+		),
+		'ignore_errors' => true
 	));
 	
 	// mod_rewrite doesn't work on localhost (!?)... add route to request params
-	$url = $conf_apiv5_url;
-	if ($method != "GET" && is_object($params)) {
-		// Send objects as JSON, add route and session id to url
-		$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
-		$content = json_encode($params);
-		$mimetype = "application/json";
-		
-	} else {
-		// For GET method, add query data to url, otherwise send it urlencoded
+	$url = $conf_backend_url;
+	if ($method == "GET") {
+		// For GET method, add query data to url
 		$params["route"] = $route;
 		$params["SESSION_ID"] = $_SESSION['api_session'];
 		$query = http_build_query($params);
+		$url = "$url?$query";
+		$content = $mimetype = "";
+	} else {
+		// add route and session id to url
+		$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
 		
-		if ($method == "GET") {
-			$url = "$url?$query";
-			$content = $mimetype = "";
+		// Send objects as JSON
+		if (is_object($params)) {
+			$content = json_encode($params);
+			$mimetype = "application/json";
 		} else {
-			$content = $query;
+			// Otherwise, send urlencoded
+			$content = http_build_query($params);
 			$mimetype = "application/x-www-form-urlencoded";
 		}
 	}
 	
 	if ($content != "") {
-		$http_request_params['content'] = $content;
-		$http_request_params['header'] = "Content-Type: $mimetype\r\n" .
+		$http_request_params['http']['content'] = $content;
+		$http_request_params['http']['header'] = "Content-Type: $mimetype\r\n" .
 		"Content-Length: " . strlen ( $content ) . "\r\n";
 	}
 	
