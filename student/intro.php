@@ -96,7 +96,7 @@ while ($r15 = db_fetch_row($q15)) {
 				$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. (Apsolventski rok) <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
 				$vrijeme_poruke["i".$r15[0]] = $r15[3];
 			} else if ($r15[10] == 0) {
-				$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. (Apsolventski rok) <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
+				$code_poruke["i".$r15[0]] = "<b>$r15[4]:</b> Objavljeni termini za ispit $r15[2]. <a href=\"?sta=student/prijava_ispita&predmet=$r15[8]&ag=$r15[9]\">Prijavite se!</a><br /><br />\n";
 				$vrijeme_poruke["i".$r15[0]] = $r15[3];
 			}
 		}
