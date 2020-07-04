@@ -21,6 +21,8 @@ $conf_dbdb = "zamger";
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
 $conf_site_url = "http://localhost:8081";
 
+$conf_apiv5_url = "http://localhost:8081/api/";
+
 // Lokacija na disku gdje je Zamger instaliran
 $conf_script_path = "/var/www/html";
 
@@ -32,7 +34,7 @@ $conf_files_path = "/home/zamger";
 
 // Podaci koji se ispisuju u gornjem desnom uglu svake stranice :)
 $conf_appname = "ZAMGER";
-$conf_appversion = "4.3";
+$conf_appversion = "<img src='static/images/corncob.png' width='30' height='30' /> hybrid";
 
 
 // Uslov za upis u narednu godinu (iz zakona)

@@ -116,7 +116,7 @@ function parsiraj_kartice($xml_data) {
 	return $result;
 }
 
-function json_request($url, $parameters, $method = "GET", $debug = false) 
+function json_request($url, $parameters, $method = "GET", $encoding = "url", $debug = false)
 {
 	global $conf_verbosity;
 	
@@ -125,13 +125,13 @@ function json_request($url, $parameters, $method = "GET", $debug = false)
 			"verify_peer"=>false,
 			"verify_peer_name"=>false,
 		),
-	);  
-
+	);
+	
 	$allowed_http_codes = array ("200"); // Only 200 is allowed
-
+	
 	$query = http_build_query($parameters);
 	
-	if ($method == "GET") 
+	if ($method == "GET")
 		$http_result = @file_get_contents("$url?$query", false, stream_context_create($disableSslCheck));
 	else {
 		$params = array('http' => array(
@@ -139,7 +139,7 @@ function json_request($url, $parameters, $method = "GET", $debug = false)
 			'content' => $query,
 			'header' => "Content-Type: application/x-www-form-urlencoded\r\n" .
 				"Content-Length: " . strlen ( $query ) . "\r\n"
-			),
+		),
 			'ssl' => array(
 				"verify_peer"=>false,
 				"verify_peer_name"=>false,
@@ -164,18 +164,88 @@ function json_request($url, $parameters, $method = "GET", $debug = false)
 		if ($debug) print "HTTP request returned code $http_code for $url?$query ($method)\n";
 		return FALSE;
 	}
-		
+	
 	$json_result = json_decode($http_result, true); // Retrieve json as associative array
 	if ($json_result===NULL) {
 		if ($debug) print "Failed to decode result as JSON\n$http_result\n";
 		// Why does this happen!?
 		if ($conf_verbosity>0) { print_r($http_result); print_r($parameters); }
 		return FALSE;
-	} 
-
+	}
+	
 	else if (array_key_exists("server_message", $json_result)) {
 		if ($debug) print "Message from server: " . $json_result["server_message"]."\n";
 	}
+	
+	return $json_result;
+}
+
+function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
+	global $conf_apiv5_url;
+	
+	$http_request_params = array('http' => array(
+		'method' => $method,
+		'ssl' => array(
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+		)
+	));
+	
+	// mod_rewrite doesn't work on localhost (!?)... add route to request params
+	$url = $conf_apiv5_url;
+	if ($method != "GET" && is_object($params)) {
+		// Send objects as JSON, add route and session id to url
+		$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
+		$content = json_encode($params);
+		$mimetype = "application/json";
+		
+	} else {
+		// For GET method, add query data to url, otherwise send it urlencoded
+		$params["route"] = $route;
+		$params["SESSION_ID"] = $_SESSION['api_session'];
+		$query = http_build_query($params);
+		
+		if ($method == "GET") {
+			$url = "$url?$query";
+			$content = $mimetype = "";
+		} else {
+			$content = $query;
+			$mimetype = "application/x-www-form-urlencoded";
+		}
+	}
+	
+	if ($content != "") {
+		$http_request_params['content'] = $content;
+		$http_request_params['header'] = "Content-Type: $mimetype\r\n" .
+		"Content-Length: " . strlen ( $content ) . "\r\n";
+	}
+	
+	$ctx = stream_context_create($http_request_params);
+	$fp = fopen($url, 'rb', false, $ctx);
+	if (!$fp) {
+		if ($debug) print "HTTP request failed for $url (fopen)\n";
+		return FALSE;
+	}
+	if ($debug)
+		$http_result = stream_get_contents($fp);
+	else
+		$http_result = @stream_get_contents($fp);
+	fclose($fp);
+	
+	if ($http_result===FALSE) {
+		if ($debug) print "HTTP request failed for $url (returned false)\n";
+		return FALSE;
+	}
+	
+	$http_code = explode(" ", $http_response_header[0]);
+	$http_code = $http_code[1];
+	
+	$json_result = json_decode($http_result, true); // Retrieve json as associative array
+	if ($json_result===NULL) {
+		if ($debug) print "Failed to decode result as JSON\n$http_result\n";
+		return FALSE;
+	}
+	$json_result['code'] = $http_code;
 
 	return $json_result;
 }
@@ -188,5 +258,3 @@ function json_error($code, $msg) {
 	$result['message'] = $msg;
 	return $result;
 }
-
-?>

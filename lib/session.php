@@ -96,7 +96,16 @@ function login($pass, $type = "") {
 		$result = db_result($q1,0,1);
 		if ($pass != $result || $result === "") return 2;
 	}
-
+	
+	// Login to webservice, assume the password will work
+	require("lib/ws.php");
+	$result = api_call("auth", ["login" => $login, "pass" => $pass], "POST");
+	if ($result['success'] == "false") {
+		// Shouldn't happen if all is properly configured
+		niceerror("Failed to authenticate to web backend");
+		return 2;
+	}
+	
 	$userid = db_result($q1,0,0);
 	$admin = db_result($q1,0,2);
 	$posljednji_pristup = db_result($q1,0,3);
@@ -106,6 +115,7 @@ function login($pass, $type = "") {
 	session_start();
 	//session_regenerate_id(); // prevent session fixation
 	$_SESSION['login']=$login;
+	$_SESSION['api_session'] = $result['sid'];
 	session_write_close();
 }
 
