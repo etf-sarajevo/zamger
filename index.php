@@ -142,7 +142,7 @@ if ($route !== false && $route != "auth") {
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
-$privilegije = [];
+$privilegije = $person = [];
 if (int_param('loginforma') === 1) {
 	$login = db_escape($_POST['login']);
 	$pass = $_POST['pass'];
@@ -185,26 +185,6 @@ if (int_param('loginforma') === 1) {
 }
 
 // nakon dijela iznad, $userid drzi numericki ID prijavljenog korisnika
-
-
-// SU = switch user
-
-if ($userid>0) {
-	$su = int_param('su');
-	if ($su==0 && isset($_SESSION['su'])) $su = $_SESSION['su'];
-	$unsu = int_param('unsu');
-	if ($unsu==1 && $su!=0) $su=0;
-	if ($su>0) {
-		if (in_array("siteadmin", $privilegije)) {
-			$userid=$su;
-			$_SESSION['su']=$su;
-		}
-	} else {
-		$_SESSION['su']="";
-	}
-}
-
-
 
 
 // Određivanje privilegija korisnika
@@ -342,23 +322,7 @@ if ($found==1 && $template==2 && $greska=="") {
 
 $rsslink = "";
 if ($userid>0) {
-	srand(time());
-	$rssid = db_get("select id from rss where auth=$userid");
-	if ($rssid === false) {
-		// kreiramo novi ID
-		do {
-			$rssid="";
-			for ($i=0; $i<10; $i++) {
-				$slovo = rand()%62;
-				if ($slovo<10) $sslovo=$slovo;
-				else if ($slovo<36) $sslovo=chr(ord('a')+$slovo-10);
-				else $sslovo=chr(ord('A')+$slovo-36);
-				$rssid .= $sslovo;
-			}
-			$postojeci = db_get("select count(*) from rss where id='$rssid'");
-		} while ($postojeci>0);
-		db_query("insert into rss set id='$rssid', auth=$userid");
-	}
+	$rssid = $person['RSS']['id'];
 	$rsslink = "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"$conf_site_url/rss.php?id=$rssid\">";
 }
 

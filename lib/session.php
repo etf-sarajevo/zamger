@@ -194,20 +194,39 @@ function keycloak_logout_url() {
 
 // Provjera da li trenutni korisnik ima važeću sesiju
 function check_cookie() {
-	global $userid,$admin,$login,$conf_cas,$conf_keycloak,$posljednji_pristup,$conf_script_path,$conf_passwords,$person,$privilegije;
+	global $userid,$admin,$login,$conf_cas,$conf_keycloak,$posljednji_pristup,$conf_script_path,$conf_passwords,$person,$privilegije,$su;
 	
 	if ($conf_passwords == "backend") {
 		session_start();
 		require_once("lib/ws.php");
 		$person = api_call("person", ["resolve[]" => "ExtendedPerson"]);
 		if ($person['code'] != "200") return;
+		
+		$privilegije = $person['privileges'];
 		$userid = $person['id'];
 		$login = $person['login'];
-		$privilegije = $person['privileges'];
 		$posljednji_pristup = db_timestamp($person['lastAccess']);
 		foreach($privilegije as $p)
 			if ($p != "student")
 				$admin=1;
+		
+		// SU - switch user
+		$su = int_param('su');
+		if ($su==0 && isset($_SESSION['su'])) $su = $_SESSION['su'];
+		$unsu = int_param('unsu');
+		if ($unsu==1 && $su!=0) $su=0;
+		if ($su>0) {
+			if (in_array("siteadmin", $privilegije)) {
+				$userid=$su;
+				$_SESSION['su']=$su;
+				$person = api_call("person/$su", ["resolve[]" => "ExtendedPerson"]);
+				$privilegije = $person['privileges'];
+			}
+		} else {
+			$_SESSION['su']="";
+		}
+		
+		
 		return;
 	}
 	
