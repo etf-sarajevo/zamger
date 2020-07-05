@@ -6,267 +6,151 @@
 
 function student_predmet() {
 
-global $userid;
-
-
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']); // akademska godina
-
-
-// Podaci za zaglavlje
-$q10 = db_query("select naziv from predmet where id=$predmet");
-if (db_num_rows($q10)<1) {
-	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
-	zamgerlog2("nepoznat predmet", $predmet);
-	biguglyerror("Nepoznat predmet");
-	return;
-}
-
-$q15 = db_query("select naziv from akademska_godina where id=$ag");
-if (db_num_rows($q15)<1) {
-	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
-	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
-	biguglyerror("Nepoznata akademska godina");
-	return;
-}
-
-// Da li student slusa predmet?
-$q17 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-if (db_num_rows($q17)<1) {
-	zamgerlog("student ne slusa predmet pp$predmet (ag$ag)", 3);
-	zamgerlog2("student ne slusa predmet", $predmet, $ag);
-	biguglyerror("Niste upisani na ovaj predmet");
-	return;
-}
-$ponudakursa = db_result($q17,0,0);
-
-
-?>
-<br/>
-<p style="font-size: small;">Predmet: <b><?=db_result($q10,0,0)?> (<?=db_result($q15,0,0)?>)</b><br/>
-<?
-
-// Određivanje labgrupe
-$q20 = db_query("select l.naziv from labgrupa as l, student_labgrupa as sl where l.predmet=$predmet and l.akademska_godina=$ag and l.virtualna=0 and l.id=sl.labgrupa and sl.student=$userid limit 1");
-// Ispisujemo naziv prve nevirtualne grupe koju upit vrati
-if (db_num_rows($q20)>0) {
-	?>Grupa: <b><?=db_result($q20,0,0)?></b></p><?
-}
-
-print "<br/>\n";
-
-
-
-// Nastavni ansambl
-$q25 = db_query("select o.id, ast.naziv from angazman as a, angazman_status as ast, osoba as o where a.predmet=$predmet and a.akademska_godina=$ag and a.angazman_status=ast.id and a.osoba=o.id order by ast.id, o.prezime, o.ime");
-while (db_fetch2($q25, $id_osobe, $angazman_status)) {
-	$email = db_get("SELECT adresa FROM email WHERE osoba=$id_osobe ORDER BY sistemska DESC LIMIT 1");
-	print "<b>".ucfirst($angazman_status)."</b>: <a href=\"mailto:$email\">".tituliraj($id_osobe)."</a><br/>";
-}
-print "<br/>\n";
-
-
-// PROGRESS BAR
-
-// Sumiramo bodove po komponentama i računamo koliko je bilo moguće ostvariti
-$ukupno_bodova = $ukupno_mogucih = 0;
-
-$q30 = db_query("select k.id, k.tipkomponente, k.opcija, kb.bodovi, k.maxbodova from komponentebodovi as kb, komponenta as k where kb.student=$userid and kb.predmet=$ponudakursa and kb.komponenta=k.id");
-while(db_fetch5($q30, $id_komponente, $tip_komponente, $parametar_komponente, $komponenta_bodova, $komponenta_mogucih)) {
-	$ukupno_bodova += $komponenta_bodova;
+	global $userid, $courseDetails;
 	
-	// Za neke komponente imamo poseban kod koliko je bilo moguće ostvariti
-	if ($tip_komponente == 4) { // Tip komponente: zadaće
-		$do_sada_zadace = db_get("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente");
-		$do_sada_zadace = round($do_sada_zadace, 2);
-		
-		// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
-		if ($do_sada_zadace > $komponenta_mogucih)
-			$ukupno_mogucih += $komponenta_mogucih;
-		else
-			$ukupno_mogucih += $do_sada_zadace;
 	
-	} else if ($tip_komponente == 3 && $parametar_komponente == -3) { // Prisustvo sa linearnim porastom
-		$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$userid");
-		$ukupno_mogucih += $casova * $komponenta_mogucih / 13;
-		
-	} else
-		$ukupno_mogucih += $komponenta_mogucih;
-}
-
-// Procenat nikada ne smije biti veći od 100%
-if ($ukupno_mogucih==0) 
-	$procenat = 0;
-else if ($ukupno_bodova > $ukupno_mogucih) 
-	$procenat = 100;
-else 
-	$procenat = intval(($ukupno_bodova/$ukupno_mogucih)*100);
-
-// boja označava napredak studenta
-if ($procenat>=75) 
-	$boja = "#00FF00";
-else if ($procenat>=50)
-	$boja = "#FFFF00";
-else
-	$boja = "#FF0000";
-
-// Crtamo tabelu koristeći dvije preskalirane slike
-$ukupna_sirina = 200;
-
-$tabela1 = $procenat * 2;
-$tabela2 = $ukupna_sirina - $tabela1;
-
-// Tekst "X bodova" ćemo upisati u onu stranu tabele koja je manja
-if ($tabela1 <= $tabela2) {
-	$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
-	$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br> $ukupno_bodova bodova";
-} else {
-	$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br> $ukupno_bodova bodova";
-	$ispis2="<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
-}
-
-
-?>
-
-
-<!-- progress bar -->
-
-<center><table border="0"><tr><td align="left">
-<p>Osvojili ste....<br/>
-<table style="border:1px;border-style:solid" width="206" cellpadding="0" cellspacing="2"><tr>
-<td width="<?=$tabela1?>" bgcolor="<?=$boja?>"><?=$ispis1?></td>
-<td width="<?=$tabela2?>" bgcolor="#FFFFFF"><?=$ispis2?></td></tr></table>
-
-<table width="208" border="0" cellspacing="0" cellpadding="0"><tr>
-<td width="68">0</td>
-<td align="center" width="68">50</td>
-<td align="right" width="69">100</td></tr></table>
-što je <?=$procenat?>% od trenutno mogućih <?=round($ukupno_mogucih,2) ?> bodova.</p>
-</td></tr></table></center>
-
-
-<!-- end progress bar -->
-<?
-
-
-
-// PRIKAZ NOVOSTI SA MOODLE-a (by fzilic)
-
-function moodle_novosti($predmet, $ag) {
-	// Parametri potrebni za Moodle integraciju
-	global $conf_moodle, $conf_moodle_url, $conf_moodle_db, $conf_moodle_prefix, $conf_moodle_reuse_connection, $conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass;
-	global $__db_connection, $conf_use_mysql_utf8;
-	global $userid;
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
 	
-	if (!$conf_moodle) return;
-
-	// Potrebno je pronaci u tabeli moodle_predmet_id koji je id kursa koristen na Moodle stranici za odredjeni predmet sa Zamger-a..tacno jedan id kursa iz moodle baze odgovara jednom predmetu u zamger bazi
-	$q60 = db_query("select moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina=$ag");
-	if (db_num_rows($q60)<1) return;
-	
-	$course_id = db_result($q60,0,0);
-
-
-	// Prikazujemo vijesti od posljednjeg logina minus dvije sedmice
-	// TODO ovo se sada može napraviti jer imamo posljednji_pristup?
-//	$q59 = db_query("select unix_timestamp(vrijeme) from log where userid=$userid and dogadjaj='login' order by vrijeme desc limit 2");
-
-	//$vrijeme_logina = array();
-
-	//while($r59 = db_fetch_assoc($q59))
-	//	array_push($vrijeme_logina,$r59[0]);
-
-	//$vrijeme_posljednjeg_logina = $vrijeme_logina[1];
-	//$vrijeme_za_novosti = $vrijeme_logina[0]-(14*24*60*60);
-	$vrijeme_za_novosti = time()-(14*24*60*60);
-	$vrijeme_posljednjeg_logina = time();
-
-
-	$moodle_con = $__db_connection;
-	if (!$conf_moodle_reuse_connection) {
-		// Pravimo novu konekciju za moodle, kod iz dbconnect2() u libvedran
-		if (!($moodle_con = mysql_connect($conf_moodle_dbhost, $conf_moodle_dbuser, $conf_moodle_dbpass))) {
-			biguglyerror(mysql_error());
-			exit;
-		}
-		if (!mysql_select_db($conf_moodle_db, $moodle_con)) {
-			biguglyerror(mysql_error());
-			exit;
-		}
-		if ($conf_use_mysql_utf8) {
-			mysql_set_charset("utf8",$moodle_con);
-		}
+	$course = [];
+	foreach($courseDetails as $courseDetail) {
+		if ($courseDetail['CourseOffering']['CourseUnit']['id'] == $predmet && $courseDetail['CourseOffering']['AcademicYear']['id'] == $ag)
+			$course = $courseDetail;
+	}
+	if (empty($course)) {
+		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+		zamgerlog2("nepoznat predmet", $predmet);
+		biguglyerror("Nepoznat predmet");
+		return;
 	}
 
-	//print "select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id<br>\n";
-	$q61 = mysql_query("select module, instance, visible, id, added from ".$conf_moodle_db.".".$conf_moodle_prefix."course_modules where course=$course_id",$moodle_con);
+	$ponudakursa = $course['CourseOffering']['id'];
 	
-	while ($r61 = mysql_fetch_row($q61)) {
-		// Modul 9 je zaduzen za cuvanje informacija o obavijesti koje se postavljaju u labelu na moodle stranici
-		// Ako visible != 1 instanca je sakrivena i ne treba je prikazati u Zamgeru
-		if ($r61[0] == 9 && $r61[2] == 1) {
-			//print "select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc<br>\n";
-			$q62 = mysql_query("select name, timemodified from ".$conf_moodle_db.".".$conf_moodle_prefix."label where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
-			
-			while ($r62 = mysql_fetch_row($q62)) {
-				$code_poruke["o".$r61[3]] = $r62[0];
-				$vrijeme_poruke_obavijest["o".$r61[3]] = ($r61[4]>$r62[1])?$r61[4]:$r62[1];
+	if (array_key_exists('name', $course['CourseOffering']['CourseDescription']))
+		$courseName = $course['CourseOffering']['CourseDescription']['name'];
+	else
+		$courseName = $course['CourseOffering']['CourseUnit']['name'];
+	$year = $course['CourseOffering']['AcademicYear']['name'];
+
+
+	?>
+	<br/>
+	<p style="font-size: small;">Predmet: <b><?=$courseName?> (<?=$year?>)</b><br/>
+	<?
+
+	// Određivanje labgrupe
+	$groups = api_call("group/course/$predmet/student/$userid", ["year" => $ag])['results'];
+	foreach($groups as $group) {
+		if (!$group['virtual']) {
+			?>Grupa: <b><?=$group['name']?></b></p><?
+		}
+	}
+	
+	print "<br/>\n";
+
+	foreach($course['CourseUnitYear']['staff'] as $staff) {
+		$name = $staff['Person']['name'] . " " . $staff['Person']['surname'];
+		if ($staff['Person']['titlesPre']) $name = $staff['Person']['titlesPre'] . " $name";
+		if ($staff['Person']['titlesPost']) $name .= " " . $staff['Person']['titlesPost'];
+		$email = $staff['Person']['email'];
+		
+		print "<b>".ucfirst($staff['status'])."</b>: <a href=\"mailto:$email\">$name</a><br/>";
+	}
+
+	
+	// PROGRESS BAR
+	
+	// Sumiramo bodove po komponentama i računamo koliko je bilo moguće ostvariti
+	$ukupno_bodova = $ukupno_mogucih = 0;
+
+	foreach($course['score'] as $komponenta) {
+		$ukupno_bodova += $komponenta['score'];
+		
+		foreach($course['CourseUnitYear']['activities'] as $act) {
+			if ($act['id'] == $komponenta['CourseActivity']['id']) {
+				$tip_komponente = $act['Activity']['id'];
+				$opcije_komponente = $act['options'];
+				$kmax = $act['points'];
 			}
 		}
 		
-		// Modul 13 je zaduzen za cuvanje informacija o dodatom resursu na moodle stranici
-		if ($r61[0] == 13 && $r61[2] == 1) {
-			$q64 = mysql_query("select name, timemodified, id from ".$conf_moodle_db.".".$conf_moodle_prefix."resource where course=$course_id and id=$r61[1] and timemodified>$vrijeme_za_novosti order by timemodified desc",$moodle_con);
+		// Za neke komponente imamo poseban kod koliko je bilo moguće ostvariti
+		if ($tip_komponente == 2) { // Tip komponente: zadaće
+			/*$do_sada_zadace = db_get("select sum(bodova) from zadaca where predmet=$predmet and akademska_godina=$ag and komponenta=$id_komponente");
+			$do_sada_zadace = round($do_sada_zadace, 2);
 			
-			while ($r64 = mysql_fetch_row($q64)) {
-				$code_poruke["r".$r61[3]] = "<a href=\"$conf_moodle_url"."mod/resource/view.php?id=$r61[3]\">$r64[0]</a>";
-				$vrijeme_poruke_resurs["r".$r61[3]] = ($r61[4]>$r64[1])?$r61[4]:$r64[1];
-			}
-		}
+			// Zbir bodova za zadaće ne može preći ono koliko nosi komponenta
+			if ($do_sada_zadace > $komponenta_mogucih)
+				$ukupno_mogucih += $komponenta_mogucih;
+			else
+				$ukupno_mogucih += $do_sada_zadace;*/
+			$ukupno_mogucih += $kmax;
+			
+		} else if ($tip_komponente == 5 && in_array("Proportional", $opcije_komponente) && array_key_exists("TotalClasses", $opcije_komponente)) { // Prisustvo sa linearnim porastom
+			//$casova = db_get("select count(*) from cas as c, labgrupa as l, prisustvo as p, ponudakursa as pk where c.labgrupa=l.id and l.predmet=pk.predmet and l.akademska_godina=pk.akademska_godina and pk.id=$ponudakursa and c.komponenta=$id_komponente and c.id=p.cas and p.student=$userid");
+			//$ukupno_mogucih += $casova * $komponenta_mogucih / 13;
+			$ukupno_mogucih += $kmax;
+			
+		} else
+			$ukupno_mogucih += $kmax;
 	}
 	
-	// Diskonektujemo moodle
-	if (!$conf_moodle_reuse_connection) {
-		mysql_close($moodle_con);
+
+	// Procenat nikada ne smije biti veći od 100%
+	if ($ukupno_mogucih==0)
+		$procenat = 0;
+	else if ($ukupno_bodova > $ukupno_mogucih)
+		$procenat = 100;
+	else
+		$procenat = intval(($ukupno_bodova/$ukupno_mogucih)*100);
+	
+	// boja označava napredak studenta
+	if ($procenat>=75)
+		$boja = "#00FF00";
+	else if ($procenat>=50)
+		$boja = "#FFFF00";
+	else
+		$boja = "#FF0000";
+	
+	// Crtamo tabelu koristeći dvije preskalirane slike
+	$ukupna_sirina = 200;
+	
+	$tabela1 = $procenat * 2;
+	$tabela2 = $ukupna_sirina - $tabela1;
+	
+	// Tekst "X bodova" ćemo upisati u onu stranu tabele koja je manja
+	if ($tabela1 <= $tabela2) {
+		$ispis1 = "<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"10\">";
+		$ispis2 = "<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"1\"><br> $ukupno_bodova bodova";
+	} else {
+		$ispis1="<img src=\"static/images/fnord.gif\" width=\"$tabela1\" height=\"1\"><br> $ukupno_bodova bodova";
+		$ispis2="<img src=\"static/images/fnord.gif\" width=\"$tabela2\" height=\"10\">";
 	}
 
-	if (count($vrijeme_poruke_obavijest)>0) {
-		?><h3>Obavještenja</h3>
-		<ul><?
-		arsort($vrijeme_poruke_obavijest);
-		$count=0;
-		foreach ($vrijeme_poruke_obavijest as $id=>$vrijeme) {
-			$code = $code_poruke[$id];
-			if ($vrijeme>$vrijeme_posljednjeg_logina) $code = "<b>$code</b>";
-			print "<li>(".date("d.m. H:i:s", $vrijeme).") $code</li>\n";
-			$count++;
-			if ($count==5) break; // prikazujemo 5 poruka
-		}
-		print "<li><a href=\"$conf_moodle_url"."course/view.php?id=$course_id\">Opširnije...</a></li></ul>\n";
-	}
 
-	if (count($vrijeme_poruke_resurs)>0) {
-		?><h3>Resursi</h3>
-		<ul><?
-		arsort($vrijeme_poruke_resurs);
-		$count=0;
-		foreach ($vrijeme_poruke_resurs as $id=>$vrijeme) {
-			$code = $code_poruke[$id];
-			if ($vrijeme>$vrijeme_posljednjeg_logina) $code = "<b>$code</b>";
-			print "<li>(".date("d.m. H:i:s", $vrijeme).") $code</li>\n";
-			$count++;
-			if ($count==5) break; // prikazujemo 5 poruka
-		}
-		?>
-		</ul>
-		<br>
-		<?
-	}
+	?>
+	
+	
+	<!-- progress bar -->
+	
+	<center><table border="0"><tr><td align="left">
+	<p>Osvojili ste....<br/>
+	<table style="border:1px;border-style:solid" width="206" cellpadding="0" cellspacing="2"><tr>
+	<td width="<?=$tabela1?>" bgcolor="<?=$boja?>"><?=$ispis1?></td>
+	<td width="<?=$tabela2?>" bgcolor="#FFFFFF"><?=$ispis2?></td></tr></table>
+	
+	<table width="208" border="0" cellspacing="0" cellpadding="0"><tr>
+	<td width="68">0</td>
+	<td align="center" width="68">50</td>
+	<td align="right" width="69">100</td></tr></table>
+	što je <?=$procenat?>% od trenutno mogućih <?=round($ukupno_mogucih,2) ?> bodova.</p>
+	</td></tr></table></center>
 
-} // function moodle_novosti()
+	
+	<!-- end progress bar -->
+	<?
 
 
-moodle_novosti($predmet, $ag);
 
 
 

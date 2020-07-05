@@ -6,7 +6,7 @@
 
 function student_intro() {
 
-	global $userid, $registry, $person;
+	global $userid, $registry, $person, $courseDetails;
 
 	require_once("lib/utility.php"); // spol, vokativ
 	require_once("lib/ws.php"); // spol, vokativ
@@ -50,11 +50,9 @@ function student_intro() {
 			<h2><img src="static/images/32x32/latest.png" align="absmiddle"> <font color="#666699">AKTUELNO</font></h2>
 	<?
 	
-	$courseDetailsCache = api_call("course/student/$userid", ["resolve" => ["CourseOffering", "CourseDescription"]])['results'];
 	$courseNames = [];
-	foreach($courseDetailsCache as $course) {
+	foreach($courseDetails as $course)
 		$courseNames[$course['CourseOffering']['CourseUnit']['id']] = $course['CourseOffering']['CourseDescription']['name'];
-	}
 	
 	$vrijeme_poruke = array();
 	$code_poruke = array();
