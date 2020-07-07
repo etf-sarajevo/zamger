@@ -131,12 +131,14 @@ $q10=db_query("SELECT it.id, p.id, k.id, i.id, p.naziv, UNIX_TIMESTAMP(it.datumv
 $apsolvent = db_get("SELECT status_studenta FROM student_studij ss, akademska_godina ag WHERE student=$userid AND ss.akademska_godina=ag.id AND ag.aktuelna=1");
 
 $brojac=1;
+$ispiti_u_ponudi = [];
 
 while ($r10=db_fetch_row($q10)) {
 	$id_termina = $r10[0];
 	$id_predmeta = $r10[1];
 	$id_komponente = $r10[2];
 	$id_ispita = $r10[3];
+	$ispiti_u_ponudi[] = $id_ispita;
 
 	$naziv_predmeta = $r10[4];
 	$vrijeme_ispita = date("d.m.Y. H:i",date($r10[5]));
@@ -224,7 +226,7 @@ while ($r10=db_fetch_row($q10)) {
 
 //slijedeci dio koda sluzi za tabelarni prikaz prijavljenih predmeta
 
-$q60 = db_query("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id
+$q60 = db_query("SELECT p.naziv, UNIX_TIMESTAMP(it.datumvrijeme), k.gui_naziv, it.id, p.id, i.id
              FROM ispit_termin as it, ispit as i, predmet as p, komponenta as k, student_ispit_termin as sit
              WHERE it.ispit=i.id AND p.id=i.predmet AND i.akademska_godina=$ag AND i.komponenta=k.id AND sit.student=$userid AND sit.ispit_termin=it.id
              ORDER BY it.datumvrijeme");
@@ -248,7 +250,7 @@ $brojac=1;
 while ($r60=db_fetch_row($q60)) {
 
 	// Ako je ispit u prošlosti, nije dozvoljeno odjavljivanje
-	if ($r60[1] < time()) continue;
+	if ($r60[1] < time() && !in_array($r60[5], $ispiti_u_ponudi)) continue;
 	
 	// Takođe ne dozvoljavamo da se student odjavi sa ispita za koje ima ocjenu jer bi to moglo pobrkati izvoz ocjena
 	$q80 = db_query("select count(*) from konacna_ocjena where student=$userid and predmet=$r60[4] and ocjena>=6");
@@ -260,7 +262,17 @@ while ($r60=db_fetch_row($q60)) {
 		<td><?=$r60[0]?></td>
 		<td align="center"><?=date("d.m.Y. H:i",date($r60[1]));?></td>
 		<td align="center"><?=$r60[2];?></td>
-		<td align="center"><a href="?sta=student/prijava_ispita&amp;akcija=odjavi&amp;termin=<?=$r60[3];?> ">Odjavi</a></td>
+		<td align="center"><?
+		if ($r60[1] < time()) {
+			?>
+			<span style="color: #999">Odjava nije moguća jer je ispit prošao</span></td>
+			<?
+		} else {
+			?>
+			<a href="?sta=student/prijava_ispita&amp;akcija=odjavi&amp;termin=<?=$r60[3];?> ">Odjavi</a></td>
+			<?
+		}
+		?>
 	</tr>
 	<?
 	$brojac++;
