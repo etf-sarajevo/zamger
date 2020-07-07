@@ -245,7 +245,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	
 	$json_result = json_decode($http_result, true); // Retrieve json as associative array
 	if ($json_result===NULL) {
-		if ($debug) print "Failed to decode result as JSON\n$http_result\n";
+		if ($debug) print "Failed to decode result as JSON for $url\n$http_result\n";
 		return FALSE;
 	}
 	$json_result['code'] = $http_code;

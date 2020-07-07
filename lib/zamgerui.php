@@ -480,9 +480,9 @@ function studentski_meni($fj) {
 	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
 	$arhiva = int_param('sm_arhiva');
 	if ($arhiva==1)
-		$courseDetails = api_call("course/student/$userid", ["resolve" => ["CourseOffering", "CourseDescription", "AcademicYear", "Activity", "CourseUnit"], "all" => "true", "details" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "all" => "true", "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"])['results'];
 	else
-		$courseDetails = api_call("course/student/$userid", ["resolve" => ["CourseOffering", "CourseDescription", "AcademicYear", "Activity", "CourseUnit"], "details" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"])['results'];
 	
 	$output = '<table border="0" cellspacing="2" cellpadding="1">';
 	$oldsem=$oldyear=0;
@@ -493,20 +493,18 @@ function studentski_meni($fj) {
 		$yearId = $courseDetail['CourseOffering']['AcademicYear']['id'];
 		$year = $courseDetail['CourseOffering']['AcademicYear']['name'];
 		$courseId = $courseDetail['CourseOffering']['CourseUnit']['id'];
-		if (array_key_exists('name', $courseDetail['CourseOffering']['CourseDescription']))
-			$course = $courseDetail['CourseOffering']['CourseDescription']['name'];
-		else
-			$course = $courseDetail['CourseOffering']['CourseUnit']['name'];
+		$course = $courseDetail['courseName'];
 		$tippredmeta = "FIXME"; // FIXME
 
 		// Zaglavlje sa imenom akademske godine i semestrom
-		if ($semester != $oldsem || $year != $oldyear) {
+		if ($semester % 2 != $oldsem || $year != $oldyear) {
 			if ($semester%2==1)
 				$output .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
 			else
 				$output .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Ljetnji semestar ";
 			$output .= $year . ":</b><br/><br/></td></tr>\n";
-			$oldsem = $semester; $oldyear = $year;
+			$oldsem = $semester % 2;
+			$oldyear = $year;
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
@@ -523,7 +521,7 @@ function studentski_meni($fj) {
 			
 			// Studentski moduli aktivirani za ovaj predmet
 			$translation = [1 => "student/moodle", 2 => "student/zadaca", 4 => "student/projekti", 5 => "student/kviz", 6 => "public/anketa", 7 => "student/gg" ];
-			foreach($courseDetail['CourseUnitYear']['activities'] as $activity) {
+			foreach($courseDetail['activities'] as $activity) {
 				if (!array_key_exists($activity['Activity']['id'], $translation))
 					continue;
 				$sta = $translation[$activity['Activity']['id']];

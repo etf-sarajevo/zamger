@@ -52,7 +52,7 @@ function student_intro() {
 	
 	$courseNames = [];
 	foreach($courseDetails as $course)
-		$courseNames[$course['CourseOffering']['CourseUnit']['id']] = $course['CourseOffering']['CourseDescription']['name'];
+		$courseNames[$course['CourseOffering']['CourseUnit']['id']] = $course['courseName'];
 	
 	$vrijeme_poruke = array();
 	$code_poruke = array();
