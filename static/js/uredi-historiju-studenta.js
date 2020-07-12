@@ -15,9 +15,6 @@ $( document ).ready(function() {
         $("#ponovac").val($(this).attr('ponovac')); // Ponovac
         $("#status_studenta").val($(this).attr('status_studenta')); // Status studenta
         $("#napomena").val($(this).attr('napomena')); // Status studenta
-
-
-        console.log($(this).attr('ponovac'));
     });
 
     $(".close-pop-up").click(function () {
