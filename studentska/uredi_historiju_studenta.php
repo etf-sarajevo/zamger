@@ -26,12 +26,11 @@ function studentska_uredi_historiju_studenta(){
 			$f_nacin_studiranja = intval($_POST['nacin_studiranja']);
 			$f_ponovac = intval($_POST['ponovac']);
 			$f_status_studenta = intval($_POST['status_studenta']);
-			$f_napomena = $_POST['napomena'];
+			$f_napomena = db_escape($_POST['napomena']);
 			
 			$f_datum = date('Y-m-d');
 			
-			try{
-				db_query("UPDATE student_studij SET
+			db_query("UPDATE student_studij SET
                           nacin_studiranja = '$f_nacin_studiranja',
                           ponovac = '$f_ponovac',
                           status_studenta = '$f_status_studenta',
@@ -39,15 +38,14 @@ function studentska_uredi_historiju_studenta(){
                           datum_azuriranja = '$f_datum',
                           osoba_id = '$userid'
 					where student = $f_student and studij = $f_studij and semestar = $f_semestar and akademska_godina = $f_ag"
-				);
-			}catch (PDOException $e){}
+			);
 		}
 	}
 	
 	
 	$student_id = intval($_REQUEST['student']);
 	$osoba = db_query("SELECT ime, prezime, spol FROM osoba where id = ".$student_id);
-	$osoba = db_fetch1($osoba);
+	$osoba = db_fetch_row($osoba);
 
 	if($osoba[2]=="Z") $upisa = 'Upisala';
 	else $upisa = "Upisao";
