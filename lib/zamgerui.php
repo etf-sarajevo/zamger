@@ -477,12 +477,12 @@ function studentski_meni($fj) {
 		if ($r[0]=="student/anketa") $modul_anketa=1;
 	}
 	
-	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
+	// Upit course/student/$userid vraca predmete koje je student ikada slusao (all=true) ili koje trenutno slusa (all=false)
 	$arhiva = int_param('sm_arhiva');
 	if ($arhiva==1)
-		$courseDetails = api_call("course/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "all" => "true", "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true"])['results'];
 	else
-		$courseDetails = api_call("course/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["courseInformation" => "true"])['results'];
 	
 	$output = '<table border="0" cellspacing="2" cellpadding="1">';
 	$oldsem=$oldyear=0;

@@ -76,6 +76,8 @@ require_once("lib/session.php");
 require_once("lib/utility.php");
 require_once("lib/zamgerui.php"); // niceerror, user_box itd.
 
+	require_once("lib/hack.php");
+
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
@@ -579,4 +581,5 @@ else
 </html>
 <?
 	db_disconnect();
+	if (isset($debug_data)) debug_data_dump();
 ?>

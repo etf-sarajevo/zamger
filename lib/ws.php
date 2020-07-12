@@ -182,7 +182,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 }
 
 function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
-	global $conf_backend_url;
+	global $conf_backend_url, $debug_data;
 	
 	$http_request_params = array('http' => array(
 		'method' => $method,
@@ -223,6 +223,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 		"Content-Length: " . strlen ( $content ) . "\r\n";
 	}
 	
+	start_time();
 	$ctx = stream_context_create($http_request_params);
 	$fp = fopen($url, 'rb', false, $ctx);
 	if (!$fp) {
@@ -234,6 +235,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	else
 		$http_result = @stream_get_contents($fp);
 	fclose($fp);
+	$time = time_elapsed();
+	$debug_data[] = [ "route" => $route, "time" => $time];
 	
 	if ($http_result===FALSE) {
 		if ($debug) print "HTTP request failed for $url (returned false)\n";

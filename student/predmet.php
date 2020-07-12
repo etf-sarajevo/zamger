@@ -12,11 +12,7 @@ function student_predmet() {
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']); // akademska godina
 	
-	$course = [];
-	foreach($courseDetails as $courseDetail) {
-		if ($courseDetail['CourseOffering']['CourseUnit']['id'] == $predmet && $courseDetail['CourseOffering']['AcademicYear']['id'] == $ag)
-			$course = $courseDetail;
-	}
+	$course = api_call("course/$predmet/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "year" => $ag, "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"]);
 	if (empty($course)) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 		zamgerlog2("nepoznat predmet", $predmet);
