@@ -13,7 +13,7 @@ function student_predmet() {
 	$ag = intval($_REQUEST['ag']); // akademska godina
 	
 	$course = api_call("course/$predmet/student/$userid", ["resolve" => ["Group", "ZClass", "Homework", "Exam"], "year" => $ag, "score" => "true", "activities" => "true", "totalScore" => "true", "courseInformation" => "true", "details" => "true"]);
-	if (empty($course)) {
+	if ($course['code'] != "200") {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
 		zamgerlog2("nepoznat predmet", $predmet);
 		biguglyerror("Nepoznat predmet");
