@@ -246,10 +246,15 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	$http_code = explode(" ", $http_response_header[0]);
 	$http_code = $http_code[1];
 	
-	$json_result = json_decode($http_result, true); // Retrieve json as associative array
-	if ($json_result===NULL) {
-		if ($debug) print "Failed to decode result as JSON for $url\n$http_result\n";
-		return FALSE;
+	// DELETE requests don't return a body
+	if ($method == "DELETE") {
+		$json_result = [];
+	} else {
+		$json_result = json_decode($http_result, true); // Retrieve json as associative array
+		if ($json_result === NULL) {
+			if ($debug) print "Failed to decode result as JSON for $url\n$http_result\n";
+			return FALSE;
+		}
 	}
 	$json_result['code'] = $http_code;
 

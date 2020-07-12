@@ -14,8 +14,8 @@ function biguglyerror($error) {
 	print "<center><h2><font color='red'><b>GREŠKA: $error</b></font></h2></center>";
 }
 
-function nicemessage($error) {
-	print "<p><font color='green'><b>$error</b></font></p>";
+function nicemessage($message) {
+	print "<p><font color='green'><b>$message</b></font></p>";
 }
 
 
@@ -480,9 +480,9 @@ function studentski_meni($fj) {
 	// Upit course/student/$userid vraca predmete koje je student ikada slusao (all=true) ili koje trenutno slusa (all=false)
 	$arhiva = int_param('sm_arhiva');
 	if ($arhiva==1)
-		$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true", "activities" => "true"])['results'];
 	else
-		$courseDetails = api_call("course/student/$userid", ["courseInformation" => "true"])['results'];
+		$courseDetails = api_call("course/student/$userid", ["courseInformation" => "true", "activities" => "true"])['results'];
 	
 	$output = '<table border="0" cellspacing="2" cellpadding="1">';
 	$oldsem=$oldyear=0;
