@@ -428,16 +428,16 @@ while ($r10=db_fetch_row($q10)) {
 // Forma za unos novog ispitnog termina ili editovanje postojećeg
 
 if ($dan==0) {
-$dan=$dan1=date('d'); $mjesec=$mjesec1=date('m'); $godina=$godina1=date('Y');
-$sat=$sat1=date('H'); $minuta=$minuta1=date('i'); $sekunda=$sekunda1=date('s');
-$limit=0;
-// Ako akcija nije izmjena, brišemo vrijednost varijable termin
-$termin=0;
+	$dan=$dan1=date('d'); $mjesec=$mjesec1=date('m'); $godina=$godina1=date('Y');
+	$sat=$sat1=date('H'); $minuta=$minuta1=date('i'); $sekunda=$sekunda1=date('s');
+	$limit=0;
+	// Ako akcija nije izmjena, brišemo vrijednost varijable termin
+	$termin=0;
 }
 
 // Ako unosimo novi termni za ispit - daj datum za koji je ispit postavljen
 if($_REQUEST["akcija"] != "izmijeni" and $_REQUEST["akcija"] != "studenti"){
-	$datum = db_fetch1(db_query("SELECT * FROM ispit where id = ".$ispit))[3] ? : 0;
+	$datum = db_get("SELECT datum FROM ispit where id = $ispit");
 	$dan = explode("-", $datum)[2];
 	$mjesec = explode("-", $datum)[1];
 	$godina = explode("-", $datum)[0];
