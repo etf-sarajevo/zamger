@@ -52,6 +52,11 @@ $tip_ispita = db_result($q20,0,1);
 $q30 = db_query("select naziv from predmet where id=$predmet");
 $predmet_naziv = db_result($q30,0,0);
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 
 
 ?>

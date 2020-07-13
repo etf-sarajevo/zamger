@@ -214,6 +214,11 @@ if (param('akcija') == 'brisi_cas' && check_csrf_token()) {
 $q130 = db_query("select naziv from predmet where id=$predmet");
 $pime = db_result($q130,0,0); // Ne bi se smjelo desiti da je nepostojeci predmet, posto se to odredjuje iz labgrupe
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$pime = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 ?>
 <br />
 <center><h1><?=$pime?> - <?=$naziv?></h1></center>

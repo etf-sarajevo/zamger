@@ -29,6 +29,11 @@ if ($predmet_naziv === false) {
 	return;
 }
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 
 
 // Da li korisnik ima pravo ući u modul?

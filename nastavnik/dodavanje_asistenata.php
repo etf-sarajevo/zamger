@@ -19,6 +19,11 @@ function nastavnik_dodavanje_asistenata(){
 		return;
 	}
 	$predmet_naziv = db_result($q10,0,0);
+	
+	$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$akademska_godina");
+	if ($pasos) {
+		$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+	}
 
 	// ** Ukoliko asistent ili superasistent pokušaju pristupiti ovoj opciji ** //
 	if (!$user_siteadmin) {
