@@ -1943,6 +1943,9 @@ CREATE TABLE IF NOT EXISTS `student_studij` (
   `odluka` int(11) default NULL,
   `plan_studija` int(11) default NULL,
   `status_studenta` int(11) NOT NULL DEFAULT '0',
+  `napomena` text COLLATE utf8_slovenian_ci DEFAULT NULL,
+  `osoba_id` int(11) DEFAULT NULL,
+  `datum_azuriranja` date DEFAULT NULL,
   PRIMARY KEY (`student`,`studij`,`semestar`,`akademska_godina`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 

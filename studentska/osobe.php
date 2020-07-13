@@ -2433,9 +2433,9 @@ else if ($akcija == "edit") {
 		<input type="checkbox" name="nastavnik" value="1" <?if($korisnik_nastavnik==1) print "CHECKED";?>> nastavnik&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="prijemni" value="1" <?if($korisnik_prijemni==1) print "CHECKED";?>> prijemni&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="studentska" value="1" <?if($korisnik_studentska==1) print "CHECKED";?>> studentska&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/>
-		<input type="submit" value=" Promijeni ">
-		</form>
+		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/> <br>
+		<input type="submit" value=" Izmijeni ">
+		</form> <br>
 		<?
 	} else if($korisnik_student==1 && $korisnik_nastavnik!=1) {
 		?>
@@ -2447,6 +2447,8 @@ else if ($akcija == "edit") {
 		<?
 	}
 
+	// Link za uređivanje historije studenta TODO - obratiti pozornost na to "ko ima pristup"
+	if($user_studentska or $user_siteadmin) print "<p> Za uređivanje historije studenta, kliknite <a href='index.php?sta=studentska/uredi_historiju_studenta&student=".$osoba."'>ovdje</a>. </p>";
 
 	// STUDENT
 
