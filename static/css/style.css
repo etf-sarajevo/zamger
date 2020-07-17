@@ -95,3 +95,62 @@
 .pop-up-shadow .generic-pop-up .pop-up-body .button-row input{height:30px;}
 
 
+.input-row {
+    position: relative;
+    width: 100%;
+    flex-wrap: nowrap;
+    display: inline-flex;
+    transition: all 0.2s;
+    justify-content: space-between;
+}
+.input-row .input-col{
+    position:relative;
+    left:0px;
+    top:0px;
+    width:calc(50% - 10px);
+}
+.input-row .input-col-button{
+    width: calc(100% + 0px);
+    margin-top:15px;
+    text-align: right;
+}
+.input-row .input-col-button input{height: 30px; margin-right:-4px;}
+
+.input-row  .form-label{
+    position:relative;
+    width:100%;
+    padding-top:8px;
+    padding-bottom:6px;
+}
+.input-row .full-input-col{width:100%; }
+.input-row .input-col .form-input{
+    position:relative;
+    width:calc(100% - 10px);
+    left:0px;
+    height:32px;
+    padding-left:10px;
+    border-radius:3px;
+    border:1px solid rgba(0,0,0,0.2);
+    margin-top:5px;
+}
+.input-row .input-col .form-input-select{height:36px; width: 100%;}
+.input-row .full-input-col .form-input{
+    width:calc(100% - 16px);
+}
+
+.input-row .full-input-col .form-input-select{width:100%;}
+
+.my-table{
+    position:relative;
+    left:0px;
+    top:0px;
+    width:100%;
+}
+.my-table thead tr td, .my-table tbody tr td{
+    border:1px solid rgba(0,0,0,0.1);
+    height: 26px;
+    margin:0px;
+    padding-left:15px;
+}
+.my-table thead tr td:first-child, .my-table tbody tr td:first-child,
+.my-table thead tr td:last-child, .my-table tbody tr td:last-child{text-align: center; padding-right: 15px;}

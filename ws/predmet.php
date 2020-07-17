@@ -97,6 +97,23 @@ function ws_predmet() {
 			$rezultat['data'][$r10[0]] = $predmet;
 		}
 	}
+	
+	// Unos konačne ocjene po odluci !!
+	
+	if(isset($_REQUEST['ocjena_po_odluci_ag'])){
+		$ag = $_REQUEST['ocjena_po_odluci_ag'];
+		$query = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
+		while($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('predmet' => $row[0], 'naziv_predmeta' => $row[3]);
+		}
+	}
+	if(isset($_REQUEST['ocjena_po_odluci_predmet'])){
+		$predmet = $_REQUEST['ocjena_po_odluci_predmet'];
+		$query = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = $predmet");
+		while($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
+		}
+	}
 
 
 	print json_encode($rezultat);
