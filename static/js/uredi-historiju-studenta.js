@@ -91,7 +91,21 @@ $( document ).ready(function() {
 
     });
 
+    $(".obrisi-konacnu-ocjenu").click(function () {
+        let student = $(this).attr('st');
+        let predmet = $(this).attr('pr');
+        let ak      = $(this).attr('ak');
+        console.log(student + ' ' + predmet + ' ' + ak);
 
+        $.ajax({
+            type:'POST',
+            url: 'index.php?sta=ws/predmet',
+            data: {obrisi_konacnu_predmet : predmet, obrisi_konacnu_student : student, obrisi_konacnu_ak : ak},
+            success:function(response){
+                window.location = '?sta=studentska/konacna_ocjena&student='+student+'&akcija=pregled';
+            }
+        });
+    });
 
     $( ".datepicker-2" ).datepicker({
         dateFormat: 'dd.mm.yy'

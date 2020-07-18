@@ -98,11 +98,11 @@ function studentska_konacna_ocjena() {
 		$predmet = intval($_REQUEST['predmet']);
 		
 		if($ag and $predmet and $student_id){
-			$konacna_ocjena = db_query("SELECT * from konacna_ocjena where akademska_godina = $ag and predmet = $predmet and student = $student_id");
+			$konacna_ocjena = db_query("SELECT ko.student, ko.predmet, ko.akademska_godina, ko.ocjena, ko.datum, ko.datum_u_indeksu, ko.odluka, ko.datum_provjeren, ko.pasos_predmeta, ak.id, ak.naziv, p.id, p.naziv, pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from konacna_ocjena as ko, akademska_godina as ak, predmet as p, pasos_predmeta as pp where ko.student = $student_id and ko.predmet = $predmet and ko.akademska_godina = $ag and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.pasos_predmeta = pp.id ");
 			$konacna_ocjena = db_fetch_row($konacna_ocjena);
 			
-			$predmeti = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
-			$pasosi   = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = ".$konacna_ocjena[1]);
+			// $predmeti = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
+			// $pasosi   = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = ".$konacna_ocjena[1]);
 			$odluka   = db_query("SELECT * from odluka where id = ".$konacna_ocjena[6]);
 			$odluka   = db_fetch_row($odluka);
 		}
@@ -139,7 +139,7 @@ function studentska_konacna_ocjena() {
 									<td><?= $row['7'] ?></td>
 									<td><?= $row['3'] ?></td>
 									<td style="width: 80px;">
-										<a href="?sta=studentska/konacna_ocjena&student=6&akcija=uredi&ak=<?= $row['1'] ?>&predmet=<?= $row['2'] ?>">
+										<a href="?sta=studentska/konacna_ocjena&student=<?= $row['0'] ?>&akcija=uredi&ak=<?= $row['1'] ?>&predmet=<?= $row['2'] ?>">
 											<button>Uredite</button>
 										</a>
 									</td>
@@ -154,8 +154,8 @@ function studentska_konacna_ocjena() {
 						<?php
 					}else if($akcija == 'unos' or $akcija == 'uredi'){
 						?>
-						<h3> <?= ($akcija == 'uredi') ? 'Uređivanje konačne ocjene ' : 'Unos konačne ocjene po odluci' ?> </h3>
-
+						<h3> <?= ($akcija == 'uredi') ? 'Uređivanje konačne ocjene ( <a href="#" class="obrisi-konacnu-ocjenu" st="'.$student_id.'" ak="'.$konacna_ocjena[2].'" pr="'.$konacna_ocjena[1].'"> OBRIŠITE </a>) ' : 'Unos konačne ocjene po odluci' ?> </h3>
+						
 						<form action="" method="POST">
 							<div class="input-row">
 								<div class="input-col">
@@ -168,12 +168,16 @@ function studentska_konacna_ocjena() {
 								<div class="input-col">
 									<div class="form-label">Akademska godina</div>
 									<select name="akademska_godina" id="ocjena-po-odluci-ag" class="form-input form-input-select" required="required">
-										<option value="">Odaberite akademsku godinu</option>
 										<?php
-										while($ag = db_fetch_row($akademske_godine)){
-											?>
-											<option value="<?= $ag[0] ?>" <?= (isset($konacna_ocjena) and $ag[0] == $konacna_ocjena[2]) ? 'selected' : '' ?>><?= $ag[1] ?></option>
-											<?php
+										if(isset($konacna_ocjena)){
+											print '<option value="' . $konacna_ocjena[2] . '"> ' . $konacna_ocjena[10] . ' </option>';
+										}else{
+											print '<option value="">Odaberite akademsku godinu</option>';
+											while($ag = db_fetch_row($akademske_godine)){
+												?>
+												<option value="<?= $ag[0] ?>" <?= (isset($konacna_ocjena) and $ag[0] == $konacna_ocjena[2]) ? 'selected' : '' ?>><?= $ag[1] ?></option>
+												<?php
+											}
 										}
 										?>
 									</select>
@@ -186,11 +190,7 @@ function studentska_konacna_ocjena() {
 									<select name="predmet" id="ocjena-po-odluci-predmet" class="form-input form-input-select" required="required">
 										<?php
 										if(isset($konacna_ocjena)){
-											while($row = db_fetch_row($predmeti)){
-												?>
-												<option value="<?= $row[0] ?>" <?= (isset($konacna_ocjena) and $row[0] == $konacna_ocjena[1]) ? 'selected' : '' ?>><?= $row[3] ?></option>
-												<?php
-											}
+											print '<option value="'.$konacna_ocjena[1].'"> '.$konacna_ocjena[12].' </option>';
 										}else{
 											print '<option value="">Odaberite akademsku godinu</option>';
 										}
@@ -203,11 +203,7 @@ function studentska_konacna_ocjena() {
 									<select name="pasos_predmeta" id="ocjena-po-odluci-pasos" class="form-input form-input-select" required="required">
 										<?php
 										if(isset($konacna_ocjena)){
-											while($row = db_fetch_row($pasosi)){
-												?>
-												<option value="<?= $row[0] ?>" <?= (isset($konacna_ocjena) and $row[0] == $konacna_ocjena[8]) ? 'selected' : '' ?>><?= $row[2].' '.$row['3'].' ('.$row[4].' ECTS)' ?></option>
-												<?php
-											}
+											print '<option value="'.$konacna_ocjena[13].'"> '.$konacna_ocjena[15].' '.$konacna_ocjena[16].' ('.$konacna_ocjena[17].' ECTS) </option>';
 										}else{
 											print '<option value="">Odaberite akademsku godinu</option>';
 										}

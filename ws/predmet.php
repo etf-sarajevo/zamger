@@ -101,17 +101,25 @@ function ws_predmet() {
 	// Unos konačne ocjene po odluci !!
 	
 	if(isset($_REQUEST['ocjena_po_odluci_ag'])){
-		$ag = $_REQUEST['ocjena_po_odluci_ag'];
+		$ag = intval($_REQUEST['ocjena_po_odluci_ag']);
 		$query = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
 		while($row = db_fetch_row($query)){
 			$rezultat['data'][] = array('predmet' => $row[0], 'naziv_predmeta' => $row[3]);
 		}
 	}
 	if(isset($_REQUEST['ocjena_po_odluci_predmet'])){
-		$predmet = $_REQUEST['ocjena_po_odluci_predmet'];
+		$predmet = intval($_REQUEST['ocjena_po_odluci_predmet']);
 		$query = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = $predmet");
 		while($row = db_fetch_row($query)){
 			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
+		}
+	}
+	if(isset($_REQUEST['obrisi_konacnu_predmet']) and isset($_REQUEST['obrisi_konacnu_ak']) and isset($_REQUEST['obrisi_konacnu_student'])){
+		$predmet = intval($_REQUEST['obrisi_konacnu_predmet']);
+		$student = intval($_REQUEST['obrisi_konacnu_student']);
+		$ak      = intval($_REQUEST['obrisi_konacnu_ak']);
+		if($predmet and $student and $ak){
+			db_query("DELETE FROM konacna_ocjena where predmet = $predmet and student = $student and akademska_godina = $ak");
 		}
 	}
 
