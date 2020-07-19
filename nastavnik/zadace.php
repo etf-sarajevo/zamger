@@ -283,21 +283,31 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q85 = db_query("delete from autotest_rezultat where autotest in (select id from autotest where zadaca=$edit_zadaca)");
 			$q86 = db_query("delete from autotest where zadaca=$edit_zadaca");
 			
-			// Update komponente za sve studente koji imaju unesene bodove za zadaću
+			// Kreiram listu studenata da bih kasnije mogao uraditi update komponente
 			$q86a = db_query("select distinct zk.student, pk.id from zadatak as zk, student_predmet as sp, ponudakursa as pk where zk.zadaca=$edit_zadaca and zk.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 			$broj_studenata = db_num_rows($q86a);
-			$brojac=1;
+			$niz_studenata = [];
 			while ($r86a = db_fetch_row($q86a)) {
 				$student = $r86a[0];
 				$ponudakursa = $r86a[1];
-				print "Ažuriram bodove za studenta $brojac od $broj_studenata<br />\n\n";
-
-				update_komponente($student,$ponudakursa,$komponenta);
+				if (!array_key_exists($ponudakursa, $niz_studenata))
+					$niz_studenata[$ponudakursa] = [];
+				$niz_studenata[$ponudakursa][] = $student;
 			}
 			
 			// Brišemo zadaću
 			$q87 = db_query("delete from zadatak where zadaca=$edit_zadaca");
 			$q88 = db_query("delete from zadaca where id=$edit_zadaca");
+			
+			// Tek nakon brisanja možemo updatovati komponente
+			$brojac = 1;
+			foreach($niz_studenata as $ponudakursa => $studenti) {
+				foreach($studenti as $student) {
+					print "Ažuriram bodove za studenta $brojac od $broj_studenata<br />\n\n";
+					update_komponente($student, $ponudakursa, $komponenta);
+					$brojac++;
+				}
+			}
 			
 			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
 			zamgerlog2("obrisana zadaca", $edit_zadaca);
