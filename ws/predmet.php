@@ -107,10 +107,20 @@ function ws_predmet() {
 			$rezultat['data'][] = array('predmet' => $row[0], 'naziv_predmeta' => $row[3]);
 		}
 	}
+	
+	// Upit koji vraća sve pasoše predmeta za dati predmet
 	if(isset($_REQUEST['ocjena_po_odluci_predmet'])){
 		$predmet = intval($_REQUEST['ocjena_po_odluci_predmet']);
-		$query = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = $predmet");
+		// Selektujemo samo pasoše koji su važeći u nekom od planova i programa
+		$query = db_query("SELECT distinct pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where pp.predmet=$predmet AND psp.pasos_predmeta=pp.id");
+		$bio_pasos = [];
 		while($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
+			$bio_pasos[] = $row[0];
+		}
+		$query = db_query("SELECT distinct pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis where pp.predmet=$predmet AND pis.pasos_predmeta=pp.id AND psp.plan_izborni_slot=pis.id");
+		while($row = db_fetch_row($query)){
+			if (in_array($row[0], $bio_pasos)) continue;
 			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
 		}
 	}
