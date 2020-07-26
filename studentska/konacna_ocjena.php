@@ -93,7 +93,10 @@ function studentska_konacna_ocjena() {
 	
 	if($akcija == 'pregled'){
 		// Daj sve ocjene po konačnoj odluci
-		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ak.id, ak.naziv, p.id, p.naziv from konacna_ocjena as ko, akademska_godina as ak, predmet as p where ko.student = $student_id and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.odluka is not null");
+		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ag.id, ag.naziv, p.id, pp.naziv
+			FROM konacna_ocjena as ko, akademska_godina as ag, predmet as p, pasos_predmeta pp
+			WHERE ko.student=$student_id and ko.akademska_godina=ag.id and ko.predmet=p.id and ko.pasos_predmeta=pp.id AND ko.odluka is not null
+			ORDER BY ag.id, pp.naziv");
 	}else if($akcija == 'uredi'){
 		$ag = intval($_REQUEST['ak']);
 		$predmet = intval($_REQUEST['predmet']);
