@@ -150,6 +150,7 @@ array("studentska/prijave", "Štampanje prijava", "Štampanje prijava", "B", "1"
 array("studentska/export_import", "Uvoz/izvoz", "Uvoz/izvoz", "B", "1", "0"),
 array("studentska/priznavanje", "Priznavanje", "Priznavanje", "B", "1", "0"),
 array("studentska/uredi_historiju_studenta", "Uredi historiju", "Uredi historiju", "B", "1", "1"),
+array("studentska/konacna_ocjena", "Konačna ocjena", "Konačna ocjena", "B", "1", "1"),
 
 array("ws/autotest", "Web servis autotest", "autotest", "SNBA", "2", "0"),
 array("ws/export", "Web servis export", "export", "BA", "2", "0"),
