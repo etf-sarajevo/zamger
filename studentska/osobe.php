@@ -2448,7 +2448,7 @@ else if ($akcija == "edit") {
 	}
 
 	// Link za uređivanje historije studenta TODO - obratiti pozornost na to "ko ima pristup"
-	if($user_studentska or $user_siteadmin) {
+	if($korisnik_student==1 && ($user_studentska || $user_siteadmin)) {
 		// Uređivanje historije studenta
 		print "<p> Za uređivanje historije studenta, kliknite <a href='index.php?sta=studentska/uredi_historiju_studenta&student=".$osoba."'>ovdje</a>. </p>";
 		// Unos konačne ocjene studenta
