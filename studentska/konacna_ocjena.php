@@ -10,17 +10,18 @@ function bos_datum($datum){
 function studentska_konacna_ocjena() {
 	global $userid, $user_siteadmin, $user_studentska, $db;
 	
-	// Učitaj CSS fajl iz statitc/css/style.css
-	print "<link rel=\"stylesheet\" href=\"static\css\style.css\">";
-	print "<link rel=\"stylesheet\" href=\"https://use.fontawesome.com/releases/v5.7.2/css/all.css\" integrity=\"sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr\" crossorigin=\"anonymous\">";
-	print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>";
+	// Učitaj CSS fajl iz static/css/style.css
+	?>
+	<link rel="stylesheet" href="static\css\style.css"
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	
-	print "<link rel=\"stylesheet\" href=\"//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css\">";
-	print "<script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>";
-	print "<script src=\"//code.jquery.com/ui/1.12.1/jquery-ui.js\"></script>";
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	
-	print "<script src='static/js/uredi-historiju-studenta.js'> </script>";
-
+	<script src='static/js/konacna_ocjena.js'> </script>
+	<?
 	
 	if (!$user_studentska && !$user_siteadmin) {
 		zamgerlog("nije studentska",3); // 3: error
@@ -92,7 +93,7 @@ function studentska_konacna_ocjena() {
 	
 	if($akcija == 'pregled'){
 		// Daj sve ocjene po konačnoj odluci
-		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ak.id, ak.naziv, p.id, p.naziv from konacna_ocjena as ko, akademska_godina as ak, predmet as p where ko.student = $student_id and ko.akademska_godina = ak.id and ko.predmet = p.id ");
+		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ak.id, ak.naziv, p.id, p.naziv from konacna_ocjena as ko, akademska_godina as ak, predmet as p where ko.student = $student_id and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.odluka is not null");
 	}else if($akcija == 'uredi'){
 		$ag = intval($_REQUEST['ak']);
 		$predmet = intval($_REQUEST['predmet']);
