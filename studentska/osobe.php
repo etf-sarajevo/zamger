@@ -2177,7 +2177,7 @@ else if ($akcija == "edit") {
 
 	// Promjena uloga korisnika
 	if (param('subakcija') == "uloga" && check_csrf_token()) {
-		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=0;
+		$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=$korisnik['sefodsjeka']=$korisnik['uprava']=0;
 		$q150 = db_query("select privilegija from privilegije where osoba=$osoba");
 		while($r150 = db_fetch_row($q150)) {
 			if ($r150[0]=="student") $korisnik['student']=1;
@@ -2185,6 +2185,8 @@ else if ($akcija == "edit") {
 			if ($r150[0]=="prijemni") $korisnik['prijemni']=1;
 			if ($r150[0]=="studentska") $korisnik['studentska']=1;
 			if ($r150[0]=="siteadmin") $korisnik['siteadmin']=1;
+			if ($r150[0]=="sefodsjeka") $korisnik['sefodsjeka']=1;
+			if ($r150[0]=="uprava") $korisnik['uprava']=1;
 		}
 
 		foreach ($korisnik as $privilegija => $vrijednost) {
@@ -2393,7 +2395,7 @@ else if ($akcija == "edit") {
 
 
 	// Uloge korisnika
-	$korisnik_student=$korisnik_nastavnik=$korisnik_prijemni=$korisnik_studentska=$korisnik_siteadmin=0;
+	$korisnik_student=$korisnik_nastavnik=$korisnik_prijemni=$korisnik_studentska=$korisnik_siteadmin=$korisnik_sefodsjeka=$korisnik_uprava=0;
 	print "<p>Tip korisnika: ";
 	$q209 = db_query("select privilegija from privilegije where osoba=$osoba");
 
@@ -2418,6 +2420,14 @@ else if ($akcija == "edit") {
 			print "<b>administrator,</b> ";
 			$korisnik_siteadmin=1;
 		}
+		if ($r209[0]=="sefodsjeka") {
+			print "<b>šef odsjeka,</b> ";
+			$korisnik_sefodsjeka=1;
+		}
+		if ($r209[0]=="uprava") {
+			print "<b>dekan/prodekan,</b> ";
+			$korisnik_uprava=1;
+		}
 	}
 	print "</p>\n";
 
@@ -2425,7 +2435,7 @@ else if ($akcija == "edit") {
 	// Admin dio
 
 	if ($user_siteadmin) {
-		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'] );
+		unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'], $_REQUEST['sefodsjeka'], $_REQUEST['uprava'] );
 		?>
 		<?=genform("POST")?>
 		<input type="hidden" name="subakcija" value="uloga">
@@ -2433,7 +2443,9 @@ else if ($akcija == "edit") {
 		<input type="checkbox" name="nastavnik" value="1" <?if($korisnik_nastavnik==1) print "CHECKED";?>> nastavnik&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="prijemni" value="1" <?if($korisnik_prijemni==1) print "CHECKED";?>> prijemni&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="studentska" value="1" <?if($korisnik_studentska==1) print "CHECKED";?>> studentska&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin<br/> <br>
+		<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin==1) print "CHECKED";?>> siteadmin&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="sefodsjeka" value="1" <?if($korisnik_sefodsjeka==1) print "CHECKED";?>> šef odsjeka&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="checkbox" name="uprava" value="1" <?if($korisnik_uprava==1) print "CHECKED";?>> dekan/prodekan<br/> <br/>
 		<input type="submit" value=" Izmijeni ">
 		</form> <br>
 		<?
