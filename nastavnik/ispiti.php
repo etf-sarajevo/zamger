@@ -99,6 +99,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		<tr bgcolor="#999999">
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Broj indeksa</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Bodovi / Komentar</font></td>
 		</tr>
 		</thead>
@@ -146,6 +147,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
+		$brindexa = $mass_rezultat['brindexa'][$student];
 		$bodova = $mass_rezultat['podatak1'][$student];
 
 		// pretvori bodove u float uz obradu decimalnog zareza
@@ -155,7 +157,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$boja?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td>nije izašao/la na ispit (unesena je ocjena: <?=$bodova?>)</td>
 				</tr>
 				<?
@@ -170,7 +172,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td>broj bodova <?=$bodova?> je veći od maksimalnih <?=$maxbodova?></td>
 				</tr>
 				<?
@@ -186,7 +188,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td>nije upisan/a na predmet</td>
 				</tr>
 				<?
@@ -202,7 +204,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				if ($ispis) {
 					?>
 					<tr bgcolor="<?=$bojae?>">
-						<td><?=$prezime?></td><td><?=$ime?></td>
+						<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 						<td>već ima rezultat <?=$oc2?>; koristite pogled grupe za izmjenu</td>
 					</tr>
 					<?
@@ -216,7 +218,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if ($ispis) {
 			?>
 			<tr bgcolor="<?=$boja?>">
-				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 				<td><?=$bodova?> bodova</td>
 			</tr>
 			<?
@@ -456,7 +458,8 @@ if ($_REQUEST['akcija']=="masovni_unos") {
 	<option value="0" <? if($format==0) print "SELECTED";?>>Prezime[TAB]Ime</option>
 	<option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 	<option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
-	<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option></select>&nbsp;
+	<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>
+	<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
 	Separator: <select name="separator" class="default">
 	<option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 	<option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br>

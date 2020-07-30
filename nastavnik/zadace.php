@@ -136,6 +136,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		<tr bgcolor="#999999">
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Broj indeksa</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Bodovi / Komentar</font></td>
 		</tr>
 		</thead>
@@ -152,13 +153,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
+		$brindexa = $mass_rezultat['brindexa'][$student];
 		$bodova = $mass_rezultat['podatak1'][$student];
 		$bodova = str_replace(",",".",$bodova);
 
 		// Student neocijenjen (prazno mjesto za ocjenu)
 		if (floatval($bodova)==0 && strpos($bodova,"0")===FALSE) {
 			if ($ispis)
-				print "Student '$prezime $ime' - nema zadaću (nije unesen broj bodova $bodova)<br/>";
+				print "Student '$prezime $ime' ($brindexa) - nema zadaću (nije unesen broj bodova $bodova)<br/>";
 			continue;
 		}
 
@@ -166,7 +168,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$bodova = floatval($bodova);
 		if ($bodova>$maxbodova) {
 			if ($ispis) {
-				print "-- Studenta '$prezime $ime' ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
+				print "-- Studenta '$prezime $ime' ($brindexa) ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
 				//$greska=1;
 				continue;
 			}
@@ -174,7 +176,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 		// Zaključak
 		if ($ispis) {
-			print "Student '$prezime $ime' - zadaća $zadaca, bodova $bodova<br/>";
+			print "Student '$prezime $ime' ($brindexa) - zadaća $zadaca, bodova $bodova<br/>";
 		} else {
 			// Odredjujemo zadnji filename
 			$q25 = db_query("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
@@ -763,7 +765,8 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 <option value="0" <? if($format==0) print "SELECTED";?>>Prezime[TAB]Ime</option>
 <option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 <option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
-<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option></select>&nbsp;
+<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>&nbsp;
+	<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>

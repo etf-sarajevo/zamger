@@ -228,6 +228,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		<tr bgcolor="#999999">
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Broj indeksa</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Akcije</font></td>
 		</tr>
 		</thead>
@@ -250,6 +251,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
+		$brindexa = $mass_rezultat['brindexa'][$student];
 
 		// Ispis studenta iz svih grupa
 		$ispisispis = "";
@@ -265,7 +267,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$boja?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td>Već upisan u grupu <?
 					foreach ($ispis_grupe as $gid => $gime) print "'$gime' ";
 					?> - preskačem</td>
@@ -291,7 +293,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 				if (!preg_match("/\w/", $imegrupe)) {
 					?>
 					<tr bgcolor="<?=$bojae?>">
-						<td><?=$prezime?></td><td><?=$ime?></td>
+						<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 						<td>neispravno ime grupe '<?=$imegrupe?>'</td>
 					</tr>
 					<?
@@ -306,7 +308,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 					if ($ispis) {
 						?>
 						<tr bgcolor="<?=$boja?>">
-							<td colspan="3">Kreiranje nove grupe '<?=$imegrupe?>'</td>
+							<td colspan="4">Kreiranje nove grupe '<?=$imegrupe?>'</td>
 						</tr>
 						<?
 						if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
@@ -328,7 +330,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 					if ($ispis) {
 						?>
 						<tr bgcolor="<?=$bojae?>">
-							<td><?=$prezime?></td><td><?=$ime?></td>
+							<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 							<td>Grupa '<?=$gime?>' je navedena dvaput - greška?</td>
 						</tr>
 						<?
@@ -344,7 +346,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if ($ispis) { // na ekran
 			?>
 			<tr bgcolor="<?=$boja?>">
-				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 				<td>
 			<?
 			foreach ($ispis_grupe as $gid => $gime) {
@@ -558,7 +560,8 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 <option value="0" <? if($format==0) print "SELECTED";?>>Prezime[TAB]Ime</option>
 <option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 <option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
-<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option></select>&nbsp;
+<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>
+<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>
