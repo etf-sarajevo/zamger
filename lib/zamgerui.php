@@ -21,9 +21,7 @@ function nicemessage($message) {
 
 // Floating layer sa podacima o korisniku i loginom
 function user_box() {
-	global $user_nastavnik,$user_studentska,$user_siteadmin,$userid,$su;
-
-	$user = db_query_assoc("select ime,prezime from osoba where id=$userid");
+	global $user_nastavnik,$user_studentska,$user_siteadmin,$userid,$su,$person;
 
 	if ($user_siteadmin) {
 		$slika="admin.png";
@@ -45,7 +43,7 @@ function user_box() {
 <div id="kocka" style="position:absolute;right:10px;top:55px">
 	<table style="border:1px;border-style:solid"><tr><td>
 	<img src="static/images/fnord.gif" width="200" height="1" alt="fnord"><br>
-	<img src="static/images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$user['ime']?> <?=$user['prezime']?><br>
+	<img src="static/images/16x16/<?=$slika?>" border="0" alt="fnord"> <?=$person['name']?> <?=$person['surname']?><br>
 	<?=$unsu?><a href="?sta=common/inbox">Poruke</a> * <a href="?sta=common/profil">Profil</a> * <a href="?sta=logout">Odjava</a>
 	</td></tr></table>
 </div>
