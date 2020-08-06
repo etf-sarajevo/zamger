@@ -3,6 +3,17 @@
 // STUDENT/INTRO - uvodna stranica za studente
 
 
+function getCourseName($courseId) {
+	global $courseDetails, $userid;
+	foreach($courseDetails as $course)
+		if ($course['CourseOffering']['CourseUnit']['id'] == $courseId)
+			return $course['courseName'];
+		
+	// Course not found in courseDetails, fetch from API
+	$course = api_call("course/$courseId/student/$userid", ["courseInformation" => true] );
+	$courseDetails[] = $course;
+	return $course['courseName'];
+}
 
 function student_intro() {
 
@@ -50,10 +61,6 @@ function student_intro() {
 			<h2><img src="static/images/32x32/latest.png" align="absmiddle"> <font color="#666699">AKTUELNO</font></h2>
 	<?
 	
-	$courseNames = [];
-	foreach($courseDetails as $course)
-		$courseNames[$course['CourseOffering']['CourseUnit']['id']] = $course['courseName'];
-	
 	$vrijeme_poruke = array();
 	$code_poruke = array();
 
@@ -64,7 +71,7 @@ function student_intro() {
 		if (array_key_exists("StudentSubmit", $hw['CourseActivity']['options']) && $hw['CourseActivity']['options']["StudentSubmit"]) {
 			$id = $hw['id'];
 			$idPredmeta = $hw['CourseUnit']['id'];
-			$nazivPredmeta = $courseNames[$idPredmeta];
+			$nazivPredmeta = getCourseName($idPredmeta);
 			$ag = $hw['AcademicYear']['id'];
 			$naziv = $hw['name'];
 			$datum = date("d. m. Y. \u H:i", db_timestamp($hw['deadline']));
@@ -83,7 +90,7 @@ function student_intro() {
 		if ($bodova >= $prolaz && $prolaz > 0) $cestitka=" Čestitamo!"; else $cestitka="";
 		$id = $exam['Exam']['id'];
 		$idPredmeta = $exam['Exam']['CourseUnit']['id'];
-		$nazivPredmeta = $courseNames[$idPredmeta];
+		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $exam['Exam']['AcademicYear']['id'];
 		$nazivIspita = $exam['Exam']['CourseActivity']['name'];
 		$datumIspita = date("d. m. Y", db_timestamp($exam['Exam']['date']));
@@ -97,7 +104,7 @@ function student_intro() {
 	$events = api_call("event/upcoming/$userid", ["resolve" => ["CourseActivity"]])['results'];
 	foreach($events as $event) {
 		$idPredmeta = $event['CourseUnit']['id'];
-		$nazivPredmeta = $courseNames[$idPredmeta];
+		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $event['AcademicYear']['id'];
 		$idAktivnosti = $event['CourseActivity']['id'];
 		$nazivIspita = $event['CourseActivity']['name'];
@@ -111,7 +118,7 @@ function student_intro() {
 	$grades = api_call("course/latestGrades/$userid")['results'];
 	foreach($grades as $grade) {
 		$idPredmeta = $grade['CourseOffering']['CourseUnit']['id'];
-		$nazivPredmeta = $courseNames[$idPredmeta];
+		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $grade['CourseOffering']['AcademicYear']['id'];
 		$the_ocjena = $grade['grade'];
 		
@@ -125,7 +132,7 @@ function student_intro() {
 	foreach($quizzes as $quiz) {
 		$id = $quiz['id'];
 		$idPredmeta = $quiz['CourseUnit']['id'];
-		$nazivPredmeta = $courseNames[$idPredmeta];
+		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $quiz['AcademicYear']['id'];
 		$naziv = $quiz['name'];
 		
@@ -165,10 +172,10 @@ function student_intro() {
 	$printed = 0;
 	foreach($announcements as $ann) {
 		if ($ann['scope'] == 5) // scope 5 = course
-			$sender = $courseNames[$ann['receiver']];
+			$sender = getCourseName($ann['receiver']);
 		else if ($ann['scope'] == 6) { // scope 6 = group
 			$group = api_call("group/" . $ann['receiver']);
-			$sender = $courseNames[$group['CourseUnit']['id']] . ", " . $group['name'];
+			$sender = getCourseName($group['CourseUnit']['id']) . ", " . $group['name'];
 		}
 		else // For other cases, sender is administrator
 			$sender = "Administrator";
