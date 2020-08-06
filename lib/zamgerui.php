@@ -14,8 +14,8 @@ function biguglyerror($error) {
 	print "<center><h2><font color='red'><b>GREŠKA: $error</b></font></h2></center>";
 }
 
-function nicemessage($message) {
-	print "<p><font color='green'><b>$message</b></font></p>";
+function nicemessage($error) {
+	print "<p><font color='green'><b>$error</b></font></p>";
 }
 
 
@@ -464,7 +464,7 @@ function horizontalni_meni($fj) {
 
 // "Studentski meni" - prikazuje se u prozoru studenta
 function studentski_meni($fj) {
-	global $userid, $sta, $registry, $courseDetails;
+	global $userid, $sta, $registry;
 
 	// Koji od interesantnih registry modula su aktivni
 	$modul_uou=$modul_kolizija=$modul_prijava=$modul_prosjek=$modul_anketa=0;
@@ -476,78 +476,111 @@ function studentski_meni($fj) {
 		if ($r[0]=="student/prosjeci") $modul_prosjek=1;
 		if ($r[0]=="student/anketa") $modul_anketa=1;
 	}
-	
-	// Upit course/student/$userid vraca predmete koje je student ikada slusao (all=true) ili koje trenutno slusa (all=false)
+
+	// Aktuelna akademska godina
+	$q10 = db_query("select id,naziv from akademska_godina where aktuelna=1");
+	$ag = db_result($q10,0,0);
+
+	// Upit $q30 vraca predmete koje je student ikada slusao (arhiva=1) ili koje trenutno slusa (arhiva=0)
 	$arhiva = int_param('sm_arhiva');
-	if ($arhiva==1)
-		$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true", "activities" => "true"])['results'];
-	else
-		$courseDetails = api_call("course/student/$userid", ["courseInformation" => "true", "activities" => "true"])['results'];
-	
-	$output = '<table border="0" cellspacing="2" cellpadding="1">';
-	$oldsem=$oldyear=0;
-	
+	if ($arhiva==1) {
+		$sem_ispis = "Arhivirani predmeti";
+		$q30 = db_query("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+		FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
+		WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=ag.id AND ag.id=agp.akademska_godina AND p.id=agp.predmet
+		ORDER BY ag.id, pk.semestar MOD 2 DESC, p.naziv");
+
+	} else {
+		// Studij koji student trenutno sluša
+		$q20 = db_query("select studij,semestar from student_studij where student=$userid and akademska_godina=$ag order by semestar desc limit 1");
+		if (db_num_rows($q20)<1) {
+			$sem_ispis = "Niste upisani na studij!";
+			$q30 = db_query("SELECT * from student_studij where 1=0"); // dummy upit koji ne vraca ništa
+			// Može li ovo bolje!?
+		} else {
+			$studij = db_result($q20,0,0);
+			$semestar = db_result($q20,0,1);
+
+			// Određujemo da li je aktuelni semestar parni ili neparni
+			$semestar=$semestar%2;
+			if ($semestar==1)
+				$sem_ispis = "Zimski semestar ";
+			else
+				$sem_ispis = "Ljetnji semestar ";
+			$sem_ispis .= db_result($q10,0,1).":";
+
+			$q30 = db_query("SELECT pk.id, p.naziv, pk.semestar, ag.naziv, p.id, ag.id, agp.tippredmeta
+			FROM student_predmet as sp, ponudakursa as pk, predmet as p, akademska_godina as ag, akademska_godina_predmet as agp
+			WHERE sp.student=$userid AND sp.predmet=pk.id AND pk.predmet=p.id AND pk.akademska_godina=$ag AND pk.semestar%2=$semestar AND pk.akademska_godina=ag.id AND agp.akademska_godina=$ag AND agp.predmet=p.id
+			ORDER BY p.naziv");
+		}
+	}
+
+	$ispis = '<table border="0" cellspacing="2" cellpadding="1">';
+	$oldsem=$oldag=0; 
+
 	// Glavna petlja za generisanje ispisa
-	foreach($courseDetails as $courseDetail) {
-		$semester = $courseDetail['CourseOffering']['semester'];
-		$yearId = $courseDetail['CourseOffering']['AcademicYear']['id'];
-		$year = $courseDetail['CourseOffering']['AcademicYear']['name'];
-		$courseId = $courseDetail['CourseOffering']['CourseUnit']['id'];
-		$course = $courseDetail['courseName'];
-		$tippredmeta = "FIXME"; // FIXME
+	while ($r30 = db_fetch_row($q30)) {
+		$ponudakursa = $r30[0];
+		$predmet_naziv = $r30[1];
+		$predmet = $r30[4];
+		$pag = $r30[5];
+		$zimskiljetnji = $r30[2]%2;
+		$tippredmeta = $r30[6];
 
 		// Zaglavlje sa imenom akademske godine i semestrom
-		if ($semester % 2 != $oldsem || $year != $oldyear) {
-			if ($semester%2==1)
-				$output .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
+		if ($zimskiljetnji!=$oldsem || $r30[3]!=$oldag) {
+			if ($r30[2]%2==1)
+				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Zimski semestar ";
 			else
-				$output .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Ljetnji semestar ";
-			$output .= $year . ":</b><br/><br/></td></tr>\n";
-			$oldsem = $semester % 2;
-			$oldyear = $year;
+				$ispis .= "<tr><td colspan=\"2\"><br/><img src=\"static/images/fnord.gif\" width=\"1\" height=\"2\"><br/><b>Ljetnji semestar ";
+			$ispis .= $r30[3].":</b><br/><br/></td></tr>\n";
+			$oldsem=$zimskiljetnji; $oldag=$r30[3];
 		}
 
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
-		if (int_param('predmet') == $courseId && int_param('ag') == $yearId) {
-			$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/down_red.png" align="bottom" border="0"></td>'."\n<td>";
+		if (int_param('predmet')==$predmet && int_param('ag')==$pag) {
+			$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/down_red.png" align="bottom" border="0"></td>'."\n<td>";
 			if ($tippredmeta == 1000 || $tippredmeta == 1001)
-				$output .= "<a href=\"?sta=student/zavrsni&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">";
+				$ispis .= "<a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
 			else if ($_REQUEST['sta'] != "student/predmet")
-				$output .= "<a href=\"?sta=student/predmet&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">";
-			$output .= "<b>$course</b>";
+				$ispis .= "<a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">";
+			$ispis .= "<b>$predmet_naziv</b>";
 			if ($_REQUEST['sta'] != "student/predmet")
-				$output .= "</a>";
-			$output .= "<br/>\n";
+				$ispis .= "</a>";
+			$ispis .= "<br/>\n";
 			
 			// Studentski moduli aktivirani za ovaj predmet
-			$translation = [1 => "student/moodle", 2 => "student/zadaca", 4 => "student/projekti", 5 => "student/kviz", 6 => "public/anketa", 7 => "student/gg" ];
-			foreach($courseDetail['activities'] as $activity) {
-				if (!array_key_exists($activity['Activity']['id'], $translation))
-					continue;
-				$sta = $translation[$activity['Activity']['id']];
-				if ($activity['Activity']['id'] == 2) {
-					if (array_key_exists("StudentSubmit", $activity['options']) && $activity['options']['StudentSubmit'])
-						$activity['name'] = "Slanje zadaće";
-					else
-						continue;
-				}
-				if ($sta == $_REQUEST['sta'])
-					$output .= "&nbsp;&nbsp;&nbsp;&nbsp;" . $activity['name'] . "<br/>\n";
-				else if ($activity['display'] == 1)
-					$output .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$sta&predmet=$courseId&ag=$yearId\" target=\"_blank\">" . $activity['name'] . "</a><br/>\n";
+			$q40 = db_query("select sm.gui_naziv, sm.modul, sm.novi_prozor from studentski_modul as sm, studentski_modul_predmet as smp where smp.predmet=$predmet and smp.akademska_godina=$pag and smp.aktivan=1 and smp.studentski_modul=sm.id order by sm.id");
+			while ($r40 = db_fetch_row($q40)) {
+				if ($r40[1]==$_REQUEST['sta'])
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;$r40[0]<br/>\n";
+				else if ($r40[2]==1)
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag\" target=\"_blank\">$r40[0]</a><br/>\n";
 				else
-					$output .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$sta&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">" . $activity['name'] . "</a><br/>\n";
+					$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=$r40[1]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r40[0]</a><br/>\n";
 			}
-			
-			$output .= "</td></tr>\n";
+
+			// Da li postoji anketa za dati predmet ili sve predmete u trenutnom semestru?
+			if ($modul_anketa) {
+				$q42 = db_query("select a.id, a.naziv, ap.aktivna from anketa_anketa as a, anketa_predmet as ap where ap.anketa=a.id and a.akademska_godina=$pag and (ap.predmet=$predmet or ap.predmet IS NULL) and ap.semestar=$zimskiljetnji");
+				while ($r42 = db_fetch_row($q42)) {
+					if ($_REQUEST['sta'] == "student/anketa" && $_REQUEST['anketa'] == $r42[0])
+						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;$r42[1]<br/>\n";
+					else
+						$ispis .= "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"?sta=student/anketa&anketa=$r42[0]&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$r42[1]</a><br/>\n";
+				}
+			}
+
+			$ispis .= "</td></tr>\n";
 		} else {
 			if ($tippredmeta == 1000 || $tippredmeta == 1001)
-				$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">$course</a></td></tr>\n";
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 			else
-				$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">$course</a></td></tr>\n";
+				$ispis .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$predmet&ag=$pag&sm_arhiva=$arhiva\">$predmet_naziv</a></td></tr>\n";
 		}
 	}
-	$output .= "</table>\n";
+	$ispis .= "</table>\n";
 
 
 ?>
@@ -556,7 +589,7 @@ function studentski_meni($fj) {
 			<img src="static/images/fnord.gif" width="197" height="1"><br/><br/>
 			<? if ($sta != "student/intro") { ?>
 			<a href="?sta=student/intro">&lt;-- Nazad na početnu</a>
-			<? } else { ?>&nbsp;<? } ?><?=$output?>
+			<? } else { ?>&nbsp;<? } ?><?=$ispis?>
 			
 			<br />
 			<? if ($arhiva == 1) { ?>
