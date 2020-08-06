@@ -21,7 +21,7 @@ $conf_dbdb = "zamger";
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
 $conf_site_url = "http://localhost/zamger";
 
-$conf_apiv5_url = "http://localhost/api/";
+$conf_backend_url = "http://localhost/api/";
 
 // Lokacija na disku gdje je Zamger instaliran
 $conf_script_path = "/var/www/html/zamger";
@@ -55,7 +55,7 @@ $conf_cijena_potvrde = 2;
 $conf_use_mysql_utf8 = true;
 
 // Da li ispisivati debugging poruke?
-$conf_debug = true;
+$conf_debug = false;
 
 // Postavite parametar ispod na true ukoliko želite omogućiti slanje maila, koji sadrzi spisak konacnih ocjena upisanih u posljednja 24h
 // U suprotnom, postavite vrijednost na false 
@@ -230,8 +230,6 @@ $conf_export_isss_kreiraj_ispite = false;
 $conf_knjigovodstveni_servis = false;
 
 // URLovi web servisa za plaćanje
-// $conf_url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
-// $conf_url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
 $conf_url_daj_karticu = "";
 $conf_url_upisi_zaduzenje = "";
 

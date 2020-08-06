@@ -182,9 +182,10 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 }
 
 function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
-	global $conf_backend_url, $debug_data;
+	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $login;
 	
 	$http_request_params = array('http' => array(
+		'header' => "",
 		'method' => $method,
 		'ssl' => array(
 			"verify_peer"=>false,
@@ -198,13 +199,17 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	if ($method == "GET") {
 		// For GET method, add query data to url
 		$params["route"] = $route;
-		$params["SESSION_ID"] = $_SESSION['api_session'];
+		if (!$conf_keycloak)
+			$params["SESSION_ID"] = $_SESSION['api_session'];
 		$query = http_build_query($params);
 		$url = "$url?$query";
 		$content = $mimetype = "";
 	} else {
 		// add route and session id to url
-		$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
+		if ($conf_keycloak)
+			$url = "$url?" . http_build_query( ["route" => $route] );
+		else
+			$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
 		
 		// Send objects as JSON
 		if (is_object($params)) {
@@ -217,9 +222,19 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 		}
 	}
 	
+	if ($conf_keycloak) {
+		$token_file = $conf_files_path . "/keycloak_token/$login";
+		$token = unserialize(file_get_contents($token_file));
+		if (!$token) {
+			// Nekako smo izgubili token!
+		//	logout();
+		}
+		$http_request_params['http']['header'] .= "Authorization: Bearer " .  $token->getToken() . "\r\n";
+	}
+	
 	if ($content != "") {
 		$http_request_params['http']['content'] = $content;
-		$http_request_params['http']['header'] = "Content-Type: $mimetype\r\n" .
+		$http_request_params['http']['header'] .= "Content-Type: $mimetype\r\n" .
 		"Content-Length: " . strlen ( $content ) . "\r\n";
 	}
 	

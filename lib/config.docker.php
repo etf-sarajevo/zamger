@@ -21,7 +21,7 @@ $conf_dbdb = "zamger";
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
 $conf_site_url = "http://localhost:8081";
 
-$conf_apiv5_url = "http://localhost:8081/api/";
+$conf_backend_url = "http://localhost:8085/api/";
 
 // Lokacija na disku gdje je Zamger instaliran
 $conf_script_path = "/var/www/html";
@@ -230,8 +230,6 @@ $conf_export_isss_kreiraj_ispite = false;
 $conf_knjigovodstveni_servis = false;
 
 // URLovi web servisa za plaćanje
-// $conf_url_daj_karticu = "http://80.65.65.68:8080/WebService1.asmx/dajKarticuStudenta";
-// $conf_url_upisi_zaduzenje = "http://80.65.65.68:8080/WebService1.asmx/UpisiZaduzenje";
 $conf_url_daj_karticu = "";
 $conf_url_upisi_zaduzenje = "";
 
