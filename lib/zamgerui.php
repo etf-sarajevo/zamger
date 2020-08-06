@@ -165,7 +165,7 @@ function ajax_box() {
 
 
 // Vrati odgovarajuću ikonu za fajl
-function getmimeicon($file) {
+function getmimeicon($file, $tip) {
 	$mimetypes = array(
 		"text/x-c" => "source_c.png",
 		"audio/mpeg" => "sound.png",
@@ -201,7 +201,6 @@ function getmimeicon($file) {
 		".html" => "html.png"
 	);
 
-	$tip = mimetype($file);
 	$ekst = $tip . strrchr($file, ".");
 
 	if ($mtekst[$ekst]) return $mtekst[$ekst];
@@ -991,5 +990,26 @@ function _mass_input_brindexa($ispis) {
 	}
 	return $greska;
 }
+
+
+function getCourseDetails($courseId, $courseYear = 0) {
+	global $courseDetails, $userid;
+	foreach($courseDetails as $course)
+		if ($course['CourseOffering']['CourseUnit']['id'] == $courseId)
+			return $course;
+	
+	// Course not found in courseDetails, fetch from API
+	$params = ["courseInformation" => true];
+	if ($courseYear != 0) $params['year'] = $courseYear;
+	$course = api_call("course/$courseId/student/$userid", $params);
+	if ($course['code'] != "200") return [];
+	$courseDetails[] = $course;
+	return $course;
+}
+
+function getCourseName($courseId) {
+	return getCourseDetails($courseId)['courseName'];
+}
+
 
 ?>

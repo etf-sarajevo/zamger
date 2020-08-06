@@ -5,425 +5,373 @@
 
 function student_zadaca() {
 
-global $userid,$conf_files_path;
+	global $userid,$conf_files_path;
+	
+	require_once("lib/autotest.php");
+	require_once("lib/utility.php"); // linkuj_urlove, nicesize, ends_with, rm_minus_r, clear_unicode
+	
+	
+	// Akcije
+	if ($_REQUEST['akcija'] == "slanje") {
+		akcijaslanje();
+		return;
+	}
+	
+	
+	// Poslani parametri
+	$zadaca = intval($_REQUEST['zadaca']);
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
+	$zadatak = intval($_REQUEST['zadatak']);
+	
+	$course = getCourseDetails($predmet, $ag);
+	if (empty($course)) {
+		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
+		zamgerlog2("nepoznat predmet", $predmet);
+		biguglyerror("Nepoznat predmet");
+		return;
+	}
+	$ponudakursa = $course['CourseOffering']['id'];
 
-require_once("lib/autotest.php");
-require_once("lib/utility.php"); // linkuj_urlove, nicesize, ends_with, rm_minus_r, clear_unicode
+	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ])['results'];
+	
+	//  IMA LI AKTIVNIH?
+	// TODO: provjeriti da li je aktivan modul...
+	//  ODREĐIVANJE ID ZADAĆE
+	// Da li neko pokušava da spoofa zadaću?
+	// Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
+	$anyActive = false;
+	$currentAssignment = [];
+	$homeworks = $assignmentHomeworks = [];
+	$maxAssignments = 0;
+	
+	foreach($assignments as $assignment) {
+		$id = $assignment['Homework']['id'];
+		$homeworks[$id] = $assignment['Homework'];
+		if (!array_key_exists($id, $assignmentHomeworks)) $assignmentHomeworks[$id] = [];
+		$assignmentHomeworks[$id][$assignment['assignNo']-1] = $assignment;
+		
+		if ($assignment['Homework']['active']) $anyActive = true;
+		if ($assignment['Homework']['nrAssignments'] > $maxAssignments)
+			$maxAssignments = $assignment['Homework']['nrAssignments'];
+		
+		if ($zadaca != 0 && $id == $zadaca) {
+			// Homework is selected, use last worked assignment in that homework
+			if ($assignment['assignNo'] == $zadatak)
+				$currentAssignment = $assignment;
+			else if (empty($currentAssignment))
+				$currentAssignment = $assignment;
+			else if ($zadatak == 0 && db_timestamp($assignment['time']) > db_timestamp($currentAssignment['time']))
+				$currentAssignment = $assignment;
+			
+		} else if ($zadaca == 0) {
+			// Homework not selected, if homework is active and not past deadline, use last worked assignment
+			if ($assignment['Homework']['active'] && db_timestamp($assignment['Homework']['deadline']) < time() && $assignment['status'] != 0) {
+				if (empty($currentAssignment))
+					$currentAssignment = $assignment;
+				else if (db_timestamp($assignment['time']) > db_timestamp($currentAssignment['time']))
+					$currentAssignment = $assignment;
+			}
+		}
+	}
+	
+	if (!$anyActive) {
+		zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
+		zamgerlog2("nijedna zadaca nije aktivna", $predmet);
+		niceerror("Nijedna zadaća nije aktivna");
+		return;
+	}
 
-
-// Akcije
-if ($_REQUEST['akcija'] == "slanje") {
-	akcijaslanje();
-	return;
-}
-
-
-// Poslani parametri
-$zadaca = intval($_REQUEST['zadaca']);
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
-
-$q10 = db_query("select naziv from predmet where id=$predmet");
-if (db_num_rows($q10)<1) {
-	zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
-	zamgerlog2("nepoznat predmet", $predmet);
-	biguglyerror("Nepoznat predmet");
-	return;
-}
-
-$q15 = db_query("select naziv from akademska_godina where id=$ag");
-if (db_num_rows($q10)<1) {
-	zamgerlog("nepoznata akademska godina $ag",3); // nivo 3: greska
-	zamgerlog2("nepoznata akademska godina", $ag); // nivo 3: greska
-	biguglyerror("Nepoznata akademska godina");
-	return;
-}
-
-// Da li student slusa predmet?
-$q17 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-if (db_num_rows($q17)<1) {
-	zamgerlog("student ne slusa predmet pp$predmet", 3);
-	zamgerlog2("student ne slusa predmet", $predmet, $ag);
-	biguglyerror("Niste upisani na ovaj predmet");
-	return;
-}
-$ponudakursa = db_result($q17,0,0);
-
-
-//  IMA LI AKTIVNIH?
-// TODO: provjeriti da li je aktivan modul...
-
-$q10 = db_query("select count(*) from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1");
-if (db_result($q10,0,0) == 0) {
-	zamgerlog("nijedna zadaća nije aktivna, predmet pp$predmet", 3);
-	zamgerlog2("nijedna zadaca nije aktivna", $predmet);
-	niceerror("Nijedna zadaća nije aktivna");
-	return;
-}
-
-
-
-//  ODREĐIVANJE ID ZADAĆE
-
-// Da li neko pokušava da spoofa zadaću?
-if ($zadaca!=0) {
-	$q20 = db_query("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
-	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
-	if (db_result($q20,0,0)==0) {
+	if ($zadaca != 0 && empty($currentAssignment)) {
+		// This can only happen if unknown homework was selected
 		zamgerlog("student nije upisan na predmet (zadaca z$zadaca)",3);
 		zamgerlog2("student ne slusa predmet za zadacu", $zadaca);
 		biguglyerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
-}
-
-// Ili predmet
-if ($ponudakursa != 0) {
-	$q25 = db_query("select count(*) from student_predmet where student=$userid and predmet=$ponudakursa");
-	if (db_result($q25,0,0)==0) {
-		zamgerlog("student nije upisan na predmet (predmet p$ponudakursa)",3);
-		zamgerlog2("student ne slusa ponudukursa", $ponudakursa);
-		biguglyerror("Niste upisani na ovaj predmet");
-		return;
+	
+	if (empty($currentAssignment)) {
+		// Try assignment no 1 in homework that is active and not past deadline
+		foreach($assignments as $assignment) {
+			if ($assignment['Homework']['active'] && db_timestamp($assignment['Homework']['deadline']) < time() && $assignment['assignNo'] == 1) {
+				$currentAssignment = $assignment;
+				break;
+			}
+		}
 	}
-	// Odgovarajuci predmet i zadaca
-	if ($zadaca != 0) {
-		$q27 = db_query("select count(*) from zadaca where id=$zadaca and predmet=$predmet and akademska_godina=$ag");
-		if (db_result($q27,0,0)==0) {
-			zamgerlog("zadaca i predmet ne odgovaraju (predmet p$ponudakursa, zadaca z$zadaca)",3);
-			zamgerlog2("zadaca i ponudakursa ne odgovaraju", $ponudakursa, $zadaca);
-			biguglyerror("Ova zadaća nije iz vašeg predmeta");
+	
+	// This can happen if all assignments are past deadline, just give last worked assignment
+	if (empty($currentAssignment)) {
+		foreach($assignments as $assignment) {
+			if ($assignment['status'] != 0) {
+				if (empty($currentAssignment))
+					$currentAssignment = $assignment;
+				else if (db_timestamp($assignment['time']) > db_timestamp($currentAssignment['time']))
+					$currentAssignment = $assignment;
+			}
+		}
+	}
+	
+	// No worked assignments, give assignment no 1 from last homework
+	if (empty($currentAssignment)) {
+		foreach($assignments as $assignment) {
+			if ($assignment['Homework']['active'] && $assignment['assignNo'] == 1) {
+				if (empty($currentAssignment))
+					$currentAssignment = $assignment;
+				else if (db_timestamp($assignment['Homework']['deadline']) > db_timestamp($currentAssignment['Homework']['deadline']))
+					$currentAssignment = $assignment;
+			}
+		}
+		// Now current assignment must be set, otherwise there are no active homeworks (caught earlier)
+	}
+	
+	// Shortcuts
+	if ($zadaca == 0) $zadaca = $currentAssignment['Homework']['id'];
+	if ($zadatak == 0) $zadatak = $currentAssignment['assignNo'];
+	
+	$naziv = $currentAssignment['Homework']['name'];
+	$rok = db_timestamp($currentAssignment['Homework']['deadline']);
+	$jezik = $currentAssignment['Homework']['ProgrammingLanguage']['id'];
+	$attachment = $currentAssignment['Homework']['attachment'];
+	$zadaca_dozvoljene_ekstenzije = $currentAssignment['Homework']['allowedExtensions'];
+	$readonly_zadaca = $currentAssignment['Homework']['readonly'];
+	$filename = $currentAssignment['filename'];
+
+
+	
+	// Akcije vezane za autotest
+	// FIXME kada pređemo na autotester v2
+	
+	if ($_REQUEST['akcija'] == "test_detalji") {
+		$test = intval($_REQUEST['test']);
+	
+		// Provjera spoofinga testa
+		$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
+		if (db_result($q10,0,0) == 0) {
+			niceerror("Odabrani test nije sa odabrane zadaće.");
 			return;
 		}
-	}
-}
-
-// Nije izabrana konkretna zadaca
-if ($zadaca==0) {
-	// Zadnja zadaca na kojoj je radio/la
-	$q30 = db_query("SELECT z.id FROM zadatak as zk, zadaca as z
-	WHERE z.id=zk.zadaca and z.aktivna=1 and z.rok>curdate() and z.predmet=$predmet and z.akademska_godina=$ag and zk.student=$userid
-	ORDER BY z.id DESC LIMIT 1");
-
-	if (db_num_rows($q30)>0)
-		$zadaca = db_result($q30,0,0);
-	else {
-		// Nije radio ni na jednoj od aktivnih zadaca$predmet_id
-		// Daj najstariju aktivnu zadacu
-		$q40 = db_query("select id from zadaca where predmet=$predmet and akademska_godina=$ag and rok>curdate() and aktivna=1 order by id limit 1");
-
-		if (db_num_rows($q40)>0)
-			$zadaca = db_result($q40,0,0);
-		else {
-			// Ako ni ovdje nema rezultata, znači da je svim 
-			// zadaćama istekao rok. Daćemo zadnju zadaću.
-			// Da li ima aktivnih provjerili smo u $q10
-			$q50 = db_query("select id from zadaca where predmet=$predmet and akademska_godina=$ag and aktivna=1 order by id desc limit 1");
-			$zadaca = db_result($q50,0,0);
-		}
-	}
-}
-
-
-
-// Standardna lokacija zadaca:
-
-$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
-
-
-
-// Ove vrijednosti će nam trebati kasnije
-$q60 = db_query("select naziv,zadataka,UNIX_TIMESTAMP(rok),programskijezik,attachment,dozvoljene_ekstenzije, readonly from zadaca where id=$zadaca");
-$naziv = db_result($q60,0,0);
-$brojzad = db_result($q60,0,1);
-$rok = db_result($q60,0,2);
-$jezik = db_result($q60,0,3);
-$attachment = db_result($q60,0,4);
-$zadaca_dozvoljene_ekstenzije = db_result($q60,0,5);
-$readonly_zadaca = db_result($q60,0,6);
-
-
-//  ODREĐIVANJE ZADATKA
-
-// Poslani parametar:
-$zadatak = intval($_REQUEST['zadatak']);
-
-if ($zadatak==0) { 
-	// Prvi neurađeni zadatak u datoj zadaći
-	// NOTE: subquery
-	$q70 = db_query("select zk.redni_broj from zadatak as zk where zk.student=$userid and zk.zadaca=$zadaca and (select count(*) from zadatak as zk2 where zk2.student=$userid and zk2.zadaca=$zadaca and zk2.redni_broj=zk.redni_broj)=0 order by zk.redni_broj limit 1");
 	
-	if (db_num_rows($q70)>0) 
-		$zadatak=db_result($q70,0,0);
-	// Sve je uradio, daj zadnji
-	else 
-		$zadatak=$brojzad;
-}
-
-
-
-// Akcije vezane za autotest
-
-if ($_REQUEST['akcija'] == "test_detalji") {
-	$test = intval($_REQUEST['test']);
-
-	// Provjera spoofinga testa
-	$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-	if (db_result($q10,0,0) == 0) {
-		niceerror("Odabrani test nije sa odabrane zadaće.");
+		autotest_detalji($test, $userid, /* $param_nastavnik = */ false);
 		return;
 	}
 
-	autotest_detalji($test, $userid, /* $param_nastavnik = */ false); 
-	return;
-}
 
-
-
-if ($_REQUEST['akcija'] == "test_sa_kodom") {
-	if ($attachment) {
-		niceerror("Download zadaće poslane kao attachment sa ugrađenim testnim kodom trenutno nije podržano.");
+	if ($_REQUEST['akcija'] == "test_sa_kodom") {
+		if ($attachment) {
+			niceerror("Download zadaće poslane kao attachment sa ugrađenim testnim kodom trenutno nije podržano.");
+			return;
+		}
+		$test = intval($_REQUEST['test']);
+	
+		// Provjera spoofinga testa
+		$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
+		if (db_result($q10,0,0) == 0) {
+			niceerror("Odabrani test nije sa odabrane zadaće.");
+			return;
+		}
+	
+		$kod = autotest_sa_kodom($test, $userid, /* $param_nastavnik = */ false);
+	
+		?>
+		<textarea rows="20" cols="80" name="program" wrap="off"><?=$kod?></textarea>
+		<?
+	
 		return;
 	}
-	$test = intval($_REQUEST['test']);
 
-	// Provjera spoofinga testa
-	$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-	if (db_result($q10,0,0) == 0) {
-		niceerror("Odabrani test nije sa odabrane zadaće.");
-		return;
-	}
 
-	$kod = autotest_sa_kodom($test, $userid, /* $param_nastavnik = */ false); 
+
+	//  NAVIGACIJA
+	
+	print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
+	
+	
+	// Statusne ikone:
+	$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
+	$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+
 
 	?>
-	<textarea rows="20" cols="80" name="program" wrap="off"><?=$kod?></textarea>
+	
+	
+	<!-- zadace -->
+	<center>
+	<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
+		<thead>
+			<tr>
 	<?
 
-	return;
-}
 
 
-
-//  NAVIGACIJA
-
-print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
-
-
-// Statusne ikone:
-$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
-$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
-
-
-?>
-
-
-<!-- zadace -->
-<center>
-<table cellspacing="0" cellpadding="2" border="0" id="zadace" class="zadace">
-	<thead>
-		<tr>
-<?
-
-
-
-?>
-	<td>&nbsp;</td>
-<?
-
-// Zaglavlje tabele - potreban nam je max. broj zadataka u zadaci
-
-$q20 = db_query("select zadataka from zadaca where predmet=$predmet and akademska_godina=$ag order by zadataka desc limit 1");
-$broj_zadataka = db_result($q20,0,0);
-for ($i=1;$i<=$broj_zadataka;$i++) {
-	?><td>Zadatak <?=$i?>.</td><?
-}
-
-?>
-		<td>Rok za slanje</td>
-		</tr>
-	</thead>
-<tbody>
-<?
-
-
-// Tijelo tabele
-
-// LEGENDA STATUS POLJA:
-// 0 - nepoznat status
-// 1 - nova zadaća
-// 2 - prepisana
-// 3 - ne može se kompajlirati
-// 4 - prošla test, predstoji kontrola
-// 5 - pregledana
-
-
-/* Ovo se sve moglo kroz SQL rijesiti, ali necu iz razloga:
-1. PHP je citljiviji
-2. MySQL <4.1 ne podrzava subqueries */
-
-
-$bodova_sve_zadace = $m_mogucih = 0;
-
-$q21 = db_query("select id, naziv, bodova, zadataka, UNIX_TIMESTAMP(rok) from zadaca where predmet=$predmet and akademska_godina=$ag order by komponenta, id");
-while ($r21 = db_fetch_row($q21)) {
-	$m_zadaca = $r21[0];
-	$m_mogucih += $r21[2];
-	$m_maxzadataka = $r21[3];
-	?><tr>
-	<th><?=$r21[1]?></th>
+	?>
+		<td>&nbsp;</td>
 	<?
 
-	for ($m_zadatak=1;$m_zadatak<=$broj_zadataka;$m_zadatak++) {
-		// Ako tekuća zadaća nema toliko zadataka, ispisujemo blank polje
-		if ($m_zadatak>$m_maxzadataka) {
-			?><td>&nbsp;</td><?
-			continue;
-		}
+	for ($i=1; $i<=$maxAssignments; $i++) {
+		?><td>Zadatak <?=$i?>.</td><?
+	}
 
-		// Uzmi samo rjesenje sa zadnjim IDom
-		$q22 = db_query("select status,bodova,komentar from zadatak where student=$userid and zadaca=$m_zadaca and redni_broj=$m_zadatak order by id desc limit 1");
-		if ($m_zadaca==$zadaca && $m_zadatak==$zadatak)
-			$bgcolor = ' bgcolor="#DDDDFF"'; 
-		else 	$bgcolor = "";
-		if (db_num_rows($q22)<1) {
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="static/images/16x16/create_new.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
-		} else {
-			$status = db_result($q22,0,0);
-			$bodova_zadatak = db_result($q22,0,1);
-			if (strlen(db_result($q22,0,2))>2)
-				$imakomentar = "<img src=\"static/images/16x16/comment_yellow.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
+	?>
+			<td>Rok za slanje</td>
+			</tr>
+		</thead>
+	<tbody>
+	<?
+
+
+	// Tijelo tabele
+	
+	foreach ($homeworks as $homework) {
+	?>
+	<tr>
+		<th><?=$homework['name']?></th>
+		<?
+		
+		for($asgn=1; $asgn<=$maxAssignments; $asgn++) {
+			// If this homework has less than maxAssignments, print empty cells
+			if ($asgn > $homework['nrAssignments']) {
+				?><td>&nbsp;</td><?
+				continue;
+			}
+		
+			// Get assignment from 2D array
+			$Assignment = $assignmentHomeworks[$homework['id']][$asgn-1];
+			
+			// Background color for current assignment
+			if ($homework['id'] == $zadaca && $asgn==$zadatak)
+				$bgcolor = ' bgcolor="#DDDDFF"';
 			else
-				$imakomentar = "";
-			?><td <?=$bgcolor?>><a href="?sta=student/zadaca&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$m_zadaca?>&zadatak=<?=$m_zadatak?>"><img src="static/images/16x16/<?=$stat_icon[$status]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$status]?>" alt="<?=$stat_tekst[$status]?>"> <?=$bodova_zadatak?> <?=$imakomentar?></a></td>
-	<?
+				$bgcolor = "";
+			
+			// status=0 means user did not submit homework
+			if ($Assignment['status'] == 0) {
+				?><td <?=$bgcolor?>><a href="?sta=student/zadaca&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zadaca=<?=$homework['id']?>&amp;zadatak=<?=$asgn?>"><img src="static/images/16x16/create_new.png" width="16" height="16" border="0" align="center" title="Novi zadatak" alt="Novi zadatak"></a></td><?
+				
+			} else {
+				if (!empty(trim($Assignment['comment'])))
+					$hasComment = "<img src=\"static/images/16x16/comment_yellow.png\"  width=\"15\" height=\"14\" border=\"0\" title=\"Ima komentar\" alt=\"Ima komentar\" align=\"center\">";
+				else
+					$hasComment = "";
+				?><td <?=$bgcolor?>><a href="?sta=student/zadaca&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zadaca=<?=$homework['id']?>&amp;zadatak=<?=$asgn?>"><img src="static/images/16x16/<?=$stat_icon[$Assignment['status']]?>.png" width="16" height="16" border="0" align="center" title="<?=$stat_tekst[$Assignment['status']]?>" alt="<?=$stat_tekst[$Assignment['status']]?>"> <?=$Assignment['score']?> <?=$hasComment?></a></td>
+				<?
+			}
 		}
-	}
-	?>
+		?>
 		<td><?
-		if ($r21[4]<time()) print "<font color=\"red\">";
-		print date("d. m. Y. H:i:s", $r21[4]);
-		if ($r21[4]<time()) print "</font>";
-		?></td>
+			$deadline = db_timestamp($homework['deadline']);
+			if ($deadline < time()) print "<font color=\"red\">";
+			print date("d. m. Y. H:i:s", $deadline);
+			if ($deadline < time()) print "</font>";
+			?></td>
 	</tr>
 	<?
-}
-
-
-
-?>
-</tbody>
-</table>
-</center>
-<?
-
-
-
-
-
-
-//  PORUKE I KOMENTARI
-
-
-// Upit za izvjestaj skripte i komentar tutora
-
-?>
-<br/><br/>
-<center>
-<table width="600" border="0"><tr><td>
-<?
-
-$status_zadace = -1;
-$q110 = db_query("select izvjestaj_skripte, komentar, userid, status, bodova from zadatak where student=$userid and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
-if (db_num_rows($q110)>0) {
-	$poruka = db_result($q110,0,0);
-	$komentar = db_result($q110,0,1);
-	$tutor = db_result($q110,0,2);
-	$status_zadace = db_result($q110,0,3);
-	$bodova = db_result($q110,0,4);
-
-	// Statusni ekran
-	autotest_status_display($userid, $zadaca, $zadatak, /*$nastavnik = */false);
-
-	// Vrijeme slanja - to neće biti isti slog kao onaj koji vraća $q110 jer taj je možda status koji je upisao tutor
-	$q113 = db_query("SELECT UNIX_TIMESTAMP(vrijeme) FROM zadatak WHERE student=$userid AND userid=$userid AND zadaca=$zadaca AND redni_broj=$zadatak ORDER BY id DESC LIMIT 1");
-	
-	if (db_num_rows($q113)>0) {
-		?>
-		<p>Zadatak poslan: <?=date("d.m.Y. H:i:s", db_result($q113,0,0))?></p>
-		<?
-	} else {
-		?>
-		<p>Zadatak nije poslan (tutor upisao/la bodove)</p>
-		<?
 	}
-	
-	// Rezultati automatskog testiranja
-	$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false);
-	if ($nalaz_autotesta != "") {
-		print "<p>Rezultati testiranja:</p>\n$nalaz_autotesta\n";
-	}
-	
-	// Poruke i komentari tutora
-	if (preg_match("/\w/",$poruka)) {
-		$poruka = str_replace("\n","<br/>\n",$poruka);
-		?><p>Poruka kod kompajliranja:<br/><b><?=$poruka?></b></p><?
-	}
-	if (preg_match("/\w/",$komentar)) {
-		$komentar = linkuj_urlove($komentar);
-		$komentar = str_replace("\n","<br/>\n",$komentar);
-		
-		// Link za odgovor na komentar
-		$link="";
-		if ($tutor>0) {
-			$q115 = db_query("select a.login,o.ime,o.prezime from auth as a, osoba as o where o.id=$tutor and a.id=o.id");
 
-			$naslov = urlencode("Odgovor na komentar ($naziv, Zadatak $zadatak)");
-			$tekst = urlencode("> $komentar");
-			$primalac = urlencode(db_result($q115,0,0)." (".db_result($q115,0,1)." ".db_result($q115,0,2).")");
+	?>
+	</tbody>
+	</table>
+	</center>
+	<?
 
-			$link = " (<a href=\"?sta=common/inbox&akcija=compose&naslov=$naslov&tekst=$tekst&primalac=$primalac\">odgovor</a>)";
+
+
+
+
+	
+	//  PORUKE I KOMENTARI
+	
+	
+	// Upit za izvjestaj skripte i komentar tutora
+	
+	?>
+	<br/><br/>
+	<center>
+	<table width="600" border="0"><tr><td>
+	<?
+
+	if ($currentAssignment['id'] > 0) {
+		$poruka = $currentAssignment['compileReport'];
+		$komentar = $currentAssignment['comment'];
+		$tutor = $currentAssignment['author']['id'];
+		$status_zadace = $currentAssignment['status'];
+		$bodova = $currentAssignment['score'];
+		$vrijemeSlanja = $currentAssignment['submittedTime'];
+
+		// Statusni ekran
+		// FIXME kada pređemo na autotester v2
+		autotest_status_display($userid, $zadaca, $zadatak, /*$nastavnik = */false);
+
+		if ($vrijemeSlanja) {
+			?>
+			<p>Zadatak poslan: <?=date("d.m.Y. H:i:s", db_timestamp($vrijemeSlanja))?></p>
+			<?
+		} else {
+			?>
+			<p>Zadatak nije poslan (tutor upisao/la bodove)</p>
+			<?
 		}
-		?><p>Komentar tutora: <b><?=$komentar?></b><?=$link?><?
+	
+		// Rezultati automatskog testiranja
+		// FIXME kada pređemo na autotester v2
+		$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false);
+		if ($nalaz_autotesta != "") {
+			print "<p>Rezultati testiranja:</p>\n$nalaz_autotesta\n";
+		}
+	
+		// Poruke i komentari tutora
+		if (preg_match("/\w/",$poruka)) {
+			$poruka = str_replace("\n","<br/>\n",$poruka);
+			?><p>Poruka kod kompajliranja:<br/><b><?=$poruka?></b></p><?
+		}
+		if (preg_match("/\w/",$komentar)) {
+			$komentar = linkuj_urlove($komentar);
+			$komentar = str_replace("\n","<br/>\n",$komentar);
+		
+			// Link za odgovor na komentar
+			$link="";
+			if ($tutor>0) {
+				$tutor = api_call("person/$tutor");
+	
+				$naslov = urlencode("Odgovor na komentar ($naziv, Zadatak $zadatak)");
+				$tekst = urlencode("> $komentar");
+				$primalac = urlencode($tutor['login']." (".$tutor['name']." ".$tutor['surname'].")");
+	
+				$link = " (<a href=\"?sta=common/inbox&akcija=compose&naslov=$naslov&tekst=$tekst&primalac=$primalac\">odgovor</a>)";
+			}
+			?><p>Komentar tutora: <b><?=$komentar?></b><?=$link?><?
+		}
 	}
-}
 
 
-// Istek roka za slanje zadace
-
-if ($rok <= time()) {
-	print "<p><b>Vrijeme za slanje ove zadaće je isteklo.</b></p>";
-	// Ovo je onemogućavalo copy&paste u Firefoxu :(
-	//$readonly = "DISABLED";
-} else {
-	$readonly = "";
-}
-
-if ($readonly_zadaca) $readonly = "DISABLED";
-
-
-
-//  FORMA ZA SLANJE
+	// Istek roka za slanje zadace
+	
+	if ($rok <= time()) {
+		print "<p><b>Vrijeme za slanje ove zadaće je isteklo.</b></p>";
+		// Ovo je onemogućavalo copy&paste u Firefoxu :(
+		//$readonly = "DISABLED";
+	} else {
+		$readonly = "";
+	}
+	
+	if ($readonly_zadaca) $readonly = "DISABLED";
 
 
-if ($attachment) {
-	print "</td></tr></table>\n";
 
-	// Attachment
-	$q120 = db_query("select filename,UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
-	if (db_num_rows($q120)>0) {
-		$filename = db_result($q120,0,0);
-		$the_file = "$lokacijazadaca/$zadaca/$filename";
-		if ($filename && file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) {
-			// Utvrđujemo stvarno vrijeme slanja
-			$q130 = db_query("SELECT UNIX_TIMESTAMP(vrijeme) from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid and userid=$userid order by id desc limit 1");
-			if (db_num_rows($q130)>0)
-				$vrijeme = db_result($q130,0,0);
+	//  FORMA ZA SLANJE
+	
+	
+	if ($attachment) {
+		print "</td></tr></table>\n";
+
+		if ($currentAssignment['status'] != 0 && $currentAssignment['filename'] != "") {
+			if ($currentAssignment['submittedTime'] > 0)
+				$vrijeme = date("d. m. Y. H:i:s", db_timestamp($currentAssignment['submittedTime']));
 			else
-				$vrijeme = db_result($q120,0,1);
-			$vrijeme = date("d. m. Y. H:i:s",$vrijeme);
-			$velicina = nicesize(filesize($the_file));
-			$icon = "static/images/mimetypes/" . getmimeicon($the_file);
+				$vrijeme = date("d. m. Y. H:i:s", db_timestamp($currentAssignment['time']));
+			
+			$velicina = $currentAssignment['filesize'];
+			$icon = "static/images/mimetypes/" . getmimeicon($currentAssignment['filename'], $currentAssignment['filetype']);
 			$dllink = "index.php?sta=common/attachment&zadaca=$zadaca&zadatak=$zadatak";
 			?>
 			<center><table width="75%" border="1" cellpadding="6" cellspacing="0" bgcolor="#CCCCCC"><tr><td>
@@ -435,69 +383,63 @@ if ($attachment) {
 			</td></tr></table></center>
 			<?
 			print "<p>Ako želite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
+		
+		} else if (db_timestamp($currentAssignment['Homework']['deadline']) > time()) {
+			print "<p>Izaberite datoteku koju želite poslati i kliknite na dugme za slanje.";
+			if ($zadaca_dozvoljene_ekstenzije != "")
+				print " Dozvoljeni su sljedeći tipovi datoteka: <b>$zadaca_dozvoljene_ekstenzije</b>.";
+			print "</p>\n";
 		}
-	} else {
-		print "<p>Izaberite datoteku koju želite poslati i kliknite na dugme za slanje.";
-		if ($zadaca_dozvoljene_ekstenzije != "")
-			print " Dozvoljeni su sljedeći tipovi datoteka: <b>$zadaca_dozvoljene_ekstenzije</b>.";
-		print "</p>\n";
-	}
+		
+		?>
 
-	?>
+		<form action="index.php" method="POST" enctype="multipart/form-data">
+		<input type="hidden" name="sta" value="student/zadaca">
+		<input type="hidden" name="akcija" value="slanje">
+		<input type="hidden" name="predmet" value="<?=$predmet?>">
+		<input type="hidden" name="ag" value="<?=$ag?>">
+		<input type="hidden" name="zadaca" value="<?=$zadaca?>">
+		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+		<input type="file" name="attachment" size="50" <?=$readonly?>>
+		</center>
+		<p>&nbsp;</p>
+		<?
+	
+	} else { // if ($attachment)
 
-	<form action="index.php" method="POST" enctype="multipart/form-data">
-	<input type="hidden" name="sta" value="student/zadaca">
-	<input type="hidden" name="akcija" value="slanje">
-	<input type="hidden" name="predmet" value="<?=$predmet?>">
-	<input type="hidden" name="ag" value="<?=$ag?>">
-	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
-	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
-	<input type="file" name="attachment" size="50" <?=$readonly?>>
-	</center>
-	<p>&nbsp;</p>
-	<?
-
-} else {
-
-	// Forma
-	$q130 = db_query("select ekstenzija from programskijezik where id=$jezik");
-	$ekst = db_result($q130,0,0);
-
-	if ($status_zadace == 2) {
-		?><p>Zadaća se ne može ponovo poslati jer je predviđena odbrana</p><?
-	} else if ($rok > time()) {
- 		?><p>Kopirajte vaš zadatak u tekstualno polje ispod:</p>
-		</td></tr></table>
-
+		if ($status_zadace == 2) {
+			?><p>Zadaća se ne može ponovo poslati jer je predviđena odbrana</p><?
+		} else if ($rok > time()) {
+			?><p>Kopirajte vaš zadatak u tekstualno polje ispod:</p>
+			</td></tr></table>
+	
+			<?
+		}
+	
+		?>
+		
+			</td></tr></table>
+		<center>
+		<?=genform("POST")?>
+		<input type="hidden" name="zadaca" value="<?=$zadaca?>">
+		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
+		<input type="hidden" name="akcija" value="slanje">
+		
+		<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><?
+		$tekst_zadace = api_call("homework/$zadaca/$zadatak/student/$userid/file", [], "GET", false, false);
+		$tekst_zadace = htmlspecialchars($tekst_zadace);
+		print $tekst_zadace;
+		?></textarea>
+		</center>
+	
 		<?
 	}
-	
+
 	?>
 	
-		</td></tr></table>
-	<center>
-	<?=genform("POST")?>
-	<input type="hidden" name="zadaca" value="<?=$zadaca?>">
-	<input type="hidden" name="zadatak" value="<?=$zadatak?>">
-	<input type="hidden" name="akcija" value="slanje">
-	
-	<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><? 
-	$the_file = "$lokacijazadaca$zadaca/$zadatak$ekst";
-	$tekst_zadace = "";
-	if (file_exists("$conf_files_path/zadace/$predmet-$ag") && file_exists($the_file)) $tekst_zadace = join("",file($the_file)); 
-	$tekst_zadace = htmlspecialchars($tekst_zadace);
-	print $tekst_zadace;
-	?></textarea>
-	</center>	
-
+	<center><input type="submit" value=" Pošalji zadatak! "></center>
+	</form>
 	<?
-}
-
-?>
-
-<center><input type="submit" value=" Pošalji zadatak! "></center>
-</form>
-<?
 
 
 } // function student_zadaca()

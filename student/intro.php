@@ -2,19 +2,6 @@
 
 // STUDENT/INTRO - uvodna stranica za studente
 
-
-function getCourseName($courseId) {
-	global $courseDetails, $userid;
-	foreach($courseDetails as $course)
-		if ($course['CourseOffering']['CourseUnit']['id'] == $courseId)
-			return $course['courseName'];
-		
-	// Course not found in courseDetails, fetch from API
-	$course = api_call("course/$courseId/student/$userid", ["courseInformation" => true] );
-	$courseDetails[] = $course;
-	return $course['courseName'];
-}
-
 function student_intro() {
 
 	global $userid, $registry, $person, $courseDetails;

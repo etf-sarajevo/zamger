@@ -181,7 +181,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 	return $json_result;
 }
 
-function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
+function api_call($route, $params = [], $method = "GET", $debug = true, $json = true) { // set to false when finished
 	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login;
 	
 	$http_request_params = array('http' => array(
@@ -268,6 +268,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	
 	$http_code = explode(" ", $http_response_header[0]);
 	$http_code = $http_code[1];
+	
+	if (!$json) return $http_result;
 	
 	// DELETE requests don't return a body
 	if ($method == "DELETE") {
