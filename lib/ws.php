@@ -182,7 +182,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 }
 
 function api_call($route, $params = [], $method = "GET", $debug = true) { // set to false when finished
-	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $login;
+	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login;
 	
 	$http_request_params = array('http' => array(
 		'header' => "",
@@ -198,18 +198,26 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 	$url = $conf_backend_url;
 	if ($method == "GET") {
 		// For GET method, add query data to url
-		$params["route"] = $route;
+		if ($conf_backend_has_rewrite)
+			$url = $url . $route;
+		else
+			$params["route"] = $route;
 		if (!$conf_keycloak)
 			$params["SESSION_ID"] = $_SESSION['api_session'];
 		$query = http_build_query($params);
 		$url = "$url?$query";
 		$content = $mimetype = "";
 	} else {
-		// add route and session id to url
-		if ($conf_keycloak)
-			$url = "$url?" . http_build_query( ["route" => $route] );
+		$query_params = [];
+		if ($conf_backend_has_rewrite)
+			$url = $url . $route;
 		else
-			$url = "$url?" . http_build_query( ["route" => $route, "SESSION_ID" => $_SESSION['api_session']] );
+			$query_params["route"] = $route;
+		if (!$conf_keycloak)
+			$query_params["SESSION_ID"] = $_SESSION['api_session'];
+		
+		// add route and session id to url
+		$url = "$url?" . http_build_query( $query_params );
 		
 		// Send objects as JSON
 		if (is_object($params)) {
@@ -226,8 +234,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true) { // set
 		$token_file = $conf_files_path . "/keycloak_token/$login";
 		$token = unserialize(file_get_contents($token_file));
 		if (!$token) {
-			// Nekako smo izgubili token!
-		//	logout();
+			// We lost the token somehow
+			logout();
 		}
 		$http_request_params['http']['header'] .= "Authorization: Bearer " .  $token->getToken() . "\r\n";
 	}

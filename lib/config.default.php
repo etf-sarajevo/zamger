@@ -22,6 +22,7 @@ $conf_dbdb = "zamger";
 $conf_site_url = "http://localhost/zamger";
 
 $conf_backend_url = "http://localhost/api/";
+$conf_backend_has_rewrite = true;
 
 // Lokacija na disku gdje je Zamger instaliran
 $conf_script_path = "/var/www/html/zamger";
