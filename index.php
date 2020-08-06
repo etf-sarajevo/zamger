@@ -76,6 +76,8 @@ require_once("lib/session.php");
 require_once("lib/utility.php");
 require_once("lib/zamgerui.php"); // niceerror, user_box itd.
 
+	require_once("lib/hack.php");
+
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 
@@ -142,6 +144,7 @@ if ($route !== false && $route != "auth") {
 //	$greska="Vaša sesija je istekla. Molimo prijavite se ponovo.";
 //}
 
+$privilegije = $person = [];
 if (int_param('loginforma') === 1) {
 	$login = db_escape($_POST['login']);
 	$pass = $_POST['pass'];
@@ -186,34 +189,11 @@ if (int_param('loginforma') === 1) {
 // nakon dijela iznad, $userid drzi numericki ID prijavljenog korisnika
 
 
-// SU = switch user
-
-if ($userid>0) {
-	$su = int_param('su');
-	if ($su==0 && isset($_SESSION['su'])) $su = $_SESSION['su'];
-	$unsu = int_param('unsu');
-	if ($unsu==1 && $su!=0) $su=0;
-	if ($su>0) {
-		// Provjeravamo da li je korisnik admin
-		$privilegije = db_get("select count(*) from privilegije where osoba=$userid and privilegija='siteadmin'");
-		if ($privilegije > 0) {
-			$userid=$su;
-			$_SESSION['su']=$su;
-		}
-	} else {
-		$_SESSION['su']="";
-	}
-}
-
-
-
-
 // Određivanje privilegija korisnika
 
 $user_student=$user_nastavnik=$user_studentska=$user_siteadmin=$user_prijemni=$user_sefodsjeka=$user_uprava=false;
 if ($userid>0) {
-	$q10 = db_query("select privilegija from privilegije where osoba=$userid");
-	while (db_fetch1($q10, $privilegija)) {
+	foreach($privilegije as $privilegija) {
 		if ($privilegija=="student") $user_student=true;
 		if ($privilegija=="nastavnik") $user_nastavnik=true;
 		if ($privilegija=="studentska") $user_studentska=true;
@@ -344,23 +324,7 @@ if ($found==1 && $template==2 && $greska=="") {
 
 $rsslink = "";
 if ($userid>0) {
-	srand(time());
-	$rssid = db_get("select id from rss where auth=$userid");
-	if ($rssid === false) {
-		// kreiramo novi ID
-		do {
-			$rssid="";
-			for ($i=0; $i<10; $i++) {
-				$slovo = rand()%62;
-				if ($slovo<10) $sslovo=$slovo;
-				else if ($slovo<36) $sslovo=chr(ord('a')+$slovo-10);
-				else $sslovo=chr(ord('A')+$slovo-36);
-				$rssid .= $sslovo;
-			}
-			$postojeci = db_get("select count(*) from rss where id='$rssid'");
-		} while ($postojeci>0);
-		db_query("insert into rss set id='$rssid', auth=$userid");
-	}
+	$rssid = $person['RSS']['id'];
 	$rsslink = "<link rel=\"alternate\" type=\"application/rss+xml\" title=\"RSS 2.0\" href=\"$conf_site_url/rss.php?id=$rssid\">";
 }
 
@@ -617,4 +581,5 @@ else
 </html>
 <?
 	db_disconnect();
+	if (isset($debug_data)) debug_data_dump();
 ?>

@@ -57,7 +57,7 @@ function db_num_rows($res) { return mysqli_num_rows($res); }
 function db_insert_id() { global $__db_connection; return mysqli_insert_id($__db_connection); }
 function db_affected_rows() { global $__db_connection; return mysqli_affected_rows($__db_connection); }
 function db_escape_string($s) { global $__db_connection; return mysqli_real_escape_string($__db_connection, $s); }
-function db_free_result($res) { return mysqli_free_result($res); }
+function db_free_result($res) { mysqli_free_result($res); }
 
 // Reimplementacija mysql_result sa mysqli (bez provjere ispravnosti parametara)
 function db_result($res, $row, $col) { 
@@ -139,9 +139,14 @@ function db_fetch7($res, &$a, &$b, &$c, &$d, &$e, &$f, &$g) { $r = db_fetch_row(
 // Konvertuje timestamp u nativni format baze
 function db_time($timestamp) { return date("Y-m-d H:i:s",$timestamp); }
 // Konvertuje datum u nativnom formatu baze u timestamp
-function db_timestamp($v) { 
-	$g = substr($v,0,4); $mj=substr($v,5,2); $d=substr($v,8,2); 
-	$h=substr($v,11,2); $mi=substr($v,14,2); $s=substr($v,17,2);
+function db_timestamp($v) {
+	$g = substr($v,0,4); $mj = substr($v,5,2); $d = substr($v,8,2);
+	if (strlen($v) > 10) {
+		$h = substr($v, 11, 2);
+		$mi = substr($v, 14, 2);
+		$s = substr($v, 17, 2);
+	}
+	else $h=$mi=$s=0;
 	return mktime($h,$mi,$s,$mj,$d,$g);
 }
 
@@ -178,5 +183,3 @@ function db_escape($value) {
 // INTERNO KORIŠTENE FUNKCIJE
 // ----------------------------
 
-
-?>

@@ -2,6 +2,7 @@
 
 // LIB/HACK - stvari koje se (najčešće) ne puštaju u produkciji
 
+$debug_data = [];
 
 // Funkcije za mjerenje vremena izvršenja PHP koda
 function start_time() {
@@ -16,8 +17,17 @@ function time_elapsed() {
 	list($nus, $ns) = explode(" ", $now);
 	$time = $ns-$ss;
 	$time = $time + ($nus-$sus)/1000000;
-	print "Time $time<br>\n";
 	$rustart = $now;
+	return $time;
+}
+function debug_data_dump() {
+	global $debug_data;
+	print "Debug data:<br>\n";
+	foreach($debug_data as $data) {
+		foreach ($data as $key => $value)
+			print "$key => $value; ";
+		print "<br>\n";
+	}
 }
 
 ?>
