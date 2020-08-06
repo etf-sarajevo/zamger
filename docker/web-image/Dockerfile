@@ -19,4 +19,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --filename=composer --in
 
 ENV PATH /root/.composer/vendor/bin:$PATH
 
+RUN mkdir /home/zamger && chown www-data /home/zamger
+
 WORKDIR /var/www/html

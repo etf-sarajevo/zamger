@@ -52,6 +52,11 @@ $tip_ispita = db_result($q20,0,1);
 $q30 = db_query("select naziv from predmet where id=$predmet");
 $predmet_naziv = db_result($q30,0,0);
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 
 
 ?>
@@ -435,6 +440,19 @@ if ($dan==0) {
 	$termin=0;
 }
 
+// Ako unosimo novi termni za ispit - daj datum za koji je ispit postavljen
+if($_REQUEST["akcija"] != "izmijeni" and $_REQUEST["akcija"] != "studenti"){
+	$datum = db_get("SELECT datum FROM ispit where id = $ispit");
+	$dan = explode("-", $datum)[2];
+	$mjesec = explode("-", $datum)[1];
+	$godina = explode("-", $datum)[0];
+
+	$dan1 = $dan; $mjesec1 = $mjesec; $godina1 = $godina;
+	
+	$sat = "09";  $minuta = "00";  $sekunda = "00";
+	$sat1 = "09"; $minuta1 = "00"; $sekunda1 = "00";
+}
+
 
 ?>
 	<?=genform("POST")?>
@@ -454,7 +472,7 @@ if ($dan==0) {
 
 	&nbsp;&nbsp; <input type="text" name="sat" size="2" value="<?=$sat?>"> <b>:</b> <input type="text" name="minuta" size="2" value="<?=$minuta?>"> <b>:</b> <input type="text" name="sekunda" size="2" value="<?=$sekunda?>">
 	<br/><br/>
-
+	
 	Krajnji rok za prijavu ispita:
 	<br/>
 	<?=datectrl($dan1, $mjesec1, $godina1, "1"); ?>
@@ -471,12 +489,6 @@ if ($dan==0) {
 </form>
 
 <?
-
-
-
-
-
-
 }
 
 ?>

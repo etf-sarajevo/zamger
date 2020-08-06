@@ -38,8 +38,12 @@ function studentska_priznavanje(){
 
 		$student_id = db_get("select id from osoba where brindexa='$index'");
 		
-		$make_odluka = db_query("insert into odluka set datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
-		$odluka_id = db_insert_id('odluka', 'id');
+		$odluka_id = db_get("SELECT id FROM odluka WHERE datum='$datum' AND broj_protokola='$broj_protokola' AND student=$student_id");
+		if (!$odluka_id) {
+			$make_odluka = db_query("insert into odluka set datum='$datum', broj_protokola='$broj_protokola', student=$student_id");
+			$odluka_id = db_insert_id('odluka', 'id');
+		}
+		
 
 		for ($i=1; $i <= $broj_predmeta; $i++) { 
 		$naziv_predmeta = db_escape($_POST["naziv_predmeta".$i]);

@@ -38,6 +38,11 @@ if (db_num_rows($q5)<1) {
 }
 $predmet_naziv = db_result($q5,0,0);
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 
 // Da li korisnik ima pravo ući u modul?
 
@@ -131,6 +136,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		<tr bgcolor="#999999">
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Broj indeksa</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Bodovi / Komentar</font></td>
 		</tr>
 		</thead>
@@ -147,13 +153,14 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
+		$brindexa = $mass_rezultat['brindexa'][$student];
 		$bodova = $mass_rezultat['podatak1'][$student];
 		$bodova = str_replace(",",".",$bodova);
 
 		// Student neocijenjen (prazno mjesto za ocjenu)
 		if (floatval($bodova)==0 && strpos($bodova,"0")===FALSE) {
 			if ($ispis)
-				print "Student '$prezime $ime' - nema zadaću (nije unesen broj bodova $bodova)<br/>";
+				print "Student '$prezime $ime' ($brindexa) - nema zadaću (nije unesen broj bodova $bodova)<br/>";
 			continue;
 		}
 
@@ -161,7 +168,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		$bodova = floatval($bodova);
 		if ($bodova>$maxbodova) {
 			if ($ispis) {
-				print "-- Studenta '$prezime $ime' ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
+				print "-- Studenta '$prezime $ime' ($brindexa) ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
 				//$greska=1;
 				continue;
 			}
@@ -169,7 +176,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 		// Zaključak
 		if ($ispis) {
-			print "Student '$prezime $ime' - zadaća $zadaca, bodova $bodova<br/>";
+			print "Student '$prezime $ime' ($brindexa) - zadaća $zadaca, bodova $bodova<br/>";
 		} else {
 			// Odredjujemo zadnji filename
 			$q25 = db_query("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
@@ -278,21 +285,31 @@ if ($_POST['akcija']=="edit" && $_POST['potvrdabrisanja'] != " Nazad " && check_
 			$q85 = db_query("delete from autotest_rezultat where autotest in (select id from autotest where zadaca=$edit_zadaca)");
 			$q86 = db_query("delete from autotest where zadaca=$edit_zadaca");
 			
-			// Update komponente za sve studente koji imaju unesene bodove za zadaću
+			// Kreiram listu studenata da bih kasnije mogao uraditi update komponente
 			$q86a = db_query("select distinct zk.student, pk.id from zadatak as zk, student_predmet as sp, ponudakursa as pk where zk.zadaca=$edit_zadaca and zk.student=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 			$broj_studenata = db_num_rows($q86a);
-			$brojac=1;
+			$niz_studenata = [];
 			while ($r86a = db_fetch_row($q86a)) {
 				$student = $r86a[0];
 				$ponudakursa = $r86a[1];
-				print "Ažuriram bodove za studenta $brojac od $broj_studenata<br />\n\n";
-
-				update_komponente($student,$ponudakursa,$komponenta);
+				if (!array_key_exists($ponudakursa, $niz_studenata))
+					$niz_studenata[$ponudakursa] = [];
+				$niz_studenata[$ponudakursa][] = $student;
 			}
 			
 			// Brišemo zadaću
 			$q87 = db_query("delete from zadatak where zadaca=$edit_zadaca");
 			$q88 = db_query("delete from zadaca where id=$edit_zadaca");
+			
+			// Tek nakon brisanja možemo updatovati komponente
+			$brojac = 1;
+			foreach($niz_studenata as $ponudakursa => $studenti) {
+				foreach($studenti as $student) {
+					print "Ažuriram bodove za studenta $brojac od $broj_studenata<br />\n\n";
+					update_komponente($student, $ponudakursa, $komponenta);
+					$brojac++;
+				}
+			}
 			
 			zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
 			zamgerlog2("obrisana zadaca", $edit_zadaca);
@@ -748,7 +765,8 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 <option value="0" <? if($format==0) print "SELECTED";?>>Prezime[TAB]Ime</option>
 <option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 <option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
-<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option></select>&nbsp;
+<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>&nbsp;
+	<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>

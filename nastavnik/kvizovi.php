@@ -28,6 +28,11 @@ if (db_num_rows($q5)<1) {
 }
 $predmet_naziv = db_result($q5,0,0);
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+	}
+
 // Da li korisnik ima pravo ući u modul?
 
 if (!$user_siteadmin) {

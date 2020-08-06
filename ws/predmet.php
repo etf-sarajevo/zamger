@@ -97,6 +97,41 @@ function ws_predmet() {
 			$rezultat['data'][$r10[0]] = $predmet;
 		}
 	}
+	
+	// Unos konačne ocjene po odluci !!
+	
+	if(isset($_REQUEST['ocjena_po_odluci_ag'])){
+		$ag = intval($_REQUEST['ocjena_po_odluci_ag']);
+		$query = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
+		while($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('predmet' => $row[0], 'naziv_predmeta' => $row[3]);
+		}
+	}
+	
+	// Upit koji vraća sve pasoše predmeta za dati predmet
+	if(isset($_REQUEST['ocjena_po_odluci_predmet'])){
+		$predmet = intval($_REQUEST['ocjena_po_odluci_predmet']);
+		// Selektujemo samo pasoše koji su važeći u nekom od planova i programa
+		$query = db_query("SELECT distinct pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where pp.predmet=$predmet AND psp.pasos_predmeta=pp.id");
+		$bio_pasos = [];
+		while($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
+			$bio_pasos[] = $row[0];
+		}
+		$query = db_query("SELECT distinct pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp, plan_izborni_slot pis where pp.predmet=$predmet AND pis.pasos_predmeta=pp.id AND psp.plan_izborni_slot=pis.id");
+		while($row = db_fetch_row($query)){
+			if (in_array($row[0], $bio_pasos)) continue;
+			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
+		}
+	}
+	if(isset($_REQUEST['obrisi_konacnu_predmet']) and isset($_REQUEST['obrisi_konacnu_ak']) and isset($_REQUEST['obrisi_konacnu_student'])){
+		$predmet = intval($_REQUEST['obrisi_konacnu_predmet']);
+		$student = intval($_REQUEST['obrisi_konacnu_student']);
+		$ak      = intval($_REQUEST['obrisi_konacnu_ak']);
+		if($predmet and $student and $ak){
+			db_query("DELETE FROM konacna_ocjena where predmet = $predmet and student = $student and akademska_godina = $ak");
+		}
+	}
 
 
 	print json_encode($rezultat);

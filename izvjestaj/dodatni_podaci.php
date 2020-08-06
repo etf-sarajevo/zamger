@@ -57,15 +57,18 @@ if (!$naziv_ag) {
 <table>
 <thead>
 	<tr>
-		<th>R.br</th><th>Prezime i ime</th><th>Broj indeksa</th><th>Semestar</th><th>Koji put</th><th>Status</th>
+		<th>R.br</th><th>Prezime i ime</th><th>Broj indeksa</th><th>Studij</th><th>Semestar</th><th>Koji put</th><th>Status</th>
 	</tr>
 </thead>
 <tbody>
 <?
 
-$q10 = db_query("SELECT sp.student, o.ime, o.prezime, o.brindexa, ss.semestar, ss.ponovac, ss.status_studenta FROM student_predmet sp, ponudakursa pk, student_studij ss, osoba o WHERE sp.student=o.id AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.akademska_godina=$ag AND ss.student=sp.student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = pk.semestar MOD 2 ORDER BY o.prezime, o.ime");
+$q10 = db_query("SELECT sp.student, o.ime, o.prezime, o.brindexa, s.kratkinaziv, ss.semestar, ss.ponovac, ss.status_studenta
+	FROM student_predmet sp, ponudakursa pk, student_studij ss, osoba o, studij s
+	WHERE sp.student=o.id AND sp.predmet=pk.id AND pk.predmet=$predmet AND pk.akademska_godina=$ag AND ss.student=sp.student AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = pk.semestar MOD 2 AND ss.studij=s.id
+	ORDER BY o.prezime, o.ime");
 $rbr = 1;
-while (db_fetch7($q10, $student, $ime, $prezime, $brindexa, $semestar, $ponovac, $apsolvent)) {
+while (db_fetch8($q10, $student, $ime, $prezime, $brindexa, $studij, $semestar, $ponovac, $apsolvent)) {
 	
 	if ($apsolvent) $status="Apsolvent";
 	else if($ponovac) $status="Ponovac";
@@ -75,7 +78,7 @@ while (db_fetch7($q10, $student, $ime, $prezime, $brindexa, $semestar, $ponovac,
 	
 	?>
 	<tr>
-		<td><?=$rbr?></td><td><?=$prezime?> <?=$ime?></td><td><?=$brindexa?></td><td><?=$semestar?></td><td><?=$put?></td><td><?=$status?></td>
+		<td><?=$rbr?></td><td><?=$prezime?> <?=$ime?></td><td><?=$brindexa?></td><td><?=$studij?></td><td><?=$semestar?></td><td><?=$put?></td><td><?=$status?></td>
 	</tr>
 	<?
 	$rbr++;
@@ -86,3 +89,5 @@ while (db_fetch7($q10, $student, $ime, $prezime, $brindexa, $semestar, $ponovac,
 <?
 
 }
+
+function db_fetch8($res, &$a, &$b, &$c, &$d, &$e, &$f, &$g, &$h) { $r = db_fetch_row($res); if ($r) { $a=$r[0]; $b=$r[1]; $c=$r[2]; $d=$r[3]; $e=$r[4]; $f=$r[5]; $g=$r[6]; $h=$r[7]; } return $r; }

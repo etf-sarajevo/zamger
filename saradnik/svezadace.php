@@ -95,7 +95,7 @@ if ($_REQUEST['potvrda']!="ok") {
 // Pravim folder koji će biti zipovan
 $lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/";
 $tmpfolder = "$conf_files_path/zadace/tmp/";
-mkdir ($tmpfolder);
+if (!file_exists($tmpfolder)) mkdir ($tmpfolder);
 
 // Podaci o zadaći
 $q100 = db_query("select zadataka, programskijezik, attachment from zadaca where id=$zadaca");
@@ -123,7 +123,7 @@ for ($zadatak=1; $zadatak<=$brzadataka; $zadatak++) {
 	// Ako je $brzadataka>1 pravimo folder za svaki zadatak
 	if ($brzadataka>1) {
 		$zadatakfolder = $tmpfolder . "zadatak_$zadatak/";
-		mkdir($zadatakfolder);
+		if (!file_exists($zadatakfolder)) mkdir($zadatakfolder);
 	}
 	
 	// Petlja za studente
@@ -200,6 +200,7 @@ if ($k == false) {
 }
 
 unlink($naziv_zip_fajla);
+rm_minus_r($tmpfolder);
 
 exit;
 

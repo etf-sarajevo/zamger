@@ -27,6 +27,11 @@ if (db_num_rows($q10)<1) {
 }
 $predmet_naziv = db_result($q10,0,0);
 
+$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
+if ($pasos) {
+	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
+}
+
 
 
 // Da li korisnik ima pravo ući u modul?
@@ -90,6 +95,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		<tr bgcolor="#999999">
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Prezime</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ime</font></td>
+			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Broj indeksa</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Ocjena / Komentar</font></td>
 			<td><font style="font-family:DejaVu Sans,Verdana,Arial,sans-serif;font-size:11px;color:white;">Datum</font></td>
 		</tr>
@@ -128,6 +134,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 
 	foreach ($mass_rezultat['ime'] as $student=>$ime) {
 		$prezime = $mass_rezultat['prezime'][$student];
+		$brindexa = $mass_rezultat['brindexa'][$student];
 		$ocjena = $mass_rezultat['podatak1'][$student];
 
 		// Student neocijenjen (prazno mjesto za ocjenu)
@@ -135,7 +142,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$boja?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td colspan="2">nije ocijenjen/a (unesena je ocjena: <?=$ocjena?>)</td>
 				</tr>
 				<?
@@ -150,7 +157,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td colspan="2">ocjena nije u opsegu 6-10 (ocjena: <?=$ocjena?>)</td>
 				</tr>
 				<?
@@ -166,7 +173,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 			if ($oc2>5 && $ispis) {
 				?>
 				<tr bgcolor="<?=$bojae?>">
-					<td><?=$prezime?></td><td><?=$ime?></td>
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 					<td colspan="2">već ima ocjenu <?=$oc2?>; koristite pogled grupe za izmjenu</td>
 				</tr>
 				<?
@@ -210,7 +217,7 @@ if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_t
 		if ($ispis) {
 			?>
 			<tr bgcolor="<?=$boja?>">
-				<td><?=$prezime?></td><td><?=$ime?></td>
+				<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
 				<td>ocjena: <?=$ocjena?></td>
 				<td><?=date("d. m. Y", $datum_u_indeksu)?></td>
 			</tr>
@@ -300,7 +307,8 @@ if (strlen($_POST['nazad'])>1) print $_POST['massinput'];
 <option value="0" <? if($format==0) print "SELECTED";?>>Prezime[TAB]Ime</option>
 <option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 <option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
-<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option></select>&nbsp;
+<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>
+<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
 Separator: <select name="separator" class="default">
 <option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 <option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br/>

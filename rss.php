@@ -90,10 +90,13 @@ while ($r10 = db_fetch_row($q10)) {
 
 // Objavljeni rezultati ispita
 
+$apsolvent = 0;
 if ($id == "svi")
 	$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, predmet as p where i.akademska_godina=$ag and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
-else 
-	$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+else {
+	$apsolvent = db_get("SELECT status_studenta FROM student_studij ss, akademska_godina ag WHERE student=$userid AND ss.akademska_godina=ag.id AND ag.aktuelna=1");
+	$q15 = db_query("select i.id, i.predmet, k.gui_naziv, UNIX_TIMESTAMP(i.vrijemeobjave), p.naziv, UNIX_TIMESTAMP(i.datum), pk.id, p.id, pk.akademska_godina, i.apsolventski_rok from ispit as i, komponenta as k, student_predmet as sp, ponudakursa as pk, predmet as p where sp.student=$userid and sp.predmet=pk.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and i.komponenta=k.id and pk.predmet=p.id order by i.vrijemeobjave desc limit $broj_poruka");
+}
 while ($r15 = db_fetch_row($q15)) {
 	if ($r15[3] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
 
@@ -109,14 +112,27 @@ while ($r15 = db_fetch_row($q15)) {
 	if (db_num_rows($q16)==0) {
 		$q17 = db_query("select count(*) from ispit_termin where ispit=$r15[0]");
 		if (db_result($q17,0,0)>0) {
-			$vrijeme_poruke["i".$r15[0]] = $r15[3];
-			$code_poruke["i".$r15[0]] = "<item>
-		<guid isPermaLink=\"false\">i".$r15[0]."</guid>
-		<title>Objavljeni termini za ispit $r15[2] (".date("d. m. Y",$r15[5]).") - predmet $r15[4]</title>
+			// Apsolventski rokovi
+			if ($apsolvent == 1 && $r15[9] == 1) {
+				$code_poruke["i" . $r15[0]] = "<item>
+		<guid isPermaLink=\"false\">i" . $r15[0] . "</guid>
+		<title>Objavljeni termini za ispit $r15[2] (Apsolventski rok, " . date("d. m. Y", $r15[5]) . ") - predmet $r15[4]</title>
 		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
-		<description><![CDATA[Datum objave ".date("d. m. Y  h:i",$r15[3]).".]]></description>
-		<pubDate>".date("D, j M Y H:i:s O", $vrijeme_poruke["i".$r15[0]])."</pubDate>
+		<description><![CDATA[Datum objave " . date("d. m. Y  h:i", $r15[3]) . ".]]></description>
+		<pubDate>" . date("D, j M Y H:i:s O", $vrijeme_poruke["i" . $r15[0]]) . "</pubDate>
 	</item>\n";
+				$vrijeme_poruke["i" . $r15[0]] = $r15[3];
+			} else if ($r15[9] == 0) {
+				$code_poruke["i" . $r15[0]] = "<item>
+		<guid isPermaLink=\"false\">i" . $r15[0] . "</guid>
+		<title>Objavljeni termini za ispit $r15[2] (" . date("d. m. Y", $r15[5]) . ") - predmet $r15[4]</title>
+		<link>$conf_site_url/index.php?sta=student/predmet&amp;predmet=$r15[7]&amp;ag=$r15[8]</link>
+		<description><![CDATA[Datum objave " . date("d. m. Y  h:i", $r15[3]) . ".]]></description>
+		<pubDate>" . date("D, j M Y H:i:s O", $vrijeme_poruke["i" . $r15[0]]) . "</pubDate>
+	</item>\n";
+				$vrijeme_poruke["i" . $r15[0]] = $r15[3];
+				
+			}
 		}
 	}
 	else {
@@ -180,6 +196,7 @@ while ($r18 = db_fetch_row($q18)) {
 
 if ($id == "svi") {
 	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, tip, posiljalac from poruka where opseg=3 or opseg=4 or opseg=5 order by vrijeme desc limit $broj_poruka");
+	$br = 0;
 	while ($r100 = db_fetch_row($q100)) {
 		$id_poruke = $r100[0];
 		$opseg = $r100[2];
@@ -425,7 +442,7 @@ arsort($vrijeme_poruke);
 $count=0;
 
 header("Content-type: application/rss+xml");
-header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_shift(array_values($vrijeme_poruke))) . " GMT");
+header("Last-Modified: " . gmdate("D, j M Y H:i:s", array_values($vrijeme_poruke)[0]) . " GMT");
 
 ?>
 <<?='?'?>xml version="1.0" encoding="utf-8"?>
