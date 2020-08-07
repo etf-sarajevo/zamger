@@ -182,7 +182,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 }
 
 function api_call($route, $params = [], $method = "GET", $debug = true, $json = true) { // set to false when finished
-	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login;
+	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code;
 	
 	$http_request_params = array('http' => array(
 		'header' => "",
@@ -267,7 +267,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	}
 	
 	$http_code = explode(" ", $http_response_header[0]);
-	$http_code = $http_code[1];
+	$_api_http_code = $http_code[1];
 	
 	if (!$json) return $http_result;
 	
@@ -281,10 +281,99 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 			return FALSE;
 		}
 	}
-	$json_result['code'] = $http_code;
+	$json_result['code'] = $_api_http_code;
 
 	return $json_result;
 }
+
+
+// Upload file using multipart/form-data
+// AFAIK doesn't work with HTTP methods other than POST
+function api_file_upload($route, $fieldName, $filename, $mimetype = "application/zip", $params = [], $debug = true) {
+	global $conf_backend_url, $_api_http_code, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login;
+	
+	$url = $conf_backend_url;
+	$query_params = [];
+	if ($conf_backend_has_rewrite)
+		$url = $url . $route;
+	else
+		$query_params["route"] = $route;
+	if (!$conf_keycloak)
+		$query_params["SESSION_ID"] = $_SESSION['api_session'];
+	
+	// add route and session id to url
+	$url = "$url?" . http_build_query( $query_params );
+	
+	// Otherwise, send urlencoded
+	define('MULTIPART_BOUNDARY', '--------------------------'.microtime(true));
+	$header = 'Content-Type: multipart/form-data; boundary='.MULTIPART_BOUNDARY;
+	
+	if ($conf_keycloak) {
+		$token_file = $conf_files_path . "/keycloak_token/$login";
+		$token = unserialize(file_get_contents($token_file));
+		if (!$token) {
+			// We lost the token somehow
+			logout();
+		}
+		$header .= "\r\nAuthorization: Bearer " .  $token->getToken() . "\r\n";
+	}
+	
+	$file_contents = file_get_contents($filename);
+	$content =  "--".MULTIPART_BOUNDARY."\r\n".
+		"Content-Disposition: form-data; name=\"$fieldName\"; filename=\"".basename($filename)."\"\r\n".
+		"Content-Type: $mimetype\r\n\r\n".
+		$file_contents."\r\n";
+
+	// add some POST fields to the request too: $_POST['foo'] = 'bar'
+	foreach($params as $key => $value) {
+		$content .= "--".MULTIPART_BOUNDARY."\r\n".
+					"Content-Disposition: form-data; name=\"$key\"\r\n\r\n".
+					"$value\r\n";
+	}
+	
+	// signal end of request (note the trailing "--")
+	$content .= "--".MULTIPART_BOUNDARY."--\r\n";
+	
+	$http_request_params = array('http' => array(
+		'header' => $header,
+		'content' => $content,
+		'method' => "POST",
+		'ssl' => array(
+			"verify_peer"=>false,
+			"verify_peer_name"=>false,
+		),
+		'ignore_errors' => true
+	));
+	
+	start_time();
+	$ctx = stream_context_create($http_request_params);
+	$fp = fopen($url, 'rb', false, $ctx);
+	if (!$fp) {
+		echo "HTTP request failed for $url (POST)\n";
+		return FALSE;
+	}
+	$http_result = stream_get_contents($fp);
+	fclose($fp);
+	$time = time_elapsed();
+	$debug_data[] = [ "upload route" => $route, "time" => $time];
+	
+	if ($http_result===FALSE) {
+		if ($debug) print "HTTP request failed for $url (file upload)\n";
+		return FALSE;
+	}
+	$http_code = explode(" ", $http_response_header[0]);
+	$_api_http_code = $http_code[1];
+	
+	$json_result = json_decode($http_result, true); // Retrieve json as associative array
+	if ($json_result===NULL) {
+		if ($debug) print "Failed to decode result as JSON\n$http_result\n";
+		return FALSE;
+	}
+	$json_result['code'] = $_api_http_code;
+	
+	return $json_result;
+}
+
 
 // Construct ok/error messages
 function json_error($code, $msg) {

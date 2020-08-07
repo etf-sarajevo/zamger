@@ -24,6 +24,7 @@ function student_zadaca() {
 	$ag = intval($_REQUEST['ag']);
 	$zadatak = intval($_REQUEST['zadatak']);
 	
+	// Test if student is enrolled on course
 	$course = getCourseDetails($predmet, $ag);
 	if (empty($course)) {
 		zamgerlog("nepoznat predmet $predmet",3); // nivo 3: greska
@@ -31,7 +32,6 @@ function student_zadaca() {
 		biguglyerror("Nepoznat predmet");
 		return;
 	}
-	$ponudakursa = $course['CourseOffering']['id'];
 
 	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ])['results'];
 	
@@ -426,7 +426,9 @@ function student_zadaca() {
 		<input type="hidden" name="akcija" value="slanje">
 		
 		<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><?
+		global $_api_http_code;
 		$tekst_zadace = api_call("homework/$zadaca/$zadatak/student/$userid/file", [], "GET", false, false);
+		if ($_api_http_code == "404") $tekst_zadace = "";
 		$tekst_zadace = htmlspecialchars($tekst_zadace);
 		print $tekst_zadace;
 		?></textarea>
@@ -448,8 +450,7 @@ function student_zadaca() {
 
 function akcijaslanje() {
 
-	global $userid,$conf_files_path;
-	require_once("lib/student_predmet.php"); // update_komponente nakon slanja
+	global $userid, $conf_files_path;
 
 	// Parametri
 	$predmet = intval($_REQUEST['predmet']);
@@ -463,50 +464,37 @@ function akcijaslanje() {
 	$povratak_js = "<script>window.onload = function() { setTimeout('redirekcija()', 3000); }\nfunction redirekcija() { window.location='$povratak_url'; } </script>\n";
 
 	// Da li student slusa predmet?
-	$q195 = db_query("select sp.predmet from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (db_num_rows($q195)<1) {
+	$course = getCourseDetails($predmet, $ag);
+	if (empty($course)) {
 		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
-	$ponudakursa = db_result($q195,0,0);	
-
-
-	// Standardna lokacija zadaca
-	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$userid/";
-	if (!file_exists("$conf_files_path/zadace/$predmet-$ag")) {
-		mkdir ("$conf_files_path/zadace/$predmet-$ag",0777, true);
-	}
+	$ponudakursa = $course['CourseOffering']['id'];
 
 
 	// Da li neko pokušava da spoofa zadaću?
-	$q200 = db_query("SELECT count(*) FROM zadaca as z, student_predmet as sp, ponudakursa as pk
-	WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=z.predmet and pk.akademska_godina=z.akademska_godina and z.id=$zadaca");
-	if (db_result($q200,0,0)==0) {
+	$homeworks = api_call("homework/course/$predmet/$ag", [ "resolve" => ["ProgrammingLanguage"] ] )['results'];
+	$selectedHomework = [];
+	foreach($homeworks as $homework)
+		if ($homework['id'] == $zadaca && $zadatak >= 1 && $zadatak <= $homework['nrAssignments'])
+			$selectedHomework = $homework;
+	if (empty($selectedHomework)) {
 		biguglyeerror("Ova zadaća nije iz vašeg predmeta");
 		return;
 	}
 
-	// Ovo je potrebno radi pravljenja diff-a
-	if (get_magic_quotes_gpc()) {
-		$program = stripslashes($program);
-	}
-
 	// Podaci o zadaći
-	$q210 = db_query("select programskijezik, UNIX_TIMESTAMP(rok), attachment, naziv, komponenta, dozvoljene_ekstenzije, automatsko_testiranje, readonly from zadaca where id=$zadaca");
-	$jezik = db_result($q210,0,0);
-	$rok = db_result($q210,0,1);
-	$attach = db_result($q210,0,2);
-	$naziv_zadace = db_result($q210,0,3);
-	$komponenta = db_result($q210,0,4);
-	$zadaca_dozvoljene_ekstenzije = db_result($q210,0,5);
-	$automatsko_testiranje = db_result($q210,0,6);
-	if (db_result($q210,0,7) == 1) {
+	$jezik = $selectedHomework['ProgrammingLanguage']['id'];
+	$rok = db_timestamp($selectedHomework['deadline']);
+	$attach = $selectedHomework['attachment'];
+	$naziv_zadace = $selectedHomework['name'];
+	$komponenta = $selectedHomework['CourseActivity']['id'];
+	$zadaca_dozvoljene_ekstenzije = $selectedHomework['allowedExtensions'];
+	$automatsko_testiranje = $selectedHomework['automatedTesting'];
+	if ($selectedHomework['readonly']) {
 		niceerror("Slanje ove zadaće kroz Zamger nije moguće");
 		return;
 	}
-
-	// Ako je aktivno automatsko testiranje, postavi status na 1 (automatska kontrola), inace na 4 (ceka pregled)
-	if ($automatsko_testiranje==1) $prvi_status=1; else $prvi_status=4;
 
 	// Provjera roka
 	if ($rok <= time()) {
@@ -516,24 +504,20 @@ function akcijaslanje() {
 		print $povratak_html;
 		return; 
 	}
-
+	
+	// Lokacija na serveru za privremenu datoteku
+	$dir = "$conf_files_path/zadacetmp/$userid/";
+	if (!file_exists($dir))
+		mkdir ($dir,0777, true);
+	
 	// Prepisane zadaće se ne mogu ponovo slati
-	$q240 = db_query("select status from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$userid order by id desc limit 1");
-	if (db_num_rows($q240) > 0 && db_result($q240,0,0) == 2) { // status = 2 - prepisana zadaća
+	$previousSubmission = api_call("homework/$zadaca/$zadatak/student/$userid", []);
+	if ($previousSubmission['status'] == 2) { // status = 2 - prepisana zadaća
 		niceerror("Zadaća se ne može ponovo poslati jer je predviđena odbrana.");
 		print $povratak_html;
 		return; 
 	}
 
-	// Pravimo potrebne puteve
-	if (!file_exists($lokacijazadaca)) mkdir ($lokacijazadaca,0777);
-	if ($zadaca>0 && !file_exists("$lokacijazadaca$zadaca")) 
-		mkdir ("$lokacijazadaca$zadaca",0777);
-	
-	// Temp fajl radi određivanja diff-a 
-	if (file_exists("$lokacijazadaca$zadaca/difftemp")) 
-		unlink ("$lokacijazadaca$zadaca/difftemp");
-	
 	// Vrsta zadaće: textarea ili attachment
 	if ($attach == 0) { // textarea
 		if (!check_csrf_token()) {
@@ -544,10 +528,8 @@ function akcijaslanje() {
 		}
 
 		// Određivanje ekstenzije iz jezika
-		$q220 = db_query("select ekstenzija from programskijezik where id=$jezik");
-		$ekst = db_result($q220,0,0);
-
-		$filename = "$lokacijazadaca$zadaca/$zadatak$ekst";
+		$ekst = $selectedHomework['ProgrammingLanguage']['extension'];
+		$filename = "$zadatak$ekst";
 
 		// Kreiranje datoteke
 		if (strlen($program)<=10) {
@@ -557,49 +539,41 @@ function akcijaslanje() {
 			zamgerlog2("poslao praznu zadacu", $zadaca, $zadatak); // nivo 3 - greska
 			print $povratak_html;
 			return;
-		} else if ($zadaca>0 && $zadatak>0) {
-			// Pravimo backup fajla za potrebe računanja diff-a
-			$postoji_prosla_verzija = false;
-			if (file_exists($filename)) {
-				rename ($filename, "$lokacijazadaca$zadaca/difftemp"); 
-				$postoji_prosla_verzija = true;
-			}
 			
-			$f = fopen($filename,'w');
+		} else if ($zadaca>0 && $zadatak>0) {
+			// Zapisujemo fajl na server radi slanja na backend (može li bez ovoga?)
+			$filepath = $dir . $filename;
+			if (file_exists($filepath))
+				unlink($filepath);
+			
+			// Pravimo backup fajla za potrebe računanja diff-a
+			$f = fopen($filepath,'w');
 			if (!$f) {
 				niceerror("Greška pri pisanju fajla za zadaću.");
 				zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
 				zamgerlog2("greska pri pisanju zadace", $zadaca, $zadatak); // nivo 3 - greska
-				if ($postoji_prosla_verzija)
-					rename ("$lokacijazadaca$zadaca/difftemp", $filename);
 				print $povratak_html;
 				return;
 			}
 			fwrite($f,$program);
 			fclose($f);
 
-			// Tabela "zadatak" funkcioniše kao log događaja u
-			// koji se stvari samo dodaju
-			$q230 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$zadatak$ekst', userid=$userid");
-			$id_zadatka = db_insert_id();
-
-			// Pravljenje diffa
-			if ($postoji_prosla_verzija) {
-				$diff = `/usr/bin/diff -u $lokacijazadaca$zadaca/difftemp $filename`;
-				$diff = db_escape($diff);
-				if (strlen($diff)>1) {
-					if (strlen($diff) > 65535) $diff = substr($diff, 0, 65534);
-					$q250 = db_query("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
-				}
-				unlink ("$lokacijazadaca$zadaca/difftemp");
+			// Content-Type: text/plain je najsigurniji pošto je u pitanju sigurno tekstualni format
+			$result = api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath, "text/plain");
+			
+			print_r($result);
+			
+			// Očekivan je kod 201
+			if ($result['code'] == "201") {
+				nicemessage($naziv_zadace . "/Zadatak " . $zadatak . " uspješno poslan!");
+				zamgerlog("poslana zadaca z$zadaca zadatak $zadatak", 2); // nivo 2 - edit
+				zamgerlog2("poslana zadaca (textarea)", $zadaca, $zadatak); // nivo 2 - edit
+				print $povratak_html;
+				print $povratak_js;
+			} else {
+				niceerror("Neuspješno slanje zadaće");
+				print $result['message'];
 			}
-
-			nicemessage($naziv_zadace."/Zadatak ".$zadatak." uspješno poslan!");
-			update_komponente($userid,$ponudakursa);
-			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak",2); // nivo 2 - edit
-			zamgerlog2("poslana zadaca (textarea)", $zadaca, $zadatak); // nivo 2 - edit
-			print $povratak_html;
-			print $povratak_js;
 			return;
 		} else {
 			zamgerlog("greska pri slanju zadace (zadaca z$zadaca zadatak $zadatak filename $filename)",3);
@@ -612,15 +586,14 @@ function akcijaslanje() {
 	} else { // if ($attach==0)...
 		$program = $_FILES['attachment']['tmp_name'];
 		if ($program && (file_exists($program)) && $_FILES['attachment']['error']===UPLOAD_ERR_OK) {
-			$ime_fajla = strip_tags(basename($_FILES['attachment']['name']));
+			$filename = strip_tags(basename($_FILES['attachment']['name']));
 
 			// Ukidam HTML znakove radi potencijalnog XSSa
-			$ime_fajla = str_replace("&", "", $ime_fajla);
-			$ime_fajla = str_replace("\"", "", $ime_fajla);
-			$puni_put = "$lokacijazadaca$zadaca/$ime_fajla";
+			$filename = str_replace("&", "", $filename);
+			$filename = str_replace("\"", "", $filename);
 
 			// Provjeravamo da li je ekstenzija na spisku dozvoljenih
-			$ext = ".".pathinfo($ime_fajla, PATHINFO_EXTENSION); // FIXME: postojeći kod očekuje da ekstenzije počinju tačkom...
+			$ext = ".".pathinfo($filename, PATHINFO_EXTENSION); // FIXME: postojeći kod očekuje da ekstenzije počinju tačkom...
 			$db_doz_eks = explode(',',$zadaca_dozvoljene_ekstenzije);
 			if ($zadaca_dozvoljene_ekstenzije != "" && !in_array($ext, $db_doz_eks)) {
 				niceerror("Tip datoteke koju ste poslali nije dozvoljen.");
@@ -632,53 +605,16 @@ function akcijaslanje() {
 				return;
 			}
 			
-			// Diffing
-			$diff = "";
-			$q255 = db_query("SELECT filename FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak AND student=$userid ORDER BY id DESC LIMIT 1");
-			if (db_num_rows($q255) > 0) {
-				$stari_filename = "$lokacijazadaca$zadaca/".db_result($q255, 0, 0);
-
-				// Podržavamo diffing ako je i stara i nova ekstenzija ZIP (TODO ostale vrste arhiva)
-				if (ends_with($stari_filename, ".zip") && ends_with($puni_put, ".zip")) {
-				
-					// Pripremamo temp dir
-					$zippath = "/tmp/difftemp";
-					if (!file_exists($zippath)) {
-						mkdir($zippath, 0777, true);
-					} else if (!is_dir($zippath)) {
-						unlink($zippath);
-						mkdir($zippath);
-					} else {
-						rm_minus_r($zippath);
-					}
-					$oldpath = "$zippath/old";
-					$newpath = "$zippath/new";
-					mkdir ($oldpath);
-					mkdir ($newpath);
-					`unzip -j "$stari_filename" -d $oldpath`;
-					`unzip -j "$program" -d $newpath`;
-					$diff = `/usr/bin/diff -ur $oldpath $newpath`;
-					$diff = clear_unicode(db_escape($diff));
-				}
-			}
-
-			if (file_exists($puni_put)) unlink ($puni_put);
-			rename($program, $puni_put);
-			chmod($puni_put, 0640);
-
-			// Escaping za SQL
-			$ime_fajla = db_escape($ime_fajla);
-
-			$q260 = db_query("insert into zadatak set zadaca=$zadaca, redni_broj=$zadatak, student=$userid, status=$prvi_status, vrijeme=now(), filename='$ime_fajla', userid=$userid");
-			$id_zadatka = db_insert_id();
-
-			if (strlen($diff)>1) {
-				if (strlen($diff) > 65535) $diff = substr($diff, 0, 65534);
-				$q270 = db_query("insert into zadatakdiff set zadatak=$id_zadatka, diff='$diff'");
-			}
+			// Pravimo rename fajla na željenu lokaciju
+			$filepath = $dir . $filename;
+			if (file_exists($filepath))
+				unlink($filepath);
+			rename($program, $filepath);
+			chmod($filepath, 0640);
+			
+			api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath);
 
 			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
-			update_komponente($userid,$ponudakursa,$komponenta);
 			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
 			zamgerlog2("poslana zadaca (attachment)", $zadaca, $zadatak);
 			print $povratak_html;
