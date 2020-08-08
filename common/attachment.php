@@ -5,7 +5,7 @@
 
 function common_attachment() {
 
-global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin;
+global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin,$_api_http_code;
 
 
 // Kakav fajl se downloaduje?
@@ -24,17 +24,6 @@ if ($tip == "zadaca") {
 	$zadatak = intval($_REQUEST['zadatak']);
 	$student = intval($_REQUEST['student']);
 
-	$q5 = db_query("select predmet, akademska_godina from zadaca where id=$zadaca");
-	if (db_num_rows($q5)<1) {
-		zamgerlog("nepostojeca zadaca $zadaca",3);
-		zamgerlog2("nepostojeca zadaca", $zadaca);
-		niceerror("Nepostojeća zadaća");
-		return;
-	}
-	$predmet = db_result($q5,0,0);
-	$ag = db_result($q5,0,1);
-
-
 	if ($student==0) { // student otvara vlastitu zadaću
 		if ($user_student)
 			$student=$userid;
@@ -52,61 +41,39 @@ if ($tip == "zadaca") {
 			niceerror("Nemate pravo pregleda ove zadaće");
 			return;
 		}
-		
-		if (!$user_siteadmin) {
-			$q10 = db_query("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-			if (db_result($q10,0,0)<1) {
-				zamgerlog("attachment: nije nastavnik na predmetu (student u$student zadaca z$zadaca)",3);
-				zamgerlog2("nije nastavnik na predmetu za zadacu", $zadaca);
-				niceerror("Nemate pravo pregleda ove zadaće");
-				return;
-			}
-			
-			// Provjera ograničenja
-			$q20 = db_query("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-			if (db_num_rows($q20)>0) {
-				// Ako ograničenja postoje, dozvoljavamo korisniku da otvori zadaće samo studenata u labgrupama kojima inače može pristupiti
-				$nasao=0;
-				while ($r20 = db_fetch_row($q20)) {
-					$q25 = db_query("select count(*) from student_labgrupa where student=$student and labgrupa=$r20[0]");
-					if (db_result($q25,0,0)>0) { $nasao=1; break; }
-				}
-				if ($nasao == 0) {
-					zamgerlog("ogranicenje na predmet (student u$student predmet pp$predmet ag$ag)",3);
-					zamgerlog2("ogranicenje na predmet za zadacu", $zadaca);
-					niceerror("Nemate pravo pregleda ove zadaće");
-					return;
-				}
-			}
-		}
+		// Provjera da li je nastavnik na predmetu će biti urađena na backendu
 	}
-
-
-	// Da li neko pokušava da spoofa zadaću?
 	
-	$q30 = db_query("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	if (db_result($q30,0,0)<1) {
+	$assignment = api_call("homework/$zadaca/$zadatak/student/$student", []);
+	if ($_api_http_code == "404") {
 		zamgerlog("student nije upisan na predmet (student u$student zadaca z$zadaca)",3);
 		zamgerlog2("student ne slusa predmet za zadacu", $zadaca);
-		niceerror("Student nije upisan na predmet");
-		return;
-	}
-
-
-	// Lokacija zadaće
-
-	$lokacijazadaca="$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/";
-	
-	$q40 = db_query("select filename from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$student order by id desc limit 1");
-	if (db_num_rows($q40) < 1) {
-		zamgerlog("ne postoji attachment (zadaca $zadaca zadatak $zadatak student $student)",3);
-		zamgerlog2("ne postoji attachment", intval($student), $zadaca, $zadatak);
-		niceerror("Ne postoji attachment");
+		niceerror("Nemate pravo pregleda ove zadaće");
 		return;
 	}
 	
-	$filename = db_result($q40,0,0);
-	$filepath = $lokacijazadaca.$filename;
+	$filename = $assignment['filename'];
+	
+	$content = api_call("homework/$zadaca/$zadatak/student/$student/file", [], "GET", false, false);
+	
+	// Kreiramo privremenu datoteku u koju ćemo upisati ZIP
+	$dir = "$conf_files_path/zadacetmp/$userid/";
+	if (!file_exists($dir))
+		mkdir ($dir,0777, true);
+	
+	$filepath = $dir . $filename;
+	if (file_exists($filepath))
+		unlink($filepath);
+	
+	$f = fopen($filepath,'w');
+	if (!$f) {
+		// Nema smisla printati grešku jer smo u PDF generatoru
+		zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+		zamgerlog2("greska pri pisanju zadace", $zadaca, $zadatak); // nivo 3 - greska
+		return;
+	}
+	fwrite($f, $content);
+	fclose($f);
 }
 
 
