@@ -543,8 +543,6 @@ function akcijaslanje() {
 		} else if ($zadaca>0 && $zadatak>0) {
 			// Zapisujemo fajl na server radi slanja na backend (može li bez ovoga?)
 			$filepath = $dir . $filename;
-			if (file_exists($filepath))
-				unlink($filepath);
 			
 			// Pravimo backup fajla za potrebe računanja diff-a
 			$f = fopen($filepath,'w');

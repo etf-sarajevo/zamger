@@ -331,7 +331,7 @@ function student_predmet() {
 					if ($homework['text']) {
 						?>
 						<td>
-						<a href="?sta=common/attachment&amp;zadaca=<?=$homework['id']?>&amp;tip=postavka"><img src="static/images/16x16/download.png" width="16" height="16" border="0"></a>
+						<a href="?sta=common/attachment&amp;zadaca=<?=$homework['id']?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=postavka"><img src="static/images/16x16/download.png" width="16" height="16" border="0"></a>
 						</td><?
 					} else {
 						?>
@@ -344,7 +344,7 @@ function student_predmet() {
 				if ($sentAnything) {
 					?>
 					<td>
-						<a href="?sta=student/zadacapdf&amp;zadaca=<?=$homework['id']?>" target="_new"><img src="static/images/16x16/pdf.png" width="16" height="16" border="0"></a>
+						<a href="?sta=student/zadacapdf&amp;zadaca=<?=$homework['id']?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>" target="_new"><img src="static/images/16x16/pdf.png" width="16" height="16" border="0"></a>
 					</td>
 					<?
 				} else {

@@ -994,7 +994,7 @@ function _mass_input_brindexa($ispis) {
 
 function getCourseDetails($courseId, $courseYear = 0) {
 	global $courseDetails, $userid;
-	foreach($courseDetails as $course)
+	if (isset($courseDetails)) foreach($courseDetails as $course)
 		if ($course['CourseOffering']['CourseUnit']['id'] == $courseId)
 			return $course;
 	
@@ -1007,8 +1007,8 @@ function getCourseDetails($courseId, $courseYear = 0) {
 	return $course;
 }
 
-function getCourseName($courseId) {
-	return getCourseDetails($courseId)['courseName'];
+function getCourseName($courseId, $courseYear = 0) {
+	return getCourseDetails($courseId, $courseYear)['courseName'];
 }
 
 
