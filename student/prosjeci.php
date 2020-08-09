@@ -6,43 +6,45 @@
 
 function student_prosjeci() {
 
-global $userid, $conf_naziv_institucije;
+	global $userid, $courseDetails;
+	
+	
+	?>
+	<h2>Prosjeci</h2>
+	<?
 
-
-?>
-<h2>Prosjeci</h2>
-<?
-
-
-// Ako se ne koriste planovi studija, dajemo prosjek svega što je student slušao
-//$q5 = db_query("select count(*) from plan_studija");
-//if (db_num_rows($q5)==0) {
-if (true) {
-	// Ovo će dati neprecizne rezultate u slučaju da je student mijenjao studij u toku studiranja
-	// (objašnjenje u komentaru drugog dijela)
-
+	
+	// Ako je aktivna opcija "sm_arhiva", onda $courseDetails već sadrži sve potrebne predmete
+	// U suprotnom radimo novi upit na API
+	$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true", "score" => "true", "resolve" => ["Programme", "ProgrammeType"]])['results'];
+	
 	$maxgod=0;
-	$q10 = db_query("select ts.ciklus, pk.semestar, ko.ocjena from student_predmet as sp, ponudakursa as pk, konacna_ocjena as ko, studij as s, tipstudija as ts where sp.student=$userid and sp.predmet=pk.id and ko.predmet=pk.predmet and ko.akademska_godina=pk.akademska_godina and ko.student=$userid and pk.studij=s.id and s.tipstudija=ts.id AND ko.ocjena>5 AND ko.ocjena<11");
 	$ciklusi = $suma_ciklus = $broj_ciklus = $suma_ciklus_semestar = $broj_ciklus_semestar = array();
-	while ($r10 = db_fetch_row($q10)) {
-		$ciklus=$r10[0]; $semestar=$r10[1]; $ocjena=$r10[2];
-
+	foreach ($courseDetails as $course) {
+		$ciklus = $course['CourseOffering']['Programme']['ProgrammeType']['cycle'];
+		$semestar = $course['CourseOffering']['semester'];
+		$ocjena = $course['grade'];
+		if ($ocjena < 6 || $ocjena > 10) continue; // Opisne ocjene ne ulaze u prosjek
+		
 		if (!in_array($ciklus,$ciklusi)) $ciklusi[]=$ciklus;
 		$suma_ciklus[$ciklus] += $ocjena; $broj_ciklus[$ciklus]++;
 		$suma_ciklus_semestar["$ciklus-$semestar"] += $ocjena; $broj_ciklus_semestar["$ciklus-$semestar"]++;
-	
-		if ($r10[1]/2>$maxgod) $maxgod=$r10[1]/2;
-	//print "Ocjena: $r10[0] ($r10[1])<br/>";
+		
+		if ($semestar/2 > $maxgod) $maxgod = $semestar/2;
 	}
-	//$maxgod=intval($maxgod);
-
 
 	sort($ciklusi);
 	foreach ($ciklusi as $ciklus) {
-		?>
-		
-		<h3><?=$ciklus?>. ciklus studija</h3>
-		<?
+		if ($ciklus == 99) {
+			?>
+			<h3>Stručni studij</h3>
+			<?
+		} else {
+			?>
+			<h3><?=$ciklus?>. ciklus studija</h3>
+			<?
+			
+		}
 
 		if ($broj_ciklus_semestar["$ciklus-1"]==0) {
 			?>
@@ -76,32 +78,32 @@ if (true) {
 	}
 
 	
-
-?>
-<p>&nbsp;</p>
-<p><b>Tumačenje prikazanih brojeva:</b>
-<ul>
-<li>Prosjek godine <i>nije jednak</i> srednjoj vrijednosti prosjeka semestara, jer broj predmeta po semestrima ne mora biti isti.
+	
+	?>
+	<p>&nbsp;</p>
+	<p><b>Tumačenje prikazanih brojeva:</b>
 	<ul>
-		<li>Primjer: U prvom semestru ste imali pet predmeta i iz svih pet ste dobili ocjenu 10. Prosjek 1. semestra je 10.0</li>
-		<li>U drugom semestru ste imali šest predmeta i iz svih šest ste dobili ocjenu 6. Prosjek 2. semestra je 6.0</li>
-		<li>No prosjek godine <i>nije</i> 8.0 nego je nešto manji. Prosjek godine se računa kao prosjek svih predmeta na godini, kojih ima jedanaest, pa je to (5*10 + 6*6) / 11 = 86 / 11 = 7,82.</li>
+	<li>Prosjek godine <i>nije jednak</i> srednjoj vrijednosti prosjeka semestara, jer broj predmeta po semestrima ne mora biti isti.
+		<ul>
+			<li>Primjer: U prvom semestru ste imali pet predmeta i iz svih pet ste dobili ocjenu 10. Prosjek 1. semestra je 10.0</li>
+			<li>U drugom semestru ste imali šest predmeta i iz svih šest ste dobili ocjenu 6. Prosjek 2. semestra je 6.0</li>
+			<li>No prosjek godine <i>nije</i> 8.0 nego je nešto manji. Prosjek godine se računa kao prosjek svih predmeta na godini, kojih ima jedanaest, pa je to (5*10 + 6*6) / 11 = 86 / 11 = 7,82.</li>
+		</ul>
+	</li>
+	<li>Prosjek ciklusa <i>nije jednak</i> srednjoj vrijednosti svih godina jer su u prosjek ciklusa uračunate i godine koje nisu završene tj. godine koje ponavljate.
+		<ul>
+			<li>Primjer: Na prvoj godini ste imali deset predmeta i sve predmete ste položili sa ocjenom 10. Prosjek godine je 10.0.</li>
+			<li>Na drugoj godini ste imali također deset predmeta ali položili ste samo dva sa ocjenom 6. Prosjek druge godine neće biti prikazan jer godina nije završena.</li>
+			<li>Prosjek ciklusa se računa kao prosjek svih položenih predmeta, a to je (10*10 + 2*6) / 12 = 112 / 12 = 9,33.</li>
+		</ul>
 	</ul>
-</li>
-<li>Prosjek ciklusa <i>nije jednak</i> srednjoj vrijednosti svih godina jer su u prosjek ciklusa uračunate i godine koje nisu završene tj. godine koje ponavljate.
-	<ul>
-		<li>Primjer: Na prvoj godini ste imali deset predmeta i sve predmete ste položili sa ocjenom 10. Prosjek godine je 10.0.</li>
-		<li>Na drugoj godini ste imali također deset predmeta ali položili ste samo dva sa ocjenom 6. Prosjek druge godine neće biti prikazan jer godina nije završena.</li>
-		<li>Prosjek ciklusa se računa kao prosjek svih položenih predmeta, a to je (10*10 + 2*6) / 12 = 112 / 12 = 9,33.</li>
-	</ul>
-</ul>
-<?
-
+	<?
+	
 	
 	return;
 }
 
-
+/*
 
 // RAD SA PLANOM STUDIJA
 
@@ -209,5 +211,4 @@ while ($broj_semestar[$i]>0) {
 
 
 } // function student_prosjeci
-
-?>
+*/
