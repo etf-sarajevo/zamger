@@ -39,10 +39,16 @@ if (true) {
 
 	sort($ciklusi);
 	foreach ($ciklusi as $ciklus) {
-		?>
-		
-		<h3><?=$ciklus?>. ciklus studija</h3>
-		<?
+		if ($ciklus == 99) {
+			?>
+			<h3>Stručni studij</h3>
+			<?
+		} else {
+			?>
+			<h3><?=$ciklus?>. ciklus studija</h3>
+			<?
+			
+		}
 
 		if ($broj_ciklus_semestar["$ciklus-1"]==0) {
 			?>
