@@ -181,7 +181,21 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 	return $json_result;
 }
 
-function api_call($route, $params = [], $method = "GET", $debug = true, $json = true) { // set to false when finished
+/**
+ * Perform a RPC on the REST API given in $conf_backend_url
+ *
+ * Session data is discovered from global variables populated by check_cookie()
+ * Global variable $_api_http_code will be set with server HTTP response code (e.g. 200, 404 etc.)
+ * Global array $debug_data is populated with all requests and timings for the duration of script.
+ * @param string $route Desired route on backend
+ * @param array $params Associative array of parameters (encoding depends on $method)
+ * @param string $method HTTP request method
+ * @param bool $debug Display debugging messages
+ * @param bool $json Decode response from JSON format (if false, response is returned as-is)
+ * @param bool $associative Decode response into associative array (if false, response is decoded into object)
+ * @return mixed Server response as string (if $json=false), array (if $json=true, $associative=true) or object (if $associative=false)
+ */
+function api_call($route, $params = [], $method = "GET", $debug = true, $json = true, $associative = true) { // set to false when finished
 	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code;
 	
 	$http_request_params = array('http' => array(
@@ -275,7 +289,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	if ($method == "DELETE") {
 		$json_result = [];
 	} else {
-		$json_result = json_decode($http_result, true); // Retrieve json as associative array
+		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) {
 			if ($debug) print "Failed to decode result as JSON for $url\n$http_result\n";
 			return FALSE;
