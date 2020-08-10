@@ -517,7 +517,7 @@ function studentski_meni($fj) {
 			$output .= "<br/>\n";
 			
 			// Studentski moduli aktivirani za ovaj predmet
-			$translation = [1 => "student/moodle", 2 => "student/zadaca", 4 => "student/projekti", 5 => "student/kviz", 6 => "public/anketa", 7 => "student/gg" ];
+			$translation = [1 => "student/moodle", 2 => "student/zadaca", 4 => "student/projekti", 5 => "student/kviz", 6 => "student/anketa", 7 => "student/gg" ];
 			foreach($courseDetail['activities'] as $activity) {
 				if (!array_key_exists($activity['Activity']['id'], $translation))
 					continue;
