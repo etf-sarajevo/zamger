@@ -3,9 +3,9 @@
 // LIB/SESSION - podrška za login/logout na Zamgeru
 
 
-// Funkcija koja prihvata podatke sa "internal" login stranice
-// Funkcija login pisana je pod pretpostavkom da je $login globalna varijabla
-// (iz više razloga)
+// Funkcija koja prihvata podatke sa "internal" login stranice, neće uopšte biti pozivana za
+// različite vrijednosti $conf_login_screen
+// Funkcija je pisana pod pretpostavkom da je $login globalna varijabla (iz više razloga)
 // Parametri:
 //    password - lozinka korisnika
 //    type     - gdje se lozinka nalazi (table, ldap)
