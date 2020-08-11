@@ -37,22 +37,22 @@ function student_anketa() {
 		<h2><?=$poll['name']?></h2>
 		<?
 		
-		if (db_timestamp($poll['openDate']) > time()) {
+		if (db_timestamp($poll['openDateTime']) > time()) {
 			nicemessage("Anketa još uvijek nije otvorena za popunjavanje.");
 		}
 		
-		else if (db_timestamp($poll['closeDate']) > time()) {
+		else if (db_timestamp($poll['closeDateTime']) > time() && $poll['active']) {
 			nicemessage("Anketa je otvorena za popunjavanje.");
 			?>
 			<p><a href="?sta=public/anketa&amp;anketa=<?=$anketa?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>"><b>Kliknite ovdje za popunjavanje ankete</b></a></p>
-			<p>Vrijeme za popunjavanje ankete ističe: <b><?=date("d. m. Y. H:i:s", db_timestamp($poll['closeDate']))?></b></p>
+			<p>Vrijeme za popunjavanje ankete ističe: <b><?=date("d. m. Y. H:i:s", db_timestamp($poll['closeDateTime']))?></b></p>
 			<p>Ne možete vidjeti rezultate ankete dok se popunjavanje ne završi.</p>
 			<!--p>Za ovu anketu je predviđeno anonimno popunjavanje. Molimo da se odjavite da biste popunili anketu koristeći kod koji ste dobili.</p-->
 			<?
 		}
 		
 		else {
-			// Anketa je zatvorena
+			// Anketa je završena ali aktivna
 			if ($poll['active']) {
 				?>
 				<h2>Pristup rezultatima ankete nije moguć</h2>
@@ -62,7 +62,7 @@ function student_anketa() {
 			}
 			else {
 				?>
-				<a href="?sta=izvjestaj/anketa&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;anketa=<?=$anketa?>&amp;rank=da">Rezultati ankete za predmet <?=$naziv_predmeta?>, akademska <?=$naziv_ag?></a>
+				<p><a href="?sta=izvjestaj/anketa&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;anketa=<?=$anketa?>&amp;rank=da">Rezultati ankete za predmet <?=$naziv_predmeta?>, akademska <?=$naziv_ag?></a></p>
 				<?
 			}
 		}

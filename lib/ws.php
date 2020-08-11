@@ -295,7 +295,11 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 			return FALSE;
 		}
 	}
-	$json_result['code'] = $_api_http_code;
+	
+	if ($associative)
+		$json_result['code'] = $_api_http_code;
+	else
+		$json_result->code = $_api_http_code;
 
 	return $json_result;
 }
