@@ -7,7 +7,6 @@ function student_intro() {
 	global $userid, $registry, $person, $courseDetails;
 
 	require_once("lib/utility.php"); // spol, vokativ
-	require_once("lib/ws.php");
 
 	// Dobrodošlica
 	if ($person['ExtendedPerson']['sex'] == 'F' || ($person['ExtendedPerson']['sex'] == '' && spol($person['name'])=="Z"))

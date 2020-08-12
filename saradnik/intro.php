@@ -5,130 +5,138 @@
 
 
 function saradnik_intro() {
-
-global $userid,$user_siteadmin,$registry,$posljednji_pristup;
-
-require_once("lib/utility.php"); // spol, vokativ
-
-
-// Dobrodošlica
-
-$rez = db_query_assoc("select ime, spol from osoba where id=$userid");
-if ($rez['spol'] == 'Z' || ($rez['spol'] == '' && spol($rez['ime'])=="Z"))
-	print "<h1>Dobro došla, ".vokativ($rez['ime'],"Z")."</h1>";
-else
-	print "<h1>Dobro došao, ".vokativ($rez['ime'],"M")."</h1>";
+	
+	global $userid,$user_siteadmin,$registry,$posljednji_pristup;
+	
+	require_once ("lib/utility.php"); // spol, vokativ
+	
+	// Dobrodošlica
+	if ($person['ExtendedPerson']['sex'] == 'F' || ($person['ExtendedPerson']['sex'] == '' && spol($person['name'])=="Z"))
+		print "<h1>Dobro došla, ".vokativ($person['name'],"Z")."</h1>";
+	else
+		print "<h1>Dobro došao, ".vokativ($person['name'],"M")."</h1>";
 
 	
-print "<p>Poštovani nastavnici, ako smatrate da je neko neovlašteno pristupao vašem Zamger nalogu, možete pogledati historiju pristupa u Vašem profilu ili koristeći sljedeći direktni link:<br><a href=\"https://zamger.etf.unsa.ba/index.php?sta=common/profil&akcija=log&nivo=1\">Historija pristupa</a></p>";
+	print "<p>Poštovani nastavnici, ako smatrate da je neko neovlašteno pristupao vašem Zamger nalogu, možete pogledati historiju pristupa u Vašem profilu ili koristeći sljedeći direktni link:<br><a href=\"https://zamger.etf.unsa.ba/index.php?sta=common/profil&akcija=log&nivo=1\">Historija pristupa</a></p>";
 
 
-// Sakrij raspored ako ga nema u registry-ju
-$nasao = false;
-foreach ($registry as $r) {
-	if ($r[0]=="common/raspored1") { $nasao = true; break; }
-}
-if ($nasao) {
-	require "common/raspored1.php";
-	common_raspored1("nastavnik");
-}
+	// Sakrij raspored ako ga nema u registry-ju
+	$nasao = false;
+	foreach ($registry as $r) {
+		if ($r[0]=="common/raspored1") { $nasao = true; break; }
+	}
+	if ($nasao) {
+		require "common/raspored1.php";
+		common_raspored1("nastavnik");
+	}
 
 
-// Prikaz obavještenja za saradnike
-$prikaz_sekundi = 600; // Koliko dugo se prikazuje obavještenje
-$vrijeme = $posljednji_pristup - $prikaz_sekundi; // globalna
-$obavjestenje = db_get("select id from poruka where tip=1 and (opseg=0 or opseg=2) and UNIX_TIMESTAMP(vrijeme)>$vrijeme order by vrijeme desc limit 1");
-if ($obavjestenje != false) {
-	?><p><a href="?sta=common/inbox&poruka=<?=$obavjestenje?>"><div style="color:red; text-decoration: underline">Imate novo sistemsko obavještenje. Kliknite ovdje.</div></a></p><?
-}
+	// Prikaz obavještenja za saradnike
+	$announcements = api_call("inbox/announcements")['results'];
+	$obavjestenje = false;
+	$prikaz_sekundi = 600; // Koliko dugo se prikazuje obavještenje
+	$vrijeme = $posljednji_pristup - $prikaz_sekundi; // globalna
+	foreach($announcements as $ann) {
+		if (db_timestamp($ann['time']) > $vrijeme && ($ann['scope'] == 0 || $ann['scope'] == 2))
+			$obavjestenje = $ann['id'];
+	}
+	if ($obavjestenje != false) {
+		?><p><a href="?sta=common/inbox&poruka=<?=$obavjestenje?>"><div style="color:red; text-decoration: underline">Imate novo sistemsko obavještenje. Kliknite ovdje.</div></a></p><?
+	}
 
-
-
-// Spisak grupa po predmetima, predmeti po akademskoj godini
-?><table border="0" cellspacing="5"><tr>
-<?
-
-if (int_param('sve') === 1)
-	$upit = "select id,naziv from akademska_godina order by naziv desc";
-else
-	$upit = "select id,naziv from akademska_godina where aktuelna=1 order by naziv desc limit 1";
-$q = db_query($upit);
-while (db_fetch2($q, $ag, $ag_naziv)) {
-	// Prikaži sve predmete siteadminu
-	$uslov=""; $nppolje="nastavnik";
-	$uslov="np.predmet=p.id and np.akademska_godina=$ag and np.nastavnik=$userid and";
-	$nppolje="np.nivo_pristupa";
-
-	// Upit za spisak predmeta
-	$q10 = db_query("SELECT p.id, $nppolje, p.naziv, i.kratki_naziv, MIN(pk.semestar) sem, MIN(pk.studij) stud, agp.pasos_predmeta
-	FROM predmet as p, nastavnik_predmet as np, institucija as i, ponudakursa as pk, akademska_godina_predmet agp
-	WHERE $uslov p.institucija=i.id and pk.predmet=p.id and pk.akademska_godina=$ag AND agp.predmet=p.id AND agp.akademska_godina=$ag
-	GROUP BY p.id
-	ORDER BY sem, stud, p.naziv");
-
-	// Format - šest predmeta u jednom redu
-	$nr = db_num_rows($q10);
-	if ($nr==0) continue; // sljedeća akademska godina
-
-	if ($nr>6) $nr=6;
-	print '<td colspan="'.($nr*2).'" align="center" bgcolor="#88BB99">Predmeti ('.$ag_naziv.')</td></tr><tr>';
-
-	$br=0;
-	while (db_fetch7($q10, $predmet, $privilegija, $naziv_predmeta, $studij, $semestar, $minstud, $pasos_predmeta)) {
-		// Spacer
-		if ($br>0) print '<td bgcolor="#666666" width="1"></td>'."\n";
-
-		print '<td valign="top">'."\n";
-		
-		if ($pasos_predmeta)
-			$naziv_predmeta = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos_predmeta");
 	
-		// Siteadmin moze vidjeti i tudje predmete, pa ih prikazujemo drugom bojom
-		$moj=1;
-		if ($user_siteadmin)
-			$moj = db_get("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
+	
+	
+	// Spisak grupa po predmetima, predmeti po akademskoj godini
+	?><table border="0" cellspacing="5"><tr>
+	<?
+
+	$courses = api_call("course/teacher/$userid",
+		[
+			"all" => (int_param('sve') == 1),
+			"resolve" => ["CourseUnit", "AcademicYear", "Institution"]
+		]
+	)['results'];
+	$oldag = 0;
+	foreach($courses as $course) {
+		$ag = $course['AcademicYear']['id'];
+		if ($ag != $oldag) {
+			// Count courses in this year
+			$nr = 0;
+			foreach($courses as $c) {
+				if ($c['AcademicYear']['id'] == $ag)
+					$nr++;
+			}
 			
-		if ($moj==0)
-			print "<b><font color=\"#664444\">$naziv_predmeta ($studij)</font></b>\n";
-		else
-			print "<b>$naziv_predmeta ($studij)</b>\n";
+			$cols = $nr*2;
+			if ($cols > 12) $cols = 12;
+			?>
+			<td colspan="<?=$cols?>" align="center" bgcolor="#88BB99">Predmeti (<?=$course['AcademicYear']['name']?>)</td>
+		</tr>
+		<tr><?
+			$br = 0;
+			$oldag = $ag;
+		}
+		
+		// Spacer
+		if ($br % 6 > 0) {
+			?><td bgcolor="#666666" width="1"></td><?
+		}
+
+		?>
+			<td valign="top">
+		<?
+		
+		$predmet = $course['CourseUnit']['id'];
+		$naziv_predmeta = $course['courseName'];
+		$studij = $course['CourseUnit']['Institution']['abbrev'];
+	
+		?>
+				<b><?=$naziv_predmeta?> (<?=$studij?>)</b>
+				<?
 	
 		// Edit link
 		if ($user_siteadmin || $privilegija=="nastavnik" || $privilegija=="super_asistent") {
-			print ' [<b><a href="?sta=nastavnik/predmet&predmet='.$predmet.'&ag='.$ag.'"><font color="red">EDIT</font></a></b>]'."\n";
+			?>
+				[<b><a href="?sta=nastavnik/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>"><font color="red">EDIT</font></a></b>]
+			<?
 		}
-	
-		// Provjeri limit na prikazivanje labgrupa
-		$limit = db_query_varray("select o.labgrupa from ogranicenje as o, labgrupa as l where o.nastavnik=$userid and o.labgrupa=l.id and l.predmet=$predmet and l.akademska_godina=$ag");
-	
-		// Lab grupe
-		print "<ul>\n";
-		$labgrupe = db_query_vassoc("select id,naziv from labgrupa where predmet=$predmet and akademska_godina=$ag");
-		natsort($labgrupe);
-		foreach($labgrupe as $id_grupe => $ime_grupe) {
-			if (!preg_match("/\w/",$ime_grupe)) $ime_grupe="[Nema imena]";
-			if (count($limit)==0 || in_array($id_grupe, $limit))
-				print "<li><a href=\"?sta=saradnik/grupa&id=$id_grupe\">$ime_grupe</a></li>\n";
+		
+		// Get a list of groups
+		$groups = api_call("group/course/$predmet", [ "year" => $ag, "includeVirtual" => true ])['results'];
+		?><ul><?
+		foreach($groups as $group) {
+			if (!preg_match("/\w/", $group['name']))
+				$group['name'] = "[Nema imena]";
+			?>
+					<li><a href="?sta=saradnik/grupa&id=<?=$group['id']?>"><?=$group['name']?></a></li>
+					<?
 		}
-		print "</ul>\n";
-	
+		
 		// Kraj
-		print "</td>\n";
+		?>
+				</ul>
+			</td>
+		<?
 	
 		$br++;
-		if ($br==6) {
-			$br=0;
-			print "</tr><tr>\n";
+		if ($br % 6 == 0 || $br == $nr) {
+			?>
+		</tr>
+		<tr>
+			<?
 		}
 	}
-	print '</tr><tr>'."\n";
-}
 
-
-
-print '</tr></table>';
-
-if (int_param('sve') !== 1) print '<a href="'.genuri().'&sve=1">Prikaži ranije akademske godine</a>';
+	?>
+	</tr></table>
+	<?php
+	
+	if (int_param('sve') !== 1) {
+		?>
+		<p><a href="<?=genuri()?>&sve=1">Prikaži ranije akademske godine</a></p>
+		<?
+	}
 
 
 
