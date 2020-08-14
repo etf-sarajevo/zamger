@@ -100,6 +100,13 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 
 // Sada implementiramo kao pravi AJAX
 function ajax_box() {
+	global $conf_backend_url_client, $conf_backend_has_rewrite, $conf_keycloak, $conf_files_path, $login;
+	if ($conf_keycloak) {
+		$token_file = $conf_files_path . "/keycloak_token/$login";
+		$token = unserialize(file_get_contents($token_file));
+		$tokenString = $token->getToken();
+	}
+
 	?>
 	<script language="JavaScript">
 	function ajax_start(url, method, params, cb_success, cb_fail) {
@@ -145,6 +152,57 @@ function ajax_box() {
 			xhttp.send();
 		}
 	}
+    function ajax_api_start(route, method, params, cb_success, cb_fail) {
+        cb_fail = cb_fail || ajax_log_error;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (xhttp.readyState == 4 && (xhttp.status == 200 || xhttp.status == 201 || xhttp.status == 204)) {
+                try {
+                    var object = JSON.parse(xhttp.responseText);
+                    cb_success(object);
+                } catch(e) {
+                    cb_fail(xhttp.responseText, xhttp.status, url);
+                }
+            } else if (xhttp.readyState == 4) {
+                cb_fail(xhttp.responseText, xhttp.status, url);
+            }
+        };
+        
+        var url='<?=$conf_backend_url_client?>';
+        <?
+		if ($conf_backend_has_rewrite) {
+        	?>
+        	url += route;
+			<?
+        } else {
+        	?>
+        	url += "?route=" + route;
+        	<?
+        }
+        if (!$conf_keycloak) {
+         	if ($conf_backend_has_rewrite) {
+         		?>
+				url += "?SESSION_ID=<?=$_SESSION['api_session']?>";
+				<?
+			} else {
+         		?>
+				url += "&SESSION_ID=<?=$_SESSION['api_session']?>";
+				<?
+			}
+		}
+        ?>
+
+		xhttp.open("POST", url, true);
+		xhttp.setRequestHeader("Content-type", "application/json");
+		<?
+		if ($conf_keycloak) {
+		    ?>
+		    xhttp.setRequestHeader("Authorization", "Bearer <?=$tokenString?>");
+		    <?
+		}
+		?>
+		xhttp.send(JSON.stringify(params));
+    }
 	// Default funkcija za neuspjeh, logira greške
 	function ajax_log_error(responseText, status, url) {
 		if (status != 200) {

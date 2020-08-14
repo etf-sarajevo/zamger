@@ -116,7 +116,7 @@ function student_predmet() {
 		$odsustva=0;
 		$datumi = $vremena = $statusi = "";
 		foreach($AttendanceDetails['attendance'] as $Attendance) {
-			$time = db_timestamp($Attendance['ZClass']['datetime']);
+			$time = db_timestamp($Attendance['ZClass']['dateTime']);
 			$datumi .= "<td>" . date("d.m" , $time) . "</td>\n";
 			$vremena .= "<td>" . date("h" , $time) . "<sup>" . date("i" , $time) . "</sup></td>\n";
 		
