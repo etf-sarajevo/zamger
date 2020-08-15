@@ -132,12 +132,8 @@ function saradnik_grupa() {
 
 	// ------- ZAGLAVLJE STRANICE (naslov i sl.)
 
-	$courses = api_call("course/teacher/$userid/$ag")["results"];
-	$course = [];
-	foreach($courses as $c)
-		if ($c['CourseUnit']['id'] == $predmet)
-			$course = $c;
-
+	$course = api_call("course/$predmet/$ag");
+	
 	?>
 	<br />
 	<center><h1><?=$course['courseName']?> - <?=$naziv?></h1></center>
