@@ -21,7 +21,8 @@ $conf_dbdb = "zamger";
 // Ovaj dio je potreban za generisanje linkova, mada su u principu linkovi relativni
 $conf_site_url = "http://localhost:8081";
 
-$conf_backend_url = "http://localhost:8085/api/";
+$conf_backend_url = "http://zamger-api/api/";
+$conf_backend_url_client = "http://localhost:8085/api/";
 $conf_backend_has_rewrite = true;
 
 // Lokacija na disku gdje je Zamger instaliran
