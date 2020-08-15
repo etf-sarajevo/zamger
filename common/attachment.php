@@ -56,7 +56,7 @@ if ($tip == "zadaca") {
 	
 	$content = api_call("homework/$zadaca/$zadatak/student/$student/file", [], "GET", false, false);
 	
-	// Kreiramo privremenu datoteku u koju ćemo upisati ZIP
+	// Kreiramo privremenu datoteku u koju ćemo upisati sadržinu fajla
 	$dir = "$conf_files_path/zadacetmp/$userid/";
 	if (!file_exists($dir))
 		mkdir ($dir,0777, true);
