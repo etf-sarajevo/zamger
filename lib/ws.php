@@ -401,3 +401,16 @@ function json_error($code, $msg) {
 	$result['message'] = $msg;
 	return $result;
 }
+
+
+// Convert a hierarhical array to a hierarchical stdClass object
+function array_to_object($arr) {
+	$obj = new stdClass;
+	foreach($arr as $key => $value) {
+		if (is_array($value))
+			$obj->{$key} = array_to_object($value);
+		else
+			$obj->{$key} = $value;
+	}
+	return $obj;
+}

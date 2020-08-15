@@ -428,7 +428,7 @@ CREATE TABLE IF NOT EXISTS `buildservice_tracking` (
 
 CREATE TABLE IF NOT EXISTS `cas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `datum` date NOT NULL DEFAULT '0000-00-00',
+  `datum` date NOT NULL DEFAULT '1970-01-01',
   `vrijeme` time NOT NULL DEFAULT '00:00:00',
   `labgrupa` int(11) NOT NULL,
   `nastavnik` int(11) NOT NULL,
@@ -561,7 +561,7 @@ CREATE TABLE IF NOT EXISTS `ispit` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `predmet` int(11) NOT NULL DEFAULT '0',
   `akademska_godina` int(11) NOT NULL DEFAULT '0',
-  `datum` date NOT NULL DEFAULT '0000-00-00',
+  `datum` date NOT NULL DEFAULT '1970-01-01',
   `komponenta` int(2) NOT NULL DEFAULT '0',
   `vrijemeobjave` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `apsolventski_rok` tinyint(1) NOT NULL DEFAULT '0',
@@ -593,9 +593,9 @@ CREATE TABLE IF NOT EXISTS `ispitocjene` (
 
 CREATE TABLE IF NOT EXISTS `ispit_termin` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `datumvrijeme` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `datumvrijeme` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
   `maxstudenata` int(11) NOT NULL,
-  `deadline` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `deadline` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
   `ispit` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ispit` (`ispit`)
@@ -740,7 +740,7 @@ CREATE TABLE IF NOT EXISTS `komentar` (
   `student` int(11) NOT NULL,
   `nastavnik` int(11) NOT NULL,
   `labgrupa` int(11) NOT NULL,
-  `datum` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `datum` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
   `komentar` text COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `student` (`student`),
