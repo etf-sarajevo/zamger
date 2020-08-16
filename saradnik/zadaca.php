@@ -428,6 +428,9 @@ if ($attach == 0) {
 
 
 // Prikaz statusa sa log-om i izmjena
+?>
+<table border="0">
+<?
 
 $q140 = db_query("select status,bodova,izvjestaj_skripte,komentar from zadatak where zadaca=$zadaca and redni_broj=$zadatak and student=$stud_id order by id desc limit 1");
 if (db_num_rows($q140) > 0) {
@@ -443,7 +446,6 @@ if (db_num_rows($q140) > 0) {
 
 	?>
 
-	<table border="0">
 	<tr>
 		<td>Vrijeme slanja:</td>
 		<td><b><?=$vrijeme_slanja?></b></td>
