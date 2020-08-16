@@ -202,10 +202,11 @@ function saradnik_zadaca() {
 		
 		$newAssignment = array_to_object( [ "id" => 0, "Homework" => [ "id" => $zadaca ], "assignNo" => $zadatak, "student" => [ "id" => $studentId ], "status" => $status, "score" => $bodova, "comment" => $komentar, "compileReport" => "", "filename" => $currentAssignment['filename'] ] );
 		
-		$result = api_call("homework/$zadaca/$zadatak/student/$studentId", $newAssignment, "PUT");
+		// Current assignment is now new changed
+		$currentAssignment = api_call("homework/$zadaca/$zadatak/student/$studentId", $newAssignment, "PUT");
 		
 		if ($_api_http_code != "201") {
-			niceerror("Neuspješno ažuriranje statusa zadaće: " . $result['message']);
+			niceerror("Neuspješno ažuriranje statusa zadaće: " . $currentAssignment['message']);
 		} else {
 			zamgerlog("izmjena zadace (student u$studentId zadaca z$zadaca zadatak $zadatak)", 2);
 			zamgerlog2("bodovanje zadace", $studentId, $zadaca, $zadatak);
@@ -262,105 +263,106 @@ function saradnik_zadaca() {
 	if (!$attach) {
 		// Nije attachment
 	
-		if (file_exists($the_file)) {
-			if ($_REQUEST["akcija"] == "test_sa_kodom") {
-				$test = intval($_REQUEST['test']);
-	
-				// Ovo ćemo popraviti kada pređemo na novi format autotesta
-				
-				// Provjera spoofinga testa
-				/*$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-				if (db_result($q10,0,0) == 0) {
-					niceerror("Odabrani test nije sa odabrane zadaće.");
-					return;
-				}*/
-	
-				$src = autotest_sa_kodom($test, $studentId, /* $param_nastavnik = */ true);
-			} else
-				$src = api_call("homework/$zadaca/$zadatak/student/$studentId/file", [], "GET", false, false);
-	
-			$no_lines = count(explode("\n", $src));
-		
-			// ACE code editor
-			if ($conf_code_viewer == "ace" && $id_jezika > 0) {
-				// Ako nije definisan programski jezik geshi je lakši
-				?>
-				<div id="editor"><?=htmlspecialchars($src)?></div>
-				<script src="static/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-				<script>
-				var editor = ace.edit("editor");
-				//editor.setTheme("ace/theme/monokai");
-				editor.getSession().setMode("ace/mode/<?=$ace_mode?>");
-	
-				// Stavljamo visinu ACE editora na dužinu koda
-				var newHeight =
-				editor.getSession().getScreenLength()
-				* editor.renderer.lineHeight
-				+ editor.renderer.scrollBar.getWidth() + 20; // 20 = jedan prazan red na kraju
-				/*$('#editor').height(newHeight.toString() + "px");
-				$('#editor-section').height(newHeight.toString() + "px");
-				editor.resize();*/
-				document.getElementById('editor').style.height = newHeight.toString() + "px";
-				document.getElementById('editor-section').style.height = newHeight.toString() + "px";
-				editor.resize();
-	
-				// Not editable
-				editor.setOptions({
-				readOnly: true,
-				highlightActiveLine: false,
-				highlightGutterLine: false
-				})
-				editor.renderer.$cursorLayer.element.style.opacity=0
-				editor.textInput.getElement().tabIndex=-1
-				editor.commands.commmandKeyBinding={}
-				</script>
-				<?
-				
-			// geshi - biblioteka za syntax highlighting
-			} else {
-				require("vendor/autoload.php");
-				$geshi = new GeSHi($src, $jezik);
-	
-				?>
-				<center><table width="95%" style="border:1px solid silver;"><tr>
-				<!-- Brojevi linija -->
-				<td bgcolor="#CCCCCC" align="left"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
-				<td  bgcolor="#F3F3F3" align="left">
-				<?
-				print $geshi->parse_code();
-				?></td></tr></table></center><br/><?
-			}
-	
-			if ($_REQUEST["akcija"] == "test_sa_kodom") return;
-	
-			// Formular za izvršavanje programa
-			if ($id_jezika > 0) {
-				?>
-				<script type="text/javascript" src="static/js/combo-box.js"></script>
-				<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
-				Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
-				<?=genform("POST")?>
-				<input type="hidden" name="akcija" value="izvrsi">
-				<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
-				<?
-	
-				// Zadnje korišteni stdin se čuva u bazi
-				// TODO ovo treba držati u local storage
-				/*$q120 = db_query("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
-				if (db_num_rows($q120)<1)
-					print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
-				while ($r120 = db_fetch_row($q120)) {
-					print "<option value=\"$r120[0]\">$r120[0]</option>\n";
-				}*/
-				?>
-				</select><br/>
+		if ($_REQUEST["akcija"] == "test_sa_kodom") {
+			$test = intval($_REQUEST['test']);
+
+			// Ovo ćemo popraviti kada pređemo na novi format autotesta
 			
-				<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
-				<input type="submit" value=" Izvrši program "> <input type="submit" name="sve" value=" Izvrši sve primjere odjednom ">
-				</form>
-				</td></tr></table></center><br/>&nbsp;<br/>
-				<?
-			}
+			// Provjera spoofinga testa
+			/*$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
+			if (db_result($q10,0,0) == 0) {
+				niceerror("Odabrani test nije sa odabrane zadaće.");
+				return;
+			}*/
+
+			$src = autotest_sa_kodom($test, $studentId, /* $param_nastavnik = */ true);
+		} else {
+			$src = api_call("homework/$zadaca/$zadatak/student/$studentId/file", [], "GET", false, false);
+			if ($_api_http_code != "200")
+				$src = ""; // File doesn't exist
+		}
+
+		$no_lines = count(explode("\n", $src));
+	
+		// ACE code editor
+		if ($conf_code_viewer == "ace" && $id_jezika > 0) {
+			// Ako nije definisan programski jezik geshi je lakši
+			?>
+			<div id="editor"><?=htmlspecialchars($src)?></div>
+			<script src="static/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+			<script>
+			var editor = ace.edit("editor");
+			//editor.setTheme("ace/theme/monokai");
+			editor.getSession().setMode("ace/mode/<?=$ace_mode?>");
+
+			// Stavljamo visinu ACE editora na dužinu koda
+			var newHeight =
+			editor.getSession().getScreenLength()
+			* editor.renderer.lineHeight
+			+ editor.renderer.scrollBar.getWidth() + 20; // 20 = jedan prazan red na kraju
+			/*$('#editor').height(newHeight.toString() + "px");
+			$('#editor-section').height(newHeight.toString() + "px");
+			editor.resize();*/
+			document.getElementById('editor').style.height = newHeight.toString() + "px";
+			document.getElementById('editor-section').style.height = newHeight.toString() + "px";
+			editor.resize();
+
+			// Not editable
+			editor.setOptions({
+			readOnly: true,
+			highlightActiveLine: false,
+			highlightGutterLine: false
+			})
+			editor.renderer.$cursorLayer.element.style.opacity=0
+			editor.textInput.getElement().tabIndex=-1
+			editor.commands.commmandKeyBinding={}
+			</script>
+			<?
+			
+		// geshi - biblioteka za syntax highlighting
+		} else {
+			require("vendor/autoload.php");
+			$geshi = new GeSHi($src, $jezik);
+
+			?>
+			<center><table width="95%" style="border:1px solid silver;"><tr>
+			<!-- Brojevi linija -->
+			<td bgcolor="#CCCCCC" align="left"><pre><? for ($i=1; $i<=$no_lines; $i++) print "$i\n"; ?></pre></td>
+			<td  bgcolor="#F3F3F3" align="left">
+			<?
+			print $geshi->parse_code();
+			?></td></tr></table></center><br/><?
+		}
+
+		if ($_REQUEST["akcija"] == "test_sa_kodom") return;
+
+		// Formular za izvršavanje programa
+		if ($id_jezika > 0) {
+			?>
+			<script type="text/javascript" src="static/js/combo-box.js"></script>
+			<center><table style="border:1px solid silver;" cellspacing="0" cellpadding="6"><tr><td>
+			Izvrši program sa sljedećim parametrima (kucajte \n za tipku enter):<br/>
+			<?=genform("POST")?>
+			<input type="hidden" name="akcija" value="izvrsi">
+			<select name="stdin" onKeyPress="edit(event)" onBlur="this.editing = false;">
+			<?
+
+			// Zadnje korišteni stdin se čuva u bazi
+			// TODO ovo treba držati u local storage
+			/*$q120 = db_query("select ulaz from stdin where zadaca=$zadaca and redni_broj=$zadatak order by id desc");
+			if (db_num_rows($q120)<1)
+				print "<option></option>"; // bez ovoga nije moguće upisati novi tekst
+			while ($r120 = db_fetch_row($q120)) {
+				print "<option value=\"$r120[0]\">$r120[0]</option>\n";
+			}*/
+			?>
+			</select><br/>
+		
+			<b>Pažnja!</b> Prije pokretanja provjerite da li program sadrži opasne naredbe.<br/>
+			<input type="submit" value=" Izvrši program "> <input type="submit" name="sve" value=" Izvrši sve primjere odjednom ">
+			</form>
+			</td></tr></table></center><br/>&nbsp;<br/>
+			<?
 		}
 	
 	
