@@ -399,6 +399,9 @@ function saradnik_zadaca() {
 
 
 	// Prikaz statusa sa log-om i izmjena
+	?>
+	<table border="0">
+	<?
 
 	if ($currentAssignment['id'] > 0) {
 		$status = $currentAssignment['status'];
@@ -414,7 +417,6 @@ function saradnik_zadaca() {
 	
 		?>
 	
-		<table border="0">
 		<tr>
 			<td>Vrijeme slanja:</td>
 			<td><b><?=$vrijeme_slanja?></b></td>
