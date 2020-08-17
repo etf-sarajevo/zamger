@@ -20,8 +20,6 @@ function student_predmet() {
 		return;
 	}
 
-	$ponudakursa = $course['CourseOffering']['id'];
-
 
 	?>
 	<br/>
@@ -29,8 +27,8 @@ function student_predmet() {
 	<?
 
 	// Određivanje labgrupe
-	if (array_key_exists('group', $course) && $course['group']) {
-		?>Grupa: <b><?=$course['group']?></b><?
+	if (array_key_exists('Group', $course) && $course['Group'] != null && !$course['Group']['virtual']) {
+		?>Grupa: <b><?=$course['Group']['name']?></b><?
 	}
 	
 	print "</p><br/>\n";
@@ -118,7 +116,7 @@ function student_predmet() {
 		foreach($AttendanceDetails['attendance'] as $Attendance) {
 			$time = db_timestamp($Attendance['ZClass']['dateTime']);
 			$datumi .= "<td>" . date("d.m" , $time) . "</td>\n";
-			$vremena .= "<td>" . date("h" , $time) . "<sup>" . date("i" , $time) . "</sup></td>\n";
+			$vremena .= "<td>" . date("H" , $time) . "<sup>" . date("i" , $time) . "</sup></td>\n";
 		
 			if ($Attendance['presence'] == 0) {
 				$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
