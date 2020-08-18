@@ -109,68 +109,14 @@ function nastavnik_obavjestenja() {
 			zamgerlog("izmjena obavjestenja (id $io)",2);
 			zamgerlog2("poruka izmijenjena", $io);
 		} else {
+			$id = $result['id'];
 			zamgerlog("novo obavjestenje (predmet pp$predmet)",2);
-			zamgerlog2("nova poruka poslana", $io);
+			zamgerlog2("nova poruka poslana", $id);
 			//print_r($result);
 			
 			// Slanje mailova studentima
 			if ($_REQUEST['email']) {
-				if ($primalac > 0)
-					$group = api_call("group/$primalac");
-				else
-					$group = api_call("group/course/$predmet");
-				
-				
-				// Podaci za konverziju naših slova
-				$nasaslova = array("č", "ć", "đ", "š", "ž", "Č", "Ć", "Đ", "Š", "Ž");
-				$beznasihslova = array("c", "c", "d", "s", "z", "C", "C", "D", "S", "Z");
-				
-				// Subject email poruke
-				$subject = "OBAVJEŠTENJE: $predmet_naziv";
-				if ($primalac>0) {
-					$subject .= " (".$group['name'].")";
-				}
-				
-				$subject = iconv("UTF-8", "ISO-8859-2", $subject); // neki mail klijenti ne znaju prikazati utf-8 u subjektu
-				$preferences = array(
-					"input-charset" => "ISO-8859-2",
-					"output-charset" => "ISO-8859-2",
-					"line-length" => 76,
-					"line-break-chars" => "\n"
-				);
-				$preferences["scheme"] = "Q"; // quoted-printable
-				$subject = iconv_mime_encode("", $subject, $preferences);
-				
-				// Vraćamo naslov i tekst obavještenja koji su ranije escapovani
-				// mail() nema poznatih eksploita po tom pitanju
-				$naslov = $_REQUEST['naslov'];
-				$tekst = $_REQUEST['tekst'];
-				
-				$mail_body = "\n=== OBAVJEŠTENJE ZA STUDENTE ===\n\nNastavnik ili saradnik na predmetu $predmet_naziv poslao vam je sljedeće obavještenje:\n\n$naslov\n\n$tekst";
-				
-				// Podaci za from polje
-				$from = $person['name']." ".$person['surname'];
-				$from = str_replace($nasaslova, $beznasihslova, $from);
-				
-				$from .= " <".$person['email'].">";
-				
-				$add_header = "From: $from\r\nContent-Type: text/plain; charset=utf-8\r\n";
-				
-				
-				foreach($group['members'] as $member) {
-					$student_id = $member['student']['id'];
-					$student_ime_prezime = str_replace($nasaslova, $beznasihslova, $member['student']['name'] . "  " . $member['student']['surname']);
-					
-					// TODO više adresa
-					$mail_to = "$student_ime_prezime <" . $member['student']['email'] . ">";
-					$mail_cc = "";
-					// Prvu adresu stavljamo u To: a sve ostale u Cc: kako bi mail server otkrio eventualne aliase
-					
-					if ($member['student']['email']) { // Da li student ima ijednu adresu?
-						mail($mail_to, $subject, $mail_body, "$add_header");
-						nicemessage ("Mail poslan za $student_ime_prezime &lt;$mail_to&gt;");
-					}
-				}
+				api_call("inbox/announcement/$id/mail");
 			}
 		}
 	
