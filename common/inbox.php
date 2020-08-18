@@ -4,595 +4,493 @@
 
 
 function common_inbox() {
-
-global $userid,$user_student, $user_nastavnik;
-
-require_once("lib/utility.php"); // linkuj_urlove
-
-
-// LEGENDA tabele poruke
-// Tip:
-//    1 - obavjestenja
-//    2 - lične poruke
-// Opseg:
-//    0 - svi korisnici Zamgera
-//    1 - svi studenti
-//    2 - svi nastavnici
-//    3 - svi studenti na studiju (primalac - id studija)
-//    4 - svi studenti na godini (primalac - id akademske godine)
-//    5 - svi studenti na predmetu (primalac - id predmeta)
-//    6 - svi studenti na labgrupi (primalac - id labgrupe)
-//    7 - korisnik (primalac - user id)
-//    8 - svi studenti na godini studija (primalac - idstudija*10+godina_studija)
-
-
-
-// Podaci potrebni kasnije
-
-// Aktuelna akademska godina
-$q20 = db_query("select id,naziv from akademska_godina where aktuelna=1");
-$ag = db_result($q20,0,0);
-
-// Studij koji student trenutno sluša
-$studij = 0;
-if ($user_student) {
-	$q30 = db_query("select ss.studij,ss.semestar,ts.ciklus from student_studij as ss, studij as s, tipstudija as ts where ss.student=$userid and ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id order by ss.semestar desc limit 1");
-	if (db_num_rows($q30)>0) {
-		$studij   = db_result($q30,0,0);
-		$semestar = db_result($q30,0,1);
-		$ciklus   = db_result($q30,0,2);
-		$godina_studija = intval(($semestar+1)/2);
-	}
-}
-
-
-
-// Pravimo neki okvir za sajt
-
-?>
-<center>
-<table width="80%" border="0"><tr><td>
-
-<h1>Lične poruke</h1>
-
-<?
-
-
-
-//////////////////////
-// Slanje poruke
-//////////////////////
-
-if ($_POST['akcija']=='send' && check_csrf_token()) {
-
-	// Ko je primalac
-	$primalac = db_escape($_REQUEST['primalac']);
-	$primalac = preg_replace("/\(.*?\)/","",$primalac);
-
-	$q300 = db_query("select id from auth where login='$primalac'");
-	if (db_num_rows($q300)<1) {
-		niceerror("Nepoznat primalac");
-		return;
-		// FIXME
-	}
-	$prim_id = db_result($q300,0,0);
-
-	// Samo slanje licnih poruka je dozvoljeno...
-	$q310 = db_query("insert into poruka set tip=2, opseg=7, primalac=$prim_id, posiljalac=$userid, vrijeme=NOW(), ref=".intval($_REQUEST['ref']).", naslov='".db_escape($_REQUEST['naslov'])."', tekst='".db_escape($_REQUEST['tekst'])."', procitana=0");
-	nicemessage("Poruka uspješno poslana");
-	zamgerlog("poslana poruka za u$prim_id",2);
-	zamgerlog2("poslana poruka", intval($prim_id));
-}
-
-if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
-	if ($_REQUEST['akcija']=='odgovor') {
-		$poruka = intval($_REQUEST['poruka']);
-		$q200 = db_query("select posiljalac, naslov, tekst, primalac from poruka where id=$poruka");
-		if (db_num_rows($q200) < 1) {
-			niceerror("Poruka ne postoji");
-			zamgerlog("pokusaj odgovora na nepostojecu poruku $poruka",3);
-			zamgerlog2("pokusaj odgovora na nepostojecu poruku", $poruka);
-			return;
-		}
-
-		// Ko je poslao originalnu poruku (tj. kome odgovaramo)
-		$prim_id = db_result($q200,0,0);
-		if ($prim_id == $userid) // U slučaju odgovora na poslanu poruku, ponovo šaljemo poruku istoj osobi
-			$prim_id = db_result($q200,0,3);
-		$q210 = db_query("select a.login,o.ime,o.prezime from auth as a, osoba as o where a.id=o.id and o.id=$prim_id");
-		if (db_num_rows($q210)<1) {
-			niceerror("Nepoznat pošiljalac");
-			zamgerlog("poruka $poruka ima nepoznatog posiljaoca $prim_id (prilikom odgovora na poruku)",3);
-			zamgerlog2("poruka ima nepoznatog posiljaoca (prilikom odgovora na poruku)", $poruka, $prim_id);
-			return;
-		} else
-			$primalac = db_result($q210,0,0)." (".db_result($q210,0,1)." ".db_result($q210,0,2).")";
-		
-		// Prepravka naslova i teksta
-		$naslov = db_result($q200,0,1);
-		if (substr($naslov,0,3) != "Re:") $naslov = "Re: ".$naslov;
-		$tekst = db_result($q200,0,2);
-		for ($i=80;$i<strlen($tekst);$i+=81) {
-			$k=$i-80;
-			while ($k<$i && $k!==false) {
-				$oldk=$k;
-				$k = strpos($tekst, " ",$k+1);
-			}
-			if ($oldk==$i-80)
-				$tekst = substr($tekst,0,$i)."\n".substr($tekst,$i);
-			else
-				$tekst = substr($tekst,0,$oldk)."\n".substr($tekst,$oldk+1);
-		}
-		$tekst = "> ".str_replace("\n","\n> ", $tekst);
-		$tekst .= "\n\n";
-	} else {
-		// Omogucujemo da se naslov, tekst i primalac zadaju preko URLa
-		if ($_REQUEST['naslov']) 
-			$naslov = db_escape($_REQUEST['naslov']);
-		else $naslov="";
-		if ($_REQUEST['tekst']) 
-			$tekst = db_escape($_REQUEST['tekst']);
-		else $tekst="";
-		if ($_REQUEST['primalac']) 
-			$primalac = db_escape($_REQUEST['primalac']);
-		else $primalac="";
-	}
-		
+	
+	global $userid, $_api_http_code, $person;
+	
+	require_once("lib/utility.php"); // linkuj_urlove
+	
+	// Pravimo neki okvir za sajt
+	
 	?>
-	<a href="?sta=common/inbox">Nazad na inbox</a><br/>
-	<h3>Slanje poruke</h3>
-	<?=genform("POST")?>
+	<center>
+	<table width="80%" border="0"><tr><td>
+	
+	<h1>Lične poruke</h1>
+	
 	<?
-	if ($_REQUEST['akcija']=='odgovor') {
-		?>
-		<input type="hidden" name="ref" value="<?=$poruka?>"><?
-	}
-	?>
-	<input type="hidden" name="akcija" value="send">
-	<script language="javascript">
-	var tm=0;
-	function startaj_timer(e) {
-		sakrij_pretragu();
-		if(e.keyCode!=13 && e.keyCode!=9) tm = setTimeout('pretraga_primalaca()',1000);
-	}
-	function pretraga_primalaca() {
-		var ib=document.getElementById('primalac');
-		var pg=document.getElementById('pretgraga');
-		if (ib.value.length<3) return;
-		//alert("Trazim: "+ib.value);
+	
+	
+	$pageSize = 20; // Size of page for inbox/outbox
+	
+	
+	
+	//////////////////////
+	// Slanje poruke
+	//////////////////////
+	
+	if ($_POST['akcija']=='send' && check_csrf_token()) {
+	
+		// Ko je primalac
+		$receiverTxt = $_REQUEST['primalac'];
+		$ref = intval($_REQUEST['ref']);
+		$receiverTxt = preg_replace("/\(.*?\)/","",$receiverTxt);
 
-		// Nadji poziciju objekta - stari kod je bio obsolete i nije radio na Firefoxu
-		var viewportOffset = ib.getBoundingClientRect();
-		console.log(viewportOffset);
-		pg.style.visibility = 'visible';
-		pg.style.left = "" + viewportOffset.left + "px";
-		pg.style.top= "" + (viewportOffset.top+ib.offsetHeight) + "px";
-		console.log(pg.style);
-
-		ajax_start(
-			"ws/osoba", 
-			"GET",
-			{ "akcija" : "pretraga", "upit" : ib.value },
-			function(osobe) { 
-				var rp=document.getElementById('rezultati_pretrage');
-				rp.innerHTML = "";
-				found = false;
-				for (i=0; i<osobe.length; i++) {
-					osoba_tekst = osobe[i].logini[0] + " (" + osobe[i].ime + " " + osobe[i].prezime + ")";
-					rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+osoba_tekst+"')\">"+osoba_tekst+"</a><br/>";
-					found = true;
+		$receiver = api_call("person/byLogin", ["login" => $receiverTxt]);
+		if ($_api_http_code != "200") {
+			niceerror("Nepoznat primalac");
+			return;
+		}
+		
+		$message = array_to_object( [ "id" => 0, "type" => 2, "scope" => 7, "receiver" => $receiver['id'], "sender" => [ "id" => $userid ], "ref" => $ref, "subject" => $_REQUEST['naslov'], "text" => $_REQUEST['tekst'] ] );
+		$result = api_call("inbox", $message, "POST");
+		if ($_api_http_code == "201") {
+			nicemessage("Poruka uspješno poslana");
+			zamgerlog("poslana poruka za u$receiverId",2);
+			zamgerlog2("poslana poruka", intval($receiverId));
+		} else {
+			niceerror("Neuspješno slanje poruke: " . $result['message']);
+		}
+	}
+	
+	if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
+		if ($_REQUEST['akcija']=='odgovor') {
+			$messageId = intval($_REQUEST['poruka']);
+			$message = api_call("inbox/$messageId", [ "resolve" => [ "Person" ]]);
+	
+			// Ko je poslao originalnu poruku (tj. kome odgovaramo)
+			$receiverId = $message['sender']['id'];
+			$receiver = $message['sender'];
+			if ($receiverId == $userid) { // U slučaju odgovora na poslanu poruku, ponovo šaljemo poruku istoj osobi
+				$receiverId = $message['receiver'];
+				$receiver = api_call("person/$receiverId");
+			}
+			$receiverTxt = $receiver['login'] . " (" . $receiver['name'] . " " . $receiver['surname'] . ")";
+			
+			// Prepravka naslova i teksta
+			$subject = $message['subject'];
+			if (substr($subject,0,3) != "Re:") $subject = "Re: " . $subject;
+			
+			// Wrap message text at 80 characters
+			$lineWidth = 80;
+			$text = $message['text'];
+			for ($i = $lineWidth; $i<strlen($text); $i += $lineWidth+1) {
+				$k = $i-$lineWidth;
+				while ($k<$i && $k!==false) {
+					$oldk=$k;
+					$k = strpos($text, " ",$k+1);
 				}
-				if (!found) rp.innerHTML = "<font color=\"#AAAAAA\">(Nema rezultata)</font><br/>";
+				if ($oldk == $i - $lineWidth)
+					$text = substr($text,0,$i)."\n".substr($text,$i);
+				else
+					$text = substr($text,0,$oldk)."\n".substr($text,$oldk+1);
 			}
-		);
-	}
-	function sakrij_pretragu() {
-		var pg=document.getElementById('pretgraga');
-		pg.style.visibility = 'hidden';
-		if (tm!=0)
-			clearTimeout(tm);
-	}
-	function postavi(prim) {
-		var ib=document.getElementById('primalac');
-		ib.value=prim;
-		sakrij_pretragu();
-	}
-	function blur_dogadjaj(e) {
-		setTimeout('sakrij_pretragu()',1000);
-	}
-	</script>
-	<table border="0">
-		<tr><td><b>Primalac:</b></td><td><input type="text" name="primalac" id="primalac" size="40" value="<?=$primalac?>" autocomplete="off" onkeypress="startaj_timer(event);" onblur="blur_dogadjaj(event);"></td></tr>
-		<tr><td colspan="2"><input type="radio" name="metoda" value="1" DISABLED> Pošalji e-mail    <input type="radio" name="metoda" value="2" CHECKED> Pošalji Zamger poruku<br/>&nbsp;<br/></td></tr>
-		<tr><td><b>Naslov:</b></td><td><input type="text" name="naslov" size="40" value="<?=$naslov?>"></td></tr>
-	</table>
-
-	<!-- Rezultati pretrage primaoca -->
-	<div id="pretgraga" style="position:absolute;visibility:hidden">
-		<table border="0" bgcolor="#FFFFEE"  style="border:1px;border-color:silver;border-style:solid;">
-			<tr><td>
-				<div id="rezultati_pretrage"></div>
-			</td></tr>
-		</table>
-	</div>
-
-	<br/>
-	Tekst poruke:<br/>
-	<textarea name="tekst" rows="10" cols="81"><?=$tekst?></textarea>
-	<br/>&nbsp;<br/>
-	<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
-	</form>
-	<?
-	ajax_box();
-	return;
-}
-
-
-
-?>
-<p><a href="?sta=common/inbox&akcija=compose">Pošalji novu poruku</a> * <?
-	if ($_REQUEST['mode']=="outbox") {
-?><a href="?sta=common/inbox">Vaše sanduče</a><?
-	} else {
-?><a href="?sta=common/inbox&mode=outbox">Vaše poslane poruke</a><?
-	}
-?></p>
-<?
-
-
-
-//////////////////////
-// Čitanje poruke
-//////////////////////
-
-
-$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
-
-$dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota");
-
-$poruka = intval($_REQUEST['poruka']);
-if ($poruka>0) {
-	// Dobavljamo podatke o poruci
-	$q10 = db_query("select opseg, primalac, posiljalac, UNIX_TIMESTAMP(vrijeme), naslov, tekst, tip, procitana from poruka where id=$poruka");
-	if (db_num_rows($q10)<1) {
-		niceerror("Poruka ne postoji");
-		zamgerlog("pristup nepostojecoj poruci $poruka",3);
-		zamgerlog2("pristup nepostojecoj poruci", $poruka);
-		return;
-	}
-
-	// Posiljalac
-	$opseg =  db_result($q10,0,0);
-	$prim_id = db_result($q10,0,1);
-	$pos_id = db_result($q10,0,2);
-
-	if ($opseg == 1 && !$user_student || $opseg == 2 && !$user_nastavnik || $opseg==3 && $prim_id!=$studij && $prim_id!=-$ciklus || $opseg==4 && $prim_id!=$ag ||  $opseg==7 && $prim_id!=$userid && $_REQUEST['mode']!=="outbox" || $opseg==7 && $_REQUEST['mode']==="outbox" && $pos_id!=$userid || $opseg==8 && $prim_id != ($studij*10+$godina_studija) && $prim_id != (-$ciklus*10-$godina_studija)) {
-		niceerror("Nemate pravo pristupa ovoj poruci!");
-		zamgerlog("pokusao pristupiti poruci $poruka",3);
-		zamgerlog2("nema pravo pristupa poruci", $poruka);
-		return;
-	}
-	if ($opseg==5) {
-		// da li student ikada slusao predmet? ako jeste moze citati poruke za taj predmet... (FIXME?)
-		$q110 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$prim_id");
-		if (db_result($q110,0,0)<1) {
-			niceerror("Nemate pravo pristupa ovoj poruci!");
-			zamgerlog("pokusao pristupiti poruci $poruka",3);
-			zamgerlog2("nema pravo pristupa poruci", $poruka);
-			return;
-		}
-	}
-	if ($opseg==6) {
-		// da li je student u labgrupi?
-		$q115 = db_query("select count(*) from student_labgrupa where student=$userid and labgrupa=$prim_id");
-		if (db_result($q115,0,0)<1) {
-			niceerror("Nemate pravo pristupa ovoj poruci!");
-			zamgerlog("pokusao pristupiti poruci $poruka",3);
-			zamgerlog2("nema pravo pristupa poruci", $poruka);
-			return;
-		}
-	}
-
-
-	$q20 = db_query("select ime,prezime from osoba where id=$pos_id");
-	if (db_num_rows($q20)<1) {
-		$posiljalac = "Nepoznato!?";
-		zamgerlog("poruka $poruka ima nepoznatog posiljaoca $pos_id",3);
-		zamgerlog2("poruka ima nepoznatog posiljaoca", $poruka, $pos_id);
-	} else
-		$posiljalac = db_result($q20,0,0)." ".db_result($q20,0,1);
-
-	// Primalac
-	if ($opseg==0)
-		$primalac="Svi korisnici Zamgera";
-	else if ($opseg==1)
-		$primalac="Svi studenti";
-	else if ($opseg==2)
-		$primalac="Svi nastavnici i saradnici";
-	else if ($opseg==3) {
-		$q30 = db_query("select naziv from studij where id=$prim_id");
-		if (db_num_rows($q30)<1) {
-			$primalac="Nepoznato!?";
-			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: studij)",3);
-			zamgerlog2("poruka ima nepoznatog primaoca (opseg: studij)", $poruka, $prim_id);
+			$text = "> ".str_replace("\n","\n> ", $text);
+			$text .= "\n\n";
+			
 		} else {
-			$primalac = "Svi studenti na: ".db_result($q30,0,0);
+			// Omogucujemo da se naslov, tekst i primalac zadaju preko URLa
+			if ($_REQUEST['naslov'])
+				$subject = db_escape($_REQUEST['naslov']);
+			else $subject="";
+			if ($_REQUEST['tekst'])
+				$text = db_escape($_REQUEST['tekst']);
+			else $text="";
+			if ($_REQUEST['primalac'])
+				$receiverTxt = db_escape($_REQUEST['primalac']);
+			else $receiverTxt="";
 		}
-	}
-	else if ($opseg==4) {
-		$q40 = db_query("select naziv from akademska_godina where id=$prim_id");
-		if (db_num_rows($q40)<1) {
-			$primalac="Nepoznato!?";
-			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: akademska godina)",3);
-			zamgerlog2("poruka ima nepoznatog primaoca (opseg: akademska godina)", $poruka, $prim_id);
-		} else {
-			$primalac = "Svi studenti na akademskoj godini: ".db_result($q40,0,0);
-		}
-	}
-	else if ($opseg==5) {
-		$q50 = db_query("select naziv from predmet where id=$prim_id");
-		if (db_num_rows($q50)<1) {
-			$primalac="Nepoznato!?";
-			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: predmet)",3);
-			zamgerlog2("poruka ima nepoznatog primaoca (opseg: predmet)", $poruka, $prim_id);
-		} else {
-			$primalac = "Svi studenti na predmetu: ".db_result($q50,0,0);
-		}
-	}
-	else if ($opseg==6) {
-		$q55 = db_query("select p.naziv,l.naziv from predmet as p, labgrupa as l where l.id=$prim_id and l.predmet=p.id");
-		if (db_num_rows($q55)<1) {
-			$primalac="Nepoznato!?";
-			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: labgrupa)",3);
-			zamgerlog2("poruka ima nepoznatog primaoca (opseg: labgrupa)", $poruka, $prim_id);
-		} else {
-			$primalac = "Svi studenti u grupi ".db_result($q55,0,1)." (".db_result($q55,0,0).")";
-		}
-	}
-	else if ($opseg==7) {
-		$q60 = db_query("select ime,prezime from osoba where id=$prim_id");
-		if (db_num_rows($q60)<1) {
-			$primalac = "Nepoznato!?";
-			zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: korisnik)",3);
-			zamgerlog2("poruka ima nepoznatog primaoca (opseg: korisnik)", $poruka, $prim_id);
-		} else
-			$primalac = db_result($q60,0,0)." ".db_result($q60,0,1);
-	}
-	else if ($opseg==8) {
-		$studij = intval($prim_id / 10);
-		if ($studij == -1) {
-			$godina = -($prim_id+10);
-			$primalac = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
-		} else if ($studij == -2) {
-			$godina = -($prim_id+20);
-			$primalac = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
-		} else {
-			$godina = $prim_id%10;
-			$q30 = db_query("select naziv from studij where id=$studij");
-			if (db_num_rows($q30)<1) {
-				$primalac="Nepoznato!?";
-				zamgerlog("poruka $poruka ima nepoznatog primaoca $prim_id (opseg: godina studija)",3);
-				zamgerlog2("poruka ima nepoznatog primaoca (opseg: godina studija)", $poruka, $prim_id);
-			} else {
-				$primalac = "Svi studenti na: ".db_result($q30,0,0).", $godina. godina";
-			}
-		}
-	}
-	else {
-		$primalac = "Nepoznato!?";
-		zamgerlog("poruka $poruka ima nepoznat opseg $opseg",3);
-		zamgerlog2("poruka ima nepoznat opseg", $poruka, $opseg);
-	}
-
-	// Fini datum
-	$vr = db_result($q10,0,3);
-	if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i> - ";
-	else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i> - ";
-	$vrijeme .= $dani[date("w",$vr)].date(", j. ",$vr).$mjeseci[date("n",$vr)].date(" Y. H:i",$vr);
-
-	// Naslov
-	$tip = db_result($q10,0,6);
-	if ($tip == 1) {
-		$naslov = "O B A V J E Š T E N J E";
-		$tekst = db_result($q10,0,4) . "\n\n";
-	} else {
-		$naslov = db_result($q10,0,4);
-		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
-		$tekst = "";
-	}
-
-	?><h3>Prikaz poruke</h3>
-	<table cellspacing="0" cellpadding="0" border="0"  style="border:1px;border-color:silver;border-style:solid;"><tr><td bgcolor="#f2f2f2">
-		<table border="0">
-			<tr><td><b>Vrijeme slanja:</b></td><td><?=$vrijeme?></td></tr>
-			<tr><td><b>Pošiljalac:</b></td><td><?=$posiljalac?></td></tr>
-			<tr><td><b>Primalac:</b></td><td><?=$primalac?></td></tr>
-			<tr><td><b>Naslov:</b></td><td><?=$naslov?> (<a href="?sta=common/inbox&akcija=odgovor&poruka=<?=$poruka?>">odgovori</a>)</td></tr>
-		</table>
-	</td></tr><tr><td>
-		<br/>
-		<table border="0" cellpadding="5"><tr><td>
-		<?
-		$tekst .= db_result($q10,0,5); // Dodajemo na eventualni naslov obavještenja
-		$tekst =  linkuj_urlove($tekst);
-		$tekst =  str_replace("\n","<br/>\n",$tekst);
-
-		print $tekst;
+		
 		?>
-		</td><tr></table>
-	</td></tr></table>
-	<br/><br/>
-	<a href="?sta=common/inbox&akcija=odgovor&poruka=<?=$poruka?>">Odgovorite na poruku</a>
-	<br/><hr><br/><?
+		<a href="?sta=common/inbox">Nazad na inbox</a><br/>
+		<h3>Slanje poruke</h3>
+		<?=genform("POST")?>
+		<?
+		if ($_REQUEST['akcija']=='odgovor') {
+			?>
+			<input type="hidden" name="ref" value="<?=$messageId?>"><?
+		}
+		?>
+		<input type="hidden" name="akcija" value="send">
+		<script language="javascript">
+		var tm=0;
+		function startaj_timer(e) {
+			sakrij_pretragu();
+			if(e.keyCode!=13 && e.keyCode!=9) tm = setTimeout('pretraga_primalaca()',1000);
+		}
+		function pretraga_primalaca() {
+			var ib=document.getElementById('primalac');
+			var pg=document.getElementById('pretgraga');
+			if (ib.value.length<3) return;
+			//alert("Trazim: "+ib.value);
 	
-	if ($opseg == 7 && db_result($q10,0,7) == 0) {
-		db_query("UPDATE poruka SET procitana=1 WHERE id=$poruka");
+			// Nadji poziciju objekta - stari kod je bio obsolete i nije radio na Firefoxu
+			var viewportOffset = ib.getBoundingClientRect();
+			console.log(viewportOffset);
+			pg.style.visibility = 'visible';
+			pg.style.left = "" + viewportOffset.left + "px";
+			pg.style.top= "" + (viewportOffset.top+ib.offsetHeight) + "px";
+			console.log(pg.style);
+	
+			ajax_start(
+				"ws/osoba",
+				"GET",
+				{ "akcija" : "pretraga", "upit" : ib.value },
+				function(osobe) {
+					var rp=document.getElementById('rezultati_pretrage');
+					rp.innerHTML = "";
+					found = false;
+					for (i=0; i<osobe.length; i++) {
+						osoba_tekst = osobe[i].logini[0] + " (" + osobe[i].ime + " " + osobe[i].prezime + ")";
+						rp.innerHTML = rp.innerHTML+"<a href=\"javascript:postavi('"+osoba_tekst+"')\">"+osoba_tekst+"</a><br/>";
+						found = true;
+					}
+					if (!found) rp.innerHTML = "<font color=\"#AAAAAA\">(Nema rezultata)</font><br/>";
+				}
+			);
+		}
+		function sakrij_pretragu() {
+			var pg=document.getElementById('pretgraga');
+			pg.style.visibility = 'hidden';
+			if (tm!=0)
+				clearTimeout(tm);
+		}
+		function postavi(prim) {
+			var ib=document.getElementById('primalac');
+			ib.value=prim;
+			sakrij_pretragu();
+		}
+		function blur_dogadjaj(e) {
+			setTimeout('sakrij_pretragu()',1000);
+		}
+		</script>
+		<table border="0">
+			<tr><td><b>Primalac:</b></td><td><input type="text" name="primalac" id="primalac" size="40" value="<?=$receiverTxt?>" autocomplete="off" onkeypress="startaj_timer(event);" onblur="blur_dogadjaj(event);"></td></tr>
+			<tr><td colspan="2"><input type="radio" name="metoda" value="1" DISABLED> Pošalji e-mail    <input type="radio" name="metoda" value="2" CHECKED> Pošalji Zamger poruku<br/>&nbsp;<br/></td></tr>
+			<tr><td><b>Naslov:</b></td><td><input type="text" name="naslov" size="40" value="<?=$subject?>"></td></tr>
+		</table>
+	
+		<!-- Rezultati pretrage primaoca -->
+		<div id="pretgraga" style="position:absolute;visibility:hidden">
+			<table border="0" bgcolor="#FFFFEE"  style="border:1px;border-color:silver;border-style:solid;">
+				<tr><td>
+					<div id="rezultati_pretrage"></div>
+				</td></tr>
+			</table>
+		</div>
+	
+		<br/>
+		Tekst poruke:<br/>
+		<textarea name="tekst" rows="10" cols="81"><?=$text?></textarea>
+		<br/>&nbsp;<br/>
+		<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
+		</form>
+		<?
+		ajax_box();
+		return;
 	}
-}
-
-
-
-//////////////////////
-// OUTBOX
-//////////////////////
-
-if ($_REQUEST['mode']=="outbox") {
-
-	print "<h3>Poslane poruke:</h3>\n";
+	
+	
 	
 	?>
-	<table border="0" width="100%" style="border:1px;border-color:silver;border-style:solid;">
-		<thead>
-		<tr bgcolor="#cccccc"><td width="15%"><b>Datum</b></td><td width="15%"><b>Primalac</b></td><td width="70%"><b>Naslov</b></td></tr>
-		</thead>
-		<tbody>
+	<p><a href="?sta=common/inbox&akcija=compose">Pošalji novu poruku</a> * <?
+		if ($_REQUEST['mode']=="outbox") {
+	?><a href="?sta=common/inbox">Vaše sanduče</a><?
+		} else {
+	?><a href="?sta=common/inbox&mode=outbox">Vaše poslane poruke</a><?
+		}
+	?></p>
 	<?
 	
 	
-	$vrijeme_poruke = array();
 	
-	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac from poruka where tip=2 and posiljalac=$userid order by vrijeme desc");
-	while ($r100 = db_fetch_row($q100)) {
-		$id = $r100[0];
-		$opseg = $r100[2];
-		$primalac = $r100[3];
-
-		$vrijeme_poruke[$id]=$r100[1];
-		$naslov = $r100[4];
-		if (strlen($naslov)>60) $naslov = substr($naslov,0,55)."...";
-		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
+	//////////////////////
+	// Čitanje poruke
+	//////////////////////
+	
+	
+	$mjeseci = array("", "januar", "februar", "mart", "april", "maj", "juni", "juli", "avgust", "septembar", "oktobar", "novembar", "decembar");
+	
+	$dani = array("Nedjelja", "Ponedjeljak", "Utorak", "Srijeda", "Četvrtak", "Petak", "Subota");
+	
+	$messageId = intval($_REQUEST['poruka']);
+	if ($messageId>0) {
+		// Dobavljamo podatke o poruci
+		$message = api_call("inbox/$messageId", [ "resolve" => [ "Person" ]]);
+		if ($_api_http_code != "200") {
+			niceerror("Neuspješan pristup poruci: " . $message['message']);
+			return;
+		}
+		// Access control is now done on backend
+	
+		$senderTxt = $message['sender']['name'] . " " . $message['sender']['surname'];
+		$receiverId = $message['receiver'];
 	
 		// Primalac
-		$q120 = db_query("select ime,prezime from osoba where id=$primalac");
-		if (db_num_rows($q120)<1)
-			$primalac = "Nepoznato! Prijavite grešku";
-		else
-			$primalac = db_result($q120,0,0)." ".db_result($q120,0,1);
+		if ($message['scope'] == 0)
+			$receiverTxt = "Svi korisnici Zamgera";
+		else if ($message['scope'] == 1)
+			$receiverTxt = "Svi studenti";
+		else if ($message['scope'] == 2)
+			$receiverTxt = "Svi nastavnici i saradnici";
+		else if ($message['scope'] == 3) {
+			$programme = api_call("programme/$receiverId");
+			if ($_api_http_code == "200") {
+				$receiverTxt = "Svi studenti na studiju: " . $programme['name'];
+			} else {
+				$receiverTxt = "Nepoznato!?";
+			}
+		}
+		else if ($message['scope'] == 4) {
+			$receiverTxt = "Svi studenti na $receiverId studijskoj godini";
+		}
+		else if ($message['scope'] == 5) {
+			$course = api_call("course/$receiverId");
+			if ($_api_http_code == "200") {
+				$receiverTxt = "Svi studenti na predmetu: " . $course['courseName'];
+			} else {
+				$receiverTxt = "Nepoznato!?";
+			}
+		}
+		else if ($message['scope'] == 6) {
+			$group = api_call("group/$receiverId");
+			if ($_api_http_code == "200") {
+				$course = api_call("course/" . $group['CourseUnit']['id']);
+				$receiverTxt = "Svi studenti u grupi " . $group['name'] . " (" . $course['courseName'] . ")";
+			} else {
+				$receiverTxt = "Nepoznato!?";
+			}
+		}
+		else if ($message['scope'] == 7) {
+			if ($receiverId == $userid) {
+				$receiver = $person;
+			} else {
+				$receiver = $message['receiverPerson'];
+			}
+			$receiverTxt = $receiver['name'] . " " . $receiver['surname'];
+		}
+		else if ($message['scope'] == 8) {
+			$studij = intval($receiverId / 10);
+			if ($studij == -1) {
+				$godina = -($receiverId+10);
+				$receiverTxt = "Svi studenti na: Prvom ciklusu studija, $godina. godina";
+			} else if ($studij == -2) {
+				$godina = -($receiverId+20);
+				$receiverTxt = "Svi studenti na: Drugom ciklusu studija, $godina. godina";
+			} else {
+				$godina = $receiverId%10;
+				$programme = api_call("programme/$studij");
+				if ($_api_http_code == "200") {
+					$receiverTxt = "Svi studenti na: " . $programme['name'] . ", $godina. godina";
+				} else {
+					$receiverTxt = "Nepoznato!?";
+				}
+			}
+		}
+		else {
+			$receiverTxt = "Nepoznato!?";
+			zamgerlog("poruka $messageId ima nepoznat opseg $opseg",3);
+			zamgerlog2("poruka ima nepoznat opseg", $messageId, $opseg);
+		}
 	
-		// Fino vrijeme
-		$vr = $vrijeme_poruke[$id];
-		$vrijeme="";
-		if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i>, ";
-		else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i>, ";
-		else $vrijeme .= date("j. ",$vr).$mjeseci[date("n",$vr)].", ";
-		$vrijeme .= date("H:i",$vr);
+		// Fini datum
+		$vr = db_timestamp($message['time']);
+		if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i> - ";
+		else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i> - ";
+		$vrijeme .= $dani[date("w",$vr)].date(", j. ",$vr).$mjeseci[date("n",$vr)].date(" Y. H:i",$vr);
 	
-		if ($_REQUEST['poruka'] == $id) $bgcolor="#EEEECC"; else $bgcolor="#FFFFFF";
+		// Naslov
+		if ($message['type'] == 1) {
+			$subject = "O B A V J E Š T E N J E";
+			$text = $message['subject'] . "\n\n";
+		} else {
+			$subject = $message['subject'];
+			if (!preg_match("/\S/",$subject)) $subject = "[Bez naslova]";
+			$text = "";
+		}
 	
-		$code_poruke[$id]="<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$vrijeme</td><td>$primalac</td><td><a href=\"?sta=common/inbox&poruka=$id&mode=outbox\">$naslov</a></td></tr>\n";
+		?><h3>Prikaz poruke</h3>
+		<table cellspacing="0" cellpadding="0" border="0"  style="border:1px;border-color:silver;border-style:solid;"><tr><td bgcolor="#f2f2f2">
+			<table border="0">
+				<tr><td><b>Vrijeme slanja:</b></td><td><?=$vrijeme?></td></tr>
+				<tr><td><b>Pošiljalac:</b></td><td><?=$senderTxt?></td></tr>
+				<tr><td><b>Primalac:</b></td><td><?=$receiverTxt?></td></tr>
+				<tr><td><b>Naslov:</b></td><td><?=$subject?> (<a href="?sta=common/inbox&akcija=odgovor&poruka=<?=$messageId?>">odgovori</a>)</td></tr>
+			</table>
+		</td></tr><tr><td>
+			<br/>
+			<table border="0" cellpadding="5"><tr><td>
+			<?
+			$text .= $message['text']; // Dodajemo na eventualni naslov obavještenja
+			$text =  linkuj_urlove($text);
+			$text =  str_replace("\n","<br/>\n",$text);
+	
+			print $text;
+			?>
+			</td><tr></table>
+		</td></tr></table>
+		<br/><br/>
+		<a href="?sta=common/inbox&akcija=odgovor&poruka=<?=$messageId?>">Odgovorite na poruku</a>
+		<br/><hr><br/><?
 	}
 	
-	// Sortiramo po vremenu
-	arsort($vrijeme_poruke);
-	$count=0;
-	foreach ($vrijeme_poruke as $id=>$vrijeme) {
-		print $code_poruke[$id];
-		$count++;
-		// if ($count==20) break; // prikazujemo 20 poruka  -- TODO: stranice
-	}
-	if ($count==0) {
-		print "<li>Nemate nijednu poruku.</li>\n";
+	
+	
+	//////////////////////
+	// OUTBOX
+	//////////////////////
+	
+	if ($_REQUEST['mode']=="outbox") {
+	
+		?>
+		<h3>Poslane poruke:</h3>
+		<?
+		
+		$stranica = intval($_REQUEST['stranica']);
+		if ($stranica==0) $stranica = 1;
+		$start = ($stranica - 1) * $pageSize;
+		
+		$count = api_call("inbox/count");
+		if ($count['countOutbox'] == 0) {
+			?>
+			<ul><li>Nemate nijednu poruku.</li></ul>
+			<?
+		}
+		
+		if ($count['countOutbox'] > $pageSize) {
+			$totalPages = ($count['countOutbox'] - 1) / $pageSize + 1;
+			print "<p>Stranica: ";
+			for ($i=1; $i<=$totalPages; $i++) {
+				if ($stranica==$i)
+					print "$i ";
+				else
+					print "<a href=\"?sta=common/inbox&mode=outbox&stranica=$i\">$i</a> ";
+			}
+			print "</p>\n";
+		}
+		
+		?>
+		<table border="0" width="100%" style="border:1px;border-color:silver;border-style:solid;">
+			<thead>
+			<tr bgcolor="#cccccc"><td width="15%"><b>Datum</b></td><td width="15%"><b>Primalac</b></td><td width="70%"><b>Naslov</b></td></tr>
+			</thead>
+			<tbody>
+			<?
+		
+		$messages = api_call("inbox/outbox", [ "resolve" => [ "Person" ], "messages" => $pageSize, "start" => $start])["results"];
+		foreach($messages as $message) {
+			$id = $message['id'];
+	
+			$subject = $message['subject'];
+			if (strlen($subject)>60) $subject = substr($subject,0,55)."...";
+			if (!preg_match("/\S/",$subject)) $subject = "[Bez naslova]";
+		
+			// Primalac
+			$receiverTxt = $message['receiverPerson']['name'] . " " . $message['receiverPerson']['surname'];
+		
+			// Fino vrijeme
+			$vr = db_timestamp($message['time']);
+			$vrijeme="";
+			if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i>, ";
+			else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i>, ";
+			else $vrijeme .= date("j. ",$vr).$mjeseci[date("n",$vr)].", ";
+			$vrijeme .= date("H:i",$vr);
+		
+			if ($_REQUEST['poruka'] == $id) $bgcolor="#EEEECC"; else $bgcolor="#FFFFFF";
+		
+			?>
+			<tr bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#EEEEEE'" onmouseout="this.bgColor='<?=$bgcolor?>'">
+				<td><?=$vrijeme?></td>
+				<td><?=$receiverTxt?></td>
+				<td><a href="?sta=common/inbox&poruka=<?=$id?>&mode=outbox&stranica=<?=$stranica?>"><?=$subject?></a></td>
+			</tr>
+			<?
+		}
+		
+		?>
+			</tbody></table>
+		<?
+		
+		
+	//////////////////////
+	// INBOX
+	//////////////////////
+	
+	} else {
+		
+		?>
+		<h3>Poruke u vašem sandučetu:</h3>
+		<?
+		
+		$stranica = intval($_REQUEST['stranica']);
+		if ($stranica==0) $stranica = 1;
+		$start = ($stranica - 1) * $pageSize;
+		
+		$count = api_call("inbox/count");
+		
+		if ($count['count'] == 0) {
+			?>
+			<ul><li>Nemate nijednu poruku.</li></ul>
+			<?
+		}
+		
+		if ($count['count'] > $pageSize) {
+			$totalPages = ($count['count'] - 1) / $pageSize + 1;
+			print "<p>Stranica: ";
+			for ($i=1; $i<=$totalPages; $i++) {
+				if ($stranica==$i)
+					print "$i ";
+				else
+					print "<a href=\"?sta=common/inbox&stranica=$i\">$i</a> ";
+			}
+			print "</p>\n";
+		}
+		?>
+		<table border="0" width="100%" style="border:1px;border-color:silver;border-style:solid;">
+			<thead>
+			<tr bgcolor="#cccccc"><td width="15%"><b>Datum</b></td><td width="15%"><b>Autor</b></td><td width="70%"><b>Naslov</b></td></tr>
+			</thead>
+			<tbody>
+			<?
+		
+		$messages = api_call("inbox", [ "resolve" => [ "Person" ], "messages" => $pageSize, "start" => $start])["results"];
+		foreach($messages as $message) {
+			$id = $message['id'];
+			
+			$subject = $message['subject'];
+			if (strlen($subject)>60) $subject = substr($subject,0,55)."...";
+			if (!preg_match("/\S/",$subject)) $subject = "[Bez naslova]";
+		
+			// Posiljalac
+			$senderTxt = $message['sender']['name'] . " " . $message['sender']['surname'];
+		
+			// Fino vrijeme
+			$vr = db_timestamp($message['time']);
+			$vrijeme="";
+			if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i>, ";
+			else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i>, ";
+			else $vrijeme .= date("j. ",$vr).$mjeseci[date("n",$vr)].", ";
+			$vrijeme .= date("H:i",$vr);
+		
+			if ($_REQUEST['poruka'] == $id) $bgcolor="#EEEECC"; else $bgcolor="#FFFFFF";
+			
+			if ($message['unread']) { $b = "<b>"; $bb = "</b>"; } else { $b = $bb = ""; }
+			?>
+			<tr bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#EEEEEE'" onmouseout="this.bgColor='<?=$bgcolor?>'">
+				<td><?=$b.$vrijeme.$bb?></td>
+				<td><?=$b.$senderTxt.$bb?></td>
+				<td><a href="?sta=common/inbox&poruka=<?=$id?>&stranica=<?=$stranica?>"><?=$b.$subject.$bb?></a></td>
+			</tr>
+			<?
+		}
+		
+		?>
+			</tbody></table>
+		<?
 	}
 	
 	?>
-		</tbody></table>
 	</td></tr></tbody></table></center>
 	<?
-
-
-//////////////////////
-// INBOX
-//////////////////////
-
-} else {
-	$velstranice = 20; // Broj poruka po stranici
-	$count=0; $ispis="";
-	$stranica=intval($_REQUEST['stranica']);
-	if ($stranica==0) $stranica=1;
-
-	print "<h3>Poruke u vašem sandučetu:</h3>\n";
-	
-	?>
-	<table border="0" width="100%" style="border:1px;border-color:silver;border-style:solid;">
-		<thead>
-		<tr bgcolor="#cccccc"><td width="15%"><b>Datum</b></td><td width="15%"><b>Autor</b></td><td width="70%"><b>Naslov</b></td></tr>
-		</thead>
-		<tbody>
-	<?
-	
-	
-	$vrijeme_poruke = array();
-	
-	$q100 = db_query("select id, UNIX_TIMESTAMP(vrijeme), opseg, primalac, naslov, posiljalac, procitana from poruka where tip=2 order by vrijeme desc");
-	while ($r100 = db_fetch_row($q100)) {
-		$id = $r100[0];
-		$opseg = $r100[2];
-		$primalac = $r100[3];
-		if ($opseg == 2 || $opseg==3 && $primalac!=$studij || $opseg==4 && $primalac!=$ag ||  $opseg==7 && $primalac!=$userid)
-			continue;
-		if ($opseg==5) {
-			// da li je student ikada slusao predmet? (FIXME?)
-			$q110 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$userid and sp.predmet=pk.id and pk.predmet=$primalac");
-			if (db_result($q110,0,0)<1) continue;
-		}
-		if ($opseg==6) {
-			// da li je student u labgrupi?
-			$q115 = db_query("select count(*) from student_labgrupa where student=$userid and labgrupa=$primalac");
-			if (db_result($q115,0,0)<1) continue;
-		}
-		$vrijeme_poruke[$id]=$r100[1];
-		$naslov = $r100[4];
-		if (strlen($naslov)>60) $naslov = substr($naslov,0,55)."...";
-		if (!preg_match("/\S/",$naslov)) $naslov = "[Bez naslova]";
-	
-		// Posiljalac
-		$q120 = db_query("select ime,prezime from osoba where id=$r100[5]");
-		if (db_num_rows($q120)<1)
-			$posiljalac = "Nepoznato! Prijavite grešku";
-		else
-			$posiljalac = db_result($q120,0,0)." ".db_result($q120,0,1);
-	
-		// Fino vrijeme
-		$vr = $vrijeme_poruke[$id];
-		$vrijeme="";
-		if (date("d.m.Y",$vr)==date("d.m.Y")) $vrijeme = "<i>danas</i>, ";
-		else if (date("d.m.Y",$vr+3600*24)==date("d.m.Y")) $vrijeme = "<i>juče</i>, ";
-		else $vrijeme .= date("j. ",$vr).$mjeseci[date("n",$vr)].", ";
-		$vrijeme .= date("H:i",$vr);
-	
-		if ($_REQUEST['poruka'] == $id) $bgcolor="#EEEECC"; else $bgcolor="#FFFFFF";
-	
-		//$count++;
-		$count++;
-		if ($r100[6] == 0) { $b = "<b>"; $bb = "</b>"; } else { $b = $bb = ""; }
-		if ($count>($stranica-1)*$velstranice && $count<=$stranica*$velstranice)
-			$ispis .= "<tr bgcolor=\"$bgcolor\" onmouseover=\"this.bgColor='#EEEEEE'\" onmouseout=\"this.bgColor='$bgcolor'\"><td>$b$vrijeme$bb</td><td>$b$posiljalac$bb</td><td><a href=\"?sta=common/inbox&poruka=$id&stranica=$stranica\">$b$naslov$bb</a></td></tr>\n";
-	}
-
-	if ($count==0) {
-		print "<li>Nemate nijednu poruku.</li>\n";
-	}
-
-	if ($count>$velstranice) {
-		$broj_stranica = ($count-1)/$velstranice + 1;
-		print "<p>Stranica: ";
-		for ($i=1; $i<=$broj_stranica; $i++) {
-			if ($stranica==$i)
-				print "$i ";
-			else
-				print "<a href=\"?sta=common/inbox&stranica=$i\">$i</a> ";
-		}
-		print "</p>\n";
-	}
-	
-	print $ispis;
-	
-	print "</tbody></table>";
-
-	?>
-	</td></tr></tbody></table></center>
-	<?
-}
 
 
 }

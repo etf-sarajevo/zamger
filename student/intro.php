@@ -167,7 +167,7 @@ function student_intro() {
 			$sender = "Administrator";
 		
 		// Further shorten the announcement text
-		$text = $ann['shortText'];
+		$text = $ann['subject'];
 		$shortened = false;
 		if (strlen($text) > 250) {
 			$pos = strpos($text," ",200);
@@ -180,7 +180,7 @@ function student_intro() {
 		?>
 		<b><?=$sender?></b> (<?=date("d.m", db_timestamp($ann['time']))?>)<br/>
 		<?=$text?><?
-		if (strlen($ann['longerText'])>0 || $shortened) print " (<a href=\"?sta=common/inbox&poruka=" . $ann['id'] . "\">Dalje...</a>)";
+		if (strlen($ann['text'])>0 || $shortened) print " (<a href=\"?sta=common/inbox&poruka=" . $ann['id'] . "\">Dalje...</a>)";
 		?><br/><br/>
 		<?
 		$printed++;

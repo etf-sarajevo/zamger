@@ -90,9 +90,9 @@ function nastavnik_obavjestenja() {
 		
 		// Ako je postavljen primalac, to je id grupe
 		if ($primalac > 0)
-			$ann = array_to_object( [ "id" => $io, "scope" => 6, "sender" => $userid, "receiver" => $primalac, "shortText" => $naslov, "longerText" => $tekst ]);
+			$ann = array_to_object( [ "id" => $io, "scope" => 6, "sender" => $userid, "receiver" => $primalac, "subject" => $naslov, "text" => $tekst ]);
 		else
-			$ann = array_to_object( [ "id" => $io, "scope" => 5, "sender" => $userid, "receiver" => $predmet, "shortText" => $naslov, "longerText" => $tekst]);
+			$ann = array_to_object( [ "id" => $io, "scope" => 5, "sender" => $userid, "receiver" => $predmet, "subject" => $naslov, "text" => $tekst]);
 	
 		// $io je id obavještenja ako se mijenja ili 0 ako je novo
 		if ($io > 0)
@@ -192,7 +192,7 @@ function nastavnik_obavjestenja() {
 	}
 	
 	foreach($announcements as $ann) {
-		$tekst_poruke = nl2br($ann['longerText']);
+		$tekst_poruke = nl2br($ann['text']);
 		if (strlen($tekst_poruke)>0) {
 			if ($citava == $ann['id']) // $citava is parameter
 				$tekst_poruke = "<br/><br/>" . $tekst_poruke;
@@ -201,8 +201,8 @@ function nastavnik_obavjestenja() {
 		}
 		
 		if ($izmijeni == $ann['id']) {
-			$naslov = $ann['shortText'];
-			$tekst = $ann['longerText'];
+			$naslov = $ann['subject'];
+			$tekst = $ann['text'];
 			if ($ann['scope'] == 5)
 				$labgrupa = 0;
 			else
@@ -211,7 +211,7 @@ function nastavnik_obavjestenja() {
 		?>
 		<li>
 			<b>(<?=date("d.m.Y", db_timestamp($ann['time']))?>)</b>
-			<?=$ann['shortText']?>
+			<?=$ann['subject']?>
 			<?=$tekst_poruke?>
 			<br/>
 			<a href="?sta=nastavnik/obavjestenja&predmet=<?=$predmet?>&ag=<?=$ag?>&izmijeni=<?=$ann['id']?>">[Izmijeni]</a>
