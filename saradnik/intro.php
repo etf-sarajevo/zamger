@@ -6,7 +6,7 @@
 
 function saradnik_intro() {
 	
-	global $userid,$user_siteadmin,$registry,$posljednji_pristup;
+	global $userid,$user_siteadmin,$registry,$posljednji_pristup,$person;
 	
 	require_once ("lib/utility.php"); // spol, vokativ
 	
