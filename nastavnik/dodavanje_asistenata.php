@@ -115,7 +115,7 @@ function nastavnik_dodavanje_asistenata(){
 	<p>
 		LEGENDA: <br>
 		Asistent - asistent ima pravo samo da unosi časove, prisustvo i ocjenjuje zadaće <br>
-		Superasistent - Potpuni pristup
+		Superasistent - ima sve mogućnosti osim da unosi konačne ocjene i mijenja sistem bodovanja
 	</p>
 
 	<br>
