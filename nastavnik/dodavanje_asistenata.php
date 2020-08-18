@@ -3,75 +3,71 @@
 
 // NASTAVNIK/DODAVANJE_ASISTENATA - dodavanje saradnika (demonstratora i asistenata) na predmet
 
-function nastavnik_dodavanje_asistenata(){
-	global $userid, $user_siteadmin;
+function nastavnik_dodavanje_asistenata() {
+	global $userid, $_api_http_code;
 
-	$osobe = db_query("select id, ime, prezime, brindexa from osoba");
-	$akademska_godina = intval($_GET['ag']);
+	$ag = intval($_GET['ag']);
 	$predmet = intval($_GET['predmet']);
-
-	// Naziv predmeta
-	$q10 = db_query("select naziv from predmet where id=$predmet");
-	if (db_num_rows($q10)<1) {
-		biguglyerror("Nepoznat predmet");
-		zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
-		zamgerlog2("nepoznat predmet", $predmet);
-		return;
-	}
-	$predmet_naziv = db_result($q10,0,0);
 	
-	$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$akademska_godina");
-	if ($pasos) {
-		$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
-	}
+	$course = api_call("course/$predmet/$ag");
+	
+	// Naziv predmeta
+	$predmet_naziv = $course['courseName'];
 
 	// ** Ukoliko asistent ili superasistent pokušaju pristupiti ovoj opciji ** //
-	if (!$user_siteadmin) {
-		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$akademska_godina");
-		if (db_num_rows($q10)<1 || db_result($q10,0,0)!="nastavnik") {
+	
+	if ($_api_http_code == "403") {
+		zamgerlog("nastavnik/dodavanje_asistenata privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
+		biguglyerror("Nemate pravo pristupa ovoj opciji");
+		return;
+	}
+	
+	$teachers = api_call("course/$predmet/$ag/access")["results"];
+	
+	// ** Ukoliko asistent ili superasistent pokušaju pristupiti ovoj opciji ** //
+	foreach($teachers as $teacher) {
+		if ($teacher['Person']['id'] == $userid && $teacher['accessLevel'] != "nastavnik") {
 			zamgerlog("nastavnik/dodavanje_asistenata privilegije (predmet pp$predmet)",3);
-			zamgerlog2("nije nastavnik na predmetu", $predmet, $akademska_godina);
+			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 			biguglyerror("Nemate pravo pristupa ovoj opciji");
 			return;
 		}
 	}
 
-	if(!$akademska_godina or !$predmet){
-		// Ovdje možemo throw-ati error neki ili ukinuti u potpunosti stranicu - Stavit ću samo die u ovom slučaju
-		die();
-	}
-
 	if(isset($_POST['osoba'])){
 		$osoba = intval($_POST['osoba']);
-		$nivo_prist = $_POST['uloga'];
+		$nivoPristupa = $_POST['uloga'];
 
-		if($osoba and $nivo_prist){ // Da li su vrijednosti prave ili je prazan request
-			if($osoba != 0 and $nivo_prist != '' and $nivo_prist != 'obrisi'){
+		if ($osoba and $nivoPristupa) { // Da li su vrijednosti prave ili je prazan request
+			if ($osoba != 0 and $nivoPristupa != '' and $nivoPristupa != 'obrisi') {
 				// Provjeri da li osoba već ima status nastavnika
-				$nastavnik = db_get("select count(osoba) from privilegije where privilegija = 'nastavnik' and osoba = ".$osoba);
-
-				if(!$nastavnik){
-					db_query("INSERT into privilegije set osoba = $osoba, privilegija = 'nastavnik'");
+				
+				$vecIma = false;
+				foreach($teachers as $teacher) {
+					if ($teacher['Person']['id'] == $osoba)
+						$vecIma = true;
 				}
-
-				// Provjeravamo da li ima pravo pristupa na predmetu i ako ima, koje je to pravo
-				$nivo_pristupa = db_get("select * from nastavnik_predmet where nastavnik = $osoba and akademska_godina = $akademska_godina and predmet = ".$predmet);
-
-				if(!$nivo_pristupa){
-					db_query("INSERT INTO nastavnik_predmet SET nastavnik = $osoba, akademska_godina = $akademska_godina, nivo_pristupa = '$nivo_prist', predmet = ".$predmet);
-				}else{
-					db_query("UPDATE nastavnik_predmet SET nivo_pristupa = '$nivo_prist' where nastavnik = $osoba");
-				}
-			}else if($nivo_prist == 'obrisi'){
-				db_query("delete from nastavnik_predmet where nastavnik=$osoba and akademska_godina = $akademska_godina and predmet = ".$predmet);
+				
+				if ($vecIma)
+					$result = api_call("course/$predmet/$ag/access/$osoba", ["accessLevel" => $nivoPristupa], "PUT" );
+				else
+					$result = api_call("course/$predmet/$ag/access/$osoba", ["accessLevel" => $nivoPristupa], "POST" );
+			} else if ($nivoPristupa == 'obrisi') {
+				$result = api_call("course/$predmet/$ag/access/$osoba", [], "DELETE" );
 				$osoba = null;
 			}
-		}else{
+			if ($_api_http_code != "201" && $_api_http_code != "204") {
+				$greska = 'Promjena nivoa pristupa nije uspjela: ' . $result['message'];
+			} else {
+				$teachers = api_call("course/$predmet/$ag/access")["results"];
+			}
+		} else {
 			$greska = 'Molimo Vas da odaberete osobu ili nivo pristupa';
 		}
 	}
 
-	$angazovane_osobe = db_query("select o.ime, o.prezime, o.id, np.nivo_pristupa from nastavnik_predmet as np inner join osoba as o on np.nastavnik = o.id where (np.nivo_pristupa = 'asistent' or np.nivo_pristupa = 'super_asistent') and np.akademska_godina = $akademska_godina and np.predmet = ".$predmet);
+	$persons = api_call("person/all")["results"];
 
 	?>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -86,12 +82,12 @@ function nastavnik_dodavanje_asistenata(){
 		<select name="osoba" class="users-search">
 			<option value="0">Odaberite osobu</option>
 			<?php
-			while ($o = db_fetch_row($osobe)) {
+			foreach ($persons as $person) {
 				?>
-				<option value="<?php echo $o[0]; ?>" <?php if(isset($osoba) and $osoba == $o[0]){ echo 'selected';} ?> >
+				<option value="<?php echo $person['id']; ?>" <?php if(isset($osoba) and $osoba == $person['id']){ echo 'selected';} ?> >
 					<?php 
-						echo $o[1].' '.$o[2]; 
-						if ($o[3]) echo " (".$o[3].")";
+						echo $person['surname'].' '.$person['name'];
+						if ($person['studentIdNr']) echo " (".$person['studentIdNr'].")";
 					?>
 				</option>
 				<?php
@@ -101,8 +97,8 @@ function nastavnik_dodavanje_asistenata(){
 
 		<select name="uloga" class="users-search">
 			<option value="">Odaberite nivo pristupa</option>
-			<option value="asistent" <?php if(isset($nivo_prist)){if($nivo_prist == 'asistent') echo 'selected';} ?>>Asistent</option>
-			<option value="super_asistent" <?php if(isset($nivo_prist)){if($nivo_prist == 'super_asistent') echo 'selected';} ?>>Superasistent</option>
+			<option value="asistent" <?php if(isset($nivoPristupa)){if($nivoPristupa == 'asistent') echo 'selected';} ?>>Asistent</option>
+			<option value="super_asistent" <?php if(isset($nivoPristupa)){if($nivoPristupa == 'super_asistent') echo 'selected';} ?>>Superasistent</option>
 		</select>
 
 		<input type="submit" value="Dodaj" style="height: 28px; padding-left:20px; padding-right: 20px; background: #fff; border:1px solid rgba(0,0,0,0.3); border-radius:3px;">
@@ -115,7 +111,7 @@ function nastavnik_dodavanje_asistenata(){
 	<p>
 		LEGENDA: <br>
 		Asistent - asistent ima pravo samo da unosi časove, prisustvo i ocjenjuje zadaće <br>
-		Superasistent - Potpuni pristup
+		Superasistent - ima sve mogućnosti osim da unosi konačne ocjene i mijenja sistem bodovanja
 	</p>
 
 	<br>
@@ -133,18 +129,21 @@ function nastavnik_dodavanje_asistenata(){
 		<tbody>
 
 		<?php $counter = 1;
-		while ($o = db_fetch_row($angazovane_osobe)) {
+		
+		foreach($teachers as $teacher) {
+			if ($teacher['accessLevel'] == "nastavnik")
+				continue; // Nastavnik ne može mijenjati nastavnike
 			?>
 			<tr>
 				<form method="post">
 					<td><?= $counter++; ?>.</td>
-					<td><?= $o[0].' '.$o[1]; ?></td>
+					<td><?= $teacher['Person']['name'].' '.$teacher['Person']['surname']; ?></td>
 					<td>
-						<input type="hidden" name="osoba" value="<?= $o[2]; ?>">
+						<input type="hidden" name="osoba" value="<?= $teacher['Person']['id']; ?>">
 						<select name="uloga">
 							<option value="obrisi">Zabranite pristup</option>
-							<option value="asistent" <?= ($o[3] == 'asistent') ? 'selected' : ''; ?> >Asistent</option>
-							<option value="super_asistent" <?= ($o[3] == 'super_asistent') ? 'selected' : ''; ?> >Superasistent</option>
+							<option value="asistent" <?= ($teacher['accessLevel'] == 'asistent') ? 'selected' : ''; ?> >Asistent</option>
+							<option value="super_asistent" <?= ($teacher['accessLevel'] == 'super_asistent') ? 'selected' : ''; ?> >Superasistent</option>
 						</select>
 					</td>
 					<td style="text-align: center;">

@@ -210,7 +210,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	
 	// mod_rewrite doesn't work on localhost (!?)... add route to request params
 	$url = $conf_backend_url;
-	if ($method == "GET") {
+	if ($method == "GET" || $method == "PUT" || $method == "DELETE") {
 		// For GET method, add query data to url
 		if ($conf_backend_has_rewrite)
 			$url = $url . $route;

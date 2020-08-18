@@ -6,7 +6,7 @@
 
 function nastavnik_predmet() {
 
-	global $userid, $user_siteadmin, $_api_http_code;
+	global $_api_http_code;
 	
 	
 	
@@ -23,7 +23,7 @@ function nastavnik_predmet() {
 	// Da li korisnik ima pravo ući u modul?
 	
 	if ($_api_http_code == "403") {
-		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+		zamgerlog("nastavnik/predmet privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
@@ -57,7 +57,7 @@ function nastavnik_predmet() {
 	<ul>
 	<?
 	
-	$teachers = api_call("course/$predmet/access", [ "year" => $ag] )["results"];
+	$teachers = api_call("course/$predmet/$ag/access")["results"];
 	foreach($teachers as $teacher) {
 		if ($teacher['accessLevel'] == "nastavnik") $dodaj=" (N)";
 		else if ($teacher['accessLevel']=="super_asistent") $dodaj=" (S)";
