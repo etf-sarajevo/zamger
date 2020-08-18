@@ -211,6 +211,12 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	// mod_rewrite doesn't work on localhost (!?)... add route to request params
 	$url = $conf_backend_url;
 	if ($method == "GET" || $method == "PUT" || $method == "DELETE") {
+		$content = $mimetype = "";
+		if (is_object($params)) {
+			$content = json_encode($params);
+			$mimetype = "application/json";
+			$params = [];
+		}
 		// For GET method, add query data to url
 		if ($conf_backend_has_rewrite)
 			$url = $url . $route;
@@ -220,7 +226,6 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 			$params["SESSION_ID"] = $_SESSION['api_session'];
 		$query = http_build_query($params);
 		$url = "$url?$query";
-		$content = $mimetype = "";
 	} else {
 		$query_params = [];
 		if ($conf_backend_has_rewrite)
