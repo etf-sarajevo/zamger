@@ -581,5 +581,8 @@ else
 </html>
 <?
 	db_disconnect();
-	if (isset($debug_data)) debug_data_dump();
+	if (isset($debug_data)) {
+		print "SESSION_ID: " . $_SESSION['api_session'] . "<br>\n";
+		debug_data_dump();
+	}
 ?>
