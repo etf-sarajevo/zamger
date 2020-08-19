@@ -38,7 +38,7 @@ function nastavnik_grupe() {
 	
 	<p>&nbsp;</p>
 	
-	<p><h3><?=$predmet_naziv?> - Grupe</h3></p>
+	<h3><?=$predmet_naziv?> - Grupe</h3>
 	
 	<?
 	
@@ -54,8 +54,8 @@ function nastavnik_grupe() {
 		$group = array_to_object( ["id" => 0, "name" => $_POST['ime'], "type" => $_POST['tip'], "CourseUnit" => ["id" => $predmet], "AcademicYear" => ["id" => $ag], "virtual" => false] );
 		$result = api_call("group/course/$predmet/$ag", $group, "POST");
 		if ($_api_http_code == "201") {
-			zamgerlog2("kreirana labgrupa", db_insert_id(), $predmet, $ag, $ime);
-			zamgerlog("dodana nova labgrupa '$ime' (predmet pp$predmet godina ag$ag)", 4); // nivo 4: audit
+			zamgerlog2("kreirana labgrupa", db_insert_id(), $predmet, $ag, $_POST['ime']);
+			zamgerlog("dodana nova labgrupa '".$_POST['ime']."' (predmet pp$predmet godina ag$ag)", 4); // nivo 4: audit
 		} else {
 			niceerror("Neuspješno dodavanje grupe: " . $result['message']);
 		}
@@ -84,8 +84,8 @@ function nastavnik_grupe() {
 		
 		$result = api_call("group/$groupId", $group, "PUT");
 		if ($_api_http_code == "201") {
-			zamgerlog("preimenovana labgrupa $groupId u '$ime' (predmet pp$predmet godina ag$ag)",2); // nivo 2: edit
-			zamgerlog2("preimenovana labgrupa", $groupId, 0, 0, $ime);
+			zamgerlog("preimenovana labgrupa $groupId u '".$_POST['ime']."' (predmet pp$predmet godina ag$ag)",2); // nivo 2: edit
+			zamgerlog2("preimenovana labgrupa", $groupId, 0, 0, $_POST['ime']);
 		} else {
 			niceerror("Neuspješna promjena grupe: " . $result['message']);
 		}
@@ -165,6 +165,7 @@ function nastavnik_grupe() {
 			$studentGroups = api_call("group/course/$predmet/student/$student", ["year" => $ag])["results"];
 			$found=1;
 			foreach($studentGroups as $group) {
+				if ($group['virtual']) continue;
 				$ispis_grupe[$group['id']] = $group['name'];
 				if (!in_array($group['name'], $mass_rezultat['podatak1'][$student])) $found=0;
 			}

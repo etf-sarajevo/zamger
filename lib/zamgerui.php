@@ -694,6 +694,15 @@ function mass_input($ispis) {
 	//   4 - Broj indeksa
 	$format = intval($_REQUEST['format']);
 	if ($format == 4) return _mass_input_brindexa($ispis);
+	
+	$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
+	$names = $studentIds = [];
+	foreach($virtualGroup['members'] as $member) {
+		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
+			continue;
+		$names[$member['student']['id']] = $member['student']['name'] . " " . $member['student']['surname'];
+		$studentIds[$member['student']['id']] = $member['student']['studentIdNr'];
+	}
 
 	// Broj dodatnih kolona podataka (osim imena i prezimena)
 	$brpodataka = intval($_REQUEST['brpodataka']);
@@ -717,7 +726,8 @@ function mass_input($ispis) {
 
 	// Update korisničkih preferenci kod masovnog unosa
 
-	$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
+	// TODO preference
+	/*$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
 	if (db_num_rows($q190)<1) {
 		$q191 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-format', vrijednost='$format'");
 	} else if (db_result($q190,0,0)!=$format) {
@@ -729,7 +739,7 @@ function mass_input($ispis) {
 		$q194 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-separator', vrijednost='$separator'");
 	} else if (db_result($q193,0,0)!=$separator) {
 		$q195 = db_query("update preference set vrijednost='$separator' where korisnik=$userid and preferenca='mass-input-separator'");
-	}
+	}*/
 
 
 	$greska=0;
@@ -768,77 +778,48 @@ function mass_input($ispis) {
 		// Fixevi za naša slova i trim
 		$prezime = trim(malaslova($prezime));
 		$ime = trim(malaslova($ime));
+		$join = $ime . " " . $prezime;
 
 
 		// Provjera ispravnosti podataka
 
 		// Da li korisnik postoji u bazi?
-		if ($format == 4)
-			$q10 = db_query("select id, ime, prezime from osoba where brindexa='$brindexa'");
-		else
-			$q10 = db_query("select id, brindexa from osoba where ime like '$ime' and prezime like '$prezime'");
-		
-		if (db_num_rows($q10)<1) {
-			if ($f)  {
-				?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>nepoznat student - da li ste dobro ukucali ime?</td></tr><?
+		$found = []; $student = 0;
+		foreach($names as $id => $name) {
+			if ($name == $join) {
+				$found[$id] = $name;
+				$student = $id;
 			}
-			$greska=1;
-			continue;
-
-		} else if (db_num_rows($q10)>1) {
-			// Privremena solucija
-			$brindexa = db_num_rows($q10,0,1);
-			if ($ponudakursa>0) {
-				// Postoji više studenata sa istim imenom i prezimenom
-				// Biramo onog koji je upisan na ovu ponudukursa
-				$q10 = db_query("select DISTINCT o.id, o.brindexa from osoba as o, student_predmet as sp where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=$ponudakursa");
-	
-				if (db_num_rows($q10)<1) {
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nije upisan/a na ovaj predmet</td></tr><?
-					}
-					$greska=1;
-					continue;
-	
-				} else if (db_num_rows($q10)>1) {
-					// Na istom su predmetu!? wtf
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
-					}
-					$greska=1;
-					continue;
+		}
+		
+		if (count($found) == 0) {
+			// Pokusacemo preskociti studente koji nemaju ocjenu
+			if ($format==0 || $format==1)
+				$bodovi=$nred[2];
+			else
+				$bodovi=$nred[1];
+			if (!preg_match("/\w/",$bodovi)) {
+				if ($f)  {
+					?><tr bgcolor="#EEEEEE"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nepoznat student, nema ocjene - preskačem</td></tr><?
 				}
-
-			} else if ($predmet>0 && $ag>0) {
-				// Isto za predmet
-				$q10 = db_query("select DISTINCT o.id from osoba as o, student_predmet as sp, ponudakursa as pk where o.ime like '$ime' and o.prezime like '$prezime' and o.id=sp.student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-	
-				if (db_num_rows($q10)<1) {
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nije upisan/a na ovaj predmet</td></tr><?
-					}
-					$greska=1;
-					continue;
-	
-				} else if (db_num_rows($q10)>1) {
-					// Na istom su predmetu!? wtf
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
-					}
-					$greska=1;
-					continue;
-				}
-
-			} else {
-				if ($f) {
-					?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
+			}
+			else {
+				if ($f)  {
+					?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>nepoznat student - da li ste dobro ukucali ime?</td></tr><?
 				}
 				$greska=1;
 				continue;
 			}
+
+		} else if (count($found) > 1) {
+			// Na istom su predmetu!? wtf
+			if ($f) {
+				?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td>&nbsp;</td><td>postoji više studenata sa ovim imenom i prezimenom; koristite pogled grupe</td></tr><?
+			}
+			$greska=1;
+			continue;
 		}
-		$student = db_result($q10,0,0);
-		$brindexa = db_result($q10,0,1);
+		$brindexa = $studentIds[$student];
 
 		// Da li se ponavlja isti student?
 		if ($duplikati==0) {
@@ -851,34 +832,6 @@ function mass_input($ispis) {
 				continue;
 			}
 			array_push($prosli_idovi,$student);
-		}
-
-		// Da li je upisan na predmet?
-		$q20=0;
-		if ($ponudakursa>0) {
-			$q20 = db_query("select count(*) from student_predmet where student=$student and predmet=$ponudakursa");
-		} else if ($predmet>0 && $ag>0) {
-			$q20 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		}
-		if ($q20 != 0) {
-			if (db_result($q20,0,0)<1) {
-				// Pokusacemo preskociti studente koji nemaju ocjenu
-				if ($format==0 || $format==1) 
-					$bodovi=$nred[2];
-				else
-					$bodovi=$nred[1];
-				if (!preg_match("/\w/",$bodovi)) {
-					if ($f)  {
-						?><tr bgcolor="#EEEEEE"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nepoznat student, nema ocjene - preskačem</td></tr><?
-					}
-				} else {
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nije upisan/a na ovaj predmet</td></tr><?
-					}
-					$greska=1;
-				}
-				continue;
-			}
 		}
 
 		// Podaci su OK, punimo niz...
