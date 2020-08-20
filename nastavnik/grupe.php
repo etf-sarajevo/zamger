@@ -381,14 +381,18 @@ function nastavnik_grupe() {
 	
 		if ($_GET['akcija']=="studenti_grupa" && $_GET['grupaid']==$group['id']) {
 			// It's faster to get just this group members separately, than to get all group members at the top
-			$group = api_call("group/" . $group['id'], ["names" => true]);
+			$group = api_call("group/" . $group['id'] . "/students")["results"];
 			
 			?>
 			<ul>
 			<?
-			usort($group['members'], function($m1, $m2) { return strcasecmp($m1['student']['surname'], $m2['student']['surname']); } );
-			foreach($group['members'] as $member) {
-				$s = $member['student'];
+			
+			usort($group, function ($s1, $s2) {
+				if ($s1['surname'] == $s2['surname']) return bssort($s1['name'], $s2['name']);
+				return bssort($s1['surname'], $s2['surname']);
+			});
+			
+			foreach($group as $s) {
 				?><li><a href="#" onclick="javascript:window.open('?sta=saradnik/izmjena_studenta&student=<?=$s['id']?>&predmet=<?=$predmet?>&ag=<?=$ag?>','blah6','width=320,height=320');"><?=$s['surname']." ".$s['name']?></a></li><?
 			}
 			
