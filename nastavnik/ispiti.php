@@ -16,7 +16,6 @@ function nastavnik_ispiti() {
 	// Parametri
 	$predmet = int_param('predmet');
 	$ag = int_param('ag');
-	$termin = int_param('termin');
 	
 	
 	$course = api_call("course/$predmet/$ag");
