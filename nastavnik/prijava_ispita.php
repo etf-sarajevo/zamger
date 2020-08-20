@@ -211,15 +211,15 @@ function nastavnik_prijava_ispita() {
 		<select name="student">
 		<?
 		
-		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true ] );
-		usort($virtualGroup['members'], function ($s1, $s2) {
-			if ($s1['student']['surname'] == $s2['student']['surname']) return bssort($s1['student']['name'], $s2['student']['name']);
-			return bssort($s1['student']['surname'], $s2['student']['surname']);
+		$allStudents = api_call("group/course/$predmet/allStudentsSimple", [ "year" => $ag, "names" => true ] )["results"];
+		usort($allStudents, function ($s1, $s2) {
+			if ($s1['surname'] == $s2['surname']) return bssort($s1['name'], $s2['name']);
+			return bssort($s1['surname'], $s2['surname']);
 		});
-		foreach($virtualGroup['members'] as $member) {
-			if (in_array($member['student']['id'], $bili)) continue;
+		foreach($allStudents as $student) {
+			if (in_array($student['id'], $bili)) continue;
 			?>
-			<option value="<?=$member['student']['id']?>"><?=$member['student']['surname'] . " " . $member['student']['name']?></option>
+			<option value="<?=$student['id']?>"><?=$student['surname'] . " " . $student['name']?></option>
 			<?
 		}
 		?>
