@@ -255,6 +255,9 @@ function saradnik_grupa() {
 				
 				if ($activityType == 9) { // 9 = Attendance
 					foreach($detail['attendance'] as $attendance) {
+						// In virtual groups, we would receive attendance detail for all groups
+						if ($attendance['ZClass']['Group']['id'] != $labgrupa) continue;
+						
 						$classId = $attendance['ZClass']['id'];
 						if (!array_key_exists($classId, $classes)) {
 							$cactClasses[$cactId][$classId] = $attendance['ZClass'];
