@@ -67,7 +67,6 @@ if ($tip == "zadaca") {
 	
 	$f = fopen($filepath,'w');
 	if (!$f) {
-		// Nema smisla printati grešku jer smo u PDF generatoru
 		zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
 		zamgerlog2("greska pri pisanju zadace", $zadaca, $zadatak); // nivo 3 - greska
 		return;
@@ -80,51 +79,51 @@ if ($tip == "zadaca") {
 
 // Tip: postavka zadaće
 
-if ($tip == "postavka") {
-	$zadaca=intval($_REQUEST['zadaca']);
+if ($tip == "dodatne") {
+	$zadaca = intval($_REQUEST['zadaca']);
+	$file=intval($_REQUEST['file']);
 	
-	$q100 = db_query("select predmet, akademska_godina, postavka_zadace from zadaca where id=$zadaca");
-	if (db_num_rows($q100)<1) {
-		zamgerlog("nepostojeca zadaca $zadaca",3);
-		zamgerlog2("nepostojeca zadaca", $zadaca);
-		niceerror("Nepostojeća zadaća");
-		return;
-	}
-	
-	$predmet = db_result($q100,0,0);
-	$ag = db_result($q100,0,1);
-	$postavka_zadace = db_result($q100,0,2);
-
-	if ($postavka_zadace == "") {
-		niceerror("Postavka ne postoji");
-		zamgerlog("postavka ne postoji z$zadaca", 3);
-		zamgerlog2("postavka ne postoji", $zadaca);
-		return;
-	}
-
-
-	$ok = false;
-
-	if ($user_siteadmin) $ok = true;
-	if ($user_nastavnik && !$ok) {
-		$q110 = db_query("select count(*) from nastavnik_predmet where predmet=$predmet and akademska_godina=$ag and nastavnik=$userid");
-		if (db_result($q110,0,0)>0) $ok = true;
-	}
-	if ($user_student && !$ok) {
-		$q120 = db_query("SELECT count(*) FROM student_predmet as sp, ponudakursa as pk WHERE sp.student=$userid and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		if (db_result($q120,0,0)>0) $ok = true;
-	}
-
-	if (!$ok) {
+	$homeworkFiles = api_call("homework/$zadaca/files")["results"];
+	if ($_api_http_code != "200") {
 		zamgerlog("nema pravo pristupa postavci zadace (z$zadaca)",3);
 		zamgerlog2("nema pravo pristupa postavci zadace", $zadaca);
 		niceerror("Nemate pravo pristupa ovoj postavci");
 		return;
 	}
+	
+	$homeworkFile = false;
+	foreach($homeworkFiles as $hwf)
+		if ($hwf['id'] == $file)
+			$homeworkFile = $hwf;
+	if ($homeworkFile == false) {
+		niceerror("Postavka ne postoji");
+		zamgerlog("postavka ne postoji z$zadaca", 3);
+		zamgerlog2("postavka ne postoji", $zadaca);
+		return;
+	}
+	
+	$filename = $homeworkFile['filename'];
+	
+	$content = api_call("homework/files/" . $file, [], "GET", false, false);
+	
+	// Kreiramo privremenu datoteku u koju ćemo upisati sadržinu fajla
+	$dir = "$conf_files_path/zadacetmp/$userid/";
+	if (!file_exists($dir))
+		mkdir ($dir,0777, true);
+	
+	$filepath = $dir . $filename;
+	if (file_exists($filepath))
+		unlink($filepath);
+	
+	$f = fopen($filepath,'w');
+	if (!$f) {
+		zamgerlog("greska pri pisanju zadace z$zadaca zadatak $zadatak",3); // nivo 3 - greska
+		zamgerlog2("greska pri pisanju zadace", $zadaca, $zadatak); // nivo 3 - greska
+		return;
+	}
+	fwrite($f, $content);
+	fclose($f);
 
-
-	$filename = $postavka_zadace;
-	$filepath = "$conf_files_path/zadace/$predmet-$ag/postavke/$filename";
 }
 
 

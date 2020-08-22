@@ -279,9 +279,9 @@ function saradnik_grupa() {
 	$exams = api_call("exam/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
 	
 	
-	// Sort homeworks by publishing date within each component
+	// Sort homeworks by id within each component
 	foreach($cactHomeworks as &$ch) {
-		uasort($ch, function($h1, $h2) { return db_timestamp($h1['publishedDateTime']) > db_timestamp($h2['publishedDateTime']); });
+		uasort($ch, function($h1, $h2) { return db_timestamp($h1['id']) > db_timestamp($h2['id']); });
 	}
 	// Sort classes by dateTime within each component
 	foreach($cactClasses as &$cc) {
