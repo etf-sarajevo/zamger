@@ -868,6 +868,16 @@ function _mass_input_brindexa($ispis) {
 	
 	$format = intval($_REQUEST['format']);
 	
+	$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
+	$names = $surnames = $studentIds = [];
+	foreach($virtualGroup['members'] as $member) {
+		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
+			continue;
+		$names[$member['student']['id']] = $member['student']['name'];
+		$surnames[$member['student']['id']] = $member['student']['surname'];
+		$studentIds[$member['student']['id']] = $member['student']['studentIdNr'];
+	}
+	
 	// Broj dodatnih kolona podataka (osim imena i prezimena)
 	$brpodataka = intval($_REQUEST['brpodataka']);
 	if ($_REQUEST['brpodataka']=='on') $brpodataka=1; //checkbox
@@ -889,7 +899,8 @@ function _mass_input_brindexa($ispis) {
 	
 	// Update korisničkih preferenci kod masovnog unosa
 	
-	$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
+	// TODO preference
+	/*$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
 	if (db_num_rows($q190)<1) {
 		$q191 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-format', vrijednost='$format'");
 	} else if (db_result($q190,0,0)!=$format) {
@@ -901,7 +912,7 @@ function _mass_input_brindexa($ispis) {
 		$q194 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-separator', vrijednost='$separator'");
 	} else if (db_result($q193,0,0)!=$separator) {
 		$q195 = db_query("update preference set vrijednost='$separator' where korisnik=$userid and preferenca='mass-input-separator'");
-	}
+	}*/
 	
 	
 	$greska=0;
@@ -923,25 +934,30 @@ function _mass_input_brindexa($ispis) {
 		// Provjera ispravnosti podataka
 		
 		// Da li korisnik postoji u bazi?
-		$q10 = db_query("select id, ime, prezime from osoba where brindexa='$brindexa'");
+		$found = []; $student = 0;
+		foreach($studentIds as $id => $studentId) {
+			if ($studentId == $brindexa) {
+				$found[$id] = $studentId;
+				$student = $id;
+			}
+		}
 		
-		if (db_num_rows($q10)<1) {
+		if (count($found) == 0) {
 			if ($f)  {
 				?><tr bgcolor="#FFE3DD"><td>&nbsp;</td><td>&nbsp;</td><td><?=$brindexa?></td><td>nepoznat student - da li ste dobro ukucali broj indeksa?</td></tr><?
 			}
 			$greska=1;
 			continue;
 			
-		} else if (db_num_rows($q10)>1) {
+		} else if (count($found) > 1) {
 			if ($f) {
 				?><tr bgcolor="#FFE3DD"><td>&nbsp;</td><td>&nbsp;</td><td><?=$brindexa?></td><td>postoji više studenata sa ovim brojem indeksa; kontaktirajte studentsku službu!</td></tr><?
 			}
 			$greska=1;
 			continue;
 		}
-		$student = db_result($q10,0,0);
-		$ime = db_result($q10,0,1);
-		$prezime = db_result($q10,0,2);
+		$ime = $names[$student];
+		$prezime = $surnames[$student];
 		
 		// Da li se ponavlja isti student?
 		if ($duplikati==0) {
@@ -954,34 +970,6 @@ function _mass_input_brindexa($ispis) {
 				continue;
 			}
 			array_push($prosli_idovi,$student);
-		}
-		
-		// Da li je upisan na predmet?
-		$q20=0;
-		if ($ponudakursa>0) {
-			$q20 = db_query("select count(*) from student_predmet where student=$student and predmet=$ponudakursa");
-		} else if ($predmet>0 && $ag>0) {
-			$q20 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		}
-		if ($q20 != 0) {
-			if (db_result($q20,0,0)<1) {
-				// Pokusacemo preskociti studente koji nemaju ocjenu
-				if ($format==0 || $format==1)
-					$bodovi=$nred[2];
-				else
-					$bodovi=$nred[1];
-				if (!preg_match("/\w/",$bodovi)) {
-					if ($f)  {
-						?><tr bgcolor="#EEEEEE"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nepoznat student, nema ocjene - preskačem</td></tr><?
-					}
-				} else {
-					if ($f) {
-						?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>nije upisan/a na ovaj predmet</td></tr><?
-					}
-					$greska=1;
-				}
-				continue;
-			}
 		}
 		
 		// Podaci su OK, punimo niz...
