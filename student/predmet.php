@@ -182,11 +182,11 @@ function student_predmet() {
 			continue;
 		
 		// Transform homework details into a 2D matrix which is much easier to work with
-		$homeworks = [];
+		$homeworks = api_call("homework/course/$predmet/$ag", [ "files" => true ])["results"];
 		$assignmentHomeworks = [];
 		foreach($StudentScore['details'] as $Assignment) {
 			if (!array_key_exists($Assignment['Homework']['id'], $assignmentHomeworks)) {
-				$homeworks[] = $Assignment['Homework'];
+				//$homeworks[] = $Assignment['Homework'];
 				$assignmentHomeworks[$Assignment['Homework']['id']] = [];
 			}
 			$assignmentHomeworks[$Assignment['Homework']['id']][] = $Assignment;
@@ -262,7 +262,7 @@ function student_predmet() {
 			foreach ($homeworks as $homework) {
 				if ($homework['nrAssignments'] > $maxAssignments)
 					$maxAssignments = $homework['nrAssignments'];
-				if ($homework['text']) $hasText = true;
+				if (!empty($homework['files'])) $hasText = true;
 			}
 			
 			?>
@@ -326,10 +326,20 @@ function student_predmet() {
 					
 				// Show homework text link
 				if ($hasText) {
-					if ($homework['text']) {
+					if (!empty($homework['files'])) {
 						?>
 						<td>
-						<a href="?sta=common/attachment&amp;zadaca=<?=$homework['id']?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=postavka"><img src="static/images/16x16/download.png" width="16" height="16" border="0"></a>
+						<?
+						
+						foreach($homework['files'] as $homeworkFile) {
+							if ($homeworkFile['assignNo'] == 0 && $homeworkFile['type'] == "postavka") {
+								?>
+								<a href="?sta=common/attachment&amp;zadaca=<?=$homework['id']?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;tip=dodatne&amp;file=<?=$homeworkFile['id']?>"><img src="static/images/16x16/download.png" width="16" height="16" border="0"></a>
+								<?
+							}
+						}
+						
+						?>
 						</td><?
 					} else {
 						?>
