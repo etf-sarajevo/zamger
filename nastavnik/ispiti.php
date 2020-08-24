@@ -26,7 +26,7 @@ function nastavnik_ispiti() {
 	// Da li korisnik ima pravo ući u modul?
 	
 	if ($_api_http_code == "403") {
-		zamgerlog("nastavnik/grupe privilegije (predmet pp$predmet)",3);
+		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;

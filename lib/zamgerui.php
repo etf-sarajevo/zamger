@@ -670,7 +670,7 @@ function studentski_meni($fj) {
 // Polje $ispis omogućuje da se uradi jedan "testni prolaz" kojim se vidi šta će biti urađeno
 // Funkcija vraća 1 u slucaju greške, 0 za ispravno
 // Globalni niz $mass_rezultat sadrži parsirane podatke
-function mass_input($ispis) {
+function mass_input($ispis, $virtualGroup = []) {
 	global $mass_rezultat,$userid;
 	$mass_rezultat = array(); // brišemo niz
 	$mass_rezultat['ime'] = array(); // sprječavamo upozorenja
@@ -693,9 +693,10 @@ function mass_input($ispis) {
 	//   3 - Ime Prezime
 	//   4 - Broj indeksa
 	$format = intval($_REQUEST['format']);
-	if ($format == 4) return _mass_input_brindexa($ispis);
+	if ($format == 4) return _mass_input_brindexa($ispis, $virtualGroup);
 	
-	$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
+	if (empty($virtualGroup))
+		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
 	$names = $studentIds = [];
 	foreach($virtualGroup['members'] as $member) {
 		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
@@ -853,7 +854,7 @@ function mass_input($ispis) {
 }
 
 
-function _mass_input_brindexa($ispis) {
+function _mass_input_brindexa($ispis, $virtualGroup = []) {
 	global $mass_rezultat,$userid;
 	
 	// Da li treba ispisivati akcije na ekranu ili ne?
@@ -868,7 +869,8 @@ function _mass_input_brindexa($ispis) {
 	
 	$format = intval($_REQUEST['format']);
 	
-	$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
+	if (empty($virtualGroup))
+		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
 	$names = $surnames = $studentIds = [];
 	foreach($virtualGroup['members'] as $member) {
 		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
