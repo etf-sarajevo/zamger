@@ -12,7 +12,7 @@
 
 function common_ajah() {
 
-global $userid,$user_nastavnik,$user_siteadmin,$user_studentska;
+global $userid,$user_nastavnik,$user_siteadmin,$user_studentska, $_api_http_code;
 
 require_once("lib/student_predmet.php"); // update_komponente
 
@@ -140,7 +140,6 @@ case "izmjena_ispita":
 	$idpolja = $_REQUEST['idpolja'];
 	$vrijednost = $_REQUEST['vrijednost'];
 
-	$parametri = array();
 	$parametri = explode("-",$idpolja);
 	$ime = $parametri[0];
 	if ($ime != "ispit" && $ime!="ko" && $ime!="fiksna" && $ime!="kodatum") {
@@ -167,49 +166,11 @@ case "izmjena_ispita":
 		$stud_id = intval($parametri[1]);
 		$ispit = intval($parametri[2]);
 		
-		if ($user_siteadmin)
-			$q40 = db_query("select 'nastavnik',pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk.predmet, pk.akademska_godina from ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where i.id=$ispit and i.komponenta=k.id and i.predmet=pk.predmet and i.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and sp.student=$stud_id");
-		else
-			$q40 = db_query("select np.nivo_pristupa,pk.id,k.maxbodova,k.id,k.tipkomponente,k.opcija, pk., pk.akademska_godina from nastavnik_predmet as np, ispit as i, komponenta as k, ponudakursa as pk, student_predmet as sp where np.nastavnik=$userid and np.predmet=i.predmet and np.akademska_godina=i.akademska_godina and pk.predmet=i.predmet and pk.akademska_godina=i.akademska_godina and i.id=$ispit and i.komponenta=k.id and sp.predmet=pk.id and sp.student=$stud_id");
-		if (db_num_rows($q40)<1) {
-			zamgerlog("AJAH ispit - nepoznat ispit $ispit ili niste saradnik",3);
-			zamgerlog2("ispit - nepoznat ispit ili nije saradnik",$ispit);
-			print "nepoznat ispit $ispit ili niste saradnik na predmetu"; break;
-		}
-		if (db_result($q40,0,0) != "asistent") $padmin = 1;
-		$ponudakursa = db_result($q40,0,1);
-		$max = db_result($q40,0,2);
-		// Potrebno za update komponenti:
-		$komponenta = db_result($q40,0,3);
-		$tipkomponente = db_result($q40,0,4);
-		$kopcija = db_result($q40,0,5);
-		$predmet = db_result($q40,0,6);
-		$ag = db_result($q40,0,7);
-
 	} else if ($ime == "fiksna") {
 		$stud_id = intval($parametri[1]);
 		$predmet = intval($parametri[2]);
 		$komponenta = intval($parametri[3]);
 		$ag = intval($parametri[4]);
-
-		// TODO: provjeriti da li komponenta postoji na predmetu
-		$q40a = db_query("select maxbodova from komponenta where id=$komponenta and tipkomponente=5");
-		if (db_num_rows($q40a)!=1) {
-			zamgerlog("AJAH fiksna - nepoznata fiksna komponenta $komponenta",3);
-			zamgerlog2("fiksna - nepoznata fiksna komponenta", $komponenta);
-			print "nepoznata fiksna komponenta $komponenta"; break;
-		}
-		$max = db_result($q40a,0,0);
-
-		if (!$user_siteadmin) {
-			$q40b = db_query("select count(*) from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (db_num_rows($q40b)<1) {
-				zamgerlog("AJAH fiksna - nije na predmetu pp$predmet, ag$ag",3);
-				zamgerlog2("nije saradnik na predmetu (fiksna)", $predmet, $ag);
-				print "niste saradnik na predmetu"; break;
-			}
-		}
-		$padmin=1; // Dozvoljavamo saradnicima da unose fiksne komponente
 
 	} else if ($ime == "ko" || $ime == "kodatum") {
 		// konacna ocjena
@@ -217,60 +178,6 @@ case "izmjena_ispita":
 		if ($ime == "ko" && $vrijednost!="/") $vrijednost=intval($vrijednost); // zaokruzujemo
 		$predmet=intval($parametri[2]);
 		$ag = intval($parametri[3]);
-
-		// Da li je prošao ispitni rok?
-		$ima_li_rokova = db_get("SELECT COUNT(*) FROM ispitni_rokovi WHERE akademska_godina=$ag");
-		if ($ima_li_rokova && !$user_studentska && !$user_siteadmin) {
-			$jel_u_toku_rok = db_get("SELECT id FROM ispitni_rokovi WHERE akademska_godina=$ag AND datum_pocetka<=CURDATE() AND datum_zavrsetka>=CURDATE()");
-			if (!$jel_u_toku_rok) {
-				zamgerlog("AJAH ispit/ko - nije u toku ispitni rok (ispit pp$predmet, ag$ag)",3);
-				zamgerlog2("nije u toku ispitni rok (ispit/ko)", $predmet, $ag);
-				print "Trenutno nije u toku ispitni rok. Ne možete unositi ocjene.";
-				break;
-			}
-		}
-
-		$max = 12;
-		if (!$user_siteadmin && !$user_studentska) {
-			$q41 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-			if (db_num_rows($q41)<1) {
-				zamgerlog("AJAH ispit/ko - niste saradnik (ispit pp$predmet, ag$ag)",3);
-				zamgerlog2("nije saradnik na predmetu (ispit/ko)", $predmet, $ag);
-				print "niste saradnik na predmetu $predmet";
-				break;
-			}
-			if (db_result($q41,0,0)=="nastavnik") $padmin = 1;
-		}
-	}
-	if ($padmin==0 && !$user_siteadmin && !$user_studentska) {
-		zamgerlog("AJAH ispit - pogresne privilegije (ispit i$ispit)",3);
-		zamgerlog2("ispit - pogresne privilegije", $ispit);
-		print "niste nastavnik na predmetu $predmet niti admin!"; break;
-	}
-
-	// Da li je student na predmetu?
-	$q45 = db_query ("select count(*) from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet");
-	if (db_result($q45,0,0)<1) {
-		zamgerlog("AJAH ispit - student u$stud_id ne slusa predmet pp$predmet (ispit i$ispit)",3);
-		zamgerlog2("ispit - student ne slusa predmet", $stud_id, $ispit);
-		print "student $stud_id ne sluša predmet $predmet"; break;
-	}
-
-	// Maksimalan i minimalan broj bodova
-	if ($ime != "kodatum" && $vrijednost>$max) {
-		zamgerlog("AJAH ispit - vrijednost $vrijednost > max $max",3);
-		zamgerlog2("ispit - vrijednost > max", $stud_id, intval($ispit), 0, "$vrijednost > $max");
-		if ($ime=="ko")
-			print "stavili ste ocjenu veću od 10";
-		else
-			print "maksimalan broj bodova je $max, a unijeli ste $vrijednost";
-		break;
-	}
-	if ($ime=="ko" && $vrijednost<6 && $vrijednost!=="/") {
-		zamgerlog("AJAH ispit - konacna ocjena manja od 6 ($vrijednost)",3);
-		zamgerlog2("ispit - konacna ocjena manja od 6", 0,0,0, $vrijednost);
-		print "stavili ste ocjenu manju od 6";
-		break;
 	}
 
 	if ($ime=="kodatum") { // Parsiranje datuma
@@ -291,141 +198,106 @@ case "izmjena_ispita":
 			print "uneseni datum $dan. $mjesec. $godina je kalendarski nemoguc";
 			break;
 		}
-		$novidatum = mktime(0, 0, 0, $mjesec, $dan, $godina);
-		if ($novidatum === false) {
-			zamgerlog("AJAH ispit - datum konacne ocjene je neispravan ($vrijednost)", 3);
-			zamgerlog2("ispit - datum konacne ocjene je nemoguc", 0,0,0, $vrijednost);
-			print "uneseni datum $dan. $mjesec. $godina nije ispravan";
-			break;
-		}
+		$novidatum = "$godina-$mjesec-$dan";
 	}
 
 	// Ažuriranje podataka u bazi
 	if ($ime=="ispit") {
-		$q50 = db_query("select ocjena from ispitocjene where ispit=$ispit and student=$stud_id");
-		$c = db_num_rows($q50);
-		if ($c==0 && $vrijednost!=="/") {
-			$q60 = db_query("insert into ispitocjene set ispit=$ispit, student=$stud_id, ocjena=$vrijednost");
-			zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
-		} else if ($c>0 && $vrijednost==="/") {
-			$staraocjena = db_result($q50,0,0);
-			$q60 = db_query("delete from ispitocjene where ispit=$ispit and student=$stud_id");
-			zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staraocjena); // nivo 4: audit
-		} else if ($c>0) {
-			$staraocjena = db_result($q50,0,0);
-			$q60 = db_query("update ispitocjene set ocjena=$vrijednost where ispit=$ispit and student=$stud_id");
-			zamgerlog("AJAH ispit - izmjena rezultata $staraocjena u $vrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("izmjenjen rezultat ispita", $stud_id, $ispit, 0, "$staraocjena -> $vrijednost"); // nivo 4: audit
+		if ($vrijednost!=="/") {
+			$examResult = array_to_object( ["result" => $vrijednost] );
+			$result = api_call("exam/$ispit/student/$stud_id", $examResult, "PUT");
+			if ($_api_http_code == "201") {
+				zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)", 4); // nivo 4: audit
+				zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
+			} else {
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
+			}
+		} else {
+			$result = api_call("exam/$ispit/student/$stud_id", [], "DELETE");
+			if ($_api_http_code == "204") {
+				zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
+				zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staraocjena); // nivo 4: audit
+			} else {
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
+			}
 		}
-
-		update_komponente($stud_id,$ponudakursa,$komponenta);
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "fiksna") {
-		// Odredjujemo ponudukursa zbog tabele komponentebodovi
+		// Treba nam ponuda kursa
+		$portfolio = api_call("course/$predmet/student/$stud_id", [ "year" => $ag, "score" => true ]);
+		$ponudakursa = $portfolio['CourseOffering']['id'];
+		
+		$studentScore = array_to_object( [ "student" => [ "id" => $stud_id ], "CourseActivity" => [ "id" => $komponenta ], "CourseOffering" => [ "id" => $ponudakursa ], "score" => $vrijednost ] );
+		if ($vrijednost !== "/") {
+			$result = api_call("course/$predmet/$ag/student/$stud_id/score", $studentScore, "PUT");
+			if ($_api_http_code == "201") {
+				zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
+				zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
+			} else {
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
+			}
+		} else {
+			$result = api_call("course/$predmet/$ag/student/$stud_id/score", $studentScore, "DELETE");
+			if ($_api_http_code == "204") {
+				zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
+				zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
+			} else {
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
+			}
+		}
+		/*// Odredjujemo ponudukursa zbog tabele komponentebodovi
 		$q62 = db_query("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
 		$ponudakursa = db_result($q62,0,0);
 
 		$q63 = db_query("delete from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
-		if ($vrijednost != "/") $q66 = db_query("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");
-		zamgerlog("AJAH fiksna - upisani bodovi $vrijednost za fiksnu komponentu $komponenta (predmet pp$predmet, student u$stud_id)",4);
-		zamgerlog2("izmjena bodova za fiksnu komponentu", intval($stud_id), intval($ponudakursa), intval($komponenta), $vrijednost);
+		if ($vrijednost != "/") $q66 = db_query("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");*/
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
-		
-		// Određivanje trenutno važećeg pasoša predmeta 
-		// FIXME pasoš predmeta treba biti dio ponudekursa - sada sam definitivno shvatio da je tako
-		// npr. ako postoji drugi plan studija sa novijim pasošem, a u važećem se koristi stari, biće povučen taj pasoš
-		// Akšamović Jasmin prenio predmet NSAU, kriptografija isto
-		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps
-		WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ps.id AND ps.godina_vazenja<=$ag ORDER BY psp.pasos_predmeta DESC LIMIT 1");
-		if ($pasos_predmeta === false) {
-			$pasos_predmeta = db_get("SELECT pis.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, plan_studija ps, plan_izborni_slot pis
-			WHERE pis.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_izborni_slot=pis.id AND psp.plan_studija=ps.id AND ps.godina_vazenja<=$ag ORDER BY pis.pasos_predmeta DESC LIMIT 1");
-		}
-		if ($pasos_predmeta === false) $pasos_predmeta="NULL";
-		
-		/*// Pasoš predmeta za koji upisujemo ocjenu je onaj koji je u planu studija po kojem je student studirao date godine.
-		// Za slučaj da je student mijenjao plan studija na prelazu iz zimskog u ljetnji semestar, a po jednom planu je predmet 
-		// predviđen u zimskom a po drugom u ljetnjem semestru, uzimamo parnost semestra u kojem je ponudakursa koju je student
-		// upisao.
-		// Upit je dosta kompleksan ali nema drugog načina da se osiguramo od ovog slučaja.
-		$pasos_predmeta = db_get("SELECT psp.pasos_predmeta FROM plan_studija_predmet psp, pasos_predmeta pp, student_studij ss, ponudakursa pk, student_predmet sp
-				WHERE psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.plan_studija=ss.plan_studija AND ss.student=$stud_id AND 
-				ss.akademska_godina=$ag AND ss.semestar MOD 2=pk.semestar MOD 2 AND pk.id=sp.predmet AND pk.predmet=$predmet AND pk.akademska_godina=$ag
-				AND sp.student=$stud_id
-				ORDER BY psp.pasos_predmeta DESC LIMIT 1");*/
-
-		// Ne koristimo REPLACE i slicno zbog logginga
-		$q70 = db_query("select ocjena from konacna_ocjena where predmet=$predmet and student=$stud_id");
-		$c = db_num_rows($q70);
-		if ($c==0 && $vrijednost!="/") {
-			// Određivanje datuma za indeks
-			$q105 = db_query("SELECT UNIX_TIMESTAMP(it.datumvrijeme) 
-			FROM ispit as i, ispit_termin as it, student_ispit_termin as sit 
-			WHERE sit.student=$stud_id and sit.ispit_termin=it.id and it.ispit=i.id and i.predmet=$predmet and i.akademska_godina=$ag
-			ORDER BY i.datum DESC LIMIT 1");
-			if (db_num_rows($q105) > 0) {
-				$datum_u_indeksu = db_result($q105,0,0);
-				$sada = time();
-				if ($datum_u_indeksu > $sada) {
-					$datum_provjeren = 0;
-					zamgerlog("datum nije provjeren jer je u buducnosti $datum_u_indeksu > $sada", 3);
-				} else
-					$datum_provjeren = 1;
+		if ($vrijednost !== "/") {
+			$portfolio = array_to_object( [ "grade" => $vrijednost, "gradeDate" => null ] );
+			$result = api_call("course/$predmet/$ag/student/$stud_id/grade", $portfolio, "PUT");
+			if ($_api_http_code == "201") {
+				zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+				zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
 			} else {
-				$datum_u_indeksu = time();
-				$datum_provjeren = 0;
-				zamgerlog("datum nije provjeren jer nema termina, student $stud_id predmet $predmet ag $ag", 3);
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
 			}
-
-			$q80 = db_query("insert into konacna_ocjena set predmet=$predmet, akademska_godina=$ag, student=$stud_id, ocjena=$vrijednost, datum=NOW(), datum_u_indeksu=FROM_UNIXTIME($datum_u_indeksu), datum_provjeren=$datum_provjeren, pasos_predmeta=$pasos_predmeta");
-			zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
-		} else if ($c>0 && $vrijednost=="/") {
-			$staraocjena = db_result($q70,0,0);
-			$q80 = db_query("delete from konacna_ocjena where predmet=$predmet and student=$stud_id");
+		} else {
+			$result = api_call("course/$predmet/$ag/student/$stud_id/grade", [], "DELETE");
+			if ($_api_http_code == "204") {
 			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
 			zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
-		} else if ($c>0) {
-			$staraocjena = db_result($q70,0,0);
-			$q80 = db_query("update konacna_ocjena set ocjena=$vrijednost, datum=NOW(), pasos_predmeta=$pasos_predmeta where predmet=$predmet and student=$stud_id");
-			zamgerlog("AJAH ko - izmjena ocjene $staraocjena u $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staraocjena -> $vrijednost");
+			} else {
+				print "greška ($_api_http_code): " . $result['message'];
+				break;
+			}
 		}
-		
-		// Izvoz unesene ocjene
-		if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$stud_id AND predmet=$predmet") == 0)
-			db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "kodatum") {
-		// AJAH "kodatum" je uvijek promjena
-		$q85 = db_query("select UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where predmet=$predmet and student=$stud_id");
-		if (db_num_rows($q85) == 0) {
-			print "ne moze se mijenjati datum dok se ne unese ocjena";
-			break;
-		}
-		$staridatum = db_result($q85,0,0);
-		$datum_provjeren = db_result($q85,0,1);
-
-		if ($staridatum != $novidatum || $datum_provjeren == 0) {
-			$q87 = db_query("update konacna_ocjena set datum_u_indeksu=FROM_UNIXTIME($novidatum), datum_provjeren=1 where predmet=$predmet and student=$stud_id");
+		$portfolio = api_call("course/$predmet/student/$stud_id", [ "year" => $ag, "score" => true ], "GET", true, true, false);
+		$portfolio->gradeDate = $novidatum;
+		$result = api_call("course/$predmet/$ag/student/$stud_id/grade", $portfolio, "PUT");
+		if ($_api_http_code == "201") {
 			zamgerlog("AJAH kodatum - promijenjen datum u indeksu (predmet pp$predmet, student u$stud_id)", 4);
 			zamgerlog2("promijenjen datum ocjene", $stud_id, $predmet, $ag, date("d.m.Y",$novidatum));
-			
-			if (db_get("SELECT COUNT(*) FROM izvoz_ocjena WHERE student=$stud_id AND predmet=$predmet") == 0)
-				db_query("INSERT INTO izvoz_ocjena VALUES($stud_id,$predmet)");
+		} else {
+			print "greška ($_api_http_code): " . $result['message'];
+			break;
 		}
 	}
 

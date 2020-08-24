@@ -697,10 +697,11 @@ function saradnik_grupa() {
 		// ISPITI - ISPIS
 
 		foreach($exams as $exam) {
+			$examId = $exam['id'];
 			if (array_key_exists($exam['id'], $examResults) && array_key_exists($studentId, $examResults[$exam['id']])) {
-				$ispiti_ispis .= "<td id=\"ispit-$studentId-$examId\" ondblclick=\"coolboxopen(this)\">" . $examResults[$exam['id']][$studentId] . "</td>\n";
+				$ispiti_ispis .= "<td id=\"ispit-$studentId-$examId\" ondblclick=\"coolboxopen(this)\">" . $examResults[$examId][$studentId] . "</td>\n";
 			} else {
-				$ispiti_ispis .= "<td id=\"ispit-$studentId-$ispit\" ondblclick=\"coolboxopen(this)\">/</td>\n";
+				$ispiti_ispis .= "<td id=\"ispit-$studentId-$examId\" ondblclick=\"coolboxopen(this)\">/</td>\n";
 			}
 		}
 
