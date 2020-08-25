@@ -22,7 +22,7 @@ function saradnik_zadaca() {
 	$zadatak=intval($_REQUEST['zadatak']);
 
 
-	$currentAssignment = api_call("homework/$zadaca/$zadatak/student/$studentId", [ "resolve" => ["ProgrammingLanguage", "Person"] ] );
+	$currentAssignment = api_call("homework/$zadaca/$zadatak/student/$studentId", [ "resolve" => ["ProgrammingLanguage", "Person", "Homework"] ] );
 	if ($_api_http_code == "404") {
 		zamgerlog("nepostojeca zadaca $zadaca",3);
 		zamgerlog2("nepostojeca zadaca", $zadaca);
