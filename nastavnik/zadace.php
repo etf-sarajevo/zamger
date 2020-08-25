@@ -78,21 +78,21 @@ function nastavnik_zadace() {
 		if ($_POST['fakatradi'] != 1) $ispis = 1; else $ispis = 0;
 		
 		// Provjera ostalih parametara
-		$zadaca = intval($_REQUEST['_lv_column_zadaca']);
+		$zadaca = intval($_REQUEST['zadaca']);
 		$zadatak = intval($_REQUEST['zadatak']);
 		
 		$homework = api_call("homework/$zadaca");
-		if ($_api_http_code == "200") {
+		if ($_api_http_code != "200") {
 			zamgerlog("nepostojeca zadaca $zadaca",3); // 3 = greška
 			zamgerlog2("nepostojeca zadaca", $zadaca);
-			niceerror("Morate najprije kreirati zadaću");
+			niceerror("Morate najprije kreirati zadaću $zadaca");
 			print "\n<p>Koristite formular &quot;Kreiranje zadaće&quot; koji se nalazi na prethodnoj stranici. Ukoliko ne vidite nijednu zadaću na spisku &quot;Postojeće zadaće&quot;, koristite dugme Refresh vašeg web preglednika.</p>\n";
 			return;
 		} else {
 			if ($zadatak < 1 || $zadatak > $homework['nrAssignments']) {
 				zamgerlog("zadaca $zadaca nema $zadatak zadataka",3);
 				zamgerlog2("zadaca nema toliko zadataka", $zadaca, $zadatak);
-				niceerror("Zadaća \"".db_result($q20,0,0)."\" nema $zadatak zadataka.");
+				niceerror("Zadaća " . $homework['name'] . " nema $zadatak zadataka");
 				return;
 			}
 		}
@@ -121,9 +121,16 @@ function nastavnik_zadace() {
 		$greska=mass_input($ispis); // Funkcija koja parsira podatke
 	
 		if (count($mass_rezultat)==0) {
-			niceerror("Niste unijeli ništa.");
-			return;
+			print "Niste unijeli nijedan upotrebljiv podatak<br/><br/>\n";
+			$greska=1;
 		}
+		
+		// Obrada rezultata
+		
+		$boja1 = "#EEEEEE";
+		$boja2 = "#DDDDDD";
+		$boja=$boja1;
+		$bojae = "#FFE3DD";
 	
 		foreach ($mass_rezultat['ime'] as $student=>$ime) {
 			$prezime = $mass_rezultat['prezime'][$student];
@@ -133,8 +140,15 @@ function nastavnik_zadace() {
 	
 			// Student neocijenjen (prazno mjesto za ocjenu)
 			if (floatval($bodova)==0 && strpos($bodova,"0")===FALSE) {
-				if ($ispis)
-					print "Student '$prezime $ime' ($brindexa) - nema zadaću (nije unesen broj bodova $bodova)<br/>";
+				if ($ispis) {
+					?>
+					<tr bgcolor="<?=$bojae?>">
+						<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
+						<td colspan="2">nema zadaću (nije unesen broj bodova <?=$bodova?>)</td>
+					</tr>
+					<?
+					//$greska=1;
+				}
 				continue;
 			}
 	
@@ -142,7 +156,12 @@ function nastavnik_zadace() {
 			$bodova = floatval($bodova);
 			if ($bodova>$maxbodova) {
 				if ($ispis) {
-					print "-- Studenta '$prezime $ime' ($brindexa) ima $bodova bodova što je više od maksimalnih $maxbodova<br/>";
+					?>
+					<tr bgcolor="<?=$bojae?>">
+						<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
+						<td colspan="2">ima <?=$bodova?> bodova što je više od maksimalnih <?=$maxbodova?></td>
+					</tr>
+					<?
 					//$greska=1;
 					continue;
 				}
@@ -150,7 +169,13 @@ function nastavnik_zadace() {
 	
 			// Zaključak
 			if ($ispis) {
-				print "Student '$prezime $ime' ($brindexa) - zadaća $zadaca, bodova $bodova<br/>";
+				?>
+				<tr bgcolor="<?=$boja?>">
+					<td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td>
+					<td colspan="2">zadaca <?=$zadaca?>, bodova <?=$bodova?></td>
+				</tr>
+				<?
+				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 			} else {
 				// Odredjujemo zadnji filename
 				$filename = "";
@@ -165,6 +190,7 @@ function nastavnik_zadace() {
 					zamgerlog2("bodovanje zadace", $student, $zadaca, $zadatak, $bodova);
 				} else {
 					niceerror("Neuspješno bodovanje zadaće ($_api_http_code): " . $result['message']);
+					print_r($result);
 				}
 			}
 		}
@@ -191,9 +217,10 @@ function nastavnik_zadace() {
 			?>
 			Bodovi iz zadaća su upisani.
 			<script language="JavaScript">
-			location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
+                setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
 			</script>
 			<?
+			return;
 		}
 	}
 	
@@ -715,24 +742,24 @@ function nastavnik_zadace() {
 	
 	
 	
-	// Formular za masovni unos zadaća
+	// Masovni unos konačnih ocjena
 	
+	$preferences = api_call("person/preferences")["results"];
 	$format = intval($_POST['format']);
-	// TODO preference
-	/*if (!$_POST['format']) {
-		$q110 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-		if (db_num_rows($q110)>0) $format = db_result($q110,0,0);
+	if (!$_POST['format']) {
+		if (array_key_exists('mass-input-format', $preferences))
+			$format = $preferences['mass-input-format'];
 		else //default vrijednost
 			$format=0;
-	}*/
+	}
 	
 	$separator = intval($_POST['separator']);
-	/*if (!$_POST['separator']) {
-		$q120 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-		if (db_num_rows($q120)>0) $separator = db_result($q120,0,0);
+	if (!$_POST['separator']) {
+		if (array_key_exists('mass-input-separator', $preferences))
+			$separator = $preferences['mass-input-separator'];
 		else //default vrijednost
 			$separator=0;
-	}*/
+	}
 	
 	if (count($allHomeworks) > 0) {
 	
