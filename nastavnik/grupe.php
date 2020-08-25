@@ -471,23 +471,22 @@ function nastavnik_grupe() {
 	
 	// Masovni unos
 	
-	// TODO preference
-	
+	$preferences = api_call("person/preferences")["results"];
 	$format = intval($_POST['format']);
-	/*if (!$_POST['format']) {
-		$q110 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-		if (db_num_rows($q110)>0) $format = db_result($q110,0,0);
+	if (!$_POST['format']) {
+		if (array_key_exists('mass-input-format', $preferences))
+			$format = $preferences['mass-input-format'];
 		else //default vrijednost
 			$format=0;
-	}*/
+	}
 	
 	$separator = intval($_POST['separator']);
-	/*if (!$_POST['separator']) {
-		$q120 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-		if (db_num_rows($q120)>0) $separator = db_result($q120,0,0);
+	if (!$_POST['separator']) {
+		if (array_key_exists('mass-input-separator', $preferences))
+			$separator = $preferences['mass-input-separator'];
 		else //default vrijednost
 			$separator=0;
-	}*/
+	}
 	
 	?>
 	

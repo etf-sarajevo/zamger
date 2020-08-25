@@ -379,20 +379,22 @@ function nastavnik_ispiti() {
 	// Masovni unos rezultata ispita
 	
 	if ($_REQUEST['akcija']=="masovni_unos") {
-		// Korisničke preference za masovni unos
-		$format = int_param('format');
-		/*if ($format == 0) {
-			$format = db_get("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-			if ($format === false) //default vrijednost
+		$preferences = api_call("person/preferences")["results"];
+		$format = intval($_POST['format']);
+		if (!$_POST['format']) {
+			if (array_key_exists('mass-input-format', $preferences))
+				$format = $preferences['mass-input-format'];
+			else //default vrijednost
 				$format=0;
-		}*/
+		}
 		
-		$separator = int_param('separator');
-		/*if ($separator == 0) {
-			$separator = db_get("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-			if ($separator === false) //default vrijednost
+		$separator = intval($_POST['separator']);
+		if (!$_POST['separator']) {
+			if (array_key_exists('mass-input-separator', $preferences))
+				$separator = $preferences['mass-input-separator'];
+			else //default vrijednost
 				$separator=0;
-		}*/
+		}
 	
 		?>
 		<h4>Masovni unos ocjena za ispit <?=$fini_naziv_ispita?>, održan <?=$finidatum?></h4>

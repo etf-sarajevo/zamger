@@ -726,21 +726,8 @@ function mass_input($ispis, $virtualGroup = []) {
 
 
 	// Update korisničkih preferenci kod masovnog unosa
-
-	// TODO preference
-	/*$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-	if (db_num_rows($q190)<1) {
-		$q191 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-format', vrijednost='$format'");
-	} else if (db_result($q190,0,0)!=$format) {
-		$q192 = db_query("update preference set vrijednost='$format' where korisnik=$userid and preferenca='mass-input-format'");
-	}
-
-	$q193 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-	if (db_num_rows($q193)<1) {
-		$q194 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-separator', vrijednost='$separator'");
-	} else if (db_result($q193,0,0)!=$separator) {
-		$q195 = db_query("update preference set vrijednost='$separator' where korisnik=$userid and preferenca='mass-input-separator'");
-	}*/
+	api_call("person/preferences", ["preference" => 'mass-input-format', "value" => $format], "PUT");
+	api_call("person/preferences", ["preference" => 'mass-input-separator', "value" => $separator], "PUT");
 
 
 	$greska=0;
@@ -900,21 +887,8 @@ function _mass_input_brindexa($ispis, $virtualGroup = []) {
 	
 	
 	// Update korisničkih preferenci kod masovnog unosa
-	
-	// TODO preference
-	/*$q190 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-format'");
-	if (db_num_rows($q190)<1) {
-		$q191 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-format', vrijednost='$format'");
-	} else if (db_result($q190,0,0)!=$format) {
-		$q192 = db_query("update preference set vrijednost='$format' where korisnik=$userid and preferenca='mass-input-format'");
-	}
-	
-	$q193 = db_query("select vrijednost from preference where korisnik=$userid and preferenca='mass-input-separator'");
-	if (db_num_rows($q193)<1) {
-		$q194 = db_query("insert into preference set korisnik=$userid, preferenca='mass-input-separator', vrijednost='$separator'");
-	} else if (db_result($q193,0,0)!=$separator) {
-		$q195 = db_query("update preference set vrijednost='$separator' where korisnik=$userid and preferenca='mass-input-separator'");
-	}*/
+	api_call("person/preferences", ["preference" => 'mass-input-format', "value" => $format], "PUT");
+	api_call("person/preferences", ["preference" => 'mass-input-separator', "value" => $separator], "PUT");
 	
 	
 	$greska=0;
