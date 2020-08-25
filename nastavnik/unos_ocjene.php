@@ -5,60 +5,43 @@
 
 function nastavnik_unos_ocjene() {
 
-global $userid,$user_studentska,$user_siteadmin;
-
-
-// Parametri
-$predmet = intval($_REQUEST['predmet']);
-$ag = intval($_REQUEST['ag']);
-
-// Naziv predmeta
-$q10 = db_query("select naziv from predmet where id=$predmet");
-if (db_num_rows($q10)<1) {
-	biguglyerror("Nepoznat predmet");
-	zamgerlog("ilegalan predmet $predmet",3); //nivo 3: greska
-	zamgerlog2("nepoznat predmet", $predmet);
-	return;
-}
-$predmet_naziv = db_result($q10,0,0);
-
-$pasos = db_get("SELECT pasos_predmeta FROM akademska_godina_predmet WHERE predmet=$predmet AND akademska_godina=$ag");
-if ($pasos) {
-	$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos");
-}
-
-
-$kolokvij = false;
-$tippredmeta = db_get("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
-if ($tippredmeta == 2000 || $tippredmeta == 1001) 
-// FIXME: Ovo ne treba biti hardcodirani tip predmeta nego jedan od parametara za tip predmeta
-	$kolokvij = true;
-
-
-// Da li korisnik ima pravo ući u modul?
-
-if (!$user_siteadmin && !$user_studentska) {
-	$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-	if (db_num_rows($q10)<1 || db_result($q10,0,0)!="nastavnik") {
-		zamgerlog("nastavnik/ispiti privilegije (predmet pp$predmet)",3);
+	global $_api_http_code;
+	
+	
+	// Parametri
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']);
+	
+	$course = api_call("course/$predmet/$ag");
+	
+	// Naziv predmeta
+	$predmet_naziv = $course['courseName'];
+	
+	// Da li korisnik ima pravo ući u modul?
+	
+	if ($_api_http_code == "403") {
+		zamgerlog("nastavnik/unos_ocjene privilegije (predmet pp$predmet)",3);
 		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
 		biguglyerror("Nemate pravo pristupa ovoj opciji");
 		return;
-	} 
-}
-
-
-?>
-
-<p>&nbsp;</p>
-
-<p><h3><?=$predmet_naziv?> - Konačna ocjena (pojedinačni unos)</h3></p>
-
-<?
-
-
-
-	print ajah_box();
+	}
+	
+	
+	$kolokvij = false;
+	if ($course['gradeType'] == 1 || $course['gradeType'] == 2)
+		$kolokvij = true;
+	
+	
+	?>
+	
+	<p>&nbsp;</p>
+	
+	<p><h3><?=$predmet_naziv?> - Konačna ocjena (pojedinačni unos)</h3></p>
+	
+	<?
+	
+	
+	ajah_box();
 
 	?>
 	<SCRIPT language="JavaScript">
@@ -127,70 +110,72 @@ if (!$user_siteadmin && !$user_studentska) {
 		<tr>
 			<th><b>R. br.</b></th><th width="300"><b>Prezime i ime</b></th>
 			<th><b>Broj indeksa</b></th>
-			<th><b><? 
-			if ($kolokvij && $tippredmeta == 1001) { 
-				?>Uspješno odbranio/la<? 
-			} else if ($kolokvij) { 
-				?>Ispunio/la obaveze<? 
-			} else { 
-				?>Ocjena<? 
+			<th><b><?
+			if ($kolokvij && $course['gradeType'] == 2) {
+				?>Uspješno odbranio/la<?
+			} else if ($kolokvij) {
+				?>Ispunio/la obaveze<?
+			} else {
+				?>Ocjena<?
 			} ?></b></th>
 			<th><b>Datum</b></th>
 			<th><b>Status</b></th>
 		</tr>
 	<?
 
-	$upit = "SELECT o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.student=o.id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag order by o.prezime, o.ime";
+	$allStudents = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true ] );
+	usort($allStudents['members'], function ($s1, $s2) {
+		if ($s1['student']['surname'] == $s2['student']['surname']) return bssort($s1['student']['name'], $s2['student']['name']);
+		return bssort($s1['student']['surname'], $s2['student']['surname']);
+	});
+	
 	
 	$zebra_bg = $zebra_siva = "#f0f0f0";
 	$zebra_bijela = "#ffffff";
 
-	$q520 = db_query($upit);
 	$id=0;
 	$rbr=0;
-	while ($r520 = db_fetch_row($q520)) {
+	foreach($allStudents['members'] as $student) {
 		$rbr++;
 		if ($id!=0) {
 			?>
-			<SCRIPT language="JavaScript"> 
-				nextjump['ocjena<?=$id?>'] = "ocjena<?=$r520[0]?>";
-				nextjump['datum<?=$id?>']  = "datum<?=$r520[0]?>";
+			<SCRIPT language="JavaScript">
+				nextjump['ocjena<?=$id?>'] = "ocjena<?=$student['student']['id']?>";
+				nextjump['datum<?=$id?>']  = "datum<?=$student['student']['id']?>";
 			</SCRIPT>
 			<?
 		}
 //			print "$r520[0])\"></tr>\n";
-		$id=$r520[0];
+		$id=$student['student']['id'];
 
-		$q530 = db_query("select ocjena, UNIX_TIMESTAMP(datum_u_indeksu), datum_provjeren from konacna_ocjena where student=$r520[0] and predmet=$predmet");
-		if(db_num_rows($q530)>0) {
-			$ocjena = db_result($q530,0,0);
-			$datum_u_indeksu = date("d. m. Y.", db_result($q530,0,1));
-			$datum_provjeren = db_result($q530,0,2);
-//			$datum_u_indeksu = db_result($q530,0,1);
+		if($student['grade']) {
+			$ocjena = $student['grade'];
+			$datum_u_indeksu = date("d. m. Y.", db_timestamp($student['gradeDate']));
+			$datum_provjeren = $student['gradeDateVerified'];
 		} else {
 			$ocjena = "/";
 			$datum_u_indeksu = "/";
 			$datum_provjeren = 2;
 		}
 
-		if ($kolokvij) { 
+		if ($kolokvij) {
 			if ($ocjena == 11 || $ocjena == 12) { $ispunio_uslove = "CHECKED"; $ocjena = "true"; }
 			else { $ispunio_uslove = ""; $ocjena = "false"; }
-			if ($tippredmeta == 1001) $ocjena_value = 12; else $ocjena_value = 11; // Ciljana vrijednost polja ocjena FIXME
+			if ($course['gradeType'] == 2) $ocjena_value = 12; else $ocjena_value = 11; // Ciljana vrijednost polja ocjena
 		}
 
 		if ($zebra_bg == $zebra_siva) $zebra_bg=$zebra_bijela; else $zebra_bg=$zebra_siva;
 
 		?>
-		<SCRIPT language="JavaScript"> 
+		<SCRIPT language="JavaScript">
 			origval['ocjena<?=$id?>'] = "<?=$ocjena?>";
 			origval['datum<?=$id?>'] = "<?=$datum_u_indeksu?>";
 			datum_provjeren['datum<?=$id?>'] = <?=$datum_provjeren?>;
 		</SCRIPT>
 		<tr bgcolor="<?=$zebra_bg?>">
 			<td><?=$rbr?></td>
-			<td><?=$r520[2]?> <?=$r520[1]?></td>
-			<td><?=$r520[3]?></td>
+			<td><?=$student['student']['surname']?> <?=$student['student']['name']?></td>
+			<td><?=$student['student']['studentIdNr']?></td>
 			<td align="center">
 			<?
 			if ($kolokvij) {
