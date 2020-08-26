@@ -7,7 +7,6 @@
 function nastavnik_kvizovi() {
 
 	global $_api_http_code;
-	global $_lv_;
 	
 	require_once("lib/formgen.php"); // db_dropdown, db_form, db_list
 	require_once("lib/utility.php"); // procenat
