@@ -162,6 +162,28 @@ function student_prijava_ispita() {
 		
 	
 		$greska = $greska_long = "";
+		
+		// Is there MinScore option or conditional activities
+		if (array_key_exists("MinScore", $event['CourseActivity']['options']) || !empty($event['CourseActivity']['conditionalActivities'])) {
+			// Get student portfolio with score
+			$portfolio = api_call("course/$id_predmeta/student/$userid", ["totalScore" => true]);
+			if (array_key_exists("MinScore", $event['CourseActivity']['options']) && $event['CourseActivity']['options']['MinScore'] > $portfolio['totalScore']) {
+				$greska = "U";
+				$greska_long = "Nemate dovoljno bodova";
+			}
+			else if (!empty($event['CourseActivity']['conditionalActivities'])) {
+				foreach ($event['CourseActivity']['conditionalActivities'] as $cact) {
+					foreach($portfolio['score'] as $score) {
+						if ($cact['id'] == $score['CourseActivity']['id']) {
+							if ($score['score'] < $score['CourseActivity']['pass']) {
+								$greska = "U";
+								$greska_long = "Niste položili " . $score['CourseActivity']['name'];
+							}
+						}
+					}
+				}
+			}
+		}
 	
 		// Da li je već prijavio ovaj ispit u nekom od termina?
 		foreach ($registered_events as $registered_event) {
@@ -219,7 +241,8 @@ function student_prijava_ispita() {
 		?><p><b>LEGENDA GREŠAKA:</b><br>
 		<b>P</b> - termin je popunjen (ako nema ove oznake, postoji još slobodnih mjesta na ovom terminu)<br>
 		<b>O</b> - već ste prijavljeni za ovaj termin<br>
-		<b>D</b> - prijavljeni ste za drugi termin istog ispita; potrebno je da se odjavite sa tog termina da biste se mogli prijaviti za ovaj termin</p>
+		<b>D</b> - prijavljeni ste za drugi termin istog ispita; potrebno je da se odjavite sa tog termina da biste se mogli prijaviti za ovaj termin<br>
+		<b>U</b> - ne ispunjavate uslove za ovaj termin</p>
 		<?
 	}
 	
