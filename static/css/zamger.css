@@ -46,3 +46,7 @@
 }
 
 div.breakafter {page-break-after:always;}
+
+.aktivnosti label { display: inline-block; width: 100px; height: 20px; }
+
+.opis { font-size: x-small; color: gray; height: 40px; }

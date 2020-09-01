@@ -296,7 +296,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	} else {
 		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) {
-			if ($debug) print "Failed to decode result as JSON for $url\n$http_result\n";
+			if ($debug) {
+				print "Failed to decode result as JSON for $url<br>";
+				print "<pre>" . htmlentities($http_result) . "</pre>";
+			}
 			return FALSE;
 		}
 	}
