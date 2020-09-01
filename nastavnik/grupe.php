@@ -9,7 +9,7 @@
 
 function nastavnik_grupe() {
 	
-	global $userid, $_api_http_code;
+	global $_api_http_code;
 	
 	global $mass_rezultat; // za masovni unos studenata u grupe
 	
