@@ -114,7 +114,11 @@ while ($r15 = db_fetch_row($q15)) {
 $q17 = db_query("select pk.id, ko.ocjena, UNIX_TIMESTAMP(ko.datum), p.naziv, p.id, pk.akademska_godina from konacna_ocjena as ko, student_predmet as sp, ponudakursa as pk, predmet as p where ko.student=$userid and sp.student=$userid and ko.predmet=p.id and ko.akademska_godina=pk.akademska_godina and sp.predmet=pk.id and pk.predmet=p.id and ko.ocjena>5");
 while ($r17 = db_fetch_row($q17)) {
 	if ($r17[2] < time()-60*60*24*30) continue; // preskacemo starije od mjesec dana
-	$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[4]&ag=$r17[5]\">Dobili ste $r17[1]</a><br /><br />\n";
+	if ($r17[1] == 12) {
+		$titula = db_get("SELECT ss.naziv FROM strucni_stepen ss, studij s, student_studij sts WHERE sts.student=$userid AND sts.akademska_godina=".$r17[5]." AND sts.studij=s.id AND s.strucni_stepen=ss.id");
+		$code_poruke["k" . $r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/zavrsni&predmet=$r17[4]&ag=$r17[5]\">Postali ste $titula!</a><br /><br />\n";
+	} else
+		$code_poruke["k".$r17[0]] = "<b>$r17[3]:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$r17[4]&ag=$r17[5]\">Dobili ste $r17[1]</a><br /><br />\n";
 	$vrijeme_poruke["k".$r17[0]] = $r17[2];
 }
 
