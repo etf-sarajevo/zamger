@@ -2210,6 +2210,7 @@ CREATE TABLE IF NOT EXISTS `zahtjev_za_potvrdu` (
   `status` int(11) default NULL,
   `akademska_godina` int(11) NOT NULL,
   `besplatna` tinyint(4) NOT NULL default '1',
+  `napomena` text COLLATE utf8_slovenian_ci DEFAULT NULL,
   PRIMARY KEY  (`id`),
   KEY `akademska_godina` (`akademska_godina`),
   KEY `tip_potvrde` (`tip_potvrde`),
