@@ -6,7 +6,7 @@
 
 function nastavnik_zadace() {
 
-	global $userid, $_api_http_code, $conf_files_path;
+	global $userid, $_api_http_code, $conf_files_path, $conf_backend_url_client;
 	
 	require_once("lib/autotest.php");
 	require_once("lib/zamgerui.php"); // mass_input
@@ -54,8 +54,8 @@ function nastavnik_zadace() {
 	if (!$foundHomeworkCact) {
 		zamgerlog("ne postoji komponenta za zadace na predmetu pp$predmet ag$ag", 3);
 		zamgerlog2("ne postoji komponenta za zadace", $predmet, $ag);
-		niceerror("U sistemu bodovanja za ovaj predmet nije definisana nijedna komponenta zadaće.");
-		print "<p>Da biste nastavili, promijenite <a href=\"?sta=nastavnik/tip&amp;predmet=$predmet&amp;ag=$ag\">sistem bodovanja</a> za ovaj predmet.</p>\n";
+		niceerror("U postavkama predmeta nije dodata nijedna aktivnost tipa &quot;Zadaće&quot;.");
+		print "<p>Da biste nastavili, podesite <a href=\"?sta=nastavnik/tip&amp;predmet=$predmet&amp;ag=$ag\">aktivnosti</a> za ovaj predmet.</p>\n";
 		return;
 	}
 	
@@ -439,21 +439,6 @@ function nastavnik_zadace() {
 	}
 	
 	
-	// Akcija: AUTOTESTOVI
-	
-	if ($_REQUEST['akcija'] == "autotestovi") {
-		// TODO prebaciti na HomeworkFiles
-		$zadaca = intval($_REQUEST['zadaca']);
-		$backLink = "?sta=nastavnik/zadace&amp;predmet=$predmet&amp;ag=$ag";
-		$linkPrefix = "$backLink&amp;zadaca=$zadaca&amp;akcija=autotestovi";
-		$backLink = "<a href=\"?$backLink&amp;_lv_nav_id=$zadaca\">Nazad na popis zadaća</a>";
-	
-		autotest_admin($zadaca, $linkPrefix, $backLink);
-	
-		return;
-	}
-	
-	
 	
 	// Spisak postojećih zadaća
 	$izabrana = intval($_REQUEST['_lv_nav_id']);
@@ -655,12 +640,36 @@ function nastavnik_zadace() {
 	
 	<?
 	
+	if ($izabrana != 0) {
+		// We will need homework files for autotest editor buttons and later for listing other files
+		$homeworkFiles = api_call("homework/$izabrana/files")["results"];
+	}
+	
 	if ($zjezik != 0) {// Ako nije definisan programski jezik, nećemo ni nuditi automatsko testiranje... ?
-		if ($automatsko_testiranje == 1) $add_testiranje = "CHECKED"; else $add_testiranje = "";
+		if ($automatsko_testiranje) $add_testiranje = "CHECKED"; else $add_testiranje = "";
 		?>
 		<input type="checkbox" name="automatsko_testiranje" <?=$add_testiranje?>> Automatsko testiranje<br>
-		<a href="?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&akcija=autotestovi">Kliknite ovdje da definišete testove</a><br><br>
-		<?
+		<?php
+		
+		// Show buttons to define tests
+		if ($izabrana != 0 && $automatsko_testiranje) {
+			?>
+			<script src="lib/autotest-genv2/scripts/helpers.js"></script>
+			<br><b>Definišite testove za zadatke:</b><br>
+			<?
+			
+			for ($i = 1; $i <= $zzadataka; $i++) {
+				$wsurl = $conf_backend_url_client . "homework/files/";
+				foreach($homeworkFiles as $hwf) {
+					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) $wsurl .= $hwf['id'];
+				}
+				$wsurl .= "?SESSION_ID=" . $_SESSION['api_session'];
+				?>
+				<button onclick="Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zadatak <?=$i?></button>&nbsp;
+				<?
+			}
+			print "<br><br><br>";
+		}
 	}
 	
 	
@@ -683,8 +692,9 @@ function nastavnik_zadace() {
 	<?
 	
 	if ($izabrana != 0) {
-		$homeworkFiles = api_call("homework/$izabrana/files")["results"];
 		foreach($homeworkFiles as $homeworkFile) {
+			if ($homeworkFile['type'] == "autotest") continue; // Don't show autotest files
+			
 			?>
 			<form action="index.php" method="POST">
 				<input type="hidden" name="sta" value="nastavnik/zadace">
@@ -714,7 +724,7 @@ function nastavnik_zadace() {
 			<input type="hidden" name="zadaca" value="<?=$izabrana?>">
 			<input type="hidden" name="akcija" value="dodaj_datoteku">
 			<input type="file" name="dodatna_datoteka" size="45"><br>
-		Tip datoteke: <select name="type"><option value="autotest">Autotest</option><option value="postavka">Postavka zadaće</option></select>
+		Tip datoteke: <select name="type"><option value="postavka">Postavka zadaće</option></select>
 		Uz zadatak: <select name="assignNo"><option value="0">Svi zadaci (čitava zadaća)</option>
 			<?
 			for ($i=1; $i<=$homework['nrAssignments']; $i++)
