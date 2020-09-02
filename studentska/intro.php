@@ -418,7 +418,7 @@ if (param('akcija') == "potvrda") {
 		</tr>
 	<?
 
-	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna, zzp.napomena FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
 	$rbr = 1;
 	while ($r200 = db_fetch_row($q200)) {
 		$ag = $r200[9];
@@ -460,7 +460,14 @@ if (param('akcija') == "potvrda") {
 		}
 		if ($error == 1)
 			print " <a href=\"?sta=studentska/osobe&akcija=edit&osoba=$r200[6]\">popravi</a>";
+		
+		// Ako je u pitanju prepis ocjena
+		if($r200[3] == 2){
+			print " <a href=\"?sta=studentska/intro&akcija=napomena&uvjerenje_id=$r200[0]\">- Napomena</a>";
+		}
+		
 		print "</td></tr>\n";
+		
 		$rbr++;
 	}
 
@@ -506,6 +513,57 @@ if (param('akcija') == "potvrda") {
 	?>
 	</table>
 	<?
+	return;
+}
+
+
+if(isset($_POST['napomena'])){
+	$napomena = db_escape($_POST['napomena']);
+	$id = intval($_GET['uvjerenje_id']);
+	$query = db_query("UPDATE zahtjev_za_potvrdu SET napomena = '$napomena' where id = $id");
+}
+
+if (param('akcija') == "napomena"){
+	$id = intval($_GET['uvjerenje_id']);
+	
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna, zzp.napomena FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 and zzp.id = $id");
+	$q200 = db_fetch_row($q200);
+	
+	?>
+
+	<link rel="stylesheet" href="static\css\style.css">
+	<center>
+		<table border="0" width="700">
+			<tr>
+				<td>
+					<a href="?sta=studentska/intro&akcija=potvrda"> Nazad na pregled zahtjeva </a>
+					<br><br>
+					<h3><?= $q200['1'].' '.$q200['2'] ?> - <?= $q200['4'] ?></h3>
+					<p>Uvjerenje kreirano : <?= date("d.m.Y. H:i:s", $q200[5]) ?></p>
+					<hr>
+					<form action="" method="POST">
+						<div class="input-row">
+							<div class="input-col full-input-col">
+								<div class="form-label">Unos / Uređivanje napomene na uvjerenju</div>
+								<textarea class="form-input" name="napomena" style="height: 120px;"><?= $q200[11] ?></textarea>
+								<input type="hidden" name="uvjerenje_id" value="<?= $id; ?>">
+							</div>
+						</div>
+
+
+						<div class="input-row">
+							<div class="input-col input-col-button">
+								<input type="submit" class="" value=SPREMITE>
+							</div>
+						</div>
+					</form>
+				</td>
+			</tr>
+		</table>
+	</center>
+
+	<?php
+	
 	return;
 }
 

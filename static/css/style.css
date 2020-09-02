@@ -140,6 +140,10 @@
 
 .input-row .full-input-col .form-input-select{width:100%;}
 
+.input-row .input-col textarea{
+    height: 120px;
+}
+
 .my-table{
     position:relative;
     left:0px;
