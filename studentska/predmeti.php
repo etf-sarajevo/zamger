@@ -371,6 +371,8 @@ else if ($akcija == "edit") {
 			<tr><td align="center"><a href="?sta=nastavnik/unos_ocjene&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
 			<img src="static/images/32x32/report.png" border="0"><br/>Unos ocjena</a></td></tr>
 
+			<tr><td align="center"><a href="?sta=studentska/ogranicenja&amp;predmet=<?=$predmet?>&amp;prikazi=sve">
+			<img src="static/images/32x32/report.png" border="0"><br/>Ograničenja</a></td></tr>
 
 			<tr><td align="left">Ispiti:<br/><?
 			while ($r359 = db_fetch_row($q359)) {
