@@ -418,7 +418,7 @@ if (param('akcija') == "potvrda") {
 		</tr>
 	<?
 
-	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
+	$q200 = db_query("SELECT zzp.id, o.ime, o.prezime, tp.id, tp.naziv, UNIX_TIMESTAMP(zzp.datum_zahtjeva), o.id, zzp.svrha_potvrde, o.brindexa, zzp.akademska_godina, zzp.besplatna, zzp.napomena FROM zahtjev_za_potvrdu as zzp, osoba as o, tip_potvrde as tp WHERE zzp.student=o.id AND zzp.tip_potvrde=tp.id AND zzp.status=1 $order_by");
 	$rbr = 1;
 	while ($r200 = db_fetch_row($q200)) {
 		$ag = $r200[9];

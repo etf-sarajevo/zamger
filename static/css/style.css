@@ -140,6 +140,10 @@
 
 .input-row .full-input-col .form-input-select{width:100%;}
 
+.input-row .input-col textarea{
+    height: 120px;
+}
+
 .my-table{
     position:relative;
     left:0px;
@@ -154,3 +158,6 @@
 }
 .my-table thead tr td:first-child, .my-table tbody tr td:first-child,
 .my-table thead tr td:last-child, .my-table tbody tr td:last-child{text-align: center; padding-right: 15px;}
+
+.width-40{width: 40px;}
+.width-100{width: 100px;}
