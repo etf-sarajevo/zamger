@@ -98,7 +98,7 @@ array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1"
 array("nastavnik/kvizovi", "Kvizovi", "Kvizovi", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
-
+array("nastavnik/kalendar", "Kalendar", "Kalendar", "N", "1", "0"),
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
