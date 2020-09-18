@@ -114,7 +114,15 @@ function studentska_konacna_ocjena() {
 			$konacna_ocjena = db_fetch_row($konacna_ocjena);
 			
 			// $predmeti = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
-			// $pasosi   = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = ".$konacna_ocjena[1]);
+			$pasosi   = db_query_table("SELECT DISTINCT pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.pasos_predmeta=pp.id AND pp.predmet = ".$konacna_ocjena[1]);
+			$pasosi2   = db_query_table("SELECT DISTINCT pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_izborni_slot pis where pis.pasos_predmeta=pp.id AND pp.predmet = ".$konacna_ocjena[1]);
+			foreach($pasosi2 as $pasos2) {
+				$postoji = false;
+				foreach($pasosi as $pasos) {
+					if ($pasos['id'] == $pasos2['id']) $postoji = true;
+				}
+				if (!$postoji) $pasosi[] = $pasos2;
+			}
 			if ($konacna_ocjena[6]) {
 				$odluka   = db_query("SELECT * from odluka where id = ".$konacna_ocjena[6]);
 				$odluka   = db_fetch_row($odluka);
@@ -160,7 +168,7 @@ function studentska_konacna_ocjena() {
 								</tr>
 								<?php
 							}
-							?>
+							?>$konacna_ocjena
 							</tbody>
 						</table>
 						<br>
@@ -218,7 +226,9 @@ function studentska_konacna_ocjena() {
 									<select name="pasos_predmeta" id="ocjena-po-odluci-pasos" class="form-input form-input-select" required="required">
 										<?php
 										if(isset($konacna_ocjena)){
-											print '<option value="'.$konacna_ocjena[13].'"> '.$konacna_ocjena[15].' '.$konacna_ocjena[16].' ('.$konacna_ocjena[17].' ECTS) </option>';
+											foreach($pasosi as $pasos) {
+												print '<option value="'.$pasos['id'].'"> '.$pasos['sifra'].' '.$pasos['naziv'].' ('.$pasos['ects'].' ECTS) </option>';
+											}
 										}else{
 											print '<option value="">Odaberite akademsku godinu</option>';
 										}
