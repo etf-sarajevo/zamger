@@ -227,7 +227,8 @@ function studentska_konacna_ocjena() {
 										<?php
 										if(isset($konacna_ocjena)){
 											foreach($pasosi as $pasos) {
-												print '<option value="'.$pasos['id'].'"> '.$pasos['sifra'].' '.$pasos['naziv'].' ('.$pasos['ects'].' ECTS) </option>';
+												if ($pasos['id'] == $konacna_ocjena[8]) $sel = "SELECTED"; else $sel = "";
+												print '<option value="'.$pasos['id'].'" '.$sel.'> '.$pasos['sifra'].' '.$pasos['naziv'].' ('.$pasos['ects'].' ECTS) </option>';
 											}
 										}else{
 											print '<option value="">Odaberite akademsku godinu</option>';
