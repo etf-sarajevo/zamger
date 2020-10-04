@@ -977,6 +977,10 @@ function getCourseDetails($courseId, $courseYear = 0) {
 	$params = ["courseInformation" => true];
 	if ($courseYear != 0) $params['year'] = $courseYear;
 	$course = api_call("course/$courseId/student/$userid", $params);
+	if ($course['code'] == "404") {
+		// Maybe its a teacher?
+		$course = api_call("course/$courseId");
+	}
 	if ($course['code'] != "200") return [];
 	$courseDetails[] = $course;
 	return $course;
