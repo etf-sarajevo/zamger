@@ -1081,7 +1081,7 @@ else if ($akcija == "upis") {
 				// pa ćemo pretpostaviti sve najbolje :)
 
 				// Moramo upisati studenta u istu ponudu kursa koju je ranije slušao
-				$q592 = db_query("select pk.studij,pk.semestar,pk.obavezan from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
+				$q592 = db_query("select pk.studij,pk.semestar,pk.obavezan,pk.pasos_predmeta from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
 
 				// Polje $zamger_predmeti_pao sadrži predmete koje je student trebao slušati prema NPP u prošloj godini a nije ih položio
 				// No ako se student direktno upisuje na višu godinu (doktorski studij!?), moguće da je tu predmet koji nikada nije slušao
@@ -1089,15 +1089,15 @@ else if ($akcija == "upis") {
 				if (db_num_rows($q592)<1) continue;
 
 				print "Ponovo upisujem studenta u predmet $naziv_predmeta ($predmet) koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br>";
-				db_fetch3($q592, $studij_stara_pk, $semestar_stara_pk, $obavezan);
+				db_fetch4($q592, $studij_stara_pk, $semestar_stara_pk, $obavezan, $pasos_predmeta_stari);
 
 				// Tražimo istu ponudu kursa u aktuelnoj godini
-				$nova_pk = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina");
+				$nova_pk = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina and pasos_predmeta=$pasos_predmeta_stari");
 				if (!$nova_pk) {
 					// Ponuda kursa ne postoji u aktuelnoj godini, kreiramo je
 					print "-- Kreiram ponudu kursa za predmet $predmet, studij $studij_stara_pk, semestar $semestar_stara_pk<br>";
-					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true);
-					if ($nova_pk == false) $nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, false);
+					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true, $pasos_predmeta_stari);
+					if ($nova_pk == false) $nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, false, $pasos_predmeta_stari);
 				}
 
 				upis_studenta_na_predmet($student, $nova_pk);
@@ -1144,17 +1144,17 @@ else if ($akcija == "upis") {
 		// Ako postoji plan studija, problem je jednostavan
 		$obavezni = array();
 		if ($plan_studija>0) {
-			$q605 = db_query("SELECT pp.predmet, pp.naziv FROM pasos_predmeta pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.semestar=$semestar AND psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
-			while (db_fetch2($q605, $predmet, $naziv_predmeta)) {
+			$q605 = db_query("SELECT pp.predmet, pp.naziv, pp.id FROM pasos_predmeta pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.semestar=$semestar AND psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
+			while (db_fetch3($q605, $predmet, $naziv_predmeta, $pasos_predmeta)) {
 				// Da li ga je vec polozio
 				$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
 				if (!$polozio) {
 					print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
-					$ponudakursa = db_get("SELECT id FROM ponudakursa WHERE predmet=$predmet AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina AND obavezan=1");
+					$ponudakursa = db_get("SELECT id FROM ponudakursa WHERE predmet=$predmet AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina AND obavezan=1 AND pasos_predmeta=$pasos_predmeta");
 					if (!$ponudakursa) {
 						// Jednom pozivam da ispiše šta će uraditi, drugi put da uradi
-						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, true);
-						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, false);
+						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, true, $pasos_predmeta);
+						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, false, $pasos_predmeta);
 					}
 						
 					upis_studenta_na_predmet($student, $ponudakursa);
@@ -2447,7 +2447,7 @@ else if ($akcija == "edit") {
 		<input type="checkbox" name="sefodsjeka" value="1" <?if($korisnik_sefodsjeka==1) print "CHECKED";?>> šef odsjeka&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="checkbox" name="uprava" value="1" <?if($korisnik_uprava==1) print "CHECKED";?>> dekan/prodekan<br/> <br/>
 		<input type="submit" value=" Izmijeni ">
-		</form> <br>
+		</form>
 		<?
 	} else if($korisnik_student==1 && $korisnik_nastavnik!=1) {
 		?>

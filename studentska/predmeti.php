@@ -307,7 +307,7 @@ else if ($akcija == "dodaj_pk") {
 		$studij = intval($_REQUEST['_lv_column_studij']);
 		$semestar = intval($_REQUEST['semestar']);
 		if ($_REQUEST['obavezan']) $obavezan=true; else $obavezan=false;
-		kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0);
+		kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis=0, "NULL");
 		nicemessage("Ponuda kursa uspješno kreirana");
 	}
 	$q400 = db_query("select naziv from predmet where id=$predmet");
@@ -370,7 +370,7 @@ else if ($akcija == "edit") {
 			<img src="static/images/32x32/report.png" border="0"><br/>Ispiti i prijave</a></td></tr>
 			<tr><td align="center"><a href="?sta=nastavnik/unos_ocjene&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">
 			<img src="static/images/32x32/report.png" border="0"><br/>Unos ocjena</a></td></tr>
-
+			
 			<tr><td align="center"><a href="?sta=studentska/ogranicenja&amp;predmet=<?=$predmet?>&amp;prikazi=sve">
 			<img src="static/images/32x32/report.png" border="0"><br/>Ograničenja</a></td></tr>
 

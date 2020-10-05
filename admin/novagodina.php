@@ -50,9 +50,10 @@ if (param('akcija') == "novagodina") {
 			$plan = predmeti_na_planu($plan_studija['id'], $sem);
 			foreach ($plan as $slog) {
 				if ($slog['obavezan'])
-					kreiraj_ponudu_kursa ($slog['predmet']['id'], $studij, $sem, $ag, true, $ispis);
-				else foreach($slog['predmet'] as $slog_predmet)
-					kreiraj_ponudu_kursa ($slog_predmet['id'], $studij, $sem, $ag, false, $ispis);
+					kreiraj_ponudu_kursa ($slog['predmet']['id'], $studij, $sem, $ag, true, $ispis, $slog['pasos_predmeta']);
+				else foreach($slog['predmet'] as $slog_predmet) {
+					kreiraj_ponudu_kursa ($slog_predmet['id'], $studij, $sem, $ag, false, $ispis, $slog_predmet['pasos_predmeta']);
+				}
 			}
 		}
 	}

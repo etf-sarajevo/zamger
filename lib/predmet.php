@@ -7,7 +7,7 @@
 // Funkcija koja kreira jednu ponudu kursa i dodaje sve ostalo što treba
 // Ako je parametar $ispis == true, ne radi ništa (vraća id ponudekursa ako ista već postoji,
 // u suprotnom vraća false)
-function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis) {
+function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $ispis, $pasos_predmeta) {
 	// Naziv predmeta nam treba za poruke
 	if ($obavezan === true || $obavezan === 1 || $obavezan === "1") $obavezan=1; else $obavezan=0;
 	$q60 = db_query("select naziv from predmet where id=$predmet");
@@ -24,7 +24,7 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 		if ($obavezan==1) $tekst = "obavezan"; else $tekst = "izborni";
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem predmet $naziv_predmeta ($tekst)<br/>\n";
 		else {
-			$q63 = db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, obavezan=$obavezan, akademska_godina=$ag");
+			$q63 = db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, obavezan=$obavezan, akademska_godina=$ag, pasos_predmeta=$pasos_predmeta");
 			$pkid = db_insert_id();
 		}
 	}
