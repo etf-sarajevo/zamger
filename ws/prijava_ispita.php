@@ -22,6 +22,7 @@ function ws_prijava_ispita() {
 		
 		$predmet = db_result($q10,0,0);
 		$q20 = db_query("DELETE FROM student_ispit_termin WHERE student=$userid AND ispit_termin=$termin");
+		$q20a = db_query("DELETE FROM dogadjaj_osoba WHERE osoba=$userid AND dogadjaj=$termin");
 		zamgerlog("odjavljen sa ispita (pp$predmet)", 2);
 		
 		$rezultat['message'] = "Student odjavljen sa ispita";
@@ -61,6 +62,7 @@ function ws_prijava_ispita() {
 				return;
 			} else {
 				$q70 = db_query("INSERT INTO student_ispit_termin (student,ispit_termin) VALUES ($userid, $termin)");
+				$q70a = db_query("INSERT INTO dogadjaj_osoba (osoba,dogadjaj) VALUES ($userid, $termin)");
 				zamgerlog("prijavljen na termin za ispit/događaj (pp$predmet)", 2);
 				
 				$rezultat['message'] = "Student prijavljen na ispit";
