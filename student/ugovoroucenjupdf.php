@@ -129,7 +129,7 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 		// Nema ga - možda je izborni sa drugog odsjeka?
 		// Uzimamo drugi studij sa istom godinom usvajanja
 		if (!$podaci) 
-			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, pp.predmet FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet");
+			$podaci = db_query_assoc("SELECT pp.sifra, pp.naziv, pp.ects, pp.predmet FROM pasos_predmeta as pp, plan_studija_predmet psp, plan_studija ps WHERE ps.godina_vazenja<=$godina_vazenja AND psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet ORDER BY ps.godina_vazenja DESC");
 		
 		// Nije među obaveznim - možda je izborni na drugom odsjeku?
 		if (!$podaci) 

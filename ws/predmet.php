@@ -97,12 +97,14 @@ function ws_predmet() {
 			$rezultat['data'][$r10[0]] = $predmet;
 		}
 	}
+
 	
 	// Unos konačne ocjene po odluci !!
 	
+	// Spisak svih predmeta na akademskoj godini
 	if(isset($_REQUEST['ocjena_po_odluci_ag'])){
 		$ag = intval($_REQUEST['ocjena_po_odluci_ag']);
-		$query = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
+		$query = db_query("SELECT DISTINCT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet ORDER BY p.naziv");
 		while($row = db_fetch_row($query)){
 			$rezultat['data'][] = array('predmet' => $row[0], 'naziv_predmeta' => $row[3]);
 		}
@@ -124,6 +126,7 @@ function ws_predmet() {
 			$rezultat['data'][] = array('pasos' => $row[0], 'naziv' => $row[2].' '.$row['3'].' ('.$row[4].' ECTS)');
 		}
 	}
+	
 	if(isset($_REQUEST['obrisi_konacnu_predmet']) and isset($_REQUEST['obrisi_konacnu_ak']) and isset($_REQUEST['obrisi_konacnu_student'])){
 		$predmet = intval($_REQUEST['obrisi_konacnu_predmet']);
 		$student = intval($_REQUEST['obrisi_konacnu_student']);
@@ -132,7 +135,6 @@ function ws_predmet() {
 			db_query("DELETE FROM konacna_ocjena where predmet = $predmet and student = $student and akademska_godina = $ak");
 		}
 	}
-
 
 	print json_encode($rezultat);
 }
