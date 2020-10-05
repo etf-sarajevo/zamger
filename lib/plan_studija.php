@@ -33,7 +33,7 @@ function predmeti_na_planu($plan_studija, $semestar=0)
 			
 			if (!$pronadjen) {
 				// uzimamo sve predmete u slotu $plan_izborni_slot
-				$rezultat['predmet'] = db_query_table("select pp.predmet id, pp.naziv naziv, pp.ects ects from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$pis and pis.pasos_predmeta=pp.id");
+				$rezultat['predmet'] = db_query_table("select pp.predmet id, pp.naziv naziv, pp.ects ects, pp.id pasos_predmeta from pasos_predmeta as pp, plan_izborni_slot as pis where pis.id=$pis and pis.pasos_predmeta=pp.id");
 				$rezultat['ponavljanja'] = 1;
 				$rezultati[] = $rezultat;
 			}
