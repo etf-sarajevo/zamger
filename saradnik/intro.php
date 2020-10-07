@@ -96,7 +96,7 @@ function saradnik_intro() {
 				<?
 	
 		// Edit link
-		if ($user_siteadmin || $privilegija=="nastavnik" || $privilegija=="super_asistent") {
+		if ($user_siteadmin || $course['accessLevel']=="nastavnik" || $course['accessLevel']=="super_asistent") {
 			?>
 				[<b><a href="?sta=nastavnik/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>"><font color="red">EDIT</font></a></b>]
 			<?
