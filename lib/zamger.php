@@ -64,7 +64,7 @@ function zamgerlog2($tekst, $objekat1 = 0, $objekat2 = 0, $objekat3 = 0, $blob =
 
 	// Parametri objekat* moraju biti tipa int, pratimo sve drugačije pozive kako bismo ih mogli popraviti
 	if ($objekat1 !== intval($objekat1) || $objekat2 !== intval($objekat2) || $objekat3 !== intval($objekat3)) {
-		$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, '$ip_adresa' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
+		$q5 = db_query("INSERT INTO log2 SELECT 0,NOW(), ".intval($userid).", m.id, d.id, 0, 0, 0, 0, '$ip_adresa' FROM log2_modul AS m, log2_dogadjaj AS d WHERE m.naziv='$sta' AND d.opis='poziv zamgerlog2 funkcije nije ispravan'");
 		// Dodajemo blob
 		$id = db_insert_id(); // Zašto se dešava da $id bude nula???
 		$tekst_bloba = "";
@@ -181,7 +181,7 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	$_REQUEST['ag'] = $ag;
 	
 	ob_start('zamger_file_callback');
-	include("izvjestaj/predmet.php");
+	require_once("izvjestaj/predmet.php");
 	eval("izvjestaj_predmet();");
 	ob_end_clean();
 	
@@ -190,6 +190,26 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	}
 	$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY").".html";
 	file_put_contents($filename, $zamger_filecb_sadrzaj_buffera);
+}
+
+
+function generisi_izvjestaj_kod($student) {
+	do {
+		$suglasnici = 'BCDFGHJKLMNPQRSTVWXYZ';
+		$samoglasnici = 'AEIOU';
+		$kod = array(); //remember to declare $pass as an array
+		for ($i = 0; $i < 5; $i++) {
+			$n = rand(0, strlen($suglasnici)-1);
+			$kod[] = $suglasnici[$n];
+			$n = rand(0, 4);
+			$kod[] = $samoglasnici[$n];
+		}
+		$string = implode($kod); //turn the array into a string
+		$exists = db_get("SELECT COUNT(*) FROM kod_za_izvjestaj WHERE kod='$string'");
+	} while ($exists > 0);
+	db_query("DELETE FROM kod_za_izvjestaj WHERE osoba=$student");
+	db_query("INSERT INTO kod_za_izvjestaj VALUES($student, '$string')");
+	return $string;
 }
 
 

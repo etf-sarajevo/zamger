@@ -57,7 +57,7 @@ if ($_REQUEST['skrati']=="da") $skrati=1; else $skrati=0;
 // ako ova opcija nije "da", prikazuje se samo zadnji rezultat na svakom parcijalnom, ili samo integralni ispit (ako je bolji)
 if ($_REQUEST['razdvoji_ispite']=="da") $razdvoji_ispite=1; else $razdvoji_ispite=0; 
 // nemoj razdvajati studente po grupama (neki su trazili ovu opciju)
-if ($_REQUEST['sastavi_grupe']=="da") $sastavi_grupe=1; else $sastavi_grupe=0; 
+if ($_REQUEST['sastavi_grupe']=="da" || $_REQUEST['sakrij_imena']=="da") $sastavi_grupe=1; else $sastavi_grupe=0;
 // tabela za samo jednu grupu
 $grupa = intval($_REQUEST['grupa']); 
 
@@ -121,13 +121,24 @@ if ($user_nastavnik && !$user_studentska && !$user_siteadmin) {
 // u grupi
 $imeprezime = $brindexa = array();
 
-$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id");
-
-while ($r10 = db_fetch_row($q10)) {
-	$imeprezime[$r10[0]] = "$r10[1] $r10[2]";
-	$brindexa[$r10[0]] = "$r10[3]";
+if ($imenaopt) {
+	$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa from osoba as o, student_predmet as sp, ponudakursa as pk where sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag and sp.student=o.id");
+	while ($r10 = db_fetch_row($q10)) {
+		$imeprezime[$r10[0]] = "$r10[1] $r10[2]";
+		$brindexa[$r10[0]] = "$r10[3]";
+	}
+	
+	uasort($imeprezime, "bssort"); // bssort - bosanski jezik
+	
+} else {
+	$kodovi = db_query_vassoc("SELECT o.id, k.kod FROM osoba o, student_predmet sp, ponudakursa pk, kod_za_izvjestaj k WHERE sp.predmet=pk.id AND pk.predmet=$predmet AND pk.akademska_godina=$ag AND sp.student=o.id AND k.osoba=o.id");
+	$imeprezime = $brindexa = [];
+	$keys = array_keys($kodovi);
+	shuffle($keys);
+	foreach($keys as $key)
+		$brindexa[$key] = $imeprezime[$key] = $kodovi[$key];
 }
-uasort($imeprezime,"bssort"); // bssort - bosanski jezik
+//shuffle($imeprezime);
 
 
 
@@ -411,8 +422,13 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 <center><h2><?=$grupa_naziv?></h2></center>
 <table border="1" cellspacing="0" cellpadding="2">
 	<tr><td rowspan="2" align="center">R.br.</td>
-		<? if ($imenaopt) { ?><td rowspan="2" align="center">Prezime i ime</td><? } ?>
-		<td rowspan="2" align="center">Br. indexa</td>
+		<? if ($imenaopt) {
+			?>
+			<td rowspan="2" align="center">Prezime i ime</td>
+			<td rowspan="2" align="center">Br. indexa</td>
+		<? } else { ?>
+			<td rowspan="2" align="center">Kod</td>
+		<? } ?>
 		<?=$zaglavlje1?>
 		<td align="center" <? if ($broj_ispita==0) { ?> rowspan="2" <? } else { ?> colspan="<?=$broj_ispita?>" <? } ?>>Ispiti</td>
 		<td rowspan="2" align="center"><b>UKUPNO</b></td>
@@ -563,13 +579,13 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 			if (db_num_rows($q230)>0) {
 				$ocjena = db_result($q230,0,0);
 				if ($razdvoji_ispite==1) $ispis .= "<td align=\"center\">$ocjena</td>\n";
-				if (!in_array($k,$komponente) || $ocjena>$kmax[$k]) {
+				if (!in_array($k,$komponente) || array_key_exists($k, $kmax) && $ocjena>$kmax[$k]) {
 					$kmax[$k]=$ocjena;
 					$kispis[$k] = "<td align=\"center\">$ocjena</td>\n";
 				}
 			} else {
 				if ($razdvoji_ispite==1) $ispis .= "<td align=\"center\">/</td>\n";
-				if ($kispis[$k] == "") $kispis[$k] = "<td align=\"center\">/</td>\n";
+				if (array_key_exists($k, $kispis) && $kispis[$k] == "") $kispis[$k] = "<td align=\"center\">/</td>\n";
 			}
 			if (!in_array($k,$komponente)) $komponente[]=$k;
 		}
@@ -584,12 +600,14 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 				$zbir=0;
 				$pao=0;
 				foreach ($dijelovi as $dio) {
-					$zbir += $kmax[$dio];
-					if ($kmax[$dio]<$komponenta_prolaz[$dio]) $pao=1;
+					if (array_key_exists($dio, $kmax)) {
+						$zbir += $kmax[$dio];
+						if ($kmax[$dio]<$komponenta_prolaz[$dio]) $pao=1;
+					}
 				}
 	
 				// Eliminisemo parcijalne obuhvacene integralnim
-				if ($kmax[$k]>$zbir || $pao==1 && $kmax[$k]>=$komponenta_prolaz[$k]) {
+				if (array_key_exists($k, $kmax) && ($kmax[$k]>$zbir || $pao==1 && $kmax[$k]>=$komponenta_prolaz[$k])) {
 					$bodova += $kmax[$k];
 					foreach ($dijelovi as $dio) {
 						$kmax[$dio]=0;
@@ -603,7 +621,7 @@ foreach ($spisak_grupa as $grupa_id => $grupa_naziv) {
 	
 		// Sabiremo preostale parcijalne ispite na sumu bodova
 		foreach ($komponente as $k) {
-			if ($komponenta_tip[$k] != 2) {
+			if (array_key_exists($k, $kmax) && $komponenta_tip[$k] != 2) {
 				$bodova += $kmax[$k];
 			}
 			if ($razdvoji_ispite!=1) $ispis .= $kispis[$k];
