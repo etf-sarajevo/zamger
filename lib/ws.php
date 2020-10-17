@@ -304,9 +304,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		}
 	}
 	
-	if ($associative)
+	if ($associative) {
+		if (array_key_exists('code', $json_result)) $json_result['_code'] = $json_result['code'];
 		$json_result['code'] = $_api_http_code;
-	else
+	} else
 		$json_result->code = $_api_http_code;
 
 	return $json_result;

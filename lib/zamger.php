@@ -181,7 +181,7 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	$_REQUEST['ag'] = $ag;
 	
 	ob_start('zamger_file_callback');
-	include("izvjestaj/predmet.php");
+	require_once("izvjestaj/predmet.php");
 	eval("izvjestaj_predmet();");
 	ob_end_clean();
 	
