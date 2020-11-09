@@ -38,9 +38,9 @@ function nastavnik_tip() {
 	
 	<?
 	
-	if (param('akcija') != "") {
+	$foundActivity = false;
+	if (param('akcija') != "" && param('akcija') != "dodaj") {
 		$aktivnost = int_param('aktivnost');
-		$foundActivity = false;
 		foreach ($course['activities'] as $activity) {
 			if ($activity['id'] == $aktivnost)
 				$foundActivity = $activity;
@@ -349,7 +349,7 @@ function nastavnik_tip() {
 		return;
 	}
 	
-	if (param('akcija') == "izmijeni_potvrda") {
+	if (param('akcija') == "izmijeni_potvrda" || param('akcija') == "dodaj") {
 		$naziv = param('naziv');
 		$tip = int_param('tip_aktivnosti');
 		$abbrev = param('abbrev');
@@ -378,12 +378,12 @@ function nastavnik_tip() {
 			return;
 		}
 		
-		if ($foundActivity['forced']) {
+		if ($foundActivity && $foundActivity['forced']) {
 			niceerror("Aktivnost je forsirana od administratora i ne može se mijenjati");
 			return;
 		}
 		
-		if ($tip != $foundActivity['Activity']['id']) {
+		if ($foundActivity && $tip != $foundActivity['Activity']['id']) {
 			if (param('fakat_potvrda') != 1) {
 				?>
 				<h2 style="color:red">Da li ste sigurni???</h2>
@@ -408,22 +408,47 @@ function nastavnik_tip() {
 			}
 		}
 		
-		$cact = array_to_object( [ "id" => $aktivnost, "name" => $naziv, "abbrev" => $abbrev, "Activity" => [ "id" => $tip ], "points" => $poena, "pass" => $prolaz, "mandatory" => $obavezna, "forced" => false ] );
-		// We add these afterwards because array_to_object would convert them to stdClass and they need to remain as arrays
-		$cact->options = $foundActivity['options'];
-		$cact->conditionalActivities = $foundActivity['conditionalActivities'];
-		
-		$result = api_call("course/$predmet/$ag/activity/$aktivnost", $cact, "PUT");
-		if ($_api_http_code == "201") {
-			nicemessage("Aktivnost je uspješno izmijenjena");
-			?>
-			<script language="JavaScript">
-                setTimeout(function() { location.href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
-			</script>
-			<?
+		$cact = array_to_object( [ "name" => $naziv, "abbrev" => $abbrev, "Activity" => [ "id" => $tip ], "points" => $poena, "pass" => $prolaz, "mandatory" => $obavezna, "forced" => false ] );
+		if ($foundActivity) {
+			$cact->id = $aktivnost;
+			// We add these afterwards because array_to_object would convert them to stdClass and they need to remain as arrays
+			$cact->options = $foundActivity['options'];
+			$cact->conditionalActivities = $foundActivity['conditionalActivities'];
+		} else {
+			$cact->options = [];
+			$cact->conditionalActivities = [];
 		}
-		else {
-			niceerror("Neuspješna izmjena aktivnosti ($_api_http_code): " . $result['message']);
+		
+		if (param('akcija') == "izmijeni_potvrda") {
+			$result = api_call("course/$predmet/$ag/activity/$aktivnost", $cact, "PUT");
+			if ($_api_http_code == "201") {
+				nicemessage("Aktivnost je uspješno izmijenjena");
+				?>
+				<script language="JavaScript">
+					setTimeout(function() { location.href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
+				</script>
+				<?
+			}
+			else {
+				niceerror("Neuspješna izmjena aktivnosti ($_api_http_code): " . $result['message']);
+				var_dump($result);
+			}
+		} else {
+			$result = api_call("course/$predmet/$ag/activity", $cact, "POST");
+			if ($_api_http_code == "201") {
+				nicemessage("Aktivnost je uspješno dodata");
+				?>
+				<script language="JavaScript">
+                    setTimeout(function() { location.href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
+				</script>
+				<?
+			}
+			else {
+				niceerror("Neuspješno dodavanje aktivnosti ($_api_http_code): " . $result['message']);
+				print "<textarea>\n";
+				var_dump($result);
+				print "</textarea>\n";
+			}
 		}
 		return;
 	}
@@ -448,7 +473,7 @@ function nastavnik_tip() {
 				<?
 			}
 			?>
-		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=320,height=300');">Legenda tipova aktivnosti</a><br>
+		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=520,height=500');">Legenda tipova aktivnosti</a><br>
 		<label for="abbrev">Skraćeni naziv:</label> <input type="text" name="abbrev" id="abbrev" value="<?=$foundActivity['abbrev']?>"><br>
 		<span class="opis">Skraćeni naziv se koristi u zaglavljima tabela i nekim menijima</span><br>
 		<label for="poena">Poena:</label> <input type="text" name="poena" id="poena" value="<?=$foundActivity['points']?>"><br>
@@ -547,7 +572,7 @@ function nastavnik_tip() {
 				<?
 			}
 			?>
-		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=320,height=300');">Legenda tipova aktivnosti</a><br>
+		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=520,height=500');">Legenda tipova aktivnosti</a><br>
 		<label for="abbrev">Skraćeni naziv:</label> <input type="text" name="abbrev" id="abbrev"><br>
 		<span class="opis">Skraćeni naziv se koristi u zaglavljima tabela i nekim menijima</span><br>
 		<label for="poena">Poena:</label> <input type="text" name="poena" id="poena" value="0"><br>
