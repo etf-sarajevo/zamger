@@ -50,6 +50,14 @@ function saradnik_grupa() {
 			
 			$prisustvo = intval($_POST['prisustvo']);
 			
+			if ($labgrupa == 0) {
+				// Moramo izvršiti jedan upit ranije da bismo dobili id grupe ako je zadat predmet i ag
+				$predmet = intval($_REQUEST['predmet']);
+				$ag = intval($_REQUEST['ag']);
+				$group = api_call("group/course/$predmet/allStudents", [ "year" => $ag ] );
+				$labgrupa = $group['id'];
+			}
+			
 			// Create ZClass object
 			$zclass = [
 				"id" => 0,
@@ -62,6 +70,7 @@ function saradnik_grupa() {
 			];
 			$result = api_call("class/group/$labgrupa", array_to_object($zclass), "PUT");
 			if ($_api_http_code == "201") {
+				$cas_id = $result['id'];
 				zamgerlog("registrovan cas c$cas_id", 2); // nivo 2: edit
 				zamgerlog2("registrovan cas", $cas_id);
 			} else {
