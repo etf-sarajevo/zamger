@@ -432,7 +432,7 @@ if (param('akcija') == "potvrda") {
 
 		print "<tr><td>$rbr</td><td>$r200[2] $r200[1]</td><td>$r200[8]</td><td>$r200[4]</td><td>".date("d.m.Y. H:i:s", $r200[5])."</td>";
 		
-		if ($r200[10] == 1) print "<td>&nbsp;</td>"; else print "<td><img src=\"static/images/32x32/markica.jpg\" width=\"30\" height=\"30\"></td>";	
+		if ($r200[10] == 1 || $conf_broj_besplatnih_potvrda == 0) print "<td>&nbsp;</td>"; else print "<td><img src=\"static/images/32x32/markica.jpg\" width=\"30\" height=\"30\"></td>";
 		print "<td><a href=\"$link_printanje\" target=\"_blank\">printaj</a> * <a href=\"?sta=studentska/intro&akcija=obradi_potvrdu&id=$r200[0]&status=2\">obradi</a>";
 
 		// Dodatne kontrole
