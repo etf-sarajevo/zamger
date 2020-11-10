@@ -33,6 +33,17 @@ function nastavnik_tip() {
 	?>
 
 	<p>&nbsp;</p>
+	<style>
+		label {
+			width: 100px;
+			display: inline-block;
+			padding-top: 10px;
+		}
+		span.opis {
+			margin-left: 100px;
+			color: #aaa;
+		}
+	</style>
 
 	<p><h3><?=$predmet_naziv?> - Aktivnosti na predmetu</h3></p>
 	
@@ -431,7 +442,9 @@ function nastavnik_tip() {
 			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti ($_api_http_code): " . $result['message']);
+				print "<textarea>\n";
 				var_dump($result);
+				print "</textarea>\n";
 			}
 		} else {
 			$result = api_call("course/$predmet/$ag/activity", $cact, "POST");
@@ -476,7 +489,8 @@ function nastavnik_tip() {
 		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=520,height=500');">Legenda tipova aktivnosti</a><br>
 		<label for="abbrev">Skraćeni naziv:</label> <input type="text" name="abbrev" id="abbrev" value="<?=$foundActivity['abbrev']?>"><br>
 		<span class="opis">Skraćeni naziv se koristi u zaglavljima tabela i nekim menijima</span><br>
-		<label for="poena">Poena:</label> <input type="text" name="poena" id="poena" value="<?=$foundActivity['points']?>"><br>
+		<label for="poena">Bodova:</label> <input type="text" name="poena" id="poena" value="<?=$foundActivity['points']?>"><br>
+		<span class="opis">Koliko poena nosi aktivnost. Ako se aktivnost ne boduje, stavite 0.</span><br>
 		<label for="prolaz">Prolaz:</label> <input type="text" name="prolaz" id="prolaz" value="<?=$foundActivity['pass']?>"><br>
 		<span class="opis">"Prolaz" je minimalan broj bodova potreban da bi se smatralo da je aktivnost "položena". Ako ne postoji takav minimalan broj bodova, unesite 0.</span><br>
 		<label for="obavezna">Obavezna:</label> <input type="checkbox" name="obavezna" id="obavezna" <? if ($foundActivity['mandatory']) print "CHECKED"; ?>><br>
@@ -523,9 +537,11 @@ function nastavnik_tip() {
 			<td><?=$activity['points']?></td>
 			<td><?=$activity['pass']?></td>
 			<td><?
-				if ($activity['mandatory']) print "Obavezna";
+				if ($activity['mandatory']) print "Obavezna, ";
 				foreach($activity['conditionalActivities'] as $cond)
 					print $cond['name'] . ", ";
+				if (is_array($activity['options']) && array_key_exists("MinScore", $activity['options']))
+					print "min. " . $activity['options']['MinScore'] . " b.";
 				?></td>
 			<td><?
 				if (!$activity['forced']) {
@@ -557,7 +573,6 @@ function nastavnik_tip() {
 	
 	<p><b>Dodajte novu aktivnost na predmet</b></p>
 	<form action="index.php" method="POST" class="aktivnosti">
-		<span style="">
 		<input type="hidden" name="sta" value="nastavnik/tip">
 		<input type="hidden" name="predmet" value="<?=$predmet?>">
 		<input type="hidden" name="ag" value="<?=$ag?>">
@@ -575,14 +590,14 @@ function nastavnik_tip() {
 		</select> <a href="#" onclick="javascript:window.open('legenda-aktivnosti.html','blah6','width=520,height=500');">Legenda tipova aktivnosti</a><br>
 		<label for="abbrev">Skraćeni naziv:</label> <input type="text" name="abbrev" id="abbrev"><br>
 		<span class="opis">Skraćeni naziv se koristi u zaglavljima tabela i nekim menijima</span><br>
-		<label for="poena">Poena:</label> <input type="text" name="poena" id="poena" value="0"><br>
+		<label for="poena">Bodova:</label> <input type="text" name="poena" id="poena" value="0"><br>
+		<span class="opis">Koliko poena nosi aktivnost. Ako se aktivnost ne boduje, stavite 0.</span><br>
 		<label for="prolaz">Prolaz:</label> <input type="text" name="prolaz" id="prolaz" value="0"><br>
 		<span class="opis">"Prolaz" je minimalan broj bodova potreban da bi se smatralo da je aktivnost "položena". Ako ne postoji takav minimalan broj bodova, unesite 0.</span><br>
 		<label for="obavezna">Obavezna:</label> <input type="checkbox" name="obavezna" id="obavezna"><br>
 		<span class="opis">Ako je aktivna opcija "Obavezna", student ne može dobiti konačnu ocjenu dok ne položi ovu aktivnost. Ako je u "prolaz" uneseno 0, student mora pristupiti ovoj aktivnosti, čak i ako osvoji 0 bodova.</span><br>
 		<p>Opcije specifične za tip aktivnosti te spisak uslovnih aktivnosti možete podesiti nakon što dodate aktivnost.</p>
 		<input type="submit" value=" Dodaj aktivnost ">
-		</span>
 	</form>
 	<?
 }

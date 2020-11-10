@@ -9,7 +9,7 @@ function saradnik_svezadace() {
 	// TODO: create downloadable URL on backend and redirect there
 	// (This URL must be without authentication, because headers can't be send through URLs)
 	
-	global $userid, $user_siteadmin, $user_nastavnik, $conf_files_path;
+	global $userid, $user_siteadmin, $user_nastavnik, $conf_files_path, $_api_http_code;
 
 	// Pretvorba naših slova u nenaša slova
 	$trans = array("č"=>"c", "ć"=>"c", "đ"=>"d", "š"=>"s", "ž"=>"z", "Č"=>"C", "Ć"=>"C", "Đ"=>"D", "Š"=>"S", "Ž"=>"Z");
@@ -43,7 +43,7 @@ function saradnik_svezadace() {
 		<h2>Download svih zadaća u grupi</h2>
 		<? nicemessage ("Molimo sačekajte dok se kreira arhiva.");
 		?>
-		<!--script language="JavaScript">document.location.replace('index.php?sta=saradnik/svezadace&grupa=<?=$labgrupa?>&zadaca=<?=$zadaca?>&potvrda=ok');</script-->
+		<script language="JavaScript">document.location.replace('index.php?sta=saradnik/svezadace&grupa=<?=$labgrupa?>&zadaca=<?=$zadaca?>&potvrda=ok');</script>
 		<?
 	
 		return;
@@ -60,13 +60,20 @@ function saradnik_svezadace() {
 		unlink($filepath);
 	
 	$content = api_call("homework/$zadaca/getAll", [ "filenames" => "fullname", "group" => $labgrupa ], "GET", false, false);
+
+	if ($_api_http_code == "200") {
+		$type = "application/zip; charset=binary";
+		header("Content-Type: $type");
+		header('Content-Disposition: attachment; filename="' . $filename.'"', false);
+		header("Content-Length: ".strlen($content));
+		
+		print $content;
+	} else {
+		niceerror("Došlo je do greške prilikom kreiranja ZIP datoteke");
+		print "Kod: $_api_http_code<br>";
+		print_r($content);
+	}
 	
-	$type = "application/zip; charset=binary";
-	header("Content-Type: $type");
-	header('Content-Disposition: attachment; filename="' . $filename.'"', false);
-	header("Content-Length: ".strlen($content));
-	
-	print $content;
 
 	exit;
 }
