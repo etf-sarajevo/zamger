@@ -221,7 +221,7 @@ function saradnik_grupa() {
 	$homeworks = $cactHomeworks = $homeworkStatus = $homeworkScore = [];
 	$classes = $cactClasses = $presenceCache = [];
 	$examResults = [];
-	$fixedCacts = $fixedResults = [];
+	$fixedResults = [];
 	$grades = [];
 	foreach($group['members'] as $member) {
 		$studentId = $member['student']['id'];
@@ -231,11 +231,8 @@ function saradnik_grupa() {
 			$cactTitles[$cactId] = $score['CourseActivity']['name'];
 			$cactScores[$cactId][$studentId] = $score['score'];
 			
-			if ($activityType == null) { // null = Fixed component
-				if (!array_key_exists($cactId, $fixedCacts))
-					$fixedCacts[$cactId] = $score['CourseActivity'];
+			if ($activityType == null) // null = Fixed component
 				continue; // No details
-			}
 			
 			foreach($score['details'] as $detail) {
 				if ($activityType == 2) { // 2 = Homework
@@ -280,6 +277,11 @@ function saradnik_grupa() {
 	// Get exam list from api, since details will not include exams that noone took
 	$exams = api_call("exam/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
 	
+	// Get fixed cacts list
+	$fixedCacts = [];
+	foreach($course['activities'] as $cact)
+		if ($cact['Activity']['id'] == null)
+			$fixedCacts[$cact['id']] = $cact;
 	
 	// Sort homeworks by id within each component
 	foreach($cactHomeworks as &$ch) {
@@ -571,16 +573,18 @@ function saradnik_grupa() {
 	
 	// Zaglavlje fiksne komponente
 	foreach($fixedCacts as $cactId => $cact) {
-		$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">" . $cactTitles[$cactId] . "</td>";
+		$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">" . $cact['name'] . "</td>";
 		$minw += 60;
 	}
 	
 	// Zaglavlje ispiti
-	foreach($exams as $exam) {
-		$zaglavlje2 .= "<td align=\"center\">" . $exam['CourseActivity']['abbrev'] . "<br/> ".date("d.m.", db_timestamp($exam['date']))."</td>\n";
-		$minw += 40;
+	if (count($exams) > 0) {
+		foreach ($exams as $exam) {
+			$zaglavlje2 .= "<td align=\"center\">" . $exam['CourseActivity']['abbrev'] . "<br/> " . date("d.m.", db_timestamp($exam['date'])) . "</td>\n";
+			$minw += 40;
+		}
+		$zaglavlje1 .= "<td align=\"center\" colspan=\"" . count($exams) . "\">Ispiti</td>\n";
 	}
-	$zaglavlje1 .= "<td align=\"center\" colspan=\"" . count($exams) . "\">Ispiti</td>\n";
 	
 	$minw += 70; // ukupno
 	$minw += 45; // broj indexa
