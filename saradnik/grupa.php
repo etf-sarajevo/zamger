@@ -188,39 +188,37 @@ function saradnik_grupa() {
 
 	
 	// Cool editing box
-	if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadmin) {
-		if ($course['gradeType'] == 1 || $course['gradeType'] == 2) {
-			?>
-			<SCRIPT language="JavaScript">
-			function ispunio_uslove(element, ocjena) {
-				var id = element.id;
-				var vrijednost = element.checked;
-				if (vrijednost!=origval[id]) {
-					var oc_vrijednost;
-					if (!vrijednost) ocjena='/';
-					var value = parseInt(element.id.substr(6));
-					ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"","document.getElementById('"+id+"').focus()");
-				}
+	if ($course['gradeType'] == 1 || $course['gradeType'] == 2) {
+		?>
+		<SCRIPT language="JavaScript">
+		function ispunio_uslove(element, ocjena) {
+			var id = element.id;
+			var vrijednost = element.checked;
+			if (vrijednost!=origval[id]) {
+				var oc_vrijednost;
+				if (!vrijednost) ocjena='/';
+				var value = parseInt(element.id.substr(6));
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"","document.getElementById('"+id+"').focus()");
 			}
-			var origval=new Array();
-			</SCRIPT>
-			<?
-	
 		}
-		else {
-			cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
-			?>
-			<script language="JavaScript">
-			function undo_coolbox() {
-				var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
-				if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
-				alert(greska);
-				zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
-				zamger_coolbox_origcaller=false;
-			}
-			</script>
-			<?
+		var origval=new Array();
+		</SCRIPT>
+		<?
+
+	}
+	else {
+		cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
+		?>
+		<script language="JavaScript">
+		function undo_coolbox() {
+			var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
+			if (!greska.match(/\S/)) greska = "Došlo je do greške. Molimo kontaktirajte administratora.";
+			alert(greska);
+			zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
+			zamger_coolbox_origcaller=false;
 		}
+		</script>
+		<?
 	}
 	
 	
