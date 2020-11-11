@@ -77,7 +77,7 @@ function nastavnik_tip() {
 		}
 		
 		if (param('subakcija') == "dodaj_uslovnu" && check_csrf_token()) {
-			$cact->conditionalActivities[] = int_param("uslovna_aktivnost");
+			$cact->conditionalActivities[] = [ "id" => int_param("uslovna_aktivnost")];
 		}
 		
 		if (param('subakcija') == "dodaj_min_bodove" && check_csrf_token()) {
