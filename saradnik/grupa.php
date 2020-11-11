@@ -230,8 +230,6 @@ function saradnik_grupa() {
 	$homeworks = $cactHomeworks = $homeworkStatus = $homeworkScore = [];
 	$classes = $cactClasses = $presenceCache = [];
 	$examResults = [];
-	$fixedResults = [];
-	$grades = [];
 	foreach($group['members'] as $member) {
 		$studentId = $member['student']['id'];
 		foreach($member['score'] as $score) {
@@ -292,10 +290,22 @@ function saradnik_grupa() {
 		if ($cact['Activity']['id'] == null)
 			$fixedCacts[$cact['id']] = $cact;
 	
-	// Sort homeworks by id within each component
-	foreach($cactHomeworks as &$ch) {
-		uasort($ch, function($h1, $h2) { return db_timestamp($h1['id']) > db_timestamp($h2['id']); });
+	// Get list of homeworks
+	$allHomeworks = api_call("homework/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
+	foreach($allHomeworks as $hw) {
+		$cactId = $hw['CourseActivity']['id'];
+		if (!array_key_exists($cactId, $cactHomeworks))
+			$cactHomeworks[$cactId] = [];
+		$found = false;
+		foreach($cactHomeworks[$cactId] as $hwk)
+			if ($hwk['id'] == $hw['id'])
+				$found = true;
+		if (!$found)
+			$cactHomeworks[$cactId][] = $hw;
+		if (!array_key_exists($cactId, $cactTitles))
+			$cactTitles[$cactId] = $hw['CourseActivity']['name'];
 	}
+	
 	// Sort classes by dateTime within each component
 	foreach($cactClasses as &$cc) {
 		uasort($cc, function($c1, $c2) { return db_timestamp($c1['dateTime']) > db_timestamp($c2['dateTime']); });
