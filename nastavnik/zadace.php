@@ -279,9 +279,13 @@ function nastavnik_zadace() {
 		$result = api_call("homework/files/$homeworkFile", [], "DELETE");
 		if ($_api_http_code == "204") {
 			nicemessage("Postavka zadaće obrisana");
-			print "<a href=\"?sta=nastavnik/zadace&predmet=$predmet&ag=$ag&_lv_nav_id=$edit_zadaca\">Nazad</a>\n";
 			zamgerlog("obrisana postavka zadace z$edit_zadaca", 2);
 			zamgerlog2("obrisana postavka zadace", $edit_zadaca);
+			?>
+			<script language="JavaScript">
+                setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$edit_zadaca?>'; }, 1000);
+			</script>
+			<?
 		} else {
 			niceerror("Neuspješno brisanje postavke zadaće: kod ($_api_http_code)");
 			print_r($result);
@@ -320,7 +324,7 @@ function nastavnik_zadace() {
 					nicemessage ("Zadaća uspješno obrisana");
 					?>
 					<script language="JavaScript">
-					location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>';
+                    setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
 					</script>
 					<?
 				} else {
