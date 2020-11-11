@@ -5,7 +5,7 @@
 
 function student_zadaca() {
 
-	global $userid,$conf_files_path;
+	global $userid,$conf_files_path, $_api_http_code;
 	
 	require_once("lib/autotest.php");
 	require_once("lib/utility.php"); // linkuj_urlove, nicesize, ends_with, rm_minus_r, clear_unicode
@@ -33,7 +33,13 @@ function student_zadaca() {
 		return;
 	}
 
-	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ])['results'];
+	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ]);
+	if ($_api_http_code != 200) {
+		niceerror("Kod: $_api_http_code");
+		print_r($assignments);
+		return;
+	}
+	$assignments = $assignments['results'];
 	
 	//  IMA LI AKTIVNIH?
 	// TODO: provjeriti da li je aktivan modul...
