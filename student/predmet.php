@@ -102,14 +102,14 @@ function student_predmet() {
 	
 	//  PRISUSTVO NA VJEŽBAMA
 	
-	function prisustvo_ispis($AttendanceDetails) {
+	function prisustvo_ispis($AttendanceDetails, $cactName) {
 		// Don't print groups without attendance detail
 		if (!array_key_exists('attendance', $AttendanceDetails) || empty($AttendanceDetails['attendance']))
 			return;
 		
-		$imegrupe = "[Bez naziva]";
-		if (array_key_exists("Group", $AttendanceDetails))
-			$imegrupe = $AttendanceDetails['Group']['name'];
+		$imegrupe = "";
+		if (array_key_exists("Group", $AttendanceDetails) && !$AttendanceDetails['Group']['virtual'])
+			$imegrupe = " (" . $AttendanceDetails['Group']['name'] . ")";
 		
 		$odsustva=0;
 		$datumi = $vremena = $statusi = "";
@@ -130,8 +130,8 @@ function student_predmet() {
 		}
 		
 		?>
-	
-		<b>Prisustvo (<?=$imegrupe?>):</b><br/>
+
+		<b><?=$cactName?><?=$imegrupe?>:</b><br/>
 		<table cellspacing="0" cellpadding="2" border="0" id="prisustvo" class="prisustvo">
 			<tr>
 				<th>Datum</th>
@@ -158,7 +158,7 @@ function student_predmet() {
 		$found = true;
 		$bodovi += $StudentScore['score'];
 		foreach ($StudentScore['details'] as $AttendanceDetails)
-			prisustvo_ispis($AttendanceDetails);
+			prisustvo_ispis($AttendanceDetails, $StudentScore['CourseActivity']['name']);
 	}
 	
 	if ($found) {

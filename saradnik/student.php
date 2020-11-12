@@ -406,14 +406,14 @@ function saradnik_student() {
 	
 	// Ispis tablice prisustva za jednu od grupa u kojima je student
 	
-	function prisustvo_ispis($AttendanceDetails) {
+	function prisustvo_ispis($AttendanceDetails, $cactName) {
 		// Don't print groups without attendance detail
 		if (!array_key_exists('attendance', $AttendanceDetails) || empty($AttendanceDetails['attendance']))
 			return;
 		
-		$imegrupe = "[Bez naziva]";
-		if (array_key_exists("Group", $AttendanceDetails))
-			$imegrupe = $AttendanceDetails['Group']['name'];
+		$imegrupe = "";
+		if (array_key_exists("Group", $AttendanceDetails) && !$AttendanceDetails['Group']['virtual'])
+			$imegrupe = " (" . $AttendanceDetails['Group']['name'] . ")";
 		
 		$odsustva=0;
 		$datumi = $vremena = $statusi = "";
@@ -421,21 +421,23 @@ function saradnik_student() {
 			$time = db_timestamp($Attendance['ZClass']['dateTime']);
 			$datumi .= "<td>" . date("d.m" , $time) . "</td>\n";
 			$vremena .= "<td>" . date("H" , $time) . "<sup>" . date("i" , $time) . "</sup></td>\n";
+			$student = $Attendance['student']['id'];
+			$class = $Attendance['ZClass']['id'];
 		
 			if ($Attendance['presence'] == 0) {
-				$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\">NE</td>\n";
+				$statusi .= "<td bgcolor=\"#FFCCCC\" align=\"center\" id=\"dane-".$student."-".$class."\" onclick=\"javascript:prisustvo(".$student.",".$class.")\"><div id=\"danetekst-".$student."-".$class."\">NE</div></td>\n";
 				$odsustva++;
 			} else if ($Attendance['presence'] == 1) {
-				$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\">DA</td>\n";
+				$statusi .= "<td bgcolor=\"#CCFFCC\" align=\"center\" id=\"dane-".$student."-".$class."\" onclick=\"javascript:prisustvo(".$student.",".$class.")\"><div id=\"danetekst-".$student."-".$class."\">DA</div></td>\n";
 			} else {
-				$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\">/</td>\n";
+				$statusi .= "<td bgcolor=\"#FFFFCC\" align=\"center\" id=\"dane-".$student."-".$class."\" onclick=\"javascript:prisustvo(".$student.",".$class.")\"><div id=\"danetekst-".$student."-".$class."\"> / </div></td>\n";
 			}
 			
 		}
 		
 		?>
 	
-		<b>Prisustvo (<?=$imegrupe?>):</b><br/>
+		<b><?=$cactName?><?=$imegrupe?>:</b><br/>
 		<table cellspacing="0" cellpadding="2" border="0" id="prisustvo" class="prisustvo">
 			<tr>
 				<th>Datum</th>
@@ -463,7 +465,7 @@ function saradnik_student() {
 		$found = true;
 		$bodovi += $StudentScore['score'];
 		foreach ($StudentScore['details'] as $AttendanceDetails)
-			prisustvo_ispis($AttendanceDetails);
+			prisustvo_ispis($AttendanceDetails, $StudentScore['CourseActivity']['name']);
 	}
 	
 	if ($found) {
@@ -921,14 +923,14 @@ function saradnik_student() {
 			} else if (stavka.opis_dogadjaja == "promijenjen datum ocjene" && document.getElementById('kolog')) {
 				document.getElementById('kolog').innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjena datum ocjene u <b>' + stavka.datum_ocjene + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('kolog').innerHTML;
 				
-			} else if (stavka.opis_dogadjaja == "upisan rezultat ispita") {
+			} else if (stavka.opis_dogadjaja == "upisan rezultat ispita" && document.getElementById('ispitlog' + stavka.ispit)) {
 				if (stavka.bodovi != rezultati_ispita[stavka.ispit])
 					stavka.bodovi += " ?";
 				rezultati_ispita[stavka.ispit] = "/";
 				
 				document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> upisan rezultat <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
 				
-			} else if (stavka.opis_dogadjaja == "izbrisan rezultat ispita") {
+			} else if (stavka.opis_dogadjaja == "izbrisan rezultat ispita" && document.getElementById('ispitlog' + stavka.ispit)) {
 				if (rezultati_ispita[stavka.ispit] != "/")
 					stavka.stari_bodovi += " ?";
 				else
@@ -936,14 +938,14 @@ function saradnik_student() {
 				
 				document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> izbrisan rezultat (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
 				
-			} else if (stavka.opis_dogadjaja == "izmjenjen rezultat ispita") {
+			} else if (stavka.opis_dogadjaja == "izmjenjen rezultat ispita" && document.getElementById('ispitlog' + stavka.ispit)) {
 				if (stavka.bodovi != rezultati_ispita[stavka.ispit])
 					stavka.bodovi += " ?";
 				rezultati_ispita[stavka.ispit] = stavka.stari_bodovi;
 				
 				document.getElementById('ispitlog' + stavka.ispit).innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjen rezultat u <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('ispitlog' + stavka.ispit).innerHTML;
 				
-			} else if (stavka.opis_dogadjaja == "izmjena bodova za fiksnu komponentu") {
+			} else if (stavka.opis_dogadjaja == "izmjena bodova za fiksnu komponentu" && document.getElementById('fiksnalog' + stavka.komponenta)) {
 				document.getElementById('fiksnalog' + stavka.komponenta).innerHTML = '<img src="static/images/16x16/edit_red.png" width="16" height="16" align="center"> promijenjeni bodovi u <b>' + stavka.bodovi + '</b> (' + stavka.korisnik + ', ' + stavka.vrijeme + ')<br />' + document.getElementById('fiksnalog' + stavka.komponenta).innerHTML;
 			}
 		}
