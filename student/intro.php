@@ -128,12 +128,28 @@ function student_intro() {
 	// Konačne ocjene
 	$grades = api_call("course/latestGrades/$userid")['results'];
 	foreach($grades as $grade) {
+		// Preskačemo ocjene starije od mjesec dana
+		if (db_timestamp($grade['gradeDate']) < time()-60*60*24*30) continue;
+		
 		$idPredmeta = $grade['CourseOffering']['CourseUnit']['id'];
 		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $grade['CourseOffering']['AcademicYear']['id'];
 		$the_ocjena = $grade['grade'];
+		if ($the_ocjena == 12) {
+			$enrollments = api_call("enrollment/all/$userid", ["resolve" => ["Programme", "ProfessionalDegree"]] )['results'];
+			$title = "";
+			foreach($enrollments as $enr) {
+				if ($enr['AcademicYear']['id'] == $ag)
+					$title = $enr['Programme']['ProfessionalDegree']['name'];
+			}
+			$code_poruke["k$idPredmeta"] = "<b>$nazivPredmeta:</b> Čestitamo! <a href=\"?sta=student/zavrsni&predmet=$idPredmeta&ag=$ag\">Postali ste $title</a><br /><br />\n";
+		}
+		else if ($the_ocjena == 11) {
+			$code_poruke["k$idPredmeta"] = "<b>$nazivPredmeta:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$idPredmeta&ag=$ag\">Položili ste predmet!</a><br /><br />\n";
+		} else {
+			$code_poruke["k$idPredmeta"] = "<b>$nazivPredmeta:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$idPredmeta&ag=$ag\">Dobili ste $the_ocjena</a><br /><br />\n";
+		}
 		
-		$code_poruke["k$idPredmeta"] = "<b>$nazivPredmeta:</b> Čestitamo! <a href=\"?sta=student/predmet&predmet=$idPredmeta&ag=$ag\">Dobili ste $the_ocjena</a><br /><br />\n";
 		$vrijeme_poruke["k$idPredmeta"] = db_timestamp($grade['gradeDate']);
 	}
 	
