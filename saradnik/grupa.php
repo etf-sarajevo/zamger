@@ -31,7 +31,7 @@ function saradnik_grupa() {
 		// KOMPONENTA
 		// Ovaj kod radi samo sa jednom komponentom prisustva. U budućnosti to bi moglo biti popravljeno, ali realno nema prevelike potrebe
 		
-		$datum = intval($_POST['godina'])."-". intval($_POST['mjesec'])."-". intval($_POST['dan']);
+		$datum = intval($_POST['godina']) . "-" . nuliraj_broj(intval($_POST['mjesec'])) . "-" . nuliraj_broj(intval($_POST['dan']));
 		$vrijeme = $_POST['vrijeme'];
 		if (!preg_match("/^\d?\d:\d\d$/", $vrijeme)) {
 			niceerror("Vrijeme nije u ispravnom formatu!");
@@ -101,10 +101,19 @@ function saradnik_grupa() {
 			[ "details" => true, "names" => true,
 				"resolve" => ["Homework", "ZClass"] ]
 		);
-		if ($_api_http_code != "200") {
+		if ($_api_http_code == "404") {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
 			zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
 			zamgerlog2("nepostojeca labgrupa", $labgrupa);
+			return;
+		}
+		else if ($_api_http_code == "401") {
+			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			zamgerlog("nema pravo pristupa labgrupi $labgrupa",3); // 3 = greska
+			zamgerlog2("nema pravo pristupa labgrupi", $labgrupa);
+			return;
+		} else if ($_api_http_code != "200") {
+			niceerror("Greška prilikom pristupa grupi: Kod $_api_http_code");
 			return;
 		}
 		$naziv = $group['name'];
@@ -120,17 +129,25 @@ function saradnik_grupa() {
 			[ "details" => true, "names" => true, "year" => $ag,
 				"resolve" => ["Homework", "ZClass"] ]
 		);
-		if ($_api_http_code != "200") {
+		if ($_api_http_code == "404") {
 			biguglyerror("Nemate pravo ulaska u ovu grupu!");
-			zamgerlog("nepostojeca labgrupa $labgrupa",3); // 3 = greska
-			zamgerlog2("nepostojeca labgrupa", $labgrupa);
+			zamgerlog("nepostojeci predmet $predmet $ag",3); // 3 = greska
+			zamgerlog2("nepostojeci predmet", $predmet, $ag);
+			return;
+		}
+		else if ($_api_http_code == "401") {
+			biguglyerror("Nemate pravo ulaska u ovu grupu!");
+			zamgerlog("nema pravo pristupa labgrupi svi studenti $predmet $ag",3); // 3 = greska
+			zamgerlog2("nema pravo pristupa predmetu", $predmet, $ag);
+			return;
+		} else if ($_api_http_code != "200") {
+			niceerror("Greška prilikom pristupa grupi: Kod $_api_http_code");
 			return;
 		}
 		$labgrupa = $group['id'];
 		$naziv = $group['name'];
 		$grupa_virtualna = true;
 	}
-
 
 	// Spisak komponenti koje su zastupljene na predmetu
 	foreach($group['activities'] as $activity)
@@ -370,15 +387,6 @@ function saradnik_grupa() {
 		$dan=date("d"); $mjesec=date("m"); $godina=date("Y");
 		$vrijeme=date("H:i");
 		
-		// Tražimo komponentu prisustva i uzimamo prvu
-		// FIXME: praktično je nemoguće registrovati čas za drugu komponentu
-		$komponenta = 0;
-		foreach ($tipovi_komponenti as $k_id => $tip) {
-			if ($tip == 9) { // 9 = prisustvo
-				$komponenta = $k_id;
-				break;
-			}
-		}
 	
 		// Ujedno ćemo definisati i neke JavaScripte za prisustvo
 	
@@ -387,7 +395,6 @@ function saradnik_grupa() {
 		<td valign="top" width="50%">
 			Registrujte novi čas:<br/>
 			<?=genform("POST")?>
-			<input type="hidden" name="komponenta" value="<?=$komponenta?>">
 			<input type="hidden" name="akcija" value="dodajcas">
 		
 			Datum:
@@ -413,7 +420,37 @@ function saradnik_grupa() {
 			}
 			?></select><br/>
 			Vrijeme: <input type="text" size="10" name="vrijeme" value="<?=$vrijeme?>"  class="default">
-			<input type="submit" value="Registruj"  class="default"><br/><br/>
+			<input type="submit" value="Registruj"  class="default"><br/>
+			<?
+			
+			// Select attendance course activity
+			$attendanceCacts = [];
+			foreach($course['activities'] as $cact)
+				if ($cact['Activity']['id'] == 9) {
+					$attendanceCacts[$cact['id']] = $cact['name'];
+					$cactId = $cact['id'];
+				}
+			if (count($attendanceCacts) == 1) { // There is at least one
+				?>
+					<br/>
+				<input type="hidden" name="komponenta" value="<?=$cactId?>">
+				<?
+			} else {
+				?>
+				Aktivnost: <select name="komponenta">
+				<?
+				foreach($attendanceCacts as $cactId => $cactName) {
+					?>
+					<option value="<?=$cactId?>"><?=$cactName?></option>
+					<?
+				}
+				?>
+				</select><br/><br/>
+				<?
+			}
+			
+			?>
+			<br/>
 		
 			<input type="radio" name="prisustvo" value="1" CHECKED>Svi prisutni
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -496,7 +533,9 @@ function saradnik_grupa() {
 				function(responseText, status, url) {
 					azuriraj_polje(oldState, student, cas);
 					var greska = "";
-					if (status != 200)
+                    if (status == 401)
+                        greska = "Vaša sesija je istekla. Molimo osvježite stranicu da biste obnovili sesiju.";
+					else if (status != 200)
 						greska = "Došlo je do greške (status: "+status+"). Molimo kontaktirajte administratora";
 					else try {
 						var object = JSON.parse(responseText);
@@ -709,7 +748,7 @@ function saradnik_grupa() {
 
 		// FIKSNE KOMPONENTE - ISPIS
 		foreach ($fixedCacts as $cactId => $cact) {
-			if (array_key_exists($studentId, $cactScores[$cactId])) {
+			if (array_key_exists($cactId, $cactScores) && array_key_exists($studentId, $cactScores[$cactId])) {
 				$fiksne_ispis .= "<td id=\"fiksna-$studentId-$predmet-$cactId-$ag\" ondblclick=\"coolboxopen(this)\">" . $cactScores[$cactId][$studentId] . "</td>\n";
 			} else {
 				$fiksne_ispis .= "<td id=\"fiksna-$studentId-$predmet-$cactId-$ag\" ondblclick=\"coolboxopen(this)\">/</td>\n";
