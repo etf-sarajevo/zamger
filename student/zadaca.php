@@ -565,8 +565,6 @@ function akcijaslanje() {
 			// Content-Type: text/plain je najsigurniji pošto je u pitanju sigurno tekstualni format
 			$result = api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath, "text/plain");
 			
-			print_r($result);
-			
 			// Očekivan je kod 201
 			if ($result['code'] == "201") {
 				nicemessage($naziv_zadace . "/Zadatak " . $zadatak . " uspješno poslan!");
