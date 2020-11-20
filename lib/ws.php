@@ -196,7 +196,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
  * @return mixed Server response as string (if $json=false), array (if $json=true, $associative=true) or object (if $associative=false)
  */
 function api_call($route, $params = [], $method = "GET", $debug = true, $json = true, $associative = true) { // set to false when finished
-	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code;
+	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code, $http_result;
 	
 	$http_request_params = array('http' => array(
 		'header' => "",

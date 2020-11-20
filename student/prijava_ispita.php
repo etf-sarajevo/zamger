@@ -98,7 +98,7 @@ function student_prijava_ispita() {
 			if ($same) {
 				niceerror("Već ste prijavljeni na neki termin za ovaj ispit.");
 			} else {
-				api_call("event/$termin/register/$userid", [], "POST");
+				$result = api_call("event/$termin/register/$userid", [], "POST");
 				if ($_api_http_code == "201") {
 					$predmet = $foundEvent['CourseUnit']['id'];
 					nicemessage("Uspješno ste prijavljeni na termin ispita");
@@ -108,6 +108,7 @@ function student_prijava_ispita() {
 					$registered_events[] = $foundEvent;
 				} else {
 					niceerror("Prijavljivanje na ispit nije uspjelo");
+					api_error_message($result);
 				}
 			}
 		}

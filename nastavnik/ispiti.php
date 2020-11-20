@@ -455,7 +455,9 @@ function nastavnik_ispiti() {
 				zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 				zamgerlog2("kreiran novi ispit", $ispit, $predmet, $ag);
 			} else {
-				niceerror("Neuspješno kreiranje ispita ($_api_http_code): " . $exam['message']);
+				niceerror("Neuspješno kreiranje ispita");
+				api_error_message($exam);
+				print "<br><br>";
 			}
 			print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";
 			return;

@@ -991,4 +991,16 @@ function getCourseName($courseId, $courseYear = 0) {
 }
 
 
+// Helper function for displaying a standard API error message
+function api_error_message($apiResponse) {
+	global $_api_http_code, $http_result;
+	$msg = "Kod $_api_http_code";
+	if (array_key_exists('message', $apiResponse))
+		$msg .= ": " . $apiResponse['message'];
+	niceerror($msg);
+	
+	?><textarea><?=htmlentities($http_result)?></textarea><?
+}
+
+
 ?>
