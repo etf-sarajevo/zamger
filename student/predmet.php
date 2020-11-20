@@ -223,7 +223,7 @@ function student_predmet() {
 			foreach ($homeworks as $homework) {
 				$sumScore = 0;
 				$status = 0;
-				foreach ($assignmentHomeworks[$homework['id']] as $Assignment) {
+				if (array_key_exists($homework['id'], $assignmentHomeworks)) foreach ($assignmentHomeworks[$homework['id']] as $Assignment) {
 					$sumScore += $Assignment['score'];
 					if ($status == 0) $status = $Assignment['status'];
 				}

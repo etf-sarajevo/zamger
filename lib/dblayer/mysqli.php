@@ -142,9 +142,9 @@ function db_time($timestamp) { return date("Y-m-d H:i:s",$timestamp); }
 function db_timestamp($v) {
 	$g = substr($v,0,4); $mj = substr($v,5,2); $d = substr($v,8,2);
 	if (strlen($v) > 10) {
-		$h = substr($v, 11, 2);
-		$mi = substr($v, 14, 2);
-		$s = substr($v, 17, 2);
+		$h = intval(substr($v, 11, 2));
+		$mi = intval(substr($v, 14, 2));
+		$s = intval(substr($v, 17, 2));
 	}
 	else $h=$mi=$s=0;
 	return mktime($h,$mi,$s,$mj,$d,$g);
