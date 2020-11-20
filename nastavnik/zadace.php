@@ -443,6 +443,30 @@ function nastavnik_zadace() {
 	}
 	
 	
+	if ($_GET['akcija'] == "resetStatus") {
+		$zadaca = intval($_GET['zadaca']);
+		$zadatak = intval($_GET['zadatak']);
+		$status = 1;
+		
+		$result = api_call("homework/$zadaca/$zadatak/resetStatus", ["status" => $status], "PUT");
+		if ($_api_http_code == "201") {
+			nicemessage("Zadaća je označena za ponovno testiranje svim studentima");
+			print "Ponovno testiranje će se desiti u terminu kada je to podešeno platformom za automatsko testiranje zadaća (sutra ujutro).";
+			zamgerlog("resetovan status zadace z$zadaca zadatak $zadatak", 2);
+			zamgerlog2("resetovan status zadace", $zadaca, $zadatak);
+			?>
+			<script language="JavaScript">
+                setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&_lv_nav_id=<?=$zadaca?>'; }, 5000);
+			</script>
+			<?
+			
+		} else {
+			niceerror("Neuspješno resetovanje statusa: kod $_api_http_code");
+			print "<textarea>"; print_r($result); print "</textarea>\n";
+		}
+		return;
+	}
+	
 	
 	// Spisak postojećih zadaća
 	$izabrana = intval($_REQUEST['_lv_nav_id']);
@@ -672,7 +696,20 @@ function nastavnik_zadace() {
 				<button onclick="Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zadatak <?=$i?></button>&nbsp;
 				<?
 			}
-			print "<br><br><br>";
+			
+			?>
+			<br><br><br><b>Retestiraj svima:</b><br>
+			<?
+			
+			for ($i = 1; $i <= $zzadataka; $i++) {
+				?>
+				<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=resetStatus';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zadatak <?=$i?></button>&nbsp;
+				<?
+			}
+			
+			?>
+			<br><br><br>
+			<?
 		}
 	}
 	
@@ -728,7 +765,7 @@ function nastavnik_zadace() {
 			<input type="hidden" name="zadaca" value="<?=$izabrana?>">
 			<input type="hidden" name="akcija" value="dodaj_datoteku">
 			<input type="file" name="dodatna_datoteka" size="45"><br>
-		Tip datoteke: <select name="type"><option value="postavka">Postavka zadaće</option></select>
+		Tip datoteke: <select name="type"><option value="postavka">Postavka zadaće</option><option value="autotest">Autotest</option></select>
 		Uz zadatak: <select name="assignNo"><option value="0">Svi zadaci (čitava zadaća)</option>
 			<?
 			for ($i=1; $i<=$homework['nrAssignments']; $i++)
