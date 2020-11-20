@@ -262,13 +262,14 @@ function nastavnik_ispiti() {
 		if ($_REQUEST['potvrdabrisanja'] == " Briši " && check_csrf_token()) {
 			print "<p>Brisanje u toku. Molimo budite strpljivi, ova akcija može potrajati nekoliko minuta.</p>\n\n\n\n";
 			
-			api_call("exam/$ispit", [], "DELETE");
+			$result = api_call("exam/$ispit", [], "DELETE");
 			if ($_api_http_code == "204") {
 				zamgerlog("obrisan ispit $ispit (pp$predmet, ag$ag)", 4); // 4 - audit
 				zamgerlog2("obrisan ispit", $predmet, $ag, $ispit);
 				nicemessage("Svi podaci su ažurirani.");
 			} else {
-				niceerror("Greška prilikom brisanja ispita: kod " . $_api_http_code);
+				niceerror("Greška prilikom brisanja ispita");
+				api_report_bug($result, []);
 			}
 			print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";
 			return;
@@ -335,7 +336,8 @@ function nastavnik_ispiti() {
 			if ($_api_http_code == "201") {
 				nicemessage("Svi podaci su ažurirani.");
 			} else {
-				niceerror("Neuspješno ažuriranje ispita ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno ažuriranje ispita");
+				api_report_bug($result, $changedExam);
 			}
 			print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";
 			return;
@@ -456,7 +458,7 @@ function nastavnik_ispiti() {
 				zamgerlog2("kreiran novi ispit", $ispit, $predmet, $ag);
 			} else {
 				niceerror("Neuspješno kreiranje ispita");
-				api_error_message($exam);
+				api_report_bug($exam, $addExam);
 				print "<br><br>";
 			}
 			print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";

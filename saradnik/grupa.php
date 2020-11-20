@@ -74,8 +74,8 @@ function saradnik_grupa() {
 				zamgerlog("registrovan cas c$cas_id", 2); // nivo 2: edit
 				zamgerlog2("registrovan cas", $cas_id);
 			} else {
-				niceerror("Greška prilikom kreiranja časa: " . $result['message']);
-				print_r($result);
+				niceerror("Greška prilikom kreiranja časa");
+				api_report_bug($result, $zclass);
 			}
 		}
 	}
@@ -88,8 +88,8 @@ function saradnik_grupa() {
 			zamgerlog("obrisan cas $cas_id",2);
 			zamgerlog2("obrisan cas", $cas_id);
 		} else {
-			niceerror("Greška prilikom brisanja časa (code $_api_http_code)"); // DELETE request can't return anything
-			print_r($result);
+			niceerror("Greška prilikom brisanja časa"); // DELETE request can't return anything
+			api_report_bug($result, []);
 		}
 	}
 
@@ -113,7 +113,8 @@ function saradnik_grupa() {
 			zamgerlog2("nema pravo pristupa labgrupi", $labgrupa);
 			return;
 		} else if ($_api_http_code != "200") {
-			niceerror("Greška prilikom pristupa grupi: Kod $_api_http_code");
+			niceerror("Greška prilikom pristupa grupi");
+			api_report_bug($result, []);
 			return;
 		}
 		$naziv = $group['name'];
@@ -141,7 +142,8 @@ function saradnik_grupa() {
 			zamgerlog2("nema pravo pristupa predmetu", $predmet, $ag);
 			return;
 		} else if ($_api_http_code != "200") {
-			niceerror("Greška prilikom pristupa grupi: Kod $_api_http_code");
+			niceerror("Greška prilikom pristupa grupi");
+			api_report_bug($result, []);
 			return;
 		}
 		$labgrupa = $group['id'];

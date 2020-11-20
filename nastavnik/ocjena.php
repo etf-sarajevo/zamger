@@ -204,8 +204,8 @@ function nastavnik_ocjena() {
 					zamgerlog2("dodana ocjena", $student, $predmet, $ag, $ocjena);
 					nicemessage("Dodajem ocjenu za studenta $prezime $ime ($brindexa)");
 				} else {
-					niceerror("Neuspješno dodavanje ocjene za studenta $prezime $ime ($brindexa): kod ($_api_http_code): " . $result['message']);
-					print_r($result);
+					niceerror("Neuspješno dodavanje ocjene za studenta $prezime $ime ($brindexa)");
+					api_report_bug($result, $portfolio);
 				}
 			}
 		}

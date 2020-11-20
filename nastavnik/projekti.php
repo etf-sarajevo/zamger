@@ -184,7 +184,8 @@ function nastavnik_projekti() {
 				zamgerlog("izmijenio parametre projekata na predmetu pp$_REQUEST[predmet]", 2);
 				zamgerlog2("izmijenjeni parametri projekata na predmetu", $predmet, $ag);
 			} else {
-				niceerror("Neuspješna izmjena parametara ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješna izmjena parametara");
+				api_report_bug($result, $params);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
@@ -261,7 +262,8 @@ function nastavnik_projekti() {
 				zamgerlog("dodao novi projekat na predmetu pp$predmet", 2);
 				zamgerlog2("dodao projekat", db_insert_id(), $predmet, $ag);
 			} else {
-				niceerror("Neuspješno dodavanje projekta ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno dodavanje projekta");
+				api_report_bug($result, $project);
 			}
 
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
@@ -315,7 +317,8 @@ function nastavnik_projekti() {
 				zamgerlog("izmijenio projekat $id na predmetu pp$predmet", 2);
 				zamgerlog2("izmijenio projekat", $id);
 			} else {
-				niceerror("Neuspješna izmjena projekta ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješna izmjena projekta");
+				api_report_bug($result, $project);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
@@ -365,7 +368,8 @@ function nastavnik_projekti() {
 				zamgerlog("dodao biljesku na projekat $id na predmetu pp$predmet", 2);
 				zamgerlog2("dodao biljesku na projekat", $id);
 			} else {
-				niceerror("Neuspješno dodavanje bilješke ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno dodavanje bilješke");
+				api_report_bug($result, $project);
 			}
 
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
@@ -400,7 +404,8 @@ function nastavnik_projekti() {
 				zamgerlog("izbrisan projekat $id na predmetu pp$predmet", 4);
 				zamgerlog2("izbrisan projekat", $id, $predmet, $ag);
 			} else {
-				niceerror("Neuspješno brisanje projekta ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno brisanje projekta");
+				api_report_bug($result, []);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
@@ -481,7 +486,8 @@ function nastavnik_projekti() {
 					zamgerlog2 ("student prebacen na projekat", $student, $projekat, 0, $stari_projekat);
 				}
 			} else {
-				nicemessage("Neuspješno prijavljivanje studenta na projekat ($_api_http_code): " . $result['message']);
+				nicemessage("Neuspješno prijavljivanje studenta na projekat");
+				api_report_bug($result, []);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;
@@ -572,7 +578,8 @@ function nastavnik_projekti() {
 				zamgerlog("student u$student odjavljen sa projekta $projekat (pp$predmet)", 2);
 				zamgerlog2("student odjavljen sa projekta", $student, $projekat);
 			} else {
-				niceerror("Neuspješno odjavljivanje studenta sa projekta ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno odjavljivanje studenta sa projekta");
+				api_report_bug($result, []);
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return;

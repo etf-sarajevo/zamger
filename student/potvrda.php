@@ -29,15 +29,17 @@ function student_potvrda() {
 			return;
 		}
 		
-		api_call("certificate/$id", [], "DELETE");
+		$result = api_call("certificate/$id", [], "DELETE");
 		if ($_api_http_code == "204") {
 			nicemessage("Odustali ste od zahtjeva");
 			for ($i=0; $i<count($zahtjevi); $i++)
 				if ($zahtjevi[$i]['id'] == $id)
 					unset($zahtjevi[$i]);
 		}
-		else
+		else {
 			niceerror("Došlo je do greške prilikom odustajanja od zahtjeva");
+			api_report_bug($result, []);
+		}
 		
 	}
 
@@ -70,8 +72,10 @@ function student_potvrda() {
 			</script>
 			<?
 		}
-		else
-			niceerror("Greška prilikom slanja zahtjeva: Error " . $result['code'] . ": " . $result['message']);
+		else {
+			niceerror("Greška prilikom slanja zahtjeva");
+			api_report_bug($result, $certificate);
+		}
 		return;
 	}
 

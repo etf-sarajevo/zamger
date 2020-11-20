@@ -54,7 +54,7 @@ function student_prijava_ispita() {
 			return;
 		}
 		
-		api_call("event/$termin/register/$userid", [], "DELETE");
+		$result = api_call("event/$termin/register/$userid", [], "DELETE");
 		if ($_api_http_code == "204") {
 			$predmet = $foundEvent['CourseUnit']['id'];
 			nicemessage("Uspješno ste odjavljeni sa ispita.");
@@ -66,6 +66,7 @@ function student_prijava_ispita() {
 					unset($registered_events[$i]);
 		} else {
 			niceerror("Odjavljivanje sa ispita nije uspjelo");
+			api_report_bug($result, []);
 		}
 	}
 	
@@ -108,7 +109,7 @@ function student_prijava_ispita() {
 					$registered_events[] = $foundEvent;
 				} else {
 					niceerror("Prijavljivanje na ispit nije uspjelo");
-					api_error_message($result);
+					api_report_bug($result, []);
 				}
 			}
 		}

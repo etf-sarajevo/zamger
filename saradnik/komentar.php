@@ -35,7 +35,8 @@ function saradnik_komentar() {
 			zamgerlog("dodan komentar na studenta u$studentId labgrupa g$labgrupa", 2);
 			zamgerlog2("dodan komentar na studenta", $studentId, $labgrupa);
 		} else {
-			niceerror("Dodavanje komentara nije uspjelo: " . $result['message']);
+			niceerror("Dodavanje komentara nije uspjelo");
+			api_report_bug($result, $comment);
 		}
 	}
 	
@@ -48,7 +49,8 @@ function saradnik_komentar() {
 			zamgerlog("obrisan komentar $id",2);
 			zamgerlog2("obrisan komentar", $id);
 		} else {
-			niceerror("Brisanje komentara nije uspjelo: kod " . $_api_http_code);
+			niceerror("Brisanje komentara nije uspjelo");
+			api_report_bug($result, []);
 		}
 	}
 

@@ -992,14 +992,32 @@ function getCourseName($courseId, $courseYear = 0) {
 
 
 // Helper function for displaying a standard API error message
-function api_error_message($apiResponse) {
-	global $_api_http_code, $http_result;
-	$msg = "Kod $_api_http_code";
-	if (array_key_exists('message', $apiResponse))
-		$msg .= ": " . $apiResponse['message'];
-	niceerror($msg);
+function api_report_bug($apiResponse, $apiRequest) {
+	global $_api_http_code, $http_result, $sta;
 	
-	?><textarea><?=htmlentities($http_result)?></textarea><?
+	$bt = debug_backtrace();
+	$caller = array_shift($bt);
+	$msg = "";
+	if (is_array($apiResponse) && array_key_exists('message', $apiResponse))
+		$msg = $apiResponse['message'];
+	
+	?>
+	<form action="index.php" method="POST">
+		<input type="hidden" name="sta" value="common/inbox">
+		<input type="hidden" name="akcija" value="bugreport">
+		<input type="hidden" name="original_sta" value="<?=$sta?>">
+		<input type="hidden" name="file" value="<?=$caller['file']?>">
+		<input type="hidden" name="line" value="<?=$caller['line']?>">
+		<input type="hidden" name="request_data" value="<?=htmlentities(json_encode($apiRequest))?>">
+		<input type="hidden" name="code" value="<?=$_api_http_code?>">
+		<input type="hidden" name="message" value="<?=$msg?>">
+		<input type="hidden" name="server_json" value="<?=htmlentities($http_result)?>">
+		<input type="submit" value="     Prijavite bug" style="-webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none; background: #eeeeee url('static/images/16x16/bug.png') no-repeat; background-position: 10px 5px; padding: 5px 10px; border: 1px solid #223445; border-radius: 4px;">
+		
+	</form>
+	<?
 }
 
 

@@ -58,7 +58,9 @@ function nastavnik_dodavanje_asistenata() {
 				$osoba = null;
 			}
 			if ($_api_http_code != "201" && $_api_http_code != "204") {
-				$greska = 'Promjena nivoa pristupa nije uspjela: ' . $result['message'];
+				niceerror("Promjena nivoa pristupa nije uspjela");
+				api_report_bug($result, ["accessLevel" => $nivoPristupa]);
+				return;
 			} else {
 				$teachers = api_call("course/$predmet/$ag/access")["results"];
 			}

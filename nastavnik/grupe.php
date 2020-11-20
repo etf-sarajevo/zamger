@@ -57,7 +57,8 @@ function nastavnik_grupe() {
 			zamgerlog2("kreirana labgrupa", db_insert_id(), $predmet, $ag, $_POST['ime']);
 			zamgerlog("dodana nova labgrupa '".$_POST['ime']."' (predmet pp$predmet godina ag$ag)", 4); // nivo 4: audit
 		} else {
-			niceerror("Neuspješno dodavanje grupe: " . $result['message']);
+			niceerror("Neuspješno dodavanje grupe");
+			api_report_bug($result, $group);
 		}
 	}
 	
@@ -66,12 +67,13 @@ function nastavnik_grupe() {
 	
 	if ($_POST['akcija'] == "obrisi_grupu" && check_csrf_token()) {
 		$groupId = intval($_POST['grupaid']);
-		api_call("group/$groupId", [], "DELETE");
+		$result = api_call("group/$groupId", [], "DELETE");
 		if ($_api_http_code == "204") {
 			zamgerlog("obrisana labgrupa $groupId (predmet pp$predmet)",4); // nivo 4: audit
 			zamgerlog2("obrisana labgrupa", intval($predmet), $ag, $groupId);
 		} else {
-			niceerror("Neuspješno brisanje grupe: kod $_api_http_code");
+			niceerror("Neuspješno brisanje grupe");
+			api_report_bug($result, $group);
 		}
 	}
 	
@@ -87,7 +89,8 @@ function nastavnik_grupe() {
 			zamgerlog("preimenovana labgrupa $groupId u '".$_POST['ime']."' (predmet pp$predmet godina ag$ag)",2); // nivo 2: edit
 			zamgerlog2("preimenovana labgrupa", $groupId, 0, 0, $_POST['ime']);
 		} else {
-			niceerror("Neuspješna promjena grupe: " . $result['message']);
+			niceerror("Neuspješna promjena grupe");
+			api_report_bug($result, $group);
 		}
 	
 		// Grupa treba ostati otvorena:
@@ -112,7 +115,8 @@ function nastavnik_grupe() {
 			zamgerlog("prekopirane labgrupe sa predmeta pp$kopiraj u pp$predmet",4);
 			zamgerlog2("prekopirane labgrupe", $kopiraj, $ag);
 		} else {
-			niceerror("Neuspješno kopiranje grupa: " . $result['message']);
+			niceerror("Neuspješno kopiranje grupa");
+			api_report_bug($result, [ "fromCourse" => $kopiraj ]);
 		}
 	}
 	
@@ -227,7 +231,8 @@ function nastavnik_grupe() {
 							$group = array_to_object( ["id" => 0, "name" => $imegrupe, "type" => 'vjezbe+tutorijali', "CourseUnit" => ["id" => $predmet], "AcademicYear" => ["id" => $ag], "virtual" => false] );
 							$foundGroup = api_call("group/course/$predmet/$ag", $group, "POST");
 							if ($_api_http_code != "201") {
-								niceerror("Neuspješno kreiranje grupe: " . $foundGroup['message']);
+								niceerror("Neuspješno kreiranje grupe");
+								api_report_bug($foundGroup, $group);
 								return;
 							}
 							$labgrupa = $foundGroup['id'];
@@ -275,9 +280,10 @@ function nastavnik_grupe() {
 				if ($boja==$boja1) $boja=$boja2; else $boja=$boja1;
 			} else {
 				foreach ($ispis_grupe as $gid => $gime) {
-					api_call("group/$gid/student/$student", [], "DELETE");
+					$result = api_call("group/$gid/student/$student", [], "DELETE");
 					if ($_api_http_code != "204") {
-						niceerror("Neuspješan ispis studenta iz grupe: kod $_api_http_code");
+						niceerror("Neuspješan ispis studenta iz grupe");
+						api_report_bug($result, []);
 						return;
 					}
 					zamgerlog2("student ispisan sa grupe (masovni unos)", $student, $gid);
@@ -285,7 +291,8 @@ function nastavnik_grupe() {
 				foreach ($upis_grupe as $gid => $gime) {
 					$result = api_call("group/$gid/student/$student", [], "POST");
 					if ($_api_http_code != "201") {
-						niceerror("Neuspješan upis studenta u grupu: " . $result['message']);
+						niceerror("Neuspješan upis studenta u grupu");
+						api_report_bug($result, []);
 						return;
 					}
 					zamgerlog2("student upisan u grupu (masovni unos)", $student, $gid);

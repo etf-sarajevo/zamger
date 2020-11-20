@@ -151,10 +151,8 @@ function nastavnik_tip() {
 				<?
 			}
 			else {
-				niceerror("Neuspješna izmjena aktivnosti ($_api_http_code): " . $result['message']);
-				print "<textarea>";
-				print_r($result);
-				print "</textarea>";
+				niceerror("Neuspješna izmjena aktivnosti");
+				api_report_bug($result, $cact);
 			}
 			return;
 		}
@@ -334,7 +332,8 @@ function nastavnik_tip() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno uklanjanje aktivnosti ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno uklanjanje aktivnosti");
+				api_report_bug($result, []);
 			}
 			return;
 		}
@@ -441,10 +440,8 @@ function nastavnik_tip() {
 				<?
 			}
 			else {
-				niceerror("Neuspješna izmjena aktivnosti ($_api_http_code): " . $result['message']);
-				print "<textarea>\n";
-				var_dump($result);
-				print "</textarea>\n";
+				niceerror("Neuspješna izmjena aktivnosti");
+				api_report_bug($result, $cact);
 			}
 		} else {
 			$result = api_call("course/$predmet/$ag/activity", $cact, "POST");
@@ -457,10 +454,8 @@ function nastavnik_tip() {
 				<?
 			}
 			else {
-				niceerror("Neuspješno dodavanje aktivnosti ($_api_http_code): " . $result['message']);
-				print "<textarea>\n";
-				var_dump($result);
-				print "</textarea>\n";
+				niceerror("Neuspješno dodavanje aktivnosti");
+				api_report_bug($result, $cact);
 			}
 		}
 		return;

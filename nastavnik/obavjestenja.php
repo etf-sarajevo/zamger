@@ -63,10 +63,11 @@ function nastavnik_obavjestenja() {
 	
 	if (param('akcija')=="obrisi_obavjestenje" && check_csrf_token()) {
 		$obavjestenje = intval($_POST['obavjestenje']);
-		api_call("inbox/announcements/$obavjestenje", [], "DELETE");
+		$result = api_call("inbox/announcements/$obavjestenje", [], "DELETE");
 		
 		if ($_api_http_code != "204") {
-			niceerror("Neuspješno brisanje obavještenja $obavjestenje: kod $_api_http_code");
+			niceerror("Neuspješno brisanje obavještenja $obavjestenje");
+			api_report_bug($result, []);
 		} else {
 			zamgerlog("obrisano obavjestenje (id $obavjestenje )", 2);
 			zamgerlog2("obrisana poruka", $obavjestenje);
@@ -103,8 +104,10 @@ function nastavnik_obavjestenja() {
 		if ($_api_http_code != "201") {
 			if ($result['message'] == "Announcement is too short")
 				niceerror("Obavještenje je prekratko");
-			else
-				niceerror("Neuspješno postavljanje obavještenja: " . $result['message']);
+			else {
+				niceerror("Neuspješno postavljanje obavještenja");
+				api_report_bug($result, $ann);
+			}
 		} else if ($io > 0) {
 			zamgerlog("izmjena obavjestenja (id $io)",2);
 			zamgerlog2("poruka izmijenjena", $io);

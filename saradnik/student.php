@@ -33,7 +33,8 @@ function saradnik_student() {
 		return;
 	}
 	if ($_api_http_code != "200") {
-		niceerror("Neuspješan pristup podacima studenta: " . $course['message']);
+		niceerror("Neuspješan pristup podacima studenta");
+		api_report_bug($course, []);
 		return;
 	}
 
@@ -138,13 +139,14 @@ function saradnik_student() {
 
 	// Akcija: ispis studenta sa predmeta
 	if (param('akcija') == "ispis" && $user_siteadmin) {
-		api_call("course/$predmet/$ag/enroll/$student", [], "DELETE");
+		$result = api_call("course/$predmet/$ag/enroll/$student", [], "DELETE");
 		if ($_api_http_code == "204") {
 			zamgerlog("student ispisan sa predmeta (student u$student predmet pp$predmet)",4); // nivo 4: audit
 			zamgerlog2("student ispisan sa predmeta", $student, $predmet, $ag);
 			nicemessage("Student ispisan sa predmeta.");
 		} else {
-			niceerror("Ispisivanje studenta sa predmeta nije uspjelo: kod $_api_http_code");
+			niceerror("Ispisivanje studenta sa predmeta nije uspjelo");
+			api_report_bug($result, []);
 		}
 		return;
 	}
@@ -170,7 +172,8 @@ function saradnik_student() {
 		else
 			$result = api_call("group/$novagrupa/student/$student", [], "PUT");
 		if ($_api_http_code != "201" && $_api_http_code != "204") {
-			niceerror("Promjena grupe nije uspjela: " . $result['message']);
+			niceerror("Promjena grupe nije uspjela");
+			api_report_bug($result, []);
 			return;
 		}
 		
@@ -202,7 +205,8 @@ function saradnik_student() {
 		$kviz = intval($_REQUEST['kviz']);
 		api_call("quiz/$kviz/student/$student", [], "DELETE");
 		if ($_api_http_code != "204") {
-			niceerror("Poništavanje kviza nije uspjelo: kod $_api_http_code");
+			niceerror("Poništavanje kviza nije uspjelo");
+			api_report_bug($result, []);
 			return;
 		}
 		zamgerlog("ponisten kviz u$student $kviz", 2);

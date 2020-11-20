@@ -189,8 +189,8 @@ function nastavnik_zadace() {
 				if ($_api_http_code == "201") {
 					zamgerlog2("bodovanje zadace", $student, $zadaca, $zadatak, $bodova);
 				} else {
-					niceerror("Neuspješno bodovanje zadaće ($_api_http_code): " . $result['message']);
-					print_r($result);
+					niceerror("Neuspješno bodovanje zadaće");
+					api_report_bug($result, $newAssignment);
 				}
 			}
 		}
@@ -263,11 +263,12 @@ function nastavnik_zadace() {
 			if ($_api_http_code == "201") {
 				nicemessage("Postavljena dodatna datoteka $filename");
 			} else {
-				niceerror("Neuspješno dodavanje prateće datoteke - drugi korak ($_api_http_code): " . $result['message']);
-				print_r($result);
+				niceerror("Neuspješno dodavanje prateće datoteke");
+				api_report_bug($result, []);
 			}
 		} else {
-			niceerror("Neuspješno dodavanje prateće datoteke ($_api_http_code): " . $result['message']);
+			niceerror("Neuspješno dodavanje prateće datoteke");
+			api_report_bug($result, $homeworkFile);
 		}
 	}
 	
@@ -287,10 +288,8 @@ function nastavnik_zadace() {
 			</script>
 			<?
 		} else {
-			niceerror("Neuspješno brisanje postavke zadaće: kod ($_api_http_code)");
-			print_r($result);
-			if (is_array($result) && array_key_exists("message", $result))
-				print $result['message'];
+			niceerror("Neuspješno brisanje prateće datoteke");
+			api_report_bug($result, []);
 		}
 		return;
 	}
@@ -306,9 +305,9 @@ function nastavnik_zadace() {
 			$homework = api_call("homework/$edit_zadaca", ["stats" => true]);
 			if ($_api_http_code != "200") {
 				niceerror("Nepostojeća zadaća sa IDom $edit_zadaca");
-				print "Kod: ($_api_http_code) " . $homework['message'];
 				zamgerlog("promjena nepostojece zadace $edit_zadaca", 3);
 				zamgerlog2("nepostojeca zadaca", $edit_zadaca);
+				api_report_bug($homework, []);
 				return 0;
 			}
 		}
@@ -316,7 +315,7 @@ function nastavnik_zadace() {
 		// Brisanje zadaće
 		if ($_POST['brisanje'] == " Obriši ") {
 			if ($_POST['potvrdabrisanja']==" Briši ") {
-				api_call("homework/$edit_zadaca", [], "DELETE");
+				$result = api_call("homework/$edit_zadaca", [], "DELETE");
 				
 				if ($_api_http_code == "204") {
 					zamgerlog("obrisana zadaca $edit_zadaca sa predmeta pp$predmet", 4);
@@ -328,7 +327,8 @@ function nastavnik_zadace() {
 					</script>
 					<?
 				} else {
-					niceerror("Neuspješno brisanje zadaće: kod ($_api_http_code)");
+					niceerror("Neuspješno brisanje zadaće");
+					api_report_bug($result, []);
 				}
 				return;
 				
@@ -432,7 +432,8 @@ function nastavnik_zadace() {
 		} else {
 			$result = api_call("homework/$edit_zadaca", $newHomework, "PUT");
 			if ($_api_http_code != "201") {
-				niceerror("Izmjena zadaće nije uspjela ($_api_http_code): " . $result['message']);
+				niceerror("Izmjena zadaće nije uspjela");
+				api_report_bug($result, $newHomework);
 			} else {
 				nicemessage("Ažurirana zadaća '$naziv'");
 				zamgerlog("azurirana zadaca z$edit_zadaca", 2);
@@ -461,8 +462,8 @@ function nastavnik_zadace() {
 			<?
 			
 		} else {
-			niceerror("Neuspješno resetovanje statusa: kod $_api_http_code");
-			print "<textarea>"; print_r($result); print "</textarea>\n";
+			niceerror("Neuspješno resetovanje statusa");
+			api_report_bug($result, ["status" => $status] );
 		}
 		return;
 	}
@@ -721,7 +722,7 @@ function nastavnik_zadace() {
 	<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
 	<?
 	if ($izabrana>0) {
-		?><input type="submit" name="brisanje" value=" Obriši "><?
+		?><input type="$homeworkFilesubmit" name="brisanje" value=" Obriši "><?
 	}
 	echo "<script> onemoguci_ekstenzije('');</script>";
 	?>

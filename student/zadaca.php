@@ -35,8 +35,8 @@ function student_zadaca() {
 
 	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ]);
 	if ($_api_http_code != 200) {
-		niceerror("Kod: $_api_http_code");
-		print_r($assignments);
+		niceerror("Neuspješno čitanje podataka o zadaćama");
+		api_report_bug($assignments, []);
 		return;
 	}
 	$assignments = $assignments['results'];
@@ -456,7 +456,7 @@ function student_zadaca() {
 
 function akcijaslanje() {
 
-	global $userid, $conf_files_path;
+	global $userid, $conf_files_path, $_api_http_code;
 
 	// Parametri
 	$predmet = intval($_REQUEST['predmet']);
@@ -566,7 +566,7 @@ function akcijaslanje() {
 			$result = api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath, "text/plain");
 			
 			// Očekivan je kod 201
-			if ($result['code'] == "201") {
+			if ($_api_http_code == "201") {
 				nicemessage($naziv_zadace . "/Zadatak " . $zadatak . " uspješno poslan!");
 				zamgerlog("poslana zadaca z$zadaca zadatak $zadatak", 2); // nivo 2 - edit
 				zamgerlog2("poslana zadaca (textarea)", $zadaca, $zadatak); // nivo 2 - edit
@@ -574,7 +574,7 @@ function akcijaslanje() {
 				print $povratak_js;
 			} else {
 				niceerror("Neuspješno slanje zadaće");
-				print $result['message'];
+				api_report_bug($result, []);
 			}
 			return;
 		} else {
@@ -614,13 +614,18 @@ function akcijaslanje() {
 			rename($program, $filepath);
 			chmod($filepath, 0640);
 			
-			api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath);
-
-			nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
-			zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
-			zamgerlog2("poslana zadaca (attachment)", $zadaca, $zadatak);
-			print $povratak_html;
-			print $povratak_js;
+			$result = api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath);
+			
+			if ($_api_http_code == "201") {
+				nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
+				zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
+				zamgerlog2("poslana zadaca (attachment)", $zadaca, $zadatak);
+				print $povratak_html;
+				print $povratak_js;
+			} else {
+				niceerror("Neuspješno slanje zadaće");
+				api_report_bug($result, []);
+			}
 			return;
 		} else {
 			switch ($_FILES['attachment']['error']) { 

@@ -28,7 +28,7 @@ function common_inbox() {
 	// Slanje poruke
 	//////////////////////
 	
-	if ($_POST['akcija']=='send' && check_csrf_token()) {
+	if (($_POST['akcija']=='send' || $_POST['akcija'] == "send_bug_report") && check_csrf_token()) {
 	
 		// Ko je primalac
 		$receiverTxt = $_REQUEST['primalac'];
@@ -41,7 +41,13 @@ function common_inbox() {
 			return;
 		}
 		
-		$message = array_to_object( [ "id" => 0, "type" => 2, "scope" => 7, "receiver" => $receiver['id'], "sender" => [ "id" => $userid ], "ref" => $ref, "subject" => $_REQUEST['naslov'], "text" => $_REQUEST['tekst'] ] );
+		$text = $_REQUEST['tekst'];
+		if ($_POST['akcija'] == "send_bug_report") {
+			$text .= "\n\nŠta je radio: " . $_REQUEST['stasamradio'];
+		}
+		
+		
+		$message = array_to_object( [ "id" => 0, "type" => 2, "scope" => 7, "receiver" => $receiver['id'], "sender" => [ "id" => $userid ], "ref" => $ref, "subject" => $_REQUEST['naslov'], "text" => $text ] );
 		$result = api_call("inbox", $message, "POST");
 		if ($_api_http_code == "201") {
 			nicemessage("Poruka uspješno poslana");
@@ -49,7 +55,42 @@ function common_inbox() {
 			zamgerlog2("poslana poruka", intval($receiverId));
 		} else {
 			niceerror("Neuspješno slanje poruke: " . $result['message']);
+			api_report_bug($result, $message);
 		}
+	}
+	
+	if ($_REQUEST['akcija']=='bugreport') {
+		
+		$text = "Šta: " . $_REQUEST['original_sta'] . "\n\nFile: " . $_REQUEST['file'] . "\n\nLine: " . $_REQUEST['line'] .
+			"\n\nAPI request data: " . $_REQUEST['request_data'] . "\n\nAPI response code: " . $_REQUEST['code'] . "\n\nAPI message: " . $_REQUEST['message'] .
+			"\n\nAPI response (JSON):" . $_REQUEST['server_json'];
+		
+		unset($_REQUEST['server_json']); unset($_REQUEST['request_data']);
+		
+		?>
+		<a href="?sta=common/inbox">Nazad na inbox</a><br/>
+		<h3>Prijava buga</h3>
+		<?=genform("POST")?>
+		<input type="hidden" name="akcija" value="send_bug_report">
+		<input type="hidden" name="primalac" value="vljubovic">
+		<input type="hidden" name="naslov" value="PRIJAVA BUGA">
+		<input type="hidden" name="tekst" value="<?=htmlentities($text)?>">
+		
+		<? nicemessage("Podaci o bugu uspješno prikupljeni!") ?>
+		
+		<p>Opišite šta ste radili u trenutku kada se bug desio (nije obavezno):</p>
+		<textarea name="stasamradio" cols="60" rows="10"></textarea><br><br>
+
+		<input type="submit" value="Prijavi bug">
+		</form>
+		<p><a onclick="daj_stablo('detalji')">Detaljnije informacije o bugu</a></p>
+		
+		<div id="detalji" style="display:none">
+			<pre><?=htmlentities($text)?></pre>
+		</div>
+		
+		<?
+		return;
 	}
 	
 	if ($_REQUEST['akcija']=='compose' || $_REQUEST['akcija']=='odgovor') {
@@ -321,8 +362,12 @@ function common_inbox() {
 			<table border="0" cellpadding="5"><tr><td>
 			<?
 			$text .= $message['text']; // Dodajemo na eventualni naslov obavještenja
-			$text =  linkuj_urlove($text);
-			$text =  str_replace("\n","<br/>\n",$text);
+			if (starts_with($text, "'''")) {
+				$text = "<pre>" . substr($text, 3) . "</pre>";
+			} else {
+				$text = linkuj_urlove($text);
+				$text = str_replace("\n", "<br/>\n", $text);
+			}
 	
 			print $text;
 			?>

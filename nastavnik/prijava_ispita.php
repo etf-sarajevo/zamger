@@ -114,13 +114,14 @@ function nastavnik_prijava_ispita() {
 	// Potvrda brisanja
 	
 	if ($_REQUEST["akcija"]=="obrisi_potvrda" && $_REQUEST['povratak'] != " Nazad " && check_csrf_token()) {
-		api_call("event/$termin", [], "DELETE");
+		$result = api_call("event/$termin", [], "DELETE");
 		if ($_api_http_code == "204") {
 			zamgerlog("izbrisan ispitni termin $termin (pp$predmet, ag$ag)", 2);
 			zamgerlog2("izbrisan ispitni termin", $termin, $predmet, $ag);
 			nicemessage("Termin uspješno obrisan ");
 		} else {
-			niceerror("Neuspješno brisanje termina: kod $_api_http_code");
+			niceerror("Neuspješno brisanje termina");
+			api_report_bug($result, []);
 		}
 	}
 	
@@ -137,18 +138,20 @@ function nastavnik_prijava_ispita() {
 				zamgerlog2("nastavnik dodao studenta na termin", $student, $termin);
 				$event = api_call("event/$termin", [ "resolve" => [ "Person" ] ] );
 			} else {
-				niceerror("Neuspješno dodavanje studenta na termin ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno dodavanje studenta na termin ($_api_http_code)");
+				api_report_bug($result, []);
 			}
 			// Ponovo preuzimamo spisak studenata jer se promijenio
 			$event = api_call("event/$termin", [ "resolve" => [ "Person" ] ] );
 		}
 		if ($_REQUEST['subakcija']=="izbaci_studenta" && check_csrf_token()) {
 			$student = intval($_REQUEST['student']);
-			api_call("event/$termin/register/$student", [], "DELETE");
+			$result = api_call("event/$termin/register/$student", [], "DELETE");
 			if ($_api_http_code == "204") {
 				zamgerlog2("nastavnik uklonio studenta sa termina", $student, $termin);
 			} else {
-				niceerror("Neuspješno uklanjanje studenta sa termin: kod $_api_http_code");
+				niceerror("Neuspješno uklanjanje studenta sa termina");
+				api_report_bug($result, []);
 			}
 			// Ponovo preuzimamo spisak studenata jer se promijenio
 			$event = api_call("event/$termin", [ "resolve" => [ "Person" ] ] );
@@ -307,7 +310,8 @@ function nastavnik_prijava_ispita() {
 				zamgerlog("izmijenjen ispitni termin", 2);
 				zamgerlog2("izmijenjen ispitni termin", $termin);
 			} else {
-				niceerror("Neuspješna izmjena termina ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješna izmjena termina");
+				api_report_bug($result, $eventObj);
 			}
 		}
 	}
@@ -368,7 +372,8 @@ function nastavnik_prijava_ispita() {
 				zamgerlog2("kreiran novi ispitni termin", db_insert_id(), $predmet, $ag);
 				zamgerlog("kreiran novi ispitni termin pp$predmet, ag$ag", 2);
 			} else {
-				niceerror("Neuspješno kreiranje termina ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno kreiranje termina");
+				api_report_bug($result, $eventObj);
 			}
 		}
 	}

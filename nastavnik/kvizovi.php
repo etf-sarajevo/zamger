@@ -64,9 +64,10 @@ function nastavnik_kvizovi() {
 		}
 		
 		if ($_api_http_code != "200") {
-			niceerror("Nepostojeći kviz $quizId ($_api_http_code): " . $quiz['message']);
+			niceerror("Nepostojeći kviz $quizId");
 			zamgerlog("editovanje pitanja: nepostojeci kviz $quizId", 3);
 			zamgerlog2("nepostojeci kviz (editovanje pitanja)", $quizId);
+			api_report_bug($quiz, ["questions" => true]);
 			return;
 		}
 		$naziv_kviza = $quiz->name;
@@ -97,7 +98,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno dodavanje pitanja ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno dodavanje pitanja");
+				api_report_bug($result, $quiz);
 			}
 			return;
 		}
@@ -131,7 +133,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno izmjena pitanja ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno izmjena pitanja");
+				api_report_bug($result, $quiz);
 			}
 			
 			return;
@@ -161,7 +164,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno brisanje pitanja ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno brisanje pitanja");
+				api_report_bug($result, $quiz);
 			}
 			return;
 		}
@@ -193,7 +197,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno dodavanje odgovora ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno dodavanje odgovora");
+				api_report_bug($result, $quiz);
 			}
 			return;
 		}
@@ -225,7 +230,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno brisanje odgovora ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno brisanje odgovora");
+				api_report_bug($result, $quiz);
 			}
 			return;
 		}
@@ -254,7 +260,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješan toggle odgovora ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješan toggle odgovora");
+				api_report_bug($result, $quiz);
 			}
 			return;
 		}
@@ -274,7 +281,8 @@ function nastavnik_kvizovi() {
 				</script>
 				<?
 			} else {
-				niceerror("Neuspješno kopiranje pitanja sa kviza $drugi_kviz ($_api_http_code): " . $result['message']);
+				niceerror("Neuspješno kopiranje pitanja sa kviza $drugi_kviz");
+				api_report_bug($result, [ "quizId" => $drugi_kviz ]);
 			}
 			return;
 		}

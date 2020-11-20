@@ -298,7 +298,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		if ($json_result === NULL) {
 			if ($debug) {
 				print "Failed to decode result as JSON for $url<br>";
-				print "<pre>" . htmlentities($http_result) . "</pre>";
+				api_report_bug([], []);
 			}
 			return FALSE;
 		}

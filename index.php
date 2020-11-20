@@ -43,7 +43,7 @@ function greska_u_modulima() {
 		<?
 	}
 	if ($uspjeh==1) {
-                if (function_exists('error_get_last')) {
+		if (function_exists('error_get_last')) {
 			$err = error_get_last();
 			$file = $err['file'];
 			$line = $err['line'];
