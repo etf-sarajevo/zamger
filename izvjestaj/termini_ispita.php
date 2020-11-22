@@ -24,7 +24,7 @@ if(isset($_REQUEST['termin'])){
 }
 if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
 else{
-	$q8 = db_query("select ispit from ispit_termin where id=$termin_id_url");
+	$q8 = db_query("select opcije from dogadjaj where id=$termin_id_url");
 	if (db_num_rows($q8)<1) {
 		niceerror("Nepostojeći termin.");
 		return;
@@ -41,7 +41,7 @@ if (db_num_rows($q9)<1) {
 $komp = db_result($q9,0,0);
 // Upit za ispit
 
-$q10 = db_query("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
+$q10 = db_query("select UNIX_TIMESTAMP(i.datum), ap.naziv, i.predmet, i.akademska_godina from ispit as i, aktivnost_predmet as ap where i.id=$ispit and i.komponenta=ap.id");
 
 $predmet = db_result($q10,0,2);
 $ag = db_result($q10,0,3);
@@ -90,11 +90,11 @@ print ajah_box();
 
 $imeprezime = $brindexa = array();
 
-$qtermini = db_query("SELECT it.id,UNIX_TIMESTAMP(it.datumvrijeme)
-				     FROM ispit_termin it
-					 INNER JOIN ispit i ON i.id = it.ispit
+$qtermini = db_query("SELECT d.id,UNIX_TIMESTAMP(d.datum_vrijeme)
+				     FROM dogadjaj d
+					 INNER JOIN ispit i ON i.id = d.opcije
 					 WHERE i.id=$ispit
-					 ORDER BY it.datumvrijeme
+					 ORDER BY d.datum_vrijeme
 					");
 
 $broj_termina =0;
@@ -122,22 +122,22 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	$datum_termina= date("d. m. Y. ( H:i )",$rtermini[1]);
 	if(isset($_REQUEST['ispit'])) $ispit = intval($_REQUEST['ispit']);
 	else{
-		$q8 = db_query("select ispit from ispit_termin where id=$termin_id_url");
+		$q8 = db_query("select opcije from dogadjaj where id=$termin_id_url");
 		$ispit = db_result($q8,0,0);
 	}
 	print "Termin $broj_termina : <h4 style=\"display:inline\"> $datum_termina</h4><br></br>";
 	$q10 = db_query("select o.id, o.prezime, o.ime, o.brindexa, a.login 
-					from osoba as o, student_predmet as sp, ponudakursa as pk, student_ispit_termin sit, ispit_termin it, ispit i, auth a
+					from osoba as o, student_predmet as sp, ponudakursa as pk, dogadjaj_osoba dos, dogadjaj d, ispit i, auth a
 					where 
 						sp.predmet=pk.id 
 						and sp.student=o.id
-						and sit.student=o.id
-						and sit.ispit_termin=it.id
-						and it.ispit = i.id
+						and dos.osoba=o.id
+						and dos.dogadjaj=d.id
+						and d.opcije = i.id
 						and pk.predmet=$predmet 
 						and pk.akademska_godina=$ag
 						and i.id=$ispit
-						and it.id = $id_termina
+						and d.id = $id_termina
 						and a.id=o.id
 						");
 	if (db_num_rows($q10)<1) {
@@ -167,7 +167,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 
 	$ispit_id_array = array();
 	
-	$q30 = db_query("select i.id, UNIX_TIMESTAMP(i.datum), k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova, k.prolaz, k.opcija from ispit as i, komponenta as k where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=k.id order by i.datum, i.komponenta");
+	$q30 = db_query("select i.id, UNIX_TIMESTAMP(i.datum), ap.id, ap.kratki_naziv, ap.aktivnost, ap.bodova, ap.prolaz, ap.opcije from ispit as i, aktivnost_predmet as ap where i.predmet=$predmet and i.akademska_godina=$ag and i.komponenta=ap.id order by i.datum, i.komponenta");
 	$imaintegralni=0;
 	while ($r30 = db_fetch_row($q30)) {
 		$komponenta = $r30[2];
@@ -210,7 +210,7 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	$ostale_komponente = array();
 	
 	// 1 = parcijalni ispit, 2 = integralni ispit
-	$q40 = db_query("select k.id, k.kratki_gui_naziv, k.tipkomponente, k.maxbodova from komponenta as k, akademska_godina_predmet as agp, tippredmeta_komponenta as tpk where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and tpk.komponenta=k.id and k.tipkomponente!=1 and k.tipkomponente!=2 and agp.akademska_godina=$ag");
+	$q40 = db_query("select ap.id, ap.kratki_naziv, ap.aktivnost, ap.bodova from aktivnost_predmet ap, aktivnost_agp as aagp where aagp.predmet=$predmet and aagp.aktivnost_predmet=ap.id and ap.aktivnost!=8 and aagp.akademska_godina=$ag and ap.bodova>0");
 	while ($r40 = db_fetch_row($q40)) {
 		$mogucih_bodova += $r40[3];
 	

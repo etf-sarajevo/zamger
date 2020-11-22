@@ -369,7 +369,7 @@ function nastavnik_prijava_ispita() {
 			$result = api_call("event/course/$predmet/$ag", $eventObj, "POST");
 			if ($_api_http_code == "201") {
 				nicemessage("Uspješno kreiran novi termin.");
-				zamgerlog2("kreiran novi ispitni termin", db_insert_id(), $predmet, $ag);
+				zamgerlog2("kreiran novi ispitni termin", $result['id'], $predmet, $ag);
 				zamgerlog("kreiran novi ispitni termin pp$predmet, ag$ag", 2);
 			} else {
 				niceerror("Neuspješno kreiranje termina");
