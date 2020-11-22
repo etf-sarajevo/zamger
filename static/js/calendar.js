@@ -1,3 +1,6 @@
+// Validate form and draggable elements
+let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start, event_minutes_end;
+
 let calendar = {
     wrapper: ".calendar",
     calendar_body : ".dynamic-body",
@@ -18,6 +21,9 @@ let calendar = {
     week_day: null,
     save_url: '',
     saving: true,
+    d_day_in_week : 'Utorak',
+    d_date : '1. Septembar 2020',
+    current_time : 0,
 
     // Get the first day of week of month
     firstDay : function () {
@@ -61,9 +67,9 @@ let calendar = {
         if (this.year % 4 === 0) this.months_d[1] = 29;
     },
     createCalendar : function () {
+
         // Remove everything from calendar
-        $(this.wrapper).empty();
-        console.log(this.calendar_body);
+         $(this.wrapper).empty();
         // vars.wrapper.contents(':not(#add-new-absence)').remove();
 
         // Set dates as we want it - initially it uses custom date
@@ -72,6 +78,8 @@ let calendar = {
         // Let's start with building GUI
         this.createHeader();
         this.createBody();
+
+        // this.createSingleDay();
     },
 
     createBody : function () {
@@ -151,6 +159,31 @@ let calendar = {
         $(this.wrapper).append( '<div class="calendar-body"> <div class="calendar-row small-row"> ' + row + ' </div> </div>');
 
     },
+    createSingleDayHeader : function(){
+        return '<div class="header-of-day"> <h2 id="name-of-single-day">' + this.d_day_in_week + ', ' + this.d_date + ' </h2> <div class="day-actions"><div class="inside-element back-to-full-calendar"> <i class="fas fa-angle-left"></i> <p>Nazad</p> </div> <div class="inside-element create-cal-event"> <i class="fas fa-plus"></i> <p>Unos</p> </div> </div> </div>';
+    },
+    getHourValue : function(index){
+        if(index < 10){return ('0' + index + ':00');}
+        else return (index + ':00');
+
+    },
+    createSingleDayBody : function () {
+        let hours = '';
+        for(let i=0; i<24; i++){
+            let hour  = '<div class="hour"> <p> ' + this.getHourValue(i) + ' </p> </div>';
+            let event = '<div class="event-elem">  </div>';
+            hours += '<div class="hours" style="top: '+(i * 60)+'px"> ' + hour + event + '</div>';
+        }
+
+        return '<div class="single-day-body"> <div class="events-wrapper"> ' + hours + ' </div> </div>';
+    },
+    createSingleDay : function () {
+        $(this.wrapper).append( '<div class="full-day-preview"> ' + this.createSingleDayHeader() + this.createSingleDayBody() + ' </div>');
+    },
+    removeSingleDay : function () {
+        $(this.wrapper).find(".full-day-preview").remove();
+        $(".add-new-event-wrapper").fadeOut();
+    }
 };
 
 $("body").on('click', '.next-month', function () {
@@ -183,24 +216,98 @@ $("body").on('click', '.text-button', function () {
     calendar.createCalendar();
 });
 
-let calendaree = function(options) {
+$("body").on('click', '.calendar-col', function () {
+    let date = new Date($(this).attr('year') + '-' + (parseInt($(this).attr('month')) + 1) + '-' + $(this).attr('day'));
+    calendar.d_day_in_week = calendar.week_days[date.getDay()];
+    calendar.d_date = $(this).attr('day') + '. ' + calendar.months_name[$(this).attr('month')] + ' ' + $(this).attr('year');
 
+    calendar.createSingleDay();
+});
+$("body").on('click', '.back-to-full-calendar', function () {
+    calendar.removeSingleDay();
+});
 
-    let createHeader = function () {
-        vars.wrapper.append(
-            '<div id="calendar-header"> <div class="calendar-header-left-buttons"> <div class="calendar-button calendar-previous"> <p>' + vars.buttons[0] + '</p> </div> <div class="calendar-button calendar-current"> <p>' + vars.buttons[1] + '</p> </div> <div class="calendar-button calendar-next"> <p>' + vars.buttons[2] + '</p> </div> </div> <div class="calendar-current-month"> <p class="calendar-current-month-val">' + vars.months_name[vars.month] + ' ' + vars.year + '</p> </div> <div class="calendar-header-right-buttons"> <div class="calendar-button"> <p>' + vars.buttons[3] + '</p> </div> <div class="calendar-button add-new-absence"> <p>' + vars.buttons[4] + '</p> </div> </div> </div>'
-        );
-        let week_days = '';
-        for (let i = 0; i < vars.week_days.length; i++) {
-            if (window.innerWidth > 1000) {
-                week_days += '<div class="calendar-week-day"> <p> ' + vars.week_days[i] + ' </p> </div>';
-            } else {
-                week_days += '<div class="calendar-week-day"> <p> ' + vars.week_short[i] + ' </p> </div>';
+$( function() {
+    $( ".day-form" ).draggable({ containment: "parent" });
+} );
+
+function validateHhMm(id) {
+    let element = $("#" + id);
+    let isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(element.val());
+
+    if (isValid) element.css("background-color", '#fff');
+    else element.css("background-color", '#fba');
+
+    return isValid;
+}
+
+function getNewEventRange(){
+    let time_f_string = $("#time-from").val(); let time_t_string = $("#time-to").val();
+    return time_f_string + ' : ' + time_t_string;
+}
+function getNewEventTitle(){
+    if($("#time-title").val() === '') {return '( Nema naslova )';}
+    else {return $("#time-title").val();}
+}
+
+$("body").on('keyup', '.form-time', function (){
+    let value = validateHhMm($(this).attr('id'));
+    let time = $(this).val(); time = time.split(':');
+
+    if($(this).attr('id') === 'time-from'){
+        if(value){
+            if(time[0] < 23){
+                $("#time-to").val((parseInt(time[0]) + 1) + ':' + time[1]);
+            }
+            time_from = true;
+            time_to = true;
+
+            // Create elements
+
+            event_minutes_start = ((parseInt(time[0]) * 60) + parseInt(time[1]));
+
+            let time_two = $("#time-to").val(); time_two = time_two.split(':');
+            event_minutes_end   = ((parseInt(time_two[0]) * 60) + parseInt(time_two[1]));
+
+            let height = event_minutes_end - event_minutes_start;
+
+            // console.log("Start : " + event_minutes_start + ' :: End :' + event_minutes_end + ' :: height : ' + height);
+
+            if(event_new_elem_ === 0){
+                event_new_elem_ = (new Date()).getTime();
+                $(".events-wrapper").append(
+                    '<div class="event-short-preview" id="'+event_new_elem_+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+event_new_elem_+'-header"> ' + getNewEventTitle() + ' </h4> <p id="'+event_new_elem_+'-time"> ' + getNewEventRange() + ' </p> </div> '
+                );
+            }else{
+                $("#"+event_new_elem_).height(height).css({ top: event_minutes_start +'px' });
+                $("#"+event_new_elem_+'-time').text(getNewEventRange());
             }
 
-        }
-        vars.wrapper.append('<div id="calendar-week-days">' + week_days + '</div>');
-        //let week_days = '<div id="calendar-header"> </div>';
-    };
-};
+        }else{time_from = false;}
+    }
+    if($(this).attr('id') === 'time-to'){
+        if(value) {
+            time_to = true;
+            event_minutes_end = ((parseInt(time[0]) * 60) + parseInt(time[1]));
+            $("#"+event_new_elem_).height(event_minutes_end - event_minutes_start);
 
+            $("#"+event_new_elem_+'-time').text(getNewEventRange());
+        }
+        else {time_to = false;}
+    }
+});
+
+$("body").on('keyup', '#time-title', function (){
+    $("#"+event_new_elem_+'-header').text(getNewEventTitle());
+});
+
+$("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
+    $(".add-new-event-wrapper").fadeOut();
+    $(".events-wrapper").find("#"+event_new_elem_).remove();
+    event_new_elem_ = 0;
+
+    // TODO :: Clean all input fields from event adder
+});
+$("body").on('click', '.create-cal-event', function () { // Show pop-up for event
+    $(".add-new-event-wrapper").fadeIn();
+});
