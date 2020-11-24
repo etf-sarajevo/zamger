@@ -177,7 +177,7 @@ function nastavnik_projekti() {
 				return;
 			}
 
-			$params = array_to_object( [ "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "minTeams" => $min_timova, "maxTeams" => $max_timova, "minTeamMembers" => $min_clanova_tima, "maxTeamMembers" => $max_clanova_tima] );
+			$params = array_to_object( [ "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "minTeams" => $min_timova, "maxTeams" => $max_timova, "minTeamMembers" => $min_clanova_tima, "maxTeamMembers" => $max_clanova_tima, "locked" => $zakljucani_projekti] );
 			$result = api_call("project/params/$predmet/$ag", $params, "PUT");
 			if ($_api_http_code == "201") {
 				nicemessage('Uspješno ste uredili parametre projekata.');
