@@ -100,11 +100,13 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 
 // Sada implementiramo kao pravi AJAX
 function ajax_box() {
-	global $conf_backend_url_client, $conf_backend_has_rewrite, $conf_keycloak, $conf_files_path, $login;
+	global $conf_backend_url_client, $conf_backend_has_rewrite, $conf_keycloak, $conf_site_url;
 	if ($conf_keycloak) {
-		$token_file = $conf_files_path . "/keycloak_token/$login";
-		$token = unserialize(file_get_contents($token_file));
-		$tokenString = $token->getToken();
+		?>
+		<script>
+			var zamger_oauth_token = '<?=get_keycloak_token()?>';
+		</script>
+		<?php
 	}
 
 	?>
@@ -163,6 +165,20 @@ function ajax_box() {
                 } catch(e) {
                     cb_fail(xhttp.responseText, xhttp.status, url);
                 }
+            } else if (xhttp.readyState == 4 && xhttp.status == 401) {
+                // Access denied, check if token expired
+                var xhttp_token = new XMLHttpRequest();
+                xhttp_token.onreadystatechange = function() {
+                    if (xhttp_token.readyState == 4 && xhttp_token.status == 200 && xhttp_token.responseText.substring(0,7) == "Token: ") {
+                        zamger_oauth_token = xhttp_token.responseText.substring(7);
+                        ajax_api_start(route, method, params, cb_success, cb_fail);
+                    } else if (xhttp_token.readyState == 4) {
+                        cb_fail(xhttp.responseText, xhttp.status, url);
+                    }
+                };
+                var url = '<?=$conf_site_url?>/get_token.php';
+                xhttp_token.open("GET", url, true);
+                xhttp_token.send();
             } else if (xhttp.readyState == 4) {
                 cb_fail(xhttp.responseText, xhttp.status, url);
             }
@@ -180,24 +196,19 @@ function ajax_box() {
         	<?
         }
         if (!$conf_keycloak) {
-         	if ($conf_backend_has_rewrite) {
-         		?>
-				url += "?SESSION_ID=<?=$_SESSION['api_session']?>";
-				<?
-			} else {
-         		?>
-				url += "&SESSION_ID=<?=$_SESSION['api_session']?>";
-				<?
-			}
+        	?>
+        	if (url.includes("?")) url += "&"; else url += "?";
+			url += "SESSION_ID=<?=$_SESSION['api_session']?>";
+			<?
 		}
         ?>
 
-		xhttp.open("POST", url, true);
+		xhttp.open(method, url, true);
 		xhttp.setRequestHeader("Content-type", "application/json");
 		<?
 		if ($conf_keycloak) {
 		    ?>
-		    xhttp.setRequestHeader("Authorization", "Bearer <?=$tokenString?>");
+		    xhttp.setRequestHeader("Authorization", "Bearer "+zamger_oauth_token);
 		    <?
 		}
 		?>
@@ -205,16 +216,11 @@ function ajax_box() {
     }
 	// Default funkcija za neuspjeh, logira greške
 	function ajax_log_error(responseText, status, url) {
-		if (status != 200) {
-			console.log("Web servis "+url+" vratio status "+status);
-			return;
-		}
 		try {
 			var object = JSON.parse(responseText);
 			console.log("Neuspio upit na web servis "+url+": ["+object['code']+"] "+object['message']);
 		} catch(e) {
-			console.log("Web servis "+url+" nije vratio validan JSON: "+xhttp.responseText);
-			console.log(e);
+			console.log("Web servis "+url+" nije vratio validan JSON (status "+status+"): "+xhttp.responseText);
 		}
 	}
 	</script>

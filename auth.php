@@ -9,7 +9,7 @@ require_once("lib/zamger.php");
 require_once("lib/session.php"); // check_cookie
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
-//$conf_system_auth = "table"; // prihvatamo autotestera
+$conf_passwords = "table"; // prihvatamo autotestera
 
 $login = db_escape($_POST['login']);
 $pass = $_POST['pass'];

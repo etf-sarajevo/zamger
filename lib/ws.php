@@ -196,7 +196,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
  * @return mixed Server response as string (if $json=false), array (if $json=true, $associative=true) or object (if $associative=false)
  */
 function api_call($route, $params = [], $method = "GET", $debug = true, $json = true, $associative = true) { // set to false when finished
-	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code, $http_result;
+	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code, $http_result, $conf_debug;
 	
 	$http_request_params = array('http' => array(
 		'header' => "",
@@ -265,7 +265,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		"Content-Length: " . strlen ( $content ) . "\r\n";
 	}
 	
-	start_time();
+	if ($conf_debug) start_time();
 	$ctx = stream_context_create($http_request_params);
 	$fp = fopen($url, 'rb', false, $ctx);
 	if (!$fp) {
@@ -277,8 +277,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	else
 		$http_result = @stream_get_contents($fp);
 	fclose($fp);
-	$time = time_elapsed();
-	$debug_data[] = [ "route" => $route, "time" => $time];
+	if ($conf_debug) {
+		$time = time_elapsed();
+		$debug_data[] = ["route" => $route, "time" => $time];
+	}
 	
 	if ($http_result===FALSE) {
 		if ($debug) print "HTTP request failed for $url (returned false)\n";

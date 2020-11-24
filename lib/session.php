@@ -256,6 +256,9 @@ function check_cookie() {
 					}
 					file_put_contents($token_file, serialize($newAccessToken));
 				}
+			} else {
+				header('Location: ' . keycloak_logout_url());
+				exit(0); // We somehow lost the token file
 			}
 		}
 		
@@ -384,6 +387,13 @@ function check_cookie() {
 	}
 }
 
+// Quickly get KeyCloak token string
+function get_keycloak_token() {
+	global $conf_files_path, $login;
+	$token_file = $conf_files_path . "/keycloak_token/$login";
+	$token = unserialize(file_get_contents($token_file));
+	return $token->getToken();
+}
 
 // Prekid sesije (logout)
 function logout() {
