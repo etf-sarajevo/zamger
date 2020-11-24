@@ -617,9 +617,14 @@ function akcijaslanje() {
 			$result = api_file_upload("homework/$zadaca/$zadatak/student/$userid", "homework", $filepath);
 			
 			if ($_api_http_code == "201") {
-				nicemessage("Z".$naziv_zadace."/".$zadatak." uspješno poslan!");
-				zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)",2); // nivo 2 - edit
+				nicemessage("Z" . $naziv_zadace . "/" . $zadatak . " uspješno poslan!");
+				zamgerlog("poslana zadaca z$zadaca zadatak $zadatak (attachment)", 2); // nivo 2 - edit
 				zamgerlog2("poslana zadaca (attachment)", $zadaca, $zadatak);
+				print $povratak_html;
+				print $povratak_js;
+			} else if ($_api_http_code == "403" && ends_with($result['message'], "isn't active")) {
+				niceerror("Zadaća nije aktivna");
+				print "Molimo kontaktirajte tutora da saznate zašto zadaća nije u Zamgeru označena kao aktivna.";
 				print $povratak_html;
 				print $povratak_js;
 			} else {
