@@ -304,7 +304,7 @@ function saradnik_grupa() {
 	// Get fixed cacts list
 	$fixedCacts = [];
 	foreach($course['activities'] as $cact)
-		if ($cact['Activity']['id'] == null)
+		if ($cact['Activity']['id'] == null || $cact['Activity']['id'] == 4) // 4 = Projects
 			$fixedCacts[$cact['id']] = $cact;
 	
 	// Get list of homeworks
