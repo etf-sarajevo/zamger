@@ -44,6 +44,7 @@ function common_inbox() {
 		$text = $_REQUEST['tekst'];
 		if ($_POST['akcija'] == "send_bug_report") {
 			$text .= "\n\nŠta je radio: " . $_REQUEST['stasamradio'];
+			$text = "'''" . $text;
 		}
 		
 		
