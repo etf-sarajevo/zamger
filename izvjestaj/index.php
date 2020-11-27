@@ -100,20 +100,25 @@ print "</ul>";
 ?>
 
 <p><b>Pregled položenih predmeta sa ocjenama</b></p>
-<table width="700" border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
+<table border="1" cellspacing="0" cellpadding="3"><tr bgcolor="#AAAAAA">
 	<td width="20">&nbsp;</td>
 	<td>Naziv predmeta</td>
+	<td>Šifra</td>
 	<td>Akademska godina</td>
 	<td>Konačna ocjena</td>
 </tr>
 <?
 
 $i=1;
-$q110 = db_query("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar 
+$q110 = db_query("SELECT p.naziv, ko.ocjena, ag.naziv, pk.semestar, p.sifra, ko.pasos_predmeta
 FROM konacna_ocjena as ko, ponudakursa as pk, predmet as p, student_predmet as sp, akademska_godina as ag
 WHERE ko.student=$student and ko.predmet=p.id and ko.akademska_godina=ag.id and ko.predmet=pk.predmet and pk.id=sp.predmet and sp.student=$student and pk.akademska_godina=ag.id and ko.ocjena>5 order by ag.id, pk.semestar, p.naziv");
-while ($r110 = db_fetch_row($q110)) {
-	print "<tr><td>".($i++).".</td><td>".$r110[0]."</td><td>".$r110[2]."</td><td>".$imena_ocjena[$r110[1]]."</td></tr>\n";
+while (db_fetch6($q110, $naziv, $ocjena, $akademska_godina, $semestar, $sifra, $pasos_predmeta)) {
+	if ($pasos_predmeta > 0) {
+		$q140 = db_query("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$pasos_predmeta");
+		db_fetch3($q140, $sifra, $naziv, $ects);
+	}
+	print "<tr><td>".($i++).".</td><td>$naziv</td><td>$sifra</td><td>$akademska_godina</td><td>".$imena_ocjena[$ocjena]."</td></tr>\n";
 }
 print "</table>";
 
