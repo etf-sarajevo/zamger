@@ -133,6 +133,30 @@ function ws_predmet() {
 		}
 	}
 
+	// Kalendar - test APIs -- Brisat' će se nakon testiranja
+	// Trenutno služe samo kao API podloga za pravi API
+	
+	if(isset($_REQUEST['event_create'])){
+		$title     = $_REQUEST['event_title'];
+		$category  = $_REQUEST['event_category'];
+		$time_from = $_REQUEST['event_time_from'];
+		$time_To   = $_REQUEST['event_time_to'];
+		$info      = $_REQUEST['event_info'];
+		$date      = $_REQUEST['event_date'];
+		
+		db_query("INSERT INTO kalendar SET naslov = '$title', kategorija = '$category', pocetak = '$time_from', kraj = '$time_To', datum = '$date', opis = '$info' ");
+	}
+	if(isset($_REQUEST['event_get_data'])){
+		$date = $_REQUEST['event_date'];
+
+		$query = db_query("SELECT * FROM kalendar where datum = '$date'");
+
+		// $rezultat['data'] = array('date' => $date, 'query' => $query->fetch_all());
+
+		while ($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('id' => $row[0],'title' => $row[1], 'start' => $row[4], 'end' => $row[5], 'description' => $row[7]);
+		}
+	}
 
 	print json_encode($rezultat);
 }

@@ -1,6 +1,9 @@
 // Validate form and draggable elements
 let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start, event_minutes_end;
 
+let save_data = false; // If it is true, time format is fine - make ajax request
+let event_date; // Date for event -- set value on onclick event on calendar day
+
 let calendar = {
     wrapper: ".calendar",
     calendar_body : ".dynamic-body",
@@ -179,6 +182,15 @@ let calendar = {
     },
     createSingleDay : function () {
         $(this.wrapper).append( '<div class="full-day-preview"> ' + this.createSingleDayHeader() + this.createSingleDayBody() + ' </div>');
+
+        // Append current time line
+        let current_h = (new Date()).getHours();
+        let current_m = (new Date()).getMinutes();
+        let top_time = (current_h * 60) + current_m;
+
+        $(".events-wrapper").append(
+            '<div class="current-time-line" style="top:'+(top_time)+'px" title="Trenutno vrijeme '+current_h+':'+current_m+'">  </div>'
+        );
     },
     removeSingleDay : function () {
         $(this.wrapper).find(".full-day-preview").remove();
@@ -216,10 +228,57 @@ $("body").on('click', '.text-button', function () {
     calendar.createCalendar();
 });
 
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+let dayData = function(date){
+
+    $.ajax({
+        type:'POST',
+        url: 'index.php?sta=ws/predmet',
+        data: { event_get_data: true, event_date: date},
+        success:function(response){
+
+            if(response['success'] === 'true'){
+                for(let i=0; i<response['data'].length; i++){
+                    let start = response['data'][i]['start'].split(':');
+                    event_minutes_start = ((parseInt(start[0]) * 60) + parseInt(start[1]));
+
+                    let end = response['data'][i]['end'].split(':');
+                    event_minutes_end   = ((parseInt(end[0]) * 60) + parseInt(end[1]));
+
+                    let height = event_minutes_end - event_minutes_start;
+
+                    $(".events-wrapper").append(
+                        '<div class="event-short-preview" id="'+response['data'][i]['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+response['data'][i]['id']+'-header"> ' + response['data'][i]['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (response['data'][i]['start'] + ' : ' + response['data'][i]['end']) + ' </p> </div> '
+                    );
+                    console.log(response['data'][i]['naslov']);
+                }
+
+                $('.event-short-preview').animate({
+                    scrollTop: 1000
+                }, 2000);
+            }else{
+                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+            }
+
+            /*  */
+
+        }
+    });
+}
+
+
 $("body").on('click', '.calendar-col', function () {
     let date = new Date($(this).attr('year') + '-' + (parseInt($(this).attr('month')) + 1) + '-' + $(this).attr('day'));
     calendar.d_day_in_week = calendar.week_days[date.getDay()];
     calendar.d_date = $(this).attr('day') + '. ' + calendar.months_name[$(this).attr('month')] + ' ' + $(this).attr('year');
+
+    // Get date for clicked "day"
+    event_date = $(this).attr('year')+'-'+(parseInt($(this).attr('month')) + 1)+'-'+$(this).attr('day');
+
+    // First, check if there is any data for this particular day
+    let response = dayData(event_date);
 
     calendar.createSingleDay();
 });
@@ -235,8 +294,14 @@ function validateHhMm(id) {
     let element = $("#" + id);
     let isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(element.val());
 
-    if (isValid) element.css("background-color", '#fff');
-    else element.css("background-color", '#fba');
+    if (isValid) {
+        element.css("background-color", '#fff');
+        save_data = true;
+    }
+    else {
+        element.css("background-color", '#fba');
+        save_data = false;
+    }
 
     return isValid;
 }
@@ -310,4 +375,52 @@ $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
 });
 $("body").on('click', '.create-cal-event', function () { // Show pop-up for event
     $(".add-new-event-wrapper").fadeIn();
+});
+
+$("body").on('click', '.save-event', function () { // Hide pop-up for event
+    let title = $("#time-title").val();
+    let category = $("#time-category").val();
+    let time_from = $("#time-from").val();
+    let time_to   = $("#time-to").val();
+    let info = $("#info").val();
+
+    if(title === ''){
+        $.notify("Naslov ne smije biti prazan!", 'warn');
+        return;
+    }
+
+    if(!save_data || time_from === '' || time_to === ''){
+        $.notify("Datum početka i datum kraja nisu validni, molimo provjerite !", 'warn');
+        return;
+    }
+
+    $.ajax({
+        type:'POST',
+        url: 'index.php?sta=ws/predmet',
+        data: { event_create: true, event_title : title, event_category : category, event_time_from : time_from, event_time_to : time_to, event_info : info, event_date: event_date},
+        success:function(response){
+
+            if(response['success'] === 'true'){
+                $.notify("Uspješno ste spasili podatke!", 'success');
+                $(".add-new-event-wrapper").fadeOut();
+
+                event_new_elem_ = 0; // Allow new element creation
+
+                // TODO - Potrebno je provjeriti stanje koje ostaje u cache, ukoliko zaglavi te restartovati
+                // formu - Pogodno kreirati funkciju za restartovanje forme - brisanje svih podataka, pošto se koristi
+                // na više polja
+            }else{
+                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+            }
+
+            /* for(let i=0; i<response['data'].length; i++){
+                $('#ocjena-po-odluci-pasos').append($('<option>', {
+                    value: response['data'][i]['pasos'],
+                    text: response['data'][i]['naziv']
+                }));
+            } */
+
+        }
+    });
+
 });

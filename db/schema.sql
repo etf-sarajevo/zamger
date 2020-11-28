@@ -700,6 +700,25 @@ CREATE TABLE `jasper_token` (
   `param2` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kalendar`
+--
+CREATE TABLE IF NOT EXISTS `kalendar` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naslov` varchar(160) DEFAULT NULL,
+  `predmet` int(11) DEFAULT NULL,
+  `kategorija` int(11) NOT NULL,
+  `pocetak` varchar(10) NOT NULL,
+  `kraj` varchar(10) NOT NULL,
+  `datum` date NOT NULL,
+  `opis` text NOT NULL,
+  `kreirao` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
 -- --------------------------------------------------------
 
 --

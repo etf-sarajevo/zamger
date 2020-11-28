@@ -8,7 +8,8 @@ function nastavnik_kalendar() {
 	print "<script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>";
 	print "<script src=\"https://code.jquery.com/ui/1.12.1/jquery-ui.js\"></script>";
 	print "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js\" integrity=\"sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM\" crossorigin=\"anonymous\"></script>";
-	print "<script src=\"static\js\calendar.js\"> </script>"
+	print "<script src=\"static/js/notify.js\"> </script>";
+	print "<script src=\"static\js\calendar.js\"> </script>";
 	
 	?>
 		<div class="calendar-wrapper">
@@ -19,7 +20,7 @@ function nastavnik_kalendar() {
 						<small id="Title" class="form-text text-muted">Unesite naslov koji će se prikazivati na kalendaru</small>
 					</div>
 					<div class="form-group">
-						<select name="" id="" class="form-control">
+						<select name="time-category" id="time-category" class="form-control">
 							<option value="1">Događaj</option>
 							<option value="2">Raspored časova</option>
 						</select>
@@ -39,12 +40,12 @@ function nastavnik_kalendar() {
 						</div>
 					</div>
 					<div class="form-group">
-						<textarea name="info" id="" class="form-control custom-textarea"></textarea>
+						<textarea name="info" id="info" class="form-control custom-textarea"></textarea>
 					</div>
 					<div class="row">
 						<div class="col text-right">
 							<button type="submit" class="btn btn-secondary btn-sm exit-cal-event">Odustanite</button>
-							<button type="submit" class="btn btn-info btn-sm ml-2">Spremite</button>
+							<button type="submit" class="btn btn-info btn-sm ml-2 save-event">Spremite</button>
 						</div>
 					</div>
 				</div>
