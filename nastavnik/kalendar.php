@@ -11,6 +11,13 @@ function nastavnik_kalendar() {
 	print "<script src=\"static/js/notify.js\"> </script>";
 	print "<script src=\"static\js\calendar.js\"> </script>";
 	
+	// Current date and day : )
+	$days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota', 'Nedjelja'];
+	$months = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
+	
+	$date = date('Y-m-d');
+	$events = db_query("SELECT * FROM kalendar where datum = '$date'")->fetch_all();
+	
 	?>
 		<div class="calendar-wrapper">
 			<div class="add-new-event-wrapper ">
@@ -57,27 +64,21 @@ function nastavnik_kalendar() {
 			
 			<div class="this-day">
 				<h5>Danas</h5>
-				<h2>Utorak, <br> 1. Septembar 2020</h2>
+				<h2><?= $days[date('w')] ?>, <br> <?= date('d') ?>. <?= $months[date('m')] ?> <?= date('Y') ?></h2>
 
-				<h5>4 stavke</h5>
+				<h5><?= count($events) ?> stavke</h5>
 				
 				<div class="items-wrapper">
-					<div class="single-item">
-						<p>08:00</p>
-						<span>Predavanja iz OE</span>
-					</div>
-					<div class="single-item">
-						<p>10:00</p>
-						<span>Konsultacije sa studentima</span>
-					</div>
-					<div class="single-item">
-						<p>14:30</p>
-						<span>Sastanak vijeća odsjeka</span>
-					</div>
-					<div class="single-item">
-						<p>16:00</p>
-						<span>Pokupiti djecu iz škole :D</span>
-					</div>
+					<?php
+					for($i=0; $i<count($events); $i++){
+						?>
+						<div class="single-item">
+							<p><?= $events[$i][4].' : '.$events[$i][5] ?></p>
+							<span><?= $events[$i][1] ?></span>
+						</div>
+						<?php
+					}
+					?>
 				</div>
 				<div class="add-new-today">
 					<i class="fas fa-plus"></i>
