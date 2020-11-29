@@ -255,20 +255,34 @@ function nastavnik_zadace() {
 		rename($tmpfile, $filepath);
 		chmod($filepath, 0644);
 		
-		$homeworkFile = array_to_object( [ "id" => 0, "Homework" => [ "id" => $edit_zadaca ], "assignNo" => $assignNo, "type" => $type, "description" => "", "display" => $display] );
-		$result = api_call("homework/$edit_zadaca/files", $homeworkFile, "POST");
-		if ($_api_http_code == "201") {
-			$id = $result['id'];
-			$result = api_file_upload("homework/files/$id/upload", "homeworkFileUpload", $filepath);
+		$id = 0;
+		if ($type == "autotest") {
+			// If type is autotest, file already exists and we are updating it
+			$homeworkFiles = api_call("homework/$edit_zadaca/files")["results"];
+			foreach ($homeworkFiles as $homeworkFile) {
+				if ($homeworkFile['type'] == $type && $homeworkFile['assignNo'] == $assignNo)
+					$id = $homeworkFile['id'];
+			}
+		}
+		
+		if ($id == 0) {
+			$homeworkFile = array_to_object(["id" => 0, "Homework" => ["id" => $edit_zadaca], "assignNo" => $assignNo, "type" => $type, "description" => "", "display" => $display]);
+			$result = api_call("homework/$edit_zadaca/files", $homeworkFile, "POST");
 			if ($_api_http_code == "201") {
-				nicemessage("Postavljena dodatna datoteka $filename");
+				$id = $result['id'];
 			} else {
 				niceerror("Neuspješno dodavanje prateće datoteke");
-				api_report_bug($result, []);
+				api_report_bug($result, $homeworkFile);
+				return;
 			}
+		}
+		
+		$result = api_file_upload("homework/files/$id/upload", "homeworkFileUpload", $filepath);
+		if ($_api_http_code == "201") {
+			nicemessage("Postavljena dodatna datoteka $filename");
 		} else {
-			niceerror("Neuspješno dodavanje prateće datoteke");
-			api_report_bug($result, $homeworkFile);
+			niceerror("Neuspješno slanje prateće datoteke");
+			api_report_bug($result, []);
 		}
 	}
 	
@@ -367,7 +381,7 @@ function nastavnik_zadace() {
 		$minuta = nuliraj_broj(intval($_POST['minuta']));
 		$sekunda = nuliraj_broj(intval($_POST['sekunda']));
 		if ($_POST['aktivna']) $aktivna=true; else $aktivna=false;
-		if ($_POST['attachment']) $attachment=true; else $attachment=true;
+		if ($_POST['attachment']) $attachment=true; else $attachment=false;
 		$programskijezik = intval($_POST['_lv_column_programskijezik']);
 		if ($_POST['automatsko_testiranje']) $automatsko_testiranje=true; else $automatsko_testiranje=false;
 		if ($_POST['readonly']) $readonly=true; else $readonly=false;
@@ -682,33 +696,78 @@ function nastavnik_zadace() {
 		
 		// Show buttons to define tests
 		if ($izabrana != 0 && $automatsko_testiranje) {
+			$wsurl = "dummy,neradi";
+			global $conf_site_url, $conf_backend_url_client, $conf_keycloak;
+			ajax_box();
 			?>
 			<script src="lib/autotest-genv2/scripts/helpers.js"></script>
-			<br><b>Definišite testove za zadatke:</b><br>
-			<?
-			
-			for ($i = 1; $i <= $zzadataka; $i++) {
-				$wsurl = $conf_backend_url_client . "homework/files/";
-				foreach($homeworkFiles as $hwf) {
-					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) $wsurl .= $hwf['id'];
+			<script>
+				function updateAutotestFile(fileID, assignNo) {
+				    const data = window.localStorage.getItem('.autotest-content');
+				    
+				    // Requires fairly recent browser, doesn't work in IE
+                    const formData = new FormData();
+                    formData.append("sta", "nastavnik/zadace");
+                    formData.append("predmet", "<?=$predmet?>");
+                    formData.append("ag", "<?=$ag?>");
+                    formData.append("zadaca", "<?=$izabrana?>");
+                    formData.append("akcija", "dodaj_datoteku");
+                    formData.append("type", "autotest");
+                    formData.append("assignNo", assignNo);
+                    formData.append("display", "0");
+
+                    formData.append("dodatna_datoteka", new File([new Blob([data])], "autotest"));
+                    var url='<?=$conf_site_url?>/index.php';
+                    fetch(url, {
+						method: 'POST',
+						body: formData,
+					}).then((response) => {
+						console.log(response)
+					});
 				}
-				$wsurl .= "?SESSION_ID=" . $_SESSION['api_session'];
-				?>
-				<button onclick="Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zadatak <?=$i?></button>&nbsp;
-				<?
-			}
-			
-			?>
-			<br><br><br><b>Retestiraj svima:</b><br>
+				
+				function doOpenAutotestGenerator(fileID, assignNo) {
+					ajax_api_start( "homework/files/"+fileID, "GET", [], (obj) => {
+						window.localStorage.setItem('.autotest-content', JSON.stringify(obj));
+						const newWindow = Helpers.openGenerator('lib/autotest-genv2/html/index.html','<?=$wsurl?>', true);
+						
+						newWindow.addEventListener('load', () => {
+							const button = newWindow.document.getElementById('export-button');
+							button.addEventListener("click", () => {
+								updateAutotestFile(fileID, assignNo);
+							});
+						}, false);
+					}, (json, status, url) => {
+						alert("Greška prilikom preuzimanja autotest fajla sa servera: " + status);
+						console.log(json);
+					})
+				}
+			</script>
+			<br><b>Opcije automatskog testiranja:</b><br>
+			<ul>
 			<?
 			
 			for ($i = 1; $i <= $zzadataka; $i++) {
 				?>
-				<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=resetStatus';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zadatak <?=$i?></button>&nbsp;
+				<li>Zadatak <?=$i?>:
 				<?
+				$fileID = false;
+				foreach($homeworkFiles as $hwf) {
+					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) $fileID = $hwf['id'];
+				}
+				if (!$fileID) {
+					niceerror("Nije kreiran default autotest fajl. Kontaktirajte administratora");
+				} else {
+					?>
+					<button onclick="doOpenAutotestGenerator(<?=$fileID?>, <?=$i?>) ;" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Definiši testove</button>&nbsp;
+					<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=resetStatus';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zatraži retestiranje</button>&nbsp;
+					</li>
+					<?
+				}
 			}
 			
 			?>
+			</ul>
 			<br><br><br>
 			<?
 		}
@@ -722,7 +781,7 @@ function nastavnik_zadace() {
 	<input type="submit" value=" Pošalji "> <input type="reset" value=" Poništi ">
 	<?
 	if ($izabrana>0) {
-		?><input type="$homeworkFilesubmit" name="brisanje" value=" Obriši "><?
+		?><input type="submit" name="brisanje" value=" Obriši "><?
 	}
 	echo "<script> onemoguci_ekstenzije('');</script>";
 	?>
