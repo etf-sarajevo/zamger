@@ -440,18 +440,25 @@ function malimeni($fj) {
 		<?
 
 	$k=0;
-	if ($predmet==0 || ($tippredmeta != 1000 && $tippredmeta != 1001)) 
-	foreach ($registry as $r) {
-		if(count($r) < 5 || $r[5] != 0) continue; // nevidljiv
-		if (strstr($r[0],$sekcija)) { 
-			if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
-			if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 ili 1001 - završni rad
-			?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
-				<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
-			</tr></tr>
-			<tr><td>&nbsp;</td></tr>
-			<?
+	if ($predmet==0 || ($tippredmeta != 1000 && $tippredmeta != 1001)) {
+		foreach ($registry as $r) {
+			if(count($r) < 5 || $r[5] != 0) continue; // nevidljiv
+			if (strstr($r[0],$sekcija)) {
+				if ($r[0]==$sta) $bgcolor="#eeeeee"; else $bgcolor="#ffffff";
+				if ($r[0]=="nastavnik/zavrsni") continue; // Ovo se prikazuje samo ako je tippredmeta == 1000 ili 1001 - završni rad
+				?><tr><td height="20" align="right" bgcolor="<?=$bgcolor?>" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='<?=$bgcolor?>'">
+					<a href="?sta=<?=$r[0]?><?=$dodaj?>" class="malimeni"><?=$r[1]?></a>
+				</tr></tr>
+				<tr><td>&nbsp;</td></tr>
+				<?
+			}
 		}
+	} else {
+		?><tr><td height="20" align="right" bgcolor="#eeeeee" onmouseover="this.bgColor='#CCCCCC'" onmouseout="this.bgColor='#eeeeee'">
+			<a href="?sta=nastavnik/zavrsni<?=$dodaj?>" class="malimeni">Završni rad</a>
+		</tr></tr>
+		<tr><td>&nbsp;</td></tr>
+		<?
 	}
 
 	if ($sekcija=="nastavnik/") {
