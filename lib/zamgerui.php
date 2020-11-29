@@ -159,12 +159,14 @@ function ajax_box() {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4 && (xhttp.status == 200 || xhttp.status == 201 || xhttp.status == 204)) {
+                var object = {};
                 try {
-                    var object = JSON.parse(xhttp.responseText);
-                    cb_success(object);
+                    object = JSON.parse(xhttp.responseText);
                 } catch(e) {
                     cb_fail(xhttp.responseText, xhttp.status, url);
+                    return;
                 }
+                cb_success(object);
             } else if (xhttp.readyState == 4 && xhttp.status == 401) {
                 // Access denied, check if token expired
                 var xhttp_token = new XMLHttpRequest();
@@ -525,7 +527,7 @@ function horizontalni_meni($fj) {
 
 // "Studentski meni" - prikazuje se u prozoru studenta
 function studentski_meni($fj) {
-	global $userid, $sta, $registry, $courseDetails;
+	global $userid, $sta, $registry, $courseDetails, $_api_http_code;
 
 	// Koji od interesantnih registry modula su aktivni
 	$modul_uou=$modul_kolizija=$modul_prijava=$modul_prosjek=$modul_anketa=0;
@@ -544,6 +546,11 @@ function studentski_meni($fj) {
 		$courseDetails = api_call("course/student/$userid", ["all" => "true", "courseInformation" => "true", "activities" => "true"])['results'];
 	else
 		$courseDetails = api_call("course/student/$userid", ["courseInformation" => "true", "activities" => "true"])['results'];
+	
+	if ($_api_http_code == "404") {
+		// Student not currently enrolled
+		$courseDetails = [];
+	}
 	
 	$output = '<table border="0" cellspacing="2" cellpadding="1">';
 	$oldsem=$oldyear=0;
