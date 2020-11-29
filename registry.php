@@ -20,6 +20,7 @@ array("admin/novagodina", "Nova akademska godina", "Nova akademska godina", "A",
 array("admin/prijemni", "Alati za prijemni", "Prijemni", "A", "1", "0"),
 array("admin/kompakt", "Kompaktovanje baze", "Kompaktovanje baze", "A", "1", "0"),
 array("admin/cron", "Cron", "Cron", "A", "1", "0"),
+array("admin/misc", "Ostalo", "Ostalo", "A", "1", "0"),
 
 
 array("common/ajah", "Asynchronous JavaScript And HTML", "AJAH", "PSNBA", "0", "0"),

@@ -9,8 +9,15 @@
 function admin_misc() {
 
 
-require("lib/manip.php");
+require_once("lib/utility.php"); // testjmbg
+require_once("lib/zamgerui.php"); // mass_input
+require_once("lib/formgen.php"); // db_dropdown
+require_once("lib/student_predmet.php"); // update_komponente, upisi_na_predmet, ispisi_sa_predmeta
+require_once("lib/student_studij.php"); // ima_li_uslov
+
+
 global $mass_rezultat, $conf_ldap_server,$conf_ldap_domain; // za masovni unos studenata u grupe
+global $conf_files_path; // za migriranje zadaća
 
 
 ?>
@@ -83,27 +90,119 @@ if ($_REQUEST['akcija'] == "upis_prva") {
 }
 
 
+// Ovo je retroaktivni upis u predmete svih studenata viših godina 
+// Koristi se samo ako sam opet bio kreten i nisam na vrijeme koristio admin/novagodina
+
+if ($_REQUEST['akcija'] == "upis_vise") {
+	$ag = intval($_REQUEST['ag']);
+
+	if ($_REQUEST['fakatradi'] != 1) $ispis=1; else $ispis=0;
+	$q10 = db_query("select ss.student, ss.studij, s.kratkinaziv, ss.ponovac, ss.semestar from student_studij as ss, studij as s, tipstudija as ts where ss.akademska_godina=$ag and ss.studij=s.id and s.tipstudija=ts.id and ts.ciklus=1");
+	while (db_fetch5($q10, $student, $studij, $studij_kratki, $ponovac, $semestar)) {
+		$godina = ($semestar + 1) / 2;
+		if ($ispis) {
+			$pstudent = db_query_assoc("SELECT ime, prezime, brindexa FROM osoba WHERE id=$student");
+			print "Student " . $pstudent['ime'] . " " . $pstudent['prezime'] . " (" . $pstudent['brindexa'] . ") - $studij_kratki $godina";
+		}
+		if ($ponovac > 0) {
+			if ($ispis) 
+				print " - ponovac<br>\n";
+			global $zamger_predmeti_pao, $zamger_pao_ects;
+			$uslov = ima_li_uslov($student, $ag);
+			foreach ($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
+				if ($ispis)
+					print "-- Pao predmet $naziv_predmeta<br>\n";
+				
+				$q15 = db_query("SELECT id, semestar FROM ponudakursa WHERE akademska_godina=$ag AND predmet=$predmet AND studij=$studij");
+				if (db_num_rows($q15) == 0) {
+					if ($ispis) 
+						print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- Nepoznata ponudakursa (studij $studij semestar $semestar)<br>\n";
+					else
+						print""; // Kreiraj ponudu kursa?
+				} else {
+					db_fetch2($q15, $pk, $semestar);
+					if ($semestar % 2 == 0) {
+						if ($ispis)
+							print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- Predmet u parnom semestru, preskačem<br>\n";
+						continue;
+					}
+				}
+				$vecupisan = db_get("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$pk");
+				if ($vecupisan) {
+					if ($ispis)
+						print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- Već upisan na predmet<br>\n";
+				}
+				else if (!$ispis)
+					upis_studenta_na_predmet($student, $pk);
+			}
+			
+		} else {
+			if ($ispis) print "<br>\n";
+			$q20 = db_query("select pk.id, p.naziv from ponudakursa as pk, predmet as p where pk.semestar=$semestar and pk.akademska_godina=$ag and pk.studij=$studij and pk.predmet=p.id AND pk.obavezan=1");
+			while (db_fetch2($q20, $pk, $naziv_predmeta)) {
+				$vecupisan = db_get("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$pk");
+				if ($vecupisan) {
+					if ($ispis)
+						print "-- Već upisan na obavezan predmet $naziv_predmeta<br>\n";
+				} else if ($ispis)
+					print "-- Upisujem na obavezan predmet $naziv_predmeta<br>\n";
+				else
+					upis_studenta_na_predmet($student, $pk);
+			}
+			$uou_id = db_get("SELECT id FROM ugovoroucenju WHERE student=$student AND akademska_godina=$ag AND semestar=$semestar");
+			if (!$uou_id) {
+				if ($ispis)
+					print "-- Student nije popunio ugovor o učenju<br>\n";
+			} else {
+				$predmeti_uou = db_query_varray("SELECT predmet FROM ugovoroucenju_izborni WHERE ugovoroucenju=$uou_id");
+				foreach($predmeti_uou as $predmet) {
+					$q30 = db_query("select pk.id, p.naziv from ponudakursa as pk, predmet as p where pk.semestar=$semestar and pk.akademska_godina=$ag and pk.studij=$studij and pk.predmet=p.id AND pk.obavezan=0 AND p.id=$predmet");
+					if (db_num_rows($q30) == 0) {
+						if ($ispis) {
+							$naziv_predmeta = db_get("SELECT naziv FROM predmet WHERE id=$predmet");
+							print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- Ne postoji ponuda kursa za predmet $naziv_predmeta iz ugovora<br>\n";
+						} else
+							print ""; // Kreirati ponudu za izborni sa drugog odsjeka
+					} else {
+						db_fetch2($q30, $pk, $naziv_predmeta);
+						$vecupisan = db_get("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$pk");
+						if ($vecupisan) {
+							if ($ispis)
+								print "-- Već upisan na izborni predmet $naziv_predmeta (uou)<br>\n";
+						}
+						else if ($ispis)
+							print "-- Upisujem na izborni predmet $naziv_predmeta (uou)<br>\n";
+						else
+							upis_studenta_na_predmet($student, $pk);
+					}
+				}
+			}
+		}
+	
+// 		$q5 = db_query("select pk.id, p.naziv from ponudakursa as pk, predmet as p where pk.semestar=1 and pk.akademska_godina=$ag and pk.studij=$r10[1] and pk.predmet=p.id");
+// 		while ($r5 = db_fetch_row($q5)) {
+// 			$q15 = db_query("select count(*) from student_predmet where student=$r10[0] and predmet=$r5[0]");
+// 			if (db_result($q15,0,0)>0) {
+// 				if ($ispis) {
+// 					$q20 = db_query("select ime, prezime, brindexa from osoba where id=$r10[0]");
+// 					print "Student ".db_result($q20,0,0)." ".db_result($q20,0,1)." ".db_result($q20,0,2)." već upisan na ponudukursa $r5[1]<br>";
+// 				}
+// 			} else {
+// 				if ($ispis) {
+// 					$q20 = db_query("select ime, prezime, brindexa from osoba where id=$r10[0]");
+// 					print "Upisujem studenta ".db_result($q20,0,0)." ".db_result($q20,0,1)." ".db_result($q20,0,2)." na ponudukursa $r5[1] ($r10[2] - $r5[0])<br>";
+// 				} else
+// 					upis_studenta_na_predmet($r10[0], $r5[0]);
+// 			}
+// 		}
+	}
+}
+
+
 
 //----------------------------------------
 // Masovni unos jmbg
 //----------------------------------------
-
-function testjmbg($jmbg) {
-	if (strlen($jmbg)!=13) return "JMBG nema tačno 13 cifara";
-	for ($i=0; $i<13; $i++) {
-		$slovo = substr($jmbg,$i,1);
-		if ($slovo<'0' || $slovo>'9') return "Neki od znakova nisu cifre";
-		$cifre[$i] = $slovo-'0';
-	}
-	// Datum
-	if (!checkdate($cifre[2]*10+$cifre[3], $cifre[0]*10+$cifre[1], $cifre[4]*10+$cifre[5]))
-		return "Datum rođenja je kalendarski nemoguć";
-	// Checksum
-	$k = 11 - (( 7*($cifre[0]+$cifre[6]) + 6*($cifre[1]+$cifre[7]) + 5*($cifre[2]+$cifre[8]) + 4*($cifre[3]+$cifre[9]) + 3*($cifre[4]+$cifre[10]) + 2*($cifre[5]+$cifre[11]) ) % 11);
-	if ($k==11) $k=0;
-	if ($k!=$cifre[12]) return "Checksum ne valja ($cifre[12] a trebao bi biti $k)";
-	return "";
-}
 
 if ($_POST['akcija'] == "massjmbg" && strlen($_POST['nazad'])<1) {
 
@@ -404,7 +503,7 @@ if ($_POST['akcija']=="logini") {
 
 	if ($f==0) {
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="akcija" value="logini">
 		<input type="submit" value=" Fakat radi ">
@@ -416,7 +515,7 @@ if ($_POST['akcija']=="logini") {
 	
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="fakatradi" value="0">
 	<input type="hidden" name="akcija" value="logini">
 	<input type="submit" value=" Kreiraj logine svim studentima prve godine ">
@@ -444,17 +543,19 @@ if ($_POST['akcija']=="grupe") {
 	$broj_grupa=intval($_REQUEST['brojgrupa']);
 	$ag = intval($_REQUEST['_lv_column_akademska_godina']);
 
-	$dodaj = "";
+	$dodaj = $dodaj2 = "";
 	foreach($_REQUEST['studij'] as $studij) {
-		if ($dodaj != "") $dodaj .= "or ";
+		if ($dodaj != "") { $dodaj .= "or "; $dodaj2 .= "or "; }
 		$dodaj .= "ss.studij=$studij ";
+		$dodaj2 .= "s.id=$studij ";
 	}
+	if ($dodaj != "") { $dodaj = "and ($dodaj)"; $dodaj2 = "and ($dodaj2)"; }
 	
 	$semestar=1;
 	if (isset($_REQUEST['parni']) && $_REQUEST['parni'] == 1) $semestar=2;
 
-		print "select o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ag and ss.semestar=$semestar and ss.ponovac=0 and ($dodaj) order by o.prezime, o.ime";
-	$q10 = db_query("select o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ag and ss.semestar=$semestar and ss.ponovac=0 and ($dodaj) order by o.prezime, o.ime");
+		//print "select o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ag and ss.semestar=$semestar and ss.ponovac=0 $dodaj order by o.prezime, o.ime";
+	$q10 = db_query("select o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ag and ss.semestar=$semestar and ss.ponovac=0 $dodaj order by o.prezime, o.ime");
 	$broj_studenata=db_num_rows($q10);
 	$broj_studenata_po_grupi = intval($broj_studenata/$broj_grupa);
 	$broj_ekstra_grupa = $broj_studenata%$broj_grupa;
@@ -471,50 +572,79 @@ if ($_POST['akcija']=="grupe") {
 
 
 	// Spisak predmeta
-	$q20 = db_query("select distinct pk.predmet from ponudakursa as pk, studij as s, tipstudija as ts where pk.semestar=1 and pk.obavezan=1 and pk.studij=s.id and s.tipstudija=ts.id and ts.ciklus=1 and pk.akademska_godina=$ag");
+	$q20 = db_query("select distinct pk.predmet from ponudakursa as pk, studij as s where pk.semestar=$semestar and pk.obavezan=1 and pk.studij=s.id and pk.akademska_godina=$ag $dodaj2");
 	$predmeti=array();
 	while ($r20 = db_fetch_row($q20)) array_push($predmeti, $r20[0]);
+	if ($f == 0) { print_r($predmeti); print "<br><br>\n"; }
 
 	$count=$grupa=1;
+	$grupa_naziv = $grupa;
+	// Hack za RI i AET
+	if ($dodaj == "and (ss.studij=2 )") {
+		if ($grupa % 2 == 0) $slovo='b'; else $slovo='a';
+		$grupa_naziv = "RI1-" . intval(($grupa+1)/2) . $slovo;
+	}
+	if ($dodaj == "and (ss.studij=3 or ss.studij=4 or ss.studij=5 )") {
+		if ($grupa % 2 == 0) $slovo='b'; else $slovo='a';
+		$grupa_naziv = "ATE1-" . intval(($grupa+1)/2) . $slovo;
+	}
 	if ($f==0) {
-		print "<b>Grupa $grupa</b>:<br/>\n<ol>\n";
+		print "<b>Grupa $grupa_naziv</b>:<br/>\n<ol>\n";
 	} else {
 		$labgrupe=array();
+		$labgrupa_predmet = array();
 		foreach ($predmeti as $predmet) {
-			$q30 = db_query("insert into labgrupa set naziv='Grupa $grupa', predmet=$predmet, akademska_godina=$ag, virtualna=0");
-			$q40 = db_query("select id from labgrupa where naziv='Grupa $grupa' and predmet=$predmet and akademska_godina=$ag and virtualna=0");
-			array_push($labgrupe, db_result($q40,0,0));
+			$q30 = db_query("insert into labgrupa set naziv='Grupa $grupa_naziv', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+			$labgrupa = db_get("select id from labgrupa where naziv='Grupa $grupa_naziv' and predmet=$predmet and akademska_godina=$ag and virtualna=0");
+			array_push($labgrupe, $labgrupa);
+			$labgrupa_predmet[$labgrupa] = $predmet;
 		}
 	}
+	print_r($labgrupa_predmet);
 	foreach($studenti as $stud_id=>$stud_ispis) {
 		if ($count>$broj_studenata_po_grupi) {
 			$count=1;
 			if ($broj_ekstra_grupa>0) {
 				if ($f==0) {
 					print "<li>$stud_ispis</li>\n";
+					
 				} else {
 					foreach ($labgrupe as $lg) {
-						$q50 = db_query("insert into student_labgrupa set student=$stud_id, labgrupa=$lg");
+						$slusa_li = db_get("SELECT COUNT(*) FROM student_predmet sp, ponudakursa pk WHERE sp.student=$stud_id AND sp.predmet=pk.id AND pk.predmet=" . $labgrupa_predmet[$lg] . " AND pk.akademska_godina=$ag");
+						if ($slusa_li)
+							$q50 = db_query("insert into student_labgrupa set student=$stud_id, labgrupa=$lg");
+						else
+							print "<li>Student $stud_ispis ne sluša predmet ". db_get("SELECT naziv FROM predmet WHERE id=" . $labgrupa_predmet[$lg]) . "</li>\n";
 					}
 				}
+
 				$broj_ekstra_grupa--;
 				$ispiso=1;
 				$count=0;
 			}
 			$grupa++;
+			$grupa_naziv = $grupa;
+			if ($dodaj == "and (ss.studij=2 )") {
+				if ($grupa % 2 == 0) $slovo='b'; else $slovo='a';
+				$grupa_naziv = "RI1-" . intval(($grupa+1)/2) . $slovo;
+			}
+			if ($dodaj == "and (ss.studij=3 or ss.studij=4 or ss.studij=5 )") {
+				if ($grupa % 2 == 0) $slovo='b'; else $slovo='a';
+				$grupa_naziv = "ATE1-" . intval(($grupa+1)/2) . $slovo;
+			}
 			if ($f==0) {
 				print "</ol>\n";
-				print "<b>Grupa $grupa</b>:<br/>\n<ol>\n";
+				print "<b>Grupa $grupa_naziv</b>:<br/>\n<ol>\n";
 			} else {
 				$labgrupe=array();
 				foreach ($predmeti as $predmet) {
-					$q30 = db_query("insert into labgrupa set naziv='Grupa $grupa', predmet=$predmet, akademska_godina=$ag, virtualna=0");
-					$q40 = db_query("select id from labgrupa where naziv='Grupa $grupa' and predmet=$predmet and akademska_godina=$ag and virtualna=0");
+					$q30 = db_query("insert into labgrupa set naziv='Grupa $grupa_naziv', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+					$q40 = db_query("select id from labgrupa where naziv='Grupa $grupa_naziv' and predmet=$predmet and akademska_godina=$ag and virtualna=0");
 					array_push($labgrupe, db_result($q40,0,0));
 				}
 			}
 		}
-		if ($ispiso!=1) {
+		if ($ispiso != 1) {
 			if ($f==0) { print "<li>$stud_ispis</li>\n";
 			} else {
 				foreach ($labgrupe as $lg) {
@@ -547,7 +677,7 @@ if ($_POST['akcija']=="grupe") {
 
 	if ($f==0) {
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="akcija" value="grupe">
 		<input type="hidden" name="_lv_column_akademska_godina" value="<?=$ag?>">
@@ -562,7 +692,7 @@ if ($_POST['akcija']=="grupe") {
 	
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="fakatradi" value="0">
 	<input type="hidden" name="akcija" value="grupe">
 	Akademska godina: <?=db_dropdown('akademska_godina')?><br/>
@@ -585,6 +715,403 @@ if ($_POST['akcija']=="grupe") {
 
 
 
+
+
+if ($_POST['akcija']=="grupe-ri2") {
+	$f = intval($_POST['fakatradi']);
+
+	$studenti=$studenti_id=array();
+
+	$broj_grupa=intval($_REQUEST['brojgrupa']);
+	$ag = intval($_REQUEST['_lv_column_akademska_godina']);
+	$godina_studija = intval($_REQUEST['godina_studija']);
+	$ciklus = intval($_REQUEST['ciklus']);
+
+	$dodaj = $dodaj_pk = "";
+	foreach($_REQUEST['studij'] as $studij) {
+		if ($dodaj != "") { $dodaj .= "or "; $dodaj_pk .= "or "; }
+		$dodaj .= "ss.studij=$studij ";
+		$dodaj_pk .= "pk.studij=$studij ";
+	}
+	if ($dodaj != "") $dodaj = "AND ($dodaj)";
+	if ($dodaj_pk != "") $dodaj_pk = "AND ($dodaj_pk)";
+	
+	$semestar = $godina_studija*2 - 1;
+	if (isset($_REQUEST['parni']) && $_REQUEST['parni'] == 1) $semestar = $godina_studija*2;
+
+	// Spisak studenata na godini
+	$q10 = db_query("select o.id, o.ime, o.prezime, o.brindexa from osoba as o, student_studij as ss where ss.student=o.id and ss.akademska_godina=$ag and ss.semestar=$semestar and ss.ponovac=0 $dodaj order by o.prezime, o.ime");
+	$broj_studenata=db_num_rows($q10);
+	$broj_studenata_po_grupi = intval($broj_studenata/$broj_grupa);
+	$broj_ekstra_grupa = $broj_studenata%$broj_grupa;
+
+	while ($r10 = db_fetch_row($q10)) {
+		$studenti[$r10[0]]="$r10[2] $r10[1] ($r10[3])";
+	}
+	uasort($studenti,"bssort");
+	
+	
+	if ($f==0) {
+		print "Ukupno studenata: $broj_studenata<br/>\nBroj grupa: $broj_grupa<br/>\nStudenata po grupi: $broj_studenata_po_grupi (+$broj_ekstra_grupa)<br/><br/>\n";
+	}
+
+	
+	// Spisak obaveznih i izbornih predmeta i studenata na njima
+	$izborni_table = db_query_table("SELECT pk.id, pk.predmet, p.kratki_naziv FROM ponudakursa pk, predmet p WHERE pk.akademska_godina=$ag $dodaj_pk and pk.semestar=$semestar AND pk.obavezan=0 AND pk.predmet=p.id ORDER BY p.kratki_naziv");
+	$izborni = $studenti_izborni = array();
+	foreach($izborni_table as $predmet) {
+		$izborni[$predmet['predmet']] = $predmet['kratki_naziv'];
+		$studenti_izborni[$predmet['predmet']] = db_query_varray("SELECT student FROM student_predmet WHERE predmet=".$predmet['id']);
+	}
+	
+	$obavezni_table = db_query_table("SELECT pk.id, pk.predmet, p.kratki_naziv FROM ponudakursa pk, predmet p WHERE pk.akademska_godina=$ag $dodaj_pk and pk.semestar=$semestar AND pk.obavezan=1 AND pk.predmet=p.id ORDER BY p.kratki_naziv");
+	$obavezni = $studenti_obavezni = array();
+	foreach($obavezni_table as $predmet) {
+		$obavezni[$predmet['predmet']] = $predmet['kratki_naziv'];
+		$studenti_obavezni[$predmet['predmet']] = db_query_varray("SELECT student FROM student_predmet WHERE predmet=".$predmet['id']);
+	}
+	
+	
+	// Spisak studenata koji nisu ni na jednom predmetu i spisak kombinacija za formiranje grupa
+	$kombinacije = $student_predmeti = $student_izborni = array();
+	$velicina_kombinacija = 0;
+	foreach($studenti as $student => $ime) {
+		$pronadjen = $imena = array();
+		foreach($izborni as $predmet => $kratkinaziv) {
+			if (in_array($student, $studenti_izborni[$predmet])) {
+				$pronadjen[] = $predmet;
+				$imena[] = $kratkinaziv;
+			}
+		}
+		
+		if ($student == 3955) { $pronadjen=array(2231,116); $imena=array("PJIP", "RMIS"); }
+		$student_izborni[$student] = $pronadjen;
+		
+		if (!empty($pronadjen) && count($pronadjen) >= $velicina_kombinacija) {
+			if (count($pronadjen) > $velicina_kombinacija) {
+				$velicina_kombinacija = count($pronadjen);
+				$kombinacije = array();
+			}
+			$kombinacija = join("-", $pronadjen);
+			$ime_kombinacije = join("-", $imena);
+			//print "Student $ime ($student) kombinacija $ime_kombinacije<br>";
+			if (!array_key_exists($kombinacija, $kombinacije))
+				$kombinacije[$kombinacija] = $ime_kombinacije;
+		}
+		
+		foreach($obavezni as $predmet => $kratkinaziv) {
+			if (in_array($student, $studenti_obavezni[$predmet])) {
+				$pronadjen[] = $predmet;
+			}
+		}
+		
+		$student_predmeti[$student] = $pronadjen;
+	}
+	arsort($kombinacije); // zbog SP/NA - staviti asort
+
+	
+	// Studenti u datoj kombinaciji
+	$kombinacija_studenti = array();
+	$total_studenata_kombinacije = 0;
+	foreach($kombinacije as $id_kombinacije => $ime_kombinacije) {
+		$kpredmeti = explode("-", $id_kombinacije);
+		$kombinacija_studenti[$id_kombinacije] = array();
+		foreach($studenti as $student => $ime) {
+			$svi = true;
+			foreach($kpredmeti as $predmet) {
+				if (!in_array($predmet, $student_predmeti[$student])) {
+					$svi = false;
+					break;
+				}
+			}
+			if ($svi) {
+				$kombinacija_studenti[$id_kombinacije][$student] = $ime;
+				unset($studenti[$student]);
+			}
+		}
+		/*if (count($kombinacija_studenti[$id_kombinacije])==0)
+			unset($kombinacije[$id_kombinacije]); // Niko nema ovu kombinaciju!*/
+		$total_studenata_kombinacije += count($kombinacija_studenti[$id_kombinacije]);
+	}
+	
+	// Formiramo grupe po kombinacijama
+	$grupa = 1;
+	$kombinacija_grupe = array();
+	foreach($kombinacije as $id_kombinacije => $ime_kombinacije) {
+		$k_studenata = count($kombinacija_studenti[$id_kombinacije]);
+		$k_ratio = $k_studenata / $total_studenata_kombinacije;
+		$k_br_grupa = intval($broj_grupa * $k_ratio + 0.5);
+		if ($k_br_grupa == 0) $k_br_grupa=1;
+		$k_spg = intval ( $k_studenata / $k_br_grupa);
+		$k_spg_extra = $k_studenata % $k_spg;
+		
+		if ($f==0) {
+			print "Kombinacija: <b>$ime_kombinacije</b><ul>\n";
+			print "<li>Studenata: $k_studenata</li>\n";
+			print "<li>Omjer: $k_ratio</li>\n";
+			print "<li>Grupa: $k_br_grupa</li>\n";
+			print "<li>Studenata po grupi: $k_spg (+$k_spg_extra)</li>\n";
+			print "</ul>\n";
+		}
+		
+		$kombinacija_grupe[$id_kombinacije] = array();
+		$count = 0;
+		foreach($kombinacija_studenti[$id_kombinacije] as $student => $ime) {
+			$kombinacija_grupe[$id_kombinacije]["Grupa $grupa"][$student] = $ime;
+			$count++;
+			if ($count == $k_spg+1) {
+				$grupa++;
+				$count=0;
+				$k_spg_extra--;
+			}
+			else if ($count == $k_spg && $k_spg_extra == 0) {
+				$grupa++;
+				$count = 0;
+			}
+		}
+		if ($count > 0) $grupa++;
+		
+	}
+	
+	// Raspoređujemo preostale neraspoređene studente u grupe
+	foreach($studenti as $student => $ime) {
+		foreach($kombinacije as $id_kombinacije => $ime_kombinacije) {
+			// Može li student na ovu kombinaciju ikako?
+			$kpredmeti = explode("-", $id_kombinacije);
+			$moze = true;
+			foreach($student_izborni[$student] as $sp) {
+				$ima = false;
+				foreach($kpredmeti as $predmet) 
+					if ($predmet == $sp) $ima = true;
+				if (!$ima) { $moze=false; break; }
+			}
+			//print "Student $student moze $moze komb $ime_kombinacije k_spg $broj_studenata_po_grupi<br>";
+			
+			if ($moze) {
+				$dodan = false;
+				// Round robin dodajemo u grupe
+				foreach($kombinacija_grupe[$id_kombinacije] as $grupa => $studenti) {
+					//print "Grupa $grupa count " .count($kombinacija_grupe[$id_kombinacije][$grupa])."<br>";
+					if (count($kombinacija_grupe[$id_kombinacije][$grupa]) < $broj_studenata_po_grupi) {
+						$kombinacija_grupe[$id_kombinacije][$grupa][$student] = $ime;
+						$dodan = true;
+						break;
+					}
+				}
+				if ($dodan) break; // foreach ($kombinacije)
+			}
+			
+			// Trebalo bi biti nemoguće da student ne može nigdje?
+		}
+		
+		// Nije nigdje dodan jer sve grupe imaju max. studenata
+		if (!$dodan) {
+			// Povećavamo globalni broj studenata u grupi
+			$broj_studenata_po_grupi++;
+			// Dodajemo u neku od grupa na posljednjoj kombinaciji koja može
+			foreach($kombinacija_grupe[$id_kombinacije] as $grupa => $studenti) {
+				if (count($kombinacija_grupe[$id_kombinacije][$grupa]) < $broj_studenata_po_grupi) {
+					$kombinacija_grupe[$id_kombinacije][$grupa][$student] = $ime;
+					break;
+				}
+			}
+		}
+	}
+	
+	// Ispis grupa
+	foreach($kombinacije as $id_kombinacije => $ime_kombinacije) {
+		foreach($kombinacija_grupe[$id_kombinacije] as $grupa => $studenti) {
+			if ($f == 0) {
+				print "<b>$grupa</b> ($ime_kombinacije):<br>\n<ol>\n";
+				foreach($studenti as $id_studenta => $ime_studenta) {
+					$predmeti_join = join("-", $student_predmeti[$id_studenta]);
+					print "<li>$ime_studenta</li>\n";
+				}
+				print "</ol>\n";
+				
+			} else {
+				// Kreiramo grupe
+				$labgrupe = array();
+				foreach ($obavezni as $predmet => $naziv) {
+					$lg = db_get("SELECT id FROM labgrupa WHERE naziv='$grupa' AND predmet=$predmet AND akademska_godina=$ag AND virtualna=0");
+					if ($lg) {
+						print "Grupa $grupa na predmetu $naziv već kreirana<br>";
+					} else {
+						$q30 = db_query("insert into labgrupa set naziv='$grupa', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+						$labgrupe[$predmet] = db_insert_id();
+						print "Kreiram grupu $grupa na predmetu $naziv<br>";
+					}
+				}
+				
+				$kpredmeti = explode("-", $id_kombinacije);
+				foreach($kpredmeti as $predmet) {
+					$lg = db_get("SELECT id FROM labgrupa WHERE naziv='$grupa' AND predmet=$predmet AND akademska_godina=$ag AND virtualna=0");
+					if ($lg) {
+						print "Grupa $grupa na predmetu $predmet već kreirana<br>";
+					} else {
+						$q30 = db_query("insert into labgrupa set naziv='$grupa', predmet=$predmet, akademska_godina=$ag, virtualna=0");
+						$labgrupe[$predmet] = db_insert_id();
+						print "Kreiram grupu $grupa na predmetu $predmet<br>";
+					}
+				}
+				
+				foreach($studenti as $id_studenta => $ime_studenta) {
+					foreach ($labgrupe as $predmet => $lg) {
+						if (in_array($predmet, $student_predmeti[$id_studenta]))
+							$q50 = db_query("insert into student_labgrupa set student=$id_studenta, labgrupa=$lg");
+					}
+				}
+			}
+		}
+	}
+	
+
+	if ($f==0) {
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="fakatradi" value="1">
+		<input type="hidden" name="akcija" value="grupe-ri2">
+		<input type="hidden" name="_lv_column_akademska_godina" value="<?=$ag?>">
+		<input type="submit" value=" Fakat radi ">
+		</form>
+		<?
+	} else {
+		nicemessage("Grupe kreirane, studenti upisani.");
+	}
+
+} else {
+	
+	
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="fakatradi" value="0">
+	<input type="hidden" name="akcija" value="grupe-ri2">
+	Akademska godina: <?=db_dropdown('akademska_godina')?><br/>
+	Godina studija: <select name="godina_studija"><option value="1">Prva</option><option value="2">Druga</option><option value="3">Treća</option></select><br/>
+	Ciklus: <select name="ciklus"><option value="1">Prvi</option><option value="2">Drugi</option><option value="3">Treći</option></select><br/>
+	Broj grupa: <input type="text" name="brojgrupa" size="5" value="10"><br/>
+	Studiji: <?
+	
+	$q10 = db_query("select s.id, s.kratkinaziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=1 and s.moguc_upis=1");
+	while ($r10 = db_fetch_row($q10)) {
+		?>
+		<input type="checkbox" name="studij[]" value="<?=$r10[0]?>"><?=$r10[1]?> 
+		<?
+	}
+	
+	?><br/>
+	Parni semestar: <input type="checkbox" name="parni" value="1"><br>
+	<input type="submit" value=" Kreiraj grupe na godini ">
+	</form>
+	<?
+}
+
+
+
+if ($_POST['akcija']=="zamjena_grupa") {
+	$s1 = int_param('s1');
+	$s2 = int_param('s2');
+	$f = intval($_POST['fakatradi']);
+	$ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
+	
+	if (param('automatski')) {
+		if ($f == 0) {
+			$ime_s1 = db_get("SELECT CONCAT(prezime,CONCAT(' ',ime)) FROM osoba WHERE id=$s1");
+			$ime_s2 = db_get("SELECT CONCAT(prezime,CONCAT(' ',ime)) FROM osoba WHERE id=$s2");
+		}
+	
+	
+		$naziv_grupe_1 = db_get("SELECT l.naziv FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s1 AND virtualna=0");
+		$naziv_grupe_2 = db_get("SELECT l.naziv FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s2 AND virtualna=0");
+		
+		if ($f == 0) print "Prebacujem studenta <b>$ime_s1</b> iz grupe <b>$naziv_grupe_1</b> u grupu <b>$naziv_grupe_2</b><br>";
+		
+		$grupe1 = db_query_vassoc("SELECT l.id, l.predmet FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s1 AND virtualna=0");
+		$grupe2 = db_query_vassoc("SELECT l.id, l.predmet FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s2 AND virtualna=0");
+		
+		foreach($grupe1 as $id1=>$predmet1) {
+			$nova = db_get("SELECT id FROM labgrupa WHERE predmet=$predmet1 AND akademska_godina=$ag AND naziv='$naziv_grupe_2'");
+			$naziv_predmeta = db_get("SELECT naziv FROM predmet WHERE id=$predmet1");
+			
+			if (!$nova) {
+				niceerror("-- Greška predmet $naziv_predmeta");
+			} else {
+				if ($f == 0) {
+					print "-- Predmet $naziv_predmeta<br>";
+				} else {
+					ispis_studenta_sa_labgrupe($s1, $id1);
+					upis_studenta_na_labgrupu($s1, $nova);
+				}
+			}
+		}
+		
+		if ($f == 0) print "<br><br>Prebacujem studenta <b>$ime_s2</b> iz grupe <b>$naziv_grupe_2</b> u grupu <b>$naziv_grupe_1</b><br>";
+		
+		
+		foreach($grupe2 as $id2=>$predmet2) {
+			$nova = db_get("SELECT id FROM labgrupa WHERE predmet=$predmet2 AND akademska_godina=$ag AND naziv='$naziv_grupe_1'");
+			$naziv_predmeta = db_get("SELECT naziv FROM predmet WHERE id=$predmet2");
+			
+			if (!$nova) {
+				niceerror("-- Greška predmet $naziv_predmeta");
+			} else {
+				if ($f == 0) {
+					print "-- Predmet $naziv_predmeta<br>";
+				} else {
+					ispis_studenta_sa_labgrupe($s2, $id2);
+					upis_studenta_na_labgrupu($s2, $nova);
+				}
+			}
+		}
+		
+		
+		if ($f==0) {
+			?>
+			<?=genform("POST")?>
+			<input type="hidden" name="fakatradi" value="1">
+			<input type="hidden" name="akcija" value="zamjena_grupa">
+			<input type="submit" value=" Fakat radi ">
+			</form>
+			<?
+		} else {
+			nicemessage("Zamijenjene grupe");
+		}
+
+	} else {
+		$grupe1 = db_query_vassoc("SELECT l.id, l.predmet FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s1 AND virtualna=0");
+		$grupe2 = db_query_vassoc("SELECT l.id, l.predmet FROM labgrupa l, student_labgrupa sl WHERE l.akademska_godina=$ag AND sl.labgrupa=l.id AND sl.student=$s2 AND virtualna=0");
+		
+		foreach($grupe1 as $id1=>$predmet1) {
+			foreach($grupe2 as $id2=>$predmet2) {
+				if ($predmet1==$predmet2) {
+					ispis_studenta_sa_labgrupe($s1, $id1);
+					ispis_studenta_sa_labgrupe($s2, $id2);
+					upis_studenta_na_labgrupu($s1, $id2);
+					upis_studenta_na_labgrupu($s2, $id1);
+					break;
+				}
+			}
+		}
+	
+		nicemessage("Zamijenjene grupe");
+	}
+	
+} else {
+	
+	
+	?>
+	<p><b>Zamjena grupa</b></p>
+	<?=genform("POST")?>
+	<input type="hidden" name="fakatradi" value="0">
+	<input type="hidden" name="akcija" value="zamjena_grupa">
+	Student 1: <input type="text" name="s1"><br>
+	Student 2: <input type="text" name="s2"><br>
+	<input type="checkbox" name="automatski" CHECKED> Automatski kreirane grupe<br>
+	
+	<input type="submit" value=" Zamijeni grupe ">
+	</form>
+	<?
+}
 
 
 //----------------------------------------
@@ -681,7 +1208,7 @@ if ($_POST['akcija']=="anketa_tokeni") {
 	
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="anketa_tokeni">
 	Anketa: <select name="anketa">
 	<?
@@ -787,7 +1314,7 @@ if ($_POST['akcija']=="update_komponenti" && intval($_POST['stage']) == 2) {
 
 	if (!$f) {
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="akcija" value="update_komponenti">
 		<input type="submit" value=" Fakat radi ">
@@ -807,15 +1334,15 @@ if ($_POST['akcija']=="update_komponenti" && intval($_POST['stage']) == 2) {
 	} else {
 		
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="akcija" value="update_komponenti">
 		<input type="hidden" name="stage" value="2">
 		Ponudakursa: <select name="pk"><?
-		while (db_fetch3($q110, $pk, $studij, $semestar)
+		while (db_fetch3($q110, $pk, $studij, $semestar))
 			print "<option value='$pk'>$studij, $semestar. semestar</option>\n";
 		?></select><br>
 		Komponenta: <select name="komponenta"><?
-		while (db_fetch3($q120, $komponenta, $naziv_komponente)
+		while (db_fetch2($q120, $komponenta, $naziv_komponente))
 			print "<option value='$komponenta'>$naziv_komponente</option>\n";
 		?></select><br>
 		<input type="submit" value=" Update komponenti ">
@@ -830,14 +1357,14 @@ if ($_POST['akcija']=="update_komponenti" && intval($_POST['stage']) == 2) {
 	$q140 = db_query("SELECT id, naziv, aktuelna FROM akademska_godina ORDER BY id");
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="update_komponenti">
 	Predmet: <select name="predmet"><?
-	while (db_fetch3($q130, $predmet, $naziv_predmeta)
+	while (db_fetch2($q130, $predmet, $naziv_predmeta))
 		print "<option value='$predmet'>$naziv_predmeta</option>\n";
 	?></select><br>
 	Akademska godina: <select name="ag"><?
-	while (db_fetch3($q140, $ag, $naziv_ag, $aktuelna)
+	while (db_fetch3($q140, $ag, $naziv_ag, $aktuelna))
 		print "<option value='$ag'" . ($aktuelna ? " SELECTED" : "") . ">$naziv_ag</option>\n";
 	?></select><br>
 	<input type="submit" value=" Izbor komponente ">
@@ -845,6 +1372,9 @@ if ($_POST['akcija']=="update_komponenti" && intval($_POST['stage']) == 2) {
 	<?
 
 }
+
+
+
 
 
 
@@ -891,10 +1421,12 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 		}
 
 	$q105 = db_query("select login from auth where id=$osoba");
-	if ($f)
-		$q105a = db_query("delete from auth where id=$osoba");
-	else
-		print "Login ".db_result($q105,0,0)."<br>\n";
+	if (db_num_rows($q105)>0) {
+		if ($f)
+			$q105a = db_query("delete from auth where id=$osoba");
+		else
+			print "Login ".db_result($q105,0,0)."<br>\n";
+	}
 
 	$q120 = db_query("select vrijeme, prvi_post from bb_tema where osoba=$osoba");
 	if ($f)
@@ -948,6 +1480,14 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 				print "Ispit: $r140[0] ";
 			print "Ocjena: $r140[1]<br>";
 		}
+		
+	$q145 = db_query("SELECT akademska_godina FROM izvoz_upis_prva WHERE student=$osoba");
+	if ($f)
+		$q145a = db_query("DELETE FROM izvoz_upis_prva WHERE student=$osoba");
+	else 
+		while ($r145 = db_fetch_row($q145))
+			print "Izvoz upis prva: " . db_get("SELECT naziv FROM akademska_godina WHERE id=$r145[0]") . "<br>";
+
 //izbor
 //kolizija
 //komentar
@@ -955,13 +1495,13 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 //konacna_ocjena
 //kviz_student
 
-	$q150 = db_query("select vrijeme, dogadjaj, nivo from log where userid=$osoba");
+	/*$q150 = db_query("select vrijeme, dogadjaj, nivo from log where userid=$osoba");
 	if ($f)
 		$q150a = db_query("delete from log where userid=$osoba");
 	else
 		while ($r150 = db_fetch_row($q150)) {
 			print "Log: $r150[0] $r150[1] $r150[2]<br>";
-		}
+		}*/
 
 	$q160 = db_query("select vrijeme, modul, dogadjaj from log2 where userid=$osoba");
 	if ($f)
@@ -1097,7 +1637,7 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 
 	if (!$f) {
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="akcija" value="brisanje_osobe">
 		<input type="submit" value=" Fakat radi ">
@@ -1113,7 +1653,7 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 	
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="brisanje_osobe">
 	Unesite ID osobe: <input type="text" name="osoba" value=""><br>
 	<input type="submit" value=" Brisanje osobe ">
@@ -1270,12 +1810,12 @@ if ($_POST['akcija']=="spajanje_osoba" && check_csrf_token()) {
 //izbor
 //kolizija
 
-	$q145 = db_query("select predmet, komentar from komentar where student=$osoba_B");
+	$q145 = db_query("select labgrupa, komentar from komentar where student=$osoba_B");
 	if ($f)
 		$q145a = db_query("UPDATE komentar SET student=$osoba_A where student=$osoba_B");
 	else
 		while ($r145 = db_fetch_row($q145)) {
-			$q146 = db_query("select naziv from predmet where id=$r145[0]");
+			$q146 = db_query("select p.naziv from predmet p, labgrupa l where l.id=$r145[0] and l.predmet=p.id");
 			if (db_num_rows($q146)>0)
 				print "Komentar na predmetu ".db_result($q146,0,0).": $r145[1]<br>";
 			else
@@ -1498,6 +2038,12 @@ if ($_POST['akcija']=="spajanje_osoba" && check_csrf_token()) {
 //zadatak
 //zavrsni_*
 
+// MYSQL query:
+// delete from osoba where id=6800
+// 
+// MYSQL error:
+// Cannot delete or update a parent row: a foreign key constraint fails (`zamger`.`izvoz_upis_semestar`, CONSTRAINT `izvoz_upis_semestar_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`))
+
 
 // Lični podaci
 
@@ -1534,7 +2080,7 @@ if ($_POST['akcija']=="spajanje_osoba" && check_csrf_token()) {
 
 	if (!$f) {
 		?>
-		<p><?=genform("POST")?>
+		<?=genform("POST")?>
 		<input type="hidden" name="fakatradi" value="1">
 		<input type="hidden" name="akcija" value="spajanje_osoba">
 		<input type="submit" value=" Fakat radi ">
@@ -1549,7 +2095,7 @@ if ($_POST['akcija']=="spajanje_osoba" && check_csrf_token()) {
 } else {
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="spajanje_osoba">
 	Unesite ID osobe A: <input type="text" name="osoba_A" value=""><br>
 	Unesite ID osobe B: <input type="text" name="osoba_B" value=""><br>
@@ -1631,12 +2177,15 @@ foreach($osobe as $osoba) {
 	$q10 = db_query("SELECT count(*) FROM student_predmet WHERE student=$osoba AND predmet=$stari_pk");
 	$q20 = db_query("SELECT count(*) FROM student_predmet WHERE student=$osoba AND predmet=$novi_pk");
 	if (db_result($q10,0,0) != 1) {
-		niceerror("Osoba ne sluša ponudukursa $stari_predmet");
+		niceerror("Osoba ne sluša ponudukursa $stari_predmet ($stari_pk)");
 		return;
 	}
+	
+	$vec_slusa = false;
 	if (db_result($q20,0,0) > 0) {
-		niceerror("Osoba već sluša ponudukursa $novi_predmet");
-		return;
+		if ($ispis)
+			print("-- Osoba već sluša ponudukursa $novi_predmet ($novi_pk) - samo ćemo ispisati iz stare ($stari_pk)");
+		$vec_slusa = true;
 	}
 
 	print "<br><br>AKCIJE:<br>\n";
@@ -1660,30 +2209,35 @@ foreach($osobe as $osoba) {
 
 		// LABGRUPE (CASOVI I KOMENTARI - samo ih brišemo :( )
 		$q40 = db_query("SELECT l.id, l.virtualna, l.naziv FROM student_labgrupa as sl, labgrupa as l WHERE sl.student=$osoba AND sl.labgrupa=l.id AND l.predmet=$stari_pid AND l.akademska_godina=$stari_ag");
-		while ($r40 = db_fetch_row($q40)) {
-			if ($r40[1] == 1) {
+		while (db_fetch3($q40, $labgrupa, $virtuelna, $naziv_labgrupe)) {
+			$prisustvo = array();
+			$q41 = db_query("SELECT c.datum, p.prisutan FROM prisustvo p, cas c WHERE p.cas=c.id AND p.student=$osoba AND c.labgrupa=$labgrupa");
+			while (db_fetch2($q41, $datum, $prisutan))
+				$prisustvo[$datum] = $prisutan;
+				
+			if ($virtuelna == 1) {
 				$q45 = db_query("SELECT id FROM labgrupa WHERE predmet=$novi_pid AND akademska_godina=$novi_ag AND virtualna=1");
 				if (db_num_rows($q45)>0) {
 					$nova_lg = db_result($q45,0,0);
 					if ($ispis)
-						print "-- Ispisujem studenta sa virtuelne labgrupe $r40[2] ($r40[0]) i upisujem u istoimenu v.lg. $nova_lg<br>\n";
+						print "-- Ispisujem studenta sa virtuelne labgrupe $naziv_labgrupe ($labgrupa) i upisujem u istoimenu v.lg. $nova_lg<br>\n";
 					else {
-						ispis_studenta_sa_labgrupe($osoba,$r40[0]);
+						ispis_studenta_sa_labgrupe($osoba, $labgrupa);
 						$q47 = db_query("INSERT INTO student_labgrupa SET student=$osoba, labgrupa=$nova_lg");
 					}
 				} else {
 					if ($ispis)
-						print "!! Predmet $novi_predmet nema virtuelne labgrupe! Student će biti ispisan iz v. lg. $r40[2]<br>";
+						print "!! Predmet $novi_predmet nema virtuelne labgrupe! Student će biti ispisan iz v. lg. $naziv_labgrupe<br>";
 					else
-						ispis_studenta_sa_labgrupe($osoba,$r40[0]);
+						ispis_studenta_sa_labgrupe($osoba, $labgrupa);
 				}
 			} else {
-				$novi_naziv = db_escape_string($r40[2]);
+				$novi_naziv = db_escape_string($naziv_labgrupe);
 				$nova_lg = db_get("SELECT id FROM labgrupa WHERE predmet=$novi_pid AND akademska_godina=$novi_ag AND naziv='$novi_naziv'");
 				if ($ispis)
-					print "-- Ispisujem studenta sa labgrupe $r40[2] ";
+					print "-- Ispisujem studenta sa labgrupe $naziv_labgrupe ";
 				else
-					ispis_studenta_sa_labgrupe($osoba,$r40[0]);
+					ispis_studenta_sa_labgrupe($osoba, $labgrupa);
 				if ($nova_lg) {
 					if ($ispis)
 						print "i upisujem u istoimenu lg. ($nova_lg)<br>\n";
@@ -1693,6 +2247,19 @@ foreach($osobe as $osoba) {
 					if ($ispis)
 						print "-- nisam pronašao istoimenu lg. (dodajte ručno)<br>\n";
 				}
+			}
+			
+			if ($nova_lg) {
+				if ($ispis) print "-- migriram prisustvo: ";
+				foreach($prisustvo as $datum => $prisutan) {
+					$cas = db_get("SELECT id FROM cas WHERE labgrupa=$nova_lg AND datum='$datum'");
+					if ($cas) {
+						if ($ispis) print "$datum [+] ";
+						else db_query("INSERT INTO prisustvo SET student=$osoba, cas=$cas, prisutan=$prisutan");
+					} else 
+						if ($ispis) print "$datum [-] ";
+				}
+				print "<br>\n";
 			}
 		}
 	} else {
@@ -1742,6 +2309,8 @@ foreach($osobe as $osoba) {
 				else
 					$q65 = db_query("UPDATE konacna_ocjena SET predmet=$novi_pid, akademska_godina=$novi_ag, pasos_predmeta=$pasos_predmeta WHERE student=$osoba AND predmet=$stari_pid AND akademska_godina=$stari_ag");
 			}
+			if ($novi_pid != $stari_pid)
+				$q67 = db_query("UPDATE izvoz_ocjena SET predmet=$novi_pid WHERE predmet=$stari_pid AND student=$osoba");
 		}
 	} else {
 		if ($ispis) print "Isti ID predmeta, ne mijenjam konačnu ocjenu.<br>\n";
@@ -1756,17 +2325,25 @@ foreach($osobe as $osoba) {
 
 	// ZADACA
 	if ($stari_pid != $novi_pid) {
-		$q70 = db_query("SELECT z.id, z.naziv FROM zadaca as z, zadatak as zk WHERE zk.student=$osoba and zk.zadaca=z.id AND z.predmet=$stari_pid AND z.akademska_godina=$stari_ag");
-		while ($r70 = db_fetch_row($q70)) {
-			$q75 = db_query("SELECT id FROM zadaca WHERE naziv='$r70[1]' AND predmet=$novi_pid AND akademska_godina=$novi_ag");
+		$q70 = db_query("SELECT DISTINCT z.id, z.naziv FROM zadaca as z, zadatak as zk WHERE zk.student=$osoba and zk.zadaca=z.id AND z.predmet=$stari_pid AND z.akademska_godina=$stari_ag");
+		while (db_fetch2($q70, $stara_zadaca, $stari_naziv)) {
+			$q75 = db_query("SELECT id FROM zadaca WHERE naziv='$stari_naziv' AND predmet=$novi_pid AND akademska_godina=$novi_ag");
 			if (db_num_rows($q75)==0)
-				print "!! Nisam pronašao odgovarajuću zadaću za &quot;$r70[1]&quot; ($r70[0]). Migrirajte ručno<br>\n";
+				print "!! Nisam pronašao odgovarajuću zadaću za &quot;$stari_naziv&quot; ($stara_zadaca). Migrirajte ručno<br>\n";
 			else {
 				$nova_zadaca = db_result($q75,0,0);
 				if ($ispis)
-					print "-- Migriram sve zadatke za zadaću $r70[1] ($r70[0]) na $nova_zadaca<br>\n";
-				else
-					$q78 = db_query("UPDATE zadatak SET zadaca=$nova_zadaca WHERE student=$osoba AND zadaca=$r70[0]");
+					print "-- Migriram sve zadatke za zadaću $stari_naziv ($stara_zadaca) na $nova_zadaca<br>\n";
+				else {
+					$q78 = db_query("UPDATE zadatak SET zadaca=$nova_zadaca WHERE student=$osoba AND zadaca=$stara_zadaca");
+					$stara_zadaca_path = "$conf_files_path/zadace/$stari_pid-$stari_ag/$osoba";
+					if (file_exists($stara_zadaca_path)) {
+						$zadaca_path = "$conf_files_path/zadace/$novi_pid-$novi_ag/$osoba";
+						if (!file_exists($zadaca_path)) 
+							mkdir ("$zadaca_path", 0777, true);
+						rename("$stara_zadaca_path/$stara_zadaca", "$zadaca_path/$nova_zadaca");
+					}
+				}
 			}
 		}
 	} else {
@@ -1777,7 +2354,10 @@ foreach($osobe as $osoba) {
 	if ($ispis)
 		print "-- Prepisujem u novu ponudukursa<br>\n<hr><br>\n";
 	else {
-		$q100 = db_query("UPDATE student_predmet SET predmet=$novi_pk WHERE student=$osoba AND predmet=$stari_pk");
+		if ($vec_slusa)
+			$q100a = db_query("DELETE FROM student_predmet WHERE student=$osoba AND predmet=$stari_pk");
+		else
+			$q100 = db_query("UPDATE student_predmet SET predmet=$novi_pk WHERE student=$osoba AND predmet=$stari_pk");
 		print "Migriran student $ime $prezime.<br>\n";
 	}
 
@@ -1805,7 +2385,7 @@ foreach($osobe as $osoba) {
 } else {
 	
 	?>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="zamijeni_pk">
 	Unesite ID osobe: <input type="text" name="osoba" value=""><br>
 	Stara ponudakursa: <input type="text" name="old_pk" value=""><br>
@@ -1815,6 +2395,440 @@ foreach($osobe as $osoba) {
 	<?
 }
 
+
+
+//----------------------------------------
+// Generiši izvještaj
+//----------------------------------------
+
+?>
+<p><hr/></p>
+
+<p><b>Generiši izvještaj</b></p>
+
+<?
+
+if ($_POST['akcija']=="generisi_izvjestaj" && check_csrf_token()) {
+	// Generisem statičku verziju izvještaja predmet
+	generisi_izvjestaj_predmet( $_POST['predmet'], $_POST['ag'], array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
+	
+	nicemessage("Izvještaj generisan");
+
+} else {
+	
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="generisi_izvjestaj">
+	Unesite ID predmeta: <input type="text" name="predmet" value=""><br>
+	Akademska godina: <input type="text" name="ag" value=""><br>
+	<input type="submit" value=" Generiši izvještaj ">
+	</form>
+	<?
+}
+
+
+
+//----------------------------------------
+// Import rasporeda
+//----------------------------------------
+
+?>
+<p><hr/></p>
+
+<p><b>Import raspored</b></p>
+
+<?
+
+if ($_POST['akcija']=="import_raspored" && check_csrf_token()) {
+	$raspored = int_param('raspored');
+	if ($raspored == 0) {
+		?>
+		<?=genform("POST")?></p>
+		<input type="hidden" name="akcija" value="import_raspored">
+		<input type="hidden" name="raspored" value="-1">
+		Akademska godina: <select name="akademska_godina">
+		<?
+		$q20 = db_query("SELECT id, naziv, aktuelna FROM akademska_godina");
+		while (db_fetch3($q20, $id, $naziv, $aktuelna)) {
+			print "<option value=\"$id\"";
+			if ($aktuelna == 1) print " selected";
+			print ">$naziv</option>\n";
+		}
+		?>
+		</select><br>
+		Studij: <select name="studij"><option value="0">(Svi studiji)</option>
+		<?
+		$q30 = db_query("SELECT id, naziv FROM studij WHERE moguc_upis=1");
+		while (db_fetch2($q30, $id, $naziv)) {
+			print "<option value=\"$id\">$naziv</option>";
+		}
+		?>
+		</select><br>
+		Semestar: <select name="semestar"><option value="0">(Svi semestri)</option>
+		<?
+		for ($i=1; $i<6; $i++)
+			print "<option value=\"$i\">$i</option>\n";
+		?>
+		</select><br>
+		<input type="submit" value=" Kreiraj ">
+		</form>
+		<?
+		
+		return;
+	}
+	
+	if ($raspored == -1) {
+		$ag = int_param('akademska_godina');
+		$studij = int_param('studij');
+		$semestar = int_param('semestar');
+		
+		db_query("INSERT INTO raspored SET studij=$studij, akademska_godina=$ag, semestar=$semestar, privatno=0, aktivan=1");
+		$raspored = db_insert_id();
+	} else {
+		$ag = db_get("SELECT akademska_godina FROM raspored WHERE id=$raspored");
+		if ($ag === false) {
+			niceerror("Nepoznat raspored");
+			return;
+		}
+	}
+	
+	$tr_dani = array("PO" => 1, "UT" => 2, "SR" => 3, "CE" => 4, "PE" => 5);
+	$zamjene = array(
+		// Naša slova
+		"Inzenj" => "Inženj", "Racun" => "Račun", "Masin" => "Mašin", "Dinamick" => "Dinamičk", "Elektricn" => "Električn", "Logick" => "Logičk", "Rjesenj" => "Rješenj", "Zastit" => "Zaštit", "Mrez" => "Mrež", "Numerick" => "Numeričk", "Istrazi" => "Istraži", "Menadzm" => "Menadžm", "Cvorist" => "Čvorišt", "Optick" => "Optičk", 
+		// Specifičnosti predmeta
+		"Računari Arhitektura" => "Računari, Arhitektura", "Upravljanje E E S" => "Upravljanje elektroenergetskih sistema", "Pouzdanost El Elemenata" => "Pouzdanost električnih elemenata", "Dinamika El Ma" => "Dinamika električnih ma", "Uupravljanje" => "Upravljanje", "Vjestacke" => "Vještačke", "Inovacije U Projektiranju" => "Inovacije u projektovanju", "lektronika Za Telekomunikacije " => "lektronika TK", "hC" => "h Č", "U T K Mre" => "u Telekomunikacijskim mre", "U T K Kana" => "u Telekomunikacijskom kana", "Softver Inzinjering" => "softver inženjering", "ki T K Sis" => "ki Telekomunikacijski sis", "Telek Softver Inzen" => "Telekomunikacijski Softver Inženjering", "Ttelekomu" => "Telekomu");
+	$zamjene_sale = array("EE-1" => "EE1", "EE-2" => "EE2");
+	
+	$ocekivani = $ocekivano_ime = "";
+	foreach(explode("\n", $_REQUEST['import']) as $linija) {
+		//print "Linija: $linija<br>\n";
+		//print "Ocekivani: $ocekivani $ocekivano_ime<br>\n";
+		
+		$dijelovi = explode(",", trim($linija));
+		$novi_dan = $tr_dani[substr($dijelovi[0], 0, 2)];
+		$polusat = (substr($dijelovi[0], strlen($dijelovi[0])-1) == "A");
+		$vrijeme = intval(substr($dijelovi[0], 2)) - 1;
+		
+		$dijelovi_imena = substr($dijelovi[1], 0, strrpos($dijelovi[1], "-"));
+		
+		if ($dijelovi[0] == $ocekivani && $dijelovi_imena == $ocekivano_ime) { 
+			$vrijeme_kraj = $vrijeme;
+			
+			if ($polusat) $fini_kraj = "00:00:00";
+			else $fini_kraj = sprintf("00:%02d:30", $vrijeme+8);
+			
+			if ($polusat) $ocekivani = substr($dijelovi[0], 0, 2) . ($vrijeme_kraj+2);
+			else $ocekivani = substr($dijelovi[0], 0, 2) . ($vrijeme+1) . "A";
+			continue;
+		}
+		
+		if ($ocekivani != "" && $id_predmeta !== false) {
+			if (empty($labgrupe) && $tip == "P")
+				db_query("INSERT INTO raspored_stavka VALUES (0, $raspored, $dan, $id_predmeta, 0, $vrijeme_pocetak, $vrijeme_kraj, $id_sale, '$tip', 0, 0, '$fini_pocetak', '$fini_kraj')");
+			else foreach($labgrupe as $lg)
+				db_query("INSERT INTO raspored_stavka VALUES (0, $raspored, $dan, $id_predmeta, $lg, $vrijeme_pocetak, $vrijeme_kraj, $id_sale, '$tip', 0, 0, '$fini_pocetak', '$fini_kraj')");
+		}
+		
+		$dan = $novi_dan;
+		$vrijeme_pocetak = $vrijeme;
+		$vrijeme_kraj = $vrijeme;
+		if ($polusat) {
+			$fini_pocetak = sprintf("00:%02d:30", $vrijeme+8);
+			$fini_kraj = "00:00:00";
+		}
+		else {
+			$fini_pocetak = "00:00:00";
+			$fini_kraj = sprintf("00:%02d:30", $vrijeme+8);
+		}
+		
+		$ocekivano_ime = substr($dijelovi[1], 0, strrpos($dijelovi[1], "-"));
+		$tip = strtoupper($ocekivano_ime[0]);
+		
+		$tmpime = substr($dijelovi[1], 1, strpos($dijelovi[1], "-")-1);
+		$ime_predmeta = "";
+		for ($i=0; $i<strlen($tmpime); $i++) {
+			if ($i>0 && (($tmpime[$i] >= "A" && $tmpime[$i] <= "Z") || ($tmpime[$i] >= "0" && $tmpime[$i] <= "9")))
+				$ime_predmeta .= " ";
+			$ime_predmeta .= $tmpime[$i];
+		}
+		
+		foreach($zamjene as $dio => $zamjena)
+			$ime_predmeta = str_replace($dio, $zamjena, $ime_predmeta);
+		
+		$id_predmeta = db_get("SELECT id FROM predmet WHERE naziv LIKE '$ime_predmeta'");
+		if ($id_predmeta === false)
+			print "-- Nije pronađen predmet $ime_predmeta<br>\n";
+		if ($id_predmeta == 20) $id_predmeta = 2093;
+		
+		$sala = $dijelovi[count($dijelovi)-1];
+		if ($sala[0] == "R") $sala = substr($sala,1);
+		foreach($zamjene_sale as $dio => $zamjena)
+			$sala = str_replace($dio, $zamjena, $sala);
+		
+		$id_sale = db_get("SELECT id FROM raspored_sala WHERE naziv LIKE '$sala'");
+		if ($id_sale === false)
+			print "-- Nije pronađena sala $sala<br>\n";
+		
+		if ($polusat) $ocekivani = substr($dijelovi[0], 0, 2) . ($vrijeme_kraj+1);
+		else $ocekivani = substr($dijelovi[0], 0, 2) . ($vrijeme+1) . "A";
+		
+		$labgrupe = array();
+		if ($id_predmeta !== false)
+			for ($i=2; $i<count($dijelovi)-1; $i++) {
+				$id_labgrupe = db_get("SELECT id FROM labgrupa WHERE naziv LIKE '".$dijelovi[$i]."' AND predmet=$id_predmeta AND akademska_godina=$ag");
+				if ($id_labgrupe !== false) $labgrupe[] = $id_labgrupe;
+				//print "Naziv ".$dijelovi[$i]." id $id_labgrupe<br>\n";
+			}
+	}
+	
+	if ($ocekivani != "" && $id_predmeta !== false)  {
+		if (empty($labgrupe) && $tip == "P")
+			db_query("INSERT INTO raspored_stavka VALUES (0, $raspored, $dan, $id_predmeta, 0, $vrijeme_pocetak, $vrijeme_kraj, $id_sale, '$tip', 0, 0, '$fini_pocetak', '$fini_kraj')");
+		else foreach($labgrupe as $lg)
+			db_query("INSERT INTO raspored_stavka VALUES (0, $raspored, $dan, $id_predmeta, $lg, $vrijeme_pocetak, $vrijeme_kraj, $id_sale, '$tip', 0, 0, '$fini_pocetak', '$fini_kraj')");
+	}
+	
+
+	nicemessage("Raspored importovan");
+
+} else {
+	
+	$q10 = db_query("SELECT id, studij, akademska_godina, semestar FROM raspored ORDER BY akademska_godina DESC");
+	$lista = "";
+	while(db_fetch4($q10, $id, $studij, $akademska_godina, $semestar)) {
+		if ($studij == 0) $tekst = "Svi studiji";
+		else $tekst = db_get("SELECT naziv FROM studij WHERE id=$studij");
+		
+		$tekst .= " (" . db_get("SELECT naziv FROM akademska_godina WHERE id=$akademska_godina");
+		
+		if ($semestar > 0) $tekst .= ", $semestar. semestar";
+		$tekst .= ")";
+		
+		$lista .= "<option value=\"$id\">$tekst</option>\n";
+	}
+	
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="import_raspored">
+	Ažuriraj raspored: <select name="raspored"><option value="0">(Kreiraj novi)</option><?=$lista?></select><br>
+	<textarea name="import" rows="6" cols="60"></textarea><br>
+	<input type="submit" value=" Uvezi raspored ">
+	</form>
+	<?
+}
+
+
+
+
+
+
+//----------------------------------------
+// Upis na završni rad
+//----------------------------------------
+
+?>
+<p><hr/></p>
+
+<p><b>Masovni upis na predmet &quot;Završni rad&quot;</b></p>
+
+<?
+
+
+
+if ($_POST['akcija']=="mass_zavrsni" && check_csrf_token()) {
+	if ($_REQUEST['fakatradi'] != 1) $ispis=1; else $ispis=0;
+	
+	$ag = db_get("SELECT id FROM akademska_godina WHERE aktuelna=1");
+	
+	// Kod je obsolete zbog kolone tippredmeta
+	$pk_zavrsni = db_query_vassoc("SELECT pk.studij, pk.id FROM ponudakursa pk, akademska_godina_predmet agp 
+	WHERE agp.akademska_godina=$ag AND (agp.tippredmeta=1000 OR agp.tippredmeta=1001) AND agp.predmet=pk.predmet AND pk.akademska_godina=$ag"); // 1000 = Završni rad
+
+
+	$q10 = db_query("SELECT o.id, o.ime, o.prezime, s.id FROM osoba o, student_studij ss, studij s, tipstudija ts
+	WHERE ss.akademska_godina=$ag AND ss.student=o.id AND ss.studij=s.id AND s.tipstudija=ts.id AND ts.ciklus=1 AND ss.semestar=5
+	ORDER BY o.prezime, o.ime");
+	while (db_fetch4($q10, $student, $ime, $prezime, $studij)) {
+		$pk = $pk_zavrsni[$studij];
+		if (!isset($pk)) {
+			print "--- Greška: Nepoznat predmet za studij $studij!!!<br>\n";
+			continue;
+		}
+		$vec_upisan = db_get("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$pk");
+		if ($vec_upisan) continue;
+		if ($ispis) print "Upisujem $prezime $ime<br>\n";
+		else {
+			upis_studenta_na_predmet($student, $pk);
+		}
+	}
+	
+	
+	// Sada isto to za drugi ciklus
+	$q10 = db_query("SELECT o.id, o.ime, o.prezime, s.id FROM osoba o, student_studij ss, studij s, tipstudija ts
+	WHERE ss.akademska_godina=$ag AND ss.student=o.id AND ss.studij=s.id AND s.tipstudija=ts.id AND ts.ciklus=2 AND ss.semestar=3
+	ORDER BY o.prezime, o.ime");
+	while (db_fetch4($q10, $student, $ime, $prezime, $studij)) {
+		if ($studij >= 18 && $studij <= 21) continue; // Ekvivalencija
+		$pk = $pk_zavrsni[$studij];
+		if (!isset($pk)) print "--- Greška: Nepoznat predmet za studij $studij!!!<br>\n";
+		$vec_upisan = db_get("SELECT COUNT(*) FROM student_predmet WHERE student=$student AND predmet=$pk");
+		if ($vec_upisan) continue;
+		if ($ispis) print "Upisujem $prezime $ime<br>\n";
+		else {
+			upis_studenta_na_predmet($student, $pk);
+		}
+	}
+	
+	// Potvrda i Nazad
+	if ($ispis) {
+		?>
+		<?=genform("POST")?>
+		<input type="hidden" name="fakatradi" value="1">
+		<?
+		print '<input type="submit" name="nazad" value=" Nazad "> ';
+		if ($greska==0) print '<input type="submit" value=" Potvrda ">';
+		print "</form>";
+		return;
+	} else {
+		?>
+		Svi studenti upisani na Završni rad.
+		<?
+	}
+
+} else {
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="fakatradi" value="0">
+	<input type="hidden" name="akcija" value="mass_zavrsni">
+	<input type="submit" value=" Upiši sve studente 5. semestra BSc / 3. semestra MSc na predmet Završni rad ">
+	</form>
+	<?
+}
+
+
+
+
+//----------------------------------------
+// Provjera uslova
+//----------------------------------------
+
+?>
+<p><hr/></p>
+
+<p><b>Ima li uslov?</b></p>
+
+<?
+
+
+
+if ($_POST['akcija']=="ima_li_uslov" && check_csrf_token()) {
+	global $zamger_predmeti_pao, $zamger_pao_ects;
+	$uslov = ima_li_uslov_plan(int_param('student'), int_param('ag'), int_param('studij'), int_param('semestar'), int_param('studij_trajanje'), int_param('plan_studija'));
+	if ($uslov) print "Ima uslov!<br><br>"; else print "Nema uslov!<br><br>";
+	print_r($zamger_predmeti_pao);
+	print "<br><br>ZPE: " . $zamger_pao_ects;
+	return;
+
+} else {
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="ima_li_uslov">
+	Student: <input type="text" name="student"><br>
+	A.g.: <input type="text" name="ag"><br>
+	Studij: <input type="text" name="studij"><br>
+	Semestar: <input type="text" name="semestar"><br>
+	Trajanje: <input type="text" name="studij_trajanje"><br>
+	Plan studija: <input type="text" name="plan_studija"><br>
+	<input type="submit" value=" Provjeri uslov ">
+	</form>
+	<?
+}
+
+
+
+
+//----------------------------------------
+// Novi messaging
+//----------------------------------------
+
+?>
+<p><hr/></p>
+
+<p><b>Pošalji poruku</b></p>
+
+<?
+
+
+
+if ($_POST['akcija']=="posalji_poruku" && check_csrf_token()) {
+	require_once ("lib/messaging.php");
+	$poruka = array();
+	$poruka['tip'] = intval($_POST['tip']);
+	$poruka['opseg'] = intval($_POST['opseg']);
+	$poruka['ref'] = intval($_POST['ref']);
+	$poruka['primalac'] = intval($_POST['primalac']);
+	$poruka['naslov'] = $_POST['naslov'];
+	$poruka['tekst'] = $_POST['tekst'];
+	
+	$poruka = posalji_poruku($poruka);
+	nicemessage("Poruka uspješno poslana ".$poruka['id']);
+	return;
+
+} else if ($_POST['akcija']=="konverzija_poruka" && check_csrf_token()) {
+	require_once ("lib/messaging.php");
+	konverzija();
+	nicemessage("Poruka uspješno poslana ".$poruka['id']);
+	return;
+
+} else if ($_POST['akcija']=="inbox" && check_csrf_token()) {
+	require_once ("lib/messaging.php");
+	$korisnik = intval($_POST['korisnik']);
+	
+	print "Nepročitane: <br><ul>\n";
+	$count = 0;
+	foreach(daj_inbox($korisnik, true) as $poruka) {
+		print "<li>".$poruka['naslov']." (".date("d.m.Y H:i:s", $poruka['vrijeme']).") od: ".$poruka['posiljalac']."</li>";
+		if ($count++ > 40) break;
+	}
+
+	print "</ul>Sve: <br><ul>\n";
+	$count = 0;
+	foreach(daj_inbox($korisnik, false) as $poruka) {
+		print "<li>".$poruka['naslov']." (".date("d.m.Y H:i:s", $poruka['vrijeme']).") od: ".$poruka['posiljalac']."</li>";
+		if ($count++ > 40) break;
+	}
+	print "</ul>";
+
+	return;
+	
+} else {
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="posalji_poruku">
+	Tip: <input type="text" name="tip"><br>
+	Opseg: <input type="text" name="opseg"><br>
+	Ref: <input type="text" name="ref"><br>
+	Primalac: <input type="text" name="primalac"><br>
+	Naslov: <input type="text" name="naslov"><br>
+	Tekst: <input type="text" name="tekst"><br>
+	<input type="submit" value=" Pošalji poruku ">
+	</form>
+	<?
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="konverzija_poruka">
+	<input type="submit" value=" Konverzija poruka ">
+	</form>
+	<?
+	?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="inbox">
+	Korisnik: <input type="text" name="korisnik"><br>
+	<input type="submit" value=" Daj inbox ">
+	</form>
+	<?
+}
 
 // Kraj ADMIN/MISC
 print "<hr/>\n";
