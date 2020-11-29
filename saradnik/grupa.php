@@ -152,6 +152,7 @@ function saradnik_grupa() {
 	}
 
 	// Spisak komponenti koje su zastupljene na predmetu
+	$tipovi_komponenti = [];
 	foreach($group['activities'] as $activity)
 		$tipovi_komponenti[$activity['id']] = $activity['Activity']['id'];
 	
