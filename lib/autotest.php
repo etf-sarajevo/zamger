@@ -260,8 +260,6 @@ function autotest_sa_kodom($test, $student, $nastavnik) {
 	$test = $r110[0];
 	$global="\n".$r110[4]."\n";
 	$pozicija_globala=$r110[5];
-	
-	$rbr = 1234; // Trebalo bi uzeti redni broj testa iz baze, ali ovo nije uopšte bitno toliko
 
 	// Sadržaj maina
 	if ($programski_jezik == "C") {
@@ -290,7 +288,7 @@ function autotest_sa_kodom($test, $student, $nastavnik) {
 // Funkcija za masovnu promjenu statusa na zadaći svim studentima
 // Vjerovanto se treba migrirati na neki lib/zadaca
 function zadaca_change_status($zadaca, $zadatak, $polazni_status, $ciljni_status, $zadatak_bodova=0) {
-	global $userid; // korisnik koji vrši ocjenjivanje
+	global $userid, $conf_files_path; // korisnik koji vrši ocjenjivanje
 	
 	if ($zadatak_bodova > 0) {
 		$testovi = db_query_varray("SELECT id FROM autotest WHERE zadaca=$zadaca AND zadatak=$zadatak");
@@ -307,6 +305,10 @@ function zadaca_change_status($zadaca, $zadatak, $polazni_status, $ciljni_status
 	$q10 = db_query("SELECT predmet, akademska_godina, komponenta FROM zadaca WHERE id=$zadaca");
 	db_fetch3($q10, $predmet, $akademska_godina, $komponenta);
 	
+	$task_path = "$conf_files_path/zadace/$predmet-$akademska_godina/datoteke/task-$zadaca" . nuliraj_broj($zadatak). ".json";
+	if (file_exists($task_path))
+		$task = json_decode(file_get_contents($task_path), true);
+	
 	$q20 = db_query("SELECT DISTINCT student FROM zadatak WHERE zadaca=$zadaca AND redni_broj=$zadatak");
 	while (db_fetch1($q20, $student)) {
 		// Filename, izlaz skripte, status
@@ -316,7 +318,23 @@ function zadaca_change_status($zadaca, $zadatak, $polazni_status, $ciljni_status
 		$filename          = db_escape_string(db_result($q40,0,1));
 		
 		if ($zadatak_bodova > 0) {
-			$broj_uspjesnih = db_get("SELECT COUNT(*) FROM autotest_rezultat WHERE student=$student AND autotest in $testovi AND status='ok'");
+			$result_path = "$conf_files_path/zadace/$predmet-$akademska_godina/$student/$zadaca/$zadatak-result.json";
+			if (file_exists($result_path)) {
+				$result = json_decode(file_get_contents($result_path), true);
+				$broj_testova = $broj_uspjesnih = 0;
+				
+				foreach($task['tests'] as $test) {
+					if (array_key_exists('options', $test) && in_array("silent", $test['options'])) continue;
+					$broj_testova++;
+					if (!array_key_exists($test['id'], $result['test_results'])) continue;
+					
+					$tr = $result['test_results'][$test['id']];
+					if ($tr['status'] == 1) $broj_uspjesnih++;
+				}
+			} else {
+				$broj_uspjesnih = db_get("SELECT COUNT(*) FROM autotest_rezultat WHERE student=$student AND autotest in $testovi AND status='ok'");
+			}
+			
 			$student_bodova = round($zadatak_bodova * ($broj_uspjesnih / $broj_testova), 2);
 			$poruka = "$broj_uspjesnih/$broj_testova testova ($student_bodova bodova)";
 		} else { $student_bodova = 0; $poruka = ""; }
@@ -716,7 +734,7 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 		print "</p>\n<p><a href=\"$linkPrefix&subakcija=dodaj_uslov&id=$r210[0]&zadatak=$zadatak\">Dodaj zahtijevanu funkciju</a></p>\n";
 
 
-		?><p><b>Autotestovi:</b></p>
+		?><p><b>Autotestovi:</b> </p>
 		<table border="1" cellspacing="0" cellpadding="5">
 		<tr bgcolor="#CCCCCC"><td>R.br.</td><td>Kod</td><td>Ulaz</td><td>Rezultat</td><td>Alternativni rezultat</td><td>Fuzzy matching?</td><td>Naredbe u globalnom opsegu</td><td>Akcije</td></tr>
 		<?
@@ -768,6 +786,132 @@ function autotest_admin($zadaca, $linkPrefix, $backLink) {
 // Vraća HTML kod tabele
 
 function autotest_tabela($student, $zadaca, $zadatak, $nastavnik) {
+	global $conf_files_path;
+	$q100 = db_query("SELECT predmet, akademska_godina, UNIX_TIMESTAMP(rok) FROM zadaca WHERE id=$zadaca");
+	db_fetch3($q100, $predmet, $ag, $rok_za_slanje);
+	$result_path = "$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/$zadatak-result.json";
+	if (!file_exists($result_path))
+		return autotest_tabela_old($student, $zadaca, $zadatak, $nastavnik);
+
+	$task_path = "$conf_files_path/zadace/$predmet-$ag/datoteke/task-$zadaca" . nuliraj_broj($zadatak). ".json";
+	$task_file = db_get("SELECT datoteka FROM zadaca_datoteka WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='autotest'");
+	if ($task_file)
+		$task_path = "$conf_files_path/homework-files/$predmet-$ag/$zadaca-$zadatak/$task_file";
+		
+
+	$task = json_decode(file_get_contents($task_path), true);
+	$result = json_decode(file_get_contents($result_path), true);
+	
+	
+	
+	// Kod kopiran iz render.php kao privremeno rjesenje...
+	
+	function tr($k) { return $k; }
+	
+	$statuses = array(
+	array( "id" => "ok", "code" => 1, "label" => tr("OK"), "description" => tr("Test successful") ),
+	array( "id" => "symbol", "code" => 2, "label" => "Nije pronađeno", "description" => tr("Required string/symbol not found in code") ),
+	array( "id" => "error", "code" => 3, "label" => "Ne može se kompajlirati", "description" => tr("Test code couldn't be compiled") ),
+	array( "id" => "too_long", "code" => 4, "label" => "Predugo izvršavanje", "description" => tr("Test took too long to finish") ),
+	array( "id" => "crash", "code" => 5, "label" => "Testni program se krahira", "description" => tr("The program crashed") ),
+	array( "id" => "wrong", "code" => 6, "label" => "Pogrešan rezultat", "description" => tr("Program output doesn't match expected output") ),
+	array( "id" => "profiler", "code" => 7, "label" => "Memorijska greška", "description" => tr("A run-time error was reported by profiler") ),
+	array( "id" => "find_fail", "code" => 8, "label" => "Nije pronađen rezultat", "description" => tr("Program output was not found") ),
+	array( "id" => "exception", "code" => 9, "label" => tr("Unexpected exception"), "description" => tr("Program throws an exception") ),
+	array( "id" => "internal", "code" => 10, "label" => tr("Internal error"), "description" => tr("Internal error with autotester system") ),
+	array( "id" => "unzip", "code" => 11, "label" => tr("Not a ZIP file"), "description" => tr("Unzip command failed") ),
+	array( "id" => "tool", "code" => 12, "label" => tr("Internal error"), "description" => tr("Internal error - a tool failed to run") ),
+	array( "id" => "profiler_ok", "code" => 701, "label" => tr("OK"), "description" => tr("Profiler reported no known errors") ),
+	array( "id" => "oob", "code" => 702, "label" => "Memorijska greška", "description" => tr("Memory error (exceeded array/vector size or illegal pointer operation)") ),
+	array( "id" => "uninit", "code" => 703, "label" => "Neinicijalizovana promjenljiva", "description" => tr("Program is accessing a variable that wasn't initialized") ),
+	array( "id" => "memleak", "code" => 704, "label" => "Curenje memorije", "description" => tr("Allocated memory was not freed") ),
+	array( "id" => "invalid_free", "code" => 705, "label" => "Loša dealokacija", "description" => tr("Attempting to free memory that wasn't allocated") ),
+	array( "id" => "mismatched_free", "code" => 705, "label" => "Pogrešan dealokator", "description" => tr("Wrong type of deallocation used (delete vs. delete[] ...)") ),
+	);
+	
+	
+	$task_enc = htmlspecialchars(json_encode($task));
+	$result_enc = htmlspecialchars(json_encode($result));
+	
+	$rezultat = '<form action="lib/render/render.php" method="POST" id="details_form">
+	<input type="hidden" name="language" value="bs">
+	<input type="hidden" name="task" value="' . $task_enc . '">
+	<input type="hidden" name="result" value="' . $result_enc . '">
+	<input type="hidden" name="test" id="form_test_id" value="0">
+	</form>';
+	
+		$rezultat .= <<<HTML
+	<script>
+	function showDetail(id) {
+		document.getElementById('form_test_id').value = "" + id;
+		document.getElementById('details_form').submit();
+		return false;
+	}
+	</script>
+	
+	<table border="1" cellspacing="0" cellpadding="2">
+		<thead><tr>
+			<th>Test</th>
+			<th>Rezultat</th>
+			<th>Vrijeme testiranja</th>
+			<th>&nbsp;</th>
+		</tr></thead>
+HTML;
+	
+	$no = 0;
+	foreach($task['tests'] as $test) {
+		if (array_key_exists('options', $test) && in_array("silent", $test['options'])) continue;
+		if (!array_key_exists($test['id'], $result['test_results'])) continue;
+		
+		// Da li prikazati skrivene testove?
+		if (array_key_exists('options', $test) && in_array("hidden", $test['options']) && !$nastavnik && $rok_za_slanje > time())
+			continue;
+		
+		$tr = $result['test_results'][$test['id']];
+		if ($tr['status'] == 1) 
+			$icon = '<img src="static/images/16x16/ok.png" width="8" height="8">'; 
+		else 
+			$icon = '<img src="static/images/16x16/not_ok.png" width="8" height="8">'; 
+			
+		// Get detailed status text for profiler errors
+		if ($tr['status'] == 7) {
+			foreach($tr['tools'] as $key => $value)
+				if (substr($key, 0, 7) == "profile" && $value['status'] != 1)
+					$tr['status'] = 700 + $value['status'];
+		}
+
+		// Get status text
+		$status_text = "Ok";
+		if (array_key_exists('options', $test) && in_array("nodetail", $test['options']) && $tr['status'] != 1) 
+			$status_text = "Not ok";
+		else foreach($statuses as $st)
+			if ($tr['status'] == $st['code'])
+				$status_text = $st['label'];
+		
+		// Gray color for hidden tests
+		if (array_key_exists('options', $test) && (in_array("nodetail", $test['options']) || in_array("hidden", $test['options'])))
+			$class = "style=\"color: #777\"";
+		else
+			$class = "";
+		$no++;
+		
+		$nicetime = date("d. m. Y H:i:s", $result['time']);
+		
+		$rezultat .= "<tr>
+			<td $class>$no</td>
+			<td $class>$icon $status_text</td>
+			<td $class>$nicetime</td>
+			<td>
+				<a href=\"#\" onclick=\"return showDetail(".$test['id'].");\">Detalji</a>
+			</td>
+		</tr>";
+	}
+	
+	$rezultat .= "\n</table>\n";
+	return $rezultat;
+}
+
+function autotest_tabela_old($student, $zadaca, $zadatak, $nastavnik) {
 	// Labela za status autotesta
 	$stat_autotest = array(
 		"ok"              => "OK", 
@@ -863,10 +1007,12 @@ function autotest_brisi_rezultate($student, $zadaca, $zadatak) {
 //   $nastavnik - ako je true, moguć je pristup neaktivnim i sakrivenim testovima
 
 function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
-	$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+	global $conf_files_path;
+	$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
-	$q10 = db_query("select status, bodova from zadatak where student=$student and zadaca=$zadaca and redni_broj=$zadatak order by id desc limit 1");
-	$status_zadace = db_result($q10,0,0);
+	$q10 = db_query("select zk.status, zk.bodova, z.predmet, z.akademska_godina from zadatak zk, zadaca z where zk.student=$student and zk.zadaca=$zadaca and zk.redni_broj=$zadatak AND z.id=$zadaca order by zk.id desc limit 1");
+	db_fetch4($q10, $status_zadace, $bodova, $predmet, $ag);
+//if (($zadaca == 5460 || $zadaca == 5461) && $status_zadace == 2) { $status_zadace=4; $imakomentar = ""; }
 	if ($status_zadace == 3) {
 		$bgcolor = "#fcc";
 		$status_duzi_tekst = "<b>Ne može se kompajlirati</b>";
@@ -874,7 +1020,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 	}
 	else if ($status_zadace == 2) {
 		$bgcolor = "#fcc";
-		$status_duzi_tekst = "<b>Zadaća prepisana</b>";
+		$status_duzi_tekst = "<b>Potrebna je odbrana zadaće</b>";
 		$status_ikona = "copy";
 	}
 	else if ($status_zadace == 1 || $status_zadace == 4) {
@@ -883,23 +1029,40 @@ function autotest_status_display($student, $zadaca, $zadatak, $nastavnik) {
 		$status_ikona = "view";
 	}
 	else if ($status_zadace == 5) {
-		$bodova = db_result($q10,0,1);
 		$status_duzi_tekst = "<b>Zadaća pregledana: $bodova bodova</b>";
 		$status_ikona = "ok";
 	}
 
 	// Status testova
-	$dodaj = "";
-	if (!$nastavnik)
-		$dodaj = "AND a.aktivan=1";
+	$result_path = "$conf_files_path/zadace/$predmet-$ag/$student/$zadaca/$zadatak-result.json";
+	if (file_exists($result_path)) {
+		$task_path = "$conf_files_path/zadace/$predmet-$ag/datoteke/task-$zadaca" . nuliraj_broj($zadatak). ".json";
+
+		$task = json_decode(file_get_contents($task_path), true);
+		$result = json_decode(file_get_contents($result_path), true);
+		$ukupno_testova = $proslo_testova = 0;
 		
-	if ($status_zadace == 1 || $status_zadace == 4 || $status_zadace == 5) {
-		$q111 = db_query("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student $dodaj");
-		$ukupno_testova = db_result($q111,0,0);
-	}
-	if ($status_zadace == 4 || $status_zadace == 5) {
-		$q112 = db_query("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student AND ar.status='ok' $dodaj");
-		$proslo_testova = db_result($q112,0,0);
+		foreach($task['tests'] as $test) {
+			if (array_key_exists('options', $test) && in_array("silent", $test['options'])) continue;
+			$ukupno_testova++;
+			if (!array_key_exists($test['id'], $result['test_results'])) continue;
+			
+			$tr = $result['test_results'][$test['id']];
+			if ($tr['status'] == 1) $proslo_testova++;
+		}
+	} else {
+		$dodaj = "";
+		if (!$nastavnik)
+			$dodaj = "AND a.aktivan=1";
+			
+		if ($status_zadace == 1 || $status_zadace == 4 || $status_zadace == 5) {
+			$q111 = db_query("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student $dodaj");
+			$ukupno_testova = db_result($q111,0,0);
+		}
+		if ($status_zadace == 4 || $status_zadace == 5) {
+			$q112 = db_query("SELECT COUNT(*) FROM autotest AS a, autotest_rezultat AS ar WHERE a.zadaca=$zadaca AND a.zadatak=$zadatak AND a.id=ar.autotest AND ar.student=$student AND ar.status='ok' $dodaj");
+			$proslo_testova = db_result($q112,0,0);
+		}
 	}
 
 	if ($status_zadace == 1 || $status_zadace == 3) {

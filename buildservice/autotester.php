@@ -178,6 +178,10 @@ else if ($_REQUEST['action'] == "getTask") {
 		db_fetch2($q, $predmet, $ag);
 	
 		$filepath="$conf_files_path/zadace/$predmet-$ag/datoteke/task-$task.json";
+		$task_file = db_get("SELECT datoteka FROM zadaca_datoteka WHERE zadaca=$zadaca AND zadatak=$zadatak AND tip='autotest'");
+		if ($task_file)
+			$filepath="$conf_files_path/homework-files/$predmet-$ag/$zadaca-$zadatak/$task_file";
+		
 		if (file_exists($filepath)) {
 			$result['data'] = json_decode(file_get_contents($filepath), true);
 		} else {
@@ -498,7 +502,7 @@ else if ($_REQUEST['action'] == "setResult") {
 						$output .= ":\n" . $msg['message']."\n\n";
 					}
 				}
-				else if (array_key_exists("output", $data['test_results']["1"]['tools']['compile']))
+				if ($output == "" && array_key_exists("output", $data['test_results']["1"]['tools']['compile']))
 					$output = $data['test_results']["1"]['tools']['compile']['output'];
 				$compiler_output = db_escape($output); // staviti u izvjestaj_skripte
 				
