@@ -421,6 +421,7 @@ function malimeni($fj) {
 	}
 	
 	if ($predmet>0) {
+		// FIXME prebaciti na aktivnost "završni rad"
 		$q15 = db_query("SELECT tippredmeta FROM akademska_godina_predmet WHERE akademska_godina=$ag AND predmet=$predmet");
 		$tippredmeta = db_result($q15,0,0);
 	}
@@ -585,7 +586,7 @@ function studentski_meni($fj) {
 		// Ako je modul trenutno aktivan, boldiraj i prikaži meni
 		if (int_param('predmet') == $courseId && int_param('ag') == $yearId) {
 			$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/down_red.png" align="bottom" border="0"></td>'."\n<td>";
-			if ($tippredmeta == 1000 || $tippredmeta == 1001)
+			if ($course == "Završni rad" || $course == "Završni rad (Master)")
 				$output .= "<a href=\"?sta=student/zavrsni&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">";
 			else if ($_REQUEST['sta'] != "student/predmet")
 				$output .= "<a href=\"?sta=student/predmet&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">";
@@ -616,7 +617,7 @@ function studentski_meni($fj) {
 			
 			$output .= "</td></tr>\n";
 		} else {
-			if ($tippredmeta == 1000 || $tippredmeta == 1001)
+			if ($course == "Završni rad" || $course == "Završni rad (Master)")
 				$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/zavrsni&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">$course</a></td></tr>\n";
 			else
 				$output .= '<tr><td valign="top" style="padding-top:2px;"><img src="static/images/left_red.png" align="bottom" border="0"></td>'."\n<td><a href=\"?sta=student/predmet&predmet=$courseId&ag=$yearId&sm_arhiva=$arhiva\">$course</a></td></tr>\n";
