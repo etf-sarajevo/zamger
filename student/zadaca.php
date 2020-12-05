@@ -144,50 +144,6 @@ function student_zadaca() {
 	$filename = $currentAssignment['filename'];
 
 
-	
-	// Akcije vezane za autotest
-	// FIXME kada pređemo na autotester v2
-	
-	if ($_REQUEST['akcija'] == "test_detalji") {
-		$test = intval($_REQUEST['test']);
-	
-		// Provjera spoofinga testa
-		$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-		if (db_result($q10,0,0) == 0) {
-			niceerror("Odabrani test nije sa odabrane zadaće.");
-			return;
-		}
-	
-		autotest_detalji($test, $userid, /* $param_nastavnik = */ false);
-		return;
-	}
-
-
-	if ($_REQUEST['akcija'] == "test_sa_kodom") {
-		if ($attachment) {
-			niceerror("Download zadaće poslane kao attachment sa ugrađenim testnim kodom trenutno nije podržano.");
-			return;
-		}
-		$test = intval($_REQUEST['test']);
-	
-		// Provjera spoofinga testa
-		$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-		if (db_result($q10,0,0) == 0) {
-			niceerror("Odabrani test nije sa odabrane zadaće.");
-			return;
-		}
-	
-		$kod = autotest_sa_kodom($test, $userid, /* $param_nastavnik = */ false);
-	
-		?>
-		<textarea rows="20" cols="80" name="program" wrap="off"><?=$kod?></textarea>
-		<?
-	
-		return;
-	}
-
-
-
 	//  NAVIGACIJA
 	
 	print "<br/><br/><center><h1>$naziv, Zadatak: $zadatak</h1></center>\n";
@@ -301,12 +257,10 @@ function student_zadaca() {
 		$komentar = $currentAssignment['comment'];
 		$tutor = $currentAssignment['author']['id'];
 		$status_zadace = $currentAssignment['status'];
-		$bodova = $currentAssignment['score'];
 		$vrijemeSlanja = $currentAssignment['submittedTime'];
 
 		// Statusni ekran
-		// FIXME kada pređemo na autotester v2
-		autotest_status_display($userid, $zadaca, $zadatak, /*$nastavnik = */false);
+		autotest_status_display($userid, $zadaca, $zadatak, $currentAssignment, /*$nastavnik = */false);
 
 		if ($vrijemeSlanja) {
 			?>
@@ -319,10 +273,11 @@ function student_zadaca() {
 		}
 	
 		// Rezultati automatskog testiranja
-		// FIXME kada pređemo na autotester v2
-		$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false);
-		if ($nalaz_autotesta != "") {
-			print "<p>Rezultati testiranja:</p>\n$nalaz_autotesta\n";
+		if ($currentAssignment['Homework']['automatedTesting']) {
+			$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false);
+			if ($nalaz_autotesta != "") {
+				print "<p>Rezultati testiranja:</p>\n$nalaz_autotesta\n";
+			}
 		}
 	
 		// Poruke i komentari tutora

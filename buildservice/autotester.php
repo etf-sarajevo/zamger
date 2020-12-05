@@ -83,7 +83,7 @@ else if ($_REQUEST['action'] == "ping") {
 		$result['code'] = "ERR004";
 		$result["message"] = "Only autotester has access to nextTask";
 	} else {
-		$broj = db_get("SELECT id, zadataka FROM zadaca WHERE automatsko_testiranje=1 ORDER BY id DESC");
+		$task = $tmpTask = false;
 		$q = db_query("SELECT z.id, z.zadataka FROM zadaca z, akademska_godina ag WHERE z.akademska_godina=ag.id AND ag.aktuelna=1 AND z.automatsko_testiranje=1 ORDER BY id DESC");
 		while ($r = db_fetch_row($q)) {
 			for ($i=1; $i<=$r[1]; $i++) {

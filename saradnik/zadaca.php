@@ -7,7 +7,7 @@
 
 function saradnik_zadaca() {
 
-	global $conf_files_path,$userid,$user_siteadmin,$conf_code_viewer,$_api_http_code;
+	global $user_siteadmin,$conf_code_viewer,$_api_http_code;
 	
 	require_once("lib/autotest.php");
 	require_once("lib/student_predmet.php"); // update_komponente
@@ -214,26 +214,6 @@ function saradnik_zadaca() {
 	
 		// Nakon izmjene statusa, nastavljamo normalno sa prikazom zadatka
 	}
-
-
-	if ($_REQUEST["akcija"] == "test_detalji") {
-		$test = intval($_REQUEST['test']);
-	
-		// Ovo ćemo ažurirati kada pređemo na novi format
-		
-		// Provjera spoofinga testa
-		//$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-		//if (db_result($q10,0,0) == 0) {
-		//	niceerror("Odabrani test nije sa odabrane zadaće.");
-		//	return;
-		//}
-	
-		if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "zadace_admin")
-			autotest_detalji($test, $studentId, /* $param_nastavnik = */ true);
-		else
-			autotest_detalji($test, $studentId, /* $param_nastavnik = */ false);
-		return;
-	}
 	
 
 	if ($_REQUEST["akcija"] == "brisi_testove" && check_csrf_token()) {
@@ -263,24 +243,9 @@ function saradnik_zadaca() {
 	if (!$attach) {
 		// Nije attachment
 	
-		if ($_REQUEST["akcija"] == "test_sa_kodom") {
-			$test = intval($_REQUEST['test']);
-
-			// Ovo ćemo popraviti kada pređemo na novi format autotesta
-			
-			// Provjera spoofinga testa
-			/*$q10 = db_query("SELECT COUNT(*) FROM autotest WHERE id=$test AND zadaca=$zadaca AND zadatak=$zadatak");
-			if (db_result($q10,0,0) == 0) {
-				niceerror("Odabrani test nije sa odabrane zadaće.");
-				return;
-			}*/
-
-			$src = autotest_sa_kodom($test, $studentId, /* $param_nastavnik = */ true);
-		} else {
-			$src = api_call("homework/$zadaca/$zadatak/student/$studentId/file", [], "GET", false, false);
-			if ($_api_http_code != "200")
-				$src = ""; // File doesn't exist
-		}
+		$src = api_call("homework/$zadaca/$zadatak/student/$studentId/file", [], "GET", false, false);
+		if ($_api_http_code != "200")
+			$src = ""; // File doesn't exist
 
 		$no_lines = count(explode("\n", $src));
 	
