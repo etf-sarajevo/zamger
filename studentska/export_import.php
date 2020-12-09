@@ -4,7 +4,7 @@ function studentska_export_import() {
 
 global $conf_site_url;
 
-$export_ws = "$conf_site_url/api/export";
+$export_ws = "$conf_site_url/?sta=ws/export&";
 
 ?>
 <h2>Uvoz/Izvoz podataka</h2>
@@ -102,7 +102,7 @@ function servis_single(stavka, tip, provjera) {
 	console.log (" tip "+tip+" provjera "+provjera);
 
 	var xmlhttp = new XMLHttpRequest();
-	var url = export_url + "?tip=" + tip;
+	var url = export_url + "tip=" + tip;
 	if (provjera) url = url + "&akcija=provjera";
 	
 	if (tip == "ocjene" || tip == "ciscenje_ocjene") 
@@ -119,9 +119,9 @@ function servis_single(stavka, tip, provjera) {
 	}
 		
 	else if (tip == "promjena_podataka") {
-		if (provjera) url = export_url + "?tip=daj_razlike&student=" + stavka.student
+		if (provjera) url = export_url + "tip=daj_razlike&student=" + stavka.student
 		else {
-			url = export_url + "?tip=popravi_isss&student=" + stavka.student + "&razlike=";
+			url = export_url + "tip=popravi_isss&student=" + stavka.student + "&razlike=";
 			for (i=0; i<stavka.razlike.length; i++)
 				url += stavka.razlike[i].podatak + "%20";
 		}

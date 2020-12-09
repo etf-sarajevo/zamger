@@ -145,7 +145,7 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
 				"verify_peer_name"=>false,
 			),
 		);
-		print_r($params);
+		//print_r($params);
 		$ctx = stream_context_create($params);
 		$fp = fopen($url, 'rb', false, $ctx);
 		if (!$fp) {

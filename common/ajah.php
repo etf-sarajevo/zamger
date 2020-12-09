@@ -277,10 +277,11 @@ case "izmjena_ispita":
 		} else {
 			$result = api_call("course/$predmet/$ag/student/$stud_id/grade", [], "DELETE");
 			if ($_api_http_code == "204") {
-			zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
-			zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
+				zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+				zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
 			} else {
-				print "greška ($_api_http_code): " . $result['message'];
+				print "greška ($_api_http_code): ";
+				print_r($result);
 				break;
 			}
 		}

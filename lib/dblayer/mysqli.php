@@ -140,7 +140,7 @@ function db_fetch7($res, &$a, &$b, &$c, &$d, &$e, &$f, &$g) { $r = db_fetch_row(
 function db_time($timestamp) { return date("Y-m-d H:i:s",$timestamp); }
 // Konvertuje datum u nativnom formatu baze u timestamp
 function db_timestamp($v) {
-	$g = substr($v,0,4); $mj = substr($v,5,2); $d = substr($v,8,2);
+	$g = intval(substr($v,0,4)); $mj = intval(substr($v,5,2)); $d = intval(substr($v,8,2));
 	if (strlen($v) > 10) {
 		$h = intval(substr($v, 11, 2));
 		$mi = intval(substr($v, 14, 2));

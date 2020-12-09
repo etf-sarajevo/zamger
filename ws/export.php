@@ -5,7 +5,7 @@
 
 
 function ws_export() {
-	require("lib/ws.php");
+	require_once("lib/ws.php");
 
 	global $userid, $user_siteadmin, $user_studentska;
 	global $conf_export_format, $conf_export_isss_url, $conf_export_isss_id_fakulteta, $conf_export_isss_kreiraj_ispite;
@@ -195,6 +195,8 @@ function ws_export() {
 				}
 				
 				$odgovor = array();
+				$odgovor['isss_request'] = $isss_data;
+				$odgovor['isss_result'] = $isss_result;
 				foreach($isss_result['warnings'] as $warning) {
 					// Ovo je moralo već biti provjereno, ali zbog race conditiona provjeravamo i to
 					if ($warning['code'] == 'grade_exists') {
@@ -624,7 +626,7 @@ function ws_export() {
 		}
 		
 		
-		print json_encode($rezultat);
+		print json_encode($rezultat, JSON_PRETTY_PRINT);
 	}
 }
 
@@ -839,6 +841,7 @@ $isss_sifrarnik_kanton_popravke = array(
 
 
 function isss2zamger($polje, $vrijednost) {
+	$niz = [];
 	eval("global \$isss_sifrarnik_".$polje."; \$niz = \$isss_sifrarnik_".$polje.";");
 	
 	if (array_key_exists($vrijednost, $niz)) return $niz[$vrijednost];
@@ -858,6 +861,7 @@ function zamger_studij2isss($vrijednost, $godina) {
 
 function zamger2isss($polje, $vrijednost) {
 	global $isss_sifrarnik_nacionalnost_ostalo, $isss_sifrarnik_nacin_studiranja_nepoznat;
+	$niz = [];
 	eval("global \$isss_sifrarnik_".$polje."; \$niz = \$isss_sifrarnik_".$polje.";");
 	$niz = array_flip($niz);
 	
