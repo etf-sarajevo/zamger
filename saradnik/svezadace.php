@@ -38,16 +38,36 @@ function saradnik_svezadace() {
 	
 	// Ekran za čekanje
 	if ($_REQUEST['potvrda']!="ok") {
+		$backgroundTaskId = api_call("homework/$zadaca/getAll", [ "filenames" => "fullname", "group" => $labgrupa])['BackgroundTask']['id'];
+		
+		ajax_box();
 		?>
 		<h3><?=$group['CourseUnit']['name']?>, <?=$group['name']?>, <?=$homework['name']?></h3>
 		<h2>Download svih zadaća u grupi</h2>
 		<? nicemessage ("Molimo sačekajte dok se kreira arhiva.");
 		?>
-		<script language="JavaScript">document.location.replace('index.php?sta=saradnik/svezadace&grupa=<?=$labgrupa?>&zadaca=<?=$zadaca?>&potvrda=ok');</script>
+		<script language="JavaScript">
+			params = { 'id' : '<?=$backgroundTaskId?>' };
+			setTimeout(checkServer, 1000);
+            function checkServer() {
+                ajax_api_start('zamger/backgroundTask', 'GET', params, function(task) {
+                    if (task.status == 2)
+                        document.location.replace('index.php?sta=saradnik/svezadace&grupa=<?=$labgrupa?>&zadaca=<?=$zadaca?>&potvrda=ok&task=<?=$backgroundTaskId?>');
+                    else
+                        setTimeout(checkServer, 1000);
+                }, function(text, status, url) {
+                    alert("Došlo je do greške na serveru.");
+                    console.error("Kod: "+status);
+                    console.error(text);
+                });
+            }
+		</script>
 		<?
 	
 		return;
 	}
+	
+	$task = $_REQUEST['task'];
 	
 	
 	// Kreiramo privremenu datoteku u koju ćemo upisati sadržinu fajla
@@ -59,8 +79,8 @@ function saradnik_svezadace() {
 	if (file_exists($filepath))
 		unlink($filepath);
 	
-	$content = api_call("homework/$zadaca/getAll", [ "filenames" => "fullname", "group" => $labgrupa ], "GET", false, false);
-
+	$content = api_call("zamger/backgroundTask/getFile", [ "id" => $task ], "GET", false, false);
+	
 	if ($_api_http_code == "200") {
 		$type = "application/zip; charset=binary";
 		header("Content-Type: $type");
@@ -71,7 +91,9 @@ function saradnik_svezadace() {
 	} else {
 		niceerror("Došlo je do greške prilikom kreiranja ZIP datoteke");
 		print "Kod: $_api_http_code<br>";
+		print "<textarea>";
 		print_r($content);
+		print "</textarea>";
 	}
 	
 

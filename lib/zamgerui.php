@@ -204,6 +204,12 @@ function ajax_box() {
 			<?
 		}
         ?>
+		if (method == "GET") {
+		    for(param in params) {
+                if (url.includes("?")) url += "&"; else url += "?";
+                url += param + "=" + encodeURI(params[param]);
+            }
+        }
 
 		xhttp.open(method, url, true);
 		xhttp.setRequestHeader("Content-type", "application/json");
