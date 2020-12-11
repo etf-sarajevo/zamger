@@ -6,24 +6,20 @@
 
 function nastavnik_zavrsni() {
 
-	global $userid, $user_nastavnik, $user_siteadmin;
-	global $conf_files_path;
+	global $userid, $_api_http_code;
 
 	require_once("lib/legacy.php"); // mb_substr
 
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
-	
 
 	// Da li korisnik ima pravo ući u modul?
-	if (!$user_siteadmin) {
-		$q10 = db_query("select nivo_pristupa from nastavnik_predmet where nastavnik=$userid and predmet=$predmet and akademska_godina=$ag");
-		if (db_num_rows($q10)<1 || db_result($q10,0,0)=="asistent") {
-			zamgerlog("nastavnik/završni privilegije (predmet pp$predmet)",3);
-			zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
-			biguglyerror("Nemate pravo pristupa ovoj opciji");
-			return;
-		}
+	$course = api_call("course/$predmet/$ag");
+	if ($_api_http_code == "403") {
+		zamgerlog("nastavnik/zadace privilegije (predmet pp$predmet)",3);
+		zamgerlog2("nije nastavnik na predmetu", $predmet, $ag);
+		biguglyerror("Nemate pravo pristupa ovoj opciji");
+		return;
 	}
 
 	$linkPrefix = "?sta=nastavnik/zavrsni&predmet=$predmet&ag=$ag";
@@ -33,17 +29,6 @@ function nastavnik_zavrsni() {
 	?>
 	<h2>Završni rad</h2>
 	<?
-	
-	//Preuzimanje parametara završnih radova
-	$q900 = db_query("SELECT naslov, kratki_pregled, literatura, student FROM  zavrsni WHERE predmet=$predmet AND akademska_godina=$ag");
-	if (db_num_rows($q900)<1)
-		$nema_parametara = true;
-	else {
-		$nema_parametara = false;
-		$param_naziv = db_result($q900,0,0);
-		$param_kratki_pregled = db_result($q900,0,1);
-		$param_literatura = db_result($q900,0,2);
-	}
 
 	
 	// Default akcija - LISTA ZAVRSNIH RADOVA
@@ -54,9 +39,8 @@ function nastavnik_zavrsni() {
 		<p>Teme koje ste ponudili ili ste imenovani za mentora:</p>
 		<?
 
-		// Početne informacije
-		$q900 = db_query("SELECT id, naslov, kratki_pregled, mentor, student, predsjednik_komisije, clan_komisije, UNIX_TIMESTAMP(termin_odbrane), kandidat_potvrdjen FROM zavrsni WHERE mentor=$userid and predmet=$predmet AND akademska_godina=$ag ORDER BY mentor,naslov");
-		if (db_num_rows($q900) == 0) {
+		$theses = api_call("thesis/forMenthor/$userid", [ "course" => $predmet, "year" => $ag, "resolve" => [ "Person" ] ])["results"];
+		if (count($theses) == 0) {
 			?>
 			<span class="notice">Nije definisana niti jedna tema.</span>	
 			<?
@@ -79,38 +63,54 @@ function nastavnik_zavrsni() {
 
 			$rbr = 0;
 			$nema = "<font color=\"gray\">(nije definisan)</font>";
-			while ($r900 = db_fetch_row($q900)) {
+			foreach($theses as $thesis) {
 				$rbr++;
-				$id_zavrsni = $r900[0];
-				$naslov_teme = $r900[1];
+				$id_zavrsni = $thesis['id'];
+				$naslov_teme = $thesis['title'];
 
-				$kratki_pregled = $r900[2];
-				if ($kratki_pregled == "") $kratki_pregled = $nema;
-				else $kratki_pregled = substr($kratki_pregled, 0, 200)."...";
+				$kratki_pregled = $thesis['description'];
+				if ($kratki_pregled == "")
+					$kratki_pregled = $nema;
+				else
+					$kratki_pregled = substr($kratki_pregled, 0, 200)."...";
 				
-				$mentor = tituliraj($r900[3], false);
-				if ($mentor=="") $mentor = "<font color=\"red\">(nije definisan)</font>";
+				$mentori = "";
+				foreach($thesis['menthors'] as $menthor) {
+					if ($mentori != "") $mentori .= "<br>\n";
+					$mentori .= tituliraj_api($menthor, false);
+				}
+				if ($mentori=="") $mentori = "<font color=\"red\">(nije definisan)</font>";
 
-				$student_id = $r900[4];
-				$student = tituliraj($r900[4], false);
-				if ($student=="") $student = "<font color=\"gray\">niko nije izabrao temu</font>";
-				else if ($r900[8]==0) // Kandidat nije potvrđen
-					$student .= "<br>(<a href=\"$linkPrefix&akcija=potvrdi_kandidata&id=$id_zavrsni\">potvrdi kandidata</a>)";
+				$student_id = $thesis['candidate']['id'];
+				if ($student_id > 0) {
+					$student = tituliraj_api($thesis['candidate'], false);
+					if (!$thesis['candidateApproved']) // Kandidat nije potvrđen
+						$student .= "<br>(<a href=\"$linkPrefix&akcija=potvrdi_kandidata&id=$id_zavrsni\">potvrdi kandidata</a>)";
+				} else {
+					$student = "<font color=\"gray\">niko nije izabrao temu</font>";
+				}
 
-				$predsjednik_komisije = tituliraj($r900[5], false);
-				if ($predsjednik_komisije=="") $predsjednik_komisije = $nema;
-
-				$clan_komisije = tituliraj($r900[6], false);
+				if ($thesis['committeeChair']['id'] > 0)
+					$predsjednik_komisije = tituliraj_api($thesis['committeeChair'], false);
+				else
+					$predsjednik_komisije = $nema;
+				
+				$clan_komisije = "";
+				foreach($thesis['committeeMembers'] as $member) {
+					if ($clan_komisije != "") $clan_komisije .= "<br>\n";
+					$clan_komisije .= tituliraj_api($member, false);
+				}
 				if ($clan_komisije=="") $clan_komisije = $nema;
 
-				$termin_odbrane = date("d.m.Y h:i",$r900[7]);
-				if ($r900[7] == 0) $termin_odbrane = $nema;
+				$termin_odbrane = date("d.m.Y h:i", db_timestamp($thesis['presentationDateTime']));
+				if (!$thesis['presentationDateTime']) $termin_odbrane = $nema;
 
 				$konacna_ocjena = "<font color=\"gray\">(nije ocijenjen)</font>";
-				if ($student_id>0) {
-					$q903 = db_query("SELECT ocjena FROM konacna_ocjena WHERE student=$student_id AND predmet=$predmet AND akademska_godina=$ag");
-					if (db_num_rows($q903)>0 && db_result($q903,0,0)>5) {
-						$konacna_ocjena = db_result($q903,0,0);
+				if ($student_id > 0) {
+					$pf = api_call("course/$predmet/student/$student_id", [ "year" => $ag, "score" => true ] );
+					$ocjena = $pf['grade'];
+					if ($ocjena > 5) {
+						$konacna_ocjena = $ocjena;
 						if ($konacna_ocjena == 12)
 							$konacna_ocjena = "Uspješno odbranio";
 					}
@@ -120,7 +120,7 @@ function nastavnik_zavrsni() {
 				<tr>
 					<td><?=$rbr?>.</td>
 					<td><?=$naslov_teme?></td>
-					<td><?=$mentor?></td>
+					<td><?=$mentori?></td>
 					<td><?=$student?></td>
 					<td><?=$predsjednik_komisije?></td>
 					<td><?=$clan_komisije?></td>
@@ -144,23 +144,24 @@ function nastavnik_zavrsni() {
 		
 		<?
 		
-		$q910 = db_query("SELECT z.id, z.naslov, o.ime, o.prezime 
-		FROM zavrsni as z 
-		LEFT JOIN osoba as o ON z.student=o.id 
-		WHERE z.predmet=$predmet AND z.akademska_godina=".($ag-1)." AND z.mentor=$userid
-		ORDER BY o.prezime, o.ime, z.naslov");
-		if (db_num_rows($q910) > 0) {
+		// Ponavljanje tema od prošle godine
+		
+		$theses = api_call("thesis/forMenthor/$userid", [ "course" => $predmet, "year" => $ag-1, "resolve" => [ "Person" ] ])["results"];
+		for ($i=0; $i<count($theses); $i++)
+			if (!$theses[$i]['candidate']['id'])
+				unset($theses[$i]);
+		if (count($theses) > 0) {
 			?>
 			<p><b>Ponavljanje teme od prošle godine:</b></p>
 			<?=genform("POST")?>
 			<input type="hidden" name="akcija" value="ponovi_temu">
 			<select name="id_teme">
 			<?
-			while ($r910 = db_fetch_row($q910)) {
-				$naslov = $r910[1];
+			foreach($theses as $thesis) {
+				$naslov = $thesis['title'];
 				if (strlen($naslov)>50) $naslov = mb_substr($naslov, 0, 40) . "...";
 				?>
-				<option value="<?=$r910[0]?>">(<?=$r910[3]?> <?=$r910[2]?>) <?=$naslov?></option>
+				<option value="<?=$thesis['id']?>">(<?=$thesis['candidate']['surname']?> <?=$thesis['candidate']['name']?>) <?=$naslov?></option>
 				<?
 			}
 			?>
@@ -179,31 +180,29 @@ function nastavnik_zavrsni() {
 	} //akcija == zavrsni_stranica
 
 	elseif ($akcija == 'ponovi_temu') {
-		$id_teme = intval($_REQUEST['id_teme']);
-		$q300 = db_query("SELECT naslov, podnaslov, rad_na_predmetu, kratki_pregled, literatura, sazetak, summary, biljeska, predsjednik_komisije, clan_komisije, student FROM zavrsni WHERE predmet=$predmet AND akademska_godina=".($ag-1)." AND mentor=$userid AND id=$id_teme");
-		if (db_num_rows($q300) == 0) {
-			biguglyerror("Nepostojeća tema");
+		$zavrsni = intval($_REQUEST['id_teme']);
+		$thesis = api_call("thesis/$zavrsni", [ "resolve" => [ "Person" ]]);
+		if ($_api_http_code != "200") {
+			niceerror("Završni rad nije sa ovog predmeta");
+			zamgerlog("spoofing zavrsnog rada $zavrsni", 3);
+			api_report_bug($thesis, []);
 			return;
 		}
-		$naslov = db_escape_string(db_result($q300,0,0));
-		$podnaslov = db_escape_string(db_result($q300,0,1));
-		$rad_na_predmetu = intval(db_result($q300,0,2));
-		if ($rad_na_predmetu == 0) $rad_na_predmetu = "NULL";
-		$kratki_pregled = db_escape_string(db_result($q300,0,3));
-		$literatura = db_escape_string(db_result($q300,0,4));
-		$sazetak = db_escape_string(db_result($q300,0,5));
-		$summary = db_escape_string(db_result($q300,0,6));
-		$biljeska = db_escape_string(db_result($q300,0,7));
-		$predsjednik = intval(db_result($q300,0,8));
-		if ($predsjednik == 0) $predsjednik="NULL";
-		$clan_komisije = intval(db_result($q300,0,9));
-		if ($clan_komisije == 0) $clan_komisije="NULL";
-		$student = intval(db_result($q300,0,10));
-		if ($student == 0) $student="NULL";
-		if ($student > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
-		$q310 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', rad_na_predmetu=$rad_na_predmetu, kratki_pregled='$kratki_pregled', literatura='$literatura', sazetak='$sazetak', summary='$summary', biljeska='$biljeska', predsjednik_komisije=$predsjednik, clan_komisije=$clan_komisije, student=$student, kandidat_potvrdjen=$kandidat_potvrdjen, predmet=$predmet, akademska_godina=$ag, mentor=$userid");
 		
-		nicemessage('Kopirana tema od prošle godine');
+		$newthesis = array_to_object($thesis);
+		$newthesis->menthors = $newthesis->committeeMembers = [];
+		foreach($thesis['menthors'] as $menthor)
+			$newthesis->menthors[] = array_to_object($menthor);
+		foreach($thesis['committeeMembers'] as $menthor)
+			$newthesis->committeeMembers[] = array_to_object($menthor);
+		
+		$result = api_call("thesis/course/$predmet/$ag", $newthesis, "POST");
+		if ($_api_http_code == "201") {
+			nicemessage('Kopirana tema od prošle godine');
+		} else {
+			niceerror("Kopiranje teme nije uspjelo");
+			api_report_bug($result, $thesis);
+		}
 		nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 
 		return;
@@ -212,28 +211,64 @@ function nastavnik_zavrsni() {
 	//akcija IZMJENA TEME ZAVRŠNOG RADA
 	elseif ($akcija == 'izmjena') {
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
-			// Poslana forma za dodavanje teme zavrsnog rada
-			$predmet = intval($_REQUEST['predmet']);
-			$ag = intval($_REQUEST['ag']);
-
-			$naslov = db_escape(trim($_REQUEST['naslov']));
-			$podnaslov = db_escape(trim($_REQUEST['podnaslov']));
-			$kratki_pregled  = db_escape_string(trim($_REQUEST['kratki_pregled']));
-			$literatura = db_escape_string(trim($_REQUEST['literatura']));
-
-			$kandidat = intval($_REQUEST['kandidat']);
-			if ($kandidat == 0) $kandidat = "NULL";
-			if ($kandidat > 0) $kandidat_potvrdjen=1; else $kandidat_potvrdjen = 0;
+			// Construct thesis object
+			$thesis = array_to_object([
+				"CourseUnit" => [ "id" => $predmet ],
+				"AcademicYear" => [ "id" => $ag ],
+				"title" => $_REQUEST['naslov'],
+				"subtitle" => $_REQUEST['podnaslov'],
+				"description" => $_REQUEST['kratki_pregled'],
+				"literature" => $_REQUEST['literatura'],
+				"candidate" => [ "id" => $_REQUEST['kandidat'] ],
+				"thesisCourseUnit" => [ "id" => $_REQUEST['na_predmetu'] ],
+				"committeeChair" => [ "id" => $_REQUEST['predkom'] ],
+				"thesisApproved" => false,
+				"candidateApproved" => false
+			]);
 			
-			$na_predmetu = intval($_REQUEST['na_predmetu']);
-			if ($na_predmetu == 0) $na_predmetu = "NULL";
 			
-			$id_predkom = intval($_REQUEST['predkom']);
-			if ($id_predkom == 0) $id_predkom = "null";
-			$id_clankom = intval($_REQUEST['clankom']);
-			if ($id_clankom == 0) $id_clankom = "null";
-
-			// Kontrola datuma odluke
+			// Construct decision objects (if neccessary)
+			
+			$thesisDecision = [ "id" => 0 ];
+			if ($_REQUEST['datum_odluke_tema'] != "") {
+				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke_tema'], $matches)) {
+					$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
+					if (!checkdate($mjesec,$dan,$godina)) {
+						niceerror("Datum za odluku o odobrenju teme je kalendarski nemoguć ($dan. $mjesec. $godina)");
+						nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+						return;
+					}
+					$thesisDecision['date'] = "$godina-$mjesec-$dan";
+				} else {
+					niceerror("Datum za odluku o odobrenju teme nije u ispravnom formatu.");
+					print "Potrebno je koristiti format: DD. MM. GGGG.<br>";
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				if ($_REQUEST['broj_odluke_tema'] == "") {
+					niceerror("Unijeli ste datum odluke o odobrenju teme a niste unijeli broj odluke!");
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				$thesisDecision['protocolNumber'] = $_REQUEST['broj_odluke_tema'];
+				$thesisDecision['Institution'] = [ "id" => 1 ]; // FIXME
+				$thesisDecision['Person'] = [ "id" => $_REQUEST['kandidat'] ];
+				$result = api_call("zamger/decision", array_to_object($thesisDecision), "POST");
+				if ($_api_http_code != "201") {
+					niceerror("Neuspješno dodavanje odluke o odobrenju teme");
+					api_report_bug($result, $thesisDecision);
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				
+				$thesisDecision = array_to_object($result);
+				
+				// Decision on thesis means thesis is approved
+				$thesis->thesisApproved = true;
+			} else $thesisDecision = array_to_object($thesisDecision);
+			
+			
+			$committeeDecision = [ "id" => 0 ];
 			if ($_REQUEST['datum_odluke_komisija'] != "") {
 				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke_komisija'], $matches)) {
 					$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
@@ -242,7 +277,7 @@ function nastavnik_zavrsni() {
 						nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 						return;
 					}
-					$datum_odluke_komisija = mktime(0, 0, 0, $mjesec, $dan, $godina);
+					$committeeDecision['date'] = "$godina-$mjesec-$dan";
 				} else {
 					niceerror("Datum za odluku o imenovanju komisije nije u ispravnom formatu.");
 					print "Potrebno je koristiti format: DD. MM. GGGG.<br>";
@@ -254,161 +289,171 @@ function nastavnik_zavrsni() {
 					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 					return;
 				}
-				$broj_odluke_komisija = db_escape($_REQUEST['broj_odluke_komisija']);
-				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke_komisija) AND broj_protokola='$broj_odluke_komisija'");
-				if (db_num_rows($q009) > 0) {
-					$odluka_komisija = db_result($q009, 0, 0);
-				} else {
-					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_komisija), broj_protokola='$broj_odluke_komisija', student=$kandidat");
-					$odluka_komisija = db_insert_id();
-				}
-			} else $odluka_komisija = 0;
-
-			// Kontrola datuma odluke
-			if ($_REQUEST['datum_odluke_tema'] != "") {
-				if (preg_match("/(\d+).*?(\d+).*?(\d+)/", $_REQUEST['datum_odluke_tema'], $matches)) {
-					$dan=$matches[1]; $mjesec=$matches[2]; $godina=$matches[3];
-					if (!checkdate($mjesec,$dan,$godina)) {
-						niceerror("Datum za odluku o imenovanju komisije je kalendarski nemoguć ($dan. $mjesec. $godina)");
-						nicemessage('<a href="javascript:history.back();">Povratak.</a>');
-						return;
-					}
-					$datum_odluke_tema = mktime(0, 0, 0, $mjesec, $dan, $godina);
-				} else {
-					niceerror("Datum za odluku o imenovanju komisije nije u ispravnom formatu.");
-					print "Potrebno je koristiti format: DD. MM. GGGG.<br>";
+				$committeeDecision['protocolNumber'] = $_REQUEST['broj_odluke_komisija'];
+				$committeeDecision['Institution'] = [ "id" => 1 ]; // FIXME
+				$committeeDecision['Person'] = [ "id" => $_REQUEST['kandidat'] ];
+				$result = api_call("zamger/decision", array_to_object($committeeDecision), "POST");
+				if ($_api_http_code != "201") {
+					niceerror("Neuspješno dodavanje odluke o imenovanju komisije");
+					api_report_bug($result, $committeeDecision);
 					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 					return;
 				}
-				if ($_REQUEST['broj_odluke_tema'] == "") {
-					niceerror("Unijeli ste datum odluke o imenovanju komisije a niste unijeli broj odluke!");
-					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
-					return;
-				}
-				$broj_odluke_tema = db_escape($_REQUEST['broj_odluke_tema']);
-				$q009 = db_query("SELECT id FROM odluka WHERE datum=FROM_UNIXTIME($datum_odluke_tema) AND broj_protokola='$broj_odluke_tema'");
-				if (db_num_rows($q009) > 0) {
-					$odluka_tema = db_result($q009, 0, 0);
-				} else {
-					$q001 = db_query("INSERT INTO odluka SET datum=FROM_UNIXTIME($datum_odluke_tema), broj_protokola='$broj_odluke_tema', student=$kandidat");
-					$odluka_tema = db_insert_id();
-				}
-			} else $odluka_tema = 0;
+				
+				$committeeDecision = array_to_object($result);
+				
+				// Decision on committee means candidate is approved
+				$thesis->candidateApproved = true;
+				
+			} else $committeeDecision = array_to_object($committeeDecision);
 			
-			if (empty($naslov)) {
+			$thesis->committeeDecision = $committeeDecision;
+			$thesis->thesisDecision = $thesisDecision;
+			$thesis->committeeMembers = [];
+			$id_clankom = intval($_REQUEST['clankom']);
+			if ($id_clankom > 0)
+				$thesis->committeeMembers[] = array_to_object([ "id" => $id_clankom]);
+			$thesis->menthors = [];
+			
+			if (empty($_REQUEST['naslov'])) {
 				niceerror('Unesite sva obavezna polja.');
 				nicemessage('<a href="javascript:history.back();">Povratak.</a>');
 				return;
 			}
 
 			if ($id > 0) {
-				$q905 = db_query("UPDATE zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, predsjednik_komisije=$id_predkom, clan_komisije=$id_clankom, odluka_tema=$odluka_tema, odluka_komisija=$odluka_komisija WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
-				nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
-				zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
-				zamgerlog2("izmijenio temu zavrsnog rada", $id);
+				// Copy menthors from old thesis object
+				$oldThesis = api_call("thesis/$id");
+				if ($_api_http_code != 200) {
+					niceerror("Pogrešan ID završnog rada");
+					api_report_bug($oldThesis, []);
+					nicemessage('<a href="javascript:history.back();">Povratak.</a>');
+					return;
+				}
+				foreach($oldThesis['menthors'] as $menthor)
+					$thesis->menthors[] = array_to_object($menthor);
+				
+				if ($thesis->candidate->id == 0)
+					$thesis->candidateApproved = false;
+				else if ($thesis->candidate->id != $oldThesis['candidate']['id'])
+					$thesis->candidateApproved = true; // If menthor changed the candidate, then he approved the candidate
+				else
+					$thesis->candidateApproved = $oldThesis['candidateApproved'];
+				$thesis->thesisApproved = $oldThesis['thesisApproved'];
+					
+				$result = api_call("thesis/$id", $thesis, "PUT");
+				if ($_api_http_code == "201") {
+					nicemessage('Podaci o završnom radu uspješno izmijenjeni.');
+					zamgerlog("izmijenjena tema zavrsnog rada $id na predmetu pp$predmet", 2);
+					zamgerlog2("izmijenio temu zavrsnog rada", $id);
+				} else {
+					niceerror("Greška prilikom izmjene završnog rada");
+					api_report_bug($result, $thesis);
+				}
 			} else {
-				$q905 = db_query("INSERT INTO zavrsni SET naslov='$naslov', podnaslov='$podnaslov', kratki_pregled='$kratki_pregled', literatura='$literatura', predmet=$predmet, akademska_godina=$ag, mentor=$userid, student=$kandidat, kandidat_potvrdjen=$kandidat_potvrdjen, rad_na_predmetu=$na_predmetu, tema_odobrena=0, predsjednik_komisije=$id_predkom, clan_komisije=$id_clankom, odluka_tema=$odluka_tema, odluka_komisija=$odluka_komisija");
-				$id = db_insert_id();
-				nicemessage('Uspješno kreirana nova tema završnog rada.');
-				zamgerlog("kreirana tema zavrsnog rada $id na predmetu pp$predmet", 2);
-				zamgerlog2("dodao temu zavrsnog rada", $id);
+				$thesis->menthors[] = array_to_object( [ "id" => $userid ] );
+				
+				$result = api_call("thesis/course/$predmet/$ag", $thesis, "POST");
+				if ($_api_http_code == "201") {
+					$id = $result['id'];
+					nicemessage('Uspješno kreirana nova tema završnog rada.');
+					zamgerlog("kreirana tema zavrsnog rada $id na predmetu pp$predmet", 2);
+					zamgerlog2("dodao temu zavrsnog rada", $id);
+				} else {
+					niceerror("Greška prilikom dodavanja završnog rada");
+					api_report_bug($result, $thesis);
+				}
 			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 
 			return;
 		}
 		
-
+		
 		if ($id > 0) {
-			$q98 = db_query("SELECT student, mentor, predsjednik_komisije, clan_komisije, naslov, podnaslov, kratki_pregled, literatura, rad_na_predmetu, odluka_tema, odluka_komisija FROM zavrsni WHERE id=$id AND predmet=$predmet AND akademska_godina=$ag");
-			if (db_num_rows($q98)<1) {
+			$thesis = api_call("thesis/$id", [ "resolve" => [ "Decision" ] ] );
+			if ($_api_http_code == "404") {
 				niceerror("Nepostojeći završni rad");
 				zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
 				zamgerlog2("id zavrsnog rada i predmeta se ne poklapaju", $id, $predmet, $ag);
 				return;
-			}
-			$id_studenta = db_result($q98, 0, 0);
-			$id_mentora = db_result($q98, 0, 1);
-			$id_predkom = db_result($q98, 0, 2);
-			$id_clankom = db_result($q98, 0, 3);
-			$naslov = db_result($q98, 0, 4);
-			$podnaslov = db_result($q98, 0, 5);
-			$kratki_pregled = db_result($q98, 0, 6);
-			$literatura = db_result($q98, 0, 7);
-			$na_predmetu = db_result($q98, 0, 8);
-			$odluka_komisija = db_result($q98, 0, 9);
-			if ($odluka_komisija > 0) {
-				$q99 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=$odluka_komisija");
-				$datum_odluke_komisija = date("d.m.Y.", db_result($q99,0,0));
-				$broj_odluke_komisija = db_result($q99,0,1);
-			} else {
-				$broj_odluke_komisija = $datum_odluke_komisija = "";
-			}
-			$odluka_tema = db_result($q98, 0, 10);
-			if ($odluka_tema > 0) {
-				$q99 = db_query("SELECT UNIX_TIMESTAMP(datum), broj_protokola FROM odluka WHERE id=$odluka_tema");
-				$datum_odluke_tema = date("d.m.Y.", db_result($q99,0,0));
-				$broj_odluke_tema = db_result($q99,0,1);
-			} else {
-				$broj_odluke_tema = $datum_odluke_tema = "";
+			} else if ($_api_http_code != "200") {
+				niceerror("Greška prilikom preuzimanja teme završnog rada");
+				api_report_bug($thesis, []);
+				return;
 			}
 
 			?>	
 			<h3>Izmjena teme završnog rada</h3>
 			<?
 		} else {
+			$thesis = [ "title" => "", "subtitle" => "", "description" => "", "literature" => "", "thesisDecision" => [ "id" => 0 ], "committeeDecision" => [ "id" => 0 ] ];
 			?>	
 			<h3>Nova tema završnog rada</h3>
 			<?
-			$naslov = $podnaslov = $kratki_pregled = $literatura = "";
-			$na_predmetu = $id_studenta = 0;
-			$broj_odluke_tema = $datum_odluke_tema = $broj_odluke_komisija = $datum_odluke_komisija = "";
 		}
 
 		// Spisak predmeta na kojima je osoba odg. nastavnik iz kojih može biti predmet
-		$q99 = db_query("SELECT p.id, p.naziv, i.kratki_naziv FROM predmet as p, angazman as a, institucija as i WHERE a.predmet=p.id AND a.akademska_godina=$ag AND a.osoba=$userid AND a.angazman_status=1 AND p.institucija=i.id ORDER BY p.naziv");
+		$courses = api_call("course/teacher/$userid", [ "resolve" => ["CourseUnit", "Institution" ] ])["results"];
 		$pronadjen = false;
 		$prof_predmeti = "<option value=0>(nije definisan)</option>\n";
-		while ($r99 = db_fetch_row($q99)) {
-			if (substr($r99[1], 0, 12) == "Završni rad") continue;
-			if ($r99[0] == $na_predmetu) {
-				$prof_predmeti .= "<option value=\"$r99[0]\" selected>";
+		foreach($courses as $course) {
+			if (substr($course['courseName'], 0, 12) == "Završni rad") continue;
+			if ($course['CourseUnit']['id'] == $thesis['thesisCourseUnit']['id']) {
+				$prof_predmeti .= "<option value=\"" . $course['CourseUnit']['id'] . "\" selected>";
 				$pronadjen = true;
 			} else
-				$prof_predmeti .= "<option value=\"$r99[0]\">";
-			$prof_predmeti .= "$r99[1] ($r99[2])</option>\n";
+				$prof_predmeti .= "<option value=\"" . $course['CourseUnit']['id'] . "\">";
+			$prof_predmeti .= $course['courseName'] . " (" . $course['CourseUnit']['Institution']['abbrev'] . ")</option>\n";
 		}
-		if ($na_predmetu != 0 && $pronadjen == false) {
+		if ($thesis['thesisCourseUnit']['id'] != 0 && $pronadjen == false) {
 			// Ako je ranije već izabran predmet kojeg nema na spisku, dodaćemo ga na spisak
-			$q99a = db_query("SELECT p.naziv, i.kratki_naziv FROM predmet as p, institucija as i WHERE p.id=$na_predmetu and p.institucija=i.id");
-			$prof_predmeti .= "<option value=\"$na_predmetu\" selected>".db_result($q99a,0,0)." (".db_result($q99a,0,1).")</option>\n";
+			$course = api_call("course/$na_predmetu", [ "resolve" => ["CourseUnit", "Institution" ] ]);
+			$prof_predmeti .= "<option value=\"$na_predmetu\" selected>" . $course['courseName'] . " (" . $course['CourseUnit']['Institution']['abbrev'] . ")</option>\n";
 		}
 		
 		// Spisak studenata na predmetu Završni rad
-		$q100 = db_query("SELECT o.id, o.ime, o.prezime, o.brindexa FROM student_predmet AS sp, ponudakursa AS pk, osoba AS o WHERE pk.predmet=$predmet AND pk.akademska_godina=$ag AND pk.id=sp.predmet AND sp.student=o.id ORDER BY o.prezime, o.ime");
-		$rowcounter5 = 0;
+		$allStudents = api_call("group/course/$predmet/allStudentsSimple", [ "year" => $ag ] )["results"];
+		usort($allStudents, function($s1, $s2) {
+			if ($s1['surname'] == $s2['surname'])
+				return strcasecmp($s1['name'], $s2['name']);
+			return strcasecmp($s1['surname'], $s2['surname']);
+		});
+		
 		$studenti_ispis = "<option value=0>(nije definisan)</option>\n";
 		$cnt5 = 0;
-		while ($r100 = db_fetch_row($q100)) {
+		foreach($allStudents as $student) {
 			$cnt5 = $cnt5 + 1;
-			if ($r100[0] == $id_studenta) $opcija = " SELECTED";
+			if ($student['id'] == $id_studenta) $opcija = " SELECTED";
 			else $opcija = "";
 			
-			$studenti_ispis .= "<option value=\"$r100[0]\" $opcija>$r100[2] $r100[1] ($r100[3])</option>\n";
+			$studenti_ispis .= "<option value=\"" . $student['id'] . "\" $opcija>" . $student['surname'] . " " . $student['name'] . " (" . $student['studentIdNr'] . ")</option>\n";
 		}
 		
 		// Spisak potencijalnih članova komisije
-		$profesori = $asistenti = $naucni_stepen = array();
-		$q99 = db_query("select id, titula from naucni_stepen");
-		while ($r99 = db_fetch_row($q99))
-			$naucni_stepen[$r99[0]]=$r99[1];
-			
-		$q952 = db_query("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=1 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
-		while ($r952 = db_fetch_row($q952))
-			$profesori[$r952[0]] = $r952[2] . " " . $naucni_stepen[$r952[3]] . " " . $r952[1];
-		$q953 = db_query("SELECT o.id, o.ime, o.prezime, o.naucni_stepen FROM angazman AS a, osoba AS o WHERE a.predmet=$predmet AND a.akademska_godina=$ag AND a.angazman_status=2 AND a.osoba=o.id ORDER BY o.prezime, o.ime");
-		while ($r953 = db_fetch_row($q953))
-			$asistenti[$r953[0]] = $r953[2] . " " . $naucni_stepen[$r953[3]] . " " . $r953[1];
+		$profesori = array();
+		$course = api_call("course/$predmet", [ "year" => $ag ]);
+		foreach($course['staff'] as $staff) {
+			if ($staff['status_id'] == 1 || $staff['status_id'] == 2) {
+				$profesori[$staff['Person']['id']] = $staff['Person']['surname'] . " " . $staff['Person']['name'];
+			}
+		}
+		
+		$broj_odluke_tema = $datum_odluke_tema = "";
+		if ($thesis['thesisDecision']['id'] > 0) {
+			$broj_odluke_tema = $thesis['thesisDecision']['protocolNumber'];
+			$datum_odluke_tema = date("d. m. Y", db_timestamp($thesis['thesisDecision']['date']));
+		}
+		
+		$broj_odluke_komisija = $datum_odluke_komisija = "";
+		if ($thesis['committeeDecision']['id'] > 0) {
+			$broj_odluke_komisija = $thesis['committeeDecision']['protocolNumber'];
+			$datum_odluke_komisija = date("d. m. Y", db_timestamp($thesis['committeeDecision']['date']));
+		}
+		
+		// TODO jedan član komisije!
+		if (count($thesis['committeeMembers']) > 0)
+			$id_clankom = $thesis['committeeMembers'][0]['id'];
 
 		?>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
@@ -429,27 +474,21 @@ function nastavnik_zavrsni() {
 
 		<?=genform("POST", "addForm");?>
 			<input type="hidden" name="subakcija" value="potvrda">
-			<label for="naslov"><span>Naslov teme: <font color="red">*</font></span> <input name="naslov" type="text" id="naslov" size="70" value="<?=$naslov?>"></label> 
-			<label for="podnaslov"><span>Podnaslov:</span> <input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$podnaslov?>"></label>  
+			<label for="naslov"><span>Naslov teme: <font color="red">*</font></span> <input name="naslov" type="text" id="naslov" size="70" value="<?=$thesis['title']?>"></label>
+			<label for="podnaslov"><span>Podnaslov:</span> <input name="podnaslov" type="text" id="podnaslov" size="70" value="<?=$thesis['subtitle']?>"></label>
 			<label for="predmet"><span>Predmet:</span> <select name="na_predmetu"><?=$prof_predmeti?></select></label>  
 			<label for="kandidat"><span>Kandidat:</span> <select name="kandidat"><?=$studenti_ispis?></select></label>  
 			<label for="predkom"><span>Predsjednik komisije:</span> <select name="predkom"><option value=0>(nije definisan)</option><?php 
 				foreach($profesori as $idprof => $imeprof) {
 					if ($idprof == $userid || $idprof == $id_clankom) continue;
 					print "<option value=\"$idprof\"";
-					if ($idprof == $id_predkom) print " SELECTED";
+					if ($idprof == $thesis['committeeChair']['id']) print " SELECTED";
 					print ">$imeprof</option>\n";
 				}
 			?></select></label>  
 			<label for="clankom"><span>Član komisije:</span> <select name="clankom"><option value=0>(nije definisan)</option><?php 
 				foreach($profesori as $idprof => $imeprof) {
-					if ($idprof == $userid || $idprof == $id_predkom) continue;
-					print "<option value=\"$idprof\"";
-					if ($idprof == $id_clankom) print " SELECTED";
-					print ">$imeprof</option>\n";
-				}
-				foreach($asistenti as $idprof => $imeprof) {
-					if ($idprof == $userid || $idprof == $id_predkom) continue;
+					if ($idprof == $userid || $idprof == $thesis['committeeChair']['id']) continue;
 					print "<option value=\"$idprof\"";
 					if ($idprof == $id_clankom) print " SELECTED";
 					print ">$imeprof</option>\n";
@@ -462,9 +501,9 @@ function nastavnik_zavrsni() {
 						od datuma
 						<input name="datum_odluke_komisija" type="text" id="datum_odluke_komisija" size="20" value="<?=$datum_odluke_komisija?>"></label>  
 			<label for="kratki_pregled"><span>Kratki pregled:</span>
-			<textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=htmlentities($kratki_pregled)?></textarea></label> 
+			<textarea name="kratki_pregled" cols="60" rows="10" id="kratki_pregled"><?=htmlentities($thesis['description'])?></textarea></label>
 			<label for="literatura"><span>Preporučena literatura:</span>
-			<textarea name="literatura" cols="60" rows="15" id="literatura"><?=htmlentities($literatura)?></textarea></label>
+			<textarea name="literatura" cols="60" rows="15" id="literatura"><?=htmlentities($thesis['literature'])?></textarea></label>
 			<label><span>&nbsp;</span> <input type="submit" id="submit" value="Potvrdi"> <input type="button" id="nazad" value="Nazad" onclick="javascript:history.go(-1)"></label>
 		</form>
 		
@@ -474,31 +513,52 @@ function nastavnik_zavrsni() {
 	
 	// Akcija DODAJ BILJEŠKU
 	elseif ($akcija == 'dodaj_biljesku') {
+		$thesis = api_call("thesis/$id" );
+		if ($_api_http_code == "404") {
+			niceerror("Nepostojeći završni rad");
+			zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
+			zamgerlog2("id zavrsnog rada i predmeta se ne poklapaju", $id, $predmet, $ag);
+			return;
+		} else if ($_api_http_code != "200") {
+			niceerror("Greška prilikom preuzimanja teme završnog rada");
+			api_report_bug($thesis, []);
+			return;
+		}
 
 		if ($_REQUEST['subakcija'] == "potvrda" && check_csrf_token()) {
 			// Poslana forma za dodavanje bilješke
-			$biljeska = db_escape($_REQUEST['biljeska']);
-			$q250 = db_query("UPDATE zavrsni SET biljeska='$biljeska' WHERE id=$id");
-
-			nicemessage('Uspješno ste dodali bilješku.');
-			zamgerlog("dodao biljesku na zavrsni rad $id", 2);
-			zamgerlog2("dodao biljesku na zavrsni rad", $id);
+			$thesis['note'] = $_REQUEST['biljeska'];
+			
+			$newthesis = array_to_object($thesis);
+			$newthesis->menthors = $newthesis->committeeMembers = [];
+			foreach($thesis['menthors'] as $menthor)
+				$newthesis->menthors[] = array_to_object($menthor);
+			foreach($thesis['committeeMembers'] as $menthor)
+				$newthesis->committeeMembers[] = array_to_object($menthor);
+			
+			$result = api_call("thesis/$id", $newthesis, "PUT");
+			if ($_api_http_code == "201") {
+				nicemessage('Uspješno ste dodali bilješku.');
+				zamgerlog("dodao biljesku na zavrsni rad $id", 2);
+				zamgerlog2("dodao biljesku na zavrsni rad", $id);
+			} else {
+				niceerror("Greška prilikom izmjene završnog rada");
+				api_report_bug($result, $thesis);
+			}
 			nicemessage('<a href="'. $linkPrefix .'">Povratak.</a>');
 			return; 
 		}
 
 		// Forma za izmjenu/dodavanje bilješke
-		$q260 = db_query("SELECT biljeska, naslov FROM zavrsni WHERE id=$id");
-
 		?>
-		<h3>Bilješka na završni rad: <?=db_result($q260,0,1)?></h3>
+		<h3>Bilješka na završni rad: <?=htmlentities($thesis['title'])?></h3>
 		<p>Ovdje možete ostaviti bilješku koja je samo vama vidljiva.</p>
 		<p><a href="<?=$linkPrefix?>">Nazad na spisak tema</a></p>
 		<?=genform('POST','addNote'); ?>
 		<input type="hidden" name="subakcija" value="potvrda">
 			<div class="row">
 				<span class="label">Bilješka:</span>
-				<span class="formw"><textarea name="biljeska" cols="60" rows="15" id="opis"><?=db_result($q260,0,0)?></textarea></span>
+				<span class="formw"><textarea name="biljeska" cols="60" rows="15" id="opis"><?=htmlentities($thesis['note'])?></textarea></span>
 			</div> 
 					
 			<div class="row">	
@@ -509,17 +569,40 @@ function nastavnik_zavrsni() {
 	} //akcija == dodaj biljesku
 
 	elseif ($akcija == 'potvrdi_kandidata') {
-		$q1000 = db_query("SELECT student FROM zavrsni WHERE mentor=$userid and id=$id AND predmet=$predmet AND akademska_godina=$ag");
-		if (db_num_rows($q1000)<1 || db_result($q1000,0,0)==0) {
+		$thesis = api_call("thesis/$id" );
+		if ($_api_http_code == "404") {
+			niceerror("Nepostojeći završni rad");
+			zamgerlog("spoofing zavrsnog rada $id kod izmjene teme", 3);
+			zamgerlog2("id zavrsnog rada i predmeta se ne poklapaju", $id, $predmet, $ag);
+			return;
+		} else if ($_api_http_code != "200") {
+			niceerror("Greška prilikom preuzimanja teme završnog rada");
+			api_report_bug($thesis, []);
+			return;
+		}
+		
+		if ($thesis['candidate']['id'] == 0) {
 			niceerror("Nije definisan kandidat za ovaj rad");
 			zamgerlog("spoofing zavrsnog rada $id kod potvrde kandidata", 3);
 			zamgerlog2("id zavrsnog rada i predmeta se ne poklapaju", $id, $predmet, $ag);
 			return;
 		} else {
-			$q1010 = db_query("UPDATE zavrsni SET kandidat_potvrdjen=1 WHERE id=$id");
-			?>
-			<script>window.location = '<?=$linkPrefix?>';</script>
-			<?
+			$thesis['candidateApproved'] = true;
+			$newthesis = array_to_object($thesis);
+			$newthesis->menthors = $newthesis->committeeMembers = [];
+			foreach($thesis['menthors'] as $menthor)
+				$newthesis->menthors[] = array_to_object($menthor);
+			foreach($thesis['committeeMembers'] as $menthor)
+				$newthesis->committeeMembers[] = array_to_object($menthor);
+			$result = api_call("thesis/$id", $newthesis, "PUT");
+			if ($_api_http_code == "201") {
+				?>
+				<script>window.location = '<?=$linkPrefix?>';</script>
+				<?
+			} else {
+				niceerror("Greška prilikom izmjene završnog rada");
+				api_report_bug($result, $thesis);
+			}
 		}
 	} //akcija == potvrdi_kandidata
 } // function

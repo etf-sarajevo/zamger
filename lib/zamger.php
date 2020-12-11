@@ -163,6 +163,32 @@ function tituliraj($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zv
 	return $ime;
 }
 
+// Version with fully resolved person from api
+function tituliraj_api($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavnim_zvanjem = true, $prezime_prvo = false) {
+	if ($prezime_prvo)
+		$ime = $osoba['surname'] . " " . $osoba['name'];
+	else
+		$ime = $osoba['name'] . " " . $osoba['surname'];
+	
+	// Insert dr/mr into middle
+	if ($osoba['titlesPre'] && $prezime_prvo) {
+		if (ends_with($osoba['titlesPre'], " dr")) {
+			$ime = $osoba['surname'] . " dr " . $osoba['name'];
+			$osoba['titlesPre'] = substr($osoba['titlesPre'], 0, strlen($osoba['titlesPre']) - 3);
+		}
+		if (ends_with($osoba['titlesPre'], " mr")) {
+			$ime = $osoba['surname'] . " mr " . $osoba['name'];
+			$osoba['titlesPre'] = substr($osoba['titlesPre'], 0, strlen($osoba['titlesPre']) - 3);
+		}
+	}
+	
+	if ($sa_akademskim_zvanjem && $osoba['titlesPost'])
+		$ime = $ime . ", " . $osoba['titlesPost'];
+	if ($sa_naucnonastavnim_zvanjem && $osoba['titlesPre'])
+		$ime = $osoba['titlesPre'] . " " . $ime;
+	return $ime;
+}
+
 
 // Generiše cachiranu verziju izvještaja izvjestaj/predmet
 // Prije poziva treba u superglobalni niz $_REQUEST napuniti eventualne parametre izvještaja
@@ -232,7 +258,7 @@ function genform($method="POST", $name="") {
 	global $login;
 
 	if ($method != "GET" && $method != "POST") $method="POST";
-	$result = '<form name="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
+	$result = '<form name="'.$name.'" id="'.$name.'" action="'.$_SERVER['PHP_SELF'].'" method="'.$method.'">'."\n";
 	foreach ($_REQUEST as $key=>$value) {
 		if ($key=="pass" && $method=="GET") continue; // Ne pokazuj sifru u URLu!
 		if ($key=="PHPSESSID") continue; // Ne pokazuj session id u URLu

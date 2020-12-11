@@ -4,11 +4,11 @@
 
 
 
-function common_zavrsniStrane() {
+function common_zavrsniStrane($thesis = []) {
 	require_once("lib/utility.php"); // nicesize
 
 	//debug mod aktivan
-	global $userid, $user_nastavnik, $user_student, $conf_files_path, $user_siteadmin, $conf_jasper, $conf_jasper_url;
+	global $userid, $_api_http_code, $conf_files_path, $conf_jasper, $conf_jasper_url;
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 	$zavrsni = intval($_REQUEST['zavrsni']);
@@ -22,33 +22,34 @@ function common_zavrsniStrane() {
 	$lokacijafajlova ="$conf_files_path/zavrsni/fajlovi/$zavrsni/";
 
 	// Osnovne informacije o radu
-	$q10 = db_query("SELECT z.naslov, o.ime, o.prezime, o.naucni_stepen, z.student, z.kratki_pregled, z.literatura, z.clan_komisije, z.odluka_komisija, z.odluka_tema FROM zavrsni AS z, osoba AS o WHERE z.id=$zavrsni AND z.mentor=o.id");
-	if (db_num_rows($q10)<1) {
-		niceerror("Nepostojeći rad");
-		zamgerlog("zavrsniStrane: nepostojeci rad $zavrsni", 3);
-		zamgerlog2("nepostojeci rad", $zavrsni);
-		return;
+	if (empty($thesis)) {
+		$thesis = api_call("thesis/$zavrsni", [ "resolve" => [ "Person" ]]);
+		if ($_api_http_code != "200") {
+			niceerror("Završni rad nije sa ovog predmeta");
+			zamgerlog("spoofing zavrsnog rada $zavrsni", 3);
+			api_report_bug($thesis, []);
+			return;
+		}
 	}
 
-	// Cache naučnog stepena
-	$q20 = db_query("select id, titula from naucni_stepen");
-	while ($r20 = db_fetch_row($q20))
-		$naucni_stepen[$r20[0]]=$r20[1];
-
-	$naslov_rada = db_result($q10,0,0);
-	$mentor = db_result($q10,0,2)." ".$naucni_stepen[db_result($q10,0,3)]." ".db_result($q10,0,1);
-	$id_studenta = db_result($q10,0,4);
+	$naslov_rada = $thesis['title'];
+	$mentori = "";
+	foreach($thesis['menthors'] as $menthor) {
+		if ($mentori != "") $mentori .= "<br>\n";
+		$mentori .= tituliraj_api($menthor, false);
+	}
+	$id_studenta = $thesis['candidate']['id'];
 	
 	// Naslov stranice
 
 	?>
 	<h2><?=$naslov_rada?></h2>
-	<p>Mentor: <?=$mentor?><br>
+	<p>Mentor(i): <?=$mentori?><br>
 	<?
 	
 	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
 		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
-		print "<p>Student: ".db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).")</p>";
+		print "<p>Student: ".$thesis['candidate']['surname']." ".$thesis['candidate']['name']." (".$thesis['candidate']['studentIdNr'].")</p>";
 	} else {
 		print "<p><a href=\"?sta=student/zavrsni&amp;predmet=$predmet&amp;ag=$ag&amp;zavrsni=$zavrsni&amp;akcija=detalji\">Pregledaj postavku teme</a></p>\n";
 	}
@@ -59,8 +60,8 @@ function common_zavrsniStrane() {
 
 		
 	// Da li je definisan sazetak?
-	$kratki_pregled = db_result($q10,0,5);
-	$literatura = db_result($q10,0,6);
+	$kratki_pregled = $thesis['description'];
+	$literatura = $thesis['literature'];
 /*	if ($userid == $id_studenta) {
 		if (!preg_match("/\w/", $kratki_pregled) || !preg_match("/\w/", $literatura)) {
 			?>
@@ -82,16 +83,24 @@ function common_zavrsniStrane() {
 	<p><b>Izvještaji</b></p>
 	
 	<?
-	$clan_komisije = db_result($q10,0,7);
-	$odluka_komisija = db_result($q10,0,8);
-	$odluka_tema = db_result($q10,0,9);
+	$clan_komisije = false;
+	if (count($thesis['committeeMembers']) > 0)
+		$clan_komisije = $thesis['committeeMembers'][0]['id'];
+	$odluka_komisija = $thesis['thesisDecision']['id'];
+	$odluka_tema = $thesis['committeeDecision']['id'];
 		
-	//	$ocjena = db_get("SELECT ocjena FROM konacna_ocjena WHERE student=$student AND predmet=$predmet AND akademska_godina=$ag");
+	// Get students current study cycle
+	$enr = api_call("enrollment/current/$id_studenta", [ "resolve" => ["Programme", "ProgrammeType"] ] );
+	if ($_api_http_code == "200") {
+		$ciklus = $enr["Programme"]["ProgrammeType"]["cycle"];
+	} else {
+		niceerror("Nije moguće odrediti ciklus studija studenta");
+		$ciklus = 1;
+	}
+	
 		
-		$ciklus = db_get("SELECT ts.ciklus FROM tipstudija ts, studij s, student_studij ss WHERE ss.student=$id_studenta AND ss.akademska_godina=$ag AND ss.semestar MOD 2 = 1 AND ss.studij=s.id AND s.tipstudija=ts.id");
 		
-		
-		if (!$mentor || !$clan_komisije || !$odluka_komisija || !$odluka_tema)
+		if (!$mentor1 || !$clan_komisije || !$odluka_komisija || !$odluka_tema)
 			niceerror("Molimo da kontaktirate vašeg mentora kako bi unio u Zamger podatke koji nedostaju");
 	
 	$url = "id=$id&amp;zavrsni=$id&amp;predmet=$predmet&amp;ag=$ag";
@@ -104,12 +113,12 @@ function common_zavrsniStrane() {
 			?>
 			<li>Obrazac ZR1: Prijava teme završnog rada - <font color="red">nije unesen kratki pregled teme i preporučena literatura</font></li>
 			<? }?>
-			<? if ($mentor && $clan_komisije) { ?>
+			<? if ($mentori && $clan_komisije) { ?>
 			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=2" target="_blank">Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada</a></li>
 			<? } else { 
 			?>
 			<li>Obrazac ZR2: Prijedlog Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
-			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$mentori) print "nije definisan mentor za završni rad, ";
 			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
 			?></font></li>
 			<? }?>
@@ -122,31 +131,31 @@ function common_zavrsniStrane() {
 			<? if ($ciklus == 1 || !$conf_jasper) { ?>
 			<li><a href="?sta=izvjestaj/zavrsni_zapisnik&amp;<?=$url?>">Zapisnik sa odbrane završnog rada</a></li>
 			<? } ?>
-			<? if ($mentor) { ?>
+			<? if ($mentori) { ?>
 			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=4" target="_blank">Obrazac ZR4: Saglasnost mentora</a></li>
 			<? } else { 
 			?>
 			<li>Obrazac ZR4: Saglasnost mentora - <font color="red"><? 
-			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$mentori) print "nije definisan mentor za završni rad, ";
 			?></font></li>
 			<? }?>
-			<? if ($mentor && $clan_komisije && $odluka_komisija) { ?>
+			<? if ($mentori && $clan_komisije && $odluka_komisija) { ?>
 			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=5" target="_blank">Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada</a></li>
 			<? } else { 
 			?>
 			<li>Obrazac ZR5: Izvještaj Komisije za ocjenu i odbranu završnog rada - <font color="red"><? 
-			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$mentori) print "nije definisan mentor za završni rad, ";
 			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
 			if (!$odluka_komisija) print "nije unesen broj i datum odluke o imenovanju komisije";
 			?></font></li>
 			<? }?>
-			<? if ($ciklus == 2 && $mentor && $clan_komisije && $odluka_tema) { ?>
+			<? if ($ciklus == 2 && $mentori && $clan_komisije && $odluka_tema) { ?>
 			<li><a href="<?=$linkPrefix?>&amp;subakcija=izvjestaj_jasper&amp;tip=6" target="_blank">Obrazac ZR6: Zapisnik sa odbrane završnog rada</a></li>
 			<? } else if ($ciklus == 2) { 
 			?>
 			<li>Obrazac ZR6: Zapisnik sa odbrane završnog rada - <font color="red"><? 
 			//if (!$ocjena) print "nije unesena ocjena, ";
-			if (!$mentor) print "nije definisan mentor za završni rad, ";
+			if (!$mentori) print "nije definisan mentor za završni rad, ";
 			if (!$clan_komisije) print "nije definisana komisija za završni rad, ";
 			if (!$odluka_tema) print "nije unesen broj odluke o odobrenju teme, ";
 			?></font></li>
@@ -156,6 +165,8 @@ function common_zavrsniStrane() {
 	
 
 	// Spisak fajlova
+	
+	// TODO prebaciti na portal!
 
 	?>
 	<hr>
@@ -312,8 +323,9 @@ function common_zavrsniStrane() {
 
 
 	// Konačna ocjena
-
-	$ocjena = db_get("select ocjena from konacna_ocjena where student=$id_studenta and predmet=$predmet and akademska_godina=$ag");
+	
+	$pf = api_call("course/$predmet/student/$id_studenta", [ "year" => $ag, "score" => true ] );
+	$ocjena = $pf['grade'];
 	if ($ocjena > 5) {
 		if ($ocjena == 11) $ocjena = "Ispunio/la obaveze";
 		if ($ocjena == 12) $ocjena = "Uspješno odbranio/la";
