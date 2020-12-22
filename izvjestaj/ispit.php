@@ -51,7 +51,7 @@ if ($_REQUEST['ispit'] == "svi") {
 
 // Upit za ispit
 
-$q10 = db_query("select UNIX_TIMESTAMP(i.datum), k.gui_naziv, k.maxbodova, k.prolaz, i.predmet, i.akademska_godina from ispit as i, komponenta as k where i.id=$ispit and i.komponenta=k.id");
+$q10 = db_query("select UNIX_TIMESTAMP(i.datum), ap.naziv, ap.bodova, ap.prolaz, i.predmet, i.akademska_godina from ispit as i, aktivnost_predmet as ap where i.id=$ispit and i.komponenta=ap.id");
 if (db_num_rows($q10)<1) {
 	biguglyerror("Nepoznat ispit!");
 	zamgerlog ("nepoznat ispit $ispit",3);
