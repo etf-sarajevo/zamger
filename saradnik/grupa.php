@@ -162,6 +162,11 @@ function saradnik_grupa() {
 	// ------- ZAGLAVLJE STRANICE (naslov i sl.)
 
 	$course = api_call("course/$predmet/$ag");
+	if ($_api_http_code != "200") {
+		niceerror("Neuspješno otvaranje predmeta");
+		api_report_bug($course, []);
+		return;
+	}
 	
 	?>
 	<br />
