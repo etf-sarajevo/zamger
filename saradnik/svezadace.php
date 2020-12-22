@@ -46,6 +46,7 @@ function saradnik_svezadace() {
 		<h2>Download svih zadaća u grupi</h2>
 		<? nicemessage ("Molimo sačekajte dok se kreira arhiva.");
 		?>
+		<progress id="progressBar" value="0" max="100"> / </progress>
 		<script language="JavaScript">
 			params = { 'id' : '<?=$backgroundTaskId?>' };
 			setTimeout(checkServer, 1000);
@@ -53,8 +54,16 @@ function saradnik_svezadace() {
                 ajax_api_start('zamger/backgroundTask', 'GET', params, function(task) {
                     if (task.status == 2)
                         document.location.replace('index.php?sta=saradnik/svezadace&grupa=<?=$labgrupa?>&zadaca=<?=$zadaca?>&potvrda=ok&task=<?=$backgroundTaskId?>');
-                    else
+                    else {
                         setTimeout(checkServer, 1000);
+                        if (task.hasOwnProperty('current')) {
+                            var progress = document.getElementById('progressBar');
+                            progress.value = task.current;
+                            progress.max = task.total;
+                            progress.innerText = " " + task.current + " / " + task.total + " ";
+                            console.log(task.current + " / " + task.total);
+						}
+                    }
                 }, function(text, status, url) {
                     alert("Došlo je do greške na serveru.");
                     console.error("Kod: "+status);
