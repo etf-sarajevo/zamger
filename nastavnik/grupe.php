@@ -121,7 +121,7 @@ function nastavnik_grupe() {
 	}
 	
 	
-	$groups = api_call("group/course/$predmet", [ "year" => $ag ] )["results"];
+	$groups = api_call("group/course/$predmet", [ "year" => $ag, "countMembers" => true ] )["results"];
 	
 	// Masovni unos studenata u grupe
 	if ($_POST['akcija'] == "massinput" && strlen($_POST['nazad'])<1 && check_csrf_token()) {
