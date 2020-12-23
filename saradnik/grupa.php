@@ -6,7 +6,7 @@
 
 function saradnik_grupa() {
 
-	global $userid,$user_siteadmin, $_api_http_code;
+	global $userid, $_api_http_code;
 	
 	require_once("lib/student_predmet.php"); // update_komponente
 	require_once("lib/utility.php"); // procenat, bssort, array_to_object
@@ -650,6 +650,66 @@ function saradnik_grupa() {
 		$zaglavlje1 .= "<td align=\"center\" colspan=\"" . count($exams) . "\">Ispiti</td>\n";
 	}
 	
+	// Refresh icon
+	$refresh_icon = "";
+	if ($grupa_virtualna) {
+		$refresh_icon = '<br><img src="static/images/16x16/view-refresh.svg" width="16" height="16" onclick="return updateAllScores();" title="Ažuriraj bodove" alt="Ažuriraj bodove">';
+		?>
+		<div id="prekrivac" style="display:none; position: absolute; left: 0px; top: 55px; background-image:url('static/images/blur.gif'); background-repeat:repeat; height: 100%; width: 100%;">
+			<div id="prozor" style="backdrop-filter: blur(10px); background: #eee; border: 1px solid black; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px">
+				<p align="center">Ažuriram ukupan broj bodova za sve studente. Molim sačekajte...<br>
+					<progress id="updateScoreProgress" value="0" max="100"> / </progress></p>
+			</div>
+			
+		</div>
+		<script>
+			// Function that calls updateAllScores API in the background
+			backgroundTaskParams = { 'id' : '0' };
+			function updateAllScores() {
+                ajax_api_start('course/<?=$predmet?>/<?=$ag?>/updateAllScores', 'GET', {}, function (result) {
+                    backgroundTaskParams.id = result['BackgroundTask']['id'];
+                    document.getElementById('prekrivac').style.display = "inline";
+                    setTimeout(updateAllScoresHelper, 1000);
+                }, function (text, status, url) {
+                    alert("Došlo je do greške na serveru.");
+                    console.error("Kod: " + status);
+                    console.error(text);
+                });
+            }
+
+            // Helper function
+            function updateAllScoresHelper() {
+                ajax_api_start('zamger/backgroundTask', 'GET', backgroundTaskParams, function(task) {
+                    if (task.status == 2) {
+                        document.getElementById('prekrivac').style.display = "none";
+                        for (var studentId in task.result.members) {
+                            var item = task.result.members[studentId];
+                            console.log(item);
+                            if (item.hasOwnProperty('totalScore'))
+	                            document.getElementById('total-' + studentId).innerHTML = item.totalScore;
+						}
+					}
+                    else {
+                        setTimeout(updateAllScoresHelper, 1000);
+                        if (task.hasOwnProperty('current')) {
+                            var progress = document.getElementById('updateScoreProgress');
+                            progress.value = task.current;
+                            progress.max = task.total;
+                            progress.innerText = " " + task.current + " / " + task.total + " ";
+                            console.log(task.current + " / " + task.total);
+                        }
+                    }
+                }, function(text, status, url) {
+                    alert("Došlo je do greške na serveru.");
+                    console.error("Kod: "+status);
+                    console.error(text);
+                });
+            }
+
+		</script>
+		<?php
+	}
+	
 	$minw += 70; // ukupno
 	$minw += 45; // broj indexa
 	$minw += 100; // ime i prezime
@@ -663,7 +723,7 @@ function saradnik_grupa() {
 			<td rowspan="2" align="center" valign="center">Broj indexa</td>
 			<td rowspan="2" align="center" valign="center">Ko-<br/>men-<br/>tar</td>
 			<?=$zaglavlje1?>
-			<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;</td>
+			<td align="center" valign="center" rowspan="2">&nbsp;&nbsp;<b>UKUPNO</b>&nbsp;&nbsp;<?=$refresh_icon?></td>
 			<td rowspan="2" align="center">Konačna<br/>ocjena</td>
 		</tr>
 		<tr>
@@ -819,7 +879,7 @@ function saradnik_grupa() {
 			<?=$zadace_ispis?>
 			<?=$fiksne_ispis?>
 			<?=$ispiti_ispis?>
-			<td align="center"><? print $currentMember['totalScore'];
+			<td align="center" id="total-<?=$studentId?>"><? print $currentMember['totalScore'];
 		/*	Procenat zauzima previše prostora po horizontali, a nije toliko interesantan
 			if ($mogucih_bodova!=0 && $mogucih_bodova!=100) {
 		//		?> (<?=procenat($bodova,$mogucih_bodova)?>)<?
