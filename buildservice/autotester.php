@@ -472,8 +472,6 @@ else if ($_REQUEST['action'] == "setResult") {
 		db_fetch2($q, $predmet, $ag);
 		
 		$privilegija = bs_nastavnik_pravo_pristupa($zadaca);
-		zamgerlog("autotestiran student u$student z$zadaca zadatak $zadatak", 2);
-		zamgerlog2("autotestiran student", intval($student), intval($zadaca), intval($zadatak));
 		
 		if (!$user_siteadmin && !$user_autotester && ($privilegija === false || $privilegija == "asistent" && !bs_nastavnik_ogranicenje($zadaca, $student))) {
 			$result['success'] = "false";
@@ -512,6 +510,8 @@ else if ($_REQUEST['action'] == "setResult") {
 			
 			if ($program_status == 3 || $program_status == 4) {
 				$q2 = db_query("INSERT INTO zadatak SET zadaca=$zadaca, redni_broj=$zadatak, student=$student, status=$program_status, bodova=$bodova, izvjestaj_skripte='$compiler_output', vrijeme=NOW(), komentar='".db_escape_string($komentar)."', filename='".db_escape_string($filename)."', userid=$userid");
+				zamgerlog("autotestiran student u$student z$zadaca zadatak $zadatak", 2);
+				zamgerlog2("autotestiran student", intval($student), intval($zadaca), intval($zadatak));
 			}
 			
 			// Zapisujemo rezultat testa u fajl 
