@@ -309,9 +309,14 @@ function saradnik_grupa() {
 	
 	// Get fixed cacts list
 	$fixedCacts = [];
-	foreach($course['activities'] as $cact)
+	foreach($course['activities'] as $cact) {
 		if ($cact['Activity']['id'] == null || $cact['Activity']['id'] == 4) // 4 = Projects
 			$fixedCacts[$cact['id']] = $cact;
+		// Fix attendance with no registered classes
+		if ($cact['Activity']['id'] == 9)
+			if (!array_key_exists($cact['id'], $cactClasses))
+				$cactClasses[$cact['id']] = [];
+	}
 	
 	// Get list of homeworks
 	$allHomeworks = api_call("homework/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
