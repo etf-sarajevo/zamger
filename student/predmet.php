@@ -176,10 +176,15 @@ function student_predmet() {
 	$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
 	$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 	
-	foreach($course['score'] as $StudentScore) {
-		$cact = $StudentScore['CourseActivity']; // shortcut
+	foreach($course['activities'] as $cact) {
+		//$cact = $StudentScore['CourseActivity']; // shortcut
 		if ($cact['Activity']['id'] != 2) // 2 = Zadaće
 			continue;
+		
+		$StudentScore = [ "details" => [] ];
+		foreach ($course['score'] as $score)
+			if ($score['CourseActivity']['id'] == $cact['id'])
+				$StudentScore = $score;
 		
 		// Transform homework details into a 2D matrix which is much easier to work with
 		$homeworks = api_call("homework/course/$predmet/$ag", [ "files" => true ])["results"];
