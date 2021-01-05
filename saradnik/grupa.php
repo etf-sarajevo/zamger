@@ -426,7 +426,7 @@ function saradnik_grupa() {
 			}
 			?></select>&nbsp;&nbsp;
 			<select name="godina" class="default"><?
-			for ($i=2005; $i<=2020; $i++) {
+			for ($i=2005; $i<=2040; $i++) {
 				print "<option value=\"$i\"";
 				if ($i==$godina) print " selected";
 				print ">$i</option>";
