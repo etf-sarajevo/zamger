@@ -329,7 +329,7 @@ function saradnik_grupa() {
 			if ($hwk['id'] == $hw['id'])
 				$found = true;
 		if (!$found)
-			$cactHomeworks[$cactId][] = $hw;
+			$cactHomeworks[$cactId][$hw['id']] = $hw;
 		if (!array_key_exists($cactId, $cactTitles))
 			$cactTitles[$cactId] = $hw['CourseActivity']['name'];
 	}
