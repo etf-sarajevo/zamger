@@ -483,6 +483,58 @@ function nastavnik_zadace() {
 	}
 	
 	
+	if (param('akcija') == "bodujSve") {
+		$zadaca = int_param('zadaca');
+		$zadatak = int_param('zadatak');
+		
+		if ((param('subakcija') == "fakatBoduj" || param('subakcija') == "dryRun") && check_csrf_token()) {
+			if (param('subakcija') == "dryRun") $dryRun = true; else $dryRun = false;
+			$maxBodova = floatval($_REQUEST['maxBodova']);
+			$autoGrade = api_call("homework/$zadaca/$zadatak/autoGrade", [ "maxScore" => $maxBodova, "dryRun" => $dryRun], "PUT");
+			if ($_api_http_code == "201") {
+				if (param('subakcija') == "dryRun") {
+					foreach($autoGrade['results'] as $student => $result) {
+						print "$result<br>";
+					}
+					print "<p>&nbsp;</p>";
+					?>
+					<?=genform("POST");?>
+					<input type="hidden" name="subakcija" value="fakatBoduj">
+					<input type="submit" value=" Potvrdi bodove ">
+					</form>
+					<?php
+				} else {
+					foreach($autoGrade['results'] as $student => $result) {
+						zamgerlog2("automatsko bodovanje zadace", $student, $zadaca, $zadatak);
+						print "$result<br>";
+					}
+					nicemessage("Automatsko bodovanje zadaće uspješno završeno");
+				}
+			} else {
+				niceerror("Neuspješno bodovanje zadaće");
+				api_report_bug($result, $newAssignment);
+			}
+			
+			return;
+		}
+		
+		$homework = api_call("homework/$zadaca");
+		$defaultScore = round($homework['maxScore'] / $homework['nrAssignments'], 2);
+		
+		?>
+		<h3>Automatsko bodovanje zadaće proporcionalno rezultatima testiranja</h3>
+		<p>Zadaća <b><?=$homework['name']?></b>, Zadatak <b><?=$zadatak?></b></p>
+		<?=genform("POST")?>
+		<input type="hidden" name="subakcija" value="dryRun">
+		Maksimalan broj bodova: <input type="text" name="maxBodova" value="<?=$defaultScore?>">
+		<input type="submit" value=" Kreni ">
+		</form>
+		<?
+		
+		return;
+	}
+	
+	
 	// Spisak postojećih zadaća
 	$izabrana = intval($_REQUEST['_lv_nav_id']);
 	if ($izabrana==0) $izabrana=intval($edit_zadaca);
@@ -761,6 +813,7 @@ function nastavnik_zadace() {
 					?>
 					<button onclick="doOpenAutotestGenerator(<?=$fileID?>, <?=$i?>) ;" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Definiši testove</button>&nbsp;
 					<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=resetStatus';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Zatraži retestiranje</button>&nbsp;
+					<button onclick="location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>&zadaca=<?=$izabrana?>&zadatak=<?=$i?>&akcija=bodujSve';" type="button" class="btn btn-info btn-sm mr-2 waves-effect">Automatsko bodovanje</button>&nbsp;
 					</li>
 					<?
 				}
