@@ -11,7 +11,7 @@ function nastavnik_tip() {
 	$predmet = intval($_REQUEST['predmet']);
 	$ag = intval($_REQUEST['ag']);
 	
-	$course = api_call("course/$predmet/$ag", [ "resolve" => ["Activity"] ] );
+	$course = api_call("course/$predmet/$ag", [ "resolve" => ["Activity", "CourseActivity"] ] );
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
@@ -77,7 +77,21 @@ function nastavnik_tip() {
 		}
 		
 		if (param('subakcija') == "dodaj_uslovnu" && check_csrf_token()) {
-			$cact->conditionalActivities[] = [ "id" => int_param("uslovna_aktivnost")];
+			$found = false;
+			$new_conditional_id = int_param("uslovna_aktivnost");
+			foreach ($cact->conditionalActivities as $cond)
+				if ($cond['id'] == $new_conditional_id)
+					$found = true;
+			if (!$found)
+				$cact->conditionalActivities[] = [ "id" => $new_conditional_id];
+		}
+		
+		if (param('subakcija') == "obrisi_uslovnu" /*&& check_csrf_token()*/) { // TODO: move to POST request
+			$found = false;
+			$conditional_id = int_param("uslovna_aktivnost");
+			foreach ($cact->conditionalActivities as $key => $cond)
+				if ($cond['id'] == $conditional_id)
+					unset($cact->conditionalActivities[$key]);
 		}
 		
 		if (param('subakcija') == "dodaj_min_bodove" && check_csrf_token()) {
@@ -182,7 +196,7 @@ function nastavnik_tip() {
 		foreach($foundActivity['conditionalActivities'] as $cond) {
 			foreach ($course['activities'] as $activity) {
 				if ($cond['id'] == $activity['id'])
-					print "<li>" . $activity['name'] . "</li>\n";
+					print "<li>" . $activity['name'] . " (<a href='" . genuri() . "&subakcija=obrisi_uslovnu&uslovna_aktivnost=" . $cond['id'] .  "'>obriši</a>)</li>\n";
 			}
 		}
 		?>
@@ -534,7 +548,7 @@ function nastavnik_tip() {
 			<td><?
 				if ($activity['mandatory']) print "Obavezna, ";
 				foreach($activity['conditionalActivities'] as $cond)
-					print $cond['name'] . ", ";
+					print "uslov: " . $cond['name'] . ", ";
 				if (is_array($activity['options']) && array_key_exists("MinScore", $activity['options']))
 					print "min. " . $activity['options']['MinScore'] . " b.";
 				?></td>
