@@ -19,6 +19,15 @@ function student_prijava_ispita() {
 	// Spisak ispita na koje je student već prijavljen
 	$registered_events = api_call("event/registered/$userid", [ "resolve" => ["CourseActivity"]] )['results'];
 	
+	if ($userid == 7440) {
+		print "<textarea>";
+		print_r($upcoming_events);
+		print "</textarea><br>";
+		print "<textarea>";
+		print_r($registered_events);
+		print "</textarea>";
+	}
+	
 	
 	// Odjavljivanje sa prijavljenog ispita
 	
@@ -92,7 +101,7 @@ function student_prijava_ispita() {
 			// Da li je već prijavio termin na istom ispitu?
 			$same = false;
 			foreach($registered_events as $event) {
-				if ($foundEvent['CourseUnit']['id'] == $event['CourseUnit']['id'] && $foundEvent['CourseActivity']['id'] == $event['CourseActivity']['id']) {
+				if ($foundEvent['CourseUnit']['id'] == $event['CourseUnit']['id'] && $foundEvent['CourseActivity']['id'] == $event['CourseActivity']['id'] && $foundEvent['options'] == $event['options']) {
 					$same = true;
 				}
 			}
@@ -196,7 +205,7 @@ function student_prijava_ispita() {
 			}
 		}
 		if ($greska == "") foreach ($registered_events as $registered_event) {
-			if ($registered_event['CourseUnit']['id'] == $event['CourseUnit']['id'] && $registered_event['CourseActivity']['id'] == $event['CourseActivity']['id']) {
+			if ($registered_event['CourseUnit']['id'] == $event['CourseUnit']['id'] && $registered_event['CourseActivity']['id'] == $event['CourseActivity']['id'] && $registered_event['options'] == $event['options']) {
 				$greska .= "D";
 				$greska_long .= "Prijavljeni ste za drugi termin ovog ispita. ";
 				break;
