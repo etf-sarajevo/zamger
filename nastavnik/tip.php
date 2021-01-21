@@ -164,6 +164,12 @@ function nastavnik_tip() {
 				</script>
 				<?
 			}
+			else if ($_api_http_code == "401") {
+				niceerror("Nemate permisije za izmjenu aktivnosti");
+				?>
+				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
+				<?
+			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti");
 				api_report_bug($result, $cact);
@@ -345,7 +351,14 @@ function nastavnik_tip() {
                     setTimeout(function() { location.href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
 				</script>
 				<?
-			} else {
+			}
+			else if ($_api_http_code == "401") {
+				niceerror("Nemate permisije za brisanje aktivnosti");
+				?>
+				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
+				<?
+			}
+			else {
 				niceerror("Neuspješno uklanjanje aktivnosti");
 				api_report_bug($result, []);
 			}
@@ -453,6 +466,12 @@ function nastavnik_tip() {
 				</script>
 				<?
 			}
+			else if ($_api_http_code == "401") {
+				niceerror("Nemate permisije za izmjenu aktivnosti");
+				?>
+				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
+				<?
+			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti");
 				api_report_bug($result, $cact);
@@ -465,6 +484,12 @@ function nastavnik_tip() {
 				<script language="JavaScript">
                     setTimeout(function() { location.href='?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
 				</script>
+				<?
+			}
+			else if ($_api_http_code == "401") {
+				niceerror("Nemate permisije za dodavanje aktivnosti");
+				?>
+				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
 				<?
 			}
 			else {
