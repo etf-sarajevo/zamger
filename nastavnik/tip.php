@@ -559,6 +559,10 @@ function nastavnik_tip() {
 				<a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=izmijeni&aktivnost=<?=$activity['id']?>">Izmijeni</a> *
 				<a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>&akcija=ukloni&aktivnost=<?=$activity['id']?>">Ukloni</a>
 				<?
+				} else {
+					?>
+					nije moguća izmjena
+					<?
 				}
 				?>
 			</td>
