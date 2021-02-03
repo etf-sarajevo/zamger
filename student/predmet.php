@@ -435,11 +435,11 @@ function student_predmet() {
 	}
 	
 
-	//  FIKSNE KOMPONENTE
+	//  FIKSNE KOMPONENTE I BODOVI ZA PROJEKTE
 	
 	$printedHeadline = false;
 	foreach($course['score'] as $StudentScore) {
-		if ($StudentScore['CourseActivity']['Activity']['id'] == null) {
+		if ($StudentScore['CourseActivity']['Activity']['id'] == null || $StudentScore['CourseActivity']['Activity']['id'] == 4) {
 			if (!$printedHeadline) {
 				$printedHeadline = true;
 				?>
