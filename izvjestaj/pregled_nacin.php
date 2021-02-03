@@ -136,8 +136,6 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 
 	foreach ($studiji as $studij => $ime) {
 		if ($semestar_real <= $studij_trajanje[$studij]) {
-			// Ukinuti sljedeće godine (ovo je hack jer u zimskom semestru nisu bili evidentirani apsolventi)
-			if ($semestar_real == $studij_trajanje[$studij]-1) $semestar_real++;
 			for ($ponovac = 0; $ponovac <= 2; $ponovac++) {
 				if ($ponovac == 2)
 					$dodaj_upit = "status_studenta=1";
