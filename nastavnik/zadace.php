@@ -544,8 +544,10 @@ function nastavnik_zadace() {
 	$izabrana_komponenta = int_param('komponenta');
 	
 	
+	$homeworkActivities = [];
 	foreach ($course['activities'] as $cact) {
 		if ($cact['Activity']['id'] == 2) { // 2 = Homework
+			$homeworkActivities[] = $cact;
 			$_lv_["where:komponenta"] = $cact['id']; // određena na početku fajla
 			
 			// FIXME Hack kojim ćemo postići da link "Unesi novu" ispravno prosljeđuje komponentu
@@ -574,8 +576,8 @@ function nastavnik_zadace() {
 		}
 	}
 	
-	if ($izabrana_komponenta!=0)
-		$_REQUEST['komponenta'] = $izabrana_komponenta; // Potrebno nam je radi genform za kreiranje zadaće
+	//if ($izabrana_komponenta!=0)
+	//	$_REQUEST['komponenta'] = $izabrana_komponenta; // Potrebno nam je radi genform za kreiranje zadaće
 	
 	
 	// Kreiranje nove zadace ili izmjena postojeće
@@ -587,6 +589,7 @@ function nastavnik_zadace() {
 		$znaziv=$zaktivna=$zattachment=$zjezik=$zreadonly="";
 		$zzadataka=0; $zbodova=0;
 		$tmpvrijeme=time();
+		$zkomponenta = $izabrana_komponenta;
 	} else {
 		$homework = api_call("homework/$izabrana");
 		
@@ -604,6 +607,7 @@ function nastavnik_zadace() {
 		$dozvoljene_ekstenzije_selected = $homework['allowedExtensions'];
 		$automatsko_testiranje = $homework['automatedTesting'];
 		if ($homework['readonly']) $zreadonly="CHECKED"; else $zreadonly="";
+		$zkomponenta = $homework['CourseActivity']['id'];
 	}
 	
 	$zdan = date('d',$tmpvrijeme);
@@ -709,6 +713,22 @@ function nastavnik_zadace() {
 	<input type="hidden" name="akcija" value="edit">
 	<input type="hidden" name="zadaca" value="<?=$izabrana?>">
 	Naziv: <input type="text" name="naziv" id="naziv" size="30" value="<?=$znaziv?>"><br><br>
+	
+	<?
+	if (count($homeworkActivities) == 1) {
+		?>
+		<input type="hidden" name="komponenta" value="<?=$homeworkActivities[0]['id']?>">
+		<?
+	} else {
+		?>
+		Aktivnost: <select name="komponenta"><?
+		foreach($homeworkActivities as $cact) {
+			?><option value="<?=$cact['id']?>" <? if ($cact['id'] == $zkomponenta) print "SELECTED"; ?>><?=$cact['name']?></option><?
+		}
+		?></select><br><br>
+		<?
+	}
+	?>
 	
 	Broj zadataka: <input type="text" name="zadataka" id="zadataka" size="4" value="<?=$zzadataka?>">
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Max. broj bodova: <input type="text" name="bodova" id="bodova" size="3" value="<?=$zbodova?>"><br><br>
