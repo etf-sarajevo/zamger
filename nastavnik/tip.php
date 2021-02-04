@@ -267,10 +267,10 @@ function nastavnik_tip() {
 			<span class="opis">Ako je ova opcija odabrana, u zbiru bodova studenta se računa posljednji ostvareni rezultat. Ako nije odabrana, uzima se najbolji rezultat koji je student ostvario tokom tekuće akademske godine.</span>
 			<p><input type="checkbox" name="Integral" value="1" <?=$sel?> onchange="updateIntegralni()"> Integralni ispit</p>
 			<span class="opis">Integralni ispit se u ukupnom zbiru bodova računa umjesto pojedinačnih (parcijalnih) ispita koje odaberete.</span>
-			<ul>Odaberite koje postojeće aktivnosti tipa &quot;Ispit&quot; objedinjuje ovaj integralni ispit:<br>
+			<ul>Odaberite koje postojeće aktivnosti tipa &quot;Ispit&quot; objedinjuje ovaj integralni ispit (integralni ispit ne može obuhvatati druge integralne ispite):<br>
 				<?
 				foreach ($course['activities'] as $activity) {
-					if ($activity['id'] != $foundActivity['id'] && $activity['Activity']['id'] == 8) {
+					if ($activity['id'] != $foundActivity['id'] && $activity['Activity']['id'] == 8 && !array_key_exists("Integral", $activity['options'])) {
 						if (in_array($activity['id'], $integralni)) $sel = "CHECKED"; else $sel = "";
 						?>
 						<input type="checkbox" name="integralni-<?=$activity['id']?>" <?=$sel?>> <?=$activity['name']?><br>
@@ -360,6 +360,7 @@ function nastavnik_tip() {
 			}
 			else {
 				niceerror("Neuspješno uklanjanje aktivnosti");
+				if ($result['message']) nicemessage("Razlog: " . $result['message']);
 				api_report_bug($result, []);
 			}
 			return;
