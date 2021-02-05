@@ -170,6 +170,14 @@ function nastavnik_tip() {
 				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
 				<?
 			}
+			else if ($_api_http_code == "400" && starts_with($result['message'], "Circular dependency")) {
+				niceerror("Stvorili ste cirkularnu međuzavisnost");
+				$act = substr($result['message'], strlen("Circular dependency with "));
+				?>
+				<p>Pokušali ste da dodate <?=$act?> kao uslov za aktivnost <?=$foundActivity['name']?>, međutim <?=$foundActivity['name']?> je već uslov za <?=$act?>!</p>
+				<p><a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
+				<?
+			}
 			else {
 				niceerror("Neuspješna izmjena aktivnosti");
 				api_report_bug($result, $cact);
@@ -356,6 +364,25 @@ function nastavnik_tip() {
 				niceerror("Nemate permisije za brisanje aktivnosti");
 				?>
 				<p>Samo korisnici sa nastavničkim nivoom pristupa na predmetu mogu mijenjati aktivnosti.</p>
+				<?
+			}
+			else if ($_api_http_code == "400" && starts_with($result['message'], "Activity not removable")) {
+				if (starts_with($result['message'], "Activity not removable because it is conditional for activity")) {
+					$act = substr($result['message'], strlen("Activity not removable because it is conditional for activity"));
+					niceerror("Aktivnost se ne može ukloniti jer je uslovna za aktivnost $act");
+					print "<p>Najprije izmijenite aktivnost $act tako što ćete ukloniti aktivnost " . $foundActivity['name'] . " iz spiska njenih uslova, zatim možete ponovo pokušati ukloniti aktivnost " . $foundActivity['name'] . ".</p>";
+				} else {
+					niceerror("Aktivnost se ne može ukloniti iz nekog razloga");
+				}
+				?>
+				<p><a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
+				<?
+			}
+			else if ($_api_http_code == "400" && starts_with($result['message'], "There are integral exams")) {
+				niceerror("Postoje integralni ispiti koji obuhvataju ovaj ispit");
+				?>
+				<p>Najprije editujte aktivnosti tipa integralnog ispita koje obuhvataju <?=$foundActivity['name']?> kao parcijalni ispit, a zatim pokušajte ponovo ukloniti <?=$foundActivity['name']?>.</p>
+				<p><a href="?sta=nastavnik/tip&predmet=<?=$predmet?>&ag=<?=$ag?>">Nazad</a></p>
 				<?
 			}
 			else {
