@@ -294,7 +294,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	
 	// DELETE requests don't return a body
 	if ($method == "DELETE") {
-		$json_result = [];
+		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 	} else {
 		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) {
