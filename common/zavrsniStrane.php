@@ -51,7 +51,11 @@ function common_zavrsniStrane($thesis = []) {
 		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
 		print "<p>Student: ".$thesis['candidate']['surname']." ".$thesis['candidate']['name']." (".$thesis['candidate']['studentIdNr'].")</p>";
 	} else {
-		print "<p><a href=\"?sta=student/zavrsni&amp;predmet=$predmet&amp;ag=$ag&amp;zavrsni=$zavrsni&amp;akcija=detalji\">Pregledaj postavku teme</a></p>\n";
+		
+		?>
+		<p><a href="?sta=student/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zavrsni=<?=$zavrsni?>&amp;akcija=detalji">Pregledaj postavku teme</a><br>
+		<a href="?sta=student/zavrsni&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>&amp;zavrsni=<?=$zavrsni?>&amp;akcija=odjava">Odjavi se sa ove teme</a></p>
+		<?
 	}
 
 	// Prikaz ako nije odabrana subakcija

@@ -120,14 +120,16 @@ function student_zavrsni()  {
 			$clanovi .= tituliraj_api($member, false);
 		}
 		
+		$desc = nl2br($thesis['description']);
+		
 		?>
 		<h2>Završni rad</h2>
 		<h3>Detaljnije informacije o temi završnog rada</h3>
 		<table border="0" cellpadding="10">
 		<tr><td align="right" valign="top"><b>Naslov teme:</b></td><td><?=$thesis['title']?></td></tr>
 		<tr><td align="right" valign="top"><b>Podnaslov:</b></td><td><?=$thesis['subtitle']?></td></tr>
-		<tr><td align="right" valign="top"><b>Kratki pregled teme:</b></td><td><?=$thesis['description']?></td></tr>
-		<tr><td align="right" valign="top"><b>Literatura:</b></td><td><?=$thesis['literature']?></td></tr>
+		<tr><td align="right" valign="top"><b>Kratki pregled teme:</b></td><td><?=nl2br(linkuj_urlove($thesis['description']))?></td></tr>
+		<tr><td align="right" valign="top"><b>Literatura:</b></td><td><?=nl2br(linkuj_urlove($thesis['literature']))?></td></tr>
 		<tr><td align="right" valign="top"><b>Mentor(i):</b></td><td><?=$mentori?></td></tr>
 		<tr><td align="right" valign="top"><b>Predsjednik komisije:</b></td><td><?=tituliraj_api($thesis['committeeChair'], false)?></td></tr>
 		<tr><td align="right" valign="top"><b>Član(ovi) komisije:</b></td><td><?=$clanovi?></td></tr>
@@ -200,6 +202,14 @@ function student_zavrsni()  {
 			<?
 			$rbr=0;
 		}
+		
+		usort($theses, function($t1, $t2) {
+			$ime1 = $t1['menthors'][0]['surname'] . " " . $t1['menthors'][0]['name'];
+			$ime2 = $t2['menthors'][0]['surname'] . " " . $t2['menthors'][0]['name'];
+			if ($ime1 == $ime2)
+				return bssort($t1['title'], $t2['title']);
+			return bssort($ime1, $ime2);
+		});
 	
 		foreach($theses as $thesis) {
 			$id_zavrsni = $thesis['id'];
