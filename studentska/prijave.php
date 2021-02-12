@@ -79,16 +79,17 @@ function studentska_prijave() {
 	$prosli_datum = $prosla_komponenta = "";
 	$broj_na_datum = $studenata_na_datum = 0;
 	foreach($events as $event) {
-		if (date("Y-m-d", db_timestamp($event['dateTime'])) != $prosli_datum || $prosla_komponenta != $event['CourseActivity']['id']) {
+		if (date("Y-m-d", db_timestamp($event['dateTime'])) != $prosli_datum || $prosla_komponenta != $event['CourseActivity']['name']) {
 			if ($broj_na_datum > 1) {
 				?>
-				<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum, $prosla_komponenta</a> ($studenata_na_datum studenata)"?> - samo studenti <a href="?sta=izvjestaj/prijave&amp;tip=na_datum_sa_ocjenom&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">sa ocjenom</a></li>
+				<li><a href="?sta=izvjestaj/prijave&amp;tip=na_datum&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">Svi studenti na datum <?="$prosli_datum_text, $prosla_komponenta</a> ($studenata_na_datum studenata)"?> - samo studenti <a href="?sta=izvjestaj/prijave&amp;tip=na_datum_sa_ocjenom&amp;datum=<?=$prosli_datum?>&amp;predmet=<?=$predmet?>&amp;ag=<?=$ag?>">sa ocjenom</a></li>
 				<?
 			}
 			$prosli_datum = date("Y-m-d", db_timestamp($event['dateTime']));
+			$prosli_datum_text = date("d. m. Y", db_timestamp($event['dateTime']));
 			$broj_na_datum = 1;
 			$studenata_na_datum = $event['registered'];
-			$prosla_komponenta = $event['CourseActivity']['id'];
+			$prosla_komponenta = $event['CourseActivity']['name'];
 		} else {
 			$broj_na_datum++;
 			$studenata_na_datum += $event['registered'];

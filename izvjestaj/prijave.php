@@ -8,7 +8,7 @@ function izvjestaj_prijave() {
 
 	require("vendor/autoload.php"); // Koristimo TCPDF
 	
-	global $userid,$conf_files_path;
+	global $_api_http_code;
 	
 	// Poslani parametar
 	$ispit_termin=intval($_GET['ispit_termin']);
@@ -68,9 +68,14 @@ function izvjestaj_prijave() {
 	
 	if ($_GET['tip'] == "na_datum" || $_GET['tip'] == "na_datum_sa_ocjenom") {
 		// List of events on given date
-		$events = api_call("event/course/$predmet/$ag/date/" . $_GET['datum'])["results"];
+		$events = api_call("event/course/$predmet/$ag/date", [ "date" => $_GET['datum'] ]);
+		if ($_api_http_code != 200) {
+			niceerror("" . $events['message']);
+			api_report_bug($events, $_GET['datum']);
+			exit(0);
+		}
 		$event_students = [];
-		foreach($events as $event) {
+		foreach($events["results"] as $event) {
 			$event_students = array_merge($event_students, $event['students']);
 		}
 	}
