@@ -168,7 +168,7 @@ function saradnik_student() {
 		}
 
 		if ($novagrupa == 0)
-			$result = api_call("group/$novagrupa/student/$student", [], "DELETE");
+			$result = api_call("group/$staragrupa/student/$student", [], "DELETE");
 		else
 			$result = api_call("group/$novagrupa/student/$student", [], "PUT");
 		if ($_api_http_code != "201" && $_api_http_code != "204") {
