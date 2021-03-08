@@ -21,6 +21,7 @@ function nastavnik_ocjena() {
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
 	
 	// Da li korisnik ima pravo ući u modul?
 	
@@ -37,6 +38,18 @@ function nastavnik_ocjena() {
 	<p>&nbsp;</p>
 	
 	<p><h3><?=$predmet_naziv?> - Konačna ocjena</h3></p>
+	
+	<?
+	
+	if (!$course['AcademicYear']['isCurrent']) {
+		?>
+		<hr>
+		<p><font color="red">Odabrana akademska godina nije aktivna u Zamgeru.</font> Sve promjene koje vršite primjenjuju se retroaktivno na akademsku <?=$course['AcademicYear']['name'] ?>!</p>
+		<hr>
+		<?
+	}
+	
+	?>
 	
 	<p><a href="?sta=nastavnik/unos_ocjene&predmet=<?=$predmet?>&ag=<?=$ag?>">Pojedinačni unos konačnih ocjena</a></p>
 	

@@ -26,8 +26,11 @@ function nastavnik_zavrsni() {
 	$akcija = $_REQUEST['akcija'];
 	$id = intval($_REQUEST['id']);
 	
+	$predmet_naziv = "Završni rad";
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
+	
 	?>
-	<h2>Završni rad</h2>
+	<h2><?=$predmet_naziv?></h2>
 	<?
 
 	

@@ -16,6 +16,7 @@ function nastavnik_unos_ocjene() {
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
 	
 	// Da li korisnik ima pravo ući u modul?
 	

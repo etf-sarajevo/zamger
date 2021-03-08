@@ -22,6 +22,7 @@ function nastavnik_prijava_ispita() {
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
 	
 	// Da li korisnik ima pravo ući u modul?
 	
@@ -52,6 +53,18 @@ function nastavnik_prijava_ispita() {
 	
 	<br/>
 	<h3><?=$predmet_naziv?> - Termini ispita</h3>
+	
+	<?
+	
+	if (!$course['AcademicYear']['isCurrent']) {
+		?>
+		<hr>
+		<p><font color="red">Odabrana akademska godina nije aktivna u Zamgeru.</font> Sve promjene koje vršite primjenjuju se retroaktivno na akademsku <?=$course['AcademicYear']['name'] ?>!</p>
+		<hr>
+		<?
+	}
+	
+	?>
 	
 	<h4><?=$fini_naziv_ispita?>, <?=$finidatum?></h4>
 	

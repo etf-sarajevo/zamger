@@ -13,6 +13,7 @@ function nastavnik_dodavanje_asistenata() {
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
 
 	// ** Ukoliko asistent ili superasistent pokušaju pristupiti ovoj opciji ** //
 	
@@ -78,6 +79,17 @@ function nastavnik_dodavanje_asistenata() {
 
 	<br><br>
 	<p><h3><?=$predmet_naziv?> - Saradnici na predmetu</h3></p>
+	<?
+	
+	if (!$course['AcademicYear']['isCurrent']) {
+		?>
+		<hr>
+		<p><font color="red">Odabrana akademska godina nije aktivna u Zamgeru.</font> Sve promjene koje vršite primjenjuju se retroaktivno na akademsku <?=$course['AcademicYear']['name'] ?>!</p>
+		<hr>
+		<?
+	}
+	
+	?>
 	<p><b>Dodajte demonstratora ili asistenta na predmet</b></p>
 	<p>
 	<form method="post">

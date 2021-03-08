@@ -21,6 +21,7 @@ function nastavnik_kvizovi() {
 	
 	// Naziv predmeta
 	$predmet_naziv = $course['courseName'];
+	if (!$course['AcademicYear']['isCurrent']) $predmet_naziv .= " (" . $course['AcademicYear']['name'] . ")";
 	
 	// Da li korisnik ima pravo ući u modul?
 	
@@ -40,6 +41,14 @@ function nastavnik_kvizovi() {
 	<p><h3><?=$predmet_naziv?> - Kvizovi</h3></p>
 	
 	<?
+	
+	if (!$course['AcademicYear']['isCurrent']) {
+		?>
+		<hr>
+		<p><font color="red">Odabrana akademska godina nije aktivna u Zamgeru.</font> Sve promjene koje vršite primjenjuju se retroaktivno na akademsku <?=$course['AcademicYear']['name'] ?>!</p>
+		<hr>
+		<?
+	}
 	
 	$allQuizzes = api_call("quiz/course/$predmet/$ag")["results"];
 	usort($allQuizzes, function($q1, $q2) {
