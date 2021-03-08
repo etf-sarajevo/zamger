@@ -206,6 +206,7 @@ function nastavnik_ocjena() {
 				} else {
 					niceerror("Neuspješno dodavanje ocjene za studenta $prezime $ime ($brindexa)");
 					api_report_bug($result, $portfolio);
+					$greska = 1;
 				}
 			}
 		}
@@ -228,18 +229,24 @@ function nastavnik_ocjena() {
 			}
 			return;
 		} else {
-			// Generisem statičku verziju izvještaja predmet
-			generisi_izvjestaj_predmet( $predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
-	
-			zamgerlog("masovno upisane ocjene na predmet pp$predmet",4);
-			
-			?>
-			Ocjene su upisane.
-			<script language="JavaScript">
-			setTimeout(function() { location.href='?sta=nastavnik/ocjena&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
-			</script>
-			<?
-			return;
+			if ($greska) {
+				?>
+				<p>Došlo je do greške. Pregledajte pažljivo poruke iznad ove.</p>
+				<?
+			} else {
+				// Generisem statičku verziju izvještaja predmet
+				generisi_izvjestaj_predmet( $predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
+		
+				zamgerlog("masovno upisane ocjene na predmet pp$predmet",4);
+				
+				?>
+				Ocjene su upisane.
+				<script language="JavaScript">
+				setTimeout(function() { location.href='?sta=nastavnik/ocjena&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
+				</script>
+				<?
+				return;
+			}
 		}
 	}
 	

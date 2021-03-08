@@ -191,6 +191,7 @@ function nastavnik_zadace() {
 				} else {
 					niceerror("Neuspješno bodovanje zadaće");
 					api_report_bug($result, $newAssignment);
+					$greska = 1;
 				}
 			}
 		}
@@ -213,14 +214,20 @@ function nastavnik_zadace() {
 			}
 			return;
 		} else {
-			zamgerlog("masovno upisane zadaće na predmet pp$predmet, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
-			?>
-			Bodovi iz zadaća su upisani.
-			<script language="JavaScript">
-                setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
-			</script>
-			<?
-			return;
+			if ($greska) {
+				?>
+				<p>Došlo je do greške. Pregledajte pažljivo poruke iznad ove.</p>
+				<?
+			} else {
+				zamgerlog("masovno upisane zadaće na predmet pp$predmet, zadaća z$zadaca, zadatak $zadatak",2); // 2 = edit
+				?>
+				Bodovi iz zadaća su upisani.
+				<script language="JavaScript">
+					setTimeout(function() { location.href='?sta=nastavnik/zadace&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
+				</script>
+				<?
+				return;
+			}
 		}
 	}
 	
