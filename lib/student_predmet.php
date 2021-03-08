@@ -141,10 +141,10 @@ function upis_studenta_na_predmet($student, $ponudakursa) {
 	$q30 = db_query("insert into student_labgrupa set student=$student, labgrupa=$labgrupa");
 
 	// Potrebno je upisati max. bodova za sve komponente prisustva!
-	$q40 = db_query("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // tip komponente 3 = klasično prisustvo
+	/*$q40 = db_query("select k.id, k.maxbodova from komponenta as k, tippredmeta_komponenta as tpk, akademska_godina_predmet as agp where agp.predmet=$predmet and agp.tippredmeta=tpk.tippredmeta and agp.akademska_godina=$ag and tpk.komponenta=k.id and k.tipkomponente=3"); // tip komponente 3 = klasično prisustvo
 	while ($r40 = db_fetch_row($q40)) {
 		$q50 = db_query("insert into komponentebodovi set student=$student, predmet=$ponudakursa, komponenta=$r40[0], bodovi=$r40[1]");
-	}
+	}*/
 	
 }
 
