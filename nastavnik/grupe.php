@@ -182,7 +182,7 @@ function nastavnik_grupe() {
 				if (!in_array($group['name'], $mass_rezultat['podatak1'][$student])) $found=0;
 			}
 	
-			if ($found==1 && count($groups)>0) {
+			if ($found==1 && count($ispis_grupe)>0) {
 				if ($ispis) {
 					?>
 					<tr bgcolor="<?=$boja?>">
