@@ -980,7 +980,7 @@ function nastavnik_zadace() {
 	foreach($allHomeworks as $_hw) {
 		if ($_hw['id'] == $izabrana) $sel = " SELECTED"; else $sel = "";
 		?>
-		<option value="<?=$_hw['id']?>"><?=$_hw['name']?></option>
+		<option value="<?=$_hw['id']?>" <?=$sel?>><?=$_hw['name']?></option>
 		<?
 		if ($_hw['nrAssignments'] > $maxAssignments) $maxAssignments = $_hw['nrAssignments'];
 	}
