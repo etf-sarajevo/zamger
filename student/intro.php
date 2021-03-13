@@ -14,11 +14,11 @@ function student_intro() {
 	else
 		print "<h1>Dobro došao, ".vokativ($person['name'],"M")."</h1>";
 
-	// Zaduženje FIXME
-	$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$userid");
-	if ($zaduzenje > 0) {
+	// Zaduženje
+	$zaduzenje = api_call("balance")["amount"];
+	if ($zaduzenje < 0) {
 		?>
-		<p>Prema trenutnoj evidenciji dugujete <b style="color: red"><?=sprintf("%.2f", $zaduzenje)?> KM</b> za školarinu.<br>
+		<p>Prema trenutnoj evidenciji dugujete <b style="color: red"><?=sprintf("%.2f", -$zaduzenje)?> KM</b> za školarinu.<br>
 			Ako ovo nije tačno, molimo da se javite studentskoj službi.</p>
 		<?
 	}
