@@ -224,6 +224,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 			$params["route"] = $route;
 		if (!$conf_keycloak)
 			$params["SESSION_ID"] = $_SESSION['api_session'];
+		if ($_SESSION['su'])
+			$params['impersonate'] = $_SESSION['su'];
 		$query = http_build_query($params);
 		$url = "$url?$query";
 	} else {
@@ -234,6 +236,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 			$query_params["route"] = $route;
 		if (!$conf_keycloak)
 			$query_params["SESSION_ID"] = $_SESSION['api_session'];
+		if ($_SESSION['su'])
+			$query_params['impersonate'] = $_SESSION['su'];
 		
 		// add route and session id to url
 		$url = "$url?" . http_build_query( $query_params );
@@ -300,7 +304,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		if ($json_result === NULL) {
 			if ($debug) {
 				print "Failed to decode result as JSON for $url<br>";
-				api_report_bug([], []);
+				if ($route == "auth")
+					print "Response: $http_result";
+				else
+					api_report_bug([], []);
 			}
 			return FALSE;
 		}
