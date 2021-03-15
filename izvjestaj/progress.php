@@ -55,14 +55,16 @@ $imena_ocjena = array("", "", "", "", "", "5 (pet)", "6 (šest)", "7 (sedam)", "
 
 // Ocjene po odluci:
 
-$q105 = db_query("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
+$q105 = db_query("select ko.ocjena, p.naziv, UNIX_TIMESTAMP(o.datum), o.broj_protokola, ko.pasos_predmeta from konacna_ocjena as ko, odluka as o, predmet as p where ko.odluka=o.id and ko.predmet=p.id and ko.student=$student");
 if (db_num_rows($q105)>0) {
 	?>
 	<p><b>Ocjene donesene odlukom (nostrifikacija, promjena studija itd.):</b><br><ul>
 	<?
 }
-while ($r105 = db_fetch_row($q105)) {
-	print "<li><b>$r105[1]</b> - ocjena: ".$imena_ocjena[$r105[0]]."<br>(odluka br. $r105[3] od ".date("d. m. Y.", $r105[2]).")</li>\n";
+while (db_fetch5($q105, $ocjena, $naziv_predmeta, $datum, $broj_protokola, $pasos_predmeta)) {
+	if ($pasos_predmeta)
+		$naziv_predmeta = db_get("SELECT naziv FROM pasos_predmeta WHERE id=$pasos_predmeta");
+	print "<li><b>$naziv_predmeta</b> - ocjena: ".$imena_ocjena[$ocjena]."<br>(odluka br. $broj_protokola od ".date("d. m. Y.", $datum).")</li>\n";
 }
 if (db_num_rows($q105)>0) print "</ul></p><p>&nbsp;</p>\n";
 
@@ -104,7 +106,7 @@ while ($r110 = db_fetch_row($q110)) {
 	for ($sem=1; $sem>=0; $sem--) {
 		if ($sem==1) $naziv_sem="Zimski semestar"; else $naziv_sem="Ljetnji semestar";
 
-		$q120 = db_query("select pk.id, p.naziv, p.id, pp.naziv from predmet as p, ponudakursa as pk, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id  where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$r110[0] and pk.predmet=p.id and pk.semestar%2=$sem and agp.akademska_godina=$r110[0] and agp.predmet=p.id order by p.naziv");
+		$q120 = db_query("select pk.id, p.naziv, p.id, pp.naziv, pk.pasos_predmeta from predmet as p, ponudakursa as pk, student_predmet as sp, akademska_godina_predmet as agp left join pasos_predmeta as pp on agp.pasos_predmeta=pp.id  where sp.student=$student and sp.predmet=pk.id and pk.akademska_godina=$r110[0] and pk.predmet=p.id and pk.semestar%2=$sem and agp.akademska_godina=$r110[0] and agp.predmet=p.id order by p.naziv");
 		if (db_num_rows($q120)>0) {
 			// Zaglavlje tabele
 			?>
@@ -128,7 +130,9 @@ while ($r110 = db_fetch_row($q110)) {
 
 		while ($r120 = db_fetch_row($q120)) {
 			$naziv = $r120[1];
-			if ($r120[3]) $naziv = $r120[3];
+			if ($r120[4])
+				$naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=" . $r120[4]);
+			else if ($r120[3]) $naziv = $r120[3];
 			print "<tr><td>".($rbr++)."</td><td>".$naziv."</td><td>".$r110[1]."</td>";
 			$ukupno=0;
 
