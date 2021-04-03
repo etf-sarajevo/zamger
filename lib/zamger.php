@@ -211,6 +211,8 @@ function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
 	eval("izvjestaj_predmet();");
 	ob_end_clean();
 	
+	if (strstr($zamger_filecb_sadrzaj_buffera, "Neuspješno otvaranje predmeta")) return;
+	
 	if (!file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag")) {
 		mkdir ("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag",0755, true);
 	}
