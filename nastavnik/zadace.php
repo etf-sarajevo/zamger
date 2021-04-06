@@ -786,11 +786,30 @@ function nastavnik_zadace() {
 			$wsurl = "dummy,neradi";
 			global $conf_site_url, $conf_backend_url_client, $conf_keycloak;
 			ajax_box();
+			
+			// Construt an JS array of filenames
+			$jsfilenames = "var filenames = ['', ";
+			for ($i = 1; $i <= $zzadataka; $i++) {
+				$found = false;
+				foreach($homeworkFiles as $hwf) {
+					if ($hwf['type'] == "autotest" && $hwf['assignNo'] == $i) {
+						$jsfilenames .= "'" . $hwf['filename'] . "'";
+						$found = true;
+						break;
+					}
+				}
+				if (!$found) $jsfilenames .= "'autotest'";
+				if ($i < $zzadataka) $jsfilenames .= ", ";
+			}
+			$jsfilenames .= "];\n";
+			
 			?>
 			<script src="lib/autotest-genv2/scripts/helpers.js"></script>
 			<script>
 				function updateAutotestFile(fileID, assignNo) {
-				    const data = window.localStorage.getItem('.autotest-content');
+				    var data = window.localStorage.getItem('.autotest-content');
+                    data = JSON.stringify(JSON.parse(data), null, 2);
+				    <?=$jsfilenames?>
 				    
 				    // Requires fairly recent browser, doesn't work in IE
                     const formData = new FormData();
@@ -803,7 +822,7 @@ function nastavnik_zadace() {
                     formData.append("assignNo", assignNo);
                     formData.append("display", "0");
 
-                    formData.append("dodatna_datoteka", new File([new Blob([data])], "autotest"));
+                    formData.append("dodatna_datoteka", new File([new Blob([data])], filenames[assignNo]));
                     var url='<?=$conf_site_url?>/index.php';
                     fetch(url, {
 						method: 'POST',
@@ -820,7 +839,7 @@ function nastavnik_zadace() {
 						
 						newWindow.addEventListener('load', () => {
 							const button = newWindow.document.getElementById('export-button');
-							button.addEventListener("click", () => {
+                            button.addEventListener("click", () => {
 								updateAutotestFile(fileID, assignNo);
 							});
 						}, false);
