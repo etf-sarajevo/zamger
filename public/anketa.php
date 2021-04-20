@@ -78,14 +78,21 @@ function public_anketa() {
 	
 	if ($_api_http_code == "404") {
 		biguglyerror("Nepoznata anketa $id_ankete");
+		api_report_bug($poll, []);
 		return;
 	}
-	if ($_api_http_code == "403") {
+	else if ($_api_http_code == "403") {
 		biguglyerror("Nemate pravo popunjavanja ankete $id_ankete");
+		return;
+	}
+	else if ($_api_http_code != "200") {
+		biguglyerror("Greška prilikom pristupanja anketi");
+		api_report_bug($poll, []);
 		return;
 	}
 	if ($_GET['akcija'] != "preview" && !$poll->active) {
 		biguglyerror("Anketa trenutno nije aktivna.");
+		api_report_bug($poll, []);
 		return;
 	}
 
@@ -186,6 +193,8 @@ function public_anketa() {
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
+			zamgerlog2("neuspješno popunjavanje ankete", $id_ankete);
+			api_report_bug($result, $poll);
 		}
 		return;
 	}
