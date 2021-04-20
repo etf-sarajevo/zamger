@@ -390,9 +390,9 @@ function saradnik_zadaca() {
 	
 		// Autotest nalaz
 		if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "zadace_admin")
-			$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ true);
+			$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ true, db_timestamp($currentAssignment['Homework']));
 		else
-			$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ false);
+			$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ false, db_timestamp($currentAssignment['Homework']));
 		if ($nalaz_autotesta != "") {
 			?>
 		<tr>

@@ -5,7 +5,7 @@
 
 function student_zadaca() {
 
-	global $userid,$conf_files_path, $_api_http_code;
+	global $userid, $conf_code_viewer, $_api_http_code;
 	
 	require_once("lib/autotest.php");
 	require_once("lib/utility.php"); // linkuj_urlove, nicesize, ends_with, rm_minus_r, clear_unicode
@@ -33,7 +33,7 @@ function student_zadaca() {
 		return;
 	}
 
-	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework"], "year" => $ag, "submittedTime" => true ]);
+	$assignments = api_call("homework/course/$predmet/student/$userid", ["resolve" => ["Homework", "ProgrammingLanguage"], "year" => $ag, "submittedTime" => true ]);
 	if ($_api_http_code != 200) {
 		niceerror("Neuspješno čitanje podataka o zadaćama");
 		api_report_bug($assignments, []);
@@ -138,6 +138,7 @@ function student_zadaca() {
 	$naziv = $currentAssignment['Homework']['name'];
 	$rok = db_timestamp($currentAssignment['Homework']['deadline']);
 	$jezik = $currentAssignment['Homework']['ProgrammingLanguage']['id'];
+	$ace_mode = $currentAssignment['Homework']['ProgrammingLanguage']['ace'];
 	$attachment = $currentAssignment['Homework']['attachment'];
 	$zadaca_dozvoljene_ekstenzije = $currentAssignment['Homework']['allowedExtensions'];
 	$readonly_zadaca = $currentAssignment['Homework']['readonly'];
@@ -274,7 +275,7 @@ function student_zadaca() {
 	
 		// Rezultati automatskog testiranja
 		if ($currentAssignment['Homework']['automatedTesting']) {
-			$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false);
+			$nalaz_autotesta = autotest_tabela($userid, $zadaca, $zadatak, /*$nastavnik =*/ false, db_timestamp($currentAssignment['Homework']['deadline']));
 			if ($nalaz_autotesta != "") {
 				print "<p>Rezultati testiranja:</p>\n$nalaz_autotesta\n";
 			}
@@ -340,7 +341,7 @@ function student_zadaca() {
 			</td><td>
 			<p>Poslani fajl: <b><a href="<?=$dllink?>"><?=$filename?></a></b><br/>
 			Datum slanja: <b><?=$vrijeme?></b><br/>
-			Veličina: <b><?=$velicina?></b></p>
+			Veličina: <b><?=$velicina?></b> <? if ($velicina == "0 B") print "<font color=\"red\"><b>Datoteka je prazna! Možda je niste ispravno poslali?</b></font>"; ?></p>
 			</td></tr></table></center>
 			<?
 			print "<p>Ako želite promijeniti datoteku iznad, izaberite novu i kliknite na dugme za slanje:</p>";
@@ -376,28 +377,71 @@ function student_zadaca() {
 	
 			<?
 		}
-	
+		
+		$tekst_zadace = api_call("homework/$zadaca/$zadatak/student/$userid/file", [], "GET", false, false);
+		if ($_api_http_code == "404") $tekst_zadace = "";
+		$tekst_zadace = htmlspecialchars($tekst_zadace);
+		
 		?>
 		
 			</td></tr></table>
-		<center>
 		<?=genform("POST")?>
 		<input type="hidden" name="zadaca" value="<?=$zadaca?>">
 		<input type="hidden" name="zadatak" value="<?=$zadatak?>">
 		<input type="hidden" name="akcija" value="slanje">
 		
-		<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><?
-		global $_api_http_code;
-		$tekst_zadace = api_call("homework/$zadaca/$zadatak/student/$userid/file", [], "GET", false, false);
-		if ($_api_http_code == "404") $tekst_zadace = "";
-		$tekst_zadace = htmlspecialchars($tekst_zadace);
-		print $tekst_zadace;
-		?></textarea>
-		</center>
 	
 		<?
-	}
+		
+		// ACE code editor
+		if ($conf_code_viewer == "aceee" && $jezik > 0) {
+			// Ako nije definisan programski jezik geshi je lakši
+			?>
+			<div id="editor" style="text-align: left"><?=$tekst_zadace?></div>
+			<script src="static/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+			<script>
+                var editor = ace.edit("editor");
+                //editor.setTheme("ace/theme/monokai");
+                editor.getSession().setMode("ace/mode/<?=$ace_mode?>");
 
+                // Stavljamo visinu ACE editora na dužinu koda
+                var newHeight =
+                    editor.getSession().getScreenLength()
+                    * editor.renderer.lineHeight
+                    + editor.renderer.scrollBar.getWidth() + 20; // 20 = jedan prazan red na kraju
+                /*$('#editor').height(newHeight.toString() + "px");
+				$('#editor-section').height(newHeight.toString() + "px");
+				editor.resize();*/
+                document.getElementById('editor').style.height = newHeight.toString() + "px";
+                document.getElementById('editor-section').style.height = newHeight.toString() + "px";
+                editor.resize();
+
+                // Not editable
+                editor.setOptions({
+                    readOnly: <? if ($readonly_zadaca) print "true"; else print "false"; ?>,
+                    highlightActiveLine: false,
+                    highlightGutterLine: false
+                })
+                editor.renderer.$cursorLayer.element.style.opacity=0
+                editor.textInput.getElement().tabIndex=-1
+                editor.commands.commmandKeyBinding={}
+			</script>
+			<?
+			
+		} else {
+			?>
+		<center>
+			<textarea rows="20" cols="80" name="program" <?=$readonly?> wrap="off"><?
+				print $tekst_zadace;
+				?></textarea>
+		</center>
+			<?
+		}
+		
+		?>
+		<?
+	}
+	
 	?>
 	
 	<center><input type="submit" value=" Pošalji zadatak! "></center>
