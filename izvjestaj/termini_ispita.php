@@ -67,7 +67,12 @@ if ($privilegija=="nastavnik" || $privilegija=="super_asistent" || $user_siteadm
 	<script language="JavaScript">
 	function undo_coolbox() {
 		var greska = document.getElementById("zamger_ajah-info").innerText || document.getElementById("zamger_ajah-info").textContent;
-		alert(greska);
+		if (greska.includes("Exam result too large")) {
+		    alert ("Unijeli ste rezultat ispita izvan dozvoljenog opsega");
+            document.getElementById("zamger_ajah-info").innerText = "";
+            document.getElementById("zamger_ajah-info").textContent = "";
+		} else
+			alert(greska);
 		zamger_coolbox_origcaller.innerHTML = zamger_coolbox_origvalue;
 		zamger_coolbox_origcaller=false;
 	}
@@ -209,8 +214,8 @@ while ($rtermini = db_fetch_row($qtermini)) {
 	
 	$ostale_komponente = array();
 	
-	// 1 = parcijalni ispit, 2 = integralni ispit
-	$q40 = db_query("select ap.id, ap.kratki_naziv, ap.aktivnost, ap.bodova from aktivnost_predmet ap, aktivnost_agp as aagp where aagp.predmet=$predmet and aagp.aktivnost_predmet=ap.id and ap.aktivnost!=8 and aagp.akademska_godina=$ag and ap.bodova>0");
+	// 8 = ispit
+	$q40 = db_query("select ap.id, ap.kratki_naziv, ap.aktivnost, ap.bodova from aktivnost_predmet ap, aktivnost_agp as aagp where aagp.predmet=$predmet and aagp.aktivnost_predmet=ap.id and (ap.aktivnost!=8 or ap.aktivnost is null) and aagp.akademska_godina=$ag and ap.bodova>0");
 	while ($r40 = db_fetch_row($q40)) {
 		$mogucih_bodova += $r40[3];
 	

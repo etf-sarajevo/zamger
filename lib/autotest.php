@@ -11,7 +11,7 @@
 //   $nastavnik - ako je true, moguć je pristup neaktivnim i sakrivenim testovima
 // Vraća HTML kod tabele
 
-function autotest_tabela($student, $zadaca, $zadatak, $nastavnik) {
+function autotest_tabela($student, $zadaca, $zadatak, $nastavnik, $rok_za_slanje) {
 	global $_api_http_code;
 	$result = api_call("homework/$zadaca/$zadatak/student/$student/file", [ "filename" => "$zadatak-result.json" ]);
 	if ($_api_http_code != "200") return ""; // No test result
@@ -200,7 +200,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nast
 				if ($homeworkFile['type'] == "autotest" && $homeworkFile['assignNo'] == $zadatak)
 					$taskFileId = $homeworkFile['id'];
 			}
-			if (!$taskFileId) {
+			if ($taskFileId) {
 				$task = api_call("homework/files/$taskFileId");
 				if ($_api_http_code == "200")
 					$resultsExist = true;
