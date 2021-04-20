@@ -149,7 +149,9 @@ function nastavnik_prijava_ispita() {
 			$result = api_call("event/$termin/register/$student", [], "POST");
 			if ($_api_http_code == "201") {
 				zamgerlog2("nastavnik dodao studenta na termin", $student, $termin);
-				$event = api_call("event/$termin", [ "resolve" => [ "Person" ] ] );
+				$event = api_call("event/$termin", ["resolve" => ["Person"]]);
+			} else if ($_api_http_code == "403" && strstr($result['message'], "already registered")) {
+				niceerror("Ovaj student je već prijavljen za neki drugi termin istog ispita");
 			} else {
 				niceerror("Neuspješno dodavanje studenta na termin ($_api_http_code)");
 				api_report_bug($result, []);
