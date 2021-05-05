@@ -195,8 +195,6 @@ function ws_export() {
 				}
 				
 				$odgovor = array();
-				$odgovor['isss_request'] = $isss_data;
-				$odgovor['isss_result'] = $isss_result;
 				foreach($isss_result['warnings'] as $warning) {
 					// Ovo je moralo već biti provjereno, ali zbog race conditiona provjeravamo i to
 					if ($warning['code'] == 'grade_exists') {
@@ -245,6 +243,8 @@ function ws_export() {
 					$odgovor['status'] = 'ok';
 				}
 			}
+			$odgovor['isss_request'] = $isss_data;
+			$odgovor['isss_result'] = $isss_result;
 			$rezultat['data'] = $odgovor;
 		}
 		
@@ -721,8 +721,10 @@ function daj_podatke_studenta($id_studenta) {
 	if ($drzavljanstvo) $podaci_studenta['drzavljanstvo'] = $drzavljanstvo; else $podaci_studenta['drzavljanstvo'] = "";
 	
 	// Kanton NE određujemo iz adresa-mjesto nego iz polja kanton (zbog razlike prebivalište/boravište)
-	$kanton = db_get("SELECT naziv FROM kanton WHERE id=".$podaci_studenta['kanton']);
-	if ($kanton) $podaci_studenta['kanton'] = zamger2isss('kanton_popravke', $kanton); else $podaci_studenta['kanton'] = "";
+	if ($podaci_studenta['kanton']) {
+		$kanton = db_get("SELECT naziv FROM kanton WHERE id=".$podaci_studenta['kanton']);
+		if ($kanton) $podaci_studenta['kanton'] = zamger2isss('kanton_popravke', $kanton); else $podaci_studenta['kanton'] = "";
+	} else $podaci_studenta['kanton'] = "";
 	
 	return $podaci_studenta;
 }
