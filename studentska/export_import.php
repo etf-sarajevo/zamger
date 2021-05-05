@@ -15,7 +15,7 @@ var export_url = '<?=$export_ws?>';
 var za_slanje = [];
 var za_ciscenje = [];
 var dugmad;
-var razlike_poruke = [];
+var razlike_poruke = [];	
 
 //window.onload = function () { pozicioniraj_prozor(); }
 
@@ -194,6 +194,7 @@ function servis_single(stavka, tip, provjera) {
 			} catch(e) {
 				console.log("Parsiranje JSONa nije uspjelo");
 				console.log(xmlhttp.responseText);
+				console.log(e);
 				
 				// Ponavljamo provjeru ako prethodno nije bila greška
 				if (stavka.greska) {
@@ -268,8 +269,15 @@ function prikazi_razlike(code, tip) {
 			if (obj.razlike[i].zamger == "1") obj.razlike[i].zamger = "DA"; else obj.razlike[i].zamger = "NE";
 			if (obj.razlike[i].isss == "1") obj.razlike[i].isss = "DA"; else obj.razlike[i].isss = "NE";
 		}
-		if (obj.razlike[i].podatak == "srednja_skola") {
-			if (obj.razlike[i].zamger == "false") obj.razlike[i].zamger = "nepoznato";
+		if (obj.razlike[i].podatak == "domaca_skola") {
+			if (obj.razlike[i].zamger == "1") obj.razlike[i].zamger = "DA"; else obj.razlike[i].zamger = "NE";
+			if (obj.razlike[i].isss == "1") obj.razlike[i].isss = "DA"; else obj.razlike[i].isss = "NE";
+		}
+		if (obj.razlike[i].podatak == "spol") {
+			if (obj.razlike[i].zamger == "0") obj.razlike[i].zamger = "ženski";
+			if (obj.razlike[i].zamger == "1") obj.razlike[i].zamger = "muški";
+			if (obj.razlike[i].isss == "0") obj.razlike[i].isss = "ženski";
+			if (obj.razlike[i].isss == "1") obj.razlike[i].isss = "muški";
 		}
 
 		var row = tbl.insertRow(tbl.rows.length);
