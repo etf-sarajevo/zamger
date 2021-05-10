@@ -801,7 +801,9 @@ function saradnik_grupa() {
 			foreach($_homeworks as $homeworkId => $homework) {
 				$zadace_ispis .= "<td> \n";
 				for ($i=1; $i<=$homework['nrAssignments']; $i++) {
-					$status = $homeworkStatus[$homeworkId][$i][$studentId];
+					$status = 0;
+					if (array_key_exists($homeworkId, $homeworkStatus))
+						$status = $homeworkStatus[$homeworkId][$i][$studentId];
 					if ($status == 0) { // Zadatak nije poslan
 						if ($kreiranje>0) {
 							$zadace_ispis .= "<a href=\"#\" onclick=\"javascript:openzadaca(event, '".$studentId."', '".$homeworkId."', '".$i."'); return false;\"><img src=\"static/images/16x16/create_new.png\" width=\"16\" height=\"16\" border=\"0\" align=\"center\" title=\"".$studentId.",".$homeworkId.",".$i."\" alt=\"".$studentId.",".$homeworkId.",".$i."\"></a>&nbsp;";
@@ -858,20 +860,20 @@ function saradnik_grupa() {
 				$ocjena_text = "uspješno odbranio";
 			}
 			if ($currentMember['grade']) $ispunio_uslove = "CHECKED"; else $ispunio_uslove = "";
-			if ($privilegija != "super-asistent")
-				$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\"><input type=\"checkbox\" id=\"ocjena$studentId\" onchange=\"ispunio_uslove(this,$ocjena_value)\" $ispunio_uslove></td>";
-			else
-				$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\">$ocjena_text</td>";
+			
+			// TODO: don't show ajax box for assistants?
+			$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\"><input type=\"checkbox\" id=\"ocjena$studentId\" onchange=\"ispunio_uslove(this,$ocjena_value)\" $ispunio_uslove></td>";
 			$ko_ispis .= "\n<SCRIPT>origval['ko-$studentId-$predmet-$ag'] = \"" . $currentMember['grade'] . "\";</SCRIPT>\n";
 		}
 		
-		else if ($privilegija == "super-asistent") {
+		/*else if ($privilegija == "super-asistent") {
 			if ($currentMember['grade']) {
 				$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\">" . $currentMember['grade'] . "</td>\n";
 			} else {
 				$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\">/</td>\n";
 			}
-		} else {
+		}*/
+		else {
 			if ($currentMember['grade']) {
 				$ko_ispis = "<td align=\"center\" id=\"ko-$studentId-$predmet-$ag\" ondblclick=\"coolboxopen(this)\">" . $currentMember['grade'] . "</td>\n";
 			} else {
