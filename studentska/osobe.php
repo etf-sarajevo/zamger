@@ -10,6 +10,7 @@ global $userid, $user_siteadmin, $user_studentska;
 global $conf_files_path, $conf_system_auth, $conf_ldap, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
 global $conf_knjigovodstveni_servis;
 global $registry; // šta je od modula aktivno
+	global $_api_http_code;
 
 global $_lv_; // Potrebno za genform()
 
@@ -567,660 +568,489 @@ if ($akcija == "podaci") {
 	<?
 
 } // if ($akcija == "podaci")
-
-
-
-
-// Upis studenta na semestar
-
-else if ($akcija == "upis") {
-
-	$student = intval($_REQUEST['osoba']);
-	$studij = intval($_REQUEST['studij']);
-	$semestar = intval($_REQUEST['semestar']);
-	$godina = intval($_REQUEST['godina']);
-	
-	$dry_run = false;
-	if ($user_siteadmin) $dry_run = intval($_REQUEST['dry_run']);
-	
-	$nacin_studiranja = false;
-	if (param('nacin_studiranja')) $nacin_studiranja = int_param('nacin_studiranja');
-
-	// Neispravni parametri se ne bi trebali desiti, osim u slučaju hackovanja
-	// a i tada je "šteta" samo nekonzistentnost baze
-
-	$q500 = db_query("select ime, prezime, brindexa, jmbg from osoba where id=$student");
-	db_fetch4($q500, $ime, $prezime, $brindexa, $jmbg);
-
-	?>
-	<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$student?>">Nazad na podatke o osobi</a><br/><br/>
-	<h2><?=$ime?> <?=$prezime?> - upis</h2><?
-	print genform("POST");
-	?>
-	<input type="hidden" name="subakcija" value="upis_potvrda">
-	<?
-	
-	$ok_izvrsiti_upis = $ns = false;
-	
-	// Ako je subakcija, potvrdjujemo da se moze izvrsiti upis
-	if (param('subakcija') == "upis_potvrda" && check_csrf_token()) {
-		$ok_izvrsiti_upis = true;
-
-		// Potvrdjujemo da je korisnik odabrao promjenu studija
-		$ns = int_param('novi_studij');
-		if ($ns>0) {
-			$studij = $ns;
-			$_REQUEST['novi_studij'] = 0; // zbog pozivanja genform
-			?>
-			<input type="hidden" name="studij" value="<?=$studij?>">
-			<input type="hidden" name="novi_studij" value="0">
-			<?
-			$ok_izvrsiti_upis = false; // Tražimo novu potvrdu jer od izbora studija ovisi previše stvari
-			// npr. ugovor o učenju
-		} else 
-			$ns = false;
-	}
 	
 
-	$zaduzenja_xml = array();
+
+
+	// Upis studenta na semestar
 	
-	// Šta je student slušao i kako?
-	$q510 = db_query("select studij, nacin_studiranja, plan_studija, semestar, ponovac from student_studij where student=$student order by akademska_godina desc, semestar desc limit 1");
-	$stari_studij = $plan_studija = $ponovac = $stari_nacin_studiranja = false;
-	if (db_num_rows($q510) > 0) {
-		db_fetch5($q510, $stari_studij, $stari_nacin_studiranja, $plan_studija, $stari_semestar, $tmp_ponovac);
-		if ($stari_semestar >= $semestar) 
-			$ponovac = true;
-		else if ($semestar%2 == 0) 
-			$ponovac = ($tmp_ponovac == 1);
-	}
-
-	// Ako je promijenjen studij, moramo odrediti i novi plan studija
-	if ($stari_studij != $studij) {
-		$ponovac = false;
-		$plan_studija = db_get("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-	}
-
-
-	// Novi student
-	$mijenja_studij = $ciklus = false;
-	if ($stari_studij == false && $ns == false && $ok_izvrsiti_upis == false) {
-		// Šta je odabrao na prijemnom? 
-		// (pretpostavljamo da godine u tabeli akademska_godina idu hronološkim redom)
-		$izabrani_studij = $studij;
-		$q520 = db_query("select pp.studij_prvi, pt.ciklus_studija from prijemni_prijava as pp, prijemni_termin as pt where pp.osoba=$student and pp.prijemni_termin=pt.id and pt.akademska_godina=$godina order by pt.datum desc limit 1");
-		if (!db_fetch2($q520, $izabrani_studij, $ciklus)) {
-			// Iz parametra studij ćemo probati odrediti ciklus
-			$ciklus = db_get("select ts.ciklus from tipstudija as ts, studij as s where s.id=$studij and s.tipstudija=ts.id");
-			if ($ciklus === false)
-				$ciklus = 1; // nemamo pojma = prvi ciklus
-		}
-
-		// Lista studija
+	else if ($akcija == "upis") {
 		?>
-		<p><b>Izaberite studij koji će student upisati:</b><br/>
+		<p><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=int_param('osoba')?>">Nazad na podatke o osobi</a></p>
 		<?
+
+		// Parametri, ako su proslijeđeni
 		
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
-		while (db_fetch2($q550, $q_id_studija, $q_naziv_studija)) {
-			if ($q_id_studija == $izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="novi_studij" value="'.$q_id_studija.'"'.$dodaj.'>'.$q_naziv_studija."<br/>\n";
-		}
-		print "</p>\n\n";
-		$mijenja_studij = true;
-	}
-
-
-	// Izbor studija kod završetka prethodnog ciklusa
-	$q540 = db_query("select ts.trajanje, s.naziv, ts.ciklus, s.institucija from studij as s, tipstudija as ts where s.id=$studij and s.tipstudija=ts.id");
-	if (!db_fetch4($q540, $studij_trajanje, $naziv_studija, $ciklus, $institucija)) {
-		// Student je trenutno upisan na nepoznat studij, pa ne možemo odrediti sljedeći ciklus
-		$ok_izvrsiti_upis = false;
-		$studij_trajanje = 0; // Forsiramo manuelni izbor
-	}
-
-	// Pošto se akcija "edit" ne bavi određivanjem sljedećeg ciklusa, ona će proslijediti 
-	// prevelik broj semestra
-	if ($semestar > $studij_trajanje && $stari_studij !== false) {
-		// Biramo sljedeći ciklus istog studija po tome što ga nudi ista institucija
-		$ciklus++;
-		$izabrani_studij = db_get("select s.id from studij as s, tipstudija as ts where s.institucija=$institucija and s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1");
-	
-		?>
-		<p><b>Izaberite studij koji će student upisati:</b><br/>
-		<?
+		$student = int_param('osoba');
+		$studij = int_param('studij');
+		$semestar = int_param('semestar');
+		$godina = int_param('godina');
+		if (param('ponovac')) $ponovac = true; else $ponovac = false;
+		if (param('status')) $status = int_param('status'); else $status = 0; /* Default status: Normal student */
+		$enrollment = array_to_object([ "student" => [ "id" => $student], "Programme" => [ "id" => $studij], "semester" => $semestar, "AcademicYear" => [ "id" => $godina], "repeat" => $ponovac, "status" => $status ]);
 		
-		$q550 = db_query("select s.id, s.naziv from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=$ciklus and s.moguc_upis=1 order by s.naziv");
-		while (db_fetch2($q550, $q_id_studija, $q_naziv_studija)) {
-			if ($q_id_studija == $izabrani_studij) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="novi_studij" value="'.$q_id_studija.'"'.$dodaj.'>'.$q_naziv_studija."<br/>\n";
-		}
-		print "</p>\n\n";
-
-		// Postavljamo semestar na 1
-		unset($_REQUEST['semestar']);
-		print '<input type="hidden" name="semestar" value="1">'."\n";
-
-		$nacin_studiranja = false; // Ponovo se mora izabrati način studiranja
-		$ok_izvrsiti_upis = false;
-		$mijenja_studij = true;
-	} else if ($stari_studij !== false) {
-		?>
-		<p>Upis na studij <?=$naziv_studija?>, <?=$semestar?>. semestar:</p>
-		<?
-	}
-
-
-	// Izbor načina studiranja
-	if ($nacin_studiranja === false) {
-		?>
-		<p><b>Izaberite način studiranja studenta:</b><br/>
-		<?
-		$q560 = db_query("select id, naziv from nacin_studiranja where moguc_upis=1");
-		while (db_fetch2($q560, $q_id_nacina, $q_naziv_nacina)) {
-			if ($q_id_nacina == $stari_nacin_studiranja) $dodaj=" CHECKED"; else $dodaj="";
-			print '<input type="radio" name="nacin_studiranja" value="'.$q_id_nacina.'"'.$dodaj.'>'.$q_naziv_nacina."<br/>\n";
-		}
-
-		$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$osoba");
-		?>
-		</p>
-		<p>Zaduženje: <input type="text" name="zaduzenje" value="<?=$zaduzenje?>" size="10"> KM</p>
-		<?
+		/* Optional fields */
+		if (param('nacin_studiranja')) {
+			$nacin_studiranja = int_param('nacin_studiranja');
+			$enrollment->EnrollmentType = [ "id" => $nacin_studiranja ];
+		} else $nacin_studiranja = false;
+		if (param('plan_studija')) {
+			$plan_studija = int_param('plan_studija');
+			$enrollment->Curriculum = [ "id" => $plan_studija ];
+		} else $plan_studija = false;
+		if (param('odluka')) {
+			$odluka = int_param('odluka');
+			$enrollment->Decision = [ "id" => $odluka ];
+		} else $odluka = false;
 		
-		$ok_izvrsiti_upis = false;
-	}
-
-	// Da li je apsolvent?
-	if ($ponovac && ($semestar == $studij_trajanje || $semestar == $studij_trajanje - 1) && !$ok_izvrsiti_upis && !param('apsolvent')) {
-		$apsolvent = "";
-		$broj_ponavljanja = db_get("SELECT COUNT(*) FROM student_studij WHERE student=$student AND studij=$studij AND semestar=$semestar AND ponovac=1");
-		if ($broj_ponavljanja == 0) $apsolvent = "CHECKED";
-		?>
-		<p><input type="checkbox" name="apsolvent" <?=$apsolvent?>> Apsolvent</p>
-		<?
-	}
-
-	// Da li ima nepoložene predmete sa ranijih semestara?
-	global $zamger_predmeti_pao;
-	$zamger_predmeti_pao = array();
-	if ($semestar > 1 && $semestar%2 == 1 && $stari_studij !== false) {
-		// Pozivamo "ima_li_uslov" da dobijemo spisak nepoloženih predmeta
-		ima_li_uslov($student);
-
-		// U prvom prolazu nudimo da se ručno unesu ocjene za preostale neocijenjene predmete
-		if (count($zamger_predmeti_pao) > 0 && $ok_izvrsiti_upis === false) {
-			?>
-			<p><b>Predmeti iz kojih je student ostao neocijenjen - upišite eventualne ocjene u polja lijevo:</b></p>
-			<table border="0">
-			<?
-			foreach ($zamger_predmeti_pao as $id => $naziv) {
-				if ($id < 0) {
-					// Ovo je jedini pametan razlog da se pojavi id nula
-					?>
-					<tr><td colspan="2">Student nije slušao nijedan od ponuđenih izbornih predmeta koje je po planu studija trebao slušati.<br/> Pošto ima dovoljan broj ostvarenih ECTS kredita pretpostavićemo da je sve u redu.</td></tr>
-					<?
-					continue;
-				}
-				?>
-				<tr><td><input type="text" size="3" name="pao-<?=$id?>"></td>
-				<td><?=$naziv?></td></tr>
-				<?
+		
+		// Zaduženja
+		$balance = api_call("balance/$student");
+		// API expects negative value for debt
+		$newAmount = -floatval(param('zaduzenje'));
+		if ($newAmount != floatval($balance['amount'])) {
+			print "Old amount " . $balance['amount'] . " new amount $newAmount<br>\n";
+			$newBalance = array_to_object( [ "Person" => [ "id" => $student], "amount" => $newAmount ] );
+			$result = api_call("balance/$student", $newBalance, "PUT");
+			if ($_api_http_code != "201") {
+				niceerror("Neuspješna izmjena zaduženja studenta");
+				api_report_bug($result, []);
+				return;
+			} else {
+				nicemessage("Izmijenjeno zaduženje studenta");
 			}
-			?>
-			</table>
-			<?
+			// Show updated amount on UI
+			$balance['amount'] = $newAmount;
 		}
-	}
-
-
-	// Provjera plaćanja
-	if ($conf_knjigovodstveni_servis && $nacin_studiranja !== false && $ciklus !== false) {
-		global $conf_url_daj_karticu;
-		$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
-		$saldo = 0;
-		if ($kartice === FALSE || count($kartice) == 0) {
-			?>
-			<p><font color="red">Nema podataka o uplatama</font></p>
-			<?
-		} else {
-			$uplate = array();
-			if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 1) 
-				array_push($uplate, 1);  // Redovni upis I ciklus
-			else if ($ciklus == 1 && $ponovac == 0 && $nacin_studiranja == 3) 
-				array_push($uplate, 2); // Redovni upis I ciklus - participacija
-			else if ($ciklus == 1 && $ponovac == 1) {
-				array_push($uplate, 3); // Ponovni upis I ciklus
-				foreach ($zamger_predmeti_pao as $id => $naziv)
-					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
-			}
-
-			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 1) {
-				array_push($uplate, 28); // Redovni upis II ciklus
-				if ($semestar==6) array_push($uplate, 31); // Prijava i odbrana završnog rada - II ciklus
-			}
-			else if ($ciklus == 2 && $ponovac == 0 && $nacin_studiranja == 3) {
-				array_push($uplate, 29); // Redovni upis II ciklus - participacija
-				if ($semestar==6) array_push($uplate, 31); // Prijava i odbrana završnog rada - II ciklus
-			}
-			else if ($ciklus == 2 && $ponovac == 1) {
-				array_push($uplate, 30); // Ponovni upis II ciklus
-				foreach ($zamger_predmeti_pao as $id => $naziv)
-					array_push($uplate, 40); // Uplata za svaki nepolozeni ispit kod obnove godine
-			}
-			else if ($ciklus == 3 && $ponovac == 0)
-				array_push($uplate, 45 + ($godina - 8) ); // 45 == 2012/2013 FIXME loše organizovani kodovi uplata...
-			else if ($ciklus == 3 && $ponovac == 1) 
-				array_push($uplate, 49); // Ponovni upis III ciklus
-			
-			// Šta treba uplatiti i koliko
-			$saldo = $potrebno = 0;
-			foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
-			foreach ($uplate as $uplata) {
-				$q123 = db_query("SELECT cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
-				$potrebno += db_result($q123,0,0);
-			}
-			if ($potrebno > $saldo) {
-				?>
-				<p><font color="red">Student nije uplatio dovoljno novca za upis:<br>
-				Potrebno je <?=$potrebno?> KM a ukupan iznos svih uplata je <?=$saldo?> KM.</font></p>
-				<?
-				//$ok_izvrsiti_upis = 0;
-			} 
-			
-			// Tražimo detaljne greške i ujedno generišemo XML zaduženja
-			$greska = "";
-			foreach ($uplate as $uplata) {
-				$q124 = db_query("SELECT vrsta_zaduzenja_opis, cijena FROM cjenovnik WHERE vrsta_zaduzenja=$uplata");
-				$opis = db_result($q124,0,0);
-				$cijena = db_result($q124,0,1);
-				$found = 0;
-				foreach($kartice as $kartica) {
-					$kzaduzenje = str_replace("–", "-", trim($kartica['vrsta_zaduzenja']));
-					if ($kzaduzenje == trim($opis)) {
-						$found += $kartica['razduzenje'] - $kartica['zaduzenje'];
+		
+		// Kada je specificirana subakcija uvijek omogući upis, čak i ako nema uslov (forsiranje)
+		if (param('finish')) {
+			$enrollment->dryRun = false;
+			$newEnrollment = api_call("enrollment/$student", $enrollment, "POST");
+			if ($_api_http_code == "201") {
+				$studentFullname = $newEnrollment['student']['surname'] . " " . $newEnrollment['student']['name'] . " (" . $newEnrollment['student']['studentIdNr'] . ")";
+				
+				nicemessage("Student $studentFullname je upisan na studij " . $newEnrollment['Programme']['name'] . ", $semestar. semestar u akademskoj " . $newEnrollment['AcademicYear']['name'] . " godini");
+				
+				// Enroll into courses
+				foreach($newEnrollment['enrollCourses'] as $cuy) {
+					$result = api_call("course/" . $cuy['CourseUnit']['id'] . "/" . $cuy['AcademicYear']['id'] . "/enroll/$student", [], "POST");
+					if ($_api_http_code == "201") {
+						print "* Student upisan na predmet " . $cuy['courseName'] . "<br>";
+					} else if ($_api_http_code == "403") {
+						print "* Student je već od ranije upisan na predmet " . $cuy['courseName'] . "<br>";
+					} else {
+						niceerror("Neuspješan upis studenta na predmet");
+						api_report_bug($result, []);
 					}
 				}
-				if ($found < $cijena)
-					$greska .= "Za vrstu zaduženja $opis potrebno je $cijena KM a student je uplatio $found KM.<br>";
-					
-				$datumxml = date("d/m/Y");
-				$iznosxml = number_format($cijena, 2, ",", "");
-				$zaduzenje_xml = '<?xml version="1.0" encoding="UTF-8"?>';
-				$zaduzenje_xml .= "\n<Zaduzenje>\n<JMBG>$jmbg</JMBG>\n<vrstaZaduzenjaId>$uplata</vrstaZaduzenjaId>\n<datum>$datumxml</datum>\n<iznos>$iznosxml</iznos>\n<aktivan>1</aktivan>\n<opis>$opis</opis>\n</Zaduzenje>";
-				$zaduzenja_xml[] = $zaduzenje_xml;
-			}
-			if ($greska != "" && $potrebno <= $saldo) {
-				?>
-				<p><font color="red">Uplate nisu odgovarajućeg tipa.</font></p>
-				<?
-			}
-			if ($greska != "") {
-				?>
-				<p><font color="red"><?=$greska?></font></p>
-				<?
-				//$ok_izvrsiti_upis = 0;
-			}
-		}
-
-	}
-
-
-	// IZBORNI PREDMETI
-
-	// novi studij - određujemo najnoviji plan studija za taj studij
-	if ($ns !== false) { 
-		$plan_studija = db_get("select id from plan_studija where studij=$studij order by godina_vazenja desc limit 1");
-	}
-
-	// Nema potrebe gledati dalje ako treba tek izabrati studij
-	$uou = false;
-	if (!$mijenja_studij) {
-		// Da li je popunjen ugovor o učenju?
-		$uoupk = array();
-		$uou = db_get("select id from ugovoroucenju where student=$student and akademska_godina=$godina and studij=$studij and semestar=$semestar");
-		
-		if ($uou) {
-			// Ugovor o učenju je jedini način kako student može odabrati predmete sa drugog odsjeka/fakulteta
-			// jer se tu uopšte ne gleda plan studija
-			if (!$ok_izvrsiti_upis) print "<p>Popunjen Ugovor o učenju (ID: $uou).\n";
-			
-			$q690 = db_query("select p.id, p.naziv from ugovoroucenju_izborni as uoui, predmet as p where uoui.ugovoroucenju=$uou and uoui.predmet=p.id");
-			
-			if (db_num_rows($q690)>0 && !$ok_izvrsiti_upis) print " Izabrani predmeti u semestru:";
-			
-			while (db_fetch2($q690, $predmet, $naziv_predmeta)) {
-				if (!$ok_izvrsiti_upis) print "<br/>* $naziv_predmeta\n";
-
-				// Da li je već položio predmet
-				$polozio_predmet = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet and ocjena>5");
-				if ($polozio_predmet) {
-					if (!$ok_izvrsiti_upis) print " - već položen! Preskačem";
-				} else {
-	
-					// Tražimo ponudukursa
-					$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-					if (!$ponudakursa) {
-						db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
-						$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-						zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$godina zbog studenta u$student", 2);
-						zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($ponudakursa));
-					} 
-					
-					if (!$ok_izvrsiti_upis) print '<input type="hidden" name="izborni-'.$ponudakursa.'" value="on">'."\n";
-				}
-			}
-			if (!$ok_izvrsiti_upis) print "</p>\n";
-		}
-
-
-		// Nalazim izborne predmete 
-
-		// Ako postoji plan studija, problem je jednostavan
-		if ($plan_studija>0 && !$uou) {
-			$plan_studija_opis = predmeti_na_planu($plan_studija, $semestar);
-			$poruka_ispisana = false;
-			
-			foreach($plan_studija_opis as $slog) {
-				if ($slog['obavezan'] == 1) continue;
-				
-				// Koliko je predmeta iz izbornog slota je položeno?
-				$polozenih = 0;
-				foreach($slog['predmet'] as $predmet_slog) {
-					$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=" . $predmet_slog['id'] . " AND ocjena>5");
-					if ($polozio) $polozenih++;
-				}
-				
-				// Da li su izborni predmeti ranije selektovani na formi?
-				if ($polozenih < $slog['ponavljanja']) {
-					foreach($_REQUEST as $key=>$value) {
-						if (substr($key,0,8) != "izborni-") continue;
-						if ($value=="") continue;
-						$ponudakursa = intval(substr($key,8));
-						$predmet = db_get("select predmet from ponudakursa where id=$ponudakursa");
-						foreach($slog['predmet'] as $predmet_slog)
-							if ($predmet == $predmet_slog['id'])
-								$polozenih++;
+				foreach($newEnrollment['failedCourses'] as $co) {
+					$co['AcademicYear'] = $newEnrollment['AcademicYear'];
+					$co = array_to_object($co);
+					$result = api_call("course/offering/enroll/$student", $co, "PUT");
+					if ($_api_http_code == "201") {
+						print "* Student upisan na preneseni predmet " . $co->CourseDescription->name . "<br>";
+					} else if ($_api_http_code == "403") {
+						print "* Student je već od ranije upisan na preneseni predmet " . $co->CourseDescription->name . "<br>";
+					} else {
+						niceerror("Neuspješan upis studenta na predmet");
+						api_report_bug($result, $co);
 					}
 				}
 				
-				// I dalje nema dovoljno...
-				if ($polozenih < $slog['ponavljanja']) {
-					// Poruku da se moraju odabrati izborni predmeti ispisujemo samo ako je to slučaj
-					if (!$poruka_ispisana) {
-						print "<p><b>Nije popunjen Ugovor o učenju!</b>\n";
-						if ($ok_izvrsiti_upis) 
-							print "</p><p><b>Morate izabrati " . $slog['ponavljanja'] . " od ovih predmeta.</b> Ako to znači da ste sada izabrali viška predmeta, koristite dugme za povratak nazad.</p>\n";
-						else
-							print "Izaberite izborne predmete ručno.</p>\n";
-						$poruka_ispisana = true;
-					}
-					
-					foreach($slog['predmet'] as $predmet_slog) {
-						$predmet = $predmet_slog['id'];
-						// Odredjujemo ponudu kursa
-						$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-						if (!$ponudakursa) {
-							db_query("insert into ponudakursa set predmet=$predmet, studij=$studij, semestar=$semestar, akademska_godina=$godina, obavezan=0");
-							$ponudakursa = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij and semestar=$semestar and akademska_godina=$godina");
-							zamgerlog("kreirao ponudu kursa pp$predmet, studij s$studij, sem. $semestar, ag$godina zbog studenta u$student", 2);
-							zamgerlog2("kreirao ponudu kursa zbog studenta", $student, intval($ponudakursa));
-						}
-						?>
-						<input type="checkbox" name="izborni-<?=$ponudakursa?>"> <?=$predmet_slog['naziv']?> (<?=$predmet_slog['ects']?> ECTS)<br/>
-						<?
-					}
-				}
-			}
-		
-		// Nije definisan plan studija - deduciramo izborne predmete iz onoga što se držalo prošle godine
-		} else if (!$uou) {
-			
-			// Da li je zbir ECTS bodova sa izbornim predmetima = 30?
-			$q560 = db_query("select p.id, p.naziv, pk.id, p.ects from predmet as p, ponudakursa as pk where pk.akademska_godina=$godina and pk.studij=$studij and pk.semestar=$semestar and obavezan=0 and pk.predmet=p.id");
-			if (db_num_rows($q560)>0 && $ok_izvrsiti_upis) {
-				$ects_suma = db_get("select sum(p.ects) from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-		
-				// Upisujemo na izborne predmete koji su odabrani
-				foreach($_REQUEST as $key=>$value) {
-					if (substr($key,0,8) != "izborni-") continue;
-					if ($value=="") continue;
-					$predmet = intval(substr($key,8));
-					$ects_suma += db_get("select p.ects from ponudakursa as pk, predmet as p where pk.id=$predmet and pk.predmet=p.id");
-				}
-		
-				if ($ects_suma != 30) {
-					$ok_izvrsiti_upis = false;
-					niceerror("Izabrani izborni predmeti čine sumu $ects_suma ECTS kredita, umjesto 30");
-				}
-			}
-		
-			if (db_num_rows($q560)>0 && !$ok_izvrsiti_upis) {
+				print "<p>Završene su sve operacije u vezi upisa.</p>";
+				
+			} else if($_api_http_code == "400" && starts_with($newEnrollment['message'], "Already enrolled")) {
+				if ($semestar % 2 == 0) $rijec = "ljetnji"; else $rijec = "zimski";
+				niceerror("Student je već upisan u $rijec semestar tekuće akademske godine!");
 				?>
-				<p><b>Izaberite izborne predmete:</b><br/>
+				<p>Vratite se na <a href="?sta=studentska%2Fosobe&akcija=edit&osoba=<?=$student?>">pregled podataka o studentu</a> da saznate više informacija.</p>
 				<?
-				while (db_fetch4($q560, $predmet, $naziv_predmeta, $ponudakursa, $ects)) {
-					$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
-					if (!$polozio) {
-						// Nije polozio/la - koristimo pk
-						?>
-						<input type="checkbox" name="izborni-<?=$ponudakursa?>"> <?=$naziv_predmeta?> (<?=$ects?> ECTS)<br/>
-						<?
-					}
-				}
+			} else {
+				niceerror("Neuspješan upis studenta na studij");
+				api_report_bug($newEnrollment, $enrollment);
 			}
-		}
-	}
-
-	// Studentu nikada nije zadat broj indexa (npr. prvi put se upisuje)
-	if (($brindexa==0 || $brindexa=="" || $mijenja_studij) && !$ok_izvrsiti_upis && !isset($_REQUEST['novi_brindexa'])) {
-		if ($brindexa==0) $brindexa="";
-		?>
-		<p><b>Unesite broj indeksa za ovog studenta:</b><br/>
-		<input type="text" name="novi_brindexa" size="10" value="<?=$brindexa?>"></p>
-		<?
-	}
-
-
-
-	// ------ Izvrsenje upisa!
-	if ($user_siteadmin && param('forsiraj'))
-		$ok_izvrsiti_upis = true;
-
-	if ($ok_izvrsiti_upis && check_csrf_token()) {
-		// Izbjegavamo da student bude više puta upisan na isti studij
-		$parni = $semestar % 2;
-		$q591 = db_query("SELECT s.naziv, ss.semestar FROM student_studij ss, studij s WHERE ss.student=$student AND ss.akademska_godina=$godina AND ss.semestar MOD 2=$parni AND ss.studij=s.id");
-		if (db_fetch2($q591, $vec_studij_naziv, $vec_semestar)) {
-			$naziv_ak_god = db_get("select naziv from akademska_godina where id=$godina");
-			
-			niceerror("Student je već upisan u akademskoj godini $naziv_ak_god u semestar $vec_semestar (studij $vec_studij_naziv)");
 			return;
 		}
 		
-		// Upis u prvi semestar - kandidat za prijemni postaje student!
-		if (!$stari_studij) {
-			// Ukidamo privilegiju "prijemni" ako je student imao
-			db_query("delete from privilegije where osoba=$student and privilegija='prijemni'");
-
-			// Dodajemo privilegiju "student" samo ako je student nije već imao
-			$ima_privilegiju = db_get("select count(*) from privilegije where osoba=$student and privilegija='student'");
-			if (!$ima_privilegiju)
-				db_query("insert into privilegije set osoba=$student, privilegija='student'");
-
-			// AUTH tabelu cemo srediti naknadno
-			zamgerlog2("proglasen za studenta", $student);
-			print "-- $prezime $ime proglašen za studenta<br/>\n";
-		}
-
-		// Novi broj indexa
-		$nbri = db_escape($_REQUEST['novi_brindexa']);
-		if ($nbri!="") {
-			db_query("update osoba set brindexa='$nbri' where id=$student");
-			zamgerlog2("postavljen broj indeksa", $student, 0, 0, $nbri);
-			print "-- broj indeksa postavljen na $nbri<br/>\n";
-		}
-
-		// Upisujemo ocjene za predmete koje su dopisane
-		if (count($zamger_predmeti_pao) > 0)
-		foreach ($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
-			$ocjena = intval($_REQUEST["pao-$predmet"]);
-			if ($ocjena>5) {
-				// Upisujem dopisanu ocjenu
-				if (!$dry_run) {
-					db_query("insert into konacna_ocjena set student=$student, predmet=$predmet, ocjena=$ocjena, akademska_godina=$godina, datum=NOW()");
-					zamgerlog("dopisana ocjena $ocjena prilikom upisa na studij (predmet pp$predmet, student u$student)", 4); // 4 = audit
-					zamgerlog2("dodana ocjena", $student, $predmet, $godina, $ocjena);
-				}
-				print "-- Dopisana ocjena $ocjena za predmet $naziv_predmeta<br/>\n";
-			} else {
-				// Student prenio predmet
-				if ($predmet < 0) continue; // nije slušao nijedan od mogućih izbornih predmeta
-				
-				// Provjera broja ECTS kredita je obavljena na početnoj strani (akcija "edit")
-				// pa ćemo pretpostaviti sve najbolje :)
-
-				// Moramo upisati studenta u istu ponudu kursa koju je ranije slušao
-				$q592 = db_query("select pk.studij,pk.semestar,pk.obavezan,pk.pasos_predmeta from ponudakursa as pk, student_predmet as sp where sp.student=$student and sp.predmet=pk.id and pk.predmet=$predmet order by pk.akademska_godina desc limit 1");
-
-				// Polje $zamger_predmeti_pao sadrži predmete koje je student trebao slušati prema NPP u prošloj godini a nije ih položio
-				// No ako se student direktno upisuje na višu godinu (doktorski studij!?), moguće da je tu predmet koji nikada nije slušao
-				// Stoga moramo provjeriti i to i preskočiti takve predmete
-				if (db_num_rows($q592)<1) continue;
-
-				print "Ponovo upisujem studenta u predmet $naziv_predmeta ($predmet) koji je prenio s prethodne godine (ako je ovo greška, zapamtite da ga treba ispisati sa predmeta!)<br>";
-				db_fetch4($q592, $studij_stara_pk, $semestar_stara_pk, $obavezan, $pasos_predmeta_stari);
-
-				// Tražimo istu ponudu kursa u aktuelnoj godini
-				$nova_pk = db_get("select id from ponudakursa where predmet=$predmet and studij=$studij_stara_pk and semestar=$semestar_stara_pk and akademska_godina=$godina and pasos_predmeta=$pasos_predmeta_stari");
-				if (!$nova_pk) {
-					// Ponuda kursa ne postoji u aktuelnoj godini, kreiramo je
-					print "-- Kreiram ponudu kursa za predmet $predmet, studij $studij_stara_pk, semestar $semestar_stara_pk<br>";
-					$nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, true, $pasos_predmeta_stari);
-					if ($nova_pk == false) $nova_pk = kreiraj_ponudu_kursa($predmet, $studij_stara_pk, $semestar_stara_pk, $godina, $obavezan, false, $pasos_predmeta_stari);
-				}
-
-				upis_studenta_na_predmet($student, $nova_pk);
-				zamgerlog2("student upisan na predmet (preneseni)", $student, intval($nova_pk));
-				print "-- Upisan u predmet $predmet<br/>\n";
-			}
-		}
-
-
-		// Upisujemo studenta na novi studij
-		if (!$dry_run) {
-			if (!$ponovac) $ponovac=0;
-
-			$status_studenta = 0;
-			if (param('apsolvent')) $status_studenta = 1;
-			if ($plan_studija == false) $plan_studija = "NULL";
-
-			db_query("INSERT INTO student_studij SET student=$student, studij=$studij, semestar=$semestar, akademska_godina=$godina, nacin_studiranja=$nacin_studiranja, ponovac=$ponovac, odluka=NULL, plan_studija=$plan_studija, status_studenta=$status_studenta");
-
-			if (isset($_REQUEST['zaduzenje'])) $zaduzenje = floatval($_REQUEST['zaduzenje']); else $zaduzenje=0;
-			$staro_zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$student");
-			if ($zaduzenje == 0 && $staro_zaduzenje != 0)
-				db_query("DELETE FROM student_zaduzenje WHERE student=$student");
-			else if ($staro_zaduzenje === false && $zaduzenje != 0)
-				db_query("INSERT INTO student_zaduzenje SET student=$student, zaduzenje=$zaduzenje");
-			else
-				db_query("UPDATE student_zaduzenje SET zaduzenje=$zaduzenje WHERE student=$student");
-
-			zamgerlog2("student upisan na studij", $student, $studij, $godina, $semestar);
+		// Use "dry run" enrollment to find out which options need to be changed
+		$enrollment->dryRun = true;
+		// If everything is ok, we allow user to finish enrollment
+		$finish = true;
+		// Otherwise, some options will be shown in UI
+		$show = [];
+		
+		$newEnrollment = api_call("enrollment/$student", $enrollment, "POST");
+		
+		// Handle errors
+		if ($_api_http_code == "400" && starts_with($newEnrollment['message'], "Already enrolled")) {
+			if ($semestar % 2 == 0) $rijec = "ljetnji"; else $rijec = "zimski";
+			niceerror("Student je već upisan u $rijec semestar odabrane akademske godine!");
+			?>
+			<p>Vratite se na <a href="?sta=studentska%2Fosobe&akcija=edit&osoba=<?=$student?>">pregled podataka o studentu</a> da saznate više informacija.</p>
+			<?
+			return;
 		}
 		
-		// Zapis u tabele za izvoz podataka
-		if (!$dry_run) {
-			if ($semestar==1 && !$ponovac) {
-				if (db_get("SELECT COUNT(*) FROM izvoz_upis_prva WHERE student=$student AND akademska_godina=$godina") == 0)
-					db_query("INSERT INTO izvoz_upis_prva VALUES($student,$godina)");
-			} else {
-				if (db_get("SELECT COUNT(*) FROM izvoz_upis_semestar WHERE student=$student AND akademska_godina=$godina AND semestar=$semestar") == 0)
-					db_query("INSERT INTO izvoz_upis_semestar VALUES($student,$semestar,$godina)");
-			}
+		else if ($_api_http_code != "201" && !strstr($newEnrollment['message'], "semesters, but")) {
+			niceerror("Neuspješan upis studenta na studij");
+			api_report_bug($newEnrollment, $enrollment);
+			return;
 		}
-
-		// Upisujemo na sve obavezne predmete na studiju
-		// Ako postoji plan studija, problem je jednostavan
-		$obavezni = array();
-		if ($plan_studija>0) {
-			$q605 = db_query("SELECT pp.predmet, pp.naziv, pp.id FROM pasos_predmeta pp, plan_studija_predmet psp WHERE psp.plan_studija=$plan_studija AND psp.semestar=$semestar AND psp.obavezan=1 AND psp.pasos_predmeta=pp.id");
-			while (db_fetch3($q605, $predmet, $naziv_predmeta, $pasos_predmeta)) {
-				// Da li ga je vec polozio
-				$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
-				if (!$polozio) {
-					print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
-					$ponudakursa = db_get("SELECT id FROM ponudakursa WHERE predmet=$predmet AND studij=$studij AND semestar=$semestar AND akademska_godina=$godina AND obavezan=1 AND pasos_predmeta=$pasos_predmeta");
-					if (!$ponudakursa) {
-						// Jednom pozivam da ispiše šta će uraditi, drugi put da uradi
-						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, true, $pasos_predmeta);
-						$ponudakursa = kreiraj_ponudu_kursa($predmet, $studij, $semestar, $godina, true, false, $pasos_predmeta);
+		
+		// Programme, cycle or curriculum has changed
+		if (param('change') || $studij == -1 || ($_api_http_code == "400" && strstr($newEnrollment['message'], "semesters, but")) || $newEnrollment['Programme']['id'] != $studij) {
+			$show['programme'] = $show['curriculum'] = true;
+			$finish = false;
+			
+			// Get a list of all programmes from api
+			$allProgrammes = api_call("programme/all", [ "resolve" => [ "ProgrammeType" ]]);
+			$allProgrammes = $allProgrammes['results'];
+			$programmeTypes = [];
+			foreach($allProgrammes as $prog) {
+				$ptId = $prog['ProgrammeType']['id']; // shortcut
+				if (!array_key_exists($ptId, $programmeTypes))
+					$programmeTypes[$ptId] = $prog['ProgrammeType'];
+			}
+			
+			
+			// If semester is invalid, we will try enrollment into the next cycle
+			if (strstr($newEnrollment['message'], "semesters, but")) {
+				// First find old programme, cause we lost it >D
+				foreach($allProgrammes as $prog) {
+					if ($prog['id'] == $studij)
+						$oldProgramme = $prog;
+				}
+				$newProgramme = false;
+				foreach($allProgrammes as $prog) {
+					if ($prog['Institution']['id'] == $oldProgramme['Institution']['id'] && $prog['ProgrammeType']['cycle'] == $oldProgramme['ProgrammeType']['cycle'] + 1)
+						$newProgramme = $prog;
+				}
+				if (!$newProgramme) {
+					niceerror("Neispravan broj semestra");
+					return;
+				}
+				$enrollment->Programme = [ "id" => $newProgramme['id']];
+				$enrollment->semester = 1;
+				
+				// Retry enrollment with new cycle
+				$newEnrollment = api_call("enrollment/$student", $enrollment, "PUT");
+				
+				if ($_api_http_code == "400") {
+					niceerror("Neispravan broj semestra");
+					return; // We don't know how to continue after this
+				}
+			}
+			
+			$currentCycle = 0;
+			
+			?>
+			<script>
+				function changeCycle() {
+				    var cycle = document.getElementById('cycle').value;
+				    var progEl  = document.getElementById('programme');
+				    progEl.options.length = 0;
+				    <?
+				    foreach ($programmeTypes as $id => $programmeType) {
+				    	print "if (cycle == $id) {\n";
+				    	foreach($allProgrammes as $programme)
+				    		if ($programme['ProgrammeType']['id'] == $id) {
+								print "option = document.createElement(\"option\");\n";
+								print "option.text = '" . $programme['name'] . "';\n";
+								print "option.value = " . $programme['id'] . ";\n";
+								if ($programme['id'] == $studij) {
+									print "option.selected = true;\n";
+									$currentCycle = $id;
+								}
+								print "progEl.add(option);";
+							}
+				    	print "}\n";
 					}
-						
-					upis_studenta_na_predmet($student, $ponudakursa);
-					zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
-				} else {
-					print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
+				    ?>
 				}
-				
-			}
+                function changeProgramme() {
+                    var curriculumEl = document.getElementById('curriculum');
+                    curriculumEl.options.length = 0;
+                    var option = document.createElement("option");
+                    option.text = '(odredi automatski)';
+                    option.value = 0;
+                    curriculumEl.add(option);
+                }
+                window.addEventListener("load", function() {
+                    document.getElementById('cycle').value = <?=$currentCycle?>;
+                    changeCycle();
+				});
+			</script>
+			<?
+		} else
+			$show['programme'] = $show['curriculum'] = false;
 			
-		} else {
-			// Nije definisan plan studija, deduciramo obavezne predmete iz onoga što se drži tekuće godine
-			$q610 = db_query("select pk.id, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.studij=$studij and pk.semestar=$semestar and pk.akademska_godina=$godina and pk.obavezan=1 and pk.predmet=p.id");
-			while (db_fetch3($q610, $ponudakursa, $predmet, $naziv_predmeta)) {
-				// Da li ga je vec polozio
-				$polozio = db_get("select count(*) from konacna_ocjena where student=$student and predmet=$predmet");
-				if (!$polozio) {
-					print "Obavezni predmet $naziv_predmeta ($predmet)<br>";
-					upis_studenta_na_predmet($student, $ponudakursa);
-					zamgerlog2("student upisan na predmet (obavezan)", $student, intval($ponudakursa));
-				} else {
-					print "-- Student NIJE upisan u $naziv_predmeta jer ga je već položio<br/>\n";
-				}
-			}
-		}
-
-		// Upisujemo na izborne predmete koji su odabrani
-		foreach($_REQUEST as $key=>$value) {
-			if (substr($key,0,8) != "izborni-") continue;
-			if ($value=="") continue;
-			$ponudakursa = intval(substr($key,8)); // drugi dio ključa je ponudakursa
-			print "Izborni predmet $ponudakursa<br>";
+		// Check if other data has changed, make further API queries if neccessary
+		if (param('change') || $newEnrollment['semester'] != $semestar) {
+			$show['semester'] = true;
+			$finish = false;
+		} else
+			$show['semester'] = false;
 			
-			if (!$dry_run) {
-				upis_studenta_na_predmet($student, $ponudakursa);
-				zamgerlog2("student upisan na predmet (izborni)", $student, $ponudakursa);
-			}
-			$naziv_predmeta = db_get("select p.naziv from ponudakursa as pk, predmet as p where pk.id=$ponudakursa and pk.predmet=p.id");
-			print "-- Student upisan u izborni predmet $naziv_predmeta<br/>";
-		}
-
-		// Unos zaduženja na studentovu karticu
-		if (!$dry_run && $conf_knjigovodstveni_servis) {
-			global $conf_url_upisi_zaduzenje;
-			foreach($zaduzenja_xml as $zaduzenje) {
-				xml_request($conf_url_upisi_zaduzenje, array("xml" => $zaduzenje), "POST");
-			}
-			zamgerlog2("upisano zaduzenje za upis", $student);
-		}
-		print "-- Evidentirano zaduženje u bazi uplata<br>\n";
+		if (param('change') || $newEnrollment['repeat'] != $ponovac) {
+			$show['repeat'] = true;
+			$finish = false;
+		} else
+			$show['repeat'] = false;
+			
+		if (param('change') || $newEnrollment['status'] != $status) {
+			$show['status'] = true;
+			$finish = false;
+		} else
+			$show['status'] = false;
 		
-		nicemessage("Student uspješno upisan na $naziv_studija, $semestar. semestar");
-		if (!$dry_run) zamgerlog("Student u$student upisan na studij s$studij, semestar $semestar, godina ag$godina", 4); // 4 - audit
-		return;
+		if (param('change')) {
+			$years = api_call("zamger/year")["results"];
+			$show['year'] = true;
+			$finish = false;
+		} else
+			$show['year'] = false;
+			
+		if (param('change')) {
+			$curricula = api_call("curriculum/programme/" . $newEnrollment['Programme']['id'] . "/all", [ "resolve" => ["AcademicYear"]])["results"];
+			$show['year'] = true;
+			$finish = false;
+		} else
+			$show['year'] = false;
 
-	} else {
-		if ($user_siteadmin)
-			print "<p><input type=\"checkbox\" name=\"forsiraj\" value=\"1\"> Forsiraj</p>\n";
+		if (param('change') || param('nacin_studiranja') && $newEnrollment['EnrollmentType']['id'] != $nacin_studiranja) {
+			$enrollmentTypes = api_call("enrollment/type")["results"];
+			$show['nacin_studiranja'] = true;
+			$finish = false;
+		} else
+			$show['nacin_studiranja'] = false;
+		
+		// Show main form
+		unset($_POST['change']); unset($_REQUEST['change']);
 		?>
-		<p>&nbsp;</p>
-		<input type="submit" value=" Potvrda upisa ">
+		<?=genform("POST");?>
+		<h2>Podaci o upisu</h2>
+		<style>
+			  table.podaci { border: 1px solid #808080; border-collapse: collapse; width: 800px }
+             .podaci tr td { border: 1px solid #808080; border-collapse: collapse; border-spacing: 10px; padding: 10px }
+		</style>
+		<table class="podaci" id="podaciid">
+			<tr>
+				<td><b>Student</b></td>
+				<td><?=$newEnrollment['student']['surname'] . " " . $newEnrollment['student']['name'] . " (" . $newEnrollment['student']['studentIdNr'] . ")";
+					?></td>
+			</tr>
+			<tr>
+				<td><b>Akademska godina</b></td>
+				<? if ($show['year']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<select name="godina">
+							<?
+							foreach ($years as $id => $academicYear) {
+								print "<option value=\"$id\" ";
+								if ($id == $newEnrollment['AcademicYear']['id']) print "SELECTED";
+								print ">" . $academicYear['name'] . "</option>";
+							}
+							?>
+						</select>
+					</td>
+					<?
+				} else {
+					?><td><?=$newEnrollment['AcademicYear']['name']?> <?
+					if (!$newEnrollment['AcademicYear']['isCurrent'])
+						print "- <font color='red'>Godina nije aktuelna</font>";
+					?></td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Ciklus studija</b></td>
+				<? if ($show['programme']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<select name="ciklus" id="cycle" onchange="changeCycle();">
+							<?
+							foreach ($programmeTypes as $id => $programmeType)
+								print "<option value=$id>" . $programmeType['name'] . "</option>";
+							?>
+						</select>
+					</td>
+					<?
+				} else {
+					?>
+					<td>
+						<?=$newEnrollment['Programme']['ProgrammeType']['name']?>
+						<input type="hidden" name="ciklus" value="<?=$newEnrollment['Programme']['ProgrammeType']['id']?>">
+					</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Studij</b></td>
+				<? if ($show['programme']) {
+					?>
+				<td bgcolor="#ffeeee">
+					<select name="studij" id="programme" onchange="changeProgramme();">
+					</select>
+				</td>
+					<?
+				} else {
+				?>
+				<td>
+					<?=$newEnrollment['Programme']['name']?>
+					<input type="hidden" name="studij" value="<?=$newEnrollment['Programme']['id']?>">
+				</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Plan studija</b></td>
+				<? if ($show['curriculum']) {
+					?>
+				<td bgcolor="#ffeeee">
+					<select name="plan_studija" id="curriculum">
+						<option value="0" selected>(odredi automatski)</option>
+				<?
+					// Not implemented currently
+					foreach($curricula as $cur) {
+						print "<option value=\"" . $cur['id'] . "\">" . $cur['startingYear']['name'] . "</option>";
+					}
+					?>
+					</select></td><?
+				} else {
+					?>
+				<td>
+					<?=$newEnrollment['Curriculum']['startingYear']['name'];?>
+					<input type="hidden" name="plan_studija" value="<?=$newEnrollment['Curriculum']['id']?>">
+				</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Semestar</b></td>
+				<? if ($show['semester']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<select name="semestar">
+						<?
+						for ($i=1; $i<=6; $i++) {
+							print "<option value=$i";
+							if ($i == $newEnrollment['semester']) print " selected";
+							print ">$i</option>\n";
+						}
+						?>
+						</select>
+					</td>
+					<?
+				} else {
+					?>
+					<td>
+						<?=$newEnrollment['semester'];?>
+						<input type="hidden" name="semestar" value="<?=$newEnrollment['semester']?>">
+					</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Ponovac</b></td>
+				<? if ($show['repeat']) {
+						?>
+					<td bgcolor="#ffeeee">
+						<input type="checkbox" name="ponovac" <? if ($newEnrollment['repeat']) print "checked";?>>
+					</td>
+						<?
+					} else {
+						if ($newEnrollment['repeat']) {
+							print "<td>DA";
+							?>
+				<input type="hidden" name="ponovac" value="1"></td><?
+						} else
+							print "<td>NE</td>";
+					}?>
+			</tr>
+			<tr>
+				<td><b>Apsolvent</b></td>
+				<? if ($show['status']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<input type="checkbox" name="status" value="1">
+					</td>
+						<?
+					} else {
+					?>
+					<td><?
+						if ($newEnrollment['status'] == 1) print "DA"; else print "NE";
+						?>
+						<input type="hidden" name="status" value="<?=$newEnrollment['status']?>">
+					</td><?
+					}?>
+			</tr>
+			<tr>
+				<td><b>Način studiranja</b></td>
+				<? if ($show['nacin_studiranja']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<select name="nacin_studiranja">
+							<?
+							foreach ($enrollmentTypes as $type) {
+								print "<option value=\"" . $type['id'] . "\"";
+								if ($type['id'] == $newEnrollment['EnrollmentType']['id']) print "SELECTED";
+								print ">" . $type['name'] . "</option>";
+							}
+							?>
+						</select>
+					</td>
+					<?
+				} else {
+					?>
+					<td>
+						<?=$newEnrollment['EnrollmentType']['name'];?>
+						<input type="hidden" name="nacin_studiranja" value="<?=$newEnrollment['EnrollmentType']['id']?>">
+					</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Zaduženje</b></td>
+				<td><input type="text" name="zaduzenje" value="<?=-$balance['amount']?>"> KM</td>
+			</tr>
+			<?
+			if (!$newEnrollment['canEnroll']) {
+				?>
+				<tr>
+					<td>&nbsp;</td>
+					<td bgcolor="#ffeeee">
+						<p><b>Student ne ispunjava uslove za upis</b></p>
+						<p>Nepoloženi predmeti:</p>
+						<ul>
+							<?
+							$totalECTS = 0;
+							if (is_array($newEnrollment['failedCourses'])) foreach ($newEnrollment['failedCourses'] as $co) {
+								print "<li>" . $co['CourseDescription']['name'] . " (" . $co['CourseDescription']['ects'] . " ECTS)</li>\n";
+								$totalECTS += $co['CourseDescription']['ects'];
+							}
+							?>
+						</ul>
+						<p>Ukupno <?=count($newEnrollment['failedCourses'])?> predmeta (<?=$totalECTS?> ECTS)</p>
+					</td>
+				</tr>
+			<?
+			}
+			?>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="submit" name="change" value="Promijeni sve podatke">
+					<?
+					if (!$finish) {
+						?><input type="submit" name="confirm" value="Potvrdi izmjene"><?
+						//print_r($show);
+					}
+					if ($finish || $user_siteadmin) {
+						?><input type="submit" name="finish" value="Upiši studenta"><?
+					}
+					?>
+				</td>
+			</tr>
+		</table>
 		</form>
 		<?
 	}
-} // $akcija == "upis"
-
 
 
 // Ispis sa studija
@@ -1583,7 +1413,7 @@ else if ($akcija == "predmeti") {
 	// Ispis svih predmeta na studiju semestru je funkcija, pošto pozivanje unutar petlje ovisi o nivou spiska
 
 	function dajpredmete($studij, $semestar, $student, $ag, $spisak) {
-		$q2100 = db_query("SELECT pk.id, p.id, p.naziv, pk.obavezan, pp.naziv 
+		$q2100 = db_query("SELECT pk.id, p.id, p.naziv, pk.obavezan, pp.naziv, pk.pasos_predmeta
 			FROM ponudakursa AS pk, predmet AS p, akademska_godina_predmet agp
 			LEFT JOIN pasos_predmeta as pp ON pp.id=agp.pasos_predmeta
 			WHERE pk.studij=$studij AND pk.semestar=$semestar AND pk.akademska_godina=$ag AND pk.predmet=p.id AND agp.predmet=p.id AND agp.akademska_godina=$ag
@@ -1592,7 +1422,9 @@ else if ($akcija == "predmeti") {
 			$ponudakursa = $r2100[0];
 			$predmet = $r2100[1];
 			$predmet_naziv = $r2100[2];
-			if ($r2100[4]) $predmet_naziv = $r2100[4];
+			if ($r2100[5])
+				$predmet_naziv = db_get("SELECT naziv FROM pasos_predmeta WHERE id=" . $r2100[5]);
+			else if ($r2100[4]) $predmet_naziv = $r2100[4];
 			print "<li>$predmet_naziv";
 			if ($r2100[3]!=1) print " (izborni)";
 
