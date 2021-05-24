@@ -13,8 +13,8 @@ function izvjestaj_predmet() {
 	
 	// Parametri upita
 	
-	$predmet = intval($_REQUEST['predmet']);
-	$ag = intval($_REQUEST['ag']);
+	$predmet = int_param('predmet');
+	$ag = int_param('ag');
 	$time = time();
 	
 	if (!$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_sefodsjeka) {
@@ -53,13 +53,13 @@ function izvjestaj_predmet() {
 	}
 	
 	// sumiraj kolone za zadace i prisustvo
-	if ($_REQUEST['skrati']=="da") $skrati=1; else $skrati=0;
+	if (param('skrati')=="da") $skrati=1; else $skrati=0;
 	// ako ova opcija nije "da", prikazuje se samo zadnji rezultat na svakom parcijalnom, ili samo integralni ispit (ako je bolji)
-	if ($_REQUEST['razdvoji_ispite']=="da") $razdvoji_ispite=1; else $razdvoji_ispite=0;
+	if (param('razdvoji_ispite')=="da") $razdvoji_ispite=1; else $razdvoji_ispite=0;
 	// nemoj razdvajati studente po grupama (neki su trazili ovu opciju)
-	if ($_REQUEST['sastavi_grupe']=="da" || $_REQUEST['sakrij_imena']=="da") $sastavi_grupe=1; else $sastavi_grupe=0;
+	if (param('sastavi_grupe')=="da" || param('sakrij_imena')=="da") $sastavi_grupe=1; else $sastavi_grupe=0;
 	// tabela za samo jednu grupu
-	$grupa = intval($_REQUEST['grupa']);
+	$grupa = int_param('grupa');
 	
 	
 	
@@ -145,10 +145,13 @@ function izvjestaj_predmet() {
 	foreach($group['members'] as $member) {
 		$studentId = $member['student']['id'];
 		
-		$imeprezime[$studentId] = $member['student']['surname'] . "&nbsp;" . $member['student']['name'];
-		if (!$imenaopt)
+		if ($imenaopt) {
+			$imeprezime[$studentId] = $member['student']['surname'] . "&nbsp;" . $member['student']['name'];
+			$brind[$studentId] = $member['student']['studentIdNr'];
+		} else {
 			$imeprezime[$studentId] = $member['reportCode'];
-		$brind[$studentId] = $member['student']['studentIdNr'];
+			$brind[$studentId] = "";
+		}
 		
 		if (!$sastavi_grupe && $member['Group']) {
 			//if (array_key_exists($member['Group']['id'], $spisak_grupa)) {
