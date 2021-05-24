@@ -223,7 +223,7 @@ function saradnik_grupa() {
 				var oc_vrijednost;
 				if (!vrijednost) ocjena='/';
 				var value = parseInt(element.id.substr(6));
-				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"","document.getElementById('"+id+"').focus()");
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+ocjena+"&staravrijednost="+origval[id],"document.getElementById('"+id+"').focus()");
 			}
 		}
 		var origval=new Array();
@@ -232,7 +232,7 @@ function saradnik_grupa() {
 
 	}
 	else {
-		cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
+		cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value+"&staravrijednost="+zamger_coolbox_origvalue, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
 		?>
 		<script language="JavaScript">
 		function undo_coolbox() {

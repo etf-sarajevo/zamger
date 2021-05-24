@@ -137,8 +137,9 @@ case "izmjena_ispita":
 	}
 
 	// Provjera validnosti primljenih podataka
-	$idpolja = $_REQUEST['idpolja'];
-	$vrijednost = $_REQUEST['vrijednost'];
+	$idpolja = param('idpolja');
+	$vrijednost = param('vrijednost');
+	$staravrijednost = param('staravrijednost');
 
 	$parametri = explode("-",$idpolja);
 	$ime = $parametri[0];
@@ -207,8 +208,13 @@ case "izmjena_ispita":
 			$examResult = array_to_object( ["result" => $vrijednost] );
 			$result = api_call("exam/$ispit/student/$stud_id", $examResult, "PUT");
 			if ($_api_http_code == "201") {
-				zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)", 4); // nivo 4: audit
-				zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
+				if ($staravrijednost !== "/") {
+					zamgerlog("AJAH ko - izmjena rezultata $staravrijednost u $vrijednost (ispit i$ispit, student u$stud_id)", 4); // nivo 4: audit
+					zamgerlog2("izmjenjen rezultat ispita", $stud_id, $ispit, 0, "$staravrijednost -> $vrijednost");
+				} else {
+					zamgerlog("AJAH ispit - upisan novi rezultat $vrijednost (ispit i$ispit, student u$stud_id)", 4); // nivo 4: audit
+					zamgerlog2("upisan rezultat ispita", $stud_id, $ispit, 0, $vrijednost); // nivo 4: audit
+				}
 			} else {
 				print "greška ($_api_http_code): " . $result['message'];
 				break;
@@ -216,8 +222,8 @@ case "izmjena_ispita":
 		} else {
 			$result = api_call("exam/$ispit/student/$stud_id", [], "DELETE");
 			if ($_api_http_code == "204") {
-				zamgerlog("AJAH ispit - izbrisan rezultat $staraocjena (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
-				zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staraocjena); // nivo 4: audit
+				zamgerlog("AJAH ispit - izbrisan rezultat $staravrijednost (ispit i$ispit, student u$stud_id)",4); // nivo 4: audit
+				zamgerlog2("izbrisan rezultat ispita", $stud_id, $ispit, 0, $staravrijednost); // nivo 4: audit
 			} else {
 				print "greška ($_api_http_code): " . $result['message'];
 				break;
@@ -252,12 +258,6 @@ case "izmjena_ispita":
 				break;
 			}
 		}
-		/*// Odredjujemo ponudukursa zbog tabele komponentebodovi
-		$q62 = db_query("select pk.id from student_predmet as sp, ponudakursa as pk where sp.student=$stud_id and sp.predmet=pk.id and pk.predmet=$predmet and pk.akademska_godina=$ag");
-		$ponudakursa = db_result($q62,0,0);
-
-		$q63 = db_query("delete from komponentebodovi where student=$stud_id and predmet=$ponudakursa and komponenta=$komponenta");
-		if ($vrijednost != "/") $q66 = db_query("insert into komponentebodovi set student=$stud_id, predmet=$ponudakursa, komponenta=$komponenta, bodovi=$vrijednost");*/
 
 		// Generisem statičku verziju izvještaja predmet
 		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
@@ -268,8 +268,13 @@ case "izmjena_ispita":
 			$portfolio = array_to_object( [ "grade" => $vrijednost, "gradeDate" => null ] );
 			$result = api_call("course/$predmet/$ag/student/$stud_id/grade", $portfolio, "PUT");
 			if ($_api_http_code == "201") {
-				zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
-				zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
+				if ($staravrijednost !== "/") {
+					zamgerlog("AJAH ko - izmjena ocjene $staravrijednost u $vrijednost (predmet pp$predmet, student u$stud_id)", 4); // nivo 4: audit
+					zamgerlog2("izmjena ocjene", $stud_id, $predmet, $ag, "$staravrijednost -> $vrijednost");
+				} else {
+					zamgerlog("AJAH ko - dodana ocjena $vrijednost (predmet pp$predmet, student u$stud_id)", 4); // nivo 4: audit
+					zamgerlog2("dodana ocjena", $stud_id, $predmet, $ag, $vrijednost);
+				}
 			} else {
 				print "greška ($_api_http_code): " . $result['message'];
 				break;
@@ -277,8 +282,8 @@ case "izmjena_ispita":
 		} else {
 			$result = api_call("course/$predmet/$ag/student/$stud_id/grade", [], "DELETE");
 			if ($_api_http_code == "204") {
-				zamgerlog("AJAH ko - obrisana ocjena $staraocjena (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
-				zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staraocjena);
+				zamgerlog("AJAH ko - obrisana ocjena $staravrijednost (predmet pp$predmet, student u$stud_id)",4); // nivo 4: audit
+				zamgerlog2("obrisana ocjena", $stud_id, $predmet, $ag, $staravrijednost);
 			} else {
 				print "greška ($_api_http_code): ";
 				print_r($result);

@@ -58,7 +58,7 @@ function nastavnik_unos_ocjene() {
 		if (vrijednost!=origval[id]) {
 			if (id.substr(0,6) == "ocjena") {
 				var value = parseInt(element.id.substr(6));
-				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"","document.getElementById('ocjena'+"+value+").focus()");
+				ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja=ko-"+value+"-<?=$predmet?>-<?=$ag?>&vrijednost="+vrijednost+"&staravrijednost="+origval[id],"document.getElementById('ocjena'+"+value+").focus()");
 				if (origval[id] == "/") {
 					var datum_element = document.getElementById("datum"+value);
 					datum_element.value = "<?=date("d. m. Y")?>";

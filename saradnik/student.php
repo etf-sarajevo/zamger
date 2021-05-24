@@ -44,6 +44,7 @@ function saradnik_student() {
 	$ime = $course['student']['name'];
 	$prezime = $course['student']['surname'];
 	$brindexa = $course['student']['studentIdNr'];
+	$privilegija = $course['accessLevel'];
 	
 	// TODO više mailova
 	$mailprint = "";
@@ -625,11 +626,7 @@ function saradnik_student() {
 			<?
 			$totalSumScore += $sumScore;
 		}
-	
-	
-		// Ukupno bodova za studenta
 		
-		$bodova += $totalSumScore;
 		
 		?>
 		<tr><td colspan="<?=$maxAssignments+1?>" align="right">UKUPNO: </td>
@@ -650,7 +647,7 @@ function saradnik_student() {
 	
 	
 	// Importujemo kod za coolbox
-	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
+	cool_box('ajah_start("index.php?c=N&sta=common/ajah&akcija=izmjena_ispita&idpolja="+zamger_coolbox_origcaller.id+"&vrijednost="+coolboxedit.value+"&staravrijednost="+zamger_coolbox_origvalue, "undo_coolbox()", "zamger_coolbox_origcaller=false");');
 	?>
 	<script language="JavaScript">
 	function undo_coolbox() {
