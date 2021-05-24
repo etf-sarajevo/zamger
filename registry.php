@@ -139,6 +139,7 @@ array("saradnik/zadaca", "Pregled zadaće", "Pregled zadaće", "N", "0", "0"),
 
 array("studentska/intro", "Studentska služba", "Početna", "B", "1", "0"),
 array("studentska/osobe", "Studenti i nastavnici", "Osobe", "B", "1", "0"),
+array("studentska/potvrde", "Zahtjevi za potvrde", "Potvrde", "B", "1", "1"),
 array("studentska/predmeti", "Predmeti", "Predmeti", "B", "1", "0"),
 array("studentska/prijemni", "Prijemni ispit", "Prijemni", "NB", "1", "0"),
 array("studentska/raspored1", "Definisanje studentskih rasporeda", "Raspored", "B", "1", "0"),
