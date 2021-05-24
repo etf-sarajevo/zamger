@@ -152,6 +152,21 @@ function nastavnik_prijava_ispita() {
 				$event = api_call("event/$termin", ["resolve" => ["Person"]]);
 			} else if ($_api_http_code == "403" && strstr($result['message'], "already registered")) {
 				niceerror("Ovaj student je već prijavljen za neki drugi termin istog ispita");
+			} else if ($_api_http_code == "403" && strstr($result['message'], "already has grade")) {
+				niceerror("Student je položio predmet (ima upisanu ocjenu)");
+				?>
+				<p>Ako želite da retroaktivno promijenite datum ocjene, to ne možete postići na ovaj način! Koristite
+					modul za <a href="?sta=nastavnik/unos_ocjene&predmet=<?=$predmet?>&ag=<?=$ag?>">pojedinačni unos konačnih ocjena</a>.</p>
+				<?
+			} else if ($_api_http_code == "403" && strstr($result['message'], "didn't pass conditional activity")) {
+				$k =  strpos($result['message'], "didn't pass conditional activity");
+				$msg = substr($result['message'], $k);
+				$msg = str_replace("didn't pass conditional activity ", "Student nema dovoljno bodova iz uslovne aktivnosti &quot;", $msg);
+				$msg = str_replace(" (has ", "&quot; (ostvario ", $msg);
+				$msg = str_replace(", required", " bodova, a potrebno je ", $msg);
+				niceerror($msg);
+			} else if ($_api_http_code == "403" && strstr($result['message'], "for absolvents only")) {
+				niceerror("Ispit je označen kao apsolventski rok, a ovaj student nije apsolvent");
 			} else {
 				niceerror("Neuspješno dodavanje studenta na termin ($_api_http_code)");
 				api_report_bug($result, []);
