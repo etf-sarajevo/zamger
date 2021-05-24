@@ -230,8 +230,10 @@ case "izmjena_ispita":
 			}
 		}
 
-		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
+		// Generate static exam report
+		// We need course id and academic year from exam to fix this
+		$exam = api_call("exam/$ispit");
+		generisi_izvjestaj_predmet( $exam['CourseUnit']['id'], $exam['AcademicYear']['id'], array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
 
 	} else if ($ime == "fiksna") {
 		// Treba nam ponuda kursa
