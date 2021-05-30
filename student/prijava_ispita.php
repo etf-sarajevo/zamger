@@ -19,15 +19,6 @@ function student_prijava_ispita() {
 	// Spisak ispita na koje je student već prijavljen
 	$registered_events = api_call("event/registered/$userid", [ "resolve" => ["CourseActivity"]] )['results'];
 	
-	if ($userid == 7440) {
-		print "<textarea>";
-		print_r($upcoming_events);
-		print "</textarea><br>";
-		print "<textarea>";
-		print_r($registered_events);
-		print "</textarea>";
-	}
-	
 	
 	// Odjavljivanje sa prijavljenog ispita
 	
