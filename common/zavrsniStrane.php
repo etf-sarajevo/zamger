@@ -48,7 +48,6 @@ function common_zavrsniStrane($thesis = []) {
 	<?
 	
 	if (substr($sta,0,7) != "student" || substr($sta,0,10) == "studentska") {
-		$q30 = db_query("select ime,prezime,brindexa from osoba where id=$id_studenta");
 		print "<p>Student: ".$thesis['candidate']['surname']." ".$thesis['candidate']['name']." (".$thesis['candidate']['studentIdNr'].")</p>";
 	} else {
 		
