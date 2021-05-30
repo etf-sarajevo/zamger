@@ -5,8 +5,6 @@
 
 
 function student_potvrda() {
-	function db_fetch8($res, &$a, &$b, &$c, &$d, &$e, &$f, &$g, &$h) { $r = db_fetch_row($res); if ($r) { $a=$r[0]; $b=$r[1]; $c=$r[2]; $d=$r[3]; $e=$r[4]; $f=$r[5]; $g=$r[6]; $h=$r[7]; } return $r; }
-
 	global $userid;
 	global $conf_broj_besplatnih_potvrda, $conf_cijena_potvrde, $_api_http_code;
 	
@@ -93,7 +91,7 @@ function student_potvrda() {
 		print "<ul>";
 	
 	foreach($zahtjevi as $zahtjev) {
-		$fini_datum = date("d.m.Y. H:i:s", db_timestamp($zahtjev['datetime']));
+		$fini_datum = date("d.m.Y. H:i:s", db_timestamp($zahtjev['requestedDate']));
 	
 		print "<li>" . $certPurposesTypes['types'][$zahtjev['CertificateType']] . "<br>\n";
 		if ($zahtjev['CertificateType'] == 1)
