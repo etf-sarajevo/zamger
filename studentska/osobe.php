@@ -579,7 +579,7 @@ if ($akcija == "podaci") {
 		<p><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=int_param('osoba')?>">Nazad na podatke o osobi</a></p>
 		<?
 
-		// Parametri, ako su proslijeđeni
+		// Parameters, if passed
 		
 		$student = int_param('osoba');
 		$studij = int_param('studij');
@@ -587,9 +587,10 @@ if ($akcija == "podaci") {
 		$godina = int_param('godina');
 		if (param('ponovac')) $ponovac = true; else $ponovac = false;
 		if (param('status')) $status = int_param('status'); else $status = 0; /* Default status: Normal student */
-		$enrollment = array_to_object([ "student" => [ "id" => $student], "Programme" => [ "id" => $studij], "semester" => $semestar, "AcademicYear" => [ "id" => $godina], "repeat" => $ponovac, "status" => $status ]);
+		$put = int_param('put');
+		$enrollment = array_to_object([ "student" => [ "id" => $student], "Programme" => [ "id" => $studij], "semester" => $semestar, "AcademicYear" => [ "id" => $godina], "repeat" => $ponovac, "status" => $status, "whichTime" => $put ]);
 		
-		/* Optional fields */
+		// Optional fields
 		if (param('nacin_studiranja')) {
 			$nacin_studiranja = int_param('nacin_studiranja');
 			$enrollment->EnrollmentType = [ "id" => $nacin_studiranja ];
@@ -824,8 +825,15 @@ if ($akcija == "podaci") {
 			$finish = false;
 		} else
 			$show['nacin_studiranja'] = false;
-		
-		// Show main form
+			
+		if (param('change')) {
+			$show['whichTime'] = true;
+			$finish = false;
+		} else
+			$show['whichTime'] = false;
+			
+			
+			// Show main form
 		unset($_POST['change']); unset($_REQUEST['change']);
 		?>
 		<?=genform("POST");?>
@@ -944,6 +952,30 @@ if ($akcija == "podaci") {
 					<td>
 						<?=$newEnrollment['semester'];?>
 						<input type="hidden" name="semestar" value="<?=$newEnrollment['semester']?>">
+					</td><?
+				}?>
+			</tr>
+			<tr>
+				<td><b>Koji put upisuje</b></td>
+				<? if ($show['whichTime']) {
+					?>
+					<td bgcolor="#ffeeee">
+						<select name="whichTime">
+							<?
+							for ($i=1; $i<=20; $i++) {
+								print "<option value=$i";
+								if ($i == $newEnrollment['whichTime']) print " selected";
+								print ">$i</option>\n";
+							}
+							?>
+						</select>
+					</td>
+					<?
+				} else {
+					?>
+					<td>
+					<?=$newEnrollment['whichTime'];?>
+					<input type="hidden" name="whichTime" value="<?=$newEnrollment['whichTime']?>">
 					</td><?
 				}?>
 			</tr>
@@ -2308,7 +2340,7 @@ else if ($akcija == "edit") {
 		<?
 
 		// Trenutno upisan na semestar:
-		$q220 = db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, status.naziv
+		$q220 = db_query("SELECT s.naziv, ss.semestar, ss.akademska_godina, ag.naziv, s.id, ts.trajanje, ns.naziv, ts.ciklus, status.naziv, ss.put
 		FROM student_studij as ss, studij as s, akademska_godina as ag, tipstudija as ts, nacin_studiranja as ns, status_studenta status
 		WHERE ss.student=$osoba and ss.studij=s.id and ag.id=ss.akademska_godina and s.tipstudija=ts.id and ss.nacin_studiranja=ns.id AND ss.status_studenta=status.id
 		ORDER BY ag.naziv DESC");
@@ -2319,7 +2351,7 @@ else if ($akcija == "edit") {
 
 		// Da li je ikada slušao nešto?
 		$ikad_studij=$ikad_studij_id=$ikad_semestar=$ikad_ak_god=$studij_ciklus=-1;
-		$ikad_ciklusi = array();
+		$ikad_ciklusi = $ikad_puta = array();
 	
 		while ($r220=db_fetch_row($q220)) {
 			if ($r220[2]==$id_ak_god && $r220[1]>$semestar) { //trenutna akademska godina
@@ -2330,9 +2362,7 @@ else if ($akcija == "edit") {
 				$nacin_studiranja="kao $r220[6]";
 				$studij_ciklus=$r220[7];
 				if ($r220[8] != "Student") $status_studenta = " - " .$r220[8];
-			}
-			else if ($r220[0]==$studij && $r220[1]==$semestar) { // ponovljeni semestri
-				$puta++;
+				$puta = $r220[9];
 			} else if ($r220[2]>$ikad_ak_god || ($r220[2]==$ikad_ak_god && $r220[1]>$ikad_semestar)) {
 				$ikad_studij=$r220[0];
 				$ikad_semestar=$r220[1];
@@ -2340,6 +2370,7 @@ else if ($akcija == "edit") {
 				$ikad_ak_god_naziv=$r220[3];
 				$ikad_studij_id=$r220[4];
 				$ikad_studij_trajanje=$r220[5];
+				$ikad_puta["$ikad_studij_id-$ikad_semestar"] = $r220[9];
 			}
 			if (!in_array($r220[7], $ikad_ciklusi)) $ikad_ciklusi[] = $r220[7];
 		}
@@ -2498,19 +2529,12 @@ else if ($akcija == "edit") {
 
 		// Da li je vec upisan?
 		$novi_studij_id = 0;
-		$q235 = db_query("select s.naziv, ss.semestar, s.id from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god order by ss.semestar desc");
+		$q235 = db_query("select s.naziv, ss.semestar, s.id, ss.put from student_studij as ss, studij as s where ss.student=$osoba and ss.studij=s.id and ss.akademska_godina=$nova_ak_god order by ss.semestar desc");
 		if (db_num_rows($q235)>0) {
 			$novi_studij=db_result($q235,0,0);
 			$novi_semestar=db_result($q235,0,1);
 			$novi_studij_id=db_result($q235,0,2);
-			if ($novi_semestar<=$semestar && $novi_studij==$studij) 
-				$nputa=$puta+1; 
-			else if ($studij == 0)
-				// Ako student nije upisan nigdje, $puta će biti nula
-				$nputa = db_get("SELECT COUNT(*) FROM student_studij WHERE student=$osoba AND studij=$novi_studij_id AND semestar=$novi_semestar");
-			else
-				// Student upisuje viši semestar od tekućeg ili drugi studij
-				$nputa=1;
+			$nputa=db_result($q235,0,3);
 			?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je upisan na studij: <b><?=$novi_studij?></b>, <?=$novi_semestar?>. semestar (<?=$nputa?>. put). (<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=ispis&studij=<?=$novi_studij_id?>&semestar=<?=$novi_semestar?>&godina=<?=$nova_ak_god?>">ispiši sa studija</a>)</p><?
 
@@ -2574,7 +2598,7 @@ else if ($akcija == "edit") {
 				print "(".count($zamger_predmeti_pao)." nepoloženih predmeta, $zamger_pao_ects ECTS kredita)";
 				
 				?></p>
-				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar-1)?>&amp;godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($puta+1)?>. put).</a></p>
+				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar-1)?>&amp;godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($ikad_puta["$studij_id-".($semestar-1)]+1)?>. put).</a></p>
 				<!--p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p-->
 				<?
 			}
