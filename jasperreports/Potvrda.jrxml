@@ -30,6 +30,12 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
+	<style name="blueStyle">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[($F{prezime}+" ("+($F{imeoca}.isEmpty()?$F{imemajke}:$F{imeoca})+") "+$F{ime}).length()>10 ?  Boolean.TRUE : Boolean.FALSE]]></conditionExpression>
+			<style fontSize="3"/>
+		</conditionalStyle>
+	</style>
 	<subDataset name="Empty Dataset1" uuid="4f84f3c3-9c8a-4065-98df-825b59731f7e"/>
 	<parameter name="token" class="java.lang.Integer">
 		<parameterDescription><![CDATA[Report token]]></parameterDescription>
@@ -37,20 +43,25 @@
 	<parameter name="zahtjev" class="java.lang.Integer">
 		<parameterDescription><![CDATA[Zahtjev]]></parameterDescription>
 	</parameter>
-	<parameter name="put" class="java.lang.Integer"/>
+	<parameter name="zahtjev_datum" class="java.lang.String"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT o.ime, o.imeoca, o.imemajke, 
 o.prezime, o.brindexa, o.datum_rodjenja, 
 m.naziv mjesto_rodjenja, op.naziv opcina_rodjenja,
 d.naziv drzava_rodjenja, s.naziv naziv_studija, ss.semestar,
-ss.ponovac, ss.status_studenta, ag.naziv naziv_akademske_godine, 
+ss.ponovac, ss.status_studenta, ss.put, ag.naziv naziv_akademske_godine, 
 ns.naziv nacin_studiranja_txt, sp.naziv svrha_potvrde,
-ts.ciklus, tituliraj(i.dekan) dekan
+ts.ciklus, tituliraj(i.dekan) dekan, zzp.datum_obrade
 FROM zahtjev_za_potvrdu zzp, osoba o, mjesto m, opcina op,
-drzava d, student_studij ss, studij s, akademska_godina ag, 
+drzava d, studij s, akademska_godina ag, 
 nacin_studiranja ns, svrha_potvrde sp, tipstudija ts,
-institucija i, jasper_token jt
-WHERE zzp.id=$P{zahtjev} AND zzp.student=o.id AND
+institucija i, jasper_token jt, student_studij ss
+INNER JOIN (
+         SELECT student, akademska_godina, MAX(semestar) msem
+         FROM student_studij
+         GROUP BY student, akademska_godina
+     ) b ON ss.student=b.student and ss.akademska_godina=b.akademska_godina and ss.semestar=b.msem
+WHERE (zzp.id=$P{zahtjev} OR (zzp.datum_zahtjeva >= CONCAT($P{zahtjev_datum}, ' 00:00:00') AND zzp.datum_zahtjeva <= CONCAT($P{zahtjev_datum}, ' 23:59:59'))) AND zzp.student=o.id AND
 zzp.akademska_godina=ag.id AND zzp.svrha_potvrde=sp.id AND
 zzp.student=ss.student AND 
 zzp.akademska_godina=ss.akademska_godina AND
@@ -58,9 +69,9 @@ ss.studij=s.id AND ss.nacin_studiranja=ns.id AND
 m.id=o.mjesto_rodjenja AND op.id=m.opcina AND
 d.id=m.drzava AND s.tipstudija=ts.id AND i.tipinstitucije=1
 AND jt.token=$P{token}
-AND jt.report='Potvrda' AND jt.param1=$P{zahtjev}
+AND jt.report='Potvrda' AND (jt.param1=$P{zahtjev} OR jt.param1=$P{zahtjev_datum})
 AND NOW()-jt.vrijeme<1200
-ORDER BY ss.semestar DESC LIMIT 1]]>
+LIMIT 100]]>
 	</queryString>
 	<field name="ime" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="ime"/>
@@ -103,6 +114,7 @@ ORDER BY ss.semestar DESC LIMIT 1]]>
 	<field name="status_studenta" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="status_studenta"/>
 	</field>
+	<field name="put" class="java.lang.Integer"/>
 	<field name="svrha_potvrde" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="svrha_potvrde"/>
 	</field>
@@ -124,8 +136,12 @@ ORDER BY ss.semestar DESC LIMIT 1]]>
 	<field name="dekan" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="dekan"/>
 	</field>
+	<field name="datum_obrade" class="java.sql.Date"/>
 	<variable name="CURRENT_PAGE_NUMBER" class="java.lang.Integer" resetType="None" incrementType="Page">
 		<variableExpression><![CDATA[$V{CURRENT_PAGE_NUMBER} == null? $V{PAGE_NUMBER}: $V{PAGE_NUMBER} +1]]></variableExpression>
+	</variable>
+	<variable name="fontSize" class="java.lang.Integer">
+		<variableExpression><![CDATA[($F{prezime}+" ("+($F{imeoca}.isEmpty()?$F{imemajke}:$F{imeoca})+") "+$F{ime}).length() > 30 ? 13 : 16]]></variableExpression>
 	</variable>
 	<background>
 		<band splitType="Stretch"/>
@@ -147,97 +163,97 @@ ORDER BY ss.semestar DESC LIMIT 1]]>
 	<detail>
 		<band height="527" splitType="Stretch">
 			<staticText>
-				<reportElement x="51" y="0" width="473" height="50" uuid="a861eeba-8762-403a-9f63-89431d6c9ab9"/>
+				<reportElement x="51" y="0" width="474" height="60" uuid="a861eeba-8762-403a-9f63-89431d6c9ab9"/>
 				<textElement>
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
-				<text><![CDATA[Na osnovu člana 169. stav (2) Zakona o upravnom postupku FBiH (Službene novine FBiH, broj 2/98, 48/99), člana 140. Zakona o visokom obrazovanju (Službene novine Kantona Sarajevo, broj 33/17) i člana 239. Statuta Univerziteta u Sarajevu, Elektrotehnički fakultet izdaje]]></text>
+				<text><![CDATA[Na osnovu člana 169. stav (2) Zakona o upravnom postupku ("Službene novine Federacije BiH", broj 2/98 i 48/99), člana 140. Zakona o visokom obrazovanju ("Službene novine Kantona Sarajevo", broj 33/17, 35/20 i 40/20) i člana 239. Statuta Univerziteta u Sarajevu, Elektrotehnički fakultet izdaje]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="50" width="473" height="30" uuid="5e5ced46-4508-4aa3-8712-04224aa7e9a4"/>
+				<reportElement x="51" y="58" width="473" height="30" uuid="5e5ced46-4508-4aa3-8712-04224aa7e9a4"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="24" isBold="true"/>
 				</textElement>
 				<text><![CDATA[P O T V R D U]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="360" y="415" width="163" height="30" uuid="aecd9776-43c7-4b0a-a3f4-6042a9f99f4a"/>
+				<reportElement positionType="Float" x="360" y="423" width="163" height="30" uuid="aecd9776-43c7-4b0a-a3f4-6042a9f99f4a"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="11"/>
 				</textElement>
 				<text><![CDATA[DEKAN]]></text>
 			</staticText>
 			<line>
-				<reportElement positionType="Float" x="360" y="462" width="163" height="1" uuid="31dbb7d7-ed3e-44e5-bddf-48a606011d44"/>
+				<reportElement positionType="Float" x="360" y="470" width="163" height="1" uuid="31dbb7d7-ed3e-44e5-bddf-48a606011d44"/>
 				<graphicElement>
 					<pen lineStyle="Dashed"/>
 				</graphicElement>
 			</line>
 			<textField>
-				<reportElement positionType="Float" x="96" y="416" width="190" height="21" uuid="0b8f4cf4-72e0-47eb-b0f1-3fea70528d4b"/>
+				<reportElement positionType="Float" x="96" y="424" width="190" height="21" uuid="0b8f4cf4-72e0-47eb-b0f1-3fea70528d4b"/>
 				<textElement>
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[CONCATENATE("Sarajevu, ", DATEFORMAT(NOW( ) , "d. M. YYYY"), ". god.")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[CONCATENATE("Sarajevu, ", DATEFORMAT($F{datum_obrade} , "d. M. YYYY"), ". god.")]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="50" y="80" width="473" height="20" uuid="4b7c9fa3-f6b3-4d4b-975f-1ab369a8f3cb"/>
+				<reportElement x="50" y="88" width="473" height="20" uuid="4b7c9fa3-f6b3-4d4b-975f-1ab369a8f3cb"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[kojom se potvrđuje da je]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="110" width="473" height="20" uuid="afceea8b-1aaa-4d7d-8ad2-e3fd9544831d"/>
+				<reportElement x="51" y="118" width="473" height="20" uuid="afceea8b-1aaa-4d7d-8ad2-e3fd9544831d"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[________________________________________________ dosije broj _____________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="140" width="473" height="20" uuid="71c9a28c-0654-4a02-8afb-d8953c608da1"/>
+				<reportElement x="51" y="148" width="473" height="20" uuid="71c9a28c-0654-4a02-8afb-d8953c608da1"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[rođen/a     ______________________________________________________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="170" width="473" height="20" uuid="cab65566-1244-47db-9b92-04afc36120dd"/>
+				<reportElement x="51" y="178" width="473" height="20" uuid="cab65566-1244-47db-9b92-04afc36120dd"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[upisan/a    __________ u školskoj  ____________ godini   ________________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="200" width="473" height="20" uuid="933d1f06-df73-4034-ab2e-5ce2d13a8187"/>
+				<reportElement x="51" y="208" width="473" height="20" uuid="933d1f06-df73-4034-ab2e-5ce2d13a8187"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[kao             ______________________________________________________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="230" width="473" height="20" uuid="1fd208ba-b80a-4850-a011-117975e86a45"/>
+				<reportElement x="51" y="238" width="473" height="20" uuid="1fd208ba-b80a-4850-a011-117975e86a45"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[na               ______________________________________________________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="51" y="260" width="473" height="20" uuid="6602e106-f050-4906-bcc2-997c03507edb"/>
+				<reportElement x="51" y="268" width="473" height="20" uuid="6602e106-f050-4906-bcc2-997c03507edb"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[odsjek        ______________________________________________________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="50" y="290" width="473" height="20" uuid="3fd36970-40cb-4358-a72e-4ac1bacfe3d0"/>
+				<reportElement x="50" y="298" width="473" height="20" uuid="3fd36970-40cb-4358-a72e-4ac1bacfe3d0"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[smjer         ______________________________________________________________________]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="50" y="330" width="473" height="50" uuid="6405d325-cd29-4f51-a1d5-bdc773d62488"/>
+				<reportElement positionType="Float" x="50" y="338" width="473" height="50" uuid="6405d325-cd29-4f51-a1d5-bdc773d62488"/>
 				<box>
 					<pen lineWidth="1.25" lineStyle="Dashed"/>
 				</box>
@@ -247,91 +263,84 @@ ORDER BY ss.semestar DESC LIMIT 1]]>
 				<textFieldExpression><![CDATA["Ova potvrda se izdaje u svrhu regulisanja <b>"+$F{svrha_potvrde}+"</b>, te se u druge svrhe <u>ne može koristiti</u>."]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="50" y="420" width="200" height="20" uuid="ad0a5e75-571c-4f30-b831-5b28217e6def"/>
+				<reportElement x="50" y="428" width="200" height="20" uuid="ad0a5e75-571c-4f30-b831-5b28217e6def"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[Izdato u   ________________________]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="280" y="417" width="30" height="20" uuid="c6861d1c-ce3e-4b58-9706-a098edd39fcf"/>
+				<reportElement x="280" y="425" width="30" height="20" uuid="c6861d1c-ce3e-4b58-9706-a098edd39fcf"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
 				<text><![CDATA[M. P.]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="360" y="462" width="163" height="21" uuid="9c0ed30a-7884-4c9e-8c6d-c6b02f5a2420"/>
+				<reportElement positionType="Float" x="360" y="470" width="163" height="21" uuid="9c0ed30a-7884-4c9e-8c6d-c6b02f5a2420"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dekan}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="108" y="228" width="398" height="20" uuid="25f18b6d-c8e7-4063-b2c9-dec9911cf5ff"/>
+				<reportElement x="108" y="236" width="398" height="20" uuid="25f18b6d-c8e7-4063-b2c9-dec9911cf5ff"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Univerzitetu u Sarajevu - Elektrotehnički fakultet]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="58" y="104" width="275" height="21" uuid="3d94eece-afe8-4c1a-aa88-2b04058a8746"/>
-				<textElement textAlignment="Center">
-					<font fontName="Calibri" size="16" isBold="true"/>
+				<reportElement style="blueStyle" positionType="Float" x="58" y="112" width="275" height="21" uuid="3d94eece-afe8-4c1a-aa88-2b04058a8746"/>
+				<textElement textAlignment="Center" markup="styled">
+					<font fontName="Calibri" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{prezime}.toUpperCase()+" ("+($F{imeoca}.isEmpty()?$F{imemajke}.toUpperCase():$F{imeoca}.toUpperCase())+") "+$F{ime}.toUpperCase()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<style size=\"" + $V{fontSize} + "\">" + $F{prezime}.toUpperCase()+" ("+($F{imeoca}.isEmpty()?$F{imemajke}.toUpperCase():$F{imeoca}.toUpperCase())+") "+$F{ime}.toUpperCase() + "</style>"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="396" y="104" width="123" height="21" uuid="f79b296f-828e-42ee-bd25-c6e9280d43e7"/>
+				<reportElement positionType="Float" x="396" y="112" width="123" height="21" uuid="f79b296f-828e-42ee-bd25-c6e9280d43e7"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="16" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{brindexa}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="106" y="121" width="415" height="32" uuid="ff415be0-6328-4e2b-a493-f30ce288326a"/>
+				<reportElement positionType="Float" x="106" y="129" width="415" height="32" uuid="ff415be0-6328-4e2b-a493-f30ce288326a"/>
 				<textElement textAlignment="Center" verticalAlignment="Bottom">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DATEFORMAT($F{datum_rodjenja} , "d. M. YYYY") + ". godine, " + $F{mjesto_rodjenja} + ", općina " + ($F{opcina_rodjenja}.equals("(nije u BiH)")?$F{mjesto_rodjenja}:$F{opcina_rodjenja}) + ", "  + $F{drzava_rodjenja}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="220" y="169" width="70" height="21" uuid="fc274229-bc81-4197-9cab-7307999d6f70"/>
+				<reportElement positionType="Float" x="220" y="177" width="70" height="21" uuid="fc274229-bc81-4197-9cab-7307999d6f70"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{naziv_akademske_godine} + "."]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="108" y="197" width="252" height="21" uuid="57da79d5-e7bb-443a-9416-331dbbaaa6de"/>
+				<reportElement positionType="Float" x="108" y="205" width="252" height="21" uuid="57da79d5-e7bb-443a-9416-331dbbaaa6de"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nacin_studiranja_txt} + " student"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="109" y="256" width="252" height="21" uuid="6fe43220-4f25-457c-8645-ad08d9785dd3"/>
+				<reportElement positionType="Float" x="109" y="264" width="252" height="21" uuid="6fe43220-4f25-457c-8645-ad08d9785dd3"/>
 				<textElement textAlignment="Left">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{naziv_studija}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="110" y="287" width="30" height="20" uuid="04f8d865-3b2c-4b15-ac07-50378ea619f3"/>
-				<textElement textAlignment="Left">
-					<font fontName="Calibri" size="12" isBold="true"/>
-				</textElement>
-				<text><![CDATA[-]]></text>
-			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="333" y="169" width="186" height="21" uuid="9ac39181-7877-48fe-951d-2a94523b3a9e"/>
+				<reportElement positionType="Float" x="333" y="177" width="186" height="21" uuid="9ac39181-7877-48fe-951d-2a94523b3a9e"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[($F{status_studenta}.equals(1)?"kao apsolvent":"u " + $F{semestar} + ". semestar") + " - " + ($F{ciklus}.equals(1)?"prvi ciklus":$F{ciklus}.equals(2)?"drugi ciklus":$F{ciklus}.equals(3)?"treći ciklus":"stručni studij")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement x="98" y="461" width="142" height="22" uuid="6c8e24bf-cd1d-4c18-8fdc-507ab4eba02d">
+				<reportElement x="98" y="469" width="142" height="22" uuid="6c8e24bf-cd1d-4c18-8fdc-507ab4eba02d">
 					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="3of9" drawText="false" checksumRequired="false">
@@ -339,14 +348,14 @@ ORDER BY ss.semestar DESC LIMIT 1]]>
 				</jr:barbecue>
 			</componentElement>
 			<textField>
-				<reportElement positionType="Float" x="106" y="168" width="54" height="21" uuid="3cf2e7f7-d71e-444a-b331-c5a96bde6e51"/>
+				<reportElement positionType="Float" x="106" y="176" width="54" height="21" uuid="3cf2e7f7-d71e-444a-b331-c5a96bde6e51"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="12" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{put} + ". put"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{put} + ". put"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="98" y="483" width="92" height="21" uuid="ce416546-e12b-42b1-8b13-3d53f514dca2"/>
+				<reportElement positionType="Float" x="98" y="490" width="92" height="21" uuid="ce416546-e12b-42b1-8b13-3d53f514dca2"/>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="10" isBold="false"/>
 				</textElement>
