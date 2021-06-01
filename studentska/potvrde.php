@@ -139,7 +139,7 @@ function studentska_potvrde() {
 		foreach($certificates['results'] as $certificate) {
 			$nicedate = date ("d. m. Y.", db_timestamp($certificate['requestedDate']));
 			?>
-			<li><?=$certificate['student']['surname']?> <?=$certificate['student']['name']?> (<?=$certificate['student']['studentIdNr']?>) - <?=$nicedate?> - <?= ($certificate['status'] == 2 ? "obrađen" : "nije obrađen") ?> - <a href="?sta=studentska/potvrde&akcija=potvrda_jasper&id=<?=$certificate['id']?>">printaj</a></li>
+			<li><?=$certificate['student']['surname']?> <?=$certificate['student']['name']?> (<?=$certificate['student']['studentIdNr']?>) - <?=$nicedate?> - <?= ($certificate['status'] == 2 ? "obrađen" : "nije obrađen") ?> - <a href="?sta=studentska/potvrde&akcija=potvrda_jasper&id=<?=$certificate['id']?>&tip=<?=$certificate['CertificateType']?>">printaj</a></li>
 			<?
 		}
 		print "</ul>";
@@ -298,7 +298,7 @@ function studentska_potvrde() {
 		
 		?>
 		<h3>Zahtjevi za potvrde i uvjerenja</h3>
-		<p>=&gt; <a href="?sta=studentska/potvrde&akcija=arhiva">Arhiva zathjeva</a></p>
+		<p>=&gt; <a href="?sta=studentska/potvrde&akcija=arhiva">Arhiva zahtjeva</a></p>
 		<?
 		
 		$cpt = api_call("certificate/purposesTypes");
