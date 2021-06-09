@@ -960,7 +960,7 @@ if ($akcija == "podaci") {
 				<? if ($show['whichTime']) {
 					?>
 					<td bgcolor="#ffeeee">
-						<select name="whichTime">
+						<select name="put">
 							<?
 							for ($i=1; $i<=20; $i++) {
 								print "<option value=$i";
@@ -975,7 +975,7 @@ if ($akcija == "podaci") {
 					?>
 					<td>
 					<?=$newEnrollment['whichTime'];?>
-					<input type="hidden" name="whichTime" value="<?=$newEnrollment['whichTime']?>">
+					<input type="hidden" name="put" value="<?=$newEnrollment['whichTime']?>">
 					</td><?
 				}?>
 			</tr>
