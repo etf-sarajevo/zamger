@@ -667,6 +667,8 @@ if ($akcija == "podaci") {
 				?>
 				<p>Vratite se na <a href="?sta=studentska%2Fosobe&akcija=edit&osoba=<?=$student?>">pregled podataka o studentu</a> da saznate više informacija.</p>
 				<?
+				opcije_za_retroaktivni_upis($godina, $semestar);
+				return;
 			} else {
 				niceerror("Neuspješan upis studenta na studij");
 				api_report_bug($newEnrollment, $enrollment);
@@ -690,6 +692,7 @@ if ($akcija == "podaci") {
 			?>
 			<p>Vratite se na <a href="?sta=studentska%2Fosobe&akcija=edit&osoba=<?=$student?>">pregled podataka o studentu</a> da saznate više informacija.</p>
 			<?
+			opcije_za_retroaktivni_upis($godina, $semestar);
 			return;
 		}
 		
@@ -729,6 +732,7 @@ if ($akcija == "podaci") {
 				}
 				if (!$newProgramme) {
 					niceerror("Neispravan broj semestra");
+					opcije_za_retroaktivni_upis($godina, $semestar);
 					return;
 				}
 				$enrollment->Programme = [ "id" => $newProgramme['id']];
@@ -739,6 +743,7 @@ if ($akcija == "podaci") {
 				
 				if ($_api_http_code == "400") {
 					niceerror("Neispravan broj semestra");
+					opcije_za_retroaktivni_upis($godina, $semestar);
 					return; // We don't know how to continue after this
 				}
 			}
@@ -3044,3 +3049,28 @@ else {
 
 }
 
+
+function opcije_za_retroaktivni_upis($academicYearId, $semester) {
+	?>
+	<p>Upišite studenta retroaktivno na:</p>
+	<?=genform("POST");?>
+	Akademska godina: <select name="godina"><?
+		$years = api_call("zamger/year")["results"];
+		foreach ($years as $id => $academicYear) {
+			print "<option value=\"$id\" ";
+			if ($id == $academicYearId) print "SELECTED";
+			print ">" . $academicYear['name'] . "</option>";
+		}
+	?></select><br>
+	Semestar: <select name="semestar">
+		<?
+		for ($i=1; $i<=8; $i++) {
+			print "<option value=$i";
+			if ($i == $semester) print " selected";
+			print ">$i</option>\n";
+		}
+		?>
+	</select><br>
+	<input type="submit" value="Kreni"></form>
+	<?
+}
