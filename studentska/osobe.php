@@ -834,7 +834,7 @@ if ($akcija == "podaci") {
 			
 			
 			// Show main form
-		unset($_POST['change']); unset($_REQUEST['change']);
+		unset($_POST['change']); unset($_REQUEST['change']); unset($_POST['ponovac']); unset($_REQUEST['ponovac']);
 		?>
 		<?=genform("POST");?>
 		<h2>Podaci o upisu</h2>
