@@ -74,10 +74,12 @@ if ($studij>0) {
 
 // Parametar: godina studija
 $godinastudija = intval($_REQUEST['godina_studija']);
+$limit_ects = 0;
+if (isset($_REQUEST['limit_ects'])) $limit_ects = floatval($_REQUEST['limit_ects']);
 if ($studij == -2)
-	$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']) + 180;
+	$minsumaects = $godinastudija * 60 - $limit_ects + 180;
 else
-	$minsumaects = $godinastudija*60-floatval($_REQUEST['limit_ects']);
+	$minsumaects = $godinastudija * 60 - $limit_ects;
 $wheresemestar="";;
 if ($godinastudija>0) {
 	?><h3><?=$godinastudija?>. godina studija</h3><?
@@ -85,7 +87,7 @@ if ($godinastudija>0) {
 	// za upit šta trenutno sluša gledamo samo ljetnji semestar, jer ako ima ljetnji onda je sigurno završio i zimski, dok obrnuto ne mora biti
 }
 
-$limit_predmet = intval($_REQUEST['limit_predmet']);
+$limit_predmet = int_param('limit_predmet');
 
 if ($_REQUEST['samo_tekuca_gs'] == "da") $samo_tekuca_gs = true; else $samo_tekuca_gs = false;
 
@@ -103,18 +105,24 @@ while ($r1 = db_fetch_row($q1)) {
 	$brindexa[$id_studenta]=$r1[3];
 	$nacinstudiranja[$id_studenta]=$r1[4];
 	
-	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, ss.semestar, pp.naziv, ss.studij
+	$q2 = db_query("SELECT DISTINCT ko.ocjena, pp.ects, ss.semestar, pp.naziv
 	FROM konacna_ocjena as ko,  student_studij ss, studij as st, tipstudija as ts, pasos_predmeta pp
 	WHERE ko.student=$id_studenta AND ss.student=$id_studenta AND ko.ocjena>5 AND ko.akademska_godina<=$ak_god AND ko.pasos_predmeta=pp.id AND ss.akademska_godina=ko.akademska_godina AND ss.semestar MOD 2 = 1 AND ss.studij=st.id AND st.tipstudija=ts.id $whereprosliciklus");
 	$suma=0; $broj=0; $sumaects=0;
 	while ($r2 = db_fetch_row($q2)) {
 		$sumaects += $r2[1];
 		if ($r2[0] > 10 || $r2[0] < 5) continue;
-		if ($samo_tekuca_gs) 
-			if ($r2[2] < $godinastudija*2-1 || $r2[4] != $student_id_studija) continue;
-		$suma += $r2[0]; $broj++; 
-		$sumasemestar[$r2[2]][$id_studenta] += $r2[0];
-		$brojsemestar[$r2[2]][$id_studenta]++;
+		if ($samo_tekuca_gs)
+			if ($r2[2] < $godinastudija*2-1) continue;
+		$suma += $r2[0]; $broj++;
+		if (!array_key_exists($r2[2], $sumasemestar)) $sumasemestar[$r2[2]] = [];
+		if (!array_key_exists($id_studenta, $sumasemestar[$r2[2]])) {
+			$sumasemestar[$r2[2]][$id_studenta] = $r2[0];
+			$brojsemestar[$r2[2]][$id_studenta] = 1;
+		} else {
+			$sumasemestar[$r2[2]][$id_studenta] += $r2[0];
+			$brojsemestar[$r2[2]][$id_studenta]++;
+		}
 	}
 	
 	// Dodajemo ocjene sa priznavanja
@@ -126,9 +134,15 @@ while ($r1 = db_fetch_row($q1)) {
 		if ($r4[0] > 10 || $r4[0] < 5) continue;
 		if ($samo_tekuca_gs) 
 			if ($r4[2] < $godinastudija*2-1) continue;
-		$suma += $r4[0]; $broj++; 
-		$sumasemestar[$r4[2]][$id_studenta] += $r4[0];
-		$brojsemestar[$r4[2]][$id_studenta]++;
+		$suma += $r4[0]; $broj++;
+		if (!array_key_exists($r4[2], $sumasemestar)) $sumasemestar[$r4[2]] = [];
+		if (!array_key_exists($id_studenta, $sumasemestar[$r4[2]])) {
+			$sumasemestar[$r4[2]][$id_studenta] = $r4[0];
+			$brojsemestar[$r4[2]][$id_studenta] = 1;
+		} else {
+			$sumasemestar[$r4[2]][$id_studenta] += $r4[0];
+			$brojsemestar[$r4[2]][$id_studenta]++;
+		}
 	}
 	
 	// preskacemo studente sa premalo polozenih predmeta
@@ -136,7 +150,7 @@ while ($r1 = db_fetch_row($q1)) {
 		$q3 = db_query("select count(*) from student_predmet as sp, ponudakursa as pk, studij as st, tipstudija as ts where sp.student=$id_studenta and sp.predmet=pk.id and pk.akademska_godina=$ak_god and pk.studij=st.id and st.tipstudija=ts.id $whereprosliciklus and (select count(*) from konacna_ocjena as ko where ko.student=$id_studenta and ko.predmet=pk.predmet and ko.ocjena>5 and ko.akademska_godina<=$ak_god)=0");
 		if (db_result($q3,0,0)>$limit_predmet) continue;
 	} else if ($sumaects<$minsumaects) continue; 
-
+	
 	$prosjek = $suma/$broj;
 	$prosjeci[$id_studenta]=$prosjek;
 	$ects[$id_studenta]=$sumaects;
@@ -152,7 +166,7 @@ indexa</th><th>Način studiranja</th><th>Prosjek</th></tr>
 
 $k=1;
 
-$statistika=array();
+$statistika=array_fill(0, 11, 0);
 
 foreach ($prosjeci as $id=>$prosjek) {
 	$ocjena = intval(round($prosjek,0));
