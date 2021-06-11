@@ -58,10 +58,10 @@ $trajanje_msc /= 2; // broj godina umjesto broj semestara
 
 $q40 = db_query("select s.id, s.kratkinaziv, ts.trajanje, s.institucija from studij as s, tipstudija as ts where s.tipstudija=ts.id and ts.ciklus=3 and s.moguc_upis=1 order by s.kratkinaziv");
 while ($r40 = db_fetch_row($q40)) {
-	$studiji_phd[$r40[1]] = $r40[0];
+	$studiji_phd[$r40[0]] = $r40[1];
 	$studij_trajanje[$r40[0]] = $r40[2];
 	if ($r40[2] > $trajanje_phd) $trajanje_phd = $r40[2];
-	$institucije[$r40[1]] = $r40[3];
+	$institucije[$r40[0]] = $r40[3];
 	$studiji_svi[] = $r40[1];
 }
 $trajanje_phd /= 2; // broj godina umjesto broj semestara
@@ -101,8 +101,10 @@ sort($studiji_svi);
 // Računanje suma
 $suma_svega = 0;
 
-$suma_nacin = $suma_tip = $suma_nacin_tip = $suma_godina = $suma_godina_nacin = $suma_godina_tip = $suma_godina_nacin_tip = array();
-$suma_studij = $suma_studij_nacin = $suma_studij_tip = $suma_studij_nacin_tip = $suma_godina_studij = $suma_godina_studij_nacin = $suma_godina_studij_tip = $suma_godina_studij_nacin_tip = array();
+$suma_nacin = $suma_tip = $suma_godina = $suma_studij = array_fill(0, 100, 0);
+$suma_nacin_tip = $suma_godina_nacin = $suma_godina_tip = $suma_studij_nacin = $suma_studij_tip = $suma_godina_studij = array_fill(0, 100, $suma_nacin);
+$suma_godina_nacin_tip = $suma_studij_nacin_tip = $suma_godina_studij_nacin = $suma_godina_studij_tip = array_fill(0, 100, $suma_nacin_tip);
+$suma_godina_studij_nacin_tip = array_fill(0, 100, $suma_godina_nacin_tip);
 $semestar = 1;
 
 for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
@@ -154,10 +156,11 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 					$suma_godina_nacin[$godina][$nacin] += $x;
 					$suma_godina_tip[$godina][$ponovac] += $x;
 					$suma_godina_nacin_tip[$godina][$nacin][$ponovac] += $x;
-					$suma_studij[$institucije[$studij]] += $x;
-					$suma_studij_nacin[$institucije[$studij]][$nacin] += $x;
-					$suma_studij_tip[$institucije[$studij]][$ponovac] += $x;
-					$suma_studij_nacin_tip[$institucije[$studij]][$nacin][$ponovac] += $x;
+					
+					$suma_studij[$ime] += $x;
+					$suma_studij_nacin[$ime][$nacin] += $x;
+					$suma_studij_tip[$ime][$ponovac] += $x;
+					$suma_studij_nacin_tip[$ime][$nacin][$ponovac] += $x;
 					$suma_godina_studij[$godina][$studij] += $x;
 					$suma_godina_studij_nacin[$godina][$studij][$nacin] += $x;
 					$suma_godina_studij_tip[$godina][$studij][$ponovac] += $x;
@@ -171,10 +174,13 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd; $godina++) {
 	else if (!$po_semestrima) $semestar++;
 }
 
-
 // ISPIS
 for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd+1; $godina++) {
-	if ($godina>$trajanje_bsc+$trajanje_msc) {
+	if ($godina == $trajanje_bsc+$trajanje_msc+$trajanje_phd+1) {
+		$studiji = $studiji_bsc;
+		$godina_real = 1; // Da ne bi preskočio ispis
+	}
+	else if ($godina>$trajanje_bsc+$trajanje_msc) {
 		$studiji = $studiji_phd;
 		$godina_real = $godina - $trajanje_bsc - $trajanje_msc;
 		$dodatak = "PhD";
@@ -266,23 +272,28 @@ for ($godina=1; $godina<=$trajanje_bsc+$trajanje_msc+$trajanje_phd+1; $godina++)
 
 			foreach ($studiji_svi as $ime) {
 				$studij = 0;
-				foreach($studiji as $id => $sime) if ($sime == $ime) $studij = $id;
+				foreach($studiji as $id => $sime) {
+					if ($sime == $ime) $studij = $id;
+//					print "ime $ime sime $sime id $id studij $studij<br>\n";
+				}
 				?>
 				<td align="center" valign="center" bgcolor="<?=$bgcolor?>">
 				<?
+				if ($studij == 0 && $godina < $trajanje_bsc+$trajanje_msc+$trajanje_phd+1) { print "</td>\n"; continue; }
+				if ($godina_real * 2 > $studij_trajanje[$studij]) { print "</td>\n"; continue; }
 				if (($ponovac==3 || $godina == $trajanje_bsc+$trajanje_msc+$trajanje_phd+1) && $nacin==5) print "<b>";
 
 				if ($godina == $trajanje_bsc+$trajanje_msc+$trajanje_phd+1)
 					if ($ponovac == 3)
 						if ($nacin == 5)
-							print $suma_studij[$institucije[$studij]];
+							print $suma_studij[$ime];
 						else
-							print $suma_studij_nacin[$institucije[$studij]][$nacin];
+							print $suma_studij_nacin[$ime][$nacin];
 					else
 						if ($nacin == 5)
-							print $suma_studij_tip[$institucije[$studij]][$ponovac];
+							print $suma_studij_tip[$ime][$ponovac];
 						else
-							print $suma_studij_nacin_tip[$institucije[$studij]][$nacin][$ponovac];
+							print $suma_studij_nacin_tip[$ime][$nacin][$ponovac];
 				else
 					if ($ponovac == 3)
 						if ($nacin == 5)
