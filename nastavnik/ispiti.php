@@ -464,6 +464,9 @@ function nastavnik_ispiti() {
 				nicemessage("Ispit uspješno kreiran.");
 				zamgerlog("kreiran novi ispit (predmet pp$predmet, ag$ag)", 4); // 4 - audit
 				zamgerlog2("kreiran novi ispit", $ispit, $predmet, $ag);
+			} else if ($_api_http_code == "400" && $exam['message'] == "Invalid date") {
+				niceerror("Neispravan datum ispita");
+				print "<p>Unijeli ste datum $dan. $mjesec. $godina. koji je nemoguć.</p>";
 			} else {
 				niceerror("Neuspješno kreiranje ispita");
 				api_report_bug($exam, $addExam);
