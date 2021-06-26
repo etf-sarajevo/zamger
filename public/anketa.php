@@ -185,6 +185,14 @@ function public_anketa() {
 				<a href="index.php">Nazad na početnu stranicu</a>
 			</center>
 			<?
+		} else if ($_api_http_code == "403" && $result['message'] == "Student already completed this poll") {
+			?>
+			<center>
+				<? 	niceerror("Već ste jednom popunili ovu anketu"); ?>
+				<p> Ne možete dva puta popuniti anketu za isti predmet. Ako je ovo prvi put da popunjavate anketu za ovaj predmet, moguće da ovu grešku vidite zato što ste dvaput kliknuli na dugme za slanje ili zato što ste koristili dugme Back Vašeg web preglednika. </p>
+				<a href="index.php">Nazad na početnu stranicu</a>
+			</center>
+			<?
 		} else {
 			?>
 			<center>
