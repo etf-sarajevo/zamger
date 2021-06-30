@@ -131,6 +131,14 @@ function nastavnik_tip() {
 							$int .= intval(substr($key, 11));
 						}
 					}
+					if ($int == "") {
+						niceerror("Ne možete postaviti Integralni ispit koji ne obuhvata niti jedan drugi ispit");
+						?>
+						<p>Integralni ispit je ispit koji objedinjuje rezultate sa nekoliko drugih ispita. Obavezno je da odmah odaberete koji su to ispiti.</p>
+						<p><a href="javascript:window.history.back();">Nazad</a></p>
+						<?
+						return;
+					}
 					$cact->options['Integral'] = $int;
 				} else
 					unset($cact->options['Integral']);
