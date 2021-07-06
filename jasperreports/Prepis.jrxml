@@ -672,14 +672,23 @@ AND NOW()-jt.vrijeme<1200]]>
 				</line>
 				<staticText>
 					<reportElement x="3" y="4" width="183" height="20" uuid="51958212-6b05-4713-88c3-22470d088eb2"/>
+					<textElement>
+						<font fontName="Calibri"/>
+					</textElement>
 					<text><![CDATA[Ukupan broj položenih predmeta:]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="3" y="26" width="193" height="30" uuid="38c565d1-a3b0-4ec0-b0b4-1d437a6a907a"/>
+					<textElement>
+						<font fontName="Calibri"/>
+					</textElement>
 					<text><![CDATA[Prosječna ocjena položenih predmeta:]]></text>
 				</staticText>
 				<staticText>
 					<reportElement x="2" y="50" width="192" height="15" uuid="47cb81fd-2628-4ec5-bae8-211abf32ef31"/>
+					<textElement>
+						<font fontName="Calibri"/>
+					</textElement>
 					<text><![CDATA[Ukupan broj ECTS bodova:]]></text>
 				</staticText>
 			</frame>
