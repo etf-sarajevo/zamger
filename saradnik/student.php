@@ -44,7 +44,9 @@ function saradnik_student() {
 	$ime = $course['student']['name'];
 	$prezime = $course['student']['surname'];
 	$brindexa = $course['student']['studentIdNr'];
-	$privilegija = $course['accessLevel'];
+	
+	$cuy = api_call("course/$predmet");
+	$privilegija = $cuy['accessLevel'];
 	
 	// TODO više mailova
 	$mailprint = "";
