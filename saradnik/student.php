@@ -77,8 +77,13 @@ function saradnik_student() {
 	$godinaStudija = round($semestar / 2);
 	
 	// Koji studij student sluša, koji put
-	$enrollment = api_call("enrollment/current/$student", [ "resolve" => [ "Programme" ] ] );
-	if ($_api_http_code == "404") {
+	$enrollments = api_call("enrollment/all/$student", [ "resolve" => [ "Programme" ] ] )['results'];
+	$enrollment = [];
+	foreach ($enrollments as $anEnrollment) {
+		if ($anEnrollment['AcademicYear']['id'] == $ag && $anEnrollment['semester'] % 2 == $semestar % 2)
+			$enrollment = $anEnrollment;
+	}
+	if (empty($enrollment)) {
 		$nazivstudija = "Nije upisan na studij!";
 		$kolpren=$ponovac=$nacin_studiranja="";
 	} else {
