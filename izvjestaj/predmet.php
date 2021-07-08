@@ -53,11 +53,11 @@ function izvjestaj_predmet() {
 	}
 	
 	// sumiraj kolone za zadace i prisustvo
-	if (param('skrati')=="da") $skrati=1; else $skrati=0;
+	$skrati = (param('skrati')=="da");
 	// ako ova opcija nije "da", prikazuje se samo zadnji rezultat na svakom parcijalnom, ili samo integralni ispit (ako je bolji)
-	if (param('razdvoji_ispite')=="da") $razdvoji_ispite=1; else $razdvoji_ispite=0;
+	$razdvoji_ispite = (param('razdvoji_ispite')=="da");
 	// nemoj razdvajati studente po grupama (neki su trazili ovu opciju)
-	if (param('sastavi_grupe')=="da" || param('sakrij_imena')=="da") $sastavi_grupe=1; else $sastavi_grupe=0;
+	$sastavi_grupe = (param('sastavi_grupe')=="da" || param('sakrij_imena')=="da");
 	// tabela za samo jednu grupu
 	$grupa = int_param('grupa');
 	
@@ -88,7 +88,7 @@ function izvjestaj_predmet() {
 	
 	// Koristimo ulogu iz /index.php da odredimo da li će se prikazati imena...
 	$imenaopt = true;
-	if ((!$user_nastavnik && !$user_studentska && !$user_siteadmin) || $_REQUEST['sakrij_imena']=="da") {
+	if ((!$user_nastavnik && !$user_studentska && !$user_siteadmin) || param('sakrij_imena')=="da") {
 		$imenaopt = false;
 		print "<p><b>Napomena:</b> Radi zaštite privatnosti studenata, imena će biti prikazana samo ako ste prijavljeni kao nastavnik/saradnik.</p>\n";
 	}
@@ -199,7 +199,7 @@ function izvjestaj_predmet() {
 		foreach($member['score'] as $score) {
 			$activityType = $score['CourseActivity']['Activity']['id'];
 			$cactId = $score['CourseActivity']['id'];
-			if ($skrati == 1)
+			if ($skrati)
 				$cactTitles[$cactId] = $score['CourseActivity']['abbrev'];
 			else
 				$cactTitles[$cactId] = $score['CourseActivity']['name'];
@@ -252,10 +252,12 @@ function izvjestaj_predmet() {
 	$exams = api_call("exam/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
 	
 	// Get fixed cacts list
-	$fixedCacts = [];
+	$fixedCacts = $examCacts = [];
 	foreach($course['activities'] as $cact) {
 		if ($cact['Activity']['id'] == null || $cact['Activity']['id'] == 4) // 4 = Projects
 			$fixedCacts[$cact['id']] = $cact;
+		if ($cact['Activity']['id'] == 8) // 8 = Exam
+			$examCacts[$cact['id']] = $cact;
 		// Fix attendance with no registered classes
 		if ($cact['Activity']['id'] == 9)
 			if (!array_key_exists($cact['id'], $cactClasses))
@@ -307,11 +309,11 @@ function izvjestaj_predmet() {
 	
 	// Zaglavlje prisustvo
 	foreach($cactClasses as $cactId => $c) {
-		if ($skrati == 1) {
+		if ($skrati) {
 			$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">" . $cactTitles[$cactId] . "</td>\n";
 		} else {
 			$brcasova = count($c);
-			if ($brcasova == 0 || $skrati == 1) {
+			if ($brcasova == 0 || $skrati) {
 				$brcasova = 1;
 				$zaglavlje2 .= "<td>&nbsp;</td>";
 			}
@@ -338,7 +340,7 @@ function izvjestaj_predmet() {
 		$brzadaca = count($hw);
 		if ($brzadaca == 0) continue; // Skip component with no homeworks
 		
-		if ($skrati == 1) {
+		if ($skrati) {
 			$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">" . $cactTitles[$cactId] . "</td>\n";
 		} else {
 			$zaglavlje1 .= "<td align=\"center\" colspan=\"$brzadaca\">" . $cactTitles[$cactId] . "</td>\n";
@@ -355,8 +357,26 @@ function izvjestaj_predmet() {
 	
 	// Zaglavlje ispiti
 	if (count($exams) > 0) {
-		if ($razdvoji_ispite == 0) {
-			$zaglavlje1 .= "<td align=\"center\" rowspan=\"2\">Ispiti</td>\n";
+		if (!$razdvoji_ispite) {
+			$partialExamCacts = $integralExamCacts = [];
+			foreach ($examCacts as $cactId => $examCact) {
+				if (array_key_exists("Integral", $examCact['options'])) {
+					$integralExamCacts[$cactId] = $examCact;
+					// Ensure that integrable partials are in correct sequence
+					$partials = explode("+", $examCact['options']['Integral']);
+					foreach ($partials as $partial) {
+						$zaglavlje2 .= "<td align=\"center\">" . $examCacts[$partial]['abbrev'] . "</td>\n";
+						$partialExamCacts[$partial] = $examCacts[$partial];
+					}
+				}
+			}
+			foreach ($examCacts as $cactId => $examCact) {
+				if (!array_key_exists("Integral", $examCact['options']) && !array_key_exists($cactId, $partialExamCacts)) {
+					$zaglavlje2 .= "<td align=\"center\">" . $examCact['abbrev'] . "</td>\n";
+					$partialExamCacts[$cactId] = $examCact;
+				}
+			}
+			$zaglavlje1 .= "<td align=\"center\" colspan=\"" . count($partialExamCacts) . "\">Ispiti</td>\n";
 		} else {
 			foreach ($exams as $exam) {
 				$zaglavlje2 .= "<td align=\"center\">" . $exam['CourseActivity']['abbrev'] . "<br/> " . date("d.m.", db_timestamp($exam['date'])) . "</td>\n";
@@ -418,7 +438,7 @@ function izvjestaj_predmet() {
 			// PRISUSTVO - ISPIS
 			
 			foreach($cactClasses as $cactId => $_classes) {
-				if ($skrati == 0) {
+				if (!$skrati) {
 					if (count($_classes) == 0)
 						$prisustvo_ispis .= "<td>&nbsp;</td>";
 					
@@ -457,7 +477,7 @@ function izvjestaj_predmet() {
 			// ZADACE - ISPIS
 			
 			foreach($cactHomeworks as $cactId => $_homeworks) {
-				if ($skrati == 1) {
+				if ($skrati) {
 					$zadace_ispis .= "<td align=\"center\">" . $cactScores[$cactId][$studentId] . "</td>\n";
 				} else {
 					foreach ($_homeworks as $homeworkId => $homework) {
@@ -487,12 +507,41 @@ function izvjestaj_predmet() {
 			
 			// ISPITI - ISPIS
 			
-			foreach($exams as $exam) {
-				$examId = $exam['id'];
-				if (array_key_exists($exam['id'], $examResults) && array_key_exists($studentId, $examResults[$exam['id']])) {
-					$ispiti_ispis .= "<td align=\"center\">" . $examResults[$examId][$studentId] . "</td>\n";
-				} else {
-					$ispiti_ispis .= "<td align=\"center\">/</td>\n";
+			if ($razdvoji_ispite) {
+				foreach ($exams as $exam) {
+					$examId = $exam['id'];
+					if (array_key_exists($exam['id'], $examResults) && array_key_exists($studentId, $examResults[$exam['id']])) {
+						$ispiti_ispis .= "<td align=\"center\">" . $examResults[$examId][$studentId] . "</td>\n";
+					} else {
+						$ispiti_ispis .= "<td align=\"center\">/</td>\n";
+					}
+				}
+			} else {
+				// Does student have scores on integral exams?
+				$hasIntegrals = [];
+				foreach ($integralExamCacts as $cactId => $cact) {
+					if (array_key_exists($cactId, $cactScores) && array_key_exists($studentId, $cactScores[$cactId])) {
+						$partials = explode("+", $cact['options']['Integral']);
+						$hasIntegrals[$cactId] = $partials;
+					}
+				}
+				
+				foreach ($partialExamCacts as $cactId => $cact) {
+					$skip = false;
+					foreach($hasIntegrals as $integralCactId => $partials) {
+						if ($cactId == $partials[0]) {
+							$ispiti_ispis .= "<td align=\"center\" colspan=\"" . count($partials) . "\">" . $cactScores[$integralCactId][$studentId] . "</td>\n";
+						}
+						if (in_array($cactId, $partials)) $skip = true;
+					}
+					
+					if (!$skip) {
+						if (array_key_exists($cactId, $cactScores) && array_key_exists($studentId, $cactScores[$cactId])) {
+							$ispiti_ispis .= "<td align=\"center\">" . $cactScores[$cactId][$studentId] . "</td>\n";
+						} else {
+							$ispiti_ispis .= "<td align=\"center\">/</td>\n";
+						}
+					}
 				}
 			}
 			
