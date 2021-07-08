@@ -174,8 +174,10 @@ function studentska_potvrde() {
                         console.log(zahtjevi);
                         for (var id in zahtjevi) {
                             if (zahtjevi.hasOwnProperty(id)) {
+                                var tip;
+                                if (zahtjevi[id].CertificateType==1) tip = "potvrda"; else tip = "prepis";
                                 rp.innerHTML += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-                                rp.innerHTML += zahtjevi[id].student.surname + " " + zahtjevi[id].student.name + " (" + zahtjevi[id].student.studentIdNr + ") - <a href=\"?sta=studentska/potvrde&akcija=potvrda_jasper&id=" + zahtjevi[id].id + "&tip=" + zahtjevi[id].CertificateType + "\">printaj</a>\n";
+                                rp.innerHTML += zahtjevi[id].student.surname + " " + zahtjevi[id].student.name + " (" + zahtjevi[id].student.studentIdNr + ") - " + tip + " - <a href=\"?sta=studentska/potvrde&akcija=potvrda_jasper&id=" + zahtjevi[id].id + "&tip=" + zahtjevi[id].CertificateType + "\">printaj</a>\n";
                             }
                         }
                         if (rp.innerHTML == "") rp.innerHTML += "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nema rezultata";
