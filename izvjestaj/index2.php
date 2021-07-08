@@ -6,7 +6,6 @@
 
 function izvjestaj_index2() {
 
-
 global $userid, $user_studentska, $user_siteadmin;
 
 require_once("lib/utility.php"); // spol, rimski_broj, nuliraj_broj
@@ -16,6 +15,7 @@ require_once("lib/utility.php"); // spol, rimski_broj, nuliraj_broj
 $student      = int_param('student');
 $param_ciklus = int_param('ciklus');
 $param_studij = int_param('studij');
+$param_studijska_godina = int_param('studijska_godina');
 
 
 // Prava pristupa
@@ -49,7 +49,7 @@ $upit_dodaj = "";
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
 if ($param_studij != 0) $upit_dodaj = " AND s.id=$param_studij";
 
-$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv, ss.napomena, UNIX_TIMESTAMP(ag.pocetak_zimskog_semestra)
+$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv, ss.napomena, UNIX_TIMESTAMP(ag.pocetak_zimskog_semestra), ss.put, ss.status_studenta
 FROM student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts 
 WHERE ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj
 ORDER BY ag.id desc, ss.semestar DESC LIMIT 1");
@@ -76,11 +76,8 @@ $studij_trajanje   = $r110[8];
 $studij_ects       = $r110[9];
 $tip_studija       = $r110[10];
 $napomena_uvj      = $r110[11];
-
-if ($ponovac == 1) {
-	$q120 = db_query("select count(*) from student_studij where student=$student and studij=$r110[5] and semestar=$r110[2]");
-	$koji_put = db_result($q120,0,0);
-} else $koji_put = "1";
+$koji_put          = $r110[13];
+$status            = $r110[14];
 
 // Kod izvještaja za sve cikluse sumiramo ECTS bodove na svim studijima koje je student slušao
 if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
@@ -98,7 +95,9 @@ if ($studij_ciklus == 2 /* zašto samo 2? */ && $param_ciklus == 0) {
 obrazovanju (Službene novine Kantona Sarajevo, broj 33/17) i člana 198. stav (1) Statuta 
 Univerziteta u Sarajevu, Elektrotehnički fakultet u Sarajevu izdaje</p>
 
-<h2>Uvjerenje o prepisu ocjena</h2>
+<h2>Uvjerenje o prepisu ocjena<?
+if ($param_studijska_godina > 0) print " za $param_studijska_godina. godinu studija";
+?></h2>
 <p>&nbsp;<br />
 <table border="0">
 <tr>
@@ -184,7 +183,8 @@ if ($suma_ects >= $studij_ects && $trenutno_semestar == $studij_trajanje) {
 		$tekst_ciklus = " ($tip_studija)";
 	
 	$ponovac_dodaj = "";
-	if ($ponovac) $ponovac_dodaj = " (ponovac)";
+	if ($status == 1) $ponovac_dodaj = " (apsolvent)";
+	else if ($ponovac) $ponovac_dodaj = " (ponovac)";
 
 	if ($spol == "Z") {
 		?>
@@ -325,6 +325,8 @@ and sp.student=$student and pk.studij=s.id and s.tipstudija=ts.id and ko.ocjena>
 ORDER BY ts.ciklus, pk.semestar, p.naziv");
 while ($r130 = db_fetch_row($q130)) {
 	$godina = round($r130[6]/2);
+	if ($param_studijska_godina > 0 && $param_studijska_godina != $godina)
+		continue;
 
 	if (intval($r130[8])>0) {
 		$q140 = db_query("SELECT sifra, naziv, ects FROM pasos_predmeta WHERE id=$r130[8]");
@@ -452,15 +454,6 @@ do {
 
 <?
 
-
-// Označi izvještaj kao obrađen - FIXME: ovo treba biti event na klik u studentska/intro
-if ($user_studentska) {
-	$q200 = db_query("SELECT id, status FROM zahtjev_za_potvrdu WHERE student=$student AND svrha_potvrde=1");
-	while ($r200 = db_fetch_row($q200)) {
-		if ($r200[1] == 1)
-			$q210 = db_query("UPDATE zahtjev_za_potvrdu SET status=2 WHERE id=$r200[0]");
-	}
-}
 
 
 }
