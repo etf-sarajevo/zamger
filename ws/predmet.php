@@ -152,8 +152,9 @@ function ws_predmet() {
 	}
 	if(isset($_REQUEST['event_get_data'])){
 		$date = $_REQUEST['event_date'];
+		$subject = $_REQUEST['subject'];
 
-		$query = db_query("SELECT * FROM kalendar where datum = '$date'");
+		$query = db_query("SELECT * FROM kalendar where datum = '$date' AND predmet = '$subject' ");
 
 		// $rezultat['data'] = array('date' => $date, 'query' => $query->fetch_all());
 

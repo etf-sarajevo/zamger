@@ -268,7 +268,7 @@ let dayData = function(date){
     $.ajax({
         type:'POST',
         url: api_link,
-        data: { event_get_data: true, event_date: date},
+        data: { event_get_data: true, event_date: date, subject : getUrlParameter('predmet')},
         success:function(response){
 
             if(response['success'] === 'true'){
