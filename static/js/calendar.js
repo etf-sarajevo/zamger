@@ -4,6 +4,8 @@ let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start
 let save_data = false; // If it is true, time format is fine - make ajax request
 let event_date; // Date for event -- set value on onclick event on calendar day
 
+let api_link = 'index.php?sta=ws/predmet';
+
 // Parse url and read GET parameters from URL
 
 let getUrlParameter = function getUrlParameter(sParam) {
@@ -265,7 +267,7 @@ let isToday = function(date){
 let dayData = function(date){
     $.ajax({
         type:'POST',
-        url: 'index.php?sta=ws/predmet',
+        url: api_link,
         data: { event_get_data: true, event_date: date},
         success:function(response){
 
@@ -347,7 +349,7 @@ $("body").on('click', '.ea-d', function () {
 
     $.ajax({
         type:'POST',
-        url: 'index.php?sta=ws/predmet',
+        url: api_link,
         data: { remove_event_data: true, event_id: event_id},
         success:function(response){
 
@@ -496,7 +498,7 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
 
     $.ajax({
         type:'POST',
-        url: 'index.php?sta=ws/predmet',
+        url: api_link,
         data: { event_create: true, event_title : title, event_category : category, event_time_from : time_from, event_time_to : time_to, event_info : info, event_date: event_date, subject : subject},
         success:function(response){
 
