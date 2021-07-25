@@ -1,6 +1,6 @@
 <?
 
-// IZVJESTAJ/SAMOFIN - Pregled studenata po prosjeku
+// IZVJESTAJ/SAMOFIN - Pregled studenata po broju ponavljanja godine (studenti koji gube status studenta na budžetu)
 
 
 function izvjestaj_samofin() {
@@ -47,7 +47,7 @@ while ($r10 = db_fetch_row($q10)) {
 	if ($broj_ponavljanja < $limit) continue;
 	
 	$q30 = db_query("SELECT ime, prezime, brindexa FROM osoba WHERE id=$student");
-	$ime_ispis = db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).")";
+	$ime_ispis = db_result($q30,0,1)." ".db_result($q30,0,0)." (".db_result($q30,0,2).") - $semestar. semestar";
 	$rezultati[$ime_ispis] = $broj_ponavljanja;
 }
 

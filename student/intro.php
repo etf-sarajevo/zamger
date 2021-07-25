@@ -30,6 +30,31 @@ if ($zaduzenje > 0) {
 	<?
 }
 
+
+// KOD ZA IZVJEŠTAJE
+if ($_REQUEST['akcija'] == "promijeni_kod") {
+	global $conf_files_path, $user_siteadmin;
+	generisi_izvjestaj_kod($userid);
+	$q11 = db_query("SELECT pk.predmet, pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE pk.id=sp.predmet AND sp.student=$userid");
+	
+	// Proglašavamo usera za siteadmina da ne bi izvjestaj/predmet opet vrati cachirani izvještaj
+	$old_siteadmin = $user_siteadmin;
+	$user_siteadmin = true;
+	while (db_fetch2($q11, $predmet, $ag)) {
+		if (file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag"))
+			generisi_izvjestaj_predmet($predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
+	}
+	$user_siteadmin = $old_siteadmin;
+}
+?>
+	<?=genform("POST")?>
+	<input type="hidden" name="akcija" value="promijeni_kod">
+	<p>Tvoj kod za izvještaje: <b><?=db_get("SELECT kod FROM kod_za_izvjestaj WHERE osoba=$userid")?></b>
+		<input type="submit" value="Promijeni"></form></p>
+<?
+
+
+
 // Sakrij module ako ih nema u registry-ju
 $modul_raspored=$modul_anketa=0;
 foreach ($registry as $r) {

@@ -788,7 +788,7 @@ function studentska_zavrsni()  {
 			?>
 			<li>Obrazac ZR3: Zahtjev za ocjenu i odbranu završnog rada - <font color="red">nije unesen broj i datum odluke o odobrenju teme</font></li>
 			<? }?>
-			<? if ($ciklus == 1 || !$conf_jasper) { ?>
+			<? if ($ciklus == 1 || $ciklus == 99 || !$conf_jasper) { ?>
 			<li><a href="?sta=izvjestaj/zavrsni_zapisnik&amp;<?=$url?>">Zapisnik sa odbrane završnog rada</a></li>
 			<? } ?>
 			<? if ($mentor) { ?>
@@ -841,7 +841,7 @@ function studentska_zavrsni()  {
 		db_query("INSERT INTO jasper_token SET token=$token, report='$dbname', vrijeme=NOW(), param1=$id, param2=$param2");
 		
 		?>
-		<script>window.location = '<?=$conf_jasper_url?>/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Freports&reportUnit=<?=$reportUnit?>&standAlone=true<?=$uriParams?>&decorate=no';</script>
+		<script>window.location = '<?=$conf_jasper_url?>/flow.html?_flowId=viewReportFlow&_flowId=viewReportFlow&ParentFolderUri=%2Freports&reportUnit=<?=$reportUnit?>&standAlone=true<?=$uriParams?>&decorate=no&output=pdf';</script>
 		<?
 		
 	}

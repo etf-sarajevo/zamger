@@ -49,7 +49,7 @@ $upit_dodaj = "";
 if ($param_ciklus != 0) $upit_dodaj = " AND ts.ciklus=$param_ciklus";
 if ($param_studij != 0) $upit_dodaj = " AND s.id=$param_studij";
 
-$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv, ss.napomena
+$q110 = db_query("SELECT s.naziv, ag.naziv, ss.semestar, ns.naziv, ss.ponovac, s.id, ts.ciklus, s.institucija, ts.trajanje, ts.ects, ts.naziv, ss.napomena, UNIX_TIMESTAMP(ag.pocetak_zimskog_semestra)
 FROM student_studij as ss, studij as s, nacin_studiranja as ns, akademska_godina as ag, tipstudija as ts 
 WHERE ss.student=$student and ss.studij=s.id and ss.akademska_godina=ag.id and ss.nacin_studiranja=ns.id and s.tipstudija=ts.id $upit_dodaj
 ORDER BY ag.id desc, ss.semestar DESC LIMIT 1");
@@ -58,6 +58,12 @@ if (!($r110 = db_fetch_row($q110))) {
 	zamgerlog("student u$student nikada nije studirao", 3);
 	zamgerlog2("korisnik nikada nije studirao", $student);
 	return;
+}
+
+// Ako godina još nije ni počela, idemo nazad
+if ($r110[12] > time()) {
+	$r110temp = db_fetch_row($q110);
+	if ($r110temp) $r110 = $r110temp;
 }
 
 $naziv_studija     = $r110[0];
@@ -405,7 +411,7 @@ if ($brojuk == 0) $prosjek = 0; else $prosjek = $sumauk/$brojuk;
 </tr>
 </table>
 
-<p><?= $napomena_uvj; ?></p>
+<p><?= nl2br($napomena_uvj); ?></p>
 
 <?
 

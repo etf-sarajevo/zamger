@@ -735,6 +735,19 @@ CREATE TABLE IF NOT EXISTS `kanton` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `kod_za_izvjestaj`
+--
+
+CREATE TABLE `kod_za_izvjestaj` (
+  `osoba` int(11) NOT NULL,
+  `kod` varchar(20) COLLATE utf8_slovenian_ci NOT NULL,
+  UNIQUE KEY `kod` (`kod`),
+  KEY `osoba` (`osoba`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `kolizija`
 --
 
@@ -2666,6 +2679,13 @@ ALTER TABLE `izvoz_upis_prva`
 ALTER TABLE `izvoz_upis_semestar`
   ADD CONSTRAINT `izvoz_upis_semestar_ibfk_1` FOREIGN KEY (`student`) REFERENCES `osoba` (`id`),
   ADD CONSTRAINT `izvoz_upis_semestar_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
+
+--
+-- Constraints for table `kod_za_izvjestaj`
+--
+ALTER TABLE `kod_za_izvjestaj`
+  ADD CONSTRAINT `kod_za_izvjestaj_ibfk_1` FOREIGN KEY (`osoba`) REFERENCES `osoba` (`id`);
+COMMIT;
 
 --
 -- Constraints for table `kolizija`

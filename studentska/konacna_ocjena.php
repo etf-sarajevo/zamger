@@ -1,6 +1,11 @@
 <?php
 
-// Funkcija
+// STUDENTSKA/KONACNA_OCJENA - unos ocjena po odluci i izmjena statusa
+
+
+
+
+// Pomoćna funkcija za datume
 
 function bos_datum($datum){
 	$date = new DateTime($datum);
@@ -91,11 +96,14 @@ function studentska_konacna_ocjena() {
 	// Izaberi akademske godine
 	$akademske_godine = db_query("SELECT DISTINCT ss.akademska_godina, ak.naziv, ak.id from student_studij as ss, akademska_godina as ak where ss.student = $student_id and ss.akademska_godina = ak.id");
 	
-	if($akcija == 'pregled'){
+	if($akcija == 'pregled') {
+		if ($_REQUEST['sve']) $uslov = "";
+		else $uslov = "AND ko.odluka is not null";
+		
 		// Daj sve ocjene po konačnoj odluci
 		$query = db_query("SELECT ko.student, ko.akademska_godina, ko.predmet, ko.ocjena, ag.id, ag.naziv, p.id, pp.naziv
 			FROM konacna_ocjena as ko, akademska_godina as ag, predmet as p, pasos_predmeta pp
-			WHERE ko.student=$student_id and ko.akademska_godina=ag.id and ko.predmet=p.id and ko.pasos_predmeta=pp.id AND ko.odluka is not null
+			WHERE ko.student=$student_id and ko.akademska_godina=ag.id and ko.predmet=p.id and ko.pasos_predmeta=pp.id $uslov
 			ORDER BY ag.id, pp.naziv");
 	}else if($akcija == 'uredi'){
 		$ag = intval($_REQUEST['ak']);
@@ -106,9 +114,19 @@ function studentska_konacna_ocjena() {
 			$konacna_ocjena = db_fetch_row($konacna_ocjena);
 			
 			// $predmeti = db_query("SELECT pk.predmet, pk.akademska_godina, p.id, p.naziv from ponudakursa as pk, predmet as p where pk.akademska_godina = $ag and p.id = pk.predmet");
-			// $pasosi   = db_query("SELECT id, predmet, sifra, naziv, ects from pasos_predmeta where predmet = ".$konacna_ocjena[1]);
-			$odluka   = db_query("SELECT * from odluka where id = ".$konacna_ocjena[6]);
-			$odluka   = db_fetch_row($odluka);
+			$pasosi   = db_query_table("SELECT DISTINCT pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_studija_predmet psp where psp.pasos_predmeta=pp.id AND pp.predmet = ".$konacna_ocjena[1]);
+			$pasosi2   = db_query_table("SELECT DISTINCT pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from pasos_predmeta pp, plan_izborni_slot pis where pis.pasos_predmeta=pp.id AND pp.predmet = ".$konacna_ocjena[1]);
+			foreach($pasosi2 as $pasos2) {
+				$postoji = false;
+				foreach($pasosi as $pasos) {
+					if ($pasos['id'] == $pasos2['id']) $postoji = true;
+				}
+				if (!$postoji) $pasosi[] = $pasos2;
+			}
+			if ($konacna_ocjena[6]) {
+				$odluka   = db_query("SELECT * from odluka where id = ".$konacna_ocjena[6]);
+				$odluka   = db_fetch_row($odluka);
+			}
 		}
 	}
 	?>
@@ -150,11 +168,12 @@ function studentska_konacna_ocjena() {
 								</tr>
 								<?php
 							}
-							?>
+							?>$konacna_ocjena
 							</tbody>
 						</table>
 						<br>
 						<p>Za unos konačne ocjene po odluci, kliknite <a href="?sta=studentska/konacna_ocjena&student=<?= $student_id ?>&akcija=unos">ovdje</a>.</p>
+						<p>Za prikaz svih ocjena (ne samo ocjena po odluci), kliknite <a href="?sta=studentska/konacna_ocjena&student=<?= $student_id ?>&akcija=pregled&sve=1">ovdje</a>.</p>
 						<?php
 					}else if($akcija == 'unos' or $akcija == 'uredi'){
 						?>
@@ -207,7 +226,10 @@ function studentska_konacna_ocjena() {
 									<select name="pasos_predmeta" id="ocjena-po-odluci-pasos" class="form-input form-input-select" required="required">
 										<?php
 										if(isset($konacna_ocjena)){
-											print '<option value="'.$konacna_ocjena[13].'"> '.$konacna_ocjena[15].' '.$konacna_ocjena[16].' ('.$konacna_ocjena[17].' ECTS) </option>';
+											foreach($pasosi as $pasos) {
+												if ($pasos['id'] == $konacna_ocjena[8]) $sel = "SELECTED"; else $sel = "";
+												print '<option value="'.$pasos['id'].'" '.$sel.'> '.$pasos['sifra'].' '.$pasos['naziv'].' ('.$pasos['ects'].' ECTS) </option>';
+											}
 										}else{
 											print '<option value="">Odaberite akademsku godinu</option>';
 										}

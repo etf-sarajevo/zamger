@@ -63,7 +63,9 @@ if ($spol == "") $spol = spol($r20["ime"]);
 
 
 // ZAPISNIK ZA PRVI CIKLUS
-if ($r10['ciklus'] == 1) {
+if ($r10['ciklus'] == 1 || $r10['ciklus'] == 99) {
+	if ($r10['ciklus'] == 1) $ciklus = "prvi ciklus"; else $ciklus = "stručni studij";
+
 	// Određivanje dekana i broja protokola
 	$institucija = $r10['institucija'];
 	do {
@@ -79,7 +81,7 @@ if ($r10['ciklus'] == 1) {
 		$institucija = $r140[1];
 	} while(true);
 
-	if ($r10["id_rad_na_predmetu"] == 0) {
+	if ($r10["id_rad_na_predmetu"] == 0 && $r10['ciklus'] == 1) {
 		niceerror("Zapisnik se ne može odštampati jer nisu unijeta sva obavezna polja");
 		?><p>Na zapisniku za prvi ciklus nalaze se još i obavezna polja: rad iz kojeg je predmet. Morate popuniti i ta polja.</p>
 		<?
@@ -88,8 +90,7 @@ if ($r10['ciklus'] == 1) {
 	}
 
 	// Potreban nam je predmet iz kojeg je rad 
-	$q35 = db_query("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
-	$rad_na_predmetu = db_result($q35,0,0);
+	$rad_na_predmetu = db_get("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
 
 	$rbr_komisija=1;
 	
@@ -102,7 +103,7 @@ if ($r10['ciklus'] == 1) {
 
 	<p><b>&quot;<?=$r10["naslov"]?>&quot;</b></p>
 
-	<p>U okviru predmeta: "<?=$rad_na_predmetu?>"</p>
+	<? if ($r10['ciklus'] == 1) { ?><p>U okviru predmeta: "<?=$rad_na_predmetu?>"</p> <? } ?>
 
 	<p>KOMISIJA U SASTAVU</p>
 
