@@ -4,6 +4,26 @@ let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start
 let save_data = false; // If it is true, time format is fine - make ajax request
 let event_date; // Date for event -- set value on onclick event on calendar day
 
+// Parse url and read GET parameters from URL
+
+let getUrlParameter = function getUrlParameter(sParam) {
+    let sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return typeof sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+    return false;
+};
+
+// Calendar object
+
 let calendar = {
     wrapper: ".calendar",
     calendar_body : ".dynamic-body",
@@ -230,9 +250,19 @@ $("body").on('click', '.text-button', function () {
 
 
 // ------------------------------------------------------------------------------------------------------------------ //
+// ** Preview only one day -- data from calendar ** //
+
+let isToday = function(date){
+    date = date.split('-');
+    let y = date[0]; let m = date[1]; let d = date[2];
+
+    let today = new Date();
+
+    if(today.getFullYear() === parseInt(y) && (today.getMonth() === (parseInt(m) - 1)) && (today.getDate() === parseInt(d))) return true;
+    return false;
+};
 
 let dayData = function(date){
-
     $.ajax({
         type:'POST',
         url: 'index.php?sta=ws/predmet',
@@ -240,6 +270,12 @@ let dayData = function(date){
         success:function(response){
 
             if(response['success'] === 'true'){
+
+                if(isToday(event_date)) {
+                    $(".items-wrapper").empty();
+                    $(".this-day-total").text(0);
+                }
+
                 for(let i=0; i<response['data'].length; i++){
                     let start = response['data'][i]['start'].split(':');
                     event_minutes_start = ((parseInt(start[0]) * 60) + parseInt(start[1]));
@@ -250,9 +286,27 @@ let dayData = function(date){
                     let height = event_minutes_end - event_minutes_start;
 
                     $(".events-wrapper").append(
-                        '<div class="event-short-preview" id="'+response['data'][i]['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+response['data'][i]['id']+'-header"> ' + response['data'][i]['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (response['data'][i]['start'] + ' : ' + response['data'][i]['end']) + ' </p> </div> '
+                        '<div class="event-short-preview" title="' + response['data'][i]['description'] + '" id="event-elem-'+response['data'][i]['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+response['data'][i]['id']+'-header"> ' + response['data'][i]['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (response['data'][i]['start'] + ' : ' + response['data'][i]['end']) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ response['data'][i]['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> </div> </div> '
                     );
-                    console.log(response['data'][i]['naslov']);
+
+                    if(isToday(event_date)){
+                        $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
+                        // Check if date is current date; If it is, add to side menu
+                        $(".items-wrapper").append(function () {
+                            return $("<div>").attr('class', 'single-item sci-d')
+                                .attr('year', (new Date()).getFullYear())
+                                .attr('month', (new Date()).getMonth())
+                                .attr('day', (new Date()).getDate())
+                                .attr('title', response['data'][i]['title'] + '\u000d' + response['data'][i]['description'])
+                                .attr('event-id', 'event-elem-' + response['data'][i]['id'])
+                                .append(function () {
+                                    return $("<p>").text(response['data'][i]['start'] + ' : ' + response['data'][i]['end']);
+                                })
+                                .append(function () {
+                                    return $("<span>").text(response['data'][i]['title'])
+                                })
+                        });
+                    }
                 }
 
                 $('.event-short-preview').animate({
@@ -261,15 +315,13 @@ let dayData = function(date){
             }else{
                 $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
             }
-
-            /*  */
-
         }
     });
-}
+};
 
 
-$("body").on('click', '.calendar-col', function () {
+$("body").on('click', '.calendar-col, .sci-d', function () {
+
     let date = new Date($(this).attr('year') + '-' + (parseInt($(this).attr('month')) + 1) + '-' + $(this).attr('day'));
     calendar.d_day_in_week = calendar.week_days[date.getDay()];
     calendar.d_date = $(this).attr('day') + '. ' + calendar.months_name[$(this).attr('month')] + ' ' + $(this).attr('year');
@@ -281,11 +333,40 @@ $("body").on('click', '.calendar-col', function () {
     let response = dayData(event_date);
 
     calendar.createSingleDay();
+
+    if($(this).hasClass('sci-d')){
+        // TODO - figure out how to scroll to selected position
+    }
 });
 $("body").on('click', '.back-to-full-calendar', function () {
     calendar.removeSingleDay();
 });
+$("body").on('click', '.ea-d', function () {
+    // remove from list of events
+    let event_id = $(this).attr('event-id');
 
+    $.ajax({
+        type:'POST',
+        url: 'index.php?sta=ws/predmet',
+        data: { remove_event_data: true, event_id: event_id},
+        success:function(response){
+
+            if(response['success'] === 'true'){
+                calendar.removeSingleDay();
+
+                let response = dayData(event_date);
+                calendar.createSingleDay();
+
+                // Now, check if date is today -- if it is, then remove from "side menu"
+                if(isToday(event_date)){
+                    $("#event-elem-" + event_id).remove();
+                }
+            }else{
+                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+            }
+        }
+    });
+});
 $( function() {
     $( ".day-form" ).draggable({ containment: "parent" });
 } );
@@ -365,7 +446,6 @@ $("body").on('keyup', '.form-time', function (){
 $("body").on('keyup', '#time-title', function (){
     $("#"+event_new_elem_+'-header').text(getNewEventTitle());
 });
-
 $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
     $(".add-new-event-wrapper").fadeOut();
     $(".events-wrapper").find("#"+event_new_elem_).remove();
@@ -376,6 +456,12 @@ $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
 $("body").on('click', '.create-cal-event', function () { // Show pop-up for event
     $(".add-new-event-wrapper").fadeIn();
 });
+$("body").on('click', '.add-new-today', function () { // Open form and set event_date as today's date
+    let today = new Date();
+    event_date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    calendar.removeSingleDay();
+    $(".add-new-event-wrapper").fadeIn();
+});
 
 $("body").on('click', '.save-event', function () { // Hide pop-up for event
     let title = $("#time-title").val();
@@ -383,6 +469,8 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
     let time_from = $("#time-from").val();
     let time_to   = $("#time-to").val();
     let info = $("#info").val();
+    let subject = getUrlParameter('predmet'); // Get subject from URI
+
 
     if(title === ''){
         $.notify("Naslov ne smije biti prazan!", 'warn');
@@ -390,15 +478,28 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
     }
 
     if(!save_data || time_from === '' || time_to === ''){
-        $.notify("Datum početka i datum kraja nisu validni, molimo provjerite !", 'warn');
+        $.notify("Vrijeme početka i vrijeme kraja nisu validni, molimo provjerite !", 'warn');
         return;
     }
+
+    // Check if time from is less than time to
+    if(time_from !== '' && time_to !== ''){
+        let time_from_p = time_from.split(":");
+        let time_to_p   = time_to.split(":");
+
+        if((parseInt(time_from_p[0]) > parseInt(time_to_p[0])) || (parseInt(time_from_p[0]) === parseInt(time_to_p[0]) && parseInt(time_from_p[1]) >= parseInt(time_to_p[1]))){
+            $.notify("Vrijeme predviđeno za početak ne smije biti veće od vremena predviđenog za kraj!", 'warn');
+            return;
+        }
+    }
+
 
     $.ajax({
         type:'POST',
         url: 'index.php?sta=ws/predmet',
-        data: { event_create: true, event_title : title, event_category : category, event_time_from : time_from, event_time_to : time_to, event_info : info, event_date: event_date},
+        data: { event_create: true, event_title : title, event_category : category, event_time_from : time_from, event_time_to : time_to, event_info : info, event_date: event_date, subject : subject},
         success:function(response){
+
 
             if(response['success'] === 'true'){
                 $.notify("Uspješno ste spasili podatke!", 'success');
@@ -406,20 +507,22 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
 
                 event_new_elem_ = 0; // Allow new element creation
 
+                calendar.removeSingleDay();
+
+                let response = dayData(event_date);
+                calendar.createSingleDay();
+
+                // Remove all previously entered data
+                $("#time-title").val('');
+                $("#time-from").val('');
+                $("#time-to").val('');
+                $("#info").val('');
+
+
                 // TODO - Potrebno je provjeriti stanje koje ostaje u cache, ukoliko zaglavi te restartovati
-                // formu - Pogodno kreirati funkciju za restartovanje forme - brisanje svih podataka, pošto se koristi
-                // na više polja
             }else{
                 $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
             }
-
-            /* for(let i=0; i<response['data'].length; i++){
-                $('#ocjena-po-odluci-pasos').append($('<option>', {
-                    value: response['data'][i]['pasos'],
-                    text: response['data'][i]['naziv']
-                }));
-            } */
-
         }
     });
 

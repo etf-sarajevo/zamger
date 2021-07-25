@@ -146,8 +146,9 @@ function ws_predmet() {
 		$time_To   = $_REQUEST['event_time_to'];
 		$info      = $_REQUEST['event_info'];
 		$date      = $_REQUEST['event_date'];
+		$subject   = $_REQUEST['subject'];
 		
-		db_query("INSERT INTO kalendar SET naslov = '$title', kategorija = '$category', pocetak = '$time_from', kraj = '$time_To', datum = '$date', opis = '$info' ");
+		$query = db_query("INSERT INTO kalendar SET naslov = '$title', kategorija = '$category', pocetak = '$time_from', kraj = '$time_To', datum = '$date', opis = '$info', predmet = '$subject' ");
 	}
 	if(isset($_REQUEST['event_get_data'])){
 		$date = $_REQUEST['event_date'];
@@ -159,6 +160,11 @@ function ws_predmet() {
 		while ($row = db_fetch_row($query)){
 			$rezultat['data'][] = array('id' => $row[0],'title' => $row[1], 'start' => $row[4], 'end' => $row[5], 'description' => $row[7]);
 		}
+	}
+	if(isset($_REQUEST['remove_event_data'])){
+		$id = $_REQUEST['event_id'];
+		
+		db_query("DELETE FROM kalendar where id = $id");
 	}
 	
 	print json_encode($rezultat);
