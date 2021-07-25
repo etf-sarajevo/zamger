@@ -23,7 +23,7 @@ function nastavnik_kalendar() {
 			<div class="add-new-event-wrapper ">
 				<div class="day-form p-4">
 					<div class="form-group mt-2">
-						<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="Inicijalni naslov">
+						<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="">
 						<small id="Title" class="form-text text-muted">Unesite naslov koji će se prikazivati na kalendaru</small>
 					</div>
 					<div class="form-group">
@@ -36,10 +36,10 @@ function nastavnik_kalendar() {
 					<div class="form-group">
 						<div class="row">
 							<div class="col col-md-6">
-								<input type="text" class="form-control form-time" id="time-from" aria-describedby="Title" placeholder="12:00" value="12:00">
+								<input type="text" class="form-control form-time" id="time-from" aria-describedby="Title" placeholder="12:00" value="">
 							</div>
 							<div class="col col-md-6">
-								<input type="text" class="form-control form-time" id="time-to" aria-describedby="Title" placeholder="13:30" value="13:00">
+								<input type="text" class="form-control form-time" id="time-to" aria-describedby="Title" placeholder="13:30" value="">
 							</div>
 							<div class="col col-md-12">
 								<small id="Title" class="form-text text-muted">Unesite vrijeme početka i kraja događaja</small>
