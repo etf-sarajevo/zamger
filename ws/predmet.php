@@ -167,6 +167,29 @@ function ws_predmet() {
 		
 		db_query("DELETE FROM kalendar where id = $id");
 	}
+	if(isset($_REQUEST['calendar_get_content'])){
+		$month   = $_REQUEST['month'];
+		$year    = $_REQUEST['year'];
+		$subject = $_REQUEST['subject'];
+		
+		
+		for($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $month, $year); $i++){
+			
+			$date = $year.'-'.$month.'-'.$i;
+			$events = [];
+			
+			$data = db_query("SELECT naslov, kategorija FROM kalendar where datum = '$date' and predmet = '$subject'");
+			while($row = db_fetch_row($data)){
+				$events[] = $row;
+			}
+			
+			$rezultat['data'][$i] = [
+				'events' => $events
+			];
+		}
+		
+		// $rezultat['data'] =
+	}
 	
 	print json_encode($rezultat);
 }

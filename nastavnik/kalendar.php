@@ -5,7 +5,7 @@ function nastavnik_kalendar() {
 	print "<link rel=\"stylesheet\" href=\"static\css\calendar.css\">";
 	print "<link href=\"https://fonts.googleapis.com/css?family=Nunito:200,600\" rel=\"stylesheet\">";
 	print "<script src=\"https://kit.fontawesome.com/cdf2a0a58b.js\"></script>";
-	print "<script src=\"//code.jquery.com/jquery-1.12.4.js\"></script>";
+	print "	<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>";
 	print "<script src=\"https://code.jquery.com/ui/1.12.1/jquery-ui.js\"></script>";
 	print "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js\" integrity=\"sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM\" crossorigin=\"anonymous\"></script>";
 	print "<script src=\"static/js/notify.js\"> </script>";

@@ -78,7 +78,13 @@
 }
 .calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col:first-child{background: rgba(0,0,0,0.05);}
 .calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col:last-child{border-right:1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.05);}
-.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col p{position:absolute; left:15px; top:1px; font-weight: bold;}
+.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col p{position:absolute; left:10px; top:5px; font-weight: bold;}
+
+.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col .cv-events{ position: absolute; left:10px; width: calc(100% - 20px); top: 30px; height: calc(100% - 35px); }
+.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col .cv-events .cv-e-event{ position: relative; left:0px; background: #0B8043; display: inline-flex; margin-right:2px; margin-bottom:2px; padding:3px 5px 3px 5px; border-radius:2px;}
+.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col .cv-events .cv-e-event-2{background: #7986CB; }
+.calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col .cv-events .cv-e-event h5{font-size:11px; margin: 0px; width: auto; color:#fff; }
+.calendar-wrapper .calendar .calendar-body .calendar-row .current-day p{color:#0099FF;}
 
 .calendar-wrapper .calendar .calendar-body .calendar-row .calendar-col:hover{background: rgba(0,0,0,0.1); cursor: pointer;}
 

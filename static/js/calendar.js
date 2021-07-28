@@ -49,6 +49,7 @@ let calendar = {
     d_day_in_week : 'Utorak',
     d_date : '1. Septembar 2020',
     current_time : 0,
+    d_today : new Date(),
 
     // Get the first day of week of month
     firstDay : function () {
@@ -102,9 +103,41 @@ let calendar = {
 
         // Let's start with building GUI
         this.createHeader();
-        this.createBody();
+        let value = this.createBody();
 
         // this.createSingleDay();
+    },
+
+    getCalendarContent : function (){
+        $.ajax({
+            type:'POST',
+            url: api_link,
+            data: { calendar_get_content: true, month: (this.month + 1), year : this.year, subject : getUrlParameter('predmet')},
+            success:function(response){
+                if(response['success'] === 'true'){
+
+                    $.each(response['data'], function (index, value) {
+
+                        if(value['events'].length !== 0){
+                            let wrapper = $("<div>").attr('class', 'cv-events');
+                            for(let i=0; i<value['events'].length; i++) wrapper.append(function () {
+                                return $("<div>").attr('class', 'cv-e-event' + ((parseInt(value['events'][i][1]) === 2) ? ' cv-e-event-2' : ''))
+                                    .append($("<h5>").text(value['events'][i][0]));
+                            }); // Append all elements as it should be
+
+                            $(".current-value[day="+index+"]").append(function () {
+                                return wrapper;
+                            });
+                        }
+
+                        // console.log(value['events']);
+                    });
+
+                }else{
+                    $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+                }
+            }
+        });
     },
 
     createBody : function () {
@@ -124,6 +157,7 @@ let calendar = {
 
             for (let j = 0; j < 7; j++) {
                 let day = 0;     // Value of single day
+                let day_t = '';
                 let month = 0;   // Use current month
                 let year = 0;   // Get current year
                 let class_name = ''; // when we want to give better view for current month
@@ -139,6 +173,8 @@ let calendar = {
                     day = days_counter++;
                     month = this.month;
                     year = this.year;
+
+                    day_t = (this.d_today.getDate() === day) ? ' (Danas)' : '';
                 }
 
                 /******************************************************************************************************/
@@ -163,7 +199,7 @@ let calendar = {
                     } else month = (this.month - 1);
                 }
 
-                col += '<div class="calendar-col ' + class_name + '" year="' + year + '" month="' + month + '" day="' + day + '"><p>' + day + '</p> </div>';
+                col += '<div class="calendar-col ' + class_name + '" year="' + year + '" month="' + month + '" day="' + day + '"><p>' + (day + day_t) + '</p> </div>';
             }
 
             // style="top: -'+ (i + 1)*5 +'px !important;"
@@ -172,6 +208,9 @@ let calendar = {
         }
 
         $(this.wrapper).append('<div class="calendar-body dynamic-body">' + row + '</div>');
+
+        // Finally, fill calendar days with events
+        this.getCalendarContent();
     },
     createHeader : function () {
         $(this.wrapper).append('<div class="calendar-header"> <h1 class="month-on-top"></h1> <div class="buttons"> <div class="arrow-button previous-month"><i class="fas fa-angle-left"></i> </div> <div class="text-button"> DANAS </div> <div class="arrow-button next-month"> <i class="fas fa-angle-right"></i> </div> </div> </div>');
@@ -244,7 +283,6 @@ $("body").on('click', '.previous-month', function () {
     }
     calendar.createCalendar();
 });
-
 $("body").on('click', '.text-button', function () {
     calendar.custom_date = false;
     calendar.createCalendar();
