@@ -174,7 +174,7 @@ let calendar = {
                     month = this.month;
                     year = this.year;
 
-                    day_t = (this.d_today.getDate() === day) ? ' (Danas)' : '';
+                    day_t = (this.d_today.getDate() === day && this.d_today.getMonth() === month && this.d_today.getFullYear() === year) ? ' (Danas)' : '';
                 }
 
                 /******************************************************************************************************/
