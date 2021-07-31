@@ -316,6 +316,8 @@ let dayData = function(date){
                     $(".this-day-total").text(0);
                 }
 
+                let scrollPos = 1444;
+
                 for(let i=0; i<response['data'].length; i++){
                     let start = response['data'][i]['start'].split(':');
                     event_minutes_start = ((parseInt(start[0]) * 60) + parseInt(start[1]));
@@ -347,11 +349,20 @@ let dayData = function(date){
                                 })
                         });
                     }
+
+                    // Check for first event to determine scroll position
+                    if(scrollPos > event_minutes_start) scrollPos = parseInt(event_minutes_start);
                 }
 
-                $('.event-short-preview').animate({
-                    scrollTop: 1000
-                }, 2000);
+                if(response['data'].length === 0){
+                    scrollPos = 480;
+                }else{
+                    scrollPos = (scrollPos > 60) ? (scrollPos - 60) : scrollPos;
+                }
+
+                $(".single-day-body").animate({
+                    scrollTop : scrollPos
+                }, 500);
             }else{
                 $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
             }
@@ -359,29 +370,26 @@ let dayData = function(date){
     });
 };
 
-
-$("body").on('click', '.calendar-col, .sci-d', function () {
-
-    let date = new Date($(this).attr('year') + '-' + (parseInt($(this).attr('month')) + 1) + '-' + $(this).attr('day'));
+let showSingleDay = function(day, month, year){
+    let date = new Date(year + '-' + month + '-' + day);
     calendar.d_day_in_week = calendar.week_days[date.getDay()];
-    calendar.d_date = $(this).attr('day') + '. ' + calendar.months_name[$(this).attr('month')] + ' ' + $(this).attr('year');
+    calendar.d_date = day + '. ' + calendar.months_name[month] + ' ' + year;
 
     // Get date for clicked "day"
-    event_date = $(this).attr('year')+'-'+(parseInt($(this).attr('month')) + 1)+'-'+$(this).attr('day');
+    event_date = year + '-' + month + '-' + day;
 
     // First, check if there is any data for this particular day
     let response = dayData(event_date);
 
     calendar.createSingleDay();
+};
 
-    // if($(this).hasClass('sci-d')){
-    //     // TODO - figure out how to scroll to selected position
-    //     document.getElementsByClassName('current-time-line').scrollIntoView();
-    // }
+$("body").on('click', '.calendar-col, .sci-d', function () {
+    let day   = $(this).attr('day');
+    let month = (parseInt($(this).attr('month')) + 1);
+    let year  = $(this).attr('year');
 
-    $(".single-day-body").animate({
-        scrollTop : 480
-    }, 500);
+    showSingleDay(day, month, year);
 });
 $("body").on('click', '.back-to-full-calendar', function () {
     calendar.removeSingleDay();
@@ -497,6 +505,22 @@ $("body").on('keyup', '.form-time', function (){
     }
 });
 
+// On change, change event_time, so it would open wanted day
+$("body").on('change', '#event-date', function () {
+    let fromDatepicker = $(this).val().split('.');
+
+    event_date = fromDatepicker[2] + '-' + fromDatepicker[1] + '-' + fromDatepicker[0];
+
+    calendar.removeSingleDay();
+    showSingleDay(fromDatepicker[0], parseInt(fromDatepicker[1]), parseInt(fromDatepicker[2]));
+
+    $(".add-new-event-wrapper").fadeIn();
+
+    event_new_elem_ = 0;
+    $("#time-from").val('');
+    $("#time-to").val('');
+});
+
 $("body").on('keyup', '#time-title', function (){
     $("#"+event_new_elem_+'-header').text(getNewEventTitle());
 });
@@ -504,17 +528,23 @@ $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
     $(".add-new-event-wrapper").fadeOut();
     $(".events-wrapper").find("#"+event_new_elem_).remove();
     event_new_elem_ = 0;
-
-    // TODO :: Clean all input fields from event adder
 });
 $("body").on('click', '.create-cal-event', function () { // Show pop-up for event
     $(".add-new-event-wrapper").fadeIn();
+
+    // Set date as clicked
+    let datePrevious = event_date.split('-');
+
+    $("#event-date").val(((parseInt(datePrevious[2]) < 10) ? '0' + parseInt(datePrevious[2]) : datePrevious[2]) + '.' + ((parseInt(datePrevious[1]) < 10) ? '0' + parseInt(datePrevious[1]) : datePrevious[1]) + '.' + datePrevious[0]);
 });
 $("body").on('click', '.add-new-today', function () { // Open form and set event_date as today's date
     let today = new Date();
     event_date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     calendar.removeSingleDay();
     $(".add-new-event-wrapper").fadeIn();
+
+    // Set event date as today
+    $("#event-date").val(today.getDate() + '.' + (today.getMonth() + 1) + '.' + today.getFullYear());
 });
 
 $("body").on('click', '.save-event', function () { // Hide pop-up for event
@@ -579,5 +609,11 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
             }
         }
     });
+});
 
+// Set datepicker event jQuery
+$( function() {
+    $( ".datepicker" ).datepicker({
+        dateFormat: 'dd.mm.yy'
+    });
 });
