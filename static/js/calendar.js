@@ -374,9 +374,14 @@ $("body").on('click', '.calendar-col, .sci-d', function () {
 
     calendar.createSingleDay();
 
-    if($(this).hasClass('sci-d')){
-        // TODO - figure out how to scroll to selected position
-    }
+    // if($(this).hasClass('sci-d')){
+    //     // TODO - figure out how to scroll to selected position
+    //     document.getElementsByClassName('current-time-line').scrollIntoView();
+    // }
+
+    $(".single-day-body").animate({
+        scrollTop : 480
+    }, 500);
 });
 $("body").on('click', '.back-to-full-calendar', function () {
     calendar.removeSingleDay();
@@ -437,8 +442,9 @@ function getNewEventTitle(){
 }
 
 $("body").on('keyup', '.form-time', function (){
-    let value = validateHhMm($(this).attr('id'));
-    let time = $(this).val(); time = time.split(':');
+    let value     = validateHhMm($(this).attr('id'));
+    let time      = $(this).val(); time = time.split(':');
+    let scrollVar = 0;
 
     if($(this).attr('id') === 'time-from'){
         if(value){
@@ -449,7 +455,6 @@ $("body").on('keyup', '.form-time', function (){
             time_to = true;
 
             // Create elements
-
             event_minutes_start = ((parseInt(time[0]) * 60) + parseInt(time[1]));
 
             let time_two = $("#time-to").val(); time_two = time_two.split(':');
@@ -468,6 +473,15 @@ $("body").on('keyup', '.form-time', function (){
                 $("#"+event_new_elem_).height(height).css({ top: event_minutes_start +'px' });
                 $("#"+event_new_elem_+'-time').text(getNewEventRange());
             }
+
+            // Now, if time from is valid, scroll to element with this time
+            if(parseInt(time[0]) >= 1){
+                scrollVar = (parseInt(time[0]) * 60) - 60;
+            }
+
+            $(".single-day-body").animate({
+                scrollTop : scrollVar
+            }, 500);
 
         }else{time_from = false;}
     }
