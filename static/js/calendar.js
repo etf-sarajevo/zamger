@@ -373,7 +373,7 @@ let dayData = function(date){
 let showSingleDay = function(day, month, year){
     let date = new Date(year + '-' + month + '-' + day);
     calendar.d_day_in_week = calendar.week_days[date.getDay()];
-    calendar.d_date = day + '. ' + calendar.months_name[month] + ' ' + year;
+    calendar.d_date = day + '. ' + calendar.months_name[month - 1] + ' ' + year;
 
     // Get date for clicked "day"
     event_date = year + '-' + month + '-' + day;
