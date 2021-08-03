@@ -45,8 +45,8 @@ function ws_predmet() {
 		$predmet_ar['sati_vjezbi'] = db_result($q100,0,6);
 		$predmet_ar['sati_tutorijala'] = db_result($q100,0,7);
 		
-		$q120 = db_query("SELECT pk.id, s.id, s.naziv, s.kratkinaziv, ts.ciklus, pk.semestar, pk.obavezan 
-		FROM ponudakursa pk, studij s, tipstudija ts 
+		$q120 = db_query("SELECT pk.id, s.id, s.naziv, s.kratkinaziv, ts.ciklus, pk.semestar, pk.obavezan
+		FROM ponudakursa pk, studij s, tipstudija ts
 		WHERE pk.predmet=$predmet AND pk.akademska_godina=$ag AND pk.studij=s.id AND s.tipstudija=ts.id");
 		$predmet_ar['ponude_kursa'] = array();
 		while ($r120 = db_fetch_row($q120)) {
@@ -135,6 +135,61 @@ function ws_predmet() {
 			db_query("DELETE FROM konacna_ocjena where predmet = $predmet and student = $student and akademska_godina = $ak");
 		}
 	}
+	
+	// Kalendar - test APIs -- Brisat' će se nakon testiranja
+	// Trenutno služe samo kao API podloga za pravi API
+	
+	if(isset($_REQUEST['event_create'])){
+		$title     = $_REQUEST['event_title'];
+		$category  = $_REQUEST['event_category'];
+		$time_from = $_REQUEST['event_time_from'];
+		$time_To   = $_REQUEST['event_time_to'];
+		$info      = $_REQUEST['event_info'];
+		$date      = $_REQUEST['event_date'];
+		$subject   = $_REQUEST['subject'];
+		
+		$query = db_query("INSERT INTO kalendar SET naslov = '$title', kategorija = '$category', pocetak = '$time_from', kraj = '$time_To', datum = '$date', opis = '$info', predmet = '$subject' ");
+	}
+	if(isset($_REQUEST['event_get_data'])){
+		$date = $_REQUEST['event_date'];
+		$subject = $_REQUEST['subject'];
 
+		$query = db_query("SELECT * FROM kalendar where datum = '$date' AND predmet = '$subject' ");
+
+		// $rezultat['data'] = array('date' => $date, 'query' => $query->fetch_all());
+
+		while ($row = db_fetch_row($query)){
+			$rezultat['data'][] = array('id' => $row[0],'title' => $row[1], 'start' => $row[4], 'end' => $row[5], 'description' => $row[7]);
+		}
+	}
+	if(isset($_REQUEST['remove_event_data'])){
+		$id = $_REQUEST['event_id'];
+		
+		db_query("DELETE FROM kalendar where id = $id");
+	}
+	if(isset($_REQUEST['calendar_get_content'])){
+		$month   = $_REQUEST['month'];
+		$year    = $_REQUEST['year'];
+		$subject = $_REQUEST['subject'];
+		
+		
+		for($i = 1; $i <= cal_days_in_month(CAL_GREGORIAN, $month, $year); $i++){
+			
+			$date = $year.'-'.$month.'-'.$i;
+			$events = [];
+			
+			$data = db_query("SELECT naslov, kategorija FROM kalendar where datum = '$date' and predmet = '$subject'");
+			while($row = db_fetch_row($data)){
+				$events[] = $row;
+			}
+			
+			$rezultat['data'][$i] = [
+				'events' => $events
+			];
+		}
+		
+		// $rezultat['data'] =
+	}
+	
 	print json_encode($rezultat);
 }

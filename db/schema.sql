@@ -2,7 +2,7 @@
 
 -- Ovaj fajl sadrži DB schemu Zamgera. Sama schema nije dovoljna za
 -- funkcionisanje sistema, potrebni su i određeni podaci, npr.
--- u mnogim modulima se pretpostavlja da postoji tačno jedna 
+-- u mnogim modulima se pretpostavlja da postoji tačno jedna
 -- akademska godina koja je označena kao aktivna. Fajl seed.sql
 -- sadrži neke default "demo" podatke.
 
@@ -700,6 +700,25 @@ CREATE TABLE `jasper_token` (
   `param2` varchar(200) COLLATE utf8_slovenian_ci NOT NULL,
   PRIMARY KEY  (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kalendar`
+--
+CREATE TABLE IF NOT EXISTS `kalendar` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `naslov` varchar(160) DEFAULT NULL,
+  `predmet` int(11) DEFAULT NULL,
+  `kategorija` int(11) NOT NULL,
+  `pocetak` varchar(10) NOT NULL,
+  `kraj` varchar(10) NOT NULL,
+  `datum` date NOT NULL,
+  `opis` text NOT NULL,
+  `kreirao` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -865,7 +884,7 @@ CREATE TABLE IF NOT EXISTS `kviz_odgovor` (
 --
 -- Table structure for table `kviz_pitanje`
 --
-	
+
 CREATE TABLE IF NOT EXISTS `kviz_pitanje` (
   `id` int(11) NOT NULL auto_increment,
   `kviz` int(11) NOT NULL,
@@ -1177,6 +1196,32 @@ CREATE TABLE IF NOT EXISTS `osoba` (
   KEY `kanton` (`kanton`),
   KEY `nacionalnost` (`nacionalnost`),
   KEY `drzavljanstvo` (`drzavljanstvo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `osoba__dodatno`
+--
+
+CREATE TABLE IF NOT EXISTS `osoba__dodatno` (
+`id` int(11) NOT NULL AUTO_INCREMENT,
+`osoba` int(11) NOT NULL,
+`drzava_preb` int(11) NOT NULL,
+`kanton_preb` int(11) NOT NULL,
+`opcina_preb` varchar(50) NOT NULL,
+`adresa_preb` varchar(100) NOT NULL,
+`izvori_finan` varchar(100) NOT NULL,
+`status_a_r` varchar(100) NOT NULL,
+`status_a_s` varchar(100) NOT NULL,
+`zanimanje_r` varchar(150) NOT NULL,
+`zanimanje_s` varchar(150) NOT NULL,
+`status_z_r` varchar(150) NOT NULL,
+`status_z_s` varchar(150) NOT NULL,
+PRIMARY KEY (`id`),
+KEY `os_kanton` (`kanton_preb`),
+KEY `os_drzava` (`drzava_preb`),
+KEY `os_opcina` (`opcina_preb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_slovenian_ci;
 
 -- --------------------------------------------------------
@@ -1819,6 +1864,7 @@ CREATE TABLE IF NOT EXISTS `srednja_ocjene` (
 CREATE TABLE IF NOT EXISTS `srednja_skola` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `naziv` varchar(100) COLLATE utf8_slovenian_ci NOT NULL,
+  `godina` int(11) NULL, -- Add this column for SV-20
   `opcina` int(11) NOT NULL,
   `domaca` tinyint(1) NOT NULL DEFAULT '1',
   `tipskole` enum('GIMNAZIJA','ELEKTROTEHNICKA','TEHNICKA','STRUCNA','MSS','ZANAT') collate utf8_slovenian_ci NOT NULL,
@@ -2421,7 +2467,7 @@ COLLATE = utf8_slovenian_ci;
 
 CREATE TABLE IF NOT EXISTS `kandidati_ocjene` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `kandidat_id` INT NOT NULL, 
+  `kandidat_id` INT NOT NULL,
   `naziv_predmeta` VARCHAR(128) CHARACTER SET 'utf8' COLLATE 'utf8_slovenian_ci' NOT NULL,
   `prvi_razred` TINYINT NOT NULL,
   `drugi_razred` TINYINT NOT NULL,
@@ -2810,10 +2856,10 @@ ALTER TABLE `projekat`
   ADD CONSTRAINT `projekat_ibfk_1` FOREIGN KEY (`predmet`) REFERENCES `predmet` (`id`),
   ADD CONSTRAINT `projekat_ibfk_2` FOREIGN KEY (`akademska_godina`) REFERENCES `akademska_godina` (`id`);
 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`mjesto_rodjenja`) REFERENCES `kandidati_mjesto`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`nacionalnost`) REFERENCES `nacionalnost`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`drzavljanstvo`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati` ADD FOREIGN KEY (`boracka_kategorija`) REFERENCES `posebne_kategorije`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`opcina_skole`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`studijski_program`) REFERENCES `studij`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 ALTER TABLE `kandidati` ADD FOREIGN KEY (`skolska_godina_zavrsetka`) REFERENCES `akademska_godina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
@@ -2821,7 +2867,7 @@ ALTER TABLE `kandidati` ADD FOREIGN KEY (`skolska_godina_zavrsetka`) REFERENCES 
 ALTER TABLE `kandidati_ocjene` ADD FOREIGN KEY (`kandidat_id`) REFERENCES `kandidati`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`opcina`) REFERENCES `opcina`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT; 
+ALTER TABLE `kandidati_mjesto` ADD FOREIGN KEY (`drzava`) REFERENCES `drzava`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `projekat`

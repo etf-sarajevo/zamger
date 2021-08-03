@@ -28,6 +28,7 @@ array("common/attachment", "Download zadaće u formi attachmenta", "Attachment",
 array("common/inbox", "Lične poruke", "Poruke", "SNBA", "1", "0"),
 array("common/pdfraspored", "Prikaz rasporeda u pdf formatu", "PDF_RASPORED", "SNBA", "1", "0"),
 array("common/profil", "Profil", "Profil", "SNBA", "1", "0"),
+array("common/moj_profil", "Moj profil", "Moj profil", "SNBA", "1", "0"),
 array("common/projektneStrane", "Projektne strane", "Projektne strane", "SN", "1", "0"),
 //array("common/raspored", "Raspored", "Raspored", "SNBA", "1", "0"),
 array("common/raspored1", "Raspored", "Raspored", "SNBA", "1", "0"),
@@ -98,7 +99,7 @@ array("nastavnik/tip", "Sistem bodovanja", "Sistem bodovanja predmeta", "N", "1"
 array("nastavnik/kvizovi", "Kvizovi", "Kvizovi", "N", "1", "0"),
 array("nastavnik/projekti", "Projekti", "Projekti", "N", "1", "0"),
 array("nastavnik/zavrsni", "Završni rad", "Završni rad", "N", "1", "0"),
-
+array("nastavnik/kalendar", "Kalendar", "Kalendar", "N", "1", "0"),
 
 array("public/intro", "Login", "Login", "P", "1", "0"),
 array("public/anketa", "Anketa", "Anketa", "P", "1", "0"),
@@ -109,10 +110,10 @@ array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
 array("student/kolizijapdf", "Kolizija (PDF)", "Kolizija (PDF)", "S", "2", "0"),
-array("student/kviz", "Kvizovi", "Kvizovi", "S", "1", "0"), 
+array("student/kviz", "Kvizovi", "Kvizovi", "S", "1", "0"),
 array("student/moodle", "Materijali (Moodle)", "Materijali (Moodle)", "S", "2", "0"),
-array("student/popuni_kviz", "Kvizovi", "Kvizovi", "S", "2", "0"), 
-array("student/potvrda", "Zahtjev za potvrdu", "Zahtjev za potvrdu", "S", "1", "0"), 
+array("student/popuni_kviz", "Kvizovi", "Kvizovi", "S", "2", "0"),
+array("student/potvrda", "Zahtjev za potvrdu", "Zahtjev za potvrdu", "S", "1", "0"),
 array("student/predmet", "Status predmeta", "Status predmeta", "S", "1", "0"),
 array("student/prijava_ispita", "Prijava ispita", "Prijava ispita", "S", "1", "0"),
 array("student/projekti", "Projekti", "Projekti", "S", "1", "0"),
@@ -165,6 +166,7 @@ array("ws/prijava_ispita", "Web servis prijava_ispita", "prijava_ispita", "S", "
 array("ws/prisustvo", "Web servis prisustvo", "prisustvo", "SNBA", "2", "0"),
 array("ws/student_predmet", "Web servis student_predmet", "student_predmet", "SNBA", "2", "0"),
 array("ws/zadaca", "Web servis zadaca", "zadaca", "SNBA", "2", "0"),
+array("ws/api_links", "API links za select-2 i ostalo", "api_links", "PSNBA", "2", "0"),
 
 array()
 );
