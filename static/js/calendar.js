@@ -1,6 +1,8 @@
 // Validate form and draggable elements
 let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start, event_minutes_end;
 
+let currentDate = new Date();
+
 let save_data = false; // If it is true, time format is fine - make ajax request
 let event_date; // Date for event -- set value on onclick event on calendar day
 
@@ -392,6 +394,9 @@ $("body").on('click', '.calendar-col, .sci-d', function () {
     showSingleDay(day, month, year);
 });
 $("body").on('click', '.back-to-full-calendar', function () {
+    // Back to full calendar - reaload event_date
+
+    calendar.createCalendar();
     calendar.removeSingleDay();
 });
 $("body").on('click', '.ea-d', function () {
@@ -505,9 +510,20 @@ $("body").on('keyup', '.form-time', function (){
     }
 });
 
+let dateValid = function(testdate) {
+    var date_regex = /^(0?[1-9]|1\d|2\d|3[01])\.(0?[1-9]|1[0-2])\.(19|20)\d{2}$/ ;
+    return date_regex.test(testdate);
+};
+
 // On change, change event_time, so it would open wanted day
 $("body").on('change', '#event-date', function () {
-    let fromDatepicker = $(this).val().split('.');
+    let value = $(this).val();
+    if(!dateValid(value)){ // In case someone trie to be smart :D
+        value = currentDate.getDate() + '.' + (currentDate.getMonth() + 1) + '.' + currentDate.getFullYear();
+        $(this).val(value);
+    }
+
+    let fromDatepicker = value.split('.');
 
     event_date = fromDatepicker[2] + '-' + fromDatepicker[1] + '-' + fromDatepicker[0];
 

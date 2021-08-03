@@ -1,15 +1,6 @@
 <?php
 function nastavnik_kalendar() {
-	print "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css\" integrity=\"sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T\" crossorigin=\"anonymous\">";
-	
-	print "<link rel=\"stylesheet\" href=\"https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css\">";
 	print "<link rel=\"stylesheet\" href=\"static\css\calendar.css\">";
-	print "<link href=\"https://fonts.googleapis.com/css?family=Nunito:200,600\" rel=\"stylesheet\">";
-	print "<script src=\"https://kit.fontawesome.com/cdf2a0a58b.js\"></script>";
-	print "	<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>";
-	print "<script src=\"https://code.jquery.com/ui/1.12.1/jquery-ui.js\"></script>";
-	print "<script src=\"https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js\" integrity=\"sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM\" crossorigin=\"anonymous\"></script>";
-	print "<script src=\"static/js/notify.js\"> </script>";
 	print "<script src=\"static\js\calendar.js\"> </script>";
 	
 	// Current date and day : )
@@ -35,8 +26,19 @@ function nastavnik_kalendar() {
 						<small id="Title" class="form-text text-muted">Odaberite vrstu događaja</small>
 					</div>
 					<div class="form-group">
-						<input type="text" class="form-control datepicker" id="event-date" aria-describedby="eventDate" placeholder="" value="">
-						<small id="eventDate" class="form-text text-muted">Datum događaja</small>
+						<div class="row">
+							<div class="col-md-6">
+								<input type="text" class="form-control datepicker" id="event-date" aria-describedby="eventDate" placeholder="" value="">
+								<small id="eventDate" class="form-text text-muted">Datum događaja</small>
+							</div>
+							<div class="col-md-6">
+								<select name="repeat" id="" class="form-control">
+									<option value="1">Ne ponavljaj</option>
+									<option value="2">Ponovi svake sedmice</option>
+								</select>
+								<small id="eventDate" class="form-text text-muted">Datum događaja</small>
+							</div>
+						</div>
 					</div>
 					<div class="form-group">
 						<div class="row">
