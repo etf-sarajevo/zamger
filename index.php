@@ -83,7 +83,7 @@ db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 
 // Zabranjene IP adrese
 if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWARDED_FOR'])
-	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR']; 
+	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR'];
 else
 	$ip_adresa = $_SERVER['REMOTE_ADDR'];
 if (in_array($ip_adresa, $conf_banned_ips)) { print "Pristup Zamgeru onemogućen zbog zloupotrebe. Kontaktirajte administratora."; exit(0); }
@@ -335,8 +335,23 @@ if ($userid>0) {
 <head>
 	<title><?=$naslov?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
 	<link href="static/css/zamger.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="static/css/print.css" type="text/css" media="print">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
+	<script src="https://kit.fontawesome.com/cdf2a0a58b.js"></script>
+
+	<!-- Javascript scripts -->
+	<script src="https://kit.fontawesome.com/cdf2a0a58b.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	
 	<?=$rsslink?>
 </head>
 <?
