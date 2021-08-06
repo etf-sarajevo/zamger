@@ -32,6 +32,7 @@ function db_query($query, $disableLog = false) {
 	if ($resource = @mysqli_query($__db_connection, $query)) {
 		return $resource;
 	}
+	if ($disableLog) exit;
 	
 	# Error handling
 	$error = mysqli_error($__db_connection);
