@@ -26,12 +26,13 @@ function db_disconnect() {
 
 
 // Stari API - vraća resurs (čija semantika zavisi od db layera)
-function db_query($query) {
+function db_query($query, $disableLog = false) {
 	global $__db_connection, $conf_debug, $conf_script_path;
 
 	if ($resource = @mysqli_query($__db_connection, $query)) {
 		return $resource;
 	}
+	if ($disableLog) exit;
 	
 	# Error handling
 	$error = mysqli_error($__db_connection);
