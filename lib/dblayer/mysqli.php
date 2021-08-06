@@ -32,12 +32,12 @@ function db_query($query, $disableLog = false) {
 	if ($resource = @mysqli_query($__db_connection, $query)) {
 		return $resource;
 	}
-	if ($disableLog) exit;
 	
 	# Error handling
 	$error = mysqli_error($__db_connection);
 	if ($conf_debug)
 		print "<br/><hr/><br/>MYSQL query:<br/><pre>".$query."</pre><br/>MYSQL error:<br/><pre>".$error."</pre>";
+	if ($disableLog) exit;
 	$backtrace = debug_backtrace();
 	$file = $backtrace[0]['file'];
 	$file = str_replace($conf_script_path."/", "", $file);
