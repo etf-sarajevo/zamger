@@ -4,7 +4,7 @@
 
 function student_intro() {
 
-	global $userid, $registry, $person, $courseDetails;
+	global $userid, $registry, $person;
 
 	require_once("lib/utility.php"); // spol, vokativ
 
@@ -26,8 +26,19 @@ function student_intro() {
 
 	// KOD ZA IZVJEŠTAJE
 	if ($_REQUEST['akcija'] == "promijeni_kod") {
+		?>
+		<h1>Molimo sačekajte</h1>
+		<p>Regenerisanje koda za izvještaje može potrajati nekoliko minuta.</p>
+		<?=genform("POST", "pk_real")?>
+			<input type="hidden" name="akcija" value="promijeni_kod_real">
+			</form>
+		<script>document.getElementById("pk_real").submit();</script>
+		<?
+		return;
+	}
+	if ($_REQUEST['akcija'] == "promijeni_kod_real") {
 		global $conf_files_path, $user_siteadmin;
-		$code = api_call("zamger/anonymous_code/$userid", [], "POST");
+		api_call("zamger/anonymous_code/$userid", [], "POST");
 		// FIXME
 		$q11 = db_query("SELECT pk.predmet, pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE pk.id=sp.predmet AND sp.student=$userid");
 		
