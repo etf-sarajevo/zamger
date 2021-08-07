@@ -8,6 +8,19 @@ let event_date; // Date for event -- set value on onclick event on calendar day
 
 let api_link = 'index.php?sta=ws/predmet';
 
+/*
+ *  Deadline represents minimum time (in hours) for deadline - before event starts -- TODO :: Check
+ *  as default, it is set to 24h (for all categories / event types )
+ */
+
+let deadline = {
+    1 : 24,
+    2 : 24,
+    3 : 24,
+    4 : 24,
+    5 : 24
+};
+
 // Parse url and read GET parameters from URL
 
 let getUrlParameter = function getUrlParameter(sParam) {
@@ -26,6 +39,75 @@ let getUrlParameter = function getUrlParameter(sParam) {
     return false;
 };
 
+/*
+ *  Check if date format is valid - valid format is dd.mm.yyyy
+ */
+
+let dateValid = function(testDate) {
+    let date_regex = /^(0?[1-9]|1\d|2\d|3[01])\.(0?[1-9]|1[0-2])\.(19|20)\d{2}$/ ;
+    return date_regex.test(testDate);
+};
+let formatDate = function(date, operator = '-'){
+    date = date.split(operator);
+
+    date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1]; // Format month 1 -> 01
+    if(operator === '-') date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2]; // Format day yyyy-mm-dd
+    else date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0]; // Format day dd.mm.yyyy
+
+    return date[0] + operator + date[1] + operator + date[2];
+};
+
+let formatTime = function(time, dateTime = false){
+    time = time.split(':');
+    if(time[0].length === 1) time[0] = (time[0] < 10) ? ('0' + time[0]) : time[0];
+    if(time[1].length === 1) time[1] = (time[1] < 10) ? ('0' + time[1]) : time[1];
+
+    return time[0] + ':' + time[1];
+};
+
+/*
+ *  Returns difference in minutes between start and end of event
+ *  Needs for calculation of event duration
+ */
+
+let diffInMinutes = function(timeFrom, timeTo){
+    /*
+     *  Get an two elements array from hh:mm
+     */
+    timeFrom = timeFrom.split(':');
+    timeTo   = timeTo.split(':');
+
+    /*
+     *  Convert to minutes
+     */
+    let timeFromMinutes = ((parseInt(timeFrom[0]) * 60) + parseInt(timeFrom[1]));
+    let timeToMinutes   = ((parseInt(timeTo[0]) * 60) + parseInt(timeTo[1]));
+
+    if(timeToMinutes <= timeFromMinutes){
+        return {
+            code : '4004',
+            'message' : 'Vrijeme predviđeno za početak ne smije biti veće od vremena predviđenog za kraj!'
+        };
+    }else{
+        return {
+            code : '0000',
+            message : 'Uspješno izračunato !',
+            data : (parseInt(timeToMinutes) - parseInt(timeFromMinutes))
+        };
+    }
+};
+
+let formatDateTime = function(date, time){ return formatDate(date) + ' ' + formatTime(time) + ':00'; };
+
+let deadlineDateTime = function(dateTime, eventType){
+    let cDate = new Date(dateTime);
+    let days = parseInt(parseInt(deadline[eventType]) / 24);
+
+    // Now, substract number of days from date
+    cDate.setDate(cDate.getDate() - days);
+
+    return formatDate(cDate.getFullYear() + '-' + (cDate.getMonth() + 1) + '-' + cDate.getDate()) + ' ' + formatTime(cDate.getHours() + ':' + cDate.getMinutes()) + ':00';
+};
 // Calendar object
 
 let calendar = {
@@ -510,11 +592,6 @@ $("body").on('keyup', '.form-time', function (){
     }
 });
 
-let dateValid = function(testdate) {
-    var date_regex = /^(0?[1-9]|1\d|2\d|3[01])\.(0?[1-9]|1[0-2])\.(19|20)\d{2}$/ ;
-    return date_regex.test(testdate);
-};
-
 // On change, change event_time, so it would open wanted day
 $("body").on('change', '#event-date', function () {
     let value = $(this).val();
@@ -564,66 +641,71 @@ $("body").on('click', '.add-new-today', function () { // Open form and set event
 });
 
 $("body").on('click', '.save-event', function () { // Hide pop-up for event
-    let title = $("#time-title").val();
-    let category = $("#time-category").val();
-    let time_from = $("#time-from").val();
-    let time_to   = $("#time-to").val();
-    let info = $("#info").val();
-    let subject = getUrlParameter('predmet'); // Get subject from URI
+    let title       = $("#time-title").val();
+    let eventType   = $("#time-category").val();
+    let timeFrom    = $("#time-from").val();
+    let timeTo      = $("#time-to").val();
+    let description = $("#info").val();
+    let subject     = getUrlParameter('predmet'); // Get subject from URI
+    let ac_year     = getUrlParameter('ag');      // Get academic year from URI
 
+    save_data = true;
 
     if(title === ''){
         $.notify("Naslov ne smije biti prazan!", 'warn');
         return;
     }
 
-    if(!save_data || time_from === '' || time_to === ''){
+    if(!save_data || timeFrom === '' || timeTo === ''){
         $.notify("Vrijeme početka i vrijeme kraja nisu validni, molimo provjerite !", 'warn');
         return;
     }
 
-    // Check if time from is less than time to
-    if(time_from !== '' && time_to !== ''){
-        let time_from_p = time_from.split(":");
-        let time_to_p   = time_to.split(":");
-
-        if((parseInt(time_from_p[0]) > parseInt(time_to_p[0])) || (parseInt(time_from_p[0]) === parseInt(time_to_p[0]) && parseInt(time_from_p[1]) >= parseInt(time_to_p[1]))){
-            $.notify("Vrijeme predviđeno za početak ne smije biti veće od vremena predviđenog za kraj!", 'warn');
-            return;
-        }
+    let duration = diffInMinutes(timeFrom, timeTo); // Calculate duration of event
+    if(duration['code'] !== '0000'){
+        $.notify(duration['message'], 'warn');
+        return;
     }
 
+    let dateTime = formatDateTime(event_date, timeFrom); // Event start date and time -- format from event_date and start time
 
-    $.ajax({
-        type:'POST',
-        url: api_link,
-        data: { event_create: true, event_title : title, event_category : category, event_time_from : time_from, event_time_to : time_to, event_info : info, event_date: event_date, subject : subject},
-        success:function(response){
+    let deadline = deadlineDateTime(dateTime, eventType);
 
 
-            if(response['success'] === 'true'){
-                $.notify("Uspješno ste spasili podatke!", 'success');
-                $(".add-new-event-wrapper").fadeOut();
+    let params = {
+        CourseUnit : { id : subject },
+        AcademicYear : { id : ac_year },
+        EventType : eventType,
+        dateTime : dateTime,
+        maxStudents : 0,
+        duration : duration['data'],
+        deadline : deadline,
+        CourseActivity : { id : null }, // this param is empty for now
+        options : '',
+        title : title,
+        description : description
+    };
+    ajax_api_start('event/course/'+subject+'/'+ac_year+'', 'POST', params, function (result) {
+        $.notify("Uspješno ste spasili podatke!", 'success');
+        $(".add-new-event-wrapper").fadeOut();
 
-                event_new_elem_ = 0; // Allow new element creation
+        event_new_elem_ = 0; // Allow new element creation
 
-                calendar.removeSingleDay();
+        calendar.removeSingleDay();
 
-                let response = dayData(event_date);
-                calendar.createSingleDay();
+        let response = dayData(event_date);
+        calendar.createSingleDay();
 
-                // Remove all previously entered data
-                $("#time-title").val('');
-                $("#time-from").val('');
-                $("#time-to").val('');
-                $("#info").val('');
+        // Remove all previously entered data
+        $("#time-title").val('');
+        $("#time-from").val('');
+        $("#time-to").val('');
+        $("#info").val('');
 
-
-                // TODO - Potrebno je provjeriti stanje koje ostaje u cache, ukoliko zaglavi te restartovati
-            }else{
-                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-            }
-        }
+    }, function (text, status, url) {
+        console.log("Došlo je do greške na serveru.");
+        console.error("Kod: " + status);
+        console.error(text);
     });
 });
 
@@ -632,16 +714,4 @@ $( function() {
     $( ".datepicker" ).datepicker({
         dateFormat: 'dd.mm.yy'
     });
-});
-
-
-
-$.ajax({
-    type:'POST',
-    contentType: "application/x-www-form-urlencoded",
-    url: '/zamger-api/api/index.php?route=auth',
-    data: { login: 'admin', pass: 'admin'},
-    success:function(response){
-        console.log(response);
-    }
 });
