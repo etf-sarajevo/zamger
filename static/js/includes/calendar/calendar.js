@@ -521,26 +521,19 @@ $("body").on('click', '.ea-d', function () {
     // remove from list of events
     let event_id = $(this).attr('event-id');
 
-    $.ajax({
-        type:'POST',
-        url: api_link,
-        data: { remove_event_data: true, event_id: event_id},
-        success:function(response){
+    ajax_api_start('event/'+event_id, 'DELETE', {}, function (result) {
+    }, function (text, status, url) {
+        if(status === 204){
+            calendar.removeSingleDay();
 
-            if(response['success'] === 'true'){
-                calendar.removeSingleDay();
+            let response = dayData(event_date);
+            calendar.createSingleDay();
 
-                let response = dayData(event_date);
-                calendar.createSingleDay();
-
-                // Now, check if date is today -- if it is, then remove from "side menu"
-                if(isToday(event_date)){
-                    $("#event-elem-" + event_id).remove();
-                }
-            }else{
-                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+            // Now, check if date is today -- if it is, then remove from "side menu"
+            if(isToday(event_date)){
+                $("#event-elem-" + event_id).remove();
             }
-        }
+        }else {$.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');}
     });
 });
 $( function() {
