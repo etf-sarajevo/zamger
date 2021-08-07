@@ -47,6 +47,11 @@ let dateValid = function(testDate) {
     let date_regex = /^(0?[1-9]|1\d|2\d|3[01])\.(0?[1-9]|1[0-2])\.(19|20)\d{2}$/ ;
     return date_regex.test(testDate);
 };
+
+/*
+ *  Set propper format of date yyyy-mm-dd or dd.mm.yyyy
+ */
+
 let formatDate = function(date, operator = '-'){
     date = date.split(operator);
 
@@ -57,12 +62,27 @@ let formatDate = function(date, operator = '-'){
     return date[0] + operator + date[1] + operator + date[2];
 };
 
+/*
+ *  Set propper format of time hh:ii
+ */
+
 let formatTime = function(time, dateTime = false){
     time = time.split(':');
     if(time[0].length === 1) time[0] = (time[0] < 10) ? ('0' + time[0]) : time[0];
     if(time[1].length === 1) time[1] = (time[1] < 10) ? ('0' + time[1]) : time[1];
 
     return time[0] + ':' + time[1];
+};
+
+/*
+ *  Return time to (from datetime + duration)
+ */
+
+let getTimeTo = function(dateTime, duration){
+    let cDate    = new Date(dateTime);
+    cDate = new Date(cDate.setMinutes(cDate.getMinutes() + duration));
+
+    return cDate.getHours() + ':' + cDate.getMinutes();
 };
 
 /*
@@ -118,6 +138,20 @@ let deadlineDateTime = function(dateTime, eventType){
 let getPhpYear  = function(date){ return new Date(date).getFullYear(); };
 let getPhpMonth = function(date){ return (new Date(date).getMonth() + 1) ; };
 let getPhpDay   = function(date){ return new Date(date).getDate() ; };
+
+/*
+ *  Get minutes from date-time format (this is required to setup exact position on day preview
+ */
+
+let extractTime = function(dateTime, extractMinutes = false){
+    let cDate = new Date(dateTime);
+    let cTime = (cDate.getHours() + ':' + cDate.getMinutes())
+
+    if(extractMinutes){
+        cTime = (cDate.getHours() * 60) + cDate.getMinutes();
+    }else{ cTime = formatTime(cTime); }
+    return cTime;
+};
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 /*
@@ -216,8 +250,6 @@ let calendar = {
         ajax_api_start(uri, 'GET', {}, function (result) {
             for(let i=0; i<result['results'].length; i++){
                 let event = result['results'][i];
-
-                // let wrapper = $("<div>").attr('class', 'cv-events'); // Wrapper inside day of calendar
 
                 $(".current-value[day="+getPhpDay(event['dateTime'])+"]").find('.cv-events').append(function () {
                     return $("<div>").attr('class', 'cv-e-event' + ((event['EventType'] === 5) ? ' cv-e-event-2' : ''))
@@ -392,70 +424,64 @@ let isToday = function(date){
 };
 
 let dayData = function(date){
-    $.ajax({
-        type:'POST',
-        url: api_link,
-        data: { event_get_data: true, event_date: date, subject : getUrlParameter('predmet')},
-        success:function(response){
 
-            if(response['success'] === 'true'){
+    let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'/date&date='+formatDate(event_date);
 
-                if(isToday(event_date)) {
-                    $(".items-wrapper").empty();
-                    $(".this-day-total").text(0);
-                }
-
-                let scrollPos = 1444;
-
-                for(let i=0; i<response['data'].length; i++){
-                    let start = response['data'][i]['start'].split(':');
-                    event_minutes_start = ((parseInt(start[0]) * 60) + parseInt(start[1]));
-
-                    let end = response['data'][i]['end'].split(':');
-                    event_minutes_end   = ((parseInt(end[0]) * 60) + parseInt(end[1]));
-
-                    let height = event_minutes_end - event_minutes_start;
-
-                    $(".events-wrapper").append(
-                        '<div class="event-short-preview" title="' + response['data'][i]['description'] + '" id="event-elem-'+response['data'][i]['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+response['data'][i]['id']+'-header"> ' + response['data'][i]['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (response['data'][i]['start'] + ' : ' + response['data'][i]['end']) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ response['data'][i]['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> </div> </div> '
-                    );
-
-                    if(isToday(event_date)){
-                        $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
-                        // Check if date is current date; If it is, add to side menu
-                        $(".items-wrapper").append(function () {
-                            return $("<div>").attr('class', 'single-item sci-d')
-                                .attr('year', (new Date()).getFullYear())
-                                .attr('month', (new Date()).getMonth())
-                                .attr('day', (new Date()).getDate())
-                                .attr('title', response['data'][i]['title'] + '\u000d' + response['data'][i]['description'])
-                                .attr('event-id', 'event-elem-' + response['data'][i]['id'])
-                                .append(function () {
-                                    return $("<p>").text(response['data'][i]['start'] + ' : ' + response['data'][i]['end']);
-                                })
-                                .append(function () {
-                                    return $("<span>").text(response['data'][i]['title'])
-                                })
-                        });
-                    }
-
-                    // Check for first event to determine scroll position
-                    if(scrollPos > event_minutes_start) scrollPos = parseInt(event_minutes_start);
-                }
-
-                if(response['data'].length === 0){
-                    scrollPos = 480;
-                }else{
-                    scrollPos = (scrollPos > 60) ? (scrollPos - 60) : scrollPos;
-                }
-
-                $(".single-day-body").animate({
-                    scrollTop : scrollPos
-                }, 500);
-            }else{
-                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-            }
+    ajax_api_start(uri, 'GET', {}, function (result) {
+        if(isToday(event_date)) {
+            $(".items-wrapper").empty();
+            $(".this-day-total").text(0);
         }
+        let scrollPos = 1444;
+
+        for(let i=0; i<result['results'].length; i++){
+            let event = result['results'][i];
+
+            event_minutes_start = extractTime(event['dateTime'], true);
+            event_minutes_end   = event_minutes_start + event['duration'];
+
+            let height = event_minutes_end - event_minutes_start;
+
+            $(".events-wrapper").append(
+                '<div class="event-short-preview" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> </div> </div> '
+            );
+
+            if(isToday(event_date)){
+                $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
+                // Check if date is current date; If it is, add to side menu
+                $(".items-wrapper").append(function () {
+                    return $("<div>").attr('class', 'single-item sci-d')
+                        .attr('year', (new Date()).getFullYear())
+                        .attr('month', (new Date()).getMonth())
+                        .attr('day', (new Date()).getDate())
+                        .attr('title', event['title'] + '\u000d' + event['description'])
+                        .attr('event-id', 'event-elem-' + event['id'])
+                        .append(function () {
+                            return $("<p>").text(extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration'])));
+                        })
+                        .append(function () {
+                            return $("<span>").text(event['title'])
+                        })
+                });
+            }
+
+            if(scrollPos > event_minutes_start) scrollPos = parseInt(event_minutes_start);
+        }
+
+        /*
+         *  If there is no data - scrol to 08:00 h
+         */
+
+        if(result['results'].length === 0){
+            scrollPos = 480;
+        }else{
+            scrollPos = (scrollPos > 60) ? (scrollPos - 60) : scrollPos;
+        }
+
+        $(".single-day-body").animate({ scrollTop : scrollPos }, 500); // Set animation duration to 0.2 s
+
+    }, function (text, status, url) {
+        $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
     });
 };
 
