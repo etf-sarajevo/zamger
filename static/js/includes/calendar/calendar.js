@@ -600,6 +600,8 @@ $("body").on('keyup', '.form-time', function (){
             }else{
                 let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
 
+                console.log("Edit it bitch !");
+
                 $("#"+elem_id).height(height).css({ top: event_minutes_start +'px' });
                 $("#"+elem_id+'-time').text(getNewEventRange());
             }
@@ -619,9 +621,12 @@ $("body").on('keyup', '.form-time', function (){
         if(value) {
             time_to = true;
             event_minutes_end = ((parseInt(time[0]) * 60) + parseInt(time[1]));
-            $("#"+event_new_elem_).height(event_minutes_end - event_minutes_start);
 
-            $("#"+event_new_elem_+'-time').text(getNewEventRange());
+            let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
+
+            $("#"+elem_id).height(event_minutes_end - event_minutes_start);
+
+            $("#"+elem_id+'-time').text(getNewEventRange());
         }
         else {time_to = false;}
     }
