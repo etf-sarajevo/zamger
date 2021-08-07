@@ -644,6 +644,7 @@ $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
     $(".add-new-event-wrapper").fadeOut();
     $(".events-wrapper").find("#"+event_new_elem_).remove();
     event_new_elem_ = 0;
+    edit_event = false;
 });
 $("body").on('click', '.create-cal-event', function () { // Show pop-up for event
     $(".add-new-event-wrapper").fadeIn();
@@ -737,13 +738,9 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
         // if edit_event != false, it has some id from previous response
         let uri = 'event/' + edit_event;
         createEventRequest(uri, 'PUT', edit_event);
-
-        console.log("Update event !");
     }else{
         let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'';
         createEventRequest(uri, 'POST');
-
-        console.log("Add event !");
     }
 });
 
@@ -794,12 +791,5 @@ $("body").on('click', '.ea-u', function () {
 
     }, function (text, status, url) {
         $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-    });
-});
-
-// Set datepicker event jQuery
-$( function() {
-    $( ".datepicker" ).datepicker({
-        dateFormat: 'dd.mm.yy'
     });
 });

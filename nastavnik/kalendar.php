@@ -105,10 +105,6 @@ function nastavnik_kalendar() {
 
 	<script>
         calendar.createCalendar();
-
-
-
-
 	</script>
 	<?php
 }

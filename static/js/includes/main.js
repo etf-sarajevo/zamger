@@ -14,7 +14,16 @@ let sessionID = function(name) {
     else{ console.log('--something went wrong---'); }
 };
 
+/*
+ *  Move datepicker into main.js file -- would be used in different modules
+ */
 
+// Set datepicker event jQuery
+$( function() {
+    $( ".datepicker" ).datepicker({
+        dateFormat: 'dd.mm.yy'
+    });
+});
 
 /*
  *  USER PROFILE
