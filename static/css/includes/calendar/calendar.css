@@ -143,11 +143,17 @@
 .calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview h4{font-size:12px; color:#fff; margin-left:20px; margin-top:3px; font-weight:bold; margin-bottom:0px;}
 .calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview p{font-size:10px; margin-left:20px; margin-top:0px; color:#fff;}
 .calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .current-time-line{position: absolute; left:50px; width: calc(100% - 50px); height: 1px; background: red; top: 100px; z-index:1000;}
-.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions{position: absolute; right:20px; top:10px; width: 30px; height: 20px; max-height: calc(100% - 10px); display: inline-flex; justify-content: flex-end;}
-.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d{position: relative; top:0px; width: 20px; height: 100%; text-align: center;}
-.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d i{color:#fff; transition: 0.2s all;}
-.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d:hover{cursor: pointer;}
-.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d:hover i{cursor: pointer; color:#b30000;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions{position: absolute; right:20px; top:10px; width: 50px; height: 20px; max-height: calc(100% - 10px); display: inline-flex; justify-content: flex-end;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d,
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u{position: relative; top:0px; width: 20px; height: 100%; text-align: center;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d i,
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u i{color:#fff; transition: 0.2s all;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u i{color:#ECC471;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d:hover,
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u:hover{cursor: pointer;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-d:hover i,
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u:hover i{cursor: pointer; color:#b30000;}
+.calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u:hover i{color:#0B8043;}
 /*** Add new event ***/
 .calendar-wrapper .add-new-event-wrapper{position: absolute; left:0px; top:0px; width: 100%; height: 100%; display: none;}
 .calendar-wrapper .add-new-event-wrapper .day-form{position: absolute; width: 360px; left:calc(50% - 180px);  z-index: 1000; top:calc(50% - 250px); height: 500px; background: #fff; border-radius:3px;

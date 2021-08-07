@@ -8,6 +8,8 @@ let event_date = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) 
 
 let api_link = 'index.php?sta=ws/predmet';
 
+let edit_event = false; // If it set to true, api calls method update() otherwise calls add()
+
 /*
  *  Deadline represents minimum time (in hours) for deadline - before event starts -- TODO :: Check
  *  as default, it is set to 24h (for all categories / event types )
@@ -55,9 +57,9 @@ let dateValid = function(testDate) {
 let formatDate = function(date, operator = '-'){
     date = date.split(operator);
 
-    date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1]; // Format month 1 -> 01
-    if(operator === '-') date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2]; // Format day yyyy-mm-dd
-    else date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0]; // Format day dd.mm.yyyy
+    if(date[1].length === 1) date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1]; // Format month 1 -> 01
+    if(operator === '-' && date[2].length === 1) date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2]; // Format day yyyy-mm-dd
+    else if(date[0].length === 1) date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0]; // Format day dd.mm.yyyy
 
     return date[0] + operator + date[1] + operator + date[2];
 };
@@ -141,6 +143,7 @@ let getPhpDay   = function(date){ return new Date(date).getDate() ; };
 
 /*
  *  Get minutes from date-time format (this is required to setup exact position on day preview
+ *  Get year-month-day from date-time format
  */
 
 let extractTime = function(dateTime, extractMinutes = false){
@@ -151,6 +154,14 @@ let extractTime = function(dateTime, extractMinutes = false){
         cTime = (cDate.getHours() * 60) + cDate.getMinutes();
     }else{ cTime = formatTime(cTime); }
     return cTime;
+};
+let extractDate = function(dateTime, engFormat = false){
+    let cDate = new Date(dateTime);
+    if(engFormat){
+        return cDate.getFullYear() + '-' + (cDate.getMonth() + 1) + '-' + cDate.getDate();
+    }else{
+        return cDate.getDate() + '.' + (cDate.getMonth() + 1) + '.' + cDate.getFullYear();
+    }
 };
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -443,7 +454,7 @@ let dayData = function(date){
             let height = event_minutes_end - event_minutes_start;
 
             $(".events-wrapper").append(
-                '<div class="event-short-preview" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> </div> </div> '
+                '<div class="event-short-preview" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div> </div> '
             );
 
             if(isToday(event_date)){
@@ -514,28 +525,9 @@ $("body").on('click', '.back-to-full-calendar', function () {
 });
 
 /*
- *  Remove event from database + remove from preview
+ *  Make an input form draggable over area of calendar (inside wrapper)
  */
 
-$("body").on('click', '.ea-d', function () {
-    // remove from list of events
-    let event_id = $(this).attr('event-id');
-
-    ajax_api_start('event/'+event_id, 'DELETE', {}, function (result) {
-    }, function (text, status, url) {
-        if(status === 204){
-            calendar.removeSingleDay();
-
-            let response = dayData(event_date);
-            calendar.createSingleDay();
-
-            // Now, check if date is today -- if it is, then remove from "side menu"
-            if(isToday(event_date)){
-                $("#event-elem-" + event_id).remove();
-            }
-        }else {$.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');}
-    });
-});
 $( function() {
     $( ".day-form" ).draggable({ containment: "parent" });
 } );
@@ -594,8 +586,10 @@ $("body").on('keyup', '.form-time', function (){
                     '<div class="event-short-preview" id="'+event_new_elem_+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+event_new_elem_+'-header"> ' + getNewEventTitle() + ' </h4> <p id="'+event_new_elem_+'-time"> ' + getNewEventRange() + ' </p> </div> '
                 );
             }else{
-                $("#"+event_new_elem_).height(height).css({ top: event_minutes_start +'px' });
-                $("#"+event_new_elem_+'-time').text(getNewEventRange());
+                let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
+
+                $("#"+elem_id).height(height).css({ top: event_minutes_start +'px' });
+                $("#"+elem_id+'-time').text(getNewEventRange());
             }
 
             // Now, if time from is valid, scroll to element with this time
@@ -669,37 +663,32 @@ $("body").on('click', '.add-new-today', function () { // Open form and set event
     $("#event-date").val(today.getDate() + '.' + (today.getMonth() + 1) + '.' + today.getFullYear());
 });
 
-$("body").on('click', '.save-event', function () { // Hide pop-up for event
+let createEventRequest = function(url, method, edit = false){
     let title       = $("#time-title").val();
     let eventType   = $("#time-category").val();
     let timeFrom    = $("#time-from").val();
     let timeTo      = $("#time-to").val();
+    let repeat      = $("#repeat").val();
     let description = $("#info").val();
     let subject     = getUrlParameter('predmet'); // Get subject from URI
     let ac_year     = getUrlParameter('ag');      // Get academic year from URI
-
-    save_data = true;
 
     if(title === ''){
         $.notify("Naslov ne smije biti prazan!", 'warn');
         return;
     }
-
     if(!save_data || timeFrom === '' || timeTo === ''){
         $.notify("Vrijeme početka i vrijeme kraja nisu validni, molimo provjerite !", 'warn');
         return;
     }
-
     let duration = diffInMinutes(timeFrom, timeTo); // Calculate duration of event
     if(duration['code'] !== '0000'){
         $.notify(duration['message'], 'warn');
         return;
     }
 
-    let dateTime = formatDateTime(event_date, timeFrom); // Event start date and time -- format from event_date and start time
-
-    let deadline = deadlineDateTime(dateTime, eventType);
-
+    let dateTime = formatDateTime(event_date, timeFrom);    // Event start date and time -- format from event_date and start time
+    let deadline = deadlineDateTime(dateTime, eventType);   // Creates deadline according to eventType -- see deadline variable
 
     let params = {
         CourseUnit : { id : subject },
@@ -712,13 +701,18 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
         CourseActivity : { id : null }, // this param is empty for now
         options : '',
         title : title,
-        description : description
+        description : description,
+        repeat : repeat
     };
-    ajax_api_start('event/course/'+subject+'/'+ac_year+'', 'POST', params, function (result) {
+
+    if(edit_event) params.id = edit_event;
+
+    ajax_api_start(url, method, params, function (result) {
         $.notify("Uspješno ste spasili podatke!", 'success');
         $(".add-new-event-wrapper").fadeOut();
 
         event_new_elem_ = 0; // Allow new element creation
+        edit_event      = false; // Stop edditig an element
 
         calendar.removeSingleDay();
 
@@ -735,6 +729,71 @@ $("body").on('click', '.save-event', function () { // Hide pop-up for event
         console.log("Došlo je do greške na serveru.");
         console.error("Kod: " + status);
         console.error(text);
+    });
+};
+
+$("body").on('click', '.save-event', function () { // Hide pop-up for event
+    if(edit_event){
+        // if edit_event != false, it has some id from previous response
+        let uri = 'event/' + edit_event;
+        createEventRequest(uri, 'PUT', edit_event);
+
+        console.log("Update event !");
+    }else{
+        let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'';
+        createEventRequest(uri, 'POST');
+
+        console.log("Add event !");
+    }
+});
+
+/*
+ *  Remove event from database + remove from preview
+ */
+
+$("body").on('click', '.ea-d', function () {
+    // remove from list of events
+    let event_id = $(this).attr('event-id');
+
+    ajax_api_start('event/'+event_id, 'DELETE', {}, function (result) {
+    }, function (text, status, url) {
+        if(status === 204){
+            calendar.removeSingleDay();
+
+            let response = dayData(event_date);
+            calendar.createSingleDay();
+
+            // Now, check if date is today -- if it is, then remove from "side menu"
+            if(isToday(event_date)){
+                $("#event-elem-" + event_id).remove();
+            }
+        }else {$.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');}
+    });
+});
+
+/*
+ *  Edit event - almost the same as create one
+ */
+
+$("body").on('click', '.ea-u', function () {
+    let event_id = $(this).attr('event-id');
+
+    ajax_api_start('event/'+event_id, 'GET', {}, function (result) {
+        $(".add-new-event-wrapper").fadeIn();
+
+        $("#time-title").val(result['title']);
+        $("#time-from").val(extractTime(result['dateTime']));
+        $("#time-to").val(formatTime(getTimeTo(result['dateTime'], result['duration'])));
+        $("#event-date").val(formatDate(extractDate(result['dateTime']), '.'));
+        $("#repeat").val((result['repeat'] === undefined) ? 1 : result['repeat']); // Till implementation
+        $("#info").val(result['description']);
+
+        save_data       = true; // Make it available to save instantly
+        edit_event      = result['id'];
+        event_new_elem_ = result['id']; // Need it for moving created element in day preview
+
+    }, function (text, status, url) {
+        $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
     });
 });
 

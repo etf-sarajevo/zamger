@@ -1,7 +1,7 @@
 <?php
 function nastavnik_kalendar() {
 	
-	ajax_box();
+	ajax_box(); // Allow JS to create requests to zamger-api
 	
 	print "<link rel=\"stylesheet\" href=\"static\css\includes\calendar\calendar.css\">";
 	print "<script src=\"static\js\includes\calendar\calendar.js\"> </script>";
@@ -10,15 +10,18 @@ function nastavnik_kalendar() {
 	$days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota', 'Nedjelja'];
 	$months = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
 	
-	$date = date('Y-m-d');
-	// $events = db_query("SELECT * FROM kalendar where datum = '$date' and predmet = ".(is_numeric($_GET['predmet']) ? $_GET['predmet'] : 0))->fetch_all();
+	$date    = date('Y-m-d');
+	$predmet = intval($_REQUEST['predmet']);
+	$ag      = intval($_REQUEST['ag']);
 	
+	$events = api_call("event/course/$predmet/$ag/date", ['date' => $date], 'GET', true);
+
 	?>
 	<div class="calendar-wrapper">
 		<div class="add-new-event-wrapper ">
 			<div class="day-form p-4">
 				<div class="form-group mt-2">
-					<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="ee">
+					<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="">
 					<small id="Title" class="form-text text-muted">Unesite naslov koji će se prikazivati na kalendaru</small>
 				</div>
 				<div class="form-group">
@@ -35,7 +38,7 @@ function nastavnik_kalendar() {
 							<small id="eventDate" class="form-text text-muted">Datum događaja</small>
 						</div>
 						<div class="col-md-6">
-							<select name="repeat" id="" class="form-control">
+							<select name="repeat" id="repeat" class="form-control">
 								<option value="1">Ne ponavljaj</option>
 								<option value="2">Ponovi svake sedmice</option>
 							</select>
@@ -71,15 +74,27 @@ function nastavnik_kalendar() {
 
 		</div>
 
-
 		<div class="this-day">
 			<h5>Danas</h5>
 			<h2><?= $days[date('w')] ?>, <br> <?= date('d') ?>. <?= $months[date('m')] ?> <?= date('Y') ?></h2>
 
-			<h5><span class="this-day-total">12</span> stavke</h5>
+			<h5><span class="this-day-total"><?= count($events['results']) ?></span> stavka / e</h5>
 
 			<div class="items-wrapper">
-
+				<?php
+				foreach ($events['results'] as $event){
+					?>
+					<div class="single-item sci-d" title="<?= $event['title'].'&#13; &#13;'.$event['description'] ?>" year="<?= date('Y') ?>" month="<?= (int)(date('m')) - 1 ?>" day="<?= date('d') ?>" id="event-elem-<?= $event['id'] ?>">
+						<p>
+							<?= date('H:i', strtotime($event['dateTime'])) ?>
+							-
+							<?= date('H:i', strtotime($event['dateTime']) + ($event['duration'] * 60)) ?>
+						</p>
+						<span> <?= $event['title'] ?></span>
+					</div>
+					<?php
+				}
+				?>
 			</div>
 			<div class="add-new-today" title="Unesite novi događaj na današnji dan">
 				<i class="fas fa-plus"></i>
