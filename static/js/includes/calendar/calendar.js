@@ -164,6 +164,16 @@ let extractDate = function(dateTime, engFormat = false){
     }
 };
 
+let initialData = function(){
+    $("#time-title").val('');
+    $("#time-category").val(2);
+    $("#event-date").val(currentDate.getDate() + '.' + (currentDate.getMonth() + 1) + '.' + currentDate.getFullYear());
+    $("#repeat").val(1);
+    $("#time-from").val('');
+    $("#time-to").val('');
+    $("#info").val('');
+};
+
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 /*
  *  Complete calendar object - fully functional
@@ -263,7 +273,7 @@ let calendar = {
                 let event = result['results'][i];
 
                 $(".current-value[day="+getPhpDay(event['dateTime'])+"]").find('.cv-events').append(function () {
-                    return $("<div>").attr('class', 'cv-e-event' + ((event['EventType'] === 5) ? ' cv-e-event-2' : ''))
+                    return $("<div>").attr('class', 'cv-e-event  cv-e-event-' + event['EventType'])
                         .append($("<h5>").text(event['title']));
                 });
             }
@@ -381,9 +391,11 @@ let calendar = {
         let current_m = (new Date()).getMinutes();
         let top_time = (current_h * 60) + current_m;
 
-        $(".events-wrapper").append(
-            '<div class="current-time-line" style="top:'+(top_time)+'px" title="Trenutno vrijeme '+current_h+':'+current_m+'">  </div>'
-        );
+        if(isToday(event_date)){
+            $(".events-wrapper").append(
+                '<div class="current-time-line" style="top:'+(top_time)+'px" title="Trenutno vrijeme '+current_h+':'+current_m+'">  </div>'
+            );
+        }
     },
     removeSingleDay : function () {
         $(this.wrapper).find(".full-day-preview").remove();
@@ -454,7 +466,7 @@ let dayData = function(date){
             let height = event_minutes_end - event_minutes_start;
 
             $(".events-wrapper").append(
-                '<div class="event-short-preview" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div> </div> '
+                '<div class="event-short-preview event-short-preview-'+event['EventType']+'" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div> </div> '
             );
 
             if(isToday(event_date)){
@@ -583,7 +595,7 @@ $("body").on('keyup', '.form-time', function (){
             if(event_new_elem_ === 0){
                 event_new_elem_ = (new Date()).getTime();
                 $(".events-wrapper").append(
-                    '<div class="event-short-preview" id="'+event_new_elem_+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+event_new_elem_+'-header"> ' + getNewEventTitle() + ' </h4> <p id="'+event_new_elem_+'-time"> ' + getNewEventRange() + ' </p> </div> '
+                    '<div class="event-short-preview event-short-preview-'+$("#time-category").val()+'" id="'+event_new_elem_+'" style="top:'+event_minutes_start+'px; height: '+(height)+'"><h4 id="'+event_new_elem_+'-header"> ' + getNewEventTitle() + ' </h4> <p id="'+event_new_elem_+'-time"> ' + getNewEventRange() + ' </p> </div> '
                 );
             }else{
                 let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
@@ -637,14 +649,23 @@ $("body").on('change', '#event-date', function () {
     $("#time-to").val('');
 });
 
+$("body").on('change', '#time-category', function () {
+    let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
+
+    $("#"+elem_id).attr('class', 'event-short-preview event-short-preview-' + $(this).val());
+});
+
 $("body").on('keyup', '#time-title', function (){
     $("#"+event_new_elem_+'-header').text(getNewEventTitle());
 });
 $("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
     $(".add-new-event-wrapper").fadeOut();
-    $(".events-wrapper").find("#"+event_new_elem_).remove();
-    event_new_elem_ = 0;
-    edit_event = false;
+    $(".events-wrapper").find("#"+event_new_elem_).remove(); // Remove created event inside day preview
+
+    event_new_elem_ = 0; // Not inserting new event
+    edit_event = false;  // Not editing previous event
+
+    initialData(); // Default
 });
 $("body").on('click', '.create-cal-event', function () { // Show pop-up for event
     $(".add-new-event-wrapper").fadeIn();
@@ -658,10 +679,11 @@ $("body").on('click', '.add-new-today', function () { // Open form and set event
     let today = new Date();
     event_date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     calendar.removeSingleDay();
-    $(".add-new-event-wrapper").fadeIn();
 
-    // Set event date as today
-    $("#event-date").val(today.getDate() + '.' + (today.getMonth() + 1) + '.' + today.getFullYear());
+    initialData(); // Set everything to default
+
+    // Open form window
+    $(".add-new-event-wrapper").fadeIn();
 });
 
 let createEventRequest = function(url, method, edit = false){
@@ -721,10 +743,7 @@ let createEventRequest = function(url, method, edit = false){
         calendar.createSingleDay();
 
         // Remove all previously entered data
-        $("#time-title").val('');
-        $("#time-from").val('');
-        $("#time-to").val('');
-        $("#info").val('');
+        initialData();
 
     }, function (text, status, url) {
         console.log("Došlo je do greške na serveru.");
@@ -732,6 +751,10 @@ let createEventRequest = function(url, method, edit = false){
         console.error(text);
     });
 };
+
+/*
+ *  Create new event
+ */
 
 $("body").on('click', '.save-event', function () { // Hide pop-up for event
     if(edit_event){
@@ -779,6 +802,7 @@ $("body").on('click', '.ea-u', function () {
         $(".add-new-event-wrapper").fadeIn();
 
         $("#time-title").val(result['title']);
+        $("#time-category").val(result['EventType']);
         $("#time-from").val(extractTime(result['dateTime']));
         $("#time-to").val(formatTime(getTimeTo(result['dateTime'], result['duration'])));
         $("#event-date").val(formatDate(extractDate(result['dateTime']), '.'));

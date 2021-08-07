@@ -26,8 +26,8 @@ function nastavnik_kalendar() {
 				</div>
 				<div class="form-group">
 					<select name="time-category" id="time-category" class="form-control">
-						<option value="5">Događaj</option>
 						<option value="2">Raspored časova</option>
+						<option value="5">Događaj</option>
 					</select>
 					<small id="Title" class="form-text text-muted">Odaberite vrstu događaja</small>
 				</div>
