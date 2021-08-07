@@ -355,6 +355,11 @@ function check_cookie() {
 		} else {
 			$_SESSION['su']="";
 		}
+		if ($unsu == 1) {
+			// Moramo ponoviti person, sada bez impersonate atributa
+			$person = api_call("person", ["resolve[]" => "ExtendedPerson"]);
+			$privilegije = $person['privileges'];
+		}
 		
 		// Ne smijemo dalje nastaviti, jer ostatak koda pretpostavlja bazu
 		return;

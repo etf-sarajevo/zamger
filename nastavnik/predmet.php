@@ -57,11 +57,15 @@ function nastavnik_predmet() {
 	// Pregled ponuda kursa
 	foreach($course['courseOfferings'] as $co) {
 		$cd = $co['CourseDescription'];
+		$cdOutput = "";
+		if ($cd['id']) {
+			$cdOutput = $cd['name'] . " (" . $cd['code'] . ", " . $cd['ects'] . " ECTS) - ";
+		}
 		$izborni = "";
 		if ($co['mandatory'] == false)
 			$izborni = ", izborni";
 		?>
-		<li><?=$cd['name']?> (<?=$cd['code']?>, <?=$cd['ects']?> ECTS) - <?=$co['Programme']['name']?>, <?=$co['semester']?>. semestar<?=$izborni?> - <a href="?sta=nastavnik/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&prikazi=<?=$co['id']?>"><?=count($co['members'])?> studenata (pogledaj spisak)</a></li>
+		<li><?=$cdOutput?><?=$co['Programme']['name']?>, <?=$co['semester']?>. semestar<?=$izborni?> - <a href="?sta=nastavnik/predmet&predmet=<?=$predmet?>&ag=<?=$ag?>&prikazi=<?=$co['id']?>"><?=count($co['members'])?> studenata (pogledaj spisak)</a></li>
 		<?
 		if (int_param("prikazi") == $co['id']) {
 			$students = $co['members'];
