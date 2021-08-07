@@ -4,7 +4,7 @@ let time_from = false, time_to = false, event_new_elem_ = 0, event_minutes_start
 let currentDate = new Date();
 
 let save_data = false; // If it is true, time format is fine - make ajax request
-let event_date; // Date for event -- set value on onclick event on calendar day
+let event_date = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate(); // Date for event -- set value on onclick event on calendar day
 
 let api_link = 'index.php?sta=ws/predmet';
 
@@ -97,8 +97,14 @@ let diffInMinutes = function(timeFrom, timeTo){
     }
 };
 
+/*
+ *  This function is used to create date-time format from date and time; adds extra seconds as '00'
+ */
 let formatDateTime = function(date, time){ return formatDate(date) + ' ' + formatTime(time) + ':00'; };
 
+/*
+ *  Creates deadline (in date-time format) depending on predefined values in let deadline variable
+ */
 let deadlineDateTime = function(dateTime, eventType){
     let cDate = new Date(dateTime);
     let days = parseInt(parseInt(deadline[eventType]) / 24);
@@ -108,7 +114,15 @@ let deadlineDateTime = function(dateTime, eventType){
 
     return formatDate(cDate.getFullYear() + '-' + (cDate.getMonth() + 1) + '-' + cDate.getDate()) + ' ' + formatTime(cDate.getHours() + ':' + cDate.getMinutes()) + ':00';
 };
-// Calendar object
+
+let getPhpYear  = function(date){ return new Date(date).getFullYear(); };
+let getPhpMonth = function(date){ return (new Date(date).getMonth() + 1) ; };
+let getPhpDay   = function(date){ return new Date(date).getDate() ; };
+
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+/*
+ *  Complete calendar object - fully functional
+ */
 
 let calendar = {
     wrapper: ".calendar",
@@ -193,34 +207,25 @@ let calendar = {
     },
 
     getCalendarContent : function (){
-        $.ajax({
-            type:'POST',
-            url: api_link,
-            data: { calendar_get_content: true, month: (this.month + 1), year : this.year, subject : getUrlParameter('predmet')},
-            success:function(response){
-                if(response['success'] === 'true'){
 
-                    $.each(response['data'], function (index, value) {
+        let month = ((this.n_month === null) ? this.currentMonth() : this.n_month) + 1;
+        let year  = (this.n_year === null) ? this.currentYear() : this.n_year;
 
-                        if(value['events'].length !== 0){
-                            let wrapper = $("<div>").attr('class', 'cv-events');
-                            for(let i=0; i<value['events'].length; i++) wrapper.append(function () {
-                                return $("<div>").attr('class', 'cv-e-event' + ((parseInt(value['events'][i][1]) === 2) ? ' cv-e-event-2' : ''))
-                                    .append($("<h5>").text(value['events'][i][0]));
-                            }); // Append all elements as it should be
+        let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'/month&myear='+year+'&month='+month;
 
-                            $(".current-value[day="+index+"]").append(function () {
-                                return wrapper;
-                            });
-                        }
+        ajax_api_start(uri, 'GET', {}, function (result) {
+            for(let i=0; i<result['results'].length; i++){
+                let event = result['results'][i];
 
-                        // console.log(value['events']);
-                    });
+                // let wrapper = $("<div>").attr('class', 'cv-events'); // Wrapper inside day of calendar
 
-                }else{
-                    $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-                }
+                $(".current-value[day="+getPhpDay(event['dateTime'])+"]").find('.cv-events').append(function () {
+                    return $("<div>").attr('class', 'cv-e-event' + ((event['EventType'] === 5) ? ' cv-e-event-2' : ''))
+                        .append($("<h5>").text(event['title']));
+                });
             }
+        }, function (text, status, url) {
+            $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
         });
     },
 
@@ -283,7 +288,7 @@ let calendar = {
                     } else month = (this.month - 1);
                 }
 
-                col += '<div class="calendar-col ' + class_name + '" year="' + year + '" month="' + month + '" day="' + day + '"><p>' + (day + day_t) + '</p> </div>';
+                col += '<div class="calendar-col ' + class_name + '" year="' + year + '" month="' + month + '" day="' + day + '"><p>' + (day + day_t) + '</p> <div class="cv-events"></div> </div>';
             }
 
             // style="top: -'+ (i + 1)*5 +'px !important;"
@@ -481,6 +486,11 @@ $("body").on('click', '.back-to-full-calendar', function () {
     calendar.createCalendar();
     calendar.removeSingleDay();
 });
+
+/*
+ *  Remove event from database + remove from preview
+ */
+
 $("body").on('click', '.ea-d', function () {
     // remove from list of events
     let event_id = $(this).attr('event-id');
