@@ -758,9 +758,14 @@ body input[type=range] {
 /**********************************************************************************************************************/
 
 .color-logo{ color:#0266AE; }
+.bck-logo{ background:#0266AE; color:#fff;}
+.bck-logo:hover{color:#fff;}
 .color-logo:hover{cursor:pointer;}
 .remove-email:hover{cursor:pointer;}
 .bck {background: rgba(0,0,0,0.05);}
 
 .form-control{font-size:13px !important;}
 .download-sv-20:hover{ cursor: pointer; }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/* Profile style */

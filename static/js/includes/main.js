@@ -42,114 +42,134 @@ $(document).ready(function() {
 $(document).ready(function () {
 
     let update_link = 'index.php?sta=ws/api_links'; // TODO - set this link!
+    let newPlace    = ''; // TODO - update link
 
     function validateDate(testdate) {
         var date_regex = /^(0?[1-9]|1\d|2\d|3[01])\.(0?[1-9]|1[0-2])\.(19|20)\d{2}$/ ;
         return date_regex.test(testdate);
     }
 
+    /*
+     *  Max length of JMB is 13 -- remove everything after 13
+     */
+    $("#jmbg").keyup(function (){
+        let value = $(this).val();
+        let realJmb = value.substring(0, (value.length >= 13) ? 13 : value.length);
+        $(this).val(realJmb);
+    });
+    /*
+     *  Construct an email object from 3 arrays (email address, email ID and account address)
+     */
+    let constructEmail = function(){
+        let emails = $("input[name='email[]']").map(function(){return $(this).val();}).get();
+        let emailID = $("input[name='email_id[]']").map(function(){return $(this).val();}).get();
+        let emailAA = $("input[name='acc_addr[]']").map(function(){return $(this).val();}).get();
+
+        let email = {};
+
+        for(let i=0; i<emails.length; i++){
+            email[i+1] = {
+                ID : emailID[i],
+                address : emails[i],
+                account_address : emailAA[i]
+            };
+        }
+
+        return email;
+    };
+
+    /*
+     *  Submit form
+     */
     $('#update-profile').on('submit', function(e){
 
-        /** Osnovne informacije **/
-        let ime             = $("#ime").val();
-        let prezime         = $("#prezime").val();
-        let brindexa        = $("#brindexa").val();
-        let jmbg            = $("#jmbg").val();
-        let spol            = $("#spol").val();
-        let mjesto_rodjenja = $("#mjesto_rodjenja").val();
-        let opcina_rodjenja = $("#opcina_rodjenja").val();
-        let drzava_rodjenja = $("#drzava_rodjenja").val();
-        let datum_rodjenja  = $("#datum_rodjenja").val();
-        let drzavljanstvo   = $("#drzavljanstvo").val();
-        let nacionalnost    = $("#nacionalnost").val();
-        /** Prebivalšte studenta **/
-        let drzava_preb     = $("#drzava_preb").val();
-        let kanton_preb     = $("#kanton_preb").val();
-        let opcina_preb     = $("#opcina_preb").val();
-        let adresa_preb     = $("#adresa_preb").val();
-        /** Info o roditeljima **/
-        let imeoca          = $("#imeoca").val();
-        let prezimeoca      = $("#prezimeoca").val();
-        let imemajke        = $("#imemajke").val();
-        let prezimemajke    = $("#prezimemajke").val();
-        /** Boravište studenta **/
-        let adresa          = $("#adresa").val();
-        let adresa_mjesto   = $("#adresa_mjesto").val();
-        let telefon         = $("#telefon").val();
-        let email           = $("input[name='email[]']").map(function(){return $(this).val();}).get();
-        let email_id        = $("input[name='email_id[]']").map(function(){return $(this).val();}).get();  // In addition to an email
-        /** Srednja škola **/
-        let naziv           = $("#naziv").val();
-        let godina          = $("#godina").val();
-        let opcina          = $("#opcina").val();
-        let tipskole        = $("#tipskole").val();
-        let domaca          = $("#domaca").val();
-        /** Ostale informacije **/
-        let izvori_finan    = $("#izvori_finan").val();
-        let status_a_r      = $("#status_a_r").val();
-        let status_a_s      = $("status_a_s").val();
-        let zanimanje_r     = $("#zanimanje_r").val();
-        let zanimanje_s     = $("#zanimanje_s").val();
-        let status_z_r      = $("#status_z_r").val();
-        let status_z_s      = $("#status_z_s").val();
+        let personId = $("#personId").val();
+        let jmb      = $("#jmbg").val();
 
-        $.ajax({
-            type:'POST',
-            url: update_link,
-            data: {
-                osoba_azuriraj  : true,
-                /** Osnovne informacije **/
-                ime             : ime,
-                prezime         : prezime,
-                brindexa        : brindexa,
-                jmbg            : jmbg,
-                spol            : spol,
-                mjesto_rodjenja : mjesto_rodjenja,
-                opcina_rodjenja : opcina_rodjenja,
-                drzava_rodjenja : drzava_rodjenja,
-                datum_rodjenja  : datum_rodjenja,
-                drzavljanstvo   : drzavljanstvo,
-                nacionalnost    : nacionalnost,
-                /** Prebivalšte studenta **/
-                drzava_preb     : drzava_preb,
-                kanton_preb     : kanton_preb,
-                opcina_preb     : opcina_preb,
-                adresa_preb     : adresa_preb,
-                /** Info o roditeljima **/
-                imeoca          : imeoca,
-                prezimeoca      : prezimeoca,
-                imemajke        : imemajke,
-                prezimemajke    : prezimemajke,
-                /** Boravište studenta **/
-                adresa          : adresa,
-                adresa_mjesto   : adresa_mjesto,
-                telefon         : telefon,
-                email           : email,
-                email_id        : email_id,
-                /** Srednja škola **/
-                naziv           : naziv,
-                godina          : godina,
-                opcina          : opcina,
-                tipskole        : tipskole,
-                domaca          : domaca,
-                /** Ostale informacije **/
-                izvori_finan    : izvori_finan,
-                status_a_r      : status_a_r,
-                status_a_s      : status_a_s,
-                zanimanje_r     : zanimanje_r,
-                zanimanje_s     : zanimanje_s,
-                status_z_r      : status_z_r,
-                status_z_s      : status_z_s,
-            },
-            success:function(response){
-                location.reload();
-                response = JSON.parse(response);
-                if(response['success'] === 'true'){
+        /*
+         *  Form validations
+         */
 
-                }else{
-                    $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-                }
+        if(jmb.length !== 13){
+            $.notify("Jedinstveni matični broj nije validan!", 'warn');
+            e.preventDefault();
+            return;
+        }
+
+        /*
+         *  Params in object form
+         */
+
+        let params = {
+            id:                   personId,                                  // Person ID
+            name:                 $("#name").val(),
+            surname:              $("#surname").val(),
+            dateOfBirth:          $("#dateOfBirth").val(),                   // Datum rođenja :: TODO format !?
+            studentIdNr:          $("#studentIdNr").val(),                   // Broj indexa - string
+            email:                        constructEmail(),              // TODO - napravi funkciju za kreiranje mail objekta
+
+            /** Extended person **/
+            ExtendedPerson: {
+                jmbg:              $("#jmbg").val(),                         // TODO - Provjeriti prije UPDATE-a
+                sex:               $("#sex").val(),
+
+                /** TODO - Kako ćemo slati ovo !? Da li šaljemo samo placeOfBirth, ili !? **/
+                /** Place of birth **/
+                placeOfBirth: {                                              // Mjesto rođenja
+                    id : $("#placeOfBirth").val(),                           // ID mjesta rođenja
+                    Municipality : {
+                        id : $("#Municipality").val()                        // ID općine rođenja (perhaps)
+                    },
+                    Country : {
+                        id : $("#Country").val()                             // ID države rođenja
+                    }
+                },
+                nationality:              $("#nationality").val(),           // Državljanstvo
+                ethnicity:                $("#ethnicity").val(),             // Nacionalnost
+
+                /** TODO - provjeriti za adresu prebivališta, općinu, kanton (ako je BiH) i državu **/
+
+                residenceAddress:              $("#residenceAddress").val(),  // Adresa boravišta
+                residencePlace:              $("#residencePlace").val(),
+
+                /** Parent informations **/
+                fathersName:                 $("#fathersName").val(),        // Ime oca
+                fathersSurname:              $("#fathersSurname").val(),     // Prezime oca
+                mothersName:                 $("#mothersName").val(),        // Ime majke
+                mothersSurname:              $("#mothersSurname").val(),     // Prezime majke
+
+                /** Adresa i mjesto boravišta **/
+                addressStreetNo:              $("#addressStreetNo").val(),   // Adresa boravišta
+                addressPlace:                 $("#addressPlace").val(),      // Mjesto boravišta
+
+                /** Kontakt informacije **/
+                phone:                        $("#phone").val(),             // Kontakt telefon
+
+                /** TODO - High school **/
+                highSchool: {
+
+                },
+
+                /** Rest of data **/
+                sourceOfFunding:              $("#sourceOfFunding").val(),        // Izvori finansiranja studenta
+                activityStatusParent:         $("#activityStatusParent").val(),   // Status aktivnosti roditelja
+                activityStatusStudent:        $("#activityStatusStudent").val(),  // Status aktivnosti studenta
+                occupationParent:             $("#occupationParent").val(),       // Zanimanje roditelja
+                occupationStudent:            $("#occupationStudent").val(),      // Zanimanje studenta
+                employmentStatusParent:       $("#employmentStatusParent").val(), // Status zaposlenja roditelja
+                employmentStatusStudent:      $("employmentStatusStudent").val(), // Status zaposlenja studenta
             }
+        };
+
+        // console.log(params);
+        // e.preventDefault();
+        //
+        // return;
+
+        ajax_api_start('person/'+personId, 'PUT', params, function (result) {
+            console.log(result);
+        }, function (text, status, url) {
+            $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
         });
 
         e.preventDefault();
@@ -187,7 +207,10 @@ $(document).ready(function () {
                             return $('<input type="email">').attr({class:'form-control sm-emails', id:'email-' + email_accounts, name:'email[]', no : email_accounts});
                         })
                         .append(function () {
-                            return $('<input type="hidden">').attr({class:'form-control sm-emails-id', name:'email_id[]', value:'x'});
+                            return $('<input type="hidden">').attr({class:'form-control sm-emails-id', name:'email_id[]', value:'0'});
+                        })
+                        .append(function () {
+                            return $('<input type="hidden">').attr({class:'form-control sm-emails-accaddr', name:'acc_addr[]', value:'0'});
                         })
                         .append(function () {
                             return $("<small>").attr('class', 'form-text text-muted remove-email')
@@ -212,35 +235,84 @@ $(document).ready(function () {
 
             let email_id = $(this).attr('id');
 
-            $.ajax({
-                type:'POST',
-                url: update_link,
-                data: {
-                    'remove_email' : true,
-                    'id' : email_id
-                },
-                success:function(response){
-                    if(response['success'] === 'true'){
-                        $.notify(response['message'], 'success');
-                    }else{
-                        $.notify(response['message'], 'success');
-                    }
-                }
-            });
-        }
-
-        if($(".sm-emails").length === 1){
-            $(".sm-emails").val('').attr('no', '1');
-            $(".sm-emails-id").val('x');
+            // $.ajax({
+            //     type:'POST',
+            //     url: update_link,
+            //     data: {
+            //         'remove_email' : true,
+            //         'id' : email_id
+            //     },
+            //     success:function(response){
+            //         if(response['success'] === 'true'){
+            //             $.notify(response['message'], 'success');
+            //         }else{
+            //             $.notify(response['message'], 'success');
+            //         }
+            //     }
+            // });
+            $(this).parent().parent().parent().remove();
         }else{
             $(this).parent().parent().remove();
-
-            let counter = 1;
-            $(".sm-emails").each(function () {
-                $(this).attr('no', counter++);
-            });
-            emailDOMwidth();
         }
+
+
+
+        let counter = 1;
+        $(".sm-emails").each(function () {
+            $(this).attr('no', counter++);
+        });
+        emailDOMwidth();
+    });
+
+    /*
+     *  Search : Places, Municipalities and Countries
+     */
+
+    $(".place-search").keyup(function () {
+        // console.log($(this).val());
+        // $("#encodings").append(function () {
+        //     return $("<option>").attr('value', "Aladin").text(14)
+        // }).append(function () {
+        //     return $("<option>").attr('value', 15).text('Kapić')
+        // });
+    });
+
+    /*
+     *  New country, canton, municipality and place -- check and save
+     */
+
+    $("body").on('change', '#newCountry', function () {
+        if(parseInt($(this).val()) === 1){
+            $(".newMunicSelW").attr('class', 'col-md-6 newMunicSelW');
+            $(".newMunicTextW").attr('class', 'col-md-6 newMunicTextW d-none');
+        }else{
+            $(".newMunicSelW").attr('class', 'col-md-6 newMunicSelW d-none');
+            $(".newMunicTextW").attr('class', 'col-md-6 newMunicTextW');
+        }
+    })
+    $("body").on('click', '.saveNewPlace', function () {
+        let country      = $("#newCountry").val();
+        let municipality = (parseInt(country) === 1) ? $("#newMunicSel").val() : $("#newMunicText").val();
+        let place        = $("#newPlace").val();
+
+
+        if(country === '' || municipality === '' || place === ''){
+            $.notify("Molimo da popunite sva polja!", 'warn');
+            return;
+        }
+
+        let params = {
+            country : country,
+            municipality : municipality,
+            place : place
+        };
+
+        ajax_api_start(newPlace, 'PUT', params, function (result) {
+            $("#placeInsert").modal('hide');
+        }, function (text, status, url) {
+            $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+        });
+
     });
 
     /*
