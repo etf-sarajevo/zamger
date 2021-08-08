@@ -264,7 +264,7 @@ function common_moj_profil(){
                         <?php
                         foreach ($emails as $email){
                             ?>
-                            <div class="<?= ($email_c % 2 == 0) ? 'col-md-12' : 'col-md-6' ?>">
+                            <div class="<?= ($email_c < count($emails)) ? 'col-md-6' : ((count($emails) % 2 == 0) ? 'col-md-12' : 'col-md-6')  ?>">
                                 <div class="form-group">
                                     <label for="email">Email</label> <!-- Old -->
                                     <?= Form::email('email[]', $email['address'] ?? '', ['class' => 'form-control form-control-sm sm-emails', 'id' => 'email'.$email['id'], 'aria-describedby' => 'emailHelp', 'no' => $email_c++, ($email['account_address']) ? 'readonly' : '']) ?>
