@@ -6,8 +6,6 @@ function common_moj_profil(){
     global $userid, $person;
 	global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 	
-	var_dump($person['ExtendedPerson']);
-	
 	ajax_box(); // Allow JS to create requests to zamger-api
 	
     $emails   = $person['email'];
@@ -114,7 +112,11 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="placeOfBirth">Mjesto rođenja</label>
-                                <?= Form::select('placeOfBirth', $mjesto, $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'placeOfBirth', 'aria-describedby' => 'placeOfBirthHelp'], 'mjesto rođenja') ?>
+								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
+								<div class="search-container">
+									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'Country' => 'Country']) ?>
+								</div>
+<!--                                --><?//= Form::select('placeOfBirth', $mjesto, $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'placeOfBirth', 'aria-describedby' => 'placeOfBirthHelp'], 'mjesto rođenja') ?>
                                 <small id="placeOfBirthHelp" class="form-text text-muted">
 									Vaše mjesto rođenja - Ako je van BiH odaberite "Van BiH"
 									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo" data-toggle="modal" data-target="#placeInsert">obrazac za unos</span></b> !

@@ -127,12 +127,15 @@ $(document).ready(function () {
                 /** TODO - Kako ćemo slati ovo !? Da li šaljemo samo placeOfBirth, ili !? **/
                 /** Place of birth **/
                 placeOfBirth: {                                              // Mjesto rođenja
-                    id : $("#placeOfBirth").val(),                           // ID mjesta rođenja
+                    id: $("#placeOfBirthID").val(),                          // ID mjesta rođenja
+                    name: $("#placeOfBirth").val(),
                     Municipality : {
-                        id : $("#Municipality").val()                        // ID općine rođenja (perhaps)
+                        id: $("#Municipality").val(),                        // ID općine rođenja (perhaps)
+                        name: ''
                     },
                     Country : {
-                        id : $("#Country").val()                             // ID države rođenja
+                        id: $("#Country").val(),                             // ID države rođenja
+                        name: ''
                     }
                 },
                 nationality:              $("#nationality").val(),           // Državljanstvo
@@ -142,9 +145,19 @@ $(document).ready(function () {
                 dateOfBirth:          dateOfBirth[2] + '-' + dateOfBirth[1] + '-' + dateOfBirth[0],
 
                 /** TODO - provjeriti za adresu prebivališta, općinu, kanton (ako je BiH) i državu **/
-
-                residenceAddress:              $("#residenceAddress").val(),  // Adresa boravišta
-                residencePlace:              $("#residencePlace").val(),
+                residenceAddress:              $("#residenceAddress").val(),  // Adresa prebivališta
+                residencePlace: {
+                    id: $("#residencePlace").val(),
+                    name: '',
+                    Municipality: {
+                        id: 0,
+                        name: ''
+                    },
+                    Country: {
+                        id: 1,
+                        name: ''
+                    }
+                },
 
                 /** Parent informations **/
                 fathersName:                 $("#fathersName").val(),        // Ime oca
@@ -155,7 +168,16 @@ $(document).ready(function () {
                 /** Adresa i mjesto boravišta **/
                 addressStreetNo:              $("#addressStreetNo").val(),   // Adresa boravišta
                 addressPlace: {
-                    id: $("#addressPlace").val() // Mjesto boravišta
+                    id: $("#addressPlace").val(),                            // Mjesto boravišta
+                    name: '',
+                    Municipality : {
+                        id: 1,                                               // ID općine boravišta
+                        name: ''
+                    },
+                    Country : {
+                        id: 1,                                               // ID države boravišta
+                        name: ''
+                    }
                 },
 
                 /** Kontakt informacije **/
@@ -281,19 +303,6 @@ $(document).ready(function () {
     });
 
     /*
-     *  Search : Places, Municipalities and Countries
-     */
-
-    $(".place-search").keyup(function () {
-        // console.log($(this).val());
-        // $("#encodings").append(function () {
-        //     return $("<option>").attr('value', "Aladin").text(14)
-        // }).append(function () {
-        //     return $("<option>").attr('value', 15).text('Kapić')
-        // });
-    });
-
-    /*
      *  New country, canton, municipality and place -- check and save
      */
 
@@ -356,4 +365,10 @@ $(document).ready(function () {
             }
         });
     });
+
+    /******************************************************************************************************************/
+    /*
+     *  Include additional scripts
+     */
+    import('./libraries/places-search');
 });
