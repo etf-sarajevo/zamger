@@ -6,7 +6,7 @@ function common_moj_profil(){
     global $userid, $person;
 	global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 	
-	// var_dump($person);
+	var_dump($person['ExtendedPerson']);
 	
 	ajax_box(); // Allow JS to create requests to zamger-api
 	
@@ -36,6 +36,9 @@ function common_moj_profil(){
      * 	Require template for new place, municipalitiy, canton and country insert
      */
     require_once 'common/includes/profile/add-place.php';
+    
+    // Unique identification number
+	$jmb = isset($person['ExtendedPerson']['jmbg']) ? ((strlen((string)$person['ExtendedPerson']['jmbg']) == 12) ? '0'.$person['ExtendedPerson']['jmbg'] : $person['ExtendedPerson']['jmbg']) : '';
     ?>
 
     <div class="container text-center">
@@ -95,7 +98,7 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="jmbg">JMBG</label> <!-- Old -->
-                                <?= Form::number('jmbg', $person['ExtendedPerson']['jmbg'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'jmbg', 'aria-describedby' => 'jmbgHelp', 'required' => 'required']) ?>
+                                <?= Form::number('jmbg', $jmb, ['class' => 'form-control form-control-sm', 'id' => 'jmbg', 'aria-describedby' => 'jmbgHelp', 'required' => 'required']) ?>
                                 <small id="jmbgHelp" class="form-text text-muted"> Vaš jedinstveni matični broj </small>
                             </div>
                         </div>

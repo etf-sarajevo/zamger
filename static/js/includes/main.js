@@ -65,15 +65,17 @@ $(document).ready(function () {
         let emailID = $("input[name='email_id[]']").map(function(){return $(this).val();}).get();
         let emailAA = $("input[name='acc_addr[]']").map(function(){return $(this).val();}).get();
 
-        let email = {};
+        let email = [];
 
         for(let i=0; i<emails.length; i++){
-            email[i+1] = {
-                ID : emailID[i],
+            email[i] = {
+                id : emailID[i],
                 address : emails[i],
                 account_address : emailAA[i]
             };
         }
+
+        console.log(email);
 
         return email;
     };
@@ -85,6 +87,7 @@ $(document).ready(function () {
 
         let personId = $("#personId").val();
         let jmb      = $("#jmbg").val();
+        let dateOfBirth = $("#dateOfBirth").val();
 
         /*
          *  Form validations
@@ -95,6 +98,15 @@ $(document).ready(function () {
             e.preventDefault();
             return;
         }
+        if(!validateDate(dateOfBirth)){
+            $.notify("Datum rođenja nije validan!", 'warn');
+            e.preventDefault();
+            return;
+        }
+
+        dateOfBirth = dateOfBirth.split('.');
+
+        console.log(dateOfBirth[2] + '-' + dateOfBirth[1] + '-' + dateOfBirth[0]);
 
         /*
          *  Params in object form
@@ -104,9 +116,8 @@ $(document).ready(function () {
             id:                   personId,                                  // Person ID
             name:                 $("#name").val(),
             surname:              $("#surname").val(),
-            dateOfBirth:          $("#dateOfBirth").val(),                   // Datum rođenja :: TODO format !?
             studentIdNr:          $("#studentIdNr").val(),                   // Broj indexa - string
-            email:                        constructEmail(),              // TODO - napravi funkciju za kreiranje mail objekta
+            email:                        constructEmail(),                  // TODO - napravi funkciju za kreiranje mail objekta
 
             /** Extended person **/
             ExtendedPerson: {
@@ -127,6 +138,9 @@ $(document).ready(function () {
                 nationality:              $("#nationality").val(),           // Državljanstvo
                 ethnicity:                $("#ethnicity").val(),             // Nacionalnost
 
+                /** Date of birth - from dd.mm.yyyy => yyyy-mm-dd **/
+                dateOfBirth:          dateOfBirth[2] + '-' + dateOfBirth[1] + '-' + dateOfBirth[0],
+
                 /** TODO - provjeriti za adresu prebivališta, općinu, kanton (ako je BiH) i državu **/
 
                 residenceAddress:              $("#residenceAddress").val(),  // Adresa boravišta
@@ -140,7 +154,9 @@ $(document).ready(function () {
 
                 /** Adresa i mjesto boravišta **/
                 addressStreetNo:              $("#addressStreetNo").val(),   // Adresa boravišta
-                addressPlace:                 $("#addressPlace").val(),      // Mjesto boravišta
+                addressPlace: {
+                    id: $("#addressPlace").val() // Mjesto boravišta
+                },
 
                 /** Kontakt informacije **/
                 phone:                        $("#phone").val(),             // Kontakt telefon
