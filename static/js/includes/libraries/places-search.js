@@ -12,6 +12,25 @@
  *  That means, picking up data with php would goes like $name = $_REQUEST['placeOfBirth'], $id = $_REQUEST['placeOfBirthID']
  */
 
+let removeIt = function(id){
+    let inputName = $("#"+id);
+    let inputID   = $("#"+id + 'ID');
+
+    inputName.val($(this).find('p').text()).attr('initname', '');
+    inputID.val($(this).attr('idval')).attr('initvalue', '');
+
+    let municipality = inputName.attr('municipality');
+    if(municipality !== undefined){
+        $("#" + municipality).val('');
+        $("#" + municipality + 'ID').val('');
+    }
+
+    let country = inputName.attr('country');
+    if(country !== undefined){
+        $("#" + country).val('');
+    }
+};
+
 let activeRequest = false;
 $(".placeSearch").keyup(function () {
     let $this = $(this);
@@ -58,6 +77,10 @@ $(".placeSearch").keyup(function () {
         }else{
             $this.parent().find('.search-options').remove();
             activeRequest = false;
+
+            // Now, remove everything :)
+
+            removeIt($this.attr('id'));
         }
     }
 });

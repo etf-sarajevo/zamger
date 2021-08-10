@@ -128,14 +128,13 @@ $(document).ready(function () {
                 /** Place of birth **/
                 placeOfBirth: {                                              // Mjesto rođenja
                     id: $("#placeOfBirthID").val(),                          // ID mjesta rođenja
-                    name: $("#placeOfBirth").val(),
+                    name: $("#placeOfBirth").val(),                          // Naziv mjesta rođenja
                     Municipality : {
-                        id: $("#Municipality").val(),                        // ID općine rođenja (perhaps)
-                        name: ''
+                        id: $("#MunicipalityID").val(),                        // ID općine rođenja
+                        name: $("#Municipality").val()                     // Naziv općine rođenja
                     },
                     Country : {
                         id: $("#Country").val(),                             // ID države rođenja
-                        name: ''
                     }
                 },
                 nationality:              $("#nationality").val(),           // Državljanstvo
@@ -145,17 +144,16 @@ $(document).ready(function () {
                 dateOfBirth:          dateOfBirth[2] + '-' + dateOfBirth[1] + '-' + dateOfBirth[0],
 
                 /** TODO - provjeriti za adresu prebivališta, općinu, kanton (ako je BiH) i državu **/
-                residenceAddress:              $("#residenceAddress").val(),  // Adresa prebivališta
-                residencePlace: {
-                    id: $("#residencePlace").val(),
-                    name: '',
-                    Municipality: {
-                        id: 0,
-                        name: ''
+                residenceAddress:              $("#residenceAddress").val(),    // Adresa prebivališta
+                residencePlace: {                                               // Mjesto rođenja
+                    id: $("#residencePlaceID").val(),                           // ID mjesta rođenja
+                    name: $("#residencePlace").val(),                           // Naziv mjesta rođenja
+                    Municipality : {
+                        id: $("#residenceMunicipalityID").val(),                  // ID općine rođenja
+                        name: $("#residenceMunicipality").val()               // Naziv općine rođenja
                     },
-                    Country: {
-                        id: 1,
-                        name: ''
+                    Country : {
+                        id: $("#residenceCountry").val(),                       // ID države rođenja
                     }
                 },
 
@@ -167,16 +165,15 @@ $(document).ready(function () {
 
                 /** Adresa i mjesto boravišta **/
                 addressStreetNo:              $("#addressStreetNo").val(),   // Adresa boravišta
-                addressPlace: {
-                    id: $("#addressPlace").val(),                            // Mjesto boravišta
-                    name: '',
+                addressPlace: {                                              // Mjesto rođenja
+                    id: $("#addressPlaceID").val(),                          // ID mjesta rođenja
+                    name: $("#addressPlace").val(),                          // Naziv mjesta rođenja
                     Municipality : {
-                        id: 1,                                               // ID općine boravišta
-                        name: ''
+                        id: $("#addressMunicipalityID").val(),                 // ID općine rođenja
+                        name: $("#addressMunicipality").val()              // Naziv općine rođenja
                     },
                     Country : {
-                        id: 1,                                               // ID države boravišta
-                        name: ''
+                        id: $("#addressCountry").val(),                      // ID države rođenja
                     }
                 },
 
@@ -306,6 +303,8 @@ $(document).ready(function () {
      *  New country, canton, municipality and place -- check and save
      */
 
+    let placeType = '';
+
     $("body").on('change', '#newCountry', function () {
         if(parseInt($(this).val()) === 1){
             $(".newMunicSelW").attr('class', 'col-md-6 newMunicSelW');
@@ -326,18 +325,42 @@ $(document).ready(function () {
             return;
         }
 
-        let params = {
-            country : country,
-            municipality : municipality,
-            place : place
-        };
+        /*
+         *  First, let's find input with given placeType
+         */
+        let mainInput = $("#" + placeType);
 
-        ajax_api_start(newPlace, 'PUT', params, function (result) {
-            $("#placeInsert").modal('hide');
-        }, function (text, status, url) {
-            $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
-        });
+        // Set place
+        mainInput.val(place).attr('initname', place);
+        $("#" + placeType + 'ID').val(0).attr('initvalue', 0);
 
+        let newMunicipality = mainInput.attr('municipality');
+        if(newMunicipality !== undefined){
+            if(parseInt(country) === 1){ // It is Bosnia and Herzegovinia, go for select
+                $("#" + newMunicipality).val($("#newMunicSel").find('option:selected').text());
+                $("#" + newMunicipality + 'ID').val($("#newMunicSel").val());
+            }else{ // Go as text
+                $("#" + newMunicipality).val(municipality);
+                $("#" + newMunicipality + 'ID').val(0);
+            }
+        }
+
+        let newCountry = mainInput.attr('country');
+        if(newCountry !== undefined){
+            $("#" + newCountry).val(country);
+        }
+
+        $("#placeInsert").modal('hide');
+    });
+
+    /*
+     *  Open popup with specified ID
+     */
+
+    $(".insert-place").click(function () {
+        $("#placeInsert").modal('show');
+
+        placeType = $(this).attr('idFor');
     });
 
     /*

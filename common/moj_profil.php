@@ -105,7 +105,7 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="sex">Spol</label> <!-- Old -->
-                                <?= Form::select('sex', ['M' => 'Muški', 'Z' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp', 'required' => 'required'], 'spol') ?>
+                                <?= Form::select('sex', ['M' => 'Muški', 'Z' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp'], 'spol', '0') ?>
                                 <small id="sexHelp" class="form-text text-muted">Vaš spol</small>
                             </div>
                         </div>
@@ -116,10 +116,9 @@ function common_moj_profil(){
 								<div class="search-container">
 									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'country' => 'Country']) ?>
 								</div>
-<!--                                --><?//= Form::select('placeOfBirth', $mjesto, $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'placeOfBirth', 'aria-describedby' => 'placeOfBirthHelp'], 'mjesto rođenja') ?>
                                 <small id="placeOfBirthHelp" class="form-text text-muted">
-									Vaše mjesto rođenja - Ako je van BiH odaberite "Van BiH"
-									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo" data-toggle="modal" data-target="#placeInsert">obrazac za unos</span></b> !
+									Vaše mjesto rođenja
+									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo insert-place" idFor="placeOfBirth">obrazac za unos</span></b> !
 								</small>
                             </div>
                         </div>
@@ -135,7 +134,7 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="Country">Država rođenja</label> <!-- TODO -->
-                                <?= Form::select('Country', $drzava, $person['ExtendedPerson']['placeOfBirth']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Country', 'aria-describedby' => 'CountryHelp', 'required' => 'required', 'disabled' => 'true'], 'državu rođenja') ?>
+                                <?= Form::select('Country', $drzava, $person['ExtendedPerson']['placeOfBirth']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Country', 'aria-describedby' => 'CountryHelp', 'disabled' => 'true'], 'državu rođenja') ?>
                                 <small id="CountryHelp" class="form-text text-muted">Odaberite državu rođenja</small>
                             </div>
                         </div>
@@ -144,14 +143,14 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="nationality">Državljanstvo</label> <!-- TODO -->
-                                <?= Form::select('nationality', $drzava, $person['ExtendedPerson']['nationality'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'nationality', 'aria-describedby' => 'nationalityHelp', 'required' => 'required'], 'državljanstvo') ?>
+                                <?= Form::select('nationality', $drzava, $person['ExtendedPerson']['nationality'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'nationality', 'aria-describedby' => 'nationalityHelp'], 'državljanstvo') ?>
                                 <small id="nationalityHelp" class="form-text text-muted">Odaberite državu čiji ste državljanin</small>
                             </div>
                         </div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="studentIdNr"> Broj indexa </label> <!-- Old -->
-								<?= Form::text('studentIdNr', $person['studentIdNr'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'studentIdNr', 'aria-describedby' => 'studentIdNrHelp', 'readonly']) ?>
+								<?= Form::text('studentIdNr', $person['studentIdNr'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'studentIdNr', 'aria-describedby' => 'studentIdNrHelp', (!$user_studentska or !$user_siteadmin) ? 'readonly' : '']) ?>
 								<small id="studentIdNrHelp" class="form-text text-muted"> Ovaj podatak može uređivati samo administrator i/ili studentska služba </small>
 							</div>
 						</div>
@@ -160,7 +159,7 @@ function common_moj_profil(){
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="ethnicity">Nacionalna pripadnost</label> <!-- Old -->
-                                <?= Form::select('ethnicity', $nacionalnost, $person['ExtendedPerson']['ethnicity'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'ethnicity', 'aria-describedby' => 'ethnicityHelp', 'required' => 'required'], 'nacionalnost') ?>
+                                <?= Form::select('ethnicity', $nacionalnost, $person['ExtendedPerson']['ethnicity'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'ethnicity', 'aria-describedby' => 'ethnicityHelp'], 'nacionalnost') ?>
                                 <small id="ethnicityHelp" class="form-text text-muted">Upisuju samo državljani BiH </small>
                             </div>
                         </div>
@@ -182,7 +181,10 @@ function common_moj_profil(){
 								<div class="search-container">
 									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry']) ?>
 								</div>
-								<small class="form-text text-muted"> Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo" data-toggle="modal" data-target="#placeInsert">obrazac za unos</span></b> ! </small>
+								<small id="placeOfBirthHelp" class="form-text text-muted">
+									Vaše mjesto prebivališta
+									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo insert-place" idFor="residencePlace">obrazac za unos</span></b> !
+								</small>
 							</div>
 						</div>
                     </div>
@@ -248,7 +250,7 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="addressStreetNo">Adresa boravišta</label>
-                                <?= Form::text('addressStreetNo', $person['ExtendedPerson']['addressStreetNo'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressStreetNo', 'aria-describedby' => 'addressStreetNoHelp', 'required' => 'required']) ?>
+                                <?= Form::text('addressStreetNo', $person['ExtendedPerson']['addressStreetNo'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressStreetNo', 'aria-describedby' => 'addressStreetNoHelp']) ?>
                                 <small id="addressStreetNoHelp" class="form-text text-muted"> Boravište je mjesto stanovanja gdje student boravi za vrijeme studija. </small>
                             </div>
                         </div>
@@ -259,7 +261,10 @@ function common_moj_profil(){
 								<div class="search-container">
 									<?= Form::text('addressPlace', $person['ExtendedPerson']['addressPlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'addressPlace', 'idVal' => $person['ExtendedPerson']['addressPlace']['id'] ?? '',  'municipality' => 'addressMunicipality', 'country' => 'addressCountry']) ?>
 								</div>
-                                <small id="addressPlaceHelp" class="form-text text-muted"> Boravište je mjesto stanovanja gdje student boravi za vrijeme studija. </small>
+								<small id="placeOfBirthHelp" class="form-text text-muted">
+									Vaše mjesto boravišta
+									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo insert-place" idFor="addressPlace">obrazac za unos</span></b> !
+								</small>
                             </div>
                         </div>
                     </div>
@@ -274,7 +279,7 @@ function common_moj_profil(){
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="addressCountry">Država boravišta</label>
-								<?= Form::select('addressCountry', $drzava, $person['ExtendedPerson']['addressPlace']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressCountry', 'aria-describedby' => 'addressCountryHelp', 'required' => 'required', 'disabled' => 'true'], 'državu boravišta') ?>
+								<?= Form::select('addressCountry', $drzava, $person['ExtendedPerson']['addressPlace']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressCountry', 'aria-describedby' => 'addressCountryHelp', 'disabled' => 'true'], 'državu boravišta') ?>
 								<small id="addressCountryHelp" class="form-text text-muted">Država rođenja - popunjava se automatski u odnosu na mjesto</small>
 							</div>
 						</div>
@@ -366,7 +371,7 @@ function common_moj_profil(){
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="sourceOfFunding"> Izvori finansiranja studenta za vrijeme studija </label> <!-- New -->
-                                <?= Form::select('sourceOfFunding', $izvoriFinansiranja, $person['ExtendedPerson']['sourceOfFunding'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sourceOfFunding', 'aria-describedby' => 'sourceOfFundingHelp', 'required' => 'required'], 'izvor finansiranja') ?>
+                                <?= Form::select('sourceOfFunding', $izvoriFinansiranja, $person['ExtendedPerson']['sourceOfFunding'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sourceOfFunding', 'aria-describedby' => 'sourceOfFundingHelp'], 'izvor finansiranja') ?>
                                 <small id="sourceOfFundingHelp" class="form-text text-muted"> Ukoliko je iz više izvora, odaberite pretežiti izvor </small>
                             </div>
                         </div>
@@ -375,13 +380,13 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="activityStatusParent">Status u aktivnosti roditelja - izdržavatelja </label> <!-- New -->
-                                <?= Form::select('activityStatusParent', $statusAktivnosti, $person['ExtendedPerson']['activityStatusParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'activityStatusParent', 'aria-describedby' => 'activityStatusHelp', 'required' => 'required'], 'status aktivnosti roditelja') ?>
+                                <?= Form::select('activityStatusParent', $statusAktivnosti, $person['ExtendedPerson']['activityStatusParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'activityStatusParent', 'aria-describedby' => 'activityStatusHelp'], 'status aktivnosti roditelja') ?>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="activityStatusStudent">Status u aktivnosti studenta</label> <!-- New -->
-                                <?= Form::select('activityStatusStudent', $statusAktivnosti, $person['ExtendedPerson']['activityStatusStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'activityStatusStudent', 'aria-describedby' => 'activityStatusHelp', 'required' => 'required'], 'status aktivnosti studenta') ?>
+                                <?= Form::select('activityStatusStudent', $statusAktivnosti, $person['ExtendedPerson']['activityStatusStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'activityStatusStudent', 'aria-describedby' => 'activityStatusHelp'], 'status aktivnosti studenta') ?>
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -396,13 +401,13 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="occupationParent">Zanimanje roditelja - izdržavatelja </label> <!-- New -->
-                                <?= Form::text('occupationParent', $person['ExtendedPerson']['occupationParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'occupationParent', 'aria-describedby' => 'occupationHelp', 'required' => 'required']) ?>
+                                <?= Form::text('occupationParent', $person['ExtendedPerson']['occupationParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'occupationParent', 'aria-describedby' => 'occupationHelp']) ?>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="occupationStudent">Zanimanje studenta</label> <!-- New -->
-                                <?= Form::text('occupationStudent', $person['ExtendedPerson']['occupationStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'occupationStudent', 'aria-describedby' => 'occupationHelp', 'required' => 'required']) ?>
+                                <?= Form::text('occupationStudent', $person['ExtendedPerson']['occupationStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'occupationStudent', 'aria-describedby' => 'occupationHelp']) ?>
                             </div>
                         </div>
                         <div class="col-md-12">
@@ -415,13 +420,13 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="employmentStatusParent">Status u zaposlenosti roditelja - izdržavatelja </label> <!-- New -->
-                                <?= Form::select('employmentStatusParent', $statusZaposlenosti, $person['ExtendedPerson']['employmentStatusParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'employmentStatusParent', 'aria-describedby' => 'employmentStatusHelp', 'required' => 'required'], 'status zaposlenosti roditelja') ?>
+                                <?= Form::select('employmentStatusParent', $statusZaposlenosti, $person['ExtendedPerson']['employmentStatusParent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'employmentStatusParent', 'aria-describedby' => 'employmentStatusHelp'], 'status zaposlenosti roditelja') ?>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="employmentStatusStudent">Status u zaposlenosti studenta</label> <!-- New -->
-                                <?= Form::select('employmentStatusStudent', $statusZaposlenosti, $person['ExtendedPerson']['employmentStatusStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'employmentStatusStudent', 'aria-describedby' => 'employmentStatusHelp', 'required' => 'required'], 'status zaposlenosti studenta') ?>
+                                <?= Form::select('employmentStatusStudent', $statusZaposlenosti, $person['ExtendedPerson']['employmentStatusStudent'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'employmentStatusStudent', 'aria-describedby' => 'employmentStatusHelp'], 'status zaposlenosti studenta') ?>
                             </div>
                         </div>
                         <div class="col-md-12">
