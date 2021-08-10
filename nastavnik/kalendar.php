@@ -21,43 +21,70 @@ function nastavnik_kalendar() {
 		<div class="add-new-event-wrapper ">
 			<div class="day-form p-4">
 				<div class="form-group mt-2">
-					<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="">
-					<small id="Title" class="form-text text-muted">Unesite naslov koji će se prikazivati na kalendaru</small>
+					<div class="row">
+						<div class="col-md-12">
+							<input type="text" class="form-control" id="time-title" aria-describedby="Title" placeholder="Dodajte naslov" value="">
+							<small id="Title" class="form-text text-muted">Unesite naslov koji će se prikazivati na kalendaru</small>
+						</div>
+					</div>
 				</div>
+
 				<div class="form-group">
-					<select name="time-category" id="time-category" class="form-control">
-						<option value="2">Raspored časova</option>
-						<option value="5">Događaj</option>
-					</select>
-					<small id="Title" class="form-text text-muted">Odaberite vrstu događaja</small>
+					<div class="row">
+						<div class="col-md-6" title="Odaberite datum događaja">
+							<input type="text" class="form-control datepicker" id="event-date" aria-describedby="event-date" placeholder="" value="<?= date('d.m.Y') ?>">
+						</div>
+						<div class="col-md-6" title="Odaberite vrstu događaja (npr. Raspored časova)">
+							<select name="time-category" id="time-category" class="form-control">
+								<option value="2">Raspored časova</option>
+								<option value="5">Događaj</option>
+							</select>
+						</div>
+					</div>
 				</div>
 				<div class="form-group">
 					<div class="row">
-						<div class="col-md-6">
-							<input type="text" class="form-control datepicker" id="event-date" aria-describedby="eventDate" placeholder="" value="">
-							<small id="eventDate" class="form-text text-muted">Datum događaja</small>
+						<div class="col col-md-6">
+							<input type="text" class="form-control form-time" id="time-from" aria-describedby="Title" placeholder="12:00" value="">
 						</div>
+						<div class="col col-md-6">
+							<input type="text" class="form-control form-time" id="time-to" aria-describedby="Title" placeholder="13:30" value="">
+						</div>
+						<div class="col col-md-12">
+							<small id="Title" class="form-text text-muted">Unesite vrijeme početka i kraja događaja - validan format je HH:MM</small>
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="row">
 						<div class="col-md-6">
 							<select name="repeat" id="repeat" class="form-control">
 								<option value="1">Ne ponavljaj</option>
 								<option value="2">Ponovi svake sedmice</option>
 							</select>
-							<small id="eventDate" class="form-text text-muted">Datum događaja</small>
+						</div>
+						<div class="col-md-6">
+							<select name="allow-students" id="allow-students" class="form-control">
+								<option value="1">Ne</option>
+								<option value="2">Da</option>
+							</select>
+							<small id="Title" class="form-text text-muted">Omogućite prijavljivanje studenata</small>
 						</div>
 					</div>
 				</div>
-				<div class="form-group">
-					<div class="row">
-						<div class="col col-md-6">
-							<input type="text" class="form-control form-time" id="time-from" aria-describedby="Title" placeholder="12:00" value="12:00">
+				<div class="form-group deadline-data">
+					<div class="row mb-1">
+						<div class="col-md-4">
+							<input type="number" class="form-control" id="maxStudents" value="0" min="0" max="1000">
 						</div>
-						<div class="col col-md-6">
-							<input type="text" class="form-control form-time" id="time-to" aria-describedby="Title" placeholder="13:30" value="13:00">
+						<div class="col-md-4 m-0 p-0">
+							<input type="text" class="form-control datepicker" id="deadline-date" placeholder="" value="<?= date('d.m.Y', strtotime(date('Y-m-d')) - 86400) ?>">
 						</div>
-						<div class="col col-md-12">
-							<small id="Title" class="form-text text-muted">Unesite vrijeme početka i kraja događaja</small>
+						<div class="col-md-4">
+							<input type="text" class="form-control" id="deadline-time" aria-describedby="Title" placeholder="13:30" value="">
 						</div>
 					</div>
+					<small>Unesite broj studenata, kao i datum i vrijeme za prijavu !</small>
 				</div>
 				<div class="form-group">
 					<textarea name="info" id="info" class="form-control custom-textarea"></textarea>

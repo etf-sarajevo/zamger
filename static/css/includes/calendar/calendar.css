@@ -164,7 +164,7 @@
 .calendar-wrapper .calendar .full-day-preview .single-day-body .events-wrapper .event-short-preview .event-actions .ea-u:hover i{color:#000;}
 /*** Add new event ***/
 .calendar-wrapper .add-new-event-wrapper{position: absolute; left:0px; top:0px; width: 100%; height: 100%; display: none;}
-.calendar-wrapper .add-new-event-wrapper .day-form{position: absolute; width: 360px; left:calc(50% - 180px);  z-index: 1000; top:calc(50% - 250px); height: 500px; background: #fff; border-radius:3px;
+.calendar-wrapper .add-new-event-wrapper .day-form{position: absolute; width: 360px; left:calc(50% - 180px);  z-index: 1000; top:calc(50% - 250px); min-height: 500px; background: #fff; border-radius:3px;
     box-shadow:  0 0 10px 5px rgba(0,0,0,0.2);
     -moz-box-shadow: 0 0 10px  5px rgba(0,0,0,0.2);
     -webkit-box-shadow: 0 0 10px 5px rgba(0,0,0,0.2);
@@ -185,3 +185,4 @@
 .form-control::-ms-input-placeholder { /* Microsoft Edge */
     color: red;
 }
+.deadline-data{display: none;}

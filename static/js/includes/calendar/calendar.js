@@ -11,8 +11,8 @@ let api_link = 'index.php?sta=ws/predmet';
 let edit_event = false; // If it set to true, api calls method update() otherwise calls add()
 
 /*
- *  Deadline represents minimum time (in hours) for deadline - before event starts -- TODO :: Check
- *  as default, it is set to 24h (for all categories / event types )
+ *  Deadline represents minimum time (in hours) for deadline - before event starts --
+ *  as default, it is set to 24h (for all categories / event types ) ; Deprecated with function deadlineDateTime
  */
 
 let deadline = {
@@ -57,11 +57,15 @@ let dateValid = function(testDate) {
 let formatDate = function(date, operator = '-'){
     date = date.split(operator);
 
-    if(date[1].length === 1) date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1]; // Format month 1 -> 01
-    if(operator === '-' && date[2].length === 1) date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2]; // Format day yyyy-mm-dd
-    else if(date[0].length === 1) date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0]; // Format day dd.mm.yyyy
+    console.log(date);
+
+    if(date[1].length === 1) date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1];                      // Format month 1 -> 01
+    if(operator === '-' && date[2].length === 1) date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2];  // Format day yyyy-mm-dd
+    else if(date[0].length === 1) date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0];                 // Format day dd.mm.yyyy
 
     return date[0] + operator + date[1] + operator + date[2];
+    if(operator === '-') { return date[0] + operator + date[1] + operator + date[2]; }
+    else { return date[2] + '-' + date[1] + '-' + date[0]; }
 };
 
 /*
@@ -126,10 +130,11 @@ let formatDateTime = function(date, time){ return formatDate(date) + ' ' + forma
 
 /*
  *  Creates deadline (in date-time format) depending on predefined values in let deadline variable
+ *  This function is deprecated and probably wont be ever used!
  */
-let deadlineDateTime = function(dateTime, eventType){
+let deadlineDateTime = function(dateTime, eventType = 'default'){
     let cDate = new Date(dateTime);
-    let days = parseInt(parseInt(deadline[eventType]) / 24);
+    let days  = (eventType === 'default') ? 1 : parseInt(parseInt(deadline[eventType]) / 24);
 
     // Now, substract number of days from date
     cDate.setDate(cDate.getDate() - days);
@@ -167,11 +172,13 @@ let extractDate = function(dateTime, engFormat = false){
 let initialData = function(){
     $("#time-title").val('');
     $("#time-category").val(2);
-    $("#event-date").val(currentDate.getDate() + '.' + (currentDate.getMonth() + 1) + '.' + currentDate.getFullYear());
+    $("#event-date").val(((currentDate.getDate() < 10) ? '0' + currentDate.getDate() : currentDate.getDate()) + '.' + (((currentDate.getMonth() + 1) < 10) ? '0' + (currentDate.getMonth() + 1) : (currentDate.getMonth() + 1)) + '.' + currentDate.getFullYear());
     $("#repeat").val(1);
     $("#time-from").val('');
     $("#time-to").val('');
     $("#info").val('');
+
+    deadlineData();
 };
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -403,6 +410,10 @@ let calendar = {
     }
 };
 
+/*
+ *  Go for next, previous or current month
+ */
+
 $("body").on('click', '.next-month', function () {
     calendar.custom_date = true;
     calendar.n_day = calendar.day;
@@ -445,7 +456,6 @@ let isToday = function(date){
     if(today.getFullYear() === parseInt(y) && (today.getMonth() === (parseInt(m) - 1)) && (today.getDate() === parseInt(d))) return true;
     return false;
 };
-
 let dayData = function(date){
 
     let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'/date&date='+formatDate(event_date);
@@ -507,7 +517,6 @@ let dayData = function(date){
         $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
     });
 };
-
 let showSingleDay = function(day, month, year){
     let date = new Date(year + '-' + month + '-' + day);
     calendar.d_day_in_week = calendar.week_days[date.getDay()];
@@ -544,17 +553,17 @@ $( function() {
     $( ".day-form" ).draggable({ containment: "parent" });
 } );
 
-function validateHhMm(id) {
+function validateHhMm(id, force = false) {
     let element = $("#" + id);
     let isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(element.val());
 
     if (isValid) {
         element.css("background-color", '#fff');
-        save_data = true;
+        if(!force) save_data = true;
     }
     else {
         element.css("background-color", '#fba');
-        save_data = false;
+        if(!force) save_data = true;
     }
 
     return isValid;
@@ -590,8 +599,6 @@ $("body").on('keyup', '.form-time', function (){
 
             let height = event_minutes_end - event_minutes_start;
 
-            // console.log("Start : " + event_minutes_start + ' :: End :' + event_minutes_end + ' :: height : ' + height);
-
             if(event_new_elem_ === 0){
                 event_new_elem_ = (new Date()).getTime();
                 $(".events-wrapper").append(
@@ -599,8 +606,6 @@ $("body").on('keyup', '.form-time', function (){
                 );
             }else{
                 let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
-
-                console.log("Edit it bitch !");
 
                 $("#"+elem_id).height(height).css({ top: event_minutes_start +'px' });
                 $("#"+elem_id+'-time').text(getNewEventRange());
@@ -632,7 +637,13 @@ $("body").on('keyup', '.form-time', function (){
     }
 });
 
-// On change, change event_time, so it would open wanted day
+/*
+ *  When date is changed:
+ *      - Perform date validation
+ *      - Set event_date as picked date (YYYY-MM-DD)
+ *      - Remove data for previous day
+ *      - Read data for new date and show it to user
+ */
 $("body").on('change', '#event-date', function () {
     let value = $(this).val();
     if(!dateValid(value)){ // In case someone trie to be smart :D
@@ -654,32 +665,28 @@ $("body").on('change', '#event-date', function () {
     $("#time-to").val('');
 });
 
+/*
+ *  On change category, change background depending on defined values inside calendar.css
+ *
+ *      event-elem-1 (category 1), event-elem-2 (category 2) etc.
+ */
 $("body").on('change', '#time-category', function () {
     let elem_id = (edit_event) ? ('event-elem-' + event_new_elem_) : event_new_elem_;
 
     $("#"+elem_id).attr('class', 'event-short-preview event-short-preview-' + $(this).val());
 });
 
+/*
+ *  Update title on newly created element inside day preview
+ */
 $("body").on('keyup', '#time-title', function (){
     $("#"+event_new_elem_+'-header').text(getNewEventTitle());
 });
-$("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
-    $(".add-new-event-wrapper").fadeOut();
-    $(".events-wrapper").find("#"+event_new_elem_).remove(); // Remove created event inside day preview
 
-    event_new_elem_ = 0; // Not inserting new event
-    edit_event = false;  // Not editing previous event
+/*
+ *  Add new event, only for today -- set date to todays date; closes day preview (full month preview) + form open
+ */
 
-    initialData(); // Default
-});
-$("body").on('click', '.create-cal-event', function () { // Show pop-up for event
-    $(".add-new-event-wrapper").fadeIn();
-
-    // Set date as clicked
-    let datePrevious = event_date.split('-');
-
-    $("#event-date").val(((parseInt(datePrevious[2]) < 10) ? '0' + parseInt(datePrevious[2]) : datePrevious[2]) + '.' + ((parseInt(datePrevious[1]) < 10) ? '0' + parseInt(datePrevious[1]) : datePrevious[1]) + '.' + datePrevious[0]);
-});
 $("body").on('click', '.add-new-today', function () { // Open form and set event_date as today's date
     let today = new Date();
     event_date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
@@ -691,6 +698,12 @@ $("body").on('click', '.add-new-today', function () { // Open form and set event
     $(".add-new-event-wrapper").fadeIn();
 });
 
+/*
+ *  createEventRequest is used to generate request, depending on url and method;
+ *
+ *  All params sent for create / update are built in here
+ */
+
 let createEventRequest = function(url, method, edit = false){
     let title       = $("#time-title").val();
     let eventType   = $("#time-category").val();
@@ -698,8 +711,15 @@ let createEventRequest = function(url, method, edit = false){
     let timeTo      = $("#time-to").val();
     let repeat      = $("#repeat").val();
     let description = $("#info").val();
+    let students    = parseInt($("#allow-students").val());
+    let maxStudents = parseInt($("#maxStudents").val());
+    let deadDate    = $("#deadline-date").val();
+    let deadTime    = $("#deadline-time").val();
     let subject     = getUrlParameter('predmet'); // Get subject from URI
     let ac_year     = getUrlParameter('ag');      // Get academic year from URI
+    let deadline    = '';
+
+    maxStudents = (isNaN(maxStudents)) ? 0 : maxStudents; // If it is empty, make it 0 (zero)
 
     if(title === ''){
         $.notify("Naslov ne smije biti prazan!", 'warn');
@@ -715,15 +735,41 @@ let createEventRequest = function(url, method, edit = false){
         return;
     }
 
-    let dateTime = formatDateTime(event_date, timeFrom);    // Event start date and time -- format from event_date and start time
-    let deadline = deadlineDateTime(dateTime, eventType);   // Creates deadline according to eventType -- see deadline variable
+    /** Format date and start time to dateTime **/
+    let dateTime = formatDateTime(event_date, timeFrom);       // Event start date and time -- format from event_date and start time
+    // let deadline = deadlineDateTime(dateTime, eventType);   // Creates deadline according to eventType -- see deadline variable; Deprecated
+
+    /** If students allowed **/
+    if(students === 2){ // We need to perform extra checks for date and time format
+        if(!dateValid(deadDate) || deadDate === ''){
+            $.notify("Datum roka za prijavu nije validan!", 'warn');
+            return;
+        }
+        if(!validateHhMm('deadline-time', true) || deadTime === ''){
+            $.notify("Vrijeme roka za prijavu nije validno! Validan format je HH:MM", 'warn');
+            return;
+        }
+
+        deadDate = deadDate.split('.');
+        deadDate = deadDate[2] + '-' + deadDate[1] + '-' + deadDate[0];
+        deadDate = formatDate(deadDate);
+
+        deadline = formatDateTime(deadDate, deadTime);       // Event start date and time -- format from event_date and start time
+
+        if((new Date(dateTime)) < (new Date(deadline))){
+            $.notify("Rok prijave ne smije biti poslije događaja!", 'warn');
+            return;
+        }
+    }else{
+        deadline = deadlineDateTime(dateTime);
+    }
 
     let params = {
         CourseUnit : { id : subject },
         AcademicYear : { id : ac_year },
         EventType : eventType,
         dateTime : dateTime,
-        maxStudents : 0,
+        maxStudents : maxStudents,
         duration : duration['data'],
         deadline : deadline,
         CourseActivity : { id : null }, // this param is empty for now
@@ -751,9 +797,10 @@ let createEventRequest = function(url, method, edit = false){
         initialData();
 
     }, function (text, status, url) {
-        console.log("Došlo je do greške na serveru.");
-        console.error("Kod: " + status);
-        console.error(text);
+        // console.log("Došlo je do greške na serveru.");
+        // console.error("Kod: " + status);
+        text = JSON.parse(text);
+        $.notify(text['message'], 'error');
     });
 };
 
@@ -814,6 +861,15 @@ $("body").on('click', '.ea-u', function () {
         $("#repeat").val((result['repeat'] === undefined) ? 1 : result['repeat']); // Till implementation
         $("#info").val(result['description']);
 
+        if(parseInt(result['maxStudents']) !== 0){
+            $(".deadline-data").fadeIn();
+
+            $("#allow-students").val('2');
+            $("#maxStudents").val(result['maxStudents']);
+            $("#deadline-date").val(formatDate(extractDate(result['deadline']), '.'));
+            $("#deadline-time").val(extractTime(result['deadline']));
+        }
+
         save_data       = true; // Make it available to save instantly
         edit_event      = result['id'];
         event_new_elem_ = result['id']; // Need it for moving created element in day preview
@@ -821,4 +877,64 @@ $("body").on('click', '.ea-u', function () {
     }, function (text, status, url) {
         $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
     });
+});
+
+
+/*
+ *  Onclick show / hide DOM elements:
+ *      - popup for event handler
+ *      - popup elements manipulations
+ */
+
+$("body").on('click', '.exit-cal-event', function () { // Hide pop-up for event
+    $(".add-new-event-wrapper").fadeOut();
+    $(".events-wrapper").find("#"+event_new_elem_).remove(); // Remove created event inside day preview
+
+    event_new_elem_ = 0; // Not inserting new event
+    edit_event = false;  // Not editing previous event
+
+    initialData(); // Default
+});
+
+$("body").on('click', '.create-cal-event', function () {
+    $(".add-new-event-wrapper").fadeIn();
+
+    // Set date as clicked
+    let datePrevious = event_date.split('-');
+
+    $("#event-date").val(((parseInt(datePrevious[2]) < 10) ? '0' + parseInt(datePrevious[2]) : datePrevious[2]) + '.' + ((parseInt(datePrevious[1]) < 10) ? '0' + parseInt(datePrevious[1]) : datePrevious[1]) + '.' + datePrevious[0]);
+});
+
+/*
+ *  Set everything to default
+ */
+
+let deadlineData = function(){
+    $(".deadline-data").fadeOut();
+
+    $("#maxStudents").val(0);
+    $("#deadline-date").val('');
+    $("#deadline-time").val('');
+    $("#allow-students").val('1');
+};
+
+$("body").on('change', '#allow-students', function () {
+    if(parseInt($(this).val()) === 1){
+        deadlineData();
+    }else{
+        $(".deadline-data").fadeIn();
+
+        let eventDate = $("#event-date").val();
+
+        if(dateValid(eventDate) && eventDate !== ''){
+            eventDate = eventDate.split('.');
+            eventDate = eventDate[2] + '-' + eventDate[1] + '-' + eventDate[0];
+            let cDate = new Date(eventDate);
+
+            console.log(cDate, eventDate);
+            cDate.setDate(cDate.getDate() - 1);
+
+            $("#deadline-date").val(cDate.getDate() + '.' + (cDate.getMonth() + 1) + '.' + cDate.getFullYear());
+        }else console.log("Not valid !" + $("#eventDate").val());
+    }
 });
