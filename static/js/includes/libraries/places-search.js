@@ -35,6 +35,9 @@ $(".placeSearch").keyup(function () {
                         return $("<div>").attr('class', 'search-value')
                             .attr('title', item['name'] + ' (' + item['Municipality']['name'] + ', ' + item['Country']['name'] + ')')
                             .attr('idVal', item['id'])
+                            .attr('municipalitymunName', item['Municipality']['name'])
+                            .attr('municipalityID', item['Municipality']['id'])
+                            .attr('countryID', item['Country']['id'])
                             .append(function () {
                                 return $("<p>").text(item['name'])
                             })
@@ -69,8 +72,18 @@ $("body").on('click', '.search-value', function () {
     let inputID   = $(this).parent().parent().find('.placeSearchID');
 
     inputName.val($(this).find('p').text()).attr('initname', $(this).find('p').text());
-
     inputID.val($(this).attr('idval')).attr('initvalue', $(this).attr('idval'));
+
+    let municipality = inputName.attr('municipality');
+    if(municipality !== undefined){
+        $("#" + municipality).val($(this).attr('municipalitymunName'));
+        $("#" + municipality + 'ID').val($(this).attr('municipalityID'));
+    }
+
+    let country = inputName.attr('country');
+    if(country !== undefined){
+        $("#" + country).val($(this).attr('countryID'));
+    }
 
     $(this).parent().remove();
 });
@@ -86,7 +99,6 @@ $(".placeSearch").focusout(function () {
     }
 
     $(this).parent().find('.search-options').remove();
-
     $(this).val($(this).attr('initname'));
 });
 
@@ -107,6 +119,26 @@ $(".placeSearch").each(function () {
             .attr('class', $this.attr('class') + 'ID')
             .attr('initValue', $this.attr('idVal'));
     });
+
+    /*
+    *   Municipality and / or country attribute
+    *
+    *   If we set municipality attribute, it would try to find municipality with attribute ID
+    *   After, it would create an new hidden element for id (in case PHP script is used)
+    *
+    *   Country would never change, so select will do the job !
+    */
+
+    let municipality = $(this).attr('municipality');
+    if(municipality !== undefined){
+        municipality = $("#" + municipality);
+
+        municipality.parent().append(function () {
+            return $("<input type='hidden'>").attr('name', municipality.attr('name') + 'ID')
+                .attr('id', municipality.attr('name') + 'ID')
+                .attr('value', municipality.attr('idVal'));
+        });
+    }
 });
 
 /** Deprecated -- select-2 ajax search **/

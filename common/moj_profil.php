@@ -114,7 +114,7 @@ function common_moj_profil(){
                                 <label for="placeOfBirth">Mjesto rođenja</label>
 								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
 								<div class="search-container">
-									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'Country' => 'Country']) ?>
+									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'country' => 'Country']) ?>
 								</div>
 <!--                                --><?//= Form::select('placeOfBirth', $mjesto, $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'placeOfBirth', 'aria-describedby' => 'placeOfBirthHelp'], 'mjesto rođenja') ?>
                                 <small id="placeOfBirthHelp" class="form-text text-muted">
@@ -128,14 +128,14 @@ function common_moj_profil(){
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="Municipality">Općina rođenja</label> <!-- TODO !? -->
-                                <?= Form::select('Municipality', $opcina, $person['ExtendedPerson']['placeOfBirth']['Municipality']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'Municipality', 'aria-describedby' => 'MunicipalityHelp', 'disabled' => 'true'], 'općinu rođenja') ?>
+                                <?= Form::text('Municipality',$person['ExtendedPerson']['placeOfBirth']['Municipality']['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Municipality', 'aria-describedby' => 'MunicipalityHelp', 'readonly', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['Municipality']['id'] ?? '']) ?>
                                 <small id="MunicipalityHelp" class="form-text text-muted">Općina rođenja - Ukoliko je van BiH odaberite "Van BiH"</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="Country">Država rođenja</label> <!-- TODO -->
-                                <?= Form::select('Country', $drzava, $person['ExtendedPerson']['placeOfBirth']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'Country', 'aria-describedby' => 'CountryHelp', 'required' => 'required', 'disabled' => 'true'], 'državu rođenja') ?>
+                                <?= Form::select('Country', $drzava, $person['ExtendedPerson']['placeOfBirth']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Country', 'aria-describedby' => 'CountryHelp', 'required' => 'required', 'disabled' => 'true'], 'državu rođenja') ?>
                                 <small id="CountryHelp" class="form-text text-muted">Odaberite državu rođenja</small>
                             </div>
                         </div>
@@ -172,29 +172,31 @@ function common_moj_profil(){
                     <div class="row pt-2">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="residenceAddress">Adresa prebivališta</label>  <!-- TODO -->
+								<label for="residenceAddress">Adresa prebivališta</label>
 								<?= Form::text('residenceAddress', $person['ExtendedPerson']['residenceAddress'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'residenceAddress']) ?>
-								<small class="form-text text-muted"> Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo" data-toggle="modal" data-target="#placeInsert">obrazac za unos</span></b> ! </small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="residencePlace">Općina prebivališta</label>  <!-- TODO -->
-								<?= Form::select('residencePlace', $opcina, $person['ExtendedPerson']['residencePlace'], ['class' => 'form-control form-control-sm', 'id' => 'opcina_preb'], 'općinu prebivališta') ?>
+								<label for="placeOfBirth">Mjesto prebivališta</label>
+								<div class="search-container">
+									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry']) ?>
+								</div>
+								<small class="form-text text-muted"> Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo" data-toggle="modal" data-target="#placeInsert">obrazac za unos</span></b> ! </small>
 							</div>
 						</div>
                     </div>
                     <div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="residenceCanton">Kanton prebivalšta</label>  <!-- TODO -->
-								<?= Form::select('residenceCanton', $kanton, $person['ExtendedPerson']['residenceCanton'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'residenceCanton', 'disabled' => 'true'], 'kanton prebivališta') ?>
+								<label for="residenceMunicipality">Općina prebivališta</label>
+								<?= Form::text('residenceMunicipality',$person['ExtendedPerson']['residencePlace']['Municipality']['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'residenceMunicipality', 'readonly', 'idVal' => $person['ExtendedPerson']['residencePlace']['Municipality']['id'] ?? '']) ?>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="residenceCountry">Država prebivališta</label>  <!-- TODO -->
-								<?= Form::select('residenceCountry', $drzava, $person['ExtendedPerson']['residenceCountry'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'residenceCountry', 'disabled' => 'true'], 'državu prebivališta') ?>
+								<label for="residenceCountry">Država prebivališta</label>
+								<?= Form::select('residenceCountry', $drzava, $person['ExtendedPerson']['residencePlace']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'residenceCountry', 'disabled' => 'true'], 'državu prebivališta') ?>
 							</div>
 						</div>
 
@@ -245,19 +247,39 @@ function common_moj_profil(){
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="addressStreetNo">Adresa boravišta</label> <!-- Old -->
+                                <label for="addressStreetNo">Adresa boravišta</label>
                                 <?= Form::text('addressStreetNo', $person['ExtendedPerson']['addressStreetNo'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressStreetNo', 'aria-describedby' => 'addressStreetNoHelp', 'required' => 'required']) ?>
                                 <small id="addressStreetNoHelp" class="form-text text-muted"> Boravište je mjesto stanovanja gdje student boravi za vrijeme studija. </small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="addressPlace">Mjesto boravišta</label> <!-- Old -->
-                                <?= Form::select('addressPlace', $mjesto, $person['ExtendedPerson']['addressPlace']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'addressPlace', 'aria-describedby' => 'addressPlaceHelp'], 'mjesto boravišta') ?>
+                                <label for="addressPlace">Mjesto boravišta</label>
+								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
+								<div class="search-container">
+									<?= Form::text('addressPlace', $person['ExtendedPerson']['addressPlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'addressPlace', 'idVal' => $person['ExtendedPerson']['addressPlace']['id'] ?? '',  'municipality' => 'addressMunicipality', 'country' => 'addressCountry']) ?>
+								</div>
                                 <small id="addressPlaceHelp" class="form-text text-muted"> Boravište je mjesto stanovanja gdje student boravi za vrijeme studija. </small>
                             </div>
                         </div>
                     </div>
+					<div class="row d-none">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="addressMunicipality">Općina boravišta</label>
+								<?= Form::text('addressMunicipality',$person['ExtendedPerson']['addressPlace']['Municipality']['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressMunicipality', 'aria-describedby' => 'addressMunicipalityHelp', 'readonly', 'idVal' => $person['ExtendedPerson']['addressPlace']['Municipality']['id'] ?? '']) ?>
+								<small id="addressMunicipalityHelp" class="form-text text-muted">Općina boravišta - popunjava se automatski u odnosu na mjesto</small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="addressCountry">Država boravišta</label>
+								<?= Form::select('addressCountry', $drzava, $person['ExtendedPerson']['addressPlace']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'addressCountry', 'aria-describedby' => 'addressCountryHelp', 'required' => 'required', 'disabled' => 'true'], 'državu boravišta') ?>
+								<small id="addressCountryHelp" class="form-text text-muted">Država rođenja - popunjava se automatski u odnosu na mjesto</small>
+							</div>
+						</div>
+					</div>
+					
                     <div class="row email-wrapper">
                         <div class="col-md-6">
                             <div class="form-group">
