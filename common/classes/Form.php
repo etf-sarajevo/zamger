@@ -9,7 +9,7 @@ class Form{
         }
         return $optionsStr;
     }
-    public static function select($name, $values, $value, $options, $default = ''){
+    public static function select($name, $values, $value, $options, $default = '', $defaultVal = ''){
         $optionsStr = self::setOptions($options);
         $data = '<select name="'.$name.'" '.$optionsStr.'>';
         
