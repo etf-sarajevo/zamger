@@ -10,16 +10,10 @@ function nastavnik_kalendar() {
 	$days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota', 'Nedjelja'];
 	$months = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
 	
-	$date    = date('Y-m-d');
-	$predmet = intval($_REQUEST['predmet']);
-	$ag      = intval($_REQUEST['ag']);
-	
-	$events = api_call("event/course/$predmet/$ag/date", ['date' => $date], 'GET', true);
-
 	?>
 	<div class="calendar-wrapper">
 		<div class="add-new-event-wrapper ">
-			<div class="day-form p-4">
+			<div class="day-form p-4 new-event-form">
 				<div class="form-group mt-2">
 					<div class="row">
 						<div class="col-md-12">
@@ -97,32 +91,17 @@ function nastavnik_kalendar() {
 				</div>
 			</div>
 		</div>
-		<div class="calendar">
-
-		</div>
+		
+		<!-- Calendar wrapper -->
+		<div class="calendar"> </div>
 
 		<div class="this-day">
 			<h5>Danas</h5>
 			<h2><?= $days[date('w')] ?>, <br> <?= date('d') ?>. <?= $months[date('m')] ?> <?= date('Y') ?></h2>
 
-			<h5><span class="this-day-total"><?= count($events['results']) ?></span> stavka / e</h5>
-
-			<div class="items-wrapper">
-				<?php
-				foreach ($events['results'] as $event){
-					?>
-					<div class="single-item sci-d" title="<?= $event['title'].'&#13; &#13;'.$event['description'] ?>" year="<?= date('Y') ?>" month="<?= (int)(date('m')) - 1 ?>" day="<?= date('d') ?>" id="event-elem-<?= $event['id'] ?>">
-						<p>
-							<?= date('H:i', strtotime($event['dateTime'])) ?>
-							-
-							<?= date('H:i', strtotime($event['dateTime']) + ($event['duration'] * 60)) ?>
-						</p>
-						<span> <?= $event['title'] ?></span>
-					</div>
-					<?php
-				}
-				?>
-			</div>
+			<h5><span class="this-day-total">  </span> stavka / e</h5>
+			<div class="items-wrapper"> </div>
+			
 			<div class="add-new-today" title="Unesite novi događaj na današnji dan">
 				<i class="fas fa-plus"></i>
 				<p>Unesite novi događaj</p>

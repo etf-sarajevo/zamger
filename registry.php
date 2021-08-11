@@ -111,6 +111,7 @@ array("public/ical", "Raspored u iCal formatu", "Raspored u iCal formatu", "PSNB
 
 array("student/anketa", "Anketa", "Anketa", "S", "1", "0"),
 array("student/intro", "Studentski dashboard", "Dashboard", "S", "1", "0"),
+array("student/kalendar", "Kalendar", "kalendar", "S", "1", "0"),
 array("student/kolizija", "Kolizija", "Kolizija", "S", "1", "0"),
 array("student/kolizijapdf", "Kolizija (PDF)", "Kolizija (PDF)", "S", "2", "0"),
 array("student/kviz", "Kvizovi", "Kvizovi", "S", "1", "0"),

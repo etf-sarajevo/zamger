@@ -57,8 +57,6 @@ let dateValid = function(testDate) {
 let formatDate = function(date, operator = '-'){
     date = date.split(operator);
 
-    console.log(date);
-
     if(date[1].length === 1) date[1] = (date[1] < 10) ? ('0' + date[1]) : date[1];                      // Format month 1 -> 01
     if(operator === '-' && date[2].length === 1) date[2] = (date[2] < 10) ? ('0' + date[2]) : date[2];  // Format day yyyy-mm-dd
     else if(date[0].length === 1) date[0] = (date[0] < 10) ? ('0' + date[0]) : date[0];                 // Format day dd.mm.yyyy
@@ -210,6 +208,7 @@ let calendar = {
     d_date : '1. Septembar 2020',
     current_time : 0,
     d_today : new Date(),
+    first_run : true,
 
     // Get the first day of week of month
     firstDay : function () {
@@ -265,7 +264,28 @@ let calendar = {
         this.createHeader();
         let value = this.createBody();
 
-        // this.createSingleDay();
+        /*
+         *  When opening the page, reload todays content !
+         */
+
+        if(this.first_run){
+            this.first_run = false;
+
+            let dataParams = dayDataParams();
+
+            ajax_api_start(dataParams['uri'], 'GET', dataParams['params'], function (result) {
+                if(isToday(event_date)) { refreshToday(); }
+
+                for(let i=0; i<result['results'].length; i++){
+                    let event = result['results'][i];
+
+                    if(isToday(event_date)){ appendToToday(event); }
+                }
+
+            }, function (text, status, url) {
+                $.notify("Došlo je do greške, molimo pokušajte ponovo!", 'error');
+            });
+        }
     },
 
     getCalendarContent : function (){
@@ -273,9 +293,21 @@ let calendar = {
         let month = ((this.n_month === null) ? this.currentMonth() : this.n_month) + 1;
         let year  = (this.n_year === null) ? this.currentYear() : this.n_year;
 
+        let wrapper = $(".new-event-form");
         let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'/month&myear='+year+'&month='+month;
+        let params = {};
 
-        ajax_api_start(uri, 'GET', {}, function (result) {
+        if(!wrapper.length){
+            uri = 'event/between';
+            month = (month < 10) ? ('0' + month) : month;
+
+            params = {
+                start : year + '-' + month + '-01 00:00:00',
+                end : year + '-' + month + '-' + this.months_d[parseInt(month) - 1] + ' 23:59:59'
+            };
+        }
+
+        ajax_api_start(uri, 'GET', params, function (result) {
             for(let i=0; i<result['results'].length; i++){
                 let event = result['results'][i];
 
@@ -373,7 +405,9 @@ let calendar = {
 
     },
     createSingleDayHeader : function(){
-        return '<div class="header-of-day"> <h2 id="name-of-single-day">' + this.d_day_in_week + ', ' + this.d_date + ' </h2> <div class="day-actions"><div class="inside-element back-to-full-calendar"> <i class="fas fa-angle-left"></i> <p>Nazad</p> </div> <div class="inside-element create-cal-event"> <i class="fas fa-plus"></i> <p>Unos</p> </div> </div> </div>';
+        let addEvent = ($(".new-event-form").length) ? '<div class="inside-element create-cal-event"> <i class="fas fa-plus"></i> <p>Unos</p> </div> </div>' : '';
+
+        return '<div class="header-of-day"> <h2 id="name-of-single-day">' + this.d_day_in_week + ', ' + this.d_date + ' </h2> <div class="day-actions"><div class="inside-element back-to-full-calendar"> <i class="fas fa-angle-left"></i> <p>Nazad</p> </div> ' + addEvent + ' </div>';
     },
     getHourValue : function(index){
         if(index < 10){return ('0' + index + ':00');}
@@ -456,14 +490,53 @@ let isToday = function(date){
     if(today.getFullYear() === parseInt(y) && (today.getMonth() === (parseInt(m) - 1)) && (today.getDate() === parseInt(d))) return true;
     return false;
 };
-let dayData = function(date){
+let refreshToday = function(){
+    $(".items-wrapper").empty();
+    $(".this-day-total").text(0);
+};
+let appendToToday = function(event){
+    $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
+    // Check if date is current date; If it is, add to side menu
+    $(".items-wrapper").append(function () {
+        return $("<div>").attr('class', 'single-item sci-d')
+            .attr('year', (new Date()).getFullYear())
+            .attr('month', (new Date()).getMonth())
+            .attr('day', (new Date()).getDate())
+            .attr('title', event['title'] + '\u000d' + event['description'])
+            .attr('event-id', 'event-elem-' + event['id'])
+            .append(function () {
+                return $("<p>").text(extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration'])));
+            })
+            .append(function () {
+                return $("<span>").text(event['title'])
+            })
+    });
+};
+let dayDataParams = function(){
+    let wrapper = $(".new-event-form");
 
     let uri = 'event/course/'+getUrlParameter('predmet')+'/'+getUrlParameter('ag')+'/date&date='+formatDate(event_date);
+    let params = {};
 
-    ajax_api_start(uri, 'GET', {}, function (result) {
+    if(!wrapper.length){
+        uri = 'event/between';
+        params = {
+            start : formatDate(event_date) + ' 00:00:00',
+            end : formatDate(event_date) + ' 23:59:59'
+        };
+    }
+    return {
+        uri : uri,
+        params: params,
+        wrapper : wrapper.length
+    };
+};
+let dayData = function(date){
+    let dataParams = dayDataParams();
+
+    ajax_api_start(dataParams['uri'], 'GET', dataParams['params'], function (result) {
         if(isToday(event_date)) {
-            $(".items-wrapper").empty();
-            $(".this-day-total").text(0);
+            refreshToday();
         }
         let scrollPos = 1444;
 
@@ -474,28 +547,14 @@ let dayData = function(date){
             event_minutes_end   = event_minutes_start + event['duration'];
 
             let height = event_minutes_end - event_minutes_start;
+            let eventActions = (dataParams['wrapper']) ? '<div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div>' : '';
 
             $(".events-wrapper").append(
-                '<div class="event-short-preview event-short-preview-'+event['EventType']+'" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> <div class="event-actions"> <div class="ea-d" event-id="'+ event['id'] +'" title="Obrišite događaj"><i class="fas fa-trash"></i></div> <div class="ea-u ml-1" event-id="'+ event['id'] +'" title="Uredite"><i class="fas fa-edit"></i></div> </div> </div> '
+                '<div class="event-short-preview event-short-preview-'+event['EventType']+'" title="' + event['title'] + '" id="event-elem-'+event['id']+'" style="top:'+event_minutes_start+'px; height: '+(height)+'px"><h4 id="'+event['id']+'-header"> ' +event['title'] + ' </h4> <p id="'+event_new_elem_+'-time"> ' + (extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration']))) + ' </p> ' + eventActions + ' </div> '
             );
 
             if(isToday(event_date)){
-                $(".this-day-total").text(parseInt($(".this-day-total").text()) + 1);
-                // Check if date is current date; If it is, add to side menu
-                $(".items-wrapper").append(function () {
-                    return $("<div>").attr('class', 'single-item sci-d')
-                        .attr('year', (new Date()).getFullYear())
-                        .attr('month', (new Date()).getMonth())
-                        .attr('day', (new Date()).getDate())
-                        .attr('title', event['title'] + '\u000d' + event['description'])
-                        .attr('event-id', 'event-elem-' + event['id'])
-                        .append(function () {
-                            return $("<p>").text(extractTime(event['dateTime']) + ' : ' + formatTime(getTimeTo(event['dateTime'], event['duration'])));
-                        })
-                        .append(function () {
-                            return $("<span>").text(event['title'])
-                        })
-                });
+                appendToToday(event);
             }
 
             if(scrollPos > event_minutes_start) scrollPos = parseInt(event_minutes_start);
@@ -931,7 +990,6 @@ $("body").on('change', '#allow-students', function () {
             eventDate = eventDate[2] + '-' + eventDate[1] + '-' + eventDate[0];
             let cDate = new Date(eventDate);
 
-            console.log(cDate, eventDate);
             cDate.setDate(cDate.getDate() - 1);
 
             $("#deadline-date").val(cDate.getDate() + '.' + (cDate.getMonth() + 1) + '.' + cDate.getFullYear());
