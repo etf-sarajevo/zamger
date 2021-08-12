@@ -6,6 +6,8 @@ function common_moj_profil(){
     global $userid, $person;
 	global $user_student, $user_nastavnik, $user_studentska, $user_siteadmin;
 	
+	var_dump($person['ExtendedPerson']['previousEducation'][0]);
+	
 	ajax_box(); // Allow JS to create requests to zamger-api
 	
     $emails   = $person['email'];
@@ -321,6 +323,7 @@ function common_moj_profil(){
 
                     <hr>
 
+					<!-- Srednja škola -->
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
