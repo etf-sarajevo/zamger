@@ -129,7 +129,9 @@ function student_intro() {
 		$nazivPredmeta = getCourseName($idPredmeta);
 		$ag = $event['AcademicYear']['id'];
 		$idAktivnosti = $event['CourseActivity']['id'];
-		$nazivIspita = $event['CourseActivity']['name'];
+		$nazivIspita = $event['title'];
+		if (empty($nazivIspita))
+			$nazivIspita = $event['CourseActivity']['name'];
 		
 		$code_poruke["d$idPredmeta-$idAktivnosti"] = "<b>$nazivPredmeta:</b> Objavljeni termini za $nazivIspita: <a href=\"?sta=student/prijava_ispita&predmet=$idPredmeta&ag=$ag\">Prijavite se!</a><br /><br />\n";
 		$vrijeme_poruke["d$idPredmeta-$idAktivnosti"] = db_timestamp($event['dateTimePublished']);
