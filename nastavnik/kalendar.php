@@ -3,12 +3,13 @@ function nastavnik_kalendar() {
 	
 	// Current date and day : )
 	$days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota', 'Nedjelja'];
-	$months = ['Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
+	$months = ['', 'Januar', 'Februar', 'Mart', 'April', 'Maj', 'Juni', 'Juli', 'August', 'Septembar', 'Oktobar', 'Novembar', 'Decembar'];
 	
 	ajax_box(); // Allow JS to create requests to zamger-api
 	
 	?>
 	<link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
+	<link href="static/css/includes/libraries/select-2.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -19,9 +20,9 @@ function nastavnik_kalendar() {
 	<script src="https://kit.fontawesome.com/cdf2a0a58b.js"></script>
 
 	<script src="static/js/notify.js"></script>
-	<script src="static\js\jquery-setup.js"> </script>
-	<link rel="stylesheet" href="static\css\calendar\calendar.css">
-	<script src="static\js\calendar\calendar.js"> </script>
+	<script src="static/js/jquery-setup.js"> </script>
+	<link rel="stylesheet" href="static/css/calendar/calendar.css">
+	<script src="static/js/calendar/calendar.js"> </script>
 	
 	<div class="calendar-wrapper">
 		<div class="add-new-event-wrapper ">
@@ -110,9 +111,9 @@ function nastavnik_kalendar() {
 		
 		<div class="this-day">
 			<h5>Danas</h5>
-			<h2><?= $days[date('w')] ?>, <br> <?= date('d') ?>. <?= $months[date('m')] ?> <?= date('Y') ?></h2>
+			<h2><?= $days[date('w')] ?>, <br> <?= date('d') ?>. <?= $months[intval(date('m'))] ?> <?= date('Y') ?></h2>
 			
-			<h5><span class="this-day-total">  </span> stavka / e</h5>
+			<h5><span class="this-day-total">  </span> događaja</h5>
 			<div class="items-wrapper"> </div>
 			
 			<div class="add-new-today" title="Unesite novi događaj na današnji dan">

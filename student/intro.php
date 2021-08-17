@@ -60,18 +60,35 @@ function student_intro() {
 	<?
 
 	// Sakrij module ako ih nema u registry-ju
-	$modul_raspored=$modul_anketa=0;
+	$modul_anketa=0;
 	foreach ($registry as $r) {
 		if (count($r) == 0) continue;
-		if ($r[0]=="common/raspored1") $modul_raspored=1;
 		if ($r[0]=="student/anketa") $modul_anketa=1;
 	}
 	
-	// Prikazujem raspored
-	if ($modul_raspored==1) {
-		require "common/raspored1.php";
-		common_raspored1("student");
+	// Prikazujem kalendar
+	?>
+	<script>
+	function prikazi(id) {
+	    var _iframe = document.getElementById(id);
+	    var plusminus = document.getElementById("img-" + id);
+	    if (_iframe.style.display == "none") {
+	        _iframe.style.display = "block";
+	        plusminus.src = "static/images/minus.png";
+	        if (!_iframe.src)
+	            _iframe.src = "?sta=student/kalendar";
+		} else {
+            _iframe.style.display = "none";
+            plusminus.src = "static/images/plus.png";
+		}
 	}
+	</script>
+	<div>
+		<div style="padding-top: 3px; padding-bottom: 3px; background-color: #F5F5F5"><a href = "#" onclick="prikazi('kalendar')" style="color: #666699"><img id = "img-kalendar" src = "static/images/plus.png" border = "0" align = left hspace = 2 /><b>Pogledaj svoj kalendar</b></a></div>
+		<hr style = "background-color: #ccc; height: 0px; border: 0px; padding-bottom: 1px">
+		<iframe id="kalendar" style="display:none; width: 100%; height: 600px; border: 0px"></iframe>
+	</div>
+	<?php
 
 
 	// AKTUELNO
