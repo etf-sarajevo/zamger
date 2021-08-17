@@ -108,129 +108,136 @@ function ajax_box() {
 		</script>
 		<?php
 	}
-
+	
 	?>
 	<script language="JavaScript">
-	function ajax_start(url, method, params, cb_success, cb_fail) {
-		cb_fail = cb_fail || ajax_log_error;
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (xhttp.readyState == 4 && xhttp.status == 200) {
-				try {
-					var object = JSON.parse(xhttp.responseText);
-					if (object['success'] === 'true')
-						cb_success(object['data']);
-					else
+		function ajax_start(url, method, params, cb_success, cb_fail) {
+			cb_fail = cb_fail || ajax_log_error;
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (xhttp.readyState == 4 && xhttp.status == 200) {
+					try {
+						var object = JSON.parse(xhttp.responseText);
+						if (object['success'] === 'true')
+							cb_success(object['data']);
+						else
+							cb_fail(xhttp.responseText, xhttp.status, url);
+					} catch(e) {
 						cb_fail(xhttp.responseText, xhttp.status, url);
-				} catch(e) {
+					}
+				} else if (xhttp.readyState == 4) {
 					cb_fail(xhttp.responseText, xhttp.status, url);
 				}
-			} else if (xhttp.readyState == 4) {
-				cb_fail(xhttp.responseText, xhttp.status, url);
+			};
+
+			// Zamger URL
+			if (url.indexOf("://") == -1) {
+				params['sta'] = url;
+				url = "index.php";
 			}
-		};
-		
-		// Zamger URL
-		if (url.indexOf("://") == -1) {
-			params['sta'] = url;
-			url = "index.php";
-		}
-		
-		var encode_params = "";
-		for (var key in params) {
-			if (params.hasOwnProperty(key)) {
-				if (encode_params != "") encode_params += "&";
-				encode_params += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+
+			var encode_params = "";
+			for (var key in params) {
+				if (params.hasOwnProperty(key)) {
+					if (encode_params != "") encode_params += "&";
+					encode_params += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+				}
+			}
+
+			if (method == "POST") {
+				xhttp.open("POST", url, true);
+				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xhttp.send(encode_params);
+			} else {
+				if (encode_params != "") url = url + "?" + encode_params;
+				xhttp.open(method, url, true);
+				xhttp.send();
 			}
 		}
-		
-		if (method == "POST") {
-			xhttp.open("POST", url, true);
-			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send(encode_params);
-		} else {
-			if (encode_params != "") url = url + "?" + encode_params;
-			xhttp.open(method, url, true);
-			xhttp.send();
-		}
-	}
-    function ajax_api_start(route, method, params, cb_success, cb_fail) {
-        cb_fail = cb_fail || ajax_log_error;
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (xhttp.readyState == 4 && (xhttp.status == 200 || xhttp.status == 201 || xhttp.status == 204)) {
-                var object = {};
-                try {
-                    object = JSON.parse(xhttp.responseText);
-                } catch(e) {
-                    cb_fail(xhttp.responseText, xhttp.status, url);
-                    return;
-                }
-                cb_success(object);
-            } else if (xhttp.readyState == 4 && xhttp.status == 401) {
-                // Access denied, check if token expired
-                var xhttp_token = new XMLHttpRequest();
-                xhttp_token.onreadystatechange = function() {
-                    if (xhttp_token.readyState == 4 && xhttp_token.status == 200 && xhttp_token.responseText.substring(0,7) == "Token: ") {
-                        zamger_oauth_token = xhttp_token.responseText.substring(7);
-                        ajax_api_start(route, method, params, cb_success, cb_fail);
-                    } else if (xhttp_token.readyState == 4) {
-                        cb_fail(xhttp.responseText, xhttp.status, url);
-                    }
-                };
-                var url = '<?=$conf_site_url?>/get_token.php';
-                xhttp_token.open("GET", url, true);
-                xhttp_token.send();
-            } else if (xhttp.readyState == 4) {
-                cb_fail(xhttp.responseText, xhttp.status, url);
-            }
-        };
-        
-        var url='<?=$conf_backend_url_client?>';
-        <?
-		if ($conf_backend_has_rewrite) {
-        	?>
-        	url += route;
+		function ajax_api_start(route, method, params, cb_success, cb_fail) {
+			cb_fail = cb_fail || ajax_log_error;
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (xhttp.readyState == 4 && (xhttp.status == 200 || xhttp.status == 201 || xhttp.status == 204)) {
+					var object = {};
+					try {
+						object = JSON.parse(xhttp.responseText);
+					} catch(e) {
+						cb_fail(xhttp.responseText, xhttp.status, url);
+						return;
+					}
+					cb_success(object);
+				} else if (xhttp.readyState == 4 && xhttp.status == 401) {
+					// Access denied, check if token expired
+					var xhttp_token = new XMLHttpRequest();
+					xhttp_token.onreadystatechange = function() {
+						if (xhttp_token.readyState == 4 && xhttp_token.status == 200 && xhttp_token.responseText.substring(0,7) == "Token: ") {
+							zamger_oauth_token = xhttp_token.responseText.substring(7);
+							ajax_api_start(route, method, params, cb_success, cb_fail);
+						} else if (xhttp_token.readyState == 4) {
+							cb_fail(xhttp.responseText, xhttp.status, url);
+						}
+					};
+					var url = '<?=$conf_site_url?>/get_token.php';
+					xhttp_token.open("GET", url, true);
+					xhttp_token.send();
+				} else if (xhttp.readyState == 4) {
+					cb_fail(xhttp.responseText, xhttp.status, url);
+				}
+			};
+
+			var url='<?=$conf_backend_url_client?>';
 			<?
-        } else {
-        	?>
-        	url += "?route=" + route;
-        	<?
-        }
-        if (!$conf_keycloak) {
-        	?>
-        	if (url.includes("?")) url += "&"; else url += "?";
+			if ($conf_backend_has_rewrite) {
+			?>
+			url += route;
+			<?
+			} else {
+			?>
+			url += "?route=" + route;
+			<?
+			}
+			// These must be in URL even if method is not GET
+			if (!$conf_keycloak) {
+			?>
+			if (url.includes("?")) url += "&"; else url += "?";
 			url += "SESSION_ID=<?=$_SESSION['api_session']?>";
 			<?
-		}
-        ?>
-		if (method == "GET") {
-		    for(param in params) {
-                if (url.includes("?")) url += "&"; else url += "?";
-                url += param + "=" + encodeURI(params[param]);
-            }
-        }
+			}
+			if ($_SESSION['su']) {
+			?>
+			if (url.includes("?")) url += "&"; else url += "?";
+			url += "impersonate=<?=$_SESSION['su']?>";
+			<?
+			}
+			?>
+			if (method == "GET") {
+				for(param in params) {
+					if (url.includes("?")) url += "&"; else url += "?";
+					url += param + "=" + encodeURI(params[param]);
+				}
+			}
 
-		xhttp.open(method, url, true);
-		xhttp.setRequestHeader("Content-type", "application/json");
-		<?
-		if ($conf_keycloak) {
-		    ?>
-		    xhttp.setRequestHeader("Authorization", "Bearer "+zamger_oauth_token);
-		    <?
+			xhttp.open(method, url, true);
+			xhttp.setRequestHeader("Content-type", "application/json");
+			<?
+			if ($conf_keycloak) {
+			?>
+			xhttp.setRequestHeader("Authorization", "Bearer "+zamger_oauth_token);
+			<?
+			}
+			?>
+			xhttp.send(JSON.stringify(params));
 		}
-		?>
-		xhttp.send(JSON.stringify(params));
-    }
-	// Default funkcija za neuspjeh, logira greške
-	function ajax_log_error(responseText, status, url) {
-		try {
-			var object = JSON.parse(responseText);
-			console.log("Neuspio upit na web servis "+url+": ["+object['code']+"] "+object['message']);
-		} catch(e) {
-			console.log("Web servis "+url+" nije vratio validan JSON (status "+status+"): "+xhttp.responseText);
+		// Default funkcija za neuspjeh, logira greške
+		function ajax_log_error(responseText, status, url) {
+			try {
+				var object = JSON.parse(responseText);
+				console.log("Neuspio upit na web servis "+url+": ["+object['code']+"] "+object['message']);
+			} catch(e) {
+				console.log("Web servis "+url+" nije vratio validan JSON (status "+status+"): "+xhttp.responseText);
+			}
 		}
-	}
 	</script>
 	<?php
 }
