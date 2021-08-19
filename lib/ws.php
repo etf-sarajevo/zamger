@@ -304,9 +304,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		if ($json_result === NULL) {
 			if ($debug) {
 				print "Failed to decode result as JSON for $url<br>";
-				if ($route == "auth")
+				if ($route == "auth" || substr($route,0,6) == "person") {
 					print "Response: $http_result";
-				else
+					exit(0);
+				} else
 					api_report_bug([], []);
 			}
 			return FALSE;
