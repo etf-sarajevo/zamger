@@ -48,10 +48,13 @@ function saradnik_student() {
 	$cuy = api_call("course/$predmet");
 	$privilegija = $cuy['accessLevel'];
 	
-	// TODO više mailova
 	$mailprint = "";
-	if (!empty($course['student']['email']))
-		$mailprint .= "<a href=\"mailto:" . $course['student']['email'] . "\">" . $course['student']['email'] . "</a>";
+	if (!empty($course['student']['email'])) {
+		foreach ($course['student']['email'] as $mail) {
+			if ($mailprint != "") $mailprint .= ", ";
+			$mailprint .= "<a href=\"mailto:" . $mail['address'] . "\">" . $mail['address'] . "</a>";
+		}
+	}
 	
 	$nazivpredmeta = $course['courseName'];
 	
@@ -734,7 +737,7 @@ function saradnik_student() {
 				$time = db_timestamp($ExamResult['Exam']['date']);
 				$ExamResult['name'] = $StudentScore['CourseActivity']['name'];
 				$ExamResult['date'] = date("d. m. Y", $time);
-				$ExamResult['pass'] = ($ExamResult['result'] >= $ExamResult['Exam']['passPoints']);
+				$ExamResult['pass'] = ($ExamResult['result'] >= $StudentScore['CourseActivity']['pass']);
 				$examResults[$time . $StudentScore['CourseActivity']['id']] = $ExamResult;
 			}
 		}
