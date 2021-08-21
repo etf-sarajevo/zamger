@@ -80,16 +80,11 @@ function saradnik_student() {
 	$godinaStudija = round($semestar / 2);
 	
 	// Koji studij student sluša, koji put
-	$enrollments = api_call("enrollment/all/$student", [ "resolve" => [ "Programme" ] ] )['results'];
-	$enrollment = [];
-	foreach ($enrollments as $anEnrollment) {
-		if ($anEnrollment['AcademicYear']['id'] == $ag && $anEnrollment['semester'] % 2 == $semestar % 2)
-			$enrollment = $anEnrollment;
-	}
-	if (empty($enrollment)) {
+	$enrollment = api_call("enrollment/$student/forCourse/$predmet/$ag", [ "resolve" => [ "Programme" ] ] );
+	if ($_api_http_code == "404") {
 		$nazivstudija = "Nije upisan na studij!";
-		$kolpren=$ponovac=$nacin_studiranja="";
-	} else {
+		$kolpren=$ponovac="";
+	} else if ($_api_http_code == "200") {
 		$nazivstudija = $enrollment['Programme']['name'];
 		$enrollmentYear = round($enrollment['semester'] / 2);
 		if ($enrollmentYear < $godinaStudija)
@@ -104,19 +99,20 @@ function saradnik_student() {
 		else if ($enrollment['repeat'])
 			$ponovac=", ponovac";
 		else $ponovac = "";
+	} else {
+		niceerror("Greška prilikom preuzimanja podataka o studiju");
+		api_report_bug($enrollment, []);
 	}
 	
 	// Koliko puta i kada je student slušao ovaj predmet?
-	$allCourses = api_call("course/student/$student", [ "all" => true, "resolve" => ["CourseOffering", "AcademicYear"] ] )["results"];
+	$allCourses = api_call("course/$predmet/student/$student/history", [ "resolve" => ["CourseOffering", "AcademicYear"] ] )["results"];
 	$count = 0;
 	$years = [];
 	foreach($allCourses as $_course) {
-		if ($_course['CourseOffering']['CourseUnit']['id'] == $predmet) {
-			if ($ag == $_course['CourseOffering']['AcademicYear']['id'])
-				break;
-			$count++;
-			$years[$_course['CourseOffering']['AcademicYear']['id']] = $_course['CourseOffering']['AcademicYear']['name'];
-		}
+		if ($ag == $_course['CourseOffering']['AcademicYear']['id'])
+			break;
+		$count++;
+		$years[$_course['CourseOffering']['AcademicYear']['id']] = $_course['CourseOffering']['AcademicYear']['name'];
 	}
 	$kojiput = $dosjei = "";
 	if ($count > 0) {
