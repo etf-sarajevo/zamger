@@ -333,7 +333,7 @@ function nastavnik_prijava_ispita() {
 			niceerror("Krajnji rok za prijavu ispita mora raniji od tačnog vremena održavanja ispita");
 		}
 		else {
-			$eventObj = array_to_object( [ "id" => $termin, "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "dateTime" => $db_date, "deadline" => $db_date1,  "maxStudents" => $limit, "CourseActivity" => [ "id" => $tipispita ], "options" => $ispit ] );
+			$eventObj = array_to_object( [ "id" => $termin, "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "dateTime" => $db_date, "deadline" => $db_date1,  "maxStudents" => $limit, "CourseActivity" => [ "id" => $tipispita ], "options" => $ispit, "EventType" => 1 ] );
 			$result = api_call("event/$termin", $eventObj, "PUT");
 			if ($_api_http_code == "201") {
 				nicemessage("Uspješno izmijenjen termin.");
@@ -395,7 +395,7 @@ function nastavnik_prijava_ispita() {
 			niceerror("Krajnji rok za prijavu ispita mora raniji od tačnog vremena održavanja ispita");
 		}
 		else {
-			$eventObj = array_to_object( [ "id" => 0, "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "dateTime" => $db_date, "deadline" => $db_date1,  "maxStudents" => $limit, "CourseActivity" => [ "id" => $tipispita ], "options" => $ispit ] );
+			$eventObj = array_to_object( [ "id" => 0, "CourseUnit" => [ "id" => $predmet ], "AcademicYear" => [ "id" => $ag ], "dateTime" => $db_date, "deadline" => $db_date1,  "maxStudents" => $limit, "CourseActivity" => [ "id" => $tipispita ], "options" => $ispit, "EventType" => 1 ] );
 			$result = api_call("event/course/$predmet/$ag", $eventObj, "POST");
 			if ($_api_http_code == "201") {
 				nicemessage("Uspješno kreiran novi termin.");
