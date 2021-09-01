@@ -92,7 +92,7 @@ function student_prijava_ispita() {
 			// Da li je već prijavio termin na istom ispitu?
 			$same = false;
 			foreach($registered_events as $event) {
-				if ($foundEvent['CourseUnit']['id'] == $event['CourseUnit']['id'] && $foundEvent['CourseActivity']['id'] == $event['CourseActivity']['id'] && $foundEvent['options'] == $event['options']) {
+				if ($event['CourseActivity']['id'] > 0 && $foundEvent['CourseUnit']['id'] == $event['CourseUnit']['id'] && $foundEvent['CourseActivity']['id'] == $event['CourseActivity']['id'] && $foundEvent['options'] == $event['options']) {
 					$same = true;
 				}
 			}
@@ -150,7 +150,9 @@ function student_prijava_ispita() {
 		$naziv_predmeta = getCourseName($id_predmeta);
 		$vrijeme_ispita = date("d.m.Y. H:i", db_timestamp($event['dateTime']));
 		$rok_za_prijavu = date("d.m.Y. H:i", db_timestamp($event['deadline']));
-		$tip_ispita = $event['CourseActivity']['name'];
+		$tip_ispita = $event['title'];
+		if (empty($tip_ispita))
+			$tip_ispita = $event['CourseActivity']['name'];
 		
 		// If event is exam, try to see if this is absolvent exam
 		if ($event['CourseActivity']['Activity']['className'] == "ExamActivity") {
@@ -196,7 +198,7 @@ function student_prijava_ispita() {
 			}
 		}
 		if ($greska == "") foreach ($registered_events as $registered_event) {
-			if ($registered_event['CourseUnit']['id'] == $event['CourseUnit']['id'] && $registered_event['CourseActivity']['id'] == $event['CourseActivity']['id'] && $registered_event['options'] == $event['options']) {
+			if ($registered_event['CourseActivity']['id'] > 0 && $registered_event['CourseUnit']['id'] == $event['CourseUnit']['id'] && $registered_event['CourseActivity']['id'] == $event['CourseActivity']['id'] && $registered_event['options'] == $event['options']) {
 				$greska .= "D";
 				$greska_long .= "Prijavljeni ste za drugi termin ovog ispita. ";
 				break;
@@ -283,13 +285,17 @@ function student_prijava_ispita() {
 		// Takođe ne dozvoljavamo da se student odjavi sa ispita za koje ima ocjenu jer bi to moglo pobrkati izvoz ocjena
 		$courseDetails = getCourseDetails($event['CourseUnit']['id']);
 		if ($courseDetails['grade'] >= 6) continue;
+		
+		$tip_ispita = $event['title'];
+		if (empty($tip_ispita))
+			$tip_ispita = $event['CourseActivity']['name'];
 	
 		?>
 		<tr>
 			<td><?=$brojac?></td>
 			<td><?=$courseDetails['courseName']?></td>
 			<td align="center"><?=date("d.m.Y. H:i", db_timestamp($event['dateTime']));?></td>
-			<td align="center"><?=$event['CourseActivity']['name'];?></td>
+			<td align="center"><?=$tip_ispita;?></td>
 			<td align="center"><?
 			if (db_timestamp($event['dateTime']) < time()) {
 				?>

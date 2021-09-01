@@ -58,7 +58,9 @@ function izvjestaj_termini_ispita() {
 		$finidatum = date ("d. m. Y.", db_timestamp($exam['date']));
 	} else {
 		// Use details from first event
-		$naziv = $events[0]['CourseActivity']['name'];
+		$naziv = $events[0]['title'];
+		if (empty($naziv))
+			$naziv = $events[0]['CourseActivity']['name'];
 		$finidatum = date ("d. m. Y.", db_timestamp($events[0]['dateTime']));
 	}
 	

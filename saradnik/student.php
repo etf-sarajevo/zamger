@@ -50,7 +50,7 @@ function saradnik_student() {
 	
 	// TODO više mailova
 	$mailprint = "";
-	if ($course['student']['email'] != "")
+	if (!empty($course['student']['email']))
 		$mailprint .= "<a href=\"mailto:" . $course['student']['email'] . "\">" . $course['student']['email'] . "</a>";
 	
 	$nazivpredmeta = $course['courseName'];

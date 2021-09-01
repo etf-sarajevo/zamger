@@ -1,0 +1,23 @@
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+/* Profile style */
+
+.search-container .search-options{
+    position: absolute; left:15px; top:58px; width: calc(100% - 30px); max-height: 200px; background: #fff; z-index: 100; border:1px solid rgba(0,0,0,0.2); border-bottom:0px;
+    scroll-y: auto
+}
+
+.search-container .search-options .search-value{
+    position: relative; left:0px; top:0px; width: 100%; height: 30px; border-bottom:1px solid rgba(0,0,0,0.1);
+}
+.search-container .search-options .search-value:hover{
+    cursor:pointer; background: #0266AE;
+}
+.search-container .search-options .search-value p{
+    margin-left:10px; padding-top:8px;
+}
+.search-container .search-options .search-value i{
+    position: absolute; right:10px; top:8px; display: none;
+}
+.search-container .search-options .search-value:hover p{color:#fff;}
+.search-container .search-options .search-value:hover i{display: block; color:#fff;}
