@@ -788,3 +788,149 @@ body input[type=range] {
 }
 .search-container .search-options .search-value:hover p{color:#fff;}
 .search-container .search-options .search-value:hover i{display: block; color:#fff;}
+
+
+
+/**********************************************************************************************************************/
+/*
+ *  Profile image uploader
+ */
+
+
+.full-window {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: none;
+}
+.modal-popup {
+    position: relative;
+    width: 500px;
+    background: #fff;
+    border-radius: 3px;
+    margin-top: 200px;
+    left: calc(50% - 250px);
+}
+.modal-popup .mp-header {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 50px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.modal-popup .mp-header h5 {
+    margin-left: 20px;
+    font-size: 18px;
+    margin-top: 0px;
+    padding-top: 14px;
+}
+.modal-popup .mp-header .mp-exit {
+    position: absolute;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+    text-align: right;
+    top: 15px;
+}
+.modal-popup .mp-header .mp-exit i {
+    font-size: 18px;
+}
+.modal-popup .mp-header .mp-exit:hover {
+    cursor: pointer;
+}
+.modal-popup .mp-body {
+    position: relative;
+    left: 20px;
+    top: 0px;
+    width: calc(100% - 40px);
+    min-height: 120px;
+    margin-top: 20px;
+}
+.modal-popup .mp-body .mp-c-pi {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 2px dashed rgba(0, 0, 0, 0.4);
+    left: calc(50% - 70px);
+    margin: 20px 0px;
+    overflow: hidden;
+}
+.modal-popup .mp-body .mp-c-pi label {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    opacity: 0.2;
+}
+.modal-popup .mp-body .mp-c-pi label .mp-cpi-wrapper {
+    position: relative;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+.modal-popup .mp-body .mp-c-pi label .mp-cpi-wrapper i {
+    font-size: 40px;
+    margin-top: 36px;
+    color: grey;
+}
+.modal-popup .mp-body .mp-c-pi label .mp-cpi-wrapper:hover i {
+    color: #000;
+}
+.modal-popup .mp-body .mp-c-pi input {
+    display: none;
+}
+.modal-popup .mp-body .mp-c-pi label:hover {
+    cursor: pointer;
+    opacity: 1;
+}
+.modal-popup .mp-body .mp-c-pi img {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    max-width: 100%;
+    max-height: 100%;
+    margin: auto;
+}
+.modal-popup .mp-buttons {
+    position: relative;
+    left: 20px;
+    top: 0px;
+    width: calc(100% - 40px);
+    height: 36px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    display: inline-flex;
+    justify-content: flex-end;
+}
+.modal-popup .mp-buttons button {
+    height: 26px;
+    margin-left: 10px;
+    font-size: 14px;
+    border-radius: 2px;
+    margin-top: 8px;
+    padding: 0px 10px;
+    border:0px;
+    color: #fff;
+}
+.modal-popup .mp-buttons .mp-submit {
+    background: #17a2b8;
+}
+.modal-popup .mp-buttons button:hover {
+    cursor: pointer;
+}
+.mp-400 {
+    width: 400px;
+    left: calc(50% - 200px);
+}

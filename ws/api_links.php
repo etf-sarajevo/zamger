@@ -317,6 +317,49 @@ function ws_api_links(){
 	}
 	
 	/*
+	 * 	Upload image
+	 */
+	
+	else if($_REQUEST['category']){
+		
+		$target_dir = $_REQUEST['path'];
+		$target_file = $target_dir . basename($_FILES["photo-input"]["name"]);
+		$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+
+		$name = md5(time()).'.'.$imageFileType;
+		
+		// Check if image file is a actual image or fake image
+		$check = getimagesize($_FILES["photo-input"]["tmp_name"]);
+		if($check !== false) {
+			if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" ) {
+				$data[] = ['code' => '4004', 'message' => 'Samo .jpg, .png i .jpeg formati slike su dozvoljeni!'];
+			}else{
+				if(move_uploaded_file($_FILES["photo-input"]["tmp_name"], $target_dir.$name)){
+					$data = ['code' => '0000', 'photo' => $name];
+				}else{
+					$data[] = ['code' => '4004', 'message' => 'Desila se greška prilikom spremanja !'];
+				}
+			}
+		} else {
+			$data[] = ['code' => '4004', 'message' => 'Spremljeni dokument nema formu slike !'];
+		}
+		
+		echo json_encode($data);
+	}
+	
+	else if($_REQUEST['uploadImage']){
+		$name = $_REQUEST['image'];
+		$id   = $person['id'];
+		
+		$update = db_query("UPDATE osoba SET slika = '".$name."' where id = $id");
+		
+		echo json_encode([
+			'code' => '0000',
+			'message' => 'Slika profila uspješno ažurirana !'
+		]);
+	}
+	
+	/*
 	 * 	Final result for select-2 AJAX requests -- if there is no data, or some kind of error occurs, it would
 	 * 	return a json object with message "No data"
 	 */

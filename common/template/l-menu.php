@@ -2,7 +2,7 @@
 	<!-- user Info -->
 	<div class="user-info">
 		<div class="user-image">
-			<img class="mp-profile-image" title="Promijenite sliku profila" src="static/images/16x16/user.png" alt="">
+			<img class="mp-profile-image" title="Promijenite sliku profila" src="static/images/user-images/<?= $person['slika'] ?>" alt="">
 		</div>
 		<div class="user-desc">
 			<h4><?= $user['ime'].' '.$user['prezime'] ?></h4>
@@ -135,3 +135,7 @@
 	</div>
 
 </div>
+
+
+<!-- Upload an image for user account -->
+<?php include('common/template/includes/slika-profila.php') ?>

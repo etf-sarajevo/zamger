@@ -394,4 +394,9 @@ $(document).ready(function () {
      *  Include additional scripts
      */
     import('./libraries/places-search');
+
+    /*
+     *  Include profile image uploader
+     */
+    import('./profile/photo-upload')
 });
