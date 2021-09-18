@@ -7,6 +7,7 @@ require_once("lib/config.php");
 require_once("lib/dblayer.php");
 require_once("lib/zamger.php");
 require_once("lib/session.php"); // check_cookie
+require_once("lib/hack.php");
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 check_cookie();
