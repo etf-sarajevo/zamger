@@ -3,6 +3,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Potvrda" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5b016f3d-d5e5-4a91-bbb1-1c18a6f0f594">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ZamgerDataAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="244"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="748"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -135,7 +137,8 @@ ss.ponovac, ss.status_studenta, ss.put, ag.naziv naziv_akademske_godine,
 ag2.naziv akademska_godina_studij, ko.ocjena polozen_zavrsni,
 ko.datum_u_indeksu datum_diplomiranja,
 ns.naziv nacin_studiranja_txt, sp.naziv svrha_potvrde,
-ts.ciklus, tituliraj(i.dekan) dekan, zzp.datum_obrade
+ts.ciklus, tituliraj(i.dekan) dekan, zzp.datum_obrade,
+CONCAT('00000' , zzp.id) zahtjev
 FROM   osoba o, mjesto m, opcina op, drzava d,
        akademska_godina ag, akademska_godina ag2, 
        institucija i, svrha_potvrde sp, jasper_token jt,
@@ -161,6 +164,7 @@ zzp.student=ss.student AND
 ss.akademska_godina = ag2.id AND
 m.id=o.mjesto_rodjenja AND op.id=m.opcina AND
 d.id=m.drzava AND i.tipinstitucije=1
+AND zzp.tip_potvrde=2
 AND jt.token=$P{token}
 AND jt.report='Prepis' AND (jt.param1=$P{zahtjev} OR jt.param1=$P{zahtjev_datum})
 AND NOW()-jt.vrijeme<1200]]>
@@ -234,6 +238,7 @@ AND NOW()-jt.vrijeme<1200]]>
 	<field name="akademska_godina_studij" class="java.lang.String"/>
 	<field name="polozen_zavrsni" class="java.lang.String"/>
 	<field name="datum_diplomiranja" class="java.sql.Date"/>
+	<field name="zahtjev" class="java.lang.Integer"/>
 	<variable name="CURRENT_PAGE_NUMBER" class="java.lang.Integer" resetType="None" incrementType="Page">
 		<variableExpression><![CDATA[$V{CURRENT_PAGE_NUMBER} == null? $V{PAGE_NUMBER}: $V{PAGE_NUMBER} +1]]></variableExpression>
 	</variable>
@@ -608,7 +613,7 @@ AND NOW()-jt.vrijeme<1200]]>
 				<textElement textAlignment="Center">
 					<font fontName="Calibri" size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{zahtjev}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{zahtjev}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="364" y="156" width="163" height="21" uuid="9c0ed30a-7884-4c9e-8c6d-c6b02f5a2420"/>
@@ -622,7 +627,7 @@ AND NOW()-jt.vrijeme<1200]]>
 					<property name="com.jaspersoft.studio.unit.barWidth" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="3of9" drawText="false" checksumRequired="false">
-					<jr:codeExpression><![CDATA[$P{zahtjev}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA[$F{zahtjev}]]></jr:codeExpression>
 				</jr:barbecue>
 			</componentElement>
 			<textField>
