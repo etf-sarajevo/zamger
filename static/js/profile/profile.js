@@ -148,10 +148,8 @@ $(document).ready(function () {
                 /** Kontakt informacije **/
                 phone:                        $("#phone").val(),             // Kontakt telefon
 
-                /** TODO - High school **/
-                highSchool: {
-
-                },
+                /** Previous education **/
+                previousEducation: [ ],
 
                 /** Rest of data **/
                 sourceOfFunding:              $("#sourceOfFunding").val(),        // Izvori finansiranja studenta
@@ -164,6 +162,17 @@ $(document).ready(function () {
             }
         };
 
+        if ($("#skola").val() > 0) {
+            let previousEducation = {
+                School:     {
+                    id: $("#skola").val()
+                },
+                yearCompleted:  {
+                    id: $("#godina_zavrsetka").val()
+                }
+            };
+            params.ExtendedPerson.previousEducation.push( previousEducation );
+        }
         console.log(params);
         // e.preventDefault();
         //
