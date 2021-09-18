@@ -168,7 +168,7 @@ function student_prijava_ispita() {
 		$greska = $greska_long = "";
 		
 		// Is there MinScore option or conditional activities
-		if (array_key_exists("MinScore", $event['CourseActivity']['options']) || !empty($event['CourseActivity']['conditionalActivities'])) {
+		if ($id_komponente > 0 && array_key_exists("MinScore", $event['CourseActivity']['options']) || !empty($event['CourseActivity']['conditionalActivities'])) {
 			// Get student portfolio with score
 			$portfolio = api_call("course/$id_predmeta/student/$userid", ["totalScore" => true]);
 			if (array_key_exists("MinScore", $event['CourseActivity']['options']) && $event['CourseActivity']['options']['MinScore'] > $portfolio['totalScore']) {
