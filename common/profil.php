@@ -63,15 +63,15 @@ function common_profil() {
 	
 	// These lists have fixed values
 	$nacionalnost = [
-		"1" => "Bošnjak/Bošnjakinja",
-		"2" => "Srbin/Srpkinja",
-		"3" => "Hrvat/Hrvatica",
-		"4" => "Rom/Romkinja",
-		"5" => "Ostalo",
-		"6" => "Nepoznato / Nije se izjasnio/la",
-		"9" => "Bosanac/Bosanka",
-		"10" => "BiH",
-		"11" => "Musliman/Muslimanka"
+		["1", "Bošnjak/Bošnjakinja"],
+		["2", "Srbin/Srpkinja"],
+		["3", "Hrvat/Hrvatica"],
+		["4", "Rom/Romkinja"],
+		["5", "Ostalo"],
+		["6", "Nepoznato / Nije se izjasnio/la"],
+		["9", "Bosanac/Bosanka"],
+		["10", "BiH"],
+		["11", "Musliman/Muslimanka"]
 	];
 	$izvoriFinansiranja = [ '1' => 'Roditelji', '2' => 'Primate plaću iz radnog odnosa', '3' => 'Primate stipendiju', '4' => 'Kredit', '5' => 'Ostalo' ];
 	$statusAktivnosti   = [ '1' => 'Zaposlen', '2' => 'Nezaposlen', '3' => 'Neaktivan'];
