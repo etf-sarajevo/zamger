@@ -328,7 +328,7 @@ if (!$user_studentska && !$user_siteadmin) {
 	
 	// Zahtjevi za promjenu ličnih podataka
 	
-	$changeRequests = api_call("person/changeRequest")['results'];
+	$changeRequests = api_call("person/changeRequest", [ "resolve" => ["Person"] ] )['results'];
 	if (count($changeRequests) < 1) {
 	?>
 		<p>Nema novih zahtjeva za promjenu ličnih podataka.</p>
@@ -339,11 +339,10 @@ if (!$user_studentska && !$user_siteadmin) {
 		<ul>
 	<?
 	}
-	//$q10 = db_query("select pp.id, pp.osoba, UNIX_TIMESTAMP(pp.vrijeme_zahtjeva), o.ime, o.prezime from promjena_podataka as pp, osoba as o where o.id=pp.osoba order by pp.vrijeme_zahtjeva");
 	
 	foreach ($changeRequests as $cr) {
 		?>
-		<li><a href="?sta=studentska/intro&akcija=zahtjev&id=<?=$cr['id']?>"><?=$cr['name']?> <?=$cr['surname']?></a> (<?=date("d. m. Y. H:i", db_timestamp($cr['requestDateTime']))?>)</li>
+		<li><a href="?sta=studentska/intro&akcija=zahtjev&id=<?=$cr['id']?>"><?=$cr['Person']['name']?> <?=$cr['Person']['surname']?></a> (<?=date("d. m. Y. H:i", db_timestamp($cr['requestDateTime']))?>)</li>
 		<?
 	}
 	
