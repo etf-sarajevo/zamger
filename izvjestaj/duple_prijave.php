@@ -42,9 +42,9 @@ while(db_fetch2($qispiti, $ispit, $predmet)) {
 	if (!array_key_exists($predmet, $studenti))
 		$studenti[$predmet] = array();
 	
-	$qtermin = db_query("SELECT id FROM ispit_termin WHERE ispit=$ispit");
+	$qtermin = db_query("SELECT id FROM dogadjaj WHERE opcije=$ispit");
 	while(db_fetch1($qtermin, $termin)) {
-		$qstudent = db_query("SELECT student FROM student_ispit_termin WHERE ispit_termin=$termin");
+		$qstudent = db_query("SELECT osoba FROM dogadjaj_osoba WHERE dogadjaj=$termin");
 		while(db_fetch1($qstudent, $student)) {
 			if (!in_array($student, $studenti[$predmet]))
 				$studenti[$predmet][] = $student;
@@ -97,8 +97,9 @@ print "<h3>Dvostruke prijave</h3>\n";
 
 foreach($duple_prijave as $student => $predmeti) {
 	$sd = db_query_assoc("SELECT ime, prezime, brindexa FROM osoba WHERE id=$student");
+	$email = db_get("SELECT adresa FROM email WHERE osoba=$student AND sistemska=1");
 	?>
-	<li><?=$sd['prezime']?> <?=$sd['ime']?> (<?=$sd['brindexa']?>): 
+	<li><?=$sd['prezime']?> <?=$sd['ime']?> (<?=$sd['brindexa']?>) - <?=$email?>:
 	<?
 	foreach($predmeti as $predmet) {
 		if (!array_key_exists($predmet, $imena_predmeta_cache))
