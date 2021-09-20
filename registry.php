@@ -75,6 +75,7 @@ array("izvjestaj/rezultati_ispita", "Rezultati ispita", "Rezultati ispita", "NBA
 array("izvjestaj/spisak_predmeta", "Spisak predmeta u akademskoj godini", "Spisak predmeta", "BA", "2", "0"),
 array("izvjestaj/statistika_predmeta", "Sumarna statistika predmeta", "Statistika predmeta", "NBA", "0", "0"),
 array("izvjestaj/studenata_po_predmetu", "Broj studenata po predmetu", "Broj studenata po predmetu", "BA", "0", "0"),
+array("izvjestaj/sv20", "Obrazac ŠV-20", "Obrazac ŠV-20", "SNBA", "2", "0"),
 array("izvjestaj/svi_studenti", "Spisak svih studenata", "Spisak svih studenata", "BA", "0", "0"),
 array("izvjestaj/termini_ispita", "Izvještaj za termine ispita", "Termin ispita", "NBA", "0", "0"),
 array("izvjestaj/ugovoroucenju", "Spisak odabranih izbornih predmeta", "Izborni predmeti", "NBA", "0", "0"),

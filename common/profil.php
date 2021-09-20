@@ -50,18 +50,28 @@ function common_profil() {
 	$opcina = [];
 	foreach (api_call("person/municipality/search", [ "query" => "" ] )["results"] as $result)
 		$opcina[] = [ $result['id'], $result['name'] ];
+	$skola = [];
+	foreach (api_call("person/school/search", [ "query" => "" ] )["results"] as $result) {
+		$result['name'] = str_replace("MSŠ", "Mješovita srednja škola", $result['name']);
+		$skola[] = [ $result['id'], $result['name'] ];
+	}
+	$skolska_godina = [];
+	foreach (api_call("zamger/year", [] )["results"] as $result) {
+		$year = substr($result['name'], strpos($result['name'], "/") + 1);
+		if ($result['id'] != 0) $skolska_godina[] = [$result['id'], $year];
+	}
 	
 	// These lists have fixed values
 	$nacionalnost = [
-		"1" => "Bošnjak/Bošnjakinja",
-		"2" => "Srbin/Srpkinja",
-		"3" => "Hrvat/Hrvatica",
-		"4" => "Rom/Romkinja",
-		"5" => "Ostalo",
-		"6" => "Nepoznato / Nije se izjasnio/la",
-		"9" => "Bosanac/Bosanka",
-		"10" => "BiH",
-		"11" => "Musliman/Muslimanka"
+		["1", "Bošnjak/Bošnjakinja"],
+		["2", "Srbin/Srpkinja"],
+		["3", "Hrvat/Hrvatica"],
+		["4", "Rom/Romkinja"],
+		["5", "Ostalo"],
+		["6", "Nepoznato / Nije se izjasnio/la"],
+		["9", "Bosanac/Bosanka"],
+		["10", "BiH"],
+		["11", "Musliman/Muslimanka"]
 	];
 	$izvoriFinansiranja = [ '1' => 'Roditelji', '2' => 'Primate plaću iz radnog odnosa', '3' => 'Primate stipendiju', '4' => 'Kredit', '5' => 'Ostalo' ];
 	$statusAktivnosti   = [ '1' => 'Zaposlen', '2' => 'Nezaposlen', '3' => 'Neaktivan'];
@@ -91,7 +101,7 @@ function common_profil() {
 					<div class="col-md-12">
 							Popunjavanjem ovog Zahtjeva preuzimate odgovornost za ispravnost unesenih podataka. Ovdje uneseni podaci se mogu koristiti na dokumentima koje izdaje <?=$conf_skr_naziv_institucije?>. Studentska služba zadržava pravo da odbije zahtjev u slučaju da su podaci neispravni.<br>
 						    <b>Napomena</b>: Pristupnu šifru možete promijeniti isključivo koristeći <?=$conf_promjena_sifre?>.
-							<!--br> <span class="color-logo download-sv-20 ml-2">Preuzmite ŠV-20 obrazac</span-->
+						<br> <span class="color-logo download-sv-20 ml-2"><a href="?sta=izvjestaj/sv20&ugovor=da">Preuzmite ŠV-20 obrazac</a></span>
 					</div>
 				</div>
 				<div class="row mb-3 bg-light">
@@ -377,42 +387,50 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="naziv">Naziv prethodno završenog obrazovanja</label> <!-- Old -->
-								<?= Form::text('naziv', '', ['class' => 'form-control form-control-sm', 'id' => 'naziv', 'aria-describedby' => 'prethodnoObrazHelp']) ?>
+								<?
+								$schools = count($person['ExtendedPerson']['previousEducation']);
+								if ($schools > 0) {
+									$lastSchool = $person['ExtendedPerson']['previousEducation'][$schools - 1]['School']['id'];
+									$yearCompleted = $person['ExtendedPerson']['previousEducation'][$schools - 1]['yearCompleted']['id'];
+								} else
+									$lastSchool = $yearCompleted = 0;
+								print Form::select('skola', $skola, $lastSchool, ['class' => 'form-control form-control-sm select-2', 'id' => 'skola', 'aria-describedby' => 'prethodnoObrazHelp'], 'školu')
+								?>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="godina">Godina </label> <!-- New -->
-								<?= Form::number('godina','', ['class' => 'form-control form-control-sm', 'id' => 'godina', 'aria-describedby' => 'prethodnoObrazHelp', 'min' => '1960', 'max' => date('Y')]) ?>
+								<label for="godina">Godina</label> <!-- New -->
+								<?= Form::select('godina_zavrsetka', $skolska_godina, $yearCompleted ?? '', ['class' => 'form-control form-control-sm', 'id' => 'godina_zavrsetka', 'aria-describedby' => 'yearHelp'], 'godinu') ?>
 							</div>
 						</div>
 					</div>
-					<div class="row">
+					<!--div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="opcina">Općina u kojoj ste završili</label> <!-- Old -->
+								<label for="opcina">Općina u kojoj ste završili</label>
 								<?= Form::select('opcina', $opcina, '', ['class' => 'form-control form-control-sm select-2', 'id' => 'opcina', 'aria-describedby' => 'prethodnoObrazHelp'], 'općinu') ?>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="tipskole"> Tip škole </label> <!-- Old -->
+								<label for="tipskole"> Tip škole </label>
 								<?= Form::select('tipskole', ['GIMNAZIJA' => 'GIMNAZIJA', 'ELEKTROTEHNICKA' => 'ELEKTROTEHNICKA', 'TEHNICKA' => 'TEHNICKA', 'STRUCNA' => 'STRUCNA', 'MSS' => 'MSS'], 'GIMNAZIJA', ['class' => 'form-control form-control-sm', 'id' => 'tipskole', 'aria-describedby' => 'prethodnoObrazHelp']) ?>
 							</div>
 						</div>
-					</div>
+					</div-->
 					<div class="row">
-						<div class="col-md-12">
+						<!--div class="col-md-12">
 							<div class="form-group">
-								<label for="domaca">Da li je škola u BiH</label> <!-- Old -->
+								<label for="domaca">Da li je škola u BiH</label>
 								<?= Form::select('domaca', ['1' => 'Da', '2' => 'Ne'], '1', ['class' => 'form-control form-control-sm', 'id' => 'domaca', 'aria-describedby' => 'prethodnoObrazHelp']) ?>
 							</div>
-						</div>
+						</div-->
 						<div class="col-md-12">
 							<small id="prethodnoObrazHelp" class="form-text text-muted">
-								Naziv prethodno završenog obrazovanja -Upisuje se naziv prethodno završenog obrazovanja /srednje, više, visoke škole/, fakulteta, akademije koju ste završili prije upisa na ovu visokoškolsku ustanovu, tj. prije upisa na određe ni studijski program. Ako ste prije studirali na nekoj visokoškolskoj ustanovi a niste diplomirali, upisujete naziv srednje škole koju ste prethodno završili.
+								Naziv prethodno završenog obrazovanja -Upisuje se naziv prethodno završenog obrazovanja /srednje, više, visoke škole/, fakulteta, akademije koju ste završili prije upisa na ovu visokoškolsku ustanovu, tj. prije upisa na određeni studijski program. Ako ste prije studirali na nekoj visokoškolskoj ustanovi a niste diplomirali, upisujete naziv srednje škole koju ste prethodno završili.
 								<br>
-								Godina prethodno završenog obrazovanja - Upisujete godinu završnog ispita - mature ili godine kada ste dobili završno svjedoanstvo za srednju školu, odnosno godinu diplomiranja - završetka studija na određenom više ili visokoškolskom studiju.
+								Godina prethodno završenog obrazovanja - Upisujete godinu završnog ispita - mature ili godine kada ste dobili završno svjedočanstvo za srednju školu, odnosno godinu diplomiranja - završetka studija na određenom višem ili visokoškolskom studiju.
 							</small>
 						</div>
 					</div>

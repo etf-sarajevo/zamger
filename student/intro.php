@@ -26,30 +26,14 @@ function student_intro() {
 
 	// KOD ZA IZVJEŠTAJE
 	if ($_REQUEST['akcija'] == "promijeni_kod") {
-		?>
-		<h1>Molimo sačekajte</h1>
-		<p>Regenerisanje koda za izvještaje može potrajati nekoliko minuta.</p>
-		<?=genform("POST", "pk_real")?>
-			<input type="hidden" name="akcija" value="promijeni_kod_real">
-			</form>
-		<script>document.getElementById("pk_real").submit();</script>
-		<?
-		return;
-	}
-	if ($_REQUEST['akcija'] == "promijeni_kod_real") {
 		global $conf_files_path, $user_siteadmin;
 		api_call("zamger/anonymous_code/$userid", [], "POST");
-		// FIXME
-		$q11 = db_query("SELECT pk.predmet, pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE pk.id=sp.predmet AND sp.student=$userid");
-		
-		// Proglašavamo usera za siteadmina da ne bi izvjestaj/predmet opet vrati cachirani izvještaj
-		$old_siteadmin = $user_siteadmin;
-		$user_siteadmin = true;
-		while (db_fetch2($q11, $predmet, $ag)) {
-			if (file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag"))
-				generisi_izvjestaj_predmet($predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
-		}
-		$user_siteadmin = $old_siteadmin;
+		?>
+		<h1>Promjena koda je zatražena</h1>
+		<p>Vaš kod će biti promijenjen u narednih 24 sata.</p>
+		<a href="?sta=student/intro">Nazad</a>
+		<?
+		return;
 	}
 	$code = api_call("zamger/anonymous_code/$userid");
 	?>
