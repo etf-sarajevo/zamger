@@ -657,7 +657,8 @@ function studentski_meni($fj) {
 			<img src="static/images/plus.png" width="13" height="13" id="img-dokumenti" onclick="daj_stablo('dokumenti')">
 			<a href="#" onclick="daj_stablo('dokumenti'); return false;">Dokumenti</a><br />
 			<div id="dokumenti" style="display:none">
-				&nbsp;&nbsp;&nbsp; <a href="?sta=student/potvrda">Zahtjev za ovjereno uvjerenje</a> <i><font color="red">NOVO!</font></i><br />
+				&nbsp;&nbsp;&nbsp; <a href="?sta=izvjestaj/sv20">ŠV-20 obrazac</a> <i><font color="red">NOVO!</font></i><br />
+				&nbsp;&nbsp;&nbsp; <a href="?sta=student/potvrda">Zahtjev za ovjereno uvjerenje</a><br />
 				&nbsp;&nbsp;&nbsp; <a href="?sta=izvjestaj/index&student=<?=$userid?>">Uvjerenje o položenim predmetima</a><br />
 				&nbsp;&nbsp;&nbsp; <a href="?sta=izvjestaj/progress&student=<?=$userid?>&razdvoji_ispite=1">Pregled ostvarenog rezultata</a><br />
 				<? if ($modul_uou) { ?>

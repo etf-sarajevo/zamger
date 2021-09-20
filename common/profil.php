@@ -101,7 +101,7 @@ function common_profil() {
 					<div class="col-md-12">
 							Popunjavanjem ovog Zahtjeva preuzimate odgovornost za ispravnost unesenih podataka. Ovdje uneseni podaci se mogu koristiti na dokumentima koje izdaje <?=$conf_skr_naziv_institucije?>. Studentska služba zadržava pravo da odbije zahtjev u slučaju da su podaci neispravni.<br>
 						    <b>Napomena</b>: Pristupnu šifru možete promijeniti isključivo koristeći <?=$conf_promjena_sifre?>.
-							<!--br> <span class="color-logo download-sv-20 ml-2">Preuzmite ŠV-20 obrazac</span-->
+						<br> <span class="color-logo download-sv-20 ml-2"><a href="?sta=izvjestaj/sv20&ugovor=da">Preuzmite ŠV-20 obrazac</a></span>
 					</div>
 				</div>
 				<div class="row mb-3 bg-light">
