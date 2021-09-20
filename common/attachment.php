@@ -5,7 +5,7 @@
 
 function common_attachment() {
 
-global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin,$_api_http_code;
+global $userid,$conf_files_path,$user_student,$user_nastavnik,$user_siteadmin,$_api_http_code,$user_studentska;
 
 
 // Kakav fajl se downloaduje?
@@ -225,6 +225,27 @@ if ($tip == "zavrsni") {
 	$filename = db_result($q330,0,1);
 
 	$filepath = "$conf_files_path/zavrsni/fajlovi/$zavrsni/$filename/v$revizija/$filename";
+}
+
+
+
+// Tip: uplatnica
+
+if ($tip == "uplatnica") {
+	$student = $userid;
+	if ($user_studentska && int_param('student'))
+		$student = int_param('student');
+	$ag = int_param('ag');
+	$dir = "$conf_files_path/uplatnice/$student/";
+	$filepath = $dir . "uplatnica-$ag.jpg";
+	if (!file_exists($filepath))
+		$filepath = $dir . "uplatnica-$ag.png";
+	if (!file_exists($filepath))
+		$filepath = $dir . "uplatnica-$ag.pdf]";
+	if (!file_exists($filepath))
+		exit;
+	
+	$filename = basename($filepath);
 }
 
 // DOWNLOAD

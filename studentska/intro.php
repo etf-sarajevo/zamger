@@ -200,7 +200,7 @@ if (!$user_studentska && !$user_siteadmin) {
 		$translations = array(
 			"name" => "ime", "surname" => "prezime", "sex" => "spol", "fathersSurname" => "prezime oca", "fathersName" => "ime oca",
 			"mothersName" => "ime majke", "mothersSurname" => "prezime majke", "ethnicity" => "nacionalnost", "placeOfBirth" => "mjesto rođenja",
-			"addressStreetNo" => "adresa", "addressPlace" => "adresa (mjesto)", "nationality" => "državljanstvo",
+			"dateOfBirth" => "datum rođenja", "addressStreetNo" => "adresa", "addressPlace" => "adresa (mjesto)", "nationality" => "državljanstvo",
 			"phone" => "telefon", "previousEducation" => "završena škola", "residenceAddress" => "adresa prebivališta",
 			"residencePlace" => "mjesto prebivališta", "sourceOfFunding" => "izvor finasiranja",
 			"activityStatusParent" => "status aktivnosti roditelja", "activityStatusStudent" => "status aktivnosti studenta",
