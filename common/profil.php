@@ -134,7 +134,7 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="sex">Spol</label> <!-- Old -->
-								<?= Form::select('sex', ['M' => 'Muški', 'Z' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp'], 'spol', '0') ?>
+								<?= Form::select('sex', ['M' => 'Muški', 'F' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp'], 'spol', '0') ?>
 								<small id="sexHelp" class="form-text text-muted">Vaš spol</small>
 							</div>
 						</div>
@@ -351,14 +351,14 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="fathersName">Ime oca</label> <!-- Old -->
-								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp', 'required' => 'required']) ?>
+								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp']) ?>
 								<small id="fathersNameHelp" class="form-text text-muted"> Unesite ime Vašeg oca </small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="fathersSurname">Prezime oca</label> <!-- Old -->
-								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname', 'required' => 'required']) ?>
+								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname']) ?>
 								<small id="fathersSurnameHelp" class="form-text text-muted"> Unesite prezime Vašeg oca </small>
 							</div>
 						</div>
@@ -367,14 +367,14 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="mothersName">Ime majke</label> <!-- Old -->
-								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp', 'required' => 'required']) ?>
+								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp']) ?>
 								<small id="mothersNameHelp" class="form-text text-muted"> Unesite ime Vaše majke </small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="mothersSurname">Prezime majke</label> <!-- Old -->
-								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp', 'required' => 'required']) ?>
+								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp']) ?>
 								<small id="mothersSurnameHelp" class="form-text text-muted"> Unesite prezime Vaše majke </small>
 							</div>
 						</div>
