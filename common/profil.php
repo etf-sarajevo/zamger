@@ -134,7 +134,7 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="sex">Spol</label> <!-- Old -->
-								<?= Form::select('sex', ['M' => 'Muški', 'Z' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp'], 'spol', '0') ?>
+								<?= Form::select('sex', ['M' => 'Muški', 'F' => 'Ženski'], $person['ExtendedPerson']['sex'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'sex', 'aria-describedby' => 'sexHelp'], 'spol', '0') ?>
 								<small id="sexHelp" class="form-text text-muted">Vaš spol</small>
 							</div>
 						</div>
@@ -351,14 +351,14 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="fathersName">Ime oca</label> <!-- Old -->
-								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp', 'required' => 'required']) ?>
+								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp']) ?>
 								<small id="fathersNameHelp" class="form-text text-muted"> Unesite ime Vašeg oca </small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="fathersSurname">Prezime oca</label> <!-- Old -->
-								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname', 'required' => 'required']) ?>
+								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname']) ?>
 								<small id="fathersSurnameHelp" class="form-text text-muted"> Unesite prezime Vašeg oca </small>
 							</div>
 						</div>
@@ -367,14 +367,14 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="mothersName">Ime majke</label> <!-- Old -->
-								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp', 'required' => 'required']) ?>
+								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp']) ?>
 								<small id="mothersNameHelp" class="form-text text-muted"> Unesite ime Vaše majke </small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="mothersSurname">Prezime majke</label> <!-- Old -->
-								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp', 'required' => 'required']) ?>
+								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp']) ?>
 								<small id="mothersSurnameHelp" class="form-text text-muted"> Unesite prezime Vaše majke </small>
 							</div>
 						</div>
@@ -462,7 +462,7 @@ function common_profil() {
 						<div class="col-md-12">
 							<small id="activityStatusHelp" class="form-text text-muted">
 								<b>Zaposlen</b> , ako roditelj - izdržavatelj ili student imaju neki posao kojim obezbjeđuju sredstva za život.
-								<b>Nezaposlen</b> , ako roditelj - izdržavatelj ili student nemaju nikakav posao kojim obezbjeđuju sredstva za život, ali traže posao i spremni su da ponu da ga obavljaju ukoliko bi im posao bio ponuđen.
+								<b>Nezaposlen</b> , ako roditelj - izdržavatelj ili student nemaju nikakav posao kojim obezbjeđuju sredstva za život, ali traže posao i spremni su da počnu da ga obavljaju ukoliko bi im posao bio ponuđen.
 								<b>Neaktivan</b> , ako je roditelj - izdržavatelj ili student nesposoban za rad, domaćica, penzioner, student.
 							</small>
 						</div>
@@ -482,7 +482,7 @@ function common_profil() {
 						</div>
 						<div class="col-md-12">
 							<small id="occupationHelp" class="form-text text-muted">
-								<b>Zanimanje</b> - vrsta posla koju osoba obavlja u preduzeu, prodavnici, tvornici, itd. Potrebno je upisati što precizniji opis zanimanja, odnosno vrste posla koji osoba obavlja u preduzeu, prodavnici, na poljoprivrednom gazdinstvu, i slino. Zanimanje ne mora biti u vezi sa stepenom obrazovanja ili specijalizacijom nego se veže za konkretan posao koji obavlja osoba, npr. pravnik koji pruža taksi usluge po zanimanju je taksista, a ne pravnik. U svrhu omoguavanja šifriranja odgovori moraju biti jasni i kompletni. Odgovor treba da je što detaljniji, npr.: individualni poljoprivrednik, rudar, blagajnik, profesor, elektrotehniar, laborant, slovoslaga i dr.
+								<b>Zanimanje</b> - vrsta posla koju osoba obavlja u preduzeu, prodavnici, tvornici, itd. Potrebno je upisati što precizniji opis zanimanja, odnosno vrste posla koji osoba obavlja u preduzeu, prodavnici, na poljoprivrednom gazdinstvu, i slino. Zanimanje ne mora biti u vezi sa stepenom obrazovanja ili specijalizacijom nego se veže za konkretan posao koji obavlja osoba, npr. pravnik koji pruža taksi usluge po zanimanju je taksista, a ne pravnik. U svrhu omoguavanja šifriranja odgovori moraju biti jasni i kompletni. Odgovor treba da je što detaljniji, npr.: individualni poljoprivrednik, rudar, blagajnik, profesor, elektrotehničar, laborant, slovoslagač i dr.
 							</small>
 						</div>
 					</div>
@@ -503,7 +503,7 @@ function common_profil() {
 							<small id="employmentStatusHelp" class="form-text text-muted">
 								<b>Poslodavci/samozaposlenici</b> su poslodavci koji upravljaju poslovnim subjektom i zapošljavaju jednog ili više zaposlenika, kao i osobe koje rade za vlastiti raun i ne zapošljavaju zaposlenike, kao i vlasnici poljoprivrednog gazdinstva.
 								<b>Zaposlenik</b> je osoba koja radi za poslodavca u državnom/privatnom sektoru i za taj rad prima naknadu /u novcu ili naturi/
-								<b>Pomažući član porodice</b> je osoba koja radi bez plae u preduzeću, obrtu ili poljoprivrednom gazdinstvu kojeg vodi njen srodnik s kojim živi u istom domaćinstvu. Ova kategorija uključuje npr.: sina ili kćerku koji rade u roditeljskom biznisu ili roditeljskom poljoprivrednom gazdinstvu bez plaćanja.
+								<b>Pomažući član porodice</b> je osoba koja radi bez plaće u preduzeću, obrtu ili poljoprivrednom gazdinstvu kojeg vodi njen srodnik s kojim živi u istom domaćinstvu. Ova kategorija uključuje npr.: sina ili kćerku koji rade u roditeljskom biznisu ili roditeljskom poljoprivrednom gazdinstvu bez plaćanja.
 							</small>
 						</div>
 					</div>

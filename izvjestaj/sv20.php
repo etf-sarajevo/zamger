@@ -59,18 +59,26 @@ function izvjestaj_sv20() {
 		13 => 'Strani državljanin'
 	];
 	$imena_ciklusa = [ "", "Prvi ciklus", "Drugi ciklus", "Treći ciklus" ];
-	$rimski_brojevi = [ "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" ];
+	$rimski_brojevi = [ "", " I ", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" ];
 	$nacini_studija = [ "", "redovan", "paralelan", "samofinansirajući", "vanredan", "dl" ];
 	$izvoriFinansiranja = [ "", "roditelji", "primate plaću iz radnog odnosa", "primate stipendiju", "kredit", "ostalo" ];
 	$statusAktivnosti = [ "", "zaposlen", "nezaposlen", "neaktivan" ];
 	$statusZaposlenosti = [ "", "poslodavac/samozaposlenik", "zaposlenik", "pomažući član porodice" ] ;
 	
-	if (param('ugovor')) {
-		$enrollment = api_call("enrollment/contract/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
-		if ($_api_http_code != "200")
-			$enrollment = api_call("enrollment/current/$student", [ "resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
-	} else
-		$enrollment = api_call("enrollment/current/$student", [ "resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
+	
+	$enrollment = api_call("enrollment/current/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
+	$currentlyEnrolled = ($_api_http_code == "200");
+	$enrollmentContract = api_call("enrollment/current/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
+	$hasContract = ($_api_http_code == "200");
+	
+	if (param('ugovor') || !$currentlyEnrolled)
+		$enrollment = $enrollmentContract;
+
+	if (!$currentlyEnrolled && !$hasContract) {
+		niceerror("Student nije trenutno upisan niti ima generisan ugovor o učenju");
+		print "<p>Da biste mogli preuzeti ŠV-20 obrazac potrebno je da je ispunjen jedan od ova dva uslova.</p>";
+		return;
+	}
 	
 	list($yearFrom, $yearTo) = explode("/", $enrollment['AcademicYear']['name']);
 		
@@ -129,6 +137,8 @@ function izvjestaj_sv20() {
 		
 	$employmentStatusParent  = $statusZaposlenosti[$exp['employmentStatusParent']];
 	$employmentStatusStudent = $statusZaposlenosti[$exp['employmentStatusStudent']];
+	
+	
 	
 	/*
 	 * 	Path to file
@@ -232,8 +242,8 @@ function izvjestaj_sv20() {
 		}
 		// Study year
 		
-		if($studyYear == 'I'){ $templateProcessor->setComplexValue('f',  (new TextRun())->addText('I', $strikethroughb)); } // TODO - check
-		else $templateProcessor->setComplexValue('f',  (new TextRun())->addText('I',  $bold));
+		if($studyYear == ' I '){ $templateProcessor->setComplexValue('f',  (new TextRun())->addText(' I ', $strikethroughb)); } // TODO - check
+		else $templateProcessor->setComplexValue('f',  (new TextRun())->addText(' I ',  $bold));
 		if($studyYear == 'II'){ $templateProcessor->setComplexValue('s',  (new TextRun())->addText('II', $strikethroughb)); }
 		else $templateProcessor->setComplexValue('s',  (new TextRun())->addText('II',  $bold));
 		if($studyYear == 'III'){ $templateProcessor->setComplexValue('t',  (new TextRun())->addText('III', $strikethroughb)); }
