@@ -316,6 +316,323 @@ function ws_api_links(){
 		}
 	}
 	
+	else if($_REQUEST['prijava_semestra']){
+		$fileName = 'static/files/prijava-semestra/files/'.md5(time()).'.docx';
+		
+		$faculty = 'Elektrotehnički Fakultet u Sarajevu';
+		$place   = 'Sarajevo';
+		$index   = '16837';
+		
+		$fullNameParent = 'John (Father) Doe';
+		$fullName = 'John Doe';
+		$semestar = 'IV';
+		$department = 'Automatika i Elektronika';
+		
+		$jmb = '0305994112460';
+		$birthDate = '03.05.1994';
+		
+		$birthPlace = 'Cazin, Cazin'; // Ovdje ide Mjesto i općina rođenja
+		$birthCountry = 'Unsko Sanski Kanton, Bosna i Hercegovina'; // Ovdje ide kanton i država
+		
+		$citizenship  = 'Bosna i Hercegovina';
+		
+		$father = 'John Does father'; // Ime i prezime
+		$mother = 'John Does mother'; // Ime i prezime
+		
+		$residenceAddress = 'Adresa prebivališta';
+		$residencePlace = 'Mjesto, općina i kanton prebivališta';
+		
+		$postalAddress = 'Adresa stanovanja za vrijeme školovanja';
+		$phone = '0038761225883';
+		$email = 'john@doe.com';
+		
+		$schoolYear = '2020/2021';
+		$date  = date('d.m.Y');
+		$date2 = date('d.m');
+		$year  = date('Y');
+		
+		// Kako se student upisuje
+		// 1 - redovan, 2 - redovan samofinansirajući, 3 - Vanredan, 4 - DL, 5 - gost
+		
+		$status = 2; // Redovan
+		$cycle  = 1; // 1 - Prvi ciklus, 2 - Drugi ciklus, 3 - Treći ciklus || Prvog - Drugog - Trećeg
+		
+		// TODO -- Napomena za predmete :: Pokušaj dobiti neki array, koji je array of arrays - example ispod
+		$data = [
+			[
+				'Električni krugovi 1', // Predmet
+				'prof. dr. Nastavnik',  // Profesor
+				'4', // Sedmično predavanja
+				'2', // Sedmično vježbi
+				'36', // Ukupno predavanja
+				'20', // Ukupno vježbi
+				'6', // ECTS
+			],
+			[
+				'Drugi',
+				'profa',
+				'5',
+				'3',
+				'40',
+				'22',
+				'3'
+			]
+		];
+		
+		
+		try {
+			/*
+			 * Init template processor
+			 */
+			$templateProcessor = new TemplateProcessor('static/files/prijava-semestra/prijava_semestra.docx');
+			$underline = array('underline' => 'single', 'name' => 'Arial');
+			$arial = array('name' => 'Arial');
+			$strikethrough = array('strikethrough' => true, 'name' => 'Arial');
+			$strikethrough10 = array('strikethrough' => true, 'name' => 'Arial', 'size' => 10);
+			
+			/*
+			 * 	Data
+			 */
+			for($i=0; $i<count($data); $i++){
+				$templateProcessor->setValue('p'.$i,  $data[$i][0]); // Predmet
+				$templateProcessor->setValue('n'.$i,  $data[$i][1]); // Nastavnik
+				$templateProcessor->setValue('pr'.$i, $data[$i][2]); // Predavanja sedmično
+				$templateProcessor->setValue('vj'.$i, $data[$i][3]); // Vježbi sedmično
+				$templateProcessor->setValue('pt'.$i, $data[$i][4]); // Predavanja ukupno
+				$templateProcessor->setValue('vt'.$i, $data[$i][5]); // Vježbi ukupno
+				$templateProcessor->setValue('e'.$i,  $data[$i][6]); // ECTS
+			}
+			
+			/*
+			 * 	Now, set rest values to empty string
+			 */
+			
+			for($i = count($data); $i<12; $i++){
+				$templateProcessor->setValue('p'.$i, ''); // Predmet
+				$templateProcessor->setValue('n'.$i, ''); // Nastavnik
+				$templateProcessor->setValue('pr'.$i,''); // Predavanja sedmično
+				$templateProcessor->setValue('vj'.$i,''); // Vježbi sedmično
+				$templateProcessor->setValue('pt'.$i,''); // Predavanja ukupno
+				$templateProcessor->setValue('vt'.$i,''); // Vježbi ukupno
+				$templateProcessor->setValue('e'.$i, ''); // ECTS
+			}
+			
+			/*
+			 * 	Header
+			 */
+			$templateProcessor->setValue('faculty', $faculty);
+			$templateProcessor->setValue('place', $place);
+			$templateProcessor->setValue('index', $index);
+			$templateProcessor->setValue('fullNameParent', $fullNameParent);
+			$templateProcessor->setValue('fullName', $fullName);
+			$templateProcessor->setValue('semestar', $semestar);
+			$templateProcessor->setValue('department', $department);
+			
+			/*
+			 * 	Student info
+			 */
+			
+			$templateProcessor->setValue('jmb', $jmb);
+			$templateProcessor->setValue('birthDate', $birthDate);
+			$templateProcessor->setValue('birthPlace', $birthPlace);
+			$templateProcessor->setValue('birthCountry', $birthCountry);
+			
+			$templateProcessor->setValue('citizenship', $citizenship);
+			$templateProcessor->setValue('father', $father);
+			$templateProcessor->setValue('mother', $mother);
+			$templateProcessor->setValue('residenceAddress', $residenceAddress);
+			$templateProcessor->setValue('residencePlace', $residencePlace);
+			$templateProcessor->setValue('postalAddress', $postalAddress);
+			$templateProcessor->setValue('phone', $phone);
+			$templateProcessor->setValue('email', $email);
+			
+			$templateProcessor->setValue('date', $date);
+			$templateProcessor->setValue('date2', $date2);
+			$templateProcessor->setValue('year', $year);
+			$templateProcessor->setValue('sYear', $schoolYear);
+			
+			/*
+			 * 	Strike trough
+			 */
+			
+			if($status == 1) {
+				$templateProcessor->setComplexValue('st1', (new TextRun())->addText('redovan', $strikethrough10));
+				$templateProcessor->setComplexValue('st11', (new TextRun())->addText('redovan', $strikethrough10));
+			}
+			else{
+				$templateProcessor->setValue('st1', 'redovan');
+				$templateProcessor->setValue('st11', 'redovan');
+			}
+			if($status == 2) {
+				$templateProcessor->setComplexValue('st2', (new TextRun())->addText('redovan samofinansirajući', $strikethrough10));
+				$templateProcessor->setComplexValue('st21', (new TextRun())->addText('redovan samofinansirajući', $strikethrough10));
+			}
+			else {
+				$templateProcessor->setValue('st2', 'redovan samofinansirajući');
+				$templateProcessor->setValue('st21', 'redovan samofinansirajući');
+			}
+			if($status == 3) {
+				$templateProcessor->setComplexValue('st3', (new TextRun())->addText('Vanredan', $strikethrough10));
+				$templateProcessor->setComplexValue('st31', (new TextRun())->addText('Vanredan', $strikethrough10));
+			}
+			else {
+				$templateProcessor->setValue('st3', 'Vanredan');
+				$templateProcessor->setValue('st31', 'Vanredan');
+			}
+			if($status == 4) {
+				$templateProcessor->setComplexValue('st4', (new TextRun())->addText('DL', $strikethrough10));
+				$templateProcessor->setComplexValue('st41', (new TextRun())->addText('DL', $strikethrough10));
+			}
+			else {
+				$templateProcessor->setValue('st4', 'DL');
+				$templateProcessor->setValue('st41', 'DL');
+			}
+			if($status == 5) { $templateProcessor->setComplexValue('st5', (new TextRun())->addText('gost', $strikethrough10)); }
+			else $templateProcessor->setValue('st5', 'gost');
+			
+			if($status == 1) $templateProcessor->setComplexValue('c1', (new TextRun())->addText('Prvog', $strikethrough10));
+			else $templateProcessor->setValue('c1', 'Prvog');
+			if($status == 2) $templateProcessor->setComplexValue('c2', (new TextRun())->addText('Drugog', $strikethrough10));
+			else $templateProcessor->setValue('c2', 'Drugog');
+			if($status == 3) $templateProcessor->setComplexValue('c3', (new TextRun())->addText('Trećeg', $strikethrough10));
+			else $templateProcessor->setValue('c3', 'Trećeg');
+			
+			$templateProcessor->saveAs($fileName);
+		}catch (\PhpOffice\PhpWord\Exception\CreateTemporaryFileException $e) { }
+	}
+	
+	else if($_REQUEST['upisni-list']){
+		$fileName = 'static/files/upisni-list/files/'.md5(time()).'.docx';
+		
+		$faculty = 'Elektrotehnički Fakultet u Sarajevu';
+		$place   = 'Sarajevo';
+		$index   = '16837';
+		
+		$fullName = 'John (Father) Doe';
+		$semestar = 'IV';
+		$department = 'Automatika i Elektronika';
+		
+		$jmb = '0305994112460';
+		$birthDate = '03.05.1994';
+		
+		$birthPlace = 'Cazin, Cazin'; // Ovdje ide Mjesto i općina rođenja
+		$birthCountry = 'Unsko Sanski Kanton, Bosna i Hercegovina'; // Ovdje ide kanton i država
+		
+		$highSchool = 'Sarajevo, 1984'; // Gdje i kada je završio srednju školu
+		
+		$citizenship  = 'Bosna i Hercegovina';
+		$nationality  = 'Bošnj0'; // Nacionalna pripadnost
+		
+		$father = 'John Does father'; // Ime i prezime
+		$mother = 'John Does mother'; // Ime i prezime
+		$fatherOccupation = 'Roditelj'; // Zanimanje oca
+		$motherOccupation = 'Roditelj'; // Zanimanje majke
+		
+		$residenceAddress = 'Adresa prebivališta';
+		$residencePlace = 'Mjesto, općina i kanton prebivališta';
+		$postalAddress = 'Adresa stanovanja za vrijeme školovanja';
+		$phone = '0038761225883';
+		$email = 'john@doe.com';
+		
+		$date = date('d.m.Y');
+		$year = date('Y');
+		
+		// Kako se student upisuje
+		// 1 - redovan, 2 - redovan samofinansirajući, 3 - Vanredan, 4 - DL, 5 - gost
+		
+		$status = 2; // Redovan
+		$cycle  = 1; // 1 - Prvi ciklus, 2 - Drugi ciklus, 3 - Treći ciklus || Prvog - Drugog - Trećeg
+		
+		$templateProcessor = new TemplateProcessor('static/files/upisni-list/upisni_list.docx');
+		$underline = array('underline' => 'single', 'name' => 'Arial');
+		$arial = array('name' => 'Arial');
+		$strikethrough = array('strikethrough' => true, 'name' => 'Arial');
+		$strikethrough10 = array('strikethrough' => true, 'name' => 'Arial', 'size' => 10);
+		
+		/*
+		 * 	Header
+		 */
+		$templateProcessor->setValue('faculty', $faculty);
+		$templateProcessor->setValue('place', $place);
+		$templateProcessor->setValue('index', $index);
+		$templateProcessor->setValue('fullName', $fullName);
+		$templateProcessor->setValue('semestar', $semestar);
+		$templateProcessor->setValue('department', $department);
+		
+		/*
+		 * 	Student
+		 */
+		
+		$templateProcessor->setValue('jmb', $jmb);
+		$templateProcessor->setValue('birthDate', $birthDate);
+		$templateProcessor->setValue('birthPlace', $birthPlace);
+		$templateProcessor->setValue('birthCountry', $birthCountry);
+		
+		$templateProcessor->setValue('citizenship', $citizenship);
+		$templateProcessor->setValue('nationality', $nationality);
+		$templateProcessor->setValue('highSchool', $highSchool);
+		$templateProcessor->setValue('father', $father);
+		$templateProcessor->setValue('mother', $mother);
+		$templateProcessor->setValue('fatherOccupation', $fatherOccupation);
+		$templateProcessor->setValue('motherOccupation', $motherOccupation);
+		$templateProcessor->setValue('residenceAddress', $residenceAddress);
+		$templateProcessor->setValue('residencePlace', $residencePlace);
+		$templateProcessor->setValue('postalAddress', $postalAddress);
+		$templateProcessor->setValue('phone', $phone);
+		$templateProcessor->setValue('email', $email);
+		
+		$templateProcessor->setValue('date', $date);
+		$templateProcessor->setValue('year', $year);
+		
+		/*
+		 * 	Strike trough
+		 */
+		
+		if($status == 1) {
+			$templateProcessor->setComplexValue('st1', (new TextRun())->addText('redovan', $strikethrough10));
+			$templateProcessor->setComplexValue('st11', (new TextRun())->addText('redovan', $strikethrough10));
+		}
+		else{
+			$templateProcessor->setValue('st1', 'redovan');
+			$templateProcessor->setValue('st11', 'redovan');
+		}
+		if($status == 2) {
+			$templateProcessor->setComplexValue('st2', (new TextRun())->addText('redovan samofinansirajući', $strikethrough10));
+			$templateProcessor->setComplexValue('st21', (new TextRun())->addText('redovan samofinansirajući', $strikethrough10));
+		}
+		else {
+			$templateProcessor->setValue('st2', 'redovan samofinansirajući');
+			$templateProcessor->setValue('st21', 'redovan samofinansirajući');
+		}
+		if($status == 3) {
+			$templateProcessor->setComplexValue('st3', (new TextRun())->addText('Vanredan', $strikethrough10));
+			$templateProcessor->setComplexValue('st31', (new TextRun())->addText('Vanredan', $strikethrough10));
+		}
+		else {
+			$templateProcessor->setValue('st3', 'Vanredan');
+			$templateProcessor->setValue('st31', 'Vanredan');
+		}
+		if($status == 4) {
+			$templateProcessor->setComplexValue('st4', (new TextRun())->addText('DL', $strikethrough10));
+			$templateProcessor->setComplexValue('st41', (new TextRun())->addText('DL', $strikethrough10));
+		}
+		else {
+			$templateProcessor->setValue('st4', 'DL');
+			$templateProcessor->setValue('st41', 'DL');
+		}
+		if($status == 5) { $templateProcessor->setComplexValue('st5', (new TextRun())->addText('gost', $strikethrough10)); }
+		else $templateProcessor->setValue('st5', 'gost');
+		
+		if($status == 1) $templateProcessor->setComplexValue('c1', (new TextRun())->addText('Prvog', $strikethrough10));
+		else $templateProcessor->setValue('c1', 'Prvog');
+		if($status == 2) $templateProcessor->setComplexValue('c2', (new TextRun())->addText('Drugog', $strikethrough10));
+		else $templateProcessor->setValue('c2', 'Drugog');
+		if($status == 3) $templateProcessor->setComplexValue('c3', (new TextRun())->addText('Trećeg', $strikethrough10));
+		else $templateProcessor->setValue('c3', 'Trećeg');
+		
+		$templateProcessor->saveAs($fileName);
+	}
+	
 	/*
 	 * 	Upload image
 	 */
