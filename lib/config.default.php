@@ -42,7 +42,9 @@ $conf_appversion = "<img src='static/images/corncob.png' width='30' height='30' 
 // Uslov za upis u narednu godinu (iz zakona)
 $conf_uslov_predmeta = 2;
 $conf_uslov_ects_kredita = 12;
-$conf_uslov_kolizija = 5;
+$conf_uslov_kolizija = 5;;
+
+$conf_predmeti_sa_drugog_odsjeka = false;
 
 
 // Broj statusnih uvjerenja i prepisa ocjena koje studenti mogu dobiti besplatno

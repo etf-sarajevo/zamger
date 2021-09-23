@@ -8,7 +8,7 @@
 
 function student_ugovoroucenju() {
 
-	global $userid;
+	global $userid, $conf_predmeti_sa_drugog_odsjeka;
 	
 	
 	// Studiji za koje je trenutno isključeno popunjavanje uou
@@ -127,6 +127,7 @@ function student_ugovoroucenju() {
 					
 					if (provjeri_kapacitet($userid, $izabran_predmet, $akademska_godina, $studij, false, true) == 0) {
 						niceerror("Predmet $predmet_naziv se ne može izabrati jer su dostupni kapaciteti za taj predmet popunjeni");
+						zamgerlog("popunjen kapacitet za predmet $izabran_predmet", 2);
 						zamgerlog2("popunjen kapacitet za predmet", $izabran_predmet);
 						return;
 					}
@@ -410,7 +411,7 @@ function student_ugovoroucenju() {
 
 		// Generišemo spisak predmeta sa drugog odsjeka za dati semestar
 		$izborni_drugi_odsjek = array();
-		if (!in_array($studij, $nema_drugi_odsjek_studij) && !in_array($studij_godina, $nema_drugi_odsjek_studij_godina)) {
+		if ($conf_predmeti_sa_drugog_odsjeka && !in_array($studij, $nema_drugi_odsjek_studij) && !in_array($studij_godina, $nema_drugi_odsjek_studij_godina)) {
 			// Spisak drugih studija istog ciklusa
 			$q100 = db_query("SELECT s.id, s.kratkinaziv FROM studij s, tipstudija ts WHERE s.tipstudija=ts.id AND ts.ciklus=$ciklus AND s.id!=$studij");
 			while (db_fetch2($q100, $m_studij, $kratki_naziv_studija)) {
@@ -511,17 +512,20 @@ function student_ugovoroucenju() {
 					<?
 				}
 				
-				?>
-				<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" <? 
-				if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
-				?> <?=$disabled?>>Predmet sa drugog odsjeka</input><br>
-				<select name="odsjek-<?=$pis?>">
-				<?
-				foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
-					print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
-				?></select>
-				</p>
-				<?
+				if ($conf_predmeti_sa_drugog_odsjeka) {
+					?>
+					<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" <?
+					if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
+					?> <?=$disabled?>>Predmet sa drugog odsjeka</input><br>
+					<select name="odsjek-<?=$pis?>">
+					<?
+					foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
+						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+					?></select>
+					<?
+				}
+				print "</p>\n";
+				
 			} else {
 				
 				print "<p>\n";
@@ -550,19 +554,21 @@ function student_ugovoroucenju() {
 						<?
 					}
 				}
-				
-				$broj = 1;
-				for ($i=0; $i<$broj; $i++) {
-					?>
-					<input type="checkbox" name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" <? 
-					if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
-					?><?=$disabled?>>Predmet sa drugog odsjeka</input><br>
-					<select name="odsjek-<?=$pis?>-<?=$i?>">
-					<?
-					foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
-						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
-					print "</select>\n";
-					if ($i < $broj - 1) print "<br>\n";
+		
+				if ($conf_predmeti_sa_drugog_odsjeka) {
+					$broj = 1;
+					for ($i=0; $i<$broj; $i++) {
+						?>
+						<input type="checkbox" name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" <?
+						if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
+						?><?=$disabled?>>Predmet sa drugog odsjeka</input><br>
+						<select name="odsjek-<?=$pis?>-<?=$i?>">
+						<?
+						foreach($izborni_drugi_odsjek as $predmet_id => $predmet_naziv)
+							print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
+						print "</select>\n";
+						if ($i < $broj - 1) print "<br>\n";
+					}
 				}
 				print "</p>\n";
 			}
@@ -578,7 +584,11 @@ function student_ugovoroucenju() {
 
 	<p><b>Napomene:</b><br>
 	* Ukoliko obnavljate godinu, trebate ponovo izabrati one predmete koje ste već položili.<br>
-	* Možete izabrati najviše jedan predmet s drugog odsjeka po semestru, a u zbiru trebate imati najmanje 30 ECTS kredita po semestru odnosno 60 ECTS kredita po godini.<br>
+	<? if ($conf_predmeti_sa_drugog_odsjeka) {
+		?>
+		* Možete izabrati najviše jedan predmet s drugog odsjeka po semestru, a u zbiru trebate imati najmanje 30 ECTS kredita po semestru odnosno 60 ECTS kredita po godini.<br>
+		<?
+	} ?>
 	* Ako želite slušati izborni predmet sa drugog fakulteta, sada ovdje izaberite neki predmet sa našeg fakulteta a ujedno pokrenite proceduru (koja podrazumijeva odobrenje oba fakulteta).</p>
 	<?
 
