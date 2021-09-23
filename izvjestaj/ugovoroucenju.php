@@ -31,8 +31,8 @@ if (!$user_studentska && !$user_siteadmin) {
 }
 
 
-$novaag = intval($_REQUEST['akademska_godina']);
-if ($novaag==0) $novaag = intval($_REQUEST['ag']);
+$novaag = int_param('akademska_godina');
+if ($novaag==0) $novaag = int_param('ag');
 if ($novaag==0) {
 	$q3 = db_query("select id, naziv, aktuelna from akademska_godina order by id desc limit 1");
 	$novaag = db_result($q3,0,0);
@@ -57,6 +57,8 @@ if (db_num_rows($q5)<1) {
 $ag = db_result($q5,0,0);
 $ag_naziv = db_result($q5,0,1);
 
+$brstudenata = 0;
+$slusa_redovno_sigurno = $slusa_odsjek_sigurno = [];
 
 
 if (!isset($_REQUEST['csv'])) {
@@ -70,7 +72,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 // Podvrsta izvještaja: IMENA
 // Daje spisak studenata koji su odabrali određeni predmet kroz Ugovor
-$imena = intval($_REQUEST['imena']);
+$imena = int_param('imena');
 if ($imena>0) {
 	$q1 = db_query("select naziv from predmet where id=$imena");
 	print "<h2>Spisak studenata koji su odabrali predmet: ".db_result($q1,0,0)."</h2>\n";
@@ -88,7 +90,7 @@ if ($imena <= -1) {
 
 // Podvrsta izvještaja: NISU IZABRALI
 // Daje spisak imena studenata koji nisu izabrali izborne predmete
-$nisu_izabrali = $_REQUEST['nisu_izabrali'];
+$nisu_izabrali = param('nisu_izabrali');
 
 
 // Odredićemo vrstu izvještaja kasnije
@@ -444,7 +446,7 @@ if ($student==$debug_student) { print "polozio koliziono  "; print_r ($polozio_k
 	$pao_septembar=$polozio_septembar=array();
 	foreach ($zamger_predmeti_pao as $predmet => $naziv) {
 		$polozio=$pao=false;
-		if ($ispit_septembar[$predmet])
+		if (array_key_exists($predmet, $ispit_septembar))
 		foreach ($ispit_septembar[$predmet] as $ispitkomponenta) {
 			list($ispit,$komponenta) = explode("-", $ispitkomponenta);
 
@@ -499,8 +501,10 @@ if ($student==$debug_student) print "Ima uslov<br>";
 				}
 			} else
 			if (!in_array($r40[0], $polozio_koliziono)) {
+				if (!array_key_exists($r40[0], $slusa_redovno_sigurno)) $slusa_redovno_sigurno[$r40[0]] = 0;
 				$slusa_redovno_sigurno[$r40[0]]++;
 				$fali_u_koliziji++;
+				if (!array_key_exists($novistudij, $slusa_odsjek_sigurno[$r40[0]])) $slusa_odsjek_sigurno[$r40[0]][$novistudij] = 0;
 				$slusa_odsjek_sigurno[$r40[0]][$novistudij]++;
 if ($r40[0]==$debug_predmet) print $k++." redovno sigurno (obavezan) $student<br>";
 /*if ($novistudij == 2 && $novisemestar == 3)
@@ -937,9 +941,21 @@ if ($fuzzy) {
 
 
 
-// Po studijima i semestrima
+// Određivanje planova studija
+$studiji = db_query("SELECT s.id, s.naziv, s.institucija, ts.ciklus FROM studij s, tipstudija ts WHERE s.moguc_upis=1 AND s.tipstudija=ts.id ORDER BY ts.ciklus, s.naziv");
+$predmeti = [];
+while(db_fetch4($studiji, $studij, $naziv_studija, $institucija, $ciklus)) {
+	if ($ciklus == 3) continue; // nećemo phd
+	$plan = db_get("SELECT id FROM plan_studija WHERE studij=$studij AND usvojen=1 ORDER BY godina_vazenja DESC LIMIT 1");
+	if ($plan == 0) continue;
+	// Treba prebaciti na lib/plan_studija i redizajnirati petlje
+	$predmeti = array_merge($predmeti,
+		db_query_table("SELECT psp.pasos_predmeta, psp.plan_izborni_slot, psp.semestar, psp.obavezan, $studij studij, '$naziv_studija' naziv_studija, psp.semestar, psp.obavezan, $ciklus ciklus, $institucija institucija
+			FROM plan_studija_predmet as psp, plan_studija as ps
+			WHERE psp.plan_studija=ps.id AND ps.id=$plan order by psp.semestar, psp.obavezan DESC"));
+}
 
-$q100 = db_query("select psp.pasos_predmeta, psp.plan_izborni_slot, s.id, s.naziv, psp.semestar, psp.obavezan, ts.ciklus, s.institucija from plan_studija_predmet as psp, plan_studija as ps, studij as s, tipstudija as ts where ps.studij=s.id and (ps.godina_vazenja=10 or ps.godina_vazenja=4) and psp.plan_studija=ps.id AND s.tipstudija=ts.id order by ts.ciklus, s.naziv, psp.semestar, psp.obavezan DESC"); // FIXME ukodirani planovi studija - ovo sada neće raditi!
+
 $oldstudij=$oldsemestar=$oldobavezan="";
 
 $predmeti_ispis=array();
@@ -959,14 +975,14 @@ while ($rblesavo = db_fetch_row($qblesavo)) {
 
 $institucija=1;
 
-while ($r100 = db_fetch_row($q100)) {
-	$studij=$r100[2];
-	$naziv_studija = $r100[3];
-	$semestar=$r100[4];
-	$obavezan=$r100[5];
-	$ciklus=$r100[6];
+foreach($predmeti as $predmet_iz_upita) {
+	$studij=$predmet_iz_upita['studij'];
+	$naziv_studija = $predmet_iz_upita['naziv_studija'];
+	$semestar=$predmet_iz_upita['semestar'];
+	$obavezan=$predmet_iz_upita['obavezan'];
+	$ciklus=$predmet_iz_upita['ciklus'];
 	$oldinstitucija=$institucija;
-	$institucija=$r100[7];
+	$institucija=$predmet_iz_upita['institucija'];
 
 	if ($semestar!=$oldsemestar || $obavezan==1) {
 		$x=0;
@@ -989,9 +1005,9 @@ while ($r100 = db_fetch_row($q100)) {
 			$dodaj = $dodajpon = "";
 			for ($i=1; $i<15; $i++) {
 				if ($i==$studij) continue;
-				if ($slusa_odsjek_sigurno[$predmet][$i]>0 && $slusa_odsjek_sigurno[$predmet][$i]<$slusa_redovno_sigurno[$predmet]) 
+				if (array_key_exists($predmet, $slusa_odsjek_sigurno) && $slusa_odsjek_sigurno[$predmet][$i]>0 && $slusa_odsjek_sigurno[$predmet][$i]<$slusa_redovno_sigurno[$predmet])
 					$dodaj .= " (".$naziv_studijaa[$i]." ".$slusa_odsjek_sigurno[$predmet][$i].")";
-				if ($slusa_odsjek_ponovac[$predmet][$i]>0 && $slusa_odsjek_ponovac[$predmet][$i]<$slusa_ponovac_sigurno[$predmet]) 
+				if (array_key_exists($predmet, $slusa_odsjek_ponovac) && $slusa_odsjek_ponovac[$predmet][$i]>0 && $slusa_odsjek_ponovac[$predmet][$i]<$slusa_ponovac_sigurno[$predmet])
 					$dodajpon .= " (".$naziv_studijaa[$i]." ".$slusa_odsjek_ponovac[$predmet][$i].")";
 			}
 	
@@ -1095,14 +1111,14 @@ $statstudij=$studij;
 	}
 
 	if ($obavezan==1) {
-		$q110 = db_query("select p.id, pp.naziv, p.institucija from predmet p, pasos_predmeta pp where pp.id=$r100[0] AND pp.predmet=p.id");
+		$q110 = db_query("select p.id, pp.naziv, p.institucija from predmet p, pasos_predmeta pp where pp.id=" . $predmet_iz_upita['pasos_predmeta'] . " AND pp.predmet=p.id");
 		db_fetch3($q110, $predmet, $naziv_predmeta, $pinstitucija);
 		// FIXME ne koristiti instituciju ovdje!
 		$predmeti_ispis[$predmet] = $naziv_predmeta;
 		$predmeti_institucija[$predmet] = $pinstitucija;
 		$izborni_print=0;
 	} else {
-		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=$r100[1] and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
+		$q120 = db_query("select p.id, pp.naziv, p.institucija from plan_izborni_slot as pis, predmet as p, pasos_predmeta as pp where pis.id=" . $predmet_iz_upita['plan_izborni_slot'] . " and pis.pasos_predmeta=pp.id AND pp.predmet=p.id");
 		while(db_fetch3($q120, $predmet, $naziv_predmeta, $pinstitucija)) {
 			$predmeti_ispis[$predmet] = $naziv_predmeta;
 			$predmeti_institucija[$predmet] = $pinstitucija;
