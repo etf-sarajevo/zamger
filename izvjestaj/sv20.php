@@ -68,7 +68,7 @@ function izvjestaj_sv20() {
 	
 	$enrollment = api_call("enrollment/current/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
 	$currentlyEnrolled = ($_api_http_code == "200");
-	$enrollmentContract = api_call("enrollment/current/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
+	$enrollmentContract = api_call("enrollment/contract/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"]]);
 	$hasContract = ($_api_http_code == "200");
 	
 	if (param('ugovor') || !$currentlyEnrolled)
@@ -93,7 +93,7 @@ function izvjestaj_sv20() {
 	$birthPlace = $exp['placeOfBirth']['name'] . ", " . $exp['placeOfBirth']['Municipality']['name'];
 	
 	$birthDay   = substr($exp['dateOfBirth'], 8);
-	$birthMonth = substr($exp['dateOfBirth'], 6, 2);
+	$birthMonth = substr($exp['dateOfBirth'], 5, 2);
 	$birthYear  = substr($exp['dateOfBirth'], 0, 4);
 	
 	if ($exp['nationality'] == 1) { // Bosna i Hercegovina
@@ -143,7 +143,7 @@ function izvjestaj_sv20() {
 	/*
 	 * 	Path to file
 	 */
-	$path = $conf_files_path . "/sv20";
+	$path = $conf_files_path . "/tmp";
 	if (!file_exists($path))
 		mkdir($path);
 	$fileName = $path . "/" . md5(time()) . '.docx';
@@ -231,7 +231,7 @@ function izvjestaj_sv20() {
 			$templateProcessor->setComplexValue('cyc_f', (new TextRun())->addText('Prvi ciklus', $strikethrough9));
 			$templateProcessor->setValue('cyc_s', 'Drugi ciklus');
 			$templateProcessor->setValue('cyc_t', 'Treći ciklus');
-		}else if($citizenship == 'Drugi ciklus '){
+		}else if($cycle == 'Drugi ciklus'){
 			$templateProcessor->setValue('cyc_f', 'Prvi ciklus');
 			$templateProcessor->setComplexValue('cyc_s', (new TextRun())->addText('Drugi ciklus', $strikethrough9));
 			$templateProcessor->setValue('cyc_t', 'Treći ciklus');
