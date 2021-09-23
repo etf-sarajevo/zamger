@@ -3,6 +3,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Obrazac_ZR4" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="5b016f3d-d5e5-4a91-bbb1-1c18a6f0f594">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ZamgerDataAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="401"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="591"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -43,15 +45,17 @@ o.prezime, o.brindexa, o2.ime ime_mentora,
 o2.prezime prezime_mentora, z.kratki_pregled,
 z.literatura, z.termin_odbrane, s.naziv naziv_studija,
 ns.naziv nacin_studiranja_txt, i.naziv odsjek,
-ag.naziv naziv_akademske_godine
+ag.naziv naziv_akademske_godine, ts.ciklus
 FROM zavrsni z, osoba o, student_studij ss, studij s,
 nacin_studiranja ns, institucija i, osoba o2, 
-akademska_godina ag, jasper_token jt
+akademska_godina ag, jasper_token jt,
+tipstudija ts
 WHERE z.student=o.id AND ss.student=z.student AND
 ss.akademska_godina=z.akademska_godina AND
 ss.semestar MOD 2 = 1 AND ss.studij=s.id AND
 ss.nacin_studiranja=ns.id AND s.institucija=i.id AND
 z.mentor=o2.id AND z.akademska_godina=ag.id 
+AND s.tipstudija=ts.id
 AND z.id=$P{id_zavrsnog} AND jt.token=$P{token}
 AND jt.report='Obrazac ZR4' AND jt.param1=$P{id_zavrsnog}
 AND NOW()-jt.vrijeme<1200]]>
@@ -115,6 +119,7 @@ AND NOW()-jt.vrijeme<1200]]>
 		<property name="com.jaspersoft.studio.field.label" value="naziv_akademske_godine"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="ag.naziv"/>
 	</field>
+	<field name="ciklus" class="java.lang.Integer"/>
 	<variable name="CURRENT_PAGE_NUMBER" class="java.lang.Integer" resetType="None" incrementType="Page">
 		<variableExpression><![CDATA[$V{CURRENT_PAGE_NUMBER} == null? $V{PAGE_NUMBER}: $V{PAGE_NUMBER} +1]]></variableExpression>
 	</variable>
@@ -227,7 +232,7 @@ SAGLASNOST MENTORA]]></text>
 				<textElement markup="html">
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Završni rad <b>"+$F{ime}+" "+$F{prezime}+"</b>, studenta drugog ciklusa studija na <b>Odsjeku za "+$F{odsjek}.substring(10)+"</b>, pod naslovom:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Završni rad <b>"+$F{ime}+" "+$F{prezime}+"</b>, studenta " + (($F{ciklus} == 1) ? "prvog" : "drugog") + " ciklusa studija na <b>Odsjeku za "+$F{odsjek}.substring(10)+"</b>, pod naslovom:"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" x="50" y="301" width="190" height="21" uuid="0b8f4cf4-72e0-47eb-b0f1-3fea70528d4b"/>
