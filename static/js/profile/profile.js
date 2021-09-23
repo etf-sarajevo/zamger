@@ -56,6 +56,8 @@ $(document).ready(function () {
         let personId = $("#personId").val();
         let jmb      = $("#jmbg").val();
         let dateOfBirth = $("#dateOfBirth").val();
+        let name     = $("#name").val();
+        let surname  = $("#surname").val();
 
         /*
          *  Form validations
@@ -68,6 +70,12 @@ $(document).ready(function () {
         }
         if(!validateDate(dateOfBirth)){
             $.notify("Datum rođenja nije validan!", 'warn');
+            e.preventDefault();
+            return;
+        }
+        if (name.indexOf(surname) >= 0) {
+            $("#name").focus();
+            $.notify("Unijeli ste prezime u polje za ime!", 'warn');
             e.preventDefault();
             return;
         }
