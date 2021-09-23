@@ -148,6 +148,10 @@ function student_potvrda() {
 		<p>U ovoj akademskoj godini ste iskoristili <b><?=count($zahtjevi)?></b> od besplatnih <b><?=$conf_broj_besplatnih_potvrda?></b> potvrda na koje imate pravo. (Možete odustati od potvrda koje još uvijek nisu obrađene.)</p>
 		<?
 	}
+	
+	?>
+	<p><b>Napomena:</b> Zahtjev koji je označen kao obrađen se ne može preuzeti isti dan, nego sljedećeg radnog dana!</p>
+	<?php
 }
 
 ?>
