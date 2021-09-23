@@ -10,8 +10,6 @@ function common_profil() {
 	global $person;
 	global $user_studentska, $user_siteadmin, $conf_skr_naziv_institucije, $conf_promjena_sifre, $conf_skr_naziv_institucije_genitiv;
 	
-	//var_dump($person['ExtendedPerson']['previousEducation'][0]);
-	
 	ajax_box(); // Allow JS to create requests to zamger-api
 	
 	
@@ -117,8 +115,8 @@ function common_profil() {
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="name">Ime</label> <!-- Old -->
-								<?= Form::text('name', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'name', 'aria-describedby' => 'nameHelp', 'required' => 'required']) ?>
+								<label for="name">Ime (bez prezimena)</label> <!-- Old -->
+								<?= Form::text('name', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'name', 'aria-describedby' => 'nameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
 								<small id="nameHelp" class="form-text text-muted">Vaše ime</small>
 							</div>
 						</div>
@@ -235,7 +233,7 @@ function common_profil() {
 									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry']) ?>
 								</div>
 								<small id="placeOfBirthHelp" class="form-text text-muted">
-									Vaše mjesto prebivališta.<br>
+									Vaše mjesto prebivališta. Ovdje upisujete naseljeno mjesto (grad, selo), a općina i država će biti popunjeni automatski. Ne unosite dio mjesta (naselje, četvrt) npr. ako živite na Pofalićima unosite Sarajevo a ne Pofalići.<br>
 									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo insert-place" idFor="residencePlace">obrazac za unos</span></b> !
 								</small>
 							</div>
