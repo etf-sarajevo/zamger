@@ -343,11 +343,6 @@ function izvjestaj_sv20() {
 		header('Content-Disposition: attachment; filename="sv-20.docx"', false);
 		
 		echo file_get_contents($fileName);
-		
-		echo json_encode([
-			'code' => '0000',
-			'file' => $fileName
-		]);
 	} catch (\PhpOffice\PhpWord\Exception\CopyFileException $e) {
 	} catch (\PhpOffice\PhpWord\Exception\CreateTemporaryFileException $e) {
 	}

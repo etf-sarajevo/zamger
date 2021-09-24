@@ -580,49 +580,50 @@ if ($akcija == "podaci") {
 		<?
 		
 		// Find uplatnitza
-		
-		$dir = "$conf_files_path/uplatnice/" . int_param('osoba');
-		$dozvoljene_ekstenzije = ["png", "jpg", "pdf"];
-		
-		$found = false;
-		foreach($dozvoljene_ekstenzije as $ext) {
-			$filename = $dir . "/uplatnica-" . int_param('godina') . ".$ext";
-			if (file_exists($filename)) $found = $filename;
-		}
-		if ($found) {
-			?>
-			<p>Uplatnica:</p>
-			<?
-			if (ends_with($found, ".pdf")) {
-				?>
-				<div>
-					<object
-							data='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
-							type="application/pdf"
-							width="400"
-							height="300">
+
+		if (!param('finish')) {
+			$dir = "$conf_files_path/uplatnice/" . int_param('osoba');
+			$dozvoljene_ekstenzije = ["png", "jpg", "pdf"];
 			
-						<iframe
-								src='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
+			$found = false;
+			foreach($dozvoljene_ekstenzije as $ext) {
+				$filename = $dir . "/uplatnica-" . int_param('godina') . ".$ext";
+				if (file_exists($filename)) $found = $filename;
+			}
+			if ($found) {
+				?>
+				<p>Uplatnica:</p>
+				<?
+				if (ends_with($found, ".pdf")) {
+					?>
+					<div>
+						<object
+								data='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
+								type="application/pdf"
 								width="400"
 								height="300">
-							<p>This browser does not support PDF!</p>
-						</iframe>
-			
-					</object>
-				</div>
-				<?
+				
+							<iframe
+									src='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
+									width="400"
+									height="300">
+								<p>This browser does not support PDF!</p>
+							</iframe>
+				
+						</object>
+					</div>
+					<?
+				} else {
+					?>
+						<img src="?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>" style="width: 100%; max-width: 400px; height: 100%; max-height: 300px">
+					<?
+				}
 			} else {
 				?>
-					<img src="?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>" style="width: 100%; max-width: 400px; height: 100%; max-height: 300px">
+				<p>Student nije uploadovao uplatnicu.</p>
 				<?
 			}
-		} else {
-			?>
-			<p>Student nije uploadovao uplatnicu.</p>
-			<?
 		}
-		
 
 		// Parameters, if passed
 		
@@ -2736,7 +2737,7 @@ else if ($akcija == "edit") {
 		// Upis studenta na pojedinačne predmete
 		?>
 		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=predmeti">Manuelni upis studenta na predmete / ispis sa predmeta.</a></p>
-		<p><a href="?sta=izvjestaj/sv20&student=<?=$osoba?>&ugovor=da">ŠV-20 obrazac</a></p>
+		<p><a href="?sta=izvjestaj/sv20&student=<?=$osoba?>&ugovor=da">ŠV-20 obrazac</a> * <a href="?sta=izvjestaj/upisni_list&student=<?=$osoba?>&ugovor=da">Upisni list</a> * <a href="?sta=izvjestaj/prijava_semestra&student=<?=$osoba?>&ugovor=da">List o prijavi semestra</a></p>
 		<?
 
 		print "\n<div style=\"clear:both\"></div>\n";

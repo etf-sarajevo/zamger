@@ -145,6 +145,8 @@ function student_upis() {
 		if ($data === '' || $data === 0 || $data === '0' || $data === false || $data === null || $data === '1970-01-01')
 			$missing[] = $names[$i];
 	}
+	if (empty($exp['fathersName']) && empty($exp['mothersName']))
+		$missing[] = "ime jednog roditelja";
 	if (!empty($missing)) {
 		?><p><b>Nedostaju sljedeći podaci u vašem profilu:</b></p>
 		<ul><li><?
@@ -190,9 +192,9 @@ function student_upis() {
 	<h3>Dokumenti</h3>
 	<ul>
 		<li><a href="?sta=student/ugovoroucenjupdf">Ugovor o učenju</a></li>
-		<li><a href="?sta=izvjestaj/sv20">ŠV-20 obrazac</a></li>
-		<li>Upisni list (u pripremi)</li>
-		<li>Semestralni list (u pripremi)</li>
+		<li><a href="?sta=izvjestaj/sv20&ugovor=da">ŠV-20 obrazac</a></li>
+		<li><a href="?sta=izvjestaj/upisni_list&ugovor=da">Upisni list</a></li>
+		<li><a href="?sta=izvjestaj/prijava_semestra&ugovor=da">List o prijavi semestra</a></li>
 	</ul>
 	<?php
 }
