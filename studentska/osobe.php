@@ -2635,7 +2635,7 @@ else if ($akcija == "edit") {
 
 			// Pokusacemo odrediti uslov na osnovu polozenih predmeta...
 			global $zamger_predmeti_pao, $zamger_pao_ects;
-			$ima_uslov = ima_li_uslov($osoba);
+			$ima_uslov = ima_li_uslov($osoba, $id_ak_god);
 			
 			if ($ima_uslov) {
 				?>
