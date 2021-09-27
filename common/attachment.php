@@ -241,7 +241,7 @@ if ($tip == "uplatnica") {
 	if (!file_exists($filepath))
 		$filepath = $dir . "uplatnica-$ag.png";
 	if (!file_exists($filepath))
-		$filepath = $dir . "uplatnica-$ag.pdf]";
+		$filepath = $dir . "uplatnica-$ag.pdf";
 	if (!file_exists($filepath))
 		exit;
 	
