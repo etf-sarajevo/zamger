@@ -70,12 +70,11 @@ function student_ugovoroucenju() {
 		unset($_POST['akcija']);
 	}
 
-
 	// Odabir plana studija
 	$plan_studija = $novi_studij = 0;
 	if ($studij > 0) {
 		$q5a = db_query("SELECT studij, plan_studija, semestar FROM student_studij WHERE student=$userid AND akademska_godina<=$akademska_godina ORDER BY akademska_godina DESC LIMIT 1");
-		if (!db_fetch3($q5a, $stari_studij, $plan_studija, $semestar) || $studij != $stari_studij || $semestar >= $godina_studija*2) {
+		if (!db_fetch3($q5a, $stari_studij, $plan_studija, $bio_semestar) || $studij != $stari_studij || $bio_semestar >= $godina_studija*2) {
 			// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan ili je ponovac
  			// Uzimamo najnoviji plan za odabrani studij
 			$plan_studija = db_get("SELECT id FROM plan_studija WHERE studij=$studij ORDER BY godina_vazenja DESC LIMIT 1");
@@ -215,7 +214,7 @@ function student_ugovoroucenju() {
 		} while($ima_li > 0);
 
 		// Ubacujemo novi ugovor u bazu
-		$q150 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2-1) . ", kod='$kod'");
+		$q150 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2-1) . ", plan_studija=$plan_studija, kod='$kod'");
 		// Uzimamo ID ugovora
 		$id1 = db_get("select id from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina and studij=$studij and semestar=".($godina_studija*2-1));
 		foreach ($izabrani_predmeti_neparni as $predmet) {
@@ -223,7 +222,7 @@ function student_ugovoroucenju() {
 		}
 
 		// Isto za parni semestar
-		$q180 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2) . ", kod='$kod'");
+		$q180 = db_query("insert into ugovoroucenju set student=$userid, akademska_godina=$akademska_godina, studij=$studij, semestar=" . ($godina_studija*2) . ", plan_studija=$plan_studija, kod='$kod'");
 		$id2 = db_get("select id from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina and studij=$studij and semestar=".($godina_studija*2) );
 		foreach ($izabrani_predmeti_parni as $predmet) {
 			$q200 = db_query("insert into ugovoroucenju_izborni set ugovoroucenju=$id2, predmet=$predmet");
