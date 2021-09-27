@@ -18,7 +18,7 @@ if (param('akcija') == "novagodina") {
 	$ag = db_get("select id from akademska_godina where naziv like '$naziv'");
 	if ($ag === false) {
 		$ag = db_get("select id+1 from akademska_godina order by id desc limit 1");
-		db_query("insert into akademska_godina set id=$ag, naziv='$naziv', aktuelna=0");
+		db_query("insert into akademska_godina set id=$ag, naziv='$naziv', aktuelna=0, pocetak_zimskog_semestra='1970-01-01', kraj_zimskog_semestra='1970-01-01', pocetak_ljetnjeg_semestra='1970-01-01', kraj_ljetnjeg_semestra='1970-01-01'");
 		print "-- Kreirana nova akademska godina '$naziv' (ID: $ag). Koristite modul 'Parametri studija' da je proglasite za aktuelnu.<br/>\n";
 	} else {
 		print "-- Pronađena postojeća akademska godina (ID: $ag) - neće biti kreirana nova godina.<br/>\n";
