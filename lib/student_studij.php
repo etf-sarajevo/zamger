@@ -58,6 +58,9 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 	
 	// Svi predmeti koje je student položio
 	$student_polozio = db_query_vassoc("SELECT ko.predmet, ko.ocjena FROM konacna_ocjena ko WHERE ko.student=$student AND ko.ocjena>5");
+	$pretpostavljamo_polozio = db_query_varray("SELECT predmet FROM pretpostavljamo_polozeno WHERE student=$student");
+	foreach($pretpostavljamo_polozio as $predmet)
+		if (!array_key_exists($predmet, $student_polozio)) $student_polozio[$predmet] = 10; // Hardcode 10 - whatever
 	
 	$student_slusao = db_query_varray("SELECT DISTINCT pk.predmet FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id");
 	$student_pao = array();
@@ -127,8 +130,8 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 					$polozio_izbornih_slot++;
 				else if (in_array($predmet, $student_pao)) {
 					$izborni_predmeti_pao[] = $slog_predmet;
-					if ($student == $uslov_debug) print "Pao izborni $predmet<br>\n";
 					$ag_izborni = db_get("SELECT pk.akademska_godina FROM ponudakursa pk, student_predmet sp WHERE sp.student=$student AND sp.predmet=pk.id AND pk.predmet=$predmet order by pk.akademska_godina DESC LIMIT 1");
+					if ($student == $uslov_debug) print "Pao izborni $predmet ag $ag ag_izborni $ag_izborni<br>\n";
 					if ($ag_izborni == $ag) $izborni_predmeti_pao_ova_godina[] = $slog_predmet;
 				}
 			}
@@ -152,7 +155,8 @@ function ima_li_uslov_plan($student, $ag, $studij, $semestar, $studij_trajanje, 
 			}
 			
 			// Predmeti sa drugog odsjeka koje je pao
-			if ($polozio_izbornih_slot < $slog['ponavljanja']) {			
+			// Dodajem $izborni_pao_ova_godina jer se dešava npr. na AE da položen izborni sa drugog odsjeka pribroji u slot 1 (gdje ima izborni sa matičnog koji je pao), umjesto u slot 2
+			if ($polozio_izbornih_slot + count($izborni_predmeti_pao_ova_godina) < $slog['ponavljanja']) {
 				// Tražimo da li je slušao predmete sa drugog odsjeka u istom semestru
 				foreach ($drugi_odsjek as $predmet => $podaci) {
 					if ($student == $uslov_debug) print "slogsem ".$slog['semestar']." podacisem ".$podaci['semestar']." id ".$predmet." naziv ".$podaci['naziv']."<br>\n";
@@ -336,9 +340,9 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 			if ($debug) print "Predmet ne ide u koliziji.<br>\n";
 			return 0;
 		}
-	
+		
 		$broj_obavezni = $broj_izborni_maticno = $broj_kolizija = $broj_drugi_odsjek = 0;
-	
+		
 		// Za koji studij je predmet obavezan (ako ijedan?)
 		$maticni_studij = db_query_varray("SELECT ps.studij FROM plan_studija ps, plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=ps.id AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet ORDER BY ps.godina_vazenja DESC LIMIT 1");
 		if (empty($maticni_studij)) {
@@ -434,24 +438,24 @@ function provjeri_kapacitet($student, $predmet, $ag, $studij, $kolizija = false,
 
 function provjeri_preduvjete($predmet, $student, $najnoviji_plan) {
 	$rezultat = array();
-
+	
 	$q100 = db_query("SELECT preduvjet FROM preduvjeti WHERE predmet=$predmet");
 	while (db_fetch1($q100, $preduvjet)) {
 		// Da li je preduvjet po najnovijem planu na istoj ili višoj godini kao predmet?
 		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$predmet AND psp.obavezan=1");
-		if ($semestar === false) 
+		if ($semestar === false)
 			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$predmet");
 		if ($semestar === false) { niceerror("Predmet nije pronađen u planu i programu"); return []; }
 		$godina_predmeta = ($semestar+1)/2;
-
+		
 		$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.pasos_predmeta=pp.id AND pp.predmet=$preduvjet AND psp.obavezan=1");
-		if ($semestar === false) 
+		if ($semestar === false)
 			$semestar = db_get("SELECT psp.semestar FROM plan_studija_predmet psp, plan_izborni_slot pis, pasos_predmeta pp WHERE psp.plan_studija=$najnoviji_plan AND psp.obavezan=0 AND psp.plan_izborni_slot=pis.id AND pis.pasos_predmeta=pp.id AND pp.predmet=$preduvjet");
 		if ($semestar === false) { niceerror("Preduvjet $preduvjet za predmet $predmet nije pronađen u planu i programu"); $semestar=1; }
 		$godina_preduvjeta = ($semestar+1)/2;
-
+		
 		if ($godina_preduvjeta >= $godina_predmeta) continue;
-
+		
 		// Da li je položio?
 		$br_ocjena = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$preduvjet AND ocjena>5");
 		if ($br_ocjena == 0) array_push($rezultat, $preduvjet);
