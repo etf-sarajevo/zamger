@@ -106,8 +106,13 @@ function izvjestaj_prijava_semestra() {
 		$teacher = "";
 		foreach($course['staff'] as $staffMember)
 			if ($staffMember['status_id'] == 1) {
-				$teacher = $staffMember['Person']['titlesPre'] . " " . $staffMember['Person']['name'] . " " . $staffMember['Person']['surname'];
-				break;
+				if (strstr($teacher, "\n")) {
+					$teacher = ""; break;
+				}
+				else if ($teacher != "")
+					$teacher .= "</w:t><w:br/><w:t>\n" . $staffMember['Person']['titlesPre'] . " " . $staffMember['Person']['name'] . " " . $staffMember['Person']['surname'];
+				else
+					$teacher = $staffMember['Person']['titlesPre'] . " " . $staffMember['Person']['name'] . " " . $staffMember['Person']['surname'];
 			}
 		$entry = [ $course['courseName'], $teacher, ceil($cd['lectureHours'] / 14), ceil(($cd['tutorialHours']+$cd['practiceHours']) / 14), $cd['lectureHours'], $cd['tutorialHours']+$cd['practiceHours'], $cd['ects'] ];
 		$data[] = $entry;
