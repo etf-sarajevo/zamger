@@ -84,6 +84,12 @@ function student_ugovoroucenju() {
 			}
 		}
 	}
+	
+	if ($godina_studija == 1 && $ciklus == 2 && $studij != $stari_studij) {
+		niceerror("Popunjavanje ugovora o učenju je onemogućeno za studente 1. godine 2. ciklusa studija");
+		print "<p><a href='https://zamger.etf.unsa.ba/hybrid/index.php?sta=common/inbox&poruka=20846&stranica=1'>Više informacija</a></p>";
+		return;
+	}
 
 	
 	// Akcija - kreiranje ugovora
@@ -196,6 +202,12 @@ function student_ugovoroucenju() {
 				$izabrani_predmeti_neparni = $izabrani_predmeti;
 			else
 				$izabrani_predmeti_parni = $izabrani_predmeti;
+		}
+		
+		// Ima li uslov
+		if ($studij == $stari_studij && $bio_semestar < $godina_studija*2-1 && !ima_li_uslov($userid, $aktuelna_godina)) {
+			niceerror("Ne možete trenutno popuniti Ugovor o učenju jer nemate uslov za ovu akademsku godinu");
+			return;
 		}
 
 		// Sve ok, brišemo stari ugovor iz baze
@@ -410,7 +422,8 @@ function student_ugovoroucenju() {
 
 		// Generišemo spisak predmeta sa drugog odsjeka za dati semestar
 		$izborni_drugi_odsjek = array();
-		if ($conf_predmeti_sa_drugog_odsjeka && !in_array($studij, $nema_drugi_odsjek_studij) && !in_array($studij_godina, $nema_drugi_odsjek_studij_godina)) {
+		$polozio_drugi_odsjek = array();
+		if (!in_array($studij, $nema_drugi_odsjek_studij) && !in_array($studij_godina, $nema_drugi_odsjek_studij_godina)) {
 			// Spisak drugih studija istog ciklusa
 			$q100 = db_query("SELECT s.id, s.kratkinaziv FROM studij s, tipstudija ts WHERE s.tipstudija=ts.id AND ts.ciklus=$ciklus AND s.id!=$studij");
 			while (db_fetch2($q100, $m_studij, $kratki_naziv_studija)) {
@@ -436,7 +449,13 @@ function student_ugovoroucenju() {
 							if ($kapacitet == 0 || $kapacitet_izborni == 0 || $kapacitet_drugi_odsjek == 0) continue;
 							$zabrane = explode(",", $drugi_odsjek_zabrane);
 							if (in_array($studij, $zabrane)) continue;
+						} else {
+							$polozio_drugi_odsjek[$predmet['id']] = $predmet['naziv'];
 						}
+					} else {
+						$polozio = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$userid AND predmet=" . $predmet['id'] . " AND ocjena>5");
+						if ($polozio)
+							$polozio_drugi_odsjek[$predmet['id']] = $predmet['naziv'];
 					}
 					
 					// Da li postoji u matičnom planu
@@ -479,9 +498,12 @@ function student_ugovoroucenju() {
 			}
 			
 			// Ako je već ispolagao dovoljno predmeta
-			$disabled = "";
+			$disabled = ""; $drugi_odsjek_prikazi = false;
 			if (count($polozeni) == $slog['ponavljanja']) $disabled = " DISABLED";
-			$odaberi_jos = $slog['ponavljanja'] - count($polozeni);
+			else if (count($polozio_drugi_odsjek) > 0) {
+				$drugi_odsjek_prikazi = true;
+			}
+			$odaberi_jos = $slog['ponavljanja'] - count($polozeni) - count($polozio_drugi_odsjek);
 			
 			$pis = $slog['plan_izborni_slot'];
 			if ($slog['ponavljanja'] == 1) {
@@ -511,7 +533,7 @@ function student_ugovoroucenju() {
 					<?
 				}
 				
-				if ($conf_predmeti_sa_drugog_odsjeka) {
+				if ($conf_predmeti_sa_drugog_odsjeka && !$disabled) {
 					?>
 					<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" <?
 					if ($odaberi_jos > 0) { print " CHECKED"; $odaberi_jos--; }
@@ -522,6 +544,16 @@ function student_ugovoroucenju() {
 						print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
 					?></select>
 					<?
+				} else if ($drugi_odsjek_prikazi) {
+					$i = 0;
+					foreach($polozio_drugi_odsjek as $predmet_id => $predmet_naziv) {
+						?>
+						<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" CHECKED><?=$predmet_naziv?>
+						<input type="hidden" name="odsjek-<?=$pis?>" value="<?=$predmet_id?>">
+						<?
+						$i++;
+					}
+				
 				}
 				print "</p>\n";
 				
@@ -567,6 +599,15 @@ function student_ugovoroucenju() {
 							print "<option value=\"$predmet_id\">$predmet_naziv</option>\n";
 						print "</select>\n";
 						if ($i < $broj - 1) print "<br>\n";
+					}
+				} else if ($drugi_odsjek_prikazi) {
+					$i = 0;
+					foreach($polozio_drugi_odsjek as $predmet_id => $predmet_naziv) {
+						?>
+						<input type="checkbox"  name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" CHECKED><?=$predmet_naziv?></input><br>
+						<input type="hidden" name="odsjek-<?=$pis?>-<?=$i?>" value="<?=$predmet_id?>">
+						<?
+						$i++;
 					}
 				}
 				print "</p>\n";
