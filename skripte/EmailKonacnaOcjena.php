@@ -1,9 +1,9 @@
 <?php
 
-require_once("../www/lib/config.php");
-require_once("../www/lib/dblayer.php");
-require_once("../www/lib/zamger.php");
-require_once("../www/lib/utility.php"); // spol
+require_once("lib/config.php");
+require_once("lib/dblayer.php");
+require_once("lib/zamger.php");
+require_once("lib/utility.php"); // spol
 
 
 $prikaziMailove = true;

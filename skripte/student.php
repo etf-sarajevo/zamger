@@ -4,8 +4,8 @@ $uslovag=" and ag.id=5";
 
 if ($argc != 3) { print "Greska.\n"; exit; }
 
-require("../www/lib/libvedran.php");
-require("../www/lib/zamger.php");
+require("lib/libvedran.php");
+require("lib/zamger.php");
 
 dbconnect();
 

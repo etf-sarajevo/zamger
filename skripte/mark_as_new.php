@@ -12,9 +12,9 @@ $keywords=array(
 "return","main"
 );
 
-require("../www/lib/libvedran.php");
-require("../www/lib/zamger.php");
-require("../www/lib/config.php");
+require("lib/libvedran.php");
+require("lib/zamger.php");
+require("lib/config.php");
 
 $aktuelna_zadaca = 1320;
 $trazeni_zadatak=1;

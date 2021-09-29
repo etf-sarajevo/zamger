@@ -2,19 +2,24 @@
 
 // MARK_AS_READ.PHP - istovremena promjena statusa velikog broja zadaća
 
-require("../www/lib/config.php");
-require("../www/lib/dblayer.php");
-require("../www/lib/libvedran.php");
-require("../www/lib/zamger.php");
+require("lib/config.php");
+require("lib/dblayer.php");
+require("lib/libvedran.php");
+require("lib/zamger.php");
 
-$aktuelna_zadaca = 3755;
-$predmet = "1-12";
-$aktuelni_zadatak = 1;
+if ($argc != 4) {
+	print "Upotreba: php mark_as_read.php [ID ZADACE] [PREDMET]-[GODINA] [ZADATAK]\n";
+	exit(1);
+}
+
+$aktuelna_zadaca = $argv[1];
+$predmet = $argv[2];
+$aktuelni_zadatak = $argv[3];
 
 // 1 -sacekati, 2 - prepisana, 3 - bug, 4 - nova, 5 - pregledana
 
 $fromstatus = 4;
-$tostatus = 1;
+$tostatus = 5;
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
 

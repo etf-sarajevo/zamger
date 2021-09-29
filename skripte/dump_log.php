@@ -3,11 +3,11 @@
 
 // DUMP_LOG.PHP - skripta za migraciju loga pristupa iz MySQL tabele "log" u novi format log datoteka
 
-require("../www/lib/config.php");
-require("../www/lib/dblayer.php");
-require("../www/lib/libvedran.php");
-require("../www/lib/zamger.php");
-require("../www/lib/manip.php");
+require("lib/config.php");
+require("lib/dblayer.php");
+require("lib/libvedran.php");
+require("lib/zamger.php");
+require("lib/manip.php");
 
 
 db_connect($conf_dbhost,$conf_dbuser,$conf_dbpass,$conf_dbdb);
