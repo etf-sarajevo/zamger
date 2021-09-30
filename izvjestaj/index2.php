@@ -351,9 +351,11 @@ while ($r130 = db_fetch_row($q130)) {
 			<?
 			$sumagodine = $brojgodine = 0;
 		}
+		$ciklusa = $r130[7] . ". CIKLUSA";
+		if ($r130[7] == 99) $ciklusa = "STRUČNOG";
 		?>
 		<tr bgcolor="#CCCCCC">
-		<td colspan="7"><b><?=$godina?>. GODINA <?=$r130[7]?>. CIKLUSA STUDIJA</b></td>
+		<td colspan="7"><b><?=$godina?>. GODINA <?=$ciklusa?> STUDIJA</b></td>
 		</tr>
 		<?
 		$oldgodina = $godina;
