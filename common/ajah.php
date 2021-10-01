@@ -302,7 +302,7 @@ case "izmjena_ispita":
 		$result = api_call("course/$predmet/$ag/student/$stud_id/grade", $portfolio, "PUT");
 		if ($_api_http_code == "201") {
 			zamgerlog("AJAH kodatum - promijenjen datum u indeksu (predmet pp$predmet, student u$stud_id)", 4);
-			zamgerlog2("promijenjen datum ocjene", $stud_id, $predmet, $ag, date("d.m.Y",$novidatum));
+			zamgerlog2("promijenjen datum ocjene", $stud_id, $predmet, $ag, date("d.m.Y",db_timestamp($novidatum)));
 		} else {
 			print "greška ($_api_http_code): " . $result['message'];
 			break;
