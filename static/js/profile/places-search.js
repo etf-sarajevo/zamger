@@ -47,6 +47,15 @@ $(".placeSearch").keyup(function () {
 
                 let wrapper = $("<div>").attr('class', 'search-options');
 
+                /* Find repeating place names */
+                var lastPlace = '';
+                for(let i=0; i<result['results'].length; i++) {
+                    if (result['results'][i]['name'] == lastPlace) {
+                        result['results'][i]['name'] = lastPlace + ' (' + result['results'][i]['Municipality']['name'] + ')';
+                        result['results'][i-1]['name'] = lastPlace + ' (' + result['results'][i-1]['Municipality']['name'] + ')';
+                    } else lastPlace = result['results'][i]['name'];
+                }
+
                 for(let i=0; i<result['results'].length; i++){
                     let item = result['results'][i];
 
