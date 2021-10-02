@@ -55,6 +55,19 @@ function kreiraj_ponudu_kursa($predmet, $studij, $semestar, $ag, $obavezan, $isp
 		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem slog u akademska_godina_predmet<br>\n";
 		else $q90 = db_query("insert into akademska_godina_predmet set akademska_godina=$ag, predmet=$predmet, tippredmeta=$tippredmeta");
 	}
+	// Isto to za aktivnost_agp
+	$q80 = db_query("select akademska_godina, aktivnost_predmet from aktivnost_agp where predmet=$predmet and akademska_godina<=$ag order by akademska_godina desc limit 1");
+	if (db_num_rows($q80)==0) {
+		$aktivnosti = [ 1, 2, 3, 4, 5, 6 ]; // wtf this works
+		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem slog u aktivnost_agp<br>\n";
+		else foreach ($aktivnosti as $aktivnost) $q90 = db_query("insert into aktivnost_agp set akademska_godina=$ag, predmet=$predmet, aktivnost_predmet=$aktivnost");
+	} else if (db_result($q80,0,0) == $ag) { // Već postoji
+		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Već postoji slog u aktivnost_agp<br>\n";
+	} else {
+		$tippredmeta = db_result($q80,0,1);
+		if ($ispis) print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Dodajem slog u aktivnost_agp<br>\n";
+		else $q90 = db_query("insert into aktivnost_agp SELECT aktivnost_predmet, 17, $predmet FROM aktivnost_agp WHERE akademska_godina=$ag AND predmet=$predmet");
+	}
 
 	// Kopiram podatak od prošle godine za moodle predmet id, ako ga ima
 	$q100 = db_query("select akademska_godina, moodle_id from moodle_predmet_id where predmet=$predmet and akademska_godina<=$ag order by akademska_godina desc limit 1");
