@@ -108,7 +108,8 @@ function common_profil() {
 					</div>
 				</div>
 
-				<form class="p-0" action="" method="post" id="update-profile">
+				<form class="p-0" action="" method="post" id="update-profile" autocomplete="off">
+					<input autocomplete="false" name="hidden" type="text" class="hidden">
 					
 					<?= Form::hidden('id', $person['id'], ['class' => 'form-control', 'id' => 'personId']) ?>
 
@@ -123,7 +124,7 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="surname">Prezime</label> <!-- Old -->
-								<?= Form::text('surname', $person['surname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'surname', 'aria-describedby' => 'surnameHelp', 'required' => 'required']) ?>
+								<?= Form::text('surname', $person['surname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'surname', 'aria-describedby' => 'surnameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
 								<small id="surnameHelp" class="form-text text-muted">Vaše prezime</small>
 							</div>
 						</div>
@@ -157,7 +158,7 @@ function common_profil() {
 								<label for="placeOfBirth">Mjesto rođenja</label>
 								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
 								<div class="search-container">
-									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'country' => 'Country']) ?>
+									<?= Form::text('placeOfBirth', $person['ExtendedPerson']['placeOfBirth']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'placeOfBirth', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['id'] ?? '', 'municipality' => 'Municipality', 'country' => 'Country', 'autocomplete' => 'off']) ?>
 								</div>
 								<small id="placeOfBirthHelp" class="form-text text-muted">
 									Vaše mjesto rođenja.<br>
@@ -230,7 +231,7 @@ function common_profil() {
 							<div class="form-group">
 								<label for="placeOfBirth">Mjesto prebivališta</label>
 								<div class="search-container">
-									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry']) ?>
+									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry', 'autocomplete' => 'off']) ?>
 								</div>
 								<small id="placeOfBirthHelp" class="form-text text-muted">
 									Vaše mjesto prebivališta. Ovdje upisujete naseljeno mjesto (grad, selo), a općina i država će biti popunjeni automatski. Ne unosite dio mjesta (naselje, četvrt) npr. ako živite na Pofalićima unosite Sarajevo a ne Pofalići.<br>
@@ -275,7 +276,7 @@ function common_profil() {
 								<label for="addressPlace">Mjesto boravišta</label>
 								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
 								<div class="search-container">
-									<?= Form::text('addressPlace', $person['ExtendedPerson']['addressPlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'addressPlace', 'idVal' => $person['ExtendedPerson']['addressPlace']['id'] ?? '',  'municipality' => 'addressMunicipality', 'country' => 'addressCountry']) ?>
+									<?= Form::text('addressPlace', $person['ExtendedPerson']['addressPlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'addressPlace', 'idVal' => $person['ExtendedPerson']['addressPlace']['id'] ?? '',  'municipality' => 'addressMunicipality', 'country' => 'addressCountry', 'autocomplete' => 'off']) ?>
 								</div>
 								<small id="placeOfBirthHelp" class="form-text text-muted">
 									Vaše mjesto boravišta.<br>
