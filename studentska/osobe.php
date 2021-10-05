@@ -579,62 +579,31 @@ if ($akcija == "podaci") {
 		<p><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=int_param('osoba')?>">Nazad na podatke o osobi</a></p>
 		<?
 		
-		// Find uplatnitza
-
-		if (!param('finish')) {
-			$dir = "$conf_files_path/uplatnice/" . int_param('osoba');
-			$dozvoljene_ekstenzije = ["png", "jpg", "pdf"];
-			
-			$found = false;
-			foreach($dozvoljene_ekstenzije as $ext) {
-				$filename = $dir . "/uplatnica-" . int_param('godina') . ".$ext";
-				if (file_exists($filename)) $found = $filename;
-			}
-			if ($found) {
-				?>
-				<p>Uplatnica:</p>
-				<?
-				if (ends_with($found, ".pdf")) {
-					?>
-					<div>
-						<object
-								data='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
-								type="application/pdf"
-								width="400"
-								height="300">
-				
-							<iframe
-									src='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
-									width="400"
-									height="300">
-								<p>This browser does not support PDF!</p>
-							</iframe>
-				
-						</object>
-					</div>
-					<?
-				} else {
-					?>
-						<img src="?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>" style="width: 100%; max-width: 400px; height: 100%; max-height: 300px">
-					<?
-				}
-			} else {
-				?>
-				<p>Student nije uploadovao uplatnicu.</p>
-				<?
-			}
-		}
-
+		// Get a list of all programmes from api - we will need it later
+		$allProgrammes = api_call("programme/all", [ "resolve" => [ "ProgrammeType" ]]);
+		$allProgrammes = $allProgrammes['results'];
+		
+		
 		// Parameters, if passed
 		
 		$student = int_param('osoba');
 		$studij = int_param('studij');
+		if ($studij == 0) {
+			// Passing zero means that programme should be selected manually
+			foreach ($allProgrammes as $programme) {
+				if ($programme['acceptsStudents']) {
+					$studij = $programme['id'];
+					break;
+				}
+			}
+			$_REQUEST['change'] = true;
+		}
 		$semestar = int_param('semestar');
 		$godina = int_param('godina');
 		if (param('ponovac')) $ponovac = true; else $ponovac = false;
 		if (param('status')) $status = int_param('status'); else $status = 0; /* Default status: Normal student */
 		$put = int_param('put');
-		$enrollment = array_to_object([ "student" => [ "id" => $student], "Programme" => [ "id" => $studij], "semester" => $semestar, "AcademicYear" => [ "id" => $godina], "repeat" => $ponovac, "status" => $status, "whichTime" => $put ]);
+		$enrollment = array_to_object([ "student" => [ "id" => $student ], "Programme" => [ "id" => $studij ], "semester" => $semestar, "AcademicYear" => [ "id" => $godina ], "repeat" => $ponovac, "status" => $status, "whichTime" => $put ]);
 		
 		// Optional fields
 		if (param('nacin_studiranja')) {
@@ -732,6 +701,12 @@ if ($akcija == "podaci") {
 		$newEnrollment = api_call("enrollment/$student", $enrollment, "POST");
 		
 		// Handle errors
+		if ($_api_http_code == "400" && $newEnrollment['message'] === "Enrollment type is required") {
+			// API failed to automatically detect enrollment type, we will provide a random one
+			$enrollment->EnrollmentType = [ "id" => 1 ];
+			$newEnrollment = api_call("enrollment/$student", $enrollment, "POST");
+		}
+		
 		if ($_api_http_code == "400" && starts_with($newEnrollment['message'], "Already enrolled")) {
 			if ($semestar % 2 == 0) $rijec = "ljetnji"; else $rijec = "zimski";
 			niceerror("Student je već upisan u $rijec semestar odabrane akademske godine!");
@@ -753,9 +728,7 @@ if ($akcija == "podaci") {
 			$show['programme'] = $show['curriculum'] = true;
 			$finish = false;
 			
-			// Get a list of all programmes from api
-			$allProgrammes = api_call("programme/all", [ "resolve" => [ "ProgrammeType" ]]);
-			$allProgrammes = $allProgrammes['results'];
+			// Determine programme type
 			$programmeTypes = [];
 			foreach($allProgrammes as $prog) {
 				$ptId = $prog['ProgrammeType']['id']; // shortcut
@@ -884,7 +857,54 @@ if ($akcija == "podaci") {
 			$show['whichTime'] = false;
 			
 			
-			// Show main form
+			
+			// Find uplatnitza
+			
+			if (!param('finish')) {
+			$dir = "$conf_files_path/uplatnice/" . int_param('osoba');
+			$dozvoljene_ekstenzije = ["png", "jpg", "pdf"];
+			
+			$found = false;
+			foreach($dozvoljene_ekstenzije as $ext) {
+				$filename = $dir . "/uplatnica-" . int_param('godina') . ".$ext";
+				if (file_exists($filename)) $found = $filename;
+			}
+			if ($found) {
+			?>
+				<p>Uplatnica:</p>
+				<?
+				if (ends_with($found, ".pdf")) {
+					?>
+					<div>
+						<object
+								data='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
+								type="application/pdf"
+								width="400"
+								height="300">
+				
+							<iframe
+									src='?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>'
+									width="400"
+									height="300">
+								<p>This browser does not support PDF!</p>
+							</iframe>
+				
+						</object>
+					</div>
+					<?
+				} else {
+					?>
+				<img src="?sta=common/attachment&tip=uplatnica&ag=<?=int_param('godina')?>&student=<?=int_param('osoba')?>" style="width: 100%; max-width: 400px; height: 100%; max-height: 300px">
+					<?
+				}
+			} else {
+				?>
+				<p>Student nije uploadovao uplatnicu.</p>
+			<?
+			}
+		}
+			
+		// Show main form
 		unset($_POST['change']); unset($_REQUEST['change']); unset($_POST['ponovac']); unset($_REQUEST['ponovac']);
 		?>
 		<?=genform("POST");?>
@@ -2123,6 +2143,9 @@ else if ($akcija == "edit") {
 	}
 
 
+	//$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson" ]]);
+	//print_r($person);
+
 	// Osnovni podaci
 
 	$q200 = db_query("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
@@ -2592,7 +2615,7 @@ else if ($akcija == "edit") {
 		} else {
 
 		// Ima li uslove za upis
-		if ($semestar==0 && $ikad_semestar==0) {
+		if ($semestar==0 && $ikad_semestar==-1) {
 			// Upis na prvu godinu
 
 			?>
