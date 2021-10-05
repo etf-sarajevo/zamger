@@ -475,7 +475,10 @@ function student_ugovoroucenju() {
 							if ($postoji_maticni) break;
 						}
 					}
-					if ($postoji_maticni) continue;
+					if ($postoji_maticni) {
+						unset($polozio_drugi_odsjek[$predmet['id']]);
+						continue;
+					}
 					
 					// Nećemo dvaput isti
 					if (array_key_exists($predmet['id'], $izborni_drugi_odsjek)) continue;
