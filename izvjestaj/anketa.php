@@ -16,8 +16,13 @@ function izvjestaj_anketa() {
 	$anketa = intval($_REQUEST['anketa']);
 
 	// naziv predmeta
-	$q10 = db_query("select p.naziv,pk.akademska_godina,p.id from predmet as p, ponudakursa as pk where pk.predmet=p.id and p.id=$predmet and pk.akademska_godina=$ag; ");
-	$naziv_predmeta = db_result($q10,0,0);
+	$q10 = db_query("select pp.naziv from pasos_predmeta as pp, ponudakursa as pk where pk.pasos_predmeta=pp.id and pk.predmet=$predmet and pk.akademska_godina=$ag ");
+	$naziv_predmeta = "";
+	while (db_fetch1($q10, $pp_naziv))
+		if ($naziv_predmeta == "")
+			$naziv_predmeta = $pp_naziv;
+		else if (!strstr($naziv_predmeta, $pp_naziv))
+			$naziv_predmeta .= " / $pp_naziv";
 
 	if (!$user_siteadmin && !$user_studentska) {
 		$pristup_nastavnik = $pristup_student = false;
