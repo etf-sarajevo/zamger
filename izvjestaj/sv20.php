@@ -116,6 +116,7 @@ function izvjestaj_sv20() {
 	$email            = $person['email'][0]['address'];
 		
 	$cycle            = $imena_ciklusa[$enrollment['Programme']['ProgrammeType']['cycle']];
+	if ($enrollment['Programme']['ProgrammeType']['cycle'] == 99) $cycle = $imena_ciklusa[1]; // Stručni studij
 	$godina           = floor(($enrollment['semester'] + 1) / 2);
 	$studyYear        = $rimski_brojevi[$godina];
 	$again            = $enrollment['repeat'] ? 'Da' : 'Ne';
