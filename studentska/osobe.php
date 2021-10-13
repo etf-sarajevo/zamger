@@ -824,8 +824,13 @@ if ($akcija == "podaci") {
 			$show['repeat'] = false;
 			
 		if (param('change') || $newEnrollment['status'] != $status) {
-			$show['status'] = true;
-			$finish = false;
+			if (param('forceStatus')) {
+				$newEnrollment['status'] = $status;
+				$show['status'] = false;
+			} else {
+				$show['status'] = true;
+				$finish = false;
+			}
 		} else
 			$show['status'] = false;
 		
@@ -860,7 +865,7 @@ if ($akcija == "podaci") {
 			
 			// Find uplatnitza
 			
-			if (!param('finish')) {
+		if (!param('finish')) {
 			$dir = "$conf_files_path/uplatnice/" . int_param('osoba');
 			$dozvoljene_ekstenzije = ["png", "jpg", "pdf"];
 			
@@ -1073,6 +1078,7 @@ if ($akcija == "podaci") {
 					?>
 					<td bgcolor="#ffeeee">
 						<input type="checkbox" name="status" value="1">
+						<input type="hidden" name="forceStatus" value="1">
 					</td>
 						<?
 					} else {
