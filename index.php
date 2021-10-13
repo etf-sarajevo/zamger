@@ -86,7 +86,11 @@ if (array_key_exists('HTTP_X_FORWARDED_FOR', $_SERVER) && $_SERVER['HTTP_X_FORWA
 	$ip_adresa = $_SERVER['HTTP_X_FORWARDED_FOR']; 
 else
 	$ip_adresa = $_SERVER['REMOTE_ADDR'];
-if (in_array($ip_adresa, $conf_banned_ips)) { print "Pristup Zamgeru onemogućen zbog zloupotrebe. Kontaktirajte administratora."; exit(0); }
+if (in_array($ip_adresa, $conf_banned_ips)) {
+	print "Pristup Zamgeru onemogućen zbog zloupotrebe. Kontaktirajte administratora.";
+	$uspjeh = 2;
+	exit(0);
+}
 
 
 // Login forma i provjera sesije
@@ -291,10 +295,16 @@ if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo 
 // Prikaz specijalnih login ekrana u slučaju greške
 // Ovo radimo nakon servisa, jer za servise nećemo da prikazujemo login ekran!
 if (($greska !== "" || ($sta == "" && $userid == 0)) && $conf_login_screen != "internal") {
+	if ($greska !== "") {
+		niceerror($greska);
+		$uspjeh = 2;
+		exit;
+	}
 	if ($conf_login_screen == "cas")
 		cas_login_screen();
 	if ($conf_login_screen == "keycloak")
 		keycloak_login_screen();
+	$uspjeh = 2;
 	exit;
 }
 
@@ -303,6 +313,7 @@ if (isset($_SESSION['come_back_to'])) {
 	$url = $_SESSION['come_back_to'];
 	unset($_SESSION['come_back_to']);
 	header("Location: " . $url);
+	$uspjeh = 2;
 	exit;
 }
 
@@ -315,6 +326,7 @@ if ($found==1 && $template==2 && $greska=="") {
 	$uspjeh=2;
 	eval("$staf();");
 	db_disconnect();
+	$uspjeh = 2;
 	exit(0);
 }
 
@@ -376,6 +388,7 @@ if ($found==1 && $template==0 && $greska=="") {
 	eval("$staf();");
 	print "</body></html>\n";
 	db_disconnect();
+	$uspjeh = 2;
 	exit(0);
 }
 
