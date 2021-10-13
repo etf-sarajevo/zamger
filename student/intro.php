@@ -26,8 +26,9 @@ function student_intro() {
 
 	// KOD ZA IZVJEŠTAJE
 	if ($_REQUEST['akcija'] == "promijeni_kod") {
-		global $conf_files_path, $user_siteadmin;
-		api_call("zamger/anonymous_code/$userid", [], "POST");
+		$users_who_change_code_too_much = [ 3980 ];
+		if (!in_array($userid, $users_who_change_code_too_much))
+			api_call("zamger/anonymous_code/$userid", [], "POST");
 		?>
 		<h1>Promjena koda je zatražena</h1>
 		<p>Vaš kod će biti promijenjen u narednih 24 sata.</p>
