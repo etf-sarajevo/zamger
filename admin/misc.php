@@ -1535,13 +1535,21 @@ if ($_POST['akcija']=="brisanje_osobe" && check_csrf_token()) {
 		while ($r150 = db_fetch_row($q150)) {
 			print "Log: $r150[0] $r150[1] $r150[2]<br>";
 		}*/
+	
+	$q160 = db_query("select kod from kod_za_izvjestaj where osoba=$osoba");
+	if ($f)
+		$q160a = db_query("delete from kod_za_izvjestaj where osoba=$osoba");
+	else
+		while ($r160 = db_fetch_row($q160)) {
+			print "Kod za izvjestaj: $r160[0]<br>";
+		}
 
 	$q160 = db_query("select vrijeme, modul, dogadjaj from log2 where userid=$osoba");
 	if ($f)
 		$q160a = db_query("delete from log2 where userid=$osoba");
 	else
 		while ($r160 = db_fetch_row($q160)) {
-			print "Log2: $r150[0] $r150[1] $r150[2]<br>";
+			print "Log2: $r160[0] $r160[1] $r160[2]<br>";
 		}
 //nastavnik_predmet
 //odluka
