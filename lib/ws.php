@@ -294,6 +294,14 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	$http_code = explode(" ", $http_response_header[0]);
 	$_api_http_code = $http_code[1];
 	
+	if ($_api_http_code == "490" && $conf_keycloak) {
+		// Token is expired, get the refresh token
+		check_cookie();
+		
+		// Repeat api_call
+		return api_call($route, $params, $method, $debug, $json, $associative);
+	}
+	
 	if (!$json) return $http_result;
 	
 	// DELETE requests don't return a body

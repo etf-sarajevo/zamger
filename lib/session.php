@@ -219,7 +219,9 @@ function check_cookie() {
 
 	// Provjera KeyCloak single sign-on sesije
 	if ($login == "" && $conf_keycloak) {
-		global $conf_site_url, $conf_files_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
+		// TODO: Refactor into lib/oauth2_client.php
+		// TODO: Use phpleague/oauth2 instead of Stevenmaguire\Keycloak
+		global $conf_site_url, $conf_files_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret, $uspjeh;
 		
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
 			'authServerUrl' => $conf_keycloak_url,
@@ -275,7 +277,8 @@ function check_cookie() {
 			if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
 				unset($_SESSION['oauth2state']);
 				niceerror('Autentikacija na keycloak neuspjela, kontaktirajte administratora (1)');
-				return;
+				$uspjeh = 2;
+				exit(0);
 			}
 			$_SESSION['keycloak_code'] = $code = $_GET['code'];
 			
@@ -285,10 +288,9 @@ function check_cookie() {
 					'code' => $code
 				]);
 				if ($token->hasExpired()) {
-					// Redirektujemo na logout url kako bi se korisnik opet prijavio
-//					header('Location: ' . keycloak_logout_url());
-					print "Token istekao\n";
-					
+					// This should never happen since we just arrived from OAuth server!
+					niceerror('Token je već istekao! Kontaktirajte administratora (2)');
+					$uspjeh = 2;
 					exit(0);
 				}
 				
@@ -324,12 +326,32 @@ function check_cookie() {
 		// Ako se koristi keycloak, moramo imati login jer na osnovu logina dobijamo token
 		require_once("lib/ws.php");
 		$person = api_call("person", ["resolve[]" => "ExtendedPerson"]);
-		if ($person['code'] != "200") {
+		if ($person['code'] == "401") {
 			if ($conf_keycloak) {
-				header('Location: ' . keycloak_logout_url());
-				exit();
+				// Shouldn't happen - session was valid 100 lines ago!
+				zamgerlog("person vratio 401",3);
+				?>
+				<p>Vaša sesija je istekla. <a href="?logout">Prijavite se ponovo.</a></p>
+				<?php
+				$uspjeh = 2;
+				exit(0);
 			}
+			
+			// We use backend for session, so return to login page
+			$userid = 0;
 			return;
+		}
+		
+		if ($person['code'] != "200") {
+			// Other type of exception - can happen if database is inconsistent
+			niceerror("Došlo je do greške u pristupu podacima Vaše osobe");
+			print "<p>Molimo da pošaljete sljedeće podatke nadležnima. Detalji:</p>";
+			api_debug($person, true);
+			if ($conf_keycloak) {
+				print "<p>Možete probati logout preko <a href='$conf_keycloak_url/realms/$conf_keycloak_realm/account/'>Keycloak stranice</a> mada ne vjerujemo da će pomoći.</p>";
+			}
+			$uspjeh = 2;
+			exit(0);
 		}
 		
 		$privilegije = $person['privileges'];
