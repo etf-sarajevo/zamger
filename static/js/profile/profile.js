@@ -73,7 +73,7 @@ $(document).ready(function () {
             e.preventDefault();
             return;
         }
-        if (name.indexOf(surname) >= 0) {
+        if (name.replaceAll('ć','c').indexOf(surname.replaceAll('ć','c')) >= 0) {
             $("#name").focus();
             $.notify("Unijeli ste prezime u polje za ime!", 'warn');
             e.preventDefault();
