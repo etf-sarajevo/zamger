@@ -273,10 +273,10 @@ function check_cookie() {
 		// Prvi pristup Zamgeru, ovo je redirekt sa login stranice
 		else if (isset($_GET['code'])) {
 			// Check given state against previously stored one to mitigate CSRF attack
-			// TODO? Ovo je bitno samo prilikom logina
 			if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-				unset($_SESSION['oauth2state']);
-				niceerror('Autentikacija na keycloak neuspjela, kontaktirajte administratora (1)');
+				// This sometimes happens when user goes back to URL with outdated 'state'
+				// Going back to site URL will either work or redirect back to keycloak
+				header('Location: ' . $conf_site_url);
 				$uspjeh = 2;
 				exit(0);
 			}
