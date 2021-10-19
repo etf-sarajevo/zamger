@@ -74,21 +74,16 @@ function student_ugovoroucenju() {
 	$plan_studija = $novi_studij = 0;
 	if ($studij > 0) {
 		$q5a = db_query("SELECT studij, plan_studija, semestar FROM student_studij WHERE student=$userid AND akademska_godina<=$akademska_godina ORDER BY akademska_godina DESC LIMIT 1");
-		if (!db_fetch3($q5a, $stari_studij, $plan_studija, $bio_semestar) || $studij != $stari_studij || $bio_semestar >= $godina_studija*2) {
+		if (!db_fetch3($q5a, $stari_studij, $plan_studija, $bio_semestar) || $studij != $stari_studij || $bio_semestar >= $godina_studija * 2) {
 			// Student nije prethodno studirao na istom studiju ili plan studija nije bio definisan ili je ponovac
- 			// Uzimamo najnoviji plan za odabrani studij
-			$plan_studija = db_get("SELECT id FROM plan_studija WHERE studij=$studij ORDER BY godina_vazenja DESC LIMIT 1");
-			if (!$plan_studija) { 
+			// Uzimamo najnoviji plan za odabrani studij
+			$max_godina = $akademska_godina - $godina_studija + 1;
+			$plan_studija = db_get("SELECT id FROM plan_studija WHERE studij=$studij AND godina_vazenja<$max_godina ORDER BY godina_vazenja DESC LIMIT 1");
+			if (!$plan_studija) {
 				niceerror("Nije definisan plan i program za studij $studij");
 				return;
 			}
 		}
-	}
-	
-	if ($godina_studija == 1 && $ciklus == 2 && $studij != $stari_studij) {
-		niceerror("Popunjavanje ugovora o učenju je onemogućeno za studente 1. godine 2. ciklusa studija");
-		print "<p><a href='https://zamger.etf.unsa.ba/hybrid/index.php?sta=common/inbox&poruka=20846&stranica=1'>Više informacija</a></p>";
-		return;
 	}
 
 	
