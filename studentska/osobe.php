@@ -2652,32 +2652,38 @@ else if ($akcija == "edit") {
 
 		} else {
 			// Upis na neparni semestar - da li je student dao uslov?
-			$ima_uslov=0;
-			
-			// Tekst za ono što upisuje
-			if ($semestar==$studij_trajanje) {
-				$sta = "sljedeći ciklus studija";
-			} else {
-				$sta = "&quot;$studij&quot;, ".($semestar+1).". semestar";
-			}
-
 
 			// Pokusacemo odrediti uslov na osnovu polozenih predmeta...
 			global $zamger_predmeti_pao, $zamger_pao_ects;
 			$ima_uslov = ima_li_uslov($osoba, $id_ak_god);
 			
 			if ($ima_uslov) {
-				?>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao/la uslove za upis na <?=$sta?></p>
-				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p>
-				<?
+				if ($semestar == $studij_trajanje) {
+					?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao/la uslove za upis na sljedeći ciklus studija</p>
+					<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=0&amp;semestar=1&amp;godina=<?=$nova_ak_god?>">Upiši studenta na sljedeći ciklus studija.</a></p>
+					<?
+				} else {
+					?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student je stekao/la uslove za upis na &quot;<?=$studij?>&quot;, <?=($semestar+1)?>. semestar</p>
+					<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na &quot;<?=$studij?>&quot;, <?=($semestar+1)?>. semestar.</a></p>
+					<?
+				}
 			} else {
+				if ($semestar == $studij_trajanje) {
+					?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za upis na sljedeći ciklus studija<br/>
+					<?
+					
+				} else {
+					?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za &quot;<?=$studij?>&quot;, <?=($semestar+1)?>. semestar<br/>
+					<?
+				}
+				
 				?>
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Student <b>NIJE</b> stekao/la uslove za <?=$sta?><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?
-				
-				print "(".count($zamger_predmeti_pao)." nepoloženih predmeta, $zamger_pao_ects ECTS kredita)";
-				
-				?></p>
+				(<?=count($zamger_predmeti_pao)?> nepoloženih predmeta, <?=$zamger_pao_ects?> ECTS kredita)
+				</p>
 				<p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar-1)?>&amp;godina=<?=$nova_ak_god?>">Ponovo upiši studenta na <?=$studij?>, <?=($semestar-1)?>. semestar (<?=($ikad_puta["$studij_id-".($semestar-1)]+1)?>. put).</a></p>
 				<!--p><a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=upis&amp;studij=<?=$studij_id?>&amp;semestar=<?=($semestar+1)?>&amp;godina=<?=$nova_ak_god?>">Upiši studenta na <?=$sta?>.</a></p-->
 				<?
