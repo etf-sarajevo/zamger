@@ -167,7 +167,7 @@ function ajax_box() {
 						return;
 					}
 					cb_success(object);
-				} else if (xhttp.readyState == 4 && xhttp.status == 401) {
+				} else if (xhttp.readyState == 4 && xhttp.status == 490) {
 					// Access denied, check if token expired
 					var xhttp_token = new XMLHttpRequest();
 					xhttp_token.onreadystatechange = function() {
@@ -175,6 +175,8 @@ function ajax_box() {
 							zamger_oauth_token = xhttp_token.responseText.substring(7);
 							ajax_api_start(route, method, params, cb_success, cb_fail);
 						} else if (xhttp_token.readyState == 4) {
+                            console.log("Getting token failed, status " + xhttp_token.status);
+							console.log(xhttp_token.responseText);
 							cb_fail(xhttp.responseText, xhttp.status, url);
 						}
 					};
