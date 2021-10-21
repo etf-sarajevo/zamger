@@ -263,7 +263,7 @@ function izvjestaj_sv20() {
 		
 		if($studyType == 'redovan'){ $templateProcessor->setComplexValue('st_f', (new TextRun())->addText('redovan', $strikethrough9)); } // TODO - check
 		else $templateProcessor->setValue('st_f', 'redovan');
-		if($studyType == 'samofinancirajući'){ $templateProcessor->setComplexValue('st_s', (new TextRun())->addText('samofinansirajući', $strikethrough9)); }
+		if($studyType == 'samofinansirajući'){ $templateProcessor->setComplexValue('st_s', (new TextRun())->addText('samofinansirajući', $strikethrough9)); }
 		else $templateProcessor->setValue('st_s', 'samofinansirajući');
 		if($studyType == 'vanredan'){ $templateProcessor->setComplexValue('st_t', (new TextRun())->addText('vanredan', $strikethrough9)); }
 		else $templateProcessor->setValue('st_t', 'vanredan');
