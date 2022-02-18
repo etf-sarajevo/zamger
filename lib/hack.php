@@ -29,5 +29,16 @@ function debug_data_dump() {
 		print "<br>\n";
 	}
 }
+function api_debug($data, $textarea=false) {
+	if ($textarea) {
+		print "<textarea cols=50>";
+		print_r($data);
+		print "</textarea>";
+	} else {
+		print "<pre>";
+		print_r($data);
+		print "</pre>";
+	}
+}
 
 ?>
