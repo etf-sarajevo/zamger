@@ -42,6 +42,14 @@ function izvjestaj_prijava_semestra() {
 	$enrollmentContract = api_call("enrollment/contract/$student", ["resolve" => ["AcademicYear", "Programme", "Institution", "ProgrammeType", "EnrollmentType"], "getCourses" => true]);
 	$hasContract = ($_api_http_code == "200");
 	
+	if (param('ugovor') && !$hasContract) {
+		niceerror("Student nije popunio Ugovor o učenju");
+		?><p>Ako želite možete isprintati Prijavu semestra prema semestru koji je trenutno upisan.</p>
+		<p><a href="?sta=izvjestaj/prijava_semestra&student=<?=$student?>">Prijava semestra za trenutno upisani semestar</a></p>
+		<?php
+		exit(0);
+	}
+	
 	if (param('ugovor') || !$currentlyEnrolled)
 		$enrollment = $enrollmentContract;
 	
