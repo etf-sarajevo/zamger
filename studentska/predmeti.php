@@ -447,8 +447,10 @@ else if ($akcija == "edit") {
 			// Ova funkcija briše ispite, zadaće, prisustvo i konačnu ocjenu te ispisuje studenta iz labgrupe
 			ispis_studenta_sa_predmeta($r364[0], $r364[1], $r364[2]);
 		}
-
-
+		
+		// zaostatak u bazi... fixme?
+		db_query("delete from komponentebodovi where predmet=$ponudakursa");
+		
 		// Brišemo ponudu kursa
 		$q365 = db_query("delete from ponudakursa where id=$ponudakursa");
 		nicemessage ("Ponuda kursa je obrisana");
