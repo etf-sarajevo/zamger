@@ -1624,6 +1624,13 @@ else if ($akcija == "izbori") {
 		$q3030 = db_query("insert into izbor set osoba=$osoba, zvanje=$zvanje, datum_izbora=FROM_UNIXTIME($datum_izbora), datum_isteka=$sqlisteka, oblast=$oblast, podoblast=$podoblast, dopunski=$dopunski, druga_institucija=$drugainst");
 		zamgerlog("dodani podaci o izboru za u$osoba", 2);
 		zamgerlog2("dodani podaci o izboru", $osoba);
+		
+		?>
+		<script language="JavaScript">
+			setTimeout(function() { location.href='?sta=studentska/osobe&akcija=izbori&predmet=<?=$predmet?>&ag=<?=$ag?>'; }, 1000);
+		</script>
+		<?
+		return;
 	}
 	
 	if (param('subakcija') == "izmjena" && check_csrf_token()) {
