@@ -196,7 +196,9 @@ function json_request($url, $parameters, $method = "GET", $encoding = "url", $de
  * @return mixed Server response as string (if $json=false), array (if $json=true, $associative=true) or object (if $associative=false)
  */
 function api_call($route, $params = [], $method = "GET", $debug = true, $json = true, $associative = true) { // set to false when finished
-	global $conf_backend_url, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code, $http_result, $conf_debug;
+	global $conf_backend_url, $debug_data, $conf_keycloak, $conf_backend_has_rewrite, $login, $_api_http_code, $http_result, $conf_debug;
+	
+	require_once("lib/oauth2_client.php"); // OAuth2Helper
 	
 	$http_request_params = array('http' => array(
 		'header' => "",
@@ -253,15 +255,8 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		}
 	}
 	
-	if ($conf_keycloak) {
-		$token_file = $conf_files_path . "/keycloak_token/$login";
-		$token = unserialize(file_get_contents($token_file));
-		if (!$token) {
-			// We lost the token somehow
-			logout();
-		}
-		$http_request_params['http']['header'] .= "Authorization: Bearer " .  $token->getToken() . "\r\n";
-	}
+	if ($conf_keycloak)
+		$http_request_params['http']['header'] .= "Authorization: Bearer " .  OAuth2Helper::getToken($login) . "\r\n";
 	
 	if ($content != "") {
 		$http_request_params['http']['content'] = $content;
@@ -295,8 +290,14 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	$_api_http_code = $http_code[1];
 	
 	if ($_api_http_code == "490" && $conf_keycloak) {
+		// Avoid redirect loops where backend thinks session is expired but frontend disagrees
+		// (why??? i think this is due to mismatch in clocks between OAuth2 server and backend server)
+		// (still don't know why this happens :( )
+		if (count(debug_backtrace()) > 20)
+			OAuth2Helper::logOut();
+		
 		// Token is expired, get the refresh token
-		check_cookie();
+		OAuth2Helper::refreshToken($login);
 		
 		// Repeat api_call
 		return api_call($route, $params, $method, $debug, $json, $associative);
@@ -337,6 +338,9 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 function api_file_upload($route, $fieldName, $filename, $mimetype = "application/zip", $params = [], $debug = true) {
 	global $conf_backend_url, $_api_http_code, $debug_data, $conf_files_path, $conf_keycloak, $conf_backend_has_rewrite, $login;
 	
+	require_once("lib/oauth2_client.php"); // OAuth2Helper
+	// TODO fix code duplication
+	
 	$url = $conf_backend_url;
 	$query_params = [];
 	if ($conf_backend_has_rewrite)
@@ -353,15 +357,8 @@ function api_file_upload($route, $fieldName, $filename, $mimetype = "application
 	define('MULTIPART_BOUNDARY', '--------------------------'.microtime(true));
 	$header = 'Content-Type: multipart/form-data; boundary='.MULTIPART_BOUNDARY;
 	
-	if ($conf_keycloak) {
-		$token_file = $conf_files_path . "/keycloak_token/$login";
-		$token = unserialize(file_get_contents($token_file));
-		if (!$token) {
-			// We lost the token somehow
-			logout();
-		}
-		$header .= "\r\nAuthorization: Bearer " .  $token->getToken() . "\r\n";
-	}
+	if ($conf_keycloak)
+		$header .= "\r\nAuthorization: Bearer " .  OAuth2Helper::getToken($login) . "\r\n";
 	
 	$file_contents = file_get_contents($filename);
 	$content =  "--".MULTIPART_BOUNDARY."\r\n".

@@ -18,6 +18,8 @@
 //    $admin  - korisnik je administrator
 //    $userid - interni ID korisnika (prirodan broj)
 
+require("lib/oauth2_client.php");
+
 function login($pass, $type = "") {
 	global $userid,$admin,$login,$conf_passwords,$conf_ldap_server,$conf_ldap_domain,$conf_ldap_dn,$posljednji_pristup;
 	if ($type === "") $type = $conf_passwords;
@@ -136,65 +138,18 @@ function cas_login_screen() {
 	header('Location: ' . $conf_cas_server);
 }
 
-
-// Redirekcija na KeyCloak login screen
-function keycloak_login_screen() {
-	global $conf_site_url, $conf_script_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret;
-	
-	require "$conf_script_path/vendor/autoload.php"; // keycloak
-	
-	// Nakon uspješnog logina korisnik se treba vratiti na onaj Zamger ekran gdje je bio prije
-	// Izgenerisaćemo url koji postiže upravo to i zapisati ga u sesiju
-	// Ne možemo postaviti u 'redirectUri' jer to nekad (!) izaziva cirkularnu redirekciju
-	$url = $conf_site_url . "/index.php";
-	$forbidden_keys = [ "state", "session_state", "code" ];
-	foreach ($_GET as $key => $value) {
-		if (!in_array($key, $forbidden_keys)) {
-			if ($url == $conf_site_url . "/index.php")
-				$url .= "?" . urlencode($key) . "=" . urlencode($value);
-			else
-				$url .= "&" . urlencode($key) . "=" . urlencode($value);
-		}
-		if ($key == "sta" && $value == "logout") {
-			// Ako se nalazimo ovdje, korisnik je kliknuo na Logout dugme ali sesija mu je već istekla
-			// U tom slučaju ćemo prikazati login ekran, pa ga vratiti na početnu stranicu ako se prijavi
-			$url = $conf_site_url . "/index.php";
-			break;
-		}
-	}
-	$_SESSION['come_back_to'] = $url;
-	
-	$provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
-		'authServerUrl'             => $conf_keycloak_url,
-		'realm'                     => $conf_keycloak_realm,
-		'clientId'                  => $conf_keycloak_client_id,
-		'clientSecret'              => $conf_keycloak_client_secret,
-		'redirectUri'               => $conf_site_url . "/index.php",
-		'encryptionAlgorithm'       => null,
-		'encryptionKey'             => null,
-		'encryptionKeyPath'         => null
-	]);
-	
-	// Preuzimamo autentikacijski URL i state cookie
-	$authUrl = $provider->getAuthorizationUrl();
-	$_SESSION['oauth2state'] = $provider->getState();
-	// Želimo da sljedeći check_cookie skoči na provjeru $_GET['code']
-	unset($_SESSION['keycloak_code']);
-	header('Location: '.$authUrl );
+// Redirektuj na odgovarajuću login stranicu
+function session_login_screen() {
+	global $conf_login_screen;
+	if ($conf_login_screen == "cas")
+		cas_login_screen();
+	if ($conf_login_screen == "keycloak")
+		OAuth2Helper::loginScreen();
 }
-
-
-// Pomoćna funkcija koja generiše URL na KeyCloak serveru koji vrši logout
-function keycloak_logout_url() {
-	global $conf_keycloak_url, $conf_keycloak_realm, $conf_site_url;
-	$logout_url = $conf_keycloak_url . "/realms/$conf_keycloak_realm/protocol/openid-connect/logout?redirect_uri=" . urlencode($conf_site_url . '/index.php');
-	return $logout_url;
-}
-
 
 // Provjera da li trenutni korisnik ima važeću sesiju
 function check_cookie() {
-	global $userid,$admin,$login,$conf_cas,$conf_keycloak,$posljednji_pristup,$conf_script_path,$conf_passwords,$person,$privilegije,$su;
+	global $userid,$admin,$login,$conf_cas,$conf_keycloak,$posljednji_pristup,$conf_script_path,$conf_passwords,$person,$privilegije,$su,$uspjeh;
 	
 	require "$conf_script_path/vendor/autoload.php"; // phpcas, keycloak
 	
@@ -217,123 +172,26 @@ function check_cookie() {
 	}
 	
 
-	// Provjera KeyCloak single sign-on sesije
+	// Provjera OAuth2 single sign-on sesije
 	if ($login == "" && $conf_keycloak) {
-		// TODO: Refactor into lib/oauth2_client.php
-		// TODO: Use phpleague/oauth2 instead of Stevenmaguire\Keycloak
-		global $conf_site_url, $conf_files_path, $conf_keycloak_url, $conf_keycloak_realm, $conf_keycloak_client_id, $conf_keycloak_client_secret, $uspjeh;
-		
-		$provider = new Stevenmaguire\OAuth2\Client\Provider\Keycloak([
-			'authServerUrl' => $conf_keycloak_url,
-			'realm' => $conf_keycloak_realm,
-			'clientId' => $conf_keycloak_client_id,
-			'clientSecret' => $conf_keycloak_client_secret,
-			'redirectUri' => $conf_site_url . '/index.php',
-			'encryptionAlgorithm' => null,
-			'encryptionKey' => null,
-			'encryptionKeyPath' => null
-		]);
-		
-		// Postoji aktivna sesija, provjeravamo da li je još uvijek validna
-		// (zanemarićemo sesije koje nisu keycloak sesije)
-		if (isset($_SESSION['login']) && isset($_SESSION['keycloak_code'])) {
-			$login = db_escape($_SESSION['login']);
-			$token_file = $conf_files_path . "/keycloak_token/$login";
-			
-			if (file_exists($token_file)) {
-				$token = unserialize(file_get_contents($token_file));
-				if ($token->hasExpired()) {
-					// Token je istekao, preuzimamo novi sa servera i zapisujemo ga u fajl
-					try {
-						$newAccessToken = $provider->getAccessToken('refresh_token', [
-							'refresh_token' => $token->getRefreshToken()
-						]);
-					} catch (Exception $e) {
-						// Sesija je istekla
-						// Redirektujemo na logout url kako bi se korisnik opet prijavio
-						$_SESSION = array();
-						session_destroy();
-						header('Location: ' . keycloak_logout_url());
-						exit(0);
-					}
-					file_put_contents($token_file, serialize($newAccessToken));
-				}
-			} else {
-				header('Location: ' . keycloak_logout_url());
-				exit(0); // We somehow lost the token file
-			}
-		}
-		
-		// Prikaz greške sa keycloak servera
-		else if (isset($_GET['error']) && isset($_GET['state']) && $_GET['state'] == $_SESSION['ouath2state']) {
-			niceerror("KeyCloak greška: " . $_GET['error'] . ": " . $_GET['error_description']);
-			// Varijabla $login neće biti setovana, tako da login nije uspio
-		}
-		
-		// Prvi pristup Zamgeru, ovo je redirekt sa login stranice
-		else if (isset($_GET['code'])) {
-			// Check given state against previously stored one to mitigate CSRF attack
-			if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-				// This sometimes happens when user goes back to URL with outdated 'state'
-				// Going back to site URL will either work or redirect back to keycloak
-				header('Location: ' . $conf_site_url);
-				$uspjeh = 2;
-				exit(0);
-			}
-			$_SESSION['keycloak_code'] = $code = $_GET['code'];
-			
-			// Try to get an access token (using the authorization coe grant)
-			try {
-				$token = $provider->getAccessToken('authorization_code', [
-					'code' => $code
-				]);
-				if ($token->hasExpired()) {
-					// This should never happen since we just arrived from OAuth server!
-					niceerror('Token je već istekao! Kontaktirajte administratora (2)');
-					$uspjeh = 2;
-					exit(0);
-				}
-				
-				// Od KeyCloak servera dobijamo login
-				$user = $provider->getResourceOwner($token);
-				$login = $user->toArray()['preferred_username'];
-				$token_file = $conf_files_path . "/keycloak_token/$login";
-				
-				// Zapisujemo token u fajl
-				if (!file_exists($conf_files_path . "/keycloak_token"))
-					mkdir($conf_files_path . "/keycloak_token");
-				
-				file_put_contents($token_file, serialize($token));
-				$_SESSION['login'] = $login;
-			} catch (Exception $e) {
-				if ($e->getMessage() == "invalid_grant: Code not valid") {
-					// Autorizacijski kod je invalidan, vjerovatno jer je sesija istekla
-					// Redirektujemo na logout url kako bi se korisnik opet prijavio
-					header('Location: ' . keycloak_logout_url());
-					exit(0);
-				}
-				
-				niceerror('Autentikacija na keycloak neuspjela, kontaktirajte administratora: ' . $e->getMessage());
-				$login = '';
-				// Nastavljamo sa radom kako bismo prihvatili eventualnu Zamger sesiju
-			}
-		}
+		$login = OAuth2Helper::checkSession();
 	}
 	
-	// Koristimo backend za passworde
+	// Koristimo backend za sesiju
 	if ($conf_passwords == "backend" && (!$conf_keycloak || $login != "")) {
-		// Ako se ne koristi keycloak, imamo sesiju preko koje ćemo saznati login
-		// Ako se koristi keycloak, moramo imati login jer na osnovu logina dobijamo token
+		// Ako se ne koristi OAuth2, sa backenda ćemo dobiti login
+		// Ako se koristi OAuth2, moramo imati login jer na osnovu logina dobijamo token
 		require_once("lib/ws.php");
 		$person = api_call("person", ["resolve[]" => "ExtendedPerson"]);
+		
 		if ($person['code'] == "401") {
 			if ($conf_keycloak) {
-				// Shouldn't happen - session was valid 100 lines ago!
-				zamgerlog("person vratio 401",3);
+				// Token expired - this happens when users use "back" button to reach login page
+				zamgerlog("person vratio " . $person['code'] == "490",3);
 				?>
 				<p>Vaša sesija je istekla. <a href="?logout">Prijavite se ponovo.</a></p>
 				<?php
-				$uspjeh = 2;
+				//$uspjeh = 2;
 				exit(0);
 			}
 			
@@ -414,13 +272,6 @@ function check_cookie() {
 	}
 }
 
-// Quickly get KeyCloak token string
-function get_keycloak_token() {
-	global $conf_files_path, $login;
-	$token_file = $conf_files_path . "/keycloak_token/$login";
-	$token = unserialize(file_get_contents($token_file));
-	return $token->getToken();
-}
 
 // Prekid sesije (logout)
 function logout() {
@@ -436,10 +287,8 @@ function logout() {
 	}
 	session_destroy();
 	
-	if ($conf_keycloak) {
-		header('Location: ' . keycloak_logout_url());
-		exit(0);
-	}
+	if ($conf_keycloak)
+		OAuth2Helper::logOut();
 }
 
 

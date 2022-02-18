@@ -3,6 +3,7 @@
 // LIB/ZAMGERUI - generisanje različitih elemenata Zamger korisničkog interfejsa
 
 require_once("lib/utility.php"); // malaslova, mimetype
+require_once("lib/oauth2_client.php"); // getToken
 
 
 // Standardne poruke (koristiti CSS!)
@@ -100,11 +101,11 @@ document.getElementById("<?=$naziv?>-info").innerHTML=frames['<?=$naziv?>'].docu
 
 // Sada implementiramo kao pravi AJAX
 function ajax_box() {
-	global $conf_backend_url_client, $conf_backend_has_rewrite, $conf_keycloak, $conf_site_url;
+	global $conf_backend_url_client, $conf_backend_has_rewrite, $conf_keycloak, $conf_site_url, $login;
 	if ($conf_keycloak) {
 		?>
 		<script>
-			var zamger_oauth_token = '<?=get_keycloak_token()?>';
+			var zamger_oauth_token = '<?=OAuth2Helper::getToken($login)?>';
 		</script>
 		<?php
 	}

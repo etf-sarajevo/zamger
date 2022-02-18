@@ -294,16 +294,16 @@ if (substr($sta, 0, 3) == "ws/" || substr($oldsta, 0, 3) == "ws/") { // Gledamo 
 
 // Prikaz specijalnih login ekrana u slučaju greške
 // Ovo radimo nakon servisa, jer za servise nećemo da prikazujemo login ekran!
+// TODO: napraviti i Zamger login screen tako da je kod univerzalan
 if (($greska !== "" || ($sta == "" && $userid == 0)) && $conf_login_screen != "internal") {
-	if ($greska !== "") {
-		niceerror($greska);
+	if ($userid == 0) {
+		session_login_screen();
 		$uspjeh = 2;
 		exit;
 	}
-	if ($conf_login_screen == "cas")
-		cas_login_screen();
-	if ($conf_login_screen == "keycloak")
-		keycloak_login_screen();
+	// U slučaju da sesija nije istekla, prikaz login ekrana će dovesti to beskonačne petlje
+	niceerror($greska);
+	print "<a href='index.php'>Nazad</a>";
 	$uspjeh = 2;
 	exit;
 }
@@ -588,7 +588,7 @@ else
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p align="center">Copyright (c) 2006-2021 <a href="static/doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
+<p align="center">Copyright (c) 2006-2022 <a href="static/doc/CREDITS.txt">Vedran Ljubović i drugi</a><br>Elektrotehnički fakultet Sarajevo</p>
 
 </body>
 </html>
