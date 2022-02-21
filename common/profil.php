@@ -109,7 +109,6 @@ function common_profil() {
 				</div>
 
 				<form class="p-0" action="" method="post" id="update-profile" autocomplete="off">
-					<input autocomplete="false" name="hidden" type="text" class="hidden">
 					
 					<?= Form::hidden('id', $person['id'], ['class' => 'form-control', 'id' => 'personId']) ?>
 
@@ -117,7 +116,7 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="name">Ime (bez prezimena)</label> <!-- Old -->
-								<?= Form::text('name', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'name', 'aria-describedby' => 'nameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
+								<?= Form::text('new-name', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'name', 'aria-describedby' => 'nameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
 								<small id="nameHelp" class="form-text text-muted">Vaše ime</small>
 							</div>
 						</div>
