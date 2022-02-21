@@ -191,7 +191,7 @@ function check_cookie() {
 				?>
 				<p>Vaša sesija je istekla. <a href="?logout">Prijavite se ponovo.</a></p>
 				<?php
-				//$uspjeh = 2;
+				$uspjeh = 2; // Don't display an error message
 				exit(0);
 			}
 			
@@ -208,7 +208,7 @@ function check_cookie() {
 			if ($conf_keycloak) {
 				print "<p>Možete probati logout preko <a href='$conf_keycloak_url/realms/$conf_keycloak_realm/account/'>Keycloak stranice</a> mada ne vjerujemo da će pomoći.</p>";
 			}
-			$uspjeh = 2;
+			$uspjeh = 2; // Don't display an error message
 			exit(0);
 		}
 		

@@ -115,7 +115,7 @@ class OAuth2Helper
 				if ($token->hasExpired()) {
 					// This should never happen since we just arrived from OAuth server!
 					niceerror('Token je već istekao! Kontaktirajte administratora (2)');
-					//$uspjeh = 2
+					$uspjeh = 2; // Don't display an error message
 					exit(0);
 				}
 				
