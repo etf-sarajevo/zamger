@@ -9,7 +9,11 @@ function db_connect($dbhost,$dbuser,$dbpass,$dbdb) {
 	
 	$__db_connection = mysqli_connect($dbhost, $dbuser, $dbpass, $dbdb);
 	if (!$__db_connection) {
-		if ($conf_debug) biguglyerror(mysqli_connect_error());
+		if (mysqli_connect_errno() == 2002 && $conf_debug) { // No such file or directory
+			// Means that mysql socket file doesn't exist
+			biguglyerror("MySQL server nedostupan");
+		}
+		else if ($conf_debug) biguglyerror(mysqli_connect_error());
 		exit;
 	}
 
