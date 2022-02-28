@@ -1,9 +1,12 @@
 <?php
 
 
-// Podaci o izboru u zvanja
+// Editovanje podataka o izboru u zvanja
 
 function studentska_osobe_izbori() {
+	require_once("lib/formgen.php"); // db_dropdown, datectrl
+	global $_lv_; // Potrebno za genform()
+	
 	$osoba = int_param('osoba');
 	
 	if (param('subakcija') == "novi" && check_csrf_token()) {
@@ -183,3 +186,60 @@ function studentska_osobe_izbori() {
 	}
 }
 
+
+// Prikaz osnovnih podataka o važećem izboru na stranici studentska/osobe
+
+function studentska_osobe_applet_izbori($osoba) {
+	
+	$q400 = db_query("select z.naziv, UNIX_TIMESTAMP(i.datum_izbora), UNIX_TIMESTAMP(i.datum_isteka), i.oblast, i.podoblast, i.dopunski, i.druga_institucija from izbor as i, zvanje as z WHERE i.osoba=$osoba and i.zvanje=z.id order by i.datum_isteka DESC, i.datum_izbora DESC");
+	if (db_num_rows($q400)==0) {
+		print "<p>Nema podataka o izboru.</p>\n";
+	} else {
+		$datum_izbora = date("d. m. Y", db_result($q400,0,1));
+		if (db_result($q400,0,1)==0)
+			$datum_izbora = "<font color=\"red\">(nepoznato)</font>";
+		$datum_isteka = date("d. m. Y", db_result($q400,0,2));
+		if (db_result($q400,0,2)==0)
+			$datum_isteka = "Neodređeno";
+		$oblast = db_result($q400,0,3);
+		if ($oblast<1)
+			$oblast = "<font color=\"red\">(nepoznato)</font>";
+		else {
+			$q410 = db_query("select naziv from oblast where id=$oblast");
+			if (db_num_rows($q410)<1)
+				$oblast = "<font color=\"red\">GREŠKA</font>";
+			else
+				$oblast = db_result($q410,0,0);
+		}
+		$podoblast = db_result($q400,0,4);
+		if ($podoblast<1)
+			$podoblast = "<font color=\"red\">(nepoznato)</font>";
+		else {
+			$q420 = db_query("select naziv from podoblast where id=$podoblast");
+			if (db_num_rows($q420)<1)
+				$podoblast = "<font color=\"red\">GREŠKA</font>";
+			else
+				$podoblast = db_result($q420,0,0);
+		}
+		if (db_result($q400,0,5)==0) $radniodnos = "Stalni";
+		else $radniodnos = "Dopunski";
+		
+		?>
+		<table border="0">
+			<tr><td>Zvanje:</td><td><?=db_result($q400,0,0)?></td></tr>
+			<tr><td>Datum izbora:</td><td><?=$datum_izbora?></td></tr>
+			<tr><td>Datum isteka:</td><td><?=$datum_isteka?></td></tr>
+			<tr><td>Oblast:</td><td><?=$oblast?></td></tr>
+			<tr><td>Podoblast:</td><td><?=$podoblast?></td></tr>
+			<tr><td>Radni odnos:</td><td><?=$radniodnos?></td></tr>
+			<?
+			if (db_result($q400,0,6)==1) print "<tr><td colspan=\"2\">Biran/a na drugoj VŠO</td></tr>\n";
+			?>
+		</table>
+		<?
+	}
+	
+	?>
+	<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=izbori">Izmijenite podatke o izboru ili pogledajte historijske podatke</a></p>
+	<?
+}

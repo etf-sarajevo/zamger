@@ -45,3 +45,55 @@ function studentska_osobe_kartica() {
 		<?
 	}
 }
+
+
+function studentska_osobe_applet_kartica($osoba,$jmbg) {
+	global $conf_url_daj_karticu;
+	
+	require_once("lib/ws.php"); // Web service za parsiranje XMLa
+	
+	$kartice = parsiraj_kartice(xml_request($conf_url_daj_karticu, array("jmbg" => $jmbg), "POST"));
+	$saldo = 0;
+	if ($kartice === FALSE || count($kartice) == 0) {
+		?>
+		<p><font color="red">Nema podataka o uplatama</font></p>
+		<?
+	} else {
+		foreach($kartice as $kartica) $saldo += $kartica['razduzenje'] - $kartica['zaduzenje'];
+		if ($saldo>=0) $boja="green"; else $boja="red";
+		?>
+		<p><font color="<?=$boja?>">Student na računu ima: <?=number_format($saldo, 2, ",", "")?> KM</font> - <a href="?sta=studentska/osobe&amp;osoba=<?=$osoba?>&amp;akcija=kartica">Analitička kartica studenta</a></p>
+		<?
+	}
+}
+
+
+function parsiraj_kartice($xml_data) {
+	$result = array();
+	if ($xml_data === FALSE) return FALSE;
+	
+	$u_kartici = false;
+	$tekuca_kartica = array();
+	foreach ($xml_data as $node) {
+		if ($node['tag'] == "KARTICA") {
+			if ($node['type'] == "open") {
+				if ($u_kartici) $result[] = $tekuca_kartica;
+				$u_kartici=true;
+				$tekuca_kartica = array();
+			}
+			if ($node['type'] == "closed") {
+				$u_kartici=false;
+				$result[] = $tekuca_kartica;
+			}
+			continue;
+		}
+		if (!$u_kartici) continue;
+		if ($node['tag'] == "DATUM") $tekuca_kartica['datum'] = $node['value'];
+		if ($node['tag'] == "VRSTAZADUZENJA") $tekuca_kartica['vrsta_zaduzenja'] = $node['value'];
+		if ($node['tag'] == "ZADUZENJE") $tekuca_kartica['zaduzenje'] = bhfloat($node['value']);
+		if ($node['tag'] == "RAZDUZENJE") $tekuca_kartica['razduzenje'] = bhfloat($node['value']);
+	}
+	if ($u_kartici) $result[] = $tekuca_kartica;
+	
+	return $result;
+}

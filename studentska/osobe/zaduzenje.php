@@ -33,3 +33,11 @@ function studentska_osobe_zaduzenje() {
 	<a href="?sta=studentska/osobe&amp;akcija=edit&amp;osoba=<?=$osoba?>">Nazad</a>
 	<?
 }
+
+function studentska_osobe_applet_zaduzenje($osoba) {
+	$zaduzenje = db_get("SELECT zaduzenje FROM student_zaduzenje WHERE student=$osoba");
+	if ($zaduzenje > 0) {
+		print "<p style=\"color: red\">Evidentirano je zaduženje: <b>" . sprintf("%.2f", $zaduzenje) . " KM</b> - ";
+	}
+	print "<a href=\"?sta=studentska/osobe&osoba=$osoba&akcija=izmijeni_zaduzenje\">Izmijeni zaduženje</a></p>\n";
+}

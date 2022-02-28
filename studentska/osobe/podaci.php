@@ -6,6 +6,8 @@
 function studentska_osobe_podaci() {
 	global $conf_files_path;
 	
+	require_once("lib/formgen.php"); // db_dropdown
+	
 	$osoba = int_param('osoba');
 	
 	if ($_POST['subakcija']=="potvrda" && check_csrf_token()) {
