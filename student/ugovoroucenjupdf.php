@@ -147,7 +147,7 @@ for ($sem=$sem1; $sem<=$sem2; $sem++) {
 $svi = array_merge($neparni_obavezni, $neparni_izborni, $parni_obavezni, $parni_izborni);
 
 // Dodajemo predmete koje je student prenio sa prošle godine
-foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
+if (is_array($zamger_predmeti_pao)) foreach($zamger_predmeti_pao as $predmet => $naziv_predmeta) {
 	// Preskačemo predmete koji su već pronađeni
 	// Npr. Razvoj programskih rješenja je na AE u 5. semestru, a u pasošu je treći semestar
 	// Npr. kod Tehnika programiranja se promijenio pasoš pa nije prepoznat prilikom prelaska na Razvoj softvera

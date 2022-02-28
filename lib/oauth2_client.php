@@ -185,7 +185,7 @@ class OAuth2Helper
 	// Force logout
 	public static function logOut() {
 		$_SESSION = array();
-		session_destroy();
+		if (session_status() == PHP_SESSION_ACTIVE) session_destroy();
 		header('Location: ' . self::logoutUrl());
 		// After redirect there is no point in continuing
 		exit(0);

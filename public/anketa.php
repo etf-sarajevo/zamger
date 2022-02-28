@@ -170,7 +170,7 @@ function public_anketa() {
 		}
 		
 		// We must manually add token to poll object
-		if (!property_exists($poll, "result"))
+		if (!property_exists($poll, "result") || !is_object($poll->result))
 			$poll->result = new stdClass();
 		$poll->result->token = $token;
 		

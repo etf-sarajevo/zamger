@@ -255,7 +255,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		}
 	}
 	
-	if ($conf_keycloak)
+	if ($conf_keycloak && $login)
 		$http_request_params['http']['header'] .= "Authorization: Bearer " .  OAuth2Helper::getToken($login) . "\r\n";
 	
 	if ($content != "") {
@@ -293,8 +293,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		// Avoid redirect loops where backend thinks session is expired but frontend disagrees
 		// (why??? i think this is due to mismatch in clocks between OAuth2 server and backend server)
 		// (still don't know why this happens :( )
-		if (count(debug_backtrace()) > 20)
+		if (count(debug_backtrace()) > 20) {
+			zamgerlog2("redirect gloop $login");
 			OAuth2Helper::logOut();
+		}
 		
 		// Token is expired, get the refresh token
 		OAuth2Helper::refreshToken($login);
@@ -308,6 +310,7 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	// DELETE requests don't return a body
 	if ($method == "DELETE") {
 		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
+		if ($json_result === NULL) $json_result = [];
 	} else {
 		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) {
