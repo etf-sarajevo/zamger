@@ -121,7 +121,7 @@ function izvjestaj_termini_ispita() {
 		foreach($event['details'] as $detail) {
 			$student = $detail['student'];
 			$imeprezime[$student['id']] = $student['surname'] . " " . $student['name'];
-			if (param('logini')) $logini[$student['id']] = $student['login'];
+			if (param('logini')) $logini[$student['id']] = $student['login'][0];
 			$brindexa[$student['id']] = $student['studentIdNr'];
 			
 			// Are there non virtual groups on course

@@ -297,7 +297,7 @@ function student_zadaca() {
 	
 				$naslov = urlencode("Odgovor na komentar ($naziv, Zadatak $zadatak)");
 				$tekst = urlencode("> $komentar");
-				$primalac = urlencode($tutor['login']." (".$tutor['name']." ".$tutor['surname'].")");
+				$primalac = urlencode($tutor['login'][0]." (".$tutor['name']." ".$tutor['surname'].")");
 	
 				$link = " (<a href=\"?sta=common/inbox&akcija=compose&naslov=$naslov&tekst=$tekst&primalac=$primalac\">odgovor</a>)";
 			}

@@ -244,7 +244,7 @@ function saradnik_student() {
 	
 	
 	// Određujemo username radi slanja poruke
-	$poruka_link = "<br><a href=\"?sta=common/inbox&akcija=compose&primalac=" . $course['student']['login'] . "\">Pošaljite Zamger poruku</a>";
+	$poruka_link = "<br><a href=\"?sta=common/inbox&akcija=compose&primalac=" . $course['student']['login'][0] . "\">Pošaljite Zamger poruku</a>";
 	
 	
 	// Naslov

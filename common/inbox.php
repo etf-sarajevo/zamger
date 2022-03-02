@@ -106,7 +106,7 @@ function common_inbox() {
 				$receiverId = $message['receiver'];
 				$receiver = api_call("person/$receiverId");
 			}
-			$receiverTxt = $receiver['login'] . " (" . $receiver['name'] . " " . $receiver['surname'] . ")";
+			$receiverTxt = $receiver['login'][0] . " (" . $receiver['name'] . " " . $receiver['surname'] . ")";
 			
 			// Prepravka naslova i teksta
 			$subject = $message['subject'];
