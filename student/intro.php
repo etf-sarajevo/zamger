@@ -141,9 +141,9 @@ function student_intro() {
 	
 	
 	// Konačne ocjene
-	$grades = api_call("course/latestGrades/$userid")['results'];
+	$grades = api_call("course/latestGrades/$userid", [ "pageSize" => 5, "page" => 1 ])['results'];
 	foreach($grades as $grade) {
-		// Preskačemo ocjene starije od mjesec dana
+		// Preskačemo ocjene starije od mjesec dana - zašto?
 		if (db_timestamp($grade['gradeDate']) < time()-60*60*24*30) continue;
 		
 		$idPredmeta = $grade['CourseOffering']['CourseUnit']['id'];

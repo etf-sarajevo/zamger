@@ -679,16 +679,16 @@ else if ($akcija == "edit") {
 
 else {
 	$years = api_call("zamger/year")['results'];
-	
-	$src = db_escape(param('search'));
-	$limit = 20;
-	$offset = int_param("offset");
-	$ak_god = int_param("ag");
 	if ($ak_god == 0) {
 		foreach($years as $year)
 			if ($year['isCurrent'])
 				$ak_god = $year['id'];
 	}
+	
+	$src = db_escape(param('search'));
+	$limit = 20;
+	$page = int_param("page");
+	if ($page == 0) $page = 1;
 
 	?>
 	<table width="100%" border="0"><tr><td align="left">
@@ -709,25 +709,28 @@ else {
 		</p>
 	<?
 	
-	$courses = api_call("course/search", [ "query" => param('search'), "year" => $ak_god, "limit" => 10000, "offset" => 0, "resolve" => [ "CourseUnit", "Institution" ] ])['results']; // TODO implement count of results on backend
+	$courses = api_call("course/search", [ "query" => param('search'), "page" => $page, "year" => $ak_god, "resolve" => [ "CourseUnit", "Institution" ] ]);
 	if ($_api_http_code != "200") {
 		niceerror("Neuspješna pretraga predmeta");
 		api_report_bug($courses, []);
 		return;
 	}
 
-	if (count($courses) == 0)
+	if ($courses['totalResults'] == 0)
 		print "Nema rezultata!";
 	else {
-		if (count($courses) > $limit) {
-			print "Prikazujem rezultate ".($offset+1)."-".($offset+20)." od ".count($courses).". Stranica: ";
+		$page = $courses['page']; // If page is changed on backend for some reason
+		$kraj = $page * $limit;
+		$poc = $kraj - $limit + 1;
+		
+		if ($courses['totalPages'] > 1) {
+			print "Prikazujem rezultate $poc-$kraj od " . $courses['totalResults'] . ". Stranica: ";
 	
-			for ($i=0; $i<count($courses); $i+=$limit) {
-				$br = intval($i/$limit)+1;
-				if ($i==$offset)
-					print "<b>$br</b> ";
+			for ($i=1; $i <= $courses['totalPages']; $i++) {
+				if ($i == $page)
+					print "<b>$i</b> ";
 				else
-					print "<a href=\"".genuri()."&offset=$i&_lv_column_akademska_godina=$ak_god\">$br</a> ";
+					print "<a href=\"".genuri()."&page=$i&_lv_column_akademska_godina=$ak_god\">$i</a> ";
 			}
 			print "<br/>";
 		}
@@ -735,11 +738,8 @@ else {
 
 		?>
 		<table width="100%" border="0"><?
-		$i=0;
-		foreach ($courses as $course) {
-			$i++;
-			if ($i < $offset) continue;
-			if ($i > $offset + $limit) break;
+		$i=$poc;
+		foreach ($courses['results'] as $course) {
 			?>
 			<tr>
 				<td><?=$i?>. <?=$course['courseName']?> (<?=$course['CourseUnit']['Institution']['abbrev']?>)</td>
@@ -753,6 +753,7 @@ else {
 			?>
 			</tr>
 			<?
+			$i++;
 		}
 		?>
 		</table>
