@@ -366,96 +366,86 @@ function studentska_osobe() {
 		}
 	
 	
-		//$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson" ]]);
-		//print_r($person);
-	
 		// Osnovni podaci
 	
-		$q200 = db_query("select ime, prezime, 1, brindexa, UNIX_TIMESTAMP(datum_rodjenja), mjesto_rodjenja, jmbg, drzavljanstvo, adresa, adresa_mjesto, telefon, kanton, strucni_stepen, naucni_stepen, slika from osoba where id=$osoba");
-		if (!($r200 = db_fetch_row($q200))) {
-			zamgerlog("nepostojeca osoba u$osoba",3);
-			zamgerlog2("nepostojeca osoba", $osoba);
-			niceerror("Nepostojeća osoba!");
-			return;
-		}
-		$ime = db_result($q200,0,0);
-		$prezime = db_result($q200,0,1);
-		$jmbg = db_result($q200,0,6);
-		$slika = db_result($q200,0,14);
-	
-		// Pripremam neke podatke za ispis
-		// Ovo nije u istom upitu jer nije pravi FK, podaci ne moraju biti definisani
-		// TODO dodati polje "nedefinisano" u sve tabele, po mogućnosti sa IDom nula
-		$mjesto_rodj = "";
-		if (db_result($q200,0,5)!=0) {
-			$q201 = db_query("select naziv from mjesto where id=".db_result($q200,0,5));
-			$mjesto_rodj = db_result($q201,0,0);
-		}
-	
-		$drzavljanstvo = "";
-		if (db_result($q200,0,7)!=0) {
-			$q202 = db_query("select naziv from drzava where id=".db_result($q200,0,7));
-			$drzavljanstvo = db_result($q202,0,0);
-		}
-	
-		$adresa = db_result($q200,0,8);
-		if (db_result($q200,0,9)!=0) {
-			$q203 = db_query("select naziv from mjesto where id=".db_result($q200,0,9));
-			$adresa .= ", ".db_result($q203,0,0);
-		}
-	
-		$kanton = "";
-		if (db_result($q200,0,11)>0) {
-			$q205 = db_query("select naziv from kanton where id=".db_result($q200,0,11));
-			$kanton = db_result($q205,0,0);
-		}
-	
-		if (db_result($q200,0,12)!=0) {
-			$q206 = db_query("select naziv from strucni_stepen where id=".db_result($q200,0,12));
-			$strucni_stepen = db_result($q206,0,0);
-		}
-		if (db_result($q200,0,13)!=0) {
-			$q207 = db_query("select naziv from naucni_stepen where id=".db_result($q200,0,13));
-			$naucni_stepen = db_result($q207,0,0);
-		}
-	
-		// Spisak mailova
+		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
+		$exp = $person['ExtendedPerson']; // shortcut
 		
-		$q260 = db_query("select adresa from email where osoba=$osoba");
-		$email_adrese = "";
-		while ($r260 = db_fetch_row($q260)) {
-			if ($email_adrese !== "") $email_adrese .= ", ";
-			$email_adrese .= $r260[0];
+		
+		// Small helper function
+		function optionalField($field) {
+			if (array_key_exists('name', $field))
+				return $field['name'];
+			return "";
 		}
-	
+		
+		// Nationality
+		$country = api_call("person/country/" . $exp['nationality']);
+		
+		// Address
+		$address = "";
+		if ($exp['addressStreetNo']) {
+			$address = $exp['addressStreetNo'];
+			if (optionalField($exp['addressPlace'])) $address .= ", ";
+		}
+		$address .= optionalField($exp['addressPlace']);
+		
+		// E-mails
+		$emails = "";
+		foreach($person['email'] as $email) {
+			if ($emails != "") $emails .= ", ";
+			$emails .= $email['address'];
+		}
+		
+		// Canton
+		$cantons = [
+			"1" => "Bosansko-Podrinjski kanton",
+			"2" => "Hercegovačko-Neretvanski kanton",
+			"3" => "Livanjski kanton",
+			"4" => "Posavski kanton",
+			"5" => "Sarajevski kanton",
+			"6" => "Srednjobosanski kanton",
+			"7" => "Tuzlanski kanton",
+			"8" => "Unsko-Sanski kanton",
+			"9" => "Zapadno-Hercegovački kanton",
+			"10" =>"Zeničko-Dobojski kanton",
+			"11" =>"Republika Srpska",
+			"12" =>"Distrikt Brčko",
+			"13" =>"Strani državljanin",
+		];
+		$canton = "";
+		if (array_key_exists('Municipality', $exp['residencePlace']) && array_key_exists('Canton', $exp['residencePlace']['Municipality']))
+			$canton = $cantons[ $exp['residencePlace']['Municipality']['Canton'] ];
+		
 		?>
 	
-		<h2><?=$ime?> <?=$prezime?></h2>
+		<h2><?=$person['name']?> <?=$person['surname']?></h2>
 		<?
-		if ($slika!="") {
+		if ($person['hasPhoto']!="") {
 			?>
 			<img src="?sta=common/slika&osoba=<?=$osoba?>"><br/>
 			<?
 		}
+		
 		?>
 		<table border="0" width="600"><tr><td valign="top">
-			Ime: <b><?=$ime?></b><br/>
-			Prezime: <b><?=$prezime?></b><br/>
-			Broj indexa (za studente): <b><?=db_result($q200,0,3)?></b><br/>
-			JMBG: <b><?=$jmbg?></b><br/>
+			Ime: <b><?=$person['name']?></b><br/>
+			Prezime: <b><?=$person['surname']?></b><br/>
+			Broj indexa (za studente): <b><?=$person['studentIdNr']?></b><br/>
+			JMBG: <b><?=$exp['jmbg']?></b><br/>
 			<br/>
 			Datum rođenja: <b><?
-			if (db_result($q200,0,4)) print date("d. m. Y.", db_result($q200,0,4))?></b><br/>
-			Mjesto rođenja: <b><?=$mjesto_rodj?></b><br/>
-			Državljanstvo: <b><?=$drzavljanstvo?></b><br/>
+			if ($exp['dateOfBirth']) print date("d. m. Y.", db_timestamp($exp['dateOfBirth']))?></b><br/>
+			Mjesto rođenja: <b><?=optionalField($exp['placeOfBirth'])?></b><br/>
+			Državljanstvo: <b><?=$country['name']?></b><br/>
 			</td><td valign="top">
-			Adresa: <b><?=$adresa?></b><br/>
-			Kanton: <b><?=$kanton?></b><br/>
-			Telefon: <b><?=db_result($q200,0,10)?></b><br/>
-			Kontakt e-mail: <b><?=$email_adrese?></b><br/>
+			Adresa: <b><?=$address?></b><br/>
+			Kanton: <b><?=$canton?></b><br/>
+			Telefon: <b><?=$exp['phone']?></b><br/>
+			Kontakt e-mail: <b><?=$emails?></b><br/>
 			<br/>
-			Stručni stepen: <b><?=$strucni_stepen?></b><br/>
-			Naučni stepen: <b><?=$naucni_stepen?></b><br/>
+			Stručni stepen: <b><?=optionalField($exp['ProfessionalDegree'])?></b><br/>
+			Naučni stepen: <b><?=optionalField($exp['ScientificDegree'])?></b><br/>
 			<br/>
 			ID: <b><?=$osoba?></b><br/>
 			<br/>
@@ -556,39 +546,10 @@ function studentska_osobe() {
 	
 	
 		// Uloge korisnika
-		$korisnik_student=$korisnik_nastavnik=$korisnik_prijemni=$korisnik_studentska=$korisnik_siteadmin=$korisnik_sefodsjeka=$korisnik_uprava=false;
+		$allPrivileges = [ 'student', 'nastavnik', 'prijemni', 'studentska', 'siteadmin', 'sefodsjeka', 'uprava' ];
 		print "<p>Tip korisnika: ";
-		$q209 = db_query("select privilegija from privilegije where osoba=$osoba");
-	
-		while ($r209 = db_fetch_row($q209)) {
-			if ($r209[0]=="student") {
-				print "<b>student,</b> ";
-				$korisnik_student=true;
-			}
-			if ($r209[0]=="nastavnik") {
-				print "<b>nastavnik,</b> ";
-				$korisnik_nastavnik=true;
-			}
-			if ($r209[0]=="prijemni") {
-				print "<b>kandidat na prijemnom ispitu,</b> ";
-				$korisnik_prijemni=true;
-			}
-			if ($r209[0]=="studentska") {
-				print "<b>uposlenik studentske službe,</b> ";
-				$korisnik_studentska=true;
-			}
-			if ($r209[0]=="siteadmin") {
-				print "<b>administrator,</b> ";
-				$korisnik_siteadmin=true;
-			}
-			if ($r209[0]=="sefodsjeka") {
-				print "<b>šef odsjeka,</b> ";
-				$korisnik_sefodsjeka=true;
-			}
-			if ($r209[0]=="uprava") {
-				print "<b>dekan/prodekan,</b> ";
-				$korisnik_uprava=true;
-			}
+		foreach($person['privileges'] as $privilege) {
+			print "<b>$privilege,</b> ";
 		}
 		print "</p>\n";
 	
@@ -596,21 +557,22 @@ function studentska_osobe() {
 		// Admin dio
 	
 		if ($user_siteadmin) {
-			unset( $_REQUEST['student'], $_REQUEST['nastavnik'], $_REQUEST['prijemni'], $_REQUEST['studentska'], $_REQUEST['siteadmin'], $_REQUEST['sefodsjeka'], $_REQUEST['uprava'] );
 			?>
 			<?=genform("POST")?>
 			<input type="hidden" name="subakcija" value="uloga">
-			<input type="checkbox" name="student" value="1" <?if($korisnik_student) print "CHECKED";?>> Student&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="nastavnik" value="1" <?if($korisnik_nastavnik) print "CHECKED";?>> nastavnik&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="prijemni" value="1" <?if($korisnik_prijemni) print "CHECKED";?>> prijemni&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="studentska" value="1" <?if($korisnik_studentska) print "CHECKED";?>> studentska&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="siteadmin" value="1" <?if($korisnik_siteadmin) print "CHECKED";?>> siteadmin&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="sefodsjeka" value="1" <?if($korisnik_sefodsjeka) print "CHECKED";?>> šef odsjeka&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="checkbox" name="uprava" value="1" <?if($korisnik_uprava) print "CHECKED";?>> dekan/prodekan<br/> <br/>
+			<?
+			foreach ($allPrivileges as $privilege) {
+				unset($_REQUEST[$privilege]);
+				?>
+				<input type="checkbox" name="student" value="1" <? if (in_array($privilege, $person['privileges'])) print "CHECKED";?>> <?=$privilege?>&nbsp;&nbsp;&nbsp;&nbsp;
+				<?
+			}
+		
+			?><br/> <br/>
 			<input type="submit" value=" Izmijeni ">
 			</form>
 			<?
-		} else if($korisnik_student && !$korisnik_nastavnik) {
+		} else if(in_array('student', $person['privileges']) && !in_array('nastavnik', $person['privileges'])) {
 			?>
 			<?=genform("POST")?>
 			<input type="hidden" name="subakcija" value="uloga">
@@ -621,7 +583,7 @@ function studentska_osobe() {
 		}
 	
 		// Link za uređivanje historije studenta TODO - obratiti pozornost na to "ko ima pristup"
-		if ($korisnik_student && ($user_studentska || $user_siteadmin)) {
+		if (in_array('student', $person['privileges']) && ($user_studentska || $user_siteadmin)) {
 			// Uređivanje historije studenta
 			print "<p> Za uređivanje historije studenta, kliknite <a href='index.php?sta=studentska/uredi_historiju_studenta&student=".$osoba."'>ovdje</a>. </p>";
 			// Unos konačne ocjene studenta
@@ -631,7 +593,7 @@ function studentska_osobe() {
 		
 		// STUDENT
 	
-		if ($korisnik_student) {
+		if (in_array('student', $person['privileges'])) {
 			require_once("studentska/osobe/student.php");
 			studentska_osobe_student();
 		}
@@ -639,7 +601,7 @@ function studentska_osobe() {
 	
 		// NASTAVNIK
 		
-		if ($korisnik_nastavnik) {
+		if (in_array('nastavnik', $person['privileges'])) {
 			require_once("studentska/osobe/nastavnik.php");
 			studentska_osobe_nastavnik();
 		}
@@ -664,16 +626,11 @@ function studentska_osobe() {
 	else {
 		$src = db_escape(param("search"));
 		$limit = 20;
-		$offset = int_param("offset");
-	
-		// Naucni stepeni
-		$naucni_stepen = array();
-		$q99 = db_query("select id, titula from naucni_stepen");
-		while ($r99 = db_fetch_row($q99))
-			$naucni_stepen[$r99[0]]=$r99[1];
+		$page = int_param("page");
+		if ($page == 0) $page = 1;
 	
 		?>
-		<p><h3>Studentska služba - Studenti i nastavnici</h3></p>
+		<h3>Studentska služba - Studenti i nastavnici</h3>
 	
 		<table width="500" border="0"><tr><td align="left">
 			<p><b>Pretraži osobe:</b><br/>
@@ -683,66 +640,30 @@ function studentska_osobe() {
 			<input type="text" size="50" name="search" value="<? if ($src!="sve") print $src?>"> <input type="Submit" value=" Pretraži "></form>
 			<a href="<?=genuri()?>&search=sve">Prikaži sve osobe</a></p>
 		<?
+		
 		if ($src) {
-			$rezultata=0;
-			if ($src == "sve") {
-				$q100 = db_query("select count(*) from osoba");
-				$q101 = db_query("select id, ime, prezime, brindexa, naucni_stepen from osoba order by prezime,ime limit $offset,$limit");
-				$rezultata = db_result($q100,0,0);
-			} else {
-				$src = preg_replace("/\s+/"," ",$src);
-				$src=trim($src);
-				$dijelovi = explode(" ", $src);
-				$query = "";
-	
-				// Probavamo traziti ime i prezime istovremeno
-				if (count($dijelovi)==2) {
-					$q100 = db_query("select count(*) from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%'");
-					$q101 = db_query("select id,ime,prezime,brindexa,naucni_stepen from osoba where ime like '%$dijelovi[0]%' and prezime like '%$dijelovi[1]%' order by prezime,ime limit $offset,$limit");
-					if (db_result($q100,0,0)==0) {
-						$q100 = db_query("select count(*) from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%'");
-						$q101 = db_query("select id,ime,prezime,brindexa,naucni_stepen from osoba where ime like '%$dijelovi[1]%' and prezime like '%$dijelovi[0]%' order by prezime,ime limit $offset,$limit");
-					}
-					$rezultata = db_result($q100,0,0);
-				}
-	
-				// Nismo nasli ime i prezime, pokusavamo bilo koji dio
-				if ($rezultata==0) {
-					foreach($dijelovi as $dio) {
-						if ($query != "") $query .= "or ";
-						$query .= "ime like '%$dio%' or prezime like '%$dio%' or brindexa like '%$dio%' ";
-						if (intval($dio)>0) $query .= "or id=".intval($dio)." ";
-					}
-					$q100 = db_query("select count(*) from osoba where ($query)");
-					$q101 = db_query("select id,ime,prezime,brindexa,naucni_stepen from osoba where ($query) order by prezime,ime limit $offset,$limit");
-					$rezultata = db_result($q100,0,0);
-				}
-	
-				// Nismo nasli nista, pokusavamo login
-				if ($rezultata==0) {
-					$query="";
-					foreach($dijelovi as $dio) {
-						if ($query != "") $query .= "or ";
-						$query .= "a.login like '%$dio%' ";
-					}
-					$q100 = db_query("select count(*) from osoba as o, auth as a where ($query) and a.id=o.id");
-					$q101 = db_query("select o.id,o.ime,o.prezime,o.brindexa,o.naucni_stepen from osoba as o, auth as a where ($query) and a.id=o.id order by o.prezime,o.ime limit $offset,$limit");
-					$rezultata = db_result($q100,0,0);
-				}
-	
-			}
-	
-			if ($rezultata == 0)
+			if ($src == "sve")
+				$persons = api_call("person/all", [ "page" => $page ]);
+			else
+				$persons = api_call("person/search", [ "query" => param('search'), "page" => $page ]);
+			
+			$brojRezultata = $persons['totalResults'];
+			$brojStranica = $persons['totalPages'];
+			$page = $persons['page']; // If page is changed on backend for some reason
+			
+			$kraj = $page * $limit;
+			$poc = $kraj - $limit + 1;
+			
+			if ($brojRezultata == 0)
 				print "Nema rezultata!";
-			else if ($rezultata>$limit) {
-				print "Prikazujem rezultate ".($offset+1)."-".($offset+20)." od $rezultata. Stranica: ";
+			else if ($brojRezultata>$limit) {
+				print "Prikazujem rezultate $poc-$kraj od $brojRezultata. Stranica: ";
 	
-				for ($i=0; $i<$rezultata; $i+=$limit) {
-					$br = intval($i/$limit)+1;
-					if ($i==$offset)
-						print "<b>$br</b> ";
+				for ($i=1; $i<=intval($brojStranica); $i++) {
+					if ($i==$page)
+						print "<b>$i</b> ";
 					else
-						print "<a href=\"".genuri()."&offset=$i\">$br</a> ";
+						print "<a href=\"".genuri()."&page=$i\">$i</a> ";
 				}
 				print "<br/>";
 			}
@@ -751,19 +672,23 @@ function studentska_osobe() {
 	
 			print "<br/>";
 	
-			print '<table width="100%" border="0">';
-			$i=$offset+1;
-			while ($r101 = db_fetch_row($q101)) {
-				print "<tr ";
-				if ($i%2==0) print "bgcolor=\"#EEEEEE\"";
-				print "><td>$i. $r101[2] ";
-				if ($r101[4]>0) print $naucni_stepen[$r101[4]]." ";
-				print $r101[1];
-				if (intval($r101[3])>0) print " ($r101[3])";
-				print "</td><td><a href=\"".genuri()."&akcija=edit&osoba=$r101[0]\">Detalji</a></td></tr>";
+			?><table width="100%" border="0"><?
+			$i=$poc;
+			foreach ($persons['results'] as $person) {
+				?>
+				<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""; ?>>
+					<td><?=$i?>. <?=$person['surname']?> <?
+						//if ($r101[4]>0) print $naucni_stepen[$r101[4]]." ";
+						?> <?=$person['name']?> <? if ($person['studentIdNr']) print " (" . $person['studentIdNr'] . ")"; ?>
+					</td>
+					<td><a href="<?=genuri()?>&akcija=edit&osoba=<?=$person['id']?>">Detalji</a></td>
+				</tr>
+				<?
 				$i++;
 			}
-			print "</table>";
+			?>
+			</table>
+			<?
 		}
 	
 		?>
