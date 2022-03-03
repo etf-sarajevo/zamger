@@ -241,7 +241,7 @@ function studentska_konacna_ocjena() {
 							<div class="input-row">
 								<div class="input-col">
 									<div class="form-label">Ocjena</div>
-									<input type="number" name="ocjena" class="form-input" value="<?= isset($konacna_ocjena) ? $konacna_ocjena[3] : '' ?>" required="required" min="5" max="10">
+									<input type="number" name="ocjena" class="form-input" value="<?= isset($konacna_ocjena) ? $konacna_ocjena[3] : '' ?>" required="required" min="5" max="12">
 								</div>
 								<div class="input-col">
 									<div class="form-label">Datum</div>
