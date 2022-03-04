@@ -124,15 +124,20 @@ function nastavnik_obavjestenja() {
 		} else if ($io > 0) {
 			zamgerlog("izmjena obavjestenja (id $io)",2);
 			zamgerlog2("poruka izmijenjena", $io);
+			nicemessage("Obavještenje je uspješno izmijenjeno");
 		} else {
 			$id = $result['id'];
 			zamgerlog("novo obavjestenje (predmet pp$predmet)",2);
 			zamgerlog2("nova poruka poslana", $id);
-			//print_r($result);
+			nicemessage("Obavještenje je uspješno poslano");
 			
 			// Slanje mailova studentima
 			if ($_REQUEST['email']) {
-				api_call("inbox/announcement/$id/mail");
+				$result = api_call("inbox/announcements/$id/mail");
+				if ($_api_http_code != "200") {
+					niceerror("Slanje maila nije uspjelo");
+					api_report_bug($result);
+				}
 			}
 		}
 	
