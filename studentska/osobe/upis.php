@@ -7,9 +7,6 @@
 function studentska_osobe_upis() {
 	global $_api_http_code, $conf_files_path, $user_siteadmin;
 	
-	?>
-		<p><a href="?sta=studentska/osobe&akcija=edit&osoba=<?=int_param('osoba')?>">Nazad na podatke o osobi</a></p>
-	<?
 	
 	// Get a list of all programmes from api - we will need it later
 	$allProgrammes = api_call("programme/all", [ "resolve" => [ "ProgrammeType" ]]);

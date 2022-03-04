@@ -374,7 +374,7 @@ function studentska_osobe() {
 		
 		// Small helper function
 		function optionalField($field) {
-			if (array_key_exists('name', $field))
+			if (is_array($field) && array_key_exists('name', $field))
 				return $field['name'];
 			return "";
 		}

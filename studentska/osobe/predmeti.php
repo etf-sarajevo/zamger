@@ -4,6 +4,7 @@
 
 function studentska_osobe_predmeti() {
 	require_once("lib/predmet.php"); // kreiraj_ponudu_kursa
+	require_once("lib/formgen.php"); // db_dropdown
 	
 	$osoba = int_param('osoba');
 	
