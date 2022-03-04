@@ -679,6 +679,7 @@ else if ($akcija == "edit") {
 
 else {
 	$years = api_call("zamger/year")['results'];
+	$ak_god = int_param('ag');
 	if ($ak_god == 0) {
 		foreach($years as $year)
 			if ($year['isCurrent'])
