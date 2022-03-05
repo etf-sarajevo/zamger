@@ -5,7 +5,7 @@
 
 
 function studentska_osobe() {
-	global $user_siteadmin, $user_studentska;
+	global $user_siteadmin, $user_studentska, $_api_http_code;
 	global $conf_system_auth, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
 
 	require_once("lib/student_predmet.php");
@@ -380,7 +380,22 @@ function studentska_osobe() {
 		}
 		
 		// Nationality
-		$country = api_call("person/country/" . $exp['nationality']);
+		$nationality = "";
+		if (intval($exp['nationality']) > 0) {
+			$country = api_call("person/country/" . $exp['nationality']);
+			if ($_api_http_code == "200")
+				$nationality = $country['name'];
+		}
+		
+		// PoB
+		$placeOfBirth = "";
+		if (is_array($exp['placeOfBirth']) && array_key_exists('name', $exp['placeOfBirth'])) {
+			$placeOfBirth = $exp['placeOfBirth']['name'];
+			if ($exp['placeOfBirth']['Country']['id'] != 1) {
+				$pobCountry = api_call("person/country/" . $exp['placeOfBirth']['Country']['id']);
+				$placeOfBirth .= " (" . $pobCountry['name'] . ")";
+			}
+		}
 		
 		// Address
 		$address = "";
@@ -436,8 +451,8 @@ function studentska_osobe() {
 			<br/>
 			Datum rođenja: <b><?
 			if ($exp['dateOfBirth']) print date("d. m. Y.", db_timestamp($exp['dateOfBirth']))?></b><br/>
-			Mjesto rođenja: <b><?=optionalField($exp['placeOfBirth'])?></b><br/>
-			Državljanstvo: <b><?=$country['name']?></b><br/>
+			Mjesto rođenja: <b><?=$placeOfBirth?></b><br/>
+			Državljanstvo: <b><?=$nationality?></b><br/>
 			</td><td valign="top">
 			Adresa: <b><?=$address?></b><br/>
 			Kanton: <b><?=$canton?></b><br/>
@@ -650,6 +665,7 @@ function studentska_osobe() {
 			$brojRezultata = $persons['totalResults'];
 			$brojStranica = $persons['totalPages'];
 			$page = $persons['page']; // If page is changed on backend for some reason
+			if ($page > $brojStranica) $page = $brojStranica;
 			
 			$kraj = $page * $limit;
 			$poc = $kraj - $limit + 1;
