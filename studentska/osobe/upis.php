@@ -506,7 +506,7 @@ function studentska_osobe_upis() {
 				<? if ($show['status']) {
 					?>
 					<td bgcolor="#ffeeee">
-						<input type="checkbox" name="status" value="1">
+						<input type="checkbox" name="status" value="1" <? if ($newEnrollment['status'] == 1) print "checked"; ?>>
 						<input type="hidden" name="forceStatus" value="1">
 					</td>
 					<?
