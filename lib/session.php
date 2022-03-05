@@ -214,7 +214,7 @@ function check_cookie() {
 		
 		$privilegije = $person['privileges'];
 		$userid = $person['id'];
-		if ($login == "") $login = $person['login'];
+		if ($login == "") $login = $person['login'][0];
 		$posljednji_pristup = db_timestamp($person['lastAccess']);
 		foreach($privilegije as $p)
 			if ($p != "student")
