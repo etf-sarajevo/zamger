@@ -65,6 +65,9 @@ function studentska_osobe() {
 	// Ispis sa studija
 	
 	else if ($akcija == "ispis") {
+		?>
+		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a></p>
+		<?
 		require_once("studentska/osobe/ispis.php");
 		studentska_osobe_ispis();
 	}

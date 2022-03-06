@@ -79,7 +79,7 @@ function studentska_osobe_upis() {
 			
 			// Enroll into courses
 			foreach($newEnrollment['enrollCourses'] as $cuy) {
-				$result = api_call("course/" . $cuy['CourseUnit']['id'] . "/" . $cuy['AcademicYear']['id'] . "/enroll/$student", [], "POST");
+				$result = api_call("course/" . $cuy['CourseUnit']['id'] . "/" . $cuy['AcademicYear']['id'] . "/enroll/$student", [ "create" => true ], "POST");
 				if ($_api_http_code == "201") {
 					print "* Student upisan na predmet " . $cuy['courseName'] . "<br>";
 				} else if ($_api_http_code == "403") {
