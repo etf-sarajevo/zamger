@@ -90,6 +90,7 @@ else if ($studij == 0 && $tipstudija > 0)
 if ($ponovci == 1) $uslovi .= " and ss.ponovac=0";
 if ($ponovci == 2) $uslovi .= " and ss.ponovac=1";
 if ($ponovci == 3) $uslovi .= " and ss.status_studenta=1";
+if ($ponovci == 4) $uslovi .= " and ss.ponovac=1 and ss.status_studenta=0";
 if ($login) $uslovi .= " and o.id=a.id";
 if ($mjesto_rodjenja) $uslovi .= " and o.mjesto_rodjenja=m.id";
 if ($adresa_mjesto) {
