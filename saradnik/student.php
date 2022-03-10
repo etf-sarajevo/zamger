@@ -84,6 +84,12 @@ function saradnik_student() {
 	if ($_api_http_code == "404") {
 		$nazivstudija = "Nije upisan na studij!";
 		$kolpren=$ponovac="";
+	} else if ($_api_http_code == "403" || $_api_http_code == "401") {
+		// Može se desiti ako korisnik ima privilegiju "studentska"
+		biguglyerror("Nemate pravo pristupa ovom studentu");
+		zamgerlog ("nastavnik nije na predmetu (pp$predmet ag$ag)", 3);
+		zamgerlog2("nije saradnik na predmetu", $predmet, $ag);
+		return;
 	} else if ($_api_http_code == "200") {
 		$nazivstudija = $enrollment['Programme']['name'];
 		$enrollmentYear = round($enrollment['semester'] / 2);
@@ -105,26 +111,31 @@ function saradnik_student() {
 	}
 	
 	// Koliko puta i kada je student slušao ovaj predmet?
-	$allCourses = api_call("course/$predmet/student/$student/history", [ "resolve" => ["CourseOffering", "AcademicYear"] ] )["results"];
-	$count = 0;
-	$years = [];
-	foreach($allCourses as $_course) {
-		if ($ag == $_course['CourseOffering']['AcademicYear']['id'])
-			break;
-		$count++;
-		$years[$_course['CourseOffering']['AcademicYear']['id']] = $_course['CourseOffering']['AcademicYear']['name'];
-	}
-	$kojiput = $dosjei = "";
-	if ($count > 0) {
-		$count++;
-		$kojiput = "($count. put sluša predmet)";
-		$dosjei = "&nbsp;&nbsp;&nbsp;&nbsp;Pogledajte dosje za: ";
-		$zarez = false;
-		foreach($years as $yearId => $yearName) {
-			if (!$zarez) $zarez=true; else $dosjei .= ", ";
-			$dosjei .= "<a href=\"?sta=saradnik/student&student=$student&predmet=$predmet&ag=$yearId\">$yearName</a>";
+	$allCourses = api_call("course/$predmet/student/$student/history", [ "resolve" => ["CourseOffering", "AcademicYear"] ] );
+	if ($_api_http_code == "200") {
+		$count = 0;
+		$years = [];
+		foreach($allCourses['results'] as $_course) {
+			if ($ag == $_course['CourseOffering']['AcademicYear']['id'])
+				break;
+			$count++;
+			$years[$_course['CourseOffering']['AcademicYear']['id']] = $_course['CourseOffering']['AcademicYear']['name'];
 		}
-		$dosjei .= "<br>\n";
+		$kojiput = $dosjei = "";
+		if ($count > 0) {
+			$count++;
+			$kojiput = "($count. put sluša predmet)";
+			$dosjei = "&nbsp;&nbsp;&nbsp;&nbsp;Pogledajte dosje za: ";
+			$zarez = false;
+			foreach($years as $yearId => $yearName) {
+				if (!$zarez) $zarez=true; else $dosjei .= ", ";
+				$dosjei .= "<a href=\"?sta=saradnik/student&student=$student&predmet=$predmet&ag=$yearId\">$yearName</a>";
+			}
+			$dosjei .= "<br>\n";
+		}
+	} else {
+		niceerror("Greška prilikom preuzimanja podataka o predmetima");
+		api_report_bug($allCourses, []);
 	}
 	
 	$labgrupa = $staragrupa = 0;
@@ -158,7 +169,14 @@ function saradnik_student() {
 		return;
 	}
 
-	$groups = api_call("group/course/$predmet", [ "year" => $ag] )["results"];
+	$groups = api_call("group/course/$predmet", [ "year" => $ag] );
+	if ($_api_http_code == "200") {
+		$groups = $groups["results"];
+	} else {
+		niceerror("Greška prilikom preuzimanja podataka o grupama");
+		api_report_bug($groups, []);
+		$groups = [];
+	}
 
 	if (param('akcija') == "promjena_grupe" && check_csrf_token()) {
 		$novagrupa = intval($_POST['grupa']);
