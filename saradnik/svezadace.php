@@ -9,7 +9,7 @@ function saradnik_svezadace() {
 	// TODO: create downloadable URL on backend and redirect there
 	// (This URL must be without authentication, because headers can't be send through URLs)
 	
-	global $userid, $user_siteadmin, $user_nastavnik, $conf_files_path, $_api_http_code;
+	global $userid, $user_siteadmin, $user_nastavnik, $conf_files_path, $_api_http_code, $conf_site_url;
 
 	// Pretvorba naših slova u nenaša slova
 	$trans = array("č"=>"c", "ć"=>"c", "đ"=>"d", "š"=>"s", "ž"=>"z", "Č"=>"C", "Ć"=>"C", "Đ"=>"D", "Š"=>"S", "Ž"=>"Z");
@@ -65,6 +65,25 @@ function saradnik_svezadace() {
 						}
                     }
                 }, function(text, status, url) {
+                    if (status == 490) {
+                        // Access denied, check if token expired
+						// TODO refactor this into lib
+                        var xhttp_token = new XMLHttpRequest();
+                        xhttp_token.onreadystatechange = function () {
+                            if (xhttp_token.readyState == 4 && xhttp_token.status == 200 && xhttp_token.responseText.substring(0, 7) == "Token: ") {
+                                zamger_oauth_token = xhttp_token.responseText.substring(7);
+                                checkServer();
+                            } else if (xhttp_token.readyState == 4) {
+                                console.log("Getting token failed, status " + xhttp_token.status);
+                                console.log(xhttp_token.responseText);
+                                alert("Vaša sesija je istekla. Molimo osvježite stranicu da biste obnovili sesiju.");
+                            }
+                        };
+                        var url = '<?=$conf_site_url?>/get_token.php';
+                        xhttp_token.open("GET", url, true);
+                        xhttp_token.send();
+                        return;
+                    }
                     alert("Došlo je do greške na serveru.");
                     console.error("Kod: "+status);
                     console.error(text);

@@ -546,7 +546,25 @@ function saradnik_grupa() {
 				function(responseText, status, url) {
 					azuriraj_polje(oldState, student, cas);
 					var greska = "";
-                    if (status == 401)
+                	if (status == 490) {
+                        // Access denied, check if token expired
+                        var xhttp_token = new XMLHttpRequest();
+                        xhttp_token.onreadystatechange = function () {
+                            if (xhttp_token.readyState == 4 && xhttp_token.status == 200 && xhttp_token.responseText.substring(0, 7) == "Token: ") {
+                                zamger_oauth_token = xhttp_token.responseText.substring(7);
+                                prisustvo(e, student, cas);
+                            } else if (xhttp_token.readyState == 4) {
+                                console.log("Getting token failed, status " + xhttp_token.status);
+                                console.log(xhttp_token.responseText);
+                                alert("Vaša sesija je istekla. Molimo osvježite stranicu da biste obnovili sesiju.");
+                            }
+                        };
+                        var url = '<?=$conf_site_url?>/get_token.php';
+                        xhttp_token.open("GET", url, true);
+                        xhttp_token.send();
+                        return;
+                    }
+	                else if (status == 401)
                         greska = "Vaša sesija je istekla. Molimo osvježite stranicu da biste obnovili sesiju.";
 					else if (status != 200)
 						greska = "Došlo je do greške (status: "+status+"). Molimo kontaktirajte administratora";
