@@ -86,36 +86,6 @@ function bhfloat($str) {
 }
 
 
-function parsiraj_kartice($xml_data) {
-	$result = array();
-	if ($xml_data === FALSE) return FALSE;
-
-	$u_kartici = false;
-	$tekuca_kartica = array();
-	foreach ($xml_data as $node) {
-		if ($node['tag'] == "KARTICA") {
-			if ($node['type'] == "open") { 
-				if ($u_kartici) $result[] = $tekuca_kartica;
-				$u_kartici=true;
-				$tekuca_kartica = array();
-			}
-			if ($node['type'] == "closed") {
-				$u_kartici=false;
-				$result[] = $tekuca_kartica;
-			}
-			continue;
-		}
-		if (!$u_kartici) continue;
-		if ($node['tag'] == "DATUM") $tekuca_kartica['datum'] = $node['value'];
-		if ($node['tag'] == "VRSTAZADUZENJA") $tekuca_kartica['vrsta_zaduzenja'] = $node['value'];
-		if ($node['tag'] == "ZADUZENJE") $tekuca_kartica['zaduzenje'] = bhfloat($node['value']);
-		if ($node['tag'] == "RAZDUZENJE") $tekuca_kartica['razduzenje'] = bhfloat($node['value']);
-	}
-	if ($u_kartici) $result[] = $tekuca_kartica;
-
-	return $result;
-}
-
 function json_request($url, $parameters, $method = "GET", $encoding = "url", $debug = false)
 {
 	global $conf_verbosity;
@@ -293,13 +263,19 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 		// Avoid redirect loops where backend thinks session is expired but frontend disagrees
 		// (why??? i think this is due to mismatch in clocks between OAuth2 server and backend server)
 		// (still don't know why this happens :( )
-		if (count(debug_backtrace()) > 20) {
+		if (count(debug_backtrace()) > 30) {
 			zamgerlog2("redirect gloop $login");
 			OAuth2Helper::logOut();
 		}
+		if (count(debug_backtrace()) > 15) {
+			// Sleep to give time for the clocks to sync
+			usleep(250000);
+			OAuth2Helper::forceRefreshToken($login);
+		} else {
+			// Token is expired, get the refresh token
+			OAuth2Helper::refreshToken($login);
+		}
 		
-		// Token is expired, get the refresh token
-		OAuth2Helper::refreshToken($login);
 		
 		// Repeat api_call
 		return api_call($route, $params, $method, $debug, $json, $associative);
@@ -308,11 +284,10 @@ function api_call($route, $params = [], $method = "GET", $debug = true, $json = 
 	if (!$json) return $http_result;
 	
 	// DELETE requests don't return a body
+	$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 	if ($method == "DELETE") {
-		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) $json_result = [];
 	} else {
-		$json_result = json_decode($http_result, $associative); // Retrieve json as associative array
 		if ($json_result === NULL) {
 			if ($debug) {
 				print "Failed to decode result as JSON for $url<br>";

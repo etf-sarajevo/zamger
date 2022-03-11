@@ -3,7 +3,9 @@
 // LIB/OAUTH2_CLIENT - helper functions for authentication using OAuth2 protocol
 
 // TODO: Currently this code uses Stevenmaguire\Keycloak.
-// Apparently we can switch to phpleague/oauth2 with almost no change, but this should be further verified
+// Apparently we can switch to phpleague\oauth2 with almost no change, but this should be further verified
+
+// Switch to Jose library? (sometimes Jose detects that token is expired but this lib doesn't)
 
 
 class OAuth2Helper
@@ -170,6 +172,30 @@ class OAuth2Helper
 				// Session has expired, redirect to logout url
 				self::logOut();
 			}
+		}
+	}
+	
+	// Refresh expired token without checking is it expired (debug)
+	public static function forceRefreshToken($username) {
+		global $conf_files_path;
+		
+		$token_file = $conf_files_path . "/keycloak_token/$username";
+		if (!file_exists($token_file)) {
+			// We somehow lost the token file so we must logout
+			self::logOut();
+		}
+		$token = unserialize(file_get_contents($token_file));
+		try {
+			$newAccessToken = self::getProvider()->getAccessToken('refresh_token', [
+				'refresh_token' => $token->getRefreshToken()
+			]);
+			
+			$token_file = $conf_files_path . "/keycloak_token/$username";
+			file_put_contents($token_file, serialize($newAccessToken));
+			
+		} catch (Exception $e) {
+			// Session has expired, redirect to logout url
+			self::logOut();
 		}
 	}
 	
