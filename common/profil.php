@@ -116,7 +116,7 @@ function common_profil() {
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="name">Ime (bez prezimena)</label> <!-- Old -->
-								<?= Form::text('new-name', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'name', 'aria-describedby' => 'nameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
+								<?= Form::text('newname', $person['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'newname', 'aria-describedby' => 'nameHelp', 'required' => 'required', 'autocomplete' => 'off']) ?>
 								<small id="nameHelp" class="form-text text-muted">Vaše ime</small>
 							</div>
 						</div>

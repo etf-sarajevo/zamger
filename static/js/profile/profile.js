@@ -56,7 +56,7 @@ $(document).ready(function () {
         let personId = $("#personId").val();
         let jmb      = $("#jmbg").val();
         let dateOfBirth = $("#dateOfBirth").val();
-        let name     = $("#new-name").val();
+        let name     = $("#newname").val();
         let surname  = $("#surname").val();
 
         /*
@@ -74,7 +74,7 @@ $(document).ready(function () {
             return;
         }
         if (name.replaceAll('ć','c').indexOf(surname.replaceAll('ć','c')) >= 0) {
-            $("#new-name").focus();
+            $("#newname").focus();
             $.notify("Unijeli ste prezime u polje za ime!", 'warn');
             e.preventDefault();
             return;
@@ -90,7 +90,7 @@ $(document).ready(function () {
 
         let params = {
             id:                   personId,                                  // Person ID
-            name:                 $("#new-name").val(),
+            name:                 $("#newname").val(),
             surname:              $("#surname").val(),
             studentIdNr:          $("#studentIdNr").val(),                   // Broj indexa - string
             email:                        constructEmail(),                  // TODO - napravi funkciju za kreiranje mail objekta
