@@ -190,7 +190,15 @@ function student_zavrsni()  {
 		<h2>Lista tema završnih radova</h2>
 		<?
 		
-		$theses = api_call("thesis/course/$predmet/$ag")["results"];
+		$theses = api_call("thesis/course/$predmet/$ag");
+		if ($_api_http_code == "200") {
+			$theses = $theses['results'];
+		} else {
+			niceerror("Neuspješno preuzimanje liste završnih radova");
+			zamgerlog("spoofing predmeta za zavrsni rad $predmet $ag", 3);
+			api_report_bug($theses, []);
+			return;
+		}
 		if (count($theses) == 0) {
 			?>
 			<span class="notice">Nema kreiranih tema za završni rad.</span>	
