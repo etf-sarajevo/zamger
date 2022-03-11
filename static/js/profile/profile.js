@@ -187,8 +187,10 @@ $(document).ready(function () {
         // return;
 
         ajax_api_start('person/'+personId, 'PUT', params, function (result) {
-            console.log(result);
-            $.notify("Zahtjev je uspješno poslan i biće pregledan ubrzo", "success");
+            if ($("#isAdmin").val() == 1)
+                $.notify("Podaci su promijenjeni", "success");
+            else
+                $.notify("Zahtjev je uspješno poslan i biće pregledan ubrzo", "success");
         }, function (text, status, url) {
             try {
                 var obj = JSON.parse(text);

@@ -38,7 +38,7 @@ class OAuth2Helper
 		// After successful login, user should be redirected to the url where they were before
 		// We will use some logic to generate exactly such url and put it into $_SESSION
 		// However gen_uri() for some reason doesn't do a good job here
-		// Also we won't use 'redirectUri' to avoid nasty redirect loops (perhaps this is fixed now?)
+		// Also we won't use OAuth 'redirectUri' to avoid nasty redirect loops (perhaps this is fixed now?)
 		// TODO fix gen_uri?
 		$url = $conf_site_url . "/index.php";
 		$forbidden_keys = ["state", "session_state", "code"];

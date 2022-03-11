@@ -46,8 +46,15 @@ function studentska_osobe() {
 		?>
 		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o osobi</a></p>
 		<?
-		require_once("studentska/osobe/podaci.php");
-		studentska_osobe_podaci();
+		require_once "includes/profile/profile.php";
+		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
+		$title = '<div class="col-md-6">
+						<span class="navbar-brand color-logo" href="#"> <h2>Izmjena ličnih podataka - ' . $person['name'] . ' ' . $person['surname'] . '</h2> </span>
+					</div>
+					<div class="col-md-6 text-right pt-2 mt-2">
+						&nbsp;
+					</div>';
+		includes_profile($title, $person, true);
 	}
 
 
