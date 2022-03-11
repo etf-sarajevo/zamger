@@ -3,6 +3,10 @@
 // IZVJESTAJ/PREDMET - statistika predmeta, pregled prisustva itd.
 
 
+function zamger_izvjestaj_predmet_callback($buffer) {
+	global $zamger_filecb_sadrzaj_buffera;
+	$zamger_filecb_sadrzaj_buffera = $buffer;
+}
 
 function izvjestaj_predmet() {
 
@@ -18,17 +22,40 @@ function izvjestaj_predmet() {
 	$time = time();
 	
 	if (!$user_nastavnik && !$user_studentska && !$user_siteadmin && !$user_sefodsjeka) {
-		$dan=0;
-		do {
-			$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY", $time).".html";
-			$time -= 86400;
-			$dan++;
-			if ($dan == 3650) {
-				niceerror("Izvještaj ne postoji");
+		if ($predmet == 0 || $ag == 0) {
+			niceerror("Nepostojeći predmet");
+			return;
+		}
+		
+		$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag.html";
+		if (!file_exists($filename)) {
+			zamgerlog2("regenerisem izvjestaj", $predmet, $ag);
+			global $zamger_filecb_sadrzaj_buffera;
+			$user_nastavnik = true;
+			$_REQUEST['sakrij_imena'] = "da";
+			$_REQUEST['skrati'] = "da";
+			$_REQUEST['razdvoji_ispite'] = "da";
+			ob_start('zamger_izvjestaj_predmet_callback');
+			require_once("lib/ws.php");
+			eval("izvjestaj_predmet();");
+			ob_end_clean();
+			$user_nastavnik = false;
+			
+			if (strstr($zamger_filecb_sadrzaj_buffera, "Neuspješno otvaranje predmeta")) {
+				if (strstr($zamger_filecb_sadrzaj_buffera, "name=\"code\" value=\"404\""))
+					niceerror("Nepostojeći predmet");
+				else
+					print $zamger_filecb_sadrzaj_buffera;
 				return;
 			}
-		} while (!file_exists($filename));
-	
+			
+			if (!file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag")) {
+				mkdir ("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag",0755, true);
+			}
+			$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag.html";
+			file_put_contents($filename, $zamger_filecb_sadrzaj_buffera);
+		}
+		
 		readfile($filename);
 		return;
 	}
@@ -266,7 +293,7 @@ function izvjestaj_predmet() {
 	
 	// Get list of homeworks
 	$allHomeworks = api_call("homework/course/$predmet/$ag", [ "resolve" => ["CourseActivity"] ] )["results"];
-	foreach($allHomeworks as $hw) {
+	if ($allHomeworks) foreach($allHomeworks as $hw) {
 		$cactId = $hw['CourseActivity']['id'];
 		if (!array_key_exists($cactId, $cactHomeworks))
 			$cactHomeworks[$cactId] = [];
@@ -289,7 +316,7 @@ function izvjestaj_predmet() {
 	
 	$quizResultCache = []; // Cache quizzes
 	$quizzes = api_call("quiz/course/$predmet/$ag")["results"];
-	foreach($quizzes as $quiz) {
+	if ($quizzes) foreach($quizzes as $quiz) {
 		$quizResults = api_call("quiz/" . $quiz['id'] . "/group/$labgrupa")["results"];
 		foreach($quizResults as $qr) {
 			$studentId = $qr['student']['id'];

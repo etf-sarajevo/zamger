@@ -32,7 +32,6 @@ function admin_misc() {
 		"brisanje_osobe" => "Sigurno brisanje osobe",
 		"spajanje_osoba" => "Spajanje dvije osobe",
 		"zamijeni_pk" => "Zamijeni ponudu kursa",
-		"generisi_izvjestaj" => "Generiši izvještaj za predmet",
 		"import_raspored" => "Import rasporeda iz Ribićeve aplikacije",
 		"mass_zavrsni" => "Upiši sve studente 5. semestra BSc / 3. semestra MSc na predmet Završni rad",
 		"upisi_parni" => "Upiši sve studente u parni semestar",

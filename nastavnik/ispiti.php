@@ -242,8 +242,8 @@ function nastavnik_ispiti() {
 			}
 			return;
 		} else {
-			// Generisem statičku verziju izvještaja predmet TODO
-			generisi_izvjestaj_predmet( $predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
+			// Generisem statičku verziju izvještaja predmet
+			generisi_izvjestaj_predmet( $predmet, $ag );
 	
 			zamgerlog("masovni rezultati ispita za predmet pp$predmet",4);
 			?>
@@ -279,6 +279,10 @@ function nastavnik_ispiti() {
 				niceerror("Greška prilikom brisanja ispita");
 				api_report_bug($result, []);
 			}
+			
+			// Generisem statičku verziju izvještaja predmet
+			generisi_izvjestaj_predmet( $predmet, $ag );
+			
 			print "<a href=\"?sta=nastavnik/ispiti&predmet=$predmet&ag=$ag\">Nazad</a>\n";
 			return;
 	

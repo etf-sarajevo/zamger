@@ -16,7 +16,7 @@ function admin_misc_promijeni_kodove() {
 		$par = array_shift($parovi);
 		print "Generišem $par<br>\n";
 		list($predmet,$ag) = explode("-", $par);
-		generisi_izvjestaj_predmet($predmet, $ag, array("skrati" => "da", "sakrij_imena" => "da", "razdvoji_ispite" => "da") );
+		generisi_izvjestaj_predmet($predmet, $ag);
 		
 		if (!empty($parovi)) {
 			$predmeti = join(",", $parovi);

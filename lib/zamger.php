@@ -190,34 +190,13 @@ function tituliraj_api($osoba, $sa_akademskim_zvanjem = true, $sa_naucnonastavni
 }
 
 
-// Generiše cachiranu verziju izvještaja izvjestaj/predmet
-// Prije poziva treba u superglobalni niz $_REQUEST napuniti eventualne parametre izvještaja
+// Briše cachiranu verziju izvještaja izvjestaj/predmet
+// Izvještaj će biti regenerisan prilikom sljedećeg otvaranja
 
-function zamger_file_callback($buffer) {
-	global $zamger_filecb_sadrzaj_buffera;
-	$zamger_filecb_sadrzaj_buffera = $buffer;
-}
-function generisi_izvjestaj_predmet($predmet, $ag, $params = array()) {
-	global $zamger_filecb_sadrzaj_buffera, $conf_files_path;
-
-	// Punimo parametre u superglobalni niz $_REQUEST kako bi se proslijedili izvještaju
-	foreach($params as $key => $value)
-		$_REQUEST[$key] = $value;
-	$_REQUEST['predmet'] = $predmet;
-	$_REQUEST['ag'] = $ag;
-	
-	ob_start('zamger_file_callback');
-	require_once("izvjestaj/predmet.php");
-	eval("izvjestaj_predmet();");
-	ob_end_clean();
-	
-	if (strstr($zamger_filecb_sadrzaj_buffera, "Neuspješno otvaranje predmeta")) return;
-	
-	if (!file_exists("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag")) {
-		mkdir ("$conf_files_path/cache/izvjestaj_predmet/$predmet-$ag",0755, true);
-	}
-	$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag-".date("dmY").".html";
-	file_put_contents($filename, $zamger_filecb_sadrzaj_buffera);
+function generisi_izvjestaj_predmet($predmet, $ag) {
+	global $conf_files_path;
+	$filename = $conf_files_path."/cache/izvjestaj_predmet/$predmet-$ag/$predmet-$ag.html";
+	if (file_exists($filename)) unlink($filename);
 }
 
 

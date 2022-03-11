@@ -233,7 +233,7 @@ case "izmjena_ispita":
 		// Generate static exam report
 		// We need course id and academic year from exam to fix this
 		$exam = api_call("exam/$ispit");
-		generisi_izvjestaj_predmet( $exam['CourseUnit']['id'], $exam['AcademicYear']['id'], array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
+		generisi_izvjestaj_predmet( $exam['CourseUnit']['id'], $exam['AcademicYear']['id'] );
 
 	} else if ($ime == "fiksna") {
 		// Treba nam ponuda kursa
@@ -262,7 +262,7 @@ case "izmjena_ispita":
 		}
 
 		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
+		generisi_izvjestaj_predmet( $predmet, $ag );
 
 	} else if ($ime == "ko") {
 		// Konacna ocjena
@@ -294,7 +294,7 @@ case "izmjena_ispita":
 		}
 
 		// Generisem statičku verziju izvještaja predmet
-		generisi_izvjestaj_predmet( $predmet, $ag, array('skrati' => 'da', 'sakrij_imena' => 'da', 'razdvoji_ispite' => 'da') );
+		generisi_izvjestaj_predmet( $predmet, $ag );
 
 	} else if ($ime == "kodatum") {
 		$portfolio = api_call("course/$predmet/student/$stud_id", [ "year" => $ag, "score" => true ], "GET", true, true, false);
