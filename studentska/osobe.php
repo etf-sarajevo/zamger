@@ -21,15 +21,7 @@ function studentska_osobe() {
 	
 	
 	
-	?>
-	
-	<center>
-	<table border="0"><tr><td>
-	
-	<?
-	
 	$akcija = param('akcija');
-	$osoba = int_param('osoba');
 	
 	
 	// Dodavanje nove osobe u bazu
@@ -37,17 +29,31 @@ function studentska_osobe() {
 	if ($akcija == "nova" && check_csrf_token()) {
 		require_once("studentska/osobe/nova.php");
 		studentska_osobe_nova();
+		return;
 	}
 
+	if ($akcija != "") {
+		$osoba = int_param('osoba');
+		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
+		if ($_api_http_code == "404") {
+			niceerror("Nepoznata osoba");
+			return;
+		} else if ($_api_http_code != "200") {
+			niceerror("Neuspješan pristup podacima osobe");
+			return;
+		}
+		
+		if ($akcija != "edit") {
+			?>
+			<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o osobi</a></p>
+			<?
+		}
+	}
 
 	// Izmjena ličnih podataka osobe
 	
 	if ($akcija == "podaci") {
-		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o osobi</a></p>
-		<?
 		require_once "includes/profile/profile.php";
-		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
 		$title = '<div class="col-md-6">
 						<span class="navbar-brand color-logo" href="#"> <h2>Izmjena ličnih podataka - ' . $person['name'] . ' ' . $person['surname'] . '</h2> </span>
 					</div>
@@ -61,9 +67,6 @@ function studentska_osobe() {
 	// Upis studenta na semestar
 	
 	else if ($akcija == "upis") {
-		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a></p>
-		<?
 		require_once("studentska/osobe/upis.php");
 		studentska_osobe_upis();
 	}
@@ -72,9 +75,6 @@ function studentska_osobe() {
 	// Ispis sa studija
 	
 	else if ($akcija == "ispis") {
-		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a></p>
-		<?
 		require_once("studentska/osobe/ispis.php");
 		studentska_osobe_ispis();
 	}
@@ -83,10 +83,6 @@ function studentska_osobe() {
 	// Promjena načina studiranja
 	
 	else if ($akcija == "promijeni_nacin") {
-		?>
-		<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
-		<?
-
 		require_once("studentska/osobe/promijeni_nacin.php");
 		studentska_osobe_promijeni_nacin();
 	}
@@ -95,10 +91,6 @@ function studentska_osobe() {
 	// Pregled predmeta za koliziju i potvrda
 	
 	else if ($akcija == "kolizija") {
-		?>
-		<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
-		<?
-		
 		require_once("studentska/osobe/kolizija.php");
 		studentska_osobe_kolizija();
 	}
@@ -108,10 +100,6 @@ function studentska_osobe() {
 	// Manuelni upis/ispis na predmete
 	
 	else if ($akcija == "predmeti") {
-		?>
-		<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
-		<?
-
 		require_once("studentska/osobe/predmeti.php");
 		studentska_osobe_predmeti();
 	}
@@ -120,9 +108,6 @@ function studentska_osobe() {
 	// Izbori za nastavnike
 	
 	else if ($akcija == "izbori") {
-		?>
-		<p><a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o osobi</a></p>
-		<?
 		require_once("studentska/osobe/izbori.php");
 		studentska_osobe_izbori();
 	}
@@ -131,9 +116,6 @@ function studentska_osobe() {
 	// Analitička kartica studenta
 	
 	else if ($akcija == "kartica") {
-		?>
-		<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
-		<?
 		require_once("studentska/osobe/kartica.php");
 		studentska_osobe_kartica();
 	}
@@ -142,12 +124,8 @@ function studentska_osobe() {
 	// Ažuriranje dugovanja studenta
 	
 	else if ($akcija == "izmijeni_zaduzenje") {
-		?>
-		<a href="?sta=studentska/osobe&osoba=<?=$osoba?>&akcija=edit">Nazad na podatke o studentu</a><br/><br/>
-		<?
 		require_once("studentska/osobe/zaduzenje.php");
 		studentska_osobe_zaduzenje();
-		return;
 	}
 
 	
@@ -639,8 +617,6 @@ function studentska_osobe() {
 			require_once("studentska/osobe/prijemni.php");
 			studentska_osobe_prijemni();
 		}
-		
-		?></td></tr></table></center><? // Vanjska tabela
 	
 	}
 	
@@ -657,7 +633,6 @@ function studentska_osobe() {
 		?>
 		<h3>Studentska služba - Studenti i nastavnici</h3>
 	
-		<table width="500" border="0"><tr><td align="left">
 			<p><b>Pretraži osobe:</b><br/>
 			Unesite dio imena i prezimena ili broj indeksa<br/>
 			<?=genform("GET")?>
@@ -722,7 +697,7 @@ function studentska_osobe() {
 			<?=genform("POST")?>
 			<input type="hidden" name="akcija" value="nova">
 			<b>Unesite novu osobu:</b><br/>
-			<table border="0" cellspacing="0" cellpadding="0" width="100%">
+			<table border="0" cellspacing="0" cellpadding="0" width="500">
 			<tr><td>Ime<? if ($conf_ldap_search) print " ili login"?>:</td><td>Prezime:</td><td>&nbsp;</td></tr>
 			<tr>
 				<td><input type="text" name="ime" size="15"></td>
@@ -731,17 +706,7 @@ function studentska_osobe() {
 			</tr></table>
 			</form>
 		<?
-		?>
-	
-		</td></tr></table>
-		<?
 	}
 	
-	
-	?>
-	</td></tr></table></center>
-	<?
-	
-
 }
 

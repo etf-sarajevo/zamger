@@ -27,12 +27,6 @@ if (!$user_studentska && !$user_siteadmin) {
 
 
 
-?>
-<center>
-<table border="0"><tr><td>
-
-<?
-
 $akcija = param('akcija');
 
 
@@ -692,6 +686,8 @@ else {
 	if ($page == 0) $page = 1;
 
 	?>
+	<h3>Studentska služba - Predmeti</h3>
+
 	<table width="100%" border="0"><tr><td align="left">
 		<p><b>Pretraga</b><br/>
 		Za prikaz svih predmeta na akademskoj godini, ostavite polje za pretragu prazno.</br>
@@ -742,7 +738,7 @@ else {
 		$i=$poc;
 		foreach ($courses['results'] as $course) {
 			?>
-			<tr>
+			<tr <? if ($i%2==0) print "bgcolor=\"#EEEEEE\""; ?>>
 				<td><?=$i?>. <?=$course['courseName']?> (<?=$course['CourseUnit']['Institution']['abbrev']?>)</td>
 				<td><a href="<?=genuri()?>&amp;akcija=edit&amp;predmet=<?=$course['CourseUnit']['id']?>&amp;ag=<?=$course['AcademicYear']['id']?>">Detalji</a></td>
 				<?
@@ -773,10 +769,6 @@ else {
 
 }
 
-
-?>
-</td></tr></table></center>
-<?
 
 
 }
