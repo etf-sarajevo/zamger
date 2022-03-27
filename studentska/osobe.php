@@ -447,6 +447,15 @@ function studentska_osobe() {
 			<br/>
 			Stručni stepen: <b><?=optionalField($exp['ProfessionalDegree'])?></b><br/>
 			Naučni stepen: <b><?=optionalField($exp['ScientificDegree'])?></b><br/>
+					<?
+					if (!empty($exp['specialCategories'])) {
+						?>
+						Posebne kategorije: <b><?
+						foreach ($exp['specialCategories'] as $cat) print $cat['SpecialCategory']['name'] . ", ";
+						?></b><br/>
+						<?
+					}
+					?>
 			<br/>
 			ID: <b><?=$osoba?></b><br/>
 			<br/>
@@ -469,7 +478,6 @@ function studentska_osobe() {
 			if ($conf_passwords == "backend") $auth_name = "Backend";
 			
 			// Da li ima aktivan login?
-			api_debug($person['login']);
 			$hasLogin = false;
 			foreach($person['login'] as $login) {
 				if ($login['active']) $hasLogin = true;
@@ -523,7 +531,7 @@ function studentska_osobe() {
 		}
 	
 		// U slučaju LDAPa studentskoj službi dajemo mogućnost da (de)aktivira pristup korisniku
-		else if ($conf_system_auth == "ldap") {
+		else {
 			
 			$hasLogin = false;
 			foreach($person['login'] as $login) {
