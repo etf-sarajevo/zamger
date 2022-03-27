@@ -79,7 +79,19 @@ function studentska_konacna_ocjena() {
 					where student = $student and predmet = $predmet and akademska_godina = $ag"
 				);
 				
-			}else db_query("INSERT INTO konacna_ocjena SET student = $student, predmet = $predmet, akademska_godina = $ag, ocjena = $ocjena, datum = '{$datum}', datum_u_indeksu = '{$datum_i}', odluka = $odluka, datum_provjeren = $datum_p, pasos_predmeta = $pasos");
+			} else {
+				// Provjera da li ocjena već postoji
+				$exists = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=$student AND predmet=$predmet");
+				if ($exists) {
+					niceerror("Student već ima unesenu ocjenu iz ovog predmeta!");
+					?>
+					<p>Idite na opciju <a href="?sta=studentska/konacna_ocjena&student=<?=$student?>&akcija=pregled&sve=1">Prikaz svih ocjena (ne samo po odluci)</a>, nađite ocjenu po želji, kliknite na <b>Uredite</b> i zatim dodajte broj odluke.</p>
+					<?
+					return;
+				}
+				
+				db_query("INSERT INTO konacna_ocjena SET student = $student, predmet = $predmet, akademska_godina = $ag, ocjena = $ocjena, datum = '{$datum}', datum_u_indeksu = '{$datum_i}', odluka = $odluka, datum_provjeren = $datum_p, pasos_predmeta = $pasos");
+			}
 		}
 		
 	}
