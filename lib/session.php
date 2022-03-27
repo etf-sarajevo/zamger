@@ -18,14 +18,13 @@
 //    $admin  - korisnik je administrator
 //    $userid - interni ID korisnika (prirodan broj)
 
-require("lib/oauth2_client.php");
 
 function login($pass, $type = "") {
-	global $userid,$admin,$login,$conf_passwords,$conf_ldap_server,$conf_ldap_domain,$conf_ldap_dn,$posljednji_pristup;
+	global $userid,$admin,$login,$conf_passwords,$conf_ldap_server,$conf_ldap_domain,$conf_ldap_dn,$posljednji_pristup,$conf_script_path;
 	if ($type === "") $type = $conf_passwords;
 	
 	if ($type == "backend") {
-		require_once("lib/ws.php");
+		require_once($conf_script_path . "/lib/ws.php");
 		global $conf_backend_url;
 		$result = api_call("auth", ["login" => $login, "pass" => $pass], "POST");
 		if ($result['success'] == "false") {
@@ -140,7 +139,8 @@ function cas_login_screen() {
 
 // Redirektuj na odgovarajuću login stranicu
 function session_login_screen() {
-	global $conf_login_screen;
+	global $conf_login_screen, $conf_script_path;
+	require_once($conf_script_path . "/lib/oauth2_client.php");
 	if ($conf_login_screen == "cas")
 		cas_login_screen();
 	if ($conf_login_screen == "keycloak")
@@ -174,6 +174,7 @@ function check_cookie() {
 
 	// Provjera OAuth2 single sign-on sesije
 	if ($login == "" && $conf_keycloak) {
+		require_once($conf_script_path . "/lib/oauth2_client.php");
 		$login = OAuth2Helper::checkSession();
 	}
 	
@@ -287,8 +288,10 @@ function logout() {
 	}
 	session_destroy();
 	
-	if ($conf_keycloak)
+	if ($conf_keycloak) {
+		require_once($conf_script_path . "/lib/oauth2_client.php");
 		OAuth2Helper::logOut();
+	}
 }
 
 
