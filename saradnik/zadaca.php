@@ -63,6 +63,10 @@ function saradnik_zadaca() {
 	$prezime_studenta = $currentAssignment['student']['surname'];
 	
 	
+	// Nivo pristupa
+	
+	$course = api_call("course/$predmet/$ag");
+	$nivo_pristupa = $course['accessLevel'];
 	
 	
 	
@@ -389,7 +393,7 @@ function saradnik_zadaca() {
 			<?
 			
 			// Autotest nalaz
-			if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "zadace_admin")
+			if ($nivo_pristupa == "nastavnik" || $nivo_pristupa == "super_asistent" || $nivo_pristupa == "studentska")
 				$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ true, db_timestamp($currentAssignment['Homework']['deadline']));
 			else
 				$nalaz_autotesta = autotest_tabela($studentId, $zadaca, $zadatak, /*$nastavnik =*/ false, db_timestamp($currentAssignment['Homework']['deadline']));
