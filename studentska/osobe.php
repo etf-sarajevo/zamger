@@ -319,40 +319,47 @@ function studentska_osobe() {
 			} // else if ($pristup!=0)
 	
 		} // if ($_REQUEST['subakcija'] == "auth")
-	
-	
-		// Promjena uloga korisnika
-		if (param('subakcija') == "uloga" && check_csrf_token()) {
-			$korisnik['student']=$korisnik['nastavnik']=$korisnik['prijemni']=$korisnik['studentska']=$korisnik['siteadmin']=$korisnik['sefodsjeka']=$korisnik['uprava']=false;
-			$q150 = db_query("select privilegija from privilegije where osoba=$osoba");
-			while($r150 = db_fetch_row($q150)) {
-				if ($r150[0]=="student") $korisnik['student']=true;
-				if ($r150[0]=="nastavnik") $korisnik['nastavnik']=true;
-				if ($r150[0]=="prijemni") $korisnik['prijemni']=true;
-				if ($r150[0]=="studentska") $korisnik['studentska']=true;
-				if ($r150[0]=="siteadmin") $korisnik['siteadmin']=true;
-				if ($r150[0]=="sefodsjeka") $korisnik['sefodsjeka']=true;
-				if ($r150[0]=="uprava") $korisnik['uprava']=true;
-			}
-	
-			foreach ($korisnik as $privilegija => $vrijednost) {
-				if ($user_studentska && !$user_siteadmin && $privilegija !== 'nastavnik') continue;
-			
-				if ($_POST[$privilegija]=="1" && $vrijednost==0) {
-					$q151 = db_query("insert into privilegije set osoba=$osoba, privilegija='$privilegija'");
-					zamgerlog("osobi u$osoba data privilegija $privilegija",4);
-					zamgerlog2("osobi data privilegija", $osoba, 0, 0, $privilegija);
-					nicemessage("Data privilegija $privilegija");
-				}
-				if ($_POST[$privilegija]!="1" && $vrijednost==1) {
-					$q151 = db_query("delete from privilegije where osoba=$osoba and privilegija='$privilegija'");
-					zamgerlog("osobi u$osoba oduzeta privilegija $privilegija",4);
-					zamgerlog2("osobi oduzeta privilegija", $osoba, 0, 0, $privilegija);
-					nicemessage("Oduzeta privilegija $privilegija");
-				}
-			}
+		
+		
+		// JavaScript
+		ajax_box();
+		?>
+		<SCRIPT language="JavaScript">
+		var person = null, personId = <?=$osoba?>;
+		window.onload = function() {
+			ajax_api_start(
+				"person/" + personId,
+				"GET",
+                { "resolve" : [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ] },
+				function (foo) {
+					person = foo;
+				},
+            	function (responseText, status, url) {}
+			);
 		}
-	
+		function addRemovePrivilege(privilege) {
+            var found = -1;
+            for (var i=0; i<person.privileges.length; i++) {
+                if (person.privileges[i] === privilege)
+                    found = i;
+			}
+            console.log("Found " + found);
+			if (found === -1)
+                person.privileges.push(privilege);
+            else
+                person.privileges.splice(found, 1);
+		}
+        function updatePrivileges(okFunc, errorFunc) {
+            ajax_api_start(
+                "person/" + personId + "/privileges",
+                "PUT",
+                person,
+                okFunc,
+                errorFunc
+            );
+		}
+		</SCRIPT>
+		<?php
 	
 		// Osnovni podaci
 		$exp = $person['ExtendedPerson']; // shortcut
@@ -571,27 +578,28 @@ function studentska_osobe() {
 	
 		if ($user_siteadmin) {
 			?>
-			<?=genform("POST")?>
-			<input type="hidden" name="subakcija" value="uloga">
 			<?
 			foreach ($allPrivileges as $privilege) {
-				unset($_REQUEST[$privilege]);
 				?>
-				<input type="checkbox" name="student" value="1" <? if (in_array($privilege, $person['privileges'])) print "CHECKED";?>> <?=$privilege?>&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="checkbox" <? if (in_array($privilege, $person['privileges'])) print "CHECKED";?> onchange="addRemovePrivilege('<?=$privilege?>')"> <?=$privilege?>&nbsp;&nbsp;&nbsp;&nbsp;
 				<?
 			}
 		
 			?><br/> <br/>
-			<input type="submit" value=" Izmijeni ">
-			</form>
+			<input type="submit" value=" Izmijeni " onclick="updatePrivileges(
+                    function(foo) { document.getElementById('izmijeniPrivilegije').innerHTML = '<b>Izmijenjene privilegije.</b>'; },
+                    function (responseText, status, url) { let response=JSON.parse(responseText); alert('Došlo je do greške ('+status+'): ' + response['message']); }
+				)"> <div id="izmijeniPrivilegije" style="color:green"></div>
 			<?
 		} else if(in_array('student', $person['privileges']) && !in_array('nastavnik', $person['privileges'])) {
 			?>
-			<?=genform("POST")?>
-			<input type="hidden" name="subakcija" value="uloga">
-			<input type="checkbox" name="nastavnik" value="1"> Proglasi korisnika za nastavnika&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="submit" value=" Promijeni ">
-			</form>
+			<div id="proglasiZaNastavnika">
+				<input type="checkbox" name="nastavnik" value="1" onchange="addRemovePrivilege('nastavnik');"> Proglasi korisnika za nastavnika&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="submit" value=" Promijeni " onclick="updatePrivileges(
+                    function(foo) { document.getElementById('proglasiZaNastavnika').innerHTML = '<b>Korisnik proglašen za nastavnika.</b>'; },
+                    function (responseText, status, url) { let response=JSON.parse(responseText); alert('Došlo je do greške ('+status+'): ' + response['message']); }
+				)">
+			</div>
 			<?
 		}
 	
