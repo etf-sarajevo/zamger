@@ -6,7 +6,7 @@
 
 function studentska_osobe() {
 	global $user_siteadmin, $user_studentska, $_api_http_code;
-	global $conf_system_auth, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
+	global $conf_passwords, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
 
 	require_once("lib/student_predmet.php");
 	
@@ -34,7 +34,7 @@ function studentska_osobe() {
 
 	if ($akcija != "") {
 		$osoba = int_param('osoba');
-		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
+		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ], "withInactiveLogins" => true ]);
 		if ($_api_http_code == "404") {
 			niceerror("Nepoznata osoba");
 			return;
@@ -355,8 +355,6 @@ function studentska_osobe() {
 	
 	
 		// Osnovni podaci
-	
-		$person = api_call("person/$osoba", [ "resolve" => [ "ExtendedPerson", "ProfessionalDegree", "ScientificDegree" ]]);
 		$exp = $person['ExtendedPerson']; // shortcut
 		
 		
@@ -464,43 +462,44 @@ function studentska_osobe() {
 	
 		// Promjena lozinke na ovom mjestu je moguća samo ako je autentikacija "table"
 		// Site admin će vidjeti detaljnije informacije
-		if ($conf_system_auth == "table" || $user_siteadmin) {
+		if ($conf_passwords == "table" || $user_siteadmin) {
 			// Kapitalizovan naziv autentikacijskog modula
-			$auth_name = $conf_system_auth;
-			if ($conf_system_auth == "ldap") $auth_name = "LDAP";
-			if ($conf_system_auth == "cas") $auth_name = "CAS";
-			if ($conf_system_auth == "keycloak") $auth_name = "KeyCloak";
+			$auth_name = $conf_passwords;
+			if ($conf_passwords == "ldap") $auth_name = "LDAP";
+			if ($conf_passwords == "backend") $auth_name = "Backend";
+			
+			// Da li ima aktivan login?
+			api_debug($person['login']);
+			$hasLogin = false;
+			foreach($person['login'] as $login) {
+				if ($login['active']) $hasLogin = true;
+			}
 			
 			print "<p>Korisnički pristup:\n";
-			$q201 = db_query("select aktivan from auth where id=$osoba and aktivan=1");
-			if (db_num_rows($q201)<1) print "<font color=\"red\">NEMA</font>";
+			if (!$hasLogin) print "<font color=\"red\">NEMA</font>";
 			?>
 				<table border="0">
 				<tr>
 					<td>Korisničko ime:</td>
-					<td width="80">Šifra:</td>
+					<td style="width: 80px">Šifra:</td>
 					<td>Aktivan:</td>
 					<td>&nbsp;</td>
 				</tr>
 			<?
-	
-			$q201 = db_query("select login,password,aktivan from auth where id=$osoba");
-			while ($r201 = db_fetch_row($q201)) {
-				$login=$r201[0];
-				$password=$r201[1];
-				$pristup=$r201[2];
+			
+			foreach($person['login'] as $login) {
 				?>
 				<?=genform("POST")?>
 				<input type="hidden" name="subakcija" value="auth">
-				<input type="hidden" name="stari_login" value="<?=$login?>">
+				<input type="hidden" name="stari_login" value="<?=$login['login']?>">
 				<tr>
-					<td><input type="text" size="10" name="login" value="<?=$login?>"></td>
-					<td valign="center"><? if ($conf_system_auth=="table") {
-						?><input type="password" size="10" name="password" value="<?=$password?>"><?
+					<td><input type="text" size="10" name="login" value="<?=$login['login']?>"></td>
+					<td valign="center"><? if ($conf_system_auth=="table" || $login['password'] !== '') {
+						?><input type="password" size="10" name="password" value="<?=$login['password']?>"><?
 					} else {
 						?><b><?=$auth_name?></b><?
 					}?></td>
-					<td><input type="checkbox" size="10" name="aktivan" value="1" <? if ($pristup==1) print "CHECKED"; ?>></td>
+					<td><input type="checkbox" size="10" name="aktivan" value="1" <? if ($login['active']) print "CHECKED"; ?>></td>
 					<td><input type="Submit" value=" Izmijeni "> <input type="Submit" name="brisanje" value=" Obriši "></td>
 				</tr></form>
 				<?
@@ -525,10 +524,13 @@ function studentska_osobe() {
 	
 		// U slučaju LDAPa studentskoj službi dajemo mogućnost da (de)aktivira pristup korisniku
 		else if ($conf_system_auth == "ldap") {
-			$q201 = db_query("select aktivan from auth where id=$osoba and aktivan=1");
-			if (db_num_rows($q201)>0) $pristup=1; else $pristup=0;
-			?>
 			
+			$hasLogin = false;
+			foreach($person['login'] as $login) {
+				if ($login['active']) $hasLogin = true;
+			}
+			
+			?>
 			<script language="JavaScript">
 			function upozorenje(pristup) {
 				document.authforma.pristup.value=pristup;
@@ -542,7 +544,7 @@ function studentska_osobe() {
 	
 			<table border="0">
 			<tr>
-				<td colspan="5">Korisnički pristup: <input type="checkbox" name="aktivan" onchange="javascript:upozorenje('<?=$pristup?>');" <? if ($pristup==1) print "CHECKED"; ?>></td>
+				<td colspan="5">Korisnički pristup: <input type="checkbox" name="aktivan" onchange="javascript:upozorenje('<?=$hasLogin?>');" <? if ($hasLogin) print "CHECKED"; ?>></td>
 			</tr></table></form>
 			<?
 		}
