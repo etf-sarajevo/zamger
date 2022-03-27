@@ -71,7 +71,7 @@ function common_cron() {
 
 		// Ažuriramo bazu
 		$q20 = db_query("UPDATE cron SET zadnje_izvrsenje=NOW(), sljedece_izvrsenje=FROM_UNIXTIME($nexttime) WHERE id=$r10[0]");
-		$q30 = db_query("INSERT INTO cron_rezultat SET cron=$r10[0], izlaz='(Nije završeno)', return_value=0, vrijeme=NOW()");
+		$q30 = db_query("INSERT INTO cron_rezultat SET id=0, cron=$r10[0], izlaz='(Nije završeno)', return_value=0, vrijeme=NOW()");
 		$id = db_insert_id();
 
 		// Pripremamo za izvršenje
