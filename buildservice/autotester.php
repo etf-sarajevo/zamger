@@ -535,7 +535,7 @@ else if ($_REQUEST['action'] == "setResult") {
 					case 3: {
 						$status="error"; 
 						$nalaz .= "Greška prilikom kompajliranja autotesta.\n";
-						if (array_key_exists('parsed_output', $tr['tools']['compile[debug]'])) 
+						if (is_array($tr['tools']['compile[debug]']) && array_key_exists('parsed_output', $tr['tools']['compile[debug]']))
 							foreach ($tr['tools']['compile[debug]']['parsed_output'] as $msg) {
 								$nalaz .= lociraj_gresku($msg['file'], $msg['line'], $test, $sources) . $msg['message'] . "\n\n";
 							}
