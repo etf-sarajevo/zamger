@@ -162,7 +162,7 @@ function autotest_brisi_rezultate($student, $zadaca, $zadatak) {
 
 function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nastavnik) {
 	global $_api_http_code;
-	$stat_tekst = array("Bug u programu", "Pregled u toku", "Prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+	$stat_tekst = array("Bug u programu", "Pregled u toku", "Prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK", "Potrebna odbrana");
 
 	$status_zadace = $assignment['status'];
 	$bodova = $assignment['score'];
