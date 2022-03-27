@@ -162,7 +162,7 @@ function autotest_brisi_rezultate($student, $zadaca, $zadatak) {
 
 function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nastavnik) {
 	global $_api_http_code;
-	$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+	$stat_tekst = array("Bug u programu", "Pregled u toku", "Prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK");
 
 	$status_zadace = $assignment['status'];
 	$bodova = $assignment['score'];
@@ -173,9 +173,12 @@ function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nast
 		$status_duzi_tekst = "<b>Ne može se kompajlirati</b>";
 		$status_ikona = "bug";
 	}
-	else if ($status_zadace == 2) {
+	else if ($status_zadace == 2 || $status_zadace = 6) {
 		$bgcolor = "#fcc";
-		$status_duzi_tekst = "<b>Potrebna je odbrana zadaće</b>";
+		if ($status_zadace == 2)
+			$status_duzi_tekst = "<b>Zadaća je prepisana</b>";
+		else
+			$status_duzi_tekst = "<b>Potrebna je odbrana zadaće</b>";
 		$status_ikona = "copy";
 	}
 	else if ($status_zadace == 1 || $status_zadace == 4) {
@@ -205,7 +208,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nast
 				if ($_api_http_code == "200")
 					$resultsExist = true;
 			}
-		}
+		} else $status_duzi_tekst .= "<br>r1: $_api_http_code";
 		
 		if ($resultsExist) {
 			foreach ($task['tests'] as $test) {

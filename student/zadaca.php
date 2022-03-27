@@ -151,8 +151,8 @@ function student_zadaca() {
 	
 	
 	// Statusne ikone:
-	$stat_icon = array("bug", "view", "copy", "bug", "view", "ok");
-	$stat_tekst = array("Bug u programu", "Pregled u toku", "Potrebna odbrana", "Bug u programu", "Pregled u toku", "Zadaća OK");
+	$stat_icon = array("bug", "view", "copy", "bug", "view", "ok", "copy");
+	$stat_tekst = array("Bug u programu", "Pregled u toku", "Zadaća prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK", "Potrebna odbrana");
 
 
 	?>
@@ -370,6 +370,8 @@ function student_zadaca() {
 	} else { // if ($attachment)
 
 		if ($status_zadace == 2) {
+			?><p>Zadaća se ne može ponovo poslati jer je prepisana</p><?
+		} else if ($status_zadace == 6) {
 			?><p>Zadaća se ne može ponovo poslati jer je predviđena odbrana</p><?
 		} else if ($rok > time()) {
 			?><p>Kopirajte vaš zadatak u tekstualno polje ispod:</p>
@@ -517,8 +519,11 @@ function akcijaslanje() {
 	
 	// Prepisane zadaće se ne mogu ponovo slati
 	$previousSubmission = api_call("homework/$zadaca/$zadatak/student/$userid", []);
-	if ($previousSubmission['status'] == 2) { // status = 2 - prepisana zadaća
-		niceerror("Zadaća se ne može ponovo poslati jer je predviđena odbrana.");
+	if ($previousSubmission['status'] == 2 || $previousSubmission['status'] == 6) { // status = 2 - prepisana zadaća
+		if ($previousSubmission['status'] == 2)
+			niceerror("Zadaća se ne može ponovo poslati jer je prepisana.");
+		else
+			niceerror("Zadaća se ne može ponovo poslati jer je predviđena odbrana.");
 		print $povratak_html;
 		return; 
 	}
