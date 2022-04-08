@@ -39,21 +39,20 @@ function studentska_konacna_ocjena() {
 	
 	if(isset($_REQUEST['student']) and isset($_REQUEST['akademska_godina']) and ($user_studentska or $user_siteadmin)){ // Pošto su svi required - dovoljan check za ovo dvoje
 		
+		$student = intval($_REQUEST['student']);
 		$datum_odluke = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum_odluke']))));
 		$broj_protokola = db_escape($_REQUEST['broj_protokola']);
 		
 		// Prvo provjeravamo da li ima odluka u tabeli "odluka"
-		$odluka = db_query("SELECT * from odluka where datum = '{$datum_odluke}' and broj_protokola = '{$broj_protokola}'");
+		$odluka = db_query("SELECT * from odluka where datum = '$datum_odluke' and broj_protokola = '$broj_protokola' and student='$student'");
 		$odluka = db_fetch_row($odluka);
-		// var_dump($odluka);
 		
 		if(!$odluka){ // Ako nema te odluke, unesi novu i vrati njen ID
-			$odluka = db_query("INSERT INTO odluka set datum = '{$datum_odluke}', broj_protokola = '{$broj_protokola}'");
-			$odluka = db_fetch_row(db_query("SELECT LAST_INSERT_ID() from odluka"));
+			$odluka = db_query("INSERT INTO odluka set datum = '$datum_odluke', broj_protokola = '$broj_protokola', student=$student");
+			$odluka = db_fetch_row(db_query("SELECT * from odluka where id=LAST_INSERT_ID()"));
 		}
 		$odluka = $odluka[0];
 		
-		$student = intval($_REQUEST['student']);
 		$predmet = intval($_REQUEST['predmet']);
 		$ag      = intval($_REQUEST['akademska_godina']);
 		$ocjena  = intval($_REQUEST['ocjena']);
@@ -278,12 +277,12 @@ function studentska_konacna_ocjena() {
 							<div class="input-row">
 								<div class="input-col">
 									<div class="form-label">Datum odluke</div>
-									<input type="text" name="datum_odluke" class="form-input datepicker-2" value="<?= isset($konacna_ocjena) ? bos_datum($odluka[1]) : '' ?>"  required="required">
+									<input type="text" name="datum_odluke" class="form-input datepicker-2" value="<?= isset($konacna_ocjena) ? bos_datum($odluka[2]) : '' ?>"  required="required">
 								</div>
 
 								<div class="input-col">
 									<div class="form-label">Broj protokola</div>
-									<input type="text" name="broj_protokola" class="form-input" value="<?= isset($konacna_ocjena) ? $odluka[2] : '' ?>" required="required">
+									<input type="text" name="broj_protokola" class="form-input" value="<?= isset($konacna_ocjena) ? $odluka[3] : '' ?>" required="required">
 								</div>
 							</div>
 
