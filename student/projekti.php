@@ -249,7 +249,7 @@ function student_projekti() {
 				<li style="color:red" class="last">Projekat je popunjen i ne prima prijave.</li>
 				<?
 
-			} else if (count($project['member']) == 0 && $limit_timova) {
+			} else if (count($project['members']) == 0 && $limit_timova) {
 				?>
 				<div style="color:red; margin-top: 10px;">Limit za broj timova dostignut. Ne možete kreirati novi tim. Prijavite se na projekte u kojima ima mjesta.</div>	
 				<?
