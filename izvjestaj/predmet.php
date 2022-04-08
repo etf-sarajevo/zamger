@@ -383,9 +383,9 @@ function izvjestaj_predmet() {
 	}
 	
 	// Zaglavlje ispiti
+	$partialExamCacts = $integralExamCacts = [];
 	if (count($exams) > 0) {
 		if (!$razdvoji_ispite) {
-			$partialExamCacts = $integralExamCacts = [];
 			foreach ($examCacts as $cactId => $examCact) {
 				if (array_key_exists("Integral", $examCact['options'])) {
 					$integralExamCacts[$cactId] = $examCact;
