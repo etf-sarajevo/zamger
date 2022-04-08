@@ -14,7 +14,7 @@ class Form{
 		$data = '<select name="'.$name.'" '.$optionsStr.'>';
 		
 		// lets insert empty value at the beginning of every array with value $default
-		if(count($values)){
+		if(count($values) && $default !== ''){
 			if(is_array($values[0])){
 				array_unshift($values, [
 					0 => '',

@@ -12,14 +12,14 @@ function studentska_intro() {
 	require_once("lib/formgen.php"); // datectl
 
 
-// Provjera privilegija
-
-if (!$user_studentska && !$user_siteadmin) {
-	zamgerlog("nije studentska",3); // 3: error
-	zamgerlog2("nije studentska"); // 3: error
-	biguglyerror("Pristup nije dozvoljen.");
-	return;
-}
+	// Provjera privilegija
+	
+	if (!$user_studentska && !$user_siteadmin) {
+		zamgerlog("nije studentska",3); // 3: error
+		zamgerlog2("nije studentska"); // 3: error
+		biguglyerror("Pristup nije dozvoljen.");
+		return;
+	}
 
 
 	// Akcije

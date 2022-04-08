@@ -46,6 +46,10 @@ function includes_profile($title, $person, $isAdmin) {
 		$result['name'] = str_replace("MSŠ", "Mješovita srednja škola", $result['name']);
 		$skola[] = [ $result['id'], $result['name'] ];
 	}
+	$strucniStepen = [];
+	foreach (api_call("person/professionalDegree/search", [ "query" => "" ] )["results"] as $result) {
+		$strucniStepen[] = [ $result['id'], $result['name'] ];
+	}
 	$skolska_godina = [];
 	foreach (api_call("zamger/year", [] )["results"] as $result) {
 		$year = substr($result['name'], strpos($result['name'], "/") + 1);
@@ -67,6 +71,7 @@ function includes_profile($title, $person, $isAdmin) {
 	$izvoriFinansiranja = [ '1' => 'Roditelji', '2' => 'Primate plaću iz radnog odnosa', '3' => 'Primate stipendiju', '4' => 'Kredit', '5' => 'Ostalo' ];
 	$statusAktivnosti   = [ '1' => 'Zaposlen', '2' => 'Nezaposlen', '3' => 'Neaktivan'];
 	$statusZaposlenosti = [ '1' => 'Poslodavac / Samozaposlenik', '2' => 'Zaposlenik', '3' => 'Pomažući član porodice'];
+	$naucniStepen = [ '1' => 'Doktor nauka', '2' => 'Magistar nauka', '6' => 'Bez naučnog stepena'];
 	
 	/*
 	 * 	Require template for new place, municipalitiy, canton and country insert
@@ -211,11 +216,11 @@ function includes_profile($title, $person, $isAdmin) {
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="placeOfBirth">Mjesto prebivališta</label>
+								<label for="residencePlace">Mjesto prebivališta</label>
 								<div class="search-container">
-									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry', 'autocomplete' => 'off']) ?>
+									<?= Form::text('residencePlace', $person['ExtendedPerson']['residencePlace']['name'] ?? '', ['class' => 'form-control placeSearch', 'id' => 'residencePlace', 'idVal' => $person['ExtendedPerson']['residencePlace']['id'] ?? '', 'municipality' => 'residenceMunicipality', 'country' => 'residenceCountry', 'autocomplete' => 'off', 'aria-describedby' => 'residencePlaceHelp']) ?>
 								</div>
-								<small id="placeOfBirthHelp" class="form-text text-muted">
+								<small id="residencePlaceHelp" class="form-text text-muted">
 									Vaše mjesto prebivališta. Ovdje upisujete naseljeno mjesto (grad, selo), a općina i država će biti popunjeni automatski. Ne unosite dio mjesta (naselje, četvrt) npr. ako živite na Pofalićima unosite Sarajevo a ne Pofalići.<br>
 									Ukoliko ne možete pronaći vaše mjesto, molimo da isto unesete koristeći <b><span class="color-logo insert-place" idFor="residencePlace">obrazac za unos</span></b> !
 								</small>
@@ -317,52 +322,14 @@ function includes_profile($title, $person, $isAdmin) {
 						}
 						?>
 					</div>
+
 					<hr>
 					<div class="row mb-3 bg-light">
 						<div class="col-md-12">
-							<h4 class="pt-2">Podaci za ŠV-20 obrazac</h4>
-						</div>
-						<div class="col-md-12">
-							<small id="sv20Help" class="form-text text-muted"> Osobe koje nisu studenti ne moraju popunjavati ove podatke. </small>
+							<h4 class="pt-2">Obrazovanje</h4>
 						</div>
 					</div>
-					
-					<!-- Informacije o roditeljima -->
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label for="fathersName">Ime oca</label> <!-- Old -->
-								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp']) ?>
-								<small id="fathersNameHelp" class="form-text text-muted"> Unesite ime Vašeg oca </small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label for="fathersSurname">Prezime oca</label> <!-- Old -->
-								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname']) ?>
-								<small id="fathersSurnameHelp" class="form-text text-muted"> Unesite prezime Vašeg oca </small>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label for="mothersName">Ime majke</label> <!-- Old -->
-								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp']) ?>
-								<small id="mothersNameHelp" class="form-text text-muted"> Unesite ime Vaše majke </small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label for="mothersSurname">Prezime majke</label> <!-- Old -->
-								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp']) ?>
-								<small id="mothersSurnameHelp" class="form-text text-muted"> Unesite prezime Vaše majke </small>
-							</div>
-						</div>
-					</div>
-					
-					<hr>
-					
+
 					<!-- Srednja škola -->
 					<div class="row">
 						<div class="col-md-6">
@@ -411,8 +378,73 @@ function includes_profile($title, $person, $isAdmin) {
 							<small id="prethodnoObrazHelp" class="form-text text-muted">
 								Naziv prethodno završenog obrazovanja -Upisuje se naziv prethodno završenog obrazovanja /srednje, više, visoke škole/, fakulteta, akademije koju ste završili prije upisa na ovu visokoškolsku ustanovu, tj. prije upisa na određeni studijski program. Ako ste prije studirali na nekoj visokoškolskoj ustanovi a niste diplomirali, upisujete naziv srednje škole koju ste prethodno završili.
 								<br>
-								Godina prethodno završenog obrazovanja - Upisujete godinu završnog ispita - mature ili godine kada ste dobili završno svjedočanstvo za srednju školu, odnosno godinu diplomiranja - završetka studija na određenom višem ili visokoškolskom studiju.
+								Godina prethodno završenog obrazovanja - Upisujete godinu završnog ispita - mature ili godine kada ste dobili završno svjedočanstvo za srednju školu, odnosno godinu diplomiranja - završetka studija na određenom višem ili visokoškolskom studiju.<br>&nbsp;
 							</small>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="ProfessionalDegree">Stručni stepen</label>
+								<?= Form::select('ProfessionalDegree', $strucniStepen, $person['ExtendedPerson']['ProfessionalDegree']['id'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'ProfessionalDegree', 'aria-describedby' => 'ProfessionalDegreeHelp', $isAdmin ? '' : 'disabled'], 'stručni stepen') ?>
+								<small id="ProfessionalDegreeHelp" class="form-text text-muted"> Stručni stepen. <? if(!$isAdmin) print 'Ovaj podatak može uređivati samo administrator i/ili studentska služba' ?> </small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="ScientificDegree">Naučni stepen</label>
+								<!-- Zbog ljepšeg pregleda i korišenja sa Bootstrap-om, potrebno input wrappati unutar search-container-a -->
+								<div class="search-container">
+									<?= Form::select('ScientificDegree', $naucniStepen, $person['ExtendedPerson']['ScientificDegree']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'ScientificDegree', 'aria-describedby' => 'ScientificDegreeHelp', $isAdmin ? '' : 'disabled']) ?>
+								</div>
+								<small id="ScientificDegreeHelp" class="form-text text-muted">
+									Naučni stepen. <? if(!$isAdmin) print 'Ovaj podatak može uređivati samo administrator i/ili studentska služba' ?>
+								</small>
+							</div>
+						</div>
+					</div>
+
+					<hr>
+					<div class="row mb-3 bg-light">
+						<div class="col-md-12">
+							<h4 class="pt-2">Podaci za ŠV-20 obrazac</h4>
+						</div>
+						<div class="col-md-12">
+							<small id="sv20Help" class="form-text text-muted"> Osobe koje nisu studenti ne moraju popunjavati ove podatke. </small>
+						</div>
+					</div>
+					
+					<!-- Informacije o roditeljima -->
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="fathersName">Ime oca</label> <!-- Old -->
+								<?= Form::text('fathersName', $person['ExtendedPerson']['fathersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersName', 'aria-describedby' => 'fathersNameHelp']) ?>
+								<small id="fathersNameHelp" class="form-text text-muted"> Unesite ime Vašeg oca </small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="fathersSurname">Prezime oca</label> <!-- Old -->
+								<?= Form::text('fathersSurname', $person['ExtendedPerson']['fathersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'fathersSurname', 'aria-describedby' => 'fathersSurname']) ?>
+								<small id="fathersSurnameHelp" class="form-text text-muted"> Unesite prezime Vašeg oca </small>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="mothersName">Ime majke</label> <!-- Old -->
+								<?= Form::text('mothersName', $person['ExtendedPerson']['mothersName'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersName', 'aria-describedby' => 'mothersNameHelp']) ?>
+								<small id="mothersNameHelp" class="form-text text-muted"> Unesite ime Vaše majke </small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="mothersSurname">Prezime majke</label> <!-- Old -->
+								<?= Form::text('mothersSurname', $person['ExtendedPerson']['mothersSurname'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'mothersSurname', 'aria-describedby' => 'mothersSurnameHelp']) ?>
+								<small id="mothersSurnameHelp" class="form-text text-muted"> Unesite prezime Vaše majke </small>
+							</div>
 						</div>
 					</div>
 					

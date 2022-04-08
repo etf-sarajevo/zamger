@@ -167,6 +167,12 @@ $(document).ready(function () {
                 occupationStudent:            $("#occupationStudent").val(),      // Zanimanje studenta
                 employmentStatusParent:       $("#employmentStatusParent").val(), // Status zaposlenja roditelja
                 employmentStatusStudent:      $("employmentStatusStudent").val(), // Status zaposlenja studenta
+                ProfessionalDegree : {
+                    id: $("#ProfessionalDegree").val(),                      // ID države rođenja
+                },
+                ScientificDegree : {
+                    id: $("#ScientificDegree").val(),                      // ID države rođenja
+                }
             }
         };
 
