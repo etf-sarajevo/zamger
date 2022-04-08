@@ -219,9 +219,9 @@ function studentska_intro() {
 			"10" => "BiH",
 			"11" => "Musliman/Muslimanka"
 		];
-		$izvoriFinansiranja = [ '1' => 'Roditelji', '2' => 'Primate plaću iz radnog odnosa', '3' => 'Primate stipendiju', '4' => 'Kredit', '5' => 'Ostalo' ];
-		$statusAktivnosti   = [ '1' => 'Zaposlen', '2' => 'Nezaposlen', '3' => 'Neaktivan'];
-		$statusZaposlenosti = [ '1' => 'Poslodavac / Samozaposlenik', '2' => 'Zaposlenik', '3' => 'Pomažući član porodice'];
+		$izvoriFinansiranja = [ '0' => '0', '1' => 'Roditelji', '2' => 'Primate plaću iz radnog odnosa', '3' => 'Primate stipendiju', '4' => 'Kredit', '5' => 'Ostalo' ];
+		$statusAktivnosti   = [ '0' => '0', '1' => 'Zaposlen', '2' => 'Nezaposlen', '3' => 'Neaktivan'];
+		$statusZaposlenosti = [ '0' => '0', '1' => 'Poslodavac / Samozaposlenik', '2' => 'Zaposlenik', '3' => 'Pomažući član porodice'];
 		$drzava = $skola = [];
 
 		foreach($changeRequest['changes'] as $change) {
