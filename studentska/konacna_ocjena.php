@@ -8,6 +8,7 @@
 // Pomoćna funkcija za datume
 
 function bos_datum($datum){
+	if (empty(trim($datum))) return "";
 	$date = new DateTime($datum);
 	return $date->format('d.m.Y');
 }
@@ -40,18 +41,22 @@ function studentska_konacna_ocjena() {
 	if(isset($_REQUEST['student']) and isset($_REQUEST['akademska_godina']) and ($user_studentska or $user_siteadmin)){ // Pošto su svi required - dovoljan check za ovo dvoje
 		
 		$student = intval($_REQUEST['student']);
-		$datum_odluke = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum_odluke']))));
 		$broj_protokola = db_escape($_REQUEST['broj_protokola']);
-		
-		// Prvo provjeravamo da li ima odluka u tabeli "odluka"
-		$odluka = db_query("SELECT * from odluka where datum = '$datum_odluke' and broj_protokola = '$broj_protokola' and student='$student'");
-		$odluka = db_fetch_row($odluka);
-		
-		if(!$odluka){ // Ako nema te odluke, unesi novu i vrati njen ID
-			$odluka = db_query("INSERT INTO odluka set datum = '$datum_odluke', broj_protokola = '$broj_protokola', student=$student");
-			$odluka = db_fetch_row(db_query("SELECT * from odluka where id=LAST_INSERT_ID()"));
+		if (empty(trim($broj_protokola))) {
+			$odluka = "null";
+		} else {
+			$datum_odluke = date("Y-m-d", strtotime(str_replace('/', '-', db_escape($_REQUEST['datum_odluke']))));
+			
+			// Prvo provjeravamo da li ima odluka u tabeli "odluka"
+			$odluka = db_query("SELECT * from odluka where datum = '$datum_odluke' and broj_protokola = '$broj_protokola' and student='$student'");
+			$odluka = db_fetch_row($odluka);
+			
+			if (!$odluka) { // Ako nema te odluke, unesi novu i vrati njen ID
+				$odluka = db_query("INSERT INTO odluka set datum = '$datum_odluke', broj_protokola = '$broj_protokola', student=$student");
+				$odluka = db_fetch_row(db_query("SELECT * from odluka where id=LAST_INSERT_ID()"));
+			}
+			$odluka = $odluka[0];
 		}
-		$odluka = $odluka[0];
 		
 		$predmet = intval($_REQUEST['predmet']);
 		$ag      = intval($_REQUEST['akademska_godina']);
@@ -72,7 +77,7 @@ function studentska_konacna_ocjena() {
                           ocjena = '$ocjena',
                           datum = '{$datum}',
                           datum_u_indeksu = '{$datum_i}',
-                          odluka = '{$odluka}',
+                          odluka = {$odluka},
                           datum_provjeren = '{$datum_p}',
                           pasos_predmeta = '{$pasos}'
 					where student = $student and predmet = $predmet and akademska_godina = $ag"
@@ -119,6 +124,7 @@ function studentska_konacna_ocjena() {
 	}else if($akcija == 'uredi'){
 		$ag = intval($_REQUEST['ak']);
 		$predmet = intval($_REQUEST['predmet']);
+		$odluka = [ '', '', '', '' ];
 		
 		if($ag and $predmet and $student_id){
 			$konacna_ocjena = db_query("SELECT ko.student, ko.predmet, ko.akademska_godina, ko.ocjena, ko.datum, ko.datum_u_indeksu, ko.odluka, ko.datum_provjeren, ko.pasos_predmeta, ak.id, ak.naziv, p.id, p.naziv, pp.id, pp.predmet, pp.sifra, pp.naziv, pp.ects from konacna_ocjena as ko, akademska_godina as ak, predmet as p, pasos_predmeta as pp where ko.student = $student_id and ko.predmet = $predmet and ko.akademska_godina = $ag and ko.akademska_godina = ak.id and ko.predmet = p.id and ko.pasos_predmeta = pp.id ");
@@ -277,12 +283,12 @@ function studentska_konacna_ocjena() {
 							<div class="input-row">
 								<div class="input-col">
 									<div class="form-label">Datum odluke</div>
-									<input type="text" name="datum_odluke" class="form-input datepicker-2" value="<?= isset($konacna_ocjena) ? bos_datum($odluka[2]) : '' ?>"  required="required">
+									<input type="text" name="datum_odluke" class="form-input datepicker-2" value="<?= isset($konacna_ocjena) ? bos_datum($odluka[2]) : '' ?>" autocomplete="off">
 								</div>
 
 								<div class="input-col">
 									<div class="form-label">Broj protokola</div>
-									<input type="text" name="broj_protokola" class="form-input" value="<?= isset($konacna_ocjena) ? $odluka[3] : '' ?>" required="required">
+									<input type="text" name="broj_protokola" class="form-input" value="<?= isset($konacna_ocjena) ? $odluka[3] : '' ?>">
 								</div>
 							</div>
 
