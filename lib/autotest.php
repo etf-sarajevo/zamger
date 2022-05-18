@@ -163,7 +163,6 @@ function autotest_brisi_rezultate($student, $zadaca, $zadatak) {
 function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nastavnik) {
 	global $_api_http_code;
 	$stat_tekst = array("Bug u programu", "Pregled u toku", "Prepisana", "Bug u programu", "Pregled u toku", "Zadaća OK", "Potrebna odbrana");
-
 	$status_zadace = $assignment['status'];
 	$bodova = $assignment['score'];
 
@@ -173,7 +172,7 @@ function autotest_status_display($student, $zadaca, $zadatak, $assignment, $nast
 		$status_duzi_tekst = "<b>Ne može se kompajlirati</b>";
 		$status_ikona = "bug";
 	}
-	else if ($status_zadace == 2 || $status_zadace = 6) {
+	else if ($status_zadace == 2 || $status_zadace == 6) {
 		$bgcolor = "#fcc";
 		if ($status_zadace == 2)
 			$status_duzi_tekst = "<b>Zadaća je prepisana</b>";
