@@ -188,6 +188,9 @@ function student_predmet() {
 		
 		// Transform homework details into a 2D matrix which is much easier to work with
 		$homeworks = api_call("homework/course/$predmet/$ag", [ "files" => true ])["results"];
+		foreach($homeworks as $key => $homework)
+			if ($homework['CourseActivity']['id'] != $cact['id'])
+				unset($homeworks[$key]);
 		$assignmentHomeworks = [];
 		foreach($StudentScore['details'] as $Assignment) {
 			if (!array_key_exists($Assignment['Homework']['id'], $assignmentHomeworks)) {
