@@ -134,7 +134,7 @@ function izvjestaj_anketa() {
 		}
 	
 		?>
-		<table width="650px"  >
+		<table width="500px"  >
 			 <tr>
 				<td bgcolor="#6699CC" height="10">   </td>
 			</tr>

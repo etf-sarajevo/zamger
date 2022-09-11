@@ -486,8 +486,11 @@ function studentska_anketa(){
 			</form>
 			<tr>
 				<td valign="top" align="right">&nbsp;</td>
-				<td valign="top">&nbsp;<br /> <a href="?sta=izvjestaj/anketa_sumarno&amp;anketa=<?=$id_ankete?>">Sumarni izvještaj za anketu</a><br/>
-				<a href="?sta=izvjestaj/anketa_sumarno&amp;anketa=<?=$id_ankete?>&amp;tip=sveukupna">Samo pitanje &quot;Sveukupna ocjena predmeta&quot;</a><br/></td>
+				<td valign="top">&nbsp;
+					<br /> <a href="?sta=izvjestaj/anketa_sumarno&amp;anketa=<?=$id_ankete?>">Sumarni izvještaj za anketu</a><br/>
+					<a href="?sta=izvjestaj/anketa_sumarno&amp;anketa=<?=$id_ankete?>&amp;tip=sveukupna">Samo pitanje &quot;Sveukupna ocjena predmeta&quot;</a><br/>
+					<a href="?sta=izvjestaj/anketa_paket&amp;anketa=<?=$id_ankete?>">Informacioni paket za anketu</a><br/>
+				</td>
 			</tr> 
 			<tr>
 				<td valign="top" colspan="2" align="center"> <hr/></td>

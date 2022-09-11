@@ -32,7 +32,7 @@ function izvjestaj_for_looper() {
 		return;
 	}
 
-	include("$koji.php");//ovdje ga ukljucujem
+	include_once("$koji.php");//ovdje ga ukljucujem
 
 	$for_loop_vars = array();
 
@@ -47,13 +47,22 @@ function izvjestaj_for_looper() {
 	// Čitanje for_upit varijabli iz upita
 	foreach ($_REQUEST as $key => $value) {
 		if ($key == "for_studij") {
-			$q10 = db_query("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, akademska_godina 
-as ag, predmet as p, studij as s WHERE pk.studij=".intval($value)." and 
-pk.akademska_godina=11 and
-(pk.semestar=3 or pk.semestar=1) and pk.predmet=p.id and pk.studij=s.id 
-and 
-p.institucija=s.institucija
-ORDER BY pk.semestar, p.naziv");
+			$studij = intval($value);
+			$last_semester = db_get("SELECT ts.trajanje FROM tipstudija ts, studij s WHERE s.id=$studij AND s.tipstudija=ts.id");
+			$semestri = "";
+			$start = 2 + intval($_REQUEST['for_semestar']);
+			for ($i=$start; $i<=$last_semester; $i++) {
+				if ($semestri != "") $semestri .= " or ";
+				$semestri .= "pk.semestar=$i";
+			}
+			if ($_REQUEST['for_semestar'] == 0)
+				$start = 2;
+				
+			$q10 = db_query("SELECT DISTINCT pk.predmet
+				FROM ponudakursa as pk, akademska_godina as ag, predmet as p, studij as s
+				WHERE pk.studij=".intval($value)." and pk.akademska_godina=ag.id AND ag.aktuelna=1 and ($semestri) and pk.predmet=p.id and pk.studij=s.id and
+					p.institucija=s.institucija
+				ORDER BY pk.semestar, p.naziv");
 			$range = "";
 			while ($r10 = db_fetch_row($q10)) {
 				if ($range != "") $range .= ",";
@@ -80,10 +89,11 @@ ORDER BY pk.semestar, p.naziv");
 			$for_loop_vars["student"] = $range;
 		}
 		if ($key == "for_pgs") {
-			$q10 = db_query("SELECT DISTINCT pk.predmet FROM ponudakursa as pk, predmet as p, studij as s WHERE pk.akademska_godina=11 and
-pk.semestar=1 and pk.predmet=p.id and pk.studij=s.id 
-AND s.tipstudija=2
-ORDER BY pk.semestar, p.naziv");
+			if ($_REQUEST['for_semestar'] == 0) $semestar = 2; else $semestar = 1;
+			$q10 = db_query("SELECT DISTINCT pk.predmet
+				FROM ponudakursa as pk, predmet as p, studij as s, akademska_godina ag
+				WHERE pk.akademska_godina=ag.id AND ag.aktuelna=1 and pk.semestar=$semestar and pk.predmet=p.id and pk.studij=s.id AND s.tipstudija=2
+				ORDER BY pk.semestar, p.naziv");
 			$range = "";
 			while ($r10 = db_fetch_row($q10)) {
 				if ($range != "") $range .= ",";
