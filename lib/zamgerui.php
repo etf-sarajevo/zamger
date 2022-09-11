@@ -723,6 +723,9 @@ function mass_input($ispis, $virtualGroup = []) {
 	$ag = intval($_REQUEST['ag']); // akademska godina
 
 	$redovi = explode("\n",$_POST['massinput']);
+	
+	if (empty($virtualGroup))
+		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
 
 	// Format imena i prezimena:
 	//   0 - Prezime[SEPARATOR]Ime
@@ -730,11 +733,11 @@ function mass_input($ispis, $virtualGroup = []) {
 	//   2 - Prezime Ime
 	//   3 - Ime Prezime
 	//   4 - Broj indeksa
+	//   5 - Username
 	$format = intval($_REQUEST['format']);
 	if ($format == 4) return _mass_input_brindexa($ispis, $virtualGroup);
+	if ($format == 5) return _mass_input_username($ispis, $virtualGroup);
 	
-	if (empty($virtualGroup))
-		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
 	$names = $studentIds = [];
 	foreach($virtualGroup['members'] as $member) {
 		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
@@ -879,7 +882,7 @@ function mass_input($ispis, $virtualGroup = []) {
 }
 
 
-function _mass_input_brindexa($ispis, $virtualGroup = []) {
+function _mass_input_brindexa($ispis, $virtualGroup) {
 	global $mass_rezultat,$userid;
 	
 	// Da li treba ispisivati akcije na ekranu ili ne?
@@ -894,8 +897,6 @@ function _mass_input_brindexa($ispis, $virtualGroup = []) {
 	
 	$format = intval($_REQUEST['format']);
 	
-	if (empty($virtualGroup))
-		$virtualGroup = api_call("group/course/$predmet/allStudents", [ "year" => $ag, "names" => true]);
 	$names = $surnames = $studentIds = [];
 	foreach($virtualGroup['members'] as $member) {
 		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
@@ -1004,6 +1005,129 @@ function _mass_input_brindexa($ispis, $virtualGroup = []) {
 	return $greska;
 }
 
+
+function _mass_input_username($ispis, $virtualGroup) {
+	global $mass_rezultat,$userid;
+	
+	// Da li treba ispisivati akcije na ekranu ili ne?
+	$f = $ispis;
+	
+	// Parametri
+	$ponudakursa = intval($_REQUEST['ponudakursa']);
+	$predmet = intval($_REQUEST['predmet']);
+	$ag = intval($_REQUEST['ag']); // akademska godina
+	
+	$redovi = explode("\n",$_POST['massinput']);
+	
+	$format = intval($_REQUEST['format']);
+	
+	$names = $surnames = $studentIds = [];
+	foreach($virtualGroup['members'] as $member) {
+		if ($ponudakursa > 0 && $member['CourseOffering']['id'] != $ponudakursa)
+			continue;
+		$names[$member['student']['id']] = $member['student']['name'];
+		$surnames[$member['student']['id']] = $member['student']['surname'];
+		$studentIds[$member['student']['id']] = $member['student']['login'][0];
+	}
+	
+	// Broj dodatnih kolona podataka (osim imena i prezimena)
+	$brpodataka = intval($_REQUEST['brpodataka']);
+	if ($_REQUEST['brpodataka']=='on') $brpodataka=1; //checkbox
+	$kolona = $brpodataka+1;
+	
+	// Separator: 0 = TAB, 1 = zarez, ...
+	$separator = intval($_REQUEST['separator']);
+	if ($separator==1) $sepchar=','; else $sepchar="\t";
+	
+	// Da li je dozvoljeno ponavljanje istog studenta? 1=da, sve ostalo=ne
+	$duplikati = intval($_REQUEST['duplikati']);
+	if ($duplikati!=1) $duplikati=0;
+	
+	// U slucaju duplikati=1, sta se desava sa ponovnim unosom?
+	// 0=pise se preko starog, 1=rezultati su nizovi
+	$visestruki = intval($_REQUEST['visestruki']);
+	if ($visestruki!=1) $visestruki=0;
+	
+	
+	// Update korisničkih preferenci kod masovnog unosa
+	api_call("person/preferences", ["preference" => 'mass-input-format', "value" => $format], "PUT");
+	api_call("person/preferences", ["preference" => 'mass-input-separator', "value" => $separator], "PUT");
+	
+	
+	$greska=0;
+	$prosli_idovi = array(); // za duplikate
+	
+	foreach ($redovi as $red) {
+		$red = trim($red);
+		if (strlen($red)<2) continue; // prazan red
+		// popravljamo nbsp Unicode karakter
+		$red = str_replace("¡", " ", $red);
+		$red = str_replace(" ", " ", $red);
+		$red = db_escape($red);
+		
+		$nred = explode($sepchar, $red, $kolona);
+		
+		// Parsiranje formata
+		$brindexa = trim($nred[0]);
+	
+		// Provjera ispravnosti podataka
+		
+		// Da li korisnik postoji u bazi?
+		$found = []; $student = 0;
+		foreach($studentIds as $id => $studentId) {
+			if ($studentId == $brindexa) {
+				$found[$id] = $studentId;
+				$student = $id;
+			}
+		}
+		
+		if (count($found) == 0) {
+			if ($f)  {
+				?><tr bgcolor="#FFE3DD"><td>&nbsp;</td><td>&nbsp;</td><td><?=$brindexa?></td><td>nepoznat student - da li ste dobro ukucali login?</td></tr><?
+			}
+			$greska=1;
+			continue;
+			
+		} else if (count($found) > 1) {
+			if ($f) {
+				?><tr bgcolor="#FFE3DD"><td>&nbsp;</td><td>&nbsp;</td><td><?=$brindexa?></td><td>postoji više studenata sa ovim loginom; kontaktirajte studentsku službu!</td></tr><?
+			}
+			$greska=1;
+			continue;
+		}
+		$ime = $names[$student];
+		$prezime = $surnames[$student];
+		
+		// Da li se ponavlja isti student?
+		if ($duplikati==0) {
+			// FIXME: zašto ne radi array_search?
+			if (in_array($student,$prosli_idovi)) {
+				if ($f) {
+					?><tr bgcolor="#FFE3DD"><td><?=$prezime?></td><td><?=$ime?></td><td><?=$brindexa?></td><td>ponavlja se</td></tr><?
+				}
+				$greska=1;
+				continue;
+			}
+			array_push($prosli_idovi,$student);
+		}
+		
+		// Podaci su OK, punimo niz...
+		$mass_rezultat['ime'][$student]=$ime;
+		$mass_rezultat['prezime'][$student]=$prezime;
+		$mass_rezultat['brindexa'][$student]=$brindexa;
+		for ($i=1; $i<=$brpodataka; $i++) {
+			if ($duplikati==1 && $visestruki==1) {
+				if (count($mass_rezultat["podatak$i"][$student])==0) $mass_rezultat["podatak$i"][$student]=array();
+				array_push($mass_rezultat["podatak$i"][$student],$nred[$kolona-$brpodataka-1+$i]);
+			} else
+				$mass_rezultat["podatak$i"][$student]=$nred[$kolona-$brpodataka-1+$i];
+		}
+	}
+	if ($f) {
+		print "<br/>\n";
+	}
+	return $greska;
+}
 
 function getCourseDetails($courseId, $courseYear = 0) {
 	global $courseDetails, $userid;

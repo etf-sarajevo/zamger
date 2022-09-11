@@ -428,7 +428,8 @@ function nastavnik_ispiti() {
 		<option value="1" <? if($format==1) print "SELECTED";?>>Ime[TAB]Prezime</option>
 		<option value="2" <? if($format==2) print "SELECTED";?>>Prezime Ime</option>
 		<option value="3" <? if($format==3) print "SELECTED";?>>Ime Prezime</option>
-		<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option></select>&nbsp;
+		<option value="4" <? if($format==4) print "SELECTED";?>>Broj indeksa</option>
+		<option value="5" <? if($format==5) print "SELECTED";?>>Username</option></select>&nbsp;
 		Separator: <select name="separator" class="default">
 		<option value="0" <? if($separator==0) print "SELECTED";?>>Tab</option>
 		<option value="1" <? if($separator==1) print "SELECTED";?>>Zarez</option></select><br/><br>
