@@ -246,8 +246,8 @@ function student_ugovoroucenju() {
 
 
 	// Da li student već ima kreiran ugovor o učenju za sljedeću godinu?
-	$q9 = db_query("select count(*) from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina");
-	if (db_result($q9,0,0)>0) {
+	$ima_ugovor = db_get("select count(*) from ugovoroucenju where student=$userid and akademska_godina=$akademska_godina");
+	if ($ima_ugovor) {
 		?>
 		<p>Već imate kreiran Ugovor o učenju.<br />Možete ga preuzeti <a href="?sta=student/ugovoroucenjupdf">klikom ovdje</a>, ili možete kreirati novi ugovor ispod (pri čemu će stari biti pobrisan).</p>
 		<p>&nbsp;</p>
@@ -500,6 +500,7 @@ function student_ugovoroucenju() {
 			if (count($polozeni) == $slog['ponavljanja']) $disabled = " DISABLED";
 			else if (count($polozio_drugi_odsjek) > 0) {
 				$drugi_odsjek_prikazi = true;
+				if (count($polozeni)+count($polozio_drugi_odsjek) == $slog['ponavljanja']) $disabled = " DISABLED";
 			}
 			$odaberi_jos = $slog['ponavljanja'] - count($polozeni) - count($polozio_drugi_odsjek);
 			
@@ -546,7 +547,7 @@ function student_ugovoroucenju() {
 					$i = 0;
 					foreach($polozio_drugi_odsjek as $predmet_id => $predmet_naziv) {
 						?>
-						<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" CHECKED><?=$predmet_naziv?>
+						<input type="radio" name="is<?=$pis?>" value="odsjek<?=$semestar?>" onchange="drugiodsjek('<?=$pis?>',<?=$semestar?>,true);" CHECKED <?=$disabled?>><?=$predmet_naziv?>
 						<input type="hidden" name="odsjek-<?=$pis?>" value="<?=$predmet_id?>">
 						<?
 						$i++;
@@ -602,7 +603,7 @@ function student_ugovoroucenju() {
 					$i = 0;
 					foreach($polozio_drugi_odsjek as $predmet_id => $predmet_naziv) {
 						?>
-						<input type="checkbox"  name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" CHECKED><?=$predmet_naziv?></input><br>
+						<input type="checkbox"  name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" CHECKED <?=$disabled?>><?=$predmet_naziv?></input><br>
 						<input type="hidden" name="odsjek-<?=$pis?>-<?=$i?>" value="<?=$predmet_id?>">
 						<?
 						$i++;
