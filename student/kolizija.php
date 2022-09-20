@@ -8,6 +8,8 @@ function student_kolizija() {
 
 	global $userid, $conf_uslov_predmeta;
 	
+	$conf_kolizija_izborni = false;
+	
 	require("lib/student_studij.php");
 	
 	// Definicija kolizije
@@ -711,7 +713,7 @@ function student_kolizija() {
 	while ($r40 = db_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
 			dajpredmet($r40[0], $studij, $najnoviji_plan, $zagodinu, false, true);
-		} else { // izborni
+		} else if ($conf_kolizija_izborni) { // izborni
 
 			if (count($is_bilo)==0) {
 				print "Izborni predmeti:<br />\n";
@@ -751,7 +753,7 @@ function student_kolizija() {
 	while ($r40 = db_fetch_row($q40)) {
 		if ($r40[1]==1) { // obavezan
 			dajpredmet($r40[0], $studij, $najnoviji_plan, $zagodinu, false, false);
-		} else { // izborni
+		} else if ($conf_kolizija_izborni) { // izborni
 
 			if (count($is_bilo)==0) {
 				print "Izborni predmeti:<br />\n";
