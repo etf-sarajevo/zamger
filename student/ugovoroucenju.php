@@ -181,7 +181,7 @@ function student_ugovoroucenju() {
 					}
 					
 					if (count($izabrani_predmeti_slot) < $slog['ponavljanja']) {
-						niceerror("Nije izabrano dovoljno predmeta u izbornom slotu $pis");
+						niceerror("Nije izabrano dovoljno predmeta u semestru $semestar (slot: $pis) - " . count($izabrani_predmeti_slot) . "<" . $slog['ponavljanja']);
 						return;
 					}
 					$izabrani_predmeti = array_merge($izabrani_predmeti, $izabrani_predmeti_slot);
@@ -585,7 +585,7 @@ function student_ugovoroucenju() {
 					}
 				}
 		
-				if ($conf_predmeti_sa_drugog_odsjeka) {
+				if ($conf_predmeti_sa_drugog_odsjeka && !$disabled) {
 					$broj = 1;
 					for ($i=0; $i<$broj; $i++) {
 						?>
@@ -604,6 +604,7 @@ function student_ugovoroucenju() {
 					foreach($polozio_drugi_odsjek as $predmet_id => $predmet_naziv) {
 						?>
 						<input type="checkbox"  name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>" onchange="jedanod('<?=$pis?>', this); ('<?=$pis?>',<?=$semestar?>,this.checked);" CHECKED <?=$disabled?>><?=$predmet_naziv?></input><br>
+						<input type="hidden" name="iz<?=$pis?>-odsjek<?=$i?>" value="odsjek<?=$semestar?>">
 						<input type="hidden" name="odsjek-<?=$pis?>-<?=$i?>" value="<?=$predmet_id?>">
 						<?
 						$i++;
