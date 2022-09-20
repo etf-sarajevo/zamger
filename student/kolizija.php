@@ -16,8 +16,8 @@ function student_kolizija() {
 	$limit_ects_zima = 20;
 	$limit_ects_ljeto = 20;
 	$uslov_ukupan_broj_nepolozenih = 0;
-	$uslov_ects_zima = 15;
-	$uslov_ects_ljeto = 15;
+	$uslov_ects_zima = 10;
+	$uslov_ects_ljeto = 10;
 
 	// Naslov
 	?>
