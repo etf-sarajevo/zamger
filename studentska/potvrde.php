@@ -353,7 +353,7 @@ function studentska_potvrde() {
 				api_call("enrollment/current/" . $certificate['student']['id']);
 				if ($_api_http_code == "404") {
 					$errors[] = "trenutno nije upisan na studij!";
-				} else if ($certificate['CertificateType'] == 1) {
+				} else {
 					$thesis = api_call("thesis/forStudent/" . $certificate['student']['id'], [ "year" => $certificate['AcademicYear']['id'] ]);
 					if ($_api_http_code != "404") {
 						$portfolio = api_call("course/" . $thesis['CourseUnit']['id'] . "/student/" . $certificate['student']['id'], [ "score" => true ] );
