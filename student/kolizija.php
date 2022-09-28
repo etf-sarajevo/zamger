@@ -653,7 +653,8 @@ function student_kolizija() {
 		
 
 		// Provjera preduvjeta -- za sada disabled
-		$preduvjeti = provjeri_preduvjete($predmet, $userid, $najnoviji_plan);
+		//$preduvjeti = provjeri_preduvjete($predmet, $userid, $najnoviji_plan);
+		$preduvjeti = [];
 		for ($i=0; $i<count($preduvjeti); $i++) {
 			if (isset($_POST["polaze-" . $preduvjeti[$i]])) array_splice($preduvjeti, $i, 1);
 		}
