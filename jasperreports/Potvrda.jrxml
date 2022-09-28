@@ -172,7 +172,7 @@ LIMIT 100]]>
 				<textElement>
 					<font fontName="Calibri" size="12" isBold="false"/>
 				</textElement>
-				<text><![CDATA[Na osnovu člana 169. stav (2) Zakona o upravnom postupku ("Službene novine Federacije BiH", broj 2/98 i 48/99), člana 140. Zakona o visokom obrazovanju ("Službene novine Kantona Sarajevo", broj 33/17, 35/20 i 40/20) i člana 239. Statuta Univerziteta u Sarajevu, Elektrotehnički fakultet izdaje]]></text>
+				<text><![CDATA[Na osnovu člana 169. Zakona o upravnom postupku ("Službene novine Federacije BiH", broj 2/98, 48/99 i 61/22), člana 76. Zakona o visokom obrazovanju ("Službene novine Kantona Sarajevo", broj 36/22) i člana 239. stav (1) Statuta Univerziteta u Sarajevu od 13.12.2018. godine, Elektrotehnički fakultet u Sarajevu izdaje]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="51" y="58" width="473" height="30" uuid="5e5ced46-4508-4aa3-8712-04224aa7e9a4"/>
