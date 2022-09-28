@@ -459,7 +459,9 @@ if ($akcija == "brzi_unos") {
 			} while (db_result($q3015,0,0)>0);
 			
 			// Određivanje datuma rođenja iz JMBGa
-			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rjmbg,0,2), substr($rjmbg,4,3)+1000);
+			$godinarod = substr($rjmbg,4,3)+1000;
+			if ($godinarod < 1500) $godinarod += 1000;
+			$datumrod = mktime(0,0,0, substr($rjmbg,2,2), substr($rjmbg,0,2), $godinarod);
 
 			$q3020 = db_query("insert into osoba set id=$osoba, ime='$rime', prezime='$rprezime', imeoca='$rimeroditelja', jmbg='$rjmbg', datum_rodjenja=FROM_UNIXTIME($datumrod)");
 			$q3030 = db_query("insert into prijemni_prijava set prijemni_termin=$termin, osoba=$osoba, broj_dosjea=$broj_dosjea, izasao=0, rezultat=0");
