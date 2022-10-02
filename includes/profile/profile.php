@@ -50,11 +50,20 @@ function includes_profile($title, $person, $isAdmin) {
 	foreach (api_call("person/professionalDegree/search", [ "query" => "" ] )["results"] as $result) {
 		$strucniStepen[] = [ $result['id'], $result['name'] ];
 	}
+	$posebneKategorije = [];
+	foreach (api_call("person/specialCategory/search", [ "query" => "" ] )["results"] as $result) {
+		$posebneKategorije[] = [ $result['id'], $result['name'] ];
+	}
 	$skolska_godina = [];
 	foreach (api_call("zamger/year", [] )["results"] as $result) {
 		$year = substr($result['name'], strpos($result['name'], "/") + 1);
 		if ($result['id'] != 0) $skolska_godina[] = [$result['id'], $year];
 	}
+	if ($person['id'] == 7371) {
+		api_debug($person);
+	}
+	
+	
 	
 	// These lists have fixed values
 	$nacionalnost = [
@@ -157,14 +166,14 @@ function includes_profile($title, $person, $isAdmin) {
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="Municipality">Općina rođenja</label> <!-- TODO !? -->
+								<label for="Municipality">Općina rođenja</label>
 								<?= Form::text('Municipality',$person['ExtendedPerson']['placeOfBirth']['Municipality']['name'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Municipality', 'aria-describedby' => 'MunicipalityHelp', 'readonly', 'idVal' => $person['ExtendedPerson']['placeOfBirth']['Municipality']['id'] ?? '']) ?>
 								<small id="MunicipalityHelp" class="form-text text-muted">Općina rođenja - Ukoliko nije ispravno, promijenite Mjesto rođenja</small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="Country">Država rođenja</label> <!-- TODO -->
+								<label for="Country">Država rođenja</label>
 								<?= Form::select('Country', $drzava, $person['ExtendedPerson']['placeOfBirth']['Country']['id'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'Country', 'aria-describedby' => 'CountryHelp', 'disabled' => 'true'], 'državu rođenja') ?>
 								<small id="CountryHelp" class="form-text text-muted">Država rođenja - Ukoliko nije ispravno, promijenite Mjesto rođenja</small>
 							</div>
@@ -173,25 +182,40 @@ function includes_profile($title, $person, $isAdmin) {
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="nationality">Državljanstvo</label> <!-- TODO -->
+								<label for="nationality">Državljanstvo</label>
 								<?= Form::select('nationality', $drzava, $person['ExtendedPerson']['nationality'] ?? '', ['class' => 'form-control form-control-sm select-2', 'id' => 'nationality', 'aria-describedby' => 'nationalityHelp'], 'državljanstvo') ?>
 								<small id="nationalityHelp" class="form-text text-muted">Odaberite državu čiji ste državljanin</small>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label for="ethnicity">Nacionalna pripadnost</label> <!-- Old -->
+								<label for="ethnicity">Nacionalna pripadnost</label>
 								<?= Form::select('ethnicity', $nacionalnost, $person['ExtendedPerson']['ethnicity'] ?? '', ['class' => 'form-control form-control-sm', 'id' => 'ethnicity', 'aria-describedby' => 'ethnicityHelp'], 'nacionalnost') ?>
 								<small id="ethnicityHelp" class="form-text text-muted">Upisuju samo državljani BiH </small>
 							</div>
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-12">
+						<div class="col-md-6">
 							<div class="form-group">
-								<label for="jmbg">JMBG</label> <!-- Old -->
+								<label for="jmbg">JMBG</label>
 								<?= Form::number('jmbg', $jmb, ['class' => 'form-control form-control-sm', 'id' => 'jmbg', 'aria-describedby' => 'jmbgHelp', 'required' => 'required', $isAdmin ? '' : 'readonly']) ?>
 								<small id="jmbgHelp" class="form-text text-muted"> Vaš jedinstveni matični broj.<? if(!$isAdmin) print 'Ovaj podatak može uređivati samo administrator i/ili studentska služba' ?></small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label for="ethnicity">Posebne kategorije</label>
+								<?
+								
+								$osobaPosebnaKategorija = '';
+								if (count($person['ExtendedPerson']['specialCategories']) > 0)
+									$osobaPosebnaKategorija = $person['ExtendedPerson']['specialCategories'][0]['SpecialCategory']['id'];
+								$opts = ['class' => 'form-control form-control-sm', 'id' => 'specialCategory', 'aria-describedby' => 'specialCategoryHelp'];
+								if (!$isAdmin) $opts['disabled'] = 'true';
+								?>
+								<?= Form::select('specialCategory', $posebneKategorije, $osobaPosebnaKategorija ?? '', $opts, 'Bez kategorije') ?>
+								<small id="ethnicityHelp" class="form-text text-muted">Pripadnost posebnim (boračkim) kategorijama. <? if(!$isAdmin) print 'Ovaj podatak može uređivati samo administrator i/ili studentska služba' ?></small>
 							</div>
 						</div>
 					</div>

@@ -172,7 +172,8 @@ $(document).ready(function () {
                 },
                 ScientificDegree : {
                     id: $("#ScientificDegree").val(),                      // ID države rođenja
-                }
+                },
+                specialCategories: [ ]
             }
         };
 
@@ -186,6 +187,20 @@ $(document).ready(function () {
                 }
             };
             params.ExtendedPerson.previousEducation.push( previousEducation );
+        }
+
+        if ($("#specialCategory").val() > 0) {
+            let specialCategory = {
+                SpecialCategory:     {
+                    id: $("#specialCategory").val()
+                },
+                // FIXME
+                decisionNumber: '',
+                decisionDate: '0000-00-00',
+                decisionBody: ''
+            };
+            params.ExtendedPerson.specialCategories.push( specialCategory );
+
         }
         console.log(params);
         // e.preventDefault();
