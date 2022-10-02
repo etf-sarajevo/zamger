@@ -52,15 +52,6 @@ if (db_num_rows($q10)<1) {
 	return;
 }
 
-$q12 = db_query("select tippredmeta from akademska_godina_predmet where predmet=$predmet and akademska_godina=$ag");
-if (db_num_rows($q10)<1) {
-	biguglyerror("Nepoznat predmet");
-	zamgerlog ("nepoznat predmet $predmet", 3);
-	zamgerlog2 ("nije definisan tip predmeta", $predmet, $ag);
-	return;
-}
-$tippredmeta = db_result($q12,0,0);
-
 $q15 = db_query("select naziv from akademska_godina where id=$ag");
 if (db_num_rows($q15)<1) {
 	biguglyerror("Nepoznata akademska godina");
@@ -96,14 +87,15 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 //if ($odrzano_ispita>0) {
 
 	// Spisak komponenti
-	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=$knemabodova=array();
-	$q50 = db_query("select k.id, k.gui_naziv, k.prolaz, k.tipkomponente, k.uslov from komponenta as k, tippredmeta_komponenta as tpk where tpk.tippredmeta=$tippredmeta and tpk.komponenta=k.id and k.gui_naziv != 'Usmeni'");
+	$knazivi=$kprolaz=$ktip=$kpolozilo=$kfalisamo=$knemabodova=$kopcije=array();
+	$q50 = db_query("select ap.id, ap.naziv, ap.prolaz, ap.aktivnost, ap.uslov, ap.opcije from aktivnost_predmet as ap, aktivnost_agp as aagp where aagp.aktivnost_predmet=ap.id AND aagp.akademska_godina=$ag AND aagp.predmet=$predmet and ap.naziv != 'Usmeni'");
 	while ($r50 = db_fetch_row($q50)) {
 		$knazivi[$r50[0]]=$r50[1]; // k.gui_naziv
 		$kprolaz[$r50[0]]=$r50[2]; // k.prolaz
 		$ktip[$r50[0]]=$r50[3]; // k.tipkomponente
 		$kpolozilo[$r50[0]]=0;
 		$kuslov[$r50[0]]=$r50[4];
+		$kopcije[$r50[0]]=$r50[5];
 	}
 
 	// Prolazimo kroz studente
@@ -136,7 +128,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 			if (db_num_rows($q60)>0) {
 				$komponente[$komponenta]=1;
 				$bodovi = db_result($q60,0,0);
-				if ($tip==1 || $tip==2) $izasao++;
+				if ($tip==8) $izasao++; // Ispiti
 				if ($kprolaz[$komponenta]==0) {
 					$kpolozilo[$komponenta]++;
 					$polozene_komponente[$komponenta]=1;
@@ -160,7 +152,7 @@ $upisano_puta[0]=$upisano_puta[1]=$upisano_puta[3]=$upisano_puta[4]=$upisano_put
 				$knemabodova[$komponenta]++;
 				$polozene_komponente[$komponenta]=1;
 
-			} else if ($tip!=2) { // tip 2 = integralni ispit
+			} else if (!strstr($kopcije[$komponenta], "Integral")) { // tip 2 = integralni ispit
 				$pao++;
 				if($kuslov[$komponenta]==1)
 					$uslovUslov=0;
@@ -210,7 +202,7 @@ for ($i=0; $i<=$maxput; $i++) {
 	print "<li>".($i+1).". put: <b>".$upisano_puta[$i]."</b> studenata</li>\n";
 }
 
-print "</ul>\n";
+?></ul><?
 
 if ($odrzano_ispita==0) {
 	?>Nije održan nijedan ispit.</p>
@@ -288,17 +280,27 @@ if ($odrzano_ispita==0) {
 			<div style="width:250px;height:200px;margin:5px;">
 				<?
 				foreach ($broj_ocjena as $oc => $broj) {
-					if($broj==0) $broj_pixela_print =170;
+					if($broj==0) $broj_pixela_print = 198;
 					else {
 						$broj_pixela = ($broj/$max_ocjena)*200;
 						$broj_pixela_print = intval(200-$broj_pixela);
-					}	
-					?>
-					<div style="width:45px; height:200px; background:green;margin-left:5px;float:left;">
-						<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;">&nbsp;</div>
-						<span style="color:white;font-size: 25px; text-align: center; ">&nbsp;<?=$oc?></span>
-					</div>	
-					<?
+					}
+					if ($broj_pixela_print <= 170) {
+						?>
+						<div style="width:45px; height:200px; background:green;margin-left:5px;float:left;">
+							<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;">&nbsp;</div>
+							<span style="margin-left:5px;color:white;font-size: 25px; text-align: center; ">&nbsp;<?=$oc?></span>
+						</div>
+						<?
+					} else {
+						$broj_pixela_print -= 30;
+						?>
+						<div style="width:45px; height:200px; background:green;margin-left:5px;float:left;">
+							<div style="width:45px;height:<?=$broj_pixela_print?>px;background:white;"> </div>
+							<span style="padding-left:7px;padding-right:15px;margin-right:0px;width:45px;height:30px;color:green;background:white; font-size: 25px; text-align: center; ">&nbsp;<?=$oc?></span>
+						</div>
+						<?
+					}
 				}
 			?>
 			</div>
