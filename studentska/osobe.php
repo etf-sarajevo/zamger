@@ -6,7 +6,7 @@
 
 function studentska_osobe() {
 	global $user_siteadmin, $user_studentska, $_api_http_code;
-	global $conf_passwords, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain;
+	global $conf_passwords, $conf_ldap_search, $conf_ldap_server, $conf_ldap_dn, $conf_ldap_domain, $conf_system_auth;
 
 	require_once("lib/student_predmet.php");
 	
