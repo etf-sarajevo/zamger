@@ -14,11 +14,18 @@ require_once("lib/plan_studija.php");
 if (param('akcija') == "novagodina") {
 	if (param('fakatradi') != 1) $ispis=1; else $ispis=0;
 
+	$fields = [ 'pocetak_godine', 'kraj_godine', 'kraj_zimskog_semestra', 'pocetak_ljetnjeg_semestra' ];
+	foreach($fields as $field)
+		if (!preg_match("/^\d\d\d\d-\d\d-\d\d$/", param($field))) {
+			niceerror("Neispravan $field");
+			return;
+		}
+	
 	$naziv = db_escape(param('godina'));
 	$ag = db_get("select id from akademska_godina where naziv like '$naziv'");
 	if ($ag === false) {
 		$ag = db_get("select id+1 from akademska_godina order by id desc limit 1");
-		db_query("insert into akademska_godina set id=$ag, naziv='$naziv', aktuelna=0, pocetak_zimskog_semestra='1970-01-01', kraj_zimskog_semestra='1970-01-01', pocetak_ljetnjeg_semestra='1970-01-01', kraj_ljetnjeg_semestra='1970-01-01'");
+		db_query("insert into akademska_godina set id=$ag, naziv='$naziv', aktuelna=0, pocetak_godine='" . param('pocetak_godine') . "', kraj_godine='" . param('kraj_godine') . "', pocetak_zimskog_semestra='" . param('pocetak_godine') . "', kraj_zimskog_semestra='" . param('kraj_zimskog_semestra') . "', pocetak_ljetnjeg_semestra='" . param('pocetak_ljetnjeg_semestra') . "', kraj_ljetnjeg_semestra='" . param('kraj_godine') . "'");
 		print "-- Kreirana nova akademska godina '$naziv' (ID: $ag). Koristite modul 'Parametri studija' da je proglasite za aktuelnu.<br/>\n";
 	} else {
 		print "-- Pronađena postojeća akademska godina (ID: $ag) - neće biti kreirana nova godina.<br/>\n";
@@ -73,17 +80,33 @@ if (param('akcija') == "novagodina") {
 	
 
 
-	$q = db_query("select naziv from akademska_godina order by id desc limit 1");
+	$najnovija = db_get("select naziv from akademska_godina order by id desc limit 1");
+	$sljedeca = intval($najnovija)+1;
+	$sljedeca_full = $sljedeca . "/" . ($sljedeca+1);
+	
+	$pocetak_godine = "$sljedeca-10-01";
+	$kraj_godine = ($sljedeca+1) . "-09-30";
+	$kraj_zimskog_semestra = ($sljedeca+1) . "-01-21";
+	$pocetak_ljetnjeg_semestra = ($sljedeca+1) . "-02-28";
 	
 	?>
 	<h2>Nova akademska godina</h2>
 	<p>Ovaj modul kreira novu akademsku godinu u bazi, a zatim za datu godinu kreira sve predmete koji su predviđeni aktuelnim planovima svih kreiranih studija.</p>
 	<p>Klikom na dugme "Kreiraj" biće najprije ispisano šta će se sve uraditi, te ponuđeno dugme "Potvrda" nakon kojeg će akcije biti izvršene i baza izmijenjena.</p>
-	<p><?=genform("POST")?>
+	<?=genform("POST")?>
 	<input type="hidden" name="akcija" value="novagodina">
-	<input type="text" name="godina" size="20" value="<?=db_result($q,0,0)?>">
-	<input type="submit" value=" Kreiraj novu akademsku godinu ">
-	</form></p>
+	<p>
+		<input type="text" name="godina" size="20" value="<?=$sljedeca_full?>">
+	</p>
+	<p>
+		Značajni datumi (u formatu GODINA-MJESEC-DAN):<br>
+		Početak godine i početak zimskog semestra: <input type="text" name="pocetak_godine" size="20" value="<?=$pocetak_godine?>"><br>
+		Kraj godine i kraj ljetnjeg semestra: <input type="text" name="kraj_godine" size="20" value="<?=$kraj_godine?>"><br>
+		Kraj zimskog semestra: <input type="text" name="kraj_zimskog_semestra" size="20" value="<?=$kraj_zimskog_semestra?>"><br>
+		Početak ljetnjeg semestra: <input type="text" name="pocetak_ljetnjeg_semestra" size="20" value="<?=$pocetak_ljetnjeg_semestra?>"><br>
+		<input type="submit" value=" Kreiraj novu akademsku godinu ">
+	</p>
+	</form>
 	<hr>
 	<?
 }
