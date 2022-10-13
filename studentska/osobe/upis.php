@@ -12,21 +12,11 @@ function studentska_osobe_upis() {
 	$allProgrammes = api_call("programme/all", [ "resolve" => [ "ProgrammeType" ]]);
 	$allProgrammes = $allProgrammes['results'];
 	
-	
+
 	// Parameters, if passed
 	
 	$student = int_param('osoba');
 	$studij = int_param('studij');
-	if ($studij == 0) {
-		// Passing zero means that programme should be selected manually
-		foreach ($allProgrammes as $programme) {
-			if ($programme['acceptsStudents']) {
-				$studij = $programme['id'];
-				break;
-			}
-		}
-		$_REQUEST['change'] = true;
-	}
 	$semestar = int_param('semestar');
 	$godina = int_param('godina');
 	if (param('ponovac')) $ponovac = true; else $ponovac = false;
@@ -54,7 +44,6 @@ function studentska_osobe_upis() {
 	// API expects negative value for debt
 	$newAmount = -floatval(param('zaduzenje'));
 	if ($newAmount != floatval($balance['amount'])) {
-		print "Old amount " . $balance['amount'] . " new amount $newAmount<br>\n";
 		$newBalance = array_to_object( [ "Person" => [ "id" => $student], "amount" => $newAmount ] );
 		$result = api_call("balance/$student", $newBalance, "PUT");
 		if ($_api_http_code != "201") {
@@ -153,7 +142,7 @@ function studentska_osobe_upis() {
 	}
 	
 	// Programme, cycle or curriculum has changed
-	if (param('change') || $studij == -1 || ($_api_http_code == "400" && strstr($newEnrollment['message'], "semesters, but")) || $newEnrollment['Programme']['id'] != $studij) {
+	if (param('change') || $studij == -1 || ($_api_http_code == "400" && strstr($newEnrollment['message'], "semesters, but")) || ($newEnrollment['Programme']['id'] != $studij && $studij != 0)) {
 		$show['programme'] = $show['curriculum'] = true;
 		$finish = false;
 		
@@ -167,7 +156,7 @@ function studentska_osobe_upis() {
 		
 		
 		// If semester is invalid, we will try enrollment into the next cycle
-		if (strstr($newEnrollment['message'], "semesters, but")) {
+		if ($_api_http_code == "400" && strstr($newEnrollment['message'], "semesters, but")) {
 			// First find old programme, cause we lost it >D
 			foreach($allProgrammes as $prog) {
 				if ($prog['id'] == $studij)
