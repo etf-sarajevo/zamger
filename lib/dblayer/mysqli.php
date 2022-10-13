@@ -168,11 +168,6 @@ function db_escape($value) {
 	// If chars are needed for something, escape manually
 	$value = htmlspecialchars($value);
 
-	// If magic quotes is on, stuff would be double-escaped here
-	if (get_magic_quotes_gpc()) {
-		$value = stripslashes($value);
-	}
-
 	// Quote if not a number or a numeric string
 	if (!is_numeric($value)) {
 		$value = mysqli_real_escape_string($__db_connection, $value); // Detecting quotes later is a pain
