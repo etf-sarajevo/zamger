@@ -93,6 +93,7 @@ function admin_misc_promijeni_kodove() {
 			<?
 		} else {
 			print "Nema ništa";
+			db_query("UPDATE kod_za_izvjestaj SET promjena=0");
 		}
 		
 		return;
