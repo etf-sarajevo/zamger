@@ -19,7 +19,7 @@ Elektrotehnički fakultet Sarajevo</p>
 
 $id_zavrsni = intval($_REQUEST['zavrsni']);
 
-$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.drugi_mentor as mentor2_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, z.clan_komisije2 as clan2_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, z.sala as sala, z.odluka_komisija as odluka, s.institucija as institucija
+$q10 = db_query("select z.naslov as naslov, i.naziv as odsjek, z.student as student_id, z.mentor as mentor_id, z.drugi_mentor as mentor2_id, z.predsjednik_komisije as predsjednik_id, z.clan_komisije as clan_id, z.clan_komisije2 as clan2_id, UNIX_TIMESTAMP(z.termin_odbrane) as termin_odbrane, z.rad_na_predmetu as id_rad_na_predmetu, ts.ciklus as ciklus, ts.ects as ects, z.sala as sala, z.odluka_komisija as odluka, s.institucija as institucija, p.id as id_zavrsni_rad_predmet
 from zavrsni as z, predmet as p, institucija as i, ponudakursa as pk, studij as s, tipstudija as ts
 where z.id=$id_zavrsni and z.predmet=p.id and p.institucija=i.id and ". // uslovi za detekciju ciklusa studija
 "pk.predmet=p.id and pk.akademska_godina=z.akademska_godina and pk.studij=s.id and s.tipstudija=ts.id");
@@ -48,11 +48,13 @@ $predsjednik = tituliraj($r10["predsjednik_id"], true);
 $clan = tituliraj($r10["clan_id"], true);
 $clan2 = tituliraj($r10["clan2_id"], true);
 
-$q25 = db_query("select naziv, opcina from mjesto where id=".$r20["mjesto_rodjenja"]);
+$q25 = db_query("select naziv, opcina, opcina_van_bih from mjesto where id=".$r20["mjesto_rodjenja"]);
 $r25 = db_fetch_assoc($q25);
 
 $q27 = db_query("select naziv from opcina where id=".$r25["opcina"]);
 $r27 = db_fetch_assoc($q27);
+$naziv_opcine = $r27['naziv'];
+if ($r25['opcina'] == 143) $naziv_opcine = $r25['opcina_van_bih'];
 
 $q30 = db_query("select naziv from mjesto where id=".intval($r20["adresa_mjesto_id"]));
 $r30 = db_fetch_assoc($q30);
@@ -88,6 +90,11 @@ if ($r10['ciklus'] == 1 || $r10['ciklus'] == 99) {
 		nicemessage("<a href=\"javascript:history.go(-1);\">Nazad</a>");
 		return;
 	}
+
+	// Broj položenih predmeta i prosječna ocjena
+	// -- ovo nije dobro za drugi ciklus jer ocjene nisu razdvojene po ciklusu
+	$broj_predmeta = db_get("SELECT COUNT(*) FROM konacna_ocjena WHERE student=" . $r10['student_id'] . " AND ocjena>5 AND predmet!=" . $r10['id_zavrsni_rad_predmet']);
+	$prosjecna_ocjena = round(db_get("SELECT AVG(ocjena) FROM konacna_ocjena WHERE student=" . $r10['student_id'] . " AND ocjena>5 AND ocjena<=10"), 2);
 
 	// Potreban nam je predmet iz kojeg je rad 
 	$rad_na_predmetu = db_get("SELECT naziv FROM predmet WHERE id=".$r10["id_rad_na_predmetu"]);
@@ -134,14 +141,14 @@ if ($r10['ciklus'] == 1 || $r10['ciklus'] == 99) {
 
 	<table border="0" width="600px">
 	<tr><td>Prosječna ocjena položenih ispita</td>
-	<td style="border: 1px solid black;">&nbsp;</td></tr>
+	<td style="border: 1px solid black;"><?=$prosjecna_ocjena?></td></tr>
 	<tr><td>Broj ECTS bodova</td>
-	<td style="border: 1px solid black;">180</td></tr>
+	<td style="border: 1px solid black;"><?=$r10['ects']?></td></tr>
 	<tr><td>Ukupan broj položenih ispita</td>
-	<td style="border: 1px solid black;">33</td></tr>
+	<td style="border: 1px solid black;"><?=$broj_predmeta?></td></tr>
 	</table>
 
-	<p>Datum rođenja <?=date("d. m. Y.", $r20["datum_rodjenja"])?> u mjestu <?=$r25["naziv"]?>, općina <?=$r27["naziv"]?>.</p>
+	<p>Datum rođenja <?=date("d. m. Y.", $r20["datum_rodjenja"])?> u mjestu <?=$r25["naziv"]?>, općina <?=$naziv_opcine?>.</p>
 
 	<p>Adresa na koju se dostavlja obavijest o promociji: <?=$r20["adresa"]?>, <?=$r30["naziv"]?></p>
 
