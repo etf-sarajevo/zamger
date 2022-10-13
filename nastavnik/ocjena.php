@@ -280,9 +280,9 @@ function nastavnik_ocjena() {
 	$separator = intval($_POST['separator']);
 	if (!$_POST['separator']) {
 		if (array_key_exists('mass-input-separator', $preferences))
-			$format = $preferences['mass-input-separator'];
+			$separator = $preferences['mass-input-separator'];
 		else //default vrijednost
-			$format=0;
+			$separator=0;
 	}
 	
 	
