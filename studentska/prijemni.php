@@ -936,7 +936,10 @@ if ($akcija == "prijemni") {
 
 	$upit = "";
 
-	$upit = "SELECT o.id, o.ime, o.prezime, pp.rezultat, pp.izasao, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi, pp.broj_dosjea from osoba as o, prijemni_prijava as pp, uspjeh_u_srednjoj as us where o.id=pp.osoba and pp.prijemni_termin=$termin and us.osoba=o.id";
+	if ($ciklus_studija == 1)
+		$upit = "SELECT o.id, o.ime, o.prezime, pp.rezultat, pp.izasao, us.opci_uspjeh+us.kljucni_predmeti+us.dodatni_bodovi, pp.broj_dosjea from osoba as o, prijemni_prijava as pp, uspjeh_u_srednjoj as us where o.id=pp.osoba and pp.prijemni_termin=$termin and us.osoba=o.id";
+	else
+		$upit = "SELECT o.id, o.ime, o.prezime, pp.rezultat, pp.izasao, pc.opci_uspjeh+pc.dodatni_bodovi, pp.broj_dosjea from osoba as o, prijemni_prijava as pp, prosliciklus_uspjeh as pc where o.id=pp.osoba and pp.prijemni_termin=$termin and pc.osoba=o.id";
 
 	if ($_REQUEST['sort'] == "prezime") $upit .= " ORDER BY o.prezime, o.ime";
 	else $upit .= " ORDER BY pp.broj_dosjea";
