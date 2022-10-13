@@ -63,7 +63,7 @@ if (db_num_rows($q10)<1) {
 	$datum = date("d. m. Y.",db_result($q10,0,2));
 	$ciklus_studija = db_result($q10,0,3);
 	
-	$naziv = " za ".db_result($q10,0,1)." akademsku godinu (".db_result($q10,0,3)." ciklus studija), $datum";
+	$naziv = " za ".db_result($q10,0,1)." akademsku godinu ($ciklus_studija ciklus studija), $datum";
 }
 $ocekivani_ects = 0;
 if ($ciklus_studija == 2) $ocekivani_ects = 180;
@@ -610,6 +610,7 @@ if ($akcija == "spisak") {
 		print "<option value=\"$pk\">$naziv_pk</option>\n";
 	?>
 	</select></p>
+	<p><input type="checkbox" name="anonimno"> Prikaz šifara</p>
 	<input type="submit" value=" Kreni ">
 	</form>
 	<?
